@@ -1,3 +1,7 @@
+2004-03-08  Eric Christopher  <echristo@redhat.com>
+
+	* Makefile.in (site.exp): Add libiconv variable definition.
+
 2004-03-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure: Regenerate for config/accross.m4 correction.
@@ -45,7 +49,7 @@
 	and MASK_STRING.
 
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
- 
+
         * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
         for little endian.
         ("ashrdi3_no_power"): Disable for little endian.
