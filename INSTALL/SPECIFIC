@@ -4,7 +4,7 @@ Host/Target specific installation notes for
 alpha*-*-*
 No specific installation needs/instructions. 
 
-i?86-*-linux-gnulibc1
+i?86-*-linux-*
 You will need binutils-2.8.1.0.15 or newer for exception handling to work. 
 
 i?86-*-sco3.2v5*

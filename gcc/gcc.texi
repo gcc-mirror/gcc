@@ -2184,11 +2184,9 @@ for improvement of GNU CC or GNU C++ are welcome in any case.
 Send bug reports for GNU C to @samp{egcs-bugs@@cygnus.com}.
 
 @kindex egcs-bugs@@cygnus.com
-@kindex egcs-bugs@@pcygnus.com
-Send bug reports for GNU C++ to @samp{egcs-bugs@@cygnus.com}.  If
-your bug involves the C++ class library libg++, send mail instead to the
-address @samp{egcs-bugs@@cygnus.com}.  If you're not sure, you
-can send the bug report to both lists.
+@kindex egcs-bugs@@cygnus.com
+Send bug reports for GNU C++ and the C++ runtime libraries to
+@samp{egcs-bugs@@cygnus.com}.
 
 Often people think of posting bug reports to the newsgroup instead of
 mailing them.  This appears to work, but it has one problem which can be
