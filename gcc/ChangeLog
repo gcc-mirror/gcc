@@ -1,5 +1,7 @@
 Tue Sep  7 03:42:45 1999  Mark Klein (mklein@dis.com)
 
+	* pa/quadlib.asm: New file for long double support.
+
 	* configure.in: Add hppa1.0-*-mpeix for MPE port.
 	* configure: Rebuilt.
 
