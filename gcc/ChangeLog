@@ -1,5 +1,10 @@
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
+	* reload.c (push_secondary_reload): Don't check for "=" in output
+	constraint after ""->ALL_REGS check.
+
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
 	* predict.c (expected_value_to_br_prob): Use pc_set.
 
 	* optabs.c (init_one_libfunc): Gen a FUNCTION_DECL for use by
