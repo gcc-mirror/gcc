@@ -1,3 +1,9 @@
+2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/10129
+	* config/darwin.c (darwin_encode_section_info): When the decl has
+	a DECL_INITIAL, it is only defined also when it is not a common.
+
 2004-06-17  Zack Weinberg  <zack@codesourcery.com>
 
 	Bug 14610
