@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha
    running Windows/NT.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -45,6 +45,11 @@ Boston, MA 02111-1307, USA.  */
 /* "long" is 32 bits.  */
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "short unsigned int"
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 16
 
 /* We can't do any debugging.  */
 #undef SDB_DEBUGGING_INFO
