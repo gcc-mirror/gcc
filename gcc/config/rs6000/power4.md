@@ -130,7 +130,7 @@
        (eq_attr "cpu" "power4"))
   "lsq_power4")
 
-(define_insn_reservation "power4-store" 1
+(define_insn_reservation "power4-store" 12
   (and (eq_attr "type" "store")
        (eq_attr "cpu" "power4"))
   "(du1_power4,lsu1_power4,iu1_power4)\
@@ -138,7 +138,7 @@
   |(du3_power4,lsu2_power4,nothing,iu2_power4)\
   |(du4_power4,lsu1_power4,nothing,iu1_power4)")
 
-(define_insn_reservation "power4-store-update" 1
+(define_insn_reservation "power4-store-update" 12
   (and (eq_attr "type" "store_u")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4,lsu1_power4+iu2_power4,iu1_power4)\
@@ -146,13 +146,13 @@
   |(du3_power4+du4_power4,lsu2_power4+iu1_power4,iu2_power4)\
   |(du3_power4+du4_power4,lsu2_power4,iu1_power4,iu2_power4)")
 
-(define_insn_reservation "power4-store-update-indexed" 1
+(define_insn_reservation "power4-store-update-indexed" 12
   (and (eq_attr "type" "store_ux")
        (eq_attr "cpu" "power4"))
    "du1_power4+du2_power4+du3_power4+du4_power4,\
     iu1_power4,lsu2_power4+iu2_power4,iu2_power4")
 
-(define_insn_reservation "power4-fpstore" 1
+(define_insn_reservation "power4-fpstore" 12
   (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "power4"))
   "(du1_power4,lsu1_power4,fpu1_power4)\
@@ -160,7 +160,7 @@
   |(du3_power4,lsu2_power4,nothing,fpu2_power4)\
   |(du4_power4,lsu1_power4,nothing,fpu1_power4)")
 
-(define_insn_reservation "power4-fpstore-update" 1
+(define_insn_reservation "power4-fpstore-update" 12
   (and (eq_attr "type" "fpstore_u,fpstore_ux")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4,lsu1_power4+iu2_power4,fpu1_power4)\
@@ -168,7 +168,7 @@
   |(du3_power4+du4_power4,lsu2_power4+iu1_power4,fpu2_power4)")
 ;  |(du3_power4+du4_power4,nothing,lsu2_power4+iu1_power4,fpu2_power4)")
 
-(define_insn_reservation "power4-vecstore" 1
+(define_insn_reservation "power4-vecstore" 12
   (and (eq_attr "type" "vecstore")
        (eq_attr "cpu" "power4"))
   "(du1_power4,lsu1_power4,vec_power4)\
