@@ -25,9 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_TARGET_OPTIONS\
   { "abi=", &mips_abi_string	},
 
-#undef EMPTY_FIELD_BOUNDARY
-#define EMPTY_FIELD_BOUNDARY	32
-
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY (mips_abi == ABI_32 ? 64 : 128)
 
