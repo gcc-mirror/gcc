@@ -1586,6 +1586,26 @@ extern struct rtx_def *hppa_legitimize_address ();
   else					\
     readonly_data_section ();
 
+/* On hpux10, the linker will give an error if we have a reference
+   in the read-only data section to a symbol defined in a shared
+   library.  Therefore, expressions that might require a reloc can
+   not be placed in the read-only data section.  */
+#define SELECT_SECTION(EXP,RELOC) \
+  if (TREE_CODE (EXP) == VAR_DECL \
+      && TREE_READONLY (EXP) \
+      && !TREE_THIS_VOLATILE (EXP) \
+      && DECL_INITIAL (EXP) \
+      && (DECL_INITIAL (EXP) == error_mark_node \
+          || TREE_CONSTANT (DECL_INITIAL (EXP))) \
+      && !RELOC) \
+    readonly_data_section (); \
+  else if (TREE_CODE_CLASS (TREE_CODE (EXP)) == 'c' \
+	   && !(TREE_CODE (EXP) == STRING_CST && flag_writable_strings) \
+	   && !RELOC) \
+    readonly_data_section (); \
+  else \
+    data_section ();
+   
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).

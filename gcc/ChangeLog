@@ -1,3 +1,8 @@
+Mon Aug  9 01:15:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (SELECT_SECTION): Define.
+	* som.h (SELECT_SECTION): Delete.
+
 Sun Aug  8 15:13:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (init_alias_analysis): Wrap call to 
