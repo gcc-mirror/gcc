@@ -422,8 +422,8 @@ make_node (code)
       DECL_SOURCE_FILE (t) =
 	(input_filename) ? input_filename : "<built-in>";
       DECL_UID (t) = next_decl_uid++;
-      /* Note that we have not yet computed the alias set for this
-	 declaration.  */
+
+      /* We have not yet computed the alias set for this declaration.  */
       DECL_POINTER_ALIAS_SET (t) = -1;
       break;
 
@@ -432,10 +432,12 @@ make_node (code)
       TYPE_ALIGN (t) = char_type_node ? TYPE_ALIGN (char_type_node) : 0;
       TYPE_USER_ALIGN (t) = 0;
       TYPE_MAIN_VARIANT (t) = t;
+
+      /* Default to no attributes for type, but let target change that.  */
       TYPE_ATTRIBUTES (t) = NULL_TREE;
-      (* target.set_default_type_attributes) (t);
-      /* Note that we have not yet computed the alias set for this
-	 type.  */
+      (*target.set_default_type_attributes) (t);
+
+      /* We have not yet computed the alias set for this type.  */
       TYPE_ALIAS_SET (t) = -1;
       break;
 
