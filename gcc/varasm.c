@@ -89,6 +89,7 @@ extern FILE *asm_out_file;
 static char *compare_constant_1 ();
 static void record_constant_1 ();
 static void output_constant_def_contents ();
+static int contains_pointers_p ();
 
 void output_constant_pool ();
 void assemble_name ();
@@ -923,7 +924,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
 
   /* Output any data that we will need to use the address of.  */
-  if (DECL_INITIAL (decl))
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl));
+  else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
   /* Switch to the proper section for this data.  */
@@ -1050,6 +1053,42 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* There must be a statement after a label.  */
   ;
 #endif
+}
+
+/* Return 1 if type TYPE contains any pointers.  */
+
+static int
+contains_pointers_p (type)
+     tree type;
+{
+  switch (TREE_CODE (type))
+    {
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      /* I'm not sure whether OFFSET_TYPE needs this treatment,
+	 so I'll play safe and return 1.  */
+    case OFFSET_TYPE:
+      return 1;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree fields;
+	/* For a type that has fields, see if the fields have pointers.  */
+	for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+	  if (contains_pointers_p (TREE_TYPE (fields)))
+	    return 1;
+	return 0;
+      }
+
+    case ARRAY_TYPE:
+      /* An array type contains pointers if its element type does.  */
+      return contains_pointers_p (TREE_TYPE (type));
+
+    default:
+      return 0;
+    }
 }
 
 /* Output something to declare an external symbol to the assembler.
