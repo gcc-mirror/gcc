@@ -1,7 +1,22 @@
+2002-02-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* lib/libjava.exp: Add "xfail-byte-output" and "xfail-source-output".
+	Don't display expected and actual output for a failed output test.
+
+	* libjava.lang/ArrayStore.java: New file.
+	* libjava.lang/ArrayStore.out: New file.
+	* libjava.lang/ArrayStore.xfail: New file. xfail-byte-output.
+	* libjava.lang/ArrayStore2.java: New file.
+	* libjava.lang/ArrayStore2.out: New file.
+	* libjava.lang/ArrayStore2.xfail: New file. xfail-source-output.
+
 2002-02-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/err7.xfail: Removed.
 	* libjava.lang/err8.xfail: Removed.
+	
+	* libjava.lang/ArrayStore.java: New file.
+	* libjava.lang/ArrayStore.out: New file.
 
 2002-02-10  Tom Tromey  <tromey@redhat.com>
 
