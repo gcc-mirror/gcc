@@ -1,3 +1,9 @@
+2000-02-18  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.jni/register.java: New file.
+	* libjava.jni/register.c: New file.
+	* libjava.jni/register.out: New file.
+
 2000-02-16  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.jni/calls.c: New file.
