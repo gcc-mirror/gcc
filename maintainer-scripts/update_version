@@ -2,6 +2,7 @@
 
 CVSROOT=${CVSROOT:-/cvs/gcc}
 IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2)-branch'
+ADD_BRANCHES='HEAD tree-ssa-20020619-branch'
 
 # Run this from /tmp.
 export CVSROOT
@@ -19,7 +20,7 @@ BRANCHES=`$CVS status -v gcc/ChangeLog \
           | egrep 'gcc-[0-9]+_[0-9]+-branch$' \
           | egrep -v $IGNORE_BRANCHES`
 # Always update the mainline.
-BRANCHES="${BRANCHES} HEAD"
+BRANCHES="${BRANCHES} ${ADD_BRANCHES}"
 
 # ARGS is passed to 'cvs co'
 CURR_DATE=`/bin/date +"%Y%m%d"`
