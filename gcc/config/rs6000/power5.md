@@ -179,9 +179,9 @@
   "(du1_power5,iu1_power5*6)\
   |(du2_power5,iu2_power5*6)\
   |(du3_power5,iu2_power5*6)\
-  |(du4_power5,iu2_power5*6)")
+  |(du4_power5,iu1_power5*6)")
 ;  |(du3_power5,nothing,iu2_power5*6)\
-;  |(du4_power5,nothing,iu2_power5*6)")
+;  |(du4_power5,nothing,iu1_power5*6)")
 
 (define_insn_reservation "power5-imul" 5
   (and (eq_attr "type" "imul")
