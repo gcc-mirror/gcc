@@ -252,7 +252,7 @@ void
 end_final (filename)
      const char *filename;
 {
-  if (profile_arc_flag)
+  if (profile_arc_flag && profile_info.count_instrumented_edges)
     {
       char name[20];
       tree string_type, string_cst;
