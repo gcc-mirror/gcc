@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do compile }
 // { dg-options "-O3" }
 
 struct X { void foo (); }; 

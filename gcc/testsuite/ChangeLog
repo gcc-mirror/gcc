@@ -1,3 +1,7 @@
+2004-06-28  Andrew Pinski  <apinski@apple.com>
+
+	* g++.dg/opt/ptrmem4.C: Change to compile only test.
+
 2004-06-28  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
 
 	PR target/14041
