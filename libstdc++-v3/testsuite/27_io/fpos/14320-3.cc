@@ -24,7 +24,7 @@
 #include <testsuite_hooks.h>
 
 // libstdc++/14320
-int test01()
+void test01()
 {
   using namespace std;
   bool test __attribute__((unused)) = true;

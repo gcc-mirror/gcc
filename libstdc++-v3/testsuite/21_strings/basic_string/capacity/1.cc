@@ -1,6 +1,6 @@
 // 1999-05-11 bkoz
 
-// Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,7 +140,7 @@ void test01()
   VERIFY( sz04 >= 100 );
   str02.reserve();
   sz03 = str02.capacity();
-  VERIFY( sz03 >= 0 );
+  VERIFY( sz03 == 0 );
 
   sz03 = str02.size() + 5;
   str02.resize(sz03);

@@ -1,6 +1,7 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,9 +36,8 @@
 
 // { dg-do compile }
 
-namespace test 
+namespace std
 {
-  using namespace std;
   using __gnu_test::pod_char;
   typedef short type_t;
   template class basic_istream<type_t, char_traits<type_t> >;

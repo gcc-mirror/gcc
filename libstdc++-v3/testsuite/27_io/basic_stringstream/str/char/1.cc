@@ -1,6 +1,6 @@
 // 2001-05-24 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ void test01()
   state1 = is01.rdstate();
   is01 >> a;
   state2 = is01.rdstate();
-  VERIFY( a = i01 );
+  VERIFY( a == i01 );
   // 22.2.2.1.2 num_get virtual functions
   // p 13
   // in any case, if stage 2 processing was terminated by the test for
