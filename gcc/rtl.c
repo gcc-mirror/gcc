@@ -205,7 +205,9 @@ const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS] = {
     /* MODE_PARTIAL_INT */	PQImode,
     /* MODE_CC */		CCmode,
     /* MODE_COMPLEX_INT */	CQImode,
-    /* MODE_COMPLEX_FLOAT */	QCmode
+    /* MODE_COMPLEX_FLOAT */	QCmode,
+    /* MODE_VECTOR_INT */	V2QImode,
+    /* MODE_VECTOR_FLOAT */	V2SFmode
 };
 
 
