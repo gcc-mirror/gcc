@@ -214,7 +214,7 @@ _Jv_JNI_DeleteLocalRef (JNIEnv *env, jobject obj)
 
   for (frame = env->locals; frame != NULL; frame = frame->next)
     {
-      for (int i = 0; i < FRAME_SIZE; ++i)
+      for (int i = 0; i < frame->size; ++i)
 	{
 	  if (frame->vec[i] == obj)
 	    {
