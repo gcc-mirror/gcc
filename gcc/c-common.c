@@ -253,6 +253,19 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`const' attribute ignored");
       }
+    else if (TREE_VALUE (a) == get_identifier ("transparent_union"))
+      {
+	if (TREE_CODE (decl) == PARM_DECL
+	    && TREE_CODE (type) == UNION_TYPE
+	    && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
+	  DECL_TRANSPARENT_UNION (decl) = 1;
+	else if (TREE_CODE (decl) == TYPE_DECL
+		 && TREE_CODE (type) == UNION_TYPE
+		 && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
+	  TYPE_TRANSPARENT_UNION (type) = 1;
+	else
+	  warning_with_decl (decl, "`transparent_union' attribute ignored");
+      }
     else if (TREE_CODE (name) != TREE_LIST)
      {
 #ifdef VALID_MACHINE_ATTRIBUTE
