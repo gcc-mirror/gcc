@@ -5785,7 +5785,7 @@ fold (tree expr)
 
     case NEGATE_EXPR:
       if (negate_expr_p (arg0))
-	return negate_expr (arg0);
+	return fold_convert (type, negate_expr (arg0));
       return t;
 
     case ABS_EXPR:

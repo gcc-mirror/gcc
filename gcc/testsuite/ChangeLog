@@ -1,3 +1,9 @@
+2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/14092
+
+	* gcc.dg/pr14092-1.c: New testcase.
+
 2004-02-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/cpp/assert4.c: Fix typo last change.
