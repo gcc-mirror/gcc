@@ -1,5 +1,10 @@
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11149
+	* g++.dg/lookup/scoped6.C: New test.
+
+2003-07-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9559
 	* g++.dg/init/static1.C: New test.
 
