@@ -1,3 +1,7 @@
+Wed Jul  7 01:38:03 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (unroll_loop): Don't delete NOTE_INSN_DELETED_LABEL notes.
+
 1999-07-07  Manfred Hollstein  <mhollstein@cygnus.com>
 
 	* m88k/dguxbcs.h (CPP_SPEC): Add missing \ in multi-line
