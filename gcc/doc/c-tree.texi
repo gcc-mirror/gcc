@@ -1771,6 +1771,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex CLEANUP_POINT_EXPR
 @tindex ARRAY_REF
 @tindex VTABLE_REF
+@tindex VA_ARG_EXPR
 
 The internal representation for expressions is for the most part quite
 straightforward.  However, there are a few facts that one must bear in
@@ -2311,5 +2312,11 @@ survives the balance of code generation.
 The first operand is the expression that computes the vtable reference.
 The second operand is the @code{VAR_DECL} of the vtable.  The third
 operand is an @code{INTEGER_CST} of the byte offset into the vtable.
+
+@item VA_ARG_EXPR
+This node is used to implement support for the C/C++ variable argument-list
+mechanism.  It represents expressions like @code{va_arg (ap, type)}.
+Its @code{TREE_TYPE} yields the tree representation for @code{type} and
+its sole argument yields the representation for @code{ap}.
 
 @end table
