@@ -1,6 +1,12 @@
+2003-04-01  Aldy Hernandez  <aldyh@redhat.com>
+
+        * g++.dg/eh/simd-1.C: New.
+
+        * g++.dg/eh/simd-2.C: New.
+
 2003-03-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.c-torture/execute/simd-3.c: New.
+        * gcc.c-torture/execute/simd-3.c: New.
 
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
