@@ -1,3 +1,10 @@
+1999-04-19  Tom Tromey  <tromey@cygnus.com>
+
+	* xref.h (enum): Removed trailing comma.
+
+	* parse.y (resolve_qualified_expression_name): Added missing
+	`break'.
+
 Thu Apr 15 13:08:03 1999  Anthony Green  <green@cygnus.com>
 
 	* gjavah.c: New prototypes for java_float_finite and

@@ -6321,6 +6321,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	default:
 	  /* Fix for -Wall Just go to the next statement. Don't
              continue */
+	  break;
 	}
 
       /* If we fall here, we weren't processing a (static) function call. */

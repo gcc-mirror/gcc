@@ -30,7 +30,7 @@ void expand_xref PROTO ((tree));
 /* flag_emit_xref range of possible values. */
 
 enum {
-  XREF_NONE = 0,
+  XREF_NONE = 0
 };
 
 /* Lookup table to be used with the value of flag_emit_xref */

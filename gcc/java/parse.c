@@ -2226,7 +2226,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
+#line 3 "/x1/java/install/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2419,7 +2419,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/lib/bison.simple"
+#line 196 "/x1/java/install/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4678,7 +4678,7 @@ case 493:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/lib/bison.simple"
+#line 498 "/x1/java/install/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -8922,6 +8922,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	default:
 	  /* Fix for -Wall Just go to the next statement. Don't
              continue */
+	  break;
 	}
 
       /* If we fall here, we weren't processing a (static) function call. */
@@ -12343,6 +12344,7 @@ patch_unaryop (node, wfl_op)
       /* 15.14.2 Prefix Decrement Operator -- */
     case PREDECREMENT_EXPR:
       decl = strip_out_static_field_access_decl (op);
+      /* We really should have a JAVA_ARRAY_EXPR to avoid this */
       if (!JDECL_P (decl) 
 	  && TREE_CODE (decl) != COMPONENT_REF
 	  && !(flag_emit_class_files && TREE_CODE (decl) == ARRAY_REF)
