@@ -113,47 +113,6 @@ struct gcc_target
        insn in the new chain we're building.  Returns a new LAST.
        The default is to do nothing.  */
     rtx (* cycle_display) PARAMS ((int clock, rtx last));
-    /* The following member value is a pointer to a function returning
-       nonzero if we should use DFA based scheduling.  The default is
-       to use the old pipeline scheduler.  */
-    int (* use_dfa_pipeline_interface) PARAMS ((void));
-    /* The values of all the following members are used only for the
-       DFA based scheduler: */
-    /* The values of the following four members are pointers to
-       functions used to simplify the automaton descriptions.
-       dfa_pre_cycle_insn and dfa_post_cycle_insn give functions
-       returning insns which are used to change the pipeline hazard
-       recognizer state when the new simulated processor cycle
-       correspondingly starts and finishes.  The function defined by
-       init_dfa_pre_cycle_insn and init_dfa_post_cycle_insn are used
-       to initialize the corresponding insns.  The default values of
-       the memebers result in not changing the automaton state when
-       the new simulated processor cycle correspondingly starts and
-       finishes.  */
-    void (* init_dfa_pre_cycle_insn) PARAMS ((void));
-    rtx (* dfa_pre_cycle_insn) PARAMS ((void));
-    void (* init_dfa_post_cycle_insn) PARAMS ((void));
-    rtx (* dfa_post_cycle_insn) PARAMS ((void));
-    /* The following member value is a pointer to a function returning value
-       which defines how many insns in queue `ready' will we try for
-       multi-pass scheduling.  if the member value is nonzero and the
-       function returns positive value, the DFA based scheduler will make
-       multi-pass scheduling for the first cycle.  In other words, we will
-       try to choose ready insn which permits to start maximum number of
-       insns on the same cycle.  */
-    int (* first_cycle_multipass_dfa_lookahead) PARAMS ((void));
-    /* The values of the following members are pointers to functions
-       used to improve the first cycle multipass scheduling by
-       inserting nop insns.  dfa_scheduler_bubble gives a function
-       returning a nop insn with given index.  The indexes start with
-       zero.  The function should return NULL if there are no more nop
-       insns with indexes greater than given index.  To initialize the
-       nop insn the function given by member
-       init_dfa_scheduler_bubbles is used.  The default values of the
-       members result in not inserting nop insns during the multipass
-       scheduling.  */
-    void (* init_dfa_bubbles) PARAMS ((void));
-    rtx (* dfa_bubble) PARAMS ((int));
   } sched;
 
   /* Given two decls, merge their attributes and return the result.  */

@@ -346,10 +346,6 @@ INTL_SUBDIRS = intl $(POSUB)
 # system library.
 OBSTACK=obstack.o
 
-# The following object files is used by genautomata.
-GETRUNTIME = getruntime.o
-HASHTAB = hashtab.o
-
 # The GC method to be used on this system.
 GGC=@GGC@.o
 
@@ -486,8 +482,6 @@ HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_OBSTACK=$(OBSTACK)
 HOST_VFPRINTF=$(VFPRINTF)
 HOST_DOPRINT=$(DOPRINT)
-HOST_GETRUNTIME=$(GETRUNTIME)
-HOST_HASHTAB=$(HASHTAB)
 HOST_STRSTR=$(STRSTR)
 
 # Actual name to use when installing a native compiler.
@@ -615,8 +609,6 @@ ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
 USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
 USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
-USE_HOST_GETRUNTIME= ` case "${HOST_GETRUNTIME}" in ?*) echo ${HOST_PREFIX}${HOST_GETRUNTIME} ;; esac `
-USE_HOST_HASHTAB= ` case "${HOST_HASHTAB}" in ?*) echo ${HOST_PREFIX}${HOST_HASHTAB} ;; esac `
 USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR} ;; esac `
 
 # Dependency on obstack or whatever library facilities
@@ -645,7 +637,6 @@ HOST_RTL = $(HOST_PREFIX)rtl.o read-rtl.o $(HOST_PREFIX)bitmap.o \
 
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
-HOST_VARRAY = $(HOST_PREFIX)varray.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -1342,11 +1333,6 @@ obstack.o: $(srcdir)/../libiberty/obstack.c $(GCONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
 		obstack.c $(OUTPUT_OPTION)
 
-getruntime.o: $(srcdir)/../libiberty/getruntime.c $(CONFIG_H)
-	rm -f getruntime.c
-	$(LN_S) $(srcdir)/../libiberty/getruntime.c getruntime.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getruntime.c
-
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
@@ -1547,13 +1533,12 @@ sched-deps.o : sched-deps.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h cselib.h $(PARAMS_H) $(TM_P_H)
 sched-rgn.o : sched-rgn.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
-   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H) $(TARGET_H)
+   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H)
 sched-ebb.o : sched-ebb.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H)
 sched-vis.o : sched-vis.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
-   hard-reg-set.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(REGS_H) $(TM_P_H) \
-   $(TARGET_H)
+   hard-reg-set.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(REGS_H) $(TM_P_H)
 final.o : final.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h intl.h \
    $(REGS_H) $(RECOG_H) conditions.h insn-config.h $(INSN_ATTR_H) function.h \
    real.h output.h hard-reg-set.h except.h debug.h xcoffout.h \
@@ -1857,17 +1842,13 @@ genattr$(build_exeext) : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HO
 genattr.o : genattr.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
 
-genattrtab$(build_exeext) : genattrtab.o genautomata.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(HOST_PREFIX)$(HOST_GETRUNTIME) $(HOST_LIBDEPS)
+genattrtab$(build_exeext) : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattrtab.o genautomata.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(USE_HOST_GETRUNTIME) $(HOST_LIBS) -lm
+	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
 genattrtab.o : genattrtab.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
-  $(SYSTEM_H) errors.h $(GGC_H) gensupport.h genattrtab.h
+  $(SYSTEM_H) errors.h $(GGC_H) gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
-
-genautomata.o : genautomata.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
-  $(SYSTEM_H) errors.h varray.h hash.h genattrtab.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genautomata.c
 
 genoutput$(build_exeext) : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1918,16 +1899,6 @@ $(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(HCONFIG_H)
 	rm -f $(HOST_PREFIX)obstack.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
-
-$(HOST_PREFIX_1)getruntime.o: $(srcdir)/../libiberty/getruntime.c
-	rm -f $(HOST_PREFIX)getruntime.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/getruntime.c > $(HOST_PREFIX)getruntime.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)getruntime.c
-
-$(HOST_PREFIX_1)hashtab.o: $(srcdir)/../libiberty/hashtab.c
-	rm -f $(HOST_PREFIX)hashtab.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/hashtab.c > $(HOST_PREFIX)hashtab.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)hashtab.c
 
 $(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(HCONFIG_H)
 	rm -f $(HOST_PREFIX)vfprintf.c
