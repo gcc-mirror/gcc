@@ -1,3 +1,9 @@
+Sat Feb 14 05:08:21 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.md (movsfcc): Also validate operands[3] when compiling hard
+	float.
+	(movdfcc): Only accept fpu_add_operand for operands[3].
+
 Sat Feb 14 02:02:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (output_constant_pool): Bring back 'done' label inside
