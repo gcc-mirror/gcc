@@ -148,6 +148,7 @@ static int dependency_tracking = 0;
 
 /*
  * process java-specific compiler command-line options
+ * return 0, but do not complain if the option is not recognised.
  */
 int
 lang_decode_option (argc, argv)
