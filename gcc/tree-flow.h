@@ -309,6 +309,12 @@ struct stmt_ann_d GTY(())
      by each pass on an as-needed basis in any order convenient for the
      pass which needs statement UIDs.  */
   unsigned int uid;
+
+  /* Linked list of histograms for value-based profiling.  This is really a
+     struct histogram_value*.  We use void* to avoid having to export that
+     everywhere, and to avoid having to put it in GC memory.  */
+  
+  void * GTY ((skip (""))) histograms;
 };
 
 union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))

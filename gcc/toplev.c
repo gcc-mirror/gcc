@@ -1773,9 +1773,6 @@ process_options (void)
     warning ("this target machine does not have delayed branches");
 #endif
 
-  if (flag_tree_based_profiling && flag_profile_values)
-    sorry ("value-based profiling not yet implemented in trees.");
-
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
     {

@@ -23,30 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* Generate basic block profile instrumentation and auxiliary files.
-   Profile generation is optimized, so that not all arcs in the basic
-   block graph need instrumenting. First, the BB graph is closed with
-   one entry (function start), and one exit (function exit).  Any
-   ABNORMAL_EDGE cannot be instrumented (because there is no control
-   path to place the code). We close the graph by inserting fake
-   EDGE_FAKE edges to the EXIT_BLOCK, from the sources of abnormal
-   edges that do not go to the exit_block. We ignore such abnormal
-   edges.  Naturally these fake edges are never directly traversed,
-   and so *cannot* be directly instrumented.  Some other graph
-   massaging is done. To optimize the instrumentation we generate the
-   BB minimal span tree, only edges that are not on the span tree
-   (plus the entry point) need instrumenting. From that information
-   all other edge counts can be deduced.  By construction all fake
-   edges must be on the spanning tree. We also attempt to place
-   EDGE_CRITICAL edges on the spanning tree.
-
-   The auxiliary file generated is <dumpbase>.bbg. The format is
-   described in full in gcov-io.h.  */
-
-/* ??? Register allocation should use basic block execution counts to
-   give preference to the most commonly executed blocks.  */
-
-/* ??? Should calculate branch probabilities before instrumenting code, since
-   then we can use arc counts to help decide which arcs to instrument.  */
+   RTL-based version.  See profile.c for overview.  */
 
 #include "config.h"
 #include "system.h"
@@ -114,33 +91,33 @@ rtl_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   rtx less_label = gen_label_rtx ();
   rtx end_of_code_label = gen_label_rtx ();
   int per_counter = gcov_size / BITS_PER_UNIT;
-  edge e = split_block (BLOCK_FOR_INSN ((rtx)value->insn),
-		   PREV_INSN ((rtx)value->insn));
+  edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
+		   PREV_INSN (value->hvalue.rtl.insn));
 
   start_sequence ();
 
-  if (value->seq)
-    emit_insn (value->seq);
+  if (value->hvalue.rtl.seq)
+    emit_insn (value->hvalue.rtl.seq);
 
   mr = gen_reg_rtx (Pmode);
 
   tmp = rtl_coverage_counter_ref (tag, base);
   tmp = force_reg (Pmode, XEXP (tmp, 0));
 
-  val = expand_simple_binop (value->mode, MINUS,
-			     copy_rtx (value->value),
+  val = expand_simple_binop (value->hvalue.rtl.mode, MINUS,
+			     copy_rtx (value->hvalue.rtl.value),
 			     GEN_INT (value->hdata.intvl.int_start),
 			     NULL_RTX, 0, OPTAB_WIDEN);
 
-  if (value->hdata.intvl.may_be_more)
     do_compare_rtx_and_jump (copy_rtx (val), GEN_INT (value->hdata.intvl.steps),
-			     GE, 0, value->mode, NULL_RTX, NULL_RTX, more_label);
-  if (value->hdata.intvl.may_be_less)
-    do_compare_rtx_and_jump (copy_rtx (val), const0_rtx, LT, 0, value->mode,
+			   GE, 0, value->hvalue.rtl.mode, NULL_RTX, NULL_RTX, 
+			   more_label);
+  do_compare_rtx_and_jump (copy_rtx (val), const0_rtx, LT, 0, 
+			   value->hvalue.rtl.mode,
 			     NULL_RTX, NULL_RTX, less_label);
 
   /* We are in range.  */
-  tmp1 = expand_simple_binop (value->mode, MULT,
+  tmp1 = expand_simple_binop (value->hvalue.rtl.mode, MULT,
 			      copy_rtx (val), GEN_INT (per_counter),
 			      NULL_RTX, 0, OPTAB_WIDEN);
   tmp1 = expand_simple_binop (Pmode, PLUS, copy_rtx (tmp), tmp1, mr,
@@ -148,43 +125,27 @@ rtl_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
   if (tmp1 != mr)
     emit_move_insn (copy_rtx (mr), tmp1);
 
-  if (value->hdata.intvl.may_be_more
-      || value->hdata.intvl.may_be_less)
-    {
       emit_jump_insn (gen_jump (end_of_code_label));
       emit_barrier ();
-    }
 
   /* Above the interval.  */
-  if (value->hdata.intvl.may_be_more)
-    {
       emit_label (more_label);
       tmp1 = expand_simple_binop (Pmode, PLUS, copy_rtx (tmp),
 				  GEN_INT (per_counter * value->hdata.intvl.steps),
 				  mr, 0, OPTAB_WIDEN);
       if (tmp1 != mr)
 	emit_move_insn (copy_rtx (mr), tmp1);
-      if (value->hdata.intvl.may_be_less)
-	{
 	  emit_jump_insn (gen_jump (end_of_code_label));
 	  emit_barrier ();
-	}
-    }
 
   /* Below the interval.  */
-  if (value->hdata.intvl.may_be_less)
-    {
       emit_label (less_label);
       tmp1 = expand_simple_binop (Pmode, PLUS, copy_rtx (tmp),
-		GEN_INT (per_counter * (value->hdata.intvl.steps
-					+ (value->hdata.intvl.may_be_more ? 1 : 0))),
+			GEN_INT (per_counter * (value->hdata.intvl.steps +1)),
 		mr, 0, OPTAB_WIDEN);
       if (tmp1 != mr)
 	emit_move_insn (copy_rtx (mr), tmp1);
-    }
 
-  if (value->hdata.intvl.may_be_more
-      || value->hdata.intvl.may_be_less)
     emit_label (end_of_code_label);
 
   mem_ref = validize_mem (gen_rtx_MEM (mode, mr));
@@ -215,32 +176,32 @@ rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   rtx end_of_code_label = gen_label_rtx ();
   rtx loop_label = gen_label_rtx ();
   int per_counter = gcov_size / BITS_PER_UNIT;
-  edge e = split_block (BLOCK_FOR_INSN ((rtx)value->insn),
-		   PREV_INSN ((rtx)value->insn));
+  edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
+		   PREV_INSN (value->hvalue.rtl.insn));
 
   start_sequence ();
 
-  if (value->seq)
-    emit_insn (value->seq);
+  if (value->hvalue.rtl.seq)
+    emit_insn (value->hvalue.rtl.seq);
 
   mr = gen_reg_rtx (Pmode);
   tmp = rtl_coverage_counter_ref (tag, base);
   tmp = force_reg (Pmode, XEXP (tmp, 0));
   emit_move_insn (mr, tmp);
 
-  uval = gen_reg_rtx (value->mode);
-  emit_move_insn (uval, copy_rtx (value->value));
+  uval = gen_reg_rtx (value->hvalue.rtl.mode);
+  emit_move_insn (uval, copy_rtx (value->hvalue.rtl.value));
 
   /* Check for non-power of 2.  */
   if (value->hdata.pow2.may_be_other)
     {
-      do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, LE, 0, value->mode,
+      do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, LE, 0, value->hvalue.rtl.mode,
 			       NULL_RTX, NULL_RTX, end_of_code_label);
-      tmp = expand_simple_binop (value->mode, PLUS, copy_rtx (uval),
+      tmp = expand_simple_binop (value->hvalue.rtl.mode, PLUS, copy_rtx (uval),
 				 constm1_rtx, NULL_RTX, 0, OPTAB_WIDEN);
-      tmp = expand_simple_binop (value->mode, AND, copy_rtx (uval), tmp,
+      tmp = expand_simple_binop (value->hvalue.rtl.mode, AND, copy_rtx (uval), tmp,
 				 NULL_RTX, 0, OPTAB_WIDEN);
-      do_compare_rtx_and_jump (tmp, const0_rtx, NE, 0, value->mode, NULL_RTX,
+      do_compare_rtx_and_jump (tmp, const0_rtx, NE, 0, value->hvalue.rtl.mode, NULL_RTX,
 			       NULL_RTX, end_of_code_label);
     }
 
@@ -251,12 +212,12 @@ rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   if (tmp != mr)
     emit_move_insn (copy_rtx (mr), tmp);
 
-  tmp = expand_simple_binop (value->mode, ASHIFTRT, copy_rtx (uval), const1_rtx,
+  tmp = expand_simple_binop (value->hvalue.rtl.mode, ASHIFTRT, copy_rtx (uval), const1_rtx,
 			     uval, 0, OPTAB_WIDEN);
   if (tmp != uval)
     emit_move_insn (copy_rtx (uval), tmp);
 
-  do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, NE, 0, value->mode,
+  do_compare_rtx_and_jump (copy_rtx (uval), const0_rtx, NE, 0, value->hvalue.rtl.mode,
 			   NULL_RTX, NULL_RTX, loop_label);
 
   /* Increase the counter.  */
@@ -295,8 +256,8 @@ rtl_gen_one_value_profiler_no_edge_manipulation (histogram_value value,
 
   start_sequence ();
 
-  if (value->seq)
-    emit_insn (value->seq);
+  if (value->hvalue.rtl.seq)
+    emit_insn (value->hvalue.rtl.seq);
 
   stored_value_ref = rtl_coverage_counter_ref (tag, base);
   counter_ref = rtl_coverage_counter_ref (tag, base + 1);
@@ -306,7 +267,7 @@ rtl_gen_one_value_profiler_no_edge_manipulation (histogram_value value,
   all = validize_mem (all_ref);
 
   uval = gen_reg_rtx (mode);
-  convert_move (uval, copy_rtx (value->value), 0);
+  convert_move (uval, copy_rtx (value->hvalue.rtl.value), 0);
 
   /* Check if the stored value matches.  */
   do_compare_rtx_and_jump (copy_rtx (uval), copy_rtx (stored_value), EQ,
@@ -362,8 +323,8 @@ rtl_gen_one_value_profiler_no_edge_manipulation (histogram_value value,
 static void
 rtl_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  edge e = split_block (BLOCK_FOR_INSN ((rtx)value->insn),
-		   PREV_INSN ((rtx)value->insn));
+  edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
+		   PREV_INSN (value->hvalue.rtl.insn));
   rtx sequence = rtl_gen_one_value_profiler_no_edge_manipulation (value, 
 			tag, base);
   rebuild_jump_labels (sequence);
@@ -383,28 +344,28 @@ rtl_gen_const_delta_profiler (histogram_value value, unsigned tag, unsigned base
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
   rtx stored_value_ref, stored_value, tmp, uval;
   rtx sequence;
-  edge e = split_block (BLOCK_FOR_INSN ((rtx)value->insn),
-		   PREV_INSN ((rtx)value->insn));
+  edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
+		   PREV_INSN (value->hvalue.rtl.insn));
 
   start_sequence ();
 
-  if (value->seq)
-    emit_insn (value->seq);
+  if (value->hvalue.rtl.seq)
+    emit_insn (value->hvalue.rtl.seq);
 
   stored_value_ref = rtl_coverage_counter_ref (tag, base);
   stored_value = validize_mem (stored_value_ref);
 
   uval = gen_reg_rtx (mode);
-  convert_move (uval, copy_rtx (value->value), 0);
+  convert_move (uval, copy_rtx (value->hvalue.rtl.value), 0);
   tmp = expand_simple_binop (mode, MINUS,
 			     copy_rtx (uval), copy_rtx (stored_value),
 			     NULL_RTX, 0, OPTAB_WIDEN);
 
   one_value_delta = ggc_alloc (sizeof (*one_value_delta));
-  one_value_delta->value = tmp;
-  one_value_delta->mode = mode;
-  one_value_delta->seq = NULL_RTX;
-  one_value_delta->insn = value->insn;
+  one_value_delta->hvalue.rtl.value = tmp;
+  one_value_delta->hvalue.rtl.mode = mode;
+  one_value_delta->hvalue.rtl.seq = NULL_RTX;
+  one_value_delta->hvalue.rtl.insn = value->hvalue.rtl.insn;
   one_value_delta->type = HIST_TYPE_SINGLE_VALUE;
   emit_insn (rtl_gen_one_value_profiler_no_edge_manipulation (one_value_delta,
 							      tag, base + 1));

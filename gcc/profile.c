@@ -224,6 +224,7 @@ instrument_values (histogram_values values)
 	  abort ();
 	}
     }
+  VEC_free (histogram_value, values);
 }
 
 
@@ -641,7 +642,7 @@ compute_branch_probabilities (void)
 }
 
 /* Load value histograms values whose description is stored in VALUES array
-   from .da file.  */
+   from .gcda file.  */
 
 static void
 compute_value_histograms (histogram_values values)
@@ -688,21 +689,32 @@ compute_value_histograms (histogram_values values)
       hist = VEC_index (histogram_value, values, i);
       t = (int) hist->type;
 
-      /* FIXME: make this work for trees.  */
+      aact_count = act_count[t];
+      act_count[t] += hist->n_counters;
+
       if (!ir_type ())
 	{
-	  aact_count = act_count[t];
-	  act_count[t] += hist->n_counters;
 	  for (j = hist->n_counters; j > 0; j--)
 	    hist_list = alloc_EXPR_LIST (0, GEN_INT (aact_count[j - 1]), 
 					hist_list);
-	      hist_list = alloc_EXPR_LIST (0, 
-			    copy_rtx ((rtx) hist->value), hist_list);
+	  hist_list = alloc_EXPR_LIST (0, 
+			copy_rtx (hist->hvalue.rtl.value), hist_list);
 	  hist_list = alloc_EXPR_LIST (0, GEN_INT (hist->type), hist_list);
-	      REG_NOTES ((rtx) hist->insn) =
-		  alloc_EXPR_LIST (REG_VALUE_PROFILE, hist_list,
-				   REG_NOTES ((rtx) hist->insn));
+	  REG_NOTES (hist->hvalue.rtl.insn) =
+	      alloc_EXPR_LIST (REG_VALUE_PROFILE, hist_list,
+			       REG_NOTES (hist->hvalue.rtl.insn));
 	}
+      else
+	{
+	  tree stmt = hist->hvalue.tree.stmt;
+	  stmt_ann_t ann = get_stmt_ann (stmt);
+	  hist->hvalue.tree.next = ann->histograms;
+	  ann->histograms = hist;
+	  hist->hvalue.tree.counters = 
+		xmalloc (sizeof (gcov_type) * hist->n_counters);
+	  for (j = 0; j < hist->n_counters; j++)
+	    hist->hvalue.tree.counters[j] = aact_count[j];
+  	}
     }
 
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
