@@ -1248,6 +1248,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (XEXP (SET_SRC (temp1), 1) == const1_rtx
 		  || XEXP (SET_SRC (temp1), 1) == constm1_rtx)
 	      && rtx_equal_p (temp2, XEXP (SET_SRC (temp1), 0))
+	      && ! side_effects_p (temp2)
+	      && ! may_trap_p (temp2)
 	      /* INSN must either branch to the insn after TEMP or the insn
 		 after TEMP must branch to the same place as INSN.  */
 	      && (reallabelprev == temp
