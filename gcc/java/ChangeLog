@@ -1,3 +1,11 @@
+2001-12-20  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/3417:
+	* parse.y (patch_assignment): Added special processing for
+	`return'.
+	(patch_return): Don't convert booleans to integers, and don't
+	special-case `null'.
+
 2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config-lang.in (diff_excludes): Remove.
