@@ -1,3 +1,5 @@
+// Build don't link:
+
 typedef	unsigned int atypedef;
 struct astruct{};
 void afunction();

@@ -8,15 +8,14 @@ struct X{
 };
 
 
-void f(X *x = new X);          // ERROR -
+void f(X *x = new X);          // ERROR - 
 
-void f(X *x = new X(4));       // ERROR -
+void f(X *x = new X(4));       // ERROR - 
 
-void f(X *x = new X[4]);       // ERROR -
+void f(X *x = new X[4]);       // ERROR - 
 
-void f(X *x = new (3) X(6));   // ERROR -
+void f(X *x = new (3) X(6));   // ERROR - 
 
-void f(X *x = new (2) X[10]);  // ERROR -
+void f(X *x = new (2) X[10]);  // ERROR - 
 
-void f(X *x = new X[10][5]);   // ERROR -
-
+void f(X *x = new X[10][5]);   // ERROR - 

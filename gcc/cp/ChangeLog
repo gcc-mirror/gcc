@@ -1,3 +1,7 @@
+1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (cp_printers): Use 'o' instead of '_' for the null entry.
+
 1998-06-05  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (DECL_NAMESPACE_ALIAS, ORIGINAL_NAMESPACE): Declare.
