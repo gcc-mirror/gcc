@@ -1,4 +1,7 @@
-Wed Feb 18 13:38:29 1998  Jeffrey A Law  (law@cygnus.com)
+Wed Feb 18 23:19:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* varasm.c (output_constant_pool): Fix dumb thinko in last
+	change.
 
 	* pa.h (ASM_OUTPUT_FUNCTION_PREFIX): Correctly translate from
 	a function name to a section name.
