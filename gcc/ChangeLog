@@ -1,3 +1,11 @@
+2004-11-28  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.h (WORLD_SAVE_P): Define.
+	* config/rs6000/darwin.h (WORLD_SAVE_P): Define.
+	* config/rs6000/rs6000.c (compute_save_world_info): Use WORLD_SAVE_P
+	to allow non-darwin ABIs to optimize away code.
+	(rs6000_emit_prologue, rs6000_emit_epilogue): Likewise.
+
 2004-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree.c (operand_equal_for_phi_arg_p): New.
