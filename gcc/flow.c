@@ -3157,12 +3157,7 @@ notice_stack_pointer_modification_1 (x, pat, data)
 	 of a push until later in flow.  See the comments in rtl.texi
 	 regarding Embedded Side-Effects on Addresses.  */
       || (GET_CODE (x) == MEM
-	  && (GET_CODE (XEXP (x, 0)) == PRE_DEC
-	      || GET_CODE (XEXP (x, 0)) == PRE_INC
-	      || GET_CODE (XEXP (x, 0)) == PRE_MODIFY
-	      || GET_CODE (XEXP (x, 0)) == POST_MODIFY
-	      || GET_CODE (XEXP (x, 0)) == POST_DEC
-	      || GET_CODE (XEXP (x, 0)) == POST_INC)
+	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == 'a'
 	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
     current_function_sp_is_unchanging = 0;
 }
