@@ -2113,7 +2113,7 @@ write_cond (struct decision_test *p, int depth,
       break;
 
     case DT_c_test:
-      printf ("(%s)", p->u.c_test);
+      print_c_condition (p->u.c_test);
       break;
 
     case DT_accept_insn:

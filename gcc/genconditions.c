@@ -86,6 +86,10 @@ write_header (void)
 
   puts ("\
 #include \"system.h\"\n\
+/* If we don't have __builtin_constant_p, or it's not acceptable in array\n\
+   initializers, fall back to assuming that all conditions potentially\n\
+   vary at run time.  It works in 3.0.1 and later; 3.0 only when not\n\
+   optimizing.  */\n\
 #if GCC_VERSION < 3001\n\
 #include \"dummy-conditions.c\"\n\
 #else\n\
@@ -122,19 +126,15 @@ write_header (void)
 extern rtx insn;\n\
 extern rtx ins1;\n\
 extern rtx operands[];\n");
-
-  puts ("\
-/* If we don't have __builtin_constant_p, or it's not acceptable in\n\
-   array initializers, fall back (by using dummy-conditions.c above)\n\
-   to assuming that all conditions potentially vary at run time.  It\n\
-   works in 3.0.1 and later; 3.0 only when not optimizing.  */\n\
-#define MAYBE_EVAL(expr) (__builtin_constant_p(expr) ? (int) (expr) : -1)\n");
 }
 
 /* Write out one entry in the conditions table, using the data pointed
    to by SLOT.  Each entry looks like this:
-  { "! optimize_size && ! TARGET_READ_MODIFY_WRITE",
-    MAYBE_EVAL (! optimize_size && ! TARGET_READ_MODIFY_WRITE) },  */
+
+   { "! optimize_size && ! TARGET_READ_MODIFY_WRITE",
+     __builtin_constant_p (! optimize_size && ! TARGET_READ_MODIFY_WRITE)
+     ? (int) (! optimize_size && ! TARGET_READ_MODIFY_WRITE)
+     : -1) },  */
 
 static int
 write_one_condition (void **slot, void * ARG_UNUSED (dummy))
@@ -142,6 +142,7 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
   const struct c_test *test = * (const struct c_test **) slot;
   const char *p;
 
+  print_rtx_ptr_loc (test->expr);
   fputs ("  { \"", stdout);
   for (p = test->expr; *p; p++)
     {
@@ -153,7 +154,11 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
 	putchar (*p);
     }
 
-  printf ("\",\n    MAYBE_EVAL (%s) },\n", test->expr);
+  printf ("\",\n    __builtin_constant_p ");
+  print_c_condition (test->expr);
+  printf ("\n    ? (int) ");
+  print_c_condition (test->expr);
+  printf ("\n    : -1 },\n");
   return 1;
 }
 

@@ -3506,7 +3506,7 @@ write_test_expr (rtx exp, int flags)
 
     /* A random C expression.  */
     case SYMBOL_REF:
-      printf ("%s", XSTR (exp, 0));
+      print_c_condition (XSTR (exp, 0));
       break;
 
     /* The address of the branch target.  */
@@ -4035,7 +4035,7 @@ write_attr_value (struct attr_desc *attr, rtx value)
       break;
 
     case SYMBOL_REF:
-      fputs (XSTR (value, 0), stdout);
+      print_c_condition (XSTR (value, 0));
       break;
 
     case ATTR:

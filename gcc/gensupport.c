@@ -317,7 +317,10 @@ process_rtx (rtx desc, int lineno)
 	   insn condition to create the new split condition.  */
 	split_cond = XSTR (desc, 4);
 	if (split_cond[0] == '&' && split_cond[1] == '&')
-	  split_cond = concat (XSTR (desc, 2), split_cond, NULL);
+	  {
+	    copy_rtx_ptr_loc (split_cond + 2, split_cond);
+	    split_cond = join_c_conditions (XSTR (desc, 2), split_cond + 2);
+	  }
 	XSTR (split, 1) = split_cond;
 	XVEC (split, 2) = XVEC (desc, 5);
 	XSTR (split, 3) = XSTR (desc, 6);
@@ -663,16 +666,8 @@ static const char *
 alter_test_for_insn (struct queue_elem *ce_elem,
 		     struct queue_elem *insn_elem)
 {
-  const char *ce_test, *insn_test;
-
-  ce_test = XSTR (ce_elem->data, 1);
-  insn_test = XSTR (insn_elem->data, 2);
-  if (!ce_test || *ce_test == '\0')
-    return insn_test;
-  if (!insn_test || *insn_test == '\0')
-    return ce_test;
-
-  return concat ("(", ce_test, ") && (", insn_test, ")", NULL);
+  return join_c_conditions (XSTR (ce_elem->data, 1),
+			    XSTR (insn_elem->data, 2));
 }
 
 /* Adjust all of the operand numbers in SRC to match the shift they'll

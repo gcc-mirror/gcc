@@ -79,6 +79,14 @@ struct macro_group {
   void (*apply_macro) (rtx, int);
 };
 
+/* Associates PTR (which can be a string, etc.) with the file location
+   specified by FILENAME and LINENO.  */
+struct ptr_loc {
+  const void *ptr;
+  const char *filename;
+  int lineno;
+};
+
 /* If CODE is the number of a code macro, return a real rtx code that
    has the same format.  Return CODE otherwise.  */
 #define BELLWETHER_CODE(CODE) \
@@ -105,6 +113,10 @@ static struct map_value **add_map_value (struct map_value **,
 					 int, const char *);
 static void initialize_macros (void);
 static void read_name (char *, FILE *);
+static hashval_t leading_ptr_hash (const void *);
+static int leading_ptr_eq_p (const void *, const void *);
+static void set_rtx_ptr_loc (const void *, const char *, int);
+static const struct ptr_loc *get_rtx_ptr_loc (const void *);
 static char *read_string (FILE *, int);
 static char *read_quoted_string (FILE *);
 static char *read_braced_string (FILE *);
@@ -126,6 +138,22 @@ static enum rtx_code *bellwether_codes;
 
 /* Obstack used for allocating RTL strings.  */
 static struct obstack string_obstack;
+
+/* A table of ptr_locs, hashed on the PTR field.  */
+static htab_t ptr_locs;
+
+/* An obstack for the above.  Plain xmalloc is a bit heavyweight for a
+   small structure like ptr_loc.  */
+static struct obstack ptr_loc_obstack;
+
+/* A hash table of triples (A, B, C), where each of A, B and C is a condition
+   and A is equivalent to "B && C".  This is used to keep track of the source
+   of conditions that are made up of separate rtx strings (such as the split
+   condition of a define_insn_and_split).  */
+static htab_t joined_conditions;
+
+/* An obstack for allocating joined_conditions entries.  */
+static struct obstack joined_conditions_obstack;
 
 /* Subroutines of read_rtx.  */
 
@@ -285,7 +313,9 @@ apply_macro_to_string (const char *string, struct mapping *macro, int value)
   if (base != copy)
     {
       obstack_grow (&string_obstack, base, strlen (base) + 1);
-      return (char *) obstack_finish (&string_obstack);
+      copy = obstack_finish (&string_obstack);
+      copy_rtx_ptr_loc (copy, string);
+      return copy;
     }
   return string;
 }
@@ -396,16 +426,9 @@ uses_macro_p (rtx x, struct mapping *macro)
 static const char *
 add_condition_to_string (const char *original, const char *extra)
 {
-  char *result;
-
-  if (original == 0 || original[0] == 0)
-    return extra;
-
-  if ((original[0] == '&' && original[1] == '&') || extra[0] == 0)
+  if (original != 0 && original[0] == '&' && original[1] == '&')
     return original;
-
-  asprintf (&result, "(%s) && (%s)", original, extra);
-  return result;
+  return join_c_conditions (original, extra);
 }
 
 /* Like add_condition, but applied to all conditions in rtx X.  */
@@ -565,6 +588,116 @@ initialize_macros (void)
 
       lower_ptr = add_map_value (lower_ptr, i, GET_RTX_NAME (i));
       upper_ptr = add_map_value (upper_ptr, i, copy);
+    }
+}
+
+/* Return a hash value for the pointer pointed to by DEF.  */
+
+static hashval_t
+leading_ptr_hash (const void *def)
+{
+  return htab_hash_pointer (*(const void *const *) def);
+}
+
+/* Return true if DEF1 and DEF2 are pointers to the same pointer.  */
+
+static int
+leading_ptr_eq_p (const void *def1, const void *def2)
+{
+  return *(const void *const *) def1 == *(const void *const *) def2;
+}
+
+/* Associate PTR with the file position given by FILENAME and LINENO.  */
+
+static void
+set_rtx_ptr_loc (const void *ptr, const char *filename, int lineno)
+{
+  struct ptr_loc *loc;
+
+  loc = (struct ptr_loc *) obstack_alloc (&ptr_loc_obstack,
+					  sizeof (struct ptr_loc));
+  loc->ptr = ptr;
+  loc->filename = filename;
+  loc->lineno = lineno;
+  *htab_find_slot (ptr_locs, loc, INSERT) = loc;
+}
+
+/* Return the position associated with pointer PTR.  Return null if no
+   position was set.  */
+
+static const struct ptr_loc *
+get_rtx_ptr_loc (const void *ptr)
+{
+  return (const struct ptr_loc *) htab_find (ptr_locs, &ptr);
+}
+
+/* Associate NEW_PTR with the same file position as OLD_PTR.  */
+
+void
+copy_rtx_ptr_loc (const void *new_ptr, const void *old_ptr)
+{
+  const struct ptr_loc *loc = get_rtx_ptr_loc (old_ptr);
+  if (loc != 0)
+    set_rtx_ptr_loc (new_ptr, loc->filename, loc->lineno);
+}
+
+/* If PTR is associated with a known file position, print a #line
+   directive for it.  */
+
+void
+print_rtx_ptr_loc (const void *ptr)
+{
+  const struct ptr_loc *loc = get_rtx_ptr_loc (ptr);
+  if (loc != 0)
+    printf ("#line %d \"%s\"\n", loc->lineno, loc->filename);
+}
+
+/* Return a condition that satisfies both COND1 and COND2.  Either string
+   may be null or empty.  */
+
+const char *
+join_c_conditions (const char *cond1, const char *cond2)
+{
+  char *result;
+  const void **entry;
+
+  if (cond1 == 0 || cond1[0] == 0)
+    return cond2;
+
+  if (cond2 == 0 || cond2[0] == 0)
+    return cond1;
+
+  result = concat ("(", cond1, ") && (", cond2, ")", NULL);
+  obstack_ptr_grow (&joined_conditions_obstack, result);
+  obstack_ptr_grow (&joined_conditions_obstack, cond1);
+  obstack_ptr_grow (&joined_conditions_obstack, cond2);
+  entry = obstack_finish (&joined_conditions_obstack);
+  *htab_find_slot (joined_conditions, entry, INSERT) = entry;
+  return result;
+}
+
+/* Print condition COND, wrapped in brackets.  If COND was created by
+   join_c_conditions, recursively invoke this function for the original
+   conditions and join the result with "&&".  Otherwise print a #line
+   directive for COND if its original file position is known.  */
+
+void
+print_c_condition (const char *cond)
+{
+  const void **halves = htab_find (joined_conditions, &cond);
+  if (halves != 0)
+    {
+      printf ("(");
+      print_c_condition (halves[1]);
+      printf (" && ");
+      print_c_condition (halves[2]);
+      printf (")");
+    }
+  else
+    {
+      putc ('\n', stdout);
+      print_rtx_ptr_loc (cond);
+      printf ("(%s)", cond);
     }
 }
 
@@ -801,7 +934,7 @@ read_string (FILE *infile, int star_if_braced)
 {
   char *stringbuf;
   int saw_paren = 0;
-  int c;
+  int c, old_lineno;
 
   c = read_skip_spaces (infile);
   if (c == '(')
@@ -810,6 +943,7 @@ read_string (FILE *infile, int star_if_braced)
       c = read_skip_spaces (infile);
     }
 
+  old_lineno = read_rtx_lineno;
   if (c == '"')
     stringbuf = read_quoted_string (infile);
   else if (c == '{')
@@ -828,6 +962,7 @@ read_string (FILE *infile, int star_if_braced)
 	fatal_expected_char (infile, ')', c);
     }
 
+  set_rtx_ptr_loc (stringbuf, read_rtx_filename, old_lineno);
   return stringbuf;
 }
 
@@ -1094,6 +1229,11 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
       initialize_macros ();
       obstack_init (&string_obstack);
       queue_head = rtx_alloc (EXPR_LIST);
+      ptr_locs = htab_create (161, leading_ptr_hash, leading_ptr_eq_p, 0);
+      obstack_init (&ptr_loc_obstack);
+      joined_conditions = htab_create (161, leading_ptr_hash,
+				       leading_ptr_eq_p, 0);
+      obstack_init (&joined_conditions_obstack);
     }
 
   if (queue_next == 0)
