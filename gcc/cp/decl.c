@@ -5949,7 +5949,6 @@ __inline
 tree
 auto_function (name, type)
      tree name, type;
-     enum built_in_function;
 {
   return define_function
     (IDENTIFIER_POINTER (name), type, push_overloaded_decl_1,
