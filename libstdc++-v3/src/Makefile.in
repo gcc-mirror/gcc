@@ -184,7 +184,7 @@ libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD =  	../libmath/libmath.la @libio_la@ 	../libsupc++/libsupc++convenience.la
 
 
-libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
+libstdc___la_LDFLAGS = -release @VERSION@ -lm
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 
