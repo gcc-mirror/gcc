@@ -632,6 +632,7 @@ in the following sections.
 @emph{Xtensa Options}
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
 -mdensity  -mno-density @gol
+-mconst16 -mno-const16 @gol
 -mmac16  -mno-mac16 @gol
 -mmul16  -mno-mul16 @gol
 -mmul32  -mno-mul32 @gol
@@ -10648,6 +10649,16 @@ processor.
 @opindex mdensity
 @opindex mno-density
 Enable or disable use of the optional Xtensa code density instructions.
+
+@item -mconst16
+@itemx -mno-const16
+@opindex mconst16
+@opindex mno-const16
+Enable or disable use of CONST16 instructions for loading constant values.
+The CONST16 instruction is currently not a standard option from Tensilica.
+When enabled, CONST16 instructions are always used in place of the standard
+L32R instructions.  The use of CONST16 is enabled by default only if the
+L32R instruction is not available.
 
 @item -mmac16
 @itemx -mno-mac16

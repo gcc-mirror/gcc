@@ -198,29 +198,18 @@ static rtx gen_conditional_move PARAMS ((rtx));
 static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
 static struct machine_function * xtensa_init_machine_status PARAMS ((void));
-static void xtensa_reorg PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
+static void xtensa_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static unsigned int xtensa_multibss_section_type_flags
   PARAMS ((tree, const char *, int));
 static void xtensa_select_rtx_section
   PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 static bool xtensa_rtx_costs PARAMS ((rtx, int, int, int *));
 
-static rtx frame_size_const;
 static int current_function_arg_words;
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array 'regs_ever_live' to determine which registers
-   to save; 'regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE xtensa_function_prologue
 
 /* This macro generates the assembly code for function exit,
    on machines that need it.  If FUNCTION_EPILOGUE is not defined
@@ -243,9 +232,6 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG xtensa_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -412,8 +398,7 @@ add_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
-    return (xtensa_simm8 (INTVAL (op)) ||
-	    xtensa_simm8x256 (INTVAL (op)));
+    return (xtensa_simm8 (INTVAL (op)) || xtensa_simm8x256 (INTVAL (op)));
 
   return register_operand (op, mode);
 }
@@ -610,19 +595,23 @@ move_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (register_operand (op, mode))
+  if (register_operand (op, mode)
+      || memory_operand (op, mode))
     return TRUE;
+
+  if (mode == SFmode)
+    return TARGET_CONST16 && CONSTANT_P (op);
 
   /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and
      result in 0/1.  */
   if (GET_CODE (op) == CONSTANT_P_RTX)
     return TRUE;
 
-  if (GET_CODE (op) == CONST_INT)
-    return xtensa_simm12b (INTVAL (op));
+  if (GET_CODE (op) == CONST_INT && xtensa_simm12b (INTVAL (op)))
+    return TRUE;
 
-  if (GET_CODE (op) == MEM)
-    return memory_address_p (mode, XEXP (op, 0));
+  if (mode == SImode)
+    return TARGET_CONST16 && CONSTANT_P (op);
 
   return FALSE;
 }
@@ -702,21 +691,6 @@ constantpool_mem_p (op)
 }
 
 
-int
-non_const_move_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (register_operand (op, mode))
-    return 1;
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  if (GET_CODE (op) == MEM)
-    return memory_address_p (mode, XEXP (op, 0));
-  return FALSE;
-}
-
-
 /* Accept the floating point constant 1 in the appropriate mode.  */
 
 int
@@ -775,32 +749,6 @@ xtensa_extend_reg (dst, src)
 
   emit_insn (gen_ashlsi3 (temp, src, shift));
   emit_insn (gen_ashrsi3 (dst, temp, shift));
-}
-
-
-void
-xtensa_load_constant (dst, src)
-     rtx dst;
-     rtx src;
-{
-  enum machine_mode mode = GET_MODE (dst);
-  src = force_const_mem (SImode, src);
-
-  /* PC-relative loads are always SImode so we have to add a SUBREG if that
-     is not the desired mode */
-
-  if (mode != SImode)
-    {
-      if (register_operand (dst, mode))
-	dst = simplify_gen_subreg (SImode, dst, mode, 0);
-      else
-	{
-	  src = force_reg (SImode, src);
-	  src = gen_lowpart_SUBREG (mode, src);
-	}
-    }
-
-  emit_move_insn (dst, src);
 }
 
 
@@ -899,8 +847,8 @@ xtensa_mem_offset (v, mode)
 	 moved in < "move_ratio" pieces.  The worst case is when the block is
 	 aligned but has a size of (3 mod 4) (does this happen?) so that the
 	 last piece requires a byte load/store.  */
-      return (xtensa_uimm8 (v) &&
-	      xtensa_uimm8 (v + MOVE_MAX * LARGEST_MOVE_RATIO));
+      return (xtensa_uimm8 (v)
+	      && xtensa_uimm8 (v + MOVE_MAX * LARGEST_MOVE_RATIO));
 
     case QImode:
       return xtensa_uimm8 (v);
@@ -1260,7 +1208,6 @@ xtensa_expand_scc (operands)
 
 
 /* Emit insns to move operands[1] into operands[0].
-
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
    normally.  */
@@ -1275,8 +1222,27 @@ xtensa_emit_move_sequence (operands, mode)
       && (GET_CODE (operands[1]) != CONST_INT
 	  || !xtensa_simm12b (INTVAL (operands[1]))))
     {
-      xtensa_load_constant (operands[0], operands[1]);
-      return 1;
+      if (!TARGET_CONST16)
+	operands[1] = force_const_mem (SImode, operands[1]);
+
+      /* PC-relative loads are always SImode, and CONST16 is only
+	 supported in the movsi pattern, so add a SUBREG for any other
+	 (smaller) mode.  */
+
+      if (mode != SImode)
+	{
+	  if (register_operand (operands[0], mode))
+	    {
+	      operands[0] = simplify_gen_subreg (SImode, operands[0], mode, 0);
+	      emit_move_insn (operands[0], operands[1]);
+	      return 1;
+	    }
+	  else
+	    {
+	      operands[1] = force_reg (SImode, operands[1]);
+	      operands[1] = gen_lowpart_SUBREG (mode, operands[1]);
+	    }
+	}
     }
 
   if (!(reload_in_progress | reload_completed))
@@ -1298,6 +1264,7 @@ xtensa_emit_move_sequence (operands, mode)
     }
   return 0;
 }
+
 
 static rtx
 fixup_subreg_mem (x)
@@ -1848,6 +1815,7 @@ override_options ()
   xtensa_char_to_class['C'] = ((TARGET_MUL16) ? GR_REGS: NO_REGS);
   xtensa_char_to_class['D'] = ((TARGET_DENSITY) ? GR_REGS: NO_REGS);
   xtensa_char_to_class['d'] = ((TARGET_DENSITY) ? AR_REGS: NO_REGS);
+  xtensa_char_to_class['W'] = ((TARGET_CONST16) ? GR_REGS: NO_REGS);
 
   /* Set up array giving whether a given register can hold a given mode.  */
   for (mode = VOIDmode;
@@ -1862,8 +1830,8 @@ override_options ()
 	  int temp;
 
 	  if (ACC_REG_P (regno))
-	    temp = (TARGET_MAC16 &&
-		    (class == MODE_INT) && (size <= UNITS_PER_WORD));
+	    temp = (TARGET_MAC16
+		    && (class == MODE_INT) && (size <= UNITS_PER_WORD));
 	  else if (GP_REG_P (regno))
 	    temp = ((regno & 1) == 0 || (size <= UNITS_PER_WORD));
 	  else if (FP_REG_P (regno))
@@ -1879,9 +1847,19 @@ override_options ()
 
   init_machine_status = xtensa_init_machine_status;
 
-  /* Check PIC settings.  There's no need for -fPIC on Xtensa and
-     some targets need to always use PIC.  */
-  if (flag_pic > 1 || (XTENSA_ALWAYS_PIC))
+  /* Check PIC settings.  PIC is only supported when using L32R
+     instructions, and some targets need to always use PIC.  */
+  if (flag_pic && TARGET_CONST16)
+    error ("-f%s is not supported with CONST16 instructions",
+	   (flag_pic > 1 ? "PIC" : "pic"));
+  else if (XTENSA_ALWAYS_PIC)
+    {
+      if (TARGET_CONST16)
+	error ("PIC is required but not supported with CONST16 instructions");
+      flag_pic = 1;
+    }
+  /* There's no need for -fPIC (as opposed to -fpic) on Xtensa.  */
+  if (flag_pic > 1)
     flag_pic = 1;
 }
 
@@ -1918,6 +1896,8 @@ override_options ()
    'D'  REG, print second register of double-word register operand
    'N'  MEM, print address of next word following a memory operand
    'v'  MEM, if memory reference is volatile, output a MEMW before it
+   't'  any constant, add "@h" suffix for top 16 bits
+   'b'  any constant, add "@l" suffix for bottom 16 bits
 */
 
 static void
@@ -1936,94 +1916,146 @@ printx (file, val)
 
 
 void
-print_operand (file, op, letter)
+print_operand (file, x, letter)
      FILE *file;		/* file to write to */
-     rtx op;		/* operand to print */
+     rtx x;			/* operand to print */
      int letter;		/* %<letter> or 0 */
 {
-  enum rtx_code code;
-
-  if (! op)
+  if (!x)
     error ("PRINT_OPERAND null pointer");
 
-  code = GET_CODE (op);
-  switch (code)
+  switch (letter)
     {
-    case REG:
-    case SUBREG:
-      {
-	int regnum = xt_true_regnum (op);
-	if (letter == 'D')
-	  regnum++;
-	fprintf (file, "%s", reg_names[regnum]);
-	break;
-      }
+    case 'D':
+      if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+	fprintf (file, "%s", reg_names[xt_true_regnum (x) + 1]);
+      else
+	output_operand_lossage ("invalid %%D value");
+      break;
 
-    case MEM:
-      /* For a volatile memory reference, emit a MEMW before the
-	 load or store.  */
- 	if (letter == 'v')
-	  {
-	    if (MEM_VOLATILE_P (op) && TARGET_SERIALIZE_VOLATILE)
-	      fprintf (file, "memw\n\t");
-	    break;
-	  }
- 	else if (letter == 'N')
-	  {
-	    enum machine_mode mode;
-	    switch (GET_MODE (op))
-	      {
-	      case DFmode: mode = SFmode; break;
-	      case DImode: mode = SImode; break;
-	      default: abort ();
-	      }
-	    op = adjust_address (op, mode, 4);
-	  }
-
-	output_address (XEXP (op, 0));
-	break;
-
-    case CONST_INT:
-      switch (letter)
+    case 'v':
+      if (GET_CODE (x) == MEM)
 	{
-	case 'K':
-	  {
-	    int num_bits = 0;
-	    unsigned val = INTVAL (op);
-	    while (val & 1)
-	      {
-		num_bits += 1;
-		val = val >> 1;
-	      }
-	    if ((val != 0) || (num_bits == 0) || (num_bits > 16))
-	      fatal_insn ("invalid mask", op);
+	  /* For a volatile memory reference, emit a MEMW before the
+	     load or store.  */
+	  if (MEM_VOLATILE_P (x) && TARGET_SERIALIZE_VOLATILE)
+	    fprintf (file, "memw\n\t");
+	}
+      else
+	output_operand_lossage ("invalid %%v value");
+      break;
 
-	    fprintf (file, "%d", num_bits);
-	    break;
-	  }
+    case 'N':
+      if (GET_CODE (x) == MEM
+	  && (GET_MODE (x) == DFmode || GET_MODE (x) == DImode))
+	{
+	  x = adjust_address (x, GET_MODE (x) == DFmode ? SFmode : SImode, 4);
+	  output_address (XEXP (x, 0));
+	}
+      else
+	output_operand_lossage ("invalid %%N value");
+      break;
 
-	case 'L':
-	  fprintf (file, "%ld", (32 - INTVAL (op)) & 0x1f);
-	  break;
+    case 'K':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  int num_bits = 0;
+	  unsigned val = INTVAL (x);
+	  while (val & 1)
+	    {
+	      num_bits += 1;
+	      val = val >> 1;
+	    }
+	  if ((val != 0) || (num_bits == 0) || (num_bits > 16))
+	    fatal_insn ("invalid mask", x);
 
-	case 'R':
-	  fprintf (file, "%ld", INTVAL (op) & 0x1f);
-	  break;
+	  fprintf (file, "%d", num_bits);
+	}
+      else
+	output_operand_lossage ("invalid %%K value");
+      break;
 
-	case 'x':
-	  printx (file, INTVAL (op));
-	  break;
+    case 'L':
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (file, "%ld", (32 - INTVAL (x)) & 0x1f);
+      else
+	output_operand_lossage ("invalid %%L value");
+      break;
 
-	case 'd':
-	default:
-	  fprintf (file, "%ld", INTVAL (op));
-	  break;
+    case 'R':
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (file, "%ld", INTVAL (x) & 0x1f);
+      else
+	output_operand_lossage ("invalid %%R value");
+      break;
 
+    case 'x':
+      if (GET_CODE (x) == CONST_INT)
+	printx (file, INTVAL (x));
+      else
+	output_operand_lossage ("invalid %%x value");
+      break;
+
+    case 'd':
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (file, "%ld", INTVAL (x));
+      else
+	output_operand_lossage ("invalid %%d value");
+      break;
+
+    case 't':
+    case 'b':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  printx (file, INTVAL (x));
+	  fputs (letter == 't' ? "@h" : "@l", file);
+	}
+      else if (GET_CODE (x) == CONST_DOUBLE)
+	{
+	  REAL_VALUE_TYPE r;
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	  if (GET_MODE (x) == SFmode)
+	    {
+	      long l;
+	      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	      fprintf (file, "0x%08lx@%c", l, letter == 't' ? 'h' : 'l');
+	    }
+	  else
+	    output_operand_lossage ("invalid %%t/%%b value");
+	}
+      else if (GET_CODE (x) == CONST)
+	{
+	  /* X must be a symbolic constant on ELF.  Write an expression
+	     suitable for 'const16' that sets the high or low 16 bits.  */
+	  if (GET_CODE (XEXP (x, 0)) != PLUS
+	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) != SYMBOL_REF
+		  && GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
+	      || GET_CODE (XEXP (XEXP (x, 0), 1)) != CONST_INT)
+	    output_operand_lossage ("invalid %%t/%%b value");
+	  print_operand (file, XEXP (XEXP (x, 0), 0), 0);
+	  fputs (letter == 't' ? "@h" : "@l", file);
+	  /* There must be a non-alphanumeric character between 'h' or 'l'
+	     and the number.  The '-' is added by print_operand() already.  */
+	  if (INTVAL (XEXP (XEXP (x, 0), 1)) >= 0)
+	    fputs ("+", file);
+	  print_operand (file, XEXP (XEXP (x, 0), 1), 0);
+	}
+      else
+	{ 
+	  output_addr_const (file, x);
+	  fputs (letter == 't' ? "@h" : "@l", file);
 	}
       break;
 
     default:
-      output_addr_const (file, op);
+      if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+	fprintf (file, "%s", reg_names[xt_true_regnum (x)]);
+      else if (GET_CODE (x) == MEM)
+	output_address (XEXP (x, 0));
+      else if (GET_CODE (x) == CONST_INT)
+	fprintf (file, "%ld", INTVAL (x));
+      else
+	output_addr_const (file, x);
     }
 }
 
@@ -2191,129 +2223,85 @@ xtensa_frame_pointer_required ()
 }
 
 
-/* If the stack frame size is too big to fit in the immediate field of
-   the ENTRY instruction, we need to store the frame size in the
-   constant pool.  However, the code in xtensa_function_prologue runs too
-   late to be able to add anything to the constant pool.  Since the
-   final frame size isn't known until reload is complete, this seems
-   like the best place to do it.
-
-   There may also be some fixup required if there is an incoming argument
-   in a7 and the function requires a frame pointer. */
-
-static void
-xtensa_reorg ()
-{
-  rtx first, insn, set_frame_ptr_insn = 0;
-    
-  unsigned long tsize = compute_frame_size (get_frame_size ());
-  first = get_insns ();
-  if (tsize < (1 << (12+3)))
-    frame_size_const = 0;
-  else
-    {
-      frame_size_const = force_const_mem (SImode, GEN_INT (tsize - 16));;
-
-      /* make sure the constant is used so it doesn't get eliminated
-	 from the constant pool */
-      emit_insn_before (gen_rtx_USE (SImode, frame_size_const), first);
-    }
-
-  if (!frame_pointer_needed)
-    return;
-
-  /* Search all instructions, looking for the insn that sets up the
-     frame pointer.  This search will fail if the function does not
-     have an incoming argument in $a7, but in that case, we can just
-     set up the frame pointer at the very beginning of the
-     function.  */
-
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    {
-      rtx pat;
-
-      if (!INSN_P (insn))
-	continue;
-
-      pat = PATTERN (insn);
-      if (GET_CODE (pat) == SET
-	  && GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
-	  && (XINT (SET_SRC (pat), 1) == UNSPECV_SET_FP))
-	{
-	  set_frame_ptr_insn = insn;
-	  break;
-	}
-    }
-
-  if (set_frame_ptr_insn)
-    {
-      /* for all instructions prior to set_frame_ptr_insn, replace
-	 hard_frame_pointer references with stack_pointer */
-      for (insn = first; insn != set_frame_ptr_insn; insn = NEXT_INSN (insn))
-	{
-	  if (INSN_P (insn))
-	    PATTERN (insn) = replace_rtx (copy_rtx (PATTERN (insn)),
-					  hard_frame_pointer_rtx,
-					  stack_pointer_rtx);
-	}
-    }
-  else
-    {
-      /* emit the frame pointer move immediately after the NOTE that starts
-	 the function */
-      emit_insn_after (gen_movsi (hard_frame_pointer_rtx,
-				  stack_pointer_rtx), first);
-    }
-}
-
-
-/* Set up the stack and frame (if desired) for the function.  */
-
 void
-xtensa_function_prologue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+xtensa_expand_prologue ()
 {
-  unsigned long tsize = compute_frame_size (get_frame_size ());
+  HOST_WIDE_INT total_size;
+  rtx size_rtx;
+
+  total_size = compute_frame_size (get_frame_size ());
+  size_rtx = GEN_INT (total_size);
+
+  if (total_size < (1 << (12+3)))
+    emit_insn (gen_entry (size_rtx, size_rtx));
+  else
+    {
+      /* Use a8 as a temporary since a0-a7 may be live.  */
+      rtx tmp_reg = gen_rtx_REG (Pmode, A8_REG);
+      emit_insn (gen_entry (size_rtx, GEN_INT (MIN_FRAME_SIZE)));
+      emit_move_insn (tmp_reg, GEN_INT (total_size - MIN_FRAME_SIZE));
+      emit_insn (gen_subsi3 (tmp_reg, stack_pointer_rtx, tmp_reg));
+      emit_move_insn (stack_pointer_rtx, tmp_reg);
+    }
 
   if (frame_pointer_needed)
-    fprintf (file, "\t.frame\ta7, %ld\n", tsize);
-  else
-    fprintf (file, "\t.frame\tsp, %ld\n", tsize);
- 
-
-  if (tsize < (1 << (12+3)))
     {
-      fprintf (file, "\tentry\tsp, %ld\n", tsize);
-    }
-  else
-    {
-      fprintf (file, "\tentry\tsp, 16\n");
+      rtx first, insn, set_frame_ptr_insn = 0;
 
-      /* use a8 as a temporary since a0-a7 may be live */
-      fprintf (file, "\tl32r\ta8, ");
-      print_operand (file, frame_size_const, 0);
-      fprintf (file, "\n\tsub\ta8, sp, a8\n");
-      fprintf (file, "\tmovsp\tsp, a8\n");
+      push_topmost_sequence ();
+      first = get_insns ();
+      pop_topmost_sequence ();
+
+      /* Search all instructions, looking for the insn that sets up the
+	 frame pointer.  This search will fail if the function does not
+	 have an incoming argument in $a7, but in that case, we can just
+	 set up the frame pointer at the very beginning of the
+	 function.  */
+
+      for (insn = first; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx pat;
+
+	  if (!INSN_P (insn))
+	    continue;
+
+	  pat = PATTERN (insn);
+	  if (GET_CODE (pat) == SET
+	      && GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
+	      && (XINT (SET_SRC (pat), 1) == UNSPECV_SET_FP))
+	    {
+	      set_frame_ptr_insn = insn;
+	      break;
+	    }
+	}
+
+      if (set_frame_ptr_insn)
+	{
+	  /* For all instructions prior to set_frame_ptr_insn, replace
+	     hard_frame_pointer references with stack_pointer.  */
+	  for (insn = first;
+	       insn != set_frame_ptr_insn;
+	       insn = NEXT_INSN (insn))
+	    {
+	      if (INSN_P (insn))
+		PATTERN (insn) = replace_rtx (copy_rtx (PATTERN (insn)),
+					      hard_frame_pointer_rtx,
+					      stack_pointer_rtx);
+	    }
+	}
+      else
+	emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
     }
 }
 
 
-/* Do any necessary cleanup after a function to restore
-   stack, frame, and regs.  */
+/* Clear variables at function end.  */
 
 void
 xtensa_function_epilogue (file, size)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
-  rtx insn = get_last_insn ();
-  /* If the last insn was a BARRIER, we don't have to write anything.  */
-  if (GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-  if (insn == 0 || GET_CODE (insn) != BARRIER)
-    fprintf (file, TARGET_DENSITY ? "\tretw.n\n" : "\tretw\n");
-
   xtensa_current_frame_size = 0;
 }
 
@@ -2326,7 +2314,7 @@ xtensa_return_addr (count, frame)
   rtx result, retaddr;
 
   if (count == -1)
-    retaddr = gen_rtx_REG (Pmode, 0);
+    retaddr = gen_rtx_REG (Pmode, A0_REG);
   else
     {
       rtx addr = plus_constant (frame, -4 * UNITS_PER_WORD);
@@ -2882,6 +2870,8 @@ xtensa_rtx_costs (x, code, outer_code, total)
 	}
       if (xtensa_simm12b (INTVAL (x)))
 	*total = 5;
+      else if (TARGET_CONST16)
+	*total = COSTS_N_INSNS (2);
       else
 	*total = 6;
       return true;
@@ -2889,11 +2879,17 @@ xtensa_rtx_costs (x, code, outer_code, total)
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      *total = 5;
+      if (TARGET_CONST16)
+	*total = COSTS_N_INSNS (2);
+      else
+	*total = 5;
       return true;
 
     case CONST_DOUBLE:
-      *total = 7;
+      if (TARGET_CONST16)
+	*total = COSTS_N_INSNS (4);
+      else
+	*total = 7;
       return true;
 
     case MEM:

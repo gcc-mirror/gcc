@@ -61,6 +61,7 @@ extern unsigned xtensa_current_frame_size;
 #define MASK_HARD_FLOAT_RSQRT	0x00004000	/* floating-point recip sqrt */
 #define MASK_NO_FUSED_MADD	0x00008000	/* avoid f-p mul/add */
 #define MASK_SERIALIZE_VOLATILE 0x00010000	/* serialize volatile refs */
+#define MASK_CONST16		0x00020000	/* use CONST16 instruction */
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -81,12 +82,14 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_HARD_FLOAT_RSQRT	(target_flags & MASK_HARD_FLOAT_RSQRT)
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_SERIALIZE_VOLATILE (target_flags & MASK_SERIALIZE_VOLATILE)
+#define TARGET_CONST16		(target_flags & MASK_CONST16)
 
 /* Default target_flags if no switches are specified  */
 
 #define TARGET_DEFAULT (						\
   (XCHAL_HAVE_BE	? MASK_BIG_ENDIAN : 0) |			\
   (XCHAL_HAVE_DENSITY	? MASK_DENSITY : 0) |				\
+  (XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
   (XCHAL_HAVE_MAC16	? MASK_MAC16 : 0) |				\
   (XCHAL_HAVE_MUL16	? MASK_MUL16 : 0) |				\
   (XCHAL_HAVE_MUL32	? MASK_MUL32 : 0) |				\
@@ -114,6 +117,10 @@ extern unsigned xtensa_current_frame_size;
     N_("Use the Xtensa code density option")},				\
   {"no-density",		-MASK_DENSITY,				\
     N_("Do not use the Xtensa code density option")},			\
+  {"const16",			MASK_CONST16,				\
+    N_("Use CONST16 instruction to load constants")},			\
+  {"no-const16",		-MASK_CONST16,				\
+    N_("Use PC-relative L32R instruction to load constants")},		\
   {"mac16",			MASK_MAC16,				\
     N_("Use the Xtensa MAC16 option")},					\
   {"no-mac16",			-MASK_MAC16,				\
@@ -629,6 +636,7 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
    'A'	MAC16 accumulator (only if MAC16 option enabled)
    'B'	general-purpose registers (only if sext instruction enabled)
    'C'  general-purpose registers (only if mul16 option enabled)
+   'W'  general-purpose registers (only if const16 option enabled)
    'b'	coprocessor boolean registers
    'f'	floating-point registers
 */
@@ -699,7 +707,7 @@ extern enum reg_class xtensa_char_to_class[256];
         && REGNO (OP) >= FIRST_PSEUDO_REGISTER)				\
    : ((CODE) == 'R') ? smalloffset_mem_p (OP)				\
    : ((CODE) == 'S') ? smalloffset_double_mem_p (OP)			\
-   : ((CODE) == 'T') ? constantpool_mem_p (OP)				\
+   : ((CODE) == 'T') ? !TARGET_CONST16 && constantpool_mem_p (OP)	\
    : ((CODE) == 'U') ? !constantpool_mem_p (OP)				\
    : FALSE)
 
@@ -968,24 +976,27 @@ typedef struct xtensa_args {
     fprintf (STREAM, "\t.begin no-generics\n");				\
     fprintf (STREAM, "\tentry\tsp, %d\n", MIN_FRAME_SIZE);		\
 									\
-    /* GCC isn't prepared to deal with data at the beginning of the	\
-       trampoline, and the Xtensa l32r instruction requires that the	\
-       constant pool be located before the code.  We put the constant	\
-       pool in the middle of the trampoline and jump around it. */ 	\
+    /* save the return address */					\
+    fprintf (STREAM, "\tmov\ta10, a0\n");				\
 									\
-    fprintf (STREAM, "\tj\t.Lskipconsts\n");				\
+    /* Use a CALL0 instruction to skip past the constants and in the	\
+       process get the PC into A0.  This allows PC-relative access to	\
+       the constants without relying on L32R, which may not always be	\
+       available.  */							\
+									\
+    fprintf (STREAM, "\tcall0\t.Lskipconsts\n");			\
     fprintf (STREAM, "\t.align\t4\n");					\
-    fprintf (STREAM, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));	\
     fprintf (STREAM, ".Lchainval:%s0\n", integer_asm_op (4, TRUE));	\
+    fprintf (STREAM, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));	\
     fprintf (STREAM, ".Lskipconsts:\n");				\
 									\
     /* store the static chain */					\
-    fprintf (STREAM, "\tl32r\ta8, .Lchainval\n");			\
-    fprintf (STREAM, "\ts32i\ta8, sp, %d\n",				\
-	     MIN_FRAME_SIZE - (5 * UNITS_PER_WORD));			\
+    fprintf (STREAM, "\taddi\ta0, a0, 3\n");				\
+    fprintf (STREAM, "\tl32i\ta8, a0, 0\n");				\
+    fprintf (STREAM, "\ts32i\ta8, sp, %d\n", MIN_FRAME_SIZE - 20);	\
 									\
     /* set the proper stack pointer value */				\
-    fprintf (STREAM, "\tl32r\ta8, .Lfnaddr\n");				\
+    fprintf (STREAM, "\tl32i\ta8, a0, 4\n");				\
     fprintf (STREAM, "\tl32i\ta9, a8, 0\n");				\
     fprintf (STREAM, "\textui\ta9, a9, %d, 12\n",			\
 	     TARGET_BIG_ENDIAN ? 8 : 12);				\
@@ -994,6 +1005,9 @@ typedef struct xtensa_args {
     fprintf (STREAM, "\tsub\ta9, sp, a9\n");				\
     fprintf (STREAM, "\tmovsp\tsp, a9\n");				\
 									\
+    /* restore the return address */					\
+    fprintf (STREAM, "\tmov\ta0, a10\n");				\
+									\
     /* jump to the instruction following the entry */			\
     fprintf (STREAM, "\taddi\ta8, a8, 3\n");				\
     fprintf (STREAM, "\tjx\ta8\n");					\
@@ -1001,7 +1015,7 @@ typedef struct xtensa_args {
   } while (0)
 
 /* Size in bytes of the trampoline, as an integer.  */
-#define TRAMPOLINE_SIZE 49
+#define TRAMPOLINE_SIZE 59
 
 /* Alignment required for trampolines, in bits.  */
 #define TRAMPOLINE_ALIGNMENT (32)
@@ -1010,8 +1024,8 @@ typedef struct xtensa_args {
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			\
   do {									\
     rtx addr = ADDR;							\
-    emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 8)), FUNC); \
     emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 12)), CHAIN); \
+    emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 16)), FUNC); \
     emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__xtensa_sync_caches"), \
 		       0, VOIDmode, 1, addr, Pmode);			\
   } while (0)
@@ -1128,7 +1142,7 @@ typedef struct xtensa_args {
 									\
     /* allow constant pool addresses */					\
     if ((MODE) != BLKmode && GET_MODE_SIZE (MODE) >= UNITS_PER_WORD	\
-	&& constantpool_address_p (xinsn))				\
+	&& !TARGET_CONST16 && constantpool_address_p (xinsn))		\
       goto LABEL;							\
 									\
     while (GET_CODE (xinsn) == SUBREG)					\
@@ -1330,7 +1344,6 @@ typedef struct xtensa_args {
   {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG }},	\
   {"move_operand",		{ REG, SUBREG, MEM, CONST_INT, CONST_DOUBLE, \
 				  CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"non_const_move_operand",	{ REG, SUBREG, MEM }},			\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"branch_operator",		{ EQ, NE, LT, GE }},			\
   {"ubranch_operator",		{ LTU, GEU }},				\

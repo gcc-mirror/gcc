@@ -57,11 +57,9 @@ extern int smalloffset_mem_p PARAMS ((rtx));
 extern int smalloffset_double_mem_p PARAMS ((rtx));
 extern int constantpool_address_p PARAMS ((rtx));
 extern int constantpool_mem_p PARAMS ((rtx));
-extern int non_const_move_operand PARAMS ((rtx, enum machine_mode));
 extern int const_float_1_operand PARAMS ((rtx, enum machine_mode));
 extern int fpmem_offset_operand PARAMS ((rtx, enum machine_mode));
 extern void xtensa_extend_reg PARAMS ((rtx, rtx));
-extern void xtensa_load_constant PARAMS ((rtx, rtx));
 extern int branch_operator PARAMS ((rtx, enum machine_mode));
 extern int ubranch_operator PARAMS ((rtx, enum machine_mode));
 extern int boolean_operator PARAMS ((rtx, enum machine_mode));
@@ -110,8 +108,7 @@ extern int xtensa_dbx_register_number PARAMS ((int));
 extern void override_options PARAMS ((void));
 extern long compute_frame_size PARAMS ((int));
 extern int xtensa_frame_pointer_required PARAMS ((void));
-extern void xtensa_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-extern void xtensa_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+extern void xtensa_expand_prologue PARAMS ((void));
 extern void order_regs_for_local_alloc PARAMS ((void));
 
 #endif /* !__XTENSA_PROTOS_H__ */
