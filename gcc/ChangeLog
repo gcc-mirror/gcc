@@ -1,3 +1,7 @@
+2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* stormy16.h (ASM_OUTPUT_SYMBOL_REF): Use ASM_OUTPUT_LABEL_REF.
+
 2002-07-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* defaults.h (ASM_OUTPUT_MEASURED_SIZE): Take only two
