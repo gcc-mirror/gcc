@@ -410,6 +410,8 @@ gen_rtx_REG (mode, regno)
       if (regno == RETURN_ADDRESS_POINTER_REGNUM)
 	return return_address_pointer_rtx;
 #endif
+      if (regno == PIC_OFFSET_TABLE_REGNUM)
+        return pic_offset_table_rtx;
       if (regno == STACK_POINTER_REGNUM)
 	return stack_pointer_rtx;
     }
@@ -4974,7 +4976,7 @@ init_emit_once (line_numbers)
 #endif
 
   if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
-    pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
+    pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 
   ggc_add_rtx_root (&pic_offset_table_rtx, 1);
   ggc_add_rtx_root (&struct_value_rtx, 1);
