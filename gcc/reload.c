@@ -3871,6 +3871,35 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	reload_opnum[i] = goal_alternative_matches[reload_opnum[i]];
     }
 
+  /* Scan all the reloads, and check for RELOAD_FOR_OPERAND_ADDRESS reloads.
+     If we have more than one, then convert all RELOAD_FOR_OPADDR_ADDR
+     reloads to RELOAD_FOR_OPERAND_ADDRESS reloads.
+
+     choose_reload_regs assumes that RELOAD_FOR_OPADDR_ADDR reloads never
+     conflict with RELOAD_FOR_OPERAND_ADDRESS reloads.  This is true for a
+     single pair of RELOAD_FOR_OPADDR_ADDR/RELOAD_FOR_OPERAND_ADDRESS reloads.
+     However, if there is more than one RELOAD_FOR_OPERAND_ADDRESS reload,
+     then a RELOAD_FOR_OPADDR_ADDR reload conflicts with all
+     RELOAD_FOR_OPERAND_ADDRESS reloads other than the one that uses it.
+     This is complicated by the fact that a single operand can have more
+     than one RELOAD_FOR_OPERAND_ADDRESS reload.  It is very difficult to fix
+     choose_reload_regs without affecting code quality, and cases that
+     actually fail are extremely rare, so it turns out to be better to fix
+     the problem here by not generating cases that choose_reload_regs will
+     fail for.  */
+   
+  {
+    int op_addr_reloads = 0;
+    for (i = 0; i < n_reloads; i++)
+      if (reload_when_needed[i] == RELOAD_FOR_OPERAND_ADDRESS)
+	op_addr_reloads++;
+
+    if (op_addr_reloads > 1)
+      for (i = 0; i < n_reloads; i++)
+	if (reload_when_needed[i] == RELOAD_FOR_OPADDR_ADDR)
+	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+  }
+
   /* See if we have any reloads that are now allowed to be merged
      because we've changed when the reload is needed to
      RELOAD_FOR_OPERAND_ADDRESS or RELOAD_FOR_OTHER_ADDRESS.  Only
