@@ -472,3 +472,10 @@ dtors_section ()							\
 
 #undef	HAS_INIT_SECTION
 #define HAS_INIT_SECTION
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   The trampoline should set the static chain pointer to value placed
+   into the trampoline and should branch to the specified routine.  */
+#define TRAMPOLINE_TEMPLATE(FILE) rs6000_trampoline_template (FILE)
