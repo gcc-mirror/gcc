@@ -1,3 +1,10 @@
+2003-09-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9848
+	* optimize.c (maybe_clone_body): Don't set MARK_USED on parameters
+	here.
+	* semantics.c (expand_body): Set it here on the remaining clones.
+
 2003-09-18  Roger Sayle  <roger@eyesopen.com>
 
 	* lex.c (init_operators): Remove operator_name_info for FFS_EXPR.
