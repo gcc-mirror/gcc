@@ -1,3 +1,10 @@
+2001-02-21  David Mosberger  <davidm@hpl.hp.com>
+
+	* config/ia64/ia64.c (ia64_epilogue_uses): For syscall_linkage
+	functions, drop current_function_args_info.words test.
+	(ia64_compute_frame_size): Mark syscall_linkage functions as
+	using eight input registers.
+
 2001-02-21  Loren J. Rittle  <ljrittle@acm.org>
 	Bruce Korb  <bkorb@gnu.org>
 
