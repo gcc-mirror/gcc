@@ -3335,8 +3335,10 @@ try_simplify_condjump (cbranch_block)
   /* Success.  Update the CFG to match.  Note that after this point
      the edge variable names appear backwards; the redirection is done
      this way to preserve edge profile data.  */
-  redirect_edge_succ_nodup (cbranch_jump_edge, cbranch_dest_block);
-  redirect_edge_succ_nodup (cbranch_fallthru_edge, jump_dest_block);
+  cbranch_jump_edge = redirect_edge_succ_nodup (cbranch_jump_edge,
+						cbranch_dest_block);
+  cbranch_fallthru_edge = redirect_edge_succ_nodup (cbranch_fallthru_edge,
+						    jump_dest_block);
   cbranch_jump_edge->flags |= EDGE_FALLTHRU;
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
 
@@ -9029,7 +9031,7 @@ redirect_edge_succ (e, new_succ)
 
 /* Like previous but avoid possible dupplicate edge.  */
 
-void
+edge
 redirect_edge_succ_nodup (e, new_succ)
      edge e;
      basic_block new_succ;
@@ -9045,9 +9047,11 @@ redirect_edge_succ_nodup (e, new_succ)
       s->probability += e->probability;
       s->count += e->count;
       remove_edge (e);
+      e = s;
     }
   else
     redirect_edge_succ (e, new_succ);
+  return e;
 }
 
 /* Redirect an edge's predecessor from one block to another.  */
