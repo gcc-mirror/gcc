@@ -19,8 +19,3 @@ CC=c89
 
 CLIB=-liberty
 LDFLAGS=-L../libiberty
-
-# TAR Options
-
-TAROUTOPTS=xpf
-
