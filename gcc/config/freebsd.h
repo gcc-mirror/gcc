@@ -53,16 +53,24 @@ Boston, MA 02111-1307, USA.  */
 #if FBSD_MAJOR == 6
 #define FBSD_CPP_PREDEFINES \
   "-D__FreeBSD__=6 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
-#elif FBSD_MAJOR == 5
+#endif
+
+#if FBSD_MAJOR == 5
 #define FBSD_CPP_PREDEFINES \
   "-D__FreeBSD__=5 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
-#elif FBSD_MAJOR == 4
+#endif
+
+#if FBSD_MAJOR == 4
 #define FBSD_CPP_PREDEFINES \
   "-D__FreeBSD__=4 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
-#elif FBSD_MAJOR == 3
+#endif
+
+#if FBSD_MAJOR == 3
 #define FBSD_CPP_PREDEFINES \
   "-D__FreeBSD__=3 -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
-#else
+#endif
+
+#ifndef FBSD_CPP_PREDEFINES
 #define FBSD_CPP_PREDEFINES \
   "-D__FreeBSD__   -Dunix -D__ELF__ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
 #endif
