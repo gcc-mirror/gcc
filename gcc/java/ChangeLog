@@ -1,3 +1,13 @@
+2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* decl.c (java_init_decl_processing): Change 
+	soft_lookupjnimethod_node to reflect the change in
+	signature of _Jv_LookupJNIMethod in libjava/jni.cc
+	* expr.c (build_jni_stub): Calculate and pass the size
+	on the stack of the arguments to a JNI function. Use
+	new target macro MODIFY_JNI_METHOD_CALL to allow a 
+	target to modify the call to a JNI method.
+
 2003-02-08  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-io.c (java_or_class_file): Use libiberty's lbasename
