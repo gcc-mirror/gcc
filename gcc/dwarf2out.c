@@ -8105,6 +8105,7 @@ add_bound_info (subrange_die, bound_attr, bound)
     case MAX_EXPR:
     case VAR_DECL:
     case COMPONENT_REF:
+    case COND_EXPR:
       /* ??? These types of bounds can be created by the Ada front end,
 	 and it isn't clear how to emit debug info for them.  */
       break;
