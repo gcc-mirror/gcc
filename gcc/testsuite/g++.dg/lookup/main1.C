@@ -1,0 +1,3 @@
+struct main {};
+
+int main () {}
