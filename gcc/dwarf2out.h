@@ -18,8 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void dwarf2out_init 		PARAMS ((FILE *asm_out_file, 
-						 char *main_input_filename));
+extern void dwarf2out_init 		PARAMS ((FILE *, const char *));
 extern void dwarf2out_finish		PARAMS ((void));
 
 extern void dwarf2out_define		PARAMS ((unsigned, const char *));

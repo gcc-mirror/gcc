@@ -104,7 +104,7 @@ typedef union dw_cfi_oprnd_struct
 {
   unsigned long dw_cfi_reg_num;
   long int dw_cfi_offset;
-  char *dw_cfi_addr;
+  const char *dw_cfi_addr;
 }
 dw_cfi_oprnd;
 
@@ -125,9 +125,9 @@ dw_cfi_node;
 
 typedef struct dw_fde_struct
 {
-  char *dw_fde_begin;
-  char *dw_fde_current_label;
-  char *dw_fde_end;
+  const char *dw_fde_begin;
+  const char *dw_fde_current_label;
+  const char *dw_fde_end;
   dw_cfi_ref dw_fde_cfi;
   int nothrow;
 }
@@ -221,18 +221,18 @@ static unsigned long size_of_uleb128	PARAMS ((unsigned long));
 static unsigned long size_of_sleb128	PARAMS ((long));
 static void output_uleb128		PARAMS ((unsigned long));
 static void output_sleb128		PARAMS ((long));
-static void add_fde_cfi			PARAMS ((char *, dw_cfi_ref));
+static void add_fde_cfi			PARAMS ((const char *, dw_cfi_ref));
 static void lookup_cfa_1		PARAMS ((dw_cfi_ref, unsigned long *,
 						 long *));
 static void lookup_cfa			PARAMS ((unsigned long *, long *));
-static void reg_save			PARAMS ((char *, unsigned, unsigned,
-						 long));
+static void reg_save			PARAMS ((const char *, unsigned,
+						 unsigned, long));
 static void initial_return_save		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PARAMS ((int));
 static unsigned int reg_number		PARAMS ((rtx));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
-static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
+static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -715,7 +715,7 @@ dwarf2out_cfi_label ()
 
 static void
 add_fde_cfi (label, cfi)
-     register char *label;
+     register const char *label;
      register dw_cfi_ref cfi;
 {
   if (label)
@@ -815,7 +815,7 @@ static long old_args_size;
 
 void
 dwarf2out_def_cfa (label, reg, offset)
-     register char *label;
+     register const char *label;
      register unsigned reg;
      register long offset;
 {
@@ -867,7 +867,7 @@ dwarf2out_def_cfa (label, reg, offset)
 
 static void
 reg_save (label, reg, sreg, offset)
-     register char * label;
+     register const char *label;
      register unsigned reg;
      register unsigned sreg;
      register long offset;
@@ -916,7 +916,7 @@ reg_save (label, reg, sreg, offset)
 
 void
 dwarf2out_window_save (label)
-     register char * label;
+     register const char *label;
 {
   register dw_cfi_ref cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
@@ -928,7 +928,7 @@ dwarf2out_window_save (label)
 
 void
 dwarf2out_args_size (label, size)
-     char *label;
+     const char *label;
      long size;
 {
   register dw_cfi_ref cfi;
@@ -948,7 +948,7 @@ dwarf2out_args_size (label, size)
 
 void
 dwarf2out_reg_save (label, reg, offset)
-     register char * label;
+     register const char *label;
      register unsigned reg;
      register long offset;
 {
@@ -960,7 +960,7 @@ dwarf2out_reg_save (label, reg, offset)
 
 void
 dwarf2out_return_save (label, offset)
-     register char * label;
+     register const char *label;
      register long offset;
 {
   reg_save (label, DWARF_FRAME_RETURN_COLUMN, -1, offset);
@@ -971,7 +971,7 @@ dwarf2out_return_save (label, offset)
 
 void
 dwarf2out_return_reg (label, sreg)
-     register char * label;
+     register const char *label;
      register unsigned sreg;
 {
   reg_save (label, DWARF_FRAME_RETURN_COLUMN, sreg, 0);
@@ -1041,7 +1041,7 @@ dwarf2out_stack_adjust (insn)
      rtx insn;
 {
   long offset;
-  char *label;
+  const char *label;
 
   if (! asynchronous_exceptions && GET_CODE (insn) == CALL_INSN)
     {
@@ -1146,7 +1146,7 @@ static long cfa_temp_value;
 static void
 dwarf2out_frame_debug_expr (expr, label)
      rtx expr;
-     char *label;
+     const char *label;
 {
   rtx src, dest;
   long offset;
@@ -1353,7 +1353,7 @@ void
 dwarf2out_frame_debug (insn)
      rtx insn;
 {
-  char *label;
+  const char *label;
   rtx src;
 
   if (insn == NULL_RTX)
@@ -2229,7 +2229,7 @@ static unsigned file_table_in_use;
 
 /* Local pointer to the name of the main input file.  Initialized in
    dwarf2out_init.  */
-static char *primary_filename;
+static const char *primary_filename;
 
 /* A pointer to the base of a table of references to DIE's that describe
    declarations.  The table is indexed by DECL_UID() which is a unique
@@ -2406,10 +2406,10 @@ static void add_AT_addr			PARAMS ((dw_die_ref,
 						 rtx));
 static void add_AT_lbl_id		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
-						 char *));
+						 const char *));
 static void add_AT_lbl_offset		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
-						 char *));
+						 const char *));
 static dw_attr_ref get_AT		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static const char *get_AT_low_pc	PARAMS ((dw_die_ref));
@@ -2502,10 +2502,10 @@ static dw_die_ref scope_die_for		PARAMS ((tree, dw_die_ref));
 static void pop_decl_scope		PARAMS ((void));
 static void add_type_attribute		PARAMS ((dw_die_ref, tree, int, int,
 						 dw_die_ref));
-static char *type_tag			PARAMS ((tree));
+static const char *type_tag	        PARAMS ((tree));
 static tree member_declared_type	PARAMS ((tree));
 #if 0
-static char *decl_start_label		PARAMS ((tree));
+static const char *decl_start_label	PARAMS ((tree));
 #endif
 static void gen_array_type_die		PARAMS ((tree, dw_die_ref));
 static void gen_set_type_die		PARAMS ((tree, dw_die_ref));
@@ -3767,7 +3767,7 @@ static inline void
 add_AT_lbl_id (die, attr_kind, lbl_id)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     register char *lbl_id;
+     register const char *lbl_id;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
@@ -3784,7 +3784,7 @@ static inline void
 add_AT_lbl_offset (die, attr_kind, label)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     register char *label;
+     register const char *label;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
@@ -7634,11 +7634,11 @@ add_type_attribute (object_die, type, decl_const, decl_volatile, context_die)
    a pointer to the (string) tag name for the given type, or zero if the type
    was declared without a tag.  */
 
-static char *
+static const char *
 type_tag (type)
      register tree type;
 {
-  register char *name = 0;
+  register const char *name = 0;
 
   if (TYPE_NAME (type) != 0)
     {
@@ -7679,12 +7679,12 @@ member_declared_type (member)
    from the DECL_NAME name used in the source file.  */
 
 #if 0
-static char *
+static const char *
 decl_start_label (decl)
      register tree decl;
 {
   rtx x;
-  char *fnname;
+  const char *fnname;
   x = DECL_RTL (decl);
   if (GET_CODE (x) != MEM)
     abort ();
@@ -8674,7 +8674,7 @@ gen_compile_unit_die (filename)
 {
   register dw_die_ref die;
   char producer[250];
-  char *wd = getpwd ();
+  const char *wd = getpwd ();
   int language;
 
   die = new_die (DW_TAG_compile_unit, NULL);
@@ -9835,7 +9835,7 @@ dwarf2out_undef (lineno, buffer)
 void
 dwarf2out_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
-     register char *main_input_filename;
+     register const char *main_input_filename;
 {
   /* Remember the name of the primary input file.  */
   primary_filename = main_input_filename;
