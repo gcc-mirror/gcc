@@ -334,6 +334,7 @@ java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TARGET_H) function.h gt-java-resource.h
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) real.h
+java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) java/jcf.h
 java/verify.o: java/verify.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   java/javaop.h java/java-opcodes.h java/java-except.h toplev.h $(SYSTEM_H) \
   coretypes.h $(TM_H)
