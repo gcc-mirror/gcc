@@ -1,5 +1,7 @@
 Mon Feb 23 03:04:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (tsubst, FUNCTION_DECL): Tidy.
+
 	* typeck.c (build_x_function_call): Handle static member function
 	templates like non-templates.  Handle friend templates like normal
 	function templates.
