@@ -1,3 +1,9 @@
+Thu Jun 3 07:48 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	*fixinc/inclhack.def(Io_Def_Quotes): corrected sed expression
+	*fixinc/fixincl.x: regenerate
+	*fixinc/inclhack.sh: regenerate
+
 Thu Jun  3 02:15:07 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (add_incomplete_type): New fn.
