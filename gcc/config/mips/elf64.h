@@ -25,6 +25,12 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT MASK_FLOAT64|MASK_64BIT
 #define MIPS_ISA_DEFAULT 3
 
+#ifndef TARGET_ENDIAN_DEFAULT
+#define MULTILIB_DEFAULTS { "EB", "mips3" }
+#else
+#define MULTILIB_DEFAULTS { "EL", "mips3" }
+#endif
+
 /* Until we figure out what MIPS ELF targets normally use, just do
    stabs in ELF.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
