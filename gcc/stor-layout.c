@@ -389,7 +389,15 @@ layout_decl (decl, known_align)
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
-      else if (DECL_PACKED (decl))
+
+      /* If the field is of variable size, we can't misalign it since we
+	 have no way to make a temporary to align the result.  But this
+	 isn't an issue if the decl is not addressable.  Likewise if it
+	 is of unknown size.  */
+      else if (DECL_PACKED (decl)
+	       && (DECL_NONADDRESSABLE_P (decl)
+		   || DECL_SIZE_UNIT (decl) == 0
+		   || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
 	{
 	  DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
 	  DECL_USER_ALIGN (decl) = 0;

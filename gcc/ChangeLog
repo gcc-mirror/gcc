@@ -1,5 +1,8 @@
 Sat Dec 29 15:48:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_decl): Don't misalign field of variable size
+	for packed record.
+
 	* dwarf2out.c (compute_section_prefix): Avoid cast warning.
 	(gen_decl_die): Only check DECL_IGNORED_P on decls.
 	(dwarf2out_decl): Check for DECL_IGNORED_P only when needed.
