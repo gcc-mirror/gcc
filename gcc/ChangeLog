@@ -1,3 +1,7 @@
+2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h: Merge from mainline.
+
 Mon Mar 10 11:30:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Revert the previous patch.
