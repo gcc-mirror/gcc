@@ -1,6 +1,6 @@
-/* Definitions of target machine for GNU compiler,
-   for ARM with ELF obj format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.
+   For ARM with ELF obj format.
+   Copyright (C) 1995 - 1999 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org> and
    Catherine Moore <clm@cygnus.com>
    
@@ -34,6 +34,22 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC  "-Darm_elf -D__ELF__"
+#endif
+
+#ifndef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC
+#endif
+
+#ifndef ASM_SPEC
+#define ASM_SPEC "\
+%{mbig-endian:-EB} \
+%{mcpu=*:-m%*} \
+%{march=*:-m%*} \
+%{mapcs-*:-mapcs-%*} \
+%{mapcs-float:-mfloat} \
+%{msoft-float:-mno-fpu} \
+%{mthumb-interwork:-mthumb-interwork} \
+" SUBTARGET_EXTRA_ASM_SPEC
 #endif
 
 /* The following macro defines the format used to output the second
@@ -151,11 +167,6 @@ Boston, MA 02111-1307, USA.  */
    Otherwise, the readonly data section is used.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-#ifndef ASM_SPEC
-#define ASM_SPEC "%{mbig-endian:-EB} %{mcpu=*:-m%*} %{march=*:-m%*} \
- %{mapcs-*:-mapcs-%*} %{mthumb-interwork:-mthumb-interwork} %{mapcs-float:mfloat}"
-#endif
-
 #ifndef LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} -X"
 #endif
@@ -166,11 +177,12 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32)
+#define TARGET_DEFAULT (ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
 #endif
 
 #ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { "mlittle-endian", "msoft-float", "mapcs-32", "mno-thumb-interwork" }
+#define MULTILIB_DEFAULTS \
+  { "marm", "mlittle-endian", "msoft-float", "mapcs-32", "mno-thumb-interwork", "fno-leading-underscore" }
 #endif
 
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
@@ -275,30 +287,48 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef CTORS_SECTION_FUNCTION
-#define CTORS_SECTION_FUNCTION 						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
+#define CTORS_SECTION_FUNCTION 					\
+void								\
+ctors_section ()						\
+{								\
+  if (in_section != in_ctors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
+      in_section = in_ctors;					\
+    }								\
 }
 #endif
 
 #ifndef DTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION 						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
+#define DTORS_SECTION_FUNCTION 					\
+void								\
+dtors_section ()						\
+{								\
+  if (in_section != in_dtors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
+      in_section = in_dtors;					\
+    }								\
 }
 #endif
+
+/* A C statement to output something to the assembler file to switch to
+   section NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL
+   or NULL_TREE.  */
+#undef  ASM_OUTPUT_SECTION_NAME
+#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)        	\
+  do									\
+    {								  	\
+      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		  	\
+	fprintf (STREAM, "\t.section %s,\"ax\",%%progbits\n", NAME);	\
+      else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	  	\
+	fprintf (STREAM, "\t.section %s,\"a\"\n", NAME);		\
+      else if (! strncmp (NAME, ".bss", 4))      			\
+	fprintf (STREAM, "\t.section %s,\"aw\",%%nobits\n", NAME);	\
+      else							 	\
+	fprintf (STREAM, "\t.section %s,\"aw\"\n", NAME);	  	\
+    }									\
+  while (0)
 
 /* Support the ctors/dtors sections for g++.  */
 #ifndef INT_ASM_OP
@@ -367,4 +397,4 @@ dtors_section ()							\
     }							\
   while (0)
 
-#include "arm/aout.h"
+#include "aout.h"

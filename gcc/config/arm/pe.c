@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "expr.h"
 #include "toplev.h"
-#include "arm-protos.h"
+#include "tm_p.h"
 
 extern int current_function_anonymous_args;
 
@@ -59,6 +59,7 @@ arm_pe_valid_machine_decl_attribute (decl, attributes, attr, args)
 
   if (is_attribute_p ("dllexport", attr))
     return 1;
+  
   if (is_attribute_p ("dllimport", attr))
     return 1;
 
@@ -118,45 +119,6 @@ arm_pe_merge_machine_decl_attributes (old, new)
   return a;
 }
 
-#if 0
-/* Check a type that has a virtual table, and see if any virtual methods are
-   marked for import or export, and if so, arrange for the vtable to
-   be imported or exported.  */
-
-static int
-arm_check_vtable_importexport (type)
-     tree type;
-{
-  tree methods = TYPE_METHODS (type);
-  tree fndecl;
-
-  if (TREE_CODE (methods) == FUNCTION_DECL)
-    fndecl = methods;
-  else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
-    fndecl = TREE_VEC_ELT (methods, 0);
-  else
-    fndecl = TREE_VEC_ELT (methods, 1);
-
-  while (fndecl)
-    {
-      if (DECL_VIRTUAL_P (fndecl) || DECL_VINDEX (fndecl) != NULL_TREE)
-	{
-	  tree exp = lookup_attribute ("dllimport",
-				       DECL_MACHINE_ATTRIBUTES (fndecl));
-	  if (exp == 0)
-	    exp = lookup_attribute ("dllexport",
-				    DECL_MACHINE_ATTRIBUTES (fndecl));
-	  if (exp)
-	    return 1;
-	}
-
-      fndecl = TREE_CHAIN (fndecl);
-    }
-
-  return 0;
-}
-#endif
-
 /* Return non-zero if DECL is a dllexport'd object.  */
 
 tree current_class_type; /* FIXME */
@@ -173,23 +135,6 @@ arm_dllexport_p (decl)
   exp = lookup_attribute ("dllexport", DECL_MACHINE_ATTRIBUTES (decl));
   if (exp)
     return 1;
-
-#if 0 /* This was a hack to get vtable's exported or imported since only one
-	 copy of them is ever output.  Disabled pending better solution.  */
-  /* For C++, the vtables might have to be marked.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
-    {
-      if (TREE_PUBLIC (decl)
-	  && DECL_EXTERNAL (decl) == 0
-	  && (DECL_CONTEXT (decl)
-	      ? arm_check_vtable_importexport (DECL_CONTEXT (decl))
-	      : current_class_type
-	      ? arm_check_vtable_importexport (current_class_type)
-	      : 0)
-	  )
-	return 1;
-    }
-#endif
 
   return 0;
 }
@@ -212,23 +157,6 @@ arm_dllimport_p (decl)
   imp = lookup_attribute ("dllimport", DECL_MACHINE_ATTRIBUTES (decl));
   if (imp)
     return 1;
-
-#if 0 /* This was a hack to get vtable's exported or imported since only one
-	 copy of them is ever output.  Disabled pending better solution.  */
-  /* For C++, the vtables might have to be marked.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
-    {
-      if (TREE_PUBLIC (decl)
-	  && DECL_EXTERNAL (decl)
-	  && (DECL_CONTEXT (decl)
-	      ? arm_check_vtable_importexport (DECL_CONTEXT (decl))
-	      : current_class_type
-	      ? arm_check_vtable_importexport (current_class_type)
-	      : 0)
-	  )
-	return 1;
-    }
-#endif
 
   return 0;
 }
@@ -436,71 +364,4 @@ arm_pe_unique_section (decl, reloc)
   sprintf (string, "%s%s", prefix, name);
 
   DECL_SECTION_NAME (decl) = build_string (len, string);
-}
-
-/* This is to better conform to the ARM PCS.
-   Richard Earnshaw hasn't put this into FSF sources yet so it's here.  */
-
-int
-arm_pe_return_in_memory (type)
-     tree type;
-{
-  if (TREE_CODE (type) == RECORD_TYPE)
-    {
-      tree field;
-      int num_fields = 0;
-
-      /* For a record containing just a single element, we can be a little
-	 less restrictive.  */
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	{
-	  if (TREE_CODE (field) == FIELD_DECL && ! TREE_STATIC (field))
-	    {
-	      if ((AGGREGATE_TYPE_P (TREE_TYPE (field))
-		   && RETURN_IN_MEMORY (TREE_TYPE (field)))
-		  || FLOAT_TYPE_P (TREE_TYPE (field)))
-		return 1;
-	      num_fields++;
-	    }
-	}
-
-      if (num_fields == 1)
-	return 0;
-	    
-      /* For a struct, we can return in a register if every element was a
-	 bit-field and it all fits in one word.  */
-      for (field = TYPE_FIELDS (type); field;  field = TREE_CHAIN (field))
-	{
-	  if (TREE_CODE (field) == FIELD_DECL
-	      && ! TREE_STATIC (field)
-	      && (! DECL_BIT_FIELD_TYPE (field)
-		  || (host_integerp (DECL_SIZE (field), 1)
-		      && host_integerp (bit_position (field), 1)
-		      && 32 < (int_bit_position (field)
-			       + tree_low_cst (DECL_SIZE (field), 1)))))
-	    return 1;
-	}
-      return 0;
-    }
-  else if (TREE_CODE (type) == UNION_TYPE
-	   || TREE_CODE (type) == QUAL_UNION_TYPE)
-    {
-      tree field;
-
-      /* Unions can be returned in registers if every element is
-	 integral, or can be returned in an integer register.  */
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	{
-	  if (TREE_CODE (field) == FIELD_DECL
-	      && ! TREE_STATIC (field)
-	      && ((AGGREGATE_TYPE_P (TREE_TYPE (field))
-		   && RETURN_IN_MEMORY (TREE_TYPE (field)))
-		  || FLOAT_TYPE_P (TREE_TYPE (field))))
-	    return 1;
-	}
-      return 0;
-    }
-  /* XXX Not sure what should be done for other aggregates, so put them in
-     memory. */
-  return 1;
 }

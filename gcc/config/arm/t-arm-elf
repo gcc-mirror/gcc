@@ -1,6 +1,6 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
-LIB1ASMSRC    = arm/lib1funcs.asm
-LIB1ASMFUNCS  = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX
+LIB1ASMSRC = arm/lib1funcs.asm
+LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func _call_via_rX _interwork_call_via_rX
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
@@ -67,7 +67,16 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 # LIBGCC               = stmp-multilib
 # INSTALL_LIBGCC       = install-multilib
 
-# If EXTRA_MULTILIB_PARTS is not defined above then define EXTRA_PARTS here
-EXTRA_PARTS = crtbegin.o crtend.o
+MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 
-TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc
+# If EXTRA_MULTILIB_PARTS is not defined above then define EXTRA_PARTS here
+# EXTRA_PARTS = crtbegin.o crtend.o
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
+# Currently there is a bug somewhere in GCC's alias analysis
+# or scheduling code that is breaking _fpmul_parts in libgcc1.c.
+# Disabling function inlining is a workaround for this problem.
+TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc -fno-inline

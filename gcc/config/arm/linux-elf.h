@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 # define SUBTARGET_EXTRA_ASM_SPEC	\
 	" %{mapcs-26:-mapcs-26} %{!mapcs-26:-mapcs-32}"
 # define MULTILIB_DEFAULTS \
-	{ "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
+	{ "marm", "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
 # define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
 #else	/* default is APCS-26 */
 # define TARGET_DEFAULT (ARM_FLAG_MMU_TRAPS)
@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 # define SUBTARGET_EXTRA_ASM_SPEC	\
 	" %{mapcs-32:-mapcs-32} %{!mapcs-32:-mapcs-26}"
 # define MULTILIB_DEFAULTS \
-	{ "mlittle-endian", "mhard-float", "mapcs-26", "mno-thumb-interwork" }
+	{ "marm", "mlittle-endian", "mhard-float", "mapcs-26", "mno-thumb-interwork" }
 #endif
 
 /* This was defined in linux.h.  Define it here also. */
@@ -102,13 +102,6 @@ Boston, MA 02111-1307, USA.  */
    -X \
    %{mbig-endian:-EB}" \
    SUBTARGET_EXTRA_LINK_SPEC
-
-#define ASM_SPEC "%{mbig-endian:-EB} \
-   %{mcpu=*:-m%*} %{march=*:-m%*} \
-   %{mthumb-interwork:-mthumb-interwork} \
-   %{msoft-float:-mno-fpu} \
-   %{mapcs-float:-mfloat}" \
-   SUBTARGET_EXTRA_ASM_SPEC
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -165,6 +158,8 @@ do {				 				\
    that use additional sections (e.g. .tdesc) you should override this
    definition in the target-specific file which includes this file.  */
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS	CONST_SECTION_FUNCTION
+
+extern void text_section ();
 
 #define CONST_SECTION_ASM_OP	".section\t.rodata"
 
@@ -302,8 +297,8 @@ const_section ()							\
 #define FP_DEFAULT FP_SOFT3
 
 /* Call the function profiler with a given profile label.  */
-#undef  FUNCTION_PROFILER
-#define FUNCTION_PROFILER(STREAM, LABELNO)  				\
+#undef  ARM_FUNCTION_PROFILER
+#define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  			\
 {									\
   fprintf (STREAM, "\tbl\tmcount%s\n", NEED_PLT_RELOC ? "(PLT)" : "");	\
 }

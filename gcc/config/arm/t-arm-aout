@@ -1,6 +1,6 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
-LIB1ASMSRC    = arm/lib1funcs.asm
-LIB1ASMFUNCS  = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX
+LIB1ASMSRC = arm/lib1funcs.asm
+LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX  _interwork_call_via_rX
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
@@ -21,12 +21,10 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' >> dp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
-# Avoid building a duplicate set of libraries for the default endian-ness.
-MULTILIB_OPTIONS  = mlittle-endian/mbig-endian mhard-float
-MULTILIB_DIRNAMES = le be fpu
-MULTILIB_MATCHES  = 
+# MULTILIB_OPTIONS  = mhard-float/msoft-float mapcs-32/mapcs-26 mno-thumb-interwork/mthumb-interwork arm/thumb
+# MULTILIB_DIRNAMES = le be fpu soft 32bit 26bit normal interwork arm thumb
+# MULTILIB_MATCHES  = 
+# MULTILIB_EXCEPTIONS = *mapcs-26/*mthumb-interwork* *mpacs-26/*mthumb*
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-
