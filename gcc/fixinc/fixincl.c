@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #define  BAD_ADDR ((void*)-1)
 #endif
 
-#include <signal.h>
 #if ! defined( SIGCHLD ) && defined( SIGCLD )
 #  define SIGCHLD SIGCLD
 #endif

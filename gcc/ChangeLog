@@ -1,3 +1,8 @@
+2002-12-16  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixlib.h: add: #include <signal.h>
+	* fixinc/fixincl.c: remove: #include <signal.h>
+
 Mon Dec 16 17:20:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (EXTRA_CONSTRAINT_Z): New macro.
