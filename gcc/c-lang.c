@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static void c_init_options PARAMS ((void));
+static int c_init_options PARAMS ((void));
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
@@ -43,8 +43,8 @@ static void c_init_options PARAMS ((void));
 #define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_init_options
-#undef LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION c_common_decode_option
+#undef LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
@@ -157,10 +157,10 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-static void
+static int
 c_init_options ()
 {
-  c_common_init_options (clk_c);
+  return c_common_init_options (clk_c);
 }
 
 /* Used by c-lex.c, but only for objc.  */

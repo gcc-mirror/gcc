@@ -150,11 +150,9 @@ int interface_unknown;		/* whether or not we know this class
 
 
 /* Initialization before switch parsing.  */
-void
+int
 cxx_init_options ()
 {
-  c_common_init_options (clk_cplusplus);
-
   /* Default exceptions on.  */
   flag_exceptions = 1;
   /* By default wrap lines at 80 characters.  Is getenv ("COLUMNS")
@@ -163,6 +161,8 @@ cxx_init_options ()
   /* By default, emit location information once for every
      diagnostic message.  */
   diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+
+  return c_common_init_options (clk_cplusplus);
 }
 
 void

@@ -35,7 +35,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cppdefault.h"
 #include "c-incpath.h"
 #include "debug.h"		/* For debug_hooks.  */
-#include "c-options.h"
+#include "opts.h"
+#include "options.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -48,6 +49,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef TARGET_EBCDIC
 # define TARGET_EBCDIC 0
 #endif
+
+static const int lang_flags[] = {CL_C, CL_OBJC, CL_CXX, CL_OBJCXX};
 
 static int saved_lineno;
 
@@ -97,8 +100,7 @@ static size_t deferred_count, deferred_size;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
-static void missing_arg PARAMS ((size_t));
-static size_t find_opt PARAMS ((const char *, int));
+static void missing_arg PARAMS ((enum opt_code));
 static void set_Wimplicit PARAMS ((int));
 static void complain_wrong_lang PARAMS ((size_t));
 static void write_langs PARAMS ((char *, int));
@@ -114,36 +116,12 @@ static void add_prefixed_path PARAMS ((const char *, size_t));
 static void push_command_line_include PARAMS ((void));
 static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 static void finish_options PARAMS ((void));
-static int c_common_handle_option (enum opt_code, const char *arg, int on);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
 #endif
 
-#define CL_C			(1 << 0) /* Only C.  */
-#define CL_OBJC			(1 << 1) /* Only ObjC.  */
-#define CL_CXX			(1 << 2) /* Only C++.  */
-#define CL_OBJCXX		(1 << 3) /* Only ObjC++.  */
-#define CL_JOINED		(1 << 4) /* If takes joined argument.  */
-#define CL_SEPARATE		(1 << 5) /* If takes a separate argument.  */
-#define CL_REJECT_NEGATIVE	(1 << 6) /* Reject no- form.  */
-
-#include "c-options.c"
-
-/* If the user gives an option to a front end that doesn't support it,
-   an error is output, mentioning which front ends the option is valid
-   for.  If you don't want this, you must accept it for all front
-   ends, and test for the front end in the option handler.  See, for
-   example, the handling of -fcond-mismatch.
-
-   If you requested a joined or separate argument, it is stored in the
-   variable "arg", which is guaranteed to be non-NULL and to not be an
-   empty string.  It points to the argument either within the argv[]
-   vector or within one of that vector's strings, and so the text is
-   permanent and copies need not be made.  Be sure to add an error
-   message in missing_arg() if the default is not appropriate.  */
-
-/* Holds switches parsed by c_common_decode_option (), but whose
+/* Holds switches parsed by c_common_handle_option (), but whose
    handling is deferred to c_common_post_options ().  */
 static void defer_opt PARAMS ((enum opt_code, const char *));
 static struct deferred_opt
@@ -155,12 +133,11 @@ static struct deferred_opt
 /* Complain that switch OPT_INDEX expects an argument but none was
    provided.  */
 static void
-missing_arg (opt_index)
-     size_t opt_index;
+missing_arg (enum opt_code code)
 {
-  const char *opt_text = cl_options[opt_index].opt_text;
+  const char *opt_text = cl_options[code].opt_text;
 
-  switch (opt_index)
+  switch (code)
     {
     case OPT__output_pch_:
     case OPT_Wformat_:
@@ -214,95 +191,6 @@ missing_arg (opt_index)
     }
 }
 
-/* Perform a binary search to find which option the command-line INPUT
-   matches.  Returns its index in the option array, and N_OPTS on
-   failure.
-
-   Complications arise since some options can be suffixed with an
-   argument, and multiple complete matches can occur, e.g. -pedantic
-   and -pedantic-errors.  Also, some options are only accepted by some
-   languages.  If a switch matches for a different language and
-   doesn't match any alternatives for the true front end, the index of
-   the matched switch is returned anyway.  The caller should check for
-   this case.  */
-static size_t
-find_opt (input, lang_flag)
-     const char *input;
-     int lang_flag;
-{
-  size_t md, mn, mx;
-  size_t opt_len;
-  size_t result = N_OPTS;
-  int comp;
-
-  mn = 0;
-  mx = N_OPTS;
-
-  while (mx > mn)
-    {
-      md = (mn + mx) / 2;
-
-      opt_len = cl_options[md].opt_len;
-      comp = strncmp (input, cl_options[md].opt_text, opt_len);
-
-      if (comp < 0)
-	mx = md;
-      else if (comp > 0)
-	mn = md + 1;
-      else
-	{
-	  /* The switch matches.  It it an exact match?  */
-	  if (input[opt_len] == '\0')
-	    return md;
-	  else
-	    {
-	      mn = md + 1;
-
-	      /* If the switch takes no arguments this is not a proper
-		 match, so we continue the search (e.g. input="stdc++"
-		 match was "stdc").  */
-	      if (!(cl_options[md].flags & CL_JOINED))
-		continue;
-
-	      /* Is this switch valid for this front end?  */
-	      if (!(cl_options[md].flags & lang_flag))
-		{
-		  /* If subsequently we don't find a better match,
-		     return this and let the caller report it as a bad
-		     match.  */
-		  result = md;
-		  continue;
-		}
-
-	      /* Two scenarios remain: we have the switch's argument,
-		 or we match a longer option.  This can happen with
-		 -iwithprefix and -withprefixbefore.  The longest
-		 possible option match succeeds.
-
-		 Scan forwards, and return an exact match.  Otherwise
-		 return the longest valid option-accepting match (mx).
-		 This loops at most twice with current options.  */
-	      mx = md;
-	      for (md = md + 1; md < (size_t) N_OPTS; md++)
-		{
-		  opt_len = cl_options[md].opt_len;
-		  if (strncmp (input, cl_options[md].opt_text, opt_len))
-		    break;
-		  if (input[opt_len] == '\0')
-		    return md;
-		  if (cl_options[md].flags & lang_flag
-		      && cl_options[md].flags & CL_JOINED)
-		    mx = md;
-		}
-
-	      return mx;
-	    }
-	}
-    }
-
-  return result;
-}
-
 /* Defer option CODE with argument ARG.  */
 static void
 defer_opt (code, arg)
@@ -328,7 +216,7 @@ defer_opt (code, arg)
 }
 
 /* Common initialization before parsing options.  */
-void
+int
 c_common_init_options (lang)
      enum c_language_kind lang;
 {
@@ -342,134 +230,50 @@ c_common_init_options (lang)
 
   flag_const_strings = (lang == clk_cplusplus);
   warn_pointer_arith = (lang == clk_cplusplus);
+
+  return lang_flags[(c_language << 1) + flag_objc];
 }
 
-/* Handle one command-line option in (argc, argv).
-   Can be called multiple times, to handle multiple sets of options.
-   Returns number of strings consumed.  */
-int
-c_common_decode_option (argc, argv)
-     int argc;
-     char **argv;
-{
-  static const int lang_flags[] = {CL_C, CL_OBJC, CL_CXX, CL_OBJCXX};
-  size_t opt_index;
-  const char *opt, *arg = 0;
-  char *dup = 0;
-  bool on = true;
-  int result = 0, temp, lang_flag;
-  const struct cl_option *option;
-
-  opt = argv[0];
-
-  /* Interpret "-" or a non-switch as a file name.  */
-  if (opt[0] != '-' || opt[1] == '\0')
-    {
-      if (!in_fname)
-	in_fname = opt;
-      else if (!out_fname)
-	out_fname = opt;
-      else
-	{
-	  error ("too many filenames given.  Type %s --help for usage",
-		 progname);
-	  return argc;
-	}
-
-      return 1;
-    }
-
-  /* Drop the "no-" from negative switches.  */
-  if ((opt[1] == 'W' || opt[1] == 'f')
-      && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
-    {
-      size_t len = strlen (opt) - 3;
-
-      dup = xmalloc (len + 1);
-      dup[0] = '-';
-      dup[1] = opt[1];
-      memcpy (dup + 2, opt + 5, len - 2 + 1);
-      opt = dup;
-      on = false;
-    }
-
-  /* Skip over '-'.  */
-  lang_flag = lang_flags[(c_language << 1) + flag_objc];
-  opt_index = find_opt (opt + 1, lang_flag);
-  if (opt_index == N_OPTS)
-    goto done;
-
-  option = &cl_options[opt_index];
-
-  /* Reject negative form of switches that don't take negatives.  */
-  if (!on && (option->flags & CL_REJECT_NEGATIVE))
-    goto done;
-
-  /* We've recognised this switch.  */
-  result = 1;
-
-  /* Sort out any argument the switch takes.  */
-  if (option->flags & (CL_JOINED | CL_SEPARATE))
-    {
-      if (option->flags & CL_JOINED)
-	{
-	  /* Have arg point to the original switch.  This is because
-	     some code, such as disable_builtin_function, expects its
-	     argument to be persistent until the program exits.  */
-	  arg = argv[0] + cl_options[opt_index].opt_len + 1;
-	  if (!on)
-	    arg += strlen ("no-");
-	}
-
-      /* If we don't have an argument, and CL_SEPARATE, try the next
-	 argument in the vector.  */
-      if (!arg || (*arg == '\0' && option->flags & CL_SEPARATE))
-	{
-	  arg = argv[1];
-	  result = 2;
-	}
-
-      if (!arg || *arg == '\0')
-	{
-	  missing_arg (opt_index);
-	  result = argc;
-	  goto done;
-	}
-    }
-
-  /* Complain about the wrong language after we've swallowed any
-     necessary extra argument.  Eventually make this a hard error
-     after the call to find_opt, and return argc.  */
-  if (!(cl_options[opt_index].flags & lang_flag))
-    {
-      complain_wrong_lang (opt_index);
-      goto done;
-    }
-
-  temp = c_common_handle_option (opt_index, arg, on);
-  if (temp <= 0)
-    result = temp;
-
- done:
-  if (dup)
-    free (dup);
-  return result;
-}
-
-/* Handle switch OPT_INDEX with argument ARG.  ON is true, unless no-
+/* Handle switch SCODE with argument ARG.  ON is true, unless no-
    form of an -f or -W option was given.  Returns 0 if the switch was
    invalid, a negative number to prevent language-independent
    processing in toplev.c (a hack necessary for the short-term).  */
-static int
-c_common_handle_option (enum opt_code code, const char *arg, int on)
+int
+c_common_handle_option (size_t scode, const char *arg, int on)
 {
-  const struct cl_option *option = &cl_options[code];
-  int result = 1;
+  const struct cl_option *option = &cl_options[scode];
+  enum opt_code code = (enum opt_code) scode;
+  int result = 1, lang_mask;
+
+  if (code == N_OPTS)
+    {
+      if (!in_fname)
+	in_fname = arg;
+      else if (!out_fname)
+	out_fname = arg;
+      else
+	  error ("too many filenames given.  Type %s --help for usage",
+		 progname);
+      return 1;
+    }
+
+  lang_mask = lang_flags[(c_language << 1) + flag_objc];
+  if (!(option->flags & lang_mask))
+    {
+      complain_wrong_lang (code);
+      return 1;
+    }
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+    {
+      missing_arg (code);
+      return 1;
+    }
 
   switch (code)
     {
-    case N_OPTS: /* Shut GCC up.  */
-      break;
+    default:
+      return 0;
 
     case OPT__help:
       print_help ();
@@ -1740,6 +1544,7 @@ complain_wrong_lang (opt_index)
 
   write_langs (ok_langs, ok_flags);
   write_langs (bad_langs, ~ok_flags);
+  /* Eventually this should become a hard error.  */
   warning ("\"-%s\" is valid for %s but not for %s",
 	   cl_options[opt_index].opt_text, ok_langs, bad_langs);
 }

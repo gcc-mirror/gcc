@@ -812,7 +812,8 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  haifa-sched.o hashtable.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
- loop.o mbchar.o optabs.o params.o predict.o print-rtl.o print-tree.o	   \
+ loop.o mbchar.o optabs.o options.o opts.o params.o predict.o		   \
+ print-rtl.o print-tree.o						   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -1316,15 +1317,14 @@ c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
         c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h \
-	intl.h debug.h $(C_COMMON_H) c-options.h c-options.c
+	intl.h debug.h $(C_COMMON_H) opts.h options.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
-c-options.c: c.opt $(srcdir)/opts.sh
-	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh c-options.c c-options.h $(srcdir)/c.opt
+options.c: c.opt $(srcdir)/opts.sh options.h
 
-c-options.h: c-options.c
-	@true
+options.h: c.opt $(srcdir)/opts.sh
+	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh options.c options.h $(srcdir)/c.opt
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_COMMON_H) c-pragma.h flags.h toplev.h langhooks.h \
@@ -1404,12 +1404,12 @@ s-gencheck : Makefile
 	$(SHELL) $(srcdir)/move-if-change tmp-gencheck.h gencheck.h
 	$(STAMP) s-gencheck
 
-options.h : s-options ; @true
+options_.h : s-options ; @true
 s-options : Makefile
 	lof="$(lang_options_files)"; for f in $$lof; do \
 	    echo "#include \"$$f\""; \
-	done | sed 's|$(srcdir)/||' > tmp-options.h
-	$(SHELL) $(srcdir)/move-if-change tmp-options.h options.h
+	done | sed 's|$(srcdir)/||' > tmp-options_.h
+	$(SHELL) $(srcdir)/move-if-change tmp-options_.h options_.h
 	$(STAMP) s-options
 
 specs.h : s-specs ; @true
@@ -1479,13 +1479,15 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H
 diagnostic.o : diagnostic.c diagnostic.h real.h diagnostic.def \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(TM_P_H) flags.h $(GGC_H) \
    input.h toplev.h intl.h langhooks.h $(LANGHOOKS_DEF_H)
+opts.o : opts.c opts.h options.h $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TREE_H) $(TM_H) $(LANGHOOKS_H)
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    function.h flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h diagnostic.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
    ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
-   langhooks.h insn-flags.h options.h cfglayout.h real.h cfgloop.h \
+   langhooks.h insn-flags.h options_.h cfglayout.h real.h cfgloop.h \
    hosthooks.h $(LANGHOOKS_DEF_H) cgraph.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
@@ -2785,7 +2787,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f xlimits.h
 # Delete other built files.
 	-rm -f xsys-protos.hT
-	-rm -f specs.h options.h gencheck.h c-options.c c-options.h
+	-rm -f specs.h options_.h gencheck.h options.c options.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*

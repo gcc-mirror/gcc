@@ -1,3 +1,39 @@
+2003-06-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (OJBS, c-opts.o): Update.
+	(c-options.c, c-options.h): Rename options.h and options.c.
+	(options.h): Rename options_.h.
+	(opts.o): New.
+	* c-common.h (c_common_handle_option): Replace c_common_decode_option.
+	(c_common_init_options): Update prototype.
+	* c-lang.c (c_init_options): Update prototype.
+	(LANG_HOOKS_HANDLE_OPTION): Override.
+	(LANG_HOOKS_DECODE_OPTION): Drop.
+	* c-opts.c: Include opts.h and options.h instead of c-options.h
+	and c-options.c.
+	(lang_flags): Move to file scope.
+	(find_opt, c_common_decode_option): Remove.
+	(CL_C, CL_OBJC, CL_CXX, CL_OBJCXX, CL_JOINED, CL_SEPARATE,
+	CL_REJECT_NEGATIVE): Move to opts.h.
+	(missing_arg): Update prototype.
+	(c_common_init_options): Update for new prototype.
+	(c_common_handle_options): Filenames are passed as N_OPTS.
+	* hooks.c (hook_int_void_0): New.
+	* hooks.h (hook_int_void_0): New.
+	* langhooks-def.h (LANG_HOOKS_INIT_OPTIONS): New default.
+	(LANG_HOOKS_HANDLE_OPTION): Default to NULL for now.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (init_options): Update.
+	(handle_option): New.
+	* opts.c, opts.h: New files.
+	* opts.sh: Update c file to include opts.h and options.h.
+	* toplev.c: Include opts.h; change options.h to options_.h.
+	(parse_options_and_default_flags): Get lang_mask, use
+	handle_option for language-specific handling.
+	* objc/objc-lang.c (LANG_HOOKS_DECODE_OPTON): Drop.
+	(LANG_HOOKS_HANDLE_OPTION): Override.
+	(objc_init_options): Update.
+
 2003-06-07  Magnus Kreth <magnus.kreth@gmx.de>
 	    Thibaud Gaillard <thibaud.gaillard@nto.atmel.com>
 

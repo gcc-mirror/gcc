@@ -14149,7 +14149,7 @@ insert_block (tree block)
 static bool ffe_init PARAMS ((void));
 static void ffe_finish PARAMS ((void));
 static bool ffe_post_options PARAMS ((const char **));
-static void ffe_init_options PARAMS ((void));
+static int ffe_init_options PARAMS ((void));
 static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 
 struct language_function GTY(())
@@ -14289,7 +14289,7 @@ ffe_finish ()
   fclose (finput);
 }
 
-static void
+static int
 ffe_init_options ()
 {
   /* Set default options for Fortran.  */
@@ -14299,6 +14299,8 @@ ffe_init_options ()
   flag_merge_constants = 2;
   flag_errno_math = 0;
   flag_complex_divide_method = 1;
+
+  return 0;
 }
 
 static bool

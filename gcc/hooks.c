@@ -104,6 +104,12 @@ hook_int_rtx_0 (a)
   return 0;
 }
 
+int
+hook_int_void_0 (void)
+{
+  return 0;
+}
+
 void
 hook_void_tree (a)
      tree a ATTRIBUTE_UNUSED;

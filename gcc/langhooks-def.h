@@ -92,8 +92,9 @@ void write_global_declarations PARAMS ((void));
 #define LANG_HOOKS_FINISH		lhd_do_nothing
 #define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
-#define LANG_HOOKS_INIT_OPTIONS		lhd_do_nothing
+#define LANG_HOOKS_INIT_OPTIONS		hook_int_void_0
 #define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
+#define LANG_HOOKS_HANDLE_OPTION	NULL
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
@@ -243,6 +244,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_TREE_SIZE, \
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_DECODE_OPTION, \
+  LANG_HOOKS_HANDLE_OPTION, \
   LANG_HOOKS_POST_OPTIONS, \
   LANG_HOOKS_INIT, \
   LANG_HOOKS_FINISH, \

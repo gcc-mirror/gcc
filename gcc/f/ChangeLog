@@ -1,3 +1,7 @@
+Sat Jun  7 12:10:41 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* com.c (ffe_init_options): Update.
+
 Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
