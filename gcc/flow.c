@@ -2408,7 +2408,7 @@ mark_used_regs (needed, live, x, final, insn)
 		if (regno < FIRST_PSEUDO_REGISTER
 		    && HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
 		  {
-		    int n = HARD_REGNO_NREGS (regno, GET_CODE (x));
+		    int n = HARD_REGNO_NREGS (regno, GET_MODE (x));
 		    while (--n >= 0)
 		      some_needed |= dead_or_set_regno_p (insn, regno + n);
 		  }
