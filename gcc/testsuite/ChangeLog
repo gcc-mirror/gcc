@@ -1,3 +1,7 @@
+Tue Sep 28 13:19:15 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/decl6.C: New test.
+
 Tue Sep 28 01:19:09 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/va-arg-10.c: New test.
