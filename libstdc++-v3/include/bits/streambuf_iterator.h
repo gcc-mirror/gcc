@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -28,8 +28,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// XXX Should specialize copy, find algorithms for streambuf iterators.
-
 /** @file streambuf_iterator.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
@@ -39,6 +37,10 @@
 #define _CPP_BITS_STREAMBUF_ITERATOR_H 1
 
 #pragma GCC system_header
+
+#include <streambuf>
+
+// NB: Should specialize copy, find algorithms for streambuf iterators.
 
 namespace std
 {
@@ -166,7 +168,6 @@ namespace std
       bool 		_M_failed;
 
     public:
-      inline 
       ostreambuf_iterator(ostream_type& __s) throw ()
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
       
@@ -174,7 +175,13 @@ namespace std
       : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
       ostreambuf_iterator& 
-      operator=(_CharT __c);
+      operator=(_CharT __c)
+      {
+	if (!_M_failed && 
+	    _Traits::eq_int_type(_M_sbuf->sputc(__c), _Traits::eof()))
+	  _M_failed = true;
+	return *this;
+      }
 
       ostreambuf_iterator& 
       operator*() throw()
@@ -191,16 +198,13 @@ namespace std
       bool 
       failed() const throw()
       { return _M_failed; }
-    };
 
-  template<typename _CharT, typename _Traits>
-    inline ostreambuf_iterator<_CharT, _Traits>&
-    ostreambuf_iterator<_CharT, _Traits>::operator=(_CharT __c)
-    {
-      if (!_M_failed && 
-          _Traits::eq_int_type(_M_sbuf->sputc(__c), _Traits::eof()))
-	_M_failed = true;
-      return *this;
-    }
+      ostreambuf_iterator& 
+      _M_put(const _CharT* __ws, streamsize __len)
+      {
+	this->_M_sbuf->sputn(__ws, __len);
+	return *this;
+      }
+    };
 } // namespace std
 #endif

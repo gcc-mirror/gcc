@@ -103,7 +103,8 @@ namespace std
     __convert_to_v(const char*, long double&, ios_base::iostate&, 
 		   const __c_locale&, int);
 
-
+  // NB: __pad is a struct, rather than a function, so it can be
+  // partially-specialized.
   template<typename _CharT, typename _Traits>
     struct __pad
     {
@@ -113,16 +114,52 @@ namespace std
 	     const streamsize __oldlen, const bool __num);
     };
 
+  // Used by both numeric and monetary facets.
+  // Check to make sure that the __grouping_tmp string constructed in
+  // money_get or num_get matches the canonical grouping for a given
+  // locale.
+  // __grouping_tmp is parsed L to R
+  // 1,222,444 == __grouping_tmp of "\1\3\3"
+  // __grouping is parsed R to L
+  // 1,222,444 == __grouping of "\3" == "\3\3\3"
   template<typename _CharT>
     bool
     __verify_grouping(const basic_string<_CharT>& __grouping, 
 		      basic_string<_CharT>& __grouping_tmp);
 
+  // Used by both numeric and monetary facets.
+  // Inserts "group separator" characters into an array of characters.
+  // It's recursive, one iteration per group.  It moves the characters
+  // in the buffer this way: "xxxx12345" -> "12,345xxx".  Call this
+  // only with __gbeg != __gend.
   template<typename _CharT>
     _CharT*
     __add_grouping(_CharT* __s, _CharT __sep,  
 		   const char* __gbeg, const char* __gend, 
 		   const _CharT* __first, const _CharT* __last);
+
+  // This template permits specializing facet output code for
+  // ostreambuf_iterator.  For ostreambuf_iterator, sputn is
+  // significantly more efficient than incrementing iterators.
+  template<typename _CharT>
+    inline
+    ostreambuf_iterator<_CharT>
+    __write(ostreambuf_iterator<_CharT> __s, const _CharT* __ws, int __len)
+    {
+      __s._M_put(__ws, __len);
+      return __s;
+    }
+
+  // This is the unspecialized form of the template.
+  template<typename _CharT, typename _OutIter>
+    inline
+    _OutIter
+    __write(_OutIter __s, const _CharT* __ws, int __len)
+    {
+      for (int __j = 0; __j < __len; __j++, ++__s)
+	*__s = __ws[__j];
+      return __s;
+    }
 
   // 22.2.1.1  Template class ctype
   // Include host and configuration specific ctype enums for ctype_base.
