@@ -620,7 +620,8 @@ in the following sections.
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
 -mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
--m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch  -mfused-madd  -mno-fused-madd}
+-m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
+-mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -916,7 +917,7 @@ no trouble.
 @item -combine
 @opindex combine
 If you are compiling multiple source files, this option tells the driver
-to pass all the source files to the compiler at once (for those 
+to pass all the source files to the compiler at once (for those
 languages for which the compiler can handle this).  This will allow
 intermodule analysis (IMA) to be performed by the compiler.  Currently the only
 language for which this is supported is C.  If you pass source files for
@@ -926,7 +927,7 @@ source files appropriate for it.  For those languages that do not support
 IMA this option will be ignored, and the compiler will be invoked once for
 each source file in that language.  If you use this option in conjunction
 with -save-temps, the compiler will generate multiple pre-processed files
-(one for each source file), but only one (combined) .o or .s file. 
+(one for each source file), but only one (combined) .o or .s file.
 
 @item --help
 @opindex help
@@ -3333,7 +3334,7 @@ Dump after loop optimization passes, to @file{@var{file}.09.loop} and
 @file{@var{file}.16.loop2}.
 @item m
 @opindex dm
-Dump after modulo scheduling, to @file{@var{file}.23.sms}. 
+Dump after modulo scheduling, to @file{@var{file}.23.sms}.
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganization pass, to
@@ -4374,21 +4375,21 @@ references with scalars to prevent committing structures to memory too
 early.  This flag is enabled by default at -O and higher.
 
 @item -ftree-copyrename
-Perform copy renaming on trees.  This pass attempts to rename compiler 
-temporaries to other variables at copy locations, usually resulting in 
-variable names which more closely resemble the original variables.  This flag 
+Perform copy renaming on trees.  This pass attempts to rename compiler
+temporaries to other variables at copy locations, usually resulting in
+variable names which more closely resemble the original variables.  This flag
 is enabled by default at -O and higher.
 
 @item -ftree-ter
 Perform temporary expression replacement during the SSA->normal phase.  Single
-use/single def temporaries are replaced at their use location with their 
-defining expression.  This results in non-GIMPLE code, but gives the expanders 
+use/single def temporaries are replaced at their use location with their
+defining expression.  This results in non-GIMPLE code, but gives the expanders
 much more complex trees to work on resulting in better RTL generation.  This is
 enabled by default at -O and higher.
 
 @item -ftree-lrs
-Perform live range splitting during the SSA->normal phase.  Distinct live 
-ranges of a variable are split into unique variables, allowing for better 
+Perform live range splitting during the SSA->normal phase.  Distinct live
+ranges of a variable are split into unique variables, allowing for better
 optimization later.  This is enabled by default at -O and higher.
 
 @item -ftracer
@@ -4647,7 +4648,7 @@ attribute @code{used} will prevent this behavior.
 @end itemize
 
 As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
-but this scheme may not be supported by future releases of GCC. 
+but this scheme may not be supported by future releases of GCC.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -10477,6 +10478,14 @@ Tune to @var{cpu-type} everything applicable about the generated code,
 except for the ABI and the set of available instructions.
 The list of @var{cpu-type} values is the same as for @option{-march}.
 The default is the value used for @option{-march}.
+
+@item -mtpf-trace
+@itemx -mno-tpf-trace
+@opindex mtpf-trace
+@opindex mno-tpf-trace
+Generate code that adds (does not add) in TPF OS specific branches to trace
+routines in the operating system.  This option is off by default, even
+when compiling for the TPF OS.
 
 @item -mfused-madd
 @itemx -mno-fused-madd
