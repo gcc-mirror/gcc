@@ -88,6 +88,9 @@ extern int target_flags;
 #define TARGET_H8300H	(target_flags & 4096)
 #define TARGET_H8300S	(target_flags & 1)
 
+/* mac register and relevant instructions are available.  */
+#define TARGET_MAC    (target_flags & 2)
+
 /* Align all values on the H8/300H the same way as the H8/300.  Specifically,
    32 bit and larger values are aligned on 16 bit boundaries.
    This is all the hardware requires, but the default is 32 bits for the 300H.
@@ -104,6 +107,8 @@ extern int target_flags;
 #define TARGET_SWITCHES  \
   { {"s",		1,     N_("Generate H8/S code")},		\
     {"no-s",		-1,    N_("Do not generate H8/S code")},	\
+    {"s2600",		2,     N_("Generate H8/S2600 code")},           \
+    {"no-s2600",	-2,    N_("Do not generate H8/S2600 code")},    \
     {"int32",		8,     N_("Make integers 32 bits wide")},	\
     {"addresses",	64,    NULL},					\
     {"quickcall",	128,						\
@@ -280,10 +285,10 @@ extern int target_flags;
 #define REG_ALLOC_ORDER \
   { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9}
 
-#define CONDITIONAL_REGISTER_USAGE	\
-{					\
-  if (!TARGET_H8300S)			\
-    fixed_regs[8] = call_used_regs[8] = 1;\
+#define CONDITIONAL_REGISTER_USAGE		\
+{						\
+  if (!TARGET_MAC)				\
+    fixed_regs[8] = call_used_regs[8] = 1;	\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO

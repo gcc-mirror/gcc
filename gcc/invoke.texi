@@ -6681,6 +6681,9 @@ Generate code for the H8/300H.
 @item -ms
 Generate code for the H8/S.
 
+@item -ms2600
+Generate code for the H8/S2600.  This switch must be used with -ms.
+
 @item -mint32
 Make @code{int} data 32 bits by default.
 

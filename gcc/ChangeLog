@@ -1,3 +1,15 @@
+2000-09-14  Kazu Hirata  <kazu@hxi.com>
+
+	* invoke.texi (H8/300 Options): Add -ms2600.
+	* config/h8300.c (h8300_init_once): Output an error when -ms2600
+	is used without -ms.
+	* config/h8300.h (TARGET_MAC): New.
+	(TARGET_SWITCHES): Add -ms2600 and -mno-s2600.
+	(CONDITIONA_REGISTER_USAGE): Disable the mac register on any
+	machine other than H8/S2600.
+	* config/h8300.md: Accept mac instructions on the H8/S2600 instead
+	of the H8/S2000.
+
 2000-09-14  Alexandre Oliva  <aoliva@redhat.com>, Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* reload.c (find_reloads_address_1): Generate reloads for auto_inc

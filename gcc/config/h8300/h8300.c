@@ -107,6 +107,9 @@ h8300_init_once ()
   h8_push_op = h8_push_ops[cpu_type];
   h8_pop_op = h8_pop_ops[cpu_type];
   h8_mov_op = h8_mov_ops[cpu_type];
+
+  if (!TARGET_H8300S && TARGET_MAC)
+    fatal ("-ms2600 is used without -ms.");
 }
 
 const char *
