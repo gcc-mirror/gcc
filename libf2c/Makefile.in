@@ -42,7 +42,7 @@ glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 top_builddir = .
 
 libdir = $(exec_prefix)/lib
-libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 #
 # Versions should start at 0:0:0 - See libtool manual.
 VERSION_MAJOR=0

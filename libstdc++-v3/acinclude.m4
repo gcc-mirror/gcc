@@ -762,11 +762,12 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
   if test $version_specific_libs = yes; then
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
-    # is selected.
+    # is selected.  FIXME: these variables are misnamed, there are
+    # no executables installed in _toolexecdir or _toolexeclibdir.
     if test x"$gxx_include_dir" = x"no"; then
-      gxx_include_dir='${libdir}/gcc-lib/${host_alias}/'$gcc_version/include/c++
+      gxx_include_dir='${libdir}/gcc/${host_alias}/'$gcc_version/include/c++
     fi
-    glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+    glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
     glibcxx_toolexeclibdir='${toolexecdir}/'$gcc_version'$(MULTISUBDIR)'
   fi
 
@@ -778,7 +779,7 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
       glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
       glibcxx_toolexeclibdir='${toolexecdir}/lib'
     else
-      glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+      glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
       glibcxx_toolexeclibdir='${libdir}'
     fi
     multi_os_directory=`$CXX -print-multi-os-directory`

@@ -194,9 +194,10 @@ AC_SUBST(gcc_version_trigger)
 if test $version_specific_libs = yes; then
   # Need the gcc compiler version to know where to install libraries
   # and header files if --enable-version-specific-runtime-libs option
-  # is selected.
+  # is selected.  FIXME: "toolexecdir" is a misnomer, there are no
+  # executables installed there.
   changequote(,)dnl
-  glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  glibcpp_toolexecdir='$(libdir)/gcc/$(target_alias)'
   glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
   changequote([,])dnl
 fi
@@ -209,7 +210,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
     glibcpp_toolexecdir='$(exec_prefix)/$(target_alias)'
     glibcpp_toolexeclibdir='$(toolexecdir)/lib'
   else
-    glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+    glibcpp_toolexecdir='$(libdir)/gcc/$(target_alias)'
     glibcpp_toolexeclibdir='$(libdir)'
   fi
   multi_os_directory=`$CC -print-multi-os-directory`
