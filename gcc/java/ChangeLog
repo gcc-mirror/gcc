@@ -235,6 +235,17 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* verify.c (CHECK_PC_IN_RANGE): Cast result of stmt-expr to void.
 
+2000-10-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (OP1): Update `last_bc'.
+	(struct jcf_block): Fixed indentation and typo in comments.  New
+	field `last_bc'.
+	(generate_bytecode_insns): Insert `nop' if `jsr' immediately
+	follows `monitorenter'.
+	* parse.y (patch_synchronized_statement): New local `tmp'. Call
+	`patch_string'.
+	Fixes gcj/232.
+
 2000-10-16  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Recognize -MF and -MT.
@@ -297,6 +308,68 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* decl.c (init_decl_processing): Call init_class_processing before
 	anything else.
+
+2000-10-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (check_init): Fixed leading comment. Use
+	LOCAL_FINAL_P.
+	* decl.c (push_jvm_slot): Use MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC.
+	(give_name_to_locals): Likewise.
+	(lang_mark_tree): Handle FIELD_DECL. Register `am' and `wfl'
+	fields in lang_decl_var.
+	* java-tree.h (DECL_FUNCTION_SYNTHETIC_CTOR,
+	DECL_FUNCTION_ALL_FINAL_INITIALIZED): New macros.
+	(FIELD_INNER_ACCESS): Removed ugly cast, macro rewritten.
+	(FIELD_INNER_ACCESS_P, DECL_FIELD_FINAL_IUD, DECL_FIELD_FINAL_LIIC,
+	DECL_FIELD_FINAL_IERR, DECL_FIELD_FINAL_WFL): New macros.
+	(LOCAL_FINAL): Rewritten.
+	(LOCAL_FINAL_P, FINAL_VARIABLE_P, CLASS_FINAL_VARIABLE_P
+	MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC): New macros.
+	(struct lang_decl): Fixed comments. Added `synthetic_ctor' and
+	`init_final' fields.
+	(struct lang_decl_var): Fixed leading comment. Added `am', `wfl',
+	`final_uid', `final_liic', `final_ierr' and `local_final' fields.
+	(TYPE_HAS_FINAL_VARIABLE): New macro.
+	(struct lang_type): Added `afv' field.
+	* parse.y (check_static_final_variable_assignment_flag): New function.
+	(reset_static_final_variable_assignment_flag): Likewise.
+	(check_final_variable_local_assignment_flag): Likewise.
+	(reset_final_variable_local_assignment_flag): Likewise.
+	(check_final_variable_indirect_assignment): Likewise.
+	(check_final_variable_global_assignment_flag): Likewise.
+	(add_inner_class_fields): Use LOCAL_FINAL_P.
+	(register_fields): Handle local finals and final variables.
+	(craft_constructor): Set DECL_FUNCTION_SYNTHETIC_CTOR.
+	(declare_local_variables): Call MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC.
+	(source_start_java_method): Call MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC
+	on local finals.
+	(java_complete_expand_methods): Loop to set
+	TYPE_HAS_FINAL_VARIABLE. Call
+	`reset_final_variable_local_assignment_flag' and 
+	`check_final_variable_local_assignment_flag' accordingly before
+	and after constructor expansion. Call
+	`reset_static_final_variable_assignment_flag'
+	before expanding <clinit> and after call 
+	`check_static_final_variable_assignment_flag' if the
+	current_class isn't an interface. After all methods have been
+	expanded, call `check_final_variable_global_assignment_flag' and
+	`check_static_final_variable_assignment_flag' if the current class
+	is an interface. 
+	(maybe_yank_clinit): Fixed typo in comment.
+	(build_outer_field_access_methods): Removed old sanity check. Use
+	FIELD_INNER_ACCESS_P. Call MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC.
+	Don't create access methods for finals.
+	(resolve_field_access): Use `CLASS_FINAL_VARIABLE_P'.
+	(java_complete_tree): Likewise. Reset DECL_FIELD_FINAL_IUD if
+	existing DECL_INIT has been processed. 
+	(java_complete_lhs): Likewise.
+	(check_final_assignment): Filter input on `lvalue''s TREE_CODE.
+	Test for COMPONENT_REF to get to the FIELD_DECL. Implemented new
+	logic.
+	(patch_assignment): Use LOCAL_FINAL_P.
+	(fold_constant_for_init): Reset DECL_FIELD_FINAL_IUD if
+	DECL_INITIAL is nullified.
+	Fixes gcj/163.
 
 2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -402,6 +475,20 @@ Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 	* lex.c (java_new_lexer): Initialize out_first and out_last
 	fields.
 	* lex.h (java_lexer): Added out_buffer, out_first, out_last.
+
+2000-10-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (pop_current_osb): New function.
+	(array_type:): Use `dims:', changed actions
+	accordingly. Suggested by Anthony Green.
+	(array_creation_expression:): Used pop_current_osb.
+	(cast_expression:): Likewise.
+	(search_applicable_method_list): Fixed indentation.
+
+2000-10-08  Anthony Green  <green@redhat.com>
+
+	* parse.y (array_type_literal): Remove production.
+	(type_literals): Refer to array_type, not array_type_literal.
 
 2000-10-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 

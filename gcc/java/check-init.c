@@ -356,8 +356,7 @@ done_alternative (after, current)
   start_current_locals = current.save_start_current_locals; \
 }
 
-/* Check for (un)initialized local variables in EXP.
-*/
+/* Check for (un)initialized local variables in EXP.  */
 
 static void
 check_init (exp, before)
@@ -387,14 +386,14 @@ check_init (exp, before)
       /* We're interested in variable declaration and parameter
          declaration when they're declared with the `final' modifier. */
       if ((TREE_CODE (tmp) == VAR_DECL && ! FIELD_STATIC (tmp))
-	  || (TREE_CODE (tmp) == PARM_DECL && LOCAL_FINAL (tmp)))
+	  || (TREE_CODE (tmp) == PARM_DECL && LOCAL_FINAL_P (tmp)))
 	{
 	  int index;
 	  check_init (TREE_OPERAND (exp, 1), before);
 	  index = DECL_BIT_INDEX (tmp);
 	  /* A final local already assigned or a final parameter
              assigned must be reported as errors */
-	  if (LOCAL_FINAL (tmp) 
+	  if (LOCAL_FINAL_P (tmp)
 	      && (index == -1 || TREE_CODE (tmp) == PARM_DECL))
 	    parse_error_context (wfl, "Can't assign here a value to the `final' variable `%s'", IDENTIFIER_POINTER (DECL_NAME (tmp)));
 
