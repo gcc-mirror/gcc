@@ -122,6 +122,9 @@ Boston, MA 02111-1307, USA.  */
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
 
+/* Likewise, the assembler doesn't handle DWARF2 directives.  */
+#define DWARF2_UNWIND_INFO 0
+
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 5.x"
 
