@@ -755,7 +755,6 @@ extern void		sbss_section PARAMS ((void));
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
 
-#define BRANCH_LIKELY_P()	GENERATE_BRANCHLIKELY
 #define HAVE_SQRT_P()		(!ISA_MIPS1)
 
 /* True if the ABI can only work with 64-bit integer registers.  We
