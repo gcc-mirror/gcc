@@ -1,3 +1,7 @@
+2005-02-09  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/ext/array_allocator/2.cc: XFAIL for powerpc*-*-linux*.
+
 2005-02-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/linker-map.gnu (GLIBCXX_3.4): Add _ZNSdC* and _ZNSdD*.
