@@ -8,15 +8,6 @@ Sun Nov  2 23:30:31 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 	14 char length.
 	* configure: Rebuild.
 
-Sun Nov  2 23:21:36 1997  Richard Henderson  <rth@cygnus.com>
-			  Jim Wilson  <wilson@cygnus.com>
-
-	* combine.c (try_combine): Don't elim_i1 when it is used in i2src.
-
-        * combine.c (try_combine): When setting elim_i2, check whether newi2pat
-        sets i2dest.  When calling distribute_notes for i3dest_killed, pass
-        elim_i2 and elim_i1.
-
 Sun Nov  2 22:53:16 1997  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (load_multiple_sequence): Support SUBREG of MEM.
