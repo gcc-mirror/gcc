@@ -1,3 +1,8 @@
+1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* Makefile.in (MYCXXFLAGS): Include $(CXXFLAGS).
+	(MYCFLAGS): Include $(CFLAGS).
+	
 1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* std/bastring.h (basic_string::basic_string): Rename parameters
