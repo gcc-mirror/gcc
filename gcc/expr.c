@@ -2806,7 +2806,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       if (GET_MODE (to_rtx) == BLKmode)
 	emit_block_move (to_rtx, value, expr_size (from),
-			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_WORD);
+			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_UNIT);
       else
 	emit_move_insn (to_rtx, value);
       preserve_temp_slots (to_rtx);
