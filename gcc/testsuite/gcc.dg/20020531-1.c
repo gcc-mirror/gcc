@@ -16,6 +16,6 @@ void foo (void)
 
   c = (unsigned long long) __builtin_ia32_paddusb ((__v8qi) a, (__v8qi) b);
   __builtin_ia32_emms ();
-  if (c != 0x1122334455667788)
+  if (c != 0x1122334455667788LL)
     abort ();
 }
