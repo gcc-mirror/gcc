@@ -17,8 +17,6 @@ details.  */
 
 #include <string.h>
 
-#pragma implementation "Throwable.h"
-
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/Object.h>
