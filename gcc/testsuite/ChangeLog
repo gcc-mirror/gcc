@@ -1,3 +1,7 @@
+2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/20030222-1.c: New test.
+
 2003-03-03  James E Wilson  <wilson@tuliptree.org>
 
 	* gcc.dg/m68k-slp-ice.c: New test for PR c/7872.
