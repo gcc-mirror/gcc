@@ -3486,7 +3486,7 @@ fold (expr)
 		    {
 		    case 0:
 		      /* Always false.  */
-		      return convert (type, integer_zero_node);
+		      return omit_one_operand (type, integer_zero_node, arg0);
 		    case 1:
 		      code = LT_EXPR;
 		      break;
@@ -3507,10 +3507,12 @@ fold (expr)
 		      break;
 		    case 7:
 		      /* Always true.  */
-		      return convert (type, integer_one_node);
+		      return omit_one_operand (type, integer_one_node, arg0);
 		    }
 
-		  return fold (build (code, type, cval1, cval2));
+		  return omit_one_operand (type, 
+					   fold (build (code, type, cval1, cval2)),
+					   arg0);
 		}
 	    }
 	}
