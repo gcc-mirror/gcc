@@ -4671,6 +4671,9 @@ all_java_source_files = \
     $(xlib_java_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
+all_property_files = $(property_files) $(jgss_property_files) \
+    java/util/logging/logging.properties
+
 property_files = \
 gnu/regexp/MessagesBundle.properties \
 gnu/regexp/MessagesBundle_fr.properties
@@ -23159,9 +23162,14 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 @ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
 @ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 @ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) @libgcj.sourcelist
-@ONESTEP_TRUE@	find java gnu javax org -type d -o -type f -name '*.class' | \
-@ONESTEP_TRUE@	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-@ONESTEP_TRUE@	  $(ZIP) cfM0E@ $@
+@ONESTEP_TRUE@	(find java gnu javax org -type d -o -type f -name '*.class'; \
+@ONESTEP_TRUE@	for file in $(all_property_files); do \
+@ONESTEP_TRUE@	  echo "x-C" | sed -e 's/^.//'; \
+@ONESTEP_TRUE@	  echo $(srcdir); \
+@ONESTEP_TRUE@	  echo $$file; \
+@ONESTEP_TRUE@	done) | \
+@ONESTEP_TRUE@	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
+@ONESTEP_TRUE@	  $(ZIP) -cfM0E@ $@
 
 # This next rule seems backward, but reflects the fact
 # that 1) all classfiles are compiled in one go when the
@@ -23175,11 +23183,16 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 @ONESTEP_FALSE@.java.class:
 @ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $<
 
-@ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files)
+@ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
 @ONESTEP_FALSE@	-@rm -f libgcj-@gcc_version@.jar
-@ONESTEP_FALSE@	find java gnu javax org -type d -o -type f -name '*.class' | \
-@ONESTEP_FALSE@	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-@ONESTEP_FALSE@	  $(ZIP) cfM0E@ $@
+@ONESTEP_FALSE@	(find java gnu javax org -type d -o -type f -name '*.class'; \
+@ONESTEP_FALSE@	for file in $(all_property_files); do \
+@ONESTEP_FALSE@	  echo "x-C" | sed -e 's/^.//'; \
+@ONESTEP_FALSE@	  echo $(srcdir); \
+@ONESTEP_FALSE@	  echo $$file; \
+@ONESTEP_FALSE@	done) | \
+@ONESTEP_FALSE@	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
+@ONESTEP_FALSE@	  $(ZIP) -cfM0E@ $@
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f

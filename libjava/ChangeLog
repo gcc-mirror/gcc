@@ -1,5 +1,11 @@
 2004-09-29  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/17715:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj-@gcc_version@.jar): Include properties
+	files.
+	(all_property_files): New macro.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (ordinary_java_source_files): Re-sorted.
 	(libgcj.la): Moved to old location near lib-gnu-awt-xlib.la.
