@@ -19,7 +19,7 @@
 #ifdef __i860__
 #include "va-i860.h"
 #else
-#ifdef __hp9000s800__
+#ifdef __hppa__
 #include "va-pa.h"
 #else
 #ifdef __mips__
@@ -67,7 +67,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif /* not i960 */
 #endif /* not sparc */
 #endif /* not mips */
-#endif /* not hp9000s800 */
+#endif /* not hppa */
 #endif /* not i860 */
 #endif /* not m88k */
 
