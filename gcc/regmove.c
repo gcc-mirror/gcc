@@ -43,14 +43,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "expr.h"
 #include "insn-flags.h"
-#include "basic-block.h"
 
 static int optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_3	PROTO((rtx, rtx, rtx));
 static rtx gen_add3_insn	PROTO((rtx, rtx, rtx));
-static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int));
-static int *regmove_bb_head;
 
 struct match {
   int with[MAX_RECOG_OPERANDS];
@@ -531,98 +528,6 @@ optimize_reg_copy_3 (insn, dest, src)
   validate_replace_rtx (src, src_reg, insn);
 }
 
-
-/* If we were not able to update the users of src to use dest directly, try
-   instead moving the value to dest directly before the operation.  */
-
-void
-copy_src_to_dest (insn, src, dest, loop_depth)
-     rtx insn;
-     rtx src;
-     rtx dest;
-{
-  rtx seq;
-  rtx link;
-  rtx next;
-  rtx set;
-  rtx move_insn;
-  rtx *p_insn_notes;
-  rtx *p_move_notes;
-  int i;
-  int src_regno;
-  int dest_regno;
-  int bb;
-  int insn_uid;
-  int move_uid;
-
-  if (GET_CODE (src) == REG && GET_CODE (dest) == REG
-      && (set = single_set (insn)) != NULL_RTX
-      && !reg_mentioned_p (dest, SET_SRC (set))
-      && validate_replace_rtx (src, dest, insn))
-    {
-      /* Generate the src->dest move.  */
-      start_sequence ();
-      emit_move_insn (dest, src);
-      seq = gen_sequence ();
-      end_sequence ();
-      emit_insn_before (seq, insn);
-      move_insn = PREV_INSN (insn);
-      p_move_notes = &REG_NOTES (move_insn);
-      p_insn_notes = &REG_NOTES (insn);
-
-      /* Move any notes mentioning src to the move instruction */
-      for (link = REG_NOTES (insn); link != NULL_RTX; link = next)
-	{
-	  next = XEXP (link, 1);
-	  if (XEXP (link, 0) == src)
-	    {
-	      *p_move_notes = link;
-	      p_move_notes = &XEXP (link, 1);
-	    }
-	  else
-	    {
-	      *p_insn_notes = link;
-	      p_insn_notes = &XEXP (link, 1);
-	    }
-	}
-
-      *p_move_notes = NULL_RTX;
-      *p_insn_notes = NULL_RTX;
-
-      /* Is the insn the head of a basic block?  If so extend it */
-      insn_uid = INSN_UID (insn);
-      move_uid = INSN_UID (move_insn);
-      bb = regmove_bb_head[insn_uid];
-      if (bb >= 0)
-	{
-	  basic_block_head[bb] = move_insn;
-	  regmove_bb_head[insn_uid] = -1;
-	}
-
-      /* Update the various register tables.  */
-      dest_regno = REGNO (dest);
-      REG_N_SETS (dest_regno) += loop_depth;
-      REG_N_REFS (dest_regno) += loop_depth;
-      REG_LIVE_LENGTH (dest_regno)++;
-      if (REGNO_FIRST_UID (dest_regno) == insn_uid)
-	REGNO_FIRST_UID (dest_regno) = move_uid;
-
-      src_regno = REGNO (src);
-      if (! find_reg_note (move_insn, REG_DEAD, src))
-	REG_LIVE_LENGTH (src_regno)++;
-
-      if (REGNO_FIRST_UID (src_regno) == insn_uid)
-	REGNO_FIRST_UID (src_regno) = move_uid;
-
-      if (REGNO_LAST_UID (src_regno) == insn_uid)
-	REGNO_LAST_UID (src_regno) = move_uid;
-
-      if (REGNO_LAST_NOTE_UID (src_regno) == insn_uid)
-	REGNO_LAST_NOTE_UID (src_regno) = move_uid;
-    }
-}
-
-
 /* Return whether REG is set in only one location, and is set to a
    constant, but is set in a different basic block from INSN (an
    instructions which uses REG).  In this case REG is equivalent to a
@@ -845,15 +750,9 @@ regmove_optimize (f, nregs, regmove_dump_file)
   struct match match;
   int pass;
   int maxregnum = max_reg_num (), i;
-  rtx copy_src, copy_dst;
 
   regno_src_regno = (int *)alloca (sizeof *regno_src_regno * maxregnum);
   for (i = maxregnum; --i >= 0; ) regno_src_regno[i] = -1;
-
-  regmove_bb_head = (int *)alloca (sizeof (int) * (get_max_uid () + 1));
-  for (i = get_max_uid (); --i >= 0; ) regmove_bb_head[i] = -1;
-  for (i = 0; i < n_basic_blocks; i++)
-    regmove_bb_head[INSN_UID (basic_block_head[i])] = i;
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
@@ -1037,7 +936,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	{
 	  int insn_code_number = find_matches (insn, &match);
 	  int operand_number, match_number;
-	  int success = 0;
 	  
 	  if (insn_code_number < 0)
 	    continue;
@@ -1048,14 +946,13 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	     operand.  If safe, then replace the source operand with the
 	     dest operand in both instructions.  */
 
-	  copy_src = NULL_RTX;
-	  copy_dst = NULL_RTX;
 	  for (operand_number = 0;
 	       operand_number < insn_n_operands[insn_code_number];
 	       operand_number++)
 	    {
 	      rtx set, p, src, dst;
 	      rtx src_note, dst_note;
+	      int success = 0;
 	      int num_calls = 0;
 	      enum reg_class src_class, dst_class;
 	      int length;
@@ -1119,58 +1016,27 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		      || CLASS_LIKELY_SPILLED_P (src_class))
 		  && (! reg_class_subset_p (dst_class, src_class)
 		      || CLASS_LIKELY_SPILLED_P (dst_class)))
-		{
-		  if (!copy_src)
-		    {
-		      copy_src = src;
-		      copy_dst = dst;
-		    }
-		  continue;
-		}
+		continue;
+	  
+	      if (! (src_note = find_reg_note (insn, REG_DEAD, src)))
+		continue;
 
 	      /* Can not modify an earlier insn to set dst if this insn
 		 uses an old value in the source.  */
 	      if (reg_overlap_mentioned_p (dst, SET_SRC (set)))
-		{
-		  if (!copy_src)
-		    {
-		      copy_src = src;
-		      copy_dst = dst;
-		    }
-		  continue;
-		}
-
-	      if (! (src_note = find_reg_note (insn, REG_DEAD, src)))
-		{
-		  if (!copy_src)
-		    {
-		      copy_src = src;
-		      copy_dst = dst;
-		    }
-		  continue;
-		}
-
-
-	      /* If src is set once in a different basic block,
-		 and is set equal to a constant, then do not use
-		 it for this optimization, as this would make it
-		 no longer equivalent to a constant.  */
-
-              if (reg_is_remote_constant_p (src, insn, f))
-		{
-		  if (!copy_src)
-		    {
-		      copy_src = src;
-		      copy_dst = dst;
-		    }
-		  continue;
-		}
-
+		continue;
 
 	      if (regmove_dump_file)
 		fprintf (regmove_dump_file,
 			 "Could fix operand %d of insn %d matching operand %d.\n",
 			 operand_number, INSN_UID (insn), match_number);
+
+	      /* If src is set once in a different basic block,
+		 and is set equal to a constant, then do not use
+		 it for this optimization, as this would make it
+		 no longer equivalent to a constant.  */
+	      if (reg_is_remote_constant_p (src, insn, f))
+		continue;
 
 	      /* Scan backward to find the first instruction that uses
 		 the input operand.  If the operand is set here, then
@@ -1307,12 +1173,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  break;
 		}
 	    }
-
-	  /* If we weren't able to replace any of the alternatives, try an
-	     alternative appoach of copying the source to the destination.  */
-	  if (!success && copy_src != NULL_RTX)
-	    copy_src_to_dest (insn, copy_src, copy_dst, loop_depth);
-
 	}
     }
 #endif /* REGISTER_CONSTRAINTS */
