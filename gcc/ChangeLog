@@ -1,5 +1,10 @@
 2004-04-04  Roger Sayle  <roger@eyesopen.com>
 
+	* cse.c (cse_insn): Correct usage of simplify_replace_rtx when
+	updating the REG_EQUAL note on an insn's libcall_insn.
+
+2004-04-04  Roger Sayle  <roger@eyesopen.com>
+
 	* df.h: Tidy up whitespace in the definitions of the DF_ flags.
 
 2004-04-03  Roger Sayle  <roger@eyesopen.com>
