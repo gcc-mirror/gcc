@@ -1,4 +1,14 @@
-2004-06-15  Peter Barada  <peter@the-baradas.com>
+2004-06-16  Bernardo Innocenti  <bernie@develer.com>
+
+	PR target/13292
+	* config/m68k/m68k.h (TARGET_SWITCHES): Don't remove MASK_68040_ONLY
+	on -msoft-float.
+	(TARGET_FLT_EVAL_METHOD): Don't advertise extended precision for
+	68040 and soft-float.
+	* config/m68k/m68k.md (truncdfsf2): Explicitly require TARGET_68881
+	in the TARGET_68040_ONLY case.
+
+2004-06-16 Peter Barada  <peter@the-baradas.com>
 
 	* config/m68k/m68k.md (movsi_cfv4): New pattern to allow mov3q.
 	(movsi_cf): Make named, don't match TARGET_CFV4.
