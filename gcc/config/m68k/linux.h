@@ -112,6 +112,13 @@ Boston, MA 02111-1307, USA.  */
   "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
 #endif
 
+/* We override the ASM_SPEC from svr4.h because we must pass -m68040 down
+   to the assembler.  */
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{m68040} %{m68060:-m68040}"
+
 /* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
@@ -198,19 +205,6 @@ Boston, MA 02111-1307, USA.  */
   else									\
     fprintf (FILE, "\tjbsr _mcount\n");					\
 }
-
-/* Register in which address to store a structure value is passed to a
-   function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
-
-#undef STRUCT_VALUE_REGNUM
-#define STRUCT_VALUE_REGNUM 8
-
-/* Register in which static-chain is passed to a function.  The
-   default in m68k.h is a0, but that is already the struct value
-   regnum.  Make it a1 instead.  */
-
-#undef STATIC_CHAIN_REGNUM
-#define STATIC_CHAIN_REGNUM 9
 
 /* How to renumber registers for dbx and gdb.
    On the Sun-3, the floating point registers have numbers
@@ -305,24 +299,6 @@ do {									\
    technique. */
 #undef PCC_STATIC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-/* This is different from the generic version in that we use a1 as the
-   static call chain.  */
-
-#undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx (MEM, HImode, TRAMP), GEN_INT (0x227C));	\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), CXT); \
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)),	\
-		  GEN_INT (0x4EF9));					\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 8)), FNADDR); \
-  FINALIZE_TRAMPOLINE (TRAMP);						\
-}
 
 /* Finalize the trampoline by flushing the insn cache.  */
 
