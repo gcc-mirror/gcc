@@ -3780,6 +3780,7 @@ assign_parms (fndecl, second_time)
 
 #ifdef PROMOTE_FUNCTION_ARGS
       /* Compute the mode in which the arg is actually extended to.  */
+      unsignedp = TREE_UNSIGNED (passed_type);
       promoted_mode = promote_mode (passed_type, promoted_mode, &unsignedp, 1);
 #endif
 

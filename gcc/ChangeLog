@@ -1,5 +1,8 @@
 Tue Apr 14 22:00:39 1998  John Carr <jfc@mit.edu>
 
+	* function.c (assign_parms): Initialize unsignedp before passing
+	its pointer to promote_mode.
+
 	* genattrtab.c (check_attr_test): Handle MATCH_INSN like MATCH_OPERAND.
 	(write_test_expr): Allow MATCH_INSN.
 
