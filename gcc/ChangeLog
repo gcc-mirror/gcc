@@ -1,3 +1,7 @@
+2001-04-07  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.h (HARD_REGNO_NREGS): HCmode mode uses 2 regs not 4.
+
 2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (cpp_push_buffer): Give stdin buffers the name <stdin>.
