@@ -65,7 +65,7 @@ case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
-	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | \
+	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi \
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp )
 		os=
@@ -97,7 +97,7 @@ case $basic_machine in
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
-		| alpha | we32k | ns16k | clipper | sparclite | i370 )
+		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -111,7 +111,8 @@ case $basic_machine in
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
-	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* )
+	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
+	      | sh-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -369,6 +370,10 @@ case $basic_machine in
 		;;
 	h8300hms)
 		basic_machine=h8300-hitachi
+		os=-hms
+		;;
+	sh)
+		basic_machine=sh-hitachi
 		os=-hms
 		;;
 	harris)
