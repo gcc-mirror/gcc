@@ -2264,8 +2264,9 @@ do {							\
    ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
    it always means that we get slightly larger than necessary object files
    if the user does not specify -g.  If we don't pass -g, then mips-tfile
-   will need to be fixed to work in this case.  */
-#define ASM_SPEC "%{!mgas:-g} -nocpp %{pg}"
+   will need to be fixed to work in this case.  Pass -O0 since some
+   optimization are broken and don't help us anyway.  */
+#define ASM_SPEC "%{!mgas:-g} -nocpp %{pg} -O0"
 #endif
 
 /* Specify to run a post-processor, mips-tfile after the assembler
