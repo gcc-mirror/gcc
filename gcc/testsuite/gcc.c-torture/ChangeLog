@@ -1,3 +1,8 @@
+2000-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* compile/20000127-1.c: New test.
+	* execute/991228-1.c: New test.
+
 1999-12-27  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* execute/991227-1.c: New test.
