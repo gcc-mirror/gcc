@@ -1,3 +1,12 @@
+2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/bprob/bprob.exp (prof_ext): Update.
+	* g77.dg/bprob/bprob.exp (prof_ext): Update.
+	* gcc.misc-tests/bprob.exp (prof_ext): Update.
+	* gcc.misc-tests/gcov.exp: Update
+	* g++.dg/gcov/gcov.exp: Update
+	* lib/gcov.exp: Update.
+
 2003-07-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/mangle17.C: Make sure template expressions are

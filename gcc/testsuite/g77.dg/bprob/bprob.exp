@@ -28,7 +28,7 @@ if { [istarget mmix-*-*]
 set tool g77
 set profile_option -fprofile-arcs
 set feedback_option -fbranch-probabilities
-set prof_ext da
+set prof_ext gcda
 set perf_ext tim
 
 # Override the list defined in profopt.exp.

@@ -32,8 +32,8 @@ if { ![is_remote host] && [string match "*/*" [lindex $GXX_UNDER_TEST 0]] } {
 # Initialize harness.
 dg-init
 
-# Delete old .da files.
-set files [glob -nocomplain gcov-*.da];
+# Delete old .gcda files.
+set files [glob -nocomplain gcov-*.gcda];
 if { $files != "" } {
     eval "remote_file build delete $files";
 }
