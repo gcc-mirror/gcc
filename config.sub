@@ -166,7 +166,7 @@ case $basic_machine in
 		| i370 | sh | powerpc | powerpcle | 1750a | dsp16xx | pdp11 \
 		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
 		| mipstx39 | mipstx39el \
-		| sparc | sparclet | sparclite | sparc64)
+		| sparc | sparclet | sparclite | sparc64 | v850)
 		basic_machine=$basic_machine-unknown
 		;;
 	m88110 | m680[01234]0 | m683?2 | m68360 | z8k | v70 | h8500 | w65) # CYGNUS LOCAL

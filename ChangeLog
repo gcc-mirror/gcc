@@ -1,3 +1,7 @@
+Fri Sep  5 12:27:17 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config.sub: Handle v850-elf.
+
 Wed Sep  3 22:01:58 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* .cvsignore (*-install): Remove.
