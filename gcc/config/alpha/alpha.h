@@ -729,22 +729,32 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
    
-enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
-		 LIM_REG_CLASSES };
+enum reg_class {
+  NO_REGS, R24_REG, R25_REG, R27_REG,
+  GENERAL_REGS, FLOAT_REGS, ALL_REGS,
+  LIM_REG_CLASSES
+};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES				\
- {"NO_REGS", "PV_REG", "GENERAL_REGS", "FLOAT_REGS", "ALL_REGS" }
+ {"NO_REGS", "R24_REG", "R25_REG", "R27_REG",	\
+  "GENERAL_REGS", "FLOAT_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS	\
-  { {0, 0}, {0x08000000, 0}, {~0, 0x80000000}, {0, 0x7fffffff}, {~0, ~0} }
+#define REG_CLASS_CONTENTS				\
+{ {0x00000000, 0x00000000},	/* NO_REGS */		\
+  {0x01000000, 0x00000000},	/* R24_REG */		\
+  {0x02000000, 0x00000000},	/* R25_REG */		\
+  {0x08000000, 0x00000000},	/* R27_REG */		\
+  {0xffffffff, 0x80000000},	/* GENERAL_REGS */	\
+  {0x00000000, 0x7fffffff},	/* FLOAT_REGS */	\
+  {0xffffffff, 0xffffffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -752,7 +762,9 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO)			\
- ((REGNO) == 27 ? PV_REG			\
+ ((REGNO) == 24 ? R24_REG			\
+  : (REGNO) == 25 ? R25_REG			\
+  : (REGNO) == 27 ? R27_REG			\
   : (REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS	\
   : GENERAL_REGS)
 
@@ -763,7 +775,11 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C)	\
- ((C) == 'c' ? PV_REG : (C) == 'f' ? FLOAT_REGS : NO_REGS)
+ ((C) == 'a' ? R24_REG			\
+  : (C) == 'b' ? R25_REG		\
+  : (C) == 'c' ? R27_REG		\
+  : (C) == 'f' ? FLOAT_REGS		\
+  : NO_REGS)
 
 /* Define this macro to change register usage conditional on target flags.  */
 /* #define CONDITIONAL_REGISTER_USAGE  */
@@ -840,9 +856,10 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    On the Alpha, all constants except zero go into a floating-point
    register via memory.  */
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS)		\
-   (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
-   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS : GENERAL_REGS) \
+#define PREFERRED_RELOAD_CLASS(X, CLASS)				\
+  (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
+   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS		\
+      : (CLASS) == ALL_REGS ? GENERAL_REGS : (CLASS))			\
    : (CLASS))
 
 /* Loading and storing HImode or QImode values to and from memory
