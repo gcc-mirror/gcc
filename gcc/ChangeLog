@@ -1,3 +1,20 @@
+2001-04-12  David Edelsohn  <dje@watson.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Do not
+	special-case HOST_BITS_PER_WIDE_INT != 32.  Use same criteria
+	for generating CONST_INT and CONST_DOUBLE.
+
+2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/rs6000/rs6000.c (logical_operand): CONST_INTs are
+	already sign-extended.
+	(rs6000_emit_prologue): Make register iterator signed.
+	(rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000.md (addsi3, adddi3): Sign-extend high
+	and low.
+	(movsf split, movdf split): Sign-extend CONST_INTs.
+	(movdi splits): Likewise.
+
 2001-04-12  Kelley Cook <kelley.cook@home.com>
 
 	* config-lang.in (lang_dirs): Add in zlib.

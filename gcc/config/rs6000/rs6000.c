@@ -965,7 +965,7 @@ add_operand (op, mode)
 {
   return (reg_or_short_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL(op), 'L')));
+	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')));
 }
 
 /* Return 1 if OP is a constant but not a valid add_operand.  */
@@ -977,7 +977,7 @@ non_add_cint_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
-	  && ! CONST_OK_FOR_LETTER_P (INTVAL(op), 'L'));
+	  && ! CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
 }
 
 /* Return 1 if the operand is a non-special register or a constant that
@@ -995,13 +995,7 @@ logical_operand (op, mode)
     return 1;
 
   if (GET_CODE (op) == CONST_INT)
-    {
-      opl = INTVAL (op) & GET_MODE_MASK (mode);
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	oph = 0;
-      else
-	oph = INTVAL (op) >> (HOST_BITS_PER_WIDE_INT - 1);
-    }
+    opl = INTVAL (op);
   else if (GET_CODE (op) == CONST_DOUBLE)
     {
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
@@ -1009,13 +1003,21 @@ logical_operand (op, mode)
 
       opl = CONST_DOUBLE_LOW (op);
       oph = CONST_DOUBLE_HIGH (op);
+
+      if (oph != ((unsigned HOST_WIDE_INT)0
+		  - ((opl & ((unsigned HOST_WIDE_INT)1
+			     << (HOST_BITS_PER_WIDE_INT - 1))) != 0)))
+	return 0;
     }
   else
     return 0;
 
-  return (oph == 0
-	  && ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
-	      || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0));
+  /* This must really be SImode, not MODE.  */
+  if (opl != trunc_int_for_mode (opl, SImode))
+    return 0;
+
+  return ((opl & 0xffff) == 0
+	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0);
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -1709,11 +1711,12 @@ rs6000_emit_move (dest, source, mode)
 	}
       else if (mode == Pmode
 	       && CONSTANT_P (operands[1])
- 	       && (((HOST_BITS_PER_WIDE_INT != 32 
- 		     || GET_CODE (operands[1]) != CONST_INT)
- 		    && ! easy_fp_constant (operands[1], mode))
- 		   || (GET_CODE (operands[0]) == REG
- 		       && FP_REGNO_P (REGNO (operands[0]))))
+	       && ((GET_CODE (operands[1]) != CONST_INT
+		    && ! easy_fp_constant (operands[1], mode))
+		   || (GET_CODE (operands[1]) == CONST_INT
+		       && num_insns_constant (operands[1], mode) > 2)
+		   || (GET_CODE (operands[0]) == REG
+		       && FP_REGNO_P (REGNO (operands[0]))))
 	       && GET_CODE (operands[1]) != HIGH
 	       && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
 	       && ! TOC_RELATIVE_EXPR_P (operands[1]))
@@ -5822,7 +5825,7 @@ rs6000_emit_prologue ()
      easiest way to get the frame unwind information emitted.  */
   if (current_function_calls_eh_return)
     {
-      unsigned int i, regno;
+      int i, regno;
       for (i = 0; ; ++i)
 	{
 	  rtx addr, reg, mem;
@@ -6078,7 +6081,7 @@ rs6000_emit_epilogue (sibcall)
   /* Load exception handler data registers, if needed.  */
   if (current_function_calls_eh_return)
     {
-      unsigned int i, regno;
+      int i, regno;
       for (i = 0; ; ++i)
 	{
 	  rtx addr, mem;
