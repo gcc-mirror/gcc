@@ -216,7 +216,7 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 #else
 #define ISTABLE unsigned char _cpp_IStable[256] = { 0 }; \
  static void init_IStable PARAMS ((void)) { \
- unsigned char *x = id;
+ unsigned char *x = _cpp_IStable;
 #define END } 
 #define s(p, v) x[p] = v;
 #endif
