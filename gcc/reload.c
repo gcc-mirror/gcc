@@ -616,9 +616,12 @@ push_reload (in, out, inloc, outloc, class,
      really reload just the inside expression in its own mode.
      If we have (SUBREG:M1 (REG:M2 ...) ...) with M1 wider than M2 and the
      register is a pseudo, this will become the same as the above case.
-     Do the same for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
+     Similar issue for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
      either M1 is not valid for R or M2 is wider than a word but we only
      need one word to store an M2-sized quantity in R.
+     (However, if OUT is nonzero, we need to reload the reg *and*
+     the subreg, so do nothing here, and let following statement handle it.)
+
      Note that the case of (SUBREG (CONST_INT...)...) is handled elsewhere;
      we can't handle it here because CONST_INT does not indicate a mode.
 
@@ -635,8 +638,10 @@ push_reload (in, out, inloc, outloc, class,
 	      && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER
 	      && (GET_MODE_SIZE (inmode)
 		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))))
-	  || (GET_CODE (SUBREG_REG (in)) == REG
-	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+	  || (REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+	      /* The case where out is nonzero
+		 is handled differently in the following statement.  */
+	      && (out == 0 || SUBREG_WORD (in) == 0)
 	      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)), inmode)
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
@@ -666,6 +671,30 @@ push_reload (in, out, inloc, outloc, class,
 #endif
       inmode = GET_MODE (in);
     }
+
+  /* Similar issue for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
+     either M1 is not valid for R or M2 is wider than a word but we only
+     need one word to store an M2-sized quantity in R.
+
+     However, we must reload the inner reg *as well as* the subreg in
+     that case.  */
+
+  if (in != 0 && GET_CODE (in) == SUBREG
+      && GET_CODE (SUBREG_REG (in)) == REG
+      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)), inmode)
+	  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
+	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+		  > UNITS_PER_WORD)
+	      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+		   / UNITS_PER_WORD)
+		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
+				       GET_MODE (SUBREG_REG (in)))))))
+    {
+      push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_PTR,
+		   GENERAL_REGS, VOIDmode, VOIDmode, 0, 0, opnum, type);
+    }
+
 
   /* Similarly for paradoxical and problematical SUBREGs on the output.
      Note that there is no reason we need worry about the previous value
