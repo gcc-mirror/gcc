@@ -81,19 +81,19 @@ vec_add (vector signed char a1, vector signed char a2)
 inline vector unsigned char
 vec_add (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_add (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_add (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -105,19 +105,19 @@ vec_add (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_add (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_add (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_add (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -129,19 +129,19 @@ vec_add (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_add (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_add (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_add (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
@@ -155,7 +155,7 @@ vec_add (vector float a1, vector float a2)
 inline vector unsigned int
 vec_addc (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vaddcuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vaddcuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_adds */
@@ -163,19 +163,19 @@ vec_addc (vector unsigned int a1, vector unsigned int a2)
 inline vector unsigned char
 vec_adds (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_adds (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_adds (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vaddubs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed char
@@ -187,19 +187,19 @@ vec_adds (vector signed char a1, vector signed char a2)
 inline vector unsigned short
 vec_adds (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_adds (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_adds (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vadduhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -211,19 +211,19 @@ vec_adds (vector signed short a1, vector signed short a2)
 inline vector unsigned int
 vec_adds (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_adds (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_adds (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vadduws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -237,19 +237,19 @@ vec_adds (vector signed int a1, vector signed int a2)
 inline vector float
 vec_and (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_and (vector float a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_and (vector signed int a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -261,67 +261,67 @@ vec_and (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_and (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_and (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_and (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_and (vector signed short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_and (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_and (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_and (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_and (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_and (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_and (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_and (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vand ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_andc */
@@ -329,19 +329,19 @@ vec_and (vector unsigned char a1, vector unsigned char a2)
 inline vector float
 vec_andc (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_andc (vector float a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_andc (vector signed int a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -353,67 +353,67 @@ vec_andc (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_andc (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_andc (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_andc (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_andc (vector signed short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_andc (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_andc (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_andc (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_andc (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_andc (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_andc (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_andc (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vandc ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_avg */
@@ -421,7 +421,7 @@ vec_andc (vector unsigned char a1, vector unsigned char a2)
 inline vector unsigned char
 vec_avg (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vavgub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vavgub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed char
@@ -433,7 +433,7 @@ vec_avg (vector signed char a1, vector signed char a2)
 inline vector unsigned short
 vec_avg (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vavguh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vavguh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -445,7 +445,7 @@ vec_avg (vector signed short a1, vector signed short a2)
 inline vector unsigned int
 vec_avg (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vavguw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vavguw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -645,7 +645,7 @@ vec_cts (vector float a1, int a2)
 inline vector unsigned int
 vec_ctu (vector float a1, int a2)
 {
-  return (vector signed int) __builtin_altivec_vctuxs ((vector float) a1, (const char) a2);
+  return (vector unsigned int) __builtin_altivec_vctuxs ((vector float) a1, (const char) a2);
 }
 
 /* vec_dss */
@@ -939,7 +939,43 @@ vec_loge (vector float a1)
 /* vec_lvsl */
 
 inline vector unsigned char
-vec_lvsl (int a1, vector unsigned char *a2)
+vec_lvsl (int a1, unsigned char *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, signed char *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, unsigned short *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, signed short *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, unsigned int *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, signed int *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsl (int a1, float *a2)
 {
   return (vector unsigned char) __builtin_altivec_lvsl (a1, (void *) a2);
 }
@@ -947,9 +983,45 @@ vec_lvsl (int a1, vector unsigned char *a2)
 /* vec_lvsr */
 
 inline vector unsigned char
-vec_lvsr (int a1, vector unsigned char *a2)
+vec_lvsr (int a1, unsigned char *a2)
 {
-  return (vector signed char) __builtin_altivec_lvsr (a1, (void *) a2);
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, signed char *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, unsigned short *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, signed short *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, unsigned int *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, signed int *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
+}
+
+inline vector unsigned char
+vec_lvsr (int a1, float *a2)
+{
+  return (vector unsigned char) __builtin_altivec_lvsr (a1, (void *) a2);
 }
 
 /* vec_madd */
@@ -973,19 +1045,19 @@ vec_madds (vector signed short a1, vector signed short a2, vector signed short a
 inline vector unsigned char
 vec_max (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_max (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_max (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vmaxub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed char
@@ -997,19 +1069,19 @@ vec_max (vector signed char a1, vector signed char a2)
 inline vector unsigned short
 vec_max (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_max (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_max (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vmaxuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -1021,19 +1093,19 @@ vec_max (vector signed short a1, vector signed short a2)
 inline vector unsigned int
 vec_max (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_max (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_max (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vmaxuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1059,7 +1131,7 @@ vec_mergeh (vector signed char a1, vector signed char a2)
 inline vector unsigned char
 vec_mergeh (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vmrghb ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vmrghb ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1071,13 +1143,13 @@ vec_mergeh (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_mergeh (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vmrghh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vmrghh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector float
 vec_mergeh (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1089,7 +1161,7 @@ vec_mergeh (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_mergeh (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vmrghw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_mergel */
@@ -1103,7 +1175,7 @@ vec_mergel (vector signed char a1, vector signed char a2)
 inline vector unsigned char
 vec_mergel (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vmrglb ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vmrglb ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1115,13 +1187,13 @@ vec_mergel (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_mergel (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vmrglh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vmrglh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector float
 vec_mergel (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1133,7 +1205,7 @@ vec_mergel (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_mergel (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vmrglw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_mfvscr */
@@ -1141,7 +1213,7 @@ vec_mergel (vector unsigned int a1, vector unsigned int a2)
 inline vector unsigned short
 vec_mfvscr ()
 {
-  return (vector signed short) __builtin_altivec_mfvscr ();
+  return (vector unsigned short) __builtin_altivec_mfvscr ();
 }
 
 /* vec_min */
@@ -1149,19 +1221,19 @@ vec_mfvscr ()
 inline vector unsigned char
 vec_min (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_min (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_min (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vminub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed char
@@ -1173,19 +1245,19 @@ vec_min (vector signed char a1, vector signed char a2)
 inline vector unsigned short
 vec_min (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_min (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_min (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vminuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -1197,19 +1269,19 @@ vec_min (vector signed short a1, vector signed short a2)
 inline vector unsigned int
 vec_min (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_min (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_min (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vminuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1247,7 +1319,7 @@ vec_mladd (vector unsigned short a1, vector signed short a2, vector signed short
 inline vector unsigned short
 vec_mladd (vector unsigned short a1, vector unsigned short a2, vector unsigned short a3)
 {
-  return (vector signed short) __builtin_altivec_vmladduhm ((vector signed short) a1, (vector signed short) a2, (vector signed short) a3);
+  return (vector unsigned short) __builtin_altivec_vmladduhm ((vector signed short) a1, (vector signed short) a2, (vector signed short) a3);
 }
 
 /* vec_mradds */
@@ -1263,7 +1335,7 @@ vec_mradds (vector signed short a1, vector signed short a2, vector signed short 
 inline vector unsigned int
 vec_msum (vector unsigned char a1, vector unsigned char a2, vector unsigned int a3)
 {
-  return (vector signed int) __builtin_altivec_vmsumubm ((vector signed char) a1, (vector signed char) a2, (vector signed int) a3);
+  return (vector unsigned int) __builtin_altivec_vmsumubm ((vector signed char) a1, (vector signed char) a2, (vector signed int) a3);
 }
 
 inline vector signed int
@@ -1275,7 +1347,7 @@ vec_msum (vector signed char a1, vector unsigned char a2, vector signed int a3)
 inline vector unsigned int
 vec_msum (vector unsigned short a1, vector unsigned short a2, vector unsigned int a3)
 {
-  return (vector signed int) __builtin_altivec_vmsumuhm ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3);
+  return (vector unsigned int) __builtin_altivec_vmsumuhm ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3);
 }
 
 inline vector signed int
@@ -1289,7 +1361,7 @@ vec_msum (vector signed short a1, vector signed short a2, vector signed int a3)
 inline vector unsigned int
 vec_msums (vector unsigned short a1, vector unsigned short a2, vector unsigned int a3)
 {
-  return (vector signed int) __builtin_altivec_vmsumuhs ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3);
+  return (vector unsigned int) __builtin_altivec_vmsumuhs ((vector signed short) a1, (vector signed short) a2, (vector signed int) a3);
 }
 
 inline vector signed int
@@ -1341,7 +1413,7 @@ vec_mtvscr (vector unsigned char a1)
 inline vector unsigned short
 vec_mule (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed short) __builtin_altivec_vmuleub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned short) __builtin_altivec_vmuleub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1353,7 +1425,7 @@ vec_mule (vector signed char a1, vector signed char a2)
 inline vector unsigned int
 vec_mule (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vmuleuh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned int) __builtin_altivec_vmuleuh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -1367,7 +1439,7 @@ vec_mule (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_mulo (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed short) __builtin_altivec_vmuloub ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned short) __builtin_altivec_vmuloub ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1379,7 +1451,7 @@ vec_mulo (vector signed char a1, vector signed char a2)
 inline vector unsigned int
 vec_mulo (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vmulouh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned int) __builtin_altivec_vmulouh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -1401,7 +1473,7 @@ vec_nmsub (vector float a1, vector float a2, vector float a3)
 inline vector float
 vec_nor (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1413,31 +1485,31 @@ vec_nor (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_nor (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_nor (vector signed short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_nor (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_nor (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_nor (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vnor ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_or */
@@ -1445,19 +1517,19 @@ vec_nor (vector unsigned char a1, vector unsigned char a2)
 inline vector float
 vec_or (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_or (vector float a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_or (vector signed int a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -1469,67 +1541,67 @@ vec_or (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_or (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_or (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_or (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_or (vector signed short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_or (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_or (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_or (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_or (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_or (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_or (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_or (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vor ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_pack */
@@ -1543,7 +1615,7 @@ vec_pack (vector signed short a1, vector signed short a2)
 inline vector unsigned char
 vec_pack (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed char) __builtin_altivec_vpkuhum ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned char) __builtin_altivec_vpkuhum ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -1555,7 +1627,7 @@ vec_pack (vector signed int a1, vector signed int a2)
 inline vector unsigned short
 vec_pack (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed short) __builtin_altivec_vpkuwum ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vpkuwum ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_packpx */
@@ -1571,7 +1643,7 @@ vec_packpx (vector unsigned int a1, vector unsigned int a2)
 inline vector unsigned char
 vec_packs (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed char) __builtin_altivec_vpkuhus ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned char) __builtin_altivec_vpkuhus ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed char
@@ -1583,7 +1655,7 @@ vec_packs (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_packs (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
@@ -1597,25 +1669,25 @@ vec_packs (vector signed int a1, vector signed int a2)
 inline vector unsigned char
 vec_packsu (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed char) __builtin_altivec_vpkuhus ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned char) __builtin_altivec_vpkuhus ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned char
 vec_packsu (vector signed short a1, vector signed short a2)
 {
-  return (vector signed char) __builtin_altivec_vpkshus ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned char) __builtin_altivec_vpkshus ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_packsu (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vpkuwus ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_packsu (vector signed int a1, vector signed int a2)
 {
-  return (vector signed short) __builtin_altivec_vpkswus ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vpkswus ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_perm */
@@ -1623,7 +1695,7 @@ vec_packsu (vector signed int a1, vector signed int a2)
 inline vector float
 vec_perm (vector float a1, vector float a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector float) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 inline vector signed int
@@ -1635,31 +1707,31 @@ vec_perm (vector signed int a1, vector signed int a2, vector unsigned char a3)
 inline vector unsigned int
 vec_perm (vector unsigned int a1, vector unsigned int a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector unsigned int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 inline vector signed short
 vec_perm (vector signed short a1, vector signed short a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector signed short) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 inline vector unsigned short
 vec_perm (vector unsigned short a1, vector unsigned short a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector unsigned short) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 inline vector signed char
 vec_perm (vector signed char a1, vector signed char a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector signed char) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 inline vector unsigned char
 vec_perm (vector unsigned char a1, vector unsigned char a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
+  return (vector unsigned char) __builtin_altivec_vperm_4si ((vector signed int) a1, (vector signed int) a2, (vector signed char) a3);
 }
 
 /* vec_re */
@@ -1681,7 +1753,7 @@ vec_rl (vector signed char a1, vector unsigned char a2)
 inline vector unsigned char
 vec_rl (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vrlb ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vrlb ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1693,7 +1765,7 @@ vec_rl (vector signed short a1, vector unsigned short a2)
 inline vector unsigned short
 vec_rl (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vrlh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vrlh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -1705,7 +1777,7 @@ vec_rl (vector signed int a1, vector unsigned int a2)
 inline vector unsigned int
 vec_rl (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vrlw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vrlw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_round */
@@ -1729,13 +1801,13 @@ vec_rsqrte (vector float a1)
 inline vector float
 vec_sel (vector float a1, vector float a2, vector signed int a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector float) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector float
 vec_sel (vector float a1, vector float a2, vector unsigned int a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector float) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector signed int
@@ -1753,61 +1825,61 @@ vec_sel (vector signed int a1, vector signed int a2, vector unsigned int a3)
 inline vector unsigned int
 vec_sel (vector unsigned int a1, vector unsigned int a2, vector signed int a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector unsigned int
 vec_sel (vector unsigned int a1, vector unsigned int a2, vector unsigned int a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector signed short
 vec_sel (vector signed short a1, vector signed short a2, vector signed short a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector signed short) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector signed short
 vec_sel (vector signed short a1, vector signed short a2, vector unsigned short a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector signed short) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector unsigned short
 vec_sel (vector unsigned short a1, vector unsigned short a2, vector signed short a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned short) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector unsigned short
 vec_sel (vector unsigned short a1, vector unsigned short a2, vector unsigned short a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned short) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector signed char
 vec_sel (vector signed char a1, vector signed char a2, vector signed char a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector signed char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector signed char
 vec_sel (vector signed char a1, vector signed char a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector signed char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector unsigned char
 vec_sel (vector unsigned char a1, vector unsigned char a2, vector signed char a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 inline vector unsigned char
 vec_sel (vector unsigned char a1, vector unsigned char a2, vector unsigned char a3)
 {
-  return (vector signed int) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
+  return (vector unsigned char) __builtin_altivec_vsel_4si ((vector signed int) a1, (vector signed int) a2, (vector signed int) a3);
 }
 
 /* vec_sl */
@@ -1821,7 +1893,7 @@ vec_sl (vector signed char a1, vector unsigned char a2)
 inline vector unsigned char
 vec_sl (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vslb ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vslb ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -1833,7 +1905,7 @@ vec_sl (vector signed short a1, vector unsigned short a2)
 inline vector unsigned short
 vec_sl (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vslh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vslh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -1845,7 +1917,7 @@ vec_sl (vector signed int a1, vector unsigned int a2)
 inline vector unsigned int
 vec_sl (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vslw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vslw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_sld */
@@ -1853,7 +1925,7 @@ vec_sl (vector unsigned int a1, vector unsigned int a2)
 inline vector float
 vec_sld (vector float a1, vector float a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector float) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 inline vector signed int
@@ -1865,31 +1937,31 @@ vec_sld (vector signed int a1, vector signed int a2, int a3)
 inline vector unsigned int
 vec_sld (vector unsigned int a1, vector unsigned int a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector unsigned int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 inline vector signed short
 vec_sld (vector signed short a1, vector signed short a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector signed short) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 inline vector unsigned short
 vec_sld (vector unsigned short a1, vector unsigned short a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector unsigned short) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 inline vector signed char
 vec_sld (vector signed char a1, vector signed char a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector signed char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 inline vector unsigned char
 vec_sld (vector unsigned char a1, vector unsigned char a2, int a3)
 {
-  return (vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
+  return (vector unsigned char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, (const char) a3);
 }
 
 /* vec_sll */
@@ -1915,91 +1987,91 @@ vec_sll (vector signed int a1, vector unsigned char a2)
 inline vector unsigned int
 vec_sll (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_sll (vector unsigned int a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_sll (vector unsigned int a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_sll (vector signed short a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_sll (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_sll (vector signed short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_sll (vector unsigned short a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_sll (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_sll (vector unsigned short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_sll (vector signed char a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_sll (vector signed char a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_sll (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_sll (vector unsigned char a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_sll (vector unsigned char a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_sll (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsl ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_slo */
@@ -2007,13 +2079,13 @@ vec_sll (vector unsigned char a1, vector unsigned char a2)
 inline vector float
 vec_slo (vector float a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_slo (vector float a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -2031,61 +2103,61 @@ vec_slo (vector signed int a1, vector unsigned char a2)
 inline vector unsigned int
 vec_slo (vector unsigned int a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_slo (vector unsigned int a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_slo (vector signed short a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_slo (vector signed short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_slo (vector unsigned short a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_slo (vector unsigned short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_slo (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_slo (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_slo (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_slo (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vslo ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_splat */
@@ -2099,7 +2171,7 @@ vec_splat (vector signed char a1, int a2)
 inline vector unsigned char
 vec_splat (vector unsigned char a1, int a2)
 {
-  return (vector signed char) __builtin_altivec_vspltb ((vector signed char) a1, (const char) a2);
+  return (vector unsigned char) __builtin_altivec_vspltb ((vector signed char) a1, (const char) a2);
 }
 
 inline vector signed short
@@ -2111,13 +2183,13 @@ vec_splat (vector signed short a1, int a2)
 inline vector unsigned short
 vec_splat (vector unsigned short a1, int a2)
 {
-  return (vector signed short) __builtin_altivec_vsplth ((vector signed short) a1, (const char) a2);
+  return (vector unsigned short) __builtin_altivec_vsplth ((vector signed short) a1, (const char) a2);
 }
 
 inline vector float
 vec_splat (vector float a1, int a2)
 {
-  return (vector signed int) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2);
+  return (vector float) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2);
 }
 
 inline vector signed int
@@ -2129,7 +2201,7 @@ vec_splat (vector signed int a1, int a2)
 inline vector unsigned int
 vec_splat (vector unsigned int a1, int a2)
 {
-  return (vector signed int) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2);
+  return (vector unsigned int) __builtin_altivec_vspltw ((vector signed int) a1, (const char) a2);
 }
 
 /* vec_splat_s8 */
@@ -2161,7 +2233,7 @@ vec_splat_s32 (int a1)
 inline vector unsigned char
 vec_splat_u8 (int a1)
 {
-  return (vector signed char) __builtin_altivec_vspltisb ((const char) a1);
+  return (vector unsigned char) __builtin_altivec_vspltisb ((const char) a1);
 }
 
 /* vec_splat_u16 */
@@ -2169,7 +2241,7 @@ vec_splat_u8 (int a1)
 inline vector unsigned short
 vec_splat_u16 (int a1)
 {
-  return (vector signed short) __builtin_altivec_vspltish ((const char) a1);
+  return (vector unsigned short) __builtin_altivec_vspltish ((const char) a1);
 }
 
 /* vec_splat_u32 */
@@ -2177,7 +2249,7 @@ vec_splat_u16 (int a1)
 inline vector unsigned int
 vec_splat_u32 (int a1)
 {
-  return (vector signed int) __builtin_altivec_vspltisw ((const char) a1);
+  return (vector unsigned int) __builtin_altivec_vspltisw ((const char) a1);
 }
 
 /* vec_sr */
@@ -2191,7 +2263,7 @@ vec_sr (vector signed char a1, vector unsigned char a2)
 inline vector unsigned char
 vec_sr (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsrb ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsrb ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -2203,7 +2275,7 @@ vec_sr (vector signed short a1, vector unsigned short a2)
 inline vector unsigned short
 vec_sr (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsrh ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsrh ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -2215,7 +2287,7 @@ vec_sr (vector signed int a1, vector unsigned int a2)
 inline vector unsigned int
 vec_sr (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsrw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsrw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_sra */
@@ -2229,7 +2301,7 @@ vec_sra (vector signed char a1, vector unsigned char a2)
 inline vector unsigned char
 vec_sra (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsrab ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsrab ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -2241,7 +2313,7 @@ vec_sra (vector signed short a1, vector unsigned short a2)
 inline vector unsigned short
 vec_sra (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsrah ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsrah ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -2253,7 +2325,7 @@ vec_sra (vector signed int a1, vector unsigned int a2)
 inline vector unsigned int
 vec_sra (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsraw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsraw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_srl */
@@ -2279,91 +2351,91 @@ vec_srl (vector signed int a1, vector unsigned char a2)
 inline vector unsigned int
 vec_srl (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_srl (vector unsigned int a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_srl (vector unsigned int a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_srl (vector signed short a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_srl (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_srl (vector signed short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_srl (vector unsigned short a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_srl (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_srl (vector unsigned short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_srl (vector signed char a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_srl (vector signed char a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_srl (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_srl (vector unsigned char a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_srl (vector unsigned char a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_srl (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsr ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_sro */
@@ -2371,13 +2443,13 @@ vec_srl (vector unsigned char a1, vector unsigned char a2)
 inline vector float
 vec_sro (vector float a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_sro (vector float a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -2395,61 +2467,61 @@ vec_sro (vector signed int a1, vector unsigned char a2)
 inline vector unsigned int
 vec_sro (vector unsigned int a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_sro (vector unsigned int a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_sro (vector signed short a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_sro (vector signed short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_sro (vector unsigned short a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_sro (vector unsigned short a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_sro (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_sro (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_sro (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_sro (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vsro ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_st */
@@ -2595,19 +2667,19 @@ vec_sub (vector signed char a1, vector signed char a2)
 inline vector unsigned char
 vec_sub (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_sub (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_sub (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububm ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed short
@@ -2619,19 +2691,19 @@ vec_sub (vector signed short a1, vector signed short a2)
 inline vector unsigned short
 vec_sub (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_sub (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_sub (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhm ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed int
@@ -2643,19 +2715,19 @@ vec_sub (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_sub (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_sub (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_sub (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuwm ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
@@ -2669,7 +2741,7 @@ vec_sub (vector float a1, vector float a2)
 inline vector unsigned int
 vec_subc (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubcuw ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubcuw ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_subs */
@@ -2677,19 +2749,19 @@ vec_subc (vector unsigned int a1, vector unsigned int a2)
 inline vector unsigned char
 vec_subs (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_subs (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector unsigned char
 vec_subs (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
+  return (vector unsigned char) __builtin_altivec_vsububs ((vector signed char) a1, (vector signed char) a2);
 }
 
 inline vector signed char
@@ -2701,19 +2773,19 @@ vec_subs (vector signed char a1, vector signed char a2)
 inline vector unsigned short
 vec_subs (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_subs (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector unsigned short
 vec_subs (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
+  return (vector unsigned short) __builtin_altivec_vsubuhs ((vector signed short) a1, (vector signed short) a2);
 }
 
 inline vector signed short
@@ -2725,19 +2797,19 @@ vec_subs (vector signed short a1, vector signed short a2)
 inline vector unsigned int
 vec_subs (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_subs (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_subs (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsubuws ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -2751,7 +2823,7 @@ vec_subs (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_sum4s (vector unsigned char a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vsum4ubs ((vector signed char) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vsum4ubs ((vector signed char) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -2823,19 +2895,19 @@ vec_unpackl (vector signed short a1)
 inline vector float
 vec_xor (vector float a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_xor (vector float a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector float
 vec_xor (vector signed int a1, vector float a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector float) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed int
@@ -2847,67 +2919,67 @@ vec_xor (vector signed int a1, vector signed int a2)
 inline vector unsigned int
 vec_xor (vector signed int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_xor (vector unsigned int a1, vector signed int a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned int
 vec_xor (vector unsigned int a1, vector unsigned int a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed short
 vec_xor (vector signed short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed short) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_xor (vector signed short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_xor (vector unsigned short a1, vector signed short a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned short
 vec_xor (vector unsigned short a1, vector unsigned short a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned short) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector signed char
 vec_xor (vector signed char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector signed char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_xor (vector signed char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_xor (vector unsigned char a1, vector signed char a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 inline vector unsigned char
 vec_xor (vector unsigned char a1, vector unsigned char a2)
 {
-  return (vector signed int) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
+  return (vector unsigned char) __builtin_altivec_vxor ((vector signed int) a1, (vector signed int) a2);
 }
 
 /* vec_all_eq */
@@ -2915,7 +2987,7 @@ vec_xor (vector unsigned char a1, vector unsigned char a2)
 inline int
 vec_all_eq (vector signed char a1, vector unsigned char a2)
 {
-  return __builtin_altivec_vcmpequb_p (__CR6_LT, a1, a2);
+  return __builtin_altivec_vcmpequb_p (__CR6_LT, a1, (vector signed char) a2);
 }
 
 inline int

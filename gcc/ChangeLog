@@ -1,3 +1,7 @@
+2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h: Fix typos.
+
 2002-02-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/arm/netbsd.h: Correct a comment.
