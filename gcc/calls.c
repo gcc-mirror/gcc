@@ -1675,10 +1675,14 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	    {
 	      rtx mem = validize_mem (args[i].value);
 
-#ifdef BLOCK_REG_PADDING
 	      /* Handle a BLKmode that needs shifting.  */
 	      if (nregs == 1 && size < UNITS_PER_WORD
-		  && args[i].locate.where_pad == downward)
+#ifdef BLOCK_REG_PADDING
+		  && args[i].locate.where_pad == downward
+#else
+		  && BYTES_BIG_ENDIAN
+#endif
+		 )
 		{
 		  rtx tem = operand_subword_force (mem, 0, args[i].mode);
 		  rtx ri = gen_rtx_REG (word_mode, REGNO (reg));
@@ -1693,7 +1697,6 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		    emit_move_insn (ri, x);
 		}
 	      else
-#endif
 		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
 	    }
 

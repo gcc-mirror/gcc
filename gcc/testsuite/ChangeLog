@@ -1,5 +1,10 @@
 2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR target/14262
+	* gcc.dg/20040305-2.c: New test.
+
+2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* gcc.dg/20040310-1.c: New test.
 
 2004-03-11  Roger Sayle  <roger@eyesopen.com>
