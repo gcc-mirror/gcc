@@ -828,6 +828,13 @@ extern int rs6000_default_long_calls;
 	v31 - v20       (saved; order given to save least number)
 */
 						
+#if FIXED_R2 == 1
+#define MAYBE_R2_AVAILABLE
+#define MAYBE_R2_FIXED 2,
+#else
+#define MAYBE_R2_AVAILABLE 2,
+#define MAYBE_R2_FIXED
+#endif
 
 #define REG_ALLOC_ORDER					\
   {32, 							\
@@ -836,13 +843,13 @@ extern int rs6000_default_long_calls;
    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,	\
    50, 49, 48, 47, 46, 					\
    75, 74, 69, 68, 72, 71, 70,				\
-   0,							\
+   0, MAYBE_R2_AVAILABLE				\
    9, 11, 10, 8, 7, 6, 5, 4,				\
    3,							\
    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,	\
    18, 17, 16, 15, 14, 13, 12,				\
    64, 66, 65, 						\
-   73, 1, 2, 67, 76,					\
+   73, 1, MAYBE_R2_FIXED 67, 76,			\
    /* AltiVec registers.  */				\
    77, 78,						\
    90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80,		\
@@ -916,22 +923,24 @@ extern int rs6000_default_long_calls;
 	 || (TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (MODE)))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   For POWER and PowerPC, the GPRs can hold any mode, but the float
+   For POWER and PowerPC, the GPRs can hold any mode, but values bigger
+   than one register cannot go past R31.  The float
    registers only can hold floating modes and DImode, and CR register only
    can hold CC modes.  We cannot put TImode anywhere except general
    register and it must be able to fit within the register set.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  (FP_REGNO_P (REGNO) ?							\
-   (GET_MODE_CLASS (MODE) == MODE_FLOAT					\
-    || (GET_MODE_CLASS (MODE) == MODE_INT				\
-	&& GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))			\
+  (INT_REGNO_P (REGNO) ?						\
+     INT_REGNO_P (REGNO + HARD_REGNO_NREGS (REGNO, MODE) - 1)	        \
+   : FP_REGNO_P (REGNO) ?						\
+     (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+      || (GET_MODE_CLASS (MODE) == MODE_INT				\
+	  && GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))		\
    : ALTIVEC_REGNO_P (REGNO) ? ALTIVEC_VECTOR_MODE (MODE)		\
    : SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE) ? 1 \
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
    : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
-   : ! INT_REGNO_P (REGNO) ? GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
-   : 1)
+   : GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.

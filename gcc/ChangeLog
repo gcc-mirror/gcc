@@ -1,3 +1,9 @@
+2003-03-21  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER):  Increase
+	priority for R2 on Darwin.
+	(HARD_REGNO_MODE_OK):  Don't accept R31 for DFmode.
+
 2003-03-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (make_field_assignment): Remove unnecessary AND
