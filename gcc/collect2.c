@@ -1839,6 +1839,7 @@ scan_prog_file (prog_name, which_pass)
 #include <sys/mman.h>
 #include <sys/param.h>
 #include <sys/unistd.h>
+#include <sys/dir.h>
 
 /* pointers to the object file */
 unsigned object;    	/* address of memory mapped file */
@@ -1870,6 +1871,43 @@ mapfile (name)
     fatal ("unable to mmap file '%s'", name);
 
   close (fp);
+}
+
+/* Helpers for locatelib.  */
+
+static char *libname;
+
+static int
+libselect (d)
+     struct direct *d;
+{
+  return (strncmp (libname, d->d_name, strlen (libname)) == 0);
+}
+
+static int
+libcompare (d1, d2)
+     struct direct **d1, **d2;
+{
+  int i1, i2 = strlen (libname);
+  char *e1 = (*d1)->d_name + i2;
+  char *e2 = (*d2)->d_name + i2;
+
+  while (*e1 && *e2)
+    {
+      ++e1;
+      ++e2;
+      i1 = strtol (e1, &e1, 10);
+      i2 = strtol (e2, &e2, 10);
+      if (i1 != i2)
+	return i1 - i2;
+    }
+
+  if (*e1)
+    return 1;
+  else if (*e2)
+    return -1;
+  else
+    return 0;
 }
 
 /* Given the name NAME of a dynamic dependency, find its pathname and add
@@ -1941,11 +1979,14 @@ locatelib (name)
       *pp++ = "/usr/local/lib";
       *pp = 0;
     }
+  libname = name;
   for (pp = l; *pp != 0 ; pp++)
     {
-      sprintf (buf, "%s/%s", *pp, name);
-      if (access (buf, R_OK) == 0)
+      struct direct **namelist;
+      int entries;
+      if ((entries = scandir (*pp, &namelist, libselect, libcompare)) > 0)
 	{
+	  sprintf (buf, "%s/%s", *pp, namelist[entries - 1]->d_name);
 	  add_to_list (&libraries, buf);
 	  if (debug)
 	    fprintf (stderr, "%s\n", buf);
