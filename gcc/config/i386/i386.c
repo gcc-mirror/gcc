@@ -1466,12 +1466,25 @@ ix86_return_pops_args (fundecl, funtype, size)
       return size;
   }
 
-  /* Lose any fake structure return argument.  */
+  /* Lose any fake structure return argument if it is passed on the stack.  */
   if (aggregate_value_p (TREE_TYPE (funtype))
       && !TARGET_64BIT)
-    return GET_MODE_SIZE (Pmode);
+    {
+      int nregs = ix86_regparm;
 
-    return 0;
+      if (funtype)
+	{
+	  tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (funtype));
+
+	  if (attr)
+	    nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+	}
+
+      if (!nregs)
+	return GET_MODE_SIZE (Pmode);
+    }
+
+  return 0;
 }
 
 /* Argument support functions.  */
