@@ -342,3 +342,7 @@ extern int can_reach_end;
 
 extern int current_function_has_nonlocal_label;
 
+/* Nonzero if function being compiled has nonlocal gotos to parent
+   function.  */
+
+extern int current_function_has_nonlocal_goto;
