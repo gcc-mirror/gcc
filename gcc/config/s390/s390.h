@@ -41,7 +41,7 @@ enum processor_type
 };
 
 extern enum processor_type s390_cpu;
-extern const char *s390_cpu_string;
+extern const char *s390_tune_string;
 
 extern enum processor_type s390_arch;
 extern const char *s390_arch_string;
@@ -113,7 +113,7 @@ extern int target_flags;
   { "", TARGET_DEFAULT, 0 } }
 
 #define TARGET_OPTIONS                                          \
-{ { "cpu=",             &s390_cpu_string,                       \
+{ { "tune=",            &s390_tune_string,                      \
     N_("Schedule code for given CPU")},                         \
   { "arch=",            &s390_arch_string,                      \
     N_("Generate code for given CPU")},                         \

@@ -117,13 +117,13 @@ struct s390_address
   int pointer;
 };
 
-/* Which cpu are we scheduling for.  */
+/* Which cpu are we tuning for.  */
 enum processor_type s390_cpu;
 /* Which instruction set architecture to use.  */
 enum processor_type s390_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
-const char *s390_cpu_string;		/* for -mcpu=<xxx> */
+const char *s390_tune_string;		/* for -mtune=<xxx> */
 const char *s390_arch_string;		/* for -march=<xxx> */
 
 /* Define the structure for the machine field in struct function.  */
@@ -869,10 +869,10 @@ override_options ()
   init_machine_status = s390_init_machine_status;
  
   /* Set cpu and arch, if only partially given.  */
-  if (!s390_cpu_string && s390_arch_string)
-    s390_cpu_string = s390_arch_string;
-  if (!s390_cpu_string)
-    s390_cpu_string = cpu_names [TARGET_64BIT ? TARGET_CPU_DEFAULT_2064
+  if (!s390_tune_string && s390_arch_string)
+    s390_tune_string = s390_arch_string;
+  if (!s390_tune_string)
+    s390_tune_string = cpu_names [TARGET_64BIT ? TARGET_CPU_DEFAULT_2064
                                               :	TARGET_CPU_DEFAULT_9672];
   if (!s390_arch_string)
 #ifdef DEFAULT_TARGET_64BIT
@@ -912,14 +912,14 @@ override_options ()
     }
 
   for (i = 0; i < pta_size; i++)
-    if (! strcmp (s390_cpu_string, processor_alias_table[i].name))
+    if (! strcmp (s390_tune_string, processor_alias_table[i].name))
       {
 	s390_cpu = processor_alias_table[i].processor;
 	break;
       }
 
   if (i == pta_size)
-    error ("bad value (%s) for -mcpu= switch", s390_cpu_string);
+    error ("bad value (%s) for -mtune= switch", s390_tune_string);
 }
 
 /* Map for smallest class containing reg regno.  */
