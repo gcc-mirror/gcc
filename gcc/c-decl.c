@@ -3878,6 +3878,9 @@ finish_decl (decl, init, asmspec_tree)
 	  else
 	    error_with_decl (decl, "storage size of `%s' isn't constant");
 	}
+
+      if (TREE_USED  (type))
+	TREE_USED (decl) = 1;
     }
 
   /* If this is a function and an assembler name is specified, it isn't
