@@ -209,8 +209,6 @@ do {									\
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 
-#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
-
 /* Determine whether the the entire c99 runtime is present in the
    runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
@@ -233,3 +231,6 @@ do {									\
    change their minds.  */
 #undef SPARC_RELAXED_ORDERING
 #define SPARC_RELAXED_ORDERING true
+
+#undef NEED_INDICATE_EXEC_STACK
+#define NEED_INDICATE_EXEC_STACK 1

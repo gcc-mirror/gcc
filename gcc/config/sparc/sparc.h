@@ -214,6 +214,9 @@ extern enum cmodel sparc_cmodel;
    total memory ordering (TMO).  */
 #define SPARC_RELAXED_ORDERING false
 
+/* Do not use the .note.GNU-stack convention by default.  */
+#define NEED_INDICATE_EXEC_STACK 0
+
 /* This is call-clobbered in the normal ABI, but is reserved in the
    home grown (aka upward compatible) embedded ABI.  */
 #define EMBMEDANY_BASE_REG "%g4"
