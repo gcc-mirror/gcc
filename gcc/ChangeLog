@@ -1,3 +1,8 @@
+2002-05-01	Joel Sherrill <joel@OARcorp.com>
+
+	* config/sparc/t-elf (sparc-rtems, sparc-elf): Build assembly
+	support routines.
+
 2002-05-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Update Texinfo version requirement
