@@ -55,7 +55,6 @@ extern int errno;
 
 extern int end_of_file;
 extern int current_class_depth;
-extern int flag_new_for_scope;
 
 void yyerror ();
 
@@ -3246,10 +3245,11 @@ simple_stmt:
 		  finish_stmt (); }
 	| FOR
 		{ emit_line_note (input_filename, lineno);
-		  if (flag_new_for_scope)
+		  if (flag_new_for_scope > 0)
 		    {
 		      /* Conditionalize .pushlevel */
 		      pushlevel (0);
+		      note_level_for_for ();
 		      clear_last_expr ();
 		      push_momentary ();
 		      expand_start_bindings (0);
@@ -3272,7 +3272,7 @@ simple_stmt:
 		  if ($10) cplus_expand_expr_stmt ($10);
 		  pop_momentary ();
 		  expand_end_loop ();
-		  if (flag_new_for_scope)
+		  if (flag_new_for_scope > 0)
 		    {
 		      expand_end_bindings (getdecls (), kept_level_p (), 1);
 		      poplevel (kept_level_p (), 1, 0);
