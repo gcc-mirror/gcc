@@ -1,3 +1,11 @@
+2003-04-10  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (pop64): Removed.
+	(verify_instructions_0) <op_pop2>: Inline code.  Don't throw
+	exception if top-of-stack is narrow.
+	(initialize_stack): Check to ensure that <init> is not static and
+	<clinit> is.
+
 2003-04-07  Aaron M. Renn (arenn@urbanophile.com)
 
 	* java/io/ObjectStreamException
