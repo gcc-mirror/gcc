@@ -42,7 +42,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.c,
    c-common.c, and config/<arch>/<arch>.h.  */
 
-/* alpha.h gets this wrong for FreeBSD.  We use the GCC defaults instead.  */
+/* Earlier headers may get this wrong for FreeBSD.
+   We use the GCC defaults instead.  */
 #undef WCHAR_TYPE
 
 #undef  WCHAR_UNSIGNED

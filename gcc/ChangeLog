@@ -1,3 +1,7 @@
+2001-11-12  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/ia64/freebsd.h:  Fix comment (sync with mainline).
+
 2001-05-15  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/sysv4.h (ASM_PREFERRED_EH_DATA_FORMAT): Treat
@@ -108,13 +112,13 @@
 
 	* config.gcc: Add FreeBSD/IA-64 target.  Move inclusion of IA-64
 	target headers to tm_file.
-	* config/i64/ia64.h (TARGET_VERSION,ASM_SPEC,LINK_SPEC): Remove,
+	* config/ia64/ia64.h (TARGET_VERSION,ASM_SPEC,LINK_SPEC): Remove,
 	they are OS specific.  Use CPP_CPU_SPEC rather than CPP_PREDEFINES,
 	so OS specific files and use CPP_PREDEFINES for their needs.
-	* config/i64/elf.h (TARGET_VERSION): Add.  Also, move inclusion of
+	* config/ia64/elf.h (TARGET_VERSION): Add.  Also, move inclusion of
 	target headers to tm_file.
-	* config/i64/linux.h (TARGET_VERSION): Likewise.
-	* config/i64/freebsd.h: New file.
+	* config/ia64/linux.h (TARGET_VERSION): Likewise.
+	* config/ia64/freebsd.h: New file.
 	* config/freebsd.h: Tidy up.
 	(_USING_CONFIG_FREEBSD): Define.
 	(FBSD_CPP_PREDEFINES): Add __KPRINTF_ATTRIBUTE__.
