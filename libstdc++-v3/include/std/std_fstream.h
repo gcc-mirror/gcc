@@ -379,6 +379,15 @@ namespace std
       seekpos(pos_type __pos,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
+      // Common code for seekoff and seekpos
+      /**
+       *  @if maint
+       *  @doctodo
+       *  @endif
+      */
+      pos_type
+      _M_seek(off_type __off, ios_base::seekdir __way);
+
       // [documentation is inherited]
       virtual int
       sync()

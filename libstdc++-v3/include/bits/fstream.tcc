@@ -573,10 +573,8 @@ namespace std
     }
   
 
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // According to 27.8.1.4 p11 - 13 (for seekoff) and the resolution of
-  // DR 171 (for seekpos), both functions should ignore the last argument
-  // (of type openmode).
+  // According to 27.8.1.4 p11 - 13, seekoff should ignore the last
+  // argument (of type openmode).
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
@@ -597,15 +595,7 @@ namespace std
 	  _M_destroy_pback();
 
 	  off_type __computed_off = __off * __width;
-	  if (this->pbase() < this->pptr())
-	    {
-	      // Part one: update the output sequence.
-	      this->sync();
-	      
-	      // Part two: output unshift sequence.
-	      _M_output_unshift();
-	    }
-	  else if (_M_reading && __way == ios_base::cur)
+	  if (_M_reading && __way == ios_base::cur)
 	    {
 	      if (_M_codecvt->always_noconv())
 		__computed_off += this->gptr() - this->egptr();
@@ -620,13 +610,29 @@ namespace std
 		}
 	    }
 	  
-	  // Returns pos_type(off_type(-1)) in case of failure.
-	  __ret = _M_file.seekoff(__computed_off, __way);
-	  
-	  _M_reading = false;
-	  _M_writing = false;
-	  _M_ext_next = _M_ext_end = _M_ext_buf;
-	  _M_set_buffer(-1);
+	  __ret = _M_seek(__computed_off, __way);
+	}
+      _M_last_overflowed = false;	
+      return __ret;
+    }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 171. Strange seekpos() semantics due to joint position
+  // According to the resolution of DR 171, seekpos should ignore the last
+  // argument (of type openmode).
+  template<typename _CharT, typename _Traits>
+    typename basic_filebuf<_CharT, _Traits>::pos_type
+    basic_filebuf<_CharT, _Traits>::
+    seekpos(pos_type __pos, ios_base::openmode)
+    {
+      pos_type __ret =  pos_type(off_type(-1)); 
+
+      if (this->is_open()) 
+	{
+	  // Ditch any pback buffers to avoid confusion.
+	  _M_destroy_pback();
+
+	  __ret = _M_seek(off_type(__pos), ios_base::beg);
 	}
       _M_last_overflowed = false;	
       return __ret;
@@ -635,20 +641,25 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
-    seekpos(pos_type __pos, ios_base::openmode __mode)
+    _M_seek(off_type __off, ios_base::seekdir __way)
     {
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 171. Strange seekpos() semantics due to joint position
-      pos_type __ret =  pos_type(off_type(-1)); 
-
-      int __width = 0;
-      if (_M_codecvt)
-	__width = _M_codecvt->encoding();
-      if (__width > 0)
-	__ret = this->seekoff(off_type(__pos) / __width, ios_base::beg, __mode);
-
+      if (this->pbase() < this->pptr())
+	{
+	  // Part one: update the output sequence.
+	  this->sync();
+	      
+	  // Part two: output unshift sequence.
+	  _M_output_unshift();
+	}
+	  
+      // Returns pos_type(off_type(-1)) in case of failure.
+      pos_type __ret = _M_file.seekoff(__off, __way);
+	  
+      _M_reading = false;
+      _M_writing = false;
+      _M_ext_next = _M_ext_end = _M_ext_buf;
+      _M_set_buffer(-1);
       return __ret;
-#endif
     }
 
   template<typename _CharT, typename _Traits>
