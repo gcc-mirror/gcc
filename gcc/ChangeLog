@@ -1,5 +1,7 @@
 Sun Jan 17 19:23:20 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.md (integer conditional moves): Add missing earlyclobbers.
+
         * regmove.c (optimize_reg_copy_1): Undo Aug 18 change.  Update
         REG_N_CALLS_CROSSED and REG_LIVE_LENGH if and only if we change
         where a register is live.
