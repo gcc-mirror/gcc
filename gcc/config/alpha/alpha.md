@@ -638,6 +638,13 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   ""
   "")
 
+(define_insn "*adddi_er_high"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (match_operand:DI 1 "register_operand" "r")
+		 (high:DI (match_operand:DI 2 "local_symbolic_operand" ""))))]
+  "TARGET_EXPLICIT_RELOCS"
+  "ldah %0,%2(%1)\t\t!gprelhigh")
+
 ;; We used to expend quite a lot of effort choosing addq/subq/lda.
 ;; With complications like
 ;;
@@ -5298,7 +5305,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:DI 2 "local_symbolic_operand" "")))]
   "TARGET_EXPLICIT_RELOCS"
-  "lda %0,%2(%1)\t\t!gprellow")
+{
+  if (true_regnum (operands[1]) == 29)
+    return "lda %0,%2(%1)\t\t!gprel";
+  else
+    return "lda %0,%2(%1)\t\t!gprellow";
+})
 
 (define_insn "*movdi_er_nofix"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,Q")
