@@ -9396,7 +9396,7 @@ do
 		echo "$lang doesn't set \$language." 1>&2
 		exit 1
 	  fi
-	  if test x"${enable_languages}" = xall; then
+	  if test x"${enable_languages}" = xall && test x"${lang_alias}" != xCHILL; then
 	  	add_this_lang=yes
 	  else
 		case "${enable_languages}" in
