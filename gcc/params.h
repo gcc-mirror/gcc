@@ -82,6 +82,10 @@ typedef enum compiler_param
   (compiler_params[(int) ENUM].value)
 
 /* Macros for the various parameters.  */
+#define SRA_MAX_STRUCTURE_SIZE \
+  PARAM_VALUE (PARAM_SRA_MAX_STRUCTURE_SIZE)
+#define SRA_FIELD_STRUCTURE_RATIO \
+  PARAM_VALUE (PARAM_SRA_FIELD_STRUCTURE_RATIO)
 #define MAX_INLINE_INSNS_SINGLE \
   PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SINGLE)
 #define MAX_INLINE_INSNS \

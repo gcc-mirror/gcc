@@ -35,6 +35,25 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
+/* The maximum structure size at which the scalar replacement of
+   aggregates (SRA) pass will perform block copies.  The default
+   value, 0, implies that GCC will select the most appropriate size
+   itself.  */
+DEFPARAM (PARAM_SRA_MAX_STRUCTURE_SIZE,
+	  "sra-max-structure-size",
+	  "The maximum structure size (in bytes) at which GCC will do block copies.",
+	  0)
+
+/* The ratio between instantiated fields and the complete structure
+   size.  We say that if the ratio of the number of bytes in
+   instantiated fields to the number of bytes in the complete
+   structure exceeds this parameter, then block copies are not used.
+   The default is 75%.  */
+DEFPARAM (PARAM_SRA_FIELD_STRUCTURE_RATIO,
+	  "sra-field-structure-ratio",
+	  "The threshold ratio between instantiated fields and the total structure size.",
+	  75)
+
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
