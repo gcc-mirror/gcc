@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "sparc/sparc.h"
-#include "aoutos.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu(sparc) -Amachine(sparc)"
