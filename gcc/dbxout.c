@@ -150,6 +150,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define NO_DBX_FUNCTION_END 0
 #endif
 
+#ifndef NO_DBX_BNSYM_ENSYM
+#define NO_DBX_BNSYM_ENSYM 0
+#endif
+
 enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
 
 /* Structure recording information about a C data type.
@@ -487,7 +491,7 @@ dbxout_function_end (void)
   fprintf (asmfile, "\n");
 #endif
 
-  if (!flag_debug_only_used_symbols)
+  if (!NO_DBX_BNSYM_ENSYM && !flag_debug_only_used_symbols)
     fprintf (asmfile, "%s%d,0,0\n", ASM_STABD_OP, N_ENSYM);
 }
 #endif /* DBX_DEBUGGING_INFO */
@@ -794,6 +798,7 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
 {
   if (use_gnu_debug_info_extensions
       && !NO_DBX_FUNCTION_END
+      && !NO_DBX_BNSYM_ENSYM
       && !flag_debug_only_used_symbols)
     fprintf (asmfile, "%s%d,0,0\n", ASM_STABD_OP, N_BNSYM);
 

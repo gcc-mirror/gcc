@@ -108,6 +108,9 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* The Solaris assembler cannot grok .stabd directives.  */
+#undef NO_DBX_BNSYM_ENSYM
+#define NO_DBX_BNSYM_ENSYM 1
 
 
 #undef  ENDFILE_SPEC

@@ -7998,6 +7998,12 @@ On those machines, define this macro to turn this feature off without
 disturbing the rest of the gdb extensions.
 @end defmac
 
+@defmac NO_DBX_BNSYM_ENSYM
+Some assemblers cannot handle the @code{.stabd BNSYM/ENSYM,0,0} gdb dbx
+extension construct.  On those machines, define this macro to turn this
+feature off without disturbing the rest of the gdb extensions.
+@end defmac
+
 @node File Names and DBX
 @subsection File Names in DBX Format
 

@@ -1,3 +1,15 @@
+2004-09-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config.gcc (sparc64-*-solaris2*): Include sparc/sol2-gas.h
+	if the GNU assembler is used.
+	(sparc-*-solaris2*): Likewise.
+	* dbxout.c (NO_DBX_BNSYM_ENSYM): Default to zero.
+	(dbxout_function_end): Protect N_ENSYM with it.
+	(dbxout_begin_prologue): Protect N_BNSYM with it.
+	* doc/tm.texi (NO_DBX_BNSYM_ENSYM): Document it.
+	* config/sparc/sol2.h (NO_DBX_BNSYM_ENSYM): Define to 1.
+	* config/sparc/sol2-gas.h: New file.
+
 2004-09-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17369
