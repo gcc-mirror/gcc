@@ -141,7 +141,7 @@ static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
 static int add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
-static tree local_variable_p PROTO((tree *));
+static tree local_variable_p PROTO((tree *, int *, void *));
 static tree find_binding PROTO((tree, tree));
 static tree select_decl PROTO((tree, int));
 static int lookup_flags PROTO((int, int));
@@ -348,11 +348,6 @@ extern int flag_no_builtin;
    -ansi sets this.  */
 
 extern int flag_no_nonansi_builtin;
-
-/* Nonzero means enable obscure ANSI features and disable GNU extensions
-   that might cause ANSI-compliant code to be miscompiled.  */
-
-extern int flag_ansi;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
    objects.  */
@@ -11189,8 +11184,10 @@ require_complete_types_for_parms (parms)
    NULL_TREE otherwise.  */
 
 static tree
-local_variable_p (tp)
+local_variable_p (tp, walk_subtrees, data)
      tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   tree t = *tp;
 
@@ -11272,7 +11269,7 @@ check_default_argument (decl, arg)
 
      The keyword `this' shall not be used in a default argument of a
      member function.  */
-  var = search_tree (&arg, local_variable_p);
+  var = walk_tree (&arg, local_variable_p, NULL);
   if (var)
     {
       cp_error ("default argument `%E' uses local variable `%D'",

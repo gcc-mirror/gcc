@@ -19,7 +19,7 @@
 	(copy_tree_r): New function.
 	(search_tree): Rename, and adjust, to become ...
 	(walk_tree): New function.
-	(mapcar): Rtemove.
+	(mapcar): Remove.
 	(target_remap): Remove.
 	(target_remap_count): Likewise.
 	(break_out_target_exprs): Use walk_tree.
