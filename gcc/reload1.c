@@ -758,6 +758,13 @@ reload (first, global)
     {
       rtx set = single_set (insn);
 
+      /* We may introduce USEs that we want to remove at the end, so
+	 we'll mark them with QImode.  Make sure there are no
+	 previously-marked insns left by say regmove.  */
+      if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE
+	  && GET_MODE (insn) != VOIDmode)
+	PUT_MODE (insn, VOIDmode);
+
       if (GET_CODE (insn) == CALL_INSN
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1183,7 +1190,9 @@ reload (first, global)
 					 CALL_INSN_FUNCTION_USAGE (insn));
 
 	if ((GET_CODE (PATTERN (insn)) == USE
-	     && find_reg_note (insn, REG_EQUAL, NULL_RTX))
+	     /* We mark with QImode USEs introduced by reload itself.  */
+	     && (GET_MODE (insn) == QImode
+		 || find_reg_note (insn, REG_EQUAL, NULL_RTX)))
 	    || (GET_CODE (PATTERN (insn)) == CLOBBER
 		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != REG
 		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
@@ -8929,7 +8938,12 @@ reload_combine_note_use (xp, insn)
 
     case CLOBBER:
       if (GET_CODE (SET_DEST (x)) == REG)
-	return;
+	{
+	  /* No spurious CLOBBERs of pseudo registers may remain.  */
+	  if (REGNO (SET_DEST (x)) >= FIRST_PSEUDO_REGISTER)
+	    abort ();
+	  return;
+	}
       break;
 
     case PLUS:
@@ -8946,10 +8960,9 @@ reload_combine_note_use (xp, insn)
 	int use_index;
 	int nregs;
 
-	/* Some spurious USEs of pseudo registers might remain.
-	   Just ignore them.  */
+	/* No spurious USEs of pseudo registers may remain.  */
 	if (regno >= FIRST_PSEUDO_REGISTER)
-	  return;
+	  abort ();
 
 	nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
 
