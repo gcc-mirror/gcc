@@ -307,12 +307,6 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_EXPLICIT_RELOCS	(target_flags & MASK_EXPLICIT_RELOCS)
 
 
-/* This is true if we must enable the assembly language file switching
-   code.  */
-
-#define TARGET_FILE_SWITCHING \
-  (TARGET_GP_OPT && ! TARGET_GAS && ! TARGET_MIPS16)
-
 /* True if the call patterns should be split into a jalr followed by
    an instruction to restore $gp.  This is only ever true for SVR4 PIC,
    in which $gp is call-clobbered.  It is only safe to split the load
@@ -341,12 +335,6 @@ extern void		sbss_section PARAMS ((void));
    Not all SGI assemblers support this.  */
 
 #define TARGET_GPWORD (TARGET_ABICALLS && (!TARGET_NEWABI || TARGET_GAS))
-
-
-/* We must disable the function end stabs when doing the file switching trick,
-   because the Lscope stabs end up in the wrong place, making it impossible
-   to debug the resulting code.  */
-#define NO_DBX_FUNCTION_END TARGET_FILE_SWITCHING
 
 					/* Generate mips16 code */
 #define TARGET_MIPS16		(target_flags & MASK_MIPS16)
@@ -1370,99 +1358,18 @@ extern int mips_abi;
 
 #define FIND_BASE_TERM(X) mips_delegitimize_address (X)
 
-/* Overrides for the COFF debug format.  */
-#define PUT_SDB_SCL(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.scl\t%d;", (a));	\
-} while (0)
-
-#define PUT_SDB_INT_VAL(a)				\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.val\t" HOST_WIDE_INT_PRINT_DEC ";", \
-	   (HOST_WIDE_INT)(a));			        \
-} while (0)
-
-#define PUT_SDB_VAL(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fputs ("\t.val\t", asm_out_text_file);		\
-  output_addr_const (asm_out_text_file, (a));		\
-  fputc (';', asm_out_text_file);			\
-} while (0)
-
 #define PUT_SDB_DEF(a)					\
 do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t%s.def\t",		\
+  fprintf (asm_out_file, "\t%s.def\t",			\
 	   (TARGET_GAS) ? "" : "#");			\
-  ASM_OUTPUT_LABELREF (asm_out_text_file, a); 		\
-  fputc (';', asm_out_text_file);			\
+  ASM_OUTPUT_LABELREF (asm_out_file, a); 		\
+  fputc (';', asm_out_file);				\
 } while (0)
 
 #define PUT_SDB_PLAIN_DEF(a)				\
 do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t%s.def\t.%s;",		\
+  fprintf (asm_out_file, "\t%s.def\t.%s;",		\
 	   (TARGET_GAS) ? "" : "#", (a));		\
-} while (0)
-
-#define PUT_SDB_ENDEF					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.endef\n");		\
-} while (0)
-
-#define PUT_SDB_TYPE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.type\t0x%x;", (a));	\
-} while (0)
-
-#define PUT_SDB_SIZE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.size\t" HOST_WIDE_INT_PRINT_DEC ";", \
-	   (HOST_WIDE_INT)(a));			        \
-} while (0)
-
-#define PUT_SDB_DIM(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.dim\t%d;", (a));	\
-} while (0)
-
-#ifndef PUT_SDB_START_DIM
-#define PUT_SDB_START_DIM				\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.dim\t");		\
-} while (0)
-#endif
-
-#ifndef PUT_SDB_NEXT_DIM
-#define PUT_SDB_NEXT_DIM(a)				\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "%d,", a);		\
-} while (0)
-#endif
-
-#ifndef PUT_SDB_LAST_DIM
-#define PUT_SDB_LAST_DIM(a)				\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "%d;", a);		\
-} while (0)
-#endif
-
-#define PUT_SDB_TAG(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.tag\t");		\
-  ASM_OUTPUT_LABELREF (asm_out_text_file, a); 		\
-  fputc (';', asm_out_text_file);			\
 } while (0)
 
 /* For block start and end, we create labels, so that
@@ -1472,8 +1379,7 @@ do {							\
 
 #define PUT_SDB_BLOCK_START(LINE)			\
 do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file,				\
+  fprintf (asm_out_file,				\
 	   "%sLb%d:\n\t%s.begin\t%sLb%d\t%d\n",		\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
@@ -1486,8 +1392,7 @@ do {							\
 
 #define PUT_SDB_BLOCK_END(LINE)				\
 do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file,				\
+  fprintf (asm_out_file,				\
 	   "%sLe%d:\n\t%s.bend\t%sLe%d\t%d\n",		\
 	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
@@ -1502,20 +1407,10 @@ do {							\
 
 #define PUT_SDB_FUNCTION_END(LINE)			\
 do {							\
-  extern FILE *asm_out_text_file;			\
-  ASM_OUTPUT_SOURCE_LINE (asm_out_text_file, LINE + sdb_begin_function_line); \
+  ASM_OUTPUT_SOURCE_LINE (asm_out_file, LINE + sdb_begin_function_line); \
 } while (0)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
-
-#define PUT_SDB_SRC_FILE(FILENAME)			\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  output_file_directive (asm_out_text_file, (FILENAME));\
-} while (0)
-
-#define SDB_GENERATE_FAKE(BUFFER, NUMBER)		\
-  sprintf ((BUFFER), ".%dfake", (NUMBER));
 
 /* Correct the offset of automatic variables and arguments.  Note that
    the MIPS debug format wants all automatic variables and arguments
@@ -3929,18 +3824,6 @@ while (0)
 
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME) \
   mips_output_external(STREAM,DECL,NAME)
-
-/* Play switch file games if we're optimizing the global pointer.  */
-
-#undef TEXT_SECTION
-#define TEXT_SECTION()					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  if (TARGET_FILE_SWITCHING)				\
-    asm_out_file = asm_out_text_file;			\
-  fputs (TEXT_SECTION_ASM_OP, asm_out_file);		\
-  fputc ('\n', asm_out_file);            		\
-} while (0)
 
 
 /* This is how to declare a function name.  The actual work of

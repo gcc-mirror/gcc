@@ -1,3 +1,26 @@
+2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/10913
+	* config/mips/mips.h (TARGET_FILE_SWITCHING, NO_DBX_FUNCTION_END,
+	PUT_SDB_SCL, PUT_SDB_INT_VAL, PUT_SDB_VAL, PUT_SDB_ENDEF,
+	PUT_SDB_TYPE, PUT_SDB_SIZE, PUT_SDB_DIM, PUT_SDB_START_DIM,
+	PUT_SDB_NEXT_DIM, PUT_SDB_LAST_DIM, PUT_SDB_TAG, PUT_SDB_SRC_FILE,
+	SDB_GENERATE_FAKE, TEXT_SECTION): Delete.
+	(PUT_SDB_DEF, PUT_SDB_PLAIN_DEF, PUT_SDB_BLOCK_START,
+	PUT_SDB_BLOCK_END, PUT_SDB_FUNCTION_END): Replace use of
+	asm_out_text_file with asm_out_file.
+	* config/mips/iris5gas.h (PUT_SDB_SIZE, PUT_SDB_TYPE): Likewise.
+	* config/mips/elf.h (TEXT_SECTION): Undefine.
+	* config/mips/elf64.h (TEXT_SECION): Undefine.
+	* config/mips/openbsd.h (TEXT_SECION): Undefine.
+	* config/mips/mips.c (asm_out_text_file, asm_out_data_file): Delete.
+	(override_options): Disable small-data optimizations unless using
+	gas or explicit relocations.
+	(mips_asm_file_start, mips_asm_file_end, mips_output_function_epilogue,
+	iris6_asm_named_section, iris6_asm_file_start): Remove code for
+	handling TARGET_FILE_SWITCHING.
+	(copy_file_data): Move into TARGET_IRIX6 block.
+
 2003-06-08  Richard Henderson  <rth@redhat.com>
 
 	* expr.h (EXPAND_MEMORY): New.
