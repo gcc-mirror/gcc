@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -122,7 +122,8 @@ char *optabs[] =
   "movcc_gen_code[(int) %A] = CODE_FOR_%(mov%acc%)",
   "reload_in_optab[(int) %A] = CODE_FOR_%(reload_in%a%)",
   "reload_out_optab[(int) %A] = CODE_FOR_%(reload_out%a%)",
-  "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)" };
+  "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)",
+  "clrstr_optab[(int) %A] = CODE_FOR_%(clrstr%a%)" };
 
 /* Allow linking with print-rtl.c.  */
 char **insn_name_ptr;
