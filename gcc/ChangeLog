@@ -1,3 +1,9 @@
+2005-02-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/18663
+	* tree-ssa-dom.c (extract_range_from_cond): Return 0
+	if the type has variable bounds.
+
 2005-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c: Remove an obsolete comment.
