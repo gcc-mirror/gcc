@@ -1,3 +1,7 @@
+2004-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Change c++filt3 to c++filt.
+
 2004-04-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi: Update HP-UX 11 installation procedure.
