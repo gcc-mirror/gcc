@@ -45,7 +45,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
 	%{pipe: %e-pipe is not supported.} \
 	%{mips1} %{mips2} %{mips3} \
-	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
+	%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
 	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K} \
 	%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
 	%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
