@@ -1,5 +1,11 @@
 2005-01-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19395
+	* g++.dg/parse/error24.C: New test. 
+
+	PR c++/19367
+	* g++.dg/lookup/builtin1.C: New test.
+
 	PR c++/19457
 	* g++.dg/warn/conv3.C: New test.
 
