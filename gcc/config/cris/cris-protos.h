@@ -30,7 +30,6 @@ extern void cris_conditional_register_usage (void);
 extern int cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);
-extern int cris_eligible_for_epilogue_delay (rtx);
 extern void cris_notice_update_cc (rtx, rtx);
 extern void cris_print_operand (FILE *, rtx, int);
 extern void cris_print_operand_address (FILE *, rtx);
@@ -61,5 +60,3 @@ extern void cris_override_options (void);
 extern int cris_initial_elimination_offset (int, int);
 
 extern void cris_init_expanders (void);
-
-extern int cris_delay_slots_for_epilogue (void);

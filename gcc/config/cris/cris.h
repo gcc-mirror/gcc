@@ -1003,13 +1003,6 @@ struct cum_args {int regs;};
 /* See cris.c for TARGET_ASM_FUNCTION_PROLOGUE and
    TARGET_ASM_FUNCTION_EPILOGUE.  */
 
-/* If the epilogue uses the "ret" insn, we need to fill the
-   delay slot.  */
-#define DELAY_SLOTS_FOR_EPILOGUE cris_delay_slots_for_epilogue ()
-
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN, N) \
-  cris_eligible_for_epilogue_delay (INSN)
-
 /* Node: Profiling */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
