@@ -4216,11 +4216,13 @@ fold (expr)
 	      TREE_SET_CODE (t, EQ_EXPR);
 	      break;
 	    case GE_EXPR:
-	      return omit_one_operand (integer_type_node,
-				       integer_one_node, arg0);
+	      return omit_one_operand (type,
+				       convert (type, integer_one_node),
+				       arg0);
 	    case LT_EXPR:
-	      return omit_one_operand (integer_type_node,
-				       integer_zero_node, arg0);
+	      return omit_one_operand (type,
+				       convert (type, integer_zero_node),
+				       arg0);
 	    }
 	}
 
