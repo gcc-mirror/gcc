@@ -1,5 +1,12 @@
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11137
+	* decl2.c (generate_ctor_or_dtor_function): Tolerate a
+	non-existant ssdf_decls array.
+	(finish_file): Call generator_ctor_or_dtor_function when there are
+	static constructors or destructors and no other static
+	initializations.
+
 	PR c++/11149
 	* call.c (resolve_scoped_fn_name): Check that the qualifying scope
 	is a class type.
