@@ -1649,6 +1649,8 @@ These lists are updated as new information becomes available.
 @item
 @uref{#sparc64-*-*,,sparc64-*-*}
 @item
+@uref{#sparcv9-*-solaris2*,,sparcv9-*-solaris2*}
+@item
 @uref{#*-*-sysv*,,*-*-sysv*}
 @item
 @uref{#vax-dec-ultrix,,vax-dec-ultrix}
@@ -3557,6 +3559,21 @@ can use the @code{sparc32} program to start up a new shell
 invocation with an environment that causes @command{configure} to
 recognize (via @samp{uname -a}) the system as @samp{sparc-*-*} instead.
 
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{sparcv9-*-solaris2*}sparcv9-*-solaris2*
+
+The following compiler flags must be specified in the configure
+step in order to bootstrap this target with the Sun compiler:
+
+@example
+   % CC="cc -xildoff -xarch=v9" @var{srcdir}/configure [@var{options}] [@var{target}]
+@end example
+
+@option{-xildoff} turns off the incremental linker, and @option{-xarch=v9}
+specifies the v9 architecture to the Sun linker and assembler.
 
 @html
 </p>
