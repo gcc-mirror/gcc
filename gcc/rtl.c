@@ -684,18 +684,18 @@ int read_rtx_lineno = 1;
 const char *read_rtx_filename = "<unknown>";
 
 static void
-fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msgid, ...))
+fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *infile;
-  const char *msgid;
+  const char *msg;
 #endif
   va_list ap;
   char context[64];
   size_t i;
   int c;
 
-  VA_START (ap, msgid);
+  VA_START (ap, msg);
 
 #ifndef ANSI_PROTOTYPES
   infile = va_arg (ap, FILE *);
@@ -703,7 +703,7 @@ fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msgid, ...))
 #endif
 
   fprintf (stderr, "%s:%d: ", read_rtx_filename, read_rtx_lineno);
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (stderr, msg, ap);
   putc ('\n', stderr);
 
   /* Gather some following context.  */
@@ -718,7 +718,7 @@ fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msgid, ...))
     }
   context[i] = '\0';
 
-  fprintf (stderr, _("%s:%d: following context is `%s'\n"),
+  fprintf (stderr, "%s:%d: following context is `%s'\n",
 	   read_rtx_filename, read_rtx_lineno, context);
 
   va_end (ap);
