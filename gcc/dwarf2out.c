@@ -1716,7 +1716,7 @@ static void
 output_call_frame_info (for_eh)
      int for_eh;
 {
-  register unsigned long i;
+  register unsigned int i;
   register dw_fde_ref fde;
   register dw_cfi_ref cfi;
   char l1[20], l2[20];
@@ -5507,7 +5507,7 @@ build_abbrev_table (die)
      register dw_die_ref die;
 {
   register unsigned long abbrev_id;
-  register unsigned long n_alloc;
+  register unsigned int n_alloc;
   register dw_die_ref c;
   register dw_attr_ref d_attr, a_attr;
 
@@ -11450,7 +11450,7 @@ void
 dwarf2out_finish ()
 {
   limbo_die_node *node, *next_node;
-  dw_die_ref die;
+  dw_die_ref die = 0;
 
   /* Traverse the limbo die list, and add parent/child links.  The only
      dies without parents that should be here are concrete instances of

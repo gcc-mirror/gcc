@@ -3555,7 +3555,8 @@ build_op_delete_call (code, addr, size, flags, placement)
      tree addr, size, placement;
      int flags;
 {
-  tree fn, fns, fnname, fntype, argtypes, args, type;
+  tree fn = NULL_TREE;
+  tree fns, fnname, fntype, argtypes, args, type;
   int pass;
 
   if (addr == error_mark_node)
@@ -3871,8 +3872,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
       /* Copy-initialization where the cv-unqualified version of the source
 	 type is the same class as, or a derived class of, the class of the
 	 destination [is treated as direct-initialization].  [dcl.init] */
-      if (fn)
-	savew = warningcount, savee = errorcount;
+      savew = warningcount, savee = errorcount;
       expr = build_new_method_call (NULL_TREE, complete_ctor_identifier,
 				    build_tree_list (NULL_TREE, expr),
 				    TYPE_BINFO (totype),
@@ -5425,7 +5425,7 @@ tweak:
   if (!pedantic)
     {
       int rank1 = IDENTITY_RANK, rank2 = IDENTITY_RANK;
-      struct z_candidate *w, *l;
+      struct z_candidate *w = 0, *l = 0;
 
       for (i = 0; i < len; ++i)
 	{

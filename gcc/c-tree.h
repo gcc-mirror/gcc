@@ -1,6 +1,6 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -168,7 +168,6 @@ extern void c_mark_varargs                      PARAMS ((void));
 extern void check_for_loop_decls                PARAMS ((void));
 extern tree check_identifier                    PARAMS ((tree, tree));
 extern void clear_parm_order                    PARAMS ((void));
-extern tree combine_parm_decls                  PARAMS ((tree, tree, int));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
 extern tree define_label                        PARAMS ((const char *, int,

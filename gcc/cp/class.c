@@ -202,6 +202,7 @@ static void update_vtable_entry_for_fn PARAMS ((tree, tree, tree, tree *));
 static tree copy_virtuals PARAMS ((tree));
 static void build_ctor_vtbl_group PARAMS ((tree, tree));
 static void build_vtt PARAMS ((tree));
+static tree binfo_ctor_vtable PARAMS ((tree));
 static tree *build_vtt_inits PARAMS ((tree, tree, tree *, tree *));
 static tree dfs_build_secondary_vptr_vtt_inits PARAMS ((tree, void *));
 static tree dfs_ctor_vtable_bases_queue_p PARAMS ((tree, void *data));
@@ -6796,7 +6797,7 @@ get_primary_binfo (binfo)
      tree binfo;
 {
   tree primary_base;
-  tree result;
+  tree result = NULL_TREE;
   tree virtuals;
   
   primary_base = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (binfo));

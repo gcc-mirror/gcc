@@ -2200,7 +2200,7 @@ tree
 build_java_class_ref (type)
      tree type;
 {
-  tree name, class_decl;
+  tree name = NULL_TREE, class_decl;
   static tree CL_suffix = NULL_TREE;
   if (CL_suffix == NULL_TREE)
     CL_suffix = get_identifier("class$");

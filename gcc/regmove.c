@@ -72,7 +72,7 @@ static void flags_set_1 PARAMS ((rtx, rtx, void *));
 
 static int try_auto_increment PARAMS ((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
 static int find_matches PARAMS ((rtx, struct match *));
-static void replace_in_call_usage PARAMS ((rtx *, int, rtx, rtx));
+static void replace_in_call_usage PARAMS ((rtx *, unsigned int, rtx, rtx));
 static int fixup_match_1 PARAMS ((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 ;
 static int reg_is_remote_constant_p PARAMS ((rtx, rtx, rtx));
@@ -1619,7 +1619,7 @@ find_matches (insn, matchp)
 static void
 replace_in_call_usage (loc, dst_reg, src, insn)
      rtx *loc;
-     int dst_reg;
+     unsigned int dst_reg;
      rtx src;
      rtx insn;
 {

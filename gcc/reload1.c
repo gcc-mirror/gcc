@@ -601,7 +601,7 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
   code = GET_CODE (x);
   if (code == REG)
     {
-      int regno = REGNO (x);
+      unsigned int regno = REGNO (x);
 
       if (regno < FIRST_PSEUDO_REGISTER)
 	return;
@@ -8585,7 +8585,8 @@ static void
 reload_combine ()
 {
   rtx insn, set;
-  int first_index_reg = -1, last_index_reg;
+  int first_index_reg = -1;
+  int last_index_reg = 0;
   int i;
   unsigned int r;
   int last_label_ruid;
@@ -8816,7 +8817,7 @@ reload_combine ()
 	      rtx usage_rtx = XEXP (XEXP (link, 0), 0);
 	      if (GET_CODE (usage_rtx) == REG)
 	        {
-		  int i;
+		  unsigned int i;
 		  unsigned int start_reg = REGNO (usage_rtx);
 		  unsigned int num_regs =
 			HARD_REGNO_NREGS (start_reg, GET_MODE (usage_rtx));

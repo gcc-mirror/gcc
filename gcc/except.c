@@ -100,7 +100,7 @@ tree (*lang_eh_runtime_type) PARAMS ((tree));
 rtx exception_handler_labels;
 
 static int call_site_base;
-static int sjlj_funcdef_number;
+static unsigned int sjlj_funcdef_number;
 static htab_t type_to_runtime_map;
 
 /* Describe the SjLj_Function_Context structure.  */
@@ -1855,7 +1855,8 @@ connect_post_landing_pads ()
 static void
 dw2_build_landing_pads ()
 {
-  int i, j;
+  int i;
+  unsigned int j;
 
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
@@ -3233,7 +3234,7 @@ convert_to_eh_region_ranges ()
   rtx last_action_insn = NULL_RTX;
   rtx last_landing_pad = NULL_RTX;
   rtx first_no_action_insn = NULL_RTX;
-  int call_site;
+  int call_site = 0;
 
   if (USING_SJLJ_EXCEPTIONS || cfun->eh->region_tree == NULL)
     return;
@@ -3504,7 +3505,7 @@ output_function_exception_table ()
 #endif
   int have_tt_data;
   int funcdef_number;
-  int tt_format_size;
+  int tt_format_size = 0;
 
   /* Not all functions need anything.  */
   if (! cfun->uses_eh_lsda)

@@ -3564,13 +3564,15 @@ instantiate_decls (fndecl, valid_only)
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+      HOST_WIDE_INT size_rtl;
 
       instantiate_decl (DECL_RTL (decl), size, valid_only);
 
       /* If the parameter was promoted, then the incoming RTL mode may be
 	 larger than the declared type size.  We must use the larger of
 	 the two sizes.  */
-      size = MAX (GET_MODE_SIZE (GET_MODE (DECL_INCOMING_RTL (decl))), size);
+      size_rtl = GET_MODE_SIZE (GET_MODE (DECL_INCOMING_RTL (decl)));
+      size = MAX (size_rtl, size);
       instantiate_decl (DECL_INCOMING_RTL (decl), size, valid_only);
     }
 

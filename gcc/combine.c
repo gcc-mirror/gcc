@@ -8463,7 +8463,8 @@ num_sign_bit_copies (x, mode)
 	 of sign bit copies, we can just subtract that amount from the
 	 number.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= 0 && INTVAL (XEXP (x, 1)) < bitwidth)
+	  && INTVAL (XEXP (x, 1)) >= 0
+	  && INTVAL (XEXP (x, 1)) < (int) bitwidth)
 	{
 	  num0 = num_sign_bit_copies (XEXP (x, 0), mode);
 	  return MAX (1, num0 - (code == ROTATE ? INTVAL (XEXP (x, 1))
@@ -8595,7 +8596,7 @@ num_sign_bit_copies (x, mode)
       num0 = num_sign_bit_copies (XEXP (x, 0), mode);
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) > 0)
-	num0 = MIN (bitwidth, num0 + INTVAL (XEXP (x, 1)));
+	num0 = MIN ((int) bitwidth, num0 + INTVAL (XEXP (x, 1)));
 
       return num0;
 
@@ -8603,7 +8604,7 @@ num_sign_bit_copies (x, mode)
       /* Left shifts destroy copies.  */
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
 	  || INTVAL (XEXP (x, 1)) < 0
-	  || INTVAL (XEXP (x, 1)) >= bitwidth)
+	  || INTVAL (XEXP (x, 1)) >= (int) bitwidth)
 	return 1;
 
       num0 = num_sign_bit_copies (XEXP (x, 0), mode);
