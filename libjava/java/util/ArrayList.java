@@ -1,6 +1,6 @@
 /* ArrayList.java -- JDK1.2's answer to Vector; this is an array-backed
    implementation of the List interface
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,11 +39,11 @@ exception statement from your version. */
 
 package java.util;
 
-import java.lang.reflect.Array;
-import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Array;
 
 /**
  * An array-backed implementation of the List interface.  This implements

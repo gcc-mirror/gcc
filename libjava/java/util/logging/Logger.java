@@ -1,7 +1,7 @@
 /* Logger.java
    -- a class for logging messages
 
-Copyright (C) 2002 Free Software Foundation, Inc.
+Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,9 +42,9 @@ exception statement from your version.
 
 package java.util.logging;
 
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
  * A Logger is used for logging information about events. Usually, there

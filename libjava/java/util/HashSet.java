@@ -1,5 +1,5 @@
 /* HashSet.java -- a class providing a HashMap-backed Set
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,9 @@ exception statement from your version. */
 package java.util;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * This class provides a HashMap-backed implementation of the Set interface.

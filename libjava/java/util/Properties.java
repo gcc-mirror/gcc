@@ -1,5 +1,5 @@
 /* Properties.java -- a set of persistent properties
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,14 +38,14 @@ exception statement from your version. */
 
 package java.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.PrintStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
  * A set of persistent properties, which can be saved or loaded from a stream.

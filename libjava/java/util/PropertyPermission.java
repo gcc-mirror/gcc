@@ -1,5 +1,5 @@
 /* PropertyPermission.java -- permission to get and set System properties
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package java.util;
 
-import java.security.Permission;
-import java.security.BasicPermission;
-import java.security.PermissionCollection;
-import java.io.ObjectStreamField;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
+import java.io.ObjectStreamField;
+import java.security.BasicPermission;
+import java.security.Permission;
+import java.security.PermissionCollection;
 
 /**
  * This class represents the permission to access and modify a property.<br>
