@@ -66,7 +66,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <testsuite_hooks.h>
+//#include <testsuite_hooks.h>
+#define VERIFY(x) x
 
 // Include iostream last, just to make is as difficult as possible to
 // properly initialize the standard iostream objects.
@@ -116,19 +117,20 @@ void test03()
 // Interactive test, to be exercised as follows:
 // assign stderr to stdout in shell command line,
 // pipe stdout to cat process and/or redirect stdout to file.
-// "hello fine world\n" should be written to stdout in proper order.
-// This is a version of the scott snyder test taken from:
-// http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00108.html
+// a.out >& output
+// "hello fine world\n" should be written to stdout, and output, in
+// proper order.  This is a version of the scott snyder test taken
+// from: http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00108.html
 void test04()
 {
   using namespace std;
 
   cout << "hello ";
-  cout.flush ();
+  cout.flush();
   cerr << "fine ";
-  cerr.flush ();
+  cerr.flush();
   cout << "world" << endl;
-  cout.flush ();
+  cout.flush();
 }
 
 // Interactive test, to be exercised as follows:
@@ -138,7 +140,7 @@ void test04()
 // depending upon buffering mode enforced.
 void test05()
 {
-  std::cout << "hello" << ' ' << "world" <<std::endl;
+  std::cout << "hello" << ' ' << "world" << std::endl;
   std::cout << "Enter your name: ";
   std::string s;
   std::cin >> s;
@@ -169,7 +171,7 @@ void test06()
 void test07()
 {
   bool test = true;
-  std::cout << "Please, enter 'test':";
+  std::cout << "Enter 'test':";
   std::string s;
   std::getline(std::cin, s, '\n');
   VERIFY( s == "test" );
@@ -188,8 +190,19 @@ void test08()
 void test09()
 {
   bool test = true;
-  std::cout << "Enter name: ";
+  std::cout << "Enter favorite beach: ";
   std::cin.ignore(2048, '\n');
+}
+
+// http://gcc.gnu.org/ml/libstdc++/2002-08/msg00060.html
+// Should only have to hit enter once.
+void
+test10()
+{
+  using namespace std;
+  cout << "Press ENTER once\n";
+  cin.ignore(1);
+  cout << "_M_gcount: "<< cin.gcount() << endl;
 }
 
 int 
@@ -205,5 +218,6 @@ main()
   // test07();
   // test08();
   // test09();
+  // test10();
   return 0;
 }

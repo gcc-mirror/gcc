@@ -722,23 +722,18 @@ namespace std
 	    {
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sgetc();	
+	      int_type __c;
 	      
 	      __n = min(__n, numeric_limits<streamsize>::max());
 	      while (_M_gcount < __n  
-		     && !traits_type::eq_int_type(__c, __eof) 
-		     && !traits_type::eq_int_type(__c, __delim))
+		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
 		{
-		  __c = __sb->snextc();
 		  ++_M_gcount;
+		  if (traits_type::eq_int_type(__c, __delim))
+		    break;
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		this->setstate(ios_base::eofbit);
-	      else if (traits_type::eq_int_type(__c, __delim))
-		{
-		  __sb->sbumpc();
-		  ++_M_gcount;
-		}
 	    }
 	  catch(exception& __fail)
 	    {
