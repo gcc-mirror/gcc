@@ -1,3 +1,11 @@
+2001-05-15  Zack Weinberg  <zackw@stanford.edu>
+	
+        * testsuite/21_strings/inserters_extractors.cc,
+        testsuite/27_io/istream_unformatted.cc,
+        testsuite/27_io/stringstream.cc:
+        Replace multi-line string constants with C89-style
+        concatenated string constants.
+	
 2001-05-14  Richard Henderson  <rth@redhat.com>
 
 	* mknumeric_limits: Build with -fno-exceptions.

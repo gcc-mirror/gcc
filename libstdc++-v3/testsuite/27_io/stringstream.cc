@@ -48,9 +48,8 @@ test01()
   VERIFY( len == 0 );
 
   // Full string sanity check.
-  // { dg-warning "string literals" "" { xfail *-*-* } 52 }
-  std::string str02("these golden days, i spend waiting for you:\n 
-              Betty Carter on Verve with I'm Yours and You're Mine.");
+  std::string str02("these golden days, i spend waiting for you:\n"
+		    "Betty Carter on Verve with I'm Yours and You're Mine.");
   __i_start = str02.begin();
   __i_end = str02.end();
   len = str02.size();
