@@ -84,9 +84,6 @@ static tree strip_compound_expr PROTO((tree, tree));
 #define BRANCH_COST 1
 #endif
 
-/* Yield nonzero if a signed left shift of A by B bits overflows.  */
-#define left_shift_overflows(a, b)  ((a)  !=  ((a) << (b)) >> (b))
-
 /* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
    Suppose A, B and SUM have the same respective signs as A1, B1, and SUM1.
    Then this yields nonzero if overflow occurred during the addition.
