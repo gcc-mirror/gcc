@@ -3556,6 +3556,8 @@ override_options ()
 	case '3':
 	  if (!strcmp (p, "3000") || !strcmp (p, "3k") || !strcmp (p, "3K"))
 	    mips_cpu = PROCESSOR_R3000;
+	  else if (!strcmp (p, "3900"))
+	    mips_cpu = PROCESSOR_R3900;
 	  break;
 
 	case '4':

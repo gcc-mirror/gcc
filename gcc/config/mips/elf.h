@@ -24,7 +24,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Until we figure out what MIPS ELF targets normally use, just do
    stabs in ELF.  */
+#ifndef
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#endif
 
 /* Mostly like ECOFF.  */
 #include "mips/ecoff.h"

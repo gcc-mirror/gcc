@@ -64,6 +64,7 @@ enum delay_type {
 enum processor_type {
   PROCESSOR_DEFAULT,
   PROCESSOR_R3000,
+  PROCESSOR_R3900,
   PROCESSOR_R6000,
   PROCESSOR_R4000,
   PROCESSOR_R4100,
@@ -276,6 +277,7 @@ extern void		text_section ();
 #define MASK_SINGLE_FLOAT 0x00020000	/* Only single precision FPU.  */
 #define MASK_MAD	0x00040000	/* Generate mad/madu as on 4650.  */
 #define MASK_4300_MUL_FIX 0x00080000    /* Work-around early Vr4300 CPU bug */
+#define MASK_MIPS3900	0x00100000	/* like -mips1 only 3900 */
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -291,7 +293,6 @@ extern void		text_section ();
 #define MASK_DEBUG_G	0x00800000	/* don't support 64 bit arithmetic */
 #define MASK_DEBUG_H	0x00400000	/* allow ints in FP registers */
 #define MASK_DEBUG_I	0x00200000	/* unused */
-#define MASK_DEBUG_J	0x00100000	/* unused */
 
 					/* r4000 64 bit sizes */
 #define TARGET_INT64		(target_flags & MASK_INT64)
@@ -301,6 +302,9 @@ extern void		text_section ();
 
 					/* Mips vs. GNU linker */
 #define TARGET_SPLIT_ADDRESSES	(target_flags & MASK_SPLIT_ADDR)
+
+/* generate mips 3900 insns */
+#define TARGET_MIPS3900         (target_flags & MASK_MIPS3900)
 
 					/* Mips vs. GNU assembler */
 #define TARGET_GAS		(target_flags & MASK_GAS)
@@ -318,7 +322,6 @@ extern void		text_section ();
 #define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
 #define TARGET_DEBUG_H_MODE	(target_flags & MASK_DEBUG_H)
 #define TARGET_DEBUG_I_MODE	(target_flags & MASK_DEBUG_I)
-#define TARGET_DEBUG_J_MODE	(target_flags & MASK_DEBUG_J)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
@@ -425,6 +428,7 @@ extern void		text_section ();
   {"fix4300",             MASK_4300_MUL_FIX},				\
   {"no-fix4300",         -MASK_4300_MUL_FIX},				\
   {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT},		\
+  {"3900",		  MASK_MIPS3900},                               \
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -435,7 +439,6 @@ extern void		text_section ();
   {"debugg",		  MASK_DEBUG_G},				\
   {"debugh",		  MASK_DEBUG_H},				\
   {"debugi",		  MASK_DEBUG_I},				\
-  {"debugj",		  MASK_DEBUG_J},				\
   {"",			  (TARGET_DEFAULT				\
 			   | TARGET_CPU_DEFAULT				\
 			   | TARGET_ENDIAN_DEFAULT)}			\
@@ -507,10 +510,16 @@ extern void		text_section ();
 /* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_TARGET_OPTIONS
 
+#define GENERATE_BRANCHLIKELY  (TARGET_MIPS3900 || (mips_isa >= 2))
+#define GENERATE_MULT3         (TARGET_MIPS3900)
+#define GENERATE_MADD          (TARGET_MIPS3900)
+
+
+
 /* Macros to decide whether certain features are available or not,
    depending on the instruction set architecture level.  */
 
-#define BRANCH_LIKELY_P()	(mips_isa >= 2)
+#define BRANCH_LIKELY_P()	GENERATE_BRANCHLIKELY
 #define HAVE_SQRT_P()		(mips_isa >= 2)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
@@ -664,7 +673,7 @@ while (0)
 /* GAS_ASM_SPEC is passed when using gas, rather than the MIPS
    assembler.  */
 
-#define GAS_ASM_SPEC "%{mcpu=*} %{m4650} %{mmad:-m4650} %{v}"
+#define GAS_ASM_SPEC "%{mcpu=*} %{m4650} %{mmad:-m4650} %{m3900} %{v}"
 
 /* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
    GAS_ASM_SPEC as the default, depending upon the value of
@@ -791,6 +800,7 @@ while (0)
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
 %{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
 %{m4650:-mcpu=r4650} \
+%{m3900:-mips1 -mcpu=r3900 -mfp32 -mgp32} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
@@ -2969,7 +2979,8 @@ while (0)
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode || xmode == DFmode)				\
 	{								\
-	  if (mips_cpu == PROCESSOR_R3000)				\
+	  if (mips_cpu == PROCESSOR_R3000				\
+              || mips_cpu == PROCESSOR_R3900)				\
 	    return COSTS_N_INSNS (2);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
 	    return COSTS_N_INSNS (3);					\
@@ -2992,6 +3003,7 @@ while (0)
       if (xmode == SFmode)						\
 	{								\
 	  if (mips_cpu == PROCESSOR_R3000				\
+	      || mips_cpu == PROCESSOR_R3900				\
 	      || mips_cpu == PROCESSOR_R5000)				\
 	    return COSTS_N_INSNS (4);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
@@ -3003,6 +3015,7 @@ while (0)
       if (xmode == DFmode)						\
 	{								\
 	  if (mips_cpu == PROCESSOR_R3000				\
+	      || mips_cpu == PROCESSOR_R3900				\
 	      || mips_cpu == PROCESSOR_R5000)				\
 	    return COSTS_N_INSNS (5);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
@@ -3013,6 +3026,8 @@ while (0)
 									\
       if (mips_cpu == PROCESSOR_R3000)					\
 	return COSTS_N_INSNS (12);					\
+      else if (mips_cpu == PROCESSOR_R3900)				\
+	return COSTS_N_INSNS (2);					\
       else if (mips_cpu == PROCESSOR_R6000)				\
 	return COSTS_N_INSNS (17);					\
       else if (mips_cpu == PROCESSOR_R5000)				\
@@ -3027,7 +3042,8 @@ while (0)
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
 	{								\
-	  if (mips_cpu == PROCESSOR_R3000)				\
+	  if (mips_cpu == PROCESSOR_R3000				\
+              || mips_cpu == PROCESSOR_R3900)				\
 	    return COSTS_N_INSNS (12);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
 	    return COSTS_N_INSNS (15);					\
@@ -3037,7 +3053,8 @@ while (0)
 									\
       if (xmode == DFmode)						\
 	{								\
-	  if (mips_cpu == PROCESSOR_R3000)				\
+	  if (mips_cpu == PROCESSOR_R3000				\
+              || mips_cpu == PROCESSOR_R3900)				\
 	    return COSTS_N_INSNS (19);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
 	    return COSTS_N_INSNS (16);					\
@@ -3049,7 +3066,8 @@ while (0)
 									\
   case UDIV:								\
   case UMOD:								\
-    if (mips_cpu == PROCESSOR_R3000)					\
+    if (mips_cpu == PROCESSOR_R3000					\
+        || mips_cpu == PROCESSOR_R3900)					\
       return COSTS_N_INSNS (35);					\
     else if (mips_cpu == PROCESSOR_R6000)				\
       return COSTS_N_INSNS (38);					\

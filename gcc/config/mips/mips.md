@@ -88,15 +88,14 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,r3000,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000"
+  "default,r3000,r3900,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
-;; (MIPS ISA level 2)
 
 (define_attr "branch_likely" "no,yes"
   (const
-   (if_then_else (ge (symbol_ref "mips_isa") (const_int 2))
+   (if_then_else (ne (symbol_ref "GENERATE_BRANCHLIKELY") (const_int 0))
 		 (const_string "yes")
 		 (const_string "no"))))
 
@@ -147,12 +146,12 @@
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "!r3000,r4600,r4650,r4100,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4100,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "r3000,r4600,r4650,r4100,r4300,r5000"))
+       (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4300,r5000"))
   2 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
@@ -165,11 +164,11 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul")
-       (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4300,r5000"))
   17 17)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "r3000"))
+  (and (eq_attr "type" "imul") (eq_attr "cpu" "r3000,r3900"))
   12 12)
 
 (define_function_unit "imuldiv"  1 0
@@ -207,11 +206,11 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv")
-       (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4300,r5000"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000"))
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000,r3900"))
   35 35)
 
 (define_function_unit "imuldiv"  1 0
@@ -264,11 +263,11 @@
 ;; instructions to be processed in the "imuldiv" unit.
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r6000,r4300,r5000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000"))
   3 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r3000,r6000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r3000,r3900,r6000"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -276,11 +275,11 @@
   1 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r6000,r4300"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r3900,r6000,r4300"))
   4 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r3000"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r3000,r3900"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -289,22 +288,22 @@
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg")
-       (eq_attr "cpu" "!r3000,r4600,r4650,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4300,r5000"))
   2 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r4600,r4650,r5000"))
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r3900,r4600,r4650,r5000"))
   1 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
   7 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000,r5000")))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000,r3900,r5000")))
   4 0)
 
 (define_function_unit "mult" 1 1
@@ -319,12 +318,12 @@
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4300,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000")))
   8 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000,r3900,r5000")))
   5 0)
 
 (define_function_unit "mult" 1 1
@@ -335,12 +334,12 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
   23 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000,r3900")))
   12 0)
 
 (define_function_unit "divide" 1 1
@@ -361,12 +360,12 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "DF")
-	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000,r3900")))
   19 0)
 
 (define_function_unit "divide" 1 1
@@ -1031,7 +1030,9 @@
   ""
   "
 {
-  if (TARGET_MAD)
+  if (GENERATE_MULT3)
+    emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
+  else if (TARGET_MAD)
     emit_insn (gen_mulsi3_r4650 (operands[0], operands[1], operands[2]));
   else if (mips_cpu != PROCESSOR_R4000)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
@@ -1039,6 +1040,19 @@
     emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
   DONE;
 }")
+
+(define_insn "mulsi3_mult3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(mult:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=l"))
+   (clobber (match_scratch:SI 5 "=a"))]
+  "GENERATE_MULT3"
+  "mult\\t%0,%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
 
 (define_insn "mulsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=l")
@@ -1286,8 +1300,14 @@
 		 (match_dup 0)))
    (clobber (match_scratch:SI 3 "=h"))
    (clobber (match_scratch:SI 4 "=a"))]
-  "TARGET_MAD"
-  "mad\\t%1,%2"
+  "TARGET_MAD || GENERATE_MADD"
+  "*
+{
+  if (TARGET_MAD)
+    return \"mad\\t%1,%2\";
+  else
+    return \"madd\\t%1,%2\";
+}"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
@@ -1346,6 +1366,20 @@
    (clobber (match_scratch:DI 4 "=h"))]
   "TARGET_MAD && TARGET_64BIT"
   "madu\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"   "1")])
+
+(define_insn "madd3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
+			  (match_operand:SI 2 "register_operand" "d"))
+		 (match_operand:SI 3 "register_operand" "l")))
+   (clobber (match_scratch:SI 4 "=l"))
+   (clobber (match_scratch:SI 5 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
+  "GENERATE_MADD"
+  "madd\\t%0,%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
@@ -1775,7 +1809,7 @@
 
   if (REGNO (operands[0]) == REGNO (operands[1]))
     {
-      if (mips_isa >= 2)
+      if (GENERATE_BRANCHLIKELY)
 	return \"%(bltzl\\t%1,1f\\n\\tsubu\\t%0,%z2,%0\\n1:%)\";
       else
 	return \"bgez\\t%1,1f%#\\n\\tsubu\\t%0,%z2,%0\\n1:\";
