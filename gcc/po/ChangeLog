@@ -1,3 +1,12 @@
+2000-10-21  Philipp Thomas  <pthomas@suse.de>
+
+	* POTFILES.in: Remove config/rs6000/netware.h.
+	Remove the files moved out of libgcc and over
+	to libsupc++.
+	* Makefile.in.in (stamp-check-pot): Rename to stamp-check-po.
+	(check-po): New, more intuitive target to check POTFILES.in
+	for consistency.
+
 2000-10-08  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Remove the files from the nuked

@@ -449,7 +449,6 @@ config/rs6000/eabisim.h
 config/rs6000/linux.h
 config/rs6000/lynx.h
 config/rs6000/mach.h
-config/rs6000/netware.h
 config/rs6000/rs6000-protos.h
 config/rs6000/rs6000.c
 config/rs6000/rs6000.h
@@ -550,7 +549,6 @@ cp/except.c
 cp/expr.c
 cp/friend.c
 cp/g++spec.c
-cp/inc/new.h
 cp/init.c
 cp/lang-options.h
 cp/lang-specs.h
@@ -565,7 +563,6 @@ cp/repo.c
 cp/rtti.c
 cp/search.c
 cp/spew.c
-cp/tinfo.h
 cp/tree.c
 cp/typeck.c
 cp/typeck2.c

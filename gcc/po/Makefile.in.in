@@ -82,8 +82,10 @@ all: all-@USE_NLS@
 all-yes: $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
 all-no:
 
-stamp-check-pot: $(POTFILES)
-	touch stamp-check-pot
+stamp-check-po: $(POTFILES)
+	touch stamp-check-po
+
+check-po: stamp-check-po
 
 $(srcdir)/$(PACKAGE).pot: $(POTFILES)
 	$(XGETTEXT) --default-domain=$(PACKAGE) --directory=$(top_srcdir) \
