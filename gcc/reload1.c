@@ -3717,7 +3717,11 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
       }
   for (i = 0; i < scratch_list_length; i++)
     {
-      if (scratch_list[i] && REGNO (scratch_list[i]) == regno)
+     if (scratch_list[i] 
+          && regno >= REGNO (scratch_list[i]) 
+          && regno <  REGNO (scratch_list[i]) 
+                      + HARD_REGNO_NREGS (REGNO (scratch_list[i]),
+                                          GET_MODE (scratch_list[i])))
 	{
 	  if (! cant_eliminate && basic_block_needs[0]
 	      && ! basic_block_needs[(int) class][scratch_block[i]])
