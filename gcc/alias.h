@@ -25,6 +25,6 @@ extern HOST_WIDE_INT new_alias_set (void);
 extern HOST_WIDE_INT get_varargs_alias_set (void);
 extern HOST_WIDE_INT get_frame_alias_set (void);
 extern void record_base_value (unsigned int, rtx, int);
-extern int can_address_p (tree);
+extern bool component_uses_parent_alias_set (tree);
 
 #endif /* GCC_ALIAS_H */
