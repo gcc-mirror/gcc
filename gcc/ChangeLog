@@ -1,3 +1,13 @@
+2001-06-28  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	    Jeff Law <law@redhat.com>
+
+	* Makefile.in (OBJS): Add df.o
+	(df.o): Add dependencies.
+	* basic-block.h (flow_depth_first_order_compute): Declare.
+	* flow.c (flow_depth_first_order_compute): No longer declare.
+	Make external.
+	* df.c, df.h: New files.
+
 2001-06-28  Zack Weinberg  <zackw@stanford.edu>
 
 	* config/i386/i386.md: Global update to use new string syntax
