@@ -28,18 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
-struct cpp_macro
-{
-  cpp_hashnode **params;	/* Parameters, if any.  */
-  cpp_token *expansion;		/* First token of replacement list.  */
-  unsigned int line;		/* Starting line number.  */
-  unsigned int count;		/* Number of tokens in expansion.  */
-  unsigned short paramc;	/* Number of parameters.  */
-  unsigned int fun_like : 1;	/* If a function-like macro.  */
-  unsigned int variadic : 1;	/* If a variadic macro.  */
-  unsigned int syshdr   : 1;	/* If macro defined in system header.  */
-};
-
 typedef struct macro_arg macro_arg;
 struct macro_arg
 {
@@ -695,7 +683,7 @@ enter_macro_context (pfile, node)
       node->flags |= NODE_DISABLED;
 
       if (macro->paramc == 0)
-	push_token_context (pfile, node, macro->expansion, macro->count);
+	push_token_context (pfile, node, macro->exp.tokens, macro->count);
 
       return 1;
     }
@@ -726,9 +714,9 @@ replace_args (pfile, node, macro, args)
      statements below is subtle; we must handle stringification before
      pasting.  */
   total = macro->count;
-  limit = macro->expansion + macro->count;
+  limit = macro->exp.tokens + macro->count;
 
-  for (src = macro->expansion; src < limit; src++)
+  for (src = macro->exp.tokens; src < limit; src++)
     if (src->type == CPP_MACRO_ARG)
       {
 	/* Leading and trailing padding tokens.  */
@@ -744,7 +732,7 @@ replace_args (pfile, node, macro, args)
 	      arg->stringified = stringify_arg (pfile, arg);
 	  }
 	else if ((src->flags & PASTE_LEFT)
-		 || (src > macro->expansion && (src[-1].flags & PASTE_LEFT)))
+		 || (src > macro->exp.tokens && (src[-1].flags & PASTE_LEFT)))
 	  total += arg->count - 1;
 	else
 	  {
@@ -760,7 +748,7 @@ replace_args (pfile, node, macro, args)
   first = (const cpp_token **) buff->base;
   dest = first;
 
-  for (src = macro->expansion; src < limit; src++)
+  for (src = macro->exp.tokens; src < limit; src++)
     {
       unsigned int count;
       const cpp_token **from, **paste_flag;
@@ -777,7 +765,7 @@ replace_args (pfile, node, macro, args)
 	count = 1, from = &arg->stringified;
       else if (src->flags & PASTE_LEFT)
 	count = arg->count, from = arg->first;
-      else if (src != macro->expansion && (src[-1].flags & PASTE_LEFT))
+      else if (src != macro->exp.tokens && (src[-1].flags & PASTE_LEFT))
 	{
 	  count = arg->count, from = arg->first;
 	  if (dest != first)
@@ -805,7 +793,7 @@ replace_args (pfile, node, macro, args)
 
       /* Padding on the left of an argument (unless RHS of ##).  */
       if (!pfile->state.in_directive
-	  && src != macro->expansion && !(src[-1].flags & PASTE_LEFT))
+	  && src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT))
 	*dest++ = padding_token (pfile, src);
 
       if (count)
@@ -1149,7 +1137,7 @@ warn_of_redefinition (node, macro2)
 
   /* Check each token.  */
   for (i = 0; i < macro1->count; i++)
-    if (! _cpp_equiv_tokens (&macro1->expansion[i], &macro2->expansion[i]))
+    if (! _cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
       return 1;
 
   /* Check parameter spellings.  */
@@ -1410,22 +1398,22 @@ _cpp_create_definition (pfile, node)
       token = lex_expansion_token (pfile, macro);
     }
 
-  macro->expansion = (cpp_token *) BUFF_FRONT (pfile->a_buff);
+  macro->exp.tokens = (cpp_token *) BUFF_FRONT (pfile->a_buff);
 
   /* Don't count the CPP_EOF.  */
   macro->count--;
 
   /* Clear whitespace on first token for warn_of_redefinition().  */
   if (macro->count)
-    macro->expansion[0].flags &= ~PREV_WHITE;
+    macro->exp.tokens[0].flags &= ~PREV_WHITE;
 
   /* Commit the memory.  */
-  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->expansion[macro->count];
+  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->exp.tokens[macro->count];
 
   /* Implement the macro-defined-to-itself optimisation.  */
   if (macro->count == 1 && !macro->fun_like
-      && macro->expansion[0].type == CPP_NAME
-      && macro->expansion[0].val.node == node)
+      && macro->exp.tokens[0].type == CPP_NAME
+      && macro->exp.tokens[0].val.node == node)
     node->flags |= NODE_DISABLED;
 
   /* To suppress some diagnostics.  */
@@ -1545,7 +1533,7 @@ cpp_macro_definition (pfile, node)
 
   for (i = 0; i < macro->count; i++)
     {
-      cpp_token *token = &macro->expansion[i];
+      cpp_token *token = &macro->exp.tokens[i];
 
       if (token->type == CPP_MACRO_ARG)
 	len += NODE_LEN (macro->params[token->val.arg_no - 1]);
@@ -1602,7 +1590,7 @@ cpp_macro_definition (pfile, node)
     {
       for (i = 0; i < macro->count; i++)
 	{
-	  cpp_token *token = &macro->expansion[i];
+	  cpp_token *token = &macro->exp.tokens[i];
 
 	  if (token->flags & PREV_WHITE)
 	    *buffer++ = ' ';
