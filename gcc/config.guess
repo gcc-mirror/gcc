@@ -368,6 +368,8 @@ EOF
 	elif /bin/uname -X 2>/dev/null >/dev/null ; then
 		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
+		(/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
+			&& UNAME_MACHINE=i586
 		echo ${UNAME_MACHINE}-unknown-sco$UNAME_REL
 	else
 		echo ${UNAME_MACHINE}-unknown-sysv32
