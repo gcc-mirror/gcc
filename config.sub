@@ -224,40 +224,14 @@ case $basic_machine in
 		;;
 	thumb-*) # CYGNUS LOCAL angela/thumb
 		;;
-# start-sanitize-sky
-	dvp-* | txvu-*)
-		;;
-# end-sanitize-sky
 	v850-*) # CYGNUS LOCAL
 	        ;;
-# start-sanitize-v850e
-	v850e-*) # CYGNUS LOCAL
-	        ;;
-	v850ea-*) # CYGNUS LOCAL
-	        ;;
-# end-sanitize-v850e
 	d30v-*) # CYGNUS LOCAL
 	        ;;
-# start-sanitize-vr4320
-	mips64vr4320-* | mips64vr4320el-*)
-		;;
-# end-sanitize-vr4320
 	mips64vr4300-* | mips64vr4300el-*) # CYGNUS LOCAL jsmith/vr4300
 		;;
 	mips64vr4100-* | mips64vr4100el-*) # CYGNUS LOCAL jsmith/vr4100
 		;;
-# start-sanitize-tx19
-	mipstx19-* | mipstx19el-*)
-		;;
-# end-sanitize-tx19
-# start-sanitize-tx49
-	mips64tx49-* | mips64tx49el-*)
-		;;
-# end-sanitize-tx49
-# start-sanitize-r5900
-	mips64r5900-* | mips64r5900el-*) # CYGNUS LOCAL gavin/r5900
-                ;;
-# end-sanitize-r5900
 	mips16-*) # CYGNUS LOCAL krk/mips16
 		;;
 	tic30-*) # CYGNUS LOCAL ian/tic30
@@ -265,10 +239,6 @@ case $basic_machine in
 	c30-*) # CYGNUS LOCAL ian/tic30
 		basic_machine=tic30-unknown
 		;;
-# start-sanitize-tic80
-	tic80-*)						# CYGNUS LOCAL fnf/TIc80
-		;;
-# end-sanitize-tic80
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
 	386bsd)						# CYGNUS LOCAL
