@@ -5139,7 +5139,7 @@ main (argc, argv)
 	    {
 	      int skip_first = 0;
 
-	      if (mbuffer[0] == '.')
+	      if (mbuffer[0] == '.' || mbuffer[0] == '$')
 		++skip_first;
 	      if (strip_underscore && mbuffer[skip_first] == '_')
 		++skip_first;
