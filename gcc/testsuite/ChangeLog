@@ -1,3 +1,7 @@
+2004-08-17  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/darwin-20040812-1.c: Compile only on darwin.
+
 2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/pr17036-1.c: New test.
