@@ -1,5 +1,7 @@
 2000-07-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* genrecog.c (write_header): Split long string.
+
 	* cpphash.c (macro_info): Don't use the `signed' keyword.
 
 	* system.h (alloca): Prototype if __GNUC__ && __SIZE_TYPE__.
