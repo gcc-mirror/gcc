@@ -1,5 +1,11 @@
 2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cse.c (fold_rtx_subreg, fold_rtx_mem): New.
+	(fold_rtx): Call fold_rtx_subreg and fold_rtx_mem to handle
+	SUBREG and MEM, respectively.
+
+2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* fold-const.c (fold_binary): Avoid directly using the original
 	expression t as much as possible.
 
