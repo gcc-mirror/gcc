@@ -1,3 +1,15 @@
+Tue Sep 21 14:51:23 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* flow.c (remove_edge): New function to remove an edge from the 
+	flow graph.
+	(remove_fake_successors): New function to remove fake successor edges.
+	(remove_fake_edges): New function to remove all fake edges from the
+	flow graph.
+	(add_fake_exit_edges): New function to add fake edges from all blocks
+	with no successors to the exit block.
+	* basic-block.h (remove_fake_edges, add_fake_exit_edges): Add 
+	prototypes for new functions.
+
 Tue Sep 21 14:49:53 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* config/mips/elf64.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR):
