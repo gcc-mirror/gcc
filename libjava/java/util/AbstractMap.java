@@ -227,15 +227,18 @@ public abstract class AbstractMap implements Map
   {
     Iterator entries = entrySet().iterator();
     int size = size();
-    String r = "{";
+    StringBuffer r = new StringBuffer("{");
     for (int pos = 0; pos < size; pos++)
       {
-	r += entries.next();
+        // Append the toString value of the entries rather than calling 
+	// getKey/getValue. This is more efficient and it matches the JDK
+	// behaviour.
+	r.append(entries.next());	
 	if (pos < size - 1)
-	  r += ", ";
+	  r.append(", ");
       }
-    r += "}";
-    return r;
+    r.append("}");
+    return r.toString();
   }
 
   public Collection values()
