@@ -1,3 +1,9 @@
+Sun Nov 16 22:47:03 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (compare, compare-lean): Define $stage for each
+	shell command.
+	(gnucompare, gnucompare-lean): Likewise.
+
 Sun Nov 16 22:02:16 1997  Richard Henderson  (rth@cygnus.com)
 
 	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE): Fix offsets.
