@@ -187,12 +187,6 @@ static int arm_address_cost			PARAMS ((rtx));
 #undef  TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES arm_set_default_type_attributes
 
-#undef  TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS arm_init_builtins
-
-#undef  TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN arm_expand_builtin
-
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST arm_adjust_cost
 
@@ -9980,82 +9974,6 @@ arm_debugger_arg_offset (value, addr)
     }
 
   return value;
-}
-
-#define def_builtin(NAME, TYPE, CODE) \
-  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE)
-
-void
-arm_init_builtins ()
-{
-  tree endlink = void_list_node;
-  tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
-  tree pchar_type_node = build_pointer_type (char_type_node);
-
-  tree int_ftype_int, void_ftype_pchar;
-
-  /* void func (char *) */
-  void_ftype_pchar
-    = build_function_type_list (void_type_node, pchar_type_node, NULL_TREE);
-
-  /* int func (int) */
-  int_ftype_int
-    = build_function_type (integer_type_node, int_endlink);
-
-  /* Initialize arm V5 builtins.  */
-  if (arm_arch5)
-    def_builtin ("__builtin_arm_clz", int_ftype_int, ARM_BUILTIN_CLZ);
-}
-
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-rtx
-arm_expand_builtin (exp, target, subtarget, mode, ignore)
-     tree exp;
-     rtx target;
-     rtx subtarget ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int ignore ATTRIBUTE_UNUSED;
-{
-  enum insn_code icode;
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0;
-  rtx op0, pat;
-  enum machine_mode tmode, mode0;
-  int fcode = DECL_FUNCTION_CODE (fndecl);
-
-  switch (fcode)
-    {
-    default:
-      break;
-      
-    case ARM_BUILTIN_CLZ:
-      icode = CODE_FOR_clz;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-    }
-
-  /* @@@ Should really do something sensible here.  */
-  return NULL_RTX;
 }
 
 /* Recursively search through all of the blocks in a function

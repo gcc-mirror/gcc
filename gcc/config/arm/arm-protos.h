@@ -209,12 +209,6 @@ extern void arm_mark_dllexport 		PARAMS ((tree));
 extern void arm_mark_dllimport 		PARAMS ((tree));
 #endif
 
-extern void arm_init_builtins		PARAMS ((void));
-#if defined (TREE_CODE) && defined (RTX_CODE)
-extern rtx arm_expand_builtin		PARAMS ((tree, rtx, rtx,
-					       enum machine_mode, int));
-#endif
-
 extern void arm_pr_long_calls		PARAMS ((struct cpp_reader *));
 extern void arm_pr_no_long_calls	PARAMS ((struct cpp_reader *));
 extern void arm_pr_long_calls_off	PARAMS ((struct cpp_reader *));

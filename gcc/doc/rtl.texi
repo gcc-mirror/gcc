@@ -1850,7 +1850,8 @@ valid.
 @item (clz:@var{m} @var{x})
 Represents the number of leading 0-bits in @var{x}, represented as an
 integer of mode @var{m}, starting at the most significant bit position.
-If @var{x} is zero, the value is undefined.  Note that this is one of
+If @var{x} is zero, the value is determined by
+@code{CLZ_DEFINED_VALUE_AT_ZERO}.  Note that this is one of
 the few expressions that is not invariant under widening.  The mode of
 @var{x} will usually be an integer mode.
 
@@ -1858,7 +1859,8 @@ the few expressions that is not invariant under widening.  The mode of
 @item (ctz:@var{m} @var{x})
 Represents the number of trailing 0-bits in @var{x}, represented as an
 integer of mode @var{m}, starting at the least significant bit position.
-If @var{x} is zero, the value is undefined.  Except for this case,
+If @var{x} is zero, the value is determined by
+@code{CTZ_DEFINED_VALUE_AT_ZERO}.  Except for this case,
 @code{ctz(x)} is equivalent to @code{ffs(@var{x}) - 1}.  The mode of
 @var{x} will usually be an integer mode.
 

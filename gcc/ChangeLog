@@ -1,3 +1,27 @@
+2003-02-05  Richard Henderson  <rth@redhat.com>
+
+	* defaults.h (CLZ_DEFINED_VALUE_AT_ZERO): New.
+	(CTZ_DEFINED_VALUE_AT_ZERO): New.
+	* doc/rtl.texi, doc/tm.texi: Document them.
+
+	* combine.c (nonzero_bits) [CLZ, CTZ]: Handle the definedness
+	of the value at zero properly.
+	* fold-const.c (tree_expr_nonnegative_p): Likewise.
+	* simplify-rtx.c (simplify_unary_operation): Likewise.
+
+	* config/alpha/alpha.h (CLZ_DEFINED_VALUE_AT_ZERO): New.
+	(CTZ_DEFINED_VALUE_AT_ZERO): New.
+
+	* config/arm/arm.c (TARGET_INIT_BUILTINS): Remove.
+	(TARGET_EXPAND_BUILTIN): Remove.
+	(def_builtin, arm_init_builtins, arm_expand_builtin): Remove.
+	* config/arm/arm.h (CLZ_DEFINED_VALUE_AT_ZERO): New.
+	(enum arm_builtins): Remove.
+	* config/arm/arm.md (UNSPEC_CLZ): Remove.
+	(clzsi2): Rename from clz; use clz instead of unspec.
+	(ctzsi2): New.
+	* config/arm/arm-protos.h: Update.
+
 Wed Feb  5 23:12:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (x86_emit_floatuns):  Declare.

@@ -2146,6 +2146,8 @@ extern int making_const_table;
 
 #define STORE_FLAG_VALUE 1
 
+/* The arm5 clz instruction returns 32.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 
 
 /* Gcc puts the pool in the wrong place for ARM, since we can only
@@ -2456,9 +2458,4 @@ extern int making_const_table;
 #define SPECIAL_MODE_PREDICATES			\
  "cc_register", "dominant_cc_register",
 
-enum arm_builtins
-{
-  ARM_BUILTIN_CLZ,
-  ARM_BUILTIN_MAX
-};
 #endif /* ! GCC_ARM_H */
