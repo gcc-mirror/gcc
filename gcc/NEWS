@@ -1,1075 +1,1448 @@
-Noteworthy changes in GCC after EGCS 1.1.
------------------------------------------
-
-Target specific NEWS
-
-    RS6000/PowerPC: -mcpu=401 was added as an alias for -mcpu=403.  -mcpu=e603e
-		    was added to do -mcpu=603e and -msoft-float.
-
-    MCore: Port of gcc to Motorola's MCore 210 and 340 contributed.
-
-    XScale: Port of gcc to Intel's XScale processor contributed.
-        
-Noteworthy changes in GCC for EGCS 1.1.
----------------------------------------
-
-The compiler now implements global common subexpression elimination (gcse) as
-well as global constant/copy propagation.  (link to gcse page).
-
-More major improvements have been made to the alias analysis code.  A new
-option to allow front-ends to provide alias information to the optimizers
-has also been added (-fstrict-aliasing).  -fstrict-aliasing is off by default
-now, but will be enabled by default in the future. (link to alias page)
-
-Major changes continue in the exception handling support.  This release
-includes some changes to reduce static overhead for exception handling.  It
-also includes some major changes to the setjmp/longjmp based EH mechanism to
-make it less pessimistic.  And finally, major infrastructure improvements
-to the dwarf2 EH mechanism have been made to make our EH support extensible.
-
-We have fixed the infamous security problems with temporary files. 
-
-The "regmove" optimization pass has been nearly completely rewritten.  It now
-uses much more information about the target to determine profitability of
-transformations.
-
-The compiler now recomputes register usage information immediately before
-register allocation.  Previously such information was only not kept up to
-date after instruction combination which led to poor register allocation
-choices by our priority based register allocator.
-
-The register reloading phase of the compiler has been improved to better
-optimize spill code.  This primarily helps targets which generate lots of
-spills (like the x86 ports and many register poor embedded ports).
-
-A few changes in the heuristics used by the register allocator and scheduler
-have been made which can significantly improve performance for certain
-applications.
-
-The compiler's branch shortening algorithms have been significantly improved
-to work better on targets which align jump targets.
-
-The compiler now supports the "ADDRESSOF" optimization which can significantly
-reduce the overhead for certain inline calls (and inline calls in general).
-
-The compiler now supports a code size optimization switch (-Os).  When enabled
-the compiler will prefer optimizations which improve code size over those
-which improve code speed.
-
-The compiler has been improved to completely eliminate library calls which
-compute constant values.  This is particularly useful on machines which
-do not have integer mul/div or floating point support on-chip.
-
-GCC now supports a "--help" option to print detailed help information.
-
-cpplib has been greatly improved.  It is probably useable for some sites now
-(major missing feature is trigraphs).
-
-Memory footprint for the compiler has been significantly reduced for certain
-pathalogical cases.
-
-Build time improvements for targets which support lots of sched parameters
-(alpha and mips primarily).
-
-Compile time for certain programs using large constant initializers has been
-improved (affects glibc significantly).
-
-Plus an incredible number of infrastructure changes, warning fixes, bugfixes
-and local optimizations.
-
-Various improvements have been made to better support cross compilations.  They
-are still not easy, but they are improving.
-
-Target specific NEWS
-
-    Sparc: Now includes V8 plus and V9 support, lots of tuning for Ultrasparcs
-           and uses the Haifa scheduler by default.
-
-    Alpha: EV6 tuned, optimized expansion of memcpy/bzero.
-
-    x86: Data in the static store is aligned per Intel recommendations.  Jump
-         targets are aligned per Intel recommendations.  Improved epilogue
-         sequences for Pentium chips.  Backend improvements which should help
-         register allocation on all x86 variants.  Support for PPro conditional
-         move instructions has been fixed and enabled.  Random changes
-	 throughout the port to make generated code more Pentium friendly.
-         Improved support for 64bit integer operations.
-         Unixware 7, a System V Release 5 target is now supported.
-         SCO OpenServer targets can support GAS.  See gcc/INSTALL for details.
-
-    RS6000/PowerPC: Includes AIX4.3 support as well as PowerPC64 support.  
-                    Haifa instruction scheduling is enabled by default now.
-
-    MIPS: Multiply/Multiply-Add support has been largely rewritten to generate
-          more efficient code.  Includes mips16 support.
-
-    M68K: Various micro-optimizations and Coldfire fixes.
-
-    M32r: Major improvements to this port.
-
-    Arm: Includes Thumb and super interworking support.
-
-EGCS includes all gcc2 changes up to and including the June 9, 1998 snapshot.
-
-
-Noteworthy changes in GCC version 2.8.1
----------------------------------------
-
-Numerous bugs have been fixed and some minor performance
-improvements (compilation speed) have been made.
-
-Noteworthy changes in GCC version 2.8.0
----------------------------------------
-
-A major change in this release is the addition of a framework for
-exception handling, currently used by C++.  Many internal changes and
-optimization improvements have been made.  These increase the
-maintainability and portability of GCC.  GCC now uses autoconf to
-compute many host parameters.
-
-The following lists changes that add new features or targets.
-
-See cp/NEWS for new features of C++ in this release.
-
-New tools and features:
-
-    The Dwarf 2 debugging information format is supported on ELF systems, and
-    is the default for -ggdb where available.  It can also be used for C++.
-    The Dwarf version 1 debugging format is also permitted for C++, but
-    does not work well.
-
-    gcov.c is provided for test coverage analysis and branch profiling
-    analysis is also supported; see -fprofile-arcs, -ftest-coverage,
-    and -fbranch-probabilities.
-
-    Support for the Checker memory checking tool.
-
-    New switch, -fstack-check, to check for stack overflow on systems that
-    don't have such built into their ABI.
-
-    New switches, -Wundef and -Wno-undef to warn if an undefined identifier
-    is evaluated in an #if directive.
-
-    Options -Wall and -Wimplicit now cause GCC to warn about implicit int
-    in declarations (e.g. `register i;'), since the C Standard committee
-    has decided to disallow this in the next revision of the standard;
-    -Wimplicit-function-declarations and -Wimplicit-int are subsets of
-    this.
-
-    Option -Wsign-compare causes GCC to warn about comparison of signed and
-    unsigned values.
-
-    Add -dI option of cccp for cxref.
-
-New features in configuration, installation and specs file handling:
-
-    New option --enable-c-cpplib to configure script.
-
-    You can use --with-cpu on the configure command to specify the default
-    CPU that GCC should generate code for.
-
-    The -specs=file switch allows you to override default specs used in
-    invoking programs like cc1, as, etc.
-
-    Allow including one specs file from another and renaming a specs
-    variable.
-
-    You can now relocate all GCC files with a single environment variable
-    or a registry entry under Windows 95 and Windows NT.
-
-Changes in Objective-C:
-
-    The Objective-C Runtime Library has been made thread-safe.
-
-    The Objective-C Runtime Library contains an interface for creating
-    mutexes, condition mutexes, and threads; it requires a back-end
-    implementation for the specific platform and/or thread package.
-    Currently supported are DEC/OSF1, IRIX, Mach, OS/2, POSIX, PCThreads,
-    Solaris, and Windows32.  The --enable-threads parameter can be used
-    when configuring GCC to enable and select a thread back-end.
-
-    Objective-C is now configured as separate front-end language to GCC,
-    making it more convenient to conditionally build it.
-
-    The internal structures of the Objective-C Runtime Library have
-    changed sufficiently to warrant a new version number; now version 8.
-    Programs compiled with an older version must be recompiled.
-
-    The Objective-C Runtime Library can be built as a DLL on Windows 95
-    and Windows NT systems.
-    
-    The Objective-C Runtime Library implements +load.
-
-The following new targets are supported (see also list under each
-individual CPU below):
-
-    Embedded target m32r-elf.
-    Embedded Hitachi Super-H using ELF.
-    RTEMS real-time system on various CPU targets.
-    ARC processor.
-    NEC V850 processor.
-    Matsushita MN10200 processor.
-    Matsushita MN10300 processor.
-    Sparc and PowerPC running on VxWorks.
-    Support both glibc versions 1 and 2 on Linux-based GNU systems.
-
-New features for DEC Alpha systems:
-
-    Allow detailed specification of IEEE fp support:
-      -mieee, -mieee-with-inexact, and -mieee-conformant
-      -mfp-trap-mode=xxx, -mfp-round-mode=xxx, -mtrap-precision=xxx
-    -mcpu=xxx for CPU selection
-    Support scheduling parameters for EV5.
-    Add support for BWX, CIX, and MAX instruction set extensions.
-    Support Linux-based GNU systems.
-    Support VMS.
-
-Additional supported processors and systems for MIPS targets:
-
-    MIPS4 instruction set.
-    R4100, R4300 and R5000 processors.
-    N32 and N64 ABI.
-    IRIX 6.2.
-    SNI SINIX.
-    
-New features for Intel x86 family:
-
-    Add scheduling parameters for Pentium and Pentium Pro.
-    Support stabs on Solaris-x86.
-    Intel x86 processors running the SCO OpenServer 5 family.
-    Intel x86 processors running DG/UX.
-    Intel x86 using Cygwin32 or Mingw32 on Windows 95 and Windows NT.
-
-New features for Motorola 68k family:
-
-    Support for 68060 processor.
-    More consistent switches to specify processor.
-    Motorola 68k family running AUX.
-    68040 running pSOS, ELF object files, DBX debugging.
-    Coldfire variant of Motorola m68k family.
-
-New features for the HP PA RISC:
-
-    -mspace and -mno-space
-    -mlong-load-store and -mno-long-load-store
-    -mbig-switch -mno-big-switch
-
-    GCC on the PA requires either gas-2.7 or the HP assembler; for best
-    results using GAS is highly recommended.  GAS is required for -g and
-    exception handling support.
-
-New features for SPARC-based systems:
-
-    The ultrasparc cpu.
-    The sparclet cpu, supporting only a.out file format.
-    Sparc running SunOS 4 with the GNU assembler.
-    Sparc running the Linux-based GNU system.
-    Embedded Sparc processors running the ELF object file format.
-    -mcpu=xxx
-    -mtune=xxx
-    -malign-loops=xxx
-    -malign-jumps=xxx
-    -malign-functions=xxx
-    -mimpure-text and -mno-impure-text
-
-    Options -mno-v8 and -mno-sparclite are no longer supported on SPARC
-    targets.  Options -mcypress, -mv8, -msupersparc, -msparclite, -mf930,
-    and -mf934 are deprecated and will be deleted in GCC 2.9.  Use
-    -mcpu=xxx instead.
-
-New features for rs6000 and PowerPC systems:
-
-    Solaris 2.51 running on PowerPC's.
-    The Linux-based GNU system running on PowerPC's.
-    -mcpu=604e,602,603e,620,801,823,mpc505,821,860,power2
-    -mtune=xxx
-    -mrelocatable-lib, -mno-relocatable-lib
-    -msim, -mmve, -memb
-    -mupdate, -mno-update
-    -mfused-madd, -mno-fused-madd
-
-    -mregnames
-    -meabi
-    -mcall-linux, -mcall-solaris, -mcall-sysv-eabi, -mcall-sysv-noeabi
-    -msdata, -msdata=none, -msdata=default, -msdata=sysv, -msdata=eabi
-    -memb, -msim, -mmvme
-    -myellowknife, -mads
-    wchar_t is now of type long as per the ABI, not unsigned short.
-    -p/-pg support
-    -mcpu=403 now implies -mstrict-align.
-    Implement System V profiling.
-
-    Aix 4.1 GCC targets now default to -mcpu=common so that programs
-    compiled can be moved between rs6000 and powerpc based systems.  A
-    consequence of this is that -static won't work, and that some programs
-    may be slightly slower.
-
-    You can select the default value to use for -mcpu=xxx on rs6000 and
-    powerpc targets by using the --with-cpu=xxx option when configuring the
-    compiler.  In addition, a new options, -mtune=xxx was added that
-    selects the machine to schedule for but does not select the
-    architecture level.
-
-    Directory names used for storing the multilib libraries on System V
-    and embedded PowerPC systems have been shortened to work with commands
-    like tar that have fixed limits on pathname size.
-
-New features for the Hitachi H8/300(H):
-
-    -malign-300
-    -ms (for the Hitachi H8/S processor)
-    -mint32
-
-New features for the ARM:
-
-    -march=xxx, -mtune=xxx, -mcpu=xxx
-    Support interworking with Thumb code.
-    ARM processor with a.out object format, COFF, or AOF assembler.
-    ARM on "semi-hosted" platform.
-    ARM running NetBSD.
-    ARM running the Linux-based GNU system.
-
-New feature for Solaris systems:
-
-    GCC installation no longer makes a copy of system include files,
-    thus insulating GCC better from updates to the operating system.
-
-
-Noteworthy changes in GCC version 2.7.2
----------------------------------------
-
-A few bugs have been fixed (most notably the generation of an
-invalid assembler opcode on some RS/6000 systems).
-
-Noteworthy changes in GCC version 2.7.1
----------------------------------------
-
-This release fixes numerous bugs (mostly minor) in GCC 2.7.0, but
-also contains a few new features, mostly related to specific targets.
-
-Major changes have been made in code to support Windows NT.
-
-The following new targets are supported:
-
-	2.9 BSD on PDP-11
-	Linux on m68k
-	HP/UX version 10 on HP PA RISC (treated like version 9)
-	DEC Alpha running Windows NT
-
-When parsing C, GCC now recognizes C++ style `//' comments unless you
-specify `-ansi' or `-traditional'.
-
-The PowerPC System V targets (powerpc-*-sysv, powerpc-*-eabi) now use the
-calling sequence specified in the System V Application Binary Interface
-Processor Supplement (PowerPC Processor ABI Supplement) rather than the calling
-sequence used in GCC version 2.7.0.  That calling sequence was based on the AIX
-calling sequence without function descriptors.  To compile code for that older
-calling sequence, either configure the compiler for powerpc-*-eabiaix or use
-the -mcall-aix switch when compiling and linking.
-
-Noteworthy changes in GCC version 2.7.0
----------------------------------------
-
-GCC now works better on systems that use ".obj" and ".exe" instead of
-".o" and no extension.  This involved changes to the driver program,
-gcc.c, to convert ".o" names to ".obj" and to GCC's Makefile to use
-".obj" and ".exe" in filenames that are not targets.  In order to
-build GCC on such systems, you may need versions of GNU make and/or
-compatible shells.  At this point, this support is preliminary.
-
-Object file extensions of ".obj" and executable file extensions of
-".exe" are allowed when using appropriate version of GNU Make.
-
-Numerous enhancements were made to the __attribute__ facility including
-more attributes and more places that support it.  We now support the
-"packed", "nocommon", "noreturn", "volatile", "const", "unused",
-"transparent_union", "constructor", "destructor", "mode", "section",
-"align", "format", "weak", and "alias" attributes.  Each of these
-names may also be specified with added underscores, e.g., "__packed__".
-__attribute__ may now be applied to parameter definitions, function
-definitions, and structure, enum, and union definitions.
-
-GCC now supports returning more structures in registers, as specified by
-many calling sequences (ABIs), such as on the HP PA RISC.
-
-A new option '-fpack-struct' was added to automatically pack all structure
-members together without holes.
-
-There is a new library (cpplib) and program (cppmain) that at some
-point will replace cpp (aka cccp).  To use cppmain as cpp now, pass
-the option CCCP=cppmain to make.  The library is already used by the
-fix-header program, which should speed up the fixproto script.
-
-New options for supported targets:
-
-    GNU on many targets.
-    NetBSD on MIPS, m68k, VAX, and x86.
-    LynxOS on x86, m68k, Sparc, and RS/6000.
-    VxWorks on many targets.
-
-    Windows/NT on x86 architecture.  Initial support for Windows/NT on Alpha
-    (not fully working).
-
-    Many embedded targets, specifically UDI on a29k, aout, coff, elf,
-    and vsta "operating systems" on m68k, m88k, mips, sparc, and x86.
-
-Additional support for x86 (i386, i486, and Pentium):
-
-    Work with old and new linkers for Linux-based GNU systems,
-	supporting both a.out and ELF.
-    FreeBSD on x86.
-    Stdcall convention.
-    -malign-double, -mregparm=, -malign-loops= and -malign-jumps=  switches.
-    On ISC systems, support -Xp like -posix.
-
-Additions for RS/6000:
-
-    Instruction scheduling information for PowerPC 403.
-    AIX 4.1 on PowerPC.
-    -mstring and -mno-string.
-    -msoft-float and floating-point emulation included.
-    Preliminary support for PowerPC System V.4 with or without the GNU as.
-    Preliminary support for EABI.
-    Preliminary support for 64-bit systems.
-    Both big and little endian systems.
-
-New features for MIPS-based systems:
-
-    r4650.
-    mips4 and R8000.
-    Irix 6.0.
-    64-bit ABI.
-    Allow dollar signs in labels on SGI/Irix 5.x.
-
-New support for HP PA RISC:
-
-    Generation of PIC (requires binutils-2.5.2.u6 or later).
-    HP-UX version 9 on HP PA RISC (dynamically links even with -g).
-    Processor variants for HP PA RISC: 700, 7100, and 7100LC.
-    Automatic generation of long calls when needed.
-    -mfast-indirect-calls for kernels and static binaries.
-
-    The called routine now copies arguments passed by invisible reference,
-    as required by the calling standard.
-
-Other new miscellaneous target-specific support:
-
-    -mno-multm on a29k.
-    -mold-align for i960.
-    Configuration for "semi-hosted" ARM.
-    -momit-leaf-frame-pointer for M88k.
-    SH3 variant of Hitachi Super-H and support both big and little endian.
-
-Changes to Objective-C:
-
-    Bare-bones implementation of NXConstantString has been added,
-    which is invoked by the @"string" directive.
-
-    Class * has been changed to Class to conform to the NextSTEP and
-    OpenStep runtime.
-
-    Enhancements to make dynamic loading easier.
-
-    The module version number has been updated to Version 7, thus existing
-    code will need to be recompiled to use the current run-time library.
-
-GCC now supports the ISO Normative Addendum 1 to the C Standard.
-As a result:
-
-    The header <iso646.h> defines macros for C programs written
-    in national variants of ISO 646.
-
-    The following digraph tokens are supported:
-	<:	:>	<%	%>	%:	%:%:
-    These behave like the following, respectively:
-	[	]	{	}	#	##
-
-    Digraph tokens are supported unless you specify the `-traditional'
-    option; you do not need to specify `-ansi' or `-trigraphs'.  Except
-    for contrived and unlikely examples involving preprocessor
-    stringizing, digraph interpretation doesn't change the meaning of
-    programs; this is unlike trigraph interpretation, which changes the
-    meanings of relatively common strings.
-
-    The macro __STDC_VERSION__ has the value 199409L.
-
-  As usual, for full conformance to the standard, you also need a
-  C library that conforms.
-
-The following lists changes that have been made to g++.  If some
-features mentioned below sound unfamiliar, you will probably want to
-look at the recently-released public review copy of the C++ Working
-Paper.  For PostScript and PDF (Adobe Acrobat) versions, see the
-archive at ftp://research.att.com/dist/stdc++/WP.  For HTML and ASCII
-versions, see ftp://ftp.cygnus.com/pub/g++.  On the web, see
-http://www.cygnus.com/~mrs/wp-draft.
-
-The scope of variables declared in the for-init-statement has been changed
-to conform to http://www.cygnus.com/~mrs/wp-draft/stmt.html#stmt.for; as a
-result, packages such as groff 1.09 will not compile unless you specify the
--fno-for-scope flag.  PLEASE DO NOT REPORT THIS AS A BUG; this is a change
-mandated by the C++ standardization committee.
-
-Binary incompatibilities:
-
-    The builtin 'bool' type is now the size of a machine word on RISC targets,
-    for code efficiency; it remains one byte long on CISC targets.
-
-    Code that does not use #pragma interface/implementation will most
-    likely shrink dramatically, as g++ now only emits the vtable for a
-    class in the translation unit where its first non-inline, non-abstract
-    virtual function is defined.
-
-    Classes that do not define the copy constructor will sometimes be
-    passed and returned in registers.  This may illuminate latent bugs in
-    your code.
-
-Support for automatic template instantiation has *NOT* been added, due
-to a disagreement over design philosophies.
-
-Support for exception handling has been improved; more targets are now
-supported, and throws will use the RTTI mechanism to match against the
-catch parameter type.  Optimization is NOT SUPPORTED with
--fhandle-exceptions; no need to report this as a bug.
-
-Support for Run-Time Type Identification has been added with -frtti.
-This support is still in alpha; one major restriction is that any file
-compiled with -frtti must include <typeinfo.h>.
-
-Preliminary support for namespaces has been added.  This support is far
-from complete, and probably not useful.
-
-Synthesis of compiler-generated constructors, destructors and
-assignment operators is now deferred until the functions are used.
-
-The parsing of expressions such as `a ? b : c = 1' has changed from
-`(a ? b : c) = 1' to `a : b ? (c = 1)'.
-
-The code generated for testing conditions, especially those using ||
-and &&, is now more efficient.
-
-The operator keywords and, and_eq, bitand, bitor, compl, not, not_eq,
-or, or_eq, xor and xor_eq are now supported.  Use -ansi or
--foperator-names to enable them.
-
-The 'explicit' keyword is now supported.  'explicit' is used to mark
-constructors and type conversion operators that should not be used
-implicitly.
-
-g++ now accepts the typename keyword, though it currently has no
-semantics; it can be a no-op in the current template implementation.
-You may want to start using it in your code, however, since the
-pending rewrite of the template implementation to compile STL properly
-(perhaps for 2.8.0, perhaps not) will require you to use it as
-indicated by the current draft.
-
-Handling of user-defined type conversion has been overhauled so that
-type conversion operators are now found and used properly in
-expressions and function calls.
-
--fno-strict-prototype now only applies to function declarations with
-"C" linkage.
-
-g++ now warns about 'if (x=0)' with -Wparentheses or -Wall.
-
-#pragma weak and #pragma pack are supported on System V R4 targets, as
-are various other target-specific #pragmas supported by gcc.
-
-new and delete of const types is now allowed (with no additional
-semantics).
-
-Explicit instantiation of template methods is now supported.  Also,
-'inline template class foo<int>;' can be used to emit only the vtable
-for a template class.
-
-With -fcheck-new, g++ will check the return value of all calls to
-operator new, and not attempt to modify a returned null pointer.
-
-The template instantiation code now handles more conversions when
-passing to a parameter that does not depend on template arguments.
-This means that code like 'string s; cout << s;' now works.
-
-Invalid jumps in a switch statement past declarations that require
-initializations are now caught.
-
-Functions declared 'extern inline' now have the same linkage semantics
-as inline member functions.  On supported targets, where previously
-these functions (and vtables, and template instantiations) would have
-been defined statically, they will now be defined as weak symbols so
-that only one out-of-line definition is used.
-
-collect2 now demangles linker output, and c++filt has become part of
-the gcc distribution.
-
-Noteworthy changes in GCC version 2.6.3:
-
-A few more bugs have been fixed.
-
-Noteworthy changes in GCC version 2.6.2:
-
-A few bugs have been fixed.
-
-Names of attributes can now be preceded and followed by double underscores.
-
-Noteworthy changes in GCC version 2.6.1:
-
-Numerous (mostly minor) bugs have been fixed.
-
-The following new configurations are supported:
-
-	GNU on x86 (instead of treating it like MACH)
-	NetBSD on Sparc and Motorola 68k
-	AIX 4.1 on RS/6000 and PowerPC systems
-	Sequent DYNIX/ptx 1.x and 2.x.
-	Both COFF and ELF configurations on AViiON without using /bin/gcc
-	Windows/NT on x86 architecture; preliminary
-	AT&T DSP1610 digital signal processor chips
-	i960 systems on bare boards using COFF
-	PDP11; target only and not extensively tested
-
-The -pg option is now supported for Alpha under OSF/1 V3.0 or later.
-
-Files with an extension of ".c++" are treated as C++ code.
-
-The -Xlinker and -Wl arguments are now passed to the linker in the
-position they were specified on the command line.  This makes it
-possible, for example, to pass flags to the linker about specific
-object files.
-
-The use of positional arguments to the configure script is no longer
-recommended.  Use --target= to specify the target; see the GCC manual.
-
-The 386 now supports two new switches: -mreg-alloc=<string> changes
-the default register allocation order used by the compiler, and
--mno-wide-multiply disables the use of the mul/imul instructions that
-produce 64 bit results in EAX:EDX from 32 bit operands to do long long
-multiplies and 32-bit division by constants.
-
-Noteworthy changes in GCC version 2.6.0:
-
-Numerous bugs have been fixed, in the C and C++ front-ends, as
-well as in the common compiler code.
-
-This release includes the C, Objective-C, and C++ compilers.  However,
-we have moved the files for the C++ compiler (G++) files to a
-subdirectory, cp.  Subsequent releases of GCC will split these files
-to a separate TAR file.
-
-The G++ team has been tracking the development of the ANSI standard for C++.
-Here are some new features added from the latest working paper:
-
-	* built-in boolean type 'bool', with constants 'true' and 'false'.
-	* array new and delete (operator new [] and delete []).
-	* WP-conforming lifetime of temporaries.
-	* explicit instantiation of templates (template class A<int>;),
-          along with an option (-fno-implicit-templates) to disable emission
-          of implicitly instantiated templates, obsoletes -fexternal-templates.
-	* static member constants (static const int foo = 4; within the
-          class declaration).
-
-Many error messages have been improved to tell the user more about the
-problem.  Conformance checking with -pedantic-errors has been
-improved.  G++ now compiles Fresco.
-
-There is now an experimental implementation of virtual functions using
-thunks instead of Cfront-style vtables, enabled with -fvtable-thunks.
-This option also enables a heuristic which causes the compiler to only
-emit the vtable in the translation unit where its first non-inline
-virtual function is defined; using this option and
--fno-implicit-templates, users should be able to avoid #pragma
-interface/implementation altogether.
-
-Signatures have been added as a GNU C++ extension.  Using the option
--fhandle-signatures, users are able to turn on recognition of
-signatures.  A short introduction on signatures is in the section
-`Extension to the C++ Language' in the manual.
-
-The `g++' program is now a C program, rather than a shell script.
-
-Lots and lots and lots of bugs fixes, in nested types, access control,
-pointers to member functions, the parser, templates, overload
-resolution, etc, etc.
-
-There have been two major enhancements to the Objective-C compiler:
-
-1) Added portability.  It now runs on Alpha, and some problems with
-   message forwarding have been addressed on other platforms.
-
-2) Selectors have been redefined to be pointers to structs like:
-   { void *sel_id, char *sel_types }, where the sel_id is the unique
-   identifier, the selector itself is no longer unique.  
-
-   Programmers should use the new function sel_eq to test selector
-   equivalence.
-
-The following major changes have been made to the base compiler and
-machine-specific files.
-
-- The MIL-STD-1750A is a new port, but still preliminary.
-
-- The h8/300h is now supported; both the h8/300 and h8/300h ports come
-  with 32 bit IEEE 754 software floating point support.
-
-- The 64-bit Sparc (v9) and 64-bit MIPS chips are supported.
-
-- NetBSD is supported on m68k, Intel x86, and pc523 systems and FreeBSD
-  on x86.
-
-- COFF is supported on x86, m68k, and Sparc systems running LynxOS.
-
-- 68K systems from Bull and Concurrent are supported and System V
-  Release 4 is supported on the Atari.
-
-- GCC supports GAS on the Motorola 3300 (sysV68) and debugging
-  (assuming GAS) on the Plexus 68K system.  (However, GAS does not yet
-  work on those systems).
-
-- System V Release 4 is supported on MIPS (Tandem).
-
-- For DG/UX, an ELF configuration is now supported, and both the ELF
-  and BCS configurations support ELF and COFF object file formats.
-
-- OSF/1 V2.0 is supported on Alpha.
-
-- Function profiling is also supported on Alpha.
-
-- GAS and GDB is supported for Irix 5 (MIPS).
-
-- "common mode" (code that will run on both POWER and PowerPC
-  architectures) is now supported for the RS/6000 family; the
-  compiler knows about more PPC chips.
-
-- Both NeXTStep 2.1 and 3 are supported on 68k-based architectures.
-
-- On the AMD 29k, the -msoft-float is now supported, as well as
-  -mno-sum-in-toc for RS/6000, -mapp-regs and -mflat for Sparc, and
-  -membedded-pic for MIPS.
-
-- GCC can now convert division by integer constants into the equivalent
-  multiplication and shift operations when that is faster than the
-  division.
-	
-- Two new warning options, -Wbad-function-cast and
-  -Wmissing-declarations have been added.
-
-- Configurations may now add machine-specific __attribute__ options on
-  type; many machines support the `section' attribute.
-
-- The -ffast-math flag permits some optimization that violate strict
-  IEEE rules, such as converting X * 0.0 to 0.0.
-
-Noteworthy changes in GCC version 2.5.8:
-
-This release only fixes a few serious bugs.  These include fixes for a
-bug that prevented most programs from working on the RS/6000, a bug
-that caused invalid assembler code for programs with a `switch'
-statement on the NS32K, a G++ problem that caused undefined names in
-some configurations, and several less serious problems, some of which
-can affect most configuration.
-
-Noteworthy change in GCC version 2.5.7:
-
-This release only fixes a few bugs, one of which was causing bootstrap
-compare errors on some systems.
-
-Noteworthy change in GCC version 2.5.6:
-
-A few backend bugs have been fixed, some of which only occur on one
-machine.
-
-The C++ compiler in 2.5.6 includes:
-
- * fixes for some common crashes
- * correct handling of nested types that are referenced as `foo::bar'
- * spurious warnings about friends being declared static and never
-   defined should no longer appear
- * enums that are local to a method in a class, or a class that's
-   local to a function, are now handled correctly.  For example:
-       class foo { void bar () { enum { x, y } E; x; } };
-       void bar () { class foo { enum { x, y } E; E baz; }; }
-
-Noteworthy change in GCC version 2.5.5:
-
-A large number of C++ bugs have been fixed.
-
-The fixproto script adds prototypes conditionally on __cplusplus.
-
-Noteworthy change in GCC version 2.5.4:
-
-A bug fix in passing of structure arguments for the HP-PA architecture
-makes code compiled with GCC 2.5.4 incompatible with code compiled
-with earlier versions (if it passes struct arguments of 33 to 64 bits,
-interspersed with other types of arguments).
-
-Noteworthy change in gcc version 2.5.3:
-
-The method of "mangling" C++ function names has been changed.  So you
-must recompile all C++ programs completely when you start using GCC
-2.5.  Also, GCC 2.5 requires libg++ version 2.5.  Earlier libg++
-versions won't work with GCC 2.5.  (This is generally true--GCC
-version M.N requires libg++ version M.N.)
-
-Noteworthy GCC changes in version 2.5:
-
-* There is now support for the IBM 370 architecture as a target.
-Currently the only operating system supported is MVS; GCC does not run
-on MVS, so you must produce .s files using GCC as a cross compiler,
-then transfer them to MVS to assemble them.  This port is not reliable
-yet.
-
-* The Power PC is now supported.
-
-* The i860-based Paragon machine is now supported.
-
-* The Hitachi 3050 (an HP-PA machine) is now supported.
-
-* The variable __GNUC_MINOR__ holds the minor version number of GCC, as
-an integer.  For version 2.5.X, the value is 5.
-
-* In C, initializers for static and global variables are now processed
-an element at a time, so that they don't need a lot of storage.
-
-* The C syntax for specifying which structure field comes next in an
-initializer is now `.FIELDNAME='.  The corresponding syntax for
-array initializers is now `[INDEX]='.  For example,
-
-  char whitespace[256]
-    = { [' '] = 1, ['\t'] = 1, ['\n'] = 1 };
-
-This was changed to accord with the syntax proposed by the Numerical
-C Extensions Group (NCEG).
-
-* Complex numbers are now supported in C.  Use the keyword __complex__
-to declare complex data types.  See the manual for details.
-
-* GCC now supports `long double' meaningfully on the Sparc (128-bit
-floating point) and on the 386 (96-bit floating point).  The Sparc
-support is enabled on Solaris 2.x because earlier system versions
-(SunOS 4) have bugs in the emulation.
-
-* All targets now have assertions for cpu, machine and system.  So you
-can now use assertions to distinguish among all supported targets.
-
-* Nested functions in C may now be inline.  Just declare them inline
-in the usual way.
-
-* Packed structure members are now supported fully; it should be possible 
-to access them on any supported target, no matter how little alignment
-they have.
-
-* To declare that a function does not return, you must now write
-something like this (works only in 2.5):
-
-    void fatal () __attribute__ ((noreturn));
-
-or like this (works in older versions too):
-
-    typedef void voidfn ();
-
-    volatile voidfn fatal;
-
-It used to be possible to do so by writing this:
-
-    volatile void fatal ();
-
-but it turns out that ANSI C requires that to mean something
-else (which is useless).
-
-Likewise, to declare that a function is side-effect-free
-so that calls may be deleted or combined, write
-something like this (works only in 2.5):
-
-    int computation () __attribute__ ((const));
-
-or like this (works in older versions too):
-
-    typedef int intfn ();
-
-    const intfn computation;
-
-* The new option -iwithprefixbefore specifies a directory to add to 
-the search path for include files in the same position where -I would
-put it, but uses the specified prefix just like -iwithprefix.
-
-* Basic block profiling has been enhanced to record the function the
-basic block comes from, and if the module was compiled for debugging,
-the line number and filename.  A default version of the basic block
-support module has been added to libgcc2 that appends the basic block
-information to a text file 'bb.out'.  Machine descriptions can now
-override the basic block support module in the target macro file.
-
-New features in g++:
-
-* The new flag `-fansi-overloading' for C++.  Use a newly implemented
-scheme of argument matching for C++.  It makes g++ more accurately
-obey the rules set down in Chapter 13 of the Annotated C++ Reference
-Manual (the ARM).  This option will be turned on by default in a
-future release.
-
-* The -finline-debug flag is now gone (it was never really used by the
-  compiler).
-
-* Recognizing the syntax for pointers to members, e.g., "foo::*bar", has been
-  dramatically improved.  You should not get any syntax errors or incorrect
-  runtime results while using pointers to members correctly; if you do, it's
-  a definite bug.
-
-* Forward declaration of an enum is now flagged as an error.
-
-* Class-local typedefs are now working properly.
-
-* Nested class support has been significantly improved.  The compiler
-  will now (in theory) support up to 240 nested classes before hitting
-  other system limits (like memory size).
-
-* There is a new C version of the `g++' driver, to replace the old
-  shell script.  This should significantly improve the performance of
-  executing g++ on a system where a user's PATH environment variable
-  references many NFS-mounted filesystems.  This driver also works
-  under MS-DOS and OS/2.
-
-* The ANSI committee working on the C++ standard has adopted a new
-  keyword `mutable'.  This will allow you to make a specific member be
-  modifiable in an otherwise const class.
-
-Noteworthy GCC changes in version 2.4.4:
-
-  A crash building g++ on various hosts (including m68k) has been
-  fixed.  Also the g++ compiler no longer reports incorrect
-  ambiguities in some situations where they do not exist, and
-  const template member functions are now being found properly.
-
-Noteworthy GCC changes in version 2.4:
-
-* On each target, the default is now to return short structures
-compatibly with the "usual" compiler on that target.
-
-For most targets, this means the default is to return all structures
-in memory, like long structures, in whatever way is used on that
-target.  Use -freg-struct-return to enable returning short structures
-(and unions) in registers.
-
-This change means that newly compiled binaries are incompatible with
-binaries compiled with previous versions of GCC.
-
-On some targets, GCC is itself the usual compiler.  On these targets,
-the default way to return short structures is still in registers.
-Use -fpcc-struct-return to tell GCC to return them in memory.
-
-* There is now a floating point emulator which can imitate the way all
-supported target machines do floating point arithmetic.
-
-This makes it possible to have cross compilation to and from the VAX,
-and between machines of different endianness.  However, this works
-only when the target machine description is updated to use the new
-facilities, and not all have been updated.
-
-This also makes possible support for longer floating point types.
-GCC 2.4 supports extended format on the 68K if you use `long double',
-for targets that have a 68881.  (When we have run time library
-routines for extended floating point, then `long double' will use
-extended format on all 68K targets.)
-
-We expect to support extended floating point on the i386 and Sparc in
-future versions.
-
-* Building GCC now automatically fixes the system's header files.
-This should require no attention.
-
-* GCC now installs an unsigned data type as size_t when it fixes the
-header files (on all but a handful of old target machines).
-Therefore, the bug that size_t failed to be unsigned is fixed.
-
-* Building and installation are now completely separate.
-All new files are constructed during the build process; 
-installation just copies them.
-
-* New targets supported: Clipper, Hitachi SH, Hitachi 8300, and Sparc
-Lite.
-
-* A totally new and much better Objective C run time system is included.
-
-* Objective C supports many new features.  Alas, I can't describe them
-since I don't use that language; however, they are the same ones 
-supported in recent versions of the NeXT operating system.
-
-* The builtin functions __builtin_apply_args, __builtin_apply and
-__builtin_return let you record the arguments and returned
-value of a function without knowing their number or type.
-
-* The builtin string variables __FUNCTION__ and __PRETTY_FUNCTION__
-give the name of the function in the source, and a pretty-printed
-version of the name.  The two are the same in C, but differ in C++.
-
-* Casts to union types do not yield lvalues.
-
-* ## before an empty rest argument discards the preceding sequence
-of non-whitespace characters from the macro definition.
-(This feature is subject to change.)
-
-
-New features specific to C++:
-
-* The manual contains a new section ``Common Misunderstandings with
-GNU C++'' that C++ users should read.
-
-* #pragma interface and #pragma implementation let you use the same
-C++ source file for both interface and implementation.
-However, this mechanism is still in transition.
-
-* Named returned values let you avoid an extra constructor call
-when a function result has a class type.
-
-* The C++ operators <? and >? yield min and max, respectively.
-
-* C++ gotos can exit a block safely even if the block has
-aggregates that require destructors.
-
-* gcc defines the macro __GNUG__ when compiling C++ programs.
-
-* GNU C++ now correctly distinguishes between the prefix and postfix
-forms of overloaded operator ++ and --.  To avoid breaking old
-code, if a class defines only the prefix form, the compiler
-accepts either ++obj or obj++, unless -pedantic is used.
-
-* If you are using version 2.3 of libg++, you need to rebuild it with
-`make CC=gcc' to avoid mismatches in the definition of `size_t'.
-
-Newly documented compiler options:
-
--fnostartfiles
-	Omit the standard system startup files when linking.
-
--fvolatile-global
-	Consider memory references to extern and global data items to
-	be volatile.
-
--idirafter DIR
-	Add DIR to the second include path.
-
--iprefix PREFIX
-	Specify PREFIX for later -iwithprefix options.
-
--iwithprefix DIR
-	Add PREFIX/DIR to the second include path.
-
--mv8
-	Emit Sparc v8 code (with integer multiply and divide).
--msparclite
-	Emit Sparclite code (roughly v7.5).
-
--print-libgcc-file-name
-	Search for the libgcc.a file, print its absolute file name, and exit.
-
--Woverloaded-virtual
-	Warn when a derived class function declaration may be an error
-	in defining a C++ virtual function. 
-
--Wtemplate-debugging
-	When using templates in a C++ program, warn if debugging is
-	not yet fully available.
-
-+eN
-	Control how C++ virtual function definitions are used
-	(like cfront 1.x).
-
+This file contains information about GCC releases which has been
+generated automatically from the online release notes.  This file
+covers releases of GCC (and the former EGCS project) since EGCS 1.0,
+on the line of development that led to GCC 3; for information on GCC
+2.8.1 and older releases of GCC 2, see ONEWS.
+
+======================================================================
+http://gcc.gnu.org/gcc-2.95/gcc-2.95.2.html
+
+                                 GCC 2.95.2
+
+   October 27, 1999
+
+   The GNU project and the GCC developers are pleased to announce the
+   release of GCC version 2.95.2. GCC used to stand for the GNU C
+   Compiler, but since the compiler supports several other languages
+   aside from C, it now stands for the GNU Compiler Collection.
+
+   This is a minor release to address several bugs in the GCC version
+   2.95.1 release.
+
+   The -fstrict-aliasing is not enabled by default for GCC 2.95.2. While
+   the optimizations performed by -fstrict-aliasing are valid according
+   to the C and C++ standards, the optimization have caused some
+   problems, particularly with old non-conforming code.
+
+   The GCC developers are experimenting with ways to warn users about
+   code which violates the C/C++ standards, but those warnings are not
+   ready for widespread use at this time. Rather than wait for those
+   warnings the GCC developers have chosen to disable -fstrict-aliasing
+   by default for the GCC 2.95.2 release.
+
+   We strongly encourage developers to find and fix code which violates
+   the C/C++ standards as -fstrict-aliasing may be enabled by default in
+   future releases. Use the option -fstrict-aliasing to re-enable these
+   optimizations.
+
+     * Generic bugfixes and improvements
+          + Fix incorrectly optimized memory reference in global common
+            subexpression elimination (GCSE) optimization pass.
+          + Fix code generation bug in regmove.c in which it could
+            incorrectly change a "const" value.
+          + Fix bug in optimization of conditionals involving volatile
+            memory references.
+          + Avoid over-allocation of stack space for some procedures.
+          + Fixed bug in the compiler which caused incorrect optimization
+            of an obscure series of bit manipulations, shifts and
+            arithmetic.
+          + Fixed register allocator bug which caused teTeX to be
+            mis-compiled on Sparc targets.
+          + Avoid incorrect optimization of degenerate case statements
+            for certain targets such as the ARM.
+          + Fix out of range memory reference in the jump optimizer.
+          + Avoid dereferencing null pointer in fix-header.
+          + Fix test for GCC specific features so that it is possible to
+            bootstrap with gcc-2.6.2 and older versions of GCC.
+          + Fix typo in scheduler which could potentially cause out of
+            range memory accesses.
+          + Avoid incorrect loop reversal which caused incorrect code for
+            certain loops on PowerPC targets.
+          + Avoid incorrect optimization of switch statements on certain
+            targets (for example the ARM).
+     * Platform specific bugfixes and improvements
+          + Work around bug in Sun V5.0 compilers which caused bootstrap
+            comparison failures on Sparc targets.
+          + Fix Sparc backend bug which caused aborts in final.c.
+          + Fix sparc-hal-solaris2* configuration fragments.
+          + Fix bug in sparc block profiling.
+          + Fix obscure code generation bug for the PARISC targets.
+          + Define __STDC_EXT__ for HPUX configurations.
+          + Various POWERPC64 code generation bugfixes.
+          + Fix abort for PPC targets using ELF (ex GNU/Linux).
+          + Fix collect2 problems for AIX targets.
+          + Correct handling of .file directive for PPC targets.
+          + Fix bug in fix_trunc x86 patterns.
+          + Fix x86 port to correctly pop the FP stack for functions that
+            return structures in memory.
+          + Fix minor bug in strlen x86 pattern.
+          + Use stabs debugging instead of dwarf1 for x86-solaris
+            targets.
+          + Fix template repository code to handle leading underscore in
+            mangled names.
+          + Fix weak/weak alias support for OpenBSD.
+          + GNU/Linux for the ARM has C++ compatible include files.
+     * Language & Runtime specific fixes.
+          + Fix handling of constructor attribute in the C front-end
+            which caused problems building the Chill runtime library on
+            some targets.
+          + Fix minor problem merging type qualifiers in the C front-end.
+          + Fix aliasing bug for pointers and references (C/C++).
+          + Fix incorrect "non-constant initializer bug" when
+            -traditional or -fwritable-strings is enabled.
+          + Fix build error for Chill front-end on SunOS.
+          + Do not complain about duplicate instantiations when using
+            -frepo (C++)
+          + Fix array bounds handling in C++ front-end which caused
+            problems with dwarf debugging information in some
+            circumstances.
+          + Fix minor namespace problem.
+          + Fix problem linking java programs.
+
+   The whole suite has been extensively [1]regression tested and
+   [2]package tested. It should be reliable and suitable for widespread
+   use.
+
+   The GCC 2.95 release has several new optimizations, new targets, new
+   languages and other new features as compared to EGCS 1.1 or GCC 2.8.
+   See the [3]new features page for a more complete list of new features
+   found in the GCC 2.95 releases.
+
+   The sources include installation instructions in both HTML and
+   plaintext forms in the install directory in the distribution. However,
+   the most up to date [4]installation instructions and [5]build/test
+   status are on the web pages. We will update those pages as new
+   information becomes available.
+
+   The GCC developers would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc to GCC. This
+   [6]amazing group of volunteers is what makes GCC successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [7]caveats to using GCC 2.95.2.
+
+   Download GCC 2.95.2 from the [8]GNU FTP server (ftp://ftp.gnu.org)
+   Download GCC 2.95.2 from the [9]GCC/EGCS FTP server
+   (ftp://gcc.gnu.org)
+   [10]Find a GNU mirror site
+   [11]Find a GCC/EGCS mirror site
+
+   For additional information about GCC please see the [12]GCC project
+   web server or contact the [13]GCC development mailing list.
+     _________________________________________________________________
+
+
+    [14]The GCC team
+    Last modified 2000-11-10
+
+References
+
+   1. http://gcc.gnu.org/gcc-2.95/regress.html
+   2. http://gcc.gnu.org/gcc-2.95/othertest.html
+   3. http://gcc.gnu.org/gcc-2.95/features.html
+   4. http://gcc.gnu.org/install/index.html
+   5. http://gcc.gnu.org/gcc-2.95/buildstat.html
+   6. http://gcc.gnu.org/thanks.html
+   7. http://gcc.gnu.org/gcc-2.95/caveats.html
+   8. ftp://ftp.gnu.org/pub/gnu/gcc/
+   9. ftp://gcc.gnu.org/pub/gcc/releases/index.html
+  10. http://www.gnu.org/order/ftp.html
+  11. http://gcc.gnu.org/mirrors.html
+  12. http://gcc.gnu.org/index.html
+  13. mailto:gcc@gcc.gnu.org
+  14. http://gcc.gnu.org/about.html
+======================================================================
+http://gcc.gnu.org/gcc-2.95/gcc-2.95.1.html
+
+                                 GCC 2.95.1
+
+   August 19, 1999
+
+   The GNU project and the GCC/EGCS developers are pleased to announce
+   the release of GCC version 2.95.1. GCC used to stand for the GNU C
+   Compiler, but since the compiler supports several other languages
+   aside from C, it now stands for the GNU Compiler Collection.
+
+   This is a minor release to address several bugs in the GCC version
+   2.95 release.
+
+     * Generic bugfixes and improvements
+          + Various documentation fixes related to the GCC/EGCS merger.
+          + Fix memory management bug which could lead to spurious
+            aborts, core dumps or random parsing errors in the compiler.
+          + Fix a couple bugs in the dwarf1 and dwarf2 debug record
+            support.
+          + Fix infinite loop in the CSE optimizer.
+          + Avoid undefined behavior in compiler FP emulation code
+          + Fix install problem when prefix is overridden on the make
+            install command.
+          + Fix problem with unwanted installation of assert.h on some
+            systems.
+          + Fix problem with finding the wrong assembler in a single tree
+            build.
+          + Avoid increasing the known alignment of a register that is
+            already known to be a pointer.
+     * Platform specific bugfixes and improvements
+          + Codegen bugfix for prologue/epilogue for cpu32 target.
+          + Fix long long code generation bug for the Coldfire target.
+          + Fix various aborts in the SH compiler.
+          + Fix bugs in libgcc support library for the SH.
+          + Fix alpha ev6 code generation bug.
+          + Fix problems with EXIT_SUCCESS/EXIT_FAILURE redefinitions on
+            AIX platforms.
+          + Fix -fpic code generation bug for rs6000/ppc svr4 targets.
+          + Fix varargs/stdarg code generation bug for rs6000/ppc svr4
+            targets.
+          + Fix weak symbol handling for rs6000/ppc svr4 targets.
+          + Fix various problems with 64bit code generation for the
+            rs6000/ppc port.
+          + Fix codegen bug which caused tetex to be mis-compiled on the
+            x86
+          + Fix compiler abort in new cfg code exposed by x86 port.
+          + Fix out of range array reference in code convert flat
+            registers to the x87 stacked FP register file.
+          + Fix minor vxworks configuration bug
+          + Fix return type of bsearch for SunOS 4.x.
+     * Language & Runtime specific fixes.
+          + The G++ signature extension has been deprecated. It will be
+            removed in the next major release of G++. Use of signatures
+            will result in a warning from the compiler.
+          + Several bugs relating to templates and namespaces were fixed.
+          + A bug that caused crashes when combining templates with -g on
+            DWARF1 platforms was fixed.
+          + Pointers-to-members, virtual functions, and multiple
+            inheritance should now work together correctly.
+          + Some code-generation bugs relating to function try blocks
+            were fixed.
+          + G++ is a little bit more lenient with certain archaic
+            constructs than in GCC 2.95.
+          + Fix to prevent shared library version #s from bring truncated
+            to 1 digit
+          + Fix missing std:: in the libstdc++ library.
+          + Fix stream locking problems in libio.
+          + Fix problem in java compiler driver.
+
+   The whole suite has been extensively [1]regression tested and
+   [2]package tested. It should be reliable and suitable for widespread
+   use.
+
+   The compiler has several new optimizations, new targets, new languages
+   and other new features. See the [3]new features page for a more
+   complete list of new features found in the GCC 2.95 releases.
+
+   The sources include installation instructions in both HTML and
+   plaintext forms in the install directory in the distribution. However,
+   the most up to date [4]installation instructions and [5]build/test
+   status are on the web pages. We will update those pages as new
+   information becomes available.
+
+   The GCC developers would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc to GCC. This
+   [6]amazing group of volunteers is what makes GCC successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [7]caveats to using GCC 2.95.1.
+
+   Download GCC 2.95.1 from the [8]GNU FTP server (ftp://ftp.gnu.org)
+   Download GCC 2.95.1 from the [9]GCC/EGCS FTP server
+   (ftp://go.cygnus.com)
+   [10]Find a GNU mirror site
+   [11]Find a GCC/EGCS mirror site
+
+   For additional information about GCC please see the [12]GCC project
+   web server or contact the [13]GCC development mailing list.
+     _________________________________________________________________
+
+
+    [14]The GCC team
+    Last modified 2000-11-10
+
+References
+
+   1. http://gcc.gnu.org/gcc-2.95/regress.html
+   2. http://gcc.gnu.org/gcc-2.95/othertest.html
+   3. http://gcc.gnu.org/gcc-2.95/features.html
+   4. http://gcc.gnu.org/install/index.html
+   5. http://gcc.gnu.org/gcc-2.95/buildstat.html
+   6. http://gcc.gnu.org/thanks.html
+   7. http://gcc.gnu.org/gcc-2.95/caveats.html
+   8. ftp://ftp.gnu.org/pub/gnu/gcc/
+   9. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+  10. http://www.gnu.org/order/ftp.html
+  11. http://gcc.gnu.org/mirrors.html
+  12. http://gcc.gnu.org/index.html
+  13. mailto:gcc@gcc.gnu.org
+  14. http://gcc.gnu.org/about.html
+======================================================================
+http://gcc.gnu.org/gcc-2.95/gcc-2.95.html
+
+                                  GCC 2.95
+
+   July 31, 1999
+
+   The GNU project and the GCC/EGCS developers are pleased to announce
+   the release of GCC version 2.95. GCC used to stand for the GNU C
+   Compiler, but since the compiler supports several other languages
+   aside from C, it now stands for the GNU Compiler Collection.
+
+   This is the first release of GCC since the April 1999 GCC/EGCS
+   reunification and includes nearly a year's worth of new development
+   and bugfixes.
+
+   The whole suite has been extensively [1]regression tested and
+   [2]package tested. It should be reliable and suitable for widespread
+   use.
+
+   The compiler has several new optimizations, new targets, new languages
+   and other new features. See the [3]new features page for a more
+   complete list of new features found in the GCC 2.95 releases.
+
+   The sources include installation instructions in both HTML and
+   plaintext forms in the install directory in the distribution. However,
+   the most up to date [4]installation instructions and [5]build/test
+   status are on the web pages. We will update those pages as new
+   information becomes available.
+
+   The GCC developers would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc to GCC. This
+   [6]amazing group of volunteers is what makes GCC successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [7]caveats to using GCC 2.95.
+
+   Download GCC 2.95 from the [8]GNU FTP server (ftp://ftp.gnu.org)
+   Download GCC 2.95 from the [9]GCC/EGCS FTP server
+   (ftp://go.cygnus.com)
+   [10]Find a GNU mirror site
+   [11]Find a GCC/EGCS mirror site
+
+   For additional information about GCC please see the [12]GCC project
+   web server or contact the [13]GCC development mailing list.
+     _________________________________________________________________
+
+
+    [14]The GCC team
+    Last modified 2000-11-10
+
+References
+
+   1. http://gcc.gnu.org/gcc-2.95/regress.html
+   2. http://gcc.gnu.org/gcc-2.95/othertest.html
+   3. http://gcc.gnu.org/gcc-2.95/features.html
+   4. http://gcc.gnu.org/install/index.html
+   5. http://gcc.gnu.org/gcc-2.95/buildstat.html
+   6. http://gcc.gnu.org/thanks.html
+   7. http://gcc.gnu.org/gcc-2.95/caveats.html
+   8. ftp://ftp.gnu.org/pub/gnu/gcc/
+   9. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+  10. http://www.gnu.org/order/ftp.html
+  11. http://gcc.gnu.org/mirrors.html
+  12. http://gcc.gnu.org/index.html
+  13. mailto:gcc@gcc.gnu.org
+  14. http://gcc.gnu.org/about.html
+======================================================================
+http://gcc.gnu.org/gcc-2.95/features.html
+
+                           GCC 2.95 New Features
+
+     * General Optimizer Improvements:
+          + [1]Localized register spilling to improve speed and code
+            density especially on small register class machines.
+          + [2]Global CSE using lazy code motion algorithms.
+          + [3]Improved global constant/copy propagation.
+          + [4]Improved control flow graph analysis and manipulation.
+          + [5]Local dead store elimination.
+          + [6]Memory Load hoisting/store sinking in loops.
+          + [7]Type based alias analysis is enabled by default. Note this
+            feature will expose bugs in the Linux kernel. Please refer to
+            the [8]FAQ for additional information on this issue.
+          + Major revamp of GIV detection, combination and simplification
+            to improve loop performance.
+          + Major improvements to register allocation and reloading.
+     * New Languages and Language specific improvements
+          + [9]Many C++ improvements.
+          + [10]Many Fortran improvements.
+          + [11]Java front-end has been integrated. A [12]runtime library
+            is available separately.
+          + [13]ISO C99 support
+          + [14]Chill front-end and runtime has been integrated.
+          + Boehm garbage collector support in libobjc.
+          + More support for various pragmas which appear in vendor
+            include files
+     * New Targets and Target Specific Improvements
+          + [15]Sparc backend rewrite.
+          + -mschedule=8000 will optimize code for PA8000 class
+            processors; -mpa-risc-2-0 will generate code for PA2.0
+            processors
+          + Various micro-optimizations for the ia32 port. K6
+            optimizations
+          + Compiler will attempt to align doubles in the stack on the
+            ia32 port
+          + Alpha EV6 support
+          + PowerPC 750
+          + RS6000/PowerPC: -mcpu=401 was added as an alias for
+            -mcpu=403. -mcpu=e603e was added to do -mcpu=603e and
+            -msoft-float.
+          + c3x, c4x
+          + HyperSparc
+          + SparcLite86x
+          + sh4
+          + Support for new systems (OpenBSD, FreeBSD, UWIN, Interix,
+            arm-linux)
+          + vxWorks targets include support for vxWorks threads
+          + StrongARM 110 and ARM9 support added. ARM Scheduling
+            parameters rewritten.
+          + Various changes to the MIPS port to avoid assembler macros,
+            which
+          + Various performance improvements to the i960 port.
+          + Major rewrite of ns32k port in turn improves performance
+     * Other significant improvements
+          + [16]Ability to dump cfg information and display it using vcg.
+          + The new faster scheme for fixing vendor header files is
+            enabled by default.
+          + Experimental internationalization support.
+          + multibyte character support
+          + Some compile-time speedups for pathological problems
+          + Better support for complex types
+     * Plus the usual mountain of bugfixes
+     * Core compiler is based on the gcc2 development tree from Sept 30,
+       1998, so we have all of the [17]features found in GCC 2.8.
+     _________________________________________________________________
+
+
+    [18]The GCC team
+    Last modified 2000-12-04
+
+References
+
+   1. http://gcc.gnu.org/news/spill.html
+   2. http://gcc.gnu.org/news/lcm.html
+   3. http://gcc.gnu.org/news/cprop.html
+   4. http://gcc.gnu.org/news/cfg.html
+   5. http://gcc.gnu.org/news/dse.html
+   6. http://gcc.gnu.org/news/hoist.html
+   7. http://gcc.gnu.org/news/alias.html
+   8. http://gcc.gnu.org/fom_serv/cache/24.html
+   9. http://gcc.gnu.org/gcc-2.95/c++features.html
+  10. http://gcc.gnu.org/onlinedocs/g77_news.html
+  11. http://sources.redhat.com/java/gcj-announce.txt
+  12. http://gcc.gnu.org/javaannounce.html
+  13. http://gcc.gnu.org/c99status.html
+  14. http://gcc.gnu.org/news/chill.html
+  15. http://gcc.gnu.org/news/sparc.html
+  16. http://gcc.gnu.org/news/egcs-vcg.html
+  17. http://gcc.gnu.org/egcs-1.0/features-2.8.html
+  18. http://gcc.gnu.org/about.html
+======================================================================
+http://gcc.gnu.org/gcc-2.95/caveats.html
+
+                              GCC 2.95 Caveats
+
+     * GCC 2.95 will issue an error for invalid asm statements that had
+       been silently accepted by earlier versions of the compiler. This
+       is particularly noticeable when compiling older versions of the
+       Linux kernel (2.0.xx). Please refer to the [1]FAQ for more
+       information on this issue.
+     * GCC 2.95 implements type based alias analysis to disambiguate
+       memory references. Some programs, particularly the Linux kernel
+       violate ANSI/ISO aliasing rules and therefore may not operate
+       correctly when compiled with GCC 2.95. Please refer to the [2]FAQ
+       for more information on this issue.
+     * GCC 2.95 has a known bug in its handling of complex variables for
+       64bit targets. Instead of silently generating incorrect code, GCC
+       2.95 will issue a fatal error for situations it can not handle.
+       This primarily affects the Fortran community as Fortran makes more
+       use of complex variables than C or C++.
+     * GCC 2.95 has an integrated libstdc++, but does not have an
+       integrated libg++. Furthermore old libg++ releases will not work
+       with GCC 2.95. You can retrieve a recent copy of libg++ from the
+       [3]GCC ftp server.
+       Note most C++ programs only need libstdc++.
+     * Exception handling may not work with shared libraries,
+       particularly on alphas, hppas, rs6000/powerpc and mips based
+       platforms. Exception handling is known to work on x86 GNU/Linux
+       platforms with shared libraries.
+     * In general, GCC 2.95 is more rigorous about rejecting invalid C++
+       code or deprecated C++ constructs than G++ 2.7, G++ 2.8, EGCS 1.0,
+       or EGCS 1.1. As a result it may be necessary to fix C++ code
+       before it will compile with GCC 2.95.
+     * G++ is also converting toward the ISO C++ standard; as a result
+       code which was previously valid (and thus accepted by other
+       compilers and older versions of g++) may no longer be accepted.
+       The flag -fpermissive may allow some non-conforming code to
+       compile with GCC 2.95.
+     * GCC 2.95 compiled C++ code is not binary compatible with EGCS
+       1.1.x, EGCS 1.0.x or GCC 2.8.x.
+     * GCC 2.95 does not have changes from the GCC 2.8 tree that were
+       made between Sept 30, 1998 and April 30, 1999 (the official end of
+       the GCC 2.8 project). Future GCC releases will include all the
+       changes from the defunct GCC 2.8 sources.
+     _________________________________________________________________
+
+
+    [4]The GCC team
+    Last modified 2000-11-10
+
+References
+
+   1. http://gcc.gnu.org/faq.html#asmclobber
+   2. http://gcc.gnu.org/fom_serv/cache/24.html
+   3. ftp://gcc.gnu.org/pub/gcc/infrastructure/libg++-2.8.1.3.tar.gz
+   4. http://gcc.gnu.org/about.html
+======================================================================
+http://gcc.gnu.org/egcs-1.1/egcs-1.1.2.html
+
+                                 EGCS 1.1.2
+
+   March 15, 1999
+
+   We are pleased to announce the release of EGCS 1.1.2.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   EGCS 1.1.2 is a minor update to the EGCS 1.1.1 compiler to fix several
+   serious problems in EGCS 1.1.1.
+     * General improvements and fixes
+          + Fix bug in loop optimizer which caused the SPARC (and
+            potentially other) ports to segfault.
+          + Fix infinite recursion in alias analysis and combiner code.
+          + Fix bug in regclass preferencing.
+          + Fix incorrect loop reversal which caused incorrect code to be
+            generated for several targets.
+          + Fix return value for builtin memcpy.
+          + Reduce compile time for certain loops which exposed quadratic
+            behavior in the loop optimizer.
+          + Fix bug which caused volatile memory to be written multiple
+            times when only one write was needed/desired.
+          + Fix compiler abort in caller-save.c
+          + Fix combiner bug which caused incorrect code generation for
+            certain division by constant operations.
+          + Fix incorrect code generation due to a bug in range check
+            optimizations.
+          + Fix incorrect code generation due to mis-handling of
+            clobbered values in CSE.
+          + Fix compiler abort/segfault due to incorrect register
+            splitting when unrolling loops.
+          + Fix code generation involving autoincremented addresses with
+            ternary operators.
+          + Work around bug in the scheduler which caused qt to be
+            mis-compiled on some platforms.
+          + Fix code generation problems with -fshort-enums.
+          + Tighten security for temporary files.
+          + Improve compile time for codes which make heavy use of
+            overloaded functions.
+          + Fix multiply defined constructor/destructor symbol problems.
+          + Avoid setting bogus RPATH environemnt variable during
+            bootstrap.
+          + Avoid GNU-make dependencies in the texinfo subdir.
+          + Install CPP wrapper script in $(prefix)/bin if --enable-cpp.
+            --enable-cpp= can be used to specify an additional install
+            directory for the cpp wrapper script.
+          + Fix CSE bug which caused incorrect label-label refs to appear
+            on some platforms.
+          + Avoid linking in EH routines from libgcc if they are not
+            needed.
+          + Avoid obscure bug in aliasing code.
+          + Fix bug in weak symbol handling.
+     * Platform-specific improvements and fixes
+          + Fix detection of PPro/PII on Unixware 7.
+          + Fix compiler segfault when building spec99 and other programs
+            for SPARC targets.
+          + Fix code-generation bugs for integer and floating point
+            conditional move instructions on the PPro/PII.
+          + Use fixincludes to fix byteorder problems on i?86-*-sysv.
+          + Fix build failure for the arc port.
+          + Fix floating point format configuration for i?86-gnu port
+          + Fix problems with hppa1.0-hp-hpux10.20 configuration when
+            threads are enabled
+          + Fix coldfire code generation bugs.
+          + Fix "unrecognized insn" problems for Alpha and PPC ports.
+          + Fix h8/300 code generation problem with floating point values
+            in memory.
+          + Fix unrecognized insn problems for the m68k port.
+          + Fix namespace-pollution problem for the x86 port.
+          + Fix problems with old assembler on x86 NeXT systems.
+          + Fix PIC code-generation problems for the SPARC port.
+          + Fix minor bug with LONG_CALLS in PowerPC SVR4 support.
+          + Fix minor ISO namespace violation in Alpha varargs/stdarg
+            support.
+          + Fix incorrect "braf" instruction usage for the SH port.
+          + Fix minor bug in va-sh which prevented its use with -ansi.
+          + Fix problems recognizing and supporting FreeBSD.
+          + Handle OpenBSD systems correctly.
+          + Minor fixincludes fix for Digital UNIX 4.0B.
+          + Fix problems with ctors/dtors in SCO shared libraries.
+          + Abort instead of generating incorrect code for PPro/PII
+            floating point conditional moves.
+          + Avoid multiply defined symbols on Linux/GNU systems using
+            libc-5.4.xx.
+          + Fix abort in alpha compiler.
+
+     Fortran-specific fixes
+     * Fix the IDate intrinsic (VXT) (in libg2c) so the returned year is
+       in the documented, non-Y2K-compliant range of 0-99, instead of
+       being returned as 100 in the year 2000.
+     * Fix the `Date_and_Time' intrinsic (in libg2c) to return the
+       milliseconds value properly in Values(8).
+     * Fix the `LStat' intrinsic (in libg2c) to return device-ID
+       information properly in SArray(7).
+
+   An important goal of EGCS is to allow wide scale testing of new
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most gcc releases.
+
+   EGCS 1.1.2 is based on the June 6, 1998 snapshot of the GCC 2.8
+   development sources; it contains all of the new features found in GCC
+   2.8.1 as well as all new development from gcc2 up to June 6, 1998.
+
+   See the [1]new features page for a more complete list of new features
+   found in EGCS 1.1 releases.
+
+   The EGCS 1.1.2 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.1.2 distribution). However, we also keep the
+   most up to date [2]installation instructions and [3]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   The EGCS project would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc. This [4]amazing
+   group of volunteers is what makes EGCS successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [5]caveats to using EGCS 1.1.2. [6]Download EGCS 1.1.2 from
+   egcs.cygnus.com (USA California) -->
+
+   [7]Download EGCS 1.1.2 from go.cygnus.com (USA California - High speed
+   link provided by Stanford)
+
+   The EGCS 1.1.2 release is also available on many [8]mirror sites.
+     _________________________________________________________________
+
+   Last modified on July 28, 1999.
+
+References
+
+   1. http://gcc.gnu.org/egcs-1.1/features.html
+   2. http://gcc.gnu.org/install/index.html
+   3. http://gcc.gnu.org/egcs-1.1/buildstat.html
+   4. http://gcc.gnu.org/thanks.html
+   5. http://gcc.gnu.org/egcs-1.1/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+   8. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.1/egcs-1.1.1.html
+
+                                 EGCS 1.1.1
+
+   December 1, 1998
+
+   We are pleased to announce the release of EGCS 1.1.1.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   EGCS 1.1.1 is a minor update to the EGCS 1.1 compiler to fix several
+   serious problems in EGCS 1.1.
+     * General improvements and fixes
+          + Avoid some stack overflows when compiling large functions.
+          + Avoid incorrect loop invariant code motions.
+          + Fix some core dumps on Linux kernel code.
+          + Bring back the imake -Di386 and friends fix from EGCS 1.0.2.
+          + Fix code generation problem in gcse.
+          + Various documentation related fixes.
+     * g++/libstdc++ improvements and fixes
+          + MT safe EH fix for setjmp/longjmp based exception handling.
+          + Fix a few bad interactions between optimization and exception
+            handling.
+          + Fixes for demangling of template names starting with "__".
+          + Fix a bug that would fail to run destructors in some cases
+            with -O2.
+          + Fix 'new' of classes with virtual bases.
+          + Fix crash building Qt on the Alpha.
+          + Fix failure compiling WIFEXITED macro on GNU/Linux.
+          + Fix some -frepo failures.
+     * g77 and libf2c improvements and fixes
+          + Various documentation fixes.
+          + Avoid compiler crash on RAND intrinsic.
+          + Fix minor bugs in makefiles exposed by BSD make programs.
+          + Define _XOPEN_SOURCE for libI77 build to avoid potential
+            problems on some 64-bit systems.
+          + Fix problem with implicit endfile on rewind.
+          + Fix spurious recursive I/O errors.
+     * platform specific improvements and fixes
+          + Match all versions of UnixWare7.
+          + Do not assume x86 SVR4 or UnixWare targets can handle stabs
+          + Fix PPC/RS6000 LEGITIMIZE_ADDRESS macro and bug in conversion
+            from unsigned ints to double precision floats.
+          + Fix ARM ABI issue with NetBSD.
+          + Fix a few arm code generation bugs.
+          + Fixincludes will fix additional broken SCO OpenServer header
+            files.
+          + Fix a m68k backend bug which caused invalid offsets in reg+d
+            addresses.
+          + Fix problems with 64bit AIX 4.3 support.
+          + Fix handling of long longs for varargs/stdarg functions on
+            the ppc.
+          + Minor fixes to CPP predefines for Windows.
+          + Fix code generation problems with gpr<->fpr copies for 64bit
+            ppc
+          + Fix a few coldfire code generation bugs.
+          + Fix some more header file problems on SunOS 4.x
+          + Fix assert.h handling for RTEMS.
+          + Fix Windows handling of TREE_SYMBOL_REFERENCED.
+          + Fix x86 compiler abort in reg-stack pass.
+          + Fix cygwin/windows problem with section attributes.
+          + Fix Alpha code generation problem exposed by SMP Linux
+            kernels.
+          + Fix typo in m68k 32->64bit integer conversion.
+          + Make sure target libraries build with -fPIC for PPC & Alpha
+            targets.
+
+   An important goal of EGCS is to allow wide scale testing of new
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most gcc releases.
+
+   EGCS 1.1.1 is based on the June 6, 1998 snapshot of the GCC 2.8
+   development sources; it contains all of the new features found in GCC
+   2.8.1 as well as all new development from gcc2 up to June 6, 1998.
+
+   See the [1]new features page for a more complete list of new features
+   found in EGCS 1.1 releases.
+
+   The EGCS 1.1.1 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.1.1 distribution). However, we also keep the
+   most up to date [2]installation instructions and [3]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   The EGCS project would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc. This [4]amazing
+   group of volunteers is what makes EGCS successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [5]caveats to using EGCS 1.1.1.
+
+   [6]Download EGCS 1.1.1 from egcs.cygnus.com (USA California)
+
+   The EGCS 1.1.1 release is also available on many mirror sites.
+   [7]Goto mirror list to find a closer site
+     _________________________________________________________________
+
+   Last modified on July 28, 1999.
+
+References
+
+   1. http://gcc.gnu.org/egcs-1.1/features.html
+   2. http://gcc.gnu.org/install/index.html
+   3. http://gcc.gnu.org/egcs-1.1/buildstat.html
+   4. http://gcc.gnu.org/thanks.html
+   5. http://gcc.gnu.org/egcs-1.1/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.1/egcs-1.1.html
+
+                                  EGCS 1.1
+
+   September 3, 1998
+
+   We are pleased to announce the release of EGCS 1.1.
+
+   EGCS is a free software project to further the development of the GNU
+   compilers using an open development environment.
+
+   EGCS 1.1 is a major new release of the EGCS compiler system. It has
+   been [1]extensively tested and is believed to be stable and suitable
+   for widespread use.
+
+   EGCS 1.1 is based on an June 6, 1998 snapshot of the GCC 2.8
+   development sources; it contains all of the new features found in GCC
+   2.8.1 as well as all new development from GCC up to June 6, 1998.
+
+   EGCS also contains many improvements and features not found in GCC or
+   in older versions of EGCS.
+     * Global common subexpression elimination and global constant/copy
+       propagation (aka [2]gcse)
+     * Ongoing improvements to the [3]alias analysis support to allow for
+       better optimizations throughout the compiler.
+     * Vastly improved [4]C++ compiler and integrated C++ runtime
+       libraries.
+     * Fixes for the /tmp symlink race security problems.
+     * New targets including mips16, arm-thumb and 64 bit PowerPC.
+     * Improvements to GNU Fortran (g77) compiler and runtime library
+       made since [5]g77 version 0.5.23.
+
+   See the [6]new features page for a more complete list of new features
+   found in EGCS 1.1 releases.
+
+   The EGCS 1.1 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.1 distribution). However, we also keep the
+   most up to date [7]installation instructions and [8]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   The EGCS project would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc. This [9]amazing
+   group of volunteers is what makes EGCS successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [10]caveats to using EGCS 1.1.
+
+   [11]Download EGCS 1.1 from egcs.cygnus.com (USA California)
+
+   [12]Download EGCS 1.1 from go.cygnus.com (USA California -- High speed
+   link provided by Stanford)
+
+   The EGCS 1.1 release is also available on many mirror sites.
+   [13]Goto mirror list to find a closer site
+     _________________________________________________________________
+
+   Last modified on September 4, 1999.
+
+References
+
+   1. http://gcc.gnu.org/egcs-1.1/egcs-1.1-test.html
+   2. http://gcc.gnu.org/news/gcse.html
+   3. http://gcc.gnu.org/news/alias.html
+   4. http://gcc.gnu.org/egcs-1.1/c++features.html
+   5. http://gcc.gnu.org/onlinedocs/g77_news.html
+   6. http://gcc.gnu.org/egcs-1.1/features.html
+   7. http://gcc.gnu.org/install/index.html
+   8. http://gcc.gnu.org/egcs-1.1/buildstat.html
+   9. http://gcc.gnu.org/thanks.html
+  10. http://gcc.gnu.org/egcs-1.1/caveats.html
+  11. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+  12. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+  13. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.1/features.html
+
+                           EGCS 1.1 new features
+
+     * Integrated GNU Fortran (g77) compiler and runtime library with
+       improvements, based on [1]g77 version 0.5.23.
+     * Vast improvements in the C++ compiler; so many they have [2]page
+       of their own!
+     * Compiler implements [3]global common subexpression elimination and
+       global copy/constant propagation.
+     * More major improvements in the [4]alias analysis code.
+     * More major improvements in the exception handling code to improve
+       performance, lower static overhead and provide the infrastructure
+       for future improvements.
+     * The infamous /tmp symlink race security problems have been fixed.
+     * The regmove optimization pass has been nearly completely rewritten
+       to improve performance of generated code.
+     * The compiler now recomputes register usage information before
+       local register allocation. By providing more accurate information
+       to the priority based allocator, we get better register
+       allocation.
+     * The register reloading phase of the compiler optimizes spill code
+       much better than in previous releases.
+     * Some bad interactions between the register allocator and
+       instruction scheduler have been fixed, resulting in much better
+       code for certain programs. Additionally, we have tuned the
+       scheduler in various ways to improve performance of generated code
+       for some architectures.
+     * The compiler's branch shortening algorithms have been
+       significantly improved to work better on targets which align jump
+       targets.
+     * The compiler now supports -Os to prefer optimizing for code space
+       over optimizing for code speed.
+     * The compiler will now totally eliminate library calls which
+       compute constant values. This primarily helps targets with no
+       integer div/mul support and targets without floating point
+       support.
+     * The compiler now supports an extensive "--help" option.
+     * cpplib has been greatly improved and may be suitable for limited
+       use.
+     * Memory footprint for the compiler has been significantly reduced
+       for some pathological cases.
+     * The time to build EGCS has been improved for certain targets
+       (particularly the alpha and mips platforms).
+     * Many infrastructure improvements throughout the compiler, plus the
+       usual mountain of bugfixes and minor improvements.
+     * Target dependent improvements:
+          + SPARC port now includes V8 plus and V9 support as well as
+            performance tuning for Ultra class machines. The SPARC port
+            now uses the Haifa scheduler.
+          + Alpha port has been tuned for the EV6 processor and has an
+            optimized expansion of memcpy/bzero. The Alpha port now uses
+            the Haifa scheduler.
+          + RS6000/PowerPC: EGCS 1.1 includes support for the Power64
+            architecture and aix4.3 support. The RS6000/PowerPC port now
+            uses the Haifa scheduler.
+          + x86: Alignment of static store data and jump targets is per
+            Intel recommendations now. Various improvements throughout
+            the x86 port to improve performance on Pentium processors.
+            Conditional move support has been fixed and enabled for PPro
+            processors. The x86 port also better supports 64bit
+            operations now.
+          + MIPS has improved multiply/multiply-add support and now
+            includes mips16 ISA support.
+          + M68k has many micro-optimizations and Coldfire fixes.
+     * Core compiler is based on the GCC development tree from June 9,
+       1998, so we have all of the [5]features found in GCC 2.8.
+
+   [6]Return to the EGCS home page
+
+   Last modified: September 4, 1999
+
+References
+
+   1. http://gcc.gnu.org/onlinedocs/g77_news.html
+   2. http://gcc.gnu.org/egcs-1.1/c++features.html
+   3. http://gcc.gnu.org/news/gcse.html
+   4. http://gcc.gnu.org/news/alias.html
+   5. http://gcc.gnu.org/egcs-1.0/features-2.8.html
+   6. http://gcc.gnu.org/index.html
+======================================================================
+http://gcc.gnu.org/egcs-1.1/caveats.html
+
+                              EGCS 1.1 Caveats
+
+     * EGCS has an integrated libstdc++, but does not have an integrated
+       libg++. Furthermore old libg++ releases will not work with EGCS;
+       HJ Lu has made a [1]libg++ snapshot available which may work with
+       EGCS.
+       Note most C++ programs only need libstdc++.
+     * Exception handling may not work with shared libraries,
+       particularly on alphas, hppas, rs6000/powerpc and mips based
+       platforms. Exception handling is known to work on x86-linux
+       platforms with shared libraries.
+     * Some versions of the Linux kernel have bugs which prevent them
+       from being compiled or from running when compiled by EGCS. See
+       [2]the FAQ for additional information.
+     * In general, EGCS is more rigorous about rejecting invalid C++ code
+       or deprecated C++ constructs than g++-2.7, g++-2.8 or EGCS 1.0. As
+       a result it may be necessary to fix C++ code before it will
+       compile with EGCS.
+     * G++ is also converting toward the ISO C++ standard; as a result
+       code which was previously valid (and thus accepted by other
+       compilers and older versions of g++) may no longer be accepted.
+     * EGCS 1.1 compiled C++ code is not binary compatible with EGCS
+       1.0.x or GCC 2.8.x due to changes necessary to support thread safe
+       exception handling.
+
+   [3]Return to the GCC home page
+
+   Last modified: July 28, 1999
+
+References
+
+   1. ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz
+   2. http://gcc.gnu.org/faq.html#linuxkernel
+   3. http://gcc.gnu.org/index.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/egcs-1.0.3.html
+
+                                 EGCS 1.0.3
+
+   May 15, 1998
+
+   We are pleased to announce the release of EGCS 1.0.3.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   EGCS 1.0.3 is a minor update to the EGCS 1.0.2 compiler to fix a few
+   problems reported by Red Hat for builds of Red Hat 5.1.
+     * Generic bugfixes:
+          + Fix a typo in the libio library which resulted in incorrect
+            behavior of istream::get.
+          + Fix the Fortran negative array index problem.
+          + Fix a major problem with the ObjC runtime thread support
+            exposed by glibc2.
+          + Reduce memory consumption of the Haifa scheduler.
+     * Target specific bugfixes:
+          + Fix one x86 floating point code generation bug exposed by
+            glibc2 builds.
+          + Fix one x86 internal compiler error exposed by glibc2 builds.
+          + Fix profiling bugs on the Alpha.
+          + Fix ImageMagick & emacs 20.2 build problems on the Alpha.
+          + Fix rs6000/ppc bug when converting values from integer types
+            to floating point types.
+
+   An important goal of EGCS is to allow wide scale testing of new
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most GCC releases.
+
+   EGCS 1.0.3 is based on an August 2, 1997 snapshot of the GCC 2.8
+   development sources; it contains nearly all of the new features found
+   in GCC 2.8.
+
+   EGCS also contains many improvements and features not found in GCC 2.7
+   or GCC 2.8.
+     * Integrated C++ runtime libraries, including support for most major
+       GNU/Linux systems!
+     * The integrated libstdc++ library includes a verbatim copy of
+       [1]SGI's STL release instead of a modified copy.
+     * Integrated GNU Fortran compiler
+     * New instruction scheduler
+     * New alias analysis code
+
+   See the [2]new features page for a more complete list of new features
+   found in EGCS 1.0.x releases.
+
+   The EGCS 1.0.3 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.0.3 distribution). However, we also keep the
+   most up to date [3]installation instructions and [4]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   And, we can't in good conscience fail to mention some [5]caveats to
+   using EGCS.
+
+   Update: Big thanks to Stanford for providing a high speed link for
+   downloading EGCS (go.cygnus.com)!
+
+   [6]Download EGCS 1.0.3 from ftp.cygnus.com (USA California)
+
+   [7]Download EGCS 1.0.3 from go.cygnus.com (USA California -- High
+   speed link provided by Stanford)
+
+   The EGCS 1.0.3 release is also available on many mirror sites.
+   [8]Goto mirror list to find a closer site
+
+   We'd like to thank the numerous people that have contributed new
+   features, test results, bugfixes, etc. Unfortunately, they're far too
+   numerous to mention by name.
+     _________________________________________________________________
+
+   Last modified on February 22, 1999.
+
+References
+
+   1. http://www.sgi.com/Technology/STL
+   2. http://gcc.gnu.org/egcs-1.0/features.html
+   3. http://gcc.gnu.org/install/index.html
+   4. http://gcc.gnu.org/egcs-1.0/buildstat.html
+   5. http://gcc.gnu.org/egcs-1.0/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+   8. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/egcs-1.0.2.html
+
+                                 EGCS 1.0.2
+
+   March 16, 1998
+
+   We are pleased to announce the release of EGCS 1.0.2.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   EGCS 1.0.2 is a minor update to the EGCS 1.0.1 compiler to fix several
+   serious problems in EGCS 1.0.1.
+     * General improvements and fixes
+          + Memory consumption significantly reduced, especially for
+            templates and inline functions.
+          + Fix various problems with glibc2.1.
+          + Fix loop optimization bug exposed by rs6000/ppc port.
+          + Fix to avoid potential code generation problems in jump.c.
+          + Fix some undefined symbol problems in dwarf1 debug support.
+     * g++/libstdc++ improvements and fixes
+          + libstdc++ in the EGCS release has been updated and should be
+            link compatible with libstdc++-2.8.
+          + Various fixes in libio/libstdc++ to work better on Linux
+            systems.
+          + Fix problems with duplicate symbols on systems that do not
+            support weak symbols.
+          + Memory corruption bug and undefined symbols in bastring have
+            been fixed.
+          + Various exception handling fixes.
+          + Fix compiler abort for very long thunk names.
+     * g77 improvements and fixes
+          + Fix compiler crash for omitted bound in Fortran CASE
+            statement.
+          + Add missing entries to g77 lang-options.
+          + Fix problem with -fpedantic in the g77 compiler.
+          + Fix "backspace" problem with g77 on alphas.
+          + Fix x86 backend problem with Fortran literals and -fpic.
+          + Fix some of the problems with negative subscripts for g77 on
+            alphas.
+          + Fixes for Fortran builds on cygwin32/mingw32.
+     * platform specific improvements and fixes
+          + Fix long double problems on x86 (exposed by glibc)
+          + x86 ports define i386 again to keep imake happy.
+          + Fix exception handling support on NetBSD ports.
+          + Several changes to collect2 to fix many problems with AIX.
+          + Define __ELF__ for rs6000/linux.
+          + Fix -mcall-linux problem on rs6000/linux.
+          + Fix stdarg/vararg problem for rs6000/linux.
+          + Allow autoconf to select a proper install problem on AIX 3.1.
+          + m68k port support includes -mcpu32 option as well as cpu32
+            multilibs.
+          + Fix stdarg bug for irix6.
+          + Allow EGCS to build on irix5 without the gnu assembler.
+          + Fix problem with static linking on sco5.
+          + Fix bootstrap on sco5 with native compiler.
+          + Fix for abort building newlib on H8 target.
+          + Fix fixincludes handling of math.h on SunOS.
+          + Minor fix for motorola 3300 m68k systems.
+
+   An important goal of EGCS is to allow wide scale testing of new
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most GCC releases.
+
+   EGCS 1.0.2 is based on an August 2, 1997 snapshot of the GCC 2.8
+   development sources; it contains nearly all of the new features found
+   in GCC 2.8.
+
+   EGCS also contains many improvements and features not found in GCC 2.7
+   or GCC 2.8.
+     * Integrated C++ runtime libraries, including support for most major
+       linux systems!
+     * The integrated libstdc++ library includes a verbatim copy of
+       [1]SGI's STL release.
+     * Integrated GNU Fortran compiler
+     * New instruction scheduler
+     * New alias analysis code
+
+   See the [2]new features page for a more complete list of new features
+   found in EGCS 1.0.x releases.
+
+   The EGCS 1.0.2 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.0.2 distribution). However, we also keep the
+   most up to date [3]installation instructions and [4]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   And, we can't in good conscience fail to mention some [5]caveats to
+   using EGCS.
+
+   Update: Big thanks to Stanford for providing a high speed link for
+   downloading EGCS (go.cygnus.com)!
+
+   [6]Download EGCS 1.0.2 from ftp.cygnus.com (USA California)
+
+   [7]Download EGCS 1.0.2 from go.cygnus.com (USA California -- High
+   speed link provided by Stanford)
+
+   The EGCS 1.0.2 release is also available on many mirror sites.
+   [8]Goto mirror list to find a closer site
+
+   We'd like to thank the numerous people that have contributed new
+   features, test results, bugfixes, etc. Unfortunately, they're far too
+   numerous to mention by name.
+     _________________________________________________________________
+
+   Last modified on July 28, 1999.
+
+References
+
+   1. http://www.sgi.com/Technology/STL/
+   2. http://gcc.gnu.org/egcs-1.0/features.html
+   3. http://gcc.gnu.org/install/index.html
+   4. http://gcc.gnu.org/egcs-1.0/buildstat.html
+   5. http://gcc.gnu.org/egcs-1.0/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+   8. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/egcs-1.0.1.html
+
+                                 EGCS 1.0.1
+
+   January 6, 1998
+
+   We are pleased to announce the release of EGCS 1.0.1.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   EGCS 1.0.1 is a minor update to the EGCS 1.0 compiler to fix a few
+   critical bugs and add support for Red Hat 5.0 Linux. Changes since the
+   EGCS 1.0 release:
+     * Add support for Red Hat 5.0 Linux and better support for Linux
+       systems using glibc2.
+       Many programs failed to link when compiled with EGCS 1.0 on Red
+       Hat 5.0 or on systems with newer versions of glibc2. EGCS 1.0.1
+       should fix these problems.
+     * Compatability with both EGCS 1.0 and GCC 2.8 libgcc exception
+       handling interfaces.
+       To avoid future compatibility problems, we strongly urge anyone
+       who is planning on distributing shared libraries that contain C++
+       code to upgrade to EGCS 1.0.1 first.
+       Soon after EGCS 1.0 was released, the GCC developers made some
+       incompatible changes in libgcc's exception handling interfaces.
+       These changes were needed to solve problems on some platforms.
+       This means that GCC 2.8.0, when released, will not be seamlessly
+       compatible with shared libraries built by EGCS 1.0. The reason is
+       that the libgcc.a in GCC 2.8.0 will not contain a function needed
+       by the old interface.
+       The result of this is that there may be compatibility problems
+       with shared libraries built by EGCS 1.0 when used with GCC 2.8.0.
+       With EGCS 1.0.1, generated code uses the new (GCC 2.8.0)
+       interface, and libgcc.a has the support routines for both the old
+       and the new interfaces (so EGCS 1.0.1 and EGCS 1.0 code can be
+       freely mixed, and EGCS 1.0.1 and GCC 2.8.0 code can be freely
+       mixed).
+       The maintainers of GCC 2.x have decided against including seamless
+       support for the old interface in 2.8.0, since it was never
+       "official", so to avoid future compatibility problems we recommend
+       against distributing any shared libraries built by EGCS 1.0 that
+       contain C++ code (upgrade to 1.0.1 and use that).
+     * Various bugfixes in the x86, hppa, mips, and rs6000/ppc backends.
+       The x86 changes fix code generation errors exposed when building
+       glibc2 and the Linux dynamic linker (ld.so).
+       The hppa change fixes a compiler abort when configured for use
+       with RTEMS.
+       The MIPS changes fix problems with the definition of LONG_MAX on
+       newer systems, allow for command line selection of the target ABI,
+       and fix one code generation problem.
+       The rs6000/ppc change fixes some problems with passing structures
+       to varargs/stdarg functions.
+     * A few machine independent bugfixes, mostly to fix code generation
+       errors when building Linux kernels or glibc.
+     * Fix a few critical exception handling and template bugs in the C++
+       compiler.
+     * Fix Fortran namelist bug on alphas.
+     * Fix build problems on x86-solaris systems.
+
+   An important goal of EGCS is to allow wide scale testing of new
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most GCC releases.
+
+   EGCS 1.0.1 is based on an August 2, 1997 snapshot of the GCC 2.8
+   development sources; it contains nearly all of the new features found
+   in GCC 2.8.
+
+   EGCS also contains many improvements and features not found in GCC 2.7
+   and even the soon to be released GCC 2.8 compilers.
+     * Integrated C++ runtime libraries, including support for most major
+       linux systems!
+     * The integrated libstdc++ library includes a verbatim copy of
+       [1]SGI's STL release.
+     * Integrated GNU Fortran compiler
+     * New instruction scheduler
+     * New alias analysis code
+
+   See the [2]new features page for a more complete list of new features
+   found in EGCS 1.0.x releases.
+
+   The EGCS 1.0.1 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.0.1 distribution). However, we also keep the
+   most up to date [3]installation instructions and [4]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   And, we can't in good conscience fail to mention some [5]caveats to
+   using EGCS.
+
+   Update: Big thanks to Stanford for providing a high speed link for
+   downloading EGCS (go.cygnus.com)!
+
+   [6]Download EGCS 1.0.1 from ftp.cygnus.com (USA California)
+
+   [7]Download EGCS 1.0.1 from go.cygnus.com (USA California -- High
+   speed link provided by Stanford)
+
+   The EGCS 1.0.1 release is also available on many mirror sites.
+   [8]Goto mirror list to find a closer site
+
+   We'd like to thank the numerous people that have contributed new
+   features, test results, bugfixes, etc. Unfortunately, they're far too
+   numerous to mention by name.
+     _________________________________________________________________
+
+   Last modified on July 28, 1999.
+
+References
+
+   1. http://www.sgi.com/Technology/STL/
+   2. http://gcc.gnu.org/egcs-1.0/features.html
+   3. http://gcc.gnu.org/install/index.html
+   4. http://gcc.gnu.org/egcs-1.0/buildstat.html
+   5. http://gcc.gnu.org/egcs-1.0/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+   8. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/egcs-1.0.html
+
+                                  EGCS 1.0
+
+   December 3, 1997
+
+   We are pleased to announce the release of EGCS 1.0.
+
+   EGCS is a collaborative effort involving several groups of hackers
+   using an open development model to accelerate development and testing
+   of GNU compilers and runtime libraries.
+
+   An important goal of EGCS is to allow wide scale testing of
+   experimental features and optimizations; therefore, EGCS contains some
+   features and optimizations which are still under development. However,
+   EGCS has been carefully tested and should be comparable in quality to
+   most GCC releases.
+
+   EGCS 1.0 is based on an August 2, 1997 snapshot of the GCC 2.8
+   development sources; it contains nearly all of the new features found
+   in GCC 2.8.
+
+   EGCS 1.0 also contains many improvements and features not found in GCC
+   2.7 and even the soon to be released GCC 2.8 compilers.
+     * Integrated C++ runtime libraries, including support for most major
+       linux systems!
+     * The integrated libstdc++ library includes a verbatim copy of
+       [1]SGI's STL release.
+     * Integrated GNU Fortran compiler
+     * New instruction scheduler
+     * New alias analysis code
+
+   See the [2]new features page for a more complete list of new features.
+
+   The EGCS 1.0 release includes installation instructions in both HTML
+   and plaintext forms (see the INSTALL directory in the toplevel
+   directory of the EGCS 1.0 distribution). However, we also keep the
+   most up to date [3]installation instructions and [4]build/test status
+   on our web page. We will update those pages as new information becomes
+   available.
+
+   And, we can't in good conscience fail to mention some [5]caveats to
+   using EGCS.
+
+   Update: The T1 into our main California offices has been 100%
+   saturated since shortly after the release. We've added an EGCS 1.0
+   mirror at our Massachusetts office to help share the load. We also
+   encourage folks to use the many mirrors available throughout the
+   world.
+
+   Update: Big thanks to Stanford for providing a high speed link for
+   downloading EGCS! (go.cygnus.com)
+
+   [6]Download EGCS 1.0 from ftp.cygnus.com (USA California)
+
+   [7]Download EGCS 1.0 from go.cygnus.com (USA California -- High speed
+   link provided by Stanford)
+
+   The EGCS 1.0 release should be available on most mirror sites by now.
+   [8]Goto mirror list to find a closer site
+
+   We'd like to thank the numerous people that have contributed new
+   features, test results, bugfixes, etc. Unfortunately, they're far too
+   numerous to mention by name.
+     _________________________________________________________________
+
+   Last modified on July 28, 1999.
+
+References
+
+   1. http://www.sgi.com/Technology/STL
+   2. http://gcc.gnu.org/egcs-1.0/features.html
+   3. http://gcc.gnu.org/install/index.html
+   4. http://gcc.gnu.org/egcs-1.0/buildstat.html
+   5. http://gcc.gnu.org/egcs-1.0/caveats.html
+   6. ftp://egcs.cygnus.com/pub/egcs/releases/index.html
+   7. ftp://go.cygnus.com/pub/sourceware.cygnus.com/pub/egcs/releases/index.html
+   8. http://gcc.gnu.org/mirrors.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/features.html
+
+                             EGCS 1.0 features
+
+     * Core compiler is based on the gcc2 development tree from Aug 2,
+       1997, so we have most of the [1]features found in GCC 2.8.
+     * Integrated GNU Fortran compiler based on g77-0.5.22-19970929.
+     * Vast improvements in the C++ compiler; so many they have [2]page
+       of their own!
+     * Integrated C++ runtime libraries, including support for most major
+       linux systems!
+     * New instruction scheduler from IBM Haifa which includes support
+       for function wide instruction scheduling as well as superscalar
+       scheduling.
+     * Significantly improved alias analysis code.
+     * Improved register allocation for two address machines.
+     * Significant code generation improvements for Fortran code on
+       Alphas
+     * Various optimizations from the g77 project as well as improved
+       loop optimizations.
+     * Dwarf2 debug format support for some targets.
+     * egcs libstdc++ includes the SGI STL implementation without
+       changes.
+     * As a result of these and other changes, egcs libstc++ is not
+       binary compatible with previous releases of libstdc++.
+     * Various new ports -- UltraSPARC, Irix6.2 & Irix6.3 support, The
+       SCO Openserver 5 family (5.0.{0,2,4} and Internet FastStart 1.0
+       and 1.1), Support for RTEMS on several embedded targets, Support
+       for arm-linux, Mitsubishi M32R, Hitachi H8/S, Matsushita MN102 and
+       MN103, NEC V850, Sparclet, Solaris & Linux on PowerPCs, etc.
+     * Integrated testsuites for gcc, g++, g77, libstdc++ and libio.
+     * RS6000/PowerPC ports generate code which can run on all
+       RS6000/PowerPC variants by default.
+     * -mcpu= and -march= switches for the x86 port to allow better
+       control over how the x86 port generates code.
+     * Includes the template repository patch (aka repo patch); note the
+       new template code makes repo obsolete for ELF systems using gnu-ld
+       such as Linux.
+     * Plus the usual assortment of bugfixes and improvements.
+
+   [3]Return to the egcs home page
+
+   Last modified: July 28, 1999
+
+References
+
+   1. http://gcc.gnu.org/egcs-1.0/features-2.8.html
+   2. http://gcc.gnu.org/egcs-1.0/c++features.html
+   3. http://gcc.gnu.org/index.html
+======================================================================
+http://gcc.gnu.org/egcs-1.0/caveats.html
+
+                              EGCS 1.0 Caveats
+
+     * EGCS has an integrated libstdc++, but does not have an integrated
+       libg++. Furthermore old libg++ releases will not work with egc; HJ
+       Lu has made a [1]libg++ snapshot available which may work with
+       EGCS.
+       Note most C++ programs only need libstdc++.
+     * Note that using -pedantic or -Wreturn-type can cause an explosion
+       in the amount of memory needed for template-heavy C++ code, such
+       as code that uses STL. Also note that -Wall includes
+       -Wreturn-type, so if you use -Wall you will need to specify
+       -Wno-return-type to turn it off.
+     * Exception handling may not work with shared libraries,
+       particularly on alphas, hppas, and mips based platforms. Exception
+       handling is known to work on x86-linux platforms with shared
+       libraries.
+     * Some versions of the Linux kernel have bugs which prevent them
+       from being compiled or from running when compiled by EGCS. See
+       [2]the FAQ for additional information.
+     * In general, EGCS is more rigorous about rejecting invalid C++ code
+       or deprecated C++ constructs than G++ 2.7. As a result it may be
+       necessary to fix C++ code before it will compile with EGCS.
+     * G++ is also aggressively tracking the C++ standard; as a result
+       code which was previously valid (and thus accepted by other
+       compilers and older versions of G++) may no longer be accepted.
+     * EGCS 1.0 may not work with Red Hat Linux 5.0 on all targets. EGCS
+       1.0.x and later releases should work with Red Hat Linux 5.0.
+
+   [3]Return to the GCC home page
+
+   Last modified: August 27, 1998
+
+References
+
+   1. ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz
+   2. http://gcc.gnu.org/faq.html#linuxkernel
+   3. http://gcc.gnu.org/index.html
+======================================================================
