@@ -185,7 +185,7 @@ _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context __attribute__((unused)))
 {
   /* ??? Ideally __builtin_setjmp places the CFA in the jmpbuf.  */
-  return NULL;
+  return (_Unwind_Word) 0;
 }
 
 void
