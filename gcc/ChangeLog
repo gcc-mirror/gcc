@@ -1,3 +1,7 @@
+2002-10-02  Matt Austern  <austern@apple.com
+	* class.c (check_field_decls): Changed warning about const member
+	variables so that it doesn't get issued for a class aggregate.
+	
 2002-10-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/vms.texi: Blow away false include file section.
