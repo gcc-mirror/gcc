@@ -16,7 +16,7 @@
 2002-05-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cp-tree.h (struct lang_type): Added non_zero_init.
-	(CLASS_NON_ZERO_INIT_P): New macro.
+	(CLASSTYPE_NON_ZERO_INIT_P): New macro.
 	(zero_init_p, force_store_init_value, build_forced_zero_init): Declare.
 	* class.c (check_field_decls): Test non_zero_init.
 	* cvt.c (convert_to_pointer_force): Use cp_convert_to_pointer for
