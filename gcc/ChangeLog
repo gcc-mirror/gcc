@@ -1,3 +1,7 @@
+Sat Oct  2 11:28:33 1999   Krister Walfridsson <cato@df.lth.se>
+
+	* invoke.texi: Removed duplicated description for -Q.
+
 Sat Oct  2 11:16:00 1999  Jim Kingdon  <http://developer.redhat.com>
 
 	* extend.texi: Grammar fix in __extension__ text.
