@@ -1,3 +1,8 @@
+2003-02-19  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_real_zero_addition_p): Don't fold a zero
+	addition in the presence of signaling NaNs.
+
 2003-02-19  Krister Walfridsson  <cato@df.lth.se>
 
 	* tm.texi (INIT_CUMULATIVE_ARGS): Fix typo.
@@ -109,9 +114,10 @@ Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(cgraph_expand_function): Rewrite.
 
 2003-02-18  Matt Austern <austern@apple.com>
+
 	* toplev.c, langhooks.c, langhooks-def.h: Move
 	write_global_declarations from toplev.c to langhooks.c. 
-	
+
 2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (general_operand_src): Always check
@@ -168,8 +174,8 @@ Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 Tue Feb 18 20:15:54 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
-	* sh.c (calc_live_regs): Also check GET_CODE when checking if initial value
-	for PR_REG is still the PR_REG register.
+	* sh.c (calc_live_regs): Also check GET_CODE when checking if
+	initial value for PR_REG is still the PR_REG register.
 
 2003-02-18  Jim Wilson  <wilson@redhat.com>
 
