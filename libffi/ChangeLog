@@ -1,4 +1,4 @@
-2001-03-23  Tom Tromey  <tromey@redhat.com>
+2001-03-23  Kevin B Hendricks  <khendricks@ivey.uwo.ca>
 
 	* src/powerpc/ppc_closure.S: New file.
 	* src/powerpc/ffi.c (ffi_prep_args): Fixed ABI compatibility bug
