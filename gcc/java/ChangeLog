@@ -348,6 +348,13 @@
 	too early to lay innerclasses out.
 
 2001-03-20  Tom Tromey  <tromey@redhat.com>
+	    Alexandre Petit-Bianco <apbianco@redhat.com>
+
+	* parse.y (patch_assignment): Handle the case of a SAVE_EXPR
+	inside an array reference. Insertion of the array store check
+	rewritten. Fixes PR java/2299.
+
+2001-03-20  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_read_unicode): Only accept leading `u's.
 
