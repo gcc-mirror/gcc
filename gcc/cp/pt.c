@@ -5778,6 +5778,8 @@ tsubst_decl (t, args, type, in_decl)
 	    ctx = NULL_TREE;
 	  }
 	type = tsubst (type, args, /*complain=*/1, in_decl);
+	if (type == error_mark_node)
+	  return error_mark_node;
 
 	/* We do NOT check for matching decls pushed separately at this
            point, as they may not represent instantiations of this
