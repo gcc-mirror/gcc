@@ -200,4 +200,9 @@ gnu::gcj::runtime::StackTrace::update(void)
     }
 }
 
-
+void
+gnu::gcj::runtime::StackTrace::finalize(void)
+{
+  if (addrs != NULL)
+    _Jv_Free (addrs);
+}
