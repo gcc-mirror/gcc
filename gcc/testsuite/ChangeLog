@@ -1,3 +1,8 @@
+2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/16205
+	* g++.dg/warn/Wsequence-point-1.C: New test.
+
 2004-06-27  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.fortran-torture/execute/specfics.f90: Use correct typing.
