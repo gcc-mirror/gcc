@@ -2,7 +2,8 @@
 ;; Contributed by Steve Chamberlain <sac@cygnus.com>
 ;; Optimizations by Toshiyasu Morita <toshiyasu.morita@renesas.com>
 
-/* Copyright (C) 1994, 2000, 2001, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -174,30 +175,28 @@ ___ucmpsi2:
 	.section .text
 	.align 2
 divnorm:
-	mov.b	#0x0,A2L
 	or	A0H,A0H		; is divisor > 0
+	stc	ccr,A2L
 	bge	_lab1
 	not	A0H		; no - then make it +ve
 	not	A0L
 	adds	#1,A0
-	xor	#0x1,A2L	; and remember that in A2L
 _lab1:	or	A1H,A1H	; look at dividend
 	bge	_lab2
 	not	A1H		; it is -ve, make it positive
 	not	A1L
 	adds	#1,A1
-	xor	#0x1,A2L; and toggle sign of result
+	xor	#0x8,A2L; and toggle sign of result
 _lab2:	rts
 ;; Basically the same, except that the sign of the divisor determines
 ;; the sign.
 modnorm:
-	mov.b	#0x0,A2L
 	or	A0H,A0H		; is divisor > 0
+	stc	ccr,A2L
 	bge	_lab7
 	not	A0H		; no - then make it +ve
 	not	A0L
 	adds	#1,A0
-	xor	#0x1,A2L	; and remember that in A2L
 _lab7:	or	A1H,A1H	; look at dividend
 	bge	_lab8
 	not	A1H		; it is -ve, make it positive
@@ -211,7 +210,7 @@ _lab8:	rts
 ___divhi3:
 	bsr	divnorm
 	bsr	___udivhi3
-negans:	or	A2L,A2L	; should answer be negative ?
+negans:	btst	#3,A2L	; should answer be negative ?
 	beq	_lab4
 	not	A0H	; yes, so make it so
 	not	A0L
