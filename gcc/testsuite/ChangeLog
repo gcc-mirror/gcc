@@ -1,3 +1,9 @@
+Sun Jan 18 01:33:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/c-torture.exp: Look for .x files instead of .cexp files.
+	* lib/f-torture.exp: Similarly.
+	* gcc.c-torture: Rename all .cexp files to .x files.
+
 Tue Nov 25 16:18:51 1997  Kate Hedstrom  (kate@ahab.rutgers.edu)
 
         * lib/f-torture.exp: Improve error and loop detection.
