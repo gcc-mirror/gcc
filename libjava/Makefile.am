@@ -748,8 +748,8 @@ gnu/awt/j2d/MappedRaster.java \
 gnu/java/awt/BitMaskExtent.java \
 gnu/java/awt/Buffers.java \
 gnu/java/awt/ComponentDataBlitOp.java \
-gnu/java/awt/GLightweightPeer.java \
 gnu/java/awt/EventModifier.java \
+gnu/java/awt/GLightweightPeer.java \
 gnu/java/awt/image/ImageDecoder.java \
 gnu/java/awt/image/XBMDecoder.java \
 gnu/java/beans/editors/ColorEditor.java	\
@@ -1144,14 +1144,14 @@ javax/rmi/CORBA/UtilDelegate.java \
 javax/rmi/CORBA/Util.java \
 javax/rmi/CORBA/ValueHandler.java \
 javax/swing/border/AbstractBorder.java \
+javax/swing/border/BevelBorder.java \
 javax/swing/border/Border.java \
 javax/swing/border/CompoundBorder.java \
 javax/swing/border/EmptyBorder.java \
-javax/swing/border/MatteBorder.java \
-javax/swing/border/TitledBorder.java \
-javax/swing/border/BevelBorder.java \
 javax/swing/border/EtchedBorder.java \
 javax/swing/border/LineBorder.java \
+javax/swing/border/MatteBorder.java \
+javax/swing/border/TitledBorder.java \
 javax/swing/GrayFilter.java \
 javax/swing/AbstractAction.java \
 javax/swing/AbstractButton.java \
@@ -1226,6 +1226,7 @@ javax/swing/filechooser/FileView.java \
 javax/swing/table/AbstractTableModel.java \
 javax/swing/table/DefaultTableColumnModel.java \
 javax/swing/table/DefaultTableModel.java \
+javax/swing/table/JTableHeader.java \
 javax/swing/table/TableCellEditor.java \
 javax/swing/table/TableCellRenderer.java \
 javax/swing/table/TableColumn.java \
