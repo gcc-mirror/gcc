@@ -1,3 +1,13 @@
+2002-11-26  David Edelsohn  <edelsohn@gnu.org>
+
+        * config/rs6000/rs6000.c (rs6000_flag_pic): New variable.
+	(rs6000_override_options): Save original flag_pic value.
+	(rs6000_encode_section_info): More accurate test for "local" symbol.
+
+	PR 8362
+	* config/rs6000/rs6000.c (rs6000_outout_load_multiple): New function.
+	* config/rs6000/rs6000.md (ldmsi[3-8]): New patterns.
+
 2002-11-25  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR c/8639

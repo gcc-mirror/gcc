@@ -77,6 +77,7 @@ extern int constant_pool_expr_p PARAMS ((rtx));
 extern int toc_relative_expr_p PARAMS ((rtx));
 extern int expand_block_move PARAMS ((rtx[]));
 extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
+extern const char * rs6000_output_load_multiple PARAMS ((rtx[]));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int branch_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int branch_positive_comparison_operator 
