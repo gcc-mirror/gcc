@@ -59,7 +59,7 @@
 
 // Don't do memory limits.
 void
-__set_testsuite_memlimit(float)
+__set_testsuite_memlimit(float x = 0)
 { }
 
 #else
