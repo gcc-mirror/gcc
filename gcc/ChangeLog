@@ -1,3 +1,8 @@
+Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.md (fix_truncdfsi2_internal+1): Emit a clobber
+	before the fctiwz insn.
+
 Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	                  Mark Mitchell  <mark@codesourcery.com>
 
