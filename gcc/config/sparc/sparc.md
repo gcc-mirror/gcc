@@ -790,11 +790,11 @@
   else if (GET_CODE (op1) == CONST_DOUBLE)
     {
       operands[0] = operand_subword (op0, 1, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
       output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
       output_asm_insn (singlemove_string (operands), operands);
     }
   else
@@ -824,7 +824,14 @@
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:DI 2 "immediate_operand" "in")))]
   ""
-  "or %R1,%%lo(%a2),%R0"
+  "*
+{
+  /* Don't output a 64 bit constant, since we can't trust the assembler to
+     handle it correctly.  */
+  if (GET_CODE (operands[2]) == CONST_DOUBLE)
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+  return \"or %R1,%%lo(%a2),%R0\";
+}"
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
