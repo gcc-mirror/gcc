@@ -1,3 +1,18 @@
+Sat Sep  5 16:34:34 EDT 1998  John Wehle  (john@feith.com)
+
+	* global.c: Update comments.
+	(global_alloc): Assign allocation-numbers
+	even for registers allocated by local_alloc in case
+	they are later spilled and retry_global_alloc is called.
+	(mark_reg_store, mark_reg_clobber,
+	mark_reg_conflicts, mark_reg_death): Always record a
+	conflict with a pseudo register even if it has been
+	assigned to a hard register.
+	(dump_conflicts): Don't list pseudo registers already assigned to
+	a hard register as needing to be allocated, but do list their
+	conflicts.
+	* local-alloc.c: Update comment.
+
 Mon Sep  7 23:38:01 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Check for bogus GCC_EXEC_PREFIX and LIBRARY_PATH.

@@ -55,8 +55,8 @@ Boston, MA 02111-1307, USA.  */
    But this is currently disabled since tying in global_alloc is not
    yet implemented.  */
 
-/* Pseudos allocated here cannot be reallocated by global.c if the hard
-   register is used as a spill register.  So we don't allocate such pseudos
+/* Pseudos allocated here can be reallocated by global.c if the hard register
+   is used as a spill register.  Currently we don't allocate such pseudos
    here if their preferred class is likely to be used by spills.  */
 
 #include "config.h"
