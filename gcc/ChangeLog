@@ -1,3 +1,8 @@
+2004-01-20  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.h (BASE_REG_CLASS): Don't permit to use X
+	register as pointer after reload.
+
 2004-01-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/12440
