@@ -117,84 +117,59 @@ ADA_TOOLS_FLAGS_TO_PASS=\
         "GNATLINK=../../gnatlink"       \
         "GNATBIND=../../gnatbind"
 
-fyi:
-	echo $(tmake_file)
-
 # Rules to build gnatlib.
-.PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-shared
+.PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared
 gnatlib: @default_gnatlib_target@
 
-gnatlib-plain:
+gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
 	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
 	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib ; \
-
-gnatlib-sjlj:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib-sjlj ; \
-
-gnatlib-shared:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATLIBFLAGS="$(GNATLIBFLAGS)" \
-	  GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
-	  GNATLIBLDFLAGS="$(GNATLIBLDFLAGS)" \
-	  TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
-	  THREAD_KIND="$(THREAD_KIND)" \
-	  TRACE="$(TRACE)" \
-	  gnatlib-shared ; \
+	  TRACE="$(TRACE)" $@
 
 .PHONY: rts-zfp rts-ravenscar
-rts-zfp:
+rts-zfp rts-ravenscar:
 	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATMAKE=../gnatmake-cross \
-	  rts-zfp
-
-rts-ravenscar:
-	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) \
-	  GNATMAKE=../gnatmake-cross \
-	  rts-ravenscar
+	  GNATMAKE=../gnatmake-cross $@
 
 # Rules to build gnattools.
 # For cross builds of gnattools,
 # put the host RTS dir first in the PATH to hide the default runtime
 # files that are among the sources
 RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
+
+ifeq ($(build),$(target))
+  GNATTOOLS = gnattools-native
+else
+  GNATTOOLS = gnattools-cross
+endif
+
 .PHONY: gnattools regnattools
-gnattools: gnatlib
-	if test $(build) = $(target) ; then \
-	  $(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	    ADA_INCLUDES="-I- -I../rts" \
-	    CC="../../xgcc -B../../" STAGE_PREFIX=../../  gnattools1 ; \
-	  $(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2 ; \
-	  $(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3 ; \
-	else \
-	  $(MAKE)  -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-	    ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
-	    GNATMAKE="gnatmake" \
-	    GNATBIND="gnatbind" \
-	    GNATLINK="gnatlink" \
-	    LIBGNAT="" \
-	    gnattools1-re gnattools2 gnattools4 ; \
-	  $(MAKE) $(FLAGS_TO_PASS) ada.all.cross ; \
-	fi
+gnattools: $(GNATTOOLS)
+
+gnattools-native: gnatlib
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	  ADA_INCLUDES="-I- -I../rts" \
+	  CC="../../xgcc -B../../" STAGE_PREFIX=../../ gnattools1
+	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
+	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
 
 regnattools:
 	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1-re
 	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools3
 
-# It's unclear whether this is even needed, and if so whether it should run
-# *before* the rest of crossgnattools or *after* it.
-ada.all.cross:
+gnattools-cross: gnatlib
+	$(MAKE) -C $(GCC_DIR)/ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
+	  ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
+	  GNATMAKE="gnatmake" \
+	  GNATBIND="gnatbind" \
+	  GNATLINK="gnatlink" \
+	  LIBGNAT="" \
+	  gnattools1-re gnattools2 gnattools4
+	# rename cross tools, as expected by the GCC makefile when installing
 	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \
 	  mv $(GCC_DIR)/gnatbind$(exeext) $(GCC_DIR)/gnatbind-cross$(exeext); \
 	fi
