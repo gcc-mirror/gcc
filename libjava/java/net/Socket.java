@@ -311,8 +311,7 @@ public class Socket
     // that default.  JDK 1.2 doc infers not to do a bind.
   }
 
-  // This has to be accessible from java.net.ServerSocket.
-  SocketImpl getImpl() throws SocketException
+  private SocketImpl getImpl() throws SocketException
   {
     try
       {
