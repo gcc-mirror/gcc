@@ -4820,18 +4820,6 @@ push_to_sequence (rtx first)
   last_insn = last;
 }
 
-/* Set up the insn chain from a chain stort in FIRST to LAST.  */
-
-void
-push_to_full_sequence (rtx first, rtx last)
-{
-  start_sequence ();
-  first_insn = first;
-  last_insn = last;
-  /* We really should have the end of the insn chain here.  */
-  gcc_assert (!last || !NEXT_INSN (last));
-}
-
 /* Set up the outer-level insn chain
    as the current sequence, saving the previously current one.  */
 
