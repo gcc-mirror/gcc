@@ -1,25 +1,19 @@
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999-2005  Free Software Foundation
 
    This file is part of libgcj.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
-
-/* Author: Kresten Krab Thorup <krab@gnu.org>  */
+   This software is copyrighted work licensed under the terms of the
+   Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
+   details. */
 
 #include <config.h>
 
 #include <jvm.h>
 #include <gcj/cni.h>
-#include <java-props.h>
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include <java/lang/System.h>
-#include <java/util/Properties.h>
 
 static void
 help ()
@@ -46,105 +40,262 @@ help ()
 static void
 version ()
 {
+  printf ("java version " JV_VERSION "\n");
   printf ("gij (GNU libgcj) version %s\n\n", __VERSION__);
   printf ("Copyright (C) 2005 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
-int
-main (int argc, const char **argv)
+static void
+nonstandard_opts_help ()
 {
-  /* We rearrange ARGV so that all the -D options appear near the
-     beginning.  */
-  int last_D_option = 0;
+  printf ("  -Xms<size>         set initial heap size\n");
+  printf ("  -Xmx<size>         set maximum heap size\n");
+  exit (0);
+}
+
+static void
+add_option (JvVMInitArgs& vm_args, char const* option, void const* extra)
+{
+  vm_args.options =
+    (JvVMOption*) JvRealloc (vm_args.options,
+                             (vm_args.nOptions + 1) * sizeof (JvVMOption));
+
+  vm_args.options[vm_args.nOptions].optionString = const_cast<char*> (option);
+  vm_args.options[vm_args.nOptions].extraInfo = const_cast<void*> (extra);
+  ++vm_args.nOptions;
+}
+
+int
+main (int argc, char const** argv)
+{
+  JvVMInitArgs vm_args;
   bool jar_mode = false;
 
+  vm_args.options = NULL;
+  vm_args.nOptions = 0;
+  vm_args.ignoreUnrecognized = true;
+
+  // Command-line options always override the CLASSPATH environment
+  // variable.
+  char *classpath = getenv("CLASSPATH");
+
+  if (classpath)
+    {
+      char* darg = (char*) JvMalloc (strlen (classpath)
+                                     + sizeof ("-Djava.class.path="));
+      sprintf (darg, "-Djava.class.path=%s", classpath);
+      add_option (vm_args, darg, NULL);
+    }
+
+  // Handle arguments to the java command.  Store in vm_args arguments
+  // handled by the invocation API.
   int i;
   for (i = 1; i < argc; ++i)
     {
-      const char *arg = argv[i];
+      char* arg = const_cast<char*> (argv[i]);
 
-      /* A non-option stops processing.  */
+      // A non-option stops processing.
       if (arg[0] != '-')
 	break;
-      /* A "--" stops processing.  */
+
+      // A "--" stops processing.
       if (! strcmp (arg, "--"))
 	{
 	  ++i;
 	  break;
 	}
 
-      if (! strncmp (arg, "-D", 2))
-	{
-	  argv[last_D_option++] = arg + 2;
-	  continue;
-	}
-
-      if (! strcmp (arg, "-jar"))
-	{
-	  jar_mode = true;
-	  continue;
-	}
-
-      /* Allow both single or double hyphen for all remaining
-	 options.  */
+      // Allow both single or double hyphen for all options.
       if (arg[1] == '-')
 	++arg;
 
-      if (! strcmp (arg, "-help") || ! strcmp (arg, "-?"))
-	help ();
-      else if (! strcmp (arg, "-version"))
-	{
-	  version ();
-	  exit (0);
-	}
-      else if (! strcmp (arg, "-showversion"))
-	version ();
-      /* FIXME: use getopt and avoid the ugliness here.
-	 We at least need to handle the argument in a better way.  */
-      else if (! strncmp (arg, "-ms=", 4))
-	_Jv_SetInitialHeapSize (arg + 4);
-      else if (! strcmp (arg, "-ms"))
-	{
-	  if (i >= argc - 1)
-	    {
+      // Ignore JIT options
+      if (! strcmp (arg, "-client"))
+        continue;
+      else if (! strcmp (arg, "-server"))
+        continue;
+      else if (! strcmp (arg, "-hotspot"))
+        continue;
+      else if (! strcmp (arg, "-jrockit"))
+        continue;
+      // Ignore JVM Tool Interface options
+      else if (! strncmp (arg, "-agentlib:", sizeof ("-agentlib:") - 1))
+        continue;
+      else if (! strncmp (arg, "-agentpath:", sizeof ("-agentpath:") - 1))
+        continue;
+      else if (! strcmp (arg, "-classpath") || ! strcmp (arg, "-cp"))
+        {
+          if (i >= argc - 1)
+            {
 	    no_arg:
 	      fprintf (stderr, "gij: option requires an argument -- `%s'\n",
 		       argv[i]);
 	      fprintf (stderr, "Try `gij --help' for more information.\n");
 	      exit (1);
-	    }
-	  _Jv_SetInitialHeapSize (argv[++i]);
+            }
+
+          // Sun seems to translate the -classpath option into
+          // -Djava.class.path because if both -classpath and
+          // -Djava.class.path are specified on the java command line,
+          // the last one always wins.
+          char* darg = (char*) JvMalloc (strlen (argv[++i])
+                                         + sizeof ("-Djava.class.path="));
+          sprintf (darg, "-Djava.class.path=%s", argv[i]);
+          add_option (vm_args, darg, NULL);
+        }
+      else if (! strcmp (arg, "-debug"))
+        {
+          char* xarg = strdup ("-Xdebug");
+          add_option (vm_args, xarg, NULL);
+        }
+      else if (! strncmp (arg, "-D", sizeof ("-D") - 1))
+        add_option (vm_args, arg, NULL);
+      // Ignore 32/64-bit JIT options
+      else if (! strcmp (arg, "-d32") || ! strcmp (arg, "-d64"))
+        continue;
+      else if (! strcmp (arg, "-enableassertions") || ! strcmp (arg, "-ea"))
+        {
+          if (i >= argc - 1)
+            goto no_arg;
+          // FIXME: hook up assertion support
+          ++i;
+          continue;
+        }
+      else if (! strcmp (arg, "-disableassertions") || ! strcmp (arg, "-da"))
+        {
+          if (i >= argc - 1)
+            goto no_arg;
+          // FIXME
+          ++i;
+          continue;
+        }
+      else if (! strcmp (arg, "-enablesystemassertions")
+               || ! strcmp (arg, "-esa"))
+        {
+          // FIXME: hook up system assertion support
+          continue;
+        }
+      else if (! strcmp (arg, "-disablesystemassertions")
+               || ! strcmp (arg, "-dsa"))
+        {
+          // FIXME
+          continue;
+        }
+      else if (! strcmp (arg, "-jar"))
+	{
+	  jar_mode = true;
+	  continue;
 	}
-      else if (! strncmp (arg, "-mx=", 4))
-	_Jv_SetMaximumHeapSize (arg + 4);
+      // Ignore java.lang.instrument option
+      else if (! strncmp (arg, "-javaagent:", sizeof ("-javaagent:") - 1))
+        continue;
+      else if (! strcmp (arg, "-noclassgc"))
+        {
+          char* xarg = strdup ("-Xnoclassgc");
+          add_option (vm_args, xarg, NULL);
+        }
+      // -ms=n
+      else if (! strncmp (arg, "-ms=", sizeof ("-ms=") - 1))
+        {
+          arg[1] = 'X';
+          arg[2] = 'm';
+          arg[3] = 's';
+          add_option (vm_args, arg, NULL);
+        }
+      // -ms n
+      else if (! strcmp (arg, "-ms"))
+	{
+	  if (i >= argc - 1)
+            goto no_arg;
+
+          char* xarg = (char*) JvMalloc (strlen (argv[++i])
+                                         + sizeof ("-Xms"));
+          sprintf (xarg, "-Xms%s", argv[i]);
+          add_option (vm_args, xarg, NULL);
+	}
+      // -msn
+      else if (! strncmp (arg, "-ms", sizeof ("-ms") - 1))
+	{
+          char* xarg = (char*) JvMalloc (strlen (arg) + sizeof ("X"));
+          sprintf (xarg, "-Xms%s", arg + sizeof ("-Xms") - 1);
+          add_option (vm_args, xarg, NULL);
+	}
+      // -mx=n
+      else if (! strncmp (arg, "-mx=", sizeof ("-mx=") - 1))
+        {
+          arg[1] = 'X';
+          arg[2] = 'm';
+          arg[3] = 'x';
+          add_option (vm_args, arg, NULL);
+        }
+      // -mx n
       else if (! strcmp (arg, "-mx"))
 	{
 	  if (i >= argc - 1)
-	    goto no_arg;
-	  _Jv_SetMaximumHeapSize (argv[++i]);
+            goto no_arg;
+
+          char* xarg = (char*) JvMalloc (strlen (argv[++i])
+                                         + sizeof ("-Xmx"));
+          sprintf (xarg, "-Xmx%s", argv[i]);
+          add_option (vm_args, xarg, NULL);
 	}
-      else if (! strcmp (arg, "-cp") || ! strcmp (arg, "-classpath"))
+      // -mxn
+      else if (! strncmp (arg, "-mx", sizeof ("-mx") - 1))
+	{
+          char* xarg = (char*) JvMalloc (strlen (arg) + sizeof ("X"));
+          sprintf (xarg, "-Xmx%s", arg + sizeof ("-Xmx") - 1);
+          add_option (vm_args, xarg, NULL);
+	}
+      // -ss=n
+      else if (! strncmp (arg, "-ss=", sizeof ("-ss=") - 1))
+        {
+          arg[1] = 'X';
+          arg[2] = 's';
+          arg[3] = 's';
+          add_option (vm_args, arg, NULL);
+        }
+      // -ss n
+      else if (! strcmp (arg, "-ss"))
 	{
 	  if (i >= argc - 1)
-	    goto no_arg;
-	  // We set _Jv_Jar_Class_Path.  If the user specified `-jar'
-	  // then the jar code will override this.  This is the
-	  // correct behavior.
-	  _Jv_Jar_Class_Path = argv[++i];
+            goto no_arg;
+
+          char* xarg = (char*) JvMalloc (strlen (argv[++i])
+                                         + sizeof ("-Xss"));
+          sprintf (xarg, "-Xss%s", argv[i]);
+          add_option (vm_args, xarg, NULL);
 	}
-      else if (! strcmp (arg, "-verbose") || ! strcmp (arg, "-verbose:class"))
-	gcj::verbose_class_flag = true;
-      else if (arg[1] == 'X')
+      // -ssn
+      else if (! strncmp (arg, "-ss", sizeof ("-ss") - 1))
 	{
-	  if (arg[2] == '\0')
-	    {
-	      printf ("gij: currently no -X options are recognized\n");
-	      exit (0);
-	    }
-	  /* Ignore other -X options.  */
+          char* xarg = (char*) JvMalloc (strlen (arg) + sizeof ("X"));
+          sprintf (xarg, "-Xss%s", arg + sizeof ("-Xss") - 1);
+          add_option (vm_args, xarg, NULL);
 	}
+      // This handles all the option variants that begin with
+      // -verbose.
+      else if (! strncmp (arg, "-verbose", 8))
+        add_option (vm_args, arg, NULL);
+      else if (! strcmp (arg, "-version"))
+	{
+	  version ();
+	  exit (0);
+	}
+      else if (! strcmp (arg, "-fullversion"))
+        {
+          printf ("java full version \"gcj-" JV_VERSION "\"\n");
+          exit (0);
+        }
+      else if (! strcmp (arg, "-showversion"))
+        version ();
+      else if (! strcmp (arg, "-help") || ! strcmp (arg, "-?"))
+	help ();
+      else if (! strcmp (arg, "-X"))
+        nonstandard_opts_help ();
+      else if (! strncmp (arg, "-X", 2))
+        add_option (vm_args, arg, NULL);
       else
 	{
 	  fprintf (stderr, "gij: unrecognized option -- `%s'\n", argv[i]);
@@ -152,9 +303,6 @@ main (int argc, const char **argv)
 	  exit (1);
 	}
     }
-
-  argv[last_D_option] = NULL;
-  _Jv_Compiler_Properties = argv;
 
   if (argc - i < 1)
     {
@@ -166,5 +314,16 @@ main (int argc, const char **argv)
       exit (1);
     }
 
-  _Jv_RunMain (NULL, argv[i], argc - i, argv + i, jar_mode);
+  // -jar mode overrides all other modes of specifying class path:
+  // -CLASSPATH, -Djava.class.path, -classpath and -cp.
+  if (jar_mode)
+    {
+      char* darg = (char*) JvMalloc (strlen (argv[i])
+                                      + sizeof ("-Djava.class.path="));
+      sprintf (darg, "-Djava.class.path=%s", argv[i]);
+      add_option (vm_args, darg, NULL);
+    }
+
+  _Jv_RunMain (&vm_args, NULL, argv[i], argc - i,
+               (char const**) (argv + i), jar_mode);
 }
