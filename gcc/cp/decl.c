@@ -3415,7 +3415,12 @@ duplicate_decls (newdecl, olddecl)
       /* Even if the types match, prefer the new declarations type
 	 for anitipated built-ins, for exception lists, etc...  */
       else if (DECL_ANTICIPATED (olddecl))
-	TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
+	{
+	  TYPE_ATTRIBUTES (TREE_TYPE (newdecl))
+	    = (*targetm.merge_type_attributes) (TREE_TYPE (olddecl),
+						TREE_TYPE (newdecl));
+	  TREE_TYPE (olddecl) = TREE_TYPE (newdecl);
+	}
 
       /* Whether or not the builtin can throw exceptions has no
 	 bearing on this declarator.  */
