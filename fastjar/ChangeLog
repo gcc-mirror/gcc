@@ -1,3 +1,7 @@
+2003-03-10  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* dostime.c: add #include <stddef.h> for definition of NULL
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* fastjar.texi: Update to GFDL 1.2.
