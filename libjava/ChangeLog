@@ -1,3 +1,8 @@
+2004-08-16  Tom Tromey  <tromey@redhat.com>
+
+	PR java/8473:
+	* testsuite/libjava.jacks/jacks.xfail: Removed passing test.
+
 2004-08-16  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am
