@@ -135,9 +135,17 @@ main()
 {
   void *old_reg = reg;
   reg = (void *) 1;
+
   f ();
+
+  /* Additionally test that the prologue/epilogue properly does *not*
+     save and restore global registers.  Not possible when the PIC
+     register is in a register window, of course.  */
+#ifndef __sparc__
   if (reg)
     abort ();
+#endif
+
   reg = old_reg;
   return 0;
 }
