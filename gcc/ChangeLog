@@ -1,3 +1,7 @@
+Sun Aug  1 20:14:00 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.h (init_dummy_function_start): Declare.
+
 Sun Jul 25 19:32:58 1999  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (num_insns_constant_wide): Correct
