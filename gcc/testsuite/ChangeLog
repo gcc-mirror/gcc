@@ -17,6 +17,12 @@
 
 2005-03-11  Per Bothner  <per@bothner.com>
 
+	* gcc.dg/decl-2.c:  Add extra line breaks.  That way we can verify
+	that diagnotics refer to correct token.
+	* gcc.dg/unused-3.c: Likewise.
+
+2005-03-11  Per Bothner  <per@bothner.com>
+
 	* gcc.dg/cpp/direct2.c: With new lexer changes, error "before string
 	constant" is now actually on same line as string constant.
 	* gcc.dg/cpp/direct2s.c: Likewise.
