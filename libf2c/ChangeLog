@@ -1,3 +1,21 @@
+Wed Mar  4 16:32:46 1998  Craig Burley  <burley@gnu.org>
+
+	* libU77/u77-test.f: Don't bother declaring etime.
+	Use `implicit none' and declare mask and lenstr.
+	Do ETIME/DTIME consistency check before loop, then
+	use loop to verify that dtime "ticks" at some point.
+	Check ETIME array-sum using single-precision add, to
+	avoid spurious complaint on systems (like x86) that
+	use more precision for intermediate results.
+	Fix `Results of ETIME and DTIME...' message to print
+	pertinent values (r1 and r2 instead of i and j).
+	Change loop from 10M to 1K repeated up to 1000 times
+	or until dtime "ticks".
+	Print the number of 1K loops needed to see this tick.
+	Answer a commented question.
+	Split up a long line of output and do other prettying.
+	Preset lognam in case GETLOG fails to overwrite it.
+
 Sat Feb 28 15:32:15 1998  Craig Burley  <burley@gnu.org>
 
 	* libI77/open.c (f_open): Use sizeof(buf) instead of
