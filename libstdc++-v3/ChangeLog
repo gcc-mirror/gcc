@@ -1,3 +1,17 @@
+2004-02-04  Felix Yen  <fwy@alumni.brown.edu>
+
+	* testsuite/performance/20_util/producer_consumer.cc: New.
+	* testsuite/performance/20_util/allocator/insert_insert.cc: Two loops.
+	
+2004-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/performance/20_util/allocator.cc: Move to..
+	* testsuite/performance/20_util/allocator/insert.cc: ...here.	
+	* testsuite/performance/20_util/allocator_thread.cc: Move to...
+	* testsuite/performance/20_util/allocator/insert_insert.cc: ...here.
+	* testsuite/performance/20_util/allocator_map_thread.cc: Move to...
+	* testsuite/performance/20_util/allocator/map_thread.cc: ...here.
+	
 2004-02-04  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.html: Recommend using LD_LIBRARY_PATH.

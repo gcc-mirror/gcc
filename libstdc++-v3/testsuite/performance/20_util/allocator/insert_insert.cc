@@ -72,34 +72,32 @@ template<typename TestType>
   };
 
 template<typename Container>
-  void*
-  do_loop(void* p = NULL)
+  void
+  do_loop()
   {
-    Container obj;    
+    Container obj;
+    int test_iterations = 0;
+    value_type<test_type> test_value;
+    while (test_iterations < iterations)
+      {
+	for (int j = 0; j < insert_values; ++j)
+	  obj.insert(obj.end(), ++test_value);
+	++test_iterations;
+      }
+  }
+
+template<typename Container>
+  void*
+  do_test(void* p = NULL)
+  {
     try
       {
-	int test_iterations = 0;
-	value_type<test_type> test_value;
-	while (test_iterations < iterations)
-	  {
-	    for (int j = 0; j < insert_values; ++j)
-	      obj.insert(obj.end(), ++test_value);
-	    ++test_iterations;
-	  }
-	// NB: Don't use clear() here, instead force deallocation.
-        obj = Container();
-	test_iterations = 0;
-	test_value = value_type<test_type>();
-	while (test_iterations < iterations)
-	  {
-	    for (int j = 0; j < insert_values; ++j)
-	      obj.insert(obj.end(), ++test_value);
-	    ++test_iterations;
-	  }
+	do_loop<Container>();
+	do_loop<Container>();
       }
     catch(...)
       {
-	// No point allocating all available memory, repeatedly.	
+	// No point allocating all available memory, repeatedly.
       }
   }
 
@@ -117,10 +115,10 @@ template<typename Container>
     start_counters(time, resource);
     
     pthread_t  t1, t2, t3, t4;
-    pthread_create(&t1, 0, &do_loop<Container>, 0);
-    pthread_create(&t2, 0, &do_loop<Container>, 0);
-    pthread_create(&t3, 0, &do_loop<Container>, 0);
-    pthread_create(&t4, 0, &do_loop<Container>, 0);
+    pthread_create(&t1, 0, &do_test<Container>, 0);
+    pthread_create(&t2, 0, &do_test<Container>, 0);
+    pthread_create(&t3, 0, &do_test<Container>, 0);
+    pthread_create(&t4, 0, &do_test<Container>, 0);
 
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
