@@ -58,6 +58,30 @@ package java.io;
 public class BufferedWriter extends Writer
 {
   /**
+   * This is the default buffer size
+   */
+  private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+  /**
+   * This is the underlying <code>Writer</code> to which this object
+   * sends its output.
+   */
+  private Writer out;
+
+  /**
+   * This is the internal char array used for buffering output before
+   * writing it.
+   */
+  char[] buffer;
+
+  /**
+   * This is the number of chars that are currently in the buffer and
+   * are waiting to be written to the underlying stream.  It always points to
+   * the index into the buffer where the next char of data will be stored
+   */
+  int count;
+
+  /**
    * This method initializes a new <code>BufferedWriter</code> instance
    * that will write to the specified subordinate <code>Writer</code>
    * and which will use a default buffer size of 8192 chars.
@@ -77,12 +101,12 @@ public class BufferedWriter extends Writer
    * @param out The underlying <code>Writer</code> to write data to
    * @param size The size of the internal buffer
    */
-  public BufferedWriter (Writer ox, int size)
+  public BufferedWriter (Writer out, int size)
   {
-    super (ox);
-    out = ox;
-    buffer = new char[size];
-    count = 0;
+    super(out);
+    this.out = out;
+    this.buffer = new char[size];
+    this.count = 0;
   }
 
   /**
@@ -227,7 +251,7 @@ public class BufferedWriter extends Writer
   }
 
   // This should only be called with the lock held.
-  private final void localFlush () throws IOException
+  private void localFlush () throws IOException
   {
     if (count > 0)
       {
@@ -235,28 +259,4 @@ public class BufferedWriter extends Writer
 	count = 0;
       }
   }
-
-  /**
-   * This is the underlying <code>Writer</code> to which this object
-   * sends its output.
-   */
-  private Writer out;
-
-  /**
-   * This is the internal char array used for buffering output before
-   * writing it.
-   */
-  char[] buffer;
-
-  /**
-   * This is the number of chars that are currently in the buffer and
-   * are waiting to be written to the underlying stream.  It always points to
-   * the index into the buffer where the next char of data will be stored
-   */
-  int count;
-
-  /**
-   * This is the default buffer size
-   */
-  private static final int DEFAULT_BUFFER_SIZE = 8192;
 }
