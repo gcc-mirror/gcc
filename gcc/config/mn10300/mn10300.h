@@ -381,11 +381,16 @@ enum reg_class {
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)			\
-  ((X) == stack_pointer_rtx && (CLASS) != SP_REGS	\
-   ? ADDRESS_OR_EXTENDED_REGS				\
-   : (GET_CODE (X) == MEM				\
-      ? LIMIT_RELOAD_CLASS (GET_MODE (X), CLASS)	\
+#define PREFERRED_RELOAD_CLASS(X,CLASS)				\
+  ((X) == stack_pointer_rtx && (CLASS) != SP_REGS		\
+   ? ADDRESS_OR_EXTENDED_REGS					\
+   : (GET_CODE (X) == MEM					\
+      || (GET_CODE (X) == REG					\
+	  && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+      || (GET_CODE (X) == SUBREG				\
+	  && GET_CODE (SUBREG_REG (X)) == REG			\
+	  && REGNO (SUBREG_REG (X)) >= FIRST_PSEUDO_REGISTER)	\
+      ? LIMIT_RELOAD_CLASS (GET_MODE (X), CLASS)		\
       : (CLASS)))
 
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) \

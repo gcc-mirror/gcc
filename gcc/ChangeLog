@@ -1,3 +1,8 @@
+2000-10-24  Richard Henderson <rth@cygnus.com>, Aldy <aldyh@cygnus.com>
+
+        * config/mn10300/mn10300.h (PREFERRED_RELOAD_CLASS): Treat
+        pseudos just like memory.
+
 2000-10-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (distribute_notes): Discard REG_LIBCALL and REG_RETVAL
@@ -8,6 +13,7 @@
 	* expr.c (do_store_flag): Don't crash if either side of a
 	comparison is error_mark_node.
 
+>>>>>>> 1.8059
 2000-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* sibcall.c (purge_mem_unchanging_flag): New function.
