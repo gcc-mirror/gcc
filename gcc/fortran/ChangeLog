@@ -1,5 +1,11 @@
 2004-09-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/15327
+	* trans-intrinsic.c (gfc_conv_intrinsic_merge): Do the right thing for
+	strings.
+
+2004-09-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/16400
 	PR fortran/16404
 	(port from g95)
