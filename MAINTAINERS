@@ -122,6 +122,7 @@ docs co-maintainer	Joseph Myers		jsm28@cam.ac.uk
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill
 predict.def		Jan Hubicka		jh@suse.cz
+contrib/regression	Geoff Keating		geoffk@redhat.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.

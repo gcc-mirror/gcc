@@ -1,3 +1,8 @@
+2002-01-31  Geoffrey Keating  <geoffk@redhat.com>
+
+	* MAINTAINERS: Put self in as maintainer for contrib/regression
+	directory.
+
 2002-01-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* MAINTAINERS:  Update my email address.
