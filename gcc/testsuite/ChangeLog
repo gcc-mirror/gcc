@@ -1,3 +1,16 @@
+2002-03-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/dg.exp: Ignore tests in new directories bprob and gcov.
+	* g++.dg/bprob/bprob.exp: New driver for profile-directed branch
+	ordering tests.
+	* g++.dg/bprob/bprob-1.C: New test.
+	* g++.dg/gcov/gcov.exp: New driver for gcov tests.
+	* g++.dg/gcov/gcov-1.C: New test.
+	* g++.dg/gcov/gcov-1.x: New file.
+	* g++.dg/gcov/gcov-2.C: New test.
+	* g++.dg/gcov/gcov-3.C: New test.
+	* g++.dg/gcov/gcov-3.h: New file.
+
 2002-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.old-deja/g++.other/builtins5.C: New test.
