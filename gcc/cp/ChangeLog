@@ -17,7 +17,8 @@
 	(dump_type_real): Move back to dump_type.
 	(dump_type): Adjust prototype. Use tree_string_flags.
 	(dump_aggr_type): Likewise. Use dump_template_parms.
-	(dump_type_prefix): Adjust prototype. Use tree_string_flags. Return pad flag.
+	(dump_type_prefix): Adjust prototype. Use tree_string_flags.
+	Return pad flag.
 	(dump_type_suffix): Adjust prototype. Use tree_string_flags.
 	(dump_simple_decl): Likewise.
 	(dump_decl): Likewise. Use dump_template_decl.
