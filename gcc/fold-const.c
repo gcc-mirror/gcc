@@ -71,12 +71,12 @@ static tree optimize_bit_field_compare PROTO((enum tree_code, tree,
 					      tree, tree));
 static tree decode_field_reference PROTO((tree, int *, int *,
 					  enum machine_mode *, int *,
-					  int *, tree *));
+					  int *, tree *, tree *));
 static int all_ones_mask_p PROTO((tree, int));
 static int simple_operand_p PROTO((tree));
 static tree range_test	PROTO((enum tree_code, tree, enum tree_code,
 			       enum tree_code, tree, tree, tree));
-static tree unextend	PROTO((tree, int, int));
+static tree unextend	PROTO((tree, int, int, tree));
 static tree fold_truthop PROTO((enum tree_code, tree, tree, tree));
 static tree strip_compound_expr PROTO((tree, tree));
 
@@ -2382,17 +2382,20 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
    *PMASK is set to the mask used.  This is either contained in a
    BIT_AND_EXPR or derived from the width of the field.
 
+   *PAND_MASK is set the the mask found in a BIT_AND_EXPR, if any.
+
    Return 0 if this is not a component reference or is one that we can't
    do anything with.  */
 
 static tree
 decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
-			pvolatilep, pmask)
+			pvolatilep, pmask, pand_mask)
      tree exp;
      int *pbitsize, *pbitpos;
      enum machine_mode *pmode;
      int *punsignedp, *pvolatilep;
      tree *pmask;
+     tree *pand_mask;
 {
   tree and_mask = 0;
   tree mask, inner, offset;
@@ -2439,6 +2442,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
 			convert (unsigned_type, and_mask), mask));
 
   *pmask = mask;
+  *pand_mask = and_mask;
   return inner;
 }
 
@@ -2621,13 +2625,15 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 
 /* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
    bit value.  Arrange things so the extra bits will be set to zero if and
-   only if C is signed-extended to its full width.  */
+   only if C is signed-extended to its full width.  If MASK is nonzero,
+   it is an INTEGER_CST that should be AND'ed with the extra bits.  */
 
 static tree
-unextend (c, p, unsignedp)
+unextend (c, p, unsignedp, mask)
      tree c;
      int p;
      int unsignedp;
+     tree mask;
 {
   tree type = TREE_TYPE (c);
   int modesize = GET_MODE_BITSIZE (TYPE_MODE (type));
@@ -2646,6 +2652,9 @@ unextend (c, p, unsignedp)
   temp = const_binop (BIT_AND_EXPR, temp, size_int (1), 0);
   temp = const_binop (LSHIFT_EXPR, temp, size_int (modesize - 1), 0);
   temp = const_binop (RSHIFT_EXPR, temp, size_int (modesize - p - 1), 0);
+  if (mask != 0)
+    temp = const_binop (BIT_AND_EXPR, temp, convert (TREE_TYPE (c), mask), 0);
+
   return convert (type, const_binop (BIT_XOR_EXPR, c, temp, 0));
 }
 
@@ -2699,6 +2708,7 @@ fold_truthop (code, truth_type, lhs, rhs)
   enum machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
   enum machine_mode lnmode, rnmode;
   tree ll_mask, lr_mask, rl_mask, rr_mask;
+  tree ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   tree l_const, r_const;
   tree type, result;
   int first_bit, end_bit;
@@ -2788,16 +2798,20 @@ fold_truthop (code, truth_type, lhs, rhs)
   volatilep = 0;
   ll_inner = decode_field_reference (ll_arg,
 				     &ll_bitsize, &ll_bitpos, &ll_mode,
-				     &ll_unsignedp, &volatilep, &ll_mask);
+				     &ll_unsignedp, &volatilep, &ll_mask,
+				     &ll_and_mask);
   lr_inner = decode_field_reference (lr_arg,
 				     &lr_bitsize, &lr_bitpos, &lr_mode,
-				     &lr_unsignedp, &volatilep, &lr_mask);
+				     &lr_unsignedp, &volatilep, &lr_mask,
+				     &lr_and_mask);
   rl_inner = decode_field_reference (rl_arg,
 				     &rl_bitsize, &rl_bitpos, &rl_mode,
-				     &rl_unsignedp, &volatilep, &rl_mask);
+				     &rl_unsignedp, &volatilep, &rl_mask,
+				     &rl_and_mask);
   rr_inner = decode_field_reference (rr_arg,
 				     &rr_bitsize, &rr_bitpos, &rr_mode,
-				     &rr_unsignedp, &volatilep, &rr_mask);
+				     &rr_unsignedp, &volatilep, &rr_mask,
+				     &rr_and_mask);
 
   /* It must be true that the inner operation on the lhs of each
      comparison must be the same if we are to be able to do anything.
@@ -2866,7 +2880,8 @@ fold_truthop (code, truth_type, lhs, rhs)
 
   if (l_const)
     {
-      l_const = unextend (convert (type, l_const), ll_bitsize, ll_unsignedp);
+      l_const = convert (type, l_const);
+      l_const = unextend (l_const,  ll_bitsize, ll_unsignedp, ll_and_mask);
       l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos), 0);
       if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
 					fold (build1 (BIT_NOT_EXPR,
@@ -2883,7 +2898,8 @@ fold_truthop (code, truth_type, lhs, rhs)
     }
   if (r_const)
     {
-      r_const = unextend (convert (type, r_const), rl_bitsize, rl_unsignedp);
+      r_const = convert (type, r_const);
+      r_const = unextend (r_const, rl_bitsize, rl_unsignedp, rl_and_mask);
       r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos), 0);
       if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
 					fold (build1 (BIT_NOT_EXPR,
