@@ -64,8 +64,21 @@ public abstract class Reference
   /**
    * The underlying object.  This field is handled in a special way by
    * the garbage collection.
+   * GCJ LOCAL:
+   * This is a RawData because it must be disguised from the GC.
+   * END GCJ LOCAL
    */
-  Object referent;
+  gnu.gcj.RawData referent;
+
+  /**
+   * This is like REFERENT but is not scanned by the GC.  We keep a
+   * copy around so that we can see when clear() has been called.
+   * GCJ LOCAL:
+   * This field doesn't exist in Classpath; we use it to detect
+   * clearing.
+   * END GCJ LOCAL
+   */
+  gnu.gcj.RawData copy;
 
   /**
    * The queue this reference is registered on. This is null, if this
@@ -97,7 +110,7 @@ public abstract class Reference
    */
   Reference(Object ref)
   {
-    referent = ref;
+    create (ref);
   }
 
   /**
@@ -112,9 +125,14 @@ public abstract class Reference
   {
     if (q == null)
       throw new NullPointerException();
-    referent = ref;
     queue = q;
+    create (ref);
   }
+
+  /**
+   * Notifies the VM that a new Reference has been created.
+   */
+  private native void create (Object o);
 
   /**
    * Returns the object, this reference refers to.
@@ -138,6 +156,7 @@ public abstract class Reference
   public void clear()
   {
     referent = null;
+    copy = null;
   }
 
   /**

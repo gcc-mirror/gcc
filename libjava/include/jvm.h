@@ -166,6 +166,13 @@ void _Jv_RunGC (void);
 /* Disable and enable GC.  */
 void _Jv_DisableGC (void);
 void _Jv_EnableGC (void);
+/* Register a disappearing link.  This is a field F which should be
+   cleared when *F is found to be inaccessible.  This is used in the
+   implementation of java.lang.ref.Reference.  */
+void _Jv_GCRegisterDisappearingLink (jobject *objp);
+/* Return true if OBJECT should be reclaimed.  This is used to
+   implement soft references.  */
+jboolean _Jv_GCCanReclaimSoftReference (jobject obj);
 
 /* Return approximation of total size of heap.  */
 long _Jv_GCTotalMemory (void);
