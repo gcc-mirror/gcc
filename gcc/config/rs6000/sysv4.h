@@ -1020,6 +1020,7 @@ do {									\
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
 scrti.o%s"
+#endif
 
 #ifndef	ENDFILE_LINUX_SPEC
 #define	ENDFILE_LINUX_SPEC "scrtn.o%s"
