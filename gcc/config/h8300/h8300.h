@@ -768,14 +768,13 @@ struct cum_arg
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			     \
-{									     \
-  enum machine_mode mode = TARGET_H8300H || TARGET_H8300S ? SImode : HImode; \
-  emit_move_insn (gen_rtx_MEM (mode, plus_constant ((TRAMP), 2)), CXT);	     \
-  emit_move_insn (gen_rtx_MEM (mode, plus_constant ((TRAMP), 6)), FNADDR);   \
-  if (TARGET_H8300H || TARGET_H8300S)					     \
-    emit_move_insn (gen_rtx_MEM (QImode, plus_constant ((TRAMP), 6)),	     \
-		    GEN_INT (0x5A));					     \
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			    \
+{									    \
+  emit_move_insn (gen_rtx_MEM (Pmode, plus_constant ((TRAMP), 2)), CXT);    \
+  emit_move_insn (gen_rtx_MEM (Pmode, plus_constant ((TRAMP), 6)), FNADDR); \
+  if (TARGET_H8300H || TARGET_H8300S)					    \
+    emit_move_insn (gen_rtx_MEM (QImode, plus_constant ((TRAMP), 6)),	    \
+		    GEN_INT (0x5A));					    \
 }
 
 /* Addressing modes, and classification of registers for them.  */
