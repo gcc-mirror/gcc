@@ -1,3 +1,10 @@
+2003-03-20  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_mathfn_compare): New function to simplify
+	comparisons against built-in math functions.  Fold comparisons
+	of sqrt against constants.
+	(fold): Call fold_mathfn_compare when appropriate.
+
 2003-03-20 Richard Earnshaw  <rearnsha@arm.com>
 
 	* ifcvt.c (find_if_case_1): If we add a new bb, update the dominance
@@ -1542,24 +1549,24 @@ Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	MEM, try loading the MEM into a register and taking the low-part
 	of that, to help CSE see the use of the MEM in its true mode.
 
-2002-03-05  Tom Tromey  <tromey@redhat.com>
+2003-03-05  Tom Tromey  <tromey@redhat.com>
 
 	* config/stormy16/stormy16.h (DWARF_LINE_MIN_INSTR_LENGTH):
 	Define.
 
-2002-03-05  Nick Clifton  <nickc@cambridge.redhat.com>
+2003-03-05  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/stormy16/stormy16.md ("*eqbranchsi"): Remove '+' on
 	operand 2.
 	("*ineqbranchsi"): Likewise.
 
-2002-03-05  Andrew Haley  <aph@cambridge.redhat.com>
+2003-03-05  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Delete
 	mem_fake_push_rtx.  Instead construct a SEQUENCE to show the
 	register store followed by a stack increment.
 
-2002-03-05  Chris Moller  <cmoller@redhat.com>
+2003-03-05  Chris Moller  <cmoller@redhat.com>
 
 	* config/stormy16/stormy16.c (REG_NEEDS_SAVE): added a term
 	to inhibit saving CARRY_REGS.
@@ -2328,7 +2335,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(*tst_extzv_memqi_1_n): Likewise.
 	(a peephole2): New.
 
-2002-02-28  Richard Sandiford  <rsandifo@redhat.com>
+2003-02-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Wrap in
 	#ifndef __mips16.
@@ -4123,7 +4130,7 @@ Sun Feb  9 23:54:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 	simplify_binary_operation):  Deal with vector modes
 	(simplify_ternary_operation):  Deal with no-op VEC_MERGE.
 
-2002-02-09  Richard Sandiford  <rsandifo@redhat.com>
+2003-02-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* toplev.c (rest_of_compilation): Recompute register usage after
 	split_all_insns.
@@ -4489,7 +4496,7 @@ Wed Feb  5 23:12:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/unwind-ia64.c: include coretypes.h, tm.h to get
 	  config/ia64/linux.h
 
-2002-02-05  Roger Sayle  <roger@eyesopen.com>
+2003-02-05  Roger Sayle  <roger@eyesopen.com>
 
 	* cfgloop.h (flow_bb_inside_loop_p): Correct prototype again.
 
@@ -4605,7 +4612,7 @@ Mon Feb  3 21:19:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(movups/movupd/movdqu patterns): Force one of operands to not be
 	memory.
 
-2002-02-03  Roger Sayle  <roger@eyesopen.com>
+2003-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	* hooks.c (hook_rtx_rtx_identity): Generic hook function that
 	takes a single rtx and returns it unmodified.
@@ -5624,11 +5631,11 @@ Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/h8300/h8300.c (h8300_shift_needs_scratch_p): Update a
 	comment.
 
-2002-01-25  Richard Henderson  <rth@redhat.com>
+2003-01-25  Richard Henderson  <rth@redhat.com>
 
 	* config/m68k/m68k-none.h (ASM_SPEC): Adjust inter-option spacing.
 
-2002-01-25  Kelley Cook <kelleycook@comcast.net>
+2003-01-25  Kelley Cook <kelleycook@comcast.net>
 
 	* ggc-simple.c (debug_ggc_tree): Add PTR cast.
 
@@ -5646,7 +5653,7 @@ Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	2002-02-19  Robert Lipe  <robertlipe@usa.net>
 	* config/i386/t-sco5gas: (CRTSTUFF_T_CFLAGS_S): Delete -mcoff.
 
-2002-01-25  Roger Sayle  <roger@eyesopen.com>
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (purge_builtin_constant_p): Scan insn stream
 	sequentially rather than by basic block.
@@ -5656,7 +5663,7 @@ Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (simplify_comparison, case AND): Remove a redundant test.
 
-2002-01-25  Roger Sayle  <roger@eyesopen.com>
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* function.h (struct function): New field calls_constant_p.
 	(current_function_calls_constant_p): New macro for above.
@@ -5668,7 +5675,7 @@ Sat Jan 25 21:04:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* integrate.c (expand_inline_function): Set calls_constant_p if
 	the function being inlined has calls_constant_p set.
 
-2002-01-25  Roger Sayle  <roger@eyesopen.com>
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	* cse.c (fold_rtx): Instantiate CONSTANT_P_RTX to 0 when not
 	optimizing, even if flag_gcse is true.
@@ -5728,7 +5735,7 @@ Sat Jan 25 11:10:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (fold_trunc_transparent_mathfn):  Undo accidental commit.
 
-2002-01-24  Stuart Hastings  <stuart@apple.com>
+2003-01-24  Stuart Hastings  <stuart@apple.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Add Darwin/x86 support.
 
