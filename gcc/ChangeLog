@@ -5,11 +5,21 @@
 
 2002-07-16  Stan Shebs  <shebs@apple.com>
 
-	* darwin.c (func_name_maybe_scoped): Remove unused decl.
+	* config/darwin.h (ASM_OUTPUT_LABEL): Move to here from
+	config/rs6000/darwin.h.
+	(ASM_OUTPUT_SKIP): Ditto.
+	(TEXT_SECTION_ASM_OP): Ditto.
+	(DATA_SECTION_ASM_OP): Ditto.
+	(ASM_APP_ON): Define.
+	(ASM_APP_OFF): Define.
+	* config/rs6000/darwin.h (ASM_OUTPUT_LABEL, ASM_OUTPUT_SKIP,
+	TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP): Remove.
+
+	* config/darwin.c (func_name_maybe_scoped): Remove unused decl.
 	(machopic_function_base_name): Declare result to be const.
 	(machopic_non_lazy_ptr_name): Ditto.
 	(machopic_stub_name): Ditto.
-	* darwin-protos.h: Ditto for the prototypes.
+	* config/darwin-protos.h: Ditto for the prototypes.
 
 Wed Jul 17 00:22:39 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
