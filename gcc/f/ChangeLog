@@ -1,3 +1,13 @@
+2003-05-12  Roger Sayle  <roger@eyesopen.com>
+
+	* com.c (ffecom_init_0): Define built-in functions for atan2,
+	exp, floor, fmod, log and pow.
+	(duplicate_decls): Preserve assembler name when redeclaring a
+	built-in.
+	* com-rt.def: Implement using the built-in forms of the above
+	functions rather than calling the standard C library directly.
+	Correct some of the run-time prototype "codes".
+
 2003-05-11  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/10726
