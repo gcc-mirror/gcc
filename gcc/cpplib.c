@@ -250,7 +250,7 @@ get_define_node (pfile)
   const cpp_token *token;
 
   /* Skip any -C comments.  */
-  while ((token = cpp_get_token (pfile))->type == CPP_COMMENT)
+  while ((token = _cpp_get_token (pfile))->type == CPP_COMMENT)
     ;
 
   if (token->type != CPP_NAME)
@@ -307,7 +307,7 @@ do_undef (pfile)
 {
   cpp_hashnode *node = get_define_node (pfile);  
 
-  if (cpp_get_token (pfile)->type != CPP_EOF)
+  if (_cpp_get_token (pfile)->type != CPP_EOF)
     cpp_pedwarn (pfile, "junk on line after #undef");
 
   /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified identifier
@@ -343,7 +343,7 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
      unsigned int *lenp;
      int *abp;
 {
-  const cpp_token *name = cpp_get_token (pfile);
+  const cpp_token *name = _cpp_get_token (pfile);
 
   if (name->type != CPP_STRING && name->type != CPP_HEADER_NAME)
     {
@@ -361,7 +361,7 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
       return 1;
     }
 
-  if (!trail && cpp_get_token (pfile)->type != CPP_EOF)
+  if (!trail && _cpp_get_token (pfile)->type != CPP_EOF)
     cpp_error (pfile, "junk at end of #%s", dir);
 
   *lenp = name->val.str.len;
@@ -459,7 +459,7 @@ read_line_number (pfile, num)
      cpp_reader *pfile;
      int *num;
 {
-  const cpp_token *tok = cpp_get_token (pfile);
+  const cpp_token *tok = _cpp_get_token (pfile);
   enum cpp_ttype type = tok->type;
   const U_CHAR *p = tok->val.str.text;
   unsigned int len = tok->val.str.len;
@@ -519,7 +519,7 @@ do_line (pfile)
   unsigned int len;
   const cpp_token *tok;
 
-  tok = cpp_get_token (pfile);
+  tok = _cpp_get_token (pfile);
   type = tok->type;
   str = tok->val.str.text;
   len = tok->val.str.len;
@@ -535,7 +535,7 @@ do_line (pfile)
 
   old_lineno = ip->lineno;
   ip->lineno = new_lineno;
-  tok = cpp_get_token (pfile);
+  tok = _cpp_get_token (pfile);
   type = tok->type;
   str = tok->val.str.text;
   len = tok->val.str.len;
@@ -645,9 +645,9 @@ do_ident (pfile)
      cpp_reader *pfile;
 {
   /* Next token should be a string constant.  */
-  if (cpp_get_token (pfile)->type == CPP_STRING)
+  if (_cpp_get_token (pfile)->type == CPP_STRING)
     /* And then a newline.  */
-    if (cpp_get_token (pfile)->type == CPP_EOF)
+    if (_cpp_get_token (pfile)->type == CPP_EOF)
       {
 	/* Good - ship it.  */
 	pass_thru_directive (pfile);
@@ -725,7 +725,7 @@ do_pragma (pfile)
   const cpp_token *tok;
   int pop;
 
-  tok = cpp_get_token (pfile);
+  tok = _cpp_get_token (pfile);
   if (tok->type == CPP_EOF)
     return 0;
   else if (tok->type != CPP_NAME)
@@ -746,7 +746,7 @@ do_pragma_gcc (pfile)
 {
   const cpp_token *tok;
 
-  tok = cpp_get_token (pfile);
+  tok = _cpp_get_token (pfile);
   if (tok->type == CPP_EOF)
     return 1;
   else if (tok->type != CPP_NAME)
@@ -780,13 +780,13 @@ do_pragma_implementation (pfile)
 {
   /* Be quiet about `#pragma implementation' for a file only if it hasn't
      been included yet.  */
-  const cpp_token *tok = cpp_get_token (pfile);
+  const cpp_token *tok = _cpp_get_token (pfile);
   char *copy;
 
   if (tok->type == CPP_EOF)
     return 0;
   else if (tok->type != CPP_STRING
-	   || cpp_get_token (pfile)->type != CPP_EOF)
+	   || _cpp_get_token (pfile)->type != CPP_EOF)
     {
       cpp_error (pfile, "malformed #pragma implementation");
       return 1;
@@ -822,7 +822,7 @@ do_pragma_poison (pfile)
 
   for (;;)
     {
-      tok = cpp_get_token (pfile);
+      tok = _cpp_get_token (pfile);
       if (tok->type == CPP_EOF)
 	break;
       if (tok->type != CPP_NAME)
@@ -887,7 +887,7 @@ do_pragma_dependency (pfile)
     cpp_warning (pfile, "cannot find source %c%s%c", left, name, right);
   else if (ordering > 0)
     {
-      const cpp_token *msg = cpp_get_token (pfile);
+      const cpp_token *msg = _cpp_get_token (pfile);
       
       cpp_warning (pfile, "current file is older than %c%s%c",
 		   left, name, right);
@@ -974,7 +974,7 @@ parse_ifdef (pfile, name)
   enum cpp_ttype type;
   const cpp_hashnode *node = 0;
 
-  const cpp_token *token = cpp_get_token (pfile);
+  const cpp_token *token = _cpp_get_token (pfile);
   type = token->type;
 
   if (!CPP_TRADITIONAL (pfile))
@@ -983,7 +983,7 @@ parse_ifdef (pfile, name)
 	cpp_pedwarn (pfile, "#%s with no argument", name);
       else if (type != CPP_NAME)
 	cpp_pedwarn (pfile, "#%s with invalid argument", name);
-      else if (cpp_get_token (pfile)->type != CPP_EOF)
+      else if (_cpp_get_token (pfile)->type != CPP_EOF)
 	cpp_pedwarn (pfile, "garbage at end of #%s", name);
     }
 
@@ -1186,7 +1186,7 @@ validate_else (pfile, directive)
      cpp_reader *pfile;
      const U_CHAR *directive;
 {
-  if (CPP_PEDANTIC (pfile) && cpp_get_token (pfile)->type != CPP_EOF)
+  if (CPP_PEDANTIC (pfile) && _cpp_get_token (pfile)->type != CPP_EOF)
     cpp_pedwarn (pfile, "ISO C forbids text after #%s", directive);
 }
 
@@ -1515,8 +1515,13 @@ cpp_push_buffer (pfile, buffer, length)
   cpp_buffer *new;
   if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
     {
-      cpp_fatal (pfile, "#include recursion too deep");
+      cpp_fatal (pfile, "#include nested too deep");
       return NULL;
+    }
+  if (pfile->cur_context > 0)
+    {
+      cpp_ice (pfile, "buffer pushed with contexts stacked");
+      _cpp_skip_rest_of_line (pfile);
     }
 
   new = xobnew (pfile->buffer_ob, cpp_buffer);

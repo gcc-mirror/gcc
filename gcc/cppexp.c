@@ -392,7 +392,7 @@ lex (pfile, skip_evaluation)
   const cpp_token *tok;
 
  retry:
-  tok = cpp_get_token (pfile);
+  tok = _cpp_get_token (pfile);
 
   switch (tok->type)
     {

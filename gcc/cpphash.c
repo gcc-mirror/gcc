@@ -354,7 +354,7 @@ parse_define (pfile)
   int prev_white = 0;
 
   /* The first token after the macro's name.  */
-  token = cpp_get_token (pfile);
+  token = _cpp_get_token (pfile);
 
   /* Constraint 6.10.3.5  */
   if (is__va_args__ (pfile, token - 1))
