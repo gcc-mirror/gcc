@@ -1,3 +1,7 @@
+2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* gccbug.in: Update optimization -> tree-optimization/rtl-optimization.
+
 2004-06-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/install.texi (Prerequisites): Update libstdc++ entry to
