@@ -5944,7 +5944,7 @@ safe_from_p (rtx x, tree exp, int top_p)
       if (exp_rtl)
 	break;
 
-      nops = first_rtl_op (TREE_CODE (exp));
+      nops = TREE_CODE_LENGTH (TREE_CODE (exp));
       for (i = 0; i < nops; i++)
 	if (TREE_OPERAND (exp, i) != 0
 	    && ! safe_from_p (x, TREE_OPERAND (exp, i), 0))

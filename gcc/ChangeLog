@@ -1,3 +1,13 @@
+2004-12-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, expr.c, fold-const.c, print-tree.c,
+	tree-gimple.c, tree-inline.c, tree-pretty-print.c,
+	tree-ssa-loop-im.c, tree-ssa-loop-ivopts.c: Replace uses of
+	first_rtl_op with TREE_CODE_LENGTH.
+	* tree.c (first_rtl_op): Remove.
+	Replace uses of first_rtl_op with TREE_CODE_LENGTH.
+	* tree.h: Remove the prototype for first_rtl_op.
+
 2004-12-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/t-aix43, config/rs6000/t-aix52 (SHLIB_LINK):

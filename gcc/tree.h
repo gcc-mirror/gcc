@@ -3279,11 +3279,6 @@ extern tree save_expr (tree);
 
 extern tree skip_simple_arithmetic (tree);
 
-/* Returns the index of the first non-tree operand for CODE, or the number
-   of operands if all are trees.  */
-
-extern int first_rtl_op (enum tree_code);
-
 /* Return which tree structure is used by T.  */
 
 enum tree_node_structure_enum tree_node_structure (tree);

@@ -1365,7 +1365,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	 Other non-expressions need not be processed.  */
       if (cl == tcc_unary)
 	{
-	  if (first_rtl_op (code) == 0)
+	  if (TREE_CODE_LENGTH (code) == 0)
 	    return;
 	  x = TREE_OPERAND (x, 0);
 	  writer = 0;
@@ -1374,7 +1374,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       else if (IS_EXPR_CODE_CLASS (cl))
 	{
 	  int lp;
-	  int max = first_rtl_op (TREE_CODE (x));
+	  int max = TREE_CODE_LENGTH (TREE_CODE (x));
 	  for (lp = 0; lp < max; lp++)
 	    {
 	      tmp_before = tmp_nosp = 0;
