@@ -28,6 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 #ifndef UCHAR_MAX
 #define UCHAR_MAX ((unsigned char)(-1))

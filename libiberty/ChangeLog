@@ -1,3 +1,15 @@
+2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.c, partition.c, sort.c, xmemdup.c: Include string.h
+	if HAVE_STRING_H.
+	* pexecute.c, xexit.c: Include stdlib.h if HAVE_STDLIB_H.
+	* objalloc.c: Include config.h.  Include stdlib.h and don't
+	declare malloc or free if HAVE_STDLIB_H.
+	* strerror.c, strsignal.c: Include stdlib.h if HAVE_STDLIB_H,
+	else declare malloc without prototype.  Include string.h if
+	HAVE_STRING_H, else declare memset without prototype.  Don't
+	include stddef.h.
+
 2000-05-23  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (xmalloc.o): Add dependency for config.h, fixes make

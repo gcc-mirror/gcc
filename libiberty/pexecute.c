@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #define ISSPACE (x) isspace(x)
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
