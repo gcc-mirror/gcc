@@ -120,8 +120,10 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #ifndef _VA_LIST_
 #define _VA_LIST_
 #ifdef __i860__
+#ifndef _VA_LIST
 #define _VA_LIST va_list
 #endif
+#endif /* __i860__ */
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST_ */
 #else /* not __svr4__ */
