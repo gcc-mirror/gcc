@@ -182,9 +182,43 @@ void (*lang_unsave_expr_now) PARAMS ((tree));
 /* If non-null, these are language-specific helper functions for
    unsafe_for_reeval.  Return negative to not handle some tree.  */
 int (*lang_unsafe_for_reeval) PARAMS ((tree));
+
+/* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of thing
+   that the assembler should talk about, set DECL_ASSEMBLER_NAME to an
+   appropriate IDENTIFIER_NODE.  Otherwise, set it to the
+   ERROR_MARK_NODE to ensure that the assembler does not talk about
+   it.  */
+void (*lang_set_decl_assembler_name)     PARAMS ((tree));
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
+
+/* Set the DECL_ASSEMBLER_NAME for DECL.  */
+void
+set_decl_assembler_name (decl)
+     tree decl;
+{
+  /* The language-independent code should never use the
+     DECL_ASSEMBLER_NAME for lots of DECLs.  Only FUNCTION_DECLs and
+     VAR_DECLs for variables with static storage duration need a real
+     DECL_ASSEMBLER_NAME.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == VAR_DECL 
+	  && (TREE_STATIC (decl) 
+	      || DECL_EXTERNAL (decl) 
+	      || TREE_PUBLIC (decl))))
+    /* By default, assume the name to use in assembly code is the
+       same as that used in the source language.  (That's correct
+       for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
+       value as DECL_NAME in build_decl, so this choice provides
+       backwards compatibility with existing front-ends.  */
+    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+  else
+    /* Nobody should ever be asking for the DECL_ASSEMBLER_NAME of
+       these DECLs -- unless they're in language-dependent code, in
+       which case lang_set_decl_assembler_name should handle things.  */
+    abort ();
+}
 
 /* Init the principal obstacks.  */
 
@@ -199,6 +233,9 @@ init_obstacks ()
   ggc_add_root (&type_hash_table, 1, sizeof type_hash_table, mark_type_hash);
   ggc_add_tree_root (global_trees, TI_MAX);
   ggc_add_tree_root (integer_types, itk_none);
+
+  /* Set lang_set_decl_set_assembler_name to a default value.  */
+  lang_set_decl_assembler_name = set_decl_assembler_name;
 }
 
 void
@@ -2557,7 +2594,6 @@ build_decl (code, name, type)
    as the type can suppress useless errors in the use of this variable.  */
 
   DECL_NAME (t) = name;
-  DECL_ASSEMBLER_NAME (t) = name;
   TREE_TYPE (t) = type;
 
   if (code == VAR_DECL || code == PARM_DECL || code == RESULT_DECL)

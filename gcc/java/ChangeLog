@@ -1,3 +1,12 @@
+2001-03-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_class_ref): Use SET_DECL_ASSEMBLER_NAME.
+	(layout_class): Likewise.
+	(layout_class_method): Likewise.
+	(emit_register_classes): Likewise.
+	* decl.c (builtin_function): Likewise.
+	(give_name_to_locals): Likewise.
+
 2001-03-19  Per Bothner  <per@bothner.com>
 
 	* jcf-parse.c (load_inner_classes):  Check CLASS_LOADED_P

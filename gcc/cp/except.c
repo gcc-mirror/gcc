@@ -1065,6 +1065,7 @@ nothrow_libfn_p (fn)
 
   if (TREE_PUBLIC (fn)
       && DECL_EXTERNAL (fn)
+      && DECL_NAMESPACE_SCOPE_P (fn)
       && DECL_EXTERN_C_P (fn))
     /* OK */;
   else

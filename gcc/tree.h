@@ -1255,11 +1255,37 @@ struct tree_type
 /* This is the name of the object as written by the user.
    It is an IDENTIFIER_NODE.  */
 #define DECL_NAME(NODE) (DECL_CHECK (NODE)->decl.name)
-/* This is the name of the object as the assembler will see it
-   (but before any translations made by ASM_OUTPUT_LABELREF).
-   Often this is the same as DECL_NAME.
-   It is an IDENTIFIER_NODE.  */
-#define DECL_ASSEMBLER_NAME(NODE) (DECL_CHECK (NODE)->decl.assembler_name)
+/* The name of the object as the assembler will see it (but before any
+   translations made by ASM_OUTPUT_LABELREF).  Often this is the same
+   as DECL_NAME.  It is an IDENTIFIER_NODE.  */
+#define DECL_ASSEMBLER_NAME(NODE)		\
+  ((DECL_ASSEMBLER_NAME_SET_P (NODE)		\
+    ? (void) 0					\
+    : (*lang_set_decl_assembler_name) (NODE)),	\
+   DECL_CHECK (NODE)->decl.assembler_name)
+/* Returns non-zero if the DECL_ASSEMBLER_NAME for NODE has been 
+   set.  If zero, the NODE might still have a DECL_ASSEMBLER_NAME --
+   it just hasn't been set yet.  */
+#define DECL_ASSEMBLER_NAME_SET_P(NODE) \
+  (DECL_CHECK (NODE)->decl.assembler_name != NULL_TREE)
+/* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
+#define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
+  (DECL_CHECK (NODE)->decl.assembler_name = (NAME))
+/* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if
+   DECL1's DECL_ASSEMBLER_NAME has not yet been set, using this macro
+   will not cause the DECL_ASSEMBLER_NAME of either DECL to be set.
+   In other words, the semantics of using this macro, are different
+   than saying:
+     
+     SET_DECL_ASSEMBLER_NAME(DECL2, DECL_ASSEMBLER_NAME (DECL1))
+
+   which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
+#define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
+  (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
+   ? (void) SET_DECL_ASSEMBLER_NAME (DECL2, 				\
+                                     DECL_ASSEMBLER_NAME (DECL1))	\
+   : (void) 0)
+
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
 #define DECL_SECTION_NAME(NODE) (DECL_CHECK (NODE)->decl.section_name)
@@ -2495,6 +2521,7 @@ extern tree get_set_constructor_bits		PARAMS ((tree, char *, int));
 extern tree get_set_constructor_bytes		PARAMS ((tree,
 						       unsigned char *, int));
 extern tree get_callee_fndecl                   PARAMS ((tree));
+extern void set_decl_assembler_name             PARAMS ((tree));
 
 /* In stmt.c */
 
@@ -2663,6 +2690,13 @@ extern int objects_must_conflict_p		PARAMS ((tree, tree));
 
 /* In c-common.c */
 extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
+
+/* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of thing
+   that the assembler should talk about, set DECL_ASSEMBLER_NAME to an
+   appropriate IDENTIFIER_NODE.  Otherwise, set it to the
+   ERROR_MARK_NODE to ensure that the assembler does not talk about
+   it.  */
+extern void (*lang_set_decl_assembler_name)     PARAMS ((tree));
 
 struct obstack;
 

@@ -1904,9 +1904,10 @@ struct lang_decl
    just been used somewhere, even if it's not really needed.  We need
    anything that isn't comdat, but we don't know for sure whether or
    not something is comdat until end-of-file.  */
-#define DECL_NEEDED_P(DECL)					\
-  ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
-   || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
+#define DECL_NEEDED_P(DECL)						\
+  ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))		\
+   || (DECL_ASSEMBLER_NAME_SET_P (DECL)					\
+       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
    || (flag_syntax_only && TREE_USED ((DECL))))
 
 /* Non-zero iff DECL is memory-based.  The DECL_RTL of
@@ -4533,7 +4534,7 @@ extern void GNU_xref_member			PARAMS ((tree, tree));
 
 /* in mangle.c */
 extern void init_mangle                         PARAMS ((void));
-extern tree mangle_decl                         PARAMS ((tree));
+extern void mangle_decl                         PARAMS ((tree));
 extern const char *mangle_type_string           PARAMS ((tree));
 extern tree mangle_type                         PARAMS ((tree));
 extern tree mangle_typeinfo_for_type            PARAMS ((tree));

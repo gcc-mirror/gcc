@@ -1018,10 +1018,7 @@ finish_named_return_value (return_id, init)
   if (return_id != NULL_TREE)
     {
       if (DECL_NAME (decl) == NULL_TREE)
-	{
-	  DECL_NAME (decl) = return_id;
-	  DECL_ASSEMBLER_NAME (decl) = return_id;
-	}
+	DECL_NAME (decl) = return_id;
       else
 	{
 	  cp_error ("return identifier `%D' already in place", return_id);

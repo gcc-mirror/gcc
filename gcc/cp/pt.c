@@ -144,7 +144,6 @@ static tree tsubst_template_parms PARAMS ((tree, tree, int));
 static void regenerate_decl_from_template PARAMS ((tree, tree));
 static tree most_specialized PARAMS ((tree, tree, tree));
 static tree most_specialized_class PARAMS ((tree, tree));
-static void set_mangled_name_for_template_decl PARAMS ((tree));
 static int template_class_depth_real PARAMS ((tree, int));
 static tree tsubst_aggr_type PARAMS ((tree, tree, int, tree, int));
 static tree tsubst_decl PARAMS ((tree, tree, tree));
@@ -1672,24 +1671,6 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  /* Inherit default function arguments from the template
 	     DECL is specializing.  */
 	  copy_default_args_to_explicit_spec (decl);
-
-	  /* Mangle the function name appropriately.  Note that we do
-	     not mangle specializations of non-template member
-	     functions of template classes, e.g. with
-
-	       template <class T> struct S { void f(); }
-
-	     and given the specialization 
-
-	       template <> void S<int>::f() {}
-
-	     we do not mangle S<int>::f() here.  That's because it's
-	     just an ordinary member function and doesn't need special
-	     treatment.  We do this here so that the ordinary,
-	     non-template, name-mangling algorithm will not be used
-	     later.  */
-	  if (is_member_template (tmpl) || ctype == NULL_TREE)
-	    set_mangled_name_for_template_decl (decl);
 
 	  if (is_friend && !have_def)
 	    /* This is not really a declaration of a specialization.
@@ -4231,11 +4212,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	 is set up.  */
       if (TREE_CODE (t) != ENUMERAL_TYPE)
 	DECL_NAME (type_decl) = classtype_mangled_name (t);
-      DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
       if (!is_partial_instantiation)
 	{
-	  DECL_ASSEMBLER_NAME (type_decl) = mangle_decl (type_decl);
-
 	  /* For backwards compatibility; code that uses
 	     -fexternal-templates expects looking up a template to
 	     instantiate it.  I think DDD still relies on this.
@@ -4617,18 +4595,14 @@ tsubst_friend_function (decl, args)
 	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
     }
 
-  /* The mangled name for the NEW_FRIEND is incorrect.  The call to
-     tsubst will have resulted in a call to
-     set_mangled_name_for_template_decl.  But, the function is not a
-     template instantiation and should not be mangled like one.
-     Therefore, we remangle the function name.  We don't have to do
-     this if the NEW_FRIEND is a template since
-     set_mangled_name_for_template_decl doesn't do anything if the
-     function declaration still uses template arguments.  */
+  /* The mangled name for the NEW_FRIEND is incorrect.  The function
+     is not a template instantiation and should not be mangled like
+     one.  Therefore, we forget the mangling here; we'll recompute it
+     later if we need it.  */
   if (TREE_CODE (new_friend) != TEMPLATE_DECL)
     {
-      set_mangled_name_for_decl (new_friend);
       SET_DECL_RTL (new_friend, NULL_RTX);
+      SET_DECL_ASSEMBLER_NAME (new_friend, NULL_TREE);
     }
       
   if (DECL_NAMESPACE_SCOPE_P (new_friend))
@@ -5816,6 +5790,9 @@ tsubst_decl (t, args, type)
 	r = copy_decl (t);
 	DECL_USE_TEMPLATE (r) = 0;
 	TREE_TYPE (r) = type;
+	/* Clear out the mangled name and RTL for the instantiation.  */
+	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
+	SET_DECL_RTL (r, NULL_RTX);
 
 	DECL_CONTEXT (r) = ctx;
 	DECL_VIRTUAL_CONTEXT (r)
@@ -5850,46 +5827,15 @@ tsubst_decl (t, args, type)
 	    TREE_CHAIN (DECL_CLONED_FUNCTION (r)) = r;
 	  }
 
-	/* Set up the DECL_TEMPLATE_INFO for R and compute its mangled
-	   name.  There's no need to do this in the special friend
-	   case mentioned above where GEN_TMPL is NULL.  */
+	/* Set up the DECL_TEMPLATE_INFO for R.  There's no need to do
+	   this in the special friend case mentioned above where
+	   GEN_TMPL is NULL.  */
 	if (gen_tmpl)
 	  {
 	    DECL_TEMPLATE_INFO (r) 
 	      = tree_cons (gen_tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	    register_specialization (r, gen_tmpl, argvec);
-
-	    /* Set the mangled name for R.  */
-	    if (DECL_DESTRUCTOR_P (t)) 
-	      set_mangled_name_for_decl (r);
-	    else 
-	      {
-		/* Instantiations of template functions must be mangled
-		   specially, in order to conform to 14.5.5.1
-		   [temp.over.link].  */
-		tree tmpl = DECL_TI_TEMPLATE (t);
-		
-		/* TMPL will be NULL if this is a specialization of a
-		   member function of a template class.  */
-		if (tmpl == NULL_TREE
-		    || (member && !is_member_template (tmpl)
-			&& !DECL_TEMPLATE_INFO (tmpl)))
-		  set_mangled_name_for_decl (r);
-		else
-		  set_mangled_name_for_template_decl (r);
-	      }
-	    
-	    SET_DECL_RTL (r, NULL_RTX);
-	    
-	    /* Like grokfndecl.  If we don't do this, pushdecl will
-	       mess up our TREE_CHAIN because it doesn't find a
-	       previous decl.  Sigh.  */
-	    if (member
-		&& ! uses_template_parms (r)
-		&& (IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) 
-		    == NULL_TREE))
-	      SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
 
 	    /* We're not supposed to instantiate default arguments
 	       until they are called, for a template.  But, for a
@@ -6043,6 +5989,9 @@ tsubst_decl (t, args, type)
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 	DECL_CONTEXT (r) = ctx;
+	/* Clear out the mangled name and RTL for the instantiation.  */
+	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
+	SET_DECL_RTL (r, NULL_RTX);
 
 	/* Don't try to expand the initializer until someone tries to use
 	   this variable; otherwise we run into circular dependencies.  */
@@ -9773,7 +9722,7 @@ regenerate_decl_from_template (decl, tmpl)
      functions, this is not so.  See tsubst_friend_function for
      details.  */
   DECL_TI_TEMPLATE (new_decl) = DECL_TI_TEMPLATE (decl);
-  DECL_ASSEMBLER_NAME (new_decl) = DECL_ASSEMBLER_NAME (decl);
+  COPY_DECL_ASSEMBLER_NAME (decl, new_decl);
   COPY_DECL_RTL (decl, new_decl);
   DECL_USE_TEMPLATE (new_decl) = DECL_USE_TEMPLATE (decl);
 
@@ -10301,21 +10250,6 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
     *tparmsp = tparms;
 
   return fn_type;
-}
-
-/* Set the DECL_ASSEMBLER_NAME for DECL, which is a FUNCTION_DECL that
-   is either an instantiation or specialization of a template
-   function.  */
-
-static void
-set_mangled_name_for_template_decl (decl)
-     tree decl;
-{
-  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL, 0);
-  my_friendly_assert (DECL_TEMPLATE_INFO (decl) != NULL_TREE, 0);
-
-  /* Under the new ABI, we don't need special machinery.  */
-  set_mangled_name_for_decl (decl);
 }
 
 /* Return truthvalue if we're processing a template different from

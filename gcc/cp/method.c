@@ -90,7 +90,7 @@ set_mangled_name_for_decl (decl)
     /* There's no need to mangle the name of a template function.  */
     return;
 
-  DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+  mangle_decl (decl);
 }
 
 
@@ -346,6 +346,7 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
       DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (func_decl);
       copy_lang_decl (func_decl);
+      SET_DECL_ASSEMBLER_NAME (thunk, thunk_id);
       DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       TREE_READONLY (thunk) = TREE_READONLY (func_decl);
       TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (func_decl);
@@ -373,6 +374,7 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       DECL_DEFERRED_FN (thunk) = 0;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
+      SET_IDENTIFIER_GLOBAL_VALUE (thunk_id, thunk);
     }
   return thunk;
 }

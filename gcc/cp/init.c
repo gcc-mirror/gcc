@@ -2219,7 +2219,8 @@ build_java_class_ref (type)
     for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
       if (DECL_NAME (field) == CL_suffix)
 	{
-	  name = mangle_decl (field);
+	  mangle_decl (field);
+	  name = DECL_ASSEMBLER_NAME (field);
 	  break;
 	}
     if (!field)

@@ -760,6 +760,7 @@ get_vtable_decl (type, complete)
     }
   
   decl = build_vtable (type, name, void_type_node);
+  SET_DECL_ASSEMBLER_NAME (decl, name);
   decl = pushdecl_top_level (decl);
   my_friendly_assert (IDENTIFIER_GLOBAL_VALUE (name) == decl,
 		      20000517);
@@ -1310,17 +1311,9 @@ add_method (type, method, error_p)
 				  fn, method);
 		    }
 		}
-
-	      /* Since this is an ordinary function in a
-		 non-template class, it's mangled name can be used
-		 as a unique identifier.  This technique is only
-		 an optimization; we would get the same results if
-		 we just used decls_match here.  */
-	      if (DECL_ASSEMBLER_NAME (fn) 
-		  != DECL_ASSEMBLER_NAME (method))
-		continue;
 	    }
-	  else if (!decls_match (fn, method))
+
+	  if (!decls_match (fn, method))
 	    continue;
 
 	  /* There has already been a declaration of this method
@@ -3693,7 +3686,7 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
 
   /* Build the FIELD_DECL.  */
   field = build_decl (FIELD_DECL, name, type);
-  DECL_ASSEMBLER_NAME (field) = assembler_name;
+  SET_DECL_ASSEMBLER_NAME (field, assembler_name);
   DECL_VIRTUAL_P (field) = 1;
   DECL_ARTIFICIAL (field) = 1;
   DECL_FIELD_CONTEXT (field) = class_type;
@@ -4120,7 +4113,8 @@ check_methods (t)
       GNU_xref_member (current_class_name, x);
 
       /* If this was an evil function, don't keep it in class.  */
-      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
+      if (DECL_ASSEMBLER_NAME_SET_P (x) 
+	  && IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
 	continue;
 
       check_for_override (x, t);
@@ -4184,7 +4178,6 @@ build_clone (fn, name)
   DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
-  DECL_ASSEMBLER_NAME (clone) = DECL_NAME (clone);
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
@@ -4260,9 +4253,6 @@ build_clone (fn, name)
 	  copy_lang_decl (parms);
 	}
     }
-
-  /* Mangle the function name.  */
-  set_mangled_name_for_decl (clone);
 
   /* Create the RTL for this function.  */
   SET_DECL_RTL (clone, NULL_RTX);
@@ -6823,6 +6813,7 @@ build_vtt (t)
 				 
   /* Now, build the VTT object itself.  */
   vtt = build_vtable (t, get_vtt_name (t), type);
+  SET_DECL_ASSEMBLER_NAME (vtt, DECL_NAME (vtt));
   pushdecl_top_level (vtt);
   initialize_array (vtt, inits);
 }
