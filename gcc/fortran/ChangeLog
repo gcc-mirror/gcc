@@ -1,3 +1,9 @@
+2005-01-22  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/19313
+	* trans-io.c (gfc_trans_inquire): Added code to support
+	pad.
+
 2005-01-22  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.c (make_alias):  Add standard argument. 
