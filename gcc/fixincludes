@@ -277,7 +277,8 @@ while [ $# != 0 ]; do
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /#define._IO/			s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
-	  /[^A-Z]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
+	  /[^A-Z_]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
+	  /[^A-Z]_CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
 	  /#define.CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define._CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
@@ -843,6 +844,17 @@ if [ -r ${LIB}/$file ]; then
     sed -e 's|//.*$||g' $file > ${LIB}/$file
     chmod +w ${LIB}/$file 2>/dev/null
     chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+fi
+
+# Another IRIX 4.0.1 header file contains the string "//"
+file=elf_abi.h
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, overeager sed script
+  sed -e 's|"/\*"\*/|"//"|' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
   fi
 fi
 
