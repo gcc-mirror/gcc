@@ -1,3 +1,9 @@
+2000-05-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (_cpp_scan_until): Clear AUX field of tokens.
+	* cpplib.c (do_unassert): Put the list to compare against on
+	the stack.
+
 2000-05-19  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/README:  cleaned up old documentation

@@ -1607,8 +1607,9 @@ do_unassert (pfile)
   U_CHAR *sym;
   size_t len;
   HASHNODE *hp;
-  struct predicate *pred = 0;
+  cpp_toklist ans;
   enum cpp_ttype type;
+  int specific = 0;
 
   old_written = CPP_WRITTEN (pfile);
   pfile->no_macro_expand++;
@@ -1624,10 +1625,10 @@ do_unassert (pfile)
   type = _cpp_get_directive_token (pfile);
   if (type == CPP_OPEN_PAREN)
     {
-      pred = (struct predicate *) xmalloc (sizeof (struct predicate));
-      _cpp_init_toklist (&pred->answer);
+      specific = 1;
+      _cpp_init_toklist (&ans);
 
-      if (_cpp_scan_until (pfile, &pred->answer, CPP_CLOSE_PAREN)
+      if (_cpp_scan_until (pfile, &ans, CPP_CLOSE_PAREN)
 	  != CPP_CLOSE_PAREN)
 	ERROR ("missing close paren in #unassert");
 
@@ -1645,13 +1646,13 @@ do_unassert (pfile)
        goto error to clean up.  */
     goto error;
 
-  if (pred)
+  if (specific)
     {
       /* Find this specific answer and remove it.  */
       struct predicate *o, *p;
 
       for (p = NULL, o = hp->value.pred; o; p = o, o = o->next)
-	if (_cpp_equiv_toklists (&pred->answer, &o->answer))
+	if (_cpp_equiv_toklists (&ans, &o->answer))
 	  {
 	    if (p)
 	      p->next = o->next;
@@ -1682,11 +1683,8 @@ do_unassert (pfile)
   _cpp_skip_rest_of_line (pfile);
   pfile->no_macro_expand--;
   CPP_SET_WRITTEN (pfile, old_written);
-  if (pred)
-    {
-      _cpp_free_toklist (&pred->answer);
-      free (pred);
-    }
+  if (specific)
+    _cpp_free_toklist (&ans);
   return 0;
 }
 

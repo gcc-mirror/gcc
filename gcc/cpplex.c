@@ -790,6 +790,7 @@ _cpp_scan_until (pfile, list, stop)
       list->tokens_used++;
       TOK_TYPE  (list, i) = type;
       TOK_COL   (list, i) = col;
+      TOK_AUX   (list, i) = 0;
       TOK_FLAGS (list, i) = space_before ? PREV_WHITESPACE : 0;
       
       TOK_LEN (list, i) = len;
