@@ -1009,8 +1009,6 @@ documented_lang_options[] =
   { "-fno-cond-mismatch", "" },
   { "-fdollars-in-identifiers", "Allow the use of $ inside identifiers" },
   { "-fno-dollars-in-identifiers", "" },
-  { "-fident", "" },
-  { "-fno-ident", "Ignore #ident directives" },
   { "-fshort-double", "Use the same size for double as for float" },
   { "-fno-short-double", "" },
   { "-fshort-enums", "Use the smallest fitting integer to hold enums"},

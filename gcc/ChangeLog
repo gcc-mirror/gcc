@@ -1,5 +1,10 @@
+1999-02-15 17:11 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
-1999-02-15 16:59 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
+	* toplev.c (documented_lang_options): Remove -fident and
+          -fnoident, which are now handled by the language independent
+	  option parser.
+
+1999-02-15 16:59 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* c-common.c (UNGETC [USE_CPPLIB=1]): Do nothing if c is EOF.
 	* c-lex.c: Likewise.
