@@ -1154,6 +1154,10 @@ real_value_from_int_cst (i)
      tree i;
 {
   REAL_VALUE_TYPE d;
+  REAL_VALUE_TYPE e;
+  /* Some 386 compilers mishandle unsigned int to float conversions,
+     so introduce a temporary variable E to avoid those bugs.  */
+
 #ifdef REAL_ARITHMETIC
   if (! TREE_UNSIGNED (TREE_TYPE (i)))
     REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
@@ -1163,17 +1167,21 @@ real_value_from_int_cst (i)
   if (TREE_INT_CST_HIGH (i) < 0 && ! TREE_UNSIGNED (TREE_TYPE (i)))
     {
       d = (double) (~ TREE_INT_CST_HIGH (i));
-      d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+      e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
-      d += (double) (unsigned HOST_WIDE_INT) (~ TREE_INT_CST_LOW (i));
+      d *= e;
+      e = (double) (unsigned HOST_WIDE_INT) (~ TREE_INT_CST_LOW (i));
+      d += e;
       d = (- d - 1.0);
     }
   else
     {
       d = (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (i);
-      d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+      e = ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
-      d += (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (i);
+      d *= e;
+      e = (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (i);
+      d += e;
     }
 #endif /* not REAL_ARITHMETIC */
   return d;
@@ -2825,23 +2833,21 @@ build_array_type (elt_type, index_type)
 
   if (index_type == 0)
     {
-      /* The main variant of an array type should always
-	 be an array whose element type is the main variant.  */
-      if (elt_type != TYPE_MAIN_VARIANT (elt_type))
-	change_main_variant (t, build_array_type (TYPE_MAIN_VARIANT (elt_type),
-						  index_type));
-
       return t;
     }
 
   hashcode = TYPE_HASH (elt_type) + TYPE_HASH (index_type);
   t = type_hash_canon (hashcode, t);
 
+#if 0 /* This led to crashes, because it could put a temporary node
+	 on the TYPE_NEXT_VARIANT chain of a permanent one.  */
+  */
   /* The main variant of an array type should always
      be an array whose element type is the main variant.  */
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
     change_main_variant (t, build_array_type (TYPE_MAIN_VARIANT (elt_type),
 					      index_type));
+#endif
 
   if (TYPE_SIZE (t) == 0)
     layout_type (t);
