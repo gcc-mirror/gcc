@@ -1,3 +1,7 @@
+2003-03-02  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/xfails: Remove all AcuniaPropertiesTest failures
+
 2003-02-16  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/xfails: Add Class.reflect2 and String.getBytes FAILs.
