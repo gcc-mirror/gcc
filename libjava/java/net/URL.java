@@ -284,7 +284,7 @@ public final class URL implements Serializable
     this.host = host;
     this.port = port;
     this.authority = (host != null) ? host : "";
-    if (port >= 0)
+    if (port >= 0 && host != null)
 	this.authority += ":" + port;
 
     int hashAt = file.indexOf('#');
@@ -426,6 +426,8 @@ public final class URL implements Serializable
 
 
       throw new MalformedURLException("Absolute URL required with null context");
+
+    protocol = protocol.trim();
 
     if (ph != null)
       {
