@@ -288,23 +288,29 @@ int warn_parentheses;
 /* Non-zero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */
+
 int warn_overloaded_virtual;
 
 /* Non-zero means warn when declaring a class that has a non virtual
    destructor, when it really ought to have a virtual one.  */
+
 int warn_nonvdtor;
 
 /* Non-zero means warn when a function is declared extern and later inline.  */
+
 int warn_extern_inline;
 
 /* Non-zero means warn when the compiler will reorder code.  */
+
 int warn_reorder;
 
 /* Non-zero means warn when synthesis behavior differs from Cfront's.  */
+
 int warn_synth;
 
 /* Non-zero means warn when we convert a pointer to member function
    into a pointer to (void or function).  */
+
 int warn_pmf2ptr = 1;
 
 /* Nonzero means warn about violation of some Effective C++ style rules.  */
@@ -370,10 +376,12 @@ int flag_default_inline = 1;
 
 /* Controls whether compiler generates 'type descriptor' that give
    run-time type information.  */
+
 int flag_rtti = 1;
 
 /* Nonzero if we wish to output cross-referencing information
    for the GNU class browser.  */
+
 extern int flag_gnu_xref;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
@@ -434,10 +442,11 @@ int flag_honor_std = ENABLE_STD_NAMESPACE;
 
 int flag_inline_trees = 0;
 
-/* Maximum template instantiation depth. Must be at least 17 for ISO
-   compliance. */
+/* Maximum template instantiation depth.  This limit is rather
+   arbitrary, but it exists to limit the time it takes to notice
+   infinite template instantiations.  */
 
-int max_tinst_depth = 17;
+int max_tinst_depth = 50;
 
 /* The name-mangling scheme to use.  Must be 1 or greater to support
    template functions with identical types, but different template
@@ -446,11 +455,13 @@ int name_mangling_version = 2;
 
 /* Nonzero if wchar_t should be `unsigned short' instead of whatever it
    would normally be, for use with WINE.  */
+
 int flag_short_wchar;
 
 /* Nonzero if squashed mangling is to be performed. 
    This uses the B and K codes to reference previously seen class types 
    and class qualifiers.       */
+
 int flag_do_squangling;
 
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
