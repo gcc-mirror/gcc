@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.193.1.1 1997/01/04 19:21:48 karl Exp $
+%% $Id: texinfo.tex,v 2.197 1997/04/26 23:22:03 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.193.1.1 $
+\deftexinfoversion$Revision: 2.197 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -118,33 +118,41 @@
    \showboxbreadth\maxdimen\showboxdepth\maxdimen
 }%
 
-%---------------------Begin change-----------------------
+% For @cropmarks command.
+% Do @cropmarks to get crop marks.
+% 
+\newif\ifcropmarks
+\let\cropmarks = \cropmarkstrue
 %
-%%%% For @cropmarks command.
-% Dimensions to add cropmarks at corners Added by P. A. MacKay, 12 Nov. 1986
+% Dimensions to add cropmarks at corners.
+% Added by P. A. MacKay, 12 Nov. 1986
 %
 \newdimen\cornerlong \newdimen\cornerthick
-\newdimen \topandbottommargin
-\newdimen \outerhsize \newdimen \outervsize
+\newdimen\topandbottommargin
+\newdimen\outerhsize \newdimen\outervsize
 \cornerlong=1pc\cornerthick=.3pt        % These set size of cropmarks
 \outerhsize=7in
 %\outervsize=9.5in
 % Alternative @smallbook page size is 9.25in
 \outervsize=9.25in
 \topandbottommargin=.75in
-%
-%---------------------End change-----------------------
 
 % Main output routine.
 \chardef\PAGE = 255
 \output = {\onepageout{\pagecontents\PAGE}}
 
-\newbox\headlinebox  \newbox\footlinebox
+\newbox\headlinebox
+\newbox\footlinebox
 
 % \onepageout takes a vbox as an argument.  Note that \pagecontents
 % does insertions, but you have to call it yourself.
 \def\onepageout#1{%
-  \hoffset=\normaloffset
+  \ifcropmarks
+    \hoffset = 0pt
+  \else
+    \hoffset = \normaloffset
+  \fi
+  %
   \ifodd\pageno  \advance\hoffset by \bindingoffset
   \else \advance\hoffset by -\bindingoffset\fi
   %
@@ -163,52 +171,40 @@
     \normalturnoffactive  % \ in index entries must not stay \, e.g., if
                    % the page break happens to be in the middle of an example.
     \shipout\vbox{%
+      \ifcropmarks
+        \vbox to \outervsize\bgroup
+          \hsize = \outerhsize
+          \vbox{\line{\ewtop\hfill\ewtop}}%
+          \nointerlineskip
+          \line{%
+            \vbox{\moveleft\cornerthick\nstop}%
+            \hfill
+            \vbox{\moveright\cornerthick\nstop}%
+          }%
+          \vskip\topandbottommargin
+      \fi
+      %
       \unvbox\headlinebox
       \pagebody{#1}%
       \unvbox\footlinebox
+      %
+      \ifcropmarks
+          \vskip\topandbottommargin plus1fill minus1fill
+          \boxmaxdepth = \cornerthick
+          \line{%
+            \vbox{\moveleft\cornerthick\nsbot}%
+            \hfill
+            \vbox{\moveright\cornerthick\nsbot}%
+          }%
+          \nointerlineskip
+          \vbox{\line{\ewbot\hfill\ewbot}}%
+        \egroup % \vbox from first cropmarks clause
+      \fi
     }%
     }%
   \advancepageno
   \ifnum\outputpenalty>-20000 \else\dosupereject\fi
 }
-
-%%%% For @cropmarks command %%%%
-
-% Here is a modification of the main output routine for Near East Publications
-% This provides right-angle cropmarks at all four corners.
-% The contents of the page are centerlined into the cropmarks,
-% and any desired binding offset is added as an \hskip on either
-% site of the centerlined box.  (P. A. MacKay, 12 November, 1986)
-%
-\def\croppageout#1{\hoffset=0pt % make sure this doesn't mess things up
-{\escapechar=`\\\relax % makes sure backslash is used in output files.
-                 \shipout
-                 \vbox to \outervsize{\hsize=\outerhsize
-                 \vbox{\line{\ewtop\hfill\ewtop}}
-                 \nointerlineskip
-                 \line{\vbox{\moveleft\cornerthick\nstop}
-                       \hfill
-                       \vbox{\moveright\cornerthick\nstop}}
-                 \vskip \topandbottommargin
-                 \centerline{\ifodd\pageno\hskip\bindingoffset\fi
-                        \vbox{
-                        {\let\hsize=\pagewidth \makeheadline}
-                        \pagebody{#1}
-                        {\let\hsize=\pagewidth \makefootline}}
-                        \ifodd\pageno\else\hskip\bindingoffset\fi}
-                 \vskip \topandbottommargin plus1fill minus1fill
-                 \boxmaxdepth\cornerthick
-                 \line{\vbox{\moveleft\cornerthick\nsbot}
-                       \hfill
-                       \vbox{\moveright\cornerthick\nsbot}}
-                 \nointerlineskip
-                 \vbox{\line{\ewbot\hfill\ewbot}}
-        }}
-  \advancepageno
-  \ifnum\outputpenalty>-20000 \else\dosupereject\fi}
-%
-% Do @cropmarks to get crop marks
-\def\cropmarks{\let\onepageout=\croppageout }
 
 \newinsert\margin \dimen\margin=\maxdimen
 
@@ -2240,6 +2236,7 @@ width0pt\relax} \fi
 \def\r##1{\realbackslash r {##1}}%
 \def\i##1{\realbackslash i {##1}}%
 \def\b##1{\realbackslash b {##1}}%
+\def\sc##1{\realbackslash sc {##1}}%
 \def\cite##1{\realbackslash cite {##1}}%
 \def\key##1{\realbackslash key {##1}}%
 \def\file##1{\realbackslash file {##1}}%
@@ -2774,7 +2771,8 @@ width0pt\relax} \fi
 % because we don't want its macros evaluated now.
 \xdef\thischapter{\putwordChapter{} \the\chapno: \noexpand\thischaptername}%
 {\chapternofonts%
-\edef\temp{{\realbackslash chapentry {#1}{\the\chapno}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash chapentry{\the\toks0}{\the\chapno}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp  %
 \donoderef %
@@ -2793,8 +2791,9 @@ width0pt\relax} \fi
 \gdef\thischaptername{#1}%
 \xdef\thischapter{\putwordAppendix{} \appendixletter: \noexpand\thischaptername}%
 {\chapternofonts%
-\edef\temp{{\realbackslash chapentry
-  {#1}{\putwordAppendix{} \appendixletter}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash chapentry{\the\toks0}%
+  {\putwordAppendix{} \appendixletter}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp  %
 \appendixnoderef %
@@ -2828,7 +2827,8 @@ width0pt\relax} \fi
 \unnumbchapmacro {#1}%
 \gdef\thischapter{#1}\gdef\thissection{#1}%
 {\chapternofonts%
-\edef\temp{{\realbackslash unnumbchapentry {#1}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash unnumbchapentry{\the\toks0}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp  %
 \unnumbnoderef %
@@ -2843,8 +2843,9 @@ width0pt\relax} \fi
 \subsecno=0 \subsubsecno=0 \global\advance \secno by 1 %
 \gdef\thissection{#1}\secheading {#1}{\the\chapno}{\the\secno}%
 {\chapternofonts%
+\toks0 = {#1}%
 \edef\temp{{\realbackslash secentry %
-{#1}{\the\chapno}{\the\secno}{\noexpand\folio}}}%
+{\the\toks0}{\the\chapno}{\the\secno}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \donoderef %
@@ -2858,8 +2859,9 @@ width0pt\relax} \fi
 \subsecno=0 \subsubsecno=0 \global\advance \secno by 1 %
 \gdef\thissection{#1}\secheading {#1}{\appendixletter}{\the\secno}%
 {\chapternofonts%
+\toks0 = {#1}%
 \edef\temp{{\realbackslash secentry %
-{#1}{\appendixletter}{\the\secno}{\noexpand\folio}}}%
+{\the\toks0}{\appendixletter}{\the\secno}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \appendixnoderef %
@@ -2871,7 +2873,8 @@ width0pt\relax} \fi
 \def\unnumberedseczzz #1{\seccheck{unnumberedsec}%
 \plainsecheading {#1}\gdef\thissection{#1}%
 {\chapternofonts%
-\edef\temp{{\realbackslash unnumbsecentry{#1}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash unnumbsecentry{\the\toks0}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \unnumbnoderef %
@@ -2884,8 +2887,9 @@ width0pt\relax} \fi
 \gdef\thissection{#1}\subsubsecno=0 \global\advance \subsecno by 1 %
 \subsecheading {#1}{\the\chapno}{\the\secno}{\the\subsecno}%
 {\chapternofonts%
+\toks0 = {#1}%
 \edef\temp{{\realbackslash subsecentry %
-{#1}{\the\chapno}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
+{\the\toks0}{\the\chapno}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \donoderef %
@@ -2898,8 +2902,9 @@ width0pt\relax} \fi
 \gdef\thissection{#1}\subsubsecno=0 \global\advance \subsecno by 1 %
 \subsecheading {#1}{\appendixletter}{\the\secno}{\the\subsecno}%
 {\chapternofonts%
+\toks0 = {#1}%
 \edef\temp{{\realbackslash subsecentry %
-{#1}{\appendixletter}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
+{\the\toks0}{\appendixletter}{\the\secno}{\the\subsecno}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \appendixnoderef %
@@ -2911,7 +2916,8 @@ width0pt\relax} \fi
 \def\unnumberedsubseczzz #1{\seccheck{unnumberedsubsec}%
 \plainsubsecheading {#1}\gdef\thissection{#1}%
 {\chapternofonts%
-\edef\temp{{\realbackslash unnumbsubsecentry{#1}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash unnumbsubsecentry{\the\toks0}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \unnumbnoderef %
@@ -2925,8 +2931,8 @@ width0pt\relax} \fi
 \subsubsecheading {#1}
   {\the\chapno}{\the\secno}{\the\subsecno}{\the\subsubsecno}%
 {\chapternofonts%
-\edef\temp{{\realbackslash subsubsecentry %
-  {#1}
+\toks0 = {#1}%
+\edef\temp{{\realbackslash subsubsecentry{\the\toks0}
   {\the\chapno}{\the\secno}{\the\subsecno}{\the\subsubsecno}
   {\noexpand\folio}}}%
 \escapechar=`\\%
@@ -2942,7 +2948,8 @@ width0pt\relax} \fi
 \subsubsecheading {#1}
   {\appendixletter}{\the\secno}{\the\subsecno}{\the\subsubsecno}%
 {\chapternofonts%
-\edef\temp{{\realbackslash subsubsecentry{#1}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash subsubsecentry{\the\toks0}%
   {\appendixletter}
   {\the\secno}{\the\subsecno}{\the\subsubsecno}{\noexpand\folio}}}%
 \escapechar=`\\%
@@ -2956,7 +2963,8 @@ width0pt\relax} \fi
 \def\unnumberedsubsubseczzz #1{\seccheck{unnumberedsubsubsec}%
 \plainsubsubsecheading {#1}\gdef\thissection{#1}%
 {\chapternofonts%
-\edef\temp{{\realbackslash unnumbsubsubsecentry{#1}{\noexpand\folio}}}%
+\toks0 = {#1}%
+\edef\temp{{\realbackslash unnumbsubsubsecentry{\the\toks0}{\noexpand\folio}}}%
 \escapechar=`\\%
 \write \contentsfile \temp %
 \unnumbnoderef %
