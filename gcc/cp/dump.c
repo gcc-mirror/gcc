@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GNU CC.
@@ -585,6 +585,8 @@ dequeue_and_dump (di)
 		dump_string (di, "global fini");
 	      dump_int (di, "prio", GLOBAL_INIT_PRIORITY (t));
 	    }
+	  if (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t))
+	    dump_string (di, "pseudo tmpl");
 
 	  dump_child ("body", DECL_SAVED_TREE (t));
 	}
