@@ -1,3 +1,17 @@
+2004-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17042
+	* decl.c (declare_global_var): Use the return value from pushdecl.
+
+	PR c++/14667
+	* parser.c (cp_parser_simple_declaration): Do not diagnose invalid
+	type names if we have already found a valid type.
+	(cp_parser_member_declaration): Likewise.
+	
+	PR c++/17852
+	* parser.c (cp_parser_member_specification_opt): Handle
+	CPP_PRAGMA.
+
 2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dump.c, g++spec.c, repo.c: Update copyright.
