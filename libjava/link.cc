@@ -700,6 +700,13 @@ _Jv_ThrowNoSuchMethodError ()
   throw new java::lang::NoSuchMethodError;
 }
 
+// This is put in empty vtable slots.
+static void
+_Jv_abstractMethodError (void)
+{
+  throw new java::lang::AbstractMethodError();
+}
+
 // Each superinterface of a class (i.e. each interface that the class
 // directly or indirectly implements) has a corresponding "Partial
 // Interface Dispatch Table" whose size is (number of methods + 1) words.
@@ -742,14 +749,14 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
 	  if ((meth->accflags & Modifier::STATIC) != 0)
 	    throw new java::lang::IncompatibleClassChangeError
 	      (_Jv_GetMethodString (klass, meth));
-	  if ((meth->accflags & Modifier::ABSTRACT) != 0)
-	    throw new java::lang::AbstractMethodError
-	      (_Jv_GetMethodString (klass, meth));
 	  if ((meth->accflags & Modifier::PUBLIC) == 0)
 	    throw new java::lang::IllegalAccessError
 	      (_Jv_GetMethodString (klass, meth));
 
-	  itable[pos] = meth->ncode;
+ 	  if ((meth->accflags & Modifier::ABSTRACT) != 0)
+	    itable[pos] = (void *) &_Jv_abstractMethodError;
+	  else
+	    itable[pos] = meth->ncode;
 	}
       else
         {
@@ -1113,13 +1120,6 @@ _Jv_Linker::link_exception_table (jclass self)
   self->catch_classes->classname = (_Jv_Utf8Const *)-1;
 }
   
-// This is put in empty vtable slots.
-static void
-_Jv_abstractMethodError (void)
-{
-  throw new java::lang::AbstractMethodError();
-}
-
 // Set itable method indexes for members of interface IFACE.
 void
 _Jv_Linker::layout_interface_methods (jclass iface)
@@ -1211,6 +1211,8 @@ _Jv_Linker::set_vtable_entries (jclass klass, _Jv_VTable *vtable)
       if (meth->index == (_Jv_ushort) -1)
 	continue;
       if ((meth->accflags & Modifier::ABSTRACT))
+	// FIXME: it might be nice to have a libffi trampoline here,
+	// so we could pass in the method name and other information.
 	vtable->set_method(meth->index, (void *) &_Jv_abstractMethodError);
       else
 	vtable->set_method(meth->index, meth->ncode);
@@ -1259,30 +1261,9 @@ _Jv_Linker::make_vtable (jclass klass)
   // override an old one.
   set_vtable_entries (klass, vtable);
 
-  // It is an error to have an abstract method in a concrete class.
-  if (! (klass->accflags & Modifier::ABSTRACT))
-    {
-      for (int i = 0; i < klass->vtable_method_count; ++i)
-	if (vtable->get_method(i) == (void *) &_Jv_abstractMethodError)
-	  {
-	    using namespace java::lang;
-	    jclass orig = klass;
-	    while (klass != NULL)
-	      {
-		for (int j = 0; j < klass->method_count; ++j)
-		  {
-		    if (klass->methods[j].index == i)
-		      throw new AbstractMethodError(_Jv_GetMethodString(klass,
-									&klass->methods[j],
-									orig));
-		  }
-		klass = klass->getSuperclass ();
-	      }
-	    // Couldn't find the name, which is weird.
-	    // But we still must throw the error.
-	    throw new AbstractMethodError ();
-	  }
-    }
+  // Note that we don't check for abstract methods here.  We used to,
+  // but there is a JVMS clarification that indicates that a check
+  // here would be too eager.  And, a simple test case confirms this.
 }
 
 // Lay out the class, allocating space for static fields and computing

@@ -1,5 +1,8 @@
 2005-02-18  Tom Tromey  <tromey@redhat.com>
 
+	* link.cc (make_vtable): Remove abstract method check.
+	(append_partial_itable): Likewise.
+
 	PR java/20056:
 	* verify.cc (type::equals): Fixed test.
 	* testsuite/libjava.lang/PR20056.out: New file.
