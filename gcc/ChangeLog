@@ -1,3 +1,11 @@
+2004-11-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expmed.c (alg_code): Add alg_unknown.
+	(alg_hash_entry): New.
+	(NUM_ALG_HASH_ENTRIES): Likewise.
+	(alg_hash): Likewise.
+	(synth_mult): Cache the result into alg_hash.
+
 2004-11-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/rs6000/t-darwin: Augment SHLIB_MAPFILES with
