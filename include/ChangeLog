@@ -1,3 +1,10 @@
+2003-01-26  Daniel Jacobowitz  <drow@mvista.com>
+
+	* hashtab.h (htab_alloc_with_arg, htab_free_with_arg): Add new types.
+	(struct htab): Add alloc_arg, alloc_with_arg_f, free_with_arg_f.
+	(htab_create_alloc_ex): New prototype.
+	(htab_set_functions_ex): New prototype.
+
 2002-07-17  Geoffrey Keating  <geoffk@redhat.com>
 
 	* splay-tree.h (GTY): Define if undefined.

@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -191,6 +191,63 @@ htab_create_alloc (size, hash_f, eq_f, del_f, alloc_f, free_f)
   return result;
 }
 
+/* As above, but use the variants of alloc_f and free_f which accept
+   an extra argument.  */
+
+htab_t
+htab_create_alloc_ex (size, hash_f, eq_f, del_f, alloc_arg, alloc_f,
+		      free_f)
+     size_t size;
+     htab_hash hash_f;
+     htab_eq eq_f;
+     htab_del del_f;
+     PTR alloc_arg;
+     htab_alloc_with_arg alloc_f;
+     htab_free_with_arg free_f;
+{
+  htab_t result;
+
+  size = higher_prime_number (size);
+  result = (htab_t) (*alloc_f) (alloc_arg, 1, sizeof (struct htab));
+  if (result == NULL)
+    return NULL;
+  result->entries = (PTR *) (*alloc_f) (alloc_arg, size, sizeof (PTR));
+  if (result->entries == NULL)
+    {
+      if (free_f != NULL)
+	(*free_f) (alloc_arg, result);
+      return NULL;
+    }
+  result->size = size;
+  result->hash_f = hash_f;
+  result->eq_f = eq_f;
+  result->del_f = del_f;
+  result->alloc_arg = alloc_arg;
+  result->alloc_with_arg_f = alloc_f;
+  result->free_with_arg_f = free_f;
+  return result;
+}
+
+/* Update the function pointers and allocation parameter in the htab_t.  */
+
+void
+htab_set_functions_ex (htab, hash_f, eq_f, del_f, alloc_arg, alloc_f, free_f)
+     htab_t htab;
+     htab_hash hash_f;
+     htab_eq eq_f;
+     htab_del del_f;
+     PTR alloc_arg;
+     htab_alloc_with_arg alloc_f;
+     htab_free_with_arg free_f;
+{
+  htab->hash_f = hash_f;
+  htab->eq_f = eq_f;
+  htab->del_f = del_f;
+  htab->alloc_arg = alloc_arg;
+  htab->alloc_with_arg_f = alloc_f;
+  htab->free_with_arg_f = free_f;
+}
+
 /* These functions exist solely for backward compatibility.  */
 
 #undef htab_create
@@ -233,6 +290,11 @@ htab_delete (htab)
     {
       (*htab->free_f) (htab->entries);
       (*htab->free_f) (htab);
+    }
+  else if (htab->free_with_arg_f != NULL)
+    {
+      (*htab->free_with_arg_f) (htab->alloc_arg, htab->entries);
+      (*htab->free_with_arg_f) (htab->alloc_arg, htab);
     }
 }
 
@@ -313,7 +375,11 @@ htab_expand (htab)
 
   nsize = higher_prime_number (htab->size * 2);
 
-  nentries = (PTR *) (*htab->alloc_f) (nsize, sizeof (PTR));
+  if (htab->alloc_with_arg_f != NULL)
+    nentries = (PTR *) (*htab->alloc_with_arg_f) (htab->alloc_arg, nsize,
+						  sizeof (PTR *));
+  else
+    nentries = (PTR *) (*htab->alloc_f) (nsize, sizeof (PTR *));
   if (nentries == NULL)
     return 0;
   htab->entries = nentries;
@@ -340,6 +406,8 @@ htab_expand (htab)
 
   if (htab->free_f != NULL)
     (*htab->free_f) (oentries);
+  else if (htab->free_with_arg_f != NULL)
+    (*htab->free_with_arg_f) (htab->alloc_arg, oentries);
   return 1;
 }
 
