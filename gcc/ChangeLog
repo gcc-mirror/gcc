@@ -1,3 +1,8 @@
+Tue Sep 21 14:49:53 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* config/mips/elf64.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR):
+	Use Pmode to determine whether to output .dword or .word.
+
 Tue Sep 21 11:04:34 1999  Alex Samuel  <samuel@codesourcery.com>
 
 	* tree.c (built_in_filename): New variable.
