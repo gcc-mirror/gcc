@@ -1,3 +1,45 @@
+2005-03-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	Describe special registers SRP and MOF as allocatable registers.
+	* config/cris/cris.c (cris_md_asm_clobbers): New function.
+	(TARGET_MD_ASM_CLOBBERS): Define to cris_md_asm_clobbers.
+	(cris_conditional_register_usage): Enable CRIS_MOF_REGNUM if
+	TARGET_HAS_MUL_INSNS.
+	(cris_print_operand) <case 'd'>: New case.
+	<case REG>: Allow CRIS_MOF_REGNUM and CRIS_SRP_REGNUM.
+	* config/cris/cris.h (CRIS_PC_REGNUM, CRIS_SRP_REGNUM): Don't
+	define.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS, CALL_USED_REGISTERS)
+	(REG_ALLOC_ORDER): Update for MOF.
+	(enum reg_class): New members MOF_REGS, GENERAL_REGS and
+	SPECIAL_REGS.
+	(GENERAL_REGS): No longer a define of ALL_REGS.
+	(REGNO_REG_CLASS, REG_CLASS_CONTENTS, REG_CLASS_NAMES)
+	(PREFERRED_RELOAD_CLASS, REGISTER_NAMES, DBX_REGISTER_NUMBER):
+	Adjust accordingly.
+	(CRIS_SPECIAL_REGS_CONTENTS): New macro.
+	(REG_CLASS_FROM_LETTER): Allocate 'h' and 'x'.
+	(SECONDARY_RELOAD_CLASS): Define.
+	(STACK_POINTER_REGNUM): Define as CRIS_SP_REGNUM.
+	(FRAME_POINTER_REGNUM): Define as CRIS_FP_REGNUM.
+	(ARG_POINTER_REGNUM): Define as CRIS_AP_REGNUM.
+	(STATIC_CHAIN_REGNUM): Define as CRIS_STATIC_CHAIN_REGNUM.
+	(REGISTER_MOVE_COST): Define.
+	(PIC_OFFSET_TABLE_REGNUM): Define in terms of CRIS_GOT_REGNUM.
+	* config/cris/cris.md (CRIS_GOT_REGNUM, CRIS_STATIC_CHAIN_REGNUM)
+	(CRIS_FP_REGNUM, CRIS_SP_REGNUM, CRIS_SRP_REGNUM, CRIS_AP_REGNUM)
+	(CRIS_MOF_REGNUM): New define_constants.
+	("*movsi_internal", "movhi", "movqi", "movsf"): Add alternatives for
+	special registers.
+	("reload_inhi", "reload_outhi", "reload_inqi", 
+	("umulhisi3", "umulqihi3", "mulsi3", "mulqihi3", "mulhisi3")
+	("mulsidi3", "umulsidi3", "smulsi3_highpart", "umulsi3_highpart"):
+	Adjust for MOF being properly described as a register.
+	(indir_to_reg_split): Name this split.  Conditionalize on the
+	destination register being a general register.
+	(movei): Conditionalize on on operands 0 and 1 having the same
+	register class.
+
 2005-03-03  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20277

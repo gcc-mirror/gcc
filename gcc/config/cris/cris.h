@@ -50,12 +50,10 @@ Boston, MA 02111-1307, USA.  */
 #define CRIS_FIRST_ARG_REG 10
 #define CRIS_MAX_ARGS_IN_REGS 4
 
-/* Other convenience definitions.  */
-#define CRIS_PC_REGNUM 15
-#define CRIS_SRP_REGNUM 16
+/* See also *_REGNUM constants in cris.md.  */
 
 /* Most of the time, we need the index into the register-names array.
-   When passing debug-info, we need the real register number.  */
+   When passing debug-info, we need the real hardware register number.  */
 #define CRIS_CANONICAL_SRP_REGNUM (16 + 11)
 #define CRIS_CANONICAL_MOF_REGNUM (16 + 7)
 
@@ -602,9 +600,9 @@ extern int target_flags;
 
 /* Node: Register Basics */
 
-/*  We count all 16 non-special registers, SRP and a faked argument
-    pointer register.  */
-#define FIRST_PSEUDO_REGISTER (16 + 1 + 1)
+/*  We count all 16 non-special registers, SRP, a faked argument
+    pointer register and MOF.  */
+#define FIRST_PSEUDO_REGISTER (16 + 1 + 1 + 1)
 
 /* For CRIS, these are r15 (pc) and r14 (sp). Register r8 is used as a
    frame-pointer, but is not fixed.  SRP is not included in general
@@ -612,12 +610,12 @@ extern int target_flags;
    registers are fixed at the moment.  The faked argument pointer register
    is fixed too.  */
 #define FIXED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1}
 
 /* Register r9 is used for structure-address, r10-r13 for parameters,
    r10- for return values.  */
 #define CALL_USED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1}
 
 #define CONDITIONAL_REGISTER_USAGE cris_conditional_register_usage ()
 
@@ -643,7 +641,7 @@ extern int target_flags;
     Use struct-return address first, since very few functions use
    structure return values so it is likely to be available.  */
 #define REG_ALLOC_ORDER \
- {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 16, 17}
+ {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 18, 16, 17}
 
 
 /* Node: Values in Registers */
@@ -674,27 +672,46 @@ extern int target_flags;
    class for special registers, and yet another class for the
    multiply-overflow register in v10; then a class for the return
    register also makes sense.  */
-enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
+enum reg_class 
+  {
+    NO_REGS,
+    MOF_REGS, SPECIAL_REGS, GENERAL_REGS, ALL_REGS,
+    LIM_REG_CLASSES
+  };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES {"NO_REGS", "ALL_REGS"}
+#define REG_CLASS_NAMES							\
+  {"NO_REGS", "MOF_REGS", "SPECIAL_REGS", "GENERAL_REGS", "ALL_REGS"}
 
-#define GENERAL_REGS ALL_REGS
+#define CRIS_SPECIAL_REGS_CONTENTS					\
+ ((1 << CRIS_SRP_REGNUM) | (1 << CRIS_MOF_REGNUM))
 
 /* Count in the faked argument register in GENERAL_REGS.  Keep out SRP.  */
-#define REG_CLASS_CONTENTS {{0}, {0x2ffff}}
+#define REG_CLASS_CONTENTS			\
+  {						\
+   {0},						\
+   {1 << CRIS_MOF_REGNUM},			\
+   {CRIS_SPECIAL_REGS_CONTENTS},		\
+   {0x2ffff},					\
+   {0x2ffff | CRIS_SPECIAL_REGS_CONTENTS}	\
+  }
 
-#define REGNO_REG_CLASS(REGNO) GENERAL_REGS
+#define REGNO_REG_CLASS(REGNO)			\
+  ((REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
+   (REGNO) == CRIS_SRP_REGNUM ? SPECIAL_REGS :	\
+   GENERAL_REGS)
 
 #define BASE_REG_CLASS GENERAL_REGS
 
 #define INDEX_REG_CLASS GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine
-   description.  No letters are used, since 'r' is used for any
-   register.  */
-#define REG_CLASS_FROM_LETTER(C) NO_REGS
+#define REG_CLASS_FROM_LETTER(C)		\
+  (						\
+   (C) == 'h' ? MOF_REGS :			\
+   (C) == 'x' ? SPECIAL_REGS :			\
+   NO_REGS					\
+  )
 
 /* Since it uses reg_renumber, it is safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
@@ -710,9 +727,23 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 /* It seems like gcc (2.7.2 and 2.9x of 2000-03-22) may send "NO_REGS" as
    the class for a constant (testcase: __Mul in arit.c).  To avoid forcing
    out a constant into the constant pool, we will trap this case and
-   return something a bit more sane.  FIXME: Check if this is a bug.  */
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
- ((CLASS) == NO_REGS ? GENERAL_REGS : (CLASS))
+   return something a bit more sane.  FIXME: Check if this is a bug.
+   Beware that we must not "override" classes that can be specified as
+   constraint letters, or else asm operands using them will fail when
+   they need to be reloaded.  FIXME: Investigate whether that constitutes
+   a bug.  */
+#define PREFERRED_RELOAD_CLASS(X, CLASS)	\
+ ((CLASS) != MOF_REGS				\
+  && (CLASS) != SPECIAL_REGS			\
+  ? GENERAL_REGS : (CLASS))
+
+/* We can't move special registers to and from memory in smaller than
+   word_mode.  */
+#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)		\
+  (((CLASS) != SPECIAL_REGS && (CLASS) != MOF_REGS)	\
+   || GET_MODE_SIZE (MODE) == 4				\
+   || GET_CODE (X) != MEM				\
+   ? NO_REGS : GENERAL_REGS)
 
 /* For CRIS, this is always the size of MODE in words,
    since all registers are the same size.  To use omitted modes in
@@ -884,17 +915,17 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 /* Node: Frame Registers */
 
-#define STACK_POINTER_REGNUM 14
+#define STACK_POINTER_REGNUM CRIS_SP_REGNUM
 
 /* Register used for frame pointer.  This is also the last of the saved
    registers, when a frame pointer is not used.  */
-#define FRAME_POINTER_REGNUM 8
+#define FRAME_POINTER_REGNUM CRIS_FP_REGNUM
 
 /* Faked register, is always eliminated.  We need it to eliminate
    allocating stack slots for the return address and the frame pointer.  */
-#define ARG_POINTER_REGNUM 17
+#define ARG_POINTER_REGNUM CRIS_AP_REGNUM
 
-#define STATIC_CHAIN_REGNUM 7
+#define STATIC_CHAIN_REGNUM CRIS_STATIC_CHAIN_REGNUM
 
 
 /* Node: Elimination */
@@ -1288,8 +1319,32 @@ struct cum_args {int regs;};
 
 /* Node: Costs */
 
-/* FIXME: Need to define REGISTER_MOVE_COST when more register classes are
-   introduced.  */
+/* Can't move to and from a SPECIAL_REGS register, so we have to say
+   their move cost within that class is higher.  How about 7?  That's 3
+   for a move to a GENERAL_REGS register, 3 for the move from the
+   GENERAL_REGS register, and 1 for the increased register pressure.
+   Also, it's higher than the memory move cost, which is in order.  
+   We also do this for ALL_REGS, since we don't want that class to be
+   preferred (even to memory) at all where GENERAL_REGS doesn't fit.
+   Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
+   present a higher cost for ALL_REGS than memory, a SPECIAL_REGS may be
+   used when a GENERAL_REGS should be used, even if there are call-saved
+   GENERAL_REGS left to allocate.  This is because the fall-back when
+   the most preferred register class isn't available, isn't the next
+   (or next good) wider register class, but the *most widest* register
+   class.
+   Give the cost 3 between a special register and a general register,
+   because we want constraints verified.  */
+
+#define REGISTER_MOVE_COST(MODE, FROM, TO)		\
+ ((((FROM) == SPECIAL_REGS || (FROM) == MOF_REGS)	\
+   && ((TO) == SPECIAL_REGS || (TO) == MOF_REGS))	\
+  || (FROM) == ALL_REGS					\
+  || (TO) == ALL_REGS					\
+  ? 7 :							\
+  ((FROM) == SPECIAL_REGS || (FROM) == MOF_REGS		\
+   || (TO) == SPECIAL_REGS || (TO) == MOF_REGS)		\
+  ? 3 : 2)
 
 /* This isn't strictly correct for v0..3 in buswidth-8bit mode, but
    should suffice.  */
@@ -1323,7 +1378,7 @@ struct cum_args {int regs;};
 
 /* Node: PIC */
 
-#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 0 : INVALID_REGNUM)
+#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? CRIS_GOT_REGNUM : INVALID_REGNUM)
 
 #define LEGITIMATE_PIC_OPERAND_P(X) cris_legitimate_pic_operand (X)
 
@@ -1439,7 +1494,7 @@ struct cum_args {int regs;};
 
 #define REGISTER_NAMES					\
  {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",	\
-  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "faked_ap"}
+  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "faked_ap", "mof"}
 
 #define ADDITIONAL_REGISTER_NAMES \
  {{"r14", 14}, {"r15", 15}}
@@ -1525,8 +1580,10 @@ struct cum_args {int regs;};
 
 /* Node: All Debuggers */
 
-#define DBX_REGISTER_NUMBER(REGNO) \
- ((REGNO) == CRIS_SRP_REGNUM ? CRIS_CANONICAL_SRP_REGNUM : (REGNO))
+#define DBX_REGISTER_NUMBER(REGNO)				\
+ ((REGNO) == CRIS_SRP_REGNUM ? CRIS_CANONICAL_SRP_REGNUM :	\
+  (REGNO) == CRIS_MOF_REGNUM ? CRIS_CANONICAL_MOF_REGNUM :	\
+ (REGNO))
 
 /* FIXME: Investigate DEBUGGER_AUTO_OFFSET, DEBUGGER_ARG_OFFSET.  */
 
