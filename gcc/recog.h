@@ -80,6 +80,9 @@ extern int strict_memory_address_p	PROTO((enum machine_mode, rtx));
 extern int validate_replace_rtx		PROTO((rtx, rtx, rtx));
 extern void validate_replace_rtx_group	PROTO((rtx, rtx, rtx));
 extern int validate_replace_src		PROTO((rtx, rtx, rtx));
+#ifdef HAVE_cc0
+extern int next_insn_tests_no_inequality PROTO ((rtx));
+#endif
 extern int reg_fits_class_p		PROTO((rtx, enum reg_class, int,
 					       enum machine_mode));
 extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));

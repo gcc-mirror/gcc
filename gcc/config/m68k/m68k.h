@@ -2121,6 +2121,7 @@ extern int const_int_cost ();
 extern int standard_68881_constant_p ();
 extern int standard_sun_fpa_constant_p ();
 extern void output_function_prologue ();
+extern void output_function_epilogue ();
 extern int use_return_insn ();
 extern void print_operand_address ();
 extern void print_operand ();
