@@ -859,9 +859,11 @@ record_operand_costs (insn, op_costs, reg_pref)
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	{
 	  rtx inner = SUBREG_REG (recog_data.operand[i]);
+#ifdef CLASS_CANNOT_CHANGE_SIZE
 	  if (GET_MODE_SIZE (modes[i]) != GET_MODE_SIZE (GET_MODE (inner))
 	      && GET_CODE (inner) == REG)
 	    SET_REGNO_REG_SET (reg_changes_size, REGNO (inner));
+#endif
 	  recog_data.operand[i] = inner;
 	}
 
