@@ -1,3 +1,10 @@
+Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_finalize_function): Set finalized.
+	(cgraph_finalize_function): Do not examine inlinablility.
+	(cgraph_finalize_compilation_unit): Do it here.
+	* cgraph.h (cgraph_local_info): Add finalized field.
+
 2003-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* ggc-common.c (gt_pch_save): Cast MAP_FAILED to void *.

@@ -54,6 +54,7 @@ cgraph_finalize_function (decl, body)
   struct cgraph_node *node = cgraph_node (decl);
 
   node->decl = decl;
+  node->local.finalized = true;
 
   if (/* Externally visible functions must be output.  The exception are
 	 COMDAT functions that must be output only when they are needed.
@@ -73,15 +74,6 @@ cgraph_finalize_function (decl, body)
     {
       cgraph_mark_needed_node (node, 1);
     }
-
-  if (!node->needed && !DECL_COMDAT (node->decl))
-    node->local.can_inline_once = tree_inlinable_function_p (decl, 1);
-  else
-    node->local.can_inline_once = 0;
-  if (flag_inline_trees)
-    node->local.inline_many = tree_inlinable_function_p (decl, 0);
-  else
-    node->local.inline_many = 0;
 
   (*debug_hooks->deferred_inline_function) (decl);
 }
@@ -172,6 +164,15 @@ cgraph_finalize_compilation_unit ()
 
       if (lang_hooks.callgraph.lower_function)
 	(*lang_hooks.callgraph.lower_function) (decl);
+
+      if (!node->needed && !DECL_COMDAT (node->decl))
+	node->local.can_inline_once = tree_inlinable_function_p (decl, 1);
+      else
+	node->local.can_inline_once = 0;
+      if (flag_inline_trees)
+	node->local.inline_many = tree_inlinable_function_p (decl, 0);
+      else
+	node->local.inline_many = 0;
 
       /* At the moment frontend automatically emits all nested functions.  */
       if (node->nested)
