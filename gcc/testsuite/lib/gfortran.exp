@@ -187,16 +187,7 @@ proc gfortran_init { args } {
 	unset gluefile
     }
 
-    if { [target_info needs_status_wrapper] != "" } {
-	set gluefile ${tmpdir}/gfortran-testglue.o;
-	set result [build_wrapper $gluefile];
-	if { $result != "" } {
-	    set gluefile [lindex $result 0];
-	    set wrap_flags [lindex $result 1];
-	} else {
-	    unset gluefile
-	}
-    }
+    gfortran_maybe_build_wrapper "${tmpdir}/gfortran-testglue.o"
 
     set ALWAYS_GFORTRANFLAGS ""
 
