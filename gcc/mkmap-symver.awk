@@ -92,7 +92,11 @@ function output(lib) {
   printf("  global:\n");
   for (sym in ver)
     if ((ver[sym] == lib) && (sym in def))
-      printf("\t%s;\n", sym);
+      {
+	printf("\t%s;\n", sym);
+	if (dotsyms)
+	  printf("\t.%s;\n", sym);
+      }
 
   if (inherit[lib])
     printf("} %s;\n", inherit[lib]);
