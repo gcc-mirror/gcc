@@ -1235,6 +1235,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       tree arg = convert (TREE_TYPE (formal), TREE_VALUE (actual));
       /* Mode of the variable used within the function.  */
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (formal));
+      int invisiref = 0;
 
       /* Make sure this formal has some correspondence in the users code
        * before emitting any line notes for it.  */
@@ -1263,6 +1264,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  store_expr (arg, stack_slot, 0);
 
 	  arg_vals[i] = XEXP (stack_slot, 0);
+	  invisiref = 1;
 	}
       else if (GET_CODE (loc) != MEM)
 	{
@@ -1288,8 +1290,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		 be two different pseudos, and `safe_from_p' will make all
 		 sorts of smart assumptions about their not conflicting.
 		 But if ARG_VALS[I] overlaps TARGET, these assumptions are
-		 wrong, so put ARG_VALS[I] into a fresh register.  */
+		 wrong, so put ARG_VALS[I] into a fresh register.
+		 Don't worry about invisible references, since their stack
+		 temps will never overlap the target.  */
 	      || (target != 0
+		  && ! invisiref
 		  && (GET_CODE (arg_vals[i]) == REG
 		      || GET_CODE (arg_vals[i]) == SUBREG
 		      || GET_CODE (arg_vals[i]) == MEM)
