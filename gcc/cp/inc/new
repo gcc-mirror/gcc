@@ -1,0 +1,38 @@
+// The -*- C++ -*- dynamic memory management header.
+// Copyright (C) 1994, 1996 Free Software Foundation
+
+#ifndef __NEW__
+#define __NEW__
+
+#pragma interface "new"
+#include <stddef.h>
+
+extern "C++" {
+
+#if 0
+namespace std {
+#endif
+
+typedef void (*new_handler)();
+extern "C" new_handler set_new_handler (new_handler);
+
+#if 0
+} // namespace std
+#endif
+
+// G++ implementation internals
+extern new_handler __new_handler;
+extern "C" void __default_new_handler (void);
+
+// replaceable signatures
+void *operator new (size_t);
+void *operator new[] (size_t);
+void operator delete (void *);
+void operator delete[] (void *);
+
+// default placement versions of operator new
+inline void *operator new(size_t, void *place) { return place; }
+inline void *operator new[](size_t, void *place) { return place; }
+} // extern "C++"
+
+#endif

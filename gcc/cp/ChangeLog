@@ -1,3 +1,174 @@
+Mon Sep 30 12:58:40 1996  Mike Stump  <mrs@cygnus.com>
+
+	* input.c (sub_getch): Handle 8-bit characters in string literals.
+
+Sun Sep 29 03:12:01 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (mapcar): Handle CONSTRUCTORs.
+	(copy_to_permanent): Handle expression_obstack properly.
+
+	* Make-lang.in (cplib2.txt): Also depend on the headers.
+
+	* rtti.c (get_tinfo_var): Don't assume that POINTER_SIZE ==
+ 	INT_TYPE_SIZE.
+	(expand_class_desc): Use USItype for offset field.
+	* tinfo.h (struct __class_type_info): Likewise.
+
+	* method.c (build_overload_int): TYPE_PRECISION should be applied
+ 	to types.
+
+Sat Sep 28 14:44:50 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_new_op): A COND_EXPR involving void must be a
+	builtin.
+
+Fri Sep 27 16:40:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_x_component_ref): New fn.
+	(build_object_ref): Use it.
+	* parse.y (primary): Use it.
+	* decl2.c (build_expr_from_tree): Use it.
+	* cp-tree.h: Declare it.
+
+	* decl.c (start_decl): variable-sized arrays cannot be initialized.
+	* error.c (dump_type_suffix): Handle variable arrays.
+
+Fri Sep 27 13:14:05 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* Make-lang.in (exception.o): Put back compiling it with -fPIC.
+
+Fri Sep 27 03:00:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Don't try to look up anything in a
+ 	TYPENAME_TYPE.
+
+	* tinfo2.cc (__throw_type_match_rtti): Oops.
+
+Thu Sep 26 22:11:05 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* Make-lang.in (exception.o): Use -fno-PIC for now.
+
+Thu Sep 26 10:59:00 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (build_dynamic_cast): Pass tinfo fns rather than
+ 	calling them.
+	(get_tinfo_fn_dynamic): Extracted from build_typeid.
+	* tinfo2.cc (__dynamic_cast): Adjust.
+	
+	* rtti.c (build_typeid): Use resolves_to_fixed_type_p.
+	(build_x_typeid): Likewise.
+
+	* parse.y: Call build_x_typeid instead of build_typeid.
+	* cp-tree.def: Add TYPEID_EXPR.
+	* pt.c (tsubst_copy): Handle typeid.
+	* decl2.c (build_expr_from_tree): Likewise.
+	* rtti.c (build_x_typeid): Throw bad_typeid from here.
+	(build_typeid): Not here.
+	* cp-tree.h: Declare build_x_typeid.
+
+Wed Sep 25 17:26:16 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (convert_like): Pull out constant values.
+
+	* tree.c (mapcar): Use build_cplus_array_type, not build_array_type.
+
+Wed Sep 25 17:28:53 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
+
+	* decl.c (init_decl_processing): Create short int types before
+	creating size_t in case a machine description needs to use
+	unsigned short for size_t.
+
+Tue Sep 24 18:18:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Make-lang.in (exception.o): Turn off pic.
+
+	* tinfo2.cc (__throw_type_match_rtti): Fix cv-variants of the same
+	type, multi-level ptr conversions.
+
+	* rtti.c (call_void_fn): Renamed and genericized from throw_bad_cast.
+	(throw_bad_cast): Use it.
+	(throw_bad_typeid): New fn.
+	(build_typeid): Throw bad_typeid as needed.
+	Use build_call.
+	(synthesize_tinfo_fn): Handle functions and arrays before checking
+	for cv-quals.
+
+	* Remove .h from standard C++ headers, add new.h, move into inc
+ 	subdirectory.
+
+	* exception*: Remove pointer from object, constructors.  Add
+ 	default exception::what that uses type_info::name.  Add
+ 	__throw_bad_typeid.
+
+	* init.c (build_new): Don't add a cookie to new (void *) T[2].
+
+Mon Sep 23 15:21:53 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Make-lang.in: Building C++ code depends on cc1plus.
+
+Mon Sep 23 12:38:40 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (struct saved_scope): Declare PROCESSING_TEMPLATE_DECL as
+	a HOST_WIDE_INT, not a tree.
+
+Mon Sep 23 12:36:02 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc: Don't include <stdlib.h>.
+
+	* Make-lang.in (c++.clean): Remove cplib2.*.
+
+Mon Sep 23 09:42:19 1996  Doug Evans  <dje@canuck.cygnus.com>
+
+	* parse.y (component_decl_1, component_costructor_declarator case):
+	Pass attributes/prefix_attributes in tree list.
+
+Mon Sep 23 01:18:50 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo{,2}.cc: #include <stddef.h> instead of <stdlib.h>.
+
+Sun Sep 22 05:31:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Don't do deferred lookup in a template
+ 	header.
+
+	* typeck2.c (store_init_value): Oops.
+
+	* new.{h,cc}, exception.{h,cc}, typeinfo.h, tinfo{2.cc,.cc,.h}: 
+	New files for C++ lang-support library.
+	* Make-lang.in (CXX_EXTRA_HEADERS): Define.
+	(CXX_LIB2FUNCS): Define.
+	And rules for building the C++ lang-support code.
+	* config-lang.in (headers): Define.
+	(lib2funcs): Define.
+
+Sat Sep 21 19:17:28 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (build_expr_from_tree): If CONSTRUCTOR has a type, call
+	digest_init.
+	* pt.c (tsubst_copy): Compute type for CONSTRUCTOR.
+	* typeck2.c (store_init_value): Check for initializing pmf with { }
+	here.
+	(process_init_constructor): Not here.
+
+Thu Sep 19 16:41:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (begin_template_parm_list): Increment
+ 	processing_template_decl here.
+	(end_template_parm_list): Not here.
+	(process_template_parm): No need to add 1 to it now.
+	* *.c: Use processing_template_decl instead of current_template_parms
+	to check for being in a template.
+
+	* pt.c (uses_template_parms): Handle SCOPE_REF.  Fix CONSTRUCTOR.
+	(tsubst_copy): Handle CONSTRUCTOR.
+	(instantiate_decl): Set up context properly for variables.
+	* decl2.c (build_expr_from_tree): Handle CONSTRUCTOR.
+	* class.c (finish_struct): Reverse CLASSTYPE_TAGS.
+
+Wed Sep 18 13:30:20 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lex.c (enum tree_node_kind) [GATHER_STATISTICS]: Put the enum back.
+
 Wed Sep 18 04:24:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (make_thunk): Call comdat_linkage before setting the

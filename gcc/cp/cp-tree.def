@@ -120,6 +120,7 @@ DEFTREECODE (DYNAMIC_CAST_EXPR, "dynamic_cast_expr", "1", 1)
 DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", "1", 1)
 DEFTREECODE (ARROW_EXPR, "arrow_expr", "e", 1)
 DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", "e", 2)
+DEFTREECODE (TYPEID_EXPR, "typeid_expr", "e", 1)
 
 DEFTREECODE (EXPR_STMT, "expr_stmt", "e", 1)
 DEFTREECODE (COMPOUND_STMT, "compound_stmt", "e", 1)

@@ -2654,7 +2654,7 @@ do_identifier (token, parsing)
 	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
-      if (! current_template_parms
+      if (! processing_template_decl
 	  || (DECL_INITIAL (id)
 	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_CONST_PARM))
 	id = DECL_INITIAL (id);
@@ -2691,7 +2691,7 @@ do_scoped_id (token, parsing)
     yychar = yylex ();
   if (! id)
     {
-      if (current_template_parms)
+      if (processing_template_decl)
 	{
 	  id = build_min_nt (LOOKUP_EXPR, token, NULL_TREE);
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
@@ -2716,7 +2716,7 @@ do_scoped_id (token, parsing)
       else if (TREE_CODE (id) != TREE_LIST)
 	mark_used (id);
     }
-  if (TREE_CODE (id) == CONST_DECL && ! current_template_parms)
+  if (TREE_CODE (id) == CONST_DECL && ! processing_template_decl)
     {
       /* XXX CHS - should we set TREE_USED of the constant? */
       id = DECL_INITIAL (id);
@@ -2726,7 +2726,7 @@ do_scoped_id (token, parsing)
       TREE_CONSTANT (id) = 1;
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (is_overloaded_fn (id))
 	{
@@ -3796,19 +3796,19 @@ real_yylex ()
 	      len = p - token_buffer - 1;
 	    }
 #endif
-	    if (current_template_parms)
+	    if (processing_template_decl)
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	    yylval.ttype = build_string ((len + 1) * WCHAR_BYTES, widep);
-	    if (current_template_parms)
+	    if (processing_template_decl)
 	      pop_obstacks ();
 	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
 	  }
 	else
 	  {
-	    if (current_template_parms)
+	    if (processing_template_decl)
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
 	    yylval.ttype = build_string (p - token_buffer, token_buffer + 1);
-	    if (current_template_parms)
+	    if (processing_template_decl)
 	      pop_obstacks ();
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	  }
@@ -4027,6 +4027,30 @@ is_rid (t)
 }
 
 #ifdef GATHER_STATISTICS
+/* The original for tree_node_kind is in the toplevel tree.c; changes there
+   need to be brought into here, unless this were actually put into a header
+   instead.  */
+/* Statistics-gathering stuff.  */
+typedef enum
+{
+  d_kind,
+  t_kind,
+  b_kind,
+  s_kind,
+  r_kind,
+  e_kind,
+  c_kind,
+  id_kind,
+  op_id_kind,
+  perm_list_kind,
+  temp_list_kind,
+  vec_kind,
+  x_kind,
+  lang_decl,
+  lang_type,
+  all_kinds
+} tree_node_kind;
+
 extern int tree_node_counts[];
 extern int tree_node_sizes[];
 #endif

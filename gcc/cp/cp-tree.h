@@ -2169,7 +2169,9 @@ extern void finish_repo				PROTO((void));
 
 /* in rtti.c */
 extern tree get_tinfo_fn			PROTO((tree));
+extern tree get_tinfo_fn_dynamic		PROTO((tree));
 extern tree build_typeid			PROTO((tree));
+extern tree build_x_typeid			PROTO((tree));
 extern tree get_typeid				PROTO((tree));
 extern tree build_dynamic_cast			PROTO((tree, tree));
 
@@ -2454,6 +2456,7 @@ extern tree default_conversion			PROTO((tree));
 extern tree build_object_ref			PROTO((tree, tree, tree));
 extern tree build_component_ref_1		PROTO((tree, tree, int));
 extern tree build_component_ref			PROTO((tree, tree, tree, int));
+extern tree build_x_component_ref		PROTO((tree, tree, tree, int));
 extern tree build_x_indirect_ref		PROTO((tree, char *));
 extern tree build_indirect_ref			PROTO((tree, char *));
 extern tree build_x_array_ref			PROTO((tree, tree));

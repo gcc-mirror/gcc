@@ -4341,7 +4341,10 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
      defined for this type.  */
   if (CLASSTYPE_TAGS (t) || dummy)
     {
-      x = CLASSTYPE_TAGS (t);
+      /* The list of tags was built up in pushtag in reverse order; we need
+	 to fix that so that enumerators will be processed in forward order
+	 in template instantiation.  */
+      CLASSTYPE_TAGS (t) = x = nreverse (CLASSTYPE_TAGS (t));
       while (x)
 	{
 	  tree tag = TYPE_NAME (TREE_VALUE (x));

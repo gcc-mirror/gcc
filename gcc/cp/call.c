@@ -1410,7 +1410,7 @@ build_scoped_method_call (exp, basetype, name, parms)
       || basetype == error_mark_node)
     return error_mark_node;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
@@ -1681,7 +1681,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       || (instance != NULL_TREE && TREE_TYPE (instance) == error_mark_node))
     return error_mark_node;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
@@ -4545,9 +4545,16 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (arg3 && TREE_CODE (arg3) == OFFSET_REF)
     arg3 = resolve_offset_ref (arg3);
 
-  if (! IS_OVERLOAD_TYPE (TREE_TYPE (arg1))
-      && (! arg2 || ! IS_OVERLOAD_TYPE (TREE_TYPE (arg2)))
-      && (! arg3 || ! IS_OVERLOAD_TYPE (TREE_TYPE (arg3))))
+  if (code == COND_EXPR)
+    {
+      if (TREE_CODE (TREE_TYPE (arg2)) == VOID_TYPE
+	  || TREE_CODE (TREE_TYPE (arg3)) == VOID_TYPE
+	  || (! IS_OVERLOAD_TYPE (TREE_TYPE (arg2))
+	      && ! IS_OVERLOAD_TYPE (TREE_TYPE (arg3))))
+	goto builtin;
+    }
+  else if (! IS_OVERLOAD_TYPE (TREE_TYPE (arg1))
+	   && (! arg2 || ! IS_OVERLOAD_TYPE (TREE_TYPE (arg2))))
     goto builtin;
 
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
@@ -4871,6 +4878,8 @@ convert_like (convs, expr)
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
 	expr = instantiate_type (TREE_TYPE (convs), expr, 1);
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
       return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */

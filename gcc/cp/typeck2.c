@@ -607,6 +607,10 @@ store_init_value (decl, init)
 	}
     }
 
+  if (TYPE_PTRMEMFUNC_P (type) && TREE_CODE (init) == CONSTRUCTOR
+      && TREE_TYPE (init) == NULL_TREE)
+    cp_pedwarn ("initializer list for `%T'", type);
+
   /* End of special C++ code.  */
 
   /* Digest the specified initializer into an expression.  */
@@ -1011,9 +1015,6 @@ process_init_constructor (type, init, elts)
 	      sorry ("initializer list for object using virtual functions");
 	      return error_mark_node;
 	    }
-
-	  if (TYPE_PTRMEMFUNC_P (type))
-	    cp_pedwarn ("initializer list for `%T'", type);
 	}
 
       for (field = TYPE_FIELDS (type); field && tail;
@@ -1262,7 +1263,7 @@ build_x_arrow (datum)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (ARROW_EXPR, rval);
 
   if (TREE_CODE (rval) == OFFSET_REF)
@@ -1338,7 +1339,7 @@ build_m_component_ref (datum, component)
   tree rettype;
   tree binfo;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (DOTSTAR_EXPR, datum, component);
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (component)))
@@ -1423,7 +1424,7 @@ build_functional_cast (exp, parms)
   else
     type = exp;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min (CAST_EXPR, type, parms);
 
   if (IS_SIGNATURE (type))

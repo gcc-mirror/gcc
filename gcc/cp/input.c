@@ -163,7 +163,7 @@ sub_getch ()
 	  return getch ();
 	}
       if (input)
-	return input->str[input->offset++];
+	return (unsigned char)input->str[input->offset++];
     }
   return getc (finput);
 }

@@ -369,7 +369,7 @@ build_overload_int (value)
 	OB_PUTC ('_');
       return;
     }
-  else if (current_template_parms
+  else if (processing_template_decl
 	   && TREE_CODE (value) != INTEGER_CST)
     /* We don't ever want this output, but it's inconvenient not to
        be able to build the string.  This should cause assembler
@@ -382,7 +382,7 @@ build_overload_int (value)
     }
 
   my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
-  if (TYPE_PRECISION (value) == 2 * HOST_BITS_PER_WIDE_INT)
+  if (TYPE_PRECISION (TREE_TYPE (value)) == 2 * HOST_BITS_PER_WIDE_INT)
     {
       if (tree_int_cst_lt (value, integer_zero_node))
 	{
@@ -1656,7 +1656,7 @@ hack_identifier (value, name)
       return value;
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE && ! current_template_parms)
+  if (TREE_CODE (type) == REFERENCE_TYPE && ! processing_template_decl)
     value = convert_from_reference (value);
   return value;
 }
