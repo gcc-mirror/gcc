@@ -510,8 +510,7 @@ extern int target_flags;
 
 /* 0x2000, 0x4000 are unused */
 
-/* Nonzero if pointers are 64 bits.
-   At the moment it must follow architecture size flag.  */
+/* Nonzero if pointers are 64 bits.  */
 #define MASK_PTR64 0x8000
 #define TARGET_PTR64 (target_flags & MASK_PTR64)
 
