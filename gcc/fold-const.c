@@ -3445,11 +3445,14 @@ fold (expr)
 	     float or both integer, we don't need the middle conversion if
 	     it is wider than the final type and doesn't change the signedness
 	     (for integers).  Avoid this if the final type is a pointer
-	     since then we sometimes need the inner conversion.  */
+	     since then we sometimes need the inner conversion.  Likewise if
+	     the outer has a precision not equal to the size of its mode.  */
 	  if ((((inter_int || inter_ptr) && (inside_int || inside_ptr))
 	       || (inter_float && inside_float))
 	      && inter_prec >= inside_prec
 	      && (inter_float || inter_unsignedp == inside_unsignedp)
+	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
+		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
 	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
@@ -3471,7 +3474,10 @@ fold (expr)
 	      && ((inter_unsignedp && inter_prec > inside_prec)
 		  == (final_unsignedp && final_prec > inter_prec))
 	      && ! (inside_ptr && inter_prec != final_prec)
-	      && ! (final_ptr && inside_prec != inter_prec))
+	      && ! (final_ptr && inside_prec != inter_prec)
+	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
+		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
+	      && ! final_ptr)
 	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 	}
 
