@@ -2,7 +2,6 @@ Mon Sep 21 01:53:05 1998  Felix Lee  <flee@cygnus.com>
 
 	* c-lex.c (init_lex): Use getenv ("LANG"), not GET_ENVIRONMENT ().
 	* cccp.c (main): Likewise.
-	* gcc.c (process_command): Similarly for "GCC_EXEC_PREFIX".
 
 	* cccp.c, collect2.c, cpplib.c, gcc.c, config/i386/xm-cygwin32.h:
 	Rename GET_ENVIRONMENT to GET_ENV_PATH_LIST, and fix some
