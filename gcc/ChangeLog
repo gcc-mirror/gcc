@@ -1,3 +1,8 @@
+2000-01-09  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x.h: Tidy up comments.
+	* config/c4x.c: Likewise.
+
 Sun Jan  9 01:02:55 EST 2000  John Wehle  (john@feith.com)
 
 	* fold-const.c (lshift_double, rshift_double): Handle
