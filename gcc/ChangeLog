@@ -1,5 +1,15 @@
 Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (loop_unroll_factor): Move outside #ifdef HAIFA
+	conditional.
+	(loop_unroll_iter): Remove unused variable and all references.
+	(loop_optimize): Always allocate and clear space for loop_unroll_factor.
+	(insert_bct): Fix minor formatting problems.
+	* loop.h (loop_unroll_factor): Move decl outside #ifdef HAIFA.
+	(loop_unroll_iter): Removed unused decl.
+	* unroll.c (unroll_loop): Remove code to set loop_unroll_iter.
+	Always record the unrolling factor.
+
 	* cse.c (simplify_relational_operation): Set h0u just like h0s.
 	Similarly for h1u and h1s.
 
