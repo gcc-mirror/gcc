@@ -2538,8 +2538,17 @@ mark_loop_jump (x, loop_num)
       return;
 
     default:
-      /* Nothing else should occur in a JUMP_INSN.  */
-      abort ();
+      /* Treat anything else (such as a symbol_ref)
+	 as a branch out of this loop, but not into any loop.  */
+
+      if (loop_num != -1)
+	{
+	  LABEL_OUTSIDE_LOOP_P (x) = 1;
+	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
+	  loop_number_exit_labels[loop_num] = x;
+	}
+
+      return;
     }
 }
 
