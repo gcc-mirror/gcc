@@ -154,19 +154,19 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
    is this supposed to do align too?? */
 
 #define ASM_OUTPUT_SHORT(FILE, VALUE)           \
-( fprintf (FILE, "%s ", ASM_SHORT),             \
+( fprintf (FILE, "%s\t", ASM_SHORT),            \
   output_addr_const (FILE, (VALUE)),            \
   putc ('\n',FILE))
 
 #define ASM_OUTPUT_CHAR(FILE, VALUE)            \
-( fprintf (FILE, "%s ", ASM_BYTE_OP),           \
+( fprintf (FILE, "\t%s\t", ASM_BYTE_OP),        \
   output_addr_const (FILE, (VALUE)),            \
   putc ('\n', FILE))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf ((FILE), "%s 0x%x\n", ASM_BYTE_OP, (int)(VALUE))
+  fprintf ((FILE), "\t%s\t0x%x\n", ASM_BYTE_OP, (int)(VALUE))
 
      /* internal macro to output long */
 #define _ASM_OUTPUT_LONG(FILE, VALUE)                                   \
@@ -191,75 +191,16 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
-#define ASM_OUTPUT_ALIGN(FILE, LOG)      \
-    if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
-
-/* This is how to output an assembler line
-   that says to advance the location counter by SIZE bytes.  */
-
-#undef ASM_OUTPUT_SKIP 
-#define ASM_OUTPUT_SKIP(FILE, SIZE)  \
-  fprintf ((FILE), "\t.set .,.+%u\n", (SIZE))
-
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
-
+#undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
-    if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
+    if ((LOG)!=0) fprintf ((FILE), "\t.align\t%d\n", 1<<(LOG))
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 
+#undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE, SIZE)  \
-  fprintf ((FILE), "\t.set .,.+%u\n", (SIZE))
-
-/* The routine used to output sequences of byte values.  We use a special
-   version of this for most svr4 targets because doing so makes the
-   generated assembly code more compact (and thus faster to assemble)
-   as well as more readable.  Note that if we find subparts of the
-   character sequence which end with NUL (and which are shorter than
-   STRING_LIMIT) we output those using ASM_OUTPUT_LIMITED_STRING.  */
-
-#undef ASM_OUTPUT_ASCII
-#define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)                             \
-do {                                                                    \
-      register const unsigned char *_ascii_bytes = (const unsigned char *) (STR);   \
-      register const unsigned char *limit = _ascii_bytes + (LENGTH);          \
-      register unsigned bytes_in_chunk = 0;                             \
-      for (; _ascii_bytes < limit; _ascii_bytes++)                      \
-        {                                                               \
-          register const unsigned char *p;                                    \
-          if (bytes_in_chunk >= 64)                                     \
-            {                                                           \
-              fputc ('\n', (FILE));                                     \
-              bytes_in_chunk = 0;                                       \
-            }                                                           \
-          for (p = _ascii_bytes; p < limit && *p != '\0'; p++)          \
-            continue;                                                   \
-          if (p < limit && (p - _ascii_bytes) <= (long)STRING_LIMIT)    \
-            {                                                           \
-              if (bytes_in_chunk > 0)                                   \
-                {                                                       \
-                  fputc ('\n', (FILE));                                 \
-                  bytes_in_chunk = 0;                                   \
-                }                                                       \
-              ASM_OUTPUT_LIMITED_STRING ((FILE), _ascii_bytes);         \
-              _ascii_bytes = p;                                         \
-            }                                                           \
-          else                                                          \
-            {                                                           \
-              if (bytes_in_chunk == 0)                                  \
-                fprintf ((FILE), "%s\t", ASM_BYTE_OP);                  \
-              else                                                      \
-                fputc (',', (FILE));                                    \
-              fprintf ((FILE), "0x%02x", *_ascii_bytes);                \
-              bytes_in_chunk += 5;                                      \
-            }                                                           \
-        }                                                               \
-      if (bytes_in_chunk > 0)                                           \
-        fprintf ((FILE), "\n");                                         \
-} while (0)
+  fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
 
 /* Output before read-only data.  */
 

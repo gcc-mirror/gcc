@@ -59,21 +59,7 @@ Boston, MA 02111-1307, USA.  */
 	%{static:-static}}}"
 #endif
 
-#undef PROMOTE_PROTOTYPES 
 #undef MASK_RETURN_ADDR 
 #undef SELECT_SECTION
-
-/* With 64 bit new linkage for floating point registers.  */
-#undef CALL_USED_REGISTERS			
-#define CALL_USED_REGISTERS			\
-{ 1, 1, 1, 1, 					\
-  1, 1, 0, 0, 					\
-  0, 0, 0, 0, 					\
-  0, 1, 1, 1,					\
-  1, 1, 1, 1, 					\
-  1, 1, 1, 1, 					\
-  0, 0, 0, 0, 					\
-  0, 0, 0, 0, 					\
-  1, 1 }
 
 #endif

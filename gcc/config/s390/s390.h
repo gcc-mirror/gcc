@@ -65,6 +65,14 @@ extern int target_flags;
 /* Define this to change the optimizations performed by default.  */
 #define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
 
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.  */
+#define OVERRIDE_OPTIONS override_options ()
+
+
 /* Defines for REAL_ARITHMETIC.  */
 #define IEEE_FLOAT 1
 #define TARGET_IBM_FLOAT           0
@@ -236,7 +244,12 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    G5 and following have 16 IEEE floating point register,
    which get numbers 16-31.  */
 
-#define FIRST_PSEUDO_REGISTER 34
+#define FIRST_PSEUDO_REGISTER 35
+
+/* Number of hardware registers that go into the DWARF-2 unwind info.
+   If not defined, equals FIRST_PSEUDO_REGISTER.  */
+
+#define DWARF_FRAME_REGISTERS 34
 
 /* The following register have a fix usage
    GPR 12: GOT register points to the GOT, setup in prologue,
@@ -260,7 +273,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
-  1, 1 }
+  1, 1, 1 }
 
 /* 1 for registers not available across function calls.  These must include
    the FIXED_REGISTERS and also any registers that can be used without being
@@ -273,21 +286,48 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
   1, 1, 0, 0, 					\
   0, 0, 0, 0, 					\
   0, 1, 1, 1,					\
-  1, 1, 0, 0, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
   1, 1, 1, 1, 					\
-  1, 1 }
+  1, 1, 1, 1, 					\
+  1, 1, 1 }
 
-/* If not pic code, gpr 12 can be used.  */
+/* Like `CALL_USED_REGISTERS' except this macro doesn't require that
+   the entire set of `FIXED_REGISTERS' be included.
+   (`CALL_USED_REGISTERS' must be a superset of `FIXED_REGISTERS').  */
+
+#define CALL_REALLY_USED_REGISTERS		\
+{ 1, 1, 1, 1, 					\
+  1, 1, 0, 0, 					\
+  0, 0, 0, 0, 					\
+  0, 0, 0, 0,					\
+  1, 1, 1, 1, 					\
+  1, 1, 1, 1, 					\
+  1, 1, 1, 1, 					\
+  1, 1, 1, 1, 					\
+  1, 1, 1 }
+
+/* Macro to conditionally modify fixed_regs/call_used_regs.  */
 
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
   {								\
+    int i;							\
+								\
     if (flag_pic)						\
       {								\
 	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+      }								\
+    if (TARGET_64BIT)						\
+      {								\
+        for (i = 24; i < 32; i++)				\
+	    call_used_regs[i] = call_really_used_regs[i] = 0;	\
+      }								\
+    else							\
+      {								\
+        for (i = 18; i < 20; i++)				\
+	    call_used_regs[i] = call_really_used_regs[i] = 0;	\
       }								\
  } while (0)
 
@@ -298,7 +338,8 @@ do								\
 	   with stack- or frame-pointer. 
    GPR 33: Condition code 'register' */
 
-#define FRAME_POINTER_REGNUM 11
+#define HARD_FRAME_POINTER_REGNUM 11
+#define FRAME_POINTER_REGNUM 34
 
 #define ARG_POINTER_REGNUM 32
 
@@ -333,7 +374,8 @@ do								\
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
   (FLOAT_REGNO_P(REGNO)?                                            \
    (GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
-    GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
+    GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ||                   \
+    (MODE) == SImode || (MODE) == DImode) :                         \
    INT_REGNO_P(REGNO)?                                              \
     (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
@@ -349,6 +391,15 @@ do								\
    (((MODE1) == SFmode || (MODE1) == DFmode)	\
    == ((MODE2) == SFmode || (MODE2) == DFmode))
 
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the mode of the object illegally.  */
+
+#define CLASS_CANNOT_CHANGE_MODE FP_REGS
+
+/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+
+#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
@@ -383,15 +434,20 @@ while (0)
 
 #define ELIMINABLE_REGS				        \
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	        \
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},    \
  { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	        \
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM}}  
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}  
 
 #define CAN_ELIMINATE(FROM, TO) (1)
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) 			  \
 { if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) 	  \
   { (OFFSET) = 0; }     						  \
-  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)  \
+  else  if ((FROM) == FRAME_POINTER_REGNUM                                \
+	    && (TO) == HARD_FRAME_POINTER_REGNUM)                	  \
+  { (OFFSET) = 0; }     						  \
+  else if ((FROM) == ARG_POINTER_REGNUM                                   \
+            && (TO) == HARD_FRAME_POINTER_REGNUM)                         \
   { (OFFSET) = s390_arg_frame_offset (); }     				  \
   else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)  \
   { (OFFSET) = s390_arg_frame_offset (); }     				  \
@@ -433,7 +489,8 @@ while (0)
 enum reg_class
 {
   NO_REGS, ADDR_REGS, GENERAL_REGS,
-  FP_REGS, ALL_REGS, LIM_REG_CLASSES
+  FP_REGS, ADDR_FP_REGS, GENERAL_FP_REGS,
+  ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -441,7 +498,8 @@ enum reg_class
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES                                                 \
-{ "NO_REGS","ADDR_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
+{ "NO_REGS", "ADDR_REGS", "GENERAL_REGS", 				\
+  "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer for
    a vector of HARD_REG_SET of length N_REG_CLASSES.
@@ -450,10 +508,12 @@ enum reg_class
 #define REG_CLASS_CONTENTS \
 {				       			\
   { 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0x0000fffe, 0x00000001 },	/* ADDR_REGS */		\
-  { 0x0000ffff, 0x00000001 },	/* GENERAL_REGS */	\
+  { 0x0000fffe, 0x00000005 },	/* ADDR_REGS */		\
+  { 0x0000ffff, 0x00000005 },	/* GENERAL_REGS */	\
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
-  { 0xffffffff, 0x00000003 },	/* ALL_REGS */		\
+  { 0xfffffffe, 0x00000005 },	/* ADDR_FP_REGS */	\
+  { 0xffffffff, 0x00000005 },	/* GENERAL_FP_REGS */	\
+  { 0xffffffff, 0x00000007 },	/* ALL_REGS */		\
 }
 
 
@@ -506,15 +566,8 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
    but on some machines in some cases it is preferable to use a more
    restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS)                                 \
-    (GET_CODE (X) == CONST_DOUBLE ?                                      \
-     (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? FP_REGS : ADDR_REGS) :\
-     (GET_CODE (X) == CONST_INT ?                                        \
-     (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? FP_REGS : ADDR_REGS) :\
-     GET_CODE (X) == PLUS ||                                            \
-     GET_CODE (X) == LABEL_REF ||                                        \
-     GET_CODE (X) == SYMBOL_REF ||                                       \
-     GET_CODE (X) == CONST ? ADDR_REGS : (CLASS)))
+#define PREFERRED_RELOAD_CLASS(X, CLASS)	\
+	s390_preferred_reload_class ((X), (CLASS))
 
 /* Return the maximum number of consecutive registers needed to represent
    mode MODE in a register of class CLASS.  */
@@ -557,26 +610,21 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
 
 /* Stack layout; function entry, exit and calling.  */
 
-/* The current return address is on Offset 56 of the current frame
-   if we are in an leaf_function. Otherwise we have to go one stack
-   back.
-   The return address of anything farther back is accessed normally
-   at an offset of 56 from the frame pointer.
+/* The return address of the current frame is retrieved 
+   from the initial value of register RETURN_REGNUM.
+   For frames farther back, we use the stack slot where
+   the corresponding RETURN_REGNUM register was saved.  */
 
-   FIXME: builtin_return_addr does not work correctly in a leaf
-          function, we need to find way to find out, if we
-          are in a leaf function
-  */
-
-#define _RETURN_ADDR_OFFSET (TARGET_64BIT ? 112 : 56)
-
-#define RETURN_ADDR_RTX(count, frame)                                   \
-   gen_rtx (MEM, Pmode,                                                 \
-            memory_address (Pmode,                                      \
-                              plus_constant (                           \
-                              copy_to_reg (gen_rtx (MEM, Pmode,         \
-                              memory_address (Pmode, frame))),          \
-                              _RETURN_ADDR_OFFSET)));
+#define DYNAMIC_CHAIN_ADDRESS(FRAME)						\
+  ((FRAME) != hard_frame_pointer_rtx ? (FRAME) :				\
+   plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
+     
+#define RETURN_ADDR_RTX(COUNT, FRAME)						\
+  ((COUNT) == 0 ? get_hard_reg_initial_val (Pmode, RETURN_REGNUM) :		\
+   gen_rtx_MEM (Pmode,								\
+                memory_address (Pmode, 						\
+                                plus_constant (DYNAMIC_CHAIN_ADDRESS ((FRAME)),	\
+                                               RETURN_REGNUM * UNITS_PER_WORD))))
 
 /* The following macros will turn on dwarf2 exception hndling
    Other code location for this exception handling are 
@@ -587,6 +635,11 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
 /* We have 31 bit mode.  */
 
 #define MASK_RETURN_ADDR (GEN_INT (0x7fffffff))
+
+/* The offset from the incoming value of %sp to the top of the stack frame
+   for the current function.  */
+
+#define INCOMING_FRAME_SP_OFFSET STACK_POINTER_OFFSET
 
 /* Location, from where return address to load.  */
 
@@ -813,47 +866,7 @@ CUMULATIVE_ARGS;
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO) 			\
-do {                                     			\
-  extern rtx s390_profile[];  					\
-  extern int s390_pool_count;     				\
-  static char label[128];                     			\
-  fprintf (FILE, "# function profiler \n");   			\
-  if (TARGET_64BIT) 						\
-    {								\
-      rtx tmp[1];						\
-      output_asm_insn ("stg\t14,8(15)", tmp);			\
-      sprintf (label, "%sP%d", LPREFIX, LABELNO);       	\
-      tmp[0] = gen_rtx_SYMBOL_REF (Pmode, label);		\
-      SYMBOL_REF_FLAG (tmp[0]) = 1;				\
-      output_asm_insn ("larl\t1,%0", tmp);      		\
-      tmp[0] = gen_rtx_SYMBOL_REF (Pmode, "_mcount");	        \
-      if (flag_pic)						\
-        {							\
-          tmp[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, tmp[0]), 113); \
-          tmp[0] = gen_rtx_CONST (Pmode, tmp[0]);		\
-        }							\
-      output_asm_insn ("brasl\t14,%0", tmp);			\
-      output_asm_insn ("lg\t14,8(15)", tmp);			\
-    }								\
-  else								\
-    {  								\
-      output_asm_insn ("l     14,4(15)", s390_profile);		\
-      s390_pool_count = 0;                             		\
-      output_asm_insn ("st    14,4(15)", s390_profile);		\
-      output_asm_insn ("l     14,%4", s390_profile);		\
-      output_asm_insn ("l     1,%9", s390_profile);		\
-      if (flag_pic) 						\
-	{   							\
-	  output_asm_insn ("ar    1,13", s390_profile);   	\
-	  output_asm_insn ("bas   14,0(14,13)", s390_profile); 	\
-	} 							\
-      else 							\
-	{							\
-	  output_asm_insn ("basr  14,14", s390_profile);	\
-	}                  					\
-      output_asm_insn ("l     14,4(15)", s390_profile);		\
-    }                     					\
-} while (0)
+	s390_function_profiler ((FILE), ((LABELNO)))
 
 /* #define PROFILE_BEFORE_PROLOGUE */
 
@@ -875,9 +888,9 @@ do {                                     			\
    reg currently allocated to a suitable hard reg.
    These definitions are NOT overridden anywhere.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO)                                     \
-  (((REGNO) > 0 && (REGNO) < 16) || (REGNO) == ARG_POINTER_REGNUM       \
-   /* || (REGNO) == FRAME_POINTER_REGNUM */                                 \
+#define REGNO_OK_FOR_INDEX_P(REGNO)					\
+    (((REGNO) < FIRST_PSEUDO_REGISTER 					\
+     && REGNO_REG_CLASS ((REGNO)) == ADDR_REGS) 			\
     || (reg_renumber[REGNO] > 0 && reg_renumber[REGNO] < 16))
 
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
@@ -947,11 +960,10 @@ do {                                     			\
  * a pseudo reg.  
  */
 
-#define REG_OK_FOR_INDEX_NONSTRICT_P(X)               			\
-((GET_MODE (X) == Pmode) &&						\
- ((REGNO (X) > 0 && REGNO (X) < 16) ||					\
-  (REGNO (X) == ARG_POINTER_REGNUM) ||					\
-  (REGNO (X) >= FIRST_PSEUDO_REGISTER)))
+#define REG_OK_FOR_INDEX_NONSTRICT_P(X)   	\
+((GET_MODE (X) == Pmode) &&			\
+ ((REGNO (X) >= FIRST_PSEUDO_REGISTER) 		\
+  || REGNO_REG_CLASS (REGNO (X)) == ADDR_REGS))  
 
 /* Nonzero if X is a hard reg that can be used as a base reg or if it is
    a pseudo reg.  */
@@ -1079,10 +1091,6 @@ do {                                     			\
    and some other value for true.  This is the value stored for true.  */
 
 /* #define STORE_FLAG_VALUE -1 */
-
-/* When a prototype says `char' or `short', really pass an `int'.  */
-
-#define PROMOTE_PROTOTYPES 1
 
 /* Don't perform CSE on function addresses.  */
 
@@ -1269,12 +1277,13 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",	\
   "%f0",  "%f2",  "%f4",  "%f6",  "%f1",  "%f3",  "%f5",  "%f7",	\
   "%f8",  "%f10", "%f12", "%f14", "%f9", "%f11", "%f13", "%f15",	\
-  "%ap", "%cc"								\
+  "%ap",  "%cc",  "%fp"							\
 }
 
 /* implicit call of memcpy, not bcopy   */
 
 #define TARGET_MEM_FUNCTIONS
+
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
@@ -1287,17 +1296,29 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
 /* Define the codes that are matched by predicates in aux-output.c.  */
 
-#define PREDICATE_CODES                                                 \
-  {"s_operand",       { MEM }},                                          \
-  {"bras_sym_operand",{ SYMBOL_REF, CONST }},                            \
-  {"r_or_s_operand",  { MEM, SUBREG, REG }},                             \
-  {"r_or_im8_operand",  { CONST_INT, SUBREG, REG }},                     \
-  {"r_or_s_or_im8_operand",  { MEM, SUBREG, REG, CONST_INT }},           \
-  {"r_or_x_or_im16_operand", { MEM, SUBREG, REG, CONST_INT }},           \
-  {"const0_operand", { CONST_INT, CONST_DOUBLE }},	                 \
-  {"const1_operand", { CONST_INT, CONST_DOUBLE }},	                 \
-  {"tmxx_operand", { CONST_INT, MEM }},
+#define PREDICATE_CODES							\
+  {"s_operand",       { SUBREG, MEM }},					\
+  {"s_imm_operand",   { CONST_INT, CONST_DOUBLE, SUBREG, MEM }},	\
+  {"bras_sym_operand",{ SYMBOL_REF, CONST }},				\
+  {"larl_operand",    { SYMBOL_REF, CONST, CONST_INT, CONST_DOUBLE }},	\
+  {"load_multiple_operation", {PARALLEL}},			        \
+  {"store_multiple_operation", {PARALLEL}},			        \
+  {"const0_operand",  { CONST_INT, CONST_DOUBLE }},
 
+
+/* S/390 constant pool breaks the devices in crtstuff.c to control section
+   in where code resides.  We have to write it as asm code.  */
+#ifndef __s390x__
+#define CRT_CALL_STATIC_FUNCTION(func) \
+  if (0) \
+     func (); /* ... to avoid warnings.  */ \
+  else \
+    asm \
+      ("bras\t%%r2,1f\n\
+0:	.long\t" #func " - 0b\n\
+1:	l\t%%r3,0(%%r2)\n\
+	bas\t%%r14,0(%%r3,%%r2)" : : : "2", "3", "cc", "memory");
+#endif
 
 /* Constant Pool for all symbols operands which are changed with
    force_const_mem during insn generation (expand_insn).  */
@@ -1397,7 +1418,11 @@ extern int s390_nr_constants;
           fputc ('\n', (FILE));						    \
 	}								    \
       else								    \
-        assemble_integer (EXP, GET_MODE_SIZE (MODE), ALIGN, 1);		    \
+	{								    \
+	  assemble_integer (EXP, GET_MODE_SIZE (MODE), ALIGN, 1);	    \
+	  if (GET_MODE_SIZE (MODE) == 1)				    \
+	    ASM_OUTPUT_SKIP ((FILE), 1);				    \
+	}								    \
       break;								    \
 									    \
     default:								    \
