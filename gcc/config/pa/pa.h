@@ -2120,7 +2120,7 @@ extern struct rtx_def *hppa_save_pic_table_rtx;
 
 #if 0
 #define PREDICATE_CODES \
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
   {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith32_operand", {SUBREG, REG, CONST_INT}},			\
@@ -2142,15 +2142,15 @@ extern struct rtx_def *hppa_save_pic_table_rtx;
   {"movb_comparison_operator", {EQ, NE, LT, GE}},			\
   {"pc_or_label_operand", {LABEL_REF, PC}},				\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-  {"reg_or_nonsymb_mem_operand", {REG, SUBREG, MEM}},			\
-  {"move_operand", {REG, SUBREG, CONST_INT, MEM}},			\
-  {"pic_operand", {REG, SUBREG, CONST_INT, SYMBOL_REF, LABEL_REF,	\
-		   CONST, HIGH, PC}},	/* No clue */			\
+  {"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
+  {"move_operand", {SUBREG, REG, CONST_INT, MEM}},			\
+  {"pic_label_operand", {LABEL_REF, CONST}},				\
   {"function_label_operand", {SYMBOL_REF}},				\
-  {"reg_or_0_or_nonsymb_mem_operand", {REG, SUBREG, CONST_INT, MEM}},	\
+  {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, CONST_INT,		\
+				       CONST_DOUBLE, MEM}},		\
   {"div_operand", {REG, CONST_INT}},					\
-  {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
-			    CONST, HIGH}},
+  {"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST_INT,		\
+			    CONST_DOUBLE, CONST, HIGH}},
 #endif
 
 #define DO_GLOBAL_DTORS_BODY \
