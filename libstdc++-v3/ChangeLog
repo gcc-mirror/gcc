@@ -1,3 +1,7 @@
+2003-08-09  Bernardo Innocenti  <bernie@develer.com>
+
+	* include/c_std/std_cstdlib.h: Avoid using missing C library symbols.
+
 2003-09-04  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9028

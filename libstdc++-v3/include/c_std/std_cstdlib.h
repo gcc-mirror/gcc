@@ -101,9 +101,11 @@ namespace std
   using ::labs;
   using ::ldiv;
   using ::malloc;
+#ifdef _GLIBCXX_HAVE_MBSTATE_T
   using ::mblen;
   using ::mbstowcs;
   using ::mbtowc;
+#endif // _GLIBCXX_HAVE_MBSTATE_T
   using ::qsort;
   using ::rand;
   using ::realloc;
@@ -112,8 +114,10 @@ namespace std
   using ::strtol;
   using ::strtoul;
   using ::system;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using ::wcstombs;
   using ::wctomb;
+#endif // _GLIBCXX_USE_WCHAR_T 
 
   inline long 
   abs(long __i) { return labs(__i); }
