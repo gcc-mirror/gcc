@@ -39,6 +39,9 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
@@ -190,7 +193,7 @@ void print_switch_values ();
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
-#ifdef __alpha
+#ifdef NEED_DECLARATION_SBRK
 extern char *sbrk ();
 #endif
 

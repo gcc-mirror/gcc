@@ -13,10 +13,10 @@
 /* Whether free must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_FREE
 
-/* Whether index must be declared even if <stdlib.h> is included.  */
+/* Whether index must be declared even if <string.h> is included.  */
 #undef NEED_DECLARATION_INDEX
 
-/* Whether rindex must be declared even if <stdlib.h> is included.  */
+/* Whether rindex must be declared even if <string.h> is included.  */
 #undef NEED_DECLARATION_RINDEX
 
 /* Whether getenv must be declared even if <stdlib.h> is included.  */
@@ -24,4 +24,7 @@
 
 /* Whether atol must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ATOL
+
+/* Whether sbrk must be declared even if <unistd.h> is included.  */
+#undef NEED_DECLARATION_SBRK
 @TOP@
