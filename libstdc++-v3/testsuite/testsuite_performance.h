@@ -107,7 +107,7 @@ namespace __gnu_cxx_test
     { 
       if (getrusage(who, &rusage_begin) != 0 )
 	memset(&rusage_begin, 0, sizeof(rusage_begin));
-      allocation_begin = mallinfo();
+      // allocation_begin = mallinfo();
     }
     
     void
@@ -115,7 +115,7 @@ namespace __gnu_cxx_test
     { 
       if (getrusage(who, &rusage_end) != 0 )
 	memset(&rusage_end, 0, sizeof(rusage_end));
-      allocation_end = mallinfo();
+      // allocation_end = mallinfo();
     }
 
     int
