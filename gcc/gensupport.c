@@ -42,6 +42,8 @@ static int predicable_default;
 static const char *predicable_true;
 static const char *predicable_false;
 
+static char *base_dir = NULL;
+
 /* We initially queue all patterns, process the define_insn and
    define_cond_exec patterns, then return them one at a time.  */
 
@@ -62,6 +64,23 @@ static struct queue_elem *other_queue;
 static struct queue_elem **other_tail = &other_queue;
 
 static void queue_pattern PARAMS ((rtx, struct queue_elem ***, int));
+
+/* Current maximum length of directory names in the search path
+   for include files.  (Altered as we get more of them.)  */
+
+size_t max_include_len;
+
+struct file_name_list
+  {
+    struct file_name_list *next;
+    const char *fname;
+  };
+
+struct file_name_list *include = 0;     /* First dir to search */
+        /* First dir to search for <file> */
+struct file_name_list *first_bracket_include = 0;
+struct file_name_list *last_include = 0;        /* Last in chain */
+
 static void remove_constraints PARAMS ((rtx));
 static void process_rtx PARAMS ((rtx, int));
 
@@ -78,6 +97,9 @@ static const char *alter_output_for_insn PARAMS ((struct queue_elem *,
 						  int, int));
 static void process_one_cond_exec PARAMS ((struct queue_elem *));
 static void process_define_cond_exec PARAMS ((void));
+static int process_include PARAMS ((rtx, int));
+static char *save_string PARAMS ((const char *, int));
+static int init_include_reader PARAMS ((FILE  *));
 
 void
 message_with_line VPARAMS ((int lineno, const char *msg, ...))
@@ -157,6 +179,142 @@ remove_constraints (part)
       }
 }
 
+/* The entry point for initializing the reader.  */
+
+static int
+init_include_reader (inf)
+     FILE *inf;
+{
+  int c;
+
+  errors = 0;
+
+  /* Read the entire file.  */
+  while (1)
+    {
+      rtx desc;
+      int lineno;
+
+      c = read_skip_spaces (inf);
+      if (c == EOF)
+	break;
+
+      ungetc (c, inf);
+      lineno = read_rtx_lineno;
+      desc = read_rtx (inf);
+      process_rtx (desc, lineno);
+    }
+  fclose (inf);
+
+  /* Process define_cond_exec patterns.  */
+  if (define_cond_exec_queue != NULL)
+    process_define_cond_exec ();
+
+  return errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+}
+
+/* Process an include file assuming that it lives in gcc/config/{target}/ 
+   if the include looks line (include "file" )  */
+static int
+process_include (desc, lineno)
+     rtx desc;
+     int lineno;
+{
+  const char *filename = XSTR (desc, 0);
+  char *pathname = NULL;
+  FILE *input_file;
+  char *fname;
+  struct file_name_list *stackp;
+  int flen;
+
+  stackp = include;
+
+  /* If specified file name is absolute, just open it.  */
+  if (IS_ABSOLUTE_PATHNAME (filename) || !stackp)
+    {
+      if (base_dir)
+        {
+          pathname = xmalloc (strlen (base_dir) + strlen (filename) + 1);
+          pathname = strcpy (pathname, base_dir);
+          strcat (pathname, filename);
+          strcat (pathname, "\0");
+	}
+      else
+        {
+	  pathname = xstrdup (filename);
+        }
+      read_rtx_filename = pathname;
+      input_file = fopen (pathname, "r");
+
+      if (input_file == 0)
+	{
+	  perror (pathname);
+	  return FATAL_EXIT_CODE;
+	}
+    }
+  else if (stackp)
+    {
+
+      flen = strlen (filename);
+
+      fname = (char *) alloca (max_include_len + flen + 2);
+
+      /* + 2 above for slash and terminating null.  */
+
+      /* Search directory path, trying to open the file.
+         Copy each filename tried into FNAME.  */
+
+      for (; stackp; stackp = stackp->next)
+	{
+	  if (stackp->fname)
+	    {
+	      strcpy (fname, stackp->fname);
+	      strcat (fname, "/");
+	      fname[strlen (fname) + flen] = 0;
+	    }
+	  else
+	    {
+	      fname[0] = 0;
+	    }
+	  strncat (fname, (const char *) filename, flen);
+	  read_rtx_filename = fname;
+	  input_file = fopen (fname, "r");
+	  if (input_file != NULL) 
+	    break;
+	}
+      if (stackp == NULL)
+	{
+	  if (strchr (fname, '/') == NULL || strchr (fname, '\\' ) || base_dir)
+	    {
+	      if (base_dir)
+		{
+		  pathname =
+		    xmalloc (strlen (base_dir) + strlen (filename) + 1);
+		  pathname = strcpy (pathname, base_dir);
+		  strcat (pathname, filename);
+		  strcat (pathname, "\0");
+		}
+	      else
+		pathname = xstrdup (filename);
+	    }
+	  read_rtx_filename = pathname;
+	  input_file = fopen (pathname, "r");
+
+	  if (input_file == 0)
+	    {
+	      perror (filename);
+	      return FATAL_EXIT_CODE;
+	    }
+	}
+
+    }
+
+  if (init_include_reader (input_file) == FATAL_EXIT_CODE)
+    message_with_line (lineno, "read errors found in include file  %s\n", pathname);
+
+  return SUCCESS_EXIT_CODE;
+}
+
 /* Process a top level rtx in some way, queueing as appropriate.  */
 
 static void
@@ -164,6 +322,8 @@ process_rtx (desc, lineno)
      rtx desc;
      int lineno;
 {
+  const char *filename = XSTR (desc, 0);
+
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
@@ -176,6 +336,11 @@ process_rtx (desc, lineno)
 
     case DEFINE_ATTR:
       queue_pattern (desc, &define_attr_tail, lineno);
+      break;
+
+    case INCLUDE:
+      if (process_include (desc, lineno) == FATAL_EXIT_CODE)
+        message_with_line (lineno, "include file at  %s not found\n", filename);
       break;
 
     case DEFINE_INSN_AND_SPLIT:
@@ -767,6 +932,74 @@ process_define_cond_exec ()
   for (elem = define_cond_exec_queue; elem ; elem = elem->next)
     process_one_cond_exec (elem);
 }
+
+static char *
+save_string (s, len)
+     const char *s;
+     int len;
+{
+  register char *result = xmalloc (len + 1);
+
+  memcpy (result, s, len);
+  result[len] = 0;
+  return result;
+}
+
+
+/* The entry point for initializing the reader.  */
+
+int
+init_md_reader_args (argc, argv)
+     int argc;
+     char **argv;
+{
+  int i;
+  const char *in_fname;
+
+  max_include_len = 0;
+  in_fname = NULL;
+  for (i = 1; i < argc; i++)
+    {
+      if (argv[i][0] != '-')
+	{
+	  if (in_fname == NULL)
+	    in_fname = argv[i];
+	}
+      else
+	{
+	  int c = argv[i][1];
+	  switch (c)
+	    {
+	    case 'I':		/* Add directory to path for includes.  */
+	      {
+		struct file_name_list *dirtmp;
+
+		dirtmp = (struct file_name_list *)
+		  xmalloc (sizeof (struct file_name_list));
+		dirtmp->next = 0;	/* New one goes on the end */
+		if (include == 0)
+		  include = dirtmp;
+		else
+		  last_include->next = dirtmp;
+		last_include = dirtmp;	/* Tail follows the last one */
+		if (argv[i][1] == 'I' && argv[i][2] != 0)
+		  dirtmp->fname = argv[i] + 2;
+		else if (i + 1 == argc)
+		  fatal ("Directory name missing after -I option");
+		else
+		  dirtmp->fname = argv[++i];
+		if (strlen (dirtmp->fname) > max_include_len)
+		  max_include_len = strlen (dirtmp->fname);
+	      }
+	      break;
+	    default:
+	      fatal ("Invalid option `%s'", argv[i]);
+
+	    }
+	}
+    }
+    return init_md_reader (in_fname);
+}
 
 /* The entry point for initializing the reader.  */
 
@@ -776,6 +1009,14 @@ init_md_reader (filename)
 {
   FILE *input_file;
   int c;
+  char *lastsl;
+
+  if (!IS_ABSOLUTE_PATHNAME (filename))
+    {
+      lastsl = strrchr (filename, '/');
+      if (lastsl != NULL) 
+	base_dir = save_string (filename, lastsl - filename + 1 );
+    }
 
   read_rtx_filename = filename;
   input_file = fopen (filename, "r");
@@ -797,7 +1038,7 @@ init_md_reader (filename)
 
       c = read_skip_spaces (input_file);
       if (c == EOF)
-	break;
+        break;
 
       ungetc (c, input_file);
       lineno = read_rtx_lineno;

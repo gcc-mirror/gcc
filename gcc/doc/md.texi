@@ -38,6 +38,7 @@ See the next chapter for information on the C header file.
 * Expander Definitions::Generating a sequence of several RTL insns
                           for a standard operation.
 * Insn Splitting::      Splitting Instructions into Multiple Instructions.
+* Including Patterns::      Including Patterns in Machine Descriptions.
 * Peephole Definitions::Defining machine-specific peephole optimizations.
 * Insn Attributes::     Specifying the value of attributes for generated insns.
 * Conditional Execution::Generating @code{define_insn} patterns for
@@ -3909,6 +3910,80 @@ The @code{define_insn_and_split} construction provides exactly the same
 functionality as two separate @code{define_insn} and @code{define_split}
 patterns.  It exists for compactness, and as a maintenance tool to prevent
 having to ensure the two patterns' templates match.
+
+@node Including Patterns
+@section Including Patterns in Machine Descriptions.
+@cindex insn includes
+
+@findex include
+The @code{include} pattern tells the compiler tools where to
+look for patterns that are in files other than in the file
+@file{.md}. This is used only at build time and there is no preprocessing allowed.
+
+It looks like:
+
+@smallexample
+
+(include
+  @var{pathname})
+@end smallexample
+
+For example:
+
+@smallexample
+
+(include "filestuff") 
+
+@end smallexample
+
+Where @var{pathname} is a string that specifies the the location of the file,
+specifies the include file to be in @file{gcc/config/target/filestuff}. The
+directory @file{gcc/config/target} is regarded as the default directory.
+
+
+Machine descriptions may be split up into smaller more manageable subsections 
+and placed into subdirectories. 
+
+By specifying:
+
+@smallexample
+
+(include "BOGUS/filestuff") 
+
+@end smallexample
+
+the include file is specified to be in @file{gcc/config/@var{target}/BOGUS/filestuff}.
+
+Specifying an absolute path for the include file such as;
+@smallexample
+
+(include "/u2/BOGUS/filestuff") 
+
+@end smallexample
+is permitted but is not encouraged. 
+
+@subsection RTL Generation Tool Options for Directory Search
+@cindex directory options .md
+@cindex options, directory search
+@cindex search options
+
+The @option{-I@var{dir}} option specifies directories to search for machine descriptions.
+For example:
+
+@smallexample
+
+genrecog -I/p1/abc/proc1 -I/p2/abcd/pro2 target.md
+
+@end smallexample
+
+
+Add the directory @var{dir} to the head of the list of directories to be
+searched for header files.  This can be used to override a system machine definition
+file, substituting your own version, since these directories are
+searched before the default machine description file directories.  If you use more than
+one @option{-I} option, the directories are scanned in left-to-right
+order; the standard default directory come after.
+
 
 @node Peephole Definitions
 @section Machine-Specific Peephole Optimizers

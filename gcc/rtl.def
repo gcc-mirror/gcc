@@ -73,6 +73,11 @@ DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", 'x')
 
 DEF_RTL_EXPR(NIL, "nil", "*", 'x')
 
+
+/* include a file */
+
+DEF_RTL_EXPR(INCLUDE, "include", "s", 'x')
+
 /* ---------------------------------------------------------------------
    Expressions used in constructing lists.
    --------------------------------------------------------------------- */
