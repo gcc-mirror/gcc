@@ -367,7 +367,6 @@ extern void tree_operand_check_failed PARAMS ((int, enum tree_code,
 
 #define TREE_CHECK(t, code)		(t)
 #define TREE_CLASS_CHECK(t, code)	(t)
-#define CST_OR_CONSTRUCTOR_CHECK(t)	(t)
 #define EXPR_CHECK(t)			(t)
 #define TREE_VEC_ELT_CHECK(t, i)	((t)->vec.a[i])
 #define TREE_OPERAND_CHECK(t, i)	((t)->exp.operands[i])

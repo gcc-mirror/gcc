@@ -1,3 +1,7 @@
+2003-04-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h: Delete no-checking definition of CST_OR_CONSTRUCTOR_CHECK.
+
 2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* c-pragma.c (maybe_apply_renaming_pragma): Fix typo.
