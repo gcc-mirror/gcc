@@ -184,8 +184,8 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct tree_decl),
   sizeof (struct tree_list),
   TREE_EXP_SIZE (2),
-  RTL_SIZE (2),			/* REG, MEM, PLUS, etc.  */
-  RTL_SIZE (10),		/* INSN, CALL_INSN, JUMP_INSN */
+  RTL_SIZE (2),			/* MEM, PLUS, etc.  */
+  RTL_SIZE (9),		/* INSN, CALL_INSN, JUMP_INSN */
 };
 
 /* The total number of orders.  */
@@ -400,6 +400,31 @@ static struct globals
      better runtime data access pattern.  */
   unsigned long **save_in_use;
 
+#ifdef GATHER_STATISTICS
+  struct
+  {
+    /* Total memory allocated with ggc_alloc */
+    unsigned long long total_allocated;
+    /* Total overhead for memory to be allocated with ggc_alloc */
+    unsigned long long total_overhead;
+
+    /* Total allocations and overhead for sizes less than 32, 64 and 128.
+       These sizes are interesting because they are typical cache line
+       sizes. */
+   
+    unsigned long long total_allocated_under32;
+    unsigned long long total_overhead_under32;
+  
+    unsigned long long total_allocated_under64;
+    unsigned long long total_overhead_under64;
+  
+    unsigned long long total_allocated_under128;
+    unsigned long long total_overhead_under128;
+  
+    /* The overhead for each of the allocation orders. */
+    unsigned long long total_overhead_per_order[NUM_ORDERS];
+  } stats;
+#endif
 } G;
 
 /* The size in bytes required to maintain a bitmap for the objects
@@ -1123,6 +1148,30 @@ ggc_alloc (size_t size)
      information is used in deciding when to collect.  */
   G.allocated += OBJECT_SIZE (order);
 
+#ifdef GATHER_STATISTICS
+  {
+    G.stats.total_overhead += OBJECT_SIZE (order) - size;
+    G.stats.total_overhead_per_order[order] += OBJECT_SIZE (order) - size;
+    G.stats.total_allocated += OBJECT_SIZE(order);
+
+    if (size <= 32){
+      G.stats.total_overhead_under32 += OBJECT_SIZE (order) - size;
+      G.stats.total_allocated_under32 += OBJECT_SIZE(order);
+    }
+
+    if (size <= 64){
+      G.stats.total_overhead_under64 += OBJECT_SIZE (order) - size;
+      G.stats.total_allocated_under64 += OBJECT_SIZE(order);
+    }
+  
+    if (size <= 128){
+      G.stats.total_overhead_under128 += OBJECT_SIZE (order) - size;
+      G.stats.total_allocated_under128 += OBJECT_SIZE(order);
+    }
+
+  }
+#endif
+  
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file,
 	     "Allocating object, requested size=%lu, actual=%lu at %p on %p\n",
@@ -1761,7 +1810,7 @@ ggc_print_statistics (void)
 
   /* Collect some information about the various sizes of
      allocation.  */
-  fprintf (stderr, "\n%-5s %10s  %10s  %10s\n",
+  fprintf (stderr, "%-5s %10s  %10s  %10s\n",
 	   "Size", "Allocated", "Used", "Overhead");
   for (i = 0; i < NUM_ORDERS; ++i)
     {
@@ -1799,6 +1848,33 @@ ggc_print_statistics (void)
 	   SCALE (G.bytes_mapped), LABEL (G.bytes_mapped),
 	   SCALE (G.allocated), LABEL(G.allocated),
 	   SCALE (total_overhead), LABEL (total_overhead));
+
+#ifdef GATHER_STATISTICS  
+  {
+    fprintf (stderr, "Total Overhead:                        %10lld\n",
+             G.stats.total_overhead);
+    fprintf (stderr, "Total Allocated:                       %10lld\n",
+             G.stats.total_allocated);
+
+    fprintf (stderr, "Total Overhead  under  32B:            %10lld\n",
+             G.stats.total_overhead_under32);
+    fprintf (stderr, "Total Allocated under  32B:            %10lld\n",
+             G.stats.total_allocated_under32);
+    fprintf (stderr, "Total Overhead  under  64B:            %10lld\n",
+             G.stats.total_overhead_under64);
+    fprintf (stderr, "Total Allocated under  64B:            %10lld\n",
+             G.stats.total_allocated_under64);
+    fprintf (stderr, "Total Overhead  under 128B:            %10lld\n",
+             G.stats.total_overhead_under128);
+    fprintf (stderr, "Total Allocated under 128B:            %10lld\n",
+             G.stats.total_allocated_under128);
+   
+    for (i = 0; i < NUM_ORDERS; i++)
+      if (G.stats.total_overhead_per_order[i])
+        fprintf (stderr, "Total Overhead  page size %7d:     %10lld\n",
+                 OBJECT_SIZE (i), G.stats.total_overhead_per_order[i]);
+  }
+#endif
 }
 
 struct ggc_pch_data

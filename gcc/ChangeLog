@@ -1,3 +1,25 @@
+2003-07-14  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* ggc-page.c (extra_order_size_table): Insns have 9 slots. Regs
+	don't have 2.
+
+2003-07-14  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* ggc-page.c (struct globals): Add new fields to keep track of the
+	total allocated memory and overhead.
+	(ggc_print_statistics): Print them.
+	(ggc_alloc): Keep track of the total allocated memory and the
+	overhead.
+
+	* tree.c (dump_tree_statistics): Increase spacing.
+	(enum tree_node_kind): Move to ...
+	* tree.h (enum tree_node_kind): ... here.
+	(tree_node_counts, tree_node_sizes): Declare.
+
+2003-07-14  James A. Morrison  <ja2morri@student.math.uwaterloo.ca>
+
+	* doc/include/texinfo.tex: Upgrade to texinfo 4.6.
+
 2003-07-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR optimization/11440

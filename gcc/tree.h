@@ -3017,4 +3017,28 @@ extern void fancy_abort (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
+/* Enum and arrays used for tree allocation stats. 
+   Keep in sync with tree.c:tree_node_kind_names. */
+typedef enum
+{
+  d_kind,
+  t_kind,
+  b_kind,
+  s_kind,
+  r_kind,
+  e_kind,
+  c_kind,
+  id_kind,
+  perm_list_kind,
+  temp_list_kind,
+  vec_kind,
+  x_kind,
+  lang_decl,
+  lang_type,
+  all_kinds
+} tree_node_kind;
+
+extern int tree_node_counts[];
+extern int tree_node_sizes[];
+    
 #endif  /* GCC_TREE_H  */
