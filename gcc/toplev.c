@@ -3165,7 +3165,7 @@ rest_of_compilation (decl)
       estimate_probability (&loops);
 
       if (rtl_dump_file)
-	flow_loops_dump (&loops, rtl_dump_file, 0);
+	flow_loops_dump (&loops, rtl_dump_file, NULL, 0);
 
       flow_loops_free (&loops);
     }

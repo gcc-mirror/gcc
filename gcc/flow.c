@@ -7199,12 +7199,49 @@ flow_loop_nested_p (outer, loop)
   return sbitmap_a_subset_b_p (loop->nodes, outer->nodes);
 }
 
-/* Dump the loop information specified by LOOPS to the stream FILE.  */
 
+/* Dump the loop information specified by LOOP to the stream FILE
+   using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
 void
-flow_loops_dump (loops, file, verbose)
+flow_loop_dump (loop, file, loop_dump_aux, verbose)
+     const struct loop *loop;
+     FILE *file;
+     void (*loop_dump_aux)(const struct loop *, FILE *, int);
+     int verbose;
+{
+  if (! loop || ! loop->header)
+    return;
+
+  fprintf (file, ";;\n;; Loop %d (%d to %d):%s%s\n",
+	   loop->num, INSN_UID (loop->first->head),
+	   INSN_UID (loop->last->end),
+	   loop->shared ? " shared" : "",
+	   loop->invalid ? " invalid" : "");
+  fprintf (file, ";;  header %d, latch %d, pre-header %d, first %d, last %d\n",
+	   loop->header->index, loop->latch->index,
+	   loop->pre_header ? loop->pre_header->index : -1,
+	   loop->first->index, loop->last->index);
+  fprintf (file, ";;  depth %d, level %d, outer %ld\n",
+	   loop->depth, loop->level,
+	   (long) (loop->outer ? loop->outer->num : -1));
+
+  fprintf (file, ";;  %d", loop->num_nodes);
+  flow_nodes_print (" nodes", loop->nodes, file);
+  fprintf (file, ";;  %d", loop->num_exits);
+  flow_exits_print (" exits", loop->exits, loop->num_exits, file);
+
+  if (loop_dump_aux)
+    loop_dump_aux (loop, file, verbose);
+}
+
+
+/* Dump the loop information specified by LOOPS to the stream FILE,
+   using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
+void 
+flow_loops_dump (loops, file, loop_dump_aux, verbose)
      const struct loops *loops;
      FILE *file;
+     void (*loop_dump_aux)(const struct loop *, FILE *, int);
      int verbose;
 {
   int i;
@@ -7214,23 +7251,14 @@ flow_loops_dump (loops, file, verbose)
   if (! num_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found, %d levels\n",
+  fprintf (file, ";; %d loops found, %d levels\n", 
 	   num_loops, loops->levels);
 
   for (i = 0; i < num_loops; i++)
     {
       struct loop *loop = &loops->array[i];
 
-      fprintf (file, ";; loop %d (%d to %d):\n;;   header %d, latch %d, pre-header %d, depth %d, level %d, outer %ld\n",
-	       i, INSN_UID (loop->header->head), INSN_UID (loop->latch->end),
-	       loop->header->index, loop->latch->index,
-	       loop->pre_header ? loop->pre_header->index : -1,
-	       loop->depth, loop->level,
-	       (long) (loop->outer ? (loop->outer - loops->array) : -1));
-      fprintf (file, ";;   %d", loop->num_nodes);
-      flow_nodes_print (" nodes", loop->nodes, file);
-      fprintf (file, ";;   %d", loop->num_exits);
-      flow_exits_print (" exits", loop->exits, loop->num_exits, file);
+      flow_loop_dump (loop, file, loop_dump_aux, verbose);
 
       if (loop->shared)
 	{
@@ -7252,34 +7280,19 @@ flow_loops_dump (loops, file, verbose)
 		     must be disjoint.  */
 		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop,
 						   smaller ? oloop : loop);
-		  fprintf (file,
+		  fprintf (file, 
 			   ";; loop header %d shared by loops %d, %d %s\n",
 			   loop->header->index, i, j,
 			   disjoint ? "disjoint" : "nested");
 		}
 	    }
 	}
-
-      if (verbose)
-	{
-	  /* Print diagnostics to compare our concept of a loop with
-	     what the loop notes say.  */
-	  if (GET_CODE (PREV_INSN (loop->first->head)) != NOTE
-	      || NOTE_LINE_NUMBER (PREV_INSN (loop->first->head))
-	      != NOTE_INSN_LOOP_BEG)
-	    fprintf (file, ";; No NOTE_INSN_LOOP_BEG at %d\n",
-		     INSN_UID (PREV_INSN (loop->first->head)));
-	  if (GET_CODE (NEXT_INSN (loop->last->end)) != NOTE
-	      || NOTE_LINE_NUMBER (NEXT_INSN (loop->last->end))
-	      != NOTE_INSN_LOOP_END)
-	    fprintf (file, ";; No NOTE_INSN_LOOP_END at %d\n",
-		     INSN_UID (NEXT_INSN (loop->last->end)));
-	}
     }
 
   if (verbose)
     flow_loops_cfg_dump (loops, file);
 }
+
 
 /* Free all the memory allocated for LOOPS.  */
 
@@ -7315,6 +7328,7 @@ flow_loops_free (loops)
       sbitmap_free (loops->shared_headers);
     }
 }
+
 
 /* Find the exits from the loop using the bitmap of loop nodes NODES
    and store in EXITS array.  Return the number of exits from the
