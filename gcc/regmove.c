@@ -1,6 +1,6 @@
 /* Move registers around to reduce number of move instructions needed.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1581,7 +1581,9 @@ find_matches (insn, matchp)
 	  case '5': case '6': case '7': case '8': case '9':
 	    {
 	      char *end;
-	      unsigned long match = strtoul (p - 1, &end, 10);
+	      unsigned long match_ul = strtoul (p - 1, &end, 10);
+	      int match = match_ul;
+
 	      p = end;
 
 	      if (match < op_no && likely_spilled[match])

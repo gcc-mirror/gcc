@@ -1,6 +1,6 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1142,20 +1142,20 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
      int flags ATTRIBUTE_UNUSED;
      bool *no_add_attrs;
 {
-  unsigned int vecsize, nunits;
+  unsigned HOST_WIDE_INT vecsize, nunits;
   enum machine_mode mode, orig_mode, new_mode;
   tree type = *node, new_type;
 
   *no_add_attrs = true;
 
-  if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+  if (! host_integerp (TREE_VALUE (args), 1))
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       return NULL_TREE;
     }
 
   /* Get the vector size (in bytes).  */
-  vecsize = TREE_INT_CST_LOW (TREE_VALUE (args));
+  vecsize = tree_low_cst (TREE_VALUE (args), 1);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -1173,9 +1173,10 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
   /* Get the mode of the type being modified.  */
   orig_mode = TYPE_MODE (type);
 
-  if (TREE_CODE (type) == RECORD_TYPE ||
-      (GET_MODE_CLASS (orig_mode) != MODE_FLOAT
-       && GET_MODE_CLASS (orig_mode) != MODE_INT))
+  if (TREE_CODE (type) == RECORD_TYPE
+      || (GET_MODE_CLASS (orig_mode) != MODE_FLOAT
+	  && GET_MODE_CLASS (orig_mode) != MODE_INT)
+      || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
     {
       error ("invalid vector type for attribute `%s'",
 	     IDENTIFIER_POINTER (name));
@@ -1183,7 +1184,7 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
     }
 
   /* Calculate how many units fit in the vector.  */
-  nunits = vecsize / TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
+  nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
 
   /* Find a suitably sized vector.  */
   new_mode = VOIDmode;
@@ -1192,7 +1193,8 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
 					: MODE_VECTOR_FLOAT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (vecsize == GET_MODE_SIZE (mode)	&& nunits == GET_MODE_NUNITS (mode))
+    if (vecsize == GET_MODE_SIZE (mode)
+	&& nunits == (unsigned HOST_WIDE_INT) GET_MODE_NUNITS (mode))
       {
 	new_mode = mode;
 	break;
