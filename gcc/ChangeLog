@@ -1,5 +1,7 @@
 2000-12-08  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/arm.md (load_indirect_jump): Add pool ranges.
+
 	* extend.texi: Document ARM "interrupt" function attribute.
 	Mention that the ARM also support the "naked" function
 	attribute.

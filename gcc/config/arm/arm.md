@@ -1292,7 +1292,7 @@
 		 (sign_extend:SI
 		  (match_operand:HI 2 "s_register_operand" "r"))))]
   "TARGET_ARM && arm_is_xscale"
-  "smulbb%?\\t%0,%1,%2"
+  "smulbb%?\\t%0, %1, %2"
   [(set_attr "type" "mult")]
 )
 
@@ -1304,7 +1304,7 @@
 			  (sign_extend:SI
 			   (match_operand:HI 3 "s_register_operand" "r")))))]
   "TARGET_ARM && arm_is_xscale"
-  "smlabb%?\\t%0,%2,%3,%1"
+  "smlabb%?\\t%0, %2, %3, %1"
   [(set_attr "type" "mult")]
 )
 
@@ -6751,6 +6751,8 @@
   "TARGET_ARM"
   "ldr%?\\t%|pc, %0\\t%@ indirect memory jump"
   [(set_attr "type" "load")
+   (set_attr "pool_range" "4096")
+   (set_attr "neg_pool_range" "4084")
    (set_attr "predicable" "yes")]
 )
 
@@ -8994,7 +8996,7 @@
   [(set (match_operand:SI             0 "s_register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")] 128))]
   "TARGET_ARM"
-  "clz\\t%0,%1")
+  "clz\\t%0, %1")
 
 ;; XScale instructions.
 
