@@ -1451,9 +1451,7 @@ gfc_return_by_reference (gfc_symbol * sym)
   if (sym->ts.type == BT_CHARACTER)
     return 1;
 
-  if (sym->ts.type == BT_DERIVED)
-    gfc_todo_error ("Returning derived types");
-  /* Possibly return derived types by reference.  */
+  /* Possibly return complex numbers by reference for g77 compatibility.  */
   return 0;
 }
 
