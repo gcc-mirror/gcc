@@ -1,5 +1,17 @@
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
+	PR c++/12850
+	* cgraph.c (cgraph_remove_node): Clear out saved/insns/arguments and
+	initial pointers.
+	* cgraphunit.c (cgraph_finalize_function): Clear out DECL_SAVED_INSNS
+	for functions that will be only inlined.
+	(cgraph_mark_function_to_output): Likewise.
+	(cgraph_expand_function): Sanity check that DECL_DEFER_OUTPUT is clear;
+	do not clear function body.
+	* tree-optimize.c (clear_decl_rtl): Use decl_function_context.
+	(tree_rest_of_compilation): Reorganize the logic releasing function
+	body to use callgraph datastructure.
+
 	* reload.c (secondary_memlocs_elim_used): New static variable.
 	(get_secondary_mem): Update it.
 	(find_reloads): Use it.
