@@ -174,7 +174,7 @@ the input file name.
 
 @cindex sibling call optimization
 @item
-Sibiling call optimization.   This pass performs tail recursion
+Sibling call optimization.   This pass performs tail recursion
 elimination, and tail and sibling call optimizations.  The purpose of
 these optimizations is to reduce the overhead of function calls,
 whenever possible.

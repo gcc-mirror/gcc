@@ -1,5 +1,15 @@
 2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/cpp.texi: Fix typos.
+	* doc/extend.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
+2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/ia64/fde-glibc.c: Fix comment typos.
 	* config/ia64/hpux.h: Likewise.
 	* config/ia64/ia64.c: Likewise.
