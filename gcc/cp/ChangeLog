@@ -1,3 +1,9 @@
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/4884
+	* call.c (build_op_delete_call): Allow for the fact the placement
+	may be a COMPOUND_EXPR.
+	
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
