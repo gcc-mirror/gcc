@@ -4268,7 +4268,9 @@ trampoline_address (function)
   /* Find an existing trampoline and return it.  */
   for (link = trampoline_list; link; link = TREE_CHAIN (link))
     if (TREE_PURPOSE (link) == function)
-      return XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0);
+      return
+	round_trampoline_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0));
+
   for (fp = outer_function_chain; fp; fp = fp->next)
     for (link = fp->trampoline_list; link; link = TREE_CHAIN (link))
       if (TREE_PURPOSE (link) == function)
