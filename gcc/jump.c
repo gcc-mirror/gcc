@@ -3151,8 +3151,17 @@ can_reverse_comparison_p (comparison, insn)
       )
     {
       rtx prev = prev_nonnote_insn (insn);
-      rtx set = single_set (prev);
+      rtx set;
 
+      /* If the comparison itself was a loop invariant, it could have been
+	 hoisted out of the loop.  If we proceed to unroll such a loop, then
+	 we may not be able to find the comparison when copying the loop.
+
+	 Returning zero in that case is the safe thing to do.  */
+      if (prev == 0)
+	return 0;
+
+      set = single_set (prev);
       if (set == 0 || SET_DEST (set) != arg0)
 	return 0;
 
