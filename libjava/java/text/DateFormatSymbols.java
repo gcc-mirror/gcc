@@ -1,5 +1,5 @@
 /* ChoiceFormat.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -156,24 +156,24 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     * locale):
     * <p>
     * <ul>
-    * <li>0 - era (G)
-    * <li>1 - year (y)
-    * <li>2 - month (M)
-    * <li 3 - day of month (d)
-    * <li>4 - hour out of 12, from 1-12 (h)
-    * <li>5 - hour out of 24, from 0-23 (H)
-    * <li>6 - minute (m)
-    * <li>7 - second (s)
-    * <li>8 - millisecond (S)
-    * <li>9 - date of week (E)
-    * <li>10 - date of year (D)
-    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)
-    * <li>12 - week in year (w)
-    * <li>13 - week in month (W)
-    * <li>14 - am/pm (a)
-    * <li>15 - hour out of 24, from 1-24 (k)
-    * <li>16 - hour out of 12, from 0-11 (K)
-    * <li>17 - time zone (z)
+    * <li>0 - era (G)</li>
+    * <li>1 - year (y)</li>
+    * <li>2 - month (M)</li>
+    * <li>3 - day of month (d)</li>
+    * <li>4 - hour out of 12, from 1-12 (h)</li>
+    * <li>5 - hour out of 24, from 0-23 (H)</li>
+    * <li>6 - minute (m)</li>
+    * <li>7 - second (s)</li>
+    * <li>8 - millisecond (S)</li>
+    * <li>9 - date of week (E)</li>
+    * <li>10 - date of year (D)</li>
+    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)</li>
+    * <li>12 - week in year (w)</li>
+    * <li>13 - week in month (W)</li>
+    * <li>14 - am/pm (a)</li>
+    * <li>15 - hour out of 24, from 1-24 (k)</li>
+    * <li>16 - hour out of 12, from 0-11 (K)</li>
+    * <li>17 - time zone (z)</li>
     * </ul>
     *
     * @return The format patter characters
@@ -295,24 +295,24 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     * locale):
     * <p>
     * <ul>
-    * <li>0 - era (G)
-    * <li>1 - year (y)
-    * <li>2 - month (M)
-    * <li 3 - day of month (d)
-    * <li>4 - hour out of 12, from 1-12 (h)
-    * <li>5 - hour out of 24, from 0-23 (H)
-    * <li>6 - minute (m)
-    * <li>7 - second (s)
-    * <li>8 - millisecond (S)
-    * <li>9 - date of week (E)
-    * <li>10 - date of year (D)
-    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)
-    * <li>12 - week in year (w)
-    * <li>13 - week in month (W)
-    * <li>14 - am/pm (a)
-    * <li>15 - hour out of 24, from 1-24 (k)
-    * <li>16 - hour out of 12, from 0-11 (K)
-    * <li>17 - time zone (z)
+    * <li>0 - era (G)</li>
+    * <li>1 - year (y)</li>
+    * <li>2 - month (M)</li>
+    * <li>3 - day of month (d)</li>
+    * <li>4 - hour out of 12, from 1-12 (h)</li>
+    * <li>5 - hour out of 24, from 0-23 (H)</li>
+    * <li>6 - minute (m)</li>
+    * <li>7 - second (s)</li>
+    * <li>8 - millisecond (S)</li>
+    * <li>9 - date of week (E)</li>
+    * <li>10 - date of year (D)</li>
+    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)</li>
+    * <li>12 - week in year (w)</li>
+    * <li>13 - week in month (W)</li>
+    * <li>14 - am/pm (a)</li>
+    * <li>15 - hour out of 24, from 1-24 (k)</li>
+    * <li>16 - hour out of 12, from 0-11 (K)</li>
+    * <li>17 - time zone (z)</li>
     * </ul>
     *
     * @param localPatternChars The new format patter characters

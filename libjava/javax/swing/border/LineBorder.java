@@ -129,7 +129,7 @@ public class LineBorder
    * it has rounded corners.
    * 
    * <p><img src="doc-files/LineBorder-1.png" width="500" height="200"
-   * alt="[An illustration of two LineBorders] />
+   * alt="[An illustration of two LineBorders]" />
    *
    * <p>Note that the enlarged view in the right-hand picture shows
    * that the implementation draws one more pixel than specified,

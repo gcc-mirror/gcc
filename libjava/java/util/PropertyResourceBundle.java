@@ -61,8 +61,8 @@ import java.io.InputStream;
  * An example of a properties file for the german language is given
  * here. This extends the example given in ListResourceBundle.
  * Create a file MyResource_de.properties with the following contents
- * and put it in the CLASSPATH. (The char <code>\u00e4<char> is the
- * german &auml;)
+ * and put it in the CLASSPATH. (The char <code>\u00e4</code> is the
+ * german umlaut)
  *
  *
 <pre>
