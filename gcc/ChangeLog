@@ -1,3 +1,8 @@
+2002-01-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+	
+	PR preprocessor/3571
+	* tradcpp.c (handle_directive): Skip non-vertical space.
+
 2002-01-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
         * doc/install.texi (hppa*-hp-hpux11): Clarify that GCC 2.95.x cannot
