@@ -6169,8 +6169,8 @@ find_as_inner_class (enclosing, name, cl)
     {
       tree acc = NULL_TREE, decl = NULL_TREE, ptr;
 
-      for(qual = EXPR_WFL_QUALIFICATION (cl); qual && !decl; 
-	  qual = TREE_CHAIN (qual))
+      for (qual = EXPR_WFL_QUALIFICATION (cl); qual && !decl; 
+	   qual = TREE_CHAIN (qual))
 	{
 	  acc = merge_qualified_name (acc, 
 				      EXPR_WFL_NODE (TREE_PURPOSE (qual)));
@@ -8136,6 +8136,15 @@ do_resolve_class (enclosing, class_type, decl, cl)
       if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
         return new_class_decl;
 
+      /* Explore enclosing contexts. */
+      while (INNER_CLASS_DECL_P (enclosing))
+	{
+	  enclosing = DECL_CONTEXT (enclosing);
+	  if ((new_class_decl = find_as_inner_class (enclosing, 
+						     class_type, cl)))
+	    return new_class_decl;
+	}
+
       /* Now go to the upper classes, bail out if necessary. */
       enclosing = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
       if (!enclosing || enclosing == object_type_node)
@@ -8148,9 +8157,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
 	}
 
       if (TREE_CODE (enclosing) == IDENTIFIER_NODE)
-	{
-	  BUILD_PTR_FROM_NAME (name, enclosing);
-	}
+	BUILD_PTR_FROM_NAME (name, enclosing);
       else
 	name = enclosing;
       enclosing = do_resolve_class (NULL, name, NULL, NULL);
@@ -9475,6 +9482,8 @@ static void
 check_inner_class_access (decl, enclosing_type, cl)
      tree decl, enclosing_type, cl;
 {
+  if (!decl)
+    return;
   /* We don't issue an error message when CL is null. CL can be null
      as a result of processing a JDEP crafted by
      source_start_java_method for the purpose of patching its parm
@@ -11438,10 +11447,13 @@ resolve_field_access (qual_wfl, field_decl, field_type)
       if (!type_found)
 	type_found = DECL_CONTEXT (decl);
       is_static = JDECL_P (decl) && FIELD_STATIC (decl);
-      if (FIELD_FINAL (decl) 
+      if (FIELD_FINAL (decl) && FIELD_STATIC (decl)
 	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_INITIAL (decl))
 	{
+	  /* When called on a FIELD_DECL of the right (primitive)
+	     type, java_complete_tree will try to substitue the decl
+	     for it's initial value. */
 	  field_ref = java_complete_tree (decl);
 	  static_final_found = 1;
 	}
@@ -12812,7 +12824,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
     
   search_not_done++;
   hash_lookup (searched_classes, 
-              (const hash_table_key) class, TRUE, NULL);
+	       (const hash_table_key) class, TRUE, NULL);
 
   if (!CLASS_LOADED_P (class) && !CLASS_FROM_SOURCE_P (class))
     {
@@ -12966,19 +12978,27 @@ find_most_specific_methods_list (list)
 
       for (method = list; method; method = TREE_CHAIN (method))
 	{
+	  tree method_v, current_v;
 	  /* Don't test a method against itself */
 	  if (method == current)
 	    continue;
 
-	  /* Compare arguments and location where method where declared */
-	  if (argument_types_convertible (TREE_VALUE (method), 
-					  TREE_VALUE (current))
-	      && valid_method_invocation_conversion_p 
-	           (DECL_CONTEXT (TREE_VALUE (method)), 
-		    DECL_CONTEXT (TREE_VALUE (current))))
+	  method_v = TREE_VALUE (method);
+	  current_v = TREE_VALUE (current);
+
+	  /* Compare arguments and location where methods where declared */
+	  if (argument_types_convertible (method_v, current_v))
 	    {
-	      int v = ++DECL_SPECIFIC_COUNT (TREE_VALUE (current));
-	      max = (v > max ? v : max);
+	      if (valid_method_invocation_conversion_p 
+		  (DECL_CONTEXT (method_v), DECL_CONTEXT (current_v))
+		  || (INNER_CLASS_TYPE_P (DECL_CONTEXT (current_v))
+		      && enclosing_context_p (DECL_CONTEXT (method_v),
+					      DECL_CONTEXT (current_v))))
+		{
+		  int v = (DECL_SPECIFIC_COUNT (current_v) += 
+		    (INNER_CLASS_TYPE_P (DECL_CONTEXT (current_v)) ? 2 : 1));
+		  max = (v > max ? v : max);
+		}
 	    }
 	}
     }
@@ -13315,8 +13335,8 @@ java_complete_tree (node)
      tree node;
 {
   node = java_complete_lhs (node);
-  if (TREE_CODE (node) == VAR_DECL && FIELD_STATIC (node)
-      && FIELD_FINAL (node) && DECL_INITIAL (node) != NULL_TREE
+  if (JDECL_P (node) && FIELD_STATIC (node) && FIELD_FINAL (node) 
+      && DECL_INITIAL (node) != NULL_TREE
       && !flag_emit_xref)
     {
       tree value = DECL_INITIAL (node);
@@ -13782,6 +13802,7 @@ java_complete_lhs (node)
     case NEW_CLASS_EXPR:
     case CALL_EXPR:
       /* Complete function's argument(s) first */
+
       if (complete_function_arguments (node))
 	return error_mark_node;
       else
@@ -14766,7 +14787,6 @@ valid_ref_assignconv_cast_p (source, dest, cast)
       if (TYPE_CLASS_P (dest))
 	return  (source == dest 
 		 || inherits_from_p (source, dest)
-		 || enclosing_context_p (source, dest)
 		 || (cast && inherits_from_p (dest, source)));
       if (TYPE_INTERFACE_P (dest))
 	{

@@ -1,3 +1,26 @@
+2000-07-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (BUILD_PTR_FROM_NAME): Surround with a do/while
+	construct.
+	* parse.y (find_as_inner_class): Fixed typo.
+	(do_resolve_class): Explore enclosing contexts when searching for
+	innerclasses. Removed curly brackets around BUILD_PTR_FROM_NAME.
+	(check_inner_class_access): Check `decl' which can be null in case
+	of previous errors.
+
+2000-07-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (java_debug_context): Declared `extern.'
+	(safe_layout_class): Likewise.
+	* parse.y (resolve_field_access): Field must be `static' in order
+	to be replaced by its initial value. Added comments.
+	(find_applicable_accessible_methods_list): Fixed typo.
+	(find_most_specific_methods_list): Methods found in innerclasses
+	take over methods founds in the enclosing contexts.
+	(java_complete_tree): Loosen restrictions on the type of DECLs
+	that can be replaced by their initialization values.
+	(valid_ref_assignconv_cast_p): Removed call to `enclosing_context_p.'
+
 2000-07-05  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (PARSE_DIR): New macro.

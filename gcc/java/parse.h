@@ -156,10 +156,10 @@ extern tree stabilize_reference PARAMS ((tree));
 
 /* Quickly build a temporary pointer on hypothetical type NAME. */
 #define BUILD_PTR_FROM_NAME(ptr, name)		\
-  {						\
+  do {						\
     ptr = build (POINTER_TYPE, NULL_TREE);	\
     TYPE_NAME (ptr) = name;			\
-  }
+  } while (0)
 
 #define INCOMPLETE_TYPE_P(NODE)				\
   ((TREE_CODE (NODE) == POINTER_TYPE)			\
