@@ -42,9 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 
-#undef MAX			/* sys/param.h may also define these */
-#undef MIN
-
 #include "tree.h"
 #include "expr.h"
 #include "flags.h"
