@@ -1723,6 +1723,24 @@ chain_member_value (elem, chain)
   return 0;
 }
 
+/* Return nonzero if ELEM is equal to TREE_PURPOSE (TREE_VALUE (CHAIN)) 
+   for any piece of chain CHAIN. */
+
+int
+chain_member_purpose (elem, chain)
+     tree elem, chain;
+{
+
+  while (chain)
+    {
+      if (elem == TREE_PURPOSE (TREE_VALUE (chain)))
+	return 1;
+      chain = TREE_CHAIN (chain);
+    }
+
+  return 0;
+}
+
 /* Return the length of a chain of nodes chained through TREE_CHAIN.
    We expect a null pointer to mark the end of the chain.
    This is the Lisp primitive `length'.  */
