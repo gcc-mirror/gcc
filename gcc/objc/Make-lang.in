@@ -80,7 +80,7 @@ objc-act.o : $(srcdir)/objc/objc-act.c \
    $(CONFIG_H) $(TREE_H) $(RTL_H) $(SYSTEM_H) $(EXPR_H) \
    $(srcdir)/c-tree.h $(srcdir)/c-common.h $(srcdir)/c-lex.h \
    $(srcdir)/toplev.h $(srcdir)/flags.h $(srcdir)/objc/objc-act.h \
-   $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h
+   $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h $(srcdir)/debug.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-act.c
 

@@ -1,3 +1,9 @@
+2001-07-23  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* objc/Make-lang.in (objc-act.o): Depend on debug.h.
+	* objc/objc-act.c: Include debug.h.
+	(synth_module_prologue): Save and restore debug hooks too.
+
 2001-07-23  lars brinkhoff  <lars@nocrew.org>
 
 	* tm.texi (TARGET_FLOAT_FORMAT): Document IBM_FLOAT_FORMAT

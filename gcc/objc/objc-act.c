@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "cpplib.h"
+#include "debug.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -1377,12 +1378,15 @@ synth_module_prologue ()
 	  /* Suppress outputting debug symbols, because
 	     dbxout_init hasn'r been called yet.  */
 	  enum debug_info_type save_write_symbols = write_symbols;
+	  struct gcc_debug_hooks *save_hooks = debug_hooks;
 	  write_symbols = NO_DEBUG;
+	  debug_hooks = &do_nothing_debug_hooks;
 
 	  build_selector_template ();
 	  temp_type = build_array_type (objc_selector_template, NULL_TREE);
 
 	  write_symbols = save_write_symbols;
+	  debug_hooks = save_hooks;
 	}
       else
 	temp_type = build_array_type (selector_type, NULL_TREE);
