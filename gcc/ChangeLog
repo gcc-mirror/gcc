@@ -2,10 +2,10 @@ Sat Sep  5 03:23:05 1998  Jeffrey A Law  (law@cygnus.com)
 
         * Makefile.in (pexecute.o): Use pexecute.c from libiberty.  Provide
 	explicit rules for building.  Similarly for alloca, vfprintf,
-	choose-temp and mkstemp, getopt, getopt1.
+	choose-temp and mkstemp, getopt, getopt1, and obstack.
 	(INCLUDES): Add $(srcdir)/../include.
         * pexecute.c, alloca.c, vfprintf.c, choose-temp.c, mkstemp.c: Delete.
-	* getopt.h, getopt.c getopt1.c: Likewise.
+	* getopt.h, getopt.c getopt1.c, obstack.c, obstack.h: Likewise.
 
 Fri Sep  4 11:57:50 1998  Tom Tromey  <tromey@cygnus.com>
 
