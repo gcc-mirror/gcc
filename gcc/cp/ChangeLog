@@ -1,3 +1,15 @@
+2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert diagnostics to use quoting flag q 1/n
+	* error.c (locate_error): Ignore quoting flag q.
+	* call.c (build_user_type_conversion_1, build_operator_new_call,
+	build_object_call, op_error, build_conditional_expr,
+	build_new_op, build_op_delete_call, enforce_access,
+	convert_like_real, convert_arg_to_ellipsis, build_x_va_arg,
+	convert_default_arg, build_over_call, build_new_method_call,
+	joust, perform_implicit_conversion, initialize_reference): Use the
+	quoting flag q.
+
 2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17797

@@ -2332,9 +2332,14 @@ locate_error (const char *msgid, va_list ap)
       plus = 0;
       if (*f == '%')
 	{
-	  f++;
+          if (*++f == 'q')
+            ++f;                /* ignore quoting flag.  */
+
 	  if (*f == '+')
-	    f++, plus = 1;
+            {
+              ++f;
+              plus = 1;
+            }
 	  if (*f == '#')
 	    f++;
 
