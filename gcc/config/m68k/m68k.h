@@ -671,11 +671,6 @@ enum reg_class {
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
 
-/* Nonzero if we need to generate stack-probe insns.
-   On most systems they are not needed.
-   When they are needed, define this as the stack offset to probe at.  */
-#define NEED_PROBE 0
-
 /* Define this if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
