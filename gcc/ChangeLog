@@ -1,3 +1,10 @@
+2001-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bitmap.c (bitmap_union_of_diff): Don't use BITMAP_ALLOCA.
+
+	* bitmap.h (BITMAP_ALLOCA): Don't pass alloca as an argument to a
+	function.
+
 2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/include: New directory.

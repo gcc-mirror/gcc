@@ -119,10 +119,17 @@ extern int bitmap_last_set_bit PARAMS((bitmap));
 #define BITMAP_OBSTACK_ALLOC(OBSTACK)				\
   bitmap_initialize ((bitmap) obstack_alloc (OBSTACK, sizeof (bitmap_head)))
 
-/* Allocate a bitmap with alloca.  */
-#define BITMAP_ALLOCA()						\
-  bitmap_initialize ((bitmap) alloca (sizeof (bitmap_head)))
-
+/* Allocate a bitmap with alloca.  Note alloca cannot be passed as an
+   argument to a function, so we set a temporary variable to the value
+   returned by alloca and pass that variable to bitmap_initialize().
+   PTR is then set to the value returned from bitmap_initialize() to
+   avoid having it appear more than once in case it has side effects.  */
+#define BITMAP_ALLOCA(PTR) \
+do { \
+  bitmap temp_bitmap_ = (bitmap) alloca (sizeof (bitmap_head)); \
+  (PTR) = bitmap_initialize (temp_bitmap_); \
+} while (0)
+  
 /* Allocate a bitmap with xmalloc.  */
 #define BITMAP_XMALLOC()                                        \
   bitmap_initialize ((bitmap) xmalloc (sizeof (bitmap_head)))
