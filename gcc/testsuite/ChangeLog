@@ -1,3 +1,8 @@
+2003-05-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8772
+	* g++.dg/template/ttp5.C: New test.
+
 2003-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/g++-dg.exp (g++-dg-test): Add "repo" option.

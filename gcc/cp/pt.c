@@ -3579,6 +3579,8 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
 		error ("  expected a constant of type `%T', got `%T'",
 			  TREE_TYPE (parm),
 			  (is_tmpl_type ? DECL_NAME (arg) : arg));
+	      else if (requires_tmpl_type)
+		error ("  expected a class template, got `%E'", arg);
 	      else
 		error ("  expected a type, got `%E'", arg);
 	    }
