@@ -1,3 +1,7 @@
+2004-05-17  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* check-init.c: Correct minor typos.
+
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* Make-lang.in, expr.c, java-gimplify.c: Rename
