@@ -2,7 +2,7 @@
 # Run 'configure' to generate Makefile from Makefile.in
 
 # Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-# 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+# 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -704,7 +704,6 @@ FLAGS_H = flags.h options.h
 EXPR_H = expr.h insn-config.h function.h $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H) $(OBSTACK_H) $(BASIC_BLOCK_H)
-RA_H = ra.h bitmap.h sbitmap.h hard-reg-set.h insn-modes.h
 RESOURCE_H = resource.h hard-reg-set.h
 SCHED_INT_H = sched-int.h $(INSN_ATTR_H) $(BASIC_BLOCK_H) $(RTL_H)
 INTEGRATE_H = integrate.h varray.h
@@ -920,8 +919,7 @@ OBJS-common = \
  loop.o modulo-sched.o optabs.o options.o opts.o			   \
  params.o postreload.o postreload-gcse.o predict.o			   \
  insn-preds.o pointer-set.o postreload.o				   \
- print-rtl.o print-tree.o value-prof.o var-tracking.o			   \
- profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
+ print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
@@ -2067,20 +2065,6 @@ global.o : global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS
 varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h $(GGC_H) errors.h \
    $(HASHTAB_H)
 vec.o : vec.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) coretypes.h vec.h $(GGC_H) errors.h
-ra.o : ra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h \
-   $(RECOG_H) $(INTEGRATE_H) function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(DF_H) $(EXPR_H) output.h toplev.h $(FLAGS_H) reload.h $(RA_H)
-ra-build.o : ra-build.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TM_P_H) \
-   insn-config.h $(RECOG_H) function.h $(REGS_H) hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(DF_H) output.h $(GGC_H) $(RA_H) gt-ra-build.h reload.h
-ra-colorize.o : ra-colorize.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-    $(TM_P_H) function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) output.h $(RA_H)
-ra-debug.o : ra-debug.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   insn-config.h $(RECOG_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) output.h \
-   $(RA_H) $(TM_P_H) $(REGS_H)
-ra-rewrite.o : ra-rewrite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   $(TM_P_H) function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) $(EXPR_H) \
-   output.h except.h $(RA_H) reload.h insn-config.h
 reload.o : reload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS_H) output.h \
    $(EXPR_H) $(OPTABS_H) reload.h $(RECOG_H) hard-reg-set.h insn-config.h \
    $(REGS_H) function.h real.h toplev.h $(TM_P_H) $(PARAMS_H)
@@ -2432,7 +2416,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/emit-rtl.c $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/function.c \
   $(srcdir)/gcse.c $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
-  $(srcdir)/profile.c $(srcdir)/ra-build.c $(srcdir)/regclass.c \
+  $(srcdir)/profile.c $(srcdir)/regclass.c \
   $(srcdir)/reg-stack.c $(srcdir)/cfglayout.c \
   $(srcdir)/sdbout.c $(srcdir)/stor-layout.c \
   $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
@@ -2458,7 +2442,7 @@ gt-function.h gt-integrate.h gt-tree.h gt-varasm.h \
 gt-emit-rtl.h gt-explow.h gt-stor-layout.h gt-regclass.h \
 gt-lists.h gt-alias.h gt-cselib.h gt-gcse.h \
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dojump.h \
-gt-dwarf2out.h gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h \
+gt-dwarf2out.h gt-reg-stack.h gt-dwarf2asm.h \
 gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
 gt-c-pragma.h gtype-c.h gt-cfglayout.h \
 gt-tree-mudflap.h gt-tree-complex.h \

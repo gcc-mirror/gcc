@@ -1,5 +1,5 @@
 /* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -134,7 +134,6 @@ extern int flag_unroll_all_loops;
 extern int flag_unswitch_loops;
 extern int flag_cprop_registers;
 extern int time_report;
-extern int flag_new_regalloc;
 extern int flag_tree_based_profiling;
 
 /* Things to do with target switches.  */

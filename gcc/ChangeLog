@@ -1,4 +1,15 @@
-2005-01-15  Paolo Bonzini <bonzini@gnu.org>
+2005-01-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* common.opt (-fnew-ra): Remove.
+	* ra*.*: Remove.
+	* toplev.h (flag_new_regalloc): Remove.
+	* Makefile.in (ra*.*): Don't mention.
+	* passes.c (rest_of_handle_new_regalloc): Remove.
+	(rest_of_handle_combine, rest_of_compilation): Always consider
+	flag_new_regalloc as false.
+	* doc/invoke.texi: Don't document -fnew-ra.
+
+2005-01-17  Paolo Bonzini <bonzini@gnu.org>
 
 	* bb-reorder.c (fix_edges_for_rarely_executed_code): Remove
 	last parameter to reg_scan.
