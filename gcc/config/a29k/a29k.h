@@ -724,7 +724,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
    as seen by the caller.
    On 29k, gr96-gr111 are used.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) < R_GR (112))
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == R_GR (96))
 
 /* 1 if N is a possible register number for function argument passing.
    On 29k, these are lr2-lr17.  */
