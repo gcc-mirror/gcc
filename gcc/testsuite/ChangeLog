@@ -1,3 +1,8 @@
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8849
+	* g++.dg/template/ptrmem4.C: New test.
+
 2003-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parser/constant1.C: New test.
