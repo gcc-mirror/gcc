@@ -33,8 +33,7 @@
 //
 
 /** @file iomanip
- *  This is a Standard C++ Library header.  You should @c #include this header
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef _GLIBCXX_IOMANIP

@@ -56,6 +56,7 @@ namespace std
   template<typename _Tp>
     class allocator;
 
+  /// allocator<void> specialization.
   template<>
     class allocator<void>
     {
@@ -71,7 +72,12 @@ namespace std
         { typedef allocator<_Tp1> other; };
     };
 
-  /// @brief  The "standard" allocator, as per [20.4].
+  /**
+   * @brief  The "standard" allocator, as per [20.4].
+   *
+   *  Further details:
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/20_util/allocator.html
+   */
   template<typename _Tp>
     class allocator: public ___glibcxx_base_allocator<_Tp>
     {

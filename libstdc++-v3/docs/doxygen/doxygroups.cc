@@ -19,6 +19,9 @@
 /** @namespace std
  *  @brief Everything defined by the ISO C++ Standard is within namespace std.
 */
+/** @namespace std::tr1
+ *  @brief Everything defined by the TR1 is within namespace std::tr1.
+*/
 /** @namespace __gnu_cxx
  *  @brief This namespace serves two purposes.
  *

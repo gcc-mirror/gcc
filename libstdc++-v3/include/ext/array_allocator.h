@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/array_allocator.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #ifndef _ARRAY_ALLOCATOR_H
 #define _ARRAY_ALLOCATOR_H 1
 

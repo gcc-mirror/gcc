@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/new_allocator.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #ifndef _NEW_ALLOCATOR_H
 #define _NEW_ALLOCATOR_H 1
 

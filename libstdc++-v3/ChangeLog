@@ -1,3 +1,18 @@
+2004-11-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/doxygroups.cc: Add std::tr1 namespace.
+	* docs/doxygen/run_doxygen: Renames for std::tr1.
+	* docs/doxygen/user.cfg.in: Add cxxabi.h.
+	* include/bits/*.tcc: Add file markup.
+	* include/bits/allocator.h: Add link to allocator.html.
+	* include/bits/atomicity.h: Add file markup.
+	* include/bits/concurrence.h: Same.
+	* include/bits/functexcept.h: Same.
+	* include/ext*: Adjust file markup, remove GCC3 bits.
+	* include/std/*: Adjust file markup, remove bits about renamed files.
+	* libsupc++/cxxabi.h: Add file markup.
+	* testsuite/20_util/memory/auto_ptr/assign_neg.cc: Adjust line numbers.
+
 2004-11-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (isspace, isprint, isupper,
