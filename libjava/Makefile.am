@@ -133,6 +133,7 @@ libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLIBS) $(LIBLTDL) \
+	$(GCLIBS) $(ZLIBS) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
