@@ -4,43 +4,43 @@
 #define _VARARGS_H
 
 #ifdef __sparc__
-#include <va-sparc.h>
+#include "va-sparc.h"
 #else
 #ifdef __spur__
-#include <va-spur.h>
+#include "va-spur.h"
 #else
 #ifdef __mips__
-#include <va-mips.h>
+#include "va-mips.h"
 #else
 #ifdef __i860__
-#include <va-i860.h>
+#include "va-i860.h"
 #else
 #ifdef __pyr__
-#include <va-pyr.h>
+#include "va-pyr.h"
 #else
 #ifdef __clipper__
-#include <va-clipper.h>
+#include "va-clipper.h"
 #else
 #ifdef __m88k__
-#include <va-m88k.h>
+#include "va-m88k.h"
 #else
 #if defined(__hppa__) || defined(hp800)
-#include <va-pa.h>
+#include "va-pa.h"
 #else
 #ifdef __i960__
-#include <va-i960.h>
+#include "va-i960.h"
 #else
 #ifdef __alpha__
-#include <va-alpha.h>
+#include "va-alpha.h"
 #else
 #if defined (__H8300__) || defined (__H8300H__) || defined (__H8300S__)
-#include <va-h8300.h>
+#include "va-h8300.h"
 #else
 #if defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
-#include <va-ppc.h>
+#include "va-ppc.h"
 #else
 #ifdef __sh__
-#include <va-sh.h>
+#include "va-sh.h"
 #else
 
 #ifdef __NeXT__
