@@ -10985,6 +10985,14 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
       next_note = XEXP (note, 1);
       switch (REG_NOTE_KIND (note))
 	{
+	case REG_BR_PROB:
+	case REG_EXEC_COUNT:
+	  /* Doesn't matter much where we put this, as long as it's somewhere.
+	     It is preferable to keep these notes on branches, which is most
+	     likely to be i3.  */
+	  place = i3;
+	  break;
+
 	case REG_UNUSED:
 	  /* Any clobbers for i3 may still exist, and so we must process
 	     REG_UNUSED notes from that insn.
