@@ -312,6 +312,10 @@ tree
 prepare_eh_table_type (tree type)
 {
   tree exp;
+  const char *name;
+  char *buf;
+  tree decl;
+  tree utf8_ref;
 
   /* The "type" (match_info) in a (Java) exception table is a pointer to:
    * a) NULL - meaning match any type in a try-finally.
@@ -323,10 +327,9 @@ prepare_eh_table_type (tree type)
     exp = NULL_TREE;
   else if (is_compiled_class (type) && !flag_indirect_dispatch)
     {
-      char buf[64];
-      tree decl;
-      sprintf (buf, "%s_ref", 
-	       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+      name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+      buf = alloca (strlen (name) + 5);
+      sprintf (buf, "%s_ref", name);
       decl = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
       TREE_STATIC (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
@@ -342,11 +345,10 @@ prepare_eh_table_type (tree type)
     }
   else
     {
-      tree decl;
-      tree utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
-      char buf[64];
-      sprintf (buf, "%s_ref", 
-	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0))));
+      utf8_ref = build_utf8_ref (DECL_NAME (TYPE_NAME (type)));
+      name = IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (utf8_ref, 0)));
+      buf = alloca (strlen (name) + 5);
+      sprintf (buf, "%s_ref", name);
       decl = build_decl (VAR_DECL, get_identifier (buf), utf8const_ptr_type);
       TREE_STATIC (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
