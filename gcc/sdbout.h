@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void sdbout_init			PARAMS ((FILE *, char*, tree));
+extern void sdbout_init			PARAMS ((FILE *, const char *, tree));
 
 extern void sdbout_begin_function	PARAMS ((int));
 extern void sdbout_end_function		PARAMS ((int));
@@ -33,7 +33,7 @@ extern void sdbout_types		PARAMS ((tree));
 
 extern void sdbout_end_epilogue		PARAMS ((void));
 
-extern void sdbout_start_new_source_file 	PARAMS ((char *));
+extern void sdbout_start_new_source_file 	PARAMS ((const char *));
 extern void sdbout_resume_previous_source_file	PARAMS ((void));
 extern void sdbout_mark_begin_function	PARAMS ((void));
 

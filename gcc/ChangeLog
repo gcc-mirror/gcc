@@ -1,3 +1,10 @@
+Tue Jun  6 08:17:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sdbout.c (struct sdb_file): NAME now const.
+	(sdbout_init): input_file_name now const.
+	(sdbout_start_new_source_file): FILENAME now const.
+	* sdbout.c (sdbout_init, sdbout_start_new_source_file): Reflect above.
+
 2000-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* c-typeck.c (build_conditional_expr): Handle complex data types.

@@ -327,7 +327,7 @@ output_file_directive (asm_out_file, (FILENAME))
 struct sdb_file
 {
   struct sdb_file *next;
-  char *name;
+  const char *name;
 };
 
 /* This is the top of the stack.  */
@@ -341,7 +341,7 @@ static struct sdb_file *current_file;
 void
 sdbout_init (asm_file, input_file_name, syms)
      FILE *asm_file ATTRIBUTE_UNUSED;
-     char *input_file_name ATTRIBUTE_UNUSED;
+     const char *input_file_name ATTRIBUTE_UNUSED;
      tree syms ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
@@ -1645,7 +1645,7 @@ sdbout_label (insn)
 
 void
 sdbout_start_new_source_file (filename)
-     char *filename ATTRIBUTE_UNUSED;
+     const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
   struct sdb_file *n = (struct sdb_file *) xmalloc (sizeof *n);
