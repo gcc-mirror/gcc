@@ -1,3 +1,8 @@
+Tue Sep 23 00:33:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000/xm-rs6000.h: Fix thinko in last change.
+	* rs6000/xm-sysv4.h: Likewise.
+
 Mon Sep 22 19:33:53 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.c (save_restore_insns): Only set RTX_FRAME_RELATED_P if store_p.
