@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for DEC Alpha.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 192, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu).
 
 This file is part of GNU CC.
@@ -59,7 +59,3 @@ extern char *malloc (), *realloc (), *sbrk (), *calloc ();
 #endif
 
 #include "string.h"
-
-#ifndef __GNUC__
-#define ONLY_INT_FIELDS
-#endif
