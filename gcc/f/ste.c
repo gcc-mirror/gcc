@@ -2950,16 +2950,19 @@ ffeste_R838 (ffelab label, ffebld target)
       TREE_CONSTANT (label_tree) = 1;
 
       target_tree = ffecom_expr_assign_w (target);
-      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (target_tree)))
-	  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (label_tree))))
-	error ("ASSIGN to variable that is too small");
+      if (TREE_CODE (target_tree) != ERROR_MARK)
+      {
+        if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (target_tree)))
+            < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (label_tree))))
+	  error ("ASSIGN to variable that is too small");
 
-      label_tree = convert (TREE_TYPE (target_tree), label_tree);
+        label_tree = convert (TREE_TYPE (target_tree), label_tree);
 
-      expr_tree = ffecom_modify (void_type_node,
+        expr_tree = ffecom_modify (void_type_node,
 				 target_tree,
 				 label_tree);
-      expand_expr_stmt (expr_tree);
+        expand_expr_stmt (expr_tree);
+      }
     }
 }
 
@@ -2978,11 +2981,15 @@ ffeste_R839 (ffebld target)
      seen here should never require use of temporaries.  */
 
   t = ffecom_expr_assign (target);
-  if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))
-      < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (null_pointer_node))))
-    error ("ASSIGNed GOTO target variable is too small");
 
-  expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
+  if (TREE_CODE (t) != ERROR_MARK)
+  {
+       if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))
+         < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (null_pointer_node))))
+       error ("ASSIGNed GOTO target variable is too small");
+
+       expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
+  }
 }
 
 /* Arithmetic IF statement.  */
