@@ -1,3 +1,27 @@
+2003-10-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (struct machine_function): Use save_return_addr_p
+	as a general flag that the return address register needs to be saved,
+	not necessarily because of __builtin_return_addr (0).
+	(s390_split_branches): Remove TEMP_REG and TEMP_USED arguments,
+	remove special handling of zSeries machines.
+	(s390_optimize_prolog): Remove TEMP_USED argument, treat the return 
+	register as a regular register on zSeries machines.
+	(s390_reorg): Adjust calls to s390_split_branches and 
+	s390_optimize_prolog.
+	(s390_frame_info): On zSeries machines, do not assume the return
+	register is always used.  Update regs_ever_live with current data
+	for the special registers.
+	(s390_emit_epilogue): Use save_return_addr_p to determine whether
+	the return register was saved.
+	* config/s390/s390.h (CONDITIONAL_REGISTER_USAGE): Do not mark
+	RETURN_REGNUM fixed on zSeries machines.
+	(REG_ALLOC_ORDER): Use RETURN_REGNUM last.
+	* config/s390/s390.md ("*doloop_si"): Handle branch overflow
+	via ahi-jgne pair on zSeries machines.
+	("*doloop_di"): Likewise.
+	("*doloop_di_long"): Remove.
+
 2003-10-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_override_options): Revert change of arm_constant_limit

@@ -313,7 +313,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    GPRs 6-15 are always call-saved.
    GPR 12 is fixed if used as GOT pointer.
    GPR 13 is always fixed (as literal pool pointer).
-   GPR 14 is always fixed (as return address).
+   GPR 14 is always fixed on S/390 machines (as return address).
    GPR 15 is always fixed (as stack pointer).
    The 'fake' hard registers are call-clobbered and fixed.
 
@@ -364,6 +364,11 @@ do								\
 	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
       }								\
+    if (TARGET_CPU_ZARCH)					\
+      {								\
+	fixed_regs[RETURN_REGNUM] = 0;				\
+	call_used_regs[RETURN_REGNUM] = 0;			\
+      }								\
     if (TARGET_64BIT)						\
       {								\
         for (i = 24; i < 32; i++)				\
@@ -378,7 +383,7 @@ do								\
 
 /* Preferred register allocation order.  */
 #define REG_ALLOC_ORDER                                         \
-{  1, 2, 3, 4, 5, 0, 14, 13, 12, 11, 10, 9, 8, 7, 6,            \
+{  1, 2, 3, 4, 5, 0, 13, 12, 11, 10, 9, 8, 7, 6, 14,            \
    16, 17, 18, 19, 20, 21, 22, 23,                              \
    24, 25, 26, 27, 28, 29, 30, 31,                              \
    15, 32, 33, 34 }
