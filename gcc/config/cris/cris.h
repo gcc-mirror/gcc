@@ -454,10 +454,9 @@ extern int target_flags;
     {						\
       if ((OPTIMIZE) >= 2 || (SIZE))		\
 	{					\
-	  flag_force_addr =			\
-	    flag_omit_frame_pointer = 1;	\
+	  flag_force_addr = 1;			\
+	  flag_omit_frame_pointer = 1;		\
 	}					\
-      flag_strict_aliasing = 0;			\
     }						\
   while (0)
 
