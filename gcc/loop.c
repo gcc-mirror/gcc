@@ -4143,11 +4143,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      old_reg = v->dest_reg;
 	      dest_reg = gen_reg_rtx (v->mode);
     
+	      /* Unlike reg_iv_type / reg_iv_info, the other three arrays
+		 have been allocated with some slop space, so we may not
+		 actually need to reallocate them.  If we do, the following
+		 if statement will be executed just once in this loop.  */
 	      if ((unsigned) max_reg_num () > n_times_set->num_elements)
 		{
-		  int nregs = max_reg_before_loop + n_extra_increment;
-    
-		  /* Grow all the arrays.  */
+		  /* Grow all the remaining arrays.  */
 		  VARRAY_GROW (set_in_loop, nregs);
 		  VARRAY_GROW (n_times_set, nregs);
 		  VARRAY_GROW (may_not_optimize, nregs);
@@ -4431,6 +4433,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       int benefit;
       int all_reduced;
       rtx final_value = 0;
+      unsigned nregs;
 
       /* Test whether it will be possible to eliminate this biv
 	 provided all givs are reduced.  This is possible if either
@@ -4582,7 +4585,22 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	}
 
       /* Now that we know which givs will be reduced, try to rearrange the
-         combinations to reduce register pressure.  */
+         combinations to reduce register pressure.
+         recombine_givs calls find_life_end, which needs reg_iv_type and
+	 reg_iv_info to be valid for all pseudos.  We do the necessary
+	 reallocation here since it allows to check if there are still
+	 more bivs to process.  */
+      nregs = max_reg_num ();
+      if (nregs > reg_iv_type->num_elements)
+	{
+	  /* If there are still more bivs to process, allocate some slack
+	     space so that we're not constantly reallocating these arrays.  */
+	  if (bl->next)
+	    nregs += nregs / 4;
+	  /* Reallocate reg_iv_type and reg_iv_info.  */
+	  VARRAY_GROW (reg_iv_type, nregs);
+	  VARRAY_GROW (reg_iv_info, nregs);
+	}
       recombine_givs (bl, loop_start, loop_end, unroll_p);
 
       /* Reduce each giv that we decided to reduce.  */
