@@ -293,12 +293,12 @@ of @var{srcdir} is unsupported.
 
 If you have previously built GCC in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
-that might be invalid.  One of the files this deletes is
-@file{Makefile}; if @samp{make distclean} complains that @file{Makefile}
-does not exist, it probably means that the directory is already suitably
-clean.  However, with the recommended method of building in a separate
-@var{objdir}, you should simply use a different @var{objdir} for each
-target.
+that might be invalid.  One of the files this deletes is @file{Makefile};
+if @samp{make distclean} complains that @file{Makefile} does not exist
+or issues a message like ``don't know how to make distclean'' it probably
+means that the directory is already suitably clean.  However, with the
+recommended method of building in a separate @var{objdir}, you should
+simply use a different @var{objdir} for each target.
 
 Second, when configuring a native system, either @command{cc} or
 @command{gcc} must be in your path or you must set @env{CC} in
@@ -544,8 +544,8 @@ argument, only @option{--enable-shared} does.
 @item @anchor{with-gnu-as}--with-gnu-as
 Specify that the compiler should assume that the
 assembler it finds is the GNU assembler.  However, this does not modify
-the rules to find an assembler and will result in confusion if found
-assembler is not actually the GNU assembler.  (Confusion will also
+the rules to find an assembler and will result in confusion if the
+assembler found is not actually the GNU assembler.  (Confusion may also
 result if the compiler finds the GNU assembler but has not been
 configured with @option{--with-gnu-as}.)  If you have more than one
 assembler installed on your system, you may want to use this option in
@@ -718,7 +718,7 @@ Microsoft Win32 API thread support.
 @item --with-cpu=@var{cpu}
 Specify which cpu variant the
 compiler should generate code for by default.  This is currently
-only supported on the some ports, specifically arm, powerpc, and
+only supported on some ports, specifically arm, powerpc, and
 SPARC@.  If configure does not recognize the model name (e.g.@: arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
