@@ -3537,16 +3537,16 @@ for machine in $build $host $target; do
 #		use_collect2=yes
 		;;
 	i[34567]86-*-freebsdelf*)
-		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
+		tm_file="i386/i386.h i386/att.h svr4.h i386/freebsd-elf.h i386/perform.h"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		tmake_file=i386/t-freebsd
+		tmake_file=t-freebsd
 		gas=yes
 		gnu_ld=yes
 		stabs=yes
 		;;
 	i[34567]86-*-freebsd*)
 		tm_file=i386/freebsd.h
-		tmake_file=i386/t-freebsd
+		tmake_file=t-freebsd
 		;;
 	i[34567]86-*-netbsd*)
 		tm_file=i386/netbsd.h
