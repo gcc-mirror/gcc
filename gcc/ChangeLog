@@ -1,3 +1,8 @@
+2005-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* explow.c (copy_all_reg, stabilize): Remove.
+	* expr.h: Remove the corresponding prototypes.
+
 2005-01-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6k_nonimmediate_operand): Rename

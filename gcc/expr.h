@@ -642,14 +642,6 @@ extern void set_mem_attributes_minus_bitpos (rtx, tree, int, HOST_WIDE_INT);
 /* Assemble the static constant template for function entry trampolines.  */
 extern rtx assemble_trampoline_template (void);
 
-/* Given rtx, return new rtx whose address won't be affected by
-   any side effects.  It has been copied to a new temporary reg.  */
-extern rtx stabilize (rtx);
-
-/* Given an rtx, copy all regs it refers to into new temps
-   and return a modified copy that refers to the new temps.  */
-extern rtx copy_all_regs (rtx);
-
 /* Copy given rtx to a new temp reg and return that.  */
 extern rtx copy_to_reg (rtx);
 
