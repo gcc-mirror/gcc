@@ -1,5 +1,8 @@
 2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/10224
+	* g++.dg/template/arg3.C: New test.
+
 	PR c++/10158
 	* g++.dg/template/friend18.C: New test.
 

@@ -1,5 +1,11 @@
 2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/10224
+	* pt.c (lookup_template_class): Only check instantiated args if
+	they do not contain template parameters.
+
+2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/10158
 	* parser.c (cp_parser_function_definition): Set
 	DECL_INITIALIZED_IN_CLASS for members.
