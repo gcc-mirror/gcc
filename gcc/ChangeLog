@@ -1,3 +1,9 @@
+Sat Dec 12 22:13:02 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* global.c (record_conflicts): Don't use an array of shorts to
+        store an array of ints.
+	(global_conflicts): Likewise.
+
 Sat Dec 12 16:49:24 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_block_move): mode_for_size expects
