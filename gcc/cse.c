@@ -8507,16 +8507,20 @@ cse_basic_block (from, to, next_branch, around_loop)
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
-      register enum rtx_code code;
+      register enum rtx_code code = GET_CODE (insn);
       int i;
       struct table_elt *p, *next;
 
-      /* If we have processed 1,000 insns, flush the hash table to avoid
-	 extreme quadratic behavior.
+      /* If we have processed 1,000 insns, flush the hash table to
+	 avoid extreme quadratic behavior.  We must not include NOTEs
+	 in the count since there may be more or them when generating
+	 debugging information.  If we clear the table at different
+	 times, code generated with -g -O might be different than code
+	 generated with -O but not -g.
 
 	 ??? This is a real kludge and needs to be done some other way.
 	 Perhaps for 2.9.  */
-      if (num_insns++ > 1000)
+      if (code != NOTE && num_insns++ > 1000)
 	{
 	  for (i = 0; i < NBUCKETS; i++)
 	    for (p = table[i]; p; p = next)
@@ -8555,7 +8559,6 @@ cse_basic_block (from, to, next_branch, around_loop)
 	    }
 	}
         
-      code = GET_CODE (insn);
       if (GET_MODE (insn) == QImode)
 	PUT_MODE (insn, VOIDmode);
 

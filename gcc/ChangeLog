@@ -1,3 +1,9 @@
+Wed Jun 17 20:20:48 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cse.c (cse_basic_block): Don't include NOTE insns in the count
+	that is used to decide whether or not it is time to erase the
+	equivalence table.
+
 Wed Jun 17 18:30:43 1998 Franz Sirl <Franz.Sirl-kernel@lauterbach.com> 
 
         * rs6000/linux.h (JUMP_TABLES_IN_TEXT_SECTION): Define to zero.
