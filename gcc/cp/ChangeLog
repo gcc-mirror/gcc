@@ -1,5 +1,9 @@
 2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* method.c (synthesize_method): Call push/pop_deferring_access_checks.
+
+2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/10230, c++/10481
 	* semantics.c (finish_non_static_data_member): Handle when the
 	non-static member is not from a base of the current class type.

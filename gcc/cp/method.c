@@ -741,6 +741,10 @@ synthesize_method (tree fndecl)
       return;
     }
 
+  /* We may be in the middle of deferred access check.  Disable
+     it now.  */
+  push_deferring_access_checks (dk_no_deferred);
+
   if (! context)
     push_to_top_level ();
   else if (nested)
@@ -790,6 +794,8 @@ synthesize_method (tree fndecl)
     pop_from_top_level ();
   else if (nested)
     pop_function_context_from (context);
+
+  pop_deferring_access_checks ();
 }
 
 /* Use EXTRACTOR to locate the relevant function called for each base &
