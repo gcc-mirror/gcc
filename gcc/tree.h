@@ -1156,6 +1156,7 @@ extern void layout_decl			PROTO((tree, unsigned));
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 extern tree non_lvalue			PROTO((tree));
+extern tree pedantic_non_lvalue		PROTO((tree));
 
 extern tree convert			PROTO((tree, tree));
 extern tree size_in_bytes		PROTO((tree));
