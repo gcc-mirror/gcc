@@ -745,13 +745,15 @@ whether you use the GNU assembler.  On any other system,
 @item @samp{m68000-att-sysv}
 @item @samp{@var{any}-lynx-lynxos}
 @item @samp{mips-@var{any}}
+@item @samp{sparc-sun-solaris2.@var{any}}
+@item @samp{sparc64-@var{any}-solaris2.@var{any}}
 @end itemize
 
-On the systems listed above (except for the HP-PA, for ISC on the
-386, and for @samp{mips-sgi-irix5.*}), if you use the GNU assembler,
+On the systems listed above (except for the HP-PA, the SPARC, for ISC on
+the 386, and for @samp{mips-sgi-irix5.*}), if you use the GNU assembler,
 you should also use the GNU linker (and specify @option{--with-gnu-ld}).
 
-@item --with-as=@var{pathname}
+@item @anchor{with-as}--with-as=@var{pathname}
 Specify that the
 compiler should use the assembler pointed to by @var{pathname}, rather
 than the one found by the standard rules to find an assembler, which
@@ -776,12 +778,11 @@ and want to choose one that is not found by the above rules.
 
 @item @anchor{with-gnu-ld}--with-gnu-ld
 Same as @uref{#with-gnu-as,,@option{--with-gnu-as}}
-but for linker.
-
+but for the linker.
 
 @item --with-ld=@var{pathname}
-Same as
-@option{--with-as}, but for the linker.
+Same as @uref{#with-as,,@option{--with-as}}
+but for the linker.
 
 @item --with-stabs
 Specify that stabs debugging
