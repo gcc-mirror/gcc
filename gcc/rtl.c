@@ -672,30 +672,28 @@ read_rtx (infile)
 
   tmp_code = UNKNOWN;
 
-  for (i=0; i < NUM_RTX_CODE; i++) /* @@ might speed this search up */
-    {
-      if (!(strcmp (tmp_char, GET_RTX_NAME (i))))
-	{
-	  tmp_code = (RTX_CODE) i;	/* get value for name */
-	  break;
-	}
-    }
+  for (i = 0; i < NUM_RTX_CODE; i++)
+    if (! strcmp (tmp_char, GET_RTX_NAME (i)))
+      {
+	tmp_code = (RTX_CODE) i;	/* get value for name */
+	break;
+      }
+
   if (tmp_code == UNKNOWN)
-    {
-      fprintf (stderr,
-	       "Unknown rtx read in rtl.read_rtx(). Code name was %s .",
-	       tmp_char);
-    }
+    fatal ("Unknown rtx read in rtl.read_rtx(). Code name was %s .", tmp_char);
+
   /* (NIL) stands for an expression that isn't there.  */
   if (tmp_code == NIL)
     {
       /* Discard the closeparen.  */
-      while ((c = getc (infile)) && c != ')');
+      while ((c = getc (infile)) && c != ')')
+	;
+
       return 0;
     }
 
-  return_rtx = rtx_alloc (tmp_code); /* if we end up with an insn expression
-				       then we free this space below.  */
+  /* If we end up with an insn expression then we free this space below.  */
+  return_rtx = rtx_alloc (tmp_code);
   format_ptr = GET_RTX_FORMAT (GET_CODE (return_rtx));
 
   /* If what follows is `: mode ', read it and
@@ -704,13 +702,16 @@ read_rtx (infile)
   i = read_skip_spaces (infile);
   if (i == ':')
     {
-      register int k;
       read_name (tmp_char, infile);
-      for (k = 0; k < NUM_MACHINE_MODES; k++)
-	if (!strcmp (GET_MODE_NAME (k), tmp_char))
+      for (j = 0; j < NUM_MACHINE_MODES; j++)
+	if (! strcmp (GET_MODE_NAME (j), tmp_char))
 	  break;
 
-      PUT_MODE (return_rtx, (enum machine_mode) k );
+      if (j == MAX_MACHINE_MODE)
+	fatal ("Unknown mode read in rtl.read_rtx(). Mode name was %s.",
+	       tmp_char);
+
+      PUT_MODE (return_rtx, (enum machine_mode) j);
     }
   else
     ungetc (i, infile);
