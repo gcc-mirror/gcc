@@ -2130,9 +2130,10 @@ add_insn (insn)
   last_insn = insn;
 }
 
-/* Add INSN into the doubly-linked list after insn AFTER.  This should be the
-   only function called to insert an insn once delay slots have been filled
-   since only it knows how to update a SEQUENCE.  */
+/* Add INSN into the doubly-linked list after insn AFTER.  This and
+   the next should be the only functions called to insert an insn once
+   delay slots have been filled since only they knows how to update a
+   SEQUENCE.  */
 
 void
 add_insn_after (insn, after)
@@ -2158,6 +2159,9 @@ add_insn_after (insn, after)
       for (; stack; stack = stack->next)
 	if (after == stack->last)
 	  stack->last = insn;
+
+      if (stack == 0)
+	abort ();
     }
 
   NEXT_INSN (after) = insn;
@@ -2166,6 +2170,48 @@ add_insn_after (insn, after)
       rtx sequence = PATTERN (after);
       NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
     }
+}
+
+/* Add INSN into the doubly-linked list before insn BEFORE.  This and
+   the previous should be the only functions called to insert an insn once
+   delay slots have been filled since only they knows how to update a
+   SEQUENCE.  */
+
+void
+add_insn_before (insn, before)
+     rtx insn, before;
+{
+  rtx prev = PREV_INSN (before);
+
+  PREV_INSN (insn) = prev;
+  NEXT_INSN (insn) = before;
+
+  if (prev)
+    {
+      NEXT_INSN (prev) = insn;
+      if (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SEQUENCE)
+	{
+	  rtx sequence = PATTERN (prev);
+	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = insn;
+	}
+    }
+  else if (first_insn == before)
+    first_insn = insn;
+  else
+    {
+      struct sequence_stack *stack = sequence_stack;
+      /* Scan all pending sequences too.  */
+      for (; stack; stack = stack->next)
+	if (before == stack->first)
+	  stack->first = insn;
+
+      if (stack == 0)
+	abort ();
+    }
+
+  PREV_INSN (before) = insn;
+  if (GET_CODE (before) == INSN && GET_CODE (PATTERN (before)) == SEQUENCE)
+    PREV_INSN (XVECEXP (PATTERN (before), 0, 0)) = insn;
 }
 
 /* Delete all insns made since FROM.
@@ -2279,7 +2325,7 @@ emit_insn_before (pattern, before)
       for (i = 0; i < XVECLEN (pattern, 0); i++)
 	{
 	  insn = XVECEXP (pattern, 0, i);
-	  add_insn_after (insn, PREV_INSN (before));
+	  add_insn_before (insn, before);
 	}
       if (XVECLEN (pattern, 0) < SEQUENCE_RESULT_SIZE)
 	sequence_result[XVECLEN (pattern, 0)] = pattern;
@@ -2287,7 +2333,7 @@ emit_insn_before (pattern, before)
   else
     {
       insn = make_insn_raw (pattern);
-      add_insn_after (insn, PREV_INSN (before));
+      add_insn_before (insn, before);
     }
 
   return insn;
@@ -2307,7 +2353,7 @@ emit_jump_insn_before (pattern, before)
   else
     {
       insn = make_jump_insn_raw (pattern);
-      add_insn_after (insn, PREV_INSN (before));
+      add_insn_before (insn, before);
     }
 
   return insn;
@@ -2327,7 +2373,7 @@ emit_call_insn_before (pattern, before)
   else
     {
       insn = make_call_insn_raw (pattern);
-      add_insn_after (insn, PREV_INSN (before));
+      add_insn_before (insn, before);
       PUT_CODE (insn, CALL_INSN);
     }
 
@@ -2345,7 +2391,7 @@ emit_barrier_before (before)
 
   INSN_UID (insn) = cur_insn_uid++;
 
-  add_insn_after (insn, PREV_INSN (before));
+  add_insn_before (insn, before);
   return insn;
 }
 
@@ -2361,7 +2407,7 @@ emit_note_before (subtype, before)
   NOTE_SOURCE_FILE (note) = 0;
   NOTE_LINE_NUMBER (note) = subtype;
 
-  add_insn_after (note, PREV_INSN (before));
+  add_insn_before (note, before);
   return note;
 }
 
@@ -2577,7 +2623,7 @@ emit_insns_before (insn, before)
   while (insn)
     {
       rtx next = NEXT_INSN (insn);
-      add_insn_after (insn, PREV_INSN (before));
+      add_insn_before (insn, before);
       last = insn;
       insn = next;
     }
