@@ -150,34 +150,6 @@
 #define __glibcpp_u64_digits 64
 #define __glibcpp_u64_digits10 19
 
-#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
-#  define __glibcpp_f32_is_iec559  true
-#endif
-#ifndef __glibcpp_f32_is_iec559
-#  define __glibcpp_f32_is_iec559 false
-#endif 
-#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
-#  define __glibcpp_f64_is_iec559 true
-#endif
-#ifndef __glibcpp_f64_is_iec559
-#  define __glibcpp_f64_is_iec559 false
-#endif 
-#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
-#  define __glibcpp_f80_is_iec559 true
-#endif
-#ifndef __glibcpp_f80_is_iec559
-#  define __glibcpp_f80_is_iec559 false
-#endif 
-#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
-#  define __glibcpp_f96_is_iec559 true
-#endif
-#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
-#  define __glibcpp_f128_is_iec559 true
-#endif
-#ifndef __glibcpp_f128_is_iec559
-#  define __glibcpp_f128_is_iec559 false
-#endif
-
 // bool-specific hooks:
 //     __glibcpp_bool_digits  __glibcpp_int_traps __glibcpp_long_traps
 
@@ -497,16 +469,6 @@
 // float
 //
 
-#if __FLOAT_BIT__ == 32
-#  define __glibcpp_float_is_iec559 __glibcpp_f32_is_iec559
-#elif __FLOAT_BIT__ == 64
-#  define __glibcpp_float_is_iec559 __glibcpp_f64_is_iec559
-#elif __FLOAT_BIT__ == 80
-#  define __glibcpp_float_is_iec559 __glibcpp_f80_is_iec559
-#else
-// You must define these macros in the configuration file.
-#endif
-
 // Default values.  Should be overriden in configuration files if necessary.
 
 #ifndef __glibcpp_float_has_denorm_loss
@@ -515,10 +477,6 @@
 
 #ifndef __glibcpp_float_is_bounded
 #  define __glibcpp_float_is_bounded true
-#endif
-
-#ifndef __glibcpp_float_is_iec559
-#  define __glibcpp_float_is_iec559 false
 #endif
 
 #ifndef __glibcpp_float_is_modulo
@@ -535,24 +493,10 @@
 
 // double
 
-#if __DOUBLE_BIT__ == 32
-#  define __glibcpp_double_is_iec559 __glibcpp_f32_is_iec559
-#elif __DOUBLE_BIT__ == 64
-#  define __glibcpp_double_is_iec559 __glibcpp_f64_is_iec559
-#elif __DOUBLE_BIT__ == 80
-#  define __glibcpp_double_is_iec559 __glibcpp_f80_is_iec559
-#else
-// You must define these macros in the configuration file.
-#endif
-
 // Default values.  Should be overriden in configuration files if necessary.
 
 #ifndef __glibcpp_double_has_denorm_loss
 #  define __glibcpp_double_has_denorm_loss false
-#endif
-
-#ifndef __glibcpp_double_is_iec559
-#  define __glibcpp_double_is_iec559 false
 #endif
 
 #ifndef __glibcpp_double_is_bounded
@@ -573,28 +517,10 @@
 
 // long double
 
-#if __LONG_DOUBLE_BIT__ == 32
-#  define __glibcpp_long_double_is_iec559 __glibcpp_f32_is_iec559
-#elif __LONG_DOUBLE_BIT__ == 64
-#  define __glibcpp_long_double_is_iec559 __glibcpp_f64_is_iec559
-#elif __LONG_DOUBLE_BIT__ == 80
-#  define __glibcpp_long_double_is_iec559 __glibcpp_f80_is_iec559
-#elif __LONG_DOUBLE_BIT__ == 96
-#  define __glibcpp_long_double_is_iec559 __glibcpp_f96_is_iec559
-#elif __LONG_DOUBLE_BIT__ == 128
-#  define __glibcpp_long_double_is_iec559 __glibcpp_f128_is_iec559
-#else
-// You must define these macros in the configuration file.
-#endif
-
 // Default values.  Should be overriden in configuration files if necessary.
 
 #ifndef __glibcpp_long_double_has_denorm_loss
 #  define __glibcpp_long_double_has_denorm_loss false
-#endif
-
-#ifndef __glibcpp_long_double_is_iec559
-#  define __glibcpp_long_double_is_iec559 false
 #endif
 
 #ifndef __glibcpp_long_double_is_bounded
@@ -1502,7 +1428,7 @@ namespace std
       static float denorm_min() throw()
       { return __FLT_DENORM_MIN__; }
 
-      static const bool is_iec559 = __glibcpp_float_is_iec559;
+      static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = __glibcpp_float_is_bounded;
       static const bool is_modulo = __glibcpp_float_is_modulo;
 
@@ -1512,7 +1438,6 @@ namespace std
     };
 
 #undef __glibcpp_float_has_denorm_loss
-#undef __glibcpp_float_is_iec559
 #undef __glibcpp_float_is_bounded
 #undef __glibcpp_float_is_modulo
 #undef __glibcpp_float_traps
@@ -1562,7 +1487,7 @@ namespace std
       static double denorm_min() throw()
       { return __DBL_DENORM_MIN__; }
 
-      static const bool is_iec559 = __glibcpp_double_is_iec559;
+      static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = __glibcpp_double_is_bounded;
       static const bool is_modulo = __glibcpp_double_is_modulo;
 
@@ -1572,7 +1497,6 @@ namespace std
     };
 
 #undef __glibcpp_double_has_denorm_loss
-#undef __glibcpp_double_is_iec559
 #undef __glibcpp_double_is_bounded
 #undef __glibcpp_double_is_modulo
 #undef __glibcpp_double_traps
@@ -1624,7 +1548,7 @@ namespace std
       static long double denorm_min() throw()
       { return __LDBL_DENORM_MIN__; }
 
-      static const bool is_iec559 = __glibcpp_long_double_is_iec559;
+      static const bool is_iec559 = has_infinity && has_quiet_NaN;
       static const bool is_bounded = __glibcpp_long_double_is_bounded;
       static const bool is_modulo = __glibcpp_long_double_is_modulo;
 
@@ -1634,7 +1558,6 @@ namespace std
     };
 
 #undef __glibcpp_long_double_has_denorm_loss
-#undef __glibcpp_long_double_is_iec559
 #undef __glibcpp_long_double_is_bounded
 #undef __glibcpp_long_double_is_modulo
 #undef __glibcpp_long_double_traps
