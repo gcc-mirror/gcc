@@ -1091,10 +1091,10 @@ extern char *a29k_function_name;
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
 
-/* Recognize any constant value that is a valid address.
+/* Recognize any constant value that is a valid address.  */
 
-   None are on the 29K.  */
-#define CONSTANT_ADDRESS_P(X)  0
+#define CONSTANT_ADDRESS_P(X)  \
+(GET_CODE (X) == CONST_INT && (unsigned) INTVAL (X) < 0x100)
 
 /* Include all constant integers and constant doubles */
 #define LEGITIMATE_CONSTANT_P(X)	1
