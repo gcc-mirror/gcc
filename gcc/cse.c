@@ -7004,17 +7004,24 @@ cse_insn (insn, libcall_insn)
 	   SRC is a hard register.  */
 	{
 	  int first = qty_first_reg[reg_qty[REGNO (src)]];
+	  rtx new_src
+	    = (first >= FIRST_PSEUDO_REGISTER
+	       ? regno_reg_rtx[first] : gen_rtx_REG (GET_MODE (src), first));
 
-	  src = SET_SRC (sets[i].rtl)
-	    = first >= FIRST_PSEUDO_REGISTER ? regno_reg_rtx[first]
-	      : gen_rtx_REG (GET_MODE (src), first);
-
-	  /* If we had a constant that is cheaper than what we are now
-	     setting SRC to, use that constant.  We ignored it when we
-	     thought we could make this into a no-op.  */
-	  if (src_const && COST (src_const) < COST (src)
-	      && validate_change (insn, &SET_SRC (sets[i].rtl), src_const, 0))
-	    src = src_const;
+	  /* We must use validate-change even for this, because this
+	     might be a special no-op instruction, suitable only to
+	     tag notes onto.  */
+	  if (validate_change (insn, &SET_SRC (sets[i].rtl), new_src, 0))
+	    {
+	      src = new_src;
+	      /* If we had a constant that is cheaper than what we are now
+		 setting SRC to, use that constant.  We ignored it when we
+		 thought we could make this into a no-op.  */
+	      if (src_const && COST (src_const) < COST (src)
+		  && validate_change (insn, &SET_SRC (sets[i].rtl), src_const,
+				      0))
+		src = src_const;
+	    }
 	}
 
       /* If we made a change, recompute SRC values.  */
