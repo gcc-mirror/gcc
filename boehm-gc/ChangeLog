@@ -1,3 +1,10 @@
+2004-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* acinclude.m4: De-precious CC and CXX so that the right flags
+	are passed down to multilibs.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2004-02-22  Zack Weinberg <zack@codesourcery.com>
 	    Nathanael Nerode <neroden@twcny.rr.com>
 	    Alexandre Oliva <aoliva@redhat.com>
