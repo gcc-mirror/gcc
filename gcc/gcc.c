@@ -318,6 +318,10 @@ or with constant text in a single argument.
         of a temporary file, just like %u.  This temporary file is not
         meant for communication between processes, but rather as a junk
         disposal mechanism.
+ %.SUFFIX
+        substitutes .SUFFIX for the suffixes of a matched switch's args when
+        it is subsequently output with %*. SUFFIX is terminated by the next
+        space or %.
  %d	marks the argument containing or following the %d as a
 	temporary file name, so that that file will be deleted if CC exits
 	successfully.  Unlike %g, this contributes no text to the argument.
@@ -586,8 +590,8 @@ static const char *cpp_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{std*} %{nostdinc*}\
  %{C} %{v} %{I*} %{P} %{$} %I\
- %{M} %{MM} %{MD:-M -MF %b.d} %{MMD:-MM -MF %b.d} %{MF} %{MG} %{MP} %{MQ} %{MT}\
- %{M|MD|MM|MMD:%{o*:-MQ %*}}\
+ %{MD:-M -MF %{!o: %b.d}%{o*:%.d%*}} %{MMD:-MM -MF %{!o: %b.d}%{o*:%.d%*}}\
+ %{M} %{MM} %{MF} %{MG} %{MP} %{MQ} %{MT} %{M|MD|MM|MMD:%{o*:-MQ %*}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -3853,6 +3857,10 @@ static int this_is_library_file;
 /* Nonzero means that the input of this command is coming from a pipe.  */
 static int input_from_pipe;
 
+/* Nonnull means substitute this for any suffix when outputting a switches
+   arguments. */
+static const char *suffix_subst;
+
 /* Process the spec SPEC and run the commands specified therein.
    Returns 0 if the spec is successfully processed; -1 if failed.  */
 
@@ -3868,6 +3876,7 @@ do_spec (spec)
   this_is_output_file = 0;
   this_is_library_file = 0;
   input_from_pipe = 0;
+  suffix_subst = NULL;
 
   value = do_spec_1 (spec, 0, NULL_PTR);
 
@@ -4622,6 +4631,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    obstack_1grow (&obstack, '%');
 	    break;
 
+         case '.':
+	   {
+	     unsigned len = 0;
+
+	     while (p[len] && p[len] != ' ' && p[len] != '%')
+	       len++;
+             suffix_subst = save_string (p - 1, len + 1);
+             p += len;
+           }
+	   break;
+          
 	  case '*':
 	    if (soft_matched_part)
 	      {
@@ -4972,6 +4992,7 @@ next_member:
 		    do_spec_1 (string, 0, &switches[i].part1[hard_match_len]);
 		    /* Pass any arguments this switch has.  */
 		    give_switch (i, 1, 1);
+		    suffix_subst = NULL;
 		  }
 
 	      /* We didn't match.  Try again.  */
@@ -5179,9 +5200,29 @@ give_switch (switchnum, omit_first_word, include_blanks)
       const char **p;
       for (p = switches[switchnum].args; *p; p++)
 	{
+	  const char *arg = *p;
+
 	  if (include_blanks)
 	    do_spec_1 (" ", 0, NULL_PTR);
-	  do_spec_1 (*p, 1, NULL_PTR);
+	  if (suffix_subst)
+	    {
+	      unsigned length = strlen (arg);
+
+	      while (length-- && !IS_DIR_SEPARATOR (arg[length]))
+		if (arg[length] == '.')
+		  {
+		    ((char *)arg)[length] = 0;
+		    break;
+		  }
+	      do_spec_1 (arg, 1, NULL_PTR);
+	      if (!arg[length])
+		{
+		  ((char *)arg)[length] = '.';
+		  do_spec_1 (suffix_subst, 1, NULL_PTR);
+		}
+	    }
+	  else
+	    do_spec_1 (arg, 1, NULL_PTR);
 	}
     }
 

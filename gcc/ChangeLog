@@ -1,3 +1,13 @@
+2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
+	
+        * gcc.c (cpp_options): Set MD file name from output
+        filename, if specified.
+        (suffix_subst): New static variable.
+        (do_spec): Clear it.
+        (do_spec_1, case '.'): Handle new `%.suffix' spec.
+        Clear it.
+        (give_switch): Handle suffix_subst.
+
 2001-01-10  Phil Edwards  <pme@sources.redhat.com>
 
 	* invoke.texi:  Fix another typo.
