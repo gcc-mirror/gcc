@@ -267,19 +267,6 @@ fnotice VPROTO ((FILE *file, const char *msgid, ...))
 }
 
 
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR value = (PTR) malloc (size);
-  if (value == 0)
-    {
-      fnotice (stderr, "error: virtual memory exhausted");
-      exit (FATAL_EXIT_CODE);
-    }
-  return value;
-}
-
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
 
@@ -508,10 +495,8 @@ create_program_flow_graph (bptr)
   /* Read the number of blocks.  */
   __read_long (&num_blocks, bbg_file, 4);
 
-  /* Create an array of size bb number of bb_info structs.  Bzero it.  */
-  bb_graph = (struct bb_info *) xmalloc (num_blocks
-					 * sizeof (struct bb_info));
-  bzero ((char *) bb_graph, sizeof (struct bb_info) * num_blocks);
+  /* Create an array of size bb number of bb_info structs.  */
+  bb_graph = (struct bb_info *) xcalloc (num_blocks, sizeof (struct bb_info));
 
   bptr->bb_graph = bb_graph;
   bptr->num_blocks = num_blocks;
@@ -802,8 +787,7 @@ scan_for_source_files ()
 	      /* No sourcefile structure for this file name exists, create
 		 a new one, and append it to the front of the sources list.  */
 	      s_ptr = (struct sourcefile *) xmalloc (sizeof(struct sourcefile));
-	      s_ptr->name = xmalloc (strlen ((char *) ptr) + 1);
-	      strcpy (s_ptr->name, (char *) ptr);
+	      s_ptr->name = xstrdup (ptr);
 	      s_ptr->maxlineno = 0;
 	      s_ptr->next = sources;
 	      sources = s_ptr;
@@ -1019,17 +1003,11 @@ output_data ()
       else
 	source_file_name = s_ptr->name;
 
-      line_counts = (long *) xmalloc (sizeof (long) * s_ptr->maxlineno);
-      bzero ((char *) line_counts, sizeof (long) * s_ptr->maxlineno);
-      line_exists = xmalloc (s_ptr->maxlineno);
-      bzero (line_exists, s_ptr->maxlineno);
+      line_counts = (long *) xcalloc (sizeof (long), s_ptr->maxlineno);
+      line_exists = xcalloc (1, s_ptr->maxlineno);
       if (output_branch_probs)
-	{
-	  branch_probs = (struct arcdata **) xmalloc (sizeof (struct arcdata *)
-						      * s_ptr->maxlineno);
-	  bzero ((char *) branch_probs, 
-		 sizeof (struct arcdata *) * s_ptr->maxlineno);
-	}
+	branch_probs = (struct arcdata **)
+	  xcalloc (sizeof (struct arcdata *), s_ptr->maxlineno);
       
       /* There will be a zero at the beginning of the bb info, before the
 	 first list of line numbers, so must initialize block_num to 0.  */

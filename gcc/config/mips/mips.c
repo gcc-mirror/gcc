@@ -7973,8 +7973,7 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
 
       /* Record this stub.  */
       l = (struct mips16_stub *) xmalloc (sizeof *l);
-      l->name = (char *) xmalloc (strlen (fnname) + 1);
-      strcpy (l->name, fnname);
+      l->name = xstrdup (fnname);
       l->fpret = fpret;
       l->next = mips16_stubs;
       mips16_stubs = l;

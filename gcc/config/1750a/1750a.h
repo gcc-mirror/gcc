@@ -1116,7 +1116,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	do {							\
 	  if (strcmp(PREFIX,"LC") == 0) {			\
 	     label_pending = 1;					\
-	     datalbl[++datalbl_ndx].name = (char *) malloc (9); \
+	     datalbl[++datalbl_ndx].name = (char *) xmalloc (9);\
 	     sprintf(datalbl[datalbl_ndx].name,"LC%d",NUM);	\
 	     datalbl[datalbl_ndx].size = 0;			\
 	     check_section(Konst);				\

@@ -2280,76 +2280,6 @@ botch (s)
 {
   abort ();
 }
-
-/* Same as `malloc' but report error if no memory available.  */
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR value;
-
-  if (size == 0)
-    size = 1;
-
-  value = (PTR) malloc (size);
-  if (value == 0)
-    fatal ("virtual memory exhausted");
-  return value;
-}
-
-/* Same as `calloc' but report error if no memory available.  */
-
-PTR
-xcalloc (size1, size2)
-  size_t size1, size2;
-{
-  register PTR value;
-
-  if (size1 == 0 || size2 == 0)
-    size1 = size2 = 1;
-
-  value = (PTR) calloc (size1, size2);
-  if (value == 0)
-    fatal ("virtual memory exhausted");
-  return value;
-}
-
-
-/* Same as `realloc' but report error if no memory available.  
-   Also handle null PTR even if the vendor realloc gets it wrong.  */
-
-PTR
-xrealloc (ptr, size)
-  PTR ptr;
-  size_t size;
-{
-  register PTR result;
-
-  if (size == 0)
-    size = 1;
-
-  result = (ptr ? (PTR) realloc (ptr, size) : (PTR) malloc (size));
-
-  if (!result)
-    fatal ("virtual memory exhausted");
-
-  return result;
-}
-
-/* Same as `strdup' but report error if no memory available.  */
-
-char *
-xstrdup (s)
-  register const char *s;
-{
-  register char *result = (char *) malloc (strlen (s) + 1);
-
-  if (! result)
-    fatal ("virtual memory exhausted");
-  strcpy (result, s);
-  return result;
-}
 
 /* Return the logarithm of X, base 2, considering X unsigned,
    if X is a power of 2.  Otherwise, returns -1.
@@ -2596,14 +2526,11 @@ open_dump_file (suffix, function_name)
   TIMEVAR
     (dump_time,
      {
-       dumpname = (char *) xmalloc (strlen (dump_base_name) + strlen (suffix) + 1);
+       dumpname = concat (dump_base_name, suffix, NULL);
 
        if (rtl_dump_file != NULL)
 	 fclose (rtl_dump_file);
   
-       strcpy (dumpname, dump_base_name);
-       strcat (dumpname, suffix);
-       
        rtl_dump_file = fopen (dumpname, "a");
        
        if (rtl_dump_file == NULL)
@@ -2656,13 +2583,8 @@ static void
 clean_dump_file (suffix)
   const char *suffix;
 {
-  char *dumpname;
+  char * const dumpname = concat (dump_base_name, suffix, NULL);
 
-  dumpname = (char *) xmalloc (strlen (dump_base_name) + strlen (suffix) + 1);
-
-  strcpy (dumpname, dump_base_name);
-  strcat (dumpname, suffix);
-       
   rtl_dump_file = fopen (dumpname, "w");
 
   if (rtl_dump_file == NULL)
@@ -3103,10 +3025,7 @@ compile_file (name)
 	  strip_off_ending (dumpname, len);
 	  strcat (dumpname, ".s");
 	  if (asm_file_name == 0)
-	    {
-	      asm_file_name = (char *) xmalloc (strlen (dumpname) + 1);
-	      strcpy (asm_file_name, dumpname);
-	    }
+	    asm_file_name = xstrdup (dumpname);
 	  if (!strcmp (asm_file_name, "-"))
 	    asm_out_file = stdout;
 	  else

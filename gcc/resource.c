@@ -1167,14 +1167,9 @@ init_resource_info (epilogue_insn)
     mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 1);
 
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
-  target_hash_table
-    = (struct target_info **) xmalloc ((TARGET_HASH_PRIME
-				       * sizeof (struct target_info *)));
-  bzero ((char *) target_hash_table,
-	 TARGET_HASH_PRIME * sizeof (struct target_info *));
-
-  bb_ticks = (int *) xmalloc (n_basic_blocks * sizeof (int));
-  bzero ((char *) bb_ticks, n_basic_blocks * sizeof (int));
+  target_hash_table = (struct target_info **)
+    xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
+  bb_ticks = (int *) xcalloc (n_basic_blocks, sizeof (int));
 }
 
 /* Free up the resources allcated to mark_target_live_regs ().  This

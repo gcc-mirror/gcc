@@ -65,19 +65,6 @@ fatal(s)
   exit(FATAL_EXIT_CODE);
 }
 
-/* Same as `malloc' but report error if no memory available.  */
-/* Do this before size_t is fiddled with so it matches the prototype
-   in libiberty.h . */
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR value = (PTR) malloc (size);
-  if (value == 0)
-    fatal ("Virtual memory exhausted.");
-  return value;
-}
-
 /* Due to size_t being defined in sys/types.h and different
    in stddef.h, we have to do this by hand.....  Note, these
    types are correct for MIPS based systems, and may not be
@@ -928,7 +915,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	if (want_scope)
 	  {
 	    if (free_scope == (scope_t *) 0)
-	      scope_ptr = (scope_t *) malloc (sizeof (scope_t));
+	      scope_ptr = (scope_t *) xmalloc (sizeof (scope_t));
 	    else
 	      {
 		scope_ptr = free_scope;
@@ -982,7 +969,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	if (want_scope)
 	  {
 	    if (free_scope == (scope_t *) 0)
-	      scope_ptr = (scope_t *) malloc (sizeof (scope_t));
+	      scope_ptr = (scope_t *) xmalloc (sizeof (scope_t));
 	    else
 	      {
 		scope_ptr = free_scope;
@@ -1434,14 +1421,7 @@ read_tfile __proto((void))
 				    "Auxiliary symbols");
 
   if (sym_hdr.iauxMax > 0)
-    {
-      aux_used = calloc (sym_hdr.iauxMax, 1);
-      if (aux_used == (char *) 0)
-	{
-	  perror ("calloc");
-	  exit (1);
-	}
-    }
+    aux_used = xcalloc (sym_hdr.iauxMax, 1);
 
   l_strings = (char *) read_seek ((PTR_T) 0,
 				  sym_hdr.issMax,

@@ -964,7 +964,6 @@ static int discard_comments PROTO((U_CHAR *, int, int));
 
 static int change_newlines PROTO((U_CHAR *, int));
 
-static char *my_strerror PROTO((int));
 static void notice PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static void vnotice PROTO((const char *, va_list));
 void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
@@ -4723,8 +4722,7 @@ get_filename:
     
     /* Actually process the file */
     if (pcfbuf) {
-      pcfname = xmalloc (strlen (pcftry) + 1);
-      strcpy (pcfname, pcftry);
+      pcfname = xstrdup (pcftry);
       pcfinclude ((U_CHAR *) pcfbuf, (U_CHAR *) fname, op);
     }
     else
@@ -9230,38 +9228,6 @@ change_newlines (start, length)
   return obp - start;
 }
 
-/* my_strerror - return the descriptive text associated with an
-   `errno' code.  */
-
-static char *
-my_strerror (errnum)
-     int errnum;
-{
-  char *result;
-
-#ifndef VMS
-#ifndef HAVE_STRERROR
-  result = (char *) ((errnum < sys_nerr) ? sys_errlist[errnum] : 0);
-#else
-  result = strerror (errnum);
-#endif
-#else	/* VMS */
-  /* VAXCRTL's strerror() takes an optional second argument, which only
-     matters when the first argument is EVMSERR.  However, it's simplest
-     just to pass it unconditionally.  `vaxc$errno' is declared in
-     <errno.h>, and maintained by the library in parallel with `errno'.
-     We assume that caller's `errnum' either matches the last setting of
-     `errno' by the library or else does not have the value `EVMSERR'.  */
-
-  result = strerror (errnum, vaxc$errno);
-#endif
-
-  if (!result)
-    result = "errno = ?";
-
-  return result;
-}
-
 /* notice - output message to stderr */
 
 static void
@@ -9358,7 +9324,7 @@ error_from_errno (name)
     fprintf (stderr, ":%d: ", ip->lineno);
   }
 
-  fprintf (stderr, "%s: %s\n", name, my_strerror (e));
+  fprintf (stderr, "%s: %s\n", name, xstrerror (e));
 
   errors++;
 }
@@ -9716,8 +9682,7 @@ grow_outbuf (obuf, needed)
   if (minsize > obuf->length)
     obuf->length = minsize;
 
-  if ((p = (U_CHAR *) xrealloc (obuf->buf, obuf->length)) == NULL)
-    memory_full ();
+  p = (U_CHAR *) xrealloc (obuf->buf, obuf->length);
 
   obuf->bufp = p + (obuf->bufp - obuf->buf);
   obuf->buf = p;
@@ -10638,7 +10603,7 @@ static void
 perror_with_name (name)
      char *name;
 {
-  fprintf (stderr, "%s: %s: %s\n", progname, name, my_strerror (errno));
+  fprintf (stderr, "%s: %s: %s\n", progname, name, xstrerror (errno));
   errors++;
 }
 
@@ -10668,53 +10633,6 @@ static void
 memory_full ()
 {
   fatal ("Memory exhausted.");
-}
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR ptr = (PTR) malloc (size);
-  if (!ptr)
-    memory_full ();
-  return ptr;
-}
-
-PTR
-xrealloc (old, size)
-  PTR old;
-  size_t size;
-{
-  register PTR ptr;
-  if (old)
-    ptr = (PTR) realloc (old, size);
-  else
-    ptr = (PTR) malloc (size);
-  if (!ptr)
-    memory_full ();
-  return ptr;
-}
-
-PTR
-xcalloc (number, size)
-  size_t number, size;
-{
-  register size_t total = number * size;
-  register PTR ptr = (PTR) malloc (total);
-  if (!ptr)
-    memory_full ();
-  bzero (ptr, total);
-  return ptr;
-}
-
-char *
-xstrdup (input)
-  const char *input;
-{
-  register size_t len = strlen (input) + 1;
-  register char *output = xmalloc (len);
-  memcpy (output, input, len);
-  return output;
 }
 
 #ifdef VMS

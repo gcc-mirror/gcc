@@ -600,73 +600,6 @@ notice VPARAMS ((const char *msgid, ...))
 }
 
 
-char *
-xstrerror(e)
-     int e;
-{
-
-#ifdef HAVE_STRERROR
-  return strerror(e);
-
-#else
-  if (!e)
-    return "";
-
-  if (e > 0 && e < sys_nerr)
-    return sys_errlist[e];
-
-  return "errno = ?";
-#endif
-}
-
-/* Allocate some space, but check that the allocation was successful.  */
-/* alloca.c uses this, so don't make it static.  */
-
-pointer_type
-xmalloc (byte_count)
-     size_t byte_count;
-{
-  register pointer_type rv = (pointer_type) malloc (byte_count);
-  if (rv == NULL)
-    {
-      notice ("\n%s: virtual memory exceeded\n", pname);
-      exit (FATAL_EXIT_CODE);
-    }
-  return rv;
-}
-
-/* Reallocate some space, but check that the reallocation was successful.  */
-
-pointer_type
-xrealloc (old_space, byte_count)
-     pointer_type old_space;
-     size_t byte_count;
-{
-  register pointer_type rv;
-  if (old_space)
-    rv = (pointer_type) realloc (old_space, byte_count);
-  else
-    rv = (pointer_type) malloc (byte_count);
-  if (rv == NULL)
-    {
-      notice ("\n%s: virtual memory exceeded\n", pname);
-      exit (FATAL_EXIT_CODE);
-    }
-  return rv;
-}
-
-/* Deallocate the area pointed to by an arbitrary pointer, but first, strip
-   the `const' qualifier from it and also make sure that the pointer value
-   is non-null.  */
-
-void
-xfree (p)
-     const_pointer_type p;
-{
-  if (p)
-    free ((NONCONST pointer_type) p);
-}
-
 /* Make a copy of a string INPUT with size SIZE.  */
 
 static char *
@@ -676,21 +609,6 @@ savestring (input, size)
 {
   char *output = (char *) xmalloc (size + 1);
   strcpy (output, input);
-  return output;
-}
-
-/* Make a copy of the concatenation of INPUT1 and INPUT2.  */
-
-static char *
-savestring2 (input1, size1, input2, size2)
-     const char *input1;
-     unsigned int size1;
-     const char *input2;
-     unsigned int size2;
-{
-  char *output = (char *) xmalloc (size1 + size2 + 1);
-  strcpy (output, input1);
-  strcpy (&output[size1], input2);
   return output;
 }
 
@@ -1109,7 +1027,7 @@ add_symbol (p, s)
      const char *s;
 {
   p->hash_next = NULL;
-  p->symbol = savestring (s, strlen (s));
+  p->symbol = xstrdup (s);
   p->ddip = NULL;
   p->fip = NULL;
   return p;
@@ -1157,7 +1075,7 @@ static void
 free_def_dec (p)
      def_dec_info *p;
 {
-  xfree (p->ansi_decl);
+  free ((NONCONST pointer_type) p->ansi_decl);
 
 #ifndef UNPROTOIZE
   {
@@ -1167,12 +1085,12 @@ free_def_dec (p)
     for (curr = p->f_list_chain; curr; curr = next)
       {
         next = curr->chain_next;
-        xfree (curr);
+        free ((NONCONST pointer_type) curr);
       }
   }
 #endif /* !defined (UNPROTOIZE) */
 
-  xfree (p);
+  free (p);
 }
 
 /* Unexpand as many macro symbol as we can find.
@@ -2072,12 +1990,9 @@ gen_aux_info_file (base_filename)
   /* Store the full source file name in the argument vector.  */
   compile_params[input_file_name_index] = shortpath (NULL, base_filename);
   /* Add .X to source file name to get aux-info file name.  */
-  compile_params[aux_info_file_name_index]
-    = savestring2 (compile_params[input_file_name_index],
-	           strlen (compile_params[input_file_name_index]),
-		   ".X",
-		   2);
-
+  compile_params[aux_info_file_name_index] =
+    concat (compile_params[input_file_name_index], ".X", NULL);
+  
   if (!quiet_flag)
     notice ("%s: compiling `%s'\n",
 	    pname, compile_params[input_file_name_index]);
@@ -2382,7 +2297,7 @@ start_over: ;
             if (referenced_file_is_newer (aux_info_p, aux_info_mtime))
               {
                 free (aux_info_base);
-		xfree (aux_info_relocated_name);
+		free (aux_info_relocated_name);
                 if (keep_it && my_unlink (aux_info_filename) == -1)
                   {
 		    int errno_val = errno;
@@ -2431,7 +2346,7 @@ start_over: ;
   }
 
   free (aux_info_base);
-  xfree (aux_info_relocated_name);
+  free (aux_info_relocated_name);
 }
 
 #ifndef UNPROTOIZE

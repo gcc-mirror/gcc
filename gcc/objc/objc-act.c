@@ -630,13 +630,11 @@ lang_init ()
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
     {
-      int dump_base_name_length = strlen (dump_base_name);
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 7);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".decl");
+      register char * const dumpname = concat (dumpname, ".decl", NULL);
       gen_declaration_file = fopen (dumpname, "w");
       if (gen_declaration_file == 0)
 	pfatal_with_name (dumpname);
+      free (dumpname);
     }
 
   if (flag_next_runtime)

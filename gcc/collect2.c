@@ -261,7 +261,6 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static const char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
-static const char *my_strsignal	PROTO((int));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((const char *));
 static char *find_a_file	PROTO((struct path_prefix *, const char *));
@@ -321,29 +320,6 @@ dup2 (oldfd, newfd)
   return fd;
 }
 #endif
-
-static const char *
-my_strsignal (s)
-     int s;
-{
-#ifdef HAVE_STRSIGNAL
-  return strsignal (s);
-#else
-  if (s >= 0 && s < NSIG)
-    {
-# ifdef NO_SYS_SIGLIST
-      static char buffer[30];
-
-      sprintf (buffer, "Unknown signal %d", s);
-      return buffer;
-# else
-      return sys_siglist[s];
-# endif
-    }
-  else
-    return NULL;
-#endif /* HAVE_STRSIGNAL */
-}
 
 /* Delete tempfiles and exit function.  */
 
@@ -1577,7 +1553,7 @@ collect_wait (prog)
 		  : "%s terminated with signal %d [%s], core dumped"),
 		 prog,
 		 sig,
-		 my_strsignal(sig));
+		 strsignal(sig));
 	  collect_exit (FATAL_EXIT_CODE);
 	}
 
@@ -2418,8 +2394,7 @@ locatelib (name)
 	    if (*ld_rules == ':')
 	      cnt++;
 	  ld_rules = (char *) (ld_2->ld_rules + code);
-	  ldr = (char *) xmalloc (strlen (ld_rules) + 1);
-	  strcpy (ldr, ld_rules);
+	  ldr = xstrdup (ld_rules);
 	}
       p = getenv ("LD_LIBRARY_PATH");
       q = 0;
@@ -2429,8 +2404,7 @@ locatelib (name)
 	  for (q = p ; *q != 0; q++)
 	    if (*q == ':')
 	      cnt++;
-	  q = (char *) xmalloc (strlen (p) + 1);
-	  strcpy (q, p);
+	  q = xstrdup (p);
 	}
       l = (const char **) xmalloc ((cnt + 3) * sizeof (char *));
       pp = l;

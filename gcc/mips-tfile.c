@@ -636,7 +636,6 @@ extern void	pfatal_with_name
 				__proto((const char *));
 extern void	fancy_abort	__proto((void));
        void	botch		__proto((const char *));
-extern void	xfree		__proto((PTR));
 
 extern void	fatal		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1;
 extern void	error		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1;
@@ -1693,7 +1692,6 @@ STATIC void	  free_thead		__proto((thead_t *));
 
 STATIC char	 *local_index		__proto((const char *, int));
 STATIC char	 *local_rindex		__proto((const char *, int));
-STATIC const char	 *my_strsignal		__proto((int));
 
 extern char  *mktemp			__proto((char *));
 extern long   strtol			__proto((const char *, char **, int));
@@ -5022,29 +5020,6 @@ main (argc, argv)
 }
 
 
-STATIC const char *
-my_strsignal (s)
-     int s;
-{
-#ifdef HAVE_STRSIGNAL
-  return strsignal (s);
-#else
-  if (s >= 0 && s < NSIG)
-    {
-# ifdef NO_SYS_SIGLIST
-      static char buffer[30];
-
-      sprintf (buffer, "Unknown signal %d", s);
-      return buffer;
-# else
-      return sys_siglist[s];
-# endif
-    }
-  else
-    return NULL;
-#endif /* HAVE_STRSIGNAL */
-}
-
 /* Catch a signal and exit without dumping core.  */
 
 STATIC void
@@ -5052,7 +5027,7 @@ catch_signal (signum)
      int signum;
 {
   (void) signal (signum, SIG_DFL);	/* just in case...  */
-  fatal (my_strsignal(signum));
+  fatal (strsignal(signum));
 }
 
 /* Print a fatal error message.  NAME is the text.
@@ -5111,10 +5086,7 @@ STATIC page_t *
 allocate_cluster (npages)
      Size_t npages;
 {
-  register page_t *value = (page_t *) calloc (npages, PAGE_USIZE);
-
-  if (value == 0)
-    fatal ("Virtual memory exhausted.");
+  register page_t *value = (page_t *) xcalloc (npages, PAGE_USIZE);
 
   if (debug > 3)
     fprintf (stderr, "\talloc\tnpages = %d, value = 0x%.8x\n", npages, value);
@@ -5297,7 +5269,7 @@ free_scope (ptr)
   alloc_counts[ (int)alloc_type_scope ].free_list.f_scope = ptr;
 
 #else
-  xfree ((PTR_T) ptr);
+  free ((PTR_T) ptr);
 #endif
 
 }
@@ -5454,7 +5426,7 @@ free_tag (ptr)
   alloc_counts[ (int)alloc_type_tag ].free_list.f_tag = ptr;
 
 #else
-  xfree ((PTR_T) ptr);
+  free ((PTR_T) ptr);
 #endif
 
 }
@@ -5512,7 +5484,7 @@ free_forward (ptr)
   alloc_counts[ (int)alloc_type_forward ].free_list.f_forward = ptr;
 
 #else
-  xfree ((PTR_T) ptr);
+  free ((PTR_T) ptr);
 #endif
 
 }
@@ -5570,7 +5542,7 @@ free_thead (ptr)
   alloc_counts[ (int)alloc_type_thead ].free_list.f_thead = ptr;
 
 #else
-  xfree ((PTR_T) ptr);
+  free ((PTR_T) ptr);
 #endif
 
 }
@@ -5659,89 +5631,6 @@ botch (s)
      const char *s;
 {
   fatal (s);
-}
-
-/* Same as `malloc' but report error if no memory available.  */
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR value = (PTR) malloc (size);
-  if (value == 0)
-    fatal ("Virtual memory exhausted.");
-
-  if (debug > 3)
-    {
-      fputs ("\tmalloc\tptr = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, value);
-      fprintf (stderr, ", size = %10lu\n", (unsigned long) size);
-    }
-
-  return value;
-}
-
-/* Same as `calloc' but report error if no memory available.  */
-
-PTR
-xcalloc (size1, size2)
-  size_t size1, size2;
-{
-  register PTR value = (PTR) calloc (size1, size2);
-  if (value == 0)
-    fatal ("Virtual memory exhausted.");
-
-  if (debug > 3)
-    {
-      fputs ("\tcalloc\tptr = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, value);
-      fprintf (stderr, ", size1 = %10lu, size2 = %10lu [%lu]\n",
-	       (unsigned long) size1, (unsigned long) size2,
-	       (unsigned long) size1*size2);
-    }
-
-  return value;
-}
-
-/* Same as `realloc' but report error if no memory available.  */
-
-PTR
-xrealloc (ptr, size)
-  PTR ptr;
-  size_t size;
-{
-  register PTR result;
-  if (ptr)
-    result = (PTR) realloc (ptr, size);
-  else
-    result = (PTR) malloc (size);
-  if (!result)
-    fatal ("Virtual memory exhausted.");
-
-  if (debug > 3)
-    {
-      fputs ("\trealloc\tptr = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, result);
-      fprintf (stderr, ", size = %10lu, orig = ", size);
-      fprintf (stderr, HOST_PTR_PRINTF, ptr);
-      fputs ("\n", stderr);
-    }
-
-  return result;
-}
-
-void
-xfree (ptr)
-     PTR ptr;
-{
-  if (debug > 3)
-    {
-      fputs ("\tfree\tptr = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, ptr);
-      fputs ("\n", stderr);
-    }
-
-  free (ptr);
 }
 
 

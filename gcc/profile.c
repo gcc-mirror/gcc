@@ -563,9 +563,7 @@ branch_prob (f, dump_file)
 		      {
 			if (last_bb_file_name)
 			  free (last_bb_file_name);
-			last_bb_file_name
-			  = xmalloc (strlen (NOTE_SOURCE_FILE (insn)) + 1);
-			strcpy (last_bb_file_name, NOTE_SOURCE_FILE (insn));
+			last_bb_file_name = xstrdup (NOTE_SOURCE_FILE (insn));
 			output_gcov_string (NOTE_SOURCE_FILE (insn), (long)-1);
 		      }
 
