@@ -2232,7 +2232,7 @@ void
 emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 			  int nargs, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx orgfun;
   int no_queue;
   enum machine_mode outmode;
@@ -2279,7 +2279,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   VA_START (p, nargs);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
   no_queue = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
@@ -2723,7 +2723,7 @@ rtx
 emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 				enum machine_mode outmode, int nargs, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx orgfun;
   rtx value;
   int no_queue;
@@ -2778,7 +2778,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
   VA_START (p, nargs);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
   value = va_arg (p, rtx);
   no_queue = va_arg (p, int);

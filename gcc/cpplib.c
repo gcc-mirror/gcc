@@ -6725,7 +6725,7 @@ v_cpp_error (pfile, msg, ap)
 void
 cpp_error VPROTO ((cpp_reader * pfile, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   const char *msg;
 #endif
@@ -6733,7 +6733,7 @@ cpp_error VPROTO ((cpp_reader * pfile, const char *msg, ...))
 
   VA_START(ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   msg = va_arg (ap, const char *);
 #endif
@@ -6764,7 +6764,7 @@ v_cpp_warning (pfile, msg, ap)
 void
 cpp_warning VPROTO ((cpp_reader * pfile, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   const char *msg;
 #endif
@@ -6772,7 +6772,7 @@ cpp_warning VPROTO ((cpp_reader * pfile, const char *msg, ...))
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   msg = va_arg (ap, const char *);
 #endif
@@ -6786,7 +6786,7 @@ cpp_warning VPROTO ((cpp_reader * pfile, const char *msg, ...))
 void
 cpp_pedwarn VPROTO ((cpp_reader * pfile, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   const char *msg;
 #endif
@@ -6794,7 +6794,7 @@ cpp_pedwarn VPROTO ((cpp_reader * pfile, const char *msg, ...))
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   msg = va_arg (ap, const char *);
 #endif
@@ -6827,7 +6827,7 @@ v_cpp_error_with_line (pfile, line, column, msg, ap)
 void
 cpp_error_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   int line;
   int column;
@@ -6837,7 +6837,7 @@ cpp_error_with_line VPROTO ((cpp_reader * pfile, int line, int column, const cha
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   line = va_arg (ap, int);
   column = va_arg (ap, int);
@@ -6878,7 +6878,7 @@ v_cpp_warning_with_line (pfile, line, column, msg, ap)
 static void
 cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   int line;
   int column;
@@ -6888,7 +6888,7 @@ cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const c
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   line = va_arg (ap, int);
   column = va_arg (ap, int);
@@ -6903,7 +6903,7 @@ cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const c
 void
 cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   int line;
   int column;
@@ -6913,7 +6913,7 @@ cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column, const c
   
   VA_START (ap, msg);
   
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   line = va_arg (ap, int);
   column = va_arg (ap, int);
@@ -6933,7 +6933,7 @@ cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column, const c
 void
 cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
   char *file;
   int line;
@@ -6943,7 +6943,7 @@ cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line,
   
   VA_START (ap, msg);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   file = va_arg (ap, char *);
   line = va_arg (ap, int);

@@ -538,7 +538,7 @@ attr_hash_add_string (hashcode, str)
 static rtx
 attr_rtx VPROTO((enum rtx_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
 #endif
   va_list p;
@@ -551,7 +551,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
 #endif
 
@@ -735,7 +735,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 static char *
 attr_printf VPROTO((register int len, char *fmt, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   register int len;
   char *fmt;
 #endif
@@ -744,7 +744,7 @@ attr_printf VPROTO((register int len, char *fmt, ...))
 
   VA_START (p, fmt);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   len = va_arg (p, int);
   fmt = va_arg (p, char *);
 #endif
@@ -5816,14 +5816,14 @@ copy_rtx_unchanging (orig)
 static void
 fatal VPROTO ((char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 

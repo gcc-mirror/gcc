@@ -1,3 +1,129 @@
+Sun Nov  8 17:50:30 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h: Prepend a "G" to the macro wrapping this file
+	(to distinguish it from the macro wrapping ansidecl.h.)
+	Include libiberty's ansidecl.h.  Remove all redundant definitions.
+  	Define the PROTO() style macros in terms of the PARAMS() ones.
+
+	
+	* calls.c (emit_library_call): Switch on ANSI_PROTOTYPES, not
+	__STDC__, when deciding whether to use ANSI variable args.
+	(emit_library_call_value): Likewise.
+
+	* cccp.c (error): Likewise.
+	(warning): Likewise.
+	(error_with_line): Likewise.
+	(warning_with_line): Likewise.
+	(pedwarn): Likewise.
+	(pedwarn_with_line): Likewise.
+	(pedwarn_with_file_and_line): Likewise.
+	(fatal): Likewise.
+
+	* cexp.y (error): Likewise.
+	(pedwarn): Likewise.
+	(warning): Likewise.
+
+	* collect2.c (fatal_perror): Likewise.
+	(fatal): Likewise.
+	(error): Likewise.
+
+	* combine.c (gen_rtx_combine): Likewise.
+
+	* cpperror.c (cpp_message): Likewise.
+	(cpp_fatal): Likewise.
+
+	* cpplib.c (cpp_error): Likewise.
+	(cpp_warning): Likewise.
+	(cpp_pedwarn): Likewise.
+	(cpp_error_with_line): Likewise.
+	(cpp_warning_with_line): Likewise.
+	(cpp_pedwarn_with_line): Likewise.
+	(cpp_pedwarn_with_file_and_line): Likewise.
+
+	* cpplib.h: Don't define PARAMS() macro.
+
+	* demangle.h: Likewise.
+
+	* doprint.c (checkit): Switch on ANSI_PROTOTYPES, not __STDC__,
+ 	when deciding whether to use ANSI variable args.
+
+	* emit-rtl.c (gen_rtx): Likewise.
+	(gen_rtvec): Likewise.
+
+	* final.c (asm_fprintf): Likewise.
+
+	* fix-header.c (cpp_message): Likewise.
+	(fatal): Likewise.
+	(cpp_fatal): Likewise.
+
+	* gcc.c (concat): Likewise.
+	(fatal): Likewise.
+	(error): Likewise.
+
+	* genattr.c (fatal): Likewise.
+
+	* genattrtab.c (attr_rtx): Likewise.
+	(attr_printf): Likewise.
+	(fatal): Likewise.
+
+	* gencodes.c (fatal): Likewise.
+
+	* genconfig.c (fatal): Likewise.
+
+	* genemit.c (fatal): Likewise.
+
+	* genextract.c (fatal): Likewise.
+
+	* genflags.c (fatal): Likewise.
+
+	* genopinit.c (fatal): Likewise.
+
+	* genoutput.c (fatal): Likewise.
+	(error): Likewise.
+
+	* genpeep.c (fatal): Likewise.
+
+	* genrecog.c (fatal): Likewise.
+
+	* halfpic.h: Switch on ANSI_PROTOTYPES, not __STDC__, when
+	deciding whether to declare `tree_node' and `rtx_def'.
+
+	* hash.h: Don't define stuff we get from gansidecl.h.
+
+	* mips-tfile.c: Likewise.  Define __proto() in terms of PARAMS().
+	(fatal): Switch on ANSI_PROTOTYPES, not __STDC__, when deciding
+	whether to use ANSI variable args.
+	(error): Likewise.
+
+	* prefix.c (concat): Likewise.
+
+	* scan.h: Likewise.
+
+	* system.h: Likewise.
+
+	* toplev.c (error_with_file_and_line): Likewise.
+	(error_with_decl): Likewise.
+	(error_for_asm): Likewise.
+	(error): Likewise.
+	(fatal): Likewise.
+	(warning_with_file_and_line): Likewise.
+	(warning_with_decl): Likewise.
+	(warning_for_asm): Likewise.
+	(warning): Likewise.
+	(pedwarn): Likewise.
+	(pedwarn_with_decl): Likewise.
+	(pedwarn_with_file_and_line): Likewise.
+	(sorry): Likewise.
+	(really_sorry): Likewise.
+
+	* toplev.h: Switch on ANSI_PROTOTYPES, not __STDC__, when deciding
+	whether to declare `tree_node' and `rtx_def'.
+
+	* tree.c (build): Switch on ANSI_PROTOTYPES, not __STDC__, when
+	deciding whether to use ANSI variable args.
+	(build_nt): Likewise.
+	(build_parse_node): Likewise.
+
 Sun Nov 8 13:10:55 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

@@ -2983,7 +2983,7 @@ stabilize_reference_1 (e)
 tree
 build VPROTO((enum tree_code code, tree tt, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
   tree tt;
 #endif
@@ -2994,7 +2994,7 @@ build VPROTO((enum tree_code code, tree tt, ...))
 
   VA_START (p, tt);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
   tt = va_arg (p, tree);
 #endif
@@ -3109,7 +3109,7 @@ build1 (code, type, node)
 tree
 build_nt VPROTO((enum tree_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
   va_list p;
@@ -3119,7 +3119,7 @@ build_nt VPROTO((enum tree_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
 
@@ -3139,7 +3139,7 @@ build_nt VPROTO((enum tree_code code, ...))
 tree
 build_parse_node VPROTO((enum tree_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
   register struct obstack *ambient_obstack = expression_obstack;
@@ -3150,7 +3150,7 @@ build_parse_node VPROTO((enum tree_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
 

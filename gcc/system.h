@@ -8,7 +8,7 @@
 #define __GCC_SYSTEM_H__
 
 /* We must include stdarg.h/varargs.h before stdio.h. */
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
 #else
 #include <varargs.h>

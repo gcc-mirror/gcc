@@ -610,15 +610,11 @@ Boston, MA 02111-1307, USA.  */
 #define __LINE__ 0
 #endif
 
+#define __proto(x) PARAMS(x)
+/* Should PTR_T and CPTR_T be typedef'ed in terms of PTR ??? */
 #ifdef __STDC__
 typedef void *PTR_T;
 typedef const void *CPTR_T;
-#define __proto(x) x
-#ifndef VPROTO
-#define PVPROTO(ARGS)		ARGS
-#define VPROTO(ARGS)            ARGS
-#define VA_START(va_list,var)  va_start(va_list,var)
-#endif
 #else
 
 #if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
@@ -630,13 +626,6 @@ typedef char *PTR_T;					/* Ultrix 3.1 */
 typedef char *CPTR_T;
 #endif
 
-#define __proto(x) ()
-#define const
-#ifndef VPROTO
-#define PVPROTO(ARGS)		()
-#define VPROTO(ARGS)            (va_alist) va_dcl
-#define VA_START(va_list,var)  va_start(va_list)
-#endif
 #endif
 
 /* Do to size_t being defined in sys/types.h and different
@@ -5607,14 +5596,14 @@ free_thead (ptr)
 void
 fatal VPROTO((const char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 
@@ -5637,14 +5626,14 @@ fatal VPROTO((const char *format, ...))
 void
 error VPROTO((const char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 

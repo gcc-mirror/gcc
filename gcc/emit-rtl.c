@@ -350,7 +350,7 @@ gen_rtx_MEM (mode, addr)
 rtx
 gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
   enum machine_mode mode;
 #endif
@@ -361,7 +361,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
   VA_START (p, mode);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
 #endif
@@ -433,7 +433,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 rtvec
 gen_rtvec VPROTO((int n, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   int n;
 #endif
   int i;
@@ -442,7 +442,7 @@ gen_rtvec VPROTO((int n, ...))
 
   VA_START (p, n);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   n = va_arg (p, int);
 #endif
 

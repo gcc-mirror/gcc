@@ -9312,14 +9312,14 @@ my_strerror (errnum)
 void
 error VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
 
@@ -9385,14 +9385,14 @@ error_from_errno (name)
 void
 warning VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
 
@@ -9434,7 +9434,7 @@ vwarning (msg, args)
 static void
 error_with_line VPROTO ((int line, char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   int line;
   char * msg;
 #endif
@@ -9442,7 +9442,7 @@ error_with_line VPROTO ((int line, char * msg, ...))
 
   VA_START (args, msg);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
   msg = va_arg (args, char *);
 #endif
@@ -9480,7 +9480,7 @@ verror_with_line (line, msg, args)
 static void
 warning_with_line VPROTO ((int line, char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   int line;
   char * msg;
 #endif
@@ -9488,7 +9488,7 @@ warning_with_line VPROTO ((int line, char * msg, ...))
 
   VA_START (args, msg);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
   msg = va_arg (args, char *);
 #endif
@@ -9534,14 +9534,14 @@ vwarning_with_line (line, msg, args)
 void
 pedwarn VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
  
@@ -9555,7 +9555,7 @@ pedwarn VPROTO ((char * msg, ...))
 void
 pedwarn_with_line VPROTO ((int line, char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   int line;
   char * msg;
 #endif
@@ -9563,7 +9563,7 @@ pedwarn_with_line VPROTO ((int line, char * msg, ...))
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
   msg = va_arg (args, char *);
 #endif
@@ -9582,7 +9582,7 @@ static void
 pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
 				    char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   size_t file_len;
   int line;
@@ -9595,7 +9595,7 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
 
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (args, char *);
   file_len = va_arg (args, size_t);
   line = va_arg (args, int);
@@ -10623,7 +10623,7 @@ deps_output (string, spacer)
 static void
 fatal VPROTO ((char * msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char * msg;
 #endif
   va_list args;
@@ -10631,7 +10631,7 @@ fatal VPROTO ((char * msg, ...))
   fprintf (stderr, "%s: ", progname);
   VA_START (args, msg);
  
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msg = va_arg (args, char *);
 #endif
  
