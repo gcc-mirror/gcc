@@ -73,10 +73,6 @@ char *xcoff_private_data_section_name;
 char *xcoff_read_only_section_name;
 
 /* Macro definitions used below.  */
-/* Ensure we don't output a negative line number.  */
-#define MAKE_LINE_SAFE(LINE)  \
-  if (LINE <= xcoff_begin_function_line)	\
-    LINE = xcoff_begin_function_line + 1	\
 
 #define ASM_OUTPUT_LFB(FILE,LINENUM) \
 {						\
@@ -97,18 +93,10 @@ char *xcoff_read_only_section_name;
   } while (0)
 
 #define ASM_OUTPUT_LBB(FILE,LINENUM,BLOCKNUM) \
-  do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.bb\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
-  } while (0)
+  fprintf (FILE, "\t.bb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
-  do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
-  } while (0)
+  fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
 /* Support routines for XCOFF debugging info.  */
 
