@@ -109,7 +109,7 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
+	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
 		| powerpc | sparc64 | 1750a)
@@ -121,7 +121,7 @@ case $basic_machine in
 		exit 1
 		;;
 	# Recognize the basic CPU types with company name.
-	vax-* | tahoe-* | i[34]86-* | i860-* | m68k-* | m68000-* | m88k-* \
+	vax-* | tahoe-* | i[345]86-* | i860-* | m68k-* | m68000-* | m88k-* \
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
@@ -284,19 +284,19 @@ case $basic_machine in
 		os=-mvs
 		;;
 # I'm not sure what "Sysv32" means.  Should this be sysv3.2?
-	i[34]86v32)
+	i[345]86v32)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv32
 		;;
-	i[34]86v4*)
+	i[345]86v4*)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv4
 		;;
-	i[34]86v)
+	i[345]86v)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-sysv
 		;;
-	i[34]86sol2)
+	i[345]86sol2)
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-solaris2
 		;;
@@ -553,7 +553,7 @@ case $os in
 	# Each alternative must end in a *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
-	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]* \
+	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[345]* \
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
@@ -690,9 +690,6 @@ case $basic_machine in
 		;;
 	*-next)
 		os=-nextstep3
-		;;
-	i[34]86-*)
-		os=-sco3.2v2
 		;;
         *-gould)
 		os=-sysv
