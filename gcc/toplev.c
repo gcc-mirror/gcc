@@ -3957,6 +3957,10 @@ main (argc, argv, envp)
 		      if (type == NO_DEBUG)
 			type = PREFERRED_DEBUGGING_TYPE;
 
+		      if (type == NO_DEBUG)
+			warning ("`-%s' not supported by this configuration of GCC",
+				 str);
+
 		      /* Does it conflict with an already selected type?  */
 		      if (type_explicitly_set_p
 			  /* -g/-ggdb don't conflict with anything */
