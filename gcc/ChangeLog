@@ -1,3 +1,19 @@
+2001-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (fixup_var_refs): Move CALL_PLACEHOLDER handling...
+	(fixup_var_refs_insns): ...here.
+
+	* gcc.c-torture/compile/20010118-1.c: New test.
+
+2001-01-20  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* function.c (fixup_var_refs_insns): Break up into
+	fixup_var_refs_insn [body of loop], fixup_var_refs_insns
+	[loop over entire insn list], and fixup_var_refs_insns_with_hash
+	[loop over hash table entries].
+	(fixup_var_refs): Adjust calls to fixup_var_refs_insns and/or
+	fixup_var_refs_insns_with_hash, to match above changes.
+
 2001-01-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Add MAKEOVERRIDES variable.
@@ -12,7 +28,7 @@
 
 2001-01-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinternals.texi: Update.
+	* cppinternals.texi: Update.
 
 2001-01-19  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -71,8 +87,8 @@ Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplib.c (_cpp_handle_directive): Use buffer->was_skipping,
-        not pfile->skipping (== 0).
+	* cpplib.c (_cpp_handle_directive): Use buffer->was_skipping,
+	not pfile->skipping (== 0).
 
 2001-01-17  Nick Clifton  <nickc@redhat.com>
 
@@ -90,7 +106,7 @@ Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * invoke.texi (-fno-guess-branch-probability): New option.
+	* invoke.texi (-fno-guess-branch-probability): New option.
 
 Wed Jan 17 13:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -152,7 +168,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(movqi_internal, movhi_internal, movsi_internal, movdi_internal,
 	movsf_internal, movdf_internal, movtf_internal, cmovdi_internal,
 	cmovsi_internal): Delete ! TARGET_A_STEP check.
-	
+
 2001-01-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc.texi (Bug Lists): Do not mention newsgroups nor the
@@ -165,7 +181,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-16  Alan Modra <alan@linuxcare.com.au>
 
-        * cppmain.c (general_init): Don't use ANSI prototype.
+	* cppmain.c (general_init): Don't use ANSI prototype.
 
 2001-01-16  Tom Tromey  <tromey@redhat.com>
 
@@ -268,7 +284,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(emit_multi_reg_push): Don't record dwarf information for the pc.
 	* arm.md (eh_epilogue): The function type may have changed, so it
 	needs to be recalculated.
-	* arm/netbsd.h (DWARF2_UNWIND_INFO): Delete.  Can now use dwarf2 
+	* arm/netbsd.h (DWARF2_UNWIND_INFO): Delete.  Can now use dwarf2
 	unwind tables on arm/netbsd.
 
 2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
@@ -288,7 +304,7 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-15  Andreas Jaeger  <aj@suse.de>
 
-	* config/i386/i386.c (ix86_init_builtins): Make i size_t to remove 
+	* config/i386/i386.c (ix86_init_builtins): Make i size_t to remove
 	warnings.
 	(ix86_expand_builtin): Likewise.
 
@@ -301,8 +317,8 @@ Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-14  Ralf Baechle <ralf@gnu.org>
 
-        * config/mips/linux.h (SUBTARGET_CPP_SPEC): Default ABI is 32; change
-        SUBTARGET_CPP_SPEC apropriatly.
+	* config/mips/linux.h (SUBTARGET_CPP_SPEC): Default ABI is 32; change
+	SUBTARGET_CPP_SPEC apropriatly.
 
 2001-01-12  Mark Mitchell  <mark@codesourcery.com>
 
@@ -322,12 +338,12 @@ Sun Jan 14 22:31:30 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-parse.in (finish_parse): Add comment about cpp_destroy.
-        * cp/lex.c (finish_parse): Similarly.
-        * cppinit.c (cpp_cleanup): Rename cpp_destroy for clarity.
-        Return the number of errors encountered.
-        * cpplib.h (cpp_cleanup): Rename cpp_destroy, return int.
-        * cppmain.c (main): Don't call cpp_destroy.
+	* c-parse.in (finish_parse): Add comment about cpp_destroy.
+	* cp/lex.c (finish_parse): Similarly.
+	* cppinit.c (cpp_cleanup): Rename cpp_destroy for clarity.
+	Return the number of errors encountered.
+	* cpplib.h (cpp_cleanup): Rename cpp_destroy, return int.
+	* cppmain.c (main): Don't call cpp_destroy.
 
 2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -351,12 +367,12 @@ Sun Jan 14 22:31:30 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmain.c (do_preprocessing): New function; most of the old
-        main.
-        (main): Call it to do most of the work.
-        (cb): Move from global scope to set_callbacks ().
-        (setup_callbacks): Get the callback pointer.
-        (general_init, printer_init): Clean up code and comments.
+	* cppmain.c (do_preprocessing): New function; most of the old
+	main.
+	(main): Call it to do most of the work.
+	(cb): Move from global scope to set_callbacks ().
+	(setup_callbacks): Get the callback pointer.
+	(general_init, printer_init): Clean up code and comments.
 
 2001-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -491,11 +507,11 @@ Sun Jan 14 00:23:15 2001  Denis Chertykov  <denisc@overta.ru>
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (_cpp_fake_include): New function.
-        * cpphash.h (_cpp_fake_include): New.
-        * cpplib.c (do_line): Call _cpp_fake_include when entering
-        header files in preprocessed input.
-        * cppmain.c (cb_pragma_implementation): Remove handling.
+	* cppfiles.c (_cpp_fake_include): New function.
+	* cpphash.h (_cpp_fake_include): New.
+	* cpplib.c (do_line): Call _cpp_fake_include when entering
+	header files in preprocessed input.
+	* cppmain.c (cb_pragma_implementation): Remove handling.
 	(setup_callbacks): Don't register pragmas.
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -510,35 +526,35 @@ Sun Jan 14 00:23:15 2001  Denis Chertykov  <denisc@overta.ru>
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplib.h (cpp_pool, mi_state, mi_ind, struct cpp_macro,
-        struct cpp_chunk, struct htab, struct toklist,
-        struct cpp_context, CPP_STACK_MAX, struct lexer_state,
-        struct spec_nodes, struct cpp_reader, CPP_OPTION, CPP_BUFFER,
-        CPP_BUF_LINE, CPP_BUF_COL, CPP_BUF_COLUMN, U, ustrcmp, ustrncmp,
-        ustrlen, uxstrdup, ustrchr, ufputs): Move to cpphash.h.
-        (struct macro_args): Delete.
-        * cpphash.h: See above.
+	* cpplib.h (cpp_pool, mi_state, mi_ind, struct cpp_macro,
+	struct cpp_chunk, struct htab, struct toklist,
+	struct cpp_context, CPP_STACK_MAX, struct lexer_state,
+	struct spec_nodes, struct cpp_reader, CPP_OPTION, CPP_BUFFER,
+	CPP_BUF_LINE, CPP_BUF_COL, CPP_BUF_COLUMN, U, ustrcmp, ustrncmp,
+	ustrlen, uxstrdup, ustrchr, ufputs): Move to cpphash.h.
+	(struct macro_args): Delete.
+	* cpphash.h: See above.
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmain.c (struct printer): Remove no_line_dirs.
-        (options, cb): New.
-        (main, setup_callbacks, scan_buffer, printer_init, cb_define)
-        : Use options rather than CPP_OPTION.
-        (setup_callbacks): Use cb rather than pfile->cb.
-        (main): No need to check for a buffer.  Use cpp_errors.
-        (printer_init): Don't set no_line_dirs.
-        (maybe_print_line): Use options not no_line_dirs.
-        (cb_file_change): Don't call print_line if -P.
+	* cppmain.c (struct printer): Remove no_line_dirs.
+	(options, cb): New.
+	(main, setup_callbacks, scan_buffer, printer_init, cb_define)
+	: Use options rather than CPP_OPTION.
+	(setup_callbacks): Use cb rather than pfile->cb.
+	(main): No need to check for a buffer.  Use cpp_errors.
+	(printer_init): Don't set no_line_dirs.
+	(maybe_print_line): Use options not no_line_dirs.
+	(cb_file_change): Don't call print_line if -P.
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c (init_c_lex): Use cpp_get_callbacks to set
-        callbacks.
-        * c-parse.in (finish_parse): Use cpp_errors.
-        (__yylex): Use return value of cpp_pop_buffer.
-        * cp/lex.c (finish_parse): Use cpp_errors.
-        * cp/spew.c (read_token): Use return value of cpp_pop_buffer.
+	* c-lex.c (init_c_lex): Use cpp_get_callbacks to set
+	callbacks.
+	* c-parse.in (finish_parse): Use cpp_errors.
+	(__yylex): Use return value of cpp_pop_buffer.
+	* cp/lex.c (finish_parse): Use cpp_errors.
+	* cp/spew.c (read_token): Use return value of cpp_pop_buffer.
 
 Sat Jan 13 16:57:40 2001  Denis Chertykov  <denisc@overta.ru>
 
@@ -592,24 +608,24 @@ Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * fix-header.c (read_scan_file): Use cpp_get_callbacks and
-        cpp_get_options rather than dereferencing pfile and using
-        CPP_OPTION.
-        * scan-decls.c (scan_decls): Use return value of
-        cpp_pop_buffer rather than CPP_BUFFER.
+	* fix-header.c (read_scan_file): Use cpp_get_callbacks and
+	cpp_get_options rather than dereferencing pfile and using
+	CPP_OPTION.
+	* scan-decls.c (scan_decls): Use return value of
+	cpp_pop_buffer rather than CPP_BUFFER.
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (cpp_handle_option): help_only is now part of the
-        cpp_options structure.
-        * cpplib.c (cpp_errors, cpp_get_options, cpp_get_callbacks,
-        cpp_set_callbacks): New functions.
-        * cpplib.h (cpp_callbacks): Break out as a named structure.
-        (cpp_options): Move help_only here from cpp_reader.
-        (CPP_FATAL_ERRORS): Update to use cpp_errors.
-        (cpp_errors, cpp_get_options, cpp_get_callbacks,
-        cpp_set_callbacks): New prototypes.
-        * cppmain.c (main): Update for help_only.
+	* cppinit.c (cpp_handle_option): help_only is now part of the
+	cpp_options structure.
+	* cpplib.c (cpp_errors, cpp_get_options, cpp_get_callbacks,
+	cpp_set_callbacks): New functions.
+	* cpplib.h (cpp_callbacks): Break out as a named structure.
+	(cpp_options): Move help_only here from cpp_reader.
+	(CPP_FATAL_ERRORS): Update to use cpp_errors.
+	(cpp_errors, cpp_get_options, cpp_get_callbacks,
+	cpp_set_callbacks): New prototypes.
+	* cppmain.c (main): Update for help_only.
 
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
