@@ -134,8 +134,8 @@ test $do_man = yes && {
 (
   set -e
   cd $builddir
-  sed -e "s=@outdir@=${outdir}=" \
-      -e "s=@srcdir@=${srcdir}=" \
+  sed -e "s=@outdir@=${outdir}=g" \
+      -e "s=@srcdir@=${srcdir}=g" \
       -e "s=@html_output_dir@=html_${mode}=" \
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \
