@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -104,3 +104,40 @@
 	++__low;
     return __low;
   }
+
+#ifdef _GLIBCXX_USE_WCHAR_T  
+  inline bool
+  ctype<wchar_t>::
+  do_is(mask __m, wchar_t __c) const
+  {
+    return __istype (__c, __m);
+  }
+
+  inline const wchar_t* 
+  ctype<wchar_t>::
+  do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __vec) const
+  {
+    for (; __lo < __hi; ++__vec, ++__lo)
+      *__vec = __maskrune (*__lo, upper | lower | alpha | digit | xdigit
+			   | space | print | graph | cntrl | punct | alnum);
+    return __hi;
+  }
+  
+  inline const wchar_t* 
+  ctype<wchar_t>::
+  do_scan_is(mask __m, const wchar_t* __lo, const wchar_t* __hi) const
+  {
+    while (__lo < __hi && ! __istype (*__lo, __m))
+      ++__lo;
+    return __lo;
+  }
+
+  inline const wchar_t*
+  ctype<wchar_t>::
+  do_scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
+  {
+    while (__lo < __hi && __istype (*__lo, __m))
+      ++__lo;
+    return __lo;
+  }
+#endif

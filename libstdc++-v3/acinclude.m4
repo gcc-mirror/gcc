@@ -1163,7 +1163,7 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
 
         # ... at some point put __strxfrm_l tests in as well.
         ;;
-      darwin*)
+      darwin* | freebsd*)
         enable_clocale_flag=darwin
 	;;
       *)
@@ -1200,7 +1200,7 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     darwin)
-      AC_MSG_RESULT(darwin)
+      AC_MSG_RESULT(darwin or freebsd)
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
