@@ -3272,8 +3272,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     }
 
   /* If #pragma weak was used, mark the decl weak now.  */
-  if (current_scope == file_scope)
-    maybe_apply_pragma_weak (decl);
+  maybe_apply_pragma_weak (decl);
 
   /* If this is a variable definition, determine its ELF visibility.  */
   if (TREE_CODE (decl) == VAR_DECL 
