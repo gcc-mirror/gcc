@@ -1158,14 +1158,12 @@ alpha_builtin_saveregs (arglist)
 
   addr = force_operand (addr, NULL_RTX);
 
-  /* Allocate the va_list constructor */
+-  /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
-  /* Store the address of the first integer register in the __base member.
-     Note that our offsets are correct for both 32- and 64-bit pointers
-     due to the alignment of the __offset field (a long).  */
+  /* Store the address of the first integer register in the __base member.  */
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   addr = convert_memory_address (ptr_mode, addr);
@@ -1174,10 +1172,10 @@ alpha_builtin_saveregs (arglist)
   emit_move_insn (change_address (block, ptr_mode, XEXP (block, 0)), addr);
 
   /* Store the argsize as the __va_offset member.  */
-  emit_move_insn (change_address (block, ptr_mode,
+  emit_move_insn (change_address (block, TYPE_MODE (integer_type_node),
 				  plus_constant (XEXP (block, 0),
-						 GET_MODE_SIZE (ptr_mode))),
-		  force_operand (argsize, NULL_RTX));
+						 POINTER_SIZE/BITS_PER_UNIT)),
+		  argsize);
 
   /* Return the address of the va_list constructor, but don't put it in a
      register.  Doing so would fail when not optimizing and produce worse
