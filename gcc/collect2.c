@@ -528,7 +528,6 @@ putenv (str)
   char **envp;
   int num_envs = 0;
   int name_len = 1;
-  int str_len = strlen (str);
   char *p = str;
   int ch;
 
@@ -791,8 +790,6 @@ main (argc, argv)
   char **ld2		= ld2_argv;
   int first_file;
   int num_c_args	= argc+7;
-  int len;
-  int clen;
 
 #ifdef DEBUG
   debug = 1;
