@@ -1433,7 +1433,7 @@ _cpp_equiv_tokens (a, b)
       case SPELL_CHAR:
 	return a->val.c == b->val.c; /* Character.  */
       case SPELL_NONE:
-	return (a->type != CPP_MACRO_ARG || a->val.c == b->val.c);
+	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
       case SPELL_IDENT:
 	return a->val.node == b->val.node;
       case SPELL_STRING:
