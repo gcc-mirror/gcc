@@ -1,4 +1,10 @@
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+	
+	PR c++/9898, PR c++/383, DR 322
+	* pt.c (maybe_adjust_types_for_deduction) [DEDUCE_CONV]: Look
+	through reference types on both PARM and ARG.
+
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10119
 	* error.c (dump_expr) [BASELINK]: Use dump_expr.

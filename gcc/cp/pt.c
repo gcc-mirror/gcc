@@ -8753,6 +8753,12 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
       *parm = TREE_TYPE (*parm);
       result |= UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
     }
+
+  /* DR 322. For conversion deduction, remove a reference type on parm
+     too (which has been swapped into ARG).  */
+  if (strict == DEDUCE_CONV && TREE_CODE (*arg) == REFERENCE_TYPE)
+    *arg = TREE_TYPE (*arg);
+  
   return result;
 }
 
