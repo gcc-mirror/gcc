@@ -34,7 +34,7 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
-
+#
 # define version of GNUCHILL compiler. Note: maybe we have to change the
 # mechanism
 GNUCHILL_VERSION = 1.5.2
@@ -62,7 +62,7 @@ CHILL_FLAGS_TO_PASS = \
 	"CHILL_LIB=$(CHILL_LIB)" \
 	"CC=$(CC)" \
 	"GNUCHILL_VERSION=$(GNUCHILL_VERSION)"
-
+#
 # Define the names for selecting languages in LANGUAGES.
 CHILL: chill cc1chill chill-runtime
 
@@ -105,7 +105,7 @@ chill-runtime: stmp-headers $(GCC_PASSES)
 		   cd ch/runtime; $(MAKE) $(FLAGS_TO_PASS) $(CHILL_FLAGS_TO_PASS) GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" all ; \
 		 else true; fi ;; \
 	esac
-
+#
 # Build hooks:
 
 CHILL.all.build: chill
@@ -123,7 +123,7 @@ chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex chill.texi
 # FIXME: Not sure languages should do this.
 	cp ch/chill.dvi chill.dvi
-
+#
 # Install hooks:
 # cc1chill is installed elsewhere as part of $(COMPILERS).
 
@@ -166,7 +166,7 @@ CHILL.install-man:
 CHILL.uninstall:
 	-rm -rf $(bindir)/$(CHILL_INSTALL_NAME)
 	-rm -rf $(bindir)/$(CHILL_CROSS_NAME)
-
+#
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -183,7 +183,7 @@ CHILL.maintainer-clean:
 	-rm -f ch/chill.info* ch/chill.dvi ch/chill.??s ch/chill.*aux
 # CYGNUS LOCAL: Delete locally created file.
 	-rm -f ch/hash.h
-
+#
 # Stage hooks:
 # The main makefile has already created stage?/ch.
 
@@ -195,7 +195,7 @@ CHILL.stage3:
 	-mv ch/*.o stage3/ch
 CHILL.stage4:
 	-mv ch/*.o stage4/ch
-
+#
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the
