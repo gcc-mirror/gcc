@@ -5813,7 +5813,7 @@ main (argc, argv)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK defined */
+#endif
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);

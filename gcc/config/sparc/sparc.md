@@ -6150,3 +6150,12 @@
    (set (reg:CC 100) (compare (match_dup 0) (const_int 0)))]
   ""
   "subxcc %r1,0,%0")
+
+;; After a nonlocal goto, we need to restore the PIC register, but only
+;; if we need it.  So do nothing much here, but we'll check for this in
+;; finalize_pic.
+
+(define_insn "nonlocal_goto_receiver"
+  [(unspec_volatile [(const_int 0)] 4)]
+  "flag_pic"
+  "")

@@ -29,6 +29,10 @@ Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* typeck.c (build_modify_expr): Remove code that ignores trivial 
 	methods.
 
+Mon Dec 22 17:46:17 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* method.c (build_overload_name): Fix mangling for __null.
+
 Mon Dec 22 11:36:27 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
 	* call.c (add_builtin_candidate): Add default case in enumeration
