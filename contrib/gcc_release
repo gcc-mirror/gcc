@@ -219,7 +219,7 @@ build_tarfiles() {
     done
   fi
 
-  # Possibly build .bz2 files.
+  # Build .bz2 files.
   for f in ${FILE_LIST}; do
     bzfile=${f%.gz}.bz2
     zcat $f | ${BZIP2} > ${bzfile}
