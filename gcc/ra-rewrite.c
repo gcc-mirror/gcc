@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 
@@ -1085,7 +1085,7 @@ static void
 rewrite_program2 (new_deaths)
      bitmap new_deaths;
 {
-  basic_block bb;
+  basic_block bb = NULL;
   int nl_first_reload;
   struct rewrite_info ri;
   rtx insn;
