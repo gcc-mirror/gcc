@@ -186,10 +186,13 @@ extern int target_flags;
 
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the clipper, 0-15 hold int, 16-31 hold float.  */
+   On the clipper, 0-15 hold int, 16-31 hold float. DImode regs must be
+   even */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)		\
-  ((GET_MODE_CLASS(MODE) == MODE_FLOAT) ? (REGNO) >= 16 : (REGNO) < 16)
+  ((GET_MODE_CLASS(MODE) == MODE_FLOAT)		\
+   ? (REGNO) >= 16				\
+   : (REGNO) < 16 && ((MODE) !=DImode || ((REGNO) & 1) == 0))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
