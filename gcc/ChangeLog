@@ -1,3 +1,8 @@
+2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("negdf2"): Rewrite.
+	("*expanded_negdf2"): New.
+
 2002-09-19  Jim Wilson  <wilson@redhat.com>
 
 	* combine.c (simplify_set): When optimizing a subreg src with a
