@@ -378,6 +378,15 @@ for machine in $build $host $target; do
 		    ;;
 		esac
 		;;
+ 	alpha*-*-vxworks*)
+		tm_file="${tm_file} dbx.h alpha/vxworks.h"
+		if [ x$gas != xyes ]
+		then
+			extra_passes="mips-tfile mips-tdump"
+		fi
+		broken_install=yes
+		use_collect2=yes
+		;;
 	alpha*-*-winnt3*)
 		tm_file="${tm_file} alpha/win-nt.h"
 		target_cpu_default=MASK_WINDOWS_NT
