@@ -11,6 +11,8 @@ details.  */
 #ifndef __JV_POSIX_H__
 #define __JV_POSIX_H__
 
+#ifndef DISABLE_JAVA_NET
+
 /* Required on Tru64 UNIX V4/V5 so <sys/socket.h> defines prototypes of
    socket functions with socklen_t instead of size_t.  This must be defined
    early so <standards.h> defines the correct version of __PIIX.  */
@@ -102,4 +104,7 @@ _Jv_read(int s, void *buf, int len)
 {
   return ::read (s, buf, len);
 }
-#endif
+
+#endif /* DISABLE_JAVA_NET */
+
+#endif /* __JV_POSIX_H__ */
