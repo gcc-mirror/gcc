@@ -3141,6 +3141,12 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 
   switch (TREE_CODE (parm))
     {
+    case TYPENAME_TYPE:
+      /* In a type which contains a nested-name-specifier, template
+	 argument values cannot be deduced for template parameters used
+	 within the nested-name-specifier.  */
+      return 0;
+
     case TEMPLATE_TYPE_PARM:
       (*nsubsts)++;
       idx = TEMPLATE_TYPE_IDX (parm);

@@ -1,3 +1,7 @@
+Tue Sep  9 19:49:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (unify): Just return 0 for a TYPENAME_TYPE.
+
 Tue Sep  9 17:57:25 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* error.c (dump_decl): Avoid crashing when presented with a
