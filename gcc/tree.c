@@ -3792,7 +3792,8 @@ build_pointer_type_for_mode (tree to_type, enum machine_mode mode)
 {
   tree t = TYPE_POINTER_TO (to_type);
 
-  /* First, if we already have a type for pointers to TO_TYPE, use it.  */
+  /* First, if we already have a type for pointers to TO_TYPE and it's
+     the proper mode, use it.  */
   if (t != 0 && mode == ptr_mode)
     return t;
 
@@ -3801,13 +3802,13 @@ build_pointer_type_for_mode (tree to_type, enum machine_mode mode)
   TREE_TYPE (t) = to_type;
   TYPE_MODE (t) = mode;
 
-  /* Record this type as the pointer to TO_TYPE.  */
+  /* We can only record one type as "the" pointer to TO_TYPE.  We choose to
+     record the pointer whose mode is ptr_mode.  */
   if (mode == ptr_mode)
-  TYPE_POINTER_TO (to_type) = t;
+    TYPE_POINTER_TO (to_type) = t;
 
   /* Lay out the type.  This function has many callers that are concerned
-     with expression-construction, and this simplifies them all.
-     Also, it guarantees the TYPE_SIZE is in the same obstack as the type.  */
+     with expression-construction, and this simplifies them all.  */
   layout_type (t);
 
   return t;
