@@ -24,8 +24,10 @@ LIBINTL_DEP=
 INCINTL=
 case $USE_INCLUDED_LIBINTL in
   yes)
-    LIBINTL_DEP='${top_builddir}/intl/libintl.a'
-    INCINTL='-I${top_builddir}/intl'
+    LIBINTL=`echo $LIBINTL | sed 's,${top_builddir},&/..,' `
+    LTLIBINTL=`echo $LTLIBINTL | sed 's,${top_builddir},&/..,' `
+    LIBINTL_DEP='${top_builddir}/../intl/libintl.a'
+    INCINTL='-I${top_builddir}/../intl'
     ;;
 esac
 

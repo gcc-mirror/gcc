@@ -1,3 +1,7 @@
+2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (top_builddir): Define to .
+
 2004-05-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (gcc_cv_ld): Prefer in-tree ld over whatever the
