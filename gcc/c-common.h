@@ -1235,6 +1235,10 @@ extern const char *init_c_lex			PARAMS ((const char *));
 
 extern void cb_register_builtins		PARAMS ((cpp_reader *));
 
+/* Positive if an implicit `extern "C"' scope has just been entered;
+   negative if such a scope has just been exited.  */
+extern int pending_lang_change;
+
 /* Information recorded about each file examined during compilation.  */
 
 struct c_fileinfo

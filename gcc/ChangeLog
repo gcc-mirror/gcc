@@ -1,3 +1,7 @@
+2002-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (pending_lang_change): Declare.
+
 2002-12-31  Jerry Quinn  <jlquinn@optonline.net>
 
 	* gcc/doc/invoke.texi (Optimization Options): Clean up -O flag
