@@ -1,5 +1,5 @@
 dnl
-dnl This file contains stuff.
+dnl This file contains macros for testing linkage.
 dnl
 
 dnl
@@ -20,7 +20,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_1], [
 		      #endif
 		     ],
                      [ $1(0);],
-                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+                      [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
       AC_LANG_RESTORE
     ])
   fi
@@ -291,7 +291,7 @@ AC_DEFUN([GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1], [
     AC_MSG_RESULT($glibcxx_cv_func_$1_link)
     if test x$glibcxx_cv_func_$1_link = x"yes"; then
       ac_tr_func=HAVE_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-      AC_DEFINE_UNQUOTED(${ac_tr_func})
+      AC_DEFINE(${ac_tr_func}, 1, [Defined if $1 exists.])
     fi
   fi
 ])
@@ -336,30 +336,6 @@ AC_DEFUN([GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT], [
   GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cosf)
   GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cos)
   GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cosl)
-
-  dnl There is, without a doubt, a more elegant way to have these
-  dnl names exported so that they won't be stripped out of acconfig.h by
-  dnl autoheader. I leave this as an exercise to somebody less frustrated
-  dnl than I.... please email the libstdc++ list if you can figure out a
-  dnl more elegant approach (see autoconf/acgen.m4 and specifically
-  dnl AC_CHECK_FUNC for things to steal.)
-  dummyvar=no
-  if test x$dummyvar = x"yes"; then
-    AC_DEFINE(HAVE___BUILTIN_ABS)
-    AC_DEFINE(HAVE___BUILTIN_LABS)
-    AC_DEFINE(HAVE___BUILTIN_COS)
-    AC_DEFINE(HAVE___BUILTIN_COSF)
-    AC_DEFINE(HAVE___BUILTIN_COSL)
-    AC_DEFINE(HAVE___BUILTIN_FABS)
-    AC_DEFINE(HAVE___BUILTIN_FABSF)
-    AC_DEFINE(HAVE___BUILTIN_FABSL)
-    AC_DEFINE(HAVE___BUILTIN_SIN)
-    AC_DEFINE(HAVE___BUILTIN_SINF)
-    AC_DEFINE(HAVE___BUILTIN_SINL)
-    AC_DEFINE(HAVE___BUILTIN_SQRT)
-    AC_DEFINE(HAVE___BUILTIN_SQRTF)
-    AC_DEFINE(HAVE___BUILTIN_SQRTL)
-  fi
 ])
 
 dnl
@@ -518,7 +494,10 @@ AC_DEFUN([GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT], [
   AC_REPLACE_MATHFUNCS(copysignf)
 
   dnl For __signbit to signbit conversions.
+  dnl Not sure why this is done, as these will be macros mostly. 
+  dnl Should probably coordinate this with std_cmath.h.
   AC_CHECK_FUNCS([__signbit], , [LIBMATHOBJS="$LIBMATHOBJS signbit.lo"])
+
   AC_CHECK_FUNCS([__signbitf], , [LIBMATHOBJS="$LIBMATHOBJS signbitf.lo"])
 
   dnl Compile the long double complex functions only if the function
@@ -529,7 +508,7 @@ AC_DEFUN([GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT], [
     AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
   fi
 
-  # XXX Review this.  Nothing uses it.
+  # Used in libmath/Makefile.am.
   if test -n "$LIBMATHOBJS"; then
     need_libmath=yes
   fi
@@ -550,5 +529,3 @@ AC_DEFUN([GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT], [
 dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
 AC_DEFUN([AC_REPLACE_MATHFUNCS],
 [AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])])
-
-dnl vim:et:ts=2
