@@ -193,6 +193,14 @@ static void add_decl_to_level PROTO((tree, struct binding_level *));
 static tree make_label_decl PROTO((tree, int));
 static void pop_label PROTO((tree));
 static void pop_labels PROTO((tree));
+static void maybe_deduce_size_from_array_init PROTO((tree, tree));
+static void layout_var_decl PROTO((tree, tree *));
+static void maybe_commonize_var PROTO((tree));
+static void maybe_inject_for_scope_var PROTO((tree));
+static void initialize_local_var PROTO((tree, tree, tree, int));
+static tree build_cleanup_on_safe_obstack PROTO((tree));
+static void check_initializer PROTO((tree, tree *));
+static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -7315,6 +7323,207 @@ obscure_complex_init (decl, init)
   return init;
 }
 
+/* When parsing `int a[] = {1, 2};' we don't know the size of the
+   array until we finish parsing the initializer.  If that's the
+   situation we're in, update DECL accordingly.  */
+
+static void
+maybe_deduce_size_from_array_init (decl, init)
+     tree decl;
+     tree init;
+{
+  tree type = TREE_TYPE (decl);
+
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_DOMAIN (type) == NULL_TREE
+      && TREE_CODE (decl) != TYPE_DECL)
+    {
+      int do_default
+	= (TREE_STATIC (decl)
+	   /* Even if pedantic, an external linkage array
+	      may have incomplete type at first.  */
+	   ? pedantic && ! DECL_EXTERNAL (decl)
+	   : !DECL_EXTERNAL (decl));
+      tree initializer = init ? init : DECL_INITIAL (decl);
+      int failure = complete_array_type (type, initializer, do_default);
+
+      if (failure == 1)
+	cp_error ("initializer fails to determine size of `%D'", decl);
+
+      if (failure == 2)
+	{
+	  if (do_default)
+	    cp_error ("array size missing in `%D'", decl);
+	  /* If a `static' var's size isn't known, make it extern as
+	     well as static, so it does not get allocated.  If it's not
+	     `static', then don't mark it extern; finish_incomplete_decl
+	     will give it a default size and it will get allocated.  */
+	  else if (!pedantic && TREE_STATIC (decl) && !TREE_PUBLIC (decl))
+	    DECL_EXTERNAL (decl) = 1;
+	}
+
+      if (pedantic && TYPE_DOMAIN (type) != NULL_TREE
+	  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+			      integer_zero_node))
+	cp_error ("zero-size array `%D'", decl);
+
+      layout_decl (decl, 0);
+    }
+}
+
+/* Set DECL_SIZE, DECL_ALIGN, etc. for DECL (a VAR_DECL), and issue
+   any appropriate error messages regarding the layout.  INITP is a
+   pointer to the initializer for DECL; the initializer may be
+   modified by this function.  */
+
+static void
+layout_var_decl (decl, initp)
+     tree decl;
+     tree *initp;
+{
+  tree ttype = target_type (TREE_TYPE (decl));
+
+  if (DECL_SIZE (decl) == NULL_TREE
+      && TYPE_SIZE (complete_type (TREE_TYPE (decl))) != NULL_TREE)
+    layout_decl (decl, 0);
+
+  if (TREE_STATIC (decl) && DECL_SIZE (decl) == NULL_TREE)
+    {
+      /* A static variable with an incomplete type:
+	 that is an error if it is initialized.
+	 Otherwise, let it through, but if it is not `extern'
+	 then it may cause an error message later.  */
+      if (DECL_INITIAL (decl) != NULL_TREE)
+	cp_error ("storage size of `%D' isn't known", decl);
+      *initp = NULL_TREE;
+    }
+  else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
+    {
+      /* An automatic variable with an incomplete type: that is an error.
+	 Don't talk about array types here, since we took care of that
+	 message in grokdeclarator.  */
+      cp_error ("storage size of `%D' isn't known", decl);
+      TREE_TYPE (decl) = error_mark_node;
+    }
+  else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
+    /* Let debugger know it should output info for this type.  */
+    note_debug_info_needed (ttype);
+
+  if (TREE_STATIC (decl) && DECL_CLASS_SCOPE_P (decl))
+    note_debug_info_needed (DECL_CONTEXT (decl));
+
+  if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
+      && DECL_SIZE (decl) != NULL_TREE
+      && ! TREE_CONSTANT (DECL_SIZE (decl)))
+    {
+      if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
+	constant_expression_warning (DECL_SIZE (decl));
+      else
+	cp_error ("storage size of `%D' isn't constant", decl);
+    }
+}
+
+/* Return a cleanup for DECL, created on whatever obstack is
+   appropriate.  */
+
+static tree
+build_cleanup_on_safe_obstack (decl)
+     tree decl;
+{
+  tree cleanup;
+  tree type;
+  int need_pop;
+
+  type = TREE_TYPE (decl);
+
+  /* Only variables get cleaned up.  */
+  if (TREE_CODE (decl) != VAR_DECL)
+    return NULL_TREE;
+  
+  /* And only things with destructors need cleaning up.  */
+  if (!TYPE_NEEDS_DESTRUCTOR (type))
+    return NULL_TREE;
+
+  if (TREE_CODE (decl) == VAR_DECL &&
+      (DECL_EXTERNAL (decl) || TREE_STATIC (decl)))
+    /* We don't clean up things that aren't defined in this
+       translation unit, or that need a static cleanup.  The latter
+       are handled by finish_file.  */
+    return NULL_TREE;
+  
+  /* Switch to an obstack that will live until the point where the
+     cleanup code is actually expanded.  */
+  need_pop = suspend_momentary ();
+
+  /* Compute the cleanup.  */
+  cleanup = maybe_build_cleanup (decl);
+
+  /* Pop back to the obstack we were on before.  */
+  resume_momentary (need_pop);
+  
+  return cleanup;
+}
+
+/* If a local static variable is declared in an inline function, or if
+   we have a weak definition, we must endeavor to create only one
+   instance of the variable at link-time.  */
+
+static void
+maybe_commonize_var (decl)
+     tree decl;
+{
+  /* Static data in a function with comdat linkage also has comdat
+     linkage.  */
+  if (TREE_STATIC (decl)
+      /* Don't mess with __FUNCTION__.  */
+      && ! TREE_ASM_WRITTEN (decl)
+      && current_function_decl
+      && DECL_CONTEXT (decl) == current_function_decl
+      && (DECL_THIS_INLINE (current_function_decl)
+	  || DECL_TEMPLATE_INSTANTIATION (current_function_decl))
+      && TREE_PUBLIC (current_function_decl))
+    {
+      /* Rather than try to get this right with inlining, we suppress
+	 inlining of such functions.  */
+      current_function_cannot_inline
+	= "function with static variable cannot be inline";
+
+      /* If flag_weak, we don't need to mess with this, as we can just
+	 make the function weak, and let it refer to its unique local
+	 copy.  This works because we don't allow the function to be
+	 inlined.  */
+      if (! flag_weak)
+	{
+	  if (DECL_INTERFACE_KNOWN (current_function_decl))
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_EXTERNAL (decl) = DECL_EXTERNAL (current_function_decl);
+	    }
+	  else if (DECL_INITIAL (decl) == NULL_TREE
+		   || DECL_INITIAL (decl) == error_mark_node)
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_COMMON (decl) = 1;
+	    }
+	  /* else we lose. We can only do this if we can use common,
+	     which we can't if it has been initialized.  */
+
+	  if (TREE_PUBLIC (decl))
+	    DECL_ASSEMBLER_NAME (decl)
+	      = build_static_name (current_function_decl, DECL_NAME (decl));
+	  else if (! DECL_ARTIFICIAL (decl))
+	    {
+	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
+	      cp_warning_at ("  you can work around this by removing the initializer", decl);
+	    }
+	}
+    }
+  else if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
+    /* Set it up again; we might have set DECL_INITIAL since the last
+       time.  */
+    comdat_linkage (decl);
+}
+
 /* Issue an error message if DECL is an uninitialized const variable.  */
 
 static void
@@ -7332,6 +7541,327 @@ check_for_uninitialized_const_var (decl)
       && !TYPE_NEEDS_CONSTRUCTING (type)
       && !DECL_INITIAL (decl))
     cp_error ("uninitialized const `%D'", decl);
+}
+
+/* Verify INITP (the initializer for DECL), and record the
+   initialization in DECL_INITIAL, if appropriate.  The initializer
+   may be modified by this function.  */
+
+static void
+check_initializer (decl, initp)
+     tree decl;
+     tree *initp;
+{
+  tree init;
+  tree type;
+
+  if (TREE_CODE (decl) == FIELD_DECL)
+    return;
+
+  type = TREE_TYPE (decl);
+  init = *initp;
+
+  /* If `start_decl' didn't like having an initialization, ignore it now.  */
+  if (init != NULL_TREE && DECL_INITIAL (decl) == NULL_TREE)
+    init = NULL_TREE;
+  else if (DECL_EXTERNAL (decl))
+    ;
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      if (TREE_STATIC (decl))
+	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
+      grok_reference_init (decl, type, init);
+      init = NULL_TREE;
+    }
+
+  /* Check for certain invalid initializations.  */
+  if (init)
+    {
+      if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
+	{
+	  cp_error ("variable-sized object `%D' may not be initialized", decl);
+	  init = NULL_TREE;
+	}
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && !TYPE_SIZE (complete_type (TREE_TYPE (type))))
+	{
+	  cp_error ("elements of array `%#D' have incomplete type", decl);
+	  init = NULL_TREE;
+	}
+    }
+
+  if (TREE_CODE (decl) == CONST_DECL)
+    {
+      my_friendly_assert (TREE_CODE (decl) != REFERENCE_TYPE, 148);
+
+      DECL_INITIAL (decl) = init;
+
+      /* This will keep us from needing to worry about our obstacks.  */
+      my_friendly_assert (init != NULL_TREE, 149);
+      init = NULL_TREE;
+    }
+  else if (init)
+    {
+      if (TYPE_HAS_CONSTRUCTOR (type) || TYPE_NEEDS_CONSTRUCTING (type))
+	{
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    init = digest_init (type, init, (tree *) 0);
+	  else if (TREE_CODE (init) == CONSTRUCTOR
+		   && TREE_HAS_CONSTRUCTOR (init))
+	    {
+	      if (TYPE_NON_AGGREGATE_CLASS (type))
+		{
+		  cp_error ("`%D' must be initialized by constructor, not by `{...}'",
+			    decl);
+		  init = error_mark_node;
+		}
+	      else
+		goto dont_use_constructor;
+	    }
+	}
+      else
+	{
+	dont_use_constructor:
+	  if (TREE_CODE (init) != TREE_VEC)
+	    init = store_init_value (decl, init);
+	}
+
+      if (init)
+	/* We must hide the initializer so that expand_decl
+	   won't try to do something it does not understand.  */
+	init = obscure_complex_init (decl, init);
+    }
+  else if (DECL_EXTERNAL (decl))
+    ;
+  else if (TREE_CODE_CLASS (TREE_CODE (type)) == 't'
+	   && (IS_AGGR_TYPE (type) || TYPE_NEEDS_CONSTRUCTING (type)))
+    {
+      tree core_type = strip_array_types (type);
+
+      if (! TYPE_NEEDS_CONSTRUCTING (core_type))
+	{
+	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
+	    cp_error ("structure `%D' with uninitialized const members", decl);
+	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
+	    cp_error ("structure `%D' with uninitialized reference members",
+		      decl);
+	}
+
+      check_for_uninitialized_const_var (decl);
+
+      if (TYPE_SIZE (type) != NULL_TREE
+	  && TYPE_NEEDS_CONSTRUCTING (type))
+	init = obscure_complex_init (decl, NULL_TREE);
+
+    }
+  else
+    check_for_uninitialized_const_var (decl);
+  
+  /* Store the modified initializer for our caller.  */
+  *initp = init;
+}
+
+/* If DECL is not a local variable, give it RTL.  */
+
+static void
+make_rtl_for_nonlocal_decl (decl, init, asmspec)
+     tree decl;
+     tree init;
+     const char *asmspec;
+{
+  int was_temp;
+  int toplev;
+  tree type;
+
+  type = TREE_TYPE (decl);
+  toplev = toplevel_bindings_p ();
+  was_temp = (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
+	      && allocation_temporary_p ());
+  if (was_temp)
+    end_temporary_allocation ();
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+    make_decl_rtl (decl, NULL_PTR, toplev);
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && TREE_READONLY (decl)
+	   && DECL_INITIAL (decl) != NULL_TREE
+	   && DECL_INITIAL (decl) != error_mark_node
+	   && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
+    {
+      DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
+
+      if (asmspec)
+	DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+
+      if (! toplev
+	  && TREE_STATIC (decl)
+	  && ! TREE_SIDE_EFFECTS (decl)
+	  && ! TREE_PUBLIC (decl)
+	  && ! DECL_EXTERNAL (decl)
+	  && ! TYPE_NEEDS_DESTRUCTOR (type)
+	  && DECL_MODE (decl) != BLKmode)
+	{
+	  /* If this variable is really a constant, then fill its DECL_RTL
+	     slot with something which won't take up storage.
+	     If something later should take its address, we can always give
+	     it legitimate RTL at that time.  */
+	  DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
+	  store_expr (DECL_INITIAL (decl), DECL_RTL (decl), 0);
+	  TREE_ASM_WRITTEN (decl) = 1;
+	}
+      else if (toplev && ! TREE_PUBLIC (decl))
+	{
+	  /* If this is a static const, change its apparent linkage
+	     if it belongs to a #pragma interface.  */
+	  if (!interface_unknown)
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_EXTERNAL (decl) = interface_only;
+	    }
+	  make_decl_rtl (decl, asmspec, toplev);
+	}
+      else
+	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+    }
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && DECL_LANG_SPECIFIC (decl)
+	   && DECL_IN_AGGR_P (decl))
+    {
+      my_friendly_assert (TREE_STATIC (decl), 19990828);
+
+      if (init == NULL_TREE
+#ifdef DEFAULT_STATIC_DEFS
+	  /* If this code is dead, then users must
+	     explicitly declare static member variables
+	     outside the class def'n as well.  */
+	  && TYPE_NEEDS_CONSTRUCTING (type)
+#endif
+	  )
+	{
+	  DECL_EXTERNAL (decl) = 1;
+	  make_decl_rtl (decl, asmspec, 1);
+	}
+      else
+	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+    }
+  else
+    rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+
+  if (was_temp)
+    resume_temporary_allocation ();
+}
+
+/* The old ARM scoping rules injected variables declared in the
+   initialization statement of a for-statement into the surrounding
+   scope.  We support this usage, in order to be backward-compatible.
+   DECL is a just-declared VAR_DECL; if necessary inject its
+   declaration into the surrounding scope.  */
+
+static void
+maybe_inject_for_scope_var (decl)
+     tree decl;
+{
+  if (current_binding_level->is_for_scope)
+    {
+      struct binding_level *outer 
+	= current_binding_level->level_chain;
+
+      /* Check to see if the same name is already bound at the outer
+	 level, either because it was directly declared, or because a
+	 dead for-decl got preserved.  In either case, the code would
+	 not have been valid under the ARM scope rules, so clear
+	 is_for_scope for the current_binding_level.
+
+	 Otherwise, we need to preserve the temp slot for decl to last
+	 into the outer binding level.  */
+
+      tree outer_binding 
+	= TREE_CHAIN (IDENTIFIER_BINDING (DECL_NAME (decl)));
+	      
+      if (outer_binding && BINDING_LEVEL (outer_binding) == outer
+	  && (TREE_CODE (BINDING_VALUE (outer_binding)) 
+	      == VAR_DECL)
+	  && DECL_DEAD_FOR_LOCAL (BINDING_VALUE (outer_binding)))
+	{
+	  BINDING_VALUE (outer_binding)
+	    = DECL_SHADOWED_FOR_VAR (BINDING_VALUE (outer_binding));
+	  current_binding_level->is_for_scope = 0;
+	}
+      else if (DECL_IN_MEMORY_P (decl))
+	preserve_temp_slots (DECL_RTL (decl));
+    }
+}
+
+/* Generate code to initialized DECL (a local variable).  */
+
+static void
+initialize_local_var (decl, init, cleanup, flags)
+     tree decl;
+     tree init;
+     tree cleanup;
+     int flags;
+{
+  tree type;
+
+  type = TREE_TYPE (decl);
+  expand_start_target_temps ();
+
+  if (DECL_SIZE (decl) && type != error_mark_node)
+    {
+      int already_used;
+  
+      /* Compute and store the initial value.  */
+      expand_decl_init (decl);
+      already_used = TREE_USED (decl) || TREE_USED (type);
+
+      if (init || TYPE_NEEDS_CONSTRUCTING (type))
+	{
+	  emit_line_note (DECL_SOURCE_FILE (decl),
+			  DECL_SOURCE_LINE (decl));
+	  /* We call push_momentary here so that when
+	     finish_expr_stmt clears the momentary obstack it
+	     doesn't destory any momentary expressions we may
+	     have lying around.  Although cp_finish_decl is
+	     usually called at the end of a declaration
+	     statement, it may also be called for a temporary
+	     object in the middle of an expression.  */
+	  push_momentary ();
+	  finish_expr_stmt (build_aggr_init (decl, init, flags));
+	  pop_momentary ();
+	}
+
+      /* Set this to 0 so we can tell whether an aggregate which was
+	 initialized was ever used.  Don't do this if it has a
+	 destructor, so we don't complain about the 'resource
+	 allocation is initialization' idiom.  */
+      /* Now set attribute((unused)) on types so decls of that type
+	 will be marked used. (see TREE_USED, above.)  This avoids the
+	 warning problems this particular code tried to work
+	 around. */
+
+      if (TYPE_NEEDS_CONSTRUCTING (type)
+	  && ! already_used
+	  && cleanup == NULL_TREE
+	  && DECL_NAME (decl))
+	TREE_USED (decl) = 0;
+
+      if (already_used)
+	TREE_USED (decl) = 1;
+    }
+
+  /* Cleanup any temporaries needed for the initial value.  */
+  expand_end_target_temps ();
+
+  if (DECL_SIZE (decl) && type != error_mark_node)
+    {
+      /* Store the cleanup, if there was one.  */
+      if (cleanup)
+	{
+	  if (! expand_decl_cleanup (decl, cleanup))
+	    cp_error ("parser lost in parsing declaration of `%D'",
+		      decl);
+	}
+    }
 }
 
 /* Finish processing of a declaration;
@@ -7364,13 +7894,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
      int flags;
 {
   register tree type;
-  tree cleanup = NULL_TREE, ttype = NULL_TREE;
+  tree ttype = NULL_TREE;
   int was_incomplete;
   int temporary = allocation_temporary_p ();
   const char *asmspec = NULL;
   int was_readonly = 0;
-  int already_used = 0;
-  tree core_type;
 
   /* If this is 0, then we did not change obstacks.  */
   if (! decl)
@@ -7433,6 +7961,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       goto finish_end0;
     }
 
+  /* Parameters are handled by store_parm_decls, not cp_finish_decl.  */
+  my_friendly_assert (TREE_CODE (decl) != PARM_DECL, 19990828);
+
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -7478,122 +8009,19 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       TREE_READONLY (decl) = 0;
     }
 
-  if (TREE_CODE (decl) == FIELD_DECL)
+  if (TREE_CODE (decl) == FIELD_DECL && asmspec)
     {
-      if (init && init != error_mark_node)
-	my_friendly_assert (TREE_PERMANENT (init), 147);
-
-      if (asmspec)
-	{
-	  /* This must override the asm specifier which was placed
-	     by grokclassfn.  Lay this out fresh.  */
-	  DECL_RTL (TREE_TYPE (decl)) = NULL_RTX;
-	  DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
-	  make_decl_rtl (decl, asmspec, 0);
-	}
-    }
-  /* If `start_decl' didn't like having an initialization, ignore it now.  */
-  else if (init != NULL_TREE && DECL_INITIAL (decl) == NULL_TREE)
-    init = NULL_TREE;
-  else if (DECL_EXTERNAL (decl))
-    ;
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      if (TREE_STATIC (decl))
-	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
-      grok_reference_init (decl, type, init);
-      init = NULL_TREE;
+      /* This must override the asm specifier which was placed by
+	 grokclassfn.  Lay this out fresh.  */
+      DECL_RTL (TREE_TYPE (decl)) = NULL_RTX;
+      DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+      make_decl_rtl (decl, asmspec, 0);
     }
 
-  /* Check for certain invalid initializations.  */
-  if (init)
-    {
-      if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
-	{
-	  cp_error ("variable-sized object `%D' may not be initialized", decl);
-	  init = NULL_TREE;
-	}
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && !TYPE_SIZE (complete_type (TREE_TYPE (type))))
-	{
-	  cp_error ("elements of array `%#D' have incomplete type", decl);
-	  init = NULL_TREE;
-	}
-    }
+  check_initializer (decl, &init);
 
   GNU_xref_decl (current_function_decl, decl);
 
-  core_type = type;
-  while (TREE_CODE (core_type) == ARRAY_TYPE)
-    core_type = TREE_TYPE (core_type);
-  
-  if (TREE_CODE (decl) == FIELD_DECL)
-    ;
-  else if (TREE_CODE (decl) == CONST_DECL)
-    {
-      my_friendly_assert (TREE_CODE (decl) != REFERENCE_TYPE, 148);
-
-      DECL_INITIAL (decl) = init;
-
-      /* This will keep us from needing to worry about our obstacks.  */
-      my_friendly_assert (init != NULL_TREE, 149);
-      init = NULL_TREE;
-    }
-  else if (init)
-    {
-      if (TYPE_HAS_CONSTRUCTOR (type) || TYPE_NEEDS_CONSTRUCTING (type))
-	{
-	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    init = digest_init (type, init, (tree *) 0);
-	  else if (TREE_CODE (init) == CONSTRUCTOR
-		   && TREE_HAS_CONSTRUCTOR (init))
-	    {
-	      if (TYPE_NON_AGGREGATE_CLASS (type))
-		{
-		  cp_error ("`%D' must be initialized by constructor, not by `{...}'",
-			    decl);
-		  init = error_mark_node;
-		}
-	      else
-		goto dont_use_constructor;
-	    }
-	}
-      else
-	{
-	dont_use_constructor:
-	  if (TREE_CODE (init) != TREE_VEC)
-	    init = store_init_value (decl, init);
-	}
-
-      if (init)
-	/* We must hide the initializer so that expand_decl
-	   won't try to do something it does not understand.  */
-	init = obscure_complex_init (decl, init);
-    }
-  else if (DECL_EXTERNAL (decl))
-    ;
-  else if (TREE_CODE_CLASS (TREE_CODE (type)) == 't'
-	   && (IS_AGGR_TYPE (type) || TYPE_NEEDS_CONSTRUCTING (type)))
-    {
-      if (! TYPE_NEEDS_CONSTRUCTING (core_type))
-	{
-	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
-	    cp_error ("structure `%D' with uninitialized const members", decl);
-	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
-	    cp_error ("structure `%D' with uninitialized reference members",
-		      decl);
-	}
-
-      check_for_uninitialized_const_var (decl);
-
-      if (TYPE_SIZE (type) != NULL_TREE
-	  && TYPE_NEEDS_CONSTRUCTING (type))
-	init = obscure_complex_init (decl, NULL_TREE);
-
-    }
-  else
-    check_for_uninitialized_const_var (decl);
-  
   /* For top-level declaration, the initial value was read in
      the temporary obstack.  MAXINDEX, rtl, etc. to be made below
      must go in the permanent obstack; but don't discard the
@@ -7603,102 +8031,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     end_temporary_allocation ();
 
   /* Deduce size of array from initialization, if not already known.  */
-
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_DOMAIN (type) == NULL_TREE
-      && TREE_CODE (decl) != TYPE_DECL)
-    {
-      int do_default
-	= (TREE_STATIC (decl)
-	   /* Even if pedantic, an external linkage array
-	      may have incomplete type at first.  */
-	   ? pedantic && ! DECL_EXTERNAL (decl)
-	   : !DECL_EXTERNAL (decl));
-      tree initializer = init ? init : DECL_INITIAL (decl);
-      int failure = complete_array_type (type, initializer, do_default);
-
-      if (failure == 1)
-	cp_error ("initializer fails to determine size of `%D'", decl);
-
-      if (failure == 2)
-	{
-	  if (do_default)
-	    cp_error ("array size missing in `%D'", decl);
-	  /* If a `static' var's size isn't known, make it extern as
-	     well as static, so it does not get allocated.  If it's not
-	     `static', then don't mark it extern; finish_incomplete_decl
-	     will give it a default size and it will get allocated.  */
-	  else if (!pedantic && TREE_STATIC (decl) && !TREE_PUBLIC (decl))
-	    DECL_EXTERNAL (decl) = 1;
-	}
-
-      if (pedantic && TYPE_DOMAIN (type) != NULL_TREE
-	  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-			      integer_zero_node))
-	cp_error ("zero-size array `%D'", decl);
-
-      layout_decl (decl, 0);
-    }
+  maybe_deduce_size_from_array_init (decl, init);
 
   if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if (DECL_SIZE (decl) == NULL_TREE
-	  && TYPE_SIZE (complete_type (TREE_TYPE (decl))) != NULL_TREE)
-	layout_decl (decl, 0);
-
-      if (TREE_STATIC (decl) && DECL_SIZE (decl) == NULL_TREE)
-	{
-	  /* A static variable with an incomplete type:
-	     that is an error if it is initialized.
-	     Otherwise, let it through, but if it is not `extern'
-	     then it may cause an error message later.  */
-	  if (DECL_INITIAL (decl) != NULL_TREE)
-	    cp_error ("storage size of `%D' isn't known", decl);
-	  init = NULL_TREE;
-	}
-      else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
-	{
-	  /* An automatic variable with an incomplete type: that is an error.
-	     Don't talk about array types here, since we took care of that
-	     message in grokdeclarator.  */
-	  cp_error ("storage size of `%D' isn't known", decl);
-	  TREE_TYPE (decl) = error_mark_node;
-	}
-      else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
-	/* Let debugger know it should output info for this type.  */
-	note_debug_info_needed (ttype);
-
-      if (TREE_STATIC (decl) && DECL_CLASS_SCOPE_P (decl))
-	note_debug_info_needed (DECL_CONTEXT (decl));
-
-      if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
-	  && DECL_SIZE (decl) != NULL_TREE
-	  && ! TREE_CONSTANT (DECL_SIZE (decl)))
-	{
-	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
-	    constant_expression_warning (DECL_SIZE (decl));
-	  else
-	    cp_error ("storage size of `%D' isn't constant", decl);
-	}
-
-      if (! DECL_EXTERNAL (decl) && TYPE_NEEDS_DESTRUCTOR (type)
-	  /* Cleanups for static variables are handled by `finish_file'.  */
-	  && ! TREE_STATIC (decl))
-	{
-	  int yes = suspend_momentary ();
-	  cleanup = maybe_build_cleanup (decl);
-	  resume_momentary (yes);
-	}
-    }
-  /* PARM_DECLs get cleanups, too.  */
-  else if (TREE_CODE (decl) == PARM_DECL && TYPE_NEEDS_DESTRUCTOR (type))
-    {
-      if (temporary)
-	end_temporary_allocation ();
-      cleanup = maybe_build_cleanup (decl);
-      if (temporary)
-	resume_temporary_allocation ();
-    }
+    layout_var_decl (decl, &init);
 
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
@@ -7711,146 +8047,18 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     {
       /* ??? FIXME: What about nested classes?  */
       int toplev = toplevel_bindings_p ();
-      int was_temp
-	= (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
-	   && allocation_temporary_p ());
 
-      if (was_temp)
-	end_temporary_allocation ();
+      if (TREE_CODE (decl) == VAR_DECL)
+	maybe_commonize_var (decl);
 
-      /* Static data in a function with comdat linkage also has comdat
-         linkage.  */
-      if (TREE_CODE (decl) == VAR_DECL
-	  && TREE_STATIC (decl)
-	  /* Don't mess with __FUNCTION__.  */
-	  && ! TREE_ASM_WRITTEN (decl)
-	  && current_function_decl
-	  && DECL_CONTEXT (decl) == current_function_decl
-	  && (DECL_THIS_INLINE (current_function_decl)
-	      || DECL_TEMPLATE_INSTANTIATION (current_function_decl))
-	  && TREE_PUBLIC (current_function_decl))
-	{
-	  /* Rather than try to get this right with inlining, we suppress
-	     inlining of such functions.  */
-	  current_function_cannot_inline
-	    = "function with static variable cannot be inline";
+      make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
-	  /* If flag_weak, we don't need to mess with this, as we can just
-	     make the function weak, and let it refer to its unique local
-	     copy.  This works because we don't allow the function to be
-	     inlined.  */
-	  if (! flag_weak)
-	    {
-	      if (DECL_INTERFACE_KNOWN (current_function_decl))
-		{
-		  TREE_PUBLIC (decl) = 1;
-		  DECL_EXTERNAL (decl) = DECL_EXTERNAL (current_function_decl);
-		}
-	      else if (DECL_INITIAL (decl) == NULL_TREE
-		       || DECL_INITIAL (decl) == error_mark_node)
-		{
-		  TREE_PUBLIC (decl) = 1;
-		  DECL_COMMON (decl) = 1;
-		}
-	      /* else we lose. We can only do this if we can use common,
-                 which we can't if it has been initialized.  */
-
-	      if (TREE_PUBLIC (decl))
-		DECL_ASSEMBLER_NAME (decl)
-		  = build_static_name (current_function_decl, DECL_NAME (decl));
-	      else if (! DECL_ARTIFICIAL (decl))
-		{
-		  cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
-		  cp_warning_at ("  you can work around this by removing the initializer", decl);
-		}
-	    }
-	}
-
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && DECL_LANG_SPECIFIC (decl)
-	       && DECL_COMDAT (decl))
-	/* Set it up again; we might have set DECL_INITIAL since the
-	   last time.  */
-	comdat_linkage (decl);
-
-      if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
-	make_decl_rtl (decl, NULL_PTR, toplev);
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && TREE_READONLY (decl)
-	       && DECL_INITIAL (decl) != NULL_TREE
-	       && DECL_INITIAL (decl) != error_mark_node
-	       && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-	{
-	  DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
-
-	  if (asmspec)
-	    DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
-
-	  if (! toplev
-	      && TREE_STATIC (decl)
-	      && ! TREE_SIDE_EFFECTS (decl)
-	      && ! TREE_PUBLIC (decl)
-	      && ! DECL_EXTERNAL (decl)
-	      && ! TYPE_NEEDS_DESTRUCTOR (type)
-	      && DECL_MODE (decl) != BLKmode)
-	    {
-	      /* If this variable is really a constant, then fill its DECL_RTL
-		 slot with something which won't take up storage.
-		 If something later should take its address, we can always give
-		 it legitimate RTL at that time.  */
-	      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
-	      store_expr (DECL_INITIAL (decl), DECL_RTL (decl), 0);
-	      TREE_ASM_WRITTEN (decl) = 1;
-	    }
-	  else if (toplev && ! TREE_PUBLIC (decl))
-	    {
-	      /* If this is a static const, change its apparent linkage
-	         if it belongs to a #pragma interface.  */
-	      if (!interface_unknown)
-		{
-		  TREE_PUBLIC (decl) = 1;
-		  DECL_EXTERNAL (decl) = interface_only;
-		}
-	      make_decl_rtl (decl, asmspec, toplev);
-	    }
-	  else
-	    rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
-	}
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && DECL_LANG_SPECIFIC (decl)
-	       && DECL_IN_AGGR_P (decl))
-	{
-	  if (TREE_STATIC (decl))
-	    {
-	      if (init == NULL_TREE
-#ifdef DEFAULT_STATIC_DEFS
-		  /* If this code is dead, then users must
-		     explicitly declare static member variables
-		     outside the class def'n as well.  */
-		  && TYPE_NEEDS_CONSTRUCTING (type)
-#endif
-		  )
-		{
-		  DECL_EXTERNAL (decl) = 1;
-		  make_decl_rtl (decl, asmspec, 1);
-		}
-	      else
-		rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
-	    }
-	  else
-	    /* Just a constant field.  Should not need any rtl.  */
-	    goto finish_end0;
-	}
-      else
-	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
-
-      if (was_temp)
-	resume_temporary_allocation ();
-
-      if (!abstract_virtuals_error (decl, core_type)
-	  && (TREE_CODE (type) == FUNCTION_TYPE
-	      || TREE_CODE (type) == METHOD_TYPE))
-	abstract_virtuals_error (decl, TREE_TYPE (type));
+      if (TREE_CODE (type) == FUNCTION_TYPE 
+	  || TREE_CODE (type) == METHOD_TYPE)
+	abstract_virtuals_error (decl, 
+				 strip_array_types (TREE_TYPE (type)));
+      else 
+	abstract_virtuals_error (decl, strip_array_types (type));
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	;
@@ -7870,6 +8078,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	}
       else if (! toplev)
 	{
+	  tree cleanup = build_cleanup_on_safe_obstack (decl);
+
 	  /* This is a declared decl which must live until the
 	     end of the binding contour.  It may need a cleanup.  */
 
@@ -7904,93 +8114,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		}
 	    }
 
-	  if (current_binding_level->is_for_scope)
-	    {
-	      struct binding_level *outer 
-		= current_binding_level->level_chain;
-
-	      /* Check to see if the same name is already bound at
-		 the outer level, either because it was directly declared,
-		 or because a dead for-decl got preserved.  In either case,
-		 the code would not have been valid under the ARM
-		 scope rules, so clear is_for_scope for the
-		 current_binding_level.
-
-		 Otherwise, we need to preserve the temp slot for decl
-		 to last into the outer binding level.  */
-
-	      tree outer_binding 
-		= TREE_CHAIN (IDENTIFIER_BINDING (DECL_NAME (decl)));
-	      
-	      if (outer_binding && BINDING_LEVEL (outer_binding) == outer
-		  && (TREE_CODE (BINDING_VALUE (outer_binding)) 
-		      == VAR_DECL)
-		  && DECL_DEAD_FOR_LOCAL (BINDING_VALUE (outer_binding)))
-		{
-		  BINDING_VALUE (outer_binding)
-		    = DECL_SHADOWED_FOR_VAR (BINDING_VALUE (outer_binding));
-		  current_binding_level->is_for_scope = 0;
-		}
-	      else if (DECL_IN_MEMORY_P (decl))
-		preserve_temp_slots (DECL_RTL (decl));
-	    }
-
-	  expand_start_target_temps ();
-
-	  if (DECL_SIZE (decl) && type != error_mark_node)
-	    {
-	      /* Compute and store the initial value.  */
-	      expand_decl_init (decl);
-       	      already_used = TREE_USED (decl) || TREE_USED (type);
-
-	      if (init || TYPE_NEEDS_CONSTRUCTING (type))
-		{
-		  emit_line_note (DECL_SOURCE_FILE (decl),
-				  DECL_SOURCE_LINE (decl));
-		  /* We call push_momentary here so that when
-		     finish_expr_stmt clears the momentary obstack it
-		     doesn't destory any momentary expressions we may
-		     have lying around.  Although cp_finish_decl is
-		     usually called at the end of a declaration
-		     statement, it may also be called for a temporary
-		     object in the middle of an expression.  */
-		  push_momentary ();
-		  finish_expr_stmt (build_aggr_init (decl, init, flags));
-		  pop_momentary ();
-		}
-
-	      /* Set this to 0 so we can tell whether an aggregate which
-		 was initialized was ever used.  Don't do this if it has a
-		 destructor, so we don't complain about the 'resource
-		 allocation is initialization' idiom.  */
-	      /* Now set attribute((unused)) on types so decls of
-		 that type will be marked used. (see TREE_USED, above.) 
-		 This avoids the warning problems this particular code
-		 tried to work around. */
-
-	      if (TYPE_NEEDS_CONSTRUCTING (type)
-		  && ! already_used
-		  && cleanup == NULL_TREE
-		  && DECL_NAME (decl))
-		TREE_USED (decl) = 0;
-
-	      if (already_used)
-		TREE_USED (decl) = 1;
-	    }
-
-	  /* Cleanup any temporaries needed for the initial value.  */
-	  expand_end_target_temps ();
-
-	  if (DECL_SIZE (decl) && type != error_mark_node)
-	    {
-	      /* Store the cleanup, if there was one.  */
-	      if (cleanup)
-		{
-		  if (! expand_decl_cleanup (decl, cleanup))
-		    cp_error ("parser lost in parsing declaration of `%D'",
-			      decl);
-		}
-	    }
+	  maybe_inject_for_scope_var (decl);
+	  initialize_local_var (decl, init, cleanup, flags);
 	}
     finish_end0:
 
@@ -8035,12 +8160,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     }
 
   if (need_pop)
-    {
-      /* Resume permanent allocation, if not within a function.  */
-      /* The corresponding push_obstacks_nochange is in start_decl,
-	 start_method, groktypename, and in grokfield.  */
-      pop_obstacks ();
-    }
+    /* Resume permanent allocation, if not within a function.  The
+       corresponding push_obstacks_nochange is in start_decl,
+       start_method, groktypename, and in grokfield.  */
+    pop_obstacks ();
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;

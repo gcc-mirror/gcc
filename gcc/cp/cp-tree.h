@@ -3574,6 +3574,7 @@ extern tree c_expand_start_case			PROTO((tree));
 extern int comp_ptr_ttypes			PROTO((tree, tree));
 extern int ptr_reasonably_similar		PROTO((tree, tree));
 extern tree build_ptrmemfunc			PROTO((tree, tree, int));
+extern tree strip_array_types                   PROTO((tree));
 extern int cp_type_quals                        PROTO((tree));
 extern int cp_has_mutable_p                     PROTO((tree));
 extern int at_least_as_qualified_p              PROTO((tree, tree));
