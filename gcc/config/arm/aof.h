@@ -133,7 +133,7 @@
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither. */
+   must define both, or neither.  */
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
@@ -290,7 +290,7 @@ do {					\
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)	\
   fprintf ((STREAM), "\tDCD\t|L..%d|\n", (VALUE))
 
-/* A label marking the start of a jump table is a data label. */
+/* A label marking the start of a jump table is a data label.  */
 #define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)	\
   fprintf ((STREAM), "\tALIGN\n|%s..%d|\n", (PREFIX), (NUM))
 

@@ -5125,7 +5125,7 @@ alpha_multipass_dfa_lookahead (void)
 
 struct machine_function GTY(())
 {
-  /* For unicosmk. */
+  /* For unicosmk.  */
   /* List of call information words for calls from this function.  */
   struct rtx_def *first_ciw;
   struct rtx_def *last_ciw;
@@ -5134,7 +5134,7 @@ struct machine_function GTY(())
   /* List of deferred case vectors.  */
   struct rtx_def *addr_list;
 
-  /* For OSF. */
+  /* For OSF.  */
   const char *some_ld_name;
 };
 

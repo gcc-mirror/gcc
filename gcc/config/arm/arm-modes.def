@@ -31,7 +31,7 @@ FLOAT_MODE (XF, 12, 0);
    CC_NOOVmode should be used with SImode integer equalities.
    CC_Zmode should be used if only the Z flag is set correctly
    CC_Nmode should be used if only the N (sign) flag is set correctly
-   CCmode should be used otherwise. */
+   CCmode should be used otherwise.  */
 
 CC_MODE (CC_NOOV);
 CC_MODE (CC_Z);

@@ -4215,7 +4215,7 @@ adjust_insn_length (rtx insn, int len)
   return len;
 }
 
-/* Return nonzero if register REG dead after INSN. */
+/* Return nonzero if register REG dead after INSN.  */
 
 int
 reg_unused_after (rtx insn, rtx reg)
@@ -4383,7 +4383,7 @@ avr_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
    generated assembly code more compact (and thus faster to assemble)
    as well as more readable, especially for targets like the i386
    (where the only alternative is to output character sequences as
-   comma separated lists of numbers).   */
+   comma separated lists of numbers).  */
 
 void
 gas_output_limited_string(FILE *file, const char *str)

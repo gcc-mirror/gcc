@@ -3545,7 +3545,7 @@
 	(sign_extend:HI (match_operand:QI 1 "memory_operand"      "m")))]
   "TARGET_ARM && arm_arch4"
   "*
-  /* If the address is invalid, this will split the instruction into two. */
+  /* If the address is invalid, this will split the instruction into two.  */
   if (bad_signed_byte_operand (operands[1], VOIDmode))
     return \"#\";
   return \"ldr%?sb\\t%0, %1\";
@@ -3581,7 +3581,7 @@
 	XEXP (operands[2], 0) = plus_constant (operands[3], low);
 	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
       }
-    /* Ensure the sum is in correct canonical form */
+    /* Ensure the sum is in correct canonical form.  */
     else if (GET_CODE (operands[1]) == PLUS
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && !s_register_operand (XEXP (operands[1], 1), VOIDmode))
@@ -3643,7 +3643,7 @@
 	(sign_extend:SI (match_operand:QI 1 "memory_operand"      "m")))]
   "TARGET_ARM && arm_arch4"
   "*
-  /* If the address is invalid, this will split the instruction into two. */
+  /* If the address is invalid, this will split the instruction into two.  */
   if (bad_signed_byte_operand (operands[1], VOIDmode))
     return \"#\";
   return \"ldr%?sb\\t%0, %1\";
@@ -3678,7 +3678,7 @@
 	XEXP (operands[2], 0) = plus_constant (operands[0], low);
 	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
       }
-    /* Ensure the sum is in correct canonical form */
+    /* Ensure the sum is in correct canonical form.  */
     else if (GET_CODE (operands[1]) == PLUS
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && !s_register_operand (XEXP (operands[1], 1), VOIDmode))
@@ -3918,7 +3918,7 @@
   "
   if (TARGET_ARM)
     {
-      /* Everything except mem = const or mem = mem can be done easily */
+      /* Everything except mem = const or mem = mem can be done easily.  */
       if (GET_CODE (operands[0]) == MEM)
         operands[1] = force_reg (SImode, operands[1]);
       if (GET_CODE (operands[1]) == CONST_INT
@@ -3932,7 +3932,7 @@
           DONE;
         }
     }
-  else /* TARGET_THUMB.... */
+  else /* TARGET_THUMB....  */
     {
       if (!no_new_pseudos)
         {
@@ -4419,7 +4419,7 @@
 	       }
 	   }
         }
-      /* Handle loading a large integer during reload */
+      /* Handle loading a large integer during reload.  */
       else if (GET_CODE (operands[1]) == CONST_INT
 	       && !const_ok_for_arm (INTVAL (operands[1]))
 	       && !const_ok_for_arm (~INTVAL (operands[1])))
@@ -4463,7 +4463,7 @@
 	      = replace_equiv_address (operands[1],
 				       copy_to_reg (XEXP (operands[1], 0)));
         }
-      /* Handle loading a large integer during reload */
+      /* Handle loading a large integer during reload.  */
       else if (GET_CODE (operands[1]) == CONST_INT
 	        && !CONST_OK_FOR_THUMB_LETTER (INTVAL (operands[1]), 'I'))
         {
@@ -4768,7 +4768,7 @@
 	       = replace_equiv_address (operands[1],
 					copy_to_reg (XEXP (operands[1], 0)));
         }
-      /* Handle loading a large integer during reload */
+      /* Handle loading a large integer during reload.  */
       else if (GET_CODE (operands[1]) == CONST_INT
 	       && !CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
         {
@@ -5167,7 +5167,7 @@
                      (use (match_operand:SI 2 "" ""))])]
   "TARGET_ARM"
   "
-  /* Support only fixed point registers */
+  /* Support only fixed point registers.  */
   if (GET_CODE (operands[2]) != CONST_INT
       || INTVAL (operands[2]) > 14
       || INTVAL (operands[2]) < 2
@@ -7023,7 +7023,7 @@
       FAIL;
 
     /* When compiling for SOFT_FLOAT, ensure both arms are in registers. 
-       Otherwise, ensure it is a valid FP add operand */
+       Otherwise, ensure it is a valid FP add operand.  */
     if ((!TARGET_HARD_FLOAT)
         || (!fpa_add_operand (operands[3], SFmode)))
       operands[3] = force_reg (SFmode, operands[3]);
@@ -8252,7 +8252,7 @@
 	  return \"bics\\t%0, %2, %3, asr #32\;movcs\\t%0, %1\";
 	}
       /* The only case that falls through to here is when both ops 1 & 2
-	 are constants */
+	 are constants.  */
     }
 
   if (GET_CODE (operands[5]) == GE
@@ -8271,7 +8271,7 @@
 	  return \"ands\\t%0, %2, %3, asr #32\;movcc\\t%0, %1\";
 	}
       /* The only case that falls through to here is when both ops 1 & 2
-	 are constants */
+	 are constants.  */
     }
   if (GET_CODE (operands[4]) == CONST_INT
       && !const_ok_for_arm (INTVAL (operands[4])))
@@ -8408,7 +8408,7 @@
   "*
   /* If we have an operation where (op x 0) is the identity operation and
      the conditional operator is LT or GE and we are comparing against zero and
-     everything is in registers then we can do this in two instructions */
+     everything is in registers then we can do this in two instructions.  */
   if (operands[3] == const0_rtx
       && GET_CODE (operands[7]) != AND
       && GET_CODE (operands[5]) == REG

@@ -44,7 +44,7 @@ static char *vmsdwarf2spec = 0;
 /* File specification for vms-dwarf2eh.o.  */
 static char *vmsdwarf2ehspec = 0;
 
-/* verbose = 1 if -v passed.   */
+/* verbose = 1 if -v passed.  */
 static int verbose = 0;
 
 /* save_temps = 1 if -save-temps passed.  */
@@ -95,10 +95,10 @@ static void addarg (const char *);
 static int is_regular_file (char *);
 
 /* Translate a Unix syntax file specification FILESPEC into VMS syntax.
-   If indicators of VMS syntax found, return input string. */
+   If indicators of VMS syntax found, return input string.  */
 static char *to_host_file_spec (char *);
 
-/* Locate the library named LIB_NAME in the set of paths PATH_VAL. */
+/* Locate the library named LIB_NAME in the set of paths PATH_VAL.  */
 static char *locate_lib (char *, char *);
 
 /* Given a library name NAME, i.e. foo,  Look for libfoo.lib and then
@@ -106,15 +106,15 @@ static char *locate_lib (char *, char *);
 static const char *expand_lib (char *);
 
 /* Preprocess the number of args P_ARGC in ARGV.
-   Look for special flags, etc. that must be handled first. */
+   Look for special flags, etc. that must be handled first.  */
 static void preprocess_args (int *, char **);
 
 /* Preprocess the number of args P_ARGC in ARGV.  Look for
-   special flags, etc. that must be handled for the VMS linker. */
+   special flags, etc. that must be handled for the VMS linker.  */
 static void process_args (int *, char **);
 
 /* Action routine called by decc$to_vms. NAME is a file name or
-   directory name. TYPE is unused. */
+   directory name. TYPE is unused.  */
 static int translate_unix (char *, int);
 
 int main (int, char **);

@@ -58,7 +58,7 @@
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'. */
+   object constructed before entering `main'.  */
    
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC \
