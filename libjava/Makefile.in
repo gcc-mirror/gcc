@@ -65,6 +65,7 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
+BACKTRACESPEC = @BACKTRACESPEC@
 CC = @CC@
 CHECKREFSPEC = @CHECKREFSPEC@
 COMPPATH = @COMPPATH@
@@ -91,6 +92,7 @@ GTK_CFLAGS = @GTK_CFLAGS@
 GTK_CONFIG = @GTK_CONFIG@
 GTK_LIBS = @GTK_LIBS@
 HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
+IEEESPEC = @IEEESPEC@
 INCLTDL = @INCLTDL@
 INTERPRETER = @INTERPRETER@
 JC1GCSPEC = @JC1GCSPEC@
@@ -195,7 +197,7 @@ AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions \
 @USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
-JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
+JC1FLAGS = @LIBGCJ_JAVAFLAGS@ -Wno-deprecated $(GCJFLAGS)
 
 LIBFFIINCS = @LIBFFIINCS@
 
@@ -2425,13 +2427,11 @@ gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
 gnu/gcj/runtime/natVMClassLoader.lo gnu/java/nio/natByteBufferImpl.lo \
 gnu/java/nio/natCharBufferImpl.lo gnu/java/nio/natDoubleBufferImpl.lo \
-gnu/java/nio/natFileChannelImpl.lo \
-gnu/java/nio/natFloatBufferImpl.lo gnu/java/nio/natIntBufferImpl.lo \
-gnu/java/nio/natLongBufferImpl.lo \
-gnu/java/nio/natSelectorImpl.lo \
-gnu/java/nio/natShortBufferImpl.lo gnu/java/nio/natSocketChannelImpl.lo \
-java/io/natFile.lo java/io/natFileDescriptor.lo \
-java/io/natObjectInputStream.lo \
+gnu/java/nio/natFileChannelImpl.lo gnu/java/nio/natFloatBufferImpl.lo \
+gnu/java/nio/natIntBufferImpl.lo gnu/java/nio/natLongBufferImpl.lo \
+gnu/java/nio/natSelectorImpl.lo gnu/java/nio/natShortBufferImpl.lo \
+gnu/java/nio/natSocketChannelImpl.lo java/io/natFile.lo \
+java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
 java/io/natObjectOutputStream.lo java/io/natVMObjectStreamClass.lo \
 java/lang/natCharacter.lo java/lang/natClass.lo \
 java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
