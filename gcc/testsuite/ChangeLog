@@ -1,3 +1,7 @@
+2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/ucs.c: Update as for 3.2.
+
 2002-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/labels-3.x: New file, don't assemble the
