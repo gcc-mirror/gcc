@@ -3053,7 +3053,7 @@ purge_addressof_1 (loc, insn, force, store, may_postpone, ht)
 
       start_sequence ();
 
-      /* If SUB is a or virtual register, try it as a pseudo-register. 
+      /* If SUB is a hard or virtual register, try it as a pseudo-register. 
 	 Otherwise, perhaps SUB is an expression, so generate code to compute
 	 it.  */
       if (GET_CODE (sub) == REG && REGNO (sub) <= LAST_VIRTUAL_REGISTER)
