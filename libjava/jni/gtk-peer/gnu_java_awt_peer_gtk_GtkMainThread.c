@@ -134,8 +134,10 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   gtkscrollbarpeer = (*env)->FindClass (env, 
 				     "gnu/java/awt/peer/gtk/GtkScrollbarPeer");
   gtklistpeer = (*env)->FindClass (env, "gnu/java/awt/peer/gtk/GtkListPeer");
-  gtkmenuitempeer = (*env)->FindClass (env, "gnu/java/awt/peer/gtk/GtkMenuItemPeer");
-  gtktextcomponentpeer = (*env)->FindClass (env, "gnu/java/awt/peer/gtk/GtkTextComponentPeer");
+  gtkmenuitempeer = (*env)->FindClass (env,
+                                     "gnu/java/awt/peer/gtk/GtkMenuItemPeer");
+  gtktextcomponentpeer = (*env)->FindClass (env,
+                                     "gnu/java/awt/peer/gtk/GtkTextComponentPeer");
 /*    gdkColor = (*env)->FindClass (env, */
 /*  				"gnu/java/awt/peer/gtk/GdkColor"); */
 /*    gdkColorID = (*env)->GetMethodID (env, gdkColor, "<init>", "(III)V"); */
