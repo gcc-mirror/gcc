@@ -1919,7 +1919,8 @@ do {						\
 /* Define the codes that are matched by predicates in alpha.c.  */
 
 #define PREDICATE_CODES 						\
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE,		\
+			CONST_VECTOR}},					\
   {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},			\
   {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},			\
   {"cint8_operand", {CONST_INT}},					\
@@ -1932,14 +1933,13 @@ do {						\
   {"mode_mask_operand", {CONST_INT}},					\
   {"mul8_operand", {CONST_INT}},					\
   {"mode_width_operand", {CONST_INT}},					\
-  {"reg_or_fp0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}},		\
   {"alpha_zero_comparison_operator", {EQ, NE, LE, LT, LEU, LTU}},	\
   {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}},	\
   {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
   {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
-  {"fp0_operand", {CONST_DOUBLE}},					\
+  {"const0_operand", {CONST_INT, CONST_DOUBLE, CONST_VECTOR}},		\
   {"current_file_function_operand", {SYMBOL_REF}},			\
   {"direct_call_operand", {SYMBOL_REF}},				\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
