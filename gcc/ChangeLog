@@ -1,3 +1,7 @@
+2001-05-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.ALTOS: Remove obsolete file.
+
 2001-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.h (save_and_forget_protocol_qualifiers,
