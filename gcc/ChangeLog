@@ -1,3 +1,7 @@
+Tue May  5 14:33:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* elf64.h (MULTILIB_DEFAULTS): Move definition after mips.h include.
+
 Tue May  5 10:50:39 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.h: Declare functions from m68k.c used in
