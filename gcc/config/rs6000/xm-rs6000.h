@@ -1,5 +1,5 @@
-/* Configuration for GNU C-compiler for IBM RS/6000.
-   Copyright (C) 1990, 1993, 1995 Free Software Foundation, Inc.
+/* Configuration for GNU C-compiler for IBM RS/6000 running AIX in 32-bit mode.
+   Copyright (C) 1990, 1993, 1995, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
 This file is part of GNU CC.
@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define	HOST_BITS_PER_SHORT	16
 #define	HOST_BITS_PER_INT	32
 #define	HOST_BITS_PER_LONG	32
-#define HOST_BITS_PER_LONGLONG 64
+#define	HOST_BITS_PER_LONGLONG	64
 
 #define	HOST_WORDS_BIG_ENDIAN
 
