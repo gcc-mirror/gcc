@@ -611,7 +611,7 @@ poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p))
 	    warning ("%Junused variable `%D'", p, p);
-	  /* fall through */
+	  /* Fall through.  */
 
 	default:
 	normal:
@@ -1016,7 +1016,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
       if (DECL_IN_SYSTEM_HEADER (newdecl) || DECL_IN_SYSTEM_HEADER (olddecl))
-	return true;  /* allow OLDDECL to continue in use */
+	return true;  /* Allow OLDDECL to continue in use.  */
       
       error ("%Jredefinition of typedef '%D'", newdecl, newdecl);
       locate_old_decl (olddecl, error);

@@ -6493,7 +6493,7 @@ lookup_compiler (const char *name, size_t length, const char *language)
     }
 
 #if defined (OS2) ||defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  /* look again, but case-insensitively this time.  */
+  /* Look again, but case-insensitively this time.  */
   if (cp < compilers)
     for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
       {

@@ -696,7 +696,7 @@ int flag_gcse_lm = 1;
 
 int flag_gcse_sm = 1;
 
-/* Nonzero if we want to perfrom redundant load after store elimination
+/* Nonzero if we want to perform redundant load after store elimination
    in gcse.  */
 
 int flag_gcse_las = 1;

@@ -1,3 +1,10 @@
+2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-decl.c, c-ppoutput.c, combine.c, cppfiles.c, dwarf2out.c,
+	expr.c, fold-const.c, gcc.c, haifa-sched.c, loop-iv.c,
+	params.def, read-rtl.c, rtl.c, rtlanal.c, toplev.c: Fix
+	comment typos and formatting.  Follow spelling conventions.
+
 2004-02-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md: Add fixuns_truncsfsi2 and

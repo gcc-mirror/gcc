@@ -630,7 +630,7 @@ again:
 	  if (c != '[')
 	    fatal_expected_char (infile, '[', c);
 
-	  /* add expressions to a list, while keeping a count */
+	  /* Add expressions to a list, while keeping a count.  */
 	  obstack_init (&vector_stack);
 	  while ((c = read_skip_spaces (infile)) && c != ']')
 	    {

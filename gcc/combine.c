@@ -1452,7 +1452,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   int added_sets_1, added_sets_2;
   /* Total number of SETs to put into I3.  */
   int total_sets;
-  /* Nonzero is I2's body now appears in I3.  */
+  /* Nonzero if I2's body now appears in I3.  */
   int i2_is_used;
   /* INSN_CODEs for new I3, new I2, and user of condition code.  */
   int insn_code_number, i2_code_number = 0, other_code_number = 0;
