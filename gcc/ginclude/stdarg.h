@@ -10,29 +10,30 @@
 #undef __need___va_list
 
 #ifndef __GNUC__
-/* Use the system's macros with the system's compiler.  */
+/* Use the system's macros with the system's compiler.
+   This is relevant only when building GCC with some other compiler.  */
 #include <stdarg.h>
 #else
 #ifdef __m88k__
-#include "va-m88k.h"
+#include <va-m88k.h>
 #else
 #ifdef __i860__
-#include "va-i860.h"
+#include <va-i860.h>
 #else
 #ifdef __hppa__
-#include "va-pa.h"
+#include <va-pa.h>
 #else
 #ifdef __mips__
-#include "va-mips.h"
+#include <va-mips.h>
 #else
 #ifdef __sparc__
-#include "va-sparc.h"
+#include <va-sparc.h>
 #else
 #ifdef __i960__
-#include "va-i960.h"
+#include <va-i960.h>
 #else
 #ifdef __alpha__
-#include "va-alpha.h"
+#include <va-alpha.h>
 #else
 
 /* Define __gnuc_va_list.  */
