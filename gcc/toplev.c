@@ -959,16 +959,16 @@ get_run_time ()
 #else /* not _WIN32 */
 #ifdef USG
 # if HAVE_SYSCONF && defined _SC_CLK_TCK
-#  define CLOCKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
+#  define TICKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
 # else
 #  ifdef CLK_TCK
-#   define CLOCKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
+#   define TICKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
 #  else
-#   define CLOCKS_PER_SECOND HZ /* traditional UNIX */
+#   define TICKS_PER_SECOND HZ /* traditional UNIX */
 #  endif
 # endif
   times (&tms);
-  return (tms.tms_utime + tms.tms_stime) * (1000000 / CLOCKS_PER_SECOND);
+  return (tms.tms_utime + tms.tms_stime) * (1000000 / TICKS_PER_SECOND);
 #else
 #ifndef VMS
   getrusage (0, &rusage);
