@@ -1,3 +1,16 @@
+2004-08-10  Hans Boehm <Hans.Boehm@hp.com>
+
+	PR libgcj/16662
+	* java/lang/natObject.cc (LOCK_LOG, LOG): Add debug tracing.
+	(Almost everywhere): add LOG calls, fix, add comments.
+	(_Jv_MonitorEnter): Replace masking of LOCKED bit with assertion.
+	Add explicit check for LOCKED bit in slow case (PR 16662).
+	(_Jv_MonitorExit): Add casts in debug-only code.
+	Always release LOCKED bit before throwing exception.
+	(_Jv_ObjectCheckMonitor): Lock may be held if lightweight lock
+	isn't.  Handle easy cases without lock acquisition.
+	(Object::wait): Use NotifyAll for lock inflation.
+
 2004-08-12  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libjava.lang/Process_1.java: New test.
