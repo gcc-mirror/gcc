@@ -40,6 +40,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ST_RFDESCAPE    0xfff
 #endif
 
+#ifndef MIPS_IS_STAB
+/* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
+   and mips-tdump.c to print them out.  This is used on the Alpha,
+   which does not include mips.h.
+
+   These must match the corresponding definitions in gdb/mipsread.c.
+   Unfortunately, gcc and gdb do not currently share any directories. */
+
+#define CODE_MASK 0x8F300
+#define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
+#define MIPS_MARK_STAB(code) ((code)+CODE_MASK)
+#define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
+#endif
+
 #ifdef __STDC__
 typedef void *PTR_T;
 typedef const void *CPTR_T;
@@ -223,6 +237,7 @@ int	 want_aux	= 0;	/* print aux table */
 int	 want_line	= 0;	/* print line numbers */
 int	 want_rfd	= 0;	/* print relative file desc's */
 int	 want_scope	= 0;	/* print scopes for every symbol */
+int	 tfile		= 0;	/* no global header file */
 int	 tfile_fd;		/* file descriptor of .T file */
 off_t	 tfile_offset;		/* current offset in .T file */
 scope_t	*cur_scope	= 0;	/* list of active scopes */
@@ -256,10 +271,12 @@ char *glevel_to_string	__proto((glevel_t));
 char *lang_to_string	__proto((lang_t));
 char *type_to_string	__proto((AUXU *, int));
 
+#ifndef __alpha
 extern PTR_T	malloc	__proto((size_t));
 extern PTR_T	calloc	__proto((size_t, size_t));
 extern PTR_T	realloc	__proto((PTR_T, size_t));
 extern void	free	__proto((PTR_T));
+#endif
 extern char    *ctime	__proto((time_t *));
 
 extern char *optarg;
@@ -808,37 +825,60 @@ print_sym_hdr (sym_ptr)
   printf("    %-*s %11s %11s %11s\n", width, "====", "======", "======", "=====\n");
 
   printf("    %-*s %11ld %11d %11d [%d]\n", width, "Line numbers",
-	 sym_ptr->cbLineOffset, sym_ptr->cbLine, sym_ptr->cbLine, sym_ptr->ilineMax);
+	 (long)sym_ptr->cbLineOffset,
+	 (long)sym_ptr->cbLine,
+	 (long)sym_ptr->cbLine,
+	 (int)sym_ptr->ilineMax);
 
   printf("    %-*s %11ld %11d %11d\n", width, "Dense numbers",
-	 sym_ptr->cbDnOffset, sym_ptr->idnMax, sym_ptr->idnMax * sizeof (DNR));
+	 (long)sym_ptr->cbDnOffset,
+	 (long)sym_ptr->idnMax,
+	 (long)(sym_ptr->idnMax * sizeof (DNR)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Procedures Tables",
-	 sym_ptr->cbPdOffset, sym_ptr->ipdMax, sym_ptr->ipdMax * sizeof (PDR));
+	 (long)sym_ptr->cbPdOffset,
+	 (long)sym_ptr->ipdMax,
+	 (long)(sym_ptr->ipdMax * sizeof (PDR)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Local Symbols",
-	 sym_ptr->cbSymOffset, sym_ptr->isymMax, sym_ptr->isymMax * sizeof (SYMR));
+	 (long)sym_ptr->cbSymOffset,
+	 (long)sym_ptr->isymMax,
+	 (long)(sym_ptr->isymMax * sizeof (SYMR)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Optimization Symbols",
-	 sym_ptr->cbOptOffset, sym_ptr->ioptMax, sym_ptr->ioptMax * sizeof (OPTR));
+	 (long)sym_ptr->cbOptOffset,
+	 (long)sym_ptr->ioptMax,
+	 (long)(sym_ptr->ioptMax * sizeof (OPTR)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Auxiliary Symbols",
-	 sym_ptr->cbAuxOffset, sym_ptr->iauxMax, sym_ptr->iauxMax * sizeof (AUXU));
+	 (long)sym_ptr->cbAuxOffset,
+	 (long)sym_ptr->iauxMax,
+	 (long)(sym_ptr->iauxMax * sizeof (AUXU)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Local Strings",
-	 sym_ptr->cbSsOffset, sym_ptr->issMax, sym_ptr->issMax);
+	 (long)sym_ptr->cbSsOffset,
+	 (long)sym_ptr->issMax,
+	 (long)sym_ptr->issMax);
 
   printf("    %-*s %11ld %11d %11d\n", width, "External Strings",
-	 sym_ptr->cbSsExtOffset, sym_ptr->issExtMax, sym_ptr->issExtMax);
+	 (long)sym_ptr->cbSsExtOffset,
+	 (long)sym_ptr->issExtMax,
+	 (long)sym_ptr->issExtMax);
 
   printf("    %-*s %11ld %11d %11d\n", width, "File Tables",
-	 sym_ptr->cbFdOffset, sym_ptr->ifdMax, sym_ptr->ifdMax * sizeof (FDR));
+	 (long)sym_ptr->cbFdOffset,
+	 (long)sym_ptr->ifdMax,
+	 (long)(sym_ptr->ifdMax * sizeof (FDR)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Relative Files",
-	 sym_ptr->cbRfdOffset, sym_ptr->crfd, sym_ptr->crfd * sizeof (ulong));
+	 (long)sym_ptr->cbRfdOffset,
+	 (long)sym_ptr->crfd,
+	 (long)(sym_ptr->crfd * sizeof (ulong)));
 
   printf("    %-*s %11ld %11d %11d\n", width, "External Symbols",
-	 sym_ptr->cbExtOffset, sym_ptr->iextMax, sym_ptr->iextMax * sizeof (EXTR));
+	 (long)sym_ptr->cbExtOffset,
+	 (long)sym_ptr->iextMax,
+	 (long)(sym_ptr->iextMax * sizeof (EXTR)));
 }
 
 
@@ -1303,12 +1343,11 @@ read_tfile __proto((void))
   short magic;
   off_t sym_hdr_offset = 0;
 
-  /* Determine if this is a .T file (which has no file header), or some
-     sort of object file (which does have a file header) via the magic
-     number.  */
   (void) read_seek ((PTR_T) &magic, sizeof (magic), (off_t)0, "Magic number");
-  if (magic == MIPSELMAGIC || magic == MIPSEBMAGIC)
+  if (!tfile)
     {
+      /* Print out the global header, since this is not a T-file.  */
+
       (void) read_seek ((PTR_T) &global_hdr, sizeof (global_hdr), (off_t)0,
 			"Global file header");
 
@@ -1408,7 +1447,7 @@ main (argc, argv)
   /*
    * Process arguments
    */
-  while ((opt = getopt (argc, argv, "alrs")) != EOF)
+  while ((opt = getopt (argc, argv, "alrst")) != EOF)
     switch (opt)
       {
       default:	errors++;	break;
@@ -1416,18 +1455,20 @@ main (argc, argv)
       case 'l': want_line++;	break;	/* print line numbers */
       case 'r': want_rfd++;	break;	/* print relative fd's */
       case 's':	want_scope++;	break;	/* print scope info */
+      case 't': tfile++;	break;	/* this is a tfile (without header), and not a .o */
       }
 
   if (errors || optind != argc - 1)
     {
       fprintf (stderr, "Calling Sequence:\n");
-      fprintf (stderr, "\t%0 [-alrs] <object-or-T-file>\n", argv[0]);
+      fprintf (stderr, "\t%0 [-alrst] <object-or-T-file>\n", argv[0]);
       fprintf (stderr, "\n");
       fprintf (stderr, "switches:\n");
       fprintf (stderr, "\t-a Print out auxiliary table.\n");
       fprintf (stderr, "\t-l Print out line numbers.\n");
       fprintf (stderr, "\t-r Print out relative file descriptors.\n");
       fprintf (stderr, "\t-s Print out the current scopes for an item.\n");
+      fprintf (stderr, "\t-t Assume there is no global header (ie, a T-file).\n");
       return 1;
     }
 
