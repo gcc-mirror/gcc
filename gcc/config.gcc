@@ -930,7 +930,7 @@ i370-*-linux*)
 	;;
 i[34567]86-*-chorusos*)
 	xm_defines=POSIX
-	tm_file="i386/i386.h i386/att.h elfos.h i386/i386elf.h i386/chorus.h"
+	tm_file="i386/i386.h i386/att.h elfos.h i386/i386elf.h chorus.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
 	case x${enable_threads} in
@@ -2591,7 +2591,7 @@ powerpc-*-sysv*)
 	;;
 powerpc-*-chorusos*)
 	xm_defines=POSIX
-	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/chorus.h"
+	tm_file="${tm_file} svr4.h rs6000/sysv4.h chorus.h"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	case x${enable_threads} in
@@ -2843,7 +2843,7 @@ sparc-*-bsd*)
 	tm_file="${tm_file} sparc/bsd.h"
 	;;
 sparc-*-chorusos*)
-	tm_file="sparc/sol2.h sparc/elf.h sparc/chorus.h"
+	tm_file="sparc/sol2.h sparc/elf.h chorus.h"
 	tmake_file=sparc/t-chorus-elf
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	float_format=i64
