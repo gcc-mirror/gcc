@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -156,7 +156,7 @@ extern void gen_aux_info_record                 PROTO((tree, int, int, int));
 
 /* in c-common.c */
 extern void declare_function_name               PROTO((void));
-extern void decl_attributes                     PROTO((tree, tree));
+extern void decl_attributes                     PROTO((tree, tree, tree));
 extern void init_function_format_info		PROTO((void));
 extern void record_function_format		PROTO((tree, tree, int, int, int));
 extern void check_function_format		PROTO((tree, tree, tree));
