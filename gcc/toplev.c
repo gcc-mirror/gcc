@@ -432,11 +432,7 @@ int flag_inline_functions;
 
 int flag_keep_inline_functions;
 
-/* Nonzero means that functions declared `inline' will be treated
-   as `static'.  Prevents generation of zillions of copies of unused
-   static inline functions; instead, `inlines' are written out
-   only when actually used.  Used in conjunction with -g.  Also
-   does the right thing with #pragma interface.  */
+/* Nonzero means that functions will not be inlined.  */
 
 int flag_no_inline;
 
