@@ -1,5 +1,18 @@
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java
+	(CollationElementIterator): Moved, documenatation added, call setText.
+	(next): Reformated.
+	(reset): Reformated.
+	(setText): New method.
+	(getOffset): New method.
+	* java/text/CollationKey.java
+	(getSourceString): Reformated.
+	(hashCode): Reformated.
+	(toByteArray): Reformated.
+
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/zip/InflaterInputStream.java
 	(InflaterInputStream): Renamed infl to inf and bufsize to size,
 	added description to exception, check for inf == null and size < 0.

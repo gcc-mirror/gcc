@@ -82,18 +82,32 @@ public final class CollationElementIterator
   int lookahead;
 
   /**
+   * This method initializes a new instance of <code>CollationElementIterator</code>
+   * to iterate over the specified <code>String</code> using the rules in the
+   * specified <code>RuleBasedCollator</code>.
+   *
+   * @param collator The <code>RuleBasedCollation</code> used for calculating collation values
+   * @param text The <code>String</code> to iterate over.
+   */
+  CollationElementIterator (String text, RuleBasedCollator collator)
+  {
+    setText (text);
+    this.collator = collator;
+  }
+
+  /**
    * This method returns the collation ordering value of the next character
    * in the string.  This method will return <code>NULLORDER</code> if the
    * end of the string was reached.
    *
    * @return The collation ordering value.
    */
-  public int next ()
+  public int next()
   {
     if (index == text.length())
       return NULLORDER;
 
-    return collator.ceiNext(this);
+    return collator.ceiNext (this);
   }
 
   /**
@@ -114,7 +128,7 @@ public final class CollationElementIterator
    * This method resets the internal position pointer to read from the
    * beginning of the <code>String again.
    */
-  public void reset ()
+  public void reset()
   {
     index = 0;
   }
@@ -147,14 +161,33 @@ public final class CollationElementIterator
     return (short) (order & 255);
   }
 
-  // Non-public constructor.
-  CollationElementIterator (String text, RuleBasedCollator collator)
+  /**
+   * This method sets the <code>String</code> that it is iterating over
+   * to the specified <code>String</code>.
+   *
+   * @param text The new <code>String</code> to iterate over.
+   *
+   * @since 1.2
+   */
+  public void setText (String text)
   {
     this.text = text;
     this.index = 0;
     this.lookahead_set = false;
     this.lookahead = 0;
-    this.collator = collator;
+  }
+
+  /**
+   * This method returns the current offset into the <code>String</code>
+   * that is being iterated over.
+   *
+   * @return The iteration index position.
+   *
+   * @since 1.2
+   */
+  public int getOffset()
+  {
+    return index;
   }
 
 } // class CollationElementIterator

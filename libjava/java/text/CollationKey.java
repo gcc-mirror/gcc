@@ -169,7 +169,7 @@ public final class CollationKey implements Comparable
    *
    * @return The source <code>String</code> for this object.
    */
-  public String getSourceString ()
+  public String getSourceString()
   {
     return originalText;
   }
@@ -181,7 +181,7 @@ public final class CollationKey implements Comparable
    *
    * @return A hash value for this object.
    */
-  public int hashCode ()
+  public int hashCode()
   {
     // We just follow BitSet instead of thinking up something new.
     long h = originalText.hashCode();
@@ -195,7 +195,7 @@ public final class CollationKey implements Comparable
    *
    * @param A byte array containing the collation bit sequence.
    */
-  public byte[] toByteArray ()
+  public byte[] toByteArray()
   {
     byte[] r = new byte[4 * key.length];
     int off = 0;
