@@ -845,6 +845,9 @@ readescape (ignore_ptr)
 	}
       if (! nonnull)
 	error ("\\x used with no following hex digits");
+      else if (count == 0)
+	/* Digits are all 0's.  Ok.  */
+	;
       else if ((count - 1) * 4 >= TYPE_PRECISION (integer_type_node)
 	       || (count > 1
 		   && ((1 << (TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
