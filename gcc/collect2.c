@@ -363,19 +363,11 @@ collect_exit (status)
 void
 notice VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   vfprintf (stderr, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Die when sys call fails.  */
@@ -383,22 +375,15 @@ notice VPARAMS ((const char *msgid, ...))
 void
 fatal_perror VPARAMS ((const char * msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
   int e = errno;
-  va_list ap;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, ": %s\n", xstrerror (e));
-  va_end (ap);
+  VA_CLOSE (ap);
 
   collect_exit (FATAL_EXIT_CODE);
 }
@@ -408,21 +393,13 @@ fatal_perror VPARAMS ((const char * msgid, ...))
 void
 fatal VPARAMS ((const char * msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
   
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
-  va_end (ap);
+  VA_CLOSE (ap);
 
   collect_exit (FATAL_EXIT_CODE);
 }
@@ -432,21 +409,13 @@ fatal VPARAMS ((const char * msgid, ...))
 void
 error VPARAMS ((const char * msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char * msgid;
-#endif
-  va_list ap;
- 
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
-  va_end(ap);
+  VA_CLOSE(ap);
 }
 
 /* In case obstack is linked in, and abort is defined to fancy_abort,

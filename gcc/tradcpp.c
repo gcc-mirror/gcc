@@ -4686,37 +4686,22 @@ v_message (mtype, line, msgid, ap)
 void
 error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN(ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   v_message (ERROR, 0, msgid, ap);
+  VA_CLOSE (ap);
 }
 
 void
 error_with_line VPARAMS ((int line, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int line;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  line = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN(ap, msgid);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   v_message (ERROR, line, msgid, ap);
+  VA_CLOSE (ap);
 }
 
 /* Error including a message from `errno'.  */
@@ -4731,35 +4716,21 @@ error_from_errno (name)
 void
 warning VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN(ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   v_message (WARNING, 0, msgid, ap);
+  VA_CLOSE (ap);
 }
 
 void
 fatal VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN(ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   v_message (FATAL, 0, msgid, ap);
+  VA_CLOSE (ap);
   exit (FATAL_EXIT_CODE);
 }
 

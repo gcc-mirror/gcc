@@ -91,41 +91,23 @@ diagnostic_for_asm (insn, msg, args_ptr, warn)
 void
 error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  rtx insn;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  insn = va_arg (ap, rtx);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, rtx, insn);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 0);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 warning_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  rtx insn;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  insn = va_arg (ap, rtx);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, rtx, insn);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 1);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void

@@ -1,5 +1,5 @@
 /* Provide a version _doprnt in terms of fprintf.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001   Free Software Foundation, Inc.
    Contributed by Kaveh Ghazi  (ghazi@caip.rutgers.edu)  3/29/98
 
 This program is free software; you can redistribute it and/or modify it
@@ -209,21 +209,12 @@ static int checkit PARAMS ((const char * format, ...)) ATTRIBUTE_PRINTF_1;
 static int
 checkit VPARAMS ((const char* format, ...))
 {
-  va_list args;
   int result;
-
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-
-  VA_START (args, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (args, char *);
-#endif
+  VA_OPEN (args, format);
+  VA_FIXEDARG (args, char *, format);
 
   result = _doprnt (format, args, stdout);
-  va_end(args);
+  VA_CLOSE (args);
 
   return result;
 }

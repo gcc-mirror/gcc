@@ -3864,17 +3864,11 @@ build_function_call_expr (fn, arglist)
 static int
 validate_arglist VPARAMS ((tree arglist, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree arglist;
-#endif
   enum tree_code code;
-  va_list ap;
+  int res = 0;
 
-  VA_START (ap, arglist);
-
-#ifndef ANSI_PROTOTYPES
-  arglist = va_arg (ap, tree);
-#endif
+  VA_OPEN (ap, arglist);
+  VA_FIXEDARG (ap, tree, arglist);
 
   do {
     code = va_arg (ap, enum tree_code);
@@ -3882,26 +3876,30 @@ validate_arglist VPARAMS ((tree arglist, ...))
     {
     case 0:
       /* This signifies an ellipses, any further arguments are all ok.  */
-      va_end (ap);
-      return 1;
+      res = 1;
+      goto end;
     case VOID_TYPE:
       /* This signifies an endlink, if no arguments remain, return
          true, otherwise return false.  */
-      va_end (ap);
-      return arglist == 0;
+      res = arglist == 0;
+      goto end;
     default:
       /* If no parameters remain or the parameter's code does not
          match the specified code, return false.  Otherwise continue
          checking any remaining arguments.  */
       if (arglist == 0 || code != TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))))
-        {
-	  va_end (ap);
-	  return 0;
-	}
+	goto end;
       break;
     }
     arglist = TREE_CHAIN (arglist);
   } while (1);
+
+  /* We need gotos here since we can only have one VA_CLOSE in a
+     function.  */
+ end: ;
+  VA_CLOSE (ap);
+
+  return res;
 }
 
 /* Default version of target-specific builtin setup that does nothing.  */

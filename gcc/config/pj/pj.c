@@ -1,5 +1,5 @@
 /* Output routines for GCC for picoJava II
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -140,18 +140,12 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static void
 pj_printf VPARAMS ((const char *template, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *template;
-#endif
   register int c;
-
-  va_list argptr;
   int ops_read = 0;
   rtx operands[10];
-  VA_START (argptr, template);
-#ifndef ANSI_PROTOTYPES
-  template = va_arg (argptr, const char *);
-#endif
+
+  VA_OPEN (argptr, template);
+  VA_FIXEDARG (argptr, const char *, template);
 
   while ((c = *template++))
     {
@@ -229,7 +223,7 @@ pj_printf VPARAMS ((const char *template, ...))
 	  }
 	}
     }
-  va_end (argptr);
+  VA_CLOSE (argptr);
 }
 
 /* Output code to efficiently push a single word integer constant onto

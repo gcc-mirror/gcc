@@ -1149,19 +1149,11 @@ check_function_format (status, name, assembler_name, params)
 static void
 status_warning VPARAMS ((int *status, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int *status;
-  const char *msgid;
-#endif
-  va_list ap;
   diagnostic_context dc;
 
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  status = va_arg (ap, int *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, int *, status);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (status)
     *status = 1;
@@ -1173,7 +1165,7 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
       report_diagnostic (&dc);
     }
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Variables used by the checking of $ operand number formats.  */

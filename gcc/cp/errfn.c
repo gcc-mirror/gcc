@@ -1,5 +1,5 @@
 /* Provide a call-back mechanism for handling error output.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
@@ -185,77 +185,45 @@ cp_thing (errfn, atarg1, format, ap)
 void
 cp_error VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) error, 0, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_warning VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) warning, 0, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_pedwarn VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) pedwarn, 0, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_compiler_error VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) compiler_error, 0, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
@@ -271,74 +239,42 @@ cp_deprecated (msg)
 void
 cp_sprintf VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   cp_thing ((errorfn *) sprintf, 0, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_error_at VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) error_with_file_and_line, 1, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_warning_at VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) warning_with_file_and_line, 1, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 cp_pedwarn_at VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (! cp_silent)
     cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }

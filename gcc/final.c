@@ -3651,20 +3651,12 @@ output_addr_const (file, x)
 void
 asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  FILE *file;
-  const char *p;
-#endif
-  va_list argptr;
   char buf[10];
   char *q, c;
 
-  VA_START (argptr, p);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (argptr, FILE *);
-  p = va_arg (argptr, const char *);
-#endif
+  VA_OPEN (argptr, p);
+  VA_FIXEDARG (argptr, FILE *, file);
+  VA_FIXEDARG (argptr, const char *, p);
 
   buf[0] = '%';
 
@@ -3812,7 +3804,7 @@ asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
       default:
 	fputc (c, file);
       }
-  va_end (argptr);
+  VA_CLOSE (argptr);
 }
 
 /* Split up a CONST_DOUBLE or integer constant rtx

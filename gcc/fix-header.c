@@ -1,6 +1,6 @@
 /* fix-header.c - Make C header file suitable for C++.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1317,17 +1317,9 @@ v_fatal (str, ap)
 static void
 fatal VPARAMS ((const char *str, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *str;
-#endif
-  va_list ap;
-  
-  VA_START (ap, str);
-
-#ifndef ANSI_PROTOTYPES
-  str = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, str);
+  VA_FIXEDARG (ap, const char *, str);
 
   v_fatal (str, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
