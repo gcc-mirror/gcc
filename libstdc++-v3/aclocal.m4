@@ -13,8 +13,6 @@ dnl PARTICULAR PURPOSE.
 dnl
 dnl Initialize configure bits.
 dnl
-dnl Define OPTLEVEL='-O2' if new inlining code present.
-dnl
 dnl GLIBCPP_CONFIGURE
 AC_DEFUN(GLIBCPP_CONFIGURE, [
   dnl Default to --enable-multilib
@@ -184,9 +182,9 @@ fi
 
 
 dnl
-dnl Test for newer compiler features, or features that are present in newer
-dnl compiler version but not older compiler versions should be placed
-dnl here.
+dnl Tests for newer compiler features, or features that are present in newer
+dnl compiler versions but not older compiler versions still in use, should
+dnl be placed here.
 dnl
 dnl Define WERROR='-Werror' if requested and possible; g++'s that lack the
 dnl new inlining code or the new system_header pragma will die on -Werror.
@@ -198,7 +196,7 @@ dnl
 dnl GLIBCPP_CHECK_COMPILER_FEATURES
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
   # All these tests are for C++; save the language and the compiler flags.
-  # The CXXFLAGS thing is suspicious, but based on similar bits 
+  # The CXXFLAGS thing is suspicious, but based on similar bits previously
   # found in GLIBCPP_CONFIGURE.
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -374,7 +372,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1, [
 dnl
 dnl Check to see if the (math function) argument passed is
 dnl declared when using the c++ compiler
-dnl ASSUMES argument is a math function with ONE parameter
+dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_2
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_2, [
@@ -420,7 +418,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
 dnl
 dnl Check to see if the (math function) argument passed is
 dnl declared when using the c++ compiler
-dnl ASSUMES argument is a math function with ONE parameter
+dnl ASSUMES argument is a math function with THREE parameters
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_3
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_3, [
