@@ -9422,16 +9422,17 @@ preexpand_calls (exp)
     {
     case CALL_EXPR:
       /* Do nothing if already expanded.  */
-      if (CALL_EXPR_RTL (exp) != 0)
+      if (CALL_EXPR_RTL (exp) != 0
+	  /* Do nothing if the call returns a variable-sized object.  */
+	  || TREE_CODE (TYPE_SIZE (TREE_TYPE(exp))) != INTEGER_CST
+	  /* Do nothing to built-in functions.  */
+	  || (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		  == FUNCTION_DECL)
+	      && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))))
 	return;
 
-      /* Do nothing to built-in functions.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) != ADDR_EXPR
-	  || TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != FUNCTION_DECL
-	  || ! DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	  /* Do nothing if the call returns a variable-sized object.  */
-	  || TREE_CODE (TYPE_SIZE (TREE_TYPE(exp))) != INTEGER_CST)
-	CALL_EXPR_RTL (exp) = expand_call (exp, NULL_RTX, 0);
+      CALL_EXPR_RTL (exp) = expand_call (exp, NULL_RTX, 0);
       return;
 
     case COMPOUND_EXPR:
