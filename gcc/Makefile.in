@@ -974,7 +974,7 @@ stmp-multilib-sub:
 	else true; \
 	fi
 	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
-	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *.$(objext))
+	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *$(objext))
 	rm -rf libgcc2.a tmpcopy
 	if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi
 	if [ -d $(dir) ]; then true; else mkdir $(dir); fi
@@ -2420,7 +2420,7 @@ gnucompare: force
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
-	    for file in $$dir/*.$(objext); do \
+	    for file in $$dir/*$(objext); do \
 	      cmp --ignore-initial=16 $$file stage2/$$file || true ; \
 	    done; \
 	  fi; \
