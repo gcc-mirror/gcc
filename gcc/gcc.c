@@ -3718,8 +3718,28 @@ main (argc, argv)
       add_prefix (&startfile_prefix, md_startfile_prefix_1, 0, 0, NULL_PTR);
 #endif
 
-      add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0,
-		  NULL_PTR);
+      /* If standard_startfile_prefix is relative, base it on
+	 standard_exec_prefix.  This lets us move the installed tree
+	 as a unit.  If GCC_EXEC_PREFIX is defined, base
+	 standard_startfile_prefix on that as well.  */
+      if (*standard_startfile_prefix == '/')
+	add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0,
+		    NULL_PTR);
+      else
+	{
+	  if (gcc_exec_prefix)
+	    add_prefix (&startfile_prefix,
+			concat (gcc_exec_prefix,
+				machine_suffix,
+				standard_startfile_prefix),
+			0, 0, NULL_PTR);
+	  add_prefix (&startfile_prefix,
+		      concat (standard_exec_prefix,
+			      machine_suffix,
+			      standard_startfile_prefix),
+		      0, 0, NULL_PTR);
+	}		       
+
       add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0,
 		  NULL_PTR);
       add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0,
