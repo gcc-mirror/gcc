@@ -96,8 +96,8 @@ static void hack_vms_include_specification ();
 /* External declarations.  */
 
 extern char *version_string;
-HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
-HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
+HOST_WIDEST_INT parse_escape PARAMS ((char **, HOST_WIDEST_INT));
+HOST_WIDEST_INT parse_c_expression PARAMS ((char *, int));
 
 /* Name under which this program was invoked.  */
 
@@ -749,7 +749,7 @@ static int assertions_flag;
 
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
-#define DO_PROTO PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *))
+#define DO_PROTO PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *))
 
 struct directive {
   int length;			/* Length of name */
@@ -869,163 +869,165 @@ static int deps_column;
    so don't look for #include "foo" the source-file directory.  */
 static int ignore_srcdir;
 
-static int safe_read PROTO((int, char *, int));
-static void safe_write PROTO((int, const char *, int));
+static int safe_read PARAMS ((int, char *, int));
+static void safe_write PARAMS ((int, const char *, int));
 
-int main PROTO((int, char **));
+int main PARAMS ((int, char **));
 
-static void path_include PROTO((char *));
+static void path_include PARAMS ((char *));
 
-static const U_CHAR *index0 PROTO((const U_CHAR *, int, size_t));
+static const U_CHAR *index0 PARAMS ((const U_CHAR *, int, size_t));
 
-static void trigraph_pcp PROTO((FILE_BUF *));
-static void check_white_space PROTO((FILE_BUF *));
+static void trigraph_pcp PARAMS ((FILE_BUF *));
+static void check_white_space PARAMS ((FILE_BUF *));
 
-static void newline_fix PROTO((U_CHAR *));
-static void name_newline_fix PROTO((U_CHAR *));
+static void newline_fix PARAMS ((U_CHAR *));
+static void name_newline_fix PARAMS ((U_CHAR *));
 
-static const char *get_lintcmd PROTO((const U_CHAR *, const U_CHAR *,
-				      const U_CHAR **, int *, int *));
+static const char *get_lintcmd PARAMS ((const U_CHAR *, const U_CHAR *,
+					const U_CHAR **, int *, int *));
 
-static void rescan PROTO((FILE_BUF *, int));
+static void rescan PARAMS ((FILE_BUF *, int));
 
-static FILE_BUF expand_to_temp_buffer PROTO((const U_CHAR *, const U_CHAR *,
-					     int, int));
+static FILE_BUF expand_to_temp_buffer PARAMS ((const U_CHAR *, const U_CHAR *,
+					       int, int));
 
-static int handle_directive PROTO((FILE_BUF *, FILE_BUF *));
+static int handle_directive PARAMS ((FILE_BUF *, FILE_BUF *));
 
-static struct tm *timestamp PROTO((void));
-static void special_symbol PROTO((HASHNODE *, FILE_BUF *));
+static struct tm *timestamp PARAMS ((void));
+static void special_symbol PARAMS ((HASHNODE *, FILE_BUF *));
 
-static int is_system_include PROTO((const char *));
-static char *base_name PROTO((const char *));
-static int absolute_filename PROTO((const char *));
-static size_t simplify_filename PROTO((char *));
+static int is_system_include PARAMS ((const char *));
+static char *base_name PARAMS ((const char *));
+static int absolute_filename PARAMS ((const char *));
+static size_t simplify_filename PARAMS ((char *));
 
-static char *read_filename_string PROTO((int, FILE *));
-static struct file_name_map *read_name_map PROTO((const char *));
-static int open_include_file PROTO((char *, struct file_name_list *,
-				    const U_CHAR *, struct include_file **));
-static char *remap_include_file PROTO((char *, struct file_name_list *));
-static int lookup_ino_include PROTO((struct include_file *));
+static char *read_filename_string PARAMS ((int, FILE *));
+static struct file_name_map *read_name_map PARAMS ((const char *));
+static int open_include_file PARAMS ((char *, struct file_name_list *,
+				      const U_CHAR *, struct include_file **));
+static char *remap_include_file PARAMS ((char *, struct file_name_list *));
+static int lookup_ino_include PARAMS ((struct include_file *));
 
-static void finclude PROTO((int, struct include_file *, FILE_BUF *, int, struct file_name_list *));
-static void record_control_macro PROTO((struct include_file *, const U_CHAR *));
+static void finclude PARAMS ((int, struct include_file *, FILE_BUF *, int,
+			      struct file_name_list *));
+static void record_control_macro PARAMS ((struct include_file *,
+					  const U_CHAR *));
 
-static char *check_precompiled PROTO((int, struct stat *, const char *,
-				      const char **));
-static int check_preconditions PROTO((const char *));
-static void pcfinclude PROTO((U_CHAR *, const U_CHAR *, FILE_BUF *));
-static void pcstring_used PROTO((HASHNODE *));
-static void write_output PROTO((void));
-static void pass_thru_directive PROTO((const U_CHAR *, const U_CHAR *,
-				       FILE_BUF *, struct directive *));
+static char *check_precompiled PARAMS ((int, struct stat *, const char *,
+					const char **));
+static int check_preconditions PARAMS ((const char *));
+static void pcfinclude PARAMS ((U_CHAR *, const U_CHAR *, FILE_BUF *));
+static void pcstring_used PARAMS ((HASHNODE *));
+static void write_output PARAMS ((void));
+static void pass_thru_directive PARAMS ((const U_CHAR *, const U_CHAR *,
+					 FILE_BUF *, struct directive *));
 
-static MACRODEF create_definition PROTO((const U_CHAR *, const U_CHAR *,
-					 FILE_BUF *));
+static MACRODEF create_definition PARAMS ((const U_CHAR *, const U_CHAR *,
+					   FILE_BUF *));
 
-static int check_macro_name PROTO((const U_CHAR *, int));
-static int compare_defs PROTO((DEFINITION *, DEFINITION *));
-static int comp_def_part PROTO((int, const U_CHAR *, int, const U_CHAR *,
-				int, int));
+static int check_macro_name PARAMS ((const U_CHAR *, int));
+static int compare_defs PARAMS ((DEFINITION *, DEFINITION *));
+static int comp_def_part PARAMS ((int, const U_CHAR *, int, const U_CHAR *,
+				  int, int));
 
-static DEFINITION *collect_expansion  PROTO((const U_CHAR *, const U_CHAR *,
-					     int, struct arglist *));
+static DEFINITION *collect_expansion  PARAMS ((const U_CHAR *, const U_CHAR *,
+					       int, struct arglist *));
 
-int check_assertion PROTO((const U_CHAR *, int, int, struct arglist *));
-static int compare_token_lists PROTO((struct arglist *, struct arglist *));
+int check_assertion PARAMS ((const U_CHAR *, int, int, struct arglist *));
+static int compare_token_lists PARAMS ((struct arglist *, struct arglist *));
 
-static struct arglist *read_token_list PROTO((const U_CHAR **, const U_CHAR *,
-					      int *));
-static void free_token_list PROTO((struct arglist *));
+static struct arglist *read_token_list PARAMS ((const U_CHAR **,
+						const U_CHAR *, int *));
+static void free_token_list PARAMS ((struct arglist *));
 
-static ASSERTION_HASHNODE *assertion_install PROTO((const U_CHAR *, int, int));
-static ASSERTION_HASHNODE *assertion_lookup PROTO((const U_CHAR *, int, int));
-static void delete_assertion PROTO((ASSERTION_HASHNODE *));
+static ASSERTION_HASHNODE *assertion_install PARAMS ((const U_CHAR *, int, int));
+static ASSERTION_HASHNODE *assertion_lookup PARAMS ((const U_CHAR *, int, int));
+static void delete_assertion PARAMS ((ASSERTION_HASHNODE *));
 
-static void do_once PROTO((void));
+static void do_once PARAMS ((void));
 
-static HOST_WIDEST_INT eval_if_expression PROTO((const U_CHAR *, int));
-static void conditional_skip PROTO((FILE_BUF *, int, enum node_type,
-				    const U_CHAR *, FILE_BUF *));
-static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
-static void validate_else PROTO((const U_CHAR *, const U_CHAR *));
+static HOST_WIDEST_INT eval_if_expression PARAMS ((const U_CHAR *, int));
+static void conditional_skip PARAMS ((FILE_BUF *, int, enum node_type,
+				      const U_CHAR *, FILE_BUF *));
+static void skip_if_group PARAMS ((FILE_BUF *, int, FILE_BUF *));
+static void validate_else PARAMS ((const U_CHAR *, const U_CHAR *));
 
-static U_CHAR *skip_to_end_of_comment PROTO((FILE_BUF *, int *, int));
-static U_CHAR *skip_quoted_string PROTO((const U_CHAR *, const U_CHAR *,
-					 int, int *, int *, int *));
-static char *quote_string PROTO((char *, const char *, size_t));
-static U_CHAR *skip_paren_group PROTO((FILE_BUF *));
+static U_CHAR *skip_to_end_of_comment PARAMS ((FILE_BUF *, int *, int));
+static U_CHAR *skip_quoted_string PARAMS ((const U_CHAR *, const U_CHAR *,
+					   int, int *, int *, int *));
+static char *quote_string PARAMS ((char *, const char *, size_t));
+static U_CHAR *skip_paren_group PARAMS ((FILE_BUF *));
 
 /* Last arg to output_line_directive.  */
 enum file_change_code {same_file, enter_file, leave_file};
-static void output_line_directive PROTO((FILE_BUF *, FILE_BUF *, int, enum file_change_code));
+static void output_line_directive PARAMS ((FILE_BUF *, FILE_BUF *, int, enum file_change_code));
 
-static void macroexpand PROTO((HASHNODE *, FILE_BUF *));
+static void macroexpand PARAMS ((HASHNODE *, FILE_BUF *));
 
 struct argdata;
-static int macarg PROTO((struct argdata *, int));
+static int macarg PARAMS ((struct argdata *, int));
 
-static U_CHAR *macarg1 PROTO((U_CHAR *, const U_CHAR *, struct hashnode *, int *, int *, int *, int));
+static U_CHAR *macarg1 PARAMS ((U_CHAR *, const U_CHAR *, struct hashnode *, int *, int *, int *, int));
 
-static int discard_comments PROTO((U_CHAR *, int, int));
+static int discard_comments PARAMS ((U_CHAR *, int, int));
 
-static void change_newlines PROTO((struct argdata *));
+static void change_newlines PARAMS ((struct argdata *));
 
-static void notice PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-static void vnotice PROTO((const char *, va_list));
-void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-void verror PROTO((const char *, va_list));
-static void error_from_errno PROTO((const char *));
-void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-static void vwarning PROTO((const char *, va_list));
-static void error_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
-static void verror_with_line PROTO((int, const char *, va_list));
-static void vwarning_with_line PROTO((int, const char *, va_list));
-static void warning_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
-void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-void pedwarn_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
-static void pedwarn_with_file_and_line PVPROTO((const char *, size_t, int, const char *, ...)) ATTRIBUTE_PRINTF_4;
-static void pedwarn_strange_white_space PROTO((int));
+static void notice PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static void vnotice PARAMS ((const char *, va_list));
+void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void verror PARAMS ((const char *, va_list));
+static void error_from_errno PARAMS ((const char *));
+void warning PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static void vwarning PARAMS ((const char *, va_list));
+static void error_with_line PARAMS ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+static void verror_with_line PARAMS ((int, const char *, va_list));
+static void vwarning_with_line PARAMS ((int, const char *, va_list));
+static void warning_with_line PARAMS ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+void pedwarn PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void pedwarn_with_line PARAMS ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+static void pedwarn_with_file_and_line PARAMS ((const char *, size_t, int, const char *, ...)) ATTRIBUTE_PRINTF_4;
+static void pedwarn_strange_white_space PARAMS ((int));
 
-static void print_containing_files PROTO((void));
+static void print_containing_files PARAMS ((void));
 
-static int line_for_error PROTO((int));
-static int grow_outbuf PROTO((FILE_BUF *, int));
+static int line_for_error PARAMS ((int));
+static int grow_outbuf PARAMS ((FILE_BUF *, int));
 
-static HASHNODE *install PROTO((const U_CHAR *, int, enum node_type,
-				const char *, int));
-HASHNODE *lookup PROTO((const U_CHAR *, int, int));
-static void delete_macro PROTO((HASHNODE *));
-static int hashf PROTO((const U_CHAR *, int, int));
+static HASHNODE *install PARAMS ((const U_CHAR *, int, enum node_type,
+				  const char *, int));
+HASHNODE *lookup PARAMS ((const U_CHAR *, int, int));
+static void delete_macro PARAMS ((HASHNODE *));
+static int hashf PARAMS ((const U_CHAR *, int, int));
 
-static void dump_single_macro PROTO((HASHNODE *, FILE *));
-static void dump_all_macros PROTO((void));
-static void dump_defn_1 PROTO((const U_CHAR *, int, int, FILE *));
-static void dump_arg_n PROTO((DEFINITION *, int, FILE *));
+static void dump_single_macro PARAMS ((HASHNODE *, FILE *));
+static void dump_all_macros PARAMS ((void));
+static void dump_defn_1 PARAMS ((const U_CHAR *, int, int, FILE *));
+static void dump_arg_n PARAMS ((DEFINITION *, int, FILE *));
 
-static void initialize_char_syntax PROTO((void));
-static void initialize_builtins PROTO((FILE_BUF *, FILE_BUF *));
+static void initialize_char_syntax PARAMS ((void));
+static void initialize_builtins PARAMS ((FILE_BUF *, FILE_BUF *));
 
-static void make_definition PROTO((char *));
-static void make_undef PROTO((char *, FILE_BUF *));
+static void make_definition PARAMS ((char *));
+static void make_undef PARAMS ((char *, FILE_BUF *));
 
-static void make_assertion PROTO((const char *, const char *));
+static void make_assertion PARAMS ((const char *, const char *));
 
-static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, const char *, const char *, const char *));
-static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
+static struct file_name_list *new_include_prefix PARAMS ((struct file_name_list *, const char *, const char *, const char *));
+static void append_include_chain PARAMS ((struct file_name_list *, struct file_name_list *));
 
-static int quote_string_for_make PROTO((char *, const char *));
-static void deps_output PROTO((const char *, int));
+static int quote_string_for_make PARAMS ((char *, const char *));
+static void deps_output PARAMS ((const char *, int));
 
-void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
-static void perror_with_name PROTO((const char *));
-static void pfatal_with_name PROTO((const char *)) ATTRIBUTE_NORETURN;
-static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
+void fatal PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void perror_with_name PARAMS ((const char *));
+static void pfatal_with_name PARAMS ((const char *)) ATTRIBUTE_NORETURN;
+static void pipe_closed PARAMS ((int)) ATTRIBUTE_NORETURN;
 
-static void memory_full PROTO((void)) ATTRIBUTE_NORETURN;
-static void print_help PROTO((void));
+static void memory_full PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void print_help PARAMS ((void));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
    retrying if necessary.  If MAX_READ_LEN is defined, read at most
@@ -4912,7 +4914,7 @@ absolute_filename (filename)
 
 /* Returns whether or not a given character is a directory separator.
    Used by simplify_filename.  */
-static inline int is_dir_separator PROTO ((int));
+static inline int is_dir_separator PARAMS ((int));
 
 static inline
 int
@@ -9445,7 +9447,7 @@ change_newlines (arg)
 /* notice - output message to stderr */
 
 static void
-notice VPROTO ((const char * msgid, ...))
+notice VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -9473,7 +9475,7 @@ vnotice (msgid, args)
 /* error - print error message and increment count of errors.  */
 
 void
-error VPROTO ((const char * msgid, ...))
+error VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -9548,7 +9550,7 @@ error_from_errno (name)
 /* Print error message but don't count it.  */
 
 void
-warning VPROTO ((const char * msgid, ...))
+warning VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -9598,7 +9600,7 @@ vwarning (msgid, args)
 }
 
 static void
-error_with_line VPROTO ((int line, const char * msgid, ...))
+error_with_line VPARAMS ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
@@ -9646,7 +9648,7 @@ verror_with_line (line, msgid, args)
 }
 
 static void
-warning_with_line VPROTO ((int line, const char * msgid, ...))
+warning_with_line VPARAMS ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
@@ -9704,7 +9706,7 @@ vwarning_with_line (line, msgid, args)
 /* Print an error message and maybe count it.  */
 
 void
-pedwarn VPROTO ((const char * msgid, ...))
+pedwarn VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -9725,7 +9727,7 @@ pedwarn VPROTO ((const char * msgid, ...))
 }
 
 void
-pedwarn_with_line VPROTO ((int line, const char * msgid, ...))
+pedwarn_with_line VPARAMS ((int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
@@ -9751,8 +9753,8 @@ pedwarn_with_line VPROTO ((int line, const char * msgid, ...))
    giving specified file name and line number, not current.  */
 
 static void
-pedwarn_with_file_and_line VPROTO ((const char *file, size_t file_len, int line,
-				    const char * msgid, ...))
+pedwarn_with_file_and_line VPARAMS ((const char *file, size_t file_len,
+				     int line, const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *file;
@@ -10805,7 +10807,7 @@ deps_output (string, spacer)
 }
 
 void
-fatal VPROTO ((const char * msgid, ...))
+fatal VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;

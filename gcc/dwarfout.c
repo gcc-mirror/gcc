@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 95-99, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GNU CC.
@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 
 #if defined(DWARF_TIMESTAMPS)
 #if !defined(POSIX)
-extern time_t time PROTO ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
+extern time_t time PARAMS ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
 #endif /* !defined(POSIX) */
 #endif /* defined(DWARF_TIMESTAMPS) */
 
@@ -315,140 +315,140 @@ static int in_class;
 
 /* Forward declarations for functions defined in this file.  */
 
-static const char *dwarf_tag_name	PROTO((unsigned));
-static const char *dwarf_attr_name	PROTO((unsigned));
-static const char *dwarf_stack_op_name	PROTO((unsigned));
-static const char *dwarf_typemod_name	PROTO((unsigned));
-static const char *dwarf_fmt_byte_name	PROTO((unsigned));
-static const char *dwarf_fund_type_name	PROTO((unsigned));
-static tree decl_ultimate_origin	PROTO((tree));
-static tree block_ultimate_origin	PROTO((tree));
-static tree decl_class_context 		PROTO((tree));
+static const char *dwarf_tag_name	PARAMS ((unsigned));
+static const char *dwarf_attr_name	PARAMS ((unsigned));
+static const char *dwarf_stack_op_name	PARAMS ((unsigned));
+static const char *dwarf_typemod_name	PARAMS ((unsigned));
+static const char *dwarf_fmt_byte_name	PARAMS ((unsigned));
+static const char *dwarf_fund_type_name	PARAMS ((unsigned));
+static tree decl_ultimate_origin	PARAMS ((tree));
+static tree block_ultimate_origin	PARAMS ((tree));
+static tree decl_class_context 		PARAMS ((tree));
 #if 0
-static void output_unsigned_leb128	PROTO((unsigned long));
-static void output_signed_leb128	PROTO((long));
+static void output_unsigned_leb128	PARAMS ((unsigned long));
+static void output_signed_leb128	PARAMS ((long));
 #endif
-static inline int is_body_block		PROTO((tree));
-static int fundamental_type_code	PROTO((tree));
-static tree root_type_1			PROTO((tree, int));
-static tree root_type			PROTO((tree));
-static void write_modifier_bytes_1	PROTO((tree, int, int, int));
-static void write_modifier_bytes	PROTO((tree, int, int));
-static inline int type_is_fundamental	PROTO((tree));
-static void equate_decl_number_to_die_number PROTO((tree));
-static inline void equate_type_number_to_die_number PROTO((tree));
-static void output_reg_number		PROTO((rtx));
-static void output_mem_loc_descriptor	PROTO((rtx));
-static void output_loc_descriptor	PROTO((rtx));
-static void output_bound_representation	PROTO((tree, unsigned, int));
-static void output_enumeral_list	PROTO((tree));
-static inline unsigned ceiling		PROTO((unsigned, unsigned));
-static inline tree field_type		PROTO((tree));
-static inline unsigned simple_type_align_in_bits PROTO((tree));
-static inline unsigned simple_type_size_in_bits  PROTO((tree));
-static unsigned field_byte_offset	PROTO((tree));
-static inline void sibling_attribute	PROTO((void));
-static void location_attribute		PROTO((rtx));
-static void data_member_location_attribute PROTO((tree));
-static void const_value_attribute	PROTO((rtx));
-static void location_or_const_value_attribute PROTO((tree));
-static inline void name_attribute	PROTO((const char *));
-static inline void fund_type_attribute	PROTO((unsigned));
-static void mod_fund_type_attribute	PROTO((tree, int, int));
-static inline void user_def_type_attribute PROTO((tree));
-static void mod_u_d_type_attribute	PROTO((tree, int, int));
+static inline int is_body_block		PARAMS ((tree));
+static int fundamental_type_code	PARAMS ((tree));
+static tree root_type_1			PARAMS ((tree, int));
+static tree root_type			PARAMS ((tree));
+static void write_modifier_bytes_1	PARAMS ((tree, int, int, int));
+static void write_modifier_bytes	PARAMS ((tree, int, int));
+static inline int type_is_fundamental	PARAMS ((tree));
+static void equate_decl_number_to_die_number PARAMS ((tree));
+static inline void equate_type_number_to_die_number PARAMS ((tree));
+static void output_reg_number		PARAMS ((rtx));
+static void output_mem_loc_descriptor	PARAMS ((rtx));
+static void output_loc_descriptor	PARAMS ((rtx));
+static void output_bound_representation	PARAMS ((tree, unsigned, int));
+static void output_enumeral_list	PARAMS ((tree));
+static inline unsigned ceiling		PARAMS ((unsigned, unsigned));
+static inline tree field_type		PARAMS ((tree));
+static inline unsigned simple_type_align_in_bits PARAMS ((tree));
+static inline unsigned simple_type_size_in_bits  PARAMS ((tree));
+static unsigned field_byte_offset	PARAMS ((tree));
+static inline void sibling_attribute	PARAMS ((void));
+static void location_attribute		PARAMS ((rtx));
+static void data_member_location_attribute PARAMS ((tree));
+static void const_value_attribute	PARAMS ((rtx));
+static void location_or_const_value_attribute PARAMS ((tree));
+static inline void name_attribute	PARAMS ((const char *));
+static inline void fund_type_attribute	PARAMS ((unsigned));
+static void mod_fund_type_attribute	PARAMS ((tree, int, int));
+static inline void user_def_type_attribute PARAMS ((tree));
+static void mod_u_d_type_attribute	PARAMS ((tree, int, int));
 #ifdef USE_ORDERING_ATTRIBUTE
-static inline void ordering_attribute	PROTO((unsigned));
+static inline void ordering_attribute	PARAMS ((unsigned));
 #endif /* defined(USE_ORDERING_ATTRIBUTE) */
-static void subscript_data_attribute	PROTO((tree));
-static void byte_size_attribute		PROTO((tree));
-static inline void bit_offset_attribute	PROTO((tree));
-static inline void bit_size_attribute	PROTO((tree));
-static inline void element_list_attribute PROTO((tree));
-static inline void stmt_list_attribute	PROTO((const char *));
-static inline void low_pc_attribute	PROTO((const char *));
-static inline void high_pc_attribute	PROTO((const char *));
-static inline void body_begin_attribute	PROTO((const char *));
-static inline void body_end_attribute	PROTO((const char *));
-static inline void language_attribute	PROTO((unsigned));
-static inline void member_attribute	PROTO((tree));
+static void subscript_data_attribute	PARAMS ((tree));
+static void byte_size_attribute		PARAMS ((tree));
+static inline void bit_offset_attribute	PARAMS ((tree));
+static inline void bit_size_attribute	PARAMS ((tree));
+static inline void element_list_attribute PARAMS ((tree));
+static inline void stmt_list_attribute	PARAMS ((const char *));
+static inline void low_pc_attribute	PARAMS ((const char *));
+static inline void high_pc_attribute	PARAMS ((const char *));
+static inline void body_begin_attribute	PARAMS ((const char *));
+static inline void body_end_attribute	PARAMS ((const char *));
+static inline void language_attribute	PARAMS ((unsigned));
+static inline void member_attribute	PARAMS ((tree));
 #if 0
-static inline void string_length_attribute PROTO((tree));
+static inline void string_length_attribute PARAMS ((tree));
 #endif
-static inline void comp_dir_attribute	PROTO((const char *));
-static inline void sf_names_attribute	PROTO((const char *));
-static inline void src_info_attribute	PROTO((const char *));
-static inline void mac_info_attribute	PROTO((const char *));
-static inline void prototyped_attribute	PROTO((tree));
-static inline void producer_attribute	PROTO((const char *));
-static inline void inline_attribute	PROTO((tree));
-static inline void containing_type_attribute PROTO((tree));
-static inline void abstract_origin_attribute PROTO((tree));
+static inline void comp_dir_attribute	PARAMS ((const char *));
+static inline void sf_names_attribute	PARAMS ((const char *));
+static inline void src_info_attribute	PARAMS ((const char *));
+static inline void mac_info_attribute	PARAMS ((const char *));
+static inline void prototyped_attribute	PARAMS ((tree));
+static inline void producer_attribute	PARAMS ((const char *));
+static inline void inline_attribute	PARAMS ((tree));
+static inline void containing_type_attribute PARAMS ((tree));
+static inline void abstract_origin_attribute PARAMS ((tree));
 #ifdef DWARF_DECL_COORDINATES
-static inline void src_coords_attribute PROTO((unsigned, unsigned));
+static inline void src_coords_attribute PARAMS ((unsigned, unsigned));
 #endif /* defined(DWARF_DECL_COORDINATES) */
-static inline void pure_or_virtual_attribute PROTO((tree));
-static void name_and_src_coords_attributes PROTO((tree));
-static void type_attribute		PROTO((tree, int, int));
-static char *type_tag			PROTO((tree));
-static inline void dienum_push		PROTO((void));
-static inline void dienum_pop		PROTO((void));
-static inline tree member_declared_type PROTO((tree));
-static char *function_start_label	PROTO((tree));
-static void output_array_type_die	PROTO((void *));
-static void output_set_type_die		PROTO((void *));
+static inline void pure_or_virtual_attribute PARAMS ((tree));
+static void name_and_src_coords_attributes PARAMS ((tree));
+static void type_attribute		PARAMS ((tree, int, int));
+static char *type_tag			PARAMS ((tree));
+static inline void dienum_push		PARAMS ((void));
+static inline void dienum_pop		PARAMS ((void));
+static inline tree member_declared_type PARAMS ((tree));
+static char *function_start_label	PARAMS ((tree));
+static void output_array_type_die	PARAMS ((void *));
+static void output_set_type_die		PARAMS ((void *));
 #if 0
-static void output_entry_point_die	PROTO((void *));
+static void output_entry_point_die	PARAMS ((void *));
 #endif
-static void output_inlined_enumeration_type_die PROTO((void *));
-static void output_inlined_structure_type_die PROTO((void *));
-static void output_inlined_union_type_die PROTO((void *));
-static void output_enumeration_type_die	PROTO((void *));
-static void output_formal_parameter_die	PROTO((void *));
-static void output_global_subroutine_die PROTO((void *));
-static void output_global_variable_die	PROTO((void *));
-static void output_label_die		PROTO((void *));
-static void output_lexical_block_die	PROTO((void *));
-static void output_inlined_subroutine_die PROTO((void *));
-static void output_local_variable_die	PROTO((void *));
-static void output_member_die		PROTO((void *));
+static void output_inlined_enumeration_type_die PARAMS ((void *));
+static void output_inlined_structure_type_die PARAMS ((void *));
+static void output_inlined_union_type_die PARAMS ((void *));
+static void output_enumeration_type_die	PARAMS ((void *));
+static void output_formal_parameter_die	PARAMS ((void *));
+static void output_global_subroutine_die PARAMS ((void *));
+static void output_global_variable_die	PARAMS ((void *));
+static void output_label_die		PARAMS ((void *));
+static void output_lexical_block_die	PARAMS ((void *));
+static void output_inlined_subroutine_die PARAMS ((void *));
+static void output_local_variable_die	PARAMS ((void *));
+static void output_member_die		PARAMS ((void *));
 #if 0
-static void output_pointer_type_die	PROTO((void *));
-static void output_reference_type_die	PROTO((void *));
+static void output_pointer_type_die	PARAMS ((void *));
+static void output_reference_type_die	PARAMS ((void *));
 #endif
-static void output_ptr_to_mbr_type_die	PROTO((void *));
-static void output_compile_unit_die	PROTO((void *));
-static void output_string_type_die	PROTO((void *));
-static void output_inheritance_die	PROTO((void *));
-static void output_structure_type_die	PROTO((void *));
-static void output_local_subroutine_die PROTO((void *));
-static void output_subroutine_type_die	PROTO((void *));
-static void output_typedef_die		PROTO((void *));
-static void output_union_type_die	PROTO((void *));
-static void output_unspecified_parameters_die PROTO((void *));
-static void output_padded_null_die	PROTO((void *));
-static void output_die			PROTO((void (*) PROTO((void *)), void *));
-static void end_sibling_chain		PROTO((void));
-static void output_formal_types		PROTO((tree));
-static void pend_type			PROTO((tree));
-static int type_ok_for_scope		PROTO((tree, tree));
-static void output_pending_types_for_scope PROTO((tree));
-static void output_type			PROTO((tree, tree));
-static void output_tagged_type_instantiation PROTO((tree));
-static void output_block		PROTO((tree, int));
-static void output_decls_for_scope	PROTO((tree, int));
-static void output_decl			PROTO((tree, tree));
-static void shuffle_filename_entry	PROTO((filename_entry *));
-static void generate_new_sfname_entry	PROTO((void));
-static unsigned lookup_filename		PROTO((const char *));
-static void generate_srcinfo_entry	PROTO((unsigned, unsigned));
-static void generate_macinfo_entry	PROTO((const char *, const char *));
-static int is_pseudo_reg		PROTO((rtx));
-static tree type_main_variant		PROTO((tree));
-static int is_tagged_type		PROTO((tree));
-static int is_redundant_typedef		PROTO((tree));
-static void add_incomplete_type		PROTO((tree));
-static void retry_incomplete_types	PROTO((void));
+static void output_ptr_to_mbr_type_die	PARAMS ((void *));
+static void output_compile_unit_die	PARAMS ((void *));
+static void output_string_type_die	PARAMS ((void *));
+static void output_inheritance_die	PARAMS ((void *));
+static void output_structure_type_die	PARAMS ((void *));
+static void output_local_subroutine_die PARAMS ((void *));
+static void output_subroutine_type_die	PARAMS ((void *));
+static void output_typedef_die		PARAMS ((void *));
+static void output_union_type_die	PARAMS ((void *));
+static void output_unspecified_parameters_die PARAMS ((void *));
+static void output_padded_null_die	PARAMS ((void *));
+static void output_die			PARAMS ((void (*)(void *), void *));
+static void end_sibling_chain		PARAMS ((void));
+static void output_formal_types		PARAMS ((tree));
+static void pend_type			PARAMS ((tree));
+static int type_ok_for_scope		PARAMS ((tree, tree));
+static void output_pending_types_for_scope PARAMS ((tree));
+static void output_type			PARAMS ((tree, tree));
+static void output_tagged_type_instantiation PARAMS ((tree));
+static void output_block		PARAMS ((tree, int));
+static void output_decls_for_scope	PARAMS ((tree, int));
+static void output_decl			PARAMS ((tree, tree));
+static void shuffle_filename_entry	PARAMS ((filename_entry *));
+static void generate_new_sfname_entry	PARAMS ((void));
+static unsigned lookup_filename		PARAMS ((const char *));
+static void generate_srcinfo_entry	PARAMS ((unsigned, unsigned));
+static void generate_macinfo_entry	PARAMS ((const char *, const char *));
+static int is_pseudo_reg		PARAMS ((rtx));
+static tree type_main_variant		PARAMS ((tree));
+static int is_tagged_type		PARAMS ((tree));
+static int is_redundant_typedef		PARAMS ((tree));
+static void add_incomplete_type		PARAMS ((tree));
+static void retry_incomplete_types	PARAMS ((void));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -3999,7 +3999,7 @@ output_padded_null_die (arg)
 
 static void
 output_die (die_specific_output_function, param)
-     register void (*die_specific_output_function) PROTO ((void *));
+     register void (*die_specific_output_function) PARAMS ((void *));
      register void *param;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -5094,7 +5094,7 @@ output_decl (decl, containing_scope)
 	 function.  */
 
       {
-        register void (*func) PROTO((void *));
+        register void (*func) PARAMS ((void *));
 	register tree origin = decl_ultimate_origin (decl);
 
 	if (origin != NULL && TREE_CODE (origin) == PARM_DECL)

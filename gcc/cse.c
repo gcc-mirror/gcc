@@ -645,57 +645,57 @@ struct cse_basic_block_data
 	   || XEXP (X, 0) == virtual_outgoing_args_rtx))	\
    || GET_CODE (X) == ADDRESSOF)
 
-static int notreg_cost		PROTO((rtx));
-static void new_basic_block	PROTO((void));
-static void make_new_qty	PROTO((int, enum machine_mode));
-static void make_regs_eqv	PROTO((int, int));
-static void delete_reg_equiv	PROTO((int));
-static int mention_regs		PROTO((rtx));
-static int insert_regs		PROTO((rtx, struct table_elt *, int));
-static void remove_from_table	PROTO((struct table_elt *, unsigned));
-static struct table_elt *lookup	PROTO((rtx, unsigned, enum machine_mode)),
-       *lookup_for_remove PROTO((rtx, unsigned, enum machine_mode));
-static rtx lookup_as_function	PROTO((rtx, enum rtx_code));
-static struct table_elt *insert PROTO((rtx, struct table_elt *, unsigned,
-				       enum machine_mode));
-static void merge_equiv_classes PROTO((struct table_elt *,
-				       struct table_elt *));
-static void invalidate		PROTO((rtx, enum machine_mode));
-static int cse_rtx_varies_p	PROTO((rtx));
-static void remove_invalid_refs	PROTO((int));
-static void remove_invalid_subreg_refs	PROTO((int, int, enum machine_mode));
-static void rehash_using_reg	PROTO((rtx));
-static void invalidate_memory	PROTO((void));
-static void invalidate_for_call	PROTO((void));
-static rtx use_related_value	PROTO((rtx, struct table_elt *));
-static unsigned canon_hash	PROTO((rtx, enum machine_mode));
-static unsigned safe_hash	PROTO((rtx, enum machine_mode));
-static int exp_equiv_p		PROTO((rtx, rtx, int, int));
-static rtx canon_reg		PROTO((rtx, rtx));
-static void find_best_addr	PROTO((rtx, rtx *));
-static enum rtx_code find_comparison_args PROTO((enum rtx_code, rtx *, rtx *,
-						 enum machine_mode *,
-						 enum machine_mode *));
-static rtx fold_rtx		PROTO((rtx, rtx));
-static rtx equiv_constant	PROTO((rtx));
-static void record_jump_equiv	PROTO((rtx, int));
-static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
-				       rtx, rtx, int));
-static void cse_insn		PROTO((rtx, rtx));
-static int addr_affects_sp_p	PROTO((rtx));
-static void invalidate_from_clobbers PROTO((rtx));
-static rtx cse_process_notes	PROTO((rtx, rtx));
-static void cse_around_loop	PROTO((rtx));
-static void invalidate_skipped_set PROTO((rtx, rtx, void *));
-static void invalidate_skipped_block PROTO((rtx));
-static void cse_check_loop_start PROTO((rtx, rtx, void *));
-static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
-static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
-static void count_reg_usage	PROTO((rtx, int *, rtx, int));
-extern void dump_class          PROTO((struct table_elt*));
-static struct cse_reg_info* get_cse_reg_info PROTO((int));
+static int notreg_cost		PARAMS ((rtx));
+static void new_basic_block	PARAMS ((void));
+static void make_new_qty	PARAMS ((int, enum machine_mode));
+static void make_regs_eqv	PARAMS ((int, int));
+static void delete_reg_equiv	PARAMS ((int));
+static int mention_regs		PARAMS ((rtx));
+static int insert_regs		PARAMS ((rtx, struct table_elt *, int));
+static void remove_from_table	PARAMS ((struct table_elt *, unsigned));
+static struct table_elt *lookup	PARAMS ((rtx, unsigned, enum machine_mode)),
+       *lookup_for_remove PARAMS ((rtx, unsigned, enum machine_mode));
+static rtx lookup_as_function	PARAMS ((rtx, enum rtx_code));
+static struct table_elt *insert PARAMS ((rtx, struct table_elt *, unsigned,
+					 enum machine_mode));
+static void merge_equiv_classes PARAMS ((struct table_elt *,
+					 struct table_elt *));
+static void invalidate		PARAMS ((rtx, enum machine_mode));
+static int cse_rtx_varies_p	PARAMS ((rtx));
+static void remove_invalid_refs	PARAMS ((int));
+static void remove_invalid_subreg_refs	PARAMS ((int, int, enum machine_mode));
+static void rehash_using_reg	PARAMS ((rtx));
+static void invalidate_memory	PARAMS ((void));
+static void invalidate_for_call	PARAMS ((void));
+static rtx use_related_value	PARAMS ((rtx, struct table_elt *));
+static unsigned canon_hash	PARAMS ((rtx, enum machine_mode));
+static unsigned safe_hash	PARAMS ((rtx, enum machine_mode));
+static int exp_equiv_p		PARAMS ((rtx, rtx, int, int));
+static rtx canon_reg		PARAMS ((rtx, rtx));
+static void find_best_addr	PARAMS ((rtx, rtx *));
+static enum rtx_code find_comparison_args PARAMS ((enum rtx_code, rtx *, rtx *,
+						   enum machine_mode *,
+						   enum machine_mode *));
+static rtx fold_rtx		PARAMS ((rtx, rtx));
+static rtx equiv_constant	PARAMS ((rtx));
+static void record_jump_equiv	PARAMS ((rtx, int));
+static void record_jump_cond	PARAMS ((enum rtx_code, enum machine_mode,
+					 rtx, rtx, int));
+static void cse_insn		PARAMS ((rtx, rtx));
+static int addr_affects_sp_p	PARAMS ((rtx));
+static void invalidate_from_clobbers PARAMS ((rtx));
+static rtx cse_process_notes	PARAMS ((rtx, rtx));
+static void cse_around_loop	PARAMS ((rtx));
+static void invalidate_skipped_set PARAMS ((rtx, rtx, void *));
+static void invalidate_skipped_block PARAMS ((rtx));
+static void cse_check_loop_start PARAMS ((rtx, rtx, void *));
+static void cse_set_around_loop	PARAMS ((rtx, rtx, rtx));
+static rtx cse_basic_block	PARAMS ((rtx, rtx, struct branch_path *, int));
+static void count_reg_usage	PARAMS ((rtx, int *, rtx, int));
+extern void dump_class          PARAMS ((struct table_elt*));
+static struct cse_reg_info* get_cse_reg_info PARAMS ((int));
 
-static void flush_hash_table	PROTO((void));
+static void flush_hash_table	PARAMS ((void));
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */

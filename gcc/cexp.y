@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 92, 94-98, 1999 Free Software Foundation.
+   Copyright (C) 1987, 92, 94-99, 2000 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -47,10 +47,10 @@ struct arglist {
   int argno;
 };
 
-HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
+HOST_WIDEST_INT parse_c_expression PARAMS ((char *, int));
 
-static int yylex PROTO((void));
-static void yyerror PVPROTO((const char *, ...))
+static int yylex PARAMS ((void));
+static void yyerror PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static HOST_WIDEST_INT expression_value;
 #ifdef TEST_EXP_READER
@@ -133,18 +133,18 @@ extern int c89;
 
 struct constant;
 
-HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
-int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
-struct hashnode *lookup PROTO((U_CHAR *, int, int));
-void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-void verror PROTO((const char *, va_list));
-void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
-void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+HOST_WIDEST_INT parse_escape PARAMS ((char **, HOST_WIDEST_INT));
+int check_assertion PARAMS ((U_CHAR *, int, int, struct arglist *));
+struct hashnode *lookup PARAMS ((U_CHAR *, int, int));
+void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void verror PARAMS ((const char *, va_list));
+void pedwarn PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void warning PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
-static int parse_number PROTO((int));
-static HOST_WIDEST_INT left_shift PROTO((struct constant *, unsigned HOST_WIDEST_INT));
-static HOST_WIDEST_INT right_shift PROTO((struct constant *, unsigned HOST_WIDEST_INT));
-static void integer_overflow PROTO((void));
+static int parse_number PARAMS ((int));
+static HOST_WIDEST_INT left_shift PARAMS ((struct constant *, unsigned HOST_WIDEST_INT));
+static HOST_WIDEST_INT right_shift PARAMS ((struct constant *, unsigned HOST_WIDEST_INT));
+static void integer_overflow PARAMS ((void));
 
 /* `signedp' values */
 #define SIGNED (~0)
@@ -1003,7 +1003,7 @@ parse_c_expression (string, warn_undefined)
 }
 
 static void
-yyerror VPROTO ((const char * msgid, ...))
+yyerror VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -1033,9 +1033,9 @@ int pedantic;
 int traditional;
 int c89;
 
-int main PROTO((int, char **));
-static void initialize_random_junk PROTO((void));
-static void print_unsigned_host_widest_int PROTO((unsigned HOST_WIDEST_INT));
+int main PARAMS ((int, char **));
+static void initialize_random_junk PARAMS ((void));
+static void print_unsigned_host_widest_int PARAMS ((unsigned HOST_WIDEST_INT));
 
 /* Main program for testing purposes.  */
 int
@@ -1134,7 +1134,7 @@ initialize_random_junk ()
 }
 
 void
-error VPROTO ((char * msgid, ...))
+error VPARAMS ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char * msgid;
@@ -1154,7 +1154,7 @@ error VPROTO ((char * msgid, ...))
 }
 
 void
-pedwarn VPROTO ((char * msgid, ...))
+pedwarn VPARAMS ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char * msgid;
@@ -1174,7 +1174,7 @@ pedwarn VPROTO ((char * msgid, ...))
 }
 
 void
-warning VPROTO ((char * msgid, ...))
+warning VPARAMS ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char * msgid;

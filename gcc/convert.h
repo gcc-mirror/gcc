@@ -1,5 +1,5 @@
 /* Definition of functions in convert.c.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern tree convert_to_integer PROTO ((tree, tree));
-extern tree convert_to_pointer PROTO ((tree, tree));
-extern tree convert_to_real PROTO ((tree, tree));
-extern tree convert_to_complex PROTO ((tree, tree));
+extern tree convert_to_integer PARAMS ((tree, tree));
+extern tree convert_to_pointer PARAMS ((tree, tree));
+extern tree convert_to_real PARAMS ((tree, tree));
+extern tree convert_to_complex PARAMS ((tree, tree));

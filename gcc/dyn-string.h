@@ -1,5 +1,5 @@
 /* An abstract string datatype.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -27,7 +27,7 @@ typedef struct dyn_string
   char *s;		/* The string itself, NUL-terminated.  */
 }* dyn_string_t;
 
-extern dyn_string_t dyn_string_new      PROTO((int));
-extern void dyn_string_delete           PROTO((dyn_string_t));
-extern dyn_string_t dyn_string_append   PROTO((dyn_string_t, const char*));
-extern dyn_string_t dyn_string_resize   PROTO((dyn_string_t, int));
+extern dyn_string_t dyn_string_new      PARAMS ((int));
+extern void dyn_string_delete           PARAMS ((dyn_string_t));
+extern dyn_string_t dyn_string_append   PARAMS ((dyn_string_t, const char*));
+extern dyn_string_t dyn_string_resize   PARAMS ((dyn_string_t, int));

@@ -1,5 +1,5 @@
 /* Provide a version _doprnt in terms of fprintf.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Kaveh Ghazi  (ghazi@caip.rutgers.edu)  3/29/98
 
 This program is free software; you can redistribute it and/or modify it
@@ -204,10 +204,10 @@ _doprnt (format, ap, stream)
     fflush(stdin); \
 } while (0)
 
-static int checkit PVPROTO ((const char * format, ...)) ATTRIBUTE_PRINTF_1;
+static int checkit PARAMS ((const char * format, ...)) ATTRIBUTE_PRINTF_1;
 
 static int
-checkit VPROTO ((const char* format, ...))
+checkit VPARAMS ((const char* format, ...))
 {
   va_list args;
   int result;
