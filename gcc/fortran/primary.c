@@ -1400,7 +1400,8 @@ cleanup:
    the opening parenthesis to the closing parenthesis.  The argument
    list is assumed to allow keyword arguments because we don't know if
    the symbol associated with the procedure has an implicit interface
-   or not.  We make sure keywords are unique.  */
+   or not.  We make sure keywords are unique. If SUB_FLAG is set,
+   we're matching the argument list of a subroutine.  */
 
 match
 gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist ** argp)
@@ -1839,13 +1840,13 @@ match
 gfc_match_rvalue (gfc_expr ** result)
 {
   gfc_actual_arglist *actual_arglist;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  char name[GFC_MAX_SYMBOL_LEN + 1], argname[GFC_MAX_SYMBOL_LEN + 1];
   gfc_state_data *st;
   gfc_symbol *sym;
   gfc_symtree *symtree;
-  locus where;
+  locus where, old_loc;
   gfc_expr *e;
-  match m;
+  match m, m2;
   int i;
 
   m = gfc_match_name (name);
@@ -2044,35 +2045,46 @@ gfc_match_rvalue (gfc_expr ** result)
 	  break;
 	}
 
-      /* See if this could possibly be a substring reference of a name
-         that we're not sure is a variable yet.  */
+      /* See if this is a function reference with a keyword argument
+	 as first argument. We do this because otherwise a spurious
+	 symbol would end up in the symbol table.  */
+
+      old_loc = gfc_current_locus;
+      m2 = gfc_match (" ( %n =", argname);
+      gfc_current_locus = old_loc;
 
       e = gfc_get_expr ();
       e->symtree = symtree;
 
-      if ((sym->ts.type == BT_UNKNOWN || sym->ts.type == BT_CHARACTER)
-	  && match_substring (sym->ts.cl, 0, &e->ref) == MATCH_YES)
+      if (m2 != MATCH_YES)
 	{
+	  /* See if this could possibly be a substring reference of a name
+	     that we're not sure is a variable yet.  */
 
-	  e->expr_type = EXPR_VARIABLE;
-
-	  if (sym->attr.flavor != FL_VARIABLE
-	      && gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+	  if ((sym->ts.type == BT_UNKNOWN || sym->ts.type == BT_CHARACTER)
+	      && match_substring (sym->ts.cl, 0, &e->ref) == MATCH_YES)
 	    {
-	      m = MATCH_ERROR;
+
+	      e->expr_type = EXPR_VARIABLE;
+
+	      if (sym->attr.flavor != FL_VARIABLE
+		  && gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+		{
+		  m = MATCH_ERROR;
+		  break;
+		}
+
+	      if (sym->ts.type == BT_UNKNOWN
+		  && gfc_set_default_type (sym, 1, NULL) == FAILURE)
+		{
+		  m = MATCH_ERROR;
+		  break;
+		}
+
+	      e->ts = sym->ts;
+	      m = MATCH_YES;
 	      break;
 	    }
-
-	  if (sym->ts.type == BT_UNKNOWN
-	      && gfc_set_default_type (sym, 1, NULL) == FAILURE)
-	    {
-	      m = MATCH_ERROR;
-	      break;
-	    }
-
-	  e->ts = sym->ts;
-	  m = MATCH_YES;
-	  break;
 	}
 
       /* Give up, assume we have a function.  */
