@@ -598,7 +598,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ,rJ")
 			  (match_operand:DI 2 "const48_operand" "I,I"))
-		 (match_operand:DI 3 "reg_or_8bit_operand" "rI,O")))]
+		 (match_operand:DI 3 "sext_add_operand" "rI,O")))]
   ""
   "@
    s%2addq %r1,%3,%0
@@ -784,38 +784,41 @@
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:SI 2 "reg_or_0_operand" "rJ")))]
+		 (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "mull %r1,%r2,%0"
+  "mull %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-				 (match_operand:SI 2 "reg_or_0_operand" "rJ"))))]
+	(sign_extend:DI
+	  (mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
+		   (match_operand:SI 2 "reg_or_8bit_operand" "rI"))))]
   ""
-  "mull %r1,%r2,%0"
+  "mull %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
 
 (define_insn "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:DI 2 "reg_or_0_operand" "rJ")))]
+		 (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "mulq %r1,%r2,%0"
+  "mulq %r1,%2,%0"
   [(set_attr "type" "imul")])
 
 (define_insn "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(truncate:DI
 	 (lshiftrt:TI
-	  (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "r"))
-		   (zero_extend:TI (match_operand:DI 2 "register_operand" "r")))
+	  (mult:TI (zero_extend:TI
+		     (match_operand:DI 1 "reg_or_0_operand" "%rJ"))
+		   (zero_extend:TI
+		     (match_operand:DI 2 "reg_or_8bit_operand" "rI")))
 	  (const_int 64))))]
   ""
-  "umulh %1,%2,%0"
+  "umulh %r1,%2,%0"
   [(set_attr "type" "imul")
    (set_attr "opsize" "udi")])
 
