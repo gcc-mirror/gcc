@@ -2113,7 +2113,8 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 			  /* The SET_SRC might not be invariant, so we must
 			     use the REG_EQUAL note.  */
 			  start_sequence ();
-			  emit_move_insn (m->set_dest, m->set_src);
+			  emit_move_insn (m->insert_temp ? newreg : m->set_dest,
+					  m->set_src);
 			  seq = get_insns ();
 			  end_sequence ();
 

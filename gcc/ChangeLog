@@ -1,3 +1,8 @@
+2003-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* loop.c (move_movables): Handle combination of m->consec, 
+	m->move_insn_first, and m->insert_temp all nonzero correctly.
+
 2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c (load_register_parameters): Don't use
