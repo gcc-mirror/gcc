@@ -1,3 +1,8 @@
+2002-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/noncompile/920923-1.c: Prevent spurious regressions with
+	bison 1.50 or later.
+
 2002-10-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/README: Describe more test directories.
@@ -156,7 +161,7 @@ Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/array6.C: New test.
-	
+
 	* g++.dg/abi/mangle13.C: Likewise.
 	* g++.dg/abi/mangle14.C: Likewise.
 	* g++.dg/abi/mangle15.C: Likewise.
@@ -164,7 +169,7 @@ Thu Oct 17 19:12:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/empty8.C: New test.
-	
+
 2002-10-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/init/ctor1.C: New test.
@@ -205,7 +210,7 @@ Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	PR c++/5661
 	* g++.dg/ext/vlm1.C: New test.
 	* g++.dg/ext/vlm2.C: Likewise.
-	
+
 	* g++.dg/init/array1.C: Remove invalid braces.
 	* g++.dg/init/brace1.C: New test.
 	* g++.dg/init/copy2.C: Likewise.
@@ -213,7 +218,7 @@ Mon Oct 14 20:37:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* g++.old-deja/g++.ext/arrnew.C: Change WARNING to ERROR.
 	* g++.old-deja/g++.mike/p9129.C: Add ERROR on invalid use of
 	braces.
-	
+
 2002-10-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/assembler.S: Don't use -ansi.
