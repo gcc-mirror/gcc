@@ -10372,32 +10372,23 @@ grok_ctor_properties (ctype, decl)
     }
 
   if (TREE_CODE (parmtype) == REFERENCE_TYPE
-      && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == ctype)
-    {
-      if (TREE_CHAIN (parmtypes) == NULL_TREE
+      && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == ctype
+      && (TREE_CHAIN (parmtypes) == NULL_TREE
 	  || TREE_CHAIN (parmtypes) == void_list_node
-	  || TREE_PURPOSE (TREE_CHAIN (parmtypes)))
-	{
-	  TYPE_HAS_INIT_REF (ctype) = 1;
-	  if (TYPE_READONLY (TREE_TYPE (parmtype)))
-	    TYPE_HAS_CONST_INIT_REF (ctype) = 1;
-	}
-      else
-	TYPE_GETS_INIT_AGGR (ctype) = 1;
-    }
-  else if (TYPE_MAIN_VARIANT (parmtype) == ctype)
+	  || TREE_PURPOSE (TREE_CHAIN (parmtypes))))
     {
-      if (TREE_CHAIN (parmtypes) != NULL_TREE
-	  && TREE_CHAIN (parmtypes) == void_list_node)
-	{
-	  cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
-		    ctype, ctype);
-	  SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
-
-	  return 0;
-	}
-      else
-	TYPE_GETS_INIT_AGGR (ctype) = 1;
+      TYPE_HAS_INIT_REF (ctype) = 1;
+      if (TYPE_READONLY (TREE_TYPE (parmtype)))
+	TYPE_HAS_CONST_INIT_REF (ctype) = 1;
+    }
+  else if (TYPE_MAIN_VARIANT (parmtype) == ctype
+	   && TREE_CHAIN (parmtypes) != NULL_TREE
+	   && TREE_CHAIN (parmtypes) == void_list_node)
+    {
+      cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
+		ctype, ctype);
+      SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
+      return 0;
     }
   else if (TREE_CODE (parmtype) == VOID_TYPE
 	   || TREE_PURPOSE (parmtypes) != NULL_TREE)

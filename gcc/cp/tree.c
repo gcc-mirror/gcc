@@ -639,28 +639,23 @@ layout_vbasetypes (rec, max)
      The TREE_VALUE slot holds the virtual baseclass type.  */
   tree vbase_types = get_vbase_types (rec);
 
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned int record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
-#else
   unsigned int record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-#endif
   unsigned int desired_align;
 
-  /* Record size so far is CONST_SIZE + VAR_SIZE bits,
-     where CONST_SIZE is an integer
-     and VAR_SIZE is a tree expression.
-     If VAR_SIZE is null, the size is just CONST_SIZE.
-     Naturally we try to avoid using VAR_SIZE.  */
+  /* Record size so far is CONST_SIZE bits, where CONST_SIZE is an integer.  */
   register unsigned int const_size = 0;
-  register tree var_size = 0;
   unsigned int nonvirtual_const_size;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
+#endif
 
   CLASSTYPE_VBASECLASSES (rec) = vbase_types;
 
-  if (TREE_CODE (TYPE_SIZE (rec)) == INTEGER_CST)
-    const_size = TREE_INT_CST_LOW (TYPE_SIZE (rec));
-  else
-    var_size = TYPE_SIZE (rec);
+  my_friendly_assert (TREE_CODE (TYPE_SIZE (rec)) == INTEGER_CST, 19970302);
+  const_size = TREE_INT_CST_LOW (TYPE_SIZE (rec));
 
   nonvirtual_const_size = const_size;
 
@@ -686,18 +681,10 @@ layout_vbasetypes (rec, max)
 	max = CLASSTYPE_VSIZE (basetype);
       BINFO_OFFSET (vbase_types) = offset;
 
-      if (TREE_CODE (TYPE_SIZE (basetype)) == INTEGER_CST)
-	{
-	  /* Every virtual baseclass takes a least a UNIT, so that we can
-	     take it's address and get something different for each base.  */
-	  const_size += MAX (BITS_PER_UNIT,
-			     TREE_INT_CST_LOW (TYPE_SIZE (basetype))
-			     - TREE_INT_CST_LOW (CLASSTYPE_VBASE_SIZE (basetype)));
-	}
-      else if (var_size == 0)
-	var_size = TYPE_SIZE (basetype);
-      else
-	var_size = size_binop (PLUS_EXPR, var_size, TYPE_SIZE (basetype));
+      /* Every virtual baseclass takes a least a UNIT, so that we can
+	 take it's address and get something different for each base.  */
+      const_size += MAX (BITS_PER_UNIT,
+			 TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
 
       vbase_types = TREE_CHAIN (vbase_types);
     }
@@ -715,11 +702,7 @@ layout_vbasetypes (rec, max)
    here, as that is for this class, without any virtual base classes.  */
   TYPE_ALIGN (rec) = record_align;
   if (const_size != nonvirtual_const_size)
-    {
-      CLASSTYPE_VBASE_SIZE (rec)
-	= size_int (const_size - nonvirtual_const_size);
-      TYPE_SIZE (rec) = size_int (const_size);
-    }
+    TYPE_SIZE (rec) = size_int (const_size);
 
   /* Now propagate offset information throughout the lattice
      under the vbase type.  */
@@ -769,7 +752,7 @@ layout_vbasetypes (rec, max)
    TYPE_BINFO (REC) should be NULL_TREE on entry, and this routine
    creates a list of base_binfos in TYPE_BINFO (REC) from BINFOS.
 
-   Returns list of virtual base classes in a FIELD_DECL chain.  */
+   Returns list of virtual base class pointers in a FIELD_DECL chain.  */
 
 tree
 layout_basetypes (rec, binfos)
@@ -778,57 +761,33 @@ layout_basetypes (rec, binfos)
   /* Chain to hold all the new FIELD_DECLs which point at virtual
      base classes.  */
   tree vbase_decls = NULL_TREE;
-
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
-#else
   unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-#endif
 
-  /* Record size so far is CONST_SIZE + VAR_SIZE bits, where CONST_SIZE is
-     an integer and VAR_SIZE is a tree expression.  If VAR_SIZE is null,
-     the size is just CONST_SIZE.  Naturally we try to avoid using
-     VAR_SIZE.  And so far, we've been successful.  */
-#if 0
-  register tree var_size = 0;
-#endif
-
+  /* Record size so far is CONST_SIZE bits, where CONST_SIZE is an integer.  */
   register unsigned const_size = 0;
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
+#endif
 
   /* Handle basetypes almost like fields, but record their
      offsets differently.  */
 
   for (i = 0; i < n_baseclasses; i++)
     {
-      int inc, int_vbase_size;
+      int inc;
       unsigned int desired_align;
       register tree base_binfo = TREE_VEC_ELT (binfos, i);
       register tree basetype = BINFO_TYPE (base_binfo);
       tree decl, offset;
 
       if (TYPE_SIZE (basetype) == 0)
-	{
-#if 0
-	  /* This error is now reported in xref_tag, thus giving better
-	     location information.  */
-	  error_with_aggr_type (base_binfo,
-				"base class `%s' has incomplete type");
-
-	  TREE_VIA_PUBLIC (base_binfo) = 1;
-	  TREE_VIA_PROTECTED (base_binfo) = 0;
-	  TREE_VIA_VIRTUAL (base_binfo) = 0;
-
-	  /* Should handle this better so that
-
-	     class A;
-	     class B: private A { virtual void F(); };
-
-	     does not dump core when compiled.  */
-	  my_friendly_abort (121);
-#endif
-	  continue;
-	}
+	/* This error is now reported in xref_tag, thus giving better
+	   location information.  */
+	continue;
 
       /* All basetypes are recorded in the association list of the
 	 derived type.  */
@@ -906,20 +865,13 @@ layout_basetypes (rec, binfos)
 
       /* Add only the amount of storage not present in
 	 the virtual baseclasses.  */
+      inc = MAX (record_align, TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
 
-      int_vbase_size = TREE_INT_CST_LOW (CLASSTYPE_VBASE_SIZE (basetype));
-      if (TREE_INT_CST_LOW (TYPE_SIZE (basetype)) > int_vbase_size)
-	{
-	  inc = MAX (record_align,
-		     (TREE_INT_CST_LOW (TYPE_SIZE (basetype))
-		      - int_vbase_size));
+      /* Record must have at least as much alignment as any field.  */
+      desired_align = TYPE_ALIGN (basetype);
+      record_align = MAX (record_align, desired_align);
 
-	  /* Record must have at least as much alignment as any field.  */
-	  desired_align = TYPE_ALIGN (basetype);
-	  record_align = MAX (record_align, desired_align);
-
-	  const_size += inc;
-	}
+      const_size += inc;
     }
 
   if (const_size)

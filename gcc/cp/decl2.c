@@ -853,8 +853,6 @@ grok_x_components (specs, components)
 	    tcode = signature_type_node;
 	  
 	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
-	  if (TYPE_CONTEXT (t))
-	    CLASSTYPE_NO_GLOBALIZE (t) = 1;
 	  return NULL_TREE;
 	  break;
 
@@ -866,8 +864,6 @@ grok_x_components (specs, components)
 	    tcode = enum_type_node;
 
 	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
-	  if (TREE_CODE (t) == UNION_TYPE && TYPE_CONTEXT (t))
-	    CLASSTYPE_NO_GLOBALIZE (t) = 1;
 	  if (TREE_CODE (t) == UNION_TYPE
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
 	    {

@@ -420,63 +420,56 @@ struct lang_type
   struct
     {
       unsigned has_type_conversion : 1;
-      unsigned has_int_conversion : 1;
-      unsigned has_float_conversion : 1;
       unsigned has_init_ref : 1;
-      unsigned gets_init_aggr : 1;
       unsigned has_assignment : 1;
       unsigned has_default_ctor : 1;
       unsigned uses_multiple_inheritance : 1;
-
-      unsigned has_nonpublic_ctor : 2;
-      unsigned has_nonpublic_assign_ref : 2;
       unsigned const_needs_init : 1;
       unsigned ref_needs_init : 1;
       unsigned has_const_assign_ref : 1;
-      unsigned vtable_needs_writing : 1;
 
+      unsigned has_nonpublic_ctor : 2;
+      unsigned has_nonpublic_assign_ref : 2;
+      unsigned vtable_needs_writing : 1;
       unsigned has_assign_ref : 1;
       unsigned gets_new : 2;
+
       unsigned gets_delete : 2;
       unsigned has_call_overloaded : 1;
       unsigned has_array_ref_overloaded : 1;
       unsigned has_arrow_overloaded : 1;
-
       unsigned local_typedecls : 1;
       unsigned interface_only : 1;
       unsigned interface_unknown : 1;
+
       unsigned needs_virtual_reinit : 1;
       unsigned vec_delete_takes_size : 1;
       unsigned declared_class : 1;
       unsigned being_defined : 1;
       unsigned redefined : 1;
-
-      unsigned no_globalize : 1;
       unsigned marked : 1;
       unsigned marked2 : 1;
       unsigned marked3 : 1;
+
       unsigned marked4 : 1;
       unsigned marked5 : 1;
       unsigned marked6 : 1;
       unsigned debug_requested : 1;
-
       unsigned use_template : 2;
-      unsigned has_method_call_overloaded : 1;
-      unsigned private_attr : 1;
       unsigned got_semicolon : 1;
       unsigned ptrmemfunc_flag : 1;
+
       unsigned is_signature : 1;
       unsigned is_signature_pointer : 1;
-
       unsigned is_signature_reference : 1;
       unsigned has_opaque_typedecls : 1;
       unsigned sigtable_has_been_generated : 1;
       unsigned was_anonymous : 1;
       unsigned has_real_assignment : 1;
       unsigned has_real_assign_ref : 1;
+
       unsigned has_const_init_ref : 1;
       unsigned has_complex_init_ref : 1;
-
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
@@ -484,39 +477,30 @@ struct lang_type
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 21;
-
-      unsigned n_vancestors : 16;
+      unsigned dummy : 11;
     } type_flags;
 
+#ifdef MI_MATRIX
   int cid;
+#endif
   int n_ancestors;
+  int n_vancestors;
   int vsize;
   int max_depth;
   int vfield_parent;
 
-  union tree_node *vbinfo[2];
   union tree_node *baselink_vec;
   union tree_node *vfields;
   union tree_node *vbases;
-  union tree_node *vbase_size;
 
   union tree_node *tags;
   char *memoized_table_entry;
 
   union tree_node *search_slot;
 
-#ifdef ONLY_INT_FIELDS
-  unsigned int mode : 8;
-#else
-  enum machine_mode mode : 8;
-#endif
-
-  unsigned char size_unit;
   unsigned char align;
-  unsigned char sep_unit;
+  /* Room for another three unsigned chars.  */
 
-  union tree_node *sep;
   union tree_node *size;
 
   union tree_node *base_init_list;
@@ -526,7 +510,9 @@ struct lang_type
   union tree_node *binfo_as_list;
   union tree_node *friend_classes;
 
+#ifdef MI_MATRIX
   char *mi_matrix;
+#endif
 
   union tree_node *rtti;
 
@@ -580,20 +566,9 @@ struct lang_type
 /* Nonzero for TREE_LIST or _TYPE node means that this node is class-local.  */
 #define TREE_NONLOCAL_FLAG(NODE) (TREE_LANG_FLAG_0 (NODE))
 
-/* Nonzero for a _CLASSTYPE node which we know to be private.  */
-#define TYPE_PRIVATE_P(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.private_attr)
-
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
 #define TYPE_HAS_CONVERSION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_type_conversion)
-
-/* Nonzero means that this _CLASSTYPE node can convert itself to an
-   INTEGER_TYPE.  */
-#define TYPE_HAS_INT_CONVERSION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_int_conversion)
-
-/* Nonzero means that this _CLASSTYPE node can convert itself to an
-   REAL_TYPE.  */
-#define TYPE_HAS_REAL_CONVERSION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_float_conversion)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
 #define TYPE_HAS_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_assign_ref)
@@ -602,11 +577,6 @@ struct lang_type
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
 #define TYPE_HAS_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_init_ref)
 #define TYPE_HAS_CONST_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_const_init_ref)
-
-/* Nonzero means that this _CLASSTYPE node has an X(X ...) constructor.
-   Note that there must be other arguments, or this constructor is flagged
-   as being erroneous.  */
-#define TYPE_GETS_INIT_AGGR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_init_aggr)
 
 /* Nonzero means that this type is being defined.  I.e., the left brace
    starting the definition of this type has been seen.  */
@@ -742,7 +712,7 @@ struct lang_type
    large a multiple-inheritance matrix we need to build to find
    derivation information.  */
 #define CLASSTYPE_N_SUPERCLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->n_ancestors)
-#define CLASSTYPE_N_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.n_vancestors)
+#define CLASSTYPE_N_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->n_vancestors)
 
 /* Record how deep the inheritance is for this class so `void*' conversions
    are less favorable than a conversion to the most base type.  */
@@ -757,19 +727,16 @@ struct lang_type
    it can mean almost anything.  */
 #define CLASSTYPE_MTABLE_ENTRY(NODE) (TYPE_LANG_SPECIFIC(NODE)->memoized_table_entry)
 
-/* This is the total size of the baseclasses defined for this type.
-   Needed because it is desirable to layout such information
-   before beginning to process the class itself, and we
-   don't want to compute it second time when actually laying
-   out the type for real.  */
-#define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
-#define CLASSTYPE_SIZE_UNIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->size_unit)
-#define CLASSTYPE_MODE(NODE) (TYPE_LANG_SPECIFIC(NODE)->mode)
-#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
+/* These are the size, mode and alignment of the type without its
+   virtual base classes, for when we use this type as a base itself.
 
-/* This is the space needed for virtual base classes.  NULL if
-   there are no virtual basetypes.  */
-#define CLASSTYPE_VBASE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbase_size)
+   CLASSTYPE_SIZE is also used during finish_struct_1 to remember the total
+   size of the baseclasses defined for the type.  We do this because it is
+   desirable to layout such information before beginning to process the
+   class itself, and we don't want to compute it second time when actually
+   laying out the type for real.  */
+#define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
+#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
 
 /* A cons list of structure elements which either have constructors
    to be called, or virtual function table pointers which
@@ -827,14 +794,14 @@ struct lang_type
 /* A list of class types with which this type is a friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->friend_classes)
 
+#ifdef MI_MATRIX
 /* Keep an inheritance lattice around so we can quickly tell whether
    a type is derived from another or not.  */
 #define CLASSTYPE_MI_MATRIX(NODE) (TYPE_LANG_SPECIFIC(NODE)->mi_matrix)
+#endif
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
-/* whether this can be globalized.  */
-#define CLASSTYPE_NO_GLOBALIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.no_globalize)
 
 /* Nonzero if this class has const members which have no specified initialization.  */
 #define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.const_needs_init)
@@ -858,18 +825,17 @@ struct lang_type
 
 /* Additional macros for inheritance information.  */
 
-#define CLASSTYPE_VBINFO(NODE,VIA_PUBLIC) \
-  (TYPE_LANG_SPECIFIC (NODE)->vbinfo[VIA_PUBLIC])
-
 /* When following an binfo-specific chain, this is the cumulative
    via-public flag.  */
 #define BINFO_VIA_PUBLIC(NODE) TREE_LANG_FLAG_5 (NODE)
 
+#ifdef MI_MATRIX
 /* When building a matrix to determine by a single lookup
    whether one class is derived from another or not,
    this field is the index of the class in the table.  */
 #define CLASSTYPE_CID(NODE) (TYPE_LANG_SPECIFIC(NODE)->cid)
 #define BINFO_CID(NODE) CLASSTYPE_CID(BINFO_TYPE(NODE))
+#endif
 
 /* Nonzero means marked by DFS or BFS search, including searches
    by `get_binfo' and `get_base_distance'.  */

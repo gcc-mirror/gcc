@@ -1846,12 +1846,7 @@ finish_struct_bits (t, max_has_virtual)
 	{
 	  basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
 
-	  if (TYPE_HAS_CONVERSION (basetype))
-	    {
-	      TYPE_HAS_CONVERSION (t) = 1;
-	      TYPE_HAS_INT_CONVERSION (t) |= TYPE_HAS_INT_CONVERSION (basetype);
-	      TYPE_HAS_REAL_CONVERSION (t) |= TYPE_HAS_REAL_CONVERSION (basetype);
-	    }
+	  TYPE_HAS_CONVERSION (t) |= TYPE_HAS_CONVERSION (basetype);
 	  if (CLASSTYPE_MAX_DEPTH (basetype) >= CLASSTYPE_MAX_DEPTH (t))
 	    CLASSTYPE_MAX_DEPTH (t) = CLASSTYPE_MAX_DEPTH (basetype) + 1;
 	}
@@ -2005,18 +2000,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    }
  	}
       else if (IDENTIFIER_TYPENAME_P (fn_name))
-	{
-	  tree return_type = TREE_TYPE (TREE_TYPE (fn_fields));
-
-	  if (typecode_p (return_type, INTEGER_TYPE)
-	      || typecode_p (return_type, BOOLEAN_TYPE)
-	      || typecode_p (return_type, ENUMERAL_TYPE))
-	    TYPE_HAS_INT_CONVERSION (t) = 1;
-	  else if (typecode_p (return_type, REAL_TYPE))
-	    TYPE_HAS_REAL_CONVERSION (t) = 1;
-
-	  grow_method (fn_fields, &method_vec);
-	}
+	grow_method (fn_fields, &method_vec);
     }
 
   fn_fields = save_fn_fields;
@@ -2159,7 +2143,6 @@ duplicate_tag_error (t)
       CLASSTYPE_BINFO_AS_LIST (t) = binfo_as_list;
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
-      CLASSTYPE_VBASE_SIZE (t) = integer_zero_node;
       TYPE_REDEFINED (t) = 1;
     }
   TYPE_SIZE (t) = NULL_TREE;
@@ -3930,6 +3913,11 @@ finish_struct_1 (t, warn_anon)
     }
 
   layout_type (t);
+
+  /* Remember the size, mode and alignment of the class before adding
+     the virtual bases.  */
+  CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+  CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
 
   finish_struct_anon (t);
 

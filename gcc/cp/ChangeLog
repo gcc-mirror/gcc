@@ -1,3 +1,13 @@
+Thu Apr  2 14:25:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Lose CLASSTYPE_VBASE_SIZE, some unused stuff.
+	* decl.c, decl2.c, pt.c, ptree.c, lex.c: Likewise.
+	* class.c (duplicate_tag_error): Likewise.
+	(finish_struct_1): Set CLASSTYPE_SIZE, CLASSTYPE_MODE, CLASSTYPE_ALIGN.
+	* tree.c (layout_vbasetypes): Update from layout_record, remove
+	var_size support, use CLASSTYPE_SIZE instead of CLASSTYPE_VBASE_SIZE.
+	(layout_basetypes): Likewise.
+
 Wed Apr  1 18:22:25 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* class.c, Make sure system.h is included just after config.h.
