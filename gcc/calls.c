@@ -646,9 +646,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	 If returning from the subroutine does pop the args, indicate that the
 	 stack pointer will be changed.  */
 
-      if (rounded_stack_size != 0 && ! (ecf_flags & ECF_SP_DEPRESSED))
+      if (rounded_stack_size != 0)
 	{
-	  if (flag_defer_pop && inhibit_defer_pop == 0
+	  if (ecf_flags & ECF_SP_DEPRESSED)
+	    /* Just pretend we did the pop.  */
+	    stack_pointer_delta -= rounded_stack_size;
+	  else if (flag_defer_pop && inhibit_defer_pop == 0
 	      && ! (ecf_flags & (ECF_CONST | ECF_PURE)))
 	    pending_stack_adjust += rounded_stack_size;
 	  else
