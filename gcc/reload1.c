@@ -707,10 +707,9 @@ reload (rtx first, int global)
 
   CLEAR_HARD_REG_SET (bad_spill_regs_global);
 
-  /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
-     Also find all paradoxical subregs and find largest such for each pseudo.
-     On machines with small register classes, record hard registers that
-     are used for user variables.  These can never be used for spills.  */
+  /* Look for REG_EQUIV notes; record what each pseudo is equivalent
+     to.  Also find all paradoxical subregs and find largest such for
+     each pseudo.  */
 
   num_eliminable_invariants = 0;
   for (insn = first; insn; insn = NEXT_INSN (insn))
@@ -3713,9 +3712,7 @@ finish_spills (int global)
   return something_changed;
 }
 
-/* Find all paradoxical subregs within X and update reg_max_ref_width.
-   Also mark any hard registers used to store user variables as
-   forbidden from being used for spill registers.  */
+/* Find all paradoxical subregs within X and update reg_max_ref_width.  */
 
 static void
 scan_paradoxical_subregs (rtx x)
@@ -3727,13 +3724,6 @@ scan_paradoxical_subregs (rtx x)
   switch (code)
     {
     case REG:
-#if 0
-      if (SMALL_REGISTER_CLASSES && REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && REG_USERVAR_P (x))
-	SET_HARD_REG_BIT (bad_spill_regs_global, REGNO (x));
-#endif
-      return;
-
     case CONST_INT:
     case CONST:
     case SYMBOL_REF:

@@ -4417,10 +4417,7 @@ example, some 68000 operating systems call this register @code{%a5}.
 
 Defining such a register variable does not reserve the register; it
 remains available for other uses in places where flow control determines
-the variable's value is not live.  However, these registers are made
-unavailable for use in the reload pass; excessive use of this feature
-leaves the compiler too few available registers to compile certain
-functions.
+the variable's value is not live.
 
 This option does not guarantee that GCC will generate code that has
 this variable in the register you specify at all times.  You may not
