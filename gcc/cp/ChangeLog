@@ -1,3 +1,8 @@
+2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* typeck.c (build_binary_op): Do not use RDIV_EXPR for
+	integer vectors.
+
 2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14497

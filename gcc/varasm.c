@@ -3615,10 +3615,10 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	  unsigned int nalign;
 	  enum machine_mode inner;
 
-	  inner = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (exp)));
+	  inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	  nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
 
-	  elt_size = GET_MODE_UNIT_SIZE (TYPE_MODE (TREE_TYPE (exp)));
+	  elt_size = GET_MODE_SIZE (inner);
 
 	  link = TREE_VECTOR_CST_ELTS (exp);
 	  output_constant (TREE_VALUE (link), elt_size, align);
