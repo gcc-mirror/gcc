@@ -1,3 +1,10 @@
+2003-11-26  Stuart Ballard <stuart.ballard@corp.fast.net>
+
+	* java/util/HashMap.java (putAll): Use Iterator hasNext() method.
+	(putAllInternal): Likewise.
+	* java/util/Hashtable.java (putAll): Use Iterator hasNext() method.
+	(putAllInternal): Likewise.
+
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLStreamHandler.java
