@@ -1767,7 +1767,7 @@ specified function is an interrupt handler.  The compiler will generate
 function entry and exit sequences suitable for use in an interrupt
 handler when this attribute is present.
 
-Note, interrupt handlers for ther H8/300 and H8/300H processors can be
+Note, interrupt handlers for the H8/300 and H8/300H processors can be
 specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR interrupts will be enabled inside the function.
@@ -1779,7 +1779,7 @@ adding an optional parameter to the interrupt attribute like this:
 void f () __attribute__ ((interrupt ("IRQ")));
 @end smallexample
 
-Permissable values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF.
+Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF.
 
 @item eightbit_data
 @cindex eight bit data on the H8/300 and H8/300H
