@@ -896,7 +896,7 @@ scan_loop (loop, flags)
 				   SET_DEST (set), copy_rtx (SET_SRC (set)));
 
 		  delete_insn (p);
-		  for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+		  for (i = 0; i < (int) LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
 		    regs->array[regno+i].set_in_loop = 0;
 		  continue;
 		}
@@ -927,7 +927,7 @@ scan_loop (loop, flags)
 	      m->savings = regs->array[regno].n_times_set;
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
-	      for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+	      for (i = 0; i < (int) LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
 		regs->array[regno+i].set_in_loop = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
 	      loop_movables_add (movables, m);
@@ -1029,7 +1029,7 @@ scan_loop (loop, flags)
 		  m->match = 0;
 		  m->lifetime = LOOP_REG_LIFETIME (loop, regno);
 		  m->savings = 1;
-		  for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+		  for (i = 0; i < (int) LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
 		    regs->array[regno+i].set_in_loop = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
 		  loop_movables_add (movables, m);
@@ -2170,7 +2170,7 @@ move_movables (loop, movables, threshold, insn_count)
 	      if (! m->partial)
 		{
 		  int i;
-		  for (i = 0; i < LOOP_REGNO_NREGS (regno, m->set_dest); i++)
+		  for (i = 0; i < (int) LOOP_REGNO_NREGS (regno, m->set_dest); i++)
 		    regs->array[regno+i].set_in_loop = 0;
 		}
 
@@ -2235,7 +2235,7 @@ move_movables (loop, movables, threshold, insn_count)
 			{
 			  int i;
 			  for (i = 0;
-			       i < LOOP_REGNO_NREGS (regno, m1->set_dest);
+			       i < (int) LOOP_REGNO_NREGS (regno, m1->set_dest);
 			       i++)
 			    regs->array[m1->regno+i].set_in_loop = 0;
 			}
@@ -3495,7 +3495,7 @@ count_one_set (regs, insn, x, last_set)
 	{
 	  int i;
 	  int regno = REGNO (dest);
-	  for (i = 0; i < LOOP_REGNO_NREGS (regno, dest); i++)
+	  for (i = 0; i < (int) LOOP_REGNO_NREGS (regno, dest); i++)
 	    {
 	      /* If this is the first setting of this reg
 		 in current basic block, and it was set before,
