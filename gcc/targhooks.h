@@ -31,3 +31,5 @@ extern rtx default_expand_builtin_saveregs (void);
 extern void default_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 extern bool default_strict_argument_naming (CUMULATIVE_ARGS *);
 extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
+
+extern bool hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS *);

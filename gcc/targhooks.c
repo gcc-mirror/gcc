@@ -195,3 +195,10 @@ default_pretend_outgoing_varargs_named(CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 #endif
 #endif
 }
+
+/* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
+bool
+hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
+{
+  return true;
+}
