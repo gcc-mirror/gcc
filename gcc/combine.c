@@ -12729,26 +12729,16 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			    }
 #endif
 			}
-		      /* If the register is both set and used here, put the
-			 REG_DEAD note here, but place a REG_UNUSED note
-			 here too unless there already is one.  */
-		      else if (reg_referenced_p (XEXP (note, 0),
-						 PATTERN (tem)))
-			{
-			  place = tem;
-
-			  if (! find_regno_note (tem, REG_UNUSED,
-						 REGNO (XEXP (note, 0))))
-			    REG_NOTES (tem)
-			      = gen_rtx_EXPR_LIST (REG_UNUSED, XEXP (note, 0),
-						   REG_NOTES (tem));
-			}
 		      else
 			{
 			  PUT_REG_NOTE_KIND (note, REG_UNUSED);
 
 			  /*  If there isn't already a REG_UNUSED note, put one
-			      here.  */
+			      here.  Do not place a REG_DEAD note, even if
+			      the register is also used here; that would not
+			      match the algorithm used in lifetime analysis
+			      and can cause the consistency check in the
+			      scheduler to fail.  */
 			  if (! find_regno_note (tem, REG_UNUSED,
 						 REGNO (XEXP (note, 0))))
 			    place = tem;

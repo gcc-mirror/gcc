@@ -1096,37 +1096,6 @@ update_non_lazy_ptrs (const char *name)
     }
 }
 
-/* Function NAME is being defined, and its label has just been output.
-   If there's already a reference to a stub for this function, we can
-   just emit the stub label now and we don't bother emitting the stub later.  */
-
-void
-machopic_output_possible_stub_label (FILE *file, const char *name)
-{
-  tree temp;
-
-  /* Ensure we're looking at a section-encoded name.  */
-  if (name[0] != '!' || (name[1] != 't' && name[1] != 'T'))
-    return;
-
-  for (temp = machopic_stubs;
-       temp != NULL_TREE;
-       temp = TREE_CHAIN (temp))
-    {
-      const char *sym_name;
-
-      sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      if (sym_name[0] == '!' && (sym_name[1] == 'T' || sym_name[1] == 't')
-	  && ! strcmp (name+2, sym_name+2))
-	{
-	  ASM_OUTPUT_LABEL (file, IDENTIFIER_POINTER (TREE_PURPOSE (temp)));
-	  /* Avoid generating a stub for this.  */
-	  TREE_USED (temp) = 0;
-	  break;
-	}
-    }
-}
-
 /* Scan the list of stubs and update any recorded names whose
    stripped name matches the argument.  */
 
