@@ -1,9 +1,7 @@
-2001-06-07  Tom Tromey  <tromey@redhat.com>
+2001-06-08  Tom Tromey  <tromey@redhat.com>
 
-	Fix for PR libgcj/3059:
-	* java/lang/natSystem.cc (init_properties): Define `java.home'.
-	* Makefile.in: Rebuilt.
-	* Makefile.am (AM_CXXFLAGS): Define PREFIX.
+	* configure: Rebuilt.
+	* configure.in: Compute new aux dir using `pwd'.
 
 2001-06-07  Tom Tromey  <tromey@redhat.com>
 
