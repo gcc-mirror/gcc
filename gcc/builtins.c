@@ -1862,6 +1862,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
   rtx op0, op1, insns;
+  int op1_type = REAL_TYPE;
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg0, arg1, temp, narg;
@@ -1869,7 +1870,12 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   bool errno_set = true;
   bool stable = true;
 
-  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+  if ((DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXP)
+      || (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXPF)
+      || (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXPL))
+    op1_type = INTEGER_TYPE;
+
+  if (!validate_arglist (arglist, REAL_TYPE, op1_type, VOID_TYPE))
     return 0;
 
   arg0 = TREE_VALUE (arglist);
@@ -1885,6 +1891,10 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_ATAN2F:
     case BUILT_IN_ATAN2L:
       builtin_optab = atan2_optab; break;
+    case BUILT_IN_LDEXP:
+    case BUILT_IN_LDEXPF:
+    case BUILT_IN_LDEXPL:
+      builtin_optab = ldexp_optab; break;
     case BUILT_IN_FMOD:
     case BUILT_IN_FMODF:
     case BUILT_IN_FMODL:
@@ -5259,6 +5269,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_ATAN2:
     case BUILT_IN_ATAN2F:
     case BUILT_IN_ATAN2L:
+    case BUILT_IN_LDEXP:
+    case BUILT_IN_LDEXPF:
+    case BUILT_IN_LDEXPL:
     case BUILT_IN_FMOD:
     case BUILT_IN_FMODF:
     case BUILT_IN_FMODL:

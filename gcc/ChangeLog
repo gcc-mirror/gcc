@@ -1,3 +1,19 @@
+2005-02-12  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_ldexp.
+	(ldexp_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize ldexp_optab.
+	* genopinit.c (optabs): Implement ldexp_optab using ldexp?f3
+	patterns.
+	* builtins.c (expand_builtin_mathfn_2): Handle BUILT_IN_LDEXP{,F,L}
+	using ldexp_optab.
+	(expand_builtin): Expand BUILT_IN_LDEXP{,F,L} using
+	expand_builtin_mathfn_2 if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (ldexpsf3, ldexpdf3, ldexpxf3): New expanders
+	to implement ldexpf, ldexp and ldexpl built-ins as inline x87
+	intrinsics.
+
 2005-02-13  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Rename a field: base
