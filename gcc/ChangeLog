@@ -1,3 +1,8 @@
+Wed Feb 10 09:57:08 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtlanal.c (for_each_rtx): Fix declaration to conform to GNU
+	coding standards.
+
 Wed Feb 10 10:09:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_combine_note_store): Second argument is no

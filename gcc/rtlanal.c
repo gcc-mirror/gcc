@@ -2143,9 +2143,9 @@ computed_jump_p (insn)
 
 int
 for_each_rtx (x, f, data)
-     rtx* x;
+     rtx *x;
      rtx_function f;
-     void* data;
+     void *data;
 {
   int result;
   int length;
