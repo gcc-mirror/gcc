@@ -127,6 +127,12 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
+
+      # For showmanyc_helper().
+      AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
+      GLIBCXX_CHECK_POLL
+      GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITE)
