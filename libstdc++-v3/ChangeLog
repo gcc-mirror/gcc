@@ -1,3 +1,9 @@
+2005-02-07  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Make buf static.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/4.cc: Make ref and
+	src static.
+
 2005-02-02  Brad Spencer  <spencer@infointeractive.com>
 
 	* debug.html: Fix broken tags.
