@@ -35,8 +35,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include <stdio.h>
 #include "flags.h"
-#include "function.h"
 #include "tree.h"
+#include "function.h"
 #include "obstack.h"
 #include "gvarargs.h"
 
@@ -2291,7 +2291,7 @@ struct type_hash *type_hash_table[TYPE_HASH_SIZE];
 
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
-#define TYPE_HASH(TYPE) ((int) (TYPE) & 0777777)
+#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
 
 /* Compute a hash code for a list of types (chain of TREE_LIST nodes
    with types in the TREE_VALUE slots), by adding the hash codes
