@@ -3449,6 +3449,11 @@ emit_libcall_block (insns, target, result, equiv)
 
 	  add_insn (insn);
 	}
+
+      /* Some ports use a loop to copy large arguments onto the stack.
+	 Don't move anything outside such a loop.  */
+      if (GET_CODE (insn) == CODE_LABEL)
+	break;
     }
 
   prev = get_last_insn ();
