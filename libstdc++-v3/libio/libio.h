@@ -1,4 +1,4 @@
-/* Copyright (C) 1991,92,93,94,95,97,98,99,2000 Free Software Foundation, Inc.
+/* Copyright (C) 1991,92,93,94,95,97,98,99,2000,2001 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
    Written by Per Bothner <bothner@cygnus.com>.
 
@@ -162,7 +162,11 @@ struct _IO_jump_t;  struct _IO_FILE;
 /* Handle lock.  */
 #ifdef _IO_MTSAFE_IO
 # if defined __GLIBC__ && __GLIBC__ >= 2
-#  include <bits/stdio-lock.h>
+#  if __GLIBC_MINOR__ == 0
+#   include <stdio-lock.h>
+#  else
+#   include <bits/stdio-lock.h>
+#  endif
 # else
 /*# include <comthread.h>*/
 # endif
