@@ -175,8 +175,9 @@ static rtx ia64_expand_fetch_and_op PARAMS ((optab, enum machine_mode,
 					     tree, rtx));
 static rtx ia64_expand_op_and_fetch PARAMS ((optab, enum machine_mode,
 					     tree, rtx));
-static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
-						 tree, rtx));
+static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode,
+						 enum machine_mode,
+						 int, tree, rtx));
 static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
@@ -7710,9 +7711,14 @@ ia64_init_builtins ()
 				psi_type_node, integer_type_node,
 				integer_type_node, NULL_TREE);
 
-  /* __sync_val_compare_and_swap_di, __sync_bool_compare_and_swap_di */
+  /* __sync_val_compare_and_swap_di */
   tree di_ftype_pdi_di_di
     = build_function_type_list (long_integer_type_node,
+				pdi_type_node, long_integer_type_node,
+				long_integer_type_node, NULL_TREE);
+  /* __sync_bool_compare_and_swap_di */
+  tree si_ftype_pdi_di_di
+    = build_function_type_list (integer_type_node,
 				pdi_type_node, long_integer_type_node,
 				long_integer_type_node, NULL_TREE);
   /* __sync_synchronize */
@@ -7747,7 +7753,7 @@ ia64_init_builtins ()
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI);
   def_builtin ("__sync_bool_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI);
-  def_builtin ("__sync_bool_compare_and_swap_di", di_ftype_pdi_di_di,
+  def_builtin ("__sync_bool_compare_and_swap_di", si_ftype_pdi_di_di,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI);
 
   def_builtin ("__sync_synchronize", void_ftype_void,
@@ -7987,7 +7993,8 @@ ia64_expand_op_and_fetch (binoptab, mode, arglist, target)
 */
 
 static rtx
-ia64_expand_compare_and_swap (mode, boolp, arglist, target)
+ia64_expand_compare_and_swap (rmode, mode, boolp, arglist, target)
+     enum machine_mode rmode;
      enum machine_mode mode;
      int boolp;
      tree arglist;
@@ -8035,7 +8042,7 @@ ia64_expand_compare_and_swap (mode, boolp, arglist, target)
   if (boolp)
     {
       if (! target)
-	target = gen_reg_rtx (mode);
+	target = gen_reg_rtx (rmode);
       return emit_store_flag_force (target, EQ, tmp, old, mode, 1, 1);
     }
   else
@@ -8110,11 +8117,16 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode rmode = VOIDmode;
 
   switch (fcode)
     {
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI:
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI:
+      mode = SImode;
+      rmode = SImode;
+      break;
+
     case IA64_BUILTIN_LOCK_TEST_AND_SET_SI:
     case IA64_BUILTIN_LOCK_RELEASE_SI:
     case IA64_BUILTIN_FETCH_AND_ADD_SI:
@@ -8133,7 +8145,15 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI:
+      mode = DImode;
+      rmode = SImode;
+      break;
+
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI:
+      mode = DImode;
+      rmode = DImode;
+      break;
+
     case IA64_BUILTIN_LOCK_TEST_AND_SET_DI:
     case IA64_BUILTIN_LOCK_RELEASE_DI:
     case IA64_BUILTIN_FETCH_AND_ADD_DI:
@@ -8159,11 +8179,13 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
     {
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI:
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (mode, 1, arglist, target);
+      return ia64_expand_compare_and_swap (rmode, mode, 1, arglist,
+					   target);
 
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI:
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (mode, 0, arglist, target);
+      return ia64_expand_compare_and_swap (rmode, mode, 0, arglist,
+					   target);
 
     case IA64_BUILTIN_SYNCHRONIZE:
       emit_insn (gen_mf ());
