@@ -354,6 +354,9 @@ int flag_fast_math = 0;
 /* Nonzero means all references through pointers are volatile.  */
 
 int flag_volatile;
+
+/* Nonzero means treat all global and extern variables as global.  */
+
 int flag_volatile_global;
 
 /* Nonzero means just do syntax checking; don't output anything.  */
