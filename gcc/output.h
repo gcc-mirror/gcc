@@ -266,10 +266,6 @@ extern void assemble_destructor		PARAMS ((rtx, int));
 extern void assemble_constructor	PARAMS ((rtx, int));
 #endif
 
-/* Likewise for entries we want to record for garbage collection.
-   Garbage collection is still under development.  */
-extern void assemble_gc_entry		PARAMS ((const char *));
-
 /* Assemble code to leave SIZE bytes of zeros.  */
 extern void assemble_zeros		PARAMS ((int));
 
