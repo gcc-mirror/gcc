@@ -2979,7 +2979,7 @@ finish_file ()
 	{
 	  temp = build_cleanup (decl);
 
-	  if (DECL_COMMON (decl))
+	  if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
 	    {
 	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
@@ -2989,7 +2989,7 @@ finish_file ()
 
 	  expand_expr_stmt (temp);
 
-	  if (DECL_COMMON (decl))
+	  if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
 	    expand_end_cond ();
 	}
     }
@@ -3048,10 +3048,7 @@ finish_file ()
 	      || DECL_EXTERNAL (decl)
 	      || (init && TREE_CODE (init) == TREE_LIST
 		  && value_member (error_mark_node, init)))
-	    {
-	      vars = TREE_CHAIN (vars);
-	      goto next_mess;
-	    }
+	    goto next_mess;
 
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    {
@@ -3066,7 +3063,7 @@ finish_file ()
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
 	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
 
-	      if (DECL_COMMON (decl))
+	      if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
 		{
 		  tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
 		  sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
@@ -3088,7 +3085,7 @@ finish_file ()
 	      else
 		expand_assignment (decl, init, 0, 0);
 
-	      if (DECL_COMMON (decl))
+	      if (DECL_COMMON (decl) && TREE_PUBLIC (decl))
 		expand_end_cond ();
 
 	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
