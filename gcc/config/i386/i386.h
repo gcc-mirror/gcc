@@ -95,6 +95,7 @@ extern int target_flags;
 #define MASK_NO_PSEUDO		000010000000	/* Move op's args -> pseudos */
 #define MASK_DEBUG_ARG		000020000000	/* Debug function_arg */   
 #define MASK_SCHEDULE_PROLOGUE  000040000000    /* Emit prologue as rtl */
+#define MASK_STACK_PROBE	000100000000	/* Enable stack probing */
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -165,6 +166,7 @@ extern int target_flags;
 #define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
 #define TARGET_CMOVE (ix86_isa == PROCESSOR_PENTIUMPRO)
 #define TARGET_DEEP_BRANCH_PREDICTION (ix86_cpu == PROCESSOR_PENTIUMPRO)
+#define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
 #define TARGET_SWITCHES							\
 { { "80387",			 MASK_80387 },				\
@@ -202,6 +204,8 @@ extern int target_flags;
   { "no-move",			 MASK_NO_MOVE },			\
   { "debug-arg",		 MASK_DEBUG_ARG },			\
   { "no-debug-arg",		-MASK_DEBUG_ARG },			\
+  { "stack-arg-probe",		 MASK_STACK_PROBE },			\
+  { "no-stack-arg-probe",	-MASK_STACK_PROBE },			\
   SUBTARGET_SWITCHES							\
   { "", MASK_SCHEDULE_PROLOGUE | TARGET_DEFAULT}}
 
