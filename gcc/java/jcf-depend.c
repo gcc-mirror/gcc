@@ -96,8 +96,8 @@ add_entry (entp, name)
 
   if (last == NULL)
     {
-      // This is only true the first time through, when the entry list
-      // is empty.
+      /* This is only true the first time through, when the entry list
+	 is empty.  */
       *entp = ent;
     }     
   else
