@@ -1,3 +1,9 @@
+2000-11-17  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.c (emit_insn_group_barriers, case CALL_INSN): 
+	Don't clear need_barrier is next_insn is a CALL_INSN, or has
+	instruction type B or UNKNOWN.
+
 2000-11-17  Neil Booth  <neilb@earthling.net>
 
         * cpperror.c (print_file_and_line): Don't display line number
