@@ -15,7 +15,7 @@ are already suitable for ISO C and GNU CC, nothing special need be
 done).
 
 @code{GPLUSPLUS_INCLUDE_DIR} means the same thing for native and cross.  It
-is where @code{g++} looks first for header files.  The C++ library
+is where @command{g++} looks first for header files.  The C++ library
 installs only target independent header files in that directory.
 
 @code{LOCAL_INCLUDE_DIR} is used only by native compilers.  GNU CC

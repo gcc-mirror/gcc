@@ -52,7 +52,7 @@ if specified.
 @end itemize
 
 ``The compiler's search directories'' means all the directories where
-@code{gcc} searches for passes of the compiler.  This includes
+@command{gcc} searches for passes of the compiler.  This includes
 directories that you specify with @option{-B}.
 
 Cross-compilers search a little differently:
