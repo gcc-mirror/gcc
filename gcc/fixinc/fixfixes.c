@@ -30,14 +30,6 @@ Here are the rules:
     This may be useful, for example, if there are interesting strings
     or pre-compiled regular expressions stored there.
 
-    It is also possible to access fix descriptions by using the
-    index of a known fix, "my_fix_name" for example:
-
-        tFixDesc*  p_desc  = fixDescList + MY_FIX_NAME_FIXIDX;
-        tTestDesc* p_tlist = p_desc->p_test_desc;
-
-        regexec (p_tlist->p_test_regex, ...)
-
 = = = = = = = = = = = = = = = = = = = = = = = = =
 
 This file is part of GNU CC.

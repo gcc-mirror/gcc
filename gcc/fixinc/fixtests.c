@@ -47,6 +47,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
+#define _ENV_(v,m,n,t)   extern tCC* v;
+ENV_TABLE
+#undef _ENV_
+
 typedef apply_fix_p_t t_test_proc PARAMS(( tCC* file, tCC* text ));
 
 typedef struct {
