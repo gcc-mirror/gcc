@@ -1,3 +1,10 @@
+2000-10-05  Geoff Keating  <geoffk@cygnus.com>
+
+	* tree.c (tree_size): New function split out of copy_node.
+	(make_node): Remove obstack handling.  Use tree_size.
+	(copy_node): Use tree_size.
+	* tree.h: Prototype tree_size.
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* diagnostic.c (output_format): Add missing break.

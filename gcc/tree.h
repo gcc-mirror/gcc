@@ -1863,6 +1863,11 @@ extern char *permalloc			PARAMS ((int));
 extern char *savealloc			PARAMS ((int));
 extern char *expralloc			PARAMS ((int));
 
+/* Compute the number of bytes occupied by 'node'.  This routine only
+   looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
+
+extern size_t tree_size			PARAMS ((tree));
+
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
