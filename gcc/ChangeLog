@@ -1,3 +1,8 @@
+2000-11-22  Neil Booth  <neilb@earthling.net>
+
+	* cpplex.c (trigraph_ok): Ensure we don't warn twice.
+	* cpplib.h (struct cpp_buffer): New member last_Wtrigraphs.
+	
 2000-11-22  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (sched_analyze_1): Don't special-case calls
