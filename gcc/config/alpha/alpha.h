@@ -1328,6 +1328,7 @@ do {						\
 
 /* Before the prologue, RA lives in $26. */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
+#define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (26)
 
 /* Addressing modes, and classification of registers for them.  */
 

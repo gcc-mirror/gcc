@@ -1,3 +1,13 @@
+2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* config/rs6000/rs6000.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	* config/alpha/alpha.h (DWARF_FRAME_RETURN_COLUMN): Define.
+	* config/sparc/sparc.h (DWARF_FRAME_RETURN_COLUMN): Define.
+
+	* frame.h (frame_state): Revert last change.
+	* frame.c (execute_cfa_insn): Just don't record the save of a CFA reg.
+	* libgcc2.c (throw_helper): Revert last change.
+	
 2000-03-22  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_asm_operands): Don't promote the temporary.
