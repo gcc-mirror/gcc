@@ -1,5 +1,13 @@
 2003-08-04  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold <PLUS_EXPR>): Transform x+x into x*2.0.
+	Optimize x*c+x and x+x*c into x*(c+1) and x*c1+x*c2 into x*(c1+c2)
+	for floating point expressions with -ffast-math.
+	(fold <MULT_EXPR>): Don't transform x*2.0 into x+x.
+	* expmed.c (expand_mult): Wrap long line.  Expand x*2.0 as x+x.
+
+2003-08-04  Roger Sayle  <roger@eyesopen.com>
+
 	* c-common.c (flag_noniso_default_format_attributes): Delete.
 	(built_in_attribute): Don't define/undefine DEF_FN_ATTR.
 	(c_attrs_initialized): Delete.
