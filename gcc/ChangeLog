@@ -1,3 +1,9 @@
+2003-05-08  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* objc/objc-act.c (error_with_ivar): Don't use
+	error_with_file_and_line. 
+	(warn_with_method): Don't use warning_with_file_and_line.
+
 2003-05-08  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* stmt.c (emit_locus): New macro.
@@ -6,7 +12,7 @@
 	(struct stmt_status): Replace members x_emit_filename and
 	x_emit_lineno with x_emit_locus.
 	(set_file_and_line_for_stmt): Adjust.
-	(expand_expr_stmt_value): Don't use warning_with_file_and_file.
+	(expand_expr_stmt_value): Don't use warning_with_file_and_line.
 	(warn_if_unused_value): Likewise.
 	(check_seenlabel): Likewise.
 
