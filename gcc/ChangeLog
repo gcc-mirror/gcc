@@ -6,6 +6,11 @@
 	* inclhack.def:  add new tests
 	* tests/base/arch/i960/archI960.h:  New test result
 	* tests/base/curses.h: modified test result
+	* tests/base/stdio.h: ditto
+	* tests/base/time.h: ditto
+	* tests/base/sys/asm.h: ditto
+	* tests/base/sys/stat.h: ditto
+	* tests/base/sys/wait.h: ditto
 
 Wed May 31 13:17:20 2000  Philippe De Muyter  <phdm@macqel.be>
 

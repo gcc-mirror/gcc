@@ -32,4 +32,23 @@ extern int rename(const char *_old, const char *_new);
 
 #endif  /* STDIO_STDARG_H_CHECK */
 
+
+#if defined( ULTRIX_CONST_CHECK )
+extern void perror( const char *__s );
+extern int fputs( const char *__s, FILE *);
+extern size_t fwrite( const void *__ptr, size_t, size_t, FILE *);
+extern int fscanf( FILE *__stream, const char *__format, ...);
+extern int scanf( const char *__format, ...);
+
+#endif  /* ULTRIX_CONST_CHECK */
+
+
+#if defined( ULTRIX_CONST2_CHECK )
+extern FILE *fopen( const char *__filename, const char *__type );
+extern int sscanf( const char *__s, const char *__format, ...);
+extern FILE *popen( const char *, const char *);
+extern char *tempnam( const char *, const char *);
+
+#endif  /* ULTRIX_CONST2_CHECK */
+
 #endif  /* FIXINC_STDIO_STDARG_H_CHECK */
