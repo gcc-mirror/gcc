@@ -1,3 +1,8 @@
+2004-01-24  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+        * fixinc/fixinc.c (test_test): Initialize res.
+	(start_flexer): Initialize pz_cmd_save.
+
 2004-01-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/rtl.texi (Arithmetic): Rewrite entries for PLUS,
