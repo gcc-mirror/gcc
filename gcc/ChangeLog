@@ -1,3 +1,10 @@
+2004-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*la_64" + peepholes, "reload_indi"): Move
+	to before adddi3 insn patterns.
+	("*la_31" + peepholes, "*la_31_and", "*la_31_and_cc", "force_la_31",
+	"reload_insi"): Move to before addsi3 insn patterns.
+
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/interface.texi, doc/tm.texi, doc/trouble.texi: Don't
