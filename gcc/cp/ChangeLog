@@ -1,3 +1,8 @@
+2002-10-04  H.J. Lu  (hjl@gnu.org)
+
+	* pt.c (tsubst_decl, case VAR_DECL): Back out the last change.
+	(tsubst_expr, case DECL_STMT): Likewise.
+
 2002-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7754

@@ -6079,7 +6079,7 @@ tsubst_decl (t, args, type, complain)
 	  }
 
 	r = copy_decl (t);
-	TREE_TYPE (r) = complete_type (type);
+	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 	DECL_CONTEXT (r) = ctx;
 	/* Clear out the mangled name and RTL for the instantiation.  */
@@ -6115,8 +6115,6 @@ tsubst_decl (t, args, type, complain)
 	TREE_CHAIN (r) = NULL_TREE;
 	if (TREE_CODE (r) == VAR_DECL && VOID_TYPE_P (type))
 	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
-	/* Compute the size, alignment, etc. of R.  */
-	layout_decl (r, 0);
       }
       break;
 
@@ -7376,6 +7374,9 @@ tsubst_expr (t, args, complain, in_decl)
 	    decl = tsubst (decl, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
+                if (TREE_CODE (decl) != TYPE_DECL)
+                  /* Make sure the type is instantiated now. */
+                  complete_type (TREE_TYPE (decl));
 	        if (init)
 	          DECL_INITIAL (decl) = error_mark_node;
 	        /* By marking the declaration as instantiated, we avoid
@@ -7385,26 +7386,19 @@ tsubst_expr (t, args, complain, in_decl)
 	           do.  */
 	        if (TREE_CODE (decl) == VAR_DECL)
 	          DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-		if (TREE_CODE (decl) == VAR_DECL
-		    && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
-		  /* Anonymous aggregates are a special case.  */
-		  finish_anon_union (decl);
-		else 
+	        maybe_push_decl (decl);
+		if (DECL_PRETTY_FUNCTION_P (decl))
 		  {
-		    maybe_push_decl (decl);
-		    if (DECL_PRETTY_FUNCTION_P (decl))
-		      {
-			/* For __PRETTY_FUNCTION__ we have to adjust the
-			   initializer.  */
-			const char *const name
-			  = (*decl_printable_name) (current_function_decl, 2);
-			init = cp_fname_init (name);
-			TREE_TYPE (decl) = TREE_TYPE (init);
-		      }
-		    else
-		      init = tsubst_expr (init, args, complain, in_decl);
-		    cp_finish_decl (decl, init, NULL_TREE, 0);
+		    /* For __PRETTY_FUNCTION__ we have to adjust the
+		       initializer.  */
+		    const char *const name
+		      = (*decl_printable_name) (current_function_decl, 2);
+		    init = cp_fname_init (name);
+		    TREE_TYPE (decl) = TREE_TYPE (init);
 		  }
+		else
+		  init = tsubst_expr (init, args, complain, in_decl);
+	        cp_finish_decl (decl, init, NULL_TREE, 0);
 	      }
 	  }
 
