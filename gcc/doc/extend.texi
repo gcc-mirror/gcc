@@ -4756,13 +4756,43 @@ v4si f (v4si a, v4si b, v4si c)
 @findex cabs
 @findex cabsf
 @findex cabsl
+@findex cacos
+@findex cacosf
+@findex cacosh
+@findex cacoshf
+@findex cacoshl
+@findex cacosl
 @findex calloc
+@findex carg
+@findex cargf
+@findex cargl
+@findex casin
+@findex casinf
+@findex casinh
+@findex casinhf
+@findex casinhl
+@findex casinl
+@findex catan
+@findex catanf
+@findex catanh
+@findex catanhf
+@findex catanhl
+@findex catanl
 @findex cbrt
 @findex cbrtf
 @findex cbrtl
+@findex ccos
+@findex ccosf
+@findex ccosh
+@findex ccoshf
+@findex ccoshl
+@findex ccosl
 @findex ceil
 @findex ceilf
 @findex ceill
+@findex cexp
+@findex cexpf
+@findex cexpl
 @findex cimag
 @findex cimagf
 @findex cimagl
@@ -4778,9 +4808,30 @@ v4si f (v4si a, v4si b, v4si c)
 @findex coshf
 @findex coshl
 @findex cosl
+@findex cpow
+@findex cpowf
+@findex cpowl
+@findex cproj
+@findex cprojf
+@findex cprojl
 @findex creal
 @findex crealf
 @findex creall
+@findex csin
+@findex csinf
+@findex csinh
+@findex csinhf
+@findex csinhl
+@findex csinl
+@findex csqrt
+@findex csqrtf
+@findex csqrtl
+@findex ctan
+@findex ctanf
+@findex ctanh
+@findex ctanhf
+@findex ctanhl
+@findex ctanl
 @findex dcgettext
 @findex dgettext
 @findex drem
@@ -5046,32 +5097,44 @@ mode.
 The ISO C99 functions
 @code{_Exit}, @code{acoshf}, @code{acoshl}, @code{acosh}, @code{asinhf},
 @code{asinhl}, @code{asinh}, @code{atanhf}, @code{atanhl}, @code{atanh},
-@code{cabsf}, @code{cabsl}, @code{cabs}, @code{cbrtf}, @code{cbrtl},
-@code{cbrt}, @code{cimagf}, @code{cimagl}, @code{cimag}, @code{conjf},
-@code{conjl}, @code{conj}, @code{copysignf}, @code{copysignl},
-@code{copysign}, @code{crealf}, @code{creall}, @code{creal},
-@code{erfcf}, @code{erfcl}, @code{erfc}, @code{erff}, @code{erfl},
-@code{erf}, @code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f},
-@code{expm1l}, @code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim},
-@code{fmaf}, @code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax},
-@code{fma}, @code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf},
-@code{hypotl}, @code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
-@code{imaxabs}, @code{lgammaf}, @code{lgammal}, @code{lgamma},
-@code{llabs}, @code{llrintf}, @code{llrintl}, @code{llrint},
-@code{llroundf}, @code{llroundl}, @code{llround}, @code{log1pf},
-@code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l}, @code{log2},
-@code{logbf}, @code{logbl}, @code{logb}, @code{lrintf}, @code{lrintl},
-@code{lrint}, @code{lroundf}, @code{lroundl}, @code{lround},
-@code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
-@code{nextafterf}, @code{nextafterl}, @code{nextafter},
-@code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
-@code{remainderf}, @code{remainderl}, @code{remainder}, @code{remquof},
-@code{remquol}, @code{remquo}, @code{rintf}, @code{rintl}, @code{rint},
-@code{roundf}, @code{roundl}, @code{round}, @code{scalblnf},
-@code{scalblnl}, @code{scalbln}, @code{scalbnf}, @code{scalbnl},
-@code{scalbn}, @code{snprintf}, @code{tgammaf}, @code{tgammal},
-@code{tgamma}, @code{truncf}, @code{truncl}, @code{trunc},
-@code{vfscanf}, @code{vscanf}, @code{vsnprintf} and @code{vsscanf},
+@code{cabsf}, @code{cabsl}, @code{cabs}, @code{cacosf}, @code{cacoshf},
+@code{cacoshl}, @code{cacosh}, @code{cacosl}, @code{cacos},
+@code{cargf}, @code{cargl}, @code{carg}, @code{casinf}, @code{casinhf},
+@code{casinhl}, @code{casinh}, @code{casinl}, @code{casin},
+@code{catanf}, @code{catanhf}, @code{catanhl}, @code{catanh},
+@code{catanl}, @code{catan}, @code{cbrtf}, @code{cbrtl}, @code{cbrt},
+@code{ccosf}, @code{ccoshf}, @code{ccoshl}, @code{ccosh}, @code{ccosl},
+@code{ccos}, @code{cexpf}, @code{cexpl}, @code{cexp}, @code{cimagf},
+@code{cimagl}, @code{cimag},
+@code{conjf}, @code{conjl}, @code{conj}, @code{copysignf},
+@code{copysignl}, @code{copysign}, @code{cpowf}, @code{cpowl},
+@code{cpow}, @code{cprojf}, @code{cprojl}, @code{cproj}, @code{crealf},
+@code{creall}, @code{creal}, @code{csinf}, @code{csinhf}, @code{csinhl},
+@code{csinh}, @code{csinl}, @code{csin}, @code{csqrtf}, @code{csqrtl},
+@code{csqrt}, @code{ctanf}, @code{ctanhf}, @code{ctanhl}, @code{ctanh},
+@code{ctanl}, @code{ctan}, @code{erfcf}, @code{erfcl}, @code{erfc},
+@code{erff}, @code{erfl}, @code{erf}, @code{exp2f}, @code{exp2l},
+@code{exp2}, @code{expm1f}, @code{expm1l}, @code{expm1}, @code{fdimf},
+@code{fdiml}, @code{fdim}, @code{fmaf}, @code{fmal}, @code{fmaxf},
+@code{fmaxl}, @code{fmax}, @code{fma}, @code{fminf}, @code{fminl},
+@code{fmin}, @code{hypotf}, @code{hypotl}, @code{hypot}, @code{ilogbf},
+@code{ilogbl}, @code{ilogb}, @code{imaxabs}, @code{lgammaf},
+@code{lgammal}, @code{lgamma}, @code{llabs}, @code{llrintf},
+@code{llrintl}, @code{llrint}, @code{llroundf}, @code{llroundl},
+@code{llround}, @code{log1pf}, @code{log1pl}, @code{log1p},
+@code{log2f}, @code{log2l}, @code{log2}, @code{logbf}, @code{logbl},
+@code{logb}, @code{lrintf}, @code{lrintl}, @code{lrint}, @code{lroundf},
+@code{lroundl}, @code{lround}, @code{nearbyintf}, @code{nearbyintl},
+@code{nearbyint}, @code{nextafterf}, @code{nextafterl},
+@code{nextafter}, @code{nexttowardf}, @code{nexttowardl},
+@code{nexttoward}, @code{remainderf}, @code{remainderl},
+@code{remainder}, @code{remquof}, @code{remquol}, @code{remquo},
+@code{rintf}, @code{rintl}, @code{rint}, @code{roundf}, @code{roundl},
+@code{round}, @code{scalblnf}, @code{scalblnl}, @code{scalbln},
+@code{scalbnf}, @code{scalbnl}, @code{scalbn}, @code{snprintf},
+@code{tgammaf}, @code{tgammal}, @code{tgamma}, @code{truncf},
+@code{truncl}, @code{trunc}, @code{vfscanf}, @code{vscanf},
+@code{vsnprintf} and @code{vsscanf}
 are handled as built-in functions
 except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
