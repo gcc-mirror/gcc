@@ -98,9 +98,6 @@ Boston, MA 02111-1307, USA.  */
        > (2 * UNITS_PER_WORD)) 						 \
       || (int_size_in_bytes (TYPE) == -1)))
 
-#undef FUNCTION_VALUE
-#define FUNCTION_VALUE(VALTYPE, FUNC)	mips_function_value (VALTYPE, FUNC)
-
 /* For varargs, we must save the current argument, because it is the fake
    argument va_alist, and will need to be converted to the real argument.
    For stdarg, we do not need to save the current argument, because it

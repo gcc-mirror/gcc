@@ -49,7 +49,8 @@ extern struct rtx_def *	mips16_gp_pseudo_reg PARAMS ((void));
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
 extern int		mips_output_external_libcall PARAMS ((FILE *, const char *));
 #endif /* ASM_OUTPUT_UNDEF_FUNCTION */
-extern struct rtx_def  *mips_function_value PARAMS ((tree, tree));
+extern struct rtx_def  *mips_function_value PARAMS ((tree, tree,
+						     enum machine_mode));
 
 extern unsigned int	mips_hard_regno_nregs PARAMS ((int,
 						       enum machine_mode));

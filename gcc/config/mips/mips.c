@@ -7926,22 +7926,25 @@ mips_select_section (decl, reloc)
     }
 }
 
-#ifdef MIPS_ABI_DEFAULT
-
-/* Support functions for the 64 bit ABI.  */
-
-/* Return register to use for a function return value with VALTYPE for function
-   FUNC.  */
+/* Return register to use for a function return value with VALTYPE for
+   function FUNC.  MODE is used instead of VALTYPE for LIBCALLs.  */
 
 rtx
-mips_function_value (valtype, func)
+mips_function_value (valtype, func, mode)
      tree valtype;
      tree func ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   int reg = GP_RETURN;
-  enum machine_mode mode = TYPE_MODE (valtype);
-  enum mode_class mclass = GET_MODE_CLASS (mode);
-  int unsignedp = TREE_UNSIGNED (valtype);
+  enum mode_class mclass;
+  int unsignedp = 1;
+
+  if (valtype)
+    {
+      mode = TYPE_MODE (valtype);
+      unsignedp = TREE_UNSIGNED (valtype);
+    }
+  mclass = GET_MODE_CLASS (mode);
 
   /* Since we define PROMOTE_FUNCTION_RETURN, we must promote the mode
      just as PROMOTE_MODE does.  */
@@ -7966,7 +7969,7 @@ mips_function_value (valtype, func)
 	  /* When FP registers are 32 bits, we can't directly reference
 	     the odd numbered ones, so let's make a pair of evens.  */
 
-	  enum machine_mode cmode = TYPE_MODE (TREE_TYPE (valtype));
+	  enum machine_mode cmode = GET_MODE_INNER (mode);
 
 	  return gen_rtx_PARALLEL
 	    (VOIDmode,
@@ -7984,7 +7987,7 @@ mips_function_value (valtype, func)
 	reg = FP_RETURN;
     }
 
-  else if (TREE_CODE (valtype) == RECORD_TYPE
+  else if (valtype && TREE_CODE (valtype) == RECORD_TYPE
 	   && mips_abi != ABI_32
 	   && mips_abi != ABI_O64
 	   && mips_abi != ABI_EABI)
@@ -8051,7 +8054,6 @@ mips_function_value (valtype, func)
 
   return gen_rtx_REG (mode, reg);
 }
-#endif
 
 /* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
    nonzero when an argument must be passed by reference.  */
