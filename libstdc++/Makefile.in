@@ -17,7 +17,7 @@
 VERSION = 2.8.0
 
 OBJS  = cstringi.o stdexcepti.o cstdlibi.o cmathi.o stlinst.o
-SUBLIBS = $(STAMP)-string $(STAMP)-complex
+SUBLIBS = $(STAMP)-string $(STAMP)-complx
 
 # C++ headers with no extension
 HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
@@ -190,7 +190,7 @@ stmp-complex: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	done
 	touch stmp-complex
 
-bigstmp-complex: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
+bigstmp-complx: ${srcdir}/cinst.cc ${srcdir}/std/complext.h \
 	         ${srcdir}/std/complext.cc ${srcdir}/std/dcomplex.h \
 	         ${srcdir}/std/ldcomplex.h
 	echo fcomplex
