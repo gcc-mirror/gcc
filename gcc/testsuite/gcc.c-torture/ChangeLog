@@ -1,3 +1,10 @@
+1999-12-02  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* compile/991202-1.c: New test.
+	* execute/991202-1.c: New test.
+	* execute/991202-2.c: New test.
+	* execute/991202-3.c: New test.
+
 1999-11-27  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* compile/991127-1.c: New test.
