@@ -5748,7 +5748,8 @@ recompute_reg_usage (f, loop_step)
 }
 
 /* Optionally removes all the REG_DEAD and REG_UNUSED notes from a set of
-   blocks.  Returns a count of the number of registers that died.  */
+   blocks.  If BLOCKS is NULL, assume the universal set.  Returns a count
+   of the number of registers that died.  */
 
 int
 count_or_remove_death_notes (blocks, kill)
@@ -5762,7 +5763,7 @@ count_or_remove_death_notes (blocks, kill)
       basic_block bb;
       rtx insn;
 
-      if (! TEST_BIT (blocks, i))
+      if (blocks && ! TEST_BIT (blocks, i))
 	continue;
 
       bb = BASIC_BLOCK (i);

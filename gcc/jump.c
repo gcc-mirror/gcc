@@ -66,8 +66,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "real.h"
 #include "except.h"
-#include "basic-block.h"
-#include "output.h"
 #include "toplev.h"
 
 /* ??? Eventually must record somehow the labels used by jumps
@@ -192,7 +190,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   int first = 1;
   int max_uid = 0;
   rtx last_insn;
-  int did_cross_jump = 0;
 
   cross_jump_death_matters = (cross_jump == 2);
   max_uid = init_label_info (f) + 1;
@@ -2130,7 +2127,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		  if (newjpos != 0)
 		    {
-		      did_cross_jump = 1;
 		      do_cross_jump (insn, newjpos, newlpos);
 		      /* Make the old conditional jump
 			 into an unconditional one.  */
@@ -2183,7 +2179,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		  if (newjpos != 0)
 		    {
-		      did_cross_jump = 1;
 		      do_cross_jump (insn, newjpos, newlpos);
 		      changed = 1;
 		      next = insn;
@@ -2215,7 +2210,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 		  if (newjpos != 0)
 		    {
-		      did_cross_jump = 1;
 		      do_cross_jump (insn, newjpos, newlpos);
 		      changed = 1;
 		      next = insn;
@@ -2280,23 +2274,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   /* Show JUMP_CHAIN no longer valid.  */
   jump_chain = 0;
-
-#if defined(DELAY_SLOTS) || defined(STACK_REGS)
-  /* ??? Keep the CFG up to date after cross-jumping.  */
-  if (did_cross_jump && !cross_jump_death_matters)
-    {
-      sbitmap blocks;
-
-      find_basic_blocks (f, old_max_reg, NULL, 0);
-
-      blocks = sbitmap_alloc (n_basic_blocks);
-      sbitmap_ones (blocks);
-      count_or_remove_death_notes (blocks, 1);
-      sbitmap_free (blocks);
-
-      life_analysis (f, old_max_reg, NULL, 0);
-    }
-#endif
 }
 
 /* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
