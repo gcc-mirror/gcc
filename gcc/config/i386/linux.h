@@ -101,12 +101,18 @@
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* We need that too. */
+#define HANDLE_SYSV_PRAGMA
+
 #undef LINK_SPEC
 
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+/* We want to pass -v to linker */
 #if TARGET_CPU_DEFAULT == 2
 #define LINK_SPEC	"%{v:-dll-verbose} %{!m386:-m486}"
 #else
 #define LINK_SPEC	"%{v:-dll-verbose} %{m486:-m486}"
 #endif
-#define DEFAULT_PCC_STRUCT_RETURN 0
