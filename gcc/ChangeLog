@@ -1,3 +1,10 @@
+2004-07-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-pretty-print.c (dump_generic_node, case ARRAY_REF): Use
+	access functions for lower bound and element size and only output
+	if lower bound nonzero or element size not same as that of type.
+	(dump_generic_node, case COMPONENT_REF): Use access func. for offset.
+
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-pretty-print.c (pp_c_postfix_expression): Fix pasto.
