@@ -86,6 +86,11 @@ Boston, MA 02111-1307, USA.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "%{profile:-p}"
 
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+#endif
+
 #undef	LIB_SPEC
 /* We no longer link with libc_p.a or libg.a by default. If you
  * want to profile or debug the Linux C library, please add
