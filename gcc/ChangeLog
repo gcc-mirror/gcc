@@ -1,3 +1,8 @@
+Wed Oct 28 21:05:53 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (c-common.o): Depend on c-pragma.h.  Use $(RTL_H) instead
+	of rtl.h.
+
 Wed Oct 28 20:52:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c (EXTRA_SPECS, extra_specs): Introduce an intermediate
