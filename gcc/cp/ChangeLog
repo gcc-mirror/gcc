@@ -1,3 +1,8 @@
+1999-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* search.c (convert_pointer_to_single_level): Reimplement without
+	using get_binfo.
+
 1999-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* method.c (is_back_referenceable_type): Back-reference bools when

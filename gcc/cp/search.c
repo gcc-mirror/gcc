@@ -2057,17 +2057,29 @@ static tree
 convert_pointer_to_single_level (to_type, expr)
      tree to_type, expr;
 {
+  tree derived;
   tree binfo_of_derived;
-  tree last;
+  int i;
 
-  binfo_of_derived = TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr)));
-  last = get_binfo (to_type, TREE_TYPE (TREE_TYPE (expr)), 0);
-  my_friendly_assert (BINFO_INHERITANCE_CHAIN (last) == binfo_of_derived,
-		      980827);
+  derived = TREE_TYPE (TREE_TYPE (expr));
+  binfo_of_derived = TYPE_BINFO (derived);
   my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo_of_derived) == NULL_TREE,
 		      980827);
-  return build_vbase_path (PLUS_EXPR, build_pointer_type (to_type), expr,
-			   last, 1);
+  for (i = CLASSTYPE_N_BASECLASSES (derived) - 1; i >= 0; --i)
+    {
+      tree binfo = BINFO_BASETYPE (binfo_of_derived, i);
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (binfo) == binfo_of_derived,
+			  980827);
+      if (same_type_p (BINFO_TYPE (binfo), to_type))
+	return build_vbase_path (PLUS_EXPR, 
+				 build_pointer_type (to_type), 
+				 expr, binfo, 1);
+    }
+
+  my_friendly_abort (19990607);
+
+  /* NOTREACHED */
+  return NULL_TREE;
 }
 
 tree markedp (binfo, data) 
