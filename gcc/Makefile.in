@@ -615,7 +615,6 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
- bi-arity$(build_exeext) bi-opcode$(build_exeext) bi-opname$(build_exeext) \
  xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
@@ -2579,8 +2578,8 @@ distdir: distdir-start lang.distdir distdir-finish
 # The -P option assumes this is GNU diff.
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x c-gperf.h \
-	  -x cexp.c -x bi-parser.c -x objc-parse.y -x objc-parse.c \
-	  -x bi-parser.h -x TAGS \
+	  -x cexp.c -x objc-parse.y -x objc-parse.c \
+	  -x TAGS \
 	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
 	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
 	  $(LANG_DIFF_EXCLUDES) \

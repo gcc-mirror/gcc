@@ -268,7 +268,6 @@ struct nesting
 	  struct label_chain *label_chain;
 	  /* Number of function calls seen, as of start of this block.  */
 	  int function_call_count;
-	  /* Bytecode specific: stack level to restore stack to on exit.  */
 	  /* Nonzero if this is associated with a EH region.  */
 	  int exception_region;
 	  /* The saved target_temp_slot_level from our outer block.

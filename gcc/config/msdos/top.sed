@@ -19,9 +19,9 @@ host_xm_file=config/i386/xm-dos.h
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.7.2
+version=2.8.0
 /^mainversion=/ c\
-mainversion=2.7.2
+mainversion=2.8.0
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	/
@@ -48,7 +48,7 @@ s/; *@true//
 s/stamp-/s-/g
 s/tmp-/t-/g
 /> *s-objlist/ c\
-	echo.exe -o s-objlist $(addprefix ../,$(OBJS) $(BC_OBJS))
+	echo.exe -o s-objlist $(addprefix ../,$(OBJS))
 /^OBJS.*s-objlist/ s?`cat ../s-objlist`?@../s-objlist?
 s/^\(SUBDIR_OBSTACK *=\).*$/\1 ..\/obstack.o/
 s/^\(SUBDIR_USE_ALLOCA *=\).*$/\1/

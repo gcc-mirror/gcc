@@ -13,7 +13,7 @@ s/$(srcdir)\/c-gperf/c-gperf/g
 /^lang_specs_files=/ d
 /^lang_options_files=/ d
 /^version=/ c\
-version=2.7.2
+version=2.8.0
 s/CC = cc/CC = cl/
 s/^SHELL =.*/SHELL =/
 s/CFLAGS = -g/CFLAGS =/
@@ -38,7 +38,7 @@ GCC_FOR_TARGET = xgcc
 ENQUIRE_LDFLAGS =
 s/; *@true//
 /> *stamp-objlist/ c\
-	echo.exe  $(OBJS) $(BC_OBJS) | sed -e "s, \([a-z]\), ../\1,g" >stamp-objlist
+	echo.exe  $(OBJS) | sed -e "s, \([a-z]\), ../\1,g" >stamp-objlist
 /^OBJS.*stamp-objlist/ s?`cat ../stamp-objlist`?@../stamp-objlist?
 s/^\(SUBDIR_OBSTACK *=\).*$/\1 ..\/obstack.o/
 s/^\(SUBDIR_USE_ALLOCA *=\).*$/\1/
@@ -90,9 +90,6 @@ USE_HOST_ALLOCA=alloca.obj
 s/^ALLOCA =/ALLOCA = alloca.obj/
 s/^ALLOCA_FINISH = true/ALLOCA_FINISH =/
 s/	\.\//	/
-s/^bi-\([a-z]*\) *:/bi-\1.exe :/
-s/ bi-\([a-z]*\)$/ bi-\1.exe/
-s/ bi-\([a-z]*\) / bi-\1.exe /g
 s/^gen\([a-z]*\) *:/gen\1.exe :/
 s/ gen\([a-z]*\)$/ gen\1.exe/
 s/ gen\([a-z]*\) / gen\1.exe /g

@@ -147,10 +147,6 @@ struct clear_by_pieces
   int reverse;
 };
 
-/* Used to generate bytecodes: keep track of size of local variables,
-   as well as depth of arithmetic stack. (Notice that variables are
-   stored on the machine's stack, not the arithmetic stack.) */
-
 static rtx get_push_address	PROTO ((int));
 extern int local_vars_size;
 extern int stack_depth;

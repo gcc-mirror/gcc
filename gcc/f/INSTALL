@@ -1453,7 +1453,7 @@ ensure that `bison' is not invoked by `make' during the build, type
 these commands:
 
      sh# cd gcc
-     sh# touch bi-parser.c bi-parser.h c-parse.c c-parse.h cexp.c
+     sh# touch c-parse.c c-parse.h cexp.c
      sh# touch cp/parse.c cp/parse.h objc-parse.c
      sh#
 

@@ -143,7 +143,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
 /* rename all too-long external symbol names to avoid warnings */
-#define bc_check_for_full_enumeration_handling	bc_check_for_full_enum_handling
 #define check_for_full_enumeration_handling	check_for_full_enum_handling
 #define current_function_contains_functions	curfunc_contains_functions
 #define current_function_epilogue_delay_list	curfunc_epilogue_delay_list
