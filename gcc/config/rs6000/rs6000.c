@@ -95,6 +95,9 @@ const char *rs6000_isel_string;
 /* Set to non-zero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
 
+/* Private copy of original value of flag_pic for ABI_AIX.  */
+static int rs6000_flag_pic;
+
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx rs6000_compare_op0, rs6000_compare_op1;
@@ -201,8 +204,10 @@ static void rs6000_elf_select_section PARAMS ((tree, int,
 static void rs6000_elf_unique_section PARAMS ((tree, int));
 static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT));
-static void rs6000_elf_encode_section_info PARAMS ((tree, int));
+static void rs6000_elf_encode_section_info PARAMS ((tree, int))
+     ATTRIBUTE_UNUSED;
 static const char *rs6000_elf_strip_name_encoding PARAMS ((const char *));
+static bool rs6000_elf_in_small_data_p PARAMS ((tree));
 #endif
 #if TARGET_XCOFF
 static void rs6000_xcoff_asm_globalize_label PARAMS ((FILE *, const char *));
@@ -216,6 +221,7 @@ static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 #endif
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
+static void rs6000_binds_local_p PARAMS ((tree));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
@@ -360,6 +366,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
+
+#undef TARGET_BINDS_LOCAL_P
+#define TARGET_BINDS_LOCAL_P rs6000_binds_local_p
 
 /* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
 #define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
@@ -574,11 +583,8 @@ rs6000_override_options (default_cpu)
 
   if (flag_pic != 0 && DEFAULT_ABI == ABI_AIX)
     {
+      rs6000_flag_pic = flag_pic;
       flag_pic = 0;
-
-      if (extra_warnings)
-	warning ("-f%s ignored (all code is position independent)",
-		 (flag_pic > 1) ? "PIC" : "pic");
     }
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -12425,43 +12431,10 @@ static void
 rs6000_elf_select_section (decl, reloc, align)
      tree decl;
      int reloc;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align;
 {
-  int size = int_size_in_bytes (TREE_TYPE (decl));
-  bool needs_sdata;
-  bool readonly;
-  static void (* const sec_funcs[4]) PARAMS ((void)) = {
-    &readonly_data_section,
-    &sdata2_section,
-    &data_section,
-    &sdata_section
-  };
-  
-  needs_sdata = (size > 0 
-		 && size <= g_switch_value
-		 && rs6000_sdata != SDATA_NONE
-		 && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
-
-  if (TREE_CODE (decl) == STRING_CST)
-    readonly = !flag_writable_strings;
-  else if (TREE_CODE (decl) == VAR_DECL)
-    readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
-		&& TREE_READONLY (decl)
-		&& !TREE_SIDE_EFFECTS (decl)
-		&& DECL_INITIAL (decl)
-		&& DECL_INITIAL (decl) != error_mark_node
-		&& TREE_CONSTANT (DECL_INITIAL (decl)));
-  else if (TREE_CODE (decl) == CONSTRUCTOR)
-    readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
-		&& !TREE_SIDE_EFFECTS (decl)
-		&& TREE_CONSTANT (decl));
-  else
-    readonly = !((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc);
-
-  if (needs_sdata && rs6000_sdata != SDATA_EABI)
-    readonly = false;
-  
-  (*sec_funcs[(readonly ? 0 : 2) + (needs_sdata ? 1 : 0)])();
+  default_elf_select_section_1 (decl, reloc, align,
+				flag_pic || DEFAULT_ABI == ABI_AIX);
 }
 
 /* A C statement to build up a unique section name, expressed as a
@@ -12477,73 +12450,8 @@ rs6000_elf_unique_section (decl, reloc)
      tree decl;
      int reloc;
 {
-  int len;
-  int sec;
-  const char *name;
-  char *string;
-  const char *prefix;
-
-  static const char *const prefixes[7][2] =
-  {
-    { ".rodata.", ".gnu.linkonce.r." },
-    { ".sdata2.", ".gnu.linkonce.s2." },
-    { ".data.",   ".gnu.linkonce.d." },
-    { ".sdata.",  ".gnu.linkonce.s." },
-    { ".bss.",    ".gnu.linkonce.b." },
-    { ".sbss.",   ".gnu.linkonce.sb." },
-    { ".text.",   ".gnu.linkonce.t." }
-  };
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    sec = 6;
-  else
-    {
-      bool readonly;
-      bool needs_sdata;
-      int size;
-
-      if (TREE_CODE (decl) == STRING_CST)
-	readonly = !flag_writable_strings;
-      else if (TREE_CODE (decl) == VAR_DECL)
-	readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
-		    && TREE_READONLY (decl)
-		    && !TREE_SIDE_EFFECTS (decl)
-		    && TREE_CONSTANT (DECL_INITIAL (decl)));
-      else
-	readonly = !((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc);
-
-      size = int_size_in_bytes (TREE_TYPE (decl));
-      needs_sdata = (size > 0 
-		     && size <= g_switch_value
-		     && rs6000_sdata != SDATA_NONE
-		     && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
-
-      if (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node)
-	sec = 4;
-      else if (!readonly)
-	sec = 2;
-      else
-	sec = 0;
-
-      if (needs_sdata)
-	{
-	  /* .sdata2 is only for EABI.  */
-	  if (sec == 0 && rs6000_sdata != SDATA_EABI)
-	    sec = 2;
-	  sec += 1;
-	}
-    }
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = (*targetm.strip_name_encoding) (name);
-  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
-  len    = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
-  
-  sprintf (string, "%s%s", prefix, name);
-  
-  DECL_SECTION_NAME (decl) = build_string (len, string);
+  default_unique_section_1 (decl, reloc,
+			    flag_pic || DEFAULT_ABI == ABI_AIX);
 }
 
 
@@ -12635,6 +12543,34 @@ rs6000_elf_strip_name_encoding (str)
   while (*str == '*' || *str == '@')
     str++;
   return str;
+}
+
+static bool
+rs6000_elf_in_small_data_p (decl)
+     tree decl;
+{
+  if (rs6000_sdata == SDATA_NONE)
+    return false;
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
+    {
+      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      if (strcmp (section, ".sdata") == 0
+	  || strcmp (section, ".sdata2") == 0
+	  || strcmp (section, ".sbss") == 0)
+	return true;
+    }
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
+      if (size > 0
+	  && size <= g_switch_value
+	  && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)))
+	return true;
+    }
+
+  return false;
 }
 
 #endif /* USING_ELFOS_H */
@@ -13106,34 +13042,57 @@ rs6000_xcoff_asm_globalize_label (stream, name)
 static void
 rs6000_xcoff_asm_named_section (name, flags)
      const char *name;
-     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int flags;
 {
-  fprintf (asm_out_file, "\t.csect %s\n", name);
+  int smclass;
+  static const char * const suffix[3] = { "PR", "RO", "RW" };
+
+  if (flags & SECTION_CODE)
+    smclass = 0;
+  else if (flags & SECTION_WRITE)
+    smclass = 2;
+  else
+    smclass = 1;
+
+  fprintf (asm_out_file, "\t.csect %s%s[%s]\n",
+	   (flags & SECTION_CODE) ? "." : "",
+	   name, suffix[smclass]);
 }
 
 static void
-rs6000_xcoff_select_section (exp, reloc, align)
-     tree exp;
+rs6000_xcoff_select_section (decl, reloc, align)
+     tree decl;
      int reloc;
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
-  if ((TREE_CODE (exp) == STRING_CST
-       && ! flag_writable_strings)
-      || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
-	  && TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp)
-	  && DECL_INITIAL (exp)
-	  && (DECL_INITIAL (exp) == error_mark_node
-	      || TREE_CONSTANT (DECL_INITIAL (exp)))
-	  && ! (reloc)))
+  bool readonly = false;
+
+  if (TREE_CODE (decl) == STRING_CST)
+    readonly = !flag_writable_strings;
+  else if (TREE_CODE (decl) == VAR_DECL)
+    readonly = (!reloc
+		&& TREE_READONLY (decl)
+		&& !TREE_SIDE_EFFECTS (decl)
+		&& DECL_INITIAL (decl)
+		&& DECL_INITIAL (decl) != error_mark_node
+		&& TREE_CONSTANT (DECL_INITIAL (decl)));
+  else if (TREE_CODE (decl) == CONSTRUCTOR)
+    readonly = (!reloc
+		&& !TREE_SIDE_EFFECTS (decl)
+		&& TREE_CONSTANT (decl));
+  else
+    readonly = !reloc;
+
+  if (readonly)
     {
-      if (TREE_PUBLIC (exp))
+      if (TREE_PUBLIC (decl))
         read_only_data_section ();
       else
         read_only_private_data_section ();
     }
   else
     {
-      if (TREE_PUBLIC (exp))
+      if (TREE_PUBLIC (decl))
         data_section ();
       else
         private_data_section ();
@@ -13146,17 +13105,18 @@ rs6000_xcoff_unique_section (decl, reloc)
      int reloc ATTRIBUTE_UNUSED;
 {
   const char *name;
-  char *string;
-  size_t len;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      len = strlen (name) + 5;
-      string = alloca (len + 1);
-      sprintf (string, ".%s[PR]", name);
-      DECL_SECTION_NAME (decl) = build_string (len, string);
-    }
+  /* Use select_section for uninitialized data.  */
+  if (DECL_COMMON (decl)
+      || DECL_INITIAL (decl) == NULL_TREE
+      || DECL_INITIAL (decl) == error_mark_node
+      || (flag_zero_initialized_in_bss
+	  && initializer_zerop (DECL_INITIAL (decl))))
+    return;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  name = (*targetm.strip_name_encoding) (name);
+  DECL_SECTION_NAME (decl) = build_string (strlen (name), name);
 }
 
 /* Select section for constant in constant pool.
@@ -13195,7 +13155,7 @@ rs6000_xcoff_strip_name_encoding (name)
 
 #endif /* TARGET_XCOFF */
 
-/* Note that this is also used for ELF64.  */
+/* Note that this is also used for PPC64 Linux.  */
 
 static void
 rs6000_xcoff_encode_section_info (decl, first)
@@ -13207,3 +13167,17 @@ rs6000_xcoff_encode_section_info (decl, first)
       && ! DECL_WEAK (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
+
+/* Cross-module name binding.  For AIX and PPC64 Linux, which always are
+   PIC, use private copy of flag_pic.  */
+
+static void
+rs6000_binds_local_p (decl)
+     tree decl;
+{
+  if (DEFAULT_ABI == ABI_AIX)
+    default_binds_local_p_1 (decl, rs6000_flag_pic);
+  else
+    default_binds_local_p_1 (decl, flag_pic);
+}
+
