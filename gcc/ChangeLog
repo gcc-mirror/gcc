@@ -1,3 +1,14 @@
+2001-08-31  Jason Merrill  <jason_merrill@redhat.com>
+
+	* unwind-pe.h (read_uleb128, read_sleb128): Move actual reading
+	code here.  Take _Unwind_{W,Sw}ord*.
+	(read_encoded_value_with_base): Use them.
+	* unwind-dw2.c (_Unwind_FrameState): Make cfa_offset and cfa_reg
+	words.
+	(extract_cie_info): Simplify read_?leb128 handling.
+	(execute_stack_op, execute_cfa_program): Likewise.
+	* unwind-dw2-fde.c (get_cie_encoding): Likewise.
+
 2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/stormy16/stormy16.c (stormy16_expand_epilogue): Use

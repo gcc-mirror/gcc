@@ -243,18 +243,20 @@ get_cie_encoding (struct dwarf_cie *cie)
 {
   const unsigned char *aug, *p;
   _Unwind_Ptr dummy;
+  _Unwind_Word utmp;
+  _Unwind_Sword stmp;
 
   aug = cie->augmentation;
   if (aug[0] != 'z')
     return DW_EH_PE_absptr;
 
   p = aug + strlen (aug) + 1;		/* Skip the augmentation string.  */
-  p = read_uleb128 (p, &dummy);		/* Skip code alignment.  */
-  p = read_sleb128 (p, &dummy);		/* Skip data alignment.  */
+  p = read_uleb128 (p, &utmp);		/* Skip code alignment.  */
+  p = read_sleb128 (p, &stmp);		/* Skip data alignment.  */
   p++;					/* Skip return address column.  */
 
   aug++;				/* Skip 'z' */
-  p = read_uleb128 (p, &dummy);		/* Skip augmentation length.  */
+  p = read_uleb128 (p, &utmp);		/* Skip augmentation length.  */
   while (1)
     {
       /* This is what we're looking for.  */

@@ -84,7 +84,7 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
 }
 
 static const std::type_info *
-get_ttype_entry (lsda_header_info *info, long i)
+get_ttype_entry (lsda_header_info *info, _Unwind_Word i)
 {
   _Unwind_Ptr ptr;
 
@@ -97,14 +97,14 @@ get_ttype_entry (lsda_header_info *info, long i)
 
 static bool
 check_exception_spec (lsda_header_info *info, const std::type_info *throw_type,
-		      long filter_value)
+		      _Unwind_Sword filter_value)
 {
   const unsigned char *e = info->TType - filter_value - 1;
 
   while (1)
     {
       const std::type_info *catch_type;
-      _Unwind_Ptr tmp;
+      _Unwind_Word tmp;
       void *dummy;
 
       e = read_uleb128 (e, &tmp);
@@ -262,7 +262,7 @@ PERSONALITY_FUNCTION (int version,
     {
       // Otherwise we have a catch handler or exception specification.
 
-      signed long ar_filter, ar_disp;
+      _Unwind_Sword ar_filter, ar_disp;
       const std::type_info *throw_type, *catch_type;
       bool saw_cleanup = false;
       bool saw_handler = false;
@@ -279,11 +279,9 @@ PERSONALITY_FUNCTION (int version,
 
       while (1)
 	{
-	  _Unwind_Ptr tmp;
-
 	  p = action_record;
-	  p = read_sleb128 (p, &tmp); ar_filter = tmp;
-	  read_sleb128 (p, &tmp); ar_disp = tmp;
+	  p = read_sleb128 (p, &ar_filter);
+	  read_sleb128 (p, &ar_disp);
 
 	  if (ar_filter == 0)
 	    {
