@@ -561,7 +561,9 @@ get_dynamic_cast_base_type (subtype, target)
   
   if (!boff)
     return offset;
-  return build_int_2 (boff, -1);
+  offset = build_int_2 (boff, -1);
+  TREE_TYPE (offset) = ssizetype;
+  return offset;
 }
 
 /* Search for a member with name NAME in a multiple inheritance lattice
