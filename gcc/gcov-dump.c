@@ -131,7 +131,7 @@ print_prefix (filename, depth)
 {
   static const char prefix[] = "    ";
   
-  printf ("%s:%.*s", filename, depth, prefix);
+  printf ("%s:%.*s", filename, (int) depth, prefix);
 }
 
 static void

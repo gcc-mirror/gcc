@@ -1,3 +1,31 @@
+2003-02-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcov-dump.c (print_prefix): Fix signedness warning.
+	* gcov-io.h (struct counter_section, struct counter_section_data): New.
+	(struct function_info): n_arc_counts field removed, n_counter_sections,
+	counter_sections fields added.
+	(struct gcov_info): arc_counts, n_arc_counts fields removed,
+	n_counter_sections, counter_sections fields added.
+	* libgcov.c (gcov_exit, __gcov_flush): Add support for multiple
+	profile sections.
+	* profile.h (MAX_COUNTER_SECTIONS): New.
+	(struct section_info): New.
+	(struct profile_info): count_instrumented_edges,
+	count_edges_instrumented_now fields removed, n_sections, section_info
+	fields added.
+	(find_counters_section): Declare.
+	* profile.c (struct function_list): count_edges field removed,
+	n_counter_sections, counter_sections fields added.
+	(set_purpose, label_for_tag, build_counter_section_fields,
+	build_counter_section_value, build_counter_section_data_fields,
+	build_counter_section_data_value, build_function_info_fields,
+	build_function_info_value, build_gcov_info_fields,
+	build_gcov_info_value): New static functions.
+	(find_counters_section): New function.
+	(instrument_edges, get_exec_counts, compute_branch_probabilities,
+	branch_prob, create_profiler): Modified to support multiple profile
+	sections.
+
 2003-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (compute_frame_size): Don't assume PREFERRED_STACK_BOUNDARY
