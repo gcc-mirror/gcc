@@ -1003,6 +1003,13 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	  && p != succ && volatile_refs_p (PATTERN (p)))
 	return 0;
 
+  /* If INSN is an asm, and DEST is a hard register, reject, since it has
+     to be an explicit register variable, and was chosen for a reason.  */
+
+  if (GET_CODE (src) == ASM_OPERANDS
+      && GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER)
+    return 0;
+
   /* If there are any volatile insns between INSN and I3, reject, because
      they might affect machine state.  */
 

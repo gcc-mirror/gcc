@@ -1,3 +1,8 @@
+Thu Oct 16 15:07:51 1997  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (can_combine_p): Don't combine with an asm whose
+	output is a hard register.
+
 Thu Oct 16 15:43:26 1997  Mike Stump  (mrs@wrs.com)
 
 	* c-decl.c (start_struct): Ensure that structs with forward
