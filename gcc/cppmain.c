@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 const char *progname;
 
 cpp_reader parse_in;
+cpp_printer parse_out;
 
 
 extern int main				PARAMS ((int, char **));
@@ -38,10 +39,8 @@ main (argc, argv)
 {
   char *p;
   cpp_reader *pfile = &parse_in;
+  cpp_printer *print;
   int argi = 1;  /* Next argument to handle.  */
-  enum cpp_ttype kind;
-  FILE *out;
-  const char *out_fname;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/') --p;
@@ -63,64 +62,24 @@ main (argc, argv)
   if (CPP_FATAL_ERRORS (pfile))
     return (FATAL_EXIT_CODE);
 
-  if (! cpp_start_read (pfile, CPP_OPTION (pfile, in_fname)))
+  /* Open the output now.  We must do so even if no_output is on,
+     because there may be other output than from the actual
+     preprocessing (e.g. from -dM).  */
+  print = cpp_printer_init (pfile, &parse_out);
+  if (! print)
     return (FATAL_EXIT_CODE);
 
-  /* Now that we know the input file is valid, open the output.  */
-  out_fname = CPP_OPTION (pfile, out_fname);
-  if (*out_fname == '\0')
-    {
-      out_fname = "stdout";
-      out = stdout;
-    }
+  if (! cpp_start_read (pfile, print, CPP_OPTION (pfile, in_fname)))
+    return (FATAL_EXIT_CODE);
+
+  if (CPP_OPTION (pfile, no_output))
+    while (CPP_BUFFER (pfile) != NULL)
+      cpp_scan_buffer_nooutput (pfile);
   else
-    {
-      out = fopen (out_fname, "w");
-      if (!out)
-	{
-	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-	  return (FATAL_EXIT_CODE);
-	}
-    }
+    while (CPP_BUFFER (pfile) != NULL)
+      cpp_scan_buffer (pfile, print);
 
-  if (! CPP_OPTION (pfile, no_output))
-    {
-      do
-	{
-	  kind = cpp_get_token (pfile);
-	  if (CPP_WRITTEN (pfile) >= BUFSIZ || kind == CPP_EOF)
-	    {
-	      size_t rem, count = CPP_WRITTEN (pfile);
-
-	      rem = fwrite (parse_in.token_buffer, 1, count, out);
-	      if (rem < count)
-		/* Write error. */
-		cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-
-	      CPP_SET_WRITTEN (pfile, 0);
-	    }
-	}
-      while (kind != CPP_EOF);
-    }
-  else
-    {
-      do
-	{
-	  cpp_scan_buffer (pfile);
-	  kind = cpp_get_token (pfile);
-	}
-      while (kind != CPP_EOF);
-      CPP_SET_WRITTEN (pfile, 0);
-    }
-
-  cpp_finish (pfile);
-  if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (pfile), out)
-      < CPP_WRITTEN (pfile))
-    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-
-  if (ferror (out) || fclose (out))
-    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-
+  cpp_finish (pfile, print);
   cpp_cleanup (pfile);
 
   if (parse_in.errors)

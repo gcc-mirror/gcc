@@ -628,14 +628,13 @@ read_scan_file (in_fname, argc, argv)
      so ignore warnings and errors.  */
   CPP_OPTION (&scan_in, inhibit_warnings) = 1;
   CPP_OPTION (&scan_in, inhibit_errors) = 1;
-  CPP_OPTION (&scan_in, no_line_commands) = 1;
   i = cpp_handle_options (&scan_in, argc, argv);
   if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))
     cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);
   if (CPP_FATAL_ERRORS (&scan_in))
     exit (FATAL_EXIT_CODE);
 
-  if (! cpp_start_read (&scan_in, in_fname))
+  if (! cpp_start_read (&scan_in, 0, in_fname))
     exit (FATAL_EXIT_CODE);
 
   scan_decls (&scan_in, argc, argv);

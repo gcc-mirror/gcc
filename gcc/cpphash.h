@@ -263,9 +263,6 @@ extern unsigned char _cpp_IStable[256];
 #define ADJACENT_TO_MARK(PFILE) \
  (CPP_BUFFER(PFILE)->cur - CPP_BUFFER(PFILE)->mark == 1)
 
-/* Last arg to output_line_command.  */
-enum file_change_code {same_file, rename_file, enter_file, leave_file};
-
 /* In cpphash.c */
 extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
 						 enum node_type,
@@ -293,6 +290,7 @@ extern void _cpp_execute_include	PARAMS ((cpp_reader *, char *,
 						 unsigned int, int,
 						 struct file_name_list *));
 extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
+extern const char *_cpp_fake_ihash	PARAMS ((cpp_reader *, const char *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
@@ -301,6 +299,8 @@ extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 extern void _cpp_parse_name		PARAMS ((cpp_reader *, int));
 extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
 extern void _cpp_skip_hspace		PARAMS ((cpp_reader *));
+extern void _cpp_expand_to_buffer	PARAMS ((cpp_reader *,
+						 const unsigned char *, int));
 extern int _cpp_parse_assertion		PARAMS ((cpp_reader *));
 extern enum cpp_ttype _cpp_lex_token	PARAMS ((cpp_reader *));
 extern long _cpp_read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
@@ -315,8 +315,5 @@ extern enum cpp_ttype _cpp_get_define_token
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
 extern void _cpp_handle_eof		PARAMS ((cpp_reader *));
-extern void _cpp_output_line_command	PARAMS ((cpp_reader *,
-						 enum file_change_code));
-
 
 #endif

@@ -31,6 +31,7 @@ extern "C" {
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
+typedef struct cpp_printer cpp_printer;
 
 enum cpp_ttype
 {
@@ -74,8 +75,6 @@ struct cpp_buffer
 
   /* Filename specified with #line command.  */
   const char *nominal_fname;
-  /* Last filename specified with #line command.  */
-  const char *last_nominal_fname;
   /* Actual directory of this file, used only for "" includes */
   struct file_name_list *actual_dir;
 
@@ -98,6 +97,8 @@ struct cpp_buffer
 
   /* True if this is a header file included using <FILENAME>.  */
   char system_header_p;
+
+  /* True if end-of-file has already been hit once in this buffer.  */
   char seen_eof;
 
   /* True if buffer contains escape sequences.
@@ -352,8 +353,6 @@ struct cpp_reader
   struct if_stack *if_stack;
   const unsigned char *potential_control_macro;
 
-  unsigned int lineno;
-
   /* Buffer of -M output.  */
   struct deps *deps;
 
@@ -402,6 +401,19 @@ struct cpp_reader
   unsigned char done_initializing;
 };
 
+/* struct cpp_printer encapsulates state used to convert the stream of
+   tokens coming from cpp_get_token back into a text file.  Not
+   everyone wants to do that, hence we separate the function.  */
+
+struct cpp_printer
+{
+  FILE *outf;			/* stream to write to */
+  const char *last_fname;	/* previous file name */
+  unsigned int last_bsd;	/* did we just push? */
+  unsigned int lineno;		/* line currently being written */
+  unsigned int written;		/* low water mark in token buffer */
+};
+
 #define CPP_FATAL_LIMIT 1000
 /* True if we have seen a "fatal" error. */
 #define CPP_FATAL_ERRORS(READER) ((READER)->errors >= CPP_FATAL_LIMIT)
@@ -427,9 +439,11 @@ extern enum cpp_ttype cpp_get_token PARAMS ((cpp_reader *));
 extern enum cpp_ttype cpp_get_non_space_token PARAMS ((cpp_reader *));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
-extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
-extern void cpp_finish PARAMS ((cpp_reader *));
-extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
+extern cpp_printer *cpp_printer_init PARAMS ((cpp_reader *, cpp_printer *));
+extern int cpp_start_read PARAMS ((cpp_reader *, cpp_printer *, const char *));
+extern void cpp_output_tokens PARAMS ((cpp_reader *, cpp_printer *));
+extern void cpp_finish PARAMS ((cpp_reader *, cpp_printer *));
+extern void cpp_cleanup PARAMS ((cpp_reader *));
 
 extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
@@ -463,17 +477,19 @@ extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *m
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_5;
-extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
-extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
+extern void cpp_error_from_errno	PARAMS ((cpp_reader *, const char *));
+extern void cpp_notice_from_errno	PARAMS ((cpp_reader *, const char *));
 
-extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
-					    const unsigned char *, long));
-extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
-extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
+/* In cpplex.c */
+extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
+						 const unsigned char *, long));
+extern cpp_buffer *cpp_pop_buffer	PARAMS ((cpp_reader *));
+extern void cpp_scan_buffer		PARAMS ((cpp_reader *, cpp_printer *));
+extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
 
-extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *,
+/* In cpphash.c */
+extern int cpp_defined			PARAMS ((cpp_reader *,
 						 const unsigned char *, int));
-extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern int cpp_included			PARAMS ((cpp_reader *, const char *));

@@ -440,5 +440,7 @@ cpp_notice_from_errno (pfile, name)
      cpp_reader *pfile;
      const char *name;
 {
+  if (name[0] == '\0')
+    name = "stdout";
   cpp_notice (pfile, "%s: %s", name, xstrerror (errno));
 }
