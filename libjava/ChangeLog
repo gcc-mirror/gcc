@@ -1,5 +1,16 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/dgc/VMID.java,
+	java/rmi/registry/RegistryHandler.java,
+	java/rmi/server/LogStream.java,
+	java/rmi/server/Operation.java,
+	java/rmi/server/RemoteCall.java,
+	java/rmi/server/RemoteRef.java,
+	java/rmi/server/RemoteStub.java:
+	Reformatted.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractCellEditor.java,
 	javax/swing/AbstractListModel.java,
 	javax/swing/ActionMap.java,

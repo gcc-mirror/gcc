@@ -44,8 +44,7 @@ import java.io.IOException;
 /**
  * @deprecated
  */
-public class LogStream
-	extends PrintStream
+public class LogStream extends PrintStream
 {
   public static final int SILENT = 0;
   public static final int BRIEF = 10;
@@ -53,68 +52,71 @@ public class LogStream
 
   private static PrintStream defStream;
 
-  private LogStream(OutputStream s)
+  private LogStream (OutputStream s)
   {
-    super(s);
+    super (s);
   }
 
-  public static LogStream log(String name)
+  /**
+   * @deprecated
+   */
+  public static LogStream log (String name)
   {
-    throw new Error("Not implemented");
+    throw new Error ("Not implemented");
   }
 
-  public static PrintStream getDefaultStream()
+  public static PrintStream getDefaultStream ()
   {
-    return (defStream);
+    return defStream;
   }
   
-  public static void setDefaultStream(PrintStream s)
+  public static void setDefaultStream (PrintStream s)
   {
     defStream = s;
   }
 
-  public OutputStream getOutputStream()
+  public OutputStream getOutputStream ()
   {
-    return (out);
+    return out;
   }
 
-  public void setOutputStream(OutputStream s)
+  public void setOutputStream (OutputStream s)
   {
     out = s;
   }
 
-  public void write(int b)
+  public void write (int buffer)
   {
-    super.write(b);
+    super.write (buffer);
   }
 
-  public void write(byte[] b, int off, int len)
+  public void write (byte[] buffer, int offset, int len)
   {
-    super.write(b, off, len);
+    super.write (buffer, offset, len);
   }
 
-  public String toString()
+  public String toString ()
   {
-    throw new Error("Not implemented");
+    throw new Error ("Not implemented");
   }
 
-  public static int parseLevel(String s) {
-    if (s.equalsIgnoreCase("silent"))
+  public static int parseLevel (String s)
+  {
+    if (s.equalsIgnoreCase ("silent"))
       {
-        return (SILENT);
+        return SILENT;
       }
     
-    if (s.equalsIgnoreCase("brief"))
+    if (s.equalsIgnoreCase ("brief"))
       {
-        return (BRIEF);
+        return BRIEF;
       }
     
-    if (s.equalsIgnoreCase("verbose"))
+    if (s.equalsIgnoreCase ("verbose"))
       {
-        return (VERBOSE);
+        return VERBOSE;
       }
     
-    return (SILENT);
-}
-
+    return SILENT;
+  }
 }

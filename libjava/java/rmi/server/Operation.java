@@ -40,20 +40,22 @@ package java.rmi.server;
 /**
  * @deprecated
  */
-public class Operation {
+public class Operation
+{
+  private String operation;
 
-private String operation;
+  public Operation (String op)
+  {
+    operation = op;
+  }
 
-public Operation(String op) {
-	operation = op;
-}
+  public String getOperation ()
+  {
+    return operation;
+  }
 
-public String getOperation() {
-	return (operation);
-}
-
-public String toString() {
-	return (operation);
-}
-
+  public String toString ()
+  {
+    return operation;
+  }
 }
