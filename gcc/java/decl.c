@@ -499,7 +499,7 @@ tree
 builtin_function (const char *name,
 		  tree type,
 		  int function_code,
-		  enum built_in_class class,
+		  enum built_in_class cl,
 		  const char *library_name,
 		  tree ARG_UNUSED (attrs))
 {
@@ -510,7 +510,7 @@ builtin_function (const char *name,
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
   make_decl_rtl (decl, NULL);
   pushdecl (decl);
-  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl) = function_code;
   return decl;
 }
