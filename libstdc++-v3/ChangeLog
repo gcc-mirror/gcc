@@ -1,4 +1,22 @@
 2004-04-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunct,
+	__timepunct<wchar_t>::_M_initialize_timepunct): The correct
+	_M_amonth07 in the "C" locale is "Jul" and L"Jul", respectively.
+	* config/locale/gnu/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunct,
+	__timepunct<wchar_t>::_M_initialize_timepunct): Ditto.
+	* testsuite/22_locale/time_get/get_monthname/char/4.cc: New.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/4.cc: New.
+
+2004-04-24  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	* testsuite/performance/27_io/filebuf_sputn_unbuf.cc: New,
+	adapted from libstdc++/11378.
+
+2004-04-24  Paolo Carlini  <pcarlini@suse.de>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* include/bits/basic_string.tcc (_M_mutate): Don't compute
