@@ -150,6 +150,10 @@ int do_collecting = 1;
 int do_collecting = 0;
 #endif
 
+#ifndef COLLECT_PARSE_FLAG
+#define COLLECT_PARSE_FLAG(FLAG)
+#endif
+
 /* Nonzero if we should suppress the automatic demangling of identifiers
    in linker error messages.  Set from COLLECT_NO_DEMANGLE.  */
 int no_demangle;
@@ -853,8 +857,11 @@ main (int argc, char **argv)
     int i;
 
     for (i = 1; argv[i] != NULL; i ++)
-      if (! strcmp (argv[i], "-debug"))
-	debug = 1;
+      {
+	if (! strcmp (argv[i], "-debug"))
+	  debug = 1;
+	COLLECT_PARSE_FLAG (argv[i]);
+      }
     vflag = debug;
   }
 

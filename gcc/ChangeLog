@@ -1,3 +1,9 @@
+2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* collect2.c (COLLECT_PARSE_FLAG): Provide default.
+	(main): Use it.
+	* doc/tm.texi (COLLECT_PARSE_FLAG): Document it.
+
 2003-10-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm-modes.def (CC_Nmode): New condition code mode.
