@@ -1,3 +1,12 @@
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (override_options): Respect user disable of
+	fancy 387 math, sse, mmx.
+	(construct_container): Generate error if we need an sse regster
+	and sse has been disabled.
+	* config/i386/i386.h (TARGET_SWITCHES): Disabling sse also disables
+	later sse generations.  Disabling mmx also disables 3dnow.
+
 2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-inline.c (struct inline_data): Remove inlined_fns.

@@ -393,19 +393,19 @@ extern int x86_prefetch_sse;
     N_("Do not use push instructions to save outgoing arguments") },	      \
   { "mmx",			 MASK_MMX,				      \
     N_("Support MMX built-in functions") },				      \
-  { "no-mmx",			 -MASK_MMX,				      \
+  { "no-mmx",			 -(MASK_MMX|MASK_3DNOW|MASK_3DNOW_A),	      \
     N_("Do not support MMX built-in functions") },			      \
   { "3dnow",                     MASK_3DNOW,				      \
     N_("Support 3DNow! built-in functions") },				      \
-  { "no-3dnow",                  -MASK_3DNOW,				      \
+  { "no-3dnow",                  -(MASK_3DNOW|MASK_3DNOW_A),		      \
     N_("Do not support 3DNow! built-in functions") },			      \
   { "sse",			 MASK_SSE,				      \
     N_("Support MMX and SSE built-in functions and code generation") },	      \
-  { "no-sse",			 -MASK_SSE,				      \
+  { "no-sse",			 -(MASK_SSE|MASK_SSE2|MASK_SSE3),	      \
     N_("Do not support MMX and SSE built-in functions and code generation") },\
   { "sse2",			 MASK_SSE2,				      \
     N_("Support MMX, SSE and SSE2 built-in functions and code generation") }, \
-  { "no-sse2",			 -MASK_SSE2,				      \
+  { "no-sse2",			 -(MASK_SSE2|MASK_SSE3),		      \
     N_("Do not support MMX, SSE and SSE2 built-in functions and code generation") },    \
   { "sse3",			 MASK_SSE3,				      \
     N_("Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation") },\
