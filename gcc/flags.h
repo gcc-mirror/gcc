@@ -641,6 +641,10 @@ extern int flag_gcse_sm;
 
 extern int flag_eliminate_dwarf2_dups;
 
+/* Nonzero means we should do unused type elimination.  */
+
+extern int flag_eliminate_unused_debug_types;
+
 /* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
 extern int flag_detailed_statistics;

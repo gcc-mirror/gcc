@@ -378,6 +378,10 @@ tree current_function_func_begin_label;
 
 int flag_eliminate_dwarf2_dups = 0;
 
+/* Nonzero if doing unused type elimination.  */
+
+int flag_eliminate_unused_debug_types = 0;
+
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -999,6 +1003,8 @@ static const lang_independent_options f_options[] =
 {
   {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1,
    N_("Perform DWARF2 duplicate elimination") },
+  {"eliminate-unused-debug-types", &flag_eliminate_unused_debug_types, 1,
+   N_("Perform unused type elimination in debug info") },
   {"float-store", &flag_float_store, 1,
    N_("Do not store floats in registers") },
   {"defer-pop", &flag_defer_pop, 1,
