@@ -31,6 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Interfaces; use Interfaces;
+
 with System.Img_Char; use System.Img_Char;
 with System.WCh_Con;  use System.WCh_Con;
 with System.WCh_WtS;  use System.WCh_WtS;
@@ -45,7 +47,7 @@ package body System.Img_WChar is
      (V  : Wide_Character;
       EM : WC_Encoding_Method) return String
    is
-      Val : constant Natural := Wide_Character'Pos (V);
+      Val : constant Unsigned_16 := Wide_Character'Pos (V);
       WS  : Wide_String (1 .. 3);
 
    begin
@@ -88,7 +90,7 @@ package body System.Img_WChar is
      (V  : Wide_Wide_Character;
       EM : WC_Encoding_Method) return String
    is
-      Val : constant Natural := Wide_Wide_Character'Pos (V);
+      Val : constant Unsigned_32 := Wide_Wide_Character'Pos (V);
       WS  : Wide_Wide_String (1 .. 3);
 
    begin
