@@ -1,3 +1,15 @@
+2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/sol2-10.h, config/i386/t-sol2-10: New files.
+	* config/i386/i386.c (i386_solaris_elf_named_section): New
+	function.
+	* config.gcc (i[34567]86-*-solaris2*): Handle Solaris 2.10.
+	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Handle
+	64-bit.
+	(ASM_QUAD): Don't undefine for biarch targets.
+	* config/i386/t-sol2: Introduce multilib support.
+
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
 
 	* cgraphunit.c: Replace "it's" with "its" and fix a typo.

@@ -1020,6 +1020,7 @@ i[34567]86-*-solaris2*)
 	tm_p_file="${tm_p_file} sol2-protos.h"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
+		tm_defines="${tm_defines} TARGET_GNU_LD=1"
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
@@ -1028,7 +1029,20 @@ i[34567]86-*-solaris2*)
 		tm_file="$tm_file tm-dwarf2.h"
 		;;
 	esac
-	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
+	case ${target} in
+	*-*-solaris2.1[0-9])
+		tm_file="${tm_file} i386/x86-64.h i386/sol2-10.h"
+		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
+		tmake_file="$tmake_file i386/t-sol2-10"
+		need_64bit_hwint=yes
+		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as 
+		# part of the base system.
+		extra_parts="gmon.o crtbegin.o crtend.o"
+		;;
+	*)
+		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
+		;;
+	esac
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  "":yes:* | yes:yes:* ) thread_file=posix ;;
 	  "":*:yes | yes:*:yes ) thread_file=solaris ;;

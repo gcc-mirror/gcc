@@ -31,12 +31,13 @@ Boston, MA 02111-1307, USA.  */
    it knows what it is doing.  */
 #define FORCE_CODE_SECTION_ALIGN  asm(ALIGN_ASM_OP "16");
 
-/* Select a format to encode pointers in exception handling data.  CODE
-   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
-   true if the symbol may be affected by dynamic relocations.  */
+/* Old versions of the Solaris assembler can not handle the difference of
+   labels in different sections, so force DW_EH_PE_datarel.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
-  (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_datarel	\
+  (flag_pic ? ((GLOBAL ? DW_EH_PE_indirect : 0)				\
+	       | (TARGET_64BIT ? DW_EH_PE_pcrel | DW_EH_PE_sdata4	\
+		  : DW_EH_PE_datarel))					\
    : DW_EH_PE_absptr)
 
 /* Solaris 2/Intel as chokes on #line directives.  */
@@ -63,8 +64,10 @@ Boston, MA 02111-1307, USA.  */
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
-/* The Solaris assembler does not support .quad.  Do not use it.  */
+/* The 32-bit Solaris assembler does not support .quad.  Do not use it.  */
+#ifndef TARGET_BI_ARCH
 #undef ASM_QUAD
+#endif
 
 /* The Solaris assembler wants a .local for non-exported aliases.  */
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL, TARGET)	\

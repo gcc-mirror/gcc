@@ -1,3 +1,8 @@
+2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/gcc.dg/pragma-init-fini-2.c: New test.
+
 2004-11-17  Janis Johnson  <janis187@us.ibm.com>
             Aldy Hernandez  <aldyh@redhat.com>
 
