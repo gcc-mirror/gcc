@@ -964,6 +964,11 @@ gen_lowpart_common (mode, x)
 	  > ((xsize + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
     return 0;
 
+  /* Don't allow generating paradoxical FLOAT_MODE subregs.  */
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE (x) != VOIDmode && msize > xsize)
+    return 0;
+
   offset = subreg_lowpart_offset (mode, GET_MODE (x));
 
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
