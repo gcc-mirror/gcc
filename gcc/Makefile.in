@@ -2350,8 +2350,8 @@ s-preds: $(md_file) genpreds$(build_exeext)
 	$(STAMP) s-preds
 
 insn-preds.o : insn-preds.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H)  function.h \
-  hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h
+  $(RTL_H) $(TREE_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H) \
+  function.h hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h
 
 GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(CPP_ID_DATA_H) $(host_xm_file_list) \

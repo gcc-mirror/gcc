@@ -1609,68 +1609,11 @@ do {						\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~' \
    || (CODE) == '#' || (CODE) == '*' || (CODE) == '&' || (CODE) == '+')
-
+
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
   print_operand_address((FILE), (ADDR))
-
-/* Define the codes that are matched by predicates in alpha.c.  */
-
-#define PREDICATE_CODES 						\
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE,		\
-			CONST_VECTOR}},					\
-  {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},			\
-  {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},			\
-  {"reg_or_const_int_operand", {SUBREG, REG, CONST_INT}},		\
-  {"cint8_operand", {CONST_INT}},					\
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},			\
-  {"add_operand", {SUBREG, REG, CONST_INT}},				\
-  {"sext_add_operand", {SUBREG, REG, CONST_INT}},			\
-  {"const48_operand", {CONST_INT}},					\
-  {"and_operand", {SUBREG, REG, CONST_INT}},				\
-  {"or_operand", {SUBREG, REG, CONST_INT}},				\
-  {"mode_mask_operand", {CONST_INT}},					\
-  {"mul8_operand", {CONST_INT}},					\
-  {"mode_width_operand", {CONST_INT}},					\
-  {"alpha_comparison_operator", {EQ, LE, LT, LEU, LTU}},		\
-  {"alpha_zero_comparison_operator", {EQ, NE, LE, LT, LEU, LTU}},	\
-  {"alpha_swapped_comparison_operator", {EQ, GE, GT, GEU, GTU}},	\
-  {"signed_comparison_operator", {EQ, NE, LE, LT, GE, GT}},		\
-  {"alpha_fp_comparison_operator", {EQ, LE, LT, UNORDERED}},		\
-  {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
-  {"fix_operator", {FIX, UNSIGNED_FIX}},				\
-  {"const0_operand", {CONST_INT, CONST_DOUBLE, CONST_VECTOR}},		\
-  {"samegp_function_operand", {SYMBOL_REF}},				\
-  {"direct_call_operand", {SYMBOL_REF}},				\
-  {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
-  {"small_symbolic_operand", {SYMBOL_REF, CONST}},			\
-  {"global_symbolic_operand", {SYMBOL_REF, CONST}},			\
-  {"dtp16_symbolic_operand", {CONST}},					\
-  {"dtp32_symbolic_operand", {CONST}},					\
-  {"gotdtp_symbolic_operand", {CONST}},					\
-  {"tp16_symbolic_operand", {CONST}},					\
-  {"tp32_symbolic_operand", {CONST}},					\
-  {"gottp_symbolic_operand", {CONST}},					\
-  {"call_operand", {REG, SYMBOL_REF}},					\
-  {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     CONST_VECTOR, SYMBOL_REF, CONST, LABEL_REF, HIGH}},\
-  {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		    CONST_VECTOR, SYMBOL_REF, CONST, LABEL_REF, HIGH}},	\
-  {"some_ni_operand", {SUBREG, REG, MEM}},				\
-  {"aligned_memory_operand", {MEM}},					\
-  {"unaligned_memory_operand", {MEM}},					\
-  {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},			\
-  {"any_memory_operand", {MEM}},					\
-  {"normal_memory_operand", {MEM}},					\
-  {"hard_fp_register_operand", {SUBREG, REG}},				\
-  {"hard_int_register_operand", {SUBREG, REG}},				\
-  {"reg_not_elim_operand", {SUBREG, REG}},				\
-  {"reg_no_subreg_operand", {REG}},					\
-  {"addition_operation", {PLUS}},					\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-  {"some_small_symbolic_operand", {SET, PARALLEL, PREFETCH, UNSPEC,	\
-				   UNSPEC_VOLATILE}},
 
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \

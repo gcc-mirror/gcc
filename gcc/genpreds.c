@@ -417,6 +417,7 @@ write_insn_preds_c (void)
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"rtl.h\"\n\
+#include \"tree.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\

@@ -168,6 +168,12 @@
 (include "ev4.md")
 (include "ev5.md")
 (include "ev6.md")
+
+
+;; Include predicate definitions
+
+(include "predicates.md")
+
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
@@ -7378,9 +7384,9 @@
 (define_expand "builtin_zap"
   [(set (match_operand:DI 0 "register_operand" "")
 	(and:DI (unspec:DI
-		  [(match_operand:DI 2 "reg_or_const_int_operand" "")]
+		  [(match_operand:DI 2 "reg_or_cint_operand" "")]
 		  UNSPEC_ZAP)
-		(match_operand:DI 1 "reg_or_const_int_operand" "")))]
+		(match_operand:DI 1 "reg_or_cint_operand" "")))]
   ""
 {
   if (GET_CODE (operands[2]) == CONST_INT)
@@ -7410,9 +7416,9 @@
 (define_insn "*builtin_zap_1"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(and:DI (unspec:DI
-		  [(match_operand:QI 2 "reg_or_const_int_operand" "n,n,r,r")]
+		  [(match_operand:QI 2 "reg_or_cint_operand" "n,n,r,r")]
 		  UNSPEC_ZAP)
-		(match_operand:DI 1 "reg_or_const_int_operand" "n,r,J,r")))]
+		(match_operand:DI 1 "reg_or_cint_operand" "n,r,J,r")))]
   ""
   "@
    #
@@ -7471,9 +7477,9 @@
 (define_expand "builtin_zapnot"
   [(set (match_operand:DI 0 "register_operand" "")
 	(and:DI (unspec:DI
-		  [(not:QI (match_operand:DI 2 "reg_or_const_int_operand" ""))]
+		  [(not:QI (match_operand:DI 2 "reg_or_cint_operand" ""))]
 		  UNSPEC_ZAP)
-		(match_operand:DI 1 "reg_or_const_int_operand" "")))]
+		(match_operand:DI 1 "reg_or_cint_operand" "")))]
   ""
 {
   if (GET_CODE (operands[2]) == CONST_INT)

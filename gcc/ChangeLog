@@ -1,3 +1,33 @@
+2004-08-13  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (insn-preds.o): Depend on TREE_H.
+	* genpreds.c (write_insn_preds_c): Include tree.h.
+	* config/alpha/alpha.c (reg_or_0_operand, reg_or_6bit_operand,
+	reg_or_8bit_operand, cint8_operand, add_operand, sext_add_operand,
+	const48_operand, and_operand, or_operand, mode_width_operand,
+	mode_mask_operand, mul8_operand, const0_operand,
+	hard_fp_register_operand, hard_int_register_operand,
+	reg_or_cint_operand, some_operand, some_ni_operand, input_operand,
+	samegp_function_operand, direct_call_operand, small_symbolic_operand,
+	global_symbolic_operand, call_operand, symbolic_operand, 
+	dtp16_symbolic_operand, dtp32_symbolic_operand,
+	gotdtp_symbolic_operand, tp16_symbolic_operand, tp32_symbolic_operand,
+	gottp_symbolic_operand, alpha_comparison_operator,
+	alpha_zero_comparison_operator, alpha_swapped_comparison_operator,
+	signed_comparison_operator, alpha_fp_comparison_operator,
+	divmod_operator, fix_operator, aligned_memory_operand,
+	unaligned_memory_operand, reg_or_unaligned_mem_operand,
+	any_memory_operand, reg_not_elim_operand, normal_memory_operand,
+	reg_no_subreg_operand, addition_operation): Move to predicates.md.
+	(reg_or_const_int_operand): Remove.  Replace all users with
+	reg_or_cint_operand.
+	(tls_symbolic_operand_1): Export.  Don't check mode or for CONST.
+	(resolve_reload_operand): Split out of aligned_memory_operand.
+	* config/alpha/alpha-protos.h: Update for exports.
+	* config/alpha/alpha.h (PREDICATE_CODES): Remove.
+	* config/alpha/alpha.md: Include predicates.md.
+	* config/alpha/predicates.md: New file.
+
 2004-08-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* genattrtab.c (insn_ent): Replace insn_code, insn_index and lineno
