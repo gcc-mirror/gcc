@@ -3371,7 +3371,8 @@
   ""
   "
 {
-  if (! (ior_operand (operands[2]) || register_operand (operands[2])))
+  if (! (ior_operand (operands[2], SImode)
+         || register_operand (operands[2], SImode)))
     operands[2] = force_reg (SImode, operands[2]);
 }")
 
