@@ -36,13 +36,3 @@ int main(int argc, char**argv)   {
     IncludeIt* bar;
     std::exit(0);
 }
-
-template class std::__malloc_alloc_template<0>;
-#ifndef __USE_MALLOC
-template class std::__default_alloc_template<false, 0>;
-#endif
-
-
-
-
-
