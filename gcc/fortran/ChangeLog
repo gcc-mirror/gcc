@@ -1,3 +1,21 @@
+2004-08-10  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/16919
+	* trans-array.c (gfc_add_loop_ss_code): Handle GFC_SS_COMPONENT.
+	(gfc_conv_array_index_offset): Allow "temporary" with nonzero delta.
+	(gfc_trans_preloop_setup, gfc_trans_scalarized_loop_boundary):
+	Handle GFC_SS_COMPONENT.
+	(gfc_conv_ss_startstride): Ditto.  Set ss->shape.
+	(gfc_conv_loop_setup): Tweak commends. Remove dead code.
+	Use ss->shape.
+	(gfc_conv_array_initializer): Call specific initializer routines.
+	* trans-expr.c (gfc_trans_structure_assign): New function.
+	(gfc_trans_subarray_assign): New function.
+	(gfc_trans_subcomponent_assign): New fucntion
+	(gfc_conv_structure): Use them.
+	* trans.h (gfc_ss_type): Add GFC_SS_COMPONENT.
+	(gfc_ss): Add shape.
+
 2004-08-08  Victor Leikehman  <lei@il.ibm.com>
 
 	* simplify.c (gfc_simplify_shape): Bugfix.

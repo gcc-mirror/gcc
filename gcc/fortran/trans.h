@@ -148,7 +148,10 @@ typedef enum
 
   /* An intrinsic function call.  Many intrinsic functions which map directly
      to library calls are created as GFC_SS_FUNCTION nodes.  */
-  GFC_SS_INTRINSIC
+  GFC_SS_INTRINSIC,
+  
+  /* A component of a derived type.  */
+  GFC_SS_COMPONENT
 }
 gfc_ss_type;
 
@@ -158,6 +161,7 @@ typedef struct gfc_ss
 {
   gfc_ss_type type;
   gfc_expr *expr;
+  mpz_t *shape;
   union
   {
     /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
