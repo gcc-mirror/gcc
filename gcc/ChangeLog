@@ -1,5 +1,9 @@
 Mon Sep 29 00:18:16 1997  Richard Henderson  (rth@cygnus.com)
 
+	* alias.c (base_alias_check): Two symbols can conflict if they
+	are accessed via AND.
+	(memrefs_conflict_p): Likewise.
+
 	* alpha.h (SETUP_INCOMING_VARARGS): Emit a blockage insn
 	after flushing argument registers to the stack.
 
