@@ -796,7 +796,8 @@ expand_call (exp, target, ignore, modifier)
 		}
 
 	      copy = gen_rtx (MEM, BLKmode,
-			      allocate_dynamic_stack_space (size_rtx, 0));
+			      allocate_dynamic_stack_space (size_rtx, 0,
+							    TYPE_ALIGN (type)));
 	    }
 	  else
 	    copy = assign_stack_temp (TYPE_MODE (type), size, 1);
