@@ -10767,9 +10767,12 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
   unsigned HOST_WIDE_INT count = 0;
   rtx insns;
 
-
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
+
+  /* Can't use any of this if the user has appropriated esi or edi.  */
+  if (global_regs[4] || global_regs[5])
+    return 0;
 
   /* This simple hack avoids all inlining code and simplifies code below.  */
   if (!TARGET_ALIGN_STRINGOPS)
@@ -11004,6 +11007,10 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
+
+  /* Can't use any of this if the user has appropriated esi.  */
+  if (global_regs[4])
+    return 0;
 
   /* This simple hack avoids all inlining code and simplifies code below.  */
   if (!TARGET_ALIGN_STRINGOPS)
