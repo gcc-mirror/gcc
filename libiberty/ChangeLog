@@ -3,6 +3,7 @@
 	PR other/16240
 	* cp-demangle.c (d_expr_primary): Check for a failure return from
 	cplus_demangle_type.
+	* testsuite/demangle-expected: Add test case.
 
 2004-05-31  Danny Smith  <dannysmith@users.sourceforge.net>
 
