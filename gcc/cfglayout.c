@@ -739,21 +739,11 @@ fixup_reorder_chain (void)
 	    }
 	  else
 	    {
-#ifndef CASE_DROPS_THROUGH
 	      /* Otherwise we have some return, switch or computed
 		 jump.  In the 99% case, there should not have been a
 		 fallthru edge.  */
 	      gcc_assert (returnjump_p (bb_end_insn) || !e_fall);
 	      continue;
-#else
-	      if (returnjump_p (bb_end_insn) || !e_fall)
-		continue;
-	      /* Except for VAX.  Since we didn't have predication for the
-		 tablejump, the fallthru block should not have moved.  */
-	      if (bb->rbi->next == e_fall->dest)
-		continue;
-	      bb_end_insn = skip_insns_after_block (bb);
-#endif
 	    }
 	}
       else

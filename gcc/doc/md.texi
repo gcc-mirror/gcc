@@ -3500,11 +3500,6 @@ A label that precedes the table itself.
 
 @item
 A label to jump to if the index has a value outside the bounds.
-(If the machine-description macro @code{CASE_DROPS_THROUGH} is defined,
-then an out-of-bounds index drops through to the code following
-the jump table instead of jumping to this label.  In that case,
-this label is not actually used by the @samp{casesi} instruction,
-but it is always provided as an operand.)
 @end enumerate
 
 The table is a @code{addr_vec} or @code{addr_diff_vec} inside of a

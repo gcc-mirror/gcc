@@ -1240,11 +1240,6 @@ zbss_section ()								\
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : HImode)
 
-/* Define this if the case instruction drops through after the table
-   when the index is out of range.  Don't define it if the case insn
-   jumps to the default label instead.  */
-/* #define CASE_DROPS_THROUGH */
-
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.

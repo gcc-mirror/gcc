@@ -2191,13 +2191,7 @@ rtl_verify_flow_info (void)
 	  else
 	    for (insn = NEXT_INSN (BB_END (e->src)); insn != BB_HEAD (e->dest);
 		 insn = NEXT_INSN (insn))
-	      if (BARRIER_P (insn)
-#ifndef CASE_DROPS_THROUGH
-		  || INSN_P (insn)
-#else
-		  || (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn))
-#endif
-		  )
+	      if (BARRIER_P (insn) || INSN_P (insn))
 		{
 		  error ("verify_flow_info: Incorrect fallthru %i->%i",
 			 e->src->index, e->dest->index);
