@@ -494,7 +494,7 @@ ffi_closure_sparc_inner(ffi_closure *closure,
       argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
 
 #ifdef SPARC64
-      if (i < 6 && (arg_types[i]->type == FFI_TYPE_FLOAT
+      if (i < 16 && (arg_types[i]->type == FFI_TYPE_FLOAT
 		 || arg_types[i]->type == FFI_TYPE_DOUBLE
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 		 || arg_types[i]->type == FFI_TYPE_LONGDOUBLE
