@@ -1,3 +1,7 @@
+2004-08-19  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* regclass.c (globalize_reg): Update call_really_used_regs.
+
 2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (integer-share-limit): Document.
