@@ -1,3 +1,12 @@
+2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/12712
+	* reg-stack.c (convert_regs_1): Create an arbitrary input stack
+	if the block has no predecessors.
+	(convert_regs_2): Document the problem with successors whose
+	only predecessor is the block to be processed.
+	(convert_regs): Don't create the arbitrary input stack here.
+
 2003-10-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* genmodes.c (struct mode_data): Add contained and next_cont
