@@ -1557,6 +1557,9 @@ extern void lang_finish				PROTO((void));
 /* Funtion to identify which front-end produced the output file. */
 extern char *lang_identify			PROTO((void));
 
+/* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */
+extern void copy_lang_decl			PROTO((tree));
+
 /* Function called with no arguments to parse and compile the input.  */
 extern int yyparse				PROTO((void));
 /* Function called with option as argument
