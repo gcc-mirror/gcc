@@ -1,3 +1,14 @@
+2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386-protos.h: Remove prototype for
+	const_int_1_operand.
+	* config/i386/i386.c (const_int_1_operand): Remove.
+	* config/i386/i386.h (PREDICATE_CODES): Remove
+	const_int_1_operand.
+	* config/i386/i386.md: Replace all uses of const_int_1_operand
+	with const1_operand.
+	* config/i386/pentium.md: Likewise.
+
 2003-12-30  Geoffrey Keating  <geoffk@greed.local>
 
 	* doc/tm.texi (PREFERRED_RELOAD_CLASS): Describe use of NO_REGS
