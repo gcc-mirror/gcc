@@ -1,3 +1,9 @@
+1998-08-24  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (tsubst_decl): Move special case code for dealing with
+	tricky friend templates here from ...
+	(regenerate_decl_from_template): Here.
+
 1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_decl): Remove redundant linkage check.
