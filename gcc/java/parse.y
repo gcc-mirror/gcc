@@ -6411,6 +6411,12 @@ process_imports ()
   for (import = ctxp->import_list; import; import = TREE_CHAIN (import))
     {
       tree to_be_found = EXPR_WFL_NODE (TREE_PURPOSE (import));
+      char *original_name;
+
+      obstack_grow0 (&temporary_obstack,
+		     IDENTIFIER_POINTER (to_be_found),
+		     IDENTIFIER_LENGTH (to_be_found));
+      original_name = obstack_finish (&temporary_obstack);
 
       /* Don't load twice something already defined. */
       if (IDENTIFIER_CLASS_VALUE (to_be_found))
@@ -6442,9 +6448,11 @@ process_imports ()
 	{
 	  parse_error_context (TREE_PURPOSE (import),
 			       "Class or interface `%s' not found in import",
-			       IDENTIFIER_POINTER (to_be_found));
-	  return 1;
+			       original_name);
+	  error_found = 1;
 	}
+
+      obstack_free (&temporary_obstack, original_name);
       if (error_found)
 	return 1;
     }

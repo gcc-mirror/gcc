@@ -1,3 +1,8 @@
+2001-02-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (process_imports): Save the original name of the import
+	for better error report.
+
 2001-02-04  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Make-lang.in (jvspec.o): Add DRIVER_DEFINES to the list
