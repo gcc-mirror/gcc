@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* For systems with larger pointers than ints, these must be declared.  */
 PTR malloc PARAMS ((size_t));
 PTR realloc PARAMS ((PTR, size_t));
+PTR calloc PARAMS ((size_t, size_t));
 PTR sbrk PARAMS ((ptrdiff_t));
 #endif
 
@@ -88,6 +89,41 @@ xmalloc (size)
               "\n%s%sCan not allocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) size);
+#endif /* ! _WIN32 || __CYGWIN32 __ */
+      xexit (1);
+    }
+  return (newmem);
+}
+
+PTR
+xcalloc (nelem, elsize)
+  size_t nelem, elsize;
+{
+  PTR newmem;
+
+  if (nelem == 0 || elsize == 0)
+    nelem = elsize = 1;
+
+  newmem = calloc (nelem, elsize);
+  if (!newmem)
+    {
+#if ! defined (_WIN32) || defined (__CYGWIN32__)
+      extern char **environ;
+      size_t allocated;
+
+      if (first_break != NULL)
+	allocated = (char *) sbrk (0) - first_break;
+      else
+	allocated = (char *) sbrk (0) - (char *) &environ;
+      fprintf (stderr,
+	       "\n%s%sCan not allocate %lu bytes after allocating %lu bytes\n",
+	       name, *name ? ": " : "",
+	       (unsigned long) (nelem * elsize), (unsigned long) allocated);
+#else
+      fprintf (stderr,
+              "\n%s%sCan not allocate %lu bytes\n",
+              name, *name ? ": " : "",
+              (unsigned long) (nelem * elsize));
 #endif /* ! _WIN32 || __CYGWIN32 __ */
       xexit (1);
     }
