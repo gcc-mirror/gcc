@@ -1491,19 +1491,19 @@ changequote([,])dnl
 		tmake_file="i386/t-go32 t-rtems"
 		;;
 changequote(,)dnl
+	i[34567]86-*-rtemscoff*)
+changequote([,])dnl
+		cpu_type=i386
+		tm_file=i386/rtems.h
+		tmake_file="i386/t-i386bare t-rtems"
+		;;
+changequote(,)dnl
 	i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 changequote([,])dnl
 		cpu_type=i386
 		tm_file=i386/rtemself.h
 		extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 		tmake_file="i386/t-rtems-i386 i386/t-crtstuff t-rtems"
-		;;
-changequote(,)dnl
-	i[34567]86-*-rtemscoff*)
-changequote([,])dnl
-		cpu_type=i386
-		tm_file=i386/rtems.h
-		tmake_file="i386/t-i386bare t-rtems"
 		;;
 changequote(,)dnl
 	i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5

@@ -1369,7 +1369,7 @@ else
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -4156,16 +4156,16 @@ for machine in $build $host $target; do
 		tm_file=i386/go32-rtems.h
 		tmake_file="i386/t-go32 t-rtems"
 		;;
+	i[34567]86-*-rtemscoff*)
+		cpu_type=i386
+		tm_file=i386/rtems.h
+		tmake_file="i386/t-i386bare t-rtems"
+		;;
 	i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 		cpu_type=i386
 		tm_file=i386/rtemself.h
 		extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 		tmake_file="i386/t-rtems-i386 i386/t-crtstuff t-rtems"
-		;;
-	i[34567]86-*-rtemscoff*)
-		cpu_type=i386
-		tm_file=i386/rtems.h
-		tmake_file="i386/t-i386bare t-rtems"
 		;;
 	i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 		xm_file="xm-alloca.h ${xm_file} i386/xm-sco5.h"

@@ -1,3 +1,9 @@
+2000-02-11  Joel Sherrill (joel@OARcorp.com>
+
+	* configure.in: (i*86-*-rtems*): Swapped elf and coff
+	stanzas.
+	* configure: Rebuilt.
+
 2000-02-11  Rodney Brown  <RodneyBrown@pmsc.com>
 	
 	* pa-protos.h: Wrap function_arg_padding in TREE_CODE #ifdef.
