@@ -113,26 +113,10 @@
 (define_split
   [(set (match_operand:V4SI 0 "nonimmediate_operand" "")
         (match_operand:V4SI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+  "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 5))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
-
-(define_split
-  [(set (match_operand:V4SI 0 "nonimmediate_operand" "")
-        (match_operand:V4SI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
-   && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 6))
-   (set (match_dup 3) (match_dup 7))
-   (set (match_dup 4) (match_dup 8))
-   (set (match_dup 5) (match_dup 9))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
+  [(pc)]
+{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
 
 (define_split
   [(set (match_operand:V4SI 0 "altivec_register_operand" "")
@@ -175,26 +159,10 @@
 (define_split
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
         (match_operand:V8HI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+  "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 5))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
-
-(define_split
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
-        (match_operand:V8HI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
-   && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 6))
-   (set (match_dup 3) (match_dup 7))
-   (set (match_dup 4) (match_dup 8))
-   (set (match_dup 5) (match_dup 9))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
+  [(pc)]
+{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
 
 (define_split
   [(set (match_operand:V8HI 0 "altivec_register_operand" "")
@@ -237,26 +205,10 @@
 (define_split
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
         (match_operand:V16QI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+  "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 5))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
-
-(define_split
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
-        (match_operand:V16QI 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
-   && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 6))
-   (set (match_dup 3) (match_dup 7))
-   (set (match_dup 4) (match_dup 8))
-   (set (match_dup 5) (match_dup 9))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
+  [(pc)]
+{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
 
 (define_split
   [(set (match_operand:V16QI 0 "altivec_register_operand" "")
@@ -299,26 +251,10 @@
 (define_split
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
         (match_operand:V4SF 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+  "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 4))
-   (set (match_dup 3) (match_dup 5))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
-
-(define_split
-  [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
-        (match_operand:V4SF 1 "input_operand" ""))]
-  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
-   && gpr_or_gpr_p (operands[0], operands[1])"
-  [(set (match_dup 2) (match_dup 6))
-   (set (match_dup 3) (match_dup 7))
-   (set (match_dup 4) (match_dup 8))
-   (set (match_dup 5) (match_dup 9))]
-"{
-     rs6000_split_multireg_move (operands);
-}")
+  [(pc)]
+{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
