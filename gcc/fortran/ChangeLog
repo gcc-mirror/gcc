@@ -4,6 +4,14 @@
 	* iresolve.c (gfc_resolve_pack): Choose function depending if mask
 	is scalar.
 
+	PR fortran/17631
+	* intrinsic.c (add_sym_5): Remove.
+	(add_subroutines): Add resolution function for MVBITS.
+	* intrinsic.h (gfc_resolve_mvbits): Declare resolution function for
+	MVBITS
+	* iresolve.c (gfc_resolve_mvbits): New function.
+	(gfc_resolve_random_number): Remove empty line at end of function.
+
 2004-10-04  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* scanner.c (preprocessor_line): Accept preprocessor lines without

@@ -3,6 +3,9 @@
 	PR fortran/17283
 	* gfortran.fortran-torture/execute/intrinsic_pack.f90: Add more tests.
 
+	PR fortran/17631
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: New test.
+
 2004-10-04  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.dg/vect/pr16105.c: Enable for mipsisa64*-*-*.
