@@ -82,26 +82,6 @@ static int hack_vms_include_specification ();
 #define INO_T_EQ(a, b) 0
 #endif
 
-/* Find the largest host integer type and set its size and type.
-   Watch out: on some crazy hosts `long' is shorter than `int'.  */
-
-#ifndef HOST_WIDE_INT
-# if HAVE_INTTYPES_H
-#  include <inttypes.h>
-#  define HOST_WIDE_INT intmax_t
-# else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
-#   define HOST_WIDE_INT int
-#  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
-#   define HOST_WIDE_INT long
-#  else
-#   define HOST_WIDE_INT long long
-#  endif
-#  endif
-# endif
-#endif
-
 #ifndef INO_T_EQ
 #define INO_T_EQ(a, b) ((a) == (b))
 #endif
@@ -117,8 +97,8 @@ static int hack_vms_include_specification ();
 /* External declarations.  */
 
 extern char *version_string;
-HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
-HOST_WIDE_INT parse_c_expression PROTO((char *, int));
+HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
+HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
 
 /* Name under which this program was invoked.  */
 
@@ -959,7 +939,7 @@ static void delete_assertion PROTO((ASSERTION_HASHNODE *));
 
 static void do_once PROTO((void));
 
-static HOST_WIDE_INT eval_if_expression PROTO((U_CHAR *, int));
+static HOST_WIDEST_INT eval_if_expression PROTO((U_CHAR *, int));
 static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
 static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
 static void validate_else PROTO((U_CHAR *, U_CHAR *));
@@ -2563,7 +2543,7 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
      U_CHAR **argstart;		/* point to command arg */
      int *arglen, *cmdlen;	/* how long they are */
 {
-  HOST_WIDE_INT linsize;
+  HOST_WIDEST_INT linsize;
   register U_CHAR *numptr;	/* temp for arg parsing */
 
   *arglen = 0;
@@ -6962,7 +6942,7 @@ do_line (buf, limit, op, keyword)
 	if (! ignore_escape_flag)
 	  {
 	    char *bpc = (char *) bp;
-	    HOST_WIDE_INT c = parse_escape (&bpc, (HOST_WIDE_INT) (U_CHAR) (-1));
+	    HOST_WIDEST_INT c = parse_escape (&bpc, (HOST_WIDEST_INT) (U_CHAR) (-1));
 	    bp = (U_CHAR *) bpc;
 	    if (c < 0)
 	      p--;
@@ -7275,7 +7255,7 @@ do_if (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  HOST_WIDE_INT value;
+  HOST_WIDEST_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
@@ -7292,7 +7272,7 @@ do_elif (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  HOST_WIDE_INT value;
+  HOST_WIDEST_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   if (if_stack == instack[indepth].if_stack) {
@@ -7330,14 +7310,14 @@ do_elif (buf, limit, op, keyword)
 /* Evaluate a #if expression in BUF, of length LENGTH, then parse the
    result as a C expression and return the value as an int.  */
 
-static HOST_WIDE_INT
+static HOST_WIDEST_INT
 eval_if_expression (buf, length)
      U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
   HASHNODE *save_defined;
-  HOST_WIDE_INT value;
+  HOST_WIDEST_INT value;
 
   save_defined = install ((U_CHAR *) "defined", -1, T_SPEC_DEFINED,
 			  NULL_PTR, -1);

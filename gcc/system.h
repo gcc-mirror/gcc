@@ -482,15 +482,4 @@ extern void abort ();
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
-#if defined (ANSI_PROTOTYPES)
-# define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
-#else
-# define PRINTF_PROTO(ARGS, m, n) () ATTRIBUTE_PRINTF(m, n)
-#endif
-#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
-#define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
-#define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
-#define PRINTF_PROTO_4(ARGS) PRINTF_PROTO(ARGS, 4, 5)
-
-
 #endif /* __GCC_SYSTEM_H__ */
