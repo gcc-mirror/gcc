@@ -831,9 +831,6 @@ java::lang::Class::initializeClass (void)
       throw except;
     }
 
-  if (gcj::verbose_class_flag)
-    fprintf (stderr, "[Loaded %s]\n", (const char*)(name->data));
-
   _Jv_MonitorEnter (this);
   state = JV_STATE_DONE;
   notifyAll ();
