@@ -2991,6 +2991,18 @@ build_conditional_expr (arg1, arg2, arg3)
       /* In this case, there is always a common type.  */
       result_type = type_after_usual_arithmetic_conversions (arg2_type, 
 							     arg3_type);
+      
+      if (TREE_CODE (arg2_type) == ENUMERAL_TYPE
+          && TREE_CODE (arg3_type) == ENUMERAL_TYPE)
+         cp_warning ("enumeral mismatch in conditional expression: `%T' vs `%T'",
+                   arg2_type, arg3_type);
+      else if (extra_warnings
+               && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
+                    && !same_type_p (arg3_type, type_promotes_to (arg2_type)))
+                   || (TREE_CODE (arg3_type) == ENUMERAL_TYPE
+                       && !same_type_p (arg2_type, type_promotes_to (arg3_type)))))
+        cp_warning ("enumeral and non-enumeral type in conditional expression");
+      
       arg2 = perform_implicit_conversion (result_type, arg2);
       arg3 = perform_implicit_conversion (result_type, arg3);
     }
@@ -3755,13 +3767,6 @@ tree
 convert_arg_to_ellipsis (arg)
      tree arg;
 {
-  if (! pod_type_p (TREE_TYPE (arg)))
-    {
-      /* Undefined behaviour [expr.call] 5.2.2/7.  */
-      cp_warning ("cannot pass objects of non-POD type `%#T' through `...'",
-		  TREE_TYPE (arg));
-    }
-
   if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
       && (TYPE_PRECISION (TREE_TYPE (arg))
 	  < TYPE_PRECISION (double_type_node)))
@@ -3773,6 +3778,13 @@ convert_arg_to_ellipsis (arg)
 
   arg = require_complete_type (arg);
   
+  if (arg != error_mark_node && ! pod_type_p (TREE_TYPE (arg)))
+    {
+      /* Undefined behaviour [expr.call] 5.2.2/7.  */
+      cp_warning ("cannot pass objects of non-POD type `%#T' through `...'",
+		  TREE_TYPE (arg));
+    }
+
   return arg;
 }
 

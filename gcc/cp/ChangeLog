@@ -1,3 +1,9 @@
+1999-09-02  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_conditional_expr): Warn on enum mismatches.
+	(convert_arg_to_ellipsis): Move non-pod check to after
+	conversion.
+
 1999-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gxx.gperf (hash, is_reserved_word): Add prototypes.
