@@ -246,6 +246,7 @@ static void alloc_qty		PROTO((int, enum machine_mode, int, int));
 static void alloc_qty_for_scratch PROTO((rtx, int, rtx, int, int));
 static void validate_equiv_mem_from_store PROTO((rtx, rtx));
 static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
+static int contains_replace_regs PROTO((rtx, char *));
 static int memref_referenced_p	PROTO((rtx, rtx));
 static int memref_used_between_p PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
@@ -597,6 +598,52 @@ validate_equiv_mem (start, reg, memref)
 	    && reg_overlap_mentioned_p (XEXP (note, 0), memref))
 	  return 0;
     }
+
+  return 0;
+}
+
+/* TRUE if X uses any registers for which reg_equiv_replace is true.  */
+
+static int
+contains_replace_regs (x, reg_equiv_replace)
+     rtx x;
+     char *reg_equiv_replace;
+{
+  int i, j;
+  char *fmt;
+  enum rtx_code code = GET_CODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+    case PC:
+    case CC0:
+    case HIGH:
+    case LO_SUM:
+      return 0;
+
+    case REG:
+      return reg_equiv_replace[REGNO (x)];
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    switch (fmt[i])
+      {
+      case 'e':
+	if (contains_replace_regs (XEXP (x, i), reg_equiv_replace))
+	  return 1;
+	break;
+      case 'E':
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (contains_replace_regs (XVECEXP (x, i, j), reg_equiv_replace))
+	    return 1;
+	break;
+      }
 
   return 0;
 }
@@ -1008,12 +1055,24 @@ update_equiv_regs ()
 	 in a single basic block, see if the register is always equivalent
 	 to that memory location and if moving the store from INSN to the
 	 insn that set REG is safe.  If so, put a REG_EQUIV note on the
-	 initializing insn.  */
+	 initializing insn.
+
+	 Don't add a REG_EQUIV note if the insn already has one.  The existing
+	 REG_EQUIV is likely more useful than the one we are adding.
+
+	 If one of the regs in the address is marked as reg_equiv_replace,
+	 then we can't add this REG_EQUIV note.  The reg_equiv_replace
+	 optimization may move the set of this register immediately before
+	 insn, which puts it after reg_equiv_init_insn[regno], and hence
+	 the mention in the REG_EQUIV note would be to an uninitialized
+	 pseudo.  */
 
       if (GET_CODE (dest) == MEM && GET_CODE (SET_SRC (set)) == REG
 	  && (regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
 	  && REG_BASIC_BLOCK (regno) >= 0
 	  && reg_equiv_init_insn[regno] != 0
+	  && ! find_reg_note (insn, REG_EQUIV, NULL_RTX)
+	  && ! contains_replace_regs (XEXP (dest, 0), reg_equiv_replace)
 	  && validate_equiv_mem (reg_equiv_init_insn[regno], SET_SRC (set),
 				 dest)
 	  && ! memref_used_between_p (SET_DEST (set),
