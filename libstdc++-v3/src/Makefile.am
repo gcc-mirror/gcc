@@ -162,14 +162,6 @@ concept-inst.lo: concept-inst.cc
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
-# Use special rules for the demangler, so that an additional implicit
-# instantiation file is not necessary.
-demangle.lo: demangle.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $<
-demangle.o: demangle.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
-
-
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
