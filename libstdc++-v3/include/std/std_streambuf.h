@@ -203,6 +203,14 @@ namespace std
       char_type* 		_M_out_cur;    // Current put area. 
       char_type* 		_M_out_end;    // End of put area.
 
+      //@{
+      /**
+       *  @if maint
+       *  _M_set_indeterminate and setp set it equal to _M_out_beg, then
+       *  at each put operation it may be moved forward (toward _M_out_end)
+       *  by _M_out_cur_move.
+       *  @endif
+      */      
       char_type*                _M_out_lim;    // End limit of used put area.
 
       //@}
@@ -629,8 +637,8 @@ namespace std
       void 
       setp(char_type* __pbeg, char_type* __pend)
       { 
-	_M_out_beg = _M_out_cur = __pbeg; 
-	_M_out_end = _M_out_lim = __pend;
+	_M_out_beg = _M_out_cur = _M_out_lim = __pbeg; 
+	_M_out_end = __pend;
 	if (!(_M_mode & ios_base::out) && __pbeg && __pend)
 	  _M_mode = _M_mode | ios_base::out;
       }
