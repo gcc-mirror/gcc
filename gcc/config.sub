@@ -368,9 +368,13 @@ case $basic_machine in
 		basic_machine=m88k-motorola
 		os=-sysv3
 		;;
-	dpx2)
+	dpx2* | dpx2*-bull)
 		basic_machine=m68k-bull
-		os=-sysv
+		os=-sysv3
+		;;
+	sps7)
+		basic_machine=m68k-bull
+		os=-sysv2
 		;;
 	ebmon29k)
 		basic_machine=a29k-amd
