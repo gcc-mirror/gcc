@@ -1,20 +1,23 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
 
    Written by Randy Welch
    Send bug reports, questions and improvements to any of the following
    addresses:
 
-   randy@kcin.alphacdc.com
-   rwelch@isis.cs.du.eu
-   rwelch@csn.org
+   randy@kcin.uucp
+   randy@tss.com
+   rwelch@netcom.com
+   plx-info@wpg.com        Plexus users mailing list
 
-   For Plexus P/60 and assumably P/35 P/75 P/95's running System V.2
+   For 680X0 based Plexus Computers running SYSVR2
 
-   This file outputs assembler source for gas-1.38.1 with the COFF patches
-   The patches for gas-1.38.1 to support COFF is on ftp.cs.umb.edu in pub/gnu 
-   No debugging is supported, due to the fact that the only debugger Plexus
-   had was adb *sigh*.
+   The Plexus port of gcc requires you to use gas ( either 1.3X with COFF 
+   patches or 2.X ),  If you use gas 2.X you have to use binutils-2.X.
+      
+   With using gas-2.X the Plexus gcc port is now capabable of generating
+   output suitable for use by gdb-4.X ( send mail to above address for
+   info on getting gdb patches or other GNU items for the Plexus )
 
    This is configured for label output default by gas as LXXX instead of
    plexus cc/as combination requires .LXXX
@@ -78,9 +81,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef NEED_PROBE
 #define NEED_PROBE -132			/* plexus needs a stack probe */
 
+/***********************************************************************/
+/* if you have binutils-2.X and gas-2.X running you can generate code  */
+/* that gdb can understand ( gdb support available for 4.11 )          */
+/*                                                                     */
+/* If you use gas-1.3X don't define this as the version of the coff    */
+/* patches for gas-1.3x ( stabs in coff ) does not generate coff debug */
+/* syms                                                                */
+/***********************************************************************/
+#define HAVE_GAS_2_X
+
+#ifdef HAVE_GAS_2_X
+#undef DBX_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO
+
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE) \
+  output_file_directive((FILE), main_input_filename)
+
+#else
 #undef DBX_DEBUGGING_INFO		/* no real debugger */
 #undef SDB_DEBUGGING_INFO
-
+#endif
 #define TARGET_MEM_FUNCTIONS
 
 /***********************************************************************/
