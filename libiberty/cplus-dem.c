@@ -5050,7 +5050,7 @@ main (argc, argv)
   char *result;
   int c;
   const char *valid_symbols;
-  enum demangling_styles style;
+  enum demangling_styles style = auto_demangling;
 
   program_name = argv[0];
 
