@@ -50,7 +50,7 @@ a Java/CNI-aware C++ compiler, specifically a recent version of G++.)</para>
 <para>
 You start with:
 <programlisting>
-#include &lt;cni.h&gt;
+#include &lt;gcj/cni.h&gt;
 </programlisting></para>
 
 <para>
@@ -198,7 +198,7 @@ Java provides 8 <quote>primitives</quote> types:
 <literal>long</literal>, <literal>float</literal>, <literal>double</literal>,
 <literal>char</literal>, and <literal>boolean</literal>.
 These are the same as the following C++ <literal>typedef</literal>s
-(which are defined by <literal>cni.h</literal>):
+(which are defined by <literal>gcj/cni.h</literal>):
 <literal>jbyte</literal>, <literal>jshort</literal>, <literal>jint</literal>,
 <literal>jlong</literal>, <literal>jfloat</literal>,
 <literal>jdouble</literal>,
@@ -350,7 +350,7 @@ public class Int
 </programlisting>
 you can write:
 <programlisting>
-#include &lt;cni.h&gt;
+#include &lt;gcj/cni.h&gt;
 #include &lt;Int.h&gt;
 Int*
 mult (Int *p, jint k)

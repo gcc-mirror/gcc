@@ -1,3 +1,8 @@
+1999-10-12  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Fixed test for --disable-java-net.
+
 1999-10-06  Tom Tromey  <tromey@cygnus.com>
 
 	* configure.in (GCJ): Define as "target-gcj", not "target/gcj"

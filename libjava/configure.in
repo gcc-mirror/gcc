@@ -59,7 +59,7 @@ dnl Whether java.net is built by default can depend on the target.
 if test -n "$enable_java_net"; then
    enable_java_net=${enable_java_net_default-yes}
 fi
-if test "$enable_java_net" != yes; then
+if test "$enable_java_net" = no; then
    AC_DEFINE(DISABLE_JAVA_NET)
 fi
 
