@@ -2680,6 +2680,8 @@ output_constant (exp, size)
 
   switch (code)
     {
+    case CHAR_TYPE:
+    case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case POINTER_TYPE:
