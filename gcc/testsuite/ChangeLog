@@ -1,3 +1,8 @@
+2004-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14209
+	* gcc.c-torture/execute/20040218-1.c: New test.
+
 2004-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lib/target-supports.exp (check_alias_available): Don't mangle
