@@ -63,17 +63,17 @@ extern int code_for_indirect_jump_scratch;
 /* We can not debug without a frame pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */
 
-#define CONDITIONAL_REGISTER_USAGE					\
+#define CONDITIONAL_REGISTER_USAGE do					\
+{									\
+  int regno;								\
   if (! TARGET_SH4 || ! TARGET_FMOVD)					\
     {									\
-      int regno;							\
       for (regno = FIRST_XD_REG; regno <= LAST_XD_REG; regno++)		\
 	fixed_regs[regno] = call_used_regs[regno] = 1;			\
       if (! TARGET_SH4)							\
 	{								\
 	  if (! TARGET_SH3E)						\
 	    {								\
-	      int regno;						\
 	      for (regno = FIRST_FP_REG; regno <= LAST_FP_REG; regno++)	\
 		fixed_regs[regno] = call_used_regs[regno] = 1;		\
 	      fixed_regs[FPUL_REG] = call_used_regs[FPUL_REG] = 1;	\
@@ -87,7 +87,11 @@ extern int code_for_indirect_jump_scratch;
     {									\
       call_used_regs[MACH_REG] = 0;					\
       call_used_regs[MACL_REG] = 0;					\
-    }
+    }									\
+  for (regno = FIRST_GENERAL_REG; regno <= LAST_GENERAL_REG; regno++)	\
+    if (! fixed_regs[regno] && call_used_regs[regno])			\
+      SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);	\
+} while (0)
 
 /* ??? Need to write documentation for all SH options and add it to the
    invoke.texi file.  */
@@ -712,6 +716,7 @@ enum reg_class
   T_REGS,
   MAC_REGS,
   FPUL_REGS,
+  SIBCALL_REGS,
   GENERAL_REGS,
   FP0_REGS,
   FP_REGS,
@@ -733,6 +738,7 @@ enum reg_class
   "T_REGS",		\
   "MAC_REGS",		\
   "FPUL_REGS",		\
+  "SIBCALL_REGS",	\
   "GENERAL_REGS",	\
   "FP0_REGS",		\
   "FP_REGS",		\
@@ -754,6 +760,8 @@ enum reg_class
   { 0x00040000, 0x00000000 }, /* T_REGS		*/	\
   { 0x00300000, 0x00000000 }, /* MAC_REGS	*/	\
   { 0x00400000, 0x00000000 }, /* FPUL_REGS	*/	\
+  /* SIBCALL_REGS is initialized in CONDITIONAL_REGISTER_USAGE.  */ \
+  { 0x00000000, 0x00000000 }, /* SIBCALL_REGS   */	\
   { 0x0081FFFF, 0x00000000 }, /* GENERAL_REGS	*/	\
   { 0x01000000, 0x00000000 }, /* FP0_REGS	*/	\
   { 0xFF000000, 0x000000FF }, /* FP_REGS	*/	\
