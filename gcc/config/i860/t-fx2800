@@ -1,0 +1,9 @@
+
+# The Alliant FX2800 uses ELF object files, so needs these two modules
+# just as SVR4 does.  -- hyc@hanauma.jpl.nasa.gov
+
+EXTRA_PARTS=crtbegin.o crtend.o
+
+# Use ieee rounding rules for divide and square root operations.
+# /bin/cc is assumed to point to fxc version 1.3 or newer.
+CCLIBFLAGS=-O -ieee -uniproc
