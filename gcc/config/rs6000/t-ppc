@@ -17,12 +17,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 # explicit little endian or big endian libraries, since it depends on the
 # -mbig/-mlittle switches passed to gas.
 
-MULTILIB_OPTIONS	= msoft-float \
-			  mmultiple/mno-multiple
-
-MULTILIB_DIRNAMES	= soft-float \
-			  multiple no-multiple
-
+MULTILIB_OPTIONS	= msoft-float
+MULTILIB_DIRNAMES	= soft-float
 MULTILIB_MATCHES	= msoft-float=mcpu?403 \
 			  msoft-float=mcpu?mpc403 \
 			  msoft-float=mcpu?ppc403
