@@ -2536,10 +2536,9 @@ do { ip = &instack[indepth];		\
 		bp++;
 	      bp += 2;
 	    }
-	    else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
-	      bp += 2;
-	      while (*bp++ != '\n') ;
-	    }
+	    /* There is no point in trying to deal with C++ // comments here,
+	       because if there is one, then this # must be part of the
+	       comment and we would never reach here.  */
 	    else break;
 	  }
 	if (bp + 1 != ibp)
@@ -2708,13 +2707,23 @@ do { ip = &instack[indepth];		\
 	  U_CHAR *before_bp = ibp+2;
 
 	  while (ibp < limit) {
-	    if (*ibp++ == '\n') {
-	      ibp--;
+	    if (ibp[-1] != '\\' && *ibp == '\n') {
 	      if (put_out_comments) {
 		bcopy (before_bp, obp, ibp - before_bp);
 		obp += ibp - before_bp;
 	      }
 	      break;
+	    } else {
+	      if (*ibp == '\n') {
+		++ip->lineno;
+		/* Copy the newline into the output buffer, in order to
+		   avoid the pain of a #line every time a multiline comment
+		   is seen.  */
+		if (!put_out_comments)
+		  *obp++ = '\n';
+		++op->lineno;
+	      }
+	      ibp++;
 	    }
 	  }
 	  break;
@@ -3361,8 +3370,9 @@ handle_directive (ip, op)
 	pedwarn ("%s in preprocessing directive",
 		 *bp == '\f' ? "formfeed" : "vertical tab");
       bp++;
-    } else if (*bp == '/' && bp[1] == '*') {
-      ip->bufp = bp;
+    } else if (*bp == '/' && (bp[1] == '*'
+			      || (cplusplus_comments && bp[1] == '/'))) {
+      ip->bufp = bp + 2;
       skip_to_end_of_comment (ip, &ip->lineno, 0);
       bp = ip->bufp;
     } else if (*bp == '\\' && bp[1] == '\n') {
@@ -6836,10 +6846,10 @@ skip_if_group (ip, any)
 	    while (!(*bp == '*' && bp[1] == '/'))
 	      bp++;
 	    bp += 2;
-	  } else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
-	    bp += 2;
-	    while (*bp++ != '\n') ;
 	  }
+	  /* There is no point in trying to deal with C++ // comments here,
+	     because if there is one, then this # must be part of the
+	     comment and we would never reach here.  */
 	  else break;
 	}
       if (bp != ip->bufp) {
@@ -6865,7 +6875,11 @@ skip_if_group (ip, any)
 	  bp += 2;
 	} else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
 	  bp += 2;
-	  while (*bp++ != '\n') ;
+	  while (bp[-1] == '\\' || *bp != '\n') {
+	    if (*bp == '\n')
+	      ip->lineno++;
+	    bp++;
+	  }
         }
 	else break;
       }
@@ -7132,7 +7146,8 @@ validate_else (p)
       }
       else if (cplusplus_comments && p[1] == '/') {
 	p += 2;
-	while (*p && *p++ != '\n') ;
+	while (*p && (*p != '\n' || p[-1] == '\\'))
+	  p++;
       }
     } else break;
   }
@@ -7170,19 +7185,27 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
   }
   if (cplusplus_comments && bp[-1] == '/') {
     if (output) {
-      while (bp < limit)
-	if ((*op->bufp++ = *bp++) == '\n') {
-	  bp--;
+      while (bp < limit) {
+	*op->bufp++ = *bp;
+	if (*bp == '\n' && bp[-1] != '\\')
 	  break;
+	if (*bp == '\n') {
+	  ++*line_counter;
+	  ++op->lineno;
 	}
+	bp++;
+      }
       op->bufp[-1] = '*';
       *op->bufp++ = '/';
       *op->bufp++ = '\n';
     } else {
       while (bp < limit) {
-	if (*bp++ == '\n') {
-	  bp--;
+	if (bp[-1] != '\\' && *bp == '\n') {
 	  break;
+	} else {
+	  if (*bp == '\n' && line_counter)
+	    ++*line_counter;
+	  bp++;
 	}
       }
     }
@@ -8061,8 +8084,10 @@ macarg1 (start, limit, depthptr, newlines, comments, rest_args)
       if (cplusplus_comments && bp[1] == '/') {
 	*comments = 1;
 	bp += 2;
-	while (bp < limit && *bp++ != '\n') ;
-	++*newlines;
+	while (bp < limit && (*bp != '\n' || bp[-1] == '\\')) {
+	  if (*bp == '\n') ++*newlines;
+	  bp++;
+	}
 	break;
       }
       if (bp[1] != '*' || bp + 1 >= limit)
@@ -8173,7 +8198,8 @@ discard_comments (start, length, newlines)
 	/* Comments are equivalent to spaces.  */
 	obp[-1] = ' ';
 	ibp++;
-	while (ibp < limit && *ibp++ != '\n') ;
+	while (ibp < limit && (*ibp != '\n' || ibp[-1] == '\\'))
+	  ibp++;
 	break;
       }
       if (ibp[0] != '*' || ibp + 1 >= limit)
