@@ -9223,11 +9223,11 @@ ix86_expand_int_movcc (operands)
 	  /* On x86_64 the lea instruction operates on Pmode, so we need
 	     to get arithmetics done in proper mode to match.  */
 	  if (diff == 1)
-	    tmp = out;
+	    tmp = copy_rtx (out);
 	  else
 	    {
 	      rtx out1;
-	      out1 = out;
+	      out1 = copy_rtx (out);
 	      tmp = gen_rtx_MULT (mode, out1, GEN_INT (diff & ~1));
 	      nops++;
 	      if (diff & 1)
@@ -9245,9 +9245,9 @@ ix86_expand_int_movcc (operands)
 	      && (GET_CODE (tmp) != SUBREG || SUBREG_REG (tmp) != out))
 	    {
 	      if (nops == 1)
-		out = force_operand (tmp, out);
+		out = force_operand (tmp, copy_rtx (out));
 	      else
-		emit_insn (gen_rtx_SET (VOIDmode, out, tmp));
+		emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (out), copy_rtx (tmp)));
 	    }
 	  if (out != operands[0])
 	    emit_move_insn (operands[0], copy_rtx (out));

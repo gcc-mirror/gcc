@@ -1,3 +1,8 @@
+Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/8213
+	* i386.c (ix86_expand_int_movcc): FIx RTL sharing problem.
+
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*extzv_1_r_h8300): Correct the insn
