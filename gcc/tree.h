@@ -78,7 +78,7 @@ enum built_in_class
 };
 
 /* Names for the above.  */
-extern char *built_in_class_names[4];
+extern const char *const built_in_class_names[4];
 
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
@@ -155,7 +155,7 @@ enum built_in_function
 };
 
 /* Names for the above.  */
-extern char *built_in_names[(int) END_BUILTINS];
+extern const char *const built_in_names[(int) END_BUILTINS];
 
 /* The definition of tree nodes fills the next several pages.  */
 

@@ -897,7 +897,7 @@ special_symbol (hp, pfile)
       while (!ip->nominal_fname && ip != CPP_NULL_BUFFER (pfile))
 	ip = CPP_PREV_BUFFER (ip);
       if (ip->system_header_p
-	  && !cpp_lookup (pfile, (U_CHAR *) "__STRICT_ANSI__", 15))
+	  && !cpp_lookup (pfile, (const U_CHAR *) "__STRICT_ANSI__", 15))
 	CPP_PUTC_Q (pfile, '0');
       else
 #endif

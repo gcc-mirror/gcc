@@ -1,3 +1,22 @@
+2000-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (built_in_class_names, built_in_names): Constify a
+	char*.
+
+	* gmon-sol2.c (monstartup, moncontrol): Cast ptrs to long, not
+	int.
+	(_mcleanup): Ensure value matches format specifier in sprintf.
+
+	* cpphash.c (special_symbol): Don't needlessly cast away
+	const-ness.
+
+	* cppinit.c (base_name): Delete unused prototype.
+
+	* mkdeps.c (deps_init): Make definition K&R safe.
+
+	* tree.h (built_in_class_names, built_in_names): Constify a
+	char*.
+
 2000-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): Accept

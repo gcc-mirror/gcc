@@ -57,10 +57,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Define the names of the builtin function types and codes.  */
-char *built_in_class_names[4]
+const char *const built_in_class_names[4]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
-char *built_in_names[(int) END_BUILTINS] =
+const char *const built_in_names[(int) END_BUILTINS] =
 {"BUILT_IN_ALLOCA", "BUILT_IN_ABS", "BUILT_IN_FABS", "BUILT_IN_LABS",
   "BUILT_IN_FFS", "BUILT_IN_DIV", "BUILT_IN_LDIV", "BUILT_IN_FFLOOR",
   "BUILT_IN_FCEIL", "BUILT_IN_FMOD", "BUILT_IN_FREM", "BUILT_IN_MEMCPY",
