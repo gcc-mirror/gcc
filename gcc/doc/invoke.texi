@@ -3323,8 +3323,11 @@ Dump after function inlining, to @file{@var{file}.inlined}.
 @item -frandom-seed=@var{string}
 @opindex frandom-string
 This option provides a seed that GCC uses when it would otherwise use
-random numbers.  At present, this is used to generate certain symbol names
-that have to be different in every compiled file.
+random numbers.  It is used to generate certain symbol names
+that have to be different in every compiled file. It is also used to
+place unique stamps in coverage data files and the object files that
+produce them. You can use the @option{-frandom-seed} option to produce
+reproducibly identical object files.
 
 The @var{string} should be different for every file you compile.
 

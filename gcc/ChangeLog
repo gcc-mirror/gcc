@@ -1,3 +1,13 @@
+2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (enable_coverage): Remove -DSELF_COVERAGE, add
+	-frandom-seed.
+	* configure: Regenerated.
+	* Makefile.in: Remove extraneous comment.
+	* toplev.c (randomize): Protect against potential multiple calls.
+	* doc/invoke.texi (-frandom-seed): Document use for in coverage
+	files.
+
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 
