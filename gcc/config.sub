@@ -129,6 +129,8 @@ case $basic_machine in
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | sh-* | powerpc-*)
 		;;
+	# Recognize the various machine names and aliases which stand
+	# for a CPU type and a company and sometimes even an OS.
 	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
 		basic_machine=m68000-att
 		;;
@@ -435,8 +437,6 @@ case $basic_machine in
 		basic_machine=a29k-nyu
 		os=-sym1
 		;;
-	# Recognize the various machine names and aliases which stand
-	# for a CPU type and a company and sometimes even an OS.
 	vaxv)
 		basic_machine=vax-dec
 		os=-sysv
