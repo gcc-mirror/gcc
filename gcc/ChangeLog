@@ -1,3 +1,7 @@
+Fri Jun 25 11:33:24 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (override_options): Add -mcpu=ev45 as an alias for ev4.
+
 Fri Jun 25 13:41:25 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (output_toc): Always use hex values for floating-point
