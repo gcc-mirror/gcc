@@ -1,3 +1,7 @@
+Wed Apr 19 09:16:32 2000  Catherine Moore  <clm@cygnus.com>
+
+	* execute/921017-1.c: Check for NO_TRAMPOLINES.
+
 2000-04-19  Greg McGary  <gkm@gnu.org>
 
 	* execute/20000419-1.c: New test for arg clobbering with
