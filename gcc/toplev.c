@@ -3410,13 +3410,16 @@ rest_of_compilation (decl)
   timevar_pop (TV_GCSE);
 #endif
 
+  timevar_push (TV_SCHED);
+
+  split_all_insns (1);
+
 #ifdef INSN_SCHEDULING
 
   /* Print function header into sched dump now
      because doing the sched analysis makes some of the dump.  */
   if (optimize > 0 && flag_schedule_insns)
     {
-      timevar_push (TV_SCHED);
       open_dump_file (DFI_sched, decl);
 
       /* Do control and data sched analysis,
@@ -3425,15 +3428,15 @@ rest_of_compilation (decl)
       schedule_insns (rtl_dump_file);
 
       close_dump_file (DFI_sched, print_rtl_with_bb, insns);
-      timevar_pop (TV_SCHED);
-
-      ggc_collect ();
 
       /* Register lifetime information was updated as part of verifying
 	 the schedule.  */
       register_life_up_to_date = 1;
     }
 #endif
+  timevar_pop (TV_SCHED);
+
+  ggc_collect ();
 
   /* Determine if the current function is a leaf before running reload
      since this can impact optimizations done by the prologue and
@@ -3510,14 +3513,8 @@ rest_of_compilation (decl)
     }
 
   /* If optimizing, then go ahead and split insns now since we are about
-     to recompute flow information anyway.  Since we can't split insns after
-     reload, do the splitting unconditionally here to avoid gcc from losing
-     REG_DEAD notes.  */
-#ifdef STACK_REGS
-  if (1)
-#else
+     to recompute flow information anyway.  */
   if (optimize > 0)
-#endif
     {
       int old_labelnum = max_label_num ();
 
@@ -3618,6 +3615,8 @@ rest_of_compilation (decl)
 
       /* Do control and data sched analysis again,
 	 and write some more of the results to dump file.  */
+
+      split_all_insns (1);
 
       schedule_insns (rtl_dump_file);
 

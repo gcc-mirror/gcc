@@ -1906,8 +1906,6 @@ sched_init (dump_file)
   /* Initialize issue_rate.  */
   issue_rate = ISSUE_RATE;
 
-  split_all_insns (1);
-
   /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
      pseudos which do not cross calls.  */
   old_max_uid = get_max_uid () + 1;

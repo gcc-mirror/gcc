@@ -1,3 +1,13 @@
+Tue Jun 26 12:40:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (float_truncate splitter, and to mov splitters): Add
+	reload_completed; fix operand predicate.
+
+	* haifa-sched.c (sched_init): Do not split insns.
+	* toplev.c (rest_of_compilation): Call split_all_insns before
+	sched1 pass; simplify condition of post-reload splitter;
+	call split_all_insn before sched2 pass.
+
 2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (diagnostic_prefixing_rule_t): New enum type.
