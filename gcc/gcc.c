@@ -231,7 +231,8 @@ extern char *version_string;
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 
-static void init_spec		PROTO(());
+static void init_spec		PROTO((void));
+static void read_specs		PROTO((char *, int));
 static void set_spec		PROTO((char *, char *));
 static struct compiler *lookup_compiler PROTO((char *, int, char *));
 static char *build_search_list	PROTO((struct path_prefix *, char *, int));
@@ -1026,126 +1027,6 @@ my_strerror(e)
 #endif
 }
 
-/* Read compilation specs from a file named FILENAME,
-   replacing the default ones.
-
-   A suffix which starts with `*' is a definition for
-   one of the machine-specific sub-specs.  The "suffix" should be
-   *asm, *cc1, *cpp, *link, *startfile, *signed_char, etc.
-   The corresponding spec is stored in asm_spec, etc.,
-   rather than in the `compilers' vector.
-
-   Anything invalid in the file is a fatal error.  */
-
-static void
-read_specs (filename)
-     char *filename;
-{
-  int desc;
-  int readlen;
-  struct stat statbuf;
-  char *buffer;
-  register char *p;
-
-  if (verbose_flag)
-    fprintf (stderr, "Reading specs from %s\n", filename);
-
-  /* Open and stat the file.  */
-  desc = open (filename, O_RDONLY, 0);
-  if (desc < 0)
-    pfatal_with_name (filename);
-  if (stat (filename, &statbuf) < 0)
-    pfatal_with_name (filename);
-
-  /* Read contents of file into BUFFER.  */
-  buffer = xmalloc ((unsigned) statbuf.st_size + 1);
-  readlen = read (desc, buffer, (unsigned) statbuf.st_size);
-  if (readlen < 0)
-    pfatal_with_name (filename);
-  buffer[readlen] = 0;
-  close (desc);
-
-  /* Scan BUFFER for specs, putting them in the vector.  */
-  p = buffer;
-  while (1)
-    {
-      char *suffix;
-      char *spec;
-      char *in, *out, *p1, *p2;
-
-      /* Advance P in BUFFER to the next nonblank nocomment line.  */
-      p = skip_whitespace (p);
-      if (*p == 0)
-	break;
-
-      /* Find the colon that should end the suffix.  */
-      p1 = p;
-      while (*p1 && *p1 != ':' && *p1 != '\n') p1++;
-      /* The colon shouldn't be missing.  */
-      if (*p1 != ':')
-	fatal ("specs file malformed after %d characters", p1 - buffer);
-      /* Skip back over trailing whitespace.  */
-      p2 = p1;
-      while (p2 > buffer && (p2[-1] == ' ' || p2[-1] == '\t')) p2--;
-      /* Copy the suffix to a string.  */
-      suffix = save_string (p, p2 - p);
-      /* Find the next line.  */
-      p = skip_whitespace (p1 + 1);
-      if (p[1] == 0)
-	fatal ("specs file malformed after %d characters", p - buffer);
-      p1 = p;
-      /* Find next blank line.  */
-      while (*p1 && !(*p1 == '\n' && p1[1] == '\n')) p1++;
-      /* Specs end at the blank line and do not include the newline.  */
-      spec = save_string (p, p1 - p);
-      p = p1;
-
-      /* Delete backslash-newline sequences from the spec.  */
-      in = spec;
-      out = spec;
-      while (*in != 0)
-	{
-	  if (in[0] == '\\' && in[1] == '\n')
-	    in += 2;
-	  else if (in[0] == '#')
-	    {
-	      while (*in && *in != '\n') in++;
-	    }
-	  else
-	    *out++ = *in++;
-	}
-      *out = 0;
-
-      if (suffix[0] == '*')
-	{
-	  if (! strcmp (suffix, "*link_command"))
-	    link_command_spec = spec;
-	  else
-	    set_spec (suffix + 1, spec);
-	}
-      else
-	{
-	  /* Add this pair to the vector.  */
-	  compilers
-	    = ((struct compiler *)
-	       xrealloc (compilers, (n_compilers + 2) * sizeof (struct compiler)));
-	  compilers[n_compilers].suffix = suffix;
-	  bzero ((char *) compilers[n_compilers].spec,
-		 sizeof compilers[n_compilers].spec);
-	  compilers[n_compilers].spec[0] = spec;
-	  n_compilers++;
-	  bzero ((char *) &compilers[n_compilers],
-		 sizeof compilers[n_compilers]);
-	}
-
-      if (*suffix == 0)
-	link_command_spec = spec;
-    }
-
-  if (link_command_spec == 0)
-    fatal ("spec file has no spec for linking");
-}
-
 static char *
 skip_whitespace (p)
      char *p;
@@ -1236,6 +1117,9 @@ init_spec ()
   if (specs)
     return;			/* already initialized */
 
+  if (verbose_flag)
+    fprintf (stderr, "Using builtin specs.\n");
+
 #ifdef EXTRA_SPECS
   for (i = (sizeof (extra_specs) / sizeof (extra_specs[0])) - 1; i >= 0; i--)
     {
@@ -1272,6 +1156,19 @@ set_spec (name, spec)
   int name_len = strlen (name);
   int i;
 
+  /* If this is the first call, initialize the statically allocated specs */
+  if (!specs)
+    {
+      struct spec_list *next = (struct spec_list *)0;
+      for (i = (sizeof (static_specs) / sizeof (static_specs[0])) - 1; i >= 0; i--)
+	{
+	  sl = &static_specs[i];
+	  sl->next = next;
+	  next = sl;
+	}
+      specs = sl;
+    }
+
   /* See if the spec already exists */
   for (sl = specs; sl; sl = sl->next)
     if (name_len == sl->name_len && !strcmp (sl->name, name))
@@ -1294,6 +1191,11 @@ set_spec (name, spec)
   *(sl->ptr_spec) = ((spec[0] == '+' && isspace (spec[1]))
 		     ? concat (old_spec, spec + 1, NULL_PTR)
 		     : save_string (spec, strlen (spec)));
+
+#ifdef DEBUG_SPECS
+  if (verbose_flag)
+    fprintf (stderr, "Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
+#endif
 
   /* Free the old spec */
   if (old_spec && sl->alloc_p)
@@ -1457,6 +1359,241 @@ store_arg (arg, delete_always, delete_failure)
 
   if (delete_always || delete_failure)
     record_temp_file (arg, delete_always, delete_failure);
+}
+
+/* Read compilation specs from a file named FILENAME,
+   replacing the default ones.
+
+   A suffix which starts with `*' is a definition for
+   one of the machine-specific sub-specs.  The "suffix" should be
+   *asm, *cc1, *cpp, *link, *startfile, *signed_char, etc.
+   The corresponding spec is stored in asm_spec, etc.,
+   rather than in the `compilers' vector.
+
+   Anything invalid in the file is a fatal error.  */
+
+static void
+read_specs (filename, main_p)
+     char *filename;
+     int main_p;
+{
+  int desc;
+  int readlen;
+  struct stat statbuf;
+  char *buffer;
+  register char *p;
+
+  if (verbose_flag)
+    fprintf (stderr, "Reading specs from %s\n", filename);
+
+  /* Open and stat the file.  */
+  desc = open (filename, O_RDONLY, 0);
+  if (desc < 0)
+    pfatal_with_name (filename);
+  if (stat (filename, &statbuf) < 0)
+    pfatal_with_name (filename);
+
+  /* Read contents of file into BUFFER.  */
+  buffer = xmalloc ((unsigned) statbuf.st_size + 1);
+  readlen = read (desc, buffer, (unsigned) statbuf.st_size);
+  if (readlen < 0)
+    pfatal_with_name (filename);
+  buffer[readlen] = 0;
+  close (desc);
+
+  /* Scan BUFFER for specs, putting them in the vector.  */
+  p = buffer;
+  while (1)
+    {
+      char *suffix;
+      char *spec;
+      char *in, *out, *p1, *p2, *p3;
+
+      /* Advance P in BUFFER to the next nonblank nocomment line.  */
+      p = skip_whitespace (p);
+      if (*p == 0)
+	break;
+
+      /* Is this a special command that starts with '%'? */
+      /* Don't allow this for the main specs file, since it would
+	 encourage people to overwrite it.  */
+      if (*p == '%' && !main_p)
+	{
+	  p1 = p;
+	  while (*p && *p != '\n') p++;
+	  p++;			/* skip \n */
+
+	  if (!strncmp (p1, "%include", sizeof ("%include")-1)
+	      && (p1[ sizeof ("%include")-1 ] == ' '
+		  || p1[ sizeof ("%include")-1 ] == '\t'))
+	    {
+	      char *new_filename;
+
+	      p1 += sizeof ("%include");
+	      while (*p1 == ' ' || *p1 == '\t') p1++;
+
+	      if (*p1++ != '<' || p[-2] != '>')
+		fatal ("specs %%include syntax malformed after %d characters",
+		       p1 - buffer + 1);
+
+	      p[-2] = '\0';
+	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK);
+	      read_specs (new_filename ? new_filename : p1, FALSE);
+	      continue;
+	    }
+	  else if (!strncmp (p1, "%include_noerr", sizeof ("%include_noerr")-1)
+	      && (p1[ sizeof ("%include_noerr")-1 ] == ' '
+		  || p1[ sizeof ("%include_noerr")-1 ] == '\t'))
+	    {
+	      char *new_filename;
+
+	      p1 += sizeof ("%include_noerr");
+	      while (*p1 == ' ' || *p1 == '\t') p1++;
+
+	      if (*p1++ != '<' || p[-2] != '>')
+		fatal ("specs %%include syntax malformed after %d characters",
+		       p1 - buffer + 1);
+
+	      p[-2] = '\0';
+	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK);
+	      if (new_filename)
+		read_specs (new_filename, FALSE);
+	      else if (verbose_flag)
+		fprintf (stderr, "Could not find specs file %s\n", p1);
+	      continue;
+	    }
+	  else if (!strncmp (p1, "%rename", sizeof ("%rename")-1)
+		   && (p1[ sizeof ("%rename")-1 ] == ' '
+		       || p1[ sizeof ("%rename")-1 ] == '\t'))
+	    {
+	      int name_len;
+	      struct spec_list *sl;
+
+	      /* Get original name */
+	      p1 += sizeof ("%rename");
+	      while (*p1 == ' ' || *p1 == '\t') p1++;
+	      if (!isalpha (*p1))
+		fatal ("specs %%rename syntax malformed after %d characters",
+		       p1 - buffer);
+
+	      p2 = p1;
+	      while (*p2 && !isspace (*p2)) p2++;
+	      if (*p2 != ' ' && *p2 != '\t')
+		fatal ("specs %%rename syntax malformed after %d characters",
+		       p2 - buffer);
+
+	      name_len = p2 - p1;
+	      *p2++ = '\0';
+	      while (*p2 == ' ' || *p2 == '\t') p2++;
+	      if (!isalpha (*p2))
+		fatal ("specs %%rename syntax malformed after %d characters",
+		       p2 - buffer);
+
+	      /* Get new spec name */
+	      p3 = p2;
+	      while (*p3 && !isspace (*p3)) p3++;
+	      if (p3 != p-1)
+		fatal ("specs %%rename syntax malformed after %d characters",
+		       p3 - buffer);
+	      *p3 = '\0';
+
+	      for (sl = specs; sl; sl = sl->next)
+		if (name_len == sl->name_len && !strcmp (sl->name, p1))
+		  break;
+
+	      if (!sl)
+		fatal ("specs %s spec was not found to be renamed", p1);
+
+	      if (!strcmp (p1, p2))
+		continue;
+
+	      if (verbose_flag)
+		{
+		  fprintf (stderr, "rename spec %s to %s\n", p1, p2);
+#ifdef DEBUG_SPECS
+		  fprintf (stderr, "spec is '%s'\n\n", *(sl->ptr_spec));
+#endif
+		}
+
+	      set_spec (p2, *(sl->ptr_spec));
+	      if (sl->alloc_p)
+		free (*(sl->ptr_spec));
+
+	      *(sl->ptr_spec) = "";
+	      sl->alloc_p = 0;
+	      continue;
+	    }
+	  else
+	    fatal ("specs unknown %% command after %d characters",
+		   p1 - buffer);
+	}
+
+      /* Find the colon that should end the suffix.  */
+      p1 = p;
+      while (*p1 && *p1 != ':' && *p1 != '\n') p1++;
+      /* The colon shouldn't be missing.  */
+      if (*p1 != ':')
+	fatal ("specs file malformed after %d characters", p1 - buffer);
+      /* Skip back over trailing whitespace.  */
+      p2 = p1;
+      while (p2 > buffer && (p2[-1] == ' ' || p2[-1] == '\t')) p2--;
+      /* Copy the suffix to a string.  */
+      suffix = save_string (p, p2 - p);
+      /* Find the next line.  */
+      p = skip_whitespace (p1 + 1);
+      if (p[1] == 0)
+	fatal ("specs file malformed after %d characters", p - buffer);
+      p1 = p;
+      /* Find next blank line.  */
+      while (*p1 && !(*p1 == '\n' && p1[1] == '\n')) p1++;
+      /* Specs end at the blank line and do not include the newline.  */
+      spec = save_string (p, p1 - p);
+      p = p1;
+
+      /* Delete backslash-newline sequences from the spec.  */
+      in = spec;
+      out = spec;
+      while (*in != 0)
+	{
+	  if (in[0] == '\\' && in[1] == '\n')
+	    in += 2;
+	  else if (in[0] == '#')
+	    {
+	      while (*in && *in != '\n') in++;
+	    }
+	  else
+	    *out++ = *in++;
+	}
+      *out = 0;
+
+      if (suffix[0] == '*')
+	{
+	  if (! strcmp (suffix, "*link_command"))
+	    link_command_spec = spec;
+	  else
+	    set_spec (suffix + 1, spec);
+	}
+      else
+	{
+	  /* Add this pair to the vector.  */
+	  compilers
+	    = ((struct compiler *)
+	       xrealloc (compilers, (n_compilers + 2) * sizeof (struct compiler)));
+	  compilers[n_compilers].suffix = suffix;
+	  bzero ((char *) compilers[n_compilers].spec,
+		 sizeof compilers[n_compilers].spec);
+	  compilers[n_compilers].spec[0] = spec;
+	  n_compilers++;
+	  bzero ((char *) &compilers[n_compilers],
+		 sizeof compilers[n_compilers]);
+	}
+
+      if (*suffix == 0)
+	link_command_spec = spec;
+    }
+
+  if (link_command_spec == 0)
+    fatal ("spec file has no spec for linking");
 }
 
 /* Record the names of temporary files we tell compilers to write,
@@ -3615,6 +3752,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		if (sl->name_len == len && !strncmp (sl->name, name, len))
 		  {
 		    name = *(sl->ptr_spec);
+#ifdef DEBUG_SPECS
+		    fprintf (stderr, "Processing spec %c%s%c, which is '%s'\n",
+			     c, sl->name, (c == '(') ? ')' : ']', name);
+#endif
 		    break;
 		  }
 
@@ -4238,18 +4379,19 @@ main (argc, argv)
 			   spec_version, dir_separator_str, NULL_PTR);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL_PTR);
 
-  init_spec ();
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
-    read_specs (specs_file);
+    read_specs (specs_file, TRUE);
+  else
+    init_spec ();
 
   /* Process any user specified specs in the order given on the command
      line.  */
   for (uptr = user_specs_head; uptr; uptr = uptr->next)
     {
       char *filename = find_a_file (&startfile_prefixes, uptr->filename, R_OK);
-      read_specs (filename ? filename : uptr->filename);
+      read_specs (filename ? filename : uptr->filename, FALSE);
     }
 
   /* If not cross-compiling, look for startfiles in the standard places.  */
