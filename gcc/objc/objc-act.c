@@ -1287,7 +1287,7 @@ finish_var_decl (tree var, tree initializer)
   TREE_USED (var) = 1;
 }
 
-/* Find the decl for the constant string class refernce.  This is only
+/* Find the decl for the constant string class reference.  This is only
    used for the NeXT runtime.  */
 
 static tree
@@ -3091,7 +3091,7 @@ next_sjlj_build_try_catch_finally (void)
   TREE_THIS_VOLATILE (rethrow_decl) = 1;
   TREE_CHAIN (rethrow_decl) = stack_decl;
 
-  /* Build the outermost varible binding level.  */
+  /* Build the outermost variable binding level.  */
   bind = build (BIND_EXPR, void_type_node, rethrow_decl, NULL, NULL);
   SET_EXPR_LOCATION (bind, cur_try_context->try_locus);
   TREE_SIDE_EFFECTS (bind) = 1;
@@ -3863,7 +3863,7 @@ generate_protocol_references (tree plist)
    objects).  Because, as explained above, the compiler generates as
    few Protocol objects as possible, some Protocol object might end up
    being referenced multiple times when compiled with the GNU runtime,
-   and end up being fixed up multiple times at runtime inizialization.
+   and end up being fixed up multiple times at runtime initialization.
    But that doesn't hurt, it's just a little inefficient.  */
 
 static void
@@ -7348,7 +7348,7 @@ objc_push_parm (tree parm)
   objc_parmlist = chainon (objc_parmlist, parm);
 }
 
-/* Retrieve the formal paramter list constructed via preceding calls to
+/* Retrieve the formal parameter list constructed via preceding calls to
    objc_push_parm().  */
 
 #ifdef OBJCPLUS
