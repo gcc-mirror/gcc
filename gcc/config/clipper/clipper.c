@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Clipper
-   Copyright (C) 1987, 1988, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -438,7 +438,7 @@ clipper_builtin_saveregs (arglist)
 		  scratch);
 
 
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     {
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 addr, ptr_mode,

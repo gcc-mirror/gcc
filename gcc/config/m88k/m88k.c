@@ -2645,7 +2645,7 @@ m88k_builtin_saveregs (arglist)
 			   UNITS_PER_WORD * (8 - fixed));
     }
 
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     {
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 block, ptr_mode,

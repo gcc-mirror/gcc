@@ -1722,7 +1722,7 @@ alpha_builtin_saveregs (arglist)
       dest = change_address (block, ptr_mode, XEXP (block, 0));
       emit_move_insn (dest, addr);
 
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			   dest, ptr_mode,
 			   GEN_INT (GET_MODE_SIZE (ptr_mode)),
@@ -1736,7 +1736,7 @@ alpha_builtin_saveregs (arglist)
 					    POINTER_SIZE/BITS_PER_UNIT));
       emit_move_insn (dest, argsize);
 
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			   dest, ptr_mode,
 			   GEN_INT (GET_MODE_SIZE

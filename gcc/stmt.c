@@ -635,7 +635,7 @@ expand_computed_goto (exp)
 
       emit_queue ();
       /* Be sure the function is executable.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_check_exec_libfunc, 1,
 			   VOIDmode, 1, x, ptr_mode);
 
@@ -1364,9 +1364,9 @@ expand_asm (body)
       return;
     }
 
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     {
-      error ("`asm' cannot be used with `-fcheck-memory-usage'");
+      error ("`asm' cannot be used in function where memory usage is checked");
       return;
     }
 
@@ -1426,9 +1426,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       return;
     }
 
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     {
-      error ("`asm' cannot be used with `-fcheck-memory-usage'");
+      error ("`asm' cannot be used in function where memory usage is checked");
       return;
     }
 
@@ -3596,7 +3596,7 @@ expand_decl (decl)
 	   && ! TREE_ADDRESSABLE (decl)
 	   && (DECL_REGISTER (decl) || ! obey_regdecls)
 	   /* if -fcheck-memory-usage, check all variables.  */
-	   && ! flag_check_memory_usage)
+	   && ! current_function_check_memory_usage)
     {
       /* Automatic variable that can go in a register.  */
       int unsignedp = TREE_UNSIGNED (type);

@@ -4274,7 +4274,7 @@ sparc_builtin_saveregs (arglist)
 		     GEN_INT (STACK_POINTER_OFFSET
 			      + UNITS_PER_WORD * first_reg));
 
-  if (flag_check_memory_usage
+  if (current_function_check_memory_usage
       && first_reg < NPARM_REGS (word_mode))
     emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 		       address, ptr_mode,
