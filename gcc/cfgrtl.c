@@ -793,7 +793,7 @@ try_redirect_by_replacing_jump (e, target)
 /* Return last loop_beg note appearing after INSN, before start of next
    basic block.  Return INSN if there are no such notes.
 
-   When emitting jump to redirect an fallthru edge, it should always appear
+   When emitting jump to redirect a fallthru edge, it should always appear
    after the LOOP_BEG notes, as loop optimizer expect loop to either start by
    fallthru edge or jump following the LOOP_BEG note jumping to the loop exit
    test.  */

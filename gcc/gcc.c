@@ -420,7 +420,7 @@ or with constant text in a single argument.
 	and substitute the full name found.
  %eSTR  Print STR as an error message.  STR is terminated by a newline.
         Use this when inconsistent options are detected.
- %nSTR  Print STR as an notice.  STR is terminated by a newline.
+ %nSTR  Print STR as a notice.  STR is terminated by a newline.
  %x{OPTION}	Accumulate an option for %X.
  %X	Output the accumulated linker options specified by compilations.
  %Y	Output the accumulated assembler options specified by compilations.
@@ -4399,7 +4399,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    }
 	    break;
 	  case 'n':
-	    /* %nfoo means report an notice with `foo' on stderr.  */
+	    /* %nfoo means report a notice with `foo' on stderr.  */
 	    {
 	      const char *q = p;
 	      char *buf;

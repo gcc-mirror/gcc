@@ -1109,7 +1109,7 @@ union_groups (bb1, bb2)
 /* This function searches all of the edges in the program flow graph, and puts
    as many bad edges as possible onto the spanning tree.  Bad edges include
    abnormals edges, which can't be instrumented at the moment.  Since it is
-   possible for fake edges to form an cycle, we will have to develop some
+   possible for fake edges to form a cycle, we will have to develop some
    better way in the future.  Also put critical edges to the tree, since they
    are more expensive to instrument.  */
 
@@ -1128,7 +1128,7 @@ find_spanning_tree (el)
   /* Add fake edge exit to entry we can't instrument.  */
   union_groups (EXIT_BLOCK_PTR, ENTRY_BLOCK_PTR);
 
-  /* First add all abnormal edges to the tree unless they form an cycle. Also
+  /* First add all abnormal edges to the tree unless they form a cycle. Also
      add all edges to EXIT_BLOCK_PTR to avoid inserting profiling code behind
      setting return value from function.  */
   for (i = 0; i < num_edges; i++)
@@ -1148,7 +1148,7 @@ find_spanning_tree (el)
 	}
     }
 
-  /* Now insert all critical edges to the tree unless they form an cycle.  */
+  /* Now insert all critical edges to the tree unless they form a cycle.  */
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);

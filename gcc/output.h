@@ -118,7 +118,7 @@ extern void split_double	PARAMS ((rtx, rtx *, rtx *));
 /* Return nonzero if this function has no function calls.  */
 extern int leaf_function_p	PARAMS ((void));
 
-/* Return 1 if branch is an forward branch.
+/* Return 1 if branch is a forward branch.
    Uses insn_shuid array, so it works only in the final pass.  May be used by
    output templates to add branch prediction hints, for example.  */
 extern int final_forward_branch_p PARAMS ((rtx));

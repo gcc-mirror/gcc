@@ -637,7 +637,7 @@ find_rgns (edge_list, dom)
   /* Note if a block is a natural loop header.  */
   sbitmap header;
 
-  /* Note if a block is an natural inner loop header.  */
+  /* Note if a block is a natural inner loop header.  */
   sbitmap inner;
 
   /* Note if a block is in the block queue.  */

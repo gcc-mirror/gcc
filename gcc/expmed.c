@@ -2922,7 +2922,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
    the result is exact for inputs up to 0x1fffffff.
    The input range can be reduced by using cross-sum rules.
    For odd divisors >= 3, the following table gives right shift counts
-   so that if an number is shifted by an integer multiple of the given
+   so that if a number is shifted by an integer multiple of the given
    amount, the remainder stays the same:
    2, 4, 3, 6, 10, 12, 4, 8, 18, 6, 11, 20, 18, 0, 5, 10, 12, 0, 12, 20,
    14, 12, 23, 21, 8, 0, 20, 18, 0, 0, 6, 12, 0, 22, 0, 18, 20, 30, 0, 0,

@@ -1380,7 +1380,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 }
 
 
-/* This structure is used to pass parameters to an from the
+/* This structure is used to pass parameters to and from the
    the function find_regno_partial(). It is used to pass in the
    register number we are looking, as well as to return any rtx
    we find.  */

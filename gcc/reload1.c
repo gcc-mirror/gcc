@@ -9464,7 +9464,7 @@ fixup_abnormal_edges ()
     {
       edge e;
 
-      /* Look for cases we are interested in - an calls or instructions causing
+      /* Look for cases we are interested in - calls or instructions causing
          exceptions.  */
       for (e = bb->succ; e; e = e->succ_next)
 	{

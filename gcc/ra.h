@@ -303,7 +303,7 @@ struct web_link
   struct web *web;
 };
 
-/* A subconflict is part of an conflict edge to track precisely,
+/* A subconflict is part of a conflict edge to track precisely,
    which parts of two webs conflict, in case not all of both webs do.  */
 struct sub_conflict
 {
