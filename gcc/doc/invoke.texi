@@ -422,6 +422,7 @@ Objective-C and Objective-C++ Dialects}.
 -private_bundle  -read_only_relocs  -sectalign @gol
 -sectobjectsymbols  -whyload  -seg1addr @gol
 -sectcreate  -sectobjectsymbols  -sectorder @gol
+-segaddr -segs_read_only_addr -segs_read_write_addr @gol
 -seg_addr_table  -seg_addr_table_filename  -seglinkedit @gol
 -segprot  -segs_read_only_addr  -segs_read_write_addr @gol
 -single_module  -static  -sub_library  -sub_umbrella @gol
@@ -7275,6 +7276,9 @@ output file being linked. See man ld(1) for more information.
 @itemx -sectcreate
 @itemx -sectobjectsymbols
 @itemx -sectorder
+@itemx -segaddr
+@itemx -segs_read_only_addr
+@itemx -segs_read_write_addr
 @itemx -seg_addr_table
 @itemx -seg_addr_table_filename
 @itemx -seglinkedit
@@ -7334,6 +7338,9 @@ output file being linked. See man ld(1) for more information.
 @opindex sectcreate
 @opindex sectobjectsymbols
 @opindex sectorder
+@opindex segaddr
+@opindex segs_read_only_addr
+@opindex segs_read_write_addr
 @opindex seg_addr_table
 @opindex seg_addr_table_filename
 @opindex seglinkedit
