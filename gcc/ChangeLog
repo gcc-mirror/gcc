@@ -1,3 +1,7 @@
+2002-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/frv/xm-frv.h: Delete, unnecessary.
+
 2002-12-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Add comments for define_peephole2.
