@@ -1,5 +1,11 @@
 2001-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* c-lex.h (save_and_forget_protocol_qualifiers,
+	forget_protocol_qualifiers, remember_protocol_qualifiers):
+	Remove deleted functions' prototypes.
+
+2001-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* c-parse.in (methodtype): New production.
 	(methoddef, methodproto): Collapse separate '-' and '+'
 	handlers into 1.
