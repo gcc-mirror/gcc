@@ -4617,8 +4617,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 	  splay_tree_insert (pbi->reg_cond_dead, regno,
 			     (splay_tree_value) rcli);
 
-	  SET_REGNO_REG_SET (pbi->reg_cond_reg,
-			     REGNO (XEXP (cond, 0)));
+	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 
 	  /* Not unconditionaly dead.  */
 	  return 0;
@@ -4639,8 +4638,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 	    {
 	      rcli->condition = ncond;
 
-	      SET_REGNO_REG_SET (pbi->reg_cond_reg,
-				 REGNO (XEXP (cond, 0)));
+	      SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 
 	      /* Not unconditionaly dead.  */
 	      return 0;
@@ -5240,7 +5238,10 @@ mark_used_reg (pbi, reg, cond, insn)
 		  splay_tree_remove (pbi->reg_cond_dead, regno);
 		}
 	      else
-		rcli->condition = ncond;
+		{
+		  rcli->condition = ncond;
+		  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
+		}
 	    }
 	}
       else
@@ -5251,6 +5252,8 @@ mark_used_reg (pbi, reg, cond, insn)
 	  rcli->condition = not_reg_cond (cond);
 	  splay_tree_insert (pbi->reg_cond_dead, regno,
 			     (splay_tree_value) rcli);
+
+	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 	}
     }
   else if (some_was_live)
