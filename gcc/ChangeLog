@@ -1,3 +1,9 @@
+Don Feb 28 16:46:03 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (HARD_REGNO_RENAME_OK): Define.
+	* i386.md (fop_?f_comm): Allow memory operand in both arms
+	before reload.
+
 2002-02-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppinit.c (merge_include_chains): Check for brack being
