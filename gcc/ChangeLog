@@ -1,3 +1,7 @@
+2002-07-19  Momchil Velikov <velco@fadata.bg>
+
+	* reload1.c (reload_as_needed): Duplicate oldpat.
+
 2002-07-20  Alan Modra  <amodra@bigpond.net.au>
 
 	PR optimization/7130
