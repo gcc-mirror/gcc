@@ -24,6 +24,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem(unix) -Asystem(bsd) -Acpu(vax) -Amachine(vax)"
 
+/* Use -J option for long branch support with Unix assembler. */
+
+#define ASM_SPEC "-J"
+
 /* If using g-format floating point, alter math.h.  */
 
 #define	CPP_SPEC "%{mg:%{!ansi:-DGFLOAT} -D__GFLOAT}"
