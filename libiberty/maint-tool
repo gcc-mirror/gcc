@@ -223,6 +223,14 @@ sub deps {
     }
     $mine{'config.h'} = "config.h";
 
+    opendir(INC, $srcdir);
+    while ($f = readdir INC) {
+	next unless $f =~ /\.h$/;
+	$mine{$f} = "\$(srcdir)/$f";
+	$deps{$f} = join(' ', &deps_for("$srcdir/$f"));
+    }
+    $mine{'config.h'} = "config.h";
+
     open(IN, "$srcdir/Makefile.in");
     open(OUT, ">$srcdir/Makefile.tmp");
     while (<IN>) {
