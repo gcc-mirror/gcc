@@ -157,13 +157,19 @@ __extension__							\
     } 								\
   /* When this is a smaller-than-int integer, using		\
      auto-increment in the promoted (SImode) is fastest;	\
-     however, we have to be wary of small structures and	\
-     their ilk.  */						\
-  ((sizeof (TYPE) < 4 && ! __SCALAR_TYPE(__type)			\
-    && ! __LITTLE_ENDIAN_P)					\
-   ? *(TYPE *) ((char *) ++*(int **) __result_p - sizeof (TYPE))\
-   : sizeof (TYPE) < 4						\
+     however, we must convert all alternatives to TYPE;		\
+     a conversion using an ordinary cast fails for aggregates,	\
+     and for big endian, a conversion using a union works only	\
+     if the types involved have the same size.			\
+     ??? The emitted rtl still does unnecessary sign extends.  */\
+  (sizeof (TYPE) < 4 && __LITTLE_ENDIAN_P			\
    ? ((union { TYPE t; int i;} )*(*(int **) __result_p)++).t	\
+   : sizeof (TYPE) == 1						\
+   ? ((union { TYPE t; char i;} )(char)*(*(int **) __result_p)++).t\
+   : sizeof (TYPE) == 2						\
+   ? ((union { TYPE t; short i;} )(short)*(*(int **) __result_p)++).t\
+   : sizeof (TYPE) < 4						\
+   ? *(TYPE *) ((char *) ++*(int **) __result_p - sizeof (TYPE))\
    : *(*(TYPE **) __result_p)++);})
 
 #else /* ! SH3E */
@@ -171,11 +177,14 @@ __extension__							\
 #define va_arg(AP, TYPE) __extension__ 				\
 __extension__							\
 ({int __type = __builtin_classify_type (* (TYPE *) 0);		\
-  ((sizeof (TYPE) < 4 && ! __SCALAR_TYPE(__type)			\
-    && ! __LITTLE_ENDIAN_P)					\
-   ? *(TYPE *) ((char *) ++(int *) (AP) - sizeof (TYPE))	\
-   : sizeof (TYPE) < 4						\
+  (sizeof (TYPE) < 4 && __LITTLE_ENDIAN_P			\
    ? ((union { TYPE t; int i;} )*((int *) (AP))++).t		\
+   : sizeof (TYPE) == 1						\
+   ? ((union { TYPE t; char i;} )(char)*((int *) (AP))++).t	\
+   : sizeof (TYPE) == 2						\
+   ? ((union { TYPE t; short i;} )(short)*((int *) (AP))++).t	\
+   : sizeof (TYPE) < 4						\
+   ? *(TYPE *) ((char *) ++(int *) (AP) - sizeof (TYPE))	\
    : *((TYPE *) (AP))++);})
 
 #endif /* SH3E */
