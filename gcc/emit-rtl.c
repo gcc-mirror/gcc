@@ -1075,30 +1075,35 @@ operand_subword (op, i, validate_address, mode)
   /* The only remaining cases are when OP is a constant.  If the host and
      target floating formats are the same, handling two-word floating
      constants are easy.  Note that REAL_VALUE_TO_TARGET_{SINGLE,DOUBLE}
-     are defined as returning 32 bit and 64-bit values, respectively,
-     and not values of BITS_PER_WORD and 2 * BITS_PER_WORD bits.  */
+     are defined as returning one or two 32 bit values, respectively,
+     and not values of BITS_PER_WORD bits.  */
 #ifdef REAL_ARITHMETIC
-  if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
+/*  The output is some bits, the width of the target machine's word.
+    A wider-word host can surely hold them in a CONST_INT. A narrower-word
+    host can't.  */
+  if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) == 64
       && GET_CODE (op) == CONST_DOUBLE)
     {
-      HOST_WIDE_INT k[2];
+      long k[2];
       REAL_VALUE_TYPE rv;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
 
-      /* We handle 32-bit and 64-bit host words here.  Note that the order in
+      /* We handle 32-bit and >= 64-bit words here.  Note that the order in
 	 which the words are written depends on the word endianness.
 
 	 ??? This is a potential portability problem and should
 	 be fixed at some point.  */
-      if (HOST_BITS_PER_WIDE_INT == 32)
-	return GEN_INT (k[i]);
-      else if (HOST_BITS_PER_WIDE_INT == 64 && i == 0)
-	return GEN_INT ((k[! WORDS_BIG_ENDIAN] << (HOST_BITS_PER_WIDE_INT / 2))
-			| k[WORDS_BIG_ENDIAN]);
+      if (BITS_PER_WORD == 32)
+	return GEN_INT ((HOST_WIDE_INT) k[i]);
+#if HOST_BITS_PER_WIDE_INT > 32
+      else if (BITS_PER_WORD >= 64 && i == 0)
+	return GEN_INT ((((HOST_WIDE_INT) k[! WORDS_BIG_ENDIAN]) << 32)
+			| (HOST_WIDE_INT) k[WORDS_BIG_ENDIAN]);
+#endif
       else
 	abort ();
     }
@@ -1128,17 +1133,16 @@ operand_subword (op, i, validate_address, mode)
      values often do not have the same high-order bits.  We have already
      verified that we want the only defined word of the single-word value.  */
 #ifdef REAL_ARITHMETIC
-  if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-      && GET_MODE_CLASS (mode) == MODE_FLOAT
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) == 32
       && GET_CODE (op) == CONST_DOUBLE)
     {
-      HOST_WIDE_INT l;
+      long l;
       REAL_VALUE_TYPE rv;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
-      return GEN_INT (l);
+      return GEN_INT ((HOST_WIDE_INT) l);
     }
 #else
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
