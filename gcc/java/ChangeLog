@@ -1,4 +1,11 @@
 2000-07-27  Tom Tromey  <tromey@cygnus.com>
+            Anthony Green  <green@cygnus.com>
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (make_class_data): Create vtable for abstract classes.
+	(get_dispatch_table): Changed to cope with abstract classes.
+
+2000-07-27  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (patch_method_invocation): Don't reverse the argument
 	list when dealing with anonymous class constructors. Fixed typo in

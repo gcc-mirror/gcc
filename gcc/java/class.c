@@ -1218,6 +1218,7 @@ static tree
 get_dispatch_table (type, this_class_addr)
      tree type, this_class_addr;
 {
+  int abstract_p = CLASS_ABSTRACT (TYPE_NAME (type));
   tree vtable = get_dispatch_vector (type);
   int i;
   tree list = NULL_TREE;
@@ -1226,12 +1227,20 @@ get_dispatch_table (type, this_class_addr)
     {
       tree method = TREE_VEC_ELT (vtable, i);
       if (METHOD_ABSTRACT (method))
-	warning_with_decl (method, "abstract method in non-abstract class");
-      if (DECL_RTL (method) == 0)
-	make_decl_rtl (method, NULL, 1);
+	{
+	  if (! abstract_p)
+	    warning_with_decl (method,
+			       "abstract method in non-abstract class");
+	  method = null_pointer_node;
+	}
+      else
+	{
+	  if (DECL_RTL (method) == 0)
+	    make_decl_rtl (method, NULL, 1);
+	  method = build1 (ADDR_EXPR, nativecode_ptr_type_node, method);
+	}
       list = tree_cons (NULL_TREE /*DECL_VINDEX (method) + 2*/,
-			build1 (ADDR_EXPR, nativecode_ptr_type_node, method),
-			list);
+			method, list);
     }
   /* Dummy entry for compatibility with G++ -fvtable-thunks.  When
      using the Boehm GC we sometimes stash a GC type descriptor
@@ -1345,7 +1354,7 @@ make_class_data (type)
   rest_of_decl_compilation (methods_decl, (char*) 0, 1, 0);
 
   if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
-      && ! CLASS_ABSTRACT (type_decl) && ! CLASS_INTERFACE (type_decl))
+      && ! CLASS_INTERFACE (type_decl))
     {
       tree dtable = get_dispatch_table (type, this_class_addr);
       dtable_decl = build_dtable_decl (type);
