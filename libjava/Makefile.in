@@ -58,9 +58,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	ChangeLog NEWS THANKS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
 	$(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/iconv.m4 \
+	$(top_srcdir)/../config/lcmessage.m4 \
+	$(top_srcdir)/../config/lib-ld.m4 \
+	$(top_srcdir)/../config/lib-link.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
+	$(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -4193,6 +4198,7 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
@@ -4328,7 +4334,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-ACLOCAL_AMFLAGS = -I .
+ACLOCAL_AMFLAGS = -I . -I ../config
 @USING_BOEHMGC_FALSE@BOEHMGC_SRC = 
 @USING_BOEHMGC_TRUE@BOEHMGC_SRC = boehm.cc
 @USING_NOGC_FALSE@NOGC_SRC = 

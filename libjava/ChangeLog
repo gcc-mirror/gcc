@@ -1,5 +1,13 @@
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* Makefile.am: Run aclocal with -I ../config
+	* acinclude.m4: Delete macros picked up from ../config and tidy.
+	(AM_ICONV,AM_LC_MESSAGES, PKG_CHECK_MODULES): Delete.
+	* aclocal.m4, configure, Makefile.in, gcj/Makefile.in: Regenerate.
+	* include/Makefile.in, testsuite/Makefile.in: Regenerate.
+
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* aclocal.m4: Regenerate with aclocal 1.9.2.
 	* configure: Regenerate.
 	* Makefile.in, gcj/Makefile.in: Regenerate with automake 1.9.2.
