@@ -110,7 +110,6 @@ typedef enum
 
 int tree_node_counts[(int) all_kinds];
 int tree_node_sizes[(int) all_kinds];
-int id_string_size = 0;
 
 static const char * const tree_node_kind_names[] = {
   "decls",
@@ -4417,7 +4416,6 @@ dump_tree_statistics ()
       total_nodes += tree_node_counts[i];
       total_bytes += tree_node_sizes[i];
     }
-  fprintf (stderr, "%-20s        %9d\n", "identifier names", id_string_size);
   fprintf (stderr, "-------------------------------------\n");
   fprintf (stderr, "%-20s %6d %9d\n", "Total", total_nodes, total_bytes);
   fprintf (stderr, "-------------------------------------\n");

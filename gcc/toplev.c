@@ -2482,6 +2482,7 @@ compile_file (name)
     {
       ggc_print_statistics ();
       stringpool_statistics ();
+      dump_tree_statistics ();
     }
 
   /* Free up memory for the benefit of leak detectors.  */
