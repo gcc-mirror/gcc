@@ -281,7 +281,8 @@ public class File implements Serializable, Comparable
 
   public URL toURL () throws MalformedURLException
   {
-    return new URL ("file:" + path + (isDirectory() ? "/" : ""));
+    return new URL ("file://" + getAbsolutePath ()
+		    + (isDirectory() ? "/" : ""));
   }
 
   private final native boolean performMkdir ();
