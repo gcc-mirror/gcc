@@ -400,7 +400,7 @@ static void reload_cse_invalidate_mem	PROTO((rtx));
 static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
 static void reload_cse_regs		PROTO((rtx));
 static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
-static int reload_cse_noop_set_p	PROTO((rtx));
+static int reload_cse_noop_set_p	PROTO((rtx, rtx));
 static void reload_cse_simplify_set	PROTO((rtx, rtx));
 static void reload_cse_check_clobber	PROTO((rtx, rtx));
 static void reload_cse_record_set	PROTO((rtx, rtx));
@@ -7844,11 +7844,8 @@ reload_cse_regs (first)
       body = PATTERN (insn);
       if (GET_CODE (body) == SET)
 	{
-	  if (reload_cse_noop_set_p (body))
+	  if (reload_cse_noop_set_p (body, insn))
 	    {
-	      /* If we were preserving death notes, then we would want
-		 to remove any existing death note for the register
-		 being set.  */
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
@@ -7868,13 +7865,10 @@ reload_cse_regs (first)
              the entire PARALLEL.  */
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
 	    if (GET_CODE (XVECEXP (body, 0, i)) != SET
-		|| ! reload_cse_noop_set_p (XVECEXP (body, 0, i)))
+		|| ! reload_cse_noop_set_p (XVECEXP (body, 0, i), insn))
 	      break;
 	  if (i < 0)
 	    {
-	      /* If we were preserving death notes, then we would want
-		 to remove any existing death notes for the registers
-		 being set.  */
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
@@ -7957,15 +7951,18 @@ reload_cse_regno_equal_p (regno, val, mode)
   return 0;
 }
 
-/* See whether a single SET instruction is a nooop.  */
+/* See whether a single set is a noop.  SET is the set instruction we
+   are should check, and INSN is the instruction from which it came.  */
 
 static int
-reload_cse_noop_set_p (set)
+reload_cse_noop_set_p (set, insn)
      rtx set;
+     rtx insn;
 {
   rtx src, dest;
   enum machine_mode dest_mode;
   int dreg, sreg;
+  int ret;
 
   src = SET_SRC (set);
   dest = SET_DEST (set);
@@ -7977,27 +7974,38 @@ reload_cse_noop_set_p (set)
   dreg = true_regnum (dest);
   sreg = true_regnum (src);
 
+  /* Check for setting a register to itself.  In this case, we don't
+     have to worry about REG_DEAD notes.  */
+  if (dreg >= 0 && dreg == sreg)
+    return 1;
+
+  ret = 0;
   if (dreg >= 0)
     {
       /* Check for setting a register to itself.  */
       if (dreg == sreg)
-	return 1;
+	ret = 1;
 
       /* Check for setting a register to a value which we already know
          is in the register.  */
-      if (reload_cse_regno_equal_p (dreg, src, dest_mode))
-	return 1;
+      else if (reload_cse_regno_equal_p (dreg, src, dest_mode))
+	ret = 1;
 
       /* Check for setting a register DREG to another register SREG
          where SREG is equal to a value which is already in DREG.  */
-      if (sreg >= 0)
+      else if (sreg >= 0)
 	{
 	  rtx x;
 
 	  for (x = reg_values[sreg]; x; x = XEXP (x, 1))
-	    if (XEXP (x, 0) != 0
-		&& reload_cse_regno_equal_p (dreg, XEXP (x, 0), dest_mode))
-	      return 1;
+	    {
+	      if (XEXP (x, 0) != 0
+		  && reload_cse_regno_equal_p (dreg, XEXP (x, 0), dest_mode))
+		{
+		  ret = 1;
+		  break;
+		}
+	    }
 	}
     }
   else if (GET_CODE (dest) == MEM)
@@ -8007,10 +8015,33 @@ reload_cse_noop_set_p (set)
       if (sreg >= 0
 	  && reload_cse_regno_equal_p (sreg, dest, dest_mode)
 	  && ! side_effects_p (dest))
-	return 1;
+	ret = 1;
     }
 
-  return 0;
+  /* If we can delete this SET, then we need to look for an earlier
+     REG_DEAD note on DREG, and remove it if it exists.  */
+  if (ret)
+    {
+      if (! find_regno_note (insn, REG_UNUSED, dreg))
+	{
+	  rtx trial;
+
+	  for (trial = prev_nonnote_insn (insn);
+	       (trial
+		&& GET_CODE (trial) != CODE_LABEL
+		&& GET_CODE (trial) != BARRIER);
+	       trial = prev_nonnote_insn (trial))
+	    {
+	      if (find_regno_note (trial, REG_DEAD, dreg))
+		{
+		  remove_death (dreg, trial);
+		  break;
+		}
+	    }
+	}
+    }
+
+  return ret;
 }
 
 /* Try to simplify a single SET instruction.  SET is the set pattern.
@@ -8065,7 +8096,29 @@ reload_cse_simplify_set (set, insn)
 	  push_obstacks (&reload_obstack, &reload_obstack);
 
 	  if (validated)
-	    return;
+	    {
+	      /* We need to look for an earlier REG_DEAD note on I,
+		 and remove it if it exists.  */
+	      if (! find_regno_note (insn, REG_UNUSED, i))
+		{
+		  rtx trial;
+
+		  for (trial = prev_nonnote_insn (insn);
+		       (trial
+			&& GET_CODE (trial) != CODE_LABEL
+			&& GET_CODE (trial) != BARRIER);
+		       trial = prev_nonnote_insn (trial))
+		    {
+		      if (find_regno_note (trial, REG_DEAD, i))
+			{
+			  remove_death (i, trial);
+			  break;
+			}
+		    }
+		}
+
+	      return;
+	    }
 	}
     }
 }
