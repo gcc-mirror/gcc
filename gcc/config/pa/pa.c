@@ -152,7 +152,7 @@ unsigned int total_code_bytes;
 struct deferred_plabel GTY(())
 {
   rtx internal_label;
-  char *name;
+  const char *name;
 };
 static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
   deferred_plabels;
