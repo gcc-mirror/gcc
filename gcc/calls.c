@@ -1,6 +1,6 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3589,7 +3589,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
   memset ((char *) argvec, 0, (nargs + 1) * sizeof (struct arg));
 
+#ifdef INIT_CUMULATIVE_LIBCALL_ARGS
+  INIT_CUMULATIVE_LIBCALL_ARGS (args_so_far, outmode, fun);
+#else
   INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
+#endif
 
   args_size.constant = 0;
   args_size.var = 0;
