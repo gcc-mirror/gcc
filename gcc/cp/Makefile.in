@@ -1,5 +1,5 @@
 # Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90-4, 1995, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-5, 1998, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -279,7 +279,8 @@ method.o : method.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h decl.h \
   $(srcdir)/../flags.h $(srcdir)/../toplev.h $(srcdir)/../convert.h
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h \
-  $(srcdir)/../flags.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(srcdir)/../flags.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/../varray.h
 tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h
