@@ -890,10 +890,6 @@ missing and thus this setting will cause a known bootstrap failure.)
 This is an alias for @samp{single}.
 @item posix
 Generic POSIX thread support.
-@item pthreads
-Same as @samp{posix} on arm*-*-linux*, *-*-chorusos* and *-*-freebsd*
-only.  A future release of gcc might remove this alias or extend it
-to all platforms.
 @item rtems
 RTEMS thread support.
 @item single
