@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "tree.h"
+#include "obstack.h"
 
 /* Forward declarations.  */
 void print_operand_address ();
@@ -615,6 +616,15 @@ bit_operand (op, mode)
     }
 }
 
+int
+bit_memory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == MEM
+	  && EXTRA_CONSTRAINT (op, 'U'));
+}
+
 /* Recognize valid operators for bit test.  */
 
 int
@@ -1193,6 +1203,9 @@ print_operand (file, x, code)
 	      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	      && SYMBOL_REF_FLAG (XEXP (x, 0)))
 	    fprintf (file, ":8");
+	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	      && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
+	    fprintf (file, ":16");
 	  break;
 
 	case CONST_INT:
@@ -2188,7 +2201,7 @@ h8300_funcvec_function_p (func)
   return a != NULL_TREE;
 }
 
-/* Return nonzero if DECL is a variable that's in the tiny
+/* Return nonzero if DECL is a variable that's in the eight bit
    data area.  */
 
 int
@@ -2204,6 +2217,22 @@ h8300_eightbit_data_p (decl)
   return a != NULL_TREE;
 }
 
+/* Return nonzero if DECL is a variable that's in the tiny
+   data area.  */
+
+int
+h8300_tiny_data_p (decl)
+     tree decl;
+{
+  tree a;
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    return 0;
+
+  a = lookup_attribute ("tiny_data", DECL_MACHINE_ATTRIBUTES (decl));
+  return a != NULL_TREE;
+}
+
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
    supplied with ATTR.
@@ -2214,7 +2243,13 @@ h8300_eightbit_data_p (decl)
    interrupt handler.
 
    function_vector: This function should be called through the
-   function vector.  */
+   function vector.
+
+   eightbit_data: This variable lives in the 8-bit data area and can
+   be referenced with 8-bit absolute memory addresses.
+
+   tiny_data: This variable lives in the tiny data area and can be
+   referenced with 16-bit absolute memory references.  */
 
 int
 h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
@@ -2238,11 +2273,39 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
 	  warning ("Only initialized variables can be placed into the 8-bit area.");
 	  return 0;
 	}
-      DECL_SECTION_NAME (decl) = build_string (8, ".eight");
+      DECL_SECTION_NAME (decl) = build_string (7, ".eight");
+      return 1;
+    }
+
+  if (is_attribute_p ("tiny_data", attr)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    {
+      if (DECL_INITIAL (decl) == NULL_TREE)
+	{
+	  warning ("Only initialized variables can be placed into the 8-bit area.");
+	  return 0;
+	}
+      DECL_SECTION_NAME (decl) = build_string (6, ".tiny");
       return 1;
     }
       
   return 0;
+}
+
+extern struct obstack *saveable_obstack;
+
+h8300_encode_label (decl)
+     tree decl;
+{
+  char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  int len = strlen (str);
+  char *newstr;
+
+  newstr = obstack_alloc (saveable_obstack, len + 2);
+
+  strcpy (newstr + 1, str);
+  *newstr = '*';
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
 
 char *
@@ -2316,6 +2379,13 @@ h8300_adjust_insn_length (insn, length)
 	  && INTVAL (XEXP (addr, 1)) > -32768
 	  && INTVAL (XEXP (addr, 1)) < 32767)
 	return -4;
+
+      /* On the H8/300H, abs:16 is two bytes shorter than the
+	 more general abs:24.  */
+      if (TARGET_H8300H
+	  && GET_CODE (addr) == SYMBOL_REF
+	  && TINY_DATA_NAME_P (XSTR (addr, 0)))
+	return -2;
     }
 
   /* Loading some constants needs adjustment.  */

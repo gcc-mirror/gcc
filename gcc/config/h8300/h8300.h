@@ -150,7 +150,7 @@ do {				\
 /* Define this if most significant word of a multiword number is lowest
    numbered.  
    This is true on an H8/300 (actually we can make it up, but we choose to
-   be consistent.  */ 
+   be consistent).  */ 
 #define WORDS_BIG_ENDIAN 1
 
 /* Number of bits in an addressable storage unit */
@@ -784,8 +784,7 @@ struct rtx_def *function_arg();
 
 /* Extra constraints - 'U' if for an operand valid for a bset
    destination; i.e. a register, register indirect, or the
-   eightbit memory region (a SYMBOL_REF with the SYMBOL_REF_FLAG
-   set.  */
+   eightbit memory region (a SYMBOL_REF with an SYMBOL_REF_FLAG set).  */
 #define OK_FOR_U(OP) \
   ((GET_CODE (OP) == REG && REG_OK_FOR_BASE_P (OP)) \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG \
@@ -795,7 +794,7 @@ struct rtx_def *function_arg();
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST \
        && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
-       && SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0)) \
+       && SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)) \
        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT))
  
 #define EXTRA_CONSTRAINT(OP, C) \
@@ -1106,16 +1105,28 @@ readonly_data() 						\
     }						\
 }						 
 
+#define TINY_DATA_NAME_P(NAME) (*(NAME) == '*')
+
 /* If we are referencing a function that is supposed to be called
    through the function vector, the SYMBOL_REF_FLAG in the rtl
    so the call patterns can generate the correct code.  */
 #define ENCODE_SECTION_INFO(DECL)  \
-  if ((TREE_CODE (DECL) == FUNCTION_DECL \
+  if (TREE_CODE (DECL) == FUNCTION_DECL \
        && h8300_funcvec_function_p (DECL)) \
-      || ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
-	  && TREE_CODE (DECL) == VAR_DECL \
-	  && h8300_eightbit_data_p (DECL))) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1; \
+  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
+      && TREE_CODE (DECL) == VAR_DECL \
+      && h8300_eightbit_data_p (DECL)) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1; \
+  else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
+      && TREE_CODE (DECL) == VAR_DECL \
+      && h8300_tiny_data_p (DECL)) \
+    h8300_encode_label (DECL);
+
+/* Store the user-specified part of SYMBOL_NAME in VAR.
+   This is sort of inverse to ENCODE_SECTION_INFO.  */
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
+  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*' || (SYMBOL_NAME)[0] == '@');
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
