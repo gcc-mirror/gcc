@@ -1,5 +1,10 @@
 2003-01-10  Richard Henderson  <rth@redhat.com>
 
+	* combine.c (make_compound_operation): Use SCALAR_INT_MODE_P,
+	not INTEGRAL_MODE_P when widening extensions.
+
+2003-01-10  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (decl_has_samegp): True for !TREE_PUBLIC.
 
 2003-01-10  Geoffrey Keating  <geoffk@apple.com>
