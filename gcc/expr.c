@@ -3092,7 +3092,7 @@ emit_move_insn (x, y)
   else if (CONSTANT_P (y))
     {
       if (optimize
-	  && FLOAT_MODE_P (GET_MODE (x))
+	  && SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  && (last_insn = compress_float_constant (x, y)))
 	return last_insn;
 
