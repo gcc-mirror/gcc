@@ -1,3 +1,9 @@
+2003-06-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/cpp/truefalse.cpp: Move it to ...
+	* g++.dg/cpp/truefalse.C: Here.
+	* gcc.dg/cpp/cpp.exp: Remove scanning of ".cpp" files.
+
 2003-06-01  Loren James Rittle  <ljrittle@acm.org>
 	
 	* gcc.dg/cpp/redef3.c: New file.
