@@ -2628,9 +2628,10 @@ function_arg (cum, mode, type, named)
 	 last real argument, pass back a parallel vector holding each
 	 of the adjustments.  */
 
-      if (struct_p && (mode == QImode || mode == HImode))
+      if (struct_p && int_size_in_bytes (type) < 4)
 	{
-	  rtx amount = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (mode));
+	  rtx amount = GEN_INT (BITS_PER_WORD
+				- int_size_in_bytes (type) * BITS_PER_UNIT);
 	  rtx reg = gen_rtx (REG, SImode, regbase + cum->arg_words + bias);
 	  cum->adjust[ cum->num_adjusts++ ] = gen_ashlsi3 (reg, reg, amount);
 	}
