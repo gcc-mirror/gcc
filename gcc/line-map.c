@@ -1,5 +1,5 @@
 /* Map logical line numbers to (source file, line number) pairs.
-   Copyright (C) 2001
+   Copyright (C) 2001, 2003
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -75,7 +75,7 @@ linemap_free (struct line_maps *set)
 
 const struct line_map *
 linemap_add (struct line_maps *set, enum lc_reason reason,
-	     unsigned int sysp, unsigned int from_line,
+	     unsigned int sysp, source_location from_line,
 	     const char *to_file, unsigned int to_line)
 {
   struct line_map *map;
@@ -166,7 +166,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
    the list is sorted and we can use a binary search.  */
 
 const struct line_map *
-linemap_lookup (struct line_maps *set, unsigned int line)
+linemap_lookup (struct line_maps *set, source_location line)
 {
   unsigned int md, mn = 0, mx = set->used;
 
