@@ -54,13 +54,11 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
   sw = gtk_scrolled_window_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (sw), text);
 
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), 
-
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
      /* horizontal scrollbar */
      (scroll == AWT_TEXTAREA_SCROLLBARS_BOTH
       || scroll == AWT_TEXTAREA_SCROLLBARS_HORIZONTAL_ONLY) ? 
        GTK_POLICY_ALWAYS : GTK_POLICY_NEVER,
-
      /* vertical scrollbar */
      (scroll == AWT_TEXTAREA_SCROLLBARS_BOTH
       || scroll == AWT_TEXTAREA_SCROLLBARS_VERTICAL_ONLY) ? 
@@ -73,12 +71,11 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkTextGetSize
-  (JNIEnv *env, jobject obj, jint rows, jint cols, jintArray jdims)
+  (JNIEnv *env, jobject obj, jintArray jdims)
 {
   void *ptr;
   jint *dims;
   GtkWidget *text;
-/*   GtkScrolledWindow *sw; */
   GtkRequisition requisition;
 
   ptr = NSA_GET_PTR (env, obj);
@@ -89,7 +86,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkTextGetSize
   gdk_threads_enter ();
 
   text = GTK_WIDGET (TEXT_FROM_SW (ptr));
-  /*   sw = GTK_SCROLLED_WINDOW (ptr); */
 
   gtk_widget_size_request(GTK_WIDGET (text), &requisition);
   dims[0] = requisition.width;

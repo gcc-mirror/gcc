@@ -91,7 +91,7 @@ state_to_awt_mods (guint state)
    key press event with modifiers=Shift, and a key release event with
    no modifiers.  GDK's key events behave in the exact opposite way,
    so this translation code is needed. */
-static jint
+jint
 keyevent_state_to_awt_mods (GdkEvent *event)
 {
   jint result = 0;

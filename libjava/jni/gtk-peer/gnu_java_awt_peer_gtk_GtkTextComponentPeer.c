@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkTextComponentPeer.h"
 
 static void textcomponent_commit_cb (GtkIMContext *context,
@@ -149,7 +150,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setCaretPosition
   GtkEditable *editable;    // type of GtkEntry    (TextField)
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
-  GtkTextMark *mark;
   GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
@@ -174,9 +174,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setCaretPosition
       if (text)
 	{
 	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
-	  mark = gtk_text_buffer_get_insert (buf);
-	  gtk_text_buffer_get_iter_at_mark (buf, &iter, mark);
-	  gtk_text_iter_set_offset (&iter, pos);
+	  gtk_text_buffer_get_iter_at_offset (buf, &iter, pos);
+	  gtk_text_buffer_place_cursor (buf, &iter);
 	}
     }
 
@@ -417,7 +416,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   const char *str;
   GtkWidget *text = NULL;   // type of GtkTextView (TextArea)
   GtkTextBuffer *buf;
-  jobject *obj_ptr;
 
   ptr = NSA_GET_PTR (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
@@ -458,27 +456,24 @@ textcomponent_commit_cb (GtkIMContext *context,
 {
   /* str is a \0-terminated UTF-8 encoded character. */
   gunichar2 *jc = g_utf8_to_utf16 (str, -1, NULL, NULL, NULL);
+  GdkEvent *event = gtk_get_current_event ();
 
   if (jc)
     (*gdk_env)->CallVoidMethod (gdk_env, peer,
                                 postKeyEventID,
                                 (jint) AWT_KEY_TYPED,
-                                /* We don't have access to the event
-                                   that caused this commit signal to
-                                   be fired.  So approximate the event
-                                   time... */
-                                (jlong) gdk_event_get_time (NULL),
-                                /* ... and assume no modifiers. */
-                                0,
+                                (jlong) event->key.time,
+                                keyevent_state_to_awt_mods (event),
                                 VK_UNDEFINED,
                                 (jchar) jc[0],
                                 AWT_KEY_LOCATION_UNKNOWN);
   g_free (jc);
+  gdk_event_free (event);
 }
 
 static void
 textcomponent_changed_cb (GtkEditable *editable,
-                      jobject peer)
+			  jobject peer)
 {
   (*gdk_env)->CallVoidMethod (gdk_env, peer, postTextEventID);
 }
