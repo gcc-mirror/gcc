@@ -28,7 +28,8 @@ Boston, MA 02111-1307, USA.  */
   fputs (" (Hitachi SH)", stderr);
 
 /* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
-  include it here, because hconfig.h is also included by gencodes.c .  */
+   include it here, because hconfig.h is also included by gencodes.c .  */
+/* ??? No longer true.  */
 extern int code_for_indirect_jump_scratch;
 
 /* Generate SDB debugging information.  */

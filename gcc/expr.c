@@ -30,8 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "except.h"
 #include "function.h"
-#include "insn-flags.h"
-#include "insn-codes.h"
 #include "insn-config.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"

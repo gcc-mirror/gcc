@@ -45,7 +45,6 @@
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
-#include "insn-flags.h"
 #include "expr.h"
 
 
