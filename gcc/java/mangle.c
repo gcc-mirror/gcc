@@ -152,11 +152,6 @@ mangle_method_decl (mdecl)
   /* Mangle the name of the type that contains mdecl */
   mangle_record_type (DECL_CONTEXT (mdecl), /* from_pointer = */ 0);
 
-  /* Before working on the method name, get to it. It might be burried
-     in a WFL. */
-  if (TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION)
-    method_name = java_get_real_method_name (mdecl);
-
   /* Mangle the function name. There three cases
        - mdecl is java.lang.Object.Object(), use `C2' for its name
          (denotes a base object constructor.)

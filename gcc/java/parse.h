@@ -125,10 +125,6 @@ extern tree stabilize_reference PARAMS ((tree));
 #define GET_REAL_TYPE(TYPE) 					\
   (TREE_CODE (TYPE) == TREE_LIST ? TREE_PURPOSE (TYPE) : TYPE)
 
-#define GET_METHOD_NAME(METHOD)					\
-  (TREE_CODE (DECL_NAME (METHOD)) == EXPR_WITH_FILE_LOCATION ?	\
-   EXPR_WFL_NODE (DECL_NAME (METHOD)) : DECL_NAME (METHOD))
-
 /* Get TYPE name string, regardless whether TYPE is a class or an
    array. */
 #define GET_TYPE_NAME(TYPE)				\

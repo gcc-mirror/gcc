@@ -669,6 +669,8 @@ struct lang_identifier
 #define DECL_MAX_STACK(DECL) (DECL_LANG_SPECIFIC(DECL)->max_stack)
 /* Number of local variable slots needed for the arguments of this function. */
 #define DECL_ARG_SLOT_COUNT(DECL) (DECL_LANG_SPECIFIC(DECL)->arg_slot_count)
+/* Information on declaration location */
+#define DECL_FUNCTION_WFL(DECL)  (DECL_LANG_SPECIFIC(DECL)->wfl)
 /* List of checked thrown exceptions, as specified with the `throws'
    keyword */
 #define DECL_FUNCTION_THROWS(DECL) (DECL_LANG_SPECIFIC(DECL)->throws_list)
@@ -835,6 +837,7 @@ struct lang_decl
   long localvariables_offset;
   int arg_slots;
   int max_locals, max_stack, arg_slot_count;
+  tree wfl;			/* Information on the original location */
   tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */
   tree called_constructor;	/* When decl is a constructor, the
@@ -1037,7 +1040,6 @@ extern char *print_int_node PARAMS ((tree));
 extern void parse_error_context PARAMS ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 extern tree build_primtype_type_ref PARAMS ((const char *));
-extern tree java_get_real_method_name PARAMS ((tree));
 extern void finish_class PARAMS ((void));
 extern void java_layout_seen_class_methods PARAMS ((void));
 extern void check_for_initialization PARAMS ((tree));

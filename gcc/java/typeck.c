@@ -812,11 +812,8 @@ lookup_do (searched_class, searched_interface, method_name, signature, signature
               method != NULL_TREE;  method = TREE_CHAIN (method))
            {
              tree method_sig = (*signature_builder) (TREE_TYPE (method));
-	     tree name = DECL_NAME (method);
 
-	     if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
-		  EXPR_WFL_NODE (name) : name) == method_name
-		 && method_sig == signature)
+	     if (DECL_NAME (method) == method_name && method_sig == signature)
                return method;
            }
 
@@ -839,9 +836,7 @@ lookup_do (searched_class, searched_interface, method_name, signature, signature
 	  tree method_sig = (*signature_builder) (TREE_TYPE (method));
 	  tree name = DECL_NAME (method);
 
-	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
-	       EXPR_WFL_NODE (name) : name) == method_name
-	      && method_sig == signature)
+	  if (DECL_NAME (method) == method_name && method_sig == signature)
 	    return method;
 	}
       searched_class = CLASSTYPE_SUPER (searched_class);
