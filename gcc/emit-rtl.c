@@ -502,18 +502,17 @@ gen_reg_rtx (mode)
     {
       int old_size = f->emit->regno_pointer_flag_length;
       rtx *new1;
-      char *new = (char *) savealloc (old_size * 2);
-      memcpy (new, f->emit->regno_pointer_flag, old_size);
+      char *new;
+      new = xrealloc (f->emit->regno_pointer_flag, old_size * 2);
       memset (new + old_size, 0, old_size);
       f->emit->regno_pointer_flag = new;
 
-      new = (char *) savealloc (old_size * 2);
-      memcpy (new, f->emit->regno_pointer_align, old_size);
+      new = xrealloc (f->emit->regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
       f->emit->regno_pointer_align = new;
 
-      new1 = (rtx *) savealloc (old_size * 2 * sizeof (rtx));
-      memcpy (new1, regno_reg_rtx, old_size * sizeof (rtx));
+      new1 = (rtx *) xrealloc (f->emit->x_regno_reg_rtx,
+			       old_size * 2 * sizeof (rtx));
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
@@ -1596,6 +1595,19 @@ restore_emit_status (p)
 {
   last_label_num = 0;
   clear_emit_caches ();
+}
+
+/* Clear out all parts of our state in F that can safely be discarded
+   after the function has been compiled, to let garbage collection
+   reclaim the memory.  */
+void
+free_emit_status (f)
+     struct function *f;
+{
+  free (f->emit->x_regno_reg_rtx);
+  free (f->emit->regno_pointer_flag);
+  free (f->emit->regno_pointer_align);
+  f->emit->x_regno_reg_rtx = 0;
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared structure.
@@ -3404,15 +3416,15 @@ init_emit ()
   f->emit->regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
 
   f->emit->regno_pointer_flag 
-    = (char *) savealloc (f->emit->regno_pointer_flag_length);
+    = (char *) xmalloc (f->emit->regno_pointer_flag_length);
   bzero (f->emit->regno_pointer_flag, f->emit->regno_pointer_flag_length);
 
   f->emit->regno_pointer_align
-    = (char *) savealloc (f->emit->regno_pointer_flag_length);
+    = (char *) xmalloc (f->emit->regno_pointer_flag_length);
   bzero (f->emit->regno_pointer_align, f->emit->regno_pointer_flag_length);
 
   regno_reg_rtx 
-    = (rtx *) savealloc (f->emit->regno_pointer_flag_length * sizeof (rtx));
+    = (rtx *) xmalloc (f->emit->regno_pointer_flag_length * sizeof (rtx));
   bzero ((char *) regno_reg_rtx,
 	 f->emit->regno_pointer_flag_length * sizeof (rtx));
 

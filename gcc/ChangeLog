@@ -1,3 +1,45 @@
+Sat Sep  4 18:01:45 1999  Bernd Schmidt <bernds@cygnus.co.uk>
+
+	* c-decl.c (struct language_function): Renamed from struct c_function.
+	Delete elt NEXT.
+	(c_function_chain): Delete.
+	(push_c_function_context): New arg F.  Don't warn about nested
+	functions here.  Fill LANGUAGE elt of F.  Delete code to update
+	c_function_chain.  Don't call push_function_context.
+	(pop_c_function_context): New arg F.  Restore from there instead of
+	from c_function_chain.  Don't call pop_function_context.  Clear out
+	LANGUAGE field of F when done.
+	* c-lang.c: Include "function.h"
+	(lang_init): Initialize save_lang_status and restore_lang_status.
+	* c-parse.in (nested_function, nested_function_notype): Warn about
+	nested functions.  Call push_function_context/pop_function_context
+	instead of the _c_ variants.
+	* c-tree.h (push_c_function_context, pop_c_function_context): Update
+	prototype.
+	* Makefile.in (c-lang.o): Update dependencies.
+
+	* emit-rtl.c (init_emit): Use xmalloc to allocate regno_reg_rtx,
+	regno_pointer_flag, regno_pointer_align.
+	(gen_reg_rtx): Use xrealloc to enlarge them.
+	(free_emit_status): New function.
+	* function.c (mark_machine_status, mark_lang_status): New variables.
+	(assign_stack_local_1): Renamed from assign_outer_stack_local.  Merge
+	in some bits from assign_stack_local.  All callers changed to use new
+	name.
+	(assign_stack_local): Just call assign_stack_local_1.
+	(free_after_compilation): New function.
+	(put_reg_into_stack): Simplify to always call assign_stack_local_1.
+	(trampoline_address): Likewise.
+	(assign_parms): Use xcalloc/xrealloc to allocate parm_reg_stack_loc.
+	(prepare_function_start): Explicitly clear some more variables.
+	* function.h (struct function): New elt can_garbage_collect.
+	(mark_machine_status, mark_lang_status): Declare variables.
+	(free_after_compilation, free_emit_status, free_varasm_status,
+	init_varasm_status): Declare functions.
+	* toplev.c (rest_of_compilation): Call free_after_compilation when
+	done with the current function.
+	* varasm.c (free_varasm_status): New function.
+
 Sat Sep  4 17:15:13 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.h (EXPAND_BUILTIN_VA_START): Define.

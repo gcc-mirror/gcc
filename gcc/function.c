@@ -120,10 +120,12 @@ static int virtuals_instantiated;
 void (*init_machine_status) PROTO((struct function *));
 void (*save_machine_status) PROTO((struct function *));
 void (*restore_machine_status) PROTO((struct function *));
+void (*mark_machine_status) PROTO((struct function *));
 
 /* Likewise, but for language-specific data.  */
 void (*save_lang_status) PROTO((struct function *));
 void (*restore_lang_status) PROTO((struct function *));
+void (*mark_lang_status) PROTO((struct function *));
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
@@ -219,7 +221,7 @@ struct insns_for_mem_entry {
 
 /* Forward declarations.  */
 
-static rtx assign_outer_stack_local PROTO ((enum machine_mode, HOST_WIDE_INT,
+static rtx assign_stack_local_1 PROTO ((enum machine_mode, HOST_WIDE_INT,
 					    int, struct function *));
 static rtx assign_stack_temp_for_type PROTO ((enum machine_mode, HOST_WIDE_INT,
 					      int, tree));
@@ -375,6 +377,21 @@ pop_function_context ()
 {
   pop_function_context_from (current_function_decl);
 }
+
+/* Clear out all parts of the state in F that can safely be discarded
+   after the function has been compiled, to let garbage collection
+   reclaim the memory.  */
+void
+free_after_compilation (f)
+     struct function *f;
+{
+  free_emit_status (f);
+  free_varasm_status (f);
+
+  free (f->x_parm_reg_stack_loc);
+
+  f->can_garbage_collect = 1;
+}
 
 /* Allocate fixed slots in the stack frame of the current function.  */
 
@@ -411,89 +428,12 @@ get_frame_size ()
    -1 means use BIGGEST_ALIGNMENT and round size to multiple of that,
    positive specifies alignment boundary in bits.
 
-   We do not round to stack_boundary here.  */
+   We do not round to stack_boundary here.
 
-rtx
-assign_stack_local (mode, size, align)
-     enum machine_mode mode;
-     HOST_WIDE_INT size;
-     int align;
-{
-  register rtx x, addr;
-  int bigend_correction = 0;
-  int alignment;
-
-  if (align == 0)
-    {
-      tree type;
-
-      alignment = GET_MODE_ALIGNMENT (mode);
-      if (mode == BLKmode)
-	alignment = BIGGEST_ALIGNMENT;
-
-      /* Allow the target to (possibly) increase the alignment of this
-	 stack slot.  */
-      type = type_for_mode (mode, 0);
-      if (type)
-	alignment = LOCAL_ALIGNMENT (type, alignment);
-
-      alignment /= BITS_PER_UNIT;
-    }
-  else if (align == -1)
-    {
-      alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-      size = CEIL_ROUND (size, alignment);
-    }
-  else
-    alignment = align / BITS_PER_UNIT;
-
-#ifdef FRAME_GROWS_DOWNWARD
-  frame_offset -= size;
-#endif
-
-  /* Round frame offset to that alignment.
-     We must be careful here, since FRAME_OFFSET might be negative and
-     division with a negative dividend isn't as well defined as we might
-     like.  So we instead assume that ALIGNMENT is a power of two and
-     use logical operations which are unambiguous.  */
-#ifdef FRAME_GROWS_DOWNWARD
-  frame_offset = FLOOR_ROUND (frame_offset, alignment);
-#else
-  frame_offset = CEIL_ROUND (frame_offset, alignment);
-#endif
-
-  /* On a big-endian machine, if we are allocating more space than we will use,
-     use the least significant bytes of those that are allocated.  */
-  if (BYTES_BIG_ENDIAN && mode != BLKmode)
-    bigend_correction = size - GET_MODE_SIZE (mode);
-
-  /* If we have already instantiated virtual registers, return the actual
-     address relative to the frame pointer.  */
-  if (virtuals_instantiated)
-    addr = plus_constant (frame_pointer_rtx,
-			  (frame_offset + bigend_correction
-			   + STARTING_FRAME_OFFSET));
-  else
-    addr = plus_constant (virtual_stack_vars_rtx,
-			  frame_offset + bigend_correction);
-
-#ifndef FRAME_GROWS_DOWNWARD
-  frame_offset += size;
-#endif
-
-  x = gen_rtx_MEM (mode, addr);
-
-  stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, x, stack_slot_list);
-
-  return x;
-}
-
-/* Assign a stack slot in a containing function.
-   First three arguments are same as in preceding function.
-   The last argument specifies the function to allocate in.  */
+   FUNCTION specifies the function to allocate in.  */
 
 static rtx
-assign_outer_stack_local (mode, size, align, function)
+assign_stack_local_1 (mode, size, align, function)
      enum machine_mode mode;
      HOST_WIDE_INT size;
      int align;
@@ -505,8 +445,9 @@ assign_outer_stack_local (mode, size, align, function)
 
   /* Allocate in the memory associated with the function in whose frame
      we are assigning.  */
-  push_obstacks (function->function_obstack,
-		 function->function_maybepermanent_obstack);
+  if (function != current_function)
+    push_obstacks (function->function_obstack,
+		   function->function_maybepermanent_obstack);
 
   if (align == 0)
     {
@@ -536,7 +477,11 @@ assign_outer_stack_local (mode, size, align, function)
   function->x_frame_offset -= size;
 #endif
 
-  /* Round frame offset to that alignment.  */
+  /* Round frame offset to that alignment.
+     We must be careful here, since FRAME_OFFSET might be negative and
+     division with a negative dividend isn't as well defined as we might
+     like.  So we instead assume that ALIGNMENT is a power of two and
+     use logical operations which are unambiguous.  */
 #ifdef FRAME_GROWS_DOWNWARD
   function->x_frame_offset = FLOOR_ROUND (function->x_frame_offset, alignment);
 #else
@@ -548,8 +493,16 @@ assign_outer_stack_local (mode, size, align, function)
   if (BYTES_BIG_ENDIAN && mode != BLKmode)
     bigend_correction = size - GET_MODE_SIZE (mode);
 
-  addr = plus_constant (virtual_stack_vars_rtx,
-			function->x_frame_offset + bigend_correction);
+  /* If we have already instantiated virtual registers, return the actual
+     address relative to the frame pointer.  */
+  if (function == current_function && virtuals_instantiated)
+    addr = plus_constant (frame_pointer_rtx,
+			  (frame_offset + bigend_correction
+			   + STARTING_FRAME_OFFSET));
+  else
+    addr = plus_constant (virtual_stack_vars_rtx,
+			  frame_offset + bigend_correction);
+
 #ifndef FRAME_GROWS_DOWNWARD
   function->x_frame_offset += size;
 #endif
@@ -559,9 +512,21 @@ assign_outer_stack_local (mode, size, align, function)
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
 
-  pop_obstacks ();
+  if (function != current_function)
+    pop_obstacks ();
 
   return x;
+}
+
+/* Wrapper around assign_stack_local_1;  assign a local stack slot for the
+   current function.  */
+rtx
+assign_stack_local (mode, size, align)
+     enum machine_mode mode;
+     HOST_WIDE_INT size;
+     int align;
+{
+  return assign_stack_local_1 (mode, size, align, current_function);
 }
 
 /* Allocate a temporary stack slot and record it for possible later
@@ -1334,27 +1299,17 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      int used_p;
      struct hash_table *ht;
 {
+  struct function *func = function ? function : current_function;
   rtx new = 0;
   int regno = original_regno;
 
   if (regno == 0)
     regno = REGNO (reg);
 
-  if (function)
-    {
-      if (regno < function->x_max_parm_reg)
-	new = function->x_parm_reg_stack_loc[regno];
-      if (new == 0)
-	new = assign_outer_stack_local (decl_mode, GET_MODE_SIZE (decl_mode),
-					0, function);
-    }
-  else
-    {
-      if (regno < max_parm_reg)
-	new = parm_reg_stack_loc[regno];
-      if (new == 0)
-	new = assign_stack_local (decl_mode, GET_MODE_SIZE (decl_mode), 0);
-    }
+  if (regno < func->x_max_parm_reg)
+    new = func->x_parm_reg_stack_loc[regno];
+  if (new == 0)
+    new = assign_stack_local_1 (decl_mode, GET_MODE_SIZE (decl_mode), 0, func);
 
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, decl_mode);
@@ -3993,8 +3948,7 @@ assign_parms (fndecl, second_time)
     }
 			       
   max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
-  parm_reg_stack_loc = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
-  bzero ((char *) parm_reg_stack_loc, max_parm_reg * sizeof (rtx));
+  parm_reg_stack_loc = (rtx *) xcalloc (max_parm_reg, sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
@@ -4568,9 +4522,8 @@ assign_parms (fndecl, second_time)
 		 but it's also rare and we need max_parm_reg to be
 		 precisely correct.  */
 	      max_parm_reg = regno + 1;
-	      new = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
-	      bcopy ((char *) parm_reg_stack_loc, (char *) new,
-		     old_max_parm_reg * sizeof (rtx));
+	      new = (rtx *) xrealloc (parm_reg_stack_loc,
+				      max_parm_reg * sizeof (rtx));
 	      bzero ((char *) (new + old_max_parm_reg),
 		     (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
@@ -5241,7 +5194,7 @@ fix_lexical_addr (addr, var)
 
       if (fp->x_arg_pointer_save_area == 0)
 	fp->x_arg_pointer_save_area
-	  = assign_outer_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0, fp);
+	  = assign_stack_local_1 (Pmode, GET_MODE_SIZE (Pmode), 0, fp);
 
       addr = fix_lexical_addr (XEXP (fp->x_arg_pointer_save_area, 0), var);
       addr = memory_address (Pmode, addr);
@@ -5328,10 +5281,8 @@ trampoline_address (function)
 #else
 #define TRAMPOLINE_REAL_SIZE (TRAMPOLINE_SIZE)
 #endif
-  if (fp != 0)
-    tramp = assign_outer_stack_local (BLKmode, TRAMPOLINE_REAL_SIZE, 0, fp);
-  else
-    tramp = assign_stack_local (BLKmode, TRAMPOLINE_REAL_SIZE, 0);
+  tramp = assign_stack_local_1 (BLKmode, TRAMPOLINE_REAL_SIZE, 0,
+				fp ? fp : current_function);
 #endif
 
   /* Record the trampoline for reuse and note it for later initialization
@@ -5543,7 +5494,8 @@ static void
 prepare_function_start ()
 {
   current_function = (struct function *) xcalloc (1, sizeof (struct function));
-  
+  current_function->can_garbage_collect = 0;
+
   init_stmt_for_function ();
 
   cse_not_expected = ! optimize;
@@ -5584,6 +5536,11 @@ prepare_function_start ()
 
   init_varasm_status (current_function);
 
+  /* Clear out data used for inlining.  */
+  current_function->inlinable = 0;
+  current_function->original_decl_initial = 0;
+  current_function->original_arg_vector = 0;  
+
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;
 
@@ -5604,8 +5561,6 @@ prepare_function_start ()
   current_function_uses_const_pool = 0;
   current_function_uses_pic_offset_table = 0;
   current_function_cannot_inline = 0;
-
-  current_function->inlinable = 0;
 
   /* We have not yet needed to make a label to jump to for tail-recursion.  */
   tail_recursion_label = 0;

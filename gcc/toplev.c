@@ -4452,6 +4452,10 @@ rest_of_compilation (decl)
 
   init_recog_no_volatile ();
 
+  /* We're done with this function.  */
+  if (! DECL_DEFER_OUTPUT (decl))
+    free_after_compilation (current_function);
+
   /* The parsing time is all the time spent in yyparse
      *except* what is spent in this function.  */
 
