@@ -776,6 +776,24 @@ dump_decl (t, v)
       }
       break;
 
+    case TEMPLATE_ID_EXPR:
+      {
+	tree args;
+	dump_type (TREE_OPERAND (t, 0), v);
+	OB_PUTC ('<');
+	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
+	  {
+	    if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (args))) == 't')
+	      dump_type (TREE_VALUE (args), 0);
+	    else
+	      dump_expr (TREE_VALUE (args), 0);
+	    if (TREE_CHAIN (args))
+	      OB_PUTC2 (',', ' ');
+	  }
+	OB_PUTC ('>');
+      }
+      break;
+
     case LABEL_DECL:
       OB_PUTID (DECL_NAME (t));
       break;
