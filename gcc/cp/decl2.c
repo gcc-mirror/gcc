@@ -73,14 +73,14 @@ static tree merge_functions (tree, tree);
 static tree decl_namespace (tree);
 static tree validate_nonmember_using_decl (tree, tree *, tree *);
 static void do_nonmember_using_decl (tree, tree, tree, tree, tree *, tree *);
-static tree start_static_storage_duration_function (void);
+static tree start_static_storage_duration_function (unsigned);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
 static void do_static_initialization (tree, tree);
 static void do_static_destruction (tree);
 static tree start_static_initialization_or_destruction (tree, int);
 static void finish_static_initialization_or_destruction (tree);
-static void generate_ctor_or_dtor_function (bool, int);
+static void generate_ctor_or_dtor_function (bool, int, location_t *);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
                                                           void *);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -2076,10 +2076,8 @@ static splay_tree priority_info_map;
    translation unit.  */
 
 static tree
-start_static_storage_duration_function (void)
+start_static_storage_duration_function (unsigned count)
 {
-  static unsigned ssdf_number;
-
   tree parm_types;
   tree type;
   tree body;
@@ -2087,14 +2085,7 @@ start_static_storage_duration_function (void)
 
   /* Create the identifier for this function.  It will be of the form
      SSDF_IDENTIFIER_<number>.  */
-  sprintf (id, "%s_%u", SSDF_IDENTIFIER, ssdf_number++);
-  if (ssdf_number == 0)
-    {
-      /* Overflow occurred.  That means there are at least 4 billion
-	 initialization functions.  */
-      sorry ("too many initialization functions required");
-      abort ();
-    }
+  sprintf (id, "%s_%u", SSDF_IDENTIFIER, count);
 
   /* Create the parameters.  */
   parm_types = void_list_node;
@@ -2475,13 +2466,17 @@ write_out_vars (tree vars)
    storage duration having the indicated PRIORITY.  */
 
 static void
-generate_ctor_or_dtor_function (bool constructor_p, int priority)
+generate_ctor_or_dtor_function (bool constructor_p, int priority,
+				location_t *locus)
 {
   char function_key;
   tree arguments;
   tree body;
   size_t i;
 
+  input_filename = locus->file;
+  lineno = locus->line++;
+  
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
   if (constructor_p)
@@ -2526,9 +2521,9 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority)
    indicated by N.  */
 
 static int
-generate_ctor_and_dtor_functions_for_priority (splay_tree_node n,
-                                               void * data ATTRIBUTE_UNUSED)
+generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
 {
+  location_t *locus = data;
   int priority = (int) n->key;
   priority_info pi = (priority_info) n->value;
 
@@ -2536,10 +2531,10 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n,
      needed.  */
   if (pi->initializations_p
       || (priority == DEFAULT_INIT_PRIORITY && static_ctors))
-    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority);
+    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus);
   if (pi->destructions_p
       || (priority == DEFAULT_INIT_PRIORITY && static_dtors))
-    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority);
+    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus);
 
   /* Keep iterating.  */
   return 0;
@@ -2556,7 +2551,11 @@ finish_file ()
   tree vars;
   bool reconsider;
   size_t i;
+  location_t locus;
+  unsigned ssdf_count = 0;
 
+  locus.file = input_filename;
+  locus.line = lineno;
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
@@ -2683,7 +2682,13 @@ finish_file ()
 	     out.  That's a deficiency in the back-end.  When this is
 	     fixed, these initialization functions could all become
 	     inline, with resulting performance improvements.  */
-	  tree ssdf_body = start_static_storage_duration_function ();
+	  tree ssdf_body;
+
+	  /* Set the line and file, so that it is obviously not from
+	     the source file.  */
+	  input_filename = locus.file;
+	  lineno = locus.line;
+	  ssdf_body = start_static_storage_duration_function (ssdf_count);
 
 	  /* Make sure the back end knows about all the variables.  */
 	  write_out_vars (vars);
@@ -2710,12 +2715,16 @@ finish_file ()
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
+	  input_filename = locus.file;
+	  lineno = locus.line;
 	  finish_static_storage_duration_function (ssdf_body);
 
 	  /* All those initializations and finalizations might cause
 	     us to need more inline functions, more template
 	     instantiations, etc.  */
 	  reconsider = true;
+	  ssdf_count++;
+	  locus.line++;
 	}
       
       for (i = 0; i < deferred_fns_used; ++i)
@@ -2838,15 +2847,16 @@ finish_file ()
   if (priority_info_map)
     splay_tree_foreach (priority_info_map, 
 			generate_ctor_and_dtor_functions_for_priority,
-			/*data=*/0);
+			/*data=*/&locus);
   else
     {
+      
       if (static_ctors)
 	generate_ctor_or_dtor_function (/*constructor_p=*/true,
-					DEFAULT_INIT_PRIORITY);
+					DEFAULT_INIT_PRIORITY, &locus);
       if (static_dtors)
 	generate_ctor_or_dtor_function (/*constructor_p=*/false,
-					DEFAULT_INIT_PRIORITY);
+					DEFAULT_INIT_PRIORITY, &locus);
     }
 
   /* We're done with the splay-tree now.  */
@@ -2886,6 +2896,8 @@ finish_file ()
       dump_tree_statistics ();
       dump_time_statistics ();
     }
+  input_filename = locus.file;
+  lineno = locus.line;
 }
 
 /* T is the parse tree for an expression.  Return the expression after

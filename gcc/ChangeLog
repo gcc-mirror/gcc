@@ -1,3 +1,8 @@
+2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cpplex.c (_cpp_lex_direct): Set BOL for CPP_EOF tokens.
+	* gcov.c (output_lines): Don't be so fussy about going past EOF.
+
 2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (LIBCPP_OBJS): Add cppcharset.o.
