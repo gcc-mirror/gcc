@@ -170,12 +170,12 @@ EXTRA_DIST = iostreamP.h
 libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS)
 
 AM_CFLAGS = -D_GNU_SOURCE @DEBUG_FLAGS@ 
-CONFIG_HEADER = ../config.h ../config.h ../testsuite/testsuite_hooks.h
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(noinst_LTLIBRARIES)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) -I.. -I.. -I../testsuite
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@

@@ -159,10 +159,9 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then 	       echo @gl
 
 RUNTESTFLAGS = 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = ../config.h ../config.h testsuite_hooks.h
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-DIST_COMMON =  README ./stamp-h3.in Makefile.am Makefile.in \
-testsuite_hooks.h.in
+DIST_COMMON =  README Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -178,34 +177,6 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-
-testsuite_hooks.h: stamp-h3
-	@if test ! -f $@; then \
-		rm -f stamp-h3; \
-		$(MAKE) stamp-h3; \
-	else :; fi
-stamp-h3: $(srcdir)/testsuite_hooks.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=testsuite/testsuite_hooks.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > stamp-h3 2> /dev/null
-$(srcdir)/testsuite_hooks.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/stamp-h3.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/stamp-h3.in; \
-		$(MAKE) $(srcdir)/stamp-h3.in; \
-	else :; fi
-$(srcdir)/stamp-h3.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/stamp-h3.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f testsuite_hooks.h
-
-maintainer-clean-hdr:
 tags: TAGS
 TAGS:
 
@@ -270,9 +241,6 @@ installcheck-am:
 installcheck: installcheck-am
 install-info-am: 
 install-info: install-info-am
-all-recursive-am: testsuite_hooks.h
-	$(MAKE) $(AM_MAKEFLAGS) all-recursive
-
 install-exec-am:
 install-exec: install-exec-am
 
@@ -284,7 +252,7 @@ install-am: all-am
 install: install-am
 uninstall-am:
 uninstall: uninstall-am
-all-am: Makefile testsuite_hooks.h
+all-am: Makefile
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -300,34 +268,31 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-generic
+mostlyclean-am:  mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-hdr clean-generic mostlyclean-am
+clean-am:  clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-hdr distclean-generic clean-am
+distclean-am:  distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-generic \
-		distclean-am
+maintainer-clean-am:  maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-tags distdir check-DEJAGNU info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-info-am install-info \
-all-recursive-am install-exec-am install-exec install-data-am \
-install-data install-am install uninstall-am uninstall all-redirect \
-all-am all installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+.PHONY: tags distdir check-DEJAGNU info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-info-am install-info \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

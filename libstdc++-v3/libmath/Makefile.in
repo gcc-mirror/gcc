@@ -170,12 +170,12 @@ TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES =  	$(TOPLEVEL_INCLUDES) 
 
-CONFIG_HEADER = ../config.h ../config.h ../testsuite/testsuite_hooks.h
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(noinst_LTLIBRARIES)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) -I.. -I.. -I../testsuite
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
