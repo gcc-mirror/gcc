@@ -3157,7 +3157,7 @@ changequote([,])dnl
 		then
 			tmake_file=rs6000/t-xnewas
 		else
-			tmake_file=rs6000/t-newas
+			tmake_file="rs6000/t-newas rs6000/t-aix41"
 		fi
 		xmake_file=rs6000/x-aix41
 		float_format=none

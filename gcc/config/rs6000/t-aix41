@@ -1,0 +1,4 @@
+# We need -lld for collect2 (actually this only matters
+# for a native compiler, but this is as good a place as any
+# to define the symbol).
+CLIB=-lld
