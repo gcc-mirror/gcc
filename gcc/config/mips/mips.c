@@ -3672,10 +3672,15 @@ override_options ()
       mips_section_threshold = 0x7fffffff;
     }
 
+  /* This optimization requires a linker that can support a R_MIPS_LO16
+     relocation which is not immediately preceeded by a R_MIPS_HI16 relocation.
+     GNU ld has this support, but not all other MIPS linkers do, so we enable
+     this optimization only if the user requests it, or if GNU ld is the
+     standard linker for this configuration.  */
   /* ??? This does not work when target addresses are DImode.
      This is because we are missing DImode high/lo_sum patterns.  */
-
-  if (TARGET_GAS && optimize && ! flag_pic && Pmode == SImode)
+  if (TARGET_GAS && TARGET_SPLIT_ADDRESSES && optimize && ! flag_pic
+      && Pmode == SImode)
     mips_split_addresses = 1;
   else
     mips_split_addresses = 0;
