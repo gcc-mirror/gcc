@@ -1,3 +1,8 @@
+Tue Sep 15 04:18:52 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movdf_const_intreg_sp32): Fix length
+	attribute.
+
 Mon Sep 14 14:02:53 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
