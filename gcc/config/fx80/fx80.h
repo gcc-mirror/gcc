@@ -118,7 +118,7 @@ extern int target_flags;
     { "nobitfield", -4, "Do not generate bitfield insns"},	\
     { "short", 040, "Use 16bit integers"},			\
     { "noshort", -040, "Use 32bit integers"},			\
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, NULL}}
 
 /* target machine storage layout */
 
