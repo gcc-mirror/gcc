@@ -62,53 +62,52 @@ namespace std
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 292. effects of a.copyfmt (a)
-      if (this == &__rhs)
-	return *this;
-
-      // Per 27.1.1, do not call imbue, yet must trash all caches
-      // associated with imbue()
-
-      // Alloc any new word array first, so if it fails we have "rollback".
-      _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
-	                 _M_local_word : new _Words[__rhs._M_word_size];
-
-      // Bump refs before doing callbacks, for safety.
-      _Callback_list* __cb = __rhs._M_callbacks;
-      if (__cb) 
-	__cb->_M_add_reference();
-      _M_call_callbacks(erase_event);
-      if (_M_word != _M_local_word) 
+      if (this != &__rhs)
 	{
-	  delete [] _M_word;
-	  _M_word = 0;
+	  // Per 27.1.1, do not call imbue, yet must trash all caches
+	  // associated with imbue()
+	  
+	  // Alloc any new word array first, so if it fails we have "rollback".
+	  _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
+	                     _M_local_word : new _Words[__rhs._M_word_size];
+
+	  // Bump refs before doing callbacks, for safety.
+	  _Callback_list* __cb = __rhs._M_callbacks;
+	  if (__cb) 
+	    __cb->_M_add_reference();
+	  _M_call_callbacks(erase_event);
+	  if (_M_word != _M_local_word) 
+	    {
+	      delete [] _M_word;
+	      _M_word = 0;
+	    }
+	  _M_dispose_callbacks();
+
+	  // NB: Don't want any added during above.
+	  _M_callbacks = __cb;  
+	  for (int __i = 0; __i < __rhs._M_word_size; ++__i)
+	    __words[__i] = __rhs._M_word[__i];
+	  if (_M_word != _M_local_word) 
+	    {
+	      delete [] _M_word;
+	      _M_word = 0;
+	    }
+	  _M_word = __words;
+	  _M_word_size = __rhs._M_word_size;
+	  
+	  this->flags(__rhs.flags());
+	  this->width(__rhs.width());
+	  this->precision(__rhs.precision());
+	  this->tie(__rhs.tie());
+	  this->fill(__rhs.fill());
+	  _M_ios_locale = __rhs.getloc();
+	  _M_cache_locale(_M_ios_locale);
+	  
+	  _M_call_callbacks(copyfmt_event);
+	  
+	  // The next is required to be the last assignment.
+	  this->exceptions(__rhs.exceptions());
 	}
-      _M_dispose_callbacks();
-
-      // NB: Don't want any added during above.
-      _M_callbacks = __cb;  
-      for (int __i = 0; __i < __rhs._M_word_size; ++__i)
-	__words[__i] = __rhs._M_word[__i];
-      if (_M_word != _M_local_word) 
-	{
-	  delete [] _M_word;
-	  _M_word = 0;
-	}
-      _M_word = __words;
-      _M_word_size = __rhs._M_word_size;
-
-      this->flags(__rhs.flags());
-      this->width(__rhs.width());
-      this->precision(__rhs.precision());
-      this->tie(__rhs.tie());
-      this->fill(__rhs.fill());
-      _M_ios_locale = __rhs.getloc();
-      _M_cache_locale(_M_ios_locale);
-
-      _M_call_callbacks(copyfmt_event);
-
-      // The next is required to be the last assignment.
-      this->exceptions(__rhs.exceptions());
-
       return *this;
     }
 
