@@ -1414,8 +1414,8 @@ block_alloc (b)
 	     discourage the register allocator from creating false
 	     dependencies.
  
-	     The adjustment by the value +-3 indicates precisely that
-	     this qty conflicts with qtys in the instructions immediately
+	     The adjustment value is choosen to indicate that this qty
+	     conflicts with all the qtys in the instructions immediately
 	     before and after the lifetime of this qty.
 
 	     Experiments have shown that higher values tend to hurt
@@ -1423,8 +1423,9 @@ block_alloc (b)
 
 	     If allocation using the extended lifetime fails we will try
 	     again with the qty's unadjusted lifetime.  */
-	  int fake_birth = MAX (0, qty_birth[q] - 3);
-	  int fake_death = MIN (insn_number * 2 + 1, qty_death[q] + 3);
+	  int fake_birth = MAX (0, qty_birth[q] - 2 + qty_birth[q] % 2);
+	  int fake_death = MIN (insn_number * 2 + 1,
+				qty_death[q] + 2 - qty_death[q] % 2);
 #endif
 
 	  if (N_REG_CLASSES > 1)
