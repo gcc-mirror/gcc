@@ -1,3 +1,33 @@
+2001-05-18  Daniel Berlin  <dan@cgsoftware.com>
+
+	* dwarf2out.c: Add dw_loc_list_ref, a reference to a location
+	list.
+	Add have_location_lists, a variable to determine whether we need a
+	.debug_loc section or not.
+	(enum dw_val_class): Add dw_val_class_loc_list.
+	(dw_val_struct): Add val_loc_list.
+	(dw_loc_list_struct): New structure, represents location lists.
+	(new_loc_list): New function, return a new location list, given
+	the range and location expression.
+	(add_loc_descr_to_loc_list): New function, add a location
+	expression to a location list, given the expression and range.
+	(output_loc_list): New function, output a location list.
+	(gen_internal_sym): Modified to take symbol prefix, so we can
+	reuse it for location list symbols.
+	(add_AT_loc_list): New function, add a location list to a DIE at
+	the named attribute.
+	(AT_loc_list): New function, return the location list reference
+	for a given attribute, if it's a location list.
+	(print_die): Handle dw_val_class_loc_list.
+	(size_of_die): Ditto.
+	(value_format): Ditto.
+	(output_die): Ditto.
+	(output_location_lists): New function, output all of the location
+	lists for a DIE and it's children.
+	(dwarf2out_finish): Call output_location_lists if we have location
+	lists.
+
+
 Fri May 18 15:39:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (try_replace_reg): First try global replace, later try to
