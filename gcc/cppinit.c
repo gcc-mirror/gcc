@@ -1787,8 +1787,9 @@ cpp_post_options (pfile)
 
   /* The compiler front ends override this, but I think this is the
      appropriate setting for the library.  */
-  CPP_OPTION (pfile, warn_long_long) = (CPP_OPTION (pfile, pedantic)
-					&& !CPP_OPTION (pfile, c99));
+  CPP_OPTION (pfile, warn_long_long)
+     = ((CPP_OPTION (pfile, pedantic) && !CPP_OPTION (pfile, c99))
+	|| CPP_OPTION (pfile, warn_traditional));
 
   /* Permanently disable macro expansion if we are rescanning
      preprocessed text.  Read preprocesed source in ISO mode.  */

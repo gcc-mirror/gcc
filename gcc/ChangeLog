@@ -1,3 +1,19 @@
+2002-08-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (c_common_init): -Wtraditional also implies -Wlong-long.
+	* cppinit.c (cpp_post_options): Likewise.
+
+	* cppexp.c (cpp_classify_number): Suppress -Wtraditional
+	warning about 'LL' suffix (but not 'ULL' etc) when
+	-Wno-long-long is in effect.
+
+	* cppmacro.c (_cpp_builtin_macro_text) [BT_TIME, BT_DATE]:
+	Check for failing time()/localtime(), issue a warning, and
+	make __TIME__ and __DATE__ expand to fallback strings.
+
+	* doc/cpp.texi, doc/extend.texi: Document behavior of __DATE__
+	and __TIME__ when the date and time cannot be determined.
+
 2002-08-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (output_cbranch): Hint differently for power4.
@@ -48,7 +64,7 @@
 
 2002-08-01  Richard Henderson  <rth@redhat.com>
 
-	* toplev.c (parse_options_and_default_flags): Don't set 
+	* toplev.c (parse_options_and_default_flags): Don't set
 	flag_reorder_blocks for -Os.
 
 	* config/avr/avr.c (avr_optimization_options): Remove.
