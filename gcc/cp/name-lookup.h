@@ -108,6 +108,9 @@ struct cxx_binding GTY(())
 extern cxx_binding *cxx_binding_make (tree, tree);
 extern void cxx_binding_free (cxx_binding *);
 
+/* True if SCOPE designates the global scope binding contour.  */
+#define global_scope_p(SCOPE) \
+  ((SCOPE) == NAMESPACE_LEVEL (global_namespace))
 
 extern cxx_binding *cxx_scope_find_binding_for_name (cxx_scope *, tree);
 extern cxx_binding *binding_for_name (cxx_scope *, tree);
