@@ -97,16 +97,18 @@ static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 void
 override_options ()
 {
-  alpha_cpu = TARGET_CPU_DEFAULT;
+  alpha_cpu = PROCESSOR_EV4;
+
   if (alpha_cpu_string)
     {
-      if (alpha_cpu_string[0] == 'e'
-	  && alpha_cpu_string[1] == 'v'
-	  && (alpha_cpu_string[2] == '4' || alpha_cpu_string[2] == '5'))
-	alpha_cpu = alpha_cpu_string[2] == '4' ? PROCESSOR_EV4 : PROCESSOR_EV5;
+      if (! strcmp (alpha_cpu_string, "ev4")
+	  || ! strcmp (alpha_cpu_string, "21064"))
+	alpha_cpu = PROCESSOR_EV4;
+      else if (! strcmp (alpha_cpu_string, "ev5")
+	       || ! strcmp (alpha_cpu_string, "21164"))
+	alpha_cpu = PROCESSOR_EV5;
       else
-	error ("bad value (%s) for -mcpu switch",
-	       alpha_cpu_string);
+	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
     }
 
   alpha_tp = ALPHA_TP_PROG;
@@ -115,82 +117,63 @@ override_options ()
 
   if (TARGET_IEEE)
     {
-      alpha_tp_string = "i";
-      alpha_fptm_string = "su";
-      target_flags |= MASK_IEEE_CONFORMANT;
+      alpha_tp = ALPHA_TP_INSN;
+      alpha_fptm = ALPHA_FPTM_SU;
     }
 
   if (TARGET_IEEE_WITH_INEXACT)
     {
-      alpha_tp_string = "i";
-      alpha_fptm_string = "sui";
-      target_flags |= MASK_IEEE_CONFORMANT;
+      alpha_tp = ALPHA_TP_INSN;
+      alpha_fptm = ALPHA_FPTM_SUI;
     }
 
   if (alpha_tp_string)
-    switch (alpha_tp_string[0])
-      {
-      case 'p':
+    {
+      if (! strcmp (alpha_tp_string, "p"))
 	alpha_tp = ALPHA_TP_PROG;
-	break;
-
-      case 'f':
+      else if (! strcmp (alpha_tp_string, "f"))
 	alpha_tp = ALPHA_TP_FUNC;
-	break;
-
-      case 'i':
+      else if (! strcmp (alpha_tp_string, "i"))
 	alpha_tp = ALPHA_TP_INSN;
-	break;
-
-      default:
-	error ("bad value (%s) for -mtrap-precision switch",
-		 alpha_tp_string);
-	  break;
-      }
+      else
+	error ("bad value `%s' for -mtrap-precision switch", alpha_tp_string);
+    }
 
   if (alpha_fprm_string)
-    switch (alpha_fprm_string[0])
-      {
-      case 'n':
+    {
+      if (! strcmp (alpha_fprm_string, "n"))
 	alpha_fprm = ALPHA_FPRM_NORM;
-	break;
-
-      case 'm':
+      else if (! strcmp (alpha_fprm_string, "m"))
 	alpha_fprm = ALPHA_FPRM_MINF;
-	break;
-
-      case 'c':
+      else if (! strcmp (alpha_fprm_string, "c"))
 	alpha_fprm = ALPHA_FPRM_CHOP;
-	break;
-
-      case 'd':
+      else if (! strcmp (alpha_fprm_string,"d"))
 	alpha_fprm = ALPHA_FPRM_DYN;
-	break;
-
-      default:
-	error ("bad value (%s) for -mfp-rounding-mode switch",
+      else
+	error ("bad value `%s' for -mfp-rounding-mode switch",
 	       alpha_fprm_string);
-	break;
-      }
+    }
 
   if (alpha_fptm_string)
-    if (strcmp (alpha_fptm_string, "n") == 0)
-      alpha_fptm = ALPHA_FPTM_N;
-    else if (strcmp (alpha_fptm_string, "u") == 0)
-      alpha_fptm = ALPHA_FPTM_U;
-    else if (strcmp (alpha_fptm_string, "su") == 0)
-      alpha_fptm = ALPHA_FPTM_SU;
-    else if (strcmp (alpha_fptm_string, "sui") == 0)
-      alpha_fptm = ALPHA_FPTM_SUI;
-    else
-      error ("bad value (%s) for -mfp-trap-mode switch",
-	     alpha_fptm_string);
+    {
+      if (strcmp (alpha_fptm_string, "n") == 0)
+	alpha_fptm = ALPHA_FPTM_N;
+      else if (strcmp (alpha_fptm_string, "u") == 0)
+	alpha_fptm = ALPHA_FPTM_U;
+      else if (strcmp (alpha_fptm_string, "su") == 0)
+	alpha_fptm = ALPHA_FPTM_SU;
+      else if (strcmp (alpha_fptm_string, "sui") == 0)
+	alpha_fptm = ALPHA_FPTM_SUI;
+      else
+	error ("bad value `%s' for -mfp-trap-mode switch", alpha_fptm_string);
+    }
 
   /* Do some sanity checks on the above option. */
 
-  if (alpha_fptm >= ALPHA_FPTM_SU && alpha_tp != ALPHA_TP_INSN)
+  if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
+      && alpha_tp != ALPHA_TP_INSN)
     {
-      error ("fp software completion requires -mtrap-precision=i");
+      warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
     }
 }
