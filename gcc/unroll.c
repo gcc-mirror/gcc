@@ -225,13 +225,10 @@ static rtx loop_find_equiv_value PROTO((rtx, rtx));
    in loop.c.  */
 
 void
-unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
-	     loop_info, strength_reduce_p)
-     rtx loop_end;
+unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
+     struct loop *loop;
      int insn_count;
-     rtx loop_start;
      rtx end_insert_before;
-     struct loop_info *loop_info;
      int strength_reduce_p;
 {
   int i, j;
@@ -257,6 +254,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      a JUMP_INSN (for conditional jumps) or a BARRIER (for unconditional
      jumps).  */
   rtx last_loop_insn;
+  rtx loop_start = loop->start;
+  rtx loop_end = loop->end;
+  struct loop_info *loop_info = loop->info;
 
   /* Don't bother unrolling huge loops.  Since the minimum factor is
      two, loops greater than one half of MAX_UNROLLED_INSNS will never
@@ -370,10 +370,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	}
 
       /* Remove the loop notes since this is no longer a loop.  */
-      if (loop_info->vtop)
-	delete_insn (loop_info->vtop);
-      if (loop_info->cont)
-	delete_insn (loop_info->cont);
+      if (loop->vtop)
+	delete_insn (loop->vtop);
+      if (loop->cont)
+	delete_insn (loop->cont);
       if (loop_start)
 	delete_insn (loop_start);
       if (loop_end)
@@ -1310,10 +1310,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   if (unroll_type == UNROLL_COMPLETELY)
     {
       /* Remove the loop notes since this is no longer a loop.  */
-      if (loop_info->vtop)
-	delete_insn (loop_info->vtop);
-      if (loop_info->cont)
-	delete_insn (loop_info->cont);
+      if (loop->vtop)
+	delete_insn (loop->vtop);
+      if (loop->cont)
+	delete_insn (loop->cont);
       if (loop_start)
 	delete_insn (loop_start);
       if (loop_end)
@@ -1489,7 +1489,7 @@ precondition_loop_p (loop_start, loop_info,
 	       < GET_MODE_SIZE (GET_MODE (*initial_value))))
     *mode = GET_MODE (*initial_value);
 
-  /* Success! */
+  /* Success!  */
   if (loop_dump_stream)
     fprintf (loop_dump_stream, "Preconditioning: Successful.\n");
   return 1;
@@ -2600,7 +2600,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
       biv_splittable = 1;
       biv_final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
-	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
+	  && (uid_loop[INSN_UID (loop_start)]->exit_count
 	      || unroll_type == UNROLL_NAIVE)
 	  && (uid_luid[REGNO_LAST_UID (bl->regno)] >= INSN_LUID (loop_end)
 	      || ! bl->init_insn
@@ -2690,7 +2690,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	     loop to ensure that it will always be executed no matter
 	     how the loop exits.  Otherwise emit the insn after the loop,
 	     since this is slightly more efficient.  */
-	  if (! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
+	  if (! uid_loop[INSN_UID (loop_start)]->exit_count)
 	    emit_insn_before (gen_move_insn (bl->biv->src_reg,
 					     biv_final_value),
 			      end_insert_before);
@@ -2817,7 +2817,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
       final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
-	  && (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
+	  && (uid_loop[INSN_UID (loop_start)]->exit_count
 	      || unroll_type == UNROLL_NAIVE)
 	  && v->giv_type != DEST_ADDR
 	  /* The next part is true if the pseudo is used outside the loop.
@@ -3245,25 +3245,24 @@ reg_dead_after_loop (reg, loop_start, loop_end)
   enum rtx_code code;
   int jump_count = 0;
   int label_count = 0;
-  int this_loop_num = uid_loop_num[INSN_UID (loop_start)];
+  struct loop *loop = uid_loop[INSN_UID (loop_start)];
 
   /* In addition to checking all exits of this loop, we must also check
      all exits of inner nested loops that would exit this loop.  We don't
      have any way to identify those, so we just give up if there are any
      such inner loop exits.  */
 
-  for (label = loop_number_exit_labels[this_loop_num]; label;
-       label = LABEL_NEXTREF (label))
+  for (label = loop->exit_labels; label; label = LABEL_NEXTREF (label))
     label_count++;
 
-  if (label_count != loop_number_exit_count[this_loop_num])
+  if (label_count != loop->exit_count)
     return 0;
 
   /* HACK: Must also search the loop fall through exit, create a label_ref
      here which points to the loop_end, and append the loop_number_exit_labels
      list to it.  */
   label = gen_rtx_LABEL_REF (VOIDmode, loop_end);
-  LABEL_NEXTREF (label) = loop_number_exit_labels[this_loop_num];
+  LABEL_NEXTREF (label) = loop->exit_labels;
 
   for ( ; label; label = LABEL_NEXTREF (label))
     {
@@ -3343,7 +3342,7 @@ final_biv_value (bl, loop_start, loop_end, n_iterations)
      value of the biv must be invariant.  */
 
   if (n_iterations != 0
-      && ! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]]
+      && ! uid_loop[INSN_UID (loop_start)]->exit_count
       && invariant_p (bl->initial_value))
     {
       increment = biv_total_increment (bl, loop_start, loop_end);
@@ -3423,7 +3422,7 @@ final_giv_value (v, loop_start, loop_end, n_iterations)
      to be known.  */
 
   if (n_iterations != 0
-      && ! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
+      && ! uid_loop[INSN_UID (loop_start)]->exit_count)
     {
       /* ?? It is tempting to use the biv's value here since these insns will
 	 be put after the loop, and hence the biv will have its final value
@@ -3623,9 +3622,8 @@ find_common_reg_term (op0, op1)
    iterations if it can be calculated, otherwise returns zero.  */
 
 unsigned HOST_WIDE_INT
-loop_iterations (loop_start, loop_end, loop_info)
-     rtx loop_start, loop_end;
-     struct loop_info *loop_info;
+loop_iterations (loop)
+     struct loop *loop;
 {
   rtx comparison, comparison_value;
   rtx iteration_var, initial_value, increment, final_value;
@@ -3637,6 +3635,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
   rtx reg_term;
+  struct loop_info *loop_info = loop->info;
 
   loop_info->n_iterations = 0;
   loop_info->initial_value = 0;
@@ -3652,7 +3651,7 @@ loop_iterations (loop_start, loop_end, loop_info)
      accidentally get the branch for a contained loop if the branch for this
      loop was deleted.  We can only trust branches immediately before the
      loop_end.  */
-  last_loop_insn = PREV_INSN (loop_end);
+  last_loop_insn = PREV_INSN (loop->end);
 
   /* ??? We should probably try harder to find the jump insn
      at the end of the loop.  The following code assumes that
@@ -3703,12 +3702,14 @@ loop_iterations (loop_start, loop_end, loop_info)
       return 0;
     }
 
-  /* This can happen due to optimization in load_mems.  */
+  /* The only new registers that care created before loop iterations are
+     givs made from biv increments, so this should never occur.  */
+
   if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
-    return 0;
+    abort ();
 
   iteration_info (iteration_var, &initial_value, &increment,
-		  loop_start, loop_end);
+		  loop->start, loop->end);
   if (initial_value == 0)
     /* iteration_info already printed a message.  */
     return 0;
@@ -3755,7 +3756,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   final_value = comparison_value;
   if (GET_CODE (comparison_value) == REG && invariant_p (comparison_value))
     {
-      final_value = loop_find_equiv_value (loop_start, comparison_value);
+      final_value = loop_find_equiv_value (loop->start, comparison_value);
       /* If we don't get an invariant final value, we are better
 	 off with the original register.  */
       if (!invariant_p (final_value))
@@ -3815,7 +3816,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 
 	  /* Find what reg1 is equivalent to.  Hopefully it will
 	     either be reg2 or reg2 plus a constant.  */
-	  temp = loop_find_equiv_value (loop_start, reg1);
+	  temp = loop_find_equiv_value (loop->start, reg1);
 	  if (find_common_reg_term (temp, reg2))
 	    initial_value = temp;
 	  else
@@ -3823,7 +3824,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 	      /* Find what reg2 is equivalent to.  Hopefully it will
 		 either be reg1 or reg1 plus a constant.  Let's ignore
 		 the latter case for now since it is not so common.  */
-	      temp = loop_find_equiv_value (loop_start, reg2);
+	      temp = loop_find_equiv_value (loop->start, reg2);
 	      if (temp == loop_info->iteration_var)
 		temp = initial_value;
 	      if (temp == reg1)
@@ -3831,7 +3832,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 		  ? reg1 : gen_rtx_PLUS (GET_MODE (reg1), reg1, const2);
 	    }
 	}
-      else if (loop_info->vtop && GET_CODE (reg2) == CONST_INT)
+      else if (loop->vtop && GET_CODE (reg2) == CONST_INT)
 	{
 	  rtx temp;
 
@@ -3842,10 +3843,10 @@ loop_iterations (loop_start, loop_end, loop_info)
 	      where temp2 = init + const.  If the loop has a vtop we
 	      can replace initial_value with const.  */
 
-	  temp = loop_find_equiv_value (loop_start, reg1);
+	  temp = loop_find_equiv_value (loop->start, reg1);
 	  if (GET_CODE (temp) == MINUS && REG_P (XEXP (temp, 0)))
 	    {
-	      rtx temp2 = loop_find_equiv_value (loop_start, XEXP (temp, 0));
+	      rtx temp2 = loop_find_equiv_value (loop->start, XEXP (temp, 0));
 	      if (GET_CODE (temp2) == PLUS
 		  && XEXP (temp2, 0) == XEXP (temp, 1))
 		initial_value = XEXP (temp2, 1);
@@ -3862,7 +3863,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 
      ??? Without a vtop we could still perform the optimization if we check
      the initial and final values carefully.  */
-  if (loop_info->vtop
+  if (loop->vtop
       && (reg_term = find_common_reg_term (initial_value, final_value)))
     {
       initial_value = subtract_reg_term (initial_value, reg_term);
@@ -3892,7 +3893,7 @@ loop_iterations (loop_start, loop_end, loop_info)
       /* ??? Other RTL, such as (neg (reg)) is possible here, but it isn't
 	 clear if it is worthwhile to try to handle such RTL.  */
       if (GET_CODE (increment) == REG || GET_CODE (increment) == SUBREG)
-	increment = loop_find_equiv_value (loop_start, increment);
+	increment = loop_find_equiv_value (loop->start, increment);
 
       if (GET_CODE (increment) != CONST_INT)
 	{

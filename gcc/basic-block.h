@@ -275,6 +275,47 @@ struct loop
 
   /* Auxiliary info specific to a pass.  */
   void *info;
+
+  /* The following are currently used by loop.c but they are likely to
+     disappear as loop.c is converted to use the CFG.  */
+
+  /* Non-zero if the loop has a NOTE_INSN_LOOP_VTOP.  */
+  rtx vtop;
+
+  /* Non-zero if the loop has a NOTE_INSN_LOOP_CONT.
+     A continue statement will generate a branch to NEXT_INSN (cont).  */
+  rtx cont;
+
+  /* The dominator of cont.  */
+  rtx cont_dominator;
+
+  /* The NOTE_INSN_LOOP_BEG.  */
+  rtx start;
+
+  /* The NOTE_INSN_LOOP_END.  */
+  rtx end;
+
+  /* For a rotated loop that is entered near the bottom,
+     this is the label at the top.  Otherwise it is zero.  */
+  rtx top;
+
+  /* Place in the loop where control enters.  */
+  rtx scan_start;
+
+  /* List of all LABEL_REFs which refer to code labels outside the
+     loop.  Used by routines that need to know all loop exits, such as
+     final_biv_value and final_giv_value.
+     
+     This does not include loop exits due to return instructions.
+     This is because all bivs and givs are pseudos, and hence must be
+     dead after a return, so the presense of a return does not affect
+     any of the optimizations that use this info.  It is simpler to
+     just not include return instructions on this list.  */
+  rtx exit_labels;
+
+  /* The number of LABEL_REFs on exit_labels for this loop and all
+     loops nested inside it.  */
+  int exit_count;
 };
 
 
