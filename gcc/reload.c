@@ -4138,6 +4138,13 @@ form_sum (x, y)
      rtx x, y;
 {
   rtx tem;
+  enum machine_mode mode = GET_MODE (x);
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (y);
+
+  if (mode == VOIDmode)
+    mode = Pmode;
 
   if (GET_CODE (x) == CONST_INT)
     return plus_constant (y, INTVAL (x));
@@ -4163,10 +4170,10 @@ form_sum (x, y)
       if (GET_CODE (y) == CONST)
 	y = XEXP (y, 0);
 
-      return gen_rtx (CONST, VOIDmode, gen_rtx (PLUS, Pmode, x, y));
+      return gen_rtx (CONST, VOIDmode, gen_rtx (PLUS, mode, x, y));
     }
 
-  return gen_rtx (PLUS, Pmode, x, y);
+  return gen_rtx (PLUS, mode, x, y);
 }
 
 /* If ADDR is a sum containing a pseudo register that should be
