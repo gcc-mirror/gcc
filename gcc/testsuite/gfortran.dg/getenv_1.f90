@@ -1,4 +1,4 @@
-! { dg do-run }
+! { dg-do run }
 ! Test the getenv and get_environment_variable intrinsics.
 ! Ignore the return value because it's not supported/meaningful on all targets
 program getenv_1
