@@ -386,6 +386,7 @@ extdefs:
 extdef:
 	extdef_1
 	{ parsing_iso_function_signature = false; } /* Reset after any external definition.  */
+	;
 
 extdef_1:
 	fndef
@@ -797,6 +798,7 @@ old_style_parm_decls:
 	{
 	  parsing_iso_function_signature = false; /* Reset after decls.  */
 	}
+	;
 
 old_style_parm_decls_1:
 	/* empty */
