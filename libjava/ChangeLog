@@ -1,5 +1,9 @@
 2002-04-06  Mark Wielaard <mark@klomp.org>
 
+	* java/lang/Character,java (isDefined): getType() != UNASSIGNED.
+
+2002-04-06  Mark Wielaard <mark@klomp.org>
+
 	* java/util/ArrayList.java (addAll(int,Collection)): System.arraycopy
 	all of the remaining elements.
 	* java/util/Vector.java (addAll(int,Collection)): Likewise.

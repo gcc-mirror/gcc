@@ -1583,7 +1583,7 @@ public final class Character implements Serializable, Comparable
    */
   public static boolean isDefined(char ch)
   {
-    return getType(ch) == UNASSIGNED;
+    return getType(ch) != UNASSIGNED;
   }
 
   /**
