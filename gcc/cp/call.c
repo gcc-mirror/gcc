@@ -3358,8 +3358,6 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     }
 
  valid_operands:
-  arg2 = decl_constant_value (arg2);
-  arg3 = decl_constant_value (arg3);
   result = fold (build (COND_EXPR, result_type, arg1, arg2, arg3));
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */

@@ -1587,6 +1587,24 @@ build_offset_ref (tree type, tree name, bool address_p)
 tree
 decl_constant_value (tree decl)
 {
+  /* When we build a COND_EXPR, we don't know whether it will be used
+     as an lvalue or as an rvalue.  If it is an lvalue, it's not safe
+     to replace the second and third operands with their
+     initializers.  So, we do that here.  */
+  if (TREE_CODE (decl) == COND_EXPR)
+    {
+      tree d1;
+      tree d2;
+
+      d1 = decl_constant_value (TREE_OPERAND (decl, 1));
+      d2 = decl_constant_value (TREE_OPERAND (decl, 2));
+
+      if (d1 != TREE_OPERAND (decl, 1) || d2 != TREE_OPERAND (decl, 2))
+	return build (COND_EXPR,
+		      TREE_TYPE (decl),
+		      TREE_OPERAND (decl, 0), d1, d2);
+    }
+
   if (TREE_READONLY_DECL_P (decl)
       && ! TREE_THIS_VOLATILE (decl)
       && DECL_INITIAL (decl)

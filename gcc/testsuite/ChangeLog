@@ -1,3 +1,7 @@
+2003-08-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/expr/cond3.C: New test.
+
 2003-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-1.c: Add new builtin cases.

@@ -1,5 +1,8 @@
 2003-08-28  Mark Mitchell  <mark@codesourcery.com>
 
+	* init.c (decl_constant_value): Deal with COND_EXPR specially.
+	* call.c (build_conditional_expr): Revert previous patch.
+
 	PR optimization/5079
 	* call.c (build_conditional_expr): Use decl_constant_value to
 	simplify the arguments.
