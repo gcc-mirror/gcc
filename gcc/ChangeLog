@@ -1,3 +1,8 @@
+2002-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (make_decl_rtl): Don't allow weak variables to be
+	placed in common.
+
 Thu May 23 19:43:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (dump_flow_info): Print results of
