@@ -1,3 +1,7 @@
+Thu Aug 28 15:14:46 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k/m68k.md (iorsi_zexthi_ashl16): Disable.
+
 1997-08-27  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* Makefile.in (config.status): Depend on version.c
