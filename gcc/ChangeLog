@@ -1,3 +1,10 @@
+2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.h (CPP_SPEC): Don't define __LANGUAGE_C and
+	variants for .cpp/.cp/.c++ files. 
+	Move definition of __LANGUAGE_C_PLUS_PLUS ...
+	(CPLUSPLUS_CPP_SPEC): ... here.
+
 Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (duplicate_loop_exit_test): Fix loop header heuristics.
