@@ -957,9 +957,8 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  default: { int _zxy= const_costs(RTX, CODE);	\
-	     if(_zxy) return _zxy; break;}
+#define DEFAULT_RTX_COSTS(RTX,CODE,OUTER_CODE) \
+  return (const_costs (RTX, CODE));
 
 #define BRANCH_COST 0
 

@@ -1,3 +1,8 @@
+Mon Mar 23 23:18:48 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.h (CONST_COSTS): Remove definition.
+	(DEFAULT_RTX_COSTS): Define.
+
 Mon Mar 23 22:58:22 1998  Joel Sherrill (joel@OARcorp.com)
 
 	* config/sh/rtems.h: Switched from ELF to COFF.
