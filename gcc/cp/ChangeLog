@@ -1,5 +1,7 @@
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* parser.c (cp_parser_parameter_declaration): Fix comment.
+
 	PR c++/12226
 	* call.c (CHECK_COPY_CONSTRUCTOR_P): New macro.
 	(reference_binding): Set it when appropriate.
