@@ -83,6 +83,14 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 			: "long long unsigned int"))
 #endif
 
+#ifndef STDC_0_IN_SYSTEM_HEADERS
+#define STDC_0_IN_SYSTEM_HEADERS 0
+#endif
+
+#ifndef REGISTER_PREFIX
+#define REGISTER_PREFIX ""
+#endif
+
 /* The variant of the C language being processed.  */
 
 enum c_language_kind c_language;
@@ -4331,10 +4339,17 @@ cb_register_builtins (pfile)
     cpp_define (pfile, "__USING_SJLJ_EXCEPTIONS__");
 
   /* stddef.h needs to know these.  */
-  builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE);
-  builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE);
-  builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE);
-  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE);
+  builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE, 0);
+  builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE, 0);
+  builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
+  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
+
+  /* For use in assembly language.  */
+  builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
+  builtin_define_with_value ("__USER_LABEL_PREFIX__", user_label_prefix, 0);
+
+  /* Misc.  */
+  builtin_define_with_value ("__VERSION__", version_string, 1);
 
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
@@ -4385,23 +4400,28 @@ builtin_define_std (macro)
     }
 }
 
-/* Pass an object-like macro and a value to define it to.  */
+/* Pass an object-like macro and a value to define it to.  The third
+   parameter says whether or not to turn the value into a string
+   constant.  */
 void
-builtin_define_with_value (macro, expansion)
+builtin_define_with_value (macro, expansion, is_str)
      const char *macro;
      const char *expansion;
+     int is_str;
 {
-  char *buf, *q;
+  char *buf;
   size_t mlen = strlen (macro);
   size_t elen = strlen (expansion);
+  size_t extra = 2;  /* space for an = and a NUL */
 
-  q = buf = alloca (mlen + elen + 2);
-  memcpy (q, macro, mlen);
-  q += mlen;
-  *q++ = '=';
-  memcpy (q, expansion, elen);
-  q += elen;
-  *q = '\0';
+  if (is_str)
+    extra += 2;  /* space for two quote marks */
+
+  buf = alloca (mlen + elen + extra);
+  if (is_str)
+    sprintf (buf, "%s=\"%s\"", macro, expansion);
+  else
+    sprintf (buf, "%s=%s", macro, expansion);
 
   cpp_define (parse_in, buf);
 }
@@ -4429,6 +4449,7 @@ c_common_init (filename)
      options->unsigned_char = !flag_signed_char; */
 
   options->warn_multichar = warn_multichar;
+  options->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
 
   /* Register preprocessor built-ins before calls to
      cpp_main_file.  */

@@ -1,3 +1,41 @@
+2002-05-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (STDC_0_IN_SYSTEM_HEADERS, REGISTER_PREFIX):
+	Default-define here.
+	(builtin_define_with_value): Can now wrap the expansion in
+	quotation marks if such is wanted.
+	(cb_register_builtins): Update calls to	builtin_define_with_value.  
+	Define __REGISTER_PREFIX__, __USER_LABEL_PREFIX__, and __VERSION__
+	here.
+	(c_common_init): Set options->stdc_0_in_system_headers.
+	* c-lex.h: Update prototype of builtin_define_with_value.
+	* cppdefault.h: Remove default definitions of USER_LABEL_PREFIX
+	and REGISTER_PREFIX.
+
+	* cppinit.c (VERS, ULP, C, X): Kill.
+	(builtin_array): Remove entries for __VERSION__,
+	__USER_LABEL_PREFIX__, __REGISTER_PREFIX__, and
+	__HAVE_BUILTIN_SETJMP__.  Make __STDC__ always a builtin, not
+	a constant.
+	(init_builtins): Kill off a bunch of now-dead code.
+	(COMMAND_LINE_OPTIONS): Remove -fleading-underscore and
+	-fno-leading-underscore.
+	(cpp_handle_option): Remove code to set user_label_prefix.
+	(cpp_post_options): Likewise.
+
+	* cpplib.h (struct cpp_options): Remove user_label_prefix.
+	(stdc_0_in_system_headers): New.
+	* cppmacro.c (builtin_macro): Check CPP_OPTION (pfile,
+	stdc_0_in_system_headers) too to decide the value of __STDC__.
+
+	* tradcpp.c (user_label_prefix): Kill.
+	(main): Remove code handling -f(no-)leading-underscore.	
+	(initialize_builtins): Don't define __REGISTER_PREFIX__
+	or __USER_LABEL_PREFIX__.
+	(install_value): Wrap compound statement in dummy loop so the
+	macro works properly in an if statement.
+
+
 2002-05-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* loop.h (struct loop_info): Add member has_prefetch.

@@ -42,24 +42,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #undef CROSS_INCLUDE_DIR
 #endif
 
-/* We let tm.h override the types used here, to handle trivial differences
-   such as the choice of unsigned int or long unsigned int for size_t.
-   When machines start needing nontrivial differences in the size type,
-   it would be best to do something here to figure out automatically
-   from other information what type to use.  */
-
-/* The string value for __USER_LABEL_PREFIX__ */
-
-#ifndef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-#endif
-
-/* The string value for __REGISTER_PREFIX__ */
-
-#ifndef REGISTER_PREFIX
-#define REGISTER_PREFIX ""
-#endif
-
 /* This is the default list of directories to search for include files.
    It may be overridden by the various -I and -ixxx options.
 
