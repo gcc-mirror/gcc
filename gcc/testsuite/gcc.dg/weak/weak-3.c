@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-require-weak "" } */
 /* { dg-options "-fno-common" } */
 

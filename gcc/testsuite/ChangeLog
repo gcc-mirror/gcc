@@ -1,5 +1,12 @@
 2004-10-27  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc.dg/weak/typeof-2.c: Needs aliases as well as weak.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/weak/weak-5.c: Likewise.
+	* gcc.dg/weak/weak-9.c: Likewise.
+	* lib/file-format.exp (gcc_target_object_format): Darwin has Mach-O.
+	* lib/target-supports.exp (check_weak_available): Mach-O does weak.
+
 	* gcc.dg/darwin-weakimport-1.c: New.
 
 2004-10-28  Ben Elliston  <bje@au.ibm.com>

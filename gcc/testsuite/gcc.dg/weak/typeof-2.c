@@ -1,6 +1,7 @@
 /* Test typeof with __asm redirection. */
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
+/* { dg-require-alias "" } */
 /* { dg-options "-O2" } */
 
 extern int foo1 (int x) __asm ("baz1");
