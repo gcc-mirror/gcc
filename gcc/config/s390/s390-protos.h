@@ -46,6 +46,7 @@ extern int s390_single_qi PARAMS ((rtx, enum machine_mode, int));
 extern int s390_extract_qi PARAMS ((rtx, enum machine_mode, int));
 
 extern int s390_match_ccmode PARAMS ((rtx, enum machine_mode));
+extern enum machine_mode s390_tm_ccmode PARAMS ((rtx, rtx, int));
 extern enum machine_mode s390_select_ccmode PARAMS ((enum rtx_code, rtx, rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern int legitimate_la_operand_p PARAMS ((rtx));

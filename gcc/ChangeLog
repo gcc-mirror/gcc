@@ -1,3 +1,68 @@
+2002-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* s390-modes.def [CCL1, CCL2, CCT1, CCT2, CCT3, CCUR, CCSR]: Declare
+	new condition code modes.
+	s390.c (s390_match_ccmode_set): Handle those new CC modes.
+	(s390_select_ccmode): Likewise.
+	(s390_branch_condition_mask): Likewise.
+
+	* s390-protos.h (s390_tm_ccmode): Declare.
+	s390.c (s390_tm_ccmode): New function.
+	(s390_match_ccmode): Allow VOIDmode as REQ_MODE.
+
+	* s390.md ("*cmpdi_tm2"): Rename to "*tmdi_ext".
+	("*cmpsi_tm2"): Rename to "*tmsi_ext".
+	("*cmpqi_tm2"): Rename to "*tmqi_ext".
+
+	("*cmpdi_tm_reg", "*cmpdi_tm_mem", "*cmpsi_tm_reg", "*cmpsi_tm_mem",
+	"*cmphi_tm_sub","*cmphi_cct_0",  "*cmpqi_tm", "*cmpqi_tm_sub",
+	"*cmpqi_cct_0", "*tm_0"): Remove, replace by ...
+	("*tmdi_reg", "*tmsi_reg", "*tmdi_mem", "*tmsi_mem", "*tmhi_mem",
+	"*tmqi_mem", "*tmhi_full", "*tmqi_full"): ... these new patterns.
+
+	("*ltgr", "*cmpdi_ccs_0_64", "*cmpdi_ccs_0_31", "*ltr", "*icm15",
+	"*icm15_cconly", "*cmpsi_ccs_0", "*icm3", "*cmphi_ccs_0", "*icm1", 
+	"*cmpqi_ccs_0"): Remove, replace by ...
+	("*tstdi_sign", "*tstdi", "*tstdi_cconly", "*tstdi_cconly_31",
+	"*tstsi", "*tstsi_cconly", "*tstsi_cconly2", "*tsthi", "*tsthi_cconly", 
+	"*tstqi", "*tstqi_cconly"): ... these new patterns.
+
+	("*cmpsidi_ccs"): Remove, replace by ...
+	("*cmpsi_ccs_sign"): ... this new pattern.
+	("*cmpdi_ccs_sign", "*cmpdi_ccu_zero"): New patterns.
+
+	("*cmpqi_ccu_0", "*cmpqi_ccu_immed"): Remove, replace by ...
+	("*cli"): ... this new pattern.
+
+	("*adddi3_sign", "*adddi3_zero_cc", "*adddi3_zero_cconly",
+	"*adddi3_zero", "*adddi3_cc", "*adddi3_cconly", "*adddi3_cconly2"):
+	New patterns.
+	("adddi3_64"): Rename to "*adddi3_64".
+	("adddi3_31"): Replace by insn and splitter "*adddi3_31".
+	("adddi3"): Adapt expander.
+
+	("*addsi3_cc"): Allow "general_operand" for operand 2.
+	("*addsi3_carry1_cc", "*addsi3_carry1_cconly", 
+	"*addsi3_carry2_cc", "*addsi3_carry2_cconly"): New patterns.
+
+	("addhi3", "addqi3"): Remove, replace by ...
+	("*addsi3_sign", "*addsi3_sub"): ... these new patterns.
+
+	("*subdi3_sign", "*subdi3_zero_cc", "*subdi3_zero_cconly",
+	"*subdi3_zero", "*subdi3_cc", "*subdi3_cconly"): New patterns.
+	("subdi3"): Replace by insn and splitter "*subdi3_31".
+	("subdi3"): New expander.
+
+	("*subsi3_borrow_cc", "*subsi3_borrow_cconly"): New patterns.
+
+	("subhi3", "subqi3"): Remove, replace by ...
+	("*subsi3_sign", "*subsi3_sub"): ... these new patterns.
+
+	("*muldi3_sign"): New pattern.
+	("muldi3"): Do not clobber CC.
+	("mulsi3"): Likewise.
+	("mulsi_6432"): Likewise.
+
 2002-08-13  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md: Call CC_STATUS_INIT in all peepnoles
