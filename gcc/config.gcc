@@ -243,7 +243,7 @@ ia64-*-*)
 hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
 	;;
-m680[02]0-*-*)
+m680[012]0-*-*)
 	cpu_type=m68k
 	extra_headers=math-68881.h
 	;;
@@ -1930,6 +1930,18 @@ m68k-*-lynxos*)
 		tm_file=m68k/lynx-ng.h
 	fi
 	tmake_file=m68k/t-lynx
+	float_format=m68k
+	;;
+m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
+	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
+	case $machine in
+	m68010*)
+		target_cpu_default="0"
+		;;
+	*)
+		target_cpu_default="MASK_68020|MASK_68881|MASK_BITFIELD"
+		;;
+	esac
 	float_format=m68k
 	;;
 m68k*-*-netbsd*)

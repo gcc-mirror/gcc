@@ -1,3 +1,10 @@
+2002-02-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc: Set cpu_type to m68k for 68010, as well.
+	(m68010-*-netbsdelf*): New...
+	(m68k*-*-netbsdelf*): ...targets.
+	* config/m68k/netbsd-elf.h: New file.
+
 2002-02-02  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (hand_list): Move inside function_arg.
