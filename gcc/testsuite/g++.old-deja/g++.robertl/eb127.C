@@ -39,7 +39,7 @@ void ODEsolver::midpointODE(vector<double>& y, double& t, double& dt)
 
 void ODEsolver::init()
 {
-  ODEsolver::useMethod = ODEsolver::midpointODE;
+  ODEsolver::useMethod = &ODEsolver::midpointODE;
 }
 
 void ODEsolver::timeloop(vector<double>& y, double ts, double te, double dt)
