@@ -735,6 +735,10 @@ extern int current_function_anonymous_args;
 #define SETUP_INCOMING_VARARGS(CUM, MODE, TYPE, PAS, SECOND) \
   current_function_anonymous_args = (!TARGET_GHS ? 1 : 0);
 
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  v850_va_arg (valist, type)
+
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
   ((TYPE) && int_size_in_bytes (TYPE) > 8)
  
@@ -1663,3 +1667,4 @@ extern int    v850_handle_pragma            PROTO ((int (*)(void), void (*)(int)
 extern void   v850_encode_data_area         ();
 extern void   v850_set_default_decl_attr    ();
 extern v850_data_area v850_get_data_area    ();
+extern struct rtx_def *v850_va_arg	    ();

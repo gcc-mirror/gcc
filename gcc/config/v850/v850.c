@@ -3150,3 +3150,45 @@ v850_set_default_decl_attr (decl)
 	}
     }
 }
+
+/* Implement `va_arg'.  */
+
+rtx
+v850_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT size, rsize, align;
+  tree addr, incr;
+  rtx addr_rtx;
+  int indirect;
+
+  /* Round up sizeof(type) to a word.  */
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+  indirect = 0;
+
+  if (size > 8)
+    {
+      size = rsize = UNITS_PER_WORD;
+      indirect = 1;
+    }
+
+  addr = save_expr (valist);
+  incr = fold (build (PLUS_EXPR, ptr_type_node, valist,
+		      build_int_2 (rsize, 0)));
+
+  incr = build (MODIFY_EXPR, ptr_type_node, valist, incr);
+  TREE_SIDE_EFFECTS (incr) = 1;
+  expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  addr_rtx = expand_expr (addr, NULL, Pmode, EXPAND_NORMAL);
+
+  if (indirect)
+    {
+      addr_rtx = force_reg (Pmode, addr_rtx);
+      addr_rtx = gen_rtx_MEM (Pmode, addr_rtx);
+      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+    }
+
+  return addr_rtx;
+}
