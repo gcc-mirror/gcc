@@ -1600,7 +1600,7 @@ comparisons, and so forth.
 @item COMPLEX_CST
 These nodes are used to represent complex number constants, that is a
 @code{__complex__} whose parts are constant nodes.  The 
-@code{TREE_REALPART} and @code@TREE_IMAGPART} return the real and the
+@code{TREE_REALPART} and @code{TREE_IMAGPART} return the real and the
 imaginary parts respectively.
 
 @item STRING_CST
