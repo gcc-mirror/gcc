@@ -814,7 +814,7 @@ c-common.o : c-common.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 
 # Language-independent files.
 
-gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h
+gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
@@ -1178,7 +1178,7 @@ cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
-cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
+cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 # The reason we use $(libdir)/g++-include rather than using libsubdir
 # is for compatibility with the current version of libg++.
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
