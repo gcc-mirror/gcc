@@ -1,3 +1,8 @@
+Thu Oct  1 18:43:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): Fix test if reload_reg_rtx[r] was
+	copied from reload_out[r] .
+
 Thu Oct  1 19:20:09 1998  John Carr  <jfc@mit.edu>
 
 	* dwarf2out.c (expand_builtin_dwarf_reg_size): Fix to work
