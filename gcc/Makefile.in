@@ -1764,6 +1764,7 @@ intl.all intl.install intl.uninstall intl.distdir \
 	  target=`expr $@ : 'intl.\(.*\)'` && \
 	  echo "(cd $$d && $(MAKE) $$target)" && \
 	  (cd $$d && AWK='$(AWK)' $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $$target); \
+	  if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
 	done
 
 # intl.distdir doesn't copy the intl makefiles (since they aren't distributed),
