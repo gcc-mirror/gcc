@@ -1,3 +1,8 @@
+2004-08-01  Roger Sayle  <roger@eyesopen.com>
+
+	* io/write.c (write_float): Use the slightly more portable isnan
+	in preference to isinf.
+
 2004-07-18  Bud Davis  <bdavis9659@comcast.net>
 
 	* configure.ac: Add check for LFS support. 

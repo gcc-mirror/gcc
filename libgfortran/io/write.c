@@ -523,7 +523,7 @@ write_float (fnode *f, const char *source, int len)
          }
 
          memset(p, ' ', nb);
-         res = isinf (n); 
+         res = !isnan (n); 
          if (res != 0)
          {
             if (signbit(n))   
