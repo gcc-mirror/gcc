@@ -6190,7 +6190,9 @@ store_parm_decls ()
 	      DECL_ARG_TYPE (found) = TREE_TYPE (found);
 	      DECL_SOURCE_LINE (found) = DECL_SOURCE_LINE (fndecl);
 	      DECL_SOURCE_FILE (found) = DECL_SOURCE_FILE (fndecl);
-	      if (extra_warnings)
+	      if (flag_isoc99)
+		pedwarn_with_decl (found, "type of `%s' defaults to `int'");
+	      else if (extra_warnings)
 		warning_with_decl (found, "type of `%s' defaults to `int'");
 	      pushdecl (found);
 	    }
