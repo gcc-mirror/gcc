@@ -6,6 +6,7 @@
 #endif
 
 #include "sparc/sparc.h"
+#include "dbxelf.h"
 #include "elfos.h"
 #include "svr4.h"
 #include "sparc/sysv4.h"
