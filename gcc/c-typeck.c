@@ -2807,6 +2807,8 @@ build_unary_op (code, xarg, noconvert)
       if (typecode == COMPLEX_TYPE)
 	{
 	  code = CONJ_EXPR;
+	  if (pedantic)
+	    pedwarn ("ISO C does not support `~' for complex conjugation");
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
