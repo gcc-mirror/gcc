@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for DEC Alpha.
-   Copyright (C) 1990, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1990, 92, 93, 94, 95, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
 This file is part of GNU CC.
@@ -53,16 +53,6 @@ extern void *alloca ();
 
 #ifndef __GNUC__
 #define ONLY_INT_FIELDS
-#endif
-
-/* Declare some functions needed for this machine.  We don't want to
-   include these in the sources since other machines might define them
-   differently.  */
-
-extern void *malloc (), *realloc (), *calloc ();
-
-#ifndef inhibit_libc
-#include "string.h"
 #endif
 
 /* OSF/1 is POSIX.1 compliant.  */
