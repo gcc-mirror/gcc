@@ -7482,11 +7482,27 @@ foo:	.long	25
 	leal	foo@DTPOFF(%eax), %edx
 	movl	foo@GOTTPOFF(%ebx), %eax
 	subl	foo@GOTTPOFF(%ebx), %eax
+	addl	foo@GOTNTPOFF(%ebx), %eax
+	movl	foo@INDNTPOFF, %eax
 	movl	$foo@TPOFF, %eax
 	subl	$foo@TPOFF, %eax
 	leal	foo@NTPOFF(%ecx), %eax'
 	tls_first_major=2
-	tls_first_minor=13
+	tls_first_minor=14
+	;;
+  x86_64-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	movq	%fs:0, %rax
+	leaq	foo@TLSGD(%rip), %rdi
+	leaq	foo@TLSLD(%rip), %rdi
+	leaq	foo@DTPOFF(%rax), %rdx
+	movq	foo@GOTTPOFF(%rip), %rax
+	movq	$foo@TPOFF, %rax'
+	tls_first_major=2
+	tls_first_minor=14
 	;;
   ia64-*-*)
     conftest_s='
