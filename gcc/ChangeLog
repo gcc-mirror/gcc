@@ -1,3 +1,7 @@
+2003-01-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ra-build.c (undef_to_size_word): Avoid `switch' warning.
+
 2003-01-17  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/rs6000.md (*floatsidf2_internal):  Add earlyclobbers.

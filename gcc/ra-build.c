@@ -398,8 +398,9 @@ undef_to_size_word (reg, undefined)
     }
 
   /* Otherwise we handle certain cases directly.  */
-  switch (*undefined)
-    {
+  if (*undefined <= 0xffff)
+    switch ((int) *undefined)
+      {
       case 0x00f0 : *undefined = 0; return BL_TO_WORD (4, 4);
       case 0x00ff : *undefined = 0; return BL_TO_WORD (0, 8);
       case 0x0f00 : *undefined = 0; return BL_TO_WORD (8, 4);
@@ -413,29 +414,25 @@ undef_to_size_word (reg, undefined)
       case 0xff00 : *undefined = 0; return BL_TO_WORD (8, 8);
       case 0xfff0 : *undefined = 0xf0; return BL_TO_WORD (8, 8);
       case 0xffff : *undefined = 0; return BL_TO_WORD (0, 16);
+      }
 
-      /* And if nothing matched fall back to the general solution.
-	 For now unknown undefined bytes are converted to sequences
-	 of maximal length 4 bytes.  We could make this larger if
-	 necessary.  */
-      default :
-	{
-	  unsigned HOST_WIDE_INT u = *undefined;
-	  int word;
-	  struct undef_table_s tab;
-	  for (word = 0; (u & 15) == 0; word += 4)
-	    u >>= 4;
-	  u = u & 15;
-	  tab = undef_table[u];
-	  u = tab.new_undef;
-	  u = (*undefined & ~((unsigned HOST_WIDE_INT)15 << word))
-	      | (u << word);
-	  *undefined = u;
-	  /* Size remains the same, only the begin is moved up move bytes.  */
-	  return tab.size_word + BL_TO_WORD (word, 0);
-	}
-	break;
-    }
+  /* And if nothing matched fall back to the general solution.  For
+     now unknown undefined bytes are converted to sequences of maximal
+     length 4 bytes.  We could make this larger if necessary.  */
+  {
+    unsigned HOST_WIDE_INT u = *undefined;
+    int word;
+    struct undef_table_s tab;
+    for (word = 0; (u & 15) == 0; word += 4)
+      u >>= 4;
+    u = u & 15;
+    tab = undef_table[u];
+    u = tab.new_undef;
+    u = (*undefined & ~((unsigned HOST_WIDE_INT)15 << word)) | (u << word);
+    *undefined = u;
+    /* Size remains the same, only the begin is moved up move bytes.  */
+    return tab.size_word + BL_TO_WORD (word, 0);
+  }
 }
 
 /* Put the above three functions together.  For a set of undefined bytes
