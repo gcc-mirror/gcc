@@ -415,6 +415,7 @@ save_for_inline_copying (fndecl)
   int max_uid;
   rtx first_nonparm_insn;
   char *new, *new1;
+  rtx *new_parm_reg_stack_loc;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
@@ -520,6 +521,13 @@ save_for_inline_copying (fndecl)
 
   for (i = min_labelno; i < max_labelno; i++)
     label_map[i] = gen_label_rtx ();
+
+  /* Likewise for parm_reg_stack_slot.  */
+  new_parm_reg_stack_loc = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
+  for (i = 0; i < max_parm_reg; i++)
+    new_parm_reg_stack_loc[i] = copy_for_inline (parm_reg_stack_loc[i]);
+
+  parm_reg_stack_loc = new_parm_reg_stack_loc;
 
   /* Record the mapping of old insns to copied insns.  */
 
