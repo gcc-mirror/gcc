@@ -1077,7 +1077,7 @@ not specified is @samp{misc,tree,gc,rtlflag}; the checks @samp{rtl},
 @samp{gcac} and @samp{valgrind} are very expensive.
 
 @item --enable-coverage
-@item --enable-coverage=@var{level}
+@itemx --enable-coverage=@var{level}
 With this option, the compiler is built to collect self coverage
 information, every time it is run. This is for internal development
 purposes, and only works when the compiler is being built with gcc. The

@@ -1049,7 +1049,7 @@ names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 Default, ISO C90 plus GNU extensions (including some C99 features).
 
 @item gnu99
-@item gnu9x
+@itemx gnu9x
 ISO C99 plus GNU extensions.  When ISO C99 is fully implemented in GCC,
 this will become the default.  The name @samp{gnu9x} is deprecated.
 
@@ -7796,62 +7796,62 @@ This specifies the @var{executable} that will be loading the build
 output file being linked. See man ld(1) for more information.
 
 @item -allowable_client  @var{client_name}
-@item -arch_only
+@itemx -arch_only
 
-@item -client_name       
-@item -compatibility_version
-@item -current_version    
-@item -dependency-file
-@item -dylib_file    
-@item -dylinker_install_name
-@item -dynamic
-@item -dynamiclib   
-@item -exported_symbols_list  
-@item -filelist
-@item -flat_namespace   
-@item -force_cpusubtype_ALL
-@item -force_flat_namespace   
-@item -headerpad_max_install_names
-@item -image_base  
-@item -init
-@item -install_name
-@item -keep_private_externs
-@item -multi_module
-@item -multiply_defined      
-@item -multiply_defined_unused      
-@item -noall_load  
-@item -nofixprebinding
-@item -nomultidefs
-@item -noprebind     
-@item -noseglinkedit
-@item -pagezero_size    
-@item -prebind
-@item -prebind_all_twolevel_modules
-@item -private_bundle
-@item -read_only_relocs
-@item -sectalign  
-@item -sectobjectsymbols    
-@item -whyload
-@item -seg1addr 
-@item -sectcreate
-@item -sectobjectsymbols
-@item -sectorder
-@item -seg_addr_table
-@item -seg_addr_table_filename
-@item -seglinkedit
-@item -segprot   
-@item -segs_read_only_addr
-@item -segs_read_write_addr
-@item -single_module   
-@item -static
-@item -sub_library
-@item -sub_umbrella 
-@item -twolevel_namespace
-@item -umbrella
-@item -undefined
-@item -unexported_symbols_list
-@item -weak_reference_mismatches
-@item -whatsloaded  
+@itemx -client_name       
+@itemx -compatibility_version
+@itemx -current_version    
+@itemx -dependency-file
+@itemx -dylib_file    
+@itemx -dylinker_install_name
+@itemx -dynamic
+@itemx -dynamiclib   
+@itemx -exported_symbols_list  
+@itemx -filelist
+@itemx -flat_namespace   
+@itemx -force_cpusubtype_ALL
+@itemx -force_flat_namespace   
+@itemx -headerpad_max_install_names
+@itemx -image_base  
+@itemx -init
+@itemx -install_name
+@itemx -keep_private_externs
+@itemx -multi_module
+@itemx -multiply_defined      
+@itemx -multiply_defined_unused      
+@itemx -noall_load  
+@itemx -nofixprebinding
+@itemx -nomultidefs
+@itemx -noprebind     
+@itemx -noseglinkedit
+@itemx -pagezero_size    
+@itemx -prebind
+@itemx -prebind_all_twolevel_modules
+@itemx -private_bundle
+@itemx -read_only_relocs
+@itemx -sectalign  
+@itemx -sectobjectsymbols    
+@itemx -whyload
+@itemx -seg1addr 
+@itemx -sectcreate
+@itemx -sectobjectsymbols
+@itemx -sectorder
+@itemx -seg_addr_table
+@itemx -seg_addr_table_filename
+@itemx -seglinkedit
+@itemx -segprot   
+@itemx -segs_read_only_addr
+@itemx -segs_read_write_addr
+@itemx -single_module   
+@itemx -static
+@itemx -sub_library
+@itemx -sub_umbrella 
+@itemx -twolevel_namespace
+@itemx -umbrella
+@itemx -undefined
+@itemx -unexported_symbols_list
+@itemx -weak_reference_mismatches
+@itemx -whatsloaded  
 
 @opindex allowable_client
 @opindex arch_only    
@@ -7910,7 +7910,7 @@ output file being linked. See man ld(1) for more information.
 @opindex weak_reference_mismatches
 @opindex whatsloaded
 
-This options are available for Darwin linker. Darwin linker man page
+These options are available for Darwin linker. Darwin linker man page
 describes them in detail.
 @end table
 
@@ -8569,7 +8569,7 @@ and will not be binary compatible with structures in code compiled
 without that switch.
 
 @item -m96bit-long-double
-@item -m128bit-long-double
+@itemx -m128bit-long-double
 @opindex m96bit-long-double
 @opindex m128bit-long-double
 These switches control the size of @code{long double} type. The i386 
@@ -9368,7 +9368,7 @@ Supported values for @var{cpu_type} are
 
 @table @samp
 @item ev4
-@item ev45
+@itemx ev45
 @itemx 21064
 Schedules as an EV4 and has no instruction set extensions.
 
@@ -9390,7 +9390,7 @@ Schedules as an EV5 and supports the BWX and MAX extensions.
 Schedules as an EV6 and supports the BWX, FIX, and MAX extensions.
 
 @item ev67
-@item 21264a
+@itemx 21264a
 Schedules as an EV6 and supports the BWX, CIX, FIX, and MAX extensions.
 @end table
 
@@ -9640,7 +9640,7 @@ parameters for machine type @var{cpu_type}.  Supported values for
 TMS320C40.
 
 @item -mbig-memory
-@item -mbig
+@itemx -mbig
 @itemx -msmall-memory
 @itemx -msmall
 @opindex mbig-memory
@@ -10732,7 +10732,7 @@ Use 32-bit @code{int}.
 Use 64-bit @code{float}.  This is the default.
 
 @item -mfloat32
-@item -mno-float64
+@itemx -mno-float64
 @opindex mfloat32
 @opindex mno-float64
 Use 32-bit @code{float}.
