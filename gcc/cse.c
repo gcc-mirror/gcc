@@ -348,6 +348,12 @@ static int cse_jumps_altered;
 
 static int do_not_record;
 
+#ifdef LOAD_EXTEND_OP
+
+/* Scratch rtl used when looking for load-extended copy of a MEM.  */
+static rtx memory_extend_rtx;
+#endif
+
 /* canon_hash stores 1 in hash_arg_in_memory
    if it notices a reference to memory within the expression being hashed.  */
 
@@ -6378,7 +6384,53 @@ cse_insn (insn, in_libcall_block)
 		}
 	    }
 	}
-		  
+
+#ifdef LOAD_EXTEND_OP
+      /* See if a MEM has already been loaded with a widening operation;
+	 if it has, we can use a subreg of that.  Many CISC machines
+	 also have such operations, but this is only likely to be
+	 beneficial these machines.  */
+      
+      if (flag_expensive_optimizations &&  src_related == 0
+	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_CODE (src) == MEM && ! do_not_record
+	  && LOAD_EXTEND_OP (mode) != NIL)
+	{
+	  enum machine_mode tmode;
+	  
+	  /* Set what we are trying to extend and the operation it might
+	     have been extended with.  */
+	  PUT_CODE (memory_extend_rtx, LOAD_EXTEND_OP (mode));
+	  XEXP (memory_extend_rtx, 0) = src;
+	  
+	  for (tmode = GET_MODE_WIDER_MODE (mode);
+	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
+	       tmode = GET_MODE_WIDER_MODE (tmode))
+	    {
+	      struct table_elt *larger_elt;
+	      
+	      PUT_MODE (memory_extend_rtx, tmode);
+	      larger_elt = lookup (memory_extend_rtx, 
+				   HASH (memory_extend_rtx, tmode), tmode);
+	      if (larger_elt == 0)
+		continue;
+	      
+	      for (larger_elt = larger_elt->first_same_value;
+		   larger_elt; larger_elt = larger_elt->next_same_value)
+		if (GET_CODE (larger_elt->exp) == REG)
+		  {
+		    src_related = gen_lowpart_if_possible (mode, 
+							   larger_elt->exp);
+		    break;
+		  }
+	      
+	      if (src_related)
+		break;
+	    }
+	}
+#endif /* LOAD_EXTEND_OP */
+ 
       if (src == src_folded)
         src_folded = 0;
 
@@ -7915,6 +7967,13 @@ cse_main (f, nregs, after_loop, file)
   reg_qty = (int *) alloca (nregs * sizeof (int));
   reg_in_table = (int *) alloca (nregs * sizeof (int));
   reg_tick = (int *) alloca (nregs * sizeof (int));
+
+#ifdef LOAD_EXTEND_OP
+
+  /* Allocate scratch rtl here.  cse_insn will fill in the memory reference
+     and change the code and mode as appropriate.  */
+  memory_extend_rtx = gen_rtx (ZERO_EXTEND, VOIDmode, 0);
+#endif
 
   /* Discard all the free elements of the previous function
      since they are allocated in the temporarily obstack.  */
