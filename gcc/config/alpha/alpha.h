@@ -2189,6 +2189,8 @@ do {									\
   {"fp0_operand", {CONST_DOUBLE}},					\
   {"current_file_function_operand", {SYMBOL_REF}},			\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
+  {"small_symbolic_operand", {SYMBOL_REF, CONST}},			\
+  {"global_symbolic_operand", {SYMBOL_REF, CONST}},			\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		     SYMBOL_REF, CONST, LABEL_REF}},			\
