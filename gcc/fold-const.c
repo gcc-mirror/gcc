@@ -3666,9 +3666,13 @@ fold (expr)
     associate:
       /* In most languages, can't associate operations on floats
 	 through parentheses.  Rather than remember where the parentheses
-	 were, we don't associate floats at all.  It shouldn't matter much.  */
-      if (FLOAT_TYPE_P (type))
+	 were, we don't associate floats at all.  It shouldn't matter much.
+	 However, associating multiplications is only very slightly
+	 inaccurate, so do that if -ffast-math is specified.  */
+      if (FLOAT_TYPE_P (type)
+	  && ! (flag_fast_math && code == MULT_EXPR))
 	goto binary;
+
       /* The varsign == -1 cases happen only for addition and subtraction.
 	 It says that the arg that was split was really CON minus VAR.
 	 The rest of the code applies to all associative operations.  */
@@ -3958,16 +3962,79 @@ fold (expr)
 	}
       goto binary;
 
+    case RDIV_EXPR:
+      /* In most cases, do nothing with a divide by zero.  */
+#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+#ifndef REAL_INFINITY
+      if (TREE_CODE (arg1) == REAL_CST && real_zerop (arg1))
+	return t;
+#endif
+#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
+
+      /* In IEEE floating point, x/1 is not equivalent to x for snans.
+	 However, ANSI says we can drop signals, so we can do this anyway.  */
+      if (real_onep (arg1))
+	return non_lvalue (convert (type, arg0));
+
+      /* If ARG1 is a constant, we can convert this to a multiply by the
+	 reciprocal.  This does not have the same rounding properties,
+	 so only do this if -ffast-math.  We can actually always safely
+	 do it if ARG1 is a power of two, but it's hard to tell if it is
+	 or not in a portable manner.  */
+      if (TREE_CODE (arg1) == REAL_CST && flag_fast_math
+	  && 0 != (tem = const_binop (code, build_real (type, dconst1),
+				      arg1, 0)))
+	return fold (build (MULT_EXPR, type, arg0, tem));
+
+      goto binary;
+
     case TRUNC_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case FLOOR_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
-    case RDIV_EXPR:
       if (integer_onep (arg1))
 	return non_lvalue (convert (type, arg0));
       if (integer_zerop (arg1))
 	return t;
+
+      /* If we have ((a / C1) / C2) where both division are the same type, tr
+	 to simplify.  First see if C1 * C2 overflows or not.  */
+      if (TREE_CODE (arg0) == code && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 1), arg1, 0);
+
+	  /* If it overflows, the result is +/- 1 or zero, depending on
+	     the signs of the two constants and the division operation.  */
+	  if (TREE_OVERFLOW (tem))
+	    {
+	      switch (code)
+		{
+		case EXACT_DIV_EXPR:
+		case TRUNC_DIV_EXPR:
+		  tem = integer_zero_node;
+		  break;
+		case FLOOR_DIV_EXPR:
+		  /* -1 if signs disagree, else 0.  */
+		  tem = (((tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0)
+			  != (tree_int_cst_sgn (arg1) < 0))
+			 ? build_int_2 (-1, -1) : integer_zero_node);
+		  break;
+		case CEIL_DIV_EXPR:
+		  /* 1 if signs agree, else 0.  */
+		  tem = (((tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0)
+			  == (tree_int_cst_sgn (arg1) < 0))
+			 ? integer_one_node : integer_zero_node);
+		  break;
+		}
+
+	      return omit_one_operand (type, tem, TREE_OPERAND (arg0, 0));
+	    }
+	  else
+	    /* If no overflow, divide by C1*C2.  */
+	    return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
+	}
 
       /* Look for ((a * C1) / C3) or (((a * C1) + C2) / C3),
 	 where C1 % C3 == 0 or C3 % C1 == 0.  We can simplify these
@@ -4043,14 +4110,6 @@ fold (expr)
 	      return t;
 	    }
 	}
-
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-#ifndef REAL_INFINITY
-      if (TREE_CODE (arg1) == REAL_CST
-	  && real_zerop (arg1))
-	return t;
-#endif
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
       goto binary;
 
