@@ -378,6 +378,7 @@ package body Restrict is
    begin
       No_Run_Time := True;
       Restrictions (No_Exception_Handlers) := True;
+      Opt.Global_Discard_Names := True;
    end Set_No_Run_Time_Mode;
 
    -------------------
