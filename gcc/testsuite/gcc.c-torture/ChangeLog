@@ -1,3 +1,9 @@
+1999-10-13  Brendan Kehoe  <brendan@cygnus.com>
+
+	* execute/memcheck/memcheck.exp: Make sure a remote
+	host is equipped with driver.h and driver.o so it can actually
+	compile and run the tests.
+
 Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* compile/991008-1.c: New test.
