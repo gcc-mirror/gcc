@@ -508,8 +508,6 @@ namespace std
 	_M_in_beg = __gbeg;
 	_M_in_cur = __gnext;
 	_M_in_end = __gend;
-	if (!(_M_mode & ios_base::in) && __gbeg && __gnext && __gend)
-	  _M_mode = _M_mode | ios_base::in;
       }
 
       // [27.5.2.3.2] put area access
@@ -555,8 +553,6 @@ namespace std
       { 
 	_M_out_beg = _M_out_cur = _M_out_lim = __pbeg; 
 	_M_out_end = __pend;
-	if (!(_M_mode & ios_base::out) && __pbeg && __pend)
-	  _M_mode = _M_mode | ios_base::out;
       }
 
       // [27.5.2.4] virtual functions
