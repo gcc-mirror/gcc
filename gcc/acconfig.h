@@ -24,4 +24,7 @@
 
 /* Whether sbrk must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_SBRK
+
+/* Define if you want expensive run-time checks. */
+#undef ENABLE_CHECKING
 @TOP@
