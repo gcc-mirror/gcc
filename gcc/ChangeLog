@@ -1,3 +1,12 @@
+2003-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	* c-decl.c (match_builtin_function_types): New subroutine of
+	duplicate_decls to test whether a redeclaration of a builtin
+	function is suitably close, i.e. the return type and all of
+	the argument types have the same modes as the builtin expects.
+	(duplicate_decls): Fuzzy type matching for builtin functions
+	moved to match_builtin_function_types.
+
 2003-07-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopmanip.c (duplicate_loop_to_header_edge): Update irreducible
