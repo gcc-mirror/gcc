@@ -1,3 +1,8 @@
+2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17849
+	* gfortran.fortran-torture/compile/nested.f90: New test
+
 2004-10-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/Wconversion-2.c, gcc.dg/func-args-1.c: New tests.
