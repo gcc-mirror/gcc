@@ -1,3 +1,10 @@
+Mon Oct 25 00:43:05 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (note_set_pseudo_multiple_uses_retval): New variable.
+	(note_set_pseudo_multiple_uses): New function.
+	(check_dbra_loop): Use not_set_pseudo_multiple_uses to determine
+	if a pseudo set in the loop exit is used elsewhere.
+
 Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* jump.c (jump_optimize_1): More accurately detect casesi insns.

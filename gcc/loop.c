@@ -283,6 +283,9 @@ static struct movable *the_movables;
 
 FILE *loop_dump_stream;
 
+/* For communicating return values from note_set_pseudo_multiple_uses.  */
+static int note_set_pseudo_multiple_uses_retval;
+
 /* Forward declarations.  */
 
 static void verify_dominator PROTO((int));
@@ -297,6 +300,7 @@ static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
 static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
+static void note_set_pseudo_multiple_uses PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, rtx, int, int));
 #if 0
@@ -3139,6 +3143,36 @@ note_addr_stored (x, y)
     return;
 
   loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, loop_store_mems);
+}
+
+/* X is a value modified by an INSN that references a biv inside a loop
+   exit test (ie, X is somehow related to the value of the biv).  If X
+   is a pseudo that is used more than once, then the biv is (effectively)
+   used more than once.  */
+
+static void
+note_set_pseudo_multiple_uses (x, y)
+     rtx x;
+     rtx y ATTRIBUTE_UNUSED;
+{
+  if (x == 0)
+    return;
+
+  while (GET_CODE (x) == STRICT_LOW_PART
+	 || GET_CODE (x) == SIGN_EXTRACT
+	 || GET_CODE (x) == ZERO_EXTRACT
+	 || GET_CODE (x) == SUBREG)
+    x = XEXP (x, 0);
+
+  if (GET_CODE (x) != REG || REGNO (x) < FIRST_PSEUDO_REGISTER)
+    return;
+
+  /* If we do not have usage information, or if we know the register
+     is used more than once, note that fact for check_dbra_loop.  */
+  if (REGNO (x) >= max_reg_before_loop
+      || ! VARRAY_RTX (reg_single_usage, REGNO (x))
+      || VARRAY_RTX (reg_single_usage, REGNO (x)) == const0_rtx)
+    note_set_pseudo_multiple_uses_retval = 1;
 }
 
 /* Return nonzero if the rtx X is invariant over the current loop.
@@ -7765,10 +7799,22 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		    && REGNO (SET_DEST (set)) == bl->regno)
 		  /* An insn that sets the biv is okay.  */
 		  ;
-		else if (p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
-			 || p == prev_nonnote_insn (loop_end))
-		  /* Don't bother about the end test.  */
-		  ;
+		else if ((p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
+			  || p == prev_nonnote_insn (loop_end))
+			 && reg_mentioned_p (bivreg, PATTERN (p)))
+		  {
+		    /* If either of these insns uses the biv and sets a pseudo
+		       that has more than one usage, then the biv has uses
+		       other than counting since it's used to derive a value
+		       that is used more than one time.  */
+		    note_set_pseudo_multiple_uses_retval = 0;
+		    note_stores (PATTERN (p), note_set_pseudo_multiple_uses);
+		    if (note_set_pseudo_multiple_uses_retval)
+		      {
+			no_use_except_counting = 0;
+			break;
+		      }
+		  }
 		else if (reg_mentioned_p (bivreg, PATTERN (p)))
 		  {
 		    no_use_except_counting = 0;
