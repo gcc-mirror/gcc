@@ -2245,7 +2245,7 @@ libcall_dead_p (pbi, note, insn)
 
 int
 regno_uninitialized (regno)
-     int regno;
+     unsigned int regno;
 {
   if (n_basic_blocks == 0
       || (regno < FIRST_PSEUDO_REGISTER

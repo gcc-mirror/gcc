@@ -1,3 +1,9 @@
+2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * output.h (regno_uninitialized): Make argument unsigned.
+
+        * flow.c (regno_uninitialized): Make regno unsigned.
+
 2001-12-11  David O'Brien  <obrien@FreeBSD.org>
 
 	* elfos.h (ENDFILE_SPEC, STARTFILE_SPEC): Do not define.
