@@ -1,3 +1,8 @@
+2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (check_function_format): Don't suggest adding format
+	attributes to functions with no parameter to which to add them.
+
 2000-12-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_expand_prologue): Mark the generated

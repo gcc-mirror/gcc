@@ -1,3 +1,7 @@
+2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-miss-2.c: New test.
+
 2000-12-09  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/lineflags.c: New tests.
