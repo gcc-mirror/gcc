@@ -1,3 +1,8 @@
+Tue Aug 26 12:24:01 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+        * testsuite/Makefile.in (check): Don't depend on site.exp.
+        (just-check): Depend on site.exp.
+
 Wed Aug 20 02:01:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* iostream.h: Add copy assignment ops for _IO_?stream_withassign.
