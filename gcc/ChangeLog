@@ -9641,7 +9641,7 @@ Tue Jan 16 22:23:04 2001  Alan Modra (alan@linuxcare.com.au)
 
 Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* flow.c (propagate_on_insn): Make trying to delete a prologue
+	* flow.c (propagate_one_insn): Make trying to delete a prologue
 	or epilogue insn an ICE, not a warning.  Allow doing this if
 	the current function returns with stack pointer depressed.
 
