@@ -1695,13 +1695,14 @@ write_switch (start, depth)
     {
       char codemap[NUM_RTX_CODE];
       struct decision *ret;
+      RTX_CODE code;
 
       memset (codemap, 0, sizeof(codemap));
 
       printf ("  switch (GET_CODE (x%d))\n    {\n", depth);
+      code = p->tests->u.code;
       do 
 	{
-	  RTX_CODE code = p->tests->u.code;
 	  printf ("    case ");
 	  print_code (code);
 	  printf (":\n      goto L%d;\n", p->success.first->number);
@@ -1710,7 +1711,10 @@ write_switch (start, depth)
 	  codemap[code] = 1;
 	  p = p->next;
 	}
-      while (p && p->tests->type == DT_code && !p->tests->next);
+      while (p
+	     && ! p->tests->next
+	     && p->tests->type == DT_code
+	     && ! codemap[code = p->tests->u.code]);
 
       /* If P is testing a predicate that we know about and we haven't
 	 seen any of the codes that are valid for the predicate, we can

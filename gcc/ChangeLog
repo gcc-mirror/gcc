@@ -1,3 +1,7 @@
+Sat Oct 30 14:38:22 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (write_switch): Check for duplicate CODE cases.
+
 Sat Oct 30 14:31:48 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-common.c: Update pre-function commentary.
