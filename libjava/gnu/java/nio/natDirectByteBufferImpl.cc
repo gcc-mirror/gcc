@@ -13,9 +13,10 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
+#include <gnu/gcj/RawData.h>
 #include <gnu/java/nio/DirectByteBufferImpl.h>
 
-jlong
+gnu::gcj::RawData*
 gnu::java::nio::DirectByteBufferImpl::allocateImpl (jint capacity)
 {
   // FIXME: implement this
@@ -23,7 +24,7 @@ gnu::java::nio::DirectByteBufferImpl::allocateImpl (jint capacity)
 }
 
 void
-gnu::java::nio::DirectByteBufferImpl::freeImpl (jlong address)
+gnu::java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* address)
 {
   // FIXME: implement this
 }
