@@ -1,3 +1,23 @@
+2003-03-16  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Make-lang.in: added win32-host.c
+	* jcf.h: defined macro JCF_OPEN_EXACT_CASE which
+	resolves to open() on non-Win32 platforms and
+	Win32-specific jcf_open_exact_case() on Win32
+	* jcf-io.c (find_class): use JCF_OPEN_EXACT_CASE
+	when trying .java and .class files
+	* win32-host.c: added to repository. Defines
+	Win32-specific jcf_open_exact_case()
+
+2003-04-10  Andrew Haley  <aph@redhat.com>
+
+	* jcf-write.c (struct jcf_partial): num_jsrs: new field.
+	(maybe_free_localvar): Renamed from localvar_free.
+	Add new arg, really.
+	(generate_bytecode_insns): Set new variable, jsrs.
+	Only free local vars if no jsr insns have been emittted.
+	Call maybe_free_localvar, not localvar_free.
+
 2003-03-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR bootstrap/10216

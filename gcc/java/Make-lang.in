@@ -106,18 +106,18 @@ gt-java-builtins.h gtype-java.h : s-gtype ; @true
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
-  java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
-  java/mangle_name.o java/builtins.o \
+  java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o \
+  java/mangle.o java/mangle_name.o java/builtins.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
 
-GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/zextract.o version.o mkdeps.o errors.o
+GCJH_OBJS = java/gjavah.o java/jcf-io.o java/win32-host.o java/jcf-depend.o \
+  java/jcf-path.o java/zextract.o version.o mkdeps.o errors.o
 
 JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o
 
-JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/zextract.o errors.o version.o mkdeps.o
+JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/win32-host.o java/jcf-depend.o \
+  java/jcf-path.o java/zextract.o errors.o version.o mkdeps.o
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o
 
@@ -302,6 +302,7 @@ java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) flags.h \
   input.h java/java-except.h $(SYSTEM_H) toplev.h java/parse.h $(GGC_H) \
   debug.h real.h gt-java-jcf-parse.h
+java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) java/jcf.h
 java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   $(RTL_H) java/java-opcodes.h java/parse.h java/buffer.h $(SYSTEM_H) \
   toplev.h $(GGC_H) gt-java-jcf-write.h

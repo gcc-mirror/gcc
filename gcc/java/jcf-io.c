@@ -553,7 +553,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 			      classname+classname_length-
 			      (classname_length <= 30 ? 
 			       classname_length : 30)));
-      fd = open (buffer, O_RDONLY | O_BINARY);
+      fd = JCF_OPEN_EXACT_CASE (buffer, O_RDONLY | O_BINARY);
       if (fd >= 0)
 	goto found;
     }
@@ -565,7 +565,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 			      classname+classname_length-
 			      (classname_length <= 30 ? 
 			       classname_length : 30)));
-      fd = open (buffer, O_RDONLY);
+      fd = JCF_OPEN_EXACT_CASE (buffer, O_RDONLY);
       if (fd >= 0)
 	{
 	  jcf->java_source = 1;
