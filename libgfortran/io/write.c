@@ -425,9 +425,12 @@ output_float (fnode *f, double value, int len)
     }
 
   /* Round the value.  */
-  if (nbefore + nafter < ndigits && nbefore + nafter > 0)
+  if (nbefore + nafter == 0)
+    ndigits = 0;
+  else if (nbefore + nafter < ndigits)
     {
-      i = nbefore + nafter;
+      ndigits = nbefore + nafter;
+      i = ndigits;
       if (digits[i] >= '5')
 	{
 	  /* Propagate the carry.  */
@@ -512,6 +515,16 @@ output_float (fnode *f, double value, int len)
   out = write_block (w);
   if (out == NULL)
     return;
+
+  /* Zero values always output as positive, even if the value was negative
+     before rounding.  */
+  for (i = 0; i < ndigits; i++)
+    {
+      if (digits[i] != '0')
+	break;
+    }
+  if (i == ndigits)
+    sign = calculate_sign (0);
 
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);

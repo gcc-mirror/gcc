@@ -552,6 +552,7 @@ format_item:
     case FMT_BN:
     case FMT_BZ:
       get_fnode (&head, &tail, t);
+      tail->repeat = 1;
       goto between_desc;
 
     case FMT_COLON:
