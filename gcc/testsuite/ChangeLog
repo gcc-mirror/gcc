@@ -1,3 +1,8 @@
+2003-10-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12369
+	* g++.dg/template/friend25.C: New test.
+
 2003-10-16  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/try-catch-2.m: Relax target triple to all Darwin
