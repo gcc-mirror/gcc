@@ -30,6 +30,11 @@ display () {
   echo "$@" >> $dir/acats.log
 }
 
+log () {
+  echo "$@" >> $dir/acats.sum
+  echo "$@" >> $dir/acats.log
+}
+
 dir=`pwd`
 
 if [ "$testdir" = "" ]; then
@@ -59,7 +64,7 @@ EXTERNAL_OBJECTS=""
 
 rm -f $dir/acats.sum $dir/acats.log
 
-display "	=== CONFIGURATION ==="
+display "		=== acats configuration ==="
 
 display `type gcc`
 display `gcc -v 2>&1`
@@ -69,7 +74,7 @@ display `type gnatmake`
 gnatls -v >> $dir/acats.log
 display ""
 
-display "	=== SUPPORT ==="
+display "		=== acats support ==="
 display_noeol "Generating support files..."
 
 rm -rf $dir/support
@@ -141,7 +146,7 @@ target_gnatmake -c -gnato -gnatE *.adb
 
 display " done."
 display ""
-display "	=== ACATS tests ==="
+display "		=== acats tests ==="
 
 if [ $# -eq 0 ]; then
    chapters=`cd $dir/tests; echo [a-z]*`
@@ -151,6 +156,7 @@ fi
 
 glob_countn=0
 glob_countok=0
+glob_countu=0
 
 for chapter in $chapters; do
    display Running chapter $chapter ...
@@ -166,7 +172,7 @@ for chapter in $chapters; do
    cut -c1-7 | sort | uniq | comm -23 - $testdir/norun.lst \
      > $dir/tests/$chapter/${chapter}.lst 
    countn=`wc -l < $dir/tests/$chapter/${chapter}.lst`
-   countok=0
+   glob_countn=`expr $glob_countn + $countn`
    counti=0
    for i in `cat $dir/tests/$chapter/${chapter}.lst`; do 
       counti=`expr $counti + 1`
@@ -218,23 +224,31 @@ for chapter in $chapters; do
       cat ${i}.log >> $dir/acats.log
       egrep -e '(==== |\+\+\+\+ |\!\!\!\! )' ${i}.log > /dev/null 2>&1
       if [ $? -ne 0 ]; then
-         display "FAIL:	$i"
-         failed="${failed}${i} "
+         grep 'Tasking not implemented' ${i}.log > /dev/null 2>&1
+
+         if [ $? -ne 0 ]; then
+            display "FAIL:	$i"
+            failed="${failed}${i} "
+         else
+            log "UNSUPPORTED:	$i"
+            glob_countn=`expr $glob_countn - 1`
+            glob_countu=`expr $glob_countu + 1`
+         fi
       else
-         echo "PASS:	$i" >> $dir/acats.sum
-         echo "PASS:	$i" >> $dir/acats.log
-         countok=`expr $countok + 1`
+         log "PASS:	$i"
+         glob_countok=`expr $glob_countok + 1`
       fi
       clean_dir
    done
-
-   glob_countok=`expr $glob_countok + $countok`
-   glob_countn=`expr $glob_countn + $countn`
 done
 
-display "	=== ACATS Summary ==="
-display "# of expected passes $glob_countok"
-display "# of unexpected failures `expr $glob_countn - $glob_countok`"
+display "		=== acats Summary ==="
+display "# of expected passes		$glob_countok"
+display "# of unexpected failures	`expr $glob_countn - $glob_countok`"
+
+if [ $glob_countu -ne 0 ]; then
+   display "# of unsupported tests		$glob_countu"
+fi
 
 if [ $glob_countok -ne $glob_countn ]; then
    display "*** FAILURES: $failed"
