@@ -1,3 +1,29 @@
+2003-10-24  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (handleEvent):
+	Remove method.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java (postWindowEvent):
+	New method.
+	* java/awt/Window.java (Window(Window,GraphicsConfiguration),
+	show, hide, dispose, getOwnedWindows): Synchronize on tree lock.
+	(dispose): Post WINDOW_CLOSED event.
+	(addWindowFocusListener, addWindowStateListener): Assign result
+	of multicaster add back to window listener.
+	(removeWindowFocusListener, removeWindowStateListener): Assign
+	result of multicaster remove back to window listener.
+	(dispatchEventImpl): Add null checks for focus and state
+	listeners.
+	(processWindowEvent): Handle case where windowListener is null
+	but state or focus listeners exist.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c: Add JNI
+	glue for postWindowEvent.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(window_delete_cb, window_destroy_cb, window_show_cb,
+	window_focus_in_cb, window_focus_out_cb, window_window_state_cb,
+	window_get_new_state): New functions.
+	* jni/gtk-peer/gtkpeer.h: Define window event and frame state
+	macros.  Declare postWindowEventID.
+
 2003-10-24  Anthony Green  <green@redhat.com>
 
 	* java/lang/natClass.cc (_Jv_LinkSymbolTable): Fix case where

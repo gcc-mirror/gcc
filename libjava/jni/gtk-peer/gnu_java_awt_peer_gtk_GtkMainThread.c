@@ -57,6 +57,8 @@ jmethodID postAdjustmentEventID;
 jmethodID postItemEventID;
 jmethodID postListItemEventID;
 jmethodID postTextEventID;
+jmethodID postWindowEventID;
+
 JNIEnv *gdk_env;
 
 #ifdef PORTABLE_NATIVE_SYNC
@@ -163,6 +165,9 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
 					  "postMouseEvent", "(IJIIIIZ)V");
   postConfigureEventID = (*env)->GetMethodID (env, gtkwindowpeer, 
 					  "postConfigureEvent", "(IIIIIIII)V");
+  postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
+					   "postWindowEvent",
+					   "(ILjava/awt/Window;I)V");
   postExposeEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
 					  "postExposeEvent", "(IIII)V");
   postKeyEventID = (*env)->GetMethodID (env, gtkcomponentpeer,

@@ -42,6 +42,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.Frame;
+import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
 
 public class GtkWindowPeer extends GtkContainerPeer
@@ -55,6 +57,9 @@ public class GtkWindowPeer extends GtkContainerPeer
   static protected final int GDK_WINDOW_TYPE_HINT_UTILITY = 5;
   static protected final int GDK_WINDOW_TYPE_HINT_DOCK = 6;
   static protected final int GDK_WINDOW_TYPE_HINT_DESKTOP = 7;
+
+  private boolean hasBeenShown = false;
+  private int oldState = Frame.NORMAL;
 
   // Unfortunately, X does not provide a clean way to calculate the
   // dimensions of a window's borders before it has been displayed.
@@ -210,5 +215,30 @@ public class GtkWindowPeer extends GtkContainerPeer
 		 awtComponent.getWidth(),
 		 awtComponent.getHeight());
     nativeSetVisible (b);
+  }
+
+  void postWindowEvent (int id, Window opposite, int newState)
+  {
+    if (id == WindowEvent.WINDOW_OPENED)
+      {
+	// Post a WINDOW_OPENED event the first time this window is shown.
+	if (!hasBeenShown)
+	  {
+	    q.postEvent (new WindowEvent ((Window) awtComponent, id,
+					  opposite));
+	    hasBeenShown = true;
+	  }
+      }
+    else if (id == WindowEvent.WINDOW_STATE_CHANGED)
+      {
+	if (oldState != newState)
+	  {
+	    q.postEvent (new WindowEvent ((Window) awtComponent, id, opposite,
+					  oldState, newState));
+	    oldState = newState;
+	  }
+      }
+    else
+      q.postEvent (new WindowEvent ((Window) awtComponent, id, opposite));
   }
 }

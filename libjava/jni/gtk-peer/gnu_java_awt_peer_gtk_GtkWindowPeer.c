@@ -41,6 +41,23 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkFramePeer.h"
 #include <gdk/gdkprivate.h>
 #include <gdk/gdkx.h>
+#include <X11/Xatom.h>
+
+static void window_delete_cb (GtkWidget *widget, GdkEvent *event,
+			      jobject peer);
+static void window_destroy_cb (GtkWidget *widget, GdkEvent *event,
+			       jobject peer);
+static void window_show_cb (GtkWidget *widget, jobject peer);
+static gboolean window_focus_in_cb (GtkWidget * widget,
+				    GdkEventFocus *event,
+				    jobject peer);
+static gboolean window_focus_out_cb (GtkWidget * widget,
+				     GdkEventFocus *event,
+				     jobject peer);
+static gboolean window_window_state_cb (GtkWidget *widget,
+					GdkEvent *event,
+					jobject peer);
+static jint window_get_new_state (GtkWidget *widget);
 
 /*
  * Make a new window.
@@ -151,6 +168,25 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
   gtk_widget_realize (ptr);
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+
+  /* Connect signals for window event support. */
+  g_signal_connect (G_OBJECT (ptr), "delete-event",
+		    G_CALLBACK (window_delete_cb), obj);
+
+  g_signal_connect (G_OBJECT (ptr), "destroy-event",
+		    G_CALLBACK (window_destroy_cb), obj);
+
+  g_signal_connect (G_OBJECT (ptr), "show",
+		    G_CALLBACK (window_show_cb), obj);
+
+  g_signal_connect (G_OBJECT (ptr), "focus-in-event",
+		    G_CALLBACK (window_focus_in_cb), obj);
+
+  g_signal_connect (G_OBJECT (ptr), "focus-out-event",
+		    G_CALLBACK (window_focus_out_cb), obj);
+
+  g_signal_connect (G_OBJECT (ptr), "window-state-event",
+		    G_CALLBACK (window_window_state_cb), obj);
 
   gdk_threads_leave ();
 }
@@ -301,4 +337,155 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
   gdk_threads_leave ();
 
   return height;
+}
+
+static void
+window_delete_cb (GtkWidget *widget __attribute__((unused)),
+		  GdkEvent *event __attribute__((unused)),
+		  jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_CLOSING,
+			      (jobject) NULL, (jint) 0);
+}
+
+static void
+window_destroy_cb (GtkWidget *widget __attribute__((unused)),
+		   GdkEvent *event __attribute__((unused)),
+		   jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_CLOSED,
+			      (jobject) NULL, (jint) 0);
+}
+
+static void
+window_show_cb (GtkWidget *widget __attribute__((unused)),
+		jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_OPENED,
+			      (jobject) NULL, (jint) 0);
+}
+
+static gboolean
+window_focus_in_cb (GtkWidget * widget __attribute__((unused)),
+		    GdkEventFocus *event __attribute__((unused)),
+		    jobject peer)
+{
+  /* FIXME: when hiding then showing, we get two sets of
+     (LOST_FOCUS/DEACTIVATED, ACTIVATED/GAINED_FOCUS) events. */
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_ACTIVATED,
+			      (jobject) NULL, (jint) 0);
+
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_GAINED_FOCUS,
+			      (jobject) NULL, (jint) 0);
+  return TRUE;
+}
+
+static gboolean
+window_focus_out_cb (GtkWidget * widget __attribute__((unused)),
+		     GdkEventFocus *event __attribute__((unused)),
+		     jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_LOST_FOCUS,
+			      (jobject) NULL, (jint) 0);
+
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_DEACTIVATED,
+			      (jobject) NULL, (jint) 0);
+  return TRUE;
+}
+
+static gboolean
+window_window_state_cb (GtkWidget *widget,
+			GdkEvent *event,
+			jobject peer)
+{
+  jint new_state;
+
+  /* Handle WINDOW_ICONIFIED and WINDOW_DEICONIFIED events. */
+  if (event->window_state.changed_mask & GDK_WINDOW_STATE_ICONIFIED)
+    {
+      /* We've either been iconified or deiconified. */
+      if (event->window_state.new_window_state & GDK_WINDOW_STATE_ICONIFIED)
+	{
+	  /* We've been iconified. */
+	  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+				      postWindowEventID,
+				      (jint) AWT_WINDOW_ICONIFIED,
+				      (jobject) NULL, (jint) 0);
+	}
+      else
+	{
+	  /* We've been deiconified. */
+	  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+				      postWindowEventID,
+				      (jint) AWT_WINDOW_DEICONIFIED,
+				      (jobject) NULL, (jint) 0);
+	}
+    }
+
+  /* Post a WINDOW_STATE_CHANGED event, passing the new frame state to
+     GtkWindowPeer. */
+  new_state = AWT_FRAME_STATE_NORMAL;
+
+  if (event->window_state.new_window_state & GDK_WINDOW_STATE_ICONIFIED)
+    new_state |= AWT_FRAME_STATE_ICONIFIED;
+
+  new_state |= window_get_new_state (widget);
+
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+			      postWindowEventID,
+			      (jint) AWT_WINDOW_STATE_CHANGED,
+			      (jobject) NULL, new_state);
+  return TRUE;
+}
+
+static jint
+window_get_new_state (GtkWidget *widget)
+{
+  GdkDisplay *display = gtk_widget_get_display(widget);
+  jint new_state = AWT_FRAME_STATE_NORMAL;
+  Atom type;
+  gint format;
+  gulong atom_count;
+  gulong bytes_after;
+  Atom *atom_list = NULL;
+  gulong i;
+
+  XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), GDK_WINDOW_XID (widget->window),
+		      gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_STATE"),
+		      0, G_MAXLONG, False, XA_ATOM, &type, &format, &atom_count,
+		      &bytes_after, (guchar **)&atom_list);
+
+  if (type != None)
+    {
+      Atom maxvert = gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_STATE_MAXIMIZED_VERT");
+      Atom maxhorz	= gdk_x11_get_xatom_by_name_for_display (display, "_NET_WM_STATE_MAXIMIZED_HORZ");
+
+      i = 0;
+      while (i < atom_count)
+        {
+	  if (atom_list[i] == maxhorz)
+	    new_state |= AWT_FRAME_STATE_MAXIMIZED_HORIZ;
+          else if (atom_list[i] == maxvert)
+	    new_state |= AWT_FRAME_STATE_MAXIMIZED_VERT;
+
+          ++i;
+        }
+
+      XFree (atom_list);
+    }
+  return new_state;
 }
