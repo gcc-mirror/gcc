@@ -2211,7 +2211,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  result_type = integer_type_node;
 	  op1 = null_pointer_node;
-	  if (! flag_traditional)
+	  if (pedantic)
 	    pedwarn ("ordered comparison of pointer with integer zero");
 	}
       else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
