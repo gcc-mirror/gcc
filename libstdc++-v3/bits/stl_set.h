@@ -31,6 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_SET_H
 #define __SGI_STL_INTERNAL_SET_H
 
+#include <bits/concept_checks.h>
+
 __STL_BEGIN_NAMESPACE
 
 #if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
@@ -55,6 +57,11 @@ inline bool operator<(const set<_Key,_Compare,_Alloc>& __x,
 
 template <class _Key, class _Compare, class _Alloc>
 class set {
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Key, _Assignable);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+
 public:
   // typedefs:
 
@@ -175,7 +182,9 @@ public:
   // set operations:
 
   iterator find(const key_type& __x) const { return _M_t.find(__x); }
-  size_type count(const key_type& __x) const { return _M_t.count(__x); }
+  size_type count(const key_type& __x) const {
+    return _M_t.find(__x) == _M_t.end() ? 0 : 1;
+  }
   iterator lower_bound(const key_type& __x) const {
     return _M_t.lower_bound(__x);
   }
@@ -186,17 +195,17 @@ public:
     return _M_t.equal_range(__x);
   }
 
-#ifdef __STL_MEMBER_TEMPLATES
+#ifdef __STL_TEMPLATE_FRIENDS
   template <class _K1, class _C1, class _A1>
   friend bool operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
   template <class _K1, class _C1, class _A1>
   friend bool operator< (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
-#else /* __STL_MEMBER_TEMPLATES */
+#else /* __STL_TEMPLATE_FRIENDS */
   friend bool __STD_QUALIFIER
   operator== __STL_NULL_TMPL_ARGS (const set&, const set&);
   friend bool __STD_QUALIFIER
   operator<  __STL_NULL_TMPL_ARGS (const set&, const set&);
-#endif /* __STL_MEMBER_TEMPLATES */
+#endif /* __STL_TEMPLATE_FRIENDS */
 };
 
 template <class _Key, class _Compare, class _Alloc>

@@ -15,12 +15,11 @@
 #define __SGI_STL_STRING_FWD_H
 
 #include <bits/stl_config.h>
-//#include <bits/std_cstddef.h>
 #include <bits/stl_alloc.h>
+#include <bits/char_traits.h>
 
 __STL_BEGIN_NAMESPACE
 
-template <class _CharT> struct char_traits;
 template <class _CharT, 
           class _Traits = char_traits<_CharT>, 
           class _Alloc = allocator<_CharT> >

@@ -65,6 +65,9 @@ template <class _RandomAccessIterator>
 inline void 
 push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
+                 _LessThanComparable);
   __push_heap_aux(__first, __last,
                   __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
 }
@@ -100,6 +103,7 @@ inline void
 push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
           _Compare __comp)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
   __push_heap_aux(__first, __last, __comp,
                   __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
 }
@@ -147,6 +151,9 @@ template <class _RandomAccessIterator>
 inline void pop_heap(_RandomAccessIterator __first, 
                      _RandomAccessIterator __last)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
+                 _LessThanComparable);
   __pop_heap_aux(__first, __last, __VALUE_TYPE(__first));
 }
 
@@ -198,7 +205,8 @@ inline void
 pop_heap(_RandomAccessIterator __first,
          _RandomAccessIterator __last, _Compare __comp)
 {
-    __pop_heap_aux(__first, __last, __VALUE_TYPE(__first), __comp);
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  __pop_heap_aux(__first, __last, __VALUE_TYPE(__first), __comp);
 }
 
 template <class _RandomAccessIterator, class _Tp, class _Distance>
@@ -221,6 +229,9 @@ template <class _RandomAccessIterator>
 inline void 
 make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
+                 _LessThanComparable);
   __make_heap(__first, __last,
               __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
 }
@@ -248,6 +259,7 @@ inline void
 make_heap(_RandomAccessIterator __first, 
           _RandomAccessIterator __last, _Compare __comp)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
   __make_heap(__first, __last, __comp,
               __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
 }
@@ -255,6 +267,9 @@ make_heap(_RandomAccessIterator __first,
 template <class _RandomAccessIterator>
 void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
+  __STL_REQUIRES(typename iterator_traits<_RandomAccessIterator>::value_type,
+                 _LessThanComparable);
   while (__last - __first > 1)
     pop_heap(__first, __last--);
 }
@@ -264,6 +279,7 @@ void
 sort_heap(_RandomAccessIterator __first,
           _RandomAccessIterator __last, _Compare __comp)
 {
+  __STL_REQUIRES(_RandomAccessIterator, _Mutable_RandomAccessIterator);
   while (__last - __first > 1)
     pop_heap(__first, __last--, __comp);
 }

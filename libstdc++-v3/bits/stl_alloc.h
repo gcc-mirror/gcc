@@ -49,10 +49,6 @@
 #  endif
 #endif
 
-#ifdef __STL_WIN32THREADS
-#   include <windows.h>
-#endif
-
 #include <bits/std_cstddef.h>
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstring.h>
@@ -281,7 +277,8 @@ typedef malloc_alloc single_client_alloc;
 // creation of multiple default_alloc instances.
 // Node that containers built on different allocator instances have
 // different types, limiting the utility of this approach.
-#ifdef __SUNPRO_CC
+
+#if defined(__SUNPRO_CC) || defined(__GNUC__)
 // breaks if we make these template class members:
   enum {_ALIGN = 8};
   enum {_MAX_BYTES = 128};
@@ -294,7 +291,7 @@ class __default_alloc_template {
 private:
   // Really we should use static const int x = N
   // instead of enum { x = N }, but few compilers accept the former.
-# ifndef __SUNPRO_CC
+#if ! (defined(__SUNPRO_CC) || defined(__GNUC__))
     enum {_ALIGN = 8};
     enum {_MAX_BYTES = 128};
     enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
@@ -309,7 +306,7 @@ __PRIVATE:
         char _M_client_data[1];    /* The client sees this.        */
   };
 private:
-# ifdef __SUNPRO_CC
+# if defined(__SUNPRO_CC) || defined(__GNUC__) || defined(__HP_aCC)
     static _Obj* __STL_VOLATILE _S_free_list[]; 
         // Specifying a size results in duplicate def for 4.1
 # else
@@ -404,6 +401,22 @@ public:
 
 typedef __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0> alloc;
 typedef __default_alloc_template<false, 0> single_client_alloc;
+
+template <bool __threads, int __inst>
+inline bool operator==(const __default_alloc_template<__threads, __inst>&,
+                       const __default_alloc_template<__threads, __inst>&)
+{
+  return true;
+}
+
+# ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
+template <bool __threads, int __inst>
+inline bool operator!=(const __default_alloc_template<__threads, __inst>&,
+                       const __default_alloc_template<__threads, __inst>&)
+{
+  return false;
+}
+# endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 
 
@@ -548,9 +561,9 @@ template <bool __threads, int __inst>
 size_t __default_alloc_template<__threads, __inst>::_S_heap_size = 0;
 
 template <bool __threads, int __inst>
-__default_alloc_template<__threads, __inst>::_Obj* __STL_VOLATILE
+typename __default_alloc_template<__threads, __inst>::_Obj* __STL_VOLATILE
 __default_alloc_template<__threads, __inst> ::_S_free_list[
-# ifdef __SUNPRO_CC
+# if defined(__SUNPRO_CC) || defined(__GNUC__) || defined(__HP_aCC)
     _NFREELISTS
 # else
     __default_alloc_template<__threads, __inst>::_NFREELISTS
@@ -741,24 +754,6 @@ inline bool operator!=(const __malloc_alloc_template<__inst>&,
   return false;
 }
 #endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
-
-#ifndef __USE_MALLOC
-template <bool __threads, int __inst>
-inline bool operator==(const __default_alloc_template<__threads, __inst>&,
-                       const __default_alloc_template<__threads, __inst>&)
-{
-  return true;
-}
-
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-template <bool __threads, int __inst>
-inline bool operator!=(const __default_alloc_template<__threads, __inst>&,
-                       const __default_alloc_template<__threads, __inst>&)
-{
-  return false;
-}
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
-#endif
 
 template <class _Alloc>
 inline bool operator==(const debug_alloc<_Alloc>&,

@@ -49,4 +49,8 @@ namespace std {
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
+  template
+    void
+    __sink_unused_warning<size_t>(size_t);
+
 } //std

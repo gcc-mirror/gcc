@@ -57,10 +57,10 @@ __uninitialized_copy_aux(_InputIter __first, _InputIter __last,
   _ForwardIter __cur = __result;
   __STL_TRY {
     for ( ; __first != __last; ++__first, ++__cur)
-      construct(&*__cur, *__first);
+      _Construct(&*__cur, *__first);
     return __cur;
   }
-  __STL_UNWIND(destroy(__result, __cur));
+  __STL_UNWIND(_Destroy(__result, __cur));
 }
 
 
@@ -107,10 +107,10 @@ __uninitialized_copy_n(_InputIter __first, _Size __count,
   _ForwardIter __cur = __result;
   __STL_TRY {
     for ( ; __count > 0 ; --__count, ++__first, ++__cur) 
-      construct(&*__cur, *__first);
+      _Construct(&*__cur, *__first);
     return pair<_InputIter, _ForwardIter>(__first, __cur);
   }
-  __STL_UNWIND(destroy(__result, __cur));
+  __STL_UNWIND(_Destroy(__result, __cur));
 }
 
 template <class _RandomAccessIter, class _Size, class _ForwardIter>
@@ -158,9 +158,9 @@ __uninitialized_fill_aux(_ForwardIter __first, _ForwardIter __last,
   _ForwardIter __cur = __first;
   __STL_TRY {
     for ( ; __cur != __last; ++__cur)
-      construct(&*__cur, __x);
+      _Construct(&*__cur, __x);
   }
-  __STL_UNWIND(destroy(__first, __cur));
+  __STL_UNWIND(_Destroy(__first, __cur));
 }
 
 template <class _ForwardIter, class _Tp, class _Tp1>
@@ -198,10 +198,10 @@ __uninitialized_fill_n_aux(_ForwardIter __first, _Size __n,
   _ForwardIter __cur = __first;
   __STL_TRY {
     for ( ; __n > 0; --__n, ++__cur)
-      construct(&*__cur, __x);
+      _Construct(&*__cur, __x);
     return __cur;
   }
-  __STL_UNWIND(destroy(__first, __cur));
+  __STL_UNWIND(_Destroy(__first, __cur));
 }
 
 template <class _ForwardIter, class _Size, class _Tp, class _Tp1>
@@ -237,7 +237,7 @@ __uninitialized_copy_copy(_InputIter1 __first1, _InputIter1 __last1,
   __STL_TRY {
     return uninitialized_copy(__first2, __last2, __mid);
   }
-  __STL_UNWIND(destroy(__result, __mid));
+  __STL_UNWIND(_Destroy(__result, __mid));
 }
 
 // __uninitialized_fill_copy
@@ -253,7 +253,7 @@ __uninitialized_fill_copy(_ForwardIter __result, _ForwardIter __mid,
   __STL_TRY {
     return uninitialized_copy(__first, __last, __mid);
   }
-  __STL_UNWIND(destroy(__result, __mid));
+  __STL_UNWIND(_Destroy(__result, __mid));
 }
 
 // __uninitialized_copy_fill
@@ -269,7 +269,7 @@ __uninitialized_copy_fill(_InputIter __first1, _InputIter __last1,
   __STL_TRY {
     uninitialized_fill(__mid2, __last2, __x);
   }
-  __STL_UNWIND(destroy(__first2, __mid2));
+  __STL_UNWIND(_Destroy(__first2, __mid2));
 }
 
 __STL_END_NAMESPACE

@@ -140,7 +140,8 @@ headers = \
 	bits/stl_stack.h bits/stl_string_fwd.h bits/stl_tempbuf.h \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h \
-	bits/std_strstream.h \
+	bits/concept_checks.h bits/container_concepts.h \
+	bits/sequence_concepts.h bits/std_strstream.h \
 	ext/ropeimpl.h ext/stl_rope.h \
 	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h \
 	ext/stl_hashtable.h ext/stl_hash_fun.h \

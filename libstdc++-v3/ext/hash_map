@@ -165,6 +165,7 @@ public:
   operator== __STL_NULL_TMPL_ARGS (const hash_map&, const hash_map&);
 #endif /* __STL_MEMBER_TEMPLATES */
 
+#include <bits/concept_checks.h>
 
   iterator begin() { return _M_ht.begin(); }
   iterator end() { return _M_ht.end(); }
@@ -260,6 +261,20 @@ template <class _Key, class _Tp, class _HashFcn, class _EqualKey,
           class _Alloc>
 class hash_multimap
 {
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Key, _Assignable);
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Key, _Key);
+
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Key, _Assignable);
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Key, _Key);
+
 private:
   typedef hashtable<pair<const _Key, _Tp>, _Key, _HashFcn,
                     _Select1st<pair<const _Key, _Tp> >, _EqualKey, _Alloc> 

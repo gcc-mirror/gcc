@@ -31,6 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_QUEUE_H
 #define __SGI_STL_INTERNAL_QUEUE_H
 
+#include <bits/sequence_concepts.h>
+
 __STL_BEGIN_NAMESPACE
 
 // Forward declarations of operators < and ==, needed for friend declaration.
@@ -48,6 +50,15 @@ inline bool operator<(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
 
 template <class _Tp, class _Sequence>
 class queue {
+
+  // requirements:
+
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_REQUIRES(_Sequence, _FrontInsertionSequence);
+  __STL_CLASS_REQUIRES(_Sequence, _BackInsertionSequence);
+  typedef typename _Sequence::value_type _Sequence_value_type;
+  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
+
 
 #ifdef __STL_MEMBER_TEMPLATES 
   template <class _Tp1, class _Seq1>
@@ -133,10 +144,20 @@ operator>=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
 #endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 template <class _Tp, 
-          class _Sequence = vector<_Tp>,
-          class _Compare = less<typename _Sequence::value_type> >
+          class _Sequence __STL_DEPENDENT_DEFAULT_TMPL(vector<_Tp>),
+          class _Compare  
+	  __STL_DEPENDENT_DEFAULT_TMPL(less<typename _Sequence::value_type>) >
 class priority_queue {
 public:
+
+  // requirements:
+  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  __STL_CLASS_REQUIRES(_Sequence, _Sequence);
+  __STL_CLASS_REQUIRES(_Sequence, _RandomAccessContainer);
+  typedef typename _Sequence::value_type _Sequence_value_type;
+  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
+  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Tp, _Tp);
+
   typedef typename _Sequence::value_type      value_type;
   typedef typename _Sequence::size_type       size_type;
   typedef          _Sequence                  container_type;

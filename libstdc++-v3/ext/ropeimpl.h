@@ -1525,35 +1525,36 @@ const _CharT* rope<_CharT,_Alloc>::replace_with_c_str() {
 
 // Algorithm specializations.  More should be added.
 
-#ifndef _MSC_VER
-// I couldn't get this to work with VC++
-template<class _CharT,class _Alloc>
-void
-_Rope_rotate(_Rope_iterator<_CharT,_Alloc> __first,
-              _Rope_iterator<_CharT,_Alloc> __middle,
-              _Rope_iterator<_CharT,_Alloc> __last)
+template<class _Rope_iterator>  // was templated on CharT and Alloc
+void				// VC++ workaround
+_Rope_rotate(_Rope_iterator __first,
+             _Rope_iterator __middle,
+             _Rope_iterator __last)
 {
-    __stl_assert(__first.container() == __middle.container()
-                 && __middle.container() == __last.container());
-    rope<_CharT,_Alloc>& __r(__first.container());
-    rope<_CharT,_Alloc> __prefix = __r.substr(0, __first.index());
-    rope<_CharT,_Alloc> __suffix = 
-      __r.substr(__last.index(), __r.size() - __last.index());
-    rope<_CharT,_Alloc> __part1 = 
-      __r.substr(__middle.index(), __last.index() - __middle.index());
-    rope<_CharT,_Alloc> __part2 = 
-      __r.substr(__first.index(), __middle.index() - __first.index());
-    __r = __prefix;
-    __r += __part1;
-    __r += __part2;
-    __r += __suffix;
+  typedef typename _Rope_iterator::value_type _CharT;
+  typedef typename _Rope_iterator::_allocator_type _Alloc;
+  
+  __stl_assert(__first.container() == __middle.container()
+                           && __middle.container() == __last.container());
+  rope<_CharT,_Alloc>& __r(__first.container());
+  rope<_CharT,_Alloc> __prefix = __r.substr(0, __first.index());
+  rope<_CharT,_Alloc> __suffix = 
+    __r.substr(__last.index(), __r.size() - __last.index());
+  rope<_CharT,_Alloc> __part1 = 
+    __r.substr(__middle.index(), __last.index() - __middle.index());
+  rope<_CharT,_Alloc> __part2 = 
+    __r.substr(__first.index(), __middle.index() - __first.index());
+  __r = __prefix;
+  __r += __part1;
+  __r += __part2;
+  __r += __suffix;
 }
 
 #if !defined(__GNUC__)
 // Appears to confuse g++
-inline void rotate(_Rope_iterator<char,allocator<char> > __first,
-                   _Rope_iterator<char,allocator<char> > __middle,
-                   _Rope_iterator<char,allocator<char> > __last) {
+inline void rotate(_Rope_iterator<char,__STL_DEFAULT_ALLOCATOR(char)> __first,
+                   _Rope_iterator<char,__STL_DEFAULT_ALLOCATOR(char)> __middle,
+                   _Rope_iterator<char,__STL_DEFAULT_ALLOCATOR(char)> __last) {
     _Rope_rotate(__first, __middle, __last);
 }
 #endif
@@ -1567,13 +1568,13 @@ inline void rotate(_Rope_iterator<char,allocator<char> > __first,
 //   for unicode strings.  Unsigned short may be a better character
 //   type.
 inline void rotate(
-		_Rope_iterator<wchar_t, allocator<char> > __first,
-                _Rope_iterator<wchar_t, allocator<char> > __middle,
-                _Rope_iterator<wchar_t, allocator<char> > __last) {
+		_Rope_iterator<wchar_t,__STL_DEFAULT_ALLOCATOR(char)> __first,
+                _Rope_iterator<wchar_t,__STL_DEFAULT_ALLOCATOR(char)> __middle,
+                _Rope_iterator<wchar_t,__STL_DEFAULT_ALLOCATOR(char)> __last) {
     _Rope_rotate(__first, __middle, __last);
 }
 # endif
-#endif /* _MSC_VER */
+
 
 #if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
 #pragma reset woff 1174

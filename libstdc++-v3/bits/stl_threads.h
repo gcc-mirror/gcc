@@ -119,7 +119,7 @@ struct _Refcount_Base
 // In some cases the operation is emulated with a lock.
 # ifdef __STL_SGI_THREADS
     inline unsigned long _Atomic_swap(unsigned long * __p, unsigned long __q) {
-#   	if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
+#       if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
             return test_and_set(__p, __q);
 #       else
             return __test_and_set(__p, (unsigned long)__q);
@@ -133,7 +133,7 @@ struct _Refcount_Base
     // We use a template here only to get a unique initialized instance.
     template<int __dummy>
     struct _Swap_lock_struct {
-	static pthread_mutex_t _S_swap_lock;
+        static pthread_mutex_t _S_swap_lock;
     };
 
     template<int __dummy>
@@ -154,7 +154,7 @@ struct _Refcount_Base
     // We use a template here only to get a unique initialized instance.
     template<int __dummy>
     struct _Swap_lock_struct {
-	static mutex_t _S_swap_lock;
+        static mutex_t _S_swap_lock;
     };
 
     template<int __dummy>
@@ -176,7 +176,7 @@ struct _Refcount_Base
     // We use a template here only to get a unique initialized instance.
     template<int __dummy>
     struct _Swap_lock_struct {
-	static mutex_t _S_swap_lock;
+        static mutex_t _S_swap_lock;
     };
 
 # if ( __STL_STATIC_TEMPLATE_DATA > 0 )
@@ -185,7 +185,7 @@ struct _Refcount_Base
     _Swap_lock_struct<__dummy>::_S_swap_lock = DEFAULTMUTEX;
 #  else
     __DECLARE_INSTANCE(mutex_t, _Swap_lock_struct<__dummy>::_S_swap_lock, 
-		       =DEFAULTMUTEX);
+                       =DEFAULTMUTEX);
 # endif /* ( __STL_STATIC_TEMPLATE_DATA > 0 ) */
 
     // This should be portable, but performance is expected
@@ -218,6 +218,23 @@ struct _Refcount_Base
 // constructors, no base classes, no virtual functions, and no private or
 // protected members.
 
+// Helper struct.  This is a workaround for various compilers that don't
+// handle static variables in inline functions properly.
+template <int __inst>
+struct _STL_mutex_spin {
+  enum { __low_max = 30, __high_max = 1000 };
+  // Low if we suspect uniprocessor, high for multiprocessor.
+
+  static unsigned __max;
+  static unsigned __last;
+};
+
+template <int __inst>
+unsigned _STL_mutex_spin<__inst>::__max = _STL_mutex_spin<__inst>::__low_max;
+
+template <int __inst>
+unsigned _STL_mutex_spin<__inst>::__last = 0;
+
 struct _STL_mutex_lock
 {
 #if defined(__STL_SGI_THREADS) || defined(__STL_WIN32THREADS)
@@ -232,32 +249,25 @@ struct _STL_mutex_lock
           __ts.tv_nsec = 1 << __log_nsec;
           nanosleep(&__ts, 0);
 #     elif defined(__STL_WIN32THREADS)
-	  if (__log_nsec <= 20) {
-	      Sleep(0);
-	  } else {
-	      Sleep(1 << (__log_nsec - 20));
-	  }
+          if (__log_nsec <= 20) {
+              Sleep(0);
+          } else {
+              Sleep(1 << (__log_nsec - 20));
+          }
 #     else
-#	error unimplemented
+#       error unimplemented
 #     endif
   }
   void _M_acquire_lock() {
-    const unsigned __low_spin_max = 30;  // spins if we suspect uniprocessor
-    const unsigned __high_spin_max = 1000; // spins for multiprocessor
-    static unsigned __spin_max = __low_spin_max;
-    unsigned __my_spin_max;
-    static unsigned __last_spins = 0;
-    unsigned __my_last_spins;
-    volatile unsigned __junk;
-    int __i;
     volatile unsigned long* __lock = &this->_M_lock;
 
     if (!_Atomic_swap((unsigned long*)__lock, 1)) {
       return;
     }
-    __my_spin_max = __spin_max;
-    __my_last_spins = __last_spins;
-    __junk = 17;	// Value doesn't matter.
+    unsigned __my_spin_max = _STL_mutex_spin<0>::__max;
+    unsigned __my_last_spins = _STL_mutex_spin<0>::__last;
+    volatile unsigned __junk = 17;      // Value doesn't matter.
+    unsigned __i;
     for (__i = 0; __i < __my_spin_max; __i++) {
       if (__i < __my_last_spins/2 || *__lock) {
         __junk *= __junk; __junk *= __junk;
@@ -269,13 +279,13 @@ struct _STL_mutex_lock
         // Spinning worked.  Thus we're probably not being scheduled
         // against the other process with which we were contending.
         // Thus it makes sense to spin longer the next time.
-        __last_spins = __i;
-        __spin_max = __high_spin_max;
+        _STL_mutex_spin<0>::__last = __i;
+        _STL_mutex_spin<0>::__max = _STL_mutex_spin<0>::__high_max;
         return;
       }
     }
     // We are probably being scheduled against the other process.  Sleep.
-    __spin_max = __low_spin_max;
+    _STL_mutex_spin<0>::__max = _STL_mutex_spin<0>::__low_max;
     for (__i = 0 ;; ++__i) {
       int __log_nsec = __i + 6;
 
@@ -292,7 +302,7 @@ struct _STL_mutex_lock
         asm("sync");
         *__lock = 0;
 #   elif defined(__STL_SGI_THREADS) && __mips >= 3 \
-	 && (defined (_ABIN32) || defined(_ABI64))
+         && (defined (_ABIN32) || defined(_ABI64))
         __lock_release(__lock);
 #   else 
         *__lock = 0;
