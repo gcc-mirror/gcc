@@ -1372,6 +1372,14 @@ unit.)
 A C expression for the size in bits of the type @code{long} on the
 target machine.  If you don't define this, the default is one word.
 
+@findex ADA_LONG_TYPE_SIZE
+@item ADA_LONG_TYPE_SIZE
+On some machines, the size used for the Ada equivalent of the type
+@code{long} by a native Ada compiler differs from that used by C.  In
+that situation, define this macro to be a C expression to be used for
+the size of that type.  If you don't define this, the default is the
+value of @code{LONG_TYPE_SIZE}.
+
 @findex MAX_LONG_TYPE_SIZE
 @item MAX_LONG_TYPE_SIZE
 Maximum number for the size in bits of the type @code{long} on the

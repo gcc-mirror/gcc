@@ -80,9 +80,10 @@ Boston, MA 02111-1307, USA.  */
 #define STRUCT_VALUE 0
 #undef PCC_STATIC_STRUCT_RETURN
 
-/* "long" is 32 bits.  */
+/* "long" is 32 bits, but 64 bits for Ada.  */
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
+#define ADA_LONG_TYPE_SIZE 64
 
 /* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended.  */
 #undef POINTER_SIZE

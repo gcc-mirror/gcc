@@ -1,3 +1,8 @@
+Wed Dec  5 09:33:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/vms.h (ADA_LONG_TYPE_SIZE): New macro.
+	* doc/tm.texi (ADA_LONG_TYPE_SIZE): Document it.
+
 2001-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcse.c (store_killed_in_insn): Consider pure calls
