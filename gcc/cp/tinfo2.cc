@@ -35,7 +35,7 @@ using std::type_info;
 bool
 type_info::before (const type_info &arg) const
 {
-  return strcmp (name (), arg.name ()) < 0;
+  return __builtin_strcmp (name (), arg.name ()) < 0;
 }
 
 // type info for pointer type.
