@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 91, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -514,6 +514,9 @@ print_node (file, prefix, node, indent)
 	    print_node_brief (file, "method basetype", TYPE_METHOD_BASETYPE (node), indent + 4);
 	  print_node (file, "arg-types", TYPE_ARG_TYPES (node), indent + 4);
 	}
+      else if (TREE_CODE (node) == OFFSET_TYPE)
+	print_node_brief (file, "basetype", TYPE_OFFSET_BASETYPE (node),
+			  indent + 4);
       if (TYPE_CONTEXT (node))
 	print_node_brief (file, "context", TYPE_CONTEXT (node), indent + 4);
 

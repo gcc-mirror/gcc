@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992-1999 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -1400,23 +1400,21 @@ expand_eh_region_start_for_decl (decl)
   if (! doing_eh (0))
     return;
 
+  /* We need a new block to record the start and end of the
+     dynamic handler chain.  We also want to prevent jumping into
+     a try block.  */
+  expand_start_bindings (0);
+
+  /* But we don't need or want a new temporary level.  */
+  pop_temp_slots ();
+
+  /* Mark this block as created by expand_eh_region_start.  This
+     is so that we can pop the block with expand_end_bindings
+     automatically.  */
+  mark_block_as_eh_region ();
+
   if (exceptions_via_longjmp)
     {
-      /* We need a new block to record the start and end of the
-	 dynamic handler chain.  We could always do this, but we
-	 really want to permit jumping into such a block, and we want
-	 to avoid any errors or performance impact in the SJ EH code
-	 for now.  */
-      expand_start_bindings (0);
-
-      /* But we don't need or want a new temporary level.  */
-      pop_temp_slots ();
-
-      /* Mark this block as created by expand_eh_region_start.  This
-	 is so that we can pop the block with expand_end_bindings
-	 automatically.  */
-      mark_block_as_eh_region ();
-
       /* Arrange for returns and gotos to pop the entry we make on the
 	 dynamic handler stack.  */
       expand_dhc_cleanup (decl);
@@ -1489,8 +1487,7 @@ expand_eh_region_end (handler)
 
   enqueue_eh_entry (&ehqueue, entry);
 
-  /* If we have already started ending the bindings, don't recurse.
-     This only happens when exceptions_via_longjmp is true.  */
+  /* If we have already started ending the bindings, don't recurse.  */
   if (is_eh_region ())
     {
       /* Because we don't need or want a new temporary level and
@@ -1501,7 +1498,6 @@ expand_eh_region_end (handler)
 
       mark_block_as_not_eh_region ();
 
-      /* Maybe do this to prevent jumping in and so on...  */
       expand_end_bindings (NULL_TREE, 0, 0);
     }
 }
