@@ -1,5 +1,9 @@
 2002-01-17  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/MenuComponent.java: Merged with Classpath.
+	* java/awt/MenuItem.java: Merged with Classpath.
+	* java/awt/Button.java: Merged with Classpath.
+
 	* java/awt/ActiveEvent.java: Updated copyright.
 
 	* java/awt/AWTError.java: Replaced with Classpath version.
