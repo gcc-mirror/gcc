@@ -1,3 +1,9 @@
+2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/assign-warn-1.c, gcc.dg/assign-warn-2.c: New tests.
+	* gcc.dg/warn-1.c, gcc.dg/noncompile/20020213-1.c,
+	objc.dg/method-9.m: Update expected diagnostics.
+
 2004-10-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/ppc-fsel-3.c: New file.

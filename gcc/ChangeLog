@@ -1,3 +1,16 @@
+2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (enum impl_conv): New.
+	(convert_for_assignment): Use it.  Take tree for function called
+	instead of its name.  Handle ObjC selectors for diagnostics at
+	start of function.  Select diagnostic text within the function
+	using full sentences for diagnsotics.  Use %qE to name functions
+	in diagnostics.
+	(convert_arguments, build_modify_expr,
+	c_convert_parm_for_inlining, digest_init, c_finish_return): Update
+	callers to convert_for_assignment.
+	(warn_for_assignment): Remove.
+
 2004-10-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/symbian.c (symbian_possibly_export_base_class):
