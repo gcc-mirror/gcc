@@ -3069,8 +3069,7 @@ note_addr_stored (x, y, data)
 /* X is a value modified by an INSN that references a biv inside a loop
    exit test (ie, X is somehow related to the value of the biv).  If X
    is a pseudo that is used more than once, then the biv is (effectively)
-   used more than once.  DATA is really an `int *', and is set if the
-   biv is used more than once.  */
+   used more than once.  DATA is a pointer to a loop_regs structure.  */
 
 static void
 note_set_pseudo_multiple_uses (x, y, data)
@@ -3097,7 +3096,7 @@ note_set_pseudo_multiple_uses (x, y, data)
   if (REGNO (x) >= max_reg_before_loop
       || ! VARRAY_RTX (regs->single_usage, REGNO (x))
       || VARRAY_RTX (regs->single_usage, REGNO (x)) == const0_rtx)
-    *((int *) data) = 1;
+    regs->multiple_uses = 1;
 }
 
 /* Return nonzero if the rtx X is invariant over the current loop.
