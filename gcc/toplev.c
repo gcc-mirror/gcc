@@ -2266,10 +2266,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
     {
       timevar_push (TV_VARCONST);
 
-      /* If asmspec non-zero, we may be creating a global register variable.
-	 If asmspec zero, we may be making sure that ENCODE_SECTION_INFO is
-	 up-to-date.  */
-      if (TREE_CODE (decl) != TYPE_DECL && TREE_CODE (decl) != LABEL_DECL)
+      if (asmspec)
         make_decl_rtl (decl, asmspec);
 
       /* Don't output anything when a tentative file-scope definition
