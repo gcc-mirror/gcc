@@ -1,3 +1,7 @@
+2002-03-05  Richard Henderson  <rth@redhat.com>
+
+        * config/rs6000/rs6000.h (TOTAL_ALTIVEC_REGS): Fix off-by-one error.
+
 2002-03-04  Krister Walfridsson  <cato@df.lth.se>
 
 	* config.gcc (*-*-netbsd*): Add t-slibgcc-elf-ver to tmake_file.
