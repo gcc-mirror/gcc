@@ -1,5 +1,11 @@
 2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config.gcc (xstormy16-*-elf): Set extra_options.
+	* config/stormy16/stormy16.h (target_flags, TARGET_SWITCHES): Delete.
+	* config/stormy16/stormy16.opt: New file.
+
+2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/pdp11/pdp11.h (target_flags, TARGET_SWITCHES, TARGET_DEFAULT)
 	(TARGET_FPU, TARGET_SOFT_FLOAT, TARGET_AC0, TARGET_NO_AC0, TARGET_45)
 	(TARGET_BCOPY_BUILTIN, TARGET_INT16, TARGET_INT32, TARGET_FLOAT32)
