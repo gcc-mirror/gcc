@@ -783,6 +783,7 @@ do_line (pfile)
 	      else
 		{
 		  _cpp_pop_buffer (pfile);
+		  pfile->lexer_pos.output_line++;
 		  buffer = pfile->buffer;
 #ifdef ENABLE_CHECKING
 		  if (strcmp (buffer->nominal_fname, fname))
