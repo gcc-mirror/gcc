@@ -2334,9 +2334,10 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 			  const char *file ATTRIBUTE_UNUSED)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  char * dup_label;
   dw_fde_ref fde;
 
-  current_function_func_begin_label = 0;
+  current_function_func_begin_label = NULL;
 
 #ifdef TARGET_UNWIND_INFO
   /* ??? current_function_func_begin_label is also used by except.c
@@ -2355,7 +2356,8 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 			       current_function_funcdef_no);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, FUNC_BEGIN_LABEL,
 			  current_function_funcdef_no);
-  current_function_func_begin_label = get_identifier (label);
+  dup_label = xstrdup (label);
+  current_function_func_begin_label = dup_label;
 
 #ifdef TARGET_UNWIND_INFO
   /* We can elide the fde allocation if we're not emitting debug info.  */
@@ -2379,7 +2381,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   /* Add the new FDE at the end of the fde_table.  */
   fde = &fde_table[fde_table_in_use++];
   fde->decl = current_function_decl;
-  fde->dw_fde_begin = xstrdup (label);
+  fde->dw_fde_begin = dup_label;
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;

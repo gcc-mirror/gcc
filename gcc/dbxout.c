@@ -3174,8 +3174,8 @@ static void
 dbxout_block (tree block, int depth, tree args)
 {
   const char *begin_label;
-  if (current_function_func_begin_label != NULL_TREE)
-    begin_label = IDENTIFIER_POINTER (current_function_func_begin_label);
+  if (current_function_func_begin_label != NULL)
+    begin_label = current_function_func_begin_label;
   else
     begin_label = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
