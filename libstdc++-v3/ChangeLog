@@ -1,3 +1,8 @@
+2003-08-29  Nathan Myers  <ncm@cantrip.org>
+	
+	PR libstdc++/11990	
+	* include/bits/locale_facets.tcc (__pad): delete dead code.
+
 2003-08-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.ac: Test $with_cross_host against $build_alias, not $build.
