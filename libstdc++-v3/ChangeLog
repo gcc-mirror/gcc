@@ -1,3 +1,7 @@
+2003-04-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* os/hpux/ctype_inline.h: Replace with gnu-linux version.
+
 2003-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* basic_file_stdio.cc (__basic_file<char>::close): Don't flush stream
