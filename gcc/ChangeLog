@@ -1,3 +1,8 @@
+2001-11-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* final.c: (insn_lengths): Make it an int *, so that large jump
+	tables don't overflow.
+
 2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md (peephole2): New peephole2 to optimize
