@@ -1503,6 +1503,9 @@ gen_shifty_op (code, operands)
     {
       /* ??? This code should be moved elsewhere.  */
     case ASHIFTRT:
+      if (GET_CODE (operands[2]) != CONST_INT)
+	return 0;
+
       wrk = gen_reg_rtx (SImode);
 
       if (value == 31)
