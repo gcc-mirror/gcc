@@ -1,5 +1,9 @@
 2000-09-06  Bernd Schmidt  <bernds@redhat.co.uk>
-	
+
+	* local-alloc.c (local_alloc): Ignore CLASS_LIKELY_SPILLED.
+	(update_equiv_regs): Likewise, except for the mn10200 kludge.
+	(combine_regs): Likewise.
+
 	* Makefile.in (cse.o): Depend on $(BASIC_BLOCK_H).
 	* cse.c: Include "basic-block.h".
 	(struct table_elt): New field REGCOST.

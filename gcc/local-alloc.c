@@ -349,19 +349,14 @@ local_alloc ()
 
   /* Determine which pseudo-registers can be allocated by local-alloc.
      In general, these are the registers used only in a single block and
-     which only die once.  However, if a register's preferred class has only
-     a few entries, don't allocate this register here unless it is preferred
-     or nothing since retry_global_alloc won't be able to move it to
-     GENERAL_REGS if a reload register of this class is needed.
+     which only die once.
 
      We need not be concerned with which block actually uses the register
      since we will never see it outside that block.  */
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      if (REG_BASIC_BLOCK (i) >= 0 && REG_N_DEATHS (i) == 1
-	  && (reg_alternate_class (i) == NO_REGS
-	      || ! CLASS_LIKELY_SPILLED_P (reg_preferred_class (i))))
+      if (REG_BASIC_BLOCK (i) >= 0 && REG_N_DEATHS (i) == 1)
 	reg_qty[i] = -2;
       else
 	reg_qty[i] = -1;
@@ -787,15 +782,6 @@ update_equiv_regs ()
 	  /* This might be seting a SUBREG of a pseudo, a pseudo that is
 	     also set somewhere else to a constant.  */
 	  note_stores (set, no_equiv, NULL);
-	  continue;
-	}
-      /* Don't handle the equivalence if the source is in a register
-	 class that's likely to be spilled.  */
-      if (GET_CODE (src) == REG
-	  && REGNO (src) >= FIRST_PSEUDO_REGISTER
-	  && CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (src))))
-	{
-	  no_equiv (dest, set, NULL);
 	  continue;
 	}
 
@@ -1653,11 +1639,6 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       || ureg == sreg
       /* Don't try to connect two different hardware registers.  */
       || (ureg < FIRST_PSEUDO_REGISTER && sreg < FIRST_PSEUDO_REGISTER)
-      /* Don't use a hard reg that might be spilled.  */
-      || (ureg < FIRST_PSEUDO_REGISTER
-	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (ureg)))
-      || (sreg < FIRST_PSEUDO_REGISTER
-	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (sreg)))
       /* Don't connect two different machine modes if they have different
 	 implications as to which registers may be used.  */
       || !MODES_TIEABLE_P (GET_MODE (usedreg), GET_MODE (setreg)))
