@@ -1062,10 +1062,10 @@ gen_lowpart_common (mode, x)
       if (HOST_BITS_PER_WIDE_INT != 64)
 	abort ();
 
-      return immed_double_const (i[3 * endian]
-				 | ((HOST_WIDE_INT) i[1 + endian] << 32),
-				 i[2 - endian]
-				 | ((HOST_WIDE_INT) i[3 - 3 * endian] << 32),
+      return immed_double_const ((((unsigned long) i[3 * endian])
+				  | ((HOST_WIDE_INT) i[1 + endian] << 32)),
+				 (((unsigned long) i[2 - endian])
+				  | ((HOST_WIDE_INT) i[3 - 3 * endian] << 32)),
 				 mode);
 #endif
     }
