@@ -1674,7 +1674,8 @@ warning.)  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.
 
 @item -Wtrigraphs
-Warn if any trigraphs are encountered (assuming they are enabled).
+Warn if any trigraphs are encountered that might change the meaning of
+the program (trigraphs within comments are not warned about).
 
 @item -Wunused-function
 Warn whenever a static function is declared but not defined or a
@@ -2521,7 +2522,7 @@ numbers and line number note output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without -g.
 
-@item -fdump-translation-unit-@var{file} (C++ only)
+@item -fdump-translation-unit-@var{file} (C and C++ only)
 Dump a representation of the tree structure for the entire translation
 unit to @var{file}.
 
@@ -2536,15 +2537,16 @@ the target machine.
 Store the usual ``temporary'' intermediate files permanently; place them
 in the current directory and name them based on the source file.  Thus,
 compiling @file{foo.c} with @samp{-c -save-temps} would produce files
-@file{foo.i} and @file{foo.s}, as well as @file{foo.o}.
+@file{foo.i} and @file{foo.s}, as well as @file{foo.o}.  This creates a
+preprocessed @file{foo.i} output file even though the compiler now
+normally uses an integrated preprocessor.
 
 @item -time
 Report the CPU time taken by each subprocess in the compilation
-sequence.  For C source files, this is the preprocessor, compiler
-proper, and assembler.  The output looks like this:
+sequence.  For C source files, this is the compiler proper and assembler
+(plus the linker if linking is done).  The output looks like this:
 
 @smallexample
-# cpp 0.04 0.04
 # cc1 0.12 0.01
 # as 0.00 0.01
 @end smallexample
