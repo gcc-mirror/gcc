@@ -153,6 +153,8 @@ predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
 treelang                Tim Josling             tej@melbpc.org.au
 new regalloc (ra*)	Michael Matz		matz@suse.de
+gcov			Jan Hubicka		jh@suse.cz
+gcov			Nathan Sidwell		nathan@codesourcery.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
