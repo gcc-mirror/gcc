@@ -1,3 +1,3 @@
-X_CFLAGS=-Bstatic -dn -DSVR4
+X_CFLAGS=-DSVR4
 INSTALL=cp
 ALLOCA=alloca.o
