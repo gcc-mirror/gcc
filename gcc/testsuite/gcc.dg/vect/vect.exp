@@ -58,6 +58,13 @@ if [istarget "powerpc*-*-*"] {
 } elseif [istarget "sparc*-*-*"] {
     lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
     set dg-do-what-default run
+} elseif [istarget "alpha*-*-*"] {
+    lappend DEFAULT_VECTCFLAGS "-mmax"
+    if [check_alpha_max_hw_available] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default compile
+    }
 } else {
     return
 }

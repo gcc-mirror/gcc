@@ -38,4 +38,4 @@ int main (void)
 
 /* These fail to vectorize on targets that don't have or model a vector
    max operation.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail i?86-*-* x86_64-*-* sparc*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail i?86-*-* x86_64-*-* sparc*-*-* alpha*-*-* } } } */

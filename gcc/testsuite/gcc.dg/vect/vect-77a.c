@@ -43,5 +43,4 @@ int main (void)
 
 /* This fails to vectorize for 64-bit powerpc but there's no way to
    specify that in an xfail list.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail sparc*-*-* } } } */
-
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail sparc*-*-* alpha*-*-* } } } */

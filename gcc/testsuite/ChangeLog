@@ -1,3 +1,18 @@
+2004-11-23  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/pr18425.c: Use effective target vect_long.
+	* gcc.dg/vect/vect-13.c, gcc.dg/vect/vect-17.c, gcc.dg/vect/vect-18.c,
+	gcc.dg/vect/vect-19.c, gcc.dg/vect/vect-20.c, gcc.dg/vect/vect-48a.c,
+	gcc.dg/vect/vect-56a.c, gcc.dg/vect/vect-7.c, gcc.dg/vect/vect-77.c,
+	gcc.dg/vect/vect-77a.c, gcc.dg/vect/vect-78.c, gcc.dg/vect/vect-86.c,
+	gcc.dg/vect/vect-87.c, gcc.dg/vect/vect-88.c: XFAIL for alpha.
+
+	* gcc.dg/vect/vect.exp: Add check for alpha.
+	* lib/target-supports.exp (check_alpha_max_hw_available): New.
+	(check_effective_target_vect_int): Enable for alpha.
+	(check_effective_target_vect_long): New.
+	(is-effective-target): Add it.
+
 2004-11-23  Uros Bizjak <uros@kss-loka.si>
 
 	* gcc.dg/pr18614-1.c: New test.

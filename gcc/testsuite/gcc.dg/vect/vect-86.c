@@ -45,4 +45,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* Fails for targets that don't vectorize PLUS.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail alpha*-*-* } } } */

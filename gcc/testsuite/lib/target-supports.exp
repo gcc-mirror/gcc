@@ -368,6 +368,46 @@ proc check_vmx_hw_available { } {
     return $vmx_hw_available_saved
 }
 
+proc check_alpha_max_hw_available { } {
+    global alpha_max_hw_available_saved
+    global tool
+
+    if [info exists alpha_max_hw_available_saved] {
+	verbose "check_alpha_max_hw_available returning saved $alpha_max_hw_available_saved" 2
+    } else {
+	set alpha_max_hw_available_saved 0
+
+	# Set up, compile, and execute a test program probing bit 8 of the
+	# architecture mask, which indicates presence of MAX instructions.
+	set src max[pid].c
+	set exe max[pid].x
+
+	set f [open $src "w"]
+	puts $f "int main() { return __builtin_alpha_amask(1<<8) != 0; }"
+	close $f
+
+	verbose "check_alpha_max_hw_available compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+	    verbose "check_alpha_max_hw_available testfile status is <$status>" 2
+
+	    if { $status == "pass" } then {
+		set alpha_max_hw_available_saved 1
+	    }
+	} else {
+	    verbose "check_alpha_max_hw_availalble testfile compilation failed" 2
+	}
+    }
+
+    return $alpha_max_hw_available_saved
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 
@@ -406,13 +446,37 @@ proc check_effective_target_vect_int { } {
 	if { [istarget i?86-*-*]
 	      || [istarget powerpc*-*-*]
 	      || [istarget x86_64-*-*]
-	      || [istarget sparc*-*-*] } {
+	      || [istarget sparc*-*-*]
+	      || [istarget alpha*-*-*] } {
 	   set et_vect_int_saved 1
 	}
     }
 
     verbose "check_effective_target_vect_int: returning $et_vect_int_saved" 2
     return $et_vect_int_saved
+}
+
+# Return 1 if the target supports hardware vectors of long, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_long { } {
+    global et_vect_long_saved
+
+    if [info exists et_vect_long_saved] {
+	verbose "check_effective_target_vect_long: using cached result" 2
+    } else {
+	set et_vect_long_saved 0
+	if { [istarget i?86-*-*]
+	      || [istarget powerpc*-*-*]
+	      || [istarget x86_64-*-*]
+	      || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
+	   set et_vect_long_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_long: returning $et_vect_long_saved" 2
+    return $et_vect_long_saved
 }
 
 # Return 1 if the target supports hardware vectors of float, 0 otherwise.
@@ -473,6 +537,7 @@ proc is-effective-target { arg } {
 	"named_sections" { set selected [check_named_sections_available] }
 	"gc_sections" { set selected [check_gc_sections_available] }
 	"vect_int" { set selected [check_effective_target_vect_int] }
+	"vect_long" { set selected [check_effective_target_vect_long] }
 	"vect_float" { set selected [check_effective_target_vect_float] }
 	"vect_double" { set selected [check_effective_target_vect_double] }
 	default  { error "unknown effective target selector `$arg'" }
