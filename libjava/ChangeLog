@@ -1,3 +1,15 @@
+2004-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/FileDescriptor.java: (FileDescriptor) Added public
+	constructor. (valid) Added null check.
+
+2004-04-20  Guilhem Lavaux <guilhem@kaffe.org>
+
+        Reported by Nektarios Papadopoulos <npapadop@inaccessnetworks.com>
+	* java/io/FileOutputStream.java
+	(FileOutputStream) Reorganized constructors. Constructors now
+	check whether the given path is directory.
+
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Authenticator.java,

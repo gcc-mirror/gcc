@@ -83,6 +83,14 @@ public final class FileDescriptor
   /**
    * This method is used to initialize an invalid FileDescriptor object.
    */
+  public FileDescriptor()
+  {
+    channel = null;
+  }
+
+  /**
+   * This method is used to initialize a FileDescriptor object.
+   */
   FileDescriptor(ByteChannel channel)
   {
     this.channel = channel;
@@ -125,6 +133,6 @@ public final class FileDescriptor
    */
   public boolean valid ()
   {
-    return channel.isOpen();
+    return channel != null && channel.isOpen();
   }
 }
