@@ -527,8 +527,8 @@ cpp_create_reader (table, lang)
   pfile->base_context.macro = 0;
   pfile->base_context.prev = pfile->base_context.next = 0;
 
-  /* Identifier pool initially 8K.  Unaligned, permanent pool.  */
-  _cpp_init_pool (&pfile->ident_pool, 8 * 1024, 1, 0);
+  /* Unaligned storage.  */
+  pfile->u_buff = _cpp_get_buff (pfile, 0);
 
   /* Macro pool initially 8K.  Aligned, permanent pool.  */
   _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
@@ -585,8 +585,8 @@ cpp_destroy (pfile)
   _cpp_destroy_hashtable (pfile);
   _cpp_cleanup_includes (pfile);
 
-  _cpp_free_pool (&pfile->ident_pool);
   _cpp_free_pool (&pfile->macro_pool);
+  _cpp_free_buff (pfile->u_buff);
   _cpp_free_buff (pfile->free_buffs);
 
   for (run = &pfile->base_run; run; run = runn)

@@ -77,14 +77,18 @@ typedef struct _cpp_buff _cpp_buff;
 struct _cpp_buff
 {
   struct _cpp_buff *next;
-  char *base, *cur, *limit;
+  unsigned char *base, *cur, *limit;
 };
 
-extern _cpp_buff *_cpp_get_buff PARAMS ((cpp_reader *, unsigned int));
+extern _cpp_buff *_cpp_get_buff PARAMS ((cpp_reader *, size_t));
 extern void _cpp_release_buff PARAMS ((cpp_reader *, _cpp_buff *));
 extern _cpp_buff *_cpp_extend_buff PARAMS ((cpp_reader *, _cpp_buff *,
-					    unsigned int));
+					    size_t));
 extern void _cpp_free_buff PARAMS ((_cpp_buff *));
+extern unsigned char *_cpp_unaligned_alloc PARAMS ((cpp_reader *, size_t));
+#define BUFF_ROOM(BUFF) ((BUFF)->limit - (BUFF)->cur)
+#define BUFF_FRONT(BUFF) ((BUFF)->cur)
+#define BUFF_LIMIT(BUFF) ((BUFF)->limit)
 
 /* List of directories to look for include files in.  */
 struct search_path
@@ -267,12 +271,11 @@ struct cpp_reader
   unsigned int directive_line;
 
   /* Memory pools.  */
-  cpp_pool ident_pool;		/* For all identifiers, and permanent
-				   numbers and strings.  */
   cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
 
   /* Memory buffers.  */
-  _cpp_buff *free_buffs;
+  _cpp_buff *u_buff;		/* Unaligned permanent storage.  */
+  _cpp_buff *free_buffs;	/* Free buffer chain.  */
 
   /* Context stack.  */
   struct cpp_context base_context;

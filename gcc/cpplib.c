@@ -493,13 +493,13 @@ glue_header_name (pfile)
 {
   cpp_token *header = NULL;
   const cpp_token *token;
-  unsigned char *buffer, *token_mem;
-  size_t len, total_len = 0, capacity = 1024;
+  unsigned char *dest;
+  size_t len;
 
   /* To avoid lexed tokens overwriting our glued name, we can only
      allocate from the string pool once we've lexed everything.  */
 
-  buffer = (unsigned char *) xmalloc (capacity);
+  dest = BUFF_FRONT (pfile->u_buff);
   for (;;)
     {
       token = cpp_get_token (pfile);
@@ -507,35 +507,34 @@ glue_header_name (pfile)
       if (token->type == CPP_GREATER || token->type == CPP_EOF)
 	break;
 
-      len = cpp_token_len (token);
-      if (total_len + len > capacity)
+      /* + 1 for terminating NUL.  */
+      len = cpp_token_len (token) + 1;
+      if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < len)
 	{
-	  capacity = (capacity + len) * 2;
-	  buffer = (unsigned char *) xrealloc (buffer, capacity);
+	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, len);
+	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	}
 
       if (token->flags & PREV_WHITE)
-	buffer[total_len++] = ' ';
+	*dest++ = ' ';
 
-      total_len = cpp_spell_token (pfile, token, &buffer[total_len]) - buffer;
+      dest = cpp_spell_token (pfile, token, dest);
     }
 
   if (token->type == CPP_EOF)
     cpp_error (pfile, "missing terminating > character");
   else
     {
-      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len + 1);
-      memcpy (token_mem, buffer, total_len);
-      token_mem[total_len] = '\0';
-
       header = _cpp_temp_token (pfile);
       header->type = CPP_HEADER_NAME;
-      header->flags &= ~PREV_WHITE;
-      header->val.str.len = total_len;
-      header->val.str.text = token_mem;
+      header->flags = 0;
+      header->val.str.len = dest - BUFF_FRONT (pfile->u_buff);
+      header->val.str.text = BUFF_FRONT (pfile->u_buff);
+      *dest++ = '\0';
+      BUFF_FRONT (pfile->u_buff) = dest;
     }
 
-  free ((PTR) buffer);
   return header;
 }
 

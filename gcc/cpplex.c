@@ -599,17 +599,20 @@ parse_number (pfile, number, c, leading_period)
      int leading_period;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cpp_pool *pool = &pfile->ident_pool;
   unsigned char *dest, *limit;
 
-  dest = POOL_FRONT (pool);
-  limit = POOL_LIMIT (pool);
+  dest = BUFF_FRONT (pfile->u_buff);
+  limit = BUFF_LIMIT (pfile->u_buff);
 
   /* Place a leading period.  */
   if (leading_period)
     {
-      if (dest >= limit)
-	limit = _cpp_next_chunk (pool, 0, &dest);
+      if (dest == limit)
+	{
+	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 1);
+	  dest = BUFF_FRONT (pfile->u_buff);
+	  limit = BUFF_LIMIT (pfile->u_buff);
+	}
       *dest++ = '.';
     }
   
@@ -618,8 +621,13 @@ parse_number (pfile, number, c, leading_period)
       do
 	{
 	  /* Need room for terminating null.  */
-	  if (dest + 1 >= limit)
-	    limit = _cpp_next_chunk (pool, 0, &dest);
+	  if ((size_t) (limit - dest) < 2)
+	    {
+	      size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+	      pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 2);
+	      dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
+	      limit = BUFF_LIMIT (pfile->u_buff);
+	    }
 	  *dest++ = c;
 
 	  c = EOF;
@@ -643,9 +651,9 @@ parse_number (pfile, number, c, leading_period)
   /* Null-terminate the number.  */
   *dest = '\0';
 
-  number->text = POOL_FRONT (pool);
+  number->text = BUFF_FRONT (pfile->u_buff);
   number->len = dest - number->text;
-  POOL_COMMIT (pool, number->len + 1);
+  BUFF_FRONT (pfile->u_buff) = dest + 1;
 }
 
 /* Subroutine of parse_string.  Emits error for unterminated strings.  */
@@ -676,7 +684,7 @@ unescaped_terminator_p (pfile, dest)
   if (pfile->state.angled_headers)
     return 1;
 
-  start = POOL_FRONT (&pfile->ident_pool);
+  start = BUFF_FRONT (pfile->u_buff);
 
   /* An odd number of consecutive backslashes represents an escaped
      terminator.  */
@@ -699,13 +707,12 @@ parse_string (pfile, token, terminator)
      cppchar_t terminator;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cpp_pool *pool = &pfile->ident_pool;
   unsigned char *dest, *limit;
   cppchar_t c;
   bool warned_nulls = false, warned_multi = false;
 
-  dest = POOL_FRONT (pool);
-  limit = POOL_LIMIT (pool);
+  dest = BUFF_FRONT (pfile->u_buff);
+  limit = BUFF_LIMIT (pfile->u_buff);
 
   for (;;)
     {
@@ -716,8 +723,13 @@ parse_string (pfile, token, terminator)
 
     have_char:
       /* We need space for the terminating NUL.  */
-      if (dest >= limit)
-	limit = _cpp_next_chunk (pool, 0, &dest);
+      if ((size_t) (limit - dest) < 1)
+	{
+	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 2);
+	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
+	  limit = BUFF_LIMIT (pfile->u_buff);
+	}
 
       if (c == EOF)
 	{
@@ -781,9 +793,9 @@ parse_string (pfile, token, terminator)
   buffer->read_ahead = c;
   *dest = '\0';
 
-  token->val.str.text = POOL_FRONT (pool);
-  token->val.str.len = dest - token->val.str.text;
-  POOL_COMMIT (pool, token->val.str.len + 1);
+  token->val.str.text = BUFF_FRONT (pfile->u_buff);
+  token->val.str.len = dest - BUFF_FRONT (pfile->u_buff);
+  BUFF_FRONT (pfile->u_buff) = dest + 1;
 }
 
 /* The stored comment includes the comment start and any terminator.  */
@@ -801,7 +813,7 @@ save_comment (pfile, token, from)
      line, which we don't want to save in the comment.  */
   if (pfile->buffer->read_ahead != EOF)
     len--;
-  buffer = _cpp_pool_alloc (&pfile->ident_pool, len);
+  buffer = _cpp_unaligned_alloc (pfile, len);
   
   token->type = CPP_COMMENT;
   token->val.str.len = len;
@@ -1485,7 +1497,7 @@ cpp_token_as_text (pfile, token)
      const cpp_token *token;
 {
   unsigned int len = cpp_token_len (token);
-  unsigned char *start = _cpp_pool_alloc (&pfile->ident_pool, len), *end;
+  unsigned char *start = _cpp_unaligned_alloc (pfile, len), *end;
 
   end = cpp_spell_token (pfile, token, start);
   end[0] = '\0';
@@ -2043,7 +2055,7 @@ new_buff (len)
      unsigned int len;
 {
   _cpp_buff *result;
-  char *base;
+  unsigned char *base;
 
   if (len < MIN_BUFF_SIZE)
     len = MIN_BUFF_SIZE;
@@ -2128,6 +2140,27 @@ _cpp_free_buff (buff)
       next = buff->next;
       free (buff->base);
     }
+}
+
+/* Allocate permanent, unaligned storage of length LEN.  */
+unsigned char *
+_cpp_unaligned_alloc (pfile, len)
+     cpp_reader *pfile;
+     size_t len;
+{
+  _cpp_buff *buff = pfile->u_buff;
+  unsigned char *result = buff->cur;
+
+  if (len > (size_t) (buff->limit - result))
+    {
+      buff = _cpp_get_buff (pfile, len);
+      buff->next = pfile->u_buff;
+      pfile->u_buff = buff;
+      result = buff->cur;
+    }
+
+  buff->cur = result + len;
+  return result;
 }
 
 static int
