@@ -675,7 +675,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
      a jmpbuf.  */
   setjmp_decl
     = create_subprog_decl
-      (get_identifier ("setjmp"), NULL_TREE,
+      (get_identifier ("__builtin_setjmp"), NULL_TREE,
        build_function_type (integer_type_node,
 			    tree_cons (NULL_TREE,  jmpbuf_ptr_type, endlink)),
        NULL_TREE, 0, 1, 1, 0);
