@@ -47,7 +47,7 @@ void
 gnu::gcj::convert::Input_iconv::finalize (void)
 {
 #ifdef HAVE_ICONV
-  if (handle == NULL)
+  if (handle != NULL)
     {
       iconv_close ((iconv_t) handle);
       handle = NULL;
@@ -108,7 +108,7 @@ void
 gnu::gcj::convert::Output_iconv::finalize (void)
 {
 #ifdef HAVE_ICONV
-  if (handle == NULL)
+  if (handle != NULL)
     {
       iconv_close ((iconv_t) handle);
       handle = NULL;

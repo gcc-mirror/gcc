@@ -1,3 +1,9 @@
+2000-02-09  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/convert/natIconv.cc (Input_iconv::finalize): Call
+	iconv_close when handle is not NULL.  Thanks to Andrew Haley.
+	(Output_iconv::finalize): Likewise.
+
 2000-02-08  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/Properties.java (setProperty): New method.
