@@ -1,3 +1,7 @@
+2005-01-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Revert previous change.
+
 2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/19388
