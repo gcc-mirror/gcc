@@ -2755,19 +2755,18 @@ duplicate_decls (tree newdecl, tree olddecl)
 	       && DECL_UNINLINABLE (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning ("%Hfunction '%D' redeclared as inline",
-                   &DECL_SOURCE_LOCATION (newdecl), newdecl);
-	  warning ("%Hprevious declaration of '%D' with attribute noinline",
-                   &DECL_SOURCE_LOCATION (olddecl), olddecl);
+	  warning ("%Jfunction '%D' redeclared as inline", newdecl, newdecl);
+	  warning ("%Jprevious declaration of '%D' with attribute noinline",
+                   olddecl, olddecl);
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && DECL_UNINLINABLE (newdecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning ("%Hfunction '%D' redeclared with attribute noinline",
-                   &DECL_SOURCE_LOCATION (newdecl), newdecl);
-	  warning ("%Hprevious declaration of '%D' was inline",
-                   &DECL_SOURCE_LOCATION (olddecl), olddecl);
+	  warning ("%Jfunction '%D' redeclared with attribute noinline",
+		   newdecl, newdecl);
+	  warning ("%Jprevious declaration of '%D' was inline",
+		   olddecl, olddecl);
 	}
     }
 
@@ -3009,8 +3008,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
 	  cp_warning_at ("prototype for `%#D'", newdecl);
-	  warning ("%Hfollows non-prototype definition here",
-		   &DECL_SOURCE_LOCATION (olddecl));
+	  warning ("%Jfollows non-prototype definition here", olddecl);
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
@@ -3065,10 +3063,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      && ! DECL_DECLARED_INLINE_P (olddecl)
 	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
 	    {
-	      warning ("`%#D' was used before it was declared inline",
-			  newdecl);
-	      warning ("%Hprevious non-inline declaration here",
-		       &DECL_SOURCE_LOCATION (olddecl));
+	      warning ("`%#D' was used before it was declared inline", newdecl);
+	      warning ("%Jprevious non-inline declaration here", olddecl);
 	    }
 	}
     }
@@ -4790,7 +4786,7 @@ check_goto (tree decl)
 
       if (u > 1 && DECL_ARTIFICIAL (b))
 	/* Can't skip init of __exception_info.  */
-	error ("%H  enters catch block", &DECL_SOURCE_LOCATION (b));
+	error ("%J  enters catch block", b);
       else if (u > 1)
 	cp_error_at ("  skips initialization of `%#D'", b);
       else
@@ -6577,8 +6573,8 @@ fixup_anonymous_aggr (tree t)
 
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
-    error ("%Han anonymous union cannot have function members",
-	   &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (t)));
+    error ("%Jan anonymous union cannot have function members",
+	   TYPE_MAIN_DECL (t));
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
@@ -6911,8 +6907,7 @@ start_decl (tree declarator,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning ("%Hinline function '%D' given attribute noinline",
-             &DECL_SOURCE_LOCATION (decl), decl);
+    warning ("%Jinline function '%D' given attribute noinline", decl, decl);
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -7281,8 +7276,8 @@ maybe_commonize_var (tree decl)
 	      TREE_PUBLIC (decl) = 0;
 	      DECL_COMMON (decl) = 0;
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
-	      warning ("%H  you can work around this by removing the initializer",
-		       &DECL_SOURCE_LOCATION (decl));
+	      warning ("%J  you can work around this by removing the initializer",
+		       decl);
 	    }
 	}
     }
@@ -11019,8 +11014,7 @@ grokdeclarator (tree declarator,
 	{
 	  decl = build_decl (TYPE_DECL, declarator, type);
 	  if (in_namespace || ctype)
-	    error ("%Htypedef name may not be a nested-name-specifier",
-		   &DECL_SOURCE_LOCATION (decl));
+	    error ("%Jtypedef name may not be a nested-name-specifier", decl);
 	  if (!current_function_decl)
 	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 	}
@@ -11066,8 +11060,8 @@ grokdeclarator (tree declarator,
 	  if (ctype == NULL_TREE)
 	    {
 	      if (TREE_CODE (type) != METHOD_TYPE)
-		error ("%Hinvalid type qualifier for non-member function type",
-		       &DECL_SOURCE_LOCATION (decl));
+		error ("%Jinvalid type qualifier for non-member function type",
+		       decl);
 	      else
 		ctype = TYPE_METHOD_BASETYPE (type);
 	    }
@@ -12903,8 +12897,7 @@ start_enum (tree name)
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
       error ("multiple definition of `%#T'", enumtype);
-      error ("%Hprevious definition here",
-	     &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)));
+      error ("%Jprevious definition here", TYPE_MAIN_DECL (enumtype));
       /* Clear out TYPE_VALUES, and start again.  */
       TYPE_VALUES (enumtype) = NULL_TREE;
     }
@@ -13346,8 +13339,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
-    warning ("%Hinline function '%D' given attribute noinline",
-             &DECL_SOURCE_LOCATION (decl1), decl1);
+    warning ("%Jinline function '%D' given attribute noinline", decl1, decl1);
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args

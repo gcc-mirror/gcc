@@ -810,6 +810,9 @@ static const format_char_info gcc_diag_char_table[] =
   /* %H will require "location_t" at runtime.  */
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
+  /* These will require a "tree" at runtime.  */
+  { "J", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
   { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
@@ -830,7 +833,7 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "DEFT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "DEFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
   { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
@@ -852,7 +855,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "ADEFTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "+#",   ""   },
+  { "ADEFJTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "+#",   ""   },
 
   /* These accept either an `int' or an `enum tree_code' (which is handled as an `int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
@@ -2401,19 +2404,24 @@ check_format_types (int *status, format_wanted_type *types)
       {
 	const char *this;
 	const char *that;
+	tree tmp;
 
-	this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
+	tmp = TYPE_NAME (wanted_type);
+	if (TREE_CODE (tmp) == TYPE_DECL)
+	  tmp = DECL_NAME (tmp);
+	this = IDENTIFIER_POINTER (tmp);
+
 	that = 0;
 	if (TYPE_NAME (orig_cur_type) != 0
 	    && TREE_CODE (orig_cur_type) != INTEGER_TYPE
 	    && !(TREE_CODE (orig_cur_type) == POINTER_TYPE
 		 && TREE_CODE (TREE_TYPE (orig_cur_type)) == INTEGER_TYPE))
 	  {
-	    if (TREE_CODE (TYPE_NAME (orig_cur_type)) == TYPE_DECL
-		&& DECL_NAME (TYPE_NAME (orig_cur_type)) != 0)
-	      that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (orig_cur_type)));
-	    else
-	      that = IDENTIFIER_POINTER (TYPE_NAME (orig_cur_type));
+	    tmp = TYPE_NAME (orig_cur_type);
+	    if (TREE_CODE (tmp) == TYPE_DECL)
+	      tmp = DECL_NAME (tmp);
+	    if (tmp)
+	      that = IDENTIFIER_POINTER (tmp);
 	  }
 
 	/* A nameless type can't possibly match what the format wants.
@@ -2471,7 +2479,6 @@ find_char_info_specifier_index (const format_char_info *fci, int c)
   
   /* We shouldn't be looking for a non-existent specifier.  */
   abort ();
-  
 }
 
 /* Given a format_length_info array FLI, and a character C, this
@@ -2604,6 +2611,12 @@ init_dynamic_diag_info (void)
 	  diag_fci[i].types[0].type = &loc;
 	  diag_fci[i].pointer_count = 1;
 	}
+      if (t)
+        {
+	  i = find_char_info_specifier_index (diag_fci, 'J');
+	  diag_fci[i].types[0].type = &t;
+	  diag_fci[i].pointer_count = 1;
+	}
 
       /* Handle the __gcc_cdiag__ format specifics.  */
       if (! cdiag_fci)
@@ -2621,6 +2634,9 @@ init_dynamic_diag_info (void)
         {
 	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cdiag_fci, 'D');
+	  cdiag_fci[i].types[0].type = &t;
+	  cdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (cdiag_fci, 'J');
 	  cdiag_fci[i].types[0].type = &t;
 	  cdiag_fci[i].pointer_count = 1;
 	}
@@ -2641,6 +2657,9 @@ init_dynamic_diag_info (void)
         {
 	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'D');
+	  cxxdiag_fci[i].types[0].type = &t;
+	  cxxdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (cxxdiag_fci, 'J');
 	  cxxdiag_fci[i].types[0].type = &t;
 	  cxxdiag_fci[i].pointer_count = 1;
 	}

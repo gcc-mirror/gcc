@@ -1663,11 +1663,9 @@ check_global_declarations (tree *vec, int len)
 	  && ! TREE_PUBLIC (decl))
 	{
 	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    pedwarn ("%H'%F' used but never defined",
-                     &DECL_SOURCE_LOCATION (decl), decl);
+	    pedwarn ("%J'%F' used but never defined", decl, decl);
 	  else
-	    warning ("%H'%F' declared `static' but never defined",
-                     &DECL_SOURCE_LOCATION (decl), decl);
+	    warning ("%J'%F' declared `static' but never defined", decl, decl);
 	  /* This symbol is effectively an "extern" declaration now.  */
 	  TREE_PUBLIC (decl) = 1;
 	  assemble_external (decl);
@@ -1688,8 +1686,7 @@ check_global_declarations (tree *vec, int len)
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
 	  && (*lang_hooks.decls.warn_unused_global) (decl))
-	warning ("%H'%D' defined but not used",
-                 &DECL_SOURCE_LOCATION (decl), decl);
+	warning ("%J'%D' defined but not used", decl, decl);
 
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
@@ -2575,11 +2572,8 @@ rest_of_handle_inlining (tree decl)
 	{
 	  if (warn_inline && lose && DECL_INLINE (decl))
             {
-              char *msg = xmalloc (2 + strlen (lose) + 1);
-              msg[0] = '%';
-              msg[1] = 'H';
-              strcpy(msg + 2, lose);
-              warning (msg, &DECL_SOURCE_LOCATION (decl));
+              char *msg = concat ("%J", lose, NULL);
+              warning (msg, decl);
               free (msg);
             }
 	  DECL_ABSTRACT_ORIGIN (decl) = 0;

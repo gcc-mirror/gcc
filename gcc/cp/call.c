@@ -2362,11 +2362,9 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
   else if (TYPE_P (candidate->fn))
     inform ("%s %T <conversion>", msgstr, candidate->fn);
   else if (candidate->viable == -1)
-    inform ("%H%s %+#D <near match>",
-	    &DECL_SOURCE_LOCATION (candidate->fn), msgstr, candidate->fn);
+    inform ("%J%s %+#D <near match>", candidate->fn, msgstr, candidate->fn);
   else
-    inform ("%H%s %+#D",
-	    &DECL_SOURCE_LOCATION (candidate->fn), msgstr, candidate->fn);
+    inform ("%J%s %+#D", candidate->fn, msgstr, candidate->fn);
 }
 
 static void

@@ -275,8 +275,8 @@ apply_pragma_weak (tree decl, tree value)
   if (SUPPORTS_WEAK && DECL_EXTERNAL (decl) && TREE_USED (decl)
       && !DECL_WEAK (decl) /* don't complain about a redundant #pragma */
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    warning ("%Happlying #pragma weak '%D' after first use results "
-             "in unspecified behavior", &DECL_SOURCE_LOCATION (decl), decl);
+    warning ("%Japplying #pragma weak '%D' after first use results "
+             "in unspecified behavior", decl, decl);
 
   declare_weak (decl);
 }

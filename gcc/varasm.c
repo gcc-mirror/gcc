@@ -432,8 +432,7 @@ named_section (tree decl, const char *name, int reloc)
     {
       flags = get_named_section_flags (name);
       if ((flags & SECTION_OVERRIDE) == 0)
-	error ("%H%D causes a section type conflict",
-               &DECL_SOURCE_LOCATION (decl), decl);
+	error ("%J%D causes a section type conflict", decl, decl);
     }
 
   named_section_flags (name, flags);
@@ -803,17 +802,15 @@ make_decl_rtl (tree decl, const char *asmspec)
     {
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
-	error ("%Hregister name not specified for '%D'",
-               &DECL_SOURCE_LOCATION (decl), decl);
+	error ("%Jregister name not specified for '%D'", decl, decl);
       else if (reg_number < 0)
-	error ("%Hinvalid register name for '%D'",
-               &DECL_SOURCE_LOCATION (decl), decl);
+	error ("%Jinvalid register name for '%D'", decl, decl);
       else if (TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
-	error ("%Hdata type of '%D' isn't suitable for a register",
-               &DECL_SOURCE_LOCATION (decl), decl);
+	error ("%Jdata type of '%D' isn't suitable for a register",
+	       decl, decl);
       else if (! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
-	error ("%Hregister specified for '%D' isn't suitable for data type",
-               &DECL_SOURCE_LOCATION (decl), decl);
+	error ("%Jregister specified for '%D' isn't suitable for data type",
+               decl, decl);
       /* Now handle properly declared static register variables.  */
       else
 	{
@@ -857,8 +854,7 @@ make_decl_rtl (tree decl, const char *asmspec)
      Also handle vars declared register invalidly.  */
 
   if (reg_number >= 0 || reg_number == -3)
-    error ("%Hregister name given for non-register variable '%D'",
-           &DECL_SOURCE_LOCATION (decl), decl);
+    error ("%Jregister name given for non-register variable '%D'", decl, decl);
 
   /* Specifying a section attribute on a variable forces it into a
      non-.bss section, and thus it cannot be common.  */
@@ -1380,9 +1376,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   if (!dont_output_data && DECL_SIZE (decl) == 0)
     {
-      error ("%Hstorage size of `%s' isn't known",
-             &DECL_SOURCE_LOCATION (decl),
-             IDENTIFIER_POINTER (DECL_NAME (decl)));
+      error ("%Jstorage size of `%D' isn't known", decl, decl);
       TREE_ASM_WRITTEN (decl) = 1;
       return;
     }
@@ -1410,8 +1404,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (! dont_output_data
       && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
-      error ("%Hsize of variable '%D' is too large",
-             &DECL_SOURCE_LOCATION (decl), decl);
+      error ("%Jsize of variable '%D' is too large", decl, decl);
       return;
     }
 
@@ -1437,9 +1430,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 #endif
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning ("%Halignment of '%D' is greater than maximum object "
-               "file alignment.  Using %d", &DECL_SOURCE_LOCATION (decl),
-               decl, MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+      warning ("%Jalignment of '%D' is greater than maximum object "
+               "file alignment.  Using %d", decl, decl,
+	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
@@ -1505,9 +1498,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
-	warning ("%Hrequested alignment for '%D' is greater than "
-                 "implemented alignment of %d", &DECL_SOURCE_LOCATION (decl),
-                 decl, rounded);
+	warning ("%Jrequested alignment for '%D' is greater than "
+                 "implemented alignment of %d", decl, decl, rounded);
 #endif
 
       /* If the target cannot output uninitialized but not common global data
@@ -4213,17 +4205,16 @@ merge_weak (tree newdecl, tree olddecl)
 	 declare_weak because the NEWDECL and OLDDECL was not yet
 	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
       if (TREE_ASM_WRITTEN (olddecl))
-	error ("%Hweak declaration of '%D' must precede definition",
-               &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	error ("%Jweak declaration of '%D' must precede definition",
+	       newdecl, newdecl);
 
       /* If we've already generated rtl referencing OLDDECL, we may
 	 have done so in a way that will not function properly with
 	 a weak symbol.  */
       else if (TREE_USED (olddecl)
 	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)))
-	warning ("%Hweak declaration of '%D' after first use results "
-                 "in unspecified behavior",
-                 &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	warning ("%Jweak declaration of '%D' after first use results "
+                 "in unspecified behavior", newdecl, newdecl);
 
       if (SUPPORTS_WEAK)
 	{
@@ -4256,19 +4247,16 @@ void
 declare_weak (tree decl)
 {
   if (! TREE_PUBLIC (decl))
-    error ("%Hweak declaration of '%D' must be public",
-           &DECL_SOURCE_LOCATION (decl), decl);
+    error ("%Jweak declaration of '%D' must be public", decl, decl);
   else if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
-    error ("%Hweak declaration of '%D' must precede definition",
-           &DECL_SOURCE_LOCATION (decl), decl);
+    error ("%Jweak declaration of '%D' must precede definition", decl, decl);
   else if (SUPPORTS_WEAK)
     {
       if (! DECL_WEAK (decl))
 	weak_decls = tree_cons (NULL, decl, weak_decls);
     }
   else
-    warning ("%Hweak declaration of '%D' not supported",
-             &DECL_SOURCE_LOCATION (decl), decl);
+    warning ("%Jweak declaration of '%D' not supported", decl, decl);
 
   mark_weak (decl);
 }

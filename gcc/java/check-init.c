@@ -976,8 +976,8 @@ check_for_initialization (tree body, tree mdecl)
 	      if (index >= 0 && ! ASSIGNED_P (before, index))
 		{
 		  if (! is_finit_method)
-		    error ("%Hfinal field '%D' may not have been initialized",
-                           &DECL_SOURCE_LOCATION (decl), decl);
+		    error ("%Jfinal field '%D' may not have been initialized",
+                           decl, decl);
 		}
 	      else if (is_finit_method)
 		DECL_FIELD_FINAL_IUD (decl) = 1;

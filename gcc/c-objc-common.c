@@ -78,9 +78,8 @@ c_cannot_inline_tree_fn (tree *fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     {
       if (do_warning)
-	warning ("%Hfunction '%F' can never be inlined because it "
-		 "is supressed using -fno-inline",
-		 &DECL_SOURCE_LOCATION (fn), fn);
+	warning ("%Jfunction '%F' can never be inlined because it "
+		 "is supressed using -fno-inline", fn, fn);
       goto cannot_inline;
     }
 
@@ -89,18 +88,16 @@ c_cannot_inline_tree_fn (tree *fnp)
   if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn))
     {
       if (do_warning)
-	warning ("%Hfunction '%F' can never be inlined because it might not "
-		 "be bound within this unit of translation",
-		 &DECL_SOURCE_LOCATION (fn), fn);
+	warning ("%Jfunction '%F' can never be inlined because it might not "
+		 "be bound within this unit of translation", fn, fn);
       goto cannot_inline;
     }
 
   if (! function_attribute_inlinable_p (fn))
     {
       if (do_warning)
-	warning ("%Hfunction '%F' can never be inlined because it uses "
-		 "attributes conflicting with inlining",
-		 &DECL_SOURCE_LOCATION (fn), fn);
+	warning ("%Jfunction '%F' can never be inlined because it uses "
+		 "attributes conflicting with inlining", fn, fn);
       goto cannot_inline;
     }
 
@@ -114,9 +111,8 @@ c_cannot_inline_tree_fn (tree *fnp)
       if (t)
 	{
 	  if (do_warning)
-	    warning ("%Hfunction '%F' can never be inlined because it has "
-		     "pending sizes",
-		     &DECL_SOURCE_LOCATION (fn), fn);
+	    warning ("%Jfunction '%F' can never be inlined because it has "
+		     "pending sizes", fn, fn);
 	  goto cannot_inline;
 	}
     }
@@ -128,9 +124,8 @@ c_cannot_inline_tree_fn (tree *fnp)
       if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
 	{
 	  if (do_warning)
-	    warning ("%Hnested function '%F' can never be inlined because it "
-		     "has possibly saved pending sizes",
-		     &DECL_SOURCE_LOCATION (fn), fn);
+	    warning ("%Jnested function '%F' can never be inlined because it "
+		     "has possibly saved pending sizes", fn, fn);
 	  goto cannot_inline;
 	}
     }

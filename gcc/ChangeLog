@@ -1,3 +1,20 @@
+2003-09-20  Richard Henderson  <rth@redhat.com>
+
+	* c-format.c (gcc_diag_char_table): Add %J.
+	(gcc_cdiag_char_table, gcc_cxxdiag_char_table): Likewise.
+	(check_format_types): Fix wanted_type name lookup.
+	(init_dynamic_diag_info): Setup %J.
+	* diagnostic.c (text_specifies_location): Implement %J.
+	* c-common.c, c-decl.c, c-objc-common.c, c-pragma.c, calls.c,
+	dwarfout.c, expr.c, function.c, stmt.c, stor-layout.c, toplev.c,
+	tree-inline.c, tree-optimize.c, varasm.c, config/arm/pe.c,
+	config/i386/winnt.c, config/ia64/ia64.c, config/mcore/mcore.c,
+	config/v850/v850.c, objc/objc-act.c: Use %J in diagnostics.
+
+	* tree-inline.c: Include intl.h
+	(inline_forbidden_p_1): Fix i18n of inline_forbidden_reason.
+	* Makefile.in (tree-inline.o): Update.
+
 2003-09-20  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_expand_carry_flag_compare): Fix
