@@ -1,6 +1,7 @@
 2001-08-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	* java/lang/natObject.cc (is_mp): Protect use of _SC_NPROCESSORS_ONLN.
+	* gnu/gcj/convert/natIconv.cc (done): Use HAVE_ICONV.
 
 2001-08-06  Tom Tromey  <tromey@redhat.com>
 
