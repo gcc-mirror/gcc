@@ -978,7 +978,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
   while (VARRAY_ACTIVE_SIZE (vrp_variables_stack) > 0)
     {
       tree var = VARRAY_TOP_TREE (vrp_variables_stack);
-      struct vrp_hash_elt vrp_hash_elt;
+      struct vrp_hash_elt vrp_hash_elt, *vrp_hash_elt_p;
       void **slot;
 
       /* Each variable has a stack of value range records.  We want to
@@ -998,7 +998,9 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
       slot = htab_find_slot (vrp_data, &vrp_hash_elt, NO_INSERT);
 
-      var_vrp_records = (*(struct vrp_hash_elt **)slot)->records;
+      vrp_hash_elt_p = (struct vrp_hash_elt *) *slot;
+      var_vrp_records = vrp_hash_elt_p->records;
+
       while (VARRAY_ACTIVE_SIZE (var_vrp_records) > 0)
 	{
 	  struct vrp_element *element
@@ -1894,7 +1896,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	  int lowequal, highequal, swapped, no_overlap, subset, cond_inverted;
 	  varray_type vrp_records;
 	  struct vrp_element *element;
-	  struct vrp_hash_elt vrp_hash_elt;
+	  struct vrp_hash_elt vrp_hash_elt, *vrp_hash_elt_p;
 	  void **slot;
 
 	  /* First see if we have test of an SSA_NAME against a constant
@@ -1944,7 +1946,8 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
           if (slot == NULL)
 	    return NULL;
 
-	  vrp_records = (*(struct vrp_hash_elt **)slot)->records;
+	  vrp_hash_elt_p = (struct vrp_hash_elt *) *slot;
+	  vrp_records = vrp_hash_elt_p->records;
 	  if (vrp_records == NULL)
 	    return NULL;
 

@@ -1,3 +1,9 @@
+2004-09-24 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_finalize_block): Fix violation of strict
+	aliasing rules.
+	(simplify_cond_and_lookup_avail_expr): Likewise.
+
 2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/12802
