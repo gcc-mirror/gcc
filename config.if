@@ -27,7 +27,6 @@ else
   libstdcxx_srcdir=${if_topsrcdir}/libstdc++
 fi
 
-echo "${libstdcxx_srcdir} is where"
 if [ -f ${libstdcxx_srcdir}/Makefile.in ]; then
 # We check libstdc++ for libstdcxx_interface.
 libstdcxx_interface=`grep "^INTERFACE" ${libstdcxx_srcdir}/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
