@@ -48,6 +48,10 @@ public abstract class ImageDecoder implements ImageProducer
   Vector consumers = new Vector ();
   String filename;
   URL url;
+  byte[] data;
+  int offset;
+  int length;
+  InputStream input;
 
   public static ColorModel cm;
 
@@ -67,6 +71,13 @@ public abstract class ImageDecoder implements ImageProducer
   public ImageDecoder (URL url)
   {
     this.url = url;
+  }
+
+  public ImageDecoder (byte[] imagedata, int imageoffset, int imagelength)
+  {
+    data = imagedata;
+    offset = imageoffset;
+    length = imagelength;
   }
 
   public void addConsumer (ImageConsumer ic) 
@@ -90,11 +101,22 @@ public abstract class ImageDecoder implements ImageProducer
     Vector list = (Vector) consumers.clone ();
     try 
       {
-	FileInputStream is = (url == null) ? new FileInputStream (filename) :
-	                                  (FileInputStream) url.openStream();
-						  
-	produce (list, is);
-      } 
+	// Create the input stream here rather than in the
+	// ImageDecoder constructors so that exceptions cause
+	// imageComplete to be called with an appropriate error
+	// status.
+	if (url != null)
+	  input = url.openStream();
+	else
+	  {
+	    if (filename != null)
+	      input = new FileInputStream (filename);
+	    else
+	      input = new ByteArrayInputStream (data, offset, length);
+	  }
+
+	produce (list, input);
+      }
     catch (Exception e)
       {
 	for (int i = 0; i < list.size (); i++)
@@ -109,5 +131,5 @@ public abstract class ImageDecoder implements ImageProducer
   { 
   }
 
-  abstract void produce (Vector v, FileInputStream is) throws IOException;
+  abstract void produce (Vector v, InputStream is) throws IOException;
 }

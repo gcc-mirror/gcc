@@ -230,6 +230,9 @@ public class GtkComponentPeer extends GtkGenericPeer
   public boolean prepareImage (Image image, int width, int height,
 			       ImageObserver observer) 
   {
+    if (image == null)
+      throw new NullPointerException ();
+
     GtkImage i = (GtkImage) image;
 
     if (i.isLoaded ()) return true;
@@ -242,13 +245,12 @@ public class GtkComponentPeer extends GtkGenericPeer
       PrepareImage (GtkImage image, ImageObserver observer)
       {
 	this.image = image;
-	this.observer = observer;
+	image.setObserver (observer);
       }
       
       public void run ()
       {
-	// XXX: need to return data to image observer
-	image.source.startProduction (null);
+	image.source.startProduction (image);
       }
     }
 

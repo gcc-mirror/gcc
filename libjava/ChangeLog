@@ -1,5 +1,38 @@
 2003-11-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* Makefile.am: Add GdkPixbufDecoder.java and
+	gnu_java_awt_peer_gtk_GdkPixbufDecoder.c
+	* Makefile.in: Regenerate.
+	* gnu/java/awt/image/ImageDecoder.java (ImageDecoder(byte[],int,int)):
+	New constructor.
+	(startProduction): Create ByteArrayInputStream when url and filename are
+	null.
+	(produce): Declare stream parameter as InputStream.
+	* gnu/java/awt/image/XBMDecoder.java (produce): Declare stream parameter
+	as InputStream.
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java
+	(GdkPixbufDecoder(byte[],int,int)): New constructor.
+	(produce): Declare stream parameter as InputStream.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (prepareImage): Throw NPE
+	if image is null.  Set image's observer before running PrepareImage
+	thread.  Pass image to startProduction.
+	* gnu/java/awt/peer/gtk/GtkImage.java: Add null checks before calls to
+	source's member functions.
+	(observer): New field.
+	(setObserver): New method.
+	(setDimensions, setPixels, imageComplete): Call observer's imageUpdate.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (checkImage, getImage): Return
+	new GtkImage.
+	(prepareImage): Implement.
+	* java/awt/Component.java: Add static fields incrementalDraw and
+	redrawRate.
+	(imageUpdate): Implement.
+	(createImage): Call Toolkit's createImage if peer is null.
+	(prepareImage): Throw NPE if image is null.
+	* java/awt/MediaTracker.java: Fix return value.
+
+2003-11-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* gnu/java/awt/peer/gtk/GtkLabelPeer.java (create()): Call new create.
 	(create(String, float)): New method.
 	(setText): Make native.

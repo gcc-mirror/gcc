@@ -261,6 +261,7 @@ libgcj_la_LINK = $(LIBLINK)
 gtk_c_source_files = \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c \
@@ -297,6 +298,7 @@ jni/classpath/primlib.c
 gtk_awt_peer_sources = \
 gnu/java/awt/peer/gtk/GdkFontMetrics.java \
 gnu/java/awt/peer/gtk/GdkGraphics.java \
+gnu/java/awt/peer/gtk/GdkPixbufDecoder.java \
 gnu/java/awt/peer/gtk/GtkArg.java \
 gnu/java/awt/peer/gtk/GtkArgList.java \
 gnu/java/awt/peer/gtk/GtkButtonPeer.java \
@@ -2624,8 +2626,9 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS =
 lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = 
 lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 gnu/java/awt/peer/gtk/GdkFontMetrics.lo \
-gnu/java/awt/peer/gtk/GdkGraphics.lo gnu/java/awt/peer/gtk/GtkArg.lo \
-gnu/java/awt/peer/gtk/GtkArgList.lo \
+gnu/java/awt/peer/gtk/GdkGraphics.lo \
+gnu/java/awt/peer/gtk/GdkPixbufDecoder.lo \
+gnu/java/awt/peer/gtk/GtkArg.lo gnu/java/awt/peer/gtk/GtkArgList.lo \
 gnu/java/awt/peer/gtk/GtkButtonPeer.lo \
 gnu/java/awt/peer/gtk/GtkCanvasPeer.lo \
 gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.lo \
@@ -2662,6 +2665,7 @@ gnu/java/awt/peer/gtk/GtkToolkit.lo \
 gnu/java/awt/peer/gtk/GtkWindowPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo \
@@ -2827,6 +2831,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/awt/peer/GLightweightPeer.P \
 .deps/gnu/java/awt/peer/gtk/GdkFontMetrics.P \
 .deps/gnu/java/awt/peer/gtk/GdkGraphics.P \
+.deps/gnu/java/awt/peer/gtk/GdkPixbufDecoder.P \
 .deps/gnu/java/awt/peer/gtk/GtkArg.P \
 .deps/gnu/java/awt/peer/gtk/GtkArgList.P \
 .deps/gnu/java/awt/peer/gtk/GtkButtonPeer.P \
@@ -4284,6 +4289,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/jni/classpath/primlib.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.P \

@@ -170,6 +170,7 @@ libgcj_la_LINK = $(LIBLINK)
 gtk_c_source_files = \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c \
@@ -206,6 +207,7 @@ jni/classpath/primlib.c
 gtk_awt_peer_sources = \
 gnu/java/awt/peer/gtk/GdkFontMetrics.java \
 gnu/java/awt/peer/gtk/GdkGraphics.java \
+gnu/java/awt/peer/gtk/GdkPixbufDecoder.java \
 gnu/java/awt/peer/gtk/GtkArg.java \
 gnu/java/awt/peer/gtk/GtkArgList.java \
 gnu/java/awt/peer/gtk/GtkButtonPeer.java \

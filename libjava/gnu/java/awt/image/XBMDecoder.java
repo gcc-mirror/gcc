@@ -62,7 +62,7 @@ public class XBMDecoder extends ImageDecoder
     super (url);
   }
 
-  public void produce (Vector v, FileInputStream is) throws IOException
+  public void produce (Vector v, InputStream is) throws IOException
   {
     reader = new BufferedReader (new InputStreamReader (is));
     int width = -1, height = -1;

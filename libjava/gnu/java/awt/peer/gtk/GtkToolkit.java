@@ -56,6 +56,7 @@ import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.EmbeddedWindowSupport;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 import gnu.classpath.Configuration;
+import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
 
 /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
    This merits comment.  We are basically calling Sun's bluff on this one.
@@ -91,24 +92,17 @@ public class GtkToolkit extends Toolkit
   public int checkImage (Image image, int width, int height, 
 			 ImageObserver observer) 
   {
-    return ImageObserver.ALLBITS;
-
-//      GtkImage i = (GtkImage) image;
-//      return i.checkImage ();
+    return ((GtkImage) image).checkImage ();
   }
 
   public Image createImage (String filename)
   {
-    // FIXME - gcj local: GdkPixbufDecoder doesn't work.
-    // return new GtkImage (new GdkPixbufDecoder (filename), null);
-    return null;
+    return new GtkImage (new GdkPixbufDecoder (filename), null);
   }
 
   public Image createImage (URL url)
   {
-    // FIXME - gcj local: GdkPixbufDecoder doesn't work.
-    // return new GtkImage (new GdkPixbufDecoder (url), null);
-    return null;
+    return new GtkImage (new GdkPixbufDecoder (url), null);
   }
 
   public Image createImage (ImageProducer producer) 
@@ -117,10 +111,12 @@ public class GtkToolkit extends Toolkit
   }
 
   public Image createImage (byte[] imagedata, int imageoffset,
-			    int imagelength) 
+			    int imagelength)
   {
-    // System.out.println ("createImage byte[] NOT SUPPORTED");
-    return null;
+    return new GtkImage (new GdkPixbufDecoder (imagedata,
+					       imageoffset,
+					       imagelength),
+			 null);
   }
 
   public ColorModel getColorModel () 
@@ -144,16 +140,12 @@ public class GtkToolkit extends Toolkit
 
   public Image getImage (String filename) 
   {
-    // FIXME - gcj local: GdkPixbufDecoder doesn't work.
-    // return new GtkImage (new GdkPixbufDecoder (filename), null);
-    return null;
+    return new GtkImage (new GdkPixbufDecoder (filename), null);
   }
 
   public Image getImage (URL url) 
   {
-    // FIXME - gcj local: GdkPixbufDecoder doesn't work.
-    // return new GtkImage (new GdkPixbufDecoder (url), null);
-    return null;
+    return new GtkImage (new GdkPixbufDecoder (url), null);
   }
 
   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
@@ -177,6 +169,31 @@ public class GtkToolkit extends Toolkit
   public boolean prepareImage (Image image, int width, int height, 
 			       ImageObserver observer) 
   {
+    if (image == null)
+      throw new NullPointerException ();
+
+    GtkImage i = (GtkImage) image;
+
+    if (i.isLoaded ()) return true;
+
+    class PrepareImage extends Thread
+    {
+      GtkImage image;
+      ImageObserver observer;
+
+      PrepareImage (GtkImage image, ImageObserver observer)
+      {
+	this.image = image;
+	image.setObserver (observer);
+      }
+      
+      public void run ()
+      {
+	image.source.startProduction (image);
+      }
+    }
+
+    new PrepareImage (i, observer).start ();
     return false;
   }
 

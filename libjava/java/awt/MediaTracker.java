@@ -88,8 +88,8 @@ public class MediaTracker implements java.io.Serializable
       {
 	MediaTracker.this.notifyAll();
       }
-      
-      return ((status & COMPLETE) != 0);
+      // If status is not COMPLETE then we need more updates.
+      return (status & COMPLETE) == 0;
     }
   }
 
