@@ -67,3 +67,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define UMODSI3_LIBCALL "*ulrem"
 #define MULSI3_LIBCALL "*lmul"
 #define UMULSI3_LIBCALL "*ulmul"
+
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0

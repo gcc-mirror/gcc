@@ -376,3 +376,7 @@ while (0)
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
+
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
