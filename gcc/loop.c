@@ -5845,7 +5845,9 @@ static int
 combine_givs_p (g1, g2)
      struct induction *g1, *g2;
 {
+#ifdef ADDRESS_COST
   rtx tem;
+#endif
 
   /* If these givs are identical, they can be combined.  */
   if (rtx_equal_p (g1->mult_val, g2->mult_val)

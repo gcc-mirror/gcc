@@ -5695,7 +5695,9 @@ expand_function_end (filename, line, end_bindings)
       tree function = TREE_PURPOSE (link);
       rtx context = lookup_static_chain (function);
       rtx tramp = RTL_EXPR_RTL (TREE_VALUE (link));
+#ifdef TRAMPOLINE_TEMPLATE
       rtx blktramp;
+#endif
       rtx seq;
 
 #ifdef TRAMPOLINE_TEMPLATE
