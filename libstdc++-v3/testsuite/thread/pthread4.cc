@@ -61,6 +61,11 @@ produce (void*)
       pthread_mutex_unlock (&fooLock);
     }
 
+  // No more data will ever be written, ensure no fini race
+  pthread_mutex_lock (&fooLock);
+  pthread_cond_signal (&fooCondUnderflow);
+  pthread_mutex_unlock (&fooLock);
+
   return 0;
 }
 
