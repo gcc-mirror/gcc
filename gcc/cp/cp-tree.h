@@ -73,7 +73,6 @@ struct diagnostic_context;
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
-      NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
@@ -346,14 +345,6 @@ struct tree_baselink GTY(())
   tree access_binfo;
 };
 
-#define WRAPPER_ZC(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->z_c)
-
-struct tree_wrapper GTY(())
-{
-  struct tree_common common;
-  struct z_candidate *z_c;
-};
-
 /* The different kinds of ids that we ecounter.  */
 
 typedef enum cp_id_kind
@@ -484,7 +475,6 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
-  struct tree_wrapper GTY ((tag ("TS_CP_WRAPPER"))) wrapper;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
 };
@@ -3316,9 +3306,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
      direct-initialization in cases where other parts of the compiler have
      already generated a temporary, such as reference initialization and the
      catch parameter.
-   LOOKUP_SPECULATIVELY means return NULL_TREE if we cannot find what we are
-     after.  Note, LOOKUP_COMPLAIN is checked and error messages printed
-     before LOOKUP_SPECULATIVELY is checked.
    LOOKUP_NO_CONVERSION means that user-defined conversions are not
      permitted.  Built-in conversions are permitted.
    LOOKUP_DESTRUCTOR means explicit call to destructor.
@@ -3336,7 +3323,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define LOOKUP_NORMAL (3)
 #define LOOKUP_NONVIRTUAL (8)
 #define LOOKUP_GLOBAL (16)
-#define LOOKUP_SPECULATIVELY (64)
 #define LOOKUP_ONLYCONVERTING (128)
 #define DIRECT_BIND (256)
 #define LOOKUP_NO_CONVERSION (512)
@@ -3521,7 +3507,7 @@ extern tree build_operator_new_call (tree, tree, tree *, tree *);
 extern tree build_new_method_call (tree, tree, tree, tree, int);
 extern tree build_special_member_call (tree, tree, tree, tree, int);
 extern tree build_new_op (enum tree_code, int, tree, tree, tree);
-extern tree build_op_delete_call (enum tree_code, tree, tree, int, tree);
+extern tree build_op_delete_call (enum tree_code, tree, tree, bool, tree);
 extern bool can_convert (tree, tree);
 extern bool can_convert_arg (tree, tree, tree);
 extern bool can_convert_arg_bad (tree, tree, tree);
@@ -3541,6 +3527,9 @@ extern tree perform_implicit_conversion (tree, tree);
 extern tree perform_direct_initialization_if_possible (tree, tree);
 extern tree in_charge_arg_for_name (tree);
 extern tree build_cxx_call (tree, tree, tree);
+#ifdef ENABLE_CHECKING
+extern void validate_conversion_obstack (void);
+#endif /* ENABLE_CHECKING */
 
 /* in class.c */
 extern tree build_base_path			(enum tree_code, tree, tree, int);
@@ -4143,7 +4132,6 @@ extern tree vec_binfo_member			(tree, tree);
 extern tree decl_namespace_context		(tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);
-extern tree build_zc_wrapper			(struct z_candidate *);
 extern int varargs_function_p			(tree);
 extern int really_overloaded_fn			(tree);
 extern bool cp_tree_equal			(tree, tree);

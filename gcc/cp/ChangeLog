@@ -1,3 +1,109 @@
+2004-02-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (conversion_kind): New type.
+	(conversion_rank): Likewise.
+	(conversion): Likewise.
+	(CONVERSION_RANK): New macro.
+	(conversion_obstack): New variable.
+	(obstack_initialized): Likewise.
+	(z_candidate): Change type of convs and second_conv.
+	(candidate_warning): New type.
+	(IDENTITY_RANK): Remove.
+	(EXACT_RANK): Likewise.
+	(PROMO_RANK): Likewise.
+	(STD_RANK): Likewise.
+	(PBOOL_RANK): Likewise.
+	(USER_RANK): Likewise.
+	(ELLIPSIS_RANK): Likewise.
+	(BAD_RANK): Likewise.
+	(ICS_RANK): Likewise.
+	(ICS_STD_RANK): Likewise.
+	(ICS_USER_FLAG): Likewise.
+	(ICS_ELLIPSIS_FLAG): Likewise.
+	(ICS_THIS_FLAG): Likewise.
+	(ICS_BAD_FLAG): Likewise.
+	(NEED_TEMPORARY_P): Likewise.
+	(CHECK_COPY_CONSTRUCTOR_P): Likewise.
+	(USER_CONV_CAND): Likewise.
+	(USER_CONV_FN): Likewise.
+	(conversion_obstack_alloc): New function.
+	(alloc_conversion): Likewise.
+	(validate_conversion_obstack): Likewise.
+	(alloc_conversions): Likewise.
+	(build_conv): Adjust to deal with new conversion data structures.
+	(build_identity_conv): New function.
+	(build_ambiguous_conv): Likewise.
+	(standard_conversion): Adjust to deal with new conversion data
+	structures.
+	(convert_class_to_reference): Likewise.
+	(direct_reference_binding): Likewise.
+	(reference_binding): Likewise.
+	(implicit_conversion): Likewise.
+	(add_candidate): Likewise.
+	(add_function_candidate): Likewise.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(print_z_candidate): Likewise.
+	(merge_conversion_sequences): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(build_user_type_conversion): Likewise.
+	(build_new_function_call): Likewise.
+	(build_object_call): Likewise.
+	(conditional_conversion): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_new_op): Likewise.
+	(build_op_delete_call): Likewise.
+	(convert_like_real): Likewise.
+	(build_over_call): Likewise.
+	(build_new_method_call): Likewise.
+	(is_subseq): Likewise.
+	(maybe_handle_implicit_object): Likewise.
+	(maybe_handle_ref_bind): Likewise.
+	(compare_ics): Likewise.
+	(source_type): Likewise.
+	(add_warning): Likewise.
+	(joust): Likewise.
+	(can_convert_arg): Likewise.
+	(can_convert_arg_bad): Likewise.
+	(perform_implicit_conversion): Likewise.
+	(perform_direct_initialization_if_possible): Likewise.
+	(initialize_reference): Likewise.
+	* cp-lang.c (cp_tree_size): Do not handle WRAPPER.
+	* cp-tree.def (WRAPPER): Likewise.
+	(IDENTITY_CONV): Remove.
+	(LVALUE_CONV): Likewise.
+	(QUAL_CONV): Likewise.
+	(STD_CONV): Likewise.
+	(PTR_CONV): Likewise.
+	(PMEM_CONV): Likewise.
+	(BASE_CONV): Likewise.
+	(REF_BIND): Likewise.
+	(USER_CONV): Likewise.
+	(AMBIG_CONV): Likewise.
+	(RVALUE_CONV): Likewise.
+	* cp-tree.h (tree_wrapper): Remove.
+	(WRAPPER_ZC): Remove.
+	(lang_tree_node): Remove wrapper.
+	(LOOKUP_SPECULATIVELY): Remove.
+	(build_op_delete_call): Adjust prototype.
+	(validate_conversion_obstack): Declare.
+	(build_zc_wrapper): Remove.
+	* cvt.c (convert_to_reference): Remove dead code.
+	(ocp_convert): Likewise.
+	* decl.c (redeclaration_error_message): Correct handling of
+	templates.
+	(finish_destructor_body): Do not use LOOKUP_SPECULATIVELY.
+	(cp_tree_node_structure): Remove WRAPPER case.
+	* decl2.c (finish_file): Call validate_conversion_obstack.
+	* init.c (build_new_1): Remove use of LOOKUP_SPECULATIVELY.
+	(build_op_delete_call): Likewise.
+	(build_x_delete): Likewise.
+	(build_delete): Adjust call to build_op_delete_call.
+	* pt.c (tsubst_friend_declaration): Adjust code to determine
+	whether or not a friend template is a definition.
+	(tsubst_decl): Clear DECL_INITIAL for new FUNCTION_DECLs.
+	* tree.c (build_zc_wrapper): Remove.
+	
 2004-02-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp-lang.c: Don't define LANG_HOOKS_BUILTIN_TYPE_DECLS.

@@ -2232,15 +2232,12 @@ build_new_1 (tree exp)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
 	  tree cleanup;
-	  int flags = (LOOKUP_NORMAL 
-		       | (globally_qualified_p * LOOKUP_GLOBAL));
 
 	  /* The Standard is unclear here, but the right thing to do
 	     is to use the same method for finding deallocation
 	     functions that we use for finding allocation functions.  */
-	  flags |= LOOKUP_SPECULATIVELY;
-
-	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags,
+	  cleanup = build_op_delete_call (dcode, alloc_node, size, 
+					  globally_qualified_p,
 					  (placement_allocation_fn_p 
 					   ? alloc_call : NULL_TREE));
 
@@ -2790,9 +2787,9 @@ build_x_delete (tree addr, int which_delete, tree virtual_size)
   int use_global_delete = which_delete & 1;
   int use_vec_delete = !!(which_delete & 2);
   enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
-  int flags = LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL);
 
-  return build_op_delete_call (code, addr, virtual_size, flags, NULL_TREE);
+  return build_op_delete_call (code, addr, virtual_size, use_global_delete, 
+			       NULL_TREE);
 }
 
 /* Call the DTOR_KIND destructor for EXP.  FLAGS are as for
@@ -2923,8 +2920,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	return void_zero_node;
 
       return build_op_delete_call
-	(DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL),
+	(DELETE_EXPR, addr, cxx_sizeof_nowarn (type), use_global_delete,
 	 NULL_TREE);
     }
   else
@@ -2959,7 +2955,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	  do_delete = build_op_delete_call (DELETE_EXPR,
 					    addr,
 					    cxx_sizeof_nowarn (type),
-					    LOOKUP_NORMAL,
+					    /*global_p=*/false,
 					    NULL_TREE);
 	  /* Call the complete object destructor.  */
 	  auto_delete = sfk_complete_destructor;
@@ -2970,7 +2966,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	  /* Make sure we have access to the member op delete, even though
 	     we'll actually be calling it from the destructor.  */
 	  build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-				LOOKUP_NORMAL, NULL_TREE);
+				/*global_p=*/false, NULL_TREE);
 	}
 
       expr = build_dtor_call (build_indirect_ref (addr, NULL),

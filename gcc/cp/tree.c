@@ -1641,17 +1641,6 @@ cp_tree_equal (tree t1, tree t2)
   return false;
 }
 
-/* Build a wrapper around a 'struct z_candidate' so we can use it as a
-   tree.  */
-
-tree
-build_zc_wrapper (struct z_candidate* ptr)
-{
-  tree t = make_node (WRAPPER);
-  WRAPPER_ZC (t) = ptr;
-  return t;
-}
-
 /* The type of ARG when used as an lvalue.  */
 
 tree

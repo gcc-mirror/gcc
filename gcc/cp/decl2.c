@@ -2884,6 +2884,10 @@ finish_file (void)
       dump_time_statistics ();
     }
   input_location = locus;
+
+#ifdef ENABLE_CHECKING
+  validate_conversion_obstack ();
+#endif /* ENABLE_CHECKING */
 }
 
 /* FN is an OFFSET_REF, DOTSTAR_EXPR or MEMBER_REF indicating the
