@@ -1549,7 +1549,7 @@
 {
   return output_cbranch (operands[0], operands[1], 1, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "icc")])
@@ -1565,7 +1565,7 @@
 {
   return output_cbranch (operands[0], operands[1], 1, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "icc")])
@@ -1582,7 +1582,7 @@
 {
   return output_cbranch (operands[1], operands[2], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "fcc")])
@@ -1599,7 +1599,7 @@
 {
   return output_cbranch (operands[1], operands[2], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "fcc")])
@@ -1616,7 +1616,7 @@
 {
   return output_cbranch (operands[1], operands[2], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "fcc")])
@@ -1633,7 +1633,7 @@
 {
   return output_cbranch (operands[1], operands[2], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			 ! final_sequence, insn);
+			 insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "fcc")])
@@ -1655,7 +1655,7 @@
 {
   return output_v9branch (operands[0], operands[2], 1, 2, 0,
 			  final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			  ! final_sequence, insn);
+			  insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "reg")])
@@ -1672,7 +1672,7 @@
 {
   return output_v9branch (operands[0], operands[2], 1, 2, 1,
 			  final_sequence && INSN_ANNULLED_BRANCH_P (insn),
-			  ! final_sequence, insn);
+			  insn);
 }
   [(set_attr "type" "branch")
    (set_attr "branch_type" "reg")])
