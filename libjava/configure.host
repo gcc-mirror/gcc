@@ -138,6 +138,7 @@ case "${host}" in
   s390*-*)
 	sysdeps_dir=s390
 	libgcj_interpreter=yes
+	DIVIDESPEC=-fno-use-divide-subroutine
 	enable_hash_synchronization_default=yes
 	;;
   sparc*-*)
