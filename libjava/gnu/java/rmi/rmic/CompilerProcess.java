@@ -51,7 +51,7 @@ public abstract class CompilerProcess extends Compiler
    /**
     * This is used to compute the command line for the process.
     * Most compilers typically arrange their arguments as in
-    * <compiler name and arguments> <optional destination> <filename>.
+    * &lt;compiler name and arguments&gt; &lt;optional destination&gt; &lt;filename&gt;.
     * This method builds an argument array out that. It should be used
     * to define computeArguments for those compilers that follow the
     * argument convention described above.

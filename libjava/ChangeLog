@@ -1,3 +1,8 @@
+2004-05-31  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/rmi/rmic/CompilerProcess.java:
+	Fixed javadoc to by XHTML compliant.
+
 2004-05-30  Mark Wielaard  <mark@klomp.org>
 
 	* java/awt/Toolkit.java (loadSystemColors): Implement.
