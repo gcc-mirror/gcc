@@ -2316,8 +2316,8 @@
 
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
-		     (match_operand:SI 2 "const_int_operand" "n")))]
+	(rotate:SI (match_operand:SI 1 "register_operand" "r")
+		   (match_operand:SI 2 "const_int_operand" "n")))]
   ""
   "*
 {
