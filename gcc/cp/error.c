@@ -1111,10 +1111,15 @@ dump_function_decl (t, flags)
   /* Pretty print template instantiations only.  */
   if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t))
     {
+      tree tmpl;
+
       template_args = DECL_TI_ARGS (t);
-      t = most_general_template (t);
-      if (TREE_CODE (t) == TEMPLATE_DECL)
-	template_parms = DECL_TEMPLATE_PARMS (t);
+      tmpl = most_general_template (t);
+      if (tmpl && TREE_CODE (tmpl) == TEMPLATE_DECL)
+	{
+	  template_parms = DECL_TEMPLATE_PARMS (tmpl);
+	  t = tmpl;
+	}
     }
 
   fntype = TREE_TYPE (t);

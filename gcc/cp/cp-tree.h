@@ -2325,8 +2325,8 @@ struct lang_decl
 #define TMPL_ARGS_DEPTH(NODE)					\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
 
-/* The LEVELth level of the template ARGS.  Note that template
-   parameter levels are indexed from 1, not from 0.  */
+/* The LEVELth level of the template ARGS.  The outermost level of of
+   args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS) 	\
    ? TREE_VEC_ELT ((ARGS), (LEVEL) - 1) : ARGS)
@@ -2351,6 +2351,10 @@ struct lang_decl
   ((NODE) == NULL_TREE ? 0 				\
    : (TREE_CODE (NODE) == TREE_VEC 			\
       ? TREE_VEC_LENGTH (NODE) : list_length (NODE)))
+
+/* Returns the innermost level of template arguments in ARGS.  */
+#define INNERMOST_TEMPLATE_ARGS(NODE) \
+  (get_innermost_template_args ((NODE), 1))
 
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
@@ -4298,7 +4302,7 @@ extern int maybe_clone_body                     PARAMS ((tree));
 /* in pt.c */
 extern void init_pt                             PARAMS ((void));
 extern void check_template_shadow		PARAMS ((tree));
-extern tree innermost_args			PARAMS ((tree));
+extern tree get_innermost_template_args         PARAMS ((tree, int));
 extern tree tsubst				PARAMS ((tree, tree, int, tree));
 extern tree tsubst_expr				PARAMS ((tree, tree, int, tree));
 extern tree tsubst_copy				PARAMS ((tree, tree, int, tree));

@@ -578,6 +578,13 @@ dequeue_and_dump (di)
 	    dump_string (di, "operator");
 	  if (DECL_CONV_FN_P (t))
 	    dump_string (di, "conversion");
+	  if (DECL_THUNK_P (t))
+	    {
+	      dump_string (di, "thunk");
+	      dump_int (di, "dlta", THUNK_DELTA (t));
+	      dump_int (di, "vcll", THUNK_VCALL_OFFSET (t));
+	      dump_child ("fn", DECL_INITIAL (t));
+	    }
 	  if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
 	    {
 	      if (DECL_GLOBAL_CTOR_P (t))

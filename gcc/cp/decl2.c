@@ -4798,7 +4798,7 @@ arg_assoc_class (k, type)
   /* Process template arguments.  */
   if (CLASSTYPE_TEMPLATE_INFO (type))
     {
-      list = innermost_args (CLASSTYPE_TI_ARGS (type));
+      list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
       for (i = 0; i < TREE_VEC_LENGTH (list); ++i) 
         arg_assoc_template_arg (k, TREE_VEC_ELT (list, i));
     }
