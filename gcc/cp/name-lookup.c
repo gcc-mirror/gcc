@@ -2006,7 +2006,11 @@ push_overloaded_decl (tree decl, int flags)
 	}
     }
 
-  if (old || TREE_CODE (decl) == TEMPLATE_DECL)
+  if (old || TREE_CODE (decl) == TEMPLATE_DECL
+      /* If it's a using declaration, we always need to build an OVERLOAD,
+	 because it's the only way to remember that the declaration comes
+	 from 'using', and have the lookup behave correctly.  */
+      || (flags & PUSH_USING))
     {
       if (old && TREE_CODE (old) != OVERLOAD)
 	new_binding = ovl_cons (decl, ovl_cons (old, NULL_TREE));

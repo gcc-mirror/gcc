@@ -1,3 +1,9 @@
+2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2294
+	* name-lookup.c (push_overloaded_decl): always construct an OVERLOAD
+	if the declaration comes from an using declaration.
+
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10926
