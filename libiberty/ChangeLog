@@ -1,3 +1,8 @@
+2003-12-15  Brendan Kehoe  <brendan@zen.org>
+
+	* libiberty/Makefile.in (floatformat.o): Add dependency on
+	config.h to accompany change of 2003-12-03.
+
 2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	Fix handling of constructor/destructor of standard substitution:
