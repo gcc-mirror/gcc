@@ -1,3 +1,9 @@
+2003-02-13  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	* inclhack.def (hpux_long_double): Tighten select and add bypass
+	regexp.
+	* fixincl.x: Rebuilt.
+
 2003-01-30  Richard Henderson  <rth@redhat.com>
 
 	* ggc-page.c (G.context_depth_allocations): New.
