@@ -1,3 +1,9 @@
+2000-04-03  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am ($(javao_files)): Depend on libgcj.zip.
+	From H.J. Lu.
+
 Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 
 	* configure: Rebuilt.
