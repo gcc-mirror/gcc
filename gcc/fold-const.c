@@ -3424,13 +3424,10 @@ static int
 simple_operand_p (tree exp)
 {
   /* Strip any conversions that don't change the machine mode.  */
-  while ((TREE_CODE (exp) == NOP_EXPR
-	  || TREE_CODE (exp) == CONVERT_EXPR)
-	 && (TYPE_MODE (TREE_TYPE (exp))
-	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
-    exp = TREE_OPERAND (exp, 0);
+  STRIP_NOPS (exp);
 
   return (CONSTANT_CLASS_P (exp)
+	  || TREE_CODE (exp) == SSA_NAME
 	  || (DECL_P (exp)
 	      && ! TREE_ADDRESSABLE (exp)
 	      && ! TREE_THIS_VOLATILE (exp)
@@ -6180,6 +6177,51 @@ try_move_mult_to_index (tree type, enum tree_code code, tree addr, tree mult)
   return build1 (ADDR_EXPR, type, ret);
 }
 
+
+/* Fold A < X && A + 1 > Y to A < X && A >= Y.  Normally A + 1 > Y
+   means A >= Y && A != MAX, but in this case we know that
+   A < X <= MAX.  INEQ is A + 1 > Y, BOUND is A < X.  */
+
+static tree
+fold_to_nonsharp_ineq_using_bound (tree ineq, tree bound)
+{
+  tree a, typea, type = TREE_TYPE (ineq), a1, diff, y;
+
+  if (TREE_CODE (bound) == LT_EXPR)
+    a = TREE_OPERAND (bound, 0);
+  else if (TREE_CODE (bound) == GT_EXPR)
+    a = TREE_OPERAND (bound, 1);
+  else
+    return NULL_TREE;
+
+  typea = TREE_TYPE (a);
+  if (!INTEGRAL_TYPE_P (typea)
+      && !POINTER_TYPE_P (typea))
+    return NULL_TREE;
+
+  if (TREE_CODE (ineq) == LT_EXPR)
+    {
+      a1 = TREE_OPERAND (ineq, 1);
+      y = TREE_OPERAND (ineq, 0);
+    }
+  else if (TREE_CODE (ineq) == GT_EXPR)
+    {
+      a1 = TREE_OPERAND (ineq, 0);
+      y = TREE_OPERAND (ineq, 1);
+    }
+  else
+    return NULL_TREE;
+
+  if (TREE_TYPE (a1) != typea)
+    return NULL_TREE;
+
+  diff = fold (build2 (MINUS_EXPR, typea, a1, a));
+  if (!integer_onep (diff))
+    return NULL_TREE;
+
+  return fold (build2 (GE_EXPR, type, a, y));
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -8022,6 +8064,22 @@ fold (tree expr)
       if (TREE_CODE (arg1) == TRUTH_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* A < X && A + 1 > Y ==> A < X && A >= Y.  Normally A + 1 > Y
+	 means A >= Y && A != MAX, but in this case we know that
+	 A < X <= MAX.  */
+
+      if (!TREE_SIDE_EFFECTS (arg0)
+	  && !TREE_SIDE_EFFECTS (arg1))
+	{
+	  tem = fold_to_nonsharp_ineq_using_bound (arg0, arg1);
+	  if (tem)
+	    return fold (build2 (code, type, tem, arg1));
+
+	  tem = fold_to_nonsharp_ineq_using_bound (arg1, arg0);
+	  if (tem)
+	    return fold (build2 (code, type, arg0, tem));
+	}
 
     truth_andor:
       /* We only do these simplifications if we are optimizing.  */
