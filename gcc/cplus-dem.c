@@ -31,6 +31,9 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #include <demangle.h>
 #undef CURRENT_DEMANGLING_STYLE
@@ -838,7 +841,7 @@ demangle_signature (work, mangled, declp)
 	    }
 	  else
 	    /* fall through */
-	    ;
+	    {;}
 
 	default:
 	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
@@ -2322,7 +2325,6 @@ do_type (work, mangled, result)
       /* A template parm.  We substitute the corresponding argument. */
       {
 	int idx;
-	int lvl;
 
 	(*mangled)++;
 	idx = consume_count_with_underscores (mangled);
