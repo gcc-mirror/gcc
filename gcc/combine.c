@@ -5634,6 +5634,12 @@ expand_compound_operation (x)
       if (GET_MODE_SIZE (GET_MODE (XEXP (x, 0))) > UNITS_PER_WORD)
 	return x;
 
+      /* Reject MODEs that aren't scalar integers because turning vector
+	 or complex modes into shifts causes problems.  */
+
+      if (! SCALAR_INT_MODE_P (GET_MODE (XEXP (x, 0))))
+	return x;
+
       len = GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)));
       /* If the inner object has VOIDmode (the only way this can happen
 	 is if it is an ASM_OPERANDS), we can't do anything since we don't
@@ -5653,6 +5659,12 @@ expand_compound_operation (x)
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
 	  || GET_CODE (XEXP (x, 2)) != CONST_INT
 	  || GET_MODE (XEXP (x, 0)) == VOIDmode)
+	return x;
+
+      /* Reject MODEs that aren't scalar integers because turning vector
+	 or complex modes into shifts causes problems.  */
+
+      if (! SCALAR_INT_MODE_P (GET_MODE (XEXP (x, 0))))
 	return x;
 
       len = INTVAL (XEXP (x, 1));
@@ -5862,12 +5874,12 @@ expand_field_assignment (x)
 
       compute_mode = GET_MODE (inner);
 
-      /* Don't attempt bitwise arithmetic on non-integral modes.  */
-      if (! INTEGRAL_MODE_P (compute_mode))
+      /* Don't attempt bitwise arithmetic on non scalar integer modes.  */
+      if (! SCALAR_INT_MODE_P (compute_mode))
 	{
 	  enum machine_mode imode;
 
-	  /* Something is probably seriously wrong if this matches.  */
+	  /* Don't do anything for vector or complex integral types.  */
 	  if (! FLOAT_MODE_P (compute_mode))
 	    break;
 
@@ -10177,7 +10189,9 @@ simplify_comparison (code, pop0, pop1)
 
       /* Get the constant we are comparing against and turn off all bits
 	 not on in our mode.  */
-      const_op = trunc_int_for_mode (INTVAL (op1), mode);
+      const_op = INTVAL (op1);
+      if (mode != VOIDmode)
+	const_op = trunc_int_for_mode (const_op, mode);
       op1 = GEN_INT (const_op);
 
       /* If we are comparing against a constant power of two and the value

@@ -1,3 +1,20 @@
+2002-08-19  Geoffrey Keating  <geoffk@redhat.com>
+	    Steve Ellcey  <sje@cup.hp.com>
+
+	* machmode.h (SCALAR_INT_MODE_P): New macro to test for
+	scaler integer mode (MODE_INT or MODE_PARTIAL_INT).
+	* explow.c (trunc_int_for_mode): Abort when the mode is not
+	a scaler integer mode.
+	* combine.c (expand_compound_operation): Don't expand Vector
+	or Complex modes into shifts.
+	(expand_field_assignment): Don't do bitwise arithmatic and
+	shifts on Vector or Complex modes.
+	(simplify_comparison): Don't call trunc_int_for_mode
+	for VOIDmode.
+	* recog.c (general_operand): Likewise.
+	(immediate_operand): Likewise.
+	(nonmemory_operand): Likewise.
+
 2002-08-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_emit_set_const): Inline

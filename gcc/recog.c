@@ -954,6 +954,7 @@ general_operand (op, mode)
     return 0;
 
   if (GET_CODE (op) == CONST_INT
+      && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
     return 0;
 
@@ -1159,6 +1160,7 @@ immediate_operand (op, mode)
     return 0;
 
   if (GET_CODE (op) == CONST_INT
+      && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
     return 0;
 
@@ -1241,6 +1243,7 @@ nonmemory_operand (op, mode)
 	return 0;
 
       if (GET_CODE (op) == CONST_INT
+	  && mode != VOIDmode
 	  && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
 	return 0;
 
