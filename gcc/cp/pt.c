@@ -658,7 +658,8 @@ coerce_template_parms (parms, arglist, in_decl)
 	  if (! processing_template_decl)
 	    {
 	      tree t = target_type (val);
-	      if (IS_AGGR_TYPE (t)
+	      if (TREE_CODE (t) != TYPENAME_TYPE 
+		  && IS_AGGR_TYPE (t)
 		  && decl_function_context (TYPE_MAIN_DECL (t)))
 		{
 		  cp_error ("type `%T' composed from a local class is not a valid template-argument", val);
@@ -1146,8 +1147,17 @@ uses_template_parms (t)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VOID_TYPE:
-    case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
+      return 0;
+
+    case ENUMERAL_TYPE:
+      {
+	tree v;
+
+	for (v = TYPE_VALUES (t); v != NULL_TREE; v = TREE_CHAIN (v))
+	  if (uses_template_parms (TREE_VALUE (v)))
+	    return 1;
+      }
       return 0;
 
       /* constants */
@@ -2084,6 +2094,8 @@ tsubst (t, args, nargs, in_decl)
     case TREE_VEC:
       if (type != NULL_TREE)
 	{
+	  /* A binfo node.  */
+
 	  t = copy_node (t);
 
 	  if (type == TREE_TYPE (t))
@@ -2099,6 +2111,8 @@ tsubst (t, args, nargs, in_decl)
 	    }
 	  return t;
 	}
+
+      /* Otherwise, a vector of template arguments.  */
       {
 	int len = TREE_VEC_LENGTH (t), need_new = 0, i;
 	tree *elts = (tree *) alloca (len * sizeof (tree));
@@ -2108,6 +2122,24 @@ tsubst (t, args, nargs, in_decl)
 	for (i = 0; i < len; i++)
 	  {
 	    elts[i] = tsubst_expr (TREE_VEC_ELT (t, i), args, nargs, in_decl);
+
+	    if (TREE_CODE_CLASS (TREE_CODE (elts[i])) != 't'
+		&& !uses_template_parms (elts[i]))
+	      {
+		/* Sometimes, one of the args was an expression involving a
+		   template constant parameter, like N - 1.  Now that we've
+		   tsubst'd, we might have something like 2 - 1.  This will
+		   confuse lookup_template_class, so we do constant folding
+		   here.  We have to unset processing_template_decl, to
+		   fool build_expr_from_tree() into building an actual
+		   tree.  */
+
+		int saved_processing_template_decl = processing_template_decl; 
+		processing_template_decl = 0;
+		elts[i] = fold (build_expr_from_tree (elts[i]));
+		processing_template_decl = saved_processing_template_decl; 
+	      }
+
 	    if (elts[i] != TREE_VEC_ELT (t, i))
 	      need_new = 1;
 	  }
@@ -2305,8 +2337,16 @@ tree
 do_poplevel ()
 {
   tree t;
+  int saved_warn_unused;
 
+  if (processing_template_decl)
+    {
+      saved_warn_unused = warn_unused;
+      warn_unused = 0;
+    }
   expand_end_bindings (getdecls (), kept_level_p (), 1);
+  if (processing_template_decl)
+    warn_unused = saved_warn_unused;
   t = poplevel (kept_level_p (), 1, 0);
   pop_momentary ();
   return t;
@@ -3566,7 +3606,7 @@ most_specialized_class (specs, mainargs)
 
   for (t = list; t && t != champ; t = TREE_CHAIN (t))
     {
-      fate = more_specialized (champ, t);
+      fate = more_specialized_class (champ, t);
       if (fate != 1)
 	return error_mark_node;
     }

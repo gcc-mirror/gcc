@@ -4322,8 +4322,7 @@ make_typename_type (context, name)
   else if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
 
-  if (! processing_template_decl
-      || ! uses_template_parms (context)
+  if (! uses_template_parms (context)
       || context == current_class_type)
     {
       t = lookup_field (context, name, 0, 1);
@@ -4432,7 +4431,7 @@ lookup_name_real (name, prefer_type, nonclass)
       else
 	val = NULL_TREE;
 
-#if 1
+      /* Add implicit 'typename' to scoped types from other classes.  */
       if (got_scope && processing_template_decl
 	  && got_scope != current_class_type
 	  && uses_template_parms (got_scope)
@@ -4443,7 +4442,6 @@ lookup_name_real (name, prefer_type, nonclass)
 	  TREE_TYPE (t) = TREE_TYPE (val);
 	  val = TYPE_MAIN_DECL (t);
 	}
-#endif
 
       if (got_scope)
 	goto done;
@@ -4473,6 +4471,19 @@ lookup_name_real (name, prefer_type, nonclass)
 	 created the COMPONENT_REF or anything like that.  */
       if (classval == NULL_TREE)
 	classval = lookup_nested_field (name, ! yylex);
+
+      /* Add implicit 'typename' to types from base classes.  */
+      if (processing_template_decl
+	  && classval && TREE_CODE (classval) == TYPE_DECL
+	  && DECL_CONTEXT (classval) != current_class_type
+	  && uses_template_parms (DECL_CONTEXT (classval))
+	  && ! DECL_ARTIFICIAL (classval))
+	{
+	  tree t = make_typename_type (DECL_CONTEXT (classval),
+				       DECL_NAME (classval));
+	  TREE_TYPE (t) = TREE_TYPE (classval);
+	  classval = TYPE_MAIN_DECL (t);
+	}
     }
 
   if (locval && classval)
