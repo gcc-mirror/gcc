@@ -2284,7 +2284,7 @@ alpha_return_addr (count, frame)
      int count;
      rtx frame;
 {
-  rtx init, first;
+  rtx init;
 
   if (count != 0)
     return const0_rtx;
@@ -2308,8 +2308,6 @@ alpha_return_addr (count, frame)
 static int
 alpha_ra_ever_killed ()
 {
-  rtx i, ra;
-
   if (!alpha_return_addr_rtx)
     return regs_ever_live[REG_RA];
 
@@ -3535,7 +3533,6 @@ output_epilog (file, size)
     = (out_args_size + sa_size
        + ALPHA_ROUND (size + current_function_pretend_args_size));
   HOST_WIDE_INT reg_offset = out_args_size;
-  HOST_WIDE_INT frame_size_from_reg_save = frame_size - reg_offset;
   int restore_fp
     = frame_pointer_needed && regs_ever_live[HARD_FRAME_POINTER_REGNUM];
   int i;
