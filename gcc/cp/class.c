@@ -5993,7 +5993,8 @@ instantiate_type (lhstype, rhs, flags)
   int complain = (flags & itf_complain);
   int strict = (flags & itf_no_attributes)
                ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
-
+  tree r;
+  
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
