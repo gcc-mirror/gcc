@@ -2835,7 +2835,8 @@ purge_addressof_1 (loc, insn, force)
       if (GET_CODE (sub) == MEM)
 	sub = gen_rtx (MEM, GET_MODE (x), copy_rtx (XEXP (sub, 0)));
 
-      if (GET_CODE (sub) == REG && MEM_VOLATILE_P (x))
+      if (GET_CODE (sub) == REG
+	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
 	{
 	  put_addressof_into_stack (XEXP (x, 0));
 	  return;
