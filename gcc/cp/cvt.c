@@ -770,7 +770,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
    no lvalue-rvalue and similar conversions happen [expr.static.cast/4,
    stmt.expr/1, expr.comma/1].  This permits dereferencing an incomplete type
    in a void context. The C++ standard does not define what an `access' to an
-   object is, but there is reason to beleive that it is the lvalue to rvalue
+   object is, but there is reason to believe that it is the lvalue to rvalue
    conversion -- if it were not, `*&*p = 1' would violate [expr]/4 in that it
    accesses `*p' not to calculate the value to be stored. But, dcl.type.cv/8
    indicates that volatile semantics should be the same between C and C++

@@ -261,7 +261,7 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 }
 
 /* id-expression:
-      unaqualified-id
+      unqualified-id
       qualified-id   */
 static inline void
 pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
@@ -986,7 +986,7 @@ pp_cxx_simple_type_specifier (cxx_pretty_printer *pp, tree t)
       class-specifier
       enum-specifier
       elaborated-type-specifier
-      cv-qualifer   */
+      cv-qualifier   */
 
 static void
 pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
@@ -1287,7 +1287,7 @@ pp_cxx_abstract_declarator (cxx_pretty_printer *pp, tree t)
 
 /* direct-abstract-declarator:
       direct-abstract-declarator(opt) ( parameter-declaration-clause )
-                           cv-quafilier-seq(opt) exception-specification(opt)
+                           cv-qualifier-seq(opt) exception-specification(opt)
       direct-abstract-declarator(opt) [ constant-expression(opt) ]
       ( abstract-declarator )  */
 static void

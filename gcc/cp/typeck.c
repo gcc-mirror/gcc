@@ -4361,7 +4361,7 @@ build_compound_expr (tree lhs, tree rhs)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound
          expression inside the target_expr's initializer. This
-	 helps the compiler to eliminate unncessary temporaries.  */
+	 helps the compiler to eliminate unnecessary temporaries.  */
       tree init = TREE_OPERAND (rhs, 1);
       
       init = build (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);

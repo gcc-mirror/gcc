@@ -602,7 +602,7 @@ context_for_name_lookup (tree decl)
 }
 
 /* The accessibility routines use BINFO_ACCESS for scratch space
-   during the computation of the accssibility of some declaration.  */
+   during the computation of the accessibility of some declaration.  */
 
 #define BINFO_ACCESS(NODE) \
   ((access_kind) ((TREE_PUBLIC (NODE) << 1) | TREE_PRIVATE (NODE)))

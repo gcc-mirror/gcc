@@ -362,7 +362,7 @@ typedef enum cp_id_kind
   CP_ID_KIND_NONE,
   /* An unqualified-id that is not a template-id.  */
   CP_ID_KIND_UNQUALIFIED,
-  /* An uqualified-id that is a dependent name.  */
+  /* An unqualified-id that is a dependent name.  */
   CP_ID_KIND_UNQUALIFIED_DEPENDENT,
   /* An unqualified template-id.  */
   CP_ID_KIND_TEMPLATE_ID,
@@ -1474,7 +1474,7 @@ struct lang_type GTY(())
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Nonzero if this BINFO is a primary base class.  Note, this can be
-   set for non-canononical virtual bases. For a virtual primary base
+   set for non-canonical virtual bases. For a virtual primary base
    you might also need to check whether it is canonical.  */
 
 #define BINFO_PRIMARY_P(NODE) \

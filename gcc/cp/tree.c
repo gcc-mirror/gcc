@@ -99,7 +99,7 @@ lvalue_p_1 (tree ref,
 	  /* Clear the ordinary bit.  If this object was a class
 	     rvalue we want to preserve that information.  */
 	  op1_lvalue_kind &= ~clk_ordinary;
-	  /* The lvalue is for a btifield.  */
+	  /* The lvalue is for a bitfield.  */
 	  op1_lvalue_kind |= clk_bitfield;
 	}
       else if (DECL_PACKED (TREE_OPERAND (ref, 1)))

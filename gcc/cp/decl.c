@@ -3877,7 +3877,7 @@ start_decl_1 (tree decl)
 /* Handle initialization of references.  DECL, TYPE, and INIT have the
    same meaning as in cp_finish_decl.  *CLEANUP must be NULL on entry,
    but will be set to a new CLEANUP_STMT if a temporary is created
-   that must be destroeyd subsequently.
+   that must be destroyed subsequently.
 
    Returns an initializer expression to use to initialize DECL, or
    NULL if the initialization can be performed statically.

@@ -1939,7 +1939,7 @@ typedef struct find_final_overrider_data_s {
   tree most_derived_type;
   /* The candidate overriders.  */
   tree candidates;
-  /* Binfos which inherited virtually on the currrent path.  */
+  /* Binfos which inherited virtually on the current path.  */
   tree vpath;
 } find_final_overrider_data;
 
@@ -2167,7 +2167,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
       if (!virtual_offset)
 	{
 	  /* There was no existing virtual thunk (which takes
-	     precidence).  */
+	     precedence).  */
 	  tree thunk_binfo;
 	  base_kind kind;
 	  

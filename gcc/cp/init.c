@@ -292,7 +292,7 @@ build_default_init (tree type, tree nelts)
     return NULL_TREE;
       
   /* At this point, TYPE is either a POD class type, an array of POD
-     classes, or something even more inoccuous.  */
+     classes, or something even more innocuous.  */
   return build_zero_init (type, nelts, /*static_storage_p=*/false);
 }
 

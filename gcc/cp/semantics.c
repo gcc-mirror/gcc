@@ -1439,7 +1439,7 @@ finish_stmt_expr_expr (tree expr)
 
 	  /* Build a TARGET_EXPR for this aggregate.  finish_stmt_expr
 	     will then pull it apart so the lifetime of the target is
-	     within the scope of the expresson containing this statement
+	     within the scope of the expression containing this statement
 	     expression.  */
 	  if (TREE_CODE (expr) == TARGET_EXPR)
 	    ;
@@ -2240,7 +2240,7 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
 }
 
 /* Called when multiple declarators are processed.  If that is not
-   premitted in this context, an error is issued.  */
+   permitted in this context, an error is issued.  */
 
 void
 check_multiple_declarators (void)
@@ -2452,7 +2452,7 @@ finish_id_expression (tree id_expression,
 	    }
 
 	  /* If there are no dependent template arguments, go through
-	     the overlaoded functions.  */
+	     the overloaded functions.  */
 	  while (fns && !dependent_p)
 	    {
 	      tree fn = OVL_CURRENT (fns);
