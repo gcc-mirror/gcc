@@ -404,31 +404,34 @@ verify_flow_sensitive_alias_info (void)
 
   for (i = 1; i < num_ssa_names; i++)
     {
+      tree var;
       var_ann_t ann;
       struct ptr_info_def *pi;
+ 
 
       ptr = ssa_name (i);
       if (!ptr)
 	continue;
-      ann = var_ann (SSA_NAME_VAR (ptr));
-      pi = SSA_NAME_PTR_INFO (ptr);
 
       /* We only care for pointers that are actually referenced in the
 	 program.  */
-      if (!TREE_VISITED (ptr) || !POINTER_TYPE_P (TREE_TYPE (ptr)))
+      if (!POINTER_TYPE_P (TREE_TYPE (ptr)) || !TREE_VISITED (ptr))
 	continue;
 
       /* RESULT_DECL is special.  If it's a GIMPLE register, then it
 	 is only written-to only once in the return statement.
 	 Otherwise, aggregate RESULT_DECLs may be written-to more than
 	 once in virtual operands.  */
-      if (TREE_CODE (SSA_NAME_VAR (ptr)) == RESULT_DECL
+      var = SSA_NAME_VAR (ptr);
+      if (TREE_CODE (var) == RESULT_DECL
 	  && is_gimple_reg (ptr))
 	continue;
 
+      pi = SSA_NAME_PTR_INFO (ptr);
       if (pi == NULL)
 	continue;
 
+      ann = var_ann (var);
       if (pi->is_dereferenced && !pi->name_mem_tag && !ann->type_mem_tag)
 	{
 	  error ("Dereferenced pointers should have a name or a type tag");
