@@ -193,10 +193,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
+#define IDENT_ASM_OP ".ident"
+
 #define ASM_FILE_END(FILE)					\
 do {				 				\
-     fprintf ((FILE), "\t.ident\t\"GCC: (GNU) %s\"\n",		\
-	      version_string);					\
+     fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+	      IDENT_ASM_OP, version_string);			\
    } while (0)
 
 /* Allow #sccs in preprocessor.  */
@@ -206,7 +208,7 @@ do {				 				\
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "\t.ident \"%s\"\n", NAME);
+  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
 
 /* Use periods rather than dollar signs in special g++ assembler names.  */
 
@@ -314,6 +316,23 @@ do {									\
 do {									\
   sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
 } while (0)
+
+/* Output the label which preceeds a jumptable.  Note that for all svr4
+   systems where we actually generate jumptables (which is to say every
+   svr4 target except i386, where we use casesi instead) we put the jump-
+   tables into the .rodata section and since other stuff could have been
+   put into the .rodata section prior to any given jumptable, we have to
+   make sure that the location counter for the .rodata section gets pro-
+   perly re-aligned prior to the actual beginning of the jump table.  */
+
+#define ALIGN_ASM_OP ".align"
+
+#undef ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
+  do {									\
+    ASM_OUTPUT_ALIGN ((FILE), 2);					\
+    ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
+  } while (0)
 
 /* The standard SVR4 assembler seems to require that certain builtin
    library routines (e.g. .udiv) be explicitly declared as .globl
