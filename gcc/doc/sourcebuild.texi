@@ -674,6 +674,10 @@ possibly a target Makefile fragment @file{t-@var{machine}}
 some other files.  The names of these files may be changed from the
 defaults given by explicit specifications in @file{config.gcc}.
 @item
+If necessary, a file @file{@var{machine}-modes.def} in the
+@file{@var{machine}} directory, containing additional machine modes to
+represent condition codes.  @xref{Condition Code}, for further details.
+@item
 Entries in @file{config.gcc} (@pxref{System Config, , The
 @file{config.gcc} File}) for the systems with this target
 architecture.

@@ -1,0 +1,46 @@
+/* Definitions of target machine for GNU compiler for IA-32.
+   Copyright (C) 2002 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+/* Add any extra modes needed to represent the condition code.
+
+   For the i386, we need separate modes when floating-point
+   equality comparisons are being done.
+
+   Add CCNO to indicate comparisons against zero that requires
+   Overflow flag to be unset.  Sign bit test is used instead and
+   thus can be used to form "a&b>0" type of tests.
+
+   Add CCGC to indicate comparisons agains zero that allows
+   unspecified garbage in the Carry flag.  This mode is used
+   by inc/dec instructions.
+
+   Add CCGOC to indicate comparisons agains zero that allows
+   unspecified garbage in the Carry and Overflow flag. This
+   mode is used to simulate comparisons of (a-b) and (a+b)
+   against zero using sub/cmp/add operations.
+
+   Add CCZ to indicate that only the Zero flag is valid.  */
+
+CC (CCGC)
+CC (CCGOC)
+CC (CCNO)
+CC (CCZ)
+CC (CCFP)
+CC (CCFPU)

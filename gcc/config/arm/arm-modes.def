@@ -1,0 +1,46 @@
+/* Definitions of target machine for GNU compiler, for ARM.
+   Copyright (C) 2002 Free Software Foundation, Inc.
+   Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
+   and Martin Simmons (@harleqn.co.uk).
+   More major hacks by Richard Earnshaw (rearnsha@arm.com)
+   Minor hacks by Nick Clifton (nickc@cygnus.com)
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+/* CCFPEmode should be used with floating inequalities,
+   CCFPmode should be used with floating equalities.
+   CC_NOOVmode should be used with SImode integer equalities.
+   CC_Zmode should be used if only the Z flag is set correctly
+   CCmode should be used otherwise. */
+
+CC (CC_NOOV)
+CC (CC_Z)
+CC (CC_SWP)
+CC (CCFP)
+CC (CCFPE)
+CC (CC_DNE)
+CC (CC_DEQ)
+CC (CC_DLE)
+CC (CC_DLT)
+CC (CC_DGE)
+CC (CC_DGT)
+CC (CC_DLEU)
+CC (CC_DLTU)
+CC (CC_DGEU)
+CC (CC_DGTU)
+CC (CC_C)

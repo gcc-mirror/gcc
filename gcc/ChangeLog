@@ -1,3 +1,26 @@
+2002-06-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (MACHMODE_H): Add @extra_modes_file@.
+	* configure.in: If $srcdir/config/${cpu_type}/${cpu_type}-modes.def 
+	exists, substitute its pathname as @extra_modes_file@, define
+	EXTRA_MODES_FILE to be an appropriate string to #include it
+	with, and define EXTRA_CC_MODES to 1.
+
+	* machmode.def: Update comments.  Include EXTRA_MODES_FILE if
+	it's defined.  Get rid of redundancy in calling sequence for
+	CC; don't use it to define CCmode, to avoid a warning.
+	* libgcc2.c: Include symcat.h for the sake of machmode.def.
+
+	* arc-modes.def, arm-modes.def, c4x-modes.def, i386-modes.def,
+	i960-modes.def, ia64-modes.def, m88k-modes.def, mmix-modes.def,
+	pa-modes.def, pdp11-modes.def, rs6000-modes.def, sparc-modes.def:
+	New files.
+	* arc.h, arm.h, c4x.h, i386.h, i960.h, ia64.h, m88k.h, mmix.h,
+	pa.h, pdp11.h, rs6000.h, sparc.h: Don't define EXTRA_CC_MODES.
+
+	* doc/sourcebuild.texi, doc/tm.texi: Document new scheme for
+	defining extra CC modes.
+
 2002-06-10  Roger Sayle  <roger@eyesopen.com>
 	    Andreas Jaeger <aj@suse.de>
 

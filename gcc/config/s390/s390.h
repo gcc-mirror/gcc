@@ -1207,15 +1207,6 @@ CUMULATIVE_ARGS;
 
 #define BRANCH_COST 1
 
-/* Add any extra modes needed to represent the condition code.  */
-#define EXTRA_CC_MODES \
-	CC (CCZmode, "CCZ") \
-	CC (CCAmode, "CCA") \
-	CC (CCLmode, "CCL") \
-	CC (CCUmode, "CCU") \
-	CC (CCSmode, "CCS") \
-	CC (CCTmode, "CCT")
- 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
  

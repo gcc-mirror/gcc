@@ -595,14 +595,6 @@ while (0)
 #define LOCAL_REGNO(REGNO) \
   (IN_REGNO_P (REGNO) || LOC_REGNO_P (REGNO))
 
-/* Add any extra modes needed to represent the condition code.
-
-   CCImode is used to mark a single predicate register instead
-   of a register pair.  This is currently only used in reg_raw_mode
-   so that flow doesn't do something stupid.  */
-
-#define EXTRA_CC_MODES		CC(CCImode, "CCI")
-
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  Must be defined if
    EXTRA_CC_MODES is defined.  */

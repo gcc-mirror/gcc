@@ -2417,30 +2417,7 @@ extern int making_const_table;
 
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
-   return the mode to be used for the comparison. 
-   CCFPEmode should be used with floating inequalities,
-   CCFPmode should be used with floating equalities.
-   CC_NOOVmode should be used with SImode integer equalities.
-   CC_Zmode should be used if only the Z flag is set correctly
-   CCmode should be used otherwise. */
-
-#define EXTRA_CC_MODES \
-        CC(CC_NOOVmode, "CC_NOOV") \
-        CC(CC_Zmode, "CC_Z") \
-        CC(CC_SWPmode, "CC_SWP") \
-        CC(CCFPmode, "CCFP") \
-        CC(CCFPEmode, "CCFPE") \
-        CC(CC_DNEmode, "CC_DNE") \
-        CC(CC_DEQmode, "CC_DEQ") \
-        CC(CC_DLEmode, "CC_DLE") \
-        CC(CC_DLTmode, "CC_DLT") \
-        CC(CC_DGEmode, "CC_DGE") \
-        CC(CC_DGTmode, "CC_DGT") \
-        CC(CC_DLEUmode, "CC_DLEU") \
-        CC(CC_DLTUmode, "CC_DLTU") \
-        CC(CC_DGEUmode, "CC_DGEU") \
-        CC(CC_DGTUmode, "CC_DGTU") \
-        CC(CC_Cmode, "CC_C")
+   return the mode to be used for the comparison.  */
 
 #define SELECT_CC_MODE(OP, X, Y)  arm_select_cc_mode (OP, X, Y)
 

@@ -1162,8 +1162,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /*** Addressing Modes ***/
 
-#define EXTRA_CC_MODES CC(CCEVENmode, "CCEVEN")
-
 #define SELECT_CC_MODE(OP,X,Y) CCmode
 
 /* #define HAVE_POST_INCREMENT 0 */

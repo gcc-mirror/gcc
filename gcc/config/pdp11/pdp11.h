@@ -884,12 +884,6 @@ extern int may_call_alloca;
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-
-/* Add any extra modes needed to represent the condition code.
-
-   CCFPmode is used for FPU, but should we use a separate reg? */
-#define EXTRA_CC_MODES CC(CCFPmode, "CCFP")
-
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
    should be used. */
