@@ -632,9 +632,10 @@ their runtime libraries should be built.  For a list of valid values for
 grep language= */config-lang.in
 @end example
 Currently, you can use any of the following:
-@code{c}, @code{c++}, @code{f77}, @code{java} and @code{objc}.
+@code{ada}, @code{c}, @code{c++}, @code{f77}, @code{java}, @code{objc}.
 @code{CHILL} is not currently maintained, and will almost
-certainly fail to compile.@*
+certainly fail to compile.  Building the Ada compiler has special
+requirements, see below.@*
 If you do not pass this flag, all languages available in the @file{gcc}
 sub-tree will be configured.  Re-defining @code{LANGUAGES} when calling
 @samp{make bootstrap} @strong{does not} work anymore, as those
@@ -764,7 +765,8 @@ Now that GCC is configured, you are ready to build the compiler and
 runtime libraries.
 
 We @strong{highly} recommend that GCC be built using GNU make;
-other versions may work, then again they might not.
+other versions may work, then again they might not.  
+GNU make is required for compiling GNAT, the Ada compiler.
 
 (For example, many broken versions of make will fail if you use the
 recommended setup where @var{objdir} is different from @var{srcdir}.
@@ -920,6 +922,56 @@ for GNU Make 3.79 and above instead of just @samp{make bootstrap}
 when building GCC@.  You can use a bigger number instead of two if
 you like.  In most cases, it won't help to use a number bigger than
 the number of processors in your machine.
+
+@section Building the Ada compiler
+
+In order to build GNAT, the Ada compiler, you need a working GNAT
+compiler, since the Ada front end is written in Ada (with some
+GNAT-specific extensions), and GNU make.
+
+However, you do not need a full installation of GNAT, just the GNAT
+binary @file{gnat1}, a copy of @file{gnatbind}, and a compiler driver
+which can deal with Ada input (by invoking the @file{gnat1} binary).
+You can specify this compiler driver by setting the @env{ADAC}
+environment variable at the configure step.  @command{configure} can
+detect the driver automatically if it has got a common name such as
+@command{gcc} or @command{gnatgcc}.  Of course, you still need a working
+C compiler (the compiler driver can be different or not).
+
+Additional build tools (such as @command{gnatmake}) or a working GNAT
+run-time library installation are usually @emph{not} required.  However,
+if you want to boostrap the compiler using a minimal version of GNAT,
+you have to issue the following commands before invoking @samp{make
+boostrap} (this assumes that you start with an unmodified and consistent
+source distribution):
+
+@example
+    cd @var{srcdir}/gcc/ada
+    touch treeprs.ads [es]info.h nmake.ad[bs]
+@end example
+
+At the moment, the GNAT library and several tools for GNAT are not built
+by @samp{make bootstrap}.  You have to invoke 
+@samp{make gnatlib_and_tools} in the @file{@var{objdir}/gcc}
+subdirectory before proceeding with the next steps.
+
+For example, you can build a native Ada compiler by issuing the
+following commands (assuming @command{make} is GNU make):
+
+@example
+    cd @var{objdir}
+    @var{srcdir}/configure --enable-languages=c,ada 
+    cd @var{srcdir}/gcc/ada
+    touch treeprs.ads [es]info.h nmake.ad[bs]
+    cd @var{objdir}    
+    make bootstrap
+    cd gcc
+    make gnatlib_and_tools
+    cd ..
+@end example
+
+Currently, when compiling the Ada front end, you cannot use the parallel
+build feature described in the previous section.
 
 @html
 <hr>

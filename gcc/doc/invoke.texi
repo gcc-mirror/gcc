@@ -706,11 +706,18 @@ Fortran input files.
 @c @var{file}.zip
 @c @var{file}.jar
 
+@item @var{file}.ads
+Ada source code file which contains a library unit declaration (a
+declaration of a package, subprogram, or generic, or a generic
+instantiation), or a library unit renaming declaration (a package,
+generic, or subprogram renaming declaration).  Such files are also
+called @dfn{specs}.
+
+@itemx @var{file}.adb
+Ada source code file containing a library unit body (a subprogram or
+package body).  Such files are also called @dfn{bodies}.
+
 @c GCC also knows about some suffixes for languages not yet included:
-@c Ada:
-@c @var{file}.ads
-@c @var{file}.adb
-@c @var{file}.ada
 @c Pascal:
 @c @var{file}.p
 @c @var{file}.pas
@@ -744,8 +751,10 @@ c  c-header  cpp-output
 c++  c++-cpp-output
 objective-c  objc-cpp-output
 assembler  assembler-with-cpp
+ada
+chill
 f77  f77-cpp-input  ratfor
-java  chill
+java
 @end example
 @c Also f77-version, for internal use only.
 
