@@ -26,16 +26,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
 #define	MASK_NO_TRACEBACK	0x08000000	/* eliminate traceback words */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
+#define MASK_NO_TOC		0x02000000	/* do not use TOC for loading addresses */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
 #define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
+#define TARGET_NO_TOC		(target_flags & MASK_NO_TOC)
 
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
 #define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 #define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
+#define TARGET_TOC		(! TARGET_NO_TOC)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
@@ -50,7 +53,39 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { "little-endian",	 MASK_LITTLE_ENDIAN },				\
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
-  { "big",		-MASK_LITTLE_ENDIAN },
+  { "big",		-MASK_LITTLE_ENDIAN },				\
+  { "no-toc",		 MASK_NO_TOC | MASK_MINIMAL_TOC },		\
+  { "toc",		-MASK_NO_TOC },
+
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
+   get control.  */
+
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if (TARGET_RELOCATABLE && TARGET_NO_TOC)				\
+    {									\
+      target_flags &= ~ MASK_NO_TOC;					\
+      error ("-mrelocatable and -mno-toc are incompatible.");		\
+    }									\
+									\
+  if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
+    {									\
+      target_flags |= MASK_MINIMAL_TOC;					\
+      error ("-mrelocatable and -mno-minimal-toc are incompatible.");	\
+    }									\
+									\
+  if (TARGET_NO_TOC && !TARGET_MINIMAL_TOC)				\
+    {									\
+      target_flags |= MASK_MINIMAL_TOC;					\
+      error ("-mno-toc and -mno-minimal-toc are incompatible.");	\
+    }									\
+} while (0)
 
 #include "rs6000/powerpc.h"
 
@@ -152,12 +187,12 @@ toc_section ()								\
     {									\
       if (! toc_initialized)						\
 	{								\
-	  if (!TARGET_RELOCATABLE)					\
+	  if (!TARGET_RELOCATABLE && !TARGET_NO_TOC)			\
 	    fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
 									\
 	  if (TARGET_MINIMAL_TOC)					\
 	    {								\
-	      if (!TARGET_RELOCATABLE)					\
+	      if (!TARGET_RELOCATABLE && !TARGET_NO_TOC)		\
 		{							\
 		  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LCTOC", 0);	\
 		  fprintf (asm_out_file, "\t.tc ");			\

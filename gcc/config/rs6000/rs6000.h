@@ -279,16 +279,7 @@ extern char *rs6000_cpu_string;
 
    On the RS/6000 this is used to define the target cpu type.  */
 
-#define OVERRIDE_OPTIONS \
-do {				\
-  rs6000_override_options ();	\
-  SUBTARGET_OVERRIDE_OPTIONS;	\
-} while (0)
-
-/* For OS-dependent options */
-#ifndef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS
-#endif
+#define OVERRIDE_OPTIONS rs6000_override_options ()
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
