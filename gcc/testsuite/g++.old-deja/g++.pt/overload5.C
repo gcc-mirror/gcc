@@ -1,7 +1,5 @@
 // Build don't link:
 
-// crash test - XFAIL *-*-*
-
 template <class T> void foo();
 
 void (*bar)() = foo<void>;

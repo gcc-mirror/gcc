@@ -1,6 +1,5 @@
 // Build don't link:
 // Special g++ Options:
-// crash test - XFAIL
 
 class Pooled
 {

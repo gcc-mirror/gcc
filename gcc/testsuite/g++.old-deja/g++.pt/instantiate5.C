@@ -2,8 +2,6 @@
 
 // Additional sources: instantiate5.cc instantiate5-main.cc
 
-// excess errors test - XFAIL *-*-*
-
 // `global constructors' are given the same name, based on foo(), on
 // both translation units, which is wrong, because it must be possible
 // to define template functions in multiple translation units, as long
