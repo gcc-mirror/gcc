@@ -3421,6 +3421,48 @@ if test $ac_cv_c_bigendian = unknown; then
 fi
 
 
+if test x$TARGET == xSPARC; then
+    echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
+echo "configure:3426: checking assembler and linker support unaligned pc related relocs" >&5
+if eval "test \"`echo '$''{'libffi_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	save_CFLAGS="$CFLAGS"
+	save_LDFLAGS="$LDFLAGS"
+	CFLAGS="$CFLAGS -fpic"
+	LDFLAGS="$LDFLAGS -shared"
+	cat > conftest.$ac_ext <<EOF
+#line 3436 "configure"
+#include "confdefs.h"
+asm (".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo); .text");
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:3442: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  libffi_cv_as_sparc_ua_pcrel=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  libffi_cv_as_sparc_ua_pcrel=no
+fi
+rm -f conftest*
+	CFLAGS="$save_CFLAGS"
+	LDFLAGS="$save_LDFLAGS"
+fi
+
+echo "$ac_t""$libffi_cv_as_sparc_ua_pcrel" 1>&6
+    if test "x$libffi_cv_as_sparc_ua_pcrel" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_AS_SPARC_UA_PCREL 1
+EOF
+
+    fi
+fi
+
 
 
 
