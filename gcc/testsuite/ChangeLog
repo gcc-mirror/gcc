@@ -1,3 +1,9 @@
+2004-06-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/14957
+	* gfortran.fortran-torture/execute/intrinsic_scale.f90: Make all
+	arguments to test_* REAL and of the right size.
+
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/15569
