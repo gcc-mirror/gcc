@@ -1,3 +1,17 @@
+Wed Feb 11 01:30:49 1998  Marc Lehmann <pcg@goof.com>
+
+	* i386.c: Added include for recog.h. 
+	(override_options): Removed unused variable p. Initialized regno to
+	avoid warning.
+	(order_regs_for_local_alloc): Initialized regno to avoid warning.
+	(legitimize_address): Likewise for 'other'.
+	(i386_aligned_reg_p): Added default case with abort ().
+	(print_operand): Likewise.
+	(reg_mentioned_in_mem): Likewise.
+	(ix86_expand_binary_operator): Removed unused variables i & insn.
+	(ix86_expand_unary_operator): Removed unused variable insn.
+	(output_fp_cc0_set): Removed unused variable unordered_label.
+
 Wed Feb 11 01:23:03 1998  John F. Carr  <jfc@mit.edu>
 
 	* i386.c, i386.h, i386.md: Change gen_rtx (X, ...) to gen_rtx_X (...).

@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA. */
 #include "flags.h"
 #include "except.h"
 #include "function.h"
+#include "recog.h"
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
@@ -193,8 +194,7 @@ int i386_align_jumps;
 void
 override_options ()
 {
-  int ch, i, j, regno;
-  char *p;
+  int ch, i, j;
   int def_align;
 
   static struct ptt
@@ -225,6 +225,8 @@ override_options ()
     {
       for (i = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
 	{
+	  int regno = 0;
+	  
 	  switch (ch)
 	    {
 	    case 'a':	regno = 0;	break;
@@ -372,7 +374,7 @@ override_options ()
 void
 order_regs_for_local_alloc ()
 {
-  int i, ch, order, regno;
+  int i, ch, order;
 
   /* User specified the register allocation order.  */
 
@@ -380,6 +382,8 @@ order_regs_for_local_alloc ()
     {
       for (i = order = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
 	{
+	  int regno = 0;
+	  
 	  switch (ch)
 	    {
 	    case 'a':	regno = 0;	break;
@@ -489,6 +493,9 @@ i386_aligned_p (op)
 
     case REG:
       return i386_aligned_reg_p (REGNO (op));
+    
+    default:
+      abort ();
     }
 
   return 0;
@@ -1722,8 +1729,6 @@ ix86_expand_binary_operator (code, mode, operands)
      enum machine_mode mode;
      rtx operands[];
 {
-  rtx insn;
-  int i;
   int modified;
 
   /* Recognize <var1> = <value> <op> <var1> for commutative operators */
@@ -1823,8 +1828,6 @@ ix86_expand_unary_operator (code, mode, operands)
      enum machine_mode mode;
      rtx operands[];
 {
-  rtx insn;
-
   /* If optimizing, copy to regs to improve CSE */
   if (TARGET_PSEUDO
       && optimize
@@ -2841,7 +2844,8 @@ legitimize_address (x, oldx, mode)
 	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == PLUS
 	       && CONSTANT_P (XEXP (x, 1)))
 	{
-	  rtx constant, other;
+	  rtx constant;
+	  rtx other = NULL_RTX;
 
 	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	    {
@@ -3264,10 +3268,12 @@ print_operand (file, x, code)
 	    case GTU: fputs ("jne",  file); return;
 	    case LEU: fputs ("je", file); return;
 	    case LTU: fputs ("#branch never",  file); return;
-
+	    
 	    /* no matching branches for GT nor LE */
+	    
+	    default:
+	      abort ();
 	    }
-	  abort ();
 
 	case 's':
 	  if (GET_CODE (x) == CONST_INT || ! SHIFT_DOUBLE_OMITS_COUNT)
@@ -4037,7 +4043,6 @@ output_fp_cc0_set (insn)
      rtx insn;
 {
   rtx xops[3];
-  rtx unordered_label;
   rtx next;
   enum rtx_code code;
 
@@ -4822,6 +4827,8 @@ reg_mentioned_in_mem (reg, rtl)
     case CC0:
     case SUBREG:
       return 0;
+    default:
+      abort ();
     }
 
   if (code == MEM && reg_mentioned_p (reg, rtl))
