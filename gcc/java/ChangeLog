@@ -1,3 +1,8 @@
+2003-03-01  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (jdep_resolve_class): Only check deprecation if we found
+	a decl.
+
 2003-02-28  Tom Tromey  <tromey@redhat.com>
 
 	PR java/9695:

@@ -5464,7 +5464,7 @@ jdep_resolve_class (jdep *dep)
       JDEP_RESOLVED (dep, decl);
       /* If there is no WFL, that's ok.  We generate this warning
 	 elsewhere.  */
-      if (JDEP_WFL (dep) != NULL_TREE)
+      if (decl && JDEP_WFL (dep) != NULL_TREE)
 	check_deprecation (JDEP_WFL (dep), decl);
     }
 
