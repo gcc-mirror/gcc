@@ -2289,7 +2289,8 @@ Warn when a declaration does not specify a type.
 @opindex Wimplicit-function-declaration
 @opindex Werror-implicit-function-declaration
 Give a warning (or error) whenever a function is used before being
-declared.
+declared.  The form @option{-Wno-error-implicit-function-declaration}
+is not supported.
 
 @item -Wimplicit
 @opindex Wimplicit
