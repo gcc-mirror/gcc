@@ -8,18 +8,12 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.http;
+package gnu.java.net.protocol.http;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.io.IOException;
-
-/**
- * @author Warren Levy
- * @author Anthony Green <green@redhat.com>
- * @date March 26, 1999.
- */
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -27,14 +21,19 @@ import java.io.IOException;
  * Status:  Minimal functionality.
  */
 
+/**
+ * @author Warren Levy
+ * @author Anthony Green <green@redhat.com>
+ * @date March 26, 1999.
+ */
 public class Handler extends URLStreamHandler
 {
-  protected URLConnection openConnection(URL url) throws IOException
+  protected URLConnection openConnection (URL url) throws IOException
   {
-    return new Connection(url);
+    return new Connection (url);
   }
 
-  protected int getDefaultPort ()
+  protected int getDefaultPort()
   {
     return 80;
   }

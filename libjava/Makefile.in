@@ -448,6 +448,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/net/PlainSocketImpl$$SocketInputStream.h \
 	gnu/java/net/PlainSocketImpl$$SocketOutputStream.h
 
+
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
 
 x_nat_headers = $(x_java_source_files:.java=.h)
@@ -1727,17 +1728,6 @@ gnu/gcj/RawData.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
-gnu/gcj/protocol/core/Connection.java \
-gnu/gcj/protocol/core/Handler.java \
-gnu/gcj/protocol/core/CoreInputStream.java \
-gnu/gcj/protocol/file/Connection.java \
-gnu/gcj/protocol/file/Handler.java \
-gnu/gcj/protocol/http/Connection.java \
-gnu/gcj/protocol/http/Handler.java \
-gnu/gcj/protocol/jar/Connection.java \
-gnu/gcj/protocol/jar/Handler.java \
-gnu/gcj/protocol/gcjlib/Connection.java \
-gnu/gcj/protocol/gcjlib/Handler.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
@@ -1900,6 +1890,17 @@ gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
+gnu/java/net/protocol/core/Connection.java \
+gnu/java/net/protocol/core/Handler.java \
+gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/protocol/file/Connection.java \
+gnu/java/net/protocol/file/Handler.java \
+gnu/java/net/protocol/http/Connection.java \
+gnu/java/net/protocol/http/Handler.java \
+gnu/java/net/protocol/jar/Connection.java \
+gnu/java/net/protocol/jar/Handler.java \
+gnu/java/net/protocol/gcjlib/Connection.java \
+gnu/java/net/protocol/gcjlib/Handler.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
@@ -2362,7 +2363,6 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
-gnu/gcj/protocol/core/natCoreInputStream.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
 gnu/gcj/runtime/natNameFinder.cc \
@@ -2373,6 +2373,7 @@ gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/awt/natEmbeddedWindow.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \
+gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 java/io/natFile.cc \
@@ -2543,20 +2544,21 @@ gnu/gcj/convert/JIS0212_to_Unicode.lo gnu/gcj/convert/Unicode_to_JIS.lo \
 gnu/gcj/convert/natIconv.lo gnu/gcj/convert/natInput_EUCJIS.lo \
 gnu/gcj/convert/natInput_SJIS.lo gnu/gcj/convert/natOutput_EUCJIS.lo \
 gnu/gcj/convert/natOutput_SJIS.lo gnu/gcj/io/natSimpleSHSStream.lo \
-gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
-gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
-gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
-gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
-gnu/gcj/runtime/natVMClassLoader.lo gnu/java/awt/natEmbeddedWindow.lo \
+gnu/gcj/io/shs.lo gnu/gcj/runtime/natFinalizerThread.lo \
+gnu/gcj/runtime/natFirstThread.lo gnu/gcj/runtime/natNameFinder.lo \
+gnu/gcj/runtime/natSharedLibLoader.lo gnu/gcj/runtime/natStackTrace.lo \
+gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/runtime/natVMClassLoader.lo \
+gnu/java/awt/natEmbeddedWindow.lo \
 gnu/java/net/natPlainDatagramSocketImpl.lo \
-gnu/java/net/natPlainSocketImpl.lo gnu/java/nio/natFileLockImpl.lo \
-gnu/java/nio/natSelectorImpl.lo java/io/natFile.lo \
-java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
-java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
-java/lang/natClass.lo java/lang/natClassLoader.lo \
-java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
-java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
-java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/java/net/natPlainSocketImpl.lo \
+gnu/java/net/protocol/core/natCoreInputStream.lo \
+gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
+java/io/natFile.lo java/io/natFileDescriptor.lo \
+java/io/natObjectInputStream.lo java/io/natVMObjectStreamClass.lo \
+java/lang/natCharacter.lo java/lang/natClass.lo \
+java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
+java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
+java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -2766,19 +2768,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/io/DefaultMimeTypes.P .deps/gnu/gcj/io/MimeTypes.P \
 .deps/gnu/gcj/io/SimpleSHSStream.P \
 .deps/gnu/gcj/io/natSimpleSHSStream.P .deps/gnu/gcj/io/shs.P \
-.deps/gnu/gcj/natCore.P .deps/gnu/gcj/protocol/core/Connection.P \
-.deps/gnu/gcj/protocol/core/CoreInputStream.P \
-.deps/gnu/gcj/protocol/core/Handler.P \
-.deps/gnu/gcj/protocol/core/natCoreInputStream.P \
-.deps/gnu/gcj/protocol/file/Connection.P \
-.deps/gnu/gcj/protocol/file/Handler.P \
-.deps/gnu/gcj/protocol/gcjlib/Connection.P \
-.deps/gnu/gcj/protocol/gcjlib/Handler.P \
-.deps/gnu/gcj/protocol/http/Connection.P \
-.deps/gnu/gcj/protocol/http/Handler.P \
-.deps/gnu/gcj/protocol/jar/Connection.P \
-.deps/gnu/gcj/protocol/jar/Handler.P \
-.deps/gnu/gcj/runtime/FileDeleter.P \
+.deps/gnu/gcj/natCore.P .deps/gnu/gcj/runtime/FileDeleter.P \
 .deps/gnu/gcj/runtime/FinalizerThread.P \
 .deps/gnu/gcj/runtime/FirstThread.P .deps/gnu/gcj/runtime/JNIWeakRef.P \
 .deps/gnu/gcj/runtime/MethodRef.P .deps/gnu/gcj/runtime/NameFinder.P \
@@ -3027,6 +3017,18 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/net/PlainSocketImpl.P \
 .deps/gnu/java/net/natPlainDatagramSocketImpl.P \
 .deps/gnu/java/net/natPlainSocketImpl.P \
+.deps/gnu/java/net/protocol/core/Connection.P \
+.deps/gnu/java/net/protocol/core/CoreInputStream.P \
+.deps/gnu/java/net/protocol/core/Handler.P \
+.deps/gnu/java/net/protocol/core/natCoreInputStream.P \
+.deps/gnu/java/net/protocol/file/Connection.P \
+.deps/gnu/java/net/protocol/file/Handler.P \
+.deps/gnu/java/net/protocol/gcjlib/Connection.P \
+.deps/gnu/java/net/protocol/gcjlib/Handler.P \
+.deps/gnu/java/net/protocol/http/Connection.P \
+.deps/gnu/java/net/protocol/http/Handler.P \
+.deps/gnu/java/net/protocol/jar/Connection.P \
+.deps/gnu/java/net/protocol/jar/Handler.P \
 .deps/gnu/java/nio/DatagramChannelImpl.P \
 .deps/gnu/java/nio/DatagramChannelSelectionKey.P \
 .deps/gnu/java/nio/FileLockImpl.P .deps/gnu/java/nio/NIOConstants.P \

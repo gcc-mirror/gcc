@@ -1,6 +1,6 @@
-// Connection.java - Implementation of URLConnection for file protocol.
+// Connection.java - Implementation of URLConnection for core protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -8,24 +8,22 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.file;
+package gnu.java.net.protocol.core;
 
-import java.net.*;
-import java.io.*;
+import gnu.gcj.Core;
+import java.io.InputStream;
+import java.io.IOException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
 /**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date April 13, 1999.
- */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Minimal subset of functionality.
+ * @author Anthony Green <green@redhat.com>
+ * @date August 13, 2001
  */
 
 class Connection extends URLConnection
@@ -33,11 +31,10 @@ class Connection extends URLConnection
   private Hashtable hdrHash = new Hashtable();
   private Vector hdrVec = new Vector();
   private boolean gotHeaders = false;
-  private File fileIn;
-  private InputStream inputStream;
-  private OutputStream outputStream;
 
-  public Connection(URL url)
+  private Core core;
+
+  public Connection (URL url)
   {
     super(url);
   }
@@ -49,37 +46,19 @@ class Connection extends URLConnection
     if (connected)
       return;
 
-    // If not connected, then file needs to be openned.
-    String fname = url.getFile();
-    fileIn = new File(fname);
-    if (doInput)
-      inputStream = new BufferedInputStream(new FileInputStream(fileIn));
-    if (doOutput)
-      outputStream = new BufferedOutputStream(new FileOutputStream(fileIn));
+    // If not connected, then file needs to be opened.
+    core = Core.create (url.getFile());
     connected = true;
   }
 
   public InputStream getInputStream() throws IOException
   {
+    if (!connected)
+      connect();
+
     if (! doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    if (!connected)
-      connect();
-
-    return inputStream;
-  }
-
-  // Override default method in URLConnection.
-  public OutputStream getOutputStream() throws IOException
-  {
-    if (! doOutput)
-      throw new
-	ProtocolException("Can't open OutputStream if doOutput is false");
-
-    if (!connected)
-      connect();
-
-    return outputStream;
+    return new CoreInputStream (core);
   }
 
   // Override default method in URLConnection.
@@ -122,7 +101,7 @@ class Connection extends URLConnection
 	return null;
       }
     if (n < hdrVec.size())
-      return getField((String) hdrVec.elementAt(n));
+      return getField ((String) hdrVec.elementAt(n));
 
     return null;
   }
@@ -139,7 +118,7 @@ class Connection extends URLConnection
 	return null;
       }
     if (n < hdrVec.size())
-      return getKey((String) hdrVec.elementAt(n));
+      return getKey ((String) hdrVec.elementAt(n));
 
     return null;
   }
@@ -179,7 +158,7 @@ class Connection extends URLConnection
     // to add others later and for consistency, we'll implement it this way.
 
     // Add the only header we know about right now:  Content-length.
-    long len = fileIn.length();
+    long len = core.length;
     String line = "Content-length: " + len;
     hdrVec.addElement(line);
 
@@ -190,3 +169,4 @@ class Connection extends URLConnection
     hdrHash.put(key.toLowerCase(), Long.toString(len));
   }
 }
+

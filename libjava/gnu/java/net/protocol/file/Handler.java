@@ -8,12 +8,12 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.file;
+package gnu.java.net.protocol.file;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.io.IOException;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>

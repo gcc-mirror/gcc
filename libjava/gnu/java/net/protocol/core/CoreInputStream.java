@@ -8,11 +8,12 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.core;
+package gnu.java.net.protocol.core;
 
-import java.io.*;
 import gnu.gcj.Core;
 import gnu.gcj.RawData;
+import java.io.InputStream;
+import java.io.IOException;
 
 public class CoreInputStream extends InputStream
 {
@@ -82,7 +83,7 @@ public class CoreInputStream extends InputStream
     // be larger than an int since the result of subtracting 2 positive
     // ints will always fit in an int.  Since we have to return a long
     // anyway, numBytes might as well just be a long.
-    long numBytes = Math.min((long) (count - pos), n < 0 ? 0L : n);
+    long numBytes = Math.min ((long) (count - pos), n < 0 ? 0L : n);
     pos += numBytes;
     return numBytes;
   }

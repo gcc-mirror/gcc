@@ -119,7 +119,7 @@ import java.util.StringTokenizer;
 public final class URL implements Serializable
 {
   private static final String DEFAULT_SEARCH_PATH =
-    "gnu.gcj.protocol|sun.net.www.protocol";
+    "gnu.java.net.protocol|sun.net.www.protocol";
   
   /**
    * The name of the protocol for this URL.
@@ -775,12 +775,12 @@ public final class URL implements Serializable
       }
     else if (protocol.equals ("core"))
       {
- 	ph = new gnu.gcj.protocol.core.Handler();
+ 	ph = new gnu.java.net.protocol.core.Handler();
       }
     else if (protocol.equals ("file"))
       {
 	// This is an interesting case.  It's tempting to think that we
-	// could call Class.forName ("gnu.gcj.protocol.file.Handler") to
+	// could call Class.forName ("gnu.java.net.protocol.file.Handler") to
 	// get the appropriate class.  Unfortunately, if we do that the
 	// program will never terminate, because getURLStreamHandler is
 	// eventually called by Class.forName.
@@ -789,7 +789,7 @@ public final class URL implements Serializable
 	// fix this problem.  If other protocols are required in a
 	// statically linked application they will need to be handled in
 	// the same way as "file".
-	ph = new gnu.gcj.protocol.file.Handler();
+	ph = new gnu.java.net.protocol.file.Handler();
       }
 
     // Non-default factory may have returned null or a factory wasn't set.

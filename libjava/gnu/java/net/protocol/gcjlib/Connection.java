@@ -9,18 +9,21 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.gcjlib;
-import java.io.*;
-import java.net.*;
+package gnu.java.net.protocol.gcjlib;
+
+import java.io.InputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import gnu.gcj.Core;
-import gnu.gcj.protocol.core.CoreInputStream;
 import gnu.gcj.runtime.SharedLibHelper;
+import gnu.java.net.protocol.core.CoreInputStream;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>
  * @date January 10, 2003
  */
-
 class Connection extends URLConnection
 {
   String solib;
@@ -30,12 +33,13 @@ class Connection extends URLConnection
   public Connection (URL url) throws MalformedURLException
   {
     super (url);
-    int index = url.getFile().indexOf("!/");
+    int index = url.getFile().indexOf ("!/");
+    
     if (index == -1)
-      throw new MalformedURLException("couldn't find !/ in gcjlib URL");
+      throw new MalformedURLException ("couldn't find !/ in gcjlib URL");
 
-    name = url.getFile().substring(index + 2);
-    solib = url.getFile().substring(0, index);
+    name = url.getFile().substring (index + 2);
+    solib = url.getFile().substring (0, index);
   }
 
   public void connect() throws IOException

@@ -90,7 +90,7 @@ final class FirstThread extends Thread
   // classes are only referred to via Class.forName(), so we add an
   // explicit mention of them here.
   static final Class Kcert = java.security.cert.Certificate.class;
-  static final Class Kfile = gnu.gcj.protocol.file.Handler.class;
-  static final Class Khttp = gnu.gcj.protocol.http.Handler.class;
-  static final Class Kjar  = gnu.gcj.protocol.jar.Handler.class;
+  static final Class Kfile = gnu.java.net.protocol.file.Handler.class;
+  static final Class Khttp = gnu.java.net.protocol.http.Handler.class;
+  static final Class Kjar  = gnu.java.net.protocol.jar.Handler.class;
 }
