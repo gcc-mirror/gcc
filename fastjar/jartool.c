@@ -1471,9 +1471,6 @@ int extract_jar(int fd, char **files, int file_num){
     }
 
     if(method == 8 || flags & 0x0008){
-      if(seekable)
-        lseek(fd, eflen, SEEK_CUR);
-      else
         consume(&pbf, eflen);
       
       inflate_file(&pbf, f_fd, &ze);
@@ -1508,9 +1505,6 @@ int extract_jar(int fd, char **files, int file_num){
 #endif
       }
 
-      if(seekable)
-        lseek(fd, eflen, SEEK_CUR);
-      else
         consume(&pbf, eflen);
     }
 
@@ -1856,6 +1850,14 @@ int consume(pb_file *pbf, int amt){
   printf("Consuming %d bytes\n", amt);
 #endif
 
+  if (seekable){
+    if (amt <= (int)pbf->buff_amt)
+      pb_read(pbf, buff, amt);
+    else {
+      lseek(pbf->fd, amt - pbf->buff_amt, SEEK_CUR);
+      pb_read(pbf, buff, pbf->buff_amt); /* clear pbf */
+    }
+  } else
   while(tc < amt){
     rdamt = pb_read(pbf, buff, ((amt - tc) < RDSZ ? (amt - tc) : RDSZ));
 #ifdef DEBUG
@@ -1865,7 +1867,7 @@ int consume(pb_file *pbf, int amt){
   }
 
 #ifdef DEBUG
-  printf("%d bytes consumed\n", tc);
+  printf("%d bytes consumed\n", amt);
 #endif
 
   return 0;
