@@ -9014,18 +9014,19 @@ mips_secondary_reload_class (class, mode, x, in_p)
   return NO_REGS;
 }
 
-/* This function returns the maximum number of consecutive registers
-   needed to represent mode MODE in registers of class CLASS.  */
+/* Implement CLASS_MAX_NREGS.
+
+   Usually all registers are word-sized.  The only supported exception
+   is -mgp64 -msingle-float, which has 64-bit words but 32-bit float
+   registers.  A word-based calculation is correct even in that case,
+   since -msingle-float disallows multi-FPR values.  */
 
 int
 mips_class_max_nregs (class, mode)
-     enum reg_class class;
+     enum reg_class class ATTRIBUTE_UNUSED;
      enum machine_mode mode;
 {
-  if (class == FP_REGS)
-    return FP_INC;
-  else
-    return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
 bool
