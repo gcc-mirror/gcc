@@ -2670,7 +2670,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      DECL_ARTIFICIAL (nvtbl) = 1;
 	      nvtbl = pushdecl (nvtbl);
 	      init = NULL_TREE;
-	      cp_finish_decl (nvtbl, init, NULL_TREE, 0,
+	      cp_finish_decl (nvtbl, init, NULL_TREE,
 			      LOOKUP_ONLYCONVERTING);
 
 	      /* We don't set DECL_VIRTUAL_P and DECL_CONTEXT on nvtbl

@@ -4832,15 +4832,14 @@ add_warning (winner, loser)
 }
 
 /* Returns true iff functions are equivalent. Equivalent functions are
-   not identical only if one is a function-local extern function.
-   This assumes that function-locals don't have TREE_PERMANENT.  */
+   not identical only if one is a function-local extern function.  */
 
 static inline int
 equal_functions (fn1, fn2)
      tree fn1;
      tree fn2;
 {
-  if (!TREE_PERMANENT (fn1) || !TREE_PERMANENT (fn2))
+  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2))
     return decls_match (fn1, fn2);
   return fn1 == fn2;
 }

@@ -85,6 +85,7 @@ Boston, MA 02111-1307, USA.  */
    Usage of DECL_LANG_FLAG_?:
    0: DECL_ERROR_REPORTED (in VAR_DECL).
       DECL_TEMPLATE_PARM_P (in CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
+      DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
@@ -2095,6 +2096,11 @@ extern int flag_new_for_scope;
    if we already emitted a warning about using it.  */
 #define DECL_ERROR_REPORTED(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
 
+/* Nonzero if NODE is a FUNCTION_DECL (for a function with global
+   scope) declared in a local scope.  */
+#define DECL_LOCAL_FUNCTION_P(NODE) \
+  DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
+
 /* This _DECL represents a compiler-generated entity.  */
 #define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)
 
@@ -2478,9 +2484,17 @@ extern int flag_new_for_scope;
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 
 /* Nonzero for a DECL which is actually a template parameter.  */
-#define DECL_TEMPLATE_PARM_P(NODE) \
-  DECL_LANG_FLAG_0 (NODE)
+#define DECL_TEMPLATE_PARM_P(NODE) 		\
+  (DECL_LANG_FLAG_0 (NODE)			\
+   && (TREE_CODE (NODE) == CONST_DECL		\
+       || TREE_CODE (NODE) == TYPE_DECL		\
+       || TREE_CODE (NODE) == TEMPLATE_DECL))
 
+/* Mark NODE as a template parameter.  */
+#define SET_DECL_TEMPLATE_PARM_P(NODE) \
+  (DECL_LANG_FLAG_0 (NODE) = 1)
+
+/* Nonzero if NODE is a template template parameter.  */
 #define DECL_TEMPLATE_TEMPLATE_PARM_P(NODE) \
   (TREE_CODE (NODE) == TEMPLATE_DECL && DECL_TEMPLATE_PARM_P (NODE))
 
@@ -3448,7 +3462,7 @@ extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
 extern tree start_decl				PROTO((tree, tree, int, tree, tree));
 extern void start_decl_1			PROTO((tree));
-extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
+extern void cp_finish_decl			PROTO((tree, tree, tree, int));
 extern void finish_decl				PROTO((tree, tree, tree));
 extern void maybe_inject_for_scope_var          PROTO((tree));
 extern void initialize_local_var                PROTO((tree, tree, int));
@@ -3569,7 +3583,7 @@ extern void check_default_args			PROTO((tree));
 extern void mark_used				PROTO((tree));
 extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
-extern void finish_static_data_member_decl      PROTO((tree, tree, tree, int, int));
+extern void finish_static_data_member_decl      PROTO((tree, tree, tree, int));
 
 /* in parse.y */
 extern void cp_parse_init			PROTO((void));
@@ -3999,8 +4013,6 @@ extern int cp_tree_equal			PROTO((tree, tree));
 extern int can_free				PROTO((struct obstack *, tree));
 extern tree no_linkage_check			PROTO((tree));
 extern void debug_binfo				PROTO((tree));
-extern void push_expression_obstack		PROTO((void));
-extern void push_permanent_obstack              PROTO((void));
 extern tree build_dummy_object			PROTO((tree));
 extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
@@ -4014,7 +4026,6 @@ extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
 
 #define scratchalloc expralloc
 #define build_scratch_list build_expr_list
-#define push_scratch_obstack push_expression_obstack
 
 /* in typeck.c */
 extern int string_conv_p			PROTO((tree, tree, int));

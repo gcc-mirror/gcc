@@ -464,11 +464,9 @@ build_cplus_method_type (basetype, rettype, argtypes)
      which is "this".  Put it into the list of argument types.  Make
      sure that the new argument list is allocated on the same obstack
      as the type.  */
-  push_obstacks (TYPE_OBSTACK (t), TYPE_OBSTACK (t));
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
   TREE_SIDE_EFFECTS (argtypes) = 1;  /* Mark first argtype as "artificial".  */
-  pop_obstacks ();
 
   /* If we already have such a type, use the old one and free this one.
      Note that it also frees up the above cons cell if found.  */
@@ -1278,14 +1276,12 @@ reverse_path (path)
      tree path;
 {
   register tree prev = NULL_TREE, cur;
-  push_expression_obstack ();
   for (cur = path; cur; cur = BINFO_INHERITANCE_CHAIN (cur))
     {
       tree r = copy_node (cur);
       BINFO_INHERITANCE_CHAIN (r) = prev;
       prev = r;
     }
-  pop_obstacks ();
   return prev;
 }
 
@@ -1538,14 +1534,9 @@ copy_template_template_parm (t)
   tree template = TYPE_NAME (t);
   tree t2;
 
-  /* Make sure these end up on the permanent_obstack.  */
-  push_permanent_obstack ();
-  
   t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
   template = copy_node (template);
   copy_lang_decl (template);
-
-  pop_obstacks ();
 
   TREE_TYPE (template) = t2;
   TYPE_NAME (t2) = template;
@@ -2325,11 +2316,7 @@ tree
 build_expr_ptr_wrapper (ptr)
      void *ptr;
 {
-  tree t;
-  push_expression_obstack ();
-  t = build_ptr_wrapper (ptr);
-  pop_obstacks ();
-  return t;
+  return build_ptr_wrapper (ptr);
 }
 
 /* Build a wrapper around some integer I so we can use it as a tree.  */
@@ -2361,24 +2348,6 @@ tree
 build_srcloc_here ()
 {
   return build_srcloc (input_filename, lineno);
-}
-
-void
-push_expression_obstack ()
-{
-  push_obstacks_nochange ();
-  current_obstack = expression_obstack;
-}
-
-/* Begin allocating on the permanent obstack.  When you're done
-   allocating there, call pop_obstacks to return to the previous set
-   of obstacks.  */
-
-void
-push_permanent_obstack ()
-{
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
 }
 
 /* The type of ARG when used as an lvalue.  */

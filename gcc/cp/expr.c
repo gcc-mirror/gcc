@@ -311,14 +311,12 @@ extract_scalar_init (decl, init)
   extern struct obstack temporary_obstack;
   tree t = NULL_TREE;
 
-  push_obstacks (&temporary_obstack, &temporary_obstack);
   start_sequence ();
   value = expand_expr (init, NULL_RTX, VOIDmode, 0);
   insns = get_insns ();
   end_sequence ();
   reg_scan (insns, max_reg_num (), 0);
   jump_optimize (insns, 0, 0, 1);
-  pop_obstacks ();
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {

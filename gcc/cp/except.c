@@ -192,7 +192,6 @@ call_eh_info ()
 
       /* Declare cp_eh_info * __start_cp_handler (void),
 	 as defined in exception.cc. */
-      push_permanent_obstack ();
 
       /* struct cp_eh_info.  This must match exception.cc.  Note that this
 	 type is not pushed anywhere.  */
@@ -251,7 +250,6 @@ call_eh_info ()
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
   mark_used (fn);
   return build_function_call (fn, NULL_TREE);
@@ -272,7 +270,7 @@ push_eh_info ()
   DECL_ARTIFICIAL (decl) = 1;
   DECL_INITIAL (decl) = fn;
   decl = pushdecl (decl);
-  cp_finish_decl (decl, fn, NULL_TREE, 0, 0);
+  cp_finish_decl (decl, fn, NULL_TREE, 0);
 }
 
 /* Returns a reference to the cp_eh_info node for the current exception.  */
@@ -414,7 +412,6 @@ do_pop_exception ()
     {
       /* Declare void __cp_pop_exception (void *),
 	 as defined in exception.cc. */
-      push_permanent_obstack ();
       fn = build_lang_decl
 	(FUNCTION_DECL, fn,
 	 build_function_type (void_type_node, tree_cons
@@ -424,7 +421,6 @@ do_pop_exception ()
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -501,7 +497,7 @@ initialize_handler_parm (decl)
   decl = pushdecl (decl);
 
   start_decl_1 (decl);
-  cp_finish_decl (decl, init, NULL_TREE, 0,
+  cp_finish_decl (decl, init, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING|DIRECT_BIND);
 }
 
@@ -619,7 +615,7 @@ expand_end_eh_spec (raises, try_block)
   decl = build_decl (VAR_DECL, NULL_TREE, tmp);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_INITIAL (decl) = types;
-  cp_finish_decl (decl, types, NULL_TREE, 0, 0);
+  cp_finish_decl (decl, types, NULL_TREE, 0);
 
   decl = decay_conversion (decl);
 
@@ -628,8 +624,6 @@ expand_end_eh_spec (raises, try_block)
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      push_permanent_obstack ();
-
       tmp = tree_cons
 	(NULL_TREE, integer_type_node, tree_cons
 	 (NULL_TREE, TREE_TYPE (decl), void_list_node));
@@ -642,7 +636,6 @@ expand_end_eh_spec (raises, try_block)
       TREE_THIS_VOLATILE (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -750,7 +743,6 @@ alloc_eh_object (type)
     {
       /* Declare __eh_alloc (size_t), as defined in exception.cc.  */
       tree tmp;
-      push_permanent_obstack ();
       tmp = tree_cons (NULL_TREE, sizetype, void_list_node);
       fn = build_lang_decl (FUNCTION_DECL, fn,
 			    build_function_type (ptr_type_node, tmp));
@@ -759,7 +751,6 @@ alloc_eh_object (type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      pop_obstacks ();
     }
 
   mark_used (fn);
@@ -841,7 +832,7 @@ expand_throw (exp)
 	    {
 	      tree temp = create_temporary_var (TREE_TYPE (exp));
 	      DECL_INITIAL (temp) = exp;
-	      cp_finish_decl (temp, exp, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	      cp_finish_decl (temp, exp, NULL_TREE, LOOKUP_ONLYCONVERTING);
 	      exp = temp;
 	    }
 
@@ -894,7 +885,6 @@ expand_throw (exp)
 	  /* Declare __cp_push_exception (void*, void*, void (*)(void*, int)),
 	     as defined in exception.cc.  */
 	  tree tmp;
-	  push_permanent_obstack ();
 	  tmp = tree_cons
 	    (NULL_TREE, ptr_type_node, tree_cons
 	     (NULL_TREE, ptr_type_node, tree_cons
@@ -906,7 +896,6 @@ expand_throw (exp)
 	  DECL_ARTIFICIAL (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
-	  pop_obstacks ();
 	}
 
       mark_used (fn);
@@ -928,7 +917,6 @@ expand_throw (exp)
 	{
 	  /* Declare void __uncatch_exception (void)
 	     as defined in exception.cc. */
-	  push_permanent_obstack ();
 	  fn = build_lang_decl (FUNCTION_DECL, fn,
 				build_function_type (void_type_node,
 						     void_list_node));
@@ -937,7 +925,6 @@ expand_throw (exp)
 	  DECL_ARTIFICIAL (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
-	  pop_obstacks ();
 	}
 
       mark_used (fn);

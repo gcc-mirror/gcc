@@ -1067,8 +1067,6 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  push_permanent_obstack ();
-
   /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
      redundant.  */
   DECL_CONTEXT (method) = type;
@@ -1239,7 +1237,6 @@ add_method (type, fields, method)
 	push_class_level_binding (DECL_NAME (method),
 				  TREE_VEC_ELT (method_vec, slot));
     }
-  pop_obstacks ();
 }
 
 /* Subroutines of finish_struct.  */
@@ -2233,7 +2230,7 @@ finish_vtbls (binfo, do_self, t)
 	  context = DECL_CONTEXT (decl);
 	  DECL_CONTEXT (decl) = 0;
 	  DECL_INITIAL (decl) = build_vtbl_initializer (binfo);
-	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
 	  DECL_CONTEXT (decl) = context;
 	}
       CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);

@@ -2149,7 +2149,6 @@ emit_thunk (thunk_fndecl)
       /* Make sure we build up its RTL before we go onto the
 	 temporary obstack.  */
       make_function_rtl (thunk_fndecl);
-      temporary_allocation ();
       DECL_RESULT (thunk_fndecl)
 	= build_decl (RESULT_DECL, 0, integer_type_node);
       fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
@@ -2158,7 +2157,6 @@ emit_thunk (thunk_fndecl)
       assemble_start_function (thunk_fndecl, fnname);
       ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
       assemble_end_function (thunk_fndecl, fnname);
-      permanent_allocation (1);
       current_function_decl = 0;
       current_function = 0;
     }
@@ -2211,10 +2209,7 @@ emit_thunk (thunk_fndecl)
 
     /* Don't let the backend defer this function.  */
     if (DECL_DEFER_OUTPUT (thunk_fndecl))
-      {
-	output_inline_function (thunk_fndecl);
-	permanent_allocation (1);
-      }
+      output_inline_function (thunk_fndecl);
   }
 #endif /* ASM_OUTPUT_MI_THUNK */
 

@@ -1454,14 +1454,13 @@ check_classfn (ctype, function)
 /* We have just processed the DECL, which is a static data member.
    Its initializer, if present, is INIT.  The ASMSPEC_TREE, if
    present, is the assembly-language name for the data member.
-   NEED_POP and FLAGS are as for cp_finish_decl.  */
+   FLAGS is as for cp_finish_decl.  */
 
 void
-finish_static_data_member_decl (decl, init, asmspec_tree, need_pop, flags)
+finish_static_data_member_decl (decl, init, asmspec_tree, flags)
      tree decl;
      tree init;
      tree asmspec_tree;
-     int need_pop;
      int flags;
 {
   const char *asmspec = 0;
@@ -1512,7 +1511,7 @@ finish_static_data_member_decl (decl, init, asmspec_tree, need_pop, flags)
   DECL_CONTEXT (decl) = current_class_type;
   DECL_CLASS_CONTEXT (decl) = current_class_type;
 
-  cp_finish_decl (decl, init, asmspec_tree, need_pop, flags);
+  cp_finish_decl (decl, init, asmspec_tree, flags);
 }
 
 /* Process the specs, declarator (NULL if omitted) and width (NULL if omitted)
@@ -1670,9 +1669,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	}
     }
 
-  /* The corresponding pop_obstacks is in cp_finish_decl.  */
-  push_obstacks_nochange ();
-
   if (processing_template_decl && ! current_function_decl
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
     value = push_template_decl (value);
@@ -1684,7 +1680,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (TREE_CODE (value) == VAR_DECL)
     {
       finish_static_data_member_decl (value, init, asmspec_tree, 
-				      /*need_pop=*/1, flags);
+				      flags);
       return value;
     }
   if (TREE_CODE (value) == FIELD_DECL)
@@ -1698,7 +1694,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	}
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
-      cp_finish_decl (value, init, asmspec_tree, 1, flags);
+      cp_finish_decl (value, init, asmspec_tree, flags);
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
@@ -1712,7 +1708,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	  DECL_RTL (value) = NULL_RTX;
 	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
 	}
-      cp_finish_decl (value, init, asmspec_tree, 1, flags);
+      cp_finish_decl (value, init, asmspec_tree, flags);
 
       /* Pass friends back this way.  */
       if (DECL_FRIEND_P (value))
@@ -1773,7 +1769,7 @@ grokbitfield (declarator, declspecs, width)
       cp_error ("static member `%D' cannot be a bitfield", value);
       return NULL_TREE;
     }
-  cp_finish_decl (value, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (value, NULL_TREE, NULL_TREE, 0);
 
   if (width != error_mark_node)
     {
@@ -1994,10 +1990,8 @@ get_temp_name (type, staticp)
   tree decl;
   int toplev = toplevel_bindings_p ();
 
-  push_obstacks_nochange ();
   if (toplev || staticp)
     {
-      end_temporary_allocation ();
       sprintf (buf, AUTO_TEMP_FORMAT, global_temp_name_counter++);
       decl = pushdecl_top_level (build_decl (VAR_DECL, get_identifier (buf), type));
     }
@@ -2019,7 +2013,6 @@ get_temp_name (type, staticp)
       my_friendly_assert (DECL_INITIAL (decl) == NULL_TREE,
 			  19990826);
     }
-  pop_obstacks ();
 
   return decl;
 }
@@ -2750,7 +2743,6 @@ get_sentry (base)
   tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! sentry)
     {
-      push_permanent_obstack ();
       sentry = build_decl (VAR_DECL, sname, integer_type_node);
       TREE_PUBLIC (sentry) = 1;
       DECL_ARTIFICIAL (sentry) = 1;
@@ -2758,8 +2750,7 @@ get_sentry (base)
       TREE_USED (sentry) = 1;
       DECL_COMMON (sentry) = 1;
       pushdecl_top_level (sentry);
-      cp_finish_decl (sentry, NULL_TREE, NULL_TREE, 0, 0);
-      pop_obstacks ();
+      cp_finish_decl (sentry, NULL_TREE, NULL_TREE, 0);
     }
   return sentry;
 }
@@ -3428,7 +3419,6 @@ finish_file ()
   parse_time -= this_time - start_time;
   varconst_time += this_time - start_time;
   start_time = get_run_time ();
-  permanent_allocation (1);
 
   do 
     {
@@ -4806,14 +4796,12 @@ lookup_arg_dependent (name, fns, args)
 
   /* Note that we've already looked at some namespaces during normal
      unqualified lookup, unless we found a decl in function scope.  */
-  if (fns && ! TREE_PERMANENT (OVL_CURRENT (fns)))
+  if (fns && DECL_LOCAL_FUNCTION_P (OVL_CURRENT (fns)))
     k.namespaces = NULL_TREE;
   else
     unqualified_namespace_lookup (name, 0, &k.namespaces);
 
-  push_scratch_obstack ();
   arg_assoc_args (&k, args);
-  pop_obstacks ();
   return k.functions;
 }
 

@@ -992,17 +992,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
      tree clobbers;
 {
   if (TREE_CHAIN (string))
-    {
-      if (building_stmt_tree ())
-	/* We need to build the combined string on the permanent
-	   obstack so that we can use it during instantiations.  */
-	push_permanent_obstack ();
-
-      string = combine_strings (string);
-
-      if (building_stmt_tree ())
-	pop_obstacks ();
-    }
+    string = combine_strings (string);
 
   if (cv_qualifier != NULL_TREE
       && cv_qualifier != ridpointers[(int) RID_VOLATILE])
@@ -1163,7 +1153,7 @@ finish_named_return_value (return_id, init)
 	add_tree (build_min_nt (RETURN_INIT, return_id, init));
       else
 	{
-	  cp_finish_decl (decl, init, NULL_TREE, 0, 0);
+	  cp_finish_decl (decl, init, NULL_TREE, 0);
 	  store_return_init (decl);
 	}
     }
@@ -1749,8 +1739,6 @@ tree
 begin_class_definition (t)
      tree t;
 {
-  push_permanent_obstack ();
-
   if (t == error_mark_node
       || ! IS_AGGR_TYPE (t))
     {
@@ -1972,8 +1960,6 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
 	note_got_semicolon (t);
     }
 
-  pop_obstacks ();
-
   if (! semi)
     check_for_missing_semicolon (t); 
   if (pop_scope_p)
@@ -2164,10 +2150,8 @@ finish_typeof (expr)
     {
       tree t;
 
-      push_permanent_obstack ();
       t = make_lang_type (TYPEOF_TYPE);
       TYPE_FIELDS (t) = expr;
-      pop_obstacks ();
 
       return t;
     }

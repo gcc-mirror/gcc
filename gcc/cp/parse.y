@@ -1033,7 +1033,7 @@ condition:
 		}
 	  init
 		{ 
-		  cp_finish_decl ($<ttype>6, $7, $4, 1, LOOKUP_ONLYCONVERTING);
+		  cp_finish_decl ($<ttype>6, $7, $4, LOOKUP_ONLYCONVERTING);
 		  $$ = convert_from_reference ($<ttype>6); 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
 		    cp_error ("definition of array `%#D' in condition", $$); 
@@ -1381,8 +1381,6 @@ primary:
 	| boolean.literal
 	| string
 		{
-		  if (processing_template_decl)
-		    push_obstacks (&permanent_obstack, &permanent_obstack);
 		  $$ = combine_strings ($$);
 		  /* combine_strings doesn't set up TYPE_MAIN_VARIANT of
 		     a const array the way we want, so fix it.  */
@@ -1390,8 +1388,6 @@ primary:
 		    TREE_TYPE ($$) = build_cplus_array_type
 		      (TREE_TYPE (TREE_TYPE ($$)),
 		       TYPE_DOMAIN (TREE_TYPE ($$)));
-		  if (processing_template_decl)
-		    pop_obstacks ();
 		}
 	| '(' expr ')'
 		{ $$ = finish_parenthesized_expr ($2); }
@@ -1867,11 +1863,11 @@ initdcl:
 					  $3, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ cp_finish_decl ($<ttype>5, $6, $2, 1, LOOKUP_ONLYCONVERTING); }
+		{ cp_finish_decl ($<ttype>5, $6, $2, LOOKUP_ONLYCONVERTING); }
 	| declarator maybeasm maybe_attribute
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0,
 					  $3, prefix_attributes);
-		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 1, 0); }
+		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 0); }
 	;
 
         /* This rule assumes a certain configuration of the parser stack.
@@ -1886,12 +1882,12 @@ initdcl0_innards:
           /* Note how the declaration of the variable is in effect
 	     while its init is parsed! */ 
 	  init
-		{ cp_finish_decl ($<ttype>3, $4, $<ttype>0, 1,
+		{ cp_finish_decl ($<ttype>3, $4, $<ttype>0,
 				  LOOKUP_ONLYCONVERTING); }
 	| maybe_attribute
 		{ tree d;
 		  parse_decl ($<ttype>-1, $<ttype>-2, $1, 0, &d);
-		  cp_finish_decl (d, NULL_TREE, $<ttype>0, 1, 0); }
+		  cp_finish_decl (d, NULL_TREE, $<ttype>0, 0); }
   	;
   
 initdcl0:
@@ -1914,7 +1910,7 @@ nomods_initdcl0:
 	| constructor_declarator maybeasm maybe_attribute
 		{ tree d;
 		  parse_decl($1, NULL_TREE, $3, 0, &d);
-		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
+		  cp_finish_decl (d, NULL_TREE, $2, 0); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax
