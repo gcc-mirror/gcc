@@ -1,5 +1,8 @@
 Sun Sep 27 07:33:18 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* m68k/vxm68k.h (LINK_SPEC): Always use -r.
+	(WIDEST_HARDWARE_FP_SIZE): Define.
+
 	* reload.c (push_reload): If in STRICT_LOW_PART, always reload
 	inside even if SUBREG_WORD is not zero.
 
