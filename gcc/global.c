@@ -262,9 +262,12 @@ static void set_preference ();
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
-   or zero if such output is not desired.  */
+   or zero if such output is not desired.
 
-void
+   Return value is nonzero if reload failed
+   and we must not do any more for this function.  */
+
+int
 global_alloc (file)
      FILE *file;
 {
@@ -543,7 +546,7 @@ global_alloc (file)
 	 for the sake of debugging information.  */
   if (n_basic_blocks > 0)
 #endif
-    reload (get_insns (), 1, file);
+    return reload (get_insns (), 1, file);
 }
 
 /* Sort predicate for ordering the allocnos.

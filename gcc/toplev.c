@@ -1977,6 +1977,7 @@ rest_of_compilation (decl)
      to be restored after we finish compiling the function
      (for use when compiling inline calls to this function).  */
   tree saved_block_tree = 0;
+  int failure = 0;
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -2343,10 +2344,10 @@ rest_of_compilation (decl)
   TIMEVAR (global_alloc_time,
 	   {
 	     if (!obey_regdecls)
-	       global_alloc (global_reg_dump ? global_reg_dump_file : 0);
+	       failure = global_alloc (global_reg_dump ? global_reg_dump_file : 0);
 	     else
-	       reload (insns, 0,
-		       global_reg_dump ? global_reg_dump_file : 0);
+	       failure = reload (insns, 0,
+				 global_reg_dump ? global_reg_dump_file : 0);
 	   });
 
   if (global_reg_dump)
@@ -2356,6 +2357,9 @@ rest_of_compilation (decl)
 	       print_rtl (global_reg_dump_file, insns);
 	       fflush (global_reg_dump_file);
 	     });
+
+  if (failure)
+    goto exit_rest_of_compilation;
 
   reload_completed = 1;
 
@@ -2386,7 +2390,7 @@ rest_of_compilation (decl)
 #ifdef LEAF_REGISTERS
   leaf_function = 0;
   if (optimize > 0 && only_leaf_regs_used () && leaf_function_p ())
-      leaf_function = 1;
+    leaf_function = 1;
 #endif
 
   /* One more attempt to remove jumps to .+1
