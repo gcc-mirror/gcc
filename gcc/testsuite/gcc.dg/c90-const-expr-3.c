@@ -6,6 +6,7 @@
    to give the correct behavior to conforming programs.  */
 
 static const int ZERO = 0;
+static const double DZERO = 0;
 
 int *a;
 int b;
@@ -36,4 +37,9 @@ foo (void)
   ASSERT_NOT_NPC ((char) ZERO);
   ASSERT_NPC ((int) 0);
   ASSERT_NOT_NPC ((int) ZERO);
+  ASSERT_NPC ((int) 0.0);
+  ASSERT_NOT_NPC ((int) DZERO);
+  ASSERT_NOT_NPC ((int) +0.0); /* { dg-bogus "incompatible" "bogus null pointer constant" { xfail *-*-* } } */
+  ASSERT_NOT_NPC ((int) (0.0+0.0)); /* { dg-bogus "incompatible" "bogus null pointer constant" { xfail *-*-* } } */
+  ASSERT_NOT_NPC ((int) (double)0.0); /* { dg-bogus "incompatible" "bogus null pointer constant" { xfail *-*-* } } */
 }
