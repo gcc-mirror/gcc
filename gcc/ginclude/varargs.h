@@ -26,7 +26,7 @@
 #include "va-m88k.h"
 #else
 #ifdef __hp9000s800__
-#include "va-hp800.h"
+#include "va-pa.h"
 #else
 #ifdef __i960__
 #include "va-i960.h"
