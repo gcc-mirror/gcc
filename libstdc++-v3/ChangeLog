@@ -1,3 +1,7 @@
+2000-06-22  Branko Cibej  <branko.cibej@hermes.si>
+
+        * Makefile.am (AM_MAKEFLAGS): Added WERROR to list of flags.
+
 2000-06-22 Steven King <sxking@uswest.net>
 
         * acinclude.m4: Check for sinl, _sinl using 1 parameter.
