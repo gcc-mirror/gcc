@@ -1,3 +1,7 @@
+2004-06-30  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* expmed.c (expand_smod_pow2): Fix sign of mask.
+
 2004-06-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-pre.c (phi_trans_add): Use is_gimple_min_invariant
