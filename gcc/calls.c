@@ -2211,9 +2211,9 @@ expand_call (exp, target, ignore)
     {
       if (pcc_struct_value)
 	valreg = hard_function_value (build_pointer_type (TREE_TYPE (exp)),
-				      fndecl);
+				      fndecl, 0);
       else
-	valreg = hard_function_value (TREE_TYPE (exp), fndecl);
+	valreg = hard_function_value (TREE_TYPE (exp), fndecl, 0);
     }
 
   /* Precompute all register parameters.  It isn't safe to compute anything
@@ -3138,7 +3138,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #ifdef PCC_STATIC_STRUCT_RETURN
       rtx pointer_reg
 	= hard_function_value (build_pointer_type (type_for_mode (outmode, 0)),
-			       0);
+			       0, 0);
       mem_value = gen_rtx_MEM (outmode, pointer_reg);
       pcc_struct_value = 1;
       if (value == 0)

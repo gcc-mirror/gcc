@@ -1541,14 +1541,24 @@ probe_stack_range (first, size)
    in which a scalar value of data type VALTYPE
    was returned by a function call to function FUNC.
    FUNC is a FUNCTION_DECL node if the precise function is known,
-   otherwise 0.  */
+   otherwise 0.
+   OUTGOING is 1 if on a machine with register windows this function
+   should return the register in which the function will put its result
+   and 0 otherwise. */
 
 rtx
-hard_function_value (valtype, func)
+hard_function_value (valtype, func, outgoing)
      tree valtype;
      tree func ATTRIBUTE_UNUSED;
+     int outgoing ATTRIBUTE_UNUSED;
 {
-  rtx val = FUNCTION_VALUE (valtype, func);
+  rtx val;
+#ifdef FUNCTION_OUTGOING_VALUE
+  if (outgoing)
+    val = FUNCTION_OUTGOING_VALUE (valtype, func);
+  else
+#endif
+    val = FUNCTION_VALUE (valtype, func);
   if (GET_CODE (val) == REG
       && GET_MODE (val) == BLKmode)
     {
