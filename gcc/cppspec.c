@@ -197,7 +197,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   /* One more slot for a terminating null.  */
   real_new_argv = (char **) xmalloc ((new_argc + 1) * sizeof(char *));
-  new_argv = (const char **) real_new_argv.
+  new_argv = (const char **) real_new_argv;
 
   new_argv[0] = argv[0];
   j = 1;
