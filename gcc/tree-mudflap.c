@@ -508,24 +508,41 @@ mf_build_check_statement_for (tree addr, tree size,
   bsi_prev (&bsi);
   if (! bsi_end_p (bsi))
     {
+      /* We're processing a statement in the middle of the block, so
+         we need to split the block.  This creates a new block and a new
+         fallthrough edge.  */
       e = split_block (cond_bb, bsi_stmt (bsi));
       cond_bb = e->src;
       join_bb = e->dest;
     }
   else
     {
+      /* We're processing the first statement in the block, so we need
+         to split the incoming edge.  This also creates a new block
+         and a new fallthrough edge.  */
       join_bb = cond_bb;
-      cond_bb = create_empty_bb (join_bb->prev_bb);
-      e = make_edge (cond_bb, join_bb, 0);
+      cond_bb = split_edge (find_edge (join_bb->prev_bb, join_bb));
     }
-  e->flags = EDGE_FALSE_VALUE;
+  
+  /* A recap at this point: join_bb is the basic block at whose head
+     is the gimple statement for which this check expression is being
+     built.  cond_bb is the new synthetic basic block which will
+     contain the cache-lookup code, and a conditional that jumps to
+     the cache-miss code or, much more likely, over to join_bb.  */
+
+  /* Create the bb that contains the cache-miss fallback block (mf_check).  */
   then_bb = create_empty_bb (cond_bb);
   make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
-  make_edge (then_bb, join_bb, EDGE_FALLTHRU);
+  make_single_succ_edge (then_bb, join_bb, EDGE_FALLTHRU);
 
   /* We expect that the conditional jump we will construct will not
      be taken very often as it basically is an exception condition.  */
   predict_edge_def (then_bb->pred, PRED_MUDFLAP, NOT_TAKEN);
+
+  /* Mark the pseudo-fallthrough edge from cond_bb to join_bb.  */
+  e = find_edge (cond_bb, join_bb);
+  e->flags = EDGE_FALSE_VALUE;
+  predict_edge_def (e, PRED_MUDFLAP, TAKEN);
 
   /* Update dominance info.  Note that bb_join's data was
      updated by split_block.  */
