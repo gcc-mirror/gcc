@@ -1,3 +1,8 @@
+2003-07-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (simplify_comparison): Convert (ne (and (not X) 1) 0)
+	to (eq (and X 1) 0).
+
 2003-07-13  Andreas Jaeger  <aj@suse.de>
 
 	* config.gcc: Add pmmintrin.h for x86_64-*-*.
