@@ -1,3 +1,11 @@
+2005-02-10  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/17549
+	* tree-outof-ssa.c (find_replaceable_in_bb): Do not allow
+	TER to replace a DEF with its expression if the DEF and the
+	rhs of the expression we replace into have the same root
+	variable.
+
 2005-02-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Fix the placement of the match_scratch in the
