@@ -1,3 +1,40 @@
+2003-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def (BUILT_IN_PRINTF, BUILT_IN_FPRINTF): Changed from
+	front-end builtins to normal builtins, using DEF_LIB_BUILTIN.
+	(BUILT_IN_PRINTF_UNLOCKED, BUILT_IN_FPRINTF_UNLOCKED): Changed
+	from front-end to normal builtins, using DEF_EXT_LIB_BUILTIN.
+	(DEF_FRONT_END_LIB_BUILTIN): Delete.
+	(DEF_EXT_FRONT_END_LIB_BUILTIN): Delete.
+	(BUILT_IN_FWRITE_UNLOCKED): Wrap long line.
+
+	* builtins.c (build_string_literal): New function to construct
+	a char* pointer to a string literal.
+	(expand_builtin_fputs): Change 2nd argument from "int ignore" to
+	"rtx target" to be consistent with other expand_builtin_* functions.
+	Change 3rd argument from "int unlocked" to "bool unlocked".
+	(expand_builtin_printf): Rewrite of c_expand_builtin_printf from
+	c-common.c to avoid front-end dependencies.  Optimize printf("")
+	as a no-op when the result isn't required.  Handle embedded NULs
+	in format string.
+	(expand_builtin_fprintf): A rewrite of c_expand_builtin_fprintf
+	from c-common.c to avoid front-end dependencies.  Likewise, optimize
+	fprintf(fp,"") as a no-op when the result isn't required, evaluating
+	fp for side-effects.  Handle embedded NULs in format string.
+	(expand_builtin_sprintf): Fix typo.
+	(expand_builtin): Don't expand BUILT_IN_FPRINT{,_UNLOCKED} when not
+	optimizing.  Adjust calls of expand_builtin_fputs to match the API
+	change. Expand BUILT_IN_PRINTF and BUILT_IN_PRINTF_UNLOCKED using
+	expand_builtin_printf.  Likewise, expand BUILT_IN_FPRINTF_UNLOCKED
+	and BUILT_IN_FPRINTF using expand_builtin_fprintf.
+
+	* c-common.c (is_valid_printf_arglist): Delete.
+	(c_expand_builtin): Delete.
+	(c_expand_builtin_printf): Moved to builtins.c. Delete.
+	(c_expand_builtin_fprintf): Moved to builtins.c.  Delete.
+	(c_expand_expr): No longer treat CALL_EXPRs specially.
+	(CALLED_AS_BUILT_IN): Delete.
+
 2003-07-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/11631
