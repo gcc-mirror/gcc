@@ -1,5 +1,9 @@
 2004-11-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/uninit-H.c (ASM): Define to "$sp" on MIPS targets.
+
+2004-11-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* g++.dg/abi/mangle6.C: Run for all MIPS targets.  Provide dummy
 	strings for 32-bit code.
 
