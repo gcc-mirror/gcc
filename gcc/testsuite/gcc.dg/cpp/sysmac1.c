@@ -18,7 +18,7 @@
 #define sys_str(x) x
 #define sys_foo(x, y...) bar (x, ##y)
 
-# 22 "bar.c" 2			/* { dg-warning "expected to return" }  */
+# 22 "sysmac1.c" 2
 
 #if uint			/* { dg-warning "traditional C rejects" } */
 #endif
