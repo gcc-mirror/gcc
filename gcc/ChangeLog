@@ -1,3 +1,10 @@
+Sun Mar 15 15:38:16 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* c-typeck.c: Collect pending initializers in AVL tree instead of list.
+	(add_pending_init, pending_init_member): New functions.
+	(output_init_element): Use them.
+	(output_pending_init_elements): Rewritten to exploit AVL order.
+
 Sun Mar 15 05:10:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gnu.h (GNU_CPP_PREDEFINES): Deleted; not valid in traditional C.
