@@ -1299,14 +1299,12 @@ reload (first, global, dumpfile)
 		      for (i = 0; i < N_REG_CLASSES; i++)
 			if (TEST_HARD_REG_BIT (reg_class_contents[i], r))
 			  {
-			    if (insn_needs[i] > 0)
+			    /* ??? It's not clear what is really
+			       right to do if this insn needs a group.
+			       But maybe that cannot happen.  */
+			    if (insn_needs[i] > 0 || insn_groups[i] > 0)
 			      insn_needs[i]++;
-			    if (insn_groups[i] > 0
-				&& nregs > 1)
-			      inc_groups = 1;
 			  }
-		  if (inc_groups)
-		    insn_groups[i]++;
 		}
 #endif /* SMALL_REGISTER_CLASSES */
 
