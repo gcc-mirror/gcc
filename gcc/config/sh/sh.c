@@ -2000,22 +2000,20 @@ find_barrier (num_mova, mova, from)
 	{
 	  if (new_align > si_align)
 	    {
-	      count_si = count_si + new_align - 1 & -si_align;
+	      si_limit -= count_si - 1 & new_align - si_align;
 	      si_align = new_align;
 	    }
-	  else
-	    count_si = count_si + new_align - 1 & -new_align;
+	  count_si = count_si + new_align - 1 & -new_align;
 	  count_si += inc;
 	}
       if (found_hi)
 	{
 	  if (new_align > hi_align)
 	    {
-	      count_hi = count_hi + new_align - 1 & -hi_align;
+	      hi_limit -= count_hi - 1 & new_align - hi_align;
 	      hi_align = new_align;
 	    }
-	  else
-	    count_hi = count_hi + new_align - 1 & -new_align;
+	  count_hi = count_hi + new_align - 1 & -new_align;
 	  count_hi += inc;
 	}
       from = NEXT_INSN (from);
