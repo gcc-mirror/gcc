@@ -337,7 +337,7 @@ case "${target}" in
   powerpc-*-netware*)
     target_makefile_frag="${target_makefile_frag} config/mt-netware"
     ;;
-  *-*-linux-gnu)
+  *-*-linux-gnu*)
     target_makefile_frag="${target_makefile_frag} config/mt-linux"
     ;;
   *-*-aix4.[3456789]* | *-*-aix[56789].*)

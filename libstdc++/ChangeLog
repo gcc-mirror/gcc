@@ -1,3 +1,7 @@
+2000-03-29  Jason Merrill  <jason@casey.cygnus.com>
+
+	* configure.in: -linux-gnu*, not -linux-gnu.
+
 2000-03-10  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/bastring.h (basic_string<>::push_back): Was missing.
