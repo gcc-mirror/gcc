@@ -1,3 +1,8 @@
+2002-03-02  Per Bothner  <per@bothner.com>
+
+	* gcc.c (option_map):  Suport new --bootclasspath option.
+	--CLASSPATH is now just an alias for --classpath.
+
 Sat Mar  2 06:30:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (sparc_initialize_trampoline): Use
