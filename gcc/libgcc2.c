@@ -3132,7 +3132,11 @@ eh_context_initialize ()
 #if __GTHREADS
 
   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-  if (__gthread_once (&once, eh_threads_initialize) == -1)
+  /* Make sure that get_eh_context does not point to us anymore.
+     Some systems have dummy thread routines in their libc that
+     return a success (Solaris 2.6 for example). */
+  if (__gthread_once (&once, eh_threads_initialize) != 0
+      || get_eh_context == &eh_context_initialize)
     {
       /* Use static version of EH context. */
       get_eh_context = &eh_context_static;

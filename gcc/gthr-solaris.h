@@ -88,15 +88,13 @@ __gthread_once (__gthread_once_t *once, void (*func) ())
     return -1;
 
   if (once == 0 || func == 0)
-    {
-      errno = EINVAL;
-      return -1;
-    }
+    return EINVAL;
 
   if (once->once == 0)
     {
-      if (mutex_lock (&once->mutex) != 0)
-	return -1;
+      int status = mutex_lock (&once->mutex);
+      if (status != 0)
+	return status;
       if (once->once == 0)
 	{
 	  (*func) ();
@@ -113,7 +111,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
   /* Solaris 2.5 contains thr_* routines no-op in libc, so test if we actually
      got a reasonable key value, and if not, fail. */
   *key = -1;
-  if (thr_keycreate (key, dtor) == -1 || *key == -1)
+  if (thr_keycreate (key, dtor) != 0 || *key == -1)
     return -1;
   else
     return 0;
