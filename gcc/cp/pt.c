@@ -1239,6 +1239,37 @@ tsubst (t, args, nargs, in_decl)
 		&& TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't'
 		&& constructor_name (DECL_CONTEXT (t)) == DECL_NAME (t))
 	      name = constructor_name (ctx);
+
+	    if (DECL_CONSTRUCTOR_P (t) && TYPE_USES_VIRTUAL_BASECLASSES (ctx))
+	      {
+		/* Since we didn't know that this class had virtual bases until after
+		   we instantiated it, we have to recreate the arguments to this
+		   constructor, as otherwise it would miss the __in_chrg parameter.  */
+		tree newtype, parm;
+		tree parms = TREE_CHAIN (TYPE_ARG_TYPES (type));
+		parms = hash_tree_chain (integer_type_node, parms);
+		newtype = build_cplus_method_type (ctx,
+						   TREE_TYPE (type),
+						   parms);
+		newtype = build_type_variant (newtype,
+					      TYPE_READONLY (type),
+					      TYPE_VOLATILE (type));
+		type = newtype;
+
+		fnargs = copy_node (DECL_ARGUMENTS (t));
+		/* In this case we need "in-charge" flag saying whether
+		   this constructor is responsible for initialization
+		   of virtual baseclasses or not.  */
+		parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
+		/* Mark the artificial `__in_chrg' parameter as "artificial".  */
+		SET_DECL_ARTIFICIAL (parm);
+		DECL_ARG_TYPE (parm) = integer_type_node;
+		DECL_REGISTER (parm) = 1;
+		TREE_CHAIN (parm) = TREE_CHAIN (fnargs);
+		TREE_CHAIN (fnargs) = parm;
+
+		fnargs = tsubst (fnargs, args, nargs, t);
+	      }
 #if 0
 	    fprintf (stderr, "\nfor function %s in class %s:\n",
 		     IDENTIFIER_POINTER (name),

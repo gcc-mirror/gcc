@@ -552,7 +552,7 @@ struct binding_level
 
     /* Number of decls in `names' that have incomplete 
        structure or union types.  */
-    unsigned short n_incomplete;
+    unsigned int n_incomplete;
 
     /* 1 for the level that holds the parameters of a function.
        2 for the level that holds a class declaration.
@@ -2975,6 +2975,16 @@ pushdecl (x)
       if (TREE_CODE (x) != TEMPLATE_DECL
 	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
 	  && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
+	{
+	  if (++b->n_incomplete == 0)
+	    error ("too many incomplete variables at this point");
+	}
+
+      /* Keep count of variables in this level with incomplete type.  */
+      /* RTTI TD entries are created while defining the type_info.  */
+      if (TREE_CODE (x) == VAR_DECL
+	  && TYPE_LANG_SPECIFIC (TREE_TYPE (x))
+	  && TYPE_BEING_DEFINED (TREE_TYPE (x)))
 	{
 	  if (++b->n_incomplete == 0)
 	    error ("too many incomplete variables at this point");
@@ -8603,6 +8613,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 				   declarator, type);
 	    else
 	      set_nested_typename (d, TYPE_NESTED_NAME (c), declarator, type);
+
+	    DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
+	    DECL_ASSEMBLER_NAME (d)
+	      = get_identifier (build_overload_name (type, 1, 1));
 	  }
 	}
 

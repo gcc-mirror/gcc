@@ -1,3 +1,61 @@
+Fri Dec 30 12:22:29 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (n_incomplete): Bump n_incomplete up to int to match C
+	front end.
+	(pushdecl): Also count decls pushed that are of a type being defined
+	as incomplete things.
+	* class.c (finish_struct): Move hack_incomplete_structures up to
+	just after we set it as not being defined, so that the decls we
+	build for RTTI don't count as incomplete.
+
+Thu Dec 29 18:20:57 1994  Mike Stump  <mrs@cygnus.com>
+
+	* pt.c (tsubst): Fix problem with defining constructors in templated
+	classes with virtual bases.
+
+Wed Dec 28 08:31:00 1994  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (TYPEID): Strip top-level cv-qualifiers on typeid
+	expressions.
+	* gc.c (build_typeid): Ditto.
+
+Thu Dec 22 17:26:33 1994  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (build_up_reference): Fix breakage introduced on Nov 29,
+	don't assert on complex AGGR inits.
+
+Thu Dec 22 14:32:31 1994  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (build_overload_value): Handle pointer to members as
+	template arguments.
+
+Thu Dec 22 13:09:07 1994  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (unary_complex_lvalue): Don't call sorry if we know how
+	to do take the address of a data member for a pointer to data
+	member.
+
+Thu Dec 22 10:04:19 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (grokdeclarator): Use the typedef name for linkage if the
+	type doesn't otherwise have a name.
+
+	* decl2.c (grokfield): Ditto.
+
+	* class.c (finish_struct): Since we reuse the TYPE_DECL for the
+	DECL_NAME of enums, structs and classes, we have to avoid trying to
+	put it in the TYPE_FIELDS again.
+
+Wed Dec 21 11:07:05 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (check_classfn): Ignore this parameter on static functions
+	when checking to see if we match.
+
+Tue Dec 20 17:47:02 1994  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (unary_complex_lvalue): Handle address of non-left most
+	pointers to members by calling get_delta_difference.
+
 Mon Dec 19 22:40:53 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (check_classfn): Don't use decls_match yet, as it modifies

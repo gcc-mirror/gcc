@@ -3982,12 +3982,15 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       last_x = tree_last (TYPE_FIELDS (t));
       while (x)
 	{
-#if 0 /* What's wrong with using the decl the type already has? */
-	  tree tag = build_decl (TYPE_DECL, TREE_PURPOSE (x), TREE_VALUE (x));
-	  DECL_CONTEXT (tag) = t;
-#else
 	  tree tag = TYPE_NAME (TREE_VALUE (x));
-#endif
+
+	  /* Check to see if it is already there.  This will be the case if
+	     was do enum { red; } color; */
+	  if (chain_member (tag, TYPE_FIELDS (t)))
+	      {
+		x = TREE_CHAIN (x);
+		continue;
+	      }
 
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)
@@ -4077,6 +4080,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
      the base types we marked.  */
   finish_vtbls (TYPE_BINFO (t), 1, t);
   TYPE_BEING_DEFINED (t) = 0;
+  hack_incomplete_structures (t);
 
   if (flag_rtti && TYPE_VIRTUAL_P (t) && CLASSTYPE_VTABLE_NEEDS_WRITING (t))
     {
@@ -4127,8 +4131,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     popclass (0);
   else
     error ("trying to finish struct, but kicked out due to previous parse errors.");
-
-  hack_incomplete_structures (t);
 
   resume_momentary (old);
 
