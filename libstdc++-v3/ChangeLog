@@ -1,5 +1,10 @@
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/13884
+	* include/bits/sstream.tcc: Guard use of extern template.
+
+2004-01-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc
 	(money_put::do_put(..., long double)): Use the basic_string
 	constructor for char arrays, not that for C-strings, to pass

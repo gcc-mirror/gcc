@@ -225,6 +225,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_stringbuf<char>;
   extern template class basic_istringstream<char>;
   extern template class basic_ostringstream<char>;
@@ -235,6 +236,7 @@ namespace std
   extern template class basic_istringstream<wchar_t>;
   extern template class basic_ostringstream<wchar_t>;
   extern template class basic_stringstream<wchar_t>;
+#endif
 #endif
 } // namespace std
 
