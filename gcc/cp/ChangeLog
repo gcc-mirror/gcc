@@ -1,3 +1,13 @@
+1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (my_friendly_abort): Add URL.
+
+1998-10-12  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
+
+	* decl.c (start_method): Added extra parameter for attributes.
+	* cp-tree.h (start_method): Update prototype.
+	* parse.y (fn.def2): Update start_method parameter list.
+
 1998-10-10  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* decl2.c (start_objects): Add new variable `joiner' and

@@ -13417,11 +13417,11 @@ finish_function (lineno, call_poplevel, nested)
    CHANGES TO CODE IN `grokfield'.  */
 
 tree
-start_method (declspecs, declarator)
-     tree declarator, declspecs;
+start_method (declspecs, declarator, attrlist)
+     tree declarator, declspecs, attrlist;
 {
   tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0,
-				NULL_TREE);
+				attrlist);
 
   /* Something too ugly to handle.  */
   if (fndecl == NULL_TREE)
