@@ -1,6 +1,7 @@
 2003-06-07  Magnus Kreth <magnus.kreth@gmx.de>
 	    Thibaud Gaillard <thibaud.gaillard@nto.atmel.com>
 
+	PR other/7031
 	* Makefile.in (install-common): Remove GCOV_INSTALL_NAME instead of
 	gcov.
 
