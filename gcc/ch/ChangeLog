@@ -1,3 +1,18 @@
+Wed Sep 30 19:41:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* actions.c (chill_handle_multi_case_label): Always return a value
+	in function returning non-void. 
+
+	* except.c: Include OS headers before any local ones.
+
+	* typeck.c (layout_chill_range_type): Change type of variable
+	`negprecision' to int.
+	(apply_chill_array_layout): Initialize variables `stepsize' and
+	`start_bit'.
+	(layout_chill_struct_type): Change type of variable `min_align' to
+	unsigned int.
+	(smash_dummy_type): Change name of variable `main' to `main_tree'.
+
 Wed Sep 30 19:24:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (id_cmp): Do pointer arithmetic as `long' not `int' to

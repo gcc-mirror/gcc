@@ -1229,7 +1229,7 @@ chill_handle_multi_case_label (selector, label)
   tree expr;
 
   if (label == NULL_TREE || TREE_CODE (label) == ERROR_MARK)
-    return;
+    return NULL_TREE;
 
   if (TREE_CODE (label) == INTEGER_CST)
     {

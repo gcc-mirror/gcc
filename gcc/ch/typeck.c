@@ -2597,7 +2597,7 @@ layout_chill_range_type (rangetype, must_be_const)
 		  /* Compute number of bits to represent magnitude of a
 		     negative value.  Add one to MINVALUE since range of
 		     negative numbers includes the power of two.  */
-		  unsigned negprecision = floor_log2 (-minvalue - 1) + 1;
+		  int negprecision = floor_log2 (-minvalue - 1) + 1;
 		  if (negprecision > precision)
 		    precision = negprecision;
 		  precision += 1;	/* room for sign bit */
@@ -2736,7 +2736,7 @@ apply_chill_array_layout (array_type)
      tree array_type;
 {
   tree layout, temp, what, element_type;
-  int stepsize, word, start_bit, length, natural_length;
+  int stepsize=0, word, start_bit=0, length, natural_length;
   int stepsize_specified;
   int start_bit_error = 0;
   int length_error = 0;
@@ -3243,7 +3243,7 @@ layout_chill_struct_type (t)
 	}
       else
 	{
-	  int min_align = TYPE_ALIGN (TREE_TYPE (x));
+	  unsigned int min_align = TYPE_ALIGN (TREE_TYPE (x));
 	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
 	  was_pos = 0;
 	}
@@ -3346,7 +3346,7 @@ smash_dummy_type (type)
 {
   /* Save fields that we don't want to copy from ORIGIN. */ 
   tree origin = TREE_TYPE (type);
-  tree main = TYPE_MAIN_VARIANT (origin);
+  tree main_tree = TYPE_MAIN_VARIANT (origin);
   int  save_uid = TYPE_UID (type);
   struct obstack *save_obstack = TYPE_OBSTACK (type);
   tree save_name = TYPE_NAME (type);
@@ -3439,8 +3439,8 @@ smash_dummy_type (type)
   if (save_readonly)
     { /* TYPE is READ ORIGIN.
 	 Add this type to the chain of variants of TYPE.  */
-      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
-      TYPE_NEXT_VARIANT (main) = type;
+      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main_tree);
+      TYPE_NEXT_VARIANT (main_tree) = type;
       TYPE_READONLY (type) = save_readonly;
     }
   else
