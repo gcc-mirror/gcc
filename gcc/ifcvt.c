@@ -1489,7 +1489,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
     }
 
   cond = canonicalize_condition (if_info->jump, cond, reverse,
-				 earliest, target, false);
+				 earliest, target, false, true);
   if (! cond || ! reg_mentioned_p (target, cond))
     return NULL;
 
@@ -1800,7 +1800,7 @@ noce_try_sign_mask (struct noce_if_info *if_info)
 static rtx
 noce_get_condition (rtx jump, rtx *earliest)
 {
-  rtx cond, set, tmp, insn;
+  rtx cond, set, tmp;
   bool reverse;
 
   if (! any_condjump_p (jump))
@@ -1829,38 +1829,8 @@ noce_get_condition (rtx jump, rtx *earliest)
 
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
-
-  tmp = canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX,
-				false);
-  if (!tmp)
-    return NULL_RTX;
-
-  /* We are going to insert code before JUMP, not before EARLIEST.
-     We must therefore be certain that the given condition is valid
-     at JUMP by virtue of not having been modified since.  */
-  for (insn = *earliest; insn != jump; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && modified_in_p (tmp, insn))
-      break;
-  if (insn == jump)
-    return tmp;
-
-  /* The condition was modified.  See if we can get a partial result
-     that doesn't follow all the reversals.  Perhaps combine can fold
-     them together later.  */
-  tmp = XEXP (tmp, 0);
-  if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
-    return NULL_RTX;
-  tmp = canonicalize_condition (jump, cond, reverse, earliest, tmp,
-				false);
-  if (!tmp)
-    return NULL_RTX;
-
-  /* For sanity's sake, re-validate the new result.  */
-  for (insn = *earliest; insn != jump; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && modified_in_p (tmp, insn))
-      return NULL_RTX;
-
-  return tmp;
+  return canonicalize_condition (jump, cond, reverse, earliest,
+				 NULL_RTX, false, true);
 }
 
 /* Return true if OP is ok for if-then-else processing.  */

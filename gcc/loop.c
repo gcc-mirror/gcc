@@ -8001,7 +8001,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 
   /* Try to compute whether the compare/branch at the loop end is one or
      two instructions.  */
-  get_condition (jump, &first_compare, false);
+  get_condition (jump, &first_compare, false, true);
   if (first_compare == jump)
     compare_and_branch = 1;
   else if (first_compare == prev_nonnote_insn (jump))
@@ -9195,11 +9195,14 @@ update_reg_last_use (rtx x, rtx insn)
    If WANT_REG is nonzero, we wish the condition to be relative to that
    register, if possible.  Therefore, do not canonicalize the condition
    further.  If ALLOW_CC_MODE is nonzero, allow the condition returned 
-   to be a compare to a CC mode register.  */
+   to be a compare to a CC mode register.
+
+   If VALID_AT_INSN_P, the condition must be valid at both *EARLIEST
+   and at INSN.  */
 
 rtx
 canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
-			rtx want_reg, int allow_cc_mode)
+			rtx want_reg, int allow_cc_mode, int valid_at_insn_p)
 {
   enum rtx_code code;
   rtx prev = insn;
@@ -9357,6 +9360,11 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 
       if (x)
 	{
+	  /* If the caller is expecting the condition to be valid at INSN,
+	     make sure X doesn't change before INSN.  */
+	  if (valid_at_insn_p)
+	    if (modified_in_p (x, prev) || modified_between_p (x, prev, insn))
+	      break;
 	  if (COMPARISON_P (x))
 	    code = GET_CODE (x);
 	  if (reverse_code)
@@ -9443,13 +9451,16 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
    If EARLIEST is nonzero, it is a pointer to a place where the earliest
    insn used in locating the condition was found.  If a replacement test
    of the condition is desired, it should be placed in front of that
-   insn and we will be sure that the inputs are still valid.  
+   insn and we will be sure that the inputs are still valid.  If EARLIEST
+   is null, the returned condition will be valid at INSN.
 
    If ALLOW_CC_MODE is nonzero, allow the condition returned to be a
-   compare CC mode register.  */
+   compare CC mode register.
+
+   VALID_AT_INSN_P is the same as for canonicalize_condition.  */
 
 rtx
-get_condition (rtx jump, rtx *earliest, int allow_cc_mode)
+get_condition (rtx jump, rtx *earliest, int allow_cc_mode, int valid_at_insn_p)
 {
   rtx cond;
   int reverse;
@@ -9470,7 +9481,7 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode)
       && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump);
 
   return canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX,
-				 allow_cc_mode);
+				 allow_cc_mode, valid_at_insn_p);
 }
 
 /* Similar to above routine, except that we also put an invariant last
@@ -9479,7 +9490,7 @@ get_condition (rtx jump, rtx *earliest, int allow_cc_mode)
 rtx
 get_condition_for_loop (const struct loop *loop, rtx x)
 {
-  rtx comparison = get_condition (x, (rtx*) 0, false);
+  rtx comparison = get_condition (x, (rtx*) 0, false, true);
 
   if (comparison == 0
       || ! loop_invariant_p (loop, XEXP (comparison, 0))

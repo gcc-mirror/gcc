@@ -636,7 +636,7 @@ estimate_probability (struct loops *loops_info)
   FOR_EACH_BB (bb)
     {
       rtx last_insn = BB_END (bb);
-      rtx cond, earliest;
+      rtx cond;
       edge e;
 
       if (! can_predict_insn_p (last_insn))
@@ -681,7 +681,7 @@ estimate_probability (struct loops *loops_info)
 	    }
 	}
 
-      cond = get_condition (last_insn, &earliest, false);
+      cond = get_condition (last_insn, NULL, false, false);
       if (! cond)
 	continue;
 
@@ -1043,7 +1043,8 @@ expected_value_to_br_prob (void)
 		(lt r70, r71)
 	 Could use cselib to try and reduce this further.  */
       cond = XEXP (SET_SRC (pc_set (insn)), 0);
-      cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg, false);
+      cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg,
+				     false, false);
       if (! cond || XEXP (cond, 0) != ev_reg
 	  || GET_CODE (XEXP (cond, 1)) != CONST_INT)
 	continue;

@@ -1,3 +1,23 @@
+2004-07-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	* expr.h (canonicalize_condition, get_condition): Add an int argument.
+	* gcse.c (fis_get_condition): Reimplement using get_condition, leaving
+	it to check whether the condition is still valid at the jump insn.
+	* ifcvt.c (noce_get_condition): Likewise.
+	(noce_get_alt_condition): Update call to canonicalize_condition.
+	* loop-iv.c (simplify_using_initial_values): Update call to
+	get_condition.  Remove FIXME.
+	(check_simple_exit): Update call to get_condition.
+	* loop-unswitch.c (may_unswitch_on): Likewise.
+	* loop.c (check_dbra_loop): Likewise.
+	(canonicalize_condition, get_condition): Add an argument to say whether
+	the condition must still be valid at INSN.
+	(get_condition_for_loop): Update call to get_condition.  Require that
+	the condition be valid at INSN.
+	* predict.c (estimate_probability): Update call to get_condition.
+	Remove unused earliest parameter.
+	(expected_value_to_br_prob): Update call to canonicalize_condition.
+
 2004-07-26  Eric Christopher  <echristo@redhat.com>
 
 	* tree-dfa.c (add_referenced_var): Register initializers of global
