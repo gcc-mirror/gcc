@@ -1,3 +1,14 @@
+2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* nextstep-protos.h: New file.
+	* nextstep.c: Include "rtl.h", "output.h" & "tm_p.h".
+	* nextstep.h (INCLUDE_DEFAULTS): Delete LOCAL_INCLUDE_DIR and
+	STANDARD_INCLUDE_DIR from the CROSS_COMPILE clause.
+	(nextstep_asm_out_constructor, nextstep_asm_out_destructor,
+	handle_pragma): Move prototypes to nextstep-protos.h.
+	* config.gcc (i[34567]86-next-*, m68k-next-nextstep2*,
+	m68k-next-nextstep[34]*): Append nextstep-protos.h to tm_p_file.
+
 2001-12-16  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/3725
