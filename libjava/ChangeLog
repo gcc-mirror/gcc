@@ -1,3 +1,8 @@
+2004-06-14  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Support --enable-version-specific-runtime-libs.
+	* configure: Regenerated.
+
 2004-06-14  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/util/Calendar.java: Change ResourceBundle.getBundle() calls
