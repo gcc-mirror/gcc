@@ -1,3 +1,7 @@
+Thu Mar  8 23:36:56 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/som.h (MAKE_DECL_ONE_ONLY, ASM_WEAKEN_LABEL): Disable.
+
 Thu Mar  8 23:29:37 2001  John Wehle  (john@feith.com)
 
 	* rtlanal.c (rtx_varies_p): Check operand 0 of a
