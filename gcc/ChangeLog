@@ -1,3 +1,11 @@
+2001-08-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.h, line-map.h: Update comments.
+	* cppmain.c (printer_init): Move inline.
+	(maybe_print_line, print_line): Take a map pointer.
+	(cb_ident, cb_define, cb_undef, cb_include, cb_def_pragma): Update.
+	(cb_file_change): Don't use prior value of print.map.
+
 2001-08-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Document fine-grained multilib configuration.

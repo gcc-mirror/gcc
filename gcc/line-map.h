@@ -69,7 +69,8 @@ extern void free_line_maps
    at least as long as the final call to lookup_line ().
 
    FROM_LINE should be monotonic increasing across calls to this
-   function.  */
+   function.  A call to this function can relocate the previous set of
+   maps, so any stored line_map pointers should not be used.  */
 extern struct line_map *add_line_map
   PARAMS ((struct line_maps *, enum lc_reason,
 	   unsigned int from_line, const char *to_file, unsigned int to_line));

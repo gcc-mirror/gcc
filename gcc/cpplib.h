@@ -390,7 +390,7 @@ struct cpp_options
 typedef struct cpp_file_change cpp_file_change;
 struct cpp_file_change
 {
-  struct line_map *map;		/* Line map to use until next callback.  */
+  struct line_map *map;		/* Line map, valid until next callback.  */
   unsigned int line;		/* Logical line number of next line.  */
   enum lc_reason reason;	/* Reason for change.  */
   unsigned char sysp;		/* Nonzero if system header.  */

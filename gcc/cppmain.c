@@ -32,9 +32,9 @@ struct printer
 {
   FILE *outf;			/* Stream to write to.  */
   const char *syshdr_flags;	/* System header flags, if any.  */
+  struct line_map *map;		/* Logical to physical line mappings.  */
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
-  struct line_map *map;		/* Logical to physical line mappings.  */
 };
 
 int main		PARAMS ((int, char **));
@@ -45,11 +45,11 @@ static void setup_callbacks PARAMS ((void));
 /* General output routines.  */
 static void scan_translation_unit PARAMS ((cpp_reader *));
 static void check_multiline_token PARAMS ((cpp_string *));
-static void printer_init PARAMS ((void));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
-static void print_line PARAMS ((unsigned int, const char *));
-static void maybe_print_line PARAMS ((unsigned int));
+static void print_line PARAMS ((struct line_map *, unsigned int,
+				const char *));
+static void maybe_print_line PARAMS ((struct line_map *, unsigned int));
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
@@ -139,14 +139,26 @@ do_preprocessing (argc, argv)
   if (options->help_only)
     return;
 
+  /* Initialize the printer structure.  Setting print.line to -1 here
+     is a trick to guarantee that the first token of the file will
+     cause a linemarker to be output by maybe_print_line.  */
+  print.line = (unsigned int) -1;
+  print.printed = 0;
+  print.map = 0;
+  
   /* Open the output now.  We must do so even if no_output is on,
      because there may be other output than from the actual
      preprocessing (e.g. from -dM).  */
-  printer_init ();
-  if (print.outf == NULL)
+  if (options->out_fname[0] == '\0')
+    print.outf = stdout;
+  else
     {
-      cpp_notice_from_errno (pfile, options->out_fname);
-      return;
+      print.outf = fopen (options->out_fname, "w");
+      if (print.outf == NULL)
+	{
+	  cpp_notice_from_errno (pfile, options->out_fname);
+	  return;
+	}
     }
 
   setup_callbacks ();
@@ -226,7 +238,7 @@ scan_translation_unit (pfile)
 	     column.  Don't bother trying to reconstruct tabs; we can't
 	     get it right in general, and nothing ought to care.  (Yes,
 	     some things do care; the fault lies with them.)  */
-	  maybe_print_line (line);
+	  maybe_print_line (print.map, line);
 	  if (col > 1)
 	    {
 	      if (token->flags & PREV_WHITE)
@@ -267,29 +279,13 @@ check_multiline_token (str)
       print.line++;
 }
 
-/* Initialize a cpp_printer structure.  As a side effect, open the
-   output file.  If print.outf is NULL an error occurred.  */
-static void
-printer_init ()
-{
-  /* Setting print.line to -1 here guarantees that the first token of
-     the file will cause a linemarker to be output by maybe_print_line.  */
-  print.line = (unsigned int) -1;
-  print.printed = 0;
-  print.map = 0;
-
-  if (options->out_fname[0] == '\0')
-    print.outf = stdout;
-  else
-    print.outf = fopen (options->out_fname, "w");
-}
-
 /* If the token read on logical line LINE needs to be output on a
    different line to the current one, output the required newlines or
    a line marker, and return 1.  Otherwise return 0.  */
 
 static void
-maybe_print_line (line)
+maybe_print_line (map, line)
+     struct line_map *map;
      unsigned int line;
 {
   /* End the previous line of text.  */
@@ -309,11 +305,12 @@ maybe_print_line (line)
 	}
     }
   else
-    print_line (line, "");
+    print_line (map, line, "");
 }
 
 static void
-print_line (line, special_flags)
+print_line (map, line, special_flags)
+     struct line_map *map;
      unsigned int line;
      const char *special_flags;
 {
@@ -325,8 +322,8 @@ print_line (line, special_flags)
   print.line = line;
   if (! options->no_line_commands)
     fprintf (print.outf, "# %u \"%s\"%s%s\n",
-	     SOURCE_LINE (print.map, print.line),
-	     print.map->to_file, special_flags, print.syshdr_flags);
+	     SOURCE_LINE (map, print.line), map->to_file,
+	     special_flags, print.syshdr_flags);
 }
 
 /* Callbacks.  */
@@ -337,7 +334,7 @@ cb_ident (pfile, line, str)
      unsigned int line;
      const cpp_string * str;
 {
-  maybe_print_line (line);
+  maybe_print_line (print.map, line);
   fprintf (print.outf, "#ident \"%s\"\n", str->text);
   print.line++;
 }
@@ -348,7 +345,7 @@ cb_define (pfile, line, node)
      unsigned int line;
      cpp_hashnode *node;
 {
-  maybe_print_line (line);
+  maybe_print_line (print.map, line);
   fputs ("#define ", print.outf);
 
   /* -dD command line option.  */
@@ -367,7 +364,7 @@ cb_undef (pfile, line, node)
      unsigned int line;
      cpp_hashnode *node;
 {
-  maybe_print_line (line);
+  maybe_print_line (print.map, line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
   print.line++;
 }
@@ -379,10 +376,13 @@ cb_include (pfile, line, dir, header)
      const unsigned char *dir;
      const cpp_token *header;
 {
-  maybe_print_line (line);
+  maybe_print_line (print.map, line);
   fprintf (print.outf, "#%s %s\n", dir, cpp_token_as_text (pfile, header));
   print.line++;
 }
+
+/* The file name, line number or system header flags have changed, as
+   described in FC.  NB: the old print.map must be considered invalid.  */
 
 static void
 cb_file_change (pfile, fc)
@@ -395,7 +395,7 @@ cb_file_change (pfile, fc)
      change callback specially, so that a first line of "# 1 "foo.c"
      in file foo.i outputs just the foo.c line, and not a foo.i line.  */
   if (fc->reason == LC_ENTER && !first_time)
-    maybe_print_line (fc->line - 1);
+    maybe_print_line (fc->map - 1, fc->line - 1);
 
   print.map = fc->map;
   if (fc->externc)
@@ -414,7 +414,7 @@ cb_file_change (pfile, fc)
       else if (fc->reason == LC_LEAVE)
 	flags = " 2";
 
-      print_line (fc->line, flags);
+      print_line (print.map, fc->line, flags);
     }
 }
 
@@ -425,7 +425,7 @@ cb_def_pragma (pfile, line)
      cpp_reader *pfile;
      unsigned int line;
 {
-  maybe_print_line (line);
+  maybe_print_line (print.map, line);
   fputs ("#pragma ", print.outf);
   cpp_output_line (pfile, print.outf);
   print.line++;
