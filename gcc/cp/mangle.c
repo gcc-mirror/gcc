@@ -2226,15 +2226,7 @@ mangle_thunk (fn_decl, offset, vcall_offset)
 
 /* Return an identifier for the mangled unqualified name for a
    conversion operator to TYPE.  This mangling is not specified by the
-   ABI spec; it is only used internally.
-
-   For compatibility with existing conversion operator mechanisms,
-   the mangled form is `__op<type>' where <type> is the mangled
-   representation of TYPE.  
-
-   FIXME: Though identifiers with starting with __op are reserved for
-   the implementation, it would eventually be nice to use inaccessible
-   names for these operators.  */
+   ABI spec; it is only used internally.  */
 
 tree
 mangle_conv_op_name_for_type (type)
@@ -2245,10 +2237,10 @@ mangle_conv_op_name_for_type (type)
   /* Build the mangling for TYPE.  */
   const char *mangled_type = mangle_type_string (type);
   /* Allocate a temporary buffer for the complete name.  */
-  char *op_name = (char *) xmalloc (strlen (OPERATOR_TYPENAME_FORMAT) 
+  char *op_name = (char *) xmalloc (strlen ("operator ") 
 				    + strlen (mangled_type) + 1);
   /* Assemble the mangling.  */
-  strcpy (op_name, OPERATOR_TYPENAME_FORMAT);
+  strcpy (op_name, "operator ");
   strcat (op_name, mangled_type);
   /* Find or create an identifier.  */
   identifier = get_identifier (op_name);
