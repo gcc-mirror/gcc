@@ -67,7 +67,7 @@ Here are the rules for making fixes in the inclhack.def file:
     It is nice if:
 
     3.  The expression is as simple as possible to both
-        process and uderstand by people.  :-)
+        process and understand by people.  :-)
 
         Please take advantage of the fact AutoGen will glue
         together string fragments.  It helps.  Also take note

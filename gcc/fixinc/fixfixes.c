@@ -60,6 +60,10 @@ Boston, MA 02111-1307, USA.  */
 #include "fixlib.h"
 #define    GTYPE_SE_CT 1
 
+#ifdef __MSDOS__
+#include "fixincl.x"
+#endif
+
 tSCC zNeedsArg[] = "fixincl error:  `%s' needs %s argument (c_fix_arg[%d])\n";
 
 typedef struct {
@@ -725,3 +729,79 @@ apply_fix( p_fixd, filname )
   buf = load_file_data (stdin);
   (*pfe->fix_proc)( filname, buf, p_fixd );
 }
+
+#ifdef __MSDOS__
+tSCC z_usage[] =
+"USAGE: applyfix <fix-name> <file-to-fix> <file-source> <file-destination>\n";
+tSCC z_reopen[] =
+"FS error %d (%s) reopening %s as std%s\n";
+
+int
+main( argc, argv )
+  int     argc;
+  char**  argv;
+{
+  tFixDesc* pFix;
+  char* pz_tmptmp;
+  char* pz_tmp_base;
+  char* pz_tmp_dot;
+
+  if (argc != 5)
+    {
+    usage_failure:
+      fputs( z_usage, stderr );
+      return EXIT_FAILURE;
+    }
+
+  {
+    char* pz = argv[1];
+    long  idx;
+
+    if (! isdigit( *pz ))
+      goto usage_failure;
+
+    idx = strtol( pz, &pz, 10 );
+    if ((*pz != NUL) || ((unsigned)idx >= FIX_COUNT))
+      goto usage_failure;
+    pFix = fixDescList + idx;
+  }
+
+  if (freopen( argv[3], "r", stdin ) != stdin)
+    {
+      fprintf( stderr, z_reopen, errno, strerror( errno ), argv[3], "in" );
+      return EXIT_FAILURE;
+    }
+
+  pz_tmptmp = (char*)xmalloc( strlen( argv[4] ) + 5 );
+  strcpy( pz_tmptmp, argv[4] );
+
+  /* Don't lose because "12345678" and "12345678X" map to the same
+     file under DOS restricted 8+3 file namespace.  Note that DOS
+     doesn't allow more than one dot in the trunk of a file name.  */
+  pz_tmp_base = basename( pz_tmptmp );
+  pz_tmp_dot = strchr( pz_tmp_base, '.' );
+  if (pathconf( pz_tmptmp, _PC_NAME_MAX ) <= 12	/* is this DOS or Windows9X? */
+      && pz_tmp_dot != (char*)NULL)
+    strcpy( pz_tmp_dot+1, "X" ); /* nuke the original extension */
+  else
+    strcat( pz_tmptmp, ".X" );
+  if (freopen( pz_tmptmp, "w", stdout ) != stdout)
+    {
+      fprintf( stderr, z_reopen, errno, strerror( errno ), pz_tmptmp, "out" );
+      return EXIT_FAILURE;
+    }
+
+  apply_fix( pFix, argv[1] );
+  close( STDOUT_FILENO );
+  close( STDIN_FILENO );
+  unlink( argv[4] );
+  if (rename( pz_tmptmp, argv[4] ) != 0)
+    {
+      fprintf( stderr, "error %d (%s) renaming %s to %s\n", errno,
+               strerror( errno ), pz_tmptmp, argv[4] );
+      return EXIT_FAILURE;
+    }
+
+  return EXIT_SUCCESS;
+}
+#endif

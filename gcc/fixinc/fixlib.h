@@ -100,6 +100,9 @@ typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
   _ENV_( pz_machine,   BOOL_TRUE, "TARGET_MACHINE",  \
          "output from config.guess" )                \
                                                      \
+  _ENV_( pz_orig_dir,  BOOL_TRUE, "ORIGDIR",         \
+         "directory of fixincl and applyfix" )       \
+                                                     \
   _ENV_( pz_src_dir,   BOOL_TRUE, "SRCDIR",          \
          "directory of original files" )             \
                                                      \
@@ -203,6 +206,10 @@ void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
 
 void apply_fix _P_(( tFixDesc* p_fixd, tCC* filname ));
 apply_fix_p_t run_test _P_((tCC* t_name, tCC* f_name, tCC* text ));
+
+#ifdef __MSDOS__
+char* make_raw_shell_str _P_(( char* pz_d, tCC* pz_s, size_t smax ));
+#endif
 
 #ifdef MN_NAME_PAT
 void   mn_get_regexps _P_(( regex_t** label_re, regex_t** name_re,
