@@ -402,12 +402,18 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  if (GET_MODE_BITSIZE (GET_MODE (value)) >= bitsize)
 	    {
 	      /* Optimization: Don't bother really extending VALUE
-		 if it has all the bits we will actually use.  */
+		 if it has all the bits we will actually use.  However,
+		 if we must narrow it, be sure we do it correctly.  */
 
-	      /* Avoid making subreg of a subreg, or of a mem.  */
-	      if (GET_CODE (value1) != REG)
+	      if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (maxmode))
+		{
+		  /* Avoid making subreg of a subreg, or of a mem.  */
+		  if (GET_CODE (value1) != REG)
 		value1 = copy_to_reg (value1);
-	      value1 = gen_rtx (SUBREG, maxmode, value1, 0);
+		  value1 = gen_rtx (SUBREG, maxmode, value1, 0);
+		}
+	      else
+		value1 = gen_lowpart (maxmode, value1);
 	    }
 	  else if (!CONSTANT_P (value))
 	    /* Parse phase is supposed to make VALUE's data type
