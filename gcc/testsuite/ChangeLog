@@ -1,3 +1,7 @@
+2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc.dg/altivec-11.c: Extend test for more valid cases.
+
 2004-03-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/doloop-1.c: Do not check for lack of "blt".
