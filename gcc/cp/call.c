@@ -3689,8 +3689,12 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       /* XXX will LOOKUP_SPECULATIVELY be needed when this is done?  */
       if (flags & LOOKUP_SPECULATIVELY)
 	return NULL_TREE;
-      cp_error ("no matching function for call to `%T::%D (%A)%V'", basetype,
-		pretty_name, user_args, TREE_TYPE (TREE_TYPE (instance_ptr)));
+      if (TYPE_SIZE (basetype) == 0)
+	incomplete_type_error (instance_ptr, basetype);
+      else
+	cp_error ("no matching function for call to `%T::%D (%A)%V'",
+		  basetype, pretty_name, user_args,
+		  TREE_TYPE (TREE_TYPE (instance_ptr)));
       print_z_candidates (candidates);
       return error_mark_node;
     }
