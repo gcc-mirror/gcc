@@ -1378,7 +1378,7 @@ static format_char_info print_table[]
       { "C",		0,	T_W,	NULL,	NULL,	NULL,	"-w" },
       { "s",		1,	T_C,	NULL,	T_W,	NULL,	"-wp" },
       { "S",		1,	T_W,	NULL,	NULL,	NULL,	"-wp" },
-      { "p",		1,	T_V,	NULL,	NULL,	NULL,	"-" },
+      { "p",		1,	T_V,	NULL,	NULL,	NULL,	"-w" },
       { "n",		1,	T_I,	T_S,	T_L,	NULL,	"" },
       { NULL }
     };
