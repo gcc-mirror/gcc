@@ -2396,8 +2396,6 @@ prescan_loop (loop)
   loop_info->has_volatile = 0;
   loop_info->has_tablejump = 0;
   loop_info->has_multiple_exit_targets = 0;
-  loop->cont = 0;
-  loop->vtop = 0;
   loop->level = 1;
 
   unknown_address_altered = 0;
@@ -2421,25 +2419,6 @@ prescan_loop (loop)
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	    {
 	      --level;
-	      if (level == 0)
-		{
-		  end = insn;
-		  break;
-		}
-	    }
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
-	    {
-	      if (level == 1)
-		loop->cont = insn;
-	    }
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP)
-	    {
-	      /* If there is a NOTE_INSN_LOOP_VTOP, then this is a for
-		 or while style loop, with a loop exit test at the
-		 start.  Thus, we can assume that the loop condition
-		 was true when the loop was entered.  */
-	      if (level == 1)
-		loop->vtop = insn;
 	    }
 	}
       else if (GET_CODE (insn) == CALL_INSN)
@@ -2532,7 +2511,7 @@ prescan_loop (loop)
    and the continue note that is a the destination of a (cond)jump after
    the continue note.  If there is any (cond)jump between the loop start
    and what we have so far as LOOP->CONT_DOMINATOR that has a
-   target between LOOP->DOMINATOR and the continue note, move
+   target between LOOP->CONT_DOMINATOR and the continue note, move
    LOOP->CONT_DOMINATOR forward to that label; if a jump's
    destination cannot be determined, clear LOOP->CONT_DOMINATOR.  */
 
@@ -2640,6 +2619,11 @@ find_and_verify_loops (f, loops)
 	  case NOTE_INSN_LOOP_CONT:
 	    current_loop->cont = insn;
 	    break;
+
+	  case NOTE_INSN_LOOP_VTOP:
+	    current_loop->vtop = insn;
+	    break;
+
 	  case NOTE_INSN_LOOP_END:
 	    if (! current_loop)
 	      abort ();
@@ -2653,7 +2637,7 @@ find_and_verify_loops (f, loops)
 	    break;
 	  }
       /* If for any loop, this is a jump insn between the NOTE_INSN_LOOP_CONT
-	 and NOTE_INSN_LOOP_END notes, update loop->dominator.  */
+	 and NOTE_INSN_LOOP_END notes, update loop->cont_dominator.  */
       else if (GET_CODE (insn) == JUMP_INSN
 	       && GET_CODE (PATTERN (insn)) != RETURN
 	       && current_loop)
@@ -2670,7 +2654,7 @@ find_and_verify_loops (f, loops)
 	      if (loop->cont && loop->cont_dominator != const0_rtx)
 		{
 		  /* If the jump destination is not known, invalidate
-		     loop->const_dominator.  */
+		     loop->cont_dominator.  */
 		  if (! label)
 		    loop->cont_dominator = const0_rtx;
 		  else
