@@ -57,7 +57,6 @@
         * gcc.dg/cpp/redef2.c: Update.   
         * gcc.dg/cpp/skipping.c: New test. 
 
->>>>>>> 1.929
 2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.old-deja/g++.other/eh3.C: New testcase.
