@@ -1,5 +1,15 @@
 2003-11-27  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/11544
+	PR libstdc++/11603
+	* include/bits/fstream.tcc (underflow): Throw ios_base:failure
+	upon incomplete or invalid byte sequences in the file.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-1.cc: New.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-2.cc: New.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11603.cc: New.
+
+2003-11-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/std/std_streambuf.h (__copy_streambufs): Remove
 	the first, unused, basic_ios<> parameter.
 	* src/streambuf-inst.cc: Likewise.
