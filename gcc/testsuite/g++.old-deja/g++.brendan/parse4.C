@@ -12,7 +12,7 @@ public:
     void f() {}
 };
 
-int g() { return 0; }
+int g() { return 0; } // ERROR - global decl of g
 
 main()
 {
@@ -20,5 +20,5 @@ main()
     B( try1 ).f();   // no syntax error
     B b( g() );      // no syntax error
     B( ::g() ).f();  // no syntax error 
-    B( g() ).f();    // syntax error before `.' // ERROR - 
+    B( g() ).f();    // syntax error before `.' // ERROR - parse error
 }
