@@ -4703,8 +4703,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_DWARF_CFA:
       return virtual_cfa_rtx;
 #ifdef DWARF2_UNWIND_INFO
-    case BUILT_IN_DWARF_FP_REGNUM:
-      return expand_builtin_dwarf_fp_regnum ();
+    case BUILT_IN_DWARF_SP_COLUMN:
+      return expand_builtin_dwarf_sp_column ();
     case BUILT_IN_INIT_DWARF_REG_SIZES:
       expand_builtin_init_dwarf_reg_sizes (TREE_VALUE (arglist));
       return const0_rtx;

@@ -114,7 +114,7 @@ extern rtx expand_builtin_eh_return_data_regno	PARAMS ((tree));
 extern rtx expand_builtin_extract_return_addr	PARAMS ((tree));
 extern void expand_builtin_init_dwarf_reg_sizes PARAMS ((tree));
 extern rtx expand_builtin_frob_return_addr	PARAMS ((tree));
-extern rtx expand_builtin_dwarf_fp_regnum	PARAMS ((void));
+extern rtx expand_builtin_dwarf_sp_column	PARAMS ((void));
 extern void expand_builtin_eh_return		PARAMS ((tree, tree));
 extern void expand_eh_return			PARAMS ((void));
 extern rtx get_exception_pointer		PARAMS ((struct function *));

@@ -1,5 +1,20 @@
 2003-05-03  Richard Henderson  <rth@redhat.com>
 
+	* builtins.c (expand_builtin) <BUILT_IN_DWARF_FP_REGNUM>: Remove.
+	<BUILT_IN_DWARF_SP_COLUMN>: New.
+	* builtins.def (BUILT_IN_DWARF_FP_REGNUM): Remove.
+	(BUILT_IN_DWARF_SP_COLUMN): New.
+	* dwarf2out.c (expand_builtin_dwarf_fp_regnum): Remove.
+	(expand_builtin_dwarf_sp_column): New.
+	* except.h: Update to match.
+	* unwind-dw2.c (execute_stack_op): Correct stack push typo.
+	(execute_cfa_program): Record location expression address
+	before extracting length.
+	(uw_update_context_1): Install old CFA into stack pointer column.
+	(uw_init_context_1): Set cfa_reg to stack pointer column.
+
+2003-05-03  Richard Henderson  <rth@redhat.com>
+
 	* config/rs6000/rs6000.c (constant_pool_expr_p): Make static and
 	return bool.
 	(toc_relative_expr_p): Likewise.
