@@ -1,3 +1,7 @@
+Sat Oct 29 07:18:52 1994  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
+
+	* g++.c (main): Cast arg to bzero to avoid warning.
+
 Sun Oct 23 13:19:55 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
         * decl2.c: Declare flag_access_control.
