@@ -139,12 +139,14 @@
 ;; we treat them as signed entities; see mmix-modes.def.  The following
 ;; expanders should cover all MODE_CC modes, and expand for this pattern.
 (define_insn "*movcc_expanded"
-  [(set (match_operand 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand 1 "nonimmediate_operand"  "r,m,r"))]
+  [(set (match_operand 0 "nonimmediate_operand" "=r,x,r,r,m")
+	(match_operand 1 "nonimmediate_operand"  "r,r,x,m,r"))]
   "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_CC
    && GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_CC"
   "@
    SET %0,%1
+   PUT %0,%1
+   GET %0,%1
    LDT %0,%1
    STT %1,%0")
 
