@@ -1,3 +1,7 @@
+2003-02-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h: Document return value of physmem routines.
+
 2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (physmem_total, physmem_available): Prototype.
