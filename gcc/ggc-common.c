@@ -147,6 +147,11 @@ ggc_realloc (void *x, size_t size)
     return ggc_alloc (size);
 
   old_size = ggc_get_size (x);
+
+#ifndef ENABLE_GC_ALWAYS_COLLECT
+  /* In completely-anal-checking mode, never re-use memory.  This maximizes
+     the chance of catching the user retaining a pointer to the old block.
+     Otherwise, we get to consume the power-of-two overhead we had before.  */
   if (size <= old_size)
     {
       /* Mark the unwanted memory as unaccessible.  We also need to make
@@ -164,6 +169,7 @@ ggc_realloc (void *x, size_t size)
       VALGRIND_DISCARD (VALGRIND_MAKE_READABLE (x, size));
       return x;
     }
+#endif
 
   r = ggc_alloc (size);
 
@@ -176,7 +182,7 @@ ggc_realloc (void *x, size_t size)
   memcpy (r, x, old_size);
 
   /* The old object is not supposed to be used anymore.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (x, old_size));
+  ggc_free (x);
 
   return r;
 }
