@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998, 2001, 2002  Cygnus Solutions
+   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003  Cygnus Solutions
    
    X86 Foreign Function Interface 
 
@@ -131,52 +131,52 @@ epilogue:
 
 	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
-	.long	.LECIE1-.LSCIE1	# Length of Common Information Entry
+	.long	.LECIE1-.LSCIE1	/* Length of Common Information Entry */
 .LSCIE1:
-	.long	0x0	# CIE Identifier Tag
-	.byte	0x1	# CIE Version
+	.long	0x0	/* CIE Identifier Tag */
+	.byte	0x1	/* CIE Version */
 #ifdef __PIC__
-	.ascii "zR\0"	# CIE Augmentation
+	.ascii "zR\0"	/* CIE Augmentation */
 #else
-	.ascii "\0"	# CIE Augmentation
+	.ascii "\0"	/* CIE Augmentation */
 #endif
-	.uleb128 0x1	# CIE Code Alignment Factor
-	.sleb128 -4	# CIE Data Alignment Factor
-	.byte	0x8	# CIE RA Column
+	.byte	0x1	/* .uleb128 0x1; CIE Code Alignment Factor */
+	.byte	0x7c	/* .sleb128 -4; CIE Data Alignment Factor */
+	.byte	0x8	/* CIE RA Column */
 #ifdef __PIC__
-	.uleb128 0x1	# Augmentation size
-	.byte	0x1b	# FDE Encoding (pcrel sdata4)
+	.byte	0x1	/* .uleb128 0x1; Augmentation size */
+	.byte	0x1b	/* FDE Encoding (pcrel sdata4) */
 #endif
-	.byte	0xc	# DW_CFA_def_cfa
-	.uleb128 0x4
-	.uleb128 0x4
-	.byte	0x88	# DW_CFA_offset, column 0x8
-	.uleb128 0x1
+	.byte	0xc	/* DW_CFA_def_cfa */
+	.byte	0x4	/* .uleb128 0x4 */
+	.byte	0x4	/* .uleb128 0x4 */
+	.byte	0x88	/* DW_CFA_offset, column 0x8 */
+	.byte	0x1	/* .uleb128 0x1 */
 	.align 4
 .LECIE1:
 .LSFDE1:
-	.long	.LEFDE1-.LASFDE1	# FDE Length
+	.long	.LEFDE1-.LASFDE1	/* FDE Length */
 .LASFDE1:
-	.long	.LASFDE1-.Lframe1	# FDE CIE offset
+	.long	.LASFDE1-.Lframe1	/* FDE CIE offset */
 #ifdef __PIC__
-	.long	.LFB1-.	# FDE initial location
+	.long	.LFB1-.	/* FDE initial location */
 #else
-	.long	.LFB1	# FDE initial location
+	.long	.LFB1	/* FDE initial location */
 #endif
-	.long	.LFE1-.LFB1	# FDE address range
+	.long	.LFE1-.LFB1	/* FDE address range */
 #ifdef __PIC__
-	.uleb128 0x0	# Augmentation size
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
 #endif
-	.byte	0x4	# DW_CFA_advance_loc4
+	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.long	.LCFI0-.LFB1
-	.byte	0xe	# DW_CFA_def_cfa_offset
-	.uleb128 0x8
-	.byte	0x85	# DW_CFA_offset, column 0x5
-	.uleb128 0x2
-	.byte	0x4	# DW_CFA_advance_loc4
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 */
+	.byte	0x2	/* .uleb128 0x2 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.long	.LCFI1-.LCFI0
-	.byte	0xd	# DW_CFA_def_cfa_register
-	.uleb128 0x5
+	.byte	0xd	/* DW_CFA_def_cfa_register */
+	.byte	0x5	/* .uleb128 0x5 */
 	.align 4
 .LEFDE1:
 

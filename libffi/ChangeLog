@@ -1,3 +1,8 @@
+2003-06-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* src/x86/sysv.S: Avoid gas-only .uleb128/.sleb128 directives.
+	Use C style comments.
+
 2003-06-13  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* Makefile.am: Add SHmedia support.  Fix a typo of SH support.
