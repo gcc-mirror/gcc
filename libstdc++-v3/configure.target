@@ -108,6 +108,9 @@ case "${target_os}" in
   hpux*)
     os_include_dir="config/os/hpux"
     ;;
+  windiss*)
+    os_include_dir="config/os/windiss"
+    ;;
   *)
     os_include_dir="config/os/generic"
     ;;
