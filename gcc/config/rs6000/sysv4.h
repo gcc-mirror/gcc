@@ -372,11 +372,11 @@ do {									\
 
 /* Type used for wchar_t, as a string used in a declaration.  */
 #undef	WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE "long int"
 
 /* Width of wchar_t in bits.  */
 #undef	WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE_SIZE 32
 
 /* Make int foo : 8 not cause structures to be aligned to an int boundary */
 
