@@ -1,3 +1,7 @@
+1998-09-11  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/u77-test.f: Fix bad consistency checks.
+
 1998-09-08  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/u77-test.f (main): New file, somewhat
