@@ -202,13 +202,12 @@ java::lang::reflect::Method::getType ()
     }
 
   exception_types
-    = (JArray<jclass> *) JvNewObjectArray (count,
-					   &java::lang::Class::class$,
+    = (JArray<jclass> *) JvNewObjectArray (count, &java::lang::Class::class$,
 					   NULL);
   jclass *elts = elements (exception_types);
   for (int i = 0; i < count; ++i)
-    elts[i] = _Jv_FindClassFromSignature (method->throws[i]->data,
-					  declaringClass->getClassLoader ());
+    elts[i] = _Jv_FindClass (method->throws[i],
+			     declaringClass->getClassLoader ());
 }
 
 void

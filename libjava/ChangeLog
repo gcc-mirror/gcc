@@ -1,3 +1,9 @@
+2002-11-02  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/8415:
+	* java/lang/reflect/natMethod.cc (getType): Use _Jv_FindClass.
+	* prims.cc (_Jv_FindClassFromSignature): Indentation fix.
+
 2002-11-02  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.am (AM_MAKEFLAGS): Don't pass JC1FLAGS, CC and CXX, do

@@ -657,7 +657,6 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader)
 	  ;
 	_Jv_Utf8Const *name = _Jv_makeUtf8Const (&sig[1], i - 1);
 	return _Jv_FindClass (name, loader);
-
       }
     case '[':
       {
