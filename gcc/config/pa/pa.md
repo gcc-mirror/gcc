@@ -7455,6 +7455,12 @@
   "flag_pic"
   "
 {
+  /* On the 64-bit port, we need a blockage because there is
+     confusion regarding the dependence of the restore on the
+     frame pointer.  As a result, the frame pointer and pic
+     register restores sometimes are interchanged erroneously.  */
+  if (TARGET_64BIT)
+    emit_insn (gen_blockage ());
   /* Restore the PIC register using hppa_pic_save_rtx ().  The
      PIC register is not saved in the frame in 64-bit ABI.  */
   emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
@@ -7466,6 +7472,8 @@
   "flag_pic"
   "
 {
+  if (TARGET_64BIT)
+    emit_insn (gen_blockage ());
   /* Restore the PIC register.  Hopefully, this will always be from
      a stack slot.  The only registers that are valid after a
      builtin_longjmp are the stack and frame pointers.  */

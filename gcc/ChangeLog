@@ -1,3 +1,8 @@
+2002-09-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (exception_receiver, builtin_setjmp_receiver): Add blockage
+	on TARGET_64BIT before pic register restore.
+
 2002-09-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/tm.texi (TARGET_HAVE_SRODATA_SECTION): New description.
