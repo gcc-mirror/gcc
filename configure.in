@@ -1178,44 +1178,47 @@ fi
 
 case "${target}" in
   v810*)
-    target_makefile_frag="${target_makefile_frag} config/mt-v810"
+    target_makefile_frag="config/mt-v810"
     ;;
   i[3456]86-*-netware*)
-    target_makefile_frag="${target_makefile_frag} config/mt-netware"
+    target_makefile_frag="config/mt-netware"
     ;;
   powerpc-*-netware*)
-    target_makefile_frag="${target_makefile_frag} config/mt-netware"
-    ;;
-  alpha*-*-linux*)
-    target_makefile_frag="${target_makefile_frag} config/mt-linux"
-    target_makefile_frag="${target_makefile_frag} config/mt-alphaieee"
-    ;;
-  alpha*-*-*)
-    target_makefile_frag="${target_makefile_frag} config/mt-alphaieee"
+    target_makefile_frag="config/mt-netware"
     ;;
   *-*-linux*)
-    target_makefile_frag="${target_makefile_frag} config/mt-linux"
+    target_makefile_frag="config/mt-linux"
     ;;
   *-*-aix4.[3456789]* | *-*-aix[56789].*)
-    target_makefile_frag="${target_makefile_frag} config/mt-aix43"
+    target_makefile_frag="config/mt-aix43"
     ;;
   mips*-*-pe | sh*-*-pe | *arm-wince-pe)
-    target_makefile_frag="${target_makefile_frag} config/mt-wince"
+    target_makefile_frag="config/mt-wince"
+    ;;
+esac
+
+alphaieee_frag=
+case $target in
+  alpha*-*-*)
+    # This just makes sure to use the -mieee option to build target libs.
+    # This should probably be set individually by each library.
+    alphaieee_frag="config/mt-alphaieee"
     ;;
 esac
 
 # If --enable-target-optspace always use -Os instead of -O2 to build
 # the target libraries, similarly if it is not specified, use -Os
 # on selected platforms.
+ospace_frag=
 case "${enable_target_optspace}:${target}" in
   yes:*)
-    target_makefile_frag="${target_makefile_frag} config/mt-ospace"
+    ospace_frag="config/mt-ospace"
     ;;
   :d30v-*)
-    target_makefile_frag="${target_makefile_frag} config/mt-d30v"
+    ospace_frag="config/mt-d30v"
     ;;
   :m32r-* | :d10v-* | :fr30-*)
-    target_makefile_frag="${target_makefile_frag} config/mt-ospace"
+    ospace_frag="config/mt-ospace"
     ;;
   no:* | :*)
     ;;
@@ -1225,8 +1228,8 @@ case "${enable_target_optspace}:${target}" in
 esac
 
 rm -f mt-frag
-if test -n "${target_makefile_frag}" ; then
-  for f in ${target_makefile_frag}
+if test -n "${target_makefile_frag}${alphaieee_frag}${ospace_frag}" ; then
+  for f in ${target_makefile_frag} ${alphaieee_frag} ${ospace_frag}
   do
     cat ${srcdir}/$f >> mt-frag
   done
