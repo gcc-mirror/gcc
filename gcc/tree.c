@@ -3439,6 +3439,13 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 
       if (decl != 0)
 	TREE_TYPE (decl) = build_pointer_type (inner_type);
+      else
+	{
+	  /* Clear TYPE_POINTER_TO for the old inner type, since
+	     `type' won't be pointing to it anymore.  */
+	  TYPE_POINTER_TO (TREE_TYPE (type)) = NULL_TREE;
+	  TREE_TYPE (type) = inner_type;
+	}
 
       validated = 1;
     }

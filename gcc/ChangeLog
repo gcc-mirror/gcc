@@ -1,3 +1,9 @@
+Fri Apr 16 01:23:47 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (valid_machine_attribute): If we're modifying the
+	FUNCTION_TYPE within a POINTER_TYPE and we don't get a decl,
+	update the POINTER_TYPE.
+
 Fri Apr 16 00:19:31 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.c (x86_adjust_cost): Move break statement to correct place.
