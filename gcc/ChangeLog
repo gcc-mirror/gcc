@@ -7,7 +7,7 @@
 
 	* simplify-rtx.c (simplify_plus_minus): Always generate canonical form.
 
-2004-01-09  J"orn Rennecke <joern.rennecke@superh.com>
+2004-01-12  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR target/13585
 	* sh-protos.h (check_use_sfunc_addr): Declare.

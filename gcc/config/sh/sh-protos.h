@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
