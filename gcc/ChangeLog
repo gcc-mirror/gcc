@@ -1,3 +1,24 @@
+2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (altivec_init_builtins): Add support for
+        lvebx, lvehx, lvewx, lvxl, lvx, stvx, stvebx, stvehx, stvewx,
+        stvxl.
+        (altivec_expand_builtin): Same.
+        (altivec_expand_stv_builtin): New.
+
+        * config/rs6000/rs6000.h (rs6000_builtins): Same.
+
+        * config/rs6000/rs6000.md ("altivec_lvebx"): New.
+        ("altivec_lvehx"): New.
+        ("altivec_lvewx"): New.
+        ("altivec_lvxl"): New.
+        ("altivec_lvx"): New.
+        ("altivec_stvx"): New.
+        ("altivec_stvebx"): New.
+        ("altivec_stvehx"): New.
+        ("altivec_stvewx"): New.
+        ("altivec_stvxl"): New.
+
 2002-01-10  Richard Henderson  <rth@redhat.com>
 
 	* cfgrtl.c (delete_insn): Assert insn hasn't been deleted yet.
