@@ -1,3 +1,10 @@
+2001-06-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* objc-act.c (handle_class_ref): Put the class reference in the
+	variable section for hpux only.
+	(handle_impent): Put the objc class and category name labels in
+	the readonly data section for hpux only.
+
 2001-06-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
