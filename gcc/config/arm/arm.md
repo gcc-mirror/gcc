@@ -8705,7 +8705,11 @@
   "
 ;; Length is absolute worst case
   [(set_attr "length" "44")
-   (set_attr "type" "block")]
+   (set_attr "type" "block")
+   ;; We don't clobber the conditions, but the potential length of this
+   ;; operation is sufficient to make conditionalizing the sequence 
+   ;; unlikely to be profitable.
+   (set_attr "conds" "clob")]
 )
 
 (define_insn "*epilogue_insns"
@@ -8719,7 +8723,11 @@
   "
   ; Length is absolute worst case
   [(set_attr "length" "44")
-   (set_attr "type" "block")]
+   (set_attr "type" "block")
+   ;; We don't clobber the conditions, but the potential length of this
+   ;; operation is sufficient to make conditionalizing the sequence 
+   ;; unlikely to be profitable.
+   (set_attr "conds" "clob")]
 )
 
 (define_expand "eh_epilogue"
