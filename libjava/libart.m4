@@ -32,7 +32,10 @@ AC_ARG_ENABLE(libarttest, [  --disable-libarttest       Do not try to compile an
      fi
   fi
 
-  AC_PATH_PROG(LIBART_CONFIG, libart-config, no)
+  AC_PATH_PROG(LIBART_CONFIG, libart2-config, no)
+  if test "$LIBART_CONFIG" = "no" ; then
+    AC_PATH_PROG(LIBART_CONFIG, libart-config, no)
+  fi
   min_libart_version=ifelse([$1], ,0.2.5,$1)
   AC_MSG_CHECKING(for LIBART - version >= $min_libart_version)
   no_libart=""
