@@ -1,3 +1,8 @@
+Fri Jun 18 09:11:07 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/telf.h (ASM_OUTPUT_DEF_FROM_DECLS): New Marco: USe
+	.thumb_set pseudo op to mark aliases of thumb functions.
+
 Wed Jun 16 18:19:13 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* varasm.c (assemble_alias): Use ASM_OUTPUT_DEF_FROM_DECLS in
