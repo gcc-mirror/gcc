@@ -5691,11 +5691,13 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
+      && old_decl != error_mark_node
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0
       && C_DECL_ISNT_PROTOTYPE (old_decl))
     warning ("function declaration isn%'t a prototype");
   /* Optionally warn of any global def with no previous prototype.  */
   else if (warn_missing_prototypes
+	   && old_decl != error_mark_node
 	   && TREE_PUBLIC (decl1)
 	   && !MAIN_NAME_P (DECL_NAME (decl1))
 	   && C_DECL_ISNT_PROTOTYPE (old_decl))
@@ -5703,7 +5705,9 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Optionally warn of any def with no previous prototype
      if the function has already been used.  */
   else if (warn_missing_prototypes
-	   && old_decl != 0 && TREE_USED (old_decl)
+	   && old_decl != 0
+	   && old_decl != error_mark_node
+	   && TREE_USED (old_decl)
 	   && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) == 0)
     warning ("%J%qD was used with no prototype before its definition",
 	     decl1, decl1);
@@ -5716,7 +5720,9 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Optionally warn of any def with no previous declaration
      if the function has already been used.  */
   else if (warn_missing_declarations
-	   && old_decl != 0 && TREE_USED (old_decl)
+	   && old_decl != 0
+	   && old_decl != error_mark_node
+	   && TREE_USED (old_decl)
 	   && C_DECL_IMPLICIT (old_decl))
     warning ("%J%qD was used with no declaration before its definition",
 	     decl1, decl1);
