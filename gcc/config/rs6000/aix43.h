@@ -116,10 +116,7 @@ do {									\
    defined.  */
 #undef CPLUSPLUS_CPP_SPEC			
 #define CPLUSPLUS_CPP_SPEC			\
-  "-D_XOPEN_SOURCE=500				\
-   -D_XOPEN_SOURCE_EXTENDED=1			\
-   -D_LARGE_FILE_API				\
-   -D_ALL_SOURCE				\
+  "-D_ALL_SOURCE				\
    %{maix64: -D__64BIT__}			\
    %{mpe: -I/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"

@@ -1,3 +1,10 @@
+2005-01-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix43.h (CPLUSPLUS_CPP_SPEC): Delete
+	_XOPEN_SOURCE, _XOPEN_SOURCE_EXTENDED, _LARGE_FILE_API.
+	* config/rs6000/aix51.h (CPLUSPLUS_CPP_SPEC): Same.
+	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Same.
+
 2005-01-18  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	PR target/19379

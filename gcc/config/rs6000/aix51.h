@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V5.
-   Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -118,10 +118,7 @@ do {									\
    defined.  */
 #undef CPLUSPLUS_CPP_SPEC                       
 #define CPLUSPLUS_CPP_SPEC			\
-  "-D_XOPEN_SOURCE=500				\
-   -D_XOPEN_SOURCE_EXTENDED=1			\
-   -D_LARGE_FILE_API				\
-   -D_ALL_SOURCE				\
+  "-D_ALL_SOURCE				\
    %{maix64: -D__64BIT__}			\
    %{mpe: -I/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
