@@ -56,9 +56,9 @@ public final class FloatBufferImpl extends FloatBuffer
     readOnly = false;
   }
   
-  public FloatBufferImpl(float[] array, int off, int lim)
+  public FloatBufferImpl(float[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }

@@ -56,9 +56,9 @@ public final class LongBufferImpl extends LongBuffer
     readOnly = false;
   }
 
-  public LongBufferImpl(long[] array, int off, int lim)
+  public LongBufferImpl(long[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }

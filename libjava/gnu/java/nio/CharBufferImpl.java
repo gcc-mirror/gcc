@@ -56,9 +56,9 @@ public final class CharBufferImpl extends CharBuffer
     readOnly = false;
   }
   
-  public CharBufferImpl(char[] array, int off, int lim)
+  public CharBufferImpl(char[] array, int offset, int length)
   {
-    super (array.length, lim, off, 0);
+    super (array.length, length, offset, 0);
     this.backing_buffer = array;
     readOnly = false;
   }
