@@ -4007,7 +4007,7 @@
 ; sparclet multiply/accumulate insns
 
 (define_insn "*smacsi"
-  [(set (match_operand:SI 0 "register_operand" "+r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "%r")
 			  (match_operand:SI 2 "arith_operand" "rI"))
 		 (match_operand:SI 3 "register_operand" "0")))]
@@ -4016,7 +4016,7 @@
   [(set_attr "type" "imul")])
 
 (define_insn "*smacdi"
-  [(set (match_operand:DI 0 "register_operand" "+r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (mult:DI (sign_extend:DI
 			   (match_operand:SI 1 "register_operand" "%r"))
 			  (sign_extend:DI
@@ -4027,7 +4027,7 @@
   [(set_attr "type" "imul")])
 
 (define_insn "*umacdi"
-  [(set (match_operand:DI 0 "register_operand" "+r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (mult:DI (zero_extend:DI
 			   (match_operand:SI 1 "register_operand" "%r"))
 			  (zero_extend:DI
