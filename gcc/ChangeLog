@@ -1,3 +1,21 @@
+2005-03-16  Richard Henderson  <rth@redhat.com>
+
+        PR middle-end/15700
+        * varasm.c (struct alias_pair): Rename from struct output_def_pair.
+        (alias_pairs): Rename from output_defs.
+        (find_decl_and_mark_needed): Split out from assemble_alias.
+        (do_assemble_alias): New.
+        (assemble_output_def): Remove.
+        (finish_aliases_1, finish_aliases_2): New.
+        (process_pending_assemble_output_defs): Remove.
+        (assemble_alias): Defer aliases for which we don't yet have a
+        non-external decl for the target symbol.
+        * passes.c (rest_of_decl_compilation): Register variables with cgraph.
+        * cgraphunit.c (cgraph_finalize_compilation_unit): Use finish_aliases_1.        * toplev.c (compile_file): Use finish_aliases_2 instead of
+        process_pending_assemble_output_defs.
+        * tree.h (finish_aliases_1, finish_aliases_2): Declare.
+        (process_pending_assemble_output_defs): Remove.
+
 2005-03-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/i386/emmintrin.h (_mm_extract_epi16): Correct the number

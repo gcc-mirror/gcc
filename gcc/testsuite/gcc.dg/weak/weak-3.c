@@ -52,18 +52,18 @@ void * foo1e (void)
 
 
 extern void * ffoo1f (void);    
-extern void * ffoox1f (void);
 void * foo1f (void)
 {
   if (ffoo1f) /* { dg-warning "" } */
     ffoo1f ();
   return 0;
 }
+void * ffoox1f (void) { return (void *)0; }
 extern void * ffoo1f (void)  __attribute__((weak, alias ("ffoox1f"))); /* { dg-warning "weak declaration" "weak declaration" } */
 
 
 extern void * ffoo1g (void);
-extern void * ffoox1g (void);
+void * ffoox1g (void) { return (void *)0; }
 extern void * ffoo1g (void)  __attribute__((weak, alias ("ffoox1g")));
 void * foo1g (void)
 {

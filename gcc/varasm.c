@@ -4353,66 +4353,63 @@ globalize_decl (tree decl)
   targetm.asm_out.globalize_label (asm_out_file, name);
 }
 
-/* Some targets do not allow a forward or undefined reference in a
-   ASM_OUTPUT_DEF.  Thus, a mechanism is needed to defer the output of
-   this assembler code.  The following struct holds the declaration
-   and target for a deferred output define.  */
-struct output_def_pair GTY(())
+/* We have to be able to tell cgraph about the needed-ness of the target
+   of an alias.  This requires that the decl have been defined.  Aliases
+   that preceed their definition have to be queued for later processing.  */
+
+struct alias_pair GTY(())
 {
   tree decl;
   tree target;
 };
-typedef struct output_def_pair *output_def_pair;
+typedef struct alias_pair *alias_pair;
 
 /* Define gc'd vector type.  */
-DEF_VEC_GC_P(output_def_pair);
+DEF_VEC_GC_P(alias_pair);
 
-/* Vector of output_def_pair pointers.  */
-static GTY(()) VEC(output_def_pair) *output_defs;
+static GTY(()) VEC(alias_pair) *alias_pairs;
 
-#ifdef ASM_OUTPUT_DEF
-/* Output the assembler code for a define (equate) using ASM_OUTPUT_DEF
-   or ASM_OUTPUT_DEF_FROM_DECLS.  The function defines the symbol whose
-   tree node is DECL to have the value of the tree node TARGET.  */
+/* Given an assembly name, find the decl it is associated with.  At the
+   same time, mark it needed for cgraph.  */
+
+static tree
+find_decl_and_mark_needed (tree decl, tree target)
+{
+  struct cgraph_node *fnode = NULL;
+  struct cgraph_varpool_node *vnode = NULL;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      fnode = cgraph_node_for_asm (target);
+      if (fnode == NULL)
+	vnode = cgraph_varpool_node_for_asm (target);
+    }
+  else
+    {
+      vnode = cgraph_varpool_node_for_asm (target);
+      if (vnode == NULL)
+	fnode = cgraph_node_for_asm (target);
+    }
+
+  if (fnode)
+    {
+      cgraph_mark_needed_node (fnode);
+      return fnode->decl;
+    }
+  else if (vnode)
+    {
+      cgraph_varpool_mark_needed_node (vnode);
+      return vnode->decl;
+    }
+  else 
+    return NULL_TREE;
+}
 
 static void
-assemble_output_def (tree decl ATTRIBUTE_UNUSED, tree target ATTRIBUTE_UNUSED)
+do_assemble_alias (tree decl, tree target)
 {
-#ifdef ASM_OUTPUT_DEF_FROM_DECLS
-  ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
-#else
-  ASM_OUTPUT_DEF (asm_out_file,
-		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-		  IDENTIFIER_POINTER (target));
-#endif
-}
-#endif
-
-/* Process the vector of pending assembler defines.  */
-
-void
-process_pending_assemble_output_defs (void)
-{
-#ifdef ASM_OUTPUT_DEF
-  unsigned i;
-  output_def_pair p;
-
-  for (i = 0; VEC_iterate (output_def_pair, output_defs, i, p); i++)
-    assemble_output_def (p->decl, p->target);
-
-  output_defs = NULL;
-#endif
-}
-
-/* Emit an assembler directive to make the symbol for DECL an alias to
-   the symbol for TARGET.  */
-
-void
-assemble_alias (tree decl, tree target)
-{
-  /* We must force creation of DECL_RTL for debug info generation, even though
-     we don't use it here.  */
-  make_decl_rtl (decl);
+  TREE_ASM_WRITTEN (decl) = 1;
+  TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
 
 #ifdef ASM_OUTPUT_DEF
   /* Make name accessible from other files, if appropriate.  */
@@ -4423,88 +4420,125 @@ assemble_alias (tree decl, tree target)
       maybe_assemble_visibility (decl);
     }
 
-  if (TARGET_DEFERRED_OUTPUT_DEFS (decl, target))
-    {
-      output_def_pair p;
+# ifdef ASM_OUTPUT_DEF_FROM_DECLS
+  ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
+# else
+  ASM_OUTPUT_DEF (asm_out_file,
+		  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		  IDENTIFIER_POINTER (target));
+# endif
+#elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
+  {
+    const char *name;
+    tree *p, t;
 
-      p = ggc_alloc (sizeof (struct output_def_pair));
+    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+# ifdef ASM_WEAKEN_DECL
+    ASM_WEAKEN_DECL (asm_out_file, decl, name, IDENTIFIER_POINTER (target));
+# else
+    ASM_OUTPUT_WEAK_ALIAS (asm_out_file, name, IDENTIFIER_POINTER (target));
+# endif
+    /* Remove this function from the pending weak list so that
+       we do not emit multiple .weak directives for it.  */
+    for (p = &weak_decls; (t = *p) ; )
+      if (DECL_ASSEMBLER_NAME (decl) == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
+	*p = TREE_CHAIN (t);
+      else
+	p = &TREE_CHAIN (t);
+  }
+#endif
+}
+
+/* First pass of completing pending aliases.  Make sure that cgraph knows
+   which symbols will be required.  */
+
+void
+finish_aliases_1 (void)
+{
+  unsigned i;
+  alias_pair p;
+
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+    {
+      tree target_decl;
+
+      target_decl = find_decl_and_mark_needed (p->decl, p->target);
+      if (target_decl == NULL)
+	error ("%J%qD aliased to undefined symbol %qE",
+	       p->decl, p->decl, p->target);
+      else if (DECL_EXTERNAL (target_decl))
+	error ("%J%qD aliased to external symbol %qE",
+	       p->decl, p->decl, p->target);
+    }
+}
+
+/* Second pass of completing pending aliases.  Emit the actual assembly.
+   This happens at the end of compilation and thus it is assured that the
+   target symbol has been emitted.  */
+
+void
+finish_aliases_2 (void)
+{
+  unsigned i;
+  alias_pair p;
+
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+    do_assemble_alias (p->decl, p->target);
+
+  alias_pairs = NULL;
+}
+
+/* Emit an assembler directive to make the symbol for DECL an alias to
+   the symbol for TARGET.  */
+
+void
+assemble_alias (tree decl, tree target)
+{
+  tree target_decl;
+
+#if !defined (ASM_OUTPUT_DEF)
+# if !defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL)
+  error ("%Jalias definitions not supported in this configuration", decl);
+  return;
+# else
+  if (!DECL_WEAK (decl))
+    {
+      error ("%Jonly weak aliases are supported in this configuration", decl);
+      return;
+    }
+# endif
+#endif
+
+  /* We must force creation of DECL_RTL for debug info generation, even though
+     we don't use it here.  */
+  make_decl_rtl (decl);
+  TREE_USED (decl) = 1;
+
+  /* A quirk of the initial implementation of aliases required that the user
+     add "extern" to all of them.  Which is silly, but now historical.  Do
+     note that the symbol is in fact locally defined.  */
+  DECL_EXTERNAL (decl) = 0;
+
+  /* Allow aliases to aliases.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    cgraph_node (decl);
+  else
+    cgraph_varpool_node (decl);
+
+  /* If the target has already been emitted, we don't have to queue the
+     alias.  This saves a tad o memory.  */
+  target_decl = find_decl_and_mark_needed (decl, target);
+  if (target_decl && TREE_ASM_WRITTEN (target_decl))
+    do_assemble_alias (decl, target);
+  else
+    {
+      alias_pair p;
+
+      p = ggc_alloc (sizeof (struct alias_pair));
       p->decl = decl;
       p->target = target;
-      VEC_safe_push (output_def_pair, output_defs, p);
+      VEC_safe_push (alias_pair, alias_pairs, p);
     }
-  else
-    assemble_output_def (decl, target);
-#else /* !ASM_OUTPUT_DEF */
-#if defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
-  if (DECL_WEAK (decl))
-    {
-      const char *name;
-      tree *p, t;
-
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-#ifdef ASM_WEAKEN_DECL
-      ASM_WEAKEN_DECL (asm_out_file, decl, name, IDENTIFIER_POINTER (target));
-#else
-      ASM_OUTPUT_WEAK_ALIAS (asm_out_file, name, IDENTIFIER_POINTER (target));
-#endif
-      /* Remove this function from the pending weak list so that
-	 we do not emit multiple .weak directives for it.  */
-      for (p = &weak_decls; (t = *p) ; )
-	if (DECL_ASSEMBLER_NAME (decl)
-	    == DECL_ASSEMBLER_NAME (TREE_VALUE (t)))
-	  *p = TREE_CHAIN (t);
-	else
-	  p = &TREE_CHAIN (t);
-    }
-  else
-    warning ("only weak aliases are supported in this configuration");
-
-#else
-  warning ("alias definitions not supported in this configuration; ignored");
-#endif
-#endif
-
-  /* Tell cgraph that the aliased symbol is needed.  We *could* be more
-     specific and tell cgraph about the relationship between the two
-     symbols, but given that aliases virtually always exist for a reason,
-     it doesn't seem worthwhile.  */
-  if (flag_unit_at_a_time)
-    {
-      struct cgraph_node *fnode = NULL;
-      struct cgraph_varpool_node *vnode = NULL;
-
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  fnode = cgraph_node_for_asm (target);
-	  if (fnode != NULL)
-	    cgraph_mark_needed_node (fnode);
-	  else
-	    {
-	      vnode = cgraph_varpool_node_for_asm (target);
-	      if (vnode != NULL)
-		cgraph_varpool_mark_needed_node (vnode);
-	    }
-	}
-      else
-	{
-	  vnode = cgraph_varpool_node_for_asm (target);
-	  if (vnode != NULL)
-	    cgraph_varpool_mark_needed_node (vnode);
-	  else
-	    {
-	      fnode = cgraph_node_for_asm (target);
-	      if (fnode != NULL)
-		cgraph_mark_needed_node (fnode);
-	    }
-	}
-
-      if (fnode == NULL && vnode == NULL)
-	warning ("%qD aliased to undefined symbol %qE", decl, target);
-    }
-
-  TREE_USED (decl) = 1;
-  TREE_ASM_WRITTEN (decl) = 1;
-  TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
 }
 
 /* Emit an assembler directive to set symbol for DECL visibility to

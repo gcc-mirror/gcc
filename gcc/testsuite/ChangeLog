@@ -1,3 +1,16 @@
+2005-03-16  Richard Henderson  <rth@redhat.com>
+
+        PR middle-end/15700
+        * gcc.c-torture/compile/20040323-1.c: Don't xfail for solaris.
+        (_rtld_global): New.
+        * gcc.dg/weak/weak-3.c (ffoox1f, ffoox1g): Define.
+        * gcc.dg/weak/weak-9.c (notf1, notf2, notf3, notf4): Define.
+
+        * gcc.dg/alias-3.c: New.
+        * gcc.dg/alias-4.c: New.
+        * gcc.dg/alias-5.c: New.
+        * gcc.dg/alias-6.c: New.
+
 2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20257
