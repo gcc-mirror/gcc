@@ -1,3 +1,8 @@
+2001-01-03  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* lib/target-supports.exp (check_alias_available): Modified to
+	indicate aliases not supported if only weak aliases are supported. 
+
 2001-01-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-8.c: Add more testcases.
