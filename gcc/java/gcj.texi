@@ -280,12 +280,12 @@ Otherwise, the current directory (@code{"."}) is appended.
 @item
 If @code{--bootclasspath} was specified, append its value.
 Otherwise, append the built-in system directory, @file{libgcj.jar}.
-@end itemize
 
 @item
 Finaly, if @code{--extdirs} was specified, append the contents of the
 specified directories at the end of the class path.  Otherwise, append
 the contents of the built-in extdirs at @code{$(prefix)/share/java/ext}.
+@end itemize
 
 The classfile built by @command{gcj} for the class @code{java.lang.Object}
 (and placed in @code{libgcj.jar}) contains a special zero length

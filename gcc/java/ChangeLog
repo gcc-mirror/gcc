@@ -1,3 +1,7 @@
+2002-04-10  Andreas Jaeger  <aj@suse.de>
+
+	* gcj.texi (Input Options): Fix extdirs patch.
+
 2002-04-10  Anthony Green  <green@redhat.com>
 
 	* jcf-path.c (jcf_path_init) : Clean up local extdirs declaration.
@@ -41,7 +45,7 @@
 	* gcj.texi (Invocation): Update JvAttachCurrentThread documentation.
 	Add note about handling uncaught exceptions. Add an exception handler
 	to example.
-	
+
 2002-04-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (resolve_qualified_expression_name): Clear "from_super" flag
@@ -49,7 +53,7 @@
 
 2002-04-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* gcj.texi (Invocation): Document CNI invocation API.	
+	* gcj.texi (Invocation): Document CNI invocation API.
 
 2002-04-05  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
 
@@ -91,7 +95,7 @@
 
 	Fix for PR java/5993:
 	* parse.y (resolve_package): Return the decl if resolution was
-	successful. Don't special case "java.lang" and "java.lang.reflect" 
+	successful. Don't special case "java.lang" and "java.lang.reflect"
 	packages. Set type_name to the merged identifier.
 	(resolved_qualified_expression_name): Print error using "name" if
 	resolve_package returns NULL_TREE.
@@ -307,18 +311,18 @@
 
 2002-02-20  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
 
-	* gcj.texi: Option `--classpath' becomes `--CLASSPATH.'Option 
-	`--CLASSPATH' becomes `--classpath.' 
-	* gjavah.c: Likewise. 
-	* jcf-dump.c: Likewise. 
-	* lang-options.h: Likewise. 
-	* lang.c: Likewise. 
-	* jcf-path.c: Updated comment. 
-	(jcf_path_classpath_arg): Renamed `jcf_path_CLASSPATH_arg.' 
-	(jcf_path_CLASSPATH_arg): Renamed `jcf_path_classpath_arg.' 
-	* jcf.h (jcf_path_CLASSPATH_arg): Ditto. 
-	(jcf_path_CLASSPATH_arg): Ditto. 
-	(classpath_u): Updated leading comment. 
+	* gcj.texi: Option `--classpath' becomes `--CLASSPATH.'Option
+	`--CLASSPATH' becomes `--classpath.'
+	* gjavah.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* lang-options.h: Likewise.
+	* lang.c: Likewise.
+	* jcf-path.c: Updated comment.
+	(jcf_path_classpath_arg): Renamed `jcf_path_CLASSPATH_arg.'
+	(jcf_path_CLASSPATH_arg): Renamed `jcf_path_classpath_arg.'
+	* jcf.h (jcf_path_CLASSPATH_arg): Ditto.
+	(jcf_path_CLASSPATH_arg): Ditto.
+	(classpath_u): Updated leading comment.
 
 2002-02-20  Per Bothner  <per@bothner.com>
 
@@ -402,7 +406,7 @@
 	current_function_decl before building JNI stub.
 
 2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
-	
+
 	* gcc/java/builtins.c (sqrt_builtin): Use BUILT_IN_SQRT, not
 	BUILT_IN_SQRTF.
 
