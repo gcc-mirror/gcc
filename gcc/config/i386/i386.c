@@ -6016,6 +6016,92 @@ ix86_expand_fp_movcc (operands)
   rtx tmp;
   rtx compare_op, second_test, bypass_test;
 
+  /* For SF/DFmode conditional moves based on comparisons
+     in same mode, we may want to use SSE min/max instructions.  */
+  if (((TARGET_SSE && GET_MODE (operands[0]) == SFmode)
+       || (TARGET_SSE2 && GET_MODE (operands[0]) == DFmode))
+      && GET_MODE (ix86_compare_op0) == GET_MODE (operands[0])
+      /* We may be called from the post-reload splitter.  */
+      && (!REG_P (operands[0])
+	  || SSE_REG_P (operands[0])
+	  || REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
+    {
+      rtx op0 = ix86_compare_op0, op1 = ix86_compare_op1;
+      code = GET_CODE (operands[1]);
+
+      /* See if we have (cross) match between comparison operands and
+         conditional move operands.  */
+      if (rtx_equal_p (operands[2], op1))
+	{
+	  rtx tmp = op0;
+	  op0 = op1;
+	  op1 = tmp;
+	  code = reverse_condition_maybe_unordered (code);
+	}
+      if (rtx_equal_p (operands[2], op0) && rtx_equal_p (operands[3], op1))
+	{
+	  /* Check for min operation.  */
+	  if (code == LT)
+	    {
+	       operands[0] = force_reg (GET_MODE (operands[0]), operands[0]);
+	       if (memory_operand (op0, VOIDmode))
+		 op0 = force_reg (GET_MODE (operands[0]), op0);
+	       if (GET_MODE (operands[0]) == SFmode)
+		 emit_insn (gen_minsf3 (operands[0], op0, op1));
+	       else
+		 emit_insn (gen_mindf3 (operands[0], op0, op1));
+	       return 1;
+	    }
+	  /* Check for max operation.  */
+	  if (code == GT)
+	    {
+	       operands[0] = force_reg (GET_MODE (operands[0]), operands[0]);
+	       if (memory_operand (op0, VOIDmode))
+		 op0 = force_reg (GET_MODE (operands[0]), op0);
+	       if (GET_MODE (operands[0]) == SFmode)
+		 emit_insn (gen_maxsf3 (operands[0], op0, op1));
+	       else
+		 emit_insn (gen_maxdf3 (operands[0], op0, op1));
+	       return 1;
+	    }
+	}
+      /* Manage condition to be sse_comparison_operator.  In case we are
+	 in non-ieee mode, try to canonicalize the destination operand
+	 to be first in the comparison - this helps reload to avoid extra
+	 moves.  */
+      if (!sse_comparison_operator (operands[1], VOIDmode)
+	  || (rtx_equal_p (operands[0], ix86_compare_op1) && !TARGET_IEEE_FP))
+	{
+	  rtx tmp = ix86_compare_op0;
+	  ix86_compare_op0 = ix86_compare_op1;
+	  ix86_compare_op1 = tmp;
+	  operands[1] = gen_rtx_fmt_ee (swap_condition (GET_CODE (operands[1])),
+					VOIDmode, ix86_compare_op0,
+					ix86_compare_op1);
+	}
+      /* Similary try to manage result to be first operand of conditional
+	 move. */
+      if (rtx_equal_p (operands[0], operands[3]))
+	{
+	  rtx tmp = operands[2];
+	  operands[2] = operands[3];
+	  operands[2] = tmp;
+	  operands[1] = gen_rtx_fmt_ee (reverse_condition_maybe_unordered
+					  (GET_CODE (operands[1])),
+					VOIDmode, ix86_compare_op0,
+					ix86_compare_op1);
+	}
+      if (GET_MODE (operands[0]) == SFmode)
+	emit_insn (gen_sse_movsfcc (operands[0], operands[1],
+				    operands[2], operands[3],
+				    ix86_compare_op0, ix86_compare_op1));
+      else
+	emit_insn (gen_sse_movdfcc (operands[0], operands[1],
+				    operands[2], operands[3],
+				    ix86_compare_op0, ix86_compare_op1));
+      return 1;
+    }
+
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 

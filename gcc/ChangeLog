@@ -1,3 +1,9 @@
+Wed Feb 28 19:28:06 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse_mov?fcc*): New patterns and splitters.
+	* i386.c (ix86_expand_movcc): Work post-reload; recognize
+	the SSE based conditional moves.
+
 Wed Feb 28 19:18:23 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (attribute mode): Add "TI".
