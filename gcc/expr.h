@@ -888,7 +888,12 @@ extern rtx emit_store_flag_force PARAMS ((rtx, enum rtx_code, rtx, rtx,
 
 /* Functions from loop.c:  */
 
-/* Given a JUMP_INSN, return a description of the test being made.  */
+/* Given an insn and condition, return a canonical description of
+   the test being made.  */
+extern rtx canonicalize_condition PARAMS ((rtx, rtx, int, rtx *));
+
+/* Given a JUMP_INSN, return a canonical description of the test
+   being made.  */
 extern rtx get_condition PARAMS ((rtx, rtx *));
 
 /* Generate a conditional trap instruction.  */

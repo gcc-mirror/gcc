@@ -4062,6 +4062,24 @@ tree_int_cst_lt (t1, t2)
   return INT_CST_LT_UNSIGNED (t1, t2);
 }
 
+/* Return the most significant bit of the integer constant T.  */
+
+int
+tree_int_cst_msb (t)
+     tree t;
+{
+  register int prec;
+  HOST_WIDE_INT h;
+  HOST_WIDE_INT l;
+
+  /* Note that using TYPE_PRECISION here is wrong.  We care about the
+     actual bits, not the (arbitrary) range of the type.  */
+  prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (t))) - 1;
+  rshift_double (TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t), prec,
+		 2 * HOST_BITS_PER_WIDE_INT, &l, &h, 0);
+  return (l & 1) == 1;
+  }
+
 /* Return an indication of the sign of the integer constant T.
    The return value is -1 if T < 0, 0 if T == 0, and 1 if T > 0.
    Note that -1 will never be returned it T's type is unsigned.  */
