@@ -1,3 +1,7 @@
+2001-10-04  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (_Jv_JNI_DeleteLocalRef): Use correct frame size
+
 2001-10-04  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/reflect/Modifier.java: Merge with Classpath
