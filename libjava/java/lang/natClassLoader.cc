@@ -592,20 +592,17 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
   int dm_count = ObjectClass.vtable_method_count;
 
-  // Create a new vtable by copying Object's vtable (except the
-  // class pointer, of course).  Note that we allocate this as
-  // unscanned memory -- the vtables are handled specially by the
-  // GC.
-  int size = (sizeof (_Jv_VTable) + ((dm_count - 1) * sizeof (void *)));
+  // Create a new vtable by copying Object's vtable.
   _Jv_VTable *vtable;
   if (array_vtable)
     vtable = array_vtable;
   else
-    vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
+    vtable = _Jv_VTable::new_vtable (dm_count);
   vtable->clas = array_class;
-  memcpy (vtable->method, ObjectClass.vtable->method,
-	  dm_count * sizeof (void *));
   vtable->gc_descr = ObjectClass.vtable->gc_descr;
+  for (int i = 0; i < dm_count; ++i)
+    vtable->set_method (i, ObjectClass.vtable->get_method (i));
+
   array_class->vtable = vtable;
   array_class->vtable_method_count = ObjectClass.vtable_method_count;
 

@@ -1,3 +1,12 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* include/jvm.h (_Jv_VTable): Handle function descriptors for ia64;
+	add get_method, set_method, vtable_elt_size, new_vtable.
+	(_Jv_ArrayVTable): Derive from _Jv_VTable.
+	* resolve.cc (_Jv_PrepareClass): Use new _Jv_VTable methods.
+	* interpret.cc (_Jv_InterpMethod::continue1): Likewise.
+	* java/lang/natClassLoader.cc (_Jv_NewArrayClass): Likewise.
+
 2001-09-17  Jeff Sturm  <jsturm@one-point.com>
 
 	* gnu/gcj/convert/UnicodeToBytes.java (write): Write work buffer
@@ -105,7 +114,7 @@
 	
 20010617 Release Manager
 
-        * GCC 3.0 Released.
+	* GCC 3.0 Released.
 
 2001-06-13  Tom Tromey  <tromey@redhat.com>
 
@@ -167,23 +176,23 @@
 
 2001-05-29  Andrew Haley  <aph@redhat.com>
 
-        * include/i386-signal.h (MAKE_THROW_FRAME): Don't fix up frame
-        pointer: the dwarf unwinder in libgcc will do everything that's
-        needed.
-        (HANDLE_DIVIDE_OVERFLOW): Tidy.  Don't mess with stack frames any
-        more than we absolutely need to.
-        * configure.host (EXCEPTIONSPEC): Remove libgcj_sjlj on Alpha.
-        * configure.in (SIGNAL_HANDLER): Use include/dwarf2-signal.h on
-        Alpha.
-        (SIGNAL_HANDLER): Test "$enable_sjlj_exceptions", not
-        "$libgcj_sjlj".
-        * configure: Rebuilt.
-        * include/dwarf2-signal.h (MAKE_THROW_FRAME): Adjust PC
-        for Alpha.
-        (SIGNAL_HANDLER): Use siginfo style handler.
-        (INIT_SEGV): Likewise.
-        (INIT_FPE): Likewise.
-        * include/ppc-signal.h: Delete whole file.
+	* include/i386-signal.h (MAKE_THROW_FRAME): Don't fix up frame
+	pointer: the dwarf unwinder in libgcc will do everything that's
+	needed.
+	(HANDLE_DIVIDE_OVERFLOW): Tidy.  Don't mess with stack frames any
+	more than we absolutely need to.
+	* configure.host (EXCEPTIONSPEC): Remove libgcj_sjlj on Alpha.
+	* configure.in (SIGNAL_HANDLER): Use include/dwarf2-signal.h on
+	Alpha.
+	(SIGNAL_HANDLER): Test "$enable_sjlj_exceptions", not
+	"$libgcj_sjlj".
+	* configure: Rebuilt.
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME): Adjust PC
+	for Alpha.
+	(SIGNAL_HANDLER): Use siginfo style handler.
+	(INIT_SEGV): Likewise.
+	(INIT_FPE): Likewise.
+	* include/ppc-signal.h: Delete whole file.
 
 2001-05-23  Jeff Sturm  <jsturm@one-point.com>
 
@@ -219,7 +228,7 @@
 	* include/dwarf2-signal.h: New file.	
 	* configure.in (SYSDEP_SOURCES): Add dwarf2-signal.h for PPC.
 	* configure.host (EXCEPTIONSPEC): Don't use sjlj on PPC.
-        * configure: Rebuilt.
+	* configure: Rebuilt.
 
 2001-05-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
