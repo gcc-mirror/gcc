@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,7 +35,7 @@
 #include <bits/atomicity.h>
 #include <bits/concurrence.h>
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
   // Defined in globals.cc.
   extern std::locale 		c_locale;
@@ -88,11 +88,11 @@ namespace __gnu_cxx
   extern std::__moneypunct_cache<wchar_t>	moneypunct_cache_wt;
   extern std::__timepunct_cache<wchar_t>	timepunct_cache_w;
 #endif
-} // namespace __gnu_cxx
+} // namespace __gnu_internal
 
 namespace std 
 {
-  using namespace __gnu_cxx;
+  using namespace __gnu_internal;
 
   locale::locale() throw()
   { 

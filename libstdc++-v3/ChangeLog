@@ -1,3 +1,10 @@
+2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/globals_io.cc: Change to __gnu_internal namespace.
+	* src/globals_locale.cc: Same.
+	* src/locale_init.cc: Same.
+	* src/ios_init.cc: Same.
+	
 2004-01-28  Stefan Olsson  <stefan@snon.net>
 
  	* include/ext/mt_allocator.h: Replaced all malloc() calls with

@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,9 +74,10 @@ namespace std
 #endif
 } // namespace std
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
   using namespace std;
+  using namespace __gnu_cxx;
 
   // We use different stream buffer types depending on whether
   // ios_base::sync_with_stdio(false) has been called.
@@ -125,4 +126,4 @@ namespace __gnu_cxx
   _GLIBCXX_mutex_address_init ()
   { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCXX_mutex_address); }
 #endif
-} // namespace __gnu_cxx
+} // namespace __gnu_internal

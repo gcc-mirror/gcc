@@ -40,8 +40,10 @@
 #include <ext/stdio_filebuf.h>
 #include <ext/stdio_sync_filebuf.h>
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
+  using namespace __gnu_cxx;
+
   // Extern declarations for global objects in src/globals.cc.
   extern stdio_sync_filebuf<char> buf_cout_sync;
   extern stdio_sync_filebuf<char> buf_cin_sync;
@@ -60,11 +62,11 @@ namespace __gnu_cxx
   extern stdio_filebuf<wchar_t> buf_wcin;
   extern stdio_filebuf<wchar_t> buf_wcerr;
 #endif
-} // namespace __gnu_cxx
+} // namespace __gnu_internal
 
 namespace std 
 {
-  using namespace __gnu_cxx;
+  using namespace __gnu_internal;
   
   extern istream cin;
   extern ostream cout;
