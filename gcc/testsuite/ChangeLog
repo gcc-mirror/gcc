@@ -1,3 +1,8 @@
+2003-09-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/bitfield11.C: New test.
+	* g++.dg/abi/bitfield12.C: Likewise.
+
 2003-09-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/cpp/separate-1.c: Adjust line of error.  Test for correct
