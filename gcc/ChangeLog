@@ -1,5 +1,7 @@
 Thu Apr  2 06:19:25 1998  Ken Raeburn  <raeburn@cygnus.com>
 
+	* Makefile.in (version.c): Put "cvs log" output in build directory.
+
 	* reload.h (MEMORY_MOVE_COST): Define here if not already defined.
 	(memory_move_secondary_cost): Declare.
 	* regclass.c (MEMORY_MOVE_COST): Don't define default here.
