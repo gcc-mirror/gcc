@@ -145,7 +145,6 @@ extern const char *mmix_cc1_ignored_option;
     {								\
       builtin_define ("__mmix__");				\
       builtin_define ("__MMIX__");				\
-      builtin_define ("__LONG_MAX__=9223372036854775807L");	\
       if (TARGET_ABI_GNU)					\
 	builtin_define ("__MMIX_ABI_GNU__");			\
       else							\

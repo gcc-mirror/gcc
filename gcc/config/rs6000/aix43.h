@@ -103,7 +103,7 @@ do {									\
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
    %{ansi: -D_ANSI_C_SOURCE}\
-   %{maix64: -D__64BIT__ -D__LONG_MAX__=9223372036854775807L}\
+   %{maix64: -D__64BIT__}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
    %{pthread: -D_THREAD_SAFE}"
 
@@ -114,9 +114,9 @@ do {									\
   "-D_XOPEN_SOURCE=500				\
    -D_XOPEN_SOURCE_EXTENDED=1			\
    -D_LARGE_FILE_API				\
-   -D_ALL_SOURCE                                \
-   %{maix64: -D__64BIT__ -D__LONG_MAX__=9223372036854775807L}\
-   %{mpe: -I/usr/lpp/ppe.poe/include}\
+   -D_ALL_SOURCE				\
+   %{maix64: -D__64BIT__}			\
+   %{mpe: -I/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
 
 #undef TARGET_DEFAULT

@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 
-#define CPP_PREDEFINES "-Dxstormy16 -Amachine=xstormy16 -D__INT_MAX__=32767"
+#define CPP_PREDEFINES "-Dxstormy16 -Amachine=xstormy16"
 
 /* This declaration should be present.  */
 extern int target_flags;

@@ -101,22 +101,22 @@ do {									\
 -D_AIX -D_AIX32 -D_AIX41 -D_AIX43 -D_AIX51 -Asystem=unix -Asystem=aix"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
-  %{ansi: -D_ANSI_C_SOURCE}\
-  %{maix64: -D__64BIT__ -D__LONG_MAX__=9223372036854775807L}
-  %{mpe: -I/usr/lpp/ppe.poe/include}\
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}	\
+  %{ansi: -D_ANSI_C_SOURCE}			\
+  %{maix64: -D__64BIT__}			\
+  %{mpe: -I/usr/lpp/ppe.poe/include}		\
   %{pthread: -D_THREAD_SAFE}"
 
 /* The GNU C++ standard library requires that these macros be 
    defined.  */
 #undef CPLUSPLUS_CPP_SPEC                       
-#define CPLUSPLUS_CPP_SPEC                      \
-  "-D_XOPEN_SOURCE=500                          \
-   -D_XOPEN_SOURCE_EXTENDED=1                   \
-   -D_LARGE_FILE_API                            \
-   -D_ALL_SOURCE                                \
-   %{maix64: -D__64BIT__ -D__LONG_MAX__=9223372036854775807L}
-   %{mpe: -I/usr/lpp/ppe.poe/include}\
+#define CPLUSPLUS_CPP_SPEC			\
+  "-D_XOPEN_SOURCE=500				\
+   -D_XOPEN_SOURCE_EXTENDED=1			\
+   -D_LARGE_FILE_API				\
+   -D_ALL_SOURCE				\
+   %{maix64: -D__64BIT__}			\
+   %{mpe: -I/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
 
 #undef TARGET_DEFAULT

@@ -38,10 +38,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__AVR_MEGA__");	\
       if (TARGET_NO_INTERRUPTS)			\
 	builtin_define ("__NO_INTERRUPTS__");	\
-      if (TARGET_INT8)				\
-	builtin_define ("__INT_MAX__=127");	\
-      else					\
-	builtin_define ("__INT_MAX__=32767");	\
     }						\
   while (0)
 

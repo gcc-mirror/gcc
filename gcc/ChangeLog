@@ -1,5 +1,24 @@
 2002-06-11  Richard Henderson  <rth@redhat.com>
 
+	* c-common.c (builtin_define_type_max): New.
+	(cb_register_builtins): Define __SCHAR_MAX__, __SHRT_MAX__,
+	__INT_MAX__, __LONG_MAX__, __LONG_LONG_MAX__, __CHAR_BIT__.
+
+	From Joseph S. Myers:
+	* glimits.h: Rewrite to expect the double underscore definitions
+	from the compiler.
+
+	* config/alpha/unicosmk.h, config/avr/avr.h, config/h8300/h8300.h,
+	config/i386/linux64.h, config/ia64/aix.h, config/ia64/hpux.h,
+	config/ia64/ia64.h, config/m68hc11/m68hc11.h, config/m68hc11/m68hc12.h,
+	config/mips/mips.h, config/mmix/mmix.h, config/mn10200/mn10200.h,
+	config/pa/pa.h, config/rs6000/aix43.h, config/rs6000/aix51.h,
+	config/rs6000/linux64.h, config/s390/linux.h, config/sh/sh.h,
+	config/stormy16/stormy16.h: Don't define any of __SHRT_MAX__,
+	__INT_MAX__, __LONG_MAX__, or __LONG_LONG_MAX__.
+
+2002-06-11  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (ALPHA_BUILTIN_THREAD_POINTER): New.
 	(ALPHA_BUILTIN_SET_THREAD_POINTER): New.
 	(code_for_builtns): Update.

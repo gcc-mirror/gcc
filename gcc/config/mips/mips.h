@@ -417,9 +417,6 @@ extern void		sbss_section PARAMS ((void));
       if (TARGET_SINGLE_FLOAT)					\
 	  builtin_define ("__mips_single_float");		\
 								\
-      if (TARGET_LONG64)					\
-	  builtin_define ("__LONG_MAX__=9223372036854775807L"); \
-								\
       if (TARGET_BIG_ENDIAN)					\
 	{							\
 	  builtin_define_std ("MIPSEB");			\

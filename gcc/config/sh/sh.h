@@ -65,9 +65,6 @@ do { \
 				   TARGET_SHMEDIA ? "1" : "0", 0); \
 	if (! TARGET_FPU_DOUBLE) \
 	  builtin_define ("__SH4_NOFPU__"); \
-	if (TARGET_SHMEDIA64) \
-	  builtin_define_with_value ("__LONG_MAX__", \
-				     "9223372036854775807L", 0); \
       } \
     } \
   if (TARGET_HITACHI) \

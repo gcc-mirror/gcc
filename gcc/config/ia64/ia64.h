@@ -212,14 +212,8 @@ extern const char *ia64_tls_size_string;
    CPP.  It can also specify how to translate options you give to GNU CC into
    options for GNU CC to pass to the CPP.  */
 
-/* ??? __LONG_MAX__ depends on LP64/ILP32 switch.  */
-/* ??? An alternative is to modify glimits.h to check for __LP64__ instead
-   of checked for CPU specific defines.  We could also get rid of all LONG_MAX
-   defines in other tm.h files.  */
 #define CPP_SPEC \
-  "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__}	\
-   %(cpp_cpu)	\
-   -D__LONG_MAX__=9223372036854775807L"
+  "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__} %(cpp_cpu)"
 
 /* A C string constant that tells the GNU CC driver program options to pass to
    `cc1'.  It can also specify how to translate options you give to GNU CC into
