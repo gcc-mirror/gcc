@@ -1,3 +1,14 @@
+2004-09-24  Paul Brook  <paul@codesourcery.com>
+
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: XFAIL more arm
+	simulator targets.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: Ditto.
+	* testsuite/27_io/basic_istream/readsome/char/6746-2.cc: Ditto.
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Ditto.
+	* testsuite/ext/stdio_filebuf/char/10063-3.cc: Ditto.
+
 2004-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/20_util/memory/auto_ptr/assign_neg.cc

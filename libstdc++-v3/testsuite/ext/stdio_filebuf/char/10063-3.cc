@@ -18,7 +18,7 @@
 
 // The ARM simulator does not provide support for "fstat", which
 // causes "sbumpc" to return an incorrect value.
-// { dg-do run { xfail arm-none-elf } }
+// { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
 #include <cstdio>
 #include <fstream>

@@ -20,7 +20,7 @@
 
 // The ARM simulator does not provide support for "fstat", which
 // causes "in_avail" to return an incorrect value.
-// { dg-do run { xfail arm-none-elf } }
+// { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
 
 // 27.6.1.3 unformatted input functions
 // @require@ %-*.tst %-*.txt
