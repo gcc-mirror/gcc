@@ -426,10 +426,11 @@
 		 (match_operand:SI 2 "add_operand" "")))]
   ""
   "
-{ emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (DImode, operands[0]),
-			  gen_rtx_PLUS (DImode,
-					gen_lowpart (DImode, operands[1]),
-					gen_lowpart (DImode, operands[2]))));
+{
+  rtx tmp = gen_reg_rtx (DImode);
+  emit_insn (gen_adddi3 (tmp, gen_lowpart (DImode, operands[1]),
+			 gen_lowpart (DImode, operands[2])));
+  emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
   DONE;
 } ")
 
@@ -712,10 +713,11 @@
 		  (match_operand:SI 2 "reg_or_8bit_operand" "")))]
   ""
   "
-{ emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (DImode, operands[0]),
-			  gen_rtx_MINUS (DImode,
-					 gen_lowpart (DImode, operands[1]),
-					 gen_lowpart (DImode, operands[2]))));
+{
+  rtx tmp = gen_reg_rtx (DImode);
+  emit_insn (gen_subdi3 (tmp, gen_lowpart (DImode, operands[1]),
+			 gen_lowpart (DImode, operands[2])));
+  emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
   DONE;
 } ")
 

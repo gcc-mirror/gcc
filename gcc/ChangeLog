@@ -1,3 +1,8 @@
+Thu Nov  5 03:29:19 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (addsi3, subsi3): Expand to a DImode temporary so as
+	to expose this midpoint to CSE.
+
 Thu Nov  5 03:42:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movdf_const_intreg_sp64): Enable again.
