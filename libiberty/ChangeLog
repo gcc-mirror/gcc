@@ -1,3 +1,15 @@
+2000-08-23  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (result_close_template_list): Remove function.
+	(result_add_separated_char): New function.
+	(result_open_template_list): New macro.
+	(result_close_template_list): Likewise.
+	(demangle_prefix): Don't set template_p if the
+	prefix ends with a ctor name.
+	(demangle_type_ptr): Remove duplicate RETURN_IF_ERROR.
+	(demangle_type): Check for template args after substitution.
+	(demangle_template_args): Use result_open_template_list.
+	
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* pexecute.c:  Don't use vfork.  Initialize 'pid' before retry loop.
