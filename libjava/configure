@@ -3279,7 +3279,7 @@ test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
 
 case "${host}" in
     *mingw*)
-      SYSTEMSPEC="-lgdi32 -lwsock32 -lws2_32"
+      SYSTEMSPEC="-lgdi32 -lws2_32"
       if test "${with_win32_nlsapi}" = "unicows"; then
         SYSTEMSPEC="-lunicows $SYSTEMSPEC"
       fi

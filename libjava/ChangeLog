@@ -1,3 +1,12 @@
+2004-08-01  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libgcj/16814
+	* configure.in [host *mingw*] (SYSTEMSPEC): Remove -lwsock32.
+	* configure. Regenerate.
+	* include/win32.h: Explicitly include winsock2.h
+	* win32.cc (_Jv_platform_initialize): Require version 2.2 of
+	Winsock api.
+
 2004-07-30  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/zip/GZIPInputStream.java

@@ -256,7 +256,7 @@ _Jv_platform_initialize (void)
 {
   // Initialise winsock for networking
   WSADATA data;
-  if (WSAStartup (MAKEWORD (1, 1), &data))
+  if (WSAStartup (MAKEWORD (2, 2), &data))
     MessageBox (NULL, _T("Error initialising winsock library."), _T("Error"),
     MB_OK | MB_ICONEXCLAMATION);
 
