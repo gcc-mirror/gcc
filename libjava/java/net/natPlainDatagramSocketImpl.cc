@@ -152,9 +152,9 @@ java::net::PlainDatagramSocketImpl::create ()
   int sock = ::socket (AF_INET, SOCK_DGRAM, 0);
   if (sock < 0)
     {
-      char msg[100];
+      char msg[80];
       char* strerr = strerror (errno);
-      sprintf (msg, "DatagramSocketImpl.create: %.*s", 80, strerr);
+      sprintf (msg, "%.*s", 80, strerr);
       JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
     }
   fnum = sock;
@@ -206,9 +206,9 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
       return;
     }
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.bind: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::BindException (JvNewStringUTF (msg)));
 }
 
@@ -246,9 +246,9 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
   i->address = raddr;
   return rport;
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.peek: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -284,9 +284,9 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.send: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -344,9 +344,9 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   p->setLength ((jint) retlen);
   return;
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.receive: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -359,9 +359,9 @@ java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
   if (::setsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
     return;
 
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.setTimeToLive: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -374,9 +374,9 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
   if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
     return ((int) val) & 0xFF;
 
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.getTimeToLive: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -423,10 +423,9 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.%s: %.*s", join ? "join" : "leave", 80,
-    strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -531,9 +530,9 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
     }
 
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.setOption: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
 
@@ -633,9 +632,9 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
     }
 
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "DatagramSocketImpl.getOption: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
 
