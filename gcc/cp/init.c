@@ -2522,7 +2522,7 @@ build_new (placement, decl, init, use_global_new)
       TREE_CALLS_NEW (rval) = 1;
     }
 
-  if (check_new && rval)
+  if ((flag_exceptions || check_new) && rval)
     alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;
@@ -2705,13 +2705,34 @@ build_new (placement, decl, init, use_global_new)
 	  rval = xval;
 	}
 #endif
+
+      /* If any part of the object initialization terminates by throwing
+	 an exception and the new-expression does not contain a
+	 new-placement, then the deallocation function is called to free
+	 the memory in which the object was being constructed.  */
+      /* FIXME: handle placement delete.  */
+      if (flag_exceptions && ! placement)
+	{
+	  tree cleanup;
+
+	  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
+	      && (TYPE_GETS_DELETE (true_type) & (1 << has_array)))
+	    cleanup = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL,
+				      alloc_expr, size, NULL_TREE);
+	  else
+	    cleanup = build_builtin_call
+	      (void_type_node, BID, build_expr_list (NULL_TREE, alloc_expr));
+					 
+	  rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
+	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
+	}
     }
   else if (TYPE_READONLY (true_type))
     cp_error ("uninitialized const in `new' of `%#T'", true_type);
 
  done:
 
-  if (alloc_expr && rval != alloc_expr)
+  if (check_new && alloc_expr && rval != alloc_expr)
     {
       /* Did we modify the storage?  */
       tree ifexp = build_binary_op (NE_EXPR, alloc_expr,
