@@ -1,3 +1,7 @@
+2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* toplev.c (display_target_options): Don't print twice.
+
 Wed Dec  5 00:42:16 EST 2001  John Wehle  (john@feith.com)
 
 	* emit-rtl.c (set_unique_reg_note): Don't set
