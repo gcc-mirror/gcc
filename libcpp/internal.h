@@ -308,7 +308,7 @@ struct cpp_reader
   struct line_maps *line_table;
 
   /* The line of the '#' of the current directive.  */
-  fileline directive_line;
+  source_location directive_line;
 
   /* Memory buffers.  */
   _cpp_buff *a_buff;		/* Aligned permanent storage.  */
@@ -421,7 +421,7 @@ struct cpp_reader
     uchar *base;
     uchar *limit;
     uchar *cur;
-    fileline first_line;
+    source_location first_line;
   } out;
 
   /* Used for buffer overlays by cpptrad.c.  */
