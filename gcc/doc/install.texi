@@ -3324,7 +3324,7 @@ Tensilica Instruction Extension (TIE) language are only supported
 through inline assembly.
 
 The Xtensa configuration information must be specified prior to
-building GCC@.  The @file{gcc/config/xtensa/xtensa-config.h} header
+building GCC@.  The @file{include/xtensa-config.h} header
 file contains the configuration information.  If you created your
 own Xtensa configuration with the Xtensa Processor Generator, the
 downloaded files include a customized copy of this header file,

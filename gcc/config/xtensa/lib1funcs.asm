@@ -28,7 +28,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#include "xtensa/xtensa-config.h"
+#include "xtensa-config.h"
 
 	# Define macros for the ABS and ADDX* instructions to handle cases
 	# where they are not included in the Xtensa processor configuration.
