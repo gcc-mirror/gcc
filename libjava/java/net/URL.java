@@ -147,7 +147,7 @@ public final class URL implements Serializable
   /**
    * The protocol handler in use for this URL
    */
-  transient URLStreamHandler handler;
+  transient URLStreamHandler ph;
 
   /**
    * This a table where we cache protocol handlers to avoid the overhead
@@ -223,24 +223,25 @@ public final class URL implements Serializable
    * @since 1.2
    */
   public URL(String protocol, String host, int port, String file,
-    URLStreamHandler handler) throws MalformedURLException
+	     URLStreamHandler ph)
+    throws MalformedURLException
   {
     if (protocol == null)
       throw new MalformedURLException("null protocol");
     this.protocol = protocol.toLowerCase();
 
-    if (handler != null)
+    if (ph != null)
       {
 	SecurityManager s = System.getSecurityManager();
 	if (s != null)
 	  s.checkPermission (new NetPermission ("specifyStreamHandler"));
 
-        this.handler = handler;
+        this.ph = ph;
       }
     else
-      this.handler = getURLStreamHandler(protocol);
+      this.ph = getURLStreamHandler(protocol);
 
-    if (this.handler == null)
+    if (this.ph == null)
       throw new MalformedURLException (
 		      "Protocol handler not found: " + protocol);
 
@@ -328,7 +329,7 @@ public final class URL implements Serializable
    *
    * @since 1.2
    */
-  public URL(URL context, String spec, URLStreamHandler handler)
+  public URL(URL context, String spec, URLStreamHandler ph)
     throws MalformedURLException
   {
     /* A protocol is defined by the doc as the substring before a ':'
@@ -381,18 +382,18 @@ public final class URL implements Serializable
       throw new
 	  MalformedURLException("Absolute URL required with null context");
 
-    if (handler != null)
+    if (ph != null)
       {
 	SecurityManager s = System.getSecurityManager ();
 	if (s != null)
 	  s.checkPermission (new NetPermission ("specifyStreamHandler"));
 
-        this.handler = handler;
+        this.ph = ph;
       }
     else
-      this.handler = getURLStreamHandler(protocol);
+      this.ph = getURLStreamHandler(protocol);
 
-    if (this.handler == null)
+    if (this.ph == null)
       throw new MalformedURLException("Protocol handler not found: "
 				      + protocol);
 
@@ -400,8 +401,8 @@ public final class URL implements Serializable
     // is to be excluded by passing the 'limit' as the indexOf the '#'
     // if one exists, otherwise pass the end of the string.
     int hashAt = spec.indexOf('#', colon + 1);
-    this.handler.parseURL(this, spec, colon + 1,
-			  hashAt < 0 ? spec.length() : hashAt);
+    this.ph.parseURL(this, spec, colon + 1,
+		     hashAt < 0 ? spec.length() : hashAt);
     if (hashAt >= 0)
       ref = spec.substring(hashAt + 1);
 
@@ -423,7 +424,7 @@ public final class URL implements Serializable
     if (obj == null || ! (obj instanceof URL))
       return false;
 
-    return handler.equals (this, (URL) obj);
+    return ph.equals (this, (URL) obj);
   }
 
   /**
@@ -512,7 +513,7 @@ public final class URL implements Serializable
    */
   public int getDefaultPort()
   {
-    return handler.getDefaultPort();
+    return ph.getDefaultPort();
   }
 
   /**
@@ -566,7 +567,7 @@ public final class URL implements Serializable
     if (hashCode != 0)
       return hashCode;		// Use cached value if available.
     else
-      return handler.hashCode (this);
+      return ph.hashCode (this);
   }
 
   /**
@@ -579,7 +580,7 @@ public final class URL implements Serializable
    */
   public URLConnection openConnection() throws IOException
   {
-    return handler.openConnection(this);
+    return ph.openConnection(this);
   }
 
   /**
@@ -605,7 +606,7 @@ public final class URL implements Serializable
    */
   public boolean sameFile(URL other)
   {
-    return handler.sameFile(this, other);
+    return ph.sameFile(this, other);
   }
 
   /**
@@ -627,7 +628,7 @@ public final class URL implements Serializable
     // invalid protocol.  It will cause the handler to be set to null
     // thus overriding a valid handler.  Callers of this method should
     // be aware of this.
-    this.handler = getURLStreamHandler(protocol);
+    this.ph = getURLStreamHandler(protocol);
     this.protocol = protocol.toLowerCase();
     this.authority = null;
     this.port = port;
@@ -652,7 +653,7 @@ public final class URL implements Serializable
     // invalid protocol.  It will cause the handler to be set to null
     // thus overriding a valid handler.  Callers of this method should
     // be aware of this.
-    this.handler = getURLStreamHandler(protocol);
+    this.ph = getURLStreamHandler(protocol);
     this.protocol = protocol.toLowerCase();
     if (userInfo == null)
       this.host = host;
@@ -701,7 +702,7 @@ public final class URL implements Serializable
   public String toExternalForm()
   {
     // Identical to toString().
-    return handler.toExternalForm(this);
+    return ph.toExternalForm(this);
   }
 
   /**
@@ -714,24 +715,24 @@ public final class URL implements Serializable
   public String toString()
   {
     // Identical to toExternalForm().
-    return handler.toExternalForm(this);
+    return ph.toExternalForm(this);
   }
 
   private static synchronized URLStreamHandler
     getURLStreamHandler (String protocol)
   {
-    URLStreamHandler handler;
+    URLStreamHandler ph;
 
     // See if a handler has been cached for this protocol.
-    if ((handler = (URLStreamHandler) handlers.get(protocol)) != null)
-      return handler;
+    if ((ph = (URLStreamHandler) handlers.get(protocol)) != null)
+      return ph;
 
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
-      handler = factory.createURLStreamHandler(protocol);
+      ph = factory.createURLStreamHandler(protocol);
     else if (protocol.equals ("core"))
       {
- 	handler = new gnu.gcj.protocol.core.Handler ();
+ 	ph = new gnu.gcj.protocol.core.Handler ();
       }
     else if (protocol.equals ("file"))
       {
@@ -745,12 +746,12 @@ public final class URL implements Serializable
 	// fix this problem.  If other protocols are required in a
 	// statically linked application they will need to be handled in
 	// the same way as "file".
-	handler = new gnu.gcj.protocol.file.Handler ();
+	ph = new gnu.gcj.protocol.file.Handler ();
       }
 
     // Non-default factory may have returned null or a factory wasn't set.
     // Use the default search algorithm to find a handler for this protocol.
-    if (handler == null)
+    if (ph == null)
       {
 	// Get the list of packages to check and append our default handler
 	// to it, along with the JDK specified default as a last resort.
@@ -767,34 +768,33 @@ public final class URL implements Serializable
 				".Handler";
 	    try
 	      {
-		handler =
-		  (URLStreamHandler) Class.forName(facName).newInstance();
+		ph = (URLStreamHandler) Class.forName(facName).newInstance();
 	      }
 	    catch (Exception e)
 	      {
 		// Can't instantiate; handler still null, go on to next element.
 	      }
-	  } while ((handler == null ||
-		    ! (handler instanceof URLStreamHandler)) &&
+	  } while ((ph == null ||
+		    ! (ph instanceof URLStreamHandler)) &&
 		   pkgPrefix.hasMoreTokens());
       }
 
     // Update the hashtable with the new protocol handler.
-    if (handler != null)
-      if (handler instanceof URLStreamHandler)
-	handlers.put(protocol, handler);
+    if (ph != null)
+      if (ph instanceof URLStreamHandler)
+	handlers.put(protocol, ph);
       else
-	handler = null;
+	ph = null;
 
-    return handler;
+    return ph;
   }
 
   private void readObject(ObjectInputStream ois)
     throws IOException, ClassNotFoundException
   {
     ois.defaultReadObject();
-    this.handler = getURLStreamHandler(protocol);
-    if (this.handler == null)
+    this.ph = getURLStreamHandler(protocol);
+    if (this.ph == null)
       throw new IOException("Handler for protocol " + protocol + " not found");
   }
 
