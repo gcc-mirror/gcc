@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
@@ -43,6 +43,9 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "tm_p.h"
 
+static void pa_init_machine_status PARAMS ((struct function *));
+static void pa_mark_machine_status PARAMS ((struct function *));
+static void pa_free_machine_status PARAMS ((struct function *));
 static void pa_combine_instructions			PARAMS ((rtx));
 static int pa_can_combine_p	PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
 static int forward_branch_p				PARAMS ((rtx));
@@ -186,6 +189,43 @@ override_options ()
 
   /* Register global variables with the garbage collector.  */
   pa_add_gc_roots ();
+
+  /* Arrange to save and restore machine status around nested functions.  */
+  init_machine_status = pa_init_machine_status;
+  mark_machine_status = pa_mark_machine_status;
+  free_machine_status = pa_free_machine_status;
+}
+
+/* Functions to initialize pic_offset_table_save_rtx.
+   These will be called, via pointer variables,
+   from push_function_context and pop_function_context.  */
+
+static void
+pa_init_machine_status (p)
+     struct function *p;
+{
+  p->machine = (machine_function *) xmalloc (sizeof (machine_function));
+
+  p->machine->pic_offset_table_save_rtx = gen_reg_rtx (Pmode);
+}
+
+static void
+pa_mark_machine_status (p)
+     struct function *p;
+{
+  if (p->machine)
+    ggc_mark_rtx (p->machine->pic_offset_table_save_rtx);
+}
+
+static void
+pa_free_machine_status (p)
+     struct function *p;
+{
+  if (p->machine == NULL)
+    return;
+
+  free (p->machine);
+  p->machine = NULL;
 }
 
 
@@ -2653,7 +2693,7 @@ remove_useless_addtr_insns (insns, check_notes)
 
 }
 
-/* You may have trouble believing this, but this is the HP-PA stack
+/* You may have trouble believing this, but this is the 32 bit HP-PA stack
    layout.  Wow.
 
    Offset		Contents
@@ -3153,19 +3193,17 @@ hppa_expand_prologue()
      made incorrect assumptions about using global variables to hold
      per-function rtl code generated in the backend.
 
-     So instead, we copy the PIC register into a reserved callee saved
-     register in the prologue.  Then after each call we reload the PIC
-     register from the callee saved register.  We also reload the PIC
-     register from the callee saved register in the epilogue ensure the
-     PIC register is valid at function exit.
+     So instead, we copy the PIC register into a callee saved register
+     in the prologue.  Then after each call we reload the PIC register
+     from the callee saved register.
 
-     This may (depending on the exact characteristics of the function)
-     even be more efficient. 
+     Avoid doing this if the register isn't used (eg. leaf functions)
+     as it's an error to delete an instruction from the prologue.  */
 
-     Avoid this if the callee saved register wasn't used (these are
-     leaf functions).  */
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM_SAVED])
-    emit_move_insn (gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED),
+  if (flag_pic
+      && (GET_CODE (PIC_OFFSET_TABLE_SAVE_RTX) != REG
+	  || HARD_REGISTER_P (PIC_OFFSET_TABLE_SAVE_RTX)))
+    emit_move_insn (PIC_OFFSET_TABLE_SAVE_RTX,
 		    gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
 }
 
