@@ -1,4 +1,10 @@
-2001-03-13  Per Bothner  <per@bothner.com>
+2001-03-15  Per Bothner  <per@bothner.com>
+
+	Remove junk from when gcc/java was created (by copying from C/C++).
+	* decl.c (keep_next_level_flag, keep_next_if_subblocks):  Remove.
+	(struct binding_level):  Remove fields keep, keep_if_subblocks,
+	more_cleanups_ok, have_cleanups (which have never been used).
+	(pushlevel, poplevel):  Remove related useless code.
 
 	* class.c (make_class_data):  The class_dtable_decl (i.e. the
 	vtable for Class) should be external, except when compiling Class.
