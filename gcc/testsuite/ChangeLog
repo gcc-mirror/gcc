@@ -1,3 +1,8 @@
+2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/template/nontype3.C: New test.
+	* g++.dg/template/static2.C: Tweaked the dg-error clause.
+
 2003-12-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/warn/noreturn-3.C: Also test instantiation.
