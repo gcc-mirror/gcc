@@ -1,3 +1,7 @@
+2002-09-07  Ansgar Esztermann  <ansgar@thphy.uni-duesseldorf.de>
+
+	* gcc.dg/compare2.c: Remove xfail from cases 10 and 12.
+
 2002-09-05  Ziemowit Laski <zlaski@apple.com>
 
 	* objc.dg/proto-lossage-1.m: New test.
@@ -80,7 +84,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-08-26  Ziemowit Laski  <zlaski@apple.com>
 
-        * objc.dg/super-class-2.m: New test.
+	* objc.dg/super-class-2.m: New test.
 
 2002-08-24  Matt Austern  <austern@apple.com>
 
@@ -186,7 +190,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.dg/tls/diag-3.c: New.
+	* testsuite/gcc.dg/tls/diag-3.c: New.
 
 2002-08-07  Gabriel Dos Reis  <gdr@nerim.net>
 
@@ -231,7 +235,7 @@ Tue Aug 27 22:23:22 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-08-01  Benjamin Kosnik   <bkoz@redhat.com>
 
-        * g++.old-deja/g++.abi/ptrflags.C (expect): Change
+	* g++.old-deja/g++.abi/ptrflags.C (expect): Change
 	__qualifier_flags to __flags.
 
 2002-07-31  Mark Mitchell  <mark@codesourcery.com>
