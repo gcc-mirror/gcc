@@ -2804,6 +2804,7 @@ push_class_level_binding (tree name, tree x)
        || TREE_CODE (x) == CONST_DECL
        || (TREE_CODE (x) == TYPE_DECL
 	   && !DECL_SELF_REFERENCE_P (x))
+       || DECL_CLASS_TEMPLATE_P (x)
        /* A data member of an anonymous union.  */
        || (TREE_CODE (x) == FIELD_DECL
 	   && DECL_CONTEXT (x) != current_class_type))

@@ -1,3 +1,9 @@
+2004-12-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18100
+	* name-lookup.c (push_class_level_binding): Diagnose nested
+	class template with the same name as enclosing class.
+
 2004-12-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17011, c++/17971
