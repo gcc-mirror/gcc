@@ -5862,11 +5862,7 @@ print_operand (file, x, code)
 	    return;
 	  }
 	default:
-	  {
-	    char str[50];
-	    sprintf (str, "invalid operand code `%c'", code);
-	    output_operand_lossage (str);
-	  }
+	    output_operand_lossage ("invalid operand code `%c'", code);
 	}
     }
 

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -2245,14 +2245,14 @@ m32r_print_operand (file, x, code)
       if (GET_CODE (x) == REG)
 	fprintf (file, "@+%s", reg_names [REGNO (x)]);
       else
-	output_operand_lossage ("invalid operand to %s code");
+	output_operand_lossage ("invalid operand to %%s code");
       return;
       
     case 'p':
       if (GET_CODE (x) == REG)
 	fprintf (file, "@%s+", reg_names [REGNO (x)]);
       else
-	output_operand_lossage ("invalid operand to %p code");
+	output_operand_lossage ("invalid operand to %%p code");
       return;
 
     case 'R' :
@@ -2275,7 +2275,7 @@ m32r_print_operand (file, x, code)
 	  fputc (')', file);
 	}
       else
-	output_operand_lossage ("invalid operand to %R code");
+	output_operand_lossage ("invalid operand to %%R code");
       return;
 
     case 'H' : /* High word */
@@ -2298,7 +2298,7 @@ m32r_print_operand (file, x, code)
 		   code == 'L' ? INTVAL (first) : INTVAL (second));
 	}
       else
-	output_operand_lossage ("invalid operand to %H/%L code");
+	output_operand_lossage ("invalid operand to %%H/%%L code");
       return;
 
     case 'A' :
@@ -2360,7 +2360,7 @@ m32r_print_operand (file, x, code)
 	  fputc (')', file);
 	  return;
 	default :
-	  output_operand_lossage ("invalid operand to %T/%B code");
+	  output_operand_lossage ("invalid operand to %%T/%%B code");
 	  return;
 	}
       break;
@@ -2375,7 +2375,7 @@ m32r_print_operand (file, x, code)
 	    fputs (".a", file);
 	}
       else
-	output_operand_lossage ("invalid operand to %U code");
+	output_operand_lossage ("invalid operand to %%U code");
       return;
 
     case 'N' :
@@ -2383,7 +2383,7 @@ m32r_print_operand (file, x, code)
       if (GET_CODE (x) == CONST_INT)
 	output_addr_const (file, GEN_INT (- INTVAL (x)));
       else
-	output_operand_lossage ("invalid operand to %N code");
+	output_operand_lossage ("invalid operand to %%N code");
       return;
 
     case 'X' :
