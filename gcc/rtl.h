@@ -240,10 +240,6 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SYMBOL_REF, means that emit_library_call
      has used it as the function.  */
   unsigned int used : 1;
-  /* FIXME.  This should be unused now that we do inlinining on trees,
-     but it is now being used for MEM_SCALAR_P.  It should be renamed,
-     or some other field should be overloaded.  */
-  unsigned integrated : 1;
   /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
      restoring registers in the prologue and epilogue.
@@ -252,6 +248,7 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      constant string pool.  */
   unsigned frame_related : 1;
   /* 1 in a REG or PARALLEL that is the current function's return value.
+     1 in a MEM if it refers to a scalar.
      1 in a SYMBOL_REF for a weak symbol.  */
   unsigned return_val : 1;
 
@@ -597,14 +594,14 @@ extern void rtl_check_failed_flag (const char *, rtx, const char *,
 #define CLEAR_RTX_FLAGS(RTX)	\
 do {				\
   rtx const _rtx = (RTX);	\
-  _rtx->call = 0;		\
-  _rtx->frame_related = 0;	\
-  _rtx->in_struct = 0;		\
   _rtx->jump = 0;		\
+  _rtx->call = 0;		\
   _rtx->unchanging = 0;		\
-  _rtx->used = 0;		\
   _rtx->volatil = 0;		\
-  _rtx->unused_flag = 0;	\
+  _rtx->in_struct = 0;		\
+  _rtx->used = 0;		\
+  _rtx->frame_related = 0;	\
+  _rtx->return_val = 0;		\
 } while (0)
 
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rtint)
@@ -1280,10 +1277,10 @@ do {									\
 #define MEM_IN_STRUCT_P(RTX)						\
   (RTL_FLAG_CHECK1("MEM_IN_STRUCT_P", (RTX), MEM)->in_struct)
 
-/* 1 if RTX is a mem that refers to a scalar.  If zero, RTX may or may
+/* 1 if RTX is a MEM that refers to a scalar.  If zero, RTX may or may
    not refer to a scalar.  */
 #define MEM_SCALAR_P(RTX)						\
-  (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->integrated)
+  (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->return_val)
 
 /* 1 if RTX is a mem that cannot trap.  */
 #define MEM_NOTRAP_P(RTX) \
