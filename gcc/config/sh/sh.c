@@ -1232,10 +1232,10 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 	if (first < 0)
 	  {
 	    emit_insn ((mask << right) == 0xff
-		       ? gen_zero_extendqisi2(dest, gen_rtx (SUBREG, QImode,
-							     source, 0))
-		       : gen_zero_extendhisi2(dest, gen_rtx (SUBREG, HImode,
-							     source, 0)));
+		       ? gen_zero_extendqisi2(dest,
+					      gen_lowpart (QImode, source))
+		       : gen_zero_extendhisi2(dest,
+					      gen_lowpart (HImode, source)));
 	    source = dest;
 	  }
 	if (source != dest)
@@ -1255,10 +1255,8 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 	  }
 	if (first >= 0)
 	  emit_insn (mask == 0xff
-		     ? gen_zero_extendqisi2(dest, gen_rtx (SUBREG, QImode,
-							   dest, 0))
-		     : gen_zero_extendhisi2(dest, gen_rtx (SUBREG, HImode,
-							   dest, 0)));
+		     ? gen_zero_extendqisi2(dest, gen_lowpart (QImode, dest))
+		     : gen_zero_extendhisi2(dest, gen_lowpart (HImode, dest)));
 	if (total_shift > 0)
 	  {
 	    operands[2] = GEN_INT (total_shift);
@@ -1283,10 +1281,13 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 	      source = dest;
 	    }
 	  emit_insn (gen_andsi3 (dest, source, GEN_INT (mask)));
-	  operands[0] = dest;
-	  operands[1] = dest;
-	  operands[2] = GEN_INT (total_shift);
-	  shift_gen_fun (ASHIFT, operands);
+	  if (total_shift)
+	    {
+	      operands[0] = dest;
+	      operands[1] = dest;
+	      operands[2] = GEN_INT (total_shift);
+	      shift_gen_fun (ASHIFT, operands);
+	    }
 	  break;
 	}
       else
@@ -1351,6 +1352,8 @@ shl_sext_kind (left_rtx, size_rtx, costp)
     {
       /* 16 bit shift / sign extend / 16 bit shift */
       cost = shift_insns[16 - insize] + 1 + ashiftrt_insns[16 - size];
+      /* If ashiftrt_insns[16 - size] is 8, this choice will be overridden
+	 below, by alternative 3 or something even better.  */
       if (cost < best_cost)
 	{
 	  kind = 5;
@@ -1470,41 +1473,50 @@ gen_shl_sext (dest, left_rtx, size_rtx, source)
 	if (dest != source)
 	  emit_insn (gen_movsi (dest, source));
 	operands[0] = dest;
-	operands[2] = GEN_INT (ext - insize);
-	gen_shifty_hi_op (ASHIFT, operands);
+	if (ext - insize)
+	  {
+	    operands[2] = GEN_INT (ext - insize);
+	    gen_shifty_hi_op (ASHIFT, operands);
+	  }
 	emit_insn (kind & 1
-		   ? gen_extendqisi2(dest, gen_rtx (SUBREG, QImode, dest, 0))
-		   : gen_extendhisi2(dest, gen_rtx (SUBREG, HImode, dest, 0)));
+		   ? gen_extendqisi2(dest, gen_lowpart (QImode, dest))
+		   : gen_extendhisi2(dest, gen_lowpart (HImode, dest)));
 	if (kind <= 2)
 	  {
-	    operands[2] = GEN_INT (shift2);
-	    gen_shifty_op (ASHIFT, operands);
+	    if (shift2)
+	      {
+		operands[2] = GEN_INT (shift2);
+		gen_shifty_op (ASHIFT, operands);
+	      }
 	  }
 	else
 	  {
-	    if (shift2 >= 0)
+	    if (shift2 > 0)
 	      {
 		operands[2] = GEN_INT (shift2);
 		gen_shifty_hi_op (ASHIFT, operands);
 	      }
-	    else
+	    else if (shift2)
 	      {
 		operands[2] = GEN_INT (-shift2);
 		gen_shifty_hi_op (LSHIFTRT, operands);
 	      }
 	    emit_insn (size <= 8
-		       ? gen_extendqisi2 (dest,
-					  gen_rtx (SUBREG, QImode, dest, 0))
-		       : gen_extendhisi2 (dest,
-					  gen_rtx (SUBREG, HImode, dest, 0)));
+		       ? gen_extendqisi2 (dest, gen_lowpart (QImode, dest))
+		       : gen_extendhisi2 (dest, gen_lowpart (HImode, dest)));
 	  }
 	break;
       }
     case 5:
-      emit_insn (gen_shl_sext_ext (dest, source, GEN_INT (16 - insize),
-				   GEN_INT (16)));
-      emit_insn (gen_ashrsi3 (dest, dest, GEN_INT (16 - size)));
-      break;
+      {
+	int i = 16 - size;
+	emit_insn (gen_shl_sext_ext (dest, source, GEN_INT (16 - insize),
+				     GEN_INT (16)));
+	/* Don't use gen_ashrsi3 because it generates new pseudos.  */
+	while (--i >= 0)
+	  gen_ashift (ASHIFTRT, 1, dest);
+	break;
+      }
     case 6:
     case 7:
       /* Don't expand fine-grained when combining, because that will
