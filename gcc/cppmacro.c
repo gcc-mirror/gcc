@@ -33,7 +33,6 @@ struct cpp_macro
 {
   cpp_hashnode **params;	/* Parameters, if any.  */
   cpp_token *expansion;		/* First token of replacement list.   */
-  const char *file;		/* Defined in file name.  */
   unsigned int line;		/* Starting line number.  */
   unsigned int count;		/* Number of tokens in expansion.  */
   unsigned short paramc;	/* Number of parameters.  */
@@ -152,13 +151,13 @@ builtin_macro (pfile, token)
     case BT_BASE_FILE:
       {
 	const char *name;
-	cpp_buffer *buffer = pfile->buffer;
+	const struct line_map *map = pfile->map;
 
 	if (node->value.builtin == BT_BASE_FILE)
-	  while (buffer->prev)
-	    buffer = buffer->prev;
+	  while (! MAIN_FILE_P (map))
+	    map = INCLUDED_FROM (&pfile->line_maps, map);
 
-	name = buffer->nominal_fname;
+	name = map->to_file;
 	make_string_token (&pfile->ident_pool, token,
 			   (const unsigned char *) name, strlen (name));
       }
@@ -1372,7 +1371,6 @@ _cpp_create_definition (pfile, node)
 
   macro = (cpp_macro *) _cpp_pool_alloc (&pfile->macro_pool,
 					 sizeof (cpp_macro));
-  macro->file = pfile->buffer->nominal_fname;
   macro->line = pfile->directive_pos.line;
   macro->params = 0;
   macro->paramc = 0;
@@ -1476,9 +1474,7 @@ _cpp_create_definition (pfile, node)
 				 "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
-	    cpp_pedwarn_with_file_and_line (pfile,
-					    node->value.macro->file,
-					    node->value.macro->line, 1,
+	    cpp_pedwarn_with_line (pfile, node->value.macro->line, 1,
 			    "this is the location of the previous definition");
 	}
       _cpp_free_definition (node);

@@ -287,6 +287,7 @@ stack_include_file (pfile, inc)
   size_t len = 0;
   cpp_buffer *fp;
   int sysp, deps_sysp;
+  const char *filename;
 
   /* We'll try removing deps_sysp after the release of 3.0.  */
   deps_sysp = pfile->system_include_depth != 0;
@@ -326,7 +327,7 @@ stack_include_file (pfile, inc)
     }
 
   /* Push a buffer.  */
-  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name, 0);
+  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, 0);
   fp->inc = inc;
   fp->inc->refcnt++;
 
@@ -336,7 +337,10 @@ stack_include_file (pfile, inc)
   pfile->include_depth++;
 
   /* Generate the call back.  */
-  _cpp_do_file_change (pfile, LC_ENTER, fp->nominal_fname, 1, sysp);
+  filename = inc->name;
+  if (*filename == '\0')
+    filename = _("<stdin>");
+  _cpp_do_file_change (pfile, LC_ENTER, filename, 1, sysp);
 }
 
 /* Read the file referenced by INC into the file cache.

@@ -1,3 +1,30 @@
+2001-08-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c (print_location):  Don't take a file name; use the
+	line map instead.
+	(_cpp_begin_message): Similarly.
+	(cpp_ice, cpp_fatal, cpp_error, cpp_error_with_line, cpp_warning,
+	cpp_warning_with_line, cpp_pedwarn, cpp_pedwarn_with_line): Update.
+	(cpp_pedwarn_with_file_and_line): Remove.
+	* cppfiles.c (stack_include_file): Update; set filename to stdin
+	here when appropriate.
+	* cpphash.h (struct cpp_buffer): Remove nominal_fname.
+	(_cpp_begin_message): Don't take a file name.
+	* cppinit.c: Add comment.
+	* cpplex.c: Fix end-of-directive indicator.
+	* cpplib.c: Don't include intl.h.
+	(run_directive, do_diagnostic): Update.
+	(do_line): Update to not use nominal_fname.
+	(cpp_push_buffer): Don't take a filename.
+	* cpplib.h (struct ht): Remove.
+	(cpp_push_buffer): Don't take a filename.
+	(cpp_pedwarn_with_file_and_line): Remove.
+	* cppmacro.c (struct cpp_macro): Remove file.
+	(builtin_macro): Update.
+	(_cpp_create_definition): Update.
+	* cppmain.c: Correct comment.
+	* fix-header.c (read_scan_file): Update.
+
 2001-08-17  Kazu Hirata  <kazu@hxi.com>
 
 	* sbitmap.c: Fix comment formatting.

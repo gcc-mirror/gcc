@@ -30,7 +30,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "intl.h"
 
 static void print_location		PARAMS ((cpp_reader *,
-						 const char *,
 						 const cpp_lexer_pos *));
 
 /* Don't remove the blank before do, as otherwise the exgettext
@@ -39,9 +38,8 @@ static void print_location		PARAMS ((cpp_reader *,
  do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
 
 static void
-print_location (pfile, filename, pos)
+print_location (pfile, pos)
      cpp_reader *pfile;
-     const char *filename;
      const cpp_lexer_pos *pos;
 {
   cpp_buffer *buffer = pfile->buffer;
@@ -50,47 +48,28 @@ print_location (pfile, filename, pos)
     fprintf (stderr, "%s: ", progname);
   else
     {
-      unsigned int line, col = 0;
-      enum cpp_buffer_type type = buffer->type;
+      unsigned int line, col;
+      const struct line_map *map;
 
-      /* For _Pragma buffers, we want to print the location as
-	 "foo.c:5:8: _Pragma:", where foo.c is the containing buffer.
-	 For diagnostics relating to command line options, we want to
-	 print "<command line>:" with no line number.  */
-      if (type == BUF_CL_OPTION || type == BUF_BUILTIN)
-	line = 0;
-      else
-	{
-	  const struct line_map *map;
+      if (pos == 0)
+	pos = cpp_get_line (pfile);
+      map = lookup_line (&pfile->line_maps, pos->line);
 
-	  if (type == BUF_PRAGMA)
-	    buffer = buffer->prev;
+      print_containing_files (&pfile->line_maps, map);
 
-	  if (pos == 0)
-	    pos = cpp_get_line (pfile);
-	  map = lookup_line (&pfile->line_maps, pos->line);
-	  line = SOURCE_LINE (map, pos->line);
-	  if (filename == 0)
-	    filename = map->to_file;
-
-	  col = pos->col;
-	  if (col == 0)
-	    col = 1;
-
-	  print_containing_files (&pfile->line_maps, map);
-	}
-
-      if (filename == 0)
-	filename = buffer->nominal_fname;
+      line = SOURCE_LINE (map, pos->line);
+      col = pos->col;
+      if (col == 0)
+	col = 1;
 
       if (line == 0)
-	fprintf (stderr, "%s:", filename);
+	fprintf (stderr, "%s:", map->to_file);
       else if (CPP_OPTION (pfile, show_column) == 0)
-	fprintf (stderr, "%s:%u:", filename, line);
+	fprintf (stderr, "%s:%u:", map->to_file, line);
       else
-	fprintf (stderr, "%s:%u:%u:", filename, line, col);
+	fprintf (stderr, "%s:%u:%u:", map->to_file, line, col);
 
-      if (type == BUF_PRAGMA)
+      if (buffer->type == BUF_PRAGMA)
 	fprintf (stderr, "_Pragma:");
       fputc (' ', stderr);
     }
@@ -101,10 +80,9 @@ print_location (pfile, filename, pos)
    If it returns 0, this error has been suppressed.  */
 
 int
-_cpp_begin_message (pfile, code, file, pos)
+_cpp_begin_message (pfile, code, pos)
      cpp_reader *pfile;
      enum error_type code;
-     const char *file;
      const cpp_lexer_pos *pos;
 {
   int is_warning = 0;
@@ -149,7 +127,7 @@ _cpp_begin_message (pfile, code, file, pos)
       break;
     }
 
-  print_location (pfile, file, pos);
+  print_location (pfile, pos);
   if (is_warning)
     fputs (_("warning: "), stderr);
 
@@ -177,7 +155,7 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, ICE, NULL, 0))
+  if (_cpp_begin_message (pfile, ICE, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -204,7 +182,7 @@ cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, FATAL, NULL, 0))
+  if (_cpp_begin_message (pfile, FATAL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -225,7 +203,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, ERROR, NULL, 0))
+  if (_cpp_begin_message (pfile, ERROR, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -254,7 +232,7 @@ cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
 
   pos.line = line;
   pos.col = column;
-  if (_cpp_begin_message (pfile, ERROR, NULL, &pos))
+  if (_cpp_begin_message (pfile, ERROR, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -284,7 +262,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, WARNING, NULL, 0))
+  if (_cpp_begin_message (pfile, WARNING, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -313,7 +291,7 @@ cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 
   pos.line = line;
   pos.col = column;
-  if (_cpp_begin_message (pfile, WARNING, NULL, &pos))
+  if (_cpp_begin_message (pfile, WARNING, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -334,7 +312,7 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, PEDWARN, NULL, 0))
+  if (_cpp_begin_message (pfile, PEDWARN, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -363,42 +341,7 @@ cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 
   pos.line = line;
   pos.col = column;
-  if (_cpp_begin_message (pfile, PEDWARN, NULL, &pos))
-    v_message (msgid, ap);
-  va_end(ap);
-}
-
-/* Report a warning (or an error if pedantic_errors)
-   giving specified file name and line number, not current.  */
-
-void
-cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile,
-					 const char *file, int line, int col,
-					 const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *file;
-  int line;
-  int col;
-  const char *msgid;
-#endif
-  va_list ap;
-  cpp_lexer_pos pos;
-  
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  file = va_arg (ap, const char *);
-  line = va_arg (ap, int);
-  col = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  pos.line = line;
-  pos.col = col;
-  if (_cpp_begin_message (pfile, PEDWARN, file, &pos))
+  if (_cpp_begin_message (pfile, PEDWARN, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }

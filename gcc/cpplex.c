@@ -894,7 +894,7 @@ _cpp_lex_token (pfile, result)
 	 in-progress directives and arguments have been taken care of.
 	 Decrement the line to terminate an in-progress directive.  */
       if (pfile->state.in_directive)
-	pfile->line--;
+	pfile->lexer_pos.output_line = pfile->line--;
       else if (! pfile->state.parsing_args)
 	{
 	  /* Non-empty files should end in a newline.  Don't warn for

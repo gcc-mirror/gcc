@@ -861,7 +861,7 @@ init_standard_includes (pfile)
 	  || (CPP_OPTION (pfile, cplusplus)
 	      && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
 	{
-	  char *str = xstrdup (update_path (p->fname, p->component));
+	  char *str = update_path (p->fname, p->component);
 	  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
 	}
     }
@@ -938,6 +938,9 @@ cpp_start_read (pfile, fname)
      buffer to stand on.  */
   if (!_cpp_read_file (pfile, fname))
     return 0;
+
+  /* FIXME: we want to set up linemaps with _("<builtin>") and
+     _("<command line>") somewhere round here.  Harder than it looks.  */
 
   /* If already preprocessed, don't install __LINE__, etc., and ignore
      command line definitions and assertions.  Handle -U's, -D's and
