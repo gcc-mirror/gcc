@@ -162,7 +162,7 @@ do_preprocessing (argc, argv)
     {
       cpp_finish_options (pfile);
 
-      /* A successful cpp_start_read guarantees that we can call
+      /* A successful cpp_read_main_file guarantees that we can call
 	 cpp_scan_nooutput or cpp_get_token next.  */
       if (options->no_output)
 	cpp_scan_nooutput (pfile);
@@ -275,7 +275,6 @@ check_multiline_token (str)
 /* If the token read on logical line LINE needs to be output on a
    different line to the current one, output the required newlines or
    a line marker, and return 1.  Otherwise return 0.  */
-
 static void
 maybe_print_line (map, line)
      const struct line_map *map;
@@ -330,8 +329,7 @@ print_line (map, line, special_flags)
 }
 
 /* Called when a line of output is started.  TOKEN is the first token
-   of the line, and may be CPP_EOF.  */
-
+   of the line, and at end of file will be CPP_EOF.  */
 static void
 cb_line_change (pfile, token, parsing_args)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
