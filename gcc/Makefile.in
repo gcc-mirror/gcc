@@ -1332,7 +1332,7 @@ convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h toplev.h
 tree.o : tree.c $(CONFIG_H) system.h $(TREE_H) flags.h function.h toplev.h
 print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
-   function.h expr.h insn-codes.h $(RTL_H) toplev.h
+   function.h expr.h insn-codes.h $(RTL_H) toplev.h except.h
 fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
@@ -1349,10 +1349,10 @@ rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \
    function.h defaults.h insn-codes.h expr.h hard-reg-set.h regs.h \
-   xcoffout.h output.h c-pragma.h toplev.h
+   xcoffout.h output.h c-pragma.h toplev.h except.h
 function.o : function.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h \
-   insn-config.h $(RECOG_H) output.h toplev.h
+   insn-config.h $(RECOG_H) output.h toplev.h except.h
 stmt.o : stmt.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h except.h \
    loop.h $(RECOG_H) toplev.h output.h
@@ -1361,7 +1361,7 @@ except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(RECOG_H) output.h except.h toplev.h
 expr.o : expr.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h \
    regs.h insn-flags.h insn-codes.h expr.h insn-config.h $(RECOG_H) output.h \
-   typeclass.h hard-reg-set.h toplev.h
+   typeclass.h hard-reg-set.h toplev.h modemap.def hard-reg-set.h except.h
 calls.o : calls.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h expr.h \
    insn-codes.h insn-flags.h regs.h toplev.h output.h
 expmed.o : expmed.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \

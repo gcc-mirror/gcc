@@ -25,6 +25,10 @@ Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
 Wed May 13 15:28:59 1998  Michael Meissner  <meissner@cygnus.com>
 			  Jeff Law <law@cygnus.com>
 
+	* Makefile.in (stor-layout.o): Depend on except.h
+	(varasm.o, function.o): Likewise.
+	(expr.o): Depend on except.h, modemap.def and hard-reg-set.h.
+
 	* Makefile.in (HOST_RTL): Add $(HOST_PREFIX)bitmap.o.
 	(rtl.o, emit-rtl.o): Add dependency on bitmap.h.
 	($(HOST_PREFIX_1)rtl.o): Likewise.
