@@ -1015,10 +1015,12 @@ extern union tree_node *current_function_decl;
 
 #define MAX_REGS_PER_ADDRESS 2
 
-/* Recognize any constant value that is a valid address.  */
+/* Recognize any constant value that is a valid address except
+   for symbolic addresses.  We get better CSE by rejecting them
+   here and allowing hppa_legitimize_address to break them up.  */
 
-#define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
-
+#define CONSTANT_ADDRESS_P(X) \
+ (CONSTANT_P (X) && ! symbolic_expression_p (X))
 
 /* Include all constant integers and constant doubles, but not
    floating-point, except for floating-point zero.  */
@@ -1191,73 +1193,14 @@ extern union tree_node *current_function_decl;
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output. 
+   opportunities to optimize the output.  */
 
-   For the PA, transform:
-
-	memory(X + <large int>)
-
-   into:
-
-	Y = <large int> & ~mask;
-	Z = X + Y
-	memory (Z + (<large int> & mask));
-
-   This is for CSE to find several similar references, and only use one Z. 
-
-   MODE_FLOAT references allow displacements which fit in 5 bits, so use
-   0xf as the mask.  
-
-   MODE_INT references allow displacements which fit in 11 bits, so use
-   0x1fff as the mask. 
-
-   This relies on the fact that most mode MODE_FLOAT references will use FP
-   registers and most mode MODE_INT references will use integer registers.
-   (In the rare case of an FP register used in an integer MODE, we depend
-   on secondary reloads and the final output pass to clean things up.)
-
-
-   It is also beneficial to handle (plus (mult (X) (Y)) (Z)) in a special
-   manner if Y is 2, 4, or 8.  (allows more shadd insns and shifted indexed
-   adressing modes to be used).
-
-   Put X and Z into registers.  Then put the entire expression into
-   a register.  */
-
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
-{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
-    {								\
-      rtx int_reg, ptr_reg;					\
-      int offset = INTVAL (XEXP (X, 1));			\
-      int mask = GET_MODE_CLASS (mode) == MODE_FLOAT ? 0xf 	\
-						     : 0x1fff;	\
-      int_reg = force_reg (SImode, GEN_INT (offset & ~ mask));	\
-      ptr_reg = force_reg (SImode,				\
-			    gen_rtx (PLUS, SImode,		\
-				     XEXP (X, 0), int_reg));	\
-      X = plus_constant (ptr_reg, offset & mask);		\
-      goto WIN;							\
-    }								\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT	\
-      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
-      && shadd_constant_p (INTVAL (XEXP (XEXP (X, 0), 1))))	\
-    {								\
-      int val = INTVAL (XEXP (XEXP (X, 0), 1));			\
-      rtx reg1, reg2;						\
-      reg1 = force_reg (SImode, force_operand (XEXP (X, 1), 0));\
-      reg2 = force_reg (SImode, 				\
-			force_operand (XEXP (XEXP (X, 0), 0), 0));\
-      (X) = force_reg (SImode,					\
-		       gen_rtx (PLUS, SImode,			\
-				gen_rtx (MULT, SImode, reg2, 	\
-					 GEN_INT (val)),	\
-				reg1));				\
-      goto WIN;							\
-    }								\
-  if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  if (memory_address_p (MODE, X))				\
-    goto WIN;}
+extern struct rtx_def *hppa_legitimize_address ();
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
+{ rtx orig_x = (X);				\
+  (X) = hppa_legitimize_address (X, OLDX, MODE);	\
+  if ((X) != orig_x && memory_address_p (MODE, X)) \
+    goto WIN; }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
