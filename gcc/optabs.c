@@ -2557,7 +2557,8 @@ have_sub2_insn (mode)
   return sub_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing;
 }
 
-/* Generate the body of an instruction to copy Y into X.  */
+/* Generate the body of an instruction to copy Y into X.
+   It may be a SEQUENCE, if one insn isn't enough.  */
 
 rtx
 gen_move_insn (x, y)
@@ -2565,6 +2566,7 @@ gen_move_insn (x, y)
 {
   register enum machine_mode mode = GET_MODE (x);
   enum insn_code insn_code;
+  rtx seq;
 
   if (mode == VOIDmode)
     mode = GET_MODE (y); 
@@ -2628,9 +2630,14 @@ gen_move_insn (x, y)
 	}
 	  
       insn_code = mov_optab->handlers[(int) tmode].insn_code;
+      return (GEN_FCN (insn_code) (x, y));
     }
 
-  return (GEN_FCN (insn_code) (x, y));
+  start_sequence ();
+  emit_move_insn_1 (x, y);
+  seq = gen_sequence ();
+  end_sequence ();
+  return seq;
 }
 
 /* Tables of patterns for extending one integer mode to another.  */
