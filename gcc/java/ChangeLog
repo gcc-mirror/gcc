@@ -1,3 +1,18 @@
+Mon Dec  7 15:13:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (array_initializer): Tagged <node>.
+	(variable_initializer:): Use default rule.
+	(array_initializer:): Defined actions.
+	(variable_initializers:): Likewise.
+	(resolve_qualified_expression_name): Use DECL_CONTEXT to build
+ 	non-static field accesses.
+	(patch_invoke): Fixed indentation typo.
+	(java_complete_tree): Likewise.
+	(build_labeled_block): Changed leading comment. Generate an error
+ 	in case of duplicate loop labels.
+	(patch_conditional_expr): Patch results of string concatenation
+ 	operations.
+
 Sun Dec  6 13:45:00 1998  Per Bothner  <bothner@cygnus.com>
 
 	* constants.c (find_methodref_index):  When the class is an interface,

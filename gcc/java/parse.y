@@ -368,6 +368,7 @@ static tree wfl_to_string = NULL_TREE;
 %type	 <node>		variable_declarator_id variable_declarator
 			variable_declarators variable_initializer
 			variable_initializers constructor_body
+			array_initializer
 
 %type	 <node>		class_body block_end
 %type	 <node>		statement statement_without_trailing_substatement
@@ -790,7 +791,6 @@ variable_declarator_id:
 variable_initializer:
 	expression
 |	array_initializer
-		{ $$ = NULL; }
 ;
 
 /* 19.8.3 Productions from 8.4: Method Declarations  */
@@ -1092,26 +1092,20 @@ abstract_method_declaration:
 /* 19.10 Productions from 10: Arrays  */
 array_initializer:
 	OCB_TK CCB_TK
-		{
-		  RULE ("ARRAY_INITIALIZER (empty)");
-		}
+		{ $$ = NULL_TREE; }
 |	OCB_TK variable_initializers CCB_TK
-		{
-		  RULE ("ARRAY_INITIALIZER (variable)");
-		}
+		{ $$ = $2; }
 |	OCB_TK C_TK CCB_TK
-		{
-		  RULE ("ARRAY_INITIALIZER (,)");
-		}
+		{ $$ = NULL_TREE; }
 |	OCB_TK variable_initializers C_TK CCB_TK
-		{
-		  RULE ("ARRAY_INITIALIZER (variable, ,)");
-		}
+		{ $$ = $2; }
 ;
 
 variable_initializers:
 	variable_initializer
+		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
 |	variable_initializers C_TK variable_initializer
+		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 |	variable_initializers C_TK error
 		{yyerror ("Missing term"); RECOVER;}
 ;
@@ -5671,7 +5665,6 @@ fix_constructors (mdecl)
      tree mdecl;
 {
   tree body = DECL_FUNCTION_BODY (mdecl);
-  tree field_init;
 
   if (!body)
     {
@@ -6098,7 +6091,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	     build the code to access it. */
 	  if (DECL_P (decl) && !FIELD_STATIC (decl))
 	    {
-	      decl = maybe_access_field (decl, *where_found, type);
+	      decl = maybe_access_field (decl, *where_found, 
+					 DECL_CONTEXT (decl));
 	      if (decl == error_mark_node)
 		return 1;
 	    }
@@ -6839,7 +6833,8 @@ patch_invoke (patch, method, args)
   t = TYPE_ARG_TYPES (TREE_TYPE (method));
   if (TREE_CODE (patch) == NEW_CLASS_EXPR)
     t = TREE_CHAIN (t);
-  for (ta = args; t != end_params_node && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
+  for (ta = args; t != end_params_node && ta; 
+       t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
     if (JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_VALUE (ta))) &&
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
@@ -7595,7 +7590,8 @@ java_complete_tree (node)
       /* 3- Expression section */
     case COMPOUND_EXPR:
       wfl_op2 = TREE_OPERAND (node, 1);
-      TREE_OPERAND (node, 0) = nn = java_complete_tree (TREE_OPERAND (node, 0));
+      TREE_OPERAND (node, 0) = nn = 
+	java_complete_tree (TREE_OPERAND (node, 0));
       if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK
 	  && TREE_OPERAND (node, 1) != empty_stmt_node)
 	{
@@ -9850,20 +9846,20 @@ build_labeled_block (location, label)
   tree label_name = merge_qualified_name (label_id, label);
   tree label_decl, node;
 
-  /* Issue a warning if we try to reuse a label that was previously
+  /* Issue an error if we try to reuse a label that was previously
      declared */
   if (IDENTIFIER_LOCAL_VALUE (label_name))
     {
       EXPR_WFL_LINECOL (wfl_operator) = location;
-      parse_warning_context (wfl_operator, "Declaration of `%s' shadows "
-			     "a previous declaration",
+      parse_error_context (wfl_operator, "Declaration of `%s' shadows "
+			     "a previous label declaration",
 			     IDENTIFIER_POINTER (label));
       EXPR_WFL_LINECOL (wfl_operator) = 
         EXPR_WFL_LINECOL (IDENTIFIER_LOCAL_VALUE (label_name));
-      parse_warning_context (wfl_operator, "This is the location of the "
-			     "previous declaration of label `%s'",
-			     IDENTIFIER_POINTER (label));
-      java_warning_count--;
+      parse_error_context (wfl_operator, "This is the location of the "
+			   "previous declaration of label `%s'",
+			   IDENTIFIER_POINTER (label));
+      java_error_count--;
     }
 
   label_decl = create_label_decl (label_name);
@@ -10718,10 +10714,19 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   tree cond = TREE_OPERAND (node, 0);
   tree op1 = TREE_OPERAND (node, 1);
   tree op2 = TREE_OPERAND (node, 2);
-  tree t1 = TREE_TYPE (op1);
-  tree t2 = TREE_TYPE (op2);
   tree resulting_type = NULL_TREE;
+  tree t1, t2, patched;
   int error_found = 0;
+
+  /* Operands of ?: might be StringBuffers crafted as a result of a
+     string concatenation. Obtain a descent operand here.  */
+  if ((patched = patch_string (op1)))
+    TREE_OPERAND (node, 1) = op1 = patched;
+  if ((patched = patch_string (op2)))
+    TREE_OPERAND (node, 2) = op2 = patched;
+
+  t1 = TREE_TYPE (op1);
+  t2 = TREE_TYPE (op2);
 
   /* The first expression must be a boolean */
   if (TREE_TYPE (cond) != boolean_type_node)
@@ -10813,3 +10818,4 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   CAN_COMPLETE_NORMALLY (node) = 1;
   return node;
 }
+
