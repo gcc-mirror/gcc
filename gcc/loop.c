@@ -6843,6 +6843,30 @@ express_from (g1, g2)
 
   add = express_from_1 (g1->add_val, g2->add_val, mult);
   if (add == NULL_RTX)
+    {
+      /* Failed.  If we've got a multiplication factor between G1 and G2,
+	 scale G1's addend and try again.  */
+      if (INTVAL (mult) > 1)
+	{
+	  rtx g1_add_val = g1->add_val;
+	  if (GET_CODE (g1_add_val) == MULT
+	      && GET_CODE (XEXP (g1_add_val, 1)) == CONST_INT)
+	    {
+	      HOST_WIDE_INT m;
+	      m = INTVAL (mult) * INTVAL (XEXP (g1_add_val, 1));
+	      g1_add_val = gen_rtx_MULT (GET_MODE (g1_add_val),
+					 XEXP (g1_add_val, 0), GEN_INT (m));
+	    }
+	  else
+	    {
+	      g1_add_val = gen_rtx_MULT (GET_MODE (g1_add_val), g1_add_val,
+					 mult);
+	    }
+
+	  add = express_from_1 (g1_add_val, g2->add_val, const1_rtx);
+	}
+    }
+  if (add == NULL_RTX)
     return NULL_RTX;
 
   /* Form simplified final result.  */
