@@ -13075,9 +13075,7 @@ arm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 }
 
 int
-arm_emit_vector_const (file, x)
-     FILE * file;
-     rtx    x;
+arm_emit_vector_const (FILE *file, rtx x)
 {
   int i;
   const char * pattern;
@@ -13106,8 +13104,7 @@ arm_emit_vector_const (file, x)
 }
 
 const char *
-arm_output_load_gr (operands)
-     rtx * operands;
+arm_output_load_gr (rtx *operands)
 {
   rtx reg;
   rtx offset;
