@@ -1,3 +1,9 @@
+2002-08-26  Ziemowit Laski <zlaski@apple.com>
+
+	* objc/objc-act.c (get_super_receiver): If inside a class method
+	of a category, cast the receiver to 'id' before accessing the 'isa'
+	field so that <objc/objc-class.h> is not needed.  For NeXT runtime.
+
 2002-08-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_function_prologue, 

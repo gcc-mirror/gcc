@@ -7042,9 +7042,13 @@ get_super_receiver ()
 	    {
 	      super_class = get_class_reference (super_name);
 	      if (TREE_CODE (objc_method_context) == CLASS_METHOD_DECL)
+		/* Cast the super class to 'id', since the user may not have
+		   included <objc/objc-class.h>, leaving 'struct objc_class'
+		   an incomplete type.  */
 		super_class
-		  = build_component_ref (build_indirect_ref (super_class, "->"),
-					 get_identifier ("isa"));
+		  = build_component_ref (build_indirect_ref 
+					 (build_c_cast (id_type, super_class), "->"),
+					  get_identifier ("isa"));
 	    }
 	  else
 	    {
