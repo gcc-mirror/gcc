@@ -85,7 +85,8 @@ static int ignore_escape_flag;
 
 static void parse_float		PARAMS ((PTR));
 static tree lex_number		PARAMS ((const char *, unsigned int));
-static tree lex_string		PARAMS ((const char *, unsigned int, int));
+static tree lex_string		PARAMS ((const unsigned char *, unsigned int,
+					 int));
 static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
@@ -239,7 +240,7 @@ cb_ident (pfile, line, str)
   if (! flag_no_ident)
     {
       /* Convert escapes in the string.  */
-      tree value = lex_string ((const char *)str->text, str->len, 0);
+      tree value = lex_string (str->text, str->len, 0);
       ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
     }
 #endif
@@ -807,8 +808,8 @@ c_lex (value)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      *value = lex_string ((const char *)tok->val.str.text,
-			   tok->val.str.len, tok->type == CPP_WSTRING);
+      *value = lex_string (tok->val.str.text, tok->val.str.len,
+			   tok->type == CPP_WSTRING);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -1282,14 +1283,14 @@ lex_number (str, len)
 
 static tree
 lex_string (str, len, wide)
-     const char *str;
+     const unsigned char *str;
      unsigned int len;
      int wide;
 {
   tree value;
   char *buf = alloca ((len + 1) * (wide ? WCHAR_BYTES : 1));
   char *q = buf;
-  const char *p = str, *limit = str + len;
+  const unsigned char *p = str, *limit = str + len;
   unsigned int c;
   unsigned width = wide ? WCHAR_TYPE_SIZE
 			: TYPE_PRECISION (char_type_node);
@@ -1305,7 +1306,7 @@ lex_string (str, len, wide)
       wchar_t wc;
       int char_len;
 
-      char_len = local_mbtowc (&wc, p, limit - p);
+      char_len = local_mbtowc (&wc, (const char *) p, limit - p);
       if (char_len == -1)
 	{
 	  warning ("ignoring invalid multibyte character");
@@ -1329,8 +1330,7 @@ lex_string (str, len, wide)
 	    mask = ((unsigned int) 1 << width) - 1;
 	  else
 	    mask = ~0;
-	  c = cpp_parse_escape (parse_in, (const unsigned char **) &p,
-				(const unsigned char *) limit, mask);
+	  c = cpp_parse_escape (parse_in, &p, limit, mask);
 	}
 	
       /* Add this single character into the buffer either as a wchar_t
