@@ -393,7 +393,9 @@ extern void * GC_roots_present();
 	/* The type is a lie, since the real type doesn't make sense here, */
 	/* and we only test for NULL.					   */
 
+#ifndef GC_scratch_last_end_ptr
 extern ptr_t GC_scratch_last_end_ptr; /* End of GC_scratch_alloc arena	*/
+#endif
 
 /* We use /proc to track down all parts of the address space that are	*/
 /* mapped by the process, and throw out regions we know we shouldn't	*/
