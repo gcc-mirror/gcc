@@ -1,3 +1,11 @@
+2001-03-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (convert_like_real): Add extra semantics to INNER
+	parameter. Don't convert to temporary if a user conversion
+	gives us an lvalue that we're about to bind to a reference.
+	Set INNER to indicate pending reference binding on recursive
+	calls.
+
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (check_field_decls): Pointers to member do not a
