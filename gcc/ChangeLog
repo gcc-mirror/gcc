@@ -1,3 +1,9 @@
+2002-01-30  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc: Include sparc/biarch64.h rather than sparc/sparc_bi.h.
+	* config/sparc/sparc_bi.h: Remove file.
+	* config/sparc/biarch64.h: New file (rename of sparc_bi.h).
+
 2002-01-30  Richard Henderson  <rth@redhat.com>
 
 	* sched-deps.c (sched_analyze): Make a call read the frame pointer.

@@ -2900,7 +2900,7 @@ sparc-tti-*)
 	xm_defines=POSIX
 	;;
 sparc64-wrs-vxworks*)
-        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/sparc_bi.h gofast.h sparc/vxsparc64.h"
+        tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h sparc/biarch64.h gofast.h sparc/vxsparc64.h"
         tmake_file=sparc/t-vxsparc64
         use_collect2=yes
         ;;
@@ -3163,7 +3163,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
-	tm_file="sparc/sparc_bi.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
