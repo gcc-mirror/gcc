@@ -270,7 +270,15 @@ open_file (pfile, filename)
      Special case: the empty string is translated to stdin.  */
 
   if (filename[0] == '\0')
-    file->fd = 0;
+    {
+      file->fd = 0;
+#ifdef __DJGPP__
+      /* For DJGPP redirected input is opened in text mode. Change it
+         to binary mode.  */
+      if (! isatty (file->fd))
+        setmode (file->fd, O_BINARY);
+#endif
+    }
   else
     file->fd = open (file->name, O_RDONLY | O_NOCTTY | O_BINARY, 0666);
 
