@@ -1,3 +1,8 @@
+2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* treetree.c (build_stmt): Remove VPARAMS.
+	(pedwarn_c99): Likewise.
+
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.opt: Declare Treelang.  Update.
