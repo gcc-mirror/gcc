@@ -1,3 +1,7 @@
+2004-03-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* .cvsignore: Add GPATH, GRTAGS, GSYMS and GTAGS (GNU GLOBAL)
+
 2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/rs6000/rs6000.c (output_vec_const_move):
