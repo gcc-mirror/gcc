@@ -5,12 +5,33 @@
 # Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@sources.redhat.com>
-# $Id$
+# $Id: run_doxygen,v 1.2 2001/03/25 02:28:07 pme Exp $
 
 
-# We could check that the version of doxygen is >= this variable, but that's
-# just a pain.  Punt for now and rely on the maintainer to read this.  :-)
+# We can check now that the version of doxygen is = this variable.  We need
+# to check for the >= case eventually.
 DOXYVER=1.2.6
+doxygen=
+
+find_doxygen() {
+    testing_version=
+    # thank you goat book
+    set `IFS=:; X="$PATH:/usr/local/bin:/bin:/usr/bin"; echo $X`
+    for dir
+    do
+      # AC_EXEEXT could come in useful here
+      maybedoxy="$dir/doxygen"
+      test -f "$maybedoxy" && testing_version=`$maybedoxy --version`
+      if test -n "$testing_version" && test $testing_version = $DOXYVER; then
+        doxygen="$maybedoxy"
+        break
+      fi
+    done
+    if test -z "$doxygen"; then
+        echo run_doxygen error:  Could not find Doxygen $DOXYVER in path. 1>&2
+        print_usage
+    fi
+}
 
 print_usage() {
     cat 1>&2 <<EOF
@@ -49,7 +70,7 @@ parse_options() {
         blank=
         Id=is
         echo You expect this dinky script to track a version?  Okay, here
-        echo it $Id$blank
+        echo it $Id: run_doxygen,v 1.2 2001/03/25 02:28:07 pme Exp $blank
         exit 0
         ;;
       *)
@@ -74,6 +95,7 @@ srcdir=unset
 outdir=unset
 
 parse_options $*
+find_doxygen
 
 if test $srcdir = unset || test $outdir = unset || test $mode = unset; then
     # this could be better
@@ -96,7 +118,8 @@ test -d $outdir || (mkdir -p $outdir ; chmod u+w $outdir)
   cd $srcdir
   sed -e "s=@outdir@=${outdir}=" docs/doxygen/${mode}.cfg.in \
       > ${outdir}/${mode}.cfg
-  doxygen ${outdir}/${mode}.cfg
+  echo $doxygen ${outdir}/${mode}.cfg
+  $doxygen ${outdir}/${mode}.cfg
 )
 
 # mess with output files here?
@@ -107,4 +130,6 @@ echo :: ${outdir}/html_${mode}/index.html
 echo ::
 
 exit 0
+
+# vim:ts=4:et:
 

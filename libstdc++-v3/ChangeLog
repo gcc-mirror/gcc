@@ -1,3 +1,7 @@
+2001-04-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/run_doxygen:  Check for the existence of Doxygen.
+
 2001-04-04  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/user.cfg.in:  Extract all non-private members;
