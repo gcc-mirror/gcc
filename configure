@@ -970,17 +970,17 @@ case "${host}" in
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs byacc"
     ;;
-  i[3456]86-*-vsta)
+  i[3456789]86-*-vsta)
     noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix gnuserv gettext"
     ;;
-  i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
+  i[3456789]86-*-go32* | i[3456789]86-*-msdosdjgpp*)
     noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
     ;;
-  i[3456]86-*-mingw32*)
+  i[3456789]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix gnuserv"
     noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
     ;;
-  i[3456]86-*-beos*)
+  i[3456789]86-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
     ;;
   *-*-cygwin*)
@@ -1187,13 +1187,13 @@ case "${target}" in
     # No gdb or ld support yet.
     noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb ld"
     ;;
-  i[3456]86-*-coff | i[3456]86-*-elf)
+  i[3456789]86-*-coff | i[3456789]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  i[34567]86-*-freebsd*)
+  i[3456789]86-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
-  i[3456]86-*-linux*)
+  i[3456789]86-*-linux*)
     # The GCC port for glibc1 has no MD_FALLBACK_FRAME_STATE_FOR, so let's
     # not build java stuff by default.
     case "${target}" in
@@ -1212,13 +1212,13 @@ case "${target}" in
     # if the --with-newlib option has been given, because otherwise
     # 'target-newlib' will appear in skipdirs.
     ;;
-  i[3456]86-*-mingw32*)
+  i[3456789]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
     noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
 
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
-      i[3456]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
+      i[3456789]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
       *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix gnuserv"
          ;;
     esac
@@ -1236,24 +1236,24 @@ case "${target}" in
          ;;
     esac
     ;;    
-  i[3456]86-*-pe)
+  i[3456789]86-*-pe)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-sco3.2v5*)
+  i[3456789]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
     # and is not configured to handle mixed ELF and COFF.
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-sco*)
+  i[3456789]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-solaris2*)
+  i[3456789]86-*-solaris2*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
-  i[3456]86-*-sysv4*)
+  i[3456789]86-*-sysv4*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
-  i[3456]86-*-beos*)
+  i[3456789]86-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
@@ -1342,9 +1342,9 @@ case "${target}" in
     ;;
   sh-*-*)
     case "${host}" in
-      i[3456]86-*-vsta) ;; # don't add gprof back in
-      i[3456]86-*-go32*) ;; # don't add gprof back in
-      i[3456]86-*-msdosdjgpp*) ;; # don't add gprof back in
+      i[3456789]86-*-vsta) ;; # don't add gprof back in
+      i[3456789]86-*-go32*) ;; # don't add gprof back in
+      i[3456789]86-*-msdosdjgpp*) ;; # don't add gprof back in
       *) skipdirs=`echo " ${skipdirs} " | sed -e 's/ gprof / /'` ;;
     esac
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -1739,19 +1739,19 @@ case "${host}" in
   i370-ibm-opened*)
     tentative_cc="c89"
     ;;
-  i[3456]86-*-sysv5*)
+  i[3456789]86-*-sysv5*)
     host_makefile_frag="config/mh-sysv5"
     ;;
-  i[3456]86-*-dgux*)
+  i[3456789]86-*-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
     host_makefile_frag="config/mh-dgux386"
     ;;
-  i[3456]86-ncr-sysv4.3*)
+  i[3456789]86-ncr-sysv4.3*)
     # The MetaWare compiler will generate a copyright message unless you
     # turn it off by adding the -Hnocopyr flag.
     tentative_cc="cc -Hnocopyr"
     ;;
-  i[3456]86-ncr-sysv4*)
+  i[3456789]86-ncr-sysv4*)
     # for an NCR 3000 (i486/SVR4) system.
     # The NCR 3000 ships with a MetaWare compiler installed as /bin/cc.
     # This compiler not only emits obnoxious copyright messages every time
@@ -1760,21 +1760,21 @@ case "${host}" in
     tentative_cc="/usr/ccs/ATT/cc"
     host_makefile_frag="config/mh-ncr3000"
     ;;
-  i[3456]86-*-sco3.2v5*)
+  i[3456789]86-*-sco3.2v5*)
     ;;
-  i[3456]86-*-sco*)
+  i[3456789]86-*-sco*)
     # The native C compiler botches some simple uses of const.  Unfortunately,
     # it doesn't defined anything like "__sco__" for us to test for in ansidecl.h.
     tentative_cc="cc -Dconst="
     host_makefile_frag="config/mh-sco"
     ;;
-  i[3456]86-*-udk*)
+  i[3456789]86-*-udk*)
     host_makefile_frag="config/mh-sysv5"
     ;;
-  i[3456]86-*-solaris2*)
+  i[3456789]86-*-solaris2*)
     host_makefile_frag="config/mh-sysv4"
     ;;
-  i[3456]86-*-msdosdjgpp*)
+  i[3456789]86-*-msdosdjgpp*)
     host_makefile_frag="config/mh-djgpp"
     ;;
   *-cygwin*)
@@ -1824,7 +1824,7 @@ extra_nmflags_for_target=
 extra_ranlibflags_for_target=
 target_makefile_frag=/dev/null
 case "${target}" in
-  i[3456]86-*-netware*)
+  i[3456789]86-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
   powerpc-*-netware*)
@@ -2551,7 +2551,7 @@ case " $target_configdirs " in
    fi
 
    case "${target}-${is_cross_compiler}" in
-   i[3456]86-*-linux*-no)
+   i[3456789]86-*-linux*-no)
       # Here host == target, so we don't need to build gcc,
       # so we don't want to discard standard headers.
       FLAGS_FOR_TARGET=`echo " $FLAGS_FOR_TARGET " | sed -e 's/ -nostdinc / /'`
