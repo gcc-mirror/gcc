@@ -4494,17 +4494,21 @@ fi
 if test "${enable_coverage+set}" = set; then
   enableval="$enable_coverage"
   case "${enableval}" in
-yes|noopt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0"
-	;;
-opt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2"
-	;;
-*)
-	{ { echo "$as_me:$LINENO: error: unknown coverage setting $enableval" >&5
+  yes|noopt)
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0"
+    ;;
+  opt)
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2"
+    ;;
+  no)
+    # a.k.a. --disable-coverage
+    coverage_flags=""
+    ;;
+  *)
+    { { echo "$as_me:$LINENO: error: unknown coverage setting $enableval" >&5
 echo "$as_me: error: unknown coverage setting $enableval" >&2;}
    { (exit 1); exit 1; }; }
-	;;
+    ;;
 esac
 else
   coverage_flags=""
@@ -5138,7 +5142,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5141: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5145: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
