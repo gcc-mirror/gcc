@@ -1,5 +1,22 @@
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (slibdir): New variable.
+	(libgcc.mk): Pass SHLIB_INSTALL to mklibgcc.
+	(installdirs): Create slibdir.
+	(install-libgcc, install-multilib): Defer to libgcc.mk.
+	* configure.in (slibdir): Substitute.
+	* mklibgcc.in (install): New target.
+
+	* config/t-linux (SHLIB_LINK): Create links for the soname.
+	(SHLIB_INSTALL): New.
+	* config/alpha/t-osf4 (SHLIB_INSTALL): New.
+	* config/mips/t-iris6 (SHLIB_INSTALL): New.
+	* config/rs6000/t-aix43 (SHLIB_INSTALL): New.
+	* config/sparc/t-slibgcc (SHLIB_INSTALL): New.
+	* config/sparc/t-slibgcc-sld (SHLIB_INSTALL): New.
+
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
 	* config/rs6000/aix.h (LINK_LIBGCC_SPECIAL_1): New.
 	* config/rs6000/rs6000.h (LIBGCC_SPEC): Remove.
 	* config/rs6000/sysv4.h (LIBGCC_SPEC): Remove.

@@ -9,3 +9,6 @@ SHLIB_EXT = .so
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,-msym -Wl,-set_version,gcc.0 -Wl,-soname,@shlib_base_name@.so.0 \
 	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc
+SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $(slibdir)/@shlib_base_name@.so.0; \
+	rm -f $(slibdir)/@shlib_base_name@; \
+	$(LN_S) @shlib_base_name@.so.0 $(slibdir)/@shlib_base_name@.so
