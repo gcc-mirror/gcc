@@ -358,6 +358,10 @@ flow_analysis (f, nregs, file)
 			&& nonlocal_label_list != 0)
 		    || prev_code == BARRIER)))
 	  i++;
+
+	if (code == CALL_INSN && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	  code = INSN;
+
 	if (code != NOTE)
 	  prev_code = code;
       }
@@ -448,7 +452,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	       || (GET_RTX_CLASS (code) == 'i'
 		   && (prev_code == JUMP_INSN
 		       || (prev_code == CALL_INSN
-			   && nonlocal_label_list != 0)
+			   && nonlocal_label_list != 0
+			   && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		       || prev_code == BARRIER)))
 	{
 	  basic_block_head[++i] = insn;
@@ -577,7 +582,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	 to all the nonlocal goto handler labels.  */
 
       for (insn = f; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN)
+	if (GET_CODE (insn) == CALL_INSN
+	    && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	  {
 	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
 	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
