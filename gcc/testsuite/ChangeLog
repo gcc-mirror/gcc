@@ -1,3 +1,7 @@
+Fri Mar 26 00:50:46 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990326-1.c: New test from Charles Hannum.
+
 1999-03-26  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/19990325-0.f: New test.
