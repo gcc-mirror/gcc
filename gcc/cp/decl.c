@@ -4585,7 +4585,7 @@ redeclaration_error_message (newdecl, olddecl)
 	return "redefinition of `%#D'";
       return 0;
     }
-  else if (toplevel_bindings_p ())
+  else if (toplevel_bindings_p () || DECL_NAMESPACE_SCOPE_P (newdecl))
     {
       /* Objects declared at top level:  */
       /* If at least one is a reference, it's ok.  */

@@ -1097,15 +1097,14 @@ friend_accessible_p (scope, type, decl, binfo)
    When we are done with the decl-specifier-seq, we record the lookups we've
      seen in the lookups field of the typed_declspecs nonterminal.
    When we process the first declarator, either in parse_decl or
-     begin_function_definition, we call initial_deferred_type_access_control,
-     which processes any lookups from within that declarator, stores the
-     lookups from the decl-specifier-seq in current_type_lookups, and sets
-     type_lookups to error_mark_node.
-   Subsequent declarators process current_type_lookups again to make sure
-     that the types are accessible to all of the declarators.  Any lookups
-     within subsequent declarators are processed immediately.
-   Within a function, type_lookups is error_mark_node, so all lookups are
-     processed immediately.  */
+     begin_function_definition, we call save_type_access_control,
+     which stores the lookups from the decl-specifier-seq in
+     current_type_lookups.
+   As we finish with each declarator, we process everything in type_lookups
+     via decl_type_access_control, which resets type_lookups to the value of
+     current_type_lookups for subsequent declarators.
+   When we enter a function, we set type_lookups to error_mark_node, so all
+     lookups are processed immediately.  */
 
 void
 type_access_control (type, val)
