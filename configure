@@ -87,7 +87,7 @@ srctrigger=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.50 $"
+version="$Revision: 1.51 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -869,16 +869,16 @@ do
 done
 
 
+tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
+tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
+tools="${tools} BUILD_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
+tools="${tools} NM_FOR_TARGET RANLIB RANLIB_FOR_TARGET"
+tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
+tools="${tools} OBJCOPY OBJDUMP"
 if [ "${build}" != "${host}" ]; then
   # If we are doing a Canadian Cross, in which the host and build systems
   # are not the same, we set reasonable default values for the tools.
-  tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
-  tools="${tools} CC_FOR_TARGET CXX_FOR_TARGET GCJ_FOR_TARGET"
-  tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
-  tools="${tools} BUILD_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
-  tools="${tools} NM_FOR_TARGET RANLIB RANLIB_FOR_TARGET"
-  tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
-  tools="${tools} OBJCOPY OBJDUMP"
+  tools="${tools} RANLIB"
 
   for var in ${tools}; do
     if eval [ -z \"\$${var}\" ] && [ -r Makefile ]; then
@@ -968,17 +968,6 @@ t loop
     LEX=${LEX-flex}
   fi
 
-  # Export variables which autoconf might try to set.
-  export AS
-  export AR
-  export CC_FOR_BUILD
-  export DLLTOOL
-  export LD
-  export NM
-  export RANLIB
-  export WINDRES
-  export OBJCOPY
-  export OBJDUMP
 else
   # Set reasonable default values for some tools even if not Canadian.
   # Of course, these are different reasonable default values, originally
@@ -987,12 +976,6 @@ else
   # Note that all these settings are above the fragment inclusion point
   # in Makefile.in, so can still be overridden by fragments.
   # This is all going to change when we autoconfiscate...
-
-  tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
-  tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
-  tools="${tools} BUILD_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
-  tools="${tools} NM_FOR_TARGET RANLIB_FOR_TARGET"
-  tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
 
   AR=ar
   AR_FOR_TARGET='\$(USUAL_AR_FOR_TARGET)'
@@ -1064,11 +1047,6 @@ else
   CFLAGS=${CFLAGS-"-g"}
   CXXFLAGS=${CXXFLAGS-"-g -O2"}
 fi
-
-export CC
-export CXX
-export CFLAGS
-export CXXFLAGS
 
 # FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
 # Set up the list of links to be made.

@@ -1,3 +1,8 @@
+2002-12-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Remove unneeded 'export's.  Make CC_FOR_TARGET, 
+	CXX_FOR_TARGET, GCJ_FOR_TARGET substituted in configure.in only.
+
 2002-12-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config.sub: Import from master repository
