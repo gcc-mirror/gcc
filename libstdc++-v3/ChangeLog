@@ -1,5 +1,9 @@
 2000-11-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* acinclude.m4 (LIB_AC_PROG_CXX): Set CXX_libstdcxx from CXX.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Fix punctuation in
 	use of `test'.
 	* aclocal.m4: Regenerated.
