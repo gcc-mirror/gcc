@@ -118,7 +118,7 @@ ${srcdir}/configure: ${srcdir}/configure.in
 	cd $(srcdir) && autoconf
 
 # Dependence on Makefile serializes for parallel make.
-g2c.h: $(srcdir)/g2c.h.in config.status Makefile
+g2c.h: $(srcdir)/g2c.hin config.status Makefile
 # Might try to avoid rebuilding everything if Makefile or configure
 # changes and g2c.h doesn't; see also the Makefile rule.  Should
 # depend on another stamp file rather than using the commented-out
