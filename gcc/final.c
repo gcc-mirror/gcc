@@ -202,26 +202,6 @@ static char *line_note_exists;
 rtx current_insn_predicate;
 #endif
 
-/* Linked list to hold line numbers for each basic block.  */
-
-struct bb_list
-{
-  struct bb_list *next;		/* pointer to next basic block */
-  int line_num;			/* line number */
-  int file_label_num;		/* LPBC<n> label # for stored filename */
-  int func_label_num;		/* LPBC<n> label # for stored function name */
-};
-
-/* Linked list to hold the strings for each file and function name output.  */
-
-struct bb_str
-{
-  struct bb_str *next;		/* pointer to next string */
-  const char *string;		/* string */
-  int label_num;		/* label number */
-  int length;			/* string length */
-};
-
 #ifdef HAVE_ATTR_length
 static int asm_insn_count	PARAMS ((rtx));
 #endif
