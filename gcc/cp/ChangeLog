@@ -1,5 +1,9 @@
 2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* pt.c (tsubst) <ARRAY_REF>: Remove erroneous argument to build_nt.
+
+2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/5369
 	* friend.c (is_friend): Handle member function of a class
 	template as template friend.

@@ -7121,7 +7121,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return build_nt (ARRAY_REF, e1, e2, tsubst_expr);
+	return build_nt (ARRAY_REF, e1, e2);
       }
 
     case CALL_EXPR:
