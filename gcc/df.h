@@ -318,10 +318,10 @@ enum df_flow_dir
     BACKWARD
   };
 
-typedef void (*transfer_function_sbitmap) (int, int *, sbitmap, sbitmap, 
-					   sbitmap, sbitmap, void *);
-typedef void (*transfer_function_bitmap) (int, int *, bitmap, bitmap,
-					  bitmap, bitmap, void *);
+typedef void (*transfer_function_sbitmap) PARAMS ((int, int *, sbitmap, sbitmap, 
+					   sbitmap, sbitmap, void *));
+typedef void (*transfer_function_bitmap) PARAMS ((int, int *, bitmap, bitmap,
+					  bitmap, bitmap, void *));
 
 extern void iterative_dataflow_sbitmap PARAMS ((sbitmap *, sbitmap *, 
 						sbitmap *, sbitmap *, 
