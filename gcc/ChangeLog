@@ -1,3 +1,10 @@
+2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Martin Sebor  <sebor@roguewave.com>
+
+	PR target/12602
+	* doc/invoke.texi (SPARC options): Document -threads
+	and -pthreads on Solaris.
+
 2004-07-13  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Handle types passed
