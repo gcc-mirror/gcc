@@ -1,3 +1,8 @@
+Thu Aug 20 17:35:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movtf_insn_sp32): All memory operands
+	must be offsettable so the splits can be made.
+
 Thu Aug 20 13:56:53 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* config/i386/winnt.c: Include system.h, not stdio.h to get
