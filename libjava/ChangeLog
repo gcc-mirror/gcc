@@ -1,5 +1,13 @@
 2004-03-19  Per Bothner  <per@bothner.com>
 
+	* configure.in: FILE variable  overrides FLATFORM when linking
+	natFileChannelXXX.cc.
+
+	* gnu/java/nio/channels/natFileChannelEcos.cc (diag_write):  Restored.
+	(write):  Call diag_write, as in old natFileDescriptorEcos.cc.
+
+2004-03-19  Per Bothner  <per@bothner.com>
+
 	* gnu/gcj/convert/Input_UnicodeBig.java:  New class..
 	* gnu/gcj/convert/Input_UnicodeLittle.java:  New class.
 	* Makefile.am:  Update accordingly.

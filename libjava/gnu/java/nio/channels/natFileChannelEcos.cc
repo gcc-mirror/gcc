@@ -26,19 +26,31 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/String.h>
 #include <java/io/FileNotFoundException.h>
-#include <java/nio/MappedByteBufferImpl.h>
+#include <gnu/java/nio/MappedByteBufferImpl.h>
 #include <java/nio/channels/FileChannel.h>
 #include <java/nio/channels/FileLock.h>
 #include <gnu/java/nio/channels/FileChannelImpl.h>
 
 using gnu::gcj::RawData;
 using java::io::IOException;
-using java::nio::MappedByteBufferImpl;
+using gnu::java::nio::MappedByteBufferImpl;
 using java::io::InterruptedIOException;
 using java::io::FileNotFoundException;
 using java::lang::ArrayIndexOutOfBoundsException;
 using java::lang::NullPointerException;
 using gnu::java::nio::channels::FileChannelImpl;
+
+extern "C" void diag_write_char (char c);
+
+static void 
+diag_write (char *data, int len)
+{
+  while (len > 0)
+    {
+      diag_write_char (*data++);
+      len--;
+    }
+}
 
 #define NO_FSYNC_MESSAGE "sync unsupported"
 
@@ -78,6 +90,8 @@ FileChannelImpl::open (jstring, jint)
 void
 FileChannelImpl::write (jint)
 {
+  char d = (char) b;
+  ::diag_write (&d, 1);
 }
 
 void
@@ -87,6 +101,8 @@ FileChannelImpl::write (jbyteArray b, jint offset, jint len)
     throw new NullPointerException;
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
     throw new ArrayIndexOutOfBoundsException;
+  char *bytes = (char *)elements (b) + offset;
+  ::diag_write (bytes, len);
 }
 
 void
