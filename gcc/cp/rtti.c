@@ -107,7 +107,7 @@ build_headof (exp)
   type = build_type_variant (ptr_type_node, TREE_READONLY (exp),
 			     TREE_THIS_VOLATILE (exp));
   return build (PLUS_EXPR, type, exp,
-		convert (ptrdiff_type_node, offset));
+		cp_convert (ptrdiff_type_node, offset));
 }
 
 /* Build a call to a generic entry point taking and returning void.  */
@@ -240,7 +240,7 @@ build_x_typeid (exp)
       && ! nonnull)
     {
       exp = stabilize_reference (exp);
-      cond = convert (boolean_type_node, TREE_OPERAND (exp, 0));
+      cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0));
     }
 
   exp = get_tinfo_fn_dynamic (exp);
@@ -256,7 +256,7 @@ build_x_typeid (exp)
 
       bad = build_compound_expr
 	(tree_cons (NULL_TREE, bad, build_tree_list
-		    (NULL_TREE, convert (type, integer_zero_node))));
+		    (NULL_TREE, cp_convert (type, integer_zero_node))));
       exp = build (COND_EXPR, type, cond, exp, bad);
     }
 
@@ -292,7 +292,7 @@ get_tinfo_var (type)
 		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
 	size = 3 * POINTER_SIZE;
       else
-	size = 3 * POINTER_SIZE + INT_TYPE_SIZE;
+	size = 3 * POINTER_SIZE + TYPE_PRECISION (sizetype);
     }
   else
     size = 2 * POINTER_SIZE;
@@ -398,7 +398,7 @@ ifnonnull (test, result)
 {
   return build (COND_EXPR, TREE_TYPE (result),
 		build (EQ_EXPR, boolean_type_node, test, integer_zero_node),
-		convert (TREE_TYPE (result), integer_zero_node),
+		cp_convert (TREE_TYPE (result), integer_zero_node),
 		result);
 }
 
@@ -611,15 +611,14 @@ build_dynamic_cast (type, expr)
 	      expr1 = throw_bad_cast ();
 	      expr1 = build_compound_expr
 		(tree_cons (NULL_TREE, expr1,
-			    build_tree_list (NULL_TREE, convert
-					     (type, integer_zero_node))));
+			    build_tree_list (NULL_TREE, cp_convert (type, integer_zero_node))));
 	      TREE_TYPE (expr1) = type;
 	      result = save_expr (result);
 	      return build (COND_EXPR, type, result, result, expr1);
 	    }
 
 	  /* Now back to the type we want from a void*.  */
-	  result = convert (type, result);
+	  result = cp_convert (type, result);
           return ifnonnull (expr, result);
 	}
     }
@@ -842,7 +841,8 @@ expand_class_desc (tdecl, type)
     (NULL_TREE, decay_conversion (tdecl), tree_cons
      (NULL_TREE, decay_conversion (name_string), tree_cons
       (NULL_TREE, decay_conversion (elts), tree_cons
-       (NULL_TREE, build_int_2 (base_cnt, 0), NULL_TREE))));
+       (NULL_TREE, cp_convert (sizetype, build_int_2 (base_cnt, 0)),
+	NULL_TREE))));
 
   fn = get_identifier ("__rtti_class");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
@@ -1043,7 +1043,7 @@ synthesize_tinfo_fn (fndecl)
   /* If the first word of the array (the vtable) is non-zero, we've already
      initialized the object, so don't do it again.  */
   addr = decay_conversion (tdecl);
-  tmp = convert (build_pointer_type (ptr_type_node), addr);
+  tmp = cp_convert (build_pointer_type (ptr_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
   tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node, 1);
   expand_start_cond (tmp, 0);
@@ -1084,7 +1084,7 @@ synthesize_tinfo_fn (fndecl)
   expand_end_cond ();
 
   /* OK, now return the type_info object.  */
-  tmp = convert (build_pointer_type (type_info_type_node), addr);
+  tmp = cp_convert (build_pointer_type (type_info_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
   c_expand_return (tmp);
   finish_function (lineno, 0, 0);

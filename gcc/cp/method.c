@@ -895,6 +895,11 @@ build_overload_name (parmtypes, begin, end)
 	  else my_friendly_abort (74);
 	  break;
 
+	case COMPLEX_TYPE:
+	  OB_PUTC ('J');
+	  build_overload_name (TREE_TYPE (parmtype), 0, 0);
+	  break;
+
 	case VOID_TYPE:
 	  if (! just_one)
 	    {

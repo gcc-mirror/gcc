@@ -9,13 +9,19 @@ __asm, GCC_ASM_KEYWORD, NORID
 __asm__, GCC_ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
+__complex, TYPESPEC, RID_COMPLEX
+__complex__, TYPESPEC, RID_COMPLEX
 __const, CV_QUALIFIER, RID_CONST
 __const__, CV_QUALIFIER, RID_CONST
 __extension__, EXTENSION, NORID
+__imag, IMAGPART, NORID
+__imag__, IMAGPART, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
 __label__, LABEL, NORID
 __null, CONSTANT, RID_NULL
+__real, REALPART, NORID
+__real__, REALPART, NORID
 __signature__, AGGR, RID_SIGNATURE	/* Extension */,
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED

@@ -1252,7 +1252,7 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
 	 via the copy constructor, even if the call is elided.  */
       if (! (TREE_CODE (exp) == VAR_DECL && DECL_ARTIFICIAL (exp)
 	     && TREE_CODE (init) == TARGET_EXPR && TREE_TYPE (init) == type))
-	init = cp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
       expand_assignment (exp, init, 0, 0);
       return;
@@ -1512,7 +1512,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	  if (init_list && TREE_CHAIN (init_list))
 	    {
 	      warning ("initializer list being treated as compound expression");
-	      init = convert (type, build_compound_expr (init_list));
+	      init = cp_convert (type, build_compound_expr (init_list));
 	      if (init == error_mark_node)
 		return;
 	    }
@@ -2101,14 +2101,14 @@ resolve_offset_ref (exp)
 
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (member));
       addr = convert_pointer_to (basetype, addr);
-      member = convert (ptrdiff_type_node,
-			build_unary_op (ADDR_EXPR, member, 0));
+      member = cp_convert (ptrdiff_type_node,
+			   build_unary_op (ADDR_EXPR, member, 0));
       
       /* Pointer to data mebers are offset by one, so that a null
 	 pointer with a real value of 0 is distinguishable from an
 	 offset of the first member of a structure.  */
       member = build_binary_op (MINUS_EXPR, member,
-				convert (ptrdiff_type_node, integer_one_node),
+				cp_convert (ptrdiff_type_node, integer_one_node),
 				0);
 
       return build1 (INDIRECT_REF, type,
@@ -2269,7 +2269,7 @@ build_new (placement, decl, init, use_global_new)
 		}
 	      else
 		{
-		  this_nelts = save_expr (convert (sizetype, this_nelts));
+		  this_nelts = save_expr (cp_convert (sizetype, this_nelts));
 		  absdcl = TREE_OPERAND (absdcl, 0);
 	          if (this_nelts == integer_zero_node)
 		    {
@@ -2464,7 +2464,7 @@ build_new (placement, decl, init, use_global_new)
     {
       rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
 			     ptr_type_node, size, placement);
-      rval = convert (build_pointer_type (true_type), rval);
+      rval = cp_convert (build_pointer_type (true_type), rval);
     }
   else if (! has_array && flag_this_is_variable > 0
 	   && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
@@ -2498,8 +2498,8 @@ build_new (placement, decl, init, use_global_new)
     {
       tree extra = BI_header_size;
       tree cookie, exp1;
-      rval = convert (ptr_type_node, rval);    /* convert to void * first */
-      rval = convert (string_type_node, rval); /* lets not add void* and ints */
+      rval = cp_convert (ptr_type_node, rval);    /* convert to void * first */
+      rval = cp_convert (string_type_node, rval); /* lets not add void* and ints */
       rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra, 1));
       /* Store header info.  */
       cookie = build_indirect_ref (build (MINUS_EXPR, build_pointer_type (BI_header_type),
@@ -2508,7 +2508,7 @@ build_new (placement, decl, init, use_global_new)
 		    build_component_ref (cookie, nc_nelts_field_id, NULL_TREE, 0),
 		    nelts);
       TREE_SIDE_EFFECTS (exp1) = 1;
-      rval = convert (build_pointer_type (true_type), rval);
+      rval = cp_convert (build_pointer_type (true_type), rval);
       TREE_CALLS_NEW (rval) = 1;
       TREE_SIDE_EFFECTS (rval) = 1;
       rval = build_compound_expr (tree_cons (NULL_TREE, exp1,
@@ -2751,11 +2751,11 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
   if (auto_delete != integer_zero_node
       && auto_delete != integer_two_node)
     {
-      tree base_tbd = convert (ptype,
-			       build_binary_op (MINUS_EXPR,
-						convert (ptr_type_node, base),
-						BI_header_size,
-						1));
+      tree base_tbd = cp_convert (ptype,
+				  build_binary_op (MINUS_EXPR,
+						   cp_convert (ptr_type_node, base),
+						   BI_header_size,
+						   1));
       /* This is the real size */
       virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
       body = build_tree_list (NULL_TREE,
@@ -2808,11 +2808,11 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 	base_tbd = base;
       else
 	{
-	  base_tbd = convert (ptype,
-			      build_binary_op (MINUS_EXPR,
-					       convert (string_type_node, base),
-					       BI_header_size,
-					       1));
+	  base_tbd = cp_convert (ptype,
+				 build_binary_op (MINUS_EXPR,
+						  cp_convert (string_type_node, base),
+						  BI_header_size,
+						  1));
 	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
 	}
@@ -2847,7 +2847,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
       return controller;
     }
   else
-    return convert (void_type_node, body);
+    return cp_convert (void_type_node, body);
 }
 
 /* Build a tree to cleanup partially built arrays.
@@ -2891,7 +2891,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   tree type = TREE_TYPE (TREE_TYPE (base));
   tree size;
 
-  maxindex = convert (ptrdiff_type_node, maxindex);
+  maxindex = cp_convert (ptrdiff_type_node, maxindex);
   if (maxindex == error_mark_node)
     return error_mark_node;
 
@@ -2909,9 +2909,9 @@ expand_vec_init (decl, base, maxindex, init, from_array)
   /* Set to zero in case size is <= 0.  Optimizer will delete this if
      it is not needed.  */
   rval = get_temp_regvar (build_pointer_type (type),
-			  convert (build_pointer_type (type), null_pointer_node));
+			  cp_convert (build_pointer_type (type), null_pointer_node));
   base = default_conversion (base);
-  base = convert (build_pointer_type (type), base);
+  base = cp_convert (build_pointer_type (type), base);
   expand_assignment (rval, base, 0, 0);
   base = get_temp_regvar (build_pointer_type (type), base);
 

@@ -169,6 +169,11 @@ tree float_type_node;
 tree double_type_node;
 tree long_double_type_node;
 
+tree complex_integer_type_node;
+tree complex_float_type_node;
+tree complex_double_type_node;
+tree complex_long_double_type_node;
+
 tree intQI_type_node;
 tree intHI_type_node;
 tree intSI_type_node;
@@ -4805,6 +4810,30 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
   layout_type (long_double_type_node);
 
+  complex_integer_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
+			complex_integer_type_node));
+  TREE_TYPE (complex_integer_type_node) = integer_type_node;
+  layout_type (complex_integer_type_node);
+
+  complex_float_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex float"),
+			complex_float_type_node));
+  TREE_TYPE (complex_float_type_node) = float_type_node;
+  layout_type (complex_float_type_node);
+
+  complex_double_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex double"),
+			complex_double_type_node));
+  TREE_TYPE (complex_double_type_node) = double_type_node;
+  layout_type (complex_double_type_node);
+
+  complex_long_double_type_node = make_node (COMPLEX_TYPE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
+			complex_long_double_type_node));
+  TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
+  layout_type (complex_long_double_type_node);
+
   integer_zero_node = build_int_2 (0, 0);
   TREE_TYPE (integer_zero_node) = integer_type_node;
   integer_one_node = build_int_2 (1, 0);
@@ -7105,9 +7134,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 
       if (check == 0 && ! current_function_decl)
 	{
-	  /* FIXME: this should only need to look at
-             IDENTIFIER_GLOBAL_VALUE.  */
-	  tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
+	  tmp = IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl));
 	  if (tmp == NULL_TREE)
 	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
 	  else if (TREE_CODE (tmp) != TREE_CODE (decl))
@@ -7379,6 +7406,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   int virtualp, explicitp, friendp, inlinep, staticp;
   int explicit_int = 0;
   int explicit_char = 0;
+  int defaulted_int = 0;
   int opaque_typedef = 0;
   tree typedef_decl = NULL_TREE;
   char *name;
@@ -7808,7 +7836,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   typedef_type = type;
 
-  /* No type at all: default to `int', and set EXPLICIT_INT
+  /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.
      Except when we have a `typedef' inside a signature, in
      which case the type defaults to `unknown type' and is
@@ -7822,7 +7850,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       /* These imply 'int'.  */
       type = integer_type_node;
-      explicit_int = 1;
+      defaulted_int = 1;
     }
 
   if (type == NULL_TREE)
@@ -7928,7 +7956,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else
 	{
 	  ok = 1;
-	  if (!explicit_int && !explicit_char && pedantic)
+	  if (!explicit_int && !defaulted_int && !explicit_char && pedantic)
 	    {
 	      pedwarn ("long, short, signed or unsigned used invalidly for `%s'",
 		       name);
@@ -7948,11 +7976,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
     }
 
+  if (RIDBIT_SETP (RID_COMPLEX, specbits)
+      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    {
+      error ("complex invalid for `%s'", name);
+      RIDBIT_RESET (RID_COMPLEX, specbits);
+    }
+
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
   if (RIDBIT_SETP (RID_UNSIGNED, specbits)
       || (bitfield && ! flag_signed_bitfields
-	  && (explicit_int || explicit_char
+	  && (explicit_int || defaulted_int || explicit_char
 	      /* A typedef for plain `int' without `signed'
 		 can be controlled just like plain `int'.  */
 	      || ! (typedef_decl != NULL_TREE
@@ -7982,6 +8017,31 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     type = long_integer_type_node;
   else if (RIDBIT_SETP (RID_SHORT, specbits))
     type = short_integer_type_node;
+
+  if (RIDBIT_SETP (RID_COMPLEX, specbits))
+    {
+      /* If we just have "complex", it is equivalent to
+	 "complex double", but if any modifiers at all are specified it is
+	 the complex form of TYPE.  E.g, "complex short" is
+	 "complex short int".  */
+
+      if (defaulted_int && ! longlong
+	  && ! (RIDBIT_SETP (RID_LONG, specbits)
+		|| RIDBIT_SETP (RID_SHORT, specbits)
+		|| RIDBIT_SETP (RID_SIGNED, specbits)
+		|| RIDBIT_SETP (RID_UNSIGNED, specbits)))
+	type = complex_double_type_node;
+      else if (type == integer_type_node)
+	type = complex_integer_type_node;
+      else if (type == float_type_node)
+	type = complex_float_type_node;
+      else if (type == double_type_node)
+	type = complex_double_type_node;
+      else if (type == long_double_type_node)
+	type = complex_long_double_type_node;
+      else
+	type = build_complex_type (type);
+    }
 
   /* Set CONSTP if this declaration is `const', whether by
      explicit specification or via a typedef.
@@ -8353,9 +8413,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		itype
 		  = fold (build_binary_op (MINUS_EXPR,
-					   convert (index_type, size),
-					   convert (index_type,
-						    integer_one_node), 1));
+					   cp_convert (index_type, size),
+					   cp_convert (index_type,
+						       integer_one_node), 1));
 		if (! TREE_CONSTANT (itype))
 		  itype = variable_size (itype);
 		else if (TREE_OVERFLOW (itype))

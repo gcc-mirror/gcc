@@ -322,8 +322,11 @@ build_vbase_path (code, type, expr, path, alias_this)
   if (TREE_INT_CST_LOW (offset))
     {
       /* Bash types to make the backend happy.  */
-      offset = convert (type, offset);
+      offset = cp_convert (type, offset);
+#if 0
+      /* This shouldn't be necessary.  (mrs) */
       expr = build1 (NOP_EXPR, type, expr);
+#endif
 
       /* For multiple inheritance: if `this' can be set by any
 	 function, then it could be 0 on entry to any function.
@@ -518,8 +521,8 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
       *ptr_to_instptr
 	= build (PLUS_EXPR, TREE_TYPE (*ptr_to_instptr),
 		 *ptr_to_instptr,
-		 convert (ptrdiff_type_node,
-			  build_component_ref (aref, delta_identifier, NULL_TREE, 0)));
+		 cp_convert (ptrdiff_type_node,
+			     build_component_ref (aref, delta_identifier, NULL_TREE, 0)));
     }
 
   return build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
@@ -4630,8 +4633,10 @@ pushclass (type, modify)
 
   pushlevel_class ();
 
+#if 0
   if (CLASSTYPE_TEMPLATE_INFO (type))
     overload_template_name (type);
+#endif
 
   if (modify)
     {

@@ -129,6 +129,8 @@ lvalue_p (ref)
 	 what they refer to are valid lvals.  */
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case COMPONENT_REF:
     case SAVE_EXPR:
       return lvalue_p (TREE_OPERAND (ref, 0));
@@ -925,27 +927,27 @@ struct list_hash
    and the hash code is computed differently for each of these.  */
 
 #define TYPE_HASH_SIZE 59
-struct list_hash *list_hash_table[TYPE_HASH_SIZE];
+static struct list_hash *list_hash_table[TYPE_HASH_SIZE];
 
 /* Compute a hash code for a list (chain of TREE_LIST nodes
    with goodies in the TREE_PURPOSE, TREE_VALUE, and bits of the
    TREE_COMMON slots), by adding the hash codes of the individual entries.  */
 
-int
-list_hash (list)
-     tree list;
+static int
+list_hash (purpose, value, chain)
+     tree purpose, value, chain;
 {
   register int hashcode = 0;
 
-  if (TREE_CHAIN (list))
-    hashcode += TYPE_HASH (TREE_CHAIN (list));
+  if (chain)
+    hashcode += TYPE_HASH (chain);
 
-  if (TREE_VALUE (list))
-    hashcode += TYPE_HASH (TREE_VALUE (list));
+  if (value)
+    hashcode += TYPE_HASH (value);
   else
     hashcode += 1007;
-  if (TREE_PURPOSE (list))
-    hashcode += TYPE_HASH (TREE_PURPOSE (list));
+  if (purpose)
+    hashcode += TYPE_HASH (purpose);
   else
     hashcode += 1009;
   return hashcode;
@@ -954,31 +956,30 @@ list_hash (list)
 /* Look in the type hash table for a type isomorphic to TYPE.
    If one is found, return it.  Otherwise return 0.  */
 
-tree
-list_hash_lookup (hashcode, list)
-     int hashcode;
-     tree list;
+static tree
+list_hash_lookup (hashcode, via_public, via_protected, via_virtual,
+		  purpose, value, chain)
+     int hashcode, via_public, via_virtual, via_protected;
+     tree purpose, value, chain;
 {
   register struct list_hash *h;
+
   for (h = list_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
     if (h->hashcode == hashcode
-	&& TREE_VIA_VIRTUAL (h->list) == TREE_VIA_VIRTUAL (list)
-	&& TREE_VIA_PUBLIC (h->list) == TREE_VIA_PUBLIC (list)
-	&& TREE_VIA_PROTECTED (h->list) == TREE_VIA_PROTECTED (list)
-	&& TREE_PURPOSE (h->list) == TREE_PURPOSE (list)
-	&& TREE_VALUE (h->list) == TREE_VALUE (list)
-	&& TREE_CHAIN (h->list) == TREE_CHAIN (list))
-      {
-	my_friendly_assert (TREE_TYPE (h->list) == TREE_TYPE (list), 299);
-	return h->list;
-      }
+	&& TREE_VIA_VIRTUAL (h->list) == via_virtual
+	&& TREE_VIA_PUBLIC (h->list) == via_public
+	&& TREE_VIA_PROTECTED (h->list) == via_protected
+	&& TREE_PURPOSE (h->list) == purpose
+	&& TREE_VALUE (h->list) == value
+	&& TREE_CHAIN (h->list) == chain)
+      return h->list;
   return 0;
 }
 
 /* Add an entry to the list-hash-table
    for a list TYPE whose hash code is HASHCODE.  */
 
-void
+static void
 list_hash_add (hashcode, list)
      int hashcode;
      tree list;
@@ -1008,29 +1009,6 @@ list_hash_add (hashcode, list)
 static int debug_no_list_hash = 0;
 
 tree
-list_hash_canon (hashcode, list)
-     int hashcode;
-     tree list;
-{
-  tree t1;
-
-  if (debug_no_list_hash)
-    return list;
-
-  t1 = list_hash_lookup (hashcode, list);
-  if (t1 != 0)
-    {
-      obstack_free (&class_obstack, list);
-      return t1;
-    }
-
-  /* If this is a new list, record it for later reuse.  */
-  list_hash_add (hashcode, list);
-
-  return list;
-}
-
-tree
 hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
      int via_public, via_virtual, via_protected;
      tree purpose, value, chain;
@@ -1039,13 +1017,26 @@ hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
   tree t;
   int hashcode;
 
+  if (! debug_no_list_hash)
+    {
+      hashcode = list_hash (purpose, value, chain);
+      t = list_hash_lookup (hashcode, via_public, via_protected, via_virtual,
+			    purpose, value, chain);
+      if (t)
+	return t;
+    }
+
   current_obstack = &class_obstack;
+
   t = tree_cons (purpose, value, chain);
   TREE_VIA_PUBLIC (t) = via_public;
   TREE_VIA_PROTECTED (t) = via_protected;
   TREE_VIA_VIRTUAL (t) = via_virtual;
-  hashcode = list_hash (t);
-  t = list_hash_canon (hashcode, t);
+
+  /* If this is a new list, record it for later reuse.  */
+  if (! debug_no_list_hash)
+    list_hash_add (hashcode, t);
+
   current_obstack = ambient_obstack;
   return t;
 }
@@ -1056,16 +1047,7 @@ tree
 hash_tree_chain (value, chain)
      tree value, chain;
 {
-  struct obstack *ambient_obstack = current_obstack;
-  tree t;
-  int hashcode;
-
-  current_obstack = &class_obstack;
-  t = tree_cons (NULL_TREE, value, chain);
-  hashcode = list_hash (t);
-  t = list_hash_canon (hashcode, t);
-  current_obstack = ambient_obstack;
-  return t;
+  return hash_tree_cons (0, 0, 0, NULL_TREE, value, chain);
 }
 
 /* Similar, but used for concatenating two lists.  */
@@ -1594,6 +1576,12 @@ mapcar (t, func)
 	 mapcar (TREE_TYPE (t), func),
 	 mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func));
       return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+
+    case COMPLEX_CST:
+      t = copy_node (t);
+      TREE_REALPART (t) = mapcar (TREE_REALPART (t), func);
+      TREE_IMAGPART (t) = mapcar (TREE_REALPART (t), func);
+      return t;
 
     case CONSTRUCTOR:
       t = copy_node (t);

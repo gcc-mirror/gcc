@@ -197,6 +197,11 @@ dump_type (t, v)
       dump_decl (t, v);
       break;
 
+    case COMPLEX_TYPE:
+      OB_PUTS ("complex ");
+      dump_type (TREE_TYPE (t), v);
+      break;
+
     case INTEGER_TYPE:
       if (!TREE_UNSIGNED (TYPE_MAIN_VARIANT (t)) && TREE_UNSIGNED (t))
 	OB_PUTS ("unsigned ");
@@ -435,6 +440,7 @@ dump_type_prefix (t, v)
     case UNKNOWN_TYPE:
     case VOID_TYPE:
     case TYPENAME_TYPE:
+    case COMPLEX_TYPE:
       dump_type (t, v);
       break;
       
@@ -516,6 +522,7 @@ dump_type_suffix (t, v)
     case UNKNOWN_TYPE:
     case VOID_TYPE:
     case TYPENAME_TYPE:
+    case COMPLEX_TYPE:
       break;
 
     default:
