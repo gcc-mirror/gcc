@@ -1,6 +1,10 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
-	EH merge from mainline, parts 5 - 15.
+	EH merge from mainline, parts 5 - 16.
+	* regmove.c (perhaps_ends_bb_p): Use can_throw_internal to
+	reduce false positives.
+	(regmove_optimize): Disable if flag_non_call_exceptions.
+
 	* stmt.c (expand_return): Remove always true predicate.
 	(expand_decl_cleanup_no_eh): Remove dead code.
 
