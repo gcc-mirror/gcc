@@ -791,6 +791,7 @@ dw2_force_const_mem (x)
 	  id = get_identifier (ref_name);
 	  decl = build_decl (VAR_DECL, id, ptr_type_node);
 	  DECL_ARTIFICIAL (decl) = 1;
+	  TREE_PUBLIC (decl) = 1;
 	  DECL_INITIAL (decl) = decl;
 	  make_decl_one_only (decl);
 	}
@@ -804,6 +805,7 @@ dw2_force_const_mem (x)
 	  id = get_identifier (label);
 	  decl = build_decl (VAR_DECL, id, ptr_type_node);
 	  DECL_ARTIFICIAL (decl) = 1;
+	  TREE_STATIC (decl) = 1;
 	  DECL_INITIAL (decl) = decl;
 	}
 

@@ -1,5 +1,10 @@
 2001-11-13  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2asm.c (dw2_force_const_mem): Set PUBLIC or STATIC
+	as appropriate for the artificial decl.
+
+2001-11-13  Richard Henderson  <rth@redhat.com>
+
 	* loop.c (combine_movables): Turn off combination until
 	move_movables validation bugs are fixed.
 
