@@ -7254,12 +7254,11 @@ fold (tree expr)
 	  /* If VAROP is a reference to a bitfield, we must mask
 	     the constant by the width of the field.  */
 	  if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
-	      && DECL_BIT_FIELD(TREE_OPERAND (TREE_OPERAND (varop, 0), 1)))
+	      && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (varop, 0), 1)))
 	    {
 	      tree fielddecl = TREE_OPERAND (TREE_OPERAND (varop, 0), 1);
 	      int size = TREE_INT_CST_LOW (DECL_SIZE (fielddecl));
-	      tree folded_compare;
-	      tree mask = 0;
+	      tree folded_compare, shift;
 
 	      /* First check whether the comparison would come out
 		 always the same.  If we don't do that we would
@@ -7271,25 +7270,12 @@ fold (tree expr)
 		  || integer_onep (folded_compare))
 		return omit_one_operand (type, folded_compare, varop);
 
-	      if (size < HOST_BITS_PER_WIDE_INT)
-		{
-		  unsigned HOST_WIDE_INT lo = ((unsigned HOST_WIDE_INT) 1
-					       << size) - 1;
-		  mask = build_int_2 (lo, 0);
-		}
-	      else if (size < 2 * HOST_BITS_PER_WIDE_INT)
-		{
-		  HOST_WIDE_INT hi = ((HOST_WIDE_INT) 1
-				      << (size - HOST_BITS_PER_WIDE_INT)) - 1;
-		  mask = build_int_2 (~0, hi);
-		}
-		   
-	      if (mask)
-		{
-		  mask = fold_convert (TREE_TYPE (varop), mask);
-		  newconst = fold (build (BIT_AND_EXPR, TREE_TYPE (varop),
-					  newconst, mask));
-		}
+	      shift = build_int_2 (TYPE_PRECISION (TREE_TYPE (varop)) - size,
+				   0);
+	      newconst = fold (build (LSHIFT_EXPR, TREE_TYPE (varop),
+				      newconst, shift));
+	      newconst = fold (build (RSHIFT_EXPR, TREE_TYPE (varop),
+				      newconst, shift));
 	    }
 
 	  return fold (build (code, type, varop, newconst));
