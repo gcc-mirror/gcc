@@ -1,5 +1,30 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
+	* rtl.def (DEFINE_COND_EXEC): New.
+	* md.texi: Document it.
+
+	* gensupport.c (input_file): Remove.
+	(struct queue_elem): Add lineno.
+	(rtx_ready_queue): Remove.
+	(errors): New.
+	(predicable_default): New.
+	(predicable_true, predicable_false): New.
+	(define_attr_queue, define_attr_tail): New.
+	(define_insn_queue, define_insn_tail): New.
+	(define_cond_exec_queue, define_cond_exec_tail): New.
+	(other_queue, other_tail): New.
+	(queue_pattern): New.
+	(process_rtx): Add patterns to the appropriate queues.
+	(is_predicable, identify_predicable_attribute): New.
+	(n_alternatives, collect_insn_data): New.
+	(alter_predicate_for_insn, alter_test_for_insn): New.
+	(shift_output_template, alter_output_for_insn): New.
+	(process_one_cond_exec, process_define_cond_exec): New.
+	(init_md_reader): Read the entire file.  Process define_cond_exec.
+	(read_md_rtx): Return elements from the queues.
+
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (mark_set_1): Don't update conditional life info
 	if the register is not_dead.
 
