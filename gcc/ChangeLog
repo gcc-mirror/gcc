@@ -1,3 +1,7 @@
+Tue Mar 11 22:35:39 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (reload_inqi): Fix mode for source in second set.
+
 Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (cselib_invalidate_mem_1): Move too ...
