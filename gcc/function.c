@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3180,17 +3180,20 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
       if (new)
 	{
+	  rtx src = SET_SRC (x);
+
+	  instantiate_virtual_regs_1 (&src, NULL_RTX, 0);
+
 	  /* The only valid sources here are PLUS or REG.  Just do
 	     the simplest possible thing to handle them.  */
-	  if (GET_CODE (SET_SRC (x)) != REG
-	      && GET_CODE (SET_SRC (x)) != PLUS)
+	  if (GET_CODE (src) != REG && GET_CODE (src) != PLUS)
 	    abort ();
 
 	  start_sequence ();
-	  if (GET_CODE (SET_SRC (x)) != REG)
-	    temp = force_operand (SET_SRC (x), NULL_RTX);
+	  if (GET_CODE (src) != REG)
+	    temp = force_operand (src, NULL_RTX);
 	  else
-	    temp = SET_SRC (x);
+	    temp = src;
 	  temp = force_operand (plus_constant (temp, offset), NULL_RTX);
 	  seq = get_insns ();
 	  end_sequence ();
