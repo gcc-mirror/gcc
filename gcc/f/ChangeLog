@@ -1,3 +1,31 @@
+Thu May 13 12:23:20 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix INTEGER*8 subscripts in array references:
+	* com.c (ffecom_subscript_check_): Convert low, high, and
+	element as necessary to make comparison work.
+	(ffecom_arrayref_): Do more of the work.
+	Properly handle subscript expr that's wider than int,
+	if pointers are wider than int.
+	(ffecom_expr_): Leave more work to ffecom_arrayref_.
+	(ffecom_init_0): Record sizes of pointers and ints for
+	convenience.
+	Use set_sizetype etc. as done by gcc front end.
+	(ffecom_ptr_to_expr): Leave more work to ffecom_arrayref_.
+	* expr.c (ffeexpr_finished_): Don't convert INTEGER subscript
+	expressions in run-time contexts.
+	(ffeexpr_token_elements_, ffeexpr_token_substring_1_): Cope with
+	non-default INTEGER subscript expressions.
+	* news.texi: Announce.
+
+	Finish accepting -fflatten-arrays option:
+	* com.c (ffecom_arrayref_): Flatten references if requested.
+	* g77.texi: Describe.
+	* lang-options.h: Allow.
+	* news.texi: Announce.
+	* top.c, top.h: Recognize.
+
+	* version.c: Bump version.
+
 Wed May 12 07:30:05 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (lang_init_options): Disable back end's maintenance

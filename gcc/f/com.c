@@ -556,6 +556,8 @@ static tree
 static bool ffecom_member_namelisted_;	/* _member_phase1_ namelisted? */
 static bool ffecom_doing_entry_ = FALSE;
 static bool ffecom_transform_only_dummies_ = FALSE;
+static int ffecom_typesize_pointer_;
+static int ffecom_typesize_integer1_;
 
 /* Holds pointer-to-function expressions.  */
 
@@ -628,8 +630,9 @@ static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
    it would be best to do something here to figure out automatically
    from other information what type to use.  */
 
-/* NOTE: g77 currently doesn't use these; see setting of sizetype and
-   change that if you need to.	-- jcb 09/01/91. */
+#ifndef SIZE_TYPE
+#define SIZE_TYPE "long unsigned int"
+#endif
 
 #define ffecom_concat_list_count_(catlist) ((catlist).count)
 #define ffecom_concat_list_expr_(catlist,i) ((catlist).exprs[(i)])
@@ -766,6 +769,19 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
   if (element == error_mark_node)
     return element;
 
+  if (TREE_TYPE (low) != TREE_TYPE (element))
+    {
+      if (TYPE_PRECISION (TREE_TYPE (low))
+	  > TYPE_PRECISION (TREE_TYPE (element)))
+	element = convert (TREE_TYPE (low), element);
+      else
+	{
+	  low = convert (TREE_TYPE (element), low);
+	  if (high)
+	    high = convert (TREE_TYPE (element), high);
+	}
+    }
+
   element = ffecom_save_tree (element);
   cond = ffecom_2 (LE_EXPR, integer_type_node,
 		   low,
@@ -889,10 +905,10 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
 
 /* Return the computed element of an array reference.
 
-   `item' is the array or a pointer to the array.  It must be a pointer
-     to the array if ffe_is_flat_arrays ().
-   `expr' is the original opARRAYREF expression.
-   `want_ptr' is non-zero if `item' is a pointer to the element, instead of
+   `item' is NULL_TREE, or the transformed pointer to the array.
+   `expr' is the original opARRAYREF expression, which is transformed
+     if `item' is NULL_TREE.
+   `want_ptr' is non-zero if a pointer to the element, instead of
      the element itself, is to be returned.  */
 
 static tree
@@ -901,11 +917,15 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
   ffebld dims[FFECOM_dimensionsMAX];
   int i;
   int total_dims;
-  int flatten = 0 /* ~~~ ffe_is_flat_arrays () */;
-  int need_ptr = want_ptr || flatten;
+  int flatten = ffe_is_flatten_arrays ();
+  int need_ptr;
   tree array;
   tree element;
+  tree tree_type;
+  tree tree_type_x;
   char *array_name;
+  ffetype type;
+  ffebld list;
 
   if (ffebld_op (ffebld_left (expr)) == FFEBLD_opSYMTER)
     array_name = ffesymbol_text (ffebld_symter (ffebld_left (expr)));
@@ -915,33 +935,84 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
   /* Build up ARRAY_REFs in reverse order (since we're column major
      here in Fortran land). */
 
-  for (i = 0, expr = ffebld_right (expr);
-       expr != NULL;
-       expr = ffebld_trail (expr))
-    dims[i++] = ffebld_head (expr);
+  for (i = 0, list = ffebld_right (expr);
+       list != NULL;
+       ++i, list = ffebld_trail (list))
+    {
+      dims[i] = ffebld_head (list);
+      type = ffeinfo_type (ffebld_basictype (dims[i]),
+			   ffebld_kindtype (dims[i]));
+      if (! flatten
+	  && ffecom_typesize_pointer_ > ffecom_typesize_integer1_
+	  && ffetype_size (type) > ffecom_typesize_integer1_)
+	/* E.g. ARRAY(INDEX), given INTEGER*8 INDEX, on a system with 64-bit
+	   pointers and 32-bit integers.  Do the full 64-bit pointer
+	   arithmetic, for codes using arrays for nonstandard heap-like
+	   work.  */
+	flatten = 1;
+    }
 
   total_dims = i;
 
+  need_ptr = want_ptr || flatten;
+
+  if (! item)
+    {
+      if (need_ptr)
+	item = ffecom_ptr_to_expr (ffebld_left (expr));
+      else
+	item = ffecom_expr (ffebld_left (expr));
+
+      if (item == error_mark_node)
+	return item;
+
+      if (ffeinfo_where (ffebld_info (expr)) == FFEINFO_whereFLEETING
+	  && ! mark_addressable (item))
+	return error_mark_node;
+    }
+
+  if (item == error_mark_node)
+    return item;
+
   if (need_ptr)
     {
+      tree min;
+
       for (--i, array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
 	   i >= 0;
 	   --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
 	{
-	  element = ffecom_expr (dims[i]);
+	  min = TYPE_MIN_VALUE (TYPE_DOMAIN (array));
+	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
 	  if (ffe_is_subscript_check ())
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
 					       array_name);
+	  if (element == error_mark_node)
+	    return element;
+
+	  /* Widen integral arithmetic as desired while preserving
+	     signedness.  */
+	  tree_type = TREE_TYPE (element);
+	  tree_type_x = tree_type;
+	  if (tree_type
+	      && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
+	      && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
+	    tree_type_x = (TREE_UNSIGNED (tree_type) ? usizetype : ssizetype);
+
+	  if (TREE_TYPE (min) != tree_type_x)
+	    min = convert (tree_type_x, min);
+	  if (TREE_TYPE (element) != tree_type_x)
+	    element = convert (tree_type_x, element);
+
 	  item = ffecom_2 (PLUS_EXPR,
 			   build_pointer_type (TREE_TYPE (array)),
 			   item,
 			   size_binop (MULT_EXPR,
 				       size_in_bytes (TREE_TYPE (array)),
-				       convert (sizetype,
-						fold (build (MINUS_EXPR,
-							     TREE_TYPE (TYPE_MIN_VALUE (TYPE_DOMAIN (array))),
-							     element,
-							     TYPE_MIN_VALUE (TYPE_DOMAIN (array)))))));
+				       fold (build (MINUS_EXPR,
+						    tree_type_x,
+						    element,
+						    min))));
 	}
       if (! want_ptr)
 	{
@@ -962,6 +1033,20 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  if (ffe_is_subscript_check ())
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
 					       array_name);
+	  if (element == error_mark_node)
+	    return element;
+
+	  /* Widen integral arithmetic as desired while preserving
+	     signedness.  */
+	  tree_type = TREE_TYPE (element);
+	  tree_type_x = tree_type;
+	  if (tree_type
+	      && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
+	      && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
+	    tree_type_x = (TREE_UNSIGNED (tree_type) ? usizetype : ssizetype);
+
+	  element = convert (tree_type_x, element);
+
 	  item = ffecom_2 (ARRAY_REF,
 			   TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item))),
 			   item,
@@ -2063,6 +2148,8 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	  }
 
 	array = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (item)));
+
+	/* ~~~~Handle INTEGER*8 start/end, a la FFEBLD_opARRAYREF.  */
 
 	if (start == NULL)
 	  {
@@ -3245,24 +3332,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       return t;
 
     case FFEBLD_opARRAYREF:
-      {
-	if (0 /* ~~~~~ ffe_is_flat_arrays () */)
-	  t = ffecom_ptr_to_expr (ffebld_left (expr));
-	else
-	  t = ffecom_expr (ffebld_left (expr));
-
-	if (t == error_mark_node)
-	  return t;
-
-	if ((ffeinfo_where (ffebld_info (expr)) == FFEINFO_whereFLEETING)
-	    && !mark_addressable (t))
-	  return error_mark_node;	/* Make sure non-const ref is to
-					   non-reg. */
-
-	t = ffecom_arrayref_ (t, expr, 0);
-
-	return t;
-      }
+      return ffecom_arrayref_ (NULL_TREE, expr, 0);
 
     case FFEBLD_opUPLUS:
       left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
@@ -11608,12 +11678,6 @@ ffecom_init_0 ()
 	}
     }
 
-  /* Set the sizetype before we do anything else.  This _should_ be the
-     first type we create.  */
-
-  t = make_unsigned_type (POINTER_SIZE);
-  assert (t == sizetype);
-
 #if FFECOM_GCC_INCLUDE
   ffecom_initialize_char_syntax_ ();
 #endif
@@ -11658,9 +11722,6 @@ ffecom_init_0 ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
 			long_long_unsigned_type_node));
 
-  error_mark_node = make_node (ERROR_MARK);
-  TREE_TYPE (error_mark_node) = error_mark_node;
-
   short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short int"),
 			short_integer_type_node));
@@ -11668,6 +11729,17 @@ ffecom_init_0 ()
   short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short unsigned int"),
 			short_unsigned_type_node));
+
+  /* Set the sizetype before we make other types.  This *should* be the
+     first type we create.  */
+
+  set_sizetype
+    (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
+  ffecom_typesize_pointer_
+    = TREE_INT_CST_LOW (TYPE_SIZE (sizetype)) / BITS_PER_UNIT;
+
+  error_mark_node = make_node (ERROR_MARK);
+  TREE_TYPE (error_mark_node) = error_mark_node;
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
@@ -11787,6 +11859,7 @@ ffecom_init_0 ()
 		    TREE_INT_CST_LOW (TYPE_SIZE (t)) / CHAR_TYPE_SIZE,
 		    type);
   ffetype_set_kind (base_type, 1, type);
+  ffecom_typesize_integer1_ = ffetype_size (type);
   assert (ffetype_size (type) == sizeof (ffetargetInteger1));
 
   ffecom_tree_type[FFEINFO_basictypeHOLLERITH][FFEINFO_kindtypeINTEGER1]
@@ -12798,20 +12871,7 @@ ffecom_ptr_to_expr (ffebld expr)
       return item;
 
     case FFEBLD_opARRAYREF:
-      {
-	item = ffecom_ptr_to_expr (ffebld_left (expr));
-
-	if (item == error_mark_node)
-	  return item;
-
-	if ((ffebld_where (expr) == FFEINFO_whereFLEETING)
-	    && !mark_addressable (item))
-	  return error_mark_node;	/* Make sure non-const ref is to
-					   non-reg. */
-
-	item = ffecom_arrayref_ (item, expr, 1);
-      }
-      return item;
+      return ffecom_arrayref_ (NULL_TREE, expr, 1);
 
     case FFEBLD_opCONTER:
 

@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-05-10
+@set last-update 1999-05-13
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -1470,7 +1470,7 @@ by type.  Explanations are in the following sections.
 -fdebug-kludge  -femulate-complex
 -falias-check  -fargument-alias
 -fargument-noalias  -fno-argument-noalias-global
--fno-globals
+-fno-globals  -fflatten-arrays
 -fsubscript-check  -ff2c-subscript-check
 @end smallexample
 @end table
@@ -3371,6 +3371,20 @@ and warns about similar disagreements
 that are currently believed to not
 likely to result in the compiler later crashing
 or producing incorrect code.
+
+@cindex -fflatten-arrays option
+@item -fflatten-arrays
+@cindex array performance
+@cindex arrays, flattening
+Use back end's C-like constructs
+(pointer plus offset)
+instead of its @code{ARRAY_REF} construct
+to handle all array references.
+
+@emph{Note:} This option is not supported.
+It is intended for use only by @code{g77} developers,
+to evaluate code-generation issues.
+It might be removed at any time.
 
 @cindex -fsubscript-check option
 @cindex -ff2c-subscript-check option
