@@ -1,3 +1,9 @@
+Fri Oct  2 11:02:41 1998  Klaus Espenlaub <kespenla@student.informatik.uni-ulm.de>
+
+	* Makefile.in (stmp-fixinc, stmp-fixproto, install-multilib):
+	Fix directory permissions.
+	* objc/Makefile.in (copy-headers): Likewise.
+
 Fri Oct  2 10:39:08 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* expr.c (expand_expr, case CONSTRUCTOR): Change ">" to ">="
