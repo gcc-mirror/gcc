@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ROMP chip.
-   Copyright (C) 1989, 1991, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1508,10 +1508,9 @@ extern int romp_debugger_arg_correction();
   fprintf (FILE, "\t.long L%d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   (ROMP does not use such vectors,
-   but we must define this macro anyway.)  */
+   Don't define this if it is not supported. */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  abort ()
+/* #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) */
 
 /* This is how to output an assembler line
    that says to advance the location counter
