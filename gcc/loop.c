@@ -265,8 +265,8 @@ static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
 static int valid_initial_value_p PARAMS ((rtx, rtx, int, rtx));
 static void find_mem_givs PARAMS ((const struct loop *, rtx, rtx, int, int));
-static void record_biv PARAMS ((struct induction *, rtx, rtx, rtx, rtx, rtx *, 
-				int, int, int));
+static void record_biv PARAMS ((struct induction *, rtx, rtx, rtx, rtx, rtx *,
+				int, int));
 static void check_final_value PARAMS ((const struct loop *,
 				       struct induction *));
 static void record_giv PARAMS ((const struct loop *, struct induction *, 
@@ -275,7 +275,7 @@ static void record_giv PARAMS ((const struct loop *, struct induction *,
 static void update_giv_derive PARAMS ((const struct loop *, rtx));
 static int basic_induction_var PARAMS ((const struct loop *, rtx, 
 					enum machine_mode, rtx, rtx,
-					rtx *, rtx *, rtx **, int *));
+					rtx *, rtx *, rtx **));
 static rtx simplify_giv_expr PARAMS ((const struct loop *, rtx, int *));
 static int general_induction_var PARAMS ((const struct loop *loop, rtx, rtx *,
 					  rtx *, rtx *, int, int *, enum machine_mode));
@@ -3906,8 +3906,6 @@ strength_reduce (loop, insn_count, flags)
      Make a sanity check against n_times_set.  */
   for (backbl = &loop_iv_list, bl = *backbl; bl; bl = bl->next)
     {
-      int fail = 0;
-
       if (REG_IV_TYPE (bl->regno) != BASIC_INDUCT
 	  /* Above happens if register modified by subreg, etc.  */
 	  /* Make sure it is not recognized as a basic induction var: */
@@ -3915,21 +3913,6 @@ strength_reduce (loop, insn_count, flags)
 	  /* If never incremented, it is invariant that we decided not to
 	     move.  So leave it alone.  */
 	  || ! bl->incremented)
-	fail = 1;
-      else if (bl->biv_count > 1)
-	{
-	  /* ??? If we have multiple increments for this BIV, and any of
-	     them take multiple insns to perform the increment, drop the
-	     BIV, since the bit below that converts the extra increments
-	     into GIVs can't handle the multiple insn increment.  */
-	  
-	  struct induction *v;
-	  for (v = bl->biv; v ; v = v->next_iv)
-	    if (v->multi_insn_incr)
-	      fail = 1;
-	}
-
-      if (fail)
 	{
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "Reg %d: biv discarded, %s\n",
@@ -4395,7 +4378,7 @@ strength_reduce (loop, insn_count, flags)
 
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream,
-			 "Increment %d of biv %d converted to giv %d.\n",
+			 "Increment %d of biv %d converted to giv %d.\n\n",
 			 INSN_UID (v->insn), old_regno, new_regno);
 	    }
 	}
@@ -5083,12 +5066,10 @@ check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
 	  && REGNO (dest_reg) >= FIRST_PSEUDO_REGISTER
 	  && REG_IV_TYPE (REGNO (dest_reg)) != NOT_BASIC_INDUCT)
 	{
-	  int multi_insn_incr = 0;
-
 	  if (basic_induction_var (loop, SET_SRC (set),
 				   GET_MODE (SET_SRC (set)),
 				   dest_reg, p, &inc_val, &mult_val,
-				   &location, &multi_insn_incr))
+				   &location))
 	    {
 	      /* It is a possible basic induction variable.
 	         Create and initialize an induction structure for it.  */
@@ -5097,8 +5078,7 @@ check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
 	      = (struct induction *) oballoc (sizeof (struct induction));
 
 	      record_biv (v, p, dest_reg, inc_val, mult_val, location,
-			  not_every_iteration, maybe_multiple,
-			  multi_insn_incr);
+			  not_every_iteration, maybe_multiple);
 	      REG_IV_TYPE (REGNO (dest_reg)) = BASIC_INDUCT;
 	    }
 	  else if (REGNO (dest_reg) < max_reg_before_loop)
@@ -5332,7 +5312,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 
 static void
 record_biv (v, insn, dest_reg, inc_val, mult_val, location,
-	    not_every_iteration, maybe_multiple, multi_insn_incr)
+	    not_every_iteration, maybe_multiple)
      struct induction *v;
      rtx insn;
      rtx dest_reg;
@@ -5341,7 +5321,6 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
      rtx *location;
      int not_every_iteration;
      int maybe_multiple;
-     int multi_insn_incr;
 {
   struct iv_class *bl;
 
@@ -5355,7 +5334,6 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
   v->always_computable = ! not_every_iteration;
   v->always_executed = ! not_every_iteration;
   v->maybe_multiple = maybe_multiple;
-  v->multi_insn_incr = multi_insn_incr;
 
   /* Add this to the reg's iv_class, creating a class
      if this is the first incrementation of the reg.  */
@@ -5468,7 +5446,6 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->cant_derive = 0;
   v->combined_with = 0;
   v->maybe_multiple = maybe_multiple;
-  v->multi_insn_incr = 0;
   v->maybe_dead = 0;
   v->derive_adjustment = 0;
   v->same = 0;
@@ -5960,8 +5937,7 @@ update_giv_derive (loop, p)
    If we cannot find a biv, we return 0.  */
 
 static int
-basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
-		     location, multi_insn_incr)
+basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
      const struct loop *loop;
      register rtx x;
      enum machine_mode mode;
@@ -5970,7 +5946,6 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
      rtx *inc_val;
      rtx *mult_val;
      rtx **location;
-     int *multi_insn_incr;
 {
   register enum rtx_code code;
   rtx *argp, arg;
@@ -6013,8 +5988,7 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
       if (SUBREG_PROMOTED_VAR_P (x))
 	return basic_induction_var (loop, SUBREG_REG (x),
 				    GET_MODE (SUBREG_REG (x)),
-				    dest_reg, p, inc_val, mult_val, location,
-				    multi_insn_incr);
+				    dest_reg, p, inc_val, mult_val, location);
       return 0;
 
     case REG:
@@ -6047,12 +6021,8 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
 				       ? GET_MODE (x)
 				       : GET_MODE (SET_SRC (set))),
 				      dest_reg, insn,
-				      inc_val, mult_val, location,
-				      multi_insn_incr))
-	    {
-	      *multi_insn_incr = 1;
-	      return 1;
-	    }
+				      inc_val, mult_val, location))
+	    return 1;
 	}
       /* ... fall through ...  */
 
@@ -6083,8 +6053,7 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
 
     case SIGN_EXTEND:
       return basic_induction_var (loop, XEXP (x, 0), GET_MODE (XEXP (x, 0)),
-				  dest_reg, p, inc_val, mult_val, location,
-				  multi_insn_incr);
+				  dest_reg, p, inc_val, mult_val, location);
 
     case ASHIFTRT:
       /* Similar, since this can be a sign extension.  */
@@ -6101,15 +6070,11 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && GET_CODE (SET_SRC (set)) == ASHIFT
-	  && XEXP (x, 1) == XEXP (SET_SRC (set), 1)
-	  && basic_induction_var (loop, XEXP (SET_SRC (set), 0),
-				  GET_MODE (XEXP (x, 0)),
-				  dest_reg, insn, inc_val, mult_val,
-				  location, multi_insn_incr))
-	{
-	  *multi_insn_incr = 1;
-	  return 1;
-	}
+	  && XEXP (x, 1) == XEXP (SET_SRC (set), 1))
+	return basic_induction_var (loop, XEXP (SET_SRC (set), 0),
+				    GET_MODE (XEXP (x, 0)),
+				    dest_reg, insn, inc_val, mult_val,
+				    location);
       return 0;
 
     default:
