@@ -503,12 +503,31 @@ bool test03() {
   return test;
 }
 
+bool test04()
+{
+  using namespace std;
+  typedef istream::int_type	int_type;
 
-int main() {
+  bool test = true;
+  ifstream ifs(name_02);
+  char buffer[] = "xxxxxxxxxx";
+  int_type len1 = ifs.rdbuf()->sgetn(buffer, sizeof(buffer));
+  test &= len1 == sizeof(buffer);
+  test &= buffer[0] == 'a';
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
+
+int main() 
+{
   test00();
   test01();
   test02();
   test03();
+  test04();
 
   return 0;
 }

@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -145,10 +145,12 @@ namespace std {
 	      
 	      if (__retval != __n)
 		{
-		  if (this->uflow() != traits_type::eof())
-		    ++__retval;
-		  else
-		    break;
+		  int_type __c = this->uflow();  
+		  if (traits_type::eq_int_type(__c, traits_type::eof()))
+                    break;
+
+		  traits_type::assign(*__s++, traits_type::to_char_type(__c));
+                  ++__retval;
 		}
 	    }
 	}
@@ -175,9 +177,9 @@ namespace std {
 	      bool __testout = _M_mode & ios_base::out;
 	      if (!(__testput && __testout))
 		{
-		  char_type __c = *__s;
-		  char_type __overfc = this->overflow(__c);
-		  if (__c == __overfc)
+		  int_type __c = traits_type::to_int_type(*__s);
+		  int_type __overfc = this->overflow(__c);
+		  if (traits_type::eq_int_type(__c, __overfc))
 		    {
 		      ++__retval;
 		      ++__s;
