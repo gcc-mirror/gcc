@@ -990,16 +990,6 @@ handle_format_arg_attribute (tree *node ATTRIBUTE_UNUSED,
 
 /* Should not be called for treelang.   */
 
-int
-cpp_handle_option (cpp_reader *pfile ATTRIBUTE_UNUSED,
-     int argc ATTRIBUTE_UNUSED,
-     char **argv ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
 void
 cpp_assert (cpp_reader * cr ATTRIBUTE_UNUSED,
             const char *s ATTRIBUTE_UNUSED)
