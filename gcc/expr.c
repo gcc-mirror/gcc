@@ -1081,6 +1081,9 @@ convert_move (to, from, unsignedp)
 	    || GET_CODE (from) == REG
 	    || GET_CODE (from) == SUBREG))
 	from = force_reg (from_mode, from);
+      if (GET_CODE (from) == REG && REGNO (from) < FIRST_PSEUDO_REGISTER
+	  && ! HARD_REGNO_MODE_OK (REGNO (from), to_mode))
+	from = copy_to_reg (from);
       emit_move_insn (to, gen_lowpart (to_mode, from));
       return;
     }
