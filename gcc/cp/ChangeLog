@@ -1,3 +1,23 @@
+1999-09-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (struct priority_info_s): Remove initialization_sequence
+	and destruction_sequence.
+	(start_static_storage_duration_function): Return the body of the
+	function.  Convert for function-at-a-time mode.
+	(generate_inits_for_priority): Remove.
+	(finish_static_storage_duration_function): Change prototype.
+	Adjust for function-at-a-time mode.
+	(do_static_initialization): Likewise.
+	(do_static_destruction): Likewise.
+	(do_static_initialization_and_destruction): Remove.
+	(start_static_initialization_or_destruction): New function.
+	(finish_static_initialization_or_destruction): Likewise.
+	(get_priority_info): Don't manipulation initialization_sequence or
+	destruction_sequence.
+	(prune_vars_needing_no_initialization): New function.
+	(write_out_vars): Likewise.
+	(finish_file): Use the various new functions instead of the old.
+	
 Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 
 	* cp-tree.h (warn_float_equal): Declare.
