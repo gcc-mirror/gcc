@@ -1,3 +1,4 @@
+#include "config.h"
 #include <sys/types.h>
 #include "f2c.h"
 #include "fio.h"

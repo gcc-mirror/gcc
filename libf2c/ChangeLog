@@ -1,5 +1,33 @@
 2001-05-16  Andreas Jaeger  <aj@suse.de>
 
+	* libI77/backspace.c: Include "config.h".
+	* libI77/close.c: Likewise.
+	* libI77/dfe.c: Likewise.
+	* libI77/dolio.c: Likewise.
+	* libI77/due.c: Likewise.
+	* libI77/err.c: Likewise.
+	* libI77/fmt.c: Likewise.
+	* libI77/fmtlib.c: Likewise.
+	* libI77/ftell_.c: Likewise.
+	* libI77/ilnw.c: Likewise.
+	* libI77/lread.c: Likewise.
+	* libI77/open.c: Likewise.
+	* libI77/rdfmt.c: Likewise.
+	* libI77/rsfe.c: Likewise.
+	* libI77/rsne.c: Likewise.
+	* libI77/util.c: Likewise.
+	* libI77/wrtfmt.c: Likewise.
+	* libI77/wsne.c: Likewise.
+	* libI77/xwsne.c: Likewise.
+
+	* libI77/config.h.in: Generate with autoheader.
+
+	* libI77/configure.in: Add comments for all AC_DEFINES so that
+	autoheader can grok it.
+	* libI77/configure: Regenerated.
+
+2001-05-16  Andreas Jaeger  <aj@suse.de>
+
 	* libI77/Makefile.in (endfile.o): Add dependency on config.h.
 
 	* libI77/endfile.c: Include config.h and sys/types for off_t.
