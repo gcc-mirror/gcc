@@ -222,7 +222,7 @@ static FILE *dump = 0;
 
 void
 fix_sched_param (param, val)
-     char *param, *val;
+     const char *param, *val;
 {
   if (!strcmp (param, "verbose"))
     sched_verbose_param = atoi (val);
@@ -455,7 +455,7 @@ static int schedule_block PROTO ((int, int));
 static void split_hard_reg_notes PROTO ((rtx, rtx, rtx));
 static void new_insn_dead_notes PROTO ((rtx, rtx, rtx, rtx));
 static void update_n_sets PROTO ((rtx, int));
-static char *safe_concat PROTO ((char *, char *, char *));
+static char *safe_concat PROTO ((char *, char *, const char *));
 static int insn_issue_delay PROTO ((rtx));
 static int birthing_insn_p PROTO ((rtx));
 static void adjust_priority PROTO ((rtx));
@@ -748,7 +748,7 @@ static void init_target_units PROTO ((void));
 static void insn_print_units PROTO ((rtx));
 static int get_visual_tbl_length PROTO ((void));
 static void init_block_visualization PROTO ((void));
-static void print_block_visualization PROTO ((int, char *));
+static void print_block_visualization PROTO ((int, const char *));
 static void visualize_scheduled_insns PROTO ((int, int));
 static void visualize_no_unit PROTO ((rtx));
 static void visualize_stall_cycles PROTO ((int, int));
@@ -5792,7 +5792,7 @@ static char *
 safe_concat (buf, cur, str)
      char *buf;
      char *cur;
-     char *str;
+     const char *str;
 {
   char *end = buf + BUF_LEN - 2;	/* leave room for null */
   int c;
@@ -5821,10 +5821,10 @@ print_exp (buf, x, verbose)
      int verbose;
 {
   char tmp[BUF_LEN];
-  char *st[4];
+  const char *st[4];
   char *cur = buf;
-  char *fun = (char *)0;
-  char *sep;
+  const char *fun = (char *)0;
+  const char *sep;
   rtx op[4];
   int i;
 
@@ -6433,7 +6433,7 @@ print_insn (buf, x, verbose)
 static void
 print_block_visualization (b, s)
      int b;
-     char *s;
+     const char *s;
 {
   int unit, i;
 

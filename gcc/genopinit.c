@@ -176,7 +176,7 @@ gen_insn (insn)
 	      case 'c':
 		for (op = 0; op < NUM_RTX_CODE; op++)
 		  {
-		    for (p = rtx_name[op], q = np; *p; p++, q++)
+		    for (p = GET_RTX_NAME(op), q = np; *p; p++, q++)
 		      if (*p != *q)
 			break;
 
@@ -190,7 +190,7 @@ gen_insn (insn)
 		if (op == NUM_RTX_CODE)
 		  matches = 0;
 		else
-		  np += strlen (rtx_name[op]);
+		  np += strlen (GET_RTX_NAME(op));
 		break;
 	      case 'a':
 	      case 'b':
@@ -268,10 +268,10 @@ gen_insn (insn)
 	    printf ("%smode", mode_name[m2]);
 	    break;
 	  case 'c':
-	    printf ("%s", rtx_name[op]);
+	    printf ("%s", GET_RTX_NAME(op));
 	    break;
 	  case 'C':
-	    for (np = rtx_name[op]; *np; np++)
+	    for (np = GET_RTX_NAME(op); *np; np++)
 	      printf ("%c", toupper ((unsigned char)*np));
 	    break;
 	  }

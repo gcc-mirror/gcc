@@ -51,7 +51,7 @@ enum rtx_code  {
 extern int rtx_length[];
 #define GET_RTX_LENGTH(CODE)		(rtx_length[(int) (CODE)])
 
-extern char *rtx_name[];
+extern const char * const rtx_name[];
 #define GET_RTX_NAME(CODE)		(rtx_name[(int) (CODE)])
 
 extern char *rtx_format[];
@@ -1347,7 +1347,7 @@ extern void dump_combine_total_stats	PROTO ((FILE *));
 extern void schedule_insns		PROTO ((FILE *));
 #endif
 #ifdef HAIFA
-extern void fix_sched_param		PROTO ((char *, char *));
+extern void fix_sched_param		PROTO ((const char *, const char *));
 #endif
 
 /* In print-rtl.c */

@@ -47,7 +47,7 @@ int rtx_length[NUM_RTX_CODE + 1];
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   NAME ,
 
-char *rtx_name[] = {
+const char * const rtx_name[] = {
 #include "rtl.def"		/* rtl expressions are documented here */
 };
 
