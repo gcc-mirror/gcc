@@ -1,3 +1,8 @@
+2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (i[3456]86-*-linux*): Add check to disable
+	${libgcj} for glibc1.
+
 2002-10-24  Denis Chertykov  <denisc@overta.ru>
 
 	* MAINTAINERS: Add myself as ip2k port maintainer.

@@ -422,6 +422,13 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   i[3456]86-*-linux*)
+    # The GCC port for glibc1 has no MD_FALLBACK_FRAME_STATE_FOR, so let's
+    # not build java stuff by default.
+    case "${target}" in
+      *-*-*libc1*)
+	noconfigdirs="$noconfigdirs ${libgcj}";;
+    esac
+
     # This section makes it possible to build newlib natively on linux.
     # If we are using a cross compiler then don't configure newlib.
     if test x${is_cross_compiler} != xno ; then
