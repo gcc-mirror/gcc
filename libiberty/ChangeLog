@@ -1,3 +1,10 @@
+2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_demangle): If DMGL_PARAMS is not set, don't
+	expect that we've read the entire string.
+	(is_ctor_or_dtor): Don't expect that we've read the entire
+	string--reverse patch of 2003-11-29.
+
 2003-12-15  Brendan Kehoe  <brendan@zen.org>
 
 	* libiberty/Makefile.in (floatformat.o): Add dependency on
