@@ -96,6 +96,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
    or if we want this type in particular.  */
 #if defined (_STDDEF_H) || defined (__need_size_t)
 #ifndef _SIZE_T	/* in case <sys/types.h> has defined it. */
+#ifndef _SYS_SIZE_T_H
 #ifndef _T_SIZE_
 #ifndef _T_SIZE
 #ifndef __SIZE_T
@@ -104,6 +105,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
 #define _SIZE_T
+#define _SYS_SIZE_T_H
 #define _T_SIZE_
 #define _T_SIZE
 #define __SIZE_T
@@ -122,6 +124,7 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* __SIZE_T */
 #endif /* _T_SIZE */
 #endif /* _T_SIZE_ */
+#endif /* _SYS_SIZE_T_H */
 #endif /* _SIZE_T */
 #undef	__need_size_t
 #endif /* _STDDEF_H or __need_size_t.  */
