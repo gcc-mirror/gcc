@@ -1,3 +1,9 @@
+2001-12-18  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/3417:
+	* libjava.compile/PR3417.xfail: New file.
+	* libjava.compile/PR3417.java: New file.
+
 2001-12-17  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/PR3731.xfail: Removed.
