@@ -12,11 +12,6 @@ LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
 T_CPPFLAGS = -DUSE_GAS
 
-# For DG/UX we build crtbegin.o and crtend.o which serve to add begin and
-# end labels to the .ctors and .dtors section when we link using gcc.
 # In a coff environment, a link script is required.
-
-EXTRA_PARTS=crtbegin.o crtend.o m88kdgux.ld
-
 m88kdgux.ld: $(srcdir)/config/m88k/dgux.ld
 	rm -f m88kdgux.ld; cp $(srcdir)/config/m88k/dgux.ld ./m88kdgux.ld
