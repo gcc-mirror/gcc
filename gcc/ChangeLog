@@ -1,5 +1,10 @@
 2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* tradcpp.c (rescan): Do not recognize directives when the #
+	is indented.
+
+2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
+
 	Implement C++ named operators.
 
 	* cpplib.h (TTYPE_TABLE): Move CPP_MIN and CPP_MAX into block

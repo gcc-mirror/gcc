@@ -1,5 +1,7 @@
 2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.dg/cpp/tr-direct.c: New test.
+
 	* gcc.dg/cpp/directiv.c, gcc.dg/cpp/macsyntx.c,
 	gcc.dg/cpp/undef1.c: Tweak error regexps.
 
