@@ -5021,7 +5021,11 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments  (4);
             Process_Convention (C, Def_Id);
-            Note_Possible_Modification (Expression (Arg2));
+
+            if Ekind (Def_Id) /= E_Constant then
+               Note_Possible_Modification (Expression (Arg2));
+            end if;
+
             Process_Interface_Name (Def_Id, Arg3, Arg4);
             Set_Exported (Def_Id, Arg2);
          end Export;
