@@ -6,10 +6,8 @@
 /* We have to test two cases: C comments at the top and C++ comments
    at the top.  */
 
-/*
-{ dg-do preprocess }
-{ dg-options "-Wp,-lang-c-c++-comments" }
-*/
+/* { dg-do preprocess }
+   { dg-options "" } */
 
 #include "cpp-mic.h"
 #include "cpp-mic.h"
