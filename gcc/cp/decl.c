@@ -3809,6 +3809,7 @@ pushdecl_class_level (x)
 	     members are checked in finish_struct.  */
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
 
+	  /* This should match check_member_decl_is_same_in_complete_scope.  */
 	  if (icv && icv != x
 	      && flag_optional_diags
 	      /* Don't complain about inherited names.  */
@@ -5191,9 +5192,9 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       classval = IDENTIFIER_CLASS_VALUE (name);
       if (classval == NULL_TREE && TYPE_BEING_DEFINED (current_class_type))
 	/* Try to find values from base classes if we are presently
-	   defining a type.  We are presently only interested in
-	   TYPE_DECLs.  */
-	classval = lookup_field (current_class_type, name, 0, 1);
+	   defining a type.  We are primarily interested in
+	   TYPE_DECLs or constants.  */
+	classval = lookup_field (current_class_type, name, 0, prefer_type);
 
       /* Add implicit 'typename' to types from template bases.  lookup_field
          will do this for us.  If classval is actually from an enclosing
@@ -10824,7 +10825,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    /* 9.2p13 [class.mem] */
-	    if (declarator == constructor_name (current_class_type))
+	    if (declarator == constructor_name (current_class_type)
+		/* Divergence from the standard:  In extern "C", we
+		   allow non-static data members here, because C does
+		   and /usr/include/netinet/in.h uses that.  */
+		&& (staticp || current_lang_name != lang_c))
 	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
 			  declarator);
 

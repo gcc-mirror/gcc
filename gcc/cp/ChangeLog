@@ -1,3 +1,13 @@
+1998-12-08  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Allow field with same name as class
+	in extern "C".
+
+	* decl.c (lookup_name_real): Don't limit field lookup to types.
+	* class.c (check_member_decl_is_same_in_complete_scope): No error 
+	if icv and x are the same.
+	* lex.c (do_identifier): Tweak error message.
+
 1998-12-10  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (start_enum): Use push_obstacks, not
