@@ -344,7 +344,8 @@ do_type_align (tree type, tree decl)
   if (TYPE_ALIGN (type) > DECL_ALIGN (decl))
     {
       DECL_ALIGN (decl) = TYPE_ALIGN (type);
-      DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
+      if (TREE_CODE (decl) == FIELD_DECL)
+	DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
     }
 }
 

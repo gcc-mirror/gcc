@@ -154,6 +154,7 @@ decl_attributes (tree *node, tree attributes, int flags)
       tree *anode = node;
       const struct attribute_spec *spec = NULL;
       bool no_add_attrs = 0;
+      tree fn_ptr_tmp = NULL_TREE;
       size_t i;
 
       for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
@@ -222,9 +223,18 @@ decl_attributes (tree *node, tree attributes, int flags)
 	      && (TREE_CODE (TREE_TYPE (*anode)) == FUNCTION_TYPE
 		  || TREE_CODE (TREE_TYPE (*anode)) == METHOD_TYPE))
 	    {
-	      if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-		*anode = build_type_copy (*anode);
-	      anode = &TREE_TYPE (*anode);
+	      /* OK, this is a bit convoluted.  We can't just make a copy
+		 of the pointer type and modify its TREE_TYPE, because if
+		 we change the attributes of the target type the pointer
+		 type needs to have a different TYPE_MAIN_VARIANT.  So we
+		 pull out the target type now, frob it as appropriate, and
+		 rebuild the pointer type later.
+
+	         This would all be simpler if attributes were part of the
+	         declarator, grumble grumble.  */
+	      fn_ptr_tmp = TREE_TYPE (*anode);
+	      anode = &fn_ptr_tmp;
+	      flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;
 	    }
 	  else if (flags & (int) ATTR_FLAG_FUNCTION_NEXT)
 	    {
@@ -290,6 +300,19 @@ decl_attributes (tree *node, tree attributes, int flags)
 						       tree_cons (name, args,
 								  old_attrs));
 	    }
+	}
+
+      if (fn_ptr_tmp)
+	{
+	  /* Rebuild the function pointer type and put it in the
+	     appropriate place.  */
+	  fn_ptr_tmp = build_pointer_type (fn_ptr_tmp);
+	  if (DECL_P (*node))
+	    TREE_TYPE (*node) = fn_ptr_tmp;
+	  else if (TREE_CODE (*node) == POINTER_TYPE)
+	    *node = fn_ptr_tmp;
+	  else
+	    abort ();
 	}
     }
 
