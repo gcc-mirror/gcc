@@ -1,5 +1,11 @@
 2004-05-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR 15546
+	* config/i386/i386.c (output_pic_addr_const <case SYMBOL_REF>):
+	Call mark_decl_referenced on the SYMBOL_REF_DECL.
+
+2004-05-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* c-common.c (c_common_truthvalue_conversion): Handle
 	UNEQ_EXPR, UNLE_EXPR, UNGE_EXPR, UNLT_EXPR, UNGT_EXPR,
 	ORDERED_EXPR, and UNORDERED_EXPR as comparison operators,
