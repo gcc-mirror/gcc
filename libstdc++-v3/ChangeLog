@@ -1,3 +1,7 @@
+2000-11-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * include/bits/std_complex.h (conj): Undo double removal.
+
 2000-11-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (LIB_AC_PROG_CXX): Remove CXX from the list of
