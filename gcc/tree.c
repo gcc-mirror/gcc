@@ -4587,6 +4587,22 @@ tree_vec_elt_check_failed (idx, len, file, line, function)
      idx + 1, len, function, trim_filename (file), line);
 }
 
+/* Similar to above, except that the check is for the bounds of the operand
+   vector of an expression node.  */
+
+void
+tree_operand_check_failed (idx, code, file, line, function)
+     int idx;
+     enum tree_code code;
+     const char *file;
+     int line;
+     const char *function;
+{
+  internal_error
+    ("tree check: accessed operand %d of %s with %d operands in %s, at %s:%d",
+     idx + 1, tree_code_name[code], TREE_CODE_LENGTH (code),
+     function, trim_filename (file), line);
+}
 #endif /* ENABLE_TREE_CHECKING */
 
 /* For a new vector type node T, build the information necessary for

@@ -324,6 +324,40 @@ struct tree_common GTY(())
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->vec.a[__i]; }))
 
+/* Special checks for TREE_OPERANDs.  */
+#define TREE_OPERAND_CHECK(t, i) __extension__				\
+(*({const tree __t = EXPR_CHECK(t);					\
+    const int __i = (i);						\
+    if (__i < 0 || __i >= TREE_CODE_LENGTH (TREE_CODE (__t)))		\
+      tree_operand_check_failed (__i, TREE_CODE (__t),			\
+				 __FILE__, __LINE__, __FUNCTION__);	\
+    &__t->exp.operands[__i]; }))
+
+#define TREE_OPERAND_CHECK_CODE(t, code, i) __extension__		\
+(*({const tree __t = t;							\
+    const int __i = (i);						\
+    const enum tree_code __code = code;					\
+    if (TREE_CODE (__t) != __code)					\
+      tree_check_failed (__t, __code,					\
+			 __FILE__, __LINE__, __FUNCTION__);		\
+    if (__i < 0 || __i >= TREE_CODE_LENGTH (__code))			\
+      tree_operand_check_failed (__i, __code,				\
+				 __FILE__, __LINE__, __FUNCTION__);	\
+    &__t->exp.operands[__i]; }))
+
+#define TREE_RTL_OPERAND_CHECK(t, code, i) __extension__		\
+(*(rtx *)								\
+ ({const tree __t = t;							\
+    const int __i = (i);						\
+    const enum tree_code __code = code;					\
+    if (TREE_CODE (__t) != __code)					\
+      tree_check_failed (__t, __code,					\
+			 __FILE__, __LINE__, __FUNCTION__);		\
+    if (__i < 0 || __i >= TREE_CODE_LENGTH (__code))			\
+      tree_operand_check_failed (__i, __code,				\
+				 __FILE__, __LINE__, __FUNCTION__);	\
+    &__t->exp.operands[__i]; }))
+
 extern void tree_check_failed PARAMS ((const tree, enum tree_code,
 				       const char *, int, const char *))
     ATTRIBUTE_NORETURN;
@@ -334,6 +368,10 @@ extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
 					       int, const char *))
     ATTRIBUTE_NORETURN;
 
+extern void tree_operand_check_failed PARAMS ((int, enum tree_code,
+					       const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+    
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
 
 #define TREE_CHECK(t, code)		(t)
@@ -341,6 +379,9 @@ extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
 #define CST_OR_CONSTRUCTOR_CHECK(t)	(t)
 #define EXPR_CHECK(t)			(t)
 #define TREE_VEC_ELT_CHECK(t, i)	((t)->vec.a[i])
+#define TREE_OPERAND_CHECK(t, i)	((t)->exp.operands[i])
+#define TREE_OPERAND_CHECK_CODE(t, code, i) ((t)->exp.operands[i])
+#define TREE_RTL_OPERAND_CHECK(t, code, i)  (*(rtx *) &((t)->exp.operands[i]))
 
 #endif
 
@@ -826,8 +867,9 @@ struct tree_vec GTY(())
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* In a SAVE_EXPR node.  */
-#define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND (SAVE_EXPR_CHECK (NODE), 1)
-#define SAVE_EXPR_RTL(NODE) (*(rtx *) &SAVE_EXPR_CHECK (NODE)->exp.operands[2])
+#define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND_CHECK_CODE (NODE, SAVE_EXPR, 1)
+#define SAVE_EXPR_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, SAVE_EXPR, 2)
+
 #define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (SAVE_EXPR_CHECK (NODE))
 /* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
    both in normal code and in a handler.  (Normally, in a handler, all
@@ -836,42 +878,41 @@ struct tree_vec GTY(())
 #define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (SAVE_EXPR_CHECK (NODE))
 
 /* In a RTL_EXPR node.  */
-#define RTL_EXPR_SEQUENCE(NODE) \
-  (*(rtx *) &RTL_EXPR_CHECK (NODE)->exp.operands[0])
-#define RTL_EXPR_RTL(NODE) (*(rtx *) &RTL_EXPR_CHECK (NODE)->exp.operands[1])
+#define RTL_EXPR_SEQUENCE(NODE) TREE_RTL_OPERAND_CHECK (NODE, RTL_EXPR, 0)
+#define RTL_EXPR_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, RTL_EXPR, 1)
 
 /* In a WITH_CLEANUP_EXPR node.  */
 #define WITH_CLEANUP_EXPR_RTL(NODE) \
-  (*(rtx *) &WITH_CLEANUP_EXPR_CHECK (NODE)->exp.operands[2])
+  TREE_RTL_OPERAND_CHECK (NODE, WITH_CLEANUP_EXPR, 2)
 
 /* In a CONSTRUCTOR node.  */
-#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (CONSTRUCTOR_CHECK (NODE), 1)
+#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND_CHECK_CODE (NODE, CONSTRUCTOR, 1)
 
 /* In ordinary expression nodes.  */
-#define TREE_OPERAND(NODE, I) (EXPR_CHECK (NODE)->exp.operands[I])
+#define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)
 #define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
 /* In a LABELED_BLOCK_EXPR node.  */
 #define LABELED_BLOCK_LABEL(NODE) \
-  TREE_OPERAND (LABELED_BLOCK_EXPR_CHECK (NODE), 0)
+  TREE_OPERAND_CHECK_CODE (NODE, LABELED_BLOCK_EXPR, 0)
 #define LABELED_BLOCK_BODY(NODE) \
-  TREE_OPERAND (LABELED_BLOCK_EXPR_CHECK (NODE), 1)
+  TREE_OPERAND_CHECK_CODE (NODE, LABELED_BLOCK_EXPR, 1)
 
 /* In an EXIT_BLOCK_EXPR node.  */
 #define EXIT_BLOCK_LABELED_BLOCK(NODE) \
-  TREE_OPERAND (EXIT_BLOCK_EXPR_CHECK (NODE), 0)
-#define EXIT_BLOCK_RETURN(NODE) TREE_OPERAND (EXIT_BLOCK_EXPR_CHECK (NODE), 1)
+  TREE_OPERAND_CHECK_CODE (NODE, EXIT_BLOCK_EXPR, 0)
+#define EXIT_BLOCK_RETURN(NODE) TREE_OPERAND_CHECK_CODE (NODE, EXIT_BLOCK_EXPR, 1)
 
 /* In a LOOP_EXPR node.  */
-#define LOOP_EXPR_BODY(NODE) TREE_OPERAND (LOOP_EXPR_CHECK (NODE), 0)
+#define LOOP_EXPR_BODY(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_EXPR, 0)
 
 /* In an EXPR_WITH_FILE_LOCATION node.  */
 #define EXPR_WFL_EMIT_LINE_NOTE(NODE) \
   (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->common.public_flag)
 #define EXPR_WFL_NODE(NODE) \
-  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 0)
+  TREE_OPERAND_CHECK_CODE (NODE, EXPR_WITH_FILE_LOCATION, 0)
 #define EXPR_WFL_FILENAME_NODE(NODE) \
-  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 1)
+  TREE_OPERAND_CHECK_CODE (NODE, EXPR_WITH_FILE_LOCATION, 1)
 #define EXPR_WFL_FILENAME(NODE) \
   IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (NODE))
 /* ??? Java uses this in all expressions.  */
@@ -882,9 +923,9 @@ struct tree_vec GTY(())
   (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
 
 /* In a TARGET_EXPR node.  */
-#define TARGET_EXPR_SLOT(NODE) TREE_OPERAND (TARGET_EXPR_CHECK (NODE), 0)
-#define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND (TARGET_EXPR_CHECK (NODE), 1)
-#define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND (TARGET_EXPR_CHECK (NODE), 2)
+#define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
+#define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)
+#define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 2)
 
 struct tree_exp GTY(())
 {
