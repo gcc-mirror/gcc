@@ -1,4 +1,8 @@
-Tue Apr 20 23:38:58 1999  Nathan Sidwell  <nathan@acm.org>
+Wed Apr 21 17:41:29 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (binary patterns): Reorder alternatives
+	so that two operand instructions are chosen before three operand
+	instructions.Tue Apr 20 23:38:58 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* objc/Make-lang.in (objc-parse.c): Put BISON parameters in correct
 	order.
