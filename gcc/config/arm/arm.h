@@ -969,8 +969,8 @@ extern const char * structure_size_string;
    If we have to have a frame pointer we might as well make use of it.
    APCS says that the frame pointer does not need to be pushed in leaf
    functions, or simple tail call functions.  */
-#define FRAME_POINTER_REQUIRED						\
-  (current_function_has_nonlocal_label					\
+#define FRAME_POINTER_REQUIRED					\
+  (current_function_has_nonlocal_label				\
    || (TARGET_ARM && TARGET_APCS_FRAME && ! leaf_function_p ()))
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -2758,12 +2758,12 @@ extern int making_const_table;
 #define HOST_UINT(x) ((unsigned HOST_WIDE_INT) x)
 #endif
 
-#define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)	\
-  (HOST_BITS_PER_WIDE_INT <= 32 ? (x)		\
-   : (((x) & HOST_UINT (0xffffffff)) |		\
-      (((x) & HOST_UINT (0x80000000))		\
-       ? ((~ HOST_INT (0))			\
-	  & ~ HOST_UINT(0xffffffff))		\
+#define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)			\
+  (HOST_BITS_PER_WIDE_INT <= 32 ? (unsigned HOST_WIDE_INT) (x)	\
+   : ((((unsigned HOST_WIDE_INT)(x)) & HOST_UINT (0xffffffff)) |\
+      ((((unsigned HOST_WIDE_INT)(x)) & HOST_UINT (0x80000000))	\
+       ? ((~ HOST_UINT (0))					\
+	  & ~ HOST_UINT(0xffffffff))				\
        : 0))))
 
 /* Output the address of an operand.  */

@@ -1,3 +1,17 @@
+2001-06-24  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_compute_save_reg_mask): For FIQ interrupt
+	handlers examine register r0-r7, for other interrupt handlers
+	examine r0-r12.  If the interrupt handler is not a leaf function
+	save all call clobbered registers.
+	(arm_output_epilogue): If the prologue has pushed the IP register,
+	restore it here.
+	(Arm_expand_prologue): For interrupt functions that need the frame
+	pointer, push the IP register before it is corrupted.
+
+	* config/arm/arm.h (ARM_SIGN_EXTEND): Fix compile time warnings
+	about the use of signed and unsigned quantities in a conditional.
+
 2001-06-23  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/crtfastmath.c: New file.

@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "except.h"
 #include "c-pragma.h"
+#include "integrate.h"
 #include "tm_p.h"
 
 /* Forward definitions of types.  */
@@ -6931,12 +6932,29 @@ arm_compute_save_reg_mask ()
   if (IS_VOLATILE (func_type))
     return save_reg_mask;
 
-  if (ARM_FUNC_TYPE (func_type) == ARM_FT_ISR)
+  if (IS_INTERRUPT (func_type))
     {
-      /* FIQ handlers have registers r8 - r12 banked, so
-	 we only need to check r0 - r7, they must save them.  */
-      for (reg = 0; reg < 8; reg++)
-	if (regs_ever_live[reg])
+      unsigned int max_reg;
+      
+      /* Interrupt functions must not corrupt any registers,
+	 even call clobbered ones.  If this is a leaf function
+	 we can just examine the registers used by the RTL, but
+	 otherwise we have to assume that whatever function is
+	 called might clobber anything, and so we have to save
+	 all the call-clobbered registers as well.  */
+      if (ARM_FUNC_TYPE (func_type) == ARM_FT_FIQ)
+	/* FIQ handlers have registers r8 - r12 banked, so
+	   we only need to check r0 - r7, Normal ISRs only
+	   bank r14 and r15, so ew must check up to r12.
+	   r13 is the stack pointer which is always preserved,
+	   so we do not need to consider it here.  */
+	max_reg = 7;
+      else
+	max_reg = 12;
+	
+      for (reg = 0; reg <= max_reg; reg++)
+	if (regs_ever_live[reg]
+	    || (! current_function_is_leaf && call_used_regs [reg]))
 	  save_reg_mask |= (1 << reg);
     }
   else
@@ -7410,6 +7428,11 @@ arm_output_epilogue (really_return)
 	saved_regs_mask &= ~ (1 << PC_REGNUM);
       
       print_multi_reg (f, "ldmea\t%r", FP_REGNUM, saved_regs_mask);
+
+      if (IS_INTERRUPT (func_type))
+	/* Interrupt handlers will have pushed the
+	   IP onto the stack, so restore it now.  */
+	print_multi_reg (f, "ldmea\t%r", SP_REGNUM, 1 << IP_REGNUM);
     }
   else
     {
@@ -7783,7 +7806,15 @@ arm_expand_prologue ()
 
   if (frame_pointer_needed)
     {
-      if (IS_NESTED (func_type))
+      if (IS_INTERRUPT (func_type))
+	{
+	  /* Interrupt functions must not corrupt any registers.
+	     Creating a frame pointer however, corrupts the IP
+	     register, so we must push it first.  */
+	  insn = emit_multi_reg_push (1 << IP_REGNUM);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else if (IS_NESTED (func_type))
 	{
 	  /* The Static chain register is the same as the IP register
 	     used as a scratch register during stack frame creation.
@@ -8925,7 +8956,7 @@ replace_symbols_in_block (block, orig, new)
 	      )
 	    continue;
 
-	  DECL_RTL (sym) = new;
+	  SET_DECL_RTL (sym, new);
 	}
       
       replace_symbols_in_block (BLOCK_SUBBLOCKS (block), orig, new);
