@@ -2542,18 +2542,6 @@ extern const char * arm_pic_register_string;
    offset.  */
 extern int making_const_table;
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  (arm_comp_type_attributes (TYPE1, TYPE2))
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
-  arm_set_default_type_attributes (TYPE)
-
 /* Handle pragmas for compatibility with Intel's compilers.  */
 #define REGISTER_TARGET_PRAGMAS(PFILE) do { \
   cpp_register_pragma (PFILE, 0, "long_calls", arm_pr_long_calls); \

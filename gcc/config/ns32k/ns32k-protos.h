@@ -38,7 +38,6 @@ extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int ns32k_comp_type_attributes PARAMS ((tree, tree));
 extern int ns32k_return_pops_args PARAMS ((tree, tree, int));
 #endif /* TREE_CODE */
 

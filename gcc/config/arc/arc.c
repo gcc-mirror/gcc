@@ -342,24 +342,6 @@ arc_valid_decl_attribute (type, attributes, identifier, args)
   return 0;
 }
 
-/* Return zero if TYPE1 and TYPE are incompatible, one if they are compatible,
-   and two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-int
-arc_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED, type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
-/* Set the default attributes for TYPE.  */
-
-void
-arc_set_default_type_attributes (type)
-     tree type ATTRIBUTE_UNUSED;
-{
-}
 
 /* Acceptable arguments to the call insn.  */
 

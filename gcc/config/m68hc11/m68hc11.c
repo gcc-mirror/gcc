@@ -1151,28 +1151,6 @@ m68hc11_valid_type_attribute_p (type, attributes, identifier, args)
   return 0;
 }
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-int
-m68hc11_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-void
-m68hc11_set_default_type_attributes (type)
-     tree type ATTRIBUTE_UNUSED;
-{
-}
-
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or function
    named by the symbol (such as what section it is in).

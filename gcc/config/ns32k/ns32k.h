@@ -1294,19 +1294,6 @@ while (0)
  { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
      goto LABEL;}
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  (ns32k_comp_type_attributes (TYPE1, TYPE2))
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-/* #define SET_DEFAULT_TYPE_ATTRIBUTES (TYPE) */
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
    HI mode is more efficient but the range is not wide enough for

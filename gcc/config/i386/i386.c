@@ -607,6 +607,7 @@ static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
+static int ix86_comp_type_attributes PARAMS ((tree, tree));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -616,6 +617,9 @@ static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE ix86_valid_type_attribute_p
+
+#undef TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -928,7 +932,7 @@ ix86_valid_type_attribute_p (type, attributes, identifier, args)
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
 
-int
+static int
 ix86_comp_type_attributes (type1, type2)
      tree type1;
      tree type2;

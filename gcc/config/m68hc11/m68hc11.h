@@ -1194,20 +1194,6 @@ typedef struct m68hc11_args
   m68hc11_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
 
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  (m68hc11_comp_type_attributes (TYPE1, TYPE2))
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
-  (m68hc11_set_default_type_attributes (TYPE))
-
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or function
    named by the symbol (such as what section it is in).

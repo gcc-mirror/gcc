@@ -996,16 +996,10 @@ comptypes (t1, t2, strict)
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return 1;
 
-  /* ??? COMP_TYPE_ATTRIBUTES is currently useless for variables as each
-     attribute is its own main variant (`val' will remain 0).  */
-#ifndef COMP_TYPE_ATTRIBUTES
-#define COMP_TYPE_ATTRIBUTES(t1,t2)	1
-#endif
-
   if (strict & COMPARE_NO_ATTRIBUTES)
     attrval = 1;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  else if (! (attrval = COMP_TYPE_ATTRIBUTES (t1, t2)))
+  else if (! (attrval = (*target.comp_type_attributes) (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */

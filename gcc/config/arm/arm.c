@@ -106,6 +106,8 @@ static int	 arm_valid_type_attribute_p	PARAMS ((tree, tree,
 							 tree, tree));
 static int	 arm_valid_decl_attribute_p	PARAMS ((tree, tree,
 							 tree, tree));
+static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
+static void	 arm_set_default_type_attributes	PARAMS ((tree));
 #undef Hint
 #undef Mmode
 #undef Ulong
@@ -127,6 +129,12 @@ static int	 arm_valid_decl_attribute_p	PARAMS ((tree, tree,
 #else
 #  define TARGET_VALID_DECL_ATTRIBUTE arm_valid_decl_attribute_p
 #endif
+
+#undef TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
+
+#undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
+#define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES arm_set_default_type_attributes
 
 struct gcc_target target = TARGET_INITIALIZER;
 
@@ -1913,7 +1921,7 @@ arm_valid_type_attribute_p (type, attributes, identifier, args)
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
-int
+static int
 arm_comp_type_attributes (type1, type2)
      tree type1;
      tree type2;
@@ -1984,7 +1992,7 @@ arm_encode_call_attribute (decl, flag)
 /*  Assigns default attributes to newly defined type.  This is used to
     set short_call/long_call attributes for function types of
     functions defined inside corresponding #pragma scopes.  */
-void
+static void
 arm_set_default_type_attributes (type)
   tree type;
 {

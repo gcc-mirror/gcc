@@ -60,8 +60,6 @@ extern int shift_operator PARAMS ((rtx, enum machine_mode));
 
 #ifdef TREE_CODE
 extern enum arc_function_type arc_compute_function_type PARAMS ((tree));
-extern int arc_comp_type_attributes PARAMS ((tree, tree));
-extern void arc_set_default_type_attributes PARAMS ((tree));
 extern void arc_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 						enum machine_mode, tree,
 						int *, int));

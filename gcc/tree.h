@@ -2044,6 +2044,8 @@ extern tree build_decl_attribute_variant PARAMS ((tree, tree));
 extern tree merge_decl_attributes PARAMS ((tree, tree));
 extern tree merge_type_attributes PARAMS ((tree, tree));
 extern int default_valid_attribute_p PARAMS ((tree, tree, tree, tree));
+extern int default_comp_type_attributes PARAMS ((tree, tree));
+extern void default_set_default_type_attributes PARAMS ((tree));
 
 /* Split a list of declspecs and attributes into two.  */
 

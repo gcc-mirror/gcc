@@ -8299,19 +8299,18 @@ arguments @var{args} is a valid machine specific attribute for @var{type}.
 The attributes in @var{attributes} have previously been assigned to @var{type}.
 @end deftypefn
 
-@table @code
-@findex COMP_TYPE_ATTRIBUTES
-@item COMP_TYPE_ATTRIBUTES (@var{type1}, @var{type2})
-If defined, a C expression whose value is zero if the attributes on
+@deftypefn {Target Hook} int TARGET_COMP_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
+If defined, this target hook is a function which returns zero if the attributes on
 @var{type1} and @var{type2} are incompatible, one if they are compatible,
 and two if they are nearly compatible (which causes a warning to be
-generated).
+generated).  If this is not defined, machine-specific attributes are
+supposed always to be compatible.
+@end deftypefn
 
-@findex SET_DEFAULT_TYPE_ATTRIBUTES
-@item SET_DEFAULT_TYPE_ATTRIBUTES (@var{type})
-If defined, a C statement that assigns default attributes to
+@deftypefn {Target Hook} void TARGET_SET_DEFAULT_TYPE_ATTRIBUTES (tree @var{type})
+If defined, this target hook is a function which assigns default attributes to
 newly defined @var{type}.
-@end table
+@end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_MERGE_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
 Define this target hook if the merging of type attributes needs special
