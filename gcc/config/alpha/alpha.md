@@ -3247,13 +3247,14 @@
       rtx addr = get_unaligned_address (operands[0]);
       rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
       rtx scratch2 = gen_rtx (REG, DImode, REGNO (operands[2]) + 1);
+      rtx scratch3 = scratch1;
       rtx seq;
 
       if (GET_CODE (addr) == REG)
 	scratch1 = addr;
 
       seq = gen_unaligned_storeqi (addr, operands[1], scratch1,
-				   scratch2, scratch1);
+				   scratch2, scratch3);
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
