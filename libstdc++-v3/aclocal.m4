@@ -607,7 +607,9 @@ dnl Check whether LFS support is available.
 dnl
 AC_DEFUN(GLIBCXX_CHECK_LFS, [
   AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS	
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"	
   AC_CACHE_VAL(glibcxx_cv_LFS, [
     AC_TRY_LINK(
       [#include <unistd.h>
@@ -624,7 +626,8 @@ AC_DEFUN(GLIBCXX_CHECK_LFS, [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS)
   fi
-  AC_LANG_RESTORE	
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
 ])
 
 
