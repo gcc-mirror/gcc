@@ -61,8 +61,9 @@ public class UnicastRemoteCall
   private Object object;
   private int opnum;
   private long hash;
-  private Vector vec;
-  private int ptr;
+  // These are package-private due to inner class access.
+  Vector vec;
+  int ptr;
   private ObjID objid;
 
   private ObjectOutput oout;
