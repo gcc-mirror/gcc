@@ -1004,15 +1004,14 @@ build_mangled_name (parmtypes, begin, end)
     {
       if (TYPE_PTRMEMFUNC_P (parmtypes))
         parmtypes = TYPE_PTRMEMFUNC_FN_TYPE (parmtypes);
+      parmtypes = CANONICAL_TYPE_VARIANT (parmtypes);
       process_modifiers (parmtypes);
       process_overload_item (parmtypes, FALSE);
     }
   else  {
     for ( ; parmtypes!=NULL; parmtypes = TREE_CHAIN (parmtypes))
       {
-        parmtype = TREE_VALUE (parmtypes);
-        parmtype = build_type_variant (TYPE_MAIN_VARIANT (parmtype), 
-                      TYPE_READONLY (parmtype), TYPE_VOLATILE (parmtype));
+        parmtype = CANONICAL_TYPE_VARIANT (TREE_VALUE (parmtypes));
         if (flag_do_squangling)       /* squangling style repeats */
           {
             if (parmtype == lasttype) 
@@ -1612,8 +1611,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
               tree temp = TREE_VALUE (t);
               TREE_USED (temp) = 0;
               /* clear out the type variant in case we used it */
-              temp = build_type_variant (TYPE_MAIN_VARIANT (temp),
-                    TYPE_READONLY (temp), TYPE_VOLATILE (temp));
+              temp = CANONICAL_TYPE_VARIANT (temp);
               TREE_USED (temp) = 0;
               t = TREE_CHAIN (t);
             }
