@@ -276,18 +276,6 @@ struct binding_level
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
-    /* 1 means make a BLOCK for this level regardless of all else.
-       2 for temporary binding contours created by the compiler.  */
-    char keep;
-
-    /* Nonzero means make a BLOCK if this level has any subblocks.  */
-    char keep_if_subblocks;
-
-    /* Nonzero if this level can safely have additional
-       cleanup-needing variables added to it.  */
-    char more_cleanups_ok;
-    char have_cleanups;
-
     /* The bytecode PC that marks the end of this level. */
     int end_pc;
     /* The bytecode PC that marks the start of this level. */
@@ -323,7 +311,7 @@ static struct binding_level *global_binding_level;
 
 static struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-       NULL_BINDING_LEVEL, 0, 0, 0, 0, LARGEST_PC, 0};
+       NULL_BINDING_LEVEL, LARGEST_PC, 0};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -338,15 +326,6 @@ static tree shadowed_labels;
 #endif
 
 int flag_traditional;
-
-/* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
-
-static int keep_next_level_flag;
-
-/* Nonzero means make a BLOCK for the next level pushed
-   if it has subblocks.  */
-
-static int keep_next_if_subblocks;
 
 tree java_global_trees[JTI_MAX];
   
@@ -635,12 +614,6 @@ init_decl_processing ()
   for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   FINISH_RECORD (object_type_node);
-
-  class_dtable_decl = build_dtable_decl (class_type_node);
-  TREE_STATIC (class_dtable_decl) = 1;
-  DECL_ARTIFICIAL (class_dtable_decl) = 1;
-  DECL_IGNORED_P (class_dtable_decl) = 1;
-  rest_of_decl_compilation (class_dtable_decl, (char*) 0, 1, 0);
 
   field_type_node = make_node (RECORD_TYPE);
   field_ptr_type_node = build_pointer_type (field_type_node);
@@ -1205,10 +1178,6 @@ pushlevel (unused)
   *newlevel = clear_binding_level;
   newlevel->level_chain = current_binding_level;
   current_binding_level = newlevel;
-  newlevel->keep = keep_next_level_flag;
-  keep_next_level_flag = 0;
-  newlevel->keep_if_subblocks = keep_next_if_subblocks;
-  keep_next_if_subblocks = 0;
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   newlevel->binding_depth = binding_depth;
   indent ();
@@ -1269,8 +1238,6 @@ poplevel (keep, reverse, functionbody)
 #endif
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
-  keep |= current_binding_level->keep;
-
   /* Get the decls in the order they were written.
      Usually current_binding_level->names is in reverse order.
      But parameter decls were previously put in forward order.  */
@@ -1315,8 +1282,7 @@ poplevel (keep, reverse, functionbody)
   block_previously_created = (current_binding_level->this_block != 0);
   if (block_previously_created)
     block = current_binding_level->this_block;
-  else if (keep || functionbody
-	   || (current_binding_level->keep_if_subblocks && subblocks != 0))
+  else if (keep || functionbody)
     block = make_node (BLOCK);
   if (block != 0)
     {

@@ -116,7 +116,6 @@ static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
 static void source_start_java_method PARAMS ((tree));
 static void source_end_java_method PARAMS ((void));
-static void expand_start_java_method PARAMS ((tree));
 static tree find_name_in_single_imports PARAMS ((tree));
 static void check_abstract_method_header PARAMS ((tree));
 static tree lookup_java_interface_method2 PARAMS ((tree, tree));
@@ -153,7 +152,6 @@ static int  unresolved_type_p PARAMS ((tree, tree *));
 static void create_jdep_list PARAMS ((struct parser_ctxt *));
 static tree build_expr_block PARAMS ((tree, tree));
 static tree enter_block PARAMS ((void));
-static tree enter_a_block PARAMS ((tree));
 static tree exit_block PARAMS ((void));
 static tree lookup_name_in_blocks PARAMS ((tree));
 static void maybe_absorb_scoping_blocks PARAMS ((void));
@@ -348,7 +346,7 @@ static int in_instance_initializer;
 struct parser_ctxt *ctxp;
 
 /* List of things that were analyzed for which code will be generated */
-static struct parser_ctxt *ctxp_for_generation = NULL;
+struct parser_ctxt *ctxp_for_generation = NULL;
 
 /* binop_lookup maps token to tree_code. It is used where binary
    operations are involved and required by the parser. RDIV_EXPR
@@ -410,6 +408,11 @@ static tree current_this;
 /* Hold a list of catch clauses list. The first element of this list is
    the list of the catch clauses of the currently analysed try block. */
 static tree currently_caught_type_list;
+
+static tree src_parse_roots[1] = { NULL_TREE };
+
+/* All classes seen from source code */
+#define gclass_list src_parse_roots[0]
 
 /* Check modifiers. If one doesn't fit, retrieve it in its declaration
    line and point it out.  */
@@ -2640,11 +2643,6 @@ void
 java_push_parser_context ()
 {
   create_new_parser_context (0);
-  if (ctxp->next)
-    {
-      ctxp->incomplete_class = ctxp->next->incomplete_class;
-      ctxp->gclass_list = ctxp->next->gclass_list;
-    }
 }  
 
 void 
@@ -2661,8 +2659,6 @@ java_pop_parser_context (generate)
   next = ctxp->next;
   if (next)
     {
-      next->incomplete_class = ctxp->incomplete_class;
-      next->gclass_list = ctxp->gclass_list;
       lineno = ctxp->lineno;
       current_class = ctxp->class_type;
     }
@@ -2776,8 +2772,6 @@ java_parser_context_resume ()
   struct parser_ctxt *restored = saver->next; /* This one is the old current */
 
   /* We need to inherit the list of classes to complete/generate */
-  restored->incomplete_class = old->incomplete_class;
-  restored->gclass_list = old->gclass_list;
   restored->classd_list = old->classd_list;
   restored->class_list = old->class_list;
 
@@ -3652,7 +3646,7 @@ maybe_create_class_interface_decl (decl, raw_name, qualified_name, cl)
   ctxp->class_list = decl;
 
   /* Create a new nodes in the global lists */
-  ctxp->gclass_list = tree_cons (NULL_TREE, decl, ctxp->gclass_list);
+  gclass_list = tree_cons (NULL_TREE, decl, gclass_list);
   all_class_list = tree_cons (NULL_TREE, decl, all_class_list);
 
   /* Install a new dependency list element */
@@ -4982,7 +4976,7 @@ static tree
 obtain_incomplete_type (type_name)
      tree type_name;
 {
-  tree ptr, name;
+  tree ptr = NULL_TREE, name;
 
   if (TREE_CODE (type_name) == EXPR_WITH_FILE_LOCATION)
     name = EXPR_WFL_NODE (type_name);
@@ -4991,17 +4985,8 @@ obtain_incomplete_type (type_name)
   else
     abort ();
 
-  for (ptr = ctxp->incomplete_class; ptr; ptr = TREE_CHAIN (ptr))
-    if (TYPE_NAME (ptr) == name)
-      break;
-
-  if (!ptr)
-    {
-      BUILD_PTR_FROM_NAME (ptr, name);
-      layout_type (ptr);
-      TREE_CHAIN (ptr) = ctxp->incomplete_class;
-      ctxp->incomplete_class = ptr;
-    }
+  BUILD_PTR_FROM_NAME (ptr, name);
+  layout_type (ptr);
 
   return ptr;
 }
@@ -5023,7 +5008,7 @@ register_incomplete_type (kind, wfl, decl, ptr)
 
   JDEP_KIND (new) = kind;
   JDEP_DECL (new) = decl;
-  JDEP_SOLV (new) = ptr;
+  JDEP_TO_RESOLVE (new) = ptr;
   JDEP_WFL (new) = wfl;
   JDEP_CHAIN (new) = NULL;
   JDEP_MISC (new) = NULL_TREE;
@@ -5479,8 +5464,6 @@ resolve_class (enclosing, class_type, decl, cl)
     {
       while (base != name)
 	{
-	  if (TREE_CODE (resolved_type) == RECORD_TYPE)
-	    resolved_type  = promote_type (resolved_type);
 	  resolved_type = build_java_array_type (resolved_type, -1);
 	  CLASS_LOADED_P (resolved_type) = 1;
 	  name--;
@@ -6912,12 +6895,11 @@ declare_local_variables (modifier, type, vlist)
   int final_p = 0;
 
   /* Push a new block if statements were seen between the last time we
-     pushed a block and now. Keep a cound of block to close */
+     pushed a block and now. Keep a count of blocks to close */
   if (BLOCK_EXPR_BODY (GET_CURRENT_BLOCK (current_function_decl)))
     {
-      tree body = GET_CURRENT_BLOCK (current_function_decl);
       tree b = enter_block ();
-      BLOCK_EXPR_ORIGIN (b) = body;
+      BLOCK_IS_IMPLICIT (b) = 1;
     }
 
   if (modifier)
@@ -7109,46 +7091,6 @@ end_artificial_method_body (mdecl)
   exit_block ();
 }
 
-/* Called during expansion. Push decls formerly built from argument
-   list so they're usable during expansion. */
-
-static void
-expand_start_java_method (fndecl)
-     tree fndecl;
-{
-  tree tem, *ptr;
-
-  current_function_decl = fndecl;
-
-  if (! quiet_flag)
-    fprintf (stderr, " [%s.", lang_printable_name (DECL_CONTEXT (fndecl), 0));
-  announce_function (fndecl);
-  if (! quiet_flag)
-    fprintf (stderr, "]");
-
-  pushlevel (1);		/* Prepare for a parameter push */
-  ptr = &DECL_ARGUMENTS (fndecl);
-  tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
-  while (tem)
-    {
-      tree next = TREE_CHAIN (tem);
-      tree type = TREE_TYPE (tem);
-      if (PROMOTE_PROTOTYPES
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	  && INTEGRAL_TYPE_P (type))
-	type = integer_type_node;
-      DECL_ARG_TYPE (tem) = type;
-      layout_decl (tem, 0);
-      pushdecl (tem);
-      *ptr = tem;
-      ptr = &TREE_CHAIN (tem);
-      tem = next;
-    }
-  *ptr = NULL_TREE;
-  pushdecl_force_head (DECL_ARGUMENTS (fndecl));
-  lineno = DECL_SOURCE_LINE_FIRST (fndecl);
-}
-
 /* Terminate a function and expand its body.  */
 
 static void
@@ -7285,7 +7227,7 @@ java_reorder_fields ()
       initialized_p = 1;
     }
 
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
 
@@ -7315,11 +7257,11 @@ java_reorder_fields ()
 	  }
       }
     }
-  stop_reordering = TREE_TYPE (TREE_VALUE (ctxp->gclass_list));
+  stop_reordering = TREE_TYPE (TREE_VALUE (gclass_list));
 }
 
-/* Layout the methods of all classes loaded in one way on an
-   other. Check methods of source parsed classes. Then reorder the
+/* Layout the methods of all classes loaded in one way or another.
+   Check methods of source parsed classes. Then reorder the
    fields and layout the classes or the type of all source parsed
    classes */
 
@@ -7335,12 +7277,12 @@ java_layout_classes ()
   all_class_list = NULL_TREE;
 
   /* Then check the methods of all parsed classes */
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     if (CLASS_FROM_SOURCE_P (TREE_TYPE (TREE_VALUE (current))))
       java_check_methods (TREE_VALUE (current));
   java_parse_abort_on_error ();
 
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
       layout_class (current_class);
@@ -7729,7 +7671,39 @@ java_complete_expand_method (mdecl)
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
       tree exception_copy = NULL_TREE;
-      expand_start_java_method (mdecl);
+      tree tem, *ptr;
+
+      current_function_decl = mdecl;
+
+      if (! quiet_flag)
+	fprintf (stderr, " [%s.",
+		 lang_printable_name (DECL_CONTEXT (mdecl), 0));
+      announce_function (mdecl);
+      if (! quiet_flag)
+	fprintf (stderr, "]");
+
+      pushlevel (1);		/* Prepare for a parameter push */
+      ptr = &DECL_ARGUMENTS (mdecl);
+      tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
+      while (tem)
+	{
+	  tree next = TREE_CHAIN (tem);
+	  tree type = TREE_TYPE (tem);
+	  if (PROMOTE_PROTOTYPES
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	      && INTEGRAL_TYPE_P (type))
+	    type = integer_type_node;
+	  DECL_ARG_TYPE (tem) = type;
+	  layout_decl (tem, 0);
+	  pushdecl (tem);
+	  *ptr = tem;
+	  ptr = &TREE_CHAIN (tem);
+	  tem = next;
+	}
+      *ptr = NULL_TREE;
+      pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+      lineno = DECL_SOURCE_LINE_FIRST (mdecl);
+
       build_result_decl (mdecl);
 
       current_this 
@@ -8632,10 +8606,12 @@ java_expand_classes ()
   for (; ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
     {
       ctxp = ctxp_for_generation;
+      input_filename = ctxp->filename;
       lang_init_source (2);	       /* Error msgs have method prototypes */
       java_complete_expand_classes (); /* Complete and expand classes */
       java_parse_abort_on_error ();
     }
+  input_filename = main_input_filename;
 
   /* Find anonymous classes and expand their constructor, now they
      have been fixed. */
@@ -11890,18 +11866,13 @@ build_expr_block (body, decls)
 static tree
 enter_block ()
 {
-  return (enter_a_block (build_expr_block (NULL_TREE, NULL_TREE)));
-}
+  tree b = build_expr_block (NULL_TREE, NULL_TREE);
 
-/* Link block B supercontext to the previous block. The current
-   function DECL is used as supercontext when enter_a_block is called
-   for the first time for a given function. The current function body
-   (DECL_FUNCTION_BODY) is set to be block B.  */
+  /* Link block B supercontext to the previous block. The current
+     function DECL is used as supercontext when enter_a_block is called
+     for the first time for a given function. The current function body
+     (DECL_FUNCTION_BODY) is set to be block B.  */
 
-static tree
-enter_a_block (b)
-     tree b;
-{
   tree fndecl = current_function_decl; 
 
   if (!fndecl) {
@@ -11976,7 +11947,7 @@ lookup_name_in_blocks (name)
 static void
 maybe_absorb_scoping_blocks ()
 {
-  while (BLOCK_EXPR_ORIGIN (GET_CURRENT_BLOCK (current_function_decl)))
+  while (BLOCK_IS_IMPLICIT (GET_CURRENT_BLOCK (current_function_decl)))
     {
       tree b = exit_block ();
       java_method_add_stmt (current_function_decl, b);
@@ -15688,8 +15659,6 @@ mark_parser_ctxt (p)
   ggc_mark_tree (pc->class_type);
   ggc_mark_tree (pc->function_decl);
   ggc_mark_tree (pc->package);
-  ggc_mark_tree (pc->incomplete_class);
-  ggc_mark_tree (pc->gclass_list);
   ggc_mark_tree (pc->class_list);
   ggc_mark_tree (pc->current_parsed_class);
   ggc_mark_tree (pc->current_parsed_class_un);
@@ -15704,4 +15673,11 @@ mark_parser_ctxt (p)
 
   if (pc->next)
     mark_parser_ctxt (&pc->next);
+}
+
+void
+init_src_parse ()
+{
+  /* Register roots with the garbage collector.  */
+  ggc_add_tree_root (src_parse_roots, sizeof (src_parse_roots) / sizeof(tree));
 }

@@ -120,7 +120,7 @@ java_init_lex (finput, encoding)
     wfl_to_string = build_expr_wfl (get_identifier ("toString"), NULL, 0, 0);
 
   CPC_INITIALIZER_LIST (ctxp) = CPC_STATIC_INITIALIZER_LIST (ctxp) =
-    CPC_INSTANCE_INITIALIZER_LIST (ctxp) = ctxp->incomplete_class = NULL_TREE;
+    CPC_INSTANCE_INITIALIZER_LIST (ctxp) = NULL_TREE;
 
   memset ((PTR) ctxp->modifier_ctx, 0, 11*sizeof (ctxp->modifier_ctx[0]));
   memset ((PTR) current_jcf, 0, sizeof (JCF));

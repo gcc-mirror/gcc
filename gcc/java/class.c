@@ -84,11 +84,13 @@ static assume_compiled_node *find_assume_compiled_node
 
 static assume_compiled_node *assume_compiled_tree;
 
-static tree class_roots[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+static tree class_roots[5]
+= { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
 #define registered_class class_roots[0]
 #define fields_ident class_roots[1]  /* get_identifier ("fields") */
 #define info_ident class_roots[2]  /* get_identifier ("info") */
 #define class_list class_roots[3]
+#define class_dtable_decl class_roots[4]
 
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE.  Return NULL if an
@@ -1347,6 +1349,19 @@ make_class_data (type)
       DECL_IGNORED_P (dtable_decl) = 1;
       TREE_PUBLIC (dtable_decl) = 1;
       rest_of_decl_compilation (dtable_decl, (char*) 0, 1, 0);
+      if (type == class_type_node)
+	class_dtable_decl = dtable_decl;
+    }
+
+  if (class_dtable_decl == NULL_TREE)
+    {
+      class_dtable_decl = build_dtable_decl (class_type_node);
+      TREE_STATIC (class_dtable_decl) = 1;
+      DECL_ARTIFICIAL (class_dtable_decl) = 1;
+      DECL_IGNORED_P (class_dtable_decl) = 1;
+      if (is_compiled_class (class_type_node) != 2)
+	DECL_EXTERNAL (class_dtable_decl) = 1;
+      rest_of_decl_compilation (class_dtable_decl, (char*) 0, 1, 0);
     }
 
   super = CLASSTYPE_SUPER (type);

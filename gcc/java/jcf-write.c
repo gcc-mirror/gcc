@@ -2009,6 +2009,8 @@ generate_bytecode_insns (exp, target, state)
 		    if (TREE_CODE (rhs) == MINUS_EXPR)
 		      value = -value;
 		    emit_iinc (lhs, value, state);
+		    if (target != IGNORE_TARGET)
+		      emit_load (lhs, state);
 		    break;
 		  }
 	      }

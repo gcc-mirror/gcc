@@ -1,3 +1,53 @@
+2001-03-17  Per Bothner  <per@bothner.com>
+
+	* decl.c (clear_binding_level):  Fix initializer (broke 03-15).
+
+	* jcf-write.c (generate_bytecode_insns):  Handle emitting iinc
+	when result is is needed (target is STACK_TARGET).
+
+	* parse.h (JDEP_SOLV):  Removed.
+	* parse.y (register_incomplete_type):  Use JDEP_TO_RESOLVE instead.
+
+	* parse.y (incomplete_class_list): Removed.
+	(obtain_incomplete_type): Don't use or set incomplete_class_list.
+	It doesn't work if resolve_class changes the name of an array type
+	that is on the list and then someone else looks for the modified name.
+	Also, seems liable to break when compiling multiple source files at
+	once.  So the simplest is to just remove incomplete_class_list -
+	it is only a minor space win and it is not even clear it saves time.
+
+	* parse.y (resolve_class):  Remove unneeded promote_type.
+
+2001-03-15  Per Bothner  <per@bothner.com>
+
+	* java-tree.h (BLOCK_IS_IMPLICIT):  New flag.
+	* parse.h (BLOCK_EXPR_ORIGIN):  Removed macro.
+	* parse.y (declare_local_variables, maybe_absorb_scoping_blocks):
+	Use BLOCK_IS_IMPLICIT rather than BLOCK_EXPR_ORIGIN.
+
+	* jcf-parse.c (yyparse):  Set/reset input_filename for source file.
+	* parse.y (java_expand_classes):  Likewise.
+
+	* parse.y (expand_start_java_method):  Was only called once and had a
+	misleading name, so inline in caller java_complete_expand_method.
+	(enter_a_block):  Likewise inline in enter_block and remove.
+
+	Remove junk from when gcc/java was created (by copying from C/C++).
+	* decl.c (keep_next_level_flag, keep_next_if_subblocks):  Remove.
+	(struct binding_level):  Remove fields keep, keep_if_subblocks,
+	more_cleanups_ok, have_cleanups (which have never been used).
+	(pushlevel, poplevel):  Remove related useless code.
+
+	* class.c (make_class_data):  The class_dtable_decl (i.e. the
+	vtable for Class) should be external, except when compiling Class.
+
+	* jvspec.c (lang_specific_driver):  Fix -C handling.
+	Check -save-temps to see if temp @FILE should be deleted.
+	Follow-up to/fix for February 16 patch.
+
+	* verify.c (verify_jvm_instructions):  Better error msgs for dup.
+	(type_stack_dup):  Remove no-longer neded error check.
+
 2001-03-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* mangle.c (mangle_record_type): Rename 'from_pointer' argument
@@ -24,6 +74,45 @@
 
 	* config-lang.in (lang_requires): Define.
 
+2001-03-05  Per Bothner  <per@bothner.com>
+
+	Fix a problem where rest_of_decl_compilation applied to
+	class_dtable_decl causes problems because it was done too early,
+	before output file was opened.
+	* decl.c (init_decl_processing):  Remove init of class_dtable_decl.
+	* class.c (class_dtable_decl):  Add macro - element of class_roots.
+	(make_class_data):  Define class_dtable_decl.
+	* java-tree.h (JTI_CLASS_DTABLE_DECL, class_dtable_decl):  Removed.
+
+2001-02-16  Per Bothner  <per@bothner.com>
+
+	Handle compiling multiple input files at once, and @FILE syntax.
+	* gcj.texi:  Updated documentation to match.
+	* java-tree.h (flag_filelist_file, init_src_parse):  New declarations.
+	* jcf-parse.c (parse_source_file):  Split into ...
+	(parse_source_file_1):  New function - and:
+	(parse_source_file_2):  New function.
+	(yyparse):  On -ffilelist-file, open and scan named file.
+	On first pass over files, only do parse_source_file_1.
+	A new second pass calls parse_source_file_2 for each file to compile.
+	(init_jcf_parse):  Call init_src_parse.
+	* jvspec.c (INDIRECT_FILE_ARG):  New flag.
+	(lang_specific_driver):  Support @FILELIST-FILE syntax, as well
+	as multiple input file combined in one compilation.
+	* lang-options.h:  Add -ffilelist-file
+	* lang.c (flag_filelist_file):  New flag variable.
+	(lang_f_options):  Handle -ffilelist-file.
+	* lex.c (java_init_lex): Don't clear ctxp->incomplete_class.
+	* parse.h (struct parse_ctxt):  Remove fields incomplete_class and
+	gclass_list - use global fields of src_parse_roots instead.
+	* parse.y (src_parse_roots):  New array.
+	(incomplete_class_list, gclass_list):  New macros.
+	(push_parser_context, java_pop_parser_context,
+	java_parser_context_resume):  Don't fiddle with deleted fields.
+	(various):  Use incomplete_class gclass_list and global macros
+	instead of parse_ctxt fields - the lists are global.
+	(init_src_parse):  New function.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.
@@ -48,7 +137,7 @@ Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(check_pkg_class_access): Handle the empty package correctly.
 	(in_same_package): New function. Determine if two classes are in the
 	same package.
-	
+
 2001-02-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* typeck.c (build_java_array_type): Don't try to poke a public `clone'

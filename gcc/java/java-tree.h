@@ -48,6 +48,7 @@ struct JCF;
       IS_A_CLASSFILE_NAME (in IDENTIFIER_NODE)
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
+      BLOCK_IS_IMPLICIT (in BLOCK)
    2: RETURN_MAP_ADJUSTED (in TREE_VEC).
       QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
@@ -137,6 +138,8 @@ extern int compiling_from_source;
 extern int flag_assume_compiled;
 
 extern int flag_emit_class_files;
+
+extern int flag_filelist_file;
 
 /* When non zero, assume all native functions are implemented with
    JNI, not CNI.  */
@@ -332,8 +335,6 @@ enum java_tree_index
   JTI_SOFT_LREM_NODE,
 
   JTI_ACCESS_FLAGS_TYPE_NODE,
-
-  JTI_CLASS_DTABLE_DECL,
 
   JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE,
 
@@ -581,9 +582,6 @@ extern tree throw_node[];
 
 #define access_flags_type_node \
   java_global_trees[JTI_ACCESS_FLAGS_TYPE_NODE]
-
-#define class_dtable_decl \
-  java_global_trees[JTI_CLASS_DTABLE_DECL]
 
 #define nativecode_ptr_array_type_node \
   java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
@@ -1111,6 +1109,7 @@ extern bool java_hash_compare_tree_node PARAMS ((hash_table_key,
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));
+extern void init_src_parse PARAMS((void));
 
 extern int cxx_keyword_p PARAMS ((const char *, int));
 extern tree java_mangle_decl PARAMS ((struct obstack *, tree));
@@ -1503,6 +1502,8 @@ extern tree *type_map;
 
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
+/* True for an implicit block surrounding declaration not at start of {...}. */
+#define BLOCK_IS_IMPLICIT(NODE) TREE_LANG_FLAG_1 (NODE)
 
 #define BUILD_MONITOR_ENTER(WHERE, ARG)				\
   {								\

@@ -89,7 +89,8 @@ static void handle_innerclass_attribute PARAMS ((int count, JCF *));
 static tree give_name_to_class PARAMS ((JCF *jcf, int index));
 static void parse_zip_file_entries PARAMS ((void));
 static void process_zip_dir PARAMS ((FILE *));
-static void parse_source_file PARAMS ((tree, FILE *));
+static void parse_source_file_1 PARAMS ((tree, FILE *));
+static void parse_source_file_2 PARAMS ((void));
 static void jcf_parse_source PARAMS ((void));
 static int jcf_figure_file_type PARAMS ((JCF *));
 static void parse_class_file PARAMS ((void));
@@ -641,7 +642,8 @@ jcf_parse_source ()
     {
       if (!(finput = fopen (input_filename, "r")))
 	fatal_io_error ("can't reopen %s", input_filename);
-      parse_source_file (file, finput);
+      parse_source_file_1 (file, finput);
+      parse_source_file_2 ();
       if (fclose (finput))
 	fatal_io_error ("can't close %s", input_filename);
     }
@@ -822,7 +824,7 @@ parse_class_file ()
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
 
 static void
-parse_source_file (file, finput)
+parse_source_file_1 (file, finput)
      tree file;
      FILE *finput;
 {
@@ -853,6 +855,14 @@ parse_source_file (file, finput)
 
   java_parse ();		    /* Parse and build partial tree nodes. */
   java_parse_abort_on_error ();
+}
+
+/* Process a parsed source file, resolving names etc. */
+
+static void
+parse_source_file_2 ()
+{
+  int save_error_count = java_error_count;
   java_complete_class ();	    /* Parse unsatisfied class decl. */
   java_parse_abort_on_error ();
   java_check_circular_reference (); /* Check on circular references */
@@ -876,18 +886,73 @@ predefined_filename_p (node)
 int
 yyparse ()
 {
-  int several_files = 0;
-  char *list = xstrdup (input_filename), *next;
+  int filename_count = 0;
+  char *list, *next;
   tree node;
   FILE *finput;
 
+  if (flag_filelist_file)
+    {
+      int avail = 2000;
+      finput = fopen (input_filename, "r");
+      if (finput == NULL)
+	fatal_io_error ("can't open %s", input_filename);
+      list = xmalloc(avail);
+      next = list;
+      for (;;)
+	{
+	  int count;
+	  if (avail < 500)
+	    {
+	      count = next - list;
+	      avail = 2 * (count + avail);
+	      list = xrealloc (list, avail);
+	      next = list + count;
+	      avail = avail - count;
+	    }
+	  /* Subtract to to guarantee space for final '\0'. */
+	  count = fread (next, 1, avail - 1, finput);
+	  if (count == 0)
+	    {
+	      if (! feof (finput))
+		fatal_io_error ("error closing %s", input_filename);
+	      *next = '\0';
+	      break;
+	    }
+	  avail -= count;
+	  next += count;
+	}
+      fclose (finput);
+    }
+  else
+    list = xstrdup (input_filename);
+
   do 
     {
-      next = strchr (list, '&');
-      if (next)
+      for (next = list; ; )
 	{
-	  *next++ = '\0';
-	  several_files = 1;
+	  char *ch = *next;
+	  if (ch == '\n' || ch == '\r' || ch == '\t' || ch == ' '
+	      || ch == '&' /* FIXME */)
+	    {
+	      if (next == list)
+		{
+		  next++;
+		  list = next;
+		  continue;
+		}
+	      else
+		{
+		  *next++ = '\0';
+		  break;
+		}
+	    }
+	  if (ch == '\0')
+	    {
+	      next = NULL;
+	      break;
+	    }
+	  next++;
 	}
 
       if (list[0]) 
@@ -898,11 +963,13 @@ yyparse ()
 
 	  int len = strlen (list);
 
-	  if (*list != '/' && several_files)
+	  if (*list != '/' && filename_count > 0)
 	    obstack_grow (&temporary_obstack, "./", 2);
 
 	  obstack_grow0 (&temporary_obstack, list, len);
 	  value = obstack_finish (&temporary_obstack);
+
+	  filename_count++;
 
 	  /* Exclude file that we see twice on the command line. For
 	     all files except {Class,Error,Object,RuntimeException,String,
@@ -942,6 +1009,9 @@ yyparse ()
       list = next;
     }
   while (next);
+
+  if (filename_count == 0)
+    warning ("no input file specified");
 
   current_jcf = main_jcf;
   current_file_list = nreverse (current_file_list);
@@ -985,12 +1055,19 @@ yyparse ()
 	case JCF_SOURCE:
 	  java_push_parser_context ();
 	  java_parser_context_save_global ();
-	  parse_source_file (name, finput);
+	  parse_source_file_1 (name, finput);
 	  java_parser_context_restore_global ();
 	  java_pop_parser_context (1);
 	  break;
 	}
     }
+
+  for (ctxp = ctxp_for_generation;  ctxp;  ctxp = ctxp->next)
+    {
+      input_filename = ctxp->filename;
+      parse_source_file_2 ();
+    }
+  input_filename = main_input_filename;
 
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)
@@ -1137,4 +1214,6 @@ init_jcf_parse ()
   ggc_add_tree_root (parse_roots, sizeof (parse_roots) / sizeof(tree));
 
   ggc_add_root (&current_jcf, 1, sizeof (JCF), (void (*)(void *))ggc_mark_jcf);
+
+  init_src_parse ();
 }

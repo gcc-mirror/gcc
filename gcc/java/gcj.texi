@@ -513,6 +513,7 @@ gcc, Using the GNU Compiler Collection}.  This manual only documents the
 options specific to @code{gcj}.
 
 @menu
+* Input and output files::
 * Input Options::		How gcj finds files
 * Encodings::                   Options controlling source file encoding
 * Warnings::			Options controlling warnings specific to gcj
@@ -520,6 +521,43 @@ options specific to @code{gcj}.
 * Configure-time Options::	Options you won't use
 @end menu
 
+@node Input and output files
+@section Input and output files
+
+A @code{gcj} command is like a @code{gcc} command, in that it
+consists of a number of options and file names.  The following kinds
+of input file names are supported:
+
+@table @code
+@item @var{file}.java
+Java source files.
+@item @var{file}.class
+Java bytecode files.
+@item @var{file}.zip
+@itemx @var{file}.jar
+An archive containing one or more @code{.class} files, all of
+which are compiled.  The archive may be compressed.
+@item @@@var{file}
+A file containing a whitespace-separated list of input file names.
+(Currently, these must all be @code{.java} source files, but that
+may change.)
+Each named file is compiled, just as if it had been on the command line.
+@item @var{library}.a
+@itemx @var{library}.so
+@itemx -l@var{libname}
+Libraries to use when linking.  See the @code{gcc} manual.
+@end table
+
+You can specify more than one input file on the @code{gcj} command line,
+in which case they will all be compiled.  If you specify a
+@code{-o @var{FILENAME}}
+option, all the input files will be compiled together, producing a
+single output file, named @var{FILENAME}.
+This is allowed even when using @code{-S} or @code{-c},
+but not when using @code{-C}.
+(This is an extension beyond the what plain @code{gcc} allows.)
+(If more than one input file is specified, all must currently
+be @code{.java} files, though we hope to fix this.)
 
 @node Input Options
 @section Input Options

@@ -38,6 +38,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JAVA_FILE_ARG	(1<<3)
 /* True if this arg is a .class input file name. */
 #define CLASS_FILE_ARG	(1<<4)
+/* True if this arg is @FILE - where FILE contains a list of filenames. */
+#define INDIRECT_FILE_ARG (1<<5)
 
 static char *find_spec_file	PARAMS ((const char *));
 
@@ -46,11 +48,6 @@ int lang_specific_extra_outfiles = 0;
 
 /* True if we should add -shared-libgcc to the command-line.  */
 int shared_libgcc = 1;
-
-/* Once we have the proper support in jc1 (and gcc.c) working,
-   set COMBINE_INPUTS to one.  This enables combining multiple *.java
-   and *.class input files to be passed to a single jc1 invocation. */
-#define COMBINE_INPUTS 0
 
 const char jvgenmain_spec[] =
   "jvgenmain %{D*} %i %{!pipe:%umain.i} |\n\
@@ -104,11 +101,12 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* If non-zero, the user gave us the `-v' flag.  */ 
   int saw_verbose_flag = 0;
 
+  int saw_save_temps = 0;
+
   /* This will be 0 if we encounter a situation where we should not
      link in libgcj.  */
   int library = 1;
 
-#if COMBINE_INPUTS
   /* This will be 1 if multiple input files (.class and/or .java)
      should be passed to a single jc1 invocation. */
   int combine_inputs = 0;
@@ -116,21 +114,20 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* Index of last .java or .class argument. */
   int last_input_index;
 
-  /* A buffer containing the concatenation of the inputs files
-     (e.g. "foo.java&bar.class&baz.class"). if combine_inputs. */
-  char* combined_inputs_buffer;
-
-  /* Next available location in combined_inputs_buffer. */
-  int combined_inputs_pos;
-
   /* Number of .java and .class source file arguments seen. */
   int java_files_count = 0;
   int class_files_count = 0;
+  /* Number of '@FILES' arguments seen. */
+  int indirect_files_count = 0;
 
   /* Cumulative length of the  .java and .class source file names. */
   int java_files_length = 0;
   int class_files_length = 0;
-#endif
+
+  /* Name of file containing list of files to compile. */
+  char *filelist_filename;
+
+  FILE *filelist_file;
 
   /* The number of arguments being added to what's in argv, other than
      libraries.  We use this to track the number of times we've inserted
@@ -149,6 +146,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
      already gave a language for the file.  */
   int saw_speclang = 0;
 
+#if 0
   /* "-lm" or "-lmath" if it appears on the command line.  */
   const char *saw_math ATTRIBUTE_UNUSED = 0;
 
@@ -163,6 +161,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   /* Saw `-lgcj' on command line.  */
   int saw_libgcj ATTRIBUTE_UNUSED = 0;
+#endif
 
   /* Saw -C or -o option, respectively. */
   int saw_C = 0;
@@ -251,9 +250,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    {
 	      saw_C = 1;
 	      want_spec_file = 0;
-#if COMBINE_INPUTS
-	      combine_inputs = 1;
-#endif
 	      if (library != 0)
 		added -= 2;
 	      library = 0;
@@ -308,6 +304,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      will_link = 0;
 	      continue;
 	    }
+          else if (strcmp (argv[i], "-save-temps") == 0)
+	    saw_save_temps = 1;
           else if (strcmp (argv[i], "-static-libgcc") == 0
                    || strcmp (argv[i], "-static") == 0)
 	    shared_libgcc = 0;
@@ -317,9 +315,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	}
       else
 	{
-#if COMBINE_INPUTS
 	  int len; 
-#endif
 
 	  if (saw_speclang)
 	    {
@@ -327,7 +323,12 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      continue;
 	    }
 
-#if COMBINE_INPUTS
+	  if (argv[i][0] == '@')
+	    {
+	      args[i] |= INDIRECT_FILE_ARG;
+	      indirect_files_count++;
+	    }
+
 	  len = strlen (argv[i]);
 	  if (len > 5 && strcmp (argv[i] + len - 5, ".java") == 0)
 	    {
@@ -343,7 +344,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      class_files_length += len;
 	      last_input_index = i;
 	    }
-#endif
 	}
     }
 
@@ -357,33 +357,35 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   if (saw_C)
     {
       num_args += 3;
-#if COMBINE_INPUTS
-      class_files_length = 0;
-      num_args -= class_files_count;
+      if (class_files_count > 0)
+	{
+	  error ("Warning: already-compiled .class files ignored with -C"); 
+	  class_files_count = 0;
+	  num_args -= class_files_count;
+	}
       num_args += 2;  /* For -o NONE. */
-#endif
       if (saw_o)
 	fatal ("cannot specify both -C and -o");
     }
-#if COMBINE_INPUTS
-  if (saw_o && java_files_count + (saw_C ? 0 : class_files_count) > 1)
+  if ((saw_o && java_files_count + class_files_count > 1)
+      || (saw_C && java_files_count > 1))
+    combine_inputs = 1;
+  if (class_files_count > 1)
     combine_inputs = 1;
 
   if (combine_inputs)
     {
-      int len = java_files_length + java_files_count - 1;
-      num_args -= java_files_count;
+      filelist_filename = make_temp_file ("jx");
+      if (filelist_filename == NULL)
+	fatal ("cannot create temporary file");
+      record_temp_file (filelist_filename, ! saw_save_temps, 0);
+      filelist_file = fopen (filelist_filename, "w");
+      if (filelist_file == NULL)
+	pfatal_with_name (filelist_filename);
+      num_args -= java_files_count + class_files_count;
       num_args++;  /* Add one for the combined arg. */
-      if (class_files_length > 0)
-	{
-	  len += class_files_length + class_files_count - 1;
-	  num_args -= class_files_count;
-	}
-      combined_inputs_buffer = (char*) xmalloc (len);
-      combined_inputs_pos = 0;
     }
   /* If we know we don't have to do anything, bail now.  */
-#endif
 #if 0
   if (! added && ! library && main_class_name == NULL && ! saw_C)
     {
@@ -400,6 +402,11 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     num_args++;
   num_args++;
 
+  if (combine_inputs || indirect_files_count > 0)
+    num_args += 2;
+  if (combine_inputs && indirect_files_count > 0)
+    fatal("using both @FILE with multiple files not implemented");
+
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */
 #ifndef ENABLE_SHARED_LIBGCC
@@ -409,9 +416,16 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   num_args += shared_libgcc;
 
   arglist = (const char **) xmalloc ((num_args + 1) * sizeof (char *));
+  j = 0;
 
-  for (i = 0, j = 0; i < argc; i++, j++)
+  for (i = 0; i < argc; i++, j++)
     {
+      if (i == 1 && (combine_inputs || indirect_files_count > 0))
+	{
+	  arglist[j++] = "-ffilelist-file";
+	  arglist[j++] = "-xjava";
+	}
+
       arglist[j] = argv[i];
 
       if ((args[i] & PARAM_ARG) || i == 0)
@@ -449,35 +463,32 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  continue;
 	}
 
+      if ((args[i] & INDIRECT_FILE_ARG) != 0)
+	{
+	  arglist[j] = argv[i]+1;  /* Drop '@'. */
+	}
+
       if ((args[i] & CLASS_FILE_ARG) && saw_C)
 	{
 	  --j;
 	  continue;
 	}
 
-#if COMBINE_INPUTS
       if (combine_inputs && (args[i] & (CLASS_FILE_ARG|JAVA_FILE_ARG)) != 0)
 	{
-	  if (combined_inputs_pos > 0)
-	    combined_inputs_buffer[combined_inputs_pos++] = '&';
-	  strcpy (&combined_inputs_buffer[combined_inputs_pos], argv[i]);
-	  combined_inputs_pos += strlen (argv[i]);
+	  fputs (argv[i], filelist_file);
+	  fputc ('\n', filelist_file);
 	  --j;
 	  continue;
 	}
-#endif
   }
 
-#if COMBINE_INPUTS
   if (combine_inputs)
     {
-      combined_inputs_buffer[combined_inputs_pos] = '\0';
-#if 0
-      if (! saw_C)
-#endif
-      arglist[j++] = combined_inputs_buffer;
+      if (fclose (filelist_file))
+	pfatal_with_name (filelist_filename);
+      arglist[j++] = filelist_filename;
     }
-#endif
 
   /* If we saw no -O or -g option, default to -g1, for javac compatibility. */
   if (saw_g + saw_O == 0)
@@ -494,10 +505,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       arglist[j++] = "-fsyntax-only";
       arglist[j++] = "-femit-class-files";
       arglist[j++] = "-S";
-#if COMBINE_INPUTS
       arglist[j++] = "-o";
       arglist[j++] = "NONE";
-#endif
     }
   
   if (shared_libgcc)
