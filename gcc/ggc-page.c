@@ -1146,10 +1146,13 @@ ggc_page_print_statistics ()
 	  in_use += 
 	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * (1 << i);
 	}
-      fprintf (stderr, "%-3d %-15u %-15u\n", i, allocated, in_use);
+      fprintf (stderr, "%-3d %-15lu %-15u\n", i, 
+	       (unsigned long) allocated, in_use);
     }
 
   /* Print out some global information.  */
-  fprintf (stderr, "\nTotal bytes marked: %u\n", G.allocated);
-  fprintf (stderr, "Total bytes mapped: %u\n", G.bytes_mapped);
+  fprintf (stderr, "\nTotal bytes marked: %lu\n", 
+	   (unsigned long) G.allocated);
+  fprintf (stderr, "Total bytes mapped: %lu\n", 
+	   (unsigned long) G.bytes_mapped);
 }

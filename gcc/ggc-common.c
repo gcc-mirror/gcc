@@ -524,11 +524,11 @@ ggc_print_statistics (stream, stats)
   for (code = 0; code < MAX_TREE_CODES; ++code)
     if (ggc_stats->num_trees[code]) 
       {
-	fprintf (stream, "%s%*s%-15u %-15u %7.3f\n", 
+	fprintf (stream, "%s%*s%-15u %-15lu %7.3f\n", 
 		 tree_code_name[code],
-		 22 - strlen (tree_code_name[code]), "",
+		 22 - (int) strlen (tree_code_name[code]), "",
 		 ggc_stats->num_trees[code],
-		 ggc_stats->size_trees[code],
+		 (unsigned long) ggc_stats->size_trees[code],
 		 (100 * ((double) ggc_stats->size_trees[code]) 
 		  / ggc_stats->total_size_trees));
       }
@@ -543,11 +543,11 @@ ggc_print_statistics (stream, stats)
   for (code = 0; code < NUM_RTX_CODE; ++code)
     if (ggc_stats->num_rtxs[code]) 
       {
-	fprintf (stream, "%s%*s%-15u %-15u %7.3f\n", 
+	fprintf (stream, "%s%*s%-15u %-15lu %7.3f\n", 
 		 rtx_name[code],
-		 22 - strlen (rtx_name[code]), "",
+		 22 - (int) strlen (rtx_name[code]), "",
 		 ggc_stats->num_rtxs[code],
-		 ggc_stats->size_rtxs[code],
+		 (unsigned long) ggc_stats->size_rtxs[code],
 		 (100 * ((double) ggc_stats->size_rtxs[code]) 
 		  / ggc_stats->total_size_rtxs));
       }
