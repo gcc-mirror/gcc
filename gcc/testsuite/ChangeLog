@@ -1,3 +1,7 @@
+2005-04-06  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gfortran.dg/vect/vect-5.f90: xfail for lp64. 
+
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20734
