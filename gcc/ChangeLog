@@ -1,3 +1,43 @@
+Mon Jan  4 11:01:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips-tdump.c (st_to_string, sc_to_string, glevel_to_string,
+	lang_to_string, type_to_string): Make return type const char*.
+	(print_symbol): Apply `const' keyword to a char*.
+	(print_file_desc): Cast structure member `crfd' to ulong when
+	comparing against one.
+
+	* mips-tfile.c (pfatal_with_name): Apply `const' keyword to char*.
+	(fatal, error): Add ATTRIBUTE_PRINTF_1 to prototypes.
+	(progname, input_name): Apply `const' keyword to a char*.
+	Don't redundantly include sys/stat.h.
+	(alloc_info): Apply `const' keyword to a char*.
+	(st_to_string, sc_to_string): Likewise.
+	(hash_string): Cast variable `hash_string' to a symint_t when
+	comparing against one.
+	(add_string): Cast PAGE_USIZE to Ptrdiff_t when comparing against one.
+	Likewise cast it to long when comparing against one.
+	(add_local_symbol): Apply `const' keyword to a char*.
+	(add_ext_symbol): Likewise.
+	(add_unknown_tag): Likewise.
+	(add_procedure): Cast a printf-style field width to an int.
+	(add_file): Cast PAGE_USIZE to long when comparing against one
+	(parse_begin): Cast a printf-style field width to an int.
+	(parse_bend): Likewise.
+	(parse_def): Likewise.
+	(parse_end): Likewise.
+	(mark_stabs): Mark parameter `start' with ATTRIBUTE_UNUSED.
+	(parse_stabs_common): Fix format specifier.
+	(parse_input): Change type of variable `i' to Size_t.
+	(write_object): Fix arguments to match format specifiers.
+	Cast variable `num_write' to long when comparing against one.
+	(read_seek): Cast variable `sys_read' to symint_t when comparing
+ 	against one.  Fix arguments to match format specifiers.  Cast
+	variable `size' to long when comparing against one.
+	(copy_object): Cast result of `sizeof' to int when comparing
+	against one.  Fix arguments to match format specifiers.  Cast
+	variable `ifd' to long when comparing against a signed value.
+	Likewise, likewise.
+	
 Mon Jan  4 10:30:33 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (decl_attributes): Allow applying attribute `unused'
