@@ -494,7 +494,7 @@ dnl GLIBCPP_CHECK_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins'
+  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
 
   dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")

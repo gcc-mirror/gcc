@@ -1,3 +1,9 @@
+2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+            Ulrich Drepper  <drepper@cygnus.com>
+	
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Add -D_GNU_SOURCE, so
+	that all the freaky stuff like sincos will be around...
+
 2000-06-22  Branko Cibej  <branko.cibej@hermes.si>
 
         * Makefile.am (AM_MAKEFLAGS): Added WERROR to list of flags.

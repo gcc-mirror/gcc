@@ -3970,7 +3970,7 @@ EOF
   
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins'
+  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
 
     echo $ac_n "checking for sin in -lm""... $ac_c" 1>&6
 echo "configure:3977: checking for sin in -lm" >&5
