@@ -108,15 +108,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Generate SDB style debugging information.  */
 #define SDB_DEBUGGING_INFO
+#define EXTENDED_SDB_BASIC_TYPES
 
 /* Generate DBX_DEBUGGING_INFO by default.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Redefine this to print in hex and adjust values like GNU960.  The extra
-   bit is used to handle the type long double.  Gcc does not support long
-   double in sdb output, but we do support the non-standard format.  */
+/* Redefine this to print in hex.  No value adjustment is necessary
+   anymore.  */
 #define PUT_SDB_TYPE(A) \
-  fprintf (asm_out_file, "\t.type\t0x%x;", (A & 0xf) + 2 * (A & ~0xf))
+  fprintf (asm_out_file, "\t.type\t0x%x;", A)
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
 #define HANDLE_PRAGMA(FILE, NODE) process_pragma (FILE, NODE)
