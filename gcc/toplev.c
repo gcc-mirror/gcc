@@ -2518,7 +2518,7 @@ rest_of_type_compilation (type, toplev)
 #endif
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
-    symout_time, sdbout_symbol (TYPE_STUB_DECL (type), !toplev);
+    sdbout_symbol (TYPE_STUB_DECL (type), !toplev);
 #endif
   timevar_pop (TV_SYMOUT);
 }
