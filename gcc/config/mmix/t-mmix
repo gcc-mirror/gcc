@@ -14,7 +14,9 @@ MULTILIB_OPTIONS = mabi=gnu
 MULTILIB_DIRNAMES = gnuabi
 
 $(T)crti.o: $(srcdir)/config/mmix/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crti.o -x assembler-with-cpp $(srcdir)/config/mmix/crti.asm
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/mmix/crti.asm
 
 $(T)crtn.o: $(srcdir)/config/mmix/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler-with-cpp $(srcdir)/config/mmix/crtn.asm
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mmix/crtn.asm
