@@ -1,5 +1,13 @@
 2005-03-22  James A. Morrison  <phython@gcc.gnu.org>
 
+	* treetree.c (tree_code_if_start): Use fold_buildN. 
+	(tree_code_create_variable): Likewise.
+	(tree_code_generate_return): Likewise.
+	(tree_code_get_expression): Likewise.
+	(tree_code_add_parameter): Likewise.
+
+2005-03-22  James A. Morrison  <phython@gcc.gnu.org>
+
 	* treelang.h (struct parameter_part): Skip WHERE_TO_PUT_VAR_TREE
 	during GC.
 
