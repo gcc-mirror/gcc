@@ -7,12 +7,12 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_SUNOS_MATHERR_DECL_CHECK
-#define FIXINC_SUNOS_MATHERR_DECL_CHECK 1
+#ifndef FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL
+#define FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL 1
 
 struct exception;
-#ifndef FIXINC_MATH_EXCEPTION_CHECK
-#define FIXINC_MATH_EXCEPTION_CHECK 1
+#ifndef FIXINC_WRAP_MATH_H_MATH_EXCEPTION
+#define FIXINC_WRAP_MATH_H_MATH_EXCEPTION 1
 
 #ifdef __cplusplus
 #define exception __math_exception
@@ -122,6 +122,6 @@ extern double atof(const char *__nptr);
 #undef exception
 #endif
 
-#endif  /* FIXINC_MATH_EXCEPTION_CHECK */
+#endif  /* FIXINC_WRAP_MATH_H_MATH_EXCEPTION */
 
-#endif  /* FIXINC_SUNOS_MATHERR_DECL_CHECK */
+#endif  /* FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL */

@@ -1,3 +1,8 @@
+2003-01-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c(wrap_fix): the wrapper guard must be a function
+	of *both* the file name and the fix name.
+
 2002-01-04  John David Anglin  <dave.anglin@nrc.ca>
 
 	* config.gcc (hppa*64*-*-hpux11*): Define extra_parts.  Don't use

@@ -597,47 +597,44 @@ FIX_PROC_HEAD( wrap_fix )
   tSCC   z_no_wrap_pat[] = "^#if.*__need_";
   static regex_t no_wrapping_re; /* assume zeroed data */
 
-  char   z_fixname[ 64 ];
-  tCC*   pz_src  = p_fixd->fix_name;
-  tCC*   pz_name = z_fixname;
-  char*  pz_dst  = z_fixname;
-  int    do_end  = 0;
-  size_t len     = 0;
-  IGNORE_ARG(filname);
+  tCC*   pz_name = NULL;
 
   if (no_wrapping_re.allocated == 0)
     compile_re( z_no_wrap_pat, &no_wrapping_re, 0, "no-wrap pattern",
                 "wrap-fix" );
 
-  for (;;) {
-    char ch = *pz_src++;
-
-    if (ch == NUL) {
-      *pz_dst++ = ch;
-      break;
-    } else if (! ISALNUM (ch)) {
-      *pz_dst++ = '_';
-    } else {
-      *pz_dst++ = TOUPPER (ch);
-    }
-
-    if (++len >= sizeof( z_fixname )) {
-      void* p = xmalloc( len + strlen( pz_src ) + 1 );
-      memcpy( p, (void*)z_fixname, len );
-      pz_name = (tCC*)p;
-      pz_dst  = (char*)pz_name + len;
-    }
-  }
-
   /*
    *  IF we do *not* match the no-wrap re, then we have a double negative.
    *  A double negative means YES.
    */
-  if (regexec (&no_wrapping_re, text, 0, NULL, 0) != 0)
+  if (regexec( &no_wrapping_re, text, 0, NULL, 0 ) != 0)
     {
-      printf( "#ifndef FIXINC_%s_CHECK\n", pz_name );
-      printf( "#define FIXINC_%s_CHECK 1\n\n", pz_name );
-      do_end = 1;
+      /*
+       *  A single file can get wrapped more than once by different fixes.
+       *  A single fix can wrap multiple files.  Therefore, guard with
+       *  *both* the fix name and the file name.
+       */
+      size_t ln = strlen( filname ) + strlen( p_fixd->fix_name ) + 14;
+      char*  pz = xmalloc( ln );
+      pz_name = pz;
+      sprintf( pz, "FIXINC_WRAP_%s-%s", filname, p_fixd->fix_name );
+
+      for (pz += 12; 1; pz++) {
+        char ch = *pz;
+
+        if (ch == NUL)
+          break;
+
+        if (! ISALNUM( ch )) {
+          *pz = '_';
+        }
+        else {
+          *pz = TOUPPER( ch );
+        }
+      }
+
+      printf( "#ifndef %s\n", pz_name );
+      printf( "#define %s 1\n\n", pz_name );
     }
 
   if (p_fixd->patch_args[1] == (tCC*)NULL)
@@ -650,11 +647,10 @@ FIX_PROC_HEAD( wrap_fix )
       fputs( p_fixd->patch_args[2], stdout );
   }
 
-  if (do_end != 0)
-    printf( "\n#endif  /* FIXINC_%s_CHECK */\n", pz_name );
-
-  if (pz_name != z_fixname)
+  if (pz_name != NULL) {
+    printf( "\n#endif  /* %s */\n", pz_name );
     free( (void*)pz_name );
+  }
 }
 
 
