@@ -1,3 +1,8 @@
+1998-08-03  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* libioP.h: Use __PMT in typedefs.
+	* strfile.h: Likewise.
+
 1998-06-29  Ulrich Drepper  <drepper@cygnus.com>
 
 	* libio.h: Rewrite __PMT change so that it works with platforms
