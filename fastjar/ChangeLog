@@ -1,6 +1,8 @@
-2003-08-04  Release Manager
+2003-08-13  Matthias Klose  <doko@debian.org>
 
-	* GCC 3.3.1 Released.
+	* fastjar.texi: License manual under the GPL.
+	* Makefile.am: Remove reference to fdl.texi
+	* Makefile.in: Regenerate
 
 2003-08-04  Release Manager
 
@@ -9,18 +11,6 @@
 2003-07-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README: Note that FastJar is not part of GCC.
-
-2003-05-13  Release Manager
-
-	* GCC 3.3 Released.
-
-2003-05-13  Release Manager
-
-	* GCC 3.3 Released.
-
-2003-05-13  Release Manager
-
-	* GCC 3.3 Released.
 
 2003-05-13  Release Manager
 
