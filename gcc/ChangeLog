@@ -1,3 +1,12 @@
+2001-12-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/extend.texi (Variable Attributes): Document vector_size.
+
+        * attribs.c (c_common_attribute_table): Add vector_size.
+	(handle_vector_size_attribute): New.
+        (vector_size_helper): New.
+	(decl_attributes): Relayout the decl after calculating attribs.
+
 2001-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Don't include install-old.texi.  Adjust menu

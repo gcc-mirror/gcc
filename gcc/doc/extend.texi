@@ -2794,14 +2794,15 @@ section.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes of variables or structure fields.  This keyword is followed
-by an attribute specification inside double parentheses.  Eight
+by an attribute specification inside double parentheses.  Nine
 attributes are currently defined for variables: @code{aligned},
 @code{mode}, @code{nocommon}, @code{packed}, @code{section},
-@code{transparent_union}, @code{unused}, and @code{weak}.  Some other
-attributes are defined for variables on particular target systems.  Other
-attributes are available for functions (@pxref{Function Attributes}) and
-for types (@pxref{Type Attributes}).  Other front ends might define more
-attributes (@pxref{C++ Extensions,,Extensions to the C++ Language}).
+@code{transparent_union}, @code{unused}, @code{vector_size}, and
+@code{weak}.  Some other attributes are defined for variables on
+particular target systems.  Other attributes are available for functions
+(@pxref{Function Attributes}) and for types (@pxref{Type Attributes}).
+Other front ends might define more attributes (@pxref{C++
+Extensions,,Extensions to the C++ Language}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -3002,6 +3003,35 @@ applies to all function parameters with that type.
 This attribute, attached to a variable, means that the variable is meant
 to be possibly unused.  GCC will not produce a warning for this
 variable.
+
+@item vector_size (@var{bytes})
+This attribute specifies the vector size for the variable, measured in
+bytes.  For example, the declaration:
+
+@smallexample
+int foo __attribute__ ((vector_size (16)));
+@end smallexample
+
+@noindent
+causes the compiler to set the mode for @code{foo}, to be 16 bytes,
+divided into @code{int} sized units.  Assuming a 32-bit int (a vector of
+4 units of 4 bytes), the corresponding mode of @code{foo} will be V4SI@.
+
+This attribute is only applicable to integral and float scalars,
+although arrays, pointers, and function return values are allowed in
+conjunction with this construct.
+
+Aggregates with this attribute are invalid, even if they are of the same
+size as a corresponding scalar.  For example, the declaration:
+
+@smallexample
+struct S { int a; };
+struct S  __attribute__ ((vector_size (16))) foo;
+@end smallexample
+
+@noindent
+is invalid even if the size of the structure is the same as the size of
+the @code{int}.
 
 @item weak
 The @code{weak} attribute is described in @xref{Function Attributes}.
