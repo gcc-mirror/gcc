@@ -1,6 +1,6 @@
 2004-03-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	* gcc.dg/ulstrasp2.c: Do not pass -m64.  Remove redundant lines.
+	* gcc.dg/ultrasp2.c: Do not pass -m64.  Remove redundant lines.
 	* gcc.dg/ultrasp4.c: Likewise.
 	* gcc.dg/ultrasp8.c: Do not pass -m64.  Add sparcv9-*-*.
 
