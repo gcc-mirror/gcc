@@ -2640,64 +2640,54 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			      INTVAL (size), align);
 	      goto ret;
 	    }
+	  else
+	    {
+	      rtx opalign = GEN_INT (align);
+	      enum machine_mode mode;
+	      rtx target = gen_rtx (MEM, BLKmode, temp);
 
-	  /* Try the most limited insn first, because there's no point
-	     including more than one in the machine description unless
-	     the more limited one has some advantage.  */
-#ifdef HAVE_movstrqi
-	  if (HAVE_movstrqi
-	      && GET_CODE (size) == CONST_INT
-	      && ((unsigned) INTVAL (size)
-		  < (1 << (GET_MODE_BITSIZE (QImode) - 1))))
-	    {
-	      rtx pat = gen_movstrqi (gen_rtx (MEM, BLKmode, temp),
-				      xinner, size, GEN_INT (align));
-	      if (pat != 0)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
 		{
-		  emit_insn (pat);
-		  goto ret;
+		  enum insn_code code = movstr_optab[(int) mode];
+
+		  if (code != CODE_FOR_nothing
+		      && ((GET_CODE (size) == CONST_INT
+			   && ((unsigned HOST_WIDE_INT) INTVAL (size)
+			       <= (GET_MODE_MASK (mode) >> 1)))
+			  || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
+		      && (insn_operand_predicate[(int) code][0] == 0
+			  || ((*insn_operand_predicate[(int) code][0])
+			      (target, BLKmode)))
+		      && (insn_operand_predicate[(int) code][1] == 0
+			  || ((*insn_operand_predicate[(int) code][1])
+			      (xinner, BLKmode)))
+		      && (insn_operand_predicate[(int) code][3] == 0
+			  || ((*insn_operand_predicate[(int) code][3])
+			      (opalign, VOIDmode))))
+		    {
+		      rtx op2 = convert_to_mode (mode, size, 1);
+		      rtx last = get_last_insn ();
+		      rtx pat;
+
+		      if (insn_operand_predicate[(int) code][2] != 0
+			  && ! ((*insn_operand_predicate[(int) code][2])
+				(op2, mode)))
+			op2 = copy_to_mode_reg (mode, op2);
+
+		      pat = GEN_FCN ((int) code) (target, xinner,
+						  op2, opalign);
+		      if (pat)
+			{
+			  emit_insn (pat);
+			  goto ret;
+			}
+		      else
+			delete_insns_since (last);
+		    }
 		}
 	    }
-#endif
-#ifdef HAVE_movstrhi
-	  if (HAVE_movstrhi
-	      && GET_CODE (size) == CONST_INT
-	      && ((unsigned) INTVAL (size)
-		  < (1 << (GET_MODE_BITSIZE (HImode) - 1))))
-	    {
-	      rtx pat = gen_movstrhi (gen_rtx (MEM, BLKmode, temp),
-				      xinner, size, GEN_INT (align));
-	      if (pat != 0)
-		{
-		  emit_insn (pat);
-		  goto ret;
-		}
-	    }
-#endif
-#ifdef HAVE_movstrsi
-	  if (HAVE_movstrsi)
-	    {
-	      rtx pat = gen_movstrsi (gen_rtx (MEM, BLKmode, temp),
-				      xinner, size, GEN_INT (align));
-	      if (pat != 0)
-		{
-		  emit_insn (pat);
-		  goto ret;
-		}
-	    }
-#endif
-#ifdef HAVE_movstrdi
-	  if (HAVE_movstrdi)
-	    {
-	      rtx pat = gen_movstrdi (gen_rtx (MEM, BLKmode, temp),
-				      xinner, size, GEN_INT (align));
-	      if (pat != 0)
-		{
-		  emit_insn (pat);
-		  goto ret;
-		}
-	    }
-#endif
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 	  /* If the source is referenced relative to the stack pointer,
