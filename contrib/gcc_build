@@ -127,7 +127,7 @@ update_gcc() {
     changedir ${DESTINATION}
 
     # Update the tree
-    (./contrib/gcc_update | tee -a ${LOGFILE}) || \
+    ./contrib/gcc_update || \
 	error "Could not update GCC"
 }
 
@@ -146,8 +146,7 @@ configure_gcc() {
     changedir ${OBJDIR}
 
     # Configure the tree.
-    (eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} 2>&1 | 
-        tee -a ${LOGFILE}) || \
+    eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} || \
 	error "Could not configure the compiler"
 }
 
@@ -160,8 +159,7 @@ bootstrap_gcc() {
     changedir ${OBJDIR}
 
     # Bootstrap the compiler
-    (eval ${MAKE} ${MAKE_BOOTSTRAP_OPTIONS} bootstrap 2>&1 |
-	tee -a ${LOGFILE}) || \
+    eval ${MAKE} ${MAKE_BOOTSTRAP_OPTIONS} bootstrap || \
 	error "Could not bootstrap the compiler"
 }
 
@@ -174,8 +172,8 @@ test_gcc() {
     changedir ${OBJDIR}
 
     echo "Running tests...  This will take a while."
-    (${MAKE} -k check 2>&1 | tee -a ${LOGFILE})
-    (${DESTINATION}/contrib/test_summary | tee -a ${LOGFILE})
+    ${MAKE} -k check
+    ${DESTINATION}/contrib/test_summary
 }
 
 # Export the GCC source tree.
@@ -202,8 +200,7 @@ install_gcc() {
     # Go to the object directory.
     changedir ${OBJDIR}
 
-    (${MAKE} install 2>&1 | tee -a ${LOGFILE}) || \
-	error "Installation failed"
+    ${MAKE} install || error "Installation failed"
 }
 
 ########################################################################
@@ -225,8 +222,6 @@ DESTINATION="${HOME}/dev/gcc"
 # object directory.
 OBJDIR="objdir"
 
-# The file where information will be logged.
-LOGFILE=${HOME}/build-gcc.$$.log
 # The file where the tarred up sources will be placed.
 TARFILE="${HOME}/dev/gcc.tgz"
 
@@ -285,11 +280,6 @@ done
 if [ ${CHECKOUT} -ne 0 ] && [ ${UPDATE} -ne 0 ]; then
     error "Cannot checkout and update simultaneously"
 fi
-
-# Remove any old logfiles.
-rm -f ${LOGFILE}
-# Tell the user where to find the logfile.
-echo "gcc_build: The logfile for this run is ${LOGFILE}"
 
 # Checkout the tree.
 if [ ${CHECKOUT} -ne 0 ]; then

@@ -1,3 +1,7 @@
+2000-11-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Remove code to put information in a log file.
+
 2000-11-19  Zack Weinberg  <zackw@stanford.edu>
 
 	* texi2pod.pl:
