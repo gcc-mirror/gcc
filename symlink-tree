@@ -20,13 +20,13 @@ ignore_additional=". .. CVS"
 # If we were invoked with a relative path name, adjust ${prog} to work
 # in subdirs.
 case ${prog} in
-/*) ;;
+/* | [A-Za-z]:[\\/]*) ;;
 *) prog=../${prog} ;;
 esac
 
 # Set newsrcdir to something subdirectories can use.
 case ${srcdir} in
-/*) newsrcdir=${srcdir} ;;
+/* | [A-Za-z]:[\\/]*) newsrcdir=${srcdir} ;;
 *) newsrcdir=../${srcdir} ;;
 esac
 
