@@ -1028,10 +1028,6 @@ do { char dstr[30];					\
     + (frame_pointer_needed \
        ? 0 : -initial_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)))
 
-/* We need to prepend underscores.  */
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR) \
-  fprintf ((FILE), "\t%s\t_%s", UNALIGNED_WORD_ASM_OP, (ADDR))
-
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
    decimal <-> binary conversion. */
 #define REAL_ARITHMETIC

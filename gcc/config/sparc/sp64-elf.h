@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC64, ELF.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998  Free Software Foundation, Inc.
+   Copyright (C) 1994, 95, 96, 97, 98, 2000  Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -145,9 +145,6 @@ do {								\
   output_addr_const ((FILE), (RTX));				\
   fputc ('\n', (FILE));						\
 } while (0)
-
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE, ADDR) \
-  fprintf ((FILE), "\t%s\t%s", UNALIGNED_LONGLONG_ASM_OP, (ADDR))
 
 /* ??? Not sure if this should be 4 or 8 bytes.  4 works for now.  */
 #define ASM_OUTPUT_DWARF_REF(FILE, LABEL) \

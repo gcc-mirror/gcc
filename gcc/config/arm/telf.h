@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Thumb with ELF obj format.
-   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
    
 This file is part of GNU CC.
 
@@ -140,13 +140,6 @@ extern int arm_structure_size_boundary;
 /* Don't know how to order these.  UNALIGNED_WORD_ASM_OP is in
    dwarf2.out. */ 
 #define UNALIGNED_WORD_ASM_OP ".4byte"
-
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR)			\
- if (((ADDR)[0] == '.') && ((ADDR)[1] == 'L')) 			\
-   fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR));	\
- else                                                     	\
-  fprintf ((FILE), "\t%s\t%s",					\
-           UNALIGNED_WORD_ASM_OP, (ADDR))
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)			\
   do								\

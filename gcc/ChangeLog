@@ -1,3 +1,31 @@
+2000-01-24  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c: include "varray.h", not dyn-string.h.
+	(ASM_OUTPUT_DWARF2_ADDR_CONST, ASM_NAME_TO_STRING): Lose.
+	(addr_const_to_string, addr_to_string): Lose.
+	(ASM_OUTPUT_DWARF_ADDR_CONST): Copy from dwarfout.c.
+	(struct dw_val_struct): val_addr is now an rtx.
+	(add_AT_addr, AT_addr, free_AT, output_aranges): Adjust.
+	(used_rtx_varray): New varray.
+	(dwarf2out_init): Initialize it.
+	(save_rtx): New fn.
+	(mem_loc_descriptor, add_const_value_attribute): Call it instead of
+	addr_to_string.
+	* arm/telf.h, arm/unknown-elf.h, mn10200.h, mn10300.h, 
+	sparc/sp64-elf.h: Remove definition of ASM_OUTPUT_DWARF2_ADDR_CONST.
+	* Makefile.in (dwarf2out.o): Update dependencies.
+
+2000-01-24  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (i386_dwarf_output_addr_const): New.
+	* i386.h (ASM_OUTPUT_DWARF_ADDR_CONST): New.
+
+	* dwarf2out.c (mem_loc_descriptor): Call ASM_SIMPLIFY_DWARF_ADDR
+	if defined.
+	* dwarfout.c (output_mem_loc_descriptor): Likewise.
+	* i386.c (i386_simplify_dwarf_addr): New.
+	* i386.h (ASM_SIMPLIFY_DWARF_ADDR): New.
+
 Mon Jan 24 16:56:10 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (gen_struct_or_union_type_die): Set complete if

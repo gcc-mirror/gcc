@@ -1532,7 +1532,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h reload.h output.h defaults.h \
-   hard-reg-set.h $(REGS_H) $(EXPR_H) toplev.h dwarf2out.h dyn-string.h \
+   hard-reg-set.h $(REGS_H) $(EXPR_H) toplev.h dwarf2out.h varray.h \
    ggc.h except.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h toplev.h output.h dbxout.h ggc.h

@@ -2309,6 +2309,17 @@ do { long l;						\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t%s\t%s%d-%s%d\n",ASM_LONG, LPREFIX, VALUE, LPREFIX, REL)
 
+/* A C statement that outputs an address constant appropriate to 
+   for DWARF debugging.  */
+
+#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,X) \
+  i386_dwarf_output_addr_const((FILE),(X))
+
+/* Either simplify a location expression, or return the original.  */
+
+#define ASM_SIMPLIFY_DWARF_ADDR(X) \
+  i386_simplify_dwarf_addr(X)
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
