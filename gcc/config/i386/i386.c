@@ -1000,8 +1000,8 @@ override_options ()
   real_format_for_mode[XFmode - QFmode] = &ieee_extended_intel_96_format;
   real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
 
-  /* Set the default values for switches whose defualt depends on TARGET_64BIT
-     in case they wasn't overwriten by command line options.  */
+  /* Set the default values for switches whose default depends on TARGET_64BIT
+     in case they weren't overwriten by command line options.  */
   if (TARGET_64BIT)
     {
       if (flag_omit_frame_pointer == 2)
