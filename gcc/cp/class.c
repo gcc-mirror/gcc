@@ -4499,11 +4499,16 @@ pushclass (type, modify)
       /* Forcibly remove any old class remnants.  */
       invalidate_class_lookup_cache ();
 
-      /* Now, free the obstack on which we cached all the values.  */
-      if (class_cache_firstobj)
-	obstack_free (&class_cache_obstack, class_cache_firstobj);
-      class_cache_firstobj 
-	= (char*) obstack_finish (&class_cache_obstack);
+      /* Now, free the obstack on which we cached all the values.
+         We can't do this if we have saved scopes sitting around, since
+	 they may have saved previous_class_values.  */
+      if (! saved_scope_p ())
+	{
+	  if (class_cache_firstobj)
+	    obstack_free (&class_cache_obstack, class_cache_firstobj);
+	  class_cache_firstobj 
+	    = (char*) obstack_finish (&class_cache_obstack);
+	}
     }
 
   /* If we're about to enter a nested class, clear
