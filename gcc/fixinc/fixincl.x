@@ -1092,7 +1092,7 @@ tSCC zIo_Def_QuotesName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIo_Def_QuotesSelect0[] =
-       "[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
+       "[ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
 
 #define    IO_DEF_QUOTES_TEST_CT  1
 #define    IO_DEF_QUOTES_RE_CT    1
@@ -1103,7 +1103,7 @@ tTestDesc aIo_Def_QuotesTests[] = {
  *  Fix Command Arguments for Io_Def_Quotes
  */
 const char* apzIo_Def_QuotesPatch[] = { "sed",
-    "-e", "s/\\([ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
+    "-e", "s/\\([ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/",
     "-e", "/#[ \t]*define[ \t]*[ \t]_IO/s/'\\([cgxtf]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]DESIOC/s/'\\([cdgx]\\)'/\\1/g",
     (char*)NULL };

@@ -1048,7 +1048,7 @@ extern "C" {\
     #
     # Fix  30:  Io_Def_Quotes
     #
-    if ( test -n "`egrep '[ 	](_|DES)IO[A-Z]*[ 	]*\\( *[^,'\\'']' ${file}`"
+    if ( test -n "`egrep '[ 	]*[ 	](_|DES)IO[A-Z]*[ 	]*\\( *[^,'\\'']' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       io_def_quotes"
@@ -1056,7 +1056,7 @@ extern "C" {\
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e 's/\([ 	](_|DES)IO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
+    sed -e 's/\([ 	]*[ 	](_|DES)IO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
         -e '/#[ 	]*define[ 	]*[ 	]_IO/s/'\''\([cgxtf]\)'\''/\1/g' \
         -e '/#[ 	]*define[ 	]*[ 	]DESIOC/s/'\''\([cdgx]\)'\''/\1/g' \
           < $infile > ${DESTDIR}/fixinc.tmp
