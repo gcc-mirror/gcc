@@ -927,7 +927,9 @@ main (argc, argv)
 	num_c_args++;
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
-  ++num_c_args;
+
+  /* -fno-exceptions -w */
+  num_c_args += 2;
 
   c_ptr = (const char **)
     (c_argv = (char **) xcalloc (sizeof (char *), num_c_args));
@@ -1107,6 +1109,7 @@ main (argc, argv)
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
   *c_ptr++ = "-fno-exceptions";
+  *c_ptr++ = "-w";
 
   /* !!! When GCC calls collect2,
      it does not know whether it is calling collect2 or ld.
