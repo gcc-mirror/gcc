@@ -2633,7 +2633,7 @@ fi
 
 for ac_func in malloc realloc calloc free bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked
+	strsignal putc_unlocked fputs_unlocked strstr
 do
 echo $ac_n "checking whether $ac_func must be declared""... $ac_c" 1>&6
 echo "configure:2640: checking whether $ac_func must be declared" >&5
