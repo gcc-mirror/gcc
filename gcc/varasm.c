@@ -85,6 +85,7 @@ extern FILE *asm_out_file;
 
 /* The (assembler) name of the first globally-visible object output.  */
 char *first_global_object_name;
+char *weak_global_object_name;
 
 extern struct obstack *current_obstack;
 extern struct obstack *saveable_obstack;
@@ -1003,14 +1004,19 @@ assemble_start_function (decl, fnname)
 
   if (TREE_PUBLIC (decl))
     {
-      if (!first_global_object_name && ! DECL_WEAK (decl)
-	  && ! DECL_ONE_ONLY (decl))
+      if (! first_global_object_name)
 	{
 	  char *p;
+	  char **name;
+
+	  if (! DECL_WEAK (decl) && ! DECL_ONE_ONLY (decl))
+	    name = &first_global_object_name;
+	  else
+	    name = &weak_global_object_name;
 
 	  STRIP_NAME_ENCODING (p, fnname);
-	  first_global_object_name = permalloc (strlen (p) + 1);
-	  strcpy (first_global_object_name, p);
+	  *name = permalloc (strlen (p) + 1);
+	  strcpy (*name, p);
 	}
 
 #ifdef ASM_WEAKEN_LABEL

@@ -1,3 +1,8 @@
+Fri Jun 19 23:06:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* varasm.c (assemble_start_function): Add weak_global_object_name.
+	* tree.c (get_file_function_name): Use it.
+
 Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
