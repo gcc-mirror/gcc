@@ -1,3 +1,7 @@
+Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* h8300.c (dosize): Fix test for "sub".
+
 Thu Aug 30 10:21:43 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* c-typeck.c (pointer_diff): Try to eliminate common term before
