@@ -921,6 +921,9 @@ changequote([,])dnl
 		extra_parts="crtbegin.o crtend.o"
 		install_headers_dir=install-headers-cpio
 		;;
+	d30v-*)
+		float_format=i64
+		;;
 	dsp16xx-*)
 		;;
 	elxsi-elxsi-*)

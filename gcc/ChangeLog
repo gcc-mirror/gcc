@@ -1,5 +1,12 @@
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
+	* config/d30v: New port.
+
+	* configure.in (d30v-*): Set fp format.
+	* configure: Rebuild.
+
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
 	* ifcvt.c: New file.
 	* Makefile.in (OBJS): Add it.
 	(ifcvt.o): New target.
