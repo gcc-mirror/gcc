@@ -99,7 +99,7 @@ mark_reference_fields (field, low, high, ubit,
       if (FIELD_STATIC (field))
 	continue;
 
-      offset = tree_low_cst (byte_position (field), 1);
+      offset = int_byte_position (field);
       if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
 	{
 	  unsigned int count;
