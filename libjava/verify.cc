@@ -353,20 +353,23 @@ private:
     }
 
     // Mark this type as the uninitialized result of `new'.
-    void set_uninitialized (int pc)
+    void set_uninitialized (int npc)
     {
-      if (key != reference_type && key != unresolved_reference_type)
+      if (key == reference_type)
+	key = uninitialized_reference_type;
+      else if (key == unresolved_reference_type)
+	key = uninitialized_unresolved_reference_type;
+      else
 	verify_fail ("internal error in type::uninitialized");
-      key = (key == reference_type
-	     ? uninitialized_reference_type
-	     : uninitialized_unresolved_reference_type);
-      pc = pc;
+      pc = npc;
     }
 
     // Mark this type as now initialized.
     void set_initialized (int npc)
     {
-      if (pc == npc)
+      if (npc != UNINIT && pc == npc
+	  && (key == uninitialized_reference_type
+	      || key == uninitialized_unresolved_reference_type))
 	{
 	  key = (key == uninitialized_reference_type
 		 ? reference_type
@@ -834,11 +837,11 @@ private:
   type pop_raw ()
   {
     if (current_state->stacktop <= 0)
-      verify_fail ("stack empty");
+      verify_fail ("stack empty", start_PC);
     type r = current_state->stack[--current_state->stacktop];
     current_state->stackdepth -= r.depth ();
     if (current_state->stackdepth < 0)
-      verify_fail ("stack empty");
+      verify_fail ("stack empty", start_PC);
     return r;
   }
 
@@ -846,7 +849,7 @@ private:
   {
     type r = pop_raw ();
     if (r.iswide ())
-      verify_fail ("narrow pop of wide type");
+      verify_fail ("narrow pop of wide type", start_PC);
     return r;
   }
 
@@ -854,15 +857,16 @@ private:
   {
     type r = pop_raw ();
     if (! r.iswide ())
-      verify_fail ("wide pop of narrow type");
+      verify_fail ("wide pop of narrow type", start_PC);
     return r;
   }
 
   type pop_type (type match)
   {
+    match.promote ();
     type t = pop_raw ();
     if (! match.compatible (t))
-      verify_fail ("incompatible type on stack");
+      verify_fail ("incompatible type on stack", start_PC);
     return t;
   }
 

@@ -1,5 +1,14 @@
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::pop_type): Put PC into error
+	message.
+	(_Jv_BytecodeVerifier::pop64): Likewise.
+	(_Jv_BytecodeVerifier::pop32): Likewise.
+	(_Jv_BytecodeVerifier::pop_raw): Likewise.
+	(_Jv_BytecodeVerifier::pop_type): Promote the match type.
+	(type::set_initialized): Only modify uninitialized types.
+	(type::set_uninitialized): Fix shadowing bug.  Simplify code.
+
 	* verify.cc: Include StringBuffer.h.
 	(verify_fail): Added pc argument.  Use StringBuffer to construct
 	exception message.
