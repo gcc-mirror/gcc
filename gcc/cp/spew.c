@@ -115,6 +115,7 @@ static SPEW_INLINE int read_process_identifier PARAMS ((YYSTYPE *));
 static SPEW_INLINE void feed_input PARAMS ((struct unparsed_text *));
 static SPEW_INLINE void snarf_block PARAMS ((const char *, int));
 static tree snarf_defarg PARAMS ((void));
+static void snarf_parenthesized_expression PARAMS ((const char *, int));
 static int frob_id PARAMS ((int, int, tree *));
 
 /* The list of inline functions being held off until we reach the end of
@@ -1032,6 +1033,38 @@ process_next_inline (i)
 }
 
 
+/* Accumulate the tokens that make up a parenthesized expression in T,
+   having already read the opening parenthesis.  */
+
+static void
+snarf_parenthesized_expression (starting_file, starting_line)
+     const char *starting_file;
+     int starting_line;
+{
+  int yyc;
+  int level = 1;
+
+  while (1)
+    {
+      size_t point;
+
+      point = obstack_object_size (&inline_text_obstack);
+      obstack_blank (&inline_text_obstack, sizeof (struct token));
+      yyc = add_token ((struct token *)
+		       (obstack_base (&inline_text_obstack) + point));
+      if (yyc == '(')
+	++level;
+      else if (yyc == ')' && --level == 0)
+	break;
+      else if (yyc == 0)
+	{
+	  error_with_file_and_line (starting_file, starting_line,
+				    "end of file read inside definition");
+	  break;
+	}
+    }
+}
+
 /* Subroutine of snarf_method, deals with actual absorption of the block.  */
 
 static SPEW_INLINE void
@@ -1114,6 +1147,8 @@ snarf_block (starting_file, starting_line)
 	  else if (look_for_semicolon && blev == 0)
 	    break;
 	}
+      else if (yyc == '(' && blev == 0)
+	snarf_parenthesized_expression (starting_file, starting_line);
       else if (yyc == 0)
 	{
 	  error_with_file_and_line (starting_file, starting_line,
