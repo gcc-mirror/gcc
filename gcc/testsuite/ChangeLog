@@ -1,3 +1,7 @@
+2001-12-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/typedef1.C: New test.
+
 2001-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/copy1.C: New test.
