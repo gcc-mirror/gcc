@@ -1537,7 +1537,7 @@ package body Sem_Attr is
       --   unanalyzed copy for tree transformation. The analyzed copy is used
       --   for its semantic information (whether prefix is a remote subprogram
       --   name), the unanalyzed copy is used to construct new subtree rooted
-      --   with N_aggregate which represents a fat pointer aggregate.
+      --   with N_Aggregate which represents a fat pointer aggregate.
 
       if Aname = Name_Access then
          Discard_Node (Copy_Separate_Tree (N));
@@ -6414,6 +6414,63 @@ package body Sem_Attr is
       It       : Interp;
       Nom_Subt : Entity_Id;
 
+      procedure Accessibility_Message;
+      --  Error, or warning within an instance, if the static accessibility
+      --  rules of 3.10.2 are violated.
+
+      ---------------------------
+      -- Accessibility_Message --
+      ---------------------------
+
+      procedure Accessibility_Message is
+         Indic : Node_Id := Parent (Parent (N));
+
+      begin
+         --  In an instance, this is a runtime check, but one we
+         --  know will fail, so generate an appropriate warning.
+
+         if In_Instance_Body then
+            Error_Msg_N
+              ("?non-local pointer cannot point to local object", P);
+            Error_Msg_N
+              ("?Program_Error will be raised at run time", P);
+            Rewrite (N,
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Accessibility_Check_Failed));
+            Set_Etype (N, Typ);
+            return;
+
+         else
+            Error_Msg_N
+              ("non-local pointer cannot point to local object", P);
+
+            --  Check for case where we have a missing access definition
+
+            if Is_Record_Type (Current_Scope)
+              and then
+                (Nkind (Parent (N)) = N_Discriminant_Association
+                   or else
+                 Nkind (Parent (N)) = N_Index_Or_Discriminant_Constraint)
+            then
+               Indic := Parent (Parent (N));
+               while Present (Indic)
+                 and then Nkind (Indic) /= N_Subtype_Indication
+               loop
+                  Indic := Parent (Indic);
+               end loop;
+
+               if Present (Indic) then
+                  Error_Msg_NE
+                    ("\use an access definition for" &
+                      " the access discriminant of&", N,
+                         Entity (Subtype_Mark (Indic)));
+               end if;
+            end if;
+         end if;
+      end Accessibility_Message;
+
+   --  Start of processing for Resolve_Attribute
+
    begin
       --  If error during analysis, no point in continuing, except for
       --  array types, where we get  better recovery by using unconstrained
@@ -6579,9 +6636,14 @@ package body Sem_Attr is
                   --  outside a generic body when the subprogram is declared
                   --  within that generic body.
 
+                  --  Ada2005: If the expected type is for an access
+                  --  parameter, this clause does not apply.
+
                   elsif Present (Enclosing_Generic_Body (Entity (P)))
                     and then Enclosing_Generic_Body (Entity (P)) /=
                              Enclosing_Generic_Body (Btyp)
+                    and then
+                      Ekind (Btyp) /= E_Anonymous_Access_Subprogram_Type
                   then
                      Error_Msg_N
                        ("access type must not be outside generic body", P);
@@ -6802,60 +6864,34 @@ package body Sem_Attr is
                  and then Object_Access_Level (P) > Type_Access_Level (Btyp)
                  and then Ekind (Btyp) = E_General_Access_Type
                then
-                  --  In an instance, this is a runtime check, but one we
-                  --  know will fail, so generate an appropriate warning.
-
-                  if In_Instance_Body then
-                     Error_Msg_N
-                       ("?non-local pointer cannot point to local object", P);
-                     Error_Msg_N
-                       ("?Program_Error will be raised at run time", P);
-                     Rewrite (N,
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Accessibility_Check_Failed));
-                     Set_Etype (N, Typ);
-                     return;
-
-                  else
-                     Error_Msg_N
-                       ("non-local pointer cannot point to local object", P);
-
-                     if Is_Record_Type (Current_Scope)
-                       and then (Nkind (Parent (N)) =
-                                  N_Discriminant_Association
-                                   or else
-                                 Nkind (Parent (N)) =
-                                   N_Index_Or_Discriminant_Constraint)
-                     then
-                        declare
-                           Indic : Node_Id := Parent (Parent (N));
-
-                        begin
-                           while Present (Indic)
-                             and then Nkind (Indic) /= N_Subtype_Indication
-                           loop
-                              Indic := Parent (Indic);
-                           end loop;
-
-                           if Present (Indic) then
-                              Error_Msg_NE
-                                ("\use an access definition for" &
-                                  " the access discriminant of&", N,
-                                  Entity (Subtype_Mark (Indic)));
-                           end if;
-                        end;
-                     end if;
-                  end if;
+                  Accessibility_Message;
+                  return;
                end if;
             end if;
 
-            if (Ekind (Btyp) = E_Access_Protected_Subprogram_Type
-                  or else
-                Ekind (Btyp) = E_Anonymous_Access_Protected_Subprogram_Type)
-              and then Is_Entity_Name (P)
-              and then not Is_Protected_Type (Scope (Entity (P)))
+            if Ekind (Btyp) = E_Access_Protected_Subprogram_Type
+                 or else
+               Ekind (Btyp) = E_Anonymous_Access_Protected_Subprogram_Type
             then
-               Error_Msg_N ("context requires a protected subprogram", P);
+               if Is_Entity_Name (P)
+                 and then not Is_Protected_Type (Scope (Entity (P)))
+               then
+                  Error_Msg_N ("context requires a protected subprogram", P);
+
+               --  Check accessibility of protected object against that
+               --  of the access type, but only on user code, because
+               --  the expander creates access references for handlers.
+               --  If the context is an anonymous_access_to_protected,
+               --  there are no accessibility checks either.
+
+               elsif Object_Access_Level (P) > Type_Access_Level (Btyp)
+                 and then Comes_From_Source (N)
+                 and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
+                 and then No (Original_Access_Type (Typ))
+               then
+                  Accessibility_Message;
+                  return;
+               end if;
 
             elsif (Ekind (Btyp) = E_Access_Subprogram_Type
                      or else
