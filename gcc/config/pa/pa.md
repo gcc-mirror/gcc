@@ -2281,17 +2281,19 @@
   ""
   "*
 {
-  rtx label_rtx = gen_label_rtx ();
   rtx xoperands[3];
   extern FILE *asm_out_file;
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  xoperands[2] = label_rtx;
+  if (TARGET_SOM || ! TARGET_GAS)
+    xoperands[2] = gen_label_rtx ();
+
   output_asm_insn (\"{bl|b,l} .+8,%0\", xoperands);
   output_asm_insn (\"{depi|depwi} 0,31,2,%0\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (label_rtx));
+  if (TARGET_SOM || ! TARGET_GAS)
+    ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			       CODE_LABEL_NUMBER (xoperands[2]));
 
   /* If we're trying to load the address of a label that happens to be
      close, then we can use a shorter sequence.  */
@@ -2302,12 +2304,24 @@
     {
       /* Prefixing with R% here is wrong, it extracts just 11 bits and is
 	 always non-negative.  */
-      output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      if (TARGET_SOM || ! TARGET_GAS)
+	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      else
+	output_asm_insn (\"ldo %1-$PIC_pcrel$0+8(%0),%0\", xoperands);
     }
   else
     {
-      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+      if (TARGET_SOM || ! TARGET_GAS)
+	{
+	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+	}
+      else
+	{
+	  output_asm_insn (\"addil L%%%1-$PIC_pcrel$0+8,%0\", xoperands);
+	  output_asm_insn (\"ldo R%%%1-$PIC_pcrel$0+12(%0),%0\",
+	  		   xoperands);
+	}
     }
   return \"\";
 }"
@@ -5711,14 +5725,23 @@
     {
       rtx xoperands[2];
       xoperands[0] = operands[0];
-      xoperands[1] = gen_label_rtx ();
+      if (TARGET_SOM || ! TARGET_GAS)
+	{
+	  xoperands[1] = gen_label_rtx ();
 
-      output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
-		       xoperands);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-                                 CODE_LABEL_NUMBER (xoperands[1]));
-      output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv %%r0(%%r1)\",
-		       xoperands);
+	  output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
+			   xoperands);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				     CODE_LABEL_NUMBER (xoperands[1]));
+	  output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\", xoperands);
+	}
+      else
+	{
+	  output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
+	  output_asm_insn (\"addil L'%l0-$PIC_pcrel$0+4,%%r1\", xoperands);
+	  output_asm_insn (\"ldo R'%l0-$PIC_pcrel$0+8(%%r1),%%r1\", xoperands);
+	}
+      output_asm_insn (\"bv %%r0(%%r1)\", xoperands);
     }
   else
     output_asm_insn (\"ldil L'%l0,%%r1\\n\\tbe R'%l0(%%sr4,%%r1)\", operands);;
@@ -5942,12 +5965,22 @@
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[0];
-  xoperands[1] = gen_label_rtx ();
+  if (TARGET_SOM || ! TARGET_GAS)
+    xoperands[1] = gen_label_rtx ();
   output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
-  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (xoperands[1]));
-  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  if (TARGET_SOM || ! TARGET_GAS)
+    {
+      output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				 CODE_LABEL_NUMBER (xoperands[1]));
+      output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+    }
+  else
+    {
+      output_asm_insn (\"addil L%%$$dyncall-$PIC_pcrel$0+4,%%r1\", xoperands);
+      output_asm_insn (\"ldo R%%$$dyncall-$PIC_pcrel$0+8(%%r1),%%r1\",
+      		       xoperands);
+    }
   output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
@@ -6118,12 +6151,22 @@
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[1];
-  xoperands[1] = gen_label_rtx ();
+  if (TARGET_SOM || ! TARGET_GAS)
+    xoperands[1] = gen_label_rtx ();
   output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
-  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (xoperands[1]));
-  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  if (TARGET_SOM || ! TARGET_GAS)
+    {
+      output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				 CODE_LABEL_NUMBER (xoperands[1]));
+      output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+    }
+  else
+    {
+      output_asm_insn (\"addil L%%$$dyncall-$PIC_pcrel$0+4,%%r1\", xoperands);
+      output_asm_insn (\"ldo R%%$$dyncall-$PIC_pcrel$0+8(%%r1),%%r1\",
+      		       xoperands);
+    }
   output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
