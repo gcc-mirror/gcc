@@ -374,9 +374,9 @@ DEFTREECODE (BUFFER_REF, "buffer_ref", 'r', 1)
    Operand 0 is the array; operand 1 is a (single) array index. */
 DEFTREECODE (ARRAY_REF, "array_ref", 'r', 2)
 
-/* Likewise, except that the result is a range of the array.  The starting
-   index of the array is taken from operand 0 and the size of the range
-   is taken from the type of the expression.  */
+/* Likewise, except that the result is a range ("slice") of the array.  The
+   starting index of the resulting array is taken from operand 1 and the size
+   of the range is taken from the type of the expression.  */
 DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 2)
 
 /* Constructor: return an aggregate value made from specified components.
