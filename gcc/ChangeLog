@@ -1,3 +1,7 @@
+2002-11-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/contrib.texi: Merge in the list from the libstdc++ web pages.
+
 2002-11-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR c/8467

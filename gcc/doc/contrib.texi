@@ -14,10 +14,6 @@ in this list are accidental.  Feel free to contact
 or some of your contributions are not listed.  Please keep this list in
 alphabetical order.
 
-Some projects operating under the GCC project maintain their own list
-of contributors, such as
-@uref{http://gcc.gnu.org/libstdc++/,the C++ library}.
-
 @itemize @bullet
 
 @item
@@ -25,7 +21,8 @@ Analog Devices helped implement the support for complex data types
 and iterators.
 
 @item
-John David Anglin for improvements to libstdc++-v3 and the HP-UX port.
+John David Anglin for threading-related fixes and improvements to
+libstdc++-v3, and the HP-UX port.
 
 @item
 James van Artsdalen wrote the code that makes efficient use of
@@ -96,7 +93,12 @@ Joe Buck for his direction via the steering committee.
 Craig Burley for leadership of the Fortran effort.
 
 @item
-Paolo Carlini for his work on libstdc++-v3.
+Stephan Buys for contributing Doxygen notes for libstdc++.
+
+@item
+Paolo Carlini for libstdc++ work: lots of efficiency improvements to
+the string class, hard detective work on the frustrating localization
+issues, and keeping up with the problem reports.
 
 @item
 John Carr for his alias work, SPARC hacking, infrastructure improvements,
@@ -126,8 +128,11 @@ The @uref{http://www.classpath.org,,GNU Classpath project}
 for all of their merged runtime code.
 
 @item
-Nick Clifton for arm, mcore, fr30, v850, m32r work, @option{--help}, and other random
-hacking.
+Nick Clifton for arm, mcore, fr30, v850, m32r work, @option{--help}, and
+other random hacking.
+
+@item
+Michael Cook for libstdc++ cleanup patches to reduce warnings.
 
 @item
 Ralf Corsepius for SH testing and minor bugfixing.
@@ -147,25 +152,51 @@ Dario Dariol contributed the four varieties of sample programs
 that print a copy of their source.
 
 @item
+Russell Davidson for fstream and stringstream fixes in libstdc++.
+
+@item
 Mo DeJong for gcj and libgcj bug fixes.
 
 @item
-Ulrich Drepper for his work on the C++ runtime libraries, glibc,
- testing of GCC using glibc, ISO C99 support, CFG dumping support, etc.
+Gabriel Dos Reis for contributions to g++, contributions and
+maintenance of GCC diagnostics infrastructure, libstdc++-v3,
+including valarray<>, complex<>, maintaining the numerics library
+(including that pesky <limits> :-) and keeping up-to-date anything
+to do with numbers.
+
+@item
+Ulrich Drepper for his work on glibc, testing of GCC using glibc, ISO C99
+support, CFG dumping support, etc., plus support of the C++ runtime
+libraries including for all kinds of C interface issues, contributing and
+maintaining complex<>, sanity checking and disbursement, configuration
+architecture, libio maintenance, and early math work.
 
 @item
 Richard Earnshaw for his ongoing work with the ARM@.
 
 @item
-David Edelsohn for his direction via the steering committee,
-ongoing work with the RS6000/PowerPC port, and help cleaning up Haifa
-loop changes.
+David Edelsohn for his direction via the steering committee, ongoing work
+with the RS6000/PowerPC port, help cleaning up Haifa loop changes, and
+for doing the entire AIX port of libstdc++ with his bare hands.
+
+@item
+Kevin Ediger for the floating point formatting of num_put::do_put in
+libstdc++.
+
+@item
+Phil Edwards for libstdc++ work including configuration hackery,
+documentation maintainer, chief breaker of the web pages, the occasional
+iostream bugfix, and work on shared library symbol versioning.
 
 @item
 Paul Eggert for random hacking all over GCC@.
 
 @item
-Mark Elbrecht for various DJGPP improvements.
+Mark Elbrecht for various DJGPP improvements, and for libstdc++
+configuration support for locales and fstream-related fixes.
+
+@item
+Vadim Egorov for libstdc++ fixes in strings, streambufs, and iostreams.
 
 @item
 Ben Elliston for his work to move the Objective-C runtime into its
@@ -285,17 +316,25 @@ Tim Josling for the sample language treelang based originally on Richard
 Kenner's "``toy'' language".
 
 @item
+Nicolai Josuttis for additional libstdc++ documentation.
+
+@item
 Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 
 @item
 David Kashtan of SRI adapted GCC to VMS@.
 
 @item
+Ryszard Kabatek for many, many libstdc++ bugfixes and optimizations of
+strings, especially member functions, and for auto_ptr fixes.
+
+@item
 Geoffrey Keating for his ongoing work to make the PPC work for GNU/Linux
 and his automatic regression tester.
 
 @item
-Brendan Kehoe for his ongoing work with g++.
+Brendan Kehoe for his ongoing work with g++ and for a lot of early work
+in just about every part of libstdc++.
 
 @item
 Oliver M. Kellogg of Deutsche Aerospace contributed the port to the
@@ -313,8 +352,9 @@ elimination and delay slot scheduling.  Richard Kenner was also the
 head maintainer of GCC for several years.
 
 @item
-Mumit Khan for various contributions to the cygwin and mingw32 ports and
-maintaining binary releases for Windows hosts.
+Mumit Khan for various contributions to the Cygwin and Mingw32 ports and
+maintaining binary releases for Windows hosts, and for massive libstdc++
+porting work to Cygwin/Mingw32.
 
 @item
 Robin Kirkham for cpu32 support.
@@ -374,7 +414,8 @@ runtime libraries.
 
 @item
 Martin von L@"owis for internal consistency checking infrastructure,
-and various C++ improvements including namespace support.
+various C++ improvements including namespace support, and tons of
+assistance with libstdc++/compiler merges.
 
 @item
 H.J. Lu for his previous contributions to the steering committee, many x86
@@ -395,6 +436,10 @@ implementation of the automaton based instruction scheduler.
 
 @item
 Bob Manson for his behind the scenes work on dejagnu.
+
+@item
+Philip Martin for lots of libstdc++ string and vector iterator fixes and
+improvements, and string clean up and testsuites.
 
 @item
 All of the Mauve project
@@ -424,6 +469,10 @@ developers.
 Gary Miller ported GCC to Charles River Data Systems machines.
 
 @item
+Alfred Minarik for libstdc++ string and ios bugfixes, and turning the
+entire libstdc++ testsuite namespace-compatible.
+
+@item
 Mark Mitchell for his direction via the steering committee, mountains of
 C++ work, load/store hoisting out of loops, alias analysis improvements,
 ISO C @code{restrict} support, and serving as release manager for GCC 3.x.
@@ -438,7 +487,8 @@ maintenance, and his ongoing work to make us make Fortran run fast.
 @item
 Jason Molenda for major help in the care and feeding of all the services
 on the gcc.gnu.org (formerly egcs.cygnus.com) machine---mail, web
-services, ftp services, etc etc.
+services, ftp services, etc etc.  Doing all this work on scrap paper and
+the backs of envelopes would have been... difficult.
 
 @item
 Catherine Moore for fixing various ugly problems we have sent her
@@ -467,7 +517,14 @@ Joseph S. Myers for his work on the PDP-11 port, format checking and ISO
 C99 support, and continuous emphasis on (and contributions to) documentation.
 
 @item
-Nathan Myers for his work on libstdc++-v3.
+Nathan Myers for his work on libstdc++-v3: architecture and authorship
+through the first three snapshots, including implementation of locale
+infrastructure, string, shadow C headers, and the initial project
+documentation (DESIGN, CHECKLIST, and so forth).  Later, more work on
+MT-safe string and shadow headers.
+
+@item
+Felix Natter for documentation on porting libstdc++.
 
 @item
 NeXT, Inc.@: donated the front end that supports the Objective-C
@@ -487,7 +544,7 @@ improvements.
 
 @item
 Alexandre Oliva for various build infrastructure improvements, scripts and
-amazing testing work.
+amazing testing work, including keeping libtool issues sane and happy.
 
 @item
 Melissa O'Neill for various NeXT fixes.
@@ -528,15 +585,13 @@ David Reese of Sun Microsystems contributed to the Solaris on PowerPC
 port.
 
 @item
-Gabriel Dos Reis for contributions and maintenance of libstdc++-v3,
-including valarray implementation and limits support.
-
-@item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
 hacking.
 
 @item
-Loren J. Rittle for improvements to libstdc++-v3 and the FreeBSD port.
+Loren J. Rittle for improvements to libstdc++-v3 including the FreeBSD
+port, threading fixes, thread-related configury changes, critical
+threading documentation, and solutions to really tricky I/O problems.
 
 @item
 Craig Rodrigues for processing tons of bug reports.
@@ -549,6 +604,10 @@ Ken Rose for fixes to our delay slot filling code.
 
 @item
 Paul Rubin wrote most of the preprocessor.
+
+@item
+Chip Salzenberg for libstdc++ patches and improvements to locales, traits,
+Makefiles, libio, libtool hackery, and ``long long'' support.
 
 @item
 Juha Sarlin for improvements to the H8 code generator.
@@ -571,6 +630,11 @@ work in the reload pass as well a serving as release manager for
 GCC 2.95.3.
 
 @item
+Peter Schmid for constant testing of libstdc++ -- especially application
+testing, going above and beyond what was requested for the release
+criteria -- and libstdc++ header file tweaks.
+
+@item
 Jason Schroeder for jcf-dump patches.
 
 @item
@@ -589,6 +653,10 @@ code which handles the parse tree and RTL data structures, constant
 folding and help with the original VAX & m68k ports.
 
 @item
+Kenny Simpson for prompting libstdc++ fixes due to defect reports from
+the LWG (thereby keeping us in line with updates from the ISO).
+
+@item
 Franz Sirl for his ongoing work with making the PPC port stable
 for linux.
 
@@ -602,7 +670,11 @@ Christopher Smith did the port for Convex machines.
 Randy Smith finished the Sun FPA support.
 
 @item
-Scott Snyder for various fixes.
+Scott Snyder for queue, iterator, istream, and string fixes and libstdc++
+testsuite entries.
+
+@item
+Brad Spencer for contributions to the GLIBCPP_FORCE_NEW technique.
 
 @item
 Richard Stallman, for writing the original gcc and launching the GNU project.
@@ -647,6 +719,9 @@ Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
 Philipp Thomas for random bugfixes throughout the compiler
 
 @item
+Jason Thorpe for thread support in libstdc++ on NetBSD.
+
+@item
 Kresten Krab Thorup wrote the run time support for the Objective-C
 language and the fantastic Java bytecode interpreter.
 
@@ -674,7 +749,18 @@ Lassi Tuura for improvements to config.guess to determine HP processor
 types.
 
 @item
+Petter Urkedal for libstdc++ CXXFLAGS, math, and algorithms fixes.
+
+@item
+Brent Verner for work with the libstdc++ cshadow files and their
+associated configure steps.
+
+@item
 Todd Vierling for contributions for NetBSD ports.
+
+@item
+Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML
+guidance.
 
 @item
 Dean Wakerley for converting the install documentation from HTML to texinfo
@@ -682,6 +768,11 @@ in time for GCC 3.0.
 
 @item
 Krister Walfridsson for random bugfixes.
+
+@item
+Stephen M. Webb for time and effort on making libstdc++ shadow files
+work with the tricky Solaris 8+ headers, and for pushing the build-time
+header tree.
 
 @item
 John Wehle for various improvements for the x86 code generator,
@@ -793,10 +884,16 @@ David Edelsohn
 Richard Emberson
 
 @item
+Levente Farkas
+
+@item
 Graham Fawcett
 
 @item
 Robert A. French
+
+@item
+J@"orgen Freyh
 
 @item
 Mark K. Gardner
@@ -809,6 +906,9 @@ Yung Shing Gene
 
 @item
 Kaveh Ghazi
+
+@item
+David Gilbert
 
 @item
 Simon Gornall
@@ -866,6 +966,9 @@ Jeff Law
 
 @item
 Robert Lipe
+
+@item
+llewelly
 
 @item
 Damon Love
@@ -965,6 +1068,9 @@ Mike Stump
 
 @item
 Adam Sulmicki
+
+@item
+George Talbot
 
 @item
 Gregory Warnes
