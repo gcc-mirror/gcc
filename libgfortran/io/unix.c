@@ -811,6 +811,7 @@ mem_truncate (unix_stream * s)
 static try
 mem_close (unix_stream * s)
 {
+  free_mem (s);
 
   return SUCCESS;
 }

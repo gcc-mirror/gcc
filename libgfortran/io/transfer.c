@@ -1349,7 +1349,8 @@ next_record (int done)
 
 
 /* Finalize the current data transfer.  For a nonadvancing transfer,
-   this means advancing to the next record.  */
+   this means advancing to the next record.  For internal units close the
+   steam associated with the unit.  */
 
 static void
 finalize_transfer (void)
@@ -1392,6 +1393,9 @@ finalize_transfer (void)
     }
 
   sfree (current_unit->s);
+
+  if (is_internal_unit ())
+    sclose (current_unit->s);
 }
 
 
