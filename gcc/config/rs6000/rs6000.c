@@ -5685,6 +5685,9 @@ struct rtx_def *
 find_addr_reg (addr)
      rtx addr;
 {
+  if (GET_CODE (addr) == LO_SUM)
+    addr = XEXP (addr, 0);
+
   while (GET_CODE (addr) == PLUS)
     {
       if (GET_CODE (XEXP (addr, 0)) == REG)

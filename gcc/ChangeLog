@@ -1,3 +1,11 @@
+Mon Jun 21 22:15:50 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000.c (find_addr_reg): Handle LO_SUM addresses.
+
+Mon Jun 21 22:14:05 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Fix typo.
+
 Mon Jun 21 20:10:42 1999  Richard Henderson  <rth@cygnus.com>
 
 	* collect2.c (main): Log frame table count.
