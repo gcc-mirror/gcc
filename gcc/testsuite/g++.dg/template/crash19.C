@@ -9,7 +9,7 @@ template <class T>
 struct X { 
     enum { SIXTY_FOUR=64 }; 
     struct node {
-      unsigned char *ptr[sizeof(T)*SIXTY_FOUR];
+      unsigned char *ptr[sizeof(T)*SIXTY_FOUR]; // { dg-error "" }
         void d() {}
     };
     node *head; 

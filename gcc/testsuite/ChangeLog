@@ -1,5 +1,9 @@
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17413
+	* g++.dg/template/local4.C: New test.
+	* g++.dg/template/crash19.C: Add dg-error marker.
+
 	* g++.dg/template/crash31.C: Correct embedded PR number.
 
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
