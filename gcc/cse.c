@@ -7376,6 +7376,7 @@ check_for_label_ref (rtl, data)
      LABEL_REF for a CODE_LABEL that isn't in the insn chain, don't do this
      since no REG_LABEL will be added.  */
   return (GET_CODE (*rtl) == LABEL_REF
+	  && LABEL_P (XEXP (*rtl, 0))
 	  && INSN_UID (XEXP (*rtl, 0)) != 0
 	  && ! find_reg_note (insn, REG_LABEL, XEXP (*rtl, 0)));
 }

@@ -440,8 +440,8 @@ save_for_inline (fndecl)
      Also set up ARG_VECTOR, which holds the unmodified DECL_RTX values
      for the parms, prior to elimination of virtual registers.
      These values are needed for substituting parms properly.  */
-
-  parmdecl_map = (tree *) xmalloc (max_parm_reg * sizeof (tree));
+  if (! flag_no_inline)
+    parmdecl_map = (tree *) xmalloc (max_parm_reg * sizeof (tree));
 
   /* Make and emit a return-label if we have not already done so.  */
 
@@ -451,7 +451,10 @@ save_for_inline (fndecl)
       emit_label (return_label);
     }
 
-  argvec = initialize_for_inline (fndecl);
+  if (! flag_no_inline)
+    argvec = initialize_for_inline (fndecl);
+  else
+    argvec = NULL;
 
   /* Delete basic block notes created by early run of find_basic_block.
      The notes would be later used by find_basic_blocks to reuse the memory
@@ -468,27 +471,31 @@ save_for_inline (fndecl)
   if (GET_CODE (insn) != NOTE)
     abort ();
 
-  /* Get the insn which signals the end of parameter setup code.  */
-  first_nonparm_insn = get_first_nonparm_insn ();
+  if (! flag_no_inline)
+    {
+      /* Get the insn which signals the end of parameter setup code.  */
+      first_nonparm_insn = get_first_nonparm_insn ();
 
-  /* Now just scan the chain of insns to see what happens to our
-     PARM_DECLs.  If a PARM_DECL is used but never modified, we
-     can substitute its rtl directly when expanding inline (and
-     perform constant folding when its incoming value is constant).
-     Otherwise, we have to copy its value into a new register and track
-     the new register's life.  */
-  in_nonparm_insns = 0;
-  save_parm_insns (insn, first_nonparm_insn);
+      /* Now just scan the chain of insns to see what happens to our
+	 PARM_DECLs.  If a PARM_DECL is used but never modified, we
+	 can substitute its rtl directly when expanding inline (and
+	 perform constant folding when its incoming value is
+	 constant).  Otherwise, we have to copy its value into a new
+	 register and track the new register's life.  */
+      in_nonparm_insns = 0;
+      save_parm_insns (insn, first_nonparm_insn);
 
-  cfun->inl_max_label_num = max_label_num ();
-  cfun->inl_last_parm_insn = cfun->x_last_parm_insn;
-  cfun->original_arg_vector = argvec;
+      cfun->inl_max_label_num = max_label_num ();
+      cfun->inl_last_parm_insn = cfun->x_last_parm_insn;
+      cfun->original_arg_vector = argvec;
+    }
   cfun->original_decl_initial = DECL_INITIAL (fndecl);
   cfun->no_debugging_symbols = (write_symbols == NO_DEBUG);
   DECL_SAVED_INSNS (fndecl) = cfun;
 
   /* Clean up.  */
-  free (parmdecl_map);
+  if (! flag_no_inline)
+    free (parmdecl_map);
 }
 
 /* Scan the chain of insns to see what happens to our PARM_DECLs.  If a
