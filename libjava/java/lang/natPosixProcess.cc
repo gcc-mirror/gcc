@@ -130,20 +130,22 @@ java::lang::ConcreteProcess$ProcessManager::waitForSignal ()
 
   sigset_t mask;
   // Wait for SIGCHLD
-  sigemptyset (&mask);
-  sigaddset (&mask, SIGCHLD);
+  pthread_sigmask (0, NULL, &mask);
+  sigdelset (&mask, SIGCHLD);
+  // Use sigsuspend() instead of sigwait() as sigwait() doesn't play
+  // nicely with the GC's use of signals.
+  int c = sigsuspend (&mask);
 
-  int sig;
-  int c = sigwait (&mask, &sig);
-
-  if (c != 0)
+  if (c != -1)
+    goto error;
+  if (errno != EINTR)
     goto error;
 
   // All OK.
   return;
 
 error:
-  throw new InternalError (JvNewStringUTF (strerror (c)));
+  throw new InternalError (JvNewStringUTF (strerror (errno)));
 }
 
 jboolean java::lang::ConcreteProcess$ProcessManager::reap ()

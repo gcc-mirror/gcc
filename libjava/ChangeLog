@@ -1,3 +1,8 @@
+2004-08-18  David Daney  <ddaney@avtrex.com>
+
+	* java/lang/natPosixProcess.cc (waitForSignal): Use sigsuspend 
+	instead of sigwait.
+
 2004-08-17  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am (AM_CXXFLAGS): Reformatted to make it more ease to read.
