@@ -1,3 +1,7 @@
+Sat Aug 15 20:51:35 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (movsicc): Fix mode mismatch.
+
 Sat Aug 15 20:22:33 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Handle aggregated
