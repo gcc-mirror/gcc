@@ -169,62 +169,85 @@ call_eh_info ()
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      tree t1, t, fields[7];
+      tree eh_info_type;
+      tree cleanup_fn_type;
+      tree matcher_fn_type;
+      tree cp_eh_info_type;
+      tree exception_desc_type;
+      tree fields[8];
 
-      /* Declare cp_eh_info * __start_cp_handler (void),
-	 as defined in exception.cc. */
+      eh_info_type = make_aggr_type (RECORD_TYPE);
+      exception_desc_type = make_aggr_type (RECORD_TYPE);
+      
+      /* void * (*) (__eh_info *, void *, exception_descriptor *); */
+      matcher_fn_type = tree_cons
+          (NULL_TREE, build_pointer_type (eh_info_type), tree_cons
+            (NULL_TREE, ptr_type_node, tree_cons
+              (NULL_TREE, build_pointer_type (exception_desc_type),
+                void_list_node)));
+      matcher_fn_type = build_function_type (ptr_type_node, matcher_fn_type);
+      matcher_fn_type = build_pointer_type (matcher_fn_type);
 
-      /* struct cp_eh_info.  This must match exception.cc.  Note that this
-	 type is not pushed anywhere.  */
-      t1= make_aggr_type (RECORD_TYPE);
+      /* void (*) (void *); */
+      cleanup_fn_type = tree_cons
+          (NULL_TREE, ptr_type_node, void_list_node);
+      cleanup_fn_type = build_function_type (void_type_node, cleanup_fn_type);
+      cleanup_fn_type = build_pointer_type (cleanup_fn_type);
+
+      /* eh-common.h
+        struct __eh_info 
+        {
+          __eh_matcher match_function;
+          short language;
+          short version;
+        };  */
       fields[0] = build_decl (FIELD_DECL, 
-                    get_identifier ("handler_label"), ptr_type_node);
-      fields[1] = build_decl (FIELD_DECL, 
-                    get_identifier ("dynamic_handler_chain"), ptr_type_node);
-      fields[2] = build_decl (FIELD_DECL, 
-                    get_identifier ("info"), ptr_type_node);
-      fields[3] = build_decl (FIELD_DECL, 
-                    get_identifier ("table_index"), ptr_type_node);
-      /* N.B.: The fourth field LEN is expected to be
-	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t1, "eh_context", fields, 3, ptr_type_node);
-      t1 = build_pointer_type (t1);
-
-      t1= make_aggr_type (RECORD_TYPE);
-      fields[0] = build_decl (FIELD_DECL, 
-                    get_identifier ("match_function"), ptr_type_node);
+                    get_identifier ("match_function"), matcher_fn_type);
       fields[1] = build_decl (FIELD_DECL, 
                     get_identifier ("language"), short_integer_type_node);
       fields[2] = build_decl (FIELD_DECL, 
                     get_identifier ("version"), short_integer_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t1, "__eh_info", fields, 2, ptr_type_node);
-      t = make_aggr_type (RECORD_TYPE);
-      fields[0] = build_decl (FIELD_DECL, 
-			      get_identifier ("eh_info"), t1);
+      finish_builtin_type (eh_info_type, "__eh_info", fields, 2, ptr_type_node);
+      
+      /* exception_support.h
+        struct cp_eh_info
+        {
+          __eh_info eh_info;
+          void *value;
+          void *type;
+          cleanup_fn cleanup;
+          bool caught;
+          cp_eh_info *next;
+          long handlers;
+          void *original_value;
+        };  */
+      cp_eh_info_type = make_aggr_type (RECORD_TYPE);
+      fields[0] = build_decl (FIELD_DECL, get_identifier ("eh_info"),
+                              eh_info_type);
       fields[1] = build_decl (FIELD_DECL, get_identifier ("value"),
 			      ptr_type_node);
       fields[2] = build_decl (FIELD_DECL, get_identifier ("type"),
 			      ptr_type_node);
-      fields[3] = build_decl
-	(FIELD_DECL, get_identifier ("cleanup"),
-	 build_pointer_type (build_function_type
-			     (ptr_type_node, tree_cons
-			      (NULL_TREE, ptr_type_node, void_list_node))));
+      fields[3] = build_decl (FIELD_DECL, get_identifier ("cleanup"),
+                              cleanup_fn_type);
       fields[4] = build_decl (FIELD_DECL, get_identifier ("caught"),
 			      boolean_type_node);
       fields[5] = build_decl (FIELD_DECL, get_identifier ("next"),
-			      build_pointer_type (t));
-      fields[6] = build_decl
-	(FIELD_DECL, get_identifier ("handlers"), long_integer_type_node);
+			      build_pointer_type (cp_eh_info_type));
+      fields[6] = build_decl (FIELD_DECL, get_identifier ("handlers"),
+                              long_integer_type_node);
+      fields[7] = build_decl (FIELD_DECL, get_identifier ("original_value"),
+                              ptr_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t, "cp_eh_info", fields, 6, ptr_type_node);
-      t = build_pointer_type (t);
+      finish_builtin_type (cp_eh_info_type, "cp_eh_info", fields, 7, ptr_type_node);
 
       /* And now the function.  */
-      fn = push_library_fn (fn, build_function_type (t, void_list_node));
+      fn = push_library_fn (fn,
+              build_function_type (build_pointer_type (cp_eh_info_type),
+                                   void_list_node));
     }
   return build_function_call (fn, NULL_TREE);
 }
