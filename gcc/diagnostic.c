@@ -1637,8 +1637,8 @@ error_recursion ()
   if (diagnostic_lock < 3)
     finish_diagnostic ();
 
-  fprintf (stderr,
-	   "Internal compiler error: Error reporting routines re-entered.");
+  fputs (_("Internal compiler error: Error reporting routines re-entered.\n"),
+	 stderr);
   finish_abort ();
 }
 

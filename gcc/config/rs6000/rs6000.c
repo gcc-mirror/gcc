@@ -5604,7 +5604,7 @@ rs6000_emit_prologue()
     {
       int i;
       char rname[30];
-      char *alloc_rname;
+      const char *alloc_rname;
       rtvec p;
       p = rtvec_alloc (2 + 64 - info->first_fp_reg_save);
       
@@ -6057,7 +6057,7 @@ rs6000_emit_epilogue(sibcall)
 	{
 	  int i;
 	  char rname[30];
-	  char *alloc_rname;
+	  const char *alloc_rname;
 
 	  sprintf (rname, "%s%d%s", RESTORE_FP_PREFIX, 
 		   info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
@@ -7578,14 +7578,12 @@ rs6000_encode_section_info (decl)
 	{
 	  size_t len1 = (DEFAULT_ABI == ABI_AIX) ? 1 : 2;
 	  size_t len2 = strlen (XSTR (sym_ref, 0));
-	  char *str;
-
-	  str = ggc_alloc_string (NULL, len1 + len2);
+	  char *str = alloca (len1 + len2 + 1);
 	  str[0] = '.';
 	  str[1] = '.';
 	  memcpy (str + len1, XSTR (sym_ref, 0), len2 + 1);
 
-	  XSTR (sym_ref, 0) = str;
+	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len1 + len2);
 	}
     }
   else if (rs6000_sdata != SDATA_NONE
@@ -7625,13 +7623,11 @@ rs6000_encode_section_info (decl)
 	{
 	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
 	  size_t len = strlen (XSTR (sym_ref, 0));
-	  char *str;
+	  char *str = alloca (len + 1);
 
-	  str = ggc_alloc_string (NULL, len + 1);
 	  str[0] = '@';
 	  memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
-
-	  XSTR (sym_ref, 0) = str;
+	  XSTR (sym_ref, 0) = ggc_alloc_string (str, len);
 	}
     }
 }

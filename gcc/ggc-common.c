@@ -47,7 +47,6 @@ static void ggc_mark_tree_ptr PARAMS ((void *));
 static void ggc_mark_rtx_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_hash_table_ptr PARAMS ((void *));
-static void ggc_mark_string_ptr PARAMS ((void *));
 static void ggc_mark_trees PARAMS ((void));
 static boolean ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
 						       hash_table_key));
@@ -141,16 +140,6 @@ ggc_add_tree_hash_table_root (base, nelt)
 {
   ggc_add_root (base, nelt, sizeof (struct hash_table *), 
 		ggc_mark_tree_hash_table_ptr);
-}
-
-/* Register an array of strings as a GC root.  */
-
-void
-ggc_add_string_root (base, nelt)
-     char **base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (char *), ggc_mark_string_ptr);
 }
 
 /* Remove the previously registered GC root at BASE.  */
@@ -555,43 +544,6 @@ ggc_mark_tree_hash_table_ptr (elt)
      void *elt;
 {
   ggc_mark_tree_hash_table (*(struct hash_table **) elt);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   ELT (which is really a char **) to ggc_mark_string.  */
-
-static void
-ggc_mark_string_ptr (elt)
-     void *elt;
-{
-  ggc_mark_string (*(char **) elt);
-}
-
-/* Allocate a gc-able string.  If CONTENTS is null, then the memory will
-   be uninitialized.  If LENGTH is -1, then CONTENTS is assumed to be a
-   null-terminated string and the memory sized accordingly.  Otherwise,
-   the memory is filled with LENGTH bytes from CONTENTS.  */
-
-char *
-ggc_alloc_string (contents, length)
-     const char *contents;
-     int length;
-{
-  char *string;
-
-  if (length < 0)
-    {
-      if (contents == NULL)
-	return NULL;
-      length = strlen (contents);
-    }
-
-  string = (char *) ggc_alloc (length + 1);
-  if (contents != NULL)
-    memcpy (string, contents, length);
-  string[length] = 0;
-
-  return string;
 }
 
 /* Allocate a block of memory, then clear it.  */

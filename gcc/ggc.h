@@ -40,7 +40,7 @@ union  tree_node;
 struct varasm_status;
 
 /* Constants for general use.  */
-extern char *empty_string;
+extern const char empty_string[];
 
 /* Trees that have been marked, but whose children still need marking.  */
 extern varray_type ggc_pending_trees;
@@ -49,11 +49,13 @@ extern varray_type ggc_pending_trees;
 void ggc_add_root PARAMS ((void *base, int nelt, int size, void (*)(void *)));
 void ggc_add_rtx_root PARAMS ((struct rtx_def **, int nelt));
 void ggc_add_tree_root PARAMS ((union tree_node **, int nelt));
-void ggc_add_string_root PARAMS ((char **, int nelt));
 void ggc_add_rtx_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_hash_table_root PARAMS ((struct hash_table **, int nelt));
 void ggc_del_root PARAMS ((void *base));
+
+/* Temporary */
+#define ggc_add_string_root(ptr, nelt)  /* nothing */
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
@@ -91,12 +93,8 @@ extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
       ggc_mark_rtvec_children (v__);            \
   } while (0)
 
-#define ggc_mark_string(EXPR)			\
-  do {						\
-    const char *s__ = (EXPR);			\
-    if (s__ != NULL)				\
-      ggc_set_mark (s__);			\
-  } while (0)
+/* Temporary */
+#define ggc_mark_string(EXPR)  /* nothing */
 
 #define ggc_mark(EXPR)				\
   do {						\
@@ -112,6 +110,7 @@ extern void ggc_mark_if_gcable PARAMS ((const void *));
 
 /* Initialize the garbage collector.   */
 extern void init_ggc PARAMS ((void));
+extern void init_stringpool PARAMS ((void));
 
 /* Start a new GGC context.  Memory allocated in previous contexts
    will not be collected while the new context is active.  */
@@ -138,11 +137,10 @@ void *ggc_alloc_cleared PARAMS ((size_t));
 
 #define ggc_alloc_tree(LENGTH) ((union tree_node *) ggc_alloc (LENGTH))
 
-/* Allocate a gc-able string.  If CONTENTS is null, then the memory will
-   be uninitialized.  If LENGTH is -1, then CONTENTS is assumed to be a
-   null-terminated string and the memory sized accordingly.  Otherwise,
-   the memory is filled with LENGTH bytes from CONTENTS.  */
-char *ggc_alloc_string PARAMS ((const char *contents, int length));
+/* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
+   If LENGTH is -1, then CONTENTS is assumed to be a
+   null-terminated string and the memory sized accordingly.  */
+const char *ggc_alloc_string PARAMS ((const char *contents, int length));
 
 /* Make a copy of S, in GC-able memory.  */
 #define ggc_strdup(S) ggc_alloc_string((S), -1)
@@ -214,3 +212,4 @@ void ggc_print_common_statistics PARAMS ((FILE *, ggc_statistics *));
 
 /* Print allocation statistics.  */
 extern void ggc_print_statistics PARAMS ((void));
+void stringpool_statistics PARAMS ((void));

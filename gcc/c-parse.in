@@ -1765,8 +1765,8 @@ if_prefix:
 		{ c_expand_start_cond (truthvalue_conversion ($3), 
 				       compstmt_count);
 		  $<itype>$ = stmt_count;
-		  if_stmt_file = $<filename>-1;
-		  if_stmt_line = $<lineno>0; }
+		  if_stmt_file = $<filename>-2;
+		  if_stmt_line = $<lineno>-1; }
 	;
 
 /* This is a subroutine of stmt.

@@ -394,7 +394,7 @@ struct stmt_status
 static int using_eh_for_cleanups_p = 0;
 
 /* Character strings, each containing a single decimal digit.  */
-static char *digit_strings[10];
+static const char *digit_strings[10];
 
 static int n_occurrences		PARAMS ((int, const char *));
 static void expand_goto_internal	PARAMS ((tree, rtx, rtx));
@@ -598,13 +598,15 @@ void
 init_stmt ()
 {
   int i;
+  char buf[2];
 
   gcc_obstack_init (&stmt_obstack);
 
+  buf[1] = 0;
   for (i = 0; i < 10; i++)
     {
-      digit_strings[i] = ggc_alloc_string (NULL, 1);
-      digit_strings[i][0] = '0' + i;
+      buf[0] = '0' + i;
+      digit_strings[i] = ggc_alloc_string (buf, 1);
     }
   ggc_add_string_root (digit_strings, 10);
 }
@@ -1408,7 +1410,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     {
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
-      char *constraint;
+      const char *constraint;
       char *p;
       int c_len;
       int j;
@@ -1425,8 +1427,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (tail)));
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      c_len = strlen (constraint);
 
       /* Allow the `=' or `+' to not be at the beginning of the string,
 	 since it wasn't explicitly documented that way, and there is a
@@ -1443,19 +1445,25 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  error ("output operand constraint lacks `='");
 	  return;
 	}
+      j = p - constraint;
+      is_inout = *p == '+';
 
-      if (p != constraint)
+      if (j || is_inout)
 	{
-	  j = *p;
-	  bcopy (constraint, constraint+1, p-constraint);
-	  *constraint = j;
+	  /* Have to throw away this constraint string and get a new one.  */
+	  char *buf = alloca (c_len + 1);
+	  buf[0] = '=';
+	  if (j)
+	    memcpy (buf + 1, constraint, j);
+	  memcpy (buf + 1 + j, p + 1, c_len - j);  /* not -j-1 - copy null */
+	  constraint = ggc_alloc_string (buf, c_len);
 
-	  warning ("output constraint `%c' for operand %d is not at the beginning", j, i);
+	  if (j)
+	    warning (
+		"output constraint `%c' for operand %d is not at the beginning",
+		*p, i);
 	}
 
-      is_inout = constraint[0] == '+';
-      /* Replace '+' with '='.  */
-      constraint[0] = '=';
       /* Make sure we can specify the matching operand.  */
       if (is_inout && i > 9)
 	{
@@ -1611,7 +1619,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     {
       int j;
       int allows_reg = 0, allows_mem = 0;
-      char *constraint, *orig_constraint;
+      const char *constraint, *orig_constraint;
       int c_len;
       rtx op;
 
@@ -1629,8 +1637,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  return;
 	}
 
-      c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (tail)));
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      c_len = strlen (constraint);
       orig_constraint = constraint;
 
       /* Make sure constraint has neither `=', `+', nor '&'.  */
@@ -1691,8 +1699,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		for (j = constraint[j] - '0'; j > 0; --j)
 		  o = TREE_CHAIN (o);
 
-		c_len = strlen (TREE_STRING_POINTER (TREE_PURPOSE (o)));
 		constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
+		c_len = strlen (constraint);
 		j = 0;
 		break;
 	      }

@@ -500,7 +500,7 @@ create_rethrow_ref (region_num)
      int region_num;
 {
   rtx def;
-  char *ptr;
+  const char *ptr;
   char buf[60];
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", region_num);

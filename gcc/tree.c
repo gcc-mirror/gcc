@@ -131,14 +131,6 @@ static const char * const tree_node_kind_names[] = {
   "lang_type kinds"
 };
 
-/* Hash table for uniquizing IDENTIFIER_NODEs by name.  */
-
-#define MAX_HASH_TABLE 1009
-static tree hash_table[MAX_HASH_TABLE];	/* id hash buckets */
-
-/* 0 while creating built-in identifiers.  */
-static int do_identifier_warnings;
-
 /* Unique id for next decl created.  */
 static int next_decl_uid;
 /* Unique id for next type created.  */
@@ -191,7 +183,7 @@ void (*lang_unsave_expr_now) PARAMS ((tree));
    built-in tree nodes.  The variable, which is dynamically allocated,
    should be used; the macro is only used to initialize it.  */
 
-static char *built_in_filename;
+static const char *built_in_filename;
 #define BUILT_IN_FILENAME ("<built-in>")
 
 tree global_trees[TI_MAX];
@@ -203,10 +195,6 @@ void
 init_obstacks ()
 {
   gcc_obstack_init (&permanent_obstack);
-
-  /* Init the hash table of identifiers.  */
-  memset ((char *) hash_table, 0, sizeof hash_table);
-  ggc_add_tree_root (hash_table, sizeof hash_table / sizeof (tree));
 
   /* Initialize the hash table of types.  */
   type_hash_table = htab_create (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
@@ -555,133 +543,7 @@ copy_list (list)
     }
   return head;
 }
-
-#define HASHBITS 30
 
-/* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
-   If an identifier with that name has previously been referred to,
-   the same node is returned this time.  */
-
-tree
-get_identifier (text)
-     register const char *text;
-{
-  register int hi;
-  register int i;
-  register tree idp;
-  register int len, hash_len;
-
-  /* Compute length of text in len.  */
-  len = strlen (text);
-
-  /* Decide how much of that length to hash on */
-  hash_len = len;
-  if (warn_id_clash && len > id_clash_len)
-    hash_len = id_clash_len;
-
-  /* Compute hash code */
-  hi = hash_len * 613 + (unsigned) text[0];
-  for (i = 1; i < hash_len; i += 2)
-    hi = ((hi * 613) + (unsigned) (text[i]));
-
-  hi &= (1 << HASHBITS) - 1;
-  hi %= MAX_HASH_TABLE;
-
-  /* Search table for identifier.  */
-  for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
-    if (IDENTIFIER_LENGTH (idp) == len
-	&& IDENTIFIER_POINTER (idp)[0] == text[0]
-	&& !memcmp (IDENTIFIER_POINTER (idp), text, len))
-      /* Return if found.  */
-      return idp;
-
-  /* Not found; optionally warn about a similar identifier.  */
-  if (warn_id_clash && do_identifier_warnings && len >= id_clash_len)
-    for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
-      if (!strncmp (IDENTIFIER_POINTER (idp), text, id_clash_len))
-	{
-	  warning ("`%s' and `%s' identical in first %d characters",
-		   IDENTIFIER_POINTER (idp), text, id_clash_len);
-	  break;
-	}
-
-  if (TREE_CODE_LENGTH (IDENTIFIER_NODE) < 0)
-    abort ();			/* set_identifier_size hasn't been called.  */
-
-  /* Not found, create one, add to chain */
-  idp = make_node (IDENTIFIER_NODE);
-  IDENTIFIER_LENGTH (idp) = len;
-#ifdef GATHER_STATISTICS
-  id_string_size += len;
-#endif
-
-  IDENTIFIER_POINTER (idp) = ggc_alloc_string (text, len);
-
-  TREE_CHAIN (idp) = hash_table[hi];
-  hash_table[hi] = idp;
-  return idp;			/* <-- return if created */
-}
-
-/* If an identifier with the name TEXT (a null-terminated string) has
-   previously been referred to, return that node; otherwise return
-   NULL_TREE.  */
-
-tree
-maybe_get_identifier (text)
-     register const char *text;
-{
-  register int hi;
-  register int i;
-  register tree idp;
-  register int len, hash_len;
-
-  /* Compute length of text in len.  */
-  len = strlen (text);
-
-  /* Decide how much of that length to hash on */
-  hash_len = len;
-  if (warn_id_clash && len > id_clash_len)
-    hash_len = id_clash_len;
-
-  /* Compute hash code */
-  hi = hash_len * 613 + (unsigned) text[0];
-  for (i = 1; i < hash_len; i += 2)
-    hi = ((hi * 613) + (unsigned) (text[i]));
-
-  hi &= (1 << HASHBITS) - 1;
-  hi %= MAX_HASH_TABLE;
-
-  /* Search table for identifier.  */
-  for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
-    if (IDENTIFIER_LENGTH (idp) == len
-	&& IDENTIFIER_POINTER (idp)[0] == text[0]
-	&& !memcmp (IDENTIFIER_POINTER (idp), text, len))
-      return idp;		/* <-- return if found */
-
-  return NULL_TREE;
-}
-
-/* Enable warnings on similar identifiers (if requested).
-   Done after the built-in identifiers are created.  */
-
-void
-start_identifier_warnings ()
-{
-  do_identifier_warnings = 1;
-}
-
-/* Record the size of an identifier node for the language in use.
-   SIZE is the total size in bytes.
-   This is called by the language-specific files.  This must be
-   called before allocating any identifiers.  */
-
-void
-set_identifier_size (size)
-     int size;
-{
-  tree_code_length[(int) IDENTIFIER_NODE]
-    = (size - sizeof (struct tree_common)) / sizeof (tree);
-}
 
 /* Return a newly constructed INTEGER_CST node whose constant value
    is specified by the two ints LOW and HI.

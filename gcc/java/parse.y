@@ -13070,11 +13070,7 @@ do_merge_string_cste (cste, string, string_len, after)
   const char *old = TREE_STRING_POINTER (cste);
   int old_len = TREE_STRING_LENGTH (cste);
   int len = old_len + string_len;
-  char *new;
-  
-  cste = make_node (STRING_CST);
-  TREE_STRING_LENGTH (cste) = len;
-  new = TREE_STRING_POINTER (cste) = ggc_alloc (len+1);
+  char *new = alloca (len+1);
 
   if (after)
     {
@@ -13087,7 +13083,7 @@ do_merge_string_cste (cste, string, string_len, after)
       memcpy (&new [old_len], string, string_len);
     }
   new [len] = '\0';
-  return cste;
+  return build_string (len, new);
 }
 
 /* Tries to merge OP1 (a STRING_CST) and OP2 (if suitable). Return a

@@ -4466,8 +4466,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
     {
       register const char *mname = GET_MODE_NAME(mode);
       register unsigned mname_len = strlen (mname);
-      register char *libfunc_name
-	= ggc_alloc_string (NULL, 2 + opname_len + mname_len + 1 + 1);
+      register char *libfunc_name = alloca (2 + opname_len + mname_len + 1 + 1);
       register char *p;
       register const char *q;
 
@@ -4479,10 +4478,11 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       for (q = mname; *q; q++)
 	*p++ = TOLOWER (*q);
       *p++ = suffix;
-      *p++ = '\0';
+      *p = '\0';
 
       optable->handlers[(int) mode].libfunc
-	= gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
+	= gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (libfunc_name,
+						       p - libfunc_name));
     }
 }
 

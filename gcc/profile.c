@@ -1025,9 +1025,9 @@ static void
 init_edge_profiler ()
 {
   /* Generate and save a copy of this so it can be shared.  */
-  char *name = ggc_alloc_string (NULL, 20);
-  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
-  profiler_label = gen_rtx_SYMBOL_REF (Pmode, name);
+  char buf[20];
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 2);
+  profiler_label = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
   ggc_add_rtx_root (&profiler_label, 1);
 }
 
@@ -1066,6 +1066,7 @@ output_func_start_profiler ()
 {
   tree fnname, fndecl;
   char *name;
+  char buf[20];
   const char *cfnname;
   rtx table_address;
   enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
@@ -1121,9 +1122,10 @@ output_func_start_profiler ()
   expand_function_start (fndecl, 0);
 
   /* Actually generate the code to call __bb_init_func. */
-  name = ggc_alloc_string (NULL, 20);
-  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
-  table_address = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, name));
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 0);
+  table_address = force_reg (Pmode,
+			     gen_rtx_SYMBOL_REF (Pmode,
+						 ggc_alloc_string (buf, -1)));
   emit_library_call (gen_rtx_SYMBOL_REF 
 		     (Pmode, ggc_alloc_string ("__bb_init_func", 14)), 0,
 		     mode, 1, table_address, Pmode);

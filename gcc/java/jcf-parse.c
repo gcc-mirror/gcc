@@ -328,29 +328,33 @@ get_constant (jcf, index)
       {
 	tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));
 	const char *utf8_ptr = IDENTIFIER_POINTER (name);
-	unsigned char *str_ptr;
 	int utf8_len = IDENTIFIER_LENGTH (name);
-	const unsigned char *str = (const unsigned char *)utf8_ptr;
-	int i = utf8_len;
-	int str_len;
+	unsigned char *str_ptr;
+	unsigned char *str;
+	const unsigned char *utf8;
+	int i, str_len;
 
 	/* Count the number of Unicode characters in the string,
 	   while checking for a malformed Utf8 string. */
-	for (str_len = 0; i > 0; str_len++)
+	utf8 = (const unsigned char *) utf8_ptr;
+	i = utf8_len;
+	str_len = 0;
+	while (i > 0)
 	  {
-	    int char_len = UT8_CHAR_LENGTH (*str);
+	    int char_len = UT8_CHAR_LENGTH (*utf8);
 	    if (char_len < 0 || char_len > 3 || char_len > i)
  	      fatal ("bad string constant");
-	    str += char_len;
+	    utf8 += char_len;
 	    i -= char_len;
+	    str_len++;
 	  }
 
-	value = make_node (STRING_CST);
-	TREE_TYPE (value) = build_pointer_type (string_type_node);
-	TREE_STRING_LENGTH (value) = 2 * str_len;
-	TREE_STRING_POINTER (value) = ggc_alloc (2 * str_len);
-	str_ptr = (unsigned char *) TREE_STRING_POINTER (value);
-	str = (const unsigned char *)utf8_ptr;
+	/* Allocate a scratch buffer, convert the string to UCS2, and copy it
+	   into the new space.  */
+	str_ptr = (unsigned char *) alloca (2 * str_len);
+	str = str_ptr;
+	utf8 = (const unsigned char *)utf8_ptr;
+
 	for (i = 0; i < str_len; i++)
 	  {
 	    int char_value;
@@ -358,31 +362,33 @@ get_constant (jcf, index)
 	    switch (char_len)
 	      {
 	      case 1:
-		char_value = *str++;
+		char_value = *utf8++;
 		break;
 	      case 2:
-		char_value = *str++ & 0x1F;
-		char_value = (char_value << 6) | (*str++ & 0x3F);
+		char_value = *utf8++ & 0x1F;
+		char_value = (char_value << 6) | (*utf8++ & 0x3F);
 		break;
 	      case 3:
-		char_value = *str++ & 0x0F;
-		char_value = (char_value << 6) | (*str++ & 0x3F);
-		char_value = (char_value << 6) | (*str++ & 0x3F);
+		char_value = *utf8++ & 0x0F;
+		char_value = (char_value << 6) | (*utf8++ & 0x3F);
+		char_value = (char_value << 6) | (*utf8++ & 0x3F);
 		break;
 	      default:
 		goto bad;
 	      }
 	    if (BYTES_BIG_ENDIAN)
 	      {
-		*str_ptr++ = char_value >> 8;
-		*str_ptr++ = char_value & 0xFF;
+		*str++ = char_value >> 8;
+		*str++ = char_value & 0xFF;
 	      }
 	    else
 	      {
-		*str_ptr++ = char_value & 0xFF;
-		*str_ptr++ = char_value >> 8;
+		*str++ = char_value & 0xFF;
+		*str++ = char_value >> 8;
 	      }
 	  }
+	value = build_string (str - str_ptr, str_ptr);
+	TREE_TYPE (value) = build_pointer_type (string_type_node);
       }
       break;
     default:

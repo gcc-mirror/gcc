@@ -4801,12 +4801,12 @@ ia64_encode_section_info (decl)
 	       && symbol_str[0] != SDATA_NAME_FLAG_CHAR)
 	{
 	  size_t len = strlen (symbol_str);
-	  char *newstr;
+	  char *newstr = alloca (len + 1);
 
-	  newstr = ggc_alloc_string (NULL, len + 1);
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  memcpy (newstr + 1, symbol_str, len + 1);
-
+	  
+	  newstr = ggc_alloc_string (newstr, len + 1);
 	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 	}
     }

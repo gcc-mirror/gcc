@@ -713,7 +713,7 @@ struct tree_string
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   int length;
-  char *pointer;
+  const char *pointer;
 };
 
 /* In a COMPLEX_CST node.  */
@@ -1851,6 +1851,10 @@ extern tree integer_types[itk_none];
 #endif
 extern int exact_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
 extern int floor_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
+
+/* Approximate positive square root of a host double.  This is for
+   statistical reports, not code generation.  */
+extern double approx_sqrt		PARAMS ((double));
 
 extern char *permalloc			PARAMS ((int));
 extern char *expralloc			PARAMS ((int));

@@ -377,7 +377,7 @@ combine_strings (strings)
       if (wide_flag)
 	length = length * wchar_bytes + wide_length;
 
-      p = ggc_alloc_string (NULL, length);
+      p = alloca (length);
 
       /* Copy the individual strings into the new combined string.
 	 If the combined string is wide, convert the chars to ints
@@ -416,9 +416,7 @@ combine_strings (strings)
       else
 	*q = 0;
 
-      value = make_node (STRING_CST);
-      TREE_STRING_POINTER (value) = p;
-      TREE_STRING_LENGTH (value) = length;
+      value = build_string (length, p);
     }
   else
     {

@@ -1,3 +1,8 @@
+2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* jcf-parse.c (get_constant), parse.y (do_merge_string_cste):
+	Create string in scratch buffer, then pass to build_string.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* parse.y (issue_warning_error_from_context): Add

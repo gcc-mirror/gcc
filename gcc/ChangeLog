@@ -1,3 +1,62 @@
+2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* c-parse.in (if_prefix): Find the filename and line number at
+	$-2 and $-1 respectively.
+	* diagnostic.c (error_recursion): Add missing newline, use
+	fputs, translate string.
+
+2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* stringpool.c: New file.
+	* ggc-common.c (ggc_mark_string_ptr, ggc_add_string_root): Delete.
+	(ggc_alloc_string): Now in stringpool.o.
+	* ggc-page.c, ggc-simple.c: Do not define or allocate empty_string.
+	* ggc.h: Delete prototype of ggc_add_string_root.  #define
+	ggc_add_string_root and ggc_mark_string to nothing.  Prototype
+	init_stringpool and stringpool_statistics.
+	(ggc_alloc_string): Returns a const char *.
+	* tree.c (hash_table, do_identifier_warnings): Delete.
+	(init_obstacks): Don't initialize the identifier hash table.
+	(get_identifier, maybe_get_identifier, start_identifier_warnings,
+	set_identifier_size): Now in stringpool.c.
+	* tree.h (struct tree_string): Constify pointer field.
+	(approx_sqrt): Prototype.
+
+	* Makefile.in (stringpool.o): Add rule, mention in OBJS.
+
+	* toplev.c (approx_sqrt): New function.
+	(compile_file): Call stringpool_statistics if mem_report is on.
+	(main): Call init_stringpool.
+
+	* builtins.c (c_strlen), c-decl.c (finish_decl), c-lex.c
+	(process_directive), c-typeck.c (constructor_asmspec, struct
+	initializer_stack, start_init), except.c (create_rethrow_ref),
+	stmt.c (digit_strings), toplev.c (decode_f_option), tree.c
+	(built_in_filename), varasm,c (in_named_name,
+	assemble_static_space, struct constant_descriptor, struct
+	deferred_string, struct pool_constant, force_const_mem),
+	i386.c (pic_label_name, global_offset_table_name), rs6000.c
+	(rs6000_emit_prologue, rs6000_emit_epilogue) : Constify a char *.
+
+	* c-common.c (combine_strings): Combine strings in scratch
+	buffer, then pass to build_string.
+	* optabs.c (init_libfuncs), profile.c (init_edge_profiler,
+	output_func_start_profiler), stmt.c (init_stmt), alpha.c
+	(alpha_need_linkage), arm.c (arm_encode_call_attribute),
+	i386.c (load_pic_register), ia64.c (ia64_encode_section_info),
+	rs6000.c (rs6000_encode_section_info): Create string in
+	scratch buffer, then pass to ggc_alloc_string.
+
+	* stmt.c (expand_asm_operands): If we must adjust the
+	constraint strings, do so by creating a new one, not by
+	modifying the old one in place.  Constify some char *s.
+	* config/pa/pa.c (hppa_encode_label): Drop unnecessary second
+	argument.  Create string in scratch buffer, then pass to
+	ggc_alloc_string.
+	* config/pa/pa-protos.h: Update prototype.
+	* config/pa/elf.h, config/pa/pa.h, config/pa/som.h:
+	hppa_encode_label takes only one argument.
+
 2000-11-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mcore.c (mcore_expand_prolog): Call xmalloc/xrealloc, not

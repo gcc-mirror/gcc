@@ -52,10 +52,6 @@
 #define GGC_ALWAYS_COLLECT
 #endif
 
-/* Constants for general use.  */
-
-char *empty_string;
-
 #ifndef HOST_BITS_PER_PTR
 #define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
 #endif
@@ -374,9 +370,6 @@ void
 init_ggc ()
 {
   G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
-
-  empty_string = ggc_alloc_string ("", 0);
-  ggc_add_string_root (&empty_string, 1);
 }
 
 /* Start a new GGC context.  Memory allocated in previous contexts

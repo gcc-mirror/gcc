@@ -6232,12 +6232,12 @@ alpha_need_linkage (name, is_local)
   /* Construct a SYMBOL_REF for us to call.  */
   {
     size_t name_len = strlen (name);
-    char *linksym = ggc_alloc_string (NULL, name_len + 6);
-
+    char *linksym = alloca (name_len + 6);
     linksym[0] = '$';
     memcpy (linksym + 1, name, name_len);
     memcpy (linksym + 1 + name_len, "..lk", 5);
-    al->linkage = gen_rtx_SYMBOL_REF (Pmode, linksym);
+    al->linkage = gen_rtx_SYMBOL_REF (Pmode,
+				      ggc_alloc_string (linksym, name_len + 5));
   }
 
   splay_tree_insert (alpha_links, (splay_tree_key) name,

@@ -1577,6 +1577,29 @@ floor_log2_wide (x)
   return log;
 }
 
+/* Return the approximate positive square root of a number N.  This is for
+   statistical reports, not code generation.  */
+double
+approx_sqrt (x)
+     double x;
+{
+  double s, d;
+
+  if (x < 0)
+    abort ();   
+  if (x == 0)
+    return 0;
+
+  s = x;
+  do
+    {
+      d = (s * s - x) / (2 * s);
+      s -= d;                   
+    }        
+  while (d > .0001);
+  return s;
+}
+
 static int float_handler_set;
 int float_handled;
 jmp_buf float_handler;
@@ -2516,7 +2539,10 @@ compile_file (name)
     }
 
   if (mem_report)
-    ggc_print_statistics ();
+    {
+      ggc_print_statistics ();
+      stringpool_statistics ();
+    }
 
   /* Free up memory for the benefit of leak detectors.  */
   free_reg_info ();
@@ -4085,7 +4111,7 @@ decode_f_option (arg)
   else if ((option_value
 	    = skip_leading_substring (arg, "stack-limit-symbol=")))
     {
-      char *nm;
+      const char *nm;
       nm = ggc_strdup (option_value);
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
     }
@@ -4557,6 +4583,7 @@ main (argc, argv)
 
   /* Initialize the garbage-collector.  */
   init_ggc ();
+  init_stringpool ();
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
 		mark_file_stack);
   ggc_add_rtx_root (&stack_limit_rtx, 1);

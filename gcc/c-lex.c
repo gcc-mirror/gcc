@@ -443,7 +443,7 @@ process_directive ()
   int saw_line;
   enum { act_none, act_push, act_pop } action;
   int action_number, l;
-  char *new_file;
+  const char *new_file;
 #ifndef NO_IMPLICIT_EXTERN_C
   int entering_c_header = 0;
 #endif

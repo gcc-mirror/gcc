@@ -1726,11 +1726,12 @@ arm_encode_call_attribute (decl, flag)
   /* Do not allow weak functions to be treated as short call.  */
   if (DECL_WEAK (decl) && flag == SHORT_CALL_FLAG_CHAR)
     return;
-  
-  newstr = ggc_alloc_string (NULL, len + 2);
 
-  sprintf (newstr, "%c%s", flag, str);
+  newstr = alloca (len + 2);
+  newstr[0] = flag;
+  strcpy (newstr + 1, str);
 
+  newstr = ggc_alloc_string (newstr, len + 1);
   XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
 
