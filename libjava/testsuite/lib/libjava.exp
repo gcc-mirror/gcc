@@ -313,6 +313,11 @@ proc libjava_arguments {{mode compile}} {
 	lappend args "compiler=$GCJ_UNDER_TEST -B$objdir/../"
     }
 
+    # Avoid libtool wrapper scripts when possible.
+    if {$mode == "link"} {
+        lappend args "additional_flags=-no-install"
+    }
+
     return $args
 }
 
