@@ -2920,11 +2920,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      }
 		  }
 
-		insn = get_last_insn ();
-		REG_NOTES (insn)
-		  = gen_rtx (EXPR_LIST, REG_EQUAL,
-			     gen_rtx (DIV, compute_mode, op0, op1),
-			     REG_NOTES (insn));
+		if (quotient != 0)
+		  {
+		    insn = get_last_insn ();
+		    REG_NOTES (insn)
+		      = gen_rtx (EXPR_LIST, REG_EQUAL,
+				 gen_rtx (DIV, compute_mode, op0, op1),
+				 REG_NOTES (insn));
+		  }
 	      }
 	    break;
 	  }
