@@ -22,10 +22,7 @@
 
 # Initialization and defaults
 AC_INIT(tree.c)
-AC_PREFIX_DEFAULT(/usr/local)
-#prefix=/usr/local
 native_prefix=/usr
-#exec_prefix='$(prefix)'
 local_prefix=/usr/local
 remove=rm
 hard_link=ln
@@ -1583,6 +1580,9 @@ for machine in $build $host $target; do
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
 		tmake_file=t-netbsd
+		if [[ x$prefix = xNONE ]]; then
+			prefix=$native_prefix
+		fi
 		prefix=$native_prefix
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
@@ -2562,7 +2562,9 @@ done
 # Are we using gcc as the native compiler?
 case $host in
 *linux*)	# All Linux's use gcc as the native compiler.
-	prefix=$native_prefix
+	if [[ x$prefix = xNONE ]]; then
+		prefix=$native_prefix
+	fi
 	;;
 esac
 
