@@ -1206,7 +1206,7 @@ real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
-   insn-flags.h insn-config.h insn-codes.h expr.h real.h function.h \
+   insn-flags.h insn-config.h insn-codes.h expr.h real.h regs.h function.h \
    bytecode.h
 
 jump.o : jump.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
