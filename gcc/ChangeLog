@@ -1,3 +1,9 @@
+Mon Feb  9 02:37:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * alpha.c (alpha_return_addr): Remove unused variable `first'.
+        (alpha_ra_ever_killed): Remove unused variables `ra' and `i'.
+        (output_epilog): Remove unused variable `frame_size_from_reg_save'.
+
 Sun Feb  8 14:56:03 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* loop.c (strength_reduce): When placing increment for auto-inc
