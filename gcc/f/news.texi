@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-08-11
+@c 1997-09-09
 
 @ifclear NEWSONLY
 @node News
@@ -112,6 +112,11 @@ is in effect.
 This avoids a compiler crash in some cases.
 
 @item
+The @samp{-malign-double} option now reliably aligns
+@code{DOUBLE PRECISION} optimally on Pentium and
+Pentium Pro architectures (586 and 686 in @code{gcc}).
+
+@item
 New option @samp{-Wno-globals} disables warnings
 about ``suspicious'' use of a name both as a global
 name and as the implicit name of an intrinsic, and
@@ -147,6 +152,13 @@ of arguments exist.
 This avoids a compiler crash.
 
 @item
+Fix parsing bug whereby @code{g77} rejected a
+second initialization specification immediately
+following the first's closing @samp{/} without
+an intervening comma in a @code{DATA} statement,
+and the second specification was an implied-DO list.
+
+@item
 Improve performance of the @code{gcc} back end so
 certain complicated expressions involving @code{COMPLEX}
 arithmetic (especially multiplication) don't appear to
@@ -159,12 +171,13 @@ back end.
 @item
 Integrate GNU Ada's (GNAT's) changes to the back end,
 which consist almost entirely of bug fixes.
+These fixes are circa version 3.10p of GNAT.
 
 @item
 Include some other @code{gcc} fixes that seem useful in
 @code{g77}'s version of @code{gcc}.
 (See @file{gcc/ChangeLog} for details---compare it
-to that file in the vanilla @code{gcc-2.7.2.2.tar.gz}
+to that file in the vanilla @code{gcc-2.7.2.3.tar.gz}
 distribution.)
 
 @item
@@ -219,18 +232,31 @@ during the assembler or linker phase, a compiler
 crash, or generation of incorrect code.
 
 @item
-Improve alias analysis code to properly handle
-output registers (such as the @samp{%o} registers
-on the SPARC).
+Make some fixes to alias analysis code.
 
 @item
 Add support for @code{restrict} keyword in @code{gcc}
 front end.
 
 @item
+Support @code{gcc} version 2.7.2.3
+(modified by @code{g77} into version 2.7.2.3.f.1),
+and remove
+support for prior versions of @code{gcc}.
+
+@item
+Incorporate GNAT's patches to the @code{gcc} back
+end into @code{g77}'s, so GNAT users do not need
+to apply GNAT's patches to build both GNAT and @code{g77}
+from the same source tree.
+
+@item
 Modify @code{make} rules and related code so that
 generation of Info documentation doesn't require
 compilation using @code{gcc}.
+Now, any ANSI C compiler should be adequate to
+produce the @code{g77} documentation (in particular,
+the tables of intrinsics) from scratch.
 
 @item
 Add @code{INT2} and @code{INT8} intrinsics.
@@ -261,10 +287,6 @@ Fix @code{libf2c} build procedure to re-archive library
 if previous attempt to archive was interrupted.
 
 @item
-Fix @code{gcc} to more easily support configuring on
-Pentium Pro (686) systems.
-
-@item
 Change @code{gcc} to unroll loops only during the last
 invocation (of as many as two invocations) of loop
 optimization.
@@ -284,7 +306,7 @@ as an option that inhibits linking, just like @samp{-c} or
 and @samp{-Xlinker} options.
 
 @item
-Upgrade to @code{libf2c} as of 1997-08-06.
+Upgrade to @code{libf2c} as of 1997-08-16.
 
 @item
 Modify @code{libf2c} to consistently and clearly diagnose

@@ -41,6 +41,10 @@ test "$AR" || AR=ar
 AC_SUBST(AR)
 if test "$RANLIB"; then :
   AC_SUBST(RANLIB)
+dnl Make sure that RANLIB_TEST is set also.
+  if test -z "$RANLIB_TEST"; then
+    RANLIB_TEST=true
+  fi
 else
   RANLIB_TEST=true
   AC_PROG_RANLIB

@@ -38,13 +38,16 @@ follow the `g77' installation instructions:
      available--in fact, a complete GNU UNIX system can be put together
      on most systems, if desired.
 
-`gcc-2.7.2.2.tar.gz'
+     The version of GNU `gzip' used to package this release is 1.24.
+     (The version of GNU `tar' used to package this release is 1.11.2.)
+
+`gcc-2.7.2.3.tar.gz'
      You need to have this, or some other applicable, version of `gcc'
      on your system.  The version should be an exact copy of a
-     distribution from the FSF.  It is approximately 7MB large.
+     distribution from the FSF.  Its size is approximately 7.1MB.
 
-     If you've already unpacked `gcc-2.7.2.2.tar.gz' into a directory
-     (named `gcc-2.7.2.2') called the "source tree" for `gcc', you can
+     If you've already unpacked `gcc-2.7.2.3.tar.gz' into a directory
+     (named `gcc-2.7.2.3') called the "source tree" for `gcc', you can
      delete the distribution itself, but you'll need to remember to
      skip any instructions to unpack this distribution.
 
@@ -52,27 +55,85 @@ follow the `g77' installation instructions:
      You can obtain an FSF distribution of `gcc' from the FSF.
 
 `g77-0.5.21.tar.gz'
-     You probably have already unpacked this distribution, or you are
-     reading an advanced copy of this manual, which is contained in
-     this distribution.  This distribution approximately 1MB large.
+     You probably have already unpacked this package, or you are
+     reading an advance copy of these installation instructions, which
+     are contained in this distribution.  The size of this package is
+     approximately 1.5MB.
 
      You can obtain an FSF distribution of `g77' from the FSF, the same
      way you obtained `gcc'.
 
-100MB disk space
-     For a complete "bootstrap" build, about 100MB of disk space is
-     required for `g77' by the author's current GNU/Linux system.
+Enough disk space
+     The amount of disk space needed to unpack, build, install, and use
+     `g77' depends on the type of system you're using, how you build
+     `g77', and how much of it you install (primarily, which languages
+     you install).
 
-     Some juggling can reduce the amount of space needed; during the
-     bootstrap process, once Stage 3 starts, during which the version
-     of `gcc' that has been copied into the `stage2/' directory is used
-     to rebuild the system, you can delete the `stage1/' directory to
-     free up some space.
+     The sizes shown below assume all languages distributed in
+     `gcc-2.7.2.3', plus `g77', will be built and installed.  These
+     sizes are indicative of GNU/Linux systems on Intel x86 running
+     COFF and on Digital Alpha (AXP) systems running ELF.  These should
+     be fairly representative of 32-bit and 64-bit systems,
+     respectively.
 
-     It is likely that many systems don't require the complete
-     bootstrap build, as they already have a recent version of `gcc'
-     installed.  Such systems might be able to build `g77' with only
-     about 75MB of free space.
+     Note that all sizes are approximate and subject to change without
+     notice!  They are based on preliminary releases of g77 made shortly
+     before the public beta release.
+
+        -- `gcc' and `g77' distributions occupy 8.6MB packed, 35MB
+          unpacked.  These consist of the source code and documentation,
+          plus some derived files (mostly documentation), for `gcc' and
+          `g77'.  Any deviations from these numbers for different kinds
+          of systems are likely to be very minor.
+
+        -- A "bootstrap" build requires an additional 67.3MB for a
+          total of 102MB on an ix86, and an additional 98MB for a total
+          of 165MB on an Alpha.
+
+        -- Removing `gcc/stage1' after the build recovers 10.7MB for a
+          total of 91MB on an ix86, and recovers ??MB for a total of
+          ??MB on an Alpha.
+
+          After doing this, the integrity of the build can still be
+          verified via `make compare', and the `gcc' compiler modified
+          and used to build itself for testing fairly quickly, using
+          the copy of the compiler kept in `gcc/stage2'.
+
+        -- Removing `gcc/stage2' after the build further recovers
+          27.3MB for a total of 64.3MB, and recovers ??MB for a total
+          of ??MB on an Alpha.
+
+          After doing this, the compiler can still be installed,
+          especially if GNU `make' is used to avoid gratuitous rebuilds
+          (or, the installation can be done by hand).
+
+        -- Installing `gcc' and `g77' copies 14.9MB onto the `--prefix'
+          disk for a total of 79.2MB on an ix86, and copies ??MB onto
+          the `--prefix' disk for a total of ??MB on an Alpha.
+
+     After installation, if no further modifications and builds of
+     `gcc' or `g77' are planned, the source and build directory may be
+     removed, leaving the total impact on a system's disk storage as
+     that of the amount copied during installation.
+
+     Systems with the appropriate version of `gcc' installed don't
+     require the complete bootstrap build.  Doing a "straight build"
+     requires about as much space as does a bootstrap build followed by
+     removing both the `gcc/stage1' and `gcc/stage2' directories.
+
+     Installing `gcc' and `g77' over existing versions might require
+     less *new* disk space, but note that, unlike many products, `gcc'
+     installs itself in a way that avoids overwriting other installed
+     versions of itself, so that other versions may easily be invoked
+     (via `gcc -V VERSION').
+
+     So, the amount of space saved as a result of having an existing
+     version of `gcc' and `g77' already installed is not
+     much--typically only the command drivers (`gcc', `g77', `g++', and
+     so on, which are small) and the documentation is overwritten by
+     the new installation.  The rest of the new installation is done
+     without replacing existing installed versions (assuming they have
+     different version numbers).
 
 `patch'
      Although you can do everything `patch' does yourself, by hand,
@@ -84,10 +145,14 @@ follow the `g77' installation instructions:
      In any case, you can apply patches by hand--patch files are
      designed for humans to read them.
 
+     The version of GNU `patch' used to develop this release is 2.4.
+
 `make'
      Your system must have `make', and you will probably save yourself
      a lot of trouble if it is GNU `make' (sometimes referred to as
      `gmake').
+
+     The version of GNU `make' used to develop this release is 3.73.
 
 `cc'
      Your system must have a working C compiler.
@@ -102,6 +167,8 @@ follow the `g77' installation instructions:
      distribution.  You can obtain `bison' the same way you obtained
      `gcc' and `g77'.
 
+     The version of GNU `bison' used to develop this release is 1.25.
+
      *Note Missing bison?::, for information on how to work around not
      having `bison'.
 
@@ -110,12 +177,27 @@ follow the `g77' installation instructions:
      need for it.  You can obtain `makeinfo' the same way you obtained
      `gcc' and `g77'.
 
+     The version of GNU `makeinfo' used to develop this release is
+     1.68, from GNU `texinfo' version 3.11.
+
      *Note Missing makeinfo?::, for information on getting around the
      lack of `makeinfo'.
 
-`root' access
+`sed'
+     All UNIX systems have `sed', but some have a broken version that
+     cannot handle configuring, building, or installing `gcc' or `g77'.
+
+     The version of GNU `sed' used to develop this release is 2.05.
+     (Note that GNU `sed' version 3.0 was withdrawn by the FSF--if you
+     happen to have this version installed, replace it with version
+     2.05 immediately.  See a GNU distribution site for further
+     explanation.)
+
+`root' access or equivalent
      To perform the complete installation procedures on a system, you
-     need to have `root' access to that system, or equivalent access.
+     need to have `root' access to that system, or equivalent access to
+     the `--prefix' directory tree specified on the `configure' command
+     line.
 
      Portions of the procedure (such as configuring and building `g77')
      can be performed by any user with enough disk space and virtual
@@ -294,7 +376,7 @@ reasons.
 
    * Improvements to the way `libf2c' is built could make building
      `g77' as a cross-compiler easier--for example, passing and using
-     `LD' and `AR' in the appropriate ways.
+     `$(LD)' and `$(AR)' in the appropriate ways.
 
    * There are still some challenges putting together the right
      run-time libraries (needed by `libf2c') for a target system,
@@ -484,7 +566,7 @@ is assumed that the source distributions themselves already reside in
 `/usr/FSF', a naming convention used by the author of `g77' on his own
 system:
 
-     /usr/FSF/gcc-2.7.2.2.tar.gz
+     /usr/FSF/gcc-2.7.2.3.tar.gz
      /usr/FSF/g77-0.5.21.tar.gz
 
    Users of the following systems should not blindly follow these
@@ -508,20 +590,20 @@ of some of the steps.  These explanations follow this list of steps.
 
      sh[ 1]# cd /usr/src
      
-     sh[ 2]# gunzip -c < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -
+     sh[ 2]# gunzip -c < /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -
      [Might say "Broken pipe"...that is normal on some systems.]
      
      sh[ 3]# gunzip -c < /usr/FSF/g77-0.5.21.tar.gz | tar xf -
      ["Broken pipe" again possible.]
      
-     sh[ 4]# ln -s gcc-2.7.2.2 gcc
+     sh[ 4]# ln -s gcc-2.7.2.3 gcc
      
      sh[ 5]# ln -s g77-0.5.21 g77
      
      sh[ 6]# mv -i g77/* gcc
      [No questions should be asked by mv here; or, you made a mistake.]
      
-     sh[ 7]# patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.2.diff
+     sh[ 7]# patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.3.diff
      [Unless patch complains about rejected patches, this step worked.]
      
      sh[ 8]# cd gcc
@@ -543,15 +625,22 @@ of some of the steps.  These explanations follow this list of steps.
      sh[12]# make bootstrap
      [This takes a long time, and is where most problems occur.]
      
-     sh[13]# rm -fr stage1
+     sh[13]# make compare
+     [This verifies that the compiler is `sane'.  Only
+     the file `f/zzz.o' (aka `tmp-foo1' and `tmp-foo2')
+     should be in the list of object files this command
+     prints as having different contents.  If other files
+     are printed, you have likely found a g77 bug.]
      
-     sh[14]# make -k install
+     sh[14]# rm -fr stage1
+     
+     sh[15]# make -k install
      [The actual installation.]
      
-     sh[15]# g77 -v
+     sh[16]# g77 -v
      [Verify that g77 is installed, obtain version info.]
      
-     sh[16]#
+     sh[17]#
 
    *Note Updating Your Info Directory: Updating Documentation, for
 information on how to update your system's top-level `info' directory
@@ -574,7 +663,7 @@ Step 3: `gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -'
      achieve the same result--a source tree containing version 0.5.21
      of `g77'.
 
-Step 4: `ln -s gcc-2.7.2.2 gcc'
+Step 4: `ln -s gcc-2.7.2.3 gcc'
 
 Step 5: `ln -s g77-0.5.21 g77'
      These commands mainly help reduce typing, and help reduce visual
@@ -653,10 +742,18 @@ Step 12: `make bootstrap'
      *Note Building gcc::, for complete `g77'-specific information on
      this step.
 
-Step 13: `rm -fr stage1'
+Step 13: `make compare'
+     *Note Where to Port Bugs: Bug Lists, for information on where to
+     report that you observed more than `f/zzz.o' having different
+     contents during this phase.
+
+     *Note How to Report Bugs: Bug Reporting, for information on *how*
+     to report bugs like this.
+
+Step 14: `rm -fr stage1'
      You don't need to do this, but it frees up disk space.
 
-Step 14: `make -k install'
+Step 15: `make -k install'
      If this doesn't seem to work, try:
 
           make -k install install-libf77 install-f2c-all
@@ -667,7 +764,7 @@ Step 14: `make -k install'
      information on entering this manual into your system's list of
      texinfo manuals.
 
-Step 15: `g77 -v'
+Step 16: `g77 -v'
      If this command prints approximately 25 lines of output, including
      the GNU Fortran Front End version number (which should be the same
      as the version number for the version of `g77' you just built and
@@ -735,9 +832,9 @@ generally only the documentation is immediately usable.
    A sequence of commands typically used to unpack `gcc' and `g77' is:
 
      sh# cd /usr/src
-     sh# gunzip -d < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -
-     sh# gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -
-     sh# ln -s gcc-2.7.2.2 gcc
+     sh# gunzip -c /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -
+     sh# gunzip -c /usr/FSF/g77-0.5.21.tar.gz | tar xf -
+     sh# ln -s gcc-2.7.2.3 gcc
      sh# ln -s g77-0.5.21 g77
      sh# mv -i g77/* gcc
 
@@ -757,7 +854,7 @@ and the top level of just the `g77' source tree (prior to issuing the
 
    All three entries should be moved (or copied) into a `gcc' source
 tree (typically named after its version number and as it appears in the
-FSF distributions--e.g. `gcc-2.7.2.2').
+FSF distributions--e.g. `gcc-2.7.2.3').
 
    `g77/f' is the subdirectory containing all of the code,
 documentation, and other information that is specific to `g77'.  The
@@ -1226,43 +1323,43 @@ them when they work:
      g77 version 0.5.21
       ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 ...
      Reading specs from ./specs
-     gcc version 2.7.2.2.f.3
+     gcc version 2.7.2.3.f.1
       ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+     GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
      #include "..." search starts here:
      #include <...> search starts here:
       ./include
       /usr/local/include
       /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
       /usr/include
      End of search list.
       ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase ...
-     GNU F77 version 2.7.2.2.f.3 (Linux/Alpha) compiled ...
+     GNU F77 version 2.7.2.3.f.1 (Linux/Alpha) compiled ...
      GNU Fortran Front End version 0.5.21 compiled: ...
       as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
       ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. ...
      __G77_LIBF77_VERSION__: 0.5.21
      @(#)LIBF77 VERSION 19970404
      __G77_LIBI77_VERSION__: 0.5.21
-     @(#) LIBI77 VERSION pjw,dmg-mods 19970527
+     @(#) LIBI77 VERSION pjw,dmg-mods 19970816
      __G77_LIBU77_VERSION__: 0.5.21
      @(#) LIBU77 VERSION 19970609
      sh# ./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone
      Reading specs from ./specs
-     gcc version 2.7.2.2.f.3
+     gcc version 2.7.2.3.f.1
       ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+     GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
      #include "..." search starts here:
      #include <...> search starts here:
       ./include
       /usr/local/include
       /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
       /usr/include
      End of search list.
       ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version ...
-     GNU C version 2.7.2.2.f.3 (Linux/Alpha) compiled ...
+     GNU C version 2.7.2.3.f.1 (Linux/Alpha) compiled ...
       as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
       ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. ...
      /usr/lib/crt0.o: In function `__start':

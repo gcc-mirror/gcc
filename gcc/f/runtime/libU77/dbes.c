@@ -20,27 +20,27 @@ Boston, MA 02111-1307, USA.  */
 #include <math.h>
 
 #if 0 	/* Don't include these unless necessary -- dnp. */
-doublereal G77_dbesj0_0 (const double *x) {
+double G77_dbesj0_0 (const double *x) {
     return j0 (*x);
 }
 
-doublereal G77_dbesj1_0 (const double *x) {
+double G77_dbesj1_0 (const double *x) {
     return j1 (*x);
 }
 
-doublereal G77_dbesjn_0 (const integer *n, double *x) {
+double G77_dbesjn_0 (const integer *n, double *x) {
      return jn (*n, *x);
  }
 
-doublereal G77_dbesy0_0 (const double *x) {
+double G77_dbesy0_0 (const double *x) {
     return y0 (*x);
 }
 
-doublereal G77_dbesy1_0 (const double *x) {
+double G77_dbesy1_0 (const double *x) {
     return y1 (*x);
 }
 
-doublereal G77_dbesyn_0 (const integer *n, double *x) {
+double G77_dbesyn_0 (const integer *n, double *x) {
     return yn (*n, *x);
 }
 #endif

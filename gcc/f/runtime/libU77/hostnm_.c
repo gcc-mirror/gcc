@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #if HAVE_UNISTD_H
 #  include <unistd.h>
 #endif
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 integer G77_hostnm_0 (char *name, ftnlen Lname)

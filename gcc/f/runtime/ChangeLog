@@ -1,3 +1,61 @@
+Tue Sep  9 00:33:24 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* Version 0.5.21 released.
+
+Mon Sep  8 19:39:01 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* libI77/close.c (f_exit): Fix thinko, inverted test
+	of whether initialization done, so exiting now closes
+	open units again.
+
+Tue Aug 26 01:42:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	From Jim Wilson:
+	* configure.in: Make sure RANLIB_TEST is set also.
+
+	From Robert Lipe <robertl@dgii.com>:
+	* libU77/getcwd_.c, libU77/hostnm_.c, libU77/lstat_.c:
+	Also #include <errno.h>, to define ENOSYS.
+
+Tue Aug 26 01:25:58 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* Makefile.in (stamp-lib): Put all f2cext.c objects in
+	a temp directory named libE77, then `ar' them all at
+	once into libf2c.a, to get the job done a bit faster.
+	Still remove the objects (and libE77 directory) afterward.
+
+Sun Aug 24 05:04:35 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* libU77/rand_.c (G77_rand_0), libU77/dtime_.c (G77_dtime_0),
+	libU77/etime_.c (G77_etime_0), libU77/secnds_.c (G77_secnds_0),
+	libU77/second_.c (G77_second_0): Really return `double', not
+	`doublereal', since the result is cast to `float'.
+	* f2cext.c: (rand_, dtime_, etime_, secnds_, second_): Ditto.
+	(erf_, erfc_, besj0_, besj1_, besjn_, besy0_, besy1_,
+	besyn_, dbesj0_, dbesj1_, dbesjn_, dbesy0_, dbesy1_,
+	dbesyn_): All of these return `double', not `doublereal',
+	as they either have `float' or `double' results.
+	* libU77/bes.c (besj0_, besj1_, besjn_, besy0_, besy1_,
+	besyn_): Ditto.
+	* libU77/dbes.c (dbesj0_, dbesj1_, dbesjn_, dbesy0_, dbesy1_,
+	dbesyn_): Ditto.
+
+	Update to Netlib version of 1997-08-16:
+	* libI77/iio.c: Fix bug in internal writes to an array
+	of character strings.
+
+	* Makefile.in (UOBJ): Restore fixes made by Dan Pettet I
+	lost, which included the addition of mclock_.o already noted
+	below, plus adding symlnk_.o.
+
+Thu Aug 21 03:58:34 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* Makefile.in (UOBJ): Add mclock_.o, thanks to Mumit Khan!
+
+1997-08-21  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/alarm_.c: Fix return type: `integer'.
+
 Mon Aug 11 20:12:42 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Makefile.in ($(lib), stamp-lib): Ensure that library

@@ -2834,3 +2834,8 @@ draft (in 1990 or 1991) that rescinded permission to elide quote marks
 in namelist input of character data; to get the old behavior, compile
 with F8X_NML_ELIDE_QUOTES #defined.  wrtfmt.o: wrt_G: tweak to print
 the right number of 0's for zero under G format.
+
+Sat Aug 16 05:45:32 EDT 1997
+  libI77: iio.c: fix bug in internal writes to an array of character
+strings that sometimes caused one more array element than required by
+the format to be blank-filled.  Example: format(1x).

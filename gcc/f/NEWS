@@ -55,6 +55,10 @@ In 0.5.21:
      `-fno-automatic' option is in effect.  This avoids a compiler
      crash in some cases.
 
+   * The `-malign-double' option now reliably aligns `DOUBLE PRECISION'
+     optimally on Pentium and Pentium Pro architectures (586 and 686 in
+     `gcc').
+
    * New option `-Wno-globals' disables warnings about "suspicious" use
      of a name both as a global name and as the implicit name of an
      intrinsic, and warnings about disagreements over the number or
@@ -82,6 +86,11 @@ In 0.5.21:
      type of that procedure, or where disagreements about the number or
      nature of arguments exist.  This avoids a compiler crash.
 
+   * Fix parsing bug whereby `g77' rejected a second initialization
+     specification immediately following the first's closing `/' without
+     an intervening comma in a `DATA' statement, and the second
+     specification was an implied-DO list.
+
    * Improve performance of the `gcc' back end so certain complicated
      expressions involving `COMPLEX' arithmetic (especially
      multiplication) don't appear to take forever to compile.
@@ -89,11 +98,12 @@ In 0.5.21:
    * Fix a couple of profiling-related bugs in `gcc' back end.
 
    * Integrate GNU Ada's (GNAT's) changes to the back end, which
-     consist almost entirely of bug fixes.
+     consist almost entirely of bug fixes.  These fixes are circa
+     version 3.10p of GNAT.
 
    * Include some other `gcc' fixes that seem useful in `g77''s version
      of `gcc'.  (See `gcc/ChangeLog' for details--compare it to that
-     file in the vanilla `gcc-2.7.2.2.tar.gz' distribution.)
+     file in the vanilla `gcc-2.7.2.3.tar.gz' distribution.)
 
    * Fix `libU77' routines that accept file and other names to strip
      trailing blanks from them, for consistency with other
@@ -133,13 +143,22 @@ In 0.5.21:
      diagnostics during the assembler or linker phase, a compiler
      crash, or generation of incorrect code.
 
-   * Improve alias analysis code to properly handle output registers
-     (such as the `%o' registers on the SPARC).
+   * Make some fixes to alias analysis code.
 
    * Add support for `restrict' keyword in `gcc' front end.
 
+   * Support `gcc' version 2.7.2.3 (modified by `g77' into version
+     2.7.2.3.f.1), and remove support for prior versions of `gcc'.
+
+   * Incorporate GNAT's patches to the `gcc' back end into `g77''s, so
+     GNAT users do not need to apply GNAT's patches to build both GNAT
+     and `g77' from the same source tree.
+
    * Modify `make' rules and related code so that generation of Info
-     documentation doesn't require compilation using `gcc'.
+     documentation doesn't require compilation using `gcc'.  Now, any
+     ANSI C compiler should be adequate to produce the `g77'
+     documentation (in particular, the tables of intrinsics) from
+     scratch.
 
    * Add `INT2' and `INT8' intrinsics.
 
@@ -160,9 +179,6 @@ In 0.5.21:
    * Fix `libf2c' build procedure to re-archive library if previous
      attempt to archive was interrupted.
 
-   * Fix `gcc' to more easily support configuring on Pentium Pro (686)
-     systems.
-
    * Change `gcc' to unroll loops only during the last invocation (of
      as many as two invocations) of loop optimization.
 
@@ -176,7 +192,7 @@ In 0.5.21:
      properly handle the `-nostdlib', `-M', `-MM', `-nodefaultlibs',
      and `-Xlinker' options.
 
-   * Upgrade to `libf2c' as of 1997-08-06.
+   * Upgrade to `libf2c' as of 1997-08-16.
 
    * Modify `libf2c' to consistently and clearly diagnose recursive I/O
      (at run time).

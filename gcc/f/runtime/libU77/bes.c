@@ -20,27 +20,27 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 #include <math.h>
 
-doublereal G77_besj0_0 (const real *x) {
+double G77_besj0_0 (const real *x) {
     return j0 (*x);
 }
 
-doublereal G77_besj1_0 (const real *x) {
+double G77_besj1_0 (const real *x) {
     return j1 (*x);
 }
 
-doublereal G77_besjn_0 (const integer *n, real *x) {
+double G77_besjn_0 (const integer *n, real *x) {
      return jn (*n, *x);
  }
 
-doublereal G77_besy0_0 (const real *x) {
+double G77_besy0_0 (const real *x) {
     return y0 (*x);
 }
 
-doublereal G77_besy1_0 (const real *x) {
+double G77_besy1_0 (const real *x) {
     return y1 (*x);
 }
 
-doublereal G77_besyn_0 (const integer *n, real *x) {
+double G77_besyn_0 (const integer *n, real *x) {
     return yn (*n, *x);
 }
 #endif

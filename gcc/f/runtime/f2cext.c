@@ -55,18 +55,15 @@ integer ef1cmc_ (ftnint *a, ftnlen *la, ftnint *b, ftnlen *lb) {
 }
 #endif
 
-/* Note that erf*_ and bes*_ return doublereal, not real, as this
-   is the f2c interface, which is based on K&R C.  */
-
 #ifdef Lerf
-doublereal erf_ (real *x) {
+double erf_ (real *x) {
     extern double G77_erf_0 (real *x);
     return G77_erf_0 (x);
 }
 #endif
 
 #ifdef Lerfc
-doublereal erfc_ (real *x) {
+double erfc_ (real *x) {
     extern double G77_erfc_0 (real *x);
     return G77_erfc_0 (x);
 }
@@ -150,37 +147,37 @@ integer alarm_ (integer *seconds, sig_proc proc, integer *status) {
 #endif
 
 #ifdef Lbesj0
-doublereal besj0_ (const real *x) {
+double besj0_ (const real *x) {
     return j0 (*x);
 }
 #endif
 
 #ifdef Lbesj1
-doublereal besj1_ (const real *x) {
+double besj1_ (const real *x) {
     return j1 (*x);
 }
 #endif
 
 #ifdef Lbesjn
-doublereal besjn_ (const integer *n, real *x) {
+double besjn_ (const integer *n, real *x) {
     return jn (*n, *x);
 }
 #endif
 
 #ifdef Lbesy0
-doublereal besy0_ (const real *x) {
+double besy0_ (const real *x) {
     return y0 (*x);
 }
 #endif
 
 #ifdef Lbesy1
-doublereal besy1_ (const real *x) {
+double besy1_ (const real *x) {
     return y1 (*x);
 }
 #endif
 
 #ifdef Lbesyn
-doublereal besyn_ (const integer *n, real *x) {
+double besyn_ (const integer *n, real *x) {
     return yn (*n, *x);
 }
 #endif
@@ -214,51 +211,51 @@ int date_ (char *buf, ftnlen buf_len) {
 #endif
 
 #ifdef Ldbesj0
-doublereal dbesj0_ (const double *x) {
+double dbesj0_ (const double *x) {
     return j0 (*x);
 }
 #endif
 
 #ifdef Ldbesj1
-doublereal dbesj1_ (const double *x) {
+double dbesj1_ (const double *x) {
     return j1 (*x);
 }
 #endif
 
 #ifdef Ldbesjn
-doublereal dbesjn_ (const integer *n, double *x) {
+double dbesjn_ (const integer *n, double *x) {
     return jn (*n, *x);
 }
 #endif
 
 #ifdef Ldbesy0
-doublereal dbesy0_ (const double *x) {
+double dbesy0_ (const double *x) {
     return y0 (*x);
 }
 #endif
 
 #ifdef Ldbesy1
-doublereal dbesy1_ (const double *x) {
+double dbesy1_ (const double *x) {
     return y1 (*x);
 }
 #endif
 
 #ifdef Ldbesyn
-doublereal dbesyn_ (const integer *n, double *x) {
+double dbesyn_ (const integer *n, double *x) {
     return yn (*n, *x);
 }
 #endif
 
 #ifdef Ldtime
-doublereal dtime_ (real tarray[2]) {
-    extern doublereal G77_dtime_0 (real tarray[2]);
+double dtime_ (real tarray[2]) {
+    extern double G77_dtime_0 (real tarray[2]);
     return G77_dtime_0 (tarray);
 }
 #endif
 
 #ifdef Letime
-doublereal etime_ (real tarray[2]) {
-    extern doublereal G77_etime_0 (real tarray[2]);
+double etime_ (real tarray[2]) {
+    extern double G77_etime_0 (real tarray[2]);
     return G77_etime_0 (tarray);
 }
 #endif
@@ -460,8 +457,8 @@ int perror_ (const char *str, const ftnlen Lstr) {
 #endif
 
 #ifdef Lrand
-doublereal rand_ (integer *flag) {
-    extern doublereal G77_rand_0 (integer *flag);
+double rand_ (integer *flag) {
+    extern double G77_rand_0 (integer *flag);
     return G77_rand_0 (flag);
 }
 #endif
@@ -474,15 +471,15 @@ integer rename_ (const char *path1, const char *path2, const ftnlen Lpath1, cons
 #endif
 
 #ifdef Lsecnds
-doublereal secnds_ (real *r) {
-    extern doublereal G77_secnds_0 (real *r);
+double secnds_ (real *r) {
+    extern double G77_secnds_0 (real *r);
     return G77_secnds_0 (r);
 }
 #endif
 
 #ifdef Lsecond
-doublereal second_ () {
-    extern doublereal G77_second_0 ();
+double second_ () {
+    extern double G77_second_0 ();
     return G77_second_0 ();
 }
 #endif

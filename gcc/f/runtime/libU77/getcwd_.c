@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #  include <strings.h>
 #endif
 #include <stdio.h>		/* for NULL */
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 #if HAVE_GETCWD

@@ -51,6 +51,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif	/* !defined (__TIME__) */
 #endif	/* !defined (FFEZZZ_TIME) */
 
-char *ffezzz_version_string = "0.5.21-19970811";
+char *ffezzz_version_string = "0.5.21";
 char *ffezzz_date = FFEZZZ_DATE;
 char *ffezzz_time = FFEZZZ_TIME;

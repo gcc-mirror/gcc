@@ -1,5 +1,5 @@
 /* intrin.h -- Public interface for intrin.c
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -42,7 +42,7 @@ typedef enum
     FFEINTRIN_familyFVZ,	/* in both f2c and VAX/VMS FORTRAN. */
     FFEINTRIN_familyF2U,	/* libf2c/libU77 UNIX system intrinsics. */
     FFEINTRIN_familyBADU77,	/* libU77 UNIX system intrinsics with bad form. */
-    FFEINTRIN_family,
+    FFEINTRIN_family
   } ffeintrinFamily;
 
 typedef enum

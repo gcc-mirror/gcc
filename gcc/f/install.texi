@@ -5,7 +5,7 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-08-11
+@c 1997-09-09
 
 @ifclear INSTALLONLY
 @node Installation
@@ -61,15 +61,20 @@ There are GNU versions of all these available---in fact,
 a complete GNU UNIX system can be put together on
 most systems, if desired.
 
-@item @file{gcc-2.7.2.2.tar.gz}
+The version of GNU @code{gzip} used to package this release
+is 1.24.
+(The version of GNU @code{tar} used to package this release
+is 1.11.2.)
+
+@item @file{gcc-2.7.2.3.tar.gz}
 You need to have this, or some other applicable, version
 of @code{gcc} on your system.
 The version should be an exact copy of a distribution
 from the FSF.
-It is approximately 7MB large.
+Its size is approximately 7.1MB.
 
-If you've already unpacked @file{gcc-2.7.2.2.tar.gz} into a
-directory (named @file{gcc-2.7.2.2}) called the @dfn{source tree}
+If you've already unpacked @file{gcc-2.7.2.3.tar.gz} into a
+directory (named @file{gcc-2.7.2.3}) called the @dfn{source tree}
 for @code{gcc}, you can delete the distribution
 itself, but you'll need to remember to skip any instructions to unpack
 this distribution.
@@ -79,31 +84,107 @@ build @code{g77}.
 You can obtain an FSF distribution of @code{gcc} from the FSF.
 
 @item @file{g77-0.5.21.tar.gz}
-You probably have already unpacked this distribution,
-or you are reading an advanced copy of this manual,
-which is contained in this distribution.
-This distribution approximately 1MB large.
+You probably have already unpacked this package,
+or you are reading an advance copy of these installation instructions,
+which are contained in this distribution.
+The size of this package is approximately 1.5MB.
 
 You can obtain an FSF distribution of @code{g77} from the FSF,
 the same way you obtained @code{gcc}.
 
-@item 100MB disk space
-For a complete @dfn{bootstrap} build, about 100MB
-of disk space is required for @code{g77} by the author's
-current GNU/Linux system.
+@item Enough disk space
+The amount of disk space needed to unpack, build, install,
+and use @code{g77} depends on the type of system you're
+using, how you build @code{g77}, and how much of it you
+install (primarily, which languages you install).
 
-Some juggling can reduce the amount of space needed;
-during the bootstrap process, once Stage 3 starts,
-during which the version of @code{gcc} that has been copied
-into the @file{stage2/} directory is used to rebuild the
-system, you can delete the @file{stage1/} directory
-to free up some space.
+The sizes shown below assume all languages distributed
+in @code{gcc-2.7.2.3}, plus @code{g77}, will be built
+and installed.
+These sizes are indicative of GNU/Linux systems on
+Intel x86 running COFF and on Digital Alpha (AXP) systems
+running ELF.
+These should be fairly representative of 32-bit and 64-bit
+systems, respectively.
 
-It is likely that many systems don't require the complete
-bootstrap build, as they already have a recent version of
-@code{gcc} installed.
-Such systems might be able to build @code{g77} with only
-about 75MB of free space.
+Note that all sizes are approximate and subject to change without
+notice!
+They are based on preliminary releases of g77 made shortly
+before the public beta release.
+
+@itemize ---
+@item
+@code{gcc} and @code{g77} distributions occupy 8.6MB
+packed, 35MB unpacked.
+These consist of the source code and documentation,
+plus some derived files (mostly documentation), for
+@code{gcc} and @code{g77}.
+Any deviations from these numbers for different
+kinds of systems are likely to be very minor.
+
+@item
+A ``bootstrap'' build requires an additional 67.3MB
+for a total of 102MB on an ix86, and an additional
+98MB for a total of 165MB on an Alpha.
+
+@item
+Removing @file{gcc/stage1} after the build recovers
+10.7MB for a total of 91MB on an ix86, and recovers
+??MB for a total of ??MB on an Alpha.
+
+After doing this, the integrity of the build can
+still be verified via @samp{make compare}, and the
+@code{gcc} compiler modified and used to build itself for
+testing fairly quickly, using the copy of the compiler
+kept in @code{gcc/stage2}.
+
+@item
+Removing @file{gcc/stage2} after the build further
+recovers 27.3MB for a total of 64.3MB, and recovers
+??MB for a total of ??MB on an Alpha.
+
+After doing this, the compiler can still be installed,
+especially if GNU @code{make} is used to avoid
+gratuitous rebuilds (or, the installation can be done
+by hand).
+
+@item
+Installing @code{gcc} and @code{g77} copies
+14.9MB onto the @samp{--prefix} disk for a total of 79.2MB
+on an ix86, and copies ??MB onto the @samp{--prefix}
+disk for a total of ??MB on an Alpha.
+@end itemize
+
+After installation, if no further modifications and
+builds of @code{gcc} or @code{g77} are planned, the
+source and build directory may be removed, leaving
+the total impact on a system's disk storage as
+that of the amount copied during installation.
+
+Systems with the appropriate version of @code{gcc}
+installed don't require the complete
+bootstrap build.
+Doing a ``straight build'' requires about as much
+space as does a bootstrap build followed by removing
+both the @file{gcc/stage1} and @file{gcc/stage2}
+directories.
+
+Installing @code{gcc} and @code{g77} over existing
+versions might require less @emph{new} disk space,
+but note that, unlike many products, @code{gcc}
+installs itself in a way that avoids overwriting other
+installed versions of itself, so that other versions may
+easily be invoked (via @samp{gcc -V @var{version}}).
+
+So, the amount of space saved as a result of having
+an existing version of @code{gcc} and @code{g77}
+already installed is not much---typically only the
+command drivers (@code{gcc}, @code{g77}, @code{g++},
+and so on, which are small) and the documentation
+is overwritten by the new installation.
+The rest of the new installation is done without
+replacing existing installed versions (assuming
+they have different version numbers).
 
 @item @code{patch}
 Although you can do everything @code{patch} does yourself,
@@ -116,10 +197,16 @@ You can obtain @code{patch} the same way you obtained
 In any case, you can apply patches by hand---patch files
 are designed for humans to read them.
 
+The version of GNU @code{patch} used to develop this release
+is 2.4.
+
 @item @code{make}
 Your system must have @code{make}, and you will probably save
 yourself a lot of trouble if it is GNU @code{make} (sometimes
 referred to as @code{gmake}).
+
+The version of GNU @code{make} used to develop this release
+is 3.73.
 
 @item @code{cc}
 Your system must have a working C compiler.
@@ -135,6 +222,9 @@ generated by running it in its distribution.
 You can obtain @code{bison} the same way you obtained
 @code{gcc} and @code{g77}.
 
+The version of GNU @code{bison} used to develop this release
+is 1.25.
+
 @xref{Missing bison?},
 for information on how to work around not having @code{bison}.
 
@@ -144,13 +234,29 @@ around any need for it.
 You can obtain @code{makeinfo} the same way you obtained
 @code{gcc} and @code{g77}.
 
+The version of GNU @code{makeinfo} used to develop this release
+is 1.68, from GNU @code{texinfo} version 3.11.
+
 @xref{Missing makeinfo?},
 for information on getting around the lack of @code{makeinfo}.
 
-@item @code{root} access
+@item @code{sed}
+All UNIX systems have @code{sed}, but some have a broken
+version that cannot handle configuring, building, or
+installing @code{gcc} or @code{g77}.
+
+The version of GNU @code{sed} used to develop this release
+is 2.05.
+(Note that GNU @code{sed} version 3.0 was withdrawn by the
+FSF---if you happen to have this version installed, replace
+it with version 2.05 immediately.
+See a GNU distribution site for further explanation.)
+
+@item @code{root} access or equivalent
 To perform the complete installation procedures on a system,
 you need to have @code{root} access to that system, or
-equivalent access.
+equivalent access to the @samp{--prefix} directory tree
+specified on the @code{configure} command line.
 
 Portions of the procedure (such as configuring and building
 @code{g77}) can be performed by any user with enough disk
@@ -406,7 +512,7 @@ constants.
 @item
 Improvements to the way @code{libf2c} is built could make
 building @code{g77} as a cross-compiler easier---for example,
-passing and using @samp{LD} and @samp{AR} in the appropriate
+passing and using @samp{$(LD)} and @samp{$(AR)} in the appropriate
 ways.
 
 @item
@@ -432,10 +538,13 @@ be pertinent in future versions of @code{g77}.
 @menu
 * Larger File Unit Numbers::     Raising @samp{MXUNIT}.
 * Always Flush Output::          Synchronizing write errors.
-* Maximum Stackable Size::       Large arrays are forced off the stack frame.
-* Floating-point Bit Patterns::  Possible programs building cross-compiler.
-* Large Initialization::         Large arrays with @code{DATA} initialization.
-* Alpha Problems Fixed::         Problems 64-bit systems like Alphas now fixed?
+* Maximum Stackable Size::       Large arrays forced off the stack.
+* Floating-point Bit Patterns::  Possible programs building @code{g77}
+                                   as a cross-compiler.
+* Large Initialization::         Large arrays with @code{DATA}
+                                   initialization.
+* Alpha Problems Fixed::         Problems with 64-bit systems like
+                                   Alphas now fixed?
 @end menu
 
 @node Larger File Unit Numbers
@@ -672,7 +781,7 @@ already reside in @file{/usr/FSF}, a naming convention
 used by the author of @code{g77} on his own system:
 
 @example
-/usr/FSF/gcc-2.7.2.2.tar.gz
+/usr/FSF/gcc-2.7.2.3.tar.gz
 /usr/FSF/g77-0.5.21.tar.gz
 @end example
 
@@ -714,20 +823,20 @@ These explanations follow this list of steps.
 @example
 sh[ 1]# @kbd{cd /usr/src}
 @set source-dir 1
-sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
+sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
 [Might say "Broken pipe"...that is normal on some systems.]
 @set unpack-gcc 2
 sh[ 3]# @kbd{gunzip -c < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
 ["Broken pipe" again possible.]
 @set unpack-g77 3
-sh[ 4]# @kbd{ln -s gcc-2.7.2.2 gcc}
+sh[ 4]# @kbd{ln -s gcc-2.7.2.3 gcc}
 @set link-gcc 4
 sh[ 5]# @kbd{ln -s g77-0.5.21 g77}
 @set link-g77 5
 sh[ 6]# @kbd{mv -i g77/* gcc}
 [No questions should be asked by mv here; or, you made a mistake.]
 @set merge-g77 6
-sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.2.diff}
+sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.3.diff}
 [Unless patch complains about rejected patches, this step worked.]
 @set apply-patch 7
 sh[ 8]# @kbd{cd gcc}
@@ -798,7 +907,7 @@ version of @code{g77}, and then apply the appropriate patches
 to achieve the same result---a source tree containing version
 0.5.21 of @code{g77}.
 
-@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.2 gcc}
+@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.3 gcc}
 @item Step @value{link-g77}: @kbd{ln -s g77-0.5.21 g77}
 These commands mainly help reduce typing,
 and help reduce visual clutter in examples
@@ -1021,9 +1130,9 @@ and @code{g77} is:
 
 @example
 sh# @kbd{cd /usr/src}
-sh# @kbd{gunzip -d < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
-sh# @kbd{gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
-sh# @kbd{ln -s gcc-2.7.2.2 gcc}
+sh# @kbd{gunzip -c /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
+sh# @kbd{gunzip -c /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+sh# @kbd{ln -s gcc-2.7.2.3 gcc}
 sh# @kbd{ln -s g77-0.5.21 g77}
 sh# @kbd{mv -i g77/* gcc}
 @end example
@@ -1049,7 +1158,7 @@ g77/f
 
 All three entries should be moved (or copied) into a @code{gcc}
 source tree (typically named after its version number and
-as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.2}).
+as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.3}).
 
 @file{g77/f} is the subdirectory containing all of the
 code, documentation, and other information that is specific
@@ -1672,43 +1781,43 @@ sh# @kbd{./g77 --driver=./xgcc -B./ -v}
 g77 version 0.5.21
  ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 @dots{}
 Reading specs from ./specs
-gcc version 2.7.2.2.f.3
+gcc version 2.7.2.3.f.1
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
  /usr/include
 End of search list.
  ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase @dots{}
-GNU F77 version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+GNU F77 version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
 GNU Fortran Front End version 0.5.21 compiled: @dots{}
  as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
  ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. @dots{}
 __G77_LIBF77_VERSION__: 0.5.21
 @@(#)LIBF77 VERSION 19970404
 __G77_LIBI77_VERSION__: 0.5.21
-@@(#) LIBI77 VERSION pjw,dmg-mods 19970527
+@@(#) LIBI77 VERSION pjw,dmg-mods 19970816
 __G77_LIBU77_VERSION__: 0.5.21
 @@(#) LIBU77 VERSION 19970609
 sh# @kbd{./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone}
 Reading specs from ./specs
-gcc version 2.7.2.2.f.3
+gcc version 2.7.2.3.f.1
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
  /usr/include
 End of search list.
  ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version @dots{}
-GNU C version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+GNU C version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
  as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
  ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. @dots{}
 /usr/lib/crt0.o: In function `__start':

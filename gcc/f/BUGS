@@ -15,6 +15,25 @@ separating them out.
    For information on bugs that might afflict people who configure,
 port, build, and install `g77', *Note Problems Installing::.
 
+   * `g77''s version of `gcc', and probably `g77' itself, cannot be
+     reliably used with the `-O2' option (or higher) on Digital
+     Semiconductor Alpha AXP machines.  The problem is most immediately
+     noticed in differences discovered by `make compare' following a
+     bootstrap build using `-O2'.  It also manifests itself as a
+     failure to compile `DATA' statements such as `DATA R/7./'
+     correctly; in this case, `R' might be initialized to `4.0'.
+
+     Until this bug is fixed, use only `-O1' or no optimization.
+
+   * A code-generation bug afflicts Intel x86 targets when `-O2' is
+     specified compiling, for example, an old version of the `DNRM2'
+     routine.  The x87 coprocessor stack is being somewhat mismanaged
+     in cases where assigned `GOTO' and `ASSIGN' are involved.
+
+     Version 0.5.21 of `g77' contains an initial effort to fix the
+     problem, but this effort is incomplete, and a more complete fix is
+     planned for the next release.
+
    * Work is needed on the `SIGNAL()' intrinsic to ensure that pointers
      and integers are properly handled on all targets, including 64-bit
      machines.
