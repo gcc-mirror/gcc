@@ -6137,7 +6137,7 @@ alpha_fold_builtin_cmpbge (unsigned HOST_WIDE_INT opint[], long op_const)
 	}
       return build_int_cst (long_integer_type_node, val);
     }
-  else if (op_const == 1 && opint[0] == 0)
+  else if (op_const == 2 && opint[1] == 0)
     return build_int_cst (long_integer_type_node, 0xff);
   return NULL;
 }
