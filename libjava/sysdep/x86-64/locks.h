@@ -24,10 +24,17 @@ inline static bool
 compare_and_swap(volatile obj_addr_t *addr, obj_addr_t old, obj_addr_t new_val)
 {
   char result;
+#ifdef __x86_64__
   __asm__ __volatile__("lock; cmpxchgq %2, %0; setz %1"
 	      : "+m"(*(addr)), "=q"(result)
 	      : "r" (new_val), "a"(old)
 	      : "memory");
+#else
+  __asm__ __volatile__("lock; cmpxchgl %2, %0; setz %1"
+		       : "+m"(*(addr)), "=q"(result)
+		       : "r" (new_val), "a"(old)
+		       : "memory");
+#endif
   return (bool) result;
 }
 
