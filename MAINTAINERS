@@ -23,7 +23,7 @@ Maintainers
 John Carr					jfc@mit.edu
 Richard Earnshaw				rearnsha@arm.com
 Richard Henderson                               rth@redhat.com
-Geoffrey Keating				geoffk@redhat.com
+Geoffrey Keating				geoffk@geoffk.org
 Richard Kenner					kenner@nyu.edu
 Jeff Law					law@redhat.com
 Jason Merrill					jason@redhat.com
@@ -64,7 +64,7 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-rs6000 port		Geoff Keating		geoffk@redhat.com
+rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
@@ -78,7 +78,7 @@ v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
 vax port		Dave Anglin		dave.anglin@nrc.ca
 x86-64 port		Jan Hubicka		jh@suse.cz
-xstormy16 port		Geoffrey Keating	geoffk@redhat.com
+xstormy16 port		Geoffrey Keating	geoffk@geoffk.org
 xtensa port		Bob Wilson		bob.wilson@acm.org
 
 			OS Port Maintainers	(OS alphabetical order)
@@ -146,7 +146,7 @@ docs co-maintainer	Joseph Myers		jsm28@cam.ac.uk
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill
 predict.def		Jan Hubicka		jh@suse.cz
-contrib/regression	Geoff Keating		geoffk@redhat.com
+contrib/regression	Geoff Keating		geoffk@geoffk.org
 treelang                Tim Josling             tej@melbpc.org.au
 new regalloc (ra*)	Michael Matz		matz@suse.de
 
