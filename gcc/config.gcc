@@ -2946,19 +2946,18 @@ sparc-*-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-# At the moment, 32-to-64 cross compilation doesn't work.
-#	case $machine in
-#	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*) ;;
-#	*-*-solaris2*)
-#		if test x$gnu_ld = xyes
-#		then
-#			tm_file=sparc/sol2-64.h
-#		else
-#			tm_file=sparc/sol2-sld-64.h
-#		fi
-#		tmake_file="$tmake_file sparc/t-sol2-64"
-#		;;
-#	esac
+	case $machine in
+	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*) ;;
+	*-*-solaris2*)
+		if test x$gnu_ld = xyes
+		then
+			tm_file=sparc/sol2-64.h
+		else
+			tm_file=sparc/sol2-sld-64.h
+		fi
+		tmake_file="$tmake_file sparc/t-sol2-64"
+		;;
+	esac
 	case $machine in
 	*-*-solaris2.[0-4])
 		float_format=i128

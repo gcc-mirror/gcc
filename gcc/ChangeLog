@@ -1,3 +1,7 @@
+2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config.gcc: Re-enable bi-arch sparc on Solaris 7 and above.
+
 2001-06-09  Peter Jakubek <pjak@snafu.de>
 
 	* config/m68k/m68k.md (ashrdi_const): Fix right shift by 16.
