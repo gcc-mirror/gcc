@@ -1,5 +1,5 @@
-/* gnu.java.beans.info.ComponentBeanInfo
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* gnu.java.beans.decoder.AssemblyException
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,41 +35,23 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package gnu.java.beans.decoder;
 
-package gnu.java.beans.info;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.beans.SimpleBeanInfo;
-
-/** BeanInfo class for java.awt.Component.
- ** This provides a few properties, but that's
- ** it.
- ** @author John Keiser
- ** @version 1.1.0, Aug 1 1998
- **/
-public class ComponentBeanInfo extends SimpleBeanInfo {
-	static PropertyDescriptor[] properties;
-	static {
-		try {
-		properties = new PropertyDescriptor[6];
-		properties[0] = new PropertyDescriptor("name",java.awt.Component.class);
-		properties[1] = new PropertyDescriptor("background",java.awt.Component.class);
-		properties[2] = new PropertyDescriptor("foreground",java.awt.Component.class);
-		properties[3] = new PropertyDescriptor("font",java.awt.Component.class);
-		properties[4] = new PropertyDescriptor("enabled",java.awt.Component.class);
-		properties[5] = new PropertyDescriptor("visible",java.awt.Component.class);
-		} catch(IntrospectionException E) {
-			properties = null;
-			throw new UnknownError("Could not introspect some java.awt.Component properties.");
-		}
-	}
-	public ComponentBeanInfo() {
-		super();
-	}
-
-	public PropertyDescriptor[] getPropertyDescriptors() {
-		return properties;
-	}
+/** The AssemblyException is used to wrap the cause of problems when assembling objects.
+ * In all cases only the wrapped exception is given to the PersistenceParser's
+ * ExceptionListener instance (never the AssemblyException itself).
+ * 
+ * <p>Note: Often multiple steps are needed to construct a fully usuable object instance.
+ * Such a construction can be called assembly and thats why this exception was
+ * named AssemblyException.</p>
+ *
+ * @author Robert Schuster
+ */
+class AssemblyException extends Exception
+{
+  AssemblyException(Throwable cause)
+  {
+    super(cause);
+  }
 }
-

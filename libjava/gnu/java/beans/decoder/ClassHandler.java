@@ -1,5 +1,5 @@
-/* gnu.java.beans.EmptyBeanInfo
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* gnu.java.beans.decoder.ClassHandler
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,36 +35,32 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package gnu.java.beans.decoder;
 
-package gnu.java.beans;
 
-import java.beans.*;
+/** Creates a Class instance from the character data in a &lt;class&gt; tag.
+ *
+ * @author Robert Schuster
+ */
+class ClassHandler extends SimpleHandler
+{
+  /**
+   * @param PersistenceParser
+   */
+  ClassHandler(ElementHandler parent)
+  {
+    super(parent);
+  }
 
-/**
- ** EmptyBeanInfo is a BeanInfo that discloses no
- ** information about the Bean and does not allow
- ** Introspection.  The Introspector uses instances of this
- ** class to create empty BeanInfos, but it could also be
- ** used as a base class for BeanInfos that do not allow
- ** Introspection and provide only a little bit of
- ** information.<P>
- **
- ** @author John Keiser
- ** @version 1.1.0, 30 Jul 1998
- ** @see gnu.java.beans.ExplicitBeanInfo
- ** @see java.beans.BeanInfo
- **/
-
-public class EmptyBeanInfo extends ExplicitBeanInfo {
-	/** Create a new EmptyBeanInfo. **/
-	public EmptyBeanInfo(Class beanClass) {
-		super(new BeanDescriptor(beanClass,null),
-		      new BeanInfo[0],
-		      new PropertyDescriptor[0],
-		      -1,
-		      new EventSetDescriptor[0],
-		      -1,
-		      new MethodDescriptor[0],
-		      null);
-	}
+  protected Object parse(String characters) throws AssemblyException
+  {
+    try
+      {
+	return instantiateClass(characters);
+      }
+    catch (ClassNotFoundException cnfe)
+      {
+	throw new AssemblyException(cnfe);
+      }
+  }
 }
