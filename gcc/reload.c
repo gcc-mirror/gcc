@@ -926,18 +926,23 @@ push_reload (in, out, inloc, outloc, class,
      However, we must reload the inner reg *as well as* the subreg in
      that case.  */
 
+  /* Similar issue for (SUBREG constant ...) if it was not handled by the
+     code above.  This can happen if SUBREG_WORD != 0.  */
+
   if (in != 0 && GET_CODE (in) == SUBREG
-      && GET_CODE (SUBREG_REG (in)) == REG
-      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in)) + SUBREG_WORD (in),
-				inmode)
-	  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-		  > UNITS_PER_WORD)
-	      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-		   / UNITS_PER_WORD)
-		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
-				       GET_MODE (SUBREG_REG (in)))))))
+      && (CONSTANT_P (SUBREG_REG (in))
+	  || (GET_CODE (SUBREG_REG (in)) == REG
+	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+	      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in))
+					+ SUBREG_WORD (in),
+					inmode)
+		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
+		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+			  > UNITS_PER_WORD)
+		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+			   / UNITS_PER_WORD)
+			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
+					       GET_MODE (SUBREG_REG (in)))))))))
     {
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for input reloads of type RELOAD_OTHER in the same
@@ -949,7 +954,6 @@ push_reload (in, out, inloc, outloc, class,
 		   VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
     }
-
 
   /* Similarly for paradoxical and problematical SUBREGs on the output.
      Note that there is no reason we need worry about the previous value
@@ -1271,9 +1275,13 @@ push_reload (in, out, inloc, outloc, class,
 	 For example, we may now have both IN and OUT
 	 while the old one may have just one of them.  */
 
-      if (inmode != VOIDmode)
+      /* The modes can be different.  If they are, we want to reload in
+	 the larger mode, so that the value is valid for both modes.  */
+      if (inmode != VOIDmode
+	  && GET_MODE_SIZE (inmode) > GET_MODE_SIZE (reload_inmode[i]))
 	reload_inmode[i] = inmode;
-      if (outmode != VOIDmode)
+      if (outmode != VOIDmode
+	  && GET_MODE_SIZE (outmode) > GET_MODE_SIZE (reload_outmode[i]))
 	reload_outmode[i] = outmode;
       if (in != 0)
 	reload_in[i] = in;
