@@ -1,3 +1,8 @@
 LIBGCC1=libgcc1.null
 CROSS_LIBGCC1=libgcc1.null
 ADA_CFLAGS=-mdisable-indexing
+LIB2FUNCS_EXTRA=lib2funcs.asm
+
+lib2funcs.asm: $(srcdir)/config/pa/$(LIB2FUNCS_EXTRA)
+	rm -f lib2funcs.asm
+	cp $(srcdir)/config/pa/$(LIB2FUNCS_EXTRA) .
