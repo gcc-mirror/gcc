@@ -1806,7 +1806,7 @@ reload (first, global, dumpfile)
     reload_as_needed (first, global);
 
   /* If we were able to eliminate the frame pointer, show that it is no
-     longer live at the start of any basic block.  If it ls live by
+     longer live at the start of any basic block.  If it is live by
      virtue of being in a pseudo, that pseudo will be marked live
      and hence the frame pointer will be known to be live via that
      pseudo.  */
