@@ -1,5 +1,5 @@
-/* gnu.java.lang.ArrayHelper
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* ArrayHelper.java -- Helper methods for handling array operations
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,25 +39,42 @@ exception statement from your version. */
 package gnu.java.lang;
 
 /**
- ** ArrayHelper helps you do things with arrays.
- **
- ** @author John Keiser
- ** @version 1.1.0, 29 Jul 1998
- **/
+ * ArrayHelper helps you do things with arrays.
+ *
+ * @author John Keiser
+ */
+public class ArrayHelper
+{
+  /**
+   * Counterpart to java.util.Collection.contains.
+   *
+   * @param array the array to search
+   * @param searchFor the object to locate
+   * @return true if some array element <code>equals(searchFor)</code>
+   */
+  public static boolean contains(Object[] array, Object searchFor)
+  {
+    return indexOf(array, searchFor) != -1;
+  }
 
-public class ArrayHelper {
-	public static boolean contains(Object[] array, Object searchFor) {
-		return indexOf(array,searchFor) != -1;
-	}
-
-	public static int indexOf(Object[] array, Object searchFor) {
-		for(int i=0;i<array.length;i++) {
-			if(array[i].equals(searchFor)) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /**
+   * Counterpart to java.util.Collection.indexOf.
+   *
+   * @param array the array to search
+   * @param searchFor the object to locate
+   * @return the index of the first equal object, or -1
+   */
+  public static int indexOf(Object[] array, Object searchFor)
+  {
+    for (int i = 0; i < array.length; i++)
+      {
+        if(array[i].equals(searchFor))
+          {
+            return i;
+          }
+      }
+    return -1;
+  }
 
 	public static boolean equalsArray(Object[] a, Object[] b) {
 		if(a.length == b.length) {
