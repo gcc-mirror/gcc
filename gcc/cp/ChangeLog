@@ -1,5 +1,7 @@
 Mon Sep 15 11:52:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (null_ptr_cst_p): Integer type, not integral type.
+
 	* call.c (joust): Disable warnings until they can be moved to the
 	right place.
 
