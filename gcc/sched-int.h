@@ -198,6 +198,9 @@ struct haifa_insn_data
      moved load insn and this one.  */
   unsigned int fed_by_spec_load : 1;
   unsigned int is_load_insn : 1;
+
+  /* Nonzero if priority has been computed already.  */
+  unsigned int priority_known : 1;
 };
 
 extern struct haifa_insn_data *h_i_d;
@@ -209,6 +212,7 @@ extern struct haifa_insn_data *h_i_d;
 #define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
 #define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
 #define INSN_PRIORITY(INSN)	(h_i_d[INSN_UID (INSN)].priority)
+#define INSN_PRIORITY_KNOWN(INSN) (h_i_d[INSN_UID (INSN)].priority_known)
 #define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
 #define INSN_UNIT(INSN)		(h_i_d[INSN_UID (INSN)].units)
 #define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
