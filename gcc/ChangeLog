@@ -1,3 +1,7 @@
+Wed Nov 26 13:04:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (main): Complain about -gdwarfn.
+
 Tue Nov 25 22:43:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (outout_call_frame_info): Ensure that the info has
