@@ -138,14 +138,14 @@ static void layout_class_type PROTO((tree, int *, int *, tree *, tree *));
 static void fixup_pending_inline PROTO((struct pending_inline *));
 static void fixup_inline_methods PROTO((tree));
 static void set_primary_base PROTO((tree, int, int *));
-static void dfs_propagate_binfo_offsets PROTO((tree, tree));
+static tree dfs_propagate_binfo_offsets PROTO((tree, void *));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static void layout_basetypes PROTO((tree));
 static void layout_virtual_bases PROTO((tree));
 static void remove_base_field PROTO((tree, tree, tree *));
 static void remove_base_fields PROTO((tree));
-static void dfs_set_offset_for_shared_vbases PROTO((tree, void *));
-static void dfs_set_offset_for_unshared_vbases PROTO((tree, void *));
+static tree dfs_set_offset_for_shared_vbases PROTO((tree, void *));
+static tree dfs_set_offset_for_unshared_vbases PROTO((tree, void *));
 
 /* Variables shared between class.c and call.c.  */
 
