@@ -1,3 +1,8 @@
+Mon Feb  8 22:38:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000.md: Revert "alternate use of crs if cr0 not available"
+	patches from 01-22-1999, 01-24-1999, 01-26-1999, and 02-08-1999.
+
 Mon Feb  8 21:36:44 1999  Richard Henderson  <rth@cygnus.com>
 
 	* output.h (current_function_has_computed_jump): Rename from
@@ -707,7 +712,6 @@ Thu Jan 28 09:41:11 1999  Jeffrey A Law  (law@cygnus.com)
 	* configure.in (hppa1.0-hp-hpux10*): Use t-pa.
 	* configure: Rebuilt.
 
->>>>>>> 1.2856
 Wed Jan 27 23:39:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* rtl.h (insn_first_p): Declare.
@@ -744,7 +748,6 @@ Wed Jan 27 23:39:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	Set derived_regs for givs.
 	* Makefile.in (stmt.o, loop.o, unroll.o): Depend on loop.h .
 
->>>>>>> 1.2855
 Wed Jan 27 19:31:36 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* function.c (purge_addressof_1): Handle case when a register
@@ -812,7 +815,6 @@ Tue Jan 26 13:41:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 	throughout, and invert sense.  Put cpp_warning_with_line back
 	in and export it.
 
->>>>>>> 1.2854
 Tue Jan 26 23:21:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (COUNTER_REGS): New register class.
@@ -846,7 +848,6 @@ Tue Jan 26 23:21:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	Move `string' label just after case '"' so that wide strings
 	don't crash the preprocessor.
 
->>>>>>> 1.2847
 Sun Jan 24 20:13:45 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (left shift + set cr patterns): Add missing '#' to
@@ -945,7 +946,6 @@ Sat Jan 23 22:34:57 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* varasm.c (assemble_string): Likewise.
 
->>>>>>> 1.2844
 Sat Jan 23 01:37:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (gcc_tooldir): Handle case where exec_prefix has
@@ -1003,7 +1003,6 @@ Fri Jan 22 07:43:01 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (tooldir): Replace with gcc_tooldir.
 
->>>>>>> 1.2836
 Thu Jan 21 23:21:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.md (ashldi_const): Disable for !TARGET_5200.  Fix indention.
