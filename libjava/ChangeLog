@@ -1,3 +1,8 @@
+1999-04-07  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Omit java.text.Collator,
+	java.text.RuleBasedCollator.
+
 1999-04-06  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/protocol/http/Connection.java (getHeaderField): Catch
