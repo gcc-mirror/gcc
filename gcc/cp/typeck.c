@@ -2200,7 +2200,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	}
 
       /* Handle base classes here...  */
-      if (base != basetype && TYPE_USES_COMPLEX_INHERITANCE (basetype))
+      if (base != basetype && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
 	{
 	  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
 	  if (integer_zerop (addr))
@@ -4275,7 +4275,7 @@ build_component_addr (arg, argtype)
     }
 
   if (TREE_CODE (field) == FIELD_DECL
-      && TYPE_USES_COMPLEX_INHERITANCE (basetype))
+      && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
     {
       /* Can't convert directly to ARGTYPE, since that
 	 may have the same pointer type as one of our

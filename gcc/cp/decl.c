@@ -12477,13 +12477,23 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
 	    {
 	      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
-	      TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
+	      /* Converting to a virtual base class requires looking
+		 up the offset of the virtual base.  */
+	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
 	    }
 
 	  if (CLASS_TYPE_P (basetype))
 	    {
 	      TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
 	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	      /* If the base-class uses multiple inheritance, so do we.  */
+	      TYPE_USES_MULTIPLE_INHERITANCE (ref) 
+		|= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
+	      /* Likewise, if converting to a base of the base may require
+		 code, then we may need to generate code to convert to a
+		 base as well.  */
+	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) 
+		|= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
 	    }
 
 	  i += 1;
@@ -12495,18 +12505,12 @@ xref_basetypes (code_type_node, name, ref, binfo)
     BINFO_BASETYPES (TYPE_BINFO (ref)) = NULL_TREE;
 
   if (i > 1)
-    TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
-  else if (i == 1)
     {
-      tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, 0));
-      
-      if (CLASS_TYPE_P (basetype))
-	TYPE_USES_MULTIPLE_INHERITANCE (ref)
-	  = TYPE_USES_MULTIPLE_INHERITANCE (basetype);
+      TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
+      /* If there is more than one non-empty they cannot be at the same
+	 address.  */
+      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
     }
-
-  if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
-    TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
 
   /* Unmark all the types.  */
   while (--i >= 0)

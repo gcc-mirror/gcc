@@ -831,7 +831,7 @@ process_init_constructor (type, init, elts)
 	      return error_mark_node;
 	    }
 
-	  if (TYPE_VIRTUAL_P (type))
+	  if (TYPE_POLYMORPHIC_P (type))
 	    {
 	      sorry ("initializer list for object using virtual functions");
 	      return error_mark_node;

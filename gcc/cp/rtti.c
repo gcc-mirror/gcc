@@ -84,7 +84,7 @@ build_headof_sub (exp)
 
 /* Given the expression EXP of type `class *', return the head of the
    object pointed to by EXP with type cv void*, if the class has any
-   virtual functions (TYPE_VIRTUAL_P), else just return the
+   virtual functions (TYPE_POLYMORPHIC_P), else just return the
    expression.  */
 
 static tree
@@ -102,7 +102,7 @@ build_headof (exp)
     }
   type = TREE_TYPE (type);
 
-  if (!TYPE_VIRTUAL_P (type))
+  if (!TYPE_POLYMORPHIC_P (type))
     return exp;
   if (CLASSTYPE_COM_INTERFACE (type))
     {
@@ -207,7 +207,7 @@ get_tinfo_fn_dynamic (exp)
     }
 
   /* If exp is a reference to polymorphic type, get the real type_info.  */
-  if (TYPE_VIRTUAL_P (type) && ! resolves_to_fixed_type_p (exp, 0))
+  if (TYPE_POLYMORPHIC_P (type) && ! resolves_to_fixed_type_p (exp, 0))
     {
       /* build reference to type_info from vtable.  */
       tree t;
@@ -274,7 +274,7 @@ build_x_typeid (exp)
 
   if (TREE_CODE (exp) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
-      && TYPE_VIRTUAL_P (TREE_TYPE (exp))
+      && TYPE_POLYMORPHIC_P (TREE_TYPE (exp))
       && ! resolves_to_fixed_type_p (exp, &nonnull)
       && ! nonnull)
     {
@@ -327,7 +327,7 @@ get_tinfo_var (type)
     {
       if (CLASSTYPE_N_BASECLASSES (type) == 0)
 	size = 2 * POINTER_SIZE;
-      else if (! TYPE_USES_COMPLEX_INHERITANCE (type)
+      else if (! TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (type)
 	       && (TREE_VIA_PUBLIC
 		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
 	size = 3 * POINTER_SIZE;
@@ -562,7 +562,7 @@ build_dynamic_cast_1 (type, expr)
   }
 
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */
-  if (TYPE_VIRTUAL_P (TREE_TYPE (exprtype)))
+  if (TYPE_POLYMORPHIC_P (TREE_TYPE (exprtype)))
     {
       tree expr1;
       /* if TYPE is `void *', return pointer to complete object.  */
@@ -1162,7 +1162,7 @@ synthesize_tinfo_fn (fndecl)
     {
       if (CLASSTYPE_N_BASECLASSES (type) == 0)
 	expand_generic_desc (tdecl, type, "__rtti_user");
-      else if (! TYPE_USES_COMPLEX_INHERITANCE (type)
+      else if (! TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (type)
 	       && (TREE_VIA_PUBLIC
 		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
 	expand_si_desc (tdecl, type);

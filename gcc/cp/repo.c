@@ -170,7 +170,8 @@ repo_inline_used (fn)
     return;
 
   /* Member functions of polymorphic classes go with their vtables.  */
-  if (DECL_FUNCTION_MEMBER_P (fn) && TYPE_VIRTUAL_P (DECL_CLASS_CONTEXT (fn)))
+  if (DECL_FUNCTION_MEMBER_P (fn) 
+      && TYPE_POLYMORPHIC_P (DECL_CLASS_CONTEXT (fn)))
     {
       repo_vtable_used (DECL_CLASS_CONTEXT (fn));
       return;

@@ -1,3 +1,38 @@
+1999-12-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TYPE_VIRTUAL_P): Rename to ...
+	(TYPE_POLYMORPHIC_P): ... this.
+	(TYPE_USES_COMPLEX_INHERITANCE): Rename to ...
+	(TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P): ... this.
+	(TREE_CALLS_NEW): Remove.
+	(TREE_MANGLED): Likewise.
+	* call.c (build_vfield_ref): Use TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P,
+	and TYPE_POLYMORPHIC_P.
+	* class.c (check_bases): Likewise.
+	(finish_base_struct): Likewise.
+	(finish_struct_bits): Likewise.
+	(check_for_override): Likewise.
+	(finish_struct_1): Likewise.
+	(get_vfield_name): Likewise.
+	* decl.c (xref_basetypes): Likewise.
+	* decl2.c (import_export_class): Likewise.
+	(import_export_decl): Likewise.
+	* error.c (dump_function_decl): Likewise.
+	* pt.c (instantiate_class_template): Likewise.
+	* repo.c (repo_inline_used): Likewise.
+	* rtti.c (build_headof): Likewise.
+	(get_tinfo_fn_dynamic): Likewise.
+	(build_x_typeid): Likewise.
+	(get_tinfo_var): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	(synthesize_tinfo_fn): Likewise.
+	* search.c (lookup_field_1): Likewise.
+	(dfs_debug_mark): Likewise.
+	(maybe_suppress_debug_info): Likewise.
+	* typeck.c (build_component_ref): Likewise.
+	(build_component_addr): Likewise.
+	* typeck2.c (process_init_constructor): Likewise.
+	
 1999-12-20  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (strip_all_pointer_quals): New static function.

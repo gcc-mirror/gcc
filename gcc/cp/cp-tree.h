@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
-      TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
+      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (in _TYPE).
       C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       BASELINK_P (in TREE_LIST)
@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
    2: IDENTIFIER_OPNAME_P.
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
-      TYPE_VIRTUAL_P.
+      TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       STMT_LINENO_FOR_FN_P (in _STMT)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
@@ -2065,40 +2065,16 @@ struct lang_decl
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
 
-#if 0				/* UNUSED */
-/* Nonzero in any kind of _EXPR or _REF node means that it is a call
-   to a storage allocation routine.  If, later, alternate storage
-   is found to hold the object, this call can be ignored.  */
-#define TREE_CALLS_NEW(NODE) (TREE_LANG_FLAG_1 (NODE))
-#endif
+/* Nonzero in any kind of _TYPE where conversions to base-classes may
+   involve pointer arithmetic.  If this is zero, then converting to
+   a base-class never requires changing the value of the pointer.  */
+#define TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P(NODE) (TREE_LANG_FLAG_1 (NODE))
 
-/* Nonzero in any kind of _TYPE that uses multiple inheritance
-   or virtual baseclasses.  */
-#define TYPE_USES_COMPLEX_INHERITANCE(NODE) (TREE_LANG_FLAG_1 (NODE))
+/* [class.virtual]
 
-#if 0				/* UNUSED */
-/* Nonzero in IDENTIFIER_NODE means that this name is not the name the user
-   gave; it's a DECL_NESTED_TYPENAME.  Someone may want to set this on
-   mangled function names, too, but it isn't currently.  */
-#define TREE_MANGLED(NODE) (FOO)
-#endif
-
-#if 0				/* UNUSED */
-/* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
-   should be looked up in a non-standard way.  */
-#define DECL_OVERLOADED(NODE) (FOO)
-#endif
-
-/* Nonzero if this (non-TYPE)_DECL has its virtual attribute set.
-   For a FUNCTION_DECL, this is when the function is a virtual function.
-   For a VAR_DECL, this is when the variable is a virtual function table.
-   For a FIELD_DECL, when the field is the field for the virtual function table.
-   For an IDENTIFIER_NODE, nonzero if any function with this name
-   has been declared virtual.
-
-   For a _TYPE if it uses virtual functions (or is derived from
-   one that does).  */
-#define TYPE_VIRTUAL_P(NODE) (TREE_LANG_FLAG_2 (NODE))
+   A class that declares or inherits a virtual function is called a
+   polymorphic class.  */
+#define TYPE_POLYMORPHIC_P(NODE) (TREE_LANG_FLAG_2 (NODE))
 
 extern int flag_new_for_scope;
 

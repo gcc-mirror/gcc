@@ -1542,10 +1542,10 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 	  continue;
 	}
 
-      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
+      /* Effective C++ rule 14.  We only need to check TYPE_POLYMORPHIC_P
 	 here because the case of virtual functions but non-virtual
 	 dtor is handled in finish_struct_1.  */
-      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
+      if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype)
 	  && TYPE_HAS_DESTRUCTOR (basetype))
 	cp_warning ("base class `%#T' has a non-virtual destructor",
 		    basetype);
@@ -1584,6 +1584,7 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
       TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
+      TYPE_POLYMORPHIC_P (t) |= TYPE_POLYMORPHIC_P (basetype);
 
       /* Derived classes can implicitly become COMified if their bases
 	 are COM.  */
@@ -1630,7 +1631,7 @@ finish_base_struct (t, b)
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree basetype = BINFO_TYPE (base_binfo);
 
-      if (TYPE_VIRTUAL_P (basetype))
+      if (TYPE_POLYMORPHIC_P (basetype))
 	{
 	  /* Ensure that this is set from at least a virtual base
              class.  */
@@ -1770,8 +1771,9 @@ finish_struct_bits (t, max_has_virtual)
       TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
       TYPE_NEEDS_DESTRUCTOR (variants) = TYPE_NEEDS_DESTRUCTOR (t);
 
-      TYPE_USES_COMPLEX_INHERITANCE (variants) = TYPE_USES_COMPLEX_INHERITANCE (t);
-      TYPE_VIRTUAL_P (variants) = TYPE_VIRTUAL_P (t);
+      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (variants) 
+	= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t);
+      TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
       TYPE_USES_VIRTUAL_BASECLASSES (variants) = TYPE_USES_VIRTUAL_BASECLASSES (t);
       /* Copy whatever these are holding today.  */
       TYPE_MIN_VALUE (variants) = TYPE_MIN_VALUE (t);
@@ -2926,7 +2928,7 @@ check_for_override (decl, ctype)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo)))
+      if (TYPE_POLYMORPHIC_P (BINFO_TYPE (base_binfo)))
 	{
 	  tree tmp = get_matching_virtual
 	    (base_binfo, decl,
@@ -4290,21 +4292,22 @@ finish_struct_1 (t)
 	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
       TYPE_VFIELD (t) = vfield;
     }
+
+  /* If this vtbl pointer is new, add it to the list of vtbl
+     pointers in this class.  */
     
   if (has_virtual > max_has_virtual)
     max_has_virtual = has_virtual;
   if (max_has_virtual > 0)
-    TYPE_VIRTUAL_P (t) = 1;
+    TYPE_POLYMORPHIC_P (t) = 1;
 
-  if (flag_rtti && TYPE_VIRTUAL_P (t) && !pending_hard_virtuals)
+  if (flag_rtti && TYPE_POLYMORPHIC_P (t) && !pending_hard_virtuals)
     modify_all_vtables (t, NULL_TREE);
 
-  while (pending_hard_virtuals)
-    {
-      modify_all_vtables (t,
-			  TREE_VALUE (pending_hard_virtuals));
-      pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals);
-    }
+  for (pending_hard_virtuals = nreverse (pending_hard_virtuals);
+       pending_hard_virtuals;
+       pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals))
+    modify_all_vtables (t, TREE_VALUE (pending_hard_virtuals));
   
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -5525,7 +5528,7 @@ get_vfield_name (type)
   char *buf;
 
   while (BINFO_BASETYPES (binfo)
-	 && TYPE_VIRTUAL_P (BINFO_TYPE (BINFO_BASETYPE (binfo, 0)))
+	 && TYPE_POLYMORPHIC_P (BINFO_TYPE (BINFO_BASETYPE (binfo, 0)))
 	 && ! TREE_VIA_VIRTUAL (BINFO_BASETYPE (binfo, 0)))
     binfo = BINFO_BASETYPE (binfo, 0);
 
