@@ -4263,12 +4263,10 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	     && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
 	     && TREE_CODE (TREE_OPERAND (rhs, 0)) == INTEGER_CST
 	     && integer_zerop (TREE_OPERAND (rhs, 0))))
-	{
 	  warn_for_assignment ("%s makes pointer from integer without a cast",
 			       errtype, funname, parmnum);
-	  return convert (type, rhs);
-	}
-      return null_pointer_node;
+
+      return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {

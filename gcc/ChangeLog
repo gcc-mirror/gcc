@@ -1,3 +1,9 @@
+2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/13382
+	* c-typeck.c (convert_for_assignment): When converting from
+	integral type to pointer type, always call convert.
+
 2003-12-22  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
         PR target/11271
