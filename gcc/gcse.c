@@ -494,13 +494,6 @@ static int copy_prop_count;
    Normally they'd be defined a bit later, but `rd_gen' needs to
    be declared sooner.  */
 
-/* A bitmap of all ones for implementing the algorithm for available
-   expressions and reaching definitions.  */
-/* ??? Available expression bitmaps have a different size than reaching
-   definition bitmaps.  This should be the larger of the two, however, it
-   is not currently used for reaching definitions.  */
-static sbitmap u_bitmap;
-
 /* Each block has a bitmap of each type.
    The length of each blocks bitmap is:
 
@@ -2663,9 +2656,6 @@ alloc_avail_expr_mem (n_blocks, n_exprs)
 
   ae_out = (sbitmap *) sbitmap_vector_alloc (n_blocks, n_exprs);
   sbitmap_vector_zero (ae_out, n_basic_blocks);
-
-  u_bitmap = (sbitmap) sbitmap_alloc (n_exprs);
-  sbitmap_ones (u_bitmap);
 }
 
 static void
@@ -2675,7 +2665,6 @@ free_avail_expr_mem ()
   free (ae_gen);
   free (ae_in);
   free (ae_out);
-  free (u_bitmap);
 }
 
 /* Compute the set of available expressions generated in each basic block.  */
@@ -4057,7 +4046,6 @@ alloc_pre_mem (n_blocks, n_exprs)
   pre_delete_map = NULL;
   ae_in = NULL;
   ae_out = NULL;
-  u_bitmap = NULL;
   transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
   ae_kill = sbitmap_vector_alloc (n_blocks, n_exprs);
 
@@ -4089,14 +4077,10 @@ free_pre_mem ()
     free (ae_in);
   if (ae_out)
     free (ae_out);
-  if (u_bitmap)
-    free (u_bitmap);
 
   transp = comp = NULL;
   pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
   transpout = ae_in = ae_out = NULL;
-  u_bitmap = NULL;
-
 }
 
 /* Top level routine to do the dataflow analysis needed by PRE.  */
