@@ -322,7 +322,7 @@ sext_add_operand (op, mode)
     return ((unsigned HOST_WIDE_INT) INTVAL (op) < 255
 	    || (unsigned HOST_WIDE_INT) (- INTVAL (op)) < 255);
 
-  return register_operand (op, mode);
+  return reg_not_elim_operand (op, mode);
 }
 
 /* Return 1 if OP is the constant 4 or 8.  */
@@ -1949,6 +1949,16 @@ reg_not_elim_operand (op, mode)
     return 0;
 
   return register_operand (op, mode);
+}
+
+/* Likewise, but allow 8 bit constants as well.  */
+
+int
+reg_not_elim_or_8bit_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return reg_not_elim_operand (op, mode) || cint8_operand (op, mode);
 }
 
 /* Return 1 if this function can directly return via $26.  */
