@@ -35,6 +35,8 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 
+#include <sys/types.h>
+
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
