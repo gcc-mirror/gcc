@@ -473,7 +473,7 @@ all.cross: native gcc-cross g++-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPRO
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc g++ $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc specs $(LIBGCC1) xlimits.h
+start.encap: native xgcc g++ specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
 for-bootstrap: start.encap $(LIBGCC)
 # These can't be made, with COFF encapsulation, until after GCC can run.
