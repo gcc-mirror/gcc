@@ -3685,7 +3685,7 @@ remove_constant_addition (x)
    that support write prefetches.
 
    Several heuristics are used to determine when to prefetch.  They are
-   controlled by defined symbols that can be overridden for each target. */
+   controlled by defined symbols that can be overridden for each target.  */
 
 static void
 emit_prefetch_instructions (loop)
