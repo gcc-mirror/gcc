@@ -1,6 +1,6 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -209,7 +209,7 @@ do {									\
 %type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
 %type <ttype> initdecls notype_initdecls initdcl notype_initdcl
 %type <exprtype> init
-%type <ttype> simple_asm_expr maybeasm asm_stmt asm_argument
+%type <ttype> simple_asm_expr maybeasm asm_stmt asm_argument asm_string
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
@@ -2330,7 +2330,7 @@ label:	  CASE expr_no_commas ':'
    expression with inputs and outputs does not make sense.  */
 simple_asm_expr:
 	ASM_KEYWORD stop_string_translation
-	      '(' STRING ')' start_string_translation
+	      '(' asm_string ')' start_string_translation
 		{ $$ = $4; }
 	;
 
@@ -2359,16 +2359,16 @@ asm_stmt:
 
 asm_argument:
 	/* no operands */
-	STRING
+	asm_string
 		{ $$ = build_asm_expr ($1, 0, 0, 0, true); }
 	/* output operands */
-	| STRING ':' asm_operands
+	| asm_string ':' asm_operands
 		{ $$ = build_asm_expr ($1, $3, 0, 0, false); }
 	/* output and input operands */
-	| STRING ':' asm_operands ':' asm_operands
+	| asm_string ':' asm_operands ':' asm_operands
 		{ $$ = build_asm_expr ($1, $3, $5, 0, false); }
 	/* output and input operands and clobbers */
-	| STRING ':' asm_operands ':' asm_operands ':' asm_clobbers
+	| asm_string ':' asm_operands ':' asm_operands ':' asm_clobbers
 		{ $$ = build_asm_expr ($1, $3, $5, $7, false); }
 	;
 
@@ -2402,10 +2402,11 @@ nonnull_asm_operands:
 	;
 
 asm_operand:
-	  STRING start_string_translation '(' expr ')' stop_string_translation
+	  asm_string start_string_translation '(' expr ')'
+	    stop_string_translation
 		{ $$ = build_tree_list (build_tree_list (NULL_TREE, $1),
 					$4.value); }
-	| '[' identifier ']' STRING start_string_translation
+	| '[' identifier ']' asm_string start_string_translation
 	  '(' expr ')' stop_string_translation
 		{ $2 = build_string (IDENTIFIER_LENGTH ($2),
 				     IDENTIFIER_POINTER ($2));
@@ -2413,11 +2414,23 @@ asm_operand:
 	;
 
 asm_clobbers:
-	  STRING
+	  asm_string
 		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
-	| asm_clobbers ',' STRING
+	| asm_clobbers ',' asm_string
 		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 	;
+
+/* Strings in 'asm' must be narrow strings.  */
+asm_string:
+	  STRING
+		{ if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE ($1)))
+		      != char_type_node)
+		    {
+		      error ("wide string literal in %<asm%>");
+		      $$ = build_string (1, "");
+		    }
+		  else
+		    $$ = $1; }
 
 stop_string_translation:
         { c_lex_string_translate = 0; }
