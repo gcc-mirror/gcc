@@ -269,7 +269,8 @@ LIBGCC2 = libgcc2.a
 # we use this here because that should be enough, and also
 # so that -g1 will be tested.
 LIBGCC2_DEBUG_CFLAGS = -g1
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED \
+	@inhibit_libc@
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -Iinclude
