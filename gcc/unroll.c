@@ -3617,6 +3617,10 @@ set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
 	 can not be sure that FIRST_UID dominates LAST_UID.  */
       if (GET_CODE (p) == CODE_LABEL)
 	return 0;
+      /* Could not find LAST_UID, but we reached the end of the loop, so
+	 it must be safe.  */
+      else if (p == copy_end)
+	return 1;
       p = NEXT_INSN (p);
     }
 
