@@ -44,7 +44,7 @@
 
 2004-07-13  Anthony Heading  <aheading@jpmorgan.com>
 
-	* configure.ac (gcc_cv_as_offsetable_lo10: Fix a typo.
+	* configure.ac (gcc_cv_as_offsetable_lo10): Fix a typo.
 	* configure: Rebuilt.
 
 2004-07-12  Vladimir Makarov  <vmakarov@redhat.com>
