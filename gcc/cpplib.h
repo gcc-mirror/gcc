@@ -154,7 +154,8 @@ struct cpp_buffer {
      "@-" means following identifier should not be macro-expanded.
      "@ " means a token-separator.  This turns into " " in final output
           if not stringizing and needed to separate tokens; otherwise nothing.
-     "@@" means a normal '@'. */
+     "@@" means a normal '@'.
+     (An '@' inside a string stands for itself and is never an escape.) */
   char has_escapes;
 };
 
