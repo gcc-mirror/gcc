@@ -22,6 +22,8 @@
 	* tree-data-ref.c (array_base_name_differ_p): Remove ta and
 	tb.
 
+	* tree-eh.c (tree_could_trap_p): Remove idx.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
