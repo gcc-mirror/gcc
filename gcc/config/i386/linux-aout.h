@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -Dlinux -Asystem(posix)"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

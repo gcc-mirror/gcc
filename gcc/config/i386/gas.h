@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #define CPP_PREDEFINES "-Dunix"
-#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
 
 /* Allow #sccs in preprocessor.  */
 

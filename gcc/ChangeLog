@@ -1,3 +1,16 @@
+Mon Jul 13 23:36:08 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386/i386.h (CPP_486_SPEC, CPP_586_SPEC, CPP_686_SPEC): New specs.
+	(CPP_CPU_DEFAULT_SPEC, CPP_CPU_SPEC): Use them.
+	(EXTRA_SPECS): Support them.
+	* gcc.c: Delete %[spec] support.
+	(do_spec_1, case '('): Likewise.
+	(do_spec_1, case '['): Call error.
+	* i386/aix386ng.h, cygwin32.h, freebsd-elf.h, gas.h, isc.h,
+	linux-aout.h, linux-oldld.h, linux.h, osfelf.h, osfrose.h, sco.h,
+	sco4.h, sco4dbx.h, sco5.h, sol2.h, sysv3.h (CPP_SPEC): Delete
+	%[cpp_cpu].
+
 Mon Jul 13 23:31:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.c (output_scc_di): Use cmpw #0 only for address registers.

@@ -304,15 +304,21 @@ extern int ix86_arch;
 %{mpentiumpro:-mcpu=pentiumpro}}"
 #endif
 
+#define CPP_486_SPEC "%{!ansi:-Di486} -D__i486 -D__i486__"
+#define CPP_586_SPEC "%{!ansi:-Di586 -Dpentium} \
+	-D__i586 -D__i586__ -D__pentium -D__pentium__"
+#define CPP_686_SPEC "%{!ansi:-Di686 -Dpentiumpro} \
+	-D__i686 -D__i686__ -D__pentiumpro -D__pentiumpro__"
+
 #ifndef CPP_CPU_DEFAULT_SPEC
 #if TARGET_CPU_DEFAULT == 1
-#define CPP_CPU_DEFAULT_SPEC "-Di486"
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_486)"
 #else
 #if TARGET_CPU_DEFAULT == 2
-#define CPP_CPU_DEFAULT_SPEC "-Dpentium -Di586"
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_586)"
 #else
 #if TARGET_CPU_DEFAULT == 3
-#define CPP_CPU_DEFAULT_SPEC "-Dpentiumpro -Di686"
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_686)"
 #else
 #define CPP_CPU_DEFAULT_SPEC ""
 #endif
@@ -322,11 +328,12 @@ extern int ix86_arch;
 
 #ifndef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
--Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386) \
-%{mcpu=i486:-Di486} %{m486:-Di486} \
-%{mpentium:-Dpentium -Di586} %{mcpu=pentium:-Dpentium -Di586} \
-%{mpentiumpro:-Dpentiumpro -Di686} %{mcpu=pentiumpro:-Dpentiumpro -Di686} \
-%{!mcpu*:%{!m486:%{!mpentium*: %[cpp_cpu_default]}}}"
+-Asystem(unix) -Acpu(i386) -Amachine(i386) \
+%{!ansi:-Di386} -D__i386 -D__i386__ \
+%{mcpu=i486:%(cpp_486)} %{m486:%(cpp_486)} \
+%{mpentium:%(cpp_586)} %{mcpu=pentium:%(cpp_586)} \
+%{mpentiumpro:%(cpp_686)} %{mcpu=pentiumpro:%(cpp_686)} \
+%{!mcpu*:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}"
 #endif
 
 #ifndef CC1_SPEC
@@ -348,6 +355,9 @@ extern int ix86_arch;
 #endif
 
 #define EXTRA_SPECS							\
+  { "cpp_486", CPP_486_SPEC},						\
+  { "cpp_586", CPP_586_SPEC},						\
+  { "cpp_686", CPP_686_SPEC},						\
   { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
   { "cpp_cpu",	CPP_CPU_SPEC },						\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
