@@ -1,5 +1,9 @@
 1999-08-08  Anthony Green  <green@cygnus.com>
 
+	* gnu/gcj/util/path/SearchPath.java: Comment out verbose output.
+
+1999-08-08  Anthony Green  <green@cygnus.com>
+
 	* defineclass.cc (_Jv_VerifyClassName): Verify array names
 	correctly.
 

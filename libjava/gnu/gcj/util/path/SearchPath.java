@@ -116,8 +116,8 @@ final public class SearchPath {
 		result = ent.getBytes (element);		
 		if (result != null) 
 		    {
-			System.out.println ("loading " + ent 
-					    + "(" + element + ")");
+			// System.out.println ("loading " + ent 
+			//		    + "(" + element + ")");
 			return result;
 		    }
 	    }
