@@ -1,3 +1,8 @@
+2003-12-18  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	* version.c (version_string): Renumber as 3.4.0
+	* doc/include/gcc-common.texi: Likewise
+
 2003-12-18  Richard Henderson  <rth@redhat.com>
 
 	* genrecog.c (print_host_wide_int): New.
