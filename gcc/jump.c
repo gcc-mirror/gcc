@@ -337,6 +337,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	  if (nlabel != JUMP_LABEL (insn))
 	    changed |= redirect_jump (insn, nlabel);
 
+	  if (! optimize)
+	    continue;
+
 	  /* If a dispatch table always goes to the same place,
 	     get rid of it and replace the insn that uses it.  */
 
@@ -372,9 +375,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		  changed = 1;
 		}
 	    }
-
-	  if (! optimize)
-	    continue;
 
 	  /* If a jump references the end of the function, try to turn
 	     it into a RETURN insn, possibly a conditional one.  */
