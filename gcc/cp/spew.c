@@ -120,6 +120,7 @@ static SPEW_INLINE void feed_input PARAMS ((struct unparsed_text *));
 static SPEW_INLINE void end_input PARAMS ((void));
 static SPEW_INLINE void snarf_block PARAMS ((const char *, int));
 static tree snarf_defarg PARAMS ((void));
+static int frob_id PARAMS ((int, int, tree *));
 
 /* The list of inline functions being held off until we reach the end of
    the current class declaration.  */
@@ -776,48 +777,14 @@ yylex ()
       break;
 
     case IDENTIFIER:
+    {
+      int peek;
+      
       scan_tokens (1);
-      if (nth_token (1)->yychar == SCOPE)
-	{
-	  /* Don't interfere with the setting from an 'aggr' prefix.  */
-	  old_looking_for_typename = looking_for_typename;
-	  looking_for_typename = 1;
-	}
-      else if (nth_token (1)->yychar == '<')
-	looking_for_template = 1;
-
-      trrr = lookup_name (nth_token (0)->yylval.ttype, -2);
-
-      if (trrr)
-	{
-	  yychr = identifier_type (trrr);
-	  switch (yychr)
-	    {
-	    case TYPENAME:
-	    case SELFNAME:
-	    case NSNAME:
-	    case PTYPENAME:
-	      lastiddecl = trrr;
-
-	      /* If this got special lookup, remember it.  In these
-	         cases, we know it can't be a declarator-id. */
-	      if (got_scope || got_object)
-		nth_token (0)->yylval.ttype = trrr;
-	      break;
-
-	    case PFUNCNAME:
-	    case IDENTIFIER:
-	      lastiddecl = trrr;
-	      break;
-
-	    default:
-	      my_friendly_abort (101);
-	    }
-	}
-      else
-	lastiddecl = NULL_TREE;
-      got_scope = NULL_TREE;
-      /* and fall through to...  */
+      peek = nth_token (1)->yychar;
+      yychr = frob_id (yychr, peek, &nth_token (0)->yylval.ttype);
+      break;
+    }
     case IDENTIFIER_DEFN:
     case TYPENAME:
     case TYPENAME_DEFN:
@@ -938,27 +905,40 @@ yyungetc (ch, rescan)
     }
 }
 
-/* ID is an operator name. Duplicate the hackery in yylex to determine what
-   it really is.  */
+/* Lexer hackery to determine what *IDP really is.  */
 
-tree frob_opname (id)
-     tree id;
+static int
+frob_id (yyc, peek, idp)
+     int yyc;
+     int peek;
+     tree *idp;
 {
   tree trrr;
+  int old_looking_for_typename = 0;
   
-  if (yychar == '<')
+  if (peek == SCOPE)
+    {
+      /* Don't interfere with the setting from an 'aggr' prefix.  */
+      old_looking_for_typename = looking_for_typename;
+      looking_for_typename = 1;
+    }
+  else if (peek == '<')
     looking_for_template = 1;
-  trrr = lookup_name (id, -2);
+  trrr = lookup_name (*idp, -2);
   if (trrr)
     {
-      switch (identifier_type (trrr))
+      yyc = identifier_type (trrr);
+      switch(yyc)
         {
           case TYPENAME:
           case SELFNAME:
           case NSNAME:
           case PTYPENAME:
+	    /* If this got special lookup, remember it.  In these
+	       cases, we know it can't be a declarator-id. */
             if (got_scope || got_object)
-              id = trrr;
+              *idp = trrr;
+            /* FALLTHROUGH */
           case PFUNCNAME:
           case IDENTIFIER:
             lastiddecl = trrr;
@@ -970,8 +950,19 @@ tree frob_opname (id)
   else
     lastiddecl = NULL_TREE;
   got_scope = NULL_TREE;
-  got_object = NULL_TREE;
+  looking_for_typename = old_looking_for_typename;
   looking_for_template = 0;
+  return yyc;
+}
+
+/* ID is an operator name. Duplicate the hackery in yylex to determine what
+   it really is.  */
+
+tree frob_opname (id)
+     tree id;
+{
+  frob_id (0, yychar, &id);
+  got_object = NULL_TREE;
   return id;
 }
 
