@@ -1,3 +1,18 @@
+2002-04-01  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/unwind-ia64.c: Include ia64intrin.h.
+	(atomic_alloc, atomic_free): New.
+	(SIZE, MASK_FOR, PTR_IN): New.
+	(emergency_reg_state, emergency_reg_state_free): New.
+	(emergency_labeled_state, emergency_labeled_state_free): New.
+	(reg_state_alloced, labeled_state_alloced): New.
+	(alloc_reg_state, free_reg_state): New.
+	(alloc_label_state, free_label_state, free_label_states): New.
+	(push, pop, dup_state_stack, free_state_stack): Use them.
+	(desc_label_state): Likewise.
+	(uw_frame_state_for): Free label states and state stack.
+	(uw_update_reg_address): Eliminate warnings.
+
 2002-04-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/pa/pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON,
