@@ -3,6 +3,8 @@
 	* dwarf2asm.c (eh_data_format_name): Add names for "pointer size"
 	variants of non-absolute encodings.
 
+	* config/i386/i386.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+
 Wed May 16 13:38:21 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa32-regs.h (HARD_REGNO_MODE_OK): Allow TI/TFmode values in
