@@ -153,7 +153,7 @@ when optimising a loop, only certain registers are of interest.
 Perhaps there should be a bitmap argument to df_analyse to specify
  which registers should be analysed?   */
 
-#define HANDLE_SUBREG
+#define HANDLE_SUBREG 
 
 #include "config.h"
 #include "system.h"
@@ -166,9 +166,10 @@ Perhaps there should be a bitmap argument to df_analyse to specify
 #include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "sbitmap.h"
 #include "bitmap.h"
 #include "df.h"
-
+#include "fibheap.h"
 
 #define FOR_ALL_BBS(BB, CODE)					\
 do {								\
@@ -239,8 +240,6 @@ static void df_insn_refs_record PARAMS((struct df *, basic_block, rtx));
 static void df_bb_refs_record PARAMS((struct df *, basic_block));
 static void df_refs_record PARAMS((struct df *, bitmap));
 
-static int df_visit_next_rc PARAMS ((struct df *, sbitmap));
-static int df_visit_next_rts PARAMS ((struct df *, sbitmap));
 static void df_bb_reg_def_chain_create PARAMS((struct df *, basic_block));
 static void df_reg_def_chain_create PARAMS((struct df *, bitmap));
 static void df_bb_reg_use_chain_create PARAMS((struct df *, basic_block));
@@ -249,9 +248,6 @@ static void df_bb_du_chain_create PARAMS((struct df *, basic_block, bitmap));
 static void df_du_chain_create PARAMS((struct df *, bitmap));
 static void df_bb_ud_chain_create PARAMS((struct df *, basic_block));
 static void df_ud_chain_create PARAMS((struct df *, bitmap));
-static void df_rd_global_compute PARAMS((struct df *, bitmap));
-static void df_ru_global_compute PARAMS((struct df *, bitmap));
-static void df_lr_global_compute PARAMS((struct df *, bitmap));
 static void df_bb_rd_local_compute PARAMS((struct df *, basic_block));
 static void df_rd_local_compute PARAMS((struct df *, bitmap));
 static void df_bb_ru_local_compute PARAMS((struct df *, basic_block));
@@ -296,6 +292,12 @@ static void df_chain_dump PARAMS((struct df_link *, FILE *file));
 static void df_chain_dump_regno PARAMS((struct df_link *, FILE *file));
 static void df_regno_debug PARAMS ((struct df *, unsigned int, FILE *));
 static void df_ref_debug PARAMS ((struct df *, struct ref *, FILE *));
+static void df_rd_transfer_function PARAMS ((int, int *, bitmap, bitmap, 
+					     bitmap, bitmap, void *));
+static void df_ru_transfer_function PARAMS ((int, int *, bitmap, bitmap, 
+					     bitmap, bitmap, void *));
+static void df_lr_transfer_function PARAMS ((int, int *, bitmap, bitmap, 
+					     bitmap, bitmap, void *));
 
 
 /* Local memory allocation/deallocation routines.  */
@@ -898,7 +900,6 @@ df_ref_record (df, reg, loc, bb, insn, ref_type)
     }
 }
 
-
 /* Process all the registers defined in the rtx, X.  */
 static void
 df_def_record_1 (df, x, bb, insn)
@@ -951,9 +952,9 @@ df_def_record_1 (df, x, bb, insn)
       dst = *loc;
     }
 #endif
-
-  if (GET_CODE (dst) == REG
-      || (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG))
+  
+    if (GET_CODE (dst) == REG
+        || (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG))
       df_ref_record (df, dst, loc, bb, insn, DF_REF_REG_DEF);
 }
 
@@ -1040,6 +1041,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
 	  df_uses_record (df, loc, ref_type, bb, insn);
 	  return;
 	}
+
 #else
       loc = &SUBREG_REG (x);
       x = *loc;
@@ -1049,7 +1051,6 @@ df_uses_record (df, loc, ref_type, bb, insn)
 	  return;
 	}
 #endif
-
       /* ... Fall through ...  */
 
     case REG:
@@ -1619,260 +1620,34 @@ df_ud_chain_create (df, blocks)
 }
 
 
-/* Use reverse completion order, and the worklist, to figure out what block
-   to look at next.  */
 
-static int
-df_visit_next_rc (df, blocks)
-     struct df *df ATTRIBUTE_UNUSED;
-     sbitmap blocks;
-{
-  int i=0;
-  for (i = 0; i < n_basic_blocks; i++)
-    if (TEST_BIT (blocks, df->rc_order[i]))
-      return df->rc_order[i];
-  return sbitmap_first_set_bit (blocks);
-}
-
-/* Use reverse topsort order, and the worklist, to figure out what block
-   to look at next.  */
-
-static int
-df_visit_next_rts (df, blocks)
-     struct df *df ATTRIBUTE_UNUSED;
-     sbitmap blocks;
-{
-  int i=0;
-  for (i = 0; i < n_basic_blocks; i++)
-    if (TEST_BIT (blocks, df->rts_order[i]))
-      return df->rts_order[i];
-  return sbitmap_first_set_bit (blocks);
-}
-
-
-/* Calculate reaching defs for each basic block in BLOCKS, i.e., the
-   defs that are live at the start of a basic block.  */
 static void
-df_rd_global_compute (df, blocks)
-     struct df *df ATTRIBUTE_UNUSED;
-     bitmap blocks;
+df_rd_transfer_function (bb, changed, in, out, gen, kill, data)
+     int bb ATTRIBUTE_UNUSED;
+     int *changed;
+     bitmap in, out, gen, kill;
+     void *data ATTRIBUTE_UNUSED;
 {
-  int i;
-  basic_block bb;
-  sbitmap worklist;
-
-  worklist = sbitmap_alloc (n_basic_blocks);
-  sbitmap_zero (worklist);
-
-  /* Copy the blocklist to the worklist */
-  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
-  {
-    SET_BIT (worklist, i);
-  });
-
-  /* We assume that only the basic blocks in WORKLIST have been
-     modified.  */
-  FOR_EACH_BB_IN_SBITMAP (worklist, 0, bb,
-    {
-      struct bb_info *bb_info = DF_BB_INFO (df, bb);
-
-      bitmap_copy (bb_info->rd_out, bb_info->rd_gen);
-    });
-
-  while ((i = df_visit_next_rc (df, worklist)) >= 0)
-    {
-      struct bb_info *bb_info;
-      edge e;
-      int changed;
-
-      /* Remove this block from the worklist.  */
-      RESET_BIT (worklist, i);
-
-
-      bb = BASIC_BLOCK (i);
-      bb_info = DF_BB_INFO (df, bb);
-
-      /* Calculate union of predecessor outs.  */
-      bitmap_zero (bb_info->rd_in);
-      for (e = bb->pred; e != 0; e = e->pred_next)
-	{
-	  struct bb_info *pred_refs = DF_BB_INFO (df, e->src);
-
-	  if (e->src == ENTRY_BLOCK_PTR)
-	    continue;
-
-	  bitmap_a_or_b (bb_info->rd_in, bb_info->rd_in,
-			  pred_refs->rd_out);
-	}
-
-      /* RD_OUT is the set of defs that are live at the end of the
-	 BB.  These are the defs that are either generated by defs
-	 (RD_GEN) within the BB or are live at the start (RD_IN)
-	 and are not killed by other defs (RD_KILL).  */
-      changed = bitmap_union_of_diff (bb_info->rd_out, bb_info->rd_gen,
-				       bb_info->rd_in, bb_info->rd_kill);
-
-      if (changed)
-	{
-	  /* Add each of this block's successors to the worklist.  */
-	  for (e = bb->succ; e != 0; e = e->succ_next)
-	    {
-	      if (e->dest == EXIT_BLOCK_PTR)
-		continue;
-
-	      SET_BIT (worklist, e->dest->index);
-	    }
-	}
-    }
-  sbitmap_free (worklist);
+  *changed = bitmap_union_of_diff (out, gen, in, kill);
+}
+static void
+df_ru_transfer_function (bb, changed, in, out, gen, kill, data)
+     int bb ATTRIBUTE_UNUSED;
+     int *changed;
+     bitmap in, out, gen, kill;
+     void *data ATTRIBUTE_UNUSED;
+{
+  *changed = bitmap_union_of_diff (in, gen, out, kill);
 }
 
-
-/* Calculate reaching uses for each basic block within BLOCKS, i.e.,
-   the uses that are live at the start of a basic block.  */
 static void
-df_ru_global_compute (df, blocks)
-     struct df *df ATTRIBUTE_UNUSED;
-     bitmap blocks;
+df_lr_transfer_function (bb, changed, in, out, use, def, data)
+     int bb ATTRIBUTE_UNUSED;
+     int *changed;
+     bitmap in, out, use, def;
+     void *data ATTRIBUTE_UNUSED;
 {
-  int i;
-  basic_block bb;
-  sbitmap worklist;
-
-  worklist = sbitmap_alloc (n_basic_blocks);
-  sbitmap_zero (worklist);
-
-  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
-  {
-    SET_BIT (worklist, i);
-  });
-
-  /* We assume that only the basic blocks in WORKLIST have been
-     modified.  */
-  FOR_EACH_BB_IN_SBITMAP (worklist, 0, bb,
-    {
-      struct bb_info *bb_info = DF_BB_INFO (df, bb);
-
-      bitmap_copy (bb_info->ru_in, bb_info->ru_gen);
-    });
-
-
-  while ((i = df_visit_next_rts (df, worklist)) >= 0)
-    {
-      struct bb_info *bb_info;
-      edge e;
-      int changed;
-
-      /* Remove this block from the worklist.  */
-      RESET_BIT (worklist, i);
-
-      bb = BASIC_BLOCK (i);
-      bb_info = DF_BB_INFO (df, bb);
-
-      /* Calculate union of successor ins.  */
-      bitmap_zero (bb_info->ru_out);
-      for (e = bb->succ; e != 0; e = e->succ_next)
-	{
-	  struct bb_info *succ_refs = DF_BB_INFO (df, e->dest);
-
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    continue;
-
-	  bitmap_a_or_b (bb_info->ru_out, bb_info->ru_out,
-			  succ_refs->ru_in);
-	}
-
-      /* RU_IN is the set of uses that are live at the start of the
-	 BB.  These are the uses that are either generated within the
-	 BB (RU_GEN) or are live at the end (RU_OUT) and are not uses
-	 killed by defs within the BB (RU_KILL).  */
-      changed = bitmap_union_of_diff (bb_info->ru_in, bb_info->ru_gen,
-				       bb_info->ru_out, bb_info->ru_kill);
-
-      if (changed)
-	{
-	  /* Add each of this block's predecessors to the worklist.  */
-	  for (e = bb->pred; e != 0; e = e->pred_next)
-	    {
-	      if (e->src == ENTRY_BLOCK_PTR)
-		continue;
-
-	      SET_BIT (worklist, e->src->index);
-	    }
-	}
-    }
-
-  sbitmap_free (worklist);
-}
-
-
-/* Calculate live registers for each basic block within BLOCKS.  */
-static void
-df_lr_global_compute (df, blocks)
-     struct df *df ATTRIBUTE_UNUSED;
-     bitmap blocks;
-{
-  int i;
-  basic_block bb;
-  bitmap worklist;
-
-  worklist = BITMAP_XMALLOC ();
-  bitmap_copy (worklist, blocks);
-
-  /* We assume that only the basic blocks in WORKLIST have been
-     modified.  */
-  FOR_EACH_BB_IN_BITMAP (worklist, 0, bb,
-    {
-      struct bb_info *bb_info = DF_BB_INFO (df, bb);
-
-      bitmap_copy (bb_info->lr_in, bb_info->lr_use);
-    });
-
-  while ((i = bitmap_last_set_bit (worklist)) >= 0)
-    {
-      struct bb_info *bb_info = DF_BB_INFO (df, bb);
-      edge e;
-      int changed;
-
-      /* Remove this block from the worklist.  */
-      bitmap_clear_bit (worklist, i);
-
-      bb = BASIC_BLOCK (i);
-      bb_info = DF_BB_INFO (df, bb);
-
-      /* Calculate union of successor ins.  */
-      bitmap_zero (bb_info->lr_out);
-      for (e = bb->succ; e != 0; e = e->succ_next)
-	{
-	  struct bb_info *succ_refs = DF_BB_INFO (df, e->dest);
-
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    continue;
-
-	  bitmap_a_or_b (bb_info->lr_out, bb_info->lr_out,
-			  succ_refs->lr_in);
-	}
-
-      /* LR_IN is the set of uses that are live at the start of the
-	 BB.  These are the uses that are either generated by uses
-	 (LR_USE) within the BB or are live at the end (LR_OUT)
-	 and are not killed by other uses (LR_DEF).  */
-      changed = bitmap_union_of_diff (bb_info->lr_in, bb_info->lr_use,
-				       bb_info->lr_out, bb_info->lr_def);
-
-      if (changed)
-	{
-	  /* Add each of this block's predecessors to the worklist.  */
-	  for (e = bb->pred; e != 0; e = e->pred_next)
-	    {
-	      if (e->src == ENTRY_BLOCK_PTR)
-		continue;
-
-	      bitmap_set_bit (worklist, e->src->index);
-	    }
-	}
-    }
-  BITMAP_XFREE (worklist);
+  *changed = bitmap_union_of_diff (in, use, out, def);
 }
 
 
@@ -1918,7 +1693,7 @@ df_bb_rd_local_compute (df, bb)
 	  bitmap_set_bit (bb_info->rd_gen, DF_REF_ID (def));
 	}
     }
-
+  
   bb_info->rd_valid = 1;
 }
 
@@ -1948,9 +1723,10 @@ df_bb_ru_local_compute (df, bb)
   /* This is much more tricky than computing reaching defs.  With
      reaching defs, defs get killed by other defs.  With upwards
      exposed uses, these get killed by defs with the same regno.  */
-
+  
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
   rtx insn;
+
 
   for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
        insn = PREV_INSN (insn))
@@ -2071,7 +1847,7 @@ static void
 df_bb_reg_info_compute (df, bb, live)
      struct df *df;
      basic_block bb;
-  bitmap live;
+     bitmap live;
 {
   struct reg_info *reg_info = df->regs;
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
@@ -2190,7 +1966,7 @@ df_analyse_1 (df, blocks, flags, update)
 {
   int aflags;
   int dflags;
-
+  int i;
   dflags = 0;
   aflags = flags;
   if (flags & DF_UD_CHAIN)
@@ -2257,16 +2033,43 @@ df_analyse_1 (df, blocks, flags, update)
   df->dfs_order = xmalloc (sizeof(int) * n_basic_blocks);
   df->rc_order = xmalloc (sizeof(int) * n_basic_blocks);
   df->rts_order = xmalloc (sizeof(int) * n_basic_blocks);
-
+  df->inverse_dfs_map = xmalloc (sizeof(int) * n_basic_blocks);
+  df->inverse_rc_map = xmalloc (sizeof(int) * n_basic_blocks);
+  df->inverse_rts_map = xmalloc (sizeof(int) * n_basic_blocks);
+  
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
+  for (i = 0; i < n_basic_blocks; i ++)
+   {
+     df->inverse_dfs_map[df->dfs_order[i]] = i;
+     df->inverse_rc_map[df->rc_order[i]] = i;
+     df->inverse_rts_map[df->rts_order[i]] = i;
+   }
   if (aflags & DF_RD)
     {
       /* Compute the sets of gens and kills for the defs of each bb.  */
       df_rd_local_compute (df, df->flags & DF_RD ? blocks : df->all_blocks);
-
-      /* Compute the global reaching definitions.  */
-      df_rd_global_compute (df, df->all_blocks);
+      {
+	int i;
+	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	for (i = 0; i < n_basic_blocks; i ++)
+	  {
+	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_in;
+	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_out;
+	    gen[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_gen;
+	    kill[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_kill;
+	  }
+	iterative_dataflow_bitmap (in, out, gen, kill, df->all_blocks, 
+				   FORWARD, UNION, df_rd_transfer_function,
+				   df->inverse_rc_map, NULL);
+	free (in);
+	free (out);
+	free (gen);
+	free (kill);
+      }
     }
 
   if (aflags & DF_UD_CHAIN)
@@ -2283,9 +2086,27 @@ df_analyse_1 (df, blocks, flags, update)
       /* Compute the sets of gens and kills for the upwards exposed
 	 uses in each bb.  */
       df_ru_local_compute (df, df->flags & DF_RU ? blocks : df->all_blocks);
-
-      /* Compute the global reaching uses.  */
-      df_ru_global_compute (df, df->all_blocks);
+      {
+	int i;
+	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	for (i = 0; i < n_basic_blocks; i ++)
+	  {
+	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_in;
+	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_out;
+	    gen[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_gen;
+	    kill[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_kill;
+	  }
+	iterative_dataflow_bitmap (in, out, gen, kill, df->all_blocks, 
+				   BACKWARD, UNION, df_ru_transfer_function,
+				   df->inverse_rts_map, NULL);
+	free (in);
+	free (out);
+	free (gen);
+	free (kill);
+      }
     }
 
   if (aflags & DF_DU_CHAIN)
@@ -2304,10 +2125,28 @@ df_analyse_1 (df, blocks, flags, update)
   if (aflags & DF_LR)
     {
       /* Compute the sets of defs and uses of live variables.  */
-      df_lr_local_compute (df, df->flags & DF_LR ? blocks : df->all_blocks);
-
-      /* Compute the global live variables.  */
-      df_lr_global_compute (df, df->all_blocks);
+      df_lr_local_compute (df, df->flags & DF_LR ? blocks : df->all_blocks);      
+      {
+	int i;
+	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *use = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	bitmap *def = xmalloc (sizeof (bitmap) * n_basic_blocks);
+	for (i = 0; i < n_basic_blocks; i ++)
+	  {
+	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_in;
+	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_out;
+	    use[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_use;
+	    def[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_def;
+	  }
+	iterative_dataflow_bitmap (in, out, use, def, df->all_blocks, 
+				   BACKWARD, UNION, df_lr_transfer_function,
+				   df->inverse_rts_map, NULL);
+	free (in);
+	free (out);
+	free (use);
+	free (def);
+      }
     }
 
   if (aflags & DF_REG_INFO)
@@ -2317,6 +2156,9 @@ df_analyse_1 (df, blocks, flags, update)
   free (df->dfs_order);
   free (df->rc_order);
   free (df->rts_order);
+  free (df->inverse_rc_map);
+  free (df->inverse_dfs_map);
+  free (df->inverse_rts_map);
 }
 
 
@@ -2641,14 +2483,11 @@ df_insn_modify (df, bb, insn)
   bitmap_set_bit (df->bbs_modified, bb->index);
   bitmap_set_bit (df->insns_modified, uid);
 
-#if 0
   /* For incremental updating on the fly, perhaps we could make a copy
      of all the refs of the original insn and turn them into
      anti-refs.  When df_refs_update finds these anti-refs, it annihilates
      the original refs.  If validate_change fails then these anti-refs
      will just get ignored.  */
-  */
-#endif
 }
 
 
@@ -3769,4 +3608,281 @@ debug_df_chain (link)
 {
   df_chain_dump (link, stderr);
   fputc ('\n', stderr);
+}
+
+/* gen = GEN set.
+   kill = KILL set.
+   in, out = Filled in by function.
+   blocks = Blocks to analyze.
+   dir = Dataflow direction.
+   conf_op = Confluence operation.
+   transfun = Transfer function.
+   order = Order to iterate in. (Should map block numbers -> order)
+   data = Whatever you want.  It's passed to the transfer function.
+   
+   This function will perform iterative bitvector dataflow, producing
+   the in and out sets.  Even if you only want to perform it for a
+   small number of blocks, the vectors for in and out must be large
+   enough for *all* blocks, because changing one block might affect
+   others.  However, it'll only put what you say to analyze on the
+   initial worklist.
+   
+   For forward problems, you probably want to pass in a mapping of
+   block number to rc_order (like df->inverse_rc_map).
+*/
+
+void
+iterative_dataflow_sbitmap (in, out, gen, kill, blocks, 
+			    dir, conf_op, transfun, order, data)
+     sbitmap *in, *out, *gen, *kill;
+     bitmap blocks;
+     enum df_flow_dir dir;
+     enum df_confluence_op conf_op;
+     transfer_function_sbitmap transfun;
+     int *order;
+     void *data;
+{
+  int changed;
+  int i;
+  fibheap_t worklist;
+  sbitmap onqueue;
+  basic_block bb;
+  onqueue = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (onqueue);
+  worklist = fibheap_new ();
+  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
+  {
+    fibheap_insert (worklist, order[i], (void *) i); 
+    SET_BIT (onqueue, i);
+    if (dir == FORWARD)
+      {
+	sbitmap_copy (out[i], gen[i]);
+      }
+    else
+      {
+	sbitmap_copy (in[i], gen[i]);
+      }
+    
+  });
+  while (!fibheap_empty (worklist))
+    {
+      edge e;
+      i = (int) fibheap_extract_min  (worklist);
+      changed = 0;
+      bb = BASIC_BLOCK (i);
+      RESET_BIT (onqueue, i);
+      if (dir == FORWARD)
+	{
+	  /*  Calculate <conf_op> of predecessor_outs */
+	  for (e = bb->pred; e != 0; e = e->pred_next)
+	    {
+	      if (e->src == ENTRY_BLOCK_PTR)
+		{
+		  sbitmap_zero (in[i]);
+		  continue;
+		}
+	      sbitmap_copy (in[i], out[e->src->index]);
+	      break;
+	    }
+	  if (e == 0)
+	    sbitmap_zero (in[i]);
+	  for (e = bb->pred; e != 0; e = e->pred_next)
+	    {
+	      if (e->src == ENTRY_BLOCK_PTR)
+		continue;
+	      switch (conf_op)
+		{
+		case UNION:
+		  sbitmap_a_or_b (in[i], in[i], out[e->src->index]);
+		  break;
+		case INTERSECTION:
+		  sbitmap_a_and_b (in[i], in[i], out[e->src->index]);
+		  break;
+		}
+	    }
+	}
+      else 
+	{
+	  /* Calculate <conf_op> of successor ins */
+	  sbitmap_zero (out[i]);
+	  for (e = bb->succ; e != 0; e = e->succ_next)
+	    {
+	      if (e->dest == EXIT_BLOCK_PTR)
+		continue;
+	      switch (conf_op)
+		{	
+		case UNION:
+		  sbitmap_a_or_b (out[i], out[i], in[e->dest->index]);
+		  break;
+		case INTERSECTION:
+		  sbitmap_a_and_b (out[i], out[i], in[e->dest->index]);
+		  break;
+		}
+	    }
+	}      
+      /* Common part */
+      (*transfun)(i, &changed, in[i], out[i], gen[i], kill[i], data);
+
+      if (changed)
+	{
+	  if (dir == FORWARD)
+	    {
+	      for (e = bb->succ; e != 0; e = e->succ_next)
+		{
+		  if (e->dest == EXIT_BLOCK_PTR)
+		    continue;
+		  if (!TEST_BIT (onqueue, e->dest->index))
+		    { 
+		      SET_BIT (onqueue, e->dest->index);
+		      fibheap_insert (worklist, 
+				      order[e->dest->index], 
+				      (void *)e->dest->index);
+		    }
+		}
+	    }
+	  else
+	    {
+	      for (e = bb->pred; e != 0; e = e->pred_next)
+		{
+		  if (e->src == ENTRY_BLOCK_PTR)
+		    continue;
+		  if (!TEST_BIT (onqueue, e->src->index))
+		    {
+		      SET_BIT (onqueue, e->src->index);
+		      fibheap_insert (worklist, 
+				      order[e->src->index], 
+				      (void *)e->src->index);
+		    }
+
+		}
+	    }
+	}
+    }
+  sbitmap_free (onqueue);
+  fibheap_delete (worklist);
+  
+}
+/* Exactly the same as iterative_dataflow_sbitmap, except it works on
+   bitmaps instead */
+void
+iterative_dataflow_bitmap (in, out, gen, kill, blocks, 
+			   dir, conf_op, transfun, order, data)     
+     bitmap *in, *out, *gen, *kill;
+     bitmap blocks;
+     enum df_flow_dir dir;
+     enum df_confluence_op conf_op;
+     transfer_function_bitmap transfun;
+     int *order;
+     void *data;
+{
+  int changed;
+  int i;
+  fibheap_t worklist;
+  sbitmap onqueue;
+  basic_block bb;
+
+  onqueue = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (onqueue);
+  worklist = fibheap_new ();
+  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
+  {
+    fibheap_insert (worklist, order[i], (void *) i); 
+    SET_BIT (onqueue, i);
+    if (dir == FORWARD)
+      {
+	bitmap_copy (out[i], gen[i]);
+      }
+    else
+      {
+	bitmap_copy (in[i], gen[i]);
+      }
+    
+  });
+  while (!fibheap_empty (worklist))
+    {
+      edge e;
+      i = (int) fibheap_extract_min  (worklist);
+      changed = 0;
+      bb = BASIC_BLOCK (i);
+      RESET_BIT (onqueue, i);
+      
+      if (dir == FORWARD)
+	{
+	  /*  Calculate <conf_op> of predecessor_outs */
+	  bitmap_zero (in[i]);
+	  for (e = bb->pred; e != 0; e = e->pred_next)
+	    {
+	      if (e->src == ENTRY_BLOCK_PTR)
+		continue;
+	      switch (conf_op)
+		{
+		case UNION:
+		  bitmap_a_or_b (in[i], in[i], out[e->src->index]);
+		  break;
+		case INTERSECTION:
+		  bitmap_a_and_b (in[i], in[i], out[e->src->index]);
+		  break;
+		}
+	    }
+	}
+      else 
+	{
+	  /* Calculate <conf_op> of successor ins */
+	  bitmap_zero(out[i]);
+	  for (e = bb->succ; e != 0; e = e->succ_next)
+	    {
+	      if (e->dest == EXIT_BLOCK_PTR)
+		continue;
+	      switch (conf_op)
+		{	
+		case UNION:
+		  bitmap_a_or_b (out[i], out[i], in[e->dest->index]);
+		  break;
+		case INTERSECTION:
+		  bitmap_a_and_b (out[i], out[i], in[e->dest->index]);
+		  break;
+		}
+	    }
+	}      
+      /* Common part */
+      (*transfun)(i, &changed, in[i], out[i], gen[i], kill[i], data);
+
+      if (changed)
+	{
+	  if (dir == FORWARD)
+	    {
+	      for (e = bb->succ; e != 0; e = e->succ_next)
+		{
+		  if (e->dest == EXIT_BLOCK_PTR)
+		    continue;
+		  if (!TEST_BIT (onqueue, e->dest->index))
+		    { 
+		      SET_BIT (onqueue, e->dest->index);
+		      fibheap_insert (worklist, 
+				      order[e->dest->index], 
+				      (void *)e->dest->index);
+		    }
+		}
+	    }
+	  else
+	    {
+	      for (e = bb->pred; e != 0; e = e->pred_next)
+		{
+		  if (e->src == ENTRY_BLOCK_PTR)
+		    continue;
+		  if (!TEST_BIT (onqueue, e->src->index))
+		    {
+		      SET_BIT (onqueue, e->src->index);
+		      fibheap_insert (worklist, 
+				      order[e->src->index], 
+				      (void *)e->src->index);
+		    }
+
+		}
+	    }
+	}
+    }
+  sbitmap_free (onqueue);
+  fibheap_delete (worklist);
+  
 }

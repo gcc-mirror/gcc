@@ -20,7 +20,6 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-
 #define DF_RD		 1	/* Reaching definitions.  */
 #define DF_RU		 2	/* Reaching uses.  */
 #define DF_LR		 4	/* Live registers.  */
@@ -136,12 +135,15 @@ struct df
   bitmap insns_modified;	/* Insns that (may) have changed.  */
   bitmap bbs_modified;		/* Blocks that (may) have changed.  */
   bitmap all_blocks;		/* All blocks in CFG.  */
-  /* The bitmap vector of dominators or NULL if not computed. 
+  /* The sbitmap vector of dominators or NULL if not computed. 
      Ideally, this should be a pointer to a CFG object.  */
-  bitmap *dom;
-  int * dfs_order;
-  int * rc_order;
-  int * rts_order;
+  sbitmap *dom;
+  int * dfs_order; /* DFS order -> block number */
+  int * rc_order; /* reverse completion order -> block number */
+  int * rts_order; /* reverse top sort order -> block number */
+  int * inverse_rc_map; /* block number -> reverse completion order */
+  int * inverse_dfs_map; /* block number -> DFS order */
+  int * inverse_rts_map; /* block number -> reverse top-sort order */
 };
 
 
@@ -297,3 +299,33 @@ extern void debug_df_ref PARAMS ((struct ref *));
 extern void debug_df_chain PARAMS ((struct df_link *));
 extern void df_insn_debug PARAMS ((struct df *, rtx, FILE *));
 extern void df_insn_debug_regno PARAMS ((struct df *, rtx, FILE *));
+/* Meet over any path (UNION) or meet over all paths (INTERSECTION) */
+enum df_confluence_op
+  {
+    UNION,
+    INTERSECTION
+  };
+/* Dataflow direction */
+enum df_flow_dir
+  {
+    FORWARD,
+    BACKWARD
+  };
+
+typedef void (*transfer_function_sbitmap) (int, int *, sbitmap, sbitmap, 
+					   sbitmap, sbitmap, void *);
+typedef void (*transfer_function_bitmap) (int, int *, bitmap, bitmap,
+					  bitmap, bitmap, void *);
+
+extern void iterative_dataflow_sbitmap PARAMS ((sbitmap *, sbitmap *, 
+						sbitmap *, sbitmap *, 
+						bitmap, enum df_flow_dir, 
+						enum df_confluence_op, 
+						transfer_function_sbitmap, 
+						int *, void *));
+extern void iterative_dataflow_bitmap PARAMS ((bitmap *, bitmap *, bitmap *, 
+					       bitmap *, bitmap, 
+					       enum df_flow_dir, 
+					       enum df_confluence_op, 
+					       transfer_function_bitmap, 
+					       int *, void *));
