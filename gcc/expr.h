@@ -341,37 +341,99 @@ enum optab_methods
    implicitly and not via optabs.  */
 
 extern rtx extendsfdf2_libfunc;
+extern rtx extendsfxf2_libfunc;
+extern rtx extendsftf2_libfunc;
+extern rtx extenddfxf2_libfunc;
+extern rtx extenddftf2_libfunc;
+
 extern rtx truncdfsf2_libfunc;
+extern rtx truncxfsf2_libfunc;
+extern rtx trunctfsf2_libfunc;
+extern rtx truncxfdf2_libfunc;
+extern rtx trunctfdf2_libfunc;
+
 extern rtx memcpy_libfunc;
 extern rtx bcopy_libfunc;
 extern rtx memcmp_libfunc;
 extern rtx bcmp_libfunc;
 extern rtx memset_libfunc;
 extern rtx bzero_libfunc;
+
 extern rtx eqsf2_libfunc;
 extern rtx nesf2_libfunc;
 extern rtx gtsf2_libfunc;
 extern rtx gesf2_libfunc;
 extern rtx ltsf2_libfunc;
 extern rtx lesf2_libfunc;
+
 extern rtx eqdf2_libfunc;
 extern rtx nedf2_libfunc;
 extern rtx gtdf2_libfunc;
 extern rtx gedf2_libfunc;
 extern rtx ltdf2_libfunc;
 extern rtx ledf2_libfunc;
-extern rtx floatdisf_libfunc;
+
+extern rtx eqxf2_libfunc;
+extern rtx nexf2_libfunc;
+extern rtx gtxf2_libfunc;
+extern rtx gexf2_libfunc;
+extern rtx ltxf2_libfunc;
+extern rtx lexf2_libfunc;
+
+extern rtx eqtf2_libfunc;
+extern rtx netf2_libfunc;
+extern rtx gttf2_libfunc;
+extern rtx getf2_libfunc;
+extern rtx lttf2_libfunc;
+extern rtx letf2_libfunc;
+
 extern rtx floatsisf_libfunc;
-extern rtx floatdidf_libfunc;
+extern rtx floatdisf_libfunc;
+extern rtx floattisf_libfunc;
+
 extern rtx floatsidf_libfunc;
+extern rtx floatdidf_libfunc;
+extern rtx floattidf_libfunc;
+
+extern rtx floatsixf_libfunc;
+extern rtx floatdixf_libfunc;
+extern rtx floattixf_libfunc;
+
+extern rtx floatsitf_libfunc;
+extern rtx floatditf_libfunc;
+extern rtx floattitf_libfunc;
+
 extern rtx fixsfsi_libfunc;
 extern rtx fixsfdi_libfunc;
+extern rtx fixsfti_libfunc;
+
 extern rtx fixdfsi_libfunc;
 extern rtx fixdfdi_libfunc;
+extern rtx fixdfti_libfunc;
+
+extern rtx fixxfsi_libfunc;
+extern rtx fixxfdi_libfunc;
+extern rtx fixxfti_libfunc;
+
+extern rtx fixtfsi_libfunc;
+extern rtx fixtfdi_libfunc;
+extern rtx fixtfti_libfunc;
+
 extern rtx fixunssfsi_libfunc;
 extern rtx fixunssfdi_libfunc;
+extern rtx fixunssfti_libfunc;
+
 extern rtx fixunsdfsi_libfunc;
 extern rtx fixunsdfdi_libfunc;
+extern rtx fixunsdfti_libfunc;
+
+extern rtx fixunsxfsi_libfunc;
+extern rtx fixunsxfdi_libfunc;
+extern rtx fixunsxfti_libfunc;
+
+extern rtx fixunstfsi_libfunc;
+extern rtx fixunstfdi_libfunc;
+extern rtx fixunstfti_libfunc;
 
 typedef rtx (*rtxfun) ();
 

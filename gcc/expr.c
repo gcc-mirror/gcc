@@ -355,10 +355,24 @@ convert_move (to, from, unsignedp)
 	  return;
 	}
 #endif
+#ifdef HAVE_extendsfxf2
+      if (HAVE_extendsfxf2 && from_mode == SFmode && to_mode == XFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extendsfxf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
 #ifdef HAVE_extendsftf2
       if (HAVE_extendsftf2 && from_mode == SFmode && to_mode == TFmode)
 	{
 	  emit_unop_insn (CODE_FOR_extendsftf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_extenddfxf2
+      if (HAVE_extenddfxf2 && from_mode == DFmode && to_mode == XFmode)
+	{
+	  emit_unop_insn (CODE_FOR_extenddfxf2, to, from, UNKNOWN);
 	  return;
 	}
 #endif
@@ -376,10 +390,24 @@ convert_move (to, from, unsignedp)
 	  return;
 	}
 #endif
+#ifdef HAVE_truncxfsf2
+      if (HAVE_truncxfsf2 && from_mode == XFmode && to_mode == SFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncxfsf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
 #ifdef HAVE_trunctfsf2
       if (HAVE_trunctfsf2 && from_mode == TFmode && to_mode == SFmode)
 	{
 	  emit_unop_insn (CODE_FOR_trunctfsf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
+#ifdef HAVE_truncxfdf2
+      if (HAVE_truncxfdf2 && from_mode == XFmode && to_mode == DFmode)
+	{
+	  emit_unop_insn (CODE_FOR_truncxfdf2, to, from, UNKNOWN);
 	  return;
 	}
 #endif
@@ -391,13 +419,72 @@ convert_move (to, from, unsignedp)
 	}
 #endif
 
-      if (from_mode == SFmode && to_mode == DFmode)
-	libcall = extendsfdf2_libfunc;
-      else if (from_mode == DFmode && to_mode == SFmode)
-	libcall = truncdfsf2_libfunc;
-      else
-	/* This conversion is not implemented yet.  There aren't any TFmode
-	   library calls.  */
+      libcall = (rtx) 0;
+      switch (from_mode)
+	{
+	case SFmode:
+	  switch (to_mode)
+	    {
+	    case DFmode:
+	      libcall = extendsfdf2_libfunc;
+	      break;
+
+	    case XFmode:
+	      libcall = extendsfxf2_libfunc;
+	      break;
+
+	    case TFmode:
+	      libcall = extendsftf2_libfunc;
+	      break;
+	    }
+	  break;
+
+	case DFmode:
+	  switch (to_mode)
+	    {
+	    case SFmode:
+	      libcall = truncdfsf2_libfunc;
+	      break;
+
+	    case XFmode:
+	      libcall = extenddfxf2_libfunc;
+	      break;
+
+	    case TFmode:
+	      libcall = extenddftf2_libfunc;
+	      break;
+	    }
+	  break;
+
+	case XFmode:
+	  switch (to_mode)
+	    {
+	    case SFmode:
+	      libcall = truncxfsf2_libfunc;
+	      break;
+
+	    case DFmode:
+	      libcall = truncxfdf2_libfunc;
+	      break;
+	    }
+	  break;
+
+	case TFmode:
+	  switch (to_mode)
+	    {
+	    case SFmode:
+	      libcall = trunctfsf2_libfunc;
+	      break;
+
+	    case DFmode:
+	      libcall = trunctfdf2_libfunc;
+	      break;
+	    }
+	  break;
+	}
+
+      if (libcall == (rtx) 0)
+	/* This conversion is not implemented yet.  */
 	abort ();
 
       emit_library_call (libcall, 1, to_mode, 1, from, from_mode);
