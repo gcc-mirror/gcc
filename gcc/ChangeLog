@@ -1,5 +1,8 @@
 2004-07-06 Jan Beulich <jbeulich@novell.com>
                                                                                 
+        * expmed.c (emit_store_flag): Also special-case double-word
+        (in-)equality comparison against -1.
+
 	* config/i386/i386.c (ix86_gimplify_va_arg): Don't need temporary for
 	passing arguments the containers for which are registers.
 

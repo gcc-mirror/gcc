@@ -4602,27 +4602,29 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       break;
     }
 
-  /* If we are comparing a double-word integer with zero, we can convert
-     the comparison into one involving a single word.  */
+  /* If we are comparing a double-word integer with zero or -1, we can
+     convert the comparison into one involving a single word.  */
   if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD * 2
       && GET_MODE_CLASS (mode) == MODE_INT
-      && op1 == const0_rtx
       && (!MEM_P (op0) || ! MEM_VOLATILE_P (op0)))
     {
-      if (code == EQ || code == NE)
+      if ((code == EQ || code == NE)
+	  && (op1 == const0_rtx || op1 == constm1_rtx))
 	{
 	  rtx op00, op01, op0both;
 
-	  /* Do a logical OR of the two words and compare the result.  */
+	  /* Do a logical OR or AND of the two words and compare the result.  */
 	  op00 = simplify_gen_subreg (word_mode, op0, mode, 0);
 	  op01 = simplify_gen_subreg (word_mode, op0, mode, UNITS_PER_WORD);
-	  op0both = expand_binop (word_mode, ior_optab, op00, op01,
-				  NULL_RTX, unsignedp, OPTAB_DIRECT);
+	  op0both = expand_binop (word_mode,
+				  op1 == const0_rtx ? ior_optab : and_optab,
+				  op00, op01, NULL_RTX, unsignedp, OPTAB_DIRECT);
+
 	  if (op0both != 0)
 	    return emit_store_flag (target, code, op0both, op1, word_mode,
 				    unsignedp, normalizep);
 	}
-      else if (code == LT || code == GE)
+      else if ((code == LT || code == GE) && op1 == const0_rtx)
 	{
 	  rtx op0h;
 
