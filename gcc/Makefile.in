@@ -2562,7 +2562,7 @@ install-info: doc installdirs lang.install-info
 	-chmod a-x $(infodir)/c-tree.info* $(infodir)/cppinternals.info*
 
 # Install the man pages.
-install-man: installdirs $(srcdir)/gcc.1 $(GENERATED_MANPAGES) lang.install-man
+install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
