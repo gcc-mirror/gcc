@@ -161,13 +161,8 @@ extern int target_flags;
     warning ("-fpic and -fPIC are not supported on the PA.");	\
 }
 
-/* Omit frame pointer at high optimization levels.  */
-
-#define OPTIMIZATION_OPTIONS(OPTIMIZE) \
-{  								\
-  if (OPTIMIZE >= 2) 						\
-    flag_omit_frame_pointer = 1;				\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

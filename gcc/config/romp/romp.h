@@ -69,20 +69,6 @@ extern int target_flags;
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
-
-/* Define this to change the optimizations performed by default.
-
-   This used to depend on the value of write_symbols,
-   but that is contrary to the general plan for GCC options.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)	\
-{					\
-  if ((LEVEL) > 0)			\
-    {					\
-      flag_force_addr = 1;		\
-      flag_force_mem = 1;		\
-    }					\
-}
 
 /* target machine storage layout */
 
