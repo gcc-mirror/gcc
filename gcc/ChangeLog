@@ -5,6 +5,9 @@ Mon May 17 01:57:37 1999  David Daney <daney@ibw.com.ni>
 
 1999-05-17  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
+	* m68k.c (standard_68881_constant_p): Don't accept -0.0 as valid
+	68881 constant.
+
 	* fold-const.c (fold_truthop): When converting a one-bit
 	comparison don't sign extend the constant.
 
