@@ -242,7 +242,12 @@ gendef (f, format)
 
   /* See rtx_alloc in rtl.c for comments.  */
   fprintf (f, "{\n");
-  fprintf (f, "  rtx rt = obstack_alloc_rtx (sizeof (struct rtx_def) + %d * sizeof (rtunion));\n",
+  fprintf (f, "  rtx rt;\n");
+  fprintf (f, "  if (ggc_p)\n");
+  fprintf (f, "    rt = ggc_alloc_rtx (%d);\n", 
+	   (int) strlen (format));
+  fprintf (f, "  else\n");
+  fprintf (f, "    rt = obstack_alloc_rtx (sizeof (struct rtx_def) + %d * sizeof (rtunion));\n",
 	   (int) strlen (format) - 1);
 
   fprintf (f, "  PUT_CODE (rt, code);\n");
@@ -301,7 +306,8 @@ gencode (f)
   fputs ("#include \"config.h\"\n", f);
   fputs ("#include \"system.h\"\n", f);
   fputs ("#include \"obstack.h\"\n", f);
-  fputs ("#include \"rtl.h\"\n\n", f);
+  fputs ("#include \"rtl.h\"\n", f);
+  fputs ("#include \"ggc.h\"\n\n", f);
   fputs ("extern struct obstack *rtl_obstack;\n\n", f);
   fputs ("static rtx obstack_alloc_rtx PROTO((int length));\n", f);
   fputs ("static rtx obstack_alloc_rtx (length)\n", f);
