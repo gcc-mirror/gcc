@@ -662,6 +662,9 @@
 /* Define to 1 if you have the `wscanf' function. */
 #undef HAVE_WSCANF
 
+/* Define if you have the `iswblank' function.  */
+#undef HAVE_ISWBLANK
+
 /* Define to 1 if you have the `_acosf' function. */
 #undef HAVE__ACOSF
 

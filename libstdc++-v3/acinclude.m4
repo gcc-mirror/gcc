@@ -383,12 +383,17 @@ AC_DEFUN(GLIBCXX_CHECK_WCHAR_T_SUPPORT, [
 
     # Checks for names injected into std:: by the c_std headers.
     AC_CHECK_FUNCS([btowc wctob fgetwc fgetws fputwc fputws fwide \
-    fwprintf fwscanf swprintf swscanf vfwprintf vfwscanf vswprintf vswscanf \
-    vwprintf vwscanf wprintf wscanf getwc getwchar mbsinit mbrlen mbrtowc \
-    mbsrtowcs wcsrtombs putwc putwchar ungetwc wcrtomb wcstod wcstof wcstol \
+    fwprintf fwscanf swprintf swscanf vfwprintf vswprintf \
+    vwprintf wprintf wscanf getwc getwchar mbsinit mbrlen mbrtowc \
+    mbsrtowcs wcsrtombs putwc putwchar ungetwc wcrtomb wcstod wcstol \
     wcstoul wcscpy wcsncpy wcscat wcsncat wcscmp wcscoll wcsncmp wcsxfrm \
     wcscspn wcsspn wcstok wcsftime wcschr wcspbrk wcsrchr wcsstr],
     [],[ac_wfuncs=no])
+
+    # Checks for wide character functions that are not required
+    # for basic wchar_t support.  Don't disable support if they are missing.
+    # Injection of these is wrapped with guard macros.
+    AC_CHECK_FUNCS([vfwscanf vswscanf vwscanf wcstof iswblank],[],[])
 
     AC_MSG_CHECKING([for ISO C99 wchar_t support])
     if test x"$has_weof" = xyes &&
