@@ -1,3 +1,9 @@
+2002-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5747
+	* loop.c (scan_loop): Update reg info if move_movables created new
+	pseudos.
+
 2002-02-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.c (init_gcc_spec): Revert last change.

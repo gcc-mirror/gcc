@@ -1102,7 +1102,25 @@ scan_loop (loop, flags)
      optimizing for code size.  */
 
   if (! optimize_size)
-    move_movables (loop, movables, threshold, insn_count);
+    {
+      move_movables (loop, movables, threshold, insn_count);
+
+      /* Recalculate regs->array if move_movables has created new
+	 registers.  */
+      if (max_reg_num () > regs->num)
+	{
+	  loop_regs_scan (loop, 0);
+	  for (update_start = loop_start;
+	       PREV_INSN (update_start)
+	       && GET_CODE (PREV_INSN (update_start)) != CODE_LABEL;
+	       update_start = PREV_INSN (update_start))
+	    ;
+	  update_end = NEXT_INSN (loop_end);
+
+	  reg_scan_update (update_start, update_end, loop_max_reg);
+	  loop_max_reg = max_reg_num ();
+	}
+    }
 
   /* Now candidates that still are negative are those not moved.
      Change regs->array[I].set_in_loop to indicate that those are not actually
