@@ -1,5 +1,9 @@
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Add a new peephole2.
+
+2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (a peephole2): Accept a constant
 	that's accepted by CONST_OK_FOR_J.
 
