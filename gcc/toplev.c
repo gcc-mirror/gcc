@@ -671,6 +671,8 @@ char *lang_options[] =
   "-fno-enum-int-equiv",
   "-fexternal-templates",
   "-fno-external-templates",
+  "-ffor-scope",
+  "-fno-for-scope",
   "-fgc",
   "-fno-gc",
   "-fgnu-keywords",
