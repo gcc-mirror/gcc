@@ -2374,16 +2374,35 @@ public class Arrays
       this.a = a;
     }
 
+    /**
+     * Returns the object at the specified index in
+     * the array.
+     *
+     * @param index The index to retrieve an object from.
+     * @return The object at the array index specified.
+     */ 
     public Object get(int index)
     {
       return a[index];
     }
 
+    /**
+     * Returns the size of the array.
+     *
+     * @return The size.
+     */
     public int size()
     {
       return a.length;
     }
 
+    /**
+     * Replaces the object at the specified index
+     * with the supplied element.
+     *
+     * @param index The index at which to place the new object.
+     * @return The object replaced by this operation.
+     */
     public Object set(int index, Object element)
     {
       Object old = a[index];
@@ -2391,11 +2410,25 @@ public class Arrays
       return old;
     }
 
+    /**
+     * Returns true if the array contains the
+     * supplied object.
+     *
+     * @param o The object to look for.
+     * @return True if the object was found.
+     */
     public boolean contains(Object o)
     {
       return lastIndexOf(o) >= 0;
     }
 
+    /**
+     * Returns the first index at which the
+     * object, o, occurs in the array.
+     *
+     * @param o The object to search for.
+     * @return The first relevant index.
+     */
     public int indexOf(Object o)
     {
       int size = a.length;
@@ -2405,6 +2438,13 @@ public class Arrays
       return -1;
     }
 
+    /**
+     * Returns the last index at which the
+     * object, o, occurs in the array.
+     *
+     * @param o The object to search for.
+     * @return The last relevant index.
+     */
     public int lastIndexOf(Object o)
     {
       int i = a.length;
@@ -2414,11 +2454,28 @@ public class Arrays
       return -1;
     }
 
+    /**
+     * Transforms the list into an array of
+     * objects, by simplying cloning the array
+     * wrapped by this list.
+     *
+     * @return A clone of the internal array.
+     */
     public Object[] toArray()
     {
       return (Object[]) a.clone();
     }
 
+    /**
+     * Copies the objects from this list into
+     * the supplied array.  The supplied array
+     * is shrunk or enlarged to the size of the
+     * internal array, and filled with its objects.
+     *
+     * @param The array to fill with the objects in this list.
+     * @return The array containing the objects in this list,
+     *         which may or may not be == to array.
+     */
     public Object[] toArray(Object[] array)
     {
       int size = a.length;

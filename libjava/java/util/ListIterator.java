@@ -127,12 +127,12 @@ public interface ListIterator extends Iterator
    * by nextIndex() and previousIndex() are incremented.
    *
    * @param o the object to insert into the list
-   * @throws ClassCastException the object is of a type which cannot be added
-   *         to this list
-   * @throws IllegalArgumentException some other aspect of the object stops
-   *         it being added to this list
+   * @throws ClassCastException if the object is of a type which cannot be added
+   *         to this list.
+   * @throws IllegalArgumentException if some other aspect of the object stops
+   *         it being added to this list.
    * @throws UnsupportedOperationException if this ListIterator does not
-   *         support the add operation
+   *         support the add operation.
    */
   void add(Object o);
 

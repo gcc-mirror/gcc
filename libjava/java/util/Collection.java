@@ -223,6 +223,7 @@ public interface Collection
    * Remove all elements of a given collection from this collection. That is,
    * remove every element e such that c.contains(e).
    *
+   * @param c The collection of objects to be removed.
    * @return true if this collection was modified as a result of this call.
    * @throws UnsupportedOperationException if this collection does not
    *   support the removeAll operation.
@@ -238,6 +239,7 @@ public interface Collection
    * Remove all elements of this collection that are not contained in a given
    * collection. That is, remove every element e such that !c.contains(e).
    *
+   * @param c The collection of objects to be retained.
    * @return true if this collection was modified as a result of this call.
    * @throws UnsupportedOperationException if this collection does not
    *   support the retainAll operation.

@@ -227,7 +227,7 @@ public interface Map
    * null values may also return null if the key was removed.
    *
    * @param key the key to remove
-   * @return the value the key mapped to, or null if not present
+   * @return the value the key mapped to, or null if not present.
    * @throws UnsupportedOperationException if deletion is unsupported
    * @throws NullPointerException if the key is null and this map doesn't
    *         support null keys.
