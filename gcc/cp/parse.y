@@ -1,5 +1,5 @@
 /* YACC parser for C++ syntax.
-   Copyright (C) 1988, 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1993, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -497,7 +497,7 @@ template_def:
 		  d = start_decl ($<ttype>2, /*current_declspecs*/NULL_TREE, 0,
 				  $3);
 		  cplus_decl_attributes (d, $5, prefix_attributes);
-		  finish_decl (d, NULL_TREE, $4, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, $4, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    reinit_parse_for_template ((int) $6, $1, d);
@@ -516,7 +516,7 @@ template_def:
 		  d = start_decl ($<ttype>3, current_declspecs,
 				  0, $<ttype>4);
 		  cplus_decl_attributes (d, $6, prefix_attributes);
-		  finish_decl (d, NULL_TREE, $5, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, $5, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    {
@@ -530,7 +530,7 @@ template_def:
 		{
 		  int def = ($4 != ';');
 		  tree d = start_decl ($<ttype>3, $<ttype>2, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    reinit_parse_for_template ((int) $4, $1, d);
@@ -556,7 +556,7 @@ datadef:
 	| declmods notype_declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		}
 	| typed_declspecs initdecls ';'
 		{
@@ -566,7 +566,7 @@ datadef:
 	| typed_declspecs declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  note_list_got_semicolon ($<ttype>$);
 		}
         | declmods ';'
@@ -973,7 +973,7 @@ condition:
 		}
 	init
 		{ 
-		  finish_decl ($<ttype>7, $8, $5, 0, LOOKUP_ONLYCONVERTING);
+		  cp_finish_decl ($<ttype>7, $8, $5, 0, LOOKUP_ONLYCONVERTING);
 		  resume_momentary ($<itype>6);
 		  $$ = $<ttype>7; 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
@@ -1730,7 +1730,7 @@ decl:
 		{ tree d = get_decl_list ($1);
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  resume_momentary (yes);
 		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1)))
 		    note_got_semicolon ($1);
@@ -1739,7 +1739,7 @@ decl:
 		{ tree d = $1;
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
+		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  resume_momentary (yes);
 		  note_list_got_semicolon ($1);
 		}
@@ -1981,7 +1981,7 @@ initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
+		{ cp_finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
@@ -1998,7 +1998,7 @@ initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4, prefix_attributes);
-		  finish_decl (d, NULL_TREE, $3, 0, 0); }
+		  cp_finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 initdcl:
@@ -2007,11 +2007,11 @@ initdcl:
 		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING); }
+		{ cp_finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING); }
 	| declarator exception_specification_opt maybeasm maybe_attribute
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes);
-		  finish_decl ($<ttype>$, NULL_TREE, $3, 0, 0); }
+		  cp_finish_decl ($<ttype>$, NULL_TREE, $3, 0, 0); }
 	;
 
 notype_initdcl0:
@@ -2022,7 +2022,7 @@ notype_initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
+		{ cp_finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| notype_declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
@@ -2030,7 +2030,7 @@ notype_initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4, prefix_attributes);
-		  finish_decl (d, NULL_TREE, $3, 0, 0); }
+		  cp_finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 nomods_initdcl0:
@@ -2041,7 +2041,7 @@ nomods_initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
+		{ cp_finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| notype_declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
@@ -2049,7 +2049,7 @@ nomods_initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4, prefix_attributes);
-		  finish_decl (d, NULL_TREE, $3, 0, 0); }
+		  cp_finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax

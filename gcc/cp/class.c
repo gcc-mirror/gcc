@@ -2102,7 +2102,7 @@ finish_vtbls (binfo, do_self, t)
 	      && DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
 	    DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
 					    BINFO_VIRTUALS (binfo));
-	  finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
 	  DECL_CONTEXT (decl) = context;
 	}
       CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);

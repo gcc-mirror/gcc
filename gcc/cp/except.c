@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -1230,10 +1230,10 @@ expand_start_catch_block (declspecs, declarator)
       init = convert_from_reference (save_expr (make_tree (init_type, call_rtx)));
 
       /* Do we need the below two lines? */
-      /* Let `finish_decl' know that this initializer is ok.  */
+      /* Let `cp_finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
       decl = pushdecl (decl);
-      finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
     {

@@ -2017,7 +2017,7 @@ extern void shadow_tag				PROTO((tree));
 extern int grok_ctor_properties			PROTO((tree, tree));
 extern tree groktypename			PROTO((tree));
 extern tree start_decl				PROTO((tree, tree, int, tree));
-extern void finish_decl				PROTO((tree, tree, tree, int, int));
+extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
 extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
