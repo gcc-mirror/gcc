@@ -1,3 +1,9 @@
+2004-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15890
+	* pt.c (push_template_decl_real): Disallow template allocation
+	functions with fewer than two parameters.
+
 2004-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17068

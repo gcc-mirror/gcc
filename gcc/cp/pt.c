@@ -2843,19 +2843,35 @@ push_template_decl_real (tree decl, int is_friend)
       else if (TREE_CODE (decl) == TYPE_DECL 
 	       && ANON_AGGRNAME_P (DECL_NAME (decl))) 
 	error ("template class without a name");
-      else if (TREE_CODE (decl) == FUNCTION_DECL
-	       && DECL_DESTRUCTOR_P (decl))
+      else if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
-	  /* [temp.mem]
-	     
-	      A destructor shall not be a member template.  */
-	  error ("destructor `%D' declared as member template", decl);
-	  return error_mark_node;
+	  if (DECL_DESTRUCTOR_P (decl))
+	    {
+	      /* [temp.mem]
+		 
+	         A destructor shall not be a member template.  */
+	      error ("destructor `%D' declared as member template", decl);
+	      return error_mark_node;
+	    }
+	  if (NEW_DELETE_OPNAME_P (DECL_NAME (decl))
+	      && (!TYPE_ARG_TYPES (TREE_TYPE (decl))
+		  || TYPE_ARG_TYPES (TREE_TYPE (decl)) == void_list_node
+		  || !TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)))
+		  || (TREE_CHAIN (TYPE_ARG_TYPES ((TREE_TYPE (decl))))
+		      == void_list_node)))
+	    {
+	      /* [basic.stc.dynamic.allocation] 
+
+	         An allocation function can be a function
+		 template. ... Template allocation functions shall
+		 have two or more parameters.  */
+	      error ("invalid template declaration of `%D'", decl);
+	      return decl;
+	    }
 	}
       else if ((DECL_IMPLICIT_TYPEDEF_P (decl)
 		&& CLASS_TYPE_P (TREE_TYPE (decl)))
-	       || (TREE_CODE (decl) == VAR_DECL && ctx && CLASS_TYPE_P (ctx))
-	       || TREE_CODE (decl) == FUNCTION_DECL)
+	       || (TREE_CODE (decl) == VAR_DECL && ctx && CLASS_TYPE_P (ctx)))
 	/* OK */;
       else
 	{
