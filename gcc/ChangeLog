@@ -1,3 +1,8 @@
+2000-05-28  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (diddle_return_value): A pcc-style struct return
+	returns a pointer.
+
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c: Read files in, using mmap if possible, then
