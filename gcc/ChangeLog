@@ -1,3 +1,8 @@
+2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (_cpp_make_system_header): Generate a file
+        change callback.
+
 Thu Feb 15 21:30:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (tidy_fallthru_edge): Never end block on line number NOTE.
