@@ -7025,6 +7025,7 @@ fold_binary (tree expr)
   const tree type = TREE_TYPE (expr);
   tree t1 = NULL_TREE;
   tree tem;
+  tree op0, op1;
   tree arg0 = NULL_TREE, arg1 = NULL_TREE;
   enum tree_code code = TREE_CODE (t);
   enum tree_code_class kind = TREE_CODE_CLASS (code);
@@ -7037,6 +7038,8 @@ fold_binary (tree expr)
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 2);
 
+  op0 = TREE_OPERAND (t, 0);
+  op1 = TREE_OPERAND (t, 1);
   for (i = 0; i < 2; i++)
     {
       tree op = TREE_OPERAND (t, i);
@@ -7083,8 +7086,7 @@ fold_binary (tree expr)
      to ARG1 to reduce the number of tests below.  */
   if (commutative_tree_code (code)
       && tree_swap_operands_p (arg0, arg1, true))
-    return fold (build2 (code, type, TREE_OPERAND (t, 1),
-			 TREE_OPERAND (t, 0)));
+    return fold (build2 (code, type, op1, op0));
 
   /* Now WINS is set as described above,
      ARG0 is the first operand of EXPR,
@@ -7784,7 +7786,7 @@ fold_binary (tree expr)
 				 TREE_OPERAND (arg0, 1)));
 
 	  if (TREE_CODE (arg1) == INTEGER_CST
-	      && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0),
+	      && 0 != (tem = extract_muldiv (op0,
 					     fold_convert (type, arg1),
 					     code, NULL_TREE)))
 	    return fold_convert (type, tem);
@@ -8343,8 +8345,7 @@ fold_binary (tree expr)
 	return fold (build2 (EXACT_DIV_EXPR, type, arg0, arg1));
 
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0), arg1,
-					 code, NULL_TREE)))
+	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE)))
 	return fold_convert (type, tem);
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
@@ -8429,8 +8430,7 @@ fold_binary (tree expr)
 			     fold_convert (type, TREE_OPERAND (arg1, 0))));
 
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0), arg1,
-					 code, NULL_TREE)))
+	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE)))
 	return fold_convert (type, tem);
 
       goto binary;
