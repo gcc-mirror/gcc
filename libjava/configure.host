@@ -132,7 +132,8 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
-  sparc-*)
+  sparc*-*)
+	libgcj_interpreter=yes
         ;;
   ia64-*)
 	sysdeps_dir=ia64
