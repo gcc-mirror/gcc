@@ -1,3 +1,13 @@
+2001-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (s-mlib): Don't build multilibs if
+	--disable-multilib.
+	(DRIVER_DEFINES): Adjust accordingly.
+	(gcc.o): Likewise.
+	(protoize.o): Likewise.
+	(unprotoize.o): Likewise.
+	* configure.in: Recognize --enable-multilib.
+	
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (DRIVER_DEFINES): Fix quoting.

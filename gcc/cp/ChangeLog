@@ -1,3 +1,7 @@
+2001-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (g++spec.o): Adjust use of DRIVER_DEFINES.
+
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (pushdecl): Call abort instead of fatal.
