@@ -1,3 +1,11 @@
+Sat Feb  7 15:11:28 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * aclocal.m4 (GCC_FUNC_PRINTF_PTR): New macro to test the printf
+        functions for whether they support the %p format specifier.
+        * acconfig.h (HOST_PTR_PRINTF): Insert stub for autoconf.
+        * configure.in (GCC_FUNC_PRINTF_PTR): Use it.
+	* configure, config.in: Rebuild.
+
 Fri Feb  6 14:20:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* function.c (assign_parms): New variable named_arg, with value
