@@ -6335,14 +6335,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       }
 
     case PARM_DECL:
-      if (!DECL_RTL_SET_P (exp))
-	{
-	  error ("%Jprior parameter's size depends on '%D'", exp, exp);
-	  return CONST0_RTX (mode);
-	}
-
-      /* ... fall through ...  */
-
     case VAR_DECL:
       /* If a static var's type was incomplete when the decl was written,
 	 but the type is complete now, lay out the decl now.  */

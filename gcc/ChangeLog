@@ -1,5 +1,8 @@
 2004-07-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr_real_1, case PARM_DECL): Remove obsolete error
+	check.
+
 	* gimplify.c (maybe_with_size_expr): If already have WITH_SIZE_EXPR,
 	don't make another one.
 
