@@ -791,10 +791,11 @@ get_stmt_operands (tree stmt)
 
   timevar_push (TV_TREE_OPS);
 
-  /* Initially assume that the statement has no volatile operands.
-     Statements marked with 'has_volatile_ops' are not processed by the
-     optimizers.  */
+  /* Initially assume that the statement has no volatile operands, nor
+     makes aliased loads or stores.  */
   ann->has_volatile_ops = false;
+  ann->makes_aliased_stores = false;
+  ann->makes_aliased_loads = false;
 
   /* Remove any existing operands as they will be scanned again.  */
   free_defs (&(ann->def_ops), true);
