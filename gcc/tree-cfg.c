@@ -680,7 +680,8 @@ make_goto_expr_edges (basic_block bb)
       /* A GOTO to a local label creates normal edges.  */
       if (simple_goto_p (goto_t))
 	{
-	  make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
+	  edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
+	  e->goto_locus = EXPR_LOCUS (goto_t);
 	  bsi_remove (&last);
 	  return;
 	}
@@ -2640,8 +2641,7 @@ disband_implicit_edges (void)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
 
-      if (!e
-	  || e->dest == bb->next_bb)
+      if (!e || e->dest == bb->next_bb)
 	continue;
 
       if (e->dest == EXIT_BLOCK_PTR)
@@ -2658,9 +2658,9 @@ disband_implicit_edges (void)
 	  && TREE_CODE (forward) == GOTO_EXPR)
 	label = GOTO_DESTINATION (forward);
 
-      bsi_insert_after (&last,
-			build1 (GOTO_EXPR, void_type_node, label),
-			BSI_NEW_STMT);
+      stmt = build1 (GOTO_EXPR, void_type_node, label);
+      SET_EXPR_LOCUS (stmt, e->goto_locus);
+      bsi_insert_after (&last, stmt, BSI_NEW_STMT);
       e->flags &= ~EDGE_FALLTHRU;
     }
 }
