@@ -1,3 +1,7 @@
+Mon Sep  6 15:26:23 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.c (copy_node): Copy node contents also if doing GC.
+
 Mon Sep  6 08:42:06 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* collect2.c (scan_libraries): Fix double-thinko :-).
