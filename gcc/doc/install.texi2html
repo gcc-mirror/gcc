@@ -26,5 +26,5 @@ for x in index.html specific.html download.html configure.html \
 do
     define=`echo $x | sed -e 's/\.//g'`
     echo "define = $define"
-    $MAKEINFO $SOURCEDIR/install.texi --html -D$define -o$DESTDIR/$x
+    $MAKEINFO $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
 done

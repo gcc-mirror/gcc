@@ -1,3 +1,7 @@
+2001-11-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi2html: Use $MAKEINFO --no-split.
+
 2001-11-08  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (GCC_FOR_TARGET): Add build_tooldir/sys-include.
