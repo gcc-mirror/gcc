@@ -259,11 +259,6 @@ do {									\
 static int stmt_count;
 static int compstmt_count;
 
-/* Input location of the end of the body of last simple_if;
-   used by the stmt-rule immediately after simple_if returns.  */
-static location_t if_stmt_locus;
-
-
 /* List of types and structure classes of the current declaration.  */
 static GTY(()) tree current_declspecs;
 static GTY(()) tree prefix_attributes;
@@ -2068,33 +2063,24 @@ compstmt: compstmt_start compstmt_nostart
 		  $$ = NULL_TREE; }
 	;
 
-/* Value is number of statements counted as of the closeparen.  */
-simple_if:
-	  if_prefix c99_block_lineno_labeled_stmt
-                { c_finish_then ($2); }
-/* Make sure c_expand_end_cond is run once
-   for each call to c_expand_start_cond.
-   Otherwise a crash is likely.  */
-	| if_prefix error
-	;
-
 if_prefix:
-	  /* We must build the IF_STMT node before parsing its
-	     condition so that EXPR_LOCUS refers to the line
-	     containing the "if", and not the line containing
-	     the close-parenthesis.
-
-	     c_begin_if_stmt returns the IF_STMT node, which
-	     we later pass to c_expand_start_cond to fill
-	     in the condition and other tidbits.  */
+	  /* We must build the if statement node before parsing its
+	     condition so that we get its location pointing to the
+	     line containing the "if", and not the line containing
+	     the close-parenthesis.  */
           IF
                 { $<ttype>$ = c_begin_if_stmt (); }
             '(' expr ')'
-		{ c_expand_start_cond (lang_hooks.truthvalue_conversion ($4),
-				       compstmt_count,$<ttype>2);
-		  $<itype>$ = stmt_count;
-		  if_stmt_locus = $<location>-1; }
+		{ c_finish_if_cond ($4, compstmt_count, ++stmt_count); }
         ;
+
+simple_if:
+	  if_prefix c99_block_lineno_labeled_stmt
+                { c_finish_then ($2); }
+	/* Make sure c_finish_if_stmt is run for each call to
+	   c_begin_if_stmt.  Otherwise a crash is likely.  */
+	| if_prefix error
+	;
 
 /* This is a subroutine of stmt.
    It is used twice, once for valid DO statements
@@ -2172,27 +2158,13 @@ lineno_label:
 
 select_or_iter_stmt:
 	  simple_if ELSE
-		{ c_expand_start_else ();
-		  $<itype>1 = stmt_count; }
+		{ c_begin_else (stmt_count); }
 	  c99_block_lineno_labeled_stmt
-                { c_finish_else ($4);
-		  c_expand_end_cond ();
-		  if (extra_warnings && stmt_count == $<itype>1)
-		    warning ("empty body in an else-statement"); }
+                { c_finish_else ($4); c_finish_if_stmt (stmt_count); }
 	| simple_if %prec IF
-		{ c_expand_end_cond ();
-		  /* This warning is here instead of in simple_if, because we
-		     do not want a warning if an empty if is followed by an
-		     else statement.  Increment stmt_count so we don't
-		     give a second error if this is a nested `if'.  */
-		  if (extra_warnings && stmt_count++ == $<itype>1)
-		    warning ("%Hempty body in an if-statement",
-                             &if_stmt_locus); }
-/* Make sure c_expand_end_cond is run once
-   for each call to c_expand_start_cond.
-   Otherwise a crash is likely.  */
+		{ c_finish_if_stmt (stmt_count); }
 	| simple_if ELSE error
-		{ c_expand_end_cond (); }
+		{ c_finish_if_stmt (stmt_count + 1); }
        /* We must build the WHILE_STMT node before parsing its
 	  condition so that EXPR_LOCUS refers to the line
 	  containing the "while", and not the line containing

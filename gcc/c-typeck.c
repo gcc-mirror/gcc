@@ -6467,10 +6467,12 @@ c_finish_case (tree body)
    the enclosing if statement does not have an else branch.  */
 typedef struct
 {
-  int compstmt_count;
-  location_t locus;
-  int needs_warning;
   tree if_stmt;
+  location_t empty_locus;
+  int compstmt_count;
+  int stmt_count;
+  unsigned int needs_warning : 1;
+  unsigned int saw_else : 1;
 } if_elt;
 
 static if_elt *if_stack;
@@ -6488,22 +6490,8 @@ tree
 c_begin_if_stmt (void)
 {
   tree r;
-  r = add_stmt (build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE));
-  return r;
-}
+  if_elt *elt;
 
-/* Record the start of an if-then, and record the start of it
-   for ambiguous else detection.
-
-   COND is the condition for the if-then statement.
-
-   IF_STMT is the statement node that has already been created for
-   this if-then statement.  It is created before parsing the
-   condition to keep line number information accurate.  */
-
-void
-c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
-{
   /* Make sure there is enough space on the stack.  */
   if (if_stack_space == 0)
     {
@@ -6516,14 +6504,30 @@ c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
       if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
 
-  IF_COND (if_stmt) = cond;
+  r = add_stmt (build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE));
 
   /* Record this if statement.  */
-  if_stack[if_stack_pointer].compstmt_count = compstmt_count;
-  if_stack[if_stack_pointer].locus = input_location;
-  if_stack[if_stack_pointer].needs_warning = 0;
-  if_stack[if_stack_pointer].if_stmt = if_stmt;
-  if_stack_pointer++;
+  elt = &if_stack[if_stack_pointer++];
+  memset (elt, 0, sizeof (*elt));
+  elt->if_stmt = r;
+}
+
+/* Record the start of an if-then, and record the start of it
+   for ambiguous else detection.
+
+   COND is the condition for the if-then statement.
+
+   IF_STMT is the statement node that has already been created for
+   this if-then statement.  It is created before parsing the
+   condition to keep line number information accurate.  */
+
+void
+c_finish_if_cond (tree cond, int compstmt_count, int stmt_count)
+{
+  if_elt *elt = &if_stack[if_stack_pointer - 1];
+  elt->compstmt_count = compstmt_count;
+  elt->stmt_count = stmt_count;
+  IF_COND (elt->if_stmt) = lang_hooks.truthvalue_conversion (cond);
 }
 
 /* Called after the then-clause for an if-statement is processed.  */
@@ -6531,27 +6535,16 @@ c_expand_start_cond (tree cond, int compstmt_count, tree if_stmt)
 void
 c_finish_then (tree then_stmt)
 {
-  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
-  THEN_CLAUSE (if_stmt) = then_stmt;
-}
-
-/* Record the end of an if-then.  Optionally warn if a nested
-   if statement had an ambiguous else clause.  */
-
-void
-c_expand_end_cond (void)
-{
-  if_stack_pointer--;
-  if (if_stack[if_stack_pointer].needs_warning)
-    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
-	     &if_stack[if_stack_pointer].locus);
+  if_elt *elt = &if_stack[if_stack_pointer - 1];
+  THEN_CLAUSE (elt->if_stmt) = then_stmt;
+  elt->empty_locus = input_location;
 }
 
 /* Called between the then-clause and the else-clause
    of an if-then-else.  */
 
 void
-c_expand_start_else (void)
+c_begin_else (int stmt_count)
 {
   /* An ambiguous else warning must be generated for the enclosing if
      statement, unless we see an else branch for that one, too.  */
@@ -6566,6 +6559,7 @@ c_expand_start_else (void)
      case.  Also don't warn for any if statements nested in this else.  */
   if_stack[if_stack_pointer - 1].needs_warning = 0;
   if_stack[if_stack_pointer - 1].compstmt_count--;
+  if_stack[if_stack_pointer - 1].saw_else = 1;
 }
 
 /* Called after the else-clause for an if-statement is processed.  */
@@ -6573,8 +6567,30 @@ c_expand_start_else (void)
 void
 c_finish_else (tree else_stmt)
 {
-  tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
-  ELSE_CLAUSE (if_stmt) = else_stmt;
+  if_elt *elt = &if_stack[if_stack_pointer - 1];
+  ELSE_CLAUSE (elt->if_stmt) = else_stmt;
+  elt->empty_locus = input_location;
+}
+
+/* Record the end of an if-then.  Optionally warn if a nested
+   if statement had an ambiguous else clause.  */
+
+void
+c_finish_if_stmt (int stmt_count)
+{
+  if_elt *elt = &if_stack[--if_stack_pointer];
+
+  if (elt->needs_warning)
+    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
+	     EXPR_LOCUS (elt->if_stmt));
+
+  if (extra_warnings && stmt_count == elt->stmt_count)
+    {
+      if (elt->saw_else)
+	warning ("%Hempty body in an else-statement", &elt->empty_locus);
+      else
+	warning ("%Hempty body in an if-statement", &elt->empty_locus);
+    }
 }
 
 /* Begin a while statement.  Returns a newly created WHILE_STMT if
