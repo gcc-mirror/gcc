@@ -1,3 +1,11 @@
+Sun Mar 19 13:27:30 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* tm.texi (Driver): Fix typos and tweak entry for
+	INCLUDE_DEFAULTS.
+	Move misplaced STRUCT_FORCE_BLK entry ...
+	(Storage Layout): ... to here.
+	(Run-time Target): Recommend having TARGET_MASK_... helper macros.
+
 2000-03-19  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (delete_block): Delete the addr_vec along with the block.
