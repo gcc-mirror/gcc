@@ -1,3 +1,7 @@
+2002-06-11  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h (PREDICATE_CODES): Define. 
+
 2002-06-11  Eric Christopher  <echristo@redhat.com>
 
 	* doc/tm.texi (Run-time Target): Add comment about flag_iso
