@@ -121,6 +121,8 @@ static struct fr30_frame_info 	current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 static struct fr30_frame_info 	zero_frame_info;
 
+static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					 tree, int *, int);
 static rtx fr30_pass_by_reference (tree, tree);
 static rtx fr30_pass_by_value (tree, tree);
 
@@ -151,6 +153,12 @@ static rtx fr30_pass_by_value (tree, tree);
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -662,9 +670,8 @@ fr30_print_operand (FILE *file, rtx x, int code)
 /* Compute the number of word sized registers needed to hold a
    function argument of mode INT_MODE and tree type TYPE.  */
 int
-fr30_num_arg_regs (int int_mode, tree type)
+fr30_num_arg_regs (enum machine_mode mode, tree type)
 {
-  enum machine_mode mode = (enum machine_mode) int_mode;
   int size;
 
   if (MUST_PASS_IN_STACK (mode, type))
@@ -687,7 +694,7 @@ fr30_num_arg_regs (int int_mode, tree type)
    parameters to the function.  */
 
 int
-fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, int int_mode,
+fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
 				 tree type, int named)
 {
   /* Unnamed arguments, ie those that are prototyped as ...
@@ -702,7 +709,7 @@ fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, int int_mode,
      are needed because the parameter must be passed on the stack)
      then return zero, as this parameter does not require partial
      register, partial stack stack space.  */
-  if (cum + fr30_num_arg_regs (int_mode, type) <= FR30_NUM_ARG_REGS)
+  if (cum + fr30_num_arg_regs (mode, type) <= FR30_NUM_ARG_REGS)
     return 0;
   
   /* Otherwise return the number of registers that would be used.  */

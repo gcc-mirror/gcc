@@ -1,5 +1,23 @@
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/fr30/fr30-protos.h: Remove the prototype for
+	fr30_setup_incoming_varargs.
+	Update the prototypes for fr30_num_arg_regs and
+	fr30_function_arg_partial_nregs.
+	* config/fr30/fr30.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(fr30_setup_incoming_varargs): Make it static.
+	Add argument second_time.  Don't do anything when second_time
+	is nonzero.
+	(fr30_num_arg_regs): Change the type of the first argument to
+	enum machine_mode.
+	(fr30_function_arg_partial_nregs): Change the type of the
+	second argument to enum machine_mode.
+	* config/fr30/fr30.h (STRUCT_VALUE): Remove.
+	(SETUP_INCOMING_VARARGS): Remove.
+
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arc/arc-protos.h: Remove the prototype for
 	arc_setup_incoming_varargs.
 	* config/arc/arc.c (TARGET_ASM_EXTERNAL_LIBCALL): New.
