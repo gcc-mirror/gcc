@@ -1,3 +1,13 @@
+2005-02-22  Mark Wielaard  <address@bogus.example.com>
+
+	* java/security/AlgorithmParameterGenerator.java (getInstance):
+	Mention provider when throwing NoSuchProviderException.
+	* java/security/AlgorithmParameters.java (getInstance): Likewise.
+	* java/security/KeyFactory.java (getInstance): Likewise.
+	* java/security/KeyStore.java (getInstance): Likewise.
+	* java/security/SecureRandom.java (getInstance): Likewise.
+	* java/security/cert/CertificateFactory.java (getInstance): Likewise.
+
 2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/lang/reflect/Proxy.java,

@@ -138,7 +138,7 @@ public class CertificateFactory
   {
     Provider p = Security.getProvider(provider);
     if( p == null)
-      throw new NoSuchProviderException();
+      throw new NoSuchProviderException(provider);
 
     return getInstance(type, p);
   }
