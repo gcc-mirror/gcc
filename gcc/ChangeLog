@@ -1,3 +1,9 @@
+Sun May 26 14:00:44 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (find_valid_class): Accept new argument DEST,
+	choose class accordingly.
+	(push_reload): Update callers.
+
 2002-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* combine.c (combine_instructions): Do not indent #if for
