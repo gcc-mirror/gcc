@@ -1,5 +1,10 @@
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10551
+	* g++.dg/template/explicit1.C: New test.
+
+2003-04-29  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10549
 	* g++.dg/other/bitfield1.C: New test.
 

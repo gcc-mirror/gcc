@@ -1,5 +1,11 @@
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10551
+	* pt.c (mark_decl_instantiated): Defer all explicit instantiations
+	that have not yet been written out.
+
+2003-04-29  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10549
 	* class.c (layout_class_type): Mark overlong bitfields as having
 	the maximum size permitted by their type, after layout.
