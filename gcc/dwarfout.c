@@ -270,6 +270,22 @@ static unsigned pending_types;
 
 #define PENDING_TYPES_INCREMENT 64
 
+/* A pointer to the base of a list of incomplete types which might be
+   completed at some later time.  */
+
+static tree *incomplete_types_list;
+
+/* Number of elements currently allocated for the incomplete_types_list.  */
+static unsigned incomplete_types_allocated;
+
+/* Number of elements of incomplete_types_list currently in use.  */
+static unsigned incomplete_types;
+
+/* Size (in elements) of increments by which we may expand the incomplete
+   types list.  Actually, a single hunk of space of this size should
+   be enough for most typical programs.	 */
+#define INCOMPLETE_TYPES_INCREMENT 64
+
 /* Pointer to an artificial RECORD_TYPE which we create in dwarfout_init.
    This is used in a hack to help us get the DIEs describing types of
    formal parameters to come *after* all of the DIEs describing the formal
@@ -4216,6 +4232,40 @@ output_pending_types_for_scope (containing_scope)
     }
 }
 
+/* Remember a type in the incomplete_types_list.  */
+
+static void
+add_incomplete_type (type)
+     tree type;
+{
+  if (incomplete_types == incomplete_types_allocated)
+    {
+      incomplete_types_allocated += INCOMPLETE_TYPES_INCREMENT;
+      incomplete_types_list
+	= (tree *) xrealloc (incomplete_types_list,
+			     sizeof (tree) * incomplete_types_allocated);
+    }
+
+  incomplete_types_list[incomplete_types++] = type;
+}
+
+/* Walk through the list of incomplete types again, trying once more to
+   emit full debugging info for them.  */
+
+static void
+retry_incomplete_types ()
+{
+  register tree type;
+
+  finalizing = 1;
+  while (incomplete_types)
+    {
+      --incomplete_types;
+      type = incomplete_types_list[incomplete_types];
+      output_type (type, NULL_TREE);
+    }
+}
+
 static void
 output_type (type, containing_scope)
      register tree type;
@@ -4380,7 +4430,10 @@ output_type (type, containing_scope)
 		    && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_TYPE
 		    && TREE_CODE (TYPE_CONTEXT (type)) != METHOD_TYPE))
 	    && !finalizing)
-	  return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
+	  {
+	    add_incomplete_type (type);
+	    return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
+	  }
 
 	/* Prevent infinite recursion in cases where the type of some
 	   member of this type is expressed in terms of this type itself.  */
@@ -4435,7 +4488,11 @@ output_type (type, containing_scope)
 		register int i;
 
 		for (i = 0; i < n_bases; i++)
-		  output_die (output_inheritance_die, TREE_VEC_ELT (bases, i));
+		  {
+		    tree binfo = TREE_VEC_ELT (bases, i);
+		    output_type (BINFO_TYPE (binfo), containing_scope);
+		    output_die (output_inheritance_die, binfo);
+		  }
 	      }
 
 	    ++in_class;
@@ -5843,6 +5900,8 @@ void
 dwarfout_finish ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  retry_incomplete_types ();
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);

@@ -1,6 +1,16 @@
+Wed Jun 16 10:33:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarfout.c (add_incomplete_type): New fn.
+	(output_type): Call it.
+	(retry_incomplete_types): New fn.
+	(dwarfout_finish): Call it.
+
+	From Eric Raskin <ehr@listworks.com>:
+	(output_type): Output types for bases.
+
 Tue Jun 15 12:51:23 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* config/mips/mips.c (mips_output_conditional_branch): Add `break' 
+	* mips.c (mips_output_conditional_branch): Add `break' 
 	between `default' label and `close braces'.
 
 Tue Jun 15 01:55:20 1999  David O'Brien <obrien@FreeBSD.org>
