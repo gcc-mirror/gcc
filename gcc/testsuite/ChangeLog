@@ -1,3 +1,7 @@
+1999-05-25  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/19990525-0.f: New test.
+
 Tue May 25 01:21:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990525-2.c: New test.
