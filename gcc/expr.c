@@ -6952,6 +6952,11 @@ expand_expr (exp, target, tmode, modifier)
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
+		if (TREE_ADDRESSABLE (slot))
+		  {
+		    TREE_ADDRESSABLE (slot) = 0;
+		    mark_addressable (slot);
+		  }
 
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
@@ -7144,12 +7149,6 @@ expand_expr (exp, target, tmode, modifier)
 	      mark_temp_addr_taken (op0);
 	      temp = XEXP (op0, 0);
 	    }
-
-	  else if (GET_CODE (op0) == REG
-		   /* FIXME make it work for promoted modes too */
-		   && (GET_MODE (op0)
-		       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
-	    op0 = gen_mem_addressof (op0, TREE_TYPE (TREE_OPERAND (exp, 0)));
 
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		   || GET_CODE (op0) == CONCAT)

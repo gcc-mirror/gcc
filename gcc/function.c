@@ -1372,7 +1372,7 @@ put_var_into_stack (decl)
 	 to put things in the stack for the sake of setjmp, try to keep it
 	 in a register until we know we actually need the address.  */
       if (can_use_addressof)
-	gen_mem_addressof (reg, TREE_TYPE (decl));
+	gen_mem_addressof (reg, decl);
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
@@ -2617,24 +2617,25 @@ static int out_arg_offset;
 #endif
 
 /* Build up a (MEM (ADDRESSOF (REG))) rtx for a register REG that just had
-   its address taken.  TYPE is the type of the object stored in the
+   its address taken.  DECL is the decl for the object stored in the
    register, for later use if we do need to force REG into the stack.
    REG is overwritten by the MEM like in put_reg_into_stack.  */
 
 rtx
-gen_mem_addressof (reg, type)
+gen_mem_addressof (reg, decl)
      rtx reg;
-     tree type;
+     tree decl;
 {
+  tree type = TREE_TYPE (decl);
+
   rtx r = gen_rtx (ADDRESSOF, Pmode, gen_reg_rtx (GET_MODE (reg)));
-  SET_ADDRESSOF_TYPE (r, type);
+  SET_ADDRESSOF_DECL (r, decl);
 
   XEXP (reg, 0) = r;
   PUT_CODE (reg, MEM);
-  PUT_MODE (reg, TYPE_MODE (type));
-
-  MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (r) = TYPE_VOLATILE (type);
-  MEM_IN_STRUCT_P (reg) = MEM_IN_STRUCT_P (r) = AGGREGATE_TYPE_P (type);
+  PUT_MODE (reg, DECL_MODE (decl));
+  MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
+  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
 
   fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
   return reg;
@@ -2646,14 +2647,14 @@ static void
 put_addressof_into_stack (r)
      rtx r;
 {
-  tree type = ADDRESSOF_TYPE (r);
+  tree decl = ADDRESSOF_DECL (r);
   rtx reg = XEXP (r, 0);
 
   if (GET_CODE (reg) != REG)
     abort ();
 
-  put_reg_into_stack (0, reg, type, GET_MODE (reg), TYPE_MODE (type),
-		      TYPE_VOLATILE (type));
+  put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
+		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl));
 }
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC

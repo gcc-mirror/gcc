@@ -442,9 +442,9 @@ extern char *note_insn_name[];
 /* For goto labels inside bytecode functions.  */
 #define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
 
-/* The type of the variable in the register we took the address of.  */
-#define ADDRESSOF_TYPE(X) ((tree) XEXP ((X), 1))
-#define SET_ADDRESSOF_TYPE(X, T) (XEXP ((X), 1) = (rtx) (T))
+/* The variable in the register we took the address of.  */
+#define ADDRESSOF_DECL(X) ((tree) XEXP ((X), 1))
+#define SET_ADDRESSOF_DECL(X, T) (XEXP ((X), 1) = (rtx) (T))
 
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
