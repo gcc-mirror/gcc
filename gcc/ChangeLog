@@ -1,5 +1,9 @@
 Sun Mar 15 05:10:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* flow.c (insn_dead_p): A CLOBBER of a dead pseudo is dead.
+
+	* alpha.h (REG_ALLOC_ORDER): Put $f1 after other nonsaved.
+
 	* sparc.c (sparc_type_code): Fix error in previous change.
 
 Sat Mar 14 05:45:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
