@@ -1,3 +1,7 @@
+Thu Aug  5 19:29:39 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (emit_group_load): Allow src to be a CONCAT.
+
 Thu Aug  5 22:27:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* config/sh/lib1funcs.asm (___movstrSI0): Change or r0,r0,r0 to nop.
