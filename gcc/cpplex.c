@@ -1759,7 +1759,7 @@ new_chunk (size)
   unsigned char *base;
   cpp_chunk *result;
 
-  size = _ALIGN (size, DEFAULT_ALIGNMENT);
+  size = POOL_ALIGN (size, DEFAULT_ALIGNMENT);
   base = (unsigned char *) xmalloc (size + sizeof (cpp_chunk));
   /* Put the chunk descriptor at the end.  Then chunk overruns will
      cause obvious chaos.  */
@@ -1826,7 +1826,7 @@ _cpp_pool_reserve (pool, len)
      cpp_pool *pool;
      unsigned int len;
 {
-  len = _ALIGN (len, pool->align);
+  len = POOL_ALIGN (len, pool->align);
   if (len > (unsigned int) POOL_ROOM (pool))
     _cpp_next_chunk (pool, len, 0);
 
