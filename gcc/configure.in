@@ -519,6 +519,13 @@ changequote([,])dnl
 	tm_file=${cpu_type}/${cpu_type}.h
 	xm_file=${cpu_type}/xm-${cpu_type}.h
 	
+	# On a.out targets, we need to use collect2.
+	case $machine in
+	*-*-*aout*)
+		use_collect2=yes
+		;;
+	esac	
+
 	# Common parts for linux-gnu and openbsd systems
 	case $machine in
 	*-*-linux-gnu*)
@@ -2086,7 +2093,7 @@ changequote([,])dnl
 		float_format=m68k
 		;;
 	m68020-*-elf* | m68k-*-elf*)
-		tm_file="m68k/m68020-elf.h libgloss.h"
+		tm_file="m68k/m68020-elf.h"
 		xm_file=m68k/xm-m68kv.h
 		tmake_file=m68k/t-m68kelf
 		header_files=math-68881.h
@@ -2268,7 +2275,7 @@ changequote([,])dnl
 #		fi
 		;;
 	mips-wrs-vxworks)
-		tm_file="mips/elf.h libgloss.h mips/vxworks.h"
+		tm_file="mips/elf.h mips/vxworks.h"
  		tmake_file=mips/t-ecoff
  		gas=yes
 		gnu_ld=yes
@@ -2683,7 +2690,7 @@ changequote([,])dnl
 		tmake_file=mips/t-ecoff
 		;;
 	mipsel-*-elf*)
-		tm_file="mips/elfl.h libgloss.h"
+		tm_file="mips/elfl.h"
 		tmake_file=mips/t-elf
 		;;
 	mips-*-elf*)
@@ -2695,7 +2702,7 @@ changequote([,])dnl
 		tmake_file=mips/t-elf
 		;;
 	mips64orionel-*-elf*)
-		tm_file="mips/elforion.h mips/elfl64.h libgloss.h"
+		tm_file="mips/elforion.h mips/elfl64.h"
 		tmake_file=mips/t-elf
 		;;
 	mips64-*-elf*)
@@ -2703,7 +2710,7 @@ changequote([,])dnl
 		tmake_file=mips/t-elf
 		;;
 	mips64orion-*-elf*)
-		tm_file="mips/elforion.h mips/elf64.h libgloss.h"
+		tm_file="mips/elforion.h mips/elf64.h"
 		tmake_file=mips/t-elf
 		;;
 	mips64orion-*-rtems*)

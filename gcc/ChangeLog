@@ -1,3 +1,8 @@
+Mon Aug  2 17:02:08 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* config/libgloss.h: Add a note discouraging use with ELF.
+	* configure.in: Don't use libgloss.h for ELF targets.
+
 Mon Aug  2 16:27:42 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* combine.c (force_to_mode, case LSHIFTRT): Add goto shiftrt.
