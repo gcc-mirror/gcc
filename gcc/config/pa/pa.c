@@ -3671,7 +3671,7 @@ output_dbra (operands, insn, which_alternative)
       if (get_attr_length (insn) == 12)
 	return "addib,%C2 %1,%4,%3\n\tstw %4,%0";
       else
-	return "addi,%N2 %1,%4,%0\n\tbl %3,0\n\tstw %4,%0";
+	return "addi,%N2 %1,%4,%4\n\tbl %3,0\n\tstw %4,%0";
     }
 }
 
