@@ -1,4 +1,4 @@
-2003-02-11  Gabriel Dos Reis   <gdr@integrable-solutions.net>
+2003-02-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c: Include "timevar.h".
 	(poplevel): Time name lookup.
