@@ -131,6 +131,7 @@ extern enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
 extern void ix86_split_fp_branch PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
+extern int ix86_hard_regno_mode_ok PARAMS ((int, enum machine_mode));
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));

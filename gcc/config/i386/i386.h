@@ -775,28 +775,22 @@ extern int ix86_arch;
     (VALID_SSE_REG_MODE (MODE) && TARGET_SSE ? 1			\
      : VALID_MMX_REG_MODE (MODE) && TARGET_MMX ? 1 : 0)
 
+#define VALID_FP_MODE_P(mode) \
+    ((mode) == SFmode || (mode) == DFmode || (mode) == TFmode	\
+     || (mode) == XFmode					\
+     || (mode) == SCmode || (mode) == DCmode || (mode) == TCmode\
+     || (mode) == XCmode)
+
+#define VALID_INT_MODE_P(mode) \
+    ((mode) == QImode || (mode) == HImode || (mode) == SImode	\
+     || (mode) == DImode					\
+     || (mode) == CQImode || (mode) == CHImode || (mode) == CSImode \
+     || (mode) == CDImode)
+
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)				\
-  /* Flags and only flags can only hold CCmode values.  */	\
-  (CC_REGNO_P (REGNO)						\
-   ? GET_MODE_CLASS (MODE) == MODE_CC				\
-   : GET_MODE_CLASS (MODE) == MODE_CC ? 0			\
-   /* FP regs can only hold floating point; make it clear they	\
-      cannot hold TFmode floats.  */				\
-   : FP_REGNO_P (REGNO)						\
-   ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-      && GET_MODE_UNIT_SIZE (MODE) <= 16)\
-   : SSE_REGNO_P (REGNO) ? VALID_SSE_REG_MODE (MODE)		\
-   : MMX_REGNO_P (REGNO) ? VALID_MMX_REG_MODE (MODE)		\
-   /* Only SSE and MMX regs can hold vector modes.  */		\
-   : VECTOR_MODE_P (MODE) || (MODE) == TImode ? 0		\
-   : (REGNO) < 4 ? 1						\
-   /* Other regs cannot do byte accesses.  */			\
-   : (MODE) != QImode ? 1					\
-   : reload_in_progress || reload_completed			\
-     || !TARGET_PARTIAL_REG_STALL)
+#define HARD_REGNO_MODE_OK(REGNO, MODE)	\
+   ix86_hard_regno_mode_ok (REGNO, MODE)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.

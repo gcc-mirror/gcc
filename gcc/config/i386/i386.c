@@ -8724,3 +8724,33 @@ ix86_free_from_memory (mode)
 						 ? 2
 						 : 4))));
 }
+
+/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
+int
+ix86_hard_regno_mode_ok (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  /* Flags and only flags can only hold CCmode values.  */
+  if (CC_REGNO_P (regno))
+    return GET_MODE_CLASS (mode) == MODE_CC;
+  if (GET_MODE_CLASS (mode) == MODE_CC
+      || GET_MODE_CLASS (mode) == MODE_RANDOM
+      || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+    return 0;
+  if (FP_REGNO_P (regno))
+    return VALID_FP_MODE_P (mode);
+  if (SSE_REGNO_P (regno))
+    return VALID_SSE_REG_MODE (mode);
+  if (MMX_REGNO_P (regno))
+    return VALID_MMX_REG_MODE (mode);
+  /* We handle both integer and floats in the general purpose registers.
+     In future we should be able to handle vector modes as well.  */
+  if (!VALID_INT_MODE_P (mode) && !VALID_FP_MODE_P (mode))
+    return 0;
+  /* Take care for QImode values - they can be in non-QI regs, but then
+     they do cause partial register stalls.  */
+  if (QI_REG_P (regno) || mode != QImode)
+    return 1;
+  return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
+}
