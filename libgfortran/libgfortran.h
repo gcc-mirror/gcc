@@ -87,7 +87,11 @@ typedef double GFC_REAL_8;
 typedef complex float GFC_COMPLEX_4;
 typedef complex double GFC_COMPLEX_8;
 
+/* The following two definitions must be consistent with the types used
+   by the compiler.  */
+/* The type used of array indices, amongst other things.  */
 typedef size_t index_type;
+/* The type used for string lengths.  Nothing to do with strlen(3).  */
 typedef GFC_INTEGER_4 gfc_strlen_type;
 
 /* This will be 0 on little-endian machines and one on big-endian machines.  */

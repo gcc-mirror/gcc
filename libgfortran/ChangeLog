@@ -1,3 +1,7 @@
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
+	* libgfortran.h: Add comments.
+
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.am (gfor_helper_src): Split selected_kind.f90.
