@@ -1470,11 +1470,17 @@ get_dispatch_table (type, this_class_addr)
   list = tree_cons (NULL_TREE, gc_descr, list);
   for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS-1; ++j)
     list = tree_cons (NULL_TREE, gc_descr, list);
-  list = tree_cons (integer_zero_node, this_class_addr, list);
+  list = tree_cons (NULL_TREE, this_class_addr, list);
+
+  /** Pointer to type_info object (to be implemented), according to g++ ABI. */
+  list = tree_cons (NULL_TREE, null_pointer_node, list);
+  /** Offset to start of whole object.  Always (ptrdiff_t)0 for Java. */
+  list = tree_cons (integer_zero_node, null_pointer_node, list);
 
   arraysize = (TARGET_VTABLE_USES_DESCRIPTORS? nvirtuals + 1 : nvirtuals + 2);
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
+  arraysize += 2;
   return build (CONSTRUCTOR,
 		build_prim_array_type (nativecode_ptr_type_node, arraysize),
 		NULL_TREE, list);
@@ -1504,6 +1510,9 @@ make_class_data (type)
   tree interfaces = null_pointer_node;
   int interface_len = 0;
   tree type_decl = TYPE_NAME (type);
+  /** Offset from start of virtual function table declaration
+      to where objects actually point at, following new g++ ABI. */
+  tree dtable_start_offset = build_int_2 (2 * POINTER_SIZE / BITS_PER_UNIT, 0);
 
   this_class_addr = build_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
@@ -1657,7 +1666,9 @@ make_class_data (type)
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
   PUSH_FIELD_VALUE (temp, "vtable",
-		    build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl));
+		    build (PLUS_EXPR, dtable_ptr_type,
+			   build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl),
+			   dtable_start_offset));
   if (! flag_hash_synchronization)
     PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp);
@@ -1693,7 +1704,9 @@ make_class_data (type)
   else
     PUSH_FIELD_VALUE (cons, "vtable",
 		      dtable_decl == NULL_TREE ? null_pointer_node
-		      : build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl));
+		      : build (PLUS_EXPR, dtable_ptr_type,
+			       build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl),
+			       dtable_start_offset));
   
   if (otable_methods == NULL_TREE)
     {
@@ -1826,7 +1839,7 @@ build_dtable_decl (type)
   /* We need to build a new dtable type so that its size is uniquely
      computed when we're dealing with the class for real and not just
      faking it (like java.lang.Class during the initialization of the
-     compiler.) We now we're not faking a class when CURRENT_CLASS is
+     compiler.) We know we're not faking a class when CURRENT_CLASS is
      TYPE. */
   if (current_class == type)
     {
@@ -1834,6 +1847,9 @@ build_dtable_decl (type)
       int n;
 
       dtype = make_node (RECORD_TYPE);
+
+      PUSH_FIELD (dtype, dummy, "top_offset", ptr_type_node);
+      PUSH_FIELD (dtype, dummy, "type_info", ptr_type_node);
 
       PUSH_FIELD (dtype, dummy, "class", class_ptr_type);
       for (n = 1; n < TARGET_VTABLE_USES_DESCRIPTORS; ++n)
