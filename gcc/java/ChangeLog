@@ -1,5 +1,10 @@
 2001-08-30  Per Bothner  <per@bothner.com>
 
+	* parse.y (resolve_qualified_expression_name):  If creating a
+	COMPOUND_EXPR, set it's type correctly.
+
+2001-08-30  Per Bothner  <per@bothner.com>
+
 	* jcf-io.c (open_class):  Set filename field.
 
 	* jcf-parse,c (parse_class_file):  Set current_function_decl

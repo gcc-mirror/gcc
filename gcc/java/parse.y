@@ -9418,7 +9418,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	     forcoming function's argument. */
 	  if (previous_call_static && is_static)
 	    {
-	      decl = build (COMPOUND_EXPR, type, decl, *where_found);
+	      decl = build (COMPOUND_EXPR, TREE_TYPE (*where_found),
+			    decl, *where_found);
 	      TREE_SIDE_EFFECTS (decl) = 1;
 	    }
 	  else
