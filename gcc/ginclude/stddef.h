@@ -237,7 +237,9 @@ typedef _BSD_RUNE_T_ rune_t;
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
+#ifndef __cplusplus
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif
