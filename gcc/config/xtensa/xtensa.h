@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001,2002 Free Software Foundation, Inc.
+   Copyright 2001,2002,2003 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -207,6 +207,15 @@ extern unsigned xtensa_current_frame_size;
         builtin_define ("__pic__");					\
       }									\
   } while (0)
+
+#define CPP_SPEC " %(subtarget_cpp_spec) "
+
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
+
+#define EXTRA_SPECS                                             \
+  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },
 
 #ifdef __XTENSA_EB__
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
@@ -1377,14 +1386,9 @@ typedef struct xtensa_args {
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global\t"
 
-/* This says how to define a global common symbol.  */
-#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\
-  xtensa_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (SIZE))
-
-/* This says how to define a local common symbol (ie, not visible to
-   linker).  */
-#define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-  xtensa_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE))
+/* Declare an uninitialized external linkage data object.  */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
@@ -1430,8 +1434,9 @@ typedef struct xtensa_args {
 
 
 /* Define the strings to put out for each section in the object file.  */
-#define TEXT_SECTION_ASM_OP	"\t.text"  	/* instructions */
-#define DATA_SECTION_ASM_OP	"\t.data" 	/* large data */
+#define TEXT_SECTION_ASM_OP	"\t.text"
+#define DATA_SECTION_ASM_OP	"\t.data"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
 
 /* Define output to appear before the constant pool.  If the function

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001,2002 Free Software Foundation, Inc.
+   Copyright 2001,2002,2003 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -2083,22 +2083,6 @@ print_operand_address (file, addr)
       output_addr_const (file, addr);
       break;
     }
-}
-
-
-/* Emit either a label, .comm, or .lcomm directive. */
-
-void
-xtensa_declare_object (file, name, init_string, final_string, size)
-     FILE *file;
-     char *name;
-     char *init_string;
-     char *final_string;
-     int size;
-{
-  fputs (init_string, file);		/* "", "\t.comm\t", or "\t.lcomm\t" */
-  assemble_name (file, name);
-  fprintf (file, final_string, size);	/* ":\n", ",%u\n", ",%u\n" */
 }
 
 
