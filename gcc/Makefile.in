@@ -2638,8 +2638,12 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 
 docdir = $(srcdir)/doc
 
+stmp-docobjdir:
+	-test -d $(docobjdir) || mkdir $(docobjdir)
+	$(STAMP) stmp-docobjdir
+
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
-info: $(docobjdir)/cpp.info $(docobjdir)/gcc.info $(docobjdir)/gccint.info $(docobjdir)/gccinstall.info lang.info $(docobjdir)/cppinternals.info
+info: stmp-docobjdir $(docobjdir)/cpp.info $(docobjdir)/gcc.info $(docobjdir)/gccint.info $(docobjdir)/gccinstall.info lang.info $(docobjdir)/cppinternals.info
 
 TEXI_CPP_FILES = $(docdir)/cpp.texi $(docdir)/include/fdl.texi \
   $(docdir)/cppenv.texi $(docdir)/cppopts.texi

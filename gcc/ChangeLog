@@ -1,3 +1,8 @@
+2003-07-29  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.in (stmp-docobjdir):  New target; ensure $docobjdir exists.
+	(info):  Depend on stmp-docobjdir.
+
 2003-07-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.
