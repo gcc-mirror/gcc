@@ -1456,7 +1456,7 @@ struct lang_type
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
   (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_CONSTRUCTOR_SLOT))
 
-/* A FUNCTION_DECL for the destructor for NODE.  These are te
+/* A FUNCTION_DECL for the destructor for NODE.  These are the
    destructors that take an in-charge parameter.  */
 #define CLASSTYPE_DESTRUCTORS(NODE) \
   (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_DESTRUCTOR_SLOT))

@@ -13730,9 +13730,7 @@ static void
 finish_destructor_body ()
 {
   tree compound_stmt;
-  tree virtual_size;
   tree exprstmt;
-  tree if_stmt;
 
   /* Create a block to contain all the extra code.  */
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
@@ -13814,31 +13812,31 @@ finish_destructor_body ()
 	}
     }
 
-  virtual_size = c_sizeof (current_class_type);
+  /* In a virtual destructor, we must call delete.  */
+  if (DECL_VIRTUAL_P (current_function_decl))
+    {
+      tree if_stmt;
+      tree virtual_size = c_sizeof (current_class_type);
 
-  /* At the end, call delete if that's what's requested.  */
+      /* [class.dtor]
 
-  /* FDIS sez: At the point of definition of a virtual destructor
-     (including an implicit definition), non-placement operator delete
-     shall be looked up in the scope of the destructor's class and if
-     found shall be accessible and unambiguous.
+	 At the point of definition of a virtual destructor (including
+	 an implicit definition), non-placement operator delete shall
+	 be looked up in the scope of the destructor's class and if
+	 found shall be accessible and unambiguous.  */
+      exprstmt = build_op_delete_call
+	(DELETE_EXPR, current_class_ptr, virtual_size,
+	 LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
 
-     This is somewhat unclear, but I take it to mean that if the class
-     only defines placement deletes we don't do anything here.  So we
-     pass LOOKUP_SPECULATIVELY; delete_sanity will complain for us if
-     they ever try to delete one of these.  */
-  exprstmt = build_op_delete_call
-    (DELETE_EXPR, current_class_ptr, virtual_size,
-     LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
-
-  if_stmt = begin_if_stmt ();
-  finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
-			      current_in_charge_parm,
-			      integer_one_node),
-		       if_stmt);
-  finish_expr_stmt (exprstmt);
-  finish_then_clause (if_stmt);
-  finish_if_stmt ();
+      if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
+				  current_in_charge_parm,
+				  integer_one_node),
+			   if_stmt);
+      finish_expr_stmt (exprstmt);
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+    }
 
   /* Close the block we started above.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);

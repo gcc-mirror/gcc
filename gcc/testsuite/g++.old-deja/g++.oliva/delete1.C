@@ -1,6 +1,6 @@
 // Build don't link:
 
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2001 Free Software Foundation
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // simplified from bug report by K. Haley <khaley@bigfoot.com>
@@ -21,7 +21,7 @@ struct bar : foo {
     delete this; // ERROR - delete is private
     // An implicit invocation of delete is emitted in destructors, but
     // it should only be checked in virtual destructors
-  } // gets bogus error - not virtual - XFAIL *-*-*
+  } // gets bogus error - not virtual
 } bar_;
 
 struct baz : foo {
