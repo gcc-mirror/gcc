@@ -1,5 +1,9 @@
 2002-03-01  Phil Edwards  <pme@gcc.gnu.org>
 
+	* cp-tree.h (build_init):  Remove prototype.
+
+2002-03-01  Phil Edwards  <pme@gcc.gnu.org>
+
 	* cp-tree.h:  Require __GNUC__ to be #defined.
 	(build_init):  Add missing prototype.
 
