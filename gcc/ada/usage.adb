@@ -365,7 +365,7 @@ begin
    --  Lines for -gnaty switch
 
    Write_Switch_Char ("y");
-   Write_Line ("Enable all style checks");
+   Write_Line ("Enable all style checks except 'o', indent=3");
 
    Write_Switch_Char ("yxx");
    Write_Line ("Enable selected style checks xx = list of parameters:");

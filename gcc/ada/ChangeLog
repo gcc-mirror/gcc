@@ -1,3 +1,7 @@
+2001-10-30  Robert Dewar <dewar@gnat.com>
+
+	* usage.adb: Minor fix to output for -gnaty.
+
 2001-10-30  Ed Schonberg <schonber@gnat.com>
 
 	* a-reatim.ads: Makes Seconds_Count into a 64-bit integer, 
