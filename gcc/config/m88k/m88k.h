@@ -1632,7 +1632,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* These are pretty much common to all assemblers.  */
 #define IDENT_ASM_OP		"\tident\t"
 #define FILE_ASM_OP		"\tfile\t"
-#define SECTION_ASM_OP		"\tsection\t"
 #define SET_ASM_OP		"\tdef\t"
 #define GLOBAL_ASM_OP		"\tglobal\t"
 #define ALIGN_ASM_OP		"\talign\t"
