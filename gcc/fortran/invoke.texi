@@ -126,7 +126,7 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wall  -Waliasing  -Wconversion @gol
--Wimplicit-interface  -Wsurprising  -Wunused-labels @gol
+-Wimplicit-interface  -Wsurprising  -Wunderflow -Wunused-labels @gol
 -Wline-truncation @gol
 -Werror  -W}
 
@@ -222,7 +222,7 @@ to them to fill out the line.
 Specify the maximum allowed identifier length. Typical values are
 31 (Fortran 95) and 63 (Fortran 200x).
 
-@cindex -fimpicit-none option
+@cindex -fimplicit-none option
 @cindex options, -fimplicit-none
 @item -fimplicit-none
 Specify that no implicit typing is allowed, unless overridden by explicit
@@ -318,7 +318,7 @@ Inhibit all warning messages.
 @cindex warnings, all
 Enables commonly used warning options that which pertain to usage that
 we recommend avoiding and that we believe is easy to avoid.
-This currenly includes @option{-Wunused-labels}, @option{-Waliasing},
+This currently includes @option{-Wunused-labels}, @option{-Waliasing},
 @option{-Wsurprising} and @option{-Wline-truncation}.
 
 
@@ -327,7 +327,7 @@ This currenly includes @option{-Wunused-labels}, @option{-Waliasing},
 @item -Waliasing
 @cindex aliasing
 Warn about possible aliasing of dummy arguments. The following example
-witll trigger teh warhing as it would be illegal to @code{bar} to
+will trigger the warning as it would be illegal to @code{bar} to
 modify either parameter.
 @smallexample
   INTEGER A
@@ -354,8 +354,8 @@ check that the declared interfaces are consistent across program units.
 @cindex options, -Wsurprising
 @item -Wsurprising
 @cindex Suspicious
-Produce a warning when ``suspicous'' code constructs are encountered.
-While techically legal these usually indicate that an error has been made.
+Produce a warning when ``suspicious'' code constructs are encountered.
+While technically legal these usually indicate that an error has been made.
 
 This currently produces a warning under the following circumstances:
 
@@ -367,6 +367,14 @@ lower value that is greater than its upper value.
 @item
 A LOGICAL SELECT construct has three CASE statements.
 @end itemize
+
+@cindex -Wunderflow
+@cindex options, -Wunderflow
+@item -Wunderflow
+@cindex UNDERFLOW
+Produce a warning when numerical constant expressions are
+encountered, which yield an UNDERFLOW during compilation.
+
 
 @cindex -Wunused-labels option
 @cindex options, -Wunused-labels
@@ -412,7 +420,7 @@ either your program or @command{gfortran}
 @cindex option, -fdump-parse-tree
 @item -fdump-parse-tree
 Output the internal parse tree before starting code generation.  Only
-really usedful for debugging gfortran itself.
+really useful for debugging gfortran itself.
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,
@@ -432,7 +440,7 @@ for files specified via the @code{INCLUDE} directive, and where it searches
 for previously compiled modules.
 
 It also affects the search paths used by @command{cpp} when used to preprocess
-fortran source.
+Fortran source.
 
 @table @gcctabopt
 @cindex -Idir option
@@ -463,8 +471,8 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @cindex option, -Mdir
 @item -M@var{dir}
 @item -J@var{dir}
-This option specifies where to put @samp{.mod} files for compiled modiles.
-It is also added to the list of directories to searhed by an @code{USE}
+This option specifies where to put @samp{.mod} files for compiled modules.
+It is also added to the list of directories to searched by an @code{USE}
 statement.
 
 The default is the current directory.
@@ -596,7 +604,7 @@ and against the declared minimum and maximum values.  It also
 checks array indices for assumed and deferred
 shape arrays against the actual allocated bounds.
 
-In the future this may also include other forms of checking, eg. checing
+In the future this may also include other forms of checking, eg. checking
 substring references.
 
 
@@ -615,7 +623,7 @@ The default value for @var{n} is 32768.
 @item -fpackderived
 @cindex Structure packing
 This option tells gfortran to pack derived type members as closely as
-possible.  Code compiled with this option is likley to be incompatible
+possible.  Code compiled with this option is likely to be incompatible
 with code compiled without this option, and may execute slower.
 
 @cindex -frepack-arrays option

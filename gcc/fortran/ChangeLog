@@ -1,3 +1,15 @@
+2004-05-22  Steven G. Kargl  <kargls@comcast.net>
+
+	* invoke.texi: Document -Wunderflow and spell check.
+	* lang.opt: Add Wunderflow.
+	* gfortran.h (gfc_option_t): Add warn_underflow option.
+	* options.c (gfc_init_options, set_Wall): Use it.
+	* primary.c (match_real_constant): Explicitly handle UNDERFLOW.
+	* arith.c (gfc_arith_uminus, gfc_arith_plus, gfc_arith_minus,
+	gfc_arith_times, gfc_arith_divide, gfc_arith_power, gfc_real2real,
+	gfc_real2complex, gfc_complex2real, gfc_complex2complex): Ditto.
+	* arith.c (common_logarithm): Fix typo in comment.
+
 2004-05-21  Roger Sayle  <roger@eyesopen.com>
 
 	* io.c (check_format): As a GNU extension, allow the comma after a

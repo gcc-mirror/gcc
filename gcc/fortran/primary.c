@@ -489,8 +489,10 @@ done:
       goto cleanup;
 
     case ARITH_UNDERFLOW:
-      gfc_error ("Real constant underflows its kind at %C");
-      goto cleanup;
+      if (gfc_option.warn_underflow)
+        gfc_warning ("Real constant underflows its kind at %C");
+      mpf_set_ui(e->value.real, 0);
+      break;
 
     default:
       gfc_internal_error ("gfc_range_check() returned bad value");

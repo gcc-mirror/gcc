@@ -57,6 +57,10 @@ Wsurprising
 F95
 Warn about \"suspicious\" constructs
 
+Wunderflow
+F95
+Warn about underflow of numerical constant expressions
+
 Wunused-labels
 F95
 Warn when a label is unused
