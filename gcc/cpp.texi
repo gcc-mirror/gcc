@@ -2664,6 +2664,20 @@ the text is ignored and this directive has no effect.  Typically
 @samp{#ident} is only used in header files supplied with those systems
 where it is meaningful.
 
+@findex #pragma GCC dependency
+The @samp{#pragma GCC dependency} allows you to check the relative dates
+of the current file and another file. If the other file is more
+recent than the current file, a warning is issued. This is useful if the
+include file is derived from the other file, and should be regenerated.
+The other file is searched for using the normal include search path.
+Optional trailing text can be used to give more information in the
+warning message.
+
+@smallexample
+#pragma GCC dependency "parse.y"
+#pragma GCC dependency "/usr/include/time.h" rerun /path/to/fixincludes
+@end smallexample
+
 @node Output, Invocation, Other Directives, Top
 @section C Preprocessor Output
 

@@ -1,3 +1,18 @@
+2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cpp.texi: Document #pragma GCC dependency
+	* cppfiles.c (open_include_file): Set date to unknown.
+	(_cpp_compare_file_date): New function.
+	(read_include_file): Set file date.
+	* cpphash.h (struct include_file): Add date member.
+	(_cpp_compare_file_date): Prototype.
+	* cpplib.c (parse_include): Add trail parameter. Adjust.
+	(do_include): Adjust parse_include call.
+	(do_import): Likewise.
+	(do_include_next): Likewise.
+	(gcc_pragmas): Add dependency pragma.
+	(do_pragma_dependancy): New pragma.
+
 2000-06-29  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (output_loc_operands): Don't abort on codes that have

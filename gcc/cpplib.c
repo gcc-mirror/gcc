@@ -52,7 +52,7 @@ struct if_stack
 /* Forward declarations.  */
 
 static void validate_else		PARAMS ((cpp_reader *, const U_CHAR *));
-static unsigned int parse_include	PARAMS ((cpp_reader *, const U_CHAR *));
+static unsigned int parse_include	PARAMS ((cpp_reader *, const U_CHAR *, int));
 static void push_conditional		PARAMS ((cpp_reader *, int, int,
 						 const cpp_hashnode *));
 static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
@@ -398,9 +398,10 @@ do_define (pfile)
 /* Handle #include and #import.  */
 
 static unsigned int
-parse_include (pfile, name)
+parse_include (pfile, name, trail)
      cpp_reader *pfile;
      const U_CHAR *name;
+     int trail;
 {
   long old_written = CPP_WRITTEN (pfile);
   enum cpp_ttype token;
@@ -420,7 +421,7 @@ parse_include (pfile, name)
       return 0;
     }
 
-  if (_cpp_get_directive_token (pfile) != CPP_VSPACE)
+  if (!trail && _cpp_get_directive_token (pfile) != CPP_VSPACE)
     {
       cpp_error (pfile, "junk at end of #%s", name);
       _cpp_skip_rest_of_line (pfile);
@@ -441,7 +442,7 @@ do_include (pfile)
   unsigned int len;
   U_CHAR *token;
 
-  len = parse_include (pfile, dtable[T_INCLUDE].name);
+  len = parse_include (pfile, dtable[T_INCLUDE].name, 0);
   if (len == 0)
     return 0;
   token = (U_CHAR *) alloca (len + 1);
@@ -470,7 +471,7 @@ do_import (pfile)
 	   "#import is obsolete, use an #ifndef wrapper in the header file");
     }
 
-  len = parse_include (pfile, dtable[T_IMPORT].name);
+  len = parse_include (pfile, dtable[T_IMPORT].name, 0);
   if (len == 0)
     return 0;
   token = (U_CHAR *) alloca (len + 1);
@@ -492,7 +493,7 @@ do_include_next (pfile)
   U_CHAR *token;
   struct file_name_list *search_start = 0;
 
-  len = parse_include (pfile, dtable[T_INCLUDE_NEXT].name);
+  len = parse_include (pfile, dtable[T_INCLUDE_NEXT].name, 0);
   if (len == 0)
     return 0;
   token = (U_CHAR *) alloca (len + 1);
@@ -803,6 +804,7 @@ static int do_pragma_poison		PARAMS ((cpp_reader *));
 static int do_pragma_system_header	PARAMS ((cpp_reader *));
 static int do_pragma_default		PARAMS ((cpp_reader *));
 static int do_pragma_gcc                PARAMS ((cpp_reader *));
+static int do_pragma_dependency         PARAMS ((cpp_reader *));
 
 static const struct pragma_entry top_pragmas[] =
 {
@@ -819,6 +821,7 @@ static const struct pragma_entry gcc_pragmas[] =
   {"implementation", do_pragma_implementation},
   {"poison", do_pragma_poison},
   {"system_header", do_pragma_system_header},
+  {"dependency", do_pragma_dependency},
   {NULL, do_pragma_default}
 };
 
@@ -1033,7 +1036,44 @@ do_pragma_system_header (pfile)
 
   return 1;
 }
- 
+
+/* Check the modified date of the current include file against a specified
+   file. Issue a diagnostic, if the specified file is newer. We use this to
+   determine if a fixed header should be refixed.  */
+static int
+do_pragma_dependency (pfile)
+     cpp_reader *pfile;
+{
+  U_CHAR *original_name, *name;
+  unsigned len;
+  int ordering;
+  
+  len = parse_include (pfile, (const U_CHAR *)"pragma dependency", 1);
+  original_name = (U_CHAR *) alloca (len + 1);
+  name = (U_CHAR *) alloca (len + 1);
+  memcpy (original_name, CPP_PWRITTEN (pfile), len);
+  memcpy (name, CPP_PWRITTEN (pfile), len);
+  original_name[len] = name[len] = 0;
+  
+  ordering = _cpp_compare_file_date (pfile, name, len, 0);
+  if (ordering < 0)
+    cpp_warning (pfile, "cannot find source %s", original_name);
+  else if (ordering > 0)
+    {
+      const U_CHAR *text, *limit;
+      _cpp_skip_hspace (pfile);
+      text = CPP_BUFFER (pfile)->cur;
+      _cpp_skip_rest_of_line (pfile);
+      limit = CPP_BUFFER (pfile)->cur;
+      
+      cpp_warning (pfile, "current file is older than %s", original_name);
+      if (limit != text)
+        cpp_warning (pfile, "%.*s", (int)(limit - text), text);
+    }
+  _cpp_skip_rest_of_line (pfile);
+  return 1;
+}
+
 /* Just ignore #sccs, on systems where we define it at all.  */
 #ifdef SCCS_DIRECTIVE
 static int

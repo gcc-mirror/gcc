@@ -227,6 +227,7 @@ open_include_file (pfile, filename)
     }
 
   file->fd = fd;
+  file->date = (time_t) -1;
   return file;
 }
 
@@ -465,6 +466,60 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start)
     cpp_error_from_errno (pfile, fname);
 }
 
+/* Locate file F, and determine whether it is newer than PFILE. Return -1,
+   if F cannot be located or dated, 1, if it is newer and 0 if older.  */
+
+int
+_cpp_compare_file_date (pfile, f, len, search_start)
+     cpp_reader *pfile;
+     U_CHAR *f;
+     unsigned int len;
+     struct file_name_list *search_start;
+{
+  char *fname = (char *)f;
+  int angle_brackets = fname[0] == '<';
+  struct include_file *inc;
+  struct include_file *current_include = cpp_file_buffer (pfile)->inc;
+
+  if (!search_start)
+    {
+      if (angle_brackets)
+	search_start = CPP_OPTION (pfile, bracket_include);
+      else if (CPP_OPTION (pfile, ignore_srcdir))
+	search_start = CPP_OPTION (pfile, quote_include);
+      else
+	search_start = CPP_BUFFER (pfile)->actual_dir;
+    }
+
+  /* Remove quote marks.  */
+  fname++;
+  len -= 2;
+  fname[len] = '\0';
+  
+  inc = find_include_file (pfile, fname, search_start);
+  
+  if (!inc)
+    return -1;
+  if (inc->fd >= 0)
+    {
+      struct stat source;
+      
+      if (fstat (inc->fd, &source) < 0)
+        {
+          close (inc->fd);
+          inc->fd = -1;
+          return -1;
+        }
+      inc->date = source.st_mtime;
+      close (inc->fd);
+      inc->fd = -1;
+    }
+  if (inc->date == (time_t)-1 || current_include->date == (time_t)-1)
+    return -1;
+  return inc->date > current_include->date;
+}
+
+
 /* Push an input buffer and load it up with the contents of FNAME.
    If FNAME is "" or NULL, read standard input.  */
 int
@@ -502,6 +557,8 @@ read_include_file (pfile, inc)
 
   if (fstat (fd, &st) < 0)
     goto perror_fail;
+  
+  inc->date = st.st_mtime;
 
   /* If fd points to a plain file, we might be able to mmap it; we can
      definitely allocate the buffer all at once.  If fd is a pipe or
