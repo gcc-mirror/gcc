@@ -1,6 +1,6 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+;;   2002 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -6588,8 +6588,9 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "comparison_operator"
-	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*f,!*m")
-		     (match_operand:SI 1 "int5_operand" "L,L,L"))
+	   [(plus:SI
+	      (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "+!r,!*f,!*m")
+	      (match_operand:SI 1 "int5_operand" "L,L,L"))
 	    (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
