@@ -204,7 +204,7 @@ enum string_section
 {
   class_names,		/* class, category, protocol, module names */
   meth_var_names,	/* method and variable names */
-  meth_var_types,	/* method and variable type descriptors */
+  meth_var_types	/* method and variable type descriptors */
 };
 
 static tree add_objc_string			PROTO((tree, enum string_section));
