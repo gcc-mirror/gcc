@@ -2428,9 +2428,12 @@ do_build_assign_ref (fndecl)
       for (i = 0; i < n_bases; ++i)
 	{
 	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  tree p = convert_to_reference
-	    (build_reference_type (basetype), parm,
-	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
+	  tree p = build_qualified_type
+	      (basetype, CP_TYPE_QUALS (TREE_TYPE (parm)));
+
+	  p = convert_to_reference
+	    (build_reference_type (p), parm,
+	     CONV_IMPLICIT, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
 	  p = build_member_call (basetype, ansi_assopname (NOP_EXPR),
 				 build_tree_list (NULL_TREE, p));
