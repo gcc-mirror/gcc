@@ -1,3 +1,31 @@
+Thu May  7 14:26:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (GCC_FUNC_VFPRINTF_DOPRNT): New macro.
+	
+	* configure.in: Add a call to GCC_FUNC_VFPRINTF_DOPRNT.
+	(AC_CHECK_HEADERS): Remove unused check for varargs.h,sys/varargs.h.
+	(AC_CHECK_FUNCS): Remove unused check for vprintf.
+	
+	* Makefile.in: Add support for linking in vfprintf.c and doprint.c.
+	(cccp.o): Depend on gansidecl.h.
+	(cexp.o): Likewise.
+
+	* cccp.c: Convert from using PRINTF_ALIST/PRINTF_DCL to VPROTO as
+ 	per the rest of gcc source.
+  	* cexp.y: Likewise.  Include gansidecl.h and remove all code made
+ 	redundant.
+
+	* cccp.c: Remove checks for HAVE_VPRINTF and the associated code
+	used when vfprintf is missing.
+	* cexp.y: Likewise.
+	* gcc.c: Likewise.
+	* genattrtab.c: Likewise.
+	* mips-tfile.c: Likewise.
+	* toplev.c: Likewise.
+
+	* vfprintf.c: New file.
+	* doprint.c: New file.
+
 Thu May  7 10:18:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config/linux.h (ASM_COMMENT_START): Remove from here,

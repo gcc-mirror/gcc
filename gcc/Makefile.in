@@ -265,6 +265,10 @@ CLIB=
 # system library.
 OBSTACK=obstack.o
 
+# Configure will set these if you need vfprintf and possibly _doprnt support.
+VFPRINTF=@vfprintf@
+DOPRINT=@doprint@
+
 # Specify the rule for actually making libgcc.a,
 LIBGCC = libgcc.a
 # and the rule for installing it.
@@ -410,6 +414,8 @@ HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_ALLOCA=$(ALLOCA)
 HOST_MALLOC=$(MALLOC)
 HOST_OBSTACK=$(OBSTACK)
+HOST_VFPRINTF=$(VFPRINTF)
+HOST_DOPRINT=$(DOPRINT)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
@@ -493,25 +499,27 @@ USE_ALLOCA= ${ALLOCA}
 USE_HOST_ALLOCA= ` case "${HOST_ALLOCA}" in ?*) echo ${HOST_PREFIX}${HOST_ALLOCA} ;; esac `
 USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC} ;; esac `
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
+USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
+USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
 
 # Dependency on obstack, alloca, malloc or whatever library facilities
 # are not installed in the system libraries.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-LIBDEPS= $(OBSTACK) $(ALLOCA) $(MALLOC)
+LIBDEPS= $(OBSTACK) $(ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(CLIB)
+LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(CLIB)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
-	    $(HOST_CLIB)
+	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
@@ -1731,6 +1739,16 @@ $(HOST_PREFIX_1)obstack.o: obstack.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
 
+$(HOST_PREFIX_1)vfprintf.o: vfprintf.c
+	rm -f $(HOST_PREFIX)vfprintf.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/vfprintf.c > $(HOST_PREFIX)vfprintf.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)vfprintf.c
+
+$(HOST_PREFIX_1)doprint.o: doprint.c
+	rm -f $(HOST_PREFIX)doprint.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/doprint.c > $(HOST_PREFIX)doprint.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)doprint.c
+
 $(HOST_PREFIX_1)malloc.o: malloc.c
 	rm -f $(HOST_PREFIX)malloc.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
@@ -1751,12 +1769,12 @@ cpp$(exeext): $(CCCP)$(exeext)
 cccp$(exeext): cccp.o cexp.o version.o prefix.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
 	  version.o $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h gansidecl.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
-cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h
+cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \

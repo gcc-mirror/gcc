@@ -1262,17 +1262,7 @@ vmessage (prefix, s, ap)
   if (prefix)
     fprintf (stderr, "%s: ", prefix);
 
-#ifdef HAVE_VPRINTF
   vfprintf (stderr, s, ap);
-#else
-  {
-    HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
-    HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
-    fprintf (stderr, s, v1, v2, v3, v4);
-  }
-#endif
 }
 
 /* Print a message relevant to line LINE of file FILE.  */

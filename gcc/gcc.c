@@ -246,25 +246,15 @@ static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
 static void pfatal_pexecute	PROTO((char *, char *));
-#ifdef HAVE_VPRINTF
 static void fatal		PVPROTO((char *, ...));
 static void error		PVPROTO((char *, ...));
-#else
-/* We must not provide any prototype here, even if ANSI C.  */
-static void fatal		PROTO(());
-static void error		PROTO(());
-#endif
 
 void fancy_abort ();
 char *xmalloc ();
 char *xrealloc ();
 
 #ifdef LANG_SPECIFIC_DRIVER
-#ifdef HAVE_VPRINTF
-extern void lang_specific_driver PROTO ((void (*) (char *, ...), int *, char ***, int *));
-#else
-extern void lang_specific_driver PROTO ((void (*) (), int *, char ***, int *));
-#endif
+extern void lang_specific_driver PROTO ((void (*) PVPROTO((char *, ...)), int *, char ***, int *));
 #endif
 
 /* Specs are strings containing lines, each of which (if not blank)
@@ -5048,8 +5038,6 @@ fancy_abort ()
   fatal ("Internal gcc abort.");
 }
 
-#ifdef HAVE_VPRINTF
-
 /* Output an error message and exit */
 
 static void
@@ -5094,29 +5082,6 @@ error VPROTO((char *format, ...))
 
   fprintf (stderr, "\n");
 }
-
-#else /* not HAVE_VPRINTF */
-
-static void
-fatal (msg, arg1, arg2)
-     char *msg, *arg1, *arg2;
-{
-  error (msg, arg1, arg2);
-  delete_temp_files ();
-  exit (1);
-}
-
-static void
-error (msg, arg1, arg2)
-     char *msg, *arg1, *arg2;
-{
-  fprintf (stderr, "%s: ", programname);
-  fprintf (stderr, msg, arg1, arg2);
-  fprintf (stderr, "\n");
-}
-
-#endif /* not HAVE_VPRINTF */
-
 
 static void
 validate_all_switches ()
