@@ -1,3 +1,9 @@
+2004-09-21  Matt Austern  <austern@apple.com>
+
+	Fix bootstrap.
+	* gjavah.c (free_method_name_list): Fix function definition so
+	it's a proper C prototype.
+	
 2004-09-21  Tom Tromey  <tromey@redhat.com>
 
 	PR java/17575:
