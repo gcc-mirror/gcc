@@ -1,3 +1,8 @@
+2003-03-05  Michael Matz  <matz@suse.de>
+
+	* unwind.h: Add the GPL exception.
+	* Makefile.in (USER_H): Add unwind.h.
+
 2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9799
