@@ -1,3 +1,10 @@
+2003-10-03  Andreas Schwab  <schwab@suse.de>
+
+	PR bootstrap/12276
+	* configure.in: Check for libunwind on the host only if building
+	a native compiler.
+	* configure: Regenerated.
+
 2003-10-03  Paolo Carlini  <pcarlini@unitus.it>
 
 	* unwind-pe.h (read_encoded_value_with_base): Constify u and
