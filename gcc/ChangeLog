@@ -1,3 +1,7 @@
+2004-09-05  Andreas Jaeger  <aj@suse.de>
+
+	* tree-if-conv.c: Spell check comments and clean up whitespace.
+
 2004-09-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-ivopts.c: New file.

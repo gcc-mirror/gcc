@@ -19,7 +19,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* This pass implements tree level if-conversion transformation of loops. 
+/* This pass implements tree level if-conversion transformation of loops.
    Initial goal is to help vectorizer vectorize loops with conditions.
 
    A short description of if-conversion:
@@ -27,7 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      o Decide if a loop is if-convertable or not.
      o Walk all loop basic blocks in breadth first order (BFS order).
        o Remove conditional statements (at the end of basic block)
-         and propogate condition into destination basic blcoks'
+         and propagate condition into destination basic blocks'
 	 predicate list.
        o Replace modify expression with conditional modify expression
          using current basic block's condition.
@@ -67,13 +67,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      # i_23 = PHI <0(0), i_18(10)>;
      <L0>:;
      j_15 = A[i_23];
-     
+
      <L3>:;
      iftmp.2_4 = j_15 > 41 ? 42 : 0;
      A[i_23] = iftmp.2_4;
      i_18 = i_23 + 1;
      if (i_18 <= 15) goto <L19>; else goto <L18>;
-     
+
      <L19>:;
      goto <bb 1> (<L0>);
 
@@ -104,9 +104,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* local function prototypes */
 static void main_tree_if_conversion (void);
-static tree tree_if_convert_stmt (struct loop *loop, tree, tree, 
+static tree tree_if_convert_stmt (struct loop *loop, tree, tree,
 				  block_stmt_iterator *);
-static void tree_if_convert_cond_expr (struct loop *, tree, tree, 
+static void tree_if_convert_cond_expr (struct loop *, tree, tree,
 				       block_stmt_iterator *);
 static bool if_convertable_phi_p (struct loop *, basic_block, tree);
 static bool if_convertable_modify_expr_p (struct loop *, basic_block, tree);
@@ -133,10 +133,10 @@ static basic_block *ifc_bbs;
 
 /* Main entry point.
    Apply if-conversion to the LOOP. Return true if successful otherwise return
-   false. If false is returned then loop remains unchanged.  
+   false. If false is returned then loop remains unchanged.
    FOR_VECTORIZER is a boolean flag. It indicates whether if-conversion is used
    for vectorizer or not. If it is used for vectorizer, additional checks are
-   used. (Vectorization checks are not yet imlemented).  */
+   used. (Vectorization checks are not yet implemented).  */
 
 bool
 tree_if_conversion (struct loop *loop, bool for_vectorizer)
@@ -165,9 +165,9 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
     }
 
   cond = NULL_TREE;
-  
+
   /* Do actual work now.  */
-  for (i = 0; i < loop->num_nodes; i++)  
+  for (i = 0; i < loop->num_nodes; i++)
     {
       bb = ifc_bbs [i];
 
@@ -175,7 +175,7 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
       cond = bb->aux;
 
       /* Process all statements in this basic block.
-	 Remove conditional expresion, if any, and annotate
+	 Remove conditional expression, if any, and annotate
 	 destination basic block(s) appropriately.  */
       for (itr = bsi_start (bb); !bsi_end_p (itr); /* empty */)
 	{
@@ -185,7 +185,7 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 	    bsi_next (&itr);
 	}
 
-      /* If current bb has only one successor, then consider it as an 
+      /* If current bb has only one successor, then consider it as an
 	 unconditional goto.  */
       if (bb->succ && !bb->succ->succ_next)
 	{
@@ -210,15 +210,15 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
   return true;
 }
 
-/* if-convert stmt T which is part of LOOP. 
-   If T is a MODIFY_EXPR than it is converted into conditional modify 
-   expression using COND.  For conditional expressions, add condition in the 
-   destination basic block's predicate list and remove conditional 
-   expression itself. BSI is the iterator used to traverse statements of 
+/* if-convert stmt T which is part of LOOP.
+   If T is a MODIFY_EXPR than it is converted into conditional modify
+   expression using COND.  For conditional expressions, add condition in the
+   destination basic block's predicate list and remove conditional
+   expression itself. BSI is the iterator used to traverse statements of
    loop. It is used here when it is required to delete current statement.  */
 
 static tree
-tree_if_convert_stmt (struct loop *  loop, tree t, tree cond, 
+tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
 		      block_stmt_iterator *bsi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -238,7 +238,7 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
       /* This modify_expr is killing previous value of LHS. Appropriate value will
 	 be selected by PHI node based on condition. It is possible that before
 	 this transformation, PHI nodes was selecting default value and now it will
-	 use this new value. This is OK because it does not change validity the 
+	 use this new value. This is OK because it does not change validity the
 	 program.  */
       break;
 
@@ -253,10 +253,10 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
       /* Update destination blocks' predicate list and remove this
 	 condition expression.  */
       tree_if_convert_cond_expr (loop, t, cond, bsi);
-      cond = NULL_TREE; 
+      cond = NULL_TREE;
       break;
-	
-    default:    
+
+    default:
       abort ();
       break;
     }
@@ -265,11 +265,11 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
 
 /* STMT is COND_EXPR. Update two destination's predicate list.
    Remove COND_EXPR, if it is not the loop exit condition. Otherwise
-   update loop exit condition appropriatly.  BSI is the iterator
+   update loop exit condition appropriately.  BSI is the iterator
    used to traverse statement list. STMT is part of loop LOOP.  */
 
 static void
-tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond, 
+tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 			   block_stmt_iterator *bsi)
 {
   tree then_clause, else_clause, c, new_cond;
@@ -283,7 +283,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   c = TREE_OPERAND (stmt, 0);
   then_clause = TREE_OPERAND (stmt, 1);
   else_clause = TREE_OPERAND (stmt, 2);
-  
+
   /* Create temp. for condition.  */
   if (!is_gimple_reg (c))
     {
@@ -292,22 +292,22 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
       bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
       c = TREE_OPERAND (new_stmt, 0);
     }
-	
+
   /* Add new condition into destination's predicate list.  */
   if (then_clause)
     /* if 'c' is true then then_clause is reached.  */
     new_cond = add_to_dst_predicate_list (loop, then_clause, cond, c, bsi);
-  
+
   if (else_clause)
     {
       /* if 'c' is false then else_clause is reached.  */
-      tree c2 = build1 (TRUTH_NOT_EXPR, 
-			boolean_type_node, 
+      tree c2 = build1 (TRUTH_NOT_EXPR,
+			boolean_type_node,
 			unshare_expr (c));
       add_to_dst_predicate_list (loop, else_clause, cond, c2, bsi);
     }
 
-  /* Now this conditional statement is redundent. Remove it.
+  /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
      using new condition.  */
   if (!bb_with_exit_edge_p (bb_for_stmt (stmt)))
@@ -325,7 +325,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 
 /* Return true, iff PHI is if-convertable. PHI is part of loop LOOP
    and it belongs to basic block BB.
-   PHI is not if-convertable 
+   PHI is not if-convertable
    - if it has more than 2 arguments.
    - Virtual PHI is immediately used in another PHI node.  */
 
@@ -337,14 +337,14 @@ if_convertable_phi_p (struct loop *loop, basic_block bb, tree phi)
       fprintf (dump_file, "-------------------------\n");
       print_generic_stmt (dump_file, phi, TDF_SLIM);
     }
-  
+
   if (bb != loop->header && PHI_NUM_ARGS (phi) != 2)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "More than two phi node args.\n");
       return false;
     }
-  
+
   if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
     {
       int j;
@@ -365,7 +365,7 @@ if_convertable_phi_p (struct loop *loop, basic_block bb, tree phi)
   return true;
 }
 
-/* Return true, if M_EXPR is if-convertable.  
+/* Return true, if M_EXPR is if-convertable.
    MODIFY_EXPR is not if-convertable if,
    - It is not movable.
    - It could trap.
@@ -381,7 +381,7 @@ if_convertable_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
       fprintf (dump_file, "-------------------------\n");
       print_generic_stmt (dump_file, m_expr, TDF_SLIM);
     }
-  
+
   /* Be conservative and do not handle immovable expressions.  */
   if (movement_possibility (m_expr) == MOVE_IMPOSSIBLE)
     {
@@ -391,7 +391,7 @@ if_convertable_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
     }
 
   /* See if it needs speculative loading or not.  */
-  if (bb != loop->header 
+  if (bb != loop->header
       && tree_could_trap_p (TREE_OPERAND (m_expr, 1)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -422,10 +422,10 @@ if_convertable_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
   return true;
 }
 
-/* Return true, iff STMT is if-convertable.  
+/* Return true, iff STMT is if-convertable.
    Statement is if-convertable if,
-   - It is if-converatable MODIFY_EXPR
-   - IT is LABEL_EXPR, GOTO_EXPR or COND_EXPR.  
+   - It is if-convertable MODIFY_EXPR
+   - IT is LABEL_EXPR, GOTO_EXPR or COND_EXPR.
    STMT is inside block BB, which is inside loop LOOP.  */
 
 static bool
@@ -435,17 +435,17 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
     {
     case LABEL_EXPR:
       break;
-      
+
     case MODIFY_EXPR:
-      
+
       if (!if_convertable_modify_expr_p (loop, bb, stmt))
 	return false;
       break;
-      
+
     case GOTO_EXPR:
     case COND_EXPR:
       break;
-      
+
     default:
       /* Don't know what to do with 'em so don't do anything.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -460,23 +460,23 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
   return true;
 }
 
-/* Return true, iff BB is if-convertable. 
+/* Return true, iff BB is if-convertable.
    Note: This routine does _not_ check basic block statements and phis.
-   Basic block is not if-converatable if,
-   - Basic block is non-empty and it is after exit block (in BFS order).  
+   Basic block is not if-convertable if,
+   - Basic block is non-empty and it is after exit block (in BFS order).
    - Basic block is after exit block but before latch.
-   - Basic block edge(s) is not normal.  
+   - Basic block edge(s) is not normal.
    EXIT_BB_SEEN is true if basic block with exit edge is already seen.
    BB is inside loop LOOP. */
 
-static bool 
+static bool
 if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
 {
   edge e;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "----------[%d]-------------\n", bb->index);
-  
+
   if (exit_bb_seen)
     {
       if (bb != loop->latch)
@@ -492,10 +492,10 @@ if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
 	  return false;
 	}
     }
-  
-  /* Be less adveturous and handle only normal edges.  */
+
+  /* Be less adventurous and handle only normal edges.  */
   for (e = bb->succ; e; e = e->succ_next)
-    if (e->flags & 
+    if (e->flags &
 	(EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_ABNORMAL | EDGE_IRREDUCIBLE_LOOP))
       {
 	if (dump_file && (dump_flags & TDF_DETAILS))
@@ -506,14 +506,14 @@ if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
   return true;
 }
 
-/* Return true, iff LOOP is if-convertable. 
+/* Return true, iff LOOP is if-convertable.
    LOOP is if-convertable if,
    - It is innermost.
    - It has two or more basic blocks.
    - It has only one exit.
-   - Loop header is not the exit edge. 
-   - If its basic blocks and phi nodes are if convertable. See above for 
-     more info.   
+   - Loop header is not the exit edge.
+   - If its basic blocks and phi nodes are if convertable. See above for
+     more info.
    FOR_VECTORIZER enables vectorizer specific checks. For example, support
    for vector conditions, data dependency checks etc.. (Not implemented yet).  */
 
@@ -534,17 +534,17 @@ if_convertable_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 	fprintf (dump_file, "not inner most loop\n");
       return false;
     }
-  
+
   flow_loop_scan (loop, LOOP_ALL);
 
   /* If only one block, no need for if-conversion.  */
   if (loop->num_nodes <= 2)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "less thant 2 basic blocks\n");
+	fprintf (dump_file, "less than 2 basic blocks\n");
       return false;
     }
-  
+
   /* More than one loop exit is too much to handle.  */
   if (loop->num_exits > 1)
     {
@@ -575,7 +575,7 @@ if_convertable_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
       free_dominance_info (CDI_POST_DOMINATORS);
       return false;
     }
-    
+
   for (i = 0; i < loop->num_nodes; i++)
     {
       bb = ifc_bbs[i];
@@ -613,7 +613,7 @@ static void
 add_to_predicate_list (basic_block bb, tree new_cond)
 {
   tree cond = bb->aux;
-  
+
   if (cond)
     cond = fold (build (TRUTH_OR_EXPR, boolean_type_node,
 			unshare_expr (cond), new_cond));
@@ -627,7 +627,7 @@ add_to_predicate_list (basic_block bb, tree new_cond)
    existing condition.  */
 
 static tree
-add_to_dst_predicate_list (struct loop * loop, tree dst, 
+add_to_dst_predicate_list (struct loop * loop, tree dst,
 			   tree prev_cond, tree cond,
 			   block_stmt_iterator *bsi)
 {
@@ -707,10 +707,10 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
       *cond  = p1->aux;
       switch_args = false;
     }
-    
-  /* Create temp. for the condition. Vectorizier prefers to have gimple 
-     value as condition. Various targets use different means to communicate 
-     condition in vector compare operation. Using gimple value allows compiler 
+
+  /* Create temp. for the condition. Vectorizer prefers to have gimple
+     value as condition. Various targets use different means to communicate
+     condition in vector compare operation. Using gimple value allows compiler
      to emit vector compare and select RTL without exposing compare's result.  */
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
     {
@@ -731,8 +731,8 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
 }
 
 
-/* Replace PHI node with conditional modify expr using COND.  
-   This routine does not handle PHI nodes with more than two arguments. 
+/* Replace PHI node with conditional modify expr using COND.
+   This routine does not handle PHI nodes with more than two arguments.
    For example,
      S1: A = PHI <x1(1), x2(5)
    is converted into,
@@ -765,7 +765,7 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, bool switch_args,
   new_stmt = NULL_TREE;
   arg_0 = NULL_TREE;
   arg_1 = NULL_TREE;
-  
+
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
   if (switch_args)
     {
@@ -778,12 +778,12 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, bool switch_args,
       arg_1 = PHI_ARG_DEF (phi, 1);
     }
 
-  /* Build new RHS using selected condtion and arguments.  */
+  /* Build new RHS using selected condition and arguments.  */
   rhs = build (COND_EXPR, TREE_TYPE (PHI_RESULT (phi)),
 	       unshare_expr (cond), unshare_expr (arg_0),
 	       unshare_expr (arg_1));
 
-  /* Create new MODIFY expresstion using RHS.  */
+  /* Create new MODIFY expression using RHS.  */
   new_stmt = build (MODIFY_EXPR, TREE_TYPE (PHI_RESULT (phi)),
 		    unshare_expr (PHI_RESULT (phi)), rhs);
 
@@ -805,7 +805,7 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, bool switch_args,
     }
 }
 
-/* Process phi nodes for the given  LOOP.  Replace phi nodes with cond 
+/* Process phi nodes for the given  LOOP.  Replace phi nodes with cond
    modify expr.  */
 
 static void
@@ -822,7 +822,7 @@ process_phi_nodes (struct loop *loop)
       block_stmt_iterator bsi;
       bool switch_args = false;
       bb = ifc_bbs[i];
-      
+
       if (bb == loop->header || bb == loop->latch)
 	continue;
 
@@ -846,7 +846,7 @@ process_phi_nodes (struct loop *loop)
   return;
 }
 
-/* Combine all basic block from the given LOOP into one or two super 
+/* Combine all basic block from the given LOOP into one or two super
    basic block.  Replace PHI nodes with conditional modify expression. */
 
 static void
@@ -926,14 +926,14 @@ combine_blocks (struct loop *loop)
 	delete_from_dominance_info (CDI_DOMINATORS, bb);
       if (dom_computed[CDI_POST_DOMINATORS])
 	delete_from_dominance_info (CDI_POST_DOMINATORS, bb);
-      
+
       /* Remove basic block.  */
       remove_bb_from_loops (bb);
       expunge_block (bb);
     }
 }
 
-/* Make new  temp variable of type TYPE. Add MODIFY_EXPR to assign EXP 
+/* Make new  temp variable of type TYPE. Add MODIFY_EXPR to assign EXP
    to the new variable.  */
 
 static tree
@@ -951,7 +951,7 @@ ifc_temp_var (tree type, tree exp)
 
   /* Build new statement to assigne EXP to new variable.  */
   stmt = build (MODIFY_EXPR, type, var, exp);
-  
+
   /* Get SSA name for the new variable and set make new statement
      its definition statment.  */
   new_name = make_ssa_name (var, stmt);
@@ -972,7 +972,7 @@ pred_blocks_visited_p (basic_block bb, bitmap *visited)
   for (e = bb->pred; e; e = e->pred_next)
     if (!bitmap_bit_p (*visited, e->src->index))
       return false;
-  
+
   return true;
 }
 
@@ -982,7 +982,7 @@ pred_blocks_visited_p (basic_block bb, bitmap *visited)
    additional constraint. Select block in BFS block, if all
    pred are already selected.  */
 
-static basic_block * 
+static basic_block *
 get_loop_body_in_if_conv_order (const struct loop *loop)
 {
   basic_block *blocks, *blocks_in_bfs_order;
@@ -993,7 +993,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
 
   if (!loop->num_nodes)
     abort ();
-  
+
   if (loop->latch == EXIT_BLOCK_PTR)
     abort ();
 
@@ -1006,7 +1006,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   while (index < loop->num_nodes)
     {
       bb = blocks_in_bfs_order [index];
-      
+
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
 	  free (blocks_in_bfs_order);
@@ -1094,9 +1094,8 @@ struct tree_opt_pass pass_if_conversion =
   0,                                 /* properties_provided */
   0,                                 /* properties_destroyed */
   TODO_dump_func,                    /* todo_flags_start */
-  TODO_dump_func 
+  TODO_dump_func
     | TODO_verify_ssa
-    | TODO_verify_stmts 
+    | TODO_verify_stmts
     | TODO_verify_flow               /* todo_flags_finish */
 };
-
