@@ -1,5 +1,10 @@
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
+	* gcc.c-torture/compile/961203-1.x: Disable on h8300 port.
+	* gcc.c-torture/compile/980506-1.x: Likewise.
+
+2002-02-10  Kazu Hirata  <kazu@hxi.com>
+
 	* gcc.dg/20020210-1.c: New.
 
 2002-02-09  Toon Moene  <toon@moene.indiv.nluug.nl>

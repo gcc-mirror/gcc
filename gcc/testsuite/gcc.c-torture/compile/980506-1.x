@@ -3,4 +3,8 @@ if { [istarget "xstormy16-*-*"] } {
         return 1;
 }
 
+if { [istarget "h8300-*-*"] } {
+        return 1;
+}
+
 return 0
