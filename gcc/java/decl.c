@@ -826,8 +826,10 @@ java_init_decl_processing ()
 			  0, NOT_BUILT_IN, NULL, NULL_TREE);
   DECL_IS_MALLOC (soft_anewarray_node) = 1;
 
+  /* There is no endlink here because _Jv_NewMultiArray is a varargs
+     function.  */
   t = tree_cons (NULL_TREE, ptr_type_node,
-		 tree_cons (NULL_TREE, int_type_node, endlink));
+		 tree_cons (NULL_TREE, int_type_node, NULL_TREE));
   soft_multianewarray_node
       = builtin_function ("_Jv_NewMultiArray",
 			  build_function_type (ptr_type_node, t),

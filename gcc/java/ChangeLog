@@ -1,3 +1,11 @@
+2003-01-14  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (java_init_decl_processing): _Jv_NewMultiArray is a
+	varargs function -- correct.
+
+	* parse.y (patch_assignment): Copy the rhs of an assignment into a
+	temporary if the RHS is a reference.
+
 2003-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (dump_compound_expr): Prototype.
