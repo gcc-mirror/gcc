@@ -9449,6 +9449,12 @@ simplify_comparison (code, pop0, pop1)
 	    }
 	}
 
+#ifdef CANONICALIZE_COMPARISON
+  /* If this machine only supports a subset of valid comparisons, see if we
+     can convert an unsupported one into a supported one.  */
+  CANONICALIZE_COMPARISON (code, op0, op1);
+#endif
+
   *pop0 = op0;
   *pop1 = op1;
 
