@@ -446,15 +446,20 @@ struct table_elt
 #endif
 
 /* Compute cost of X, as stored in the `cost' field of a table_elt.  Fixed
-   hard registers are the cheapest with a cost of 0.  Next come pseudos
-   with a cost of one and other hard registers with a cost of 2.  Aside
-   from these special cases, call `rtx_cost'.  */
+   hard registers and pointers into the frame are the cheapest with a cost
+   of 0.  Next come pseudos with a cost of one and other hard registers with
+   a cost of 2.  Aside from these special cases, call `rtx_cost'.  */
+
+#define CHEAP_REG(N) \
+  ((N) == FRAME_POINTER_REGNUM || (N) == STACK_POINTER_REGNUM \
+   || (N) == ARG_POINTER_REGNUM				\
+   || (N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER  \
+   || (FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
 #define COST(X)						\
   (GET_CODE (X) == REG					\
-   ? (REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1		\
-      : (FIXED_REGNO_P (REGNO (X))			\
-	 && REGNO_REG_CLASS (REGNO (X)) != NO_REGS) ? 0	\
+   ? (CHEAP_REG (REGNO (X)) ? 0				\
+      : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1		\
       : 2)						\
    : rtx_cost (X, SET) * 2)
 
@@ -697,7 +702,8 @@ rtx_cost (x, outer_code)
   switch (code)
     {
     case REG:
-      return 1;
+      return ! CHEAP_REG (REGNO (x));
+
     case SUBREG:
       /* If we can't tie these modes, make this expensive.  The larger
 	 the mode, the more expensive it is.  */
