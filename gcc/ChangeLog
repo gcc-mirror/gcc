@@ -1,3 +1,13 @@
+Mon Apr  9 15:09:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (truncdfsf2_*): Add i387->int/sse reg alternatives;
+	Do not require source to match destination anymore;
+	Add abort to the nontrivial cases that should be handled by split.
+	(fix_trunc?fdi): Add SSE case for x86_64.
+	(floatdi?f): Likewise.
+	(floatdi?f_sse): New.
+	(fix_trunc?fdi_sse): New.
+
 2001-04-09  Richard Sandiford   <rsandifo@redhat.com>
 
 	* dwarfout.c (DEBUG_ARANGES_BEGIN_LABEL): New label.
