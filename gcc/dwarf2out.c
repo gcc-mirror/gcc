@@ -7644,11 +7644,15 @@ add_abstract_origin_attribute (die, origin)
      register tree origin;
 {
   dw_die_ref origin_die = NULL;
+
   if (TREE_CODE_CLASS (TREE_CODE (origin)) == 'd')
     origin_die = lookup_decl_die (origin);
   else if (TREE_CODE_CLASS (TREE_CODE (origin)) == 't')
     origin_die = lookup_type_die (origin);
 
+  if (origin_die == NULL)
+    abort ();
+  
   add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
 
@@ -8139,9 +8143,8 @@ gen_inlined_enumeration_type_die (type, context_die)
 {
   register dw_die_ref type_die = new_die (DW_TAG_enumeration_type,
 					  scope_die_for (type, context_die));
-
-  if (!TREE_ASM_WRITTEN (type))
-    abort ();
+  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
+     be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -8154,9 +8157,8 @@ gen_inlined_structure_type_die (type, context_die)
 {
   register dw_die_ref type_die = new_die (DW_TAG_structure_type,
 					  scope_die_for (type, context_die));
-
-  if (!TREE_ASM_WRITTEN (type))
-    abort ();
+  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
+     be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -8169,9 +8171,8 @@ gen_inlined_union_type_die (type, context_die)
 {
   register dw_die_ref type_die = new_die (DW_TAG_union_type,
 					  scope_die_for (type, context_die));
-
-  if (!TREE_ASM_WRITTEN (type))
-    abort ();
+  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
+     be incomplete and such types are not marked.  */
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -9342,10 +9343,12 @@ gen_tagged_type_instantiation_die (type, context_die)
      this type (i.e. without any const or volatile qualifiers) so make sure
      that we have the main variant (i.e. the unqualified version) of this
      type now.  */
-  if (type != type_main_variant (type)
-      || !TREE_ASM_WRITTEN (type))
+  if (type != type_main_variant (type))
     abort ();
 
+  /* Do not check TREE_ASM_WRITTEN(type) as it may not be set if this is
+     an instance of an unresolved type.  */
+  
   switch (TREE_CODE (type))
     {
     case ERROR_MARK:
@@ -9702,8 +9705,8 @@ dwarf2out_decl (decl)
          on within the current translation unit). So here we just ignore all
          file-scope function declarations which are not also definitions.  If 
          and when the debugger needs to know something about these functions,
-         it wil have to hunt around and find the DWARF information associated 
-         with the definition of the function. Note that we can't just check
+         it will have to hunt around and find the DWARF information associated 
+         with the definition of the function.  Note that we can't just check
          `DECL_EXTERNAL' to find out which FUNCTION_DECL nodes represent
          definitions and which ones represent mere declarations.  We have to
          check `DECL_INITIAL' instead. That's because the C front-end
