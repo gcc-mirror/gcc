@@ -187,7 +187,7 @@ static int method_pass;
 #define HANDLE_END_FIELD()						      \
   if (field_pass)							      \
     {									      \
-      if (out && ! stubs && ! flag_jni)					      \
+      if (out && ! stubs)						      \
 	print_field_info (out, jcf, current_field_name,			      \
 			  current_field_signature,			      \
  			  current_field_flags);				      \
@@ -278,7 +278,7 @@ jni_print_float (FILE *stream, jfloat f)
      work in data initializers.  FIXME.  */
   if (JFLOAT_FINITE (f))
     {
-      fputs (" = ", stream);
+      fputs (flag_jni ? " " : " = ", out);
       if (f.negative)
 	putc ('-', stream);
       if (f.exponent)
@@ -292,7 +292,8 @@ jni_print_float (FILE *stream, jfloat f)
 		 ((unsigned int)f.mantissa) << 1,
 		 f.exponent + 1 - JFLOAT_EXP_BIAS);
     }
-  fputs (";\n", stream);
+  if (! flag_jni)
+    fputs (";\n", stream);
 }
 
 /* Print a double-precision float, suitable for parsing by g++.  */
@@ -303,7 +304,7 @@ jni_print_double (FILE *stream, jdouble f)
      work in data initializers.  FIXME.  */
   if (JDOUBLE_FINITE (f))
     {
-      fputs (" = ", stream);
+      fputs (flag_jni ? " " : " = ", out);
       if (f.negative)
 	putc ('-', stream);
       if (f.exponent)
@@ -317,7 +318,7 @@ jni_print_double (FILE *stream, jdouble f)
 		 f.mantissa0, f.mantissa1,
 		 f.exponent + 1 - JDOUBLE_EXP_BIAS);
     }
-  fputs (";\n", stream);
+  fputs (flag_jni ? "\n" : ";\n", stream);
 }
 
 /* Print a character, appropriately mangled for JNI.  */
@@ -725,7 +726,8 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 {
   char *override = NULL;
 
-  generate_access (stream, flags);
+  if (! flag_jni)
+    generate_access (stream, flags);
   if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     {
       fprintf (stream, "<not a UTF8 constant>");
@@ -733,10 +735,38 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
       return;
     }
 
-  fputs ("  ", out);
+  if (flag_jni)
+    {
+      /* For JNI we only want to print real constants.  */
+      int val;
+      if (! (flags & ACC_STATIC)
+	  || ! (flags & ACC_FINAL)
+	  || current_field_value <= 0)
+	return;
+      val = JPOOL_TAG (jcf, current_field_value);
+      if (val != CONSTANT_Integer && val != CONSTANT_Long
+	  && val != CONSTANT_Float && val != CONSTANT_Double)
+	return;
+    }
+  else
+    {
+      /* Initial indentation.  */
+      fputs ("  ", stream);
+    }
+
   if ((flags & ACC_STATIC))
     {
-      fputs ("static ", out);
+      if (flag_jni)
+	{
+	  print_cxx_classname (stream, "#undef ", jcf, jcf->this_class, 1);
+	  fputs ("_", stream);
+	  print_field_name (stream, jcf, name_index, 0);
+	  fputs ("\n", stream);
+	  print_cxx_classname (stream, "#define ", jcf, jcf->this_class, 1);
+	  fputs ("_", stream);
+	}
+      else
+	fputs ("static ", stream);
 
       if ((flags & ACC_FINAL) && current_field_value > 0)
 	{
@@ -749,9 +779,10 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	      {
 		jint num;
 		int most_negative = 0;
-		fputs ("const jint ", out);
-		print_field_name (out, jcf, name_index, 0);
-		fputs (" = ", out);
+		if (! flag_jni)
+		  fputs ("const jint ", stream);
+		print_field_name (stream, jcf, name_index, 0);
+		fputs (flag_jni ? " " : " = ", stream);
 		num = JPOOL_INT (jcf, current_field_value);
 		/* We single out the most negative number to print
 		   specially.  This avoids later warnings from g++.  */
@@ -761,16 +792,19 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 		    ++num;
 		  }
 		format_int (buffer, (jlong) num, 10);
-		fprintf (out, "%sL%s;\n", buffer, most_negative ? " - 1" : "");
+		fprintf (stream, "%sL%s%s\n", buffer,
+			 most_negative ? " - 1" : "",
+			 flag_jni ? "" : ";");
 	      }
 	      break;
 	    case CONSTANT_Long:
 	      {
 		jlong num;
 		int most_negative = 0;
-		fputs ("const jlong ", out);
-		print_field_name (out, jcf, name_index, 0);
-		fputs (" = ", out);
+		if (! flag_jni)
+		  fputs ("const jlong ", stream);
+		print_field_name (stream, jcf, name_index, 0);
+		fputs (flag_jni ? " " : " = ", stream);
 		num = JPOOL_LONG (jcf, current_field_value);
 		/* We single out the most negative number to print
                    specially..  This avoids later warnings from g++.  */
@@ -780,23 +814,27 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 		    ++num;
 		  }
 		format_int (buffer, num, 10);
-		fprintf (out, "%sLL%s;\n", buffer, most_negative ? " - 1" :"");
+		fprintf (stream, "%sLL%s%s\n", buffer,
+			 most_negative ? " - 1" :"",
+			 flag_jni ? "" : ";");
 	      }
 	      break;
 	    case CONSTANT_Float:
 	      {
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
-		fputs ("const jfloat ", out);
-		print_field_name (out, jcf, name_index, 0);
-		jni_print_float (out, fnum);
+		if (! flag_jni)
+		  fputs ("const jfloat ", stream);
+		print_field_name (stream, jcf, name_index, 0);
+		jni_print_float (stream, fnum);
 	      }
 	      break;
 	    case CONSTANT_Double:
 	      {
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
-		fputs ("const jdouble ", out);
-		print_field_name (out, jcf, name_index, 0);
-		jni_print_double (out, dnum);
+		if (! flag_jni)
+		  fputs ("const jdouble ", stream);
+		print_field_name (stream, jcf, name_index, 0);
+		jni_print_double (stream, dnum);
 	      }
 	      break;
 	    default:
@@ -811,9 +849,10 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	}
     }
 
+  /* assert (! flag_jni);  */
   override = get_field_name (jcf, name_index, flags);
-  print_c_decl (out, jcf, name_index, sig_index, 0, override, flags);
-  fputs (";\n", out);
+  print_c_decl (stream, jcf, name_index, sig_index, 0, override, flags);
+  fputs (";\n", stream);
 
   if (override)
     free (override);
