@@ -1,3 +1,8 @@
+Fri Jun 27 17:41:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_node, cgraph_varpool_node): Avoid re-initializing
+	of known_decls.
+
 2003-06-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	* defaults.h (REGISTER_MOVE_COST): Define default here.
