@@ -3020,14 +3020,14 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 #endif
 	{
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcmp_libfunc, 0,
+	  emit_library_call (memcmp_libfunc, 2,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     convert_to_mode (TYPE_MODE (sizetype), size,
 					      TREE_UNSIGNED (sizetype)),
 			     TYPE_MODE (sizetype));
 #else
-	  emit_library_call (bcmp_libfunc, 0,
+	  emit_library_call (bcmp_libfunc, 2,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     convert_to_mode (TYPE_MODE (integer_type_node),

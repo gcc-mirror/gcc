@@ -168,6 +168,9 @@ static int calls_function_1	PARAMS ((tree, int));
    the current one.  */
 #define ECF_FORK_OR_EXEC	128
 #define ECF_SIBCALL		256
+/* Nonzero if this is a call to "pure" function (like const function,
+   but may read memory.  */
+#define ECF_PURE		512
 
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
@@ -555,6 +558,15 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   if (! call_insn)
     abort ();
 
+  /* Mark memory as used for "pure" function call.  */
+  if (ecf_flags & ECF_PURE)
+    {
+      call_fusage =  gen_rtx_EXPR_LIST (VOIDmode,
+	gen_rtx_USE (VOIDmode,
+		     gen_rtx_MEM (BLKmode,
+				  gen_rtx_SCRATCH (VOIDmode))), call_fusage);
+    }
+
   /* Put the register usage information on the CALL.  If there is already
      some usage information, put ours at the end.  */
   if (CALL_INSN_FUNCTION_USAGE (call_insn))
@@ -571,7 +583,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
     CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* If this is a const call, then set the insn's unchanging bit.  */
-  if (ecf_flags & ECF_CONST)
+  if (ecf_flags & (ECF_CONST | ECF_PURE))
     CONST_CALL_P (call_insn) = 1;
 
   /* If this call can't throw, attach a REG_EH_REGION reg note to that
@@ -610,7 +622,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       if (rounded_stack_size != 0)
 	{
 	  if (flag_defer_pop && inhibit_defer_pop == 0
-	      && !(ecf_flags & ECF_CONST))
+	      && !(ecf_flags & (ECF_CONST | ECF_PURE)))
 	    pending_stack_adjust += rounded_stack_size;
 	  else
 	    adjust_stack (rounded_stack_size_rtx);
@@ -758,6 +770,10 @@ flags_from_decl_or_type (exp)
       /* The function exp may have the `malloc' attribute.  */
       if (DECL_P (exp) && DECL_IS_MALLOC (exp))
 	flags |= ECF_MALLOC;
+
+      /* The function exp may have the `pure' attribute.  */
+      if (DECL_P (exp) && DECL_IS_PURE (exp))
+	flags |= ECF_PURE;
 
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;
@@ -1195,7 +1211,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
 
 	      store_expr (args[i].tree_value, copy, 0);
-	      *ecf_flags &= ~ECF_CONST;
+	      *ecf_flags &= ~(ECF_CONST | ECF_PURE);
 
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
@@ -1254,7 +1270,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* If this is an addressable type, we cannot pre-evaluate it.  Thus,
 	 we cannot consider this function call constant.  */
       if (TREE_ADDRESSABLE (type))
-	*ecf_flags &= ~ECF_CONST;
+	*ecf_flags &= ~(ECF_CONST | ECF_PURE);
 
       /* Compute the stack-size of this argument.  */
       if (args[i].reg == 0 || args[i].partial != 0
@@ -1435,7 +1451,7 @@ precompute_arguments (flags, must_preallocate, num_actuals, args, args_size)
      which have already been stored into the stack.  */
 
   for (i = 0; i < num_actuals; i++)
-    if ((flags & ECF_CONST)
+    if ((flags & (ECF_CONST | ECF_PURE))
 	|| ((args_size->var != 0 || args_size->constant != 0)
 	    && calls_function (args[i].tree_value, 1))
 	|| (must_preallocate
@@ -2038,7 +2054,7 @@ expand_call (exp, target, ignore)
   if (aggregate_value_p (exp))
     {
       /* This call returns a big structure.  */
-      flags &= ~ECF_CONST;
+      flags &= ~(ECF_CONST | ECF_PURE);
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       {
@@ -2295,7 +2311,7 @@ expand_call (exp, target, ignore)
 
       /* When calling a const function, we must pop the stack args right away,
 	 so that the pop is deleted or moved with the call.  */
-      if (flags & ECF_CONST)
+      if (flags & (ECF_CONST | ECF_PURE))
 	NO_DEFER_POP;
 
       /* Don't let pending stack adjusts add up to too much.
@@ -2416,7 +2432,7 @@ expand_call (exp, target, ignore)
 
 	     Also do not make a sibling call.  */
 
-	  flags &= ~ECF_CONST;
+	  flags &= ~(ECF_CONST | ECF_PURE);
 	  must_preallocate = 1;
 	  sibcall_failure = 1;
 	}
@@ -2470,7 +2486,7 @@ expand_call (exp, target, ignore)
 
       /* Now we are about to start emitting insns that can be deleted
 	 if a libcall is deleted.  */
-      if (flags & (ECF_CONST | ECF_MALLOC))
+      if (flags & (ECF_CONST | ECF_PURE | ECF_MALLOC))
 	start_sequence ();
 
       old_stack_allocated =  stack_pointer_delta - pending_stack_adjust;
@@ -2653,7 +2669,7 @@ expand_call (exp, target, ignore)
 	{
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
-	  if (pending_stack_adjust && ! (flags & ECF_CONST)
+	  if (pending_stack_adjust && ! (flags & (ECF_CONST | ECF_PURE))
 	      && ! inhibit_defer_pop)
 	    {
 	      int adjust;
@@ -2821,7 +2837,8 @@ expand_call (exp, target, ignore)
 	 Test valreg so we don't crash; may safely ignore `const'
 	 if return type is void.  Disable for PARALLEL return values, because
 	 we have no way to move such values into a pseudo register.  */
-      if ((flags & ECF_CONST) && valreg != 0 && GET_CODE (valreg) != PARALLEL)
+      if ((flags & (ECF_CONST | ECF_PURE))
+	  && valreg != 0 && GET_CODE (valreg) != PARALLEL)
 	{
 	  rtx note = 0;
 	  rtx temp = gen_reg_rtx (GET_MODE (valreg));
@@ -2840,11 +2857,17 @@ expand_call (exp, target, ignore)
 	  insns = get_insns ();
 	  end_sequence ();
 
+	  if (flags & ECF_PURE)
+	    note = gen_rtx_EXPR_LIST (VOIDmode,
+	       gen_rtx_USE (VOIDmode,
+			    gen_rtx_MEM (BLKmode,
+				    	 gen_rtx_SCRATCH (VOIDmode))), note);
+
 	  emit_libcall_block (insns, temp, valreg, note);
   
 	  valreg = temp;
 	}
-      else if (flags & ECF_CONST)
+      else if (flags & (ECF_CONST | ECF_PURE))
 	{
 	  /* Otherwise, just write out the sequence without a note.  */
 	  rtx insns = get_insns ();
@@ -3171,11 +3194,11 @@ libfunc_nothrow (fun)
    The RETVAL parameter specifies whether return value needs to be saved, other 
    parameters are documented in the emit_library_call function bellow.  */
 static rtx
-emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
+emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      int retval;
      rtx orgfun;
      rtx value;
-     int no_queue;
+     int fn_type;
      enum machine_mode outmode;
      int nargs;
      va_list p;
@@ -3223,8 +3246,10 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 #endif
 
-  if (no_queue)
+  if (fn_type == 1)
     flags |= ECF_CONST;
+  else if (fn_type == 2)
+    flags |= ECF_PURE;
   fun = orgfun;
 
   if (libfunc_nothrow (fun))
@@ -3258,7 +3283,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 
       /* This call returns a big structure.  */
-      flags &= ~ECF_CONST;
+      flags &= ~(ECF_CONST | ECF_PURE);
     }
 
   /* ??? Unfinished: must pass the memory address as an argument.  */
@@ -3282,7 +3307,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   /* Now we are about to start emitting insns that can be deleted
      if a libcall is deleted.  */
-  if (flags & ECF_CONST)
+  if (flags & (ECF_CONST | ECF_PURE))
     start_sequence ();
 
   push_temp_slots ();
@@ -3726,7 +3751,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
      Test valreg so we don't crash; may safely ignore `const'
      if return type is void.  Disable for PARALLEL return values, because
      we have no way to move such values into a pseudo register.  */
-  if ((flags & ECF_CONST)
+  if ((flags & (ECF_CONST | ECF_PURE))
       && valreg != 0 && GET_CODE (valreg) != PARALLEL)
     {
       rtx note = 0;
@@ -3743,11 +3768,17 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
       insns = get_insns ();
       end_sequence ();
 
+      if (flags & ECF_PURE)
+	note = gen_rtx_EXPR_LIST (VOIDmode,
+	   gen_rtx_USE (VOIDmode,
+			gen_rtx_MEM (BLKmode,
+				     gen_rtx_SCRATCH (VOIDmode))), note);
+
       emit_libcall_block (insns, temp, valreg, note);
 
       valreg = temp;
     }
-  else if (flags & ECF_CONST)
+  else if (flags & (ECF_CONST | ECF_PURE))
     {
       /* Otherwise, just write out the sequence without a note.  */
       rtx insns = get_insns ();
@@ -3830,26 +3861,18 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
    and machine_modes to convert them to.
    The rtx values should have been passed through protect_from_queue already.
 
-   NO_QUEUE will be true if and only if the library call is a `const' call
-   which will be enclosed in REG_LIBCALL/REG_RETVAL notes; it is equivalent
-   to the flag ECF_CONST in expand_call.
-
-   NO_QUEUE must be true for const calls, because if it isn't, then
-   any pending increment will be emitted between REG_LIBCALL/REG_RETVAL notes,
-   and will be lost if the libcall sequence is optimized away.
-
-   NO_QUEUE must be false for non-const calls, because if it isn't, the
-   call insn will have its CONST_CALL_P bit set, and it will be incorrectly
-   optimized.  For instance, the instruction scheduler may incorrectly
-   move memory references across the non-const call.  */
+   FN_TYPE will is zero for `normal' calls, one for `const' calls, wich
+   which will be enclosed in REG_LIBCALL/REG_RETVAL notes and two for `pure'
+   calls, that are handled like `const' calls with extra
+   (use (memory (scratch)).  */
 
 void
-emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
+emit_library_call VPARAMS((rtx orgfun, int fn_type, enum machine_mode outmode,
 			   int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx orgfun;
-  int no_queue;
+  int fn_type;
   enum machine_mode outmode;
   int nargs;
 #endif
@@ -3859,12 +3882,12 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 
 #ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
-  no_queue = va_arg (p, int);
+  fn_type = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
   nargs = va_arg (p, int);
 #endif
 
-  emit_library_call_value_1 (0, orgfun, NULL_RTX, no_queue, outmode, nargs, p);
+  emit_library_call_value_1 (0, orgfun, NULL_RTX, fn_type, outmode, nargs, p);
 
   va_end (p);
 }
@@ -3878,13 +3901,13 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
    If VALUE is nonzero, VALUE is returned.  */
 
 rtx
-emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
+emit_library_call_value VPARAMS((rtx orgfun, rtx value, int fn_type,
 				 enum machine_mode outmode, int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx orgfun;
   rtx value;
-  int no_queue;
+  int fn_type;
   enum machine_mode outmode;
   int nargs;
 #endif
@@ -3895,12 +3918,12 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 #ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
   value = va_arg (p, rtx);
-  no_queue = va_arg (p, int);
+  fn_type = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
   nargs = va_arg (p, int);
 #endif
 
-  value = emit_library_call_value_1 (1, orgfun, value, no_queue, outmode, nargs, p);
+  value = emit_library_call_value_1 (1, orgfun, value, fn_type, outmode, nargs, p);
 
   va_end (p);
 
