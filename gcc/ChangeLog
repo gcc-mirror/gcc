@@ -1,3 +1,9 @@
+2002-04-06  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (flag_no_inline, flag_really_no_inline): Default to 2.
+	(parse_options_and_default_flags): Set them appropriately.
+	* c-common.c (c_common_post_options): Don't set flag_really_no_inline.
+
 Sat Apr  6 18:26:32 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (if_convert): Clear aux fields of blocks.
