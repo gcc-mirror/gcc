@@ -27,7 +27,7 @@
 	and "Internal error".
 
 	* gcc.dg/cpp/20000625-2.c, gcc.dg/cpp/macsyntx.c: Update error
-	regexps. 
+	regexps.
 	* gcc.dg/cpp/paste6.c: New test.
 
 2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
@@ -36,6 +36,10 @@
 
 	* gcc.dg/cpp/directiv.c, gcc.dg/cpp/macsyntx.c,
 	gcc.dg/cpp/undef1.c: Tweak error regexps.
+
+2000-07-18  Eric Christopher <echristo@redhat.com>
+
+	* gcc.c-torture/compile/20000718-1.c: New test.
 
 2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -5365,4 +5369,3 @@ Mon Mar 22 14:28:46 1993  Ian Lance Taylor  (ian@cygnus.com)
 	correspond to c-torture	1.11.
 
 	* New file.
-
