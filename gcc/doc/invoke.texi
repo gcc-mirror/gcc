@@ -3871,8 +3871,8 @@ the directories you have specified with @option{-I} options (and the
 current directory, if appropriate) are searched.  @xref{Directory
 Options}, for information on @option{-I}.
 
-By using both @option{-nostdinc} and @option{-I-}, you can limit the
-include-file search path to only those directories you specify explicitly.
+By using both @option{-nostdinc} and @option{-I-}, you can limit the include-file
+search path to only those directories you specify explicitly.
 
 @item -remap
 @opindex remap
@@ -4355,10 +4355,6 @@ not use this option to add directories that contain vendor-supplied
 system header files (use @option{-isystem} for that).  If you use more than
 one @option{-I} option, the directories are scanned in left-to-right
 order; the standard system directories come after.
-
-GCC will detect and warn you, if a directory is specified with both the
-@option{-I} and also is a system search directory (either by default, or
-with @option{-isystem}).
 
 @item -I-
 @opindex I-
