@@ -1,3 +1,8 @@
+2003-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7086
+	* utils2.c: Adjust calls to put_var_into_stack.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in, Makefile.in, config-lang.in: GCC, not GNU CC.

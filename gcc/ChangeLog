@@ -1,3 +1,19 @@
+2003-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7086
+	* c-typeck.c (c_mark_addressable): Adjust calls to
+	put_var_into_stack.
+	* expr.c (expand_expr): Likewise.
+	* function.c (put_var_into_stack): Add rescan parameter.  Do not
+	call fixup_var_refs when rescan is false.
+	(gen_mem_addressof): Likewise.
+	(assign_parms): Adjust calls to put_var_into_stack.
+	(setjmp_protect): Likewise.
+	(setjmp_protect_args): Likewise.
+	* rtl.h (gen_mem_addressof): Change prototype.
+	* stmt.c (expand_decl): Adjust calls to put_var_into_stack.
+	* tree.h (put_var_into_stack): Change prototype.
+
 2003-03-23  Arpad Beszedes <beszedes@cc.u-szeged.hu>
 
 	PR middle-end/9967

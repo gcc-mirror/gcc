@@ -2987,7 +2987,7 @@ extern void expand_dummy_function_end	PARAMS ((void));
 extern void init_function_for_compilation	PARAMS ((void));
 extern void init_function_start		PARAMS ((tree, const char *, int));
 extern void assign_parms		PARAMS ((tree));
-extern void put_var_into_stack		PARAMS ((tree));
+extern void put_var_into_stack		PARAMS ((tree, bool));
 extern void flush_addressof		PARAMS ((tree));
 extern void uninitialized_vars_warning	PARAMS ((tree));
 extern void setjmp_args_warning		PARAMS ((void));
