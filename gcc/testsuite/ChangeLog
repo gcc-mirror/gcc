@@ -1,3 +1,7 @@
+1999-12-30  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcc.dg/991230-1.c: New test.
+
 Wed Dec 29 23:48:49 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/991229-3.c: New test.
