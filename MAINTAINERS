@@ -95,6 +95,7 @@ netbsd			Jason Thorpe		thorpej@wasabisystems.com
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
+RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VxWorks ports		Zack Weinberg		zack@codesourcery.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
