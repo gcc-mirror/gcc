@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM RISCiX version.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe11@cl.cam.ac.uk), based on original
 	      work by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
@@ -54,7 +54,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  */
 
 #ifndef ASM_FINAL_SPEC
-#if !defined (CROSS_COMPILER)
+#if !defined (CROSS_COMPILE)
 #define ASM_FINAL_SPEC "\
 %{!mno-symrename: \
 	\n /usr/bin/symrename \
