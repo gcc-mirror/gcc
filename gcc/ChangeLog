@@ -1,3 +1,7 @@
+Thu May 23 09:22:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (hash_expr): Do not use alias set for hashing.
+
 2002-05-22  Kevin Buettner  <kevinb@redhat.com>
 
 	* dbxout.c (dbxout_class_name_qualifiers): New function.

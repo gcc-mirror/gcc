@@ -1689,7 +1689,9 @@ hash_expr_1 (x, mode, do_not_record_p)
 	}
 
       hash += (unsigned int) MEM;
-      hash += MEM_ALIAS_SET (x);
+      /* We used alias set for hashing, but this is not good, since the alias
+	 set may differ in -fprofile-arcs and -fbranch-probabilities compilation
+	 causing the profiles to fail to match.  */
       x = XEXP (x, 0);
       goto repeat;
 
