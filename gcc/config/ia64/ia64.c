@@ -115,7 +115,7 @@ static void ia64_add_gc_roots PARAMS ((void));
 static void ia64_init_machine_status PARAMS ((struct function *));
 static void ia64_mark_machine_status PARAMS ((struct function *));
 static void emit_insn_group_barriers PARAMS ((rtx));
-static void emit_predicate_relation_info PARAMS ((rtx));
+static void emit_predicate_relation_info PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
 static rtx ia64_expand_fetch_and_op PARAMS ((optab, enum machine_mode,
@@ -663,6 +663,19 @@ adjusted_comparison_operator (op, mode)
 	  && (code == LT || code == GE || code == LTU || code == GEU));
 }
 
+/* Return 1 if this is a signed inequality operator.  */
+
+int
+signed_inequality_operator (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+  return ((mode == VOIDmode || GET_MODE (op) == mode)
+	  && (code == GE || code == GT
+	      || code == LE || code == LT));
+}
+
 /* Return 1 if OP is a call returning an HFA.  It is known to be a PARALLEL
    and the first section has already been tested.  */
 
@@ -999,6 +1012,37 @@ spill_tfmode_operand (in, force)
     }
   else
     return in;
+}
+
+/* Emit comparison instruction if necessary, returning the expression
+   that holds the compare result in the proper mode.  */
+
+rtx
+ia64_expand_compare (code, mode)
+     enum rtx_code code;
+     enum machine_mode mode;
+{
+  rtx op0 = ia64_compare_op0, op1 = ia64_compare_op1;
+  rtx cmp;
+
+  /* If we have a BImode input, then we already have a compare result, and
+     do not need to emit another comparison.  */
+  if (GET_MODE (op0) == BImode)
+    {
+      if ((code == NE || code == EQ) && op1 == const0_rtx)
+	cmp = op0;
+      else
+	abort ();
+    }
+  else
+    {
+      cmp = gen_reg_rtx (BImode);
+      emit_insn (gen_rtx_SET (VOIDmode, cmp,
+			      gen_rtx_fmt_ee (code, BImode, op0, op1)));
+      code = NE;
+    }
+
+  return gen_rtx_fmt_ee (code, mode, cmp, const0_rtx);
 }
 
 /* Begin the assembly file.  */
@@ -3247,6 +3291,7 @@ ia64_register_move_cost (from, to)
   int from_hard, to_hard;
   int from_gr, to_gr;
   int from_fr, to_fr;
+  int from_pr, to_pr;
 
   from_hard = (from == BR_REGS || from == AR_M_REGS || from == AR_I_REGS);
   to_hard = (to == BR_REGS || to == AR_M_REGS || to == AR_I_REGS);
@@ -3254,10 +3299,19 @@ ia64_register_move_cost (from, to)
   to_gr = (to == GENERAL_REGS);
   from_fr = (from == FR_REGS);
   to_fr = (to == FR_REGS);
+  from_pr = (from == PR_REGS);
+  to_pr = (to == PR_REGS);
 
   if (from_hard && to_hard)
     return 8;
   else if ((from_hard && !to_gr) || (!from_gr && to_hard))
+    return 6;
+
+  /* Moving between PR registers takes two insns.  */
+  else if (from_pr && to_pr)
+    return 3;
+  /* Moving between PR and anything but GR is impossible.  */
+  else if ((from_pr && !to_gr) || (!from_gr && to_pr))
     return 6;
 
   /* ??? Moving from FR<->GR must be more expensive than 2, so that we get
@@ -3335,13 +3389,18 @@ ia64_secondary_reload_class (class, mode, x)
       break;
 
     case PR_REGS:
-      /* ??? This happens if we cse/gcse a CCmode value across a call,
+      /* ??? This happens if we cse/gcse a BImode value across a call,
 	 and the function has a nonlocal goto.  This is because global
 	 does not allocate call crossing pseudos to hard registers when
 	 current_function_has_nonlocal_goto is true.  This is relatively
 	 common for C++ programs that use exceptions.  To reproduce,
 	 return NO_REGS and compile libstdc++.  */
       if (GET_CODE (x) == MEM)
+	return GR_REGS;
+
+      /* This can happen when we take a BImode subreg of a DImode value,
+	 and that DImode value winds up in some non-GR register.  */
+      if (regno >= 0 && ! GENERAL_REGNO_P (regno) && ! PR_REGNO_P (regno))
 	return GR_REGS;
       break;
 
@@ -3539,21 +3598,33 @@ ia64_override_options ()
 #define AR_UNAT_BIT_0	(FIRST_PSEUDO_REGISTER + 3)
 #define NUM_REGS	(AR_UNAT_BIT_0 + 64)
 
-/* For each register, we keep track of how many times it has been
-   written in the current instruction group.  If a register is written
-   unconditionally (no qualifying predicate), WRITE_COUNT is set to 2
-   and FIRST_PRED is ignored.  If a register is written if its
-   qualifying predicate P is true, we set WRITE_COUNT to 1 and
-   FIRST_PRED to P.  Later on, the same register may be written again
-   by the complement of P (P+1 if P is even, P-1, otherwise) and when
-   this happens, WRITE_COUNT gets set to 2.  The result of this is
-   that whenever an insn attempts to write a register whose
-   WRITE_COUNT is two, we need to issue a insn group barrier first.  */
+/* For each register, we keep track of how it has been written in the
+   current instruction group.
+
+   If a register is written unconditionally (no qualifying predicate),
+   WRITE_COUNT is set to 2 and FIRST_PRED is ignored.
+
+   If a register is written if its qualifying predicate P is true, we
+   set WRITE_COUNT to 1 and FIRST_PRED to P.  Later on, the same register
+   may be written again by the complement of P (P^1) and when this happens,
+   WRITE_COUNT gets set to 2.
+
+   The result of this is that whenever an insn attempts to write a register
+   whose WRITE_COUNT is two, we need to issue a insn group barrier first.
+
+   If a predicate register is written by a floating-point insn, we set
+   WRITTEN_BY_FP to true.
+
+   If a predicate register is written by an AND.ORCM we set WRITTEN_BY_AND
+   to true; if it was written by an OR.ANDCM we set WRITTEN_BY_OR to true.  */
+
 struct reg_write_state
 {
-  char write_count;
-  char written_by_fp;	/* Was register written by a floating-point insn?  */
-  short first_pred;	/* 0 means ``no predicate'' */
+  unsigned int write_count : 2;
+  unsigned int first_pred : 16;
+  unsigned int written_by_fp : 1;
+  unsigned int written_by_and : 1;
+  unsigned int written_by_or : 1;
 };
 
 /* Cumulative info for the current instruction group.  */
@@ -3569,6 +3640,8 @@ struct reg_flags
   unsigned int is_write : 1;	/* Is register being written?  */
   unsigned int is_fp : 1;	/* Is register used as part of an fp op?  */
   unsigned int is_branch : 1;	/* Is register used as part of a branch?  */
+  unsigned int is_and : 1;	/* Is register used as part of and.orcm?  */
+  unsigned int is_or : 1;	/* Is register used as part of or.andcm?  */
 };
 
 static void rws_update PARAMS ((struct reg_write_state *, int,
@@ -3589,6 +3662,9 @@ rws_update (rws, regno, flags, pred)
 {
   rws[regno].write_count += pred ? 1 : 2;
   rws[regno].written_by_fp |= flags.is_fp;
+  /* ??? Not tracking and/or across differing predicates.  */
+  rws[regno].written_by_and = flags.is_and;
+  rws[regno].written_by_or = flags.is_or;
   rws[regno].first_pred = pred;
 }
 
@@ -3606,6 +3682,9 @@ rws_access_regno (regno, flags, pred)
 
   if (regno >= NUM_REGS)
     abort ();
+
+  if (! PR_REGNO_P (regno))
+    flags.is_and = flags.is_or = 0;
 
   if (flags.is_write)
     {
@@ -3631,7 +3710,11 @@ rws_access_regno (regno, flags, pred)
 	     not a complementary predicate, then we need a barrier.  */
 	  /* ??? This assumes that P and P+1 are always complementary
 	     predicates for P even.  */
-	  if ((rws_sum[regno].first_pred ^ 1) != pred)
+	  if (flags.is_and && rws_sum[regno].written_by_and)
+	    ; 
+	  else if (flags.is_or && rws_sum[regno].written_by_or)
+	    ;
+	  else if ((rws_sum[regno].first_pred ^ 1) != pred)
 	    need_barrier = 1;
 	  rws_update (rws_sum, regno, flags, pred);
 	  break;
@@ -3639,7 +3722,14 @@ rws_access_regno (regno, flags, pred)
 	case 2:
 	  /* The register has been unconditionally written already.  We
 	     need a barrier.  */
-	  need_barrier = 1;
+	  if (flags.is_and && rws_sum[regno].written_by_and)
+	    ;
+	  else if (flags.is_or && rws_sum[regno].written_by_or)
+	    ;
+	  else
+	    need_barrier = 1;
+	  rws_sum[regno].written_by_and = flags.is_and;
+	  rws_sum[regno].written_by_or = flags.is_or;
 	  break;
 
 	default:
@@ -3668,6 +3758,11 @@ rws_access_regno (regno, flags, pred)
 	       something other than a floating-point instruction.   */
 	    return 0;
 	}
+
+      if (flags.is_and && rws_sum[regno].written_by_and)
+	return 0;
+      if (flags.is_or && rws_sum[regno].written_by_or)
+	return 0;
 
       switch (rws_sum[regno].write_count)
 	{
@@ -3806,6 +3901,15 @@ rtx_needs_barrier (x, flags, pred)
 	       with a floating point comparison when processing the
 	       destination of the SET.  */
 	    new_flags.is_fp = 1;
+
+	  /* Discover if this is a parallel comparison.  We only handle
+	     and.orcm and or.andcm at present, since we must retain a
+	     strict inverse on the predicate pair.  */
+	  else if (GET_CODE (src) == AND)
+	    new_flags.is_and = flags.is_and = 1;
+	  else if (GET_CODE (src) == IOR)
+	    new_flags.is_or = flags.is_or = 1;
+
 	  break;
 	}
       need_barrier = rtx_needs_barrier (src, flags, pred);
@@ -3991,6 +4095,7 @@ rtx_needs_barrier (x, flags, pred)
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  break;
 
+	case 7: /* pred_rel_mutex */
         case 12: /* mf */
         case 19: /* fetchadd_acq */
 	case 20: /* mov = ar.bsp */
@@ -4162,6 +4267,8 @@ emit_insn_group_barriers (insns)
 	      memset (rws_sum, 0, sizeof (rws_sum));
 	      prev_insn = NULL_RTX;
 	    }
+	  else
+	    prev_insn = insn;
 	  break;
 	
 	case JUMP_INSN:
@@ -4179,7 +4286,7 @@ emit_insn_group_barriers (insns)
 	      rtx pat = PATTERN (insn);
 
 	      /* Ug.  Hack hacks hacked elsewhere.  */
-	      switch (INSN_CODE (insn))
+	      switch (recog_memoized (insn))
 		{
 		  /* We play dependency tricks with the epilogue in order
 		     to get proper schedules.  Undo this for dv analysis.  */
@@ -4204,6 +4311,10 @@ emit_insn_group_barriers (insns)
 		case CODE_FOR_gr_restore_internal:
 		  pat = XVECEXP (pat, 0, 0);
 		  break;
+
+		  /* Doesn't generate code.  */
+		case CODE_FOR_pred_rel_mutex:
+		  continue;
 
 		default:
 		  break;
@@ -4250,14 +4361,9 @@ emit_insn_group_barriers (insns)
    straight-line code.  */
 
 static void
-emit_predicate_relation_info (insns)
-     rtx insns;
+emit_predicate_relation_info ()
 {
   int i;
-
-  /* Make sure the CFG and global_live_at_start are correct.  */
-  find_basic_blocks (insns, max_reg_num (), NULL);
-  life_analysis (insns, NULL, 0);
 
   for (i = n_basic_blocks - 1; i >= 0; --i)
     {
@@ -4275,7 +4381,7 @@ emit_predicate_relation_info (insns)
       for (r = PR_REG (0); r < PR_REG (64); r += 2)
 	if (REGNO_REG_SET_P (bb->global_live_at_start, r))
 	  {
-	    rtx p = gen_rtx_REG (CCmode, r);
+	    rtx p = gen_rtx_REG (BImode, r);
 	    rtx n = emit_insn_after (gen_pred_rel_mutex (p), head);
 	    if (head == bb->end)
 	      bb->end = n;
@@ -4323,8 +4429,13 @@ ia64_reorg (insns)
   if (optimize == 0)
     split_all_insns (0);
 
-  emit_predicate_relation_info (insns);
+  /* Make sure the CFG and global_live_at_start are correct
+     for emit_predicate_relation_info.  */
+  find_basic_blocks (insns, max_reg_num (), NULL);
+  life_analysis (insns, NULL, 0);
+
   emit_insn_group_barriers (insns);
+  emit_predicate_relation_info ();
 }
 
 /* Return true if REGNO is used by the epilogue.  */
