@@ -1,3 +1,8 @@
+2001-10-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ref/natReference.cc (add_to_hash): Set n->next before
+	setting *link.
+
 2001-10-03  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* resolve.cc (_Jv_PrepareClass): Fix typos in vtable layout.
