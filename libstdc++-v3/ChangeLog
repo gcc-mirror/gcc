@@ -1,3 +1,8 @@
+2003-11-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Move using directive...
+	* include/debug/formatter.h: ...here.
+
 2003-11-12  Carlo Wood  <carlo@alinoe.com>
 
         PR libstdc++/12947

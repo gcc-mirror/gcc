@@ -36,6 +36,8 @@
 
 namespace __gnu_debug
 {
+  using namespace std;
+
   /** Determine if the two types are the same. */
   template<typename _Type1, typename _Type2>
     struct __is_same
