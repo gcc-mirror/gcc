@@ -1,6 +1,13 @@
 2002-01-24  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (print_operand): Remove support for
+	operand character 'A'.
+	* config/h8300/h8300.md (three anonymous patterns): Replace
+	operand character 'A' with either 'T' or 'S'.
+
+2002-01-24  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (print_operand): Remove support for
 	operand character 'U'.
 
 2002-01-24  Andris Pavenis  <pavenis@latnet.lv>
