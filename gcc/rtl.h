@@ -988,6 +988,7 @@ extern int no_labels_between_p		PROTO((rtx, rtx));
 extern int modified_in_p		PROTO((rtx, rtx));
 extern int reg_set_p			PROTO((rtx, rtx));
 extern rtx single_set			PROTO((rtx));
+extern rtx multiple_sets		PROTO((rtx));
 extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
 extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));

@@ -1876,9 +1876,16 @@ wipe_dead_reg (reg, output_p)
   /* If this insn has multiple results,
      and the dead reg is used in one of the results,
      extend its life to after this insn,
-     so it won't get allocated together with any other result of this insn.  */
+     so it won't get allocated together with any other result of this insn. 
+
+     It is unsafe to use !single_set here since it will ignore an unused
+     output.  Just because an output is unused does not mean the compiler
+     can assume the side effect will not occur.   Consider if REG appears
+     in the address of an output and we reload the output.  If we allocate
+     REG to the same hard register as an unused output we could set the hard
+     register before the output reload insn.  */
   if (GET_CODE (PATTERN (this_insn)) == PARALLEL
-      && !single_set (this_insn))
+      && multiple_sets (this_insn))
     {
       int i;
       for (i = XVECLEN (PATTERN (this_insn), 0) - 1; i >= 0; i--)
