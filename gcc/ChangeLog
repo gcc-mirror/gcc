@@ -1,3 +1,9 @@
+2004-01-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* genautomata.c (make_automaton, NDFA_to_DFA):
+	Print progress bars with '.' characters instead of '*'.
+	(build_automaton): Change notes to match.
+
 2004-01-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Use define_constants for unspec and

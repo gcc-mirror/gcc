@@ -5733,7 +5733,7 @@ make_automaton (automaton_t automaton)
                             VLA_PTR_ADD (state_stack, state2);
 			    states_n++;
 			    if (states_n % 100 == 0)
-			      fprintf (stderr, "*");
+			      fprintf (stderr, ".");
                           }
 			added_arc = add_arc (state, state2, ainsn, 1);
 			if (!ndfa_flag)
@@ -5764,7 +5764,7 @@ make_automaton (automaton_t automaton)
           VLA_PTR_ADD (state_stack, state2);
 	  states_n++;
 	  if (states_n % 100 == 0)
-	    fprintf (stderr, "*");
+	    fprintf (stderr, ".");
         }
       if (advance_cycle_ainsn == NULL)
 	abort ();
@@ -5935,7 +5935,7 @@ NDFA_to_DFA (automaton_t automaton)
 	    {
 	      states_n++;
 	      if (states_n % 100 == 0)
-		fprintf (stderr, "*");
+		fprintf (stderr, ".");
 	    }
 	}
     }
@@ -6396,9 +6396,9 @@ build_automaton (automaton_t automaton)
 
   ticker_on (&NDFA_time);
   if (automaton->corresponding_automaton_decl == NULL)
-    fprintf (stderr, "Create anonymous automaton (1 star is 100 new states):");
+    fprintf (stderr, "Create anonymous automaton (1 dot is 100 new states):");
   else
-    fprintf (stderr, "Create automaton `%s' (1 star is 100 new states):",
+    fprintf (stderr, "Create automaton `%s' (1 dot is 100 new states):",
 	     automaton->corresponding_automaton_decl->name);
   make_automaton (automaton);
   fprintf (stderr, " done\n");
@@ -6408,9 +6408,9 @@ build_automaton (automaton_t automaton)
   automaton->NDFA_arcs_num = arcs_num;
   ticker_on (&NDFA_to_DFA_time);
   if (automaton->corresponding_automaton_decl == NULL)
-    fprintf (stderr, "Make anonymous DFA (1 star is 100 new states):");
+    fprintf (stderr, "Make anonymous DFA (1 dot is 100 new states):");
   else
-    fprintf (stderr, "Make DFA `%s' (1 star is 100 new states):",
+    fprintf (stderr, "Make DFA `%s' (1 dot is 100 new states):",
 	     automaton->corresponding_automaton_decl->name);
   NDFA_to_DFA (automaton);
   fprintf (stderr, " done\n");
