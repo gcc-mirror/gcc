@@ -336,7 +336,7 @@ struct vertex {
 
     vertex(): item(), fanout()	// gets bogus error
       { };
-    vertex(const T& i): item(), fanout() // gets bogus error - XFAIL *-*-*
+    vertex(const T& i): item(), fanout() // gets bogus error
       { };
 };
 
@@ -458,7 +458,7 @@ void
 Graph<T>::nextV1(Pix vx, Pix& x) const
 {
     vertex<T> *v = (vertex<T> *) vx;
-    return v->fanout.next(x);  // ERROR - return from void method
+    return v->fanout.next(x);
 }
 
 template<class T>

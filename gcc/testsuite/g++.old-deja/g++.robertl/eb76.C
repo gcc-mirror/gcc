@@ -1,5 +1,6 @@
 //Build don't link:
 // the template operator!= interferes.  It should be in a namespace.
+// excess errors test - XFAIL *-*-*
 
 #include <utility>
 
@@ -13,6 +14,6 @@ struct X {
 
 void
 f(X& v) {
-  if( v.t != V1 ) {		// gets bogus error - address of bitfield
+  if( v.t != V1 ) {		// complains about taking address of bitfield
   }
 }

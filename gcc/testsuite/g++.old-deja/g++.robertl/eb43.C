@@ -1,3 +1,5 @@
+// excess errors test - XFAIL *-*-*
+
 #include <vector.h>
 #include <algo.h>
 

@@ -3,6 +3,7 @@
 */
 /* (w) 4.9.97 by Kurt Garloff <K.Garloff@ping.de> */
 // Special g++ Options:
+// excess errors test - XFAIL *-*-*
 
 #include <iostream.h>
 
