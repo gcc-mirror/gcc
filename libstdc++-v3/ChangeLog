@@ -1,4 +1,10 @@
-2000-05-03  Vadim Egorov  <egorovv@mailandnews.com>
+2000-05-09  Loren J. Rittle  <ljrittle@acm.org>
+
+        * backward/iostream.h: Expose endl.  Guard wide types.
+        * src/Makefile.am (headers): Update list to match files.
+        * src/Makefile.in: Regenerate.
+
+2000-05-09  Vadim Egorov  <egorovv@mailandnews.com>
 	    Benjamin Kosnik  <bkoz@gnu.org>
 	    Nathan Myers  <ncm@cantrip.org>
 	    Dietmar Kuehl  <dietmar_kuehl@yahoo.com> 
@@ -9,7 +15,7 @@
 	
 2000-05-08  Steven King  <sxking@uswest.net>
 
-        * bits/char_traits.h: use wchar_t utility functions for
+        * bits/char_traits.h: Use wchar_t utility functions for
         char_traits<wchar_t> methods.
         * testsuite/21_string/char_traits.cc: New (test02): test
         char_traits<wchar_t>

@@ -187,8 +187,8 @@ headers = \
 	backward/bvector.h backward/defalloc.h backward/deque.h \
 	backward/function.h backward/hash_map.h backward/hash_set.h \
 	backward/hashtable.h backward/heap.h backward/iterator.h \
-	backward/list.h backward/map.h backward/multimap.h \
-	backward/multiset.h backward/pair.h \
+	backward/list.h backward/map.h backward/multimap.h backward/new.h \
+	backward/multiset.h backward/pair.h backward/iostream.h \
 	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
 	backward/tempbuf.h backward/tree.h backward/vector.h \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
