@@ -19,6 +19,10 @@
 #  define re_syntax_options xre_syntax_options
 #  define re_max_failures xre_max_failures
 
+#  define _REGEX_RE_COMP
+#  define re_comp xre_comp
+#  define re_exec xre_exec
+
 #include "xregex2.h"
 
 #endif /* xregex.h */
