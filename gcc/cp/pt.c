@@ -3335,8 +3335,6 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
       arg = make_typename_type (TREE_OPERAND (arg, 0),
 				TREE_OPERAND (arg, 1),
 				complain & tf_error);
-      if (TREE_CODE (arg) == TYPE_DECL)
-	arg = TREE_TYPE (arg);
       is_type = 1;
     }
   if (is_type != requires_type)
@@ -6407,7 +6405,7 @@ tsubst (t, args, complain, in_decl)
 		    my_friendly_assert (TYPE_P (arg), 0);
 		    return cp_build_qualified_type_real
 		      (arg, cp_type_quals (arg) | cp_type_quals (t),
-		       complain);
+		       complain | tf_ignore_bad_quals);
 		  }
 		else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
@@ -6459,8 +6457,10 @@ tsubst (t, args, complain, in_decl)
 	    if (cp_type_quals (t))
 	      {
 		r = tsubst (TYPE_MAIN_VARIANT (t), args, complain, in_decl);
-		r = cp_build_qualified_type_real
-		  (r, cp_type_quals (t), complain);
+ 		r = cp_build_qualified_type_real
+ 		  (r, cp_type_quals (t),
+		   complain | (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+			       ? tf_ignore_bad_quals : 0));
 	      }
 	    else
 	      {
@@ -6785,11 +6785,18 @@ tsubst (t, args, complain, in_decl)
 	      }
 	  }
 
-	f = make_typename_type (ctx, f, complain & tf_error);
+	f = make_typename_type (ctx, f,
+				(complain & tf_error) | tf_keep_type_decl);
 	if (f == error_mark_node)
 	  return f;
-	return cp_build_qualified_type_real
-	  (f, cp_type_quals (f) | cp_type_quals (t), complain);
+ 	if (TREE_CODE (f) == TYPE_DECL)
+ 	  {
+	    complain |= tf_ignore_bad_quals;
+ 	    f = TREE_TYPE (f);
+ 	  }
+ 	
+ 	return cp_build_qualified_type_real
+ 	  (f, cp_type_quals (f) | cp_type_quals (t), complain);
       }
 	       
     case UNBOUND_CLASS_TEMPLATE:
@@ -8463,12 +8470,28 @@ check_cv_quals_for_unify (strict, arg, parm)
      tree arg;
      tree parm;
 {
+  int arg_quals = cp_type_quals (arg);
+  int parm_quals = cp_type_quals (parm);
+
+  if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM)
+    {
+      /* If the cvr quals of parm will not unify with ARG, they'll be
+	 ignored in instantiation, so we have to do the same here.  */
+      if (TREE_CODE (arg) == REFERENCE_TYPE
+	  || TREE_CODE (arg) == FUNCTION_TYPE
+	  || TREE_CODE (arg) == METHOD_TYPE)
+	parm_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      if (!POINTER_TYPE_P (arg) &&
+	  TREE_CODE (arg) != TEMPLATE_TYPE_PARM)
+	parm_quals &= ~TYPE_QUAL_RESTRICT;
+    }
+  
   if (!(strict & (UNIFY_ALLOW_MORE_CV_QUAL | UNIFY_ALLOW_OUTER_MORE_CV_QUAL))
-      && !at_least_as_qualified_p (arg, parm))
+      && (arg_quals & parm_quals) != parm_quals)
     return 0;
 
   if (!(strict & (UNIFY_ALLOW_LESS_CV_QUAL | UNIFY_ALLOW_OUTER_LESS_CV_QUAL))
-      && !at_least_as_qualified_p (parm, arg))
+      && (parm_quals & arg_quals) != arg_quals)
     return 0;
 
   return 1;
@@ -9930,6 +9953,27 @@ instantiate_decl (d, defer_ok)
 	import_export_decl (d);
     }
 
+  if (!defer_ok)
+    {
+      /* Recheck the substitutions to obtain any warning messages
+	 about ignoring cv qualifiers.  */
+      tree gen = DECL_TEMPLATE_RESULT (gen_tmpl);
+      tree type = TREE_TYPE (gen);
+
+      if (TREE_CODE (gen) == FUNCTION_DECL)
+	{
+	  tsubst (DECL_ARGUMENTS (gen), args, tf_error | tf_warning, d);
+	  tsubst (TYPE_RAISES_EXCEPTIONS (type), args,
+		  tf_error | tf_warning, d);
+	  /* Don't simply tsubst the function type, as that will give
+	     duplicate warnings about poor parameter qualifications.
+	     The function arguments are the same as the decl_arguments
+	     without the top level cv qualifiers. */
+	  type = TREE_TYPE (type);
+	}
+      tsubst (type, args, tf_error | tf_warning, d);
+    }
+  
   if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d)
       && DECL_INITIAL (d) == NULL_TREE)
     /* We should have set up DECL_INITIAL in instantiate_class_template.  */

@@ -1,3 +1,26 @@
+2002-02-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/2645, DR 295
+	* cp-tree.h (tsubst_flags_t): Add tf_ignore_bad_quals,
+	tf_keep_type_decl.
+	(make_typename_type): Use tsubst_flags_t.
+	* decl.c (make_typename_type): Adjust. Return non-artificial
+	TYPE_DECLs, if required.
+	(grokdeclarator): Simplify CVR qualification handling. Allow bad
+	qualifiers on typedef types.
+	* decl2.c (handle_class_head): Adjust make_typename_type call.
+	* parse.y (nested_name_specifier): Likewise.
+	(typename_sub0): Likewise.
+	(typename_sub1): Likewise.
+	* pt.c (convert_template_argument): Adjust make_typename_type
+	return value.
+	(tsubst): Adjust cp_build_qualified_type_real calls.
+	(check_cv_quals_for_unify): Cope with alowing bad qualifications
+	on template type parms.
+	(instantiate_decl): Recheck substitutions to give warnings on bad
+	qualifications.
+	* tree.c (cp_build_qualified_type_real): Use tf_allow_bad_quals.
+
 2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * cp/decl.c (duplicate_decls): Merge always_inline attribute.

@@ -1,3 +1,10 @@
+2002-02-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/qualttp19.C: New test.
+	* g++.dg/template/qualttp20.C: New test.
+	* g++.old-deja/g++.jason/report.C: Adjust expected errors
+	* g++.old-deja/g++.other/qual1.C: Likewise.
+
 2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/attr-alwaysinline.c: New.
