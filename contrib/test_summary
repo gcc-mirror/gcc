@@ -48,7 +48,7 @@ if test -z "$AWK" ; then
   done
 fi
 
-: ${filesuffix=}; export fileprefix
+: ${filesuffix=}; export filesuffix
 : ${move=true}; export move
 : ${forcemail=false}; export forcemail
 while true; do
