@@ -228,7 +228,7 @@ namespace __gnu_cxx
 
     public:
       pointer
-      allocate(size_t __n, const void* __h = 0)
+      allocate(size_t __n, const void* = 0)
       {
         /*
          * Although the test in __gthread_once() would suffice, we
