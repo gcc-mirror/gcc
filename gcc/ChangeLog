@@ -1,3 +1,7 @@
+2001-01-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gencodes.c (output_predicate_decls): Remove empty initializer.
+
 2001-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (copy_node): Remove documentation about obstacks.

@@ -57,16 +57,16 @@ output_predicate_decls ()
   static struct {
     const char *name;
     RTX_CODE codes[NUM_RTX_CODE];
-  } *p, predicate[] = {
+  } predicate[] = {
     PREDICATE_CODES
-    {NULL, {0}}
   };
-  
+  int i;
+
   putc ('\n', stdout);
   puts ("struct rtx_def;\n#include \"machmode.h\"\n");
-  for (p = predicate; p->name; p++)
+  for (i = 0; i < sizeof predicate / sizeof *predicate; i++)
     printf ("extern int %s PARAMS ((struct rtx_def *, enum machine_mode));\n",
-	    p->name);
+	    predicate[i].name);
   putc ('\n', stdout);
 #endif
 }
