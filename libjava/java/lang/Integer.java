@@ -433,8 +433,8 @@ public final class Integer extends Number implements Comparable
    * octal numbers.
    *
    * The <code>String</code> argument is interpreted based on the leading
-   * characters.  Depending on what the String begins with, the base will be
-   * interpreted differently:
+   * characters.  Depending on what the String begins with (after an optional
+   * minus sign), the base will be interpreted differently:
    *
    * <table border=1>
    * <tr><th>Leading<br>Characters</th><th>Base</th></tr>
@@ -444,6 +444,8 @@ public final class Integer extends Number implements Comparable
    * <tr><td>0</td><td>8</td></tr>
    * <tr><td>Anything<br>Else</td><td>10</td></tr>
    * </table>
+   *
+   * If the String starts with a minus sign the result is negated.
    *
    * @param str the <code>String</code> to interpret.
    * @return the value of the String as an <code>Integer</code>.
@@ -457,28 +459,34 @@ public final class Integer extends Number implements Comparable
     int radix = 10;
     final int len;
 
-    if (str == null || (len = str.length()) == 0)
-      throw new NumberFormatException("string null or empty");
+    if ((len = str.length()) == 0)
+      throw new NumberFormatException("empty string");
 
-    // Negative numbers are always radix 10.
     if (str.charAt(index) == '-')
       {
-        radix = 10;
-        index++;
-        isNeg = true;
+        // The minus sign should be followed by at least one more char
+        if (len > 1)
+          {
+            isNeg = true;
+            index++;
+          }
+        else
+          throw new NumberFormatException();
       }
-    else if (str.charAt(index) == '#')
+
+    if (str.charAt(index) == '#')
       {
         radix = 16;
         index++;
       }
     else if (str.charAt(index) == '0')
       {
-        // Check if str is just "0"
-        if (len == 1)
+        index++;
+
+        // Check if str is just "0" or "-0"
+        if (len == index)
           return new Integer(0);
 
-        index++;
         if (str.charAt(index) == 'x' || str.charAt(index) == 'X')
           {
             radix = 16;

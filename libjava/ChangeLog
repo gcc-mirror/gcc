@@ -1,5 +1,10 @@
 2002-04-01  Mark Wielaard  <mark@klomp.org>
 
+	* java/lang/Integer.java (decode): Throw NullPointerException when
+	argument is null. A minus sign can precede other leading characters.
+
+2002-04-01  Mark Wielaard  <mark@klomp.org>
+
 	* mauve-libgcj: Add JDK1.3, JDK1.4, JLS1.2 tests, remove ignored tests
 	that can be compiled now and add testsuite crashers to ignore list.
 
