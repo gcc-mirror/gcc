@@ -1,3 +1,9 @@
+2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8588
+	* optabs.c (expand_binop): Convert CONST_INTs in shift
+	operations too.
+
 2002-11-19  Roger Sayle  <roger@eyesopen.com>
 
 	* gcse.c (gcse_emit_move_after): Correct typo in REG_EQUAL note.
