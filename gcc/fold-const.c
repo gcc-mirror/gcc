@@ -9966,8 +9966,7 @@ fold_not_const (tree arg0, tree type)
 static tree
 fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 {
-  tree tem;
-  int invert;
+  int result, invert;
 
   /* From here on, the only cases we handle are when the result is
      known to be a constant.
@@ -9981,14 +9980,15 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 
   if (code == LE_EXPR || code == GT_EXPR)
     {
-      tem = op0, op0 = op1, op1 = tem;
+      tree tem = op0;
+      op0 = op1;
+      op1 = tem;
       code = swap_tree_comparison (code);
     }
 
   /* Note that it is safe to invert for real values here because we
      will check below in the one case that it matters.  */
 
-  tem = NULL_TREE;
   invert = 0;
   if (code == NE_EXPR || code == GE_EXPR)
     {
@@ -10001,17 +10001,16 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   if (TREE_CODE (op0) == INTEGER_CST && TREE_CODE (op1) == INTEGER_CST)
     {
       if (code == EQ_EXPR)
-        tem = build_int_2 (tree_int_cst_equal (op0, op1), 0);
+	result = tree_int_cst_equal (op0, op1);
+      else if (TYPE_UNSIGNED (TREE_TYPE (op0)))
+	result = INT_CST_LT_UNSIGNED (op0, op1);
       else
-        tem = build_int_2 ((TYPE_UNSIGNED (TREE_TYPE (op0))
-			    ? INT_CST_LT_UNSIGNED (op0, op1)
-			    : INT_CST_LT (op0, op1)),
-			   0);
+	result = INT_CST_LT (op0, op1);
     }
 
   else if (code == EQ_EXPR && !TREE_SIDE_EFFECTS (op0)
            && integer_zerop (op1) && tree_expr_nonzero_p (op0))
-    tem = build_int_2 (0, 0);
+    result = 0;
 
   /* Two real constants can be compared explicitly.  */
   else if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
@@ -10025,28 +10024,21 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 
       if (REAL_VALUE_ISNAN (TREE_REAL_CST (op0))
           || REAL_VALUE_ISNAN (TREE_REAL_CST (op1)))
-        tem = build_int_2 (invert && code == LT_EXPR, 0);
+	result = invert && code == LT_EXPR;
 
       else if (code == EQ_EXPR)
-        tem = build_int_2 (REAL_VALUES_EQUAL (TREE_REAL_CST (op0),
-					      TREE_REAL_CST (op1)),
-			   0);
+	result = REAL_VALUES_EQUAL (TREE_REAL_CST (op0),
+				    TREE_REAL_CST (op1));
       else
-        tem = build_int_2 (REAL_VALUES_LESS (TREE_REAL_CST (op0),
-					     TREE_REAL_CST (op1)),
-			   0);
+	result = REAL_VALUES_LESS (TREE_REAL_CST (op0),
+				   TREE_REAL_CST (op1));
     }
-
-  if (tem == NULL_TREE)
+  else
     return NULL_TREE;
 
   if (invert)
-    TREE_INT_CST_LOW (tem) ^= 1;
-
-  TREE_TYPE (tem) = type;
-  if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return lang_hooks.truthvalue_conversion (tem);
-  return tem;
+    result ^= 1;
+  return constant_boolean_node (result, type);
 }
 
 /* Build an expression for the address of T.  Folds away INDIRECT_REF to
