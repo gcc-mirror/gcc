@@ -8408,3 +8408,29 @@ machine_dependent_reorg (first)
      constants table, we don't need to output the constant in the real
      constant table, but we have no way to prevent that.  */
 }
+
+/* Return nonzero if X is a SIGN or ZERO extend operator.  */
+int
+extend_operator (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (x);
+  return code == SIGN_EXTEND || code == ZERO_EXTEND;
+}
+
+/* Accept any operator that can be used to shift the high half of the
+   input value to the lower half, suitable for truncation.  The
+   remainder (the lower half of the input, and the upper half of the
+   output) will be discarded.  */
+int
+highpart_shift_operator (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (x);
+  return (code == LSHIFTRT
+	  || code == ASHIFTRT
+	  || code == ROTATERT
+	  || code == ROTATE);
+}
