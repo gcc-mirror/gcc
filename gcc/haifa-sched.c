@@ -247,6 +247,14 @@ static int reg_pending_sets_all;
 static int *insn_luid;
 #define INSN_LUID(INSN) (insn_luid[INSN_UID (INSN)])
 
+/* To speed up the test for duplicate dependency links we keep a record
+   of true dependencies created by add_dependence.
+
+   Each insn has an associated bitmap for its dependencies.  Each bitmap
+   has enough entries to represent a dependency on any other insn in the
+   insn chain.  */
+static sbitmap *true_dependency_cache;
+
 /* Vector indexed by INSN_UID giving each instruction a priority.  */
 static int *insn_priority;
 #define INSN_PRIORITY(INSN) (insn_priority[INSN_UID (INSN)])
@@ -783,6 +791,12 @@ add_dependence (insn, elem, dep_type)
 
 #endif
 
+  /* If we already have a true dependency for ELEM, then we do not
+     need to do anything.  Avoiding the list walk below can cut
+     compile times dramatically for some code.  */
+  if (TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
+    return;
+
   /* Check that we don't already have this dependence.  */
   for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
     if (XEXP (link, 0) == elem)
@@ -791,6 +805,11 @@ add_dependence (insn, elem, dep_type)
 	   one, then change the existing dependence to this type.  */
 	if ((int) dep_type < (int) REG_NOTE_KIND (link))
 	  PUT_REG_NOTE_KIND (link, dep_type);
+
+	/* If we are adding a true dependency to INSN's LOG_LINKs, then
+	   note that in the bitmap cache of true dependency information.  */
+	if ((int)dep_type == 0)
+	  SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
 	return;
       }
   /* Might want to check one level of transitivity to save conses.  */
@@ -822,6 +841,13 @@ remove_dependence (insn, elem)
 	    XEXP (prev, 1) = next;
 	  else
 	    LOG_LINKS (insn) = next;
+
+	  /* If we are removing a true dependency from the LOG_LINKS list,
+	     make sure to remove it from the cache too.  */
+	  if (REG_NOTE_KIND (link) == 0)
+	    RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
+		       INSN_LUID (elem));
+
 	  free_INSN_LIST_node (link);
 
 	  found = 1;
@@ -6834,7 +6860,10 @@ schedule_insns (dump_file)
   insn_orig_block = (int *) xmalloc (max_uid * sizeof (int));
   insn_luid = (int *) xmalloc (max_uid * sizeof (int));
 
-  luid = 0;
+  /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
+     pseudos which do not cross calls.  */
+  insn_luid[0] = 0;
+  luid = 1;
   for (b = 0; b < n_basic_blocks; b++)
     for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
@@ -6844,6 +6873,12 @@ schedule_insns (dump_file)
 	if (insn == BLOCK_END (b))
 	  break;
       }
+  
+  /* ?!? We could save some memory by computing a per-region luid mapping
+     which could reduce both the number of vectors in the cache and the size
+     of each vector.  */
+  true_dependency_cache = sbitmap_vector_alloc (luid, luid);
+  sbitmap_vector_zero (true_dependency_cache, luid);
 
   nr_regions = 0;
   rgn_table = (region *) alloca ((n_basic_blocks) * sizeof (region));
@@ -7012,6 +7047,7 @@ schedule_insns (dump_file)
       fprintf (dump, "\n\n");
     }
 
+  free (true_dependency_cache);
   free (cant_move);
   free (fed_by_spec_load);
   free (is_load_insn);
