@@ -1,3 +1,7 @@
+2001-05-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/optimize2.C: New file.
+
 2001-05-25  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.c-torture/compile/20010518-2.c: New file.
