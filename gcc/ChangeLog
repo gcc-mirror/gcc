@@ -1,3 +1,8 @@
+2003-12-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c (init_spec): Add -lunwind to shared case too if
+	USE_LIBUNWIND_EXCEPTIONS.
+
 2003-12-31  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/texinfo.tex: Update to version 2003-12-21.10.
@@ -311,7 +316,7 @@
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/13429, C/11944
-	* c-common.c (c_build_qualified_type): Return early when type is 
+	* c-common.c (c_build_qualified_type): Return early when type is
 	error_mark_node.
 	(c_apply_type_quals_to_decl): Likewise.
 
