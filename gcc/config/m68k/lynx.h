@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "m68k/m68k.h"
-#include "m68k/coff.h"
+#include <m68k/m68k.h>
+#include <m68k/coff.h>
 
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_LONG ".long"
 
-#include "lynx.h"
+#include <lynx.h>
 
 /* See m68k.h.  7 means 68020 with 68881.  */
 

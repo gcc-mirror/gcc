@@ -1,8 +1,8 @@
-#include "m68k/m68k.h"
+#include <m68k/m68k.h>
 
 /* Get generic NetBSD definitions.  */
 
-#include "netbsd.h"
+#include <netbsd.h>
 
 
 /* See m68k.h.  7 means 68020 with 68881.  */

@@ -19,7 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 
-#include "ns32k/ns32k.h"
+#include <ns32k/ns32k.h>
 
 /* Compile for the floating point unit & 32532 by default;
    Don't assume SB is zero;
@@ -62,7 +62,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MOVD_FLOAT_OK
 
 /* Get generic NetBSD definitions. */
-#include "netbsd.h"
+#include <netbsd.h>
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
