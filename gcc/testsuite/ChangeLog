@@ -1,3 +1,7 @@
+2000-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20001117-1.c: New test.
+
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/nestfunc-3.c (main): Mask result to 32 bits.
