@@ -1,5 +1,10 @@
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* resolve.c (merge_argument_lists): Revert unintentionally 
+	committed change.
+	
+2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* trans-decl.c (build_function_decl): Fix spelling in comment.
 	(build_entry_thunks): Remove code with no function.
 	(gfc_build_intrinsic_function_decls): Remove empty line.
