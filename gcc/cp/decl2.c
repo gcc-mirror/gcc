@@ -125,11 +125,6 @@ tree static_dtors;
 /* The :: namespace. */
 
 tree global_namespace;
-
-/* The stack for namespaces of current declarations. */
-
-static tree decl_namespace_list;
-
 
 /* C (and C++) language-specific option variables.  */
 
@@ -5365,7 +5360,6 @@ handle_class_head (aggr, scope, id)
 void
 init_decl2 ()
 {
-  ggc_add_tree_root (&decl_namespace_list, 1);
   ggc_add_tree_varray_root (&deferred_fns, 1);
   ggc_add_tree_varray_root (&pending_statics, 1);
   ggc_add_tree_varray_root (&ssdf_decls, 1);
