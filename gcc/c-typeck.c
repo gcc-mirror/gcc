@@ -986,8 +986,8 @@ default_conversion (exp)
       if (!lvalue_p (exp)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
-	  /* Non-lvalue arrays do not decay into pointers.  */
-	  return exp;
+	  error ("invalid use of non-lvalue array");
+	  return error_mark_node;
 	}
 
       if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
