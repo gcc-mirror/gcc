@@ -1039,7 +1039,7 @@ gen_ashift (type, n, reg)
 	emit_insn (gen_lshrsi3_k (reg, reg, GEN_INT (n)));
       break;
     case ASHIFT:
-      emit_insn (gen_ashlsi3_k (reg, reg, GEN_INT (n)));
+      emit_insn (gen_ashlsi3_std (reg, reg, GEN_INT (n)));
       break;
     }
 }

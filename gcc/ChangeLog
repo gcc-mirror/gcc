@@ -1,3 +1,16 @@
+2000-08-01  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	From Joern Rennecke:
+	* sh.h (CPP_SPEC, TARGET_SWITCHES): Add m4-nofpu.
+	* sh.md (udivsi3, divsi3): Don't use libcalls that use the FPU
+	unless TARGET_SH3E is set.
+	* t-sh (MULTILIB_MATCHES): Add m2=m4-nofpu.
+
+	* sh.md (ashlsi3_d, ashlsi3_k): Remove, replace with
+	(ashlsi3_std): New pattern.
+	(ashlsi3 expander): Use it for TARGET_SH3.
+	* sh.c (gen_ashift): Use it instead of ashlsi3_k.
+
 Tue Aug  1 12:34:21 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (canonicalize_condition):  Use destination, not source to
