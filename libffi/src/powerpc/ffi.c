@@ -853,14 +853,26 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
 	case FFI_TYPE_SINT32:
 	case FFI_TYPE_UINT32:
 	case FFI_TYPE_POINTER:
-	case FFI_TYPE_STRUCT:
-	/* there are 8 gpr registers used to pass values */
+	  /* there are 8 gpr registers used to pass values */
           if (ng < 8) {
 	     avalue[i] = pgr;
              ng++;
              pgr++;
           } else {
              avalue[i] = pst;
+             pst++;
+          }
+	  break;
+	
+	case FFI_TYPE_STRUCT:
+	  /* Structs are passed by reference. The address will appear in a 
+	     gpr if it is one of the first 8 arguments.  */
+          if (ng < 8) {
+	     avalue[i] = (void *) *pgr;
+             ng++;
+             pgr++;
+          } else {
+             avalue[i] = (void *) *pst;
              pst++;
           }
 	  break;
