@@ -1158,7 +1158,7 @@ mask_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  unsigned HOST_WIDE_INT c, lsb;
+  HOST_WIDE_INT c, lsb;
 
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -1202,7 +1202,7 @@ mask64_operand (op, mode)
 {
   if (GET_CODE (op) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT c, lsb;
+      HOST_WIDE_INT c, lsb;
 
       /* We don't change the number of transitions by inverting,
 	 so make sure we start with the LS bit zero.  */
@@ -1221,7 +1221,7 @@ mask64_operand (op, mode)
   else if (GET_CODE (op) == CONST_DOUBLE
 	   && (mode == VOIDmode || mode == DImode))
     {
-      unsigned HOST_WIDE_INT low, high, lsb;
+      HOST_WIDE_INT low, high, lsb;
 
       if (HOST_BITS_PER_WIDE_INT < 64)
 	high = CONST_DOUBLE_HIGH (op);
@@ -3642,13 +3642,13 @@ includes_rldic_lshift_p (shiftop, andop)
 {
   if (GET_CODE (andop) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT c, lsb, shift_mask;
+      HOST_WIDE_INT c, lsb, shift_mask;
 
       c = INTVAL (andop);
-      if (c == 0 || c == ~(unsigned HOST_WIDE_INT) 0)
+      if (c == 0 || c == ~0)
 	return 0;
 
-      shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask = ~0;
       shift_mask <<= INTVAL (shiftop);
 
       /* Find the least signifigant one bit.  */
@@ -3671,22 +3671,20 @@ includes_rldic_lshift_p (shiftop, andop)
   else if (GET_CODE (andop) == CONST_DOUBLE
 	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
     {
-      unsigned HOST_WIDE_INT low, high, lsb;
-      unsigned HOST_WIDE_INT shift_mask_low, shift_mask_high;
+      HOST_WIDE_INT low, high, lsb;
+      HOST_WIDE_INT shift_mask_low, shift_mask_high;
 
       low = CONST_DOUBLE_LOW (andop);
       if (HOST_BITS_PER_WIDE_INT < 64)
 	high = CONST_DOUBLE_HIGH (andop);
 
       if ((low == 0 && (HOST_BITS_PER_WIDE_INT >= 64 || high == 0))
-	  || (low == ~(unsigned HOST_WIDE_INT) 0
-	      && (HOST_BITS_PER_WIDE_INT >= 64
-		  || high == ~(unsigned HOST_WIDE_INT) 0)))
+	  || (low == ~0 && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0)))
 	return 0;
 
       if (HOST_BITS_PER_WIDE_INT < 64 && low == 0)
 	{
-	  shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
+	  shift_mask_high = ~0;
 	  if (INTVAL (shiftop) > 32)
 	    shift_mask_high <<= INTVAL (shiftop) - 32;
 
@@ -3702,7 +3700,7 @@ includes_rldic_lshift_p (shiftop, andop)
 	  return high == -lsb;
 	}
 
-      shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask_low = ~0;
       shift_mask_low <<= INTVAL (shiftop);
 
       lsb = low & -low;
@@ -3739,10 +3737,9 @@ includes_rldicr_lshift_p (shiftop, andop)
 {
   if (GET_CODE (andop) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT c, lsb;
-      unsigned HOST_WIDE_INT shift_mask;
+      HOST_WIDE_INT c, lsb, shift_mask;
 
-      shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask = ~0;
       shift_mask <<= INTVAL (shiftop);
       c = INTVAL (andop);
 
@@ -3760,19 +3757,19 @@ includes_rldicr_lshift_p (shiftop, andop)
   else if (GET_CODE (andop) == CONST_DOUBLE
 	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
     {
-      unsigned HOST_WIDE_INT low, lsb, shift_mask_low;
+      HOST_WIDE_INT low, lsb, shift_mask_low;
 
       low = CONST_DOUBLE_LOW (andop);
 
       if (HOST_BITS_PER_WIDE_INT < 64)
 	{
-	  unsigned HOST_WIDE_INT high, shift_mask_high;
+	  HOST_WIDE_INT high, shift_mask_high;
 
 	  high = CONST_DOUBLE_HIGH (andop);
 
 	  if (low == 0)
 	    {
-	      shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
+	      shift_mask_high = ~0;
 	      if (INTVAL (shiftop) > 32)
 		shift_mask_high <<= INTVAL (shiftop) - 32;
 
@@ -3787,7 +3784,7 @@ includes_rldicr_lshift_p (shiftop, andop)
 	    return 0;
 	}
 
-      shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask_low = ~0;
       shift_mask_low <<= INTVAL (shiftop);
 
       lsb = low & -low;
