@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2000-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,11 +69,16 @@ package body System.Task_Primitives.Operations.DEC is
    -- Local Subprograms --
    -----------------------
 
+   pragma Warnings (Off);
+   --  Task_Id is 64 bits wide (but only 32 bits significant) on Integrity/VMS
+
    function To_Unsigned_Longword is new
      Unchecked_Conversion (Task_Id, Unsigned_Longword);
 
    function To_Task_Id is new
      Unchecked_Conversion (Unsigned_Longword, Task_Id);
+
+   pragma Warnings (On);
 
    function To_FAB_RAB is new
      Unchecked_Conversion (Address, FAB_RAB_Access_Type);
