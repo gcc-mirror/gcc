@@ -1,3 +1,26 @@
+2000-04-24  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.c: replace HSPACE_BEFORE with PREV_WHITESPACE.
+	* cpphash.h (_cpp_check_directive): new.
+	* cpplex.c (handle_newline, cpp_free_token_list,
+	init_trigraph_map, trigraph_ok, trigraph_replace,
+	backslash_start, skip_block_comment, skip_line_comment,
+	skip_whitespace, parse_name, parse_number, parse_string,
+	copy_comment, _cpp_lex_line, spell_char, spell_string,
+	spell_comment, spell_name, spell_other, _cpp_lex_file,
+	_cpp_output_list): new.
+	(expand_name_space): take length argument.
+	(init_token_list): add comment list initialisation.
+	(cpp_scan_line): use auto_expand_name_space.  PREV_WHITESPACE
+	instead of HSPACE_BEFORE.
+
+	* cpplib.c (_cpp_check_directive): new
+	* cpplib.h (cpp_name, PREV_WHITESPACE, PREV_COMMENT,
+	DIGRAPH, UNSIGNED_INT, TOK_NAME): new.
+	(HSPACE_BEFORE): delete.
+	(TTYPE_TABLE): rearrange.
+	(struct cpp_toklist): update.	
+
 2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (gcc_AC_HEADER_STRING, gcc_AC_FUNC_PRINTF_PTR,
