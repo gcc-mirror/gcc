@@ -116,17 +116,17 @@ static void check_bitfield_decl PARAMS ((tree));
 static void check_field_decl PARAMS ((tree, tree, int *, int *, int *, int *));
 static void check_field_decls PARAMS ((tree, tree *, int *, int *, int *, 
 				     int *));
-static int avoid_overlap PARAMS ((tree, tree, int *));
-static tree build_base_field PARAMS ((tree, tree, int *, int *, unsigned int *));
-static tree build_base_fields PARAMS ((tree, int *));
-static tree build_vbase_pointer_fields PARAMS ((tree, int *));
+static void build_base_field PARAMS ((record_layout_info, tree, int *,
+				      unsigned int *, varray_type *));
+static varray_type build_base_fields PARAMS ((record_layout_info, int *));
+static tree build_vbase_pointer_fields PARAMS ((record_layout_info, int *));
 static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, tree,
 					       int *));
 static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
 static void check_bases_and_members PARAMS ((tree, int *));
-static void create_vtable_ptr PARAMS ((tree, int *, int *, tree *, tree *));
+static tree create_vtable_ptr PARAMS ((tree, int *, int *, tree *, tree *));
 static void layout_class_type PARAMS ((tree, int *, int *, tree *, tree *));
 static void fixup_pending_inline PARAMS ((struct pending_inline *));
 static void fixup_inline_methods PARAMS ((tree));
@@ -135,8 +135,6 @@ static tree dfs_propagate_binfo_offsets PARAMS ((tree, void *));
 static void propagate_binfo_offsets PARAMS ((tree, tree));
 static void layout_basetypes PARAMS ((tree));
 static void layout_virtual_bases PARAMS ((tree));
-static void remove_base_field PARAMS ((tree, tree, tree *));
-static void remove_base_fields PARAMS ((tree));
 static tree dfs_set_offset_for_shared_vbases PARAMS ((tree, void *));
 static tree dfs_set_offset_for_unshared_vbases PARAMS ((tree, void *));
 static tree dfs_build_vbase_offset_vtbl_entries PARAMS ((tree, void *));
@@ -155,6 +153,9 @@ static int make_new_vtable PARAMS ((tree, tree));
 extern void dump_class_hierarchy PARAMS ((tree, int));
 static tree build_vtable PARAMS ((tree, tree, tree));
 static void initialize_vtable PARAMS ((tree, tree));
+static void layout_nonempty_base_or_field PARAMS ((record_layout_info,
+						   tree, tree,
+						   varray_type));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -175,12 +176,13 @@ int n_inner_fields_searched = 0;
    FIELD_DECLS.  */
 
 static tree
-build_vbase_pointer_fields (rec, empty_p)
-     tree rec;
+build_vbase_pointer_fields (rli, empty_p)
+     record_layout_info rli;
      int *empty_p;
 {
   /* Chain to hold all the new FIELD_DECLs which point at virtual
      base classes.  */
+  tree rec = rli->t;
   tree vbase_decls = NULL_TREE;
   tree binfos = TYPE_BINFO_BASETYPES (rec);
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
@@ -235,6 +237,7 @@ build_vbase_pointer_fields (rec, empty_p)
 					    empty_p);
 	  BINFO_VPTR_FIELD (base_binfo) = decl;
 	  TREE_CHAIN (decl) = vbase_decls;
+	  layout_field (rli, decl);
 	  vbase_decls = decl;
 	  *empty_p = 0;
 
@@ -4091,46 +4094,155 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   return field;
 }
 
-/* If the empty base field in DECL overlaps with a base of the same type in
-   NEWDECL, which is either another base field or the first data field of
-   the class, pad the base just before NEWDECL and return 1.  Otherwise,
-   return 0.  */
+/* Return the BINFO_OFFSET for BINFO as a native integer, not an
+   INTEGER_CST.  */
 
-static int
-avoid_overlap (decl, newdecl, empty_p)
-     tree decl, newdecl;
-     int *empty_p;
+static unsigned HOST_WIDE_INT
+get_binfo_offset_as_int (binfo)
+     tree binfo;
 {
-  tree field;
+  tree offset;
 
-  if (newdecl == NULL_TREE
-      || ! types_overlap_p (TREE_TYPE (decl), TREE_TYPE (newdecl)))
-    return 0;
+  offset = BINFO_OFFSET (binfo);
+  my_friendly_assert (TREE_CODE (offset) == INTEGER_CST, 20000313);
+  my_friendly_assert (TREE_INT_CST_HIGH (offset) == 0, 20000313);
 
-  for (field = decl; TREE_CHAIN (field) && TREE_CHAIN (field) != newdecl;
-       field = TREE_CHAIN (field))
-    ;
-
-  DECL_SIZE (field) = bitsize_int (1);
-  DECL_SIZE_UNIT (field) = 0;
-  /* The containing class cannot be empty; this field takes up space.  */
-  *empty_p = 0;
-
-  return 1;
+  return (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (offset);
 }
 
-/* Build a FIELD_DECL for the base given by BINFO in T.  If the new
-   object is non-empty, clear *EMPTY_P.  Otherwise, set *SAW_EMPTY_P.
-   *BASE_ALIGN is a running maximum of the alignments of any base
-   class.  */
+/* Record the type of BINFO in the slot in DATA (which is really a
+   `varray_type *') corresponding to the BINFO_OFFSET.  */
 
 static tree
-build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
-     tree t;
+dfs_record_base_offsets (binfo, data)
+     tree binfo;
+     void *data;
+{
+  varray_type *v;
+  unsigned HOST_WIDE_INT offset = get_binfo_offset_as_int (binfo);
+
+  v = (varray_type *) data;
+  while (VARRAY_SIZE (*v) <= offset)
+    VARRAY_GROW (*v, 2 * VARRAY_SIZE (*v));
+  VARRAY_TREE (*v, offset) = tree_cons (NULL_TREE,
+					BINFO_TYPE (binfo),
+					VARRAY_TREE (*v, offset));
+
+  return NULL_TREE;
+}
+
+/* Returns non-NULL if there is already an entry in DATA (which is
+   really a `varray_type') indicating that an object with the same
+   type of BINFO is already at the BINFO_OFFSET for BINFO.  */
+
+static tree
+dfs_search_base_offsets (binfo, data)
+     tree binfo;
+     void *data;
+{
+  if (is_empty_class (BINFO_TYPE (binfo)))
+    {
+      varray_type v = (varray_type) data;
+      unsigned HOST_WIDE_INT offset;
+      tree t;
+
+      /* Find the offset for this BINFO.  */
+      offset = get_binfo_offset_as_int (binfo);
+      /* If we haven't yet encountered any objects at offsets that
+	 big, then there's no conflict.  */
+      if (VARRAY_SIZE (v) <= offset)
+	return NULL_TREE;
+      /* Otherwise, go through the objects already allocated at this
+	 offset.  */
+      for (t = VARRAY_TREE (v, offset); t; t = TREE_CHAIN (t))
+	if (same_type_p (TREE_VALUE (t), BINFO_TYPE (binfo)))
+	  return binfo;
+    }
+
+  return NULL_TREE;
+}
+
+/* DECL is a FIELD_DECL corresponding either to a base subobject of a
+   non-static data member of the type indicated by RLI.  BINFO is the
+   binfo corresponding to the base subobject, or, if this is a
+   non-static data-member, a dummy BINFO for the type of the data
+   member.  V maps offsets to types already located at those offsets.
+   This function determines the position of the DECL.  */
+
+static void
+layout_nonempty_base_or_field (rli, decl, binfo, v)
+     record_layout_info rli;
+     tree decl;
+     tree binfo;
+     varray_type v;
+{
+  /* Try to place the field.  It may take more than one try if we have
+     a hard time placing the field without putting two objects of the
+     same type at the same address.  */
+  while (1)
+    {
+      tree offset;
+
+      /* Layout this field.  */
+      layout_field (rli, decl);
+      
+      /* Now that we know where it wil be placed, update its
+	 BINFO_OFFSET.  */
+      offset = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (decl)),
+			       BITS_PER_UNIT));
+      propagate_binfo_offsets (binfo, offset);
+ 
+      /* We have to check to see whether or not there is already
+	 something of the same type at the offset we're about to use.
+	 For example:
+	 
+	 struct S {};
+	 struct T : public S { int i; };
+	 struct U : public S, public T {};
+	 
+	 Here, we put S at offset zero in U.  Then, we can't put T at
+	 offset zero -- its S component would be at the same address
+	 as the S we already allocated.  So, we have to skip ahead.
+	 Since all data members, including those whose type is an
+	 empty class, have non-zero size, any overlap can happen only
+	 with a direct or indirect base-class -- it can't happen with
+	 a data member.  */
+      if (flag_new_abi && dfs_walk (binfo,
+				    dfs_search_base_offsets,
+				    dfs_skip_vbases,
+				    v))
+	{
+	  /* Undo the propogate_binfo_offsets call.  */
+	  offset = convert (sizetype,
+			    size_diffop (size_zero_node, offset));
+	  propagate_binfo_offsets (binfo, offset);
+
+	  /* Strip off the size allocated to this field.  That puts us
+	     at the first place we could have put the field with
+	     proper alignment.  */
+	  rli->const_size -= TREE_INT_CST_LOW (DECL_SIZE (decl));
+	  /* Bump up by th alignment required for the type, without
+	     virtual base classes.  */
+	  rli->const_size += CLASSTYPE_ALIGN (BINFO_TYPE (binfo));
+	}
+      else
+	/* There was no conflict.  We're done laying out this field.  */
+	break;
+    }
+}
+
+/* Build a FIELD_DECL for the base given by BINFO in the class
+   *indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
+   *BASE_ALIGN is a running maximum of the alignments of any base
+   *class.  */
+
+static void
+build_base_field (rli, binfo, empty_p, base_align, v)
+     record_layout_info rli;
      tree binfo;
      int *empty_p;
-     int *saw_empty_p;
      unsigned int *base_align;
+     varray_type *v;
 {
   tree basetype = BINFO_TYPE (binfo);
   tree decl;
@@ -4138,25 +4250,15 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
   if (TYPE_SIZE (basetype) == 0)
     /* This error is now reported in xref_tag, thus giving better
        location information.  */
-    return NULL_TREE;
+    return;
   
   decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_FIELD_CONTEXT (decl) = t;
+  DECL_FIELD_CONTEXT (decl) = rli->t;
   DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
   DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
   
-  if (flag_new_abi && integer_zerop (DECL_SIZE (decl)))
-    {
-      *saw_empty_p = 1;
-      return decl;
-    }
-
-  /* The containing class is non-empty because it has a non-empty base
-     class.  */
-  *empty_p = 0;
-      
   if (! flag_new_abi)
     {
       /* Brain damage for backwards compatibility.  For no good
@@ -4174,39 +4276,84 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
 			 (int) *base_align / BITS_PER_UNIT));
     }
 
-  return decl;
+  if (!integer_zerop (DECL_SIZE (decl)))
+    {
+      /* The containing class is non-empty because it has a non-empty
+	 base class.  */
+      *empty_p = 0;
+
+      /* Try to place the field.  It may take more than one try if we
+	 have a hard time placing the field without putting two
+	 objects of the same type at the same address.  */
+      layout_nonempty_base_or_field (rli, decl, binfo, *v);
+    }
+  else
+    {
+      /* This code assumes that zero-sized classes have one-byte
+	 alignment.  There might someday be a system where that's not
+	 true.  */
+      my_friendly_assert (DECL_ALIGN (basetype) == BITS_PER_UNIT, 
+			  20000314);
+
+      /* This is an empty base class.  We first try to put it at
+	 offset zero.  */
+      if (dfs_walk (binfo, dfs_search_base_offsets, dfs_skip_vbases, *v))
+	{
+	  /* That didn't work.  Now, we move forward from the next
+	     available spot in the class.  */
+	  propagate_binfo_offsets (binfo, size_int (rli->const_size));
+	  while (1) 
+	    {
+	      if (!dfs_walk (binfo, dfs_search_base_offsets, 
+			     dfs_skip_vbases, *v))
+		/* We finally found a spot where there's no overlap.  */
+		break;
+
+	      /* There's overlap here, too.  Bump along to the next
+		 spot.  */
+	      propagate_binfo_offsets (binfo, size_one_node);
+	    }
+	}
+    }
+
+  /* Check for inaccessible base classes.  If the same base class
+     appears more than once in the hierarchy, but isn't virtual, then
+     it's ambiguous.  */
+  if (get_base_distance (basetype, rli->t, 0, NULL) == -2)
+    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+		basetype, rli->t);
+  
+  /* Record the offsets of BINFO and its base subobjects.  */
+  dfs_walk (binfo,
+	    dfs_record_base_offsets,
+	    dfs_skip_vbases,
+	    v);
 }
 
-/* Returns a list of fields to stand in for the base class subobjects
-   of REC.  These fields are later removed by layout_basetypes.  */
+/* Layout all of the non-virtual base classes.  Returns a map from
+   offsets to types present at those offsets.  */
 
-static tree
-build_base_fields (rec, empty_p)
-     tree rec;
+static varray_type
+build_base_fields (rli, empty_p)
+     record_layout_info rli;
      int *empty_p;
 {
   /* Chain to hold all the new FIELD_DECLs which stand in for base class
      subobjects.  */
-  tree base_decls = NULL_TREE;
+  tree rec = rli->t;
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
-  tree decl, nextdecl;
-  int i, saw_empty = 0;
+  int i;
+  varray_type v;
   unsigned int base_align = 0;
+
+  /* Create the table mapping offsets to empty base classes.  */
+  VARRAY_TREE_INIT (v, 32, "v");
 
   /* Under the new ABI, the primary base class is always allocated
      first.  */
   if (flag_new_abi && CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
-    {
-      tree primary_base;
-
-      primary_base = CLASSTYPE_PRIMARY_BINFO (rec);
-      base_decls = chainon (build_base_field (rec, 
-					      primary_base,
-					      empty_p,
-					      &saw_empty,
-					      &base_align),
-			    base_decls);
-    }
+    build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (rec), 
+		      empty_p, &base_align, &v);
 
   /* Now allocate the rest of the bases.  */
   for (i = 0; i < n_baseclasses; ++i)
@@ -4227,44 +4374,10 @@ build_base_fields (rec, empty_p)
 	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
 	continue;
 
-      base_decls = chainon (build_base_field (rec, base_binfo,
-					      empty_p,
-					      &saw_empty,
-					      &base_align),
-			    base_decls);
+      build_base_field (rli, base_binfo, empty_p, &base_align, &v);
     }
 
-  /* Reverse the list of fields so we allocate the bases in the proper
-     order.  */
-  base_decls = nreverse (base_decls);
-
-  /* In the presence of empty base classes, we run the risk of allocating
-     two objects of the same class on top of one another.  Avoid that.  */
-  if (flag_new_abi && saw_empty)
-    for (decl = base_decls; decl; decl = TREE_CHAIN (decl))
-      {
-	if (integer_zerop (DECL_SIZE (decl)))
-	  {
-	    /* First step through the following bases until we find
-	       an overlap or a non-empty base.  */
-	    for (nextdecl = TREE_CHAIN (decl); nextdecl;
-		 nextdecl = TREE_CHAIN (nextdecl))
-	      if (avoid_overlap (decl, nextdecl, empty_p)
-		  || ! integer_zerop (DECL_SIZE (nextdecl)))
-		goto nextbase;
-
-	    /* If we're still looking, also check against the first
-	       field.  */
-	    for (nextdecl = TYPE_FIELDS (rec);
-		 nextdecl && TREE_CODE (nextdecl) != FIELD_DECL;
-		 nextdecl = TREE_CHAIN (nextdecl))
-	      /* keep looking */;
-	    avoid_overlap (decl, nextdecl, empty_p);
-	  }
-      nextbase:;
-      }
-
-  return base_decls;
+  return v;
 }
 
 /* Go through the TYPE_METHODS of T issuing any appropriate
@@ -4438,10 +4551,12 @@ check_bases_and_members (t, empty_p)
 }
 
 /* If T needs a pointer to its virtual function table, set TYPE_VFIELD
-   accordingly, and, if necessary, add the TYPE_VFIELD to the
-   TYPE_FIELDS list.  */
+   accordingly.  If a new vfield was created (because T doesn't have a
+   primary base class), then the newly created field is returned.  It
+   is not added to the TYPE_FIELDS list; it is the callers
+   responsibility to do that.  */
 
-static void
+static tree
 create_vtable_ptr (t, empty_p, has_virtual_p, 
 		   new_virtuals_p, overridden_virtuals_p)
      tree t;
@@ -4496,29 +4611,17 @@ create_vtable_ptr (t, empty_p, has_virtual_p,
 				     t,
 				     empty_p);
 
-      /* Add the new field to the list of fields in this class.  */
-      if (!flag_new_abi)
-	/* In the old ABI, the vtable pointer goes at the end of the
-	   class.  */
-	TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), TYPE_VFIELD (t));
-      else
-	{
-	  /* But in the new ABI, the vtable pointer is the first thing
-	     in the class.  */
-	  TYPE_FIELDS (t) = chainon (TYPE_VFIELD (t), TYPE_FIELDS (t));
-	  /* If there were any baseclasses, they can't possibly be at
-	     offset zero any more, because that's where the vtable
-	     pointer is.  So, converting to a base class is going to
-	     take work.  */
-	  if (CLASSTYPE_N_BASECLASSES (t))
-	    TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t) = 1;
-	}
+      if (flag_new_abi && CLASSTYPE_N_BASECLASSES (t))
+	/* If there were any baseclasses, they can't possibly be at
+	   offset zero any more, because that's where the vtable
+	   pointer is.  So, converting to a base class is going to
+	   take work.  */
+	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t) = 1;
 
-      /* We can't yet add this new field to the list of all virtual
-	 function table pointers in this class.  The
-	 modify_all_vtables function depends on this not being done.
-	 So, it is done later, in finish_struct_1.  */
+      return TYPE_VFIELD (t);
     }
+
+  return NULL_TREE;
 }
 
 /* Fixup the inline function given by INFO now that the class is
@@ -4611,85 +4714,6 @@ propagate_binfo_offsets (binfo, offset)
 	    dfs_unmark,
 	    dfs_skip_nonprimary_vbases_markedp,
 	    NULL);
-}
-
-/* Remove *FIELD (which corresponds to the base given by BINFO) from
-   the field list for T.  */
-
-static void
-remove_base_field (t, binfo, field)
-     tree t;
-     tree binfo;
-     tree *field;
-{
-  tree basetype = BINFO_TYPE (binfo);
-  tree offset;
-
-  my_friendly_assert (TREE_TYPE (*field) == basetype, 23897);
-
-  if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
-    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
-		basetype, t);
-
-  offset
-    = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
-		      BITS_PER_UNIT));
-  propagate_binfo_offsets (binfo, offset);
-
-  /* Remove this field.  */
-  *field = TREE_CHAIN (*field);
-}
-
-/* Remove the FIELD_DECLs created for T's base classes in
-   build_base_fields.  Simultaneously, update BINFO_OFFSET for all the
-   bases, except for non-primary virtual baseclasses.  */
-
-static void
-remove_base_fields (t)
-     tree t;
-{
-  int i;
-  tree *field;
-
-  /* Now propagate offset information throughout the lattice.
-     Simultaneously, remove the temporary FIELD_DECLS we created in
-     build_base_fields to refer to base types.  */
-  field = &TYPE_FIELDS (t);
-  if (TYPE_VFIELD (t) == *field)
-    {
-      /* If this class did not have a primary base, we create a
-	 virtual function table pointer.  It will be the first thing
-	 in the class, under the new ABI.  Skip it; the base fields
-	 will follow it.  */
-      my_friendly_assert (flag_new_abi 
-			  && !CLASSTYPE_HAS_PRIMARY_BASE_P (t),
-			  19991218);
-      field = &TREE_CHAIN (*field);
-    }
-
-  /* Under the new ABI, the primary base is always allocated first.  */
-  if (flag_new_abi && CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-    remove_base_field (t, CLASSTYPE_PRIMARY_BINFO (t), field);
-
-  /* Now remove the rest of the bases.  */
-  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
-    {
-      tree binfo;
-
-      /* Under the new ABI, we've already removed the primary base
-	 above.  */
-      if (flag_new_abi && i == CLASSTYPE_VFIELD_PARENT (t))
-	continue;
-
-      binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
-
-      /* We treat a primary virtual base class just like an ordinary base
-	 class.  But, non-primary virtual bases are laid out later.  */
-      if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
-	continue;
-
-      remove_base_field (t, binfo, field);
-    }
 }
 
 /* Called via dfs_walk from layout_virtual bases.  */
@@ -4819,16 +4843,14 @@ layout_basetypes (rec)
 {
   tree vbase_types;
 
+  if (CLASSTYPE_N_BASECLASSES (rec) == 0)
+    return;
+
 #ifdef STRUCTURE_SIZE_BOUNDARY
   /* Packed structures don't need to have minimum size.  */
   if (! TYPE_PACKED (rec))
     TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), STRUCTURE_SIZE_BOUNDARY);
 #endif
-
-  /* Remove the FIELD_DECLs we created for baseclasses in
-     build_base_fields.  Simultaneously, update the BINFO_OFFSETs for
-     everything in the hierarcy except non-primary virtual bases.  */
-  remove_base_fields (rec);
 
   /* Allocate the virtual base classes.  */
   layout_virtual_bases (rec);
@@ -4861,64 +4883,117 @@ layout_class_type (t, empty_p, has_virtual_p,
      tree *new_virtuals_p;
      tree *overridden_virtuals_p;
 {
-  tree padding = NULL_TREE;
+  tree non_static_data_members;
+  tree field;
+  tree vptr;
+  record_layout_info rli;
+  varray_type v;
+  int i;
+
+  /* Keep track of the first non-static data member.  */
+  non_static_data_members = TYPE_FIELDS (t);
+
+  /* Initialize the layout information.  */
+  rli = new_record_layout_info (t);
 
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
   determine_primary_base (t, has_virtual_p);
 
+  /* Create a pointer to our virtual function table.  */
+  vptr = create_vtable_ptr (t, empty_p, has_virtual_p,
+			    new_virtuals_p, overridden_virtuals_p);
+
+  /* Under the new ABI, the vptr is always the first thing in the
+     class.  */
+  if (flag_new_abi && vptr)
+    {
+      TYPE_FIELDS (t) = chainon (vptr, TYPE_FIELDS (t));
+      layout_field (rli, vptr);
+    }
+
   /* Add pointers to all of our virtual base-classes.  */
-  TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, empty_p),
+  TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (rli, empty_p),
 			     TYPE_FIELDS (t));
   /* Build FIELD_DECLs for all of the non-virtual base-types.  */
-  TYPE_FIELDS (t) = chainon (build_base_fields (t, empty_p), 
-			     TYPE_FIELDS (t));
-
-  /* Create a pointer to our virtual function table.  */
-  create_vtable_ptr (t, empty_p, has_virtual_p,
-		     new_virtuals_p, overridden_virtuals_p);
+  v = build_base_fields (rli, empty_p);
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
      we have to save this before we start modifying
      TYPE_NONCOPIED_PARTS.  */
   fixup_inline_methods (t);
 
+  /* Layout the non-static data members.  */
+  for (field = non_static_data_members; 
+       field; 
+       field = TREE_CHAIN (field))
+    {
+      tree binfo;
+
+      /* We still pass things that aren't non-static data members to
+	 the back-end, in case it wants to do something with them.  */
+      if (TREE_CODE (field) != FIELD_DECL)
+	{
+	  layout_field (rli, field);
+	  continue;
+	}
+
+      /* Create a dummy BINFO corresponding to this field.  */
+      binfo = make_binfo (size_zero_node, TREE_TYPE (field),
+			  NULL_TREE, NULL_TREE);
+      unshare_base_binfos (binfo);
+      layout_nonempty_base_or_field (rli, field, binfo, v);
+    }
+
+  /* Clean up.  */
+  VARRAY_FREE (v);
+  
+  /* It might be the case that we grew the class to allocate a
+     zero-sized base class.  That won't be reflected in RLI, yet,
+     because we are willing to overlay multiple bases at the same
+     offset.  However, now we need to make sure that RLI is big enough
+     to reflect the entire class.  */
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+    {
+      tree base_binfo;
+      unsigned HOST_WIDE_INT offset;
+
+      base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+      offset = get_binfo_offset_as_int (base_binfo);
+      if (offset * BITS_PER_UNIT > rli->const_size)
+	rli->const_size = (offset + 1) * BITS_PER_UNIT;
+    }
+
   /* We make all structures have at least one element, so that they
-     have non-zero size.  The field that we add here is fake, in the
-     sense that, for example, we don't want people to be able to
-     initialize it later.  So, we add it just long enough to let the
-     back-end lay out the type, and then remove it.  In the new ABI,
-     the class may be empty even if it has basetypes.  Therefore, we
-     add the fake field at the end of the fields list; if there are
-     already FIELD_DECLs on the list, their offsets will not be
-     disturbed.  */
+     have non-zero size.  In the new ABI, the class may be empty even
+     if it has basetypes.  Therefore, we add the fake field after all
+     the other fields; if there are already FIELD_DECLs on the list,
+     their offsets will not be disturbed.  */
   if (*empty_p)
     {
+      tree padding;
+
       padding = build_lang_decl (FIELD_DECL, NULL_TREE, char_type_node);
-      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), padding);
+      layout_field (rli, padding);
       TYPE_NONCOPIED_PARTS (t) 
 	= tree_cons (NULL_TREE, padding, TYPE_NONCOPIED_PARTS (t));
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
 
+  /* Under the old ABI, the vptr comes at the very end of the 
+     class.   */
+  if (!flag_new_abi && vptr)
+    {
+      layout_field (rli, vptr);
+      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), vptr);
+    }
+  
   /* Let the back-end lay out the type. Note that at this point we
      have only included non-virtual base-classes; we will lay out the
      virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after
      this call are not necessarily correct; they are just the size and
      alignment when no virtual base clases are used.  */
-  layout_type (t);
-
-  /* If we added an extra field to make this class non-empty, remove
-     it now.  */
-  if (*empty_p)
-    {
-      tree *declp;
-
-      declp = &TYPE_FIELDS (t);
-      while (*declp != padding)
-	declp = &TREE_CHAIN (*declp);
-      *declp = TREE_CHAIN (*declp);
-    }
+  finish_record_layout (rli);
 
   /* Delete all zero-width bit-fields from the list of fields.  Now
      that the type is laid out they are no longer important.  */
@@ -4952,10 +5027,9 @@ layout_class_type (t, empty_p, has_virtual_p,
 
   /* Now fix up any virtual base class types that we left lying
      around.  We must get these done before we try to lay out the
-     virtual function table.  */
-  if (CLASSTYPE_N_BASECLASSES (t))
-    /* layout_basetypes will remove the base subobject fields.  */
-    layout_basetypes (t);
+     virtual function table.  As a side-effect, this will remove the
+     base subobject fields.  */
+  layout_basetypes (t);
 }
      
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
