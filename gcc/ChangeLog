@@ -1,5 +1,9 @@
 Thu Aug  3 01:05:32 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (find_auto_inc): Verify that we've got a REG before
+	peeking at its regno.  Fail, don't abort if we can't find
+	the increment of the desired register.
+
 	* pa.md (shadd height reduction patterns/splitters): Remove.
 
 2000-08-02  Jim Wilson  <wilson@cygnus.com>

@@ -5018,12 +5018,12 @@ find_auto_inc (pbi, x, insn)
   if (GET_CODE (y) != PLUS)
     return;
 
-  if (REGNO (XEXP (y, 0)) == REGNO (addr))
+  if (REG_P (XEXP (y, 0)) && REGNO (XEXP (y, 0)) == REGNO (addr))
     inc_val = XEXP (y, 1);
-  else if (REGNO (XEXP (y, 1)) == REGNO (addr))
+  else if (REG_P (XEXP (y, 1)) && REGNO (XEXP (y, 1)) == REGNO (addr))
     inc_val = XEXP (y, 0);
   else
-    abort ();
+    return;
 
   if (GET_CODE (inc_val) == CONST_INT)
     {
