@@ -1,5 +1,10 @@
 2001-12-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* expr.c (expand_expr): When checking promoted value, use
+	DECL_MODE (exp) and not mode.
+
+2001-12-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-typeck.c (output_init_element): Call digest_init
 	just once, not in each if branch and check its return value for
 	error_mark_node.

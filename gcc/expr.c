@@ -6452,7 +6452,7 @@ expand_expr (exp, target, tmode, modifier)
 	 but mark it so that we know that it was already extended.  */
 
       if (GET_CODE (DECL_RTL (exp)) == REG
-	  && GET_MODE (DECL_RTL (exp)) != mode)
+	  && GET_MODE (DECL_RTL (exp)) != DECL_MODE (exp))
 	{
 	  /* Get the signedness used for this variable.  Ensure we get the
 	     same mode we got when the variable was declared.  */
