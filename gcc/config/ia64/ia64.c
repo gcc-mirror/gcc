@@ -3206,11 +3206,16 @@ ia64_return_in_memory (valtype)
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
-  int byte_size;
+  HOST_WIDE_INT byte_size;
 
   mode = TYPE_MODE (valtype);
-  byte_size = ((mode == BLKmode)
-	       ? int_size_in_bytes (valtype) : GET_MODE_SIZE (mode));
+  byte_size = GET_MODE_SIZE (mode);
+  if (mode == BLKmode)
+    {
+      byte_size = int_size_in_bytes (valtype);
+      if (byte_size < 0)
+	return 1;
+    }
 
   /* Hfa's with up to 8 elements are returned in the FP argument registers.  */
 
@@ -3224,7 +3229,6 @@ ia64_return_in_memory (valtype)
       else
 	return 0;
     }
-
   else if (byte_size > UNITS_PER_WORD * MAX_INT_RETURN_SLOTS)
     return 1;
   else
