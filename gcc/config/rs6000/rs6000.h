@@ -1397,13 +1397,13 @@ enum reg_class
  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)			\
-  (((GET_CODE (X) == CONST_DOUBLE			\
-     && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
-    ? NO_REGS 						\
-    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT 	\
-       && (CLASS) == NON_SPECIAL_REGS)			\
-    ? GENERAL_REGS					\
-    : (CLASS)))
+  ((CONSTANT_P (X)					\
+    && reg_classes_intersect_p ((CLASS), FLOAT_REGS))	\
+   ? NO_REGS 						\
+   : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT 	\
+      && (CLASS) == NON_SPECIAL_REGS)			\
+   ? GENERAL_REGS					\
+   : (CLASS))
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
