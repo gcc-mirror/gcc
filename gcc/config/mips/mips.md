@@ -9350,10 +9350,11 @@ move\\t%0,%z4\\n\\
     {
       if (get_attr_length (insn) <= 8)
 	return \"%*b\\t%l0\";
-      else if (Pmode == DImode)
-	return \"%[dla\\t%@,%l0\;%*jr\\t%@%]\";
       else
-	return \"%[la\\t%@,%l0\;%*jr\\t%@%]\";
+	{
+	  output_asm_insn (mips_output_load_label (), operands);
+	  return \"%*jr\\t%@%]\";
+	}
     }
   else
     return \"%*j\\t%l0\";

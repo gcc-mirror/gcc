@@ -108,6 +108,7 @@ extern void		print_operand_address PARAMS ((FILE *, rtx));
 extern void		print_operand PARAMS ((FILE *, rtx, int));
 extern struct rtx_def *	embedded_pic_offset PARAMS ((rtx));
 extern int		build_mips16_call_stub PARAMS ((rtx, rtx, rtx, int));
+extern const char	*mips_output_load_label PARAMS ((void));
 extern const char       *mips_output_conditional_branch PARAMS ((rtx, rtx *,
 								 int, int, int,
 								 int));

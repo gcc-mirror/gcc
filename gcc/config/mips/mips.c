@@ -9932,6 +9932,35 @@ mips_adjust_insn_length (insn, length)
   return length;
 }
 
+
+/* Return an asm sequence to start a noat block and load the address
+   of a label into $1.  */
+
+const char *
+mips_output_load_label ()
+{
+  if (TARGET_EXPLICIT_RELOCS)
+    switch (mips_abi)
+      {
+      case ABI_N32:
+	return "%[lw\t%@,%%got_page(%0)(%+)\n\taddiu\t%@,%@,%%got_ofst(%0)";
+
+      case ABI_64:
+	return "%[ld\t%@,%%got_page(%0)(%+)\n\tdaddiu\t%@,%@,%%got_ofst(%0)";
+
+      default:
+	return "%[lw\t%@,%%got(%0)(%+)\n\taddiu\t%@,%@,%%lo(%0)";
+      }
+  else
+    {
+      if (Pmode == DImode)
+	return "%[dla\t%@,%0";
+      else
+	return "%[la\t%@,%0";
+    }
+}
+
+
 /* Output assembly instructions to peform a conditional branch.
 
    INSN is the branch instruction.  OPERANDS[0] is the condition.
@@ -10125,10 +10154,8 @@ mips_output_conditional_branch (insn,
 	  output_asm_insn ("j\t%0", &orig_target);
 	else
 	  {
-	    if (Pmode == DImode)
-	      output_asm_insn ("%[dla\t%@,%0\n\tjr\t%@%]", &orig_target);
-	    else
-	      output_asm_insn ("%[la\t%@,%0\n\tjr\t%@%]", &orig_target);
+	    output_asm_insn (mips_output_load_label (), &orig_target);
+	    output_asm_insn ("jr\t%@%]", 0);
 	  }
 
         if (length != 16 && length != 28 && mips_branch_likely)
