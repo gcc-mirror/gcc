@@ -6533,7 +6533,12 @@ cp_parser_declaration_seq_opt (parser)
      explicit-instantiation
      explicit-specialization
      linkage-specification
-     namespace-definition    */
+     namespace-definition    
+
+   GNU extension:
+
+   declaration:
+      __extension__ declaration */
 
 static void
 cp_parser_declaration (parser)
@@ -6541,6 +6546,18 @@ cp_parser_declaration (parser)
 {
   cp_token token1;
   cp_token token2;
+  int saved_pedantic;
+
+  /* Check for the `__extension__' keyword.  */
+  if (cp_parser_extension_opt (parser, &saved_pedantic))
+    {
+      /* Parse the qualified declaration.  */
+      cp_parser_declaration (parser);
+      /* Restore the PEDANTIC flag.  */
+      pedantic = saved_pedantic;
+
+      return;
+    }
 
   /* Try to figure out what kind of declaration is present.  */
   token1 = *cp_lexer_peek_token (parser->lexer);
