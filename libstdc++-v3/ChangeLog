@@ -1,3 +1,16 @@
+2003-06-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (close): Clean up a bit.
+
+	* include/bits/streambuf.tcc (sbumpc): Clean up a bit.
+
+	* include/std/std_fstream.h (_M_destroy_pback): _M_pback_cur_save
+	- the saved _M_in_cur, that is - cannot be null.
+	(sync): Constify a variable.
+
+	* include/std/std_streambuf.h: Tweak a comment.
+	(in_avail): Constify a variable.
+
 2003-06-10  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/17_intro/BUGS:  Update from 2.90.8 snapshot.

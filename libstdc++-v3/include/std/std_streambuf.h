@@ -181,7 +181,7 @@ namespace std
        *  @if maint
        *  setp (and _M_set_buffer(0) in basic_filebuf) set it equal to
        *  _M_out_beg, then at each put operation it may be moved
-       *  forward (toward _M_out_end) by _M_out_cur_move.
+       *  forward (toward _M_out_end) by _M_move_out_cur.
        *  @endif
       */      
       char_type*                _M_out_lim;    // End limit of used put area.
@@ -328,7 +328,7 @@ namespace std
       streamsize 
       in_avail() 
       { 
-	streamsize __ret = _M_in_end - _M_in_cur;
+	const streamsize __ret = _M_in_end - _M_in_cur;
 	return __ret ? __ret : this->showmanyc();
       }
 
