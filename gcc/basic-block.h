@@ -340,6 +340,7 @@ extern void update_bb_for_insn		PARAMS ((basic_block));
 extern void free_basic_block_vars	PARAMS ((int));
 
 extern void insert_insn_on_edge		PARAMS ((rtx, edge));
+bool safe_insert_insn_on_edge (rtx, edge);
 
 extern void commit_edge_insertions	PARAMS ((void));
 extern void commit_edge_insertions_watch_calls	PARAMS ((void));

@@ -1123,6 +1123,9 @@ do {									\
 	       && (TARGET_64BIT || !TARGET_PARTIAL_REG_STALL))	\
 	   || ((MODE2) == DImode && TARGET_64BIT))))
 
+/* It is possible to write patterns to move flags; but until someone
+   does it,  */
+#define AVOID_CCMODE_COPIES
 
 /* Specify the modes required to caller save a given hard regno.
    We do this on i386 to prevent flags from being saved at all.
