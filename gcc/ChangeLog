@@ -1,3 +1,8 @@
+2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * extend.texi: Document altivec functions.
+        Fix N-bit adjectives in X86 builtin documentation.
+
 2002-01-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload.c (reg_overlap_mentioned_for_reload_p): Handle PLUS and
