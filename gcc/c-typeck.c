@@ -4864,20 +4864,9 @@ pedwarn_init (format, local, ofwhat)
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
 
-   If TAIL is nonzero, it points to a variable holding a list of elements
-   of which INIT is the first.  We update the list stored there by
-   removing from the head all the elements that we use.
-   Normally this is only one; we use more than one element only if
-   TYPE is an aggregate and INIT is not a constructor.
-
    The arguments REQUIRE_CONSTANT and CONSTRUCTOR_CONSTANT request errors
    if non-constant initializers or elements are seen.  CONSTRUCTOR_CONSTANT
-   applies only to elements of constructors.
-
-   If OFWHAT is nonnull, it specifies what we are initializing, for error
-   messages.   Examples: variable name, variable.member, array[44].
-   If OFWHAT is null, the component name is stored on the spelling stack.
-   (That is true for all nested calls to digest_init.)  */
+   applies only to elements of constructors.  */
 
 static tree
 digest_init (type, init, require_constant, constructor_constant)
