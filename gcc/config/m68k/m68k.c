@@ -1508,7 +1508,17 @@ output_move_qimode (operands)
 		   gen_rtx (PLUS, VOIDmode, stack_pointer_rtx, const1_rtx));
       /* Just pushing a byte puts it in the high byte of the halfword.	*/
       /* We must put it in the low-order, high-numbered byte.  */
-      output_asm_insn ("move%.b %1,%-\n\tmove%.b %@,%2", xoperands);
+      if (!reg_mentioned_p (stack_pointer_rtx, operands[1]))
+	{
+	  xoperands[3] = stack_pointer_rtx;
+#ifndef NO_ADDSUB_Q
+	  output_asm_insn ("subq%.l %#2,%3\n\tmove%.b %1,%2", xoperands);
+#else
+	  output_asm_insn ("sub%.l %#2,%3\n\tmove%.b %1,%2", xoperands);
+#endif
+	}
+      else
+	output_asm_insn ("move%.b %1,%-\n\tmove%.b %@,%2", xoperands);
       return "";
     }
 
