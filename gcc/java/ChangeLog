@@ -1,3 +1,8 @@
+2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* typeck.c (find_method_in_interfaces): Move variable
+	definition up.
+
 2004-01-16  Andrew Haley  <aph@redhat.com>
 
 	PR java/13273:
