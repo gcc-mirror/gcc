@@ -2,6 +2,7 @@
    This trivial function is in the public domain.
    Ian Lance Taylor, Cygnus Support, December 1995.  */
 
+#include <sys/types.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -1,3 +1,7 @@
+Tue Nov  2 03:23:13 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* xstrdup (sys/types.h): Include this file.
+
 1999-10-28  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (SUBDIRS): New macro.
