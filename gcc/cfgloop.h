@@ -175,6 +175,9 @@ struct loop
   /* The number of LABEL_REFs on exit_labels for this loop and all
      loops nested inside it.  */
   int exit_count;
+
+  /* Upper bound on number of iterations of a loop.  */
+  struct nb_iter_bound *bounds;
 };
 
 /* Flags for state of loop structure.  */

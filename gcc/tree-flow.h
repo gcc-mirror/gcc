@@ -597,6 +597,50 @@ extern void propagate_tree_value (tree *, tree);
 extern void replace_exp (use_operand_p, tree);
 extern bool may_propagate_copy (tree, tree);
 
+/* Description of number of iterations of a loop.  All the expressions inside
+   the structure can be evaluated at the end of the loop's preheader
+   (and due to ssa form, also anywhere inside the body of the loop).  */
+
+struct tree_niter_desc
+{
+  tree assumptions;	/* The boolean expression.  If this expression evalutes
+			   to false, then the other fields in this structure
+			   should not be used; there is no guarantee that they
+			   will be correct.  */
+  tree may_be_zero;	/* The booleand expression.  If it evaluates to true,
+			   the loop will exit in the first iteration (i.e.
+			   its latch will not be executed), even if the niter
+			   field says otherwise.  */
+  tree niter;		/* The expression giving the number of iterations of
+			   a loop (provided that assumptions == true and
+			   may_be_zero == false), more precisely the number
+			   of executions of the latch of the loop.  */
+  tree additional_info;	/* The boolean expression.  Sometimes we use additional
+			   knowledge to simplify the other expressions
+			   contained in this structure (for example the
+			   knowledge about value ranges of operands on entry to
+			   the loop).  If this is a case, conjunction of such
+			   condition is stored in this field, so that we do not
+			   lose the information: for example if may_be_zero
+			   is (n <= 0) and niter is (unsigned) n, we know
+			   that the number of iterations is at most
+			   MAX_SIGNED_INT.  However if the (n <= 0) assumption
+			   is eliminated (by looking at the guard on entry of
+			   the loop), then the information would be lost.  */
+};
+
+/* In tree-ssa-loop*.c  */
+
+void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
+				struct tree_niter_desc *);
+bool number_of_iterations_exit (struct loop *, edge,
+				struct tree_niter_desc *niter);
+tree loop_niter_by_eval (struct loop *, edge);
+tree find_loop_niter_by_eval (struct loop *, edge *);
+void estimate_numbers_of_iterations (struct loops *);
+tree can_count_iv_in_wider_type (struct loop *, tree, tree, tree, tree);
+void free_numbers_of_iterations_estimates (struct loops *);
+
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
 static inline bool is_call_clobbered (tree);
