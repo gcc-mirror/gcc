@@ -2649,20 +2649,14 @@ import_export_class (ctype)
     }
 }
     
-int
-finish_prevtable_vardecl (prev, vars)
+static int
+finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
   import_export_class (ctype);
   import_export_vtable (vars, ctype, 1);
-  return 1;
-}
-    
-static int
-finish_vtable_vardecl (prev, vars)
-     tree prev, vars;
-{
+
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars)
       && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
@@ -3216,11 +3210,6 @@ finish_file ()
   SET_DECL_ARTIFICIAL (vars);
   pushdecl (vars);
 #endif
-
-  /* Walk to mark the inline functions we need, then output them so
-     that we can pick up any other tdecls that those routines need.  */
-  walk_vtables ((void (*) PROTO ((tree, tree))) 0,
-		finish_prevtable_vardecl);
 
   for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
     if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
