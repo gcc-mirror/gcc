@@ -983,7 +983,14 @@ enum reg_class
    The value is a register class; perhaps CLASS, or perhaps another, smaller
    class.  */
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
+/* Don't allow volatile mem reloads into floating point registers.  This
+   is defined to force reload to choose the r/m case instead of the f/f case
+   when reloading (set (reg fX) (mem/v)).  */
+
+#define PREFERRED_RELOAD_CLASS(X, CLASS) \
+  ((CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X))	\
+   ? NO_REGS								\
+   : CLASS)
 
 /* You should define this macro to indicate to the reload phase that it may
    need to allocate at least one register for a reload in addition to the
