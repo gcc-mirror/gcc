@@ -1,3 +1,13 @@
+2003-07-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (if_then_else_cond): Simplify the comparison of
+	rtx against -1, 0, and 1.
+	* loop.c (check_dbra_loop): Likewise.
+	* optabs.c (emit_conditional_move): Likewise.
+	(emit_conditional_add): Likewise.
+	* config/i386/i386.md (*movsi_or): Likewise.
+	(*movdi_or_rex6): Likewise.
+
 Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Remove redundant if.
