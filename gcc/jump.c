@@ -1724,7 +1724,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
      Give it priority over everything else to allow machine description to do
      tricks.  */
 #ifdef REVERSIBLE_CC_MODE
-  if (GET_MODE_CLASS (mode) == MODE_CC)
+  if (GET_MODE_CLASS (mode) == MODE_CC
       && REVERSIBLE_CC_MODE (mode))
     {
 #ifdef REVERSE_CONDITION
