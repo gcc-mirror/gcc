@@ -1108,10 +1108,12 @@ scan_loop (loop, flags)
   /* Now consider each movable insn to decide whether it is worth moving.
      Store 0 in regs->array[I].set_in_loop for each reg I that is moved.
 
-     Generally this increases code size, so do not move moveables when
-     optimizing for code size.  */
+     For machines with few registers this increases code size, so do not
+     move moveables when optimizing for code size on such machines.  
+     (The 18 below is the value for i386.)  */
 
-  if (! optimize_size)
+  if (!optimize_size 
+      || (reg_class_size[GENERAL_REGS] > 18 && !loop_info->has_call))
     {
       move_movables (loop, movables, threshold, insn_count);
 
