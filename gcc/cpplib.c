@@ -2027,12 +2027,13 @@ cpp_get_token (pfile)
   if (c == EOF)
     {
     handle_eof:
-      if (CPP_BUFFER (pfile)->seen_eof)
+      if (CPP_BUFFER (pfile)->manual_pop)
+	/* If we've been reading from redirected input, the
+	   frontend will pop the buffer.  */
+	return CPP_EOF;
+      else if (CPP_BUFFER (pfile)->seen_eof)
 	{
-	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == CPP_NULL_BUFFER (pfile)
-	      /* If we've been reading from redirected input, the
-		 frontend will pop the buffer.  */
-	      || CPP_BUFFER (pfile)->manual_pop)
+	  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)) == CPP_NULL_BUFFER (pfile))
 	    return CPP_EOF;
 
 	  cpp_pop_buffer (pfile);
