@@ -1,3 +1,10 @@
+2000-12-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+       * gcc.c (cpp_options): Update to use '&'.
+       (struct switchstr): Change type of validated to save space.
+       New member 'ordering'.
+       (handle_braces, validate_switches): Update to handle '&'.       
+
 2000-12-13  Laurynas Biveinis  <lauras@softhome.net>
 
         * fixinc/inclhack.def: skip stdio_va_list fix if __DJ_va_list
