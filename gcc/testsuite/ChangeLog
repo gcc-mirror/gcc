@@ -1,4 +1,12 @@
+2001-09-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/profopt.exp: New, to support profile-directed optimizations.
+	* gcc.misc-tests/bprob.exp: New, to support branch profiling in C.
+	* gcc.misc-tests/bprob-1.c: New test.
+	* gcc.misc-tests/bprob-2.c: New test.
+
 2001-09-07  Janis Johnson  <janis187@us.ibm.com>
+
 	* gcc.misc-tests/gcov.exp: Add support for a .x file to control
 	XFAIL and which kinds of gcov output to verify.
 	* gcc.misc-tests/gcov-4b.x: New file.
