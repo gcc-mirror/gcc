@@ -2775,7 +2775,7 @@ add_pending_template (d)
     return;
 
   *template_tail = perm_tree_cons
-    (current_function_decl, d, NULL_TREE);
+    (build_srcloc_here (), d, NULL_TREE);
   template_tail = &TREE_CHAIN (*template_tail);
   TI_PENDING_TEMPLATE_FLAG (ti) = 1;
 }
@@ -3346,8 +3346,8 @@ print_template_context (err)
       if (current_function_decl == p->decl)
 	/* Avoid redundancy with the the "In function" line.  */;
       else if (current_function_decl == NULL_TREE)
-	fprintf (stderr, "In instantiation of `%s':\n",
-		 decl_as_string (p->decl, 0));
+	fprintf (stderr, "%s: In instantiation of `%s':\n",
+		 file, decl_as_string (p->decl, 0));
       else
 	my_friendly_abort (980521);
 
@@ -3397,6 +3397,7 @@ push_tinst_level (d)
       if (uses_template_parms (d))
 	return 0;
 
+      last_template_error_tick = tinst_level_tick;
       error ("template instantiation depth exceeds maximum of %d",
 	     max_tinst_depth);
       error (" (use -ftemplate-depth-NN to increase the maximum)");
@@ -7127,6 +7128,9 @@ instantiate_decl (d)
       || (! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d) && nested)
 	  && ! at_eof))
     {
+      lineno = line;
+      input_filename = file;
+
       add_pending_template (d);
       goto out;
     }

@@ -2267,6 +2267,23 @@ build_int_wrapper (i)
   return t;
 }
 
+tree
+build_srcloc (file, line)
+     char *file;
+     int line;
+{
+  tree t = make_node (SRCLOC);
+  SRCLOC_FILE (t) = file;
+  SRCLOC_LINE (t) = line;
+  return t;
+}
+
+tree
+build_srcloc_here ()
+{
+  return build_srcloc (input_filename, lineno);
+}
+
 void
 push_expression_obstack ()
 {

@@ -3086,7 +3086,12 @@ finish_file ()
 
   for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
     {
+      tree srcloc = TREE_PURPOSE (fnname);
       tree decl = TREE_VALUE (fnname);
+
+      input_filename = SRCLOC_FILE (srcloc);
+      lineno = SRCLOC_LINE (srcloc);
+
       if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
 	{
 	  instantiate_class_template (decl);
