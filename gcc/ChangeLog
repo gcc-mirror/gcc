@@ -1,3 +1,38 @@
+1999-01-18  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	*  invoke.texi (-mcpu=740, -mcpu=750): New options.
+        (-m(no-)multiple, -m(no-)string): Describe cases for PPC740 &
+	PPC750.
+
+1999-01-18  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h ({ASM,CPP}_CPU_SPEC): Add support for all machines
+	supported with -mcpu=xxx.
+	(processor_type): Add PROCESSOR_PPC750.
+	(ADJUST_PRIORITY): Call rs6000_adjust_priority.
+	(RTX_COSTS): Supply costs for 750 multiply/divide operations.
+	(rs6000_adjust_priority): Add declaration.
+	
+	* rs6000.c (rs6000_override_options): -mcpu={750,740} now sets the
+	processor type as 750, not 603.  Allow -mmultiple and -mstring on
+	little endian 750 systems.
+	(rs6000_adjust_priority): Stub for now.
+	(get_issue_rate): The PowerPC 750 can issue 2 instructions/cycle.
+
+	* rs6000.md (function/cpu attributes): Add initial ppc750 support.
+
+	* sysv4.h (STRICT_ALIGNMENT): Don't force strict alignment if
+	little endian.
+	(CC1_SPEC): Pass -mstrict-align if little endian, and not
+	overridden.
+	(CC1_ENDIAN_{LITTLE,BIG,DEFAULT}_SPEC): Endian specific configs.
+	(SUBTARGET_EXTRA_SPECS): Add cc1 endian specs.
+
+	* {sysv4,eabi}le.h (CC1_ENDIAN_DEFAULT_SPEC): Override, default is
+	little endian.
+
+	* t-ppcgas (MULTILIB_*): Delete obsolete Solaris multilibs.
+
 Mon Jan 18 12:03:08 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.md (div_trap): Split div_trap_mips16

@@ -234,6 +234,12 @@ rs6000_override_options (default_cpu)
 	 {"620", PROCESSOR_PPC620,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT},
+	 {"740", PROCESSOR_PPC750,
+ 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+ 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"750", PROCESSOR_PPC750,
+ 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+ 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"801", PROCESSOR_MPCCORE,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
@@ -297,9 +303,12 @@ rs6000_override_options (default_cpu)
   if (TARGET_STRING_SET)
     target_flags = (target_flags & ~MASK_STRING) | string;
 
-  /* Don't allow -mmultiple or -mstring on little endian systems, because the
-     hardware doesn't support the instructions used in little endian mode */
-  if (!BYTES_BIG_ENDIAN)
+  /* Don't allow -mmultiple or -mstring on little endian systems unless the cpu
+     is a 750, because the hardware doesn't support the instructions used in
+     little endian mode, and causes an alignment trap.  The 750 does not cause
+     an alignment trap (except when the target is unaligned).  */
+
+  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
     {
       if (TARGET_MULTIPLE)
 	{
@@ -5119,6 +5128,48 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
   return cost;
 }
 
+/* A C statement (sans semicolon) to update the integer scheduling priority
+   INSN_PRIORITY (INSN).  Reduce the priority to execute the INSN earlier,
+   increase the priority to execute INSN later.  Do not define this macro if
+   you do not need to adjust the scheduling priorities of insns.  */
+
+int
+rs6000_adjust_priority (insn, priority)
+     rtx insn;
+     int priority;
+{
+  /* On machines (like the 750) which have asymetric integer units, where one
+     integer unit can do multiply and divides and the other can't, reduce the
+     priority of multiply/divide so it is scheduled before other integer
+     operationss.  */
+
+#if 0
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return priority;
+
+  if (GET_CODE (PATTERN (insn)) == USE)
+    return priority;
+
+  switch (rs6000_cpu_attr) {
+  case CPU_PPC750:
+    switch (get_attr_type (insn))
+      {
+      default:
+	break;
+
+      case TYPE_IMUL:
+      case TYPE_IDIV:
+	fprintf (stderr, "priority was %#x (%d) before adjustment\n", priority, priority);
+	if (priority >= 0 && priority < 0x01000000)
+	  priority >>= 3;
+	break;
+      }
+  }
+#endif
+
+  return priority;
+}
+
 /* Return how many instructions the machine can issue per cycle */
 int get_issue_rate()
 {
@@ -5130,6 +5181,8 @@ int get_issue_rate()
   case CPU_PPC601:
     return 3;       /* ? */
   case CPU_PPC603:
+    return 2; 
+  case CPU_PPC750:
     return 2; 
   case CPU_PPC604:
     return 4;
