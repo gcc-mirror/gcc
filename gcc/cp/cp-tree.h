@@ -127,7 +127,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Language-specific tree checkers. */
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)			\
 ({  const tree __t = NODE;					\
@@ -156,7 +156,7 @@ Boston, MA 02111-1307, USA.  */
 			 __LINE__, __PRETTY_FUNCTION__);	\
     __t; })
 
-#else /* not ENABLE_CHECKING, or not gcc */
+#else /* not ENABLE_TREE_CHECKING, or not gcc */
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)	NODE
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)	NODE

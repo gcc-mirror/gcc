@@ -78,10 +78,10 @@
    last collection.  */
 #undef GGC_ALWAYS_COLLECT
 
-/* If ENABLE_CHECKING is defined, enable GGC_POISON and
-   GGC_ALWAYS_COLLECT automatically.  */
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_GC_CHECKING
 #define GGC_POISON
+#endif
+#ifdef ENABLE_GC_ALWAYS_COLLECT
 #define GGC_ALWAYS_COLLECT
 #endif
 

@@ -47,10 +47,12 @@
 /* Always verify that the to-be-marked memory is collectable.  */
 #undef GGC_ALWAYS_VERIFY
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_GC_CHECKING
 #define GGC_POISON
-#define GGC_ALWAYS_COLLECT
 #define GGC_ALWAYS_VERIFY
+#endif
+#ifdef ENABLE_GC_ALWAYS_COLLECT
+#define GGC_ALWAYS_COLLECT
 #endif
 
 /* Constants for general use.  */

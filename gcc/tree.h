@@ -321,7 +321,7 @@ struct tree_common
 
 /* When checking is enabled, errors will be generated if a tree node
    is accessed incorrectly. The macros abort with a fatal error.  */
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 #define TREE_CHECK(t, code)						\
 ({  const tree __t = t;							\
@@ -360,7 +360,7 @@ extern void tree_class_check_failed PROTO((const tree, char,
 					   const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 
-#else /* not ENABLE_CHECKING, or not gcc */
+#else /* not ENABLE_TREE_CHECKING, or not gcc */
 
 #define TREE_CHECK(t, code)		(t)
 #define TREE_CLASS_CHECK(t, code)	(t)

@@ -5,8 +5,28 @@
 /* Define if printf supports "%p".  */
 #undef HAVE_PRINTF_PTR
 
-/* Define if you want expensive run-time checks. */
+/* Define if you want more run-time sanity checks.  This one gets a grab
+   bag of miscellaneous but relatively cheap checks.  */
 #undef ENABLE_CHECKING
+
+/* Define if you want all operations on trees (the basic data
+   structure of the front ends) to be checked for dynamic type safety
+   at runtime.  This is moderately expensive.  */
+#undef ENABLE_TREE_CHECKING
+
+/* Define if you want all operations on RTL (the basic data structure
+   of the optimizer and back end) to be checked for dynamic type safety
+   at runtime.  This is quite expensive.  */
+#undef ENABLE_RTL_CHECKING
+
+/* Define if you want the garbage collector to do object poisoning and
+   other memory allocation checks.  This is quite expensive.  */
+#undef ENABLE_GC_CHECKING
+
+/* Define if you want the garbage collector to operate in maximally
+   paranoid mode, validating the entire heap and collecting garbage at
+   every opportunity.  This is extremely expensive.  */
+#undef ENABLE_GC_ALWAYS_COLLECT
 
 /* Define to 1 if NLS is requested.  */
 #undef ENABLE_NLS
