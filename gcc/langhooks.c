@@ -158,9 +158,9 @@ lhd_set_decl_assembler_name (decl)
      VAR_DECLs for variables with static storage duration need a real
      DECL_ASSEMBLER_NAME.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      || (TREE_CODE (decl) == VAR_DECL 
-	  && (TREE_STATIC (decl) 
-	      || DECL_EXTERNAL (decl) 
+      || (TREE_CODE (decl) == VAR_DECL
+	  && (TREE_STATIC (decl)
+	      || DECL_EXTERNAL (decl)
 	      || TREE_PUBLIC (decl))))
     /* By default, assume the name to use in assembly code is the
        same as that used in the source language.  (That's correct
@@ -400,8 +400,8 @@ lhd_tree_inlining_convert_parm_for_inlining (parm, value, fndecl)
   return value;
 }
 
-/* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree 
-   nodes.  Returns non-zero if it does not want the usual dumping of the 
+/* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree
+   nodes.  Returns non-zero if it does not want the usual dumping of the
    second argument.  */
 
 int
@@ -412,7 +412,7 @@ lhd_tree_dump_dump_tree (di, t)
   return 0;
 }
 
-/* lang_hooks.tree_dump.type_qual:  Determine type qualifiers in a 
+/* lang_hooks.tree_dump.type_qual:  Determine type qualifiers in a
    language-specific way.  */
 
 int
@@ -421,4 +421,3 @@ lhd_tree_dump_type_quals (t)
 {
   return TYPE_QUALS (t);
 }
-

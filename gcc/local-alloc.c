@@ -1115,7 +1115,7 @@ update_equiv_regs ()
 		      REG_N_REFS (regno) = 0;
 		      REG_FREQ (regno) = 0;
 		      delete_insn (equiv_insn);
-		      
+
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
 		    }
@@ -1159,7 +1159,7 @@ update_equiv_regs ()
     {
       int j;
       if (clear_regnos > 8)
-        {
+	{
 	  FOR_EACH_BB (bb)
 	    {
 	      AND_COMPL_REG_SET (bb->global_live_at_start, &cleared_regs);
@@ -1167,8 +1167,8 @@ update_equiv_regs ()
 	    }
 	}
       else
-        EXECUTE_IF_SET_IN_REG_SET (&cleared_regs, 0, j,
-          {
+	EXECUTE_IF_SET_IN_REG_SET (&cleared_regs, 0, j,
+	  {
 	    FOR_EACH_BB (bb)
 	      {
 	        CLEAR_REGNO_REG_SET (bb->global_live_at_start, j);

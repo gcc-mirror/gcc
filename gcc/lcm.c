@@ -147,7 +147,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
       qlen--;
 
       if (qout >= qend)
-        qout = worklist;
+	qout = worklist;
 
       if (bb->aux == EXIT_BLOCK_PTR)
 	/* Do not clear the aux field for blocks which are predecessors of
@@ -174,7 +174,7 @@ compute_antinout_edge (antloc, transp, antin, antout)
 	      e->src->aux = e;
 	      qlen++;
 	      if (qin >= qend)
-	        qin = worklist;
+		qin = worklist;
 	    }
     }
 
@@ -207,7 +207,7 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
       if (pred == ENTRY_BLOCK_PTR)
 	sbitmap_copy (earliest[x], antin[succ->index]);
       else
-        {
+	{
 	  if (succ == EXIT_BLOCK_PTR)
 	    sbitmap_zero (earliest[x]);
 	  else
@@ -317,7 +317,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
       bb->aux = NULL;
       qlen--;
       if (qout >= qend)
-        qout = worklist;
+	qout = worklist;
 
       /* Compute the intersection of LATERIN for each incoming edge to B.  */
       sbitmap_ones (laterin[bb->index]);
@@ -529,7 +529,7 @@ compute_available (avloc, kill, avout, avin)
       qlen--;
 
       if (qout >= qend)
-        qout = worklist;
+	qout = worklist;
 
       /* If one of the predecessor blocks is the ENTRY block, then the
 	 intersection of avouts is the null set.  We can identify such blocks
@@ -558,7 +558,7 @@ compute_available (avloc, kill, avout, avin)
 	      qlen++;
 
 	      if (qin >= qend)
-	        qin = worklist;
+		qin = worklist;
 	    }
     }
 
@@ -930,7 +930,7 @@ add_seginfo (head, info)
     {
       ptr = head->seginfo;
       while (ptr->next != NULL)
-        ptr = ptr->next;
+	ptr = ptr->next;
       ptr->next = info;
     }
 }
@@ -1035,7 +1035,7 @@ optimize_mode_switching (file)
 
 	/* Create the list of segments within each basic block.
 	   If NORMAL_MODE is defined, allow for two extra
-	   blocks split from the entry and exit block. */
+	   blocks split from the entry and exit block.  */
 #ifdef NORMAL_MODE
 	entry_exit_extra = 2;
 #endif

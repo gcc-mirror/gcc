@@ -1073,7 +1073,7 @@ scan_loop (loop, flags)
 		  unconditional jump, otherwise the code at the top of the
 		  loop might never be executed.  Unconditional jumps are
 		  followed by a barrier then the loop_end.  */
-               && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop->top
+	       && ! (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == loop->top
 		     && NEXT_INSN (NEXT_INSN (p)) == loop_end
 		     && any_uncondjump_p (p)))
 	maybe_never = 1;
@@ -3742,9 +3742,9 @@ remove_constant_addition (x)
       /* In case our parameter was constant, remove extra zero from the
 	 expression.  */
       if (XEXP (exp, 0) == const0_rtx)
-        *x = XEXP (exp, 1);
+	*x = XEXP (exp, 1);
       else if (XEXP (exp, 1) == const0_rtx)
-        *x = XEXP (exp, 0);
+	*x = XEXP (exp, 0);
     }
 
   return addval;
@@ -8647,9 +8647,9 @@ loop_insn_first_p (insn, reference)
       /* Start with test for not first so that INSN == REFERENCE yields not
          first.  */
       if (q == insn || ! p)
-        return 0;
+	return 0;
       if (p == reference || ! q)
-        return 1;
+	return 1;
 
       /* Either of P or Q might be a NOTE.  Notes have the same LUID as the
          previous insn, hence the <= comparison below does not work if
@@ -9642,11 +9642,11 @@ loop_regs_scan (loop, extra_size)
   if (LOOP_INFO (loop)->has_call)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
-          && rtx_varies_p (gen_rtx_REG (Pmode, i), /*for_alias=*/1))
-        {
-          regs->array[i].may_not_optimize = 1;
-          regs->array[i].set_in_loop = 1;
-        }
+	  && rtx_varies_p (gen_rtx_REG (Pmode, i), /*for_alias=*/1))
+	{
+	  regs->array[i].may_not_optimize = 1;
+	  regs->array[i].set_in_loop = 1;
+	}
 
 #ifdef AVOID_CCMODE_COPIES
   /* Don't try to move insns which set CC registers if we should not
@@ -10583,9 +10583,9 @@ loop_iv_class_dump (bl, file, verbose)
       fprintf (file, " Giv%d: insn %d, benefit %d, ",
 	       i, INSN_UID (v->insn), v->benefit);
       if (v->giv_type == DEST_ADDR)
-	  print_simple_rtl (file, v->mem);
+	print_simple_rtl (file, v->mem);
       else
-	  print_simple_rtl (file, single_set (v->insn));
+	print_simple_rtl (file, single_set (v->insn));
       fputc ('\n', file);
     }
 }
@@ -10628,7 +10628,7 @@ loop_giv_dump (v, file, verbose)
 
   if (v->giv_type == DEST_REG)
     fprintf (file, "Giv %d: insn %d",
-	     REGNO (v->dest_reg),  INSN_UID (v->insn));
+	     REGNO (v->dest_reg), INSN_UID (v->insn));
   else
     fprintf (file, "Dest address: insn %d",
 	     INSN_UID (v->insn));

@@ -81,7 +81,7 @@ struct lang_hooks_for_functions
 
 struct lang_hooks_for_tree_dump
 {
-  /* Dump language-specific parts of tree nodes.  Returns non-zero if it 
+  /* Dump language-specific parts of tree nodes.  Returns non-zero if it
      does not want the usual dumping of the second argument.  */
   int (*dump_tree) PARAMS ((void *, tree));
 
@@ -96,7 +96,7 @@ struct lang_hooks_for_types
   /* Return a new type (with the indicated CODE), doing whatever
      language-specific processing is required.  */
   tree (*make_type) PARAMS ((enum tree_code));
-  
+
   /* Given MODE and UNSIGNEDP, return a suitable type-tree with that
      mode.  */
   tree (*type_for_mode) PARAMS ((enum machine_mode, int));
@@ -344,7 +344,7 @@ struct lang_hooks
   struct lang_hooks_for_functions function;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
-  
+
   struct lang_hooks_for_tree_dump tree_dump;
 
   struct lang_hooks_for_decls decls;
