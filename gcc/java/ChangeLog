@@ -1,3 +1,11 @@
+Wed Feb 17 15:47:20 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (check_pkg_class_access): Allow private class access
+ 	within the same package.
+	(strip_out_static_field_access_decl): New function.
+	(patch_unaryop): Call strip_out_static_field_access_decl on ++/--
+ 	operator argument before testing its nature.
+
 Wed Feb  3 12:38:43 1999  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.def (FINALLY_EXPR):  Removed.  (Now uses TRY_FINALLY_EXPR.)
