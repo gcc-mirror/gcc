@@ -1,3 +1,9 @@
+2004-09-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/localename.cc (locale::locale(const char*)): Minor tweaks:
+	rename a variable, move an assignment.
+	(locale::_Impl::_Impl(const char*, size_t)): Likewise, minor tweak.
+
 2004-09-24  Paul Brook  <paul@codesourcery.com>
 
 	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: XFAIL more arm
