@@ -7505,8 +7505,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0)
 	return const0_rtx;
       else
-	return (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (arglist))) == 'c'
-		? const1_rtx : const0_rtx);
+	{
+	  tree arg = TREE_VALUE (arglist);
+
+	  STRIP_NOPS (arg);
+	  return (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
+		  || (TREE_CODE (arg) == ADDR_EXPR
+		      && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
+		  ? const1_rtx : const0_rtx);
+	}
 
     case BUILT_IN_FRAME_ADDRESS:
       /* The argument must be a nonnegative integer constant.
