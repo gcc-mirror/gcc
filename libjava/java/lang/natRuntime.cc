@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <stdlib.h>
 
@@ -32,8 +33,6 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 
 #include <jni.h>
-
-#include "platform.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>

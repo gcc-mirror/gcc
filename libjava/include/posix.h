@@ -60,6 +60,8 @@ _Jv_platform_close_on_exec (jint fd)
   ::fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
 
+#undef fcntl
+
 #ifdef JV_HASH_SYNCHRONIZATION
 inline void
 _Jv_platform_usleep (unsigned long usecs)
@@ -80,17 +82,23 @@ _Jv_socket (int domain, int type, int protocol)
   return ::socket (domain, type, protocol);
 }
 
+#undef socket
+
 inline int
 _Jv_connect (jint fd, sockaddr *ptr, int len)
 {
    return ::connect (fd, ptr, len);
 }
 
+#undef connect
+
 inline int
 _Jv_close (jint fd)
 {
   return ::close (fd);
 }
+
+#undef close
 
 // Avoid macro definitions of bind from system headers, e.g. on
 // Solaris 7 with _XOPEN_SOURCE.  FIXME
@@ -100,6 +108,8 @@ _Jv_bind (int fd, struct sockaddr *addr, int addrlen)
   return ::bind (fd, addr, addrlen);
 }
 
+#undef bind
+
 // Same problem with accept on Tru64 UNIX with _POSIX_PII_SOCKET
 inline int
 _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
@@ -107,11 +117,15 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
   return ::accept (fd, addr, addrlen);
 }
 
+#undef accept
+
 inline int
 _Jv_listen (int fd, int backlog)
 {
   return ::listen (fd, backlog);
 }
+
+#undef listen
 
 inline int
 _Jv_write(int s, void *buf, int len)
@@ -119,11 +133,15 @@ _Jv_write(int s, void *buf, int len)
   return ::write (s, buf, len);
 }
 
+#undef write
+
 inline int
 _Jv_read(int s, void *buf, int len)
 {
   return ::read (s, buf, len);
 }
+
+#undef read
 
 #endif /* DISABLE_JAVA_NET */
 
