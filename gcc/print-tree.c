@@ -317,6 +317,8 @@ print_node (file, prefix, node, indent)
 	fputs (" common", file);
       if (DECL_EXTERNAL (node))
 	fputs (" external", file);
+      if (DECL_WEAK (node))
+	fputs (" weak", file);
       if (DECL_REGISTER (node) && TREE_CODE (node) != FIELD_DECL
 	  && TREE_CODE (node) != FUNCTION_DECL
 	  && TREE_CODE (node) != LABEL_DECL)

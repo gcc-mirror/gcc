@@ -46,6 +46,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "timevar.h"
 #include "c-common.h"
+#include "c-pragma.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -3403,6 +3404,10 @@ start_decl (declarator, declspecs, initialized, attributes)
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (&decl, attributes, 0);
 
+  /* If #pragma weak was used, mark the decl weak now.  */
+  if (current_binding_level == global_binding_level)
+    maybe_apply_pragma_weak (decl);
+
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
@@ -6042,6 +6047,10 @@ start_function (declspecs, declarator, attributes)
 
   decl_attributes (&decl1, attributes, 0);
 
+  /* If #pragma weak was used, mark the decl weak now.  */
+  if (current_binding_level == global_binding_level)
+    maybe_apply_pragma_weak (decl1);
+
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
@@ -6691,9 +6700,11 @@ finish_function (nested)
 {
   tree fndecl = current_function_decl;
 
-/*  TREE_READONLY (fndecl) = 1;
-    This caused &foo to be of type ptr-to-const-function
-    which then got a warning when stored in a ptr-to-function variable.  */
+#if 0
+  /* This caused &foo to be of type ptr-to-const-function which then
+     got a warning when stored in a ptr-to-function variable.  */
+  TREE_READONLY (fndecl) = 1;
+#endif
 
   poplevel (1, 0, 1);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
@@ -6755,6 +6766,7 @@ finish_function (nested)
     {
       /* Generate RTL for the body of this function.  */
       c_expand_body (fndecl, nested, 1);
+
       /* Let the error reporting routines know that we're outside a
 	 function.  For a nested function, this value is used in
 	 pop_c_function_context and then reset via pop_function_context.  */

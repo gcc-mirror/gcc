@@ -1148,7 +1148,7 @@ $(srcdir)/c-parse.y: c-parse.in
 
 c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(C_TREE_H) \
     $(GGC_H) $(TARGET_H) c-lex.h flags.h function.h output.h $(EXPR_H) \
-    debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H)
+    debug.h toplev.h intl.h $(TM_P_H) tree-inline.h $(TIMEVAR_H) c-pragma.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
@@ -1165,7 +1165,7 @@ c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) function.h \
-    c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H)
+    c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H) $(C_COMMON_H)
 mbchar.o: mbchar.c $(CONFIG_H) $(SYSTEM_H) mbchar.h
 graph.o: graph.c $(CONFIG_H) $(SYSTEM_H) toplev.h flags.h output.h $(RTL_H) \
     function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
