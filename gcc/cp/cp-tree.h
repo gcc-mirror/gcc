@@ -59,6 +59,7 @@ struct diagnostic_context;
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       ICS_ELLIPSIS_FLAG (in _CONV)
       BINFO_ACCESS (in BINFO)
+      DECL_INITIALIZED_P (in VAR_DECL)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORPHIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
@@ -96,11 +97,10 @@ struct diagnostic_context;
       DECL_MUTABLE_P (in FIELD_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
-      DECL_C_BITFIELD (in FIELD_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
-   4: DECL_C_BIT_FIELD
+   4: DECL_C_BIT_FIELD (in a FIELD_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
@@ -1150,8 +1150,7 @@ struct lang_type_class GTY(())
   tree vfields;
   tree vbases;
   tree tags;
-  tree size;
-  tree size_unit;
+  tree as_base;
   tree pure_virtuals;
   tree friend_classes;
   tree rtti;
@@ -1396,12 +1395,17 @@ struct lang_type GTY(())
 #define CLASSTYPE_N_BASECLASSES(NODE) \
   (BINFO_N_BASETYPES (TYPE_BINFO (NODE)))
 
+/* The type corresponding to NODE when NODE is used as a base class,
+   i.e., NODE without virtual base classes.  */
+
+#define CLASSTYPE_AS_BASE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->as_base)
+
 /* These are the size and alignment of the type without its virtual
    base classes, for when we use this type as a base itself.  */
-#define CLASSTYPE_SIZE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->size)
-#define CLASSTYPE_SIZE_UNIT(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->size_unit)
-#define CLASSTYPE_ALIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->align)
-#define CLASSTYPE_USER_ALIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->user_align)
+#define CLASSTYPE_SIZE(NODE) TYPE_SIZE (CLASSTYPE_AS_BASE (NODE))
+#define CLASSTYPE_SIZE_UNIT(NODE) TYPE_SIZE_UNIT (CLASSTYPE_AS_BASE (NODE))
+#define CLASSTYPE_ALIGN(NODE) TYPE_ALIGN (CLASSTYPE_AS_BASE (NODE))
+#define CLASSTYPE_USER_ALIGN(NODE) TYPE_USER_ALIGN (CLASSTYPE_AS_BASE (NODE))
 
 /* The alignment of NODE, without its virtual bases, in bytes.  */
 #define CLASSTYPE_ALIGN_UNIT(NODE) \
@@ -1953,6 +1957,11 @@ struct lang_decl GTY(())
    case of a VAR_DECL, it is also used to determine how program storage
    should be allocated.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
+
+/* Nonzero for a VAR_DECL means that the variable's initialization has
+   been processed.  */
+#define DECL_INITIALIZED_P(NODE) \
+   (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
 
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  */
@@ -3850,7 +3859,6 @@ extern void check_handlers			PARAMS ((tree));
 extern void choose_personality_routine		PARAMS ((enum languages));
 
 /* in expr.c */
-extern int extract_init				PARAMS ((tree, tree));
 extern rtx cxx_expand_expr			PARAMS ((tree, rtx,
 							 enum machine_mode,
 							 int));
@@ -3870,7 +3878,7 @@ extern tree build_init				PARAMS ((tree, tree, int));
 extern int is_aggr_type				PARAMS ((tree, int));
 extern tree get_aggr_from_typedef		PARAMS ((tree, int));
 extern tree get_type_value			PARAMS ((tree));
-extern tree build_forced_zero_init		PARAMS ((tree));
+extern tree build_zero_init       		(tree, bool);
 extern tree build_member_call			PARAMS ((tree, tree, tree));
 extern tree build_offset_ref			PARAMS ((tree, tree));
 extern tree resolve_offset_ref			PARAMS ((tree));
@@ -4344,7 +4352,6 @@ extern tree binfo_or_else			PARAMS ((tree, tree));
 extern void readonly_error			PARAMS ((tree, const char *, int));
 extern int abstract_virtuals_error		PARAMS ((tree, tree));
 
-extern tree force_store_init_value		PARAMS ((tree, tree));
 extern tree store_init_value			PARAMS ((tree, tree));
 extern tree digest_init				PARAMS ((tree, tree, tree *));
 extern tree build_scoped_ref			PARAMS ((tree, tree, tree *));

@@ -6141,7 +6141,10 @@ tsubst_decl (t, args, type, complain)
 	/* Even if the original location is out of scope, the newly
 	   substituted one is not.  */
 	if (TREE_CODE (r) == VAR_DECL)
-	  DECL_DEAD_FOR_LOCAL (r) = 0;
+	  {
+	    DECL_DEAD_FOR_LOCAL (r) = 0;
+	    DECL_INITIALIZED_P (r) = 0;
+	  }
 
 	if (!local_p)
 	  {
@@ -9860,9 +9863,10 @@ regenerate_decl_from_template (decl, tmpl)
   if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Set up DECL_INITIAL, since tsubst doesn't.  */
-      DECL_INITIAL (new_decl) = 
-	tsubst_expr (DECL_INITIAL (code_pattern), args, 
-		     tf_error, DECL_TI_TEMPLATE (decl));
+      if (!DECL_INITIALIZED_IN_CLASS_P (decl))
+	DECL_INITIAL (new_decl) = 
+	  tsubst_expr (DECL_INITIAL (code_pattern), args, 
+		       tf_error, DECL_TI_TEMPLATE (decl));
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -10142,7 +10146,10 @@ instantiate_decl (d, defer_ok)
 	  DECL_EXTERNAL (d) = 1;
 	  DECL_NOT_REALLY_EXTERN (d) = 1;
 	}
-      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0);
+      cp_finish_decl (d, 
+		      (!DECL_INITIALIZED_IN_CLASS_P (d) 
+		       ? DECL_INITIAL (d) : NULL_TREE),
+		      NULL_TREE, 0);
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {

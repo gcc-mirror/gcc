@@ -127,11 +127,3 @@ cxx_expand_expr (exp, target, tmode, modifier)
   /* NOTREACHED */
   return NULL;
 }
-
-int
-extract_init (decl, init)
-     tree decl ATTRIBUTE_UNUSED, init ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-

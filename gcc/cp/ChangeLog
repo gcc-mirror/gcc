@@ -1,3 +1,62 @@
+2002-09-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (walk_subobject_offsets): Correct the calculation of
+	offsets for virtual bases.  Correct the counting of array
+	elements.
+	(layout_nonempty_base_or_field): Simplify.  Correct the
+	calculation of offsets to be propagated through the binfo
+	hierarchy.
+	(build_base_field): Avoid creating a FIELD_DECL for empty bases.
+	Add the FIELD_DECL to TYPE_FIELDS.
+	(build_base_fields): Adjust accordingly.
+	(layout_virtual_bases): Use build_base_field.
+	(end_of_class): Return a tree, not an integer.
+	(warn_about_ambiguous_direct_bases): Rename to ...
+	(warn_about_ambiguous_bases): ... this.
+	(include_empty_classes): New function.
+	(layout_class_type): Create an alternative version of the type to
+	be used when as a base class type.  Do not call
+	finish_record_layout until we are done laying out the class.
+	* cp-tree.h (lang_type_class): Remove size, size_unit.  Add
+	as_base.
+	(CLASSTYPE_SIZE): Reimplement.
+	(CLASSTYPE_SIZE_UNIT): Likewise.
+	(CLASSTYPE_ALIGN): Likweise.
+	(CLASSTYPE_USER_ALIGN): Likewise.
+	(CLASSTYPE_AS_BASE): New macro.
+	(DECL_INITIALIZED_P): Likewise.
+	(extract_init): Remove prototype.
+	(build_forced_zero_init): Rename to ...
+	(build_zero_init): ... this.
+	(force_store_init_value): Remove.
+	* decl.c (obscure_complex_init): Remove.
+	(duplicate_decls): Copy DECL_INITIALIZED_P.
+	(check_initializer): Do not leave junk in DECL_INITIAL.
+	(cp_finish_decl): Handle zero-initialization of entities with
+	static storage duration.
+	* expr.c (extract_init): Remove.
+	* init.c (build_forced_zero_init): Remove.
+	(build_zero_init): New function.
+	(build_default_init): Use it.
+	(build_field_list): Skip FIELD_DECLs for base subobjects.
+	(push_base_cleanups): Likewise.
+	* method.c (do_build_assign_ref): Likewise.
+	(synthesize_exception_spec): Likewise.
+	* pt.c (tsubst_decl): Clear DECL_INITIALIZED_P.
+	(regenerate_decl_from_template): To not set DECL_INITIAL for a
+	static data member whose initialization took place in its class.
+	(instantiate_decl): Do not pass an initializer to cp_finish_decl
+	in that situation.
+	* search.c (dfs_push_decls): Skip FIELD_DECLs for base subobjects.
+	(dfs_unuse_fields): Likewise.
+	* tree.c (pod_type_p): Handle error_mark_node.
+	(zero_init_p): Likewise.
+	* typeck.c (lookup_anon_field): Skip FIELD_DECLs for base 
+	subobjects.
+	* typeck2.c (store_init_value): Remove #if 0'd code.
+	(force_store_init_value): Remove.
+	(process_init_constructor): Use build_zero_init.
+	
 2002-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7788
