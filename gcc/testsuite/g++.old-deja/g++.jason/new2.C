@@ -1,5 +1,5 @@
 // PRMS Id: 6267
-// Special g++ Options: -Wno-deprecated -fthis-is-variable -fno-exceptions
+// Special g++ Options: -Wno-deprecated -fno-exceptions
 
 struct A {
   int i;
