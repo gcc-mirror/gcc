@@ -1,3 +1,10 @@
+2003-03-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/7784
+	* reload.c (find_reloads_address): Handle
+	(PLUS (PLUS (REG) (REG)) (CONST_INT)) form for
+	all base registers.
+
 2003-03-25  Marcelo Abreu  <mmabreu@inf.ufrgs.br>
 
 	PR other/10203
