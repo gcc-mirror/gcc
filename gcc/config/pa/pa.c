@@ -2539,7 +2539,7 @@ output_ascii (file, p, size)
       int io = 0;
       for (io = 0, co = 0; io < MIN (4, size - i); io++)
 	{
-	  register unsigned int c = p[i + io];
+	  register unsigned int c = (unsigned char) p[i + io];
 
 	  if (c == '\"' || c == '\\')
 	    partial_output[co++] = '\\';
