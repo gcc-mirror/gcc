@@ -1135,7 +1135,7 @@ lookup_field_r (tree binfo, void *data)
   return NULL_TREE;
 }
 
-/* Return a "baselink" which BASELINK_BINFO, BASELINK_ACCESS_BINFO,
+/* Return a "baselink" with BASELINK_BINFO, BASELINK_ACCESS_BINFO,
    BASELINK_FUNCTIONS, and BASELINK_OPTYPE set to BINFO, ACCESS_BINFO,
    FUNCTIONS, and OPTYPE respectively.  */
 

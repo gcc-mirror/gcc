@@ -1,3 +1,11 @@
+2004-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17163
+	* pt.c (instantiate_decl): Do not try to apply
+	DECL_DECLARED_INLINED_P to a VAR_DECL.
+
+	* search.c (build_baselink): Fix typo in comment.
+
 2004-08-22 Andrew Pinski  <apinski@apple.com>
 
 	Revert:

@@ -1,3 +1,8 @@
+2004-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17163
+	* g++.dg/template/repo2.C: New test.
+
 2004-08-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17078
