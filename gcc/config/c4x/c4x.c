@@ -1016,6 +1016,84 @@ c4x_null_epilogue_p ()
 }
 
 
+int
+c4x_emit_move_sequence (operands, mode)
+     rtx *operands;
+     enum machine_mode mode;     
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+
+  if (! reload_in_progress
+      && ! REG_P (op0) 
+      && ! REG_P (op1)
+      && ! (stik_const_operand (op1, mode) && ! push_operand (op0, mode)))
+    op1 = force_reg (mode, op1);
+
+  if (symbolic_operand (op1, mode))
+    {
+      if (TARGET_LOAD_ADDRESS)
+	{
+	  /* Alias analysis seems to do a better job if we force
+	     constant addresses to memory after reload.  */
+	  emit_insn (gen_load_immed_address (op0, op1));
+	  return 1;
+	}
+      else
+	{
+	  /* Stick symbol or label address into the constant pool.  */
+	  op1 = force_const_mem (Pmode, op1);
+	}
+    }
+  else if (mode == HFmode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
+    {
+      /* We could be a lot smarter about loading some of these
+	 constants...  */
+      op1 = force_const_mem (mode, op1);
+    }
+  else if (mode == HImode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
+    {
+      /* We could load all sorts of constants in two goes by pulling all
+	 sorts of tricks... The tricky thing is that we cannot clobber CC
+	 so that stifles most of the obvious methods.  */
+      op1 = force_const_mem (mode, op1);
+    }
+
+  /* Convert (MEM (SYMREF)) to a (MEM (LO_SUM (REG) (SYMREF)))
+     and emit associated (HIGH (SYMREF)) if large memory model.  
+     c4x_legitimize_address could be used to do this,
+     perhaps by calling validize_address.  */
+  if (! (reload_in_progress || reload_completed)
+      && GET_CODE (op1) == MEM
+      && symbolic_operand (XEXP (op1, 0), Pmode))
+    {
+      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+      if (! TARGET_SMALL)
+	emit_insn (gen_set_ldp (dp_reg, XEXP (op1, 0)));
+      op1 = change_address (op1, mode,
+			    gen_rtx_LO_SUM (Pmode, dp_reg, XEXP (op1, 0)));
+    }
+
+  if (! (reload_in_progress || reload_completed)
+      && GET_CODE (op0) == MEM 
+      && symbolic_operand (XEXP (op0, 0), Pmode))
+    {
+      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+      if (! TARGET_SMALL)
+	emit_insn (gen_set_ldp (dp_reg, XEXP (op0, 0)));
+      op0 = change_address (op0, mode,
+			    gen_rtx_LO_SUM (Pmode, dp_reg, XEXP (op0, 0)));
+    }
+
+  /* Adjust operands in case we have modified them.  */
+  operands[0] = op0;
+  operands[1] = op1;
+
+  /* Emit normal pattern.  */
+  return 0;
+}
+
+
 void
 c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
      char *name;
@@ -1066,6 +1144,7 @@ c4x_emit_libcall3 (name, code, mode, operands)
   return c4x_emit_libcall (name, code, mode, mode, 3, operands);
 }
 
+
 void
 c4x_emit_libcall_mulhi (name, code, mode, operands)
      char *name;
@@ -1096,7 +1175,7 @@ c4x_emit_libcall_mulhi (name, code, mode, operands)
 
 enum reg_class
 c4x_preferred_reload_class (x, class)
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
      enum reg_class class;
 {
   return class;
@@ -1119,6 +1198,22 @@ c4x_secondary_memory_needed (class1, class2, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return 0;
+}
+
+
+/* Set the SYMBOL_REF_FLAG for a function decl.  However, wo do not
+   yet use this info.  */
+void
+c4x_encode_section_info (decl)
+  tree decl;
+{
+#if 0
+  if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)   
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+#else
+  if (TREE_CODE (decl) == FUNCTION_DECL)   
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+#endif
 }
 
 
@@ -1187,19 +1282,6 @@ c4x_check_legit_addr (mode, addr, strict)
 
 	switch (code0)
 	  {
-	  case USE:
-	    /* The uses are put in to avoid problems
-	       with referenced things disappearing.  */
-	    return c4x_check_legit_addr (mode, op1, strict);
-
-	  case PLUS:
-	    /* This is another reference to keep things
-	       from disappearing, but it contains a plus
-	       of a use and DP.  */
-	    if (GET_CODE (XEXP (op0, 0)) == USE)
-	      return c4x_check_legit_addr (mode, op1, strict);
-	    return 0;
-
 	  case REG:
 	    if (REG_P (op1))
 	      {
@@ -1224,18 +1306,47 @@ c4x_check_legit_addr (mode, addr, strict)
       }
       break;
 
+      /* Direct addressing with DP register.  */
+    case LO_SUM:
+      {
+	rtx op0 = XEXP (addr, 0);
+	rtx op1 = XEXP (addr, 1);
+
+	/* HImode and HFmode direct memory references aren't truly
+	   offsettable (consider case at end of data page).  We
+	   probably get better code by loading a pointer and using an
+	   indirect memory reference.  */
+	if (mode == HImode || mode == HFmode)
+	  return 0;
+
+	if (!REG_P (op0) || REGNO (op0) != DP_REGNO)
+	  return 0;
+
+	if ((GET_CODE (op1) == SYMBOL_REF || GET_CODE (op1) == LABEL_REF))
+	  return 1;
+
+	if (GET_CODE (op1) == CONST)
+	  {
+	    addr = XEXP (op1, 0);
+	    
+	    if (GET_CODE (addr) == PLUS
+		&& (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
+		    || GET_CODE (XEXP (addr, 0)) == LABEL_REF)
+		&& GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	      return 1;
+	  }
+	return 0;
+      }
+      break;
+
       /* Direct addressing with some work for the assembler...  */
     case CONST:
-      if (GET_CODE (XEXP (addr, 0)) == PLUS
-	  && (GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
-	      || GET_CODE (XEXP (XEXP (addr, 0), 0)) == LABEL_REF)
-	  && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)
-	return 1;
-
       /* Direct addressing.  */
-    case SYMBOL_REF:
     case LABEL_REF:
-      return 1;
+    case SYMBOL_REF:
+      /* These need to be converted to a LO_SUM (...). 
+	 c4x_legitimize_address will fix them up.  */
+      return 0;
 
       /* Do not allow direct memory access to absolute addresses.
          This is more pain than its worth, especially for the
@@ -1313,6 +1424,16 @@ c4x_legitimize_address (orig, mode)
      rtx orig ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (GET_CODE (orig) == SYMBOL_REF)
+    {
+      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+
+      if (! TARGET_SMALL)
+	emit_insn (gen_set_ldp (dp_reg, orig));
+      
+      return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
+    }
+
   return NULL_RTX;
 }
 
@@ -1332,32 +1453,46 @@ rtx addr;
     case REG:
       return 1;
 
-    case CONST:
-      {
-	rtx offset = const0_rtx;
-	addr = eliminate_constant_term (addr, &offset);
-	
-	if (GET_CODE (addr) == LABEL_REF)
-	  return 3;
-	
-	if (GET_CODE (addr) != SYMBOL_REF)
-	  return 4;
-
-	if (INTVAL (offset) == 0)
-	  return 3;
-      }
-      
-      /* fall through */
-      
     case POST_INC:
     case POST_DEC:
     case PRE_INC:
     case PRE_DEC:
       return 1;
       
+      /* These shouldn't be directly generated.  */
     case SYMBOL_REF:
     case LABEL_REF:
-      return TARGET_SMALL ? 3 : 4;
+    case CONST:
+      return 10;
+
+    case LO_SUM:
+      {
+	rtx op1 = XEXP (addr, 1);
+
+	if (GET_CODE (op1) == LABEL_REF || GET_CODE (op1) == SYMBOL_REF)
+	  return TARGET_SMALL ? 3 : 4;
+	
+	if (GET_CODE (op1) == CONST)
+	  {
+	    rtx offset = const0_rtx;
+	    
+	    op1 = eliminate_constant_term (op1, &offset);
+	    
+	    /* ??? These costs need rethinking... */
+	    if (GET_CODE (op1) == LABEL_REF)
+	      return 3;
+	    
+	    if (GET_CODE (op1) != SYMBOL_REF)
+	      return 4;
+	    
+	    if (INTVAL (offset) == 0)
+	      return 3;
+
+	    return 4;
+	  }
+	fatal_insn ("c4x_address_cost: Invalid addressing mode", addr);
+      }
+      break;
       
     case PLUS:
       {
@@ -1479,18 +1614,9 @@ c4x_print_operand (file, op, letter)
 	asm_fprintf (file, "@");
       break;
 
-    case 'C':			/* call */
-      if (code != MEM)
-	fatal_insn ("c4x_print_operand: %%C inconsistency", op);
-      op1 = XEXP (op, 0);
-      SYMBOL_REF_FLAG (op1) = 1;
-      output_addr_const (file, op1);
-      return;
-
     case 'H':			/* sethi */
-      if (code == SYMBOL_REF)
-	SYMBOL_REF_FLAG (op) = 1;
-      break;
+      output_addr_const (file, op);
+      return;
 
     case 'I':			/* reversed condition */
       code = reverse_condition (code);
@@ -1511,9 +1637,9 @@ c4x_print_operand (file, op, letter)
     case 'K':			/* generate ldp(k) if direct address */
       if (! TARGET_SMALL
 	  && code == MEM
-	  && GET_CODE (XEXP (op, 0)) == PLUS
-	  && GET_CODE(XEXP (XEXP (op, 0), 0)) == REG
-	  && REGNO(XEXP (XEXP (op, 0), 0)) == DP_REGNO)
+	  && GET_CODE (XEXP (op, 0)) == LO_SUM
+	  && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
+	  && REGNO (XEXP (XEXP (op, 0), 0)) == DP_REGNO)
 	{
 	  op1 = XEXP (XEXP (op, 0), 1);
           if (GET_CODE(op1) == CONST_INT || GET_CODE(op1) == SYMBOL_REF)
@@ -1548,12 +1674,18 @@ c4x_print_operand (file, op, letter)
 	fatal_insn ("c4x_print_operand: %%O inconsistency", op);
       return;
 
-    case 'R':			/* call register */
-      op1 = XEXP (op, 0);
-      if (code != MEM || GET_CODE (op1) != REG)
-	fatal_insn ("c4x_print_operand: %%R inconsistency", op);
-      else
-	fprintf (file, "%s", reg_names[REGNO (op1)]);
+    case 'C':			/* call */
+      if (code != MEM)
+	fatal_insn ("c4x_print_operand: %%C inconsistency", op);
+      op = XEXP (op, 0);
+      code = GET_CODE (op);
+      break;
+
+    case 'U':			/* call/callu */
+      if (code != MEM)
+	fatal_insn ("c4x_print_operand: %%U inconsistency", op);
+      if (GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
+	asm_fprintf (file, "u");
       return;
 
     default:
@@ -1721,20 +1853,10 @@ c4x_print_operand_address (file, addr)
       {
 	rtx op0 = XEXP (addr, 0);
 	rtx op1 = XEXP (addr, 1);
-	enum rtx_code code0 = GET_CODE (op0);
 
-	if (code0 == USE || code0 == PLUS)
+	if (REG_P (op0))
 	  {
-	    asm_fprintf (file, "@");
-	    output_addr_const (file, op1);
-	  }
-	else if (REG_P (op0))
-	  {
-	    if (REGNO (op0) == DP_REGNO)
-	      {
-		c4x_print_operand_address (file, op1);
-	      }
-	    else if (REG_P (op1))
+	    if (REG_P (op1))
 	      {
 		if (IS_INDEX_REGNO (op0))
 		  {
@@ -1762,16 +1884,28 @@ c4x_print_operand_address (file, addr)
 			 INTVAL (op1));		/* base + displacement */
 	      }
 	  }
+	else
+          fatal_insn ("c4x_print_operand_address: Bad operand case", addr);
+      }
+      break;
+
+    case LO_SUM:
+      {
+	rtx op0 = XEXP (addr, 0);
+	rtx op1 = XEXP (addr, 1);
+	  
+	if (REG_P (op0) && REGNO (op0) == DP_REGNO)
+	  c4x_print_operand_address (file, op1);
+	else
+          fatal_insn ("c4x_print_operand_address: Bad operand case", addr);
       }
       break;
 
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
-      if (! SYMBOL_REF_FLAG (addr))
-	fprintf (file, "@");
+      fprintf (file, "@");
       output_addr_const (file, addr);
-      SYMBOL_REF_FLAG (addr) = 0;
       break;
 
       /* We shouldn't access CONST_INT addresses.  */
@@ -1783,17 +1917,18 @@ c4x_print_operand_address (file, addr)
     }
 }
 
-
+/* Return nonzero if the floating point operand will fit
+   in the immediate field.  */
 static int
-c4x_immed_float_p (operand)
-     rtx operand;
+c4x_immed_float_p (op)
+     rtx op;
 {
   long convval[2];
   int exponent;
   REAL_VALUE_TYPE r;
 
-  REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
-  if (GET_MODE (operand) == HFmode)
+  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+  if (GET_MODE (op) == HFmode)
     REAL_VALUE_TO_TARGET_DOUBLE (r, convval);
   else
     {
@@ -1810,157 +1945,6 @@ c4x_immed_float_p (operand)
   return (exponent <= 7)	/* Positive exp */
     && (exponent >= -7);	/* Negative exp */
 }
-
-
-/* This function checks for an insn operand that requires direct
-   addressing and inserts a load of the DP register prior to the
-   insn if the big memory model is being compiled for.  Immediate
-   operands that do not fit within the opcode field get changed
-   into memory references using direct addressing.  At this point
-   all pseudos have been converted to hard registers.  */
-
-int
-c4x_scan_for_ldp (newop, insn, operand0)
-     rtx *newop;
-     rtx insn;
-     rtx operand0;
-{
-  int i;
-  char *format_ptr;
-  rtx op0, op1, op2, addr;
-  rtx operand = *newop;
-
-  switch (GET_CODE (operand))
-    {
-    case MEM:
-      op0 = XEXP (operand, 0);
-
-      /* We have something we need to emit a load dp insn for.
-         The first operand should hold the rtx for the instruction
-         required.  */
-
-      switch (GET_CODE (op0))
-	{
-	case CONST_INT:
-	  fatal_insn ("c4x_scan_for_ldp: Direct memory access to const_int",
-		     op0);
-	  break;
-
-	case CONST:
-	case SYMBOL_REF:
-	  if (! TARGET_C3X && ! TARGET_SMALL
-	      && recog_memoized (insn) == CODE_FOR_movqi_noclobber
-	      && ((addr = find_reg_note (insn, REG_EQUAL, NULL_RTX))
-		  || (addr = find_reg_note (insn, REG_EQUIV, NULL_RTX)))
-	      && (IS_STD_OR_PSEUDO_REGNO (operand0)))
-	    {
-	      addr = XEXP (addr, 0);
-	      if (GET_CODE (addr) == CONST_INT)
-		{
-		  op1 = GEN_INT (INTVAL (addr) & ~0xffff);
-		  emit_insn_before (gen_movqi (operand0, op1), insn);
-		  op1 = GEN_INT (INTVAL (addr) & 0xffff);
-		  emit_insn_before (gen_iorqi3_noclobber (operand0,
-						      operand0, op1), insn);
-		  delete_insn (insn);
-		  return 1;
-		}
-	      else if (GET_CODE (addr) == SYMBOL_REF)
-		{
-		  emit_insn_before (gen_set_high_use (operand0, addr, addr),
-				    insn);
-		  emit_insn_before (gen_set_ior_lo_use (operand0, addr, addr),
-				    insn);
-		  delete_insn (insn);
-		  return 1;
-		}
-	      else if (GET_CODE (addr) == CONST
-		       && GET_CODE (op1 = XEXP (addr, 0)) == PLUS
-		       && GET_CODE (op2 = XEXP (op1, 0)) == SYMBOL_REF
-		       && GET_CODE (XEXP (op1, 1)) == CONST_INT)
-		{
-		  emit_insn_before (gen_set_high_use (operand0, addr, op2),
-				    insn);
-		  emit_insn_before (gen_set_ior_lo_use (operand0, addr, op2),
-				    insn);
-		  delete_insn (insn);
-		  return 1;
-		}
-	    }
-	  if (! TARGET_SMALL)
-	    emit_insn_before (gen_set_ldp (gen_rtx_REG (Pmode, DP_REGNO),
-					   operand), insn);
-
-	  /* Replace old memory reference with direct reference.  */
-	  *newop = gen_rtx_MEM (GET_MODE (operand),
-				gen_rtx_PLUS (Pmode,
-					      gen_rtx_REG (Pmode, DP_REGNO),
-					      op0));
-
-	  /* Use change_address?  */
-	  RTX_UNCHANGING_P (*newop) = RTX_UNCHANGING_P (operand);
-	  MEM_COPY_ATTRIBUTES (*newop, operand);
-	  break;
-
-	default:
-	  break;
-	}
-
-      return 0;
-
-    case CONST_INT:
-      if (SMALL_CONST (INTVAL (operand), insn))
-	break;
-      fatal_insn ("Immediate integer too large", insn);
-
-    case CONST_DOUBLE:
-      if (c4x_immed_float_p (operand))
-	break;
-
-      /* We'll come here if a CONST_DOUBLE integer has slipped
-         though the net...  */
-      fatal_insn ("Immediate CONST_DOUBLE integer too large", insn);
-
-    case CONST:
-      fatal_insn ("Immediate integer not known", insn);
-
-      /* Symbol and label immediate addresses cannot be stored
-         within a C[34]x instruction, so we store them in memory
-         and use direct addressing instead.  */
-    case LABEL_REF:
-    case SYMBOL_REF:
-      if (GET_CODE (operand0) != REG)
-	break;
-
-      op0 = XEXP (force_const_mem (Pmode, operand), 0);
-      *newop = gen_rtx_MEM (GET_MODE (operand),
-			    gen_rtx_PLUS (Pmode,
-					  gen_rtx_PLUS (Pmode,
-					      gen_rtx_USE (VOIDmode, operand),
-					      gen_rtx_REG (Pmode, DP_REGNO)),
-					  op0));
-      
-      if (! TARGET_SMALL)
-	emit_insn_before (gen_set_ldp_use (gen_rtx_REG (Pmode, DP_REGNO),
-					   *newop, operand), insn);
-      return 0;
-
-    default:
-      break;
-    }
-
-  format_ptr = GET_RTX_FORMAT (GET_CODE (operand));
-
-  /* Recursively hunt for required loads of DP.  */
-  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (operand)); i++)
-    {
-      if (*format_ptr++ == 'e')	/* rtx expression */
-	if (c4x_scan_for_ldp (&XEXP (operand, i), insn, operand0))
-	  break;
-    }
-  return 0;
-}
-
 
 /* The last instruction in a repeat block cannot be a Bcond, DBcound,
    CALL, CALLCond, TRAPcond, RETIcond, RETScond, IDLE, RPTB or RPTS.
@@ -1993,7 +1977,11 @@ c4x_rptb_nop_p (insn)
 
   /* If there is a label at the end of the loop we must insert
      a NOP.  */
-  insn = prev_nonnote_insn (insn);
+  do {
+    insn = previous_insn (insn);
+  } while (GET_CODE (insn) == NOTE
+	   || GET_CODE (insn) == USE
+	   || GET_CODE (insn) == CLOBBER);
   if (GET_CODE (insn) == CODE_LABEL)
     return 1;
 
@@ -2006,7 +1994,7 @@ c4x_rptb_nop_p (insn)
 	  if (insn == start_label)
 	    return i == 0;
 
-	  insn = PREV_INSN (insn);
+	  insn = previous_insn (insn);
 	};
 
       /* If we have a jump instruction we should insert a NOP. If we
@@ -2014,7 +2002,7 @@ c4x_rptb_nop_p (insn)
 	 is empty. */
       if (GET_CODE (insn) == JUMP_INSN)
 	return 1;
-      insn = PREV_INSN (insn);
+      insn = previous_insn (insn);
     }
   return 0;
 }
@@ -2053,20 +2041,16 @@ c4x_rptb_insert (insn)
   emit_insn_before (gen_rptb_top (start_label, end_label), insn);
 }
 
-/* This function is a C4x special. It scans through all the insn
-   operands looking for places where the DP register needs to be
-   reloaded and for large immediate operands that need to be converted
-   to memory references.  The latter should be avoidable with proper
-   definition of patterns in machine description.  We come here right
-   near the end of things, immediately before delayed branch
-   scheduling.  */
+
+/* This function is a C4x special called immediately before delayed
+   branch scheduling.  We fix up RTPB style loops that didn't get RC
+   allocated as the loop counter.  */
 
 void
 c4x_process_after_reload (first)
      rtx first;
 {
   rtx insn;
-  int i;
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -2086,11 +2070,9 @@ c4x_process_after_reload (first)
 	    c4x_rptb_insert(insn);
 
 	  /* We split all insns here if they have a # for the output
-	     template if we are using the big memory model since there
-	     is a chance that we might be accessing memory across a
-	     page boundary.  */
+	     template.  */
 
-	  if (! TARGET_SMALL)
+	  if (1)
 	    {
 	      char *template;
 
@@ -2106,30 +2088,9 @@ c4x_process_after_reload (first)
 		  PUT_CODE (insn, NOTE);
 		  NOTE_SOURCE_FILE (insn) = 0;
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-
-		  /* Do we have to update the basic block info here? 
-		     Maybe reorg wants it sorted out... */
-
-		  /* Continue with the first of the new insns generated
-                     by the split. */
 		  insn = new;
-
-		  insn_code_number = recog_memoized (insn);
-		  
-		  if (insn_code_number < 0)
-		    continue;
 		}
 	    }
-
-	  /* Ignore jumps and calls.  */
-	  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
-	      continue;	
-
-	  insn_extract (insn);
-	  for (i = 0; i < insn_n_operands[insn_code_number]; i++)
-	    if (c4x_scan_for_ldp (recog_operand_loc[i], insn, 
-				  recog_operand[0]))
-	      break;
 	}
     }
 }
@@ -2152,11 +2113,12 @@ c4x_x_register (op)
 
 
 static int
-c4x_int_constant (op)
+c4x_immed_int_constant (op)
      rtx op;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
+
   return GET_MODE (op) == VOIDmode
     || GET_MODE_CLASS (op) == MODE_INT
     || GET_MODE_CLASS (op) == MODE_PARTIAL_INT;
@@ -2164,11 +2126,15 @@ c4x_int_constant (op)
 
 
 static int
-c4x_float_constant (op)
+c4x_immed_float_constant (op)
      rtx op;
 {
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
+
+  if (GET_CODE (XEXP (op, 0)) == MEM)
+    return 0;
+
   return GET_MODE (op) == QFmode || GET_MODE (op) == HFmode;
 }
 
@@ -2177,7 +2143,7 @@ int
 c4x_H_constant (op)
      rtx op;
 {
-  return c4x_float_constant (op) && c4x_immed_float_p (op);
+  return c4x_immed_float_constant (op) && c4x_immed_float_p (op);
 }
 
 
@@ -2185,7 +2151,7 @@ int
 c4x_I_constant (op)
      rtx op;
 {
-  return c4x_int_constant (op) && IS_INT16_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_INT16_CONST (INTVAL (op));
 }
 
 
@@ -2195,7 +2161,7 @@ c4x_J_constant (op)
 {
   if (TARGET_C3X)
     return 0;
-  return c4x_int_constant (op) && IS_INT8_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_INT8_CONST (INTVAL (op));
 }
 
 
@@ -2205,7 +2171,7 @@ c4x_K_constant (op)
 {
   if (TARGET_C3X)
     return 0;
-  return c4x_int_constant (op) && IS_INT5_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_INT5_CONST (INTVAL (op));
 }
 
 
@@ -2213,7 +2179,7 @@ int
 c4x_L_constant (op)
      rtx op;
 {
-  return c4x_int_constant (op) && IS_UINT16_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_UINT16_CONST (INTVAL (op));
 }
 
 
@@ -2221,7 +2187,7 @@ static int
 c4x_N_constant (op)
      rtx op;
 {
-  return c4x_int_constant (op) && IS_NOT_UINT16_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_NOT_UINT16_CONST (INTVAL (op));
 }
 
 
@@ -2229,7 +2195,7 @@ static int
 c4x_O_constant (op)
      rtx op;
 {
-  return c4x_int_constant (op) && IS_HIGH_CONST (INTVAL (op));
+  return c4x_immed_int_constant (op) && IS_HIGH_CONST (INTVAL (op));
 }
 
 
@@ -2277,6 +2243,7 @@ c4x_Q_constraint (op)
 	return IS_DISP8_CONST (INTVAL (op1));
       }
       break;
+
     default:
       break;
     }
@@ -2508,7 +2475,7 @@ c4x_S_indirect (op)
 }
 
 
-/* Symbol ref.  */
+/* Direct memory operand.  */
 
 int
 c4x_T_constraint (op)
@@ -2518,27 +2485,37 @@ c4x_T_constraint (op)
     return 0;
   op = XEXP (op, 0);
 
-  if ((GET_CODE (op) == PLUS)
-      && (GET_CODE (XEXP (op, 0)) == REG)
-      && (REGNO (XEXP (op, 0)) == DP_REGNO))
+  if (GET_CODE (op) != LO_SUM)
     {
-      op = XEXP (op, 1);
-    }
-  else if ((GET_CODE (op) == PLUS)
-	   && (GET_CODE (XEXP (op, 0)) == PLUS)
-	   && (GET_CODE (XEXP (XEXP (op, 0), 0)) == USE))
-    {
-      op = XEXP (op, 1);
-    }
-  else if ((GET_CODE (op) == PLUS) && (GET_CODE (XEXP (op, 0)) == USE))
-    {
-      op = XEXP (op, 1);
+      /* Allow call operands.  */
+      return GET_CODE (op) == SYMBOL_REF
+	&& GET_MODE (op) == Pmode
+	&& SYMBOL_REF_FLAG (op);
     }
 
+  /* HImode and HFmode are not offsettable.  */
+  if (GET_MODE (op) == HImode || GET_CODE (op) == HFmode)
+    return 0;
+
+  if ((GET_CODE (XEXP (op, 0)) == REG)
+      && (REGNO (XEXP (op, 0)) == DP_REGNO))
+    return c4x_U_constraint (XEXP (op, 1));
+  
+  return 0;
+}
+
+
+/* Symbolic operand.  */
+
+int
+c4x_U_constraint (op)
+     rtx op;
+{
   /* Don't allow direct addressing to an arbitrary constant.  */
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
+      && (GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (XEXP (op, 0), 0)) == LABEL_REF)
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
     return 1;
 
@@ -2657,6 +2634,7 @@ reg_operand (op, mode)
   return register_operand (op, mode);
 }
 
+
 int
 reg_imm_operand (op, mode)
      rtx op;
@@ -2666,6 +2644,7 @@ reg_imm_operand (op, mode)
     return 1;
   return 0;
 }
+
 
 int
 not_modify_reg (op, mode)
@@ -2693,6 +2672,16 @@ not_modify_reg (op, mode)
 	if (REG_P (op1) || GET_CODE (op1) == CONST_INT)
 	  return 1;
       }
+
+    case LO_SUM:
+      {
+	rtx op0 = XEXP (op, 0);
+	  
+	if (REG_P (op0) && REGNO (op0) == DP_REGNO)
+	  return 1;
+      }
+      break;
+     
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2703,6 +2692,7 @@ not_modify_reg (op, mode)
   return 0;
 }
 
+
 int
 not_rc_reg (op, mode)
      rtx op;
@@ -2712,6 +2702,7 @@ not_rc_reg (op, mode)
     return 0;
   return 1;
 }
+
 
 /* Extended precision register R0-R1.  */
 
@@ -2867,8 +2858,6 @@ call_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) != MEM)
-    return 0;
   op = XEXP (op, 0);
   switch (GET_CODE (op))
     {
@@ -2878,6 +2867,29 @@ call_operand (op, mode)
     default:
     }
   return 0;
+}
+
+
+/* Symbolic operand.  */
+
+int
+symbolic_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 1;
+    case CONST:
+      op = XEXP (op, 0);
+      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
+    default:
+      return 0;
+    }
 }
 
 
@@ -2894,13 +2906,28 @@ src_operand (op, mode)
   if (mode == VOIDmode)
     mode = GET_MODE (op);
 
-  /* We could allow certain CONST_INT values for HImode...  */
   if (GET_CODE (op) == CONST_INT)
-    return (mode == QImode || mode == Pmode) && c4x_I_constant (op);
+    return (mode == QImode || mode == Pmode || mode == HImode)
+      && c4x_I_constant (op);
 
   /* We don't like CONST_DOUBLE integers.  */
   if (GET_CODE (op) == CONST_DOUBLE)
     return c4x_H_constant (op);
+
+  /* Disallow symbolic addresses.  */
+  if (GET_CODE (op) == SYMBOL_REF
+      || GET_CODE (op) == LABEL_REF
+      || GET_CODE (op) == CONST)
+    return 0;
+
+  /* Disallow direct memory access symbolic addresses. 
+     These are usually caught by the movqi expander and
+     converted to a LO_SUM.  */
+  if (GET_CODE (op) == MEM
+      && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	   || GET_CODE (XEXP (op, 0)) == LABEL_REF
+	   || GET_CODE (XEXP (op, 0)) == CONST)))
+    return 0;
 
   return general_operand (op, mode);
 }
@@ -2930,13 +2957,10 @@ lsrc_operand (op, mode)
   if (mode != QImode && mode != Pmode)
     fatal_insn ("Mode not QImode", op);
 
-  if (REG_P (op))
-    return reg_operand (op, mode);
-
   if (GET_CODE (op) == CONST_INT)
     return c4x_L_constant (op) || c4x_J_constant (op);
 
-  return general_operand (op, mode);
+  return src_operand (op, mode);
 }
 
 
@@ -2953,13 +2977,10 @@ tsrc_operand (op, mode)
   if (mode != QImode && mode != Pmode)
     fatal_insn ("Mode not QImode", op);
 
-  if (REG_P (op))
-    return reg_operand (op, mode);
-
   if (GET_CODE (op) == CONST_INT)
     return c4x_L_constant (op) || c4x_N_constant (op) || c4x_J_constant (op);
 
-  return general_operand (op, mode);
+  return src_operand (op, mode);
 }
 
 
@@ -3441,7 +3462,7 @@ c4x_valid_operands (code, operands, mode, force)
 	  break;
 	  
 	default:
-	  fatal ("c4x_valid_operands: Internal error");
+	  fatal_insn ("c4x_valid_operands: Internal error", op2);
 	  break;
 	}
       
@@ -3922,16 +3943,19 @@ c4x_operand_subword (op, i, validate_address, mode)
     {
       enum rtx_code code = GET_CODE (XEXP (op, 0));
       enum machine_mode mode = GET_MODE (XEXP (op, 0));
+      enum machine_mode submode;
+
+      submode = mode;
+      if (mode == HImode)
+	submode = QImode;
+      else if (mode == HFmode)
+	submode = QFmode;
 
       switch (code)
 	{
 	case POST_INC:
 	case PRE_INC:
-	  if (mode == HImode)
-	    mode = QImode;
-	  else if (mode == HFmode)
-	    mode = QFmode;
-	  return gen_rtx_MEM (mode, XEXP (op, 0));
+	  return gen_rtx_MEM (submode, XEXP (op, 0));
 	  
 	case POST_DEC:
 	case PRE_DEC:
@@ -3941,6 +3965,23 @@ c4x_operand_subword (op, i, validate_address, mode)
 	     e.g., *p-- => *(p-=2); *(p+1).  */
 	  fatal_insn ("c4x_operand_subword: invalid autoincrement", op);
 
+	case SYMBOL_REF:
+	case LABEL_REF:
+	case CONST:
+	case CONST_INT:
+	  fatal_insn ("c4x_operand_subword: invalid address", op);
+
+	  /* Even though offsettable_address_p considers (MEM
+	     (LO_SUM)) to be offsettable, it is not safe if the
+	     address is at the end of the data page since we also have
+	     to fix up the associated high PART.  In this case where
+	     we are trying to split a HImode or HFmode memory
+	     reference, we would have to emit another insn to reload a
+	     new HIGH value.  It's easier to disable LO_SUM memory references
+	     in HImode or HFmode and we probably get better code.  */
+	case LO_SUM:
+	  fatal_insn ("c4x_operand_subword: address not offsettable", op);
+  
 	default:
 	  break;
 	}
@@ -4233,7 +4274,6 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 
       /* Data dependency; DEP_INSN writes a register that INSN reads some
 	 cycles later.  */
-
       if (TARGET_C3X)
 	{
 	  if (get_attr_setgroup1 (dep_insn) && get_attr_usegroup1 (insn))
@@ -4248,7 +4288,6 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 	     insn uses ar0-ar7.  We then test if the same register
 	     is used.  The tricky bit is that some operands will
 	     use several registers...  */
-
 	  if (get_attr_setar0 (dep_insn) && get_attr_usear0 (insn))
 	    max = SET_USE_COST > max ? SET_USE_COST : max;
 	  if (get_attr_setlda_ar0 (dep_insn) && get_attr_usear0 (insn))
@@ -4342,3 +4381,4 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
   else
     abort ();
 }
+
