@@ -46,9 +46,9 @@ Thu Apr  8 19:20:18 1999  Jeffrey A Law  (law@cygnus.com)
 	Do not try to optimize a aggregate address which has VOIDmode.
 	Mirrors March 23 change to expand_assignment.
 
-	* flow.c (delete_unreachable_blocks): Do not require an edge to
-	be marked with EDGE_FALLTHRU when tidying an edge which connects
-	consecutive basic blocks.
+	* flow.c (delete_unreachable_blocks): Do not require EDGE_FALLTHRU
+	for an edge when tidying an edge which connects consecutive basic
+	blocks.
 
 	* flow.c (can_delete_label_p): Do not convert a label into a
 	deleted label here.
