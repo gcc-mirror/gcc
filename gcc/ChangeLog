@@ -1,3 +1,8 @@
+Thu Sep 23 15:54:12 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* combine.c (simplify_comparison): Use an unsigned shift to adjust
+	the constant.
+
 Thu Sep 23 08:46:21 1999  Guy Harris  <guy@netapp.com>
 
 	* gcc.1: Fix a formatting error.

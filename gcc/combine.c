@@ -10362,8 +10362,12 @@ simplify_comparison (code, pop0, pop1)
 		  & ~ (mask >> (INTVAL (XEXP (op0, 1))
 				+ ! equality_comparison_p))) == 0)
 	    {
-	      const_op >>= INTVAL (XEXP (op0, 1));
-	      op1 = GEN_INT (const_op);
+	      /* We must perform a logical shift, not an arithmetic one,
+		 as we want the top N bits of C to be zero.  */
+	      unsigned HOST_WIDE_INT temp = const_op;
+	      
+	      temp >>= INTVAL (XEXP (op0, 1));
+	      op1 = GEN_INT (temp);
 	      op0 = XEXP (op0, 0);
 	      continue;
 	    }
