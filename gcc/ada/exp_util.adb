@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
@@ -2323,50 +2324,135 @@ package body Exp_Util is
    -- Is_Possibly_Unaligned_Object --
    ----------------------------------
 
-   function Is_Possibly_Unaligned_Object (P : Node_Id) return Boolean is
+   function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean is
+      T  : constant Entity_Id := Etype (N);
+
    begin
-      --  If target does not have strict alignment, result is always
-      --  False, since correctness of code does no depend on alignment.
-
-      if not Target_Strict_Alignment then
-         return False;
-      end if;
-
       --  If renamed object, apply test to underlying object
 
-      if Is_Entity_Name (P)
-        and then Is_Object (Entity (P))
-        and then Present (Renamed_Object (Entity (P)))
+      if Is_Entity_Name (N)
+        and then Is_Object (Entity (N))
+        and then Present (Renamed_Object (Entity (N)))
       then
-         return Is_Possibly_Unaligned_Object (Renamed_Object (Entity (P)));
+         return Is_Possibly_Unaligned_Object (Renamed_Object (Entity (N)));
+      end if;
+
+      --  Tagged and controlled types and aliased types are always aligned,
+      --  as are concurrent types.
+
+      if Is_Aliased (T)
+        or else Has_Controlled_Component (T)
+        or else Is_Concurrent_Type (T)
+        or else Is_Tagged_Type (T)
+        or else Is_Controlled (T)
+      then
+         return False;
       end if;
 
       --  If this is an element of a packed array, may be unaligned
 
-      if Is_Ref_To_Bit_Packed_Array (P) then
+      if Is_Ref_To_Bit_Packed_Array (N) then
          return True;
       end if;
 
       --  Case of component reference
 
-      if Nkind (P) = N_Selected_Component then
+      if Nkind (N) = N_Selected_Component then
+         declare
+            P : constant Node_Id   := Prefix (N);
+            C : constant Entity_Id := Entity (Selector_Name (N));
+            M : Nat;
+            S : Nat;
 
-         --  If component reference is for a record that is bit packed
-         --  or has a specified alignment (that might be too small) or
-         --  the component reference has a component clause, then the
-         --  object may be unaligned.
+         begin
+            --  If component reference is for an array with non-static bounds,
+            --  then it is always aligned, we can only unaligned arrays with
+            --  static bounds (more accurately bounds known at compile time)
 
-         if Is_Packed (Etype (Prefix (P)))
-           or else Known_Alignment (Etype (Prefix (P)))
-           or else Present (Component_Clause (Entity (Selector_Name (P))))
-         then
-            return True;
+            if Is_Array_Type (T)
+              and then not Compile_Time_Known_Bounds (T)
+            then
+               return False;
+            end if;
 
-         --  Otherwise, for a component reference, test prefix
+            --  If component is aliased, it is definitely properly aligned
 
-         else
-            return Is_Possibly_Unaligned_Object (Prefix (P));
-         end if;
+            if Is_Aliased (C) then
+               return False;
+            end if;
+
+            --  If component is for a type implemented as a scalar, and the
+            --  record is packed, and the component is other than the first
+            --  component of the record, then the component may be unaligned.
+
+            if Is_Packed (Etype (P))
+              and then Represented_As_Scalar (Etype (P))
+              and then First_Entity (Etype (Entity (P))) /= C
+            then
+               return True;
+            end if;
+
+            --  Compute maximum possible alignment for T
+
+            --  If alignment is known, then that settles things
+
+            if Known_Alignment (T) then
+               M := UI_To_Int (Alignment (T));
+
+            --  If alignment is not known, tentatively set max alignment
+
+            else
+               M := Ttypes.Maximum_Alignment;
+
+               --  We can reduce this if the Esize is known since the default
+               --  alignment will never be more than the smallest power of 2
+               --  that does not exceed this Esize value.
+
+               if Known_Esize (T) then
+                  S := UI_To_Int (Esize (T));
+
+                  while (M / 2) >= S loop
+                     M := M / 2;
+                  end loop;
+               end if;
+            end if;
+
+            --  If the component reference is for a record that has a specified
+            --  alignment, and we either know it is too small, or cannot tell,
+            --  then the component may be unaligned
+
+            if Known_Alignment (Etype (P))
+              and then Alignment (Etype (P)) < Ttypes.Maximum_Alignment
+              and then M > Alignment (Etype (P))
+            then
+               return True;
+            end if;
+
+            --  Case of component clause present which may specify an
+            --  unaligned position.
+
+            if Present (Component_Clause (C)) then
+
+               --  Otherwise we can do a test to make sure that the actual
+               --  start position in the record, and the length, are both
+               --  consistent with the required alignment. If not, we know
+               --  that we are unaligned.
+
+               declare
+                  Align_In_Bits : constant Nat := M * System_Storage_Unit;
+               begin
+                  if Component_Bit_Offset (C) mod Align_In_Bits /= 0
+                    or else Esize (C) mod Align_In_Bits /= 0
+                  then
+                     return True;
+                  end if;
+               end;
+            end if;
+
+            --  Otherwise, for a component reference, test prefix
+
+            return Is_Possibly_Unaligned_Object (P);
+         end;
 
       --  If not a component reference, must be aligned
 
@@ -2379,7 +2465,7 @@ package body Exp_Util is
    -- Is_Possibly_Unaligned_Slice --
    ---------------------------------
 
-   function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean is
+   function Is_Possibly_Unaligned_Slice (N : Node_Id) return Boolean is
    begin
       --  ??? GCC3 will eventually handle strings with arbitrary alignments,
       --  but for now the following check must be disabled.
@@ -2390,16 +2476,16 @@ package body Exp_Util is
 
       --  For renaming case, go to renamed object
 
-      if Is_Entity_Name (P)
-        and then Is_Object (Entity (P))
-        and then Present (Renamed_Object (Entity (P)))
+      if Is_Entity_Name (N)
+        and then Is_Object (Entity (N))
+        and then Present (Renamed_Object (Entity (N)))
       then
-         return Is_Possibly_Unaligned_Slice (Renamed_Object (Entity (P)));
+         return Is_Possibly_Unaligned_Slice (Renamed_Object (Entity (N)));
       end if;
 
       --  The reference must be a slice
 
-      if Nkind (P) /= N_Slice then
+      if Nkind (N) /= N_Slice then
          return False;
       end if;
 
@@ -2407,10 +2493,10 @@ package body Exp_Util is
       --  component clause, which gigi/gcc does not appear to handle well.
       --  It is not clear why this special test is needed at all ???
 
-      if Nkind (Prefix (P)) = N_Selected_Component
-        and then Nkind (Prefix (Prefix (P))) = N_Selected_Component
+      if Nkind (Prefix (N)) = N_Selected_Component
+        and then Nkind (Prefix (Prefix (N))) = N_Selected_Component
         and then
-          Present (Component_Clause (Entity (Selector_Name (Prefix (P)))))
+          Present (Component_Clause (Entity (Selector_Name (Prefix (N)))))
       then
          return True;
       end if;
@@ -2424,10 +2510,10 @@ package body Exp_Util is
       --  If it is a slice, then look at the array type being sliced
 
       declare
-         Sarr : constant Node_Id := Prefix (P);
+         Sarr : constant Node_Id := Prefix (N);
          --  Prefix of the slice, i.e. the array being sliced
 
-         Styp : constant Entity_Id := Etype (Prefix (P));
+         Styp : constant Entity_Id := Etype (Prefix (N));
          --  Type of the array being sliced
 
          Pref : Node_Id;
@@ -2519,30 +2605,30 @@ package body Exp_Util is
    -- Is_Ref_To_Bit_Packed_Array --
    --------------------------------
 
-   function Is_Ref_To_Bit_Packed_Array (P : Node_Id) return Boolean is
+   function Is_Ref_To_Bit_Packed_Array (N : Node_Id) return Boolean is
       Result : Boolean;
       Expr   : Node_Id;
 
    begin
-      if Is_Entity_Name (P)
-        and then Is_Object (Entity (P))
-        and then Present (Renamed_Object (Entity (P)))
+      if Is_Entity_Name (N)
+        and then Is_Object (Entity (N))
+        and then Present (Renamed_Object (Entity (N)))
       then
-         return Is_Ref_To_Bit_Packed_Array (Renamed_Object (Entity (P)));
+         return Is_Ref_To_Bit_Packed_Array (Renamed_Object (Entity (N)));
       end if;
 
-      if Nkind (P) = N_Indexed_Component
+      if Nkind (N) = N_Indexed_Component
            or else
-         Nkind (P) = N_Selected_Component
+         Nkind (N) = N_Selected_Component
       then
-         if Is_Bit_Packed_Array (Etype (Prefix (P))) then
+         if Is_Bit_Packed_Array (Etype (Prefix (N))) then
             Result := True;
          else
-            Result := Is_Ref_To_Bit_Packed_Array (Prefix (P));
+            Result := Is_Ref_To_Bit_Packed_Array (Prefix (N));
          end if;
 
-         if Result and then Nkind (P) = N_Indexed_Component then
-            Expr := First (Expressions (P));
+         if Result and then Nkind (N) = N_Indexed_Component then
+            Expr := First (Expressions (N));
             while Present (Expr) loop
                Force_Evaluation (Expr);
                Next (Expr);
@@ -2560,25 +2646,25 @@ package body Exp_Util is
    -- Is_Ref_To_Bit_Packed_Slice --
    --------------------------------
 
-   function Is_Ref_To_Bit_Packed_Slice (P : Node_Id) return Boolean is
+   function Is_Ref_To_Bit_Packed_Slice (N : Node_Id) return Boolean is
    begin
-      if Is_Entity_Name (P)
-        and then Is_Object (Entity (P))
-        and then Present (Renamed_Object (Entity (P)))
+      if Is_Entity_Name (N)
+        and then Is_Object (Entity (N))
+        and then Present (Renamed_Object (Entity (N)))
       then
-         return Is_Ref_To_Bit_Packed_Slice (Renamed_Object (Entity (P)));
+         return Is_Ref_To_Bit_Packed_Slice (Renamed_Object (Entity (N)));
       end if;
 
-      if Nkind (P) = N_Slice
-        and then Is_Bit_Packed_Array (Etype (Prefix (P)))
+      if Nkind (N) = N_Slice
+        and then Is_Bit_Packed_Array (Etype (Prefix (N)))
       then
          return True;
 
-      elsif Nkind (P) = N_Indexed_Component
+      elsif Nkind (N) = N_Indexed_Component
            or else
-         Nkind (P) = N_Selected_Component
+         Nkind (N) = N_Selected_Component
       then
-         return Is_Ref_To_Bit_Packed_Slice (Prefix (P));
+         return Is_Ref_To_Bit_Packed_Slice (Prefix (N));
 
       else
          return False;
@@ -2645,6 +2731,22 @@ package body Exp_Util is
             if Nkind (N) = N_Subprogram_Body then
                Set_Is_Eliminated (Defining_Entity (N));
             end if;
+
+         elsif Nkind (N) = N_Package_Declaration then
+            Kill_Dead_Code (Visible_Declarations (Specification (N)));
+            Kill_Dead_Code (Private_Declarations (Specification (N)));
+
+            declare
+               E : Entity_Id := First_Entity (Defining_Entity (N));
+            begin
+               while Present (E) loop
+                  if Ekind (E) = E_Operator then
+                     Set_Is_Eliminated (E);
+                  end if;
+
+                  Next_Entity (E);
+               end loop;
+            end;
 
          --  Recurse into composite statement to kill individual statements,
          --  in particular instantiations.
@@ -3706,8 +3808,22 @@ package body Exp_Util is
             New_Exp := Make_Reference (Loc, E);
          end if;
 
-         if Nkind (E) = N_Aggregate and then Expansion_Delayed (E) then
-            Set_Expansion_Delayed (E, False);
+         if Is_Delayed_Aggregate (E) then
+
+            --  The expansion of nested aggregates is delayed until the
+            --  enclosing aggregate is expanded. As aggregates are often
+            --  qualified, the predicate applies to qualified expressions
+            --  as well, indicating that the enclosing aggregate has not
+            --  been expanded yet. At this point the aggregate is part of
+            --  a stand-alone declaration, and must be fully expanded.
+
+            if Nkind (E) = N_Qualified_Expression then
+               Set_Expansion_Delayed (Expression (E), False);
+               Set_Analyzed (Expression (E), False);
+            else
+               Set_Expansion_Delayed (E, False);
+            end if;
+
             Set_Analyzed (E, False);
          end if;
 
@@ -3730,6 +3846,18 @@ package body Exp_Util is
       Analyze_And_Resolve (Exp, Exp_Type);
       Scope_Suppress := Svg_Suppress;
    end Remove_Side_Effects;
+
+   ---------------------------
+   -- Represented_As_Scalar --
+   ---------------------------
+
+   function Represented_As_Scalar (T : Entity_Id) return Boolean is
+      UT : constant Entity_Id := Underlying_Type (T);
+   begin
+      return Is_Scalar_Type (UT)
+        or else (Is_Bit_Packed_Array (UT)
+                   and then Is_Scalar_Type (Packed_Array_Type (UT)));
+   end Represented_As_Scalar;
 
    ------------------------------------
    -- Safe_Unchecked_Type_Conversion --

@@ -417,7 +417,7 @@ package Exp_Util is
    --  nodes. False otherwise. True for an empty list. It is an error
    --  to call this routine with No_List as the argument.
 
-   function Is_Ref_To_Bit_Packed_Array (P : Node_Id) return Boolean;
+   function Is_Ref_To_Bit_Packed_Array (N : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed
    --  array, i.e. whether the designated object is a component of
    --  a bit packed array, or a subcomponent of such a component.
@@ -425,18 +425,18 @@ package Exp_Util is
    --  to Force_Evaluation, and True is returned. Otherwise False
    --  is returned, and P is not affected.
 
-   function Is_Ref_To_Bit_Packed_Slice (P : Node_Id) return Boolean;
+   function Is_Ref_To_Bit_Packed_Slice (N : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed
    --  slice, i.e. whether the designated object is bit packed slice
    --  or a component of a bit packed slice. Return True if so.
 
-   function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean;
+   function Is_Possibly_Unaligned_Slice (N : Node_Id) return Boolean;
    --  Determine whether the node P is a slice of an array where the slice
    --  result may cause alignment problems because it has an alignment that
    --  is not compatible with the type. Return True if so.
 
-   function Is_Possibly_Unaligned_Object (P : Node_Id) return Boolean;
-   --  Node P is an object reference. This function returns True if it
+   function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean;
+   --  Node N is an object reference. This function returns True if it
    --  is possible that the object may not be aligned according to the
    --  normal default alignment requirement for its type (e.g. if it
    --  appears in a packed record, or as part of a component that has
@@ -510,6 +510,11 @@ package Exp_Util is
    --  side effect (used in implementing Force_Evaluation). Note: after a
    --  call to Remove_Side_Effects, it is safe to call New_Copy_Tree to
    --  obtain a copy of the resulting expression.
+
+   function Represented_As_Scalar (T : Entity_Id) return Boolean;
+   --  Returns True iff the implementation of this type in code generation
+   --  terms is scalar. This is true for scalars in the Ada sense, and for
+   --  packed arrays which are represented by a scalar (modular) type.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True
