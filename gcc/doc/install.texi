@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.14 2001/06/03 06:37:03 dje Exp $
+@comment $Id: install.texi,v 1.1.2.15 2001/06/03 19:09:00 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1112,7 +1112,7 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#a29k-*-bsd,,a29k-*-bsd}
 @item
-@uref{#alpha*-dec-linux*,,alpha*-dec-linux*}
+@uref{#alpha*-*-*,,alpha*-*-*}
 @item
 @uref{#alpha-*-osf1,,alpha-*-osf1}
 @item
@@ -1147,6 +1147,8 @@ GNU Compiler Collection on your machine.
 @uref{#hppa*-hp-hpux10,,hppa*-hp-hpux10}
 @item
 @uref{#hppa*-hp-hpux11,,hppa*-hp-hpux11}
+@item
+@uref{#*-*-freebsd*,,*-*-freebsd*}
 @item
 @uref{#i370-*-*,,i370-*-*}
 @item
@@ -1365,11 +1367,34 @@ AMD Am29050 used in a system running a variant of BSD Unix.
 </p>
 <hr>
 @end html
-@heading @anchor{alpha*-dec-linux*}alpha*-dec-linux*
+@heading @anchor{alpha*-*-*}alpha*-*-*
 
-We require binutils 2.11 or newer.  Previous binutils releases
-had a number of problems with DWARF2 debugging information, not
-the least of which is incorrect linking of shared libraries.
+This section contains general configuration information for all
+alpha-based platforms using ELF (in particular, ignore this section for
+OSF and tru64).  In addition to reading this section, please read all
+other sections that match your target.
+
+We require binutils 2.11.1 (as of yet unreleased), binutils with
+binutils-2_11-branch tag after May 31, 2001 (as taken below), or newer.
+Previous binutils releases had a number of problems with DWARF2
+debugging information, not the least of which is incorrect linking of
+shared libraries.
+
+Until binutils 2.11.1 is released, these sample commands may be useful:
+
+@smallexample
+mkdir binutils-2.11.X; cd binutils-2.11.X
+cvs -d :pserver:anoncvs@@anoncvs.cygnus.com:/cvs/src \
+  co -rbinutils-2_11-branch -P binutils
+mkdir obj; cd obj
+../src/configure --prefix=@emph{an-absolute-path}
+make all check install
+@end smallexample
+
+When configuring gcc, provide explicit @option{--with-gnu-as}
+@option{--with-as=}@emph{an-absolute-path/bin/as} and
+@option{--with-gnu-ld} @option{--with-ld=}@emph{an-absolute-path/bin/ld}
+options to point into the prefix used above.
 
 @html
 </p>
@@ -1708,6 +1733,37 @@ GCC 2.95.2 does not support HP-UX 11, and it cannot generate 64-bit
 object files. Current (as of late 2000) snapshots and GCC 3.0 do support
 HP-UX 11.
 
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{*-*-freebsd*}*-*-freebsd*
+
+The version of binutils installed in /usr/bin is known to work unless
+otherwise specified in any per-architecture notes.  However, binutils
+2.11 is known to improve overall testsuite results.
+
+For FreeBSD 1, FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
+configuration support and files as shipped with gcc 2.95 are still in
+place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
+it is unknown which version of binutils was used (it is assumed that it
+was the system copy in /usr/bin) and C++ EH failures were noted.
+
+For FreeBSD using the ELF file format: DWARF2 debugging is now the
+default for all CPU architectures.  It had been the default on
+FreeBSD/alpha since its inception.  You may use @option{-gstabs} instead
+of @option{-g}, if you really want the old debugging format.  There are
+no known issues with mixing object files and libraries with different
+debugging formats.  Otherwise, this release of gcc should now match more
+of the configuration used in the stock FreeBSD configuration of gcc.  In
+particular, @option{--enable-threads} is now configured by default.
+However, as a general user, do not attempt to replace the system
+compiler with this release.  Known to bootstrap and check with good
+results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT.
+
+At this time, @option{--enable-threads} is not compatible with
+@option{--enable-libgcj} on FreeBSD.
 
 @html
 </p>
