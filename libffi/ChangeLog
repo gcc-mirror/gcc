@@ -1,3 +1,18 @@
+2001-03-27  Jon Beniston  <jon@beniston.com>
+
+	* configure.in: Added X86_WIN32 target (Win32, CygWin, MingW).
+	* configure: Rebuilt.
+	* Makefile.am: Added X86_WIN32 target support.
+	* Makefile.in: Rebuilt.
+
+	* include/ffi.h.in: Added X86_WIN32 target support.
+
+	* src/ffitest.c: Doesn't run structure tests for X86_WIN32 targets.
+	* src/types.c: Added X86_WIN32 target support.
+
+	* src/x86/win32.S: New file. Based on sysv.S, but with EH
+	stuff removed and made to work with CygWin's gas.
+
 2001-03-26  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Make target subdirectory in build dir.

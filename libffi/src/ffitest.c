@@ -543,6 +543,8 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
     printf("%lu promotion tests run\n", ul);
   }
 
+#ifndef X86_WIN32 /* Structures dont work on Win32 */
+
   /* struct tests */
   {
     test_structure_1 ts1_arg;
@@ -700,6 +702,10 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 
     free (ts5_result);
   }
+
+#else
+  printf("Structure passing doesn't work on Win32.\n");
+#endif /* X86_WIN32 */
 
 # if FFI_CLOSURES
   /* A simple closure test */
