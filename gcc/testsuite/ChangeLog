@@ -1,3 +1,8 @@
+2001-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20010714-1.c, gcc.dg/format/attr-4.c: New
+	tests.
+
 2001-07-17  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* g++.old-deja/g++.robertl/eb130.C: Include the correct header file.

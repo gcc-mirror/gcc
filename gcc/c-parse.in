@@ -244,8 +244,32 @@ static int if_stmt_line;
 static tree current_declspecs = NULL_TREE;
 static tree prefix_attributes = NULL_TREE;
 
-/* Stack of saved values of current_declspecs and prefix_attributes.  */
+/* List of all the attributes applying to the identifier currently being
+   declared; includes prefix_attributes and possibly some more attributes
+   just after a comma.  */
+static tree all_prefix_attributes = NULL_TREE;
+
+/* Stack of saved values of current_declspecs, prefix_attributes and
+   all_prefix_attributes.  */
 static tree declspec_stack;
+
+/* PUSH_DECLSPEC_STACK is called from setspecs; POP_DECLSPEC_STACK
+   should be called from the productions making use of setspecs.  */
+#define PUSH_DECLSPEC_STACK						 \
+  do {									 \
+    declspec_stack = tree_cons (build_tree_list (prefix_attributes,	 \
+						 all_prefix_attributes), \
+				current_declspecs,			 \
+				declspec_stack);			 \
+  } while (0)
+
+#define POP_DECLSPEC_STACK						\
+  do {									\
+    current_declspecs = TREE_VALUE (declspec_stack);			\
+    prefix_attributes = TREE_PURPOSE (TREE_PURPOSE (declspec_stack));	\
+    all_prefix_attributes = TREE_VALUE (TREE_PURPOSE (declspec_stack));	\
+    declspec_stack = TREE_CHAIN (declspec_stack);			\
+  } while (0)
 
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
@@ -291,6 +315,7 @@ c_parse_init ()
   ggc_add_tree_root (&declspec_stack, 1);
   ggc_add_tree_root (&current_declspecs, 1);
   ggc_add_tree_root (&prefix_attributes, 1);
+  ggc_add_tree_root (&all_prefix_attributes, 1);
 ifobjc
   ggc_add_tree_root (&objc_interface_context, 1);
   ggc_add_tree_root (&objc_implementation_context, 1);
@@ -355,17 +380,11 @@ datadef:
 		  else if (!flag_traditional)
 		    warning ("data definition has no type or storage class"); 
 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
         | declspecs_nots setspecs notype_initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs ';'
 	  { shadow_tag ($1); }
 	| error ';'
@@ -378,7 +397,7 @@ datadef:
 fndef:
 	  declspecs_ts setspecs declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes))
+					all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -387,16 +406,12 @@ fndef:
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
 		  finish_function (0); 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes))
+					all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -405,16 +420,12 @@ fndef:
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
 		  finish_function (0); 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator error
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator
 		{ if (! start_function (NULL_TREE, $2,
-					prefix_attributes))
+					all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -423,13 +434,9 @@ fndef:
 		{ DECL_SOURCE_FILE (current_function_decl) = $6;
 		  DECL_SOURCE_LINE (current_function_decl) = $7;
 		  finish_function (0); 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator error
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	;
 
 identifier:
@@ -800,13 +807,9 @@ datadecls:
    style parm.  */
 datadecl:
 	declspecs_ts_nosa setspecs initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_nots_nosa setspecs notype_initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);	
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa ';'
 		{ shadow_tag_warned ($1, 1);
 		  pedwarn ("empty declaration"); }
@@ -829,16 +832,15 @@ lineno_decl:
    for the sake of parm declarations nested in function declarators.  */
 setspecs: /* empty */
 		{ pending_xref_error ();
-		  declspec_stack = tree_cons (prefix_attributes,
-					      current_declspecs,
-					      declspec_stack);
+		  PUSH_DECLSPEC_STACK;
 		  split_specs_attrs ($<ttype>0,
-				     &current_declspecs, &prefix_attributes); }
+				     &current_declspecs, &prefix_attributes);
+		  all_prefix_attributes = prefix_attributes; }
 	;
 
 /* ??? Yuck.  See maybe_setattrs.  */
 setattrs: /* empty */
-		{ prefix_attributes = chainon (prefix_attributes, $<ttype>0); }
+		{ all_prefix_attributes = chainon ($<ttype>0, all_prefix_attributes); }
 	;
 
 maybe_setattrs:
@@ -854,23 +856,22 @@ maybe_setattrs:
 	  maybe_attribute setattrs
 	;
 
+/* Possibly attributes after a comma, which should reset all_prefix_attributes
+   to prefix_attributes with these ones chained on the front.  */
+maybe_resetattrs:
+		{ all_prefix_attributes = prefix_attributes; }
+	  maybe_setattrs
+	;
+
 decl:
 	declspecs_ts setspecs initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs nested_function
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_nested_function
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs ';'
 		{ shadow_tag ($1); }
 	| extension decl
@@ -1347,7 +1348,7 @@ maybe_type_quals_setattrs:
 		  split_specs_attrs ($1, &specs, &attrs);
 		  /* ??? Yuck.  See maybe_setattrs.  */
 		  if (attrs != NULL_TREE)
-		    prefix_attributes = chainon (prefix_attributes, attrs);
+		    all_prefix_attributes = chainon (attrs, all_prefix_attributes);
 		  $$ = specs; }
 	;
 
@@ -1416,12 +1417,12 @@ end ifobjc
 
 initdecls:
 	initdcl
-	| initdecls ',' maybe_setattrs initdcl
+	| initdecls ',' maybe_resetattrs initdcl
 	;
 
 notype_initdecls:
 	notype_initdcl
-	| notype_initdecls ',' maybe_setattrs notype_initdcl
+	| notype_initdecls ',' maybe_resetattrs notype_initdcl
 	;
 
 maybeasm:
@@ -1436,7 +1437,7 @@ maybeasm:
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
-					  chainon ($3, prefix_attributes));
+					  chainon ($3, all_prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
@@ -1444,7 +1445,7 @@ initdcl:
 		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
-				       chainon ($3, prefix_attributes));
+				       chainon ($3, all_prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2); 
                 }
 	;
@@ -1452,7 +1453,7 @@ initdcl:
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
-					  chainon ($3, prefix_attributes));
+					  chainon ($3, all_prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
@@ -1460,7 +1461,7 @@ notype_initdcl:
 		  finish_decl ($<ttype>5, $6, $2); }
 	| notype_declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
-				       chainon ($3, prefix_attributes));
+				       chainon ($3, all_prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2); }
 	;
 /* the * rules are dummies to accept the Apollo extended syntax
@@ -1594,7 +1595,7 @@ nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes))
+					all_prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1624,7 +1625,7 @@ notype_nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes))
+					all_prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1848,9 +1849,7 @@ end ifobjc
 component_decl:
 	  declspecs_nosc_ts setspecs components
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_ts setspecs save_filename save_lineno
 		{
 		  /* Support for unnamed structs or unions as members of 
@@ -1860,15 +1859,10 @@ component_decl:
 		    pedwarn ("ISO C doesn't support unnamed structs/unions");
 
 		  $$ = grokfield($3, $4, NULL, current_declspecs, NULL_TREE);
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		}
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_nots setspecs components_notype
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_nots
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids member declarations with no members");
@@ -1883,40 +1877,40 @@ component_decl:
 
 components:
 	  component_declarator
-	| components ',' maybe_setattrs component_declarator
+	| components ',' maybe_resetattrs component_declarator
 		{ $$ = chainon ($1, $4); }
 	;
 
 components_notype:
 	  component_notype_declarator
-	| components_notype ',' maybe_setattrs component_notype_declarator
+	| components_notype ',' maybe_resetattrs component_notype_declarator
 		{ $$ = chainon ($1, $4); }
 	;
 
 component_declarator:
 	  save_filename save_lineno declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes (&$$, chainon ($4, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($4, all_prefix_attributes), 0); }
 	| save_filename save_lineno
 	  declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes (&$$, chainon ($6, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($6, all_prefix_attributes), 0); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes (&$$, chainon ($5, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($5, all_prefix_attributes), 0); }
 	;
 
 component_notype_declarator:
 	  save_filename save_lineno notype_declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes (&$$, chainon ($4, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($4, all_prefix_attributes), 0); }
 	| save_filename save_lineno
 	  notype_declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes (&$$, chainon ($6, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($6, all_prefix_attributes), 0); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes (&$$, chainon ($5, prefix_attributes), 0); }
+		  decl_attributes (&$$, chainon ($5, all_prefix_attributes), 0); }
 	;
 
 /* We chain the enumerators in reverse order.
@@ -1966,15 +1960,15 @@ absdcl_maybe_attribute:   /* absdcl maybe_attribute, but not just attributes */
 	/* empty */
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 NULL_TREE),
-					prefix_attributes); }
+					all_prefix_attributes); }
 	| absdcl1
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					prefix_attributes); }
+					all_prefix_attributes); }
 	| absdcl1_noea attributes
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					chainon ($2, prefix_attributes)); }
+					chainon ($2, all_prefix_attributes)); }
 	;
 
 absdcl1:  /* a nonempty absolute declarator */
@@ -2564,35 +2558,25 @@ parm:
 	  declspecs_ts setspecs parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes));
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes));
+		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes)); 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes)); 
+		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs absdcl_maybe_attribute
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes));
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes));
+		  POP_DECLSPEC_STACK; }
 
 	| declspecs_nots setspecs absdcl_maybe_attribute
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	;
 
 /* The first parm, which must suck attributes from off the top of the parser
@@ -2601,40 +2585,31 @@ firstparm:
 	  declspecs_ts_nosa setspecs_fp parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes));
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes));
+		  POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa setspecs_fp notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes)); 
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes)); 
+		  POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa setspecs_fp absdcl_maybe_attribute
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nots_nosa setspecs_fp notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					chainon ($4, prefix_attributes));
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+					chainon ($4, all_prefix_attributes));
+		  POP_DECLSPEC_STACK; }
 
 	| declspecs_nots_nosa setspecs_fp absdcl_maybe_attribute
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	;
 
 setspecs_fp:
 	  setspecs
-		{ prefix_attributes = chainon (prefix_attributes, $<ttype>-2); }
+		{ prefix_attributes = chainon (prefix_attributes, $<ttype>-2);
+		  all_prefix_attributes = prefix_attributes; }
 	;
 
 /* This is used in a function definition
@@ -2918,14 +2893,10 @@ ivar_decls:
 ivar_decl:
 	declspecs_nosc_ts setspecs ivars
 	        { $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| declspecs_nosc_nots setspecs ivars
 		{ $$ = $3;
-		  current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		  POP_DECLSPEC_STACK; }
 	| error
 		{ $$ = NULL_TREE; }
 	;
@@ -2934,7 +2905,7 @@ ivars:
 	  /* empty */
 		{ $$ = NULL_TREE; }
 	| ivar_declarator
-	| ivars ',' maybe_setattrs ivar_declarator
+	| ivars ',' maybe_resetattrs ivar_declarator
 	;
 
 ivar_declarator:
@@ -3081,9 +3052,7 @@ mydecls:
 
 mydecl:
 	declspecs_ts setspecs myparms ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
-		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack); }
+		{ POP_DECLSPEC_STACK; }
 	| declspecs_ts ';'
 		{ shadow_tag ($1); }
 	| declspecs_nots ';'
@@ -3104,11 +3073,11 @@ myparm:
 	  parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					chainon ($2, prefix_attributes)); }
+					chainon ($2, all_prefix_attributes)); }
 	| notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					chainon ($2, prefix_attributes)); }
+					chainon ($2, all_prefix_attributes)); }
 	| absdcl_maybe_attribute
 		{ $$ = $1; }
 	;
