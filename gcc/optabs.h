@@ -454,6 +454,10 @@ enum can_compare_purpose
   ccp_store_flag
 };
 
+/* Return the optab used for computing the given operation on the type
+   given by the second argument.  */
+extern optab optab_for_tree_code (enum tree_code, tree);
+
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
 extern int can_compare_p (enum rtx_code, enum machine_mode,

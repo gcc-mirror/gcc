@@ -1,3 +1,45 @@
+2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-cfg.c (gimplify_val): Move from tree-complex.c.
+	(gimplify_build1): Move from tree-complex.c do_unop.
+	(gimplify_build2): Move from tree-complex.c do_binop.
+	(gimplify_build3): New.
+	* tree-complex.c (gimplify_val, do_unop, do_binop): Remove.
+	Adjust throughout to call the functions above.
+	* tree-flow.h: Declare the functions above.
+	* tree-nested.c (gimplify_val): Rename to...
+	(tsi_gimplify_val): ... this.
+
+	* Makefile.in (tree_complex.o): Update dependencies.
+	(stor-layout.o): Depend on regs.h.
+	* c-common.c (handle_vector_size_attribute): Update for
+	vector types without corresponding vector modes.
+	* expr.c (expand_expr): Treat VECTOR_CST's like CONSTRUCTORS if
+	a corresponding vector mode is not available.
+	* print-tree.c (print_node): Print nunits for vector types
+	* regclass.c (have_regs_of_mode): New.
+	(init_reg_sets_1): Initialize it and use it instead
+	of allocatable_regs_of_mode.
+	* regs.h (have_regs_of_mode): Declare it.
+	* stor-layout.c (layout_type): Pick a mode for vector types.
+	* tree-complex.c (build_word_mode_vector_type, tree_vec_extract,
+	build_replicated_const, do_unop, do_binop, do_plus_minus,
+	do_negate, expand_vector_piecewise, expand_vector_parallel,
+	expand_vector_addition, expand_vector_operations_1,
+	expand_vector_operations, tree_lower_operations,
+	pass_lower_vector_ssa, pass_pre_expand): New.
+	(expand_complex_operations, pass_lower_complex): Remove.
+	* tree-optimize.c (init_tree_optimization_passes): Adjust
+	pass ordering for changes in tree-complex.c.
+	* tree-pass.h: Declare new passes.
+	* tree.c (finish_vector_type): Remove.
+	(make_vector_type): New.
+	(build_vector_type_for_mode, build_vector_type): Rewritten.
+	* tree.def (VECTOR_TYPE): Document where the number of
+	subparts is stored.
+	* tree.h (TYPE_VECTOR_SUBPARTS): Use TYPE_PRECISION field.
+	(make_vector): Remove declaration.
+
 2004-07-21  Richard Henderson  <rth@redhat.com>
 
 	* gimple-low.c (expand_var_p): Don't look at TREE_ADDRESSABLE,

@@ -537,6 +537,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	print_node (file, "values", TYPE_VALUES (node), indent + 4);
       else if (TREE_CODE (node) == ARRAY_TYPE || TREE_CODE (node) == SET_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
+      else if (TREE_CODE (node) == VECTOR_TYPE)
+	fprintf (file, " nunits %d", (int) TYPE_VECTOR_SUBPARTS (node));
       else if (TREE_CODE (node) == RECORD_TYPE
 	       || TREE_CODE (node) == UNION_TYPE
 	       || TREE_CODE (node) == QUAL_UNION_TYPE)

@@ -1516,7 +1516,7 @@ struct tree_block GTY(())
 
 /* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
 #define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
-  GET_MODE_NUNITS (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.mode)
+  (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision)
 
 /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
@@ -3480,7 +3480,6 @@ extern void expand_function_start (tree);
 extern void expand_pending_sizes (tree);
 extern void recompute_tree_invarant_for_addr_expr (tree);
 extern bool needs_to_live_in_memory (tree);
-extern tree make_vector (enum machine_mode, tree, int);
 extern tree reconstruct_complex_type (tree, tree);
 
 extern int real_onep (tree);

@@ -1,4 +1,4 @@
-/* Lower complex operations to scalar operations.
+/* Lower complex number and vector operations to scalar operations.
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -23,34 +23,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tree.h"
 #include "tm.h"
+#include "rtl.h"
+#include "expr.h"
+#include "insn-codes.h"
+#include "diagnostic.h"
+#include "optabs.h"
+#include "machmode.h"
+#include "langhooks.h"
 #include "tree-flow.h"
 #include "tree-gimple.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "flags.h"
 
-
-/* Force EXP to be a gimple_val.  */
-
-static tree
-gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
-{
-  tree t, new_stmt, orig_stmt;
-
-  if (is_gimple_val (exp))
-    return exp;
-
-  t = make_rename_temp (type, NULL);
-  new_stmt = build (MODIFY_EXPR, type, t, exp);
-
-  orig_stmt = bsi_stmt (*bsi);
-  SET_EXPR_LOCUS (new_stmt, EXPR_LOCUS (orig_stmt));
-  TREE_BLOCK (new_stmt) = TREE_BLOCK (orig_stmt);
-
-  bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-
-  return t;
-}
 
 /* Extract the real or imaginary part of a complex variable or constant.
    Make sure that it's a proper gimple_val and gimplify it if not.
@@ -85,35 +70,6 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p)
   return gimplify_val (bsi, inner_type, ret);
 }
 
-/* Build a binary operation and gimplify it.  Emit code before BSI.
-   Return the gimple_val holding the result.  */
-
-static tree
-do_binop (block_stmt_iterator *bsi, enum tree_code code,
-	  tree type, tree a, tree b)
-{
-  tree ret;
-
-  ret = fold (build (code, type, a, b));
-  STRIP_NOPS (ret);
-
-  return gimplify_val (bsi, type, ret);
-}
-
-/* Build a unary operation and gimplify it.  Emit code before BSI.
-   Return the gimple_val holding the result.  */
-
-static tree
-do_unop (block_stmt_iterator *bsi, enum tree_code code, tree type, tree a)
-{
-  tree ret;
-
-  ret = fold (build1 (code, type, a));
-  STRIP_NOPS (ret);
-
-  return gimplify_val (bsi, type, ret);
-}
-
 /* Update an assignment to a complex variable in place.  */
 
 static void
@@ -142,8 +98,8 @@ expand_complex_addition (block_stmt_iterator *bsi, tree inner_type,
 {
   tree rr, ri;
 
-  rr = do_binop (bsi, code, inner_type, ar, br);
-  ri = do_binop (bsi, code, inner_type, ai, bi);
+  rr = gimplify_build2 (bsi, code, inner_type, ar, br);
+  ri = gimplify_build2 (bsi, code, inner_type, ai, bi);
 
   update_complex_assignment (bsi, rr, ri);
 }
@@ -158,19 +114,19 @@ expand_complex_multiplication (block_stmt_iterator *bsi, tree inner_type,
 {
   tree t1, t2, t3, t4, rr, ri;
 
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, ar, br);
-  t2 = do_binop (bsi, MULT_EXPR, inner_type, ai, bi);
-  t3 = do_binop (bsi, MULT_EXPR, inner_type, ar, bi);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, br);
+  t2 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, bi);
+  t3 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, bi);
 
   /* Avoid expanding redundant multiplication for the common
      case of squaring a complex number.  */
   if (ar == br && ai == bi)
     t4 = t3;
   else
-    t4 = do_binop (bsi, MULT_EXPR, inner_type, ai, br);
+    t4 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, br);
 
-  rr = do_binop (bsi, MINUS_EXPR, inner_type, t1, t2);
-  ri = do_binop (bsi, PLUS_EXPR, inner_type, t3, t4);
+  rr = gimplify_build2 (bsi, MINUS_EXPR, inner_type, t1, t2);
+  ri = gimplify_build2 (bsi, PLUS_EXPR, inner_type, t3, t4);
 
   update_complex_assignment (bsi, rr, ri);
 }
@@ -187,19 +143,19 @@ expand_complex_div_straight (block_stmt_iterator *bsi, tree inner_type,
 {
   tree rr, ri, div, t1, t2, t3;
 
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, br, br);
-  t2 = do_binop (bsi, MULT_EXPR, inner_type, bi, bi);
-  div = do_binop (bsi, PLUS_EXPR, inner_type, t1, t2);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, br, br);
+  t2 = gimplify_build2 (bsi, MULT_EXPR, inner_type, bi, bi);
+  div = gimplify_build2 (bsi, PLUS_EXPR, inner_type, t1, t2);
 
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, ar, br);
-  t2 = do_binop (bsi, MULT_EXPR, inner_type, ai, bi);
-  t3 = do_binop (bsi, PLUS_EXPR, inner_type, t1, t2);
-  rr = do_binop (bsi, code, inner_type, t3, div);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, br);
+  t2 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, bi);
+  t3 = gimplify_build2 (bsi, PLUS_EXPR, inner_type, t1, t2);
+  rr = gimplify_build2 (bsi, code, inner_type, t3, div);
 
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, ai, br);
-  t2 = do_binop (bsi, MULT_EXPR, inner_type, ar, bi);
-  t3 = do_binop (bsi, MINUS_EXPR, inner_type, t1, t2);
-  ri = do_binop (bsi, code, inner_type, t3, div);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, br);
+  t2 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, bi);
+  t3 = gimplify_build2 (bsi, MINUS_EXPR, inner_type, t1, t2);
+  ri = gimplify_build2 (bsi, code, inner_type, t3, div);
 
   update_complex_assignment (bsi, rr, ri);
 }
@@ -215,8 +171,8 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
   tree rr, ri, ratio, div, t1, t2, min, max, cond;
 
   /* Examine |br| < |bi|, and branch.  */
-  t1 = do_unop (bsi, ABS_EXPR, inner_type, br);
-  t2 = do_unop (bsi, ABS_EXPR, inner_type, bi);
+  t1 = gimplify_build1 (bsi, ABS_EXPR, inner_type, br);
+  t2 = gimplify_build1 (bsi, ABS_EXPR, inner_type, bi);
   cond = fold (build (LT_EXPR, boolean_type_node, t1, t2));
   STRIP_NOPS (cond);
 
@@ -292,20 +248,20 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
   
   /* Now we have MIN(|br|, |bi|) and MAX(|br|, |bi|).  We now use the
      ratio min/max to scale both the dividend and divisor.  */
-  ratio = do_binop (bsi, code, inner_type, min, max);
+  ratio = gimplify_build2 (bsi, code, inner_type, min, max);
 
   /* Calculate the divisor: min*ratio + max.  */
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, min, ratio);
-  div = do_binop (bsi, PLUS_EXPR, inner_type, t1, max);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, min, ratio);
+  div = gimplify_build2 (bsi, PLUS_EXPR, inner_type, t1, max);
 
-  /* Result is now ((ar + ai*ratio)/div) + i((ai - ar*ratio)/div).  */
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, ai, ratio);
-  t2 = do_binop (bsi, PLUS_EXPR, inner_type, ar, t1);
-  rr = do_binop (bsi, code, inner_type, t2, div);
+  /* Result is now ((ar + ai*ratio)/div) + i((ai - ar*ratio)/div). */
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ai, ratio);
+  t2 = gimplify_build2 (bsi, PLUS_EXPR, inner_type, ar, t1);
+  rr = gimplify_build2 (bsi, code, inner_type, t2, div);
 
-  t1 = do_binop (bsi, MULT_EXPR, inner_type, ar, ratio);
-  t2 = do_binop (bsi, MINUS_EXPR, inner_type, ai, t1);
-  ri = do_binop (bsi, code, inner_type, t2, div);
+  t1 = gimplify_build2 (bsi, MULT_EXPR, inner_type, ar, ratio);
+  t2 = gimplify_build2 (bsi, MINUS_EXPR, inner_type, ai, t1);
+  ri = gimplify_build2 (bsi, code, inner_type, t2, div);
 
   update_complex_assignment (bsi, rr, ri);
 }
@@ -343,8 +299,8 @@ expand_complex_negation (block_stmt_iterator *bsi, tree inner_type,
 {
   tree rr, ri;
 
-  rr = do_unop (bsi, NEGATE_EXPR, inner_type, ar);
-  ri = do_unop (bsi, NEGATE_EXPR, inner_type, ai);
+  rr = gimplify_build1 (bsi, NEGATE_EXPR, inner_type, ar);
+  ri = gimplify_build1 (bsi, NEGATE_EXPR, inner_type, ai);
 
   update_complex_assignment (bsi, rr, ri);
 }
@@ -359,7 +315,7 @@ expand_complex_conjugate (block_stmt_iterator *bsi, tree inner_type,
 {
   tree ri;
 
-  ri = do_unop (bsi, NEGATE_EXPR, inner_type, ai);
+  ri = gimplify_build1 (bsi, NEGATE_EXPR, inner_type, ai);
 
   update_complex_assignment (bsi, ar, ri);
 }
@@ -372,10 +328,11 @@ expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
 {
   tree cr, ci, cc, stmt, type;
 
-  cr = do_binop (bsi, code, boolean_type_node, ar, br);
-  ci = do_binop (bsi, code, boolean_type_node, ai, bi);
-  cc = do_binop (bsi, (code == EQ_EXPR ? TRUTH_AND_EXPR : TRUTH_OR_EXPR),
-		 boolean_type_node, cr, ci);
+  cr = gimplify_build2 (bsi, code, boolean_type_node, ar, br);
+  ci = gimplify_build2 (bsi, code, boolean_type_node, ai, bi);
+  cc = gimplify_build2 (bsi,
+			(code == EQ_EXPR ? TRUTH_AND_EXPR : TRUTH_OR_EXPR),
+			boolean_type_node, cr, ci);
 
   stmt = bsi_stmt (*bsi);
   modify_stmt (stmt);
@@ -517,17 +474,434 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
       abort ();
     }
 }
+
+/* Build a constant of type TYPE, made of VALUE's bits replicated
+   every TYPE_SIZE (INNER_TYPE) bits to fit TYPE's precision.  */
+static tree
+build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
+{
+  int width = tree_low_cst (TYPE_SIZE (inner_type), 1);
+  int n = HOST_BITS_PER_WIDE_INT / width;
+  unsigned HOST_WIDE_INT low, high, mask;
+  tree ret;
 
-/* Main loop to process each statement.  */
-/* ??? Could use dominator bits to propagate from complex_expr at the
-   same time.  This might reveal more constants, particularly in cases
-   such as (complex = complex op scalar).  This may not be relevant
-   after SRA and subsequent cleanups.  Proof of this would be if we
-   verify that the code generated by expand_complex_div_wide is
-   simplified properly to straight-line code.  */
+  if (n == 0)
+    abort ();
+
+  if (width == HOST_BITS_PER_WIDE_INT)
+    low = value;
+  else
+    {
+      mask = ((HOST_WIDE_INT)1 << width) - 1;
+      low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
+    }
+
+  if (TYPE_PRECISION (type) < HOST_BITS_PER_WIDE_INT)
+    low &= ((HOST_WIDE_INT)1 << TYPE_PRECISION (type)) - 1, high = 0;
+  else if (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT)
+    high = 0;
+  else if (TYPE_PRECISION (type) == 2 * HOST_BITS_PER_WIDE_INT)
+    high = low;
+  else
+    abort ();
+
+  ret = build_int_2 (low, high);
+  TREE_TYPE (ret) = type;
+  return ret;
+}
+
+/* Return a suitable vector types made of SUBPARTS units each of mode
+   "word_mode" (the global variable).  */
+static tree
+build_word_mode_vector_type (int nunits)
+{
+  static tree innertype;
+  static tree last;
+  static int last_nunits;
+
+  if (!innertype)
+    innertype = lang_hooks.types.type_for_mode (word_mode, 1);
+  else if (last_nunits == nunits)
+    return last;
+
+  /* We build a new type, but we canonicalize it nevertheless,
+     because it still saves some memory.  */
+  last_nunits = nunits;
+  last = type_hash_canon (nunits, build_vector_type (innertype, nunits));
+  return last;
+}
+
+typedef tree (*elem_op_func) (block_stmt_iterator *,
+			      tree, tree, tree, tree, tree, enum tree_code);
+
+static inline tree
+tree_vec_extract (block_stmt_iterator *bsi, tree type,
+		  tree t, tree bitsize, tree bitpos)
+{
+  if (bitpos)
+    return gimplify_build3 (bsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
+  else
+    return gimplify_build1 (bsi, VIEW_CONVERT_EXPR, type, t);
+}
+
+static tree
+do_unop (block_stmt_iterator *bsi, tree inner_type, tree a,
+	 tree b ATTRIBUTE_UNUSED, tree bitpos, tree bitsize,
+	 enum tree_code code)
+{
+  a = tree_vec_extract (bsi, inner_type, a, bitsize, bitpos);
+  return gimplify_build1 (bsi, code, inner_type, a);
+}
+
+static tree
+do_binop (block_stmt_iterator *bsi, tree inner_type, tree a, tree b,
+	  tree bitpos, tree bitsize, enum tree_code code)
+{
+  a = tree_vec_extract (bsi, inner_type, a, bitsize, bitpos);
+  b = tree_vec_extract (bsi, inner_type, b, bitsize, bitpos);
+  return gimplify_build2 (bsi, code, inner_type, a, b);
+}
+
+/* Expand vector addition to scalars.  This does bit twiddling
+   in order to increase parallelism:
+
+   a + b = (((int) a & 0x7f7f7f7f) + ((int) b & 0x7f7f7f7f)) ^
+           (a ^ b) & 0x80808080
+
+   a - b =  (((int) a | 0x80808080) - ((int) b & 0x7f7f7f7f)) ^
+            (a ^ ~b) & 0x80808080
+
+   -b = (0x80808080 - ((int) b & 0x7f7f7f7f)) ^ (~b & 0x80808080)
+
+   This optimization should be done only if 4 vector items or more
+   fit into a word.  */
+static tree
+do_plus_minus (block_stmt_iterator *bsi, tree word_type, tree a, tree b,
+	       tree bitpos ATTRIBUTE_UNUSED, tree bitsize ATTRIBUTE_UNUSED,
+	       enum tree_code code)
+{
+  tree inner_type = TREE_TYPE (TREE_TYPE (a));
+  unsigned HOST_WIDE_INT max;
+  tree low_bits, high_bits, a_low, b_low, result_low, signs;
+
+  max = GET_MODE_MASK (TYPE_MODE (inner_type));
+  low_bits = build_replicated_const (word_type, inner_type, max >> 1);
+  high_bits = build_replicated_const (word_type, inner_type, max & ~(max >> 1));
+
+  a = tree_vec_extract (bsi, word_type, a, bitsize, bitpos);
+  b = tree_vec_extract (bsi, word_type, b, bitsize, bitpos);
+
+  signs = gimplify_build2 (bsi, BIT_XOR_EXPR, word_type, a, b);
+  b_low = gimplify_build2 (bsi, BIT_AND_EXPR, word_type, b, low_bits);
+  if (code == PLUS_EXPR)
+    a_low = gimplify_build2 (bsi, BIT_AND_EXPR, word_type, a, low_bits);
+  else
+    {
+      a_low = gimplify_build2 (bsi, BIT_IOR_EXPR, word_type, a, high_bits);
+      signs = gimplify_build1 (bsi, BIT_NOT_EXPR, word_type, signs);
+    }
+
+  signs = gimplify_build2 (bsi, BIT_AND_EXPR, word_type, signs, high_bits);
+  result_low = gimplify_build2 (bsi, code, word_type, a_low, b_low);
+  return gimplify_build2 (bsi, BIT_XOR_EXPR, word_type, result_low, signs);
+}
+
+static tree
+do_negate (block_stmt_iterator *bsi, tree word_type, tree b,
+	   tree unused ATTRIBUTE_UNUSED, tree bitpos ATTRIBUTE_UNUSED,
+	   tree bitsize ATTRIBUTE_UNUSED,
+	   enum tree_code code ATTRIBUTE_UNUSED)
+{
+  tree inner_type = TREE_TYPE (TREE_TYPE (b));
+  HOST_WIDE_INT max;
+  tree low_bits, high_bits, b_low, result_low, signs;
+
+  max = GET_MODE_MASK (TYPE_MODE (inner_type));
+  low_bits = build_replicated_const (word_type, inner_type, max >> 1);
+  high_bits = build_replicated_const (word_type, inner_type, max & ~(max >> 1));
+
+  b = tree_vec_extract (bsi, word_type, b, bitsize, bitpos);
+
+  b_low = gimplify_build2 (bsi, BIT_AND_EXPR, word_type, b, low_bits);
+  signs = gimplify_build1 (bsi, BIT_NOT_EXPR, word_type, b);
+  signs = gimplify_build2 (bsi, BIT_AND_EXPR, word_type, signs, high_bits);
+  result_low = gimplify_build2 (bsi, MINUS_EXPR, word_type, high_bits, b_low);
+  return gimplify_build2 (bsi, BIT_XOR_EXPR, word_type, result_low, signs);
+}
+
+/* Expand a vector operation to scalars, by using many operations
+   whose type is the vector type's inner type.  */
+static tree
+expand_vector_piecewise (block_stmt_iterator *bsi, elem_op_func f,
+			 tree type, tree inner_type,
+			 tree a, tree b, enum tree_code code)
+{
+  tree head, *chain = &head;
+  tree part_width = TYPE_SIZE (inner_type);
+  tree index = bitsize_int (0);
+  int nunits = TYPE_VECTOR_SUBPARTS (type);
+  int delta = tree_low_cst (part_width, 1)
+	      / tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+  int i;
+
+  for (i = 0; i < nunits;
+       i += delta, index = int_const_binop (PLUS_EXPR, index, part_width, 0))
+    {
+      tree result = f (bsi, inner_type, a, b, index, part_width, code);
+      *chain = tree_cons (NULL_TREE, result, NULL_TREE);
+      chain = &TREE_CHAIN (*chain);
+    }
+
+  return build1 (CONSTRUCTOR, type, head);
+}
+
+/* Expand a vector operation to scalars with the freedom to use
+   a scalar integer type, or to use a different size for the items
+   in the vector type.  */
+static tree
+expand_vector_parallel (block_stmt_iterator *bsi, elem_op_func f, tree type,
+			tree a, tree b,
+			enum tree_code code)
+{
+  tree result, compute_type;
+  enum machine_mode mode;
+  int n_words = tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
+
+  /* We have three strategies.  If the type is already correct, just do
+     the operation an element at a time.  Else, if the vector is wider than
+     one word, do it a word at a time; finally, if the vector is smaller
+     than one word, do it as a scalar.  */
+  if (TYPE_MODE (TREE_TYPE (type)) == word_mode)
+     return expand_vector_piecewise (bsi, f,
+				     type, TREE_TYPE (type),
+				     a, b, code);
+  else if (n_words > 1)
+    {
+      tree word_type = build_word_mode_vector_type (n_words);
+      result = expand_vector_piecewise (bsi, f,
+				        word_type, TREE_TYPE (word_type),
+					a, b, code);
+      result = gimplify_val (bsi, word_type, result);
+    }
+  else
+    {
+      /* Use a single scalar operation with a mode no wider than word_mode.  */
+      mode = mode_for_size (tree_low_cst (TYPE_SIZE (type), 1), MODE_INT, 0);
+      compute_type = lang_hooks.types.type_for_mode (mode, 1);
+      result = f (bsi, compute_type, a, b, NULL_TREE, NULL_TREE, code);
+    }
+
+  return build1 (VIEW_CONVERT_EXPR, type, result);
+}
+
+/* Expand a vector operation to scalars; for integer types we can use
+   special bit twiddling tricks to do the sums a word at a time, using
+   function F_PARALLEL instead of F.  These tricks are done only if
+   they can process at least four items, that is, only if the vector
+   holds at least four items and if a word can hold four items.  */
+static tree
+expand_vector_addition (block_stmt_iterator *bsi,
+			elem_op_func f, elem_op_func f_parallel,
+			tree type, tree a, tree b, enum tree_code code)
+{
+  int parts_per_word = UNITS_PER_WORD
+	  	       / tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type)), 1);
+
+  if (INTEGRAL_TYPE_P (TREE_TYPE (type))
+      && parts_per_word >= 4
+      && TYPE_VECTOR_SUBPARTS (type) >= 4)
+    return expand_vector_parallel (bsi, f_parallel,
+				   type, a, b, code);
+  else
+    return expand_vector_piecewise (bsi, f,
+				    type, TREE_TYPE (type),
+				    a, b, code);
+}
+
+/* Return a type for the widest vector mode whose components are of mode
+   INNER_MODE, or NULL_TREE if none is found.  */
+static tree
+type_for_widest_vector_mode (enum machine_mode inner_mode, optab op)
+{
+  enum machine_mode best_mode = VOIDmode, mode;
+  int best_nunits = 0;
+
+  if (GET_MODE_CLASS (inner_mode) == MODE_FLOAT)
+    mode = MIN_MODE_VECTOR_FLOAT;
+  else
+    mode = MIN_MODE_VECTOR_INT;
+
+  for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_INNER (mode) == inner_mode
+        && GET_MODE_NUNITS (mode) > best_nunits
+	&& op->handlers[mode].insn_code != CODE_FOR_nothing)
+      best_mode = mode, best_nunits = GET_MODE_NUNITS (mode);
+
+  if (best_mode == VOIDmode)
+    return NULL_TREE;
+  else
+    return lang_hooks.types.type_for_mode (best_mode, 1);
+}
+
+/* Process one statement.  If we identify a vector operation, expand it.  */
 
 static void
-expand_complex_operations (void)
+expand_vector_operations_1 (block_stmt_iterator *bsi)
+{
+  tree stmt = bsi_stmt (*bsi);
+  tree *p_rhs, rhs, type, compute_type;
+  enum tree_code code;
+  enum machine_mode compute_mode;
+  optab op;
+
+  switch (TREE_CODE (stmt))
+    {
+    case RETURN_EXPR:
+      stmt = TREE_OPERAND (stmt, 0);
+      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
+	return;
+
+      /* FALLTHRU */
+
+    case MODIFY_EXPR:
+      p_rhs = &TREE_OPERAND (stmt, 1);
+      rhs = *p_rhs;
+      break;
+
+    default:
+      return;
+    }
+
+  type = TREE_TYPE (rhs);
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    return;
+
+  code = TREE_CODE (rhs);
+  if (TREE_CODE_CLASS (code) != '1'
+      && TREE_CODE_CLASS (code) != '2')
+    return;
+
+  if (code == NOP_EXPR || code == VIEW_CONVERT_EXPR)
+    return;
+
+  if (code == CONVERT_EXPR)
+    abort ();
+
+  op = optab_for_tree_code (code, type);
+
+  /* Optabs will try converting a negation into a subtraction, so
+     look for it as well.  TODO: negation of floating-point vectors
+     might be turned into an exclusive OR toggling the sign bit.  */
+  if (op == NULL
+      && code == NEGATE_EXPR
+      && INTEGRAL_TYPE_P (TREE_TYPE (type)))
+    op = optab_for_tree_code (MINUS_EXPR, type);
+
+  /* For very wide vectors, try using a smaller vector mode.  */
+  compute_type = type;
+  if (TYPE_MODE (type) == BLKmode && op)
+    {
+      tree vector_compute_type
+        = type_for_widest_vector_mode (TYPE_MODE (TREE_TYPE (type)), op);
+      if (vector_compute_type != NULL_TREE)
+        compute_type = vector_compute_type;
+    }
+
+  compute_mode = TYPE_MODE (compute_type);
+
+  /* If we are breaking a BLKmode vector into smaller pieces,
+     type_for_widest_vector_mode has already looked into the optab,
+     so skip these checks.  */
+  if (compute_type == type)
+    {
+      if ((GET_MODE_CLASS (compute_mode) == MODE_VECTOR_INT
+	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_FLOAT)
+          && op != NULL
+	  && op->handlers[compute_mode].insn_code != CODE_FOR_nothing)
+	return;
+      else
+	{
+	  /* There is no operation in hardware, so fall back to scalars.  */
+	  compute_type = TREE_TYPE (type);
+	  compute_mode = TYPE_MODE (compute_type);
+	}
+    }
+
+  /* If the compute mode is not a vector mode (hence we are decomposing
+     a BLKmode vector to smaller, hardware-supported vectors), we may
+     want to expand the operations in parallel.  */
+  if (GET_MODE_CLASS (compute_mode) != MODE_VECTOR_INT
+      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FLOAT)
+    switch (code)
+      {
+      case PLUS_EXPR:
+      case MINUS_EXPR:
+        if (TYPE_TRAP_SIGNED (type))
+	  break;
+
+        *p_rhs = expand_vector_addition (bsi, do_binop, do_plus_minus, type,
+		      		         TREE_OPERAND (rhs, 0),
+				         TREE_OPERAND (rhs, 1), code);
+	modify_stmt (bsi_stmt (*bsi));
+        return;
+
+      case NEGATE_EXPR:
+        if (TYPE_TRAP_SIGNED (type))
+	  break;
+
+        *p_rhs = expand_vector_addition (bsi, do_unop, do_negate, type,
+		      		         TREE_OPERAND (rhs, 0),
+					 NULL_TREE, code);
+	modify_stmt (bsi_stmt (*bsi));
+        return;
+
+      case BIT_AND_EXPR:
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+        *p_rhs = expand_vector_parallel (bsi, do_binop, type,
+		      		         TREE_OPERAND (rhs, 0),
+				         TREE_OPERAND (rhs, 1), code);
+	modify_stmt (bsi_stmt (*bsi));
+        return;
+
+      case BIT_NOT_EXPR:
+        *p_rhs = expand_vector_parallel (bsi, do_unop, type,
+		      		         TREE_OPERAND (rhs, 0),
+					 NULL_TREE, code);
+	modify_stmt (bsi_stmt (*bsi));
+        return;
+
+      default:
+	break;
+      }
+
+  if (TREE_CODE_CLASS (code) == '1')
+    *p_rhs = expand_vector_piecewise (bsi, do_unop, type, compute_type,
+				      TREE_OPERAND (rhs, 0),
+				      NULL_TREE, code);
+  else
+    *p_rhs = expand_vector_piecewise (bsi, do_binop, type, compute_type,
+				      TREE_OPERAND (rhs, 0),
+				      TREE_OPERAND (rhs, 1), code);
+
+  modify_stmt (bsi_stmt (*bsi));
+}
+
+static void
+expand_vector_operations (void)
+{
+  block_stmt_iterator bsi;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	expand_vector_operations_1 (&bsi);
+    }
+}
+
+static void
+tree_lower_operations (void)
 {
   int old_last_basic_block = last_basic_block;
   block_stmt_iterator bsi;
@@ -538,15 +912,19 @@ expand_complex_operations (void)
       if (bb->index >= old_last_basic_block)
 	continue;
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	expand_complex_operations_1 (&bsi);
+	{
+	  expand_complex_operations_1 (&bsi);
+	  expand_vector_operations_1 (&bsi);
+	}
     }
 }
 
-struct tree_opt_pass pass_lower_complex = 
+
+struct tree_opt_pass pass_lower_vector_ssa = 
 {
-  "complex",				/* name */
+  "vector",				/* name */
   NULL,					/* gate */
-  expand_complex_operations,		/* execute */
+  expand_vector_operations,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -555,7 +933,24 @@ struct tree_opt_pass pass_lower_complex =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_rename_vars
+  TODO_dump_func | TODO_rename_vars	/* todo_flags_finish */
     | TODO_ggc_collect | TODO_verify_ssa
-    | TODO_verify_stmts | TODO_verify_flow /* todo_flags_finish */
+    | TODO_verify_stmts | TODO_verify_flow
+};
+
+struct tree_opt_pass pass_pre_expand = 
+{
+  "oplower",				/* name */
+  0,					/* gate */
+  tree_lower_operations,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_ggc_collect
+    | TODO_verify_stmts			/* todo_flags_finish */
 };

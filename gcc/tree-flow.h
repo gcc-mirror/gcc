@@ -496,6 +496,13 @@ extern tree tree_block_label (basic_block bb);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern bool tree_purge_dead_eh_edges (basic_block);
 extern bool tree_purge_all_dead_eh_edges (bitmap);
+extern tree gimplify_val (block_stmt_iterator *, tree, tree);
+extern tree gimplify_build1 (block_stmt_iterator *, enum tree_code,
+			     tree, tree);
+extern tree gimplify_build2 (block_stmt_iterator *, enum tree_code,
+			     tree, tree, tree);
+extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
+			     tree, tree, tree, tree);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);

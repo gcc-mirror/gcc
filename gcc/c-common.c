@@ -4783,7 +4783,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 			      bool *no_add_attrs)
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
-  enum machine_mode mode, orig_mode, new_mode;
+  enum machine_mode orig_mode;
   tree type = *node, new_type, size;
 
   *no_add_attrs = true;
@@ -4832,28 +4832,13 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   /* Calculate how many units fit in the vector.  */
   nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
-
-  /* Find a suitably sized vector.  */
-  new_mode = VOIDmode;
-  for (mode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_mode) == MODE_INT
-					? MODE_VECTOR_INT
-					: MODE_VECTOR_FLOAT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (vecsize == GET_MODE_SIZE (mode)
-	&& nunits == (unsigned HOST_WIDE_INT) GET_MODE_NUNITS (mode))
-      {
-	new_mode = mode;
-	break;
-      }
-
-  if (new_mode == VOIDmode)
+  if (nunits & (nunits - 1))
     {
-      error ("no vector mode with the size and type specified could be found");
+      error ("number of components of the vector not a power of two");
       return NULL_TREE;
     }
 
-  new_type = build_vector_type_for_mode (type, new_mode);
+  new_type = build_vector_type (type, nunits);
 
   /* Build back pointers if needed.  */
   *node = reconstruct_complex_type (*node, new_type);
