@@ -82,8 +82,7 @@ namespace std
 	_M_facets[__i]->_M_remove_reference();
     delete [] _M_facets;
 
-    for (size_t __i = 0; 
-	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
       delete [] _M_names[__i];  
   }
 
@@ -109,8 +108,7 @@ namespace std
 	if (_M_facets[__i])
 	  _M_facets[__i]->_M_add_reference();
       }
-    for (size_t __i = 0; 
-	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
       {
 	char* __new = new char[strlen(__imp._M_names[__i]) + 1];
 	strcpy(__new, __imp._M_names[__i]);
@@ -144,8 +142,7 @@ namespace std
     size_t __len = strlen(__s);
     if (!strchr(__s, ';'))
       {
-	for (size_t __i = 0; 
-	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
+	for (size_t __i = 0; __i < _S_categories_size ; ++__i)
 	  {
 	    _M_names[__i] = new char[__len + 1];
 	    strcpy(_M_names[__i], __s);
@@ -154,8 +151,7 @@ namespace std
     else
       {
 	const char* __beg = __s;
-	for (size_t __i = 0; 
-	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
+	for (size_t __i = 0; __i < _S_categories_size ; ++__i)
 	  {
 	    __beg = strchr(__beg, '=') + 1;
 	    const char* __end = strchr(__beg, ';');
@@ -219,10 +215,9 @@ namespace std
       _M_facets[__i] = 0;
 
     // Name all the categories.
-    for (size_t __i = 0; 
-	 __i < _S_categories_size + _S_extra_categories_size; ++__i)
+    for (size_t __i = 0; __i < _S_categories_size ; ++__i)
       {
-	_M_names[__i]  = new (&facet_name[__i]) char[2];
+	_M_names[__i] = new (&facet_name[__i]) char[2];
 	strcpy(_M_names[__i], locale::facet::_S_c_name);
       }
 

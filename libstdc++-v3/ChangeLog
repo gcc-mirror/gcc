@@ -1,3 +1,12 @@
+2003-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/locale_classes.h
+	(locale::_S_extra_categories_size): Remove.
+	* src/locale.cc: Remove _S_extra_categories_size.
+	* src/localename.cc: Same.
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/generic/c_locale.cc: Same.
+	
 2003-04-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* src/localename.cc (__gnu_cxx::facet_vec): Correct types.
