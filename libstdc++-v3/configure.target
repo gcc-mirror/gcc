@@ -134,6 +134,9 @@ case "${target}" in
    i?86-*-*)
      LIMITSH=config/cpu/i386
      ;;
+   powerpc-*-*)
+     LIMITSH=config/cpu/powerpc
+     ;;
    *)
      LIMITSH=config/cpu/generic
      ;;
