@@ -2772,7 +2772,7 @@ merge_overrides (binfo, old, do_self, t)
    overridden or hidden by FNDECL as a list.  We set TREE_PURPOSE with
    the overrider/hider.  */
 
-tree
+static tree
 get_basefndecls (fndecl, t)
      tree fndecl, t;
 {
