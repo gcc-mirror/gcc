@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Clipper Version
-;;   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+;;   Copyright (C) 1987, 88, 91, 93, 94, 1997 Free Software Foundation, Inc.
 ;; Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 ;; This file is part of GNU CC.
@@ -532,8 +532,8 @@
   operands[6] = addr0;
   operands[7] = addr1;
 
-  operands[0] = gen_rtx (MEM, BLKmode, addr0);
-  operands[1] = gen_rtx (MEM, BLKmode, addr1);
+  operands[0] = change_address (operands[0], VOIDmode, addr0);
+  operands[1] = change_address (operands[1], VOIDmode, addr1);
 
   if (GET_CODE (operands[2]) != CONST_INT)
     operands[2] = force_reg (SImode, operands[2]);

@@ -1,6 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -2049,18 +2048,20 @@
 ;; that anything generated as this insn will be recognized as one
 ;; and that it will not successfully combine with anything.
 (define_expand "movstrsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
-		   (mem:BLK (match_operand:BLK 1 "" "")))
-	      (clobber (match_dup 0))
-	      (clobber (match_dup 1))
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (match_operand:BLK 1 "" ""))
+	      (clobber (match_dup 7))
+	      (clobber (match_dup 8))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
 	      (use (match_operand:SI 2 "arith_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   ""
   "
 {
   int size, align;
+
   /* HP provides very fast block move library routine for the PA;
      this routine includes:
 
@@ -2093,22 +2094,25 @@
 
   /* If size/alignment > 8 (eg size is large in respect to alignment),
      then use the library routines.  */
-  if (size/align > 16)
+  if (size / align > 16)
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size/align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO)
     FAIL;
   
   /* Fall through means we're going to use our block move pattern.  */
-  operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[0]
+    = change_address (operands[0], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[0], 0)));
+  operands[1]
+    = change_address (operands[1], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[1], 0)));
   operands[4] = gen_reg_rtx (SImode);
   operands[5] = gen_reg_rtx (SImode);
-  emit_insn (gen_movstrsi_internal (operands[0], operands[1], operands[4],
-				     operands[5], operands[2], operands[3],
-				     gen_reg_rtx (SImode)));
-  DONE;
+  operands[6] = gen_reg_rtx (SImode);
+  operands[7] = XEXP (operands[0], 0);
+  operands[8] = XEXP (operands[1], 0);
 }")
 
 ;; The operand constraints are written like this to support both compile-time
