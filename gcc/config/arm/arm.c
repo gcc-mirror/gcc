@@ -8252,12 +8252,38 @@ arm_get_frame_size ()
   int base_size = ROUND_UP (get_frame_size ());
   int entry_size = 0;
   unsigned long func_type = arm_current_func_type ();
+  int leaf;
 
   if (! TARGET_ARM)
     abort();
 
   if (! TARGET_ATPCS)
     return base_size;
+
+  /* We need to know if we are a leaf function.  Unfortunately, it
+     is possible to be called after start_sequence has been called,
+     which causes get_insns to return the insns for the sequence,
+     not the function, which will cause leaf_function_p to return
+     the incorrect result.
+
+     To work around this, we cache the computed frame size.  This
+     works because we will only be calling RTL expanders that need
+     to know about leaf functions once reload has completed, and the
+     frame size cannot be changed after that time, so we can safely
+     use the cached value.  */
+
+  if (reload_completed)
+    return cfun->machine->frame_size;
+
+  leaf = leaf_function_p ();
+
+  /* A leaf function does not need any stack alignment if it has nothing
+     on the stack.  */
+  if (leaf && base_size == 0)
+    {
+      cfun->machine->frame_size = 0;
+      return 0;
+    }
 
   /* We know that SP will be word aligned on entry, and we must
      preserve that condition at any subroutine call.  But those are
@@ -8282,6 +8308,8 @@ arm_get_frame_size ()
     base_size += 4;
   if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
     abort ();
+
+  cfun->machine->frame_size = base_size;
 
   return base_size;
 }
@@ -10278,6 +10306,7 @@ thumb_get_frame_size ()
   int base_size = ROUND_UP (get_frame_size ());
   int count_regs = 0;
   int entry_size = 0;
+  int leaf;
 
   if (! TARGET_THUMB)
     abort ();
@@ -10299,6 +10328,16 @@ thumb_get_frame_size ()
 
   if (reload_completed)
     return cfun->machine->frame_size;
+
+  leaf = leaf_function_p ();
+
+  /* A leaf function does not need any stack alignment if it has nothing
+     on the stack.  */
+  if (leaf && base_size == 0)
+    {
+      cfun->machine->frame_size = 0;
+      return 0;
+    }
 
   /* We know that SP will be word aligned on entry, and we must
      preserve that condition at any subroutine call.  But those are
@@ -10322,7 +10361,7 @@ thumb_get_frame_size ()
 	entry_size += 16;
     }
 
-  if (count_regs || !leaf_function_p () || thumb_far_jump_used_p (1))
+  if (count_regs || !leaf || thumb_far_jump_used_p (1))
     count_regs++;	/* LR */
 
   entry_size += count_regs * 4;
