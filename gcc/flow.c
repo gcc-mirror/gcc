@@ -10187,26 +10187,28 @@ init_flow ()
 }
 
 /* Assume that the preceeding pass has possibly eliminated jump instructions
-   or converted the unconditional jumps.  Eliminate the edges from CFG.  */
+   or converted the unconditional jumps.  Eliminate the edges from CFG.
+   Return true if any edges are eliminated.  */
 
-void
+bool
 purge_dead_edges (bb)
      basic_block bb;
 {
   edge e, next;
   rtx insn = bb->end;
+  bool purged = false;
+
   if (GET_CODE (insn) == JUMP_INSN && !simplejump_p (insn))
-    return;
+    return false;
   if (GET_CODE (insn) == JUMP_INSN)
     {
-      int removed = 0;
       rtx note;
       edge b,f;
       /* We do care only about conditional jumps and simplejumps.  */
       if (!any_condjump_p (insn)
 	  && !returnjump_p (insn)
 	  && !simplejump_p (insn))
-	return;
+	return false;
       for (e = bb->succ; e; e = next)
 	{
 	  next = e->succ_next;
@@ -10221,15 +10223,15 @@ purge_dead_edges (bb)
 	  if (e->dest == EXIT_BLOCK_PTR
 	      && returnjump_p (insn))
 	    continue;
-	  removed = 1;
+	  purged = true;
 	  remove_edge (e);
 	}
-      if (!bb->succ || !removed)
-	return;
+      if (!bb->succ || !purged)
+	return false;
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Purged edges from bb %i\n", bb->index);
       if (!optimize)
-	return;
+	return purged;
 
       /* Redistribute probabilities.  */
       if (!bb->succ->succ_next)
@@ -10241,7 +10243,7 @@ purge_dead_edges (bb)
 	{
 	  note = find_reg_note (insn, REG_BR_PROB, NULL);
 	  if (!note)
-	    return;
+	    return purged;
 	  b = BRANCH_EDGE (bb);
 	  f = FALLTHRU_EDGE (bb);
 	  b->probability = INTVAL (XEXP (note, 0));
@@ -10249,8 +10251,22 @@ purge_dead_edges (bb)
 	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
 	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
 	}
-      return;
+      return purged;
     }
+
+  /* Cleanup abnormal edges caused by throwing insns that have been
+     eliminated.  */
+  if (! can_throw_internal (bb->end))
+    for (e = bb->succ; e; e = next)
+      {
+	next = e->succ_next;
+	if (e->flags & EDGE_EH)
+	  {
+	    remove_edge (e);
+	    purged = true;
+	  }
+      }
+
   /* If we don't see a jump insn, we don't know exactly why the block would
      have been broken at this point.  Look for a simple, non-fallthru edge,
      as these are only created by conditional branches.  If we find such an
@@ -10259,12 +10275,12 @@ purge_dead_edges (bb)
   for (e = bb->succ; e && (e->flags & (EDGE_COMPLEX | EDGE_FALLTHRU));
        e = e->succ_next);
   if (!e)
-    return;
+    return purged;
   for (e = bb->succ; e; e = next)
     {
       next = e->succ_next;
       if (!(e->flags & EDGE_FALLTHRU))
-	remove_edge (e);
+	remove_edge (e), purged = true;
     }
   if (!bb->succ || bb->succ->succ_next)
     abort ();
@@ -10274,15 +10290,19 @@ purge_dead_edges (bb)
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Purged non-fallthru edges from bb %i\n",
 	     bb->index);
-  return;
+  return purged;
 }
 
-/* Search all basic blocks for potentionally dead edges and purge them.  */
+/* Search all basic blocks for potentionally dead edges and purge them.
+  
+   Return true ifif some edge has been elliminated.
+ */
 
-void
+bool
 purge_all_dead_edges ()
 {
-  int i;
+  int i, purged = false;
   for (i = 0; i < n_basic_blocks; i++)
-    purge_dead_edges (BASIC_BLOCK (i));
+    purged |= purge_dead_edges (BASIC_BLOCK (i));
+  return purged;
 }

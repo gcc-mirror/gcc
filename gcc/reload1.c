@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cselib.h"
 #include "real.h"
 #include "toplev.h"
+#include "except.h"
 
 #if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
@@ -9506,7 +9507,11 @@ fixup_abnormal_edges ()
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if (e->flags & EDGE_FALLTHRU)
 	      break;
-	  while (GET_CODE (insn) == INSN && !can_throw_internal (insn))
+	  /* Get past the new insns generated. Allow notes, as the insns may
+	     be already deleted.  */
+	  while ((GET_CODE (insn) == INSN || GET_CODE (insn) == NOTE)
+		 && !can_throw_internal (insn)
+		 && insn != bb->head)
 	    insn = PREV_INSN (insn);
 	  if (GET_CODE (insn) != CALL_INSN && !can_throw_internal (insn))
 	    abort ();

@@ -1,3 +1,15 @@
+2001-08-05  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (reload1.o): Add dedendancy on except.h
+	* basic-block.h (purge_all_dead_edges, purge_dead_edges): Update
+	prototypes.
+	* flow.c (purge_dead_edges, purge_all_dead_edges): Return bool
+	indicating wehther edges has been cleaned up.
+	* reload1.c: Inlucde except.h
+	(fixup_abnormal_edges): Accept deleted insns.
+	* toplev.c (rest_of_compilation): Purge dead edges unconditionally
+	after combine.
+
 2001-08-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (do_line): Correct line number after pop_buffer.
@@ -333,7 +345,7 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(__gthread_mutex_init_function): New function for mutex initialization.
 
 2001-08-03  Daniel Berlin  <dan@cgsoftware.com>
-        
+	
 	* Makefile.in: Revert screwed up commit.
 
 2001-08-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
@@ -353,7 +365,7 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(DTORS_SECTION_FUNCTION): Likewise for __do_global_dtors.
 
 2001-08-03  Daniel Berlin  <dan@cgsoftware.com>
-        
+	
 	* ChangeLog: Fix date on previous ChangeLog entry for GCSE.
 	
 	* Makefile.in: Add df.h to gcse.c dependencies.
@@ -366,26 +378,26 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-03  Daniel Berlin  <dan@cgsoftware.com>
 
-        * gcse.c: Include df.h for use as a dataflow analyzer.
-        Remove regvec.
-        Declaration of reg_set_info: gone.
-        New df_analyzer variable used by store motion.
-        (reg_set_info): Deleted.
-        (mark_mem_regs): New function, analyze regs used by a mem.
-        (store_ops_ok): Use dataflow analyzer results to determine if
-        necessary regs are changed in the block.
-        (find_moveable_store): Remove check for symbol ref, we can handle
-        much more complex expressions now.
-        (compute_store_table): Remove most of the code, it's unnecessary
-        now that the dataflow analyzer records the info for us.
-        (store_killed_after): Add parameter to say whether to do the
-        store_ops_okay test, used to speed up testing when we already know
-        the answer, and just want to know if the store itself was killed.
-        (build_store_vector): Largely rewritten to calculate the various
-        vectors properly, and somewhat optimized.
-        (store_motion): Init the df_analyzer, get REG_DEF chains. 
-        Also handle trapping expressions (since mems almost always trap)
-        (simple_mem): Redefine what a simple mem is.
+	* gcse.c: Include df.h for use as a dataflow analyzer.
+	Remove regvec.
+	Declaration of reg_set_info: gone.
+	New df_analyzer variable used by store motion.
+	(reg_set_info): Deleted.
+	(mark_mem_regs): New function, analyze regs used by a mem.
+	(store_ops_ok): Use dataflow analyzer results to determine if
+	necessary regs are changed in the block.
+	(find_moveable_store): Remove check for symbol ref, we can handle
+	much more complex expressions now.
+	(compute_store_table): Remove most of the code, it's unnecessary
+	now that the dataflow analyzer records the info for us.
+	(store_killed_after): Add parameter to say whether to do the
+	store_ops_okay test, used to speed up testing when we already know
+	the answer, and just want to know if the store itself was killed.
+	(build_store_vector): Largely rewritten to calculate the various
+	vectors properly, and somewhat optimized.
+	(store_motion): Init the df_analyzer, get REG_DEF chains. 
+	Also handle trapping expressions (since mems almost always trap)
+	(simple_mem): Redefine what a simple mem is.
 
 2001-08-03  DJ Delorie  <dj@redhat.com>
 
@@ -454,7 +466,7 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	cp/decl2.c, doc/contrib.texi, doc/cpp.texi, doc/gcc.texi,
 	doc/install.texi, doc/invoke.texi, doc/md.texi, doc/rtl.texi,
 	doc/tm.texi: consistently use "VAX", "VAXen", and "MicroVAX"
-        in comments and documentation.
+	in comments and documentation.
 
 2001-08-03  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
@@ -566,7 +578,7 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-01  Robert Lipe  <robertl@caldera.com>
 
-        * dwarfout.c: Remove reference to README.DWARF.
+	* dwarfout.c: Remove reference to README.DWARF.
 
 2001-08-01  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -669,7 +681,7 @@ Wed Aug  1 20:02:12 CEST 2001 Graham Stott  <grahams@redhat.com>
 
 2001-08-01  Ziemowit Laski  <zlaski@apple.com>
 
-        * c-parse.in (OBJC_NEED_RAW_IDENTIFIER): Define macro and flag for
+	* c-parse.in (OBJC_NEED_RAW_IDENTIFIER): Define macro and flag for
 	contextualizing Objective-C class name lookup by the lexer.
 	(typespec_reserved_nonattr): Disable ObjC class name lookup after
 	seeing a TYPESPEC.
@@ -731,7 +743,7 @@ Wed Aug  1 20:02:12 CEST 2001 Graham Stott  <grahams@redhat.com>
 
 2001-07-31  Jeff Sturm  <jsturm@one-point.com>
 
-        * except.c (duplicate_eh_regions): Test n_array[i] for NULL.
+	* except.c (duplicate_eh_regions): Test n_array[i] for NULL.
 
 2001-07-31  matthew green  <mrg@eterna.com.au>
 
@@ -814,10 +826,10 @@ Tue Jul 31 15:33:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-31 Hartmut Penner <hpenner@de.ibm.com>
 
-        * doc/install.texi: Add s390 and s390x as new targets.
-        * doc/invoke.texi: Add documantation of S/390 and zSeries
-        target options.
-        * doc/md.texi: Add documantation of S/390 and zSeries constraints.
+	* doc/install.texi: Add s390 and s390x as new targets.
+	* doc/invoke.texi: Add documantation of S/390 and zSeries
+	target options.
+	* doc/md.texi: Add documantation of S/390 and zSeries constraints.
 
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 
@@ -827,7 +839,7 @@ Tue Jul 31 15:33:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Mon Jul 30 23:20:34 EDT 2001  John Wehle  (john@feith.com)
 
-        * flow.c (merge_blocks): Return 1 if an extra jump is inserted.
+	* flow.c (merge_blocks): Return 1 if an extra jump is inserted.
 
 2001-07-30  Richard Henderson  <rth@redhat.com>
 
@@ -868,18 +880,18 @@ Mon Jul 30 22:16:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-30  Andreas Jaeger  <aj@suse.de>
 
-        * jump.c: Add prototype for mark_modified_reg.
+	* jump.c: Add prototype for mark_modified_reg.
 
-        * cse.c (set_live_p): Add unused attribute.
+	* cse.c (set_live_p): Add unused attribute.
 
-        * gcov.c (calculate_branch_probs): Use gcov_type to avoid
-        overflow.
-        (scan_for_source_files): Use long for count to avoid overflow.
-        (output_data): Likewise.
-        (output_data): Don't use string concatatenation to silence gcc
-        -traditional.
+	* gcov.c (calculate_branch_probs): Use gcov_type to avoid
+	overflow.
+	(scan_for_source_files): Use long for count to avoid overflow.
+	(output_data): Likewise.
+	(output_data): Don't use string concatatenation to silence gcc
+	-traditional.
 
-        * predict.c: Fix typos and grammar.
+	* predict.c: Fix typos and grammar.
 
 	* gcse.c (insert_insn_end_bb): Remove unused variables.
 
@@ -1122,7 +1134,7 @@ Fri Jul 27 17:53:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Fri Jul 27 00:33:35 EDT 2001  John Wehle  (john@feith.com)
 
-        * flow.c (redirect_edge_and_branch_force): Test
+	* flow.c (redirect_edge_and_branch_force): Test
 	target->global_live_at_start.
 
 2001-07-26  Richard Henderson  <rth@redhat.com>
@@ -1168,8 +1180,8 @@ Thu Jul 26 14:04:03 EDT 2001  John Wehle  (john@feith.com)
 
 2001-07-26  Catherine Moore  <clm@redhat.com>
 
-        * config/v850/v850.h (ENCODE_SECTION_INFO):  Change order
-        of conditional to avoid tree checking errors.
+	* config/v850/v850.h (ENCODE_SECTION_INFO):  Change order
+	of conditional to avoid tree checking errors.
 
 2001-07-26  Kazu Hirata  <kazu@hxi.com>
 
@@ -1248,8 +1260,8 @@ Wed Jul 25 18:00:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-07-25  Catherine Moore  <clm@redhat.com>
 
-        * config/v850/v850.c (v850_va_arg):  Use addr
-        instead of valist to build incr.
+	* config/v850/v850.c (v850_va_arg):  Use addr
+	instead of valist to build incr.
 
 Wed Jul 25 22:48:59 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
@@ -1314,11 +1326,11 @@ Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
-        * config/sparc/rtems.h (CPP_PREDEFINES): Remove redundant
+	* config/sparc/rtems.h (CPP_PREDEFINES): Remove redundant
 	-Acpu and -Amachine.h.
-        * config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
-        Corrected header to say ELF not a.out.
-        * config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT
+	* config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
+	Corrected header to say ELF not a.out.
+	* config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT
 	when given -msoft-float.
 
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
