@@ -1,3 +1,7 @@
+2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20030314-1.c: New test.
+
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/namespace9.C: New test.
