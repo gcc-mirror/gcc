@@ -273,8 +273,12 @@ push_value (value)
     }
 }
 
+/* Pop a type from the type stack.
+   TYPE is the expected type.   Return the actual type, which must be
+   convertible to TYPE, otherwise NULL_TREE is returned. */
+
 tree
-pop_type (type)
+pop_type_0 (type)
      tree type;
 {
   int n_words;
@@ -310,8 +314,22 @@ pop_type (type)
 	       && t == object_ptr_type_node)
 	return t;
     }
+  return NULL_TREE;
+}
+
+/* Pop a type from the type stack.
+   TYPE is the expected type.  Return the actual type, which must be
+   convertible to TYPE, otherwise call error. */
+
+tree
+pop_type (type)
+     tree type;
+{
+  tree t = pop_type_0 (type);
+  if (t != NULL_TREE)
+    return t;
   error ("unexpected type on stack");
-  return t;
+  return type;
 }
 
 /* Return 1f if SOURCE_TYPE can be safely widened to TARGET_TYPE.
