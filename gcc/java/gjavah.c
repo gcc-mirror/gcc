@@ -726,7 +726,8 @@ decode_signature_piece (stream, signature, limit, need_space)
 	  /* We have to generate a reference to JArray here, so that
 	     our output matches what the compiler does.  */
 	  ++signature;
-	  fputs ("JArray<", stream);
+	  /* Space between `<' and `:' to avoid C++ digraphs.  */
+	  fputs ("JArray< ::", stream);
 	  while (signature < limit && *signature != ';')
 	    {
 	      int ch = UTF8_GET (signature, limit);
@@ -1357,11 +1358,11 @@ DEFUN(process_file, (jcf, out),
 	       out);
       else
 	{
-	  fputs ("// This file was created by `gcjh -stubs'.  It is -*- c++ -*-.
-//
-// This file is intended to give you a head start on implementing native 
-// methods using CNI.  
-// Be aware: running `gcjh -stubs' once more for this class may overwrite any 
+	  fputs ("// This file was created by `gcjh -stubs'.  It is -*- c++ -*-.\n\
+//\n\
+// This file is intended to give you a head start on implementing native\n\
+// methods using CNI.\n\
+// Be aware: running `gcjh -stubs' once more for this class may overwrite any\n\
 // edits you have made to this file.\n\n", out);
 	}
     }

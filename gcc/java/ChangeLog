@@ -1,3 +1,9 @@
+1999-12-17  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
+	fixes PR gcj/119.
+	(process_file): Use `\n\' at end of each line in string.
+
 Tue Dec 14 14:20:16 1999  Per Bothner  <per@bothner.com>
 
 	* class.c (make_class_data): flag_keep_inline_functions to keep
