@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 #include <sstream>
 #include <fstream>
 #include <debug_assert.h>
-
 
 bool test01()
 {
@@ -62,6 +61,71 @@ bool test01()
 #endif
 
   return test;
+}
+
+const char* s = " lootpack, peanut butter wolf, rob swift, madlib, quasimoto";
+const int times = 10;
+
+void write_rewind(std::iostream& stream)
+{
+  for (int j = 0; j < times; j++) 
+    {
+      bool test = true;
+      std::streampos begin = stream.tellg();
+      
+      for (int i = 0; i < times; ++i)
+	stream << j << '-' << i << s << '\n';
+      
+      stream.seekg(begin);
+      std::streampos end = stream.tellg(); 
+      std::streampos badpos = std::streampos(std::streambuf::off_type(-1));
+    }
+}
+
+void check_contents(std::iostream& stream)
+{
+  bool test = true;
+
+  stream.clear();
+  stream.seekg(0, std::ios::beg);
+  int i = 0;
+  int loop = times * times + 2;
+  while (i < loop)
+    {
+      stream.ignore(80, '\n');
+      if (stream.good())
+	++i;
+      else
+	break;
+    }
+  VERIFY( i == times );
+}
+
+// fstream
+// libstdc++/2346
+void test02()
+{	 
+  std::fstream ofstrm;
+  ofstrm.open("istream_seeks-3.txt", std::ios::out);
+  if (!ofstrm)
+    abort();
+  write_rewind(ofstrm);
+  ofstrm.close();
+
+  std::fstream ifstrm;
+  ifstrm.open("istream_seeks-3.txt", std::ios::in);
+  check_contents(ifstrm);
+  ifstrm.close();
+}
+
+// stringstream
+// libstdc++/2346
+void test03()
+{	 
+  std::stringstream sstrm;
+
+  write_rewind(sstrm);
+  check_contents(sstrm);
 }
 
 // fstreams
@@ -289,7 +353,13 @@ void test05(void)
 int main()
 {
   test01();
+
+  test02();
+  test03();
+
   test04();
   test05();
   return 0;
 }
+
+

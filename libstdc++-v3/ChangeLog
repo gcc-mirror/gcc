@@ -1,3 +1,16 @@
+2001-06-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3126
+	* include/bits/basic_string.h (string::compare): Adjust signatures
+	as per DR 5.
+	* include/bits/basic_string.tcc: And here.
+
+	libstdc++/2346
+	* config/c_io_stdio.h: Remove whitespace.
+	* testsuite/27_io/istream_seeks.cc (test03): Add regression.
+	(test02): Add regression.
+	* testsuite/27_io/istream_seeks-3.tst: New file.
+	
 2001-06-11  Phil Edwards  <pme@sources.redhat.com>
 
 	* README:  Update to reflect reality.
