@@ -89,7 +89,7 @@ public class InflaterInputStream extends FilterInputStream
 	count = inf.inflate(buf, off, len);	
 	if (count == 0)
 	  {
-	    if (len == -1)
+	    if (this.len == -1)
 	      return -1; // Couldn't get any more data to feed to the Inflater
 	    if (inf.needsDictionary())
 	      throw new ZipException ("Inflater needs Dictionary");
