@@ -32,6 +32,14 @@ details.  */
 #include <java/lang/Thread.h>
 #include <java/io/FileNotFoundException.h>
 
+void
+java::io::FileDescriptor::init(void)
+{
+  in = new java::io::FileDescriptor((jint)(GetStdHandle (STD_INPUT_HANDLE)));
+  out = new java::io::FileDescriptor((jint)(GetStdHandle (STD_OUTPUT_HANDLE)));
+  err = new java::io::FileDescriptor((jint)(GetStdHandle (STD_ERROR_HANDLE)));
+}
+
 static char *
 winerr (void)
 {

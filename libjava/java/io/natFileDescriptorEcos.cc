@@ -41,6 +41,14 @@ diag_write (char *data, int len)
 
 #define NO_FSYNC_MESSAGE "sync unsupported"
 
+void
+java::io::FileDescriptor::init(void)
+{
+  in = new java::io::FileDescriptor(0);
+  out = new java::io::FileDescriptor(1);
+  err = new java::io::FileDescriptor(2);
+}
+
 jboolean
 java::io::FileDescriptor::valid (void)
 {

@@ -1,3 +1,10 @@
+2002-03-07  Adam Megacz  <adam@xwt.org>
+
+        * java/io/FileDescriptor.java: Initialize in/out/err in init().
+        * java/io/natFileDescriptorWin32.cc (init()): Added function.
+        * java/io/natFileDescriptorPosix.cc (init()): Added function.
+        * java/io/natFileDescriptorEcos.cc (init()): Added function.
+
 2002-03-07  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/net/natPlainSocketImpl.cc (_Jv_recv): Removed.
