@@ -92,29 +92,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "halfpic.h"
 #endif
 
-#ifdef VMS
-/* The extra parameters substantially improve the I/O performance.  */
-
-static FILE *
-vms_fopen (fname, type)
-     char *fname;
-     char *type;
-{
-  /* The <stdio.h> in the gcc-vms-1.42 distribution prototypes fopen with two
-     fixed arguments, which matches ANSI's specification but not VAXCRTL's
-     pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
-  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
-
-  if (*type == 'w')
-    return (*vmslib_fopen) (fname, type, "mbc=32",
-			    "deq=64", "fop=tef", "shr=nil");
-  else
-    return (*vmslib_fopen) (fname, type, "mbc=32");
-}
-
-#define fopen vms_fopen
-#endif	/* VMS  */
-
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
 
