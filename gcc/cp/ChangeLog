@@ -1,3 +1,9 @@
+2001-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* typeck.c (get_member_function_from_ptrfunc) [vbit_in_delta]:
+	Don't clobber delta.
+	(expand_ptrmemfunc_cst) [ptrmemfunc_vbit_in_delta]: Adjust pfn.
+
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* search.c (lookup_field_r): If looking for type and non-TYPE_DECL
