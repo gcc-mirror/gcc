@@ -351,6 +351,135 @@ maybe_apply_pragma_weak (decl)
 }
 #endif /* HANDLE_PRAGMA_WEAK */
 
+#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
+static void handle_pragma_redefine_extname PARAMS ((cpp_reader *));
+
+static tree pending_redefine_extname;
+
+/* #pragma redefined_extname oldname newname */
+static void
+handle_pragma_redefine_extname (dummy)
+     cpp_reader *dummy ATTRIBUTE_UNUSED;
+{
+  tree oldname, newname, decl, x;
+  enum cpp_ttype t;
+
+  if (c_lex (&oldname) != CPP_NAME)
+    {
+      warning ("malformed #pragma redefine_extname, ignored");
+      return;
+    }
+  if (c_lex (&newname) != CPP_NAME)
+    {
+      warning ("malformed #pragma redefine_extname, ignored");
+      return;
+    }
+  t = c_lex (&x);
+  if (t != CPP_EOF)
+    warning ("junk at end of #pragma redefine_extname");
+
+  decl = identifier_global_value (oldname);
+  if (decl && TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+    {
+      if (DECL_ASSEMBLER_NAME_SET_P (decl)
+	  && DECL_ASSEMBLER_NAME (decl) != newname)
+        warning ("#pragma redefine_extname conflicts with declaration");
+      SET_DECL_ASSEMBLER_NAME (decl, newname);
+    }
+  else
+    pending_redefine_extname
+      = tree_cons (oldname, newname, pending_redefine_extname);
+}
+#endif
+
+#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
+static void handle_pragma_extern_prefix PARAMS ((cpp_reader *));
+
+static tree pragma_extern_prefix;
+
+/* #pragma extern_prefix "prefix" */
+static void
+handle_pragma_extern_prefix (dummy)
+     cpp_reader *dummy ATTRIBUTE_UNUSED;
+{
+  tree prefix, x;
+  enum cpp_ttype t;
+
+  if (c_lex (&prefix) != CPP_STRING)
+    {
+      warning ("malformed #pragma extern_prefix, ignored");
+      return;
+    }
+  t = c_lex (&x);
+  if (t != CPP_EOF)
+    warning ("junk at end of #pragma extern_prefix");
+
+  /* Note that the length includes the null terminator.  */
+  pragma_extern_prefix = (TREE_STRING_LENGTH (prefix) > 1 ? prefix : NULL);
+}
+#endif
+
+/* Hook from the front ends to apply the results of one of the preceeding
+   pragmas that rename variables.  */
+
+tree
+maybe_apply_renaming_pragma (decl, asmname)
+     tree decl, asmname;
+{
+  tree oldname;
+
+  /* Copied from the check in set_decl_assembler_name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == VAR_DECL 
+          && (TREE_STATIC (decl) 
+              || DECL_EXTERNAL (decl) 
+              || TREE_PUBLIC (decl))))
+    oldname = DECL_ASSEMBLER_NAME (decl);
+  else
+    return asmname;
+
+  /* If the name begins with a *, that's a sign of an asmname attached to
+     a previous declaration.  */
+  if (IDENTIFIER_POINTER (oldname)[0] == '*')
+    {
+      const char *oldasmname = IDENTIFIER_POINTER (oldname) + 1;
+      if (asmname && strcmp (TREE_STRING_POINTER (asmname), oldasmname) != 0)
+	warning ("asm declaration conficts with previous rename");
+      asmname = build_string (strlen (oldasmname), oldasmname);
+    }
+
+#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
+  {
+    tree *p, t;
+
+    for (p = &pending_redefine_extname; (t = *p) ; p = &TREE_CHAIN (t))
+      if (oldname == TREE_PURPOSE (t))
+	{
+	  const char *newname = IDENTIFIER_POINTER (TREE_VALUE (t));
+
+	  if (asmname && strcmp (TREE_STRING_POINTER (asmname), newname) != 0)
+            warning ("#pragma redefine_extname conflicts with declaration");
+	  *p = TREE_CHAIN (t);
+
+	  return build_string (strlen (newname), newname);
+	}
+  }
+#endif
+
+#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
+  if (pragma_extern_prefix && !asmname)
+    {
+      char *x = concat (TREE_STRING_POINTER (pragma_extern_prefix),
+			IDENTIFIER_POINTER (oldname), NULL);
+      asmname = build_string (strlen (x), x);
+      free (x);
+      return asmname;
+    }
+#endif
+
+  return asmname;
+}
+
 void
 init_pragma ()
 {
@@ -361,6 +490,17 @@ init_pragma ()
   cpp_register_pragma (parse_in, 0, "weak", handle_pragma_weak);
   ggc_add_tree_root (&pending_weaks, 1);
 #endif
+#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
+  cpp_register_pragma (parse_in, 0, "redefine_extname",
+		       handle_pragma_redefine_extname);
+  ggc_add_tree_root (&pending_redefine_extname, 1);
+#endif
+#ifdef HANDLE_PRAGMA_EXTERN_PREFIX
+  cpp_register_pragma (parse_in, 0, "extern_prefix",
+		       handle_pragma_extern_prefix);
+  ggc_add_tree_root (&pragma_extern_prefix, 1);
+#endif
+
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS (parse_in);
 #endif
