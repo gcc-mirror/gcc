@@ -1,3 +1,9 @@
+2002-12-23  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/io/basic_file_stdio.cc (__basic_file::_M_open_mode):
+	Don't use O_NONBLOCK if it is not defined.
+	(__basic_file::open): Don't use fcntl either.
+
 2002-12-20  Sylvain Pion   <Sylvain.Pion@mpi-sb.mpg.de>
 
 	* include/bits/stl_deque.h: Fix typo.
