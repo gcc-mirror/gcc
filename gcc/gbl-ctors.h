@@ -63,18 +63,23 @@ extern void __do_global_dtors ();
    we define it once here as a macro to avoid various instances getting
    out-of-sync with one another.  */
 
-/* The first word may or may not contain the number of pointers in the table.
+/* Some systems place the number of pointers
+   in the first word of the table.
+   On other systems, that word is -1.
    In all cases, the table is null-terminated.
-   We ignore the first word and scan up to the null.  */
+   If the length is not recorded, count up to the null.  */
 
 /* Some systems use a different strategy for finding the ctors.
    For example, svr3.  */
 #ifndef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
-  func_ptr *p;								\
-  for (p = __CTOR_LIST__ + 1; *p; )					\
-    (*p++) ();								\
-} while (0)
+  unsigned nptrs = (unsigned HOST_WIDE_INT) __CTOR_LIST__[0];		\
+  unsigned i;								\
+  if (nptrs == -1)							\
+    for (nptrs = 0; __CTOR_LIST__[nptrs + 1] != 0; nptrs++);		\
+  for (i = nptrs; i >= 1; i--)						\
+    __CTOR_LIST__[i] ();						\
+} while (0) 
 #endif
 
