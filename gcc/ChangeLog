@@ -1,3 +1,7 @@
+2001-01-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc-page.c (NUM_EXTRA_ORDERS): Hardwire to zero for now.
+
 2001-01-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* builtins.def (BUILT_IN_CONJ, BUILT_IN_CREAL, BUILT_IN_CIMAG):

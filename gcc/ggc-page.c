@@ -140,11 +140,22 @@ Boston, MA 02111-1307, USA.  */
 /* The size of an object on a page of the indicated ORDER.  */
 #define OBJECT_SIZE(ORDER) object_size_table[ORDER]
 
+#ifdef NO_ALIGNMENT_PROBLEM
+
 /* The number of extra orders, not corresponding to power-of-two sized
    objects.  */
 
 #define NUM_EXTRA_ORDERS \
   (sizeof (extra_order_size_table) / sizeof (extra_order_size_table[0]))
+
+#else /* !defined(NO_ALIGNMENT_PROBLEM) */
+
+/* For now, we can't use this code because we don't ensure that the
+   objects returned are appropriately aligned.  The problem is that
+   some tree_list sized things, for example, use */
+#define NUM_EXTRA_ORDERS 0
+
+#endif /* !defined(NO_ALIGNMENT_PROBLEM) */
 
 /* The Ith entry is the maximum size of an object to be stored in the
    Ith extra order.  Adding a new entry to this array is the *only*
