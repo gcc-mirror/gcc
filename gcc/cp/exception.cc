@@ -93,6 +93,7 @@ struct cp_eh_info
   bool caught;
   cp_eh_info *next;
   long handlers;
+  void *original_value;
 };
 
 /* Language-specific EH info pointer, defined in libgcc2. */
@@ -162,7 +163,10 @@ __cplus_type_matcher (cp_eh_info *info, exception_table *matching_info,
   /* we don't worry about version info yet, there is only one version! */
   
   void *match_type = ((rtimetype) (matching_info->match_info)) ();
-  ret = __throw_type_match_rtti (match_type, info->type, info->value);
+  ret = __throw_type_match_rtti (match_type, info->type, info->original_value);
+  /* change value of exception */
+  if (ret)
+    info->value = ret;
   return ret;
 }
 
@@ -180,11 +184,11 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
   p->cleanup = cleanup;
   p->handlers = 0;
   p->caught = false;
+  p->original_value = value;
 
   p->eh_info.match_function = __cplus_type_matcher;
   p->eh_info.language = EH_LANG_C_plus_plus;
   p->eh_info.version = 1;
-  p->eh_info.coerced_value = NULL;
 
   cp_eh_info **q = __get_eh_info ();
 

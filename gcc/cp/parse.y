@@ -3253,7 +3253,6 @@ function_try_block:
 	  ctor_initializer_opt compstmt
 		{ 
                   expand_start_all_catch (); 
-                  start_catch_handler (NULL);
                 }
 	  handler_seq
 		{

@@ -56,6 +56,9 @@ static tree get_eh_type PROTO((void));
 static tree get_eh_caught PROTO((void));
 static tree get_eh_handlers PROTO((void));
 static tree do_pop_exception PROTO((void));
+static void process_start_catch_block PROTO((tree, tree));
+static void process_start_catch_block_old PROTO((tree, tree));
+static tree build_eh_type_type_ref PROTO((tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -273,14 +276,12 @@ call_eh_info ()
       fields[0] = build_lang_field_decl (FIELD_DECL, 
                     get_identifier ("match_function"), ptr_type_node);
       fields[1] = build_lang_field_decl (FIELD_DECL, 
-                    get_identifier ("coerced_value"), ptr_type_node);
-      fields[2] = build_lang_field_decl (FIELD_DECL, 
                     get_identifier ("language"), short_integer_type_node);
-      fields[3] = build_lang_field_decl (FIELD_DECL, 
+      fields[2] = build_lang_field_decl (FIELD_DECL, 
                     get_identifier ("version"), short_integer_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t1, "__eh_info", fields, 3, ptr_type_node);
+      finish_builtin_type (t1, "__eh_info", fields, 2, ptr_type_node);
       t = make_lang_type (RECORD_TYPE);
       fields[0] = build_lang_field_decl (FIELD_DECL, 
                                               get_identifier ("eh_info"), t1);
@@ -414,6 +415,48 @@ build_eh_type_type (type)
   return build1 (ADDR_EXPR, ptr_type_node, exp);
 }
 
+/* Build the address of a runtime type for use in the runtime matching
+   field of the new exception model */
+
+static tree
+build_eh_type_type_ref (type)
+     tree type;
+{
+  char *typestring;
+  tree exp;
+  int susp;
+
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  /* peel back references, so they match.  */
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+
+  /* Peel off cv qualifiers.  */
+  type = TYPE_MAIN_VARIANT (type);
+
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
+
+  if (flag_rtti)
+    {
+      exp = get_tinfo_fn (type);
+      TREE_USED (exp) = 1;
+      mark_inline_for_output (exp);
+      exp = build1 (ADDR_EXPR, ptr_type_node, exp);
+    }
+  else
+    {
+      typestring = build_overload_name (type, 1, 1);
+      exp = combine_strings (build_string (strlen (typestring)+1, typestring));
+      exp = build1 (ADDR_EXPR, ptr_type_node, exp);
+    }
+  pop_obstacks ();
+  return (exp);
+}
+
+
 /* Build a type value for use at runtime for a exp that is thrown or
    matched against by the exception handling system.  */
 
@@ -495,7 +538,7 @@ build_terminate_handler ()
   return term;
 }
 
-/* call this to start a catch block. Typename is the typename, and identifier
+/* Call this to start a catch block. Typename is the typename, and identifier
    is the variable to place the object in or NULL if the variable doesn't
    matter.  If typename is NULL, that means its a "catch (...)" or catch
    everything.  In that case we don't need to do any type checking.
@@ -505,9 +548,7 @@ void
 expand_start_catch_block (declspecs, declarator)
      tree declspecs, declarator;
 {
-  rtx false_label_rtx;
-  tree decl = NULL_TREE;
-  tree init;
+  tree decl;
 
   if (processing_template_decl)
     {
@@ -526,6 +567,25 @@ expand_start_catch_block (declspecs, declarator)
 
   if (! doing_eh (1))
     return;
+
+  if (flag_new_exceptions)
+    process_start_catch_block (declspecs, declarator);
+  else
+    process_start_catch_block_old (declspecs, declarator);
+}
+
+
+/* This function performs the expand_start_catch_block functionality for 
+   exceptions implemented in the old style, where catch blocks were all
+   called, and had to check the runtime information themselves. */
+
+static void 
+process_start_catch_block_old (declspecs, declarator)
+     tree declspecs, declarator;
+{
+  rtx false_label_rtx;
+  tree decl = NULL_TREE;
+  tree init;
 
   /* Create a binding level for the eh_info and the exception object
      cleanup.  */
@@ -631,6 +691,111 @@ expand_start_catch_block (declspecs, declarator)
   emit_line_note (input_filename, lineno);
 }
 
+/* This function performs the expand_start_catch_block functionality for 
+   exceptions implemented in the new style. __throw determines whether
+   a handler needs to be called or not, so the handler itself has to do
+   nothing additionaal. */
+
+static void 
+process_start_catch_block (declspecs, declarator)
+     tree declspecs, declarator;
+{
+  rtx false_label_rtx;
+  tree decl = NULL_TREE;
+  tree init;
+
+  /* Create a binding level for the eh_info and the exception object
+     cleanup.  */
+  pushlevel (0);
+  expand_start_bindings (0);
+
+
+  if (declspecs)
+    {
+      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
+
+      if (decl == NULL_TREE)
+	error ("invalid catch parameter");
+    }
+
+  if (decl)
+    start_catch_handler (build_eh_type_type_ref (TREE_TYPE (decl)));
+  else
+    start_catch_handler (NULL_TREE);
+
+  emit_line_note (input_filename, lineno);
+
+  push_eh_info ();
+
+  if (decl)
+    {
+      tree exp;
+      rtx call_rtx, return_value_rtx;
+      tree init_type;
+
+      /* Make sure we mark the catch param as used, otherwise we'll get
+	 a warning about an unused ((anonymous)).  */
+      TREE_USED (decl) = 1;
+
+      /* Figure out the type that the initializer is.  */
+      init_type = TREE_TYPE (decl);
+      if (TREE_CODE (init_type) != REFERENCE_TYPE
+	  && TREE_CODE (init_type) != POINTER_TYPE)
+	init_type = build_reference_type (init_type);
+
+      exp = get_eh_value ();
+
+      /* Since pointers are passed by value, initialize a reference to
+	 pointer catch parm with the address of the value slot.  */
+      if (TREE_CODE (init_type) == REFERENCE_TYPE
+	  && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
+	exp = build_unary_op (ADDR_EXPR, exp, 1);
+
+      exp = ocp_convert (init_type , exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+
+      push_eh_cleanup ();
+
+      /* Create a binding level for the parm.  */
+      pushlevel (0);
+      expand_start_bindings (0);
+
+      init = convert_from_reference (exp);
+
+      /* If the constructor for the catch parm exits via an exception, we
+         must call terminate.  See eh23.C.  */
+      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+	{
+	  /* Generate the copy constructor call directly so we can wrap it.
+	     See also expand_default_init.  */
+	  init = ocp_convert (TREE_TYPE (decl), init,
+			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
+			build_terminate_handler ());
+	}
+
+      /* Let `cp_finish_decl' know that this initializer is ok.  */
+      DECL_INITIAL (decl) = init;
+      decl = pushdecl (decl);
+
+      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+    }
+  else
+    {
+      push_eh_cleanup ();
+
+      /* Create a binding level for the parm.  */
+      pushlevel (0);
+      expand_start_bindings (0);
+
+      /* Fall into the catch all section.  */
+    }
+
+  init = build_modify_expr (get_eh_caught (), NOP_EXPR, integer_one_node);
+  expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  emit_line_note (input_filename, lineno);
+}
+
 
 
 /* Call this to end a catch block.  Its responsible for emitting the
@@ -658,7 +823,8 @@ expand_end_catch_block ()
 
   /* label we emit to jump to if this catch block didn't match.  */
   /* This the closing } in the `if (eq) {' of the documentation.  */
-  emit_label (pop_label_entry (&false_label_stack));
+  if (! flag_new_exceptions)
+    emit_label (pop_label_entry (&false_label_stack));
 }
 
 /* An exception spec is implemented more or less like:
@@ -686,7 +852,6 @@ expand_end_eh_spec (raises)
   int count = 0;
 
   expand_start_all_catch ();
-  start_catch_handler (NULL);
   expand_start_catch_block (NULL_TREE, NULL_TREE);
 
   /* Build up an array of type_infos.  */

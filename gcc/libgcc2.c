@@ -3426,10 +3426,7 @@ find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
                     {
                       ret = (*matcher)(eh_info, &tab[pos], table);
                       if (ret)
-                        {
-                          ((__eh_info *)eh_info)->coerced_value = ret;
-                          return tab[pos].exception_handler;
-                        }
+                        return tab[pos].exception_handler;
                     }
                 }
               else

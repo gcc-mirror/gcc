@@ -589,7 +589,6 @@ finish_try_block (try_block)
   else
     {
       expand_start_all_catch ();  
-      start_catch_handler (NULL);
     }
 }
 
