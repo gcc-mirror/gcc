@@ -75,6 +75,6 @@ gofast_maybe_init_libfuncs (void)
   set_conv_libfunc (ufix_optab,   SImode, DFmode, "dptoul");
 
   set_conv_libfunc (sfloat_optab, SFmode, SImode, "sitofp");
-  set_conv_libfunc (sfloat_optab, DFmode, DImode, "litodp");
+  set_conv_libfunc (sfloat_optab, DFmode, SImode, "litodp");
 #endif
 }
