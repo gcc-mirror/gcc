@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -2136,7 +2136,7 @@ v850_encode_data_area (decl)
 	return;
     }
 
-  newstr = ggc_alloc_string (NULL, len + 2);
+  newstr = alloca (len + 2);
 
   strcpy (newstr + 1, str);
 
@@ -2148,7 +2148,7 @@ v850_encode_data_area (decl)
     default: abort ();
     }
 
-  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = ggc_alloc_string (newstr, len + 2);
 }
 
 /* Return true if the given RTX is a register which can be restored

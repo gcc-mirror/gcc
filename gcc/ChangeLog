@@ -1,3 +1,8 @@
+2001-01-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (v850_encode_data_area): Use alloca to create
+	temporary string for initialisation before calling ggc_alloc_string.
+
 2001-01-06  Michael Hayes  <mhayes@redhat.com>
 
 	* rtl.h (print_simple_rtl): New.
