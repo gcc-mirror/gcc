@@ -1,3 +1,12 @@
+2004-01-18  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (try_redirect_by_replacing_jump): Declare.
+	* cfgcleanup.c (try_optimize_cfg): Use it.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Export.
+	(rtl_redirect_edge_and_branch, cfg_layout_redirect_edge_and_branch):
+	Kill hack.
+	(cfg_layout_merge_blocks): Use try_redirect_by_replacing_jump.
+
 2004-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/altivec.h: Wrap C++ functions in extern "C++"
