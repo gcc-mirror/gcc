@@ -1,5 +1,8 @@
 2000-05-01  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* config/mn10300/mn10300.c (print_operand_address): Do not add
+	zero to SP.
+
 	* config/mn10300/mn10300.c (expand_epilogue): If SP is to be
 	adjusted by less than 256 bytes, use ret regardless of having any
 	callee-saved register to restore.
