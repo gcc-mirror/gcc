@@ -927,7 +927,7 @@ dbxout_type (type, full, show_arg_types)
       type = TYPE_MAIN_VARIANT (type);
       if (TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_IGNORED_P (TYPE_NAME (type)))
+	  && TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
 	full = 0;
     }
 
