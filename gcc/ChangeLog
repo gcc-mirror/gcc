@@ -1,3 +1,8 @@
+Mon May 24 01:02:58 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_end_bindings): Ignore any elements of VARS that
+	are not VAR_DECLs.
+
 Sun May 23 20:31:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (strength_reduce): Grow reg_single_usage as needed.
