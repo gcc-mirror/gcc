@@ -1,3 +1,8 @@
+2001-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ffitest_LDFLAGS): New macro.
+
 2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* include/ffi.h.in: Change sourceware.cygnus.com references to
