@@ -1266,6 +1266,7 @@ struct lang_type
 
   tree primary_base;
   tree vfields;
+  tree typeinfo_var;
   tree vbases;
   tree tags;
   tree size;
@@ -1686,6 +1687,12 @@ struct lang_type
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
+/* The std::type_info variable representing this class, or NULL if no
+   such variable has been created.  This field is only set for the
+   TYPE_MAIN_VARIANT of the class.  */
+#define CLASSTYPE_TYPEINFO_VAR(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->typeinfo_var)
+
 /* Accessor macros for the vfield slots in structures.  */
 
 /* The virtual function pointer fields that this type contains.  For a

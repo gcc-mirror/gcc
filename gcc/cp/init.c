@@ -1062,7 +1062,7 @@ expand_member_init (exp, name, init)
     }
   else if (TYPE_P (name))
     {
-      basetype = name;
+      basetype = TYPE_MAIN_VARIANT (name);
       name = TYPE_NAME (name);
     }
   else if (TREE_CODE (name) == TYPE_DECL)
