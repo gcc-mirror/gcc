@@ -229,7 +229,7 @@ static char spill_indirect_levels;
 /* Nonzero if indirect addressing is supported when the innermost MEM is
    of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
    which these are valid is the same as spill_indirect_levels, above.  */
-static char indirect_symref_ok;
+char indirect_symref_ok;
 
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
 char double_reg_address_ok;
