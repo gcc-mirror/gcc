@@ -1,3 +1,9 @@
+2004-11-23  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (extract_bit_field): Use simplify_gen_subreg instead of
+	hard-coding avoiding calls to gen_rtx_SUBREG.  Split complex return
+	modes to CONCAT.
+
 2004-11-23  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18618
