@@ -152,6 +152,19 @@ DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
 	 "The maximum length of scheduling's pending operations list",
 	 32)
 
+DEFPARAM(PARAM_LARGE_FUNCTION_INSNS,
+	 "large-function-insns",
+	 "The size of function body to be considered large",
+	 10000)
+DEFPARAM(PARAM_LARGE_FUNCTION_GROWTH,
+	 "large-function-growth",
+	 "Maximal growth due to inlining of large function (in percents)",
+	 100)
+DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
+	 "inline-unit-growth",
+	 "how much can given compilation unit grow because of the inlining (in percents)",
+	 50)
+
 /* The GCSE optimization will be disabled if it would require
    significantly more memory than this value.  */
 DEFPARAM(PARAM_MAX_GCSE_MEMORY,

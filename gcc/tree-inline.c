@@ -106,6 +106,7 @@ typedef struct inline_data
   htab_t tree_pruner;
   /* Decl of function we are inlining into.  */
   tree decl;
+  tree current_decl;
 } inline_data;
 
 /* Prototypes.  */
@@ -1145,6 +1146,10 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   if (!fn)
     return NULL_TREE;
 
+  /* Turn forward declarations into real ones.  */
+  if (flag_unit_at_a_time)
+    fn = cgraph_node (fn)->decl;
+
   /* If fn is a declaration of a function in a nested scope that was
      globally declared inline, we don't set its DECL_INITIAL.
      However, we can't blindly follow DECL_ABSTRACT_ORIGIN because the
@@ -1159,9 +1164,9 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  if ((!flag_unit_at_a_time || !DECL_SAVED_TREE (fn)
-       || !cgraph_global_info (fn)->inline_once)
-      && !inlinable_function_p (fn, id, 0))
+  if (!DECL_SAVED_TREE (fn)
+      || (flag_unit_at_a_time && !cgraph_inline_p (id->current_decl, fn))
+      || (!flag_unit_at_a_time && !inlinable_function_p (fn, id, 0)))
     {
       if (warn_inline && DECL_INLINE (fn) && !DID_INLINE_FUNC (fn)
 	  && !DECL_IN_SYSTEM_HEADER (fn))
@@ -1403,7 +1408,12 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     }
 
   /* Recurse into the body of the just inlined function.  */
-  expand_calls_inline (inlined_body, id);
+  {
+    tree old_decl = id->current_decl;
+    id->current_decl = fn;
+    expand_calls_inline (inlined_body, id);
+    id->current_decl = old_decl;
+  }
   VARRAY_POP (id->fns);
 
   /* If we've returned to the top level, clear out the record of how
@@ -1446,6 +1456,7 @@ optimize_inline_calls (tree fn)
   memset (&id, 0, sizeof (id));
 
   id.decl = fn;
+  id.current_decl = fn;
   /* Don't allow recursion into FN.  */
   VARRAY_TREE_INIT (id.fns, 32, "fns");
   VARRAY_PUSH_TREE (id.fns, fn);

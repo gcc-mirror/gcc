@@ -48,6 +48,9 @@ struct cgraph_node *cgraph_nodes_queue;
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
 
+/* Maximal uid used in cgraph nodes.  */
+int cgraph_max_uid;
+
 /* Set when whole unit has been analyzed so we can access global info.  */
 bool cgraph_global_info_ready = false;
 
@@ -114,6 +117,7 @@ cgraph_node (decl)
   node = ggc_alloc_cleared (sizeof (*node));
   node->decl = decl;
   node->next = cgraph_nodes;
+  node->uid = cgraph_max_uid++;
   if (cgraph_nodes)
     cgraph_nodes->previous = node;
   node->previous = NULL;
@@ -157,6 +161,19 @@ create_edge (caller, callee)
      struct cgraph_node *caller, *callee;
 {
   struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
+  struct cgraph_edge *edge2;
+
+  edge->inline_call = false;
+  /* At the moment we don't associate calls with specific CALL_EXPRs
+     as we probably ought to, so we must preserve inline_call flags to
+     be the same in all copies of the same edge.  */
+  if (cgraph_global_info_ready)
+    for (edge2 = caller->callees; edge2; edge2 = edge2->next_caller)
+      if (edge2->callee == callee)
+	{
+	  edge->inline_call = edge2->inline_call;
+	  break;
+	}
 
   edge->caller = caller;
   edge->callee = callee;
@@ -337,6 +354,8 @@ dump_cgraph (f)
     {
       struct cgraph_edge *edge;
       fprintf (f, "%s", cgraph_node_name (node));
+      if (node->local.self_insns)
+        fprintf (f, " %i insns", node->local.self_insns);
       if (node->origin)
 	fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
       if (node->needed)
@@ -346,13 +365,32 @@ dump_cgraph (f)
       if (DECL_SAVED_TREE (node->decl))
 	fprintf (f, " tree");
 
+      if (node->local.disgread_inline_limits)
+	fprintf (f, " always_inline");
+      else if (node->local.inlinable)
+	fprintf (f, " inlinable");
+      if (node->global.insns && node->global.insns != node->local.self_insns)
+	fprintf (f, " %i insns after inlining", node->global.insns);
+      if (node->global.cloned_times > 1)
+	fprintf (f, " cloned %ix", node->global.cloned_times);
+      if (node->global.calls)
+	fprintf (f, " %i calls", node->global.calls);
+
       fprintf (f, "\n  called by :");
       for (edge = node->callers; edge; edge = edge->next_caller)
-	fprintf (f, "%s ", cgraph_node_name (edge->caller));
+	{
+	  fprintf (f, "%s ", cgraph_node_name (edge->caller));
+	  if (edge->inline_call)
+	    fprintf(f, "(inlined) ");
+	}
 
       fprintf (f, "\n  calls: ");
       for (edge = node->callees; edge; edge = edge->next_callee)
-	fprintf (f, "%s ", cgraph_node_name (edge->callee));
+	{
+	  fprintf (f, "%s ", cgraph_node_name (edge->callee));
+	  if (edge->inline_call)
+	    fprintf(f, "(inlined) ");
+	}
       fprintf (f, "\n");
     }
 }
