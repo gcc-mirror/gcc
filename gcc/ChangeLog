@@ -1,3 +1,7 @@
+Mon Apr  3 00:02:59 2000  Brad Lucier <lucier@math.purdue.edu>
+
+	* Makefile.in (alias.o): Depend on $(TREE_H).
+
 2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_start_read): Turn off -Wtraditional if
