@@ -1567,7 +1567,6 @@ extern const char * insn_file		PARAMS ((rtx));
 extern int prologue_locator, epilogue_locator;
 
 /* In jump.c */
-extern rtx next_nondeleted_insn		PARAMS ((rtx));
 extern enum rtx_code reverse_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code reverse_condition_maybe_unordered PARAMS ((enum rtx_code));
 extern enum rtx_code swap_condition	PARAMS ((enum rtx_code));

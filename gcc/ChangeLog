@@ -1,3 +1,8 @@
+2003-06-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* jump.c (next_nondeleted_insn): Remove.
+	* rtl.h: Remove the prototype for next_nondeleted_insn.
+
 2003-06-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11311
