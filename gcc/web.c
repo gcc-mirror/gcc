@@ -265,7 +265,7 @@ web_main (void)
   rtx insn;
 
   df = df_init ();
-  df_analyse (df, 0, DF_UD_CHAIN | DF_EQUIV_NOTES);
+  df_analyze (df, 0, DF_UD_CHAIN | DF_EQUIV_NOTES);
 
   def_entry =
     (struct web_entry *) xcalloc (df->n_defs, sizeof (struct web_entry));
