@@ -2837,7 +2837,7 @@ first_reg_to_save ()
       break;
 
   /* If profiling, then we must save/restore every register that contains
-     a parameter before/after the .mcount call.  Use registers from 30 down
+     a parameter before/after the .__mcount call.  Use registers from 30 down
      to 23 to do this.  Don't use the frame pointer in reg 31.
 
      For now, save enough room for all of the parameter registers.  */
@@ -2870,7 +2870,7 @@ rs6000_makes_calls ()
 {
   rtx insn;
 
-  /* If we are profiling, we will be making a call to mcount.  */
+  /* If we are profiling, we will be making a call to __mcount.  */
   if (profile_flag)
     return 1;
 
@@ -4317,7 +4317,7 @@ output_function_profiler (file, labelno)
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
   asm_fprintf (file, "\t{l|lwz} %s,", reg_names[3]);
   assemble_name (file, buf);
-  asm_fprintf (file, "(%s)\n\tbl .mcount\n", reg_names[2]);
+  asm_fprintf (file, "(%s)\n\tbl %s\n", reg_names[2], RS6000_MCOUNT);
 
   /* Restore parameter registers.  */
 
