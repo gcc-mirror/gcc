@@ -4344,7 +4344,7 @@ globalize_decl (tree decl)
    the symbol for TARGET.  */
 
 void
-assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
+assemble_alias (tree decl, tree target)
 {
   const char *name;
 
@@ -4394,6 +4394,44 @@ assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
   warning ("alias definitions not supported in this configuration; ignored");
 #endif
 #endif
+
+  /* Tell cgraph that the aliased symbol is needed.  We *could* be more
+     specific and tell cgraph about the relationship between the two
+     symbols, but given that aliases virtually always exist for a reason,
+     it doesn't seem worthwhile.  */
+  if (flag_unit_at_a_time)
+    {
+      struct cgraph_node *fnode = NULL;
+      struct cgraph_varpool_node *vnode = NULL;
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  fnode = cgraph_node_for_asm (target);
+	  if (fnode != NULL)
+	    cgraph_mark_needed_node (fnode);
+	  else
+	    {
+	      vnode = cgraph_varpool_node_for_asm (target);
+	      if (vnode != NULL)
+		cgraph_varpool_mark_needed_node (vnode);
+	    }
+	}
+      else
+	{
+	  vnode = cgraph_varpool_node_for_asm (target);
+	  if (vnode != NULL)
+	    cgraph_varpool_mark_needed_node (vnode);
+	  else
+	    {
+	      fnode = cgraph_node_for_asm (target);
+	      if (fnode != NULL)
+		cgraph_mark_needed_node (fnode);
+	    }
+	}
+
+      if (fnode == NULL && vnode == NULL)
+	warning ("%qD aliased to undefined symbol %qE", decl, target);
+    }
 
   TREE_USED (decl) = 1;
   TREE_ASM_WRITTEN (decl) = 1;

@@ -89,7 +89,6 @@ const char *const tree_code_name[] = {
 void
 finish_file (void)
 {
-  maybe_apply_pending_pragma_weaks ();
 }
 
 #include "gtype-c.h"

@@ -897,6 +897,8 @@ pop_file_scope (void)
   /* Pop off the file scope and close this translation unit.  */
   pop_scope ();
   file_scope = 0;
+
+  maybe_apply_pending_pragma_weaks ();
   cgraph_finalize_compilation_unit ();
 }
 

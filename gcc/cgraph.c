@@ -194,6 +194,56 @@ cgraph_node (tree decl)
   return node;
 }
 
+/* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
+
+static bool
+decl_assembler_name_equal (tree decl, tree asmname)
+{
+  tree decl_asmname = DECL_ASSEMBLER_NAME (decl);
+
+  if (decl_asmname == asmname)
+    return true;
+
+  /* If the target assembler name was set by the user, things are trickier.
+     We have a leading '*' to begin with.  After that, it's arguable what
+     is the correct thing to do with -fleading-underscore.  Arguably, we've
+     historically been doing the wrong thing in assemble_alias by always
+     printing the leading underscore.  Since we're not changing that, make
+     sure user_label_prefix follows the '*' before matching.  */
+  if (IDENTIFIER_POINTER (decl_asmname)[0] == '*')
+    {
+      const char *decl_str = IDENTIFIER_POINTER (decl_asmname) + 1;
+      size_t ulp_len = strlen (user_label_prefix);
+
+      if (ulp_len == 0)
+	;
+      else if (strncmp (decl_str, user_label_prefix, ulp_len) == 0)
+	decl_str += ulp_len;
+      else
+	return false;
+
+      return strcmp (decl_str, IDENTIFIER_POINTER (asmname)) == 0;
+    }
+
+  return false;
+}
+
+
+/* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
+   Return NULL if there's no such node.  */
+
+struct cgraph_node *
+cgraph_node_for_asm (tree asmname)
+{
+  struct cgraph_node *node;
+
+  for (node = cgraph_nodes; node ; node = node->next)
+    if (decl_assembler_name_equal (node->decl, asmname))
+      return node;
+
+  return NULL;
+}
+
 /* Return callgraph edge representing CALL_EXPR.  */
 struct cgraph_edge *
 cgraph_edge (struct cgraph_node *node, tree call_expr)
@@ -533,10 +583,23 @@ cgraph_varpool_node (tree decl)
     return *slot;
   node = ggc_alloc_cleared (sizeof (*node));
   node->decl = decl;
+  node->next = cgraph_varpool_nodes;
   cgraph_varpool_n_nodes++;
   cgraph_varpool_nodes = node;
   *slot = node;
   return node;
+}
+
+struct cgraph_varpool_node *
+cgraph_varpool_node_for_asm (tree asmname)
+{
+  struct cgraph_varpool_node *node;
+
+  for (node = cgraph_varpool_nodes; node ; node = node->next)
+    if (decl_assembler_name_equal (node->decl, asmname))
+      return node;
+
+  return NULL;
 }
 
 /* Set the DECL_ASSEMBLER_NAME and update cgraph hashtables.  */

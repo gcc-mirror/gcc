@@ -138,6 +138,8 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller")))
 struct cgraph_varpool_node GTY(())
 {
   tree decl;
+  /* Pointer to the next function in cgraph_varpool_nodes.  */
+  struct cgraph_varpool_node *next;
   /* Pointer to the next function in cgraph_varpool_nodes_queue.  */
   struct cgraph_varpool_node *next_needed;
 
@@ -168,6 +170,7 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
 				        tree);
 struct cgraph_node *cgraph_node (tree decl);
+struct cgraph_node *cgraph_node_for_asm (tree asmname);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree call_expr);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
@@ -177,6 +180,7 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *, struct cgraph_node
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *);
 
 struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
+struct cgraph_varpool_node *cgraph_varpool_node_for_asm (tree asmname);
 void cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_finalize_decl (tree);
 bool cgraph_varpool_assemble_pending_decls (void);

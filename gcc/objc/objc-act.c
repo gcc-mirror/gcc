@@ -603,8 +603,6 @@ objc_finish_file (void)
 
 #ifdef OBJCPLUS
   cp_finish_file ();
-#else
-  maybe_apply_pending_pragma_weaks ();
 #endif
 }
 
