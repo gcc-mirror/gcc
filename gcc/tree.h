@@ -53,7 +53,7 @@ enum tree_code {
 extern const char tree_code_type[];
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
-/* Returns non-zero iff CLASS is the tree-code class of an
+/* Returns nonzero iff CLASS is the tree-code class of an
    expression.  */
 
 #define IS_EXPR_CODE_CLASS(CLASS) \
@@ -1375,7 +1375,7 @@ struct tree_type GTY(())
    as DECL_NAME.  It is an IDENTIFIER_NODE.  */
 #define DECL_ASSEMBLER_NAME(NODE) decl_assembler_name (NODE)
 
-/* Returns non-zero if the DECL_ASSEMBLER_NAME for NODE has been set.  If zero,
+/* Returns nonzero if the DECL_ASSEMBLER_NAME for NODE has been set.  If zero,
    the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
    yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
@@ -1495,7 +1495,7 @@ struct tree_type GTY(())
    : (make_decl_rtl (NODE, NULL), (NODE)->decl.rtl))
 /* Set the DECL_RTL for NODE to RTL.  */
 #define SET_DECL_RTL(NODE, RTL) (DECL_CHECK (NODE)->decl.rtl = (RTL))
-/* Returns non-zero if the DECL_RTL for NODE has already been set.  */
+/* Returns nonzero if the DECL_RTL for NODE has already been set.  */
 #define DECL_RTL_SET_P(NODE)  (DECL_CHECK (NODE)->decl.rtl != NULL)
 /* Copy the RTL from NODE1 to NODE2.  If the RTL was not set for
    NODE1, it will not be set for NODE2; this is a lazy copy.  */
@@ -1608,7 +1608,7 @@ struct tree_type GTY(())
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->decl.regdecl_flag)
 
-/* In a FUNCTION_DECL with a non-zero DECL_CONTEXT, indicates that a
+/* In a FUNCTION_DECL with a nonzero DECL_CONTEXT, indicates that a
    static chain is not needed.  */
 #define DECL_NO_STATIC_CHAIN(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.regdecl_flag)
@@ -2317,7 +2317,7 @@ extern tree strip_attrs			PARAMS ((tree));
 
 extern int valid_machine_attribute	PARAMS ((tree, tree, tree, tree));
 
-/* Given a tree node and a string, return non-zero if the tree node is
+/* Given a tree node and a string, return nonzero if the tree node is
    a valid attribute name for the string.  */
 
 extern int is_attribute_p		PARAMS ((const char *, tree));
@@ -2516,7 +2516,7 @@ extern void put_pending_sizes		PARAMS ((tree));
 /* If nonzero, an upper limit on alignment of structure fields, in bits.  */
 extern unsigned int maximum_field_alignment;
 
-/* If non-zero, the alignment of a bitstring or (power-)set value, in bits.  */
+/* If nonzero, the alignment of a bitstring or (power-)set value, in bits.  */
 extern unsigned int set_alignment;
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y

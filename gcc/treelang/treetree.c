@@ -199,7 +199,7 @@ tree_code_if_start (tree exp, unsigned char* filename, int lineno)
                  exp, 
                  build1 (CONVERT_EXPR, TREE_TYPE (exp), integer_zero_node));
   emit_line_note ((const char *)filename, lineno); /* Output the line number information.  */
-  expand_start_cond (cond_exp, /* Exit-able if non zero.  */ 0);
+  expand_start_cond (cond_exp, /* Exit-able if nonzero.  */ 0);
 }
 
 /* Output the code for the else of an if statement.  The else occurred

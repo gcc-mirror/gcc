@@ -48,7 +48,7 @@ tree sizetype_tab[(int) TYPE_KIND_LAST];
    The value is measured in bits.  */
 unsigned int maximum_field_alignment;
 
-/* If non-zero, the alignment of a bitstring or (power-)set value, in bits.
+/* If nonzero, the alignment of a bitstring or (power-)set value, in bits.
    May be overridden by front-ends.  */
 unsigned int set_alignment = 0;
 
@@ -96,7 +96,7 @@ get_pending_sizes ()
   return chain;
 }
 
-/* Return non-zero if EXPR is present on the pending sizes list.  */
+/* Return nonzero if EXPR is present on the pending sizes list.  */
 
 int
 is_pending_size (expr)
@@ -807,7 +807,7 @@ place_field (rli, field)
 	 affect the alignment of a record; even a zero-sized field
 	 can do this.  The alignment should be to the alignment of
 	 the type, except that for zero-size bitfields this only
-	 applies if there was an immediately prior, non-zero-size
+	 applies if there was an immediately prior, nonzero-size
 	 bitfield.  (That's the way it is, experimentally.) */
       if (! integer_zerop (DECL_SIZE (field))
  	  ? ! DECL_PACKED (field)

@@ -78,7 +78,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the same hard register in the same machine mode are in the same
    class.  */
 
-/* If conservative_reg_partition is non-zero, use a conservative
+/* If conservative_reg_partition is nonzero, use a conservative
    register partitioning algorithm (which leaves more regs after
    emerging from SSA) instead of the coalescing one.  This is being
    left in for a limited time only, as a debugging tool until the
@@ -420,7 +420,7 @@ phi_alternative (set, c)
 }
 
 /* Given the SET of a phi node, remove the alternative for predecessor
-   block C.  Return non-zero on success, or zero if no alternative is
+   block C.  Return nonzero on success, or zero if no alternative is
    found for C.  */
 
 int
@@ -1496,7 +1496,7 @@ out:
      and C is the ith predecessor of B,
      then T0 and Ti must be equivalent.
 
-   Return non-zero iff any such cases were found for which the two
+   Return nonzero iff any such cases were found for which the two
    regs were not already in the same class.  */
 
 static int
@@ -2252,7 +2252,7 @@ convert_from_ssa ()
    destination, the regno of the phi argument corresponding to BB,
    and DATA.
 
-   If FN ever returns non-zero, stops immediately and returns this
+   If FN ever returns nonzero, stops immediately and returns this
    value.  Otherwise, returns zero.  */
 
 int

@@ -2821,7 +2821,7 @@ stmt_loop_nest_empty ()
   return (cfun->stmt == NULL || loop_stack == NULL);
 }
 
-/* Return non-zero if we should preserve sub-expressions as separate
+/* Return nonzero if we should preserve sub-expressions as separate
    pseudos.  We never do so if we aren't optimizing.  We always do so
    if -fexpensive-optimizations.
 
@@ -3434,7 +3434,7 @@ expand_end_target_temps ()
   pop_temp_slots ();
 }
 
-/* Given a pointer to a BLOCK node return non-zero if (and only if) the node
+/* Given a pointer to a BLOCK node return nonzero if (and only if) the node
    in question represents the outermost pair of curly braces (i.e. the "body
    block") of a function or method.
 
@@ -4234,7 +4234,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
    This is sometimes used to avoid a cleanup associated with
    a value that is being returned out of the scope.
 
-   If IN_FIXUP is non-zero, we are generating this cleanup for a fixup
+   If IN_FIXUP is nonzero, we are generating this cleanup for a fixup
    goto and handle protection regions specially in that case.
 
    If REACHABLE, we emit code, otherwise just inform the exception handling

@@ -1,5 +1,32 @@
 2002-09-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* LANGUAGES: Follow spelling conventions.
+	* rtl.def: Likewise.
+	* sbitmap.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+	* sibcall.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* ssa.c: Likewise.
+	* stab.def: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* target.h: Likewise.
+	* timevar.c: Likewise.
+	* toplev.c: Likewise.
+	* tree-dump.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree.c: Likewise.
+	* tree.def: Likewise.
+	* tree.h: Likewise.
+	* unroll.c: Likewise.
+	* varasm.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* treelang/treelang.texi: Likewise.
+	* treelang/treetree.c: Likewise.
+
+2002-09-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (compute_saved_regs): Use a macro
 	instead of a hard register number.
 	(get_shift_alg): Use an enumerated type instead of numbers.

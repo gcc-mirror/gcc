@@ -2599,7 +2599,7 @@ default_ms_bitfield_layout_p (record)
   return false;
 }
 
-/* Return non-zero if IDENT is a valid name for attribute ATTR,
+/* Return nonzero if IDENT is a valid name for attribute ATTR,
    or zero if not.
 
    We try both `text' and `__text__', ATTR may be either one.  */

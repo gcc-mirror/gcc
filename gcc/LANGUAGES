@@ -18,7 +18,7 @@ Aug 31, 1998:
   from the input stream, and to push them back into the input stream respectively.
   The third argument is a pointer to a null terminate string which is the first
   word after #pragma.  The expression supplied by HANDLE_PRAGMA should return
-  non-zero if it parsed and implemented the pragma.  Otherwise it should return
+  nonzero if it parsed and implemented the pragma.  Otherwise it should return
   zero, and leave the input stream as it was before the expression was evaluated.
 
   A new back-end definable macro has been added: INSERT_ATTRIBUTES.  This macro

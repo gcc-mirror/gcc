@@ -170,7 +170,7 @@ enum unroll_types
   UNROLL_NAIVE
 };
 
-/* Indexed by register number, if non-zero, then it contains a pointer
+/* Indexed by register number, if nonzero, then it contains a pointer
    to a struct induction for a DEST_REG giv which has been combined with
    one of more address givs.  This is needed because whenever such a DEST_REG
    giv is modified, we must modify the value of all split address givs
@@ -2482,7 +2482,7 @@ find_splittable_regs (loop, unroll_type, unroll_number)
 	 it is unsafe to split the biv since it may not have the proper
 	 value on loop exit.  */
 
-      /* loop_number_exit_count is non-zero if the loop has an exit other than
+      /* loop_number_exit_count is nonzero if the loop has an exit other than
 	 a fall through at the end.  */
 
       biv_splittable = 1;
@@ -2507,7 +2507,7 @@ find_splittable_regs (loop, unroll_type, unroll_number)
 	    || GET_CODE (SET_SRC (tem)) != PLUS)
 	  biv_splittable = 0;
 
-      /* If final value is non-zero, then must emit an instruction which sets
+      /* If final value is nonzero, then must emit an instruction which sets
 	 the value of the biv to the proper value.  This is done after
 	 handling all of the givs, since some of them may need to use the
 	 biv's value in their initialization code.  */
@@ -2567,7 +2567,7 @@ find_splittable_regs (loop, unroll_type, unroll_number)
       result += find_splittable_givs (loop, bl, unroll_type, increment,
 				      unroll_number);
 
-      /* If final value is non-zero, then must emit an instruction which sets
+      /* If final value is nonzero, then must emit an instruction which sets
 	 the value of the biv to the proper value.  This is done after
 	 handling all of the givs, since some of them may need to use the
 	 biv's value in their initialization code.  */
@@ -2696,7 +2696,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
       /* Should emit insns after the loop if possible, as the biv final value
 	 code below does.  */
 
-      /* If the final value is non-zero, and the giv has not been reduced,
+      /* If the final value is nonzero, and the giv has not been reduced,
 	 then must emit an instruction to set the final value.  */
       if (final_value && !v->new_reg)
 	{

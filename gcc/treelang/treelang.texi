@@ -601,7 +601,7 @@ statement: if_statement OR expression_statement OR return_statement
 if_statement: if (expression) @{ statements @} else @{ statements @}
 
 The first lot of statements is executed if the expression is
-non-zero. Otherwise the second lot of statements is executed. Either
+nonzero. Otherwise the second lot of statements is executed. Either
 list of statements may be empty, but both sets of braces and the else must be present. 
 
 @smallexample

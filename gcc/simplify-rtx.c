@@ -903,7 +903,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	{
 	case PLUS:
 	  /* Maybe simplify x + 0 to x.  The two expressions are equivalent
-	     when x is NaN, infinite, or finite and non-zero.  They aren't
+	     when x is NaN, infinite, or finite and nonzero.  They aren't
 	     when x is -0 and the rounding mode is not towards -infinity,
 	     since (-0) + 0 is then 0.  */
 	  if (!HONOR_SIGNED_ZEROS (mode) && trueop1 == CONST0_RTX (mode))
@@ -1051,7 +1051,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    return CONST0_RTX (mode);
 
 	  /* Change subtraction from zero into negation.  (0 - x) is the
-	     same as -x when x is NaN, infinite, or finite and non-zero.
+	     same as -x when x is NaN, infinite, or finite and nonzero.
 	     But if the mode has signed zeros, and does not round towards
 	     -infinity, then 0 - 0 is 0, not -0.  */
 	  if (!HONOR_SIGNED_ZEROS (mode) && trueop0 == CONST0_RTX (mode))

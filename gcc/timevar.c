@@ -114,7 +114,7 @@ static float clocks_to_msec;
 
 /* See timevar.h for an explanation of timing variables.  */
 
-/* This macro evaluates to non-zero if timing variables are enabled.  */
+/* This macro evaluates to nonzero if timing variables are enabled.  */
 #define TIMEVAR_ENABLE (time_report)
 
 /* A timing variable.  */

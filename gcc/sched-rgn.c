@@ -3001,7 +3001,7 @@ schedule_insns (dump_file)
      first so that we can verify that live_at_start didn't change.  Then
      do all other blocks.  */
   /* ??? There is an outside possibility that update_life_info, or more
-     to the point propagate_block, could get called with non-zero flags
+     to the point propagate_block, could get called with nonzero flags
      more than once for one basic block.  This would be kinda bad if it
      were to happen, since REG_INFO would be accumulated twice for the
      block, and we'd have twice the REG_DEAD notes.
