@@ -271,6 +271,7 @@ create_basic_block_structure (index, head, end, bb_note)
   bb->head = head;
   bb->end = end;
   bb->index = index;
+  bb->flags = BB_NEW;
   BASIC_BLOCK (index) = bb;
   if (basic_block_for_insn)
     update_bb_for_insn (bb);
@@ -592,6 +593,7 @@ merge_blocks_nomove (a, b)
   for (e = b->succ; e; e = e->succ_next)
     e->src = a;
   a->succ = b->succ;
+  a->flags |= b->flags;
 
   /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
   b->pred = b->succ = NULL;

@@ -5330,8 +5330,8 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin,
 	{
 	  rtx new_jump;
 
-	  new_jump = emit_jump_insn_before (gen_jump (JUMP_LABEL (last_insn)),
-					    last_insn);
+	  new_jump = emit_jump_insn_after (gen_jump (JUMP_LABEL (last_insn)),
+					   last_insn);
 	  JUMP_LABEL (new_jump) = JUMP_LABEL (last_insn);
 	  LABEL_NUSES (JUMP_LABEL (new_jump))++;
 	  emit_barrier_after (new_jump);

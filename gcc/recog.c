@@ -392,6 +392,17 @@ apply_change_group ()
 
   if (i == num_changes)
     {
+      basic_block bb;
+
+      for (i = 0; i < num_changes; i++)
+	if (changes[i].object
+	    && INSN_P (changes[i].object)
+	    && basic_block_for_insn
+	    && ((unsigned int)INSN_UID (changes[i].object)
+		< basic_block_for_insn->num_elements)
+	    && (bb = BLOCK_FOR_INSN (changes[i].object)))
+        bb->flags |= BB_DIRTY;
+
       num_changes = 0;
       return 1;
     }

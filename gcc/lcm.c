@@ -1031,6 +1031,7 @@ optimize_mode_switching (file)
   int max_num_modes = 0;
   bool emited = false;
 
+  clear_bb_flags ();
 #ifdef NORMAL_MODE
   /* Increment n_basic_blocks before allocating bb_info.  */
   n_basic_blocks++;
@@ -1398,16 +1399,11 @@ optimize_mode_switching (file)
   if (!need_commit && !emited)
     return 0;
 
-  /* Ideally we'd figure out what blocks were affected and start from
-     there, but this is enormously complicated by commit_edge_insertions,
-     which would screw up any indices we'd collected, and also need to
-     be involved in the update.  Bail and recompute global life info for
-     everything.  */
-
-  allocate_reg_life_data ();
-  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		    (PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
-		     | PROP_SCAN_DEAD_CODE | PROP_REG_INFO));
+  max_regno = max_reg_num ();
+  allocate_reg_info (max_regno, FALSE, FALSE);
+  update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+				    (PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
+				     | PROP_SCAN_DEAD_CODE));
 
   return 1;
 }

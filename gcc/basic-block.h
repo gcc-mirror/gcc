@@ -221,7 +221,9 @@ typedef struct basic_block_def {
 #define BB_FREQ_MAX 10000
 
 /* Masks for basic_block.flags.  */
-#define BB_REACHABLE		1
+#define BB_DIRTY		1
+#define BB_NEW			2
+#define BB_REACHABLE		4
 
 /* Number of basic blocks in the current function.  */
 
@@ -311,6 +313,7 @@ extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx));
 extern basic_block create_basic_block	PARAMS ((int, rtx, rtx));
 extern int flow_delete_block		PARAMS ((basic_block));
+extern void clear_bb_flags		PARAMS ((void));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 						 basic_block));
@@ -587,6 +590,8 @@ enum update_life_extent
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));
+extern void update_life_info_in_dirty_blocks PARAMS ((enum update_life_extent,
+						      int));
 extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));
 extern int propagate_block	PARAMS ((basic_block, regset, regset, regset,
 					 int));

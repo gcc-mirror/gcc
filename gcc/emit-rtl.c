@@ -3276,6 +3276,8 @@ add_insn_after (insn, after)
       && (bb = BLOCK_FOR_INSN (after)))
     {
       set_block_for_insn (insn, bb);
+      if (INSN_P (insn))
+        bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEL.  */
       if (bb->end == after
@@ -3343,6 +3345,8 @@ add_insn_before (insn, before)
       && (bb = BLOCK_FOR_INSN (before)))
     {
       set_block_for_insn (insn, bb);
+      if (INSN_P (insn))
+        bb->flags |= BB_DIRTY;
       /* Should not happen as first in the BB is always
 	 either NOTE or LABEl.  */
       if (bb->head == insn
@@ -3420,6 +3424,8 @@ remove_insn (insn)
       && (unsigned int)INSN_UID (insn) < basic_block_for_insn->num_elements
       && (bb = BLOCK_FOR_INSN (insn)))
     {
+      if (INSN_P (insn))
+        bb->flags |= BB_DIRTY;
       if (bb->head == insn)
 	{
 	  /* Never ever delete the basic block note without deleting whole basic
@@ -3497,6 +3503,7 @@ reorder_insns (from, to, after)
       && (bb = BLOCK_FOR_INSN (after)))
     {
       rtx x;
+      bb->flags |= BB_DIRTY;
  
       if (basic_block_for_insn
 	  && (unsigned int)INSN_UID (from) < basic_block_for_insn->num_elements
@@ -3504,6 +3511,7 @@ reorder_insns (from, to, after)
 	{
 	  if (bb2->end == to)
 	    bb2->end = prev;
+	  bb2->flags |= BB_DIRTY;
 	}
 
       if (bb->end == after)
@@ -4028,6 +4036,7 @@ emit_insns_after (first, after)
       && (unsigned int)INSN_UID (after) < basic_block_for_insn->num_elements
       && (bb = BLOCK_FOR_INSN (after)))
     {
+      bb->flags |= BB_DIRTY;
       for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
 	set_block_for_insn (last, bb);
       set_block_for_insn (last, bb);

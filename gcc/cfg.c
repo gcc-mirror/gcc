@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 dump_flow_info, debug_flow_info, dump_edge_info
      - Allocation of AUX fields for basic blocks
 	 alloc_aux_for_blocks, free_aux_for_blocks, alloc_aux_for_block
+     - clear_bb_flags
  */
 
 #include "config.h"
@@ -439,6 +440,16 @@ redirect_edge_pred (e, new_pred)
   e->succ_next = new_pred->succ;
   new_pred->succ = e;
   e->src = new_pred;
+}
+
+void
+clear_bb_flags ()
+{
+  int i;
+  ENTRY_BLOCK_PTR->flags = 0;
+  EXIT_BLOCK_PTR->flags = 0;
+  for (i = 0; i < n_basic_blocks; i++)
+    BASIC_BLOCK (i)->flags = 0;
 }
 
 void
