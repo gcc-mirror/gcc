@@ -93,7 +93,8 @@ static void fix_method_argument_names PARAMS ((tree ,tree));
 static tree method_declarator PARAMS ((tree, tree));
 static void parse_warning_context PARAMS ((tree cl, const char *msg, ...))
   ATTRIBUTE_PRINTF_2;
-static void issue_warning_error_from_context PARAMS ((tree, const char *msg, va_list));
+static void issue_warning_error_from_context PARAMS ((tree, const char *msg, va_list))
+  ATTRIBUTE_PRINTF (2, 0);
 static void parse_ctor_invocation_error PARAMS ((void));
 static tree parse_jdk1_1_error PARAMS ((const char *));
 static void complete_class_report_errors PARAMS ((jdep *));

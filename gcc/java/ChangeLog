@@ -1,3 +1,8 @@
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* parse.y (issue_warning_error_from_context): Add
+	ATTRIBUTE_PRINTF.
+
 2000-11-11  Anthony Green  <green@redhat.com>
 
 	* jcf-parse.c (process_zip_dir): Add finput parameter.

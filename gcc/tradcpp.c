@@ -328,12 +328,15 @@ void delete_macro	 PARAMS ((HASHNODE *));
 /* First arg to v_message.  */
 enum msgtype { WARNING = 0, ERROR, FATAL };
 void v_message		 PARAMS ((enum msgtype mtype, int line,
-				  const char *msgid, va_list ap));
+				  const char *msgid, va_list ap))
+     ATTRIBUTE_PRINTF (3, 0);
 
-void warning		 PARAMS ((const char *msgid, ...));
-void error		 PARAMS ((const char *msgid, ...));
-void fatal		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_NORETURN;
-void error_with_line	 PARAMS ((int, const char *msgid, ...));
+void warning		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
+void error		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
+void fatal		 PARAMS ((const char *msgid, ...)) ATTRIBUTE_NORETURN
+     ATTRIBUTE_PRINTF_1;
+void error_with_line	 PARAMS ((int, const char *msgid, ...))
+     ATTRIBUTE_PRINTF_2;
 void error_from_errno	 PARAMS ((const char *msgid));
 
 void perror_with_name 	 PARAMS ((const char *msgid));
