@@ -1300,6 +1300,7 @@ tree_estimate_probability (void)
 
   tree_bb_level_predictions ();
 
+  mark_irreducible_loops (&loops_info);
   predict_loops (&loops_info, false);
 
   FOR_EACH_BB (bb)
