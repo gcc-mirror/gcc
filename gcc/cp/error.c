@@ -814,9 +814,7 @@ dump_decl (tree t, int flags)
       break;
 
     case SCOPE_REF:
-      dump_decl (TREE_OPERAND (t, 0), flags & ~TFF_DECL_SPECIFIERS);
-      pp_colon_colon (cxx_pp); 
-      dump_decl (TREE_OPERAND (t, 1), flags);
+      pp_expression (cxx_pp, t);
       break;
 
     case ARRAY_REF:
@@ -1735,9 +1733,7 @@ dump_expr (tree t, int flags)
       break;
 
     case SCOPE_REF:
-      dump_type (TREE_OPERAND (t, 0), flags);
-      pp_colon_colon (cxx_pp);
-      dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+      pp_expression (cxx_pp, t);
       break;
 
     case CAST_EXPR:
