@@ -109,9 +109,6 @@ __addvdi3 (DWtype a, DWtype b)
 Wtype
 __subvsi3 (Wtype a, Wtype b)
 {
-#ifdef L_addvsi3
-  return __addvsi3 (a, (-b));
-#else
   DWtype w;
 
   w = a - b;
@@ -120,7 +117,6 @@ __subvsi3 (Wtype a, Wtype b)
     abort ();
 
   return w;
-#endif
 }
 #endif
 
@@ -128,9 +124,6 @@ __subvsi3 (Wtype a, Wtype b)
 DWtype
 __subvdi3 (DWtype a, DWtype b)
 {
-#ifdef L_addvdi3
-  return __addvdi3 (a, (-b));
-#else
   DWtype w;
 
   w = a - b;
@@ -139,19 +132,21 @@ __subvdi3 (DWtype a, DWtype b)
     abort ();
 
   return w;
-#endif
 }
 #endif
 
 #ifdef L_mulvsi3
+#define WORD_SIZE (sizeof (Wtype) * BITS_PER_UNIT)
 Wtype
 __mulvsi3 (Wtype a, Wtype b)
 {
   DWtype w;
 
-  w = a * b;
+  w = (DWtype) a * (DWtype) b;
 
-  if (((a >= 0) == (b >= 0)) ? w < 0 : w > 0)
+  if (((a >= 0) == (b >= 0))
+      ? (UDWtype) w > (UDWtype) (((DWtype) 1 << (WORD_SIZE - 1)) - 1)
+      : (UDWtype) w < (UDWtype) ((DWtype) -1 << (WORD_SIZE - 1)))
     abort ();
 
   return w;
@@ -215,8 +210,8 @@ __absvdi2 (DWtype a)
   DWtype w = a;
 
   if (a < 0)
-#ifdef L_negvsi2
-    w = __negvsi2 (a);
+#ifdef L_negvdi2
+    w = __negvdi2 (a);
 #else
     w = -a;
 
@@ -229,17 +224,132 @@ __absvdi2 (DWtype a)
 #endif
 
 #ifdef L_mulvdi3
+#define WORD_SIZE (sizeof (Wtype) * BITS_PER_UNIT)
 DWtype
 __mulvdi3 (DWtype u, DWtype v)
 {
-  DWtype w;
+  /* The unchecked multiplication needs 3 Wtype x Wtype multiplications,
+     but the checked multiplication needs only two.  */
+  DWunion uu, vv;
 
-  w = u * v;
+  uu.ll = u;
+  vv.ll = v;
 
-  if (((u >= 0) == (v >= 0)) ? w < 0 : w > 0)
-    abort ();
+  if (__builtin_expect (uu.s.high == uu.s.low >> (WORD_SIZE - 1), 1))
+    {
+      /* u fits in a single Wtype.  */
+      if (__builtin_expect (vv.s.high == vv.s.low >> (WORD_SIZE - 1), 1))
+	{
+	  /* v fits in a single Wtype as well.  */
+	  /* A single multiplication.  No overflow risk.  */
+	  return (DWtype) uu.s.low * (DWtype) vv.s.low;
+	}
+      else
+	{
+	  /* Two multiplications.  */
+	  DWunion w0, w1;
 
-  return w;
+	  w0.ll = (UDWtype) (UWtype) uu.s.low * (UDWtype) (UWtype) vv.s.low;
+	  w1.ll = (UDWtype) (UWtype) uu.s.low * (UDWtype) (UWtype) vv.s.high;
+	  if (vv.s.high < 0)
+	    w1.s.high -= uu.s.low;
+	  if (uu.s.low < 0)
+	    w1.ll -= vv.ll;
+	  w1.ll += (UWtype) w0.s.high;
+	  if (__builtin_expect (w1.s.high == w1.s.low >> (WORD_SIZE - 1), 1))
+	    {
+	      w0.s.high = w1.s.low;
+	      return w0.ll;
+	    }
+	}
+    }
+  else
+    {
+      if (__builtin_expect (vv.s.high == vv.s.low >> (WORD_SIZE - 1), 1))
+	{
+	  /* v fits into a single Wtype.  */
+	  /* Two multiplications.  */
+	  DWunion w0, w1;
+
+	  w0.ll = (UDWtype) (UWtype) uu.s.low * (UDWtype) (UWtype) vv.s.low;
+	  w1.ll = (UDWtype) (UWtype) uu.s.high * (UDWtype) (UWtype) vv.s.low;
+	  if (uu.s.high < 0)
+	    w1.s.high -= vv.s.low;
+	  if (vv.s.low < 0)
+	    w1.ll -= uu.ll;
+	  w1.ll += (UWtype) w0.s.high;
+	  if (__builtin_expect (w1.s.high == w1.s.low >> (WORD_SIZE - 1), 1))
+	    {
+	      w0.s.high = w1.s.low;
+	      return w0.ll;
+	    }
+	}
+      else
+	{
+	  /* A few sign checks and a single multiplication.  */
+	  if (uu.s.high >= 0)
+	    {
+	      if (vv.s.high >= 0)
+		{
+		  if (uu.s.high == 0 && vv.s.high == 0)
+		    {
+		      DWtype w;
+
+		      w = (UDWtype) (UWtype) uu.s.low
+			  * (UDWtype) (UWtype) vv.s.low;
+		      if (__builtin_expect (w >= 0, 1))
+			return w;
+		    }
+		}
+	      else
+		{
+		  if (uu.s.high == 0 && vv.s.high == (Wtype) -1)
+		    {
+		      DWunion ww;
+
+		      ww.ll = (UDWtype) (UWtype) uu.s.low
+			      * (UDWtype) (UWtype) vv.s.low;
+		      ww.s.high -= uu.s.low;
+		      if (__builtin_expect (ww.s.high < 0, 1))
+			return ww.ll;
+		    }
+		}
+	    }
+	  else
+	    {
+	      if (vv.s.high >= 0)
+		{
+		  if (uu.s.high == (Wtype) -1 && vv.s.high == 0)
+		    {
+		      DWunion ww;
+
+		      ww.ll = (UDWtype) (UWtype) uu.s.low
+			      * (UDWtype) (UWtype) vv.s.low;
+		      ww.s.high -= vv.s.low;
+		      if (__builtin_expect (ww.s.high < 0, 1))
+			return ww.ll;
+		    }
+		}
+	      else
+		{
+		  if (uu.s.high == (Wtype) -1 && vv.s.high == (Wtype) - 1)
+		    {
+		      DWunion ww;
+
+		      ww.ll = (UDWtype) (UWtype) uu.s.low
+			      * (UDWtype) (UWtype) vv.s.low;
+		      ww.s.high -= uu.s.low;
+		      ww.s.high -= vv.s.low;
+		      if (__builtin_expect (ww.s.high >= 0, 1))
+			return ww.ll;
+		    }
+		}
+	    }
+	}
+    }
+
+  /* Overflow.  */
+  abort ();
 }
 #endif
 
