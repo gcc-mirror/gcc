@@ -1,7 +1,7 @@
-#define MASK(N) ((int)((1U << (N)) - 1))
-#define BITS(N) ((1 << ((N) - 1)) + 2)
+#define MASK(N) ((1UL << (N)) - 1)
+#define BITS(N) ((1UL << ((N) - 1)) + 2)
 
-#define FUNC(N) void f##N(int j) { if ((j & MASK(N)) >= BITS(N)) abort();}
+#define FUNC(N) void f##N(long j) { if ((j & MASK(N)) >= BITS(N)) abort();}
 
 FUNC(3)
 FUNC(4)

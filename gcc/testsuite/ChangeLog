@@ -1,3 +1,7 @@
+2002-03-12  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.c-torture/execute/20020307-1.c: Use long.
+
 2002-03-12  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20020312-1.c: New test case.
