@@ -1,3 +1,8 @@
+Thu Nov  4 14:22:12 1999  David Billinghurst  <David.Billinghurst@riotinto.com.au>,  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* rtl.c: Include toplev.h.
+	(fatal): Remove declaration.
+
 Thu Nov  4 06:39:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (schedule_block): Fix thinko.
