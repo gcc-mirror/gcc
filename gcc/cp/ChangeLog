@@ -10,6 +10,9 @@
 
 2004-07-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (no_linkage_helper): Remove.
+	(no_linkage_check): Don't use walk_tree_without_duplicates.
+
 	* mangle.c (write_expression): Issue a sorry for zero-operand
 	functional casts.
 
