@@ -1,6 +1,6 @@
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,15 +37,10 @@ void test08()
   const char* date = "%A, the second of %B";
   const char* date_ex = "%Ex";
 
-  // basic construction and sanity checks.
+  // basic construction and sanity check
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_test::try_named_locale("en_HK");
   locale loc_fr = __gnu_test::try_named_locale("fr_FR@euro");
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  VERIFY( loc_hk != loc_c );
-  VERIFY( loc_hk != loc_fr );
-  VERIFY( loc_hk != loc_de );
-  VERIFY( loc_de != loc_fr );
+  VERIFY( loc_fr != loc_c );
 
   // create an ostream-derived object, cache the time_put facet
   const string empty;

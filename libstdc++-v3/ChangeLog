@@ -1,5 +1,56 @@
 2004-04-07  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/generic/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunct,
+	__timepunct<wchar_t>::_M_initialize_timepunct): the correct
+	_M_amonth07 in the "C" locale is "Jul" and L"Jul", respectively.
+	* config/locale/gnu/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunct,
+	__timepunct<wchar_t>::_M_initialize_timepunct): Ditto.
+	* testsuite/22_locale/time_get/get_monthname/char/4.cc: New.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/4.cc: New.
+
+	* testsuite/22_locale/time_get/date_order/char/1.cc: Remove junk.
+	* testsuite/22_locale/time_get/date_order/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_date/char/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_date/char/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_date/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_time/char/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_weekday/char/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/time_get/get_year/char/1.cc: Ditto.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/1.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/2.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/3.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/4.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/5.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/6.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/7.cc: Ditto.
+	* testsuite/22_locale/time_put/put/char/8.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Ditto.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Ditto.
+
+	* testsuite/22_locale/time_put/put/char/9780-1.cc: Fix typos.
+
+2004-04-07  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/locale/gnu/monetary_members.cc
 	(moneypunct<wchar_t>::_M_initialize_moneypunct): Prefer
 	_NL_MONETARY_DECIMAL_POINT_WC, _NL_MONETARY_THOUSANDS_SEP_WC,

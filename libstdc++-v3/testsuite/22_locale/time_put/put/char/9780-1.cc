@@ -61,7 +61,7 @@ int main()
 /*
 The problems with the first approach, as above, are numerous.
 
-1) Then locale usage and design for formatters and parers becomes
+1) The locale usage and design for formatters and parsers becomes
    fragmented. On one side, num_put and money_put, and on the other,
    time_put. This inconsistency is not useful.
 
@@ -79,7 +79,7 @@ The problems with the first approach, as above, are numerous.
  time_put<charT,OutputIterator> provide date and time formatting and
  parsing. All specifications of member functions for time_put and
  time_get in the subclauses of lib.category.time only apply to the
- instantiations required in Tables ?? and ??
+ instantiations required in Tables 51 and 52
  (lib.locale.category). Their members use their ios_base&,
  ios_base::iostate&, and fill arguments as described in
  (lib.locale.categories), and the ctype<> facet, to determine
