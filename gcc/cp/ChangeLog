@@ -1,3 +1,23 @@
+Tue Oct  7 23:00:12 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (make_typename_type): Do not try to call lookup_field for
+	non-aggregate types.
+
+Tue Oct  7 22:52:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_reinterpret_cast): Tweak.
+
+Tue Oct  7 22:45:31 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* typeck.c (build_reinterpret_cast): converting a void pointer
+	to function pointer with a reinterpret_cast produces a warning
+	if -pedantic is issued
+
+Tue Oct  7 22:43:43 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* typeck.c (c_expand_return): Don't warn about returning a
+	reference-type variable as a reference.
+
 Tue Oct  7 21:11:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (build_static_name): Fix typo.

@@ -5380,6 +5380,14 @@ build_reinterpret_cast (type, expr)
 	expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
+  else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
+	   || (TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype)))
+    {
+      pedwarn ("ANSI C++ forbids casting between pointers to functions and objects");
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
+      return fold (build1 (NOP_EXPR, type, expr));
+    }
   else
     {
       cp_error ("reinterpret_cast from `%T' to `%T'", intype, type);
@@ -7298,7 +7306,8 @@ c_expand_return (retval)
 	    {
 	      if (TEMP_NAME_P (DECL_NAME (whats_returned)))
 		warning ("reference to non-lvalue returned");
-	      else if (! TREE_STATIC (whats_returned)
+	      else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
+		       && ! TREE_STATIC (whats_returned)
 		       && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
 		       && !TREE_PUBLIC (whats_returned))
 		cp_warning_at ("reference to local variable `%D' returned", whats_returned);

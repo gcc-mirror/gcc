@@ -4349,7 +4349,11 @@ make_typename_type (context, name)
   if (! uses_template_parms (context)
       || context == current_class_type)
     {
-      t = lookup_field (context, name, 0, 1);
+      if (IS_AGGR_TYPE (context))
+	t = lookup_field (context, name, 0, 1);
+      else
+	t = NULL_TREE;
+
       if (t == NULL_TREE)
 	{
 	  cp_error ("no type named `%#T' in `%#T'", name, context);
