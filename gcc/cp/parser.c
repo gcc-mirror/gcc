@@ -14196,7 +14196,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
    specifiers applied to the declaration.  Returns the FUNCTION_DECL
    for the member function.  */
 
-tree
+static tree
 cp_parser_save_member_function_body (cp_parser* parser,
 				     tree decl_specifiers,
 				     tree declarator,

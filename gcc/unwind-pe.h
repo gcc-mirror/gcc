@@ -31,6 +31,9 @@
    compatibility problems with the base ABI.  This is slightly better
    than duplicating code, however.  */
 
+#ifndef GCC_UNWIND_PE_H
+#define GCC_UNWIND_PE_H
+
 /* If using C++, references to abort have to be qualified with std::.  */
 #if __cplusplus
 #define __gxx_abort std::abort
@@ -284,3 +287,5 @@ read_encoded_value (struct _Unwind_Context *context, unsigned char encoding,
 }
 
 #endif
+
+#endif /* unwind-pe.h */
