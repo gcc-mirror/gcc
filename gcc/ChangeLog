@@ -1,3 +1,12 @@
+2002-05-23  David S. Miller  <davem@redhat.com>
+
+	* basic-block.h (CLEANUP_NO_INSN_DEL): Define it.
+	* cfgcleanup.c (cleanup_cfg): If it is set do not
+	attempt to delete trivially dead insns.
+	* except.c (finish_eh_generation): Pass it to cleanup_cfg.
+	* toplev.c (rest_of_compilation): Document non-trivial aspect
+	the RTL before optimize_save_area_alloca is run.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c (indent_level): Remove.

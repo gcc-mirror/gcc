@@ -2501,7 +2501,7 @@ finish_eh_generation ()
 
   rebuild_jump_labels (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
-  cleanup_cfg (CLEANUP_PRE_LOOP);
+  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
@@ -2524,7 +2524,7 @@ finish_eh_generation ()
   find_exception_handler_labels ();
   rebuild_jump_labels (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
-  cleanup_cfg (CLEANUP_PRE_LOOP);
+  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 }
 
 static hashval_t
