@@ -4772,6 +4772,16 @@ int_fits_type_p (c, type)
 		  && TREE_UNSIGNED (TREE_TYPE (c))));
 }
 
+/* Given a DECL or TYPE, return the scope in which it was declared, or
+   NUL_TREE if there is no containing scope.  */
+
+tree
+get_containing_scope (t)
+     tree t;
+{
+  return (TYPE_P (t) ? TYPE_CONTEXT (t) : DECL_CONTEXT (t));
+}
+
 /* Return the innermost context enclosing DECL that is
    a FUNCTION_DECL, or zero if none.  */
 
@@ -4791,15 +4801,10 @@ decl_function_context (decl)
 
   while (context && TREE_CODE (context) != FUNCTION_DECL)
     {
-      if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-	context = TYPE_CONTEXT (context);
-      else if (TREE_CODE_CLASS (TREE_CODE (context)) == 'd')
-	context = DECL_CONTEXT (context);
-      else if (TREE_CODE (context) == BLOCK)
+      if (TREE_CODE (context) == BLOCK)
 	context = BLOCK_SUPERCONTEXT (context);
-      else
-	/* Unhandled CONTEXT !?  */
-	abort ();
+      else 
+	context = get_containing_scope (context);
     }
 
   return context;
