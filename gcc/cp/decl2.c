@@ -4791,10 +4791,11 @@ add_function (k, fn)
      case.  */
 
   /* We must find only functions, or exactly one non-function. */
-  if (k->functions && is_overloaded_fn (k->functions)
-      && is_overloaded_fn (fn))
+  if (!k->functions) 
+    k->functions = fn;
+  else if (is_overloaded_fn (k->functions) && is_overloaded_fn (fn))
     k->functions = build_overload (fn, k->functions);
-  else if (k->functions)
+  else
     {
       tree f1 = OVL_CURRENT (k->functions);
       tree f2 = fn;
@@ -4807,8 +4808,7 @@ add_function (k, fn)
       cp_error ("  in call to `%D'", k->name);
       return 1;
     }
-  else
-    k->functions = fn;
+
   return 0;
 }
 
@@ -5063,9 +5063,15 @@ arg_assoc (k, n)
     {
       my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
       
-      for (; n; n = OVL_CHAIN (n))
-	if (arg_assoc_type (k, TREE_TYPE (OVL_FUNCTION (n))))
-	  return 1;
+      for (; n; n = OVL_CHAIN (n)) 
+        {
+          /* Do not consider function template decls during Koenig lookup.  */
+
+          tree fn = OVL_FUNCTION (n);
+	  if (!DECL_FUNCTION_TEMPLATE_P (fn)
+              && arg_assoc_type (k, TREE_TYPE (fn)))
+	    return 1;
+        }
     }
 
   return 0;
