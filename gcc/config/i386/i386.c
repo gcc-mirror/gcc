@@ -15621,17 +15621,22 @@ x86_extended_reg_mentioned_p (rtx insn)
   return for_each_rtx (&PATTERN (insn), extended_reg_mentioned_1, NULL);
 }
 
-/* Generate an unsigned DImode to FP conversion.  This is the same code
+/* Generate an unsigned DImode/SImode to FP conversion.  This is the same code
    optabs would emit if we didn't have TFmode patterns.  */
 
 void
 x86_emit_floatuns (rtx operands[2])
 {
   rtx neglab, donelab, i0, i1, f0, in, out;
-  enum machine_mode mode;
+  enum machine_mode mode, inmode;
+
+  inmode = GET_MODE (operands[1]);
+  if (inmode != SImode
+      && inmode != DImode)
+    abort ();
 
   out = operands[0];
-  in = force_reg (DImode, operands[1]);
+  in = force_reg (inmode, operands[1]);
   mode = GET_MODE (out);
   neglab = gen_label_rtx ();
   donelab = gen_label_rtx ();
