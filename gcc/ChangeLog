@@ -602,7 +602,7 @@ Sun Jun  8 15:52:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* target.h: New hook asm_out.file_end.
 	* target.h: Update to match.  New hook macro TARGET_ASM_FILE_END.
-	* toplev.c (compile_file: Use targetm.asm_out.file_end.
+	* toplev.c (compile_file): Use targetm.asm_out.file_end.
 	* system.h: Poison ASM_FILE_END.
 	* varasm.c (file_end_indicate_exec_stack): New.
 	* output.h: Prototype it.
@@ -13919,7 +13919,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (inside_basic_block_p):  Declare.
 	* cfgbuild.c (inside_basic_block_p): Make global.
-	* haifa-sched.c (unlink_other_notes0: Deal with NOT_INSN_BASIC_BLOCK.
+	* haifa-sched.c (unlink_other_notes): Deal with NOT_INSN_BASIC_BLOCK.
 	* scheudle-ebb.c  (schedule_ebb): Return last basic block of trace;
 	update CFG.
 	(fix_basic_block_boundaries, add_missing_bbs): New.
@@ -15583,7 +15583,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't include ansidecl.h in tconfig.h.
-	* gcov-io.h (PARAMS, ATTRIBUTE_UNUSED: Define if IN_LIBGCC2.
+	* gcov-io.h (PARAMS, ATTRIBUTE_UNUSED): Define if IN_LIBGCC2.
 	* unwind-dw2-fde.h (last_fde): Use __attribute__, not
 	ATTRIBUTE_UNUSED.
 
