@@ -70,6 +70,9 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
 ::java::util::Vector*
 java::net::NetworkInterface::getRealNetworkInterfaces ()
 {
+#ifdef WIN32
+  throw new ::java::net::SocketException;
+#else
   int fd;
   int num_interfaces = 0;
   struct ifconf if_data;
@@ -136,6 +139,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
     ::close (fd);
   
   return ht;
+#endif /* WIN32 */
 }
 
 #endif // DISABLE_JAVA_NET //

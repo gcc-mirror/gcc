@@ -1,3 +1,8 @@
+2002-10-03  Adam Megacz <adam@xwt.org>
+
+	* natNetworkInterface.cc (getRealNetworkInterfaces): ifdef out
+	some functionality that isn't supported yet on WIN32.
+
 2002-10-03  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
