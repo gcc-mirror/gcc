@@ -24,7 +24,7 @@
 
 	* include/bits/stl_iterator.h (reverse_iterator): Uglify member
 	current to _M_current.
-	(back_insert_iterator): Ulify member container to _M_container.
+	(back_insert_iterator): Uglify member container to _M_container.
 	(front_insert_iterator): Same.
 	(insert_iterator): Same.
 	
