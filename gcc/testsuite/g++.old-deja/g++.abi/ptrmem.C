@@ -10,6 +10,7 @@
 struct S
 {
   int i;
+  int j;
 };
 
 // Because S does not have a VPTR, it will not be a primary base of T,
@@ -37,21 +38,23 @@ struct ptrmemfunc
   ptrdiff_t adj;
 };
 
+typedef int S::*sdp;
 typedef void (S::*sp)();
 typedef void (T::*tp)();
 
 int
 main ()
 {
+  S s;
   T t;
   sp x;
   tp y;
   ptrmemfunc *xp = (ptrmemfunc *) &x;
   ptrmemfunc *yp = (ptrmemfunc *) &y;
   ptrdiff_t delta = ((char *) &t) - ((char*) (S*) (&t));
-   
-  // Pointers-to-members should have the same size and alignment as
-  // the PTRMEMFUNC type.
+
+  // Pointers-to-function-members should have the same size and
+  // alignment as the PTRMEMFUNC type.
   if (sizeof (sp) != sizeof (ptrmemfunc))
     return 1;
   if (__alignof__ (sp) != __alignof__ (ptrmemfunc))
@@ -92,6 +95,17 @@ main ()
     return 11;
   if (xp->adj != delta)
     return 12;
+
+  // Pointers-to-data-members should have the same size and alignment
+  // as a ptrdiff_t.
+  if (sizeof (sdp) != sizeof (ptrdiff_t))
+    return 13;
+  if (__alignof__ (sdp) != __alignof__ (ptrdiff_t))
+    return 14;
+
+  sdp z = &S::j;
+  if ((char *) &s.j - (char *) &s != *((ptrdiff_t *) &z) - 1)
+    return 15;
 }
 
 #else /* !(defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100) */
