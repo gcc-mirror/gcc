@@ -1069,6 +1069,13 @@ extern tree build_offset_type		PROTO((tree, tree));
 extern tree build_complex_type		PROTO((tree));
 extern tree array_type_nelts		PROTO((tree));
 
+extern tree value_member		PROTO((tree, tree));
+extern tree purpose_member		PROTO((tree, tree));
+extern tree binfo_member		PROTO((tree, tree));
+extern int tree_int_cst_equal		PROTO((tree, tree));
+extern int tree_int_cst_lt		PROTO((tree, tree));
+extern int index_type_equal		PROTO((tree, tree));
+
 /* Construct expressions, performing type checking.
    GCC and G++ use different calling sequences for build_binary_op,
    and build_indirect_ref, so don't include a prototype here.  */
@@ -1364,6 +1371,7 @@ extern char *perm_calloc			PROTO((int, long));
 extern tree expand_start_stmt_expr		PROTO((void));
 extern tree expand_end_stmt_expr		PROTO((tree));
 extern void expand_expr_stmt			PROTO((tree));
+extern void expand_decl_init			PROTO((tree));
 extern void clear_last_expr			PROTO((void));
 extern void expand_label			PROTO((tree));
 extern void expand_goto				PROTO((tree));
