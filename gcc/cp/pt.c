@@ -2858,6 +2858,10 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 			TYPE_MAX_VALUE (arg), nsubsts, strict))
 	    return 1;
 	}
+      else if (TREE_CODE (parm) == REAL_TYPE
+	       && TYPE_MAIN_VARIANT (arg) != TYPE_MAIN_VARIANT (parm))
+	return 1;
+
       /* As far as unification is concerned, this wins.	 Later checks
 	 will invalidate it if necessary.  */
       return 0;
@@ -3314,13 +3318,21 @@ mark_class_instantiated (t, extern_p)
 }     
 
 void
-do_type_instantiation (name, storage)
-     tree name, storage;
+do_type_instantiation (t, storage)
+     tree t, storage;
 {
-  tree t = TREE_TYPE (name);
   int extern_p = 0;
   int nomem_p = 0;
   int static_p = 0;
+
+  if (TREE_CODE (t) == TYPE_DECL)
+    t = TREE_TYPE (t);
+
+  if (! IS_AGGR_TYPE (t) || ! CLASSTYPE_TEMPLATE_INFO (t))
+    {
+      cp_error ("explicit instantiation of non-template type `%T'", t);
+      return;
+    }
 
   complete_type (t);
 

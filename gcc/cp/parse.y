@@ -814,8 +814,9 @@ identifier_defn:
 	;
 
 explicit_instantiation:
-	  TEMPLATE aggr template_type
-		{ do_type_instantiation ($3, NULL_TREE); }
+	  TEMPLATE typespec ';'
+		{ do_type_instantiation ($2.t, NULL_TREE);
+		  yyungetc (';', 1); }
 	| TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($2.t);
 		  do_decl_instantiation (specs, $3, NULL_TREE); }
@@ -823,8 +824,9 @@ explicit_instantiation:
 		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| TEMPLATE constructor_declarator
 		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
-	| SCSPEC TEMPLATE aggr template_type
-		{ do_type_instantiation ($4, $1); }
+	| SCSPEC TEMPLATE typespec ';'
+		{ do_type_instantiation ($3.t, $1);
+		  yyungetc (';', 1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3.t);
 		  do_decl_instantiation (specs, $4, $1); }
