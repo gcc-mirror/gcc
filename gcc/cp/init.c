@@ -1798,7 +1798,9 @@ resolve_offset_ref (exp)
 	  || (TREE_CODE (base) == NOP_EXPR
 	      && TREE_OPERAND (base, 0) == error_mark_node)))
     {
-      tree basetype_path, access;
+      tree basetype_path;
+      tree access;
+      tree expr;
 
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
 	basetype = TYPE_OFFSET_BASETYPE (type);
@@ -1816,22 +1818,23 @@ resolve_offset_ref (exp)
 	 convert_pointer_to will bash it.  */
       access = compute_access (basetype_path, member);
       addr = convert_pointer_to (basetype, base);
-      if (access == access_public_node)
-	return build (COMPONENT_REF, TREE_TYPE (member),
-		      build_indirect_ref (addr, NULL_PTR), member);
-      if (access == access_protected_node)
+
+      /* Issue errors if there was an access violation.  */
+      if (access != access_public_node)
 	{
-	  cp_error_at ("member `%D' is protected", member);
-	  error ("in this context");
-	  return error_mark_node;
-	}
-      if (access == access_private_node)
-	{
-	  cp_error_at ("member `%D' is private", member);
-	  error ("in this context");
-	  return error_mark_node;
-	}
-      my_friendly_abort (55);
+	  cp_error_at ("member `%D' is %s", 
+		       access == access_private_node 
+		       ? "private" : "protected",
+		       member);
+	  cp_error ("in this context");
+	} 
+
+      /* Even in the case of illegal access, we form the
+	 COMPONENT_REF; that will allow better error recovery than
+	 just feeding back error_mark_node.  */
+      expr = build (COMPONENT_REF, TREE_TYPE (member),
+		    build_indirect_ref (addr, NULL_PTR), member);
+      return convert_from_reference (expr);
     }
 
   /* Ensure that we have an object.  */
@@ -1839,13 +1842,11 @@ resolve_offset_ref (exp)
       && TREE_OPERAND (base, 0) == error_mark_node)
     addr = error_mark_node;
   else
-    {
-      /* If this is a reference to a member function, then return the
-	 address of the member function (which may involve going
-	 through the object's vtable), otherwise, return an expression
-	 for the dereferenced pointer-to-member construct.  */
-      addr = build_unary_op (ADDR_EXPR, base, 0);
-    }
+    /* If this is a reference to a member function, then return the
+       address of the member function (which may involve going
+       through the object's vtable), otherwise, return an expression
+       for the dereferenced pointer-to-member construct.  */
+    addr = build_unary_op (ADDR_EXPR, base, 0);
 
   if (TREE_CODE (TREE_TYPE (member)) == OFFSET_TYPE)
     {
