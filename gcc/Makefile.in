@@ -2680,7 +2680,9 @@ doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
 
-generated-manpages: $(MANFILES) lang.man @GENINSRC@ srcman lang.srcman
+generated-manpages: man 
+
+man: $(MANFILES) lang.man @GENINSRC@ srcman lang.srcman
 
 srcman: $(MANFILES)
 	-cp -p $^ $(srcdir)/doc

@@ -565,23 +565,21 @@ FIXME: exactly what goes in each of these targets?
 Build an @command{etags} @file{TAGS} file in the language subdirectory
 in the source tree.
 @item info
-Build info documentation for the front end, in the source directory.
+Build info documentation for the front end, in the build directory.
 This target is only called by @samp{make bootstrap} if a suitable
 version of @command{makeinfo} is available, so does not need to check
-for this, and should fail if an error occurs.  This hook is a
-double-colon hook.
+for this, and should fail if an error occurs.
 @item dvi
 Build DVI documentation for the front end, in the build directory.
 This should be done using @code{$(TEXI2DVI)}, with appropriate
 @option{-I} arguments pointing to directories of included files.
 This hook is a double-colon hook.
-@item generated-manpages
+@item man
 Build generated man pages for the front end from Texinfo manuals
-(@pxref{Man Page Generation}), in the source directory.  This target
+(@pxref{Man Page Generation}), in the build directory.  This target
 is only called if the necessary tools are available, but should ignore
 errors so as not to stop the build if errors occur; man pages are
 optional and the tools involved may be installed in a broken way.
-This hook is a double-colon hook.
 @item install-normal
 FIXME: what is this target for?
 @item install-common
@@ -595,6 +593,18 @@ that should be installed.  This hook is a double-colon hook.
 @item install-man
 Install man pages for the front end.  This target should ignore
 errors.
+@item srcextra
+Copies its dependencies into the source directory.  This generally should
+be used for generated files such as @file{gcc/c-parse.c} which are not
+present in CVS, but should be included in any release tarballs.  This
+target will be executed during a bootstrap if
+@samp{--enable-generated-files-in-srcdir} was specified as a
+@file{configure} option.
+@item srcinfo
+@itemx srcman
+Copies its dependencies into the source directory.  These targets will be
+executed during a bootstrap if @samp{--enable-generated-files-in-srcdir}
+was specified as a @file{configure} option.
 @item uninstall
 Uninstall files installed by installing the compiler.  This is
 currently documented not to be supported, so the hook need not do

@@ -1,5 +1,17 @@
 2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* doc/install.texi:  Update automake and autoconf version
+	requirements.  Note where to find gcj automake version.
+
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (generate-manpages): Move dependencies to ...
+	(man): here.
+	* doc/makefile.texi: Document new targets.
+	* doc/sourcebuild.texi (Make-lang.in): Document new langhooks.
+
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
 	PR/13485
 	Makefile.in (srcextra):  Add a level of indirection to ...
 	(gcc.srcextra): ... here.

@@ -13,9 +13,17 @@ This is the default target.  Depending on what your build/host/target
 configuration is, it coordinates all the things that need to be built.
 
 @item doc
-Produce info-formatted documentation.  Also, @samp{make dvi} is
-available for DVI-formatted documentation, and @samp{make
-generated-manpages} to generate man pages.
+Produce info-formatted documentation and man pages.  Essentially it
+calls @samp{make man} and @samp{make info}.
+
+@item dvi
+Produce DVI-formatted documentation.
+
+@item man
+Generate man pages.
+
+@item info
+Generate info-formatted pages.
 
 @item mostlyclean
 Delete the files made while building the compiler.
@@ -30,6 +38,16 @@ That, and all the files created by @command{configure}.
 Distclean plus any file that can be generated from other files.  Note
 that additional tools may be required beyond what is normally needed to
 build gcc.
+
+@item srcextra
+Generates files in the source directory that do not exist in CVS but
+should go into a release tarball.  One example is @file{gcc/c-parse.c}
+which is generated from the CVS source file @file{gcc/c-parse.in}.
+
+@item srcinfo
+@itemx srcman
+Copies the info-formatted and manpage documentation into the source
+directory usually for the purpose of generating a release tarball.
 
 @item install
 Installs gcc.
