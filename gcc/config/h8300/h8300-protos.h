@@ -73,6 +73,7 @@ extern int iorxor_operator PARAMS ((rtx, enum machine_mode));
 
 extern int h8300_eightbit_constant_address_p PARAMS ((rtx));
 extern int h8300_tiny_constant_address_p PARAMS ((rtx));
+extern int byte_accesses_mergeable_p PARAMS ((rtx, rtx));
 
 /* Used in builtins.c */
 extern rtx h8300_return_addr_rtx PARAMS ((int, rtx));

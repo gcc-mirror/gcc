@@ -4385,3 +4385,49 @@ h8300_tiny_constant_address_p (x)
 	  || ((TARGET_H8300S && !TARGET_NORMAL_MODE)
 	      && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 }
+
+int
+byte_accesses_mergeable_p (addr1, addr2)
+     rtx addr1, addr2;
+{
+  HOST_WIDE_INT offset1, offset2;
+  rtx reg1, reg2;
+
+  if (REG_P (addr1))
+    {
+      reg1 = addr1;
+      offset1 = 0;
+    }
+  else if (GET_CODE (addr1) == PLUS
+	   && REG_P (XEXP (addr1, 0))
+	   && GET_CODE (XEXP (addr1, 1)) == CONST_INT)
+    {
+      reg1 = XEXP (addr1, 0);
+      offset1 = INTVAL (XEXP (addr1, 1));
+    }
+  else
+    return 0;
+
+  if (REG_P (addr2))
+    {
+      reg2 = addr2;
+      offset2 = 0;
+    }
+  else if (GET_CODE (addr2) == PLUS
+	   && REG_P (XEXP (addr2, 0))
+	   && GET_CODE (XEXP (addr2, 1)) == CONST_INT)
+    {
+      reg2 = XEXP (addr2, 0);
+      offset2 = INTVAL (XEXP (addr2, 1));
+    }
+  else
+    return 0;
+
+  if (((reg1 == stack_pointer_rtx && reg2 == stack_pointer_rtx)
+       || (reg1 == frame_pointer_rtx && reg2 == frame_pointer_rtx))
+      && offset1 % 2 == 0
+      && offset1 + 1 == offset2)
+    return 1;
+
+  return 0;
+}

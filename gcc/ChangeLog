@@ -1,3 +1,13 @@
+2003-03-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	byte_accesses_mergeable_p.
+	* config/h8300/h8300.c (byte_accesses_mergeable_p): New.
+	* config/h8300/h8300.md (*iorhi3_two_qi_mem): Likewise.
+	(a splitter): Likewise.
+	(*iorsi3_ashift_16_ashift_24): Likewise.
+	(*iorsi3_ashift_16_ashift_24_mem): Likewise.
+
 2003-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dwarf2asm.h: Delete obsolete comment.
