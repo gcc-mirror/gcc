@@ -1,3 +1,8 @@
+1998-11-01  Mark Mitchell  <mark@markmitchell.com>
+
+	* stl_alloc.h (default_alloc_template::_S_free_list): Don't
+	qualify _NFREELISTS.
+
 1998-10-11  Mark Mitchell  <mark@markmitchell.com>
 
 	* stl_config.h (__SGI_STL_USE_AUTO_PTR_CONVERSIONS): Define.

@@ -679,11 +679,7 @@ size_t __default_alloc_template<__threads, __inst>::_S_heap_size = 0;
 template <bool __threads, int __inst>
 __default_alloc_template<__threads, __inst>::_Obj* __VOLATILE
 __default_alloc_template<__threads, __inst> ::_S_free_list[
-# ifdef __SUNPRO_CC
     _NFREELISTS
-# else
-    __default_alloc_template<__threads, __inst>::_NFREELISTS
-# endif
 ] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
 // The 16 zeros are necessary to make version 4.1 of the SunPro
 // compiler happy.  Otherwise it appears to allocate too little
