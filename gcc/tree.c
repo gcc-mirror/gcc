@@ -2410,6 +2410,7 @@ contains_placeholder_p (exp)
      tree exp;
 {
   register enum tree_code code = TREE_CODE (exp);
+  int result;
 
   /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
      in it since it is supplying a value for it.  */
@@ -2453,8 +2454,17 @@ contains_placeholder_p (exp)
 		  || contains_placeholder_p (TREE_OPERAND (exp, 2)));
 
 	case SAVE_EXPR:
-	   return (SAVE_EXPR_RTL (exp) == 0
-		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
+	  /* If we already know this doesn't have a placeholder, don't
+	     check again.  */
+	  if (SAVE_EXPR_NOPLACEHOLDER (exp) || SAVE_EXPR_RTL (exp) != 0)
+	    return 0;
+
+	  SAVE_EXPR_NOPLACEHOLDER (exp) = 1;
+	  result = contains_placeholder_p (TREE_OPERAND (exp, 0));
+	  if (result)
+	    SAVE_EXPR_NOPLACEHOLDER (exp) = 0;
+
+	  return result;
 
 	case CALL_EXPR:
 	  return (TREE_OPERAND (exp, 1) != 0
