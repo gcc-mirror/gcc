@@ -1,3 +1,13 @@
+1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (gcc_version, gcc_version_trigger): New macros.
+	(version): Initialize from $(gcc_version).
+
+	* configure.in (version): Rename to gcc_version.
+	(gcc_version_trigger): New variable; call AC_SUBST for it and
+	emit it into the generated config.status.
+	* configure: Regenerate.
+
 Thu Jun 25 12:47:41 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* fold-const.c (make_range): Don't go looking at TREE_OPERANDs of
@@ -196,8 +206,8 @@ Wed Jun 24 09:14:04 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (gxx_include_dir): Initialize default value depending on
-	new flag --enable-version-specific-runtime-libs; remove superfluous default
-	initialization afterwards.
+	new flag --enable-version-specific-runtime-libs; remove superfluous
+	default initialization afterwards.
 	* configure: Regenerate.
 
 Wed Jun 24 01:32:12 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
