@@ -7426,8 +7426,10 @@ if_then_else_cond (x, ptrue, pfalse)
 	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
 	  && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
 	{
-	  true0 = operand_subword (true0, SUBREG_WORD (x), 0, mode);
-	  false0 = operand_subword (false0, SUBREG_WORD (x), 0, mode);
+	  true0 = operand_subword (true0, SUBREG_WORD (x), 0,
+				   GET_MODE (SUBREG_REG (x)));
+	  false0 = operand_subword (false0, SUBREG_WORD (x), 0,
+				    GET_MODE (SUBREG_REG (x)));
 	}
       *ptrue = force_to_mode (true0, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
       *pfalse
