@@ -1,3 +1,8 @@
+Mon Apr  2 22:38:09 2001  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* com.c (duplicate_decls): Fix thinko in lazy DECL_RTL patch
+	of 2001-03-04.
+
 Tue Mar 27 17:40:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
