@@ -5039,10 +5039,13 @@ function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
 	    {
 	      if (parms->intoffset != -1)
 		{
+		  unsigned int startbit, endbit;
 		  int intslots, this_slotno;
 
-		  intslots = (bitpos - parms->intoffset + BITS_PER_WORD - 1)
-		    / BITS_PER_WORD;
+		  startbit = parms->intoffset & -BITS_PER_WORD;
+		  endbit   = (bitpos + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+
+		  intslots = (endbit - startbit) / BITS_PER_WORD;
 		  this_slotno = parms->slotno + parms->intoffset
 		    / BITS_PER_WORD;
 
