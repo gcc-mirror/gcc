@@ -639,6 +639,8 @@ char *lang_options[] =
   "-Wno-pointer-arith",
   "-Wredundant-decls",
   "-Wno-redundant-decls",
+  "-Wsign-compare",
+  "-Wno-sign-compare",
   "-Wstrict-prototypes",
   "-Wno-strict-prototypes",
   "-Wtraditional",
