@@ -66,6 +66,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} -L/usr/lib %{mnx:-lnx -lmach} -lc -lic"
 #endif	/* HAVE_DASH_G */
 
+/* Get rid of definition from svr3.h.  */
+#undef SIZE_TYPE
 
 #undef	I860_REG_PREFIX
 
