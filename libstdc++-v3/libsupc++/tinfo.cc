@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1994, 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -203,25 +203,6 @@ struct __class_type_info::__upcast_result
   __upcast_result (int d)
     :dst_ptr (NULL), part2dst (__unknown), src_details (d), base_type (NULL)
     {}
-
-  explicit
-  __upcast_result(const __upcast_result& r)
-  : dst_ptr(r.dst_ptr), part2dst(r.part2dst), src_details(r.src_details), 
-    base_type(r.base_type) 
-  { }
-
-  __upcast_result&
-  operator=(const __upcast_result& r)
-  {
-    if (&r != this)
-      {
-	dst_ptr = r.dst_ptr;
-	part2dst = r.part2dst;
-	src_details = r.src_details;
-	base_type = r.base_type;
-      }
-    return *this;
-  }
 };
 
 // __dyncast_result is used to hold information during traversal of a class
