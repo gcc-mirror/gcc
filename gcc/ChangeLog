@@ -1,3 +1,28 @@
+2000-11-24  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (extra_objs): Remove duplicate description.
+	(c_target_objs): New variable.  Contains target specific
+	object files for the gcc C compiler only.
+	(cxx_target_objs): New variable.  Contains target specific 
+	object files for the gxx C++ compiler only.
+
+	* configure.in (c_target_objs): Substitute in the makefile.
+	(cxx_target_objs): Substitute in the makefile.
+	* configure: Regenerate.
+
+	* Makefile.in (C_TARGET_OBJS): Define and initialise from
+	c_target_objs.
+	(CXX_TARGET_OBJS): Define and initialise from
+	cxx_target_objs.
+	(C_AND_OBJC_OBJS): Include C_TARGET_OBJS.
+
+	* cp/Make-lang.in (CXX_C_OBJS): Include CXX_TARGET_OBJS).
+
+	* tm.texi (REGISTER_TARGET_PRAGMAS): Add paragraph explaining
+	about how the use of the 'c_lex' function requires the use of
+	the target specific, language specific object files feature of
+	the configuration mechanism.
+
 Fri Nov 24 18:50:58 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c (process_command): Use F_OK, not R_OK.

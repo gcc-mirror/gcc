@@ -1862,6 +1862,8 @@ AC_SUBST(symbolic_link)
 AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)
 AC_SUBST(will_use_collect2)
+AC_SUBST(c_target_objs)
+AC_SUBST(cxx_target_objs)
 
 
 AC_SUBST_FILE(target_overrides)
