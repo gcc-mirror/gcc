@@ -52,6 +52,6 @@ __eabi:	mflr	0
 .Ldone:
 	mtlr	0				# restore link register
 	lwz	31,0(1)
-	lwz	30,-4(1)			# restore regs
+	lwz	30,4(1)				# restore regs
 	addic	1,1,8				# pop stack
 	blr
