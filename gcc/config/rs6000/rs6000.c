@@ -16169,6 +16169,10 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 		: COSTS_N_INSNS (1));
       return true;
 
+    case MINUS:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
     case AND:
     case IOR:
     case XOR:
