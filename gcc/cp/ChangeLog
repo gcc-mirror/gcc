@@ -1,3 +1,10 @@
+Wed Dec  3 08:47:27 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* pt.c (check_explicit_specialization): Fix misspelling in
+	diagnostic: `preceeded'.
+	* typeck.c (get_delta_difference): Fix misspelling in diagnostic:
+	`conversiona'.
+
 Sun Nov 30 08:42:29 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* pt.c (do_poplevel): Allow jumps into the block.
