@@ -1438,7 +1438,7 @@ extern void on_exit (void*, void*);
 #endif
 #endif
 
-static struct bb *bb_head = (struct bb *)0;
+static struct bb *bb_head;
 
 /* Return the number of digits needed to print a value */
 /* __inline__ */ static int num_digits (long value, int base)
@@ -1745,7 +1745,7 @@ __clear_cache (beg, end)
 #else
 #ifdef INSN_CACHE_SIZE
   static char array[INSN_CACHE_SIZE + INSN_CACHE_PLANE_SIZE + INSN_CACHE_LINE_WIDTH];
-  static int initialized = 0;
+  static int initialized;
   int offset;
   void *start_addr
   void *end_addr;
@@ -2041,7 +2041,7 @@ void
 SYMBOL__MAIN ()
 {
   /* Support recursive calls to `main': run initializers just once.  */
-  static int initialized = 0;
+  static int initialized;
   if (! initialized)
     {
       initialized = 1;
@@ -2124,9 +2124,9 @@ struct exception_table_node {
   struct exception_table_node *next;
 };
 
-static int except_table_pos = 0;
-static void *except_pc = (void *)0;
-static struct exception_table_node *exception_table_list = 0;
+static int except_table_pos;
+static void *except_pc;
+static struct exception_table_node *exception_table_list;
 
 static exception_table *
 find_exception_table (pc)
