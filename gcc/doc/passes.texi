@@ -380,6 +380,14 @@ variable optimizations, including strength reduction, induction variable
 merging and induction variable elimination.  The pass is implemented in
 @file{tree-ssa-loop-ivopts.c}.
 
+Loop unswitching.  This pass moves the conditional jumps that are invariant
+out of the loops.  To achieve this, a duplicate of the loop is created for
+each possible outcome of conditional jump(s).  The pass is implemented in
+@file{tree-ssa-loop-unswitch.c}.  This pass should eventually replace the
+rtl-level loop unswitching in @file{loop-unswitch.c}, but currently
+the rtl-level pass is not completely redundant yet due to deficiences
+in tree level alias analysis.
+
 The optimizations also use various utility functions contained in
 @file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
 @file{cfgloopmanip.c}.

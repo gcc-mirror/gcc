@@ -53,7 +53,7 @@ static void fix_irreducible_loops (basic_block);
 /* Splits basic block BB after INSN, returns created edge.  Updates loops
    and dominators.  */
 edge
-split_loop_bb (basic_block bb, rtx insn)
+split_loop_bb (basic_block bb, void *insn)
 {
   edge e;
 
@@ -486,7 +486,7 @@ scale_loop_frequencies (struct loop *loop, int num, int den)
 
 struct loop *
 loopify (struct loops *loops, edge latch_edge, edge header_edge, 
-	 basic_block switch_bb)
+	 basic_block switch_bb, bool redirect_all_edges)
 {
   basic_block succ_bb = latch_edge->dest;
   basic_block pred_bb = header_edge->src;
@@ -513,12 +513,17 @@ loopify (struct loops *loops, edge latch_edge, edge header_edge,
   loop_redirect_edge (latch_edge, loop->header);
   loop_redirect_edge (BRANCH_EDGE (switch_bb), succ_bb);
 
-  loop_redirect_edge (header_edge, switch_bb);
-  loop_redirect_edge (FALLTHRU_EDGE (switch_bb), loop->header); 
-
-  /* Update dominators.  */
-  set_immediate_dominator (CDI_DOMINATORS, switch_bb, pred_bb);
-  set_immediate_dominator (CDI_DOMINATORS, loop->header, switch_bb);
+  /* During loop versioning, one of the switch_bb edge is already properly
+     set. Do not redirect it again unless redirect_all_edges is true.  */
+  if (redirect_all_edges)
+    {
+      loop_redirect_edge (header_edge, switch_bb);
+      loop_redirect_edge (FALLTHRU_EDGE (switch_bb), loop->header); 
+     
+      /* Update dominators.  */
+      set_immediate_dominator (CDI_DOMINATORS, switch_bb, pred_bb);
+      set_immediate_dominator (CDI_DOMINATORS, loop->header, switch_bb);
+    }
 
   set_immediate_dominator (CDI_DOMINATORS, succ_bb, switch_bb);
 
@@ -812,7 +817,7 @@ can_duplicate_loop_p (struct loop *loop)
 /* The NBBS blocks in BBS will get duplicated and the copies will be placed
    to LOOP.  Update the single_exit information in superloops of LOOP.  */
 
-static void
+void
 update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
 				       struct loop *loop)
 {
@@ -833,7 +838,6 @@ update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
   for (i = 0; i < nbbs; i++)
     bbs[i]->rbi->duplicated = 0;
 }
-
 
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
    LOOPS structure and dominators.  E's destination must be LOOP header for

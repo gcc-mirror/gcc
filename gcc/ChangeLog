@@ -1,3 +1,29 @@
+2004-09-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.h (update_single_exits_after_duplication): Declare.
+	(loopify, split_loop_bb): Declaration changed.
+	* cfgloopmanip.c (split_loop_bb): Take void * as an argument instead
+	of rtx.
+	(loopify): Added redirect_all_edges argument.
+	(update_single_exits_after_duplication): Export.
+	* loop-unswitch.c (unswitch_loop): Changed due to loopify change.
+	* tree-flow.h (tree_duplicate_loop_to_header_edge,
+	tree_ssa_loop_version): Declare.
+	* tree-ssa-loop-manip.c (copy_phi_node_args, rename_variables,
+	set_phi_def_stmts, tree_duplicate_loop_to_header_edge,
+	lv_adjust_loop_header_phi, lv_adjust_loop_entry_edge,
+	lv_update_pending_stmts, tree_ssa_loop_version): New functions.
+
+	* tree-ssa-loop-unswitch.c: New file.
+	* Makefile.in (tree-ssa-loop-unswitch.o): Add.
+	* timevar.def (TV_TREE_LOOP_UNSWITCH): New timevar.
+	* tree-flow.h (tree_ssa_unswitch_loops): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Add pass_unswitch.
+	* tree-pass.h (pass_unswitch): Declare.
+	* tree-ssa-loop.c (tree_ssa_loop_unswitch,
+	gate_tree_ssa_loop_unswitch, pass_unswitch): New pass.
+	* doc/passes.texi: Documen tree level loop unswitching.
+
 2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgexpand.c, config/s390/tpf-eh.c: Fix comment typos.

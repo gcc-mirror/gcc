@@ -159,6 +159,40 @@ struct tree_opt_pass pass_lim =
   0					/* letter */
 };
 
+/* Loop unswitching pass.  */
+
+static void
+tree_ssa_loop_unswitch (void)
+{
+  if (!current_loops)
+    return;
+
+  tree_ssa_unswitch_loops (current_loops);
+}
+
+static bool
+gate_tree_ssa_loop_unswitch (void)
+{
+  return flag_unswitch_loops != 0;
+}
+
+struct tree_opt_pass pass_unswitch = 
+{
+  "unswitch",				/* name */
+  gate_tree_ssa_loop_unswitch,		/* gate */
+  tree_ssa_loop_unswitch,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_LOOP_UNSWITCH,		/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,                	/* todo_flags_finish */
+  0					/* letter */
+};
+
 /* Loop autovectorization.  */
 
 static void
