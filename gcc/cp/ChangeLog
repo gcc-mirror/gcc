@@ -1,3 +1,8 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.1: Likewise.
+
 2002-09-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7768
@@ -1144,7 +1149,7 @@
 	(processing_these_inlines): Likewise.
 	(token_obstack): Make static.
 	(first_token): Likewise.
-	(init_spew): Don't initialise deleted things; use gengtype for roots.
+	(init_spew): Don't initialize deleted things; use gengtype for roots.
 	(clear_inline_text_obstack): Delete.
 	(feed_input): Use GC for struct feed.  Update for changes to
 	struct unparsed_text.
@@ -4306,7 +4311,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-07-23  Graham Stott  <grahams@redhat.com>
 
-	* cp/class.c (type_requires_array_cookie): Fix use of uninitialised
+	* cp/class.c (type_requires_array_cookie): Fix use of uninitialized
 	variable has_two_argument_delete_p.
 
 2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
@@ -7294,7 +7299,7 @@ Thu Nov 23 02:16:47 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* typeck2.c (incomplete_type_error): Reorganise to avoid
+	* typeck2.c (incomplete_type_error): Reorganize to avoid
 	excessive diagnostics.
 
 2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
