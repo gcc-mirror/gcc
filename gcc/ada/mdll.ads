@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.5 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,17 +52,18 @@ package MDLL is
 
    Kill_Suffix    : Boolean := False;
 
-   procedure Build_Dynamic_Library (Ofiles        : in Argument_List;
-                                    Afiles        : in Argument_List;
-                                    Options       : in Argument_List;
-                                    Bargs_Options : in Argument_List;
-                                    Largs_Options : in Argument_List;
-                                    Lib_Filename  : in String;
-                                    Def_Filename  : in String;
-                                    Lib_Address   : in String  := "";
-                                    Build_Import  : in Boolean := False;
-                                    Relocatable   : in Boolean := False);
-   --  build a DLL and the import library to link against the DLL.
+   procedure Build_Dynamic_Library
+     (Ofiles        : Argument_List;
+      Afiles        : Argument_List;
+      Options       : Argument_List;
+      Bargs_Options : Argument_List;
+      Largs_Options : Argument_List;
+      Lib_Filename  : String;
+      Def_Filename  : String;
+      Lib_Address   : String  := "";
+      Build_Import  : Boolean := False;
+      Relocatable   : Boolean := False);
+   --  Build a DLL and the import library to link against the DLL.
    --  this function handles relocatable and non relocatable DLL.
    --  If the Afiles argument list contains some Ada units then it will
    --  generate the right adainit and adafinal and integrate it in the DLL.
@@ -70,8 +71,9 @@ package MDLL is
    --  provided) then it will not try to build a binder file. This is ok to
    --  build DLL containing no Ada code.
 
-   procedure Build_Import_Library (Lib_Filename : in String;
-                                   Def_Filename : in String);
+   procedure Build_Import_Library
+     (Lib_Filename : String;
+      Def_Filename : String);
    --  Build an import library (.a) from a definition files. An import library
    --  is needed to link against a DLL.
 
