@@ -5,7 +5,6 @@ $! Set the def dir to proper place for use in batch. Works for interactive too.
 $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
 $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $!
-$set symbol/scope=(nolocal,noglobal)
 $!
 $! First, build the preprocessor.
 $!
