@@ -369,9 +369,7 @@ static int (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 static int num_labels;
 
-static void replace_pseudos_in_call_usage	PARAMS ((rtx *,
-							 enum machine_mode,
-							 rtx));
+static void replace_pseudos_in	PARAMS ((rtx *, enum machine_mode, rtx));
 static void maybe_fix_stack_asms	PARAMS ((void));
 static void copy_reloads		PARAMS ((struct insn_chain *));
 static void calculate_needs_all_insns	PARAMS ((int));
@@ -583,7 +581,7 @@ compute_use_by_pseudos (to, from)
    equivalences.  */
 
 static void
-replace_pseudos_in_call_usage (loc, mem_mode, usage)
+replace_pseudos_in (loc, mem_mode, usage)
      rtx *loc;
      enum machine_mode mem_mode;
      rtx usage;
@@ -608,7 +606,7 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
       if (x != *loc)
 	{
 	  *loc = x;
-	  replace_pseudos_in_call_usage (loc, mem_mode, usage);
+	  replace_pseudos_in (loc, mem_mode, usage);
 	  return;
 	}
 
@@ -628,7 +626,7 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
     }
   else if (code == MEM)
     {
-      replace_pseudos_in_call_usage (& XEXP (x, 0), GET_MODE (x), usage);
+      replace_pseudos_in (& XEXP (x, 0), GET_MODE (x), usage);
       return;
     }
 
@@ -636,10 +634,10 @@ replace_pseudos_in_call_usage (loc, mem_mode, usage)
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     if (*fmt == 'e')
-      replace_pseudos_in_call_usage (&XEXP (x, i), mem_mode, usage);
+      replace_pseudos_in (&XEXP (x, i), mem_mode, usage);
     else if (*fmt == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
-	replace_pseudos_in_call_usage (& XVECEXP (x, i, j), mem_mode, usage);
+	replace_pseudos_in (& XVECEXP (x, i, j), mem_mode, usage);
 }
 
 
@@ -1192,9 +1190,8 @@ reload (first, global)
 	rtx *pnote;
 
 	if (GET_CODE (insn) == CALL_INSN)
-	  replace_pseudos_in_call_usage (& CALL_INSN_FUNCTION_USAGE (insn),
-					 VOIDmode,
-					 CALL_INSN_FUNCTION_USAGE (insn));
+	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
+			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
 
 	if ((GET_CODE (PATTERN (insn)) == USE
 	     /* We mark with QImode USEs introduced by reload itself.  */
@@ -1212,6 +1209,13 @@ reload (first, global)
 	    delete_insn (insn);
 	    continue;
 	  }
+
+	/* Some CLOBBERs may survive until here and still reference unassigned
+	   pseudos with const equivalent, which may in turn cause ICE in later
+	   passes if the reference remains in place.  */
+	if (GET_CODE (PATTERN (insn)) == CLOBBER)
+	  replace_pseudos_in (& XEXP (PATTERN (insn), 0),
+			      VOIDmode, PATTERN (insn));
 
 	pnote = &REG_NOTES (insn);
 	while (*pnote != 0)

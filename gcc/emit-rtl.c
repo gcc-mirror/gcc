@@ -3191,6 +3191,22 @@ prev_real_insn (insn)
   return insn;
 }
 
+/* Return the last CALL_INSN in the current list, or 0 if there is none.
+   This routine does not look inside SEQUENCEs.  */
+
+rtx
+last_call_insn ()
+{
+  rtx insn;
+
+  for (insn = get_last_insn ();
+       insn && GET_CODE (insn) != CALL_INSN;
+       insn = PREV_INSN (insn))
+    ;
+
+  return insn;
+}
+
 /* Find the next insn after INSN that really does something.  This routine
    does not look inside SEQUENCEs.  Until reload has completed, this is the
    same as next_real_insn.  */
@@ -3848,6 +3864,31 @@ remove_insn (insn)
       if (bb->end == insn)
 	bb->end = prev;
     }
+}
+
+/* Append CALL_FUSAGE to the CALL_INSN_FUNCTION_USAGE for CALL_INSN.  */
+
+void
+add_function_usage_to (call_insn, call_fusage)
+     rtx call_insn, call_fusage;
+{
+  if (! call_insn || GET_CODE (call_insn) != CALL_INSN)
+    abort ();
+
+  /* Put the register usage information on the CALL.  If there is already
+     some usage information, put ours at the end.  */
+  if (CALL_INSN_FUNCTION_USAGE (call_insn))
+    {
+      rtx link;
+
+      for (link = CALL_INSN_FUNCTION_USAGE (call_insn); XEXP (link, 1) != 0;
+	   link = XEXP (link, 1))
+	;
+
+      XEXP (link, 1) = call_fusage;
+    }
+  else
+    CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 }
 
 /* Delete all insns made since FROM.

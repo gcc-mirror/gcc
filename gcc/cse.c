@@ -7515,6 +7515,17 @@ count_reg_usage (x, counts, dest, incr)
         count_reg_usage (XEXP (note, 0), counts, NULL_RTX, incr);
       return;
 
+    case EXPR_LIST:
+      if (REG_NOTE_KIND (x) == REG_EQUAL
+	  || (REG_NOTE_KIND (x) != REG_NONNEG && GET_CODE (XEXP (x,0)) == USE)
+	  /* FUNCTION_USAGE expression lists may include (CLOBBER (mem /u)),
+	     involving registers in the address.  */
+	  || GET_CODE (XEXP (x, 0)) == CLOBBER)
+	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
+
+      count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
+      return;
+
     case INSN_LIST:
       abort ();
 

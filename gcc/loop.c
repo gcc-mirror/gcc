@@ -2575,6 +2575,30 @@ prescan_loop (loop)
 	  loop_info->has_call = 1;
 	  if (can_throw_internal (insn))
 	    loop_info->has_multiple_exit_targets = 1;
+
+	  /* Calls initializing constant objects have CLOBBER of MEM /u in the
+	     attached FUNCTION_USAGE expression list, not accounted for by the
+	     code above. We should note these to avoid missing dependencies in
+	     later references.  */
+	  {
+	    rtx fusage_entry;
+	    
+	    for (fusage_entry = CALL_INSN_FUNCTION_USAGE (insn); 
+		 fusage_entry; fusage_entry = XEXP (fusage_entry, 1))
+	      {
+		rtx fusage = XEXP (fusage_entry, 0);
+
+		if (GET_CODE (fusage) == CLOBBER
+		    && GET_CODE (XEXP (fusage, 0)) == MEM
+		    && RTX_UNCHANGING_P (XEXP (fusage, 0)))
+		  {
+		    note_stores (fusage, note_addr_stored, loop_info);
+		    if (! loop_info->first_loop_store_insn
+			&& loop_info->store_mems)
+		      loop_info->first_loop_store_insn = insn;
+		  }
+	      }
+	  }
 	  break;
 
 	case JUMP_INSN:

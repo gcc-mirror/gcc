@@ -1,3 +1,22 @@
+2003-05-03  Olivier Hainque  <hainque@act-europe.fr>
+
+	* emit-rtl.c (last_call_insn, add_function_usage_to): New functions.
+	* rtl.h (last_call_insn, add_function_usage_to): New prototypes.
+	* builtins.c (expand_builtin_apply): Use the new emit-rtl functions.
+	* calls.c (emit_call_1): Likewise.
+	(expand_call): For calls initializing constant memory, replace 
+	emission of standalone mem /u clobber with function usage entry.
+	* expr.c (emit_block_move_via_libcall): Likewise.
+	* cse.c (count_reg_usage, case EXPR_LIST): New case.
+	* flow.c (propagate_one_insn): Pass entire operand of
+	CALL_INSN_FUNCTION_USAGE to mark_used_regs.
+	* integrate.c (try_constants): For CALL_INSNs, substitute constants
+	within the FUNCTION_USAGE also.
+	* loop.c (prescan_loop): Note clobbers of const mem mentioned in
+	FUNCTION_USAGE lists.
+	* reload1.c (replace_pseudos_in): Renamed.
+	(reload): Use it for clobbers surviving until the end of the reload.
+
 2003-05-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (place_field): When adjusting offset_align, use

@@ -1323,29 +1323,10 @@ expand_builtin_apply (function, arguments, argsize)
 #endif
     abort ();
 
-  /* Find the CALL insn we just emitted.  */
-  for (call_insn = get_last_insn ();
-       call_insn && GET_CODE (call_insn) != CALL_INSN;
-       call_insn = PREV_INSN (call_insn))
-    ;
-
-  if (! call_insn)
-    abort ();
-
-  /* Put the register usage information on the CALL.  If there is already
-     some usage information, put ours at the end.  */
-  if (CALL_INSN_FUNCTION_USAGE (call_insn))
-    {
-      rtx link;
-
-      for (link = CALL_INSN_FUNCTION_USAGE (call_insn); XEXP (link, 1) != 0;
-	   link = XEXP (link, 1))
-	;
-
-      XEXP (link, 1) = call_fusage;
-    }
-  else
-    CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
+  /* Find the CALL insn we just emitted, and attach the register usage
+     information.  */
+  call_insn = last_call_insn ();
+  add_function_usage_to (call_insn, call_fusage);
 
   /* Restore the stack.  */
 #ifdef HAVE_save_stack_nonlocal
