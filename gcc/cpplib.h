@@ -562,6 +562,7 @@ struct cpp_reader
   struct cpp_lookahead *la_read;	/* Read from this lookahead.  */
   struct cpp_lookahead *la_write;	/* Write to this lookahead.  */
   struct cpp_lookahead *la_unused;	/* Free store.  */
+  struct cpp_lookahead *la_saved;	/* Backup when entering directive.  */
 
   /* Error counter for exit code.  */
   unsigned int errors;

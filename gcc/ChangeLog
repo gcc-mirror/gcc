@@ -1,3 +1,17 @@
+2000-11-15  Neil Booth  <neilb@earthling.net>
+
+        * cpplib.c (start_directive, end_directive): New functions.
+        (_cpp_handle_directive, run_directive): Use them.
+        (_cpp_handle_directive): Don't -Wtraditional on indented
+        null directives.
+        (_cpp_push_buffer): Don't re-clear was_skipping.
+        * cpplib.h (struct cpp_reader): New member la_saved.
+        * cppmacro.c (cpp_get_token): Don't interpret _Pragma in
+        directives.
+
+        gcc.dg/cpp/_Pragma1.c: Update.
+        gcc.dg/cpp/_Pragma2.c: New test.
+
 2000-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* toplev.c (wrapup_global_declarations): Don't write out
