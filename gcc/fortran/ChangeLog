@@ -1,3 +1,14 @@
+2005-01-09  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/17675
+	* trans-common.c (current_common, current_offset): Remove.
+	(create_common): Add head argument.
+	(align_segment): New function.
+	(apply_segment_offset): New function.
+	(translate_common): Merge code from new_segment.  Handle alignment.
+	(new_segment): Remove.
+	(finish_equivalences): Ensure proper alignment.
+
 2005-01-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-const.c: Don't include unused math.h.
