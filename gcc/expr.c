@@ -9230,17 +9230,17 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return stack_pointer_rtx;
 #ifdef DWARF2_UNWIND_INFO
     case BUILT_IN_DWARF_FP_REGNUM:
-      return (rtx) expand_builtin_dwarf_fp_regnum ();
+      return expand_builtin_dwarf_fp_regnum ();
 #endif
     case BUILT_IN_FROB_RETURN_ADDR:
-      return (rtx) expand_builtin_frob_return_addr (TREE_VALUE (arglist));
+      return expand_builtin_frob_return_addr (TREE_VALUE (arglist));
     case BUILT_IN_EXTRACT_RETURN_ADDR:
-      return (rtx) expand_builtin_extract_return_addr (TREE_VALUE (arglist));
+      return expand_builtin_extract_return_addr (TREE_VALUE (arglist));
     case BUILT_IN_SET_RETURN_ADDR_REG:
       expand_builtin_set_return_addr_reg (TREE_VALUE (arglist));
       return const0_rtx;
     case BUILT_IN_EH_STUB:
-      return (rtx) expand_builtin_eh_stub ();
+      return expand_builtin_eh_stub ();
     case BUILT_IN_SET_EH_REGS:
       expand_builtin_set_eh_regs (TREE_VALUE (arglist),
 				  TREE_VALUE (TREE_CHAIN (arglist)));

@@ -281,3 +281,15 @@ extern int protect_cleanup_actions_with_terminate;
 #ifdef TREE_CODE
 extern tree protect_with_terminate		PROTO((tree));
 #endif
+
+/* Various hooks for the DWARF 2 __throw routine.  */
+
+void expand_builtin_unwind_init		PROTO((void));
+rtx expand_builtin_dwarf_fp_regnum	PROTO((void));
+rtx expand_builtin_eh_stub		PROTO((void));
+#ifdef TREE_CODE
+rtx expand_builtin_frob_return_addr	PROTO((tree));
+rtx expand_builtin_extract_return_addr	PROTO((tree));
+void expand_builtin_set_return_addr_reg PROTO((tree));
+void expand_builtin_set_eh_regs		PROTO((tree, tree));
+#endif
