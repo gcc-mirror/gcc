@@ -79,7 +79,7 @@ public final class FileDescriptor
 
 
   // When collected, close.
-  protected void finalize () throws IOException
+  protected void finalize () throws Throwable
   {
     if (valid ())
       close ();
