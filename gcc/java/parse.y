@@ -248,9 +248,9 @@ int java_error_count;
 int java_warning_count;
 
 /* The current parser context */
-static struct parser_ctxt *ctxp;
+struct parser_ctxt *ctxp;
 
-/* List of things that were anlyzed for which code will be generated */
+/* List of things that were analyzed for which code will be generated */
 static struct parser_ctxt *ctxp_for_generation = NULL;
 
 /* binop_lookup maps token to tree_code. It is used where binary
@@ -5319,6 +5319,11 @@ declare_local_variables (modifier, type, vlist)
 	 will be entered */
       decl = build_decl (VAR_DECL, name, real_type);
       BLOCK_CHAIN_DECL (decl);
+      
+      /* If doing xreferencing, replace the line number with the WFL
+         compound value */
+      if (flag_emit_xref)
+	DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (wfl);
       
       /* Don't try to use an INIT statement when an error was found */
       if (init && java_error_count)

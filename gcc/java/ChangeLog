@@ -1,3 +1,9 @@
+Mon Apr  5 11:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (struct parser_ctxt *ctxp): Now global.
+	(declare_local_variables): Use WFL compound value for the
+ 	declaration source line value, when doing cross-referencing.
+
 1999-03-31  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_field_info): Allow constants of other types.
