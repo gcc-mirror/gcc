@@ -9173,8 +9173,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    return 0; /* We used to do a 155 abort here.  */
 	  }
       }
-    if (name == NULL)
-      name = "type name";
   }
 
   /* A function definition's declarator must have the form of
@@ -9214,6 +9212,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       current_binding_level = b;
     }
 
+  if (name == NULL)
+    name = decl_context == PARM ? "parameter" : "type name";
+  
   /* Look through the decl specs and record which ones appear.
      Some typespecs are defined as built-in typenames.
      Others, the ones that are modifiers of other types,
@@ -9374,11 +9375,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (in_system_header || flag_ms_extensions)
 	    /* Allow it, sigh.  */;
 	  else if (pedantic || ! is_main)
-	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
-			dname);
+	    cp_pedwarn ("ANSI C++ forbids declaration of `%s' with no type",
+			name);
 	  else if (warn_return_type)
-	    cp_warning ("ANSI C++ forbids declaration `%D' with no type",
-			dname);
+	    cp_warning ("ANSI C++ forbids declaration of `%s' with no type",
+			name);
 
 	  type = integer_type_node;
 	}
@@ -9586,24 +9587,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   friendp = RIDBIT_SETP (RID_FRIEND, specbits);
   RIDBIT_RESET (RID_FRIEND, specbits);
 
-  /* $7.1.2, Function specifiers */
-  if (friendp && explicitp)
-    error ("only declarations of constructors can be `explicit'");
-
-  if (RIDBIT_SETP (RID_MUTABLE, specbits))
-    {
-      if (decl_context == PARM)
-	{
-	  error ("non-member `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
-	}
-      else if (friendp || decl_context == TYPENAME)
-	{
-	  error ("non-object member `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
-	}
-    }
-
   /* Warn if two storage classes are given. Default to `auto'.  */
 
   if (RIDBIT_ANY_SET (specbits))
@@ -9628,11 +9611,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       error ("virtual outside class declaration");
       virtualp = 0;
-    }
-  if (current_class_name == NULL_TREE && RIDBIT_SETP (RID_MUTABLE, specbits))
-    {
-      error ("only members can be declared mutable");
-      RIDBIT_RESET (RID_MUTABLE, specbits);
     }
 
   /* Static anonymous unions are dealt with here.  */
@@ -10442,22 +10420,40 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   /* Now TYPE has the actual type.  */
 
-  if (explicitp == 1)
+  if (explicitp == 1 || (explicitp && friendp))
     {
-      error ("only constructors can be declared `explicit'");
+      /* [dcl.fct.spec] The explicit specifier shall only be used in
+         declarations of constructors within a class definition.  */
+      error ("only declarations of constructors can be `explicit'");
       explicitp = 0;
     }
 
   if (RIDBIT_SETP (RID_MUTABLE, specbits))
     {
-      if (type_quals & TYPE_QUAL_CONST)
+      if (current_class_name == NULL_TREE || decl_context == PARM || friendp)
+        {
+	  error ("non-member `%s' cannot be declared `mutable'", name);
+          RIDBIT_RESET (RID_MUTABLE, specbits);
+        }
+      else if (decl_context == TYPENAME || RIDBIT_SETP (RID_TYPEDEF, specbits))
 	{
-	  error ("const `%s' cannot be declared `mutable'", name);
+	  error ("non-object member `%s' cannot be declared `mutable'", name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
+      else if (TREE_CODE (type) == FUNCTION_TYPE
+               || TREE_CODE (type) == METHOD_TYPE)
+        {
+	  error ("function `%s' cannot be declared `mutable'", name);
+	  RIDBIT_RESET (RID_MUTABLE, specbits);
+        }
       else if (staticp)
 	{
 	  error ("static `%s' cannot be declared `mutable'", name);
+	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	}
+      else if (type_quals & TYPE_QUAL_CONST)
+	{
+	  error ("const `%s' cannot be declared `mutable'", name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
     }
@@ -10577,9 +10573,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (RIDBIT_SETP (RID_SIGNED, specbits)
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
-
-      if (RIDBIT_SETP (RID_MUTABLE, specbits))
-	error ("non-object member `%s' cannot be declared mutable", name);
 
       bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
 		      inlinep, friendp, raises != NULL_TREE);
@@ -11111,10 +11104,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  }
       }
 
-    if (RIDBIT_SETP (RID_MUTABLE, specbits))
-      {
-	error ("`%s' cannot be declared mutable", name);
-      }
+    my_friendly_assert (!RIDBIT_SETP (RID_MUTABLE, specbits), 19990927);
 
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
