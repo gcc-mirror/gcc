@@ -1784,7 +1784,7 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   memcpy (&real_args[offset], args, _this->args_raw_size);
 
   // The actual call to the JNI function.
-  ffi_raw_call (&_this->jni_cif, (void (*) (...)) _this->function,
+  ffi_raw_call (&_this->jni_cif, (void (*)()) _this->function,
 		ret, real_args);
 
   _Jv_JNI_PopSystemFrame (env);

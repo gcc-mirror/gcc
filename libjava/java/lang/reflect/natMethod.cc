@@ -414,7 +414,7 @@ _Jv_CallAnyMethodA (jobject obj,
 
   try
     {
-      ffi_call (&cif, (void (*) (...)) meth->ncode, result, values);
+      ffi_call (&cif, (void (*)()) meth->ncode, result, values);
     }
   catch (Throwable *ex2)
     {
