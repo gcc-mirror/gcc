@@ -1,3 +1,7 @@
+Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c, utils2.c: Remove PALIGN parameter to get_inner_reference.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (gnat_init): Change prototype.  Include the

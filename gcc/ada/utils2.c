@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.3 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1164,11 +1164,9 @@ build_unary_op (op_code, result_type, operand)
 	      tree offset, inner;
 	      enum machine_mode mode;
 	      int unsignedp, volatilep;
-	      unsigned int alignment;
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,
-					   &mode, &unsignedp, &volatilep,
-					   &alignment);
+					   &mode, &unsignedp, &volatilep);
 
 	      /* If INNER is a padding type whose field has a self-referential
 		 size, convert to that inner type.  We know the offset is zero
