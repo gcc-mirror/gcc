@@ -95,26 +95,11 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 
-/* Assembler format: alignment output.  */
-
-/* A C statement to output to the stdio stream FILE an assembler
-   command to advance the location counter to a multiple of 1<<LOG
-   bytes if it is within MAX_SKIP bytes.
-
-   This will be used to align code labels according to Intel 
-   recommendations, in prevision of binutils upgrade.  */
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
-  do {									\
-    if ((LOG) != 0) {							\
-      if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
-      else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-    }									\
-  } while (0)
-#endif
 
 /* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"
 
+/* OpenBSD gas currently does not support quad, so do not use it.  */
+#undef ASM_QUAD
