@@ -1,3 +1,8 @@
+2001-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_CLONED_FUNCTION_P): Avoid wild reads by not
+	looking at DECL_CLONED_FUNCTION for non-functions.
+
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* error.c (dump_template_parameter): Use parm to determine how
