@@ -241,8 +241,10 @@
 ;; One day we might persuade GCC to expand divisions with constants the
 ;; way MMIX does; giving the remainder the sign of the divisor.  But even
 ;; then, it might be good to have an option to divide the way "everybody
-;; else" does.  Perhaps then, this option can be on by default.  Until
-;; then, we do division and modulus in a library function.
+;; else" does.  Perhaps then, this option can be on by default.  However,
+;; it's not likely to happen because major (C, C++, Fortran) language
+;; standards in effect at 2002-04-29 reportedly demand that the sign of
+;; the remainder must follow the sign of the dividend.
 
 (define_insn "divmoddi4"
   [(set (match_operand:DI 0 "register_operand" "=r")

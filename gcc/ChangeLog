@@ -1,3 +1,31 @@
+2002-04-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (MMIX_LAST_STACK_REGISTER_REGNUM): Renamed
+	from MMIX_LAST_REGISTER_FILE_REGNUM.
+	(NO_IMPLICIT_EXTERN_C): Remove cryptic obsolete comment.
+	(struct machine_function): New member highest_saved_stack_register
+	previously static variable in mmix.c.
+	(MACHINE_DEPENDENT_REORG): Define.
+	* config/mmix/mmix.c (highest_saved_stack_register): Deleted.
+	(MMIX_OUTPUT_REGNO): New.
+	(mmix_target_asm_function_prologue): Move calculation of last used
+	saved-stack-register into...
+	(mmix_machine_dependent_reorg): New function.  Update to also handle
+	!TARGET_ABI_GNU.
+	(mmix_print_operand): Apply MMIX_OUTPUT_REGNO when emitting
+	register names, simplify somewhat by new variable regno.
+	<case 'p'>: Remove fixed FIXME.  Always emit highest used saved
+	register.
+	(mmix_print_operand_address): Apply MMIX_OUTPUT_REGNO when
+	emitting register names.
+	(mmix_asm_output_reg_push, mmix_asm_output_reg_pop): Ditto.
+	(mmix_dbx_register_number): Apply MMIX_OUTPUT_REGNO here too.
+	Remove fixed FIXME.
+	* config/mmix/mmix-protos.h (mmix_machine_dependent_reorg):
+	Declare.
+
+	* config/mmix/mmix.md ("divmoddi4"): Update head comment.
+
 2002-04-30  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (emit_soft_tfmode_libcall,
