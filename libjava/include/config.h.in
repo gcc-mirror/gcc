@@ -194,6 +194,9 @@
 /* Define if you have the gmtime_r function.  */
 #undef HAVE_GMTIME_R
 
+/* Define if you have the iconv function.  */
+#undef HAVE_ICONV
+
 /* Define if you have the inet_addr function.  */
 #undef HAVE_INET_ADDR
 

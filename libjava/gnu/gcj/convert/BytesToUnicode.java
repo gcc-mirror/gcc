@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -69,8 +69,15 @@ public abstract class BytesToUnicode
       } 
     catch (Throwable ex) 
       { 
-	throw new java.io.UnsupportedEncodingException(encoding
-						       + " (" + ex + ')');
+	try
+	  {
+	    return new Input_iconv (encoding);
+	  }
+	catch (Throwable _)
+	  {
+	    throw new java.io.UnsupportedEncodingException(encoding
+							   + " (" + ex + ')');
+	  }
       }
   }
 
