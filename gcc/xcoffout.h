@@ -170,3 +170,9 @@ extern char *xcoff_read_only_section_name;
    Also has the consequence of putting each struct, union or enum
    into a separate .stabs, containing only cross-refs to the others.  */
 #define DBX_NO_XREFS
+
+/* We must put stabs in the text section.  If we don't the assembler
+   won't handle them correctly; it will sometimes put stabs where gdb
+   can't find them.  */
+
+#define DEBUG_SYMS_TEXT
