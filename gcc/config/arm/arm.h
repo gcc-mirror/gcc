@@ -337,6 +337,13 @@ function tries to return. */
 #define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
+/* Note: TARGET_SHORT_BY_BYTES is really a misnomer.  What it means is
+   that short values sould not be accessed using word load instructions
+   as there is a possibility that they may not be word aligned and this
+   would generate an MMU fault.  On processors which do not have a 16 bit
+   load instruction therefore, short values must be loaded by individual
+   byte accesses rather than loading a word and then shifting the desired
+   value into place.  */
 #define TARGET_SHORT_BY_BYTES		(target_flags & ARM_FLAG_SHORT_BYTE)
 #define TARGET_SOFT_FLOAT		(target_flags & ARM_FLAG_SOFT_FLOAT)
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
@@ -677,7 +684,7 @@ extern char * structure_size_string;
 #define FIXED_REGISTERS  \
 {                        \
   0,0,0,0,0,0,0,0,	 \
-  0,0,1,1,0,1,0,1,	 \
+  0,0,0,1,0,1,0,1,	 \
   0,0,0,0,0,0,0,0,	 \
   1,1,1			 \
 }
@@ -693,10 +700,14 @@ extern char * structure_size_string;
 #define CALL_USED_REGISTERS  \
 {                            \
   1,1,1,1,0,0,0,0,	     \
-  0,0,1,1,1,1,1,1,	     \
+  0,0,0,1,1,1,1,1,	     \
   1,1,1,1,0,0,0,0,	     \
   1,1,1			     \
 }
+
+#ifndef SUBTARGET_CONDITIONAL_REGISTER_USAGE
+#define SUBTARGET_CONDITIONAL_REGISTER_USAGE
+#endif
 
 /* If doing stupid life analysis, avoid a bug causing a return value r0 to be
    trampled.  This effectively reduces the number of available registers by 1.
@@ -717,11 +728,12 @@ extern char * structure_size_string;
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;	\
     }							\
-  else if (! TARGET_APCS_STACK)				\
+  else if (TARGET_APCS_STACK)				\
     {							\
-      fixed_regs[10]     = 0;				\
-      call_used_regs[10] = 0;				\
+      fixed_regs[10]     = 1;				\
+      call_used_regs[10] = 1;				\
     }							\
+  SUBTARGET_CONDITIONAL_REGISTER_USAGE 		        \
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
