@@ -1,3 +1,10 @@
+Fri Oct 10 13:46:56 1997  Doug Evans  <dje@canuck.cygnus.com>
+
+	* configure.in: Handle --with-newlib.
+	* Makefile.in (LIBGCC2_CFLAGS): Add @inhibit_libc@.
+
+	* sparc/t-sp64 (LIBGCC2_CFLAGS): Delete.
+
 Wed Oct  8 14:37:44 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config/ptx4.h: Fix typo.

@@ -3045,6 +3045,16 @@ if [[ ! -f Makefile.in ]]; then
 	echo "source ${srcdir}/.gdbinit" >> .gdbinit
 fi
 
+# If this is using newlib, then define inhibit_libc in
+# LIBGCC2_CFLAGS.  This will cause __eprintf to be left out of
+# libgcc.a, but that's OK because newib should have its own version of
+# assert.h.
+inhibit_libc=
+if [[ x$with_newlib = xyes ]]; then
+	inhibit_libc=-Dinhibit_libc
+fi
+AC_SUBST(inhibit_libc)
+
 # Override SCHED_OBJ and SCHED_CFLAGS to enable the Haifa scheduler.
 sched_prefix=
 sched_cflags=
