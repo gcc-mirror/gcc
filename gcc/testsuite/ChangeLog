@@ -1,3 +1,7 @@
+2002-03-22  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* g++.dg/inherit/template-as-base.C: New test.
+
 2002-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/dwarf2-1.C: Move...
