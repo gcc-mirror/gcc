@@ -7329,7 +7329,7 @@ delete_trivially_dead_insns (rtx insns, int nreg)
 	  ndead++;
 	}
 
-      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+      if (in_libcall && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	{
 	  in_libcall = 0;
 	  dead_libcall = 0;
