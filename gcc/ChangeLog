@@ -1,3 +1,19 @@
+2000-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (sparc_emit_float_lib_cmp): Handle
+	TARGET_ARCH32 again. Handle ORDERED, UN* and LTGT comparisons
+	using _Qp_cmp/_Q_cmp and testing the return value.
+	(print_operand): Call reverse_condition_maybe_unordered if
+	we are handling CCFPmode or CCFPEmode.
+	Handle ORDERED, UN* and LTGT comparisons.
+	* config/sparc/sparc.md (cmptf): Use even on TARGET_ARCH32
+	if not TARGET_HARD_QUAD.
+	(seq, sne, sgt, slt, sge, sle, beq, bne, bgt, blt, bge, ble,
+	bunordered, bordered, bungt, bunlt, buneq, bunge, bunle, bltgt):
+	Call sparc_emit_float_lib_cmp even on TARGET_ARCH32.
+	Adjust gen_b* calls so that they reflect return comparison of
+	sparc_emit_float_lib_cmp.
+
 2000-01-26  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/alpha/alpha.c (alpha_emit_xfloating_cvt): Do not assume
