@@ -5326,6 +5326,7 @@ lookup_namespace_name (namespace, name)
 {
   struct tree_binding _b;
   tree val;
+  tree template_id = NULL_TREE;
 
   my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 370);
 
@@ -5342,6 +5343,16 @@ lookup_namespace_name (namespace, name)
 
   namespace = ORIGINAL_NAMESPACE (namespace);
 
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    {
+      template_id = name;
+      name = TREE_OPERAND (name, 0);
+      if (TREE_CODE (name) == OVERLOAD)
+	name = DECL_NAME (OVL_CURRENT (name));
+      else if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
+	name = DECL_NAME (name);
+    }
+
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
   val = binding_init (&_b);
@@ -5351,6 +5362,26 @@ lookup_namespace_name (namespace, name)
   if (BINDING_VALUE (val))
     {
       val = BINDING_VALUE (val);
+
+      if (template_id)
+	{
+	  if (DECL_CLASS_TEMPLATE_P (val))
+	    val = lookup_template_class (val, 
+					 TREE_OPERAND (template_id, 1),
+					 /*in_decl=*/NULL_TREE,
+					 /*context=*/NULL_TREE,
+					 /*entering_scope=*/0);
+	  else if (DECL_FUNCTION_TEMPLATE_P (val)
+		   || TREE_CODE (val) == OVERLOAD)
+	    val = lookup_template_function (val, 
+					    TREE_OPERAND (template_id, 1));
+	  else
+	    {
+	      cp_error ("`%D::%D' is not a template",
+			namespace, name);
+	      return error_mark_node;
+	    }
+	}
 
       /* If we have a single function from a using decl, pull it out.  */
       if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
@@ -8479,11 +8510,16 @@ expand_static_init (decl, init)
 	      pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
 
 	      push_lang_context (lang_name_c);
+	      /* Note that we do not call pushdecl for this function;
+		 there's no reason that this declaration should be
+		 accessible to anyone.  */
 	      atexit_fndecl
-		= builtin_function ("atexit",
-				    build_function_type (void_type_node,
-							 pfvlist),
-				    NOT_BUILT_IN, NULL_PTR);
+		= define_function ("atexit",
+				   build_function_type (void_type_node,
+							pfvlist),
+				   NOT_BUILT_IN, 
+				   /*pfn=*/0,
+				   NULL_PTR);
 	      mark_used (atexit_fndecl);
 	      Atexit = default_conversion (atexit_fndecl);
 	      pop_lang_context ();
