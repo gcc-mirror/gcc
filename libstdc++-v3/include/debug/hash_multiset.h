@@ -46,22 +46,22 @@ namespace __gnu_debug_def
 						       _EqualKey, _Alloc> >
     {
       typedef __gnu_cxx:: hash_multiset<_Value,_HashFcn, _EqualKey,_Alloc>
-      							_Base;
+							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_multiset> _Safe_base;
 
   public:
-    typedef typename _Base::key_type        		key_type;
-    typedef typename _Base::value_type      		value_type;
-    typedef typename _Base::hasher          		hasher;
-    typedef typename _Base::key_equal       		key_equal;
-    typedef typename _Base::size_type       		size_type;
-    typedef typename _Base::difference_type 		difference_type;
-    typedef typename _Base::pointer         		pointer;
-    typedef typename _Base::const_pointer   		const_pointer;
-    typedef typename _Base::reference       		reference;
-    typedef typename _Base::const_reference 		const_reference;
+    typedef typename _Base::key_type			key_type;
+    typedef typename _Base::value_type			value_type;
+    typedef typename _Base::hasher			hasher;
+    typedef typename _Base::key_equal			key_equal;
+    typedef typename _Base::size_type			size_type;
+    typedef typename _Base::difference_type		difference_type;
+    typedef typename _Base::pointer			pointer;
+    typedef typename _Base::const_pointer		const_pointer;
+    typedef typename _Base::reference			reference;
+    typedef typename _Base::const_reference		const_reference;
 
-    typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, 
+    typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
 					 hash_multiset> iterator;
     typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
 					 hash_multiset> const_iterator;
@@ -82,7 +82,7 @@ namespace __gnu_debug_def
 		  const allocator_type& __a = allocator_type())
     : _Base(__n, __hf, __eql, __a)
     { }
-    
+
     template<typename _InputIterator>
       hash_multiset(_InputIterator __f, _InputIterator __l)
       : _Base(__gnu_debug::__check_valid_range(__f, __l), __l)
@@ -113,7 +113,7 @@ namespace __gnu_debug_def
     using _Base::max_size;
     using _Base::empty;
 
-    void 
+    void
     swap(hash_multiset& __x)
     {
       _Base::swap(__x);
@@ -128,8 +128,8 @@ namespace __gnu_debug_def
     { return iterator(_Base::insert(__obj), this); }
 
     template <typename _InputIterator>
-      void 
-      insert(_InputIterator __first, _InputIterator __last) 
+      void
+      insert(_InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_valid_range(__first, __last);
 	_Base::insert(__first.base(), __last.base());
@@ -140,24 +140,24 @@ namespace __gnu_debug_def
     insert_noresize(const value_type& __obj)
     { return iterator(_Base::insert_noresize(__obj), this); }
 
-    iterator 
-    find(const key_type& __key) const 
+    iterator
+    find(const key_type& __key) const
     { return iterator(_Base::find(__key), this); }
 
     using _Base::count;
-    
-    std::pair<iterator, iterator> 
+
+    std::pair<iterator, iterator>
     equal_range(const key_type& __key) const
-    { 
+    {
       typedef typename _Base::iterator _Base_iterator;
-      std::pair<_Base_iterator, _Base_iterator> __res = 
+      std::pair<_Base_iterator, _Base_iterator> __res =
 	_Base::equal_range(__key);
       return std::make_pair(iterator(__res.first, this),
 			    iterator(__res.second, this));
     }
 
-    size_type 
-    erase(const key_type& __key) 
+    size_type
+    erase(const key_type& __key)
     {
       size_type __count = 0;
       std::pair<iterator, iterator> __victims = this->equal_range(__key);
@@ -168,16 +168,16 @@ namespace __gnu_debug_def
 	}
       return __count;
     }
-    
-    void 
-    erase(iterator __it) 
+
+    void
+    erase(iterator __it)
     {
       __glibcxx_check_erase(__it);
       __it._M_invalidate();
       _Base::erase(__it.base());
     }
 
-    void 
+    void
     erase(iterator __first, iterator __last)
     {
       __glibcxx_check_erase_range(__first, __last);
@@ -189,11 +189,11 @@ namespace __gnu_debug_def
       _Base::erase(__first.base(), __last.base());
     }
 
-    void 
-    clear() 
-    { 
+    void
+    clear()
+    {
       _Base::clear();
-      this->_M_invalidate_all(); 
+      this->_M_invalidate_all();
     }
 
     using _Base::resize;
@@ -205,7 +205,7 @@ namespace __gnu_debug_def
     const _Base& _M_base() const { return *this; }
 
   private:
-    void 
+    void
     _M_invalidate_all()
     {
       typedef typename _Base::const_iterator _Base_const_iterator;

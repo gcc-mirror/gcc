@@ -38,7 +38,7 @@
 
 namespace __gnu_debug_def
 {
-  template<typename _Tp, 
+  template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector
     : public __gnu_norm::vector<_Tp, _Allocator>,
@@ -54,7 +54,7 @@ namespace __gnu_debug_def
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,vector> 
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,vector>
       iterator;
       typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,vector>
       const_iterator;
@@ -62,8 +62,8 @@ namespace __gnu_debug_def
       typedef typename _Base::size_type             size_type;
       typedef typename _Base::difference_type       difference_type;
 
-      typedef _Tp        			    value_type;
-      typedef _Allocator 			    allocator_type;
+      typedef _Tp				    value_type;
+      typedef _Allocator			    allocator_type;
       typedef typename _Allocator::pointer          pointer;
       typedef typename _Allocator::const_pointer    const_pointer;
       typedef std::reverse_iterator<iterator>       reverse_iterator;
@@ -80,21 +80,21 @@ namespace __gnu_debug_def
       template<class _InputIterator>
         vector(_InputIterator __first, _InputIterator __last,
 	       const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__check_valid_range(__first, __last), 
+	: _Base(__gnu_debug::__check_valid_range(__first, __last),
 		__last, __a),
 	  _M_guaranteed_capacity(0)
         { _M_update_guaranteed_capacity(); }
 
-      vector(const vector<_Tp,_Allocator>& __x) 
+      vector(const vector<_Tp,_Allocator>& __x)
       : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
 
       /// Construction from a release-mode vector
-      vector(const _Base& __x) 
+      vector(const _Base& __x)
       : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
 
       ~vector() { }
 
-      vector<_Tp,_Allocator>& 
+      vector<_Tp,_Allocator>&
       operator=(const vector<_Tp,_Allocator>& __x)
       {
 	static_cast<_Base&>(*this) = __x;
@@ -104,7 +104,7 @@ namespace __gnu_debug_def
       }
 
       template<typename _InputIterator>
-        void 
+        void
         assign(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
@@ -113,7 +113,7 @@ namespace __gnu_debug_def
 	  _M_update_guaranteed_capacity();
 	}
 
-      void 
+      void
       assign(size_type __n, const _Tp& __u)
       {
 	_Base::assign(__n, __u);
@@ -124,43 +124,43 @@ namespace __gnu_debug_def
       using _Base::get_allocator;
 
       // iterators:
-      iterator 
-      begin() 
+      iterator
+      begin()
       { return iterator(_Base::begin(), this); }
 
-      const_iterator 
-      begin() const 
+      const_iterator
+      begin() const
       { return const_iterator(_Base::begin(), this); }
 
-      iterator 
+      iterator
       end()
       { return iterator(_Base::end(), this); }
 
-      const_iterator 
+      const_iterator
       end() const
       { return const_iterator(_Base::end(), this); }
 
-      reverse_iterator 
-      rbegin() 
+      reverse_iterator
+      rbegin()
       { return reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       rbegin() const
       { return const_reverse_iterator(end()); }
 
-      reverse_iterator 
-      rend() 
+      reverse_iterator
+      rend()
       { return reverse_iterator(begin()); }
 
-      const_reverse_iterator 
-      rend() const 
+      const_reverse_iterator
+      rend() const
       { return const_reverse_iterator(begin()); }
 
       // 23.2.4.2 capacity:
       using _Base::size;
       using _Base::max_size;
 
-      void 
+      void
       resize(size_type __sz, _Tp __c = _Tp())
       {
 	bool __realloc = _M_requires_reallocation(__sz);
@@ -174,7 +174,7 @@ namespace __gnu_debug_def
       using _Base::capacity;
       using _Base::empty;
 
-      void 
+      void
       reserve(size_type __n)
       {
 	bool __realloc = _M_requires_reallocation(__n);
@@ -186,14 +186,14 @@ namespace __gnu_debug_def
       }
 
       // element access:
-      reference 
+      reference
       operator[](size_type __n)
       {
 	__glibcxx_check_subscript(__n);
 	return _M_base()[__n];
       }
 
-      const_reference 
+      const_reference
       operator[](size_type __n) const
       {
 	__glibcxx_check_subscript(__n);
@@ -202,28 +202,28 @@ namespace __gnu_debug_def
 
       using _Base::at;
 
-      reference 
+      reference
       front()
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
-      const_reference 
+      const_reference
       front() const
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
-      reference 
+      reference
       back()
       {
 	__glibcxx_check_nonempty();
 	return _Base::back();
       }
 
-      const_reference 
+      const_reference
       back() const
       {
 	__glibcxx_check_nonempty();
@@ -231,7 +231,7 @@ namespace __gnu_debug_def
       }
 
       // 23.2.4.3 modifiers:
-      void 
+      void
       push_back(const _Tp& __x)
       {
 	bool __realloc = _M_requires_reallocation(this->size() + 1);
@@ -241,7 +241,7 @@ namespace __gnu_debug_def
 	_M_update_guaranteed_capacity();
       }
 
-      void 
+      void
       pop_back()
       {
 	__glibcxx_check_nonempty();
@@ -250,7 +250,7 @@ namespace __gnu_debug_def
 	_Base::pop_back();
       }
 
-      iterator 
+      iterator
       insert(iterator __position, const _Tp& __x)
       {
 	__glibcxx_check_insert(__position);
@@ -265,7 +265,7 @@ namespace __gnu_debug_def
 	return iterator(__res, this);
       }
 
-      void 
+      void
       insert(iterator __position, size_type __n, const _Tp& __x)
       {
 	__glibcxx_check_insert(__position);
@@ -280,27 +280,27 @@ namespace __gnu_debug_def
       }
 
       template<class _InputIterator>
-        void 
-        insert(iterator __position, 
+        void
+        insert(iterator __position,
 	       _InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_insert_range(__position, __first, __last);
-	  
+
 	  /* Hard to guess if invalidation will occur, because __last
 	     - __first can't be calculated in all cases, so we just
 	     punt here by checking if it did occur. */
 	  typename _Base::iterator __old_begin = _M_base().begin();
 	  difference_type __offset = __position - begin();
 	  _Base::insert(__position.base(), __first, __last);
-	  
+
 	  if (_M_base().begin() != __old_begin)
 	    this->_M_invalidate_all();
 	  else
 	    this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
 	  _M_update_guaranteed_capacity();
 	}
-      
-      iterator 
+
+      iterator
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
@@ -310,21 +310,21 @@ namespace __gnu_debug_def
 	return iterator(__res, this);
       }
 
-      iterator 
+      iterator
       erase(iterator __first, iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-      
+
 	difference_type __offset = __first - begin();
-	typename _Base::iterator __res = _Base::erase(__first.base(), 
+	typename _Base::iterator __res = _Base::erase(__first.base(),
 							 __last.base());
 	this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
 	return iterator(__res, this);
       }
 
-      void 
+      void
       swap(vector<_Tp,_Allocator>& __x)
       {
 	_Base::swap(__x);
@@ -332,7 +332,7 @@ namespace __gnu_debug_def
         std::swap(_M_guaranteed_capacity, __x._M_guaranteed_capacity);
       }
 
-      void 
+      void
       clear()
       {
 	_Base::clear();
@@ -340,16 +340,16 @@ namespace __gnu_debug_def
         _M_guaranteed_capacity = 0;
       }
 
-      _Base&       
+      _Base&
       _M_base() { return *this; }
 
-      const _Base& 
+      const _Base&
       _M_base() const { return *this; }
 
     private:
       size_type _M_guaranteed_capacity;
 
-      bool 
+      bool
       _M_requires_reallocation(size_type __elements)
       {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
@@ -358,8 +358,8 @@ namespace __gnu_debug_def
 	return __elements > _M_guaranteed_capacity;
 #endif
       }
-      
-      void 
+
+      void
       _M_update_guaranteed_capacity()
       {
 	if (this->size() > _M_guaranteed_capacity)
@@ -375,31 +375,31 @@ namespace __gnu_debug_def
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator!=(const vector<_Tp, _Alloc>& __lhs, 
+    operator!=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() != __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<(const vector<_Tp, _Alloc>& __lhs, 
+    operator<(const vector<_Tp, _Alloc>& __lhs,
 	      const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<=(const vector<_Tp, _Alloc>& __lhs, 
+    operator<=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() <= __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>=(const vector<_Tp, _Alloc>& __lhs, 
+    operator>=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() >= __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>(const vector<_Tp, _Alloc>& __lhs, 
+    operator>(const vector<_Tp, _Alloc>& __lhs,
 	      const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
 
@@ -409,4 +409,4 @@ namespace __gnu_debug_def
     { __lhs.swap(__rhs); }
 } // namespace __gnu_debug_def
 
-#endif 
+#endif

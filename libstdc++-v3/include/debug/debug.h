@@ -174,7 +174,7 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
 							 _Value),	\
 		      _M_message(::__gnu_debug::__msg_unpartitioned) \
 		      ._M_iterator(_First, #_First)			\
-		      ._M_iterator(_Last, #_Last) 			\
+		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Value))
 
 /** Verify that the iterator range [_First, _Last) is partitioned
@@ -185,7 +185,7 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
 							 _Value, _Pred), \
 		      _M_message(::__gnu_debug::__msg_unpartitioned_pred) \
 		      ._M_iterator(_First, #_First)			\
-		      ._M_iterator(_Last, #_Last) 			\
+		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred)				\
                       ._M_string(#_Value))
 
@@ -267,7 +267,7 @@ _GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last, _Pred),		\
 #  define __glibcxx_requires_string(_String)
 #  define __glibcxx_requires_string_len(_String,_Len)
 #  define __glibcxx_requires_subscript(_N)
-#endif 
+#endif
 
 #include <cassert> // TBD: temporary
 
@@ -277,11 +277,11 @@ _GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last, _Pred),		\
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence> 
+  template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
 
   // An arbitrary iterator pointer is not singular.
-  inline bool 
+  inline bool
   __check_singular_aux(const void*) { return false; }
 
   // We may have an iterator that derives from _Safe_iterator_base but isn't
@@ -323,11 +323,11 @@ namespace __gnu_debug
     { return __x._M_dereferenceable(); }
 
   /** If the distance between two random access iterators is
-   *  nonnegative, assume the range is valid. 
+   *  nonnegative, assume the range is valid.
   */
   template<typename _RandomAccessIterator>
     inline bool
-    __valid_range_aux2(const _RandomAccessIterator& __first, 
+    __valid_range_aux2(const _RandomAccessIterator& __first,
 		       const _RandomAccessIterator& __last,
 		       std::random_access_iterator_tag)
     { return __last - __first >= 0; }
@@ -344,7 +344,7 @@ namespace __gnu_debug
 
   /** We say that integral types for a valid range, and defer to other
    *  routines to realize what to do with integral types instead of
-   *  iterators. 
+   *  iterators.
   */
   template<typename _Integral>
     inline bool
@@ -356,12 +356,12 @@ namespace __gnu_debug
   */
   template<typename _InputIterator>
     inline bool
-    __valid_range_aux(const _InputIterator& __first, 
+    __valid_range_aux(const _InputIterator& __first,
 		      const _InputIterator& __last, __false_type)
   {
     typedef typename std::iterator_traits<_InputIterator>::iterator_category
       _Category;
-    return __gnu_debug::__valid_range_aux2(__first, __last, _Category()); 
+    return __gnu_debug::__valid_range_aux2(__first, __last, _Category());
   }
 
   /** Don't know what these iterators are, or if they are even
@@ -372,25 +372,25 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline bool
     __valid_range(const _InputIterator& __first, const _InputIterator& __last)
-    { 
+    {
       typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
       return __gnu_debug::__valid_range_aux(__first, __last, _Integral());
     }
 
   /** Safe iterators know how to check if they form a valid range. */
   template<typename _Iterator, typename _Sequence>
-    inline bool 
+    inline bool
     __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
 		  const _Safe_iterator<_Iterator, _Sequence>& __last)
     { return __first._M_valid_range(__last); }
 
   /* Checks that [first, last) is a valid range, and then returns
    * __first. This routine is useful when we can't use a separate
-   * assertion statement because, e.g., we are in a constructor. 
+   * assertion statement because, e.g., we are in a constructor.
   */
   template<typename _InputIterator>
     inline _InputIterator
-    __check_valid_range(const _InputIterator& __first, 
+    __check_valid_range(const _InputIterator& __first,
 			const _InputIterator& __last)
     {
       _GLIBCXX_DEBUG_ASSERT(__gnu_debug::__valid_range(__first, __last));
@@ -422,7 +422,7 @@ namespace __gnu_debug
   // Can't check if an input iterator sequence is sorted, because we
   // can't step through the sequence.
   template<typename _InputIterator>
-    inline bool 
+    inline bool
     __check_sorted_aux(const _InputIterator&, const _InputIterator&,
                        std::input_iterator_tag)
     { return true; }
@@ -433,7 +433,7 @@ namespace __gnu_debug
     inline bool
     __check_sorted_aux(_ForwardIterator __first, _ForwardIterator __last,
                        std::forward_iterator_tag)
-    { 
+    {
       if (__first == __last)
         return true;
 
@@ -449,7 +449,7 @@ namespace __gnu_debug
   // Can't check if an input iterator sequence is sorted, because we can't step
   // through the sequence.
   template<typename _InputIterator, typename _Predicate>
-    inline bool 
+    inline bool
     __check_sorted_aux(const _InputIterator&, const _InputIterator&,
                        _Predicate, std::input_iterator_tag)
     { return true; }
@@ -458,9 +458,9 @@ namespace __gnu_debug
   // std::__is_sorted
   template<typename _ForwardIterator, typename _Predicate>
     inline bool
-    __check_sorted_aux(_ForwardIterator __first, _ForwardIterator __last, 
+    __check_sorted_aux(_ForwardIterator __first, _ForwardIterator __last,
                        _Predicate __pred, std::forward_iterator_tag)
-    { 
+    {
       if (__first == __last)
         return true;
 
@@ -477,8 +477,8 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline bool
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last)
-    { 
-      typedef typename std::iterator_traits<_InputIterator>::iterator_category 
+    {
+      typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
       return __gnu_debug::__check_sorted_aux(__first, __last, _Category());
     }
@@ -487,15 +487,15 @@ namespace __gnu_debug
     inline bool
     __check_sorted(const _InputIterator& __first, const _InputIterator& __last,
                    _Predicate __pred)
-    { 
-      typedef typename std::iterator_traits<_InputIterator>::iterator_category 
+    {
+      typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
       return __gnu_debug::__check_sorted_aux(__first, __last, __pred,
 					     _Category());
     }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 270. Binary search requirements overly strict 
+  // 270. Binary search requirements overly strict
   // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp>
     inline bool
@@ -528,4 +528,4 @@ namespace __gnu_debug
 #  include <debug/formatter.h>
 #endif
 
-#endif 
+#endif

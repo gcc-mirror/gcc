@@ -36,26 +36,26 @@
 
 namespace __gnu_debug
 {
-  template<typename _Iterator, typename _Sequence> 
+  template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
 
   /** A simple function object that returns true if the passed-in
    *  value is not equal to the stored value. It saves typing over
-   *  using both bind1st and not_equal. 
+   *  using both bind1st and not_equal.
    */
   template<typename _Type>
     class _Not_equal_to
     {
       _Type __value;
-      
+
     public:
       explicit _Not_equal_to(const _Type& __v) : __value(__v) { }
-      
-      bool 
-      operator()(const _Type& __x) const 
+
+      bool
+      operator()(const _Type& __x) const
       { return __value != __x; }
     };
-  
+
   /** A function object that returns true when the given random access
       iterator is at least @c n steps away from the given iterator. */
   template<typename _Iterator>
@@ -63,19 +63,19 @@ namespace __gnu_debug
     {
       typedef typename std::iterator_traits<_Iterator>::difference_type
       difference_type;
-      
+
       _Iterator _M_base;
       difference_type _M_n;
-      
+
     public:
       _After_nth_from(const difference_type& __n, const _Iterator& __base)
       : _M_base(__base), _M_n(__n) { }
-      
-      bool 
+
+      bool
       operator()(const _Iterator& __x) const
       { return __x - _M_base >= _M_n; }
     };
-  
+
   /**
    * @brief Base class for constructing a "safe" sequence type that
    * tracks iterators that reference it.
@@ -101,8 +101,8 @@ namespace __gnu_debug
 	  true. The user of this routine should be careful not to make
 	  copies of the iterators passed to @p pred, as the copies may
 	  interfere with the invalidation. */
-      template<typename _Predicate> 
-        void 
+      template<typename _Predicate>
+        void
         _M_invalidate_if(_Predicate __pred);
 
       /** Transfers all iterators that reference this memory location
@@ -114,19 +114,19 @@ namespace __gnu_debug
     };
 
   template<typename _Sequence>
-    template<typename _Predicate> 
-      void 
+    template<typename _Predicate>
+      void
       _Safe_sequence<_Sequence>::
       _M_invalidate_if(_Predicate __pred)
       {
         typedef typename _Sequence::iterator iterator;
         typedef typename _Sequence::const_iterator const_iterator;
-        
+
         for (_Safe_iterator_base* __iter = _M_iterators; __iter; )
         {
           iterator* __victim = static_cast<iterator*>(__iter);
           __iter = __iter->_M_next;
-          if (!__victim->_M_singular()) 
+          if (!__victim->_M_singular())
           {
 	    if (__pred(__victim->base()))
 	      __victim->_M_invalidate();
@@ -137,12 +137,12 @@ namespace __gnu_debug
         {
           const_iterator* __victim = static_cast<const_iterator*>(__iter);
           __iter = __iter->_M_next;
-          if (!__victim->_M_singular()) 
+          if (!__victim->_M_singular())
           {
 	    if (__pred(__victim->base()))
 	      __victim->_M_invalidate();
           }
-        }    
+        }
       }
 
   template<typename _Sequence>
@@ -157,7 +157,7 @@ namespace __gnu_debug
 
         typedef typename _Sequence::iterator iterator;
         typedef typename _Sequence::const_iterator const_iterator;
-        
+
         for (_Safe_iterator_base* __iter = __from->_M_iterators; __iter; )
         {
           iterator* __victim = static_cast<iterator*>(__iter);
@@ -176,4 +176,4 @@ namespace __gnu_debug
       }
 } // namespace __gnu_debug
 
-#endif 
+#endif

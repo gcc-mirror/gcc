@@ -39,24 +39,24 @@ namespace __gnu_debug_def
 {
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
-    class multimap 
+    class multimap
     : public __gnu_norm::multimap<_Key, _Tp, _Compare, _Allocator>,
     public __gnu_debug::_Safe_sequence<multimap<_Key,_Tp,_Compare,_Allocator> >
     {
       typedef __gnu_norm::multimap<_Key, _Tp, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<multimap> _Safe_base;
-      
+
     public:
       // types:
-      typedef _Key   			   	     key_type;
-      typedef _Tp  			   	     mapped_type;
+      typedef _Key				     key_type;
+      typedef _Tp				     mapped_type;
       typedef std::pair<const _Key, _Tp>             value_type;
       typedef _Compare                               key_compare;
       typedef _Allocator                             allocator_type;
       typedef typename _Allocator::reference         reference;
       typedef typename _Allocator::const_reference   const_reference;
-      
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, multimap> 
+
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, multimap>
                                                      iterator;
       typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
                                            multimap> const_iterator;
@@ -67,9 +67,9 @@ namespace __gnu_debug_def
       typedef typename _Allocator::const_pointer     const_pointer;
       typedef std::reverse_iterator<iterator>        reverse_iterator;
       typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
-      
+
       using _Base::value_compare;
-      
+
       // 23.3.1.1 construct/copy/destroy:
       explicit multimap(const _Compare& __comp = _Compare(),
 			const _Allocator& __a = _Allocator())
@@ -77,13 +77,13 @@ namespace __gnu_debug_def
 
       template<typename _InputIterator>
       multimap(_InputIterator __first, _InputIterator __last,
-	       const _Compare& __comp = _Compare(), 
+	       const _Compare& __comp = _Compare(),
 	       const _Allocator& __a = _Allocator())
       : _Base(__gnu_debug::__check_valid_range(__first, __last), __last,
 	      __comp, __a) { }
 
       multimap(const multimap<_Key,_Tp,_Compare,_Allocator>& __x)
-      : _Base(__x), _Safe_base() { } 
+      : _Base(__x), _Safe_base() { }
 
       multimap(const _Base& __x) : _Base(__x), _Safe_base() { }
 
@@ -100,36 +100,36 @@ namespace __gnu_debug_def
       using _Base::get_allocator;
 
       // iterators:
-      iterator       
-      begin() 
+      iterator
+      begin()
       { return iterator(_Base::begin(), this); }
 
-      const_iterator 
-      begin() const 
+      const_iterator
+      begin() const
       { return const_iterator(_Base::begin(), this); }
 
-      iterator       
-      end() 
+      iterator
+      end()
       { return iterator(_Base::end(), this); }
 
-      const_iterator 
-      end() const   
+      const_iterator
+      end() const
       { return const_iterator(_Base::end(), this); }
 
-      reverse_iterator 
-      rbegin() 
+      reverse_iterator
+      rbegin()
       { return reverse_iterator(end()); }
 
-      const_reverse_iterator 
+      const_reverse_iterator
       rbegin() const
       { return const_reverse_iterator(end()); }
 
-      reverse_iterator 
-      rend() 
+      reverse_iterator
+      rend()
       { return reverse_iterator(begin()); }
 
-      const_reverse_iterator 
-      rend() const 
+      const_reverse_iterator
+      rend() const
       { return const_reverse_iterator(begin()); }
 
       // capacity:
@@ -138,11 +138,11 @@ namespace __gnu_debug_def
       using _Base::max_size;
 
       // modifiers:
-      iterator 
+      iterator
       insert(const value_type& __x)
       { return iterator(_Base::insert(__x), this); }
 
-      iterator 
+      iterator
       insert(iterator __position, const value_type& __x)
       {
 	__glibcxx_check_insert(__position);
@@ -150,14 +150,14 @@ namespace __gnu_debug_def
       }
 
       template<typename _InputIterator>
-        void 
+        void
         insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first, __last);
 	}
 
-      void 
+      void
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
@@ -165,7 +165,7 @@ namespace __gnu_debug_def
 	_Base::erase(__position.base());
       }
 
-      size_type 
+      size_type
       erase(const key_type& __x)
       {
 	std::pair<iterator, iterator> __victims = this->equal_range(__x);
@@ -180,7 +180,7 @@ namespace __gnu_debug_def
 	return __count;
       }
 
-      void 
+      void
       erase(iterator __first, iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -190,14 +190,14 @@ namespace __gnu_debug_def
 	this->erase(__first++);
       }
 
-      void 
+      void
       swap(multimap<_Key,_Tp,_Compare,_Allocator>& __x)
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
       }
 
-      void 
+      void
       clear()
       { this->erase(begin(), end()); }
 
@@ -206,29 +206,29 @@ namespace __gnu_debug_def
       using _Base::value_comp;
 
       // 23.3.1.3 multimap operations:
-      iterator 
+      iterator
       find(const key_type& __x)
       { return iterator(_Base::find(__x), this); }
 
-      const_iterator 
+      const_iterator
       find(const key_type& __x) const
       { return const_iterator(_Base::find(__x), this); }
 
       using _Base::count;
 
-      iterator 
+      iterator
       lower_bound(const key_type& __x)
       { return iterator(_Base::lower_bound(__x), this); }
 
-      const_iterator 
+      const_iterator
       lower_bound(const key_type& __x) const
       { return const_iterator(_Base::lower_bound(__x), this); }
 
-      iterator 
+      iterator
       upper_bound(const key_type& __x)
       { return iterator(_Base::upper_bound(__x), this); }
 
-      const_iterator 
+      const_iterator
       upper_bound(const key_type& __x) const
       { return const_iterator(_Base::upper_bound(__x), this); }
 
@@ -252,14 +252,14 @@ namespace __gnu_debug_def
 			      const_iterator(__res.second, this));
       }
 
-      _Base&       
+      _Base&
       _M_base() { return *this; }
 
-      const _Base& 
+      const _Base&
       _M_base() const { return *this; }
 
     private:
-      void 
+      void
       _M_invalidate_all()
       {
 	typedef typename _Base::const_iterator _Base_const_iterator;
@@ -270,45 +270,45 @@ namespace __gnu_debug_def
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator==(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator==(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	       const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator!=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator!=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	       const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() != __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator<(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator<(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	      const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator<=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator<=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	       const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() <= __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator>=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator>=(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	       const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() >= __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline bool
-    operator>(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    operator>(const multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	      const multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
 
   template<typename _Key,typename _Tp,typename _Compare,typename _Allocator>
     inline void
-    swap(multimap<_Key,_Tp,_Compare,_Allocator>& __lhs, 
+    swap(multimap<_Key,_Tp,_Compare,_Allocator>& __lhs,
 	 multimap<_Key,_Tp,_Compare,_Allocator>& __rhs)
     { __lhs.swap(__rhs); }
 } // namespace __gnu_debug_def
 
-#endif 
+#endif

@@ -55,10 +55,10 @@ namespace __gnu_debug
 
   class _Safe_sequence_base;
 
-  template<typename _Iterator, typename _Sequence> 
+  template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
 
-  template<typename _Sequence> 
+  template<typename _Sequence>
     class _Safe_sequence;
 
   enum _Debug_msg_id
@@ -123,7 +123,7 @@ namespace __gnu_debug
       __const_iterator,
       __mutable_iterator,
       __last_constness
-    }; 
+    };
 
     // The state of the iterator (fine-grained), if we know it.
     enum _Iterator_state
@@ -143,29 +143,29 @@ namespace __gnu_debug
     // A parameter that may be referenced by an error message
     struct _Parameter
     {
-      enum 
-      { 
-	__unused_param, 
-	__iterator, 
-	__sequence, 
+      enum
+      {
+	__unused_param,
+	__iterator,
+	__sequence,
 	__integer,
 	__string
       } _M_kind;
-      
+
       union
       {
 	// When _M_kind == __iterator
-	struct 
+	struct
 	{
-	  const char*      _M_name;      
-	  const void*      _M_address;   
-	  const type_info* _M_type;   
+	  const char*      _M_name;
+	  const void*      _M_address;
+	  const type_info* _M_type;
 	  _Constness       _M_constness;
 	  _Iterator_state  _M_state;
-	  const void*      _M_sequence;  
+	  const void*      _M_sequence;
 	  const type_info* _M_seq_type;
 	} _M_iterator;
-	
+
 	// When _M_kind == __sequence
 	struct
 	{
@@ -190,17 +190,17 @@ namespace __gnu_debug
       } _M_variant;
 
       _Parameter() : _M_kind(__unused_param) { }
-      
+
       _Parameter(long __value, const char* __name) : _M_kind(__integer)
-      { 
+      {
 	_M_variant._M_integer._M_name = __name;
-	_M_variant._M_integer._M_value = __value; 
+	_M_variant._M_integer._M_value = __value;
       }
 
       _Parameter(const char* __value, const char* __name) : _M_kind(__string)
       {
 	_M_variant._M_string._M_name = __name;
-	_M_variant._M_string._M_value = __value; 
+	_M_variant._M_string._M_value = __value;
       }
 
       template<typename _Iterator, typename _Sequence>
@@ -211,7 +211,7 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_name = __name;
 	  _M_variant._M_iterator._M_address = &__it;
 	  _M_variant._M_iterator._M_type = &typeid(__it);
-	  _M_variant._M_iterator._M_constness = 
+	  _M_variant._M_iterator._M_constness =
 	    __is_same<_Safe_iterator<_Iterator, _Sequence>,
 	                         typename _Sequence::iterator>::
 	      value? __mutable_iterator : __const_iterator;
@@ -258,7 +258,7 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_sequence = 0;
 	  _M_variant._M_iterator._M_seq_type = 0;
 	}
-      
+
       template<typename _Iterator>
         _Parameter(const _Iterator& __it, const char* __name, _Is_iterator)
 	: _M_kind(__iterator)
@@ -267,19 +267,19 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_address = &__it;
 	  _M_variant._M_iterator._M_type = &typeid(__it);
 	  _M_variant._M_iterator._M_constness = __unknown_constness;
-	  _M_variant._M_iterator._M_state = 
+	  _M_variant._M_iterator._M_state =
 	    __gnu_debug::__check_singular(__it)? __singular : __unknown_state;
 	  _M_variant._M_iterator._M_sequence = 0;
 	  _M_variant._M_iterator._M_seq_type = 0;
 	}
 
       template<typename _Sequence>
-        _Parameter(const _Safe_sequence<_Sequence>& __seq, 
+        _Parameter(const _Safe_sequence<_Sequence>& __seq,
 		   const char* __name, _Is_sequence)
 	: _M_kind(__sequence)
         {
 	  _M_variant._M_sequence._M_name = __name;
-	  _M_variant._M_sequence._M_address = 
+	  _M_variant._M_sequence._M_address =
 	    static_cast<const _Sequence*>(&__seq);
 	  _M_variant._M_sequence._M_type = &typeid(_Sequence);
 	}
@@ -292,18 +292,18 @@ namespace __gnu_debug
 	  _M_variant._M_sequence._M_address = &__seq;
 	  _M_variant._M_sequence._M_type = &typeid(_Sequence);
 	}
-      
+
       void
-      _M_print_field(const _Error_formatter* __formatter, 
+      _M_print_field(const _Error_formatter* __formatter,
 		     const char* __name) const;
-					 
+
       void
       _M_print_description(const _Error_formatter* __formatter) const;
     };
 
     friend struct _Parameter;
 
-  public:    
+  public:
     template<typename _Iterator>
       const _Error_formatter&
       _M_iterator(const _Iterator& __it, const char* __name = 0)  const
@@ -335,7 +335,7 @@ namespace __gnu_debug
       _M_sequence(const _Sequence& __seq, const char* __name = 0) const
       {
 	if (_M_num_parameters < __max_parameters)
-	  _M_parameters[_M_num_parameters++] = _Parameter(__seq, __name, 
+	  _M_parameters[_M_num_parameters++] = _Parameter(__seq, __name,
 							  _Is_sequence());
 	return *this;
       }
@@ -347,7 +347,7 @@ namespace __gnu_debug
     const _Error_formatter&
     _M_message(_Debug_msg_id __id) const;
 
-    void 
+    void
     _M_error() const;
 
   private:
@@ -360,10 +360,10 @@ namespace __gnu_debug
       void
       _M_format_word(char*, int, const char*, _Tp) const;
 
-    void 
+    void
     _M_print_word(const char* __word) const;
 
-    void 
+    void
     _M_print_string(const char* __string) const;
 
     enum { __max_parameters = 9 };
@@ -386,4 +386,4 @@ namespace __gnu_debug
   };
 } // namespace __gnu_debug
 
-#endif 
+#endif
