@@ -3301,6 +3301,15 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	warning ("-Wuninitialized is not supported without -O");
     }
 
+#if defined(DWARF_DEBUGGING_INFO)
+  if (write_symbols == DWARF_DEBUG
+      && strcmp (language_string, "GNU C++") == 0)
+    {
+      warning ("-g option for g++ on SVR4 systems: -g disabled");
+      write_symbols = NO_DEBUG;
+    }
+#endif /* defined(DWARF_DEBUGGING_INFO) */
+
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
