@@ -1259,8 +1259,9 @@ dump_expr (t, nop)
 	  dump_expr (TREE_OPERAND (t, 1), 0);
 	else
 	  {
-	    sorry ("operand of OFFSET_REF not understood");
-	    goto error;
+	    dump_expr (TREE_OPERAND (t, 0), 0);
+	    OB_PUTS (" .* ");
+	    dump_expr (TREE_OPERAND (t, 1), 0);
 	  }
 	break;
       }

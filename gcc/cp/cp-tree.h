@@ -1002,7 +1002,7 @@ struct lang_decl
 
 /* Nonzero for FUNCTION_DECL means that this constructor is known to
    not make any assignment to `this', and therefore can be trusted
-   to return it unchanged.  Otherwise, we must re-assign `current_class_decl'
+   to return it unchanged.  Otherwise, we must re-assign `current_class_ptr'
    after performing base initializations.  */
 #define DECL_PRESERVES_THIS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.preserves_first_arg)
 
@@ -1551,7 +1551,8 @@ extern tree current_lang_name, lang_name_cplusplus, lang_name_c;
    of CURRENT_FUNCTION_DECL due to overloading */
 extern tree original_function_name;
 
-extern tree current_class_name, current_class_type, current_class_decl, C_C_D;
+extern tree current_class_name, current_class_type;
+extern tree current_class_ptr, current_class_ref;
 
 /* in init.c  */
 extern tree global_base_init_list;
@@ -1820,8 +1821,6 @@ extern int at_eof;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
-extern tree current_class_decl, C_C_D;	/* PARM_DECL: the class instance variable */
-
 /* The following two can be derived from the previous one */
 extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 extern tree current_class_type;	/* _TYPE: the type of the current class */
@@ -1838,7 +1837,6 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    LOOKUP_COMPLAIN mean complain if no suitable member function
      matching the arguments is found.
    LOOKUP_NORMAL is just a combination of these two.
-   LOOKUP_AGGR requires the instance to be of aggregate type.
    LOOKUP_NONVIRTUAL means make a direct call to the member function found
    LOOKUP_GLOBAL means search through the space of overloaded functions,
      as well as the space of member functions.
@@ -1858,7 +1856,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_PROTECT (1)
 #define LOOKUP_COMPLAIN (2)
 #define LOOKUP_NORMAL (3)
-#define LOOKUP_AGGR (4)
+/* #define LOOKUP_UNUSED (4) */
 #define LOOKUP_NONVIRTUAL (8)
 #define LOOKUP_GLOBAL (16)
 #define LOOKUP_HAS_IN_CHARGE (32)
@@ -1941,6 +1939,8 @@ extern int get_arglist_len_in_bytes		PROTO((tree));
 extern tree build_vfield_ref			PROTO((tree, tree));
 extern tree find_scoped_type			PROTO((tree, tree, tree));
 extern tree resolve_scope_to_name		PROTO((tree, tree));
+extern tree build_call				PROTO((tree, tree, tree));
+extern tree build_addr_func			PROTO((tree));
 extern tree build_scoped_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
 extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));

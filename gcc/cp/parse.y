@@ -782,22 +782,22 @@ member_init: '(' nonnull_exprlist ')'
 		{
 		  if (current_class_name && !flag_traditional)
 		    pedwarn ("anachronistic old style base class initializer");
-		  expand_member_init (C_C_D, NULL_TREE, $2);
+		  expand_member_init (current_class_ref, NULL_TREE, $2);
 		}
 	| LEFT_RIGHT
 		{
 		  if (current_class_name && !flag_traditional)
 		    pedwarn ("anachronistic old style base class initializer");
-		  expand_member_init (C_C_D, NULL_TREE, void_type_node);
+		  expand_member_init (current_class_ref, NULL_TREE, void_type_node);
 		}
 	| notype_identifier '(' nonnull_exprlist ')'
-		{ expand_member_init (C_C_D, $1, $3); }
+		{ expand_member_init (current_class_ref, $1, $3); }
 	| notype_identifier LEFT_RIGHT
-		{ expand_member_init (C_C_D, $1, void_type_node); }
+		{ expand_member_init (current_class_ref, $1, void_type_node); }
 	| complete_type_name '(' nonnull_exprlist ')'
-		{ expand_member_init (C_C_D, $1, $3); }
+		{ expand_member_init (current_class_ref, $1, $3); }
 	| complete_type_name LEFT_RIGHT
-		{ expand_member_init (C_C_D, $1, void_type_node); }
+		{ expand_member_init (current_class_ref, $1, void_type_node); }
 	/* GNU extension */
 	| notype_qualified_id '(' nonnull_exprlist ')'
 		{
@@ -1046,12 +1046,7 @@ nonnull_exprlist:
 
 unary_expr:
 	  primary %prec UNARY
-		{
-#if 0
-		  if (TREE_CODE ($$) == TYPE_EXPR)
-		    $$ = build_component_type_expr (C_C_D, $$, NULL_TREE, 1);
-#endif
-		}
+		{ $$ = $1; }
 	/* __extension__ turns off -pedantic for following primary.  */
 	| EXTENSION
 		{ $<itype>1 = pedantic;
@@ -1362,14 +1357,14 @@ primary:
 		}
 	| primary '(' nonnull_exprlist ')'
                 {
-                  $$ = build_x_function_call ($1, $3, current_class_decl); 
+                  $$ = build_x_function_call ($1, $3, current_class_ref); 
                   if (TREE_CODE ($$) == CALL_EXPR
                       && TREE_TYPE ($$) != void_type_node)
 	            $$ = require_complete_type ($$);
                 }
 	| primary LEFT_RIGHT
                 {
-		  $$ = build_x_function_call ($$, NULL_TREE, current_class_decl);
+		  $$ = build_x_function_call ($$, NULL_TREE, current_class_ref);
 		  if (TREE_CODE ($$) == CALL_EXPR
 		      && TREE_TYPE ($$) != void_type_node)
 		    $$ = require_complete_type ($$);
@@ -1391,12 +1386,12 @@ primary:
 		  $$ = build_x_unary_op (POSTDECREMENT_EXPR, $$); }
 	/* C++ extensions */
 	| THIS
-		{ if (current_class_decl)
+		{ if (current_class_ptr)
 		    {
 #ifdef WARNING_ABOUT_CCD
-		      TREE_USED (current_class_decl) = 1;
+		      TREE_USED (current_class_ptr) = 1;
 #endif
-		      $$ = current_class_decl;
+		      $$ = current_class_ptr;
 		    }
 		  else if (current_function_decl
 			   && DECL_STATIC_FUNCTION_P (current_function_decl))
@@ -1516,13 +1511,13 @@ primary:
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
 		     in build_component_ref entirely yet, we cannot do this. */
-		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), $4, $$);
+		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), $4, current_class_ref);
 		  if (TREE_CODE ($$) == CALL_EXPR
 		      && TREE_TYPE ($$) != void_type_node)
 		    $$ = require_complete_type ($$);
 #else
 		  $$ = build_method_call ($$, $2, $4, NULL_TREE,
-					  (LOOKUP_NORMAL|LOOKUP_AGGR));
+					  LOOKUP_NORMAL);
 #endif
 		}
 	| object unqualified_id LEFT_RIGHT
@@ -1531,13 +1526,13 @@ primary:
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
 		     in build_component_ref entirely yet, we cannot do this. */
-		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), NULL_TREE, $$);
+		  $$ = build_x_function_call (build_component_ref ($$, $2, NULL_TREE, 1), NULL_TREE, current_class_ref);
 		  if (TREE_CODE ($$) == CALL_EXPR
 		      && TREE_TYPE ($$) != void_type_node)
 		    $$ = require_complete_type ($$);
 #else
 		  $$ = build_method_call ($$, $2, NULL_TREE, NULL_TREE,
-					  (LOOKUP_NORMAL|LOOKUP_AGGR));
+					  LOOKUP_NORMAL);
 #endif
 		}
 	| object overqualified_id '(' nonnull_exprlist ')'
@@ -1546,7 +1541,7 @@ primary:
 		    {
 		      warning ("signature name in scope resolution ignored");
 		      $$ = build_method_call ($$, OP1 ($2), $4, NULL_TREE,
-					      (LOOKUP_NORMAL|LOOKUP_AGGR));
+					      LOOKUP_NORMAL);
 		    }
 		  else
 		    $$ = build_scoped_method_call ($$, OP0 ($2), OP1 ($2), $4);
@@ -1557,7 +1552,7 @@ primary:
 		    {
 		      warning ("signature name in scope resolution ignored");
 		      $$ = build_method_call ($$, OP1 ($2), NULL_TREE, NULL_TREE,
-					      (LOOKUP_NORMAL|LOOKUP_AGGR));
+					      LOOKUP_NORMAL);
 		    }
 		  else
 		    $$ = build_scoped_method_call ($$, OP0 ($2), OP1 ($2), NULL_TREE);
@@ -1605,9 +1600,9 @@ primary_no_id:
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
 	| primary_no_id '(' nonnull_exprlist ')'
-		{ $$ = build_x_function_call ($$, $3, current_class_decl); }
+		{ $$ = build_x_function_call ($$, $3, current_class_ref); }
 	| primary_no_id LEFT_RIGHT
-		{ $$ = build_x_function_call ($$, NULL_TREE, current_class_decl); }
+		{ $$ = build_x_function_call ($$, NULL_TREE, current_class_ref); }
 	| primary_no_id '[' expr ']'
 		{ goto do_array; }
 	| primary_no_id PLUSPLUS

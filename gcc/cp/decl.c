@@ -3275,7 +3275,7 @@ pushdecl (x)
 	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
 		warnstring = "declaration of `%s' shadows a parameter";
 	      else if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
-		       && current_class_decl
+		       && current_class_ptr
 		       && !TREE_STATIC (name))
 		warnstring = "declaration of `%s' shadows a member of `this'";
 	      else if (oldlocal != NULL_TREE)
@@ -11075,14 +11075,14 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
       push_nested_class (ctype, 1);
 
       /* If we're compiling a friend function, neither of the variables
-	 current_class_decl nor current_class_type will have values.  */
+	 current_class_ptr nor current_class_type will have values.  */
       if (! doing_friend)
 	{
 	  /* We know that this was set up by `grokclassfn'.
 	     We do not wait until `store_parm_decls', since evil
 	     parse errors may never get us to that point.  Here
 	     we keep the consistency between `current_class_type'
-	     and `current_class_decl'.  */
+	     and `current_class_ptr'.  */
 	  tree t = current_function_parms;
 
 	  my_friendly_assert (t != NULL_TREE
@@ -11093,14 +11093,14 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 	      int i = suspend_momentary ();
 
 	      /* Fool build_indirect_ref.  */
-	      current_class_decl = NULL_TREE;
-	      C_C_D = build_indirect_ref (t, NULL_PTR);
-	      current_class_decl = t;
+	      current_class_ptr = NULL_TREE;
+	      current_class_ref = build_indirect_ref (t, NULL_PTR);
+	      current_class_ptr = t;
 	      resume_momentary (i);
 	    }
 	  else
 	    /* We're having a signature pointer here.  */
-	    C_C_D = current_class_decl = t;
+	    current_class_ref = current_class_ptr = t;
 
 	}
     }
@@ -11110,7 +11110,7 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 	push_nested_class (DECL_CONTEXT (decl1), 2);
       else
 	push_memoized_context (0, 1);
-      current_class_decl = C_C_D = NULL_TREE;
+      current_class_ptr = current_class_ref = NULL_TREE;
     }
 
   pushlevel (0);
@@ -11502,7 +11502,7 @@ finish_function (lineno, call_poplevel, nested)
 
 	  if (current_function_assigns_this)
 	    cond = build (NE_EXPR, boolean_type_node,
-			  current_class_decl, integer_zero_node);
+			  current_class_ptr, integer_zero_node);
 	  else
 	    {
 	      int n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
@@ -11541,10 +11541,10 @@ finish_function (lineno, call_poplevel, nested)
 	  /* These are two cases where we cannot delegate deletion.  */
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)
 	      || TYPE_GETS_REG_DELETE (current_class_type))
-	    exprstmt = build_delete (current_class_type, C_C_D, integer_zero_node,
+	    exprstmt = build_delete (current_class_type, current_class_ref, integer_zero_node,
 				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 	  else
-	    exprstmt = build_delete (current_class_type, C_C_D, in_charge_node,
+	    exprstmt = build_delete (current_class_type, current_class_ref, in_charge_node,
 				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
 	  /* If we did not assign to this, then `this' is non-zero at
@@ -11576,7 +11576,7 @@ finish_function (lineno, call_poplevel, nested)
 		    {
 		      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
 			{
-			  tree ptr = convert_pointer_to_vbase (BINFO_TYPE (vbases), current_class_decl);
+			  tree ptr = convert_pointer_to_vbase (BINFO_TYPE (vbases), current_class_ptr);
 			  expand_expr_stmt (build_delete (build_pointer_type (BINFO_TYPE (vbases)),
 							  ptr, integer_zero_node,
 							  LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_HAS_IN_CHARGE, 0));
@@ -11605,11 +11605,11 @@ finish_function (lineno, call_poplevel, nested)
 			  error_mark_node),
 		  NULL_PTR),
 		 ansi_opname[(int) DELETE_EXPR],
-		 tree_cons (NULL_TREE, current_class_decl,
+		 tree_cons (NULL_TREE, current_class_ptr,
 			    build_tree_list (NULL_TREE, virtual_size)),
 		 NULL_TREE, LOOKUP_NORMAL);
 	  else if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	    exprstmt = build_x_delete (ptr_type_node, current_class_decl, 0,
+	    exprstmt = build_x_delete (ptr_type_node, current_class_ptr, 0,
 				       virtual_size);
 	  else
 	    exprstmt = NULL_TREE;
@@ -11646,16 +11646,16 @@ finish_function (lineno, call_poplevel, nested)
 	      /* Make all virtual function table pointers in non-virtual base
 		 classes point to CURRENT_CLASS_TYPE's virtual function
 		 tables.  */
-	      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_decl);
+	      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_ptr);
 
 	      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-		expand_indirect_vtbls_init (binfo, C_C_D, current_class_decl);
+		expand_indirect_vtbls_init (binfo, current_class_ref, current_class_ptr);
 	    }
 	  
 	  if (! ok_to_optimize_dtor)
 	    {
 	      cond = build_binary_op (NE_EXPR,
-				      current_class_decl, integer_zero_node, 1);
+				      current_class_ptr, integer_zero_node, 1);
 	      expand_start_cond (cond, 0);
 	    }
 
@@ -11691,7 +11691,7 @@ finish_function (lineno, call_poplevel, nested)
 		  expand_end_bindings (decls, decls != NULL_TREE, 0);
 		  poplevel (decls != NULL_TREE, 0, 0);
 		}
-	      c_expand_return (current_class_decl);
+	      c_expand_return (current_class_ptr);
 	    }
 	  else if (TYPE_MAIN_VARIANT (TREE_TYPE (
 						 DECL_RESULT (current_function_decl))) != void_type_node
@@ -11715,8 +11715,8 @@ finish_function (lineno, call_poplevel, nested)
 	  if (flag_this_is_variable > 0)
 	    {
 	      cond = build_binary_op (EQ_EXPR,
-				      current_class_decl, integer_zero_node, 1);
-	      thenclause = build_modify_expr (current_class_decl, NOP_EXPR,
+				      current_class_ptr, integer_zero_node, 1);
+	      thenclause = build_modify_expr (current_class_ptr, NOP_EXPR,
 					      build_new (NULL_TREE, current_class_type, void_type_node, 0));
 	    }
 
@@ -11769,7 +11769,7 @@ finish_function (lineno, call_poplevel, nested)
 	      poplevel (decls != NULL_TREE, 1, 0);
 	    }
 
-	  c_expand_return (current_class_decl);
+	  c_expand_return (current_class_ptr);
 
 	  current_function_assigns_this = 0;
 	  current_function_just_assigned_this = 0;
@@ -11974,7 +11974,8 @@ finish_function (lineno, call_poplevel, nested)
     }
 
   named_label_uses = NULL_TREE;
-  current_class_decl = NULL_TREE;
+  current_class_ptr = NULL_TREE;
+  current_class_ref = NULL_TREE;
 }
 
 /* Create the FUNCTION_DECL for a function definition.
@@ -12412,8 +12413,8 @@ struct cp_function
   tree base_init_list;
   tree member_init_list;
   tree base_init_expr;
-  tree class_decl;
-  tree C_C_D;
+  tree current_class_ptr;
+  tree current_class_ref;
   rtx result_rtx;
   struct cp_function *next;
   struct binding_level *binding_level;
@@ -12459,8 +12460,8 @@ push_cp_function_context (context)
   p->temp_name_counter = temp_name_counter;
   p->base_init_list = current_base_init_list;
   p->member_init_list = current_member_init_list;
-  p->class_decl = current_class_decl;
-  p->C_C_D = C_C_D;
+  p->current_class_ptr = current_class_ptr;
+  p->current_class_ref = current_class_ref;
 
   p->eh_context = push_eh_context ();
 }
@@ -12502,8 +12503,8 @@ pop_cp_function_context (context)
   temp_name_counter = p->temp_name_counter;
   current_base_init_list = p->base_init_list;
   current_member_init_list = p->member_init_list;
-  current_class_decl = p->class_decl;
-  C_C_D = p->C_C_D;
+  current_class_ptr = p->current_class_ptr;
+  current_class_ref = p->current_class_ref;
 
   pop_eh_context (p->eh_context);
 

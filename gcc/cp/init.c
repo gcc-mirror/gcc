@@ -174,7 +174,7 @@ perform_member_init (member, name, init, explicit, protect_list)
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
 	init = build_tree_list (NULL_TREE, init);
 
-      decl = build_component_ref (C_C_D, name, NULL_TREE, explicit);
+      decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
@@ -220,7 +220,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 	 current_member_init_list.  */
       if (init || explicit)
 	{
-	  decl = build_component_ref (C_C_D, name, NULL_TREE, explicit);
+	  decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
@@ -237,7 +237,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
     {
-      tree expr = build_component_ref (C_C_D, name, NULL_TREE, explicit);
+      tree expr = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
       expr = build_delete (type, expr, integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
@@ -487,7 +487,7 @@ build_partial_cleanup_for (binfo)
      tree binfo;
 {
   tree expr = convert_pointer_to_real (binfo,
-				       build_unary_op (ADDR_EXPR, C_C_D, 0));
+				       build_unary_op (ADDR_EXPR, current_class_ref, 0));
 
   return build_delete (TREE_TYPE (expr),
 		       expr,
@@ -561,7 +561,7 @@ emit_base_init (t, immediately)
       tree first_arg = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
 
       expand_start_cond (first_arg, 0);
-      expand_aggr_vbase_init (t_binfo, C_C_D, current_class_decl,
+      expand_aggr_vbase_init (t_binfo, current_class_ref, current_class_ptr,
 			      vbase_init_list);
       expand_end_cond ();
     }
@@ -596,7 +596,7 @@ emit_base_init (t, immediately)
 	  push_temp_slots ();
 	  target_temp_slot_level = temp_slot_level;
 
-	  member = convert_pointer_to_real (base_binfo, current_class_decl);
+	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
@@ -626,11 +626,11 @@ emit_base_init (t, immediately)
   /* Initialize all the virtual function table fields that
      do come from virtual base classes. */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    expand_indirect_vtbls_init (t_binfo, C_C_D, current_class_decl);
+    expand_indirect_vtbls_init (t_binfo, current_class_ref, current_class_ptr);
 
   /* Initialize all the virtual function table fields that
      do not come from virtual base classes.  */
-  expand_direct_vtbls_init (t_binfo, t_binfo, 1, 1, current_class_decl);
+  expand_direct_vtbls_init (t_binfo, t_binfo, 1, 1, current_class_ptr);
 
   for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
     {
@@ -863,7 +863,7 @@ do_member_init (s_id, name, init)
       return;
     }
 
-  base = convert_pointer_to (binfo, current_class_decl);
+  base = convert_pointer_to (binfo, current_class_ptr);
   expand_member_init (build_indirect_ref (base, NULL_PTR), name, init);
 }
 
@@ -1139,8 +1139,9 @@ expand_member_init (exp, name, init)
    explaining that such initializations are invalid.
 
    ALIAS_THIS is nonzero iff we are initializing something which is
-   essentially an alias for C_C_D.  In this case, the base constructor
-   may move it on us, and we must keep track of such deviations.
+   essentially an alias for current_class_ref.  In this case, the base
+   constructor may move it on us, and we must keep track of such
+   deviations.
 
    If INIT resolves to a CALL_EXPR which happens to return
    something of the type we are looking for, then we know
@@ -1160,8 +1161,7 @@ expand_member_init (exp, name, init)
    initialization.
 
    A constructor or a conversion operator may have to be used to
-   perform the initialization, but not both, as it would be ambiguous.
-   */
+   perform the initialization, but not both, as it would be ambiguous. */
 
 void
 expand_aggr_init (exp, init, alias_this, flags)
@@ -1318,8 +1318,8 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
 	     value is used in the derived class.  */
 	  if ((flag_this_is_variable & 1) && alias_this)
 	    {
-	      TREE_TYPE (rval) = TREE_TYPE (current_class_decl);
-	      expand_assignment (current_class_decl, rval, 0, 0);
+	      TREE_TYPE (rval) = TREE_TYPE (current_class_ptr);
+	      expand_assignment (current_class_ptr, rval, 0, 0);
 	    }
 	  else
 	    expand_expr_stmt (rval);
@@ -1676,7 +1676,7 @@ build_member_call (type, name, parmlist)
       tree ns = lookup_name (type, 0);
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
 	{
-	  return build_x_function_call (build_offset_ref (type, name), parmlist, current_class_decl);
+	  return build_x_function_call (build_offset_ref (type, name), parmlist, current_class_ref);
 	}
     }
 
@@ -1705,14 +1705,14 @@ build_member_call (type, name, parmlist)
       basetype_path = TYPE_BINFO (type);
       decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
     }
-  else if (current_class_decl == 0)
+  else if (current_class_ptr == 0)
     {
       dont_use_this = 1;
       decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
     }
   else
     {
-      tree olddecl = current_class_decl;
+      tree olddecl = current_class_ptr;
       tree oldtype = TREE_TYPE (TREE_TYPE (olddecl));
       if (oldtype != type)
 	{
@@ -1846,10 +1846,10 @@ build_offset_ref (type, name)
       basebinfo = TYPE_BINFO (type);
       decl = build1 (NOP_EXPR, type, error_mark_node);
     }
-  else if (current_class_decl == 0)
+  else if (current_class_ptr == 0)
     decl = build1 (NOP_EXPR, type, error_mark_node);
   else
-    decl = C_C_D;
+    decl = current_class_ref;
 
   if (constructor_name (BINFO_TYPE (basebinfo)) == name)
     if (dtor)
@@ -1978,7 +1978,12 @@ resolve_offset_ref (exp)
   if (TREE_CODE (exp) == TREE_LIST)
     return build_unary_op (ADDR_EXPR, exp, 0);
 
-  if (TREE_CODE (exp) != OFFSET_REF)
+  if (TREE_CODE (exp) == OFFSET_REF)
+    {
+      member = TREE_OPERAND (exp, 1);
+      base = TREE_OPERAND (exp, 0);
+    }
+  else
     {
       my_friendly_assert (TREE_CODE (type) == OFFSET_TYPE, 214);
       if (TYPE_OFFSET_BASETYPE (type) != current_class_type)
@@ -1988,12 +1993,7 @@ resolve_offset_ref (exp)
 	}
       member = exp;
       type = TREE_TYPE (type);
-      base = C_C_D;
-    }
-  else
-    {
-      member = TREE_OPERAND (exp, 1);
-      base = TREE_OPERAND (exp, 0);
+      base = current_class_ref;
     }
 
   if ((TREE_CODE (member) == VAR_DECL
@@ -2008,7 +2008,7 @@ resolve_offset_ref (exp)
 
   /* Syntax error can cause a member which should
      have been seen as static to be grok'd as non-static.  */
-  if (TREE_CODE (member) == FIELD_DECL && C_C_D == NULL_TREE)
+  if (TREE_CODE (member) == FIELD_DECL && current_class_ref == NULL_TREE)
     {
       if (TREE_ADDRESSABLE (member) == 0)
 	{
@@ -2022,7 +2022,7 @@ resolve_offset_ref (exp)
 
   /* The first case is really just a reference to a member of `this'.  */
   if (TREE_CODE (member) == FIELD_DECL
-      && (base == C_C_D
+      && (base == current_class_ref
 	  || (TREE_CODE (base) == NOP_EXPR
 	      && TREE_OPERAND (base, 0) == error_mark_node)))
     {
@@ -2033,7 +2033,7 @@ resolve_offset_ref (exp)
       else
 	basetype = DECL_CONTEXT (member);
 
-      base = current_class_decl;
+      base = current_class_ptr;
       
       if (get_base_distance (basetype, TREE_TYPE (TREE_TYPE (base)), 0, &basetype_path) < 0)
 	{
@@ -3555,8 +3555,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = convert_force (build_pointer_type (type), addr, 0);
 
       if (TREE_CODE (addr) == NOP_EXPR
-	  && TREE_OPERAND (addr, 0) == current_class_decl)
-	ref = C_C_D;
+	  && TREE_OPERAND (addr, 0) == current_class_ptr)
+	ref = current_class_ref;
       else
 	ref = build_indirect_ref (addr, NULL_PTR);
       ptr = 0;

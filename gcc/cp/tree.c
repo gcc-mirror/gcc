@@ -48,7 +48,7 @@ real_lvalue_p (ref)
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     return 1;
 
-  if (ref == current_class_decl && flag_this_is_variable <= 0)
+  if (ref == current_class_ptr && flag_this_is_variable <= 0)
     return 0;
 
   switch (TREE_CODE (ref))
@@ -118,7 +118,7 @@ lvalue_p (ref)
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     return 1;
 
-  if (ref == current_class_decl && flag_this_is_variable <= 0)
+  if (ref == current_class_ptr && flag_this_is_variable <= 0)
     return 0;
 
   switch (TREE_CODE (ref))

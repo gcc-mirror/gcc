@@ -72,7 +72,9 @@ struct class_level
   int unused;
 };
 
-tree current_class_decl, C_C_D;	/* PARM_DECL: the class instance variable */
+/* The currect_class_ptr is the pointer to the current class.
+   current_class_ref is the actual current class.  */
+tree current_class_ptr, current_class_ref;
 
 /* The following two can be derived from the previous one */
 tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
@@ -434,7 +436,7 @@ build_vtbl_ref (instance, idx)
   if (TREE_CODE (basetype) == REFERENCE_TYPE)
     basetype = TREE_TYPE (basetype);
 
-  if (instance == C_C_D)
+  if (instance == current_class_ref)
     vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
 			       NULL_PTR);
   else
@@ -4494,7 +4496,7 @@ resolves_to_fixed_type_p (instance, nonnull)
 	}
       else if (nonnull)
 	{
-	  if (instance == current_class_decl
+	  if (instance == current_class_ptr
 	      && flag_this_is_variable <= 0)
 	    {
 	      /* Some people still use `this = 0' inside destructors.  */
@@ -4940,12 +4942,6 @@ instantiate_type (lhstype, rhs, complain)
       {
 	tree elem, baselink, name;
 	int globals = overloaded_globals_p (rhs);
-
-#if 0 /* obsolete */
-	/* If there's only one function we know about, return that.  */
-	if (globals > 0 && TREE_CHAIN (rhs) == NULL_TREE)
-	  return TREE_VALUE (rhs);
-#endif
 
 	/* First look for an exact match.  Search either overloaded
 	   functions or member functions.  May have to undo what

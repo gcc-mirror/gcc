@@ -2581,6 +2581,10 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
       return 0;
 
     case POINTER_TYPE:
+      if (TREE_CODE (arg) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (arg))
+	return unify (tparms, targs, ntparms, parm,
+		      TYPE_PTRMEMFUNC_FN_TYPE (arg), nsubsts);
+
       if (TREE_CODE (arg) != POINTER_TYPE)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),

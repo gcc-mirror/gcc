@@ -506,12 +506,6 @@ convert_harshness (type, parmtype, parm)
       if (TREE_CODE (ttl) != VOID_TYPE
 	  && (TREE_CODE (ttr) != VOID_TYPE || !parm || !integer_zerop (parm)))
 	{
-	  if (TREE_UNSIGNED (ttl) != TREE_UNSIGNED (ttr))
-	    {
-	      ttl = unsigned_type (ttl);
-	      ttr = unsigned_type (ttr);
-	      penalty = 10;
-	    }
 	  if (comp_target_types (type, parmtype, 1) <= 0)
 	    return EVIL_RETURN (h);
 	}
@@ -526,22 +520,18 @@ convert_harshness (type, parmtype, parm)
 	return EVIL_RETURN (h);
 #endif
 
-      if (penalty == 10 || ttr == ttl)
+      if (ttr == ttl)
 	{
 	  tree tmp1 = TREE_TYPE (type), tmp2 = TREE_TYPE (parmtype);
 
-	  /* If one was unsigned but the other wasn't, then we need to
-	     do a standard conversion from T to unsigned T.  */
-	  if (penalty == 10)
-	    h.code = PROMO_CODE; /* was STD_CODE */
-	  else
-	    h.code = 0;
-
+	  h.code = 0;
 	  /* Note conversion from `T*' to `const T*',
 	                       or `T*' to `volatile T*'.  */
-	  if (ttl == ttr
-	      && ((TYPE_READONLY (tmp1) != TREE_READONLY (tmp2))
-		  || (TYPE_VOLATILE (tmp1) != TYPE_VOLATILE (tmp2))))
+	  if ((TYPE_READONLY (tmp1) < TREE_READONLY (tmp2))
+	      || (TYPE_VOLATILE (tmp1) < TYPE_VOLATILE (tmp2)))
+	    h.code = EVIL_CODE;
+	  else if ((TYPE_READONLY (tmp1) != TREE_READONLY (tmp2))
+		   || (TYPE_VOLATILE (tmp1) != TYPE_VOLATILE (tmp2)))
 	    h.code |= QUAL_CODE;
 
 	  h.distance = 0;
@@ -580,8 +570,11 @@ convert_harshness (type, parmtype, parm)
       if (ttl != ttr)
 	{
 	  tree tmp1 = TREE_TYPE (type), tmp2 = TREE_TYPE (parmtype);
-	  if ((TYPE_READONLY (tmp1) != TREE_READONLY (tmp2))
-	      || (TYPE_VOLATILE (tmp1) != TYPE_VOLATILE (tmp2)))
+	  if ((TYPE_READONLY (tmp1) < TREE_READONLY (tmp2))
+	      || (TYPE_VOLATILE (tmp1) < TYPE_VOLATILE (tmp2)))
+	    h.code = EVIL_CODE;
+	  else if ((TYPE_READONLY (tmp1) > TREE_READONLY (tmp2))
+		   || (TYPE_VOLATILE (tmp1) > TYPE_VOLATILE (tmp2)))
 	    h.code |= QUAL_CODE;
 	}
       return h;
@@ -1192,7 +1185,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 {
   tree field, instance;
 
-  if (instance_ptr == current_class_decl)
+  if (instance_ptr == current_class_ptr)
     {
       /* Check to see if we really have a reference to an instance variable
 	 with `operator()()' overloaded.  */
@@ -1208,7 +1201,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 	{
 	  /* If it's a field, try overloading operator (),
 	     or calling if the field is a pointer-to-function.  */
-	  instance = build_component_ref_1 (C_C_D, field, 0);
+	  instance = build_component_ref_1 (current_class_ref, field, 0);
 	  if (instance == error_mark_node)
 	    return error_mark_node;
 
@@ -1221,7 +1214,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 	      if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == FUNCTION_TYPE)
 		return build_function_call (instance, parms);
 	      else if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == METHOD_TYPE)
-		return build_function_call (instance, tree_cons (NULL_TREE, current_class_decl, parms));
+		return build_function_call (instance, tree_cons (NULL_TREE, current_class_ptr, parms));
 	    }
 	}
       return NULL_TREE;
@@ -1527,6 +1520,71 @@ print_n_candidates (candidates, n)
     cp_error_at ("                %D", candidates[i].function);
 }
 
+/* We want the address of a function or method.  We avoid creating a
+   pointer-to-member function.  */
+tree
+build_addr_func (function)
+     tree function;
+{
+  tree type = TREE_TYPE (function);
+
+  /* We have to do these by hand to avoid real pointer to member
+     functions.  */
+  if (TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree addr;
+
+      type = build_pointer_type (type);
+
+      if (mark_addressable (function) == 0)
+	return error_mark_node;
+
+      addr = build1 (ADDR_EXPR, type, function);
+
+      /* Address of a static or external variable or function counts
+	 as a constant */
+      if (staticp (function))
+	TREE_CONSTANT (addr) = 1;
+
+      function = addr;
+    }
+  else
+    function = default_conversion (function);
+
+  return function;
+}
+
+/* Build a CALL_EXPR, we can handle FUNCTION_TYPEs, METHOD_TYPEs, or
+   POINTER_TYPE to those.  Note, pointer to member function types
+   (TYPE_PTRMEMFUNC_P) must be handled by our callers.  */
+tree
+build_call (function, result_type, parms)
+     tree function, result_type, parms;
+{
+  int is_constructor = 0;
+
+  function = build_addr_func (function);
+
+  if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
+    {
+      sorry ("unable to call pointer to member function here");
+      return error_mark_node;
+    }
+
+  if (TREE_CODE (function) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL
+      && DECL_CONSTRUCTOR_P (TREE_OPERAND (function, 0)))
+    is_constructor = 1;
+
+  function = build_nt (CALL_EXPR, function, parms, NULL_TREE);
+  TREE_HAS_CONSTRUCTOR (function) = is_constructor;
+  TREE_TYPE (function) = result_type;
+  TREE_SIDE_EFFECTS (function) = 1;
+  
+  return function;
+}
+
+
 /* Build something of the form ptr->method (args)
    or object.method (args).  This can also build
    calls to constructors, and find friends.
@@ -1739,11 +1797,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  return error_mark_node;
 	}
     }
-  else if (instance == C_C_D || instance == current_class_decl)
+  else if (instance == current_class_ref || instance == current_class_ptr)
     {
       /* When doing initialization, we side-effect the TREE_TYPE of
-	 C_C_D, hence we cannot set up BASETYPE from CURRENT_CLASS_TYPE.  */
-      basetype = TREE_TYPE (C_C_D);
+	 current_class_ref, hence we cannot set up BASETYPE from CURRENT_CLASS_TYPE.  */
+      basetype = TREE_TYPE (current_class_ref);
 
       /* Anything manifestly `this' in constructors and destructors
 	 has a known type, so virtual function tables are not needed.  */
@@ -1765,8 +1823,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
       else
 	{
-	  instance = C_C_D;
-	  instance_ptr = current_class_decl;
+	  instance = current_class_ref;
+	  instance_ptr = current_class_ptr;
 	  basetype_path = TYPE_BINFO (current_class_type);
 	}
       result = build_field_call (basetype_path, instance_ptr, name, parms);
@@ -1940,9 +1998,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  TREE_VALUE (parm) = resolve_offset_ref (TREE_VALUE (parm));
 	  t = TREE_TYPE (TREE_VALUE (parm));
 	}
-      if (TREE_CODE (TREE_VALUE (parm)) == OFFSET_REF
-	  && TREE_CODE (t) == METHOD_TYPE)
+      if (TREE_CODE (t) == METHOD_TYPE)
 	{
+	  cp_pedwarn ("assuming & on `%E'", TREE_VALUE (parm));
 	  TREE_VALUE (parm) = build_unary_op (ADDR_EXPR, TREE_VALUE (parm), 0);
 	}
 #if 0
@@ -2365,7 +2423,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
      type (if it exists) is a pointer to.  */
 
   if (DECL_ABSTRACT_VIRTUAL_P (function)
-      && instance == C_C_D
+      && instance == current_class_ref
       && DECL_CONSTRUCTOR_P (current_function_decl)
       && ! (flags & LOOKUP_NONVIRTUAL)
       && value_member (function, get_abstract_virtuals (basetype)))
@@ -2422,7 +2480,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
     {
       /* Let's be nasty to the user now, and give reasonable
 	 error messages.  */
-      instance_ptr = current_class_decl;
+      instance_ptr = current_class_ptr;
       if (instance_ptr)
 	{
 	  if (basetype != current_class_type)
@@ -2540,21 +2598,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
     GNU_xref_call (current_function_decl,
 		   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function)));
 
-  {
-    int is_constructor
-      = TREE_CODE (function) == FUNCTION_DECL
-	&& DECL_CONSTRUCTOR_P (function);
-
-    function = default_conversion (function);
-
-    result = build_nt (CALL_EXPR, function, parms, NULL_TREE);
-
-    TREE_TYPE (result) = value_type;
-    TREE_SIDE_EFFECTS (result) = 1;
-    TREE_HAS_CONSTRUCTOR (result) = is_constructor;
-    result = convert_from_reference (result);
-    return result;
-  }
+  result = build_call (function, value_type, parms);
+  result = convert_from_reference (result);
+  return result;
 }
 
 /* Similar to `build_method_call', but for overloaded non-member functions.
