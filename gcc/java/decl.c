@@ -457,17 +457,13 @@ init_decl_processing ()
   pushlevel (0);	/* make the binding_level structure for global names */
   global_binding_level = current_binding_level;
 
+  /* The code here must be similar to build_common_tree_nodes{,_2} in
+     tree.c, especially as to the order of initializing common nodes.  */
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
-  initialize_sizetypes ();
   /* Create sizetype first - needed for other types. */
   initialize_sizetypes ();
-  set_sizetype (make_unsigned_type (POINTER_SIZE));
-  size_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (size_zero_node) = sizetype;
-  size_one_node = build_int_2 (1, 0);
-  TREE_TYPE (size_one_node) = sizetype;
 
   byte_type_node = make_signed_type (8);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("byte"), byte_type_node));
@@ -491,13 +487,21 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned long"),
 			unsigned_long_type_node));
 
-  integer_type_node = type_for_size (INT_TYPE_SIZE, 0);
+  set_sizetype (make_unsigned_type (POINTER_SIZE));
 
+  /* Define these next since types below may used them.  */
+  integer_type_node = type_for_size (INT_TYPE_SIZE, 0);
   integer_zero_node = build_int_2 (0, 0);
   integer_one_node = build_int_2 (1, 0);
   integer_two_node = build_int_2 (2, 0);
   integer_four_node = build_int_2 (4, 0);
   integer_negative_one_node = build_int_2 (-1, 0);
+
+  size_zero_node = size_int (0);
+  size_one_node = size_int (1);
+  bitsize_zero_node = bitsize_int (0);
+  bitsize_one_node = bitsize_int (1);
+  bitsize_unit_node = bitsize_int (BITS_PER_UNIT);
 
   long_zero_node = build_int_2 (0, 0);
   TREE_TYPE (long_zero_node) = long_type_node;

@@ -2171,8 +2171,8 @@ tree_cons (purpose, value, chain)
     }
 
 #ifdef GATHER_STATISTICS
-  tree_node_counts[(int)x_kind]++;
-  tree_node_sizes[(int)x_kind] += sizeof (struct tree_list);
+  tree_node_counts[(int) x_kind]++;
+  tree_node_sizes[(int) x_kind] += sizeof (struct tree_list);
 #endif
 
   TREE_SET_CODE (node, TREE_LIST);
@@ -5709,9 +5709,7 @@ build_common_tree_nodes_2 (short_double)
 {
   /* Define these next since types below may used them.  */
   integer_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (integer_zero_node) = integer_type_node;
   integer_one_node = build_int_2 (1, 0);
-  TREE_TYPE (integer_one_node) = integer_type_node;
 
   size_zero_node = size_int (0);
   size_one_node = size_int (1);
