@@ -553,6 +553,7 @@ multi-do:
 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
 				LIBCXXFLAGS="$(LIBCXXFLAGS) $${flags}" \
 				LDFLAGS="$(LDFLAGS) $${flags}" \
+				MULTIFLAGS="$${flags}" \
 				DESTDIR="$(DESTDIR)" \
 				INSTALL="$(INSTALL)" \
 				INSTALL_DATA="$(INSTALL_DATA)" \

@@ -1,3 +1,7 @@
+2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config-ml.in (multi-do): Pass MULTIFLAGS to subdir makes.
+
 2003-10-17 Ralph Loader  <rcl@ihug.co.nz>
 
 	* MAINTAINERS: Add myself to 'Write After Approval' section.
