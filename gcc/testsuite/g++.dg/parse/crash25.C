@@ -1,6 +1,6 @@
 // PR c++/20536
 // Found by Wolfgang Wieser 03/2005.
-// { do-do compile }
+// { dg-do compile }
  
 struct yyguts_t 
 { 
