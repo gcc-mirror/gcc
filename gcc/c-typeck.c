@@ -3788,7 +3788,9 @@ internal_build_compound_expr (list, first_p)
 
   rest = internal_build_compound_expr (TREE_CHAIN (list), FALSE);
 
-  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
+  /* When pedantic, a compound expression can be neither an lvalue
+     nor an integer constant expression.  */
+  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)) && ! pedantic)
     return rest;
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest), TREE_VALUE (list), rest);
