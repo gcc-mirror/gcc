@@ -1075,12 +1075,14 @@ coerce_template_parms (parms, arglist, in_decl)
 	{
 	  tree t = tsubst (TREE_TYPE (parm), vec,
 			   TREE_VEC_LENGTH (vec), in_decl);
-	  if (processing_template_decl)
+	  if (processing_template_decl && 
+	      (uses_template_parms (arg) || uses_template_parms (t)))
 	    val = arg;
 	  else
 	    val = digest_init (t, arg, (tree *) 0);
 
-	  if (val == error_mark_node || processing_template_decl)
+	  if (val == error_mark_node 
+	      || (processing_template_decl && uses_template_parms (val)))
 	    ;
 
 	  /* 14.2: Other template-arguments must be constant-expressions,

@@ -1,3 +1,18 @@
+Sun Dec  7 15:53:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_decl): Handle LOOKUP_EXPR.
+
+Sun Dec  7 15:45:07 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* rtti.c (build_dynamic_cast): Copy the cast-to type to the
+	permanent obstack if we are processing a template decl.
+	* typeck.c (build_static_cast): Likewise.
+	(build_const_cast): Likewise.
+	(build_reinterpret_cast): Likewise.
+
+	* pt.c (coerce_template_parms): Coerce some expressions, even
+	when processing_template_decl.
+
 Sun Dec  7 01:46:33 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* typeck.c (build_binary_op_nodefault, pointer_diff): Symmetric
