@@ -86,6 +86,7 @@ static void mark_stores                 PARAMS ((rtx, rtx, void *));
 static void save_parm_insns		PARAMS ((rtx, rtx));
 static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
 						 rtx));
+static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *));
 static int compare_blocks               PARAMS ((const PTR, const PTR));
 static int find_block                   PARAMS ((const PTR, const PTR));
 
@@ -777,6 +778,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   real_label_map
     = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
   map->label_map = real_label_map;
+  map->local_return_label = NULL_RTX;
 
   inl_max_uid = (inl_f->emit->x_cur_insn_uid + 1);
   map->insn_map = (rtx *) xcalloc (inl_max_uid, sizeof (rtx));
@@ -1138,6 +1140,13 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Now copy the insns one by one.  */
   copy_insn_list (insns, map, static_chain_value);
 
+  /* Now copy the REG_NOTES for those insns.  */
+  copy_insn_notes (insns, map);
+
+  /* If the insn sequence required one, emit the return label.  */
+  if (map->local_return_label)
+    emit_label (map->local_return_label);
+
   /* Restore the stack pointer if we saved it above.  */
   if (inl_f->calls_alloca)
     emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
@@ -1222,7 +1231,6 @@ copy_insn_list (insns, map, static_chain_value)
   register int i;
   rtx insn;
   rtx temp;
-  rtx local_return_label = NULL_RTX;
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;
 #endif
@@ -1383,13 +1391,11 @@ copy_insn_list (insns, map, static_chain_value)
 	  break;
 
 	case JUMP_INSN:
-	  if (GET_CODE (PATTERN (insn)) == RETURN
-	      || (GET_CODE (PATTERN (insn)) == PARALLEL
-		  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == RETURN))
+	  if (map->integrating && returnjump_p (insn))
 	    {
-	      if (local_return_label == 0)
-		local_return_label = gen_label_rtx ();
-	      pattern = gen_jump (local_return_label);
+	      if (map->local_return_label == 0)
+		map->local_return_label = gen_label_rtx ();
+	      pattern = gen_jump (map->local_return_label);
 	    }
 	  else
 	    pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
@@ -1579,35 +1585,57 @@ copy_insn_list (insns, map, static_chain_value)
 
       map->insn_map[INSN_UID (insn)] = copy;
     }
+}
 
-  /* Now copy the REG_NOTES.  Increment const_age, so that only constants
-     from parameters can be substituted in.  These are the only ones that
-     are valid across the entire function.  */
+/* Copy the REG_NOTES.  Increment const_age, so that only constants
+   from parameters can be substituted in.  These are the only ones
+   that are valid across the entire function.  */
+
+static void
+copy_insn_notes (insns, map)
+     rtx insns;
+     struct inline_remap *map;
+{
+  rtx insn, new_insn;
+
   map->const_age++;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& map->insn_map[INSN_UID (insn)]
-	&& REG_NOTES (insn))
-      {
-	rtx next, note = copy_rtx_and_substitute (REG_NOTES (insn), map, 0);
+    {
+      if (! INSN_P (insn))
+	continue;
 
-	/* We must also do subst_constants, in case one of our parameters
-	   has const type and constant value.  */
-	subst_constants (&note, NULL_RTX, map, 0);
-	apply_change_group ();
-	REG_NOTES (map->insn_map[INSN_UID (insn)]) = note;
+      new_insn = map->insn_map[INSN_UID (insn)];
+      if (! new_insn)
+	continue;
 
-	/* Finally, delete any REG_LABEL notes from the chain.  */
-	for (; note; note = next)
-	  {
-	    next = XEXP (note, 1);
-	    if (REG_NOTE_KIND (note) == REG_LABEL)
-	      remove_note (map->insn_map[INSN_UID (insn)], note);
-	  }
-      }
+      if (REG_NOTES (insn))
+        {
+	  rtx next, note = copy_rtx_and_substitute (REG_NOTES (insn), map, 0);
 
-  if (local_return_label)
-    emit_label (local_return_label);
+	  /* We must also do subst_constants, in case one of our parameters
+	     has const type and constant value.  */
+	  subst_constants (&note, NULL_RTX, map, 0);
+	  apply_change_group ();
+	  REG_NOTES (new_insn) = note;
+
+	  /* Delete any REG_LABEL notes from the chain.  Remap any
+             REG_EH_REGION notes.  */
+	  for (; note; note = next)
+	    {
+	      next = XEXP (note, 1);
+	      if (REG_NOTE_KIND (note) == REG_LABEL)
+	        remove_note (new_insn, note);
+	    }
+        }
+
+      if (GET_CODE (insn) == CALL_INSN
+	  && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  int i;
+	  for (i = 0; i < 3; i++)
+	    copy_insn_notes (XEXP (PATTERN (insn), i), map);
+	}
+    }
 }
 
 /* Given a chain of PARM_DECLs, ARGS, copy each decl into a VAR_DECL,

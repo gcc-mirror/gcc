@@ -1,6 +1,15 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
-	EH merge from mainline, parts 5 - 10.
+	EH merge from mainline, parts 5 - 11.
+	* integrate.c (copy_insn_list): Use returnjump_p.
+	(copy_insn_notes): Recurse for CALL_PLACEHOLDER.
+
+	* integrate.h (struct inline_remap): Add local_return_label.
+	* integrate.c (expand_inline_function): Initialize it and emit
+	it after copy_insn_notes.
+	(copy_insn_list): Don't store local_return_label here.
+	(copy_insn_notes): New function split out from copy_insn_list.
+
 	* function.h (struct function): Move all boolean valued fields
 	to single bit fields at the end of the struct.
 
