@@ -61,8 +61,6 @@ namespace std
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
 #undef btowc
-#undef wctob
-#undef fgetwc
 #undef fgetwc
 #undef fgetws
 #undef fputwc
@@ -70,53 +68,54 @@ namespace std
 #undef fwide
 #undef fwprintf
 #undef fwscanf
+#undef getwc
+#undef getwchar
+#undef mbrlen
+#undef mbrtowc
+#undef mbsinit
+#undef mbsrtowcs
+#undef putwc
+#undef putwchar
 #undef swprintf
 #undef swscanf
+#undef ungetwc
 #undef vfwprintf
 #undef vfwscanf
 #undef vswprintf
 #undef vswscanf
 #undef vwprintf
 #undef vwscanf
-#undef wprintf
-#undef wscanf
-#undef getwc
-#undef getwchar
-#undef mbsinit
-#undef mbrlen
-#undef mbrtowc
-#undef mbsrtowcs
-#undef wcsrtombs
-#undef putwc
-#undef putwchar
-#undef ungetwc
 #undef wcrtomb
-#undef wcstod
-#undef wcstof
-#undef wcstol
-#undef wcstoul
-#undef wcscpy
-#undef wcsncpy
 #undef wcscat
-#undef wcsncat
+#undef wcschr
 #undef wcscmp
 #undef wcscoll
-#undef wcsncmp
-#undef wcsxfrm
+#undef wcscpy
 #undef wcscspn
+#undef wcsftime
 #undef wcslen
+#undef wcsncat
+#undef wcsncmp
+#undef wcsncpy
+#undef wcspbrk
+#undef wcsrchr
+#undef wcsrtombs
 #undef wcsspn
+#undef wcsstr
+#undef wcstod
+#undef wcstof
 #undef wcstok
+#undef wcstol
+#undef wcstoul
+#undef wcsxfrm
+#undef wctob
+#undef wmemchr
 #undef wmemcmp
 #undef wmemcpy
 #undef wmemmove
 #undef wmemset
-#undef wcsftime
-#undef wcschr
-#undef wcspbrk
-#undef wcsrchr
-#undef wcsstr
-#undef wmemchr
+#undef wprintf
+#undef wscanf
 
 #if _GLIBCPP_USE_WCHAR_T
 namespace std
@@ -124,60 +123,56 @@ namespace std
   using ::wint_t;
 
   using ::btowc;
-  using ::wctob;
-#if _GLIBCPP_HAVE_FGETWC
   using ::fgetwc;
-#endif
-#if _GLIBCPP_HAVE_FGETWS
   using ::fgetws;
-#endif
   using ::fputwc;
   using ::fputws;
   using ::fwide;
   using ::fwprintf;
   using ::fwscanf;
+  using ::getwc;
+  using ::getwchar;
+  using ::mbrlen;
+  using ::mbrtowc;
+  using ::mbsinit;
+  using ::mbsrtowcs;
+  using ::putwc;
+  using ::putwchar;
   using ::swprintf;
   using ::swscanf;
+  using ::ungetwc;
   using ::vfwprintf;
   using ::vfwscanf;
   using ::vswprintf;
   using ::vswscanf;
   using ::vwprintf;
   using ::vwscanf;
-  using ::wprintf;
-  using ::wscanf;
-  using ::getwc;
-  using ::getwchar;
-  using ::mbsinit;
-  using ::mbrlen;
-  using ::mbrtowc;
-  using ::mbsrtowcs;
-  using ::wcsrtombs;
-  using ::putwc;
-  using ::putwchar;
-  using ::ungetwc;
   using ::wcrtomb;
-  using ::wcstod;
-  using ::wcstof;
-  using ::wcstol;
-  using ::wcstoul;
-  using ::wcscpy;
-  using ::wcsncpy;
   using ::wcscat;
-  using ::wcsncat;
   using ::wcscmp;
   using ::wcscoll;
-  using ::wcsncmp;
-  using ::wcsxfrm;
+  using ::wcscpy;
   using ::wcscspn;
+  using ::wcsftime;
   using ::wcslen;
+  using ::wcsncat;
+  using ::wcsncmp;
+  using ::wcsncpy;
+  using ::wcsrtombs;
   using ::wcsspn;
+  using ::wcstod;
+  using ::wcstof;
   using ::wcstok;
+  using ::wcstol;
+  using ::wcstoul;
+  using ::wcsxfrm;
+  using ::wctob;
   using ::wmemcmp;
   using ::wmemcpy;
   using ::wmemmove;
   using ::wmemset;
-  using ::wcsftime;
+  using ::wprintf;
+  using ::wscanf;
 
   using ::wcschr;
 

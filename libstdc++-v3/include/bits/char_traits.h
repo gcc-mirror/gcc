@@ -270,7 +270,6 @@ namespace std
       bool 
       operator()(_CharT const& __a) { return _Traits::eq(_M_c, __a); }
     };
-
 } // namespace std
 
 #endif
