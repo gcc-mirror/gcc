@@ -1,5 +1,7 @@
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* c-typeck.c: Remove #if 0 clauses.
+
 	PR other/1494
 	* config/alpha/openbsd.h, config/i386/openbsd.h,
 	config/m68k/openbsd.h, config/sparc/openbsd.h: Remove
