@@ -90,6 +90,7 @@ static enum machine_mode s390_cc_modes_compatible (enum machine_mode,
 
 struct processor_costs 
 {
+  /* multiplication */
   const int m;        /* cost of an M instruction.  */
   const int mghi;     /* cost of an MGHI instruction.  */
   const int mh;       /* cost of an MH instruction.  */
@@ -103,10 +104,17 @@ struct processor_costs
   const int msgr;     /* cost of an MSGR instruction.  */
   const int msr;      /* cost of an MSR instruction.  */
   const int mult_df;  /* cost of multiplication in DFmode.  */
+  /* square root */
   const int sqdbr;    /* cost of square root in DFmode.  */
   const int sqebr;    /* cost of square root in SFmode.  */
+  /* multiply and add */
   const int madbr;    /* cost of multiply and add in DFmode.  */
   const int maebr;    /* cost of multiply and add in SFmode.  */
+  /* division */
+  const int ddbr;
+  const int ddr;
+  const int debr;
+  const int der;
 };
 
 const struct processor_costs *s390_cost;
@@ -131,6 +139,10 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (35),    /* SQEBR */
   COSTS_N_INSNS (18),    /* MADBR */
   COSTS_N_INSNS (13),    /* MAEBR */
+  COSTS_N_INSNS (30),    /* DDBR */
+  COSTS_N_INSNS (30),    /* DDR  */
+  COSTS_N_INSNS (27),    /* DEBR */
+  COSTS_N_INSNS (26),    /* DER  */
 };
 
 static const
@@ -153,6 +165,10 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (38),    /* SQEBR */
   COSTS_N_INSNS (1),     /* MADBR */
   COSTS_N_INSNS (1),     /* MAEBR */
+  COSTS_N_INSNS (40),    /* DDBR */
+  COSTS_N_INSNS (44),    /* DDR  */
+  COSTS_N_INSNS (26),    /* DDBR */
+  COSTS_N_INSNS (28),    /* DER  */
 };
 
 
@@ -1982,6 +1998,24 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case DIV:
+      if (GET_MODE (x) == SFmode)
+	{
+	  if (TARGET_IEEE_FLOAT)
+	    *total = s390_cost->debr;
+	  else /* TARGET_IBM_FLOAT */
+	    *total = s390_cost->der;
+	}
+      else if (GET_MODE (x) == DFmode)
+	{
+	  if (TARGET_IEEE_FLOAT)
+	    *total = s390_cost->ddbr;
+	  else /* TARGET_IBM_FLOAT */
+	    *total = s390_cost->ddr;
+	}
+      else
+	*total = COSTS_N_INSNS (33);
+      return false;
+
     case UDIV:
     case MOD:
     case UMOD:
