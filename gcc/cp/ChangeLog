@@ -1,3 +1,8 @@
+2002-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR optimization/7145
+	* tree.c (cp_copy_res_decl_for_inlining): Also copy DECL_INITIAL.
+
 2002-05-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/6611
