@@ -1880,9 +1880,8 @@ resolve_offset_ref (exp)
       
       member = cp_convert (ptrdiff_type_node, member);
 
-      return build1 (INDIRECT_REF, type,
-		     build (PLUS_EXPR, build_pointer_type (type),
-			    addr, member));
+      addr = build (PLUS_EXPR, build_pointer_type (type), addr, member);
+      return build_indirect_ref (addr, 0);
     }
   else if (TYPE_PTRMEMFUNC_P (TREE_TYPE (member)))
     {

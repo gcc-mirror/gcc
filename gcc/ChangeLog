@@ -1,5 +1,7 @@
 2002-01-23  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build1): Don't set TREE_READONLY on INDIRECT_REF.
+
 	* function.c (assign_parms): Don't put args of inline functions
 	into registers when not optimizing.
 
