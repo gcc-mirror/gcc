@@ -742,7 +742,7 @@ make_regs_eqv (new, old)
   if (! (firstr < FIRST_PSEUDO_REGISTER && FIXED_REGNO_P (firstr))
       /* Certain fixed registers might be of the class NO_REGS.  This means
 	 that not only can they not be allocated by the compiler, but
-	 they cannot be used in substitutions or cannonicallizations
+	 they cannot be used in substitutions or canonicalizations
 	 either.  */
       && (new >= FIRST_PSEUDO_REGISTER || REGNO_REG_CLASS (new) != NO_REGS)
       && ((new < FIRST_PSEUDO_REGISTER && FIXED_REGNO_P (new))
@@ -1129,7 +1129,7 @@ lookup_as_function (x, code)
    goes in front, except that the first element in the list
    remains first unless a cheaper element is added.  The order of
    pseudo-registers does not matter, as canon_reg will be called to
-   find the cheapest when a register is retreived from the table.
+   find the cheapest when a register is retrieved from the table.
 
    The in_memory field in the hash table element is set to 0.
    The caller must set it nonzero if appropriate.
@@ -3785,6 +3785,22 @@ simplify_binary_operation (code, mode, op0, op1)
       /* Do nothing here.  */
       return 0;
 
+    case SMIN:
+      val = arg0s <= arg1s ? arg0s : arg1s;
+      break;
+
+    case UMIN:
+      val = (unsigned int)arg0 <= (unsigned int)arg1 ? arg0 : arg1;
+      break;
+
+    case SMAX:
+      val = arg0s > arg1s ? arg0s : arg1s;
+      break;
+
+    case UMAX:
+      val = (unsigned int)arg0 > (unsigned int)arg1 ? arg0 : arg1;
+      break;
+
     default:
       abort ();
     }
@@ -5299,13 +5315,15 @@ cse_insn (insn, in_libcall_block)
 	 and we should not substitute some other register
 	 which is not supposed to be clobbered.
 	 Therefore, this loop cannot be merged into the one below
-	 because a CALL may preceed a CLOBBER and refer to the
+	 because a CALL may precede a CLOBBER and refer to the
 	 value clobbered.  We must not let a canonicalization do
 	 anything in that case.  */
       for (i = 0; i < lim; i++)
 	{
 	  register rtx y = XVECEXP (x, 0, i);
-	  if (GET_CODE (y) == CLOBBER && GET_CODE (XEXP (y, 0)) == REG)
+	  if (GET_CODE (y) == CLOBBER
+	      && (GET_CODE (XEXP (y, 0)) == REG
+		  || GET_CODE (XEXP (y, 0)) == SUBREG))
 	    invalidate (XEXP (y, 0));
 	}
 	    
@@ -7383,7 +7401,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 	  /* Track when we are inside in LIBCALL block.  Inside such a block,
 	     we do not want to record destinations.  The last insn of a
 	     LIBCALL block is not considered to be part of the block, since
-	     its desitination is the result of the block and hence should be
+	     its destination is the result of the block and hence should be
 	     recorded.  */
 
 	  if (find_reg_note (insn, REG_LIBCALL, 0))
