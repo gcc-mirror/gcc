@@ -1,5 +1,7 @@
 2003-09-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in (genprogs): Fix typo.
+
 	* Makefile.in (gencheck.o): Remove build commands.
 	(dummy-conditions.o): Likewise.
 	(read-rtl.o): Likewise.
