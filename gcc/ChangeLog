@@ -1,3 +1,7 @@
+2002-09-04  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/t-netbsd64: Disable multilib for now.
+
 2002-09-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* target-def.h (TARGET_HAVE_SRODATA_SECTION): New macro.
