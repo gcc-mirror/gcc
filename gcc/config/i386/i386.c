@@ -1480,7 +1480,7 @@ print_operand_address (file, addr)
 
 /* Set the cc_status for the results of an insn whose pattern is EXP.
    On the 80386, we assume that only test and compare insns, as well
-   as SI, HI, & DI mode ADD, SUB, NEG, AND, IOR, XOR, ASHIFT, LSHIFT,
+   as SI, HI, & DI mode ADD, SUB, NEG, AND, IOR, XOR, ASHIFT,
    ASHIFTRT, and LSHIFTRT instructions set the condition codes usefully.
    Also, we assume that jumps, moves and sCOND don't affect the condition
    codes.  All else clobbers the condition codes, by assumption.
@@ -1548,7 +1548,7 @@ notice_update_cc (exp)
 	switch (GET_CODE (SET_SRC (exp)))
 	  {
 	  case ASHIFTRT: case LSHIFTRT:
-	  case ASHIFT: case LSHIFT:
+	  case ASHIFT:
 	    /* Shifts on the 386 don't set the condition codes if the
 	       shift count is zero. */
 	    if (GET_CODE (XEXP (SET_SRC (exp), 1)) != CONST_INT)
