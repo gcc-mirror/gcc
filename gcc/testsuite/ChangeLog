@@ -111,7 +111,7 @@
 
 	PR fortran/19071
 	* gfortran.dg/complex_write.f90: New test.
- 
+
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17595
@@ -147,7 +147,7 @@
 
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
-	* lib/target-supports.exp (check_effective_target_vect_no_align): 
+	* lib/target-supports.exp (check_effective_target_vect_no_align):
 	Remove i?86 and x86-64.
 
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
@@ -170,7 +170,7 @@
 
 	PR c++/11224
 	* g++.dg/warn/Wunused-9.C: New test.
-	
+
 2004-12-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/gcc-dg.exp (dg-skip-if): Fix the flags compared against.
@@ -186,7 +186,7 @@
 
 	PR c++/13268
 	* g++.dg/template/crash31.C: New test.
-	
+
 	PR c++/19034
 	* g++.dg/template/crash30.C: New test.
 
@@ -250,7 +250,7 @@
 	(dg-options): Use -fno-unit-at-a-time.
 	* gcc.dg/pr18596-2.c: New test.
 	* gcc.dg/pr18596-3.c: New test.
-	
+
 2004-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18683
@@ -265,7 +265,7 @@
 
 	PR c++/19044
 	* g++.dg/ext/builtin6.C: New
-	
+
 2004-12-20  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19080
@@ -665,7 +665,7 @@
 
 	PR c++/18672
 	* g++.dg/opt/array1.C: New.
-	
+
 	PR c++/18803
 	* g++.dg/template/operator5.C: New.
 
@@ -811,7 +811,7 @@
 
 	PR 18702
 	* gcc.dg/cpp/isysroot-1.c: Make this test darwin specific.
-	
+
 2004-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/ext/altivec-13.C: New test.
@@ -871,7 +871,7 @@
 
 	PR c++/18674
 	* g++.dg/template/error16.C: New test.
-	
+
 	PR c++/18512
 	* g++.dg/template/crash29.C: New test.
 
@@ -929,7 +929,7 @@
 	* gcc.dg/array-quals-1.c: Xfail for mmix-*-*.
 
 2004-11-28  Bud Davis  <bdavis9659@comcast.net>
- 
+
         * gfortran.dg/direct_io_2.f90: New test.
 
 2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
@@ -1023,9 +1023,9 @@
 	PR c++/18466
 	* g++.dg/parse/qualified3.C: New test.
 	* g++.old-deja/g++.other/friend7.C: Remove bogus qualification.
-	
+
 	PR c++/18545
-	* g++.dg/expr/return1.C: New test. 
+	* g++.dg/expr/return1.C: New test.
 
 2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -1060,10 +1060,10 @@
 
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
 
-	* g++.dg/template/deduce3.C: New test. 
+	* g++.dg/template/deduce3.C: New test.
 
 	PR c++/18586
-	* g++.dg/template/crash27.C: New test. 
+	* g++.dg/template/crash27.C: New test.
 
 	PR c++/18530
 	* g++.dg/warn/Wshadow-3.C: New test.
@@ -1742,7 +1742,7 @@
 
 2004-11-10  Adam Nemet  <anemet@lnxw.com>
 
-	PR middle-end/18160  
+	PR middle-end/18160
 	* g++.dg/warn/register-var-1.C: New test.
 	* g++.dg/warn/register-var-2.C: New test.
 
@@ -1752,7 +1752,7 @@
 
 2004-11-10  Fariborz Jahanian <fjahanian@apple.com>
 
-        * gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c: 
+        * gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c:
 	New test for PR tree-optimization/17892.
 
 2004-11-09  Mark Mitchell  <mark@codesourcery.com>
@@ -1804,7 +1804,7 @@
 2004-11-08  Steve Ellcey  <sje@cup.hp.com>
 
 	* testsuite/gcc.dg/20030225-2.c: Add prototype for abort and
-	exit. 
+	exit.
 
 2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -1879,7 +1879,7 @@
 2004-11-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/g++.dg/ext/visibility/symbian1.C: New test.
-	
+
 2004-11-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pragma-align.c (sixteen): Use 8-byte alignment
@@ -1949,7 +1949,7 @@
 
 	PR c++/18177
 	* g++.dg/conversion/const3.C: New test.
-	
+
 2004-11-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17535
@@ -2013,7 +2013,7 @@
 
 	PR c++/17542
 	* g++.dg/ext/attrib18.C: New test.
-	
+
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18096
@@ -2064,7 +2064,7 @@
 
 	PR c++/14124
 	* g++.dg/ext/packed7.C: New test.
-	
+
 2004-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/visibility-[1-9a].c: Change to use scan-hidden instead of
@@ -2083,7 +2083,7 @@
 
 2004-10-28  Adam Nemet  <anemet@lnxw.com>
 
-	PR middle-end/18160  
+	PR middle-end/18160
 	* gcc.dg/register-var-1.c: New test.
 	* gcc.dg/register-var-2.c: New test.
 	* gcc.dg/asm-7.c: Taking the address of a register variable is an
@@ -2092,7 +2092,7 @@
 2004-10-28  Dorit Naishlos <dorit@il.ibm.com>
 
 	PR other/18172
-	* gcc.dg/vect/vect-20.c: Use 'signed char' instaed of 'char'. Remove 
+	* gcc.dg/vect/vect-20.c: Use 'signed char' instaed of 'char'. Remove
 	unused variables.
 	* gcc.dg/vect/vect-22.c: Likewise.
 
@@ -2451,7 +2451,7 @@
 
 	PR 17635
 	* gcc.dg/pr17635.c : New test.
-	
+
 2004-10-14  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* testsuite/gcc.dg/vect/vect-28.c: Remove xfail.
@@ -2475,10 +2475,10 @@
 
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* gcc.dg/vect/vect-82.c: New testcase.	
-	* gcc.dg/vect/vect-82_64.c: New testcase.	
-	* gcc.dg/vect/vect-83.c: New testcase.	
-	* gcc.dg/vect/vect-83_64.c: New testcase.	
+	* gcc.dg/vect/vect-82.c: New testcase.
+	* gcc.dg/vect/vect-82_64.c: New testcase.
+	* gcc.dg/vect/vect-83.c: New testcase.
+	* gcc.dg/vect/vect-83_64.c: New testcase.
 
 2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
@@ -2529,7 +2529,7 @@
 
 	* testsuite/gcc.dg/ia64-asm-1.c: Add prototype for abort
 	* testsuite/gcc.dg/ia64-sync-1.c: Add prototype for abort and
-	memcpy. 
+	memcpy.
 	* testsuite/gcc.dg/ia64-sync-2.c: Ditto.
 	* testsuite/gcc.dg/ia64-sync-3.c: Ditto.
 
@@ -2591,7 +2591,7 @@
 
 	PR c++/17826
 	* g++.dg/template/crash24.C: New test.
-	
+
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17301
@@ -2695,7 +2695,7 @@
 
 2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90, 
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90,
 	gfortran.dg/ishft.f90: Add more tests. Add dg-warning in followup
 	commit.
 
@@ -2787,7 +2787,7 @@
 
 	PR fortran/17708
 	* gfortran.dg/pr17708.f90: New test.
-	
+
 2004-10-04  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.dg/vect/pr16105.c: Enable for mipsisa64*-*-*.
@@ -5424,8 +5424,8 @@
 
 2004-07-09   David Billinghurst <David.Billinghurst@riotinto.com>
 
- 	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
- 	* gfortran.dg/dg.exp: New file (adapted from g77.dg/dg.exp)
+	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
+	* gfortran.dg/dg.exp: New file (adapted from g77.dg/dg.exp)
 
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -6415,7 +6415,7 @@
 
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 
- 	PR objc/7993
+	PR objc/7993
 	* objc.dg/private-1.m, objc-dg/private-2.m: New testcases.
 
 2004-05-31  Mark Mitchell  <mark@codesourcery.com>
