@@ -119,19 +119,11 @@ namespace std
     basic_ostream<_CharT, _Traits>::operator<<(__streambuf_type* __sbin)
     {
       sentry __cerb(*this);
-      if (__cerb)
+      if (__cerb && __sbin)
 	{
 	  try
 	    {
-	      streamsize __xtrct = 0;
-	      if (__sbin)
-		{
-		  __streambuf_type* __sbout = this->rdbuf();
-		  __xtrct = __copy_streambufs(*this, __sbin, __sbout);
-		}
-	      else
-		this->setstate(ios_base::badbit);
-	      if (!__xtrct)
+	      if (!__copy_streambufs(*this, __sbin, this->rdbuf()))
 		this->setstate(ios_base::failbit);
 	    }
 	  catch(exception& __fail)
@@ -143,6 +135,8 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
+      else if (!__sbin)
+	this->setstate(ios_base::badbit);
       return *this;
     }
 
@@ -539,14 +533,13 @@ namespace std
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
       typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
+      if (__cerb && __s)
 	{
 	  try 
 	    {
 	      streamsize __w = __out.width();
 	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
-	      streamsize __len = __s 
-		           ? static_cast<streamsize>(_Traits::length(__s)) : 0;
+	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	      if (__w > __len)
 		{
 		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
@@ -555,8 +548,6 @@ namespace std
 		}
 	      __out.write(__s, __len);
 	      __out.width(0);
-	      if (!__len)
-		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
@@ -567,6 +558,8 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
+      else if (!__s)
+	__out.setstate(ios_base::badbit);
       return __out;
     }
 
@@ -581,9 +574,9 @@ namespace std
       typedef char_traits<char>		     __traits_type;
 #endif
       typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
+      if (__cerb && __s)
 	{
-	  size_t __clen = __s ? __traits_type::length(__s) : 0;
+	  size_t __clen = __traits_type::length(__s);
 	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__clen + 1)));
 	  for (size_t  __i = 0; __i < __clen; ++__i)
 	    __ws[__i] = __out.widen(__s[__i]);
@@ -603,8 +596,6 @@ namespace std
 		}
 	      __out.write(__str, __len);
 	      __out.width(0);
-	      if (!__len)
-		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
@@ -615,6 +606,8 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
+      else if (!__s)
+	__out.setstate(ios_base::badbit);
       return __out;
     }
 
@@ -625,14 +618,14 @@ namespace std
     {
       typedef basic_ostream<char, _Traits> __ostream_type;
       typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
+      if (__cerb && __s)
 	{
 	  try 
 	    {
 	      streamsize __w = __out.width();
 	      char* __pads = static_cast<char*>(__builtin_alloca(__w));
-	      streamsize __len = __s ? 
-		             static_cast<streamsize>(_Traits::length(__s)) : 0;
+	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
+
 	      if (__w > __len)
 		{
 		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
@@ -641,8 +634,6 @@ namespace std
 		}
 	      __out.write(__s, __len);
 	      __out.width(0);
-	      if (!__len)
-		__out.setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
 	    {
@@ -653,6 +644,8 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
+      else if (!__s)
+	__out.setstate(ios_base::badbit);
       return __out;
     }
 
