@@ -1,3 +1,16 @@
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Update copyright.
+	* class.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* optimize.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2004-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/13701
