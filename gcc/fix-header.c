@@ -871,15 +871,6 @@ write_rbrac ()
 #endif
 }
 
-char *
-xstrdup (str)
-  const char *str;
-{
-  char *copy = (char *) xmalloc (strlen (str) + 1);
-  strcpy (copy, str);
-  return copy;
-}
-
 /* Returns 1 iff the file is properly protected from multiple inclusion:
    #ifndef PROTECT_NAME
    #define PROTECT_NAME
