@@ -1845,8 +1845,16 @@ hack_identifier (value, name)
     {
       if (current_class_ptr == NULL_TREE)
 	{
-	  error ("request for member `%s' in static member function",
-		 IDENTIFIER_POINTER (DECL_NAME (value)));
+	  if (current_function_decl 
+	      && DECL_STATIC_FUNCTION_P (current_function_decl))
+	    cp_error ("invalid use of member `%D' in static member function",
+		      value);
+	  else
+	    /* We can get here when processing a bad default
+	       argument, like:
+	         struct S { int a; void f(int i = a); }  */
+	    cp_error ("invalid use of member `%D'", value);
+
 	  return error_mark_node;
 	}
       TREE_USED (current_class_ptr) = 1;

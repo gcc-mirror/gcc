@@ -182,9 +182,14 @@ DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
 /* A node to remember a source position.  */
 DEFTREECODE (SRCLOC, "srcloc", 'x', 2)
 
+/* Used to represent deferred name lookup for dependent names while
+   parsing a template declaration.  The first argument is an
+   IDENTIFIER_NODE for the name in question.  The TREE_TYPE is
+   unused.  */
+DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 1)
+
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
-DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 2)
 DEFTREECODE (MODOP_EXPR, "modop_expr", 'e', 3)
 DEFTREECODE (CAST_EXPR, "cast_expr", '1', 1)
 DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", '1', 1)

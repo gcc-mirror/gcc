@@ -2891,7 +2891,7 @@ do_identifier (token, parsing, args)
 	}
 
       if (current_template_parms)
-	return build_min_nt (LOOKUP_EXPR, token, NULL_TREE);
+	return build_min_nt (LOOKUP_EXPR, token);
       else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname[ERROR_MARK])
@@ -2988,21 +2988,12 @@ do_identifier (token, parsing, args)
   else
     id = hack_identifier (id, token);
 
-  if (current_template_parms)
-    {
-      if (is_overloaded_fn (id))
-	{
-	  tree t = build_min (LOOKUP_EXPR, unknown_type_node,
-			      token, get_first_fn (id));
-	  if (id != IDENTIFIER_NAMESPACE_VALUE (token))
-	    TREE_OPERAND (t, 1) = error_mark_node;
-	  id = t;
-	}
-      else if (! TREE_PERMANENT (id) || TREE_CODE (id) == PARM_DECL
-	       || TREE_CODE (id) == USING_DECL)
-	id = build_min (LOOKUP_EXPR, TREE_TYPE (id), token, error_mark_node);
-      /* else just use the decl */
-    }
+  if (current_template_parms
+      && (is_overloaded_fn (id) 
+	  || !TREE_PERMANENT (id)
+	  || TREE_CODE (id) == PARM_DECL
+	  || TREE_CODE (id) == USING_DECL))
+    id = build_min_nt (LOOKUP_EXPR, token);
       
   return id;
 }
@@ -3031,7 +3022,7 @@ do_scoped_id (token, parsing)
     {
       if (processing_template_decl)
 	{
-	  id = build_min_nt (LOOKUP_EXPR, token, NULL_TREE);
+	  id = build_min_nt (LOOKUP_EXPR, token);
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
 	  return id;
 	}
@@ -3068,9 +3059,9 @@ do_scoped_id (token, parsing)
     {
       if (is_overloaded_fn (id))
 	{
-	  id = build_min (LOOKUP_EXPR, unknown_type_node,
-			  token, get_first_fn (id));
+	  id = build_min_nt (LOOKUP_EXPR, token);
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
+	  return id;
 	}
       /* else just use the decl */
     }

@@ -1,3 +1,20 @@
+1998-08-02  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.def (LOOKUP_EXPR): Document.  Remove second argument.
+	* cp-tree.h (DECL_TI_TEMPLATE): Improve documentation.
+	* lex.c (do_identifier): Don't use a second argument, or a type,
+	when building LOOKUP_EXPRs.
+	(do_identifier): Likewise.
+	(do_scoped_id): Likewise.
+	* method.c (hack_identifier): Improve error message.
+	* pt.c (lookup_template_function): Don't needlessly call
+	copy_to_permanent or build_min.
+	(tsubst_copy): Remove #if 0'd code.  Tsubst into LOOKUP_EXPRs if
+	necessary.
+	(do_decl_instantiation): Improve error message.
+	* tree.c (mapcar, case LOOKUP_EXPR): Don't be sorry; make a copy.
+	(build_min): Copy the type to the permanent obstack, too.
+	
 1998-08-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (init_init_processing): Remove BI* handling.
