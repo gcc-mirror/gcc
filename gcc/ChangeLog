@@ -1,3 +1,11 @@
+2004-01-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Ensure
+	target_flags has MASK_POWERPC64 when -m64.
+	* config/rs6000/rs6000.c (processor_target_table): Add MASK_POWERPC64
+	to 620, 630, power3, power4 and rs64a entries.
+	* config/rs6000/rs6000.h (MASK_64BIT): Expand comment.
+
 2004-01-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* simplify-rtx.c (simplify_immed_subreg): Fix construction of
