@@ -35,6 +35,7 @@ extern char *output_mov_double_arm_from_fpu ();
 extern char *output_mov_immediate ();
 extern char *output_multi_immediate ();
 extern char *output_shifted_move ();
+extern char *output_arithmetic_with_immediate_multiply ();
 
 /* Translation to find startup files.  On RISCiX boxes, gcrt0.o is in
    /usr/lib.  */
