@@ -1,3 +1,8 @@
+2005-03-03  David Ayers  <d.ayers@inode.at>
+
+	* objc/hash.h (OBJC_IGNORE_DEPRECATED_API): Update deprecated
+	version reference.  Correct typo.
+
 2005-03-02  David Ayers  <d.ayers@inode.at>
 
 	PR libobjc/19024
