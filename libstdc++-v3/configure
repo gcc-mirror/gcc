@@ -2784,6 +2784,12 @@ else
   GLIBCPP_BUILD_PCH_TRUE='#'
   GLIBCPP_BUILD_PCH_FALSE=
 fi
+  if test "$glibcpp_pch_comp" = yes; then
+	glibcpp_PCHFLAGS="-include bits/stdc++.h"
+  else
+	glibcpp_PCHFLAGS=""
+  fi
+  
 
 
 # Enable all the variable C++ stuff.  C_MBCHAR must come early.
