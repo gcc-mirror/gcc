@@ -32,11 +32,11 @@ HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 
 ARLIB   = libstdc++.a.$(VERSION)
 ARLINK  = libstdc++.a
-MARLINK = libstdc++.a.`echo $(VERSION) | sed 's/\([0-9][.][0-9]\).*/\1/'`
+MARLINK = libstdc++.a.`echo $(VERSION) | sed 's/\([0-9]*[.][0-9]*\).*/\1/'`
 SHLIB   = libstdc++.so.$(VERSION)
 SHARLIB = libstdc++-sh.a
 SHLINK  = libstdc++.so
-MSHLINK = libstdc++.so.`echo $(VERSION) | sed 's/\([0-9][.][0-9]\).*/\1/'`
+MSHLINK = libstdc++.so.`echo $(VERSION) | sed 's/\([0-9]*[.][0-9]*\).*/\1/'`
 SHFLAGS =
 SHDEPS  =
 
