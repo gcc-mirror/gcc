@@ -916,8 +916,7 @@ UDItype __umulsidi3 (USItype, USItype);
   ({union {UDItype __ll;						\
 	   struct {USItype __h, __l;} __i;				\
 	  } __xx;							\
-  __asm__ ("movw %1,%R0
-	uemul %2,%0"							\
+  __asm__ ("movw %1,%R0\n\tuemul %2,%0"					\
 	   : "=&r" (__xx.__ll)						\
 	   : "g" ((USItype) (u)),					\
 	     "g" ((USItype) (v)));					\
