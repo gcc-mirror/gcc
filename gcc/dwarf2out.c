@@ -1732,6 +1732,9 @@ dwarf2out_frame_debug (insn)
 
   if (insn == NULL_RTX)
     {
+      rtx insn;
+      int n_alternate_entry_points;
+
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa);
       if (cfa.reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
@@ -1740,6 +1743,39 @@ dwarf2out_frame_debug (insn)
       cfa_store = cfa;
       cfa_temp.reg = -1;
       cfa_temp.offset = 0;
+
+      n_alternate_entry_points = 0;
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == CODE_LABEL && LABEL_ALTERNATE_NAME (insn))
+	  n_alternate_entry_points ++;
+
+      /* For each alternate entry point amit an store_state command.  We will pop
+	 the state once we will reach it.  */
+      while (n_alternate_entry_points--)
+	{
+	  register dw_cfi_ref xcfi;
+
+	  /* Set the location counter to the new label.  */
+	  xcfi = new_cfi ();
+	  xcfi->dw_cfi_opc = DW_CFA_remember_state;
+	  add_fde_cfi (NULL, xcfi);
+	}
+      return;
+    }
+  /* An alternate entry point.  Pop the state we pushed during initialization
+     and re-initialize our tables.  */
+  if (GET_CODE (insn) == CODE_LABEL && LABEL_ALTERNATE_NAME (insn))
+    {
+      register dw_cfi_ref xcfi;
+      label = dwarf2out_cfi_label ();
+
+      /* On entry, the Canonical Frame Address is at SP.  */
+      dwarf2out_def_cfa (label, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
+
+      /* Restore the frame state we had right before entering function.  */
+      xcfi = new_cfi ();
+      xcfi->dw_cfi_opc = DW_CFA_restore_state;
+      add_fde_cfi (label, xcfi);
       return;
     }
 
