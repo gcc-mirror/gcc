@@ -1,3 +1,21 @@
+2004-01-28  Zack Weinberg  <zack@codesourcery.com>
+	    Jim Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.c (ia64_split_tmode, ia64_split_tmode_move):
+	Rewrite to use POST_INC/POST_DEC/POST_MODIFY instead of a
+	scratch pointer.
+	(ia64_secondary_reload_class): Delete case GR_REGS.
+	* config/ia64/ia64.md (movti, *movti_internal, movtf, *movtf_internal):
+	Do not allocate a scratch register.
+	(reload_inti, reload_outti, reload_intf, reload_outtf): Delete.
+
+2004-01-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* ia64.c (ia64_function_arg): When placing HFAs in integer
+	registers, do not special case the mode used for complex
+	types.  Do not advance int_regs until the current register
+	is full.
+
 2004-01-28  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (allocate_struct_function): Do not initialize expr, emit
@@ -22,7 +40,7 @@
 	* config/s390/s390.h (TARGET_DEFAULT): Default to !TARGET_BACKCHAIN.
 	* config/s390/s390.c (s390_return_addr_rtx): Fail for all but current
 	frame if !TARGET_BACKCHAIN.
-	* config/s390/s390.md ("allocate_stack"): Use pattern only if 
+	* config/s390/s390.md ("allocate_stack"): Use pattern only if
 	TARGET_BACKCHAIN.
 	* doc/invoke.texi (-mbackchain/-mno-backchain): Document new default.
 
@@ -32,7 +50,7 @@
 	* except.c (init_eh): Use a 5-word __jbuf for __builtin_setjmp().
 
 2004-01-27  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Remove SUBREG
 	on CQImode and CHImode incoming arguments in register a7.
 	(function_arg): Wrap BLKmode argument in register a7 in a PARALLEL.
@@ -90,17 +108,17 @@
 	check CANNOT_CHANGE_MODE_CLASS
 
 2004-01-26  Jeff Law  <law@redhat.com>
- 
+
 	* doc/contrib.texi: Minor cleanup for Paolo Carlini's entry.  Add
 	acute accents for Petur Runolfsson's entry.
- 
+
 
 2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
 
 	2004-01-23  Eric Botcazou  <ebotcazou@act-europe.fr>
-	            Olivier Hainque  <hainque@act-europe.fr>
+		    Olivier Hainque  <hainque@act-europe.fr>
 
 	* fold-const.c (fold_binary_op_with_conditional_arg): Only
 	build a COMPOUND_EXPR if 'arg' is really a SAVE_EXPR.
@@ -220,10 +238,10 @@
 
 2004-01-23  Richard Henderson  <rth@redhat.com>
 
-        PR opt/12941
-        * combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
-        (simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
-        if SHIFT_COUNT_TRUNCATED is set.
+	PR opt/12941
+	* combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
+	(simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
+	if SHIFT_COUNT_TRUNCATED is set.
 
 2004-01-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -234,17 +252,17 @@
 	* fixinc/tests/base/sys/stat.h: Adapt for new hackname.
 
 	* fixinc/inclhack.def (alpha___extern_prefix,
-	alpha___extern_prefix_standards): New hacks to obey 
+	alpha___extern_prefix_standards): New hacks to obey
  	__PRAGMA_EXTERN_PREFIX.
 	* fixinc/tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	test.
 	* fixinc/tests/base/standards.h: Likewise.
-	
+
 	* fixincl/inclhack.def (alpha_pthread): Tweak to match more
 	variations.
 	New testcase.
 	* fixinc/tests/base/pthread.h: Handle it.
-	
+
 	* fixinc/fixincl.x: Regenerate.
 
 2004-01-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

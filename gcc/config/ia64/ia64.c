@@ -1362,62 +1362,37 @@ ia64_emit_cond_move (rtx op0, rtx op1, rtx cond)
 }
 
 /* Split a post-reload TImode or TFmode reference into two DImode
-   components.  */
+   components.  This is made extra difficult by the fact that we do
+   not get any scratch registers to work with, because reload cannot
+   be prevented from giving us a scratch that overlaps the register
+   pair involved.  So instead, when addressing memory, we tweak the
+   pointer register up and back down with POST_INCs.  Or up and not
+   back down when we can get away with it.
+
+   REVERSED is true when the loads must be done in reversed order
+   (high word first) for correctness.  DEAD is true when the pointer
+   dies with the second insn we generate and therefore the second
+   address must not carry a postmodify.
+
+   May return an insn which is to be emitted after the moves.  */
 
 static rtx
-ia64_split_tmode (rtx out[2], rtx in, rtx scratch)
+ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 {
+  rtx fixup = 0;
+
   switch (GET_CODE (in))
     {
     case REG:
-      out[0] = gen_rtx_REG (DImode, REGNO (in));
-      out[1] = gen_rtx_REG (DImode, REGNO (in) + 1);
-      return NULL_RTX;
-
-    case MEM:
-      {
-	rtx base = XEXP (in, 0);
-
-	switch (GET_CODE (base))
-	  {
-	  case REG:
-	    out[0] = adjust_address (in, DImode, 0);
-	    break;
-	  case POST_MODIFY:
-	    base = XEXP (base, 0);
-	    out[0] = adjust_address (in, DImode, 0);
-	    break;
-
-	  /* Since we're changing the mode, we need to change to POST_MODIFY
-	     as well to preserve the size of the increment.  Either that or
-	     do the update in two steps, but we've already got this scratch
-	     register handy so let's use it.  */
-	  case POST_INC:
-	    base = XEXP (base, 0);
-	    out[0]
-	      = change_address (in, DImode,
-				gen_rtx_POST_MODIFY
-				(Pmode, base, plus_constant (base, 16)));
-	    break;
-	  case POST_DEC:
-	    base = XEXP (base, 0);
-	    out[0]
-	      = change_address (in, DImode,
-				gen_rtx_POST_MODIFY
-				(Pmode, base, plus_constant (base, -16)));
-	    break;
-	  default:
-	    abort ();
-	  }
-
-	if (scratch == NULL_RTX)
-	  abort ();
-	out[1] = change_address (in, DImode, scratch);
-	return gen_adddi3 (scratch, base, GEN_INT (8));
-      }
+      out[reversed] = gen_rtx_REG (DImode, REGNO (in));
+      out[!reversed] = gen_rtx_REG (DImode, REGNO (in) + 1);
+      break;
 
     case CONST_INT:
     case CONST_DOUBLE:
+      /* Cannot occur reversed.  */
+      if (reversed) abort ();
+      
       if (GET_MODE (in) != TFmode)
 	split_double (in, &out[0], &out[1]);
       else
@@ -1444,11 +1419,108 @@ ia64_split_tmode (rtx out[2], rtx in, rtx scratch)
 	  out[0] = GEN_INT (p[0]);
 	  out[1] = GEN_INT (p[1]);
 	}
-      return NULL_RTX;
+      break;
+
+    case MEM:
+      {
+	rtx base = XEXP (in, 0);
+	rtx offset;
+
+	switch (GET_CODE (base))
+	  {
+	  case REG:
+	    if (!reversed)
+	      {
+		out[0] = adjust_automodify_address
+		  (in, DImode, gen_rtx_POST_INC (Pmode, base), 0);
+		out[1] = adjust_automodify_address
+		  (in, DImode, dead ? 0 : gen_rtx_POST_DEC (Pmode, base), 8);
+	      }
+	    else
+	      {
+		/* Reversal requires a pre-increment, which can only
+		   be done as a separate insn.  */
+		emit_insn (gen_adddi3 (base, base, GEN_INT (8)));
+		out[0] = adjust_automodify_address
+		  (in, DImode, gen_rtx_POST_DEC (Pmode, base), 8);
+		out[1] = adjust_address (in, DImode, 0);
+	      }
+	    break;
+
+	  case POST_INC:
+	    if (reversed || dead) abort ();
+	    /* Just do the increment in two steps.  */
+	    out[0] = adjust_automodify_address (in, DImode, 0, 0);
+	    out[1] = adjust_automodify_address (in, DImode, 0, 8);
+	    break;
+
+	  case POST_DEC:
+	    if (reversed || dead) abort ();
+	    /* Add 8, subtract 24.  */
+	    base = XEXP (base, 0);
+	    out[0] = adjust_automodify_address
+	      (in, DImode, gen_rtx_POST_INC (Pmode, base), 0);
+	    out[1] = adjust_automodify_address
+	      (in, DImode,
+	       gen_rtx_POST_MODIFY (Pmode, base, plus_constant (base, -24)),
+	       8);
+	    break;
+
+	  case POST_MODIFY:
+	    if (reversed || dead) abort ();
+	    /* Extract and adjust the modification.  This case is
+	       trickier than the others, because we might have an
+	       index register, or we might have a combined offset that
+	       doesn't fit a signed 9-bit displacement field.  We can
+	       assume the incoming expression is already legitimate.  */
+	    offset = XEXP (base, 1);
+	    base = XEXP (base, 0);
+
+	    out[0] = adjust_automodify_address
+	      (in, DImode, gen_rtx_POST_INC (Pmode, base), 0);
+
+	    if (GET_CODE (XEXP (offset, 1)) == REG)
+	      {
+		/* Can't adjust the postmodify to match.  Emit the
+		   original, then a separate addition insn.  */
+		out[1] = adjust_automodify_address (in, DImode, 0, 8);
+		fixup = gen_adddi3 (base, base, GEN_INT (-8));
+	      }
+	    else if (GET_CODE (XEXP (offset, 1)) != CONST_INT)
+	      abort ();
+	    else if (INTVAL (XEXP (offset, 1)) < -256 + 8)
+	      {
+		/* Again the postmodify cannot be made to match, but
+		   in this case it's more efficient to get rid of the
+		   postmodify entirely and fix up with an add insn. */
+		out[1] = adjust_automodify_address (in, DImode, base, 8);
+		fixup = gen_adddi3 (base, base,
+				    GEN_INT (INTVAL (XEXP (offset, 1)) - 8));
+	      }
+	    else
+	      {
+		/* Combined offset still fits in the displacement field.
+		   (We cannot overflow it at the high end.)  */
+		out[1] = adjust_automodify_address
+		  (in, DImode,
+		   gen_rtx_POST_MODIFY (Pmode, base,
+		     gen_rtx_PLUS (Pmode, base,
+				   GEN_INT (INTVAL (XEXP (offset, 1)) - 8))),
+		   8);
+	      }
+	    break;
+
+	  default:
+	    abort ();
+	  }
+	break;
+      }
 
     default:
       abort ();
     }
+
+  return fixup;
 }
 
 /* Split a TImode or TFmode move instruction after reload.
@@ -1456,39 +1528,60 @@ ia64_split_tmode (rtx out[2], rtx in, rtx scratch)
 void
 ia64_split_tmode_move (rtx operands[])
 {
-  rtx adj1, adj2, in[2], out[2], insn;
-  int first;
+  rtx in[2], out[2], insn;
+  rtx fixup[2];
+  bool dead = false;
+  bool reversed = false;
 
-  adj1 = ia64_split_tmode (in, operands[1], operands[2]);
-  adj2 = ia64_split_tmode (out, operands[0], operands[2]);
-
-  first = 0;
-  if (reg_overlap_mentioned_p (out[0], in[1]))
+  /* It is possible for reload to decide to overwrite a pointer with
+     the value it points to.  In that case we have to do the loads in
+     the appropriate order so that the pointer is not destroyed too
+     early.  Also we must not generate a postmodify for that second
+     load, or rws_access_regno will abort.  */
+  if (GET_CODE (operands[1]) == MEM
+      && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
-      if (reg_overlap_mentioned_p (out[1], in[0]))
-	abort ();
-      first = 1;
+      rtx base = XEXP (operands[1], 0);
+      while (GET_CODE (base) != REG)
+	base = XEXP (base, 0);
+
+      if (REGNO (base) == REGNO (operands[0]))
+	reversed = true;
+      dead = true;
     }
+  /* Another reason to do the moves in reversed order is if the first
+     element of the target register pair is also the second element of
+     the source register pair.  */
+  if (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
+      && REGNO (operands[0]) == REGNO (operands[1]) + 1)
+    reversed = true;
 
-  if (adj1 && adj2)
-    abort ();
-  if (adj1)
-    emit_insn (adj1);
-  if (adj2)
-    emit_insn (adj2);
-  insn = emit_insn (gen_rtx_SET (VOIDmode, out[first], in[first]));
-  if (GET_CODE (out[first]) == MEM
-      && GET_CODE (XEXP (out[first], 0)) == POST_MODIFY)
-    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
-					  XEXP (XEXP (out[first], 0), 0),
-					  REG_NOTES (insn));
-  insn = emit_insn (gen_rtx_SET (VOIDmode, out[!first], in[!first]));
-  if (GET_CODE (out[!first]) == MEM
-      && GET_CODE (XEXP (out[!first], 0)) == POST_MODIFY)
-    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC,
-					  XEXP (XEXP (out[!first], 0), 0),
-					  REG_NOTES (insn));
+  fixup[0] = ia64_split_tmode (in, operands[1], reversed, dead);
+  fixup[1] = ia64_split_tmode (out, operands[0], reversed, dead);
 
+#define MAYBE_ADD_REG_INC_NOTE(INSN, EXP)				\
+  if (GET_CODE (EXP) == MEM						\
+      && (GET_CODE (XEXP (EXP, 0)) == POST_MODIFY			\
+	  || GET_CODE (XEXP (EXP, 0)) == POST_INC			\
+	  || GET_CODE (XEXP (EXP, 0)) == POST_DEC))			\
+    REG_NOTES (INSN) = gen_rtx_EXPR_LIST (REG_INC,			\
+					  XEXP (XEXP (EXP, 0), 0),	\
+					  REG_NOTES (INSN))
+
+  insn = emit_insn (gen_rtx_SET (VOIDmode, out[0], in[0]));
+  MAYBE_ADD_REG_INC_NOTE (insn, in[0]);
+  MAYBE_ADD_REG_INC_NOTE (insn, out[0]);
+
+  insn = emit_insn (gen_rtx_SET (VOIDmode, out[1], in[1]));
+  MAYBE_ADD_REG_INC_NOTE (insn, in[1]);
+  MAYBE_ADD_REG_INC_NOTE (insn, out[1]);
+
+  if (fixup[0])
+    emit_insn (fixup[0]);
+  if (fixup[1])
+    emit_insn (fixup[1]);
+
+#undef MAYBE_ADD_REG_INC_NOTE
 }
 
 /* ??? Fixing GR->FR XFmode moves during reload is hard.  You need to go
@@ -3588,6 +3681,7 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       for (; offset < byte_size && int_regs < MAX_ARGUMENT_SLOTS; i++)
 	{
 	  enum machine_mode gr_mode = DImode;
+	  unsigned int gr_size;
 
 	  /* If we have an odd 4 byte hunk because we ran out of FR regs,
 	     then this goes in a GR reg left adjusted/little endian, right
@@ -3601,17 +3695,19 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	     adjusted/little endian.  */
 	  else if (byte_size - offset == 4)
 	    gr_mode = SImode;
-	  /* Complex floats need to have float mode.  */
-	  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	    gr_mode = hfa_mode;
 
 	  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
 				      gen_rtx_REG (gr_mode, (basereg
 							     + int_regs)),
 				      GEN_INT (offset));
-	  offset += GET_MODE_SIZE (gr_mode);
-	  int_regs += GET_MODE_SIZE (gr_mode) <= UNITS_PER_WORD
-		      ? 1 : GET_MODE_SIZE (gr_mode) / UNITS_PER_WORD;
+
+	  gr_size = GET_MODE_SIZE (gr_mode);
+	  offset += gr_size;
+	  if (gr_size == UNITS_PER_WORD
+	      || (gr_size < UNITS_PER_WORD && offset % UNITS_PER_WORD == 0))
+	    int_regs++;
+	  else if (gr_size > UNITS_PER_WORD)
+	    int_regs += gr_size / UNITS_PER_WORD;
 	}
 
       /* If we ended up using just one location, just return that one loc, but
@@ -4451,13 +4547,6 @@ ia64_secondary_reload_class (enum reg_class class,
       /* This can happen when we take a BImode subreg of a DImode value,
 	 and that DImode value winds up in some non-GR register.  */
       if (regno >= 0 && ! GENERAL_REGNO_P (regno) && ! PR_REGNO_P (regno))
-	return GR_REGS;
-      break;
-
-    case GR_REGS:
-      /* Since we have no offsettable memory addresses, we need a temporary
-	 to hold the address of the second word.  */
-      if (mode == TImode || mode == TFmode)
 	return GR_REGS;
       break;
 
