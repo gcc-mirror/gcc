@@ -1,0 +1,235 @@
+#!/bin/sh
+#
+# SYNOPSIS
+#	fixproto TARGET-DIR [ SOURCE-DIR ... ]
+#
+# COPYRIGHT
+#	Copyright (C) 1993 Free Software Foundation, Inc.
+#	This file is part of GNU CC.
+#
+#	GNU CC is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 2, or (at your option)
+#	any later version.
+#
+#	GNU CC is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with GNU CC; see the file COPYING.  If not, write to
+#	the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+# DESCRIPTION
+#	Adjunct script for GNU CC to populate a directory with ANSI,
+#	Posix.1, and C++ compatible header files.
+#
+#	Each file found under each SOURCE-DIR is analized and "fixed."
+#	The SOURCE-DIRs are searched in order; a file found
+#	under multiple SOURCE-DIRs is only handled for the first one.
+#
+# STRATEGY
+#       Each include file is fed through cpp, and the scan-decls program
+#	parses it, and emits any found function declarations.
+#	The patch-header program analyzes the scan-decls output,
+#	together with the original include file, and writes a "fixed"
+#	include file, if needed.
+#
+#	The comment at the beginning of patch-header.c lists specifically
+#	what kind of changes are made.
+#
+# NOTE
+#	Some file space will be wasted, because the original header
+#	files are copied.  An earlier version just included the original
+#	by "reference", using GNU cpp's #include_next mechanism.
+#	This is currently not done, partly because #include_next is
+#	fragile (susceptible to version incompatibilties, and depends
+#	and GCC-specific features), and partly for performance reasons.
+#
+# AUTHORS
+#	Ron Guilmette (rfg@netcom.com) (original idea and code)
+#	Per Bothner (bothner@cygnus.com) (major re-write)
+
+progname=$0
+progname=`basename $progname`
+original_dir=`pwd`
+CC=gcc
+CPP=${CPP-./cpp}
+#CPP="${CC} -E"
+if [ `echo $1 | wc -w` = 0 ] ; then
+  echo $progname\: usage\: $progname target-dir \[ source-dir \.\.\. \]
+  exit 1
+fi
+rel_target_dir=$1
+shift
+
+if [ `expr $rel_target_dir : '\(.\)'` != '/' ] ; then
+  abs_target_dir=$original_dir/$rel_target_dir
+else
+  abs_target_dir=$rel_target_dir
+fi
+
+if [ \! -d $abs_target_dir ] ; then
+  echo $progname\: creating directory $rel_target_dir
+  mkdir $abs_target_dir
+fi
+
+echo $progname\: populating \`$rel_target_dir\'
+
+required_ctype_h="isalnum isalpha iscntrl isdigit isgraph islower isprint ispunct isspace isupper isxdigit tolower toupper"
+required_dirent_h="closedir opendir readdir rewinddir"
+extra_check_errno_h="errno"
+required_curses_h="box delwin endwin getcurx getcury initscr mvcur mvwprintw mvwscanw newwin overlay overwrite scroll subwin touchwin waddstr wclear wclrtobot wclrtoeol waddch wdelch wdeleteln werase wgetch wgetstr winsch winsertln wmove wprintw wrefresh wscanw wstandend wstandout"
+required_fcntl_h="creat fcntl open"
+# required_float_h=...
+required_grp_h="getgrgid getgrnam"
+# Maybe also "getgrent fgetgrent setgrent endgrent" */
+# required_limit_h= /* Lots of macros */
+required_locale_h="localeconv setlocale"
+required_math_h="acos asin atan atan2 ceil cos cosh exp fabs floor fmod frexp ldexp log10 log modf pow sin sinh sqrt tan tanh"
+extra_check_math_h="HUGE_VAL"
+
+required_pwd_h="getpwnam getpwuid"
+required_setjmp_h="longjmp setjmp siglongjmp sigsetjmp"
+required_signal_h="kill raise sigaction sigaddset sigdelset sigemptyset sigfillset sigismember signal sigpending sigprocmask sigsuspend"
+# *stdarg_h *stddef.h  - supplied by gcc
+required_stdio_h="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets perror printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ungetc vfprintf vprintf vsprintf"
+# Should perhaps also handle NULL, EOF, ... ?
+required_stdlib_h="abort abs atexit atof atoi atol bsearch calloc exit free getenv labs malloc qsort rand realloc srand strtod strtol strtoul system"
+# "div ldiv", - ignored because these depend on div_t, ldiv_t
+# ignore these: "mblen mbstowcs mbstowc wcstombs wctomb"
+# Should perhaps also add NULL
+required_string_h="memchr memcmp memcpy memmove memset strcat strchr strcmp strcoll strcpy strcspn strerror strlen strncat strncmp"
+# Should perhaps also add NULL and size_t
+required_sys_stat_h="chmod fstat mkdir mkfifo stat umask"
+extra_check_sys_stat_h="S_ISDIR S_ISBLK S_ISCHR S_ISFIFO S_ISREG S_ISLNK S_IFDIR S_IFBLK S_IFCHR S_IFIFO S_IFREG S_IFLNK"
+required_sys_times_h="times"
+# "sys_types.h" add types (not in old g++-include)
+required_sys_resource_h="getrusage getrlimit setrlimit getpriority setpriority"
+required_sys_utsname_h="uname"
+required_sys_wait_h="wait waitpid"
+extra_check_sys_wait_h="WEXITSTATUS WIFEXITED WIFSIGNALED WIFSTOPPED WSTOPSIG WTERMSIG WNOHANG WNOTRACED"
+# required_tar.h= 
+required_termios_h="cfgetispeed cfgetospeed cfsetispeed cfsetospeed tcdrain tcflow tcflush tcgetattr tcsendbreak tcsetattr"
+required_time_h="asctime clock ctime difftime gmtime localtime mktime strftime time tzset"
+required_unistd_h="_exit access alarm chdir chown close ctermid cuserid dup dup2 execl execle execlp execv execve execvp fork fpathconf getcwd getegid geteuid getgid getgroups getlogin getpgrp getpid getppid getuid isatty link lseek pathconf pause pipe read rmdir setgid setpgid setsid setuid sleep sysconf tcgetpgrp tcsetpgrp ttyname unlink write"
+
+include_path=""
+
+if [ `echo $* | wc -w` != 0 ] ; then
+  for rel_source_dir in $*; do
+    if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
+      abs_source_dir=$original_dir/$rel_source_dir
+    else
+      abs_source_dir=$rel_source_dir
+    fi
+    include_path="$include_path -I$abs_source_dir"
+  done
+fi
+
+done_dirs=""
+done_files=""
+
+if [ `echo $* | wc -w` != 0 ] ; then
+  for rel_source_dir in $* ; do
+    if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
+      abs_source_dir=$original_dir/$rel_source_dir
+    else
+      abs_source_dir=$rel_source_dir
+    fi
+    if [ \! -d $abs_source_dir ] ; then
+      echo $progname\: warning\: no such directory\: \`$rel_source_dir\'
+      continue
+    fi
+    rel_source_subdirs=`cd $abs_source_dir; find . -type d -print | sed -e 's%^\./%%' -e 's/\.//'`
+    if [ `echo $rel_source_subdirs | wc -w` != 0 ] ; then
+      for rel_source_subdir in $rel_source_subdirs; do
+        abs_target_subdir=$abs_target_dir/$rel_source_subdir
+        if [ \! -d $abs_target_subdir ] ; then
+          mkdir $abs_target_subdir
+        fi
+      done
+    fi
+
+    rel_source_files=`cd $abs_source_dir; find . '!' -type d -name \*.h -print | sed 's%^\./%%'`
+
+    if [ `echo $rel_source_files | wc -w` != 0 ] ; then
+      for rel_source_file in $rel_source_files; do
+	abs_source_file=$abs_source_dir/$rel_source_file
+	abs_target_file=$abs_target_dir/$rel_source_file
+
+	# If target file exists, check if was written while processing one
+	# of the earlier source directories;  if so ignore it.
+	if test -f $abs_target_file -a -n "$done_dirs" \
+	  && echo " $done_files " |grep " $rel_source_file " >/dev/null
+	then
+	  echo $abs_target_file exists, $abs_source_file is ignored
+	else
+	  # echo doing $rel_source_file from $abs_source_dir
+	  rel_source_ident=`echo $rel_source_file | tr ./- ___`
+	  required_list=`eval echo '${required_'${rel_source_ident}'-}'`
+	  extra_check_list=`eval echo '${extra_check_'${rel_source_ident}'-}'`
+	  rm -f tmp.c tmp.i
+	  echo "#include <${rel_source_file}>" >tmp.c
+	  for macro in ${required_list} ${extra_check_list}
+	  do
+	    echo "#ifdef ${macro}" >>tmp.c
+	    echo "__DEFINED_MACRO_${macro};" >>tmp.c
+	    echo "#endif" >>tmp.c
+	  done
+	  if ${CPP} -D__STDC__ -D__cplusplus -D_POSIX_SOURCE $include_path tmp.c >tmp.i
+	  then
+	    case $rel_source_file in
+	      stdio.h)
+		if grep _flsbuf <$abs_source_file >/dev/null ; then
+		  required_list="$required_list _flsbuf _filbuf"
+		fi ;;
+	    esac
+	    cat $abs_source_file >tmp.c
+#	    echo Doing: "$original_dir/scan-decls <tmp.i | $original_dir/patch-header $rel_source_file tmp.c $abs_target_file \"$required_list\""
+
+	    $original_dir/scan-decls <tmp.i | \
+	     $original_dir/patch-header $rel_source_file tmp.c $abs_target_file "$required_list"
+	  else
+	    echo "${progname}: ${CPP} couldn't grok ${abs_source_file}"
+	  fi
+	  done_files="${done_files} ${rel_source_file}"
+	fi
+      done
+      rm -f tmp.c tmp.i
+    fi
+    # check for broken assert.h that needs stdio.h
+    if test -f $abs_source_dir/assert.h -a \! -f $abs_target_dir/assert.h \
+      && grep 'stderr' $abs_source_dir/assert.h >/dev/null
+    then
+      if grep 'include.*stdio.h' $abs_source_dir/assert.h >/dev/null
+      then true
+      else
+	echo 'Fixing broken assert.h (needs stdio.h)'
+	cat $abs_source_dir/assert.h >$abs_target_dir/assert.h
+	echo '#include <stdio.h>' >>$abs_target_dir/assert.h
+      fi
+    fi
+    done_dirs="$done_dir $rel_source_dir"
+  done
+fi
+
+for rel_source_file in unistd.h stdlib.h
+do
+  if echo " $done_files " | grep " $rel_source_file " >/dev/null
+  then true
+  else
+    echo Adding missing $rel_source_file
+    rel_source_ident=`echo $rel_source_file | tr ./- ___`
+    required_list=`eval echo '${required_'${rel_source_ident}'-}'`
+    cat >tmp.h <<EOF
+#ifndef ${rel_source_ident}
+#define ${rel_source_ident}
+#endif
+EOF
+    $original_dir/patch-header $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
+    rm tmp.h
+  fi
+done
+exit 0
