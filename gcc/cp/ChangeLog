@@ -1,3 +1,16 @@
+2004-0903  Matt Austern  <austern@apple.com>
+	Compile speed improvement.
+	* parser.c (cp_lexer_print_token): Only define if ENABLE_CHECKING set.
+	Otherwise define a stub macro that expands to nothing.
+	(cp_lexer_debugging_p): Only define if ENABLE_CHECKING set.  Otherwise
+	define a stub macro that expands to 0.
+	(cp_lexer_start_debugging): Only define if ENABLE_CHECKING set.
+	(cp_lexer_stop_debugging): Likewise.
+	(cp_lexer_debug_stream): Only define if ENABLE_CHECKING set.  Otherwise
+	define a stub macro that expands to NULL.
+	(cp_lexer_new_main): Only set debugging_p if ENABLE_CHECKING set.
+	(cp_lexer_new_from_tokens): Likewise.
+	
 2004-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (finish_function): Clean out pointers we no longer need.

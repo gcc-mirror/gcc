@@ -256,6 +256,7 @@ static void cp_lexer_rollback_tokens
   (cp_lexer *);
 static inline void cp_lexer_set_source_position_from_token
   (cp_lexer *, const cp_token *);
+#ifdef ENABLE_CHECKING
 static void cp_lexer_print_token
   (FILE *, cp_token *);
 static inline bool cp_lexer_debugging_p
@@ -264,6 +265,11 @@ static void cp_lexer_start_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
 static void cp_lexer_stop_debugging
   (cp_lexer *) ATTRIBUTE_UNUSED;
+#else
+#define cp_lexer_debug_stream NULL
+#define cp_lexer_print_token(str, tok)
+#define cp_lexer_debugging_p(lexer) 0
+#endif /* ENABLE_CHECKING */
 
 /* Manifest constants.  */
 
@@ -292,8 +298,10 @@ static void cp_lexer_stop_debugging
 
 /* Variables.  */
 
+#ifdef ENABLE_CHECKING
 /* The stream to which debugging output should be written.  */
 static FILE *cp_lexer_debug_stream;
+#endif /* ENABLE_CHECKING */
 
 /* Create a new main C++ lexer, the lexer that gets tokens from the
    preprocessor.  */
@@ -332,8 +340,10 @@ cp_lexer_new_main (void)
   /* Create the STRINGS array.  */
   VARRAY_TREE_INIT (lexer->string_tokens, 32, "strings");
 
+#ifdef ENABLE_CHECKING  
   /* Assume we are not debugging.  */
   lexer->debugging_p = false;
+#endif /* ENABLE_CHECKING */
 
   return lexer;
 }
@@ -383,19 +393,25 @@ cp_lexer_new_from_tokens (cp_token_cache *tokens)
   /* Create the STRINGS array.  */
   VARRAY_TREE_INIT (lexer->string_tokens, 32, "strings");
 
+#ifdef ENABLE_CHECKING
   /* Assume we are not debugging.  */
   lexer->debugging_p = false;
+#endif /* ENABLE_CHECKING */
 
   return lexer;
 }
 
 /* Returns nonzero if debugging information should be output.  */
 
+#ifdef ENABLE_CHECKING
+
 static inline bool
 cp_lexer_debugging_p (cp_lexer *lexer)
 {
   return lexer->debugging_p;
 }
+
+#endif /* ENABLE_CHECKING */
 
 /* Set the current source position from the information stored in
    TOKEN.  */
@@ -910,6 +926,8 @@ cp_lexer_rollback_tokens (cp_lexer* lexer)
 
 /* Print a representation of the TOKEN on the STREAM.  */
 
+#ifdef ENABLE_CHECKING
+
 static void
 cp_lexer_print_token (FILE * stream, cp_token* token)
 {
@@ -993,6 +1011,8 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 {
   --lexer->debugging_p;
 }
+
+#endif /* ENABLE_CHECKING */
 
 
 /* Decl-specifiers.  */
