@@ -1,5 +1,8 @@
 2002-01-23  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/BorderLayout.java (addLayoutComponent): Added missing
+	`else'.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (awt_java_source_files): Added new files.
 	* java/awt/Toolkit.java: Merged with Classpath.

@@ -273,7 +273,7 @@ addLayoutComponent(Component component, Object constraints)
 
   if (str == null || str.equals(CENTER))
     center = component;
-  if (str.equals(NORTH))
+  else if (str.equals(NORTH))
     north = component;
   else if (str.equals(SOUTH))
     south = component;
