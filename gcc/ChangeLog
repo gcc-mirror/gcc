@@ -4,6 +4,7 @@
 	the call to cpp_find_main_file fails.
 	(c_common_init):  Skip preprocess_file if finish_options failed.
 	(c_common_parse_file):  Break if finish_options failed.
+	Fixes PR preprocessor/12545.
 
 2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
