@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -32,15 +32,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    existing entry with a potential new one.  Also, the ability to
    delete members from the table has been removed.  */
 
-static unsigned int calc_hash PARAMS ((const unsigned char *, unsigned int));
-static void ht_expand PARAMS ((hash_table *));
+static unsigned int calc_hash (const unsigned char *, unsigned int);
+static void ht_expand (hash_table *);
 
 /* Calculate the hash of the string STR of length LEN.  */
 
 static unsigned int
-calc_hash (str, len)
-     const unsigned char *str;
-     unsigned int len;
+calc_hash (const unsigned char *str, unsigned int len)
 {
   unsigned int n = len;
   unsigned int r = 0;
@@ -56,8 +54,7 @@ calc_hash (str, len)
 /* Initialize an identifier hashtable.  */
 
 hash_table *
-ht_create (order)
-     unsigned int order;
+ht_create (unsigned int order)
 {
   unsigned int nslots = 1 << order;
   hash_table *table;
@@ -77,8 +74,7 @@ ht_create (order)
 /* Frees all memory associated with a hash table.  */
 
 void
-ht_destroy (table)
-     hash_table *table;
+ht_destroy (hash_table *table)
 {
   obstack_free (&table->stack, NULL);
   free (table->entries);
@@ -94,11 +90,8 @@ ht_destroy (table)
    CPP_ALLOCED and the item is assumed to be at the top of the
    obstack.  */
 hashnode
-ht_lookup (table, str, len, insert)
-     hash_table *table;
-     const unsigned char *str;
-     unsigned int len;
-     enum ht_lookup_option insert;
+ht_lookup (hash_table *table, const unsigned char *str, unsigned int len,
+	   enum ht_lookup_option insert)
 {
   unsigned int hash = calc_hash (str, len);
   unsigned int hash2;
@@ -158,8 +151,7 @@ ht_lookup (table, str, len, insert)
 /* Double the size of a hash table, re-hashing existing entries.  */
 
 static void
-ht_expand (table)
-     hash_table *table;
+ht_expand (hash_table *table)
 {
   hashnode *nentries, *p, *limit;
   unsigned int size, sizemask;
@@ -200,10 +192,7 @@ ht_expand (table)
 /* For all nodes in TABLE, callback CB with parameters TABLE->PFILE,
    the node, and V.  */
 void
-ht_forall (table, cb, v)
-     hash_table *table;
-     ht_cb cb;
-     const void *v;
+ht_forall (hash_table *table, ht_cb cb, const void *v)
 {
   hashnode *p, *limit;
 
@@ -221,8 +210,7 @@ ht_forall (table, cb, v)
 /* Dump allocation statistics to stderr.  */
 
 void
-ht_dump_statistics (table)
-     hash_table *table;
+ht_dump_statistics (hash_table *table)
 {
   size_t nelts, nids, overhead, headers;
   size_t total_bytes, longest, sum_of_squares;
@@ -251,7 +239,7 @@ ht_dump_statistics (table)
 	nids++;
       }
   while (++p < limit);
-      
+
   nelts = table->nelements;
   overhead = obstack_memory_used (&table->stack) - total_bytes;
   headers = table->nslots * sizeof (hashnode);
@@ -287,8 +275,7 @@ ht_dump_statistics (table)
 /* Return the approximate positive square root of a number N.  This is for
    statistical reports, not code generation.  */
 double
-approx_sqrt (x)
-     double x;
+approx_sqrt (double x)
 {
   double s, d;
 

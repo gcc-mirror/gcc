@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -189,8 +189,7 @@ static int old_max_uid;
    of the -fsched-verbose=N option.  */
 
 void
-fix_sched_param (param, val)
-     const char *param, *val;
+fix_sched_param (const char *param, const char *val)
 {
   if (!strcmp (param, "verbose"))
     sched_verbose_param = atoi (val);
@@ -305,7 +304,7 @@ struct ready_list
   int n_ready;
 };
 
-static int may_trap_exp PARAMS ((rtx, int));
+static int may_trap_exp (rtx, int);
 
 /* Nonzero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
@@ -319,9 +318,7 @@ static int may_trap_exp PARAMS ((rtx, int));
    as found by analyzing insn's expression.  */
 
 static int
-may_trap_exp (x, is_store)
-     rtx x;
-     int is_store;
+may_trap_exp (rtx x, int is_store)
 {
   enum rtx_code code;
 
@@ -394,8 +391,7 @@ may_trap_exp (x, is_store)
    being either PFREE or PRISKY.  */
 
 int
-haifa_classify_insn (insn)
-     rtx insn;
+haifa_classify_insn (rtx insn)
 {
   rtx pat = PATTERN (insn);
   int tmp_class = TRAP_FREE;
@@ -473,21 +469,21 @@ haifa_classify_insn (insn)
 
 /* The scheduler using only DFA description should never use the
    following five functions:  */
-static unsigned int blockage_range PARAMS ((int, rtx));
-static void clear_units PARAMS ((void));
-static void schedule_unit PARAMS ((int, rtx, int));
-static int actual_hazard PARAMS ((int, rtx, int, int));
-static int potential_hazard PARAMS ((int, rtx, int));
+static unsigned int blockage_range (int, rtx);
+static void clear_units (void);
+static void schedule_unit (int, rtx, int);
+static int actual_hazard (int, rtx, int, int);
+static int potential_hazard (int, rtx, int);
 
-static int priority PARAMS ((rtx));
-static int rank_for_schedule PARAMS ((const void *, const void *));
-static void swap_sort PARAMS ((rtx *, int));
-static void queue_insn PARAMS ((rtx, int));
-static int schedule_insn PARAMS ((rtx, struct ready_list *, int));
-static int find_set_reg_weight PARAMS ((rtx));
-static void find_insn_reg_weight PARAMS ((int));
-static void adjust_priority PARAMS ((rtx));
-static void advance_one_cycle PARAMS ((void));
+static int priority (rtx);
+static int rank_for_schedule (const void *, const void *);
+static void swap_sort (rtx *, int);
+static void queue_insn (rtx, int);
+static int schedule_insn (rtx, struct ready_list *, int);
+static int find_set_reg_weight (rtx);
+static void find_insn_reg_weight (int);
+static void adjust_priority (rtx);
+static void advance_one_cycle (void);
 
 /* Notes handling mechanism:
    =========================
@@ -512,28 +508,28 @@ static void advance_one_cycle PARAMS ((void));
    unlink_other_notes ()).  After scheduling the block, these notes are
    inserted at the beginning of the block (in schedule_block()).  */
 
-static rtx unlink_other_notes PARAMS ((rtx, rtx));
-static rtx unlink_line_notes PARAMS ((rtx, rtx));
-static rtx reemit_notes PARAMS ((rtx, rtx));
+static rtx unlink_other_notes (rtx, rtx);
+static rtx unlink_line_notes (rtx, rtx);
+static rtx reemit_notes (rtx, rtx);
 
-static rtx *ready_lastpos PARAMS ((struct ready_list *));
-static void ready_sort PARAMS ((struct ready_list *));
-static rtx ready_remove_first PARAMS ((struct ready_list *));
+static rtx *ready_lastpos (struct ready_list *);
+static void ready_sort (struct ready_list *);
+static rtx ready_remove_first (struct ready_list *);
 
-static void queue_to_ready PARAMS ((struct ready_list *));
+static void queue_to_ready (struct ready_list *);
 
-static void debug_ready_list PARAMS ((struct ready_list *));
+static void debug_ready_list (struct ready_list *);
 
-static rtx move_insn1 PARAMS ((rtx, rtx));
-static rtx move_insn PARAMS ((rtx, rtx));
+static rtx move_insn1 (rtx, rtx);
+static rtx move_insn (rtx, rtx);
 
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  It is used only for DFA based scheduler.  */
-static rtx ready_element PARAMS ((struct ready_list *, int));
-static rtx ready_remove PARAMS ((struct ready_list *, int));
-static int max_issue PARAMS ((struct ready_list *, int *));
+static rtx ready_element (struct ready_list *, int);
+static rtx ready_remove (struct ready_list *, int);
+static int max_issue (struct ready_list *, int *);
 
-static rtx choose_ready PARAMS ((struct ready_list *));
+static rtx choose_ready (struct ready_list *);
 
 #endif /* INSN_SCHEDULING */
 
@@ -542,8 +538,7 @@ struct sched_info *current_sched_info;
 
 #ifndef INSN_SCHEDULING
 void
-schedule_insns (dump_file)
-     FILE *dump_file ATTRIBUTE_UNUSED;
+schedule_insns (FILE *dump_file ATTRIBUTE_UNUSED)
 {
 }
 #else
@@ -562,8 +557,7 @@ static rtx last_scheduled_insn;
    should never use the following function.  */
 
 HAIFA_INLINE int
-insn_unit (insn)
-     rtx insn;
+insn_unit (rtx insn)
 {
   int unit = INSN_UNIT (insn);
 
@@ -601,9 +595,7 @@ insn_unit (insn)
    function.  */
 
 HAIFA_INLINE static unsigned int
-blockage_range (unit, insn)
-     int unit;
-     rtx insn;
+blockage_range (int unit, rtx insn)
 {
   unsigned int blockage = INSN_BLOCKAGE (insn);
   unsigned int range;
@@ -656,8 +648,7 @@ static int unit_n_insns[1];
    following function.  */
 
 rtx
-get_unit_last_insn (instance)
-     int instance;
+get_unit_last_insn (int instance)
 {
   return unit_last_insn[instance];
 }
@@ -665,7 +656,7 @@ get_unit_last_insn (instance)
 /* Reset the function unit state to the null state.  */
 
 static void
-clear_units ()
+clear_units (void)
 {
   memset ((char *) unit_last_insn, 0, sizeof (unit_last_insn));
   memset ((char *) unit_tick, 0, sizeof (unit_tick));
@@ -676,8 +667,7 @@ clear_units ()
    description should never use the following function.  */
 
 HAIFA_INLINE int
-insn_issue_delay (insn)
-     rtx insn;
+insn_issue_delay (rtx insn)
 {
   int i, delay = 0;
   int unit = insn_unit (insn);
@@ -707,9 +697,7 @@ insn_issue_delay (insn)
    use the following function.  */
 
 HAIFA_INLINE int
-actual_hazard_this_instance (unit, instance, insn, clock, cost)
-     int unit, instance, clock, cost;
-     rtx insn;
+actual_hazard_this_instance (int unit, int instance, rtx insn, int clock, int cost)
 {
   int tick = unit_tick[instance]; /* Issue time of the last issued insn.  */
 
@@ -745,9 +733,7 @@ actual_hazard_this_instance (unit, instance, insn, clock, cost)
    never use the following function.  */
 
 HAIFA_INLINE static void
-schedule_unit (unit, insn, clock)
-     int unit, clock;
-     rtx insn;
+schedule_unit (int unit, rtx insn, int clock)
 {
   int i;
 
@@ -779,9 +765,7 @@ schedule_unit (unit, insn, clock)
    use the following function.  */
 
 HAIFA_INLINE static int
-actual_hazard (unit, insn, clock, cost)
-     int unit, clock, cost;
-     rtx insn;
+actual_hazard (int unit, rtx insn, int clock, int cost)
 {
   int i;
 
@@ -830,9 +814,7 @@ actual_hazard (unit, insn, clock, cost)
    the following function.  */
 
 HAIFA_INLINE static int
-potential_hazard (unit, insn, cost)
-     int unit, cost;
-     rtx insn;
+potential_hazard (int unit, rtx insn, int cost)
 {
   int i, ncost;
   unsigned int minb, maxb;
@@ -875,8 +857,7 @@ potential_hazard (unit, insn, cost)
    instruction results.  */
 
 HAIFA_INLINE int
-insn_cost (insn, link, used)
-     rtx insn, link, used;
+insn_cost (rtx insn, rtx link, rtx used)
 {
   int cost = INSN_COST (insn);
 
@@ -898,10 +879,10 @@ insn_cost (insn, link, used)
 	    cost = insn_default_latency (insn);
 	  else
 	    cost = result_ready_cost (insn);
-	  
+
 	  if (cost < 0)
 	    cost = 0;
-	  
+
 	  INSN_COST (insn) = cost;
 	}
     }
@@ -942,15 +923,14 @@ insn_cost (insn, link, used)
       if (cost < 0)
 	cost = 0;
     }
-  
+
   return cost;
 }
 
 /* Compute the priority number for INSN.  */
 
 static int
-priority (insn)
-     rtx insn;
+priority (rtx insn)
 {
   rtx link;
 
@@ -1006,9 +986,7 @@ while (0)
    unstable.  */
 
 static int
-rank_for_schedule (x, y)
-     const void *x;
-     const void *y;
+rank_for_schedule (const void *x, const void *y)
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;
@@ -1087,9 +1065,7 @@ rank_for_schedule (x, y)
 /* Resort the array A in which only element at index N may be out of order.  */
 
 HAIFA_INLINE static void
-swap_sort (a, n)
-     rtx *a;
-     int n;
+swap_sort (rtx *a, int n)
 {
   rtx insn = a[n - 1];
   int i = n - 2;
@@ -1107,9 +1083,7 @@ swap_sort (a, n)
    chain for debugging purposes.  */
 
 HAIFA_INLINE static void
-queue_insn (insn, n_cycles)
-     rtx insn;
-     int n_cycles;
+queue_insn (rtx insn, int n_cycles)
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
   rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
@@ -1129,8 +1103,7 @@ queue_insn (insn, n_cycles)
    with the lowest priority.  */
 
 HAIFA_INLINE static rtx *
-ready_lastpos (ready)
-     struct ready_list *ready;
+ready_lastpos (struct ready_list *ready)
 {
   if (ready->n_ready == 0)
     abort ();
@@ -1141,9 +1114,7 @@ ready_lastpos (ready)
    priority.  */
 
 HAIFA_INLINE void
-ready_add (ready, insn)
-     struct ready_list *ready;
-     rtx insn;
+ready_add (struct ready_list *ready, rtx insn)
 {
   if (ready->first == ready->n_ready)
     {
@@ -1160,8 +1131,7 @@ ready_add (ready, insn)
    return it.  */
 
 HAIFA_INLINE static rtx
-ready_remove_first (ready)
-     struct ready_list *ready;
+ready_remove_first (struct ready_list *ready)
 {
   rtx t;
   if (ready->n_ready == 0)
@@ -1183,9 +1153,7 @@ ready_remove_first (ready)
    N_READY - 1.  */
 
 HAIFA_INLINE static rtx
-ready_element (ready, index)
-     struct ready_list *ready;
-     int index;
+ready_element (struct ready_list *ready, int index)
 {
 #ifdef ENABLE_CHECKING
   if (ready->n_ready == 0 || index >= ready->n_ready)
@@ -1199,9 +1167,7 @@ ready_element (ready, index)
    has N_READY - 1.  */
 
 HAIFA_INLINE static rtx
-ready_remove (ready, index)
-     struct ready_list *ready;
-     int index;
+ready_remove (struct ready_list *ready, int index)
 {
   rtx t;
   int i;
@@ -1222,8 +1188,7 @@ ready_remove (ready, index)
    macro.  */
 
 HAIFA_INLINE static void
-ready_sort (ready)
-     struct ready_list *ready;
+ready_sort (struct ready_list *ready)
 {
   rtx *first = ready_lastpos (ready);
   SCHED_SORT (first, ready->n_ready);
@@ -1234,8 +1199,7 @@ ready_sort (ready)
    provide a hook for the target to tweek itself.  */
 
 HAIFA_INLINE static void
-adjust_priority (prev)
-     rtx prev;
+adjust_priority (rtx prev)
 {
   /* ??? There used to be code here to try and estimate how an insn
      affected register lifetimes, but it did it by looking at REG_DEAD
@@ -1251,7 +1215,7 @@ adjust_priority (prev)
 
 /* Advance time on one cycle.  */
 HAIFA_INLINE static void
-advance_one_cycle ()
+advance_one_cycle (void)
 {
   if (targetm.sched.use_dfa_pipeline_interface
       && (*targetm.sched.use_dfa_pipeline_interface) ())
@@ -1278,10 +1242,7 @@ static int last_clock_var;
    zero for insns in a schedule group).  */
 
 static int
-schedule_insn (insn, ready, clock)
-     rtx insn;
-     struct ready_list *ready;
-     int clock;
+schedule_insn (rtx insn, struct ready_list *ready, int clock)
 {
   rtx link;
   int advance = 0;
@@ -1324,7 +1285,7 @@ schedule_insn (insn, ready, clock)
 
       if (MAX_BLOCKAGE > 1 || issue_rate > 1 || sched_verbose)
 	schedule_unit (unit, insn, clock);
-      
+
       if (INSN_DEPEND (insn) == 0)
 	return 0;
     }
@@ -1393,8 +1354,7 @@ schedule_insn (insn, ready, clock)
    Returns the insn following the notes.  */
 
 static rtx
-unlink_other_notes (insn, tail)
-     rtx insn, tail;
+unlink_other_notes (rtx insn, rtx tail)
 {
   rtx prev = PREV_INSN (insn);
 
@@ -1430,8 +1390,7 @@ unlink_other_notes (insn, tail)
    they can be reused.  Returns the insn following the notes.  */
 
 static rtx
-unlink_line_notes (insn, tail)
-     rtx insn, tail;
+unlink_line_notes (rtx insn, rtx tail)
 {
   rtx prev = PREV_INSN (insn);
 
@@ -1461,10 +1420,7 @@ unlink_line_notes (insn, tail)
 /* Return the head and tail pointers of BB.  */
 
 void
-get_block_head_tail (b, headp, tailp)
-     int b;
-     rtx *headp;
-     rtx *tailp;
+get_block_head_tail (int b, rtx *headp, rtx *tailp)
 {
   /* HEAD and TAIL delimit the basic block being scheduled.  */
   rtx head = BLOCK_HEAD (b);
@@ -1491,8 +1447,7 @@ get_block_head_tail (b, headp, tailp)
 /* Return nonzero if there are no real insns in the range [ HEAD, TAIL ].  */
 
 int
-no_real_insns_p (head, tail)
-     rtx head, tail;
+no_real_insns_p (rtx head, rtx tail)
 {
   while (head != NEXT_INSN (tail))
     {
@@ -1508,8 +1463,7 @@ no_real_insns_p (head, tail)
    block in which notes should be processed.  */
 
 void
-rm_line_notes (head, tail)
-     rtx head, tail;
+rm_line_notes (rtx head, rtx tail)
 {
   rtx next_tail;
   rtx insn;
@@ -1541,9 +1495,7 @@ rm_line_notes (head, tail)
    the boundaries of the block in which notes should be processed.  */
 
 void
-save_line_notes (b, head, tail)
-     int b;
-     rtx head, tail;
+save_line_notes (int b, rtx head, rtx tail)
 {
   rtx next_tail;
 
@@ -1569,8 +1521,7 @@ save_line_notes (b, head, tail)
    be processed.  */
 
 void
-restore_line_notes (head, tail)
-     rtx head, tail;
+restore_line_notes (rtx head, rtx tail)
 {
   rtx line, note, prev, new;
   int added_notes = 0;
@@ -1633,7 +1584,7 @@ restore_line_notes (head, tail)
    insns list.  */
 
 void
-rm_redundant_line_notes ()
+rm_redundant_line_notes (void)
 {
   rtx line = 0;
   rtx insn = get_insns ();
@@ -1682,9 +1633,7 @@ rm_redundant_line_notes ()
    of notes ended by NOTE_LIST.  */
 
 void
-rm_other_notes (head, tail)
-     rtx head;
-     rtx tail;
+rm_other_notes (rtx head, rtx tail)
 {
   rtx next_tail;
   rtx insn;
@@ -1724,8 +1673,7 @@ rm_other_notes (head, tail)
    a new register is not needed.  */
 
 static int
-find_set_reg_weight (x)
-    rtx x;
+find_set_reg_weight (rtx x)
 {
   if (GET_CODE (x) == CLOBBER
       && register_operand (SET_DEST (x), VOIDmode))
@@ -1748,8 +1696,7 @@ find_set_reg_weight (x)
 /* Calculate INSN_REG_WEIGHT for all insns of a block.  */
 
 static void
-find_insn_reg_weight (b)
-     int b;
+find_insn_reg_weight (int b)
 {
   rtx insn, next_tail, head, tail;
 
@@ -1769,14 +1716,14 @@ find_insn_reg_weight (b)
       x = PATTERN (insn);
       reg_weight += find_set_reg_weight (x);
       if (GET_CODE (x) == PARALLEL)
- 	{
- 	  int j;
- 	  for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
- 	    {
- 	      x = XVECEXP (PATTERN (insn), 0, j);
+	{
+	  int j;
+	  for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
+	    {
+	      x = XVECEXP (PATTERN (insn), 0, j);
 	      reg_weight += find_set_reg_weight (x);
- 	    }
- 	}
+	    }
+	}
       /* Decrement weight for each register that dies here.  */
       for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
 	{
@@ -1795,8 +1742,7 @@ static int clock_var;
 /* Move insns that became ready to fire from queue to ready list.  */
 
 static void
-queue_to_ready (ready)
-     struct ready_list *ready;
+queue_to_ready (struct ready_list *ready)
 {
   rtx insn;
   rtx link;
@@ -1866,8 +1812,7 @@ queue_to_ready (ready)
 /* Print the ready list for debugging purposes.  Callable from debugger.  */
 
 static void
-debug_ready_list (ready)
-     struct ready_list *ready;
+debug_ready_list (struct ready_list *ready)
 {
   rtx *p;
   int i;
@@ -1887,8 +1832,7 @@ debug_ready_list (ready)
 /* move_insn1: Remove INSN from insn chain, and link it after LAST insn.  */
 
 static rtx
-move_insn1 (insn, last)
-     rtx insn, last;
+move_insn1 (rtx insn, rtx last)
 {
   NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
   PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
@@ -1910,9 +1854,7 @@ move_insn1 (insn, last)
    output by the instruction scheduler.  Return the new value of LAST.  */
 
 static rtx
-reemit_notes (insn, last)
-     rtx insn;
-     rtx last;
+reemit_notes (rtx insn, rtx last)
 {
   rtx note, retval;
 
@@ -1941,8 +1883,7 @@ reemit_notes (insn, last)
    return value from the first call to reemit_notes.  */
 
 static rtx
-move_insn (insn, last)
-     rtx insn, last;
+move_insn (rtx insn, rtx last)
 {
   rtx retval = NULL;
 
@@ -2011,9 +1952,7 @@ static int cached_issue_rate = 0;
    of the best insn in READY.  The following function is used only for
    first cycle multipass scheduling.  */
 static int
-max_issue (ready, index)
-  struct ready_list *ready;
-  int *index;
+max_issue (struct ready_list *ready, int *index)
 {
   int n, i, all, n_ready, best, delay, tries_num;
   struct choice_entry *top;
@@ -2089,8 +2028,7 @@ max_issue (ready, index)
    cycle multipass scheduling.  */
 
 static rtx
-choose_ready (ready)
-     struct ready_list *ready;
+choose_ready (struct ready_list *ready)
 {
   int lookahead = 0;
 
@@ -2133,8 +2071,7 @@ choose_ready (ready)
    the instruction stream.  */
 
 rtx
-sched_emit_insn (pat)
-     rtx pat;
+sched_emit_insn (rtx pat)
 {
   rtx insn = emit_insn_after (pat, last_scheduled_insn);
   last_scheduled_insn = insn;
@@ -2145,9 +2082,7 @@ sched_emit_insn (pat)
    possibly bringing insns from subsequent blocks in the same region.  */
 
 void
-schedule_block (b, rgn_n_insns)
-     int b;
-     int rgn_n_insns;
+schedule_block (int b, int rgn_n_insns)
 {
   struct ready_list ready;
   int i, first_cycle_insn_p;
@@ -2248,18 +2183,18 @@ schedule_block (b, rgn_n_insns)
 	  start_clock_var = clock_var;
 
 	  clock_var++;
-	  
+
 	  advance_one_cycle ();
-	  
+
 	  /* Add to the ready list all pending insns that can be issued now.
 	     If there are no ready insns, increment clock until one
 	     is ready and add all pending insns at that point to the ready
 	     list.  */
 	  queue_to_ready (&ready);
-	  
+
 	  if (ready.n_ready == 0)
 	    abort ();
-	  
+
 	  if (sched_verbose >= 2)
 	    {
 	      fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:  ");
@@ -2273,7 +2208,7 @@ schedule_block (b, rgn_n_insns)
 	{
 	  /* Sort the ready list based on priority.  */
 	  ready_sort (&ready);
-	  
+
 	  if (sched_verbose >= 2)
 	    {
 	      fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
@@ -2322,13 +2257,13 @@ schedule_block (b, rgn_n_insns)
 		  || state_dead_lock_p (curr_state)
 		  || !(*current_sched_info->schedule_more_p) ())
 		break;
-	      
+
 	      /* Select and remove the insn from the ready list.  */
 	      if (sort_p)
 		insn = choose_ready (&ready);
 	      else
 		insn = ready_remove_first (&ready);
-	      
+
 	      if (targetm.sched.dfa_new_cycle
 		  && (*targetm.sched.dfa_new_cycle) (sched_dump, sched_verbose,
 						     insn, last_clock_var,
@@ -2337,7 +2272,7 @@ schedule_block (b, rgn_n_insns)
 		  ready_add (&ready, insn);
 		  break;
 		}
-	    
+
 	      sort_p = TRUE;
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      if (recog_memoized (insn) < 0)
@@ -2366,32 +2301,32 @@ schedule_block (b, rgn_n_insns)
 			{
 			  int j;
 			  rtx bubble;
-			  
+
 			  for (j = 0;
 			       (bubble = (*targetm.sched.dfa_bubble) (j))
 				 != NULL_RTX;
 			       j++)
 			    {
 			      memcpy (temp_state, curr_state, dfa_state_size);
-			      
+
 			      if (state_transition (temp_state, bubble) < 0
 				  && state_transition (temp_state, insn) < 0)
 				break;
 			    }
-			  
+
 			  if (bubble != NULL_RTX)
 			    {
 			      if (insert_schedule_bubbles_p)
 				{
 				  rtx copy;
-				  
+
 				  copy = copy_rtx (PATTERN (bubble));
 				  emit_insn_after (copy, last_scheduled_insn);
 				  last_scheduled_insn
 				    = NEXT_INSN (last_scheduled_insn);
 				  INSN_CODE (last_scheduled_insn)
 				    = INSN_CODE (bubble);
-				  
+
 				  /* Annotate the same for the first insns
 				     scheduling by using mode.  */
 				  PUT_MODE (last_scheduled_insn,
@@ -2399,20 +2334,20 @@ schedule_block (b, rgn_n_insns)
 					     ? clock_var - last_clock_var
 					     : VOIDmode));
 				  last_clock_var = clock_var;
-				  
+
 				  if (sched_verbose >= 2)
 				    {
 				      fprintf (sched_dump,
 					       ";;\t\t--> scheduling bubble insn <<<%d>>>:reservation ",
 					       INSN_UID (last_scheduled_insn));
-				      
+
 				      if (recog_memoized (last_scheduled_insn)
 					  < 0)
 					fprintf (sched_dump, "nothing");
 				      else
 					print_reservation
 					  (sched_dump, last_scheduled_insn);
-				      
+
 				      fprintf (sched_dump, "\n");
 				    }
 				}
@@ -2447,7 +2382,7 @@ schedule_block (b, rgn_n_insns)
 		cycle_issued_insns++;
 	      memcpy (curr_state, temp_state, dfa_state_size);
 	    }
-	    
+
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
 	      (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
@@ -2515,7 +2450,7 @@ schedule_block (b, rgn_n_insns)
   if (!reload_completed)
     {
       rtx insn, link, next;
-      
+
       /* INSN_TICK (minimum clock tick at which the insn becomes
          ready) may be not correct for the insn in the subsequent
          blocks of the region.  We should use a correct value of
@@ -2580,8 +2515,7 @@ schedule_block (b, rgn_n_insns)
 /* Set_priorities: compute priority of each insn in the block.  */
 
 int
-set_priorities (head, tail)
-     rtx head, tail;
+set_priorities (rtx head, rtx tail)
 {
   rtx insn;
   int n_insn;
@@ -2610,8 +2544,7 @@ set_priorities (head, tail)
    for debugging output.  */
 
 void
-sched_init (dump_file)
-     FILE *dump_file;
+sched_init (FILE *dump_file)
 {
   int luid;
   basic_block b;
@@ -2659,14 +2592,14 @@ sched_init (dump_file)
     {
       if (targetm.sched.init_dfa_pre_cycle_insn)
 	(*targetm.sched.init_dfa_pre_cycle_insn) ();
-      
+
       if (targetm.sched.init_dfa_post_cycle_insn)
 	(*targetm.sched.init_dfa_post_cycle_insn) ();
-      
+
       if (targetm.sched.first_cycle_multipass_dfa_lookahead
 	  && targetm.sched.init_dfa_bubbles)
 	(*targetm.sched.init_dfa_bubbles) ();
-      
+
       dfa_start ();
       dfa_state_size = state_size ();
       curr_state = xmalloc (dfa_state_size);
@@ -2757,7 +2690,7 @@ sched_init (dump_file)
 /* Free global data used during insn scheduling.  */
 
 void
-sched_finish ()
+sched_finish (void)
 {
   free (h_i_d);
 

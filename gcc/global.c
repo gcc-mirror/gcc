@@ -1,6 +1,6 @@
 /* Allocate registers for pseudo-registers that span basic blocks.
    Copyright (C) 1987, 1988, 1991, 1994, 1996, 1997, 1998,
-   1999, 2000, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -289,24 +289,23 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare	PARAMS ((const void *, const void *));
-static void global_conflicts	PARAMS ((void));
-static void mirror_conflicts	PARAMS ((void));
-static void expand_preferences	PARAMS ((void));
-static void prune_preferences	PARAMS ((void));
-static void find_reg		PARAMS ((int, HARD_REG_SET, int, int, int));
-static void record_one_conflict PARAMS ((int));
-static void record_conflicts	PARAMS ((int *, int));
-static void mark_reg_store	PARAMS ((rtx, rtx, void *));
-static void mark_reg_clobber	PARAMS ((rtx, rtx, void *));
-static void mark_reg_conflicts	PARAMS ((rtx));
-static void mark_reg_death	PARAMS ((rtx));
-static void mark_reg_live_nc	PARAMS ((int, enum machine_mode));
-static void set_preference	PARAMS ((rtx, rtx));
-static void dump_conflicts	PARAMS ((FILE *));
-static void reg_becomes_live	PARAMS ((rtx, rtx, void *));
-static void reg_dies		PARAMS ((int, enum machine_mode,
-				       struct insn_chain *));
+static int allocno_compare (const void *, const void *);
+static void global_conflicts (void);
+static void mirror_conflicts (void);
+static void expand_preferences (void);
+static void prune_preferences (void);
+static void find_reg (int, HARD_REG_SET, int, int, int);
+static void record_one_conflict (int);
+static void record_conflicts (int *, int);
+static void mark_reg_store (rtx, rtx, void *);
+static void mark_reg_clobber (rtx, rtx, void *);
+static void mark_reg_conflicts (rtx);
+static void mark_reg_death (rtx);
+static void mark_reg_live_nc (int, enum machine_mode);
+static void set_preference (rtx, rtx);
+static void dump_conflicts (FILE *);
+static void reg_becomes_live (rtx, rtx, void *);
+static void reg_dies (int, enum machine_mode, struct insn_chain *);
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
@@ -316,8 +315,7 @@ static void reg_dies		PARAMS ((int, enum machine_mode,
    and we must not do any more for this function.  */
 
 int
-global_alloc (file)
-     FILE *file;
+global_alloc (FILE *file)
 {
   int retval;
 #ifdef ELIMINABLE_REGS
@@ -599,9 +597,7 @@ global_alloc (file)
    Returns -1 (1) if *v1 should be allocated before (after) *v2.  */
 
 static int
-allocno_compare (v1p, v2p)
-     const void *v1p;
-     const void *v2p;
+allocno_compare (const void *v1p, const void *v2p)
 {
   int v1 = *(const int *)v1p, v2 = *(const int *)v2p;
   /* Note that the quotient will never be bigger than
@@ -629,7 +625,7 @@ allocno_compare (v1p, v2p)
    conflict matrices and preference tables.  */
 
 static void
-global_conflicts ()
+global_conflicts (void)
 {
   int i;
   basic_block b;
@@ -703,11 +699,11 @@ global_conflicts ()
 	    scan the instruction that makes either X or Y become live.  */
 	record_conflicts (block_start_allocnos, ax);
 
- 	/* Pseudos can't go in stack regs at the start of a basic block that
- 	   is reached by an abnormal edge. Likewise for call clobbered regs,
- 	   because because caller-save, fixup_abnormal_edges, and possibly
- 	   the table driven EH machinery are not quite ready to handle such
- 	   regs live across such edges.  */
+	/* Pseudos can't go in stack regs at the start of a basic block that
+	   is reached by an abnormal edge. Likewise for call clobbered regs,
+	   because because caller-save, fixup_abnormal_edges, and possibly
+	   the table driven EH machinery are not quite ready to handle such
+	   regs live across such edges.  */
 	{
 	  edge e;
 
@@ -852,7 +848,7 @@ global_conflicts ()
    merge any preferences between those allocnos.  */
 
 static void
-expand_preferences ()
+expand_preferences (void)
 {
   rtx insn;
   rtx link;
@@ -903,7 +899,7 @@ expand_preferences ()
    we will avoid using these registers.  */
 
 static void
-prune_preferences ()
+prune_preferences (void)
 {
   int i;
   int num;
@@ -991,12 +987,7 @@ prune_preferences ()
    If not, do nothing.  */
 
 static void
-find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
-     int num;
-     HARD_REG_SET losers;
-     int alt_regs_p;
-     int accept_call_clobbered;
-     int retrying;
+find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbered, int retrying)
 {
   int i, best_reg, pass;
   HARD_REG_SET used, used1, used2;
@@ -1110,7 +1101,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		   (j < lim
 		    && ! TEST_HARD_REG_BIT (used, j)
 		    && (REGNO_REG_CLASS (j)
-		    	== REGNO_REG_CLASS (best_reg + (j - i))
+			== REGNO_REG_CLASS (best_reg + (j - i))
 			|| reg_class_subset_p (REGNO_REG_CLASS (j),
 					       REGNO_REG_CLASS (best_reg + (j - i)))
 			|| reg_class_subset_p (REGNO_REG_CLASS (best_reg + (j - i)),
@@ -1149,7 +1140,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		   (j < lim
 		    && ! TEST_HARD_REG_BIT (used, j)
 		    && (REGNO_REG_CLASS (j)
-		    	== REGNO_REG_CLASS (best_reg + (j - i))
+			== REGNO_REG_CLASS (best_reg + (j - i))
 			|| reg_class_subset_p (REGNO_REG_CLASS (j),
 					       REGNO_REG_CLASS (best_reg + (j - i)))
 			|| reg_class_subset_p (REGNO_REG_CLASS (best_reg + (j - i)),
@@ -1311,9 +1302,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
    If FORBIDDEN_REGS is zero, no regs are forbidden.  */
 
 void
-retry_global_alloc (regno, forbidden_regs)
-     int regno;
-     HARD_REG_SET forbidden_regs;
+retry_global_alloc (int regno, HARD_REG_SET forbidden_regs)
 {
   int alloc_no = reg_allocno[regno];
   if (alloc_no >= 0)
@@ -1344,8 +1333,7 @@ retry_global_alloc (regno, forbidden_regs)
    reg_renumber before calling here.  */
 
 static void
-record_one_conflict (regno)
-     int regno;
+record_one_conflict (int regno)
 {
   int j;
 
@@ -1388,9 +1376,7 @@ record_one_conflict (regno)
    are currently live.  Their bits are also flagged in allocnos_live.  */
 
 static void
-record_conflicts (allocno_vec, len)
-     int *allocno_vec;
-     int len;
+record_conflicts (int *allocno_vec, int len)
 {
   while (--len >= 0)
     IOR_HARD_REG_SET (allocno[allocno_vec[len]].hard_reg_conflicts,
@@ -1399,7 +1385,7 @@ record_conflicts (allocno_vec, len)
 
 /* If CONFLICTP (i, j) is true, make sure CONFLICTP (j, i) is also true.  */
 static void
-mirror_conflicts ()
+mirror_conflicts (void)
 {
   int i, j;
   int rw = allocno_row_words;
@@ -1447,9 +1433,7 @@ mirror_conflicts ()
    a REG_INC note was found for it).  */
 
 static void
-mark_reg_store (reg, setter, data)
-     rtx reg, setter;
-     void *data ATTRIBUTE_UNUSED;
+mark_reg_store (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
 {
   int regno;
 
@@ -1496,9 +1480,7 @@ mark_reg_store (reg, setter, data)
 /* Like mark_reg_set except notice just CLOBBERs; ignore SETs.  */
 
 static void
-mark_reg_clobber (reg, setter, data)
-     rtx reg, setter;
-     void *data ATTRIBUTE_UNUSED;
+mark_reg_clobber (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (setter) == CLOBBER)
     mark_reg_store (reg, setter, data);
@@ -1508,8 +1490,7 @@ mark_reg_clobber (reg, setter, data)
    Do not mark REG itself as live.  */
 
 static void
-mark_reg_conflicts (reg)
-     rtx reg;
+mark_reg_conflicts (rtx reg)
 {
   int regno;
 
@@ -1548,8 +1529,7 @@ mark_reg_conflicts (reg)
    Store a 0 in regs_live or allocnos_live for this register.  */
 
 static void
-mark_reg_death (reg)
-     rtx reg;
+mark_reg_death (rtx reg)
 {
   int regno = REGNO (reg);
 
@@ -1585,9 +1565,7 @@ mark_reg_death (reg)
    it is assumed that the caller will do that.  */
 
 static void
-mark_reg_live_nc (regno, mode)
-     int regno;
-     enum machine_mode mode;
+mark_reg_live_nc (int regno, enum machine_mode mode)
 {
   int last = regno + HARD_REGNO_NREGS (regno, mode);
   while (regno < last)
@@ -1607,8 +1585,7 @@ mark_reg_live_nc (regno, mode)
    pseudo-register to a hard register.  */
 
 static void
-set_preference (dest, src)
-     rtx dest, src;
+set_preference (rtx dest, rtx src)
 {
   unsigned int src_regno, dest_regno;
   /* Amount to add to the hard regno for SRC, or subtract from that for DEST,
@@ -1715,8 +1692,7 @@ set_preference (dest, src)
    a use of TO.  */
 
 void
-mark_elimination (from, to)
-     int from, to;
+mark_elimination (int from, int to)
 {
   basic_block bb;
 
@@ -1738,10 +1714,7 @@ static regset live_relevant_regs;
 /* Record in live_relevant_regs and REGS_SET that register REG became live.
    This is called via note_stores.  */
 static void
-reg_becomes_live (reg, setter, regs_set)
-     rtx reg;
-     rtx setter ATTRIBUTE_UNUSED;
-     void *regs_set;
+reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *regs_set)
 {
   int regno;
 
@@ -1772,10 +1745,7 @@ reg_becomes_live (reg, setter, regs_set)
 
 /* Record in live_relevant_regs that register REGNO died.  */
 static void
-reg_dies (regno, mode, chain)
-     int regno;
-     enum machine_mode mode;
-     struct insn_chain *chain;
+reg_dies (int regno, enum machine_mode mode, struct insn_chain *chain)
 {
   if (regno < FIRST_PSEUDO_REGISTER)
     {
@@ -1799,8 +1769,7 @@ reg_dies (regno, mode, chain)
 /* Walk the insns of the current function and build reload_insn_chain,
    and record register life information.  */
 void
-build_insn_chain (first)
-     rtx first;
+build_insn_chain (rtx first)
 {
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
@@ -1905,8 +1874,7 @@ build_insn_chain (first)
    showing the information on which the allocation decisions are based.  */
 
 static void
-dump_conflicts (file)
-     FILE *file;
+dump_conflicts (FILE *file)
 {
   int i;
   int has_preferences;
@@ -1963,8 +1931,7 @@ dump_conflicts (file)
 }
 
 void
-dump_global_regs (file)
-     FILE *file;
+dump_global_regs (FILE *file)
 {
   int i, j;
 

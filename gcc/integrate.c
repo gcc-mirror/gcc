@@ -74,28 +74,23 @@ typedef struct initial_value_struct GTY(()) {
   initial_value_pair * GTY ((length ("%h.num_entries"))) entries;
 } initial_value_struct;
 
-static void setup_initial_hard_reg_value_integration PARAMS ((struct function *, struct inline_remap *));
+static void setup_initial_hard_reg_value_integration (struct function *,
+						      struct inline_remap *);
 
-static rtvec initialize_for_inline	PARAMS ((tree));
-static void note_modified_parmregs	PARAMS ((rtx, rtx, void *));
-static void integrate_parm_decls	PARAMS ((tree, struct inline_remap *,
-						 rtvec));
-static tree integrate_decl_tree		PARAMS ((tree,
-						 struct inline_remap *));
-static void subst_constants		PARAMS ((rtx *, rtx,
-						 struct inline_remap *, int));
-static void set_block_origin_self	PARAMS ((tree));
-static void set_block_abstract_flags	PARAMS ((tree, int));
-static void process_reg_param		PARAMS ((struct inline_remap *, rtx,
-						 rtx));
-static void mark_stores                 PARAMS ((rtx, rtx, void *));
-static void save_parm_insns		PARAMS ((rtx, rtx));
-static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
-						 rtx));
-static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *,
-						 int));
-static int compare_blocks               PARAMS ((const void *, const void *));
-static int find_block                   PARAMS ((const void *, const void *));
+static rtvec initialize_for_inline (tree);
+static void note_modified_parmregs (rtx, rtx, void *);
+static void integrate_parm_decls (tree, struct inline_remap *, rtvec);
+static tree integrate_decl_tree (tree, struct inline_remap *);
+static void subst_constants (rtx *, rtx, struct inline_remap *, int);
+static void set_block_origin_self (tree);
+static void set_block_abstract_flags (tree, int);
+static void process_reg_param (struct inline_remap *, rtx, rtx);
+static void mark_stores (rtx, rtx, void *);
+static void save_parm_insns (rtx, rtx);
+static void copy_insn_list (rtx, struct inline_remap *, rtx);
+static void copy_insn_notes (rtx, struct inline_remap *, int);
+static int compare_blocks (const void *, const void *);
+static int find_block (const void *, const void *);
 
 /* Used by copy_rtx_and_substitute; this indicates whether the function is
    called for the purpose of inlining or some other purpose (i.e. loop
@@ -109,9 +104,7 @@ static struct function *inlining = 0;
    explosions when the label_map gets very large.  */
 
 rtx
-get_label_from_map (map, i)
-     struct inline_remap *map;
-     int i;
+get_label_from_map (struct inline_remap *map, int i)
 {
   rtx x = map->label_map[i];
 
@@ -124,8 +117,7 @@ get_label_from_map (map, i)
 /* Return false if the function FNDECL cannot be inlined on account of its
    attributes, true otherwise.  */
 bool
-function_attribute_inlinable_p (fndecl)
-     tree fndecl;
+function_attribute_inlinable_p (tree fndecl)
 {
   if (targetm.attribute_table)
     {
@@ -151,8 +143,7 @@ function_attribute_inlinable_p (fndecl)
    for the function's name.  */
 
 const char *
-function_cannot_inline_p (fndecl)
-     tree fndecl;
+function_cannot_inline_p (tree fndecl)
 {
   rtx insn;
   tree last = tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
@@ -285,8 +276,7 @@ static int in_nonparm_insns;
    needed to save FNDECL's insns and info for future inline expansion.  */
 
 static rtvec
-initialize_for_inline (fndecl)
-     tree fndecl;
+initialize_for_inline (tree fndecl)
 {
   int i;
   rtvec arg_vector;
@@ -337,10 +327,7 @@ initialize_for_inline (fndecl)
    TO_FN.  */
 
 tree
-copy_decl_for_inlining (decl, from_fn, to_fn)
-     tree decl;
-     tree from_fn;
-     tree to_fn;
+copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
 {
   tree copy;
 
@@ -441,8 +428,7 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
    functions at the end of compilation.  */
 
 void
-save_for_inline (fndecl)
-     tree fndecl;
+save_for_inline (tree fndecl)
 {
   rtx insn;
   rtvec argvec;
@@ -518,9 +504,7 @@ save_for_inline (fndecl)
    register and track the new register's life.  */
 
 static void
-save_parm_insns (insn, first_nonparm_insn)
-     rtx insn;
-     rtx first_nonparm_insn;
+save_parm_insns (rtx insn, rtx first_nonparm_insn)
 {
   if (insn == NULL_RTX)
     return;
@@ -554,10 +538,7 @@ save_parm_insns (insn, first_nonparm_insn)
 /* Note whether a parameter is modified or not.  */
 
 static void
-note_modified_parmregs (reg, x, data)
-     rtx reg;
-     rtx x ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+note_modified_parmregs (rtx reg, rtx x ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (reg) == REG && in_nonparm_insns
       && REGNO (reg) < max_parm_reg
@@ -588,9 +569,7 @@ varray_type global_const_equiv_varray;
    Also, don't allow hard registers here; they might not be valid when
    substituted into insns.  */
 static void
-process_reg_param (map, loc, copy)
-     struct inline_remap *map;
-     rtx loc, copy;
+process_reg_param (struct inline_remap *map, rtx loc, rtx copy)
 {
   if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
       || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
@@ -612,9 +591,7 @@ process_reg_param (map, loc, copy)
    two pointers, because it may overflow sizeof(int).  */
 
 static int
-compare_blocks (v1, v2)
-     const void *v1;
-     const void *v2;
+compare_blocks (const void *v1, const void *v2)
 {
   tree b1 = *((const tree *) v1);
   tree b2 = *((const tree *) v2);
@@ -630,9 +607,7 @@ compare_blocks (v1, v2)
    an original block; the second to a remapped equivalent.  */
 
 static int
-find_block (v1, v2)
-     const void *v1;
-     const void *v2;
+find_block (const void *v1, const void *v2)
 {
   const union tree_node *b1 = (const union tree_node *) v1;
   tree b2 = *((const tree *) v2);
@@ -658,13 +633,8 @@ find_block (v1, v2)
    else an rtx for where the value is stored.  */
 
 rtx
-expand_inline_function (fndecl, parms, target, ignore, type,
-			structure_value_addr)
-     tree fndecl, parms;
-     rtx target;
-     int ignore;
-     tree type;
-     rtx structure_value_addr;
+expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
+			tree type, rtx structure_value_addr)
 {
   struct function *inlining_previous;
   struct function *inl_f = DECL_SAVED_INSNS (fndecl);
@@ -812,10 +782,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       /* If the formal type was const but the actual was not, we might
 	 end up here with an rtx wrongly tagged unchanging in the caller's
 	 context.  Fix that.  */
-      if (arg_vals[i] != 0 
+      if (arg_vals[i] != 0
 	  && (GET_CODE (arg_vals[i]) == REG || GET_CODE (arg_vals[i]) == MEM)
 	  && ! TREE_READONLY (TREE_VALUE (actual)))
-	RTX_UNCHANGING_P (arg_vals[i]) = 0;      
+	RTX_UNCHANGING_P (arg_vals[i]) = 0;
 
       if (arg_vals[i] != 0
 	  && (! TREE_READONLY (formal)
@@ -1039,7 +1009,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      REG_FUNCTION_RETURN_VALUE_P.  */
 
   map->inline_target = 0;
-  loc = (DECL_RTL_SET_P (DECL_RESULT (fndecl)) 
+  loc = (DECL_RTL_SET_P (DECL_RESULT (fndecl))
 	 ? DECL_RTL (DECL_RESULT (fndecl)) : NULL_RTX);
 
   if (TYPE_MODE (type) == VOIDmode)
@@ -1348,10 +1318,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
    register for the function.  */
 
 static void
-copy_insn_list (insns, map, static_chain_value)
-     rtx insns;
-     struct inline_remap *map;
-     rtx static_chain_value;
+copy_insn_list (rtx insns, struct inline_remap *map, rtx static_chain_value)
 {
   int i;
   rtx insn;
@@ -1732,10 +1699,7 @@ copy_insn_list (insns, map, static_chain_value)
    that are valid across the entire function.  */
 
 static void
-copy_insn_notes (insns, map, eh_region_offset)
-     rtx insns;
-     struct inline_remap *map;
-     int eh_region_offset;
+copy_insn_notes (rtx insns, struct inline_remap *map, int eh_region_offset)
 {
   rtx insn, new_insn;
 
@@ -1791,10 +1755,7 @@ copy_insn_notes (insns, map, eh_region_offset)
    push all of those decls and give each one the corresponding home.  */
 
 static void
-integrate_parm_decls (args, map, arg_vector)
-     tree args;
-     struct inline_remap *map;
-     rtvec arg_vector;
+integrate_parm_decls (tree args, struct inline_remap *map, rtvec arg_vector)
 {
   tree tail;
   int i;
@@ -1827,9 +1788,7 @@ integrate_parm_decls (args, map, arg_vector)
    no mapping is necessary.  */
 
 static tree
-integrate_decl_tree (let, map)
-     tree let;
-     struct inline_remap *map;
+integrate_decl_tree (tree let, struct inline_remap *map)
 {
   tree t;
   tree new_block;
@@ -1898,10 +1857,7 @@ integrate_decl_tree (let, map)
    calling `force_const_mem'.  */
 
 rtx
-copy_rtx_and_substitute (orig, map, for_lhs)
-     rtx orig;
-     struct inline_remap *map;
-     int for_lhs;
+copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 {
   rtx copy, temp;
   int i, j;
@@ -2050,7 +2006,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	    {
 	      if (!map->leaf_reg_map[regno][mode])
 		map->leaf_reg_map[regno][mode] = gen_rtx_REG (mode, regno);
-	      return map->leaf_reg_map[regno][mode]; 
+	      return map->leaf_reg_map[regno][mode];
 	    }
 #endif
 	  else
@@ -2280,7 +2236,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  MEM_COPY_ATTRIBUTES (copy, XEXP (orig, 0));
 
 	  return
-	    gen_rtx_CALL (GET_MODE (orig), copy, 
+	    gen_rtx_CALL (GET_MODE (orig), copy,
 			  copy_rtx_and_substitute (XEXP (orig, 1), map, 0));
 	}
       break;
@@ -2447,9 +2403,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 /* Substitute known constant values into INSN, if that is valid.  */
 
 void
-try_constants (insn, map)
-     rtx insn;
-     struct inline_remap *map;
+try_constants (rtx insn, struct inline_remap *map)
 {
   int i;
 
@@ -2463,7 +2417,7 @@ try_constants (insn, map)
   apply_change_group ();
   subst_constants (&PATTERN (insn), insn, map, 0);
   apply_change_group ();
-  
+
   /* Enforce consistency between the addresses in the regular insn flow
      and the ones in CALL_INSN_FUNCTION_USAGE lists, if any.  */
   if (GET_CODE (insn) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (insn))
@@ -2521,11 +2475,7 @@ try_constants (insn, map)
    If MEMONLY is nonzero, only make changes inside a MEM.  */
 
 static void
-subst_constants (loc, insn, map, memonly)
-     rtx *loc;
-     rtx insn;
-     struct inline_remap *map;
-     int memonly;
+subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 {
   rtx x = *loc;
   int i, j;
@@ -2599,7 +2549,7 @@ subst_constants (loc, insn, map, memonly)
 	     integral mode and extracting the low part.  */
 	  subst_constants (&inner, NULL_RTX, map, 0);
 	  new = simplify_gen_subreg (GET_MODE (x), inner,
-			 	     GET_MODE (SUBREG_REG (x)),
+				     GET_MODE (SUBREG_REG (x)),
 				     SUBREG_BYTE (x));
 
 	  if (new)
@@ -2856,10 +2806,7 @@ subst_constants (loc, insn, map, memonly)
    called from note_stores with parts of the new insn.  */
 
 static void
-mark_stores (dest, x, data)
-     rtx dest;
-     rtx x ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+mark_stores (rtx dest, rtx x ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
   int regno = -1;
   enum machine_mode mode = VOIDmode;
@@ -2908,8 +2855,7 @@ mark_stores (dest, x, data)
    values to point to themselves.  */
 
 static void
-set_block_origin_self (stmt)
-     tree stmt;
+set_block_origin_self (tree stmt)
 {
   if (BLOCK_ABSTRACT_ORIGIN (stmt) == NULL_TREE)
     {
@@ -2947,8 +2893,7 @@ set_block_origin_self (stmt)
    point to themselves.  */
 
 void
-set_decl_origin_self (decl)
-     tree decl;
+set_decl_origin_self (tree decl)
 {
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL_TREE)
     {
@@ -2972,9 +2917,7 @@ set_decl_origin_self (decl)
    (recursively) which are contained therein.  */
 
 static void
-set_block_abstract_flags (stmt, setting)
-     tree stmt;
-     int setting;
+set_block_abstract_flags (tree stmt, int setting)
 {
   tree local_decl;
   tree subblock;
@@ -2999,9 +2942,7 @@ set_block_abstract_flags (stmt, setting)
    blocks and sub-blocks (recursively) to the same setting.  */
 
 void
-set_decl_abstract_flags (decl, setting)
-     tree decl;
-     int setting;
+set_decl_abstract_flags (tree decl, int setting)
 {
   DECL_ABSTRACT (decl) = setting;
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -3023,8 +2964,7 @@ set_decl_abstract_flags (decl, setting)
 static GTY(()) struct function *old_cfun;
 
 void
-output_inline_function (fndecl)
-     tree fndecl;
+output_inline_function (tree fndecl)
 {
   enum debug_info_type old_write_symbols = write_symbols;
   const struct gcc_debug_hooks *const old_debug_hooks = debug_hooks;
@@ -3067,9 +3007,7 @@ output_inline_function (fndecl)
    the function.  */
 
 rtx
-get_hard_reg_initial_reg (fun, reg)
-     struct function *fun;
-     rtx reg;
+get_hard_reg_initial_reg (struct function *fun, rtx reg)
 {
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
   int i;
@@ -3085,9 +3023,7 @@ get_hard_reg_initial_reg (fun, reg)
 }
 
 rtx
-has_func_hard_reg_initial_val (fun, reg)
-     struct function *fun;
-     rtx reg;
+has_func_hard_reg_initial_val (struct function *fun, rtx reg)
 {
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
   int i;
@@ -3103,9 +3039,7 @@ has_func_hard_reg_initial_val (fun, reg)
 }
 
 rtx
-get_func_hard_reg_initial_val (fun, reg)
-     struct function *fun;
-     rtx reg;
+get_func_hard_reg_initial_val (struct function *fun, rtx reg)
 {
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
   rtx rv = has_func_hard_reg_initial_val (fun, reg);
@@ -3125,7 +3059,7 @@ get_func_hard_reg_initial_val (fun, reg)
   if (ivs->num_entries >= ivs->max_entries)
     {
       ivs->max_entries += 5;
-      ivs->entries = 
+      ivs->entries =
 	(initial_value_pair *) ggc_realloc (ivs->entries,
 					    ivs->max_entries
 					    * sizeof (initial_value_pair));
@@ -3138,25 +3072,19 @@ get_func_hard_reg_initial_val (fun, reg)
 }
 
 rtx
-get_hard_reg_initial_val (mode, regno)
-     enum machine_mode mode;
-     int regno;
+get_hard_reg_initial_val (enum machine_mode mode, int regno)
 {
   return get_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
 }
 
 rtx
-has_hard_reg_initial_val (mode, regno)
-     enum machine_mode mode;
-     int regno;
+has_hard_reg_initial_val (enum machine_mode mode, int regno)
 {
   return has_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
 }
 
 static void
-setup_initial_hard_reg_value_integration (inl_f, remap)
-     struct function *inl_f;
-     struct inline_remap *remap;
+setup_initial_hard_reg_value_integration (struct function *inl_f, struct inline_remap *remap)
 {
   struct initial_value_struct *ivs = inl_f->hard_reg_initial_vals;
   int i;
@@ -3171,7 +3099,7 @@ setup_initial_hard_reg_value_integration (inl_f, remap)
 
 
 void
-emit_initial_value_sets ()
+emit_initial_value_sets (void)
 {
   struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
   int i;
@@ -3192,8 +3120,7 @@ emit_initial_value_sets ()
 /* If the backend knows where to allocate pseudos for hard
    register initial values, register these allocations now.  */
 void
-allocate_initial_values (reg_equiv_memory_loc)
-     rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED;
+allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 {
 #ifdef ALLOCATE_INITIAL_VALUE
   struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;

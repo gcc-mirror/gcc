@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -46,7 +46,7 @@ struct ht
 
   hashnode *entries;
   /* Call back.  */
-  hashnode (*alloc_node) PARAMS ((hash_table *));
+  hashnode (*alloc_node) (hash_table *);
 
   unsigned int nslots;		/* Total slots in the entries array.  */
   unsigned int nelements;	/* Number of live elements.  */
@@ -60,25 +60,25 @@ struct ht
 };
 
 /* Initialize the hashtable with 2 ^ order entries.  */
-extern hash_table *ht_create PARAMS ((unsigned int order));
+extern hash_table *ht_create (unsigned int order);
 
 /* Frees all memory associated with a hash table.  */
-extern void ht_destroy PARAMS ((hash_table *));
+extern void ht_destroy (hash_table *);
 
-extern hashnode ht_lookup PARAMS ((hash_table *, const unsigned char *,
-				   unsigned int, enum ht_lookup_option));
+extern hashnode ht_lookup (hash_table *, const unsigned char *,
+			   unsigned int, enum ht_lookup_option);
 
 /* For all nodes in TABLE, make a callback.  The callback takes
    TABLE->PFILE, the node, and a PTR, and the callback sequence stops
    if the callback returns zero.  */
-typedef int (*ht_cb) PARAMS ((struct cpp_reader *, hashnode, const void *));
-extern void ht_forall PARAMS ((hash_table *, ht_cb, const void *));
+typedef int (*ht_cb) (struct cpp_reader *, hashnode, const void *);
+extern void ht_forall (hash_table *, ht_cb, const void *);
 
 /* Dump allocation statistics to stderr.  */
-extern void ht_dump_statistics PARAMS ((hash_table *));
+extern void ht_dump_statistics (hash_table *);
 
 /* Approximate positive square root of a host double.  This is for
    statistical reports, not code generation.  */
-extern double approx_sqrt PARAMS ((double));
+extern double approx_sqrt (double);
 
 #endif /* GCC_HASHTABLE_H */

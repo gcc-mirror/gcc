@@ -1,3 +1,26 @@
+2003-07-06  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c: Convert prototypes to ISO C90.
+	* gcc.h: Likewise.
+	* gcov-dump.c: Likewise.
+	* gcov-iov.c: Likewise.
+	* gcse.c: Likewise.
+	* genattrtab.h: Likewise.
+	* ggc.h: Likewise.
+	* global.c: Likewise.
+	* graph.c: Likewise.
+	* graph.h: Likewise.
+	* hosthooks.h: Likewise.
+	* hooks.h: Likewise.
+	* hooks.c: Likewise.
+	* hashtable.h: Likewise.
+	* hashtable.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* integrate.h: Likewise.
+	* integrate.c: Likewise.
+	* input.h: Likewise.
+	* ifcvt.c: Likewise.
+
 2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (nonzero_bits1): Fix a warning.
