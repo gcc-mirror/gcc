@@ -320,6 +320,7 @@ static int rank_for_schedule PARAMS ((const PTR, const PTR));
 static void swap_sort PARAMS ((rtx *, int));
 static void queue_insn PARAMS ((rtx, int));
 static void schedule_insn PARAMS ((rtx, struct ready_list *, int));
+static int find_set_reg_weight PARAMS ((rtx));
 static void find_insn_reg_weight PARAMS ((int));
 static void adjust_priority PARAMS ((rtx));
 static void advance_one_cycle PARAMS ((void));
@@ -366,7 +367,7 @@ static rtx move_insn PARAMS ((rtx, rtx));
    on the first cycle.  It is used only for DFA based scheduler.  */
 static rtx ready_element PARAMS ((struct ready_list *, int));
 static rtx ready_remove PARAMS ((struct ready_list *, int));
-static int max_issue PARAMS ((struct ready_list *, state_t, int *));
+static int max_issue PARAMS ((struct ready_list *, int *));
 
 static rtx choose_ready PARAMS ((struct ready_list *));
 
@@ -853,6 +854,7 @@ rank_for_schedule (x, y)
 
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
+
   if (priority_val)
     return priority_val;
 
@@ -1017,8 +1019,10 @@ ready_element (ready, index)
      struct ready_list *ready;
      int index;
 {
+#ifdef ENABLE_CHECKING
   if (ready->n_ready == 0 || index >= ready->n_ready)
     abort ();
+#endif
   return ready->vec[ready->first - index];
 }
 
@@ -1195,11 +1199,12 @@ schedule_insn (insn, ready, clock)
      to issue on the same cycle as the previous insn.  A machine
      may use this information to decide how the instruction should
      be aligned.  */
-  if (reload_completed && issue_rate > 1
+  if (issue_rate > 1
       && GET_CODE (PATTERN (insn)) != USE
       && GET_CODE (PATTERN (insn)) != CLOBBER)
     {
-      PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
+      if (reload_completed)
+	PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
       last_clock_var = clock;
     }
 }
@@ -1536,6 +1541,32 @@ rm_other_notes (head, tail)
 
 /* Functions for computation of registers live/usage info.  */
 
+/* This function looks for a new register being defined.
+   If the destination register is already used by the source,
+   a new register is not needed. */
+
+static int
+find_set_reg_weight (x)
+    rtx x;
+{
+  if (GET_CODE (x) == CLOBBER
+      && register_operand (SET_DEST (x), VOIDmode))
+    return 1;
+  if (GET_CODE (x) == SET
+      && register_operand (SET_DEST (x), VOIDmode))
+    {
+      if (GET_CODE (SET_DEST (x)) == REG)
+	{
+	  if (!reg_mentioned_p (SET_DEST (x), SET_SRC (x)))
+	    return 1;
+	  else
+	    return 0;
+	}
+      return 1;
+    }
+  return 0;
+}
+
 /* Calculate INSN_REG_WEIGHT for all insns of a block.  */
 
 static void
@@ -1558,21 +1589,16 @@ find_insn_reg_weight (b)
 
       /* Increment weight for each register born here.  */
       x = PATTERN (insn);
-      if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
-	  && register_operand (SET_DEST (x), VOIDmode))
-	reg_weight++;
-      else if (GET_CODE (x) == PARALLEL)
-	{
-	  int j;
-	  for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
-	    {
-	      x = XVECEXP (PATTERN (insn), 0, j);
-	      if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
-		  && register_operand (SET_DEST (x), VOIDmode))
-		reg_weight++;
-	    }
-	}
-
+      reg_weight += find_set_reg_weight (x);
+      if (GET_CODE (x) == PARALLEL)
+ 	{
+ 	  int j;
+ 	  for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
+ 	    {
+ 	      x = XVECEXP (PATTERN (insn), 0, j);
+	      reg_weight += find_set_reg_weight (x);
+ 	    }
+ 	}
       /* Decrement weight for each register that dies here.  */
       for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
 	{
@@ -1743,25 +1769,6 @@ move_insn (insn, last)
 {
   rtx retval = NULL;
 
-  /* If INSN has SCHED_GROUP_P set, then issue it and any other
-     insns with SCHED_GROUP_P set first.  */
-  while (SCHED_GROUP_P (insn))
-    {
-      rtx prev = PREV_INSN (insn);
-
-      /* Move a SCHED_GROUP_P insn.  */
-      move_insn1 (insn, last);
-      /* If this is the first call to reemit_notes, then record
-	 its return value.  */
-      if (retval == NULL_RTX)
-	retval = reemit_notes (insn, insn);
-      else
-	reemit_notes (insn, insn);
-      /* Consume SCHED_GROUP_P flag.  */
-      SCHED_GROUP_P (insn) = 0;
-      insn = prev;
-    }
-
   /* Now move the first non SCHED_GROUP_P insn.  */
   move_insn1 (insn, last);
 
@@ -1772,90 +1779,109 @@ move_insn (insn, last)
   else
     reemit_notes (insn, insn);
 
+  SCHED_GROUP_P (insn) = 0;
+
   return retval;
 }
 
+/* The following structure describe an entry of the stack of choices.  */
+struct choice_entry
+{
+  /* Ordinal number of the issued insn in the ready queue.  */
+  int index;
+  /* The number of the rest insns whose issues we should try.  */
+  int rest;
+  /* The number of issued essential insns.  */
+  int n;
+  /* State after issuing the insn.  */
+  state_t state;
+};
+
+/* The following array is used to implement a stack of choices used in
+   function max_issue.  */
+static struct choice_entry *choice_stack;
+
+/* The following variable value is number of essential insns issued on
+   the current cycle.  An insn is essential one if it changes the
+   processors state.  */
+static int cycle_issued_insns;
+
 /* The following function returns maximal (or close to maximal) number
    of insns which can be issued on the same cycle and one of which
-   insns is insns with the best rank (the last insn in READY).  To
+   insns is insns with the best rank (the first insn in READY).  To
    make this function tries different samples of ready insns.  READY
    is current queue `ready'.  Global array READY_TRY reflects what
-   insns are already issued in this try.  STATE is current processor
-   state.  If the function returns nonzero, INDEX will contain index
+   insns are already issued in this try.  INDEX will contain index
    of the best insn in READY.  The following function is used only for
    first cycle multipass scheduling.  */
-
 static int
-max_issue (ready, state, index)
-     struct ready_list *ready;
-     state_t state;
-     int *index;
+max_issue (ready, index)
+  struct ready_list *ready;
+  int *index;
 {
-  int i, best, n, temp_index, delay;
-  state_t temp_state;
+  int n, i, all, n_ready, lookahead, best, delay;
+  struct choice_entry *top;
   rtx insn;
-  int max_lookahead = (*targetm.sched.first_cycle_multipass_dfa_lookahead) ();
 
-  if (state_dead_lock_p (state))
-    return 0;
-
-  temp_state = alloca (dfa_state_size);
+  lookahead = (*targetm.sched.first_cycle_multipass_dfa_lookahead) ();
   best = 0;
-  
-  for (i = 0; i < ready->n_ready; i++)
+  memcpy (choice_stack->state, curr_state, dfa_state_size);
+  top = choice_stack;
+  top->rest = lookahead;
+  top->n = 0;
+  n_ready = ready->n_ready;
+  for (all = i = 0; i < n_ready; i++)
     if (!ready_try [i])
-      {
-	insn = ready_element (ready, i);
-	
-	if (INSN_CODE (insn) < 0)
-	  continue;
-	
-	memcpy (temp_state, state, dfa_state_size);
-	
-	delay = state_transition (temp_state, insn);
-	
-	if (delay == 0)
-	  {
-	    if (!targetm.sched.dfa_bubble)
-	      continue;
-	    else
-	      {
-		int j;
-		rtx bubble;
-		
-		for (j = 0;
-		     (bubble = (*targetm.sched.dfa_bubble) (j)) != NULL_RTX;
-		     j++)
-		  if (state_transition (temp_state, bubble) < 0
-		      && state_transition (temp_state, insn) < 0)
-		    break;
-		
-		if (bubble == NULL_RTX)
-		  continue;
-	      }
-	  }
-	else if (delay > 0)
-	  continue;
-	
-	--max_lookahead;
-	
-	if (max_lookahead < 0)
-	  break;
-	
-	ready_try [i] = 1;
-
-	n = max_issue (ready, temp_state, &temp_index);
-	if (n > 0 || ready_try[0])
-	  n += 1;
-
-	if (best < n)
-	  {
-	    best = n;
-	    *index = i;
-	  }
-	ready_try [i] = 0;
-      }
-  
+      all++;
+  i = 0;
+  for (;;)
+    {
+      if (top->rest == 0 || i >= n_ready)
+	{
+	  if (top == choice_stack)
+	    break;
+	  if (best < top - choice_stack && ready_try [0])
+	    {
+	      best = top - choice_stack;
+	      *index = choice_stack [1].index;
+	      if (top->n == issue_rate - cycle_issued_insns || best == all)
+		break;
+	    }
+	  i = top->index;
+	  ready_try [i] = 0;
+	  top--;
+	  memcpy (curr_state, top->state, dfa_state_size);
+	}
+      else if (!ready_try [i])
+	{
+	  insn = ready_element (ready, i);
+	  delay = state_transition (curr_state, insn);
+	  if (delay < 0)
+	    {
+	      if (state_dead_lock_p (curr_state))
+		top->rest = 0;
+	      else
+		top->rest--;
+	      n = top->n;
+	      if (memcmp (top->state, curr_state, dfa_state_size) != 0)
+		n++;
+	      top++;
+	      top->rest = lookahead;
+	      top->index = i;
+	      top->n = n;
+	      memcpy (top->state, curr_state, dfa_state_size);
+	      ready_try [i] = 1;
+	      i = -1;
+	    }
+	}
+      i++;
+    }
+  while (top != choice_stack)
+    {
+      ready_try [top->index] = 0;
+      top--;
+    }
+  memcpy (curr_state, choice_stack->state, dfa_state_size);
   return best;
 }
 
@@ -1873,9 +1899,21 @@ choose_ready (ready)
   else
     {
       /* Try to choose the better insn.  */
-      int index;
+      int index, i;
+      rtx insn;
 
-      if (max_issue (ready, curr_state, &index) == 0)
+      insn = ready_element (ready, 0);
+      if (INSN_CODE (insn) < 0)
+	return ready_remove_first (ready);
+      for (i = 1; i < ready->n_ready; i++)
+	{
+	  insn = ready_element (ready, i);
+	  ready_try [i]
+	    = (INSN_CODE (insn) < 0
+	       || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
+		   && !(*targetm.sched.first_cycle_multipass_dfa_lookahead_guard) (insn)));
+	}
+      if (max_issue (ready, &index) == 0)
 	return ready_remove_first (ready);
       else
 	return ready_remove (ready, index);
@@ -1903,9 +1941,10 @@ schedule_block (b, rgn_n_insns)
      int rgn_n_insns;
 {
   struct ready_list ready;
-  int first_cycle_insn_p;
+  int i, first_cycle_insn_p;
   int can_issue_more;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
+  int sort_p;
 
   /* Head/tail info for this block.  */
   rtx prev_head = current_sched_info->prev_head;
@@ -1957,6 +1996,11 @@ schedule_block (b, rgn_n_insns)
       temp_state = alloca (dfa_state_size);
       ready_try = (char *) xmalloc ((rgn_n_insns + 1) * sizeof (char));
       memset (ready_try, 0, (rgn_n_insns + 1) * sizeof (char));
+      choice_stack
+	= (struct choice_entry *) xmalloc ((rgn_n_insns + 1)
+					   * sizeof (struct choice_entry));
+      for (i = 0; i <= rgn_n_insns; i++)
+	choice_stack[i].state = (state_t) xmalloc (dfa_state_size);
     }
 
   (*current_sched_info->init_ready_list) (&ready);
@@ -1985,6 +2029,7 @@ schedule_block (b, rgn_n_insns)
   /* Start just before the beginning of time.  */
   clock_var = -1;
 
+  sort_p = TRUE;
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
     {
@@ -2007,8 +2052,17 @@ schedule_block (b, rgn_n_insns)
 	  debug_ready_list (&ready);
 	}
 
-      /* Sort the ready list based on priority.  */
-      ready_sort (&ready);
+      if (sort_p)
+	{
+	  /* Sort the ready list based on priority.  */
+	  ready_sort (&ready);
+	  
+	  if (sched_verbose >= 2)
+	    {
+	      fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
+	      debug_ready_list (&ready);
+	    }
+	}
 
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
@@ -2021,6 +2075,7 @@ schedule_block (b, rgn_n_insns)
 	can_issue_more = issue_rate;
 
       first_cycle_insn_p = 1;
+      cycle_issued_insns = 0;
       for (;;)
 	{
 	  rtx insn;
@@ -2050,8 +2105,21 @@ schedule_block (b, rgn_n_insns)
 		break;
 	      
 	      /* Select and remove the insn from the ready list.  */
-	      insn = choose_ready (&ready);
+	      if (sort_p)
+		insn = choose_ready (&ready);
+	      else
+		insn = ready_remove_first (&ready);
 	      
+	      if (targetm.sched.dfa_new_cycle
+		  && (*targetm.sched.dfa_new_cycle) (sched_dump, sched_verbose,
+						     insn, last_clock_var,
+						     clock_var, &sort_p))
+		{
+		  ready_add (&ready, insn);
+		  break;
+		}
+	    
+	      sort_p = TRUE;
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      if (recog_memoized (insn) < 0)
 		{
@@ -2155,7 +2223,11 @@ schedule_block (b, rgn_n_insns)
 
 	  if (targetm.sched.use_dfa_pipeline_interface
 	      && (*targetm.sched.use_dfa_pipeline_interface) ())
-	    memcpy (curr_state, temp_state, dfa_state_size);
+	    {
+	      if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
+		cycle_issued_insns++;
+	      memcpy (curr_state, temp_state, dfa_state_size);
+	    }
 	    
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
@@ -2172,13 +2244,16 @@ schedule_block (b, rgn_n_insns)
 	next:
 	  first_cycle_insn_p = 0;
 
+	  /* Sort the ready list based on priority.  This must be
+	     redone here, as schedule_insn may have readied additional
+	     insns that will not be sorted correctly. */
+	  if (ready.n_ready > 0)
+	    ready_sort (&ready);
+
 	  if (targetm.sched.reorder2)
 	    {
-	      /* Sort the ready list based on priority.  */
-	      if (ready.n_ready > 0)
-		ready_sort (&ready);
 	      can_issue_more =
-		(*targetm.sched.reorder2) (sched_dump,sched_verbose,
+		(*targetm.sched.reorder2) (sched_dump, sched_verbose,
 					   ready.n_ready
 					   ? ready_lastpos (&ready) : NULL,
 					   &ready.n_ready, clock_var);
@@ -2213,6 +2288,27 @@ schedule_block (b, rgn_n_insns)
   /* Update head/tail boundaries.  */
   head = NEXT_INSN (prev_head);
   tail = last_scheduled_insn;
+
+  if (!reload_completed)
+    {
+      rtx insn, link, next;
+      
+      /* INSN_TICK (minimum clock tick at which the insn becomes
+         ready) may be not correct for the insn in the subsequent
+         blocks of the region.  We should use a correct value of
+         `clock_var' or modify INSN_TICK.  It is better to keep
+         clock_var value equal to 0 at the start of a basic block.
+         Therefore we modify INSN_TICK here.  */
+      for (insn = head; insn != tail; insn = NEXT_INSN (insn))
+	if (INSN_P (insn))
+	  {
+	    for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
+	      {
+		next = XEXP (link, 0);
+		INSN_TICK (next) -= clock_var;
+	      }
+	  }
+    }
 
   /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
      previously found among the insns.  Insert them at the beginning
@@ -2250,7 +2346,12 @@ schedule_block (b, rgn_n_insns)
 
   if (targetm.sched.use_dfa_pipeline_interface
       && (*targetm.sched.use_dfa_pipeline_interface) ())
-    free (ready_try);
+    {
+      free (ready_try);
+      for (i = 0; i <= rgn_n_insns; i++)
+	free (choice_stack [i].state);
+      free (choice_stack);
+    }
 }
 
 /* Set_priorities: compute priority of each insn in the block.  */
@@ -2275,8 +2376,7 @@ set_priorities (head, tail)
       if (GET_CODE (insn) == NOTE)
 	continue;
 
-      if (!(SCHED_GROUP_P (insn)))
-	n_insn++;
+      n_insn++;
       (void) priority (insn);
     }
 

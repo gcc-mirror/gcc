@@ -1,3 +1,444 @@
+2003-01-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	The following changes are merged from itanium-sched-branch:
+
+	2003-01-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/md.texi: Clarify assignment of units to automata description.
+
+	2003-01-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (unit_decl): Remove members
+	`the_same_automaton_unit' and
+	`the_same_automaton_message_reported_p'.
+	(process_unit_to_form_the_same_automaton_unit_lists,
+	form_the_same_automaton_unit_lists_from_regexp,
+	form_the_same_automaton_unit_lists, the_same_automaton_lists):
+	Remove them.
+	(annotation_message_reported_p): New global variable.
+	(check_unit_distribution_in_reserv,
+	check_regexp_units_distribution): New functions.
+	(check_unit_distributions_to_automata): Rewrite it.
+
+	2003-01-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (form_the_same_automaton_unit_lists_from_regexp):
+	Use continue instead of break if cycle is too big.
+
+	2002-12-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (check_unit_distributions_to_automata): Output at
+	most one message for a unit.
+	(process_unit_to_form_the_same_automaton_unit_lists): Check
+	automaton of units instead of units themself.
+
+	* doc/md.texi: Describe the constraint about assigning unit to
+	automata.
+
+	2002-12-20  Jan Hubicka  <jH@suse.cz>
+		    Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (unit_decl): Add new members `min_occ_cycle_num'
+	and `in_set_p'.
+	(gen_cpu_unit): Initialize the new members.
+	(process_regexp_cycles): Calculate minimal finish cycle too.  Set
+	up `min_occ_cycle_num'.
+	(evaluate_max_reserv_cycles): Change the function call.
+	(CLEAR_BIT): New macro.
+	(states_union, state_shift): Use the mask.
+	(initiate_excl_sets, form_reserv_sets_list): Set up `in_set_p'.
+	(form_reservs_matter): New function.
+	(make_automaton): Call the function and use the mask.
+	(estimate_one_automaton_bound): Take `min_occ_cycle_num' into
+	account.
+	
+	2002-12-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/itanium2.md (lfetch): Change the insn reservation.
+
+	2002-12-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.c (bundling): Try to insert 2 nops for M insn
+	for Itanium.
+
+	2002-12-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.c (ia64_override_options): Make itanium2 as
+	default cpu.
+
+	2002-12-17  Vladimir Makarov  <vmakarov@redhat.com>
+		2002-10-31  Dale Johannesen <dalej@apple.com>
+
+	* haifa-sched.c (find_set_reg_weight): New function.
+	(find_insn_reg_weight): Use the new function.
+	(schedule_block): Do sorting ready queue always
+	after insn issue.
+
+	2002-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.c (bundling): Use MFI template instead of MLX.
+
+	2002-11-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (choice_entry): New structure.
+	(choice_stack, cycle_issued_insns): New variables.
+	(max_issue): Rewrite it.
+	(choose_ready): Set up ready_try for unknown insns too.
+	(schedule_block): Allocate and free choice_stack.  Set up
+	and modify cycle_issued_insns.
+
+	* config/ia64/ia64.c (issue_nops_and_insn): Combine insn issue
+	with and without filling the bundle.
+	(bundling): Combine calls of issue_nops_and_insn.
+	
+	2002-10-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/itanium1.md: New file.
+
+	* config/ia64/itanium2.md: New file.
+
+	* config/ia64/ia64.md: Move DFA descriptions into the new files.
+	Remove the old pipeline description.
+	
+	* config/ia64/ia64.c (ia64_override_options): Add aliases of
+	itanium processor names.
+	
+	2002-10-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.c (bundling): Print states for Itanium2 too.
+	(ia64_reorg):  Set up queried unit codes for Itanium2 too.
+
+	* config/ia64/ia64.md: Add descriptions for Itanium2.
+
+	2002-10-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.h (processor_type): New enumeration.
+	(ia64_tune, ia64_tune_string): New external declarations.
+	(TARGET_OPTIONS): Add option `tune='.
+
+	* config/ia64/ia64.c (ia64_tune, ia64_tune_string): New global
+	variables.
+	(ia64_override_options): Set up `ia64_tune'.
+	(ia64_sched_reorder2): Set up `clocks' only for Itanium.
+	(ia64_dfa_new_cycle): Set up `add_cycles' only for Itanium.
+	(bundling): Add nops for MM-insns only for Itanium.
+	(ia64_reorg): Allocate and free `clocks' and `add_cycles' only for
+	Itanium.
+
+	* config/ia64/ia64.md (cpu): New attribute.
+	(DFA description): Enable it only for Itanium.
+	
+	2002-10-08  Vladimir Makarov  <vmakarov@redhat.com>
+		    Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (MASK_TUNE_STOP_BITS): Rename it to
+	MASK_EARLY_STOP_BITS.
+	(TARGET_TUNE_STOP_BITS): Rename it to TARGET_EARLY_STOP_BITS.
+	(TARGET_SWITCHES): Rename option `tune-stop-bits' to
+	`early-stop-bits'.
+	
+	* config/ia64/ia64.c (ia64_dfa_new_cycle,
+	final_emit_insn_group_barriers): Use TARGET_EARLY_STOP_BITS
+	instead of TARGET_TUNE_STOP_BITS.
+	
+	* doc/invoke.texi: Rename option `-mtune-stop-bits' to
+	`-mearly-stop-bits'.
+
+	* config/ia64/ia64.c (automata_option "v"): Comment it.
+	
+	2002-10-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * config/ia64/ia64.h (MASK_TUNE_STOP_BITS, TARGET_TUNE_STOP_BITS):
+	New macros.
+	(TARGET_SWITCHES): Add entries for the new option.
+	
+	* config/ia64/ia64.c (dfa_stop_insn, last_scheduled_insn, rtx
+	dfa_pre_cycle_insn, ia64_nop): Don't make them as roots for GC.
+	(stops_p, stop_before_p, clocks_length, clocks, add_cycles): New
+	global variables.
+	(ia64_sched_reorder2): Set up `clocks'.
+	(ia64_variable_issue): Set up `stops_p' and reset `stop_before_p'.
+	(ia64_dfa_new_cycle): Set up add_cycle.  Permit sorting ready
+	queue when TARGET_TUNE_STOP_BITS.
+	(bundling): Insert additional nops for MM-insns.
+	(final_emit_insn_group_barriers): Add insertion of stop bits
+	according `stops_p'.
+	(ia64_reorg): Initiate the new varibales.
+
+	* doc/invoke.texi: Add description of option `-mtune-stop-bits'.
+	
+	2002-10-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (schedule_block): Modify INSN_TICK of depended
+	insns at the end of block insn scheduling.
+
+	2002-09-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* sched-deps.c (remove_dependence, group_leader): Remove it.
+	(add_dependence): Add dependence to group leader to.
+	(set_sched_group_p): Add dependence to the first insn of the
+	schedule group too.
+	(sched_analyze_insn): Make dependence to jump as anti-dependence.
+	Change true dependence by anti-dependence when
+	`reg_pending_barrier'.
+
+	* sched-rgn.c (init_ready_list, can_schedule_ready_p,
+	add_branch_dependences): Ignore schedule groups.
+
+	* sched-ebb.c (init_ready_list): Ditto.
+
+	* (move_insn, set_priorities): Ditto.
+
+	* config/ia64/ia64.c (ia64_sched_init): Check that schedule group
+	flag is clear after reload.
+	(adjust_cost): Change cost only for output dependencies.
+	
+	* config/ia64/ia64.md: Add more insns into bypass for MM-insns.
+	
+	2002-09-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* Makefile.in (sched-ebb.o): Add `$(TARGET_H)' to the entry.
+
+	* target.h (gcc_target): Add member
+	`dependencies_evaluation_hook'.
+
+	* target-def.h (TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK): New
+	macro.
+	(TARGET_SCHED): Add initiatialization of the new member.
+
+	* sched-ebb.c: Include `target.h'.
+	(schedule_ebb): Call `dependencies_evaluation_hook'.
+
+	* sched-rgn.c (schedule_region): Call
+	`dependencies_evaluation_hook'.
+
+	* config/ia64/ia64.c (TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK):
+	New macro.
+	(ia64_dependencies_evaluation_hook): New function.
+
+	* doc/tm.texi (TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK):
+	Describe the new hook.
+	
+	2002-09-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* target.h (gcc_target): Add members
+	`first_cycle_multipass_dfa_lookahead_guard' and `dfa_new_cycle'.
+
+	* target-def.h (TARGET_SCHED_DFA_NEW_CYCLE,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD): New
+	macros.
+	(TARGET_SCHED): Add initiatialization of the new members.
+
+	* haifa-sched.c (schedule_insn): Update last_clock_var for the 1st
+	insn scheduling too.
+	(choose_ready): Use `first_cycle_multipass_dfa_lookahead_guard' to
+	initialize `ready_try'.
+	(schedule_block): Use `dfa_new_cycle'.  Sort `ready' only unless
+	`dfa_new_cycle' says not to do it.
+	
+	* config/ia64/ia64.md: Add DFA Itanium 1 description for insn
+	bundling.
+
+	* config/ia64/ia64.h (CPU_UNITS_QUERY): New macro.
+
+	* config/ia64/ia64.c: Include `hashtab.h'.
+	(ia64_first_cycle_multipass_dfa_lookahead_guard,
+	ia64_dfa_new_cycle, final_emit_insn_group_barriers,
+	ia64_dfa_sched_reorder, get_free_bundle_state, free_bundle_state,
+	initiate_bundle_states, finish_bundle_states, bundle_state_hash,
+	bundle_state_eq_p, insert_bundle_state,
+	initiate_bundle_state_table, finish_bundle_state_table,
+	try_issue_nops, try_issue_insn, issue_nops_and_insn, get_max_pos,
+	get_template, get_next_important_insn, bundling): New functions.
+	(ia64_internal_sched_reorder): Remove it.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD,
+	TARGET_SCHED_DFA_NEW_CYCLE): New macros.
+	(ia64_safe_itanium_requires_unit0): Remove it.
+	(group_barrier_needed_p): Place group barrier right before a real
+	insn.
+	(bundle, ia64_packet, NR_PACKETS, type_names, packets, packets):
+	Remove them.
+	(bundle_name): New variable.
+	(_0mii_, _0mmi_, _0mfi_, _0mmf_, _0bbb_, _0mbb_, _0mib_, _0mmb_,
+	_0mfb_, _0mlx_, _1mii_, _1mmi_, _1mfi_, _1mmf_, _1bbb_, _1mbb_,
+	_1mib_, _1mmb_, _1mfb_, _1mlx_, pos_1, pos_2, pos_3, pos_4, pos_5,
+	pos_6, dfa_stop_insn, last_scheduled_insn, dfa_state_size,
+	temp_dfa_state, prev_cycle_state): New global variables.
+	(insn_matches_slot, maybe_rotate, finish_last_head,
+	rotate_one_bundle, rotate_one_bundles, nop_cycles_until,
+	cycle_end_fill_slots, packet_matches_p, get_split, find_best_insn,
+	find_best_packet, itanium_reorder, dump_current_packet,
+	schedule_stop, gen_nop_type, ia64_emit_nops): Remove them.
+	(sched_data, sched_ready, sched_types): Remove them.
+	(ia64_sched_init): Initiate only `last_scheduled_insn' and call
+	`init_insn_group_barriers'.
+	(ia64_sched_reorder, ia64_sched_reorder2): Call
+	ia64_dfa_sched_reorder.
+	(ia64_variable_issue): Rewrite it.
+	(bundle_state): New structure.
+	(index_to_bundle_states, bundle_states_num,
+	allocated_bundle_states_chain, free_bundle_state_chain): New
+	global variables.
+	(ia64_sched_finish): Add stop bits and call `bundling' after the
+	2nd insn scheduling.
+	(ia64_use_dfa_pipeline_interface): Return zero always.
+	(ia64_first_cycle_multipass_dfa_lookahead): Return 6 for the 2nd
+	insn scheduling.
+	(ia64_init_dfa_pre_cycle_insn): Initialize `dfa_state_size',
+	`temp_dfa_state', `prev_cycle_state', and `dfa_stop_insn'.
+	(ia64_reorg): Add bundling insns.
+
+	* doc/tm.texi
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD,
+	TARGET_SCHED_DFA_NEW_CYCLE): Describe the new hooks.
+	
+	2002-09-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/ia64/ia64.md: Add Itanium1 DFA description.
+	(itanium_class): Add `nop' and `pre_cycle'.  Add
+	define_function_unit for `nop'.
+	(nop): Change attribute `itanium_class'.
+	(pre_cycle): New define_insn.
+
+	* config/ia64/ia64-protos.h (bundling_p): New external variable.
+	(ia64_st_address_bypass_p, ia64_ld_address_bypass_p,
+	ia64_produce_address_p): New function prototypes.
+
+	* config/ia64/ia64.c (bundling_p): New global variable.
+	(ia64_use_dfa_pipeline_interface,
+	ia64_first_cycle_multipass_dfa_lookahead,
+	ia64_init_dfa_pre_cycle_insn, ia64_dfa_pre_cycle_insn): New
+	functions.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN): New macros.
+	(ia64_sched_init, ia64_sched_reorder, ia64_sched_reorder2,
+	ia64_variable_issue, ia64_sched_finish): Do nothing before reload.
+	(dfa_pre_cycle_insn): New variable.
+	
+	2002-09-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.def (FINAL_PRESENCE_SET, FINAL_ABSENCE_SET): New
+	constructions.
+
+	* genattrtab.h (gen_final_presence_set, gen_final_absence_set):
+	New function prototypes.
+
+	* genattrtab.c (main): Process the new constructions.
+
+	* genautomata.c (gen_presence_absence_set,
+	process_presence_absence_names, process_presence_absence_patterns,
+	add_presence_absence, check_absence_pattern_sets): Add parameter
+	`final_p'.
+	(unit_decl): Add new members `final_presence_list' and
+	`final_absence_list'.
+	(unit_pattern_rel_decl): Add new member `final_p'.
+	(gen_final_presence_set, gen_final_absence_set): New functions.
+	(process_decls): Use member `final_p'.
+	(temp_reserv): New global variable.
+	(reserv_sets_are_intersected): Add processing `final_presence_set'
+	and `final_absence_set'.
+	(initiate_states): Allocate `temp_reserv'.
+	(unit_final_presence_set_table, unit_final_absence_set_table): New
+	gloabal variables.
+	(initiate_presence_absence_pattern_sets): Initiate them.
+	(NDFA_to_DFA): Fix typo.
+	(output_description): Output `final_presence_set' and
+	`final_absence_set'.
+
+	* doc/md.texi (final_presence_set, final_absence_set): Describe
+	them.
+	
+	2002-09-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (transform_3): Process a missing case (nothing on
+	unit place).
+
+	2002-09-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.def (DEFINE_QUERY_CPU_UNIT, AUTOMATA_OPTION): Change
+	comments about queried units and the minimization.
+	
+	* doc/md.texi: Ditto.
+	
+	* genautomata.c (create_composed_state): Return nonzero if the new
+	state has been created.
+	(first_cycle_unit_presence): New function.
+	(state_is_differed): Add new parameter.  Use the new function.
+	Take queried units into account.
+	(partition_equiv_class): Pass additional parameter to
+	`state_is_differed'.
+	(merge_states): Process composed states too.
+	(build_automaton, create_automata, output_min_issue_delay_table,
+	output_tables, output_statistics): Output more information.
+	(output_reserved_units_table): Use function
+	`first_cycle_unit_presence'.
+	(output_tables): Output table of queried units even if the
+	minimization is switched on.
+	(write_automata): Output code for querying units even if the
+	minimization is switched on.
+	
+	2002-09-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.def (PRESENCE_SET, ABSENCE_SET): Add comments about extended
+	syntax of the constructions.
+	
+	* doc/md.texi (PRESENCE_SET, ABSENCE_SET): Add description of
+	extended syntax of the constructions.
+	
+	* genautomata.c (unit_rel_decl): Rename it to
+	`unit_pattern_rel_decl'.
+	(pattern_set_el, pattern_reserv): New structures.
+	(pattern_set_el_t, pattern_reserv_t): New types.
+	(gen_presence_absence_set): New function.
+	(process_presence_absence): Remove it.
+	(process_presence_absence_names,
+	process_presence_absence_patterns): New functions.
+	(get_presence_absence_set): Remove it.
+	(initiate_presence_absence_sets): Rename it on
+	`initiate_presence_absence_pattern_sets'.  Use new function
+	`form_reserv_sets_list'.
+	(form_reserv_sets_list, check_presence_pattern_sets,
+	check_absence_pattern_sets, output_pattern_set_el_list): New
+	functions.
+	(unit_decl): Change types of members `presence_list' and
+	`absence_list'.
+	(unit_rel_decl): Rename member `names_num' to `all_names_num'.
+	(decl): Change types of members `excl', `presence', and `absence'.
+	(get_str_vect): Rename `par_flag' to `paren_p'.  Add null element
+	at the end of the vector.
+	(gen_cpu_unit, gen_query_cpu_unit, gen_bypass, gen_excl_set,
+	gen_automaton, gen_regexp_repeat, gen_regexp_allof,
+	gen_regexp_oneof, gen_regexp_sequence): Use boolean values.
+	(gen_presence_set, gen_absence_set): Use new function
+	`gen_presence_absence_set'.
+	(add_presence_absence): Process `pattern_list' instead of
+	`source_list'.
+	(process_decls): USe new functions
+	`process_presence_absence_names' and
+	`process_presence_absence_patterns'.
+	(reserv_sets_are_intersected): Use new function
+	`check_presence_pattern_sets'.
+	(presence_set, absence_set): Remove them.
+	(unit_presence_set_table, unit_absence_set_table): New global
+	variables.
+	(output_description): Use new function
+	`output_pattern_set_el_list'.
+	(generate): Use `initiate_presence_absence_pattern_sets'.
+	
+	2002-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genattr.c (main): Add output of prototype of new interface
+	function `dfa_clean_insn_cache'.
+
+	* genautomata.c (output_dfa_clean_insn_cache_func): New function.
+	(DFA_CLEAN_INSN_CACHE_FUNC_NAME): New macro.
+	(output_dfa_start_func): Use function `dfa_clean_insn_cache' in
+	the generated code.
+	(write_automata): Call the new function.
+	
+
 Thu Jan  9 22:47:38 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (unit, prefix_0f, memory attributes): Hanlde sseicvt correctly.

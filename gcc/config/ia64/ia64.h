@@ -95,6 +95,8 @@ extern int target_flags;
 
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
+#define MASK_EARLY_STOP_BITS 0x00002000 /* tune stop bits for the model.  */
+
 #define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
 
 #define TARGET_GNU_AS		(target_flags & MASK_GNU_AS)
@@ -137,6 +139,7 @@ extern int ia64_tls_size;
 #define TARGET_TLS14		(ia64_tls_size == 14)
 #define TARGET_TLS22		(ia64_tls_size == 22)
 #define TARGET_TLS64		(ia64_tls_size == 64)
+#define TARGET_EARLY_STOP_BITS	(target_flags & MASK_EARLY_STOP_BITS)
 
 #define TARGET_HPUX_LD		0
 
@@ -188,6 +191,10 @@ extern int ia64_tls_size;
       N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
       N_("Disable Dwarf 2 line debug info via GNU as")},		\
+  { "early-stop-bits", MASK_EARLY_STOP_BITS,				\
+      N_("Enable earlier placing stop bits for better scheduling")},	\
+  { "no-early-stop-bits", -MASK_EARLY_STOP_BITS,			\
+      N_("Disable earlier placing stop bits")},				\
   SUBTARGET_SWITCHES							\
   { "",			TARGET_DEFAULT | TARGET_CPU_DEFAULT,		\
       NULL }								\
@@ -213,12 +220,30 @@ extern int ia64_tls_size;
 
 extern const char *ia64_fixed_range_string;
 extern const char *ia64_tls_size_string;
+
+/* Which processor to schedule for. The cpu attribute defines a list
+   that mirrors this list, so changes to i64.md must be made at the
+   same time.  */
+
+enum processor_type
+{
+  PROCESSOR_ITANIUM,			/* Original Itanium. */
+  PROCESSOR_ITANIUM2,
+  PROCESSOR_max
+};
+
+extern enum processor_type ia64_tune;
+
+extern const char *ia64_tune_string;
+
 #define TARGET_OPTIONS \
 {									\
   { "fixed-range=", 	&ia64_fixed_range_string,			\
       N_("Specify range of registers to make fixed")},			\
   { "tls-size=",	&ia64_tls_size_string,				\
       N_("Specify bit size of immediate TLS offsets")},			\
+  { "tune=",		&ia64_tune_string,				\
+      N_("Schedule code for given CPU")},				\
 }
 
 /* Sometimes certain combinations of command options do not make sense on a
@@ -2484,5 +2509,10 @@ enum fetchop_code {
 
 #undef  PROFILE_BEFORE_PROLOGUE
 #define PROFILE_BEFORE_PROLOGUE 1
+
+
+
+/* Switch on code for querying unit reservations.  */
+#define CPU_UNITS_QUERY 1
 
 /* End of ia64.h */

@@ -27,7 +27,11 @@ extern GTY(()) rtx ia64_compare_op1;
 
 /* Functions defined in ia64.c */
 
+extern int bundling_p;
 #ifdef RTX_CODE
+extern int ia64_st_address_bypass_p PARAMS((rtx, rtx));
+extern int ia64_ld_address_bypass_p PARAMS((rtx, rtx));
+extern int ia64_produce_address_p PARAMS((rtx));
 extern int call_operand PARAMS((rtx, enum machine_mode));
 extern int sdata_symbolic_operand PARAMS((rtx, enum machine_mode));
 extern int got_symbolic_operand PARAMS((rtx, enum machine_mode));

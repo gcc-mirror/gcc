@@ -5629,6 +5629,16 @@ scheduling one insn causes other insns to become ready in the same
 cycle.  These other insns can then be taken into account properly.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK (rtx @var{head}, rtx @var{tail})
+This hook is called after evaluation forward dependencies of insns in
+chain given by two parameter values (@var{head} and @var{tail}
+correspondingly) but before insns scheduling of the insn chain.  For
+example, it can be used for better insn classification if it requires
+analysis of dependencies.  This hook can use backward and forward
+dependencies of the insn scheduler because they are already
+calculated.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_SCHED_INIT (FILE *@var{file}, int @var{verbose}, int @var{max_ready})
 This hook is executed by the scheduler at the beginning of each block of
 instructions that are to be scheduled.  @var{file} is either a null
@@ -5713,6 +5723,30 @@ pipeline hazard recognizer.  We try quickly and easy many insn
 schedules to choose the best one.
 
 The default is no multipass scheduling.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD (rtx)
+
+This hook controls what insns from the ready insn queue will be
+considered for the multipass insn scheduling.  If the hook returns
+zero for insn passed as the parameter, the insn will be not chosen to
+be issued.
+
+The default is that any ready insns can be choosen to be issued.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *, int, rtx, int, int, int *)
+
+This hook is called by the insn scheduler before issuing insn passed
+as the third parameter on given cycle.  If the hook returns nonzero,
+the insn is not issued on given processors cycle.  Instead of that,
+the processor cycle is advanced.  If the value passed through the last
+parameter is zero, the insn ready queue is not sorted on the new cycle
+start as usually.  The first parameter passes file for debugging
+output.  The second one passes the scheduler verbose level of the
+debugging output.  The forth and the fifth parameter values are
+correspondingly processor cycle on which the previous insn has been
+issued and the current processor cycle.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_INIT_DFA_BUBBLES (void)

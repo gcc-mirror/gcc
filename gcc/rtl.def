@@ -358,9 +358,8 @@ DEF_RTL_EXPR(ADDRESS, "address", "e", 'm')
 DEF_RTL_EXPR(DEFINE_CPU_UNIT, "define_cpu_unit", "sS", 'x')
 
 /* (define_query_cpu_unit string [string]) describes cpu functional
-   units analogously to define_cpu_unit.  If we use automaton without
-   minimization, the reservation of such units can be queried for
-   automaton state.  */
+   units analogously to define_cpu_unit.  The reservation of such
+   units can be queried for automaton state.  */
 DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", 'x')
 
 /* (exclusion_set string string) means that each CPU functional unit
@@ -370,27 +369,79 @@ DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", 'x')
    for description CPU with fully pipelined floating point functional
    unit which can execute simultaneously only single floating point
    insns or only double floating point insns.  All CPU functional
-   units in a set should belong the same automaton.  */
+   units in a set should belong to the same automaton.  */
 DEF_RTL_EXPR(EXCLUSION_SET, "exclusion_set", "ss", 'x')
 
 /* (presence_set string string) means that each CPU functional unit in
-   the first string can not be reserved unless at least one of units
-   whose names are in the second string is reserved.  This is an
-   asymmetric relation.  CPU units in the string are separated by
-   commas.  For example, it is useful for description that slot1 is
-   reserved after slot0 reservation for VLIW processor.  All CPU
-   functional units in a set should belong the same automaton.  */
+   the first string can not be reserved unless at least one of pattern
+   of units whose names are in the second string is reserved.  This is
+   an asymmetric relation.  CPU units or unit patterns in the strings
+   are separated by commas.  Pattern is one unit name or unit names
+   separated by white-spaces.
+ 
+   For example, it is useful for description that slot1 is reserved
+   after slot0 reservation for a VLIW processor.  We could describe it
+   by the following construction
+
+      (presence_set "slot1" "slot0")
+
+   Or slot1 is reserved only after slot0 and unit b0 reservation.  In
+   this case we could write
+
+      (presence_set "slot1" "slot0 b0")
+
+   All CPU functional units in a set should belong to the same
+   automaton.  */
 DEF_RTL_EXPR(PRESENCE_SET, "presence_set", "ss", 'x')
 
+/* (final_presence_set string string) is analogous to `presence_set'.
+   The difference between them is when checking is done.  When an
+   instruction is issued in given automaton state reflecting all
+   current and planned unit reservations, the automaton state is
+   changed.  The first state is a source state, the second one is a
+   result state.  Checking for `presence_set' is done on the source
+   state reservation, checking for `final_presence_set' is done on the
+   result reservation.  This construction is useful to describe a
+   reservation which is actually two subsequent reservations.  For
+   example, if we use 
+
+      (presence_set "slot1" "slot0")
+
+   the following insn will be never issued (because slot1 requires
+   slot0 which is absent in the source state).
+
+      (define_reservation "insn_and_nop" "slot0 + slot1")
+
+   but it can be issued if we use analogous `final_presence_set'.  */
+DEF_RTL_EXPR(FINAL_PRESENCE_SET, "final_presence_set", "ss", 'x')
+
 /* (absence_set string string) means that each CPU functional unit in
-   the first string can not be reserved only if each unit whose name
-   is in the second string is not reserved.  This is an asymmetric
-   relation (actually exclusion set is analogous to this one but it is
-   symmetric).  CPU units in the string are separated by commas.  For
-   example, it is useful for description that slot0 can not be
-   reserved after slot1 or slot2 reservation for VLIW processor.  All
-   CPU functional units in a set should belong the same automaton.  */
+   the first string can be reserved only if each pattern of units
+   whose names are in the second string is not reserved.  This is an
+   asymmetric relation (actually exclusion set is analogous to this
+   one but it is symmetric).  CPU units or unit patterns in the string
+   are separated by commas.  Pattern is one unit name or unit names
+   separated by white-spaces.
+
+   For example, it is useful for description that slot0 can not be
+   reserved after slot1 or slot2 reservation for a VLIW processor.  We
+   could describe it by the following construction
+
+      (absence_set "slot2" "slot0, slot1")
+
+   Or slot2 can not be reserved if slot0 and unit b0 are reserved or
+   slot1 and unit b1 are reserved .  In this case we could write
+
+      (absence_set "slot2" "slot0 b0, slot1 b1")
+
+   All CPU functional units in a set should to belong the same
+   automaton.  */
 DEF_RTL_EXPR(ABSENCE_SET, "absence_set", "ss", 'x')
+
+/* (final_absence_set string string) is analogous to `absence_set' but
+   checking is done on the result (state) reservation.  See comments
+   for `final_presence_set'.  */
+DEF_RTL_EXPR(FINAL_ABSENCE_SET, "final_absence_set", "ss", 'x')
 
 /* (define_bypass number out_insn_names in_insn_names) names bypass
    with given latency (the first number) from insns given by the first
@@ -416,8 +467,8 @@ DEF_RTL_EXPR(DEFINE_AUTOMATON, "define_automaton", "s", 'x')
    automata.  Currently there are the following options:
 
    o "no-minimization" which makes no minimization of automata.  This
-     is only worth to do when we are going to query CPU functional
-     unit reservations in an automaton state.
+     is only worth to do when we are debugging the description and
+     need to look more accurately at reservations of states.
 
    o "time" which means printing additional time statistics about
       generation of automata.
