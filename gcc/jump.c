@@ -4207,6 +4207,19 @@ rtx_equal_for_thread_p (x, y, yinsn)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
+  /* For commutative operations, the RTX match if the operand match in any
+     order.  Also handle the simple binary and unary cases without a loop.  */
+  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
+    return ((rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0))
+	     && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1)))
+	    || (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 1))
+		&& rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 0))));
+  else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
+    return (rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0))
+	    && rtx_equal_for_thread_p (XEXP (x, 1), XEXP (y, 1)));
+  else if (GET_RTX_CLASS (code) == '1')
+    return rtx_equal_for_thread_p (XEXP (x, 0), XEXP (y, 0));
+
   /* Handle special-cases first.  */
   switch (code)
     {
