@@ -1,3 +1,8 @@
+Fri Mar  6 11:00:49 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* configure.in: Remove duplicate uses of AC_PROG_CC and
+	AC_PROG_MAKE_SET.
+
 Fri Mar  6 00:59:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (target_cpu_default2): Correct typo for alphapca56.
