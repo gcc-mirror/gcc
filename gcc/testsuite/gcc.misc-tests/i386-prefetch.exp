@@ -75,6 +75,10 @@ load_lib gcc-dg.exp
 # Initialize harness.
 dg-init
 
+# Save these.  They are needed if testsuite loops over multiple ABIs
+set saved_torture_with_loops $torture_with_loops
+set saved_torture_without_loops $torture_without_loops
+
 set torture_with_loops $PREFETCH_NONE
 set torture_without_loops $PREFETCH_NONE
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-none-*.c]] ""
@@ -91,4 +95,8 @@ set torture_with_loops $PREFETCH_ATHLON
 set torture_without_loops $PREFETCH_ATHLON
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/i386-pf-athlon-*.c]] ""
 
+set torture_with_loops $saved_torture_with_loops
+set torture_without_loops $saved_torture_without_loops
+
 dg-finish
+
