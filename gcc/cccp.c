@@ -1856,6 +1856,9 @@ main (argc, argv)
 
   rescan (&outbuf, 0);
 
+  if (missing_newline)
+    fp->lineno--;
+
   if (pedantic && missing_newline)
     pedwarn ("file does not end in newline");
 
@@ -4214,6 +4217,9 @@ finclude (f, fname, op, system_header_p, dirptr)
 
   output_line_command (fp, op, 0, enter_file);
   rescan (op, 0);
+
+  if (missing_newline)
+    fp->lineno--;
 
   if (pedantic && missing_newline)
     pedwarn ("file does not end in newline");
