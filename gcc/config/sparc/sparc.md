@@ -7957,7 +7957,7 @@
 	  == INSN_ADDRESSES (INSN_UID (insn))))
     return \"b\\t%l0%#\";
   else
-    return TARGET_V9 ? \"ba,pt%*\\t%%xcc, %l0%(\" : \"b%*\\t%l0%(\";
+    return TARGET_V9 ? \"ba%*,pt\\t%%xcc, %l0%(\" : \"b%*\\t%l0%(\";
 }"
   [(set_attr "type" "uncond_branch")])
 
