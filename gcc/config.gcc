@@ -412,21 +412,10 @@ case ${target} in
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
   ;;
-*-*-kfreebsd*-gnu)
-  # Must come before *-*-gnu*
-  xm_defines=POSIX # needed for cross-compiling from FreeBSD?
-  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-  # GNU tools are the only tools.
-  gas=yes
-  gnu_ld=yes
-  case ${enable_threads} in
-    "" | yes | posix) thread_file='posix' ;;
-  esac
-  ;;
 *-*-linux*libc1* | *-*-linux*aout*)
   # Avoid the generic linux case.
   ;;
-*-*-linux* | frv-*-*linux*)
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
   # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   gas=yes
@@ -926,22 +915,20 @@ i[34567]86-*-coff*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
 	use_fixproto=yes
 	;;
-i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
+			# Intel 80386's running GNU/*
 			# with ELF format using glibc 2
-			# aka GNU/Linux C library 6
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
+	case ${target} in
+	i[34567]86-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h i386/knetbsd-gnu.h" ;;
+	i[34567]86-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu.h" ;;
+	esac
 	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-linux*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="${tmake_file} i386/t-linux64"
-	;;
-i[34567]86-*-kfreebsd*-gnu) # must be before i[34567]86-*-gnu*
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h kfreebsdgnu.h i386/kfreebsdgnu.h"
-	tmake_file="t-slibgcc-elf-ver t-kfreebsd-gnu i386/t-crtstuff"
-	float_format=i386
-	use_fixproto=no
 	;;
 i[34567]86-*-gnu*)
 	;;

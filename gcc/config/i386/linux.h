@@ -108,24 +108,26 @@ Boston, MA 02111-1307, USA.  */
 
 /* If ELF is the default format, we should not use /lib/elf.  */
 
-#undef	LINK_SPEC
+#define LINK_EMULATION "elf_i386"
 #ifdef USE_GNULIBC_1
-#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
-	%{static:-static}}}"
+# define DYNAMIC_LINKER "/lib/ld-linux.so.1"
 #else
-#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
+# define DYNAMIC_LINKER "/lib/ld-linux.so.2"
+#endif
+
+#undef  SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "link_emulation", LINK_EMULATION },\
+  { "dynamic_linker", DYNAMIC_LINKER }
+
+#undef	LINK_SPEC
+#define LINK_SPEC "-m %(link_emulation) %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \
 	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
+	%{!dynamic-linker:-dynamic-linker %(dynamic_linker)}} \
 	%{static:-static}}}"
-#endif
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
@@ -217,6 +219,8 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 #include <sys/ucontext.h>
 
+#define REG_NAME(reg) reg
+
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned char *pc_ = (CONTEXT)->ra;					\
@@ -245,28 +249,28 @@ Boston, MA 02111-1307, USA.  */
     else								\
       break;								\
 									\
-    new_cfa_ = sc_->esp;						\
+    new_cfa_ = sc_->REG_NAME(esp);						\
     (FS)->cfa_how = CFA_REG_OFFSET;					\
     (FS)->cfa_reg = 4;							\
     (FS)->cfa_offset = new_cfa_ - (long) (CONTEXT)->cfa;		\
 									\
     /* The SVR4 register numbering macros aren't usable in libgcc.  */	\
     (FS)->regs.reg[0].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[0].loc.offset = (long)&sc_->eax - new_cfa_;		\
+    (FS)->regs.reg[0].loc.offset = (long)&sc_->REG_NAME(eax) - new_cfa_;	\
     (FS)->regs.reg[3].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[3].loc.offset = (long)&sc_->ebx - new_cfa_;		\
+    (FS)->regs.reg[3].loc.offset = (long)&sc_->REG_NAME(ebx) - new_cfa_;	\
     (FS)->regs.reg[1].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[1].loc.offset = (long)&sc_->ecx - new_cfa_;		\
+    (FS)->regs.reg[1].loc.offset = (long)&sc_->REG_NAME(ecx) - new_cfa_;	\
     (FS)->regs.reg[2].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[2].loc.offset = (long)&sc_->edx - new_cfa_;		\
+    (FS)->regs.reg[2].loc.offset = (long)&sc_->REG_NAME(edx) - new_cfa_;	\
     (FS)->regs.reg[6].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[6].loc.offset = (long)&sc_->esi - new_cfa_;		\
+    (FS)->regs.reg[6].loc.offset = (long)&sc_->REG_NAME(esi) - new_cfa_;	\
     (FS)->regs.reg[7].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[7].loc.offset = (long)&sc_->edi - new_cfa_;		\
+    (FS)->regs.reg[7].loc.offset = (long)&sc_->REG_NAME(edi) - new_cfa_;	\
     (FS)->regs.reg[5].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[5].loc.offset = (long)&sc_->ebp - new_cfa_;		\
+    (FS)->regs.reg[5].loc.offset = (long)&sc_->REG_NAME(ebp) - new_cfa_;	\
     (FS)->regs.reg[8].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[8].loc.offset = (long)&sc_->eip - new_cfa_;		\
+    (FS)->regs.reg[8].loc.offset = (long)&sc_->REG_NAME(eip) - new_cfa_;	\
     (FS)->retaddr_column = 8;						\
     goto SUCCESS;							\
   } while (0)
