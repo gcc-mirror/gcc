@@ -1532,7 +1532,12 @@ extern int may_call_alloca;
 	  && (TARGET_NO_SPACE_REGS					\
 	      ? (base && REG_P (index))					\
 	      : (base == XEXP (X, 1) && REG_P (index)			\
-		 && REG_POINTER (base) && !REG_POINTER (index)))	\
+		 && (reload_completed					\
+		     || (reload_in_progress && HARD_REGISTER_P (base))	\
+		     || REG_POINTER (base))				\
+		 && (reload_completed					\
+		     || (reload_in_progress && HARD_REGISTER_P (index))	\
+		     || !REG_POINTER (index))))				\
 	  && MODE_OK_FOR_UNSCALED_INDEXING_P (MODE)			\
 	  && REG_OK_FOR_INDEX_P (index)					\
 	  && borx_reg_operand (base, Pmode)				\
