@@ -1,6 +1,6 @@
 /* Tektronix XD88 UTekV 3.2e   (svr3 derived from UniSoft System V/88)
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2000 Free Software Foundation, Inc.
    Contributed by Kaveh R. Ghazi (ghazi@caip.rutgers.edu)  2/22/93.
 
    This file is part of GNU CC.
@@ -36,8 +36,12 @@
 /* I don't know if this SDB thing is needed or not --KRG */
 
 
-/* Use T_ARG as T_VOID.  T_VOID is not defined in <syms.h> as it should be.  */
+/* Use T_ARG as T_VOID.  T_VOID is not defined in <syms.h> as it
+   should be.  If we're cross compiling, then don't do this because
+   "gsyms.h" has T_VOID.  */
+#ifndef CROSS_COMPILE
 #define T_VOID T_ARG
+#endif
 
 
 /* The bundled ld program needs link editor directives which normally

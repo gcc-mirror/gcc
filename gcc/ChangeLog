@@ -1,5 +1,18 @@
 2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* m88k-protos.h: New file.
+
+	* m88k.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* m88k.h: Move prototypes to m88k-protos.h.  Fix compile time warnings.
+	
+	* m88k.md: Likewise.
+
+	* tekXD88.h: Likewise.
+
+2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* m68k-protos.h: New file.
 
 	* m68k.c: Include tm_p.h.  Add static prototypes.  Fix compile
