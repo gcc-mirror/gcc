@@ -1,3 +1,7 @@
+2001-09-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/t-aix43 (SHLIB_INSTALL): Use mode 751 (a+x,r-o).
+
 Mon Sep 10 16:26:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c (c_getstr): Correct thinko in last change and further
