@@ -588,7 +588,7 @@ not_both_true (d1, d2, toplevel)
 	 for D1's predicate.  */
       if (d2->code != UNKNOWN)
 	{
-	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i]; i++)
+	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i] != 0; i++)
 	    if (preds[d1->pred].codes[i] == d2->code)
 	      break;
 
@@ -600,7 +600,7 @@ not_both_true (d1, d2, toplevel)
 
       else if (d2->pred >= 0)
 	{
-	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i]; i++)
+	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i] != 0; i++)
 	    {
 	      for (j = 0; j < NUM_RTX_CODE; j++)
 		if (preds[d2->pred].codes[j] == 0
@@ -1117,7 +1117,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 
 	  if (p->pred >= 0)
 	    {
-	      for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i]; i++)
+	      for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i] != 0; i++)
 		if (codemap[(int) preds[p->pred].codes[i]])
 		  break;
 
@@ -1140,7 +1140,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 
 	      if (code == MATCH_OPERAND)
 		{
-		  for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i]; i++)
+		  for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i] != 0; i++)
 		    {
 		      printf ("%scase ", indents[indent - 2]);
 		      print_code (preds[p->pred].codes[i]);
