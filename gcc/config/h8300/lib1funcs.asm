@@ -452,9 +452,8 @@ ___udivsi3:
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
-	mov.b	#0,S2L	; keep sign low
 	bsr	divmodsi4
-	bra	exitdiv
+	bra	reti
 #else
 	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
 	PUSHP	S0P
@@ -469,11 +468,10 @@ ___umodsi3:
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
-	mov.b	#0,S2L	; keep sign low
 	bsr	divmodsi4
 	mov	S0,A0
 	mov	S1,A1
-	bra	exitdiv
+	bra	reti
 #else
 	;; H8/300H and H8S version of divmodsi4 does not clobber S1P or S2P.
 	PUSHP	S0P
@@ -493,9 +491,6 @@ ___divsi3:
 
 	; examine what the sign should be
 exitdiv:
-	POPP	S1P
-	POPP	S0P
-
 	or	S2L,S2L
 	beq	reti
 
@@ -515,6 +510,8 @@ exitdiv:
 #endif
 
 reti:
+	POPP	S1P
+	POPP	S0P
 	POPP	S2P
 	rts
 

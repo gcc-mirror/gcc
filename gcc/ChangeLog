@@ -1,3 +1,11 @@
+2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (___udivsi3): Jump to reti
+	instead of exitdiv.
+	(___umodsi3): Likewise.
+	(exitdiv): Do not restore any register.
+	(reti): Restore registers.
+
 2003-11-13  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-inline.c (walk_tree): Handle PLACEHOLDER_EXPR.
