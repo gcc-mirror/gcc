@@ -227,7 +227,6 @@ extern tree build_indirect_ref (tree, const char *);
 extern tree build_array_ref (tree, tree);
 extern tree build_external_ref (tree, int);
 extern tree parser_build_binary_op (enum tree_code, tree, tree);
-extern int c_tree_expr_nonnegative_p (tree);
 extern void readonly_error (tree, const char *);
 extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree);
@@ -272,6 +271,7 @@ extern void c_finish_for_stmt_incr (tree, tree);
 extern void c_finish_for_stmt (tree, tree);
 extern tree c_begin_stmt_expr (void);
 extern tree c_finish_stmt_expr (tree);
+extern void c_finish_expr_stmt (tree);
 extern tree build_offsetof (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if

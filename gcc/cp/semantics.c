@@ -493,7 +493,11 @@ finish_expr_stmt (tree expr)
   if (expr != NULL_TREE)
     {
       if (!processing_template_decl)
-	expr = convert_to_void (expr, "statement");
+	{
+	  if (warn_sequence_point)
+	    verify_sequence_points (expr);
+	  expr = convert_to_void (expr, "statement");
+	}
       else if (!type_dependent_expression_p (expr))
 	convert_to_void (build_non_dependent_expr (expr), "statement");
 

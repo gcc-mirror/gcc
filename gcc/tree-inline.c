@@ -1251,11 +1251,14 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case STRING_CST:
       *walk_subtrees = 0;
       return NULL;
+
     /* Recognize assignments of large structures and constructors of
        big arrays.  */
     case INIT_EXPR:
-    case TARGET_EXPR:
     case MODIFY_EXPR:
+      x = TREE_OPERAND (x, 0);
+      /* FALLTHRU */
+    case TARGET_EXPR:
     case CONSTRUCTOR:
       {
 	HOST_WIDE_INT size;

@@ -859,7 +859,6 @@ extern void binary_op_error (enum tree_code);
 #define my_friendly_assert(EXP, N) (void) \
  (((EXP) == 0) ? (fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0) : 0)
 
-extern tree c_expand_expr_stmt (tree);
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value (tree);
 extern tree fix_string_type (tree);
@@ -1096,6 +1095,8 @@ extern bool c_dump_tree (void *, tree);
 extern tree c_walk_subtrees (tree*, int*, walk_tree_fn, void*, void*);
 
 extern void c_warn_unused_result (tree *);
+
+extern void verify_sequence_points (tree);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

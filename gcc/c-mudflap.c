@@ -85,7 +85,7 @@ mflang_flush_calls (tree enqueued_call_stmt_chain)
   mf_mark (current_function_decl);
 
   cs = c_begin_compound_stmt (true);
-  c_expand_expr_stmt (enqueued_call_stmt_chain);
+  c_finish_expr_stmt (enqueued_call_stmt_chain);
   add_stmt (c_end_compound_stmt (cs, true));
 
   finish_function ();

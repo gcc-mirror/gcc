@@ -1,3 +1,8 @@
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/20030714-1.c: Rename variables to avoid
+	merging && to BIT_FIELD_REF.
+
 2004-06-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/opt/placeholder1.C: New test.

@@ -2472,13 +2472,19 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
     return ret;
 
   /* If we are initializing something from a TARGET_EXPR, strip the
-     TARGET_EXPR and initialize it directly.  */
+     TARGET_EXPR and initialize it directly, if possible.  This can't
+     be done if the initializer is void, since that implies that the
+     temporary is set in some non-trivial way.  */
   /* What about code that pulls out the temp and uses it elsewhere?  I
      think that such code never uses the TARGET_EXPR as an initializer.  If
      I'm wrong, we'll abort because the temp won't have any RTL.  In that
      case, I guess we'll need to replace references somehow.  */
   if (TREE_CODE (*from_p) == TARGET_EXPR)
-    *from_p = TARGET_EXPR_INITIAL (*from_p);
+    {
+      tree init = TARGET_EXPR_INITIAL (*from_p);
+      if (!VOID_TYPE_P (TREE_TYPE (init)))
+        *from_p = init;
+    }
 
   /* If we're assigning from a ?: expression with ADDRESSABLE type, push
      the assignment down into the branches, since we can't generate a
@@ -3021,22 +3027,29 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
   if (init)
     {
-      /* TARGET_EXPR temps aren't part of the enclosing block, so add it to the
-	 temps list.  */
+      /* TARGET_EXPR temps aren't part of the enclosing block, so add it
+	 to the temps list.  */
       gimple_add_tmp_var (temp);
 
-      /* Build up the initialization and add it to pre_p.  Special handling
-	 for BIND_EXPR can result in fewer temporaries created.  */
-      if (TREE_CODE (init) == BIND_EXPR)
-	gimplify_bind_expr (&init, temp, pre_p);
-      if (init != temp)
+      /* If TARGET_EXPR_INITIAL is void, then the mere evaluation of the
+	 expression is supposed to initialize the slot.  */
+      if (VOID_TYPE_P (TREE_TYPE (init)))
+	ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
+      else
 	{
-	  if (! VOID_TYPE_P (TREE_TYPE (init)))
-	    init = build (MODIFY_EXPR, void_type_node, temp, init);
-	  ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
-	  if (ret == GS_ERROR)
-	    return GS_ERROR;
+          /* Special handling for BIND_EXPR can result in fewer temps.  */
+	  ret = GS_OK;
+          if (TREE_CODE (init) == BIND_EXPR)
+	    gimplify_bind_expr (&init, temp, pre_p);
+          if (init != temp)
+	    {
+	      init = build (MODIFY_EXPR, void_type_node, temp, init);
+	      ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt,
+				   fb_none);
+	    }
 	}
+      if (ret == GS_ERROR)
+	return GS_ERROR;
       append_to_statement_list (init, pre_p);
 
       /* If needed, push the cleanup for the temp.  */

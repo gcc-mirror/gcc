@@ -1,3 +1,29 @@
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (verify_sequence_points): Export.
+	(c_expand_expr_stmt): Move to c-typeck.c.
+	* c-common.h (c_expand_expr_stmt): Remove.
+	(verify_sequence_points): Declare.
+	* c-mudflap.c (mflang_flush_calls): Use c_finish_expr_stmt.
+	* c-parse.in (for_init_stmt, stmt): Likewise.
+	* c-tree.h (c_finish_expr_stmt): Declare.
+	(c_tree_expr_nonnegative_p): Remove.
+	* c-typeck.c (c_tree_expr_nonnegative_p): Remove.
+	(build_conditional_expr, build_binary_op): Use tree_expr_nonnegative_p.
+	(emit_side_effect_warnings): New.
+	(c_finish_expr_stmt): Rename from c_expand_expr_stmt.  Use it.
+	(c_finish_stmt_expr): Work without EXPR_STMT.  Handle eh regions.
+	Use emit_side_effect_warnings.
+	(push_cleanup): Copy STATEMENT_LIST_STMT_EXPR.
+	* fold-const.c (tree_expr_nonnegative_p): Handle TARGET_EXPR.
+	* gimplify.c (gimplify_modify_expr): Don't discard TARGET_EXPR
+	with void initializer.
+	(gimplify_target_expr): Handle void BIND_EXPR initializer.
+	* tree-inline.c (estimate_num_insns_1): Fix type lookup for
+	INIT_EXPR and MODIFY_EXPR.
+	* objc/objc-act.c (build_module_descriptor): Use add_stmt
+	instead of c_expand_expr_stmt.
+
 2004-06-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* fold-const.c (fold_cond_expr_with_comparison):

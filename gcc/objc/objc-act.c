@@ -1918,7 +1918,7 @@ build_module_descriptor (void)
 			 build_unary_op (ADDR_EXPR, UOBJC_MODULES_decl, 0));
     decelerator = build_function_call (execclass_decl, parms);
 
-    c_expand_expr_stmt (decelerator);
+    add_stmt (decelerator);
     add_stmt (c_end_compound_stmt (compound, true));
 
     finish_function ();
