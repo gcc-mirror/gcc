@@ -1545,7 +1545,9 @@ private:
 				      &name, &field_type);
     if (class_type)
       *class_type = ct;
-    return type (field_type);
+    if (field_type->data[0] == '[' || field_type->data[0] == 'L')
+      return type (field_type);
+    return get_type_val_for_signature (field_type->data[0]);
   }
 
   type check_method_constant (int index, bool is_interface,
