@@ -262,6 +262,7 @@ init_exception_processing ()
 				     vtype, NOT_BUILT_IN);
   terminate_fndecl = auto_function (get_identifier ("terminate"),
 				    vtype, NOT_BUILT_IN);
+  TREE_THIS_VOLATILE (terminate_fndecl) = 1;
 
   push_lang_context (lang_name_c);
 
@@ -916,25 +917,11 @@ expand_end_eh_spec (raises)
 void
 expand_exception_blocks ()
 {
-  rtx funcend;
-  rtx insns;
-
-  start_sequence ();
-
-  funcend = gen_label_rtx ();
-
-  start_sequence ();
-
-  /* Add all the catch clauses here.  */
-  emit_insns (catch_clauses);
-  catch_clauses = NULL_RTX;
-
+  push_to_sequence (catch_clauses);
   expand_leftover_cleanups ();
-
-  insns = get_insns ();
+  catch_clauses = get_insns ();
   end_sequence ();
 
-#if 1
   /* Do this after we expand leftover cleanups, so that the
      expand_eh_region_end that expand_end_eh_spec does will match the
      right expand_eh_region_start, and make sure it comes out before
@@ -942,20 +929,17 @@ expand_exception_blocks ()
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     {
      expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
-     push_to_sequence (insns);
-
-     /* Now expand any new ones.  */
+     push_to_sequence (catch_clauses);
      expand_leftover_cleanups ();
-
-     insns = get_insns ();
+     catch_clauses = get_insns ();
      end_sequence ();
     }
-#endif
 
-  emit_jump (funcend);
-
-  if (insns)
+  if (catch_clauses)
     {
+      rtx funcend = gen_label_rtx ();
+      emit_jump (funcend);
+
       /* We cannot protect n regions this way if we must flow into the
 	 EH region through the top of the region, as we have to with
 	 the setjmp/longjmp approach.  */
@@ -967,23 +951,16 @@ expand_exception_blocks ()
 	  expand_eh_region_start ();
 	}
 
-      emit_insns (insns);
+      emit_insns (catch_clauses);
+      catch_clauses = NULL_RTX;
 
       if (exceptions_via_longjmp == 0)
 	expand_eh_region_end (TerminateFunctionCall);
 
       expand_leftover_cleanups ();
+
+      emit_label (funcend);
     }
-
-  emit_label (funcend);
-
-  /* Only if we had previous insns do we want to emit the jump around
-     them.  If there weren't any, then insns will remain NULL_RTX.  */
-  if (insns)
-    insns = get_insns ();
-  end_sequence ();
-
-  emit_insns (insns);
 }
 
 tree
