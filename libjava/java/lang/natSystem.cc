@@ -414,11 +414,12 @@ java::lang::System::init_properties (void)
 #endif /* HAVE_GETCWD */
 
   // Set user locale properties based on setlocale()
-#ifdef HAVE_SETLOCALE
+#if defined (HAVE_SETLOCALE) && defined (HAVE_LC_MESSAGES)
   // We let the user choose the locale.  However, since Java differs
   // from POSIX, we arbitrarily pick LC_MESSAGES as determining the
   // Java locale.  We can't use LC_ALL because it might return a full
-  // list of all the settings.
+  // list of all the settings.  If we don't have LC_MESSAGES then we
+  // just default to `en_US'.
   setlocale (LC_ALL, "");
   char *locale = setlocale (LC_MESSAGES, "");
   if (locale && strlen (locale) >= 2)
@@ -438,7 +439,7 @@ java::lang::System::init_properties (void)
         }
     }
   else
-#endif /* HAVE_SETLOCALE */
+#endif /* HAVE_SETLOCALE and HAVE_LC_MESSAGES */
     {
       SET ("user.language", "en");
       SET ("user.region", "US");

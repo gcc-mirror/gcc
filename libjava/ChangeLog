@@ -1,3 +1,11 @@
+2002-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natSystem.cc (init_properties): Only look for default
+	locale if LC_MESSAGES is defined.
+	* aclocal.m4, configure, include/config.h.in: Rebuilt.
+	* configure.in: Call AM_LC_MESSAGES.
+	* acinclude.m4 (AM_LC_MESSAGES): New macro.
+
 2002-01-10  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5303:
