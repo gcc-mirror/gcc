@@ -963,7 +963,9 @@ ostream& ends(ostream& outs)
 
 ostream& endl(ostream& outs)
 {
-    return flush(outs.put('\n'));
+    if (opfx)
+        flush(outs.put('\n'));
+    return outs;
 }
 
 istream& lock(istream& ins)
