@@ -1887,6 +1887,7 @@ legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 	  if (GET_CODE (index) == CONST_INT)
 	    return TRUE;
 	  if (GET_CODE (index) == CONST
+	      && GET_CODE (XEXP (index, 0)) != PLUS
 	      && (! flag_pic
  		  || legitimate_pic_operand_p (index)))
 	    return TRUE;
