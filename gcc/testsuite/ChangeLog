@@ -1,3 +1,12 @@
+2003-12-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/13256
+	PR target/12598
+	Backport from mainline:
+	* gcc.dg/torture/dg-torture.exp: New directory.  New file.
+	* gcc.dg/torture/cris-volatile-1.c: New test.
+	* gcc.c-torture/execute/20031201-1.c: New test.
+
 2003-12-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* gcc.dg/cpp/trad/xwin1.c: Remove, breaks testsuite (and I don't
