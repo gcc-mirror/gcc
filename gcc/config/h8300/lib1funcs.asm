@@ -59,9 +59,6 @@ Boston, MA 02111-1307, USA.  */
 #define S2H r6h
 
 #ifdef __H8300__
-#define MOVP	mov.w	/* pointers are 16 bits */
-#define ADDP	add.w
-#define CMPP	cmp.w
 #define PUSHP	push
 #define POPP	pop
 
@@ -75,9 +72,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #if defined (__H8300H__) || defined (__H8300S__)
-#define MOVP	mov.l	/* pointers are 32 bits */
-#define ADDP	add.l
-#define CMPP	cmp.l
 #define PUSHP	push.l
 #define POPP	pop.l
 

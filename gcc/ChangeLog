@@ -1,3 +1,9 @@
+2003-11-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (MOVP): Remove.
+	(ADDP): Likewise.
+	(CMPP): Likewise.
+
 2003-11-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (use_return_insn): New argument, SIBLING.  Support returning
