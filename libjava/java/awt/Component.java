@@ -205,13 +205,10 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public boolean isShowing()
   {
-    if (! visible)
+    if (! visible || peer == null)
       return false;
 
-    if (parent != null)
-      return (parent.isShowing());
-
-    return false;
+    return parent == null ? true : parent.isShowing ();
   }
   
   public boolean isEnabled()
@@ -377,8 +374,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   public Point getLocationOnScreen()
   {
-    // FIXME
-    return null;
+    if (! isShowing ())
+      throw new IllegalComponentStateException ("component not showing");
+
+    // We know peer != null here.
+    return peer.getLocationOnScreen ();
   }
 
   /** @deprecated Use getLocation() instead. */
@@ -560,7 +560,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public Dimension getPreferredSize()
   {
-    // FIXME?
     if (peer == null)
       return new Dimension(width, height);
     else
@@ -575,7 +574,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public Dimension getMinimumSize()
   {
-    // FIXME?
     if (peer == null)
       return new Dimension(width, height);
     else
@@ -587,24 +585,22 @@ public abstract class Component implements ImageObserver, MenuContainer,
   {
     return getMinimumSize();
   }
-  
+
   public Dimension getMaximumSize()
   {
     return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
   }
-  
+
   public float getAlignmentX()
   {
-    // FIXME
-    return 0;
+    return CENTER_ALIGNMENT;
   }
-  
+
   public float getAlignmentY()
   {
-    // FIXME
-    return 0;
+    return CENTER_ALIGNMENT;
   }
-  
+
   public void doLayout()
   {
     // nothing to do unless we're a container
@@ -626,9 +622,9 @@ public abstract class Component implements ImageObserver, MenuContainer,
     valid = false;
 
     if ((parent != null) && parent.valid)
-	parent.invalidate ();
+      parent.invalidate ();
   }
-  
+
   public Graphics getGraphics()
   {
     if (peer != null)
@@ -713,40 +709,41 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.repaint(tm, x, y, width, height);
   }
-  
+
   public void print(Graphics g)
   {
     paint(g);
   }
-  
+
   public void printAll(Graphics g)
   {
     paintAll(g);
   }
-  
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h)
+
+  public boolean imageUpdate (Image img, int infoflags, int x, int y,
+			      int w, int h)
   {
     // FIXME
     return false;
   }
-  
+
   public Image createImage(ImageProducer producer)
   {
     // FIXME
     return null;
   }
-  
+
   public Image createImage(int width, int height)
   {
     return getGraphicsConfiguration().createCompatibleImage(width, height);
   }
-  
+
   public boolean prepareImage(Image image, ImageObserver observer)
   {
     // FIXME
     return false;
   }
-  
+
   public boolean prepareImage(Image image, int width, int height, ImageObserver observer)
   {
     // FIXME
@@ -758,53 +755,54 @@ public abstract class Component implements ImageObserver, MenuContainer,
     // FIXME
     return 0;
   }
-  
-  public int checkImage(Image image, int width, int height, ImageObserver observer)
+
+  public int checkImage (Image image, int width, int height, ImageObserver observer)
   {
-    // FIXME
-    return 0; 
+    if (peer != null)
+      return peer.checkImage (image, width, height, observer);
+    return getToolkit ().checkImage (image, width, height, observer);
   }
-  
-  public boolean contains(int x, int y)
+
+  public boolean contains (int x, int y)
   {
     return (x >= 0) && (y >= 0) && (x < width) && (y < height);
   }
-  
+
   /** @deprecated */
   public boolean inside(int x, int y)
   {
     return contains(x,y);
   }
-  
+
   public boolean contains(Point p)
   {
     return contains(p.x, p.y);
   }
-  
+
   public Component getComponentAt(int x, int y)
   {
     if (contains(x,y))
       return this;
     return null;
   }
-  
+
   /** @deprecated */
   public Component locate(int x, int y)
   {
     return getComponentAt(x, y);
   }
-  
+
   public Component getComponentAt(Point p)
   {
     return getComponentAt(p.x, p.y);
   }
-    
+
   /** @deprecated */
   public void deliverEvent(Event e)
   {
     
   }
-  
+
   /** Forward AWT events to processEvent() if:
     *     - Events have been enabled for this type of event via enableEvents(),
     *   OR:
@@ -826,7 +824,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.handleEvent(e);
   }
-  
+
   void dispatchEventImpl(AWTEvent e)
   {
     // Make use of event id's in order to avoid multiple instanceof tests.
@@ -1019,7 +1017,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
     v.copyInto(el_a);
     return el_a;
   }
-  
+
   static void getListenerList(EventListener el, Vector v)
   {
     if (el instanceof AWTEventMulticaster)
@@ -1040,7 +1038,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   // /** @since 1.2 */
   //
   // public InputContext getInputContext()
-  
+
   protected final void enableEvents(long eventsToEnable)
   {
     eventMask |= eventsToEnable;
@@ -1054,14 +1052,16 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
     if (isLightweight() && (parent != null))
       parent.enableEvents(eventsToEnable);
+    else if (peer != null)
+      peer.setEventMask (eventMask);
   }
-  
+
   protected final void disableEvents(long eventsToDisable)
   {
     eventMask &= ~eventsToDisable;
     // forward new event mask to peer?
   }
-  
+
   /** coalesceEvents is called by the EventQueue if two events with the same 
     * event id are queued. Returns a new combined event, or null if no 
     * combining is done. 
@@ -1437,45 +1437,61 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   public boolean isFocusTraversable()
   {
-    // FIXME
-    return false;
+    return enabled && visible && (peer == null || peer.isFocusTraversable ());
   }
-  
+
   public void requestFocus()
   {
-    // FIXME
+    // If there's no peer then this component can't get the focus.  We
+    // treat it as a silent rejection of the request.
+    if (peer != null)
+      peer.requestFocus ();
   }
-  
+
+  // This method is used to implement transferFocus().
+  // CHILD is the child making the request.
+  // This is overridden by Container; when called for an ordinary
+  // component there is no child and so we always return null.
+  Component findNextFocusComponent (Component child)
+  {
+    return null;
+  }
+
   public void transferFocus()
   {
-    // FIXME
+    Component next;
+    if (parent == null)
+      next = findNextFocusComponent (null);
+    else
+      next = parent.findNextFocusComponent (this);
+    if (next != null && next != this)
+      next.requestFocus ();
   }
-  
+
   /** @deprecated */
   public void nextFocus()
   {
     transferFocus();
   }
-  
+
   /** @since 1.2 */
   public boolean hasFocus()
   {
-    // FIXME
-    return false;
+    return hasFocus;
   }
-  
+
   public synchronized void add(PopupMenu popup)
   {
     if (popups == null)
       popups = new Vector();
     popups.addElement(popup);    
   }
-  
+
   public synchronized void remove(MenuComponent popup)
   {
     popups.removeElement(popup);
   }
-  
+
   protected String paramString()
   {
     StringBuffer param = new StringBuffer();
@@ -1506,47 +1522,54 @@ public abstract class Component implements ImageObserver, MenuContainer,
     
     return param.toString();
   }
-  
+
   public String toString()
   {
     return this.getClass().getName() + "[" + paramString() + "]";
   }
-  
-  public void list()
+
+  public void list ()
   {
-    list(System.out);
+    list (System.out, 0);
   }
-  
-  public void list(PrintStream out)
+
+  public void list (PrintStream out)
   {
-    list(out, 0);
+    list (out, 0);
   }
-  
-  public void list(PrintStream out, int indent)
+
+  public void list (PrintStream out, int indent)
   {
+    for (int i = 0; i < indent; ++i)
+      out.print (' ');
+    out.println (toString ());
   }
-  
-  public void list(PrintWriter out)
+
+  public void list (PrintWriter out)
   {
+    list (out, 0);
   }
-  
-  public void list(PrintWriter out, int indent)
+
+  public void list (PrintWriter out, int indent)
   {
+    for (int i = 0; i < indent; ++i)
+      out.print (' ');
+    out.println (toString ());
   }
-  
+
   public void addPropertyChangeListener(PropertyChangeListener listener)
   {
     if (changeSupport == null)
       changeSupport = new PropertyChangeSupport(this);
     changeSupport.addPropertyChangeListener(listener);
   }
-  
+
   public void removePropertyChangeListener(PropertyChangeListener listener)
   {
     if (changeSupport != null)
       changeSupport.removePropertyChangeListener(listener);         
   }
-  
+
   public void addPropertyChangeListener(String propertyName,
                                 	PropertyChangeListener listener)
   {
@@ -1554,21 +1577,21 @@ public abstract class Component implements ImageObserver, MenuContainer,
       changeSupport = new PropertyChangeSupport(this);
     changeSupport.addPropertyChangeListener(propertyName, listener);  
   }
-  
+
   public void removePropertyChangeListener(String propertyName,
                                            PropertyChangeListener listener)
   {
     if (changeSupport != null)
       changeSupport.removePropertyChangeListener(propertyName, listener);
   }
-  
+
   protected void firePropertyChange(String propertyName, Object oldValue, 
                                     Object newValue)
   {
     if (changeSupport != null)
       changeSupport.firePropertyChange(propertyName, oldValue, newValue);    
   }
-  
+
   public void setComponentOrientation(ComponentOrientation o)
   {
     orientation = o;
