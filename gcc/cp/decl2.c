@@ -633,7 +633,9 @@ lang_decode_option (argc, argv)
 	name_mangling_version 
 	  = read_integral_parameter (p + 22, p - 2, name_mangling_version);
       else if (!strncmp (p, "message-length=", 15))
-          set_message_length (read_integral_parameter (p + 15, p -2, 0));
+          set_message_length
+              (read_integral_parameter (p + 15, p -2,
+                                        /* default line-wrap length */ 72));
       else if (!strncmp (p, "dump-translation-unit-", 22))
 	{
 	  if (p[22] == '\0')

@@ -1,3 +1,20 @@
+2000-01-19  Gabriel Dos Reis  <gdr@codesourcery>
+
+	* decl2.c (lang_decode_option): Set default line-wrap length to 72.
+	
+	* typeck.c (composite_pointer_type, common_type,
+	comp_target_parms, c_sizeof, expr_sizeof, build_array_ref,
+	build_function_call_real, convert_arguments,
+	build_binary_op_nodefault, pointer_int_sum, pointer_diff,
+	build_unary_op, mark_addressable, build_compound_expr,
+	build_static_cast, build_reinterpret_cast, build_const_cast,
+	build_c_cast, build_modify_expr, get_delta_difference,
+	build_ptrmemfunc, check_return_expr): Replace 'ANSI C++' with 
+	'ISO C++'.  Fusion consecutive calls to diagnotic message routines
+	into a single one.
+	* typeck2.c (readonly_error, abstract_virtuals_error,
+	process_init_constructor, check_for_new_type): Likewise.
+
 2000-01-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (bot_manip): Set DECL_CONTEXT for newly created

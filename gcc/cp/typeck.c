@@ -452,15 +452,15 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
   else if (TYPE_MAIN_VARIANT (TREE_TYPE (t1)) == void_type_node)
     {
       if (pedantic && TREE_CODE (t2) == FUNCTION_TYPE)
-	pedwarn ("ANSI C++ forbids %s between `void *' and function pointer",
-		 location);
+	pedwarn ("ISO C++ forbids %s between pointer of type `void *'"
+                 " and pointer-to-function", location);
       result_type = qualify_type (t1, t2);
     }
   else if (TYPE_MAIN_VARIANT (TREE_TYPE (t2)) == void_type_node)
     {
       if (pedantic && TREE_CODE (t1) == FUNCTION_TYPE)
-	pedwarn ("ANSI C++ forbids %s between `void *' and function pointer",
-		 location);
+	pedwarn ("ISO C++ forbids %s between pointer of type `void *'"
+                 " and pointer-to-function", location);
       result_type = qualify_type (t2, t1);
     }
   /* C++ */
@@ -482,7 +482,7 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
 	  if (pedantic
 	      && result_type != TREE_TYPE (t1)
 	      && result_type != TREE_TYPE (t2))
-	    cp_pedwarn ("`%T' and `%T' converted to `%T *' in %s",
+	    cp_pedwarn ("types `%T' and `%T' converted to `%T *' in %s",
 			t1, t2, result_type, location);
 	  
 	  result_type = build_pointer_type (result_type);
@@ -583,7 +583,7 @@ common_type (t1, t2)
       /* For two pointers, do this recursively on the target type,
 	 and combine the qualifiers of the two types' targets.  */
       /* This code was turned off; I don't know why.
- 	 But ANSI C++ specifies doing this with the qualifiers.
+ 	 But ISO C++ specifies doing this with the qualifiers.
  	 So I turned it on again.  */
       {
 	tree tt1 = TREE_TYPE (t1);
@@ -1466,7 +1466,7 @@ comp_target_parms (parms1, parms2, strict)
 	   declared to take (), which we fudged to (...).  Don't make the
 	   user pay for our mistake.  */;
       else
-	cp_pedwarn ("ANSI C++ prohibits conversion from `%#T' to `(...)'",
+	cp_pedwarn ("ISO C++ prohibits conversion from `%#T' to `(...)'",
 		    parms2);
       return self_promoting_args_p (t2);
     }
@@ -1548,19 +1548,20 @@ c_sizeof (type)
   if (code == FUNCTION_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids taking the sizeof a function type");
+	pedwarn ("ISO C++ forbids applying `sizeof' to a function type");
       return size_int (1);
     }
   if (code == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids taking the sizeof a method type");
+	pedwarn ("ISO C++ forbids applying `sizeof' to a member function");
       return size_int (1);
     }
   if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids taking the sizeof a void type");
+	pedwarn ("ISO C++ forbids applying `sizeof' to type `void' which is"
+                 " an incomplete type");
       return size_int (1);
     }
   if (code == ERROR_MARK)
@@ -1605,7 +1606,8 @@ expr_sizeof (e)
     error ("sizeof applied to a bit-field");
   if (is_overloaded_fn (e))
     {
-      pedwarn ("ANSI C++ forbids taking the sizeof a function type");
+      pedwarn ("ISO C++ forbids applying `sizeof' to an expression"
+               " of function type");
       return size_int (1);
     }
   else if (type_unknown_p (e))
@@ -2458,7 +2460,7 @@ build_array_ref (array, idx)
 	}
 
       if (pedantic && !lvalue_p (array))
-	pedwarn ("ANSI C++ forbids subscripting non-lvalue array");
+	pedwarn ("ISO C++ forbids subscripting non-lvalue array");
 
       /* Note in C++ it is valid to subscript a `register' array, since
 	 it is valid to take the address of something with that
@@ -2947,7 +2949,7 @@ build_function_call_real (function, params, require_complete, flags)
 
       /* Convert anything with function type to a pointer-to-function.  */
       if (pedantic && DECL_MAIN_P (function))
-	pedwarn ("ANSI C++ forbids calling `main' from within program");
+	pedwarn ("ISO C++ forbids calling `::main' from within program");
 
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
@@ -3118,11 +3120,8 @@ convert_arguments (typelist, values, fndecl, flags)
       if (type == void_type_node)
 	{
 	  if (fndecl)
-	    {
-	      cp_error_at ("too many arguments to %s `%+#D'", called_thing,
-			   fndecl);
-	      error ("at this point in file");
-	    }
+            cp_error_at ("too many arguments to %s `%+#D' at this point",
+                         called_thing, fndecl);
 	  else
 	    error ("too many arguments to function");
 	  /* In case anybody wants to know if this argument
@@ -3220,11 +3219,8 @@ convert_arguments (typelist, values, fndecl, flags)
       else
 	{
 	  if (fndecl)
-	    {
-	      cp_error_at ("too few arguments to %s `%+#D'",
-	                   called_thing, fndecl);
-	      error ("at this point in file");
-	    }
+            cp_error_at ("too few arguments to %s `%+#D' at this point",
+                         called_thing, fndecl);
 	  else
 	    error ("too few arguments to function");
 	  return error_mark_list;
@@ -3353,7 +3349,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       tree t = instantiate_type (TREE_TYPE (op1), op0, 0);
       if (t != error_mark_node)
 	{
-	  cp_pedwarn ("assuming cast to `%T' from overloaded function",
+	  cp_pedwarn ("assuming cast to type `%T' from overloaded function",
 		      TREE_TYPE (t));
 	  op0 = t;
 	}
@@ -3363,7 +3359,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       tree t = instantiate_type (TREE_TYPE (op0), op1, 0);
       if (t != error_mark_node)
 	{
-	  cp_pedwarn ("assuming cast to `%T' from overloaded function",
+	  cp_pedwarn ("assuming cast to type `%T' from overloaded function",
 		      TREE_TYPE (t));
 	  op1 = t;
 	}
@@ -3604,15 +3600,15 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    {
 	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type0), TYPE_SIZE (type1)))
-		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
+		pedwarn ("ISO C++ forbids comparison of `void *' with function pointer");
 	      else if (TREE_CODE (tt1) == OFFSET_TYPE)
-		pedwarn ("ANSI C++ forbids conversion of a pointer to member to `void *'");
+		pedwarn ("ISO C++ forbids conversion of a pointer to member to `void *'");
 	    }
 	  else if (tt1 == void_type_node)
 	    {
 	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE
 		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
-		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
+		pedwarn ("ISO C++ forbids comparison of `void *' with function pointer");
 	    }
 	  else
 	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
@@ -3628,12 +3624,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  error ("ANSI C++ forbids comparison between pointer and integer");
+	  error ("ISO C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  error ("ANSI C++ forbids comparison between pointer and integer");
+	  error ("ISO C++ forbids comparison between pointer and integer");
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && null_ptr_cst_p (op1))
 	{
@@ -3781,12 +3777,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
+	  pedwarn ("ISO C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
+	  pedwarn ("ISO C++ forbids comparison between pointer and integer");
 	}
       break;
 
@@ -3950,7 +3946,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
 	         != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
 	    {
-	      cp_warning ("comparison between `%#T' and `%#T'", 
+	      cp_warning ("comparison between types `%#T' and `%#T'", 
 			  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
 	    }
 
@@ -3987,7 +3983,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 						signed_type (result_type)))))
 	    /* OK */;
 	  else
-	    warning ("comparison between signed and unsigned");
+	    warning ("comparison between a signed and an unsigned"
+                     " integer expressions");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -4053,7 +4050,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
   if (!result_type)
     {
-      cp_error ("invalid operands `%T' and `%T' to binary `%O'",
+      cp_error ("invalid operands of types `%T' and `%T' to binary `%O'",
 		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), error_code);
       return error_mark_node;
     }
@@ -4127,25 +4124,25 @@ pointer_int_sum (resultcode, ptrop, intop)
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids using pointer of type `void *' in arithmetic");
+	pedwarn ("ISO C++ forbids using pointer of type `void *' in pointer arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids using pointer to a function in arithmetic");
+	pedwarn ("ISO C++ forbids using a pointer-to-function in pointer arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids using pointer to a method in arithmetic");
+	pedwarn ("ISO C++ forbids using a pointer to member function in pointer arithmetic");
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == OFFSET_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ANSI C++ forbids using pointer to a member in arithmetic");
+	pedwarn ("ISO C++ forbids using pointer to a member in pointer arithmetic");
       size_exp = integer_one_node;
     }
   else
@@ -4218,13 +4215,13 @@ pointer_diff (op0, op1, ptrtype)
   if (pedantic || warn_pointer_arith)
     {
       if (TREE_CODE (target_type) == VOID_TYPE)
-	pedwarn ("ANSI C++ forbids using pointer of type `void *' in subtraction");
+	pedwarn ("ISO C++ forbids using pointer of type `void *' in subtraction");
       if (TREE_CODE (target_type) == FUNCTION_TYPE)
-	pedwarn ("ANSI C++ forbids using pointer to a function in subtraction");
+	pedwarn ("ISO C++ forbids using pointer to a function in subtraction");
       if (TREE_CODE (target_type) == METHOD_TYPE)
-	pedwarn ("ANSI C++ forbids using pointer to a method in subtraction");
+	pedwarn ("ISO C++ forbids using pointer to a method in subtraction");
       if (TREE_CODE (target_type) == OFFSET_TYPE)
-	pedwarn ("ANSI C++ forbids using pointer to a member in subtraction");
+	pedwarn ("ISO C++ forbids using pointer to a member in subtraction");
     }
 
   /* First do the subtraction as integers;
@@ -4235,7 +4232,7 @@ pointer_diff (op0, op1, ptrtype)
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
-    error ("arithmetic on pointer to an incomplete type");
+    error ("invalid use of a pointer to an incomplete type in pointer arithmetic");
 
   op1 = ((TREE_CODE (target_type) == VOID_TYPE
 	  || TREE_CODE (target_type) == FUNCTION_TYPE
@@ -4520,7 +4517,7 @@ build_unary_op (code, xarg, noconvert)
 
 	/* ARM $5.2.5 last annotation says this should be forbidden.  */
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
-	  pedwarn ("ANSI C++ forbids %sing an enum",
+	  pedwarn ("ISO C++ forbids %sing an enum",
 		   (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 		   ? "increment" : "decrement");
 	    
@@ -4537,7 +4534,7 @@ build_unary_op (code, xarg, noconvert)
 	    else if ((pedantic || warn_pointer_arith)
 		     && (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
 			 || tmp == VOID_TYPE || tmp == OFFSET_TYPE))
-	      cp_pedwarn ("ANSI C++ forbids %sing a pointer of type `%T'",
+	      cp_pedwarn ("ISO C++ forbids %sing a pointer of type `%T'",
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
 			   ? "increment" : "decrement"), argtype);
@@ -4640,7 +4637,7 @@ build_unary_op (code, xarg, noconvert)
 	}
       else if (pedantic && DECL_MAIN_P (arg))
 	/* ARM $3.4 */
-	pedwarn ("taking address of function `main'");
+	pedwarn ("ISO C++ forbids taking address of function `::main'");
 
       /* Let &* cancel out to simplify resulting code.  */
       if (TREE_CODE (arg) == INDIRECT_REF)
@@ -4704,13 +4701,13 @@ build_unary_op (code, xarg, noconvert)
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
-		pedwarn ("taking the address of a non-static member function");
+		pedwarn ("ISO C++ forbids taking the address of a"
+                         " non-static member function to form a pointer"
+                         " to member function.  Say `&%T::%D'", base, name);
 	      else
-		pedwarn ("taking the address of a bound member function");
-
-	      cp_pedwarn
-		("  to form a pointer to member function, say `&%T::%D'",
-		 base, name);
+		pedwarn ("ISO C++ forbids taking the address of a bound"
+                         " member function to form a pointer to member"
+                         " function", base, name);
 	    }
 
 	  arg = build_offset_ref (base, name);
@@ -4735,7 +4732,8 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_ROUND_EXPR:
 	case FIX_CEIL_EXPR:
 	  if (! lvalue_p (arg) && pedantic)
-	    pedwarn ("taking the address of a cast to non-reference type");
+	    pedwarn ("ISO C++ forbids taking the address of a cast to a "
+                     "non-lvalue expression");
 	  break;
 	  
 	default:
@@ -4973,7 +4971,7 @@ mark_addressable (exp)
 	if (x == current_class_ptr)
 	  {
 	    if (! flag_this_is_variable)
-	      error ("address of `this' not available");
+	      error ("cannot take the address of `this', which is an ravlue expression");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
 	    put_var_into_stack (x);
 	    return 1;
@@ -5121,7 +5119,7 @@ build_compound_expr (list)
     }
 
   first = TREE_VALUE (list);
-  first = convert_to_void (first, "lhs of comma");
+  first = convert_to_void (first, "left-hand operand of comma");
   if (first == error_mark_node)
     return error_mark_node;
   
@@ -5220,7 +5218,7 @@ build_static_cast (type, expr)
      constness.  */
   if (ok && casts_away_constness (intype, type))
     {
-      cp_error ("static_cast from `%T' to `%T' casts away constness",
+      cp_error ("static_cast from type `%T' to type `%T' casts away constness",
 		intype, type);
       return error_mark_node;
     }
@@ -5228,7 +5226,7 @@ build_static_cast (type, expr)
   if (ok)
     return build_c_cast (type, expr);
 
-  cp_error ("static_cast from `%T' to `%T'", intype, type);
+  cp_error ("invalid static_cast from type `%T' to type `%T'", intype, type);
   return error_mark_node;
 }
 
@@ -5267,7 +5265,8 @@ build_reinterpret_cast (type, expr)
     {
       if (! real_lvalue_p (expr))
 	{
-	  cp_error ("reinterpret_cast from `%T' rvalue to `%T'", intype, type);
+	  cp_error ("invalid reinterpret_cast of an rvalue expression of type"
+                    " `%T' to type `%T'", intype, type);
 	  return error_mark_node;
 	}
       expr = build_unary_op (ADDR_EXPR, expr, 0);
@@ -5312,14 +5311,15 @@ build_reinterpret_cast (type, expr)
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
     {
-      pedwarn ("ANSI C++ forbids casting between pointers to functions and objects");
+      pedwarn ("ISO C++ forbids casting between pointer-to-function and pointer-to-object");
       if (TREE_READONLY_DECL_P (expr))
 	expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else
     {
-      cp_error ("reinterpret_cast from `%T' to `%T'", intype, type);
+      cp_error ("invalid reinterpret_cast from type `%T' to type `%T'",
+                intype, type);
       return error_mark_node;
     }
       
@@ -5345,16 +5345,12 @@ build_const_cast (type, expr)
     }
 
   if (!POINTER_TYPE_P (type))
-    {
-      cp_error ("`%T' is not a pointer, reference, or pointer-to-data-member type",
-		type);
-      cp_error ("as required by const_cast");
-    }
+    cp_error ("invalid use of const_cast with type `%T', which is not a"
+              " pointer, reference, nor a pointer-to-data-member type", type);
   else if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      cp_error ("`%T' is a pointer or reference to a function type",
-		type);
-      cp_error ("which is forbidden by const_cast");
+      cp_error ("invalid use of const_cast with type `%T', which is a pointer"
+                " or reference to a function type", type);
       return error_mark_node;
     }
 
@@ -5377,7 +5373,7 @@ build_const_cast (type, expr)
     {
       if (! real_lvalue_p (expr))
 	{
-	  cp_error ("const_cast from `%T' rvalue to `%T'", intype, type);
+	  cp_error ("invalid const_cast of an rvalue of type `%T' to type `%T'", intype, type);
 	  return error_mark_node;
 	}
 
@@ -5393,7 +5389,7 @@ build_const_cast (type, expr)
 	   && comp_ptr_ttypes_const (TREE_TYPE (type), TREE_TYPE (intype)))
     return cp_convert (type, expr);
 
-  cp_error ("const_cast from `%T' to `%T'", intype, type);
+  cp_error ("invalid const_cast from type `%T' to type `%T'", intype, type);
   return error_mark_node;
 }
 
@@ -5430,12 +5426,12 @@ build_c_cast (type, expr)
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	{
 	  if (pedantic)
-	    pedwarn ("ANSI C++ forbids casting to an array type");
+	    pedwarn ("ISO C++ forbids casting to an array type");
 	  type = build_pointer_type (TREE_TYPE (type));
 	}
       else
 	{
-	  error ("ANSI C++ forbids casting to an array type");
+	  error ("ISO C++ forbids casting to an array type");
 	  return error_mark_node;
 	}
     }
@@ -5443,7 +5439,7 @@ build_c_cast (type, expr)
   if (TREE_CODE (type) == FUNCTION_TYPE
       || TREE_CODE (type) == METHOD_TYPE)
     {
-      cp_error ("casting to function type `%T'", type);
+      cp_error ("invalid cast to function type `%T'", type);
       return error_mark_node;
     }
 
@@ -5768,7 +5764,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* WP 5.4.1:  The result is an lvalue if T is a reference type,
 	   otherwise the result is an rvalue.   */
 	if (! lvalue_p (lhs))
-	  pedwarn ("ANSI C++ forbids cast to non-reference type used as lvalue");
+	  pedwarn ("ISO C++ forbids cast to non-reference type used as lvalue");
 
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    cp_convert (TREE_TYPE (inner_lhs),
@@ -5874,7 +5870,7 @@ build_modify_expr (lhs, modifycode, rhs)
 
       /* Allow array assignment in compiler-generated code.  */
       if (pedantic && ! DECL_ARTIFICIAL (current_function_decl))
-	pedwarn ("ANSI C++ forbids assignment of arrays");
+	pedwarn ("ISO C++ forbids assignment of arrays");
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 	           ? 1 + (modifycode != INIT_EXPR): 0;
@@ -6051,9 +6047,8 @@ get_delta_difference (from, to, force)
       if (binfo_from_vbase (binfo))
 	{
 	  binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), from);
-	  cp_warning ("pointer to member cast to virtual base `%T'",
-		      BINFO_TYPE (binfo));
-	  warning ("  will only work if you are very careful");
+	  cp_warning ("pointer to member cast to virtual base `%T' will only"
+                      " work if you are very careful", BINFO_TYPE (binfo));
 	}
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
@@ -6067,9 +6062,8 @@ get_delta_difference (from, to, force)
     {
       if (force)
 	{
-	  cp_warning ("pointer to member cast from virtual base `%T'",
-		      BINFO_TYPE (binfo));
-	  warning ("  will only work if you are very careful");
+	  cp_warning ("pointer to member cast from virtual base `%T' will "
+                      "only wokr if you are very careful", BINFO_TYPE (binfo));
 	}
       else
 	cp_error ("pointer to member conversion from virtual base `%T'",
@@ -6184,7 +6178,7 @@ build_ptrmemfunc (type, pfn, force)
 
       if (!force 
 	  && !can_convert_arg (to_type, TREE_TYPE (pfn), pfn))
-	cp_error ("conversion to `%T' from `%T'", 
+	cp_error ("invalid conversion to type `%T' from type `%T'", 
 		  to_type, pfn_type);
 
       if (TREE_CODE (pfn) == PTRMEM_CST)
@@ -6764,7 +6758,8 @@ check_return_expr (retval)
      that's supposed to return a value.  */
   if (!retval && fn_returns_value_p)
     {
-      pedwarn ("`return' with no value, in function returning non-void");
+      pedwarn ("return-statement with no value, in function declared with"
+               " a non-void return type");
       /* Clear this, so finish_function won't say that we reach the
 	 end of a non-void function (which we don't, we gave a
 	 return!).  */
@@ -6780,7 +6775,8 @@ check_return_expr (retval)
 	   its side-effects.  */
 	  finish_expr_stmt (retval);
       else
-	pedwarn ("`return' with a value, in function returning void");
+	pedwarn ("return-statement with a value, in function declared with"
+                 " a void return type");
 
       current_function_returns_null = 1;
 
@@ -6797,7 +6793,7 @@ check_return_expr (retval)
        || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
       && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
       && null_ptr_cst_p (retval))
-    cp_warning ("operator new should throw an exception, not return NULL");
+    cp_warning ("`operator new' should throw an exception, not return NULL");
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
