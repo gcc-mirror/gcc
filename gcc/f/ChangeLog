@@ -1,3 +1,8 @@
+2002-06-28  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Mention 2 Gbyte limit on 32-bit targets
+	for arrays explicitly in news on g77-3.1.
+
 Thu Jun 20 21:56:34 2002  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-specs.h: Use cc1 for traditional preprocessing.
