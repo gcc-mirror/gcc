@@ -1,5 +1,10 @@
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
+	* toplev.c (backend_init): Move init_real_once invocation ...
+	(do_compile): ... here.
+
+2002-09-18  Richard Henderson  <rth@redhat.com>
+
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Also remove
 	RTX_UNCHANGING_P markers for successful tail-recursive replacement.
 
