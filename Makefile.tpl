@@ -165,7 +165,7 @@ MAKEINFO = `if [ -f $$r/texinfo/makeinfo/makeinfo ] ; \
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
 # using the makeinfo from the object tree.
-# (Default to avoid splitting info files by setting the threshold high.)
+# (Default to avoid splitting info files.)
 MAKEINFOFLAGS = --no-split
 
 EXPECT = `if [ -f $$r/expect/expect ] ; \
