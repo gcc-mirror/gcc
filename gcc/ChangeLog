@@ -1,4 +1,7 @@
 Thu Nov 27 12:20:19 1997  Jeffrey A Law  (law@cygnus.com)
+	
+	* flow.c (find_basic_blocks): Handle cfg issues for rethrows and
+	nested exceptions correctly.
 
 	* unroll.c (find_splittable_givs): Don't split givs with a dest_reg
 	that was created by loop.
