@@ -56,12 +56,117 @@
 # define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
 
 
+// From SGI's stl_config.h; generic settings and user hooks (_NOTHREADS).
+#if defined(_PTHREADS) && !defined(_NOTHREADS)
+#    define __STL_PTHREADS
+#endif
+#if defined(_UITHREADS) && !defined(_PTHREADS) && !defined(_NOTHREADS)
+#    define __STL_UITHREADS
+#endif
+
+// Also from SGI's stl_config.h; settings for GCC.
+#define __STL_HAS_WCHAR_T
+#define __STL_MEMBER_TEMPLATES
+#define __STL_MEMBER_TEMPLATE_CLASSES
+#define __STL_TEMPLATE_FRIENDS
+#define __STL_CLASS_PARTIAL_SPECIALIZATION 
+#define __STL_PARTIAL_SPECIALIZATION_SYNTAX 
+#define __STL_FUNCTION_TMPL_PARTIAL_ORDER
+#define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
+#define __SGI_STL_USE_AUTO_PTR_CONVERSIONS
+#define __STL_HAS_NAMESPACES
+#define __STL_USE_NAMESPACES
+#ifdef __EXCEPTIONS
+#  define __STL_USE_EXCEPTIONS
+#  define __STL_TRY try
+#  define __STL_CATCH_ALL catch(...)
+#  define __STL_THROW(x) throw x
+#  define __STL_RETHROW throw
+#  define __STL_NOTHROW throw()
+#  define __STL_UNWIND(action) catch(...) { action; throw; }
+#else
+#  define __STL_TRY 
+#  define __STL_CATCH_ALL if (false)
+#  define __STL_THROW(x) 
+#  define __STL_RETHROW 
+#  define __STL_NOTHROW 
+#  define __STL_UNWIND(action) 
+#endif
+#define __STL_THROW_RANGE_ERRORS 
+#define __STL_CAN_THROW_RANGE_ERRORS 
+#define __STL_USE_STD_ALLOCATORS 
+#define __USE_MALLOC // As the "underlying allocator"
+//#define __STL_USE_NEW_IOSTREAMS //990209 bkoz--use standard .h includes.
+#ifdef _REENTRANT
+#  define __STL_THREADS
+#endif
+#ifdef _PTHREADS
+#  define __STL_PTHREADS
+#endif
+#ifndef __STRICT_ANSI__
+#  define __STL_LONG_LONG
+#endif
+//#if (__GNUC__ < 2) || (__GNUC__ == 2 && __GNUC_MINOR__ < 95)
+#  define __STL_NO_FUNCTION_PTR_IN_CLASS_TEMPLATE
+//#endif
+
+// Also from SGI's stl_config.h; settings for GCC.
+// Mingw32, GCC compiler using the Microsoft C runtime
+#if defined(__MINGW32__)
+#  define __STL_NO_DRAND48
+#  ifdef _MT
+#    define __STL_WIN32THREADS
+#  endif
+#endif
+
+// Cygwin32, GCC compiler on MS Windows
+#if defined(__CYGWIN__)
+#  define __STL_NO_DRAND48
+#endif
+
+// The old stl_config.h would use the above settings in chains of
+// if/then/else tests to define the following.
+#define __STL_DEPENDENT_DEFAULT_TMPL(_Tp) = _Tp
+#define __STL_TEMPLATE
+#define __STL_NULL_TMPL_ARGS <>
+#define __STL_TEMPLATE_NULL template<>
+#define __STL_DEFAULT_ALLOCATOR(T) allocator< T >
+
+#define __STL_USE_NAMESPACES
+#define __STD std
+#define __STL_BEGIN_NAMESPACE namespace std {
+#define __STL_END_NAMESPACE }
+#define __STL_USE_NAMESPACE_FOR_RELOPS
+#define __STL_BEGIN_RELOPS_NAMESPACE namespace std { namespace rel_ops {
+#define __STL_END_RELOPS_NAMESPACE } }
+#define __STD_RELOPS std::rel_ops
+#define __STD_QUALIFIER std::
 
 
+#ifdef __STL_ASSERTIONS
+# include <stdio.h>
+# define __stl_assert(expr) \
+    if (!(expr)) { fprintf(stderr, "%s:%d STL assertion failure: %s\n", \
+                          __FILE__, __LINE__, # expr); abort(); }
+#else
+# define __stl_assert(expr)
+#endif
+
+#if defined(__STL_WIN32THREADS) || defined(__STL_SGI_THREADS) \
+    || defined(__STL_PTHREADS)  || defined(__STL_UITHREADS)
+#   define __STL_THREADS
+#   define __STL_VOLATILE volatile
+#else
+#   define __STL_VOLATILE
+#endif
+
+#if defined(__STL_CLASS_PARTIAL_SPECIALIZATION) \
+    && defined(__STL_MEMBER_TEMPLATES) \
+    && !defined(_STL_NO_CONCEPT_CHECKS)
+#  define __STL_USE_CONCEPT_CHECKS
+#endif
 
 
-
-
-
+// End of prewritten config; the discovered settings follow.
 
 

@@ -1,3 +1,28 @@
+2001-02-20  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/stl_config.h:  Remove file.
+	* src/Makefile.am (base_headers):  Remove from list.
+	* configure:  Regenerate.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
+	* include/bits/c++config:  Move relevant macros to here.
+	* include/backward/alloc.h:  Include c++config.h instead.
+	* include/backward/function.h:  Ditto.
+	* include/backward/heap.h:  Ditto.
+	* include/backward/pair.h:  Ditto.
+	* include/bits/pthread_allocimpl.h:  Ditto.
+	* include/bits/std_functional.h:  Ditto.
+	* include/bits/std_iterator.h:  Ditto.
+	* include/bits/std_numeric.h:  Ditto.
+	* include/bits/std_utility.h:  Ditto.
+	* include/bits/stl_algobase.h:  Ditto.
+	* include/bits/type_traits.h:  Ditto.
+	* src/stl-inst.cc:  Ditto.
+
 2001-02-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/basic_file.h: Add #pragma system_header

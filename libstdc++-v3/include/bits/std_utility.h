@@ -28,8 +28,7 @@
 #define _CPP_UTILITY 1
 
 #pragma GCC system_header
-
-#include <bits/stl_config.h>
+#include <bits/c++config.h>
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 

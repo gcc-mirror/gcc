@@ -28,8 +28,7 @@
 #define _CPP_ITERATOR 1
 
 #pragma GCC system_header
-
-#include <bits/stl_config.h>
+#include <bits/c++config.h>
 #include <bits/std_cstddef.h>
 #include <bits/std_iosfwd.h>
 #include <bits/stl_iterator_base.h>

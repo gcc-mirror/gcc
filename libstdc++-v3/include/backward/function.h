@@ -27,9 +27,7 @@
 #ifndef _CPP_BACKWARD_FUNCTION_H
 #define _CPP_BACKWARD_FUNCTION_H 1
 
-#ifndef _CPP_BITS_STL_CONFIG_H
-#include <bits/stl_config.h>
-#endif
+#include <bits/c++config.h>
 #include <stddef.h>
 #ifndef _CPP_BITS_STL_FUNCTION_H
 #include <bits/stl_function.h>
