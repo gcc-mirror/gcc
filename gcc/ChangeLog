@@ -1,3 +1,7 @@
+Sat Nov 11 18:41:20 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* fixinc/mkfixinc.sh: Use the ordinary fixincludes on IRIX.
+
 2000-11-11  Jason Merrill  <jason@redhat.com>
 
 	* function.c (assign_parms): If TREE_ADDRESSABLE is set, try to 

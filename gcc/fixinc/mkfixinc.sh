@@ -83,10 +83,6 @@ case $machine in
 	thumb-*-coff* | thumbel-*-coff* )
 		fixincludes=
 		;;
-
-	*-sgi-irix*)
-		fixincludes=fixinc.irix
-		;;
 esac
 
 #  IF there is no include fixing,
