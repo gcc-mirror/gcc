@@ -10,13 +10,6 @@ details.  */
 
 #include <config.h>
 
-#ifdef HAVE_GETPWUID_R
-#define _POSIX_PTHREAD_SEMANTICS
-#ifndef _REENTRANT
-#define _REENTRANT
-#endif
-#endif
-
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>

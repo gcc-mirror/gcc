@@ -1,6 +1,6 @@
 // natInetAddress.cc
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,10 +9,6 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
-#if GETHOSTBYNAME_R_NEEDS_REENTRANT && !defined(_REENTRANT)
-# define _REENTRANT 1
-#endif
 
 #ifdef USE_WINSOCK
 
