@@ -1837,7 +1837,7 @@ changequote([,])dnl
 fi])
 libgcc_visibility=no
 AC_SUBST(libgcc_visibility)
-if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden=yes; then
+if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden = yes; then
   libgcc_visibility=yes
   AC_DEFINE(HAVE_GAS_HIDDEN, 1,
   [Define if your assembler and linker support .hidden.])
