@@ -1,5 +1,12 @@
 2003-11-22  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
+	(peekData): Use offset and maximal free space in datagram packet.
+	(receive): Likewise.
+	(send): Use offset in datagram packet.
+
+2003-11-22  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/DatagramChannelImpl.java
 	(getNativeFD): Use getPlainDatagramSocketImpl().
 	* gnu/java/nio/NIODatagramSocket.java
