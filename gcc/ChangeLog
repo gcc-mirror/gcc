@@ -1,3 +1,8 @@
+2004-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Change to 3.5.0.
+	* doc/include/gcc-common.texi (version-GCC): Likewise.
+
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (load_tp_di): Fix pasto.
