@@ -1,3 +1,8 @@
+2002-06-11  David S. Miller  <davem@redhat.com>
+
+	* emit-rtl.c (try_split): Do not abort on non-INSN_P.
+	Only run RTX equality checks on INSN_P rtl.
+
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (reload_base, ltorg): Remove.
