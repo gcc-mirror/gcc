@@ -40,7 +40,7 @@ namespace std
 {
 
   template <class _CharT, class _Traits, class _Alloc>
-    basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     pbackfail(int_type __c)
     {
@@ -74,7 +74,7 @@ namespace std
     }
   
   template <class _CharT, class _Traits, class _Alloc>
-    basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     overflow(int_type __c)
     {
@@ -114,7 +114,7 @@ namespace std
     }
 
   template <class _CharT, class _Traits, class _Alloc>
-    basic_stringbuf<_CharT, _Traits, _Alloc>::pos_type
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::pos_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
@@ -172,7 +172,7 @@ namespace std
     }
 
   template <class _CharT, class _Traits, class _Alloc>
-    basic_stringbuf<_CharT, _Traits, _Alloc>::pos_type
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::pos_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekpos(pos_type __sp, ios_base::openmode __mode)
     {

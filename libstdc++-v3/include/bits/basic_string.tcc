@@ -354,7 +354,7 @@ namespace std
 #endif
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::_Rep*
+    typename basic_string<_CharT, _Traits, _Alloc>::_Rep*
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _S_create(size_t __capacity, const _Alloc& __alloc)
     {
@@ -571,7 +571,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     copy(_CharT* __s, size_type __n, size_type __pos) const
     {
@@ -587,7 +587,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -601,7 +601,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find(_CharT __c, size_type __pos) const
     {
@@ -620,7 +620,7 @@ namespace std
 
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -640,7 +640,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(_CharT __c, size_type __pos) const
     {
@@ -659,7 +659,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -673,7 +673,7 @@ namespace std
     }
  
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -693,7 +693,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -705,7 +705,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_not_of(_CharT __c, size_type __pos) const
     {
@@ -717,7 +717,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
@@ -737,7 +737,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>::size_type
+    typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(_CharT __c, size_type __pos) const
     {

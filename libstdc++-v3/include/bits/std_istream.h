@@ -217,7 +217,7 @@ namespace std
       typedef _Traits 					traits_type;
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_istream<_CharT, _Traits> 		__istream_type;
-      typedef __istream_type::__ctype_type 		__ctype_type;
+      typedef typename __istream_type::__ctype_type 	__ctype_type;
       typedef typename _Traits::int_type		__int_type;
 
       explicit 
