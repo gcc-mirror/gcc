@@ -419,7 +419,7 @@ jclass
 _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 	      java::lang::ClassLoader *loader)
 {
-  jclass ret = (jclass) JvAllocObject (&java::lang::Class::class$);
+  jclass ret = (jclass) _Jv_AllocObject (&java::lang::Class::class$);
   ret->name = name;
   ret->superclass = superclass;
   ret->loader = loader;

@@ -379,7 +379,7 @@ _Jv_CallAnyMethodA (jobject obj,
   // the JDK 1.2 docs specify that the new object must be allocated
   // before argument conversions are done.
   if (is_constructor)
-    obj = JvAllocObject (return_type);
+    obj = _Jv_AllocObject (return_type);
 
   const int size_per_arg = sizeof(jvalue);
   ffi_cif cif;

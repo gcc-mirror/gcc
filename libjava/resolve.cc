@@ -367,9 +367,9 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 // A helper for _Jv_PrepareClass.  This adds missing `Miranda methods'
 // to a class.
 void
-_Jv_PrepareMissingMethods (jclass base2, jclass iface_class)
+_Jv_PrepareMissingMethods (jclass base, jclass iface_class)
 {
-  _Jv_InterpClass *base = reinterpret_cast<_Jv_InterpClass *> (base2);
+  _Jv_InterpClass *interp_base = (_Jv_InterpClass *) base->aux_info;
   for (int i = 0; i < iface_class->interface_count; ++i)
     {
       for (int j = 0; j < iface_class->interfaces[i]->method_count; ++j)
@@ -403,11 +403,11 @@ _Jv_PrepareMissingMethods (jclass base2, jclass iface_class)
 	      _Jv_MethodBase **new_im
 		= (_Jv_MethodBase **) _Jv_AllocBytes (sizeof (_Jv_MethodBase *)
 						      * new_count);
-	      memcpy (new_im, base->interpreted_methods,
+	      memcpy (new_im, interp_base->interpreted_methods,
 		      sizeof (_Jv_MethodBase *) * base->method_count);
 
 	      base->methods = new_m;
-	      base->interpreted_methods = new_im;
+	      interp_base->interpreted_methods = new_im;
 	      base->method_count = new_count;
 	    }
 	}
@@ -454,7 +454,7 @@ _Jv_PrepareClass(jclass klass)
   if (klass->superclass)
     java::lang::VMClassLoader::resolveClass (klass->superclass);
 
-  _Jv_InterpClass *clz = (_Jv_InterpClass*)klass;
+  _Jv_InterpClass *iclass = (_Jv_InterpClass*)klass->aux_info;
 
   /************ PART ONE: OBJECT LAYOUT ***************/
 
@@ -462,7 +462,7 @@ _Jv_PrepareClass(jclass klass)
   // superclasses and finding the maximum required alignment.  We
   // could consider caching this in the Class.
   int max_align = __alignof__ (java::lang::Object);
-  jclass super = clz->superclass;
+  jclass super = klass->superclass;
   while (super != NULL)
     {
       int num = JvNumInstanceFields (super);
@@ -484,23 +484,23 @@ _Jv_PrepareClass(jclass klass)
   // Although java.lang.Object is never interpreted, an interface can
   // have a null superclass.  Note that we have to lay out an
   // interface because it might have static fields.
-  if (clz->superclass)
-    instance_size = clz->superclass->size();
+  if (klass->superclass)
+    instance_size = klass->superclass->size();
   else
     instance_size = java::lang::Object::class$.size();
 
-  for (int i = 0; i < clz->field_count; i++)
+  for (int i = 0; i < klass->field_count; i++)
     {
       int field_size;
       int field_align;
 
-      _Jv_Field *field = &clz->fields[i];
+      _Jv_Field *field = &klass->fields[i];
 
       if (! field->isRef ())
 	{
 	  // it's safe to resolve the field here, since it's 
 	  // a primitive class, which does not cause loading to happen.
-	  _Jv_ResolveField (field, clz->loader);
+	  _Jv_ResolveField (field, klass->loader);
 
 	  field_size = field->type->size ();
 	  field_align = get_alignment_from_class (field->type);
@@ -538,7 +538,7 @@ _Jv_PrepareClass(jclass klass)
   // to the alignment required for this object; this keeps us in sync
   // with our current ABI.
   instance_size = ROUND (instance_size, max_align);
-  clz->size_in_bytes = instance_size;
+  klass->size_in_bytes = instance_size;
 
   // allocate static memory
   if (static_size != 0)
@@ -547,18 +547,18 @@ _Jv_PrepareClass(jclass klass)
 
       memset (static_data, 0, static_size);
 
-      for (int i = 0; i < clz->field_count; i++)
+      for (int i = 0; i < klass->field_count; i++)
 	{
-	  _Jv_Field *field = &clz->fields[i];
+	  _Jv_Field *field = &klass->fields[i];
 
 	  if ((field->flags & Modifier::STATIC) != 0)
 	    {
 	      field->u.addr  = static_data + field->u.boffset;
-			    
-	      if (clz->field_initializers[i] != 0)
+	      
+	      if (iclass->field_initializers[i] != 0)
 		{
-		  _Jv_ResolveField (field, clz->loader);
-		  _Jv_InitField (0, clz, i);
+		  _Jv_ResolveField (field, klass->loader);
+		  _Jv_InitField (0, klass, i);
 		}
 	    }
 	}
@@ -566,31 +566,31 @@ _Jv_PrepareClass(jclass klass)
       // now we don't need the field_initializers anymore, so let the
       // collector get rid of it!
 
-      clz->field_initializers = 0;
+      iclass->field_initializers = 0;
     }
 
   /************ PART TWO: VTABLE LAYOUT ***************/
 
   /* preparation: build the vtable stubs (even interfaces can)
      have code -- for static constructors. */
-  for (int i = 0; i < clz->method_count; i++)
+  for (int i = 0; i < klass->method_count; i++)
     {
-      _Jv_MethodBase *imeth = clz->interpreted_methods[i];
+      _Jv_MethodBase *imeth = iclass->interpreted_methods[i];
 
-      if ((clz->methods[i].accflags & Modifier::NATIVE) != 0)
+      if ((klass->methods[i].accflags & Modifier::NATIVE) != 0)
 	{
 	  // You might think we could use a virtual `ncode' method in
 	  // the _Jv_MethodBase and unify the native and non-native
 	  // cases.  Well, we can't, because we don't allocate these
 	  // objects using `new', and thus they don't get a vtable.
 	  _Jv_JNIMethod *jnim = reinterpret_cast<_Jv_JNIMethod *> (imeth);
-	  clz->methods[i].ncode = jnim->ncode ();
+	  klass->methods[i].ncode = jnim->ncode ();
 	}
       else if (imeth != 0)		// it could be abstract
 	{
 	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
 	  _Jv_VerifyMethod (im);
-	  clz->methods[i].ncode = im->ncode ();
+	  klass->methods[i].ncode = im->ncode ();
 
 	  // Resolve ctable entries pointing to this method.  See
 	  // _Jv_Defer_Resolution.
@@ -598,16 +598,16 @@ _Jv_PrepareClass(jclass klass)
 	  while (code)
 	    {
 	      void **target = (void **)*code;
-	      *code = clz->methods[i].ncode;
+	      *code = klass->methods[i].ncode;
 	      code = target;
 	    }
 	}
     }
 
-  if ((clz->accflags & Modifier::INTERFACE))
+  if ((klass->accflags & Modifier::INTERFACE))
     {
-      clz->state = JV_STATE_PREPARED;
-      clz->notifyAll ();
+      klass->state = JV_STATE_PREPARED;
+      klass->notifyAll ();
       return;
     }
 
@@ -619,15 +619,15 @@ _Jv_PrepareClass(jclass klass)
   // this here by searching for such methods and constructing new
   // internal declarations for them.  We only need to do this for
   // abstract classes.
-  if ((clz->accflags & Modifier::ABSTRACT))
-    _Jv_PrepareMissingMethods (clz, clz);
+  if ((klass->accflags & Modifier::ABSTRACT))
+    _Jv_PrepareMissingMethods (klass, klass);
 
-  clz->vtable_method_count = -1;
-  _Jv_MakeVTable (clz);
+  klass->vtable_method_count = -1;
+  _Jv_MakeVTable (klass);
 
   /* wooha! we're done. */
-  clz->state = JV_STATE_PREPARED;
-  clz->notifyAll ();
+  klass->state = JV_STATE_PREPARED;
+  klass->notifyAll ();
 }
 
 /** Do static initialization for fields with a constant initializer */
@@ -642,18 +642,18 @@ _Jv_InitField (jobject obj, jclass klass, int index)
   if (!_Jv_IsInterpretedClass (klass))
     return;
 
-  _Jv_InterpClass *clz = (_Jv_InterpClass*)klass;
+  _Jv_InterpClass *iclass = (_Jv_InterpClass*)klass->aux_info;
 
-  _Jv_Field * field = (&clz->fields[0]) + index;
+  _Jv_Field * field = (&klass->fields[0]) + index;
 
-  if (index > clz->field_count)
+  if (index > klass->field_count)
     throw_internal_error ("field out of range");
 
-  int init = clz->field_initializers[index];
+  int init = iclass->field_initializers[index];
   if (init == 0)
     return;
 
-  _Jv_Constants *pool = &clz->constants;
+  _Jv_Constants *pool = &klass->constants;
   int tag = pool->tags[init];
 
   if (! field->isResolved ())
@@ -673,12 +673,12 @@ _Jv_InitField (jobject obj, jclass klass, int index)
     {
     case JV_CONSTANT_String:
       {
-	_Jv_MonitorEnter (clz);
+	_Jv_MonitorEnter (klass);
 	jstring str;
 	str = _Jv_NewStringUtf8Const (pool->data[init].utf8);
 	pool->data[init].string = str;
 	pool->tags[init] = JV_CONSTANT_ResolvedString;
-	_Jv_MonitorExit (clz);
+	_Jv_MonitorExit (klass);
       }
       /* fall through */
 

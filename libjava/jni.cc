@@ -633,7 +633,7 @@ static jobject
       if (clazz->isInterface() || Modifier::isAbstract(clazz->getModifiers()))
 	env->ex = new java::lang::InstantiationException ();
       else
-	obj = JvAllocObject (clazz);
+	obj = _Jv_AllocObject (clazz);
     }
   catch (jthrowable t)
     {

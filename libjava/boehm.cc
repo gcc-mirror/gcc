@@ -208,11 +208,13 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cPlabel);
       p = (ptr_t) c->hack_signers;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cSlabel);
+      p = (ptr_t) c->aux_info;
+      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cTlabel);
 
 #ifdef INTERPRETER
       if (_Jv_IsInterpretedClass (c))
 	{
-	  _Jv_InterpClass* ic = (_Jv_InterpClass*) c;
+	  _Jv_InterpClass* ic = (_Jv_InterpClass*) c->aux_info;
 
 	  p = (ptr_t) ic->interpreted_methods;
 	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic, cElabel);

@@ -384,6 +384,7 @@ private:
 #endif
 
   friend class _Jv_BytecodeVerifier;
+  friend class _Jv_StackTrace;
   friend class gnu::gcj::runtime::StackTrace;
   friend class java::io::VMObjectStreamClass;
 
@@ -449,6 +450,9 @@ private:
   JArray<jobject> *hack_signers;
   // Used by Jv_PopClass and _Jv_PushClass to communicate with StackTrace.
   jclass chain;
+  // Additional data, specific to the generator (JIT, native, interpreter) of this 
+  // class.
+  void *aux_info;
 };
 
 #endif /* __JAVA_LANG_CLASS_H__ */

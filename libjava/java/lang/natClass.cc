@@ -691,7 +691,7 @@ java::lang::Class::newInstance (void)
   if (! meth)
     throw new java::lang::InstantiationException (getName());
 
-  jobject r = JvAllocObject (this);
+  jobject r = _Jv_AllocObject (this);
   ((void (*) (jobject)) meth->ncode) (r);
   return r;
 }
@@ -1901,7 +1901,7 @@ _Jv_MakeVTable (jclass klass)
       || (klass->accflags & Modifier::ABSTRACT))
     return;
 
-  //  out before we can create a vtable. 
+  // Class must be laid out before we can create a vtable. 
   if (klass->vtable_method_count == -1)
     _Jv_LayoutVTableMethods (klass);
 
