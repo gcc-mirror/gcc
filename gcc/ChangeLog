@@ -1,3 +1,7 @@
+Sun Nov  2 19:27:21 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* arm.c (output_move_double): Allocate 3 entries in otherops array.
+
 Sat Nov  1 21:43:00 1997  Mike Stump  (mrs@wrs.com)
 
 	* except.c (expand_ex_region_start_for_decl): Emit EH_REGION_BEG
