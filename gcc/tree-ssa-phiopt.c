@@ -38,6 +38,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static void tree_ssa_phiopt (void);
 static bool conditional_replacement (basic_block bb, tree phi, tree arg0,
 				     tree arg1);			    
+static void replace_phi_with_stmt (block_stmt_iterator, basic_block,
+				   basic_block, tree, tree);
+static bool candidate_bb_for_phi_optimization (basic_block,
+					       basic_block *,
+					       basic_block *);
+
 				  
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  ie if we have something
@@ -97,32 +103,26 @@ tree_ssa_phiopt (void)
     cleanup_tree_cfg ();
 }
 
-/*  The function conditional_replacement does the main work of doing the
-    conditional replacement.  Return true if the replacement is done.
-    Otherwise return false.
-    BB is the basic block where the replacement is going to be done on.  ARG0
-    is argument 0 from PHI.  Likewise for ARG1.   */
+/* BB is a basic block which has only one PHI node with precisely two
+   arguments.
+
+   Examine both of BB's predecessors to see if one ends with a 
+   COND_EXPR and the other is an empty block.  If so, then we may
+   be able to optimize PHI nodes at the start of BB. 
+
+   If so, mark store the block with the COND_EXPR into COND_BLOCK_P
+   and the other block into OTHER_BLOCK_P and return true, otherwise
+   return false.  */
 
 static bool
-conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+candidate_bb_for_phi_optimization (basic_block bb,
+				   basic_block *cond_block_p,
+				   basic_block *other_block_p)
 {
-  tree result;
-  tree old_result = NULL;
-  basic_block other_block = NULL;
-  basic_block cond_block = NULL;
-  tree last0, last1, new, cond;
+  tree last0, last1;
   block_stmt_iterator bsi;
-  edge true_edge, false_edge;
-  tree new_var = NULL;
+  basic_block cond_block, other_block;
 
-  /* The PHI arguments have the constants 0 and 1, then convert
-     it to the conditional.  */
-  if ((integer_zerop (arg0) && integer_onep (arg1))
-      || (integer_zerop (arg1) && integer_onep (arg0)))
-    ;
-  else
-    return false;
-  
   /* One of the alternatives must come from a block ending with
      a COND_EXPR.  The other block must be entirely empty, except
      for labels.  */
@@ -171,7 +171,91 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   
   if (!bsi_end_p (bsi))
     return false;
+
+  *cond_block_p = cond_block;
+  *other_block_p = other_block;
+  /* Everything looks OK.  */
+  return true;
+}
+
+/* Replace PHI in block BB with statement NEW.  NEW is inserted after
+   BSI.  Remove the edge from COND_BLOCK which does not lead to BB (COND_BLOCK
+   is known to have two edges, one of which must reach BB).  */
+
+static void
+replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
+		       basic_block cond_block, tree phi, tree new)
+{
+  /* Insert our new statement at the head of our block.  */
+  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
   
+  /* Register our new statement as the defining statement for
+     the result.  */
+  SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new;
+  
+  /* Remove the now useless PHI node. 
+  
+     We do not want to use remove_phi_node since that releases the
+     SSA_NAME as well and the SSA_NAME is still being used.  */
+  release_phi_node (phi);
+  bb_ann (bb)->phi_nodes = NULL;
+  
+  /* Disconnect the edge leading into the empty block.  That will
+     make the empty block unreachable and it will be removed later.  */
+  if (cond_block->succ->dest == bb)
+    {
+      cond_block->succ->flags |= EDGE_FALLTHRU;
+      cond_block->succ->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      ssa_remove_edge (cond_block->succ->succ_next);
+    }
+  else
+    {
+      cond_block->succ->succ_next->flags |= EDGE_FALLTHRU;
+      cond_block->succ->succ_next->flags
+	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      ssa_remove_edge (cond_block->succ);
+    }
+  
+  /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
+  bsi = bsi_last (cond_block);
+  bsi_remove (&bsi);
+  
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	      "COND_EXPR in block %d and PHI in block %d converted to straightline code.\n",
+	      cond_block->index,
+	      bb->index);
+}
+
+/*  The function conditional_replacement does the main work of doing the
+    conditional replacement.  Return true if the replacement is done.
+    Otherwise return false.
+    BB is the basic block where the replacement is going to be done on.  ARG0
+    is argument 0 from PHI.  Likewise for ARG1.   */
+
+static bool
+conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+{
+  tree result;
+  tree old_result = NULL;
+  basic_block other_block = NULL;
+  basic_block cond_block = NULL;
+  tree new, cond;
+  block_stmt_iterator bsi;
+  edge true_edge, false_edge;
+  tree new_var = NULL;
+
+  /* The PHI arguments have the constants 0 and 1, then convert
+     it to the conditional.  */
+  if ((integer_zerop (arg0) && integer_onep (arg1))
+      || (integer_zerop (arg1) && integer_onep (arg0)))
+    ;
+  else
+    return false;
+  
+  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
+    return false;
+										
   /* If the condition is not a naked SSA_NAME and its type does not
      match the type of the result, then we have to create a new
      variable to optimize this case as it would likely create
@@ -270,45 +354,8 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 		    PHI_RESULT (phi), cond);
     }
   
-  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
-  
-  /* Register our new statement as the defining statement for
-     the result.  */
-  SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new;
-  
-  /* Remove the now useless PHI node. 
-  
-     We do not want to use remove_phi_node since that releases the
-     SSA_NAME as well and the SSA_NAME is still being used.  */
-  release_phi_node (phi);
-  bb_ann (bb)->phi_nodes = NULL;
-  
-  /* Disconnect the edge leading into the empty block.  That will
-     make the empty block unreachable and it will be removed later.  */
-  if (cond_block->succ->dest == bb)
-    {
-      cond_block->succ->flags |= EDGE_FALLTHRU;
-      cond_block->succ->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      ssa_remove_edge (cond_block->succ->succ_next);
-    }
-  else
-    {
-      cond_block->succ->succ_next->flags |= EDGE_FALLTHRU;
-      cond_block->succ->succ_next->flags
-	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      ssa_remove_edge (cond_block->succ);
-    }
-  
-  /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
-  bsi = bsi_last (cond_block);
-  bsi_remove (&bsi);
-  
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file,
-	      "COND_EXPR in block %d and PHI in block %d converted to straightline code.\n",
-	      cond_block->index,
-	      bb->index);
-	    
+  replace_phi_with_stmt (bsi, bb, cond_block, phi, new);
+
   /* Note that we optimized this PHI.  */
   return true;
 }
