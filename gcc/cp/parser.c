@@ -1721,7 +1721,9 @@ static void cp_parser_check_for_invalid_template_id
   (cp_parser *, tree);
 static tree cp_parser_non_integral_constant_expression
   (const char *);
-static bool cp_parser_diagnose_invalid_type_name
+static void cp_parser_diagnose_invalid_type_name
+  (cp_parser *, tree, tree);
+static bool cp_parser_parse_and_diagnose_invalid_type_name
   (cp_parser *);
 static int cp_parser_skip_to_closing_parenthesis
   (cp_parser *, bool, bool, bool);
@@ -1743,6 +1745,8 @@ static bool cp_parser_is_string_literal
   (cp_token *);
 static bool cp_parser_is_keyword 
   (cp_token *, enum rid);
+static tree cp_parser_make_typename_type
+  (cp_parser *, tree, tree);
 
 /* Returns nonzero if we are parsing tentatively.  */
 
@@ -1928,30 +1932,28 @@ cp_parser_non_integral_constant_expression (const char *thing)
   return error_mark_node;
 }
 
-/* Check for a common situation where a type-name should be present,
-   but is not, and issue a sensible error message.  Returns true if an
-   invalid type-name was detected.  */
+/* Emit a diagnostic for an invalid type name. Consider also if it is
+   qualified or not and the result of a lookup, to provide a better 
+   message.  */
 
-static bool
-cp_parser_diagnose_invalid_type_name (cp_parser *parser)
+static void
+cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
 {
-  /* If the next two tokens are both identifiers, the code is
-     erroneous. The usual cause of this situation is code like:
-
-       T t;
-
-     where "T" should name a type -- but does not.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
+  tree decl, old_scope;
+  /* Try to lookup the identifier.  */
+  old_scope = parser->scope;
+  parser->scope = scope;
+  decl = cp_parser_lookup_name_simple (parser, id);
+  parser->scope = old_scope;
+  /* If the lookup found a template-name, it means that the user forgot
+  to specify an argument list. Emit an useful error message.  */
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    error ("invalid use of template-name `%E' without an argument list",
+      decl);
+  else if (!parser->scope)
     {
-      tree name;
-
-      /* If parsing tentatively, we should commit; we really are
-	 looking at a declaration.  */
-      /* Consume the first identifier.  */
-      name = cp_lexer_consume_token (parser->lexer)->value;
       /* Issue an error message.  */
-      error ("`%s' does not name a type", IDENTIFIER_POINTER (name));
+      error ("`%E' does not name a type", id);
       /* If we're in a template class, it's possible that the user was
 	 referring to a type from a base class.  For example:
 
@@ -1980,10 +1982,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 		       field;
 		       field = TREE_CHAIN (field))
 		    if (TREE_CODE (field) == TYPE_DECL
-			&& DECL_NAME (field) == name)
+			&& DECL_NAME (field) == id)
 		      {
-			error ("(perhaps `typename %T::%s' was intended)",
-			       BINFO_TYPE (b), IDENTIFIER_POINTER (name));
+			inform ("(perhaps `typename %T::%E' was intended)",
+			        BINFO_TYPE (b), id);
 			break;
 		      }
 		  if (field)
@@ -1991,14 +1993,67 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 		}
 	    }
 	}
-      /* Skip to the end of the declaration; there's no point in
-	 trying to process it.  */
-      cp_parser_skip_to_end_of_statement (parser);
-      
-      return true;
     }
+  /* Here we diagnose qualified-ids where the scope is actually correct,
+     but the identifier does not resolve to a valid type name.  */
+  else 
+    {
+      if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
+	error ("`%E' in namespace `%E' does not name a type", 
+	       id, parser->scope);
+      else if (TYPE_P (parser->scope))
+	error ("`%E' in class `%T' does not name a type", 
+	       id, parser->scope);
+      else
+	abort();
+    }
+}
 
-  return false;
+/* Check for a common situation where a type-name should be present,
+   but is not, and issue a sensible error message.  Returns true if an
+   invalid type-name was detected.
+   
+   The situation handled by this function are variable declarations of the
+   form `ID a', where `ID' is an id-expression and `a' is a plain identifier. 
+   Usually, `ID' should name a type, but if we got here it means that it 
+   does not. We try to emit the best possible error message depending on
+   how exactly the id-expression looks like.
+*/
+
+static bool
+cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
+{
+  tree id;
+
+  cp_parser_parse_tentatively (parser);
+  id = cp_parser_id_expression (parser, 
+				/*template_keyword_p=*/false,
+				/*check_dependency_p=*/true,
+				/*template_p=*/NULL,
+				/*declarator_p=*/true);
+  /* After the id-expression, there should be a plain identifier,
+     otherwise this is not a simple variable declaration. Also, if
+     the scope is dependent, we cannot do much.  */
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      || (parser->scope && TYPE_P (parser->scope) 
+	  && dependent_type_p (parser->scope)))
+    {
+      cp_parser_abort_tentative_parse (parser);
+      return false;
+    }
+  if (!cp_parser_parse_definitely (parser))
+    return false;
+
+  /* If we got here, this cannot be a valid variable declaration, thus
+     the cp_parser_id_expression must have resolved to a plain identifier
+     node (not a TYPE_DECL or TEMPLATE_ID_EXPR).  */
+  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 20030203);
+  /* Emit a diagnostic for the invalid type.  */
+  cp_parser_diagnose_invalid_type_name (parser, parser->scope, id);
+  /* Skip to the end of the declaration; there's no point in
+     trying to process it.  */
+  cp_parser_skip_to_end_of_block_or_statement (parser);
+  return true;
 }
 
 /* Consume tokens up to, and including, the next non-nested closing `)'. 
@@ -2209,6 +2264,25 @@ cp_parser_skip_to_closing_brace (cp_parser *parser)
       cp_lexer_consume_token (parser->lexer);
     }
 }
+
+/* This is a simple wrapper around make_typename_type. When the id is
+   an unresolved identifier node, we can provide a superior diagnostic
+   using cp_parser_diagnose_invalid_type_name.  */
+
+static tree
+cp_parser_make_typename_type (cp_parser *parser, tree scope, tree id)
+{
+  tree result;
+  if (TREE_CODE (id) == IDENTIFIER_NODE)
+    {
+      result = make_typename_type (scope, id, /*complain=*/0);
+      if (result == error_mark_node)
+	cp_parser_diagnose_invalid_type_name (parser, scope, id);
+      return result;
+    }
+  return make_typename_type (scope, id, tf_error);
+}
+
 
 /* Create a new C++ parser.  */
 
@@ -6440,7 +6514,7 @@ cp_parser_simple_declaration (cp_parser* parser,
        T t;
 
      where "T" should name a type -- but does not.  */
-  if (cp_parser_diagnose_invalid_type_name (parser))
+  if (cp_parser_parse_and_diagnose_invalid_type_name (parser))
     {
       /* If parsing tentatively, we should commit; we really are
 	 looking at a declaration.  */
@@ -9076,8 +9150,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
       /* For a `typename', we needn't call xref_tag.  */
       if (tag_type == typename_type)
-	return make_typename_type (parser->scope, identifier, 
-				   /*complain=*/1);
+	return cp_parser_make_typename_type (parser, parser->scope, 
+					     identifier);
       /* Look up a qualified name in the usual way.  */
       if (parser->scope)
 	{
@@ -12290,7 +12364,7 @@ cp_parser_member_declaration (cp_parser* parser)
 				    &prefix_attributes,
 				    &declares_class_or_enum);
   /* Check for an invalid type-name.  */
-  if (cp_parser_diagnose_invalid_type_name (parser))
+  if (cp_parser_parse_and_diagnose_invalid_type_name (parser))
     return;
   /* If there is no declarator, then the decl-specifier-seq should
      specify a type.  */
