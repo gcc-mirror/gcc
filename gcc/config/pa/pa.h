@@ -1571,6 +1571,8 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 \t.IMPORT $$dyncall,MILLICODE\n");\
      if (profile_flag)\
        fprintf (FILE, "\t.IMPORT _mcount, CODE\n");\
+     if (write_symbols != NO_DEBUG) \
+       output_file_directive ((FILE), main_input_filename); \
    } while (0)
 
 /* Output to assembler file text saying following lines
