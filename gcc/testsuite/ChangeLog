@@ -1,3 +1,9 @@
+2005-02-01  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/ieee/copysign1.c: Special case sizeof
+	long double for ibm double-double format.
+	* gcc.c-torture/execute/ieee/copysign2.c: Likewise.
+
 2005-02-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19633

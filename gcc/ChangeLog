@@ -1,3 +1,10 @@
+2005-02-01  Richard Henderson  <rth@redhat.com>
+
+	PR 19696
+	* optabs.c (expand_copysign_absneg): Export.
+	* optabs.h (expand_copysign_absneg): Declare.
+	* config/rs6000/rs6000.md (copysigntf3): New.
+
 2005-02-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19633
