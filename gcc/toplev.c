@@ -141,6 +141,10 @@ void set_target_switch ();
 static void print_switch_values ();
 static char *decl_name ();
 
+#ifdef __alpha
+extern char *sbrk ();
+#endif
+
 /* Name of program invoked, sans directories.  */
 
 char *progname;
