@@ -716,6 +716,9 @@ public class Vector extends AbstractList
    */
   public synchronized boolean removeAll(Collection c)
   {
+    if (c == null)
+      throw new NullPointerException();
+
     int i;
     int j;
     for (i = 0; i < elementCount; i++)
@@ -742,6 +745,9 @@ public class Vector extends AbstractList
    */
   public synchronized boolean retainAll(Collection c)
   {
+    if (c == null)
+      throw new NullPointerException();
+
     int i;
     int j;
     for (i = 0; i < elementCount; i++)
@@ -779,7 +785,8 @@ public class Vector extends AbstractList
     ensureCapacity(elementCount + csize);
     int end = index + csize;
     if (elementCount > 0 && index != elementCount)
-      System.arraycopy(elementData, index, elementData, end, csize);
+      System.arraycopy(elementData, index,
+		       elementData, end, elementCount - index);
     elementCount += csize;
     for ( ; index < end; index++)
       elementData[index] = itr.next();
@@ -852,23 +859,28 @@ public class Vector extends AbstractList
 
   /**
    * Removes a range of elements from this list.
+   * Does nothing when toIndex is equal to fromIndex.
    *
    * @param fromIndex the index to start deleting from (inclusive)
    * @param toIndex the index to delete up to (exclusive)
+   * @throws IndexOutOfBoundsException if fromIndex &gt; toIndex
    */
   // This does not need to be synchronized, because it is only called through
   // clear() of a sublist, and clear() had already synchronized.
   protected void removeRange(int fromIndex, int toIndex)
   {
-    if (fromIndex != toIndex)
+    int change = toIndex - fromIndex;
+    if (change > 0)
       {
         modCount++;
         System.arraycopy(elementData, toIndex, elementData, fromIndex,
                          elementCount - toIndex);
         int save = elementCount;
-        elementCount -= toIndex - fromIndex;
+        elementCount -= change;
         Arrays.fill(elementData, elementCount, save, null);
       }
+    else if (change < 0)
+      throw new IndexOutOfBoundsException();
   }
 
   /**

@@ -427,8 +427,8 @@ public class ArrayList extends AbstractList
     if (csize + size > data.length)
       ensureCapacity(size + csize);
     int end = index + csize;
-    if (index != size)
-      System.arraycopy(data, index, data, end, csize);
+    if (size > 0 && index != size)
+      System.arraycopy(data, index, data, end, size - index);
     size += csize;
     for ( ; index < end; index++)
       data[index] = itr.next();
