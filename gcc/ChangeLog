@@ -1,3 +1,8 @@
+2004-04-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, mips-sgi-irix5): Fix IRIX 5.3 IDO
+	download URL.
+
 2004-04-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/14857

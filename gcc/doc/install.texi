@@ -3206,7 +3206,7 @@ if you use the GNU assembler and linker.
 In order to compile GCC on an SGI running IRIX 5, the @samp{compiler_dev.hdr}
 subsystem must be installed from the IDO CD-ROM supplied by SGI@.
 It is also available for download from
-@uref{http://www.sgi.com/developers/devtools/apis/ido.html}.
+@uref{ftp://ftp.sgi.com/sgi/IRIX5.3/iris-development-option-5.3.tardist}.
 
 If you use the MIPS C compiler to bootstrap, it may be necessary
 to increase its table size for switch statements with the
