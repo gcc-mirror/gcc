@@ -1,3 +1,14 @@
+Wed Jan  1 00:23:59 MET 1997  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (make_extraction): Fix rtx_cost comparison to
+	match the comment.
+
+Wed Jan  1 00:17:32 MET 1997  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (pushsi2, pushhi2, pophi2, swapsf, swapdf, 
+	umulsi3_highpart, smulsi3_highpart, testqi_ccno_1, xorqi_ext_1):
+	Add '*' to insn pattern name.
+
 2000-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplex.c (ON_REST_ARG): Check VAR_ARGS flag of current context,
