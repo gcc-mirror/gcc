@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
    Negative means not in a function or not using xcoff.  */
 
 int xcoff_begin_function_line = -1;
+int xcoff_inlining = 0;
 
 /* Name of the current include file.  */
 
@@ -80,7 +81,7 @@ char *xcoff_lastfile;
 /* Macro definitions used below.  */
 
 #define ABS_OR_RELATIVE_LINENO(LINENO)		\
- (xcoff_current_include_file ? (LINENO) : (LINENO) - xcoff_begin_function_line)
+((xcoff_inlining) ? (LINENO) : (LINENO) - xcoff_begin_function_line)
 
 /* Output source line numbers via ".line" rather than ".stabd".  */
 #define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) \
@@ -327,8 +328,8 @@ xcoffout_source_file (file, filename, inline_p)
 {
   if (filename
       && (xcoff_lastfile == 0 || strcmp (filename, xcoff_lastfile)
-	  || (inline_p && ! xcoff_current_include_file)
-	  || (! inline_p && xcoff_current_include_file)))
+	  || (inline_p && ! xcoff_inlining)
+	  || (! inline_p && xcoff_inlining)))
     {
       if (xcoff_current_include_file)
 	{
@@ -337,6 +338,7 @@ xcoffout_source_file (file, filename, inline_p)
 	  fprintf (file, "\n");
 	  xcoff_current_include_file = NULL;
 	}
+	xcoff_inlining=inline_p;
       if (strcmp (main_input_filename, filename) || inline_p)
 	{
 	  fprintf (file, "\t.bi\t");
