@@ -1,0 +1,999 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: External Bugs,  Next: Incompatibilities,  Prev: Interoperation,  Up: Trouble
+
+Problems Compiling Certain Programs
+===================================
+
+   Certain programs have problems compiling.
+
+   * Parse errors may occur compiling X11 on a Decstation running
+     Ultrix 4.2 because of problems in DEC's versions of the X11 header
+     files `X11/Xlib.h' and `X11/Xutil.h'.  People recommend adding
+     `-I/usr/include/mit' to use the MIT versions of the header files,
+     using the `-traditional' switch to turn off ANSI C, or fixing the
+     header files by adding this:
+
+          #ifdef __STDC__
+          #define NeedFunctionPrototypes 0
+          #endif
+
+   * If you have trouble compiling Perl on a SunOS 4 system, it may be
+     because Perl specifies `-I/usr/ucbinclude'.  This accesses the
+     unfixed header files.  Perl specifies the options
+
+          -traditional -Dvolatile=__volatile__
+          -I/usr/include/sun -I/usr/ucbinclude
+          -fpcc-struct-return
+
+     most of which are unnecessary with GCC 2.4.5 and newer versions.
+     You can make a properly working Perl by setting `ccflags' to
+     `-fwritable-strings' (implied by the `-traditional' in the
+     original options) and `cppflags' to empty in `config.sh', then
+     typing `./doSH; make depend; make'.
+
+   * On various 386 Unix systems derived from System V, including SCO,
+     ISC, and ESIX, you may get error messages about running out of
+     virtual memory while compiling certain programs.
+
+     You can prevent this problem by linking GNU CC with the GNU malloc
+     (which thus replaces the malloc that comes with the system).  GNU
+     malloc is available as a separate package, and also in the file
+     `src/gmalloc.c' in the GNU Emacs 19 distribution.
+
+     If you have installed GNU malloc as a separate library package,
+     use this option when you relink GNU CC:
+
+          MALLOC=/usr/local/lib/libgmalloc.a
+
+     Alternatively, if you have compiled `gmalloc.c' from Emacs 19, copy
+     the object file to `gmalloc.o' and use this option when you relink
+     GNU CC:
+
+          MALLOC=gmalloc.o
+
+
+File: gcc.info,  Node: Incompatibilities,  Next: Fixed Headers,  Prev: External Bugs,  Up: Trouble
+
+Incompatibilities of GNU CC
+===========================
+
+   There are several noteworthy incompatibilities between GNU C and most
+existing (non-ANSI) versions of C.  The `-traditional' option
+eliminates many of these incompatibilities, *but not all*, by telling
+GNU C to behave like the other C compilers.
+
+   * GNU CC normally makes string constants read-only.  If several
+     identical-looking string constants are used, GNU CC stores only one
+     copy of the string.
+
+     One consequence is that you cannot call `mktemp' with a string
+     constant argument.  The function `mktemp' always alters the string
+     its argument points to.
+
+     Another consequence is that `sscanf' does not work on some systems
+     when passed a string constant as its format control string or
+     input.  This is because `sscanf' incorrectly tries to write into
+     the string constant.  Likewise `fscanf' and `scanf'.
+
+     The best solution to these problems is to change the program to use
+     `char'-array variables with initialization strings for these
+     purposes instead of string constants.  But if this is not possible,
+     you can use the `-fwritable-strings' flag, which directs GNU CC to
+     handle string constants the same way most C compilers do.
+     `-traditional' also has this effect, among others.
+
+   * `-2147483648' is positive.
+
+     This is because 2147483648 cannot fit in the type `int', so
+     (following the ANSI C rules) its data type is `unsigned long int'.
+     Negating this value yields 2147483648 again.
+
+   * GNU CC does not substitute macro arguments when they appear inside
+     of string constants.  For example, the following macro in GNU CC
+
+          #define foo(a) "a"
+
+     will produce output `"a"' regardless of what the argument A is.
+
+     The `-traditional' option directs GNU CC to handle such cases
+     (among others) in the old-fashioned (non-ANSI) fashion.
+
+   * When you use `setjmp' and `longjmp', the only automatic variables
+     guaranteed to remain valid are those declared `volatile'.  This is
+     a consequence of automatic register allocation.  Consider this
+     function:
+
+          jmp_buf j;
+          
+          foo ()
+          {
+            int a, b;
+          
+            a = fun1 ();
+            if (setjmp (j))
+              return a;
+          
+            a = fun2 ();
+            /* `longjmp (j)' may occur in `fun3'. */
+            return a + fun3 ();
+          }
+
+     Here `a' may or may not be restored to its first value when the
+     `longjmp' occurs.  If `a' is allocated in a register, then its
+     first value is restored; otherwise, it keeps the last value stored
+     in it.
+
+     If you use the `-W' option with the `-O' option, you will get a
+     warning when GNU CC thinks such a problem might be possible.
+
+     The `-traditional' option directs GNU C to put variables in the
+     stack by default, rather than in registers, in functions that call
+     `setjmp'.  This results in the behavior found in traditional C
+     compilers.
+
+   * Programs that use preprocessing directives in the middle of macro
+     arguments do not work with GNU CC.  For example, a program like
+     this will not work:
+
+          foobar (
+          #define luser
+                  hack)
+
+     ANSI C does not permit such a construct.  It would make sense to
+     support it when `-traditional' is used, but it is too much work to
+     implement.
+
+   * Declarations of external variables and functions within a block
+     apply only to the block containing the declaration.  In other
+     words, they have the same scope as any other declaration in the
+     same place.
+
+     In some other C compilers, a `extern' declaration affects all the
+     rest of the file even if it happens within a block.
+
+     The `-traditional' option directs GNU C to treat all `extern'
+     declarations as global, like traditional compilers.
+
+   * In traditional C, you can combine `long', etc., with a typedef
+     name, as shown here:
+
+          typedef int foo;
+          typedef long foo bar;
+
+     In ANSI C, this is not allowed: `long' and other type modifiers
+     require an explicit `int'.  Because this criterion is expressed by
+     Bison grammar rules rather than C code, the `-traditional' flag
+     cannot alter it.
+
+   * PCC allows typedef names to be used as function parameters.  The
+     difficulty described immediately above applies here too.
+
+   * PCC allows whitespace in the middle of compound assignment
+     operators such as `+='.  GNU CC, following the ANSI standard, does
+     not allow this.  The difficulty described immediately above
+     applies here too.
+
+   * GNU CC complains about unterminated character constants inside of
+     preprocessing conditionals that fail.  Some programs have English
+     comments enclosed in conditionals that are guaranteed to fail; if
+     these comments contain apostrophes, GNU CC will probably report an
+     error.  For example, this code would produce an error:
+
+          #if 0
+          You can't expect this to work.
+          #endif
+
+     The best solution to such a problem is to put the text into an
+     actual C comment delimited by `/*...*/'.  However, `-traditional'
+     suppresses these error messages.
+
+   * Many user programs contain the declaration `long time ();'.  In the
+     past, the system header files on many systems did not actually
+     declare `time', so it did not matter what type your program
+     declared it to return.  But in systems with ANSI C headers, `time'
+     is declared to return `time_t', and if that is not the same as
+     `long', then `long time ();' is erroneous.
+
+     The solution is to change your program to use `time_t' as the
+     return type of `time'.
+
+   * When compiling functions that return `float', PCC converts it to a
+     double.  GNU CC actually returns a `float'.  If you are concerned
+     with PCC compatibility, you should declare your functions to return
+     `double'; you might as well say what you mean.
+
+   * When compiling functions that return structures or unions, GNU CC
+     output code normally uses a method different from that used on most
+     versions of Unix.  As a result, code compiled with GNU CC cannot
+     call a structure-returning function compiled with PCC, and vice
+     versa.
+
+     The method used by GNU CC is as follows: a structure or union
+     which is 1, 2, 4 or 8 bytes long is returned like a scalar.  A
+     structure or union with any other size is stored into an address
+     supplied by the caller (usually in a special, fixed register, but
+     on some machines it is passed on the stack).  The
+     machine-description macros `STRUCT_VALUE' and
+     `STRUCT_INCOMING_VALUE' tell GNU CC where to pass this address.
+
+     By contrast, PCC on most target machines returns structures and
+     unions of any size by copying the data into an area of static
+     storage, and then returning the address of that storage as if it
+     were a pointer value.  The caller must copy the data from that
+     memory area to the place where the value is wanted.  GNU CC does
+     not use this method because it is slower and nonreentrant.
+
+     On some newer machines, PCC uses a reentrant convention for all
+     structure and union returning.  GNU CC on most of these machines
+     uses a compatible convention when returning structures and unions
+     in memory, but still returns small structures and unions in
+     registers.
+
+     You can tell GNU CC to use a compatible convention for all
+     structure and union returning with the option
+     `-fpcc-struct-return'.
+
+   * GNU C complains about program fragments such as `0x74ae-0x4000'
+     which appear to be two hexadecimal constants separated by the minus
+     operator.  Actually, this string is a single "preprocessing token".
+     Each such token must correspond to one token in C.  Since this
+     does not, GNU C prints an error message.  Although it may appear
+     obvious that what is meant is an operator and two values, the ANSI
+     C standard specifically requires that this be treated as erroneous.
+
+     A "preprocessing token" is a "preprocessing number" if it begins
+     with a digit and is followed by letters, underscores, digits,
+     periods and `e+', `e-', `E+', or `E-' character sequences.
+
+     To make the above program fragment valid, place whitespace in
+     front of the minus sign.  This whitespace will end the
+     preprocessing number.
+
+
+File: gcc.info,  Node: Fixed Headers,  Next: Standard Libraries,  Prev: Incompatibilities,  Up: Trouble
+
+Fixed Header Files
+==================
+
+   GNU CC needs to install corrected versions of some system header
+files.  This is because most target systems have some header files that
+won't work with GNU CC unless they are changed.  Some have bugs, some
+are incompatible with ANSI C, and some depend on special features of
+other compilers.
+
+   Installing GNU CC automatically creates and installs the fixed header
+files, by running a program called `fixincludes' (or for certain
+targets an alternative such as `fixinc.svr4').  Normally, you don't
+need to pay attention to this.  But there are cases where it doesn't do
+the right thing automatically.
+
+   * If you update the system's header files, such as by installing a
+     new system version, the fixed header files of GNU CC are not
+     automatically updated.  The easiest way to update them is to
+     reinstall GNU CC.  (If you want to be clever, look in the makefile
+     and you can find a shortcut.)
+
+   * On some systems, in particular SunOS 4, header file directories
+     contain machine-specific symbolic links in certain places.  This
+     makes it possible to share most of the header files among hosts
+     running the same version of SunOS 4 on different machine models.
+
+     The programs that fix the header files do not understand this
+     special way of using symbolic links; therefore, the directory of
+     fixed header files is good only for the machine model used to
+     build it.
+
+     In SunOS 4, only programs that look inside the kernel will notice
+     the difference between machine models.  Therefore, for most
+     purposes, you need not be concerned about this.
+
+     It is possible to make separate sets of fixed header files for the
+     different machine models, and arrange a structure of symbolic
+     links so as to use the proper set, but you'll have to do this by
+     hand.
+
+   * On Lynxos, GNU CC by default does not fix the header files.  This
+     is because bugs in the shell cause the `fixincludes' script to
+     fail.
+
+     This means you will encounter problems due to bugs in the system
+     header files.  It may be no comfort that they aren't GNU CC's
+     fault, but it does mean that there's nothing for us to do about
+     them.
+
+
+File: gcc.info,  Node: Standard Libraries,  Next: Disappointments,  Prev: Fixed Headers,  Up: Trouble
+
+Standard Libraries
+==================
+
+   GNU CC by itself attempts to be what the ISO/ANSI C standard calls a
+"conforming freestanding implementation".  This means all ANSI C
+language features are available, as well as the contents of `float.h',
+`limits.h', `stdarg.h', and `stddef.h'.  The rest of the C library is
+supplied by the vendor of the operating system.  If that C library
+doesn't conform to the C standards, then your programs might get
+warnings (especially when using `-Wall') that you don't expect.
+
+   For example, the `sprintf' function on SunOS 4.1.3 returns `char *'
+while the C standard says that `sprintf' returns an `int'.  The
+`fixincludes' program could make the prototype for this function match
+the Standard, but that would be wrong, since the function will still
+return `char *'.
+
+   If you need a Standard compliant library, then you need to find one,
+as GNU CC does not provide one.  The GNU C library (called `glibc') has
+been ported to a number of operating systems, and provides ANSI/ISO,
+POSIX, BSD and SystemV compatibility.  You could also ask your operating
+system vendor if newer libraries are available.
+
+
+File: gcc.info,  Node: Disappointments,  Next: C++ Misunderstandings,  Prev: Standard Libraries,  Up: Trouble
+
+Disappointments and Misunderstandings
+=====================================
+
+   These problems are perhaps regrettable, but we don't know any
+practical way around them.
+
+   * Certain local variables aren't recognized by debuggers when you
+     compile with optimization.
+
+     This occurs because sometimes GNU CC optimizes the variable out of
+     existence.  There is no way to tell the debugger how to compute the
+     value such a variable "would have had", and it is not clear that
+     would be desirable anyway.  So GNU CC simply does not mention the
+     eliminated variable when it writes debugging information.
+
+     You have to expect a certain amount of disagreement between the
+     executable and your source code, when you use optimization.
+
+   * Users often think it is a bug when GNU CC reports an error for code
+     like this:
+
+          int foo (struct mumble *);
+          
+          struct mumble { ... };
+          
+          int foo (struct mumble *x)
+          { ... }
+
+     This code really is erroneous, because the scope of `struct
+     mumble' in the prototype is limited to the argument list
+     containing it.  It does not refer to the `struct mumble' defined
+     with file scope immediately below--they are two unrelated types
+     with similar names in different scopes.
+
+     But in the definition of `foo', the file-scope type is used
+     because that is available to be inherited.  Thus, the definition
+     and the prototype do not match, and you get an error.
+
+     This behavior may seem silly, but it's what the ANSI standard
+     specifies.  It is easy enough for you to make your code work by
+     moving the definition of `struct mumble' above the prototype.
+     It's not worth being incompatible with ANSI C just to avoid an
+     error for the example shown above.
+
+   * Accesses to bitfields even in volatile objects works by accessing
+     larger objects, such as a byte or a word.  You cannot rely on what
+     size of object is accessed in order to read or write the bitfield;
+     it may even vary for a given bitfield according to the precise
+     usage.
+
+     If you care about controlling the amount of memory that is
+     accessed, use volatile but do not use bitfields.
+
+   * GNU CC comes with shell scripts to fix certain known problems in
+     system header files.  They install corrected copies of various
+     header files in a special directory where only GNU CC will
+     normally look for them.  The scripts adapt to various systems by
+     searching all the system header files for the problem cases that
+     we know about.
+
+     If new system header files are installed, nothing automatically
+     arranges to update the corrected header files.  You will have to
+     reinstall GNU CC to fix the new header files.  More specifically,
+     go to the build directory and delete the files `stmp-fixinc' and
+     `stmp-headers', and the subdirectory `include'; then do `make
+     install' again.
+
+   * On 68000 and x86 systems, for instance, you can get paradoxical
+     results if you test the precise values of floating point numbers.
+     For example, you can find that a floating point value which is not
+     a NaN is not equal to itself.  This results from the fact that the
+     floating point registers hold a few more bits of precision than
+     fit in a `double' in memory.  Compiled code moves values between
+     memory and floating point registers at its convenience, and moving
+     them into memory truncates them.
+
+     You can partially avoid this problem by using the `-ffloat-store'
+     option (*note Optimize Options::.).
+
+   * On the MIPS, variable argument functions using `varargs.h' cannot
+     have a floating point value for the first argument.  The reason
+     for this is that in the absence of a prototype in scope, if the
+     first argument is a floating point, it is passed in a floating
+     point register, rather than an integer register.
+
+     If the code is rewritten to use the ANSI standard `stdarg.h'
+     method of variable arguments, and the prototype is in scope at the
+     time of the call, everything will work fine.
+
+   * On the H8/300 and H8/300H, variable argument functions must be
+     implemented using the ANSI standard `stdarg.h' method of variable
+     arguments.  Furthermore, calls to functions using `stdarg.h'
+     variable arguments must have a prototype for the called function
+     in scope at the time of the call.
+
+
+File: gcc.info,  Node: C++ Misunderstandings,  Next: Protoize Caveats,  Prev: Disappointments,  Up: Trouble
+
+Common Misunderstandings with GNU C++
+=====================================
+
+   C++ is a complex language and an evolving one, and its standard
+definition (the ANSI C++ draft standard) is also evolving.  As a result,
+your C++ compiler may occasionally surprise you, even when its behavior
+is correct.  This section discusses some areas that frequently give
+rise to questions of this sort.
+
+* Menu:
+
+* Static Definitions::  Static member declarations are not definitions
+* Temporaries::         Temporaries may vanish before you expect
+
+
+File: gcc.info,  Node: Static Definitions,  Next: Temporaries,  Up: C++ Misunderstandings
+
+Declare *and* Define Static Members
+-----------------------------------
+
+   When a class has static data members, it is not enough to *declare*
+the static member; you must also *define* it.  For example:
+
+     class Foo
+     {
+       ...
+       void method();
+       static int bar;
+     };
+
+   This declaration only establishes that the class `Foo' has an `int'
+named `Foo::bar', and a member function named `Foo::method'.  But you
+still need to define *both* `method' and `bar' elsewhere.  According to
+the draft ANSI standard, you must supply an initializer in one (and
+only one) source file, such as:
+
+     int Foo::bar = 0;
+
+   Other C++ compilers may not correctly implement the standard
+behavior.  As a result, when you switch to `g++' from one of these
+compilers, you may discover that a program that appeared to work
+correctly in fact does not conform to the standard: `g++' reports as
+undefined symbols any static data members that lack definitions.
+
+
+File: gcc.info,  Node: Temporaries,  Prev: Static Definitions,  Up: C++ Misunderstandings
+
+Temporaries May Vanish Before You Expect
+----------------------------------------
+
+   It is dangerous to use pointers or references to *portions* of a
+temporary object.  The compiler may very well delete the object before
+you expect it to, leaving a pointer to garbage.  The most common place
+where this problem crops up is in classes like the libg++ `String'
+class, that define a conversion function to type `char *' or `const
+char *'.  However, any class that returns a pointer to some internal
+structure is potentially subject to this problem.
+
+   For example, a program may use a function `strfunc' that returns
+`String' objects, and another function `charfunc' that operates on
+pointers to `char':
+
+     String strfunc ();
+     void charfunc (const char *);
+
+In this situation, it may seem natural to write
+`charfunc (strfunc ());' based on the knowledge that class `String' has
+an explicit conversion to `char' pointers.  However, what really
+happens is akin to `charfunc (strfunc ().convert ());', where the
+`convert' method is a function to do the same data conversion normally
+performed by a cast.  Since the last use of the temporary `String'
+object is the call to the conversion function, the compiler may delete
+that object before actually calling `charfunc'.  The compiler has no
+way of knowing that deleting the `String' object will invalidate the
+pointer.  The pointer then points to garbage, so that by the time
+`charfunc' is called, it gets an invalid argument.
+
+   Code like this may run successfully under some other compilers,
+especially those that delete temporaries relatively late.  However, the
+GNU C++ behavior is also standard-conforming, so if your program depends
+on late destruction of temporaries it is not portable.
+
+   If you think this is surprising, you should be aware that the ANSI
+C++ committee continues to debate the lifetime-of-temporaries problem.
+
+   For now, at least, the safe way to write such code is to give the
+temporary a name, which forces it to remain until the end of the scope
+of the name.  For example:
+
+     String& tmp = strfunc ();
+     charfunc (tmp);
+
+
+File: gcc.info,  Node: Protoize Caveats,  Next: Non-bugs,  Prev: C++ Misunderstandings,  Up: Trouble
+
+Caveats of using `protoize'
+===========================
+
+   The conversion programs `protoize' and `unprotoize' can sometimes
+change a source file in a way that won't work unless you rearrange it.
+
+   * `protoize' can insert references to a type name or type tag before
+     the definition, or in a file where they are not defined.
+
+     If this happens, compiler error messages should show you where the
+     new references are, so fixing the file by hand is straightforward.
+
+   * There are some C constructs which `protoize' cannot figure out.
+     For example, it can't determine argument types for declaring a
+     pointer-to-function variable; this you must do by hand.  `protoize'
+     inserts a comment containing `???' each time it finds such a
+     variable; so you can find all such variables by searching for this
+     string.  ANSI C does not require declaring the argument types of
+     pointer-to-function types.
+
+   * Using `unprotoize' can easily introduce bugs.  If the program
+     relied on prototypes to bring about conversion of arguments, these
+     conversions will not take place in the program without prototypes.
+     One case in which you can be sure `unprotoize' is safe is when you
+     are removing prototypes that were made with `protoize'; if the
+     program worked before without any prototypes, it will work again
+     without them.
+
+     You can find all the places where this problem might occur by
+     compiling the program with the `-Wconversion' option.  It prints a
+     warning whenever an argument is converted.
+
+   * Both conversion programs can be confused if there are macro calls
+     in and around the text to be converted.  In other words, the
+     standard syntax for a declaration or definition must not result
+     from expanding a macro.  This problem is inherent in the design of
+     C and cannot be fixed.  If only a few functions have confusing
+     macro calls, you can easily convert them manually.
+
+   * `protoize' cannot get the argument types for a function whose
+     definition was not actually compiled due to preprocessing
+     conditionals.  When this happens, `protoize' changes nothing in
+     regard to such a function.  `protoize' tries to detect such
+     instances and warn about them.
+
+     You can generally work around this problem by using `protoize' step
+     by step, each time specifying a different set of `-D' options for
+     compilation, until all of the functions have been converted.
+     There is no automatic way to verify that you have got them all,
+     however.
+
+   * Confusion may result if there is an occasion to convert a function
+     declaration or definition in a region of source code where there
+     is more than one formal parameter list present.  Thus, attempts to
+     convert code containing multiple (conditionally compiled) versions
+     of a single function header (in the same vicinity) may not produce
+     the desired (or expected) results.
+
+     If you plan on converting source files which contain such code, it
+     is recommended that you first make sure that each conditionally
+     compiled region of source code which contains an alternative
+     function header also contains at least one additional follower
+     token (past the final right parenthesis of the function header).
+     This should circumvent the problem.
+
+   * `unprotoize' can become confused when trying to convert a function
+     definition or declaration which contains a declaration for a
+     pointer-to-function formal argument which has the same name as the
+     function being defined or declared.  We recommand you avoid such
+     choices of formal parameter names.
+
+   * You might also want to correct some of the indentation by hand and
+     break long lines.  (The conversion programs don't write lines
+     longer than eighty characters in any case.)
+
+
+File: gcc.info,  Node: Non-bugs,  Next: Warnings and Errors,  Prev: Protoize Caveats,  Up: Trouble
+
+Certain Changes We Don't Want to Make
+=====================================
+
+   This section lists changes that people frequently request, but which
+we do not make because we think GNU CC is better without them.
+
+   * Checking the number and type of arguments to a function which has
+     an old-fashioned definition and no prototype.
+
+     Such a feature would work only occasionally--only for calls that
+     appear in the same file as the called function, following the
+     definition.  The only way to check all calls reliably is to add a
+     prototype for the function.  But adding a prototype eliminates the
+     motivation for this feature.  So the feature is not worthwhile.
+
+   * Warning about using an expression whose type is signed as a shift
+     count.
+
+     Shift count operands are probably signed more often than unsigned.
+     Warning about this would cause far more annoyance than good.
+
+   * Warning about assigning a signed value to an unsigned variable.
+
+     Such assignments must be very common; warning about them would
+     cause more annoyance than good.
+
+   * Warning about unreachable code.
+
+     It's very common to have unreachable code in machine-generated
+     programs.  For example, this happens normally in some files of GNU
+     C itself.
+
+   * Warning when a non-void function value is ignored.
+
+     Coming as I do from a Lisp background, I balk at the idea that
+     there is something dangerous about discarding a value.  There are
+     functions that return values which some callers may find useful;
+     it makes no sense to clutter the program with a cast to `void'
+     whenever the value isn't useful.
+
+   * Assuming (for optimization) that the address of an external symbol
+     is never zero.
+
+     This assumption is false on certain systems when `#pragma weak' is
+     used.
+
+   * Making `-fshort-enums' the default.
+
+     This would cause storage layout to be incompatible with most other
+     C compilers.  And it doesn't seem very important, given that you
+     can get the same result in other ways.  The case where it matters
+     most is when the enumeration-valued object is inside a structure,
+     and in that case you can specify a field width explicitly.
+
+   * Making bitfields unsigned by default on particular machines where
+     "the ABI standard" says to do so.
+
+     The ANSI C standard leaves it up to the implementation whether a
+     bitfield declared plain `int' is signed or not.  This in effect
+     creates two alternative dialects of C.
+
+     The GNU C compiler supports both dialects; you can specify the
+     signed dialect with `-fsigned-bitfields' and the unsigned dialect
+     with `-funsigned-bitfields'.  However, this leaves open the
+     question of which dialect to use by default.
+
+     Currently, the preferred dialect makes plain bitfields signed,
+     because this is simplest.  Since `int' is the same as `signed int'
+     in every other context, it is cleanest for them to be the same in
+     bitfields as well.
+
+     Some computer manufacturers have published Application Binary
+     Interface standards which specify that plain bitfields should be
+     unsigned.  It is a mistake, however, to say anything about this
+     issue in an ABI.  This is because the handling of plain bitfields
+     distinguishes two dialects of C.  Both dialects are meaningful on
+     every type of machine.  Whether a particular object file was
+     compiled using signed bitfields or unsigned is of no concern to
+     other object files, even if they access the same bitfields in the
+     same data structures.
+
+     A given program is written in one or the other of these two
+     dialects.  The program stands a chance to work on most any machine
+     if it is compiled with the proper dialect.  It is unlikely to work
+     at all if compiled with the wrong dialect.
+
+     Many users appreciate the GNU C compiler because it provides an
+     environment that is uniform across machines.  These users would be
+     inconvenienced if the compiler treated plain bitfields differently
+     on certain machines.
+
+     Occasionally users write programs intended only for a particular
+     machine type.  On these occasions, the users would benefit if the
+     GNU C compiler were to support by default the same dialect as the
+     other compilers on that machine.  But such applications are rare.
+     And users writing a program to run on more than one type of
+     machine cannot possibly benefit from this kind of compatibility.
+
+     This is why GNU CC does and will treat plain bitfields in the same
+     fashion on all types of machines (by default).
+
+     There are some arguments for making bitfields unsigned by default
+     on all machines.  If, for example, this becomes a universal de
+     facto standard, it would make sense for GNU CC to go along with
+     it.  This is something to be considered in the future.
+
+     (Of course, users strongly concerned about portability should
+     indicate explicitly in each bitfield whether it is signed or not.
+     In this way, they write programs which have the same meaning in
+     both C dialects.)
+
+   * Undefining `__STDC__' when `-ansi' is not used.
+
+     Currently, GNU CC defines `__STDC__' as long as you don't use
+     `-traditional'.  This provides good results in practice.
+
+     Programmers normally use conditionals on `__STDC__' to ask whether
+     it is safe to use certain features of ANSI C, such as function
+     prototypes or ANSI token concatenation.  Since plain `gcc' supports
+     all the features of ANSI C, the correct answer to these questions
+     is "yes".
+
+     Some users try to use `__STDC__' to check for the availability of
+     certain library facilities.  This is actually incorrect usage in
+     an ANSI C program, because the ANSI C standard says that a
+     conforming freestanding implementation should define `__STDC__'
+     even though it does not have the library facilities.  `gcc -ansi
+     -pedantic' is a conforming freestanding implementation, and it is
+     therefore required to define `__STDC__', even though it does not
+     come with an ANSI C library.
+
+     Sometimes people say that defining `__STDC__' in a compiler that
+     does not completely conform to the ANSI C standard somehow
+     violates the standard.  This is illogical.  The standard is a
+     standard for compilers that claim to support ANSI C, such as `gcc
+     -ansi'--not for other compilers such as plain `gcc'.  Whatever the
+     ANSI C standard says is relevant to the design of plain `gcc'
+     without `-ansi' only for pragmatic reasons, not as a requirement.
+
+     GNU CC normally defines `__STDC__' to be 1, and in addition
+     defines `__STRICT_ANSI__' if you specify the `-ansi' option.  On
+     some hosts, system include files use a different convention, where
+     `__STDC__' is normally 0, but is 1 if the user specifies strict
+     conformance to the C Standard.  GNU CC follows the host convention
+     when processing system include files, but when processing user
+     files it follows the usual GNU C convention.
+
+   * Undefining `__STDC__' in C++.
+
+     Programs written to compile with C++-to-C translators get the
+     value of `__STDC__' that goes with the C compiler that is
+     subsequently used.  These programs must test `__STDC__' to
+     determine what kind of C preprocessor that compiler uses: whether
+     they should concatenate tokens in the ANSI C fashion or in the
+     traditional fashion.
+
+     These programs work properly with GNU C++ if `__STDC__' is defined.
+     They would not work otherwise.
+
+     In addition, many header files are written to provide prototypes
+     in ANSI C but not in traditional C.  Many of these header files
+     can work without change in C++ provided `__STDC__' is defined.  If
+     `__STDC__' is not defined, they will all fail, and will all need
+     to be changed to test explicitly for C++ as well.
+
+   * Deleting "empty" loops.
+
+     GNU CC does not delete "empty" loops because the most likely reason
+     you would put one in a program is to have a delay.  Deleting them
+     will not make real programs run any faster, so it would be
+     pointless.
+
+     It would be different if optimization of a nonempty loop could
+     produce an empty one.  But this generally can't happen.
+
+   * Making side effects happen in the same order as in some other
+     compiler.
+
+     It is never safe to depend on the order of evaluation of side
+     effects.  For example, a function call like this may very well
+     behave differently from one compiler to another:
+
+          void func (int, int);
+          
+          int i = 2;
+          func (i++, i++);
+
+     There is no guarantee (in either the C or the C++ standard language
+     definitions) that the increments will be evaluated in any
+     particular order.  Either increment might happen first.  `func'
+     might get the arguments `2, 3', or it might get `3, 2', or even
+     `2, 2'.
+
+   * Not allowing structures with volatile fields in registers.
+
+     Strictly speaking, there is no prohibition in the ANSI C standard
+     against allowing structures with volatile fields in registers, but
+     it does not seem to make any sense and is probably not what you
+     wanted to do.  So the compiler will give an error message in this
+     case.
+
+
+File: gcc.info,  Node: Warnings and Errors,  Prev: Non-bugs,  Up: Trouble
+
+Warning Messages and Error Messages
+===================================
+
+   The GNU compiler can produce two kinds of diagnostics: errors and
+warnings.  Each kind has a different purpose:
+
+     *Errors* report problems that make it impossible to compile your
+     program.  GNU CC reports errors with the source file name and line
+     number where the problem is apparent.
+
+     *Warnings* report other unusual conditions in your code that *may*
+     indicate a problem, although compilation can (and does) proceed.
+     Warning messages also report the source file name and line number,
+     but include the text `warning:' to distinguish them from error
+     messages.
+
+   Warnings may indicate danger points where you should check to make
+sure that your program really does what you intend; or the use of
+obsolete features; or the use of nonstandard features of GNU C or C++.
+Many warnings are issued only if you ask for them, with one of the `-W'
+options (for instance, `-Wall' requests a variety of useful warnings).
+
+   GNU CC always tries to compile your program if possible; it never
+gratuitously rejects a program whose meaning is clear merely because
+(for instance) it fails to conform to a standard.  In some cases,
+however, the C and C++ standards specify that certain extensions are
+forbidden, and a diagnostic *must* be issued by a conforming compiler.
+The `-pedantic' option tells GNU CC to issue warnings in such cases;
+`-pedantic-errors' says to make them errors instead.  This does not
+mean that *all* non-ANSI constructs get warnings or errors.
+
+   *Note Options to Request or Suppress Warnings: Warning Options, for
+more detail on these and related command-line options.
+
+
+File: gcc.info,  Node: Bugs,  Next: Service,  Prev: Trouble,  Up: Top
+
+Reporting Bugs
+**************
+
+   Your bug reports play an essential role in making GNU CC reliable.
+
+   When you encounter a problem, the first thing to do is to see if it
+is already known.  *Note Trouble::.  If it isn't known, then you should
+report the problem.
+
+   Reporting a bug may help you by bringing a solution to your problem,
+or it may not.  (If it does not, look in the service directory; see
+*Note Service::.)  In any case, the principal function of a bug report
+is to help the entire community by making the next version of GNU CC
+work better.  Bug reports are your contribution to the maintenance of
+GNU CC.
+
+   Since the maintainers are very overloaded, we cannot respond to every
+bug report.  However, if the bug has not been fixed, we are likely to
+send you a patch and ask you to tell us whether it works.
+
+   In order for a bug report to serve its purpose, you must include the
+information that makes for fixing the bug.
+
+* Menu:
+
+* Criteria:  Bug Criteria.   Have you really found a bug?
+* Where: Bug Lists.	     Where to send your bug report.
+* Reporting: Bug Reporting.  How to report a bug effectively.
+* Patches: Sending Patches.  How to send a patch for GNU CC.
+* Known: Trouble.            Known problems.
+* Help: Service.             Where to ask for help.
+
+
+File: gcc.info,  Node: Bug Criteria,  Next: Bug Lists,  Up: Bugs
+
+Have You Found a Bug?
+=====================
+
+   If you are not sure whether you have found a bug, here are some
+guidelines:
+
+   * If the compiler gets a fatal signal, for any input whatever, that
+     is a compiler bug.  Reliable compilers never crash.
+
+   * If the compiler produces invalid assembly code, for any input
+     whatever (except an `asm' statement), that is a compiler bug,
+     unless the compiler reports errors (not just warnings) which would
+     ordinarily prevent the assembler from being run.
+
+   * If the compiler produces valid assembly code that does not
+     correctly execute the input source code, that is a compiler bug.
+
+     However, you must double-check to make sure, because you may have
+     run into an incompatibility between GNU C and traditional C (*note
+     Incompatibilities::.).  These incompatibilities might be considered
+     bugs, but they are inescapable consequences of valuable features.
+
+     Or you may have a program whose behavior is undefined, which
+     happened by chance to give the desired results with another C or
+     C++ compiler.
+
+     For example, in many nonoptimizing compilers, you can write `x;'
+     at the end of a function instead of `return x;', with the same
+     results.  But the value of the function is undefined if `return'
+     is omitted; it is not a bug when GNU CC produces different results.
+
+     Problems often result from expressions with two increment
+     operators, as in `f (*p++, *p++)'.  Your previous compiler might
+     have interpreted that expression the way you intended; GNU CC might
+     interpret it another way.  Neither compiler is wrong.  The bug is
+     in your code.
+
+     After you have localized the error to a single source line, it
+     should be easy to check for these things.  If your program is
+     correct and well defined, you have found a compiler bug.
+
+   * If the compiler produces an error message for valid input, that is
+     a compiler bug.
+
+   * If the compiler does not produce an error message for invalid
+     input, that is a compiler bug.  However, you should note that your
+     idea of "invalid input" might be my idea of "an extension" or
+     "support for traditional practice".
+
+   * If you are an experienced user of C or C++ compilers, your
+     suggestions for improvement of GNU CC or GNU C++ are welcome in
+     any case.
+
+
+File: gcc.info,  Node: Bug Lists,  Next: Bug Reporting,  Prev: Bug Criteria,  Up: Bugs
+
+Where to Report Bugs
+====================
+
+   Send bug reports for GNU C to `bug-gcc@prep.ai.mit.edu'.
+
+   Send bug reports for GNU C++ to `bug-g++@prep.ai.mit.edu'.  If your
+bug involves the C++ class library libg++, send mail instead to the
+address `bug-lib-g++@prep.ai.mit.edu'.  If you're not sure, you can
+send the bug report to both lists.
+
+   *Do not send bug reports to `help-gcc@prep.ai.mit.edu' or to the
+newsgroup `gnu.gcc.help'.* Most users of GNU CC do not want to receive
+bug reports.  Those that do, have asked to be on `bug-gcc' and/or
+`bug-g++'.
+
+   The mailing lists `bug-gcc' and `bug-g++' both have newsgroups which
+serve as repeaters: `gnu.gcc.bug' and `gnu.g++.bug'.  Each mailing list
+and its newsgroup carry exactly the same messages.
+
+   Often people think of posting bug reports to the newsgroup instead of
+mailing them.  This appears to work, but it has one problem which can be
+crucial: a newsgroup posting does not contain a mail path back to the
+sender.  Thus, if maintainers need more information, they may be unable
+to reach you.  For this reason, you should always send bug reports by
+mail to the proper mailing list.
+
+   As a last resort, send bug reports on paper to:
+
+     GNU Compiler Bugs
+     Free Software Foundation
+     59 Temple Place - Suite 330
+     Boston, MA 02111-1307, USA
+

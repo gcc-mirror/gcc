@@ -1,0 +1,973 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Misc,  Prev: Cross-compilation,  Up: Target Macros
+
+Miscellaneous Parameters
+========================
+
+   Here are several miscellaneous parameters.
+
+`PREDICATE_CODES'
+     Define this if you have defined special-purpose predicates in the
+     file `MACHINE.c'.  This macro is called within an initializer of an
+     array of structures.  The first field in the structure is the name
+     of a predicate and the second field is an array of rtl codes.  For
+     each predicate, list all rtl codes that can be in expressions
+     matched by the predicate.  The list should have a trailing comma.
+     Here is an example of two entries in the list for a typical RISC
+     machine:
+
+          #define PREDICATE_CODES \
+            {"gen_reg_rtx_operand", {SUBREG, REG}},  \
+            {"reg_or_short_cint_operand", {SUBREG, REG, CONST_INT}},
+
+     Defining this macro does not affect the generated code (however,
+     incorrect definitions that omit an rtl code that may be matched by
+     the predicate can cause the compiler to malfunction).  Instead, it
+     allows the table built by `genrecog' to be more compact and
+     efficient, thus speeding up the compiler.  The most important
+     predicates to include in the list specified by this macro are
+     thoses used in the most insn patterns.
+
+`CASE_VECTOR_MODE'
+     An alias for a machine mode name.  This is the machine mode that
+     elements of a jump-table should have.
+
+`CASE_VECTOR_PC_RELATIVE'
+     Define this macro if jump-tables should contain relative addresses.
+
+`CASE_DROPS_THROUGH'
+     Define this if control falls through a `case' insn when the index
+     value is out of range.  This means the specified default-label is
+     actually ignored by the `case' insn proper.
+
+`CASE_VALUES_THRESHOLD'
+     Define this to be the smallest number of different values for
+     which it is best to use a jump-table instead of a tree of
+     conditional branches.  The default is four for machines with a
+     `casesi' instruction and five otherwise.  This is best for most
+     machines.
+
+`WORD_REGISTER_OPERATIONS'
+     Define this macro if operations between registers with integral
+     mode smaller than a word are always performed on the entire
+     register.  Most RISC machines have this property and most CISC
+     machines do not.
+
+`LOAD_EXTEND_OP (MODE)'
+     Define this macro to be a C expression indicating when insns that
+     read memory in MODE, an integral mode narrower than a word, set the
+     bits outside of MODE to be either the sign-extension or the
+     zero-extension of the data read.  Return `SIGN_EXTEND' for values
+     of MODE for which the insn sign-extends, `ZERO_EXTEND' for which
+     it zero-extends, and `NIL' for other modes.
+
+     This macro is not called with MODE non-integral or with a width
+     greater than or equal to `BITS_PER_WORD', so you may return any
+     value in this case.  Do not define this macro if it would always
+     return `NIL'.  On machines where this macro is defined, you will
+     normally define it as the constant `SIGN_EXTEND' or `ZERO_EXTEND'.
+
+`IMPLICIT_FIX_EXPR'
+     An alias for a tree code that should be used by default for
+     conversion of floating point values to fixed point.  Normally,
+     `FIX_ROUND_EXPR' is used.
+
+`FIXUNS_TRUNC_LIKE_FIX_TRUNC'
+     Define this macro if the same instructions that convert a floating
+     point number to a signed fixed point number also convert validly
+     to an unsigned one.
+
+`EASY_DIV_EXPR'
+     An alias for a tree code that is the easiest kind of division to
+     compile code for in the general case.  It may be `TRUNC_DIV_EXPR',
+     `FLOOR_DIV_EXPR', `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four
+     division operators differ in how they round the result to an
+     integer.  `EASY_DIV_EXPR' is used when it is permissible to use
+     any of those kinds of division and the choice should be made on
+     the basis of efficiency.
+
+`MOVE_MAX'
+     The maximum number of bytes that a single instruction can move
+     quickly between memory and registers or between two memory
+     locations.
+
+`MAX_MOVE_MAX'
+     The maximum number of bytes that a single instruction can move
+     quickly between memory and registers or between two memory
+     locations.  If this is undefined, the default is `MOVE_MAX'.
+     Otherwise, it is the constant value that is the largest value that
+     `MOVE_MAX' can have at run-time.
+
+`SHIFT_COUNT_TRUNCATED'
+     A C expression that is nonzero if on this machine the number of
+     bits actually used for the count of a shift operation is equal to
+     the number of bits needed to represent the size of the object
+     being shifted.  When this macro is non-zero, the compiler will
+     assume that it is safe to omit a sign-extend, zero-extend, and
+     certain bitwise `and' instructions that truncates the count of a
+     shift operation.  On machines that have instructions that act on
+     bitfields at variable positions, which may include `bit test'
+     instructions, a nonzero `SHIFT_COUNT_TRUNCATED' also enables
+     deletion of truncations of the values that serve as arguments to
+     bitfield instructions.
+
+     If both types of instructions truncate the count (for shifts) and
+     position (for bitfield operations), or if no variable-position
+     bitfield instructions exist, you should define this macro.
+
+     However, on some machines, such as the 80386 and the 680x0,
+     truncation only applies to shift operations and not the (real or
+     pretended) bitfield operations.  Define `SHIFT_COUNT_TRUNCATED' to
+     be zero on such machines.  Instead, add patterns to the `md' file
+     that include the implied truncation of the shift instructions.
+
+     You need not define this macro if it would always have the value
+     of zero.
+
+`TRULY_NOOP_TRUNCATION (OUTPREC, INPREC)'
+     A C expression which is nonzero if on this machine it is safe to
+     "convert" an integer of INPREC bits to one of OUTPREC bits (where
+     OUTPREC is smaller than INPREC) by merely operating on it as if it
+     had only OUTPREC bits.
+
+     On many machines, this expression can be 1.
+
+     When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
+     modes for which `MODES_TIEABLE_P' is 0, suboptimal code can result.
+     If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
+     such cases may improve things.
+
+`STORE_FLAG_VALUE'
+     A C expression describing the value returned by a comparison
+     operator with an integral mode and stored by a store-flag
+     instruction (`sCOND') when the condition is true.  This
+     description must apply to *all* the `sCOND' patterns and all the
+     comparison operators whose results have a `MODE_INT' mode.
+
+     A value of 1 or -1 means that the instruction implementing the
+     comparison operator returns exactly 1 or -1 when the comparison is
+     true and 0 when the comparison is false.  Otherwise, the value
+     indicates which bits of the result are guaranteed to be 1 when the
+     comparison is true.  This value is interpreted in the mode of the
+     comparison operation, which is given by the mode of the first
+     operand in the `sCOND' pattern.  Either the low bit or the sign
+     bit of `STORE_FLAG_VALUE' be on.  Presently, only those bits are
+     used by the compiler.
+
+     If `STORE_FLAG_VALUE' is neither 1 or -1, the compiler will
+     generate code that depends only on the specified bits.  It can also
+     replace comparison operators with equivalent operations if they
+     cause the required bits to be set, even if the remaining bits are
+     undefined.  For example, on a machine whose comparison operators
+     return an `SImode' value and where `STORE_FLAG_VALUE' is defined as
+     `0x80000000', saying that just the sign bit is relevant, the
+     expression
+
+          (ne:SI (and:SI X (const_int POWER-OF-2)) (const_int 0))
+
+     can be converted to
+
+          (ashift:SI X (const_int N))
+
+     where N is the appropriate shift count to move the bit being
+     tested into the sign bit.
+
+     There is no way to describe a machine that always sets the
+     low-order bit for a true value, but does not guarantee the value
+     of any other bits, but we do not know of any machine that has such
+     an instruction.  If you are trying to port GNU CC to such a
+     machine, include an instruction to perform a logical-and of the
+     result with 1 in the pattern for the comparison operators and let
+     us know (*note How to Report Bugs: Bug Reporting.).
+
+     Often, a machine will have multiple instructions that obtain a
+     value from a comparison (or the condition codes).  Here are rules
+     to guide the choice of value for `STORE_FLAG_VALUE', and hence the
+     instructions to be used:
+
+        * Use the shortest sequence that yields a valid definition for
+          `STORE_FLAG_VALUE'.  It is more efficient for the compiler to
+          "normalize" the value (convert it to, e.g., 1 or 0) than for
+          the comparison operators to do so because there may be
+          opportunities to combine the normalization with other
+          operations.
+
+        * For equal-length sequences, use a value of 1 or -1, with -1
+          being slightly preferred on machines with expensive jumps and
+          1 preferred on other machines.
+
+        * As a second choice, choose a value of `0x80000001' if
+          instructions exist that set both the sign and low-order bits
+          but do not define the others.
+
+        * Otherwise, use a value of `0x80000000'.
+
+     Many machines can produce both the value chosen for
+     `STORE_FLAG_VALUE' and its negation in the same number of
+     instructions.  On those machines, you should also define a pattern
+     for those cases, e.g., one matching
+
+          (set A (neg:M (ne:M B C)))
+
+     Some machines can also perform `and' or `plus' operations on
+     condition code values with less instructions than the corresponding
+     `sCOND' insn followed by `and' or `plus'.  On those machines,
+     define the appropriate patterns.  Use the names `incscc' and
+     `decscc', respectively, for the patterns which perform `plus' or
+     `minus' operations on condition code values.  See `rs6000.md' for
+     some examples.  The GNU Superoptizer can be used to find such
+     instruction sequences on other machines.
+
+     You need not define `STORE_FLAG_VALUE' if the machine has no
+     store-flag instructions.
+
+`FLOAT_STORE_FLAG_VALUE'
+     A C expression that gives a non-zero floating point value that is
+     returned when comparison operators with floating-point results are
+     true.  Define this macro on machine that have comparison
+     operations that return floating-point values.  If there are no
+     such operations, do not define this macro.
+
+`Pmode'
+     An alias for the machine mode for pointers.  On most machines,
+     define this to be the integer mode corresponding to the width of a
+     hardware pointer; `SImode' on 32-bit machine or `DImode' on 64-bit
+     machines.  On some machines you must define this to be one of the
+     partial integer modes, such as `PSImode'.
+
+     The width of `Pmode' must be at least as large as the value of
+     `POINTER_SIZE'.  If it is not equal, you must define the macro
+     `POINTERS_EXTEND_UNSIGNED' to specify how pointers are extended to
+     `Pmode'.
+
+`FUNCTION_MODE'
+     An alias for the machine mode used for memory references to
+     functions being called, in `call' RTL expressions.  On most
+     machines this should be `QImode'.
+
+`INTEGRATE_THRESHOLD (DECL)'
+     A C expression for the maximum number of instructions above which
+     the function DECL should not be inlined.  DECL is a
+     `FUNCTION_DECL' node.
+
+     The default definition of this macro is 64 plus 8 times the number
+     of arguments that the function accepts.  Some people think a larger
+     threshold should be used on RISC machines.
+
+`SCCS_DIRECTIVE'
+     Define this if the preprocessor should ignore `#sccs' directives
+     and print no error message.
+
+`NO_IMPLICIT_EXTERN_C'
+     Define this macro if the system header files support C++ as well
+     as C.  This macro inhibits the usual method of using system header
+     files in C++, which is to pretend that the file's contents are
+     enclosed in `extern "C" {...}'.
+
+`HANDLE_PRAGMA (STREAM, NODE)'
+     Define this macro if you want to implement any pragmas.  If
+     defined, it is a C expression whose value is 1 if the pragma was
+     handled by the function.  The argument STREAM is the stdio input
+     stream from which the source text can be read.  NODE is the tree
+     node for the identifier after the `#pragma'.
+
+     It is generally a bad idea to implement new uses of `#pragma'.  The
+     only reason to define this macro is for compatibility with other
+     compilers that do support `#pragma' for the sake of any user
+     programs which already use it.
+
+`VALID_MACHINE_DECL_ATTRIBUTE (DECL, ATTRIBUTES, IDENTIFIER, ARGS)'
+     If defined, a C expression whose value is nonzero if IDENTIFIER
+     with arguments ARGS is a valid machine specific attribute for DECL.
+     The attributes in ATTRIBUTES have previously been assigned to DECL.
+
+`VALID_MACHINE_TYPE_ATTRIBUTE (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)'
+     If defined, a C expression whose value is nonzero if IDENTIFIER
+     with arguments ARGS is a valid machine specific attribute for TYPE.
+     The attributes in ATTRIBUTES have previously been assigned to TYPE.
+
+`COMP_TYPE_ATTRIBUTES (TYPE1, TYPE2)'
+     If defined, a C expression whose value is zero if the attributes on
+     TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+     two if they are nearly compatible (which causes a warning to be
+     generated).
+
+`SET_DEFAULT_TYPE_ATTRIBUTES (TYPE)'
+     If defined, a C statement that assigns default attributes to newly
+     defined TYPE.
+
+`DOLLARS_IN_IDENTIFIERS'
+     Define this macro to control use of the character `$' in identifier
+     names.  0 means `$' is not allowed by default; 1 means it is
+     allowed.  1 is the default; there is no need to define this macro
+     in that case.  This macro controls the compiler proper; it does
+     not affect the preprocessor.
+
+`NO_DOLLAR_IN_LABEL'
+     Define this macro if the assembler does not accept the character
+     `$' in label names.  By default constructors and destructors in
+     G++ have `$' in the identifiers.  If this macro is defined, `.' is
+     used instead.
+
+`NO_DOT_IN_LABEL'
+     Define this macro if the assembler does not accept the character
+     `.' in label names.  By default constructors and destructors in G++
+     have names that use `.'.  If this macro is defined, these names
+     are rewritten to avoid `.'.
+
+`DEFAULT_MAIN_RETURN'
+     Define this macro if the target system expects every program's
+     `main' function to return a standard "success" value by default
+     (if no other value is explicitly returned).
+
+     The definition should be a C statement (sans semicolon) to
+     generate the appropriate rtl instructions.  It is used only when
+     compiling the end of `main'.
+
+`HAVE_ATEXIT'
+     Define this if the target system supports the function `atexit'
+     from the ANSI C standard.  If this is not defined, and
+     `INIT_SECTION_ASM_OP' is not defined, a default `exit' function
+     will be provided to support C++.
+
+`EXIT_BODY'
+     Define this if your `exit' function needs to do something besides
+     calling an external function `_cleanup' before terminating with
+     `_exit'.  The `EXIT_BODY' macro is only needed if neither
+     `HAVE_ATEXIT' nor `INIT_SECTION_ASM_OP' are defined.
+
+`INSN_SETS_ARE_DELAYED (INSN)'
+     Define this macro as a C expression that is nonzero if it is safe
+     for the delay slot scheduler to place instructions in the delay
+     slot of INSN, even if they appear to use a resource set or
+     clobbered in INSN.  INSN is always a `jump_insn' or an `insn'; GNU
+     CC knows that every `call_insn' has this behavior.  On machines
+     where some `insn' or `jump_insn' is really a function call and
+     hence has this behavior, you should define this macro.
+
+     You need not define this macro if it would always return zero.
+
+`INSN_REFERENCES_ARE_DELAYED (INSN)'
+     Define this macro as a C expression that is nonzero if it is safe
+     for the delay slot scheduler to place instructions in the delay
+     slot of INSN, even if they appear to set or clobber a resource
+     referenced in INSN.  INSN is always a `jump_insn' or an `insn'.
+     On machines where some `insn' or `jump_insn' is really a function
+     call and its operands are registers whose use is actually in the
+     subroutine it calls, you should define this macro.  Doing so
+     allows the delay slot scheduler to move instructions which copy
+     arguments into the argument registers into the delay slot of INSN.
+
+     You need not define this macro if it would always return zero.
+
+`MACHINE_DEPENDENT_REORG (INSN)'
+     In rare cases, correct code generation requires extra machine
+     dependent processing between the second jump optimization pass and
+     delayed branch scheduling.  On those machines, define this macro
+     as a C statement to act on the code starting at INSN.
+
+`MULTIPLE_SYMBOL_SPACES'
+     Define this macro if in some cases global symbols from one
+     translation unit may not be bound to undefined symbols in another
+     translation unit without user intervention.  For instance, under
+     Microsoft Windows symbols must be explicitly imported from shared
+     libraries (DLLs).
+
+`GIV_SORT_CRITERION (GIV1, GIV2)'
+     In some cases, the strength reduction optimization pass can
+     produce better code if this is defined.  This macro controls the
+     order that induction variables are combined.  This macro is
+     particularly useful if the target has limited addressing modes.
+     For instance, the SH target has only positive offsets in
+     addresses.  Thus sorting to put the smallest address first allows
+     the most combinations to be found.
+
+
+File: gcc.info,  Node: Config,  Next: Fragments,  Prev: Target Macros,  Up: Top
+
+The Configuration File
+**********************
+
+   The configuration file `xm-MACHINE.h' contains macro definitions
+that describe the machine and system on which the compiler is running,
+unlike the definitions in `MACHINE.h', which describe the machine for
+which the compiler is producing output.  Most of the values in
+`xm-MACHINE.h' are actually the same on all machines that GNU CC runs
+on, so large parts of all configuration files are identical.  But there
+are some macros that vary:
+
+`USG'
+     Define this macro if the host system is System V.
+
+`VMS'
+     Define this macro if the host system is VMS.
+
+`FATAL_EXIT_CODE'
+     A C expression for the status code to be returned when the compiler
+     exits after serious errors.
+
+`SUCCESS_EXIT_CODE'
+     A C expression for the status code to be returned when the compiler
+     exits without serious errors.
+
+`HOST_WORDS_BIG_ENDIAN'
+     Defined if the host machine stores words of multi-word values in
+     big-endian order.  (GNU CC does not depend on the host byte
+     ordering within a word.)
+
+`HOST_FLOAT_WORDS_BIG_ENDIAN'
+     Define this macro to be 1 if the host machine stores `DFmode',
+     `XFmode' or `TFmode' floating point numbers in memory with the
+     word containing the sign bit at the lowest address; otherwise,
+     define it to be zero.
+
+     This macro need not be defined if the ordering is the same as for
+     multi-word integers.
+
+`HOST_FLOAT_FORMAT'
+     A numeric code distinguishing the floating point format for the
+     host machine.  See `TARGET_FLOAT_FORMAT' in *Note Storage Layout::
+     for the alternatives and default.
+
+`HOST_BITS_PER_CHAR'
+     A C expression for the number of bits in `char' on the host
+     machine.
+
+`HOST_BITS_PER_SHORT'
+     A C expression for the number of bits in `short' on the host
+     machine.
+
+`HOST_BITS_PER_INT'
+     A C expression for the number of bits in `int' on the host machine.
+
+`HOST_BITS_PER_LONG'
+     A C expression for the number of bits in `long' on the host
+     machine.
+
+`ONLY_INT_FIELDS'
+     Define this macro to indicate that the host compiler only supports
+     `int' bit fields, rather than other integral types, including
+     `enum', as do most C compilers.
+
+`OBSTACK_CHUNK_SIZE'
+     A C expression for the size of ordinary obstack chunks.  If you
+     don't define this, a usually-reasonable default is used.
+
+`OBSTACK_CHUNK_ALLOC'
+     The function used to allocate obstack chunks.  If you don't define
+     this, `xmalloc' is used.
+
+`OBSTACK_CHUNK_FREE'
+     The function used to free obstack chunks.  If you don't define
+     this, `free' is used.
+
+`USE_C_ALLOCA'
+     Define this macro to indicate that the compiler is running with the
+     `alloca' implemented in C.  This version of `alloca' can be found
+     in the file `alloca.c'; to use it, you must also alter the
+     `Makefile' variable `ALLOCA'.  (This is done automatically for the
+     systems on which we know it is needed.)
+
+     If you do define this macro, you should probably do it as follows:
+
+          #ifndef __GNUC__
+          #define USE_C_ALLOCA
+          #else
+          #define alloca __builtin_alloca
+          #endif
+
+     so that when the compiler is compiled with GNU CC it uses the more
+     efficient built-in `alloca' function.
+
+`FUNCTION_CONVERSION_BUG'
+     Define this macro to indicate that the host compiler does not
+     properly handle converting a function value to a
+     pointer-to-function when it is used in an expression.
+
+`HAVE_VPRINTF'
+     Define this if the library function `vprintf' is available on your
+     system.
+
+`MULTIBYTE_CHARS'
+     Define this macro to enable support for multibyte characters in the
+     input to GNU CC.  This requires that the host system support the
+     ANSI C library functions for converting multibyte characters to
+     wide characters.
+
+`HAVE_PUTENV'
+     Define this if the library function `putenv' is available on your
+     system.
+
+`POSIX'
+     Define this if your system is POSIX.1 compliant.
+
+`HAVE_POPEN'
+     Define this if the library function `popen' is available on your
+     system.
+
+`NO_SYS_SIGLIST'
+     Define this if your system *does not* provide the variable
+     `sys_siglist'.
+
+     Some systems do provide this variable, but with a different name
+     such as `_sys_siglist'.  On these systems, you can define
+     `sys_siglist' as a macro which expands into the name actually
+     provided.
+
+     Autoconf normally defines `SYS_SIGLIST_DECLARED' when it finds a
+     declaration of `sys_siglist' in the system header files.  However,
+     when you define `sys_siglist' to a different name autoconf will
+     not automatically define `SYS_SIGLIST_DECLARED'.  Therefore, if
+     you define `sys_siglist', you should also define
+     `SYS_SIGLIST_DECLARED'.
+
+`USE_PROTOTYPES'
+     Define this to be 1 if you know that the host compiler supports
+     prototypes, even if it doesn't define __STDC__, or define it to be
+     0 if you do not want any prototypes used in compiling GNU CC.  If
+     `USE_PROTOTYPES' is not defined, it will be determined
+     automatically whether your compiler supports prototypes by
+     checking if `__STDC__' is defined.
+
+`NO_MD_PROTOTYPES'
+     Define this if you wish suppression of prototypes generated from
+     the machine description file, but to use other prototypes within
+     GNU CC.  If `USE_PROTOTYPES' is defined to be 0, or the host
+     compiler does not support prototypes, this macro has no effect.
+
+`MD_CALL_PROTOTYPES'
+     Define this if you wish to generate prototypes for the `gen_call'
+     or `gen_call_value' functions generated from the machine
+     description file.  If `USE_PROTOTYPES' is defined to be 0, or the
+     host compiler does not support prototypes, or `NO_MD_PROTOTYPES'
+     is defined, this macro has no effect.  As soon as all of the
+     machine descriptions are modified to have the appropriate number
+     of arguments, this macro will be removed.
+
+`NO_STAB_H'
+     Define this if your system does not have the include file
+     `stab.h'.  If `USG' is defined, `NO_STAB_H' is assumed.
+
+`PATH_SEPARATOR'
+     Define this macro to be a C character constant representing the
+     character used to separate components in paths.  The default value
+     is the colon character
+
+`DIR_SEPARATOR'
+     If your system uses some character other than slash to separate
+     directory names within a file specification, define this macro to
+     be a C character constant specifying that character.  When GNU CC
+     displays file names, the character you specify will be used.  GNU
+     CC will test for both slash and the character you specify when
+     parsing filenames.
+
+`OBJECT_SUFFIX'
+     Define this macro to be a C string representing the suffix for
+     object files on your machine.  If you do not define this macro,
+     GNU CC will use `.o' as the suffix for object files.
+
+`EXECUTABLE_SUFFIX'
+     Define this macro to be a C string representing the suffix for
+     executable files on your machine.  If you do not define this
+     macro, GNU CC will use the null string as the suffix for object
+     files.
+
+`COLLECT_EXPORT_LIST'
+     If defined, `collect2' will scan the individual object files
+     specified on its command line and create an export list for the
+     linker.  Define this macro for systems like AIX, where the linker
+     discards object files that are not referenced from `main' and uses
+     export lists.
+
+   In addition, configuration files for system V define `bcopy',
+`bzero' and `bcmp' as aliases.  Some files define `alloca' as a macro
+when compiled with GNU CC, in order to take advantage of the benefit of
+GNU CC's built-in `alloca'.
+
+
+File: gcc.info,  Node: Fragments,  Next: Funding,  Prev: Config,  Up: Top
+
+Makefile Fragments
+******************
+
+   When you configure GNU CC using the `configure' script (*note
+Installation::.), it will construct the file `Makefile' from the
+template file `Makefile.in'.  When it does this, it will incorporate
+makefile fragment files from the `config' directory, named `t-TARGET'
+and `x-HOST'.  If these files do not exist, it means nothing needs to
+be added for a given target or host.
+
+* Menu:
+
+* Target Fragment:: Writing the `t-TARGET' file.
+* Host Fragment::   Writing the `x-HOST' file.
+
+
+File: gcc.info,  Node: Target Fragment,  Next: Host Fragment,  Up: Fragments
+
+The Target Makefile Fragment
+============================
+
+   The target makefile fragment, `t-TARGET', defines special target
+dependent variables and targets used in the `Makefile':
+
+`LIBGCC1'
+     The rule to use to build `libgcc1.a'.  If your target does not
+     need to use the functions in `libgcc1.a', set this to empty.
+     *Note Interface::.
+
+`CROSS_LIBGCC1'
+     The rule to use to build `libgcc1.a' when building a cross
+     compiler.  If your target does not need to use the functions in
+     `libgcc1.a', set this to empty.  *Note Cross Runtime::.
+
+`LIBGCC2_CFLAGS'
+     Compiler flags to use when compiling `libgcc2.c'.
+
+`LIB2FUNCS_EXTRA'
+     A list of source file names to be compiled or assembled and
+     inserted into `libgcc.a'.
+
+`CRTSTUFF_T_CFLAGS'
+     Special flags used when compiling `crtstuff.c'.  *Note
+     Initialization::.
+
+`CRTSTUFF_T_CFLAGS_S'
+     Special flags used when compiling `crtstuff.c' for shared linking.
+     Used if you use `crtbeginS.o' and `crtendS.o' in `EXTRA-PARTS'.
+     *Note Initialization::.
+
+`MULTILIB_OPTIONS'
+     For some targets, invoking GNU CC in different ways produces
+     objects that can not be linked together.  For example, for some
+     targets GNU CC produces both big and little endian code.  For
+     these targets, you must arrange for multiple versions of
+     `libgcc.a' to be compiled, one for each set of incompatible
+     options.  When GNU CC invokes the linker, it arranges to link in
+     the right version of `libgcc.a', based on the command line options
+     used.
+
+     The `MULTILIB_OPTIONS' macro lists the set of options for which
+     special versions of `libgcc.a' must be built.  Write options that
+     are mutually incompatible side by side, separated by a slash.
+     Write options that may be used together separated by a space.  The
+     build procedure will build all combinations of compatible options.
+
+     For example, if you set `MULTILIB_OPTIONS' to `m68000/m68020
+     msoft-float', `Makefile' will build special versions of `libgcc.a'
+     using the sets of options `-m68000', `-m68020', `-msoft-float',
+     `-m68000 -msoft-float', and `-m68020 -msoft-float'.
+
+`MULTILIB_DIRNAMES'
+     If `MULTILIB_OPTIONS' is used, this variable specifies the
+     directory names that should be used to hold the various libraries.
+     Write one element in `MULTILIB_DIRNAMES' for each element in
+     `MULTILIB_OPTIONS'.  If `MULTILIB_DIRNAMES' is not used, the
+     default value will be `MULTILIB_OPTIONS', with all slashes treated
+     as spaces.
+
+     For example, if `MULTILIB_OPTIONS' is specified as `m68000/m68020
+     msoft-float', then the default value of `MULTILIB_DIRNAMES' is
+     `m68000 m68020 msoft-float'.  You may specify a different value if
+     you desire a different set of directory names.
+
+`MULTILIB_MATCHES'
+     Sometimes the same option may be written in two different ways.
+     If an option is listed in `MULTILIB_OPTIONS', GNU CC needs to know
+     about any synonyms.  In that case, set `MULTILIB_MATCHES' to a
+     list of items of the form `option=option' to describe all relevant
+     synonyms.  For example, `m68000=mc68000 m68020=mc68020'.
+
+`MULTILIB_EXCEPTIONS'
+     Sometimes when there are multiple sets of `MULTILIB_OPTIONS' being
+     specified, there are combinations that should not be built.  In
+     that case, set `MULTILIB_EXCEPTIONS' to be all of the switch
+     exceptions in shell case syntax that should not be built.
+
+     For example, in the PowerPC embedded ABI support, it was not
+     desirable to build libraries that compiled with the
+     `-mcall-aixdesc' option and either of the `-mcall-aixdesc' or
+     `-mlittle' options at the same time, and therefore
+     `MULTILIB_EXCEPTIONS' is set to `*mrelocatable/*mcall-aixdesc*
+     *mlittle/*mcall-aixdesc*'.
+
+`MULTILIB_EXTRA_OPTS'
+     Sometimes it is desirable that when building multiple versions of
+     `libgcc.a' certain options should always be passed on to the
+     compiler.  In that case, set `MULTILIB_EXTRA_OPTS' to be the list
+     of options to be used for all builds.
+
+
+File: gcc.info,  Node: Host Fragment,  Prev: Target Fragment,  Up: Fragments
+
+The Host Makefile Fragment
+==========================
+
+   The host makefile fragment, `x-HOST', defines special host dependent
+variables and targets used in the `Makefile':
+
+`CC'
+     The compiler to use when building the first stage.
+
+`CLIB'
+     Additional host libraries to link with.
+
+`OLDCC'
+     The compiler to use when building `libgcc1.a' for a native
+     compilation.
+
+`OLDAR'
+     The version of `ar' to use when building `libgcc1.a' for a native
+     compilation.
+
+`INSTALL'
+     The install program to use.
+
+
+File: gcc.info,  Node: Funding,  Next: Look and Feel,  Prev: Fragments,  Up: Top
+
+Funding Free Software
+*********************
+
+   If you want to have more free software a few years from now, it makes
+sense for you to help encourage people to contribute funds for its
+development.  The most effective approach known is to encourage
+commercial redistributors to donate.
+
+   Users of free software systems can boost the pace of development by
+encouraging for-a-fee distributors to donate part of their selling price
+to free software developers--the Free Software Foundation, and others.
+
+   The way to convince distributors to do this is to demand it and
+expect it from them.  So when you compare distributors, judge them
+partly by how much they give to free software development.  Show
+distributors they must compete to be the one who gives the most.
+
+   To make this approach work, you must insist on numbers that you can
+compare, such as, "We will donate ten dollars to the Frobnitz project
+for each disk sold."  Don't be satisfied with a vague promise, such as
+"A portion of the profits are donated," since it doesn't give a basis
+for comparison.
+
+   Even a precise fraction "of the profits from this disk" is not very
+meaningful, since creative accounting and unrelated business decisions
+can greatly alter what fraction of the sales price counts as profit.
+If the price you pay is $50, ten percent of the profit is probably less
+than a dollar; it might be a few cents, or nothing at all.
+
+   Some redistributors do development work themselves.  This is useful
+too; but to keep everyone honest, you need to inquire how much they do,
+and what kind.  Some kinds of development make much more long-term
+difference than others.  For example, maintaining a separate version of
+a program contributes very little; maintaining the standard version of a
+program for the whole community contributes much.  Easy new ports
+contribute little, since someone else would surely do them; difficult
+ports such as adding a new CPU to the GNU C compiler contribute more;
+major new features or packages contribute the most.
+
+   By establishing the idea that supporting further development is "the
+proper thing to do" when distributing free software for a fee, we can
+assure a steady flow of resources into making more free software.
+
+     Copyright (C) 1994 Free Software Foundation, Inc.
+     Verbatim copying and redistribution of this section is permitted
+     without royalty; alteration is not permitted.
+
+
+File: gcc.info,  Node: Look and Feel,  Next: Copying,  Prev: Funding,  Up: Top
+
+Protect Your Freedom--Fight "Look And Feel"
+*******************************************
+
+     This section is a political message from the League for Programming
+     Freedom to the users of GNU CC.  We have included it here because
+     the issue of interface copyright is important to the GNU project.
+
+   Apple, Lotus, and now CDC have tried to create a new form of legal
+monopoly: a copyright on a user interface.
+
+   An interface is a kind of language--a set of conventions for
+communication between two entities, human or machine.  Until a few years
+ago, the law seemed clear: interfaces were outside the domain of
+copyright, so programmers could program freely and implement whatever
+interface the users demanded.  Imitating de-facto standard interfaces,
+sometimes with improvements, was standard practice in the computer
+field.  These improvements, if accepted by the users, caught on and
+became the norm; in this way, much progress took place.
+
+   Computer users, and most software developers, were happy with this
+state of affairs.  However, large companies such as Apple and Lotus
+would prefer a different system--one in which they can own interfaces
+and thereby rid themselves of all serious competitors.  They hope that
+interface copyright will give them, in effect, monopolies on major
+classes of software.
+
+   Other large companies such as IBM and Digital also favor interface
+monopolies, for the same reason: if languages become property, they
+expect to own many de-facto standard languages.  But Apple and Lotus are
+the ones who have actually sued.  Apple's lawsuit was defeated, for
+reasons only partly related to the general issue of interface copyright.
+
+   Lotus won lawsuits against two small companies, which were thus put
+out of business.  Then Lotus sued Borland; Lotus won in the trial court
+(no surprise, since it was the same court that had ruled for Lotus twice
+before), but the court of appeals ruled in favor of Borland, which was
+assisted by a friend-of-the-court brief from the League for Programming
+Freedom.
+
+   Lotus appealed the case to the Supreme Court, which heard the case
+but was unable to reach a decision.  This failure means that the appeals
+court decision stands, in one portion of the United States, and may
+influence the other appeals courts, but it does not set a nationwide
+precedent.  The battle is not over, and it is not limited to the United
+States.
+
+   The battle is extending into other areas of software as well.  In
+1995 a company that produced a simulator for a CDC computer was shut
+down by a copyright lawsuit, in which CDC charged that the simulator
+infringed the copyright on the manuals for the computer.
+
+   If the monopolists get their way, they will hobble the software
+field:
+
+   * Gratuitous incompatibilities will burden users.  Imagine if each
+     car manufacturer had to design a different way to start, stop, and
+     steer a car.
+
+   * Users will be "locked in" to whichever interface they learn; then
+     they will be prisoners of one supplier, who will charge a
+     monopolistic price.
+
+   * Large companies have an unfair advantage wherever lawsuits become
+     commonplace.  Since they can afford to sue, they can intimidate
+     smaller developers with threats even when they don't really have a
+     case.
+
+   * Interface improvements will come slower, since incremental
+     evolution through creative partial imitation will no longer occur.
+
+   If interface monopolies are accepted, other large companies are
+waiting to grab theirs:
+
+   * Adobe is expected to claim a monopoly on the interfaces of various
+     popular application programs, if Lotus ultimately wins the case
+     against Borland.
+
+   * Open Computing magazine reported a Microsoft vice president as
+     threatening to sue people who imitate the interface of Windows.
+
+   Users invest a great deal of time and money in learning to use
+computer interfaces.  Far more, in fact, than software developers
+invest in developing *and even implementing* the interfaces.  Whoever
+can own an interface, has made its users into captives, and
+misappropriated their investment.
+
+   To protect our freedom from monopolies like these, a group of
+programmers and users have formed a grass-roots political organization,
+the League for Programming Freedom.
+
+   The purpose of the League is to oppose monopolistic practices such as
+interface copyright and software patents.  The League calls for a return
+to the legal policies of the recent past, in which programmers could
+program freely.  The League is not concerned with free software as an
+issue, and is not affiliated with the Free Software Foundation.
+
+   The League's activities include publicizing the issues, as is being
+done here, and filing friend-of-the-court briefs on behalf of
+defendants sued by monopolists.
+
+   The League's membership rolls include Donald Knuth, the foremost
+authority on algorithms, John McCarthy, inventor of Lisp, Marvin Minsky,
+founder of the MIT Artificial Intelligence lab, Guy L. Steele, Jr.,
+author of well-known books on Lisp and C, as well as Richard Stallman,
+the developer of GNU CC.  Please join and add your name to the list.
+Membership dues in the League are $42 per year for programmers, managers
+and professionals; $10.50 for students; $21 for others.
+
+   Activist members are especially important, but members who have no
+time to give are also important.  Surveys at major ACM conferences have
+indicated a vast majority of attendees agree with the League on both
+issues (interface copyrights and software patents).  If just ten percent
+of the programmers who agree with the League join the League, we will
+probably triumph.
+
+   To join, or for more information, send electronic mail to the
+address `lpf@uunet.uu.net' or write to:
+
+     League for Programming Freedom
+     1 Kendall Square #143
+     P.O. Box 9171
+     Cambridge, MA 02139
+
+   In addition to joining the League, here are some suggestions from the
+League for other things you can do to protect your freedom to write
+programs:
+
+   * Tell your friends and colleagues about this issue and how it
+     threatens to ruin the computer industry.
+
+   * Mention that you are a League member in your `.signature', and
+     mention the League's email address for inquiries.
+
+   * Ask the companies you consider working for or working with to make
+     statements against software monopolies, and give preference to
+     those that do.
+
+   * When employers ask you to sign contracts giving them copyright on
+     your work, insist on a clause saying they will not claim the
+     copyright covers imitating the interface.
+
+   * When employers ask you to sign contracts giving them patent rights,
+     insist on clauses saying they can use these rights only
+     defensively.  Don't rely on "company policy," since that can
+     change at any time; don't rely on an individual executive's
+     private word, since that person may be replaced.  Get a commitment
+     just as binding as the commitment they get from you.
+
+   * Write to Congress to explain the importance of these issues.
+
+          House Subcommittee on Intellectual Property
+          2137 Rayburn Bldg
+          Washington, DC 20515
+          
+          Senate Subcommittee on Patents, Trademarks and Copyrights
+          United States Senate
+          Washington, DC 20510
+
+     (These committees have received lots of mail already; let's give
+     them even more.)
+
+   Democracy means nothing if you don't use it.  Stand up and be
+counted!
+
