@@ -1,3 +1,7 @@
+2004-06-04  Jeff Law  <law@redhat.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Fix return value.
+
 2004-06-04  Steven Bosscher  <stevenb@suse.de>
 
 	* except.c (for_each_eh_region): New function.
