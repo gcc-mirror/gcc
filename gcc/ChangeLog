@@ -1,3 +1,12 @@
+2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
+
+ 	PR objc/7993
+	* objc-act.c (is_private): Do not emit the 'instance variable %s
+	is declared private' error.
+	(is_public): Emit the error after calling is_private.
+	(lookup_objc_ivar): If the instance variable is private, return 0
+	- the instance variable is invisible here.
+
 2004-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (-static-libgcc): Explicitly mention
@@ -315,7 +324,7 @@
 	and the remaining even if flag_unsafe_math_optimizations
 	is off but we are under -fno-trapping-math.
 	(fold_relational_const): Integer modes do not honor NaNs.
-	
+
 2004-05-28  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_output_epilogue): Remove redundant code.
@@ -475,13 +484,13 @@
 	calculate_local_reg_bb_info, set_up_bb_rts_numbers, rpost_cmp,
 	modify_bb_reg_pav, calculate_reg_pav,
 	make_accurate_live_analysis): New functions.
-	
+
 2004-05-25  Devang Patel  <dpatel@apple.com>
 
 	* alias.c (init_alias_analysis): Use ggc_calloc instead of
 	xrealloc.
 	(end_alias_analysis): Use ggc_free instead fo free.
-	
+
 2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/15546
@@ -556,7 +565,7 @@
 	(nonzero_bits, cached_nonzero_bits, nonzero_bits1,
 	num_sign_bit_copies, cached_num_sign_bit_copies,
 	num_sign_bit_copies1): New, from combine.c.
-	* rtlhooks.c: New file. 
+	* rtlhooks.c: New file.
 
 2004-05-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
@@ -564,7 +573,7 @@
 	to support 32-bit -mint8 mode.
 
 	* doc/invoke.texi (-mint8): Added documentation for the -mint8
-	option in the AVR architecture. 
+	option in the AVR architecture.
 
 2004-05-24  Mike Stump  <mrs@apple.com>
 
@@ -598,7 +607,7 @@
 
 	PR tree-optimization/14197
 	* builtins.c: Include "tree-gimple.h"
-	(readonly_data_expr): Use get_base_address.  Make sure to call 
+	(readonly_data_expr): Use get_base_address.  Make sure to call
 	decl_readonly_section only on trees it can handle.
 	* tree-gimple.c (get_base_address): Accept STRING_CST and
 	CONSTRUCTOR expressions.
