@@ -95,13 +95,13 @@ namespace std
 	      __len *= 2;
 
 	      if (__testwrite)
-		__ret = this->sputc(__c);
+		__ret = this->sputc(traits_type::to_char_type(__c));
 	      else if (__len <= _M_string.max_size())
 		{
 		  // Force-allocate, re-sync.
 		  _M_string = this->str();
 		  _M_string.reserve(__len);
-		  _M_buf_size = static_cast<int_type>(__len);
+		  _M_buf_size = __len;
 		  _M_really_sync(_M_in_cur - _M_in_beg, 
 				 _M_out_cur - _M_out_beg);
 		  *_M_out_cur = traits_type::to_char_type(__c);
