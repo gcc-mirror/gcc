@@ -1,5 +1,13 @@
 2002-11-13  Michael Koch <konqueror@gmx.de>
 
+	* java/nio/ByteBuffer.java
+	(allocate): New method.
+	(wrap): New method.
+	(put): New method.
+	(get): New method.
+	
+2002-11-13  Michael Koch <konqueror@gmx.de>
+
 	* java/nio/channels/AlreadyConnectedException.java:
 	Removed unneeded import.
 	(AlreadyConnectedException): Documentation added.

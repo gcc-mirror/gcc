@@ -39,4 +39,41 @@ package java.nio;
 
 public abstract class ByteBuffer extends Buffer
 {
+  public static ByteBuffer allocate (int capacity)
+  {
+    return null;
+  }
+ 
+  final public static ByteBuffer wrap (byte[] array, int offset, int length)
+  {
+    return null;
+  }
+
+  final public static ByteBuffer wrap (byte[] array)
+  {
+    return wrap (array, 0, array.length);
+  }
+  
+  final public ByteBuffer put (ByteBuffer src)
+  {
+    while (src.hasRemaining ())
+      put (src.get ());
+    
+    return this;
+  }
+  
+  final public ByteBuffer put (byte[] src, int offset, int length)
+  {
+    for (int i = offset; i < offset + length; i++)
+      put (src [i]);
+    return this;
+  }
+  public final ByteBuffer put (byte[] src)
+  {
+    return put (src, 0, src.length);
+  }
+
+  public abstract byte get ();
+  
+  public abstract ByteBuffer put (byte b);
 }
