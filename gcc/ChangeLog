@@ -1,3 +1,12 @@
+2003-06-09  David Edelsohn  <edelsohn@gnu.org>
+	    Ayal Zaks  <gcchaifa@us.ibm.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add insert_word.
+	(insvsi*): Add insert_word attribute.
+	* config/rs6000/rs6000.c (rs6000_variable_issue): Add TYPE_INSERT_WORD.
+	* config/rs6000/{40x.md,603.md,6xx.md,7450.md,7xx.md,mpc.md,
+	power4.md,rios1.md,rios2.md,rs64.md}: Add insert_word.
+
 2003-06-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold): Fix a comment typo.

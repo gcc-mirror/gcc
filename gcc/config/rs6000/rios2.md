@@ -39,7 +39,7 @@
   "iu1_rios2|iu2_rios2")
 
 (define_insn_reservation "rios2-integer" 1
-  (and (eq_attr "type" "integer")
+  (and (eq_attr "type" "integer,insert_word")
        (eq_attr "cpu" "rios2"))
   "iu1_rios2|iu2_rios2")
 

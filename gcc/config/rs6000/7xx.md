@@ -59,7 +59,7 @@
   "ppc750_du,lsu_7xx")
 
 (define_insn_reservation "ppc750-integer" 1
-  (and (eq_attr "type" "integer")
+  (and (eq_attr "type" "integer,insert_word")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,(iu1_7xx|iu2_7xx)")
 

@@ -13055,7 +13055,8 @@ rs6000_variable_issue (stream, verbose, insn, more)
 	       || type == TYPE_LOAD_EXT || type == TYPE_DELAYED_CR
 	       || type == TYPE_COMPARE || type == TYPE_DELAYED_COMPARE
 	       || type == TYPE_IMUL_COMPARE || type == TYPE_LMUL_COMPARE
-	       || type == TYPE_IDIV || type == TYPE_LDIV)
+	       || type == TYPE_IDIV || type == TYPE_LDIV
+	       || type == TYPE_INSERT_WORD)
 	return more > 2 ? more - 2 : 0;
     }
 

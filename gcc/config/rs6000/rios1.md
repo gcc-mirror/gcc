@@ -51,7 +51,7 @@
   "iu_rios1+fpu_rios1")
 
 (define_insn_reservation "rios1-integer" 1
-  (and (eq_attr "type" "integer")
+  (and (eq_attr "type" "integer,insert_word")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
 
