@@ -1,5 +1,8 @@
 Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (hash_scan_set): An expression is not anticipatible if it
+	is part of a multi-SET insn.
+
 	* cse.c (find_comparison_args): Remove previous change.
 	* ifcvt.c (noce_process_if_block): When moving an insn, remove any
 	REG_EQUAL notes.
