@@ -77,10 +77,7 @@ extern void indent ();
    previous children have end_pc values that are too low. */
 
 static struct eh_range *
-find_handler_in_range (pc, range, child)
-     int pc;
-     struct eh_range *range;
-     register struct eh_range *child;
+find_handler_in_range (int pc, struct eh_range *range, struct eh_range *child)
 {
   for (; child != NULL;  child = child->next_sibling)
     {
@@ -99,8 +96,7 @@ find_handler_in_range (pc, range, child)
 /* Find the inner-most handler that contains PC. */
 
 struct eh_range *
-find_handler (pc)
-     int pc;
+find_handler (int pc)
 {
   struct eh_range *h;
   if (pc >= cache_range_start)
@@ -125,8 +121,7 @@ find_handler (pc)
 /* Recursive helper routine for check_nested_ranges. */
 
 static void
-link_handler (range, outer)
-     struct eh_range *range, *outer;
+link_handler (struct eh_range *range, struct eh_range *outer)
 {
   struct eh_range **ptr;
 
@@ -208,7 +203,7 @@ link_handler (range, outer)
    ensure that exception ranges are properly nested.  */
 
 void
-handle_nested_ranges ()
+handle_nested_ranges (void)
 {
   struct eh_range *ptr, *next;
 
@@ -225,8 +220,7 @@ handle_nested_ranges ()
 /* Free RANGE as well as its children and siblings.  */
 
 static void
-free_eh_ranges (range)
-     struct eh_range *range;
+free_eh_ranges (struct eh_range *range)
 {
   while (range) 
     {
@@ -241,7 +235,7 @@ free_eh_ranges (range)
 /* Called to re-initialize the exception machinery for a new method. */
 
 void
-method_init_exceptions ()
+method_init_exceptions (void)
 {
   free_eh_ranges (&whole_range);
   whole_range.start_pc = 0;
@@ -267,10 +261,7 @@ method_init_exceptions ()
    what the sorting counteracts.  */
 
 void
-add_handler (start_pc, end_pc, handler, type)
-     int start_pc, end_pc;
-     tree handler;
-     tree type;
+add_handler (int start_pc, int end_pc, tree handler, tree type)
 {
   struct eh_range *ptr, *prev = NULL, *h;
 
@@ -306,8 +297,7 @@ add_handler (start_pc, end_pc, handler, type)
 
 /* if there are any handlers for this range, issue start of region */
 static void
-expand_start_java_handler (range)
-  struct eh_range *range;
+expand_start_java_handler (struct eh_range *range)
 {
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   indent ();
@@ -319,8 +309,7 @@ expand_start_java_handler (range)
 }
 
 tree
-prepare_eh_table_type (type)
-    tree type;
+prepare_eh_table_type (tree type)
 {
   tree exp;
 
@@ -347,8 +336,7 @@ prepare_eh_table_type (type)
    exception header.  */
 
 tree
-build_exception_object_ref (type)
-     tree type;
+build_exception_object_ref (tree type)
 {
   tree obj;
 
@@ -365,8 +353,7 @@ build_exception_object_ref (type)
 /* If there are any handlers for this range, isssue end of range,
    and then all handler blocks */
 static void
-expand_end_java_handler (range)
-     struct eh_range *range;
+expand_end_java_handler (struct eh_range *range)
 {  
   tree handler = range->handlers;
   force_poplevels (range->start_pc);
@@ -398,9 +385,7 @@ expand_end_java_handler (range)
 /* Recursive helper routine for maybe_start_handlers. */
 
 static void
-check_start_handlers (range, pc)
-     struct eh_range *range;
-     int pc;
+check_start_handlers (struct eh_range *range, int pc)
 {
   if (range != NULL_EH_RANGE && range->start_pc == pc)
     {
@@ -417,9 +402,7 @@ static struct eh_range *current_range;
    end_pc. */
 
 void
-maybe_start_try (start_pc, end_pc)
-     int start_pc;
-     int end_pc;
+maybe_start_try (int start_pc, int end_pc)
 {
   struct eh_range *range;
   if (! doing_eh (1))
@@ -438,9 +421,7 @@ maybe_start_try (start_pc, end_pc)
    start_pc. */
 
 void
-maybe_end_try (start_pc, end_pc)
-     int start_pc;
-     int end_pc;
+maybe_end_try (int start_pc, int end_pc)
 {
   if (! doing_eh (1))
     return;

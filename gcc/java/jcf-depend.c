@@ -56,7 +56,7 @@ static int print_dummies;
    invocation.  FIXME: we should change our API or just completely use
    the one in mkdeps.h.  */
 void
-jcf_dependency_reset ()
+jcf_dependency_reset (void)
 {
   if (dep_out != NULL)
     {
@@ -73,8 +73,7 @@ jcf_dependency_reset ()
 }
 
 void
-jcf_dependency_set_target (name)
-     const char *name;
+jcf_dependency_set_target (const char *name)
 {
   /* We just handle this the same as an `add_target'.  */
   if (dependencies != NULL && name != NULL)
@@ -82,16 +81,14 @@ jcf_dependency_set_target (name)
 }
 
 void
-jcf_dependency_add_target (name)
-     const char *name;
+jcf_dependency_add_target (const char *name)
 {
   if (dependencies != NULL)
     deps_add_target (dependencies, name, 1);
 }
 
 void
-jcf_dependency_set_dep_file (name)
-     const char *name;
+jcf_dependency_set_dep_file (const char *name)
 {
   assert (dep_out != stdout);
   if (dep_out)
@@ -103,9 +100,7 @@ jcf_dependency_set_dep_file (name)
 }
 
 void
-jcf_dependency_add_file (filename, system_p)
-     const char *filename;
-     int system_p;
+jcf_dependency_add_file (const char *filename, int system_p)
 {
   if (! dependencies)
     return;
@@ -118,8 +113,7 @@ jcf_dependency_add_file (filename, system_p)
 }
 
 void
-jcf_dependency_init (system_p)
-     int system_p;
+jcf_dependency_init (int system_p)
 {
   assert (! dependencies);
   system_files = system_p;
@@ -127,13 +121,13 @@ jcf_dependency_init (system_p)
 }
 
 void
-jcf_dependency_print_dummies ()
+jcf_dependency_print_dummies (void)
 {
   print_dummies = 1;
 }
 
 void
-jcf_dependency_write ()
+jcf_dependency_write (void)
 {
   if (! dep_out)
     return;

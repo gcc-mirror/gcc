@@ -292,10 +292,8 @@ const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 /* Process an option that can accept a `no-' form.
    Return 1 if option found, 0 otherwise.  */
 static int
-process_option_with_no (p, table, table_size)
-     const char *p;
-     const struct string_option *table;
-     int table_size;
+process_option_with_no (const char *p, const struct string_option *table,
+			int table_size)
 {
   int j;
 
@@ -322,9 +320,7 @@ process_option_with_no (p, table, table_size)
  * return 0, but do not complain if the option is not recognized.
  */
 static int
-java_decode_option (argc, argv)
-     int argc __attribute__ ((__unused__));
-     char **argv;
+java_decode_option (int argc __attribute__ ((__unused__)), char **argv)
 {
   char *p = argv[0];
 
@@ -509,8 +505,7 @@ java_decode_option (argc, argv)
 FILE *finput;
 
 static const char *
-java_init (filename)
-     const char *filename;
+java_init (const char *filename)
 {
 #if 0
   extern int flag_minimal_debug;
@@ -599,7 +594,7 @@ java_init (filename)
 }
 
 static void
-java_finish ()
+java_finish (void)
 {
   jcf_dependency_write ();
 }
@@ -617,9 +612,7 @@ static int decl_bufpos = 0;
    It length is given by LEN;  -1 means the string is nul-terminated. */
 
 static void
-put_decl_string (str, len)
-     const char *str;
-     int len;
+put_decl_string (const char *str, int len)
 {
   if (len < 0)
     len = strlen (str);
@@ -643,8 +636,7 @@ put_decl_string (str, len)
 /* Append to decl_buf a printable name for NODE. */
 
 static void
-put_decl_node (node)
-     tree node;
+put_decl_node (tree node)
 {
   int was_pointer = 0;
   if (TREE_CODE (node) == POINTER_TYPE)
@@ -719,9 +711,7 @@ put_decl_node (node)
    which is also called directly by java_print_error_function. */
 
 const char *
-lang_printable_name (decl, v)
-     tree decl;
-     int v  __attribute__ ((__unused__));
+lang_printable_name (tree decl, int v  __attribute__ ((__unused__)))
 {
   decl_bufpos = 0;
   put_decl_node (decl);
@@ -733,9 +723,7 @@ lang_printable_name (decl, v)
    space to the DECL name string -- With Leading Space.  */
 
 const char *
-lang_printable_name_wls (decl, v)
-     tree decl;
-     int v  __attribute__ ((__unused__));
+lang_printable_name_wls (tree decl, int v  __attribute__ ((__unused__)))
 {
   decl_bufpos = 1;
   put_decl_node (decl);
@@ -750,9 +738,8 @@ lang_printable_name_wls (decl, v)
 static GTY(()) tree last_error_function_context;
 static GTY(()) tree last_error_function;
 static void
-java_print_error_function (context, file)
-     diagnostic_context *context __attribute__((__unused__));
-     const char *file;
+java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
+			   const char *file)
 {
   /* Don't print error messages with bogus function prototypes.  */
   if (inhibit_error_function_printing)
@@ -796,14 +783,13 @@ java_print_error_function (context, file)
    2, function prototypes are fully resolved and can be printed when
    reporting errors.  */
 
-void lang_init_source (level)
-     int level;
+void lang_init_source (int level)
 {
   inhibit_error_function_printing = (level == 1);
 }
 
 static void
-java_init_options ()
+java_init_options (void)
 {
   flag_bounds_check = 1;
   flag_exceptions = 1;
@@ -814,7 +800,7 @@ java_init_options ()
 }
 
 static bool
-java_can_use_bit_fields_p ()
+java_can_use_bit_fields_p (void)
 {
   /* The bit-field optimizations cause problems when generating class
      files.  */
@@ -823,7 +809,7 @@ java_can_use_bit_fields_p ()
 
 /* Post-switch processing.  */
 static bool
-java_post_options ()
+java_post_options (void)
 {
  /* Use tree inlining if possible.  Function instrumentation is only
      done in the RTL level, so we disable tree inlining.  */
@@ -845,8 +831,7 @@ java_post_options ()
 /* Return either DECL or its known constant value (if it has one).  */
 
 tree
-decl_constant_value (decl)
-     tree decl;
+decl_constant_value (tree decl)
 {
   if (/* Don't change a variable array bound or initial value to a constant
 	 in a place where a variable is invalid.  */
@@ -868,12 +853,11 @@ decl_constant_value (decl)
 /* Walk the language specific tree nodes during inlining.  */
 
 static tree
-java_tree_inlining_walk_subtrees (tp,subtrees,func,data,htab)
-     tree *tp ATTRIBUTE_UNUSED;
-     int *subtrees ATTRIBUTE_UNUSED;
-     walk_tree_fn func ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
-     void *htab ATTRIBUTE_UNUSED;
+java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
+				  int *subtrees ATTRIBUTE_UNUSED,
+				  walk_tree_fn func ATTRIBUTE_UNUSED,
+				  void *data ATTRIBUTE_UNUSED,
+				  void *htab ATTRIBUTE_UNUSED)
 {
   enum tree_code code;
   tree result;
@@ -914,8 +898,7 @@ java_tree_inlining_walk_subtrees (tp,subtrees,func,data,htab)
 
 /* Called from unsafe_for_reeval.  */
 static int
-java_unsafe_for_reeval (t)
-     tree t;
+java_unsafe_for_reeval (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -961,9 +944,7 @@ java_unsafe_for_reeval (t)
    to one in the scope of the method being inlined into.  */
 
 static int
-merge_init_test_initialization (entry, x)
-     void * * entry;
-     void * x;
+merge_init_test_initialization (void **entry, void *x)
 {
   struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
   splay_tree decl_map = (splay_tree)x;
@@ -991,9 +972,7 @@ merge_init_test_initialization (entry, x)
    inlining.  */
 
 void
-java_inlining_merge_static_initializers (fn, decl_map)
-     tree fn;
-     void *decl_map;
+java_inlining_merge_static_initializers (tree fn, void *decl_map)
 {
   htab_traverse 
     (DECL_FUNCTION_INIT_TEST_TABLE (fn),
@@ -1007,9 +986,7 @@ java_inlining_merge_static_initializers (fn, decl_map)
    pre-existing one.  */
 
 static int
-inline_init_test_initialization (entry, x)
-     void * * entry;
-     void * x;
+inline_init_test_initialization (void **entry, void *x)
 {
   struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
   splay_tree decl_map = (splay_tree)x;
@@ -1032,9 +1009,7 @@ inline_init_test_initialization (entry, x)
    into, create a new mapping for it.  */
 
 void
-java_inlining_map_static_initializers (fn, decl_map)
-     tree fn;
-     void *decl_map;
+java_inlining_map_static_initializers (tree fn, void *decl_map)
 {
   htab_traverse 
     (DECL_FUNCTION_INIT_TEST_TABLE (fn),
@@ -1044,9 +1019,7 @@ java_inlining_map_static_initializers (fn, decl_map)
 /* Avoid voluminous output for deep recursion of compound exprs.  */
 
 static void
-dump_compound_expr (di, t)
-     dump_info_p di;
-     tree t;
+dump_compound_expr (dump_info_p di, tree t)
 {
   int i;
 
@@ -1072,9 +1045,7 @@ dump_compound_expr (di, t)
 }
   
 static int
-java_dump_tree (dump_info, t)
-     void *dump_info;
-     tree t;
+java_dump_tree (void *dump_info, tree t)
 {
   enum tree_code code;
   dump_info_p di = (dump_info_p) dump_info;

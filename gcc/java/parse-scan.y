@@ -1176,7 +1176,7 @@ constant_expression:
 /* Create a new parser context */
 
 void
-java_push_parser_context ()
+java_push_parser_context (void)
 {
   struct parser_ctxt *new = xcalloc (1, sizeof (struct parser_ctxt));
 
@@ -1185,8 +1185,7 @@ java_push_parser_context ()
 }  
 
 static void
-push_class_context (name)
-    const char *name;
+push_class_context (const char *name)
 {
   struct class_context *ctx;
 
@@ -1197,7 +1196,7 @@ push_class_context (name)
 }
 
 static void
-pop_class_context ()
+pop_class_context (void)
 {
   struct class_context *ctx;
 
@@ -1217,9 +1216,7 @@ pop_class_context ()
 /* Recursively construct the class name.  This is just a helper
    function for get_class_name().  */
 static int
-make_class_name_recursive (stack, ctx)
-     struct obstack *stack;
-     struct class_context *ctx;
+make_class_name_recursive (struct obstack *stack, struct class_context *ctx)
 {
   if (! ctx)
     return 0;
@@ -1243,7 +1240,7 @@ make_class_name_recursive (stack, ctx)
 
 /* Return a newly allocated string holding the name of the class.  */
 static char *
-get_class_name ()
+get_class_name (void)
 {
   char *result;
   int last_was_digit;
@@ -1287,8 +1284,7 @@ get_class_name ()
 /* Actions defined here */
 
 static void
-report_class_declaration (name)
-     const char * name;
+report_class_declaration (const char * name)
 {
   extern int flag_dump_class, flag_list_filename;
 
@@ -1314,8 +1310,7 @@ report_class_declaration (name)
 }
 
 static void
-report_main_declaration (declarator)
-     struct method_declarator *declarator;
+report_main_declaration (struct method_declarator *declarator)
 {
   extern int flag_find_main;
 
@@ -1342,7 +1337,7 @@ report_main_declaration (declarator)
 }
 
 void
-report ()
+report (void)
 {
   extern int flag_complexity;
   if (flag_complexity)
@@ -1351,7 +1346,7 @@ report ()
 
 /* Reset global status used by the report functions.  */
 
-void reset_report ()
+void reset_report (void)
 {
   previous_output = 0;
   package_name = NULL;
@@ -1360,8 +1355,7 @@ void reset_report ()
 }
 
 void
-yyerror (msg)
-     const char *msg ATTRIBUTE_UNUSED;
+yyerror (const char *msg ATTRIBUTE_UNUSED)
 {
   fprintf (stderr, "%s: %d: %s\n", input_filename, lineno, msg);
   exit (1);

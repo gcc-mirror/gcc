@@ -800,14 +800,14 @@ static const struct option options[] =
 };
 
 static void
-usage ()
+usage (void)
 {
   fprintf (stderr, "Try `jcf-dump --help' for more information.\n");
   exit (1);
 }
 
 static void
-help ()
+help (void)
 {
   printf ("Usage: jcf-dump [OPTION]... CLASS...\n\n");
   printf ("Display contents of a class file in readable form.\n\n");
@@ -830,7 +830,7 @@ help ()
 }
 
 static void
-version ()
+version (void)
 {
   printf ("jcf-dump (GCC) %s\n\n", version_string);
   printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");

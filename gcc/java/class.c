@@ -105,9 +105,7 @@ static GTY(()) tree class_roots[5];
    appropriate node does not exist.  */
 
 static assume_compiled_node *
-find_assume_compiled_node (node, ident)
-     assume_compiled_node *node;
-     const char *ident;
+find_assume_compiled_node (assume_compiled_node *node, const char *ident)
 {
   while (node)
     {
@@ -146,9 +144,7 @@ find_assume_compiled_node (node, ident)
    if EXCLUDEP is nonzero.  */
 
 void
-add_assume_compiled (ident, excludep)
-     const char *ident;
-     int excludep;
+add_assume_compiled (const char *ident, int excludep)
 {
   int len;
   assume_compiled_node *parent;
@@ -199,8 +195,7 @@ add_assume_compiled (ident, excludep)
    should assume has been compiled to object code.  */
 
 static int
-assume_compiled (ident)
-     const char *ident;
+assume_compiled (const char *ident)
 {
   assume_compiled_node *i;
   int result;
@@ -221,13 +216,12 @@ assume_compiled (ident)
    Also, PREFIX is prepended, and SUFFIX is appended. */
 
 tree
-ident_subst (old_name, old_length, prefix, old_char, new_char, suffix)
-     const char* old_name;
-     int old_length;
-     const char *prefix;
-     int old_char;
-     int new_char;
-     const char *suffix;
+ident_subst (const char* old_name,
+	     int old_length,
+	     const char *prefix,
+	     int old_char,
+	     int new_char,
+	     const char *suffix)
 {
   int prefix_len = strlen (prefix);
   int suffix_len = strlen (suffix);
@@ -254,12 +248,11 @@ ident_subst (old_name, old_length, prefix, old_char, new_char, suffix)
    Also, PREFIX is prepended, and SUFFIX is appended. */
 
 tree
-identifier_subst (old_id, prefix, old_char, new_char, suffix)
-     const tree old_id;
-     const char *prefix;
-     int old_char;
-     int new_char;
-     const char *suffix;
+identifier_subst (const tree old_id,
+		  const char *prefix,
+		  int old_char,
+		  int new_char,
+		  const char *suffix)
 {
   return ident_subst (IDENTIFIER_POINTER (old_id), IDENTIFIER_LENGTH (old_id),
 		      prefix, old_char, new_char, suffix);
@@ -269,9 +262,7 @@ identifier_subst (old_id, prefix, old_char, new_char, suffix)
    prefixed by PREFIX. */
 
 tree
-mangled_classname (prefix, type)
-  const char *prefix;
-  tree type;
+mangled_classname (const char *prefix, tree type)
 {
   tree ident = TYPE_NAME (type);
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
@@ -280,7 +271,7 @@ mangled_classname (prefix, type)
 }
 
 tree
-make_class ()
+make_class (void)
 {
   tree type;
   type = make_node (RECORD_TYPE);
@@ -295,8 +286,7 @@ make_class ()
    return a corresponding IDENTIFIER_NODE, except using '.' as separator. */
 
 tree
-unmangle_classname (name, name_length)
-     const char *name;  int name_length;
+unmangle_classname (const char *name, int name_length)
 {
   tree to_return = ident_subst (name, name_length, "", '/', '.', "");
   /* It's not sufficient to compare to_return and get_identifier
@@ -315,8 +305,7 @@ unmangle_classname (name, name_length)
 }
 
 tree
-push_class (class_type, class_name)
-     tree class_type, class_name;
+push_class (tree class_type, tree class_name)
 {
   tree decl, signature;
   const char *save_input_filename = input_filename;
@@ -351,8 +340,7 @@ push_class (class_type, class_name)
    fill in field or methods, or do layout_type. */
 
 tree
-lookup_class (name)
-     tree name;
+lookup_class (tree name)
 {
   tree decl = IDENTIFIER_CLASS_VALUE (name);
   if (decl == NULL_TREE)
@@ -361,11 +349,8 @@ lookup_class (name)
 }
 
 void
-set_super_info (access_flags, this_class, super_class, interfaces_count)
-     int access_flags;
-     tree this_class;
-     tree super_class;
-     int interfaces_count;
+set_super_info (int access_flags, tree this_class,
+		tree super_class, int interfaces_count)
 {
   int total_supers = interfaces_count;
   tree class_decl = TYPE_NAME (this_class);
@@ -388,9 +373,7 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
 }
 
 void
-set_class_decl_access_flags (access_flags, class_decl)
-     int access_flags;
-     tree class_decl;
+set_class_decl_access_flags (int access_flags, tree class_decl)
 {
   if (access_flags & ACC_PUBLIC)    CLASS_PUBLIC (class_decl) = 1;
   if (access_flags & ACC_FINAL)     CLASS_FINAL (class_decl) = 1;
@@ -407,8 +390,7 @@ set_class_decl_access_flags (access_flags, class_decl)
    direct sub-classes of Object are 1, and so on. */
 
 int
-class_depth (clas)
-     tree clas;
+class_depth (tree clas)
 {
   int depth = 0;
   if (! CLASS_LOADED_P (clas))
@@ -426,8 +408,7 @@ class_depth (clas)
 /* Return true iff TYPE2 is an interface that extends interface TYPE1 */
 
 int
-interface_of_p (type1, type2)
-     tree type1, type2;
+interface_of_p (tree type1, tree type2)
 {
   int n, i;
   tree basetype_vec;
@@ -454,8 +435,7 @@ interface_of_p (type1, type2)
 /* Return true iff TYPE1 inherits from TYPE2. */
 
 int
-inherits_from_p (type1, type2)
-     tree type1, type2;
+inherits_from_p (tree type1, tree type2)
 {
   while (type1 != NULL_TREE && TREE_CODE (type1) == RECORD_TYPE)
     {
@@ -469,8 +449,7 @@ inherits_from_p (type1, type2)
 /* Return a 1 iff TYPE1 is an enclosing context for TYPE2 */
 
 int
-enclosing_context_p (type1, type2)
-     tree type1, type2;
+enclosing_context_p (tree type1, tree type2)
 {
   if (!INNER_CLASS_TYPE_P (type2))
     return 0;
@@ -490,8 +469,7 @@ enclosing_context_p (type1, type2)
 /* Return 1 iff there exists a common enclosing context between TYPE1
    and TYPE2.  */
 
-int common_enclosing_context_p (type1, type2)
-     tree type1, type2;
+int common_enclosing_context_p (tree type1, tree type2)
 {
   if (!PURE_INNER_CLASS_TYPE_P (type1) || !PURE_INNER_CLASS_TYPE_P (type2))
     return 0;
@@ -512,9 +490,7 @@ int common_enclosing_context_p (type1, type2)
 }
 
 static void
-add_interface_do (basetype_vec, interface_class, i)
-     tree basetype_vec, interface_class;
-     int i;
+add_interface_do (tree basetype_vec, tree interface_class, int i)
 {
   tree interface_binfo = make_tree_vec (6);
   BINFO_TYPE (interface_binfo) = interface_class;
@@ -530,8 +506,7 @@ add_interface_do (basetype_vec, interface_class, i)
    if attempt is made to add it twice. */
 
 tree
-maybe_add_interface (this_class, interface_class)
-     tree this_class, interface_class;
+maybe_add_interface (tree this_class, tree interface_class)
 {
   tree basetype_vec = TYPE_BINFO_BASETYPES (this_class);
   int i;
@@ -555,8 +530,7 @@ maybe_add_interface (this_class, interface_class)
 /* Add the INTERFACE_CLASS as one of the interfaces of THIS_CLASS. */
 
 void
-add_interface (this_class, interface_class)
-     tree this_class, interface_class;
+add_interface (tree this_class, tree interface_class)
 {
   tree basetype_vec = TYPE_BINFO_BASETYPES (this_class);
   int i;
@@ -579,9 +553,7 @@ add_interface (this_class, interface_class)
    in the list (*LIST) whose DECL_NAME is NAME. */
 
 static tree *
-find_named_method (list, name)
-     tree *list;
-     tree name;
+find_named_method (tree *list, tree name)
 {
   while (*list && DECL_NAME (*list) != name)
     list = &TREE_CHAIN (*list);
@@ -590,10 +562,7 @@ find_named_method (list, name)
 #endif
 
 static tree
-build_java_method_type (fntype, this_class, access_flags)
-     tree fntype;
-     tree this_class;
-     int access_flags;
+build_java_method_type (tree fntype, tree this_class, int access_flags)
 {
   if (access_flags & ACC_STATIC)
     return fntype;
@@ -601,11 +570,7 @@ build_java_method_type (fntype, this_class, access_flags)
 }
 
 tree
-add_method_1 (this_class, access_flags, name, function_type)
-     tree this_class;
-     int access_flags;
-     tree name;
-     tree function_type;
+add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
 {
   tree method_type, fndecl;
 
@@ -667,11 +632,7 @@ add_method_1 (this_class, access_flags, name, function_type)
    Its signature (mangled type) is METHOD_SIG (an IDENTIFIER_NODE). */
 
 tree
-add_method (this_class, access_flags, name, method_sig)
-     tree this_class;
-     int access_flags;
-     tree name;
-     tree method_sig;
+add_method (tree this_class, int access_flags, tree name, tree method_sig)
 {
   tree function_type, fndecl;
   const unsigned char *sig
@@ -687,11 +648,7 @@ add_method (this_class, access_flags, name, method_sig)
 }
 
 tree
-add_field (class, name, field_type, flags)
-     tree class;
-     tree name;
-     tree field_type;
-     int flags;
+add_field (tree class, tree name, tree field_type, int flags)
 {
   int is_static = (flags & ACC_STATIC) != 0;
   tree field;
@@ -723,8 +680,7 @@ add_field (class, name, field_type, flags)
 /* Associate a constant value CONSTANT with VAR_DECL FIELD. */
 
 void
-set_constant_value (field, constant)
-     tree field, constant;
+set_constant_value (tree field, tree constant)
 {
   if (field == NULL_TREE)
     warning ("misplaced ConstantValue attribute (not in any field)");
@@ -751,9 +707,7 @@ set_constant_value (field, constant)
 
 #if 0
 int
-strLengthUtf8 (str, len)
-     char *str;
-     int len;
+strLengthUtf8 (char *str, int len)
 {
   register unsigned char* ptr = (unsigned char*) str;
   register unsigned char *limit = ptr + len;
@@ -772,9 +726,7 @@ strLengthUtf8 (str, len)
  */
 
 static int32
-hashUtf8String (str, len)
-     const char *str;
-     int len;
+hashUtf8String (const char *str, int len)
 {
   register const unsigned char* ptr = (const unsigned char*) str;
   register const unsigned char *limit = ptr + len;
@@ -794,9 +746,7 @@ hashUtf8String (str, len)
    compiled Java resource, which is accessed by the runtime using
    NAME.  */
 void
-compile_resource_file (name, filename)
-     char *name;
-     const char *filename;
+compile_resource_file (char *name, const char *filename)
 {
   struct stat stat_buf;
   int fd;
@@ -898,8 +848,7 @@ compile_resource_file (name, filename)
 tree utf8_decl_list = NULL_TREE;
 
 tree
-build_utf8_ref (name)
-     tree name;
+build_utf8_ref (tree name)
 {
   const char * name_ptr = IDENTIFIER_POINTER(name);
   int name_len = IDENTIFIER_LENGTH(name);
@@ -971,8 +920,7 @@ build_utf8_ref (name)
    Also handles primitive types and array types. */
 
 tree
-build_class_ref (type)
-     tree type;
+build_class_ref (tree type)
 {
   int is_compiled = is_compiled_class (type);
   if (is_compiled)
@@ -1073,8 +1021,7 @@ build_class_ref (type)
 }
 
 tree
-build_static_field_ref (fdecl)
-     tree fdecl;
+build_static_field_ref (tree fdecl)
 {
   tree fclass = DECL_CONTEXT (fdecl);
   int is_compiled = is_compiled_class (fclass);
@@ -1124,8 +1071,7 @@ build_static_field_ref (fdecl)
 }
 
 int
-get_access_flags_from_decl (decl)
-     tree decl;
+get_access_flags_from_decl (tree decl)
 {
   int access_flags = 0;
   if (TREE_CODE (decl) == FIELD_DECL || TREE_CODE (decl) == VAR_DECL)
@@ -1196,8 +1142,7 @@ get_access_flags_from_decl (decl)
 }
 
 static tree
-make_field_value (fdecl)
-  tree fdecl;
+make_field_value (tree fdecl)
 {
   tree finit;
   int flags;
@@ -1241,8 +1186,7 @@ make_field_value (fdecl)
 }
 
 static tree
-make_method_value (mdecl)
-     tree mdecl;
+make_method_value (tree mdecl)
 {
   static int method_name_count = 0;
   tree minit;
@@ -1318,8 +1262,7 @@ make_method_value (mdecl)
 }
 
 static tree
-get_dispatch_vector (type)
-     tree type;
+get_dispatch_vector (tree type)
 {
   tree vtable = TYPE_VTABLE (type);
   if (vtable == NULL)
@@ -1350,8 +1293,7 @@ get_dispatch_vector (type)
 }
 
 static tree
-get_dispatch_table (type, this_class_addr)
-     tree type, this_class_addr;
+get_dispatch_table (tree type, tree this_class_addr)
 {
   int abstract_p = CLASS_ABSTRACT (TYPE_NAME (type));
   tree vtable = get_dispatch_vector (type);
@@ -1426,8 +1368,7 @@ get_dispatch_table (type, this_class_addr)
 }
 
 void
-make_class_data (type)
-     tree type;
+make_class_data (tree type)
 {
   tree decl, cons, temp;
   tree field, fields_decl;
@@ -1685,7 +1626,7 @@ make_class_data (type)
 }
 
 void
-finish_class ()
+finish_class (void)
 {
   tree method;
   tree type_methods = TYPE_METHODS (current_class);
@@ -1729,8 +1670,7 @@ finish_class ()
    return 0 if we cannot assume that CLASS is compiled.
    Returns 1 for primitive and 0 for array types.  */
 int
-is_compiled_class (class)
-     tree class;
+is_compiled_class (tree class)
 {
   int seen_in_zip;
   if (TREE_CODE (class) == POINTER_TYPE)
@@ -1776,8 +1716,7 @@ is_compiled_class (class)
 /* Build a VAR_DECL for the dispatch table (vtable) for class TYPE. */
 
 tree
-build_dtable_decl (type)
-     tree type;
+build_dtable_decl (tree type)
 {
   tree dtype;
 
@@ -1835,8 +1774,7 @@ build_dtable_decl (type)
    fields inherited from SUPER_CLASS. */
 
 void
-push_super_field (this_class, super_class)
-     tree this_class, super_class;
+push_super_field (tree this_class, tree super_class)
 {
   tree base_decl;
   /* Don't insert the field if we're just re-laying the class out. */ 
@@ -1853,9 +1791,7 @@ push_super_field (this_class, super_class)
 /* Handle the different manners we may have to lay out a super class.  */
 
 static tree
-maybe_layout_super_class (super_class, this_class)
-     tree super_class;
-     tree this_class;
+maybe_layout_super_class (tree super_class, tree this_class)
 {
   if (TREE_CODE (super_class) == RECORD_TYPE)
     {
@@ -1886,8 +1822,7 @@ maybe_layout_super_class (super_class, this_class)
 }
 
 void
-layout_class (this_class)
-     tree this_class;
+layout_class (tree this_class)
 {
   tree super_class = CLASSTYPE_SUPER (this_class);
   tree field;
@@ -1990,8 +1925,7 @@ layout_class (this_class)
 }
 
 void
-layout_class_methods (this_class)
-     tree this_class;
+layout_class_methods (tree this_class)
 {
   tree method_decl, dtable_count;
   tree super_class;
@@ -2028,8 +1962,8 @@ layout_class_methods (this_class)
    DTABLE_COUNT. Also mangle the method's name. */
 
 tree
-layout_class_method (this_class, super_class, method_decl, dtable_count)
-     tree this_class, super_class, method_decl, dtable_count;
+layout_class_method (tree this_class, tree super_class,
+		     tree method_decl, tree dtable_count)
 {
   tree method_name = DECL_NAME (method_decl);
 
@@ -2087,7 +2021,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 }
 
 void
-register_class ()
+register_class (void)
 {
   /* END does not need to be registered with the garbage collector
      because it always points into the list given by REGISTERED_CLASS,
@@ -2114,7 +2048,7 @@ register_class ()
    class in this file.  */
 
 void
-emit_register_classes ()
+emit_register_classes (void)
 {
   /* ??? This isn't quite the correct test.  We also have to know
      that the target is using gcc's crtbegin/crtend objects rather
@@ -2205,7 +2139,7 @@ build_method_symbols_entry (tree method)
 /* Emit the offset symbols table for indirect virtual dispatch. */
 
 void
-emit_offset_symbol_table ()
+emit_offset_symbol_table (void)
 {
   tree method_list, method, table, list, null_symbol;
   tree otable_bound, otable_array_type;
@@ -2260,7 +2194,7 @@ emit_offset_symbol_table ()
 }
 
 void
-init_class_processing ()
+init_class_processing (void)
 {
   registerClass_libfunc = gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterClass");
   registerResource_libfunc = 
@@ -2278,17 +2212,14 @@ static int java_treetreehash_compare (const void *, const void *);
 #define JAVA_TREEHASHHASH_H(t) (htab_hash_pointer (t))
 
 static hashval_t
-java_treetreehash_hash (k_p)
-     const void *k_p;
+java_treetreehash_hash (const void *k_p)
 {
   struct treetreehash_entry *k = (struct treetreehash_entry *) k_p;
   return JAVA_TREEHASHHASH_H (k->key);
 }
 
 static int
-java_treetreehash_compare (k1_p, k2_p)
-     const void * k1_p;
-     const void * k2_p;
+java_treetreehash_compare (const void * k1_p, const void * k2_p)
 {
   struct treetreehash_entry * k1 = (struct treetreehash_entry *) k1_p;
   tree k2 = (tree) k2_p;
@@ -2296,9 +2227,7 @@ java_treetreehash_compare (k1_p, k2_p)
 }
 
 tree 
-java_treetreehash_find (ht, t)
-     htab_t ht;
-     tree t;
+java_treetreehash_find (htab_t ht, tree t)
 {
   struct treetreehash_entry *e;
   hashval_t hv = JAVA_TREEHASHHASH_H (t);
@@ -2310,9 +2239,7 @@ java_treetreehash_find (ht, t)
 }
 
 tree *
-java_treetreehash_new (ht, t)
-     htab_t ht;
-     tree t;
+java_treetreehash_new (htab_t ht, tree t)
 {
   void **e;
   struct treetreehash_entry *tthe;
@@ -2331,9 +2258,7 @@ java_treetreehash_new (ht, t)
 }
 
 htab_t
-java_treetreehash_create (size, gc)
-     size_t size;
-     int gc;
+java_treetreehash_create (size_t size, int gc)
 {
   if (gc)
     return htab_create_ggc (size, java_treetreehash_hash,
