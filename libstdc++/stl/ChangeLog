@@ -1,5 +1,6 @@
 1998-10-11  Mark Mitchell  <mark@markmitchell.com>
 
+	* stl_config.h (__SGI_STL_USE_AUTO_PTR_CONVERSIONS): Define.
 	* memory (auto_ptr::operator auto_ptr_ref<_Tp1>): Fix typo.
 	(auto_ptr::operator auto_ptr<_Tp1>): Add missing 
 	semicolon.
