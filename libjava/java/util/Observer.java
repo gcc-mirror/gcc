@@ -56,5 +56,5 @@ public interface Observer
    * @param observable the Observable object that changed
    * @param arg arbitrary information, usually relating to the change
    */
-  public void update(Observable observable, Object arg);
+  void update(Observable observable, Object arg);
 }

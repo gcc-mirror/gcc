@@ -1,5 +1,13 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/Map.java,
+	java/util/Observer.java,
+	java/util/zip/Checksum.java,
+	java/util/zip/ZipConstants.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/AttributedCharacterIterator.java,
 	java/text/CharacterIterator.java:
 	Removed redundant modifiers.
