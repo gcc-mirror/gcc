@@ -1,3 +1,8 @@
+Tue Mar  4 11:25:22 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (rtx_for_function_call): Take the address as an argument
+	(expand_call): Do not modify the expression.
+
 2003-03-04  Kevin Buettner  <kevinb@redhat.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Don't return NULL_RTX for
@@ -24,7 +29,6 @@
 	* doc/install.texi (Specific): Update entry for powerpc-darwin.
 
 Mon Mar  3 19:09:06 CET 2003  Jan Hubicka  <jh@suse.cz>
-
 	* toplev.c (rest_of_compilation):  Avoid cfg_cleanup calls when not
 	optimizing.
 
