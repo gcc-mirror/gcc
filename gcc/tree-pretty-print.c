@@ -55,8 +55,6 @@ static void dump_generic_bb_buff (pretty_printer *, basic_block, int, int);
    lang_hooks.decl_printable_name (TREE_OPERAND (NODE, 0), 1) : \
    lang_hooks.decl_printable_name (NODE, 1))
 
-#define MASK_POINTER(P)	((unsigned)((unsigned long)(P) & 0xffff))
-
 static pretty_printer buffer;
 static int initialized = 0;
 static bool dumping_stmts;
@@ -1401,6 +1399,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, SSA_NAME_VAR (node), spc, flags, false);
       pp_string (buffer, "_");
       pp_decimal_int (buffer, SSA_NAME_VERSION (node));
+      break;
+
+    case VALUE_HANDLE:
+      pp_printf (buffer, "VH.%d", VALUE_HANDLE_ID (node));
       break;
 
     default:

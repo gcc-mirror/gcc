@@ -2234,6 +2234,28 @@ struct tree_statement_list
   struct tree_statement_list_node *head;
   struct tree_statement_list_node *tail;
 };
+
+#define VALUE_HANDLE_ID(NODE)		\
+  (VALUE_HANDLE_CHECK (NODE)->value_handle.id)
+
+#define VALUE_HANDLE_EXPR_SET(NODE)	\
+  (VALUE_HANDLE_CHECK (NODE)->value_handle.expr_set)
+
+/* Defined and used in tree-ssa-pre.c.  */
+struct value_set;
+
+struct tree_value_handle GTY(())
+{
+  struct tree_common common;
+
+  /* The set of expressions represented by this handle.  */
+  struct value_set * GTY ((skip)) expr_set;
+
+  /* Unique ID for this value handle.  IDs are handed out in a
+     conveniently dense form starting at 0, so that we can make
+     bitmaps of value handles. */
+  unsigned int id;
+};
 
 enum tree_node_structure_enum {
   TS_COMMON,
@@ -2252,6 +2274,7 @@ enum tree_node_structure_enum {
   TS_PHI_NODE,
   TS_BLOCK,
   TS_STATEMENT_LIST,
+  TS_VALUE_HANDLE,
   LAST_TS_ENUM
 };
 
@@ -2278,6 +2301,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_phi_node GTY ((tag ("TS_PHI_NODE"))) phi;
   struct tree_block GTY ((tag ("TS_BLOCK"))) block;
   struct tree_statement_list GTY ((tag ("TS_STATEMENT_LIST"))) stmt_list;
+  struct tree_value_handle GTY ((tag ("TS_VALUE_HANDLE"))) value_handle;
 };
 
 /* Standard named or nameless data types of the C compiler.  */

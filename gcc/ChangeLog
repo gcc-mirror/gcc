@@ -1,3 +1,33 @@
+2004-06-23  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in (tree-vn.o): New.
+	(tree-ssa-pre.o): Don't depend on RTL_H.
+	* tree-dfa.c (find_referenced_vars): Don't call init_tree_ssa.
+	* tree-flow.h (struct var_ann_d): Remove field expr_set.
+	(add_to_value, expressions_equal_p, get_value_handle, vn_compute,
+	vn_lookup_or_add, vn_add, vn_lookup, vn_init, vn_delete): Declare.
+	* tree-optimize.c (execute_init_datastructures): New local function.
+	(pass_init_datastructures): New local variable.
+	(init_tree_optimization_passes): Sequence pass_init_datastructures.
+	* tree-pretty-print.c (MASK_POINTER): Remove.
+	(dump_generic_node): Handle VALUE_HANDLE.
+	* tree-ssa-pre.c: Move all value numbering routines to tree-vn.c.
+	Update callers to use new function names.
+	Use VALUE_HANDLE_ID and VALUE_HANDLE_EXPR_SET instead of
+	variable annotations.
+	* tree-ssa.c (init_tree_ssa): Call vn_init.
+	(delete_tree_ssa): Call vn_delete.
+	* tree-vn.c: New file.
+	* tree.c (tree_size): Handle VALUE_HANDLE.
+	(tree_node_structure): Likewise.
+	(iterative_hash_expr): Likewise.
+	* tree.def (VALUE_HANDLE): New code.
+	* tree.h (struct tree_value_handle): New.
+	(VALUE_HANDLE_ID): Define.
+	(VALUE_HANDLE_EXPR_SET): Define.
+	(enum tree_node_structure_enum): Add TS_VALUE_HANDLE.
+	(union tree_node): Add struct tree_value_handle.
+
 2004-06-23  Andrew Pinski  <apinski@apple.com>
 
 	* c-typeck.c (composite_type):
