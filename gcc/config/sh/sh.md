@@ -108,6 +108,7 @@
   (UNSPEC_GOT		7)
   (UNSPEC_GOTOFF	8)
   (UNSPEC_PLT		9)
+  (UNSPEC_CALLER	10)
   (UNSPEC_ICACHE	12)
 
   ;; These are used with unspec_volatile.
@@ -3389,10 +3390,39 @@
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
    (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2"
   "bsrf	%0\\n%O2:%#"
+  [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
+   (set_attr "needs_delay_slot" "yes")])
+
+(define_insn_and_split "call_pcrel"
+  [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
+	 (match_operand 1 "" ""))
+   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
+   (clobber (reg:SI PR_REG))
+   (clobber (match_scratch:SI 2 "=r"))]
+  "TARGET_SH2 && optimize"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx lab = gen_call_site ();
+
+  if (SYMBOL_REF_FLAG (operands[0]))
+    emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
+  else
+    emit_insn (gen_symPLT_label2reg (operands[2], operands[0], lab));
+  emit_call_insn (gen_calli_pcrel (operands[2], operands[1], lab));
+  DONE;
+}"
   [(set_attr "type" "call")
    (set (attr "fp_mode")
 	(if_then_else (eq_attr "fpu_single" "yes")
@@ -3418,10 +3448,41 @@
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
    (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2"
   "bsrf	%1\\n%O3:%#"
+  [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
+   (set_attr "needs_delay_slot" "yes")])
+
+(define_insn_and_split "call_value_pcrel"
+  [(set (match_operand 0 "" "=rf")
+	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
+	      (match_operand 2 "" "")))
+   (use (reg:PSI FPSCR_REG))
+   (use (reg:SI PIC_REG))
+   (clobber (reg:SI PR_REG))
+   (clobber (match_scratch:SI 3 "=r"))]
+  "TARGET_SH2 && optimize"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx lab = gen_call_site ();
+
+  if (SYMBOL_REF_FLAG (operands[1]))
+    emit_insn (gen_sym_label2reg (operands[3], operands[1], lab));
+  else
+    emit_insn (gen_symPLT_label2reg (operands[3], operands[1], lab));
+  emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[3],
+					 operands[2], lab));
+  DONE;
+}"
   [(set_attr "type" "call")
    (set (attr "fp_mode")
 	(if_then_else (eq_attr "fpu_single" "yes")
@@ -3436,18 +3497,12 @@
   ""
   "
 {
-  if (flag_pic && TARGET_SH2 && ! flag_unroll_loops
+  if (flag_pic && TARGET_SH2 && optimize
       && GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
     {
-      rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
-
-      if (SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
-	emit_insn (gen_sym_label2reg (reg, XEXP (operands[0], 0), lab));
-      else
-	emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[0], 0), lab));
-      operands[0] = reg;
-      emit_call_insn (gen_calli_pcrel (operands[0], operands[1], lab));
+      emit_call_insn (gen_call_pcrel (XEXP (operands[0], 0), operands[1]));
+      current_function_uses_pic_offset_table = 1;
       DONE;
     }
   else
@@ -3463,19 +3518,13 @@
   ""
   "
 {
-  if (flag_pic && TARGET_SH2 && ! flag_unroll_loops
+  if (flag_pic && TARGET_SH2 && optimize
       && GET_CODE (operands[1]) == MEM
       && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
     {
-      rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
-
-      if (SYMBOL_REF_FLAG (XEXP (operands[1], 0)))
-	emit_insn (gen_sym_label2reg (reg, XEXP (operands[1], 0), lab));
-      else
-	emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[1], 0), lab));
-      operands[1] = reg;
-      emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[1],
-					     operands[2], lab));
+      emit_call_insn (gen_call_value_pcrel (operands[0], XEXP (operands[1], 0),
+					    operands[2]));
+      current_function_uses_pic_offset_table = 1;
       DONE;
     }
   else
@@ -3597,13 +3646,22 @@
 }
 ")
 
+(define_expand "call_site"
+  [(unspec [(match_dup 0)] UNSPEC_CALLER)]
+  ""
+  "
+{
+  static HOST_WIDE_INT i = 0;
+  operands[0] = GEN_INT (i);
+  i++;
+}")
+
 (define_expand "sym_label2reg"
   [(set (match_operand:SI 0 "" "")
 	(const (minus:SI
 		(const (unspec [(match_operand:SI 1 "" "")] UNSPEC_PIC))
 		(const (plus:SI
-			(unspec [(label_ref (match_operand:SI 2 "" ""))]
-				UNSPEC_PIC)
+			(match_operand:SI 2 "" "")
 			(const_int 2))))))]
   "" "")
 
@@ -3637,8 +3695,7 @@
 			(unspec [(match_operand:SI 1 "" "")] UNSPEC_PLT)
 			(pc)))
 		(const (plus:SI
-			(unspec [(label_ref (match_operand:SI 2 "" ""))]
-				UNSPEC_PIC)
+			(match_operand:SI 2 "" "")
 			(const_int 2))))))
    (use (match_dup 3))]
   ;; Even though the PIC register is not really used by the call

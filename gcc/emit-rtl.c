@@ -2438,6 +2438,14 @@ try_split (pat, trial, last)
 		    LABEL_NUSES (JUMP_LABEL (trial))++;
 		}
 
+	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
+	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
+	  if (GET_CODE (trial) == CALL_INSN)
+	    for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
+	      if (GET_CODE (XVECEXP (seq, 0, i)) == CALL_INSN)
+		CALL_INSN_FUNCTION_USAGE (XVECEXP (seq, 0, i))
+		  = CALL_INSN_FUNCTION_USAGE (trial);
+
 	  tem = emit_insn_after (seq, before);
 
 	  delete_insn (trial);

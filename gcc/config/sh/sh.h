@@ -2201,6 +2201,15 @@ do { char dstr[30];					\
 	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
 	    fputs ("@PLT", (STREAM));					\
 	    break;							\
+	  case UNSPEC_CALLER:						\
+	    {								\
+	      char name[32];						\
+	      /* LPCS stands for Label for PIC Call Site.  */		\
+	      ASM_GENERATE_INTERNAL_LABEL				\
+		(name, "LPCS", XINT (XVECEXP ((X), 0, 0), 0));		\
+	      assemble_name ((STREAM), name);				\
+	    }								\
+	    break;							\
 	  default:							\
 	    goto FAIL;							\
 	  }								\
@@ -2297,7 +2306,8 @@ extern struct rtx_def *fpscr_rtx;
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
   {"noncommutative_float_operator", {MINUS, DIV}},			\
-  {"register_operand", {SUBREG, REG}},
+  {"register_operand", {SUBREG, REG}},					\
+  {"symbol_ref_operand", {SYMBOL_REF}},
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
