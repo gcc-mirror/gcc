@@ -972,7 +972,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  if (GET_MODE (xtarget) != maxmode)
 	    {
 	      if (GET_CODE (xtarget) == REG)
-		xspec_target_subreg = xtarget = gen_lowpart (maxmode, xtarget);
+		{
+		  int wider = (GET_MODE_SIZE (maxmode)
+			       > GET_MODE_SIZE (GET_MODE (xtarget)));
+		  xtarget = gen_lowpart (maxmode, xtarget);
+		  if (wider)
+		    xspec_target_subreg = xtarget;
+		}
 	      else
 		xtarget = gen_reg_rtx (maxmode);
 	    }
@@ -1098,7 +1104,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  if (GET_MODE (xtarget) != maxmode)
 	    {
 	      if (GET_CODE (xtarget) == REG)
-		xspec_target_subreg = xtarget = gen_lowpart (maxmode, xtarget);
+		{
+		  int wider = (GET_MODE_SIZE (maxmode)
+			       > GET_MODE_SIZE (GET_MODE (xtarget)));
+		  xtarget = gen_lowpart (maxmode, xtarget);
+		  if (wider)
+		    xspec_target_subreg = xtarget;
+		}
 	      else
 		xtarget = gen_reg_rtx (maxmode);
 	    }
