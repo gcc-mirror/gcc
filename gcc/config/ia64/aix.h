@@ -71,32 +71,36 @@ Boston, MA 02111-1307, USA.  */
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
+/* Target OS builtins.  */
+#define TARGET_OS_CPP_BUILTINS()			\
+do {							\
+	if (iso_flag)					\
+	  builtin_define("_ANSI_C_SOURCE");		\
+	builtin_define("_AIX");				\
+	builtin_define("_AIX64");			\
+	builtin_define("unix");				\
+	builtin_assert("system=unix");			\
+	builtin_assert("system=aix");			\
+	builtin_define("__64BIT__");			\
+	builtin_define("_LONG_LONG");			\
+	builtin_define("_IA64");			\
+	builtin_define("__int128=__size128_t");		\
+	if (c_language == clk_cplusplus)		\
+	  {						\
+	    builtin_define("_XOPEN_SOURCE=500");	\
+	    builtin_define("_XOPEN_SOURCE_EXTENDED=1");	\
+	    builtin_define("_LARGE_FILE_API");		\
+	    builtin_define("_ALL_SOURCE");		\
+	  }						\
+} while (0)
+
 /* A C string constant that tells the GNU CC driver program options to pass to
    CPP.  It can also specify how to translate options you give to GNU CC into
    options for GNU CC to pass to the CPP.  */
 
-/* If -ansi, we need to define _ANSI_C_SOURCE to get the right headers.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__} \
-%{ansi:-D_ANSI_C_SOURCE} \
-%{posix:-D_POSIX_SOURCE} \
-%{cpp_cpu}"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
-  -D_AIX -D_AIX64 -D_LONGLONG -Dunix \
-  -Asystem=unix -Asystem=aix \
-  -D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t"
-
-/* The GNU C++ standard library requires that these macros be defined.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC                      \
-  "-D_XOPEN_SOURCE=500                          \
-   -D_XOPEN_SOURCE_EXTENDED=1                   \
-   -D_LARGE_FILE_API                            \
-   -D_ALL_SOURCE                                \
-   %{cpp_cpu}"
+%{posix:-D_POSIX_SOURCE}"
 
 /* Define this for shared library support.  */
 
