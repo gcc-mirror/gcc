@@ -157,24 +157,31 @@ struct cpp_name
   unsigned int offset;		/* from list->namebuf */
 };
 
-#define TOK_NAME(list, token) ((list)->namebuf + (token)->val.name.offset)
+/* Accessor macros for token lists - all expect you have a
+   list and an index.  */
+
+#define TOK_TYPE(l_, i_)   ((l_)->tokens[i_].type)
+#define TOK_FLAGS(l_, i_)  ((l_)->tokens[i_].flags)
+#define TOK_AUX(l_, i_)    ((l_)->tokens[i_].aux)
+#define TOK_COL(l_, i_)    ((l_)->tokens[i_].col)
+#define TOK_INT(l_, i_)    ((l_)->tokens[i_].val.integer)
+#define TOK_OFFSET(l_, i_) ((l_)->tokens[i_].val.name.offset)
+#define TOK_NAME(l_, i_)   ((l_)->tokens[i_].val.name.offset + (l_)->namebuf)
+#define TOK_LEN(l_, i_)    ((l_)->tokens[i_].val.name.len)
+
+#define TOK_PREV_WHITE(l_, i_) (TOK_FLAGS(l_, i_) & PREV_WHITESPACE)
 
 /* Flags for the cpp_token structure.  */
 #define PREV_WHITESPACE     1	/* If whitespace before this token.  */
 #define DIGRAPH             2	/* If it was a digraph.  */
 #define UNSIGNED_INT        4   /* If int preprocessing token unsigned.  */
 
-/* A preprocessing token.
-   This has been carefully packed and should occupy 16 bytes on
-   both 32- and 64-bit hosts.  */
+/* A preprocessing token.  This has been carefully packed and should
+   occupy 16 bytes on both 32- and 64-bit hosts.  */
 struct cpp_token
 {
   unsigned short col;			/* starting column of this token */
-#ifdef ENUM_BITFIELDS_ARE_UNSIGNED
-  enum cpp_ttype type : CHAR_BIT;	/* node type */
-#else
-  unsigned char type;
-#endif
+  ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* node type */
   unsigned char flags;			/* flags - see above */
   unsigned int aux;			/* CPP_OTHER character.  Hash of a
 					   NAME, or something - see uses

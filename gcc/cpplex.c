@@ -307,23 +307,22 @@ cpp_output_list (pfile, print, list)
   
   for (i = 0; i < list->tokens_used; i++)
     {
-      if (list->tokens[i].type == CPP_VSPACE)
+      if (TOK_TYPE (list, i) == CPP_VSPACE)
 	{
 	  output_line_command (pfile, print, list->tokens[i].aux);
 	  continue;
 	}
 	  
-      if (curcol < list->tokens[i].col)
+      if (curcol < TOK_COL (list, i))
 	{
 	  /* Insert space to bring the column to what it should be.  */
-	  bump_column (print, curcol - 1, list->tokens[i].col);
-	  curcol = list->tokens[i].col;
+	  bump_column (print, curcol - 1, TOK_COL (list, i));
+	  curcol = TOK_COL (list, i);
 	}
       /* XXX We may have to insert space to prevent an accidental
 	 token paste.  */
-      safe_fwrite (pfile, list->namebuf + list->tokens[i].val.name.offset,
-		   list->tokens[i].val.name.len, print->outf);
-      curcol += list->tokens[i].val.name.len;
+      safe_fwrite (pfile, TOK_NAME (list, i), TOK_LEN (list, i), print->outf);
+      curcol += TOK_LEN (list, i);
     }
 }
 
@@ -534,21 +533,21 @@ _cpp_scan_line (pfile, list)
 	type = CPP_NAME;
 
       list->tokens_used++;
-      list->tokens[i].type = type;
-      list->tokens[i].col = col;
-      list->tokens[i].flags = space_before ? PREV_WHITESPACE : 0;
+      TOK_TYPE  (list, i) = type;
+      TOK_COL   (list, i) = col;
+      TOK_FLAGS (list, i) = space_before ? PREV_WHITESPACE : 0;
       
       if (type == CPP_VSPACE)
 	break;
 
-      list->tokens[i].val.name.len = len;
-      list->tokens[i].val.name.offset = list->name_used;
-      memcpy (list->namebuf + list->name_used, CPP_PWRITTEN (pfile), len);
+      TOK_LEN (list, i) = len;
+      TOK_OFFSET (list, i) = list->name_used;
+      memcpy (TOK_NAME (list, i), CPP_PWRITTEN (pfile), len);
       list->name_used += len;
       i++;
       space_before = 0;
     }
-  list->tokens[i].aux =  CPP_BUFFER (pfile)->lineno + 1;
+  TOK_AUX (list, i) = CPP_BUFFER (pfile)->lineno + 1;
 
   /* XXX Temporary kluge: put back the newline.  */
   FORWARD(-1);
@@ -2194,7 +2193,7 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 #define INIT_NAME(list, name) \
   do {(name).len = 0; (name).offset = (list)->name_used;} while (0)
 
-#define IS_DIRECTIVE(list) (list->tokens[0].type == CPP_HASH)
+#define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
 #define COLUMN(cur) ((cur) - buffer->line_base)
 
 /* Maybe put these in the ISTABLE eventually.  */
@@ -2893,7 +2892,7 @@ _cpp_lex_line (pfile, list)
 	  /* Do we have a wide string?  */
 	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
 	      && cur_token[-1].val.name.len == 1
-	      && TOK_NAME (list, cur_token - 1)[0] == 'L'
+	      && *(list->namebuf + cur_token[-1].val.name.offset) == 'L'
 	      && !CPP_TRADITIONAL (pfile))
 	    {
 	      /* No need for 'L' any more.  */
@@ -3286,7 +3285,7 @@ spell_string (buffer, list, token)
   *buffer++ = c;
 
   len = token->val.name.len;
-  memcpy (buffer, TOK_NAME (list, token), len);
+  memcpy (buffer, list->namebuf + token->val.name.offset, len);
   buffer += len;
   *buffer++ = c;
   return buffer - orig_buff;
@@ -3318,7 +3317,7 @@ spell_comment (buffer, list, token)
     }
 
   len = token->val.name.len;
-  memcpy (buffer, TOK_NAME (list, token), len);
+  memcpy (buffer, list->namebuf + token->val.name.offset, len);
 
   return len + 2;
 }
@@ -3333,7 +3332,7 @@ spell_name (buffer, list, token)
   size_t len;
 
   len = token->val.name.len;
-  memcpy (buffer, TOK_NAME (list, token), len);
+  memcpy (buffer, list->namebuf + token->val.name.offset, len);
   buffer += len;
 
   return len;

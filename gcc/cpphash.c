@@ -467,7 +467,7 @@ collect_objlike_expansion (pfile, list)
 
   for (i = 1; i < list->tokens_used; i++)
     {
-      switch (list->tokens[i].type)
+      switch (TOK_TYPE (list, i))
 	{
 	case CPP_EOF:
 	  cpp_ice (pfile, "EOF in collect_expansion");
@@ -489,13 +489,10 @@ collect_objlike_expansion (pfile, list)
 	default:;
 	}
 
-      if (i > 1 && !last_was_paste
-	  && (list->tokens[i].flags & PREV_WHITESPACE))
+      if (i > 1 && !last_was_paste && TOK_PREV_WHITE (list, i))
 	CPP_PUTC (pfile, ' ');
 
-      CPP_PUTS (pfile,
-		list->tokens[i].val.name.offset + list->namebuf,
-		list->tokens[i].val.name.len);
+      CPP_PUTS (pfile, TOK_NAME (list, i), TOK_LEN (list, i));
       last_was_paste = 0;
     }
  done:
@@ -554,9 +551,9 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
 
   for (i = replacement; i < list->tokens_used; i++)
     {
-      token = list->tokens[i].type;
-      tok = list->tokens[i].val.name.offset + list->namebuf;
-      len = list->tokens[i].val.name.len;
+      token = TOK_TYPE (list, i);
+      tok = TOK_NAME (list, i);
+      len = TOK_LEN (list, i);
       switch (token)
 	{
 	case CPP_EOF:
@@ -597,10 +594,10 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
 	}
 
       if (last_token != PASTE && last_token != START
-	  && (list->tokens[i].flags & PREV_WHITESPACE))
+	  && TOK_PREV_WHITE (list, i))
 	CPP_PUTC (pfile, ' ');
       if (last_token == ARG && CPP_TRADITIONAL (pfile)
-	  && !(list->tokens[i].flags & PREV_WHITESPACE))
+	  && !TOK_PREV_WHITE (list, i))
 	endpat->raw_after = 1;
 
       switch (token)
@@ -642,7 +639,7 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
       {
 	int raw_before = (last_token == PASTE
 			  || (CPP_TRADITIONAL (pfile)
-			      && !(list->tokens[i].flags & PREV_WHITESPACE)));
+			      && ! TOK_PREV_WHITE (list, j)));
       
 	add_pat (&pat, &endpat,
 		 CPP_WRITTEN (pfile) - last /* nchars */, j /* argno */,
@@ -711,10 +708,10 @@ collect_params (pfile, list, arglist)
   unsigned int argc, a, i, j;
 
   /* The formal parameters list starts at token 1.  */
-  if (list->tokens[1].type != CPP_OPEN_PAREN)
+  if (TOK_TYPE (list, 1) != CPP_OPEN_PAREN)
     {
       cpp_ice (pfile, "first token = %d not %d in collect_formal_parameters",
-	       list->tokens[1].type, CPP_OPEN_PAREN);
+	       TOK_TYPE (list, 1), CPP_OPEN_PAREN);
       return 0;
     }
 
@@ -723,10 +720,10 @@ collect_params (pfile, list, arglist)
   argc = 0;
   argslen = 0;
   for (i = 2; i < list->tokens_used; i++)
-    switch (list->tokens[i].type)
+    switch (TOK_TYPE (list, i))
       {
       case CPP_NAME:
-	argslen += list->tokens[i].val.name.len + 1;
+	argslen += TOK_LEN (list, i) + 1;
 	argc++;
 	break;
       case CPP_COMMA:
@@ -734,25 +731,25 @@ collect_params (pfile, list, arglist)
       case CPP_CLOSE_PAREN:
 	goto scanned;
       case CPP_VSPACE:
-	cpp_error_with_line (pfile, list->line, list->tokens[i].col,
+	cpp_error_with_line (pfile, list->line, TOK_COL (list, i),
 			     "missing right paren in macro argument list");
 	return 0;
 
       default:
-	cpp_error_with_line (pfile, list->line, list->tokens[i].col,
-			     "syntax error in #define");
+	cpp_error_with_line (pfile, list->line, TOK_COL (list, i),
+			     "illegal token in macro argument list");
 	return 0;
 
       case CPP_ELLIPSIS:
-	if (list->tokens[i-1].type != CPP_NAME)
+	if (TOK_TYPE (list, i-1) != CPP_NAME)
 	  {
 	    argslen += sizeof "__VA_ARGS__";
 	    argc++;
 	  }
 	i++;
-	if (list->tokens[i].type != CPP_CLOSE_PAREN)
+	if (TOK_TYPE (list, i) != CPP_CLOSE_PAREN)
 	  {
-	    cpp_error_with_line (pfile, list->line, list->tokens[i].col,
+	    cpp_error_with_line (pfile, list->line, TOK_COL (list, i),
 				 "another parameter follows \"...\"");
 	    return 0;
 	  }
@@ -760,7 +757,7 @@ collect_params (pfile, list, arglist)
       }
 
   cpp_ice (pfile, "collect_params: unreachable - i=%d, ntokens=%d, type=%d",
-	   i, list->tokens_used, list->tokens[i-1].type);
+	   i, list->tokens_used, TOK_TYPE (list, i-1));
   return 0;
 
  scanned:
@@ -783,11 +780,11 @@ collect_params (pfile, list, arglist)
   p = namebuf;
   a = 0;
   for (j = 2; j < i; j++)
-    switch (list->tokens[j].type)
+    switch (TOK_TYPE (list, j))
       {
       case CPP_NAME:
-	tok = list->tokens[j].val.name.offset + list->namebuf;
-	len = list->tokens[j].val.name.len;
+	tok = TOK_NAME (list, j);
+	len = TOK_LEN (list, j);
 	memcpy (p, tok, len);
 	p[len] = '\0';
 	if (duplicate_arg_p (namebuf, p))
@@ -812,7 +809,7 @@ collect_params (pfile, list, arglist)
 	break;
 
       case CPP_ELLIPSIS:
-	if (list->tokens[j-1].type != CPP_NAME)
+	if (TOK_TYPE (list, j-1) != CPP_NAME)
 	  {
 	    if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 	      cpp_pedwarn (pfile, "C89 does not permit varargs macros");
@@ -833,7 +830,7 @@ collect_params (pfile, list, arglist)
 
       default:
 	cpp_ice (pfile, "collect_params: impossible token type %d",
-		 list->tokens[j].type);
+		 TOK_TYPE (list, j));
       }
 
   arglist->argc = argc;
@@ -869,17 +866,16 @@ _cpp_create_definition (pfile, list, hp)
 
   if (list->tokens_used == 2)
     ntype = T_EMPTY;    /* Empty definition of object-like macro.  */
-  else if (list->tokens_used == 3 && list->tokens[1].type == CPP_NAME
-	   && list->tokens[0].val.name.len == list->tokens[1].val.name.len
-	   && !strncmp (list->tokens[0].val.name.offset + list->namebuf,
-			list->tokens[1].val.name.offset + list->namebuf,
-			list->tokens[0].val.name.len))
+  else if (list->tokens_used == 3 && TOK_TYPE (list, 1) == CPP_NAME
+	   && TOK_LEN (list, 0) == TOK_LEN (list, 1)
+	   && !strncmp (TOK_NAME (list, 0), TOK_NAME (list, 1),
+			TOK_LEN (list, 0)))
     ntype = T_IDENTITY;  /* Object like macro defined to itself.  */
 
   /* The macro is function-like only if the next character,
      with no intervening whitespace, is '('.  */
-  else if (list->tokens[1].type == CPP_OPEN_PAREN
-	   && ! (list->tokens[1].flags & PREV_WHITESPACE))
+  else if (TOK_TYPE (list, 1) == CPP_OPEN_PAREN
+	   && ! TOK_PREV_WHITE (list, 1))
     {
       struct arglist args;
       int replacement;
@@ -898,7 +894,7 @@ _cpp_create_definition (pfile, list, hp)
      whitespace after the name (6.10.3 para 3).  */
   else
     {
-      if (! (list->tokens[1].flags & PREV_WHITESPACE))
+      if (! TOK_PREV_WHITE (list, 1))
 	cpp_pedwarn (pfile,
 		     "The C standard requires whitespace after #define %s",
 		     hp->name);
@@ -981,14 +977,14 @@ _cpp_create_definition (pfile, list, hp)
     {
       fdefn->file = CPP_BUFFER (pfile)->nominal_fname;
       fdefn->line = list->line;
-      fdefn->col  = list->tokens[0].col;
+      fdefn->col  = TOK_COL (list, 0);
       hp->value.fdefn = fdefn;
     }
   else
     {
       odefn->file = CPP_BUFFER (pfile)->nominal_fname;
       odefn->line = list->line;
-      odefn->col  = list->tokens[0].col;
+      odefn->col  = TOK_COL (list, 0);
       hp->value.odefn = odefn;
     }
   return 1;
