@@ -69,18 +69,19 @@
          <li><a href="#4_1">What works already?</a>
          <li><a href="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</a>
          <li><a href="#4_3">Bugs in the C++ language/lib specification</a>
-         <li><a href="#4_4">Things in libstdc++ that look like bugs</a>
-           <ul>
-             <li><a href="#4_4_iostreamclear">reopening a stream fails</a>
-             <li><a href="#4_4_Weff">-Weffc++ complains too much</a>
-             <li><a href="#4_4_rel_ops">&quot;ambiguous overloads&quot;
-                                 after including an old-style header</a>
-             <li><a href="#4_4_interface">The g++-3 headers are
-                                 <strong>not ours</strong></a>
-             <li><a href="#4_4_glibc">compilation errors from streambuf.h</a>
-             <li><a href="#4_4_checks">errors about <em>*Cconcept</em> and
-                                 <em>constraints</em> in the STL...</a>
-           </ul>
+         <li><a href="#4_4">Things in libstdc++ that only look like bugs</a><ul>
+           <li><a href="#4_4_iostreamclear">reopening a stream fails</a>
+           <li><a href="#4_4_Weff">-Weffc++ complains too much</a>
+           <li><a href="#4_4_rel_ops">&quot;ambiguous overloads&quot;
+                               after including an old-style header</a>
+           <li><a href="#4_4_interface">The g++-3 headers are
+                               <strong>not ours</strong></a>
+           <li><a href="#4_4_glibc">compilation errors from streambuf.h</a>
+           <li><a href="#4_4_checks">errors about <em>*Cconcept</em> and
+                               <em>constraints</em> in the STL...</a>
+           <li><a href="#4_4_dlsym">program crashes when using library code
+                               in a dynamically-loaded library</a>
+         </ul>
          <li><a href="#4_5">Aw, that's easy to fix!</a>
       </ol>
 
@@ -566,7 +567,7 @@ New in 3.0.97:
       </p>
 
 <hr>
-   <h2><a name="4_4">4.4 Things in libstdc++ that look like bugs</a></h2>
+   <h2><a name="4_4">4.4 Things in libstdc++ that only look like bugs</a></h2>
       <p>There are things which are not bugs in the compiler (4.2) nor
          the language specification (4.3), but aren't really bugs in
          libstdc++, either.  Really!  Please do not report these as bugs.
@@ -675,6 +676,24 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
            checks, is available
            <a href="../19_diagnostics/howto.html#3">here</a>.
         </p>
+      </a>
+      <a name="4_4_dlsym">
+        <p><strong>dlopen/dlsym</strong>
+           If you are using the C++ library across dynamically-loaded
+           objects, make certain that you are passing the correct options
+           when compiling and linking:
+           <pre>
+    // compile the library components
+    g++ -fPIC -c a.cc
+    g++ -fPIC -c b.cc
+    ...
+    g++ -fPIC -c z.cc
+
+    // create the library
+    g++ -fPIC -shared -rdynamic -o libfoo.so a.o b.o ... z.o
+
+    // link the executable
+    g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</pre></p>
       </a>
 
 <hr>

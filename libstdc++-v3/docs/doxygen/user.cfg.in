@@ -271,7 +271,7 @@ WARNINGS               = NO
 # for undocumented members. If EXTRACT_ALL is set to YES then this flag will 
 # automatically be disabled.
 
-WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_UNDOCUMENTED   = NO
 
 # The WARN_FORMAT tag determines the format of the warning messages that 
 # doxygen can produce. The string should contain the $file, $line, and $text 

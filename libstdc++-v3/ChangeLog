@@ -1,5 +1,14 @@
 2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/mainpage.html:  Doxygen logo is now a PNG file.
+	* docs/doxygen/run_doxygen:  Bump required version.
+	* docs/doxygen/user.cfg.in:  Revert accidental change.
+	* docs/html/faq/index.html:  Reindent a block of links.
+	(4.4):  New note on using dlsym.
+	* docs/html/faq/index.txt:  Regenerated.
+
+2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite_flags.in (cxxflags):  Also pass @EXTRA_CXX_FLAGS@.
 
 2002-04-17  Benjamin Kosnik  <bkoz@redhat.com>
