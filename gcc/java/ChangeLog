@@ -1,3 +1,23 @@
+2003-06-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in (JAVA_OBJS, java/lang.o): Update.
+	(java/j-options.c, java/j-options.h): New.
+	* java-tree.h (resource_name, compile_resource_file,
+	compile_resource_data): Constify.
+	* jcf-write.c (jcf_write_base_directory): Similarly.
+	* jcf.h (jcf_write_base_directory): Similarly.
+	* lang.c: Include j-options.h.
+	(cl_options_count, cl_options, string_option, java_decode_option,
+	lang_f_options, lang_W_options, LANG_HOOKS_DECODE_OPTION,
+	process_option_with_no): Remove.
+	(resource_name): Constify.
+	(LANG_HOOKS_HANDLE_OPTION): Override.
+	(java_handle_option): New.
+	(java_init): Don't call jcf_path_init.
+	(java_init_options): Call jcf_path_init.
+	* lang.opt: New.
+	* resource.c (compile_resource_data, compile_resource_file): Constify.
+
 2003-06-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* java-tree.h (DECL_FUNCTION_LAST_LINE): New.

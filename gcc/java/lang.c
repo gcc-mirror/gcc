@@ -46,27 +46,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "splay-tree.h"
 #include "tree-dump.h"
 #include "opts.h"
-
-const unsigned int cl_options_count;
-const struct cl_option cl_options[1];
-
-struct string_option
-{
-  const char *const string;
-  int *const variable;
-  const int on_value;
-};
+#include "j-options.h"
 
 static bool java_init (void);
 static void java_finish (void);
 static int java_init_options (void);
 static bool java_post_options (const char **);
 
-static int java_decode_option (int, char **);
+static int java_handle_option (size_t scode, const char *arg, int value);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree);
 static void java_print_error_function (diagnostic_context *, const char *);
-static int process_option_with_no (const char *, const struct string_option *, int);
 static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 					      void *, void *);
 static int java_unsafe_for_reeval (tree);
@@ -123,7 +113,7 @@ static bool inhibit_error_function_printing;
 
 int compiling_from_source;
 
-char * resource_name;
+const char *resource_name;
 
 int flag_emit_class_files = 0;
 
@@ -196,39 +186,6 @@ static int version_flag = 0;
    line.  */
 int flag_really_inline = 0;
 
-/* Table of language-dependent -f options.
-   STRING is the option name.  VARIABLE is the address of the variable.
-   ON_VALUE is the value to store in VARIABLE
-    if `-fSTRING' is seen as an option.
-   (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
-
-static const struct string_option
-lang_f_options[] =
-{
-  {"emit-class-file", &flag_emit_class_files, 1},
-  {"emit-class-files", &flag_emit_class_files, 1},
-  {"filelist-file", &flag_filelist_file, 1},
-  {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
-  {"use-boehm-gc", &flag_use_boehm_gc, 1},
-  {"hash-synchronization", &flag_hash_synchronization, 1},
-  {"jni", &flag_jni, 1},
-  {"check-references", &flag_check_references, 1},
-  {"force-classes-archive-check", &flag_force_classes_archive_check, 1},
-  {"optimize-static-class-initialization", &flag_optimize_sci, 1 },
-  {"indirect-dispatch", &flag_indirect_dispatch, 1},
-  {"store-check", &flag_store_check, 1},
-  {"assert", &flag_assert, 1}
-};
-
-static const struct string_option
-lang_W_options[] =
-{
-  { "redundant-modifiers", &flag_redundant, 1 },
-  { "extraneous-semicolon", &flag_extraneous_semicolon, 1 },
-  { "out-of-date", &flag_newer, 1 },
-  { "deprecated", &flag_deprecated, 1 }
-};
-
 JCF *current_jcf;
 
 /* Variable controlling how dependency tracking is enabled in
@@ -254,8 +211,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_FINISH java_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
-#undef LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION java_decode_option
+#undef LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION java_handle_option
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS java_post_options
 #undef LANG_HOOKS_PARSE_FILE
@@ -297,216 +254,199 @@ struct language_function GTY(())
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-/* Process an option that can accept a `no-' form.
-   Return 1 if option found, 0 otherwise.  */
-static int
-process_option_with_no (const char *p, const struct string_option *table,
-			int table_size)
-{
-  int j;
-
-  for (j = 0; j < table_size; j++)
-    {
-      if (!strcmp (p, table[j].string))
-	{
-	  *table[j].variable = table[j].on_value;
-	  return 1;
-	}
-      if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-	  && ! strcmp (p+3, table[j].string))
-	{
-	  *table[j].variable = ! table[j].on_value;
-	  return 1;
-	}
-    }
-
-  return 0;
-}
-
 /*
  * process java-specific compiler command-line options
  * return 0, but do not complain if the option is not recognized.
  */
 static int
-java_decode_option (int argc __attribute__ ((__unused__)), char **argv)
+java_handle_option (size_t scode, const char *arg, int value)
 {
-  char *p = argv[0];
+  const struct cl_option *option = &cl_options[scode];
+  enum opt_code code = (enum opt_code) scode;
 
-  jcf_path_init ();
+  /* Ignore file names.  */
+  if (code == N_OPTS)
+      return 1;
 
-  if (strcmp (p, "-version") == 0)
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      version_flag = 1;
-      /* We return 0 so that the caller can process this.  */
+      /* These can take an emtpy argument.  */
+      if (code == OPT_fassume_compiled_
+	  || code == OPT_fclasspath_
+	  || code == OPT_fCLASSPATH_)
+	arg = "";
+      else
+    {
+	  error ("missing argument to \"-%s\"", option->opt_text);
+      return 1;
+    }
+    }
+
+  switch (code)
+    {
+    default:
       return 0;
-    }
 
-#define CLARG "-fcompile-resource="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      resource_name = p + sizeof (CLARG) - 1;
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fassume-compiled="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      add_assume_compiled (p + sizeof (CLARG) - 1, 0);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fno-assume-compiled="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      add_assume_compiled (p + sizeof (CLARG) - 1, 1);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fassume-compiled"
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      add_assume_compiled ("", 0);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fno-assume-compiled"
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      add_assume_compiled ("", 1);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fCLASSPATH="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fclasspath="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fbootclasspath="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_bootclasspath_arg (p + sizeof (CLARG) - 1);
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fextdirs="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_extdirs_arg (p + sizeof (CLARG) - 1);
-      return 1;
-    }
-#undef CLARG
-  else if (strncmp (p, "-I", 2) == 0)
-    {
-      jcf_path_include_arg (p + 2);
-      return 1;
-    }
+    case OPT_I:
+      jcf_path_include_arg (arg);
+      break;
 
-#define ARG "-foutput-class-dir="
-  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
-    {
-      jcf_write_base_directory = p + sizeof (ARG) - 1;
-      return 1;
-    }
-#undef ARG
-#define ARG "-fencoding="
-  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
-    {
-      current_encoding = p + sizeof (ARG) - 1;
-      return 1;
-    }
-#undef ARG
-#define ARG "-finline-functions"
-  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
-    {
-      flag_inline_functions = 1;
-      flag_really_inline = 1;
-      return 1;
-    }
-#undef ARG
+    case OPT_M:
+      jcf_dependency_init (1);
+      dependency_tracking |= DEPEND_ENABLE;
+      break;
 
-  if (p[0] == '-' && p[1] == 'f')
-    {
-      /* Some kind of -f option.
-	 P's value is the option sans `-f'.
-	 Search for it in the table of options.  */
-      p += 2;
-      if (process_option_with_no (p, lang_f_options,
-				  ARRAY_SIZE (lang_f_options)))
-	return 1;
-      return dump_switch_p (p);
-    }
+    case OPT_MD:
+      jcf_dependency_init (1);
+      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
+      break;
 
-  if (strcmp (p, "-Wall") == 0)
-    {
-      flag_wall = 1;
-      flag_redundant = 1;
-      flag_extraneous_semicolon = 1;
+    case OPT_MF:
+      jcf_dependency_set_dep_file (arg);
+      break;
+
+    case OPT_MM:
+      jcf_dependency_init (0);
+      dependency_tracking |= DEPEND_ENABLE;
+      break;
+
+    case OPT_MMD:
+      jcf_dependency_init (0);
+      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
+      break;
+
+    case OPT_MP:
+      jcf_dependency_print_dummies ();
+      break;
+
+    case OPT_MT:
+      jcf_dependency_set_target (arg);
+      dependency_tracking |= DEPEND_TARGET_SET;
+      break;
+
+    case OPT_Wall:
+      flag_wall = value;
+      flag_redundant = value;
+      flag_extraneous_semicolon = value;
       /* When -Wall given, enable -Wunused.  We do this because the C
 	 compiler does it, and people expect it.  */
-      set_Wunused (1);
-      return 1;
-    }
+      set_Wunused (value);
+      break;
 
-  if (p[0] == '-' && p[1] == 'W')
-    {
-      /* Skip `-W' and see if we accept the option or its `no-' form.  */
-      p += 2;
-      return process_option_with_no (p, lang_W_options,
-				     ARRAY_SIZE (lang_W_options));
-    }
+    case OPT_Wdeprecated:
+      flag_deprecated = value;
+      break;
 
-  if (strcmp (p, "-MD") == 0)
-    {
-      jcf_dependency_init (1);
-      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
-      return 1;
-    }
-  else if (strcmp (p, "-MMD") == 0)
-    {
-      jcf_dependency_init (0);
-      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
-      return 1;
-    }
-  else if (strcmp (p, "-M") == 0)
-    {
-      jcf_dependency_init (1);
-      dependency_tracking |= DEPEND_ENABLE;
-      return 1;
-    }
-  else if (strcmp (p, "-MM") == 0)
-    {
-      jcf_dependency_init (0);
-      dependency_tracking |= DEPEND_ENABLE;
-      return 1;
-    }
-  else if (strcmp (p, "-MP") == 0)
-    {
-      jcf_dependency_print_dummies ();
-      return 1;
-    }
-  else if (strcmp (p, "-MT") == 0)
-    {
-      jcf_dependency_set_target (argv[1]);
-      dependency_tracking |= DEPEND_TARGET_SET;
-      return 2;
-    }
-  else if (strcmp (p, "-MF") == 0)
-    {
-      jcf_dependency_set_dep_file (argv[1]);
-      dependency_tracking |= DEPEND_FILE_ALREADY_SET;
-      return 2;
-    }
+    case OPT_Wextraneous_semicolon:
+      flag_extraneous_semicolon = value;
+      break;
 
+    case OPT_Wout_of_date:
+      flag_newer = value;
+      break;
+
+    case OPT_Wredundant_modifiers:
+      flag_redundant = value;
+      break;
+
+    case OPT_fassert:
+      flag_assert = value;
+      break;
+
+    case OPT_fassume_compiled_:
+      add_assume_compiled (arg, !value);
+      break;
+
+    case OPT_fassume_compiled:
+      add_assume_compiled ("", !value);
+      break;
+
+    case OPT_fbootclasspath_:
+      jcf_path_bootclasspath_arg (arg);
+      break;
+
+    case OPT_fcheck_references:
+      flag_check_references = value;
+      break;
+
+    case OPT_fclasspath_:
+    case OPT_fCLASSPATH_:
+      jcf_path_classpath_arg (arg);
+      break;
+
+    case OPT_fcompile_resource_:
+      resource_name = arg;
+      break;
+
+    case OPT_fdump_:
+      if (!dump_switch_p (option->opt_text + strlen ("f")))
   return 0;
+      break;
+
+    case OPT_femit_class_file:
+    case OPT_femit_class_files:
+      flag_emit_class_files = value;
+      break;
+
+    case OPT_fencoding_:
+      current_encoding = arg;
+      break;
+
+    case OPT_fextdirs_:
+      jcf_path_extdirs_arg (arg);
+      break;
+
+    case OPT_ffilelist_file:
+      flag_filelist_file = value;
+      break;
+
+    case OPT_fforce_classes_archive_check:
+      flag_force_classes_archive_check = value;
+      break;
+
+    case OPT_fhash_synchronization:
+      flag_hash_synchronization = value;
+      break;
+
+    case OPT_findirect_dispatch:
+      flag_indirect_dispatch = value;
+      break;
+
+    case OPT_finline_functions:
+      flag_inline_functions = value;
+      flag_really_inline = value;
+      break;
+
+    case OPT_fjni:
+      flag_jni = value;
+      break;
+
+    case OPT_foptimize_static_class_initialization:
+      flag_optimize_sci = value;
+      break;
+
+    case OPT_foutput_class_dir_:
+      jcf_write_base_directory = arg;
+      break;
+
+    case OPT_fstore_check:
+      flag_store_check = value;
+      break;
+
+    case OPT_fuse_boehm_gc:
+      flag_use_boehm_gc = value;
+      break;
+
+    case OPT_fuse_divide_subroutine:
+      flag_use_divide_subroutine = value;
+      break;
+
+    case OPT_version:
+      version_flag = 1;
+      break;
+    }
+
+  return 1;
 }
 
 /* Global open file.  */
@@ -530,7 +470,6 @@ java_init (void)
       && force_align_functions_log < 1)
     force_align_functions_log = 1;
 
-  jcf_path_init ();
   jcf_path_seal (version_flag);
 
   java_init_decl_processing ();
@@ -747,6 +686,8 @@ java_init_options (void)
 
   /* In Java arithmetic overflow always wraps around.  */
   flag_wrapv = 1;
+
+  jcf_path_init ();
 
   return 0;
 }

@@ -1,0 +1,158 @@
+; Options for the Java front end.
+; Copyright (C) 2003 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 2, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING.  If not, write to the Free
+; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+; 02111-1307, USA.
+
+
+; This file is processed by the script opts.sh.  It is a database of
+; command line options, with each record separated by a blank line,
+; and each field appearing on its own line.  The first field is the
+; command-line switch with the leading "-" removed.  All options
+; beginning with "f" or "W" are implicitly assumed to take a "no-"
+; form; this form should not be listed.  If you do not want this
+; negative form and you want it to be automatically rejected, add
+; RejectNegative to the second field.
+
+; The second field should contain "Java".  If the switch takes an
+; argument, then you should also specify "Joined" and/or "Separate" to
+; indicate where the argument can appear.
+
+; Comments can appear on their own line anwhere in the file, preceded
+; by a semicolon.  Whitespace is permitted before the semicolon.
+
+; For each switch XXX below, an enumeration constant is created by the
+; script opts.sh spelt OPT_XXX, but with all non-alphanumeric
+; characters replaced with an underscore.
+
+; Please try to keep this file in ASCII collating order.
+
+I
+Java Joined
+
+M
+Java
+
+MD
+Java
+
+MF
+Java Separate
+
+MM
+Java
+
+MMD
+Java
+
+MP
+Java
+
+MT
+Java Separate
+
+Wall
+Java
+
+Wdeprecated
+Java
+
+Wextraneous-semicolon
+Java
+
+Wout-of-date
+Java
+
+Wredundant-modifiers
+Java
+
+fCLASSPATH=
+Java Joined RejectNegative
+
+fassert
+Java
+
+fassume-compiled
+Java
+
+fassume-compiled=
+Java Joined
+
+fbootclasspath=
+Java Joined RejectNegative
+
+fcheck-references
+Java
+
+fclasspath=
+Java Joined RejectNegative
+
+fcompile-resource=
+Java Joined RejectNegative
+
+fdump-
+Java Joined RejectNegative
+
+femit-class-file
+Java
+
+femit-class-files
+Java
+
+fencoding=
+Java Joined RejectNegative
+
+fextdirs=
+Java Joined RejectNegative
+
+ffilelist-file
+Java
+
+fforce-classes-archive-check
+Java
+
+fhash-synchronization
+Java
+
+findirect-dispatch
+Java
+
+finline-functions
+Java
+
+fjni
+Java
+
+foptimize-static-class-initialization
+Java
+
+foutput-class-dir=
+Java Joined RejectNegative
+
+fstore-check
+Java
+
+fuse-boehm-gc
+Java
+
+fuse-divide-subroutine
+Java
+
+version
+Java
+
+; This comment is to ensure we retain the blank line above.

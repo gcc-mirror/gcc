@@ -49,7 +49,7 @@ extern struct obstack temporary_obstack;
 /* Base directory in which `.class' files should be written.
    NULL means to put the file into the same directory as the
    corresponding .java file.  */
-char *jcf_write_base_directory = NULL;
+const char *jcf_write_base_directory = NULL;
 
 /* Make sure bytecode.data is big enough for at least N more bytes. */
 
