@@ -70,15 +70,15 @@ namespace std
   bool
   locale::operator==(const locale& __rhs) const throw()
   {
-    bool __ret = false;
+    bool __ret = true;
     if (_M_impl == __rhs._M_impl)
-      __ret = true;
+      ;
+    else if (!std::strcmp(_M_impl->_M_names[0], "*"))
+      __ret = false;
     else
-      {
-	const string __name = this->name();
-	if (__name != "*" && __name == __rhs.name())
-	  __ret = true;
-      }
+      for (size_t __i = 0; __ret && __i < _S_categories_size; ++__i)
+	__ret = !std::strcmp(_M_impl->_M_names[__i],
+			     __rhs._M_impl->_M_names[__i]);
     return __ret;
   }
 
