@@ -1,3 +1,8 @@
+2001-05-25  Jeff Knaggs  <jknaggs@redhat.com>
+
+	* config/alpha/alpha.md (movtf_internal): Use reg_overlap_mentioned_p
+	instead of rtx_equal_p for early clobber test.
+
 2001-05-26  Mark  <mark@codesourcery.com>
 
 	* builtins.def: Encode additional information, such as names and
