@@ -293,6 +293,7 @@ void allocate_for_life_analysis		PROTO((void));
 static void init_regset_vector		PROTO((regset *, regset, int, int));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
 					       regset, int));
+static rtx flow_delete_insn		PROTO((rtx));
 static int insn_dead_p			PROTO((rtx, regset, int));
 static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
 static void mark_set_regs		PROTO((regset, regset, rtx,
@@ -407,11 +408,15 @@ find_basic_blocks (f, nonlocal_label_list)
   register char *block_marked = (char *) alloca (n_basic_blocks);
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
-  rtx label_value_list = 0;
+  rtx label_value_list;
   rtx x, note;
   enum rtx_code prev_code, code;
-  int depth;
+  int depth, pass;
 
+  pass = 1;
+ restart:
+
+  label_value_list = 0;
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
@@ -512,6 +517,7 @@ find_basic_blocks (f, nonlocal_label_list)
   if (n_basic_blocks > 0)
     {
       int something_marked = 1;
+      int deleted;
 
       /* Find all indirect jump insns and mark them as possibly jumping to all
 	 the labels whose addresses are explicitly used.  This is because,
@@ -626,34 +632,64 @@ find_basic_blocks (f, nonlocal_label_list)
 	 They can occur because jump_optimize does not recognize
 	 unreachable loops as unreachable.  */
 
+      deleted = 0;
       for (i = 0; i < n_basic_blocks; i++)
 	if (!block_live[i])
 	  {
-	    insn = basic_block_head[i];
-	    while (1)
+	    deleted++;
+
+	    /* Delete the insns in a (non-live) block.  We physically delete
+	       every non-note insn except the start and end (so
+	       basic_block_head/end needn't be updated), we turn the latter
+	       into NOTE_INSN_DELETED notes.
+	       We use to "delete" the insns by turning them into notes, but
+	       we may be deleting lots of insns that subsequent passes would
+	       otherwise have to process.  Secondly, lots of deleted blocks in
+	       a row can really slow down propagate_block since it will
+	       otherwise process insn-turned-notes multiple times when it
+	       looks for loop begin/end notes.  */
+	    if (basic_block_head[i] != basic_block_end[i])
 	      {
+		insn = NEXT_INSN (basic_block_head[i]);
+		while (insn != basic_block_end[i])
+		  {
+		    if (GET_CODE (insn) == BARRIER)
+		      abort ();
+		    else if (GET_CODE (insn) != NOTE)
+		      insn = flow_delete_insn (insn);
+		    else
+		      insn = NEXT_INSN (insn);
+		  }
+	      }
+	    insn = basic_block_head[i];
+	    if (GET_CODE (insn) != NOTE)
+	      {
+		/* Turn the head into a deleted insn note.  */
 		if (GET_CODE (insn) == BARRIER)
 		  abort ();
-		if (GET_CODE (insn) != NOTE)
-		  {
-		    PUT_CODE (insn, NOTE);
-		    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		    NOTE_SOURCE_FILE (insn) = 0;
-		  }
-		if (insn == basic_block_end[i])
-		  {
-		    /* BARRIERs are between basic blocks, not part of one.
-		       Delete a BARRIER if the preceding jump is deleted.
-		       We cannot alter a BARRIER into a NOTE
-		       because it is too short; but we can really delete
-		       it because it is not part of a basic block.  */
-		    if (NEXT_INSN (insn) != 0
-			&& GET_CODE (NEXT_INSN (insn)) == BARRIER)
-		      delete_insn (NEXT_INSN (insn));
-		    break;
-		  }
-		insn = NEXT_INSN (insn);
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
 	      }
+	    insn = basic_block_end[i];
+	    if (GET_CODE (insn) != NOTE)
+	      {
+		/* Turn the tail into a deleted insn note.  */
+		if (GET_CODE (insn) == BARRIER)
+		  abort ();
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+	      }
+	    /* BARRIERs are between basic blocks, not part of one.
+	       Delete a BARRIER if the preceding jump is deleted.
+	       We cannot alter a BARRIER into a NOTE
+	       because it is too short; but we can really delete
+	       it because it is not part of a basic block.  */
+	    if (NEXT_INSN (insn) != 0
+		&& GET_CODE (NEXT_INSN (insn)) == BARRIER)
+	      delete_insn (NEXT_INSN (insn));
+
 	    /* Each time we delete some basic blocks,
 	       see if there is a jump around them that is
 	       being turned into a no-op.  If so, delete it.  */
@@ -661,7 +697,7 @@ find_basic_blocks (f, nonlocal_label_list)
 	    if (block_live[i - 1])
 	      {
 		register int j;
-		for (j = i; j < n_basic_blocks; j++)
+		for (j = i + 1; j < n_basic_blocks; j++)
 		  if (block_live[j])
 		    {
 		      rtx label;
@@ -686,9 +722,32 @@ find_basic_blocks (f, nonlocal_label_list)
 		    }
 	      }
 	  }
+
+      /* There are pathalogical cases where one function calling hundreds of
+	 nested inline functions can generate lots and lots of unreachable
+	 blocks that jump can't delete.  Since we don't use sparse matrices
+	 a lot of memory will be needed to compile such functions.
+	 Implementing sparse matrices is a fair bit of work and it is not
+	 clear that they win more than they lose (we don't want to
+	 unnecessarily slow down compilation of normal code).  By making
+	 another pass for the pathalogical case, we can greatly speed up
+	 their compilation without hurting normal code.  This works because
+	 all the insns in the unreachable blocks have either been deleted or
+	 turned into notes.  */
+      /* ??? The choice of when to make another pass is a bit arbitrary,
+	 and was derived from empirical data.  */
+      if (pass == 1
+	  && (deleted > n_basic_blocks / 2 || deleted > 1000))
+	{
+	  pass++;
+	  n_basic_blocks -= deleted;
+	  goto restart;
+	}
     }
 }
 
+/* Subroutines of find_basic_blocks.  */
+
 /* Return 1 if X contain a REG or MEM that is not in the constant pool.  */
 
 static int
@@ -720,7 +779,7 @@ uses_reg_or_mem (x)
 
   return 0;
 }
-
+
 /* Check expression X for label references;
    if one is found, add INSN to the label's chain of references.
 
@@ -780,6 +839,20 @@ mark_label_ref (x, insn, checkdup)
 	    mark_label_ref (XVECEXP (x, i, j), insn, 1);
 	}
     }
+}
+
+/* Delete INSN by patching it out.
+   Return the next insn.  */
+
+static rtx
+flow_delete_insn (insn)
+     rtx insn;
+{
+  /* ??? For the moment we assume we don't have to watch for NULLs here
+     since the start/end of basic blocks aren't deleted like this.  */
+  NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+  PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+  return NEXT_INSN (insn);
 }
 
 /* Determine which registers are live at the start of each
@@ -1355,28 +1428,29 @@ propagate_block (old, first, last, final, significant, bnum)
     {
       prev = PREV_INSN (insn);
 
-      /* Look for loop boundaries, remembering that we are going backwards.  */
-      if (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	loop_depth++;
-      else if (GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	loop_depth--;
-
-      /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
-	 Abort now rather than setting register status incorrectly.  */
-      if (loop_depth == 0)
-	abort ();
-
-      /* If this is a call to `setjmp' et al,
-	 warn if any non-volatile datum is live.  */
-
-      if (final && GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+      if (GET_CODE (insn) == NOTE)
 	{
-	  int i;
-	  for (i = 0; i < regset_size; i++)
-	    regs_live_at_setjmp[i] |= old[i];
+	  /* Look for loop boundaries, remembering that we are going
+	     backwards.  */
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	    loop_depth++;
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	    loop_depth--;
+
+	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
+	     Abort now rather than setting register status incorrectly.  */
+	  if (loop_depth == 0)
+	    abort ();
+
+	  /* If this is a call to `setjmp' et al,
+	     warn if any non-volatile datum is live.  */
+
+	  if (final && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	    {
+	      int i;
+	      for (i = 0; i < regset_size; i++)
+		regs_live_at_setjmp[i] |= old[i];
+	    }
 	}
 
       /* Update the life-status of regs for this insn.
@@ -1386,7 +1460,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	 are those live after, with DEAD regs turned off,
 	 and then LIVE regs turned on.  */
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  register int i;
 	  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
