@@ -1082,7 +1082,7 @@ dump_function_decl (tree t, int flags)
 
   dump_function_name (t, flags);
 
-  if (1)
+  if (!(flags & TFF_NO_FUNCTION_ARGUMENTS))
     {
       dump_parameters (parmtypes, flags);
 
@@ -1302,7 +1302,7 @@ dump_expr (tree t, int flags)
     case NAMESPACE_DECL:
     case OVERLOAD:
     case IDENTIFIER_NODE:
-      dump_decl (t, flags & ~TFF_DECL_SPECIFIERS);
+      dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
       break;
 
     case INTEGER_CST:
