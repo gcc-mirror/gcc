@@ -14,7 +14,7 @@
  * modified is included with the above copyright notice.
  */
 
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 # if defined(LINUX) && !defined(POWERPC)
 #   include <linux/version.h>
@@ -45,7 +45,8 @@
 #     endif /* 2 <= __GLIBC__ */
 #   endif
 # endif
-# if !defined(OS2) && !defined(PCR) && !defined(AMIGA) && !defined(MACOS)
+# if !defined(OS2) && !defined(PCR) && !defined(AMIGA) && !defined(MACOS) \
+    && !defined(MSWINCE)
 #   include <sys/types.h>
 #   if !defined(MSWIN32) && !defined(SUNOS4)
 #   	include <unistd.h>
@@ -53,7 +54,11 @@
 # endif
 
 # include <stdio.h>
-# include <signal.h>
+# if defined(MSWINCE)
+#   define SIGSEGV 0 /* value is irrelevant */
+# else
+#   include <signal.h>
+# endif
 
 /* Blatantly OS dependent routines, except for those that are related 	*/
 /* to dynamic loading.							*/
@@ -89,13 +94,12 @@
 #endif
 
 #ifdef AMIGA
-# include <proto/exec.h>
-# include <proto/dos.h>
-# include <dos/dosextens.h>
-# include <workbench/startup.h>
+# define GC_AMIGA_DEF
+# include "AmigaOS.c"
+# undef GC_AMIGA_DEF
 #endif
 
-#ifdef MSWIN32
+#if defined(MSWIN32) || defined(MSWINCE)
 # define WIN32_LEAN_AND_MEAN
 # define NOSERVICE
 # include <windows.h>
@@ -113,6 +117,9 @@
 # include <sys/types.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
+#endif
+
+#ifdef UNIX_LIKE
 # include <fcntl.h>
 #endif
 
@@ -126,7 +133,7 @@
 #endif
 
 #ifdef DJGPP
-  /* Apparently necessary for djgpp 2.01.  May casuse problems with	*/
+  /* Apparently necessary for djgpp 2.01.  May cause problems with	*/
   /* other versions.							*/
   typedef long unsigned int caddr_t;
 #endif
@@ -210,6 +217,19 @@ static void *tiny_sbrk(ptrdiff_t increment)
 }
 #define sbrk tiny_sbrk
 # endif /* ECOS */
+
+#if defined(NETBSD) && defined(__ELF__)
+  ptr_t GC_data_start;
+
+  void GC_init_netbsd_elf()
+  {
+    extern ptr_t GC_find_limit();
+    extern char **environ;
+	/* This may need to be environ, without the underscore, for	*/
+	/* some versions.						*/
+    GC_data_start = GC_find_limit((ptr_t)&environ, FALSE);
+  }
+#endif
 
 # ifdef OS2
 
@@ -315,8 +335,8 @@ void GC_enable_signals(void)
 # else
 
 #  if !defined(PCR) && !defined(AMIGA) && !defined(MSWIN32) \
-      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW) \
-      && !defined(NO_SIGSET)
+      && !defined(MSWINCE) \
+      && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW)
 
 #   if defined(sigmask) && !defined(UTS4)
 	/* Use the traditional BSD interface */
@@ -391,7 +411,7 @@ void GC_enable_signals()
 # endif /*!OS/2 */
 
 /* Ivan Demakov: simplest way (to me) */
-#if defined (DOS4GW) || defined (NO_SIGSET)
+#if defined (DOS4GW)
   void GC_disable_signals() { }
   void GC_enable_signals() { }
 #endif
@@ -399,13 +419,11 @@ void GC_enable_signals()
 /* Find the page size */
 word GC_page_size;
 
-# ifdef MSWIN32
+# if defined(MSWIN32) || defined(MSWINCE)
   void GC_setpagesize()
   {
-    SYSTEM_INFO sysinfo;
-    
-    GetSystemInfo(&sysinfo);
-    GC_page_size = sysinfo.dwPageSize;
+    GetSystemInfo(&GC_sysinfo);
+    GC_page_size = GC_sysinfo.dwPageSize;
   }
 
 # else
@@ -430,7 +448,7 @@ word GC_page_size;
  * With threads, GC_mark_roots needs to know how to do this.
  * Called with allocator lock held.
  */
-# ifdef MSWIN32 
+# if defined(MSWIN32) || defined(MSWINCE)
 # define is_writable(prot) ((prot) == PAGE_READWRITE \
 			    || (prot) == PAGE_WRITECOPY \
 			    || (prot) == PAGE_EXECUTE_READWRITE \
@@ -467,7 +485,17 @@ ptr_t GC_get_stack_base()
 }
 
 
-# else
+# endif /* MS Windows */
+
+# ifdef BEOS
+# include <kernel/OS.h>
+ptr_t GC_get_stack_base(){
+	thread_info th;
+	get_thread_info(find_thread(NULL),&th);
+	return th.stack_end;
+}
+# endif /* BEOS */
+
 
 # ifdef OS2
 
@@ -483,67 +511,15 @@ ptr_t GC_get_stack_base()
     return((ptr_t)(ptib -> tib_pstacklimit));
 }
 
-# else
+# endif /* OS2 */
 
 # ifdef AMIGA
+#   define GC_AMIGA_SB
+#   include "AmigaOS.c"
+#   undef GC_AMIGA_SB
+# endif /* AMIGA */
 
-ptr_t GC_get_stack_base()
-{
-    struct Process *proc = (struct Process*)SysBase->ThisTask;
- 
-    /* Reference: Amiga Guru Book Pages: 42,567,574 */
-    if (proc->pr_Task.tc_Node.ln_Type==NT_PROCESS
-        && proc->pr_CLI != NULL) {
-	/* first ULONG is StackSize */
-	/*longPtr = proc->pr_ReturnAddr;
-	size = longPtr[0];*/
-
-	return (char *)proc->pr_ReturnAddr + sizeof(ULONG);
-    } else {
-	return (char *)proc->pr_Task.tc_SPUpper;
-    }
-}
-
-#if 0 /* old version */
-ptr_t GC_get_stack_base()
-{
-    extern struct WBStartup *_WBenchMsg;
-    extern long __base;
-    extern long __stack;
-    struct Task *task;
-    struct Process *proc;
-    struct CommandLineInterface *cli;
-    long size;
-
-    if ((task = FindTask(0)) == 0) {
-	GC_err_puts("Cannot find own task structure\n");
-	ABORT("task missing");
-    }
-    proc = (struct Process *)task;
-    cli = BADDR(proc->pr_CLI);
-
-    if (_WBenchMsg != 0 || cli == 0) {
-	size = (char *)task->tc_SPUpper - (char *)task->tc_SPLower;
-    } else {
-	size = cli->cli_DefaultStack * 4;
-    }
-    return (ptr_t)(__base + GC_max(size, __stack));
-}
-#endif /* 0 */
-
-# else /* !AMIGA, !OS2, ... */
-
-# ifdef NEED_FIND_LIMIT
-  /* Some tools to implement HEURISTIC2	*/
-#   define MIN_PAGE_SIZE 256	/* Smallest conceivable page size, bytes */
-    /* static */ jmp_buf GC_jmp_buf;
-    
-    /*ARGSUSED*/
-    void GC_fault_handler(sig)
-    int sig;
-    {
-        longjmp(GC_jmp_buf, 1);
-    }
+# if defined(NEED_FIND_LIMIT) || defined(UNIX_LIKE)
 
 #   ifdef __STDC__
 	typedef void (*handler)(int);
@@ -560,13 +536,18 @@ ptr_t GC_get_stack_base()
         static handler old_segv_handler, old_bus_handler;
 #   endif
     
-    void GC_setup_temporary_fault_handler()
+#   ifdef __STDC__
+      void GC_set_and_save_fault_handler(handler h)
+#   else
+      void GC_set_and_save_fault_handler(h)
+      handler h;
+#   endif
     {
 # ifndef ECOS
 #	if defined(SUNOS5SIGS) || defined(IRIX5) || defined(OSF1)
 	  struct sigaction	act;
 
-	  act.sa_handler	= GC_fault_handler;
+	  act.sa_handler	= h;
           act.sa_flags          = SA_RESTART | SA_NODEFER;
           /* The presence of SA_NODEFER represents yet another gross    */
           /* hack.  Under Solaris 2.3, siglongjmp doesn't appear to     */
@@ -591,12 +572,30 @@ ptr_t GC_get_stack_base()
 #		endif
 #	  endif	/* IRIX_THREADS */
 #	else
-    	  old_segv_handler = signal(SIGSEGV, GC_fault_handler);
+    	  old_segv_handler = signal(SIGSEGV, h);
 #	  ifdef SIGBUS
-	    old_bus_handler = signal(SIGBUS, GC_fault_handler);
+	    old_bus_handler = signal(SIGBUS, h);
 #	  endif
 #	endif
 # endif /* ECOS */
+    }
+# endif /* NEED_FIND_LIMIT || UNIX_LIKE */
+
+# ifdef NEED_FIND_LIMIT
+  /* Some tools to implement HEURISTIC2	*/
+#   define MIN_PAGE_SIZE 256	/* Smallest conceivable page size, bytes */
+    /* static */ jmp_buf GC_jmp_buf;
+    
+    /*ARGSUSED*/
+    void GC_fault_handler(sig)
+    int sig;
+    {
+        longjmp(GC_jmp_buf, 1);
+    }
+
+    void GC_setup_temporary_fault_handler()
+    {
+	GC_set_and_save_fault_handler(GC_fault_handler);
     }
     
     void GC_reset_fault_handler()
@@ -661,10 +660,29 @@ ptr_t GC_get_stack_base()
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 # define STAT_SKIP 27   /* Number of fields preceding startstack	*/
 			/* field in /proc/self/stat			*/
+
+# pragma weak __libc_stack_end
+  extern ptr_t __libc_stack_end;
+
+# ifdef IA64
+#   pragma weak __libc_ia64_register_backing_store_base
+    extern ptr_t __libc_ia64_register_backing_store_base;
+
+    ptr_t GC_get_register_stack_base(void)
+    {
+      if (0 != &__libc_ia64_register_backing_store_base) {
+	return __libc_ia64_register_backing_store_base;
+      } else {
+	word result = (word)GC_stackbottom - BACKING_STORE_DISPLACEMENT;
+	result += BACKING_STORE_ALIGNMENT - 1;
+	result &= ~(BACKING_STORE_ALIGNMENT - 1);
+	return (ptr_t)result;
+      }
+    }
+# endif
 
   ptr_t GC_linux_stack_base(void)
   {
@@ -672,7 +690,7 @@ ptr_t GC_get_stack_base()
     /* using direct I/O system calls in order to avoid calling malloc   */
     /* in case REDIRECT_MALLOC is defined.				*/ 
 #   define STAT_BUF_SIZE 4096
-#   ifdef USE_LD_WRAP
+#   if defined(GC_USE_LD_WRAP)
 #	define STAT_READ __real_read
 #   else
 #	define STAT_READ read
@@ -683,6 +701,10 @@ ptr_t GC_get_stack_base()
     word result = 0;
     size_t i, buf_offset = 0;
 
+    /* First try the easy way.  This should work for glibc 2.2	*/
+      if (0 != &__libc_stack_end) {
+	return __libc_stack_end;
+      }
     f = open("/proc/self/stat", O_RDONLY);
     if (f < 0 || STAT_READ(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
 	ABORT("Couldn't read /proc/self/stat");
@@ -707,6 +729,32 @@ ptr_t GC_get_stack_base()
 
 #endif /* LINUX_STACKBOTTOM */
 
+#ifdef FREEBSD_STACKBOTTOM
+
+/* This uses an undocumented sysctl call, but at least one expert 	*/
+/* believes it will stay.						*/
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+  ptr_t GC_freebsd_stack_base(void)
+  {
+    int nm[2] = { CTL_KERN, KERN_USRSTACK}, base, len, r;
+    
+    len = sizeof(int);
+    r = sysctl(nm, 2, &base, &len, NULL, 0);
+    
+    if (r) ABORT("Error getting stack base");
+
+    return (ptr_t)base;
+  }
+
+#endif /* FREEBSD_STACKBOTTOM */
+
+#if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
+    && !defined(MSWINCE) && !defined(OS2)
+
 ptr_t GC_get_stack_base()
 {
     word dummy;
@@ -714,10 +762,6 @@ ptr_t GC_get_stack_base()
 
 #   define STACKBOTTOM_ALIGNMENT_M1 ((word)STACK_GRAN - 1)
 
-#  if defined(STACKBASE)
-    extern ptr_t STACKBASE;
-    return(STACKBASE);
-#   else
 #   ifdef STACKBOTTOM
 	return(STACKBOTTOM);
 #   else
@@ -733,6 +777,9 @@ ptr_t GC_get_stack_base()
 #	endif /* HEURISTIC1 */
 #	ifdef LINUX_STACKBOTTOM
 	   result = GC_linux_stack_base();
+#	endif
+#	ifdef FREEBSD_STACKBOTTOM
+	   result = GC_freebsd_stack_base();
 #	endif
 #	ifdef HEURISTIC2
 #	    ifdef STACK_GROWS_DOWN
@@ -759,13 +806,10 @@ ptr_t GC_get_stack_base()
 #	endif
     	return(result);
 #   endif /* STACKBOTTOM */
-#   endif /* STACKBASE */
 }
 # endif /* ECOS */
 
-# endif /* ! AMIGA */
-# endif /* ! OS2 */
-# endif /* ! MSWIN32 */
+# endif /* ! AMIGA, !OS 2, ! MS Windows, !BEOS */
 
 /*
  * Register static data segment(s) as roots.
@@ -865,7 +909,9 @@ void GC_register_data_segments()
     }
 }
 
-# else
+# else /* !OS2 */
+
+# if defined(MSWIN32) || defined(MSWINCE)
 
 # ifdef MSWIN32
   /* Unfortunately, we have to handle win32s very differently from NT, 	*/
@@ -889,21 +935,19 @@ void GC_register_data_segments()
   {
       GC_win32s = GC_is_win32s();
   }
-  
+
   /* Return the smallest address a such that VirtualQuery		*/
   /* returns correct results for all addresses between a and start.	*/
   /* Assumes VirtualQuery returns correct information for start.	*/
   ptr_t GC_least_described_address(ptr_t start)
   {  
     MEMORY_BASIC_INFORMATION buf;
-    SYSTEM_INFO sysinfo;
     DWORD result;
     LPVOID limit;
     ptr_t p;
     LPVOID q;
     
-    GetSystemInfo(&sysinfo);
-    limit = sysinfo.lpMinimumApplicationAddress;
+    limit = GC_sysinfo.lpMinimumApplicationAddress;
     p = (ptr_t)((word)start & ~(GC_page_size - 1));
     for (;;) {
     	q = (LPVOID)(p - GC_page_size);
@@ -914,6 +958,7 @@ void GC_register_data_segments()
     }
     return(p);
   }
+# endif
   
   /* Is p the start of either the malloc heap, or of one of our */
   /* heap sections?						*/
@@ -927,7 +972,11 @@ void GC_register_data_segments()
      
        if (0 == malloc_heap_pointer) {
          MEMORY_BASIC_INFORMATION buf;
-         register DWORD result = VirtualQuery(malloc(1), &buf, sizeof(buf));
+         void *pTemp = malloc( 1 );
+         register DWORD result = VirtualQuery(pTemp, &buf, sizeof(buf));
+           
+         free( pTemp );
+
          
          if (result != sizeof(buf)) {
              ABORT("Weird VirtualQuery result");
@@ -941,11 +990,11 @@ void GC_register_data_segments()
      }
      return(FALSE);
   }
-  
+
+# ifdef MSWIN32
   void GC_register_root_section(ptr_t static_root)
   {
       MEMORY_BASIC_INFORMATION buf;
-      SYSTEM_INFO sysinfo;
       DWORD result;
       DWORD protect;
       LPVOID p;
@@ -954,8 +1003,7 @@ void GC_register_data_segments()
     
       if (!GC_win32s) return;
       p = base = limit = GC_least_described_address(static_root);
-      GetSystemInfo(&sysinfo);
-      while (p < sysinfo.lpMaximumApplicationAddress) {
+      while (p < GC_sysinfo.lpMaximumApplicationAddress) {
         result = VirtualQuery(p, &buf, sizeof(buf));
         if (result != sizeof(buf) || buf.AllocationBase == 0
             || GC_is_heap_base(buf.AllocationBase)) break;
@@ -976,127 +1024,17 @@ void GC_register_data_segments()
       }
       if (base != limit) GC_add_roots_inner(base, limit, FALSE);
   }
+#endif
   
   void GC_register_data_segments()
   {
+#     ifdef MSWIN32
       static char dummy;
-      
       GC_register_root_section((ptr_t)(&dummy));
-  }
-# else
-# ifdef AMIGA
-
-   void GC_register_data_segments()
-   {
-     struct Process	*proc;
-     struct CommandLineInterface *cli;
-     BPTR myseglist;
-     ULONG *data;
- 
-     int	num;
-
-
-#    ifdef __GNUC__
-        ULONG dataSegSize;
-        GC_bool found_segment = FALSE;
-	extern char __data_size[];
-
-	dataSegSize=__data_size+8;
-	/* Can`t find the Location of __data_size, because
-           it`s possible that is it, inside the segment. */
-
 #     endif
-
-	proc= (struct Process*)SysBase->ThisTask;
-
-	/* Reference: Amiga Guru Book Pages: 538ff,565,573
-		     and XOper.asm */
-	if (proc->pr_Task.tc_Node.ln_Type==NT_PROCESS) {
-	  if (proc->pr_CLI == NULL) {
-	    myseglist = proc->pr_SegList;
-	  } else {
-	    /* ProcLoaded	'Loaded as a command: '*/
-	    cli = BADDR(proc->pr_CLI);
-	    myseglist = cli->cli_Module;
-	  }
-	} else {
-	  ABORT("Not a Process.");
- 	}
-
-	if (myseglist == NULL) {
-	    ABORT("Arrrgh.. can't find segments, aborting");
- 	}
-
-	/* xoper hunks Shell Process */
-
-	num=0;
-        for (data = (ULONG *)BADDR(myseglist); data != NULL;
-             data = (ULONG *)BADDR(data[0])) {
-	  if (((ULONG) GC_register_data_segments < (ULONG) &data[1]) ||
-	      ((ULONG) GC_register_data_segments > (ULONG) &data[1] + data[-1])) {
-#             ifdef __GNUC__
-		if (dataSegSize == data[-1]) {
-		  found_segment = TRUE;
-		}
-# 	      endif
-	      GC_add_roots_inner((char *)&data[1],
-				 ((char *)&data[1]) + data[-1], FALSE);
-          }
-          ++num;
-        } /* for */
-# 	ifdef __GNUC__
-	   if (!found_segment) {
-	     ABORT("Can`t find correct Segments.\nSolution: Use an newer version of ixemul.library");
-	   }
-# 	endif
   }
 
-#if 0 /* old version */
-  void GC_register_data_segments()
-  {
-    extern struct WBStartup *_WBenchMsg;
-    struct Process	*proc;
-    struct CommandLineInterface *cli;
-    BPTR myseglist;
-    ULONG *data;
-
-    if ( _WBenchMsg != 0 ) {
-	if ((myseglist = _WBenchMsg->sm_Segment) == 0) {
-	    GC_err_puts("No seglist from workbench\n");
-	    return;
-	}
-    } else {
-	if ((proc = (struct Process *)FindTask(0)) == 0) {
-	    GC_err_puts("Cannot find process structure\n");
-	    return;
-	}
-	if ((cli = BADDR(proc->pr_CLI)) == 0) {
-	    GC_err_puts("No CLI\n");
-	    return;
-	}
-	if ((myseglist = cli->cli_Module) == 0) {
-	    GC_err_puts("No seglist from CLI\n");
-	    return;
-	}
-    }
-
-    for (data = (ULONG *)BADDR(myseglist); data != 0;
-         data = (ULONG *)BADDR(data[0])) {
-#        ifdef AMIGA_SKIP_SEG
-           if (((ULONG) GC_register_data_segments < (ULONG) &data[1]) ||
-           ((ULONG) GC_register_data_segments > (ULONG) &data[1] + data[-1])) {
-#	 else
-      	   {
-#	 endif /* AMIGA_SKIP_SEG */
-          GC_add_roots_inner((char *)&data[1],
-          		     ((char *)&data[1]) + data[-1], FALSE);
-         }
-    }
-  }
-#endif /* old version */
-
-
-# else
+# else /* !OS2 && !Windows */
 
 # if (defined(SVR4) || defined(AUX) || defined(DGUX) \
       || (defined(LINUX) && defined(SPARC))) && !defined(PCR)
@@ -1132,6 +1070,14 @@ int * etext_addr;
 }
 # endif
 
+
+#ifdef AMIGA
+
+#  define GC_AMIGA_DS
+#  include "AmigaOS.c"
+#  undef GC_AMIGA_DS
+
+#else /* !OS2 && !Windows && !AMIGA */
 
 void GC_register_data_segments()
 {
@@ -1192,15 +1138,16 @@ void GC_register_data_segments()
 }
 
 # endif  /* ! AMIGA */
-# endif  /* ! MSWIN32 */
+# endif  /* ! MSWIN32 && ! MSWINCE*/
 # endif  /* ! OS2 */
 
 /*
  * Auxiliary routines for obtaining memory from OS.
  */
- 
+
 # if !defined(OS2) && !defined(PCR) && !defined(AMIGA) \
-	&& !defined(MSWIN32) && !defined(MACOS) && !defined(DOS4GW)
+	&& !defined(MSWIN32) && !defined(MSWINCE) \
+	&& !defined(MACOS) && !defined(DOS4GW)
 
 # ifdef SUNOS4
     extern caddr_t sbrk();
@@ -1210,6 +1157,7 @@ void GC_register_data_segments()
 # else
 #   define SBRK_ARG_T int
 # endif
+
 
 # ifdef RS6000
 /* The compiler seems to generate speculative reads one past the end of	*/
@@ -1243,7 +1191,7 @@ word bytes;
 #else  /* Not RS6000 */
 
 #if defined(USE_MMAP)
-/* Tested only under IRIX5 and Solaris 2 */
+/* Tested only under Linux, IRIX5 and Solaris 2 */
 
 #ifdef USE_MMAP_FIXED
 #   define GC_MMAP_FLAGS MAP_FIXED | MAP_PRIVATE
@@ -1251,6 +1199,10 @@ word bytes;
 	/* be unreliable if something is already mapped at the address.	*/
 #else
 #   define GC_MMAP_FLAGS MAP_PRIVATE
+#endif
+
+#ifndef HEAP_START
+#   define HEAP_START 0
 #endif
 
 ptr_t GC_unix_get_mem(bytes)
@@ -1271,6 +1223,18 @@ word bytes;
     if (result == MAP_FAILED) return(0);
     last_addr = (ptr_t)result + bytes + GC_page_size - 1;
     last_addr = (ptr_t)((word)last_addr & ~(GC_page_size - 1));
+#   if !defined(LINUX)
+      if (last_addr == 0) {
+        /* Oops.  We got the end of the address space.  This isn't	*/
+	/* usable by arbitrary C code, since one-past-end pointers	*/
+	/* don't work, so we discard it and try again.			*/
+	munmap(result, (size_t)(-GC_page_size) - (size_t)result);
+			/* Leave last page mapped, so we can't repeat. */
+	return GC_unix_get_mem(bytes);
+      }
+#   else
+      GC_ASSERT(last_addr != 0);
+#   endif
     return((ptr_t)result);
 }
 
@@ -1324,6 +1288,11 @@ void * os2_alloc(size_t bytes)
 # endif /* OS2 */
 
 
+# if defined(MSWIN32) || defined(MSWINCE)
+SYSTEM_INFO GC_sysinfo;
+# endif
+
+
 # ifdef MSWIN32
 word GC_n_heap_bases = 0;
 
@@ -1331,7 +1300,7 @@ ptr_t GC_win32_get_mem(bytes)
 word bytes;
 {
     ptr_t result;
-    
+
     if (GC_win32s) {
     	/* VirtualAlloc doesn't like PAGE_EXECUTE_READWRITE.	*/
     	/* There are also unconfirmed rumors of other		*/
@@ -1360,20 +1329,81 @@ void GC_win32_free_heap ()
  	}
     }
 }
+# endif
+
+#ifdef AMIGA
+# define GC_AMIGA_AM
+# include "AmigaOS.c"
+# undef GC_AMIGA_AM
+#endif
 
 
+# ifdef MSWINCE
+word GC_n_heap_bases = 0;
+
+ptr_t GC_wince_get_mem(bytes)
+word bytes;
+{
+    ptr_t result;
+    word i;
+
+    /* Round up allocation size to multiple of page size */
+    bytes = (bytes + GC_page_size-1) & ~(GC_page_size-1);
+
+    /* Try to find reserved, uncommitted pages */
+    for (i = 0; i < GC_n_heap_bases; i++) {
+	if (((word)(-(signed_word)GC_heap_lengths[i])
+	     & (GC_sysinfo.dwAllocationGranularity-1))
+	    >= bytes) {
+	    result = GC_heap_bases[i] + GC_heap_lengths[i];
+	    break;
+	}
+    }
+
+    if (i == GC_n_heap_bases) {
+	/* Reserve more pages */
+	word res_bytes = (bytes + GC_sysinfo.dwAllocationGranularity-1)
+			 & ~(GC_sysinfo.dwAllocationGranularity-1);
+	result = (ptr_t) VirtualAlloc(NULL, res_bytes,
+    				      MEM_RESERVE | MEM_TOP_DOWN,
+    				      PAGE_EXECUTE_READWRITE);
+	if (HBLKDISPL(result) != 0) ABORT("Bad VirtualAlloc result");
+    	    /* If I read the documentation correctly, this can	*/
+    	    /* only happen if HBLKSIZE > 64k or not a power of 2.	*/
+	if (GC_n_heap_bases >= MAX_HEAP_SECTS) ABORT("Too many heap sections");
+	GC_heap_bases[GC_n_heap_bases] = result;
+	GC_heap_lengths[GC_n_heap_bases] = 0;
+	GC_n_heap_bases++;
+    }
+
+    /* Commit pages */
+    result = (ptr_t) VirtualAlloc(result, bytes,
+				  MEM_COMMIT,
+    				  PAGE_EXECUTE_READWRITE);
+    if (result != NULL) {
+	if (HBLKDISPL(result) != 0) ABORT("Bad VirtualAlloc result");
+	GC_heap_lengths[i] += bytes;
+    }
+
+    return(result);			  
+}
 # endif
 
 #ifdef USE_MUNMAP
 
-/* For now, this only works on some Unix-like systems.  If you 	*/
-/* have something else, don't define USE_MUNMAP.		*/
+/* For now, this only works on Win32/WinCE and some Unix-like	*/
+/* systems.  If you have something else, don't define		*/
+/* USE_MUNMAP.							*/
 /* We assume ANSI C to support this feature.			*/
+
+#if !defined(MSWIN32) && !defined(MSWINCE)
+
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
+
+#endif
 
 /* Compute a page aligned starting address for the unmap 	*/
 /* operation on a block of size bytes starting at start.	*/
@@ -1397,6 +1427,14 @@ ptr_t GC_unmap_end(ptr_t start, word bytes)
     return end_addr;
 }
 
+/* Under Win32/WinCE we commit (map) and decommit (unmap)	*/
+/* memory using	VirtualAlloc and VirtualFree.  These functions	*/
+/* work on individual allocations of virtual memory, made	*/
+/* previously using VirtualAlloc with the MEM_RESERVE flag.	*/
+/* The ranges we need to (de)commit may span several of these	*/
+/* allocations; therefore we use VirtualQuery to check		*/
+/* allocation lengths, and split up the range as necessary.	*/
+
 /* We assume that GC_remap is called on exactly the same range	*/
 /* as a previous call to GC_unmap.  It is safe to consistently	*/
 /* round the endpoints in both places.				*/
@@ -1406,8 +1444,24 @@ void GC_unmap(ptr_t start, word bytes)
     ptr_t end_addr = GC_unmap_end(start, bytes);
     word len = end_addr - start_addr;
     if (0 == start_addr) return;
-    if (munmap(start_addr, len) != 0) ABORT("munmap failed");
-    GC_unmapped_bytes += len;
+#   if defined(MSWIN32) || defined(MSWINCE)
+      while (len != 0) {
+          MEMORY_BASIC_INFORMATION mem_info;
+	  GC_word free_len;
+	  if (VirtualQuery(start_addr, &mem_info, sizeof(mem_info))
+	      != sizeof(mem_info))
+	      ABORT("Weird VirtualQuery result");
+	  free_len = (len < mem_info.RegionSize) ? len : mem_info.RegionSize;
+	  if (!VirtualFree(start_addr, free_len, MEM_DECOMMIT))
+	      ABORT("VirtualFree failed");
+	  GC_unmapped_bytes += free_len;
+	  start_addr += free_len;
+	  len -= free_len;
+      }
+#   else
+      if (munmap(start_addr, len) != 0) ABORT("munmap failed");
+      GC_unmapped_bytes += len;
+#   endif
 }
 
 
@@ -1419,14 +1473,35 @@ void GC_remap(ptr_t start, word bytes)
     word len = end_addr - start_addr;
     ptr_t result;
 
-    if (-1 == zero_descr) zero_descr = open("/dev/zero", O_RDWR);
-    if (0 == start_addr) return;
-    result = mmap(start_addr, len, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
-	          MAP_FIXED | MAP_PRIVATE, zero_descr, 0);
-    if (result != start_addr) {
-	ABORT("mmap remapping failed");
-    }
-    GC_unmapped_bytes -= len;
+#   if defined(MSWIN32) || defined(MSWINCE)
+      if (0 == start_addr) return;
+      while (len != 0) {
+          MEMORY_BASIC_INFORMATION mem_info;
+	  GC_word alloc_len;
+	  if (VirtualQuery(start_addr, &mem_info, sizeof(mem_info))
+	      != sizeof(mem_info))
+	      ABORT("Weird VirtualQuery result");
+	  alloc_len = (len < mem_info.RegionSize) ? len : mem_info.RegionSize;
+	  result = VirtualAlloc(start_addr, alloc_len,
+				MEM_COMMIT,
+				PAGE_EXECUTE_READWRITE);
+	  if (result != start_addr) {
+	      ABORT("VirtualAlloc remapping failed");
+	  }
+	  GC_unmapped_bytes -= alloc_len;
+	  start_addr += alloc_len;
+	  len -= alloc_len;
+      }
+#   else
+      if (-1 == zero_descr) zero_descr = open("/dev/zero", O_RDWR);
+      if (0 == start_addr) return;
+      result = mmap(start_addr, len, PROT_READ | PROT_WRITE | OPT_PROT_EXEC,
+		    MAP_FIXED | MAP_PRIVATE, zero_descr, 0);
+      if (result != start_addr) {
+	  ABORT("mmap remapping failed");
+      }
+      GC_unmapped_bytes -= len;
+#   endif
 }
 
 /* Two adjacent blocks have already been unmapped and are about to	*/
@@ -1447,16 +1522,31 @@ void GC_unmap_gap(ptr_t start1, word bytes1, ptr_t start2, word bytes2)
     if (0 == start2_addr) end_addr = GC_unmap_end(start1, bytes1 + bytes2);
     if (0 == start_addr) return;
     len = end_addr - start_addr;
-    if (len != 0 && munmap(start_addr, len) != 0) ABORT("munmap failed");
-    GC_unmapped_bytes += len;
+#   if defined(MSWIN32) || defined(MSWINCE)
+      while (len != 0) {
+          MEMORY_BASIC_INFORMATION mem_info;
+	  GC_word free_len;
+	  if (VirtualQuery(start_addr, &mem_info, sizeof(mem_info))
+	      != sizeof(mem_info))
+	      ABORT("Weird VirtualQuery result");
+	  free_len = (len < mem_info.RegionSize) ? len : mem_info.RegionSize;
+	  if (!VirtualFree(start_addr, free_len, MEM_DECOMMIT))
+	      ABORT("VirtualFree failed");
+	  GC_unmapped_bytes += free_len;
+	  start_addr += free_len;
+	  len -= free_len;
+      }
+#   else
+      if (len != 0 && munmap(start_addr, len) != 0) ABORT("munmap failed");
+      GC_unmapped_bytes += len;
+#   endif
 }
 
 #endif /* USE_MUNMAP */
 
 /* Routine for pushing any additional roots.  In THREADS 	*/
 /* environment, this is also responsible for marking from 	*/
-/* thread stacks.  In the SRC_M3 case, it also handles		*/
-/* global variables.						*/
+/* thread stacks. 						*/
 #ifndef THREADS
 void (*GC_push_other_roots)() = 0;
 #else /* THREADS */
@@ -1483,7 +1573,7 @@ PCR_ERes GC_push_old_obj(void *p, size_t size, PCR_Any data)
 }
 
 
-void GC_default_push_other_roots()
+void GC_default_push_other_roots GC_PROTO((void))
 {
     /* Traverse data allocated by previous memory managers.		*/
 	{
@@ -1511,6 +1601,10 @@ void GC_default_push_other_roots()
     --> misconfigured
 # endif
 
+void GC_push_thread_structures GC_PROTO((void))
+{
+    /* Not our responsibibility. */
+}
 
 extern void ThreadF__ProcessStacks();
 
@@ -1528,37 +1622,19 @@ int dummy3;
 {
     word q = *p;
     
-    if ((ptr_t)(q) >= GC_least_plausible_heap_addr
-	 && (ptr_t)(q) < GC_greatest_plausible_heap_addr) {
-	 GC_push_one_checked(q,FALSE);
-    }
+    GC_PUSH_ONE_STACK(q, p);
 }
 
 /* M3 set equivalent to RTHeap.TracedRefTypes */
 typedef struct { int elts[1]; }  RefTypeSet;
 RefTypeSet GC_TracedRefTypes = {{0x1}};
 
-/* From finalize.c */
-extern void GC_push_finalizer_structures();
-
-/* From stubborn.c: */
-# ifdef STUBBORN_ALLOC
-    extern GC_PTR * GC_changing_list_start;
-# endif
-
-
-void GC_default_push_other_roots()
+void GC_default_push_other_roots GC_PROTO((void))
 {
-    /* Use the M3 provided routine for finding static roots.	*/
-    /* This is a bit dubious, since it presumes no C roots.	*/
-    /* We handle the collector roots explicitly.		*/
-       {
-# 	 ifdef STUBBORN_ALLOC
-           GC_push_one(GC_changing_list_start);
-#	 endif
-      	 GC_push_finalizer_structures();
-      	 RTMain__GlobalMapProc(GC_m3_push_root, 0, GC_TracedRefTypes);
-       }
+    /* Use the M3 provided routine for finding static roots.	 */
+    /* This is a bit dubious, since it presumes no C roots.	 */
+    /* We handle the collector roots explicitly in GC_push_roots */
+      	RTMain__GlobalMapProc(GC_m3_push_root, 0, GC_TracedRefTypes);
 	if (GC_words_allocd > 0) {
 	    ThreadF__ProcessStacks(GC_push_thread_stack);
 	}
@@ -1570,24 +1646,24 @@ void GC_default_push_other_roots()
 
 # if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
      || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-     || defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
+     || defined(HPUX_THREADS)
 
 extern void GC_push_all_stacks();
 
-void GC_default_push_other_roots()
+void GC_default_push_other_roots GC_PROTO((void))
 {
     GC_push_all_stacks();
 }
 
 # endif /* SOLARIS_THREADS || ... */
 
-void (*GC_push_other_roots)() = GC_default_push_other_roots;
+void (*GC_push_other_roots) GC_PROTO((void)) = GC_default_push_other_roots;
 
 #endif
 
 /*
  * Routines for accessing dirty  bits on virtual pages.
- * We plan to eventaually implement four strategies for doing so:
+ * We plan to eventually implement four strategies for doing so:
  * DEFAULT_VDB:	A simple dummy implementation that treats every page
  *		as possibly dirty.  This makes incremental collection
  *		useless, but the implementation is still correct.
@@ -1690,7 +1766,7 @@ struct hblk *h;
  * not to work under a number of other systems.
  */
 
-# ifndef MSWIN32
+# if !defined(MSWIN32) && !defined(MSWINCE)
 
 #   include <sys/mman.h>
 #   include <signal.h>
@@ -1709,7 +1785,9 @@ struct hblk *h;
     	  
 # else
 
-#   include <signal.h>
+#   ifndef MSWINCE
+#     include <signal.h>
+#   endif
 
     static DWORD protect_junk;
 #   define PROTECT(addr, len) \
@@ -1730,7 +1808,7 @@ struct hblk *h;
 #if defined(SUNOS4) || defined(FREEBSD)
     typedef void (* SIG_PF)();
 #endif
-#if defined(SUNOS5SIGS) || defined(OSF1) || defined(LINUX)
+#if defined(SUNOS5SIGS) || defined(OSF1) || defined(LINUX) || defined(MACOSX)
 # ifdef __STDC__
     typedef void (* SIG_PF)(int);
 # else
@@ -1741,6 +1819,11 @@ struct hblk *h;
     typedef LPTOP_LEVEL_EXCEPTION_FILTER SIG_PF;
 #   undef SIG_DFL
 #   define SIG_DFL (LPTOP_LEVEL_EXCEPTION_FILTER) (-1)
+#endif
+#if defined(MSWINCE)
+    typedef LONG (WINAPI *SIG_PF)(struct _EXCEPTION_POINTERS *);
+#   undef SIG_DFL
+#   define SIG_DFL (SIG_PF) (-1)
 #endif
 
 #if defined(IRIX5) || defined(OSF1)
@@ -1768,7 +1851,7 @@ struct hblk *h;
 #   if defined(ALPHA) || defined(M68K)
       typedef void (* REAL_SIG_PF)(int, int, s_c *);
 #   else
-#     if defined(IA64)
+#     if defined(IA64) || defined(HP_PA)
         typedef void (* REAL_SIG_PF)(int, siginfo_t *, s_c *);
 #     else
         typedef void (* REAL_SIG_PF)(int, s_c);
@@ -1789,8 +1872,183 @@ struct hblk *h;
 #   endif /* !ALPHA */
 # endif
 
+# if defined(MACOSX) /* Should also test for PowerPC? */
+    typedef void (* REAL_SIG_PF)(int, int, struct sigcontext *);
+
+/* Decodes the machine instruction which was responsible for the sending of the
+   SIGBUS signal. Sadly this is the only way to find the faulting address because
+   the signal handler doesn't get it directly from the kernel (although it is
+   available on the Mach level, but droppped by the BSD personality before it
+   calls our signal handler...)
+   This code should be able to deal correctly with all PPCs starting from the
+   601 up to and including the G4s (including Velocity Engine). */
+#define EXTRACT_OP1(iw)     (((iw) & 0xFC000000) >> 26)
+#define EXTRACT_OP2(iw)     (((iw) & 0x000007FE) >> 1)
+#define EXTRACT_REGA(iw)    (((iw) & 0x001F0000) >> 16)
+#define EXTRACT_REGB(iw)    (((iw) & 0x03E00000) >> 21)
+#define EXTRACT_REGC(iw)    (((iw) & 0x0000F800) >> 11)
+#define EXTRACT_DISP(iw)    ((short *) &(iw))[1]
+
+static char *get_fault_addr(struct sigcontext *scp)
+{
+   unsigned int   instr = *((unsigned int *) scp->sc_ir);
+   unsigned int * regs = &((unsigned int *) scp->sc_regs)[2];
+   int            disp = 0, tmp;
+   unsigned int   baseA = 0, baseB = 0;
+   unsigned int   addr, alignmask = 0xFFFFFFFF;
+
+#ifdef GC_DEBUG_DECODER
+   GC_err_printf1("Instruction: 0x%lx\n", instr);
+   GC_err_printf1("Opcode 1: d\n", (int)EXTRACT_OP1(instr));
+#endif
+   switch(EXTRACT_OP1(instr)) {
+      case 38:   /* stb */
+      case 39:   /* stbu */
+      case 54:   /* stfd */
+      case 55:   /* stfdu */
+      case 52:   /* stfs */
+      case 53:   /* stfsu */
+      case 44:   /* sth */
+      case 45:   /* sthu */
+      case 47:   /* stmw */
+      case 36:   /* stw */
+      case 37:   /* stwu */
+            tmp = EXTRACT_REGA(instr);
+            if(tmp > 0)
+               baseA = regs[tmp];
+            disp = EXTRACT_DISP(instr);
+            break;
+      case 31:
+#ifdef GC_DEBUG_DECODER
+            GC_err_printf1("Opcode 2: %d\n", (int)EXTRACT_OP2(instr));
+#endif
+            switch(EXTRACT_OP2(instr)) {
+               case 86:    /* dcbf */
+               case 54:    /* dcbst */
+               case 1014:  /* dcbz */
+               case 247:   /* stbux */
+               case 215:   /* stbx */
+               case 759:   /* stfdux */
+               case 727:   /* stfdx */
+               case 983:   /* stfiwx */
+               case 695:   /* stfsux */
+               case 663:   /* stfsx */
+               case 918:   /* sthbrx */
+               case 439:   /* sthux */
+               case 407:   /* sthx */
+               case 661:   /* stswx */
+               case 662:   /* stwbrx */
+               case 150:   /* stwcx. */
+               case 183:   /* stwux */
+               case 151:   /* stwx */
+               case 135:   /* stvebx */
+               case 167:   /* stvehx */
+               case 199:   /* stvewx */
+               case 231:   /* stvx */
+               case 487:   /* stvxl */
+                     tmp = EXTRACT_REGA(instr);
+                     if(tmp > 0)
+                        baseA = regs[tmp];
+                        baseB = regs[EXTRACT_REGC(instr)];
+                        /* determine Altivec alignment mask */
+                        switch(EXTRACT_OP2(instr)) {
+                           case 167:   /* stvehx */
+                                 alignmask = 0xFFFFFFFE;
+                                 break;
+                           case 199:   /* stvewx */
+                                 alignmask = 0xFFFFFFFC;
+                                 break;
+                           case 231:   /* stvx */
+                                 alignmask = 0xFFFFFFF0;
+                                 break;
+                           case 487:  /* stvxl */
+                                 alignmask = 0xFFFFFFF0;
+                                 break;
+                        }
+                        break;
+               case 725:   /* stswi */
+                     tmp = EXTRACT_REGA(instr);
+                     if(tmp > 0)
+                        baseA = regs[tmp];
+                        break;
+               default:   /* ignore instruction */
+#ifdef GC_DEBUG_DECODER
+                     GC_err_printf("Ignored by inner handler\n");
+#endif
+                     return NULL;
+                    break;
+            }
+            break;
+      default:   /* ignore instruction */
+#ifdef GC_DEBUG_DECODER
+            GC_err_printf("Ignored by main handler\n");
+#endif
+            return NULL;
+            break;
+   }
+	
+   addr = (baseA + baseB) + disp;
+  addr &= alignmask;
+#ifdef GC_DEBUG_DECODER
+   GC_err_printf1("BaseA: %d\n", baseA);
+   GC_err_printf1("BaseB: %d\n", baseB);
+   GC_err_printf1("Disp:  %d\n", disp);
+   GC_err_printf1("Address: %d\n", addr);
+#endif
+   return (char *)addr;
+}
+#endif /* MACOSX */
+
 SIG_PF GC_old_bus_handler;
 SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
+
+#ifdef THREADS
+/* We need to lock around the bitmap update in the write fault handler	*/
+/* in order to avoid the risk of losing a bit.  We do this with a 	*/
+/* test-and-set spin lock if we know how to do that.  Otherwise we	*/
+/* check whether we are already in the handler and use the dumb but	*/
+/* safe fallback algorithm of setting all bits in the word.		*/
+/* Contention should be very rare, so we do the minimum to handle it	*/
+/* correctly.								*/
+#ifdef GC_TEST_AND_SET_DEFINED
+  static VOLATILE unsigned int fault_handler_lock = 0;
+  void async_set_pht_entry_from_index(VOLATILE page_hash_table db, int index) {
+    while (GC_test_and_set(&fault_handler_lock));
+    /* Could also revert to set_pht_entry_from_index_safe if initial	*/
+    /* GC_test_and_set fails.						*/
+    set_pht_entry_from_index(db, index);
+    GC_clear(&fault_handler_lock);
+  }
+#else /* !GC_TEST_AND_SET_DEFINED */
+  /* THIS IS INCORRECT! The dirty bit vector may be temporarily wrong,	*/
+  /* just before we notice the conflict and correct it. We may end up   */
+  /* looking at it while it's wrong.  But this requires contention	*/
+  /* exactly when a GC is triggered, which seems far less likely to	*/
+  /* fail than the old code, which had no reported failures.  Thus we	*/
+  /* leave it this way while we think of something better, or support	*/
+  /* GC_test_and_set on the remaining platforms.			*/
+  static VOLATILE word currently_updating = 0;
+  void async_set_pht_entry_from_index(VOLATILE page_hash_table db, int index) {
+    unsigned int update_dummy;
+    currently_updating = (word)(&update_dummy);
+    set_pht_entry_from_index(db, index);
+    /* If we get contention in the 10 or so instruction window here,	*/
+    /* and we get stopped by a GC between the two updates, we lose!	*/
+    if (currently_updating != (word)(&update_dummy)) {
+	set_pht_entry_from_index_safe(db, index);
+	/* We claim that if two threads concurrently try to update the	*/
+	/* dirty bit vector, the first one to execute UPDATE_START 	*/
+	/* will see it changed when UPDATE_END is executed.  (Note that	*/
+	/* &update_dummy must differ in two distinct threads.)  It	*/
+	/* will then execute set_pht_entry_from_index_safe, thus 	*/
+	/* returning us to a safe state, though not soon enough.	*/
+    }
+  }
+#endif /* !GC_TEST_AND_SET_DEFINED */
+#else /* !THREADS */
+# define async_set_pht_entry_from_index(db, index) \
+	set_pht_entry_from_index(db, index)
+#endif /* !THREADS */
 
 /*ARGSUSED*/
 # if defined (SUNOS4) || defined(FREEBSD)
@@ -1824,7 +2082,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #   if defined(ALPHA) || defined(M68K)
       void GC_write_fault_handler(int sig, int code, s_c * sc)
 #   else
-#     if defined(IA64)
+#     if defined(IA64) || defined(HP_PA)
         void GC_write_fault_handler(int sig, siginfo_t * si, s_c * scp)
 #     else
         void GC_write_fault_handler(int sig, s_c sc)
@@ -1857,10 +2115,17 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #     define CODE_OK (scp -> si_code == SEGV_ACCERR)
 #   endif
 # endif
-# if defined(MSWIN32)
+
+# if defined(MACOSX)
+    void GC_write_fault_handler(int sig, int code, struct sigcontext *scp)
+#   define SIG_OK (sig == SIGBUS)
+#   define CODE_OK (code == 0 /* experimentally determined */)
+# endif
+
+# if defined(MSWIN32) || defined(MSWINCE)
     LONG WINAPI GC_write_fault_handler(struct _EXCEPTION_POINTERS *exc_info)
 #   define SIG_OK (exc_info -> ExceptionRecord -> ExceptionCode == \
-			EXCEPTION_ACCESS_VIOLATION)
+			STATUS_ACCESS_VIOLATION)
 #   define CODE_OK (exc_info -> ExceptionRecord -> ExceptionInformation[0] == 1)
 			/* Write fault */
 # endif
@@ -1882,7 +2147,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #	if defined(M68K)
           char * addr = NULL;
 
-	  struct sigcontext *scp = (struct sigcontext *)(&sc);
+	  struct sigcontext *scp = (struct sigcontext *)(sc);
 
 	  int format = (scp->sc_formatvec >> 12) & 0xf;
 	  unsigned long *framedata = (unsigned long *)(scp + 1); 
@@ -1894,6 +2159,10 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 	  } else if (format == 7) {
 	  	/* 68040 */
 	  	ea = framedata[3];
+	  	if (framedata[1] & 0x08000000) {
+	  		/* correct addr on misaligned access */
+	  		ea = (ea+4095)&(~4095);
+		}
 	  } else if (format == 4) {
 	  	/* 68060 */
 	  	ea = framedata[0];
@@ -1907,7 +2176,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #	  ifdef ALPHA
             char * addr = get_fault_addr(sc);
 #	  else
-#	    ifdef IA64
+#	    if defined(IA64) || defined(HP_PA)
 	      char * addr = si -> si_addr;
 	      /* I believe this is claimed to work on all platforms for	*/
 	      /* Linux 2.3.47 and later.  Hopefully we don't have to	*/
@@ -1923,7 +2192,10 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #	endif
 #     endif
 #   endif
-#   if defined(MSWIN32)
+#   if defined(MACOSX)
+        char * addr = get_fault_addr(scp);
+#   endif
+#   if defined(MSWIN32) || defined(MSWINCE)
 	char * addr = (char *) (exc_info -> ExceptionRecord
 				-> ExceptionInformation[1]);
 #	define sig SIGSEGV
@@ -1955,7 +2227,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
                 old_handler = GC_old_bus_handler;
             }
             if (old_handler == SIG_DFL) {
-#		ifndef MSWIN32
+#		if !defined(MSWIN32) && !defined(MSWINCE)
 		    GC_err_printf1("Segfault at 0x%lx\n", addr);
                     ABORT("Unexpected bus error or segmentation fault");
 #		else
@@ -1974,7 +2246,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #		    if defined(ALPHA) || defined(M68K)
 		        (*(REAL_SIG_PF)old_handler) (sig, code, sc);
 #		    else 
-#		      if defined(IA64)
+#		      if defined(IA64) || defined(HP_PA)
 		        (*(REAL_SIG_PF)old_handler) (sig, si, scp);
 #		      else
 		        (*(REAL_SIG_PF)old_handler) (sig, sc);
@@ -1986,6 +2258,9 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 		    (*(REAL_SIG_PF)old_handler) (sig, code, scp);
 		    return;
 #		endif
+#		ifdef MACOSX
+		    (*(REAL_SIG_PF)old_handler) (sig, code, scp);
+#		endif
 #		ifdef MSWIN32
 		    return((*old_handler)(exc_info));
 #		endif
@@ -1994,7 +2269,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
         for (i = 0; i < divHBLKSZ(GC_page_size); i++) {
             register int index = PHT_HASH(h+i);
             
-            set_pht_entry_from_index(GC_dirty_pages, index);
+            async_set_pht_entry_from_index(GC_dirty_pages, index);
         }
         UNPROTECT(h, GC_page_size);
 #	if defined(OSF1) || defined(LINUX)
@@ -2003,13 +2278,13 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 #	endif
     	/* The write may not take place before dirty bits are read.	*/
     	/* But then we'll fault again ...				*/
-#	ifdef MSWIN32
+#	if defined(MSWIN32) || defined(MSWINCE)
 	    return(EXCEPTION_CONTINUE_EXECUTION);
 #	else
 	    return;
 #	endif
     }
-#ifdef MSWIN32
+#if defined(MSWIN32) || defined(MSWINCE)
     return EXCEPTION_CONTINUE_SEARCH;
 #else
     GC_err_printf1("Segfault at 0x%lx\n", addr);
@@ -2036,7 +2311,7 @@ struct hblk *h;
             
         if (!get_pht_entry_from_index(GC_dirty_pages, index)) {
             found_clean = TRUE;
-            set_pht_entry_from_index(GC_dirty_pages, index);
+            async_set_pht_entry_from_index(GC_dirty_pages, index);
         }
     }
     if (found_clean) {
@@ -2046,17 +2321,24 @@ struct hblk *h;
 
 void GC_dirty_init()
 {
-#if defined(SUNOS5SIGS) || defined(IRIX5) /* || defined(OSF1) */
-    struct sigaction	act, oldact;
-#   ifdef IRIX5
+#   if defined(SUNOS5SIGS) || defined(IRIX5) /* || defined(OSF1) */
+      struct sigaction	act, oldact;
+#     ifdef IRIX5
     	act.sa_flags	= SA_RESTART;
         act.sa_handler  = GC_write_fault_handler;
-#   else
+#     else
     	act.sa_flags	= SA_RESTART | SA_SIGINFO;
         act.sa_sigaction = GC_write_fault_handler;
+#     endif
+      (void)sigemptyset(&act.sa_mask);
+#    endif
+#   if defined(MACOSX)
+      struct sigaction act, oldact;
+
+      act.sa_flags = SA_RESTART;
+      act.sa_handler = GC_write_fault_handler;
+      sigemptyset(&act.sa_mask);
 #   endif
-    (void)sigemptyset(&act.sa_mask); 
-#endif
 #   ifdef PRINTSTATS
 	GC_printf0("Inititalizing mprotect virtual dirty bit implementation\n");
 #   endif
@@ -2090,7 +2372,7 @@ void GC_dirty_init()
       }
 #   endif
 #   if defined(SUNOS5SIGS) || defined(IRIX5)
-#     if defined(IRIX_THREADS) || defined(IRIX_JDK_THREADS)
+#     if defined(IRIX_THREADS)
       	sigaction(SIGSEGV, 0, &oldact);
       	sigaction(SIGSEGV, &act, 0);
 #     else
@@ -2116,16 +2398,20 @@ void GC_dirty_init()
 	  GC_err_printf0("Replaced other SIGSEGV handler\n");
 #       endif
       }
-#     ifdef HPUX
-      	  sigaction(SIGBUS, &act, &oldact);
-          GC_old_bus_handler = oldact.sa_handler;
-          if (GC_old_segv_handler != SIG_DFL) {
-#           ifdef PRINTSTATS
-	      GC_err_printf0("Replaced other SIGBUS handler\n");
-#           endif
-          }
-#     endif
-#    endif
+#   endif
+#   if defined(MACOSX) || defined(HPUX)
+      sigaction(SIGBUS, &act, &oldact);
+      GC_old_bus_handler = oldact.sa_handler;
+      if (GC_old_bus_handler == SIG_IGN) {
+	     GC_err_printf0("Previously ignored bus error!?");
+	     GC_old_bus_handler = SIG_DFL;
+      }
+      if (GC_old_bus_handler != SIG_DFL) {
+#       ifdef PRINTSTATS
+	  GC_err_printf0("Replaced other SIGBUS handler\n");
+#       endif
+      }
+#   endif /* MACOS || HPUX */
 #   if defined(MSWIN32)
       GC_old_segv_handler = SetUnhandledExceptionFilter(GC_write_fault_handler);
       if (GC_old_segv_handler != NULL) {
@@ -2178,15 +2464,23 @@ struct hblk * h;
  * happens to work.
  * On other systems, SET_LOCK_HOLDER and friends must be suitably defined.
  */
+
+static GC_bool syscall_acquired_lock = FALSE;	/* Protected by GC lock. */
  
 void GC_begin_syscall()
 {
-    if (!I_HOLD_LOCK()) LOCK();
+    if (!I_HOLD_LOCK()) {
+	LOCK();
+	syscall_acquired_lock = TRUE;
+    }
 }
 
 void GC_end_syscall()
 {
-    if (!I_HOLD_LOCK()) UNLOCK();
+    if (syscall_acquired_lock) {
+	syscall_acquired_lock = FALSE;
+	UNLOCK();
+    }
 }
 
 void GC_unprotect_range(addr, len)
@@ -2210,13 +2504,14 @@ word len;
     for (h = start_block; h <= end_block; h++) {
         register word index = PHT_HASH(h);
         
-        set_pht_entry_from_index(GC_dirty_pages, index);
+        async_set_pht_entry_from_index(GC_dirty_pages, index);
     }
     UNPROTECT(start_block,
     	      ((ptr_t)end_block - (ptr_t)start_block) + HBLKSIZE);
 }
 
-#if !defined(MSWIN32) && !defined(LINUX_THREADS)
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(LINUX_THREADS) \
+    && !defined(GC_USE_LD_WRAP)
 /* Replacement for UNIX system call.	 */
 /* Other calls that write to the heap	 */
 /* should be handled similarly.		 */
@@ -2253,17 +2548,17 @@ word len;
 	    result = readv(fd, &iov, 1);
 	}
 #   else
-	/* The two zero args at the end of this list are because one
-	   IA-64 syscall() implementation actually requires six args
-	   to be passed, even though they aren't always used. */
-    	result = syscall(SYS_read, fd, buf, nbyte, 0, 0);
+ 	/* The two zero args at the end of this list are because one
+ 	   IA-64 syscall() implementation actually requires six args
+ 	   to be passed, even though they aren't always used. */
+     	result = syscall(SYS_read, fd, buf, nbyte, 0, 0);
 #   endif
     GC_end_syscall();
     return(result);
 }
-#endif /* !MSWIN32 && !LINUX */
+#endif /* !MSWIN32 && !MSWINCE && !LINUX_THREADS */
 
-#ifdef USE_LD_WRAP
+#ifdef GC_USE_LD_WRAP
     /* We use the GNU ld call wrapping facility.			*/
     /* This requires that the linker be invoked with "--wrap read".	*/
     /* This can be done by passing -Wl,"--wrap read" to gcc.		*/
@@ -2300,6 +2595,13 @@ word n;
 {
 }
 
+# else /* !MPROTECT_VDB */
+
+#   ifdef GC_USE_LD_WRAP
+      ssize_t __wrap_read(int fd, void *buf, size_t nbyte)
+      { return __real_read(fd, buf, nbyte); }
+#   endif
+
 # endif /* MPROTECT_VDB */
 
 # ifdef PROC_VDB
@@ -2322,7 +2624,6 @@ word n;
 #include <sys/syscall.h>
 #include <sys/procfs.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 #define INITIAL_BUF_SZ 4096
 word GC_proc_buf_size = INITIAL_BUF_SZ;
@@ -2618,19 +2919,31 @@ struct hblk *h;
  * Call stack save code for debugging.
  * Should probably be in mach_dep.c, but that requires reorganization.
  */
+
+/* I suspect the following works for most X86 *nix variants, so 	*/
+/* long as the frame pointer is explicitly stored.  In the case of gcc,	*/
+/* compiler flags (e.g. -fomit-frame-pointer) determine whether it is.	*/
+#if defined(I386) && defined(LINUX) && defined(SAVE_CALL_CHAIN)
+    struct frame {
+	struct frame *fr_savfp;
+	long	fr_savpc;
+        long	fr_arg[NARGS];  /* All the arguments go here.	*/
+    };
+#endif
+
 #if defined(SPARC)
 #  if defined(LINUX)
-struct frame {
+     struct frame {
 	long	fr_local[8];
 	long	fr_arg[6];
 	struct frame *fr_savfp;
 	long	fr_savpc;
-#    ifndef __arch64__
-	char	*fr_stret;
-#    endif
+#       ifndef __arch64__
+	  char	*fr_stret;
+#       endif
 	long	fr_argd[6];
 	long	fr_argx[0];
-};
+     };
 #  else
 #    if defined(SUNOS4)
 #      include <machine/frame.h>
@@ -2638,7 +2951,7 @@ struct frame {
 #      if defined (DRSNX)
 #	 include <sys/sparc/frame.h>
 #      else
-#	 if defined(OPENBSD)
+#	 if defined(OPENBSD) || defined(NETBSD)
 #	   include <frame.h>
 #	 else
 #	   include <sys/frame.h>
@@ -2649,12 +2962,13 @@ struct frame {
 #  if NARGS > 6
 	--> We only know how to to get the first 6 arguments
 #  endif
+#endif /* SPARC */
 
 #ifdef SAVE_CALL_CHAIN
 /* Fill in the pc and argument information for up to NFRAMES of my	*/
 /* callers.  Ignore my frame and my callers frame.			*/
 
-#ifdef OPENBSD
+#if (defined(OPENBSD) || defined(NETBSD)) && defined(SPARC)
 #  define FR_SAVFP fr_fp
 #  define FR_SAVPC fr_pc
 #else
@@ -2663,9 +2977,9 @@ struct frame {
 #endif
 
 #if defined(SPARC) && (defined(__arch64__) || defined(__sparcv9))
-#define BIAS 2047
+#   define BIAS 2047
 #else
-#define BIAS 0
+#   define BIAS 0
 #endif
 
 void GC_save_callers (info) 
@@ -2674,12 +2988,19 @@ struct callinfo info[NFRAMES];
   struct frame *frame;
   struct frame *fp;
   int nframes = 0;
-  word GC_save_regs_in_stack();
+# ifdef I386
+    /* We assume this is turned on only with gcc as the compiler. */
+    asm("movl %%ebp,%0" : "=r"(frame));
+    fp = frame;
+# else
+    word GC_save_regs_in_stack();
 
-  frame = (struct frame *) GC_save_regs_in_stack ();
+    frame = (struct frame *) GC_save_regs_in_stack ();
+    fp = (struct frame *)((long) frame -> FR_SAVFP + BIAS);
+#endif
   
-  for (fp = (struct frame *)((long) frame -> FR_SAVFP + BIAS);
-       fp != 0 && nframes < NFRAMES;
+   for (; (!(fp HOTTER_THAN frame) && !(GC_stackbottom HOTTER_THAN (ptr_t)fp)
+	   && (nframes < NFRAMES));
        fp = (struct frame *)((long) fp -> FR_SAVFP + BIAS), nframes++) {
       register int i;
       
@@ -2692,7 +3013,56 @@ struct callinfo info[NFRAMES];
 }
 
 #endif /* SAVE_CALL_CHAIN */
-#endif /* SPARC */
 
+#if defined(LINUX) && defined(__ELF__) && \
+    (!defined(SMALL_CONFIG) || defined(USE_PROC_FOR_LIBRARIES))
+#ifdef GC_USE_LD_WRAP
+#   define READ __real_read
+#else
+#   define READ read
+#endif
+
+
+/* Repeatedly perform a read call until the buffer is filled or	*/
+/* we encounter EOF.						*/
+ssize_t GC_repeat_read(int fd, char *buf, size_t count)
+{
+    ssize_t num_read = 0;
+    ssize_t result;
+    
+    while (num_read < count) {
+	result = READ(fd, buf + num_read, count - num_read);
+	if (result < 0) return result;
+	if (result == 0) break;
+	num_read += result;
+    }
+    return num_read;
+}
+#endif /* LINUX && ... */
+
+
+#if defined(LINUX) && defined(__ELF__) && !defined(SMALL_CONFIG)
+
+/* Dump /proc/self/maps to GC_stderr, to enable looking up names for
+   addresses in FIND_LEAK output. */
+
+void GC_print_address_map()
+{
+    int f;
+    int result;
+    char maps_temp[32768];
+    GC_err_printf0("---------- Begin address map ----------\n");
+        f = open("/proc/self/maps", O_RDONLY);
+        if (-1 == f) ABORT("Couldn't open /proc/self/maps");
+	do {
+	    result = GC_repeat_read(f, maps_temp, sizeof(maps_temp));
+	    if (result <= 0) ABORT("Couldn't read /proc/self/maps");
+ 	    GC_err_write(maps_temp, result);
+	} while (result == sizeof(maps_temp));
+     
+    GC_err_printf0("---------- End address map ----------\n");
+}
+
+#endif
 
 

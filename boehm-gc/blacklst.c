@@ -12,7 +12,7 @@
  * modified is included with the above copyright notice.
  */
 /* Boehm, August 9, 1995 6:09 pm PDT */
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 /*
  * We maintain several hash tables of hblks that have had false hits.
@@ -52,15 +52,19 @@ word GC_black_list_spacing = MINHINCR*HBLKSIZE;  /* Initial rough guess */
 
 void GC_clear_bl();
 
-void GC_default_print_heap_obj_proc(p)
-ptr_t p;
+# if defined(__STDC__) || defined(__cplusplus)
+    void GC_default_print_heap_obj_proc(ptr_t p)
+# else
+    void GC_default_print_heap_obj_proc(p)
+    ptr_t p;
+# endif
 {
     ptr_t base = GC_base(p);
 
     GC_err_printf2("start: 0x%lx, appr. length: %ld", base, GC_size(base));
 }
 
-void (*GC_print_heap_obj)(/* char * s, ptr_t p */) =
+void (*GC_print_heap_obj) GC_PROTO((ptr_t p)) =
 				GC_default_print_heap_obj_proc;
 
 void GC_print_source_ptr(p)
@@ -81,18 +85,18 @@ ptr_t p;
 
 void GC_bl_init()
 {
-# ifndef ALL_INTERIOR_POINTERS
-    GC_old_normal_bl = (word *)
+    if (!GC_all_interior_pointers) {
+      GC_old_normal_bl = (word *)
     			 GC_scratch_alloc((word)(sizeof (page_hash_table)));
-    GC_incomplete_normal_bl = (word *)GC_scratch_alloc
+      GC_incomplete_normal_bl = (word *)GC_scratch_alloc
     					((word)(sizeof(page_hash_table)));
-    if (GC_old_normal_bl == 0 || GC_incomplete_normal_bl == 0) {
+      if (GC_old_normal_bl == 0 || GC_incomplete_normal_bl == 0) {
         GC_err_printf0("Insufficient memory for black list\n");
         EXIT();
+      }
+      GC_clear_bl(GC_old_normal_bl);
+      GC_clear_bl(GC_incomplete_normal_bl);
     }
-    GC_clear_bl(GC_old_normal_bl);
-    GC_clear_bl(GC_incomplete_normal_bl);
-# endif
     GC_old_stack_bl = (word *)GC_scratch_alloc((word)(sizeof(page_hash_table)));
     GC_incomplete_stack_bl = (word *)GC_scratch_alloc
     					((word)(sizeof(page_hash_table)));
@@ -127,9 +131,9 @@ void GC_promote_black_lists()
     
     GC_old_normal_bl = GC_incomplete_normal_bl;
     GC_old_stack_bl = GC_incomplete_stack_bl;
-#   ifndef ALL_INTERIOR_POINTERS
+    if (!GC_all_interior_pointers) {
       GC_clear_bl(very_old_normal_bl);
-#   endif
+    }
     GC_clear_bl(very_old_stack_bl);
     GC_incomplete_normal_bl = very_old_normal_bl;
     GC_incomplete_stack_bl = very_old_stack_bl;
@@ -156,13 +160,12 @@ void GC_promote_black_lists()
 
 void GC_unpromote_black_lists()
 {
-#   ifndef ALL_INTERIOR_POINTERS
+    if (!GC_all_interior_pointers) {
       GC_copy_bl(GC_old_normal_bl, GC_incomplete_normal_bl);
-#   endif
+    }
     GC_copy_bl(GC_old_stack_bl, GC_incomplete_stack_bl);
 }
 
-# ifndef ALL_INTERIOR_POINTERS
 /* P is not a valid pointer reference, but it falls inside	*/
 /* the plausible heap bounds.					*/
 /* Add it to the normal incomplete black list if appropriate.	*/
@@ -193,7 +196,6 @@ word p;
           /* object, and isn't worth black listing.			    */
     }
 }
-# endif
 
 /* And the same for false pointers from the stack. */
 #ifdef PRINT_BLACK_LIST
@@ -236,12 +238,12 @@ word len;
     register word i;
     word nblocks = divHBLKSZ(len);
 
-#   ifndef ALL_INTERIOR_POINTERS
+    if (!GC_all_interior_pointers) {
       if (get_pht_entry_from_index(GC_old_normal_bl, index)
           || get_pht_entry_from_index(GC_incomplete_normal_bl, index)) {
         return(h+1);
       }
-#   endif
+    }
     
     for (i = 0; ; ) {
         if (GC_old_stack_bl[divWORDSZ(index)] == 0

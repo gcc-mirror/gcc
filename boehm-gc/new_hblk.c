@@ -1,6 +1,7 @@
 /*
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 2000 by Hewlett-Packard Company.  All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -19,7 +20,7 @@
 
 
 # include <stdio.h>
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 #ifndef SMALL_CONFIG
 /*
@@ -30,7 +31,7 @@ ptr_t GC_build_fl1(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1);
     
     p[0] = (word)ofl;
@@ -52,7 +53,7 @@ ptr_t GC_build_fl_clear2(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1);
     
     p[0] = (word)ofl;
@@ -74,7 +75,7 @@ ptr_t GC_build_fl_clear3(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1) - 2;
     
     p[0] = (word)ofl;
@@ -94,7 +95,7 @@ ptr_t GC_build_fl_clear4(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1);
     
     p[0] = (word)ofl;
@@ -116,7 +117,7 @@ ptr_t GC_build_fl2(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1);
     
     p[0] = (word)ofl;
@@ -134,7 +135,7 @@ ptr_t GC_build_fl4(h, ofl)
 struct hblk *h;
 ptr_t ofl;
 {
-    register word * p = (word *)h;
+    register word * p = h -> hb_body;
     register word * lim = (word *)(h + 1);
     
     p[0] = (word)ofl;
@@ -150,71 +151,51 @@ ptr_t ofl;
 
 #endif /* !SMALL_CONFIG */
 
-/*
- * Allocate a new heapblock for small objects of size n.
- * Add all of the heapblock's objects to the free list for objects
- * of that size.
- * Set all mark bits if objects are uncollectable.
- * Will fail to do anything if we are out of memory.
- */
-void GC_new_hblk(sz, kind)
-register word sz;
-int kind;
+
+/* Build a free list for objects of size sz inside heap block h.	*/
+/* Clear objects inside h if clear is set.  Add list to the end of	*/
+/* the free list we build.  Return the new free list.			*/
+/* This could be called without the main GC lock, if we ensure that	*/
+/* there is no concurrent collection which might reclaim objects that	*/
+/* we have not yet allocated.						*/
+ptr_t GC_build_fl(h, sz, clear, list)
+struct hblk *h;
+word sz;
+GC_bool clear;
+ptr_t list;
 {
-    register word *p,
-		  *prev;
-    word *last_object;		/* points to last object in new hblk	*/
-    register struct hblk *h;	/* the new heap block			*/
-    register GC_bool clear = GC_obj_kinds[kind].ok_init;
+  word *p, *prev;
+  word *last_object;		/* points to last object in new hblk	*/
 
-#   ifdef PRINTSTATS
-	if ((sizeof (struct hblk)) > HBLKSIZE) {
-	    ABORT("HBLK SZ inconsistency");
-        }
-#   endif
-
-  /* Allocate a new heap block */
-    h = GC_allochblk(sz, kind, 0);
-    if (h == 0) return;
-
-  /* Mark all objects if appropriate. */
-      if (IS_UNCOLLECTABLE(kind)) GC_set_hdr_marks(HDR(h));
-
-  PREFETCH_FOR_WRITE((char *)h);
-  PREFETCH_FOR_WRITE((char *)h + 128);
-  PREFETCH_FOR_WRITE((char *)h + 256);
-  PREFETCH_FOR_WRITE((char *)h + 378);
+  /* Do a few prefetches here, just because its cheap.  	*/
+  /* If we were more serious about it, these should go inside	*/
+  /* the loops.  But write prefetches usually don't seem to	*/
+  /* matter much.						*/
+    PREFETCH_FOR_WRITE((char *)h);
+    PREFETCH_FOR_WRITE((char *)h + 128);
+    PREFETCH_FOR_WRITE((char *)h + 256);
+    PREFETCH_FOR_WRITE((char *)h + 378);
   /* Handle small objects sizes more efficiently.  For larger objects 	*/
   /* the difference is less significant.				*/
 #  ifndef SMALL_CONFIG
     switch (sz) {
-        case 1: GC_obj_kinds[kind].ok_freelist[1] =
-        	  GC_build_fl1(h, GC_obj_kinds[kind].ok_freelist[1]);
-        	return;
+        case 1: return GC_build_fl1(h, list);
         case 2: if (clear) {
-         	    GC_obj_kinds[kind].ok_freelist[2] =
-        	      GC_build_fl_clear2(h, GC_obj_kinds[kind].ok_freelist[2]);
+        	    return GC_build_fl_clear2(h, list);
         	} else {
-        	    GC_obj_kinds[kind].ok_freelist[2] =
-        	      GC_build_fl2(h, GC_obj_kinds[kind].ok_freelist[2]);
+        	    return GC_build_fl2(h, list);
         	}
-        	return;
         case 3: if (clear) {
-         	    GC_obj_kinds[kind].ok_freelist[3] =
-        	      GC_build_fl_clear3(h, GC_obj_kinds[kind].ok_freelist[3]);
-        	    return;
+         	    return GC_build_fl_clear3(h, list);
         	} else {
         	    /* It's messy to do better than the default here. */
         	    break;
         	}
         case 4: if (clear) {
-        	    GC_obj_kinds[kind].ok_freelist[4] =
-        	      GC_build_fl_clear4(h, GC_obj_kinds[kind].ok_freelist[4]);
+        	    return GC_build_fl_clear4(h, list);
         	} else {
-        	    GC_obj_kinds[kind].ok_freelist[4] =
-        	      GC_build_fl4(h, GC_obj_kinds[kind].ok_freelist[4]);
+        	    return GC_build_fl4(h, list);
         	}
-        	return;
         default:
         	break;
     }
@@ -243,7 +224,39 @@ int kind;
    * put p (which is now head of list of objects in *h) as first
    * pointer in the appropriate free list for this size.
    */
-      obj_link(h -> hb_body) = GC_obj_kinds[kind].ok_freelist[sz];
-      GC_obj_kinds[kind].ok_freelist[sz] = ((ptr_t)p);
+      obj_link(h -> hb_body) = list;
+      return ((ptr_t)p);
+}
+
+/*
+ * Allocate a new heapblock for small objects of size n.
+ * Add all of the heapblock's objects to the free list for objects
+ * of that size.
+ * Set all mark bits if objects are uncollectable.
+ * Will fail to do anything if we are out of memory.
+ */
+void GC_new_hblk(sz, kind)
+register word sz;
+int kind;
+{
+    register struct hblk *h;	/* the new heap block			*/
+    register GC_bool clear = GC_obj_kinds[kind].ok_init;
+
+#   ifdef PRINTSTATS
+	if ((sizeof (struct hblk)) > HBLKSIZE) {
+	    ABORT("HBLK SZ inconsistency");
+        }
+#   endif
+
+  /* Allocate a new heap block */
+    h = GC_allochblk(sz, kind, 0);
+    if (h == 0) return;
+
+  /* Mark all objects if appropriate. */
+      if (IS_UNCOLLECTABLE(kind)) GC_set_hdr_marks(HDR(h));
+
+  /* Build the free list */
+      GC_obj_kinds[kind].ok_freelist[sz] =
+	GC_build_fl(h, sz, clear, GC_obj_kinds[kind].ok_freelist[sz]);
 }
 

@@ -11,9 +11,8 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
-/* Boehm, October 9, 1995 1:06 pm PDT */
 # include <stdio.h>
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 /* Data structure for list of root sets.				*/
 /* We keep a hash table, so that we can filter out duplicate additions.	*/
@@ -23,7 +22,7 @@
 struct roots {
 	ptr_t r_start;
 	ptr_t r_end;
- #	ifndef MSWIN32
+ #	if !defined(MSWIN32) && !defined(MSWINCE)
 	  struct roots * r_next;
  #	endif
 	GC_bool r_tmp;
@@ -32,6 +31,8 @@ struct roots {
 
 struct roots GC_static_roots[MAX_ROOT_SETS];
 */
+
+int GC_no_dls = 0;	/* Register dynamic library data segments.	*/
 
 static int n_root_sets = 0;
 
@@ -69,11 +70,12 @@ void GC_print_static_roots()
 GC_bool GC_is_static_root(p)
 ptr_t p;
 {
-    static int last_root_set = 0;
+    static int last_root_set = MAX_ROOT_SETS;
     register int i;
     
     
-    if (p >= GC_static_roots[last_root_set].r_start
+    if (last_root_set < n_root_sets
+	&& p >= GC_static_roots[last_root_set].r_start
         && p < GC_static_roots[last_root_set].r_end) return(TRUE);
     for (i = 0; i < n_root_sets; i++) {
     	if (p >= GC_static_roots[i].r_start
@@ -85,7 +87,7 @@ ptr_t p;
     return(FALSE);
 }
 
-#ifndef MSWIN32
+#if !defined(MSWIN32) && !defined(MSWINCE)
 /* 
 #   define LOG_RT_SIZE 6
 #   define RT_SIZE (1 << LOG_RT_SIZE)  -- Power of 2, may be != MAX_ROOT_SETS
@@ -137,7 +139,7 @@ struct roots *p;
     GC_root_index[h] = p;
 }
 
-# else /* MSWIN32 */
+# else /* MSWIN32 || MSWINCE */
 
 #   define add_roots_to_index(p)
 
@@ -173,7 +175,7 @@ GC_bool tmp;
 {
     struct roots * old;
     
-#   ifdef MSWIN32
+#   if defined(MSWIN32) || defined(MSWINCE)
       /* Spend the time to ensure that there are no overlapping	*/
       /* or adjacent intervals.					*/
       /* This could be done faster with e.g. a			*/
@@ -242,7 +244,7 @@ GC_bool tmp;
     GC_static_roots[n_root_sets].r_start = (ptr_t)b;
     GC_static_roots[n_root_sets].r_end = (ptr_t)e;
     GC_static_roots[n_root_sets].r_tmp = tmp;
-#   ifndef MSWIN32
+#   if !defined(MSWIN32) && !defined(MSWINCE)
       GC_static_roots[n_root_sets].r_next = 0;
 #   endif
     add_roots_to_index(GC_static_roots + n_root_sets);
@@ -250,15 +252,18 @@ GC_bool tmp;
     n_root_sets++;
 }
 
+static roots_were_cleared = FALSE;
+
 void GC_clear_roots GC_PROTO((void))
 {
     DCL_LOCK_STATE;
     
     DISABLE_SIGNALS();
     LOCK();
+    roots_were_cleared = TRUE;
     n_root_sets = 0;
     GC_root_size = 0;
-#   ifndef MSWIN32
+#   if !defined(MSWIN32) && !defined(MSWINCE)
     {
     	register int i;
     	
@@ -286,7 +291,7 @@ void GC_remove_tmp_roots()
     	    i++;
     	}
     }
-#   ifndef MSWIN32
+#   if !defined(MSWIN32) && !defined(MSWINCE)
     {
     	register int i;
     	
@@ -298,11 +303,41 @@ void GC_remove_tmp_roots()
     
 }
 
+#if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION)
+/* Workaround for the OS mapping and unmapping behind our back:		*/
+/* Is the address p in one of the temporary static root sections?	*/
+GC_bool GC_is_tmp_root(p)
+ptr_t p;
+{
+    static int last_root_set = MAX_ROOT_SETS;
+    register int i;
+    
+    if (last_root_set < n_root_sets
+	&& p >= GC_static_roots[last_root_set].r_start
+        && p < GC_static_roots[last_root_set].r_end)
+	return GC_static_roots[last_root_set].r_tmp;
+    for (i = 0; i < n_root_sets; i++) {
+    	if (p >= GC_static_roots[i].r_start
+            && p < GC_static_roots[i].r_end) {
+            last_root_set = i;
+            return GC_static_roots[i].r_tmp;
+        }
+    }
+    return(FALSE);
+}
+#endif /* MSWIN32 || _WIN32_WCE_EMULATION */
+
 ptr_t GC_approx_sp()
 {
     word dummy;
-    
+
+#   ifdef _MSC_VER
+#     pragma warning(disable:4172)
+#   endif
     return((ptr_t)(&dummy));
+#   ifdef _MSC_VER
+#     pragma warning(default:4172)
+#   endif
 }
 
 /*
@@ -432,15 +467,15 @@ ptr_t cold_gc_frame;
 			/* Previously set to backing store pointer.	*/
 		ptr_t bsp = (ptr_t) GC_save_regs_ret_val;
 	        ptr_t cold_gc_bs_pointer;
-#		ifdef ALL_INTERIOR_POINTERS
+		if (GC_all_interior_pointers) {
 	          cold_gc_bs_pointer = bsp - 2048;
 		  if (cold_gc_bs_pointer < BACKING_STORE_BASE) {
 		    cold_gc_bs_pointer = BACKING_STORE_BASE;
 		  }
-		  GC_push_all(BACKING_STORE_BASE, cold_gc_bs_pointer);
-#		else
+		  GC_push_all_stack(BACKING_STORE_BASE, cold_gc_bs_pointer);
+		} else {
 		  cold_gc_bs_pointer = BACKING_STORE_BASE;
-#		endif
+		}
 		GC_push_all_eager(cold_gc_bs_pointer, bsp);
 		/* All values should be sufficiently aligned that we	*/
 		/* dont have to worry about the boundary.		*/
@@ -451,6 +486,19 @@ ptr_t cold_gc_frame;
 					       cold_gc_frame );
 #       endif
 #   endif /* !THREADS */
+}
+
+/*
+ * Push GC internal roots.  Only called if there is some reason to believe
+ * these would not otherwise get registered.
+ */
+void GC_push_gc_structures GC_PROTO((void))
+{
+    GC_push_finalizer_structures();
+    GC_push_stubborn_structures();
+#   if defined(THREADS)
+      GC_push_thread_structures();
+#   endif
 }
 
 /*
@@ -483,16 +531,25 @@ ptr_t cold_gc_frame;
      * not robust against mark stack overflow.
      */
      /* Reregister dynamic libraries, in case one got added.	*/
-#      if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(PCR)) \
-           && !defined(SRC_M3)
+#      if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(MSWINCE) \
+	   || defined(PCR)) && !defined(SRC_M3)
          GC_remove_tmp_roots();
-         GC_register_dynamic_libraries();
+         if (!GC_no_dls) GC_register_dynamic_libraries();
+#      else
+	 GC_no_dls = TRUE;
 #      endif
+
      /* Mark everything in static data areas                             */
        for (i = 0; i < n_root_sets; i++) {
          GC_push_conditional_with_exclusions(
 			     GC_static_roots[i].r_start,
 			     GC_static_roots[i].r_end, all);
+       }
+
+     /* Mark from GC internal roots if those might otherwise have	*/
+     /* been excluded.							*/
+       if (GC_no_dls || roots_were_cleared) {
+	   GC_push_gc_structures();
        }
 
     /*

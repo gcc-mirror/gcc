@@ -169,9 +169,9 @@ test_cpp.exe: test_cpp.obj gc.lib
 
 gc_cpp.obj: gc_cpp.cc .AUTODEPEND
         $(CXX) $(TEST_CXXFLAGS) -iinclude $*.cc
-test.obj: test.c .AUTODEPEND
+test.obj: tests\test.c .AUTODEPEND
         $(CC) $(TEST_CFLAGS) $*.c
-test_cpp.obj: test_cpp.cc .AUTODEPEND
+test_cpp.obj: tests\test_cpp.cc .AUTODEPEND
         $(CXX) $(TEST_CXXFLAGS) -iinclude $*.cc
 
 

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce configure.
 
-AC_INIT(gc_mark.h)
+AC_INIT(gcj_mlc.c)
 
 dnl Can't be done in BOEHM_CONFIGURE because that confuses automake. 
 AC_CONFIG_AUX_DIR(..)
@@ -30,7 +30,7 @@ AC_MSG_CHECKING([for thread model used by GCC])
 THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
 AC_MSG_RESULT([$THREADS])
 
-INCLUDES=
+INCLUDES=-I${srcdir}/include
 THREADLIBS=
 case "$THREADS" in
  no | none | single)
@@ -47,7 +47,7 @@ case "$THREADS" in
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
 	AC_DEFINE(FREEBSD_THREADS)
-	INCLUDES=-pthread
+	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread
       	;;
      *-*-solaris*)

@@ -132,9 +132,14 @@ extern mse * GC_mark_stack;
      */
 #endif /* PARALLEL_MARK */
 
-ptr_t GC_find_start();
+# ifdef PRINT_BLACK_LIST
+  ptr_t GC_find_start(ptr_t current, hdr *hhdr, word source);
+# else
+  ptr_t GC_find_start(ptr_t current, hdr *hhdr);
+# define source 0
+# endif
 
-mse * GC_signal_mark_stack_overflow();
+mse *GC_signal_mark_stack_overflow(mse *msp);
 
 # ifdef GATHERSTATS
 #   define ADD_TO_ATOMIC(sz) GC_atomic_in_use += (sz)
@@ -245,7 +250,6 @@ exit_label2: ; \
 #   define SET_MARK_BIT_EXIT_IF_SET(hhdr,displ,exit_label) \
     { \
         register word * mark_word_addr = hhdr -> hb_marks + divWORDSZ(displ); \
-        register word mark_word = *mark_word_addr; \
           \
         OR_WORD_EXIT_IF_SET(mark_word_addr, (word)1 << modWORDSZ(displ), \
 			    exit_label); \

@@ -17,7 +17,7 @@ CFLAGS= /O /Q /DSILENT /DSMALL_CONFIG /DALL_INTERIOR_POINTERS
 
 all: $(OBJS) gctest.exe cord\cordtest.exe
 
-$(OBJS) test.obj: gc_priv.h gc_hdrs.h gc.h
+$(OBJS) test.obj: include\private\gc_priv.h include\private\gc_hdrs.h include\gc.h include\private\gcconfig.h
 
 ## ERASE THE LIB FIRST - if it is already there then this command will fail
 ## (make sure its there or erase will fail!)
@@ -32,14 +32,14 @@ mach_dep.obj: mach_dep.c
 gctest.exe: test.obj gc.lib
         $(CC) $(CFLAGS) /B"/STACK:524288" /Fegctest test.obj gc.lib
 
-cord\cordbscs.obj: cord\cordbscs.c cord\cord.h cord\private\cord_pos.h
+cord\cordbscs.obj: cord\cordbscs.c include\cord.h include\private\cord_pos.h
         $(CC) $(CFLAGS) /C /Focord\cordbscs cord\cordbscs.c
 
-cord\cordxtra.obj: cord\cordxtra.c cord\cord.h cord\private\cord_pos.h cord\ec.h
+cord\cordxtra.obj: cord\cordxtra.c include\cord.h include\private\cord_pos.h include\ec.h
         $(CC) $(CFLAGS) /C /Focord\cordxtra cord\cordxtra.c
 
-cord\cordprnt.obj: cord\cordprnt.c cord\cord.h cord\private\cord_pos.h cord\ec.h
+cord\cordprnt.obj: cord\cordprnt.c include\cord.h include\private\cord_pos.h include\ec.h
         $(CC) $(CFLAGS) /C /Focord\cordprnt cord\cordprnt.c
 
-cord\cordtest.exe: cord\cordtest.c cord\cord.h cord\private\cord_pos.h cord\ec.h $(CORDOBJS) gc.lib
+cord\cordtest.exe: cord\cordtest.c include\cord.h include\private\cord_pos.h include\ec.h $(CORDOBJS) gc.lib
         $(CC) $(CFLAGS) /B"/STACK:65536" /Fecord\cordtest cord\cordtest.c gc.lib $(CORDOBJS)
