@@ -2012,8 +2012,8 @@ distribute_bit_expr (code, type, arg0, arg1)
 
   if (TREE_CODE (arg0) != TREE_CODE (arg1)
       || TREE_CODE (arg0) == code
-      || (TREE_CODE (arg0) != BIT_AND_EXPR
-	  && TREE_CODE (arg0) != BIT_IOR_EXPR))
+      || (TREE_CODE (arg0) != TRUTH_AND_EXPR
+	  && TREE_CODE (arg0) != TRUTH_OR_EXPR))
     return 0;
 
   if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0), 0))
@@ -2364,8 +2364,8 @@ simple_operand_p (exp)
 
    For example, "i >= 2 && i =< 9" can be done as "(unsigned) (i - 2) <= 7".
 
-   JCODE is the logical combination of the two terms.  It is BIT_AND_EXPR
-   (representing TRUTH_ANDIF_EXPR and TRUTH_AND_EXPR) or BIT_IOR_EXPR
+   JCODE is the logical combination of the two terms.  It is TRUTH_AND_EXPR
+   (representing TRUTH_ANDIF_EXPR and TRUTH_AND_EXPR) or TRUTH_OR_EXPR
    (representing TRUTH_ORIF_EXPR and TRUTH_OR_EXPR).  TYPE is the type of
    the result.
 
@@ -2385,7 +2385,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 
   /* See if this is a range test and normalize the constant terms.  */
 
-  if (jcode == BIT_AND_EXPR)
+  if (jcode == TRUTH_AND_EXPR)
     {
       switch (lo_code)
 	{
@@ -2553,7 +2553,7 @@ fold_truthop (code, truth_type, lhs, rhs)
     return 0;
 
   code = ((code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR)
-	  ? BIT_AND_EXPR : BIT_IOR_EXPR);
+	  ? TRUTH_AND_EXPR : TRUTH_OR_EXPR);
 
   ll_arg = TREE_OPERAND (lhs, 0);
   lr_arg = TREE_OPERAND (lhs, 1);
@@ -2648,7 +2648,7 @@ fold_truthop (code, truth_type, lhs, rhs)
      fail.  However, we can convert a one-bit comparison against zero into
      the opposite comparison against that bit being set in the field.  */
 
-  wanted_code = (code == BIT_AND_EXPR ? EQ_EXPR : NE_EXPR);
+  wanted_code = (code == TRUTH_AND_EXPR ? EQ_EXPR : NE_EXPR);
   if (lcode != wanted_code)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
