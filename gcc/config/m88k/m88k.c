@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.13.1 10/07/92 06:31:13";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.13.2 10/13/92 09:26:24";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -917,10 +917,11 @@ mostly_false_jump (jump_insn, condition)
     {
       if (GET_CODE (insnt) == JUMP_INSN)
 	break;
-      else if (GET_CODE (insnt) == SEQUENCE
-	       && GET_CODE (XVECEXP (insnt, 0, 0)) == JUMP_INSN)
+      else if (GET_CODE (insnt) == INSN
+	       && GET_CODE (PATTERN (insnt)) == SEQUENCE
+	       && GET_CODE (XVECEXP (PATTERN (insnt), 0, 0)) == JUMP_INSN)
 	{
-	  insnt = XVECEXP (insnt, 0, 0);
+	  insnt = XVECEXP (PATTERN (insnt), 0, 0);
 	  break;
 	}
     }
@@ -937,10 +938,11 @@ mostly_false_jump (jump_insn, condition)
     {
       if (GET_CODE (insnj) == JUMP_INSN)
 	break;
-      else if (GET_CODE (insnj) == SEQUENCE
-	       && GET_CODE (XVECEXP (insnj, 0, 0)) == JUMP_INSN)
+      else if (GET_CODE (insnj) == INSN
+	       && GET_CODE (PATTERN (insnj)) == SEQUENCE
+	       && GET_CODE (XVECEXP (PATTERN (insnj), 0, 0)) == JUMP_INSN)
 	{
-	  insnj = XVECEXP (insnj, 0, 0);
+	  insnj = XVECEXP (PATTERN (insnj), 0, 0);
 	  break;
 	}
     }
@@ -949,7 +951,7 @@ mostly_false_jump (jump_insn, condition)
 	  || (GET_CODE (PATTERN (insnj)) == SET
 	      && GET_CODE (SET_SRC (PATTERN (insnj))) == REG
 	      && REGNO (SET_SRC (PATTERN (insnj))) == 1)))
-    insnt = 0;
+    insnj = 0;
 
   /* Predict to not return.  */
   if ((insnt == 0) != (insnj == 0))
