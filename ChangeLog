@@ -1,3 +1,8 @@
+2000-04-16  Dave Pitts  <dpitts@cozx.com>
+
+        * config.sub (case $basic_machine): Change default for "ibm-*"
+        to "openedition".
+
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
 	* MAINTAINERS: Added myself.
