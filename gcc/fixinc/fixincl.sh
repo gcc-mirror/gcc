@@ -449,11 +449,11 @@ if $LINKS; then
   all_dirs=`find . -type l -print`
   for file in $all_dirs
   do
-    if ls -lLd $file > /dev/null
-    then :
-    else rm -f $file
-         test $VERBOSE -gt 3 && echo "  removed $file"
-         rmdir `dirname $file` > /dev/null && \
+    if test ! -d $file
+    then
+      rm -f $file
+      test $VERBOSE -gt 3 && echo "  removed $file"
+      rmdir `dirname $file` > /dev/null && \
            test $VERBOSE -gt 3 && \
            echo "  removed `dirname $file`"
     fi

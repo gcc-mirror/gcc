@@ -3,6 +3,7 @@
 	* fixinc/Makefile.in: fix for ancient Bourne shell
 	* fixinc/Makefile.BEOS: obsolete
 	* fixinc/Makefile.DOS: obsolete
+	* fixinc/fixincl.sh(LINKS): use `test -d' rather than `ls' for testing
 
 2000-12-27  Bernd Schmidt  <bernds@redhat.com>
 
