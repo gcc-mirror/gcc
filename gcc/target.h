@@ -74,7 +74,7 @@ struct gcc_target
 
     /* Emit an assembler directive to set visibility for the symbol
        associated with the tree decl.  */
-    void (* visibility) PARAMS ((tree, const char *));
+    void (* visibility) PARAMS ((tree, int));
 
     /* Output the assembler code for entry to a function.  */
     void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));

@@ -2133,6 +2133,16 @@ enum tls_model {
 };
 
 extern enum tls_model flag_tls_default;
+
+/* Enumerate visibility settings.  */
+
+enum symbol_visibility
+{
+  VISIBILITY_DEFAULT,
+  VISIBILITY_INTERNAL,
+  VISIBILITY_HIDDEN,
+  VISIBILITY_PROTECTED
+};
 
 /* A pointer-to-function member type looks like:
 
@@ -3043,6 +3053,7 @@ extern void make_decl_one_only		PARAMS ((tree));
 extern int supports_one_only		PARAMS ((void));
 extern void variable_section		PARAMS ((tree, int));
 enum tls_model decl_tls_model		PARAMS ((tree));
+enum symbol_visibility decl_visibility	PARAMS ((tree));
 
 /* In fold-const.c */
 extern int div_and_round_double		PARAMS ((enum tree_code, int,

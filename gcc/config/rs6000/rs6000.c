@@ -186,7 +186,7 @@ static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
 #ifdef HAVE_GAS_HIDDEN
-static void rs6000_assemble_visibility PARAMS ((tree, const char *));
+static void rs6000_assemble_visibility PARAMS ((tree, int));
 #endif
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -8157,23 +8157,29 @@ rs6000_assemble_integer (x, size, aligned_p)
    VISIBILITY_TYPE.  */
 
 static void
-rs6000_assemble_visibility (decl, visibility_type)
+rs6000_assemble_visibility (decl, vis)
      tree decl;
-     const char *visibility_type;
+     int vis;
 {
-  default_assemble_visibility (decl, visibility_type);
-
   /* Functions need to have their entry point symbol visibility set as
      well as their descriptor symbol visibility.  */
   if (DEFAULT_ABI == ABI_AIX && TREE_CODE (decl) == FUNCTION_DECL)
     {
-      const char *name;
+      static const char * const visibility_types[] = {
+        NULL, "internal", "hidden", "protected"
+      };
+
+      const char *name, *type;
 
       name = ((* targetm.strip_name_encoding)
 	      (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
+      type = visibility_types[vis];
 
-      fprintf (asm_out_file, "\t.%s\t.%s\n", visibility_type, name);
+      fprintf (asm_out_file, "\t.%s\t%s\n", type, name);
+      fprintf (asm_out_file, "\t.%s\t.%s\n", type, name);
     }
+  else
+    default_assemble_visibility (decl, vis);
 }
 #endif
 

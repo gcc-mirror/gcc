@@ -5891,9 +5891,10 @@ handle_visibility_attribute (node, name, args, flags, no_add_attrs)
 	}
       if (strcmp (TREE_STRING_POINTER (id), "hidden")
 	  && strcmp (TREE_STRING_POINTER (id), "protected")
-	  && strcmp (TREE_STRING_POINTER (id), "internal"))
+	  && strcmp (TREE_STRING_POINTER (id), "internal")
+	  && strcmp (TREE_STRING_POINTER (id), "default"))
 	{
-	  error ("visibility arg must be one of \"hidden\", \"protected\" or \"internal\"");
+	  error ("visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
