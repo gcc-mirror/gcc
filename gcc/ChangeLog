@@ -1,3 +1,10 @@
+2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-lex.c (interpret_float): Give a pedwarn rather than a warning
+	for an out-of-range floating point constant.
+	* builtins.c (fold_builtin_inf): Give a pedwarn rather than a
+	warning if the target format does not support infinities.
+
 2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* emit-rtl.c (last_label_num, base_label_num): Remove.

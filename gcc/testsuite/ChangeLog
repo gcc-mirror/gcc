@@ -1,5 +1,9 @@
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.dg/float-range-1.c, gcc.dg/float-range-2.c: New tests.
+
+2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcc.dg/assign-warn-3.c: New test.
 
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>

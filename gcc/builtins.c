@@ -5825,8 +5825,15 @@ fold_builtin_inf (tree type, int warn)
 {
   REAL_VALUE_TYPE real;
 
+  /* __builtin_inff is intended to be usable to define INFINITY on all
+     targets.  If an infinity is not available, INFINITY expands "to a
+     positive constant of type float that overflows at translation
+     time", footnote "In this case, using INFINITY will violate the
+     constraint in 6.4.4 and thus require a diagnostic." (C99 7.12#4).
+     Thus we pedwarn to ensure this constraint violation is
+     diagnosed.  */
   if (!MODE_HAS_INFINITIES (TYPE_MODE (type)) && warn)
-    warning ("target format does not support infinity");
+    pedwarn ("target format does not support infinity");
 
   real_inf (&real);
   return build_real (type, real);
