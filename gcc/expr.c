@@ -4314,6 +4314,7 @@ expand_expr (exp, target, tmode, modifier)
 	int volatilep = 0;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep);
+	int alignment;
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
@@ -4337,6 +4338,7 @@ expand_expr (exp, target, tmode, modifier)
 	      op0 = validize_mem (force_const_mem (mode, op0));
 	  }
 
+	alignment = TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT;
 	if (offset != 0)
 	  {
 	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
@@ -4346,6 +4348,14 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx (PLUS, Pmode, XEXP (op0, 0),
 					   force_reg (Pmode, offset_rtx)));
+	  /* If we have a variable offset, the known alignment
+	     is only that of the innermost structure containing the field.
+	     (Actually, we could sometimes do better by using the
+	     size of an element of the innermost array, but no need.)  */
+	  if (TREE_CODE (exp) == COMPONENT_REF
+	      || TREE_CODE (exp) == BIT_FIELD_REF)
+	    alignment = (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+			 / BITS_PER_UNIT);
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
@@ -4382,7 +4392,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	    op0 = extract_bit_field (validize_mem (op0), bitsize, bitpos,
 				     unsignedp, target, ext_mode, ext_mode,
-				     TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT,
+				     alignment,
 				     int_size_in_bytes (TREE_TYPE (tem)));
 	    if (mode == BLKmode)
 	      {
