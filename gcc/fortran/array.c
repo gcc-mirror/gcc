@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -605,6 +605,7 @@ gfc_insert_constructor (gfc_expr * base, gfc_constructor * c1)
 {
   gfc_constructor *c, *pre;
   expr_t type;
+  int t;
 
   type = base->expr_type;
 
@@ -617,12 +618,13 @@ gfc_insert_constructor (gfc_expr * base, gfc_constructor * c1)
         {
           if (type == EXPR_ARRAY)
             {
-              if (mpz_cmp (c->n.offset, c1->n.offset) < 0)
+	      t = mpz_cmp (c->n.offset, c1->n.offset);
+              if (t < 0)
                 {
                   pre = c;
                   c = c->next;
                 }
-              else if (mpz_cmp (c->n.offset, c1->n.offset) == 0)
+              else if (t == 0)
                 {
                   gfc_error ("duplicated initializer");
                   break;
