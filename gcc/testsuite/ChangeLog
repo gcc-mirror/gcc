@@ -1,3 +1,11 @@
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10451
+	* g++.dg/parse/crash4.C: New test.
+	
+	PR c++/9847
+	* g++.dg/parse/crash5.C: New test.
+
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10446
