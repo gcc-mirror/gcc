@@ -1933,7 +1933,9 @@ package body Sem_Util is
 
          C := First_Component (T);
          while Present (C) loop
-            if Is_Limited_Type (Etype (C)) then
+            if Is_Limited_Type (Etype (C))
+              and then Comes_From_Source (C)
+            then
                Error_Msg_Node_2 := T;
                Error_Msg_NE ("\component& of type& has limited type", N, C);
                Explain_Limited_Type (Etype (C), N);
@@ -1943,9 +1945,8 @@ package body Sem_Util is
             Next_Component (C);
          end loop;
 
-         --  It's odd if the loop falls through, but this is only an extra
-         --  error message, so we just let it go and ignore the situation.
-
+         --  The type may be declared explicitly limited, even if no component
+         --  of it is limited, in which case we fall out of the loop.
          return;
       end if;
    end Explain_Limited_Type;
@@ -3772,14 +3773,16 @@ package body Sem_Util is
          while Present (Discr) loop
             if Nkind (Parent (Discr)) = N_Discriminant_Specification then
                Discr_Val := Expression (Parent (Discr));
-               if not Is_OK_Static_Expression (Discr_Val) then
-                  return False;
-               else
+
+               if Present (Discr_Val)
+                 and then Is_OK_Static_Expression (Discr_Val)
+               then
                   Append_To (Constraints,
                     Make_Component_Association (Loc,
                       Choices    => New_List (New_Occurrence_Of (Discr, Loc)),
                       Expression => New_Copy (Discr_Val)));
-
+               else
+                  return False;
                end if;
             else
                return False;

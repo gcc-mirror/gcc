@@ -1737,6 +1737,44 @@ package body Exp_Attr is
          --  the dispatching (class-wide type) case, where it is a reference
          --  to the dummy object initialized to the right internal tag.
 
+         procedure Freeze_Stream_Subprogram (F : Entity_Id);
+         --  The expansion of the attribute reference may generate a call to
+         --  a user-defined stream subprogram that is frozen by the call. This
+         --  can lead to access-before-elaboration problem if the reference
+         --  appears in an object declaration and the subprogram body has not
+         --  been seen. The freezing of the subprogram requires special code
+         --  because it appears in an expanded context where expressions do
+         --  not freeze their constituents.
+
+         ------------------------------
+         -- Freeze_Stream_Subprogram --
+         ------------------------------
+
+         procedure Freeze_Stream_Subprogram (F : Entity_Id) is
+            Decl : constant Node_Id := Unit_Declaration_Node (F);
+            Bod  : Node_Id;
+
+         begin
+            --  If this is user-defined subprogram, the corresponding
+            --  stream function appears as a renaming-as-body, and the
+            --  user subprogram must be retrieved by tree traversal.
+
+            if Present (Decl)
+              and then Nkind (Decl) = N_Subprogram_Declaration
+              and then Present (Corresponding_Body (Decl))
+            then
+               Bod := Corresponding_Body (Decl);
+
+               if Nkind (Unit_Declaration_Node (Bod)) =
+                 N_Subprogram_Renaming_Declaration
+               then
+                  Set_Is_Frozen (Entity (Name (Unit_Declaration_Node (Bod))));
+               end if;
+            end if;
+         end Freeze_Stream_Subprogram;
+
+      --  Start of processing for Input
+
       begin
          --  If no underlying type, we have an error that will be diagnosed
          --  elsewhere, so here we just completely ignore the expansion.
@@ -1902,6 +1940,32 @@ package body Exp_Attr is
                Build_Record_Or_Elementary_Input_Function
                  (Loc, Base_Type (U_Type), Decl, Fname);
                Insert_Action (N, Decl);
+
+               if Nkind (Parent (N)) = N_Object_Declaration
+                 and then Is_Record_Type (U_Type)
+               then
+                  --  The stream function may contain calls to user-defined
+                  --  Read procedures for individual components.
+
+                  declare
+                     Comp : Entity_Id;
+                     Func : Entity_Id;
+
+                  begin
+                     Comp := First_Component (U_Type);
+                     while Present (Comp) loop
+                        Func :=
+                          Find_Stream_Subprogram
+                            (Etype (Comp), TSS_Stream_Read);
+
+                        if Present (Func) then
+                           Freeze_Stream_Subprogram (Func);
+                        end if;
+
+                        Next_Component (Comp);
+                     end loop;
+                  end;
+               end if;
             end if;
          end if;
 
@@ -1918,6 +1982,10 @@ package body Exp_Attr is
          Set_Controlling_Argument (Call, Cntrl);
          Rewrite (N, Unchecked_Convert_To (P_Type, Call));
          Analyze_And_Resolve (N, P_Type);
+
+         if Nkind (Parent (N)) = N_Object_Declaration then
+            Freeze_Stream_Subprogram (Fname);
+         end if;
       end Input;
 
       -------------------

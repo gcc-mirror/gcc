@@ -207,7 +207,7 @@ package body Sem_Ch13 is
          Error_Msg_N
            ("at clause is an obsolescent feature ('R'M 'J.7(2))?", N);
          Error_Msg_N
-           ("|use address attribute definition clause instead?", N);
+           ("\use address attribute definition clause instead?", N);
       end if;
 
       Rewrite (N,
@@ -360,7 +360,7 @@ package body Sem_Ch13 is
                     ("attaching interrupt to task entry is an " &
                      "obsolescent feature ('R'M 'J.7.1)?", N);
                   Error_Msg_N
-                    ("|use interrupt procedure instead?", N);
+                    ("\use interrupt procedure instead?", N);
                end if;
 
             --  Case of an address clause for a controlled object:
@@ -1192,7 +1192,7 @@ package body Sem_Ch13 is
                     ("storage size clause for task is an " &
                      "obsolescent feature ('R'M 'J.9)?", N);
                   Error_Msg_N
-                    ("|use Storage_Size pragma instead?", N);
+                    ("\use Storage_Size pragma instead?", N);
                end if;
 
                FOnly := True;
@@ -1957,7 +1957,7 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("mod clause is an obsolescent feature ('R'M 'J.8)?", N);
                Error_Msg_N
-                 ("|use alignment attribute definition clause instead?", N);
+                 ("\use alignment attribute definition clause instead?", N);
             end if;
 
             if Present (P) then
@@ -3478,11 +3478,17 @@ package body Sem_Ch13 is
       Parent_Type : Entity_Id;
 
       procedure Too_Late;
-      --  Output the too late message
+      --  Output the too late message. Note that this is not considered a
+      --  serious error, since the effect is simply that we ignore the
+      --  representation clause in this case.
+
+      --------------
+      -- Too_Late --
+      --------------
 
       procedure Too_Late is
       begin
-         Error_Msg_N ("representation item appears too late!", N);
+         Error_Msg_N ("|representation item appears too late!", N);
       end Too_Late;
 
    --  Start of processing for Rep_Item_Too_Late
