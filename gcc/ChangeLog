@@ -1,3 +1,9 @@
+2002-07-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/7177
+	* config/cris/cris.h (LEGITIMIZE_RELOAD_ADDRESS): Correct number
+	of indirections for register inside sign-extended mem part.
+
 2002-07-01  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h:  Modify builtin_function interface to take an extra
