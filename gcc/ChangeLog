@@ -1,3 +1,13 @@
+2002-07-21  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* c-decl.c (build_array_declarator): Say 'ISO C90', not 'ISO C89'.
+	(grokdeclarator): Likewise.
+	* c-format.c (C_STD_NAME): Likewise.
+	* c-lex.c (interpret_integer): Likewise.
+	* c-typeck.c (build_array_ref): Likewise.
+	* cpplex.c (_cpp_lex_direct): Likewise.
+	* toplev.c (documented_lang_options): Likewise.
+
 2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-format.c (T99_I, T99_UI): Remove.

@@ -1100,7 +1100,7 @@ _cpp_lex_direct (pfile)
 	      && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, DL_PEDWARN,
-			 "C++ style comments are not allowed in ISO C89");
+			 "C++ style comments are not allowed in ISO C90");
 	      cpp_error (pfile, DL_PEDWARN,
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
