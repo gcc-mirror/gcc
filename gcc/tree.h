@@ -2920,6 +2920,7 @@ extern bool parse_output_constraint     PARAMS ((const char **,
 						 bool *, bool *, bool *));
 extern void expand_asm_operands		PARAMS ((tree, tree, tree, tree, int,
 						 const char *, int));
+extern tree resolve_asm_operand_names (tree, tree, tree);
 extern int any_pending_cleanups		PARAMS ((int));
 extern void init_stmt_for_function	PARAMS ((void));
 extern void expand_start_target_temps	PARAMS ((void));

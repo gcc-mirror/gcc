@@ -1,3 +1,14 @@
+2003-06-06  Jason Merrill  <jason@redhat.com>
+
+	* stmt.c (resolve_asm_operand_names): Rename from
+	resolve_operand_names.  No longer static.  Avoid needless copying.
+	Don't build array of constraints.
+	(expand_asm_operands): Build it here.
+	* tree.h: Declare resolve_asm_operand_names.
+
+	* stmt.c (expand_decl): Put artificial vars into registers even
+	when not optimizing, and don't mark the regs as user vars.
+
 2003-06-06  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (FUNCTION_ARG_1): Consistently use NEW_MODE for the mode
