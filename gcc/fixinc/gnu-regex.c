@@ -80,6 +80,16 @@
 
 #else  /* not emacs */
 
+# include "auto-host.h"
+
+# if !defined(const) && !defined(HAVE_CONST)
+#  define const
+# endif
+
+# if !defined(volatile) && !defined(HAVE_VOLATILE)
+#  define volatile
+# endif
+
 /* If we are not linking with Emacs proper,
    we can't use the relocating allocator
    even if config.h says that we can.  */

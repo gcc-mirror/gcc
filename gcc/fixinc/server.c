@@ -86,6 +86,10 @@
 #define NUL '\0'
 #endif
 
+#if !defined(volatile) && !defined(HAVE_VOLATILE)
+# define volatile
+#endif
+
 STATIC volatile bool read_pipe_timeout;
 
 static t_pchar def_args[] =
