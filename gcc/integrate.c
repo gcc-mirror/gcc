@@ -113,14 +113,14 @@ function_cannot_inline_p (fndecl)
     return "nested function cannot be inline";
 
   /* If its not even close, don't even look.  */
-  if (!TREE_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
+  if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
     return "function too large to be inline";
 
 #if 0
   /* Large stacks are OK now that inlined functions can share them.  */
   /* Don't inline functions with large stack usage,
      since they can make other recursive functions burn up stack.  */
-  if (!TREE_INLINE (fndecl) && get_frame_size () > 100)
+  if (!DECL_INLINE (fndecl) && get_frame_size () > 100)
     return "function stack frame for inlining";
 #endif
 
@@ -150,7 +150,7 @@ function_cannot_inline_p (fndecl)
     if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
       return "function with varying-size parameter cannot be inline";
 
-  if (!TREE_INLINE (fndecl) && get_max_uid () > max_insns)
+  if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
     {
       for (ninsns = 0, insn = get_first_nonparm_insn (); insn && ninsns < max_insns;
 	   insn = NEXT_INSN (insn))
@@ -328,7 +328,7 @@ finish_inline (fndecl, head)
   FIRST_PARM_INSN (head) = get_insns ();
   DECL_SAVED_INSNS (fndecl) = head;
   DECL_FRAME_SIZE (fndecl) = get_frame_size ();
-  TREE_INLINE (fndecl) = 1;
+  DECL_INLINE (fndecl) = 1;
 }
 
 /* Make the insns and PARM_DECLs of the current function permanent
@@ -1745,7 +1745,7 @@ integrate_decl_tree (let, level, map)
 	}
       else if (DECL_RTL (t))
 	DECL_RTL (d) = copy_rtx (DECL_RTL (t));
-      TREE_EXTERNAL (d) = TREE_EXTERNAL (t);
+      DECL_EXTERNAL (d) = DECL_EXTERNAL (t);
       TREE_STATIC (d) = TREE_STATIC (t);
       TREE_PUBLIC (d) = TREE_PUBLIC (t);
       TREE_CONSTANT (d) = TREE_CONSTANT (t);

@@ -616,7 +616,7 @@ sdbout_symbol (decl, local)
       context = decl_function_context (decl);
       if (context == current_function_decl)
 	return;
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 	return;
       if (GET_CODE (DECL_RTL (decl)) != MEM
 	  || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
@@ -646,7 +646,7 @@ sdbout_symbol (decl, local)
     case VAR_DECL:
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 	return;
 
       /* Ignore __FUNCTION__, etc.  */
