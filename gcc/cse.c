@@ -3929,7 +3929,7 @@ simplify_plus_minus (code, mode, op0, op1)
   int negs[8];
   rtx result, tem;
   int n_ops = 2;
-  int i, j;
+  int i, j, k;
   int first = 1, negate = 0, changed;
 
   bzero (ops, sizeof ops);
@@ -4032,12 +4032,18 @@ simplify_plus_minus (code, mode, op0, op1)
     }
 
   /* Pack all the operands to the lower-numbered entries and give up if
-     we didn't reduce the number of operands we had.  */
-  for (i = 0, j = 0; j < n_ops; j++)
-    if (ops[j] != 0)
-      ops[i] = ops[j], negs[i++] = negs[j];
+     we didn't reduce the number of operands we had.  Make sure we
+     count a CONST as two operands.  */
 
-  if (i >= n_ops)
+  for (i = 0, j = 0, k = 0; j < n_ops; j++)
+    if (ops[j] != 0)
+      {
+	ops[i] = ops[j], negs[i++] = negs[j];
+	if (GET_CODE (ops[j]) == CONST)
+	  k++;
+      }
+
+  if (i + k >= n_ops)
     return 0;
 
   n_ops = i;
