@@ -1,3 +1,8 @@
+2001-08-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove unused
+	variables.
+
 2001-08-16  Andreas Jaeger  <aj@suse.de>
 
 	* config/s390/s390.c: Include "debug.h" for dwarf2out_do_frame

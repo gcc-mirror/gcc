@@ -9503,12 +9503,6 @@ ix86_init_mmx_sse_builtins ()
 						 V4SF_type_node,
 						 endlink)));
   /* MMX/SSE/integer conversions.  */
-  tree int_ftype_v4sf_int
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, V4SF_type_node,
-				      tree_cons (NULL_TREE,
-						 integer_type_node,
-						 endlink)));
   tree int_ftype_v4sf
     = build_function_type (integer_type_node,
 			   tree_cons (NULL_TREE, V4SF_type_node,
@@ -9579,17 +9573,6 @@ ix86_init_mmx_sse_builtins ()
     = build_function_type (V4HI_type_node,
 			   tree_cons (NULL_TREE, V4HI_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
-						 endlink)));
-  tree di_ftype_di_int
-    = build_function_type (long_long_unsigned_type_node,
-			   tree_cons (NULL_TREE, long_long_unsigned_type_node,
-				      tree_cons (NULL_TREE, integer_type_node,
-						 endlink)));
-  tree v8qi_ftype_v8qi_di
-    = build_function_type (V8QI_type_node,
-			   tree_cons (NULL_TREE, V8QI_type_node,
-				      tree_cons (NULL_TREE,
-						 long_long_integer_type_node,
 						 endlink)));
   tree v4hi_ftype_v4hi_di
     = build_function_type (V4HI_type_node,
