@@ -13062,15 +13062,6 @@ finish_enum (tree enumtype)
   /* We built up the VALUES in reverse order.  */
   TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
 
-  /* [dcl.enum]
-
-     Following the closing brace of an enum-specifier, each
-     enumerator has the type of its enumeration.  Prior to the
-     closing brace, the type of each enumerator is the type of
-     its initializing value.  */
-  for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
-    TREE_TYPE (TREE_VALUE (pair)) = enumtype;
-  
   /* For an enum defined in a template, all further processing is
      postponed until the template is instantiated.  */
   if (processing_template_decl)
@@ -13080,30 +13071,50 @@ finish_enum (tree enumtype)
       return;
     }
 
-  /* Figure out what the minimum and maximum values of the enumerators
-     are.  */
   if (TYPE_VALUES (enumtype))
     {
+      /* Initialize min and max values and figure out actual values in
+	 following 'for' loop.  */
       minnode = maxnode = NULL_TREE;
 
-      for (pair = TYPE_VALUES (enumtype);
-	   pair;
-	   pair = TREE_CHAIN (pair))
+      /* [dcl.enum]
+	 
+      Following the closing brace of an enum-specifier, each
+      enumerator has the type of its enumeration.  Prior to the
+      closing brace, the type of each enumerator is the type of
+      its initializing value.  */
+      for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
 	{
+
 	  tree value;
 
-	  value = DECL_INITIAL (TREE_VALUE (pair));
+	  /* If we are going to reset type then copy node first.
+	     It cannot be shared now.  */
+	  if (TREE_TYPE (TREE_VALUE (pair)) != enumtype)
+	    {
+	      if (DECL_INITIAL (TREE_VALUE (pair)))
+		DECL_INITIAL (TREE_VALUE (pair)) = 
+		  copy_node (DECL_INITIAL (TREE_VALUE (pair)));
+	      TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+	    }
 
-	  if (!minnode)
-	    minnode = maxnode = value;
-	  else if (tree_int_cst_lt (maxnode, value))
-	    maxnode = value;
-	  else if (tree_int_cst_lt (value, minnode))
-	    minnode = value;
+	  if (!processing_template_decl)
+	    {
+	      /* Adjust min and max value.  */
+	      value = DECL_INITIAL (TREE_VALUE (pair));
+
+	      if (!minnode)
+		minnode = maxnode = value;
+	      else if (tree_int_cst_lt (maxnode, value))
+		maxnode = value;
+	      else if (tree_int_cst_lt (value, minnode))
+		minnode = value;
+	    }
 	}
     }
   else
     minnode = maxnode = integer_zero_node;
+
 
   /* Compute the number of bits require to represent all values of the
      enumeration.  We must do this before the type of MINNODE and
@@ -13174,7 +13185,6 @@ build_enumerator (tree name, tree value, tree enumtype)
   tree decl;
   tree context;
   tree type;
-  tree values;
 
   /* Remove no-op casts from the value.  */
   if (value)
@@ -13223,23 +13233,7 @@ build_enumerator (tree name, tree value, tree enumtype)
       /* Remove no-op casts from the value.  */
       if (value)
 	STRIP_TYPE_NOPS (value);
-#if 0
-      /* To fix MAX_VAL enum consts. (bkoz)  */
-      TREE_TYPE (value) = integer_type_node;
-#endif
     }
-
-  /* We always have to copy here; not all INTEGER_CSTs are unshared.
-     Even in other cases, we will later (in finish_enum) be setting
-     the type of VALUE.  But, we don't need to make a copy if this
-     VALUE is one of the enumeration constants for this same
-     enumeration type.  */
-  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
-    if (TREE_VALUE (values) == value)
-      break;
-  /* If we didn't break out of the loop, then we do need a copy.  */
-  if (!values && value)
-    value = copy_node (value);
 
   /* C++ associates enums with global, function, or class declarations.  */
   context = current_scope ();
