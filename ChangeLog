@@ -1,3 +1,9 @@
+2005-03-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR libgcj/20160
+	* ltmain.sh: Avoid creating archives with components that have
+	duplicate basenames.
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	* MAINTAINERS (Language Front Ends Maintainers): Add myself as
