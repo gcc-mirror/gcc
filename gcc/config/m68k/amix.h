@@ -43,7 +43,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
    Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"
    fails to assemble.  Luckily "Lnnn(pc,d0.l*2)" produces the results
-   we want.  This difference can be accommodated by using an assembler
+   we want.  This difference can be accommodated by making the assembler
    define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
    string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
    macro. (the Amiga assembler has this bug) */
@@ -51,9 +51,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_OUTPUT_CASE_END
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 do {									\
-  if (RTX_INTEGRATED_P (TABLE))						\
+  if (switch_table_difference_label_flag)				\
     asm_fprintf ((FILE), "%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
+  switch_table_difference_label_flag = 0;
 } while (0)
+
+int switch_table_difference_label_flag;
 
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.  Under SVR4,

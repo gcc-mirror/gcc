@@ -876,11 +876,15 @@ print_operand (file, x, code)
       
     case 'F':
       output_addr_const (file, x);
-      if (! strcmp (XSTR (x, 0), current_function_name)
-	  && dbr_sequence_length () == 0)
-	fprintf (file, "+4\n\t%s,%d",
-		 a29k_regstack_size >= 64 ? "const gr121" : "sub gr1,gr1",
-		 a29k_regstack_size * 4);
+      if (dbr_sequence_length () == 0)
+	{
+	  if (! strcmp (XSTR (x, 0), current_function_name))
+	    fprintf (file, "+4\n\t%s,%d",
+		     a29k_regstack_size >= 64 ? "const gr121" : "sub gr1,gr1",
+		     a29k_regstack_size * 4);
+	  else
+	    fprintf (file, "\n\tnop");
+	}
       return;
 
     case 'L':
