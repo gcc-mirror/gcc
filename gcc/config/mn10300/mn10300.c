@@ -675,6 +675,12 @@ secondary_reload_class (class, mode, in)
 		  || XEXP (in, 1) == stack_pointer_rtx))))
     return ADDRESS_REGS;
 
+  if (GET_CODE (in) == PLUS
+      && (XEXP (in, 0) == stack_pointer_rtx
+	  || XEXP (in, 1) == stack_pointer_rtx))
+    return DATA_REGS;
+ 
+
   /* Otherwise assume no secondary reloads are needed.  */
   return NO_REGS;
 }
@@ -950,16 +956,9 @@ impossible_plus_operand (op, mode)
   if (GET_CODE (op) != PLUS)
     return 0;
 
-  if ((XEXP (op, 0) == stack_pointer_rtx)
-      && ((REG_P (XEXP (op, 1)) && reg_equiv_mem [REGNO (XEXP (op, 1))])
-	  || (GET_CODE (XEXP (op, 1)) == SUBREG
-	      && GET_CODE (SUBREG_REG (XEXP (op, 1))) == MEM)))
+  if (XEXP (op, 0) == stack_pointer_rtx
+      || XEXP (op, 1) == stack_pointer_rtx)
     return 1;
 
-  if ((XEXP (op, 1) == stack_pointer_rtx)
-      && ((REG_P (XEXP (op, 0)) && reg_equiv_mem [REGNO (XEXP (op, 0))])
-	  || (GET_CODE (XEXP (op, 0)) == SUBREG
-	      && GET_CODE (SUBREG_REG (XEXP (op, 0))) == MEM)))
-    return 1;
   return 0;
 }
