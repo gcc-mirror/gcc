@@ -457,15 +457,9 @@ do_define (pfile)
 
   if (node)
     {
-      /* Use the permanent pool for storage.  */
-      pfile->string_pool = &pfile->ident_pool;
-
       if (_cpp_create_definition (pfile, node))
 	if (pfile->cb.define)
 	  (*pfile->cb.define) (pfile, node);
-
-      /* Revert to the temporary pool.  */
-      pfile->string_pool = &pfile->temp_string_pool;
     }
 }
 
@@ -531,7 +525,7 @@ glue_header_name (pfile, header)
     cpp_error (pfile, "missing terminating > character");
   else
     {
-      token_mem = _cpp_pool_alloc (pfile->string_pool, total_len);
+      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len);
       memcpy (token_mem, buffer, total_len);
 
       header->type = CPP_HEADER_NAME;
@@ -1487,9 +1481,6 @@ parse_assertion (pfile, answerp, type)
   /* We don't expand predicates or answers.  */
   pfile->state.prevent_expansion++;
 
-  /* Use the permanent pool for storage (for the answers).  */
-  pfile->string_pool = &pfile->ident_pool;
-
   *answerp = 0;
   cpp_get_token (pfile, &predicate);
   if (predicate.type == CPP_EOF)
@@ -1507,7 +1498,6 @@ parse_assertion (pfile, answerp, type)
       result = cpp_lookup (pfile, sym, len + 1);
     }
 
-  pfile->string_pool = &pfile->temp_string_pool;
   pfile->state.prevent_expansion--;
   return result;
 }

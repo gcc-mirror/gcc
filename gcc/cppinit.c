@@ -513,17 +513,11 @@ cpp_create_reader (lang)
   /* Identifier pool initially 8K.  Unaligned, permanent pool.  */
   _cpp_init_pool (&pfile->ident_pool, 8 * 1024, 1, 0);
 
-  /* String and number pool initially 4K.  Unaligned, temporary pool.  */
-  _cpp_init_pool (&pfile->temp_string_pool, 4 * 1024, 1, 1);
-
   /* Argument pool initially 8K.  Aligned, temporary pool.  */
   _cpp_init_pool (&pfile->argument_pool, 8 * 1024, 0, 1);
 
   /* Macro pool initially 8K.  Aligned, permanent pool.  */
   _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
-
-  /* Start with temporary pool.  */
-  pfile->string_pool = &pfile->temp_string_pool;
 
   _cpp_init_hashtable (pfile);
   _cpp_init_stacks (pfile);
@@ -568,7 +562,6 @@ cpp_cleanup (pfile)
   _cpp_free_lookaheads (pfile);
 
   _cpp_free_pool (&pfile->ident_pool);
-  _cpp_free_pool (&pfile->temp_string_pool);
   _cpp_free_pool (&pfile->macro_pool);
   _cpp_free_pool (&pfile->argument_pool);
 

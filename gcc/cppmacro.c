@@ -125,7 +125,7 @@ make_number_token (pfile, token, number)
      cpp_token *token;
      int number;
 {
-  unsigned char *buf = _cpp_pool_alloc (pfile->string_pool, 20);
+  unsigned char *buf = _cpp_pool_alloc (&pfile->ident_pool, 20);
 
   sprintf ((char *) buf, "%d", number);
   token->type = CPP_NUMBER;
@@ -162,7 +162,7 @@ builtin_macro (pfile, token)
 	    buffer = buffer->prev;
 
 	name = buffer->nominal_fname;
-	make_string_token (pfile->string_pool, token,
+	make_string_token (&pfile->ident_pool, token,
 			   (const unsigned char *) name, strlen (name));
       }
       break;
@@ -237,7 +237,6 @@ static void
 lock_pools (pfile)
      cpp_reader *pfile;
 {
-  _cpp_lock_pool (&pfile->temp_string_pool);
   _cpp_lock_pool (&pfile->argument_pool);
 }
 
@@ -245,7 +244,6 @@ static void
 unlock_pools (pfile)
      cpp_reader *pfile;
 {
-  _cpp_unlock_pool (&pfile->temp_string_pool);
   _cpp_unlock_pool (&pfile->argument_pool);
 }
 
@@ -288,7 +286,7 @@ stringify_arg (pfile, arg)
      cpp_reader *pfile;
      macro_arg *arg;
 {
-  cpp_pool *pool = pfile->string_pool;
+  cpp_pool *pool = &pfile->ident_pool;
   unsigned char *start = POOL_FRONT (pool);
   unsigned int i, escape_it, total_len = 0, backslash_count = 0;
 
@@ -397,10 +395,8 @@ paste_tokens (pfile, lhs, rhs)
     {
       unsigned int total_len = cpp_token_len (lhs) + cpp_token_len (rhs);
       unsigned char *result, *end;
-      cpp_pool *pool;
 
-      pool = type == CPP_NAME ? &pfile->ident_pool: pfile->string_pool;
-      result = _cpp_pool_alloc (pool, total_len + 1);
+      result = _cpp_pool_alloc (&pfile->ident_pool, total_len + 1);
 
       /* Paste the spellings and null terminate.  */
       end = cpp_spell_token (pfile, rhs, cpp_spell_token (pfile, lhs, result));

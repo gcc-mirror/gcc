@@ -512,10 +512,8 @@ struct cpp_reader
   /* Memory pools.  */
   cpp_pool ident_pool;		/* For all identifiers, and permanent
 				   numbers and strings.  */
-  cpp_pool temp_string_pool;	/* For temporary numbers and strings.   */
   cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
   cpp_pool argument_pool;	/* For macro arguments.  Temporary.   */
-  cpp_pool* string_pool;	/* Either temp_string_pool or ident_pool.   */
 
   /* Context stack.  */
   struct cpp_context base_context;
