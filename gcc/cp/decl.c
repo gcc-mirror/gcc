@@ -6247,8 +6247,10 @@ init_decl_processing ()
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 
   /* This is special for C++ so functions can be overloaded.  */
-  wchar_type_node
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WCHAR_TYPE)));
+  wchar_type_node = get_identifier (flag_short_wchar
+				    ? "short unsigned int"
+				    : WCHAR_TYPE);
+  wchar_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   signed_wchar_type_node = make_signed_type (wchar_type_size);
   unsigned_wchar_type_node = make_unsigned_type (wchar_type_size);

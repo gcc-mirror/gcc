@@ -348,13 +348,8 @@ int interface_unknown;		/* whether or not we know this class
 
 /* lexical analyzer */
 
-#ifndef WCHAR_TYPE_SIZE
-#ifdef INT_TYPE_SIZE
-#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
-#else
-#define WCHAR_TYPE_SIZE	BITS_PER_WORD
-#endif
-#endif
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 
 /* Number of bytes in a wide character.  */
 #define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)

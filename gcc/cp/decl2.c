@@ -456,6 +456,10 @@ int name_mangling_version = 2;
 /* Nonzero means that guiding declarations are allowed.  */
 int flag_guiding_decls;
 
+/* Nonzero if wchar_t should be `unsigned short' instead of whatever it
+   would normally be, for use with WINE.  */
+int flag_short_wchar;
+
 /* Nonzero if squashed mangling is to be performed. 
    This uses the B and K codes to reference previously seen class types 
    and class qualifiers.       */
@@ -491,6 +495,7 @@ lang_f_options[] =
   {"unsigned-bitfields", &flag_signed_bitfields, 0},
   {"short-enums", &flag_short_enums, 1},
   {"short-double", &flag_short_double, 1},
+  {"short-wchar", &flag_short_wchar, 1},
   {"cond-mismatch", &flag_cond_mismatch, 1},
   {"asm", &flag_no_asm, 0},
   {"builtin", &flag_no_builtin, 0},
