@@ -2583,7 +2583,7 @@ convert_nontype_argument (type, expr)
 	    if (fn == error_mark_node)
 	      return error_mark_node;
 
-	    my_friendly_assert (comptypes (type, TREE_TYPE (fn), 1),
+	    my_friendly_assert (comptypes (type_referred_to, TREE_TYPE (fn), 1),
 				0);
 
 	    return fn;
