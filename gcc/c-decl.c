@@ -4384,9 +4384,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   if (type == 0)
     {
-      if (! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
-			 | (1 << (int) RID_SIGNED)
-			 | (1 << (int) RID_UNSIGNED))))
+      if ((! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
+			  | (1 << (int) RID_SIGNED)
+			  | (1 << (int) RID_UNSIGNED))))
+	  && ! (in_system_header && ! allocation_temporary_p ()))
 	{
 	  /* C9x will probably require a diagnostic here.
 	     For now, issue a warning if -Wreturn-type and this is a function,
