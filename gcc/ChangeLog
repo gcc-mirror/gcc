@@ -1,3 +1,8 @@
+Mon Jan 14 21:26:13 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Rebuild jump labels after
+	gcse.
+
 2002-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi: Move documentation of X86 built-in functions
