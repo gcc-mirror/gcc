@@ -1,5 +1,13 @@
 2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.ext/implicit1.C: Remove.
+	* g++.old-deja/g++.jason/c2.C: Remove
+	* g++.old-deja/g++.mike/p700.C: Add prototype parameters.
+	* g++.old-deja/g++.pt/crash16.C: Likewise.
+	* g++.old-deja/g++.brendan/crash43.C: Remove -fstrict-prototype.
+
+2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/for2.C: New test.
 
 2000-07-25  Jakub Jelinek  <jakub@redhat.com>
