@@ -1,5 +1,11 @@
 2002-10-24  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): True.
+	(ia64_output_mi_thunk): Rewrite to use rtl, and to handle the
+	vcall offset.
+
+2002-10-24  Richard Henderson  <rth@redhat.com>
+
         PR opt/7944
         * reload.c (find_reloads_toplev): Mode of X is not important
 	when simplifying subregs of constants.
