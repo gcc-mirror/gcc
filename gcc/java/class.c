@@ -1050,8 +1050,8 @@ build_class_ref (tree type)
 		abort ();
 
 	      prim_class = lookup_class (get_identifier (prim_class_name));
-	      return build (COMPONENT_REF, NULL_TREE,
-			    prim_class, TYPE_identifier_node, NULL_TREE);
+	      return build3 (COMPONENT_REF, NULL_TREE,
+			     prim_class, TYPE_identifier_node, NULL_TREE);
 	    }
 	  decl_name = TYPE_NAME (type);
 	  if (TREE_CODE (decl_name) == TYPE_DECL)
@@ -1115,9 +1115,9 @@ build_static_field_ref (tree fdecl)
 	= build_int_2 (get_symbol_table_index 
 		       (fdecl, &TYPE_ATABLE_METHODS (output_class)), 0);
       tree field_address
-	= build (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
-		 TYPE_ATABLE_DECL (output_class), table_index,
-		 NULL_TREE, NULL_TREE);
+	= build4 (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
+		  TYPE_ATABLE_DECL (output_class), table_index,
+		  NULL_TREE, NULL_TREE);
       return fold (build1 (INDIRECT_REF, TREE_TYPE (fdecl), 
 			   field_address));
     }
@@ -1129,9 +1129,9 @@ build_static_field_ref (tree fdecl)
       tree fld;
       int field_index = 0;
       ref = build1 (INDIRECT_REF, class_type_node, ref);
-      ref = build (COMPONENT_REF, field_ptr_type_node, ref,
-		   lookup_field (&class_type_node, fields_ident),
-		   NULL_TREE);
+      ref = build3 (COMPONENT_REF, field_ptr_type_node, ref,
+		    lookup_field (&class_type_node, fields_ident),
+		    NULL_TREE);
 
       for (fld = TYPE_FIELDS (fclass); ; fld = TREE_CHAIN (fld))
 	{
@@ -1144,15 +1144,15 @@ build_static_field_ref (tree fdecl)
 	    field_index++;
 	}
       field_index *= int_size_in_bytes (field_type_node);
-      ref = fold (build (PLUS_EXPR, field_ptr_type_node,
-			 ref, build_int_2 (field_index, 0)));
+      ref = fold (build2 (PLUS_EXPR, field_ptr_type_node,
+			  ref, build_int_2 (field_index, 0)));
       ref = build1 (INDIRECT_REF, field_type_node, ref);
-      ref = build (COMPONENT_REF, field_info_union_node,
-		   ref, lookup_field (&field_type_node, info_ident),
-		   NULL_TREE);
-      ref = build (COMPONENT_REF, ptr_type_node,
-		   ref, TREE_CHAIN (TYPE_FIELDS (field_info_union_node)),
-		   NULL_TREE);
+      ref = build3 (COMPONENT_REF, field_info_union_node,
+		    ref, lookup_field (&field_type_node, info_ident),
+		    NULL_TREE);
+      ref = build3 (COMPONENT_REF, ptr_type_node,
+		    ref, TREE_CHAIN (TYPE_FIELDS (field_info_union_node)),
+		    NULL_TREE);
       ref = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (fdecl)), ref);
       return fold (build1 (INDIRECT_REF, TREE_TYPE(fdecl), ref));
     }
@@ -1421,8 +1421,8 @@ get_dispatch_table (tree type, tree this_class_addr)
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
 	      {
-		tree fdesc = build (FDESC_EXPR, nativecode_ptr_type_node, 
-				    method, build_int_2 (j, 0));
+		tree fdesc = build2 (FDESC_EXPR, nativecode_ptr_type_node, 
+				     method, build_int_2 (j, 0));
 		TREE_CONSTANT (fdesc) = 1;
 		TREE_INVARIANT (fdesc) = 1;
 	        list = tree_cons (NULL_TREE, fdesc, list);
@@ -1712,9 +1712,10 @@ make_class_data (tree type)
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
   PUSH_FIELD_VALUE (temp, "vtable",
-		    build (PLUS_EXPR, dtable_ptr_type,
-			   build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl),
-			   dtable_start_offset));
+		    build2 (PLUS_EXPR, dtable_ptr_type,
+			    build1 (ADDR_EXPR, dtable_ptr_type,
+				    class_dtable_decl),
+			    dtable_start_offset));
   if (! flag_hash_synchronization)
     PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp);
@@ -1750,9 +1751,10 @@ make_class_data (tree type)
   else
     PUSH_FIELD_VALUE (cons, "vtable",
 		      dtable_decl == NULL_TREE ? null_pointer_node
-		      : build (PLUS_EXPR, dtable_ptr_type,
-			       build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl),
-			       dtable_start_offset));
+		      : build2 (PLUS_EXPR, dtable_ptr_type,
+				build1 (ADDR_EXPR, dtable_ptr_type,
+					dtable_decl),
+				dtable_start_offset));
   if (TYPE_OTABLE_METHODS (type) == NULL_TREE)
     {
       PUSH_FIELD_VALUE (cons, "otable", null_pointer_node);
@@ -2274,8 +2276,8 @@ layout_class_method (tree this_class, tree super_class,
 	       && dtable_count)
 	{
 	  set_method_index (method_decl, dtable_count);
-	  dtable_count = fold (build (PLUS_EXPR, integer_type_node,
-				      dtable_count, integer_one_node));
+	  dtable_count = fold (build2 (PLUS_EXPR, integer_type_node,
+				       dtable_count, integer_one_node));
 	}
     }
 
