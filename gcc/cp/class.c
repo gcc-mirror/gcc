@@ -5167,12 +5167,11 @@ instantiate_type (lhstype, rhs, complain)
 		  {
 		    int n = DECL_NTPARMS (elem);
 		    tree t = make_scratch_vec (n);
-		    int i, d = 0;
+		    int i;
 		    i = type_unification
 		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 
 		       &TREE_VEC_ELT (t, 0), TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		       TYPE_ARG_TYPES (lhstype), explicit_targs, &d,
-		       1, 1);
+		       TYPE_ARG_TYPES (lhstype), explicit_targs, 1, 1);
 		    if (i == 0)
 		      {
 			if (save_elem)
@@ -5183,7 +5182,7 @@ instantiate_type (lhstype, rhs, complain)
 			save_elem = instantiate_template (elem, t);
 			/* Check the return type.  */
 			if (! comptypes (TREE_TYPE (lhstype),
-					 TREE_TYPE (TREE_TYPE (save_elem)), 1))
+					 TREE_TYPE (TREE_TYPE (t)), 1))
 			  save_elem = 0;
 		      }
 		  }

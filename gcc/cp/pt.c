@@ -69,7 +69,7 @@ static tree saved_trees;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static int unify PROTO((tree, tree *, int, tree, tree, int *, int));
+static int unify PROTO((tree, tree *, int, tree, tree, int));
 static void add_pending_template PROTO((tree));
 static int push_tinst_level PROTO((tree));
 static tree classtype_mangled_name PROTO((tree));
@@ -81,7 +81,7 @@ static tree get_class_bindings PROTO((tree, tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int, int));
 static tree tsubst_enum	PROTO((tree, tree, tree *));
 static tree add_to_template_args PROTO((tree, tree));
-static int  type_unification_real PROTO((tree, tree *, tree, tree, int*,
+static int  type_unification_real PROTO((tree, tree *, tree, tree,
 					 int, int, int));
 static void note_template_header PROTO((int));
 static tree maybe_fold_nontype_arg PROTO((tree));
@@ -542,7 +542,6 @@ determine_specialization (template_id, decl, targs_out,
   for (; fn != NULL_TREE; 
        fn = overloaded ? DECL_CHAIN (fn) : NULL_TREE)
     {
-      int dummy = 0;
       tree tmpl;
 
       if (!need_member_template 
@@ -576,7 +575,7 @@ determine_specialization (template_id, decl, targs_out,
 				NULL_TREE,
 				NULL_TREE,  
 				targs_in,
-				&dummy, 1, 1);
+				1, 1);
       
 	  if (i == 0) 
 	    /* Unification was successful.  */
@@ -5024,7 +5023,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
      int strict;
      tree extra_fn_arg;
 {
-  int i, dummy = 0;
+  int i;
   tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
   tree decl_arg_types = args;
 
@@ -5051,7 +5050,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
 			fn_arg_types,
 			decl_arg_types,
 			explicit_targs,
-			&dummy, strict, 0);
+			strict, 0);
 
   return i;
 }
@@ -5081,10 +5080,10 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
    addresses, explicit instantiation, and more_specialized).  */
 
 int
-type_unification (tparms, targs, parms, args, targs_in, nsubsts,
+type_unification (tparms, targs, parms, args, targs_in,
 		  strict, allow_incomplete)
      tree tparms, *targs, parms, args, targs_in;
-     int *nsubsts, strict, allow_incomplete;
+     int strict, allow_incomplete;
 {
   int ntparms = TREE_VEC_LENGTH (tparms);
   tree arg;
@@ -5112,7 +5111,7 @@ type_unification (tparms, targs, parms, args, targs_in, nsubsts,
 	targs[i] = build1 (NOP_EXPR, NULL_TREE, TREE_VEC_ELT (arg_vec, i));
     }
   
-  r = type_unification_real (tparms, targs, parms, args, nsubsts, 0,
+  r = type_unification_real (tparms, targs, parms, args, 0,
 			     strict, allow_incomplete); 
 
   for (i = 0, arg = targs_in; 
@@ -5126,10 +5125,10 @@ type_unification (tparms, targs, parms, args, targs_in, nsubsts,
 
 
 static int
-type_unification_real (tparms, targs, parms, args, nsubsts, subr,
+type_unification_real (tparms, targs, parms, args, subr,
 		       strict, allow_incomplete)
      tree tparms, *targs, parms, args;
-     int *nsubsts, subr, strict, allow_incomplete;
+     int subr, strict, allow_incomplete;
 {
   tree parm, arg;
   int i;
@@ -5202,12 +5201,11 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	      && TREE_TYPE (arg) == unknown_type_node
 	      && TREE_CODE (TREE_VALUE (arg)) == TEMPLATE_DECL)
 	    {
-	      int nsubsts, ntparms;
+	      int ntparms;
 	      tree *targs;
 
 	      /* Have to back unify here */
 	      arg = TREE_VALUE (arg);
-	      nsubsts = 0;
 	      ntparms = DECL_NTPARMS (arg);
 	      targs = (tree *) alloca (sizeof (tree) * ntparms);
 	      parm = expr_tree_cons (NULL_TREE, parm, NULL_TREE);
@@ -5215,7 +5213,7 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 		type_unification (DECL_INNERMOST_TEMPLATE_PARMS (arg), 
 				  targs,
 				  TYPE_ARG_TYPES (TREE_TYPE (arg)),
-				  parm, NULL_TREE, &nsubsts, strict,
+				  parm, NULL_TREE, strict,
 				  allow_incomplete); 
 	    }
 	  arg = TREE_TYPE (arg);
@@ -5241,7 +5239,7 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	    arg = TYPE_MAIN_VARIANT (arg);
 	}
 
-      switch (unify (tparms, targs, ntparms, parm, arg, nsubsts, strict))
+      switch (unify (tparms, targs, ntparms, parm, arg, strict))
 	{
 	case 0:
 	  break;
@@ -5272,9 +5270,9 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 /* Tail recursion is your friend.  */
 
 static int
-unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
+unify (tparms, targs, ntparms, parm, arg, strict)
      tree tparms, *targs, parm, arg;
-     int *nsubsts, ntparms, strict;
+     int ntparms, strict;
 {
   int idx;
 
@@ -5301,7 +5299,6 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       return 0;
 
     case TEMPLATE_TYPE_PARM:
-      (*nsubsts)++;
       idx = TEMPLATE_TYPE_IDX (parm);
       /* Check for mixed types and values.  */
       if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (tparms, idx))) != TYPE_DECL)
@@ -5344,7 +5341,6 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       return 0;
 
     case TEMPLATE_TEMPLATE_PARM:
-      (*nsubsts)++;
       idx = TEMPLATE_TYPE_IDX (parm);
       /* Check for mixed types and values.  */
       if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (tparms, idx))) != TEMPLATE_DECL)
@@ -5397,7 +5393,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 		/* This argument can be deduced.  */
 
 		if (unify (tparms, targs, ntparms, t, 
-			   TREE_VEC_ELT (argvec, i), nsubsts, strict))
+			   TREE_VEC_ELT (argvec, i), strict))
 		  return 1;
 	      }
 	  }
@@ -5416,7 +5412,6 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       return 0;
 
     case TEMPLATE_PARM_INDEX:
-      (*nsubsts)++;
       idx = TEMPLATE_PARM_IDX (parm);
       if (targs[idx])
 	{
@@ -5435,18 +5430,18 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
     case POINTER_TYPE:
       if (TREE_CODE (arg) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (arg))
 	return unify (tparms, targs, ntparms, parm,
-		      TYPE_PTRMEMFUNC_FN_TYPE (arg), nsubsts, strict);
+		      TYPE_PTRMEMFUNC_FN_TYPE (arg), strict);
 
       if (TREE_CODE (arg) != POINTER_TYPE)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),
-		    nsubsts, strict);
+		    strict);
 
     case REFERENCE_TYPE:
       if (TREE_CODE (arg) == REFERENCE_TYPE)
 	arg = TREE_TYPE (arg);
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), arg,
-		    nsubsts, strict);
+		    strict);
 
     case ARRAY_TYPE:
       if (TREE_CODE (arg) != ARRAY_TYPE)
@@ -5456,10 +5451,10 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	return 1;
       if (TYPE_DOMAIN (parm) != NULL_TREE
 	  && unify (tparms, targs, ntparms, TYPE_DOMAIN (parm),
-		    TYPE_DOMAIN (arg), nsubsts, strict) != 0)
+		    TYPE_DOMAIN (arg), strict) != 0)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),
-		    nsubsts, strict);
+		    strict);
 
     case REAL_TYPE:
     case COMPLEX_TYPE:
@@ -5473,11 +5468,11 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	{
 	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
 	      && unify (tparms, targs, ntparms, TYPE_MIN_VALUE (parm),
-			TYPE_MIN_VALUE (arg), nsubsts, strict))
+			TYPE_MIN_VALUE (arg), strict))
 	    return 1;
 	  if (TYPE_MAX_VALUE (parm) && TYPE_MAX_VALUE (arg)
 	      && unify (tparms, targs, ntparms, TYPE_MAX_VALUE (parm),
-			TYPE_MAX_VALUE (arg), nsubsts, strict))
+			TYPE_MAX_VALUE (arg), strict))
 	    return 1;
 	}
       else if (TREE_CODE (parm) == REAL_TYPE
@@ -5505,7 +5500,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	t2 = TREE_OPERAND (parm, 1);
 	return unify (tparms, targs, ntparms, t1,
 		      fold (build (PLUS_EXPR, integer_type_node, arg, t2)),
-		      nsubsts, strict);
+		      strict);
       }
 
     case TREE_VEC:
@@ -5518,7 +5513,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	for (i = TREE_VEC_LENGTH (parm) - 1; i >= 0; i--)
 	  if (unify (tparms, targs, ntparms,
 		     TREE_VEC_ELT (parm, i), TREE_VEC_ELT (arg, i),
-		     nsubsts, strict))
+		     strict))
 	    return 1;
 	return 0;
       }
@@ -5526,7 +5521,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_FLAG (parm))
 	return unify (tparms, targs, ntparms, TYPE_PTRMEMFUNC_FN_TYPE (parm),
-		      arg, nsubsts, strict);
+		      arg, strict);
 
       /* Allow trivial conversions.  */
       if (TREE_CODE (arg) != RECORD_TYPE
@@ -5547,7 +5542,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	    return 1;
 
 	  return unify (tparms, targs, ntparms, CLASSTYPE_TI_ARGS (parm),
-			CLASSTYPE_TI_ARGS (t), nsubsts, strict);
+			CLASSTYPE_TI_ARGS (t), strict);
 	}
       else if (TYPE_MAIN_VARIANT (parm) != TYPE_MAIN_VARIANT (arg))
 	return 1;
@@ -5563,20 +5558,20 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	return 1;
      check_args:
       if (unify (tparms, targs, ntparms, TREE_TYPE (parm),
-		 TREE_TYPE (arg), nsubsts, strict))
+		 TREE_TYPE (arg), strict))
 	return 1;
       return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
-				    TYPE_ARG_TYPES (arg), nsubsts, 1, 
+				    TYPE_ARG_TYPES (arg), 1, 
 				    strict, 0);
 
     case OFFSET_TYPE:
       if (TREE_CODE (arg) != OFFSET_TYPE)
 	return 1;
       if (unify (tparms, targs, ntparms, TYPE_OFFSET_BASETYPE (parm),
-		 TYPE_OFFSET_BASETYPE (arg), nsubsts, strict))
+		 TYPE_OFFSET_BASETYPE (arg), strict))
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm),
-		    TREE_TYPE (arg), nsubsts, strict);
+		    TREE_TYPE (arg), strict);
 
     case CONST_DECL:
       if (arg != decl_constant_value (parm))
@@ -5736,7 +5731,7 @@ static tree
 get_class_bindings (tparms, parms, args, outer_args)
      tree tparms, parms, args, outer_args;
 {
-  int i, dummy, ntparms = TREE_VEC_LENGTH (tparms);
+  int i, ntparms = TREE_VEC_LENGTH (tparms);
   tree vec = make_temp_vec (ntparms);
 
   if (outer_args)
@@ -5748,8 +5743,7 @@ get_class_bindings (tparms, parms, args, outer_args)
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
     {
       switch (unify (tparms, &TREE_VEC_ELT (vec, 0), ntparms,
-		     TREE_VEC_ELT (parms, i), TREE_VEC_ELT (args, i),
-		     &dummy, 1))
+		     TREE_VEC_ELT (parms, i), TREE_VEC_ELT (args, i), 1))
 	{
 	case 0:
 	  break;
