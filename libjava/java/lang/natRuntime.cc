@@ -128,6 +128,10 @@ _Jv_SetDLLSearchPath (const char *)
 
 
 
+extern int _Jv_argc;
+extern const char **_Jv_argv;
+  // our process' command line arguments
+
 void
 java::lang::Runtime::exitInternal (jint status)
 {
@@ -607,7 +611,7 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
     }
 
   // The name used to invoke this process (argv[0] in C).
-  SET ("gnu.gcj.progname", _Jv_ThisExecutable());
+  SET ("gnu.gcj.progname", _Jv_argv[0]);
 
   // Allow platform specific settings and overrides.
   _Jv_platform_initProperties (newprops);

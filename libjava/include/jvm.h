@@ -352,9 +352,8 @@ extern "C"
   jlong _Jv_remJ (jlong, jlong);
 }
 
-/* get/set the name of the running executable. */
-extern char *_Jv_ThisExecutable (void);
-extern void _Jv_ThisExecutable (const char *);
+/* Get the name of the running executable. */
+extern const char *_Jv_ThisExecutable (void);
 
 /* Return a pointer to a symbol in executable or loaded library.  */
 void *_Jv_FindSymbolInExecutable (const char *);

@@ -86,9 +86,6 @@ const char *_Jv_Jar_Class_Path;
 property_pair *_Jv_Environment_Properties;
 #endif
 
-// The name of this executable.
-static char *_Jv_execName;
-
 // Stash the argv pointer to benefit native libraries that need it.
 const char **_Jv_argv;
 int _Jv_argc;
@@ -707,22 +704,6 @@ static JArray<jstring> *arg_vec;
 // The primary thread.
 static java::lang::Thread *main_thread;
 
-char *
-_Jv_ThisExecutable (void)
-{
-  return _Jv_execName;
-}
-
-void
-_Jv_ThisExecutable (const char *name)
-{
-  if (name)
-    {
-      _Jv_execName = (char *) _Jv_Malloc (strlen (name) + 1);
-      strcpy (_Jv_execName, name);
-    }
-}
-
 #ifndef DISABLE_GETENV_PROPERTIES
 
 static char *
@@ -959,19 +940,6 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
   _Jv_argc = argc;
 
   java::lang::Runtime *runtime = NULL;
-
-
-#ifdef DISABLE_MAIN_ARGS
-  _Jv_ThisExecutable ("[Embedded App]");
-#else
-#ifdef HAVE_PROC_SELF_EXE
-  char exec_name[20];
-  sprintf (exec_name, "/proc/%d/exe", getpid ());
-  _Jv_ThisExecutable (exec_name);
-#else
-  _Jv_ThisExecutable (argv[0]);
-#endif /* HAVE_PROC_SELF_EXE */
-#endif /* DISABLE_MAIN_ARGS */
 
   try
     {
