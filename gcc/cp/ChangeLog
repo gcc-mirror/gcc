@@ -1,3 +1,9 @@
+Sun Feb 21 20:38:00 1999  H.J. Lu  (hjl@gnu.org)
+
+	* decl2.c (start_objects): Make file scope constructors and
+	destructors local to the file if ASM_OUTPUT_CONSTRUCTOR and
+	ASM_OUTPUT_DESTRUCTOR are defined.
+
 Sat Feb 20 15:08:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	1999-01-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
