@@ -1,3 +1,8 @@
+2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/execute/cmplx.f90: Add test for bug in
+	constant folding.
+
 2004-05-17  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/tree-ssa/20040517-1.c: New test.
