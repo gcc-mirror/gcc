@@ -1,3 +1,9 @@
+2004-07-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vmx/ops.c: Remove checks using pointers to long.
+	* gcc.dg/vmx/ops-long-1.c: New test.
+	* gcc.dg/vmx/ops-long-2.c: New test.
+
 2004-07-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/lookup/conv-[1234].C: New.
