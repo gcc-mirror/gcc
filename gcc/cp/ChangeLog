@@ -1,5 +1,8 @@
 1999-09-29  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (dequeue_and_dump): Dump DECL_EXTERNAL.
+	* ir.texi: Document DECL_EXTERNAL.
+
 	* dump.c (dequeue_and_dump): Improve support for dumping THUNK_DECLs.
 	* ir.texi: Document THUNK_DECLs.
 
