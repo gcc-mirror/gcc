@@ -1,3 +1,12 @@
+2003-10-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/text/RuleBasedCollator.java
+	(RuleBasedCollator): Check rules not empty, fixed search in already
+	existing collation elements.
+	(is_special): Removed common whitespace characters.
+	(text_argument): Dont return on whitespaces, add characters between
+	two ' to string buffer.
+
 2003-10-18  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/file/Connection.java,
