@@ -1,3 +1,17 @@
+2004-10-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/monetary_members.cc (_S_construct_pattern):
+	Give __ret a default value, thus avoiding spurious warnings.
+
+	* testsuite/performance/27_io/filebuf_sgetn_unbuf.cc: Open either
+	words or linux.words, otherwise exit.
+	* testsuite/performance/27_io/ifstream_getline.cc: Slighlty tweak.
+
+2004-10-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/sstream.tcc (seekpos): In case of success, just
+	return __sp.
+
 2004-10-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR libstdc++/17850

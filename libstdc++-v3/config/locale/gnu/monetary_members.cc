@@ -199,7 +199,7 @@ namespace std
 	  }
 	break;
       default:
-	;
+	__ret = pattern();
       }
     return __ret;
   }
