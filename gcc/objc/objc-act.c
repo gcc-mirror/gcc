@@ -8392,6 +8392,8 @@ static void
 handle_impent (impent)
      struct imp_entry *impent;
 {
+  char *string;
+
   implementation_context = impent->imp_context;
   implementation_template = impent->imp_template;
 
@@ -8399,62 +8401,45 @@ handle_impent (impent)
     {
       const char *class_name =
 	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
-      char *string = (char *) alloca (strlen (class_name) + 30);
 
-      if (flag_next_runtime)
-	{
-	  /* Grossly unportable.
-	     People should know better than to assume
-	     such things about assembler syntax!  */
-	  sprintf (string, ".objc_class_name_%s=0", class_name);
-	  assemble_asm (my_build_string (strlen (string) + 1, string));
+      string = (char *) alloca (strlen (class_name) + 30);
 
-	  sprintf (string, ".globl .objc_class_name_%s", class_name);
-	  assemble_asm (my_build_string (strlen (string) + 1, string));
-	}
-
-      else
-	{
-	  sprintf (string, "%sobjc_class_name_%s",
-		   (flag_next_runtime ? "." : "__"), class_name);
-	  assemble_global (string);
-	  assemble_label (string);
-	}
+      sprintf (string, "*%sobjc_class_name_%s",
+               (flag_next_runtime ? "." : "__"), class_name);
     }
-
   else if (TREE_CODE (impent->imp_context) == CATEGORY_IMPLEMENTATION_TYPE)
     {
       const char *class_name =
 	IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
       const char *class_super_name =
-	IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
-      char *string = (char *) alloca (strlen (class_name)
-				      + strlen (class_super_name) + 30);
+        IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
 
-      /* Do the same for categories.  Even though no references to these
-	 symbols are generated automatically by the compiler, it gives
-	 you a handle to pull them into an archive by hand.  */
-      if (flag_next_runtime)
-	{
-	  /* Grossly unportable.  */
-	  sprintf (string, ".objc_category_name_%s_%s=0",
-		   class_name, class_super_name);
-	  assemble_asm (my_build_string (strlen (string) + 1, string));
+      string = (char *) alloca (strlen (class_name)
+				+ strlen (class_super_name) + 30);
 
-	  sprintf (string, ".globl .objc_category_name_%s_%s",
-		   class_name, class_super_name);
-	  assemble_asm (my_build_string (strlen (string) + 1, string));
-	}
-
-      else
-	{
-	  sprintf (string, "%sobjc_category_name_%s_%s",
-		   (flag_next_runtime ? "." : "__"),
-		   class_name, class_super_name);
-	  assemble_global (string);
-	  assemble_label (string);
-	}
+      /* Do the same for categories.  Even though no references to
+         these symbols are generated automatically by the compiler, it
+         gives you a handle to pull them into an archive by hand. */
+      sprintf (string, "*%sobjc_category_name_%s_%s",
+               (flag_next_runtime ? "." : "__"), class_name, class_super_name);
     }
+  else
+    return;
+
+#ifdef ASM_DECLARE_CLASS_REFERENCE
+  if (flag_next_runtime)
+    {
+      ASM_DECLARE_CLASS_REFERENCE (asm_out_file, string);
+      return;
+    }
+#endif
+
+  /* (Should this be a routine in varasm.c?) */
+  readonly_data_section ();
+  assemble_global (string);
+  assemble_align (UNITS_PER_WORD);
+  assemble_label (string);
+  assemble_zeros (UNITS_PER_WORD);
 }
 
 void
