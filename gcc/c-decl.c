@@ -3888,7 +3888,10 @@ push_parm_decl (parm)
   /* The corresponding pop_obstacks is in finish_decl.  */
   push_obstacks_nochange ();
 
-  decl = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm), PARM, 0);
+  decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
+			 TREE_PURPOSE (TREE_PURPOSE (parm)), PARM, 0);
+  decl_attributes (decl, TREE_VALUE (TREE_VALUE (parm)),
+		   TREE_PURPOSE (TREE_VALUE (parm)));
 
 #if 0
   if (DECL_NAME (decl))
