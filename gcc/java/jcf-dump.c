@@ -504,7 +504,7 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
     case CONSTANT_Float:
       {
 	jfloat fnum = JPOOL_FLOAT (jcf, index);
-	fprintf (out, "%s%.10g", verbosity > 1 ? "Float " : "", (double) fnum);
+	fprintf (out, "%s%.10g", verbosity > 0 ? "Float " : "", (double) fnum);
 	if (verbosity > 1)
 	  fprintf (out, ", bits = 0x%08lx", (long) (* (int32 *) &fnum));
 	break;
@@ -512,7 +512,7 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
     case CONSTANT_Double:
       {
 	jdouble dnum = JPOOL_DOUBLE (jcf, index);
-	fprintf (out, "%s%.20g", verbosity > 1 ? "Double " : "", dnum);
+	fprintf (out, "%s%.20g", verbosity > 0 ? "Double " : "", dnum);
 	if (verbosity > 1)
 	  {
 	    int32 hi, lo;
@@ -889,6 +889,7 @@ DEFUN(main, (argc, argv),
 	case OPT_JAVAP:
 	  flag_javap_compatible++;
 	  flag_print_constant_pool = 0;
+	  flag_print_attributes = 0;
 	  break;
 
 	default:
@@ -1201,10 +1202,10 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 
 #define SPECIAL_IINC(OPERAND_TYPE) \
   i = saw_wide ? IMMEDIATE_u2 : IMMEDIATE_u1; \
-  fprintf (out, " %ld", (long) i); \
-  INT_temp = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
+  fprintf (out, " %d", i); \
+  i = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
   saw_wide = 0; \
-  fprintf (out, " %ld", (long) INT_temp)
+  fprintf (out, " %d", i)
 
 #define SPECIAL_WIDE(OPERAND_TYPE) \
   saw_wide = 1;
