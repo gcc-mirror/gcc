@@ -1,3 +1,8 @@
+Wed Jul  7 01:16:43 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ginclude/varargs.h (__builtin_va_alist_t): New typedef.
+	(va_dcl): Use __builtin_va_alist_t.
+
 Wed Jul  7 01:13:31 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (gen_struct_or_union_type_die): Only remember types
