@@ -3644,15 +3644,18 @@ not generate any instructions in this case.
 
 @findex STRICT_ARGUMENT_NAMING
 @item STRICT_ARGUMENT_NAMING
-Define this macro if the location where a function argument is passed
-depends on whether or not it is a named argument.
+Define this macro to be a nonzero value if the location where a function
+argument is passed depends on whether or not it is a named argument.
 
 This macro controls how the @var{named} argument to @code{FUNCTION_ARG}
-is set for varargs and stdarg functions.  With this macro defined,
-the @var{named} argument is always true for named arguments, and false for
-unnamed arguments.  If this is not defined, but @code{SETUP_INCOMING_VARARGS}
-is defined, then all arguments are treated as named.  Otherwise, all named
-arguments except the last are treated as named.
+is set for varargs and stdarg functions.  If this macro returns a
+nonzero value, the @var{named} argument is always true for named
+arguments, and false for unnamed arguments.  If it returns a value of
+zero, but @code{SETUP_INCOMING_VARARGS} is defined, then all arguments
+are treated as named.  Otherwise, all named arguments except the last
+are treated as named.
+
+You need not define this macro if it always returns zero.
 @end table
 
 @node Trampolines
