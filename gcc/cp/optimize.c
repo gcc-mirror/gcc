@@ -1004,7 +1004,7 @@ maybe_clone_body (fn)
       VARRAY_FREE (id.fns);
 
       /* Now, expand this function into RTL, if appropriate.  */
-      cp_function_chain->name_declared = 1;
+      function_name_declared_p = 1;
       expand_body (finish_function (0));
       pop_from_top_level ();
     }

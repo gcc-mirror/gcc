@@ -77,19 +77,6 @@ static void genrtl_finish_function PARAMS ((tree));
       substmt = cond;					\
   } while (0)
 
-/* Wrapper since C and C++ expand_expr_stmt are different. */
-
-expand_expr_stmt_fn lang_expand_expr_stmt = cplus_expand_expr_stmt;
-
-/* Wrapper function instead of #define for use with c-common code. */
-
-void
-set_current_function_name_declared (i)
-     int i;
-{
-  cp_function_chain->name_declared = i;
-}
-
 /* Returns non-zero if the current statement is a full expression,
    i.e. temporaries created during that statement should be destroyed
    at the end of the statement.  */
@@ -110,16 +97,6 @@ current_stmt_tree ()
   return (cfun 
 	  ? &cfun->language->x_stmt_tree 
 	  : &scope_chain->x_stmt_tree);
-}
-
-/* One if we have already declared __FUNCTION__ (and related
-   variables) in the current function.  Two if we are in the process
-   of doing so.  */
-
-int
-current_function_name_declared ()
-{
-  return cp_function_chain->name_declared;
 }
 
 /* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
@@ -863,10 +840,10 @@ begin_compound_stmt (has_no_scope)
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
   if (cfun
-      && !(current_function_name_declared () )
+      && !function_name_declared_p
       && !has_no_scope)
     {
-      cp_function_chain->name_declared = 1;
+      function_name_declared_p = 1;
       declare_function_name ();
     }
 
@@ -960,20 +937,6 @@ finish_label_decl (name)
 {
   tree decl = declare_local_label (name);
   add_decl_stmt (decl);
-}
-
-/* Create a declaration statement for the declaration given by the
-   DECL.  */
-
-void
-add_decl_stmt (decl)
-     tree decl;
-{
-  tree decl_stmt;
-
-  /* We need the type to last until instantiation time.  */
-  decl_stmt = build_stmt (DECL_STMT, decl);
-  add_stmt (decl_stmt); 
 }
 
 /* Generate the RTL for a SUBOBJECT. */
@@ -1216,10 +1179,10 @@ setup_vtbl_ptr (member_init_list, base_init_list)
 
       /* Don't declare __PRETTY_FUNCTION__ and friends here when we
 	 open the block for the if-body.  */
-      saved_cfnd = current_function_name_declared ();
-      cp_function_chain->name_declared = 1;
+      saved_cfnd = function_name_declared_p;
+      function_name_declared_p = 1;
       compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-      cp_function_chain->name_declared = saved_cfnd;
+      function_name_declared_p = saved_cfnd;
 
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
@@ -1240,48 +1203,12 @@ setup_vtbl_ptr (member_init_list, base_init_list)
   vtbls_set_up_p = 1;
 }
 
+/* Returns the stack of SCOPE_STMTs for the current function.  */
 
-/* Add a scope-statement to the statement-tree.  BEGIN_P indicates
-   whether this statements opens or closes a scope.  PARTIAL_P is true
-   for a partial scope, i.e, the scope that begins after a label when
-   an object that needs a cleanup is created.  If BEGIN_P is nonzero,
-   returns a new TREE_LIST representing the top of the SCOPE_STMT
-   stack.  The TREE_PURPOSE is the new SCOPE_STMT.  If BEGIN_P is
-   zero, returns a TREE_LIST whose TREE_VALUE is the new SCOPE_STMT,
-   and whose TREE_PURPOSE is the matching SCOPE_STMT iwth
-   SCOPE_BEGIN_P set.  */
-
-tree
-add_scope_stmt (begin_p, partial_p)
-     int begin_p;
-     int partial_p;
+tree *
+current_scope_stmt_stack ()
 {
-  tree ss;
-  tree top;
-
-  /* Build the statement.  */
-  ss = build_stmt (SCOPE_STMT, NULL_TREE);
-  SCOPE_BEGIN_P (ss) = begin_p;
-  SCOPE_PARTIAL_P (ss) = partial_p;
-
-  /* Keep the scope stack up to date.  */
-  if (begin_p)
-    {
-      current_scope_stmt_stack 
-	= tree_cons (ss, NULL_TREE, current_scope_stmt_stack);
-      top = current_scope_stmt_stack;
-    }
-  else
-    {
-      top = current_scope_stmt_stack;
-      TREE_VALUE (top) = ss;
-      current_scope_stmt_stack = TREE_CHAIN (top);
-    }
-
-  /* Add the new statement to the statement-tree.  */
-  add_stmt (ss);
-
-  return top;
+  return &cfun->language->x_scope_stmt_stack;
 }
 
 /* Finish a parenthesized expression EXPR.  */
@@ -2236,10 +2163,6 @@ cp_expand_stmt (t)
       genrtl_subobject (SUBOBJECT_CLEANUP (t));
       break;
 
-    case SCOPE_STMT:
-      genrtl_scope_stmt (t);
-      break;
-
     case RETURN_INIT:
       genrtl_named_return_value ();
       break;
@@ -2483,7 +2406,7 @@ expand_body (fn)
   /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
      any of the other magic variables we set up when starting a
      function body.  */
-  cp_function_chain->name_declared = 1;
+  function_name_declared_p = 1;
 
   /* Expand the body.  */
   expand_stmt (DECL_SAVED_TREE (fn));

@@ -1985,7 +1985,8 @@ build_template_decl (decl, parms)
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
   if (DECL_LANG_SPECIFIC (decl))
     {
-      DECL_VIRTUAL_CONTEXT (tmpl) = DECL_VIRTUAL_CONTEXT (decl);
+      if (CAN_HAVE_FULL_LANG_DECL_P (decl))
+	DECL_VIRTUAL_CONTEXT (tmpl) = DECL_VIRTUAL_CONTEXT (decl);
       DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
       DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
       DECL_NONCONVERTING_P (tmpl) = DECL_NONCONVERTING_P (decl);
@@ -9689,7 +9690,7 @@ instantiate_decl (d, defer_ok)
 
       /* We already set up __FUNCTION__, etc., so we don't want to do
 	 it again now.  */
-      cp_function_chain->name_declared = 1;
+      function_name_declared_p = 1;
 
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,

@@ -878,7 +878,6 @@ struct cp_language_function
   tree x_current_class_ptr;
   tree x_current_class_ref;
   tree x_eh_spec_try_block;
-  tree x_scope_stmt_stack;
   tree x_in_charge_parm;
 
   tree *x_vcalls_possible_p;
@@ -889,7 +888,6 @@ struct cp_language_function
   int returns_null;
   int in_function_try_handler;
   int x_expanding_p;
-  int name_declared;
   int vtbls_set_up_p;
 
   struct named_label_use_list *x_named_label_uses;
@@ -927,10 +925,6 @@ struct cp_language_function
    function, if any.  */
 
 #define current_eh_spec_try_block cp_function_chain->x_eh_spec_try_block
-
-/* The stack of SCOPE_STMTs for the current function.  */
-
-#define current_scope_stmt_stack cp_function_chain->x_scope_stmt_stack
 
 /* The `__in_chrg' parameter for the current function.  Only used for
    destructors.  */
@@ -977,6 +971,12 @@ struct cp_language_function
 #define original_result_rtx cp_function_chain->x_result_rtx
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
+
+/* Nonzero if __FUNCTION__ and its ilk have been declared in this
+   function.  */
+
+#define function_name_declared_p \
+  (cp_function_chain->base.x_function_name_declared_p)
 
 extern tree current_function_return_value;
 extern tree global_namespace;
@@ -1811,6 +1811,8 @@ struct lang_type
 
 struct lang_decl_flags
 {
+  struct c_lang_decl base;
+
   ENUM_BITFIELD(languages) language : 8;
 
   unsigned operator_attr : 1;
@@ -1838,8 +1840,6 @@ struct lang_decl_flags
   unsigned anticipated_p : 1;
   unsigned generate_with_vtable_p : 1;
   unsigned dummy : 1;
-
-  tree context;
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -1872,8 +1872,9 @@ struct lang_decl
 
   tree befriending_classes;
 
-  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
-  tree saved_tree;
+  /* For a virtual FUNCTION_DECL, this is DECL_VIRTUAL_CONTEXT.  For a
+     non-virtual FUNCTION_DECL, this is DECL_FRIEND_CONTEXT.  */
+  tree context;
 
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
@@ -2168,12 +2169,12 @@ struct lang_decl
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
   ((DECL_FRIEND_P (NODE) && !DECL_FUNCTION_MEMBER_P (NODE))	\
-   ? DECL_LANG_SPECIFIC (NODE)->decl_flags.context              \
+   ? DECL_LANG_SPECIFIC (NODE)->context                         \
    : NULL_TREE)
 
 /* Set the DECL_FRIEND_CONTEXT for NODE to CONTEXT.  */
 #define SET_DECL_FRIEND_CONTEXT(NODE, CONTEXT) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.context = (CONTEXT))
+  (DECL_LANG_SPECIFIC (NODE)->context = (CONTEXT))
 
 /* NULL_TREE in DECL_CONTEXT represents the global namespace. */
 #define CP_DECL_CONTEXT(NODE) \
@@ -2183,7 +2184,7 @@ struct lang_decl
 /* For a virtual function, the base where we find its vtable entry.
    For a non-virtual function, the base where it is defined.  */
 #define DECL_VIRTUAL_CONTEXT(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.context)
+  (DECL_LANG_SPECIFIC (NODE)->context)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
@@ -2409,12 +2410,6 @@ struct lang_decl
    the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
-/* In a FUNCTION_DECL, the saved representation of the body of the
-   entire function.  Usually a COMPOUND_STMT, but this may also be a
-   RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
-#define DECL_SAVED_TREE(NODE) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->saved_tree)
-
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.saved_language_function)
@@ -2531,10 +2526,6 @@ extern int flag_new_for_scope;
    types.  */
 #define ARITHMETIC_TYPE_P(TYPE) \
   (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == REAL_TYPE)
-
-/* Mark which labels are explicitly declared.
-   These may be shadowed, and may be referenced from nested functions.  */
-#define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
 
 /* Nonzero for _TYPE means that the _TYPE defines
    at least one constructor.  */
@@ -3904,7 +3895,6 @@ extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));
 extern void hack_incomplete_structures		PARAMS ((tree));
 extern tree maybe_build_cleanup			PARAMS ((tree));
-extern void cplus_expand_expr_stmt		PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
 extern void replace_defarg			PARAMS ((tree, tree));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
@@ -4356,12 +4346,10 @@ extern tree finish_base_specifier               PARAMS ((tree, tree));
 extern void finish_member_declaration           PARAMS ((tree));
 extern void check_multiple_declarators          PARAMS ((void));
 extern tree finish_typeof			PARAMS ((tree));
-extern void add_decl_stmt                       PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
 extern void prep_stmt                           PARAMS ((tree));
-extern tree add_scope_stmt                      PARAMS ((int, int));
 extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
 extern void finish_mem_initializers             PARAMS ((tree));

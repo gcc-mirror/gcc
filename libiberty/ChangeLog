@@ -1,3 +1,7 @@
+2000-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.c (splay_tree_predecessor): Fix typo in comment.
+
 2000-09-14  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* splay-tree.c: #include <stdio.h>.

@@ -75,7 +75,7 @@ caddr_t v_addr;			/* { dg-error "parse error" } */
 	  p_addr = fill_item_entry(va_op, v_addr);
 	  goto page_type;
      case((caddr_t)1):		/* { dg-error "parse error" } */
-     default:			/* { dg-error "default label" } */
+     default:			
 	  ((void)(((0))?0:(__eprintf("Failed assertion`%s'at line%d of`%s'.\n",
 				     "FALSE", 327, "b.c"), 0)));
      }

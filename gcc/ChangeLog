@@ -1,3 +1,130 @@
+2000-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	Convert the C front-end to use function-at-a-time mode.
+	* c-common.h: Include splay-tree.h.
+	(C_DECLARED_LABEL_FLAG): New macro.
+	(struct language_function): Add x_scope_stmt_stack and
+	x_function_name_declared_p.
+	(RECHAIN_STMTS): Move definition.
+	(lang_statment_code_p): Likewise.
+	(lang_expand_stmt): Likewise.
+	(lang_expand_decl_stmt): New variable.
+	(lang_expand_function_end): Likewise.
+	(current_scope_stmt_stack): New function.
+	(add_decl_stmt): Likewise.
+	(add_scope_stmt): Likewise.
+	(mark_stmt_tree): Likewise.
+	(struct c_lang_decl): New structure.
+	(DECL_SAVED_TREE): Define.
+	(c_mark_lang_decl): New function.
+	(c_expand_start_cond): Change prototype.
+	(c_finish_then): New function.
+	(c_finish_else): Likewise.
+	(current_function_name_declared): Remove.
+	(set_current_function_name_declared): Likewise.
+	(mark_c_language_function): Declare.
+	(case_compare): Likewise.
+	(c_add_case_label): Likewise.
+	(c_expand_expr): Likewise.
+	(c_safe_from_p): Likewise.
+	* c-common.c (lang_expand_function_end): New variable.
+	(struct if_elt): Add if_stmt.
+	(c_expand_start_cond): Add the if-statement to the statement-tree,
+	rather than generating RTL.
+	(c_finish_then): New function.
+	(c_expand_start_else): Don't generate RTL.
+	(c_finish_else): New function.
+	(c_expand_expr_stmt): Don't generate RTL.
+	(statement_code_p): Add SCOPE_STMT.
+	(case_compare): New function.
+	(c_add_case_label): Likewise.
+	(mark_stmt_tree): Likewise.
+	(c_mark_lang_decl): Likewise.
+	(mark_c_language_function): Likewise.
+	(c_expand_expr): Likewise.
+	(c_safe_from_p): Likewise.
+	* c-decl.c (c_stmt_tree): New variable
+	(c_scope_stmt_stack): Likewise.
+	(c_function_name_declared_p): Likewise.
+	(lang_expand_expr_stmt): Remove.
+	(poplevel): Don't call output_inline_function for nested
+	functions.
+	(pushdecl): Don't set DECL_CONTEXT for a local declaration of an
+	`extern' function.
+	(redeclaration_error_message): Change means of computing whether
+	or not a function is nested.
+	(lookup_label): Don't call label_rtx.
+	(init_decl_processing): Add more GC roots.
+	(start_decl): Add DECL_STMTs to the statement-tree, rather than
+	calling rest_of_decl_compilation.
+	(finish_decl): Don't call expand_decl.
+	(store_parm_decls): Begin the statement-tree, but don't generate
+	RTL.
+	(finish_function): Tie off the statement-tree.  Call c_expand_body
+	if appropriate.
+	(c_expand_body): New function.
+	(push_c_function_context): Save more information.
+	(pop_c_function_contxt): Likewise.
+	(copy_lang_decl): Now that we use DECL_LANG_SPECIFIC, copy it.
+	(lang_mark_tree): Mark it.
+	(current_stmt_tree): Adjust.
+	(current_scope_stmt_stack): New function.
+	(do_case): Remove.
+	(set_current_name_declared): Likewise.
+	(c_begin_compound_stmt): Define.
+	(c_expand_decl_stmt): Likewise.
+	* c-lang.c: Include rtl.h and expr.h.
+	(lang_init): Set more language-specific hooks.
+	* c-lex.c: Include expr.h.
+	* c-parse.in: Changes throughout to add statements to the
+	statement-tree, rather than generating RTL after every statement.
+	* c-semantics.c (lang_expand_decl_stmt): Define.
+	(add_decl_stmt): New function.
+	(add_scope_stmt): Likewise.
+	(finish_stmt_tree): Tweak.
+	(genrtl_expr_stmt): Likewise.
+	(genrtl_decl_stmt): Handle local labels, and call
+	lang_expand_decl_stmt if required.
+	(genrtl_for_stmt): Fix line-number handling.
+	(genrtl_case_label): Handle cleanups.
+	(genrtl_asm_stmt): Don't call combine_strings.
+	(genrtl_compound_stmt): Simplify.
+	(expand_stmt): Handle SCOPE_STMTs.
+	* c-tree.h (struct lang_decl): New structure.
+	(C_DECLARED_LABEL_FLAG): Remove.
+	(c_begin_compound_stmt): Declare.
+	(c_expand_decl_stmt): Likewise.
+	(c_expand_start_case): Rename to c_start_case.
+	(c_finish_case): New function.
+	* c-typeck.c (start_init): Tweak setting of
+	constructor_incremental.
+	(c_expand_asm_operands): Tweak error-handling.  Add to the
+	statement-tree.
+	(c_expand_return): Add to the statement-tree.
+	(c_expand_start_case): Rename to ...
+	(c_start_case): ... this.
+	(struct c_switch): New type.
+	(switch_stack): New variable.
+	(do_case): Simplify.
+	(c_finish_case): New function.
+	* dependence.c: Include expr.h.
+	(enum dependence_type): Change spelling of enumerals.
+	(check_node_dependence): Adjust.
+	* expr.h (lang_safe_from_p): Declare.
+	(safe_from_p): Likewise.
+	* expr.c (lang_safe_from_p): New variable.
+	(safe_from_p): Give it external linkage.  Use lang_safe_from_p.
+	* stmt.c (expand_expr_stmt): Avoid clobberring of last_expr_type.
+	* toplev.c (rest_of_decl_compilation): Robustify.
+	* tree.c (contains_placeholder_p): Likewise.
+	* Makefile.in: Update dependencies.
+	* objc/objc-act.h: Adjust calculation of value for dummy_tree_code.
+	* objc/objc-act.c: Include rtl.h, expr.h, and c-common.h.
+	(objc_expand_function_end): New function.
+	(finish_method_def): Use it.
+	(init_objc): Initialize more language-specific hooks.
+	* objc/Make-lang.in: Update dependencies.
+	
 2000-09-16  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* configure.in: Define macros that affect features before

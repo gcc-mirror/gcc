@@ -40,6 +40,13 @@ Boston, MA 02111-1307, USA.  */
    expanding statements.  */
 void (*lang_expand_stmt) PARAMS ((tree));
 
+/* If non-NULL, the address of a language-specific function for
+   expanding a DECL_STMT.  After the language-independent cases are
+   handled, this function will be called.  If this function is not
+   defined, it is assumed that declarations other than those for
+   variables and labels do not require any RTL generation.  */
+void (*lang_expand_decl_stmt) PARAMS ((tree));
+
 static tree prune_unused_decls PARAMS ((tree *, int *, void *));
 
 /* Create an empty statement tree rooted at T.  */
@@ -69,6 +76,63 @@ add_stmt (t)
      statements are full-expresions.  We record that fact here.  */
   STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
   return t;
+}
+
+/* Create a declaration statement for the declaration given by the
+   DECL.  */
+
+void
+add_decl_stmt (decl)
+     tree decl;
+{
+  tree decl_stmt;
+
+  /* We need the type to last until instantiation time.  */
+  decl_stmt = build_stmt (DECL_STMT, decl);
+  add_stmt (decl_stmt); 
+}
+
+/* Add a scope-statement to the statement-tree.  BEGIN_P indicates
+   whether this statements opens or closes a scope.  PARTIAL_P is true
+   for a partial scope, i.e, the scope that begins after a label when
+   an object that needs a cleanup is created.  If BEGIN_P is nonzero,
+   returns a new TREE_LIST representing the top of the SCOPE_STMT
+   stack.  The TREE_PURPOSE is the new SCOPE_STMT.  If BEGIN_P is
+   zero, returns a TREE_LIST whose TREE_VALUE is the new SCOPE_STMT,
+   and whose TREE_PURPOSE is the matching SCOPE_STMT iwth
+   SCOPE_BEGIN_P set.  */
+
+tree
+add_scope_stmt (begin_p, partial_p)
+     int begin_p;
+     int partial_p;
+{
+  tree ss;
+  tree top;
+
+  /* Build the statement.  */
+  ss = build_stmt (SCOPE_STMT, NULL_TREE);
+  SCOPE_BEGIN_P (ss) = begin_p;
+  SCOPE_PARTIAL_P (ss) = partial_p;
+
+  /* Keep the scope stack up to date.  */
+  if (begin_p)
+    {
+      *current_scope_stmt_stack () 
+	= tree_cons (ss, NULL_TREE, *current_scope_stmt_stack ());
+      top = *current_scope_stmt_stack ();
+    }
+  else
+    {
+      top = *current_scope_stmt_stack ();
+      TREE_VALUE (top) = ss;
+      *current_scope_stmt_stack () = TREE_CHAIN (top);
+    }
+
+  /* Add the new statement to the statement-tree.  */
+  add_stmt (ss);
+
+  return top;
 }
 
 /* Remove declarations of internal variables that are not used from a
@@ -145,7 +209,7 @@ finish_stmt_tree (t)
   /* Remove unused decls from the stmt tree.  */
   walk_stmt_tree (t, prune_unused_decls, NULL);
 
-  if (cfun)
+  if (cfun && stmt)
     {
       /* The line-number recorded in the outermost statement in a function
 	 is the line number of the end of the function.  */
@@ -305,7 +369,8 @@ genrtl_expr_stmt (expr)
       if (stmts_are_full_exprs_p ())
 	expand_start_target_temps ();
       
-      lang_expand_expr_stmt (expr);
+      if (expr != error_mark_node)
+	expand_expr_stmt (expr);
       
       if (stmts_are_full_exprs_p ())
 	expand_end_target_temps ();
@@ -348,6 +413,11 @@ genrtl_decl_stmt (t)
       else
 	make_rtl_for_local_static (decl);
     }
+  else if (TREE_CODE (decl) == LABEL_DECL 
+	   && C_DECLARED_LABEL_FLAG (decl))
+    declare_nonlocal_label (decl);
+  else if (lang_expand_decl_stmt)
+    (*lang_expand_decl_stmt) (t);
 }
 
 /* Generate the RTL for T, which is an IF_STMT. */
@@ -448,30 +518,43 @@ void
 genrtl_for_stmt (t)
      tree t;
 {
-  tree tmp;
   tree cond;
+  const char *saved_filename;
+  int saved_lineno;
+
   if (NEW_FOR_SCOPE_P (t))
     genrtl_do_pushlevel ();
 
   expand_stmt (FOR_INIT_STMT (t));
 
+  /* Expand the initialization.  */
   emit_nop ();
   emit_line_note (input_filename, lineno);
   expand_start_loop_continue_elsewhere (1); 
   genrtl_do_pushlevel ();
   cond = expand_cond (FOR_COND (t));
+
+  /* Save the filename and line number so that we expand the FOR_EXPR
+     we can reset them back to the saved values.  */
+  saved_filename = input_filename;
+  saved_lineno = lineno;
+
+  /* Expand the condition.  */
   emit_line_note (input_filename, lineno);
   if (cond)
     expand_exit_loop_if_false (0, cond);
-  genrtl_do_pushlevel ();
-  tmp = FOR_EXPR (t);
 
+  /* Expand the body.  */
+  genrtl_do_pushlevel ();
   expand_stmt (FOR_BODY (t));
 
+  /* Expand the increment expression.  */
+  input_filename = saved_filename;
+  lineno = saved_lineno;
   emit_line_note (input_filename, lineno);
   expand_loop_continue_here ();
-  if (tmp) 
-    genrtl_expr_stmt (tmp);
+  if (FOR_EXPR (t))
+    genrtl_expr_stmt (FOR_EXPR (t));
   expand_end_loop ();
 }
 
@@ -575,6 +658,22 @@ genrtl_case_label (case_label)
      tree case_label;
 {
   tree duplicate;
+  tree cleanup;
+
+  cleanup = last_cleanup_this_contour ();
+  if (cleanup)
+    {
+      static int explained = 0;
+      warning_with_decl (TREE_PURPOSE (cleanup), 
+			 "destructor needed for `%#D'");
+      warning ("where case label appears here");
+      if (!explained)
+	{
+	  warning ("(enclose actions of previous case statements requiring destructors in their own scope.)");
+	  explained = 1;
+	}
+    }
+
   add_case_node (CASE_LOW (case_label), CASE_HIGH (case_label), 
 		 CASE_LABEL_DECL (case_label), &duplicate);
 }
@@ -585,16 +684,6 @@ void
 genrtl_compound_stmt (t)
     tree t;
 {
-  /* If this is the outermost block of the function, declare the
-     variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (cfun
-      && !current_function_name_declared () 
-      && !COMPOUND_STMT_NO_SCOPE (t))
-    {
-      set_current_function_name_declared (1);
-      declare_function_name ();
-    } 
-
   expand_stmt (COMPOUND_BODY (t));
 }
 
@@ -609,9 +698,6 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
      tree input_operands;
      tree clobbers;
 {
-  if (TREE_CHAIN (string))
-    string = combine_strings (string);
-
   if (cv_qualifier != NULL_TREE
       && cv_qualifier != ridpointers[(int) RID_VOLATILE])
     {
@@ -731,6 +817,10 @@ expand_stmt (t)
 	case ASM_STMT:
 	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
 			   ASM_OUTPUTS (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
+	  break;
+
+	case SCOPE_STMT:
+	  genrtl_scope_stmt (t);
 	  break;
 
 	default:

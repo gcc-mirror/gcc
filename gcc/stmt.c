@@ -1923,11 +1923,14 @@ expand_expr_stmt (exp)
   if (expr_stmts_for_value && TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE)
     exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
 
-  last_expr_type = TREE_TYPE (exp);
+  /* The call to `expand_expr' could cause last_expr_type and
+     last_expr_value to get reset.  Therefore, we set last_expr_value
+     and last_expr_type *after* calling expand_expr.  */
   last_expr_value = expand_expr (exp,
 				 (expr_stmts_for_value
 				  ? NULL_RTX : const0_rtx),
 				 VOIDmode, 0);
+  last_expr_type = TREE_TYPE (exp);
 
   /* If all we do is reference a volatile value in memory,
      copy it to a register to be sure it is actually touched.  */

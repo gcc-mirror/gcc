@@ -85,6 +85,15 @@ Boston, MA 02111-1307, USA.  */
 #define CASE_VECTOR_PC_RELATIVE 0
 #endif
 
+/* Hook called by safe_from_p for language-specific tree codes.  It is
+   up to the language front-end to install a hook if it has any such
+   codes that safe_from_p needs to know about.  Since same_from_p will
+   recursively explore the TREE_OPERANDs of an expression, this hook
+   should not reexamine those pieces.  This routine may recursively
+   call safe_from_p; it should always pass `0' as the TOP_P
+   parameter.  */
+int (*lang_safe_from_p) PARAMS ((rtx, tree));
+
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to
    output indirect addresses.  If cse is to follow, we reject
@@ -168,7 +177,6 @@ static enum memory_use_mode
   get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
 static tree save_noncopied_parts PARAMS ((tree, tree));
 static tree init_noncopied_parts PARAMS ((tree, tree));
-static int safe_from_p		PARAMS ((rtx, tree, int));
 static int fixed_type_p		PARAMS ((tree));
 static rtx var_rtx		PARAMS ((tree));
 static int readonly_fields_p	PARAMS ((tree));
@@ -5396,7 +5404,7 @@ init_noncopied_parts (lhs, list)
    It is always safe for this routine to return zero since it merely
    searches for optimization opportunities.  */
 
-static int
+int
 safe_from_p (x, exp, top_p)
      rtx x;
      tree exp;
@@ -5595,11 +5603,18 @@ safe_from_p (x, exp, top_p)
       if (exp_rtl)
 	break;
 
-      nops = TREE_CODE_LENGTH (TREE_CODE (exp));
+      nops = first_rtl_op (TREE_CODE (exp));
       for (i = 0; i < nops; i++)
 	if (TREE_OPERAND (exp, i) != 0
 	    && ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
 	  return 0;
+
+      /* If this is a language-specific tree code, it may require
+	 special handling.  */
+      if (TREE_CODE (exp) >= LAST_AND_UNUSED_TREE_CODE
+	  && lang_safe_from_p
+	  && !(*lang_safe_from_p) (x, exp))
+	return 0;
     }
 
   /* If we have an rtl, find any enclosed object.  Then see if we conflict

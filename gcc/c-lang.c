@@ -25,13 +25,15 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "input.h"
-#include "c-tree.h"
-#include "c-lex.h"
 #include "toplev.h"
 #include "diagnostic.h"
 #include "output.h"
 #include "flags.h"
 #include "ggc.h"
+#include "rtl.h"
+#include "expr.h"
+#include "c-tree.h"
+#include "c-lex.h"
 
 static int c_tree_printer PARAMS ((output_buffer *));
 
@@ -88,8 +90,10 @@ lang_init ()
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;
   mark_lang_status = &mark_c_function_context;
-
-  lang_printer = c_tree_printer;
+  lang_expand_expr = &c_expand_expr;
+  lang_safe_from_p = &c_safe_from_p;
+  lang_printer = &c_tree_printer;
+  lang_expand_decl_stmt = &c_expand_decl_stmt;
 
   c_parse_init ();
 }

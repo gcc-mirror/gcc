@@ -2566,7 +2566,11 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 	  make_decl_rtl (decl, asmspec, top_level);
 	}
       else
-	error ("invalid register name `%s' for register variable", asmspec);
+	{
+	  error ("invalid register name `%s' for register variable", asmspec);
+	  DECL_REGISTER (decl) = 0;
+	  make_decl_rtl (decl, NULL, top_level);
+	}
     }
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
   else if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)

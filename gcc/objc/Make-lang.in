@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Objective-C
-#   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -85,7 +85,7 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	$(SHELL) $(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
-   $(CONFIG_H) $(TREE_H) $(RTL_H) system.h \
+   $(CONFIG_H) $(TREE_H) $(RTL_H) system.h $(EXPR_H) \
    $(srcdir)/c-tree.h $(srcdir)/c-common.h $(srcdir)/c-lex.h \
    $(srcdir)/toplev.h $(srcdir)/flags.h $(srcdir)/objc/objc-act.h \
    $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h
