@@ -2276,11 +2276,48 @@ find_cross_jump (e1, e2, minimum, f1, f2)
       p2 = PATTERN (i2);
 	
 #ifdef STACK_REGS
+      if (GET_CODE (i1) == CALL_INSN)
+	{
+	  /* Compare register usage information for the stack registers.
+	     Two CALL_INSNs are only equal if they receive the same
+	     (amount of) stack registers as parameters.  If we don't
+	     check this the two CALL_INSNs might be merged leaving
+	     reg-stack.c with mismatching numbers of stack registers
+	     in the same basic block.  */
+
+	  register rtx link, op;
+	  HARD_REG_SET i1_regset, i2_regset;
+
+	  CLEAR_HARD_REG_SET (i1_regset);
+	  CLEAR_HARD_REG_SET (i2_regset);
+
+	  for (link = CALL_INSN_FUNCTION_USAGE (i1);
+	       link;
+	       link = XEXP (link, 1))
+	    if (GET_CODE (op = XEXP (link, 0)) == USE
+		&& STACK_REG_P (SET_DEST (op)))
+	      SET_HARD_REG_BIT (i1_regset, REGNO (SET_DEST (op)));
+
+	  for (link = CALL_INSN_FUNCTION_USAGE (i2);
+	       link;
+	       link = XEXP (link, 1))
+	    if (GET_CODE (op = XEXP (link, 0)) == USE
+		&& STACK_REG_P (SET_DEST (op)))
+	      SET_HARD_REG_BIT (i2_regset, REGNO (SET_DEST (op)));
+
+	  GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, usedmatch);
+
+	  lose = 1;
+
+	usedmatch:
+	  ;
+	}
+
       /* If cross_jump_death_matters is not 0, the insn's mode
 	 indicates whether or not the insn contains any stack-like
 	 regs. */
 
-      if (cross_jump_death_matters && GET_MODE (i1) == QImode)
+      if (!lose && cross_jump_death_matters && GET_MODE (i1) == QImode)
 	{
 	  /* If register stack conversion has already been done, then
 	     death notes must also be compared before it is certain that
@@ -2374,33 +2411,6 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	}
     }
 
-  /* We have to be careful that we do not cross-jump into the middle of
-     USE-CALL_INSN-CLOBBER sequence.  This sequence is used instead of
-     putting the USE and CLOBBERs inside the CALL_INSN.  The delay slot
-     scheduler needs to know what registers are used and modified by the
-     CALL_INSN and needs the adjacent USE and CLOBBERs to do so.
-
-     ??? At some point we should probably change this so that these are
-     part of the CALL_INSN.  The way we are doing it now is a kludge that
-     is now causing trouble.  */
-
-  if (last1 != 0 && GET_CODE (last1) == CALL_INSN
-      && (prev1 = prev_nonnote_insn (last1))
-      && GET_CODE (prev1) == INSN
-      && GET_CODE (PATTERN (prev1)) == USE)
-    {
-      /* Remove this CALL_INSN from the range we can cross-jump.  */
-      last1 = next_real_insn (last1);
-      last2 = next_real_insn (last2);
-
-      minimum++;
-    }
-
-  /* Skip past CLOBBERS since they may be right after a CALL_INSN.  It
-     isn't worth checking for the CALL_INSN.  */
-  while (last1 != 0 && GET_CODE (PATTERN (last1)) == CLOBBER)
-    last1 = next_real_insn (last1), last2 = next_real_insn (last2);
-
   if (minimum <= 0 && last1 != 0 && last1 != e1)
     *f1 = last1, *f2 = last2;
 }
@@ -2471,15 +2481,6 @@ get_label_before (insn)
     {
       rtx prev = PREV_INSN (insn);
 
-      /* Don't put a label between a CALL_INSN and USE insns that precede
-	 it.  */
-
-      if (GET_CODE (insn) == CALL_INSN
-	  || (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE
-	      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN))
-	while (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == USE)
-	  prev = PREV_INSN (prev);
-
       label = gen_label_rtx ();
       emit_label_after (label, prev);
       LABEL_NUSES (label) = 0;
@@ -2501,16 +2502,6 @@ get_label_after (insn)
 
   if (label == 0 || GET_CODE (label) != CODE_LABEL)
     {
-      /* Don't put a label between a CALL_INSN and CLOBBER insns
-	 following it. */
-
-      if (GET_CODE (insn) == CALL_INSN
-	  || (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE
-	      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN))
-	while (GET_CODE (NEXT_INSN (insn)) == INSN
-	       && GET_CODE (PATTERN (NEXT_INSN (insn))) == CLOBBER)
-	  insn = NEXT_INSN (insn);
-
       label = gen_label_rtx ();
       emit_label_after (label, insn);
       LABEL_NUSES (label) = 0;
