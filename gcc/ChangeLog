@@ -1,3 +1,10 @@
+2004-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_output_dwarf_dtprel): Add
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): New.
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+
 2003-03-12  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
