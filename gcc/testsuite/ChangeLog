@@ -1,3 +1,7 @@
+2001-04-30  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/20000724-1.c: Revert last change.
+
 2001-04-30  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/execute/20010430.f: New test.
