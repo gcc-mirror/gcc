@@ -1,3 +1,9 @@
+2003-07-11  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/7126
+	* configure.in: Correct zlib version number.
+	* configure: Regenerate.
+
 2003-07-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README: Note that zlib is not part of GCC.
