@@ -278,7 +278,6 @@ alpha*-*-*)
 	;;
 arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
 	cpu_type=arm
-	extra_headers="mmintrin.h"
 	;;
 i[34567]86-*-*)
 	cpu_type=i386
