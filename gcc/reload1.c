@@ -9732,9 +9732,15 @@ reload_combine_note_store (dst, set)
   if (GET_CODE (dst) != REG)
     return;
   regno += REGNO (dst);
+
   /* note_stores might have stripped a STRICT_LOW_PART, so we have to be
-     careful with registers / register parts that are not full words.  */
-  if (size < (unsigned) UNITS_PER_WORD)
+     careful with registers / register parts that are not full words. 
+
+     Similarly for ZERO_EXTRACT and SIGN_EXTRACT.  */
+  if (GET_CODE (set) != SET
+      || GET_CODE (SET_DEST (set)) == ZERO_EXTRACT
+      || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
+      || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
       reg_state[regno].use_index = -1;
       reg_state[regno].store_ruid = reload_combine_ruid;
@@ -10055,6 +10061,17 @@ move2add_note_store (dst, set)
   if (HARD_REGNO_NREGS (regno, mode) == 1 && GET_CODE (set) == SET)
     {
       rtx src = SET_SRC (set);
+
+      /* Indicate that this register has been recently written to,
+	 but the exact contents are not available.  */
+      if (GET_CODE (SET_DEST (set)) == ZERO_EXTRACT
+	  || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
+	  || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
+	{
+	  reg_set_luid[regno] = move2add_luid;
+	  reg_offset[regno] = dst;
+	  return;
+	}
 
       reg_mode[regno] = mode;
       switch (GET_CODE (src))

@@ -1,3 +1,9 @@
+Sat Feb  6 10:31:35 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload_combine_note_store): Be more careful with
+	STRICT_LOW_PART, ZERO_EXTRACT and SIGN_EXTRACT.
+	(move2add_note_store): Likewise.
+
 Sat Feb  6 10:18:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppfiles.c (read_and_prescan): Cast the result of `xrealloc' to
