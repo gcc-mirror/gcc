@@ -279,18 +279,15 @@ datadef:
 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($1); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
         | declmods setspecs notype_initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2);  }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
         | declmods ';'
 	  { pedwarn ("empty declaration"); }
 	| typed_declspecs ';'
@@ -305,7 +302,7 @@ datadef:
 fndef:
 	  typed_declspecs setspecs declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes, NULL_TREE, 0))
+					prefix_attributes, NULL_TREE))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  old_style_parm_decls
@@ -314,16 +311,14 @@ fndef:
 		{ finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs setspecs declarator error
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods setspecs notype_declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes, NULL_TREE, 0))
+					prefix_attributes, NULL_TREE))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  old_style_parm_decls
@@ -332,16 +327,14 @@ fndef:
 		{ finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods setspecs notype_declarator error
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| setspecs notype_declarator
 		{ if (! start_function (NULL_TREE, $2,
-					prefix_attributes, NULL_TREE, 0))
+					prefix_attributes, NULL_TREE))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  old_style_parm_decls
@@ -350,13 +343,11 @@ fndef:
 		{ finish_function (0); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($1); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| setspecs notype_declarator error
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($1); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	;
 
 identifier:
@@ -786,13 +777,11 @@ datadecl:
 	typed_declspecs_no_prefix_attr setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods_no_prefix_attr setspecs notype_initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);	
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs_no_prefix_attr ';'
 		{ shadow_tag_warned ($1, 1);
 		  pedwarn ("empty declaration"); }
@@ -821,8 +810,7 @@ decls:
    Maintains a stack of outer-level values of current_declspecs,
    for the sake of parm declarations nested in function declarators.  */
 setspecs: /* empty */
-		{ $$ = suspend_momentary ();
-		  pending_xref_error ();
+		{ pending_xref_error ();
 		  declspec_stack = tree_cons (prefix_attributes,
 					      current_declspecs,
 					      declspec_stack);
@@ -839,23 +827,19 @@ decl:
 	typed_declspecs setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods setspecs notype_initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs setspecs nested_function
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods setspecs notype_nested_function
 		{ current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs ';'
 		{ shadow_tag ($1); }
 	| declmods ';'
@@ -1088,18 +1072,9 @@ any_word:
 init:
 	expr_no_commas
 	| '{'
-		{ really_start_incremental_init (NULL_TREE);
-		  /* Note that the call to clear_momentary
-		     is in process_init_element.  */
-		  push_momentary (); }
+		{ really_start_incremental_init (NULL_TREE); }
 	  initlist_maybe_comma '}'
-		{ $$ = pop_init_level (0);
-		  if ($$ == error_mark_node
-		      && ! (yychar == STRING || yychar == CONSTANT))
-		    pop_momentary ();
-		  else
-		    pop_momentary_nofree (); }
-
+		{ $$ = pop_init_level (0); }
 	| error
 		{ $$ = error_mark_node; }
 	;
@@ -1162,7 +1137,7 @@ nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes, NULL_TREE, 1))
+					prefix_attributes, NULL_TREE))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1188,7 +1163,7 @@ notype_nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes, NULL_TREE, 1))
+					prefix_attributes, NULL_TREE))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1350,17 +1325,15 @@ structsp:
 	| union_head identifier
 		{ $$ = xref_tag (UNION_TYPE, $2); }
 	| enum_head identifier '{'
-		{ $<itype>3 = suspend_momentary ();
-		  $$ = start_enum ($2); }
+		{ $$ = start_enum ($2); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$= finish_enum ($<ttype>4, nreverse ($5), chainon ($1, $8));
-		  resume_momentary ($<itype>3); }
+		{ $$ = finish_enum ($<ttype>4, nreverse ($5),
+				    chainon ($1, $8)); }
 	| enum_head '{'
-		{ $<itype>2 = suspend_momentary ();
-		  $$ = start_enum (NULL_TREE); }
+		{ $$ = start_enum (NULL_TREE); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$= finish_enum ($<ttype>3, nreverse ($4), chainon ($1, $7));
-		  resume_momentary ($<itype>2); }
+		{ $$ = finish_enum ($<ttype>3, nreverse ($4),
+				    chainon ($1, $7)); }
 	| enum_head identifier
 		{ $$ = xref_tag (ENUMERAL_TYPE, $2); }
 	;
@@ -1408,8 +1381,7 @@ component_decl:
 		{ $$ = $3;
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_typespecs setspecs save_filename save_lineno maybe_attribute
 		{
 		  /* Support for unnamed structs or unions as members of 
@@ -1422,14 +1394,12 @@ component_decl:
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2);
 		}
     | nonempty_type_quals setspecs components
 		{ $$ = $3;
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| nonempty_type_quals
 		{ if (pedantic)
 		    pedwarn ("ANSI C forbids member declarations with no members");
@@ -1570,7 +1540,6 @@ pushlevel:  /* empty */
 		{ emit_line_note (input_filename, lineno);
 		  pushlevel (0);
 		  clear_last_expr ();
-		  push_momentary ();
 		  expand_start_bindings (0);
 		}
 	;
@@ -1616,27 +1585,15 @@ compstmt_nostart: '}'
 	| pushlevel maybe_label_decls decls xstmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), 1, 0);
-		  $$ = poplevel (1, 1, 0);
-		  if (yychar == CONSTANT || yychar == STRING)
-		    pop_momentary_nofree ();
-		  else
-		    pop_momentary (); }
+		  $$ = poplevel (1, 1, 0); }
 	| pushlevel maybe_label_decls error '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
-		  $$ = poplevel (kept_level_p (), 0, 0);
-		  if (yychar == CONSTANT || yychar == STRING)
-		    pop_momentary_nofree ();
-		  else
-		    pop_momentary (); }
+		  $$ = poplevel (kept_level_p (), 0, 0); }
 	| pushlevel maybe_label_decls stmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
-		  $$ = poplevel (kept_level_p (), 0, 0);
-		  if (yychar == CONSTANT || yychar == STRING)
-		    pop_momentary_nofree ();
-		  else
-		    pop_momentary (); }
+		  $$ = poplevel (kept_level_p (), 0, 0); }
 	;
 
 compstmt_primary_start:
@@ -1747,8 +1704,7 @@ stmt:
 		      || TREE_CODE (TREE_TYPE ($1)) == FUNCTION_TYPE)
 		    $1 = default_conversion ($1);
 #endif
-		  iterator_expand ($1);
-		  clear_momentary (); }
+		  iterator_expand ($1); }
 	| simple_if ELSE
 		{ c_expand_start_else ();
 		  $<itype>1 = stmt_count;
@@ -1797,12 +1753,10 @@ stmt:
 		{ emit_line_note (input_filename, lineno);
 		  expand_exit_loop_if_false (NULL_PTR,
 					     truthvalue_conversion ($3));
-		  expand_end_loop ();
-		  clear_momentary (); }
+		  expand_end_loop (); }
 /* This rule is needed to make sure we end every loop we start.  */
 	| do_stmt_start error
-		{ expand_end_loop ();
-		  clear_momentary (); }
+		{ expand_end_loop (); }
 	| FOR
 	  '(' xexpr ';'
 		{ stmt_count++;
@@ -1829,9 +1783,6 @@ stmt:
 		  if ($6)
 		    expand_exit_loop_if_false (NULL_PTR,
 					       truthvalue_conversion ($6));
-		  /* Don't let the tree nodes for $9 be discarded by
-		     clear_momentary during the parsing of the next stmt.  */
-		  push_momentary ();
 		  $<lineno>7 = lineno;
 		  $<filename>8 = input_filename;
 		  position_after_white_space (); }
@@ -1841,25 +1792,14 @@ stmt:
 		  expand_loop_continue_here ();
 		  if ($9)
 		    c_expand_expr_stmt ($9);
-		  if (yychar == CONSTANT || yychar == STRING)
-		    pop_momentary_nofree ();
-		  else
-		    pop_momentary ();
 		  expand_end_loop (); }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_start_case ($3);
-		  /* Don't let the tree nodes for $3 be discarded by
-		     clear_momentary during the parsing of the next stmt.  */
-		  push_momentary ();
 		  position_after_white_space (); }
 	  lineno_labeled_stmt
-		{ expand_end_case ($3);
-		  if (yychar == CONSTANT || yychar == STRING)
-		    pop_momentary_nofree ();
-		  else
-		    pop_momentary (); }
+		{ expand_end_case ($3); }
 	| BREAK ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
@@ -1981,10 +1921,6 @@ all_iter_stmt_with_decl:
 	    emit_line_note (input_filename, lineno);
 	    expand_end_bindings (getdecls (), 1, 0);
 	    $<ttype>$ = poplevel (1, 1, 0);
-	    if (yychar == CONSTANT || yychar == STRING)
-	      pop_momentary_nofree ();
-	    else
-	      pop_momentary ();	    
 	  }
 */
 
@@ -2187,8 +2123,7 @@ parm:
 							 $4));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
@@ -2196,8 +2131,7 @@ parm:
 							 $4)); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| typed_declspecs setspecs absdcl maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
@@ -2205,8 +2139,7 @@ parm:
 							 $4));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2); }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declmods setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
@@ -2214,8 +2147,7 @@ parm:
 							 $4));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2);  }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 
 	| declmods setspecs absdcl maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
@@ -2224,8 +2156,7 @@ parm:
 							 $4));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
-		  declspec_stack = TREE_CHAIN (declspec_stack);
-		  resume_momentary ($2);  }
+		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	;
 
 /* This is used in a function definition

@@ -194,7 +194,7 @@ finish_file ()
 					tree_cons (NULL_TREE, NULL_TREE, 
 						   void_list_node_1),
 					NULL_TREE),
-		      NULL_TREE, NULL_TREE, 0);
+		      NULL_TREE, NULL_TREE);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 
@@ -216,7 +216,7 @@ finish_file ()
 					tree_cons (NULL_TREE, NULL_TREE,
 						   void_list_node_1),
 					NULL_TREE),
-		      NULL_TREE, NULL_TREE, 0);
+		      NULL_TREE, NULL_TREE);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 

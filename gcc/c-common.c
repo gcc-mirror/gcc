@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "output.h"
 #include "c-pragma.h"
@@ -291,7 +290,6 @@ declare_hidden_char_array (name, value)
       || warn_larger_than)
     type = build_array_type (char_type_node,
 			     build_index_type (build_int_2 (vlen, 0)));
-  push_obstacks_nochange ();
   decl = build_decl (VAR_DECL, get_identifier (name), type);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
@@ -345,7 +343,7 @@ combine_strings (strings)
       if (wide_flag)
 	length = length * wchar_bytes + wide_length;
 
-      p = ggc_p ? ggc_alloc_string (NULL, length) : savealloc (length);
+      p = ggc_alloc_string (NULL, length);
 
       /* Copy the individual strings into the new combined string.
 	 If the combined string is wide, convert the chars to ints
@@ -3491,7 +3489,7 @@ c_get_alias_set (t)
 
   if (!TYPE_ALIAS_SET_KNOWN_P (type))
     {
-      /* Types that are not allocated on the permanent obstack are not
+      /* Types that are not global ('permanent') are not
 	 placed in the type hash table.  Thus, there can be multiple
 	 copies of identical types in local scopes.  In the long run,
 	 all types should be permanent.  */
