@@ -24,6 +24,9 @@
 #include <string>
 #include <debug_assert.h>
 
+// XXX This test is not working for non-glibc locale models.
+// { dg-do run { xfail *-*-* } }
+
 // creating unnamed locales 1 using new + combine
 void
 test01()

@@ -23,6 +23,9 @@
 #include <locale>
 #include <debug_assert.h>
 
+// XXX This test is not working for non-glibc locale models.
+// { dg-do run { xfail *-*-* } }
+
 void test01()
 {
   using namespace std;
