@@ -164,7 +164,7 @@ extern int target_flags;
 #define TARGET_USE_Q_REG (ix86_cpu == PROCESSOR_PENTIUM \
 			  || ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
-#define TARGET_CMOVE (ix86_isa == PROCESSOR_PENTIUMPRO)
+#define TARGET_CMOVE (ix86_arch == PROCESSOR_PENTIUMPRO)
 #define TARGET_DEEP_BRANCH_PREDICTION (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
@@ -227,11 +227,7 @@ enum processor_type
 
 extern enum processor_type ix86_cpu;
 
-extern int ix86_isa;
-
-/* Define generic processor types based upon current deployment.  */
-#define PROCESSOR_COMMON  PROCESSOR_I386
-#define PROCESSOR_COMMON_STRING PROCESSOR_I386_STRING
+extern int ix86_arch;
 
 /* Define the default processor.  This is overridden by other tm.h files.  */
 #define PROCESSOR_DEFAULT \
@@ -262,7 +258,7 @@ extern int ix86_isa;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 { { "cpu=",		&ix86_cpu_string},				\
-  { "arch=",		&ix86_isa_string},				\
+  { "arch=",		&ix86_arch_string},				\
   { "reg-alloc=",	&i386_reg_alloc_order },			\
   { "regparm=",		&i386_regparm_string },				\
   { "align-loops=",	&i386_align_loops_string },			\
@@ -304,6 +300,32 @@ extern int ix86_isa;
 %{mno-pentiumpro:-mcpu=pentium} \
 %{mpentiumpro:-mcpu=pentiumpro}}"
 #endif
+
+#ifndef CPP_CPU_SPEC
+#define CPP_CPU_SPEC "\
+-Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386) \
+%{mcpu=i486:-Di486} %{m486:-Di486} \
+%{mpentium:-Dpentium -Di586} %{mcpu=pentium:-Dpentium -Di586} \
+%{mpentiumpro:-Dpentiumpro -Di686} %{mcpu=pentiumpro:-Dpentiumpro -Di686}"
+#endif
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
+#define EXTRA_SPECS							\
+  { "cpp_cpu",	CPP_CPU_SPEC },						\
+  SUBTARGET_EXTRA_SPECS
 
 /* target machine storage layout */
 
@@ -2637,7 +2659,7 @@ extern void rewrite_address ();
 
 /* Variables in i386.c */
 extern char *ix86_cpu_string;			/* for -mcpu=<xxx> */
-extern char *ix86_isa_string;			/* for -mcpu=<xxx> */
+extern char *ix86_arch_string;			/* for -march=<xxx> */
 extern char *i386_reg_alloc_order;		/* register allocation order */
 extern char *i386_regparm_string;		/* # registers to use to pass args */
 extern char *i386_align_loops_string;		/* power of two alignment for loops */
