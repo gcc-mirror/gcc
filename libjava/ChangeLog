@@ -1,3 +1,14 @@
+2003-12-31  Michael Koch  <konqueror@gmx.de>
+
+	* testsuite/libjava.mauve/xfails: Removed tests that pass now:
+	XPASS: gnu.testlet.java.net.URL.URLTest: new URL(string) (number 16)
+	XPASS: gnu.testlet.java.net.URL.URLTest: new URL(string) (number 18)
+	XPASS: gnu.testlet.java.net.URL.URLTest: new URL(protocol, host, file)
+	(number 26)
+	XPASS: gnu.testlet.java.net.URL.URLTest: new URL(protocol, host, file)
+	(number 54)
+	
+
 2003-12-30 Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/util/GregorianCalendar.java

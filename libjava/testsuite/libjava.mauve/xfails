@@ -140,8 +140,4 @@ FAIL: gnu.testlet.java.net.URLConnection.URLConnectionTest: Error in test_Basics
 FAIL: gnu.testlet.java.net.URLConnection.URLConnectionTest: Error in test_getHeaderField  - 2  4 header field wrong (number 1)
 FAIL: gnu.testlet.java.net.URL.URLTest: openStream (number 1)
 FAIL: gnu.testlet.java.net.URL.URLTest:  Error in test_toString  - 5  exception should not be thrown here (number 1)
-FAIL: gnu.testlet.java.net.URL.URLTest: new URL(string) (number 16)
-FAIL: gnu.testlet.java.net.URL.URLTest: new URL(string) (number 18)
-FAIL: gnu.testlet.java.net.URL.URLTest: new URL(protocol, host, file) (number 26)
-FAIL: gnu.testlet.java.net.URL.URLTest: new URL(protocol, host, file) (number 54)
 FAIL: gnu.testlet.java.net.MulticastSocket.MulticastSocketTest: joinGroup() twice. (number 1)
