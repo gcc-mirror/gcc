@@ -1,3 +1,8 @@
+2000-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/linux.h (LINK_SPEC): Use /lib/ld-linux-ia64.so.1
+	as the dynamic linker.
+
 2000-05-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (open_include_file): Open file in blocking mode.
