@@ -709,7 +709,7 @@ __gnat_tmp_name (tmp_filename)
   if (tmpdir == NULL)
     strcpy (tmp_filename, "/tmp/gnat-XXXXXX");
   else
-    sprintf (tmp_filename, "%s/gnat-XXXXXX", tmpdir);
+    sprintf (tmp_filename, "%200s/gnat-XXXXXX", tmpdir);
 
   close (mkstemp(tmp_filename));
 #else
