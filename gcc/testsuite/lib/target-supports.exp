@@ -386,6 +386,92 @@ proc check_vmx_hw_available { } {
     return $vmx_hw_available_saved
 }
 
+# GCC 3.4.0 for powerpc64-*-linux* included an ABI fix for passing
+# complex float arguments.  This affects gfortran tests that call cabsf
+# in libm built by an earlier compiler.  Return 1 if libm uses the same
+# argument passing as the compiler under test, 0 otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_broken_cplxf_arg { } {
+    global et_broken_cplxf_arg_saved
+    global et_broken_cplxf_arg_target_name
+    global tool
+
+    # Skip the work for targets known not to be affected.
+    if { ![istarget powerpc64-*-linux*] } {
+	return 0
+    } elseif { [is-effective-target ilp32] } {
+	return 0
+    }
+
+    if { ![info exists et_broken_cplxf_arg_target_name] } {
+	set et_broken_cplxf_arg_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_broken_cplxf_arg_target_name } {
+	verbose "check_effective_target_broken_cplxf_arg: `$et_broken_cplxf_arg_target_name'" 2
+	set et_broken_cplxf_arg_target_name $current_target
+	if [info exists et_broken_cplxf_arg_saved] {
+	    verbose "check_effective_target_broken_cplxf_arg: removing cached result" 2
+	    unset et_broken_cplxf_arg_saved
+	}
+    }
+
+    if [info exists et_broken_cplxf_arg_saved] {
+	verbose "check_effective_target_broken_cplxf_arg: using cached result" 2
+    } else {
+	set et_broken_cplxf_arg_saved 0
+	# This is only known to affect one target.
+	if { ![istarget powerpc64-*-linux*] || ![is-effective-target lp64] } {
+	    set et_broken_cplxf_arg_saved 0
+	    verbose "check_effective_target_broken_cplxf_arg: caching 0" 2
+	    return $et_broken_cplxf_arg_saved
+	}
+
+	# Set up, compile, and execute a C test program that calls cabsf.
+	set src cabsf[pid].c
+	set exe cabsf[pid].x
+
+	set f [open $src "w"]
+	puts $f "#include <complex.h>"
+	puts $f "extern void abort (void);"
+	puts $f "float fabsf (float);"
+	puts $f "float cabsf (_Complex float);"
+	puts $f "int main ()"
+	puts $f "{"
+	puts $f "  _Complex float cf;"
+	puts $f "  float f;"
+	puts $f "  cf = 3 + 4.0fi;"
+	puts $f "  f = cabsf (cf);"
+	puts $f "  if (fabsf (f - 5.0) > 0.0001) abort ();"
+	puts $f "  return 0;"
+	puts $f "}"
+	close $f
+
+	set lines [${tool}_target_compile $src $exe executable "-lm"]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+
+	    verbose "check_effective_target_broken_cplxf_arg: status is <$status>" 2
+
+	    if { $status != "pass" } {
+		set et_broken_cplxf_arg_saved 1
+	    }
+	} else {
+	    verbose "check_effective_target_broken_cplxf_arg: compilation failed" 2
+	}
+    }
+    return $et_broken_cplxf_arg_saved
+}
+
 proc check_alpha_max_hw_available { } {
     global alpha_max_hw_available_saved
     global tool
