@@ -28,7 +28,7 @@ executable file might be covered by the GNU General Public License. */
 package java.beans;
 
 import java.io.*;
-// import java.applet.*;
+import java.applet.*;
 import gnu.java.io.*;
 
 /**
@@ -116,16 +116,14 @@ public class Beans {
 			}
 		}
 
-/* FIXME - Turned off since java.applet doesn't exist for libgcj.
- * FIXME		if(bean instanceof Applet) {
- * FIXME			Applet a = (Applet)bean;
- * FIXME			//a.setAppletContext(???);
- * FIXME			//a.setStub(???);
- * FIXME			if(serStream == null) {
- * FIXME				a.init();
- * FIXME			}
- * FIXME		}
- * FIXME ********************************************************/
+		if(bean instanceof Applet) {
+			Applet a = (Applet)bean;
+			//a.setAppletContext(???);
+			//a.setStub(???);
+			if(serStream == null) {
+				a.init();
+			}
+		}
 
 		return bean;
 	}
