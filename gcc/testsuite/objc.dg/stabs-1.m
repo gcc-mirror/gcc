@@ -15,4 +15,4 @@
 }
 @end
 
-/* { dg-final { scan-assembler ".text\"?\n\t.stabs.*100,0,0,(\\.)?L?Letext\[0-9\]*\n(\\.)?L?Letext" } } */
+/* { dg-final { scan-assembler "(.SUBSPA.*\[\$\]CODE\[\$\]|.text\"?)\n\t.stabs.*100,0,0,(\\.)?L?L\[\$\]?etext\[0-9\]*\n(\\.)?L?L\[\$\]?etext" } } */
