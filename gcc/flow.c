@@ -1524,6 +1524,7 @@ insn_dead_p (x, needed, call_ok)
 	  register REGSET_ELT_TYPE bit
 	    = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
+	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
 	      || regno == FRAME_POINTER_REGNUM
@@ -2167,7 +2168,11 @@ mark_used_regs (needed, live, x, final, insn)
 	    /* No death notes for global register variables;
 	       their values are live after this function exits.  */
 	    if (global_regs[regno])
-	      return;
+	      {
+		if (final)
+		  reg_next_use[regno] = insn;
+		return;
+	      }
 
 	    n = HARD_REGNO_NREGS (regno, GET_MODE (x));
 	    while (--n > 0)
@@ -2311,7 +2316,9 @@ mark_used_regs (needed, live, x, final, insn)
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	    && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-	    && ! (regno < FIRST_PSEUDO_REGISTER && global_regs[regno]))
+	    )
+	  /* We used to exclude global_regs here, but that seems wrong.
+	     Storing in them is like storing in mem.  */
 	  {
 	    mark_used_regs (needed, live, SET_SRC (x), final, insn);
 	    if (mark_dest)
