@@ -1,5 +1,14 @@
 2001-08-30  Per Bothner  <per@bothner.com>
 
+	* jcf-write.c (generate_classfile):  Don't write ConstantValue
+	attribute if field is not final, for compatibility with jdk.
+
+	* jcf-write.c (generate_classfile):  Convert ConstantValue values
+	to correct type.  Work-around for front-end bug.
+	* class.c (set_constant_value):  Error if constant has wrong type.
+
+2001-08-30  Per Bothner  <per@bothner.com>
+
 	* jcf-dump.c (print_constant):  Fix fencepost error so "Float" and
 	"Double" are printed at verbosity 1.
 

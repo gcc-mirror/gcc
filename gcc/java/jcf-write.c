@@ -2884,7 +2884,8 @@ generate_classfile (clas, state)
 			      build_java_signature (TREE_TYPE (part)));
       PUT2(i);
       have_value = DECL_INITIAL (part) != NULL_TREE 
-	&& FIELD_STATIC (part) && CONSTANT_VALUE_P (DECL_INITIAL (part));
+	&& FIELD_STATIC (part) && CONSTANT_VALUE_P (DECL_INITIAL (part))
+	&& FIELD_FINAL (part);
       if (have_value)
 	attr_count++;
 
@@ -2896,6 +2897,8 @@ generate_classfile (clas, state)
 	{
 	  tree init = DECL_INITIAL (part);
 	  static tree ConstantValue_node = NULL_TREE;
+	  // This conversion is a work-around for front-end bug.
+	  init = convert (TREE_TYPE (part), init);
 	  ptr = append_chunk (NULL, 8, state);
 	  if (ConstantValue_node == NULL_TREE)
 	    ConstantValue_node = get_identifier ("ConstantValue");
