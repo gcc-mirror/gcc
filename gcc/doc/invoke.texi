@@ -486,6 +486,7 @@ in the following sections.
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
 -mno-red-zone@gol
+-mcmodel=@var{code-model} @gol
 -m32 -m64}
 
 @emph{HPPA Options}
@@ -7598,6 +7599,32 @@ by the x86-64 ABI, it is a 128-byte area beyond the location of the
 stack pointer that will not be modified by signal or interrupt handlers
 and therefore can be used for temporary data without adjusting the stack
 pointer.  The flag @option{-mno-red-zone} disables this red zone.
+
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate code for the small code model: the program and its symbols must
+be linked in the lower 2 GB of the address space.  Pointers are 64 bits.
+Programs can be statically or dynamically linked.  This is the default
+code model.
+
+@item -mcmodel=kernel
+@opindex mcmodel=kernel
+Generate code for the kernel code model.  The kernel runs in the
+negative 2 GB of the address space.
+This model has to be used for Linux kernel code.
+
+@item -mcmodel=medium
+@opindex mcmodel=medium
+Generate code for the medium model: The program is linked in the lower 2
+GB of the address space but symbols can be located anywhere in the
+address space.  Programs can be statically or dynamically linked, but
+building of shared libraries are not supported with the medium model.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate code for the large model: This model makes no assumptions
+about addresses and sizes of sections.  Currently GCC does not implement
+this model.
 @end table
 
 @node HPPA Options
