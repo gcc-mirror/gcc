@@ -1,3 +1,9 @@
+2003-11-18  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11821
+	* config/arm/arm.c (arm_rtx_costs_1): Improve estimate of the code
+	size for calls to libgcc's div & mod subroutines when using -Os.
+
 2003-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (change_decl_assembler_name): Avoid bogus warnings.
