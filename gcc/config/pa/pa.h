@@ -173,7 +173,7 @@ extern int target_flags;
    {"nosnake", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
    {"pa-risc-1-0", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
    {"pa-risc-1-1", MASK_PA_11, "Generate PA1.1 code"},			\
-   {"pa-risc-2-0", MASK_PA_20, "Generate PA2.0 code.  This option requires gas snapshot 19990413 or later"},			\
+   {"pa-risc-2-0", MASK_PA_20, "Generate PA2.0 code.  This option requires binutils 2.10 or later"},			\
    {"disable-fpregs", MASK_DISABLE_FPREGS, "Disable FP regs"},		\
    {"no-disable-fpregs", -MASK_DISABLE_FPREGS, "Do not disable FP regs"},\
    {"no-space-regs", MASK_NO_SPACE_REGS, "Disable space regs"},		\

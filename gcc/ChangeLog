@@ -1,3 +1,8 @@
+2000-06-20  Philipp Thomas  <pthomas@suse.de>
+
+	* config/pa/pa.h(TARGET_SWITCHES): Require binutils 2.10 or later
+	for PA 2.0.
+
 Mon Jun 19 23:26:40 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Take REG_INC notes into account.
