@@ -63,6 +63,7 @@ extern java::lang::Class ConstructorClass;
 static _Jv_Utf8Const *void_signature = _Jv_makeUtf8Const ("()V", 3);
 static _Jv_Utf8Const *clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
+static _Jv_Utf8Const *finit_name = _Jv_makeUtf8Const ("$finit$", 7);
 
 
 
@@ -310,6 +311,7 @@ java::lang::Class::getDeclaredMethod (jstring name,
 	  Method *rmethod = new Method ();
 	  rmethod->offset = (char*) (&methods[i]) - (char*) methods;
 	  rmethod->declaringClass = this;
+	  return rmethod;
 	}
     }
   JvThrow (new java::lang::NoSuchMethodException);
@@ -326,7 +328,8 @@ java::lang::Class::getDeclaredMethods (void)
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
-	  || _Jv_equalUtf8Consts (method->name, init_name))
+	  || _Jv_equalUtf8Consts (method->name, init_name)
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
 	continue;
       numMethods++;
     }
@@ -339,7 +342,8 @@ java::lang::Class::getDeclaredMethods (void)
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
 	  || _Jv_equalUtf8Consts (method->name, clinit_name)
-	  || _Jv_equalUtf8Consts (method->name, init_name))
+	  || _Jv_equalUtf8Consts (method->name, init_name)
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
 	continue;
       java::lang::reflect::Method* rmethod
 	= new java::lang::reflect::Method ();
@@ -370,16 +374,19 @@ JArray<jclass> *
 java::lang::Class::getDeclaredClasses (void)
 {
   checkMemberAccess (java::lang::reflect::Member::DECLARED);
-  JvFail ("java::lang::Class::getDeclaredClasses not implemented");
-  return NULL;			// Placate compiler.
+  // Until we have inner classes, it always makes sense to return an
+  // empty array.
+  JArray<jclass> *result
+    = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass, NULL);
+  return result;
 }
 
-// This is marked as unimplemented in the JCL book.
 jclass
 java::lang::Class::getDeclaringClass (void)
 {
-  JvFail ("java::lang::Class::getDeclaringClass unimplemented");
-  return NULL;			// Placate compiler.
+  // Until we have inner classes, it makes sense to always return
+  // NULL.
+  return NULL;
 }
 
 jint
@@ -463,6 +470,11 @@ java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 	    {
 	      // Found it.
 	      using namespace java::lang::reflect;
+
+	      // Method must be public.
+	      if (! Modifier::isPublic (methods[i].accflags))
+		break;
+
 	      Method *rmethod = new Method ();
 	      rmethod->offset = (char*) (&klass->methods[i]) - (char*) methods;
 	      rmethod->declaringClass = klass;
@@ -473,10 +485,118 @@ java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
   JvThrow (new java::lang::NoSuchMethodException);
 }
 
+// This is a very slow implementation, since it re-scans all the
+// methods we've already listed to make sure we haven't duplicated a
+// method.  It also over-estimates the required size, so we have to
+// shrink the result array later.
+jint
+java::lang::Class::_getMethods (JArray<java::lang::reflect::Method *> *result,
+				jint offset)
+{
+  jint count = 0;
+
+  // First examine all local methods
+  for (int i = isPrimitive () ? 0 : method_count; --i >= 0; )
+    {
+      _Jv_Method *method = &methods[i];
+      if (method->name == NULL
+	  || _Jv_equalUtf8Consts (method->name, clinit_name)
+	  || _Jv_equalUtf8Consts (method->name, init_name)
+	  || _Jv_equalUtf8Consts (method->name, finit_name))
+	continue;
+      // Only want public methods.
+      if (! java::lang::reflect::Modifier::isPublic (method->accflags))
+	continue;
+
+      // This is where we over-count the slots required if we aren't
+      // filling the result for real.
+      if (result != NULL)
+	{
+	  jboolean add = true;
+	  java::lang::reflect::Method **mp = elements (result);
+	  // If we already have a method with this name and signature,
+	  // then ignore this one.  This can happen with virtual
+	  // methods.
+	  for (int j = 0; j < offset; ++j)
+	    {
+	      _Jv_Method *meth_2 = _Jv_FromReflectedMethod (mp[j]);
+	      if (_Jv_equalUtf8Consts (method->name, meth_2->name)
+		  && _Jv_equalUtf8Consts (method->signature,
+					  meth_2->signature))
+		{
+		  add = false;
+		  break;
+		}
+	    }
+	  if (! add)
+	    continue;
+	}
+
+      if (result != NULL)
+	{
+	  using namespace java::lang::reflect;
+	  Method *rmethod = new Method ();
+	  rmethod->offset = (char *) method - (char *) methods;
+	  rmethod->declaringClass = this;
+	  Method **mp = elements (result);
+	  mp[offset + count] = rmethod;
+	}
+      ++count;
+    }
+  offset += count;
+
+  // Now examine superclasses.
+  if (getSuperclass () != NULL)
+    {
+      jint s_count = getSuperclass()->_getMethods (result, offset);
+      offset += s_count;
+      count += s_count;
+    }
+
+  // Finally, examine interfaces.
+  for (int i = 0; i < interface_count; ++i)
+    {
+      int f_count = interfaces[i]->_getMethods (result, offset);
+      count += f_count;
+      offset += f_count;
+    }
+
+  return count;
+}
+
 JArray<java::lang::reflect::Method *> *
 java::lang::Class::getMethods (void)
 {
-  JvFail ("java::lang::Class::getMethods not implemented");
+  using namespace java::lang::reflect;
+
+  // FIXME: security checks.
+
+  // This will overestimate the size we need.
+  jint count = _getMethods (NULL, 0);
+
+  JArray<Method *> *result
+    = ((JArray<Method *> *) JvNewObjectArray (count, &MethodClass, NULL));
+
+  // When filling the array for real, we get the actual count.  Then
+  // we resize the array.
+  jint real_count = _getMethods (result, 0);
+
+  if (real_count != count)
+    {
+      JArray<Method *> *r2
+	= ((JArray<Method *> *) JvNewObjectArray (real_count, &MethodClass,
+						  NULL));
+      
+      Method **destp = elements (r2);
+      Method **srcp = elements (result);
+
+      for (int i = 0; i < real_count; ++i)
+	*destp++ = *srcp++;
+
+      result = r2;
+    }
+
+  return result;
 }
 
 jboolean

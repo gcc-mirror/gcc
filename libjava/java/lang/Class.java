@@ -94,6 +94,7 @@ public final class Class implements Serializable
 
   public native Method getMethod (String methodName, Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException;
+  private native int _getMethods (Method[] result, int offset);
   public native Method[] getMethods () throws SecurityException;
 
   public native int getModifiers ();
