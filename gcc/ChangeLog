@@ -1,3 +1,64 @@
+2000-08-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpperror.c (v_message): Split into _cpp_begin_message and
+	v_message macro.  All callers updated.
+	(_cpp_begin_message): Do inhibit_errors/inhibit_warnings
+	checks here.
+
+	* cppfiles.c (cpp_syshdr_flags): New function.
+	(read_include_file): Don't call cpp_output_tokens.  Call
+	enter_file hook.
+	* cppinit.c (dump_macros_helper): Moved to cppmain.c.
+	(cpp_reader_init): Don't initialize token_buffer.  Call
+	_cpp_init_internal_pragmas.
+	(cpp_cleanup): Don't clear token_buffer.
+	(cpp_start_read): Don't worry about output from -D processing.
+	Don't call cpp_output_tokens.
+	(cpp_finish): Don't dump macros here.  Don't call
+	cpp_output_tokens.
+	* cppmacro.c (_cpp_dump_definition): Rename
+	cpp_dump_definition.  Write directly to a FILE *.
+	(dump_funlike_macro): Delete.
+	(dump_macro_args): New.
+
+	* cpplex.c (TOKEN_LEN): Convert to inline function.
+	(_cpp_grow_token_buffer, safe_fwrite, cpp_output_tokens,
+	cpp_scan_line, _cpp_dump_list): Delete.
+	(cpp_printf, cpp_output_list): New.
+	(output_line_command): Don't worry about entering or leaving files.
+	(cpp_scan_buffer): Just output each token as we hit it.
+	(process_directive): Don't call cpp_output_tokens.
+	(_cpp_glue_header_name): Don't use token_buffer.
+	(output_token, dump_param_spelling): Write directly to a FILE *.
+
+	* cpplib.c (pass_thru_directive, dump_macro_name,
+	pragma_dispatch, do_pragma_gcc): Delete.
+	(do_define, do_undef, parse_include, do_line, do_ident, do_pragma,
+	do_pragma_poison, cpp_pop_buffer): Call the appropriate hook
+	functions.
+	(do_error, do_warning, pragma_dependency): Call
+	_cpp_begin_message, then cpp_output_list.
+	(cpp_register_pragma, cpp_register_pragma_space,
+	_cpp_init_internal_pragmas): New.
+	(do_pragma): Walk the pragmas table here.
+	(do_pragma_once, do_pragma_poison, do_pragma_system_header,
+	do_pragma_dependency): Return void.
+	(do_pragma_implementation): Moved to cppmain.c.
+
+	* cpplib.h: Update prototypes.
+	 (struct cpp_reader): Remove printer, token_buffer,
+	token_buffer_size, and limit.  Add struct cb, and pragmas.
+	(struct cpp_printer): Remove last_id and written.
+	(CPP_WRITTEN, CPP_PWRITTEN, CPP_SET_WRITTEN,
+	CPP_ADJUST_WRITTEN): Delete.
+	* cpphash.h: Update prototypes.
+	(ufputs): New wrapper.
+
+	* cppmain.c (cb_define, cb_undef, cb_include, cb_ident,
+	cb_enter_file, cb_leave_file, cb_def_pragma): New functions.
+	(main): Set up callbacks.  Register #pragma implementation.
+	Dump macros from here.
+
 2000-08-01  Geoff Keating  <geoffk@cygnus.com>
 
 	* rtl.h (enum reg_note): Add REG_MAYBE_DEAD.
