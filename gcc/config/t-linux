@@ -12,5 +12,5 @@ SHLIB_MAPFILES += $(srcdir)/config/libgcc-glibc.ver
 
 # Use unwind-dw2-fde-glibc
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
-  $(srcdir)/unwind-sjlj.c
-LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
+  $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c
+LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c gthr-gnat.c
