@@ -33,6 +33,10 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
+extern int frame_offset;
+extern rtx tail_recursion_label;
+extern rtx tail_recursion_reentry;
+
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 
@@ -62,6 +66,8 @@ struct arg_data
   rtx value;
   /* Initially-compute RTL value for argument; only for const functions.  */
   rtx initial_value;
+  /*  */
+  rtx sibcall_value;
   /* Register to pass this argument in, 0 if passed on stack, or an
      PARALLEL if the arg is to be copied into multiple non-contiguous
      registers.  */
@@ -515,17 +521,6 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
   *is_malloc = 0;
   *may_be_alloca = 0;
 
-  /* We assume that alloca will always be called by name.  It
-     makes no sense to pass it as a pointer-to-function to
-     anything that does not understand its behavior.  */
-  *may_be_alloca
-    = (name && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
-		 && name[0] == 'a'
-		 && ! strcmp (name, "alloca"))
-		|| (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
-		    && name[0] == '_'
-		    && ! strcmp (name, "__builtin_alloca"))));
-
   if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
@@ -533,6 +528,17 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
       && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
     {
       char *tname = name;
+
+      /* We assume that alloca will always be called by name.  It
+	 makes no sense to pass it as a pointer-to-function to
+	 anything that does not understand its behavior.  */
+      *may_be_alloca
+	= (((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
+	     && name[0] == 'a'
+	     && ! strcmp (name, "alloca"))
+	    || (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
+		&& name[0] == '_'
+		&& ! strcmp (name, "__builtin_alloca"))));
 
       /* Disregard prefix _, __ or __x.  */
       if (name[0] == '_')
@@ -834,6 +840,7 @@ expand_call (exp, target, ignore)
   tree actparms = TREE_OPERAND (exp, 1);
   /* RTX for the function to be called.  */
   rtx funexp;
+  rtx tail_recursion_insns = NULL_RTX;
   /* Data type of the function.  */
   tree funtype;
   /* Declaration of the function being called,
@@ -1916,6 +1923,7 @@ expand_call (exp, target, ignore)
      once we have started filling any specific hard regs.  */
   precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
+
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 
   /* Save the fixed argument area if it's part of the caller's frame and
@@ -2063,6 +2071,92 @@ expand_call (exp, target, ignore)
 	}
     }
 
+  /* See if this is a potential tail recursive call.  We can not know for
+     sure until we have expanded the entire function into RTL and can examine
+     the cfg and other data.  But we have to mark it and save some information
+     now so that we can optimize it later.  */
+  if (optimize
+      && TREE_CODE (exp) == CALL_EXPR
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+      && TREE_OPERAND (TREE_OPERAND (exp, 0), 0) == current_function_decl)
+    {
+      tree actuals, formals, a, f;
+      int i;
+
+      actuals = TREE_OPERAND (exp, 1);
+      formals = DECL_ARGUMENTS (current_function_decl);
+      /* The caller and callee must have the same number of arguments and
+	 they must be of compatible types and modes.  */
+      for (a = actuals, f = formals, i = 0;
+	   a != NULL_TREE && f != NULL_TREE;
+	   a = TREE_CHAIN (a) , f = TREE_CHAIN (f), i++)
+	{
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (a)))
+	      != TYPE_MAIN_VARIANT (TREE_TYPE (f)))
+	    break;
+	  if (GET_CODE (DECL_RTL (f)) != REG || DECL_MODE (f) == BLKmode)
+	    break;
+	  if (!args[i].sibcall_value)
+	    args[i].sibcall_value = args[i].value;
+	}
+
+      
+      if (a == NULL_TREE && f == NULL_TREE)
+	{
+	  /* Create the tail recursion label if it has not been created
+	     already.  */
+	  if (tail_recursion_label == 0)
+	    {
+	      tail_recursion_label = gen_label_rtx ();
+	      emit_label_after (tail_recursion_label, tail_recursion_reentry);
+	    }
+
+	  /* We have a potential tail recursion site.
+
+	     Start a new sequence for any RTL generated which might be used
+	     to implement tail recursion optimizations later.  */
+	  push_to_sequence (0);
+
+	  /* Find which actual values refer to current values of previous
+	     formals.  Copy each of them now, before any formal is changed.  */
+	  for (a = actuals, i = 0; a != NULL_TREE; a = TREE_CHAIN (a), i++)
+	    {
+	      int copy = 0, j;
+
+	      for (f = formals, j = 0; j < i; f = TREE_CHAIN (f), j++)
+		if (reg_mentioned_p (DECL_RTL (f), args[i].value))
+		  {
+		    copy = 1;
+		    break;
+		  }
+	      if (copy)
+		args[i].sibcall_value = copy_to_reg (args[i].value);
+	    }
+
+	  /* Store the values of the actuals into the formals.  */
+	  for (f = formals, a = actuals, i = 0; f != NULL_TREE;
+	       f = TREE_CHAIN (f), a = TREE_CHAIN (a), i++)
+	    {
+	      if (GET_MODE (DECL_RTL (f)) == GET_MODE (args[i].sibcall_value))
+		emit_move_insn (DECL_RTL (f), args[i].sibcall_value);
+	      else
+		convert_move (DECL_RTL (f), args[i].sibcall_value,
+			      TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (a))));
+	    }
+
+	  /* Emit any queued operations.  */
+	  emit_queue ();
+
+	  /* Goto the tail recursion label.  */
+	  expand_goto_internal (NULL_TREE, tail_recursion_label, get_last_insn);
+
+	  tail_recursion_insns = get_insns ();
+	  end_sequence ();
+	  emit_insns (tail_recursion_insns);  
+	  return;
+	}
+    }
+      
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
 
@@ -3690,7 +3784,10 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
      arg->stack_slot and it matters when they are not the same.
      It isn't totally clear that this is correct in all cases.  */
   if (partial == 0)
-    arg->value = arg->stack_slot;
+    {
+      arg->sibcall_value = arg->value;
+      arg->value = arg->stack_slot;
+    }
 
   /* Once we have pushed something, pops can't safely
      be deferred during the rest of the arguments.  */
