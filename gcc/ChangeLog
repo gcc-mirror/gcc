@@ -1,3 +1,8 @@
+Thu Jun 11 18:45:49 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* config/rs6000/x-aix43 (AR): Delete.
+	(AR_FOR_TARGET_FLAGS): Add -X32_64 here.
+
 Thu Jun 11 16:19:17 1998  David W. Schuler  <schuld@btv.ibm.com>
 
 	* config/i386/aix386ng.h (CPP_SPEC): Remove extraneous quote.
