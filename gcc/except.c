@@ -1022,7 +1022,12 @@ begin_protect_partials ()
 /* Start a new exception region for a region of code that has a
    cleanup action and push the HANDLER for the region onto
    protect_list. All of the regions created with add_partial_entry
-   will be ended when end_protect_partials is invoked.  */
+   will be ended when end_protect_partials is invoked.
+
+   ??? The only difference between this purpose and that of
+   expand_decl_cleanup is that in this case, we only want the cleanup to
+   run if an exception is thrown.  This should also be handled using
+   binding levels.  */
 
 void
 add_partial_entry (handler)
