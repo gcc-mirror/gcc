@@ -1,3 +1,8 @@
+2002-02-24  Christian Jönsson  <c.christian.joensson@telia.com>
+
+	* test_summary: Additional to XPASS and FAIL, add UNRESOLVED,
+	WARNING and ERROR output from the *.sum files.
+
 2002-01-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gennews (files): Replace gcc-2.95/gcc-2.95.html,
