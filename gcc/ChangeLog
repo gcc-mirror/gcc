@@ -1,4 +1,7 @@
-Mon Jul 22 15:21:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Mon Jul 22 15:27:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* rtlanal.c (subreg_regno_offset): Return correct offset for
+	big endian paradoxical subregs.
 
 	* optabs.c (expand_vector_unop): Don't expand using sub_optab
 	if we got the wrong mode.
