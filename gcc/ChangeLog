@@ -1,3 +1,7 @@
+2004-02-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* opts.c (OPT_fwritable_strings): Deprecate -fwritable-strings.
+
 2004-02-03  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
         * toplev.c: Fix broken checkin of 2003-12-30, again.

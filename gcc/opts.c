@@ -1445,6 +1445,9 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fwritable_strings:
       flag_writable_strings = value;
+      if (flag_writable_strings)
+        inform ("-fwritable-strings is deprecated; "
+                "see documentation for details");
       break;
 
     case OPT_fzero_initialized_in_bss:
