@@ -8335,6 +8335,13 @@ elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	# ??? This fails with non-gnu grep.
 	if $gcc_cv_as --gstabs -o conftest.o conftest.s > /dev/null 2>&1 ; then
 	  gcc_cv_as_gstabs_flag="yes"
+	  # The native Solaris 9/Intel assembler doesn't understand --gstabs
+	  # and warns about it, but still exits successfully.  So check for
+	  # this.
+	  if $gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | \
+		grep -i warning > /dev/null ; then
+	    gcc_cv_as_gstabs_flag="no"
+	  fi
 	fi
 	rm -f conftest.s conftest.o
 fi
@@ -8347,7 +8354,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
 
 echo $ac_n "checking linker read-only and read-write section mixing""... $ac_c" 1>&6
-echo "configure:8351: checking linker read-only and read-write section mixing" >&5
+echo "configure:8358: checking linker read-only and read-write section mixing" >&5
 gcc_cv_ld_ro_rw_mix=unknown
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8385,7 +8392,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_ro_rw_mix" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:8389: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:8396: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8406,7 +8413,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
 echo $ac_n "checking linker position independent executable support""... $ac_c" 1>&6
-echo "configure:8410: checking linker position independent executable support" >&5
+echo "configure:8417: checking linker position independent executable support" >&5
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8430,7 +8437,7 @@ echo "$ac_t""$gcc_cv_ld_pie" 1>&6
 case "$target" in
   mips*-*-*)
     echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
-echo "configure:8434: checking whether libgloss uses STARTUP directives consistently" >&5
+echo "configure:8441: checking whether libgloss uses STARTUP directives consistently" >&5
     gcc_cv_mips_libgloss_startup=no
     gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
     if test "x$exec_prefix" = xNONE; then
@@ -8458,7 +8465,7 @@ EOF
     echo "$ac_t""$gcc_cv_mips_libgloss_startup" 1>&6
 
     echo $ac_n "checking whether the assembler has explicit relocation support""... $ac_c" 1>&6
-echo "configure:8462: checking whether the assembler has explicit relocation support" >&5
+echo "configure:8469: checking whether the assembler has explicit relocation support" >&5
     if test x$gcc_cv_mips_explicit_relocs = x; then
       gcc_cv_mips_explicit_relocs=no
       if test $in_tree_gas = yes; then
@@ -8664,7 +8671,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8668: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8675: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

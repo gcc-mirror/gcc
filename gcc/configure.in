@@ -2560,6 +2560,13 @@ elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	# ??? This fails with non-gnu grep.
 	if $gcc_cv_as --gstabs -o conftest.o conftest.s > /dev/null 2>&1 ; then
 	  gcc_cv_as_gstabs_flag="yes"
+	  # The native Solaris 9/Intel assembler doesn't understand --gstabs
+	  # and warns about it, but still exits successfully.  So check for
+	  # this.
+	  if $gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | \
+		grep -i warning > /dev/null ; then
+	    gcc_cv_as_gstabs_flag="no"
+	  fi
 	fi
 	rm -f conftest.s conftest.o
 fi
