@@ -1,3 +1,11 @@
+2003-01-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/crtend.asm [HAVE_INITFINI_ARRAY]: Make
+	__do_global_ctors_aux hidden global and don't put it in
+	.init_array.
+	* config/ia64/crtbegin.asm [HAVE_INITFINI_ARRAY]: Put it here
+	instead so that it comes first.
+
 2003-01-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (ASM_SPEC): Fix for new gas format.
