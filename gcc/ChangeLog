@@ -1,3 +1,15 @@
+2000-12-02  Daniel Berlin  <dberlin@redhat.com>
+            Bruce Korb  <bkorb@gnu.org>
+
+        * fixinc/*: global substitute /__MSDOS__/SEPARATE_FIX_PROC/
+        * fixinc/mkfixinc.sh: prepare to use Makefile.BEOS for *-*-beos*
+        * fixinc/Makefile.DOS: define SEPARATE_FIX_PROC for build
+        * fixinc/fixfix.c(wrap_fix): avoid wrapping files that
+        use the "__need_" hackery.  It breaks them.
+        * fixinc/fixincl.c(process - SEPARATE_FIX_PROC):
+        Sometimes on DOS and BeOS the temp output file cannot be opened.
+        Skip the file noisily.  Ought to be fixed instead.
+
 2000-12-02  Bruce Korb  <bkorb@gnu.org>
 
 	From: 2000-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
