@@ -1,3 +1,7 @@
+Thu Nov 15 21:40:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* timevar.c (rtl.h): Include so get fancy abort.
+
 2001-11-15  Dale Johannesen  <dalej@apple.com>
 
 	* config/darwin.h (SELECT_RTX_SECTION):  Force address
