@@ -1,4 +1,4 @@
-2003-05-29  DJ Delorie  <dj@redhat.com>
+2003-06-01  DJ Delorie  <dj@redhat.com>
 
 	* cppmacro.c (warn_of_redefinition): Handle cases where the two
 	definitions have different numbers of tokens.
