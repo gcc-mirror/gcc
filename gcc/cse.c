@@ -612,6 +612,10 @@ static void find_best_addr	PROTO((rtx, rtx *));
 static enum rtx_code find_comparison_args PROTO((enum rtx_code, rtx *, rtx *,
 						 enum machine_mode *,
 						 enum machine_mode *));
+static rtx cse_gen_binary	PROTO((enum rtx_code, enum machine_mode,
+				       rtx, rtx));
+static rtx simplify_plus_minus	PROTO((enum rtx_code, enum machine_mode,
+				       rtx, rtx));
 static rtx fold_rtx		PROTO((rtx, rtx));
 static rtx equiv_constant	PROTO((rtx));
 static void record_jump_equiv	PROTO((rtx, int));
@@ -2649,11 +2653,7 @@ find_best_addr (insn, loc)
 		&& (GET_CODE (p->exp) == REG
 		    || exp_equiv_p (p->exp, p->exp, 1, 0)))
 	      {
-		rtx new = simplify_binary_operation (GET_CODE (*loc), Pmode,
-						     p->exp, c);
-
-		if (new == 0)
-		  new = gen_rtx (GET_CODE (*loc), Pmode, p->exp, c);
+		rtx new = cse_gen_binary (GET_CODE (*loc), Pmode, p->exp, c);
 
 		if ((ADDRESS_COST (new) < best_addr_cost
 		    || (ADDRESS_COST (new) == best_addr_cost
@@ -3248,6 +3248,7 @@ simplify_binary_operation (code, mode, op0, op1)
   register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
   HOST_WIDE_INT val;
   int width = GET_MODE_BITSIZE (mode);
+  rtx tem;
 
   /* Relational operations don't work here.  We must know the mode
      of the operands in order to do the comparison correctly.
@@ -3448,85 +3449,33 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (op1 == CONST0_RTX (mode))
 	    return op0;
 
-	  /* Strip off any surrounding CONSTs.  They don't matter in any of 
-	     the cases below.  */
-	  if (GET_CODE (op0) == CONST)
-	    op0 = XEXP (op0, 0);
-	  if (GET_CODE (op1) == CONST)
-	    op1 = XEXP (op1, 0);
-
 	  /* ((-a) + b) -> (b - a) and similarly for (a + (-b)) */
 	  if (GET_CODE (op0) == NEG)
-	    {
-	      rtx tem = simplify_binary_operation (MINUS, mode,
-						   op1, XEXP (op0, 0));
-	      return tem ? tem : gen_rtx (MINUS, mode, op1, XEXP (op0, 0));
-	    }
+	    return cse_gen_binary (MINUS, mode, op1, XEXP (op0, 0));
 	  else if (GET_CODE (op1) == NEG)
-	    {
-	      rtx tem = simplify_binary_operation (MINUS, mode,
-						   op0, XEXP (op1, 0));
-	      return tem ? tem : gen_rtx (MINUS, mode, op0, XEXP (op1, 0));
-	    }
+	    return cse_gen_binary (MINUS, mode, op0, XEXP (op1, 0));
 
-	  /* Don't use the associative law for floating point.
+	  /* Handle both-operands-constant cases.  We can only add
+	     CONST_INTs to constants since the sum of relocatable symbols
+	     can't be handled by most assemblers.  */
+
+	  if (CONSTANT_P (op0) && GET_CODE (op1) == CONST_INT)
+	    return plus_constant (op0, INTVAL (op1));
+	  else if (CONSTANT_P (op1) && GET_CODE (op0) == CONST_INT)
+	    return plus_constant (op1, INTVAL (op0));
+
+	  /* If one of the operands is a PLUS or a MINUS, see if we can
+	     simplify this by the associative law. 
+	     Don't use the associative law for floating point.
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
-	  if (GET_MODE_CLASS (mode) != MODE_INT)
-	    break;
 
-	  /* (a - b) + b -> a, similarly a + (b - a) -> a */
-	  if (GET_CODE (op0) == MINUS
-	      && rtx_equal_p (XEXP (op0, 1), op1) && ! side_effects_p (op1))
-	    return XEXP (op0, 0);
-
-	  if (GET_CODE (op1) == MINUS
-	      && rtx_equal_p (XEXP (op1, 1), op0) && ! side_effects_p (op0))
-	    return XEXP (op1, 0);
-
-	  /* (c1 - a) + c2 becomes (c1 + c2) - a.  */
-	  if (GET_CODE (op1) == CONST_INT && GET_CODE (op0) == MINUS
-	      && GET_CODE (XEXP (op0, 0)) == CONST_INT)
-	    {
-	      rtx tem = simplify_binary_operation (PLUS, mode, op1,
-						   XEXP (op0, 0));
-
-	      return tem ? gen_rtx (MINUS, mode, tem, XEXP (op0, 1)) : 0;
-	    }
-
-	  /* Handle both-operands-constant cases.  */
-	  if (CONSTANT_P (op0) && CONSTANT_P (op1)
-	      && GET_CODE (op0) != CONST_DOUBLE
-	      && GET_CODE (op1) != CONST_DOUBLE
-	      && GET_MODE_CLASS (mode) == MODE_INT)
-	    {
-	      if (GET_CODE (op1) == CONST_INT)
-		return plus_constant (op0, INTVAL (op1));
-	      else if (GET_CODE (op0) == CONST_INT)
-		return plus_constant (op1, INTVAL (op0));
-	      else
-		break;
-#if 0 /* No good, because this can produce the sum of two relocatable
-	 symbols, in an assembler instruction.  Most UNIX assemblers can't
-	 handle that.  */
-	      else
-		return gen_rtx (CONST, mode,
-				gen_rtx (PLUS, mode,
-					 GET_CODE (op0) == CONST
-					 ? XEXP (op0, 0) : op0,
-					 GET_CODE (op1) == CONST
-					 ? XEXP (op1, 0) : op1));
-#endif
-	    }
-	  else if (GET_CODE (op1) == CONST_INT
-		   && GET_CODE (op0) == PLUS
-		   && (CONSTANT_P (XEXP (op0, 0))
-		       || CONSTANT_P (XEXP (op0, 1))))
-	    /* constant + (variable + constant)
-	       can result if an index register is made constant.
-	       We simplify this by adding the constants.
-	       If we did not, it would become an invalid address.  */
-	    return plus_constant (op0, INTVAL (op1));
+	  if ((GET_MODE_CLASS (mode) == MODE_INT
+	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
+	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
+	    return tem;
 	  break;
 
 	case COMPARE:
@@ -3550,159 +3499,45 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && GET_MODE_CLASS (mode) != MODE_INT)
+	      && GET_MODE_CLASS (mode) != MODE_INT
+	      && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	    break;
 
 	  /* We can't assume x-x is 0 even with non-IEEE floating point.  */
 	  if (rtx_equal_p (op0, op1)
 	      && ! side_effects_p (op0)
-	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
+	      && GET_MODE_CLASS (mode) != MODE_FLOAT
+	      && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
 	    return const0_rtx;
 
 	  /* Change subtraction from zero into negation.  */
 	  if (op0 == CONST0_RTX (mode))
 	    return gen_rtx (NEG, mode, op1);
 
+	  /* (-1 - a) is ~a.  */
+	  if (op0 == constm1_rtx)
+	    return gen_rtx (NOT, mode, op1);
+
 	  /* Subtracting 0 has no effect.  */
 	  if (op1 == CONST0_RTX (mode))
 	    return op0;
 
-	  /* Strip off any surrounding CONSTs.  They don't matter in any of 
-	     the cases below.  */
-	  if (GET_CODE (op0) == CONST)
-	    op0 = XEXP (op0, 0);
-	  if (GET_CODE (op1) == CONST)
-	    op1 = XEXP (op1, 0);
-
 	  /* (a - (-b)) -> (a + b).  */
 	  if (GET_CODE (op1) == NEG)
-	    {
-	      rtx tem = simplify_binary_operation (PLUS, mode,
-						   op0, XEXP (op1, 0));
-	      return tem ? tem : gen_rtx (PLUS, mode, op0, XEXP (op1, 0));
-	    }
+	    return cse_gen_binary (PLUS, mode, op0, XEXP (op1, 0));
 
-	  /* Don't use the associative law for floating point.
+	  /* If one of the operands is a PLUS or a MINUS, see if we can
+	     simplify this by the associative law. 
+	     Don't use the associative law for floating point.
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
-	  if (GET_MODE_CLASS (mode) != MODE_INT)
-	    break;
 
-	  /* (a + b) - a -> b, and (b - (a + b))  -> -a  */
-	  if (GET_CODE (op0) == PLUS
-	      && rtx_equal_p (XEXP (op0, 0), op1)
-	      && ! side_effects_p (op1))
-	    return XEXP (op0, 1);
-	  else if (GET_CODE (op0) == PLUS
-		   && rtx_equal_p (XEXP (op0, 1), op1)
-		   && ! side_effects_p (op1))
-	    return XEXP (op0, 0);
-
-	  if (GET_CODE (op1) == PLUS
-	      && rtx_equal_p (XEXP (op1, 0), op0)
-	      && ! side_effects_p (op0))
-	    {
-	      rtx tem = simplify_unary_operation (NEG, mode, XEXP (op1, 1),
-						  mode);
-
-	      return tem ? tem : gen_rtx (NEG, mode, XEXP (op1, 1));
-	    }
-	  else if (GET_CODE (op1) == PLUS
-		   && rtx_equal_p (XEXP (op1, 1), op0)
-		   && ! side_effects_p (op0))
-	    {
-	      rtx tem = simplify_unary_operation (NEG, mode, XEXP (op1, 0),
-						  mode);
-
-	      return tem ? tem : gen_rtx (NEG, mode, XEXP (op1, 0));
-	    }
-
-	  /* a - (a - b) -> b */
-	  if (GET_CODE (op1) == MINUS && rtx_equal_p (op0, XEXP (op1, 0))
-	      && ! side_effects_p (op0))
-	    return XEXP (op1, 1);
-
-	  /* (a +/- b) - (a +/- c) can be simplified.  Do variants of
-	     this involving commutativity.  The most common case is
-	     (a + C1) - (a + C2), but it's not hard to do all the cases.  */
-	  if ((GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS)
-	      && (GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS))
-	    {
-	      rtx lhs0 = XEXP (op0, 0), lhs1 = XEXP (op0, 1);
-	      rtx rhs0 = XEXP (op1, 0), rhs1 = XEXP (op1, 1);
-	      int lhs_neg = GET_CODE (op0) == MINUS;
-	      int rhs_neg = GET_CODE (op1) == MINUS;
-	      rtx lhs = 0, rhs = 0;
-
-	      /* Set LHS and RHS to the two different terms.  */
-	      if (rtx_equal_p (lhs0, rhs0) && ! side_effects_p (lhs0))
-		lhs = lhs1, rhs = rhs1;
-	      else if (! rhs_neg && rtx_equal_p (lhs0, rhs1)
-		       && ! side_effects_p (lhs0))
-		lhs = lhs1, rhs = rhs0;
-	      else if (! lhs_neg && rtx_equal_p (lhs1, rhs0)
-		       && ! side_effects_p (lhs1))
-		lhs = lhs0, rhs = rhs1;
-	      else if (! lhs_neg && ! rhs_neg && rtx_equal_p (lhs1, rhs1)
-		       && ! side_effects_p (lhs1))
-		lhs = lhs0, rhs = rhs0;
-
-	      /* The RHS is the operand of a MINUS, so its negation
-		 status should be complemented.  */
-	      rhs_neg = ! rhs_neg;
-
-	      /* If we found two values equal, form the sum or difference
-		 of the remaining two terms.   */
-	      if (lhs)
-		{
-		  rtx tem = simplify_binary_operation (lhs_neg == rhs_neg
-						       ? PLUS : MINUS,
-						       mode,
-						       lhs_neg ? rhs : lhs,
-						       lhs_neg ? lhs : rhs);
-		  if (tem == 0)
-		    tem = gen_rtx (lhs_neg == rhs_neg
-				   ? PLUS : MINUS,
-				   mode, lhs_neg ? rhs : lhs,
-				   lhs_neg ? lhs : rhs);
-
-		  /* If both sides negated, negate result.  */
-		  if (lhs_neg && rhs_neg)
-		    {
-		      rtx tem1
-			= simplify_unary_operation (NEG, mode, tem, mode);
-		      if (tem1 == 0)
-			tem1 = gen_rtx (NEG, mode, tem);
-		      tem = tem1;
-		    }
-
-		  return tem;
-		}
-
-	      return 0;
-	    }
-
-	  /* c1 - (a + c2) becomes (c1 - c2) - a.  */
-	  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == PLUS
-	      && GET_CODE (XEXP (op1, 1)) == CONST_INT)
-	    {
-	      rtx tem = simplify_binary_operation (MINUS, mode, op0,
-						   XEXP (op1, 1));
-
-	      return tem ? gen_rtx (MINUS, mode, tem, XEXP (op1, 0)) : 0;
-	    }
-
-	  /* c1 - (c2 - a) becomes (c1 - c2) + a.  */
-	  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == MINUS
-	      && GET_CODE (XEXP (op1, 0)) == CONST_INT)
-	    {
-	      rtx tem = simplify_binary_operation (MINUS, mode, op0,
-						   XEXP (op1, 0));
-
-	      return (tem && GET_CODE (tem) == CONST_INT
-		      ? plus_constant (XEXP (op1, 1), INTVAL (tem))
-		      : 0);
-	    }
+	  if ((GET_MODE_CLASS (mode) == MODE_INT
+	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
+		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
+	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
+	    return tem;
 
 	  /* Don't let a relocatable value get a negative coeff.  */
 	  if (GET_CODE (op1) == CONST_INT)
@@ -3712,7 +3547,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	case MULT:
 	  if (op1 == constm1_rtx)
 	    {
-	      rtx tem = simplify_unary_operation (NEG, mode, op0, mode);
+	      tem = simplify_unary_operation (NEG, mode, op0, mode);
 
 	      return tem ? tem : gen_rtx (NEG, mode, op0);
 	    }
@@ -4090,6 +3925,209 @@ simplify_binary_operation (code, mode, op0, op1)
     val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
   return GEN_INT (val);
+}
+
+/* Simplify a PLUS or MINUS, at least one of whose operands may be another
+   PLUS or MINUS.
+
+   Rather than test for specific case, we do this by a brute-force method
+   and do all possible simplifications until no more changes occur.  Then
+   we rebuild the operation.  */
+
+static rtx
+simplify_plus_minus (code, mode, op0, op1)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx op0, op1;
+{
+  rtx ops[8];
+  int negs[8];
+  rtx result, tem;
+  int n_ops = 2;
+  int i, j;
+  int first = 1, negate = 0, changed;
+
+  bzero (ops, sizeof ops);
+  
+  /* Set up the two operands and then expand them until nothing has been
+     changed.  If we run out of room in our array, give up; this should
+     almost never happen.  */
+
+  ops[0] = op0, ops[1] = op1, negs[0] = 0, negs[1] = (code == MINUS);
+
+  changed = 1;
+  while (changed)
+    {
+      changed = 0;
+
+      for (i = 0; i < n_ops; i++)
+	switch (GET_CODE (ops[i]))
+	  {
+	  case PLUS:
+	  case MINUS:
+	    if (n_ops == 7)
+	      return 0;
+
+	    ops[n_ops] = XEXP (ops[i], 1);
+	    negs[n_ops++] = GET_CODE (ops[i]) == MINUS ? !negs[i] : negs[i];
+	    ops[i] = XEXP (ops[i], 0);
+	    changed = 1;
+	    break;
+
+	  case NEG:
+	    ops[i] = XEXP (ops[i], 0);
+	    negs[i] = ! negs[i];
+	    changed = 1;
+	    break;
+
+	  case CONST:
+	    ops[i] = XEXP (ops[i], 0);
+	    changed = 1;
+	    break;
+
+	  case NOT:
+	    /* ~a -> (-a - 1) */
+	    if (n_ops != 7)
+	      {
+		ops[n_ops] = constm1_rtx;
+		negs[n_ops++] = ! negs[i];
+		ops[i] = XEXP (ops[i], 0);
+		negs[i] = ! negs[i];
+		changed = 1;
+	      }
+	    break;
+
+	  case CONST_INT:
+	    if (negs[i])
+	      ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0, changed = 1;
+	    break;
+	  }
+    }
+
+  /* If we only have two operands, we can't do anything.  */
+  if (n_ops <= 2)
+    return 0;
+
+  /* Now simplify each pair of operands until nothing changes.  The first
+     time through just simplify constants against each other.  */
+
+  changed = 1;
+  while (changed)
+    {
+      changed = first;
+
+      for (i = 0; i < n_ops - 1; i++)
+	for (j = i + 1; j < n_ops; j++)
+	  if (ops[i] != 0 && ops[j] != 0
+	      && (! first || (CONSTANT_P (ops[i]) && CONSTANT_P (ops[j]))))
+	    {
+	      rtx lhs = ops[i], rhs = ops[j];
+	      enum rtx_code ncode = PLUS;
+
+	      if (negs[i] && ! negs[j])
+		lhs = ops[j], rhs = ops[i], ncode = MINUS;
+	      else if (! negs[i] && negs[j])
+		ncode = MINUS;
+
+	      tem = simplify_binary_operation (ncode, mode, lhs, rhs);
+	      if (tem)
+		{
+		  ops[i] = tem, ops[j] = 0;
+		  negs[i] = negs[i] && negs[j];
+		  if (GET_CODE (tem) == NEG)
+		    ops[i] = XEXP (tem, 0), negs[i] = ! negs[i];
+
+		  if (GET_CODE (ops[i]) == CONST_INT && negs[i])
+		    ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0;
+		  changed = 1;
+		}
+	    }
+
+      first = 0;
+    }
+
+  /* Pack all the operands to the lower-numbered entries and give up if
+     we didn't reduce the number of operands we had.  */
+  for (i = 0, j = 0; j < n_ops; j++)
+    if (ops[j] != 0)
+      ops[i] = ops[j], negs[i++] = negs[j];
+
+  if (i >= n_ops)
+    return 0;
+
+  n_ops = i;
+
+  /* If we have a CONST_INT, put it last.  */
+  for (i = 0; i < n_ops - 1; i++)
+    if (GET_CODE (ops[i]) == CONST_INT)
+      {
+	tem = ops[n_ops - 1], ops[n_ops - 1] = ops[i] , ops[i] = tem;
+	j = negs[n_ops - 1], negs[n_ops - 1] = negs[i], negs[i] = j;
+      }
+
+  /* Put a non-negated operand first.  If there aren't any, make all
+     operands positive and negate the whole thing later.  */
+  for (i = 0; i < n_ops && negs[i]; i++)
+    ;
+
+  if (i == n_ops)
+    {
+      for (i = 0; i < n_ops; i++)
+	negs[i] = 0;
+      negate = 1;
+    }
+  else if (i != 0)
+    {
+      tem = ops[0], ops[0] = ops[i], ops[i] = tem;
+      j = negs[0], negs[0] = negs[i], negs[i] = j;
+    }
+
+  /* Now make the result by performing the requested operations.  */
+  result = ops[0];
+  for (i = 1; i < n_ops; i++)
+    result = cse_gen_binary (negs[i] ? MINUS : PLUS, mode, result, ops[i]);
+
+  return negate ? gen_rtx (NEG, mode, result) : result;
+}
+
+/* Make a binary operation by properly ordering the operands and 
+   seeing if the expression folds.  */
+
+static rtx
+cse_gen_binary (code, mode, op0, op1)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx op0, op1;
+{
+  rtx tem;
+
+  /* Put complex operands first and constants second if commutative.  */
+  if (GET_RTX_CLASS (code) == 'c'
+      && ((CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
+	  || (GET_RTX_CLASS (GET_CODE (op0)) == 'o'
+	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')
+	  || (GET_CODE (op0) == SUBREG
+	      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op0))) == 'o'
+	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')))
+    tem = op0, op0 = op1, op1 = tem;
+
+  /* If this simplifies, do it.  */
+  tem = simplify_binary_operation (code, mode, op0, op1);
+
+  if (tem)
+    return tem;
+
+  /* Handle addition and subtraction of CONST_INT specially.  Otherwise,
+     just form the operation.  */
+
+  if (code == PLUS && GET_CODE (op1) == CONST_INT
+      && GET_MODE (op0) != VOIDmode)
+    return plus_constant (op0, INTVAL (op1));
+  else if (code == MINUS && GET_CODE (op1) == CONST_INT
+	   && GET_MODE (op0) != VOIDmode)
+    return plus_constant (op0, - INTVAL (op1));
+  else
+    return gen_rtx (code, mode, op0, op1);
 }
 
 /* Like simplify_binary_operation except used for relational operators.
@@ -5241,11 +5279,7 @@ fold_rtx (x, insn)
 	      if (! reg_mentioned_p (folded_arg0, y))
 		y = fold_rtx (y, insn);
 
-	      new = simplify_binary_operation (code, mode, y, new_const);
-	      if (new)
-		return new;
-
-	      return gen_rtx (code, mode, y, new_const);
+	      return cse_gen_binary (code, mode, y, new_const);
 	    }
 	}
 
