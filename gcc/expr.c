@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3522,6 +3522,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  tree pos = (TREE_CODE (exp) == COMPONENT_REF
 		      ? DECL_FIELD_BITPOS (TREE_OPERAND (exp, 1))
 		      : TREE_OPERAND (exp, 2));
+	  tree constant = integer_zero_node, var = pos;
 
 	  /* If this field hasn't been filled in yet, don't go
 	     past it.  This should only happen when folding expressions
@@ -3529,37 +3530,20 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  if (pos == 0)
 	    break;
 
-	  if (TREE_CODE (pos) == PLUS_EXPR)
-	    {
-	      tree constant, var;
-	      if (TREE_CODE (TREE_OPERAND (pos, 0)) == INTEGER_CST)
-		{
-		  constant = TREE_OPERAND (pos, 0);
-		  var = TREE_OPERAND (pos, 1);
-		}
-	      else if (TREE_CODE (TREE_OPERAND (pos, 1)) == INTEGER_CST)
-		{
-		  constant = TREE_OPERAND (pos, 1);
-		  var = TREE_OPERAND (pos, 0);
-		}
-	      else
-		abort ();
-
-	      *pbitpos += TREE_INT_CST_LOW (constant);
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (EXACT_DIV_EXPR, var,
-					       size_int (BITS_PER_UNIT)));
-	    }
+	  /* Assume here that the offset is a multiple of a unit.
+	     If not, there should be an explicitly added constant.  */
+	  if (TREE_CODE (pos) == PLUS_EXPR
+	      && TREE_CODE (TREE_OPERAND (pos, 1)) == INTEGER_CST)
+	    constant = TREE_OPERAND (pos, 1), var = TREE_OPERAND (pos, 0);
 	  else if (TREE_CODE (pos) == INTEGER_CST)
-	    *pbitpos += TREE_INT_CST_LOW (pos);
-	  else
-	    {
-	      /* Assume here that the offset is a multiple of a unit.
-		 If not, there should be an explicitly added constant.  */
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (EXACT_DIV_EXPR, pos,
-					       size_int (BITS_PER_UNIT)));
-	    }
+	    constant = pos, var = integer_zero_node;
+
+	  *pbitpos += TREE_INT_CST_LOW (constant);
+
+	  if (var)
+	    offset = size_binop (PLUS_EXPR, offset,
+				 size_binop (EXACT_DIV_EXPR, var,
+					     size_int (BITS_PER_UNIT)));
 	}
 
       else if (TREE_CODE (exp) == ARRAY_REF)
