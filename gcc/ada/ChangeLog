@@ -1,9 +1,21 @@
 2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/19140
+	Backport from mainline:
+
+	2005-03-15  Eric Botcazou  <ebotcazou@adacore.com>
+	* trans.c (gnat_to_gnu) <N_Return_Statement>: Restructure. Set
+	gnu_result to NULL_TREE on entry.  If the function returns "by
+	target", dereference the target pointer using the type of the
+	actual return value.
+	<all>: Be prepared for a null gnu_result.
+
+2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/20344
 	Backport from mainline:
 
-	Eric Botcazou  <ebotcazou@adacore.com>
+	2005-03-15  Eric Botcazou  <ebotcazou@adacore.com>
 	* lang.opt: Fix specification of -fRTS=.
 	* misc.c (gnat_handle_option): Accept OPT_fRTS_, not OPT_fRTS.
     
