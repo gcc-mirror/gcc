@@ -1,11 +1,28 @@
-// Build don't link:
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
-// excess errors test - XFAIL *-*-*
-
-#include <string>
+struct bar {
+  char c;
+  bar (const char *);
+  bar (const bar &);
+};
 
 struct foo {
-  string x;
+  bar x;
 };
+
 extern const struct foo y = { "foo" };
+
+bar::bar (const bar &ref)
+{
+  c = ref.c;
+}
+
+bar::bar (const char *p)
+{
+  c = p[2];
+}
+
+int main ()
+{
+  return y.x.c != 'o';
+}

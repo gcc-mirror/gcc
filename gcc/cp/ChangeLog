@@ -1,3 +1,7 @@
+2001-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* call.c (convert_like_real): Create a temporary for non-lvalue.
+
 2001-02-16  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* cp-tree.h: Fix typos in comments.
