@@ -2274,7 +2274,7 @@ dbxout_parms (parms)
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 
-	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
+	    dbxout_type (TREE_TYPE (parms), 0, 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
