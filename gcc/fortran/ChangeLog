@@ -1,3 +1,8 @@
+2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* array.c (gfc_insert_constructor): Avoid redundant call to
+	mpz_comp. Add 2004 to copyright years.
+	
 2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* trans.h (stmtblock_t): Change has_scope to unsigned int.
