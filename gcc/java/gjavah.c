@@ -768,8 +768,6 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	  print_cxx_classname (stream, "#define ", jcf, jcf->this_class, 1);
 	  fputs ("_", stream);
 	}
-      else
-	fputs ("static ", stream);
 
       if ((flags & ACC_FINAL) && current_field_value > 0)
 	{
@@ -783,7 +781,7 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 		jint num;
 		int most_negative = 0;
 		if (! flag_jni)
-		  fputs ("const jint ", stream);
+		  fputs ("static const jint ", stream);
 		print_field_name (stream, jcf, name_index, 0);
 		fputs (flag_jni ? " " : " = ", stream);
 		num = JPOOL_INT (jcf, current_field_value);
@@ -805,7 +803,7 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 		jlong num;
 		int most_negative = 0;
 		if (! flag_jni)
-		  fputs ("const jlong ", stream);
+		  fputs ("static const jlong ", stream);
 		print_field_name (stream, jcf, name_index, 0);
 		fputs (flag_jni ? " " : " = ", stream);
 		num = JPOOL_LONG (jcf, current_field_value);
@@ -826,7 +824,11 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	      {
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
 		if (! flag_jni)
-		  fputs ("const jfloat ", stream);
+		  /* ISO C++ does not allow initialization of a static
+		     data member of floating-point type.  Thus, this
+		     code is making use of an undocumented GNU C++
+		     extension.  */
+		  fputs ("__extension__ static const jfloat ", stream);
 		print_field_name (stream, jcf, name_index, 0);
 		jni_print_float (stream, fnum);
 	      }
@@ -835,7 +837,11 @@ print_field_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
 	      {
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
 		if (! flag_jni)
-		  fputs ("const jdouble ", stream);
+		  /* ISO C++ does not allow initialization of a static
+		     data member of floating-point type.  Thus, this
+		     code is making use of an undocumented GNU C++
+		     extension.  */
+		  fputs ("__extension__ static const jdouble ", stream);
 		print_field_name (stream, jcf, name_index, 0);
 		jni_print_double (stream, dnum);
 	      }

@@ -2682,7 +2682,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	 constant expression if they are cast to an integral or
 	 enumeration type.  */
       if (TREE_CODE (token->value) == REAL_CST
-	  && parser->integral_constant_expression_p)
+	  && parser->integral_constant_expression_p
+	  && pedantic)
 	{
 	  /* CAST_P will be set even in invalid code like "int(2.7 +
 	     ...)".   Therefore, we have to check that the next token

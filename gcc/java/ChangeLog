@@ -1,3 +1,8 @@
+2005-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* gjavah.c (print_field_info): Mark static data members of
+	floating-point type with "__extension__".
+
 2005-02-01  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/9157
