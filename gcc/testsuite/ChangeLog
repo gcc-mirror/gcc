@@ -1,3 +1,7 @@
+2002-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/parse/parameter-declaration-1.C: Expect error on last line.
+
 2002-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/static1.C: New test.
