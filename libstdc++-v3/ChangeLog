@@ -1,3 +1,9 @@
+2004-03-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::allocate,
+	__mt_alloc<>::deallocate): Protect two instances of
+	block->thread_id with __GTHREADS.
+
 2004-03-25  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_tree.h (_Rb_tree_impl): Add _Node_allocator
