@@ -1490,6 +1490,16 @@ calculate_giv_inc (pattern, src_insn, regno)
 	 one of the LO_SUM rtx.  */
       if (GET_CODE (increment) == LO_SUM)
 	increment = XEXP (increment, 1);
+
+      /* Some ports store large constants in memory and add a REG_EQUAL
+	 note to the store insn.  */
+      else if (GET_CODE (increment) == MEM)
+        {
+          rtx note = find_reg_note (src_insn, REG_EQUAL, 0);
+          if (note)
+            increment = XEXP (note, 0);
+        }
+
       else if (GET_CODE (increment) == IOR
 	       || GET_CODE (increment) == ASHIFT
 	       || GET_CODE (increment) == PLUS)
