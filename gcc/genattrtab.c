@@ -118,6 +118,9 @@ extern rtx read_rtx ();
 static void fatal ();
 void fancy_abort ();
 
+/* enough space to reserve for printing out ints */
+#define MAX_DIGITS (HOST_BITS_PER_INT * 3 / 10 + 3)
+
 /* Define structures used to record attributes and values.  */
 
 /* As each DEFINE_INSN, DEFINE_PEEPHOLE, or DEFINE_ASM_ATTRIBUTES is
@@ -373,6 +376,9 @@ static void extend_range ();
 char *xrealloc ();
 char *xmalloc ();
 static void fatal ();
+
+#define oballoc(size) obstack_alloc (hash_obstack, size)
+
 
 /* Hash table for sharing RTL and strings.  */
 
@@ -1231,7 +1237,7 @@ convert_const_symbol_ref (exp, attr)
       char *p, *string;
       rtx value;
 
-      string = p = (char *) xmalloc (2
+      string = p = (char *) oballoc (2
 				     + strlen (attr->name)
 				     + strlen (XSTR (av->value, 0)));
       strcpy (p, attr->name);
@@ -1378,7 +1384,7 @@ get_attr_value (value, attr, insn_code)
 	    || insn_alternatives[av->first_insn->insn_code]))
       return av;
 
-  av = (struct attr_value *) xmalloc (sizeof (struct attr_value));
+  av = (struct attr_value *) oballoc (sizeof (struct attr_value));
   av->value = value;
   av->next = attr->first_value;
   attr->first_value = av;
@@ -1455,7 +1461,8 @@ expand_delays ()
 	 newexp = attr_rtx (IF_THEN_ELSE, condexp,
 			    make_numeric_value (1), make_numeric_value (0));
 
-	 p = attr_printf (13, "*delay_%d_%d", delay->num, i / 3);
+	 p = attr_printf (sizeof ("*delay__") + MAX_DIGITS*2, "*delay_%d_%d",
+			  delay->num, i / 3);
 	 make_internal_attr (p, newexp, 1);
 
 	 if (have_annul_true)
@@ -1465,7 +1472,8 @@ expand_delays ()
 	     newexp = attr_rtx (IF_THEN_ELSE, condexp,
 				make_numeric_value (1),
 				make_numeric_value (0));
-	     p = attr_printf (18, "*annul_true_%d_%d", delay->num, i / 3);
+	     p = attr_printf (sizeof ("*annul_true__") + MAX_DIGITS*2,
+			      "*annul_true_%d_%d", delay->num, i / 3);
 	     make_internal_attr (p, newexp, 1);
 	   }
 
@@ -1476,7 +1484,8 @@ expand_delays ()
 	     newexp = attr_rtx (IF_THEN_ELSE, condexp,
 				make_numeric_value (1),
 				make_numeric_value (0));
-	     p = attr_printf (18, "*annul_false_%d_%d", delay->num, i / 3);
+	     p = attr_printf (sizeof ("*annul_false__") + MAX_DIGITS*2,
+			      "*annul_false_%d_%d", delay->num, i / 3);
 	     make_internal_attr (p, newexp, 1);
 	   }
        }
@@ -1735,8 +1744,8 @@ expand_units ()
 					   != unit->issue_delay.max);
 	  if (unit->needs_conflict_function)
 	    {
-	      str = attr_printf (strlen (unit->name) + 11, "*%s_cost_%d",
-				 unit->name, op->num);
+	      str = attr_printf (strlen (unit->name) + sizeof ("*_cost_") + MAX_DIGITS,
+				 "*%s_cost_%d", unit->name, op->num);
 	      make_internal_attr (str, issue_exp, 1);
 	    }
 
@@ -1939,8 +1948,8 @@ expand_units ()
 		}
 
 	      /* Make an attribute for use in the blockage function.  */
-	      str = attr_printf (strlen (unit->name) + 12, "*%s_block_%d",
-				 unit->name, op->num);
+	      str = attr_printf (strlen (unit->name) + sizeof ("*_block_") + MAX_DIGITS,
+				 "*%s_block_%d", unit->name, op->num);
 	      make_internal_attr (str, blockage, 1);
 	    }
 
@@ -1969,13 +1978,13 @@ expand_units ()
 	      newexp = operate_exp (RANGE_OP, min_blockage, max_blockage);
 	      newexp = simplify_knowing (newexp, unit->condexp);
 
-	      str = attr_printf (strlen (unit->name) + 20,
+	      str = attr_printf (strlen (unit->name) + sizeof ("*_unit_blockage_range"),
 				 "*%s_unit_blockage_range", unit->name);
 	      make_internal_attr (str, newexp, 4);
 	    }
 
-	  str = attr_printf (strlen (unit->name) + 20, "*%s_unit_ready_cost",
-			     unit->name);
+	  str = attr_printf (strlen (unit->name) + sizeof ("*_unit_ready_cost"),
+			     "*%s_unit_ready_cost", unit->name);
 	}
       else
 	str = "*result_ready_cost";
@@ -2016,7 +2025,8 @@ expand_units ()
 	}
 
       /* Simplifying caseexp with simplify_by_exploding doesn't win.  */
-      str = attr_printf (strlen (unit->name) + 8, "*%s_cases", unit->name);
+      str = attr_printf (strlen (unit->name) + sizeof ("*_cases"),
+			 "*%s_cases", unit->name);
       make_internal_attr (str, caseexp, 1);
     }
 }
@@ -2064,7 +2074,7 @@ encode_units_mask (x)
 	  ;
       else
 	j = ~i;
-      return attr_rtx (CONST_STRING, attr_printf (4, "%d", j));
+      return attr_rtx (CONST_STRING, attr_printf (MAX_DIGITS, "%d", j));
 
     case REG:
     case QUEUED:
@@ -2135,7 +2145,7 @@ fill_attr (attr)
       else
 	av = get_attr_value (value, attr, id->insn_code);
 
-      ie = (struct insn_ent *) xmalloc (sizeof (struct insn_ent));
+      ie = (struct insn_ent *) oballoc (sizeof (struct insn_ent));
       ie->insn_code = id->insn_code;
       ie->insn_index = id->insn_code;
       insert_insn_ent (av, ie);
@@ -2263,7 +2273,7 @@ make_length_attrs ()
 							 no_address_fn[i],
 							 address_fn[i]),
 				     new_attr, ie->insn_code);
-	    new_ie = (struct insn_ent *) xmalloc (sizeof (struct insn_ent));
+	    new_ie = (struct insn_ent *) oballoc (sizeof (struct insn_ent));
 	    new_ie->insn_code = ie->insn_code;
 	    new_ie->insn_index = ie->insn_index;
 	    insert_insn_ent (new_av, new_ie);
@@ -3926,7 +3936,7 @@ gen_attr (exp)
       name_ptr = XSTR (exp, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	{
-	  av = (struct attr_value *) xmalloc (sizeof (struct attr_value));
+	  av = (struct attr_value *) oballoc (sizeof (struct attr_value));
 	  av->value = attr_rtx (CONST_STRING, p);
 	  av->next = attr->first_value;
 	  attr->first_value = av;
@@ -4066,7 +4076,7 @@ gen_insn (exp)
 {
   struct insn_def *id;
 
-  id = (struct insn_def *) xmalloc (sizeof (struct insn_def));
+  id = (struct insn_def *) oballoc (sizeof (struct insn_def));
   id->next = defs;
   defs = id;
   id->def = exp;
@@ -4122,7 +4132,7 @@ gen_delay (def)
 	have_annul_false = 1;
     }
   
-  delay = (struct delay_desc *) xmalloc (sizeof (struct delay_desc));
+  delay = (struct delay_desc *) oballoc (sizeof (struct delay_desc));
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
@@ -4163,7 +4173,7 @@ gen_unit (def)
 
   if (unit == 0)
     {
-      unit = (struct function_unit *) xmalloc (sizeof (struct function_unit));
+      unit = (struct function_unit *) oballoc (sizeof (struct function_unit));
       unit->name = name;
       unit->multiplicity = multiplicity;
       unit->simultaneity = simultaneity;
@@ -4177,7 +4187,7 @@ gen_unit (def)
     }
 
   /* Make a new operation class structure entry and initialize it.  */
-  op = (struct function_unit_op *) xmalloc (sizeof (struct function_unit_op));
+  op = (struct function_unit_op *) oballoc (sizeof (struct function_unit_op));
   op->condexp = condexp;
   op->num = unit->num_opclasses++;
   op->ready = ready_cost;
@@ -5211,7 +5221,7 @@ find_attr (name, create)
   if (! create)
     return NULL;
 
-  attr = (struct attr_desc *) xmalloc (sizeof (struct attr_desc));
+  attr = (struct attr_desc *) oballoc (sizeof (struct attr_desc));
   attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
@@ -5302,7 +5312,7 @@ make_numeric_value (n)
   if (n < 20 && int_values[n])
     return int_values[n];
 
-  p = attr_printf ((n < 1000 ? 4 : HOST_BITS_PER_INT * 3 / 10 + 3), "%d", n);
+  p = attr_printf (MAX_DIGITS, "%d", n);
   exp = attr_rtx (CONST_STRING, p);
 
   if (n < 20)
@@ -5508,13 +5518,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#define operands recog_operand\n\n");
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = (int *) xmalloc (insn_code_number * sizeof (int));
+  insn_alternatives = (int *) oballoc (insn_code_number * sizeof (int));
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = (int *) xmalloc (insn_code_number * sizeof (int));
+  insn_n_alternatives = (int *) oballoc (insn_code_number * sizeof (int));
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;
