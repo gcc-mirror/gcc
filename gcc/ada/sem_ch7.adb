@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1905,7 +1905,6 @@ package body Sem_Ch7 is
             end if;
 
             Priv_Elmt := First_Elmt (Private_Dependents (Id));
-            Exchange_Declarations (Id);
 
             --  Swap out the subtypes and derived types of Id that were
             --  compiled in this scope, or installed previously by
@@ -1936,6 +1935,10 @@ package body Sem_Ch7 is
 
                Next_Elmt (Priv_Elmt);
             end loop;
+
+            --  Now restore the type itself to its private view.
+
+            Exchange_Declarations (Id);
 
          elsif Ekind (Id) = E_Incomplete_Type
            and then No (Full_View (Id))
