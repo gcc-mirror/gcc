@@ -54,11 +54,26 @@
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
 /* Provide a LINK_SPEC appropriate for NetBSD.  Here we provide support
-   for the special GCC options -static, -assert, and -nostdlib.  */
+   for the special GCC options -shared, -static, -assert, and -nostdlib.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic} %{assert*}"
+  "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} %{static:-Bstatic}} %{shared} %{assert*}"
+
+/* When building shared libraries, the initialization and finalization 
+   functions for the library are .init and .fini respectively.  */
+
+#define COLLECT_SHARED_INIT_FUNC(STREAM,FUNC)				\
+  do {									\
+    fprintf ((STREAM), "void __init() __asm__ (\".init\");");		\
+    fprintf ((STREAM), "void __init() {\n\t%s();\n}\n", (FUNC));	\
+  } while (0);
+
+#define COLLECT_SHARED_FINI_FUNC(STREAM,FUNC)				\
+  do {									\
+    fprintf ((STREAM), "void __fini() __asm__ (\".fini\");");		\
+    fprintf ((STREAM), "void __fini() {\n\t%s();\n}\n", (FUNC));	\
+  } while (0);
 
 /* This defines which switch letters take arguments. */
 #undef SWITCH_TAKES_ARG

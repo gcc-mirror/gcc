@@ -6638,6 +6638,24 @@ the following symbol is an initialization routine.
 If defined, a C string constant for a switch that tells the linker that
 the following symbol is a finalization routine.
 
+@item COLLECT_SHARED_INIT_FUNC (@var{stream}, @var{func})
+If defined, a C statement that will write a function that can be
+automatically called when a shared library is loaded.  The function
+should call @var{func}, which takes no arguments.  If not defined, and
+the object format requires an explicit initialization function, then a
+function called @var{_GLOBAL__DI} will be generated.
+
+This function and the following one are used by collect2 when linking a
+shared library that needs constructors or destructors, or has DWARF2 
+exception tables embedded in the code.
+
+@item COLLECT_SHARED_FINI_FUNC (@var{stream}, @var{func})
+If defined, a C statement that will write a function that can be
+automatically called when a shared library is unloaded.  The function
+should call @var{func}, which takes no arguments.  If not defined, and
+the object format requires an explicit finalization function, then a
+function called @var{_GLOBAL__DD} will be generated.
+
 @item INVOKE__main
 @findex INVOKE__main
 If defined, @code{main} will call @code{__main} despite the presence of

@@ -154,6 +154,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This must match tree.h.  */
 #define DEFAULT_INIT_PRIORITY 65535
 
+#ifndef COLLECT_SHARED_INIT_FUNC
+#define COLLECT_SHARED_INIT_FUNC(STREAM, FUNC) \
+  fprintf ((STREAM), "void _GLOBAL__DI() {\n\t%s();\n}\n", (FUNC))
+#endif
+#ifndef COLLECT_SHARED_FINI_FUNC
+#define COLLECT_SHARED_FINI_FUNC(STREAM, FUNC) \
+  fprintf ((STREAM), "void _GLOBAL__DD() {\n\t%s();\n}\n", (FUNC))
+#endif
+
 #if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES
 #define SCAN_LIBRARIES
 #endif
@@ -1944,8 +1953,8 @@ write_c_file_stat (stream, name)
 
   if (shared_obj)
     {
-      fprintf (stream, "void _GLOBAL__DI() {\n\t%s();\n}\n", initname);
-      fprintf (stream, "void _GLOBAL__DD() {\n\t%s();\n}\n", fininame);
+      COLLECT_SHARED_INIT_FUNC(stream, initname);
+      COLLECT_SHARED_FINI_FUNC(stream, fininame);
     }
 }
 

@@ -67,8 +67,8 @@ Boston, MA 02111-1307, USA.  */
 /* Pass -X to the linker so that it will strip symbols starting with 'L' */
 #undef LINK_SPEC
 #define LINK_SPEC "\
--X %{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} \
-%{static:-Bstatic} %{assert*} \
+-X %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} \
+%{static:-Bstatic}} %{shared} %{assert*} \
 "
 
 #undef SIZE_TYPE
