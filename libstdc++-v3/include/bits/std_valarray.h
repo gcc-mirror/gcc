@@ -722,7 +722,7 @@ _DEFINE_LOGICAL_OPERATOR(>, greater)
 _DEFINE_LOGICAL_OPERATOR(<=, less_equal)
 _DEFINE_LOGICAL_OPERATOR(>=, greater_equal)
 
-#undef _DEFINE_VALARRAY_OPERATOR
+#undef _DEFINE_LOGICAL_OPERATOR
 
 } // namespace std
 

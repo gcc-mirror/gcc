@@ -1,5 +1,8 @@
 2001-02-11  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
+	* include/bits/std_valarray.h: #undef _DEFINE_LOGICAL_OPERATOR,
+	not _DEFINE_VALARRAY_OPERATOR which is not existent.
+
 	* include/bits/valarray_meta.h (_RefFunClos<>_RefRunClos): Fix
 	thinko in member initialisation.
 
