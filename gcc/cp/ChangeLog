@@ -3,6 +3,9 @@
 	* class.c (get_enclosing_class): Remove.
 	* cp-tree.h: Remove the corresponding prototypes.
 
+	* cvt.c (convert_lvalue): Remove.
+	* cp-tree.h: Remove the corresponding prototype.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19263
