@@ -3120,7 +3120,7 @@ __terminate ()
    is raised when using the setjmp/longjmp exception handling codegen
    method.  */
 
-extern longjmp (void *, int);
+extern void longjmp (void *, int);
 
 extern void *__eh_type;
 
@@ -3169,7 +3169,11 @@ __sjthrow ()
       buf[0] = (*dhc);
 
       /* try { */
+#ifdef DONT_USE_BUILTIN_SETJMP
       if (! setjmp (&buf[2]))
+#else
+      if (! __builtin_setjmp (&buf[2]))
+#endif
 	{
 	  *dhc = buf;
 	  while (cleanup[0])
@@ -3206,10 +3210,10 @@ __sjthrow ()
 
   /* And then we jump to the handler.  */
 
-#ifdef USE_BUILTIN_SETJMP
-  __builtin_longjmp (jmpbuf, 1);
-#else
+#ifdef DONT_USE_BUILTIN_SETJMP
   longjmp (jmpbuf, 1);
+#else
+  __builtin_longjmp (jmpbuf, 1);
 #endif
 }
 
@@ -3240,7 +3244,11 @@ __sjpopnthrow ()
       buf[0] = (*dhc);
 
       /* try { */
+#ifdef DONT_USE_BUILTIN_SETJMP
       if (! setjmp (&buf[2]))
+#else
+      if (! __builtin_setjmp (&buf[2]))
+#endif
 	{
 	  *dhc = buf;
 	  while (cleanup[0])

@@ -7880,6 +7880,169 @@ expand_builtin_return_addr (fndecl_code, count, tem)
 #endif
   return tem;
 }
+
+/* __builtin_setjmp is passed a pointer to an array of five words (not
+   all will be used on all machines).  It operates similarly to the C
+   library function of the same name, but is more efficient.  Much of
+   the code below (and for longjmp) is copied from the handling of
+   non-local gotos.
+
+   NOTE: This is intended for use by GNAT and the exception handling
+   scheme in the compiler and will only work in the method used by
+   them.  */
+
+rtx
+expand_builtin_setjmp (buf_addr, target)
+     rtx buf_addr;
+     rtx target;
+{
+  rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+  enum machine_mode sa_mode = Pmode, value_mode;
+  rtx stack_save;
+  int old_inhibit_defer_pop = inhibit_defer_pop;
+  int return_pops
+    =  RETURN_POPS_ARGS (get_identifier ("__dummy"),
+			 build_function_type (void_type_node, NULL_TREE),
+			 0);
+  rtx next_arg_reg;
+  CUMULATIVE_ARGS args_so_far;
+  rtx op0;
+  int i;
+
+  value_mode = TYPE_MODE (integer_type_node);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  buf_addr = convert_memory_address (Pmode, buf_addr);
+#endif
+
+  buf_addr = force_reg (Pmode, buf_addr);
+
+  if (target == 0 || GET_CODE (target) != REG
+      || REGNO (target) < FIRST_PSEUDO_REGISTER)
+    target = gen_reg_rtx (value_mode);
+
+  emit_queue ();
+
+  CONST_CALL_P (emit_note (NULL_PTR, NOTE_INSN_SETJMP)) = 1;
+  current_function_calls_setjmp = 1;
+
+  /* We store the frame pointer and the address of lab1 in the buffer
+     and use the rest of it for the stack save area, which is
+     machine-dependent.  */
+  emit_move_insn (gen_rtx (MEM, Pmode, buf_addr),
+		  virtual_stack_vars_rtx);
+  emit_move_insn
+    (validize_mem (gen_rtx (MEM, Pmode,
+			    plus_constant (buf_addr,
+					   GET_MODE_SIZE (Pmode)))),
+     gen_rtx (LABEL_REF, Pmode, lab1));
+
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
+#endif
+
+  stack_save = gen_rtx (MEM, sa_mode,
+			plus_constant (buf_addr,
+				       2 * GET_MODE_SIZE (Pmode)));
+  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+
+#ifdef HAVE_setjmp
+  if (HAVE_setjmp)
+    emit_insn (gen_setjmp ());
+#endif
+
+  /* Set TARGET to zero and branch around the other case.  */
+  emit_move_insn (target, const0_rtx);
+  emit_jump_insn (gen_jump (lab2));
+  emit_barrier ();
+  emit_label (lab1);
+
+  /* Note that setjmp clobbers FP when we get here, so we have to make
+     sure it's marked as used by this function.  */
+  emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
+
+  /* Mark the static chain as clobbered here so life information
+     doesn't get messed up for it.  */
+  emit_insn (gen_rtx (CLOBBER, VOIDmode, static_chain_rtx));
+
+  /* Now put in the code to restore the frame pointer, and argument
+     pointer, if needed.  The code below is from expand_end_bindings
+     in stmt.c; see detailed documentation there.  */
+#ifdef HAVE_nonlocal_goto
+  if (! HAVE_nonlocal_goto)
+#endif
+    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+
+  current_function_has_nonlocal_goto = 1;
+
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+  if (fixed_regs[ARG_POINTER_REGNUM])
+    {
+#ifdef ELIMINABLE_REGS
+      static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+
+      for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
+	if (elim_regs[i].from == ARG_POINTER_REGNUM
+	    && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
+	  break;
+
+      if (i == sizeof elim_regs / sizeof elim_regs [0])
+#endif
+	{
+	  /* Now restore our arg pointer from the address at which it
+	     was saved in our stack frame.
+	     If there hasn't be space allocated for it yet, make
+	     some now.  */
+	  if (arg_pointer_save_area == 0)
+	    arg_pointer_save_area
+	      = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+	  emit_move_insn (virtual_incoming_args_rtx,
+			  copy_to_reg (arg_pointer_save_area));
+	}
+    }
+#endif
+
+#ifdef HAVE_nonlocal_goto_receiver
+  if (HAVE_nonlocal_goto_receiver)
+    emit_insn (gen_nonlocal_goto_receiver ());
+#endif
+  /* The static chain pointer contains the address of dummy function.
+     We need to call it here to handle some PIC cases of restoring a
+     global pointer.  Then return 1.  */
+  op0 = copy_to_mode_reg (Pmode, static_chain_rtx);
+
+  /* We can't actually call emit_library_call here, so do everything
+     it does, which isn't much for a libfunc with no args.  */
+  op0 = memory_address (FUNCTION_MODE, op0);
+
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE,
+			gen_rtx (SYMBOL_REF, Pmode, "__dummy"), 1);
+  next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
+
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#ifdef HAVE_call_pop
+  if (HAVE_call_pop)
+    emit_call_insn (gen_call_pop (gen_rtx (MEM, FUNCTION_MODE, op0),
+				  const0_rtx, next_arg_reg,
+				  GEN_INT (return_pops)));
+  else
+#endif
+#endif
+
+#ifdef HAVE_call
+    if (HAVE_call)
+      emit_call_insn (gen_call (gen_rtx (MEM, FUNCTION_MODE, op0),
+				const0_rtx, next_arg_reg, const0_rtx));
+    else
+#endif
+      abort ();
+
+  emit_move_insn (target, const1_rtx);
+  emit_label (lab2);
+  return target;
+}
+
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -8718,15 +8881,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 #endif
 
-      /* __builtin_setjmp is passed a pointer to an array of five words
-	 (not all will be used on all machines).  It operates similarly to
-	 the C library function of the same name, but is more efficient.
-	 Much of the code below (and for longjmp) is copied from the handling
-	 of non-local gotos.
-
-	 NOTE: This is intended for use by GNAT and will only work in
-	 the method used by it.  This code will likely NOT survive to 
-	 the GCC 2.8.0 release.  */
     case BUILT_IN_SETJMP:
       if (arglist == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
@@ -8735,148 +8889,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       {
 	rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
 				    VOIDmode, 0);
-	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
-	enum machine_mode sa_mode = Pmode;
-	rtx stack_save;
-	int old_inhibit_defer_pop = inhibit_defer_pop;
-	int return_pops
-	  =  RETURN_POPS_ARGS (get_identifier ("__dummy"),
-			       build_function_type (void_type_node, NULL_TREE),
-			       0);
-	rtx next_arg_reg;
-	CUMULATIVE_ARGS args_so_far;
-	int i;
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-	buf_addr = convert_memory_address (Pmode, buf_addr);
-#endif
-
-	buf_addr = force_reg (Pmode, buf_addr);
-
-	if (target == 0 || GET_CODE (target) != REG
-	    || REGNO (target) < FIRST_PSEUDO_REGISTER)
-	  target = gen_reg_rtx (value_mode);
-
-	emit_queue ();
-
-	CONST_CALL_P (emit_note (NULL_PTR, NOTE_INSN_SETJMP)) = 1;
-	current_function_calls_setjmp = 1;
-
-	/* We store the frame pointer and the address of lab1 in the buffer
-	   and use the rest of it for the stack save area, which is
-	   machine-dependent.  */
-	emit_move_insn (gen_rtx (MEM, Pmode, buf_addr),
-			virtual_stack_vars_rtx);
-	emit_move_insn
-	  (validize_mem (gen_rtx (MEM, Pmode,
-				  plus_constant (buf_addr,
-						 GET_MODE_SIZE (Pmode)))),
-	   gen_rtx (LABEL_REF, Pmode, lab1));
-
-#ifdef HAVE_save_stack_nonlocal
-	if (HAVE_save_stack_nonlocal)
-	  sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
-#endif
-
-	stack_save = gen_rtx (MEM, sa_mode,
-			      plus_constant (buf_addr,
-					     2 * GET_MODE_SIZE (Pmode)));
-	emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
-
-#ifdef HAVE_setjmp
-	if (HAVE_setjmp)
-	  emit_insn (gen_setjmp ());
-#endif
-
-	/* Set TARGET to zero and branch around the other case.  */
-	emit_move_insn (target, const0_rtx);
-	emit_jump_insn (gen_jump (lab2));
-	emit_barrier ();
-	emit_label (lab1);
-
-	/* Note that setjmp clobbers FP when we get here, so we have to
-	   make sure it's marked as used by this function.   */
-	emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
-
-	/* Mark the static chain as clobbered here so life information
-	   doesn't get messed up for it.  */
-	emit_insn (gen_rtx (CLOBBER, VOIDmode, static_chain_rtx));
-
-	/* Now put in the code to restore the frame pointer, and argument
-	   pointer, if needed.  The code below is from expand_end_bindings
-	   in stmt.c; see detailed documentation there.  */
-#ifdef HAVE_nonlocal_goto
-	if (! HAVE_nonlocal_goto)
-#endif
-	  emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-
-	current_function_has_nonlocal_goto = 1;
-
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	if (fixed_regs[ARG_POINTER_REGNUM])
-	  {
-#ifdef ELIMINABLE_REGS
-	    static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
-
-	    for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
-	      if (elim_regs[i].from == ARG_POINTER_REGNUM
-		  && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
-		break;
-
-	    if (i == sizeof elim_regs / sizeof elim_regs [0])
-#endif
-	      {
-		/* Now restore our arg pointer from the address at which it
-		   was saved in our stack frame.
-		   If there hasn't be space allocated for it yet, make
-		   some now.  */
-		if (arg_pointer_save_area == 0)
-		  arg_pointer_save_area
-		    = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-		emit_move_insn (virtual_incoming_args_rtx,
-				copy_to_reg (arg_pointer_save_area));
-	      }
-	  }
-#endif
-
-#ifdef HAVE_nonlocal_goto_receiver
-	if (HAVE_nonlocal_goto_receiver)
-	  emit_insn (gen_nonlocal_goto_receiver ());
-#endif
-	/* The static chain pointer contains the address of dummy function.
-	   We need to call it here to handle some PIC cases of restoring
-	   a global pointer.  Then return 1.  */
-	op0 = copy_to_mode_reg (Pmode, static_chain_rtx);
-
-	/* We can't actually call emit_library_call here, so do everything
-	   it does, which isn't much for a libfunc with no args.  */
-	op0 = memory_address (FUNCTION_MODE, op0);
-
-	INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE,
-			      gen_rtx (SYMBOL_REF, Pmode, "__dummy"), 1);
-	next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
-
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#ifdef HAVE_call_pop
-	if (HAVE_call_pop)
-	  emit_call_insn (gen_call_pop (gen_rtx (MEM, FUNCTION_MODE, op0),
-					const0_rtx, next_arg_reg,
-					GEN_INT (return_pops)));
-	else
-#endif
-#endif
-
-#ifdef HAVE_call
-	if (HAVE_call)
-	  emit_call_insn (gen_call (gen_rtx (MEM, FUNCTION_MODE, op0),
-				    const0_rtx, next_arg_reg, const0_rtx));
-	else
-#endif
-	    abort ();
-
-	emit_move_insn (target, const1_rtx);
-	emit_label (lab2);
-	return target;
+	return expand_builtin_setjmp (buf_addr, target);
       }
 
       /* __builtin_longjmp is passed a pointer to an array of five words

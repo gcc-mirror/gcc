@@ -693,9 +693,9 @@ add_partial_entry (handler)
    when there are no more elements in the dynamic handler chain, when
    the value is &top_elt from libgcc2.c.  Immediately after the
    pointer, is an area suitable for setjmp/longjmp when
-   USE_BUILTIN_SETJMP isn't defined, and an area suitable for
-   __builtin_setjmp/__builtin_longjmp when USE_BUILTIN_SETJMP is
-   defined.
+   DONT_USE_BUILTIN_SETJMP is defined, and an area suitable for
+   __builtin_setjmp/__builtin_longjmp when DONT_USE_BUILTIN_SETJMP
+   isn't defined.
 
    This routine is here to facilitate the porting of this code to
    systems with threads.  One can either replace the routine we emit a
@@ -843,10 +843,10 @@ static void
 start_dynamic_handler ()
 {
   rtx dhc, dcc;
-  rtx x, arg;
+  rtx x, arg, buf;
   int size;
 
-#ifdef USE_BUILTIN_SETJMP
+#ifndef DONT_USE_BUILTIN_SETJMP
   /* The number of Pmode words for the setjmp buffer, when using the
      builtin setjmp/longjmp, see expand_builtin, case
      BUILT_IN_LONGJMP.  */
@@ -882,10 +882,14 @@ start_dynamic_handler ()
   emit_move_insn (dcc, const0_rtx);
 
   /* The jmpbuf starts two words into the area allocated.  */
+  buf = plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2);
 
+#ifdef DONT_USE_BUILTIN_SETJMP
   x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1, SImode, 1,
-			       plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2),
-			       Pmode);
+			       buf, Pmode);
+#else
+  x = expand_builtin_setjmp (buf, NULL_RTX);
+#endif
 
   /* If we come back here for a catch, transfer control to the
      handler.  */
