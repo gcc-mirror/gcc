@@ -423,6 +423,7 @@ static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type, rtx, r
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
 static int allocate_reload_reg		PROTO((struct insn_chain *, int, int,
 					       int));
+static int conflicts_with_override	PROTO((rtx));
 static void choose_reload_regs		PROTO((struct insn_chain *));
 static void merge_assigned_reloads	PROTO((rtx));
 static void emit_reload_insns		PROTO((struct insn_chain *));
@@ -5412,6 +5413,21 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
   return 1;
 }
 
+/* Determine whether the reload reg X overlaps any rtx'es used for
+   overriding inheritance.  Return nonzero if so.  */
+
+static int
+conflicts_with_override (x)
+     rtx x;
+{
+  int i;
+  for (i = 0; i < n_reloads; i++)
+    if (reload_override_in[i]
+	&& reg_overlap_mentioned_p (x, reload_override_in[i]))
+      return 1;
+  return 0;
+}
+
 /* Find a spill register to use as a reload register for reload R.
    LAST_RELOAD is non-zero if this is the last reload for the insn being
    processed.
@@ -6819,6 +6835,7 @@ emit_reload_insns (chain)
 		   && dead_or_set_p (insn, old)
 		   /* This is unsafe if some other reload
 		      uses the same reg first.  */
+		   && ! conflicts_with_override (reloadreg)
 		   && reload_reg_free_for_value_p (REGNO (reloadreg),
 						   reload_opnum[j],
 						   reload_when_needed[j], 
