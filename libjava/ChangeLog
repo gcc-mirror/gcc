@@ -1,3 +1,8 @@
+2004-01-13  Fernando Nasser  <fnasser@redhat.com>
+
+	* java/awt/EventQueue.java (isDispatchThread): Do check on top of stack.
+	(push): Make sure push is performed at the top of the thread stack.
+ 
 2004-01-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
@@ -47,7 +52,7 @@
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c (gtkInit):
 	Update postConfigureEvent signature.
 
-2004-01-12  Fernando Nasser  <fnasser@redhat.com>
+2004-01-13  Fernando Nasser  <fnasser@redhat.com>
  
 	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Add WindowAdapter
 	to handle Window "Closing" events.

@@ -269,12 +269,17 @@ public class EventQueue
   }
 
   /**
-   * Return true if the current thread is the AWT event dispatch
+   * Return true if the current thread is the current AWT event dispatch
    * thread.
    */
   public static boolean isDispatchThread()
   {
-    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
+    
+    /* Find last EventQueue in chain */ 
+    while (eq.next != null)
+      eq = eq.next;
+
     return (Thread.currentThread() == eq.dispatchThread);
   }
 
@@ -305,6 +310,15 @@ public class EventQueue
   {
     if (newEventQueue == null)
       throw new NullPointerException ();
+
+    /* Make sure we are at the top of the stack because callers can
+       only get a reference to the one at the bottom using
+       Toolkit.getDefaultToolkit().getSystemEventQueue() */
+    if (next != null)
+      {
+        next.push (newEventQueue);
+        return;
+      }
 
     int i = next_out;
     while (i != next_in)
