@@ -1,3 +1,8 @@
+2000-07-12  Richard Henderson  <rth@cygnus.com>
+
+	* reload.c (push_secondary_reload): Make sure to add the new
+	reload at the end, after acquiring secondary memory.
+
 2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpplex.c (is_macro_disabled): Use CPP_WTRADITIONAL.
