@@ -2996,26 +2996,6 @@ split_di (operands, num, lo_half, hi_half)
 	abort();
     }
 }
-
-void
-split_xf (orig, out)
-     rtx orig;
-     rtx out[3];
-{
-  if (REG_P (orig))
-    {
-      int regno = REGNO (orig);
-      out[0] = gen_rtx_REG (SImode, regno);
-      out[1] = gen_rtx_REG (SImode, regno + 1);
-      out[2] = gen_rtx_REG (SImode, regno + 2);
-    }
-  else
-    {
-      out[0] = change_address (orig, SImode, NULL_RTX);
-      out[1] = adj_offsettable_operand (out[0], 4);
-      out[2] = adj_offsettable_operand (out[0], 8);
-    }
-}
 
 /* Output code to perform a 387 binary operation in INSN, one of PLUS,
    MINUS, MULT or DIV.  OPERANDS are the insn operands, where operands[3]
@@ -4643,27 +4623,211 @@ ix86_expand_fp_movcc (operands)
   return 1;
 }
 
-int
-ix86_split_movdi (operands)
-     rtx operands[];
+/* Split operands 0 and 1 into SImode parts.  Similar to split_di, but
+   works for floating pointer parameters and nonoffsetable memories.
+   For pushes, it returns just stack offsets; the values will be saved
+   in the right order.  Maximally three parts are generated.  */
+
+static void
+ix86_split_to_parts (operand, parts, mode)
+     rtx operand;
+     rtx *parts;
+     enum machine_mode mode;
 {
-  split_di (operands+0, 1, operands+2, operands+3);
-  split_di (operands+1, 1, operands+4, operands+5);
-  if (reg_overlap_mentioned_p (operands[2], operands[1]))
+  int size = GET_MODE_SIZE (mode) / 4;
+
+  if (size < 2 || size > 3)
+    abort ();
+
+  if (GET_CODE (operand) == MEM && !offsettable_memref_p (operand))
     {
-      rtx tmp;
-      if (!reg_overlap_mentioned_p (operands[3], operands[4]))
+      /* The only non-offsetable memories we handle are pushes.  */
+      if (! push_operand (operand, VOIDmode))
+	abort ();
+
+      PUT_MODE (operand, SImode);
+      parts[0] = parts[1] = parts[2] = operand;
+    }
+  else
+    {
+      if (mode == DImode)
+	split_di (&operand, 1, &parts[0], &parts[1]);
+      else
 	{
-	  tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
-	  tmp = operands[4], operands[4] = operands[5], operands[5] = tmp;
+	  if (REG_P (operand))
+	    {
+	      if (!reload_completed)
+		abort ();
+	      parts[0] = gen_rtx_REG (SImode, REGNO (operand) + 0);
+	      parts[1] = gen_rtx_REG (SImode, REGNO (operand) + 1);
+	      if (size == 3)
+		parts[2] = gen_rtx_REG (SImode, REGNO (operand) + 2);
+	    }
+	  else if (offsettable_memref_p (operand))
+	    {
+	      PUT_MODE (operand, SImode);
+	      parts[0] = operand;
+	      parts[1] = adj_offsettable_operand (operand, 4);
+	      if (size == 3)
+		parts[2] = adj_offsettable_operand (operand, 8);
+	    }
+	  else if (GET_CODE (operand) == CONST_DOUBLE)
+	    {
+	      REAL_VALUE_TYPE r;
+	      long l[3];
+
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
+	      switch (mode)
+		{
+		case XFmode:
+		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+		  parts[2] = GEN_INT (l[2]);
+		  break;
+		case DFmode:
+		  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+		  break;
+		default:
+		  abort ();
+		}
+	      parts[1] = GEN_INT (l[1]);
+	      parts[0] = GEN_INT (l[0]);
+	    }
+	  else
+	    abort ();
+	}
+    }
+
+  return;
+}
+
+/* Emit insns to perform a move or push of DI, DF, and XF values.
+   Return false when normal moves are needed; true when all required
+   insns have been emitted.  Operands 2-4 contain the input values
+   int the correct order; operands 5-7 contain the output values.  */
+
+int 
+ix86_split_long_move (operands1)
+     rtx operands1[];
+{
+  rtx part[2][3];
+  rtx operands[2];
+  int size = GET_MODE_SIZE (GET_MODE (operands1[0])) / 4;
+  int push = 0;
+  int collisions = 0;
+
+  /* Make our own copy to avoid clobbering the operands.  */
+  operands[0] = copy_rtx (operands1[0]);
+  operands[1] = copy_rtx (operands1[1]);
+
+  if (size < 2 || size > 3)
+    abort ();
+
+  /* The only non-offsettable memory we handle is push.  */
+  if (push_operand (operands[0], VOIDmode))
+    push = 1;
+  else if (GET_CODE (operands[0]) == MEM
+	   && ! offsettable_memref_p (operands[0]))
+    abort ();
+
+  ix86_split_to_parts (operands[0], part[0], GET_MODE (operands1[0]));
+  ix86_split_to_parts (operands[1], part[1], GET_MODE (operands1[0]));
+
+  /* When emitting push, take care for source operands on the stack.  */
+  if (push && GET_CODE (operands[1]) == MEM
+      && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
+    {
+      if (size == 3)
+	part[1][1] = part[1][2];
+      part[1][0] = part[1][1];
+    }
+
+  /* We need to do copy in the right order in case an address register 
+     of the source overlaps the destination.  */
+  if (REG_P (part[0][0]) && GET_CODE (part[1][0]) == MEM)
+    {
+      if (reg_overlap_mentioned_p (part[0][0], XEXP (part[1][0], 0)))
+	collisions++;
+      if (reg_overlap_mentioned_p (part[0][1], XEXP (part[1][0], 0)))
+	collisions++;
+      if (size == 3
+	  && reg_overlap_mentioned_p (part[0][2], XEXP (part[1][0], 0)))
+	collisions++;
+
+      /* Collision in the middle part can be handled by reordering.  */
+      if (collisions == 1 && size == 3
+	  && reg_overlap_mentioned_p (part[0][1], XEXP (part[1][0], 0)))
+	{
+	  rtx tmp;
+	  tmp = part[0][1]; part[0][1] = part[0][2]; part[0][2] = tmp;
+	  tmp = part[1][1]; part[1][1] = part[1][2]; part[1][2] = tmp;
+	}
+
+      /* If there are more collisions, we can't handle it by reordering.
+	 Do an lea to the last part and use only one colliding move.  */
+      else if (collisions > 1)
+	{
+	  collisions = 1;
+	  emit_insn (gen_rtx_SET (VOIDmode, part[0][size - 1],
+				  XEXP (part[1][0], 0)));
+	  part[1][0] = change_address (part[1][0], SImode, part[0][size - 1]);
+	  part[1][1] = adj_offsettable_operand (part[1][0], 4);
+	  if (size == 3)
+	    part[1][2] = adj_offsettable_operand (part[1][0], 8);
+	}
+    }
+
+  if (push)
+    {
+      if (size == 3)
+	emit_insn (gen_push (part[1][2]));
+      emit_insn (gen_push (part[1][1]));
+      emit_insn (gen_push (part[1][0]));
+      return 1;
+    }
+
+  /* Choose correct order to not overwrite the source before it is copied.  */
+  if ((REG_P (part[0][0])
+       && REG_P (part[1][1])
+       && (REGNO (part[0][0]) == REGNO (part[1][1])
+	   || (size == 3
+	       && REGNO (part[0][0]) == REGNO (part[1][2]))))
+      || (collisions > 0
+	  && reg_overlap_mentioned_p (part[0][0], XEXP (part[1][0], 0))))
+    {
+      if (size == 3)
+	{
+	  operands1[2] = part[0][2];
+	  operands1[3] = part[0][1];
+	  operands1[4] = part[0][0];
+	  operands1[5] = part[1][2];
+	  operands1[6] = part[1][1];
+	  operands1[7] = part[1][0];
 	}
       else
 	{
-	  emit_insn (gen_push (operands[4]));
-	  emit_insn (gen_rtx_SET (VOIDmode, operands[3], operands[5]));
-	  emit_insn (gen_popsi1 (operands[2]));
-
-	  return 1; /* DONE */
+	  operands1[2] = part[0][1];
+	  operands1[3] = part[0][0];
+	  operands1[5] = part[1][1];
+	  operands1[6] = part[1][0];
+	}
+    }
+  else
+    {
+      if (size == 3)
+	{
+	  operands1[2] = part[0][0];
+	  operands1[3] = part[0][1];
+	  operands1[4] = part[0][2];
+	  operands1[5] = part[1][0];
+	  operands1[6] = part[1][1];
+	  operands1[7] = part[1][2];
+	}
+      else
+	{
+	  operands1[2] = part[0][0];
+	  operands1[3] = part[0][1];
+	  operands1[5] = part[1][0];
+	  operands1[6] = part[1][1];
 	}
     }
 

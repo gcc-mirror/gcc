@@ -1,3 +1,16 @@
+Thu Nov 18 11:10:03 1999  Jan Hubicka  <hubicka@freesoft.cz>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* i386-protos.h (split_xf, ix86_split_movdi): Remove.
+	(ix86_split_long_move): Declare.
+	* i386.c (split_xf, ix86_split_movdi): Remove.
+	(ix86_split_to_parts, ix86_split_long_move): New.
+	* i386.md (dimode move splitters): Use ix86_split_long_move.
+	(dfmode move splitters): Likewise.
+	(xfmode move splitters): Likewise.
+	(movsf_1): Allow F->r.
+	(movdf_1, movxf_1): Allow F->ro.
+
 1999-11-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.h (struct eh_entry): Add goto_entry_p.

@@ -73,7 +73,6 @@ extern void print_operand PROTO((FILE*, rtx, int));
 extern void print_operand_address PROTO((FILE*, rtx));
 
 extern void split_di PROTO((rtx[], int, rtx[], rtx[]));
-extern void split_xf PROTO((rtx, rtx[3]));
 
 extern char *output_387_binary_op PROTO((rtx, rtx*));
 extern char *output_fix_trunc PROTO((rtx, rtx*));
@@ -92,7 +91,7 @@ extern void ix86_expand_branch PROTO((enum rtx_code, int, rtx));
 extern int ix86_expand_setcc PROTO((enum rtx_code, int, rtx));
 extern int ix86_expand_int_movcc PROTO((rtx[]));
 extern int ix86_expand_fp_movcc PROTO((rtx[]));
-extern int ix86_split_movdi PROTO((rtx[]));
+extern int ix86_split_long_move PROTO((rtx[]));
 extern void ix86_split_ashldi PROTO((rtx *, rtx));
 extern void ix86_split_ashrdi PROTO((rtx *, rtx));
 extern void ix86_split_lshrdi PROTO((rtx *, rtx));
