@@ -339,6 +339,147 @@ get_related_value (x)
   return 0;
 }
 
+/* Given a tablejump insn INSN, return the RTL expression for the offset
+   into the jump table.  If the offset cannot be determined, then return
+   NULL_RTX.
+
+   If EARLIEST is non-zero, it is a pointer to a place where the earliest
+   insn used in locating the offset was found.  */
+
+rtx
+get_jump_table_offset (insn, earliest)
+     rtx insn;
+     rtx *earliest;
+{
+  rtx label;
+  rtx table;
+  rtx set;
+  rtx old_insn;
+  rtx x;
+  rtx old_x;
+  rtx y;
+  rtx old_y;
+  int i;
+  int j;
+
+  if (GET_CODE (insn) != JUMP_INSN
+      || ! (label = JUMP_LABEL (insn))
+      || ! (table = NEXT_INSN (label))
+      || GET_CODE (table) != JUMP_INSN
+      || (GET_CODE (PATTERN (table)) != ADDR_VEC
+	  && GET_CODE (PATTERN (table)) != ADDR_DIFF_VEC)
+      || ! (set = single_set (insn)))
+    return NULL_RTX;
+
+  x = SET_SRC (set);
+
+  /* Some targets (eg, ARM) emit a tablejump that also
+     contains the out-of-range target.  */
+  if (GET_CODE (x) == IF_THEN_ELSE
+      && GET_CODE (XEXP (x, 2)) == LABEL_REF)
+    x = XEXP (x, 1);
+
+  /* Search backwards and locate the expression stored in X.  */
+  for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+       old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
+    ;
+
+  /* If X is an expression using a relative address then strip
+     off the addition / subtraction of PC, PIC_OFFSET_TABLE_REGNUM,
+     or the jump table label.  */
+  if (GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC
+      && (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS))
+    {
+      for (i = 0; i < 2; i++)
+	{
+	  old_insn = insn;
+	  y = XEXP (x, i);
+
+	  if (y == pc_rtx || y == pic_offset_table_rtx)
+	    break;
+
+	  for (old_y = NULL_RTX; GET_CODE (y) == REG && y != old_y;
+	       old_y = y, y = find_last_value (y, &old_insn, NULL_RTX, 0))
+	    ;
+
+	  if ((GET_CODE (y) == LABEL_REF && XEXP (y, 0) == label))
+	    break;
+	}
+
+      if (i >= 2)
+	return NULL_RTX;
+
+      x = XEXP (x, 1 - i);
+
+      for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+	   old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
+	;
+    }
+
+  /* Strip off any sign or zero extension.  */
+  if (GET_CODE (x) == SIGN_EXTEND || GET_CODE (x) == ZERO_EXTEND)
+    {
+      x = XEXP (x, 0);
+
+      for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+	   old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
+	;
+    }
+
+  /* If X isn't a MEM then this isn't a tablejump we understand.  */
+  if (GET_CODE (x) != MEM)
+    return NULL_RTX;
+
+  /* Strip off the MEM.  */
+  x = XEXP (x, 0);
+
+  for (old_x = NULL_RTX; GET_CODE (x) == REG && x != old_x;
+       old_x = x, x = find_last_value (x, &insn, NULL_RTX, 0))
+    ;
+
+  /* If X isn't a PLUS than this isn't a tablejump we understand.  */
+  if (GET_CODE (x) != PLUS)
+    return NULL_RTX;
+
+  /* At this point we should have an expression representing the jump table
+     plus an offset.  Examine each operand in order to determine which one
+     represents the jump table.  Knowing that tells us that the other operand
+     must represent the offset.  */
+  for (i = 0; i < 2; i++)
+    {
+      old_insn = insn;
+      y = XEXP (x, i);
+
+      for (old_y = NULL_RTX; GET_CODE (y) == REG && y != old_y;
+	   old_y = y, y = find_last_value (y, &old_insn, NULL_RTX, 0))
+	;
+
+      if ((GET_CODE (y) == CONST || GET_CODE (y) == LABEL_REF)
+	  && reg_mentioned_p (label, y))
+	break;
+    }
+
+  if (i >= 2)
+    return NULL_RTX;
+
+  x = XEXP (x, 1 - i);
+
+  /* Strip off the addition / subtraction of PIC_OFFSET_TABLE_REGNUM.  */
+  if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
+    for (i = 0; i < 2; i++)
+      if (XEXP (x, i) == pic_offset_table_rtx)
+	{
+	  x = XEXP (x, 1 - i);
+	  break;
+	}
+
+  if (earliest)
+    *earliest = insn;
+
+  /* Return the RTL expression representing the offset.  */
+  return x;
+}
+
 /* Return the number of places FIND appears within X.  If COUNT_DEST is
    zero, we do not count occurrences inside the destination of a SET.  */
 
