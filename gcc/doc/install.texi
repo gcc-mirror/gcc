@@ -1143,18 +1143,46 @@ info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 
 If you don't mind, please quickly review the
 @uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0 build status page}.
-If your system is not listed, send a note to
+If your system is not listed for the version of GCC that you built,
+send a note to
 @email{gcc@@gcc.gnu.org} indicating
 that you successfully built and installed GCC.
+Include the following information:
 
-Include the output from running @file{@var{srcdir}/config.guess}.  (Do
-not send us the @file{config.guess} file itself, just the one-line output from
-running it!)  Also specify which version you built.
-If the build was for GNU/Linux, also include the distribution name and version
-(e.g., Red Hat 7.1 or Debian 2.2.3, available from @file{/etc/issue})
-and the version of glibc you used; for RPM-based systems like Red Hat,
+@itemize @bullet
+@item
+Output from running @file{@var{srcdir}/config.guess}.  Do not send us
+that file itself, just the one-line output from running it.
+
+@item
+The output of @samp{gcc -v} for your newly installed gcc.
+This tells us which version of GCC you built and the options you passed to
+configure.
+
+@item
+If the build was for GNU/Linux, also include:
+@itemize @bullet
+@item
+The distribution name and version (e.g., Red Hat 7.1 or Debian 2.2.3);
+this information should be available from @file{/etc/issue}.
+
+@item
+The version of the Linux kernel, available from @samp{uname --version}
+or @samp{uname -a}.
+
+@item
+The version of glibc you used; for RPM-based systems like Red Hat,
 Mandrake, and SuSE type @samp{rpm -q glibc} to get the glibc version,
 and on systems like Debian and Progeny use @samp{dpkg -l libc6}.
+@end itemize
+For other systems, you can include similar information if you think it is
+relevant.
+
+@item
+Any other information that you think would be useful to people building
+GCC on the same configuration.  The new entry in the build status list
+will include a link to the archived copy of your message.
+@end itemize
 
 We'd also like to know if the
 @ifnothtml
