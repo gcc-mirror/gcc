@@ -332,12 +332,13 @@ extern tree walk_stmt_tree			PARAMS ((tree *,
 							 void *));
 extern void prep_stmt                           PARAMS ((tree));
 extern void expand_stmt                         PARAMS ((tree));
-extern void shadow_warning			PARAMS ((const char *,
-							 tree, tree));
 extern tree c_begin_if_stmt			PARAMS ((void));
 extern tree c_begin_while_stmt			PARAMS ((void));
 extern void c_finish_while_stmt_cond		PARAMS ((tree, tree));
 
+enum sw_kind { SW_PARAM = 0, SW_LOCAL, SW_GLOBAL };
+extern void shadow_warning			PARAMS ((enum sw_kind, int,
+							 const char *, tree));
 
 /* Extra information associated with a DECL.  Other C dialects extend
    this structure in various ways.  The C front-end only uses this

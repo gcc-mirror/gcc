@@ -4123,7 +4123,8 @@ pushdecl (tree x)
 		}
 
 	      if (warn_shadow && !err)
-		shadow_warning ("a parameter", name, oldlocal);
+		shadow_warning (SW_PARAM, false,
+				IDENTIFIER_POINTER (name), oldlocal);
 	    }
 
 	  /* Maybe warn if shadowing something else.  */
@@ -4140,11 +4141,13 @@ pushdecl (tree x)
 			    IDENTIFIER_POINTER (name));
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
-		shadow_warning ("a previous local", name, oldlocal);
+		shadow_warning (SW_LOCAL, false,
+				IDENTIFIER_POINTER (name), oldlocal);
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
-		shadow_warning ("a global declaration", name, oldglobal);
+		shadow_warning (SW_GLOBAL, false,
+				IDENTIFIER_POINTER (name), oldglobal);
 	    }
 	}
 

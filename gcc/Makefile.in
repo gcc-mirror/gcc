@@ -1302,7 +1302,7 @@ tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h 
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h \
+	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h intl.h \
 	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def \
 	diagnostic.h gt-c-common.h langhooks.h varray.h $(RTL_H) $(TARGET_H)
 c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \

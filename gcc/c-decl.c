@@ -1599,12 +1599,14 @@ static void
 warn_if_shadowing (x, oldlocal)
      tree x, oldlocal;
 {
-  tree name;
+  tree sym;
+  const char *name;
 
   if (DECL_EXTERNAL (x))
     return;
 
-  name = DECL_NAME (x);
+  sym = DECL_NAME (x);
+  name = IDENTIFIER_POINTER (sym);
 
   /* Warn if shadowing an argument at the top level of the body.  */
   if (oldlocal != 0
@@ -1615,14 +1617,7 @@ warn_if_shadowing (x, oldlocal)
       /* Check that the decl being shadowed
 	 comes from the parm level, one level up.  */
       && chain_member (oldlocal, current_binding_level->level_chain->names))
-    {
-      if (TREE_CODE (oldlocal) == PARM_DECL)
-	pedwarn ("declaration of `%s' shadows a parameter",
-		 IDENTIFIER_POINTER (name));
-      else
-	pedwarn ("declaration of `%s' shadows a symbol from the parameter list",
-		 IDENTIFIER_POINTER (name));
-    }
+    shadow_warning (SW_PARAM, true, name, oldlocal);
   /* Maybe warn if shadowing something else.  */
   else if (warn_shadow
 	   /* No shadow warnings for internally generated vars.  */
@@ -1641,14 +1636,14 @@ warn_if_shadowing (x, oldlocal)
       else if (oldlocal)
 	{
 	  if (TREE_CODE (oldlocal) == PARM_DECL)
-	    shadow_warning ("a parameter", name, oldlocal);
+	    shadow_warning (SW_PARAM, false, name, oldlocal);
 	  else
-	    shadow_warning ("a previous local", name, oldlocal);
+	    shadow_warning (SW_LOCAL, false, name, oldlocal);
 	}
-      else if (IDENTIFIER_GLOBAL_VALUE (name) != 0
-	       && IDENTIFIER_GLOBAL_VALUE (name) != error_mark_node)
-	shadow_warning ("a global declaration", name,
-			IDENTIFIER_GLOBAL_VALUE (name));
+      else if (IDENTIFIER_GLOBAL_VALUE (sym) != 0
+	       && IDENTIFIER_GLOBAL_VALUE (sym) != error_mark_node)
+	shadow_warning (SW_GLOBAL, false, name,
+			IDENTIFIER_GLOBAL_VALUE (sym));
     }
 }
 
