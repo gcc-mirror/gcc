@@ -1138,6 +1138,7 @@ rest_of_handle_loop_optimize (void)
 
   /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
+  profile_status = PROFILE_ABSENT;
 
   do_prefetch = flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0;
 

@@ -1,3 +1,16 @@
+2004-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* cfgexpand.c (add_reg_br_prob_note): New function.
+	(expand_gimple_cond_expr): Use it.
+	(tree_expand_cfg): No longer kill the profile.
+	* cfgrt.c (rtl_verify_flow_info_1): Check profile consistency
+	only if it is present.
+	* passes.c (rest_of_handle_loop_optimize): Kill the profile.
+	* predict.c (combine_predictions_for_insn): Set the probabilities
+	based on REG_BR_PROB note if present.
+	* predict.c (branch_prob): Profile is read only with
+	flag_branch_probabilities.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Add in gettext's m4 includes.
