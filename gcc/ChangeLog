@@ -1,5 +1,9 @@
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/install.texi: Clean up Texinfo markup.
+
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/cpp.texi, doc/cppinternals.texi, doc/gcc.texi: Move contents
 	to just after title page.
 
