@@ -2989,8 +2989,13 @@ mark_jump_label (x, insn, cross_jump)
 		    || ! (GET_CODE (next) == JUMP_INSN
 			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
-		  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
-					      REG_NOTES (insn));
+		  {
+		    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
+						REG_NOTES (insn));
+		    /* Record in the note whether label is nonlocal.  */
+		    LABEL_REF_NONLOCAL_P (REG_NOTES (insn))
+		      = LABEL_REF_NONLOCAL_P (x);
+		  }
 	      }
 	  }
 	return;
