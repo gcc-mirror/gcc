@@ -7242,7 +7242,7 @@ tsubst_copy (t, args, complain, in_decl)
 	tree name;
 	tree qualifying_scope;
 	tree fns;
-	tree template_args;
+	tree template_args = 0;
 	bool template_id_p = false;
 
 	/* A baselink indicates a function from a base class.  The

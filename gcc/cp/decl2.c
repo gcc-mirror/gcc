@@ -681,7 +681,7 @@ check_classfn (tree ctype, tree function)
   if (ix >= 0)
     {
       tree methods = CLASSTYPE_METHOD_VEC (ctype);
-      tree fndecls, fndecl;
+      tree fndecls, fndecl = 0;
       bool is_conv_op;
       const char *format = NULL;
       
@@ -1294,6 +1294,8 @@ build_anon_union_vars (tree object)
 	}
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	decl = build_anon_union_vars (ref);
+      else
+	decl = 0;
 
       if (main_decl == NULL_TREE)
 	main_decl = decl;
