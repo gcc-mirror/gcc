@@ -109,6 +109,12 @@ Boston, MA 02111-1307, USA.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 #endif
 
+/* No weird SPARC variants on Linux */
+#undef TARGET_LIVE_G0
+#define TARGET_LIVE_G0			0
+#undef TARGET_BROKEN_SAVERESTORE
+#define TARGET_BROKEN_SAVERESTORE	0
+
 /* Override MACHINE_STATE_{SAVE,RESTORE} because we have special
    traps available which can get and set the condition codes
    reliably.  */
