@@ -1,3 +1,8 @@
+2004-12-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (expand_expr_real_1): Remove an "if" whose condition
+	is always false.
+
 2004-12-06  Roger Sayle  <roger@eyesopen.com>
 
 	* c-gimplify.c (gimplify_c_loop): Improve initial implementations

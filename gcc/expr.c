@@ -6507,12 +6507,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, modifier);
 	  return const0_rtx;
 	}
-      else if ((code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
-	       && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
-	/* If the second operand has no side effects, just evaluate
-	   the first.  */
-	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-			    modifier);
       else if (code == BIT_FIELD_REF)
 	{
 	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);
