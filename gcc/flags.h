@@ -395,4 +395,4 @@ extern int current_function_has_nonlocal_goto;
 
 /* Nonzero if the current function is a thunk, so we should try to cut
    corners where we can.  */
-int current_function_is_thunk;
+extern int current_function_is_thunk;
