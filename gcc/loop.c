@@ -4654,12 +4654,18 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
   int not_every_iteration = 0;
   int maybe_multiple = 0;
   int past_loop_latch = 0;
+  bool exit_test_is_entry = false;
   rtx p;
 
-  /* If loop_scan_start points to the loop exit test, we have to be wary of
-     subversive use of gotos inside expression statements.  */
+  /* If loop_scan_start points to the loop exit test, the loop body
+     cannot be counted on running on every iteration, and we have to
+     be wary of subversive use of gotos inside expression
+     statements.  */
   if (prev_nonnote_insn (loop->scan_start) != prev_nonnote_insn (loop->start))
-    maybe_multiple = back_branch_in_range_p (loop, loop->scan_start);
+    {
+      exit_test_is_entry = true;
+      maybe_multiple = back_branch_in_range_p (loop, loop->scan_start);
+    }
 
   /* Scan through loop and update NOT_EVERY_ITERATION and MAYBE_MULTIPLE.  */
   for (p = next_insn_in_loop (loop, loop->scan_start);
@@ -4717,10 +4723,12 @@ for_each_insn_in_loop (struct loop *loop, loop_insn_callback fncall)
          beginning, don't set not_every_iteration for that.
          This can be any kind of jump, since we want to know if insns
          will be executed if the loop is executed.  */
-	  && !(JUMP_LABEL (p) == loop->top
-	       && ((NEXT_INSN (NEXT_INSN (p)) == loop->end
-		    && any_uncondjump_p (p))
-		   || (NEXT_INSN (p) == loop->end && any_condjump_p (p)))))
+	  && (exit_test_is_entry
+	      || !(JUMP_LABEL (p) == loop->top
+		   && ((NEXT_INSN (NEXT_INSN (p)) == loop->end
+			&& any_uncondjump_p (p))
+		       || (NEXT_INSN (p) == loop->end
+			   && any_condjump_p (p))))))
 	{
 	  rtx label = 0;
 
