@@ -4102,7 +4102,7 @@ rs6000_trampoline_template (file)
       fprintf (file, "\t.ualong 0\n");			/* offset  8 */
       fprintf (file, "\t.ualong 0\n");			/* offset 12 */
       fprintf (file, "\t.ualong 0\n");			/* offset 16 */
-      fprintf (file, "..LTRAMP1:\n");			/* offset 20 */
+      fprintf (file, "..LTRAMP1..0:\n");		/* offset 20 */
       fprintf (file, "\tlwz %s,8(%s)\n", r0, r2);	/* offset 24 */
       fprintf (file, "\tlwz %s,12(%s)\n", sc, r2);	/* offset 28 */
       fprintf (file, "\tmtctr %s\n", r0);		/* offset 32 */
@@ -4153,53 +4153,64 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
      rtx fnaddr;
      rtx cxt;
 {
-  rtx reg, reg2, reg3;
   enum machine_mode pmode = Pmode;
+  int regsize = (TARGET_32BIT) ? 4 : 8;
+  rtx ctx_reg = force_reg (pmode, cxt);
 
   switch (DEFAULT_ABI)
     {
     default:
       abort ();
 
+/* Macros to shorten the code expansions below.  */
+#define MEM_DEREF(addr) gen_rtx (MEM, pmode, memory_address (pmode, addr))
 #define MEM_PLUS(addr,offset) gen_rtx (MEM, pmode, memory_address (pmode, plus_constant (addr, offset)))
 
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
-      emit_move_insn (gen_rtx (MEM, pmode, memory_address (pmode, addr)),
-		      gen_rtx (MEM, pmode, memory_address (pmode, fnaddr)));
-
-      emit_move_insn (MEM_PLUS (addr, 4), MEM_PLUS (fnaddr, 4));
-      emit_move_insn (MEM_PLUS (addr, 8), force_reg (pmode, cxt));
+      {
+	rtx fn_reg = gen_reg_rtx (pmode);
+	rtx toc_reg = gen_reg_rtx (pmode);
+	emit_move_insn (fn_reg, MEM_DEREF (fnaddr));
+	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, 4));
+	emit_move_insn (MEM_DEREF (addr), fn_reg);
+	emit_move_insn (MEM_PLUS (addr, regsize), toc_reg);
+	emit_move_insn (MEM_PLUS (addr, 2*regsize), ctx_reg);
+      }
       break;
 
     /* Under V.4/eabi, update the two words after the bl to have the real
        function address and the static chain.  */
     case ABI_V4:
     case ABI_AIX_NODESC:
-      reg = gen_reg_rtx (pmode);
-
-      emit_move_insn (reg, fnaddr);
-      emit_move_insn (MEM_PLUS (addr, 8), reg);
-      emit_move_insn (MEM_PLUS (addr, (TARGET_64BIT ? 16 : 12)), cxt);
-
-      rs6000_sync_trampoline (addr);
+      {
+	rtx reg = gen_reg_rtx (pmode);
+	emit_move_insn (reg, fnaddr);
+	emit_move_insn (MEM_PLUS (addr, 8), reg);
+	emit_move_insn (MEM_PLUS (addr, 8 + regsize), ctx_reg);
+	rs6000_sync_trampoline (addr);
+      }
       break;
 
-    /* Under NT, update the first word to point to the ..LTRAMP1 header,
-       second word will point to the whole trampoline, third-fifth words
+    /* Under NT, update the first word to point to the ..LTRAMP1..0 header,
+       the second word will point to the whole trampoline, third-fifth words
        will then have the real address, static chain, and toc value.  */
     case ABI_NT:
-      addr = force_reg (pmode, addr);
-      reg = gen_reg_rtx (pmode);
-      reg2 = gen_reg_rtx (pmode);
-      emit_move_insn (reg, gen_rtx (SYMBOL_REF, pmode, "..LTRAMP1"));
-      emit_move_insn (reg2, fnaddr);
-      reg3 = force_reg (pmode, cxt);
-      emit_move_insn (MEM_PLUS (addr, 4), addr);
-      emit_move_insn (gen_rtx (MEM, pmode, addr), reg);
-      emit_move_insn (MEM_PLUS (addr, 8), reg2);
-      emit_move_insn (MEM_PLUS (addr, 12), reg3);
-      emit_move_insn (MEM_PLUS (addr, 16), gen_rtx (REG, pmode, 2));
+      {
+	rtx tramp_reg = gen_reg_rtx (pmode);
+	rtx fn_reg = gen_reg_rtx (pmode);
+	rtx toc_reg = gen_reg_rtx (pmode);
+
+	emit_move_insn (tramp_reg, gen_rtx (SYMBOL_REF, pmode, "..LTRAMP1..0"));
+	addr = force_reg (pmode, addr);
+	emit_move_insn (fn_reg, MEM_DEREF (fnaddr));
+	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, regsize));
+	emit_move_insn (MEM_DEREF (addr), tramp_reg);
+	emit_move_insn (MEM_PLUS (addr, regsize), addr);
+	emit_move_insn (MEM_PLUS (addr, 2*regsize), fn_reg);
+	emit_move_insn (MEM_PLUS (addr, 3*regsize), ctx_reg);
+	emit_move_insn (MEM_PLUS (addr, 4*regsize), gen_rtx (REG, pmode, 2));
+      }
       break;
     }
 
