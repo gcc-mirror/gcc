@@ -277,9 +277,9 @@ enum dump_file_index
   DFI_lreg,
   DFI_greg,
   DFI_flow2,
-  DFI_ce2,
   DFI_peephole2,
   DFI_rnreg,
+  DFI_ce2,
   DFI_sched2,
   DFI_bbro,
   DFI_jump2,
@@ -321,9 +321,9 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "lreg",	'l', 1, 0, 0 },
   { "greg",	'g', 1, 0, 0 },
   { "flow2",	'w', 1, 0, 0 },
-  { "ce2",	'E', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
   { "rnreg",	'n', 1, 0, 0 },
+  { "ce2",	'E', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
   { "jump2",	'J', 1, 0, 0 },
@@ -3509,17 +3509,6 @@ rest_of_compilation (decl)
   close_dump_file (DFI_flow2, print_rtl_with_bb, insns);
   timevar_pop (TV_FLOW2);
 
-  if (optimize > 0)
-    {
-      timevar_push (TV_IFCVT2);
-      open_dump_file (DFI_ce2, decl);
-
-      if_convert (1);
-
-      close_dump_file (DFI_ce2, print_rtl_with_bb, insns);
-      timevar_pop (TV_IFCVT2);
-    }
-
 #ifdef HAVE_peephole2
   if (optimize > 0 && flag_peephole2)
     {
@@ -3542,6 +3531,17 @@ rest_of_compilation (decl)
 
       close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
       timevar_pop (TV_RENAME_REGISTERS);
+    }
+
+  if (optimize > 0)
+    {
+      timevar_push (TV_IFCVT2);
+      open_dump_file (DFI_ce2, decl);
+
+      if_convert (1);
+
+      close_dump_file (DFI_ce2, print_rtl_with_bb, insns);
+      timevar_pop (TV_IFCVT2);
     }
 
 #ifdef INSN_SCHEDULING
@@ -4633,6 +4633,7 @@ main (argc, argv)
   if (optimize >= 3)
     {
       flag_inline_functions = 1;
+      flag_rename_registers = 1;
     }
 
   if (optimize < 2 || optimize_size)
