@@ -125,7 +125,7 @@ in the following sections.
 -Wconversion  -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration  -Wimport
--Werror-implicit-function-declaration  -Winline
+-Werror-implicit-function-declaration  -Wfloat-equal -Winline
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations  -Wmissing-noreturn
 -Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
@@ -1388,6 +1388,9 @@ Warn when a declaration does not specify a type.
 @itemx -Werror-implicit-function-declaration
 Give a warning (or error) whenever a function is used before being
 declared.
+
+@item -Wfloat-equal
+Warn if floating point values are used in equality comparisons.
 
 @item -Wimplicit
 Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
