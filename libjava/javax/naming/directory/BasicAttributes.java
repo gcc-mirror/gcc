@@ -185,7 +185,8 @@ public class BasicAttributes implements Attributes
 
   // This is set by the serialization spec.
   private boolean ignoreCase;
-  private transient Vector attributes;
+  // Package-private to avoid a trampoline.
+  transient Vector attributes;
 
   // Used when enumerating.
   private class BasicAttributesEnumeration implements NamingEnumeration

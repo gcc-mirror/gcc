@@ -1,5 +1,12 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* javax/naming/directory/BasicAttributes.java (attributes): Now
+	package-private.
+	* javax/imageio/spi/ServiceRegistry.java (categories): Now
+	package-private.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* java/net/URLClassLoader.java (URLClassLoader): Now
 	package-private.
 	* java/nio/charset/CoderResult.java (CoderResult): Now
