@@ -1072,10 +1072,10 @@ already_scoped_stmt:
 
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
-		{ $$ = expr_tree_cons (NULL_TREE, $$, 
+		{ $$ = tree_cons (NULL_TREE, $$, 
 		                  build_expr_list (NULL_TREE, $3)); }
 	| expr_no_commas ',' error
-		{ $$ = expr_tree_cons (NULL_TREE, $$, 
+		{ $$ = tree_cons (NULL_TREE, $$, 
 		                  build_expr_list (NULL_TREE, error_mark_node)); }
 	| nontrivial_exprlist ',' expr_no_commas
 		{ chainon ($$, build_expr_list (NULL_TREE, $3)); }
@@ -2052,14 +2052,14 @@ initlist:
 	  init
 		{ $$ = build_tree_list (NULL_TREE, $$); }
 	| initlist ',' init
-		{ $$ = expr_tree_cons (NULL_TREE, $3, $$); }
+		{ $$ = tree_cons (NULL_TREE, $3, $$); }
 	/* These are for labeled elements.  */
 	| '[' expr_no_commas ']' init
 		{ $$ = build_expr_list ($2, $4); }
 	| identifier ':' init
 		{ $$ = build_expr_list ($$, $3); }
 	| initlist ',' identifier ':' init
-		{ $$ = expr_tree_cons ($3, $5, $$); }
+		{ $$ = tree_cons ($3, $5, $$); }
 	;
 
 fn.defpen:

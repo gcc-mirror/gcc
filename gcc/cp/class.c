@@ -399,8 +399,8 @@ build_vtable_entry (delta, pfn)
   else
     {
       extern int flag_huge_objects;
-      tree elems = expr_tree_cons (NULL_TREE, delta,
-			      expr_tree_cons (NULL_TREE, integer_zero_node,
+      tree elems = tree_cons (NULL_TREE, delta,
+			      tree_cons (NULL_TREE, integer_zero_node,
 					 build_expr_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
@@ -3358,7 +3358,7 @@ finish_struct_1 (t)
 	  else
 	    fields = TREE_CHAIN (x);
 	  
-	  access_decls = scratch_tree_cons (NULL_TREE, x, access_decls);
+	  access_decls = tree_cons (NULL_TREE, x, access_decls);
 	  continue;
 	}
 
@@ -4820,7 +4820,7 @@ resolve_address_of_overloaded_function (target_type,
 	    fntype = build_pointer_type (fntype);
 
 	  if (can_convert_arg (target_type, fntype, fn))
-	    matches = scratch_tree_cons (fn, NULL_TREE, matches);
+	    matches = tree_cons (fn, NULL_TREE, matches);
 	}
     }
 
@@ -4879,7 +4879,7 @@ resolve_address_of_overloaded_function (target_type,
 	  else if (!is_reference)
 	    instantiation_type = build_pointer_type (instantiation_type);
 	  if (can_convert_arg (target_type, instantiation_type, instantiation))
-	    matches = scratch_tree_cons (instantiation, fn, matches);
+	    matches = tree_cons (instantiation, fn, matches);
 	}
 
       /* Now, remove all but the most specialized of the matches.  */
@@ -4889,7 +4889,7 @@ resolve_address_of_overloaded_function (target_type,
 						       explicit_targs);
 
 	  if (match != error_mark_node)
-	    matches = scratch_tree_cons (match, NULL_TREE, NULL_TREE);
+	    matches = tree_cons (match, NULL_TREE, NULL_TREE);
 	}
     }
 
@@ -4907,8 +4907,8 @@ resolve_address_of_overloaded_function (target_type,
              TREE_VALUE slots, so we cons one up here (we're losing anyway,
              so why be clever?).  */
           for (; overload; overload = OVL_NEXT (overload))
-            matches = scratch_tree_cons (NULL_TREE, OVL_CURRENT (overload),
-                                         matches);
+            matches = tree_cons (NULL_TREE, OVL_CURRENT (overload),
+				 matches);
           
 	  print_candidates (matches);
 	}

@@ -470,7 +470,7 @@ do_pop_exception ()
   mark_used (fn);
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
   cleanup = lookup_name (get_identifier ("__exception_info"), 0);
-  cleanup = build_function_call (fn, expr_tree_cons
+  cleanup = build_function_call (fn, tree_cons
 				 (NULL_TREE, cleanup, NULL_TREE));
   return cleanup;
 }
@@ -691,7 +691,7 @@ expand_end_eh_spec (raises)
   /* Build up an array of type_infos.  */
   for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
     {
-      types = expr_tree_cons
+      types = tree_cons
 	(NULL_TREE, build_eh_type_type (TREE_VALUE (raises)), types);
       ++count;
     }
@@ -731,8 +731,8 @@ expand_end_eh_spec (raises)
     }
 
   mark_used (fn);
-  tmp = expr_tree_cons (NULL_TREE, build_int_2 (count, 0), expr_tree_cons
-			(NULL_TREE, decl, NULL_TREE));
+  tmp = tree_cons (NULL_TREE, build_int_2 (count, 0), 
+		   tree_cons (NULL_TREE, decl, NULL_TREE));
   tmp = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), tmp);
   expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -872,7 +872,7 @@ alloc_eh_object (type)
     }
 
   mark_used (fn);
-  exp = build_function_call (fn, expr_tree_cons
+  exp = build_function_call (fn, tree_cons
 			     (NULL_TREE, size_in_bytes (type), NULL_TREE));
   exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
   return exp;
@@ -1025,9 +1025,9 @@ expand_throw (exp)
 	}
 
       mark_used (fn);
-      e = expr_tree_cons (NULL_TREE, exp, expr_tree_cons
-			  (NULL_TREE, throw_type, expr_tree_cons
-			   (NULL_TREE, cleanup, NULL_TREE)));
+      e = tree_cons (NULL_TREE, exp, tree_cons
+		     (NULL_TREE, throw_type, tree_cons
+		      (NULL_TREE, cleanup, NULL_TREE)));
       e = build_function_call (fn, e);
       expand_expr (e, const0_rtx, VOIDmode, 0);
     }

@@ -912,7 +912,7 @@ register_specialization (spec, tmpl, args)
       }
 
   DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
-     = perm_tree_cons (args, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+     = tree_cons (args, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
 
   return spec;
 }
@@ -951,7 +951,7 @@ register_local_specialization (spec, tmpl, fn)
      tree fn;
 {
   DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
-     = perm_tree_cons (fn, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+     = tree_cons (fn, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
 
   return spec;
 }
@@ -1090,7 +1090,7 @@ determine_specialization (template_id, decl, targs_out,
 	continue;
 
       /* Save this template, and the arguments deduced.  */
-      templates = scratch_tree_cons (targs, tmpl, templates);
+      templates = tree_cons (targs, tmpl, templates);
     }
 
   if (templates && TREE_CHAIN (templates))
@@ -1130,7 +1130,7 @@ determine_specialization (template_id, decl, targs_out,
      if (tmpl && tmpl != error_mark_node)
        {
 	 targs = get_bindings (tmpl, decl, explicit_targs);
-	 templates = scratch_tree_cons (targs, tmpl, NULL_TREE);
+	 templates = tree_cons (targs, tmpl, NULL_TREE);
        }
     }
 
@@ -1546,8 +1546,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	    }
 
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
-	  DECL_TEMPLATE_INFO (decl) 
-	    = perm_tree_cons (tmpl, targs, NULL_TREE);
+	  DECL_TEMPLATE_INFO (decl) = tree_cons (tmpl, targs, NULL_TREE);
 
 	  /* Mangle the function name appropriately.  Note that we do
 	     not mangle specializations of non-template member
@@ -2232,8 +2231,8 @@ process_partial_specialization (decl)
     return decl;
 
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
-    = perm_tree_cons (inner_args, inner_parms,
-		      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
+    = tree_cons (inner_args, inner_parms,
+		 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
   return decl;
 }
@@ -2547,8 +2546,8 @@ push_template_decl_real (decl, is_friend)
 	  TREE_TYPE (new_tmpl) = TREE_TYPE (decl);
 	  DECL_TI_TEMPLATE (decl) = new_tmpl;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (new_tmpl);
-	  DECL_TEMPLATE_INFO (new_tmpl) = 
-	    perm_tree_cons (tmpl, args, NULL_TREE);
+	  DECL_TEMPLATE_INFO (new_tmpl) 
+	    = tree_cons (tmpl, args, NULL_TREE);
 
 	  register_specialization (new_tmpl, tmpl, args);
 	  return decl;
@@ -2604,7 +2603,7 @@ push_template_decl_real (decl, is_friend)
   if (primary)
     DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
 
-  info = perm_tree_cons (tmpl, args, NULL_TREE);
+  info = tree_cons (tmpl, args, NULL_TREE);
 
   if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
@@ -3633,8 +3632,7 @@ add_pending_template (d)
   if (TI_PENDING_TEMPLATE_FLAG (ti))
     return;
 
-  *template_tail = perm_tree_cons
-    (build_srcloc_here (), d, NULL_TREE);
+  *template_tail = tree_cons (build_srcloc_here (), d, NULL_TREE);
   template_tail = &TREE_CHAIN (*template_tail);
   TI_PENDING_TEMPLATE_FLAG (ti) = 1;
 }
@@ -3802,7 +3800,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	return error_mark_node;
 
       TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parm)
-	= perm_tree_cons (template2, arglist2, NULL_TREE);
+	= tree_cons (template2, arglist2, NULL_TREE);
       TYPE_SIZE (parm) = 0;
       return parm;
     }
@@ -5889,7 +5887,7 @@ tsubst_decl (t, args, type, in_decl)
 	if (gen_tmpl)
 	  {
 	    DECL_TEMPLATE_INFO (r) 
-	      = perm_tree_cons (gen_tmpl, argvec, NULL_TREE);
+	      = tree_cons (gen_tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	    register_specialization (r, gen_tmpl, argvec);
 
@@ -6100,7 +6098,7 @@ tsubst_decl (t, args, type, in_decl)
 	if (ctx)
 	  DECL_EXTERNAL (r) = 1;
 
-	DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
+	DECL_TEMPLATE_INFO (r) = tree_cons (tmpl, argvec, NULL_TREE);
 	SET_DECL_IMPLICIT_INSTANTIATION (r);
 	if (ctx)
 	  register_specialization (r, gen_tmpl, argvec);
@@ -6511,7 +6509,7 @@ tsubst (t, args, complain, in_decl)
 		  return error_mark_node;
 
 		TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
-		  = perm_tree_cons (TYPE_NAME (t), argvec, NULL_TREE);
+		  = tree_cons (TYPE_NAME (t), argvec, NULL_TREE);
 	      }
 	    break;
 
@@ -7674,9 +7672,9 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
       /* This is a template conversion operator.  Use the return types
          as well as the argument types.  We use it instead of 'this', since
          we could be comparing conversions from different classes.  */
-      parms = scratch_tree_cons (NULL_TREE, TREE_TYPE (fntype),
-				 TREE_CHAIN (parms));
-      args = scratch_tree_cons (NULL_TREE, return_type, TREE_CHAIN (args));
+      parms = tree_cons (NULL_TREE, TREE_TYPE (fntype),
+			 TREE_CHAIN (parms));
+      args = tree_cons (NULL_TREE, return_type, TREE_CHAIN (args));
     }
 
   /* We allow incomplete unification without an error message here
@@ -9044,8 +9042,7 @@ most_specialized (fns, decl, explicit_args)
 
       args = get_bindings (candidate, decl, explicit_args);
       if (args)
-	candidates = scratch_tree_cons (NULL_TREE, candidate, 
-					candidates);
+	candidates = tree_cons (NULL_TREE, candidate, candidates);
     }
 
   return most_specialized_instantiation (candidates, explicit_args);
@@ -9909,7 +9906,7 @@ add_maybe_template (d, fns)
       return;
     }
 
-  *maybe_template_tail = perm_tree_cons (t, d, NULL_TREE);
+  *maybe_template_tail = tree_cons (t, d, NULL_TREE);
   maybe_template_tail = &TREE_CHAIN (*maybe_template_tail);
   DECL_MAYBE_TEMPLATE (d) = 1;
 }

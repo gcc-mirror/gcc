@@ -1196,9 +1196,9 @@ expand_default_init (binfo, true_exp, exp, init, flags)
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       if (true_exp == exp)
-	parms = expr_tree_cons (NULL_TREE, integer_one_node, parms);
+	parms = tree_cons (NULL_TREE, integer_one_node, parms);
       else
-	parms = expr_tree_cons (NULL_TREE, integer_zero_node, parms);
+	parms = tree_cons (NULL_TREE, integer_zero_node, parms);
       flags |= LOOKUP_HAS_IN_CHARGE;
     }
 
@@ -2266,7 +2266,7 @@ build_new_1 (exp)
 	susp = suspend_momentary ();
 
       rval = build_op_new_call
-	(code, true_type, expr_tree_cons (NULL_TREE, size, placement),
+	(code, true_type, tree_cons (NULL_TREE, size, placement),
 	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
       rval = cp_convert (build_pointer_type (true_type), rval);
 
@@ -2324,7 +2324,7 @@ build_new_1 (exp)
       TREE_SIDE_EFFECTS (exp1) = 1;
       rval = cp_convert (build_pointer_type (true_type), rval);
       rval = build_compound_expr
-	(expr_tree_cons (NULL_TREE, exp1,
+	(tree_cons (NULL_TREE, exp1,
 			 build_expr_list (NULL_TREE, rval)));
     }
 
@@ -2389,7 +2389,7 @@ build_new_1 (exp)
 
 	  if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
 	    {
-	      init = expr_tree_cons (NULL_TREE, integer_one_node, init);
+	      init = tree_cons (NULL_TREE, integer_one_node, init);
 	      flags |= LOOKUP_HAS_IN_CHARGE;
 	    }
 
@@ -2580,24 +2580,24 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
   else
     body = NULL_TREE;
 
-  body = expr_tree_cons (NULL_TREE,
+  body = tree_cons (NULL_TREE,
 		    build_delete (ptype, tbase, auto_delete,
 				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
 		    body);
 
-  body = expr_tree_cons (NULL_TREE,
+  body = tree_cons (NULL_TREE,
 		    build_modify_expr (tbase, NOP_EXPR, build (MINUS_EXPR, ptype, tbase, size_exp)),
 		    body);
 
-  body = expr_tree_cons (NULL_TREE,
+  body = tree_cons (NULL_TREE,
 		    build (EXIT_EXPR, void_type_node,
 			   build (EQ_EXPR, boolean_type_node, base, tbase)),
 		    body);
 
   loop = build (LOOP_EXPR, void_type_node, build_compound_expr (body));
 
-  loop = expr_tree_cons (NULL_TREE, tbase_init,
-		    expr_tree_cons (NULL_TREE, loop, NULL_TREE));
+  loop = tree_cons (NULL_TREE, tbase_init,
+		    tree_cons (NULL_TREE, loop, NULL_TREE));
   loop = build_compound_expr (loop);
 
  no_destructor:
@@ -2636,8 +2636,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 
   if (loop && deallocate_expr != integer_zero_node)
     {
-      body = expr_tree_cons (NULL_TREE, loop,
-			expr_tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
+      body = tree_cons (NULL_TREE, loop,
+			tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
       body = build_compound_expr (body);
     }
   else
@@ -3240,7 +3240,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  expr = build_scoped_method_call
 	    (ref, base_binfo, dtor_identifier,
 	     build_expr_list (NULL_TREE, this_auto_delete));
-	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
+	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
       /* Take care of the remaining baseclasses.  */
@@ -3255,7 +3255,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	    (ref, base_binfo, dtor_identifier,
 	     build_expr_list (NULL_TREE, integer_zero_node));
 
-	  exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
+	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
       for (member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
@@ -3267,7 +3267,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
 	      tree this_type = TREE_TYPE (member);
 	      expr = build_delete (this_type, this_member, integer_two_node, flags, 0);
-	      exprstmt = expr_tree_cons (NULL_TREE, expr, exprstmt);
+	      exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	    }
 	}
 
@@ -3294,7 +3294,7 @@ build_vbase_delete (type, decl)
     {
       tree this_addr = convert_force (build_pointer_type (BINFO_TYPE (vbases)),
 				      addr, 0);
-      result = expr_tree_cons (NULL_TREE,
+      result = tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
 					integer_zero_node,
 					LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0),
