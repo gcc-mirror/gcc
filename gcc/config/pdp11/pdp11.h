@@ -1144,8 +1144,6 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 {									\
   if (LEVEL >= 3)							\
     {									\
-      if (! SIZE)							\
-        flag_inline_functions		= 1;				\
       flag_omit_frame_pointer		= 1;				\
       /* flag_unroll_loops			= 1; */			\
     }									\

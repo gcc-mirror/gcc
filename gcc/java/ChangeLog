@@ -1,5 +1,14 @@
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
+	* class.c (make_class_data): Don't check flag_inline_functions.
+	* lang.c (flag_really_inline): Remove unused flag.
+	(java_handle_option): Don't set it here.  Remove special handling
+	of flag_inline_functions for Java.
+	(java_init): Don't set flag_inline_trees here.  Already done...
+	(java_post_options): ...here.  Don't clear flag_inline_functions.
+
+2004-11-24  Steven Bosscher  <stevenb@suse.de>
+
 	* java-gimplify.c (java_gimplify_labeled_block_expr): New function.
 	(java_gimplify_exit_block_expr): New function.
 	(java_gimplify_expr): Use them to gimplify EXIT_BLOCK_EXPR and

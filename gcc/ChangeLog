@@ -1,3 +1,18 @@
+2004-11-24  Steven Bosscher  <stevenb@suse.de>
+
+	* c-opts.c (c_common_post_options): Don't clear
+	flag_inline_functions.
+	* dojump.c (clear_pending_stack_adjust): Remove check on
+	flag_inline_functions, it's always true.
+	* config/alpha/alpha.md (movdi_er_maybe_g): Remove splitter
+	that can never trigger.
+	* config/c4x/c4x.h (TARGET_CPU_CPP_BUILTINS): Don't look at
+	flag_inline_trees, now that flag_inline_functions is never
+	cleared.
+	* config/pdp11/pdp11.h (OPTIMIZATION_OPTIONS): Don't set
+	flag_inline_functions at optimization levels greater than
+	or equal to 3.  This is already done by default.
+
 2004-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-outof-ssa.c (eliminate_build): Use g->e->dest_idx

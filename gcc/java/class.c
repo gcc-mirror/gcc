@@ -1618,7 +1618,7 @@ make_class_data (tree type)
       tree init;
       if (METHOD_PRIVATE (method)
 	  && ! flag_keep_inline_functions
-	  && (flag_inline_functions || optimize))
+	  && optimize)
 	continue;
       init = make_method_value (method);
       method_count++;
