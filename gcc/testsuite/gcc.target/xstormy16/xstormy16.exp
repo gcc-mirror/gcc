@@ -19,7 +19,7 @@ set dg-do-what-default run
 
 # Main loop.
 foreach testcase [lsort [find $srcdir/$subdir *.c]] {
-    global test_counts;
+    global test_counts
 
     set base "[file rootname [file tail $testcase]]"
 

@@ -70,7 +70,7 @@ proc fortran-torture-compile { src option } {
     set options ""
     lappend options "additional_flags=-w $option"
 
-    set comp_output [gfortran_target_compile "$src" "$output" object $options];
+    set comp_output [gfortran_target_compile "$src" "$output" object $options]
     
     # See if we got something bad.
     set fatal_signal "*95*: Internal compiler error: program*got fatal signal"
@@ -139,7 +139,7 @@ proc fortran-torture-execute { src } {
     global TORTURE_OPTIONS
 
     # Check for alternate driver.
-    set additional_flags "";
+    set additional_flags ""
     if [file exists [file rootname $src].x] {
 	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
@@ -186,9 +186,9 @@ proc fortran-torture-execute { src } {
 	set options ""
 	lappend options "additional_flags=-w $option"
 	if { $additional_flags != "" } {
-	    lappend options "additional_flags=$additional_flags";
+	    lappend options "additional_flags=$additional_flags"
 	}
-	set comp_output [gfortran_target_compile "$src" "$executable" executable $options];
+	set comp_output [gfortran_target_compile "$src" "$executable" executable $options]
 
 	# See if we got something bad.
 	set fatal_signal "*95*: Internal compiler error: program*got fatal signal"
@@ -262,8 +262,8 @@ proc fortran-torture-execute { src } {
 
 	# Run the testcase, and analyse the output.
 	set result [gfortran_load "$executable" "" ""]
-	set status [lindex $result 0];
-	set output [lindex $result 1];
+	set status [lindex $result 0]
+	set output [lindex $result 1]
         if { $status == "pass" } {
 	    remote_file build delete $executable
         }
@@ -305,9 +305,9 @@ proc fortran-torture { args } {
     global srcdir subdir
     global compiler_conditional_xfail_data
 
-    set src [lindex $args 0];
+    set src [lindex $args 0]
     if { [llength $args] > 1 } {
-	set options [lindex $args 1];
+	set options [lindex $args 1]
     } else {
 	set options ""
     }

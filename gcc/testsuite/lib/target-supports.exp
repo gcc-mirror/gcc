@@ -310,7 +310,7 @@ proc check_iconv_available { test_what } {
 	# No error messages, everything is OK.
 
 	set result [${tool}_load "./$exe" "" ""]
-	set status [lindex $result 0];
+	set status [lindex $result 0]
 	remote_file build delete $exe
 
 	verbose "check_iconv_available status is <$status>" 2
