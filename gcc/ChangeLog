@@ -1,5 +1,8 @@
 Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* gcc.c (lang_specific_driver): Declare prototype properly so
+	fatal can be passed to it without error.
+
 	* configure.in (AC_CHECK_FUNCS): Check for strchr and strrchr.
 	* configure: Regenerate.
 	* config.in: Add #undef's for strchr and strrchr.
