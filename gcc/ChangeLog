@@ -1,5 +1,9 @@
 2003-06-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* cfgrtl.c (mark_killed_regs): Cast HARD_REGNO_NREGS to int.
+
+2003-06-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* c-pch.c (c_common_write_pch): Flush asm_out_file to allow for
 	subsequent writes.
 
