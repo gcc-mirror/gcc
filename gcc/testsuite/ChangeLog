@@ -1,3 +1,7 @@
+2002-09-08  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.dg/7388.f: New test case for PR 7388.
+
 2002-09-07  Ansgar Esztermann  <ansgar@thphy.uni-duesseldorf.de>
 
 	* gcc.dg/compare2.c: Remove xfail from cases 10 and 12.
