@@ -97,21 +97,19 @@ struct emit_status
   int x_last_linenum;
   const char *x_last_filename;
 
-  /* A vector indexed by pseudo reg number.  The allocated length
-     of this vector is regno_pointer_flag_length.  Since this
-     vector is needed during the expansion phase when the total
-     number of registers in the function is not yet known,
-     it is copied and made bigger when necessary.  */
-  char *regno_pointer_flag;
-  int regno_pointer_flag_length;
+  /* The length of the regno_pointer_align and x_regno_reg_rtx vectors.
+     Since these vectors are needed during the expansion phase when
+     the total number of registers in the function is not yet known,
+     the vectors are copied and made bigger when necessary.  */
+  int regno_pointer_align_length;
 
   /* Indexed by pseudo register number, if nonzero gives the known alignment
-     for that pseudo (if regno_pointer_flag is set).
-     Allocated in parallel with regno_pointer_flag.  */
+     for that pseudo (if REG_POINTER is set in x_regno_reg_rtx).
+     Allocated in parallel with x_regno_reg_rtx.  */
   unsigned char *regno_pointer_align;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
-     Allocated in parallel with regno_pointer_flag.  */
+     Allocated in parallel with regno_pointer_align.  */
   rtx *x_regno_reg_rtx;
 };
 
@@ -122,7 +120,6 @@ struct emit_status
 #define seq_stack (cfun->emit->sequence_stack)
 
 #define REGNO_POINTER_ALIGN(REGNO) (cfun->emit->regno_pointer_align[REGNO])
-#define REGNO_POINTER_FLAG(REGNO) (cfun->emit->regno_pointer_flag[REGNO])
 
 struct expr_status
 {

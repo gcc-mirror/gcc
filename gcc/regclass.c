@@ -1847,10 +1847,10 @@ record_address_regs (x, class, scale)
       /* When we have an address that is a sum,
 	 we must determine whether registers are "base" or "index" regs.
 	 If there is a sum of two registers, we must choose one to be
-	 the "base".  Luckily, we can use the REGNO_POINTER_FLAG
-	 to make a good choice most of the time.  We only need to do this
-	 on machines that can have two registers in an address and where
-	 the base and index register classes are different.
+	 the "base".  Luckily, we can use the REG_POINTER to make a good
+	 choice most of the time.  We only need to do this on machines
+	 that can have two registers in an address and where the base
+	 and index register classes are different.
 
 	 ??? This code used to set REGNO_POINTER_FLAG in some cases, but
 	 that seems bogus since it should only be set when we are sure
@@ -1923,13 +1923,13 @@ record_address_regs (x, class, scale)
 	   with the other operand the index.  Likewise if the other operand
 	   is a MULT.  */
 
-	else if ((code0 == REG && REGNO_POINTER_FLAG (REGNO (arg0)))
+	else if ((code0 == REG && REG_POINTER (arg0))
 		 || code1 == MULT)
 	  {
 	    record_address_regs (arg0, BASE_REG_CLASS, scale);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
 	  }
-	else if ((code1 == REG && REGNO_POINTER_FLAG (REGNO (arg1)))
+	else if ((code1 == REG && REG_POINTER (arg1))
 		 || code0 == MULT)
 	  {
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
@@ -2331,18 +2331,18 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 	  /* If the destination pseudo is set more than once, then other
 	     sets might not be to a pointer value (consider access to a
 	     union in two threads of control in the presense of global
-	     optimizations).  So only set REGNO_POINTER_FLAG on the destination
+	     optimizations).  So only set REG_POINTER on the destination
 	     pseudo if this is the only set of that pseudo.  */
 	  && REG_N_SETS (REGNO (SET_DEST (x))) == 1
 	  && ! REG_USERVAR_P (SET_DEST (x))
-	  && ! REGNO_POINTER_FLAG (REGNO (SET_DEST (x)))
+	  && ! REG_POINTER (SET_DEST (x))
 	  && ((GET_CODE (SET_SRC (x)) == REG
-	       && REGNO_POINTER_FLAG (REGNO (SET_SRC (x))))
+	       && REG_POINTER (SET_SRC (x)))
 	      || ((GET_CODE (SET_SRC (x)) == PLUS
 		   || GET_CODE (SET_SRC (x)) == LO_SUM)
 		  && GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
 		  && GET_CODE (XEXP (SET_SRC (x), 0)) == REG
-		  && REGNO_POINTER_FLAG (REGNO (XEXP (SET_SRC (x), 0))))
+		  && REG_POINTER (XEXP (SET_SRC (x), 0)))
 	      || GET_CODE (SET_SRC (x)) == CONST
 	      || GET_CODE (SET_SRC (x)) == SYMBOL_REF
 	      || GET_CODE (SET_SRC (x)) == LABEL_REF
@@ -2359,7 +2359,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 		  && (GET_CODE (XEXP (note, 0)) == CONST
 		      || GET_CODE (XEXP (note, 0)) == SYMBOL_REF
 		      || GET_CODE (XEXP (note, 0)) == LABEL_REF))))
-	REGNO_POINTER_FLAG (REGNO (SET_DEST (x))) = 1;
+	REG_POINTER (SET_DEST (x)) = 1;
 
       /* ... fall through ...  */
 

@@ -146,10 +146,10 @@ estimate_probability (loops_info)
 	{
 	case EQ:
 	  if (GET_CODE (XEXP (cond, 0)) == REG
-	      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 0)))
+	      && REG_POINTER (XEXP (cond, 0))
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
-		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
+		      && REG_POINTER (XEXP (cond, 1)))))
 	    {
 	      prob = PROB_UNLIKELY;
 	      goto emitnote;
@@ -157,10 +157,10 @@ estimate_probability (loops_info)
 	  break;
 	case NE:
 	  if (GET_CODE (XEXP (cond, 0)) == REG
-	      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 0)))
+	      && REG_POINTER (XEXP (cond, 0))
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
-		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
+		      && REG_POINTER (XEXP (cond, 1)))))
 	    {
 	      prob = PROB_LIKELY;
 	      goto emitnote;

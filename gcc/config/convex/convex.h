@@ -1112,9 +1112,8 @@ enum reg_class {
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) \
   case PLUS:								\
-    if (cfun->emit->regno_pointer_flag != 0				\
-	&& GET_CODE (XEXP (RTX, 0)) == REG				\
-	&& REGNO_POINTER_FLAG (REGNO (XEXP (RTX, 0)))			\
+    if (GET_CODE (XEXP (RTX, 0)) == REG					\
+	&& REG_POINTER (XEXP (RTX, 0))					\
 	&& GET_CODE (XEXP (RTX, 1)) == CONST_INT)			\
       return 0;								\
     else break;								\

@@ -912,8 +912,8 @@ hppa_legitimize_address (x, oldx, mode)
       idx = NULL_RTX;
 
       /* Make sure they're both regs.  If one was a SYMBOL_REF [+ const],
-	 then emit_move_sequence will turn on REGNO_POINTER_FLAG so we'll
-	 know it's a base register below.  */
+	 then emit_move_sequence will turn on REG_POINTER so we'll know
+	 it's a base register below.  */
       if (GET_CODE (reg1) != REG)
 	reg1 = force_reg (Pmode, force_operand (reg1, 0));
 
@@ -923,7 +923,7 @@ hppa_legitimize_address (x, oldx, mode)
       /* Figure out what the base and index are.  */
 	 
       if (GET_CODE (reg1) == REG
-	  && REGNO_POINTER_FLAG (REGNO (reg1)))
+	  && REG_POINTER (reg1))
 	{
 	  base = reg1;
 	  orig_base = XEXP (XEXP (x, 0), 1);
@@ -934,7 +934,7 @@ hppa_legitimize_address (x, oldx, mode)
 			      XEXP (x, 1));
 	}
       else if (GET_CODE (reg2) == REG
-	       && REGNO_POINTER_FLAG (REGNO (reg2)))
+	       && REG_POINTER (reg2))
 	{
 	  base = reg2;
 	  orig_base = XEXP (x, 1);
@@ -1544,9 +1544,9 @@ emit_move_sequence (operands, mode, scratch_reg)
 		 Don't mark hard registers though.  That loses.  */
 	      if (GET_CODE (operand0) == REG
 		  && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
-		REGNO_POINTER_FLAG (REGNO (operand0)) = 1;
+		REG_POINTER (operand0) = 1;
 	      if (REGNO (temp) >= FIRST_PSEUDO_REGISTER)
-		REGNO_POINTER_FLAG (REGNO (temp)) = 1;
+		REG_POINTER (temp) = 1;
 	      if (ishighonly)
 		set = gen_rtx_SET (mode, operand0, temp);
 	      else
@@ -6146,16 +6146,18 @@ basereg_operand (op, mode)
   if (!cse_not_expected)
     return 0;
 
-  /* Once reload has started everything is considered valid.  Reload should
-     only create indexed addresses using the stack/frame pointer, and any
-     others were checked for validity when created by the combine pass. 
-
-     Also allow any register when TARGET_NO_SPACE_REGS is in effect since
-     we don't have to worry about the braindamaged implicit space register
-     selection using the basereg only (rather than effective address)
-     screwing us over.  */
-  if (TARGET_NO_SPACE_REGS || reload_in_progress || reload_completed)
+  /* Allow any register when TARGET_NO_SPACE_REGS is in effect since
+     we don't have to worry about the braindamaged implicit space
+     register selection from the basereg.  */
+  if (TARGET_NO_SPACE_REGS)
     return (GET_CODE (op) == REG);
+
+  /* Once reload has started any register with REG_POINTER set
+     is considered valid.  Reload should only create indexed addresses
+     using the stack/frame pointer.  All others are checked for
+     validity when they are created by the combine pass.  */
+  if (reload_in_progress || reload_completed)
+    return (GET_CODE (op) == REG && REG_POINTER (op));
 
   /* Stack is always OK for indexing.  */
   if (op == stack_pointer_rtx)
@@ -6168,13 +6170,11 @@ basereg_operand (op, mode)
     return 1;
 
   /* The only other valid OPs are pseudo registers with
-     REGNO_POINTER_FLAG set.  */
-  if (GET_CODE (op) != REG
-      || REGNO (op) < FIRST_PSEUDO_REGISTER
-      || ! register_operand (op, mode))
-    return 0;
-    
-  return REGNO_POINTER_FLAG (REGNO (op));
+     REG_POINTER set.  */
+  return (GET_CODE (op) == REG
+          && REGNO (op) >= FIRST_PSEUDO_REGISTER
+          && register_operand (op, mode)
+          && REG_POINTER (op));
 }
 
 /* Return 1 if this operand is anything other than a hard register.  */
@@ -6372,7 +6372,7 @@ restore_unscaled_index_insn_codes (insns)
    Because of this mis-feature we have to know which register in a reg+reg
    address is the base and which is the index.
 
-   Before reload, the base can be identified by REGNO_POINTER_FLAG.  We use
+   Before reload, the base can be identified by REG_POINTER.  We use
    this to force base + index addresses to match a different insn than
    index + base addresses.
 
@@ -6392,8 +6392,12 @@ restore_unscaled_index_insn_codes (insns)
    using unscaled indexed addresses have the same INSN_CODE as they did
    immediately before delay slot scheduling.
 
-   This is extremely gross.  Long term, I'd like to be able to look at
-   REG_POINTER_FLAG to handle these kinds of problems.  */
+   This is extremely gross.  Long term, I'd like to use REG_POINTER to
+   handle these kinds of problems.
+
+   FIXME: Is this still necessary now that the pointer flag is stored
+   in REG rtx's and basereg_operand properly checks for the flag after
+   reload?  */
  
 static void
 record_unscaled_index_insn_codes (insns)
