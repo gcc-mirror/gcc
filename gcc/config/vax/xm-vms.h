@@ -140,9 +140,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define rindex	strrchr
 
 /* rename all too-long external symbol names to avoid warnings */
+#define bc_check_for_full_enumeration_handling	bc_check_for_full_enum_handling
 #define check_for_full_enumeration_handling	check_for_full_enum_handling
 #define current_function_contains_functions	curfunc_contains_functions
 #define current_function_epilogue_delay_list	curfunc_epilogue_delay_list
+#define current_function_has_nonlocal_goto	curfunc_has_nonlocal_goto
 #define current_function_has_nonlocal_label	curfunc_has_nonlocal_label
 #define current_function_internal_arg_pointer	curfunc_internal_arg_pointer
 #define current_function_outgoing_args_size	curfunc_outgoing_args_size
@@ -154,6 +156,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
 #define maybe_building_objc_message_expr	maybe_building_objc_msg_expr
+#define output_deferred_addressed_constants	output_deferred_addr_constants
 #define reg_overlap_mentioned_for_reload_p	reg_overlap_mtnd_for_reload_p
 #define reposition_prologue_and_epilogue_notes	repos_prolog_and_epilog_notes
 #define rtx_equal_function_value_matters	rtx_equal_func_value_matters
