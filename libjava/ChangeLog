@@ -1,3 +1,24 @@
+2001-11-18  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc: Include StringBuffer.h.
+	(verify_fail): Added pc argument.  Use StringBuffer to construct
+	exception message.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Put PC into error
+	message.
+	(_Jv_BytecodeVerifier::check_return_type): Likewise.
+	(_Jv_BytecodeVerifier::handle_field_or_method): Likewise.
+	(_Jv_BytecodeVerifier::check_constant): Likewise.
+	(_Jv_BytecodeVerifier::check_class_constant): Likewise.
+	(_Jv_BytecodeVerifier::check_pool_index): Likewise.
+	(_Jv_BytecodeVerifier::get_variable): Likewise.
+	(_Jv_BytecodeVerifier::branch_prepass): Likewise.  Also, correctly
+	check exception handler endpoint.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Correctly handle
+	wide arguments to current method.
+	(_Jv_BytecodeVerifier::check_wide_constant): New method.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_ldc2_w]: Use
+	it.
+
 2001-11-17  Anthony Green  <green@redhat.com>
 
 	* jni.cc (unwrap): Fix test for wrapped objects.
