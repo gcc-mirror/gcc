@@ -6850,6 +6850,14 @@ nonzero_bits (x, mode)
   switch (code)
     {
     case REG:
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If pointers extend unsigned and this is a pointer in Pmode, say that
+	 all the bits above ptr_mode are known to be zero.  */
+      if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	  && REGNO_POINTER_FLAG (REGNO (x)))
+	nonzero &= GET_MODE_MASK (ptr_mode);
+#endif
+
 #ifdef STACK_BOUNDARY
       /* If this is the stack pointer, we may know something about its
 	 alignment.  If PUSH_ROUNDING is defined, it is possible for the
@@ -6864,16 +6872,11 @@ nonzero_bits (x, mode)
 	  sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
 #endif
 
-	  nonzero &= ~ (sp_alignment - 1);
+	  /* We must return here, otherwise we may get a worse result from
+	     one of the choices below.  There is nothing useful below as
+	     far as the stack pointer is concerned.  */
+	  return nonzero &= ~ (sp_alignment - 1);
 	}
-#endif
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-      /* If pointers extend unsigned and this is a pointer in Pmode, say that
-	 all the bits above ptr_mode are known to be zero.  */
-      if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
-	  && REGNO_POINTER_FLAG (REGNO (x)))
-	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
       /* If X is a register whose nonzero bits value is current, use it.
