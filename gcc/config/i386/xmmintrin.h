@@ -1065,8 +1065,8 @@ _mm_pause (void)
 do {									\
   __v4sf __r0 = (row0), __r1 = (row1), __r2 = (row2), __r3 = (row3);	\
   __v4sf __t0 = __builtin_ia32_shufps (__r0, __r1, 0x44);		\
-  __v4sf __t1 = __builtin_ia32_shufps (__r0, __r1, 0xEE);		\
-  __v4sf __t2 = __builtin_ia32_shufps (__r2, __r3, 0x44);		\
+  __v4sf __t2 = __builtin_ia32_shufps (__r0, __r1, 0xEE);		\
+  __v4sf __t1 = __builtin_ia32_shufps (__r2, __r3, 0x44);		\
   __v4sf __t3 = __builtin_ia32_shufps (__r2, __r3, 0xEE);		\
   (row0) = __builtin_ia32_shufps (__t0, __t1, 0x88);			\
   (row1) = __builtin_ia32_shufps (__t0, __t1, 0xDD);			\

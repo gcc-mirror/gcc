@@ -2,6 +2,9 @@ Sun Oct 27 10:12:27 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* linux64.h (DEFAULT_PCC_STRUCT_RETURN):  Define.
 
+	PR target/6890
+	* xmmintrin.h (_MM_TRANSPOSE4_PS): New.
+
 2002-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	PR middle-end/6994
