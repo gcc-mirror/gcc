@@ -2088,7 +2088,7 @@ genprognames=genconfig genflags gencodes genemit genopinit genrecog \
 	     genextract genpeep genattr genoutput
 
 # The names of the executable files for those programs.
-genprogs=$(genprognames:%=%$(buildexeext))
+genprogs=$(genprognames:%=%$(build_exeext))
 
 # Object files used in those programs.
 genobjs=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
