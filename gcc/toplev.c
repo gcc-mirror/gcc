@@ -663,6 +663,9 @@ char *lang_options[] =
   "-Wno-selector",
   "-Wprotocol",
   "-Wno-protocol",
+
+  /* This is for GNAT and is temporary.  */
+  "-gnat",
   0
 };
 
