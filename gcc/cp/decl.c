@@ -8428,6 +8428,7 @@ static tree
 check_initializer (tree decl, tree init, int flags, tree *cleanup)
 {
   tree type = TREE_TYPE (decl);
+  tree init_code = NULL;
 
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
   if (init != NULL_TREE && DECL_INITIAL (decl) == NULL_TREE)
@@ -8538,7 +8539,10 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	{
 	dont_use_constructor:
 	  if (TREE_CODE (init) != TREE_VEC)
-	    init = store_init_value (decl, init);
+	    {
+	      init_code = store_init_value (decl, init);
+	      init = NULL;
+	    }
 	}
     }
   else if (DECL_EXTERNAL (decl))
@@ -8561,9 +8565,9 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     check_for_uninitialized_const_var (decl);
 
   if (init && init != error_mark_node)
-    init = build (INIT_EXPR, type, decl, init);
+    init_code = build (INIT_EXPR, type, decl, init);
 
-  return init;
+  return init_code;
 }
 
 /* If DECL is not a local variable, give it RTL.  */

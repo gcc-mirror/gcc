@@ -1286,8 +1286,9 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
       /* If store_init_value returns NULL_TREE, the INIT has been
 	 record in the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
-      if (store_init_value (exp, init))
-	finish_expr_stmt (build (INIT_EXPR, type, exp, init));
+      init = store_init_value (exp, init);
+      if (init)
+	finish_expr_stmt (init);
       return;
     }
 
