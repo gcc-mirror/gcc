@@ -1,0 +1,4 @@
++++int zerofield inside struct starting with long:
+size=8,align=4
+offset-long=0,offset-last=4,
+align-long=4,align-last=4

@@ -1,0 +1,4 @@
+++Class with long inhereting class with int:
+size=8,align=4
+offset-int=0,offset-long=4,
+align-int=4,align-long=4

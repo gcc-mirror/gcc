@@ -1,0 +1,4 @@
+++Class with short inhereting class with pointer:
+size=8,align=4
+offset-pointer=0,offset-short=4,
+align-pointer=4,align-short=2

@@ -1,0 +1,5 @@
+++++Array of longdouble in struct starting with double:
+size=176,align=16
+offset-double=0,offset-arrayof-longdouble=16,
+align-double=8,align-arrayof-longdouble=16
+offset-longdouble-a[5]=96,align-longdouble-a[5]=16

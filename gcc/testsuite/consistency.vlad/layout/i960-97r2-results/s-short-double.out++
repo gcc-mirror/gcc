@@ -1,0 +1,3 @@
++++Struct short-double:
+size=16,align=8,offset-short=0,offset-double=8,
+align-short=2,align-double=8

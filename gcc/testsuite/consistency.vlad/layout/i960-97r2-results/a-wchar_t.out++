@@ -1,0 +1,3 @@
++++Array wchar_t:
+size=40,align=4,5th-elem-offset=20,5th-elem-align=4
+size=0,align=4,5th-elem-offset=60,5th-elem-align=4

@@ -1,0 +1,3 @@
++++Struct wchar_t-longdouble:
+size=32,align=16,offset-wchar_t=0,offset-longdouble=16,
+align-wchar_t=4,align-longdouble=16

@@ -1,0 +1,4 @@
+++Class with char inhereting class with longlong:
+size=16,align=8
+offset-longlong=0,offset-char=8,
+align-longlong=8,align-char=1

@@ -1,0 +1,4 @@
++++Struct int inside struct starting with double:
+size=16,align=8
+offset-double=0,offset-sss-int=8,
+align-double=8,align-sss-int=4

@@ -1,0 +1,5 @@
+++++Array of char in struct starting with char:
+size=11,align=1
+offset-char=0,offset-arrayof-char=1,
+align-char=1,align-arrayof-char=1
+offset-char-a[5]=6,align-char-a[5]=1

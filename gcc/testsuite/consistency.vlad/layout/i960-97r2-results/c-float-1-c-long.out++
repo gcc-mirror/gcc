@@ -1,0 +1,4 @@
+++Class with long inhereting class with float:
+size=8,align=4
+offset-float=0,offset-long=4,
+align-float=4,align-long=4

@@ -1,0 +1,4 @@
+++Class with longlong inhereting class with double:
+size=16,align=8
+offset-double=0,offset-longlong=8,
+align-double=8,align-longlong=8

@@ -1,0 +1,5 @@
+++++Array of float in struct starting with double:
+size=48,align=8
+offset-double=0,offset-arrayof-float=8,
+align-double=8,align-arrayof-float=4
+offset-float-a[5]=28,align-float-a[5]=4

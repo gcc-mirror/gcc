@@ -1,0 +1,5 @@
+++++Array of pointer in struct starting with longdouble:
+size=64,align=16
+offset-longdouble=0,offset-arrayof-pointer=16,
+align-longdouble=16,align-arrayof-pointer=4
+offset-pointer-a[5]=36,align-pointer-a[5]=4

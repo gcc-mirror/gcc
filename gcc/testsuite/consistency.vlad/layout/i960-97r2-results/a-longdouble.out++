@@ -1,0 +1,3 @@
++++Array longdouble:
+size=160,align=16,5th-elem-offset=80,5th-elem-align=16
+size=0,align=16,5th-elem-offset=240,5th-elem-align=16

@@ -1,0 +1,5 @@
+++++Array of short in struct starting with char:
+size=22,align=2
+offset-char=0,offset-arrayof-short=2,
+align-char=1,align-arrayof-short=2
+offset-short-a[5]=12,align-short-a[5]=2

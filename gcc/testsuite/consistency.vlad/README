@@ -1,0 +1,66 @@
+  This directory contains tests and scripts for consistency checking
+compilers.  They could be used for consistency checking different
+C/C++ compiler for one platform or C/C++ compilers for different
+platforms.
+
+  For example, to check the consistency, you could type
+
+   make check-consistency RUNTESTFLAGS='BASE_COMPILER=i960-97r2 CONSISTENCY_OPTIONS="-O2 -fvtable-thunks -mno-strict-align -fno-rtti -fcheck-new -mcall-i960-old -mlittle-endian" NO_LONG_DOUBLE=1 NO_LIBGLOSS_LIBRARY_OPTIONS=1'
+
+  In this example, DEJAGNU driver vlad.exp will process all C/C++
+tests in all subdirectories (e.g. layout) started with lower case
+letter.  C tests (with suffixes .c) will be compiled by C compiler
+only.  C++ tests will be compiled by C and C++ compilers.  It is
+supposed that each test outputs the result which is saved in temp_dir
+as
+   <basename of the test>.out
+or
+   <basename of the test>.out++
+
+correspondingly for C compiler and C++ compiler.  For example, there
+will be two output files
+
+   `align-double.out' and `align-double.out++'
+
+for test `align-double.c'.
+
+  After this if there is subdirectory <BASE_COMPILER>-results
+(`i960-97r2-results' in our example) and there is corresponding saved
+output file for the base compiler the the files are compared in order
+to check consistency.
+
+  To create the base for future comparisons of output files, you
+should create the directory and move output files from the temporary
+directory into the created directory.
+
+The test script file has the following parameters
+
+ 1. BASE_COMPILER.  The variable must be defined for work the script
+    properly.
+
+ 2. CONSISTENCY_OPTIONS.  The options which will be used for
+    compilations.  The default value is "-O2".
+
+ 3. NO_LONG_DOUBLE.  If the variable value is not zero, the tests
+    which contain long double are expected to be fail.
+
+ 4. NO_LIBGLOSS_LIBRARY_OPTIONS.  If the variable value is not zero,
+    the tests are compiled without standard dejagnu libgloss library
+    paths.
+
+  Currently, there is directory `layout' for checking allocation
+parameters of C/C++ compiler and subdirectory i960-97r2 which contains
+the test results for 97r2 i960-vxworks C/C++ compiler.
+
+  You can create other consistency tests.  Simply, create a directory
+started with lower case letter, place the tests and create the
+subdirectory with the test results for a base compiler.  If you need
+to compile tests in a directory with a wrap file simply place the file
+name (e.g. _dummy_stab.S) in file WRAP_FILE in the test directory.
+
+  The tests will be only compiled (and the test results will not be
+compared) if you place <basename of the test>.conly in the directory
+of the test.  You can use own driver for checking consistency.  To
+make this, place the TCL script with name <basename of the test>.cexp.
+
+Vladimir Makarov <vmakarov@cygnus.com>

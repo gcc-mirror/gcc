@@ -1,0 +1,4 @@
++++Struct short inside struct starting with int:
+size=8,align=4
+offset-int=0,offset-sss-short=4,
+align-int=4,align-sss-short=2
