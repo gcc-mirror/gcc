@@ -672,10 +672,9 @@ namespace std {
 
       value_type min() const;
       value_type max() const;
-//     _Meta<_ApplyFunctionWithValue<_Expr>, value_type>
-//     apply (value_type _M_func (value_type)) const;
-//     _Meta<_ApplyFunctionWithConstRef<_Expr>, value_type>
-//     apply (value_type _M_func (const value_type&)) const;
+
+      valarray<value_type> apply(value_type (*) (const value_type&)) const;
+      valarray<value_type> apply(value_type (*) (value_type)) const;
         
     private:
         const _Clos _M_closure;
@@ -718,7 +717,27 @@ namespace std {
     template<class _Clos, typename _Tp>
     inline size_t
     _Expr<_Clos,_Tp>::size () const  { return _M_closure.size (); }
+
+  template<class _Clos, typename _Tp>
+  inline valarray<_Tp>
+  _Expr<_Clos, _Tp>::shift(int __n) const
+  { return valarray<_Tp>(_M_closure).shift(__n); }
+
+  template<class _Clos, typename _Tp>
+  inline valarray<_Tp>
+  _Expr<_Clos, _Tp>::cshift(int __n) const
+  { return valarray<_Tp>(_M_closure).cshift(__n); }
+
+  ttemplate<class _Clos, typename _Tp>
+  inline valarray<_Tp>
+  _Expr<_Clos, _Tp>::apply(_Tp __f(const _Tp&)) const
+  { return valarray<_Tp>(_M_closure).apply(__f); }
     
+  ttemplate<class _Clos, typename _Tp>
+  inline valarray<_Tp>
+  _Expr<_Clos, _Tp>::apply(_Tp __f(_Tp)) const
+  { return valarray<_Tp>(_M_closure).apply(__f); }
+
     // XXX: replace this with a more robust summation algorithm.
     template<class _Clos, typename _Tp>
     inline _Tp

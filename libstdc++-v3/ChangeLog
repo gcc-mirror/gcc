@@ -1,5 +1,10 @@
 2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* bits/valarray_meta.h (_Expr<>::shift, _Expr::cshift,
+	_Expr<>::apply): Implement. 
+
+2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* bits/valarray_meta.h (_Expr<>::min, _Expr<>::max): Implement.
 
 	* bits/valarray_array.h (__valarray_min, __valarray_max): New
