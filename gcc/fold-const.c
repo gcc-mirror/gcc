@@ -8973,6 +8973,26 @@ fold (tree expr)
 			     build2 (LE_EXPR, type,
 				     TREE_OPERAND (arg0, 0), arg1)));
 
+      /* Convert ABS_EXPR<x> >= 0 to true.  */
+      else if (code == GE_EXPR
+	       && tree_expr_nonnegative_p (arg0)
+	       && (integer_zerop (arg1)
+		   || (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
+                       && real_zerop (arg1))))
+	return omit_one_operand (type, integer_one_node, arg0);
+
+      /* Convert ABS_EXPR<x> < 0 to false.  */
+      else if (code == LT_EXPR
+	       && tree_expr_nonnegative_p (arg0)
+	       && (integer_zerop (arg1) || real_zerop (arg1)))
+	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
+      else if ((code == EQ_EXPR || code == NE_EXPR)
+	       && TREE_CODE (arg0) == ABS_EXPR
+	       && (integer_zerop (arg1) || real_zerop (arg1)))
+	return fold (build2 (code, type, TREE_OPERAND (arg0, 0), arg1));
+
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
