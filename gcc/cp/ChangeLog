@@ -1,3 +1,20 @@
+2002-01-07  Graham Stott  <grahams@redhat.com>
+
+        * error.c: Update copyright date.
+        (print_scope_operator): Add parenthesis.
+        (print_left_paren): Likewise.
+        (print_right_paren): Likewise.
+        (print_left_bracket): Likewise.
+        (print_right_bracket): Likewise.
+        (print_template_argument_list_start): Likewise.
+        (print_template_argument_list_end): Likewise.
+        (print_non_consecutive_character): Likewise.
+        (print_tree_identifier): Likewise.
+        (print_identifier): Likewise.
+        (NEXT_CODE): Uppercase macro parameter.
+        (ident_fndecl): Delete unused.
+        (GLOBAL_THING): Likewise.
+
 2002-01-06  Graham Stott  <grahams@redhat.com>
 
 	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK): Add parenthesis.
@@ -22,7 +39,7 @@
 	(same_type_ignoring_top_level_qualifiers_p): Likewise.
 	(OVL_FUNCTION): Wrap long line.
 	(OVL_CHAIN): Whitespace.
-	(OVL_CURRENT): Add paranthesis and whitespace.
+	(OVL_CURRENT): Add parenthesis and whitespace.
 	(OVL_NEXT): Whitespace.
 	(OVL_USED): Likewise.
 	(IDENTIFIER_TYPE_VALUE): Likewise.
@@ -170,10 +187,10 @@
         (TYPE_PTRMEMFUNC_FLAG): Likewise.
         (TYPE_GET_PTRMEMFUNC_TYPE): Likewise.
         (TYPE_SET_PTRMEMFUNC_TYPE): Likewise.
-        (TYPE_PTRMEM_CLASS_TYPE): Remove paranthesis.
+        (TYPE_PTRMEM_CLASS_TYPE): Remove parenthesis.
         (TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
         (DECL_ACCESS): Whitespace.
-        (DECL_GLOBAL_CTOR_P): Remove paranthesis.
+        (DECL_GLOBAL_CTOR_P): Remove parenthesis.
         (DECL_GLOBAL_DTOR_P): Likewise.
         (GLOBAL_INIT_PRIORITY): Likewise.
 	(DECL_TEMPLATE_PARMS): Likewise.
