@@ -3292,8 +3292,15 @@ mark_addressable (exp)
   while (1)
     switch (TREE_CODE (x))
       {
-      case ADDR_EXPR:
       case COMPONENT_REF:
+	if (DECL_C_BIT_FIELD (TREE_OPERAND (x, 1)))
+	  error ("cannot take address of bitfield `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (x, 1))));
+	return 0;
+
+	/* ... fall through ... */
+
+      case ADDR_EXPR:
       case ARRAY_REF:
       case REALPART_EXPR:
       case IMAGPART_EXPR:
