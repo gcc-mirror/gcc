@@ -2073,8 +2073,6 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	      && frame_pointer_needed
 	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
 	  || REGNO (base) == ARG_POINTER_REGNUM
-	  || (REGNO (base) >= FIRST_VIRTUAL_REGISTER
-	      && REGNO (base) <= LAST_VIRTUAL_REGISTER)
           || (flag_pic
               && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
         pointer = base_ptr = TRUE;
@@ -2100,8 +2098,6 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
 	      && frame_pointer_needed
 	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
 	  || REGNO (indx) == ARG_POINTER_REGNUM
-	  || (REGNO (indx) >= FIRST_VIRTUAL_REGISTER
-	      && REGNO (indx) <= LAST_VIRTUAL_REGISTER)
           || (flag_pic
               && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
         pointer = indx_ptr = TRUE;
