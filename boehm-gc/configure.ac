@@ -16,8 +16,8 @@
 dnl Process this file with autoconf to produce configure.
 
 AC_PREREQ(2.59)
-AC_INIT(gcj_mlc.c)
-
+AC_INIT
+AC_CONFIG_SRCDIR(gcj_mlc.c)
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
@@ -26,12 +26,11 @@ ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 AM_ENABLE_MULTILIB(, ..)
 
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
 # Get the 'noncanonical' system names.
-_GCC_TOPLEV_NONCANONICAL_BUILD
-_GCC_TOPLEV_NONCANONICAL_HOST
-_GCC_TOPLEV_NONCANONICAL_TARGET
+ACX_NONCANONICAL_TARGET
 
 # This works around an automake problem.
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
@@ -72,26 +71,26 @@ AC_PROG_INSTALL
 
 AM_MAINTAINER_MODE
 
-. [$]{srcdir}/configure.host
+. ${srcdir}/configure.host
 
-case [$]{gc_basedir} in
-/* | [A-Za-z]:[/\\]*) gc_flagbasedir=[$]{gc_basedir} ;;
-*) gc_flagbasedir='[$](top_builddir)/'[$]{gc_basedir} ;;
+case ${gc_basedir} in
+/* | [A-Za-z]:[/\\]*) gc_flagbasedir=${gc_basedir} ;;
+*) gc_flagbasedir='$(top_builddir)/'${gc_basedir} ;;
 esac
 
-gc_cflags="[$]{gc_cflags} -Iinclude -I"'[$](top_builddir)'"/./targ-include -I[$]{gc_flagbasedir}/libc/include"
+gc_cflags="${gc_cflags} -Iinclude -I"'$(top_builddir)'"/./targ-include -I${gc_flagbasedir}/libc/include"
 case "${host}" in
   *-*-cygwin32*)
-    gc_cflags="[$]{gc_cflags} -I[$]{gc_flagbasedir}/../winsup/include"
+    gc_cflags="${gc_cflags} -I${gc_flagbasedir}/../winsup/include"
     ;;
 esac
 
-dnl gc_cflags="[$]{gc_cflags} -fno-builtin"
+dnl gc_cflags="${gc_cflags} -fno-builtin"
 
 GC_CFLAGS=${gc_cflags}
 AC_SUBST(GC_CFLAGS)
 
-AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
@@ -242,7 +241,6 @@ AC_SUBST(EXTRA_TEST_LIBS)
 
 target_all=libgcjgc.la
 AC_SUBST(target_all)
-AC_SUBST(target_noncanonical)
 
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
@@ -357,8 +355,6 @@ AC_SUBST(addincludes)
 AC_SUBST(addlibs)
 AC_SUBST(addtests)
 
-AC_PROG_LIBTOOL
-
 #
 # Check for AViiON Machines running DGUX
 #
@@ -380,13 +376,6 @@ if test $ac_is_dgux = yes; then
     AC_SUBST(CFLAGS)
     AC_SUBST(CXXFLAGS)
 fi
-
-dnl We use these options to decide which functions to include.
-AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR
-                          configuring with a cross compiler])
-AC_ARG_WITH(cross-host,
-[  --with-cross-host=HOST  configuring with a cross compiler])
 
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.
