@@ -1744,7 +1744,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  type1 = type2;
 	  break;
 	}
-      /* FALLTHROUGH */
+      /* Fall through.  */
     case LT_EXPR:
     case GT_EXPR:
     case LE_EXPR:
@@ -2037,7 +2037,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
     case GT_EXPR:
     case GE_EXPR:
       enum_p = 1;
-      /* FALLTHROUGH */
+      /* Fall through.  */
     
     default:
       ref1 = 0;
@@ -4102,7 +4102,7 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
     case RVALUE_CONV:
       if (! IS_AGGR_TYPE (totype))
 	return expr;
-      /* else fall through */
+      /* Else fall through.  */
     case BASE_CONV:
       if (TREE_CODE (convs) == BASE_CONV && !NEED_TEMPORARY_P (convs))
 	{

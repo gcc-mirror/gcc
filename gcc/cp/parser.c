@@ -2022,7 +2022,7 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
 
       token = cp_lexer_peek_token (parser->lexer);
       
-      /* This matches the processing in skip_to_end_of_statement */
+      /* This matches the processing in skip_to_end_of_statement.  */
       if (token->type == CPP_SEMICOLON && !brace_depth)
 	return 0;
       if (token->type == CPP_OPEN_BRACE)

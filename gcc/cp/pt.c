@@ -2223,7 +2223,7 @@ process_template_parm (tree list, tree next)
       else
 	{
 	  t = make_aggr_type (TEMPLATE_TYPE_PARM);
-	  /* parm is either IDENTIFIER_NODE or NULL_TREE */
+	  /* parm is either IDENTIFIER_NODE or NULL_TREE.  */
 	  decl = build_decl (TYPE_DECL, parm, t);
 	}
         
@@ -3889,7 +3889,7 @@ mangle_class_name_for_template (const char* name, tree parms, tree arglist)
 	      cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
 	    }
 	  else
-	    /* Output the parameter declaration */
+	    /* Output the parameter declaration.  */
 	    cat (type_as_string (arg, TFF_CHASE_TYPEDEF));
 	  continue;
 	}
@@ -4630,7 +4630,7 @@ for_each_template_parm_r (tree* tp, int* walk_subtrees, void* d)
       break;
 
     case TEMPLATE_DECL:
-      /* A template template parameter is encountered */
+      /* A template template parameter is encountered.  */
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t)
 	  && for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited))
 	return error_mark_node;
@@ -5755,7 +5755,7 @@ tsubst_aggr_type (tree t,
       if (TYPE_PTRMEMFUNC_P (t))
 	return tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl);
 
-      /* else fall through */
+      /* Else fall through.  */
     case ENUMERAL_TYPE:
     case UNION_TYPE:
       if (TYPE_TEMPLATE_INFO (t))
@@ -6692,7 +6692,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
 		    /* We are processing a type constructed from
-		       a template template parameter */
+		       a template template parameter.  */
 		    tree argvec = tsubst (TYPE_TI_ARGS (t),
 					  args, complain, in_decl);
 		    if (argvec == error_mark_node)
@@ -8627,7 +8627,7 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
      deferring all checks until we have the FUNCTION_DECL.  */
   push_deferring_access_checks (dk_deferred);
 
-  /* substitute template parameters */
+  /* Substitute template parameters.  */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, complain, gen_tmpl);
 
@@ -9055,7 +9055,7 @@ type_unification_real (tree tparms,
      are present, and the parm list isn't variadic.  */
   if (args && args != void_list_node && parms == void_list_node)
     return 1;
-  /* Fail if parms are left and they don't have default values.	 */
+  /* Fail if parms are left and they don't have default values.  */
   if (parms
       && parms != void_list_node
       && TREE_PURPOSE (parms) == NULL_TREE)
@@ -9993,7 +9993,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
 	  return unify (tparms, targs, t1, t, strict);
 	}
-      /* else fall through */
+      /* Else fall through.  */
 
     default:
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))))

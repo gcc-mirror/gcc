@@ -1065,7 +1065,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
 	      else
 		offset = BINFO_OFFSET (base_binfo);
               
-              /* combine offset and flags into one field */
+              /* Combine offset and flags into one field.  */
               offset = cp_build_binary_op (LSHIFT_EXPR, offset,
 					   build_int_2 (8, 0));
               offset = cp_build_binary_op (BIT_IOR_EXPR, offset,

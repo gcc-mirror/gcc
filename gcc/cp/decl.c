@@ -1856,7 +1856,7 @@ duplicate_decls (tree newdecl, tree olddecl)
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
-  /* If either declaration has a nondefault visibility, use it. */
+  /* If either declaration has a nondefault visibility, use it.  */
   if (DECL_VISIBILITY (olddecl) != VISIBILITY_DEFAULT)
     {
       if (DECL_VISIBILITY (newdecl) != VISIBILITY_DEFAULT
@@ -3103,7 +3103,7 @@ cxx_init_decl_processing (void)
 
 /* Generate an initializer for a function naming variable from
    NAME. NAME may be NULL, to indicate a dependent name.  TYPE_P is
-   filled in with the type of the init. */
+   filled in with the type of the init.  */
 
 tree
 cp_fname_init (const char* name, tree *type_p)
@@ -3377,7 +3377,7 @@ fixup_anonymous_aggr (tree t)
 {
   tree *q;
 
-  /* Wipe out memory of synthesized methods */
+  /* Wipe out memory of synthesized methods.  */
   TYPE_HAS_CONSTRUCTOR (t) = 0;
   TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
   TYPE_HAS_INIT_REF (t) = 0;
@@ -4925,7 +4925,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     mark_referenced (DECL_ASSEMBLER_NAME (decl));
 }
 
-/* This is here for a midend callback from c-common.c */
+/* This is here for a midend callback from c-common.c.  */
 
 void
 finish_decl (tree decl, tree init, tree asmspec_tree)
@@ -6079,7 +6079,7 @@ compute_array_index_type (tree name, tree size)
 				    cp_convert (ssizetype, size),
 				    cp_convert (ssizetype, integer_one_node)));
       if (!TREE_CONSTANT (itype))
-	/* A variable sized array. */
+	/* A variable sized array.  */
 	itype = variable_size (itype);
       /* Make sure that there was no overflow when creating to a signed
      	 index type.  (For example, on a 32-bit machine, an array with
@@ -7088,7 +7088,7 @@ grokdeclarator (tree declarator,
       else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	;
       else if (decl_context == FIELD
-	       /* C++ allows static class elements  */
+	       /* C++ allows static class elements.  */
 	       && RIDBIT_SETP (RID_STATIC, specbits))
 	/* C++ also allows inlines and signed and unsigned elements,
 	   but in those cases we don't come in here.  */
@@ -8196,7 +8196,7 @@ grokdeclarator (tree declarator,
 	      return void_type_node;
 	  }
 
-	/* Structure field.  It may not be a function, except for C++ */
+	/* Structure field.  It may not be a function, except for C++.  */
 
 	if (decl == NULL_TREE)
 	  {
@@ -8421,7 +8421,7 @@ require_complete_types_for_parms (tree parms)
   for (; parms; parms = TREE_CHAIN (parms))
     {
       if (VOID_TYPE_P (TREE_TYPE (parms)))
-        /* grokparms will have already issued an error */
+        /* grokparms will have already issued an error.  */
         TREE_TYPE (parms) = error_mark_node;
       else if (complete_type_or_else (TREE_TYPE (parms), parms))
 	{
@@ -10938,7 +10938,7 @@ start_method (tree declspecs, tree declarator, tree attrlist)
 
   cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);
 
-  /* Make a place for the parms */
+  /* Make a place for the parms.  */
   begin_scope (sk_function_parms, fndecl);
 
   DECL_IN_AGGR_P (fndecl) = 1;

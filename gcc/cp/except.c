@@ -296,7 +296,7 @@ choose_personality_routine (enum languages lang)
       return;
 
     case chose_none:
-      ; /* proceed to language selection */
+      ; /* Proceed to language selection.  */
     }
 
   switch (lang)
@@ -892,7 +892,7 @@ can_convert_eh (tree to, tree from)
       if (TREE_CODE (to) == VOID_TYPE)
 	return 1;
 
-      /* else fall through */
+      /* Else fall through.  */
     }
 
   if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)

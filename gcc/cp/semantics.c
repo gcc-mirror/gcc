@@ -1232,7 +1232,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	type = TREE_TYPE (type);
       else
 	{
-	  /* Set the cv qualifiers */
+	  /* Set the cv qualifiers.  */
 	  int quals = cp_type_quals (TREE_TYPE (current_class_ref));
 	  
 	  if (DECL_MUTABLE_P (decl))

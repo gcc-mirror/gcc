@@ -331,7 +331,7 @@ dump_type (tree t, int flags)
                      ? DECL_ORIGINAL_TYPE (t) : TREE_TYPE (t), flags);
           break;
         }
-      /* else fallthrough */
+      /* Else fall through.  */
 
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
@@ -644,7 +644,7 @@ dump_type_suffix (tree t, int flags)
       dump_type_suffix (TREE_TYPE (t), flags);
       break;
 
-      /* Can only be reached through function pointer */
+      /* Can only be reached through function pointer.  */
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
@@ -788,7 +788,7 @@ dump_decl (tree t, int flags)
 	  dump_type (DECL_CONTEXT (t), flags);
 	  break;
 	}
-      /* else fall through */
+      /* Else fall through.  */
     case FIELD_DECL:
     case PARM_DECL:
       dump_simple_decl (t, TREE_TYPE (t), flags);
@@ -1050,7 +1050,7 @@ dump_function_decl (tree t, int flags)
 
   if (DECL_CLASS_SCOPE_P (t))
     cname = DECL_CONTEXT (t);
-  /* this is for partially instantiated template methods */
+  /* This is for partially instantiated template methods.  */
   else if (TREE_CODE (fntype) == METHOD_TYPE)
     cname = TREE_TYPE (TREE_VALUE (parmtypes));
 
@@ -1269,7 +1269,7 @@ dump_template_parms (tree info, int primary, int flags)
   pp_template_argument_list_end (cxx_pp);
 }
 
-/* Print out a list of initializers (subr of dump_expr) */
+/* Print out a list of initializers (subr of dump_expr).  */
 
 static void
 dump_expr_list (tree l, int flags)
@@ -1596,7 +1596,7 @@ dump_expr (tree t, int flags)
 	        pp_right_paren (cxx_pp);
 	      break;
 	    }
-	  /* else FALLTHRU */
+	  /* Else fall through.  */
 	}
       dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       break;

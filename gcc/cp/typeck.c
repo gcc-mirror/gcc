@@ -900,7 +900,7 @@ comptypes (tree t1, tree t2, int strict)
   if (t1 == t2)
     return true;
 
-  /* Suppress errors caused by previously reported errors */
+  /* Suppress errors caused by previously reported errors.  */
   if (t1 == error_mark_node || t2 == error_mark_node)
     return false;
   
@@ -974,7 +974,7 @@ comptypes (tree t1, tree t2, int strict)
 	return true;
       /* Don't check inheritance.  */
       strict = COMPARE_STRICT;
-      /* fall through */
+      /* Fall through.  */
 
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -995,7 +995,7 @@ comptypes (tree t1, tree t2, int strict)
       if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
 		      strict & ~COMPARE_REDECLARATION))
 	return false;
-      /* FALLTHROUGH*/
+      /* Fall through. */
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -2583,7 +2583,7 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 
   if (typetail != 0 && typetail != void_list_node)
     {
-      /* See if there are default arguments that can be used */
+      /* See if there are default arguments that can be used.  */
       if (TREE_PURPOSE (typetail) 
 	  && TREE_CODE (TREE_PURPOSE (typetail)) != DEFAULT_ARG)
 	{
@@ -3501,7 +3501,7 @@ build_x_unary_op (enum tree_code code, tree xarg)
       && ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (xarg)))
 	   && !COMPLETE_TYPE_P (TREE_TYPE (xarg)))
 	  || (TREE_CODE (xarg) == OFFSET_REF)))
-    /* don't look for a function */;
+    /* Don't look for a function.  */;
   else
     exp = build_new_op (code, LOOKUP_NORMAL, xarg, NULL_TREE, NULL_TREE);
   if (!exp && code == ADDR_EXPR)
@@ -3907,7 +3907,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  return arg;
 	}
 
-      /* For &x[y], return x+y */
+      /* For &x[y], return x+y.  */
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
 	  if (!cxx_mark_addressable (TREE_OPERAND (arg, 0)))
@@ -4230,10 +4230,10 @@ cxx_mark_addressable (tree exp)
 	if (x == current_class_ptr)
 	  {
             error ("cannot take the address of `this', which is an rvalue expression");
-	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
+	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later.  */
 	    return true;
 	  }
-	/* FALLTHRU */
+	/* Fall through.  */
 
       case VAR_DECL:
 	/* Caller should not be trying to mark initialized
@@ -4242,7 +4242,7 @@ cxx_mark_addressable (tree exp)
 			    || DECL_IN_AGGR_P (x) == 0
 			    || TREE_STATIC (x)
 			    || DECL_EXTERNAL (x), 314);
-	/* FALLTHRU */
+	/* Fall through.  */
 
       case CONST_DECL:
       case RESULT_DECL:
@@ -4927,7 +4927,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   /* Handle control structure constructs used as "lvalues".  */
   switch (TREE_CODE (lhs))
     {
-      /* Handle --foo = 5; as these are valid constructs in C++ */
+      /* Handle --foo = 5; as these are valid constructs in C++.  */
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
@@ -5006,7 +5006,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  return result;
 	}
       else if (! IS_AGGR_TYPE (lhstype))
-	/* Do the default thing */;
+	/* Do the default thing.  */;
       else
 	{
 	  result = build_special_member_call (lhs, complete_ctor_identifier,
@@ -5033,7 +5033,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	{
 	  /* `operator=' is not an inheritable operator.  */
 	  if (! IS_AGGR_TYPE (lhstype))
-	    /* Do the default thing */;
+	    /* Do the default thing.  */;
 	  else
 	    {
 	      result = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL,
@@ -6186,7 +6186,7 @@ cp_type_quals (tree type)
   return TYPE_QUALS (type);
 }
 
-/* Returns nonzero if the TYPE contains a mutable member */
+/* Returns nonzero if the TYPE contains a mutable member.  */
 
 bool
 cp_has_mutable_p (tree type)
