@@ -1,3 +1,10 @@
+2001-08-24  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/cpu/i386/bits/limits.h (__glibcpp_long_double_bits): Only
+	define if not already provided by per-OS file.
+	* config/os/bsd/freebsd/bits/os_defines.h (__glibcpp_long_double_bits):
+	Define.
+
 2001-08-24  Jan van Male <jan.vanmale@fenk.wau.nl>
 
 	* docs/html/17_intro/C++STYLE:  Fix typo.

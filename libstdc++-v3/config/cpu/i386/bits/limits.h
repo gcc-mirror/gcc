@@ -28,6 +28,9 @@
 #ifndef _GLIBCPP_CPU_LIMITS
 #define _GLIBCPP_CPU_LIMITS 1
 
+// Some operating systems set this
+#ifndef __glibcpp_long_double_bits
 #define __glibcpp_long_double_bits 80
+#endif
 
 #endif
