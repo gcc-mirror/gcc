@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 24</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -70,7 +70,98 @@
 
 <HR>
 <H2><A NAME="2">It ends <EM>where?</EM></A></H2>
-   <P>Blah.
+   <P>This starts off sounding complicated, but is actually very easy,
+      especially towards the end.  Trust me.
+  </P>
+   <P>Beginners usually have a little trouble understand the whole
+      'past-the-end' thing, until they remember their early algebra classes
+      (see, they </EM>told</EM> you that stuff would come in handy!) and
+      the concept of half-open ranges.
+   </P>
+   <P>First, some history, and a reminder of some of the funkier rules in
+      C and C++ for builtin arrays.  The following rules have always been
+      true for both languages:
+      <OL>
+       <LI>You can point anywhere in the array, <EM>or to the first element
+           past the end of the array</EM>.  A pointer that points to one
+           past the end of the array is guaranteed to be as unique as a
+           pointer to somewhere inside the array, so that you can compare
+           such pointers safely.
+       <LI>You can only dereference a pointer that points into an array.
+           If your array pointer points outside the array -- even to just
+           one past the end -- and you dereference it, Bad Things happen.
+       <LI>Strictly speaking, simply pointing anywhere else invokes
+           undefined behavior.  Most programs won't puke until such a
+           pointer is actually dereferenced, but the standards leave that
+           up to the platform.
+      </OL>
+      The reason this past-the-end addressing was allowed is to make it
+      easy to write a loop to go over an entire array, e.g.,
+      while (*d++ = *s++);.
+   </P>
+   <P>So, when you think of two pointers delimiting an array, don't think
+      of them as indexing 0 through n-1.  Think of them as <EM>boundary
+      markers</EM>:
+      <PRE>
+
+   beginning            end
+     |                   |
+     |                   |               This is bad.  Always having to
+     |                   |               remember to add or subtract one.
+     |                   |               Off-by-one bugs very common here.
+     V                   V
+        array of N elements
+     |---|---|--...--|---|---|
+     | 0 | 1 |  ...  |N-2|N-1|
+     |---|---|--...--|---|---|
+
+     ^                       ^
+     |                       |
+     |                       |           This is good.  This is safe.  This
+     |                       |           is guaranteed to work.  Just don't
+     |                       |           dereference 'end'.
+   beginning                end
+
+      </PRE>
+      See?  Everything between the boundary markers is part of the array.
+      Simple.
+   </P>
+   <P>Now think back to your junior-high school algebra course, when you
+      were learning how to draw graphs.  Remember that a graph terminating
+      with a solid dot meant, &quot;Everything up through this point,&quot;
+      and a graph terminating with an open dot meant, &quot;Everything up
+      to, but not including, this point,&quot; respectively called closed
+      and open ranges?  Remember how closed ranges were written with
+      brackets, <EM>[a,b]</EM>, and open ranges were written with parentheses,
+      <EM>(a,b)</EM>?
+   </P>
+   <P>The boundary markers for arrays describe a <EM>half-open range</EM>,
+      starting with (and including) the first element, and ending with (but
+      not including) the last element:  <EM>[beginning,end)</EM>.  See, I
+      told you it would be simple in the end.
+   </P>
+   <P>Iterators, and everything working with iterators, follows this same
+      time-honored tradition.  A container's <TT>begin()</TT> method returns
+      an iterator referring to the first element, and its <TT>end()</TT>
+      method returns a past-the-end iterator, which is guaranteed to be
+      unique and comparable against any other iterator pointing into the
+      middle of the container.
+   </P>
+   <P>Container constructors, container methods, and algorithms, all take
+      pairs of iterators describing a range of values on which to operate.
+      All of these ranges are half-open ranges, so you pass the beginning
+      iterator as the starting parameter, and the one-past-the-end iterator
+      as the finishing parameter.
+   </P>
+   <P>This generalizes very well.  You can operate on sub-ranges quite
+      easily this way; functions accepting a <EM>[first,last)</EM> range
+      don't know or care whether they are the boundaries of an entire {array,
+      sequence, container, whatever}, or whether they only enclose a few
+      elements from the center.  This approach also makes zero-length
+      sequences very simple to recognize:  if the two endpoints compare
+      equal, then the {array, sequence, container, whatever} is empty.
+   </P>
+   <P>Just don't dereference <TT>end()</TT>.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -85,7 +176,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $
 </EM></P>
 
 

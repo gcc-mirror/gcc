@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 26</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -35,6 +35,7 @@
    <LI><A HREF="#1">Complex Number Processing</A>
    <LI><A HREF="#2">Array Processing</A>
    <LI><A HREF="#3">Numerical Functions</A>
+   <LI><A HREF="#4">C99</A>
 </UL>
 
 <HR>
@@ -125,6 +126,27 @@
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
+<HR>
+<H2><A NAME="4">C99</A></H2>
+   <P>In addition to the other topics on this page, we'll note here some
+      of the C99 features that appear in libstdc++-v3.
+   </P>
+   <P>The C99 features depend on the <TT>--enable-c99</TT> configure flag.
+      This flag is already on by default, but it can be disabled by the
+      user.  Also, the configuration machinery will disable it if the
+      neccessary support for C99 (e.g., header files) cannot be found.
+   </P>
+   <P>As of GCC 3.0, C99 support includes classification functions
+      such as <TT>isnormal</TT>, <TT>isgreater</TT>, <TT>isnan</TT>, etc.
+      The functions used for 'long long' support such as <TT>strtoll</TT>
+      are supported, as is the <TT>lldiv_t</TT> typedef.  Also supported
+      are the wide character functions using 'long long', like
+      <TT>wcstoll</TT>.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
 
 
 <!-- ####################################################### -->
@@ -133,7 +155,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:56 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $
 </EM></P>
 
 

@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.4 2001/02/07 00:03:20 pme Exp $ -->
+<!-- $Id: install.html,v 1.5 2001/04/03 00:26:54 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -39,27 +39,32 @@
 
 <H2><A NAME="prereqs">Tools you will need beforehand</A></H2>
    <P>You will need a recent version of g++ to compile the snapshot of
-      libstdc++, one of the post-2.95.2 GCC
-      snapshots (insert standard caveat about using snapshots rather
-      than formal releases).  You will need the full source
+      libstdc++, such as one of the GCC 3.x snapshots (insert standard
+      caveat about using snapshots rather than formal releases).  You
+      will need the full source
       distribution to whatever compiler release you are using.  The
       GCC snapshots can be had from one of the sites on their
       <A HREF="http://gcc.gnu.org/mirrors.html">mirror list</A>.
    </P>
 
-   <P>In addition, if you plan to modify the makefiles or regenerate
-      the configure scripts you'll need the nuevo automake, libtool
-      and autoconf to regenerate the Makefiles and configure
-      scripts. These tools are all required to be installed in the
-      same location (most linux distributions install these tools by
-      default, so no worries.)
+   <P>In addition, if you plan to modify the makefiles or regenerate the
+      configure scripts you'll need recent versions of the GNU Autotools:
+      autoconf (version 2.50 or later),
+      automake (version 1.4 or later),    <!-- special version? -->
+      and libtool (multilanguage, version 1.4 or later),  <!-- really? -->
+      in order to rebuild the files.
+      These tools are all required to be installed in the same location
+      (most linux distributions install these tools by default, so no
+      worries as long as the versions are correct).
    </P>
 
-   <P>If you don't have bash, and want to run <TT>'make check'</TT> to
-      test your build, you'll need to get bash 2.x.  Also recommended
-      is GNU Make, since it is the only 'make' that will parse these
-      makefiles correctly.  We are moving to DejaGNU, so you'll
-      probably want to get that.
+   <P>GNU Make is the only 'make' that will parse the makefiles correctly.
+   </P>
+
+   <P>To test your build, you will need either DejaGNU 1.4 (to run
+      <TT>'make check'</TT> like
+      <A HREF="http://gcc.gnu.org/install/test.html">the rest of GCC</A>),
+      or Bash 2.x (to run <TT>'make check-script'</TT>).
    </P>
 
    <P>As of June 19, 2000, libstdc++ attempts to use tricky and
@@ -73,44 +78,20 @@
       <A HREF="ftp://sources.redhat.com/pub/binutils">here</A>.
    </P>
  
+ <!-- Commented until some system-specific requirements appear.
    <P>Finally, a few system-specific requirements:
       <DL>
         <DT>Cygwin
         <DD>If you are using Cygwin to compile libstdc++-v3 on Win32, you'll
-            have to get a version of the cygwin1.dll that is dated on or
-            after February 1, 2000.  This is necessary to successfully run
-            the script &quot;mknumeric_limits&quot; which probes the
-            floating-point
-            environment of the host in question -- before this date, Cygwin
-            would freeze when running this script.  In addition, you may
-            want to get a current version of libtool (say libtool-1.3.4
-            and above) as earlier versions supposedly had problems creating
-            shared libraries.
+            [snip]
 
       </DL>
    </P>
+-->
 
 <HR>
 
 <H2><A NAME="srcsetup">Setting up the source directories</A></H2>
-   <P><EM>As the libstdc++-v3 sources and the core GCC sources have
-      converged, more and more effort goes to building the
-      library as the default version to be shipped with g++.  With the
-      2.90.8 snapshot, and especially for CVS versions after this
-      release, this is treated as the usual scenario.  If you want to
-      build the library all by itself, you will need to explicitly
-      disable certain features (like namespaces) since the core GCC
-      library, libgcc.a, will not be rebuilt with those same features.
-   </EM>
-   </P>
-
-   <P>By default, all configurations of libstdc++-v3 now have namespaces
-      enabled.  Being able to select/de-select this option was a complex task
-      that had hopelessly confused many otherwise intelligent people, and
-      provided an endless stream of silent cursing and cries for help.  
-      Because of this, gcc sources are required, and are no longer optional.
-   </P>
-
    <P>The following definitions will be used throughout the rest of this
       document:
       <UL>
@@ -129,7 +110,7 @@
       </UL>
       Note:
       <OL>
-         <LI>The .91 snapshot and following are intended to replace the
+         <LI>The 3.0 version and following are intended to replace the
              library that comes with the compiler, so <EM>libsrcdir</EM>
              and <EM>libbuilddir</EM> must be contained under
              <EM>gccsrcdir</EM> and <EM>gccbuilddir</EM>, respectively.
@@ -140,58 +121,24 @@
       </OL>
    </P>
 
-   <P>Since the release of libstdc++-2.90.8, configuration patches have gone
-      into CVS gcc that make the management of the various libstdc++ source
-      trees a bit easier.  Because of this, both libstdc++-v2 and
-      libstdc++-v3 and live together in peace, without the need
-      for soft linking.  The setup instructions are slightly different,
-      depending on whether you want to use CVS gcc or a snapshot.  Please
-      choose the appropriate scenario:
-   </P>
-
-   <P><B>...with a gcc-2.9[67] snapshot</B>
-      <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
-         instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
-         Once in <EM>gccsrcdir</EM>, you'll need to rename or delete
-	 the libstdc++-v3 directory which comes with that snapshot:
-         <PRE>
+   <P>Check out or download the gcc sources: the resulting source directory
+      (<TT>gcc</TT> or <TT>gcc-3.0</TT>, for example) is <EM>gccsrcdir</EM>.
+      Once in <EM>gccsrcdir</EM>, you'll need to rename or delete the
+      libstdc++-v3 directory which comes with that snapshot:
+      <PRE>
    mv libstdc++-v3 libstdc++-v3-previous  <STRONG>[OR]</STRONG>
    rm -r libstdc++-v3</PRE>
-      </P>
-      <P>Next, unpack the libstdc++-v3 library tarball into the
-         <EM>gccsrcdir</EM> directory; it will create a
-         <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
-         <PRE>
-   gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
-      </P>
-      <P>Finally, make a soft link between <EM>libsrcdir</EM> and
-         <TT>libstdc++-v3</TT> so that libstdc++-v3 will be the default C++
-         library used.
-         <PRE>
-   ln -s <EM>libsrcdir</EM> libstdc++-v3</PRE>
-      </P>
    </P>
-
-   <P><B>...with CVS gcc</B> 
-      <P>Check out or download the gcc sources: the resulting source
-         directory is <EM>gccsrcdir</EM>.  Once in <EM>gccsrcdir</EM>,
-         you'll need to rename or delete the libstdc++-v3 directory
-	 which comes with that snapshot:
-         <PRE>
-   mv libstdc++-v3 libstdc++-v3-previous  <STRONG>[OR]</STRONG>
-   rm -r libstdc++-v3</PRE>
-      </P>
-      <P>Next, unpack the libstdc++-v3 library tarball into this
-         <EM>gccsrcdir</EM> directory; it will create a
-         <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
-         <PRE>
+   <P>Next, unpack the libstdc++-v3 library tarball into this
+      <EM>gccsrcdir</EM> directory; it will create a
+      <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
+      <PRE>
    gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
-      </P>
-      <P>Finally, rename <EM>libsrcdir</EM> to <TT>libstdc++-v3</TT> so that
-         gcc's configure flags will be able to deal with the new library.
-         <PRE>
+   </P>
+   <P>Finally, rename <EM>libsrcdir</EM> to <TT>libstdc++-v3</TT> so that
+      gcc's configure flags will be able to deal with the new library.
+      <PRE>
    mv <EM>libsrcdir</EM> libstdc++-v3</PRE>
-      </P>
    </P>
 
 
@@ -201,7 +148,7 @@
       <A HREF="http://gcc.gnu.org/install/">GCC Installation
       Instructions</A> first.
    </P>
-   <P>Due to namespaces, when building libstdc++-v3 you'll have to configure
+   <P>When building libstdc++-v3 you'll have to configure
       the entire <EM>gccsrcdir</EM> directory.  The full list of libstdc++-v3
       specific configuration options, not dependent on the specific compiler
       release being used, can be found <A HREF="configopts.html">here</A>.
@@ -235,13 +182,13 @@
       <PRE>
    make all-target-<EM>libstdc++-v3</EM></PRE>
       This will configure and build the C++ library in the
-      <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++ directory.
+      <EM>gccbuilddir/cpu-vendor-os/</EM>libstdc++ directory.
    </P>
    <P>If you are rebuilding from a previous build [attempt], some
       information is kept in a cache file.  This is stored in
-      <EM>gccbuilddir/cpu-vendor-OS/</EM> if you are building with
+      <EM>gccbuilddir/cpu-vendor-os/</EM> if you are building with
       multilibs (the default), or in
-      <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++-v3 if you have
+      <EM>gccbuilddir/cpu-vendor-os/</EM>libstdc++-v3 if you have
       multilibs disabled.  The filename is config.cache; if previous
       information is causing problems, you can delete it entirely, or
       simply edit it and remove lines.
@@ -263,10 +210,9 @@
       <PRE>
    lib/
    include/g++-v3/
+      backward/
       bits/
-      ext/
-   CPU-vendor-OS/include/g++-v3/
-      bits/
+      <EM>cpu-vendor-os</EM>/bits/
       ext/</PRE>
    </P>
    <P>You can check the status of the build without installing it using
@@ -316,6 +262,10 @@
        <P>Use the <TT>ldd(1)</TT> utility to show which library the system
           thinks it will get at runtime.
        </P>
+       <P>A libstdc++.la file is also installed, for use with Libtool.  If
+          you use Libtool to create your executables, these details are
+          taken care of for you.
+       </P>
    </OL>
    </P>
 
@@ -334,7 +284,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: install.html,v 1.4 2001/02/07 00:03:20 pme Exp $
+<BR> $Id: install.html,v 1.5 2001/04/03 00:26:54 pme Exp $
 </EM></P>
 
 

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 25</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -37,12 +37,12 @@
       important things:
       <OL>
         <LI>Anything that behaves like an iterator can be used in one of
-	    these algorithms.  Raw pointers make great candidates, thus
-	    built-in arrays are fine containers.  So do your own iterators.
+            these algorithms.  Raw pointers make great candidates, thus
+            built-in arrays are fine containers.  So do your own iterators.
         <LI>The algorithms do not (and cannot) affect the container as a
-	    whole; only the things between the two iterator endpoints.  If
-	    you pass a range of iterators only enclosing the middle third of
-	    a container, then anything outside that range is inviolate.
+            whole; only the things between the two iterator endpoints.  If
+            you pass a range of iterators only enclosing the middle third of
+            a container, then anything outside that range is inviolate.
       </OL>
    </P>
    <P>Even strings can be fed through the algorithms here, although the
@@ -59,7 +59,7 @@
    <P>The single thing that trips people up the most is the definition of 
       <EM>range</EM> used with iterators; the famous
       &quot;past-the-end&quot; rule that everybody loves to hate.  The
-      <A HREF="../24_iterators/howto.html">iterators chapter</A> of this
+      <A HREF="../24_iterators/howto.html#2">iterators chapter</A> of this
       document has a complete explanation of this simple rule that seems to
       cause so much confusion.  Once you get <EM>range</EM> into your head
       (it's not that hard, honest!), then the algorithms are a cakewalk.
@@ -87,7 +87,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:56 pme Exp $
 </EM></P>
 
 

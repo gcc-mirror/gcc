@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2001/03/25 00:01:56 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -93,16 +93,8 @@
       object file.  The checks are also cleaner and easier to read and
       understand.
    </P>
-   <P>Concept checking can be disabled when you build your code, for example,
-      to save space during a production build.  Just define (via -D or
-      #define) any of the macros
-      <TT>_GLIBCPP_NO_CONCEPT_CHECKS (yes, with the leading underscore),
-      <TT>_STL_NO_CONCEPT_CHECKS</TT> (also with the leading underscore),
-      or <TT>NDEBUG</TT>.  The first macro is specifically for this
-      feature, the second is the disabling macro for the replaced SGI
-      version (some code may assume SGI's version is in use), and the third
-      is the usual macro to disable <TT>assert()</TT>, which is often turned
-      off for production builds.
+   <P>Right now they are off by default.  More will be added once
+      GCC 3.0 is released and we have time to revisit this topic.
    </P>
 
    <P>Return <A HREF="#top">to top of page</A> or
@@ -116,7 +108,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.2 2001/03/25 00:01:56 pme Exp $
+<BR> $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $
 </EM></P>
 
 
