@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -171,7 +171,7 @@ namespace std
 	}
       return __ret;
     }
-  
+
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
@@ -222,20 +222,25 @@ namespace std
 		}
 	      const streamsize __remainder = _M_ext_end - _M_ext_next;
 	      __rlen = __rlen > __remainder ? __rlen - __remainder : 0;
-	      
+
+	      // An imbue in 'read' mode implies first converting the external
+	      // chars already present.
+	      if (_M_reading && this->egptr() == this->eback() && __remainder)
+		__rlen = 0;
+      
 	      // Allocate buffer if necessary and move unconverted
 	      // bytes to front.
 	      if (_M_ext_buf_size < __blen)
 		{
 		  char* __buf = new char[__blen];
-		  if (__remainder > 0)
+		  if (__remainder)
 		    std::memcpy(__buf, _M_ext_next, __remainder);
 
 		  delete [] _M_ext_buf;
 		  _M_ext_buf = __buf;
 		  _M_ext_buf_size = __blen;
 		}
-	      else if (__remainder > 0)
+	      else if (__remainder)
 		std::memmove(_M_ext_buf, _M_ext_next, __remainder);
 
 	      _M_ext_next = _M_ext_buf;
@@ -738,22 +743,52 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      bool __testfail = false;
+      bool __testvalid = true;
+
+      const __codecvt_type* _M_codecvt_tmp = 0;
+      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))	      
+	_M_codecvt_tmp = &use_facet<__codecvt_type>(__loc);      
+
       if (this->is_open())
 	{
-	  const pos_type __ret = this->seekoff(0, ios_base::cur,
-					       this->_M_mode);
-	  const bool __teststate = __check_facet(_M_codecvt).encoding() == -1;
-	  __testfail = __teststate && __ret != pos_type(off_type(0));
+	  // encoding() == -1 is ok only at the beginning.
+	  if ((_M_reading || _M_writing)
+	      && __check_facet(_M_codecvt).encoding() == -1)
+	    __testvalid = false;
+	  else
+	    {
+	      if (_M_reading)
+		{
+		  if (__check_facet(_M_codecvt).always_noconv())
+		    {
+		      if (_M_codecvt_tmp
+			  && !__check_facet(_M_codecvt_tmp).always_noconv())
+			__testvalid = this->seekoff(0, ios_base::cur, this->_M_mode)
+			              != pos_type(off_type(-1));
+		    }
+		  else
+		    {
+		      // External position corresponding to gptr().
+		      _M_ext_next = _M_ext_buf 
+			+ _M_codecvt->length(_M_state_last, _M_ext_buf, _M_ext_next,
+					     this->gptr() - this->eback());
+		      const streamsize __remainder = _M_ext_end - _M_ext_next;
+		      if (__remainder)
+			std::memmove(_M_ext_buf, _M_ext_next, __remainder);
+
+		      _M_ext_next = _M_ext_buf;
+		      _M_ext_end = _M_ext_buf + __remainder;
+		      _M_set_buffer(-1);
+		      _M_state_last = _M_state_cur = _M_state_beg;
+		    }
+		}
+	      else if (_M_writing && (__testvalid = _M_terminate_output()))
+		_M_set_buffer(-1);
+	    }
 	}
 
-      if (!__testfail)
-	{
-	  if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
-	    _M_codecvt = &use_facet<__codecvt_type>(__loc);
-	  else
-	    _M_codecvt = 0;
-	}
+      if (__testvalid)
+	_M_codecvt = _M_codecvt_tmp;
     }
 
   // Inhibit implicit instantiations for required instantiations,
