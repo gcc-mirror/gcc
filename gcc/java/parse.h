@@ -728,13 +728,12 @@ typedef struct _jdeplist {
 struct parser_ctxt {
 
   const char *filename;		    /* Current filename */
-  FILE *finput;			    /* Current file input stream */
   struct parser_ctxt *next;
 
+  java_lexer *lexer;		     /* Current lexer state */
   char marker_begining;		     /* Marker. Should be a sub-struct */
   struct java_line *p_line, *c_line; /* Previous and current line */
   java_lc elc;			     /* Error's line column info */
-  unicode_t unget_utf8_value;        /* An unget utf8 value */
   int ccb_indent;		     /* Keep track of {} indent, lexer */
   int first_ccb_indent1;	     /* First { at ident level 1 */
   int last_ccb_indent1;		     /* Last } at ident level 1 */
@@ -928,7 +927,7 @@ extern void reset_report PARAMS ((void));
 /* Always in use, no matter what you compile */
 void java_push_parser_context PARAMS ((void));
 void java_pop_parser_context PARAMS ((int));
-void java_init_lex PARAMS ((void));
+void java_init_lex PARAMS ((FILE *, const char *));
 extern void java_parser_context_save_global PARAMS ((void));
 extern void java_parser_context_restore_global PARAMS ((void));
 int yyparse PARAMS ((void));

@@ -26,6 +26,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "version.h"
 
+#ifdef HAVE_NL_LANGINFO
+#include <langinfo.h>
+#endif
+
 #include <getopt.h>
 
 void fatal PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
@@ -61,6 +65,7 @@ int flag_list_filename = 0;
 
 #define OPT_HELP      LONG_OPT (0)
 #define OPT_VERSION   LONG_OPT (1)
+#define OPT_ENCODING  LONG_OPT (2)
 
 static struct option options[] =
 {
@@ -69,6 +74,7 @@ static struct option options[] =
   { "print-main", no_argument,      &flag_find_main, 1 },
   { "list-filename", no_argument,   &flag_list_filename, 1 },
   { "list-class", no_argument,      &flag_dump_class, 1 },
+  { "encoding",  required_argument, NULL, OPT_ENCODING },
   { NULL,        no_argument,       NULL, 0 }
 };
 
@@ -84,6 +90,7 @@ help ()
 {
   printf ("Usage: jv-scan [OPTION]... FILE...\n\n");
   printf ("Print useful information read from Java source files.\n\n");
+  printf ("  --encoding NAME         Specify encoding of input file\n");
   printf ("  --print-main            Print name of class containing `main'\n");
   printf ("  --list-class            List all classes defined in file\n");
   printf ("  --list-filename         Print input filename when listing class names\n");
@@ -114,6 +121,7 @@ DEFUN (main, (argc, argv),
 {
   int i = 1;
   const char *output_file = NULL;
+  const char *encoding = NULL;
   long ft;
   int opt;
 
@@ -144,6 +152,10 @@ DEFUN (main, (argc, argv),
 	  version ();
 	  break;
 
+	case OPT_ENCODING:
+	  encoding = optarg;
+	  break;
+
 	default:
 	  usage ();
 	  break;
@@ -172,7 +184,20 @@ DEFUN (main, (argc, argv),
 	input_filename = argv [i];
 	if ( (finput = fopen (argv [i], "r")) )
 	  {
-	    java_init_lex ();
+	    /* There's no point in trying to find the current encoding
+	       unless we are going to do something intelligent with it
+	       -- hence the test for iconv.  */
+#ifdef HAVE_ICONV
+#ifdef HAVE_NL_LANGINFO
+	    setlocale (LC_CTYPE, "");
+	    if (encoding == NULL)
+	      encoding = nl_langinfo (CODESET);
+#endif /* HAVE_NL_LANGINFO */
+#endif /* HAVE_ICONV */
+	    if (encoding == NULL || *encoding == '\0')
+	      encoding = DEFAULT_ENCODING;
+
+	    java_init_lex (finput, encoding);
 	    yyparse ();
 	    if (ftell (out) != ft)
 	      fputc ('\n', out);

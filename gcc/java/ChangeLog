@@ -1,5 +1,46 @@
 2000-09-12  Tom Tromey  <tromey@cygnus.com>
 
+	Fix for PR gcj/33:
+	* jv-scan.c (help): Document --encoding.
+	(options): Added `encoding' entry.
+	(OPT_ENCODING): New define.
+	(main): Handle --encoding.
+	Include <langinfo.h> if nl_langinfo exists.
+	* lang-options.h: Document --classpath, --CLASSPATH, --main, and
+	--encoding.
+	* jcf-parse.c Include <langinfo.h> if we have nl_langinfo.
+	(parse_source_file): Correctly call java_init_lex.  Added `finput'
+	argument.  Use nl_langinfo to determine default encoding.
+	* java-tree.h (current_encoding): Declare.
+	* parse.y (java_parser_context_restore_global): Don't restore
+	`finput'.
+	(java_parser_context_save_global): Don't set `finput' field.
+	(java_pop_parser_context): Don't restore `finput'.  Free old lexer
+	if required.
+	* lang.c (current_encoding): New global.
+	(lang_decode_option): Recognize `-fencoding='.
+	(finish_parse): Don't close finput.
+	* parse.h (struct parser_ctxt): Removed `finput' and
+	`unget_utf8_value' fields.  Added `lexer' field.
+	(java_init_lex): Fixed declaration.
+	* lex.c (java_new_lexer): New function.
+	(java_destroy_lexer): Likewise.
+	(java_read_char): Added `lex' argument.  Handle iconv case.
+	(java_read_unicode): Added `lex' argument.  Count backslashes in
+	lexer structure.
+	(java_init_lex): Added `finput' and `encoding' arguments.  Set
+	`lexer' field in ctxp.
+	(BAD_UTF8_VALUE): Removed.
+	(java_lex): Handle seeing UEOF in the middle of a string literal.
+	* lex.h: Include <iconv.h> if HAVE_ICONV defined.
+	(java_lexer): New structure.
+	(UNGETC): Removed.
+	(GETC): Removed.
+	(DEFAULT_ENCODING): New define.
+	(java_destroy_lexer): Declare.
+
+2000-09-12  Tom Tromey  <tromey@cygnus.com>
+
 	Fix for PR gcj/343:
 	* lex.c (java_init_lex): Initialize java_io_serializable.
 	* parse.y (java_io_serializable): New global.

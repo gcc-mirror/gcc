@@ -35,6 +35,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "parse.h"
 
+#ifdef HAVE_NL_LANGINFO
+#include <langinfo.h>
+#endif
+
 /* A CONSTANT_Utf8 element is converted to an IDENTIFIER_NODE at parse time. */
 #define JPOOL_UTF(JCF, INDEX) CPOOL_UTF(&(JCF)->cpool, INDEX)
 #define JPOOL_UTF_LENGTH(JCF, INDEX) IDENTIFIER_LENGTH (JPOOL_UTF (JCF, INDEX))
@@ -83,7 +87,7 @@ static struct JCF main_jcf[1];
 static tree give_name_to_class PARAMS ((JCF *jcf, int index));
 static void parse_zip_file_entries PARAMS ((void));
 static void process_zip_dir PARAMS ((void));
-static void parse_source_file PARAMS ((tree));
+static void parse_source_file PARAMS ((tree, FILE *));
 static void jcf_parse_source PARAMS ((void));
 static int jcf_figure_file_type PARAMS ((JCF *));
 static int find_in_current_zip PARAMS ((const char *, struct JCF **));
@@ -564,6 +568,7 @@ static void
 jcf_parse_source ()
 {
   tree file;
+  FILE *finput;
 
   java_parser_context_save_global ();
   java_push_parser_context ();
@@ -576,7 +581,7 @@ jcf_parse_source ()
       if (!(finput = fopen (input_filename, "r")))
 	fatal ("input file `%s' just disappeared - jcf_parse_source",
 	       input_filename);
-      parse_source_file (file);
+      parse_source_file (file, finput);
       if (fclose (finput))
 	fatal ("can't close input file `%s' stream - jcf_parse_source",
 	       input_filename);
@@ -754,8 +759,9 @@ parse_class_file ()
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
 
 static void
-parse_source_file (file)
+parse_source_file (file, finput)
      tree file;
+     FILE *finput;
 {
   int save_error_count = java_error_count;
   /* Mark the file as parsed */
@@ -765,7 +771,21 @@ parse_source_file (file)
 
   lang_init_source (1);		    /* Error msgs have no method prototypes */
 
-  java_init_lex ();		    /* Initialize the parser */
+  /* There's no point in trying to find the current encoding unless we
+     are going to do something intelligent with it -- hence the test
+     for iconv.  */
+#ifdef HAVE_ICONV
+#ifdef HAVE_NL_LANGINFO
+  setlocale (LC_CTYPE, "");
+  if (current_encoding == NULL)
+    current_encoding = nl_langinfo (CODESET);
+#endif /* HAVE_NL_LANGINFO */
+#endif /* HAVE_ICONV */
+  if (current_encoding == NULL || *current_encoding == '\0')
+    current_encoding = DEFAULT_ENCODING;
+
+  /* Initialize the parser */
+  java_init_lex (finput, current_encoding);
   java_parse_abort_on_error ();
 
   java_parse ();		    /* Parse and build partial tree nodes. */
@@ -796,6 +816,7 @@ yyparse ()
   int several_files = 0;
   char *list = xstrdup (input_filename), *next;
   tree node, current_file_list = NULL_TREE;
+  FILE *finput;
 
   do 
     {
@@ -901,7 +922,7 @@ yyparse ()
 	case JCF_SOURCE:
 	  java_push_parser_context ();
 	  java_parser_context_save_global ();
-	  parse_source_file (name);
+	  parse_source_file (name, finput);
 	  java_parser_context_restore_global ();
 	  java_pop_parser_context (1);
 	  break;
