@@ -1,3 +1,10 @@
+2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/13268, c++/13339
+	* class.c (add_method): Return early when method is error_mark_node.
+	* pt.c (tsubst_friend_function): Return early when new_friend is
+	error_mark_node.
+
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-lang.c (cp_expr_size): Return zero for empty classes.

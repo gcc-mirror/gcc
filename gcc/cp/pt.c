@@ -4897,6 +4897,9 @@ tsubst_friend_function (tree decl, tree args)
      
      Then, in S<int>, template <class U> void f(int, U) is not an
      instantiation of anything.  */
+  if (new_friend == error_mark_node)
+    return error_mark_node;
+  
   DECL_USE_TEMPLATE (new_friend) = 0;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
