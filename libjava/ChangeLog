@@ -5,6 +5,12 @@
 	* java/io/FileInputStream.java (skip): Call fd.getFilePointer() and
 	calculate correct number of bytes skipped.
 
+	Based on patch from Intel's ORP team:
+	* java/io/PushbackInputStream.java (available): Calculate correct 
+	number of bytes in buffer.
+	(read): Remove redundant bound check. Return bytes from both the
+	buffer and the stream.
+
 2002-03-24  Eric Blake  <ebb9@email.byu.edu>
 
 	* java/beans/IntrospectionException.java: Update to 1.4.
