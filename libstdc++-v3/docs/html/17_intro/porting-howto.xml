@@ -377,7 +377,9 @@ o clean up the section-numbering
       <command>std::streambuf</command> (or
       <command>std::basic_streambuf&lt;..&gt;</command>) which opens a file
       given a descriptor, and then pass an instance of this to the
-      stream-constructor (from the Josuttis-book).
+      stream-constructor.  For an example of this, refer to
+      <ulink url="http://www.josuttis.com/cppcode/fdstream.html">fdstream example</ulink> 
+      by Nicolai Josuttis.
     </para>
   </section>
   
