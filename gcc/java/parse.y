@@ -11485,9 +11485,9 @@ java_complete_lhs (node)
 	  EXPR_WFL_NODE (node) = body;
 	  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (body);
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
-	  if (body == empty_stmt_node)
+	  if (body == empty_stmt_node || TREE_CONSTANT (body))
 	    {
-	      /* Optimization;  makes it easier to detect empty bodies. */
+	      /* Makes it easier to constant fold, detect empty bodies. */
 	      return body;
 	    }
 	  if (body == error_mark_node)
