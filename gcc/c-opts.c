@@ -54,6 +54,7 @@ static cpp_options *cpp_opts;
 /* Input filename.  */
 static const char **in_fnames;
 static unsigned num_in_fnames;
+static const char *this_input_filename;
 
 /* Filename and stream for preprocessed output.  */
 static const char *out_fname;
@@ -109,7 +110,7 @@ static void sanitize_cpp_opts (void);
 static void add_prefixed_path (const char *, size_t);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const struct line_map *);
-static void finish_options (void);
+static void finish_options (const char *);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -1167,7 +1168,7 @@ c_common_init (void)
 
   if (flag_preprocess_only)
     {
-      finish_options ();
+      finish_options (in_fnames[0]);
       preprocess_file (parse_in);
       return false;
     }
@@ -1205,7 +1206,7 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  cpp_read_next_file (parse_in, in_fnames[file_index]);
 	}
 
-      finish_options();
+      finish_options(in_fnames[file_index]);
       if (file_index == 0)
 	pch_init();
       c_parse_file ();
@@ -1361,9 +1362,11 @@ add_prefixed_path (const char *suffix, size_t chain)
   add_path (path, chain, 0);
 }
 
-/* Handle -D, -U, -A, -imacros, and the first -include.  */
+/* Handle -D, -U, -A, -imacros, and the first -include.  
+   TIF is the input file to which we will return after processing all
+   the includes.  */
 static void
-finish_options (void)
+finish_options (const char *tif)
 {
   if (!cpp_opts->preprocessed)
     {
@@ -1414,6 +1417,7 @@ finish_options (void)
     }
 
   include_cursor = 0;
+  this_input_filename = tif;
   push_command_line_include ();
 }
 
@@ -1435,7 +1439,7 @@ push_command_line_include (void)
   if (include_cursor == deferred_count)
     {
       /* Restore the line map from <command line>.  */
-      cpp_change_file (parse_in, LC_RENAME, main_input_filename);
+      cpp_change_file (parse_in, LC_RENAME, this_input_filename);
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = warn_unused_macros;
       include_cursor++;
