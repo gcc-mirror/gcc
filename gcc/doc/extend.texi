@@ -1303,17 +1303,17 @@ of zero-length arrays, @code{sizeof} evaluates to zero.
 
 @item
 Flexible array members may only appear as the last member of a
-@code{struct} that is otherwise non-empty.  GCC currently allows
-zero-length arrays anywhere.  You may encounter problems, however,
-defining structures containing only a zero-length array.  Such usage
-is deprecated, and we recommend using zero-length arrays only in
-places in which flexible array members would be allowed.
+@code{struct} that is otherwise non-empty.
 @end itemize
 
 GCC versions before 3.0 allowed zero-length arrays to be statically
-initialized.  In addition to those cases that were useful, it also
-allowed initializations in situations that would corrupt later data.
-Non-empty initialization of zero-length arrays is now deprecated.
+initialized, as if they were flexible arrays.  In addition to those
+cases that were useful, it also allowed initializations in situations
+that would corrupt later data.  Non-empty initialization of zero-length
+arrays is now treated like any case where there are more initializer
+elements than the array holds, in that a suitable warning about "excess
+elements in array" is given, and the excess elements (all of them, in
+this case) are ignored.
 
 Instead GCC allows static initialization of flexible array members.
 This is equivalent to defining a new structure containing the original

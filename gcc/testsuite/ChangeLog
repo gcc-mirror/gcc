@@ -1,3 +1,10 @@
+2001-09-20  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/20000926-1.c: Update expected warning messages.
+	* gcc.dg/array-2.c: Likewise, and test for warnings too.
+	* gcc.dg/array-4.c: Likewise, and don't verify the zero-length
+	array.
+
 2001-09-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/eh/registers1.C: New test case.
