@@ -1,3 +1,11 @@
+2003-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h (ATTRIBUTE_NONNULL, ATTRIBUTE_NULL_PRINTF,
+	ATTRIBUTE_NULL_PRINTF_1, ATTRIBUTE_NULL_PRINTF_2,
+	ATTRIBUTE_NULL_PRINTF_3, ATTRIBUTE_NULL_PRINTF_4,
+	ATTRIBUTE_NULL_PRINTF_5): New.
+	(ATTRIBUTE_PRINTF): Add ATTRIBUTE_NONNULL.
+
 2003-03-17  Jan Hubicka  <jh@suse.cz>
 
 	* hashtab.h (htab_traverse_noresize): Declare.
