@@ -934,8 +934,9 @@ reg_or_add_cint64_operand (op, mode)
 {
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
+#if HOST_BITS_PER_WIDE_INT == 32
 	      && INTVAL (op) < 0x7fff8000
-#if HOST_BITS_PER_WIDE_INT != 32
+#else
 	      && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
 		  < 0x100000000ll)
 #endif
@@ -952,8 +953,9 @@ reg_or_sub_cint64_operand (op, mode)
 {
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
+#if HOST_BITS_PER_WIDE_INT == 32
 	      && (- INTVAL (op)) < 0x7fff8000
-#if HOST_BITS_PER_WIDE_INT != 32
+#else
 	      && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
 		  < 0x100000000ll)
 #endif
@@ -1035,20 +1037,16 @@ num_insns_constant_wide (value)
 #if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_POWERPC64)
     {
-      HOST_WIDE_INT low  = value & 0xffffffff;
-      HOST_WIDE_INT high = value >> 32;
+      HOST_WIDE_INT low  = ((value & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      HOST_WIDE_INT high = value >> 31;
 
-      low = (low ^ 0x80000000) - 0x80000000;  /* sign extend */
-
-      if (high == 0 && (low & 0x80000000) == 0)
+      if (high == 0 || high == -1)
 	return 2;
 
-      else if (high == -1 && (low & 0x80000000) != 0)
-	return 2;
+      high >>= 1;
 
-      else if (! low)
+      if (low == 0)
 	return num_insns_constant_wide (high) + 1;
-
       else
 	return (num_insns_constant_wide (high)
 		+ num_insns_constant_wide (low) + 1);
@@ -1171,8 +1169,8 @@ easy_fp_constant (op, mode)
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
 
-      return (num_insns_constant_wide ((HOST_WIDE_INT)k[0]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT)k[1]) == 1);
+      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
+	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
     }
 
   else if (mode == SFmode)
@@ -1782,10 +1780,8 @@ rs6000_legitimize_address (x, oldx, mode)
     { 
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
-      high_int = INTVAL (XEXP (x, 1)) & (~ (HOST_WIDE_INT) 0xffff);
-      low_int = INTVAL (XEXP (x, 1)) & 0xffff;
-      if (low_int & 0x8000)
-	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;
+      low_int = ((INTVAL (XEXP (x, 1)) & 0xffff) ^ 0x8000) - 0x8000;
+      high_int = INTVAL (XEXP (x, 1)) - low_int;
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (x, 0),
 					 GEN_INT (high_int)), 0);
       return gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));

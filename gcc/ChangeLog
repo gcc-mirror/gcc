@@ -1,3 +1,23 @@
+2002-03-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add any_operand and
+	zero_constant.
+	* config/rs6000/rs6000.c (easy_fp_constant): Fix formatting.
+
+2002-03-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (addsi3): Optimize sign extension.
+	(adddi3): Likewise.
+	(movdf): Likewise.
+	(movdi): Likewise.
+	(cmpsi splitter): Likewise.
+	(modsi3): Fail if <= 0.
+	* config/rs6000/rs6000.c (reg_or_add_cint64_operand): Remove
+	redundant test when HOST_BITS_PER_WIDE_INT != 32.
+	(reg_or_sub_cint64_operand): Likewise.
+	(num_insns_constant_wide): Optimize sign extension.
+	(rs6000_legitimize_address): Likewise.
+
 2002-03-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/sparc/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
@@ -92,6 +112,8 @@
 	C++ alias analysis improvement.
 	* alias.c (record_component_aliases): Record aliases for base 
 	classes too.
+
+2002-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (REG_ALLOC_ORDER): Add missing register.
 
