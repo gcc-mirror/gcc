@@ -53,20 +53,7 @@ enum cpp_token {
   CPP_COMMA,    /* "," */
   CPP_SEMICOLON,/* ";" */
   CPP_3DOTS,    /* "..." */
-#if 0
-  CPP_ANDAND, /* "&&" */
-  CPP_OROR,   /* "||" */
-  CPP_LSH,    /* "<<" */
-  CPP_RSH,    /* ">>" */
-  CPP_EQL,    /* "==" */
-  CPP_NEQ,    /* "!=" */
-  CPP_LEQ,    /* "<=" */
-  CPP_GEQ,    /* ">=" */
-  CPP_PLPL,   /* "++" */
-  CPP_MINMIN, /* "--" */
-#endif
-  /* POP_TOKEN is returned when we've popped a cpp_buffer. */
-  CPP_POP
+  CPP_POP	/* We're about to pop the buffer stack.  */
 };
 
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
