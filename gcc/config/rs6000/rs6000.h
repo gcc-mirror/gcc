@@ -1105,12 +1105,26 @@ enum reg_class
    in some cases it is preferable to use a more restrictive class.
 
    On the RS/6000, we have to return NO_REGS when we want to reload a
-   floating-point CONST_DOUBLE to force it to be copied to memory.  */
+   floating-point CONST_DOUBLE to force it to be copied to memory.  
+
+   We also don't want to reload integer values into floating-point
+   registers if we can at all help it.  In fact, this can
+   cause reload to abort, if it tries to generate a reload of CTR
+   into a FP register and discovers it doesn't have the memory location
+   required.
+
+   ??? Would it be a good idea to have reload do the converse, that is
+   try to reload floating modes into FP registers if possible?
+ */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)			\
-  ((GET_CODE (X) == CONST_DOUBLE			\
-    && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
-   ? NO_REGS : (CLASS))
+  (((GET_CODE (X) == CONST_DOUBLE			\
+     && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
+    ? NO_REGS 						\
+    : (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT 	\
+       && (CLASS) == NON_SPECIAL_REGS)			\
+    ? GENERAL_REGS					\
+    : (CLASS)))
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
