@@ -1570,6 +1570,23 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 
   gcc_assert (GET_CODE (dst) == PARALLEL);
 
+  if (!SCALAR_INT_MODE_P (GET_MODE (orig_src)))
+    {
+      enum machine_mode imode = int_mode_for_mode (GET_MODE (orig_src));
+      if (imode == BLKmode)
+	src = assign_stack_temp (GET_MODE (orig_src), ssize, 0);
+      else
+	src = gen_reg_rtx (imode);
+      if (imode != BLKmode)
+	src = gen_lowpart (GET_MODE (orig_src), src);
+      emit_move_insn (src, orig_src);
+      /* ...and back again.  */
+      if (imode != BLKmode)
+	src = gen_lowpart (imode, src);
+      emit_group_load (dst, src, type, ssize);
+      return;
+    }
+
   /* Check for a NULL entry, used to indicate that the parameter goes
      both on the stack and in registers.  */
   if (XEXP (XVECEXP (dst, 0, 0), 0))
@@ -1725,6 +1742,20 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
   int start, i;
 
   gcc_assert (GET_CODE (src) == PARALLEL);
+
+  if (!SCALAR_INT_MODE_P (GET_MODE (orig_dst)))
+    {
+      enum machine_mode imode = int_mode_for_mode (GET_MODE (orig_dst));
+      if (imode == BLKmode)
+        dst = assign_stack_temp (GET_MODE (orig_dst), ssize, 0);
+      else
+        dst = gen_reg_rtx (imode);
+      emit_group_store (dst, src, type, ssize);
+      if (imode != BLKmode)
+        dst = gen_lowpart (GET_MODE (orig_dst), dst);
+      emit_move_insn (orig_dst, dst);
+      return;
+    }
 
   /* Check for a NULL entry, used to indicate that the parameter goes
      both on the stack and in registers.  */
