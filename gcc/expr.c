@@ -168,7 +168,6 @@ static int mostly_zeros_p	PROTO((tree));
 static void store_constructor	PROTO((tree, rtx, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
-static int get_inner_unaligned_p PROTO((tree));
 static tree save_noncopied_parts PROTO((tree, tree));
 static tree init_noncopied_parts PROTO((tree, tree));
 static int safe_from_p		PROTO((rtx, tree));
@@ -2780,12 +2779,8 @@ expand_assignment (to, from, want_value, suggest_reg)
      an array element in an unaligned packed structure field, has the same
      problem.  */
 
-  if (TREE_CODE (to) == COMPONENT_REF
-      || TREE_CODE (to) == BIT_FIELD_REF
-      || (TREE_CODE (to) == ARRAY_REF
-	  && ((TREE_CODE (TREE_OPERAND (to, 1)) == INTEGER_CST
-	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (to))) == INTEGER_CST)
-	      || (SLOW_UNALIGNED_ACCESS && get_inner_unaligned_p (to)))))
+  if (TREE_CODE (to) == COMPONENT_REF || TREE_CODE (to) == BIT_FIELD_REF
+      || TREE_CODE (to) == ARRAY_REF)
     {
       enum machine_mode mode1;
       int bitsize;
@@ -4089,37 +4084,6 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
     }
 }
 
-/* Return true if any object containing the innermost array is an unaligned
-   packed structure field.  */
-
-static int
-get_inner_unaligned_p (exp)
-     tree exp;
-{
-  int needed_alignment = TYPE_ALIGN (TREE_TYPE (exp));
-
-  while (1)
-    {
-      if (TREE_CODE (exp) == COMPONENT_REF || TREE_CODE (exp) == BIT_FIELD_REF)
-	{
-	  if (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-	      < needed_alignment)
-	    return 1;
-	}
-      else if (TREE_CODE (exp) != ARRAY_REF
-	       && TREE_CODE (exp) != NON_LVALUE_EXPR
-	       && ! ((TREE_CODE (exp) == NOP_EXPR
-		      || TREE_CODE (exp) == CONVERT_EXPR)
-		     && (TYPE_MODE (TREE_TYPE (exp))
-			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
-	break;
-
-      exp = TREE_OPERAND (exp, 0);
-    }
-
-  return 0;
-}
-
 /* Given an expression EXP that may be a COMPONENT_REF, a BIT_FIELD_REF,
    or an ARRAY_REF, look for nested COMPONENT_REFs, BIT_FIELD_REFs, or
    ARRAY_REFs and find the ultimate containing object, which we return.
@@ -5272,11 +5236,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
 	tree index = TREE_OPERAND (exp, 1);
 	tree index_type = TREE_TYPE (index);
-	int i;
-
-	if (TREE_CODE (low_bound) != INTEGER_CST
-	    && contains_placeholder_p (low_bound))
-	  low_bound = build (WITH_RECORD_EXPR, sizetype, low_bound, exp);
+	HOST_WIDE_INT i;
 
 	/* Optimize the special-case of a zero lower bound.
 
@@ -5292,69 +5252,6 @@ expand_expr (exp, target, tmode, modifier)
 	if (! integer_zerop (low_bound))
 	  index = fold (build (MINUS_EXPR, index_type, index,
 			       convert (sizetype, low_bound)));
-
-	if ((TREE_CODE (index) != INTEGER_CST
-	     || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-	    && (! SLOW_UNALIGNED_ACCESS || ! get_inner_unaligned_p (exp)))
-	  {
-	    /* Nonconstant array index or nonconstant element size, and
-	       not an array in an unaligned (packed) structure field.
-	       Generate the tree for *(&array+index) and expand that,
-	       except do it in a language-independent way
-	       and don't complain about non-lvalue arrays.
-	       `mark_addressable' should already have been called
-	       for any array for which this case will be reached.  */
-
-	    /* Don't forget the const or volatile flag from the array
-	       element.  */
-	    tree variant_type = build_type_variant (type,
-						    TREE_READONLY (exp),
-						    TREE_THIS_VOLATILE (exp));
-	    tree array_adr = build1 (ADDR_EXPR,
-				     build_pointer_type (variant_type), array);
-	    tree elt;
-	    tree size = size_in_bytes (type);
-
-	    /* Convert the integer argument to a type the same size as sizetype
-	       so the multiply won't overflow spuriously.  */
-	    if (TYPE_PRECISION (index_type) != TYPE_PRECISION (sizetype))
-	      index = convert (type_for_size (TYPE_PRECISION (sizetype), 0),
-			       index);
-
-	    if (TREE_CODE (size) != INTEGER_CST
-		&& contains_placeholder_p (size))
-	      size = build (WITH_RECORD_EXPR, sizetype, size, exp);
-
-	    /* Don't think the address has side effects
-	       just because the array does.
-	       (In some cases the address might have side effects,
-	       and we fail to record that fact here.  However, it should not
-	       matter, since expand_expr should not care.)  */
-	    TREE_SIDE_EFFECTS (array_adr) = 0;
-
-	    elt
-	      = build1
-		(INDIRECT_REF, type,
-		 fold (build (PLUS_EXPR,
-			      TYPE_POINTER_TO (variant_type),
-			      array_adr,
-			      fold
-			      (build1
-			       (NOP_EXPR,
-				TYPE_POINTER_TO (variant_type),
-				fold (build (MULT_EXPR, TREE_TYPE (index),
-					     index,
-					     convert (TREE_TYPE (index),
-						      size))))))));;
-
-	    /* Volatility, etc., of new expression is same as old
-	       expression.  */
-	    TREE_SIDE_EFFECTS (elt) = TREE_SIDE_EFFECTS (exp);
-	    TREE_THIS_VOLATILE (elt) = TREE_THIS_VOLATILE (exp);
-	    TREE_READONLY (elt) = TREE_READONLY (exp);
-
-	    return expand_expr (elt, target, tmode, modifier);
-	  }
 
 	/* Fold an expression like: "foo"[2].
 	   This is not done in fold so it won't happen inside &.
@@ -5395,8 +5292,7 @@ expand_expr (exp, target, tmode, modifier)
 		 && TREE_CODE (array) == VAR_DECL && DECL_INITIAL (array)
 		 && TREE_CODE (DECL_INITIAL (array)) != ERROR_MARK)
 	  {
-	    if (TREE_CODE (index) == INTEGER_CST
-		&& TREE_INT_CST_HIGH (index) == 0)
+	    if (TREE_CODE (index) == INTEGER_CST)
 	      {
 		tree init = DECL_INITIAL (array);
 
@@ -5413,13 +5309,17 @@ expand_expr (exp, target, tmode, modifier)
 					  tmode, modifier);
 		  }
 		else if (TREE_CODE (init) == STRING_CST
-			 && i < TREE_STRING_LENGTH (init))
-		  return GEN_INT (TREE_STRING_POINTER (init)[i]);
+			 && TREE_INT_CST_HIGH (index) == 0
+			 && (TREE_INT_CST_LOW (index)
+			     < TREE_STRING_LENGTH (init)))
+		  return (GEN_INT
+			  (TREE_STRING_POINTER
+			   (init)[TREE_INT_CST_LOW (index)]));
 	      }
 	  }
       }
 
-      /* Treat array-ref with constant index as a component-ref.  */
+      /* ... fall through ... */
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
