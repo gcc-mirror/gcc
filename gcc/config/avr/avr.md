@@ -21,6 +21,10 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
+;; UNSPEC usage:
+;;  0  Length of a string, see "strlenhi".
+;;  1  Read from a word address in program memory, see "casesi".
+
 ;; Condition code settings.
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber"
   (const_string "none"))
@@ -1850,61 +1854,48 @@
 
 ;; table jump
 
-;; Note: the (mem:HI (...)) memory references here are special - actually
-;; the data is read from a word address in program memory (r31:r30 is the
-;; index in the table, not multiplied by 2 - see the "casesi" pattern).
-
 ;; Table made from "rjmp" instructions for <=8K devices.
 (define_insn "*tablejump_rjmp"
-   [(set (pc) (mem:HI
-	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
-			(label_ref (match_operand 2 "" "")))))
-    (use (label_ref (match_operand 1 "" "")))]
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r")] 1))
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (match_dup 0))]
   "!AVR_MEGA"
-  "subi r30,pm_lo8(-(%2))
-	sbci r31,pm_hi8(-(%2))
-	ijmp"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  "@
+	ijmp
+	push %A0\;push %B0\;ret"
+  [(set_attr "length" "1,3")
+   (set_attr "cc" "none,none")])
 
 ;; Not a prologue, but similar idea - move the common piece of code to libgcc.
 (define_insn "*tablejump_lib"
-   [(set (pc) (mem:HI (plus:HI (match_operand:HI 0 "register_operand" "=&z")
-			       (label_ref (match_operand 2 "" "")))))
-    (use (label_ref (match_operand 1 "" "")))]
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (match_dup 0))]
   "AVR_MEGA && TARGET_CALL_PROLOGUES"
-  "subi r30,pm_lo8(-(%2))
-	sbci r31,pm_hi8(-(%2))
-	jmp __tablejump2__"
-  [(set_attr "length" "4")
+  "jmp __tablejump2__"
+  [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump_enh"
-   [(set (pc) (mem:HI
-	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
-			(label_ref (match_operand 2 "" "")))))
-    (use (label_ref (match_operand 1 "" "")))]
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (match_dup 0))]
   "AVR_MEGA && AVR_ENHANCED"
-  "subi r30,pm_lo8(-(%2))
-	sbci r31,pm_hi8(-(%2))
-	lsl r30
+  "lsl r30
 	rol r31
 	lpm __tmp_reg__,Z+
 	lpm r31,Z
 	mov r30,__tmp_reg__
 	ijmp"
-  [(set_attr "length" "8")
+  [(set_attr "length" "6")
    (set_attr "cc" "clobber")])
 
 (define_insn "*tablejump"
-   [(set (pc) (mem:HI
-	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
-			(label_ref (match_operand 2 "" "")))))
-    (use (label_ref (match_operand 1 "" "")))]
+  [(set (pc) (unspec:HI [(match_operand:HI 0 "register_operand" "z")] 1))
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (match_dup 0))]
   "AVR_MEGA"
-  "subi r30,pm_lo8(-(%2))
-	sbci r31,pm_hi8(-(%2))
-	lsl r30
+  "lsl r30
 	rol r31
 	lpm
 	inc r30
@@ -1912,7 +1903,7 @@
 	lpm
 	push r0
 	ret"
-  [(set_attr "length" "10")
+  [(set_attr "length" "8")
    (set_attr "cc" "clobber")])
 
 (define_expand "casesi"
@@ -1929,16 +1920,13 @@
 			   (const_int 0))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-;;   (set (match_dup 6)
-;;	(plus:HI (match_dup 6)
-;;		 (match_dup 6)))
-;;   (set (match_dup 6)
-;;	(plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
-		 
-   (parallel [(set (pc) (mem:HI
-			 (plus:HI (match_dup 6)
-				  (label_ref (match_operand:HI 3 "" "")))))
-	      (use (label_ref (match_dup 3)))])]
+
+   (set (match_dup 6)
+	(plus:HI (match_dup 6) (label_ref (match_operand:HI 3 "" ""))))
+
+   (parallel [(set (pc) (unspec:HI [(match_dup 6)] 1))
+	      (use (label_ref (match_dup 3)))
+	      (clobber (match_dup 6))])]
   ""
   "
 {
