@@ -1,3 +1,11 @@
+2001-10-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* c-tree.texi: Eliminate duplicated word.
+	* cpp.texi: Likewise.
+	* install.texi: Likewise.
+	* invoke.texi: Likewise.
+	* tm.texi: Likewise.
+
 2001-10-14  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c/4157

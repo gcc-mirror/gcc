@@ -8503,7 +8503,7 @@ and 32532 cpus.  This is the default for the pc532-netbsd configuration.
 @opindex mmulti-add
 Try and generate multiply-add floating point instructions @code{polyF}
 and @code{dotF}.  This option is only available if the @option{-m32381}
-option is in effect.  Using these instructions requires changes to to
+option is in effect.  Using these instructions requires changes to
 register allocation which generally has a negative impact on
 performance.  This option should only be enabled when compiling code
 particularly likely to make heavy use of multiply-add instructions.

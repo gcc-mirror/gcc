@@ -1875,7 +1875,7 @@ These nodes are used to represent pointer-to-member constants.  The
 or @code{UNION_TYPE} within which the pointer points), and the
 @code{PTRMEM_CST_MEMBER} is the declaration for the pointed to object.
 Note that the @code{DECL_CONTEXT} for the @code{PTRMEM_CST_MEMBER} is in
-general different from from the @code{PTRMEM_CST_CLASS}.  For example,
+general different from the @code{PTRMEM_CST_CLASS}.  For example,
 given:
 @example
 struct B @{ int i; @};

@@ -2923,7 +2923,7 @@ syntax errors.
 
 One way to avoid this problem is to use an always-false conditional
 instead.  For instance, put @code{#if 0} before the deleted code and
-@code{#endif} after it.  This This works even if the code being turned
+@code{#endif} after it.  This works even if the code being turned
 off contains conditionals, but they must be entire conditionals
 (balanced @samp{#if} and @samp{#endif}).
 
@@ -3193,7 +3193,7 @@ preprocessor preserves whitespace between tokens, or replaces it with
 e.g.@: a single space.  In GNU CPP, whitespace between tokens is collapsed
 to become a single space, with the exception that the first token on a
 non-directive line is preceded with sufficient spaces that it appears in
-the same column in the preprocessed output that it appeared in in the
+the same column in the preprocessed output that it appeared in the
 original source file.  This is so the output is easy to read.
 @xref{Differences from previous versions}.  CPP does not insert any
 whitespace where there was none in the original source, except where

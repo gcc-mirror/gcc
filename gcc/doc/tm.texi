@@ -7768,7 +7768,7 @@ or @code{MACHINE_DEPENDENT_REORG}.
 
 You can have multiple entities that are mode-switched, and select at run time
 which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
-return nonzero for any @var{entity} that that needs mode-switching.
+return nonzero for any @var{entity} that needs mode-switching.
 If you define this macro, you also have to define
 @code{NUM_MODES_FOR_MODE_SWITCHING}, @code{MODE_NEEDED},
 @code{MODE_PRIORITY_TO_MODE} and @code{EMIT_MODE_SET}.
