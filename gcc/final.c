@@ -161,7 +161,7 @@ extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
 static rtx this_is_asm_operands;
 
 /* Number of operands of this insn, for an `asm' with operands.  */
-static int insn_noperands;
+static unsigned int insn_noperands;
 
 /* Compare optimization flag.  */
 
@@ -2366,7 +2366,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	/* Detect `asm' construct with operands.  */
 	if (asm_noperands (body) >= 0)
 	  {
-	    int noperands = asm_noperands (body);
+	    unsigned int noperands = asm_noperands (body);
 	    rtx *ops = (rtx *) alloca (noperands * sizeof (rtx));
 	    char *string;
 
@@ -3255,7 +3255,7 @@ output_asm_insn (template, operands)
 
 	    if (! (*p >= '0' && *p <= '9'))
 	      output_operand_lossage ("operand number missing after %-letter");
-	    else if (this_is_asm_operands && c >= insn_noperands)
+	    else if (this_is_asm_operands && (c < 0 || (unsigned int) c >= insn_noperands))
 	      output_operand_lossage ("operand number out of range");
 	    else if (letter == 'l')
 	      output_asm_label (operands[c]);
@@ -3288,7 +3288,7 @@ output_asm_insn (template, operands)
 	else if (*p >= '0' && *p <= '9')
 	  {
 	    c = atoi (p);
-	    if (this_is_asm_operands && c >= insn_noperands)
+	    if (this_is_asm_operands && (c < 0 || (unsigned int) c >= insn_noperands))
 	      output_operand_lossage ("operand number out of range");
 	    else
 	      output_operand (operands[c], 0);
