@@ -1,3 +1,7 @@
+Sun Mar 12 00:23:32 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* MAINTAINERS: Add self as ia64 port maintainer.
+
 2000-03-08  Neil Booth  <NeilB@earthling.net>
 
 	* MAINTAINERS: Add self in write-after-approval section.
