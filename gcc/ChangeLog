@@ -1,3 +1,9 @@
+Mon Nov 10 03:02:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stmt.c (expand_decl_cleanup_no_eh): New fn.
+
+	* except.c (expand_leftover_cleanups): do_pending_stack_adjust.
+
 Mon Nov 10 00:05:56 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* alias.c (MAX_ALIAS_LOOP_PASSES): Define.
