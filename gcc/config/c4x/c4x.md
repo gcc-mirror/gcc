@@ -2106,12 +2106,12 @@
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
   "@
+   mpyshi\\t%2,%0
    mpyshi3\\t%2,%1,%0
    mpyshi3\\t%2,%1,%0
    mpyshi\\t%2,%0
    mpyshi3\\t%2,%1,%0
-   mpyshi3\\t%2,%1,%0
-   mpyshi\\t%2,%0"
+   mpyshi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "int16,int16,int16,int16,int16,int16")])
 
@@ -2147,12 +2147,12 @@
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
   "@
+   mpyuhi\\t%2,%0
    mpyuhi3\\t%2,%1,%0
    mpyuhi3\\t%2,%1,%0
    mpyuhi\\t%2,%0
    mpyuhi3\\t%2,%1,%0
-   mpyuhi3\\t%2,%1,%0
-   mpyuhi\\t%2,%0"
+   mpyuhi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "uint16,uint16,uint16,uint16,uint16,uint16")])
 
@@ -2711,24 +2711,24 @@
 
 (define_insn "*cmpqi_test"
   [(set (reg:CC 21)
-        (compare:CC (match_operand:QI 0 "src_operand" "rR,?rS<>,r")
-                    (match_operand:QI 1 "src_operand" "JR,rS<>,rIm")))]
+        (compare:CC (match_operand:QI 0 "src_operand" "r,rR,rS<>")
+                    (match_operand:QI 1 "src_operand" "rIm,JR,rS<>")))]
   "valid_operands (COMPARE, operands, QImode)"
   "@
+   cmpi\\t%1,%0
    cmpi3\\t%1,%0
-   cmpi3\\t%1,%0
-   cmpi\\t%1,%0"
+   cmpi3\\t%1,%0"
   [(set_attr "type" "compare,compare,compare")])
 
 (define_insn "*cmpqi_test_noov"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (match_operand:QI 0 "src_operand" "rR,?rS<>,r")
-                         (match_operand:QI 1 "src_operand" "JR,rS<>,rIm")))]
+        (compare:CC_NOOV (match_operand:QI 0 "src_operand" "r,rR,rS<>")
+                         (match_operand:QI 1 "src_operand" "rIm,JR,rS<>")))]
   "valid_operands (COMPARE, operands, QImode)"
   "@
+   cmpi\\t%1,%0
    cmpi3\\t%1,%0
-   cmpi3\\t%1,%0
-   cmpi\\t%1,%0"
+   cmpi3\\t%1,%0"
   [(set_attr "type" "compare,compare,compare")])
 
 (define_expand "udivqi3"
@@ -3689,7 +3689,7 @@
 
 (define_insn "*cmpqf"
   [(set (reg:CC 21)
-        (compare:CC (match_operand:QF 0 "src_operand" "fR,?fS<>,f")
+        (compare:CC (match_operand:QF 0 "src_operand" "f,fR,fS<>")
                     (match_operand:QF 1 "src_operand" "fHm,R,fS<>")))]
   "valid_operands (COMPARE, operands, QFmode)"
   "@
@@ -3700,7 +3700,7 @@
 
 (define_insn "*cmpqf_noov"
   [(set (reg:CC_NOOV 21)
-        (compare:CC_NOOV (match_operand:QF 0 "src_operand" "fR,?fS<>,f")
+        (compare:CC_NOOV (match_operand:QF 0 "src_operand" "f,fR,fS<>")
                          (match_operand:QF 1 "src_operand" "fHm,R,fS<>")))]
   "valid_operands (COMPARE, operands, QFmode)"
   "@

@@ -1,3 +1,10 @@
+Tue Apr 27 13:58:23 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*cmpqf, *cmpqf_noov, *cmpqi_test, 
+	*cmpqi_test_noov): Remove ? modifier from constraints list.
+	(*smulqi3_highpart_clobber, *umulqi3_highpart_clobber): Swap
+	output strings to match new constraint ordering.
+
 1999-04-26 19:16 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpphash.c (dump_definition): New function.
