@@ -3035,8 +3035,8 @@ block must be created to hold the instrumentation code.
 @need 2000
 @item -ftest-coverage
 @opindex ftest-coverage
-Create data files for the @code{gcov} code-coverage utility
-(@pxref{Gcov,, @code{gcov}: a GCC Test Coverage Program}).  See
+Create data files for the @command{gcov} code-coverage utility
+(@pxref{Gcov,, @command{gcov}---a Test Coverage Program}).  See
 @option{-fprofile-arcs} option above for a description of @var{auxname}.
 
 @table @gcctabopt
