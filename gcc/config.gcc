@@ -274,7 +274,7 @@ case $machine in
 	# These details are the same as for Linux.
 	xmake_file=x-linux
 	# But here we need a little extra magic.
-	tmake_file="t-linux t-gnu"
+	tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
 	case $machine in
 	i[34567]86-*-*)
 		tm_file="${cpu_type}/${cpu_type}.h i386/att.h linux.h i386/linux.h gnu.h ${tm_file}"
@@ -430,7 +430,7 @@ alpha*-*-linux*ecoff*)
 alpha*-*-linux*libc1*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-ieee"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -440,7 +440,7 @@ alpha*-*-linux*libc1*)
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
+	tmake_file="t-slibgcc-elf-ver t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -573,7 +573,7 @@ arm*-*-netbsd*)
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	xmake_file=x-linux
 	tm_file="arm/linux-elf.h"
-	tmake_file="t-linux arm/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	case x${enable_threads} in
@@ -688,7 +688,7 @@ hppa*-*-linux* | parisc*-*-linux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
-	tmake_file=pa/t-linux
+	tmake_file="t-slibgcc-elf-ver t-linux pa/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -920,7 +920,7 @@ i370-*-mvs*)
 i370-*-linux*)
 	xmake_file=x-linux
 	tm_file="i370/linux.h ${tm_file}"
-	tmake_file=t-linux
+	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	# extra_parts="crtbegin.o crtend.o"
@@ -1101,7 +1101,7 @@ i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 				# GNU/Linux C library 5
 	xmake_file=x-linux	
 	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
-	tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=i386
@@ -1114,7 +1114,7 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# aka GNU/Linux C library 6
 	xmake_file=x-linux
 	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
-	tmake_file="t-linux i386/t-crtstuff"
+	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=i386
@@ -1220,6 +1220,11 @@ i[34567]86-*-solaris2*)
 		tm_file="i386/sol2gas.h ${tm_file}"
 	fi
 	tmake_file=i386/t-sol2
+	if test x$gnu_ld = xyes; then
+		tmake_file="$tmake_file t-slibgcc-elf-ver"
+	else
+		tmake_file="$tmake_file t-slibgcc-sld"
+	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	xmake_file=x-svr4
 	if test x${enable_threads} = x; then
@@ -1479,7 +1484,7 @@ ia64*-*-elf*)
 	;;
 ia64*-*-linux*)
 	tm_file=ia64/linux.h
-	tmake_file="t-linux ia64/t-ia64 ia64/t-glibc"
+	tmake_file="t-slibgcc-elf-ver t-linux ia64/t-ia64 ia64/t-glibc"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -1883,7 +1888,7 @@ m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 				# GNU/Linux C library 5
 	xmake_file=x-linux
 	tm_file=m68k/linux.h
-	tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	extra_headers=math-68881.h
 	float_format=m68k
@@ -1894,7 +1899,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# aka the GNU/Linux C library 6.
 	xmake_file=x-linux
 	tm_file=m68k/linux.h
-	tmake_file="t-linux m68k/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	extra_headers=math-68881.h
 	float_format=m68k
@@ -2186,7 +2191,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	       mips*el-*)  tm_file="elfos.h mips/elfl.h mips/linux.h" ;;
 	       *)	  tm_file="elfos.h mips/elf.h mips/linux.h" ;;
 	esac
-	tmake_file=t-linux
+	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	gas=yes
@@ -2622,7 +2627,7 @@ powerpc-*-rtems*)
 powerpc-*-linux*libc1)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
-	tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
 	xmake_file=x-linux
 	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
@@ -2632,7 +2637,7 @@ powerpc-*-linux*libc1)
 powerpc-*-linux*)
 	tm_file="${tm_file} svr4.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
-	tmake_file="rs6000/t-ppcos t-linux rs6000/t-ppccomm"
+	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
 	xmake_file=x-linux
 	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
@@ -2834,7 +2839,7 @@ sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
 sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	xmake_file=x-linux
 	tm_file=sparc/linux.h
-	tmake_file="t-linux t-linux-gnulibc1"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=sparc
@@ -2842,7 +2847,7 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 	xmake_file=x-linux
 	tm_file=sparc/linux.h
-	tmake_file="t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -2886,9 +2891,9 @@ sparcv9-*-solaris2*)
 	xm_defines=POSIX
 	tmake_file="sparc/t-sol2 sparc/t-sol2-64"
 	if test x$gnu_ld = xyes; then
-		tmake_file="$tmake_file sparc/t-slibgcc"
+		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
-		tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 	float_format=none
@@ -2911,9 +2916,9 @@ sparc-hal-solaris2*)
         tm_file="sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2"
 	if test x$gnu_ld = xyes; then
-		tmake_file="$tmake_file sparc/t-slibgcc"
+		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
-		tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
         extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
         case $machine in
@@ -2936,9 +2941,9 @@ sparc-*-solaris2*)
 	xm_defines=POSIX
 	tmake_file=sparc/t-sol2
 	if test x$gnu_ld = xyes; then
-		tmake_file="$tmake_file sparc/t-slibgcc"
+		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
-		tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 # At the moment, 32-to-64 cross compilation doesn't work.
@@ -3037,7 +3042,7 @@ sparc64-*-elf*)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
-	tmake_file="t-linux sparc/t-linux64"
+	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
 	tm_file=sparc/linux64.h
 	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
