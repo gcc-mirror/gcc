@@ -5754,7 +5754,7 @@ cse_insn (insn, in_libcall_block)
          possibilities.  Prefer items not in the hash table to ones
          that are when they are equal cost.  Note that we can never
          worsen an insn as the current contents will also succeed.
-	 If we find an equivalent identical to the source, use it as best,
+	 If we find an equivalent identical to the destination, use it as best,
 	 since this insn will probably be eliminated in that case. */
       if (src)
 	{
@@ -5829,7 +5829,7 @@ cse_insn (insn, in_libcall_block)
 	    trial = src_related, src_related_cost = 10000;
           else
 	    {
-	      trial = canon_reg (copy_rtx (elt->exp), 0);
+	      trial = copy_rtx (elt->exp);
 	      elt = elt->next_same_value;
 	      src_elt_cost = 10000;
 	    }
@@ -5866,7 +5866,10 @@ cse_insn (insn, in_libcall_block)
 	   
 	  /* Look for a substitution that makes a valid insn.  */
           else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
-	    break;
+	    {
+	      SET_SRC (sets[i].rtl) = canon_reg (SET_SRC (sets[i].rtl), insn);
+	      break;
+	    }
 
 	  /* If we previously found constant pool entries for 
 	     constants and this is a constant, try making a
