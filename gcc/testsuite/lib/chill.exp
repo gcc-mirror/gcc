@@ -159,7 +159,7 @@ proc chill_link { target } {
     # verify that the object exists
     if ![file exists $target.o] then {
 	set errno 1
-	set result "file $target.o doesn'timeout exist"
+	set result "file $target.o doesn't exist"
 	return
     }
     
