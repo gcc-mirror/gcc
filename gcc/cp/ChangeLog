@@ -1,3 +1,11 @@
+2004-06-09  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert:
+	PR c++/15815
+	2004-06-07  Mark Mitchell  <mark@codesourcery.com>
+	* lex.c (handle_pragma_interface): Deprecate.
+	(handle_pragma_implementation): Likewise.
+
 2004-06-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++spec.c (lang_specific_driver): Remove check for -lm
