@@ -2810,7 +2810,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
           if (reg != 0)
             {
-              emit_move_insn (reg, new);
+              s390_load_address (reg, new);
               new = reg;
             }
         }
@@ -2919,7 +2919,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                         new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
                         if (reg != 0)
                           {
-                            emit_move_insn (reg, new);
+                            s390_load_address (reg, new);
                             new = reg;
                           }
                       }
@@ -2963,7 +2963,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
                       if (reg != 0)
                         {
-                          emit_move_insn (reg, new);
+                          s390_load_address (reg, new);
                           new = reg;
                         }
                     }
@@ -2992,7 +2992,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                   new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
                   if (reg != 0)
                     {
-                      emit_move_insn (reg, new);
+                      s390_load_address (reg, new);
                       new = reg;
                     }
                 }

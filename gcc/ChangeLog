@@ -1,3 +1,8 @@
+2004-11-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_pic_address): Use s390_load_address
+	to load addresses.
+
 2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18001
