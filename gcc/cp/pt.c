@@ -2749,6 +2749,12 @@ push_tinst_level (d)
       int line = lineno;
       char *file = input_filename;
 
+      /* If the instantiation in question still has unbound template parms,
+	 we don't really care if we can't instantiate it, so just return.
+         This happens with base instantiation for implicit `typename'.  */
+      if (uses_template_parms (d))
+	return 0;
+
       error ("template instantiation depth exceeds maximum of %d",
 	     max_tinst_depth);
       error (" (use -ftemplate-depth-NN to increase the maximum)");
@@ -2950,6 +2956,13 @@ instantiate_class_template (type)
 
   if (t)
     args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args);
+
+  if (pedantic && uses_template_parms (args))
+    /* If there are still template parameters amongst the args, then
+       we can't instantiate the type; there's no telling whether or not one
+       of the template parameters might eventually be instantiated to some
+       value that results in a specialization being used.  */
+    return type;
 
   TYPE_BEING_DEFINED (type) = 1;
 

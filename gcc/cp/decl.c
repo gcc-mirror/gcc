@@ -11038,9 +11038,10 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  continue;
 	}
 #if 1
-      /* This code replaces similar code in layout_basetypes.  */
-      else if (! (current_template_parms && uses_template_parms (basetype))
-	       && TYPE_SIZE (complete_type (basetype)) == NULL_TREE)
+      /* This code replaces similar code in layout_basetypes.
+         We put the complete_type first for implicit `typename'.  */
+      else if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
+	       && ! (current_template_parms && uses_template_parms (basetype)))
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);
 	  continue;
