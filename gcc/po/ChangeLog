@@ -1,3 +1,8 @@
+2001-05-07  Zack Weinberg  <zackw@stanford.edu>
+
+	* POTFILES.in: Remove config/i386/sco.h, config/i386/sco4.h,
+	config/i386/sco4dbx.h, and config/i386/scodbx.h.
+
 2001-04-04  Zack Weinberg  <zackw@stanford.edu>
 
 	* POTFILES.in: Remove config/romp/xm-romp.h.

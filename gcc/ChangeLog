@@ -1,3 +1,12 @@
+2001-05-07  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc (i[34567]86-*-sco3.2v4*, i[34567]86-*-sco*):
+	Delete stanzas.
+	* config/i386/sco.h, config/i386/sco4.h, config/i386/scodbx.h,
+	config/i386/sco4dbx.h, config/i386/x-sco4: Delete file.
+
+	* optabs.c: Delete #ifdef BROKEN_LDEXP block.
+
 2001-05-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (interspace_jump): Revise comment.
