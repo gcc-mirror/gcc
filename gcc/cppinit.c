@@ -1403,7 +1403,7 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, out_fname) = "";
 	  break;
 	case OPT_v:
-	  fprintf (stderr, _("GNU CPP version %s (cpplib)\n"), version_string);
+	  fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
 #ifdef TARGET_VERSION
 	  TARGET_VERSION;
 #endif

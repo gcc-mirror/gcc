@@ -120,11 +120,12 @@ _cpp_begin_message (pfile, code, file, line, col)
   switch (code)
     {
     case WARNING:
+      if (CPP_IN_SYSTEM_HEADER (pfile)
+	  && ! CPP_OPTION (pfile, warn_system_headers))
+	return 0;
       if (! CPP_OPTION (pfile, warnings_are_errors))
 	{
-          if (CPP_OPTION (pfile, inhibit_warnings)
-	      || (CPP_IN_SYSTEM_HEADER (pfile)
-		  && ! CPP_OPTION (pfile, warn_system_headers)))
+          if (CPP_OPTION (pfile, inhibit_warnings))
 	    return 0;
 	  is_warning = 1;
 	}
@@ -138,11 +139,12 @@ _cpp_begin_message (pfile, code, file, line, col)
       break;
 
     case PEDWARN:
+      if (CPP_IN_SYSTEM_HEADER (pfile)
+	  && ! CPP_OPTION (pfile, warn_system_headers))
+	return 0;
       if (! CPP_OPTION (pfile, pedantic_errors))
 	{
-          if (CPP_OPTION (pfile, inhibit_warnings)
-	      || (CPP_IN_SYSTEM_HEADER (pfile)
-		  && ! CPP_OPTION (pfile, warn_system_headers)))
+          if (CPP_OPTION (pfile, inhibit_warnings))
 	    return 0;
 	  is_warning = 1;
 	}
