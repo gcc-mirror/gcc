@@ -1,5 +1,10 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (override_options): Disable hot/cold partitioning
+	for MIPS16.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (mips_builtins, mips_cmp_choice): Delete.
 	(mips_function_type): Move to mips.c.
 	* config/mips/mips.c (mips_builtin_type): New enum.
