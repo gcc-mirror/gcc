@@ -2924,14 +2924,8 @@ PowerPC running Darwin (Mac OS X kernel).
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://www.opensource.apple.com/projects/darwin/} (free
+@uref{http://developer.apple.com/tools/compilers.html} (free
 registration required).
-
-If you're using Darwin 1.3 (Mac OS X 10.0) or earlier, you will need
-to upgrade the assembler to version ``cctools-364''.  To get cctools-364,
-check out @file{cctools} with tag @samp{Apple-364}, build it, and
-install the assembler as @file{usr/bin/as}.  See
-@uref{http://www.opensource.apple.com/tools/cvs/docs.html} for details.
 
 The default stack limit of 512K is too small, which may cause compiles
 to fail with 'Bus error'.  Set the stack larger, for instance
