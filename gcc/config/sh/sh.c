@@ -916,13 +916,13 @@ gen_ashift_hi (type, n, reg)
   switch (type)
     {
     case ASHIFTRT:
-      emit_insn (gen_ashrhi3_k (reg, reg, GEN_INT (n)));
-      break;
     case LSHIFTRT:
-      if (n == 1)
-	emit_insn (gen_lshrhi3_m (reg, reg, GEN_INT (n)));
-      else
-	emit_insn (gen_lshrhi3_k (reg, reg, GEN_INT (n)));
+      /* We don't have HImode right shift operations because using the
+	 ordinary 32 bit shift instructions for that doesn't generate proper
+	 zero/sign extension.
+	 gen_ashift_hi is only called in contexts where we know that the
+	 sign extension works out correctly.  */
+      gen_ashift (type, n, gen_rtx_SUBREG (SImode, reg, 0));
       break;
     case ASHIFT:
       emit_insn (gen_ashlhi3_k (reg, reg, GEN_INT (n)));
