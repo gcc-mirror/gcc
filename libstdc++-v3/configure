@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1555,7 +1555,7 @@ fi
 #  no-dependencies:  turns off auto dependency generation (just for now)
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is now required.
-am__api_version="1.8"
+am__api_version="1.9"
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
 # incompatible versions:
@@ -1707,13 +1707,21 @@ echo "$as_me: WARNING: \`missing' script is too old or missing" >&2;}
 fi
 
 if mkdir -p --version . >/dev/null 2>&1 && test ! -d ./--version; then
-  # Keeping the `.' argument allows $(mkdir_p) to be used without
-  # argument.  Indeed, we sometimes output rules like
+  # We used to keeping the `.' as first argument, in order to
+  # allow $(mkdir_p) to be used without argument.  As in
   #   $(mkdir_p) $(somedir)
-  # where $(somedir) is conditionally defined.
-  # (`test -n '$(somedir)' && $(mkdir_p) $(somedir)' is a more
-  # expensive solution, as it forces Make to start a sub-shell.)
-  mkdir_p='mkdir -p -- .'
+  # where $(somedir) is conditionally defined.  However this is wrong
+  # for two reasons:
+  #  1. if the package is installed by a user who cannot write `.'
+  #     make install will fail,
+  #  2. the above comment should most certainly read
+  #     $(mkdir_p) $(DESTDIR)$(somedir)
+  #     so it does not work when $(somedir) is undefined and
+  #     $(DESTDIR) is not.
+  #  To support the latter case, we have to write
+  #     test -z "$(somedir)" || $(mkdir_p) $(DESTDIR)$(somedir),
+  #  so the `.' trick is pointless.
+  mkdir_p='mkdir -p --'
 else
   # On NextStep and OpenStep, the `mkdir' command does not
   # recognize any option.  It will interpret all options as
@@ -1848,9 +1856,6 @@ AUTOHEADER=${AUTOHEADER-"${am_missing_run}autoheader"}
 
 MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
-
-AMTAR=${AMTAR-"${am_missing_run}tar"}
-
 install_sh=${install_sh-"$am_aux_dir/install-sh"}
 
 # Installed binaries are usually stripped using `strip' when the user
@@ -1943,6 +1948,13 @@ INSTALL_STRIP_PROGRAM="\${SHELL} \$(install_sh) -c -s"
 
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
+# Always define AMTAR for backward compatibility.
+
+AMTAR=${AMTAR-"${am_missing_run}tar"}
+
+am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+
+
 
 
 
@@ -4382,7 +4394,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4385 "configure"' > conftest.$ac_ext
+  echo '#line 4397 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5003,7 +5015,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5006 "configure"
+#line 5018 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -95609,7 +95621,6 @@ s,@AUTOCONF@,$AUTOCONF,;t t
 s,@AUTOMAKE@,$AUTOMAKE,;t t
 s,@AUTOHEADER@,$AUTOHEADER,;t t
 s,@MAKEINFO@,$MAKEINFO,;t t
-s,@AMTAR@,$AMTAR,;t t
 s,@install_sh@,$install_sh,;t t
 s,@STRIP@,$STRIP,;t t
 s,@ac_ct_STRIP@,$ac_ct_STRIP,;t t
@@ -95618,6 +95629,9 @@ s,@mkdir_p@,$mkdir_p,;t t
 s,@AWK@,$AWK,;t t
 s,@SET_MAKE@,$SET_MAKE,;t t
 s,@am__leading_dot@,$am__leading_dot,;t t
+s,@AMTAR@,$AMTAR,;t t
+s,@am__tar@,$am__tar,;t t
+s,@am__untar@,$am__untar,;t t
 s,@glibcxx_builddir@,$glibcxx_builddir,;t t
 s,@glibcxx_srcdir@,$glibcxx_srcdir,;t t
 s,@toplevel_srcdir@,$toplevel_srcdir,;t t
