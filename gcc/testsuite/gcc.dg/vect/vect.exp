@@ -71,19 +71,6 @@ if [istarget "powerpc*-*-*"] {
     return
 }
 
-# Return 1 if the effective target is LP64 or if the effective target
-# does not support a vector alignment mechanism.
-
-proc check_effective_target_lp64_or_vect_no_align { } {
-    if { [is-effective-target lp64]
-	  || [is-effective-target vect_no_align] } {
-	set answer 1
-    } else {
-	set answer 0
-    }
-    return $answer
-}
-
 # Initialize `dg'.
 dg-init
 
