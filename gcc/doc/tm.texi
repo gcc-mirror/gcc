@@ -3289,6 +3289,26 @@ column number to use instead.
 See the PowerPC's SPE target for an example.
 @end defmac
 
+@defmac DWARF_FRAME_REGNUM (@var{regno})
+
+Define this macro if the target's representation for dwarf registers
+used in .eh_frame or .debug_frame is different from that used in other
+debug info sections.  Given a gcc hard register number, this macro
+should return the .eh_frame register number.  The default is
+@code{DBX_REGISTER_NUMBER (@var{regno})}.
+
+@end defmac
+
+@defmac DWARF2_FRAME_REG_OUT (@var{regno}, @var{for_eh})
+
+Define this macro to map register numbers held in the call frame info
+that gcc has collected using @code{DWARF_FRAME_REGNUM} to those that
+should be output in .debug_frame (@code{@var{for_eh}} is zero) and
+.eh_frame (@code{@var{for_eh}} is non-zero).  The default is to 
+return @code{@var{regno}}.
+
+@end defmac
+
 @node Elimination
 @subsection Eliminating Frame Pointer and Arg Pointer
 
