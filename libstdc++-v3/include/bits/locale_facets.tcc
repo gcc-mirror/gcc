@@ -391,7 +391,7 @@ namespace std
 
 	// At this point, base is determined. If not hex, only allow
 	// base digits as valid input.
-	const size_t __len = __base == 16 ? _S_iend : __base;
+	const size_t __len = __base == 16 ? _S_iend - _S_izero : __base;
 
 	// Extract.
 	string __found_grouping;
