@@ -593,6 +593,8 @@ expand_computed_goto (exp)
 
   do_pending_stack_adjust ();
   emit_indirect_jump (x);
+
+  current_function_has_computed_jump = 1;
 }
 
 /* Handle goto statements and the labels that they can go to.  */

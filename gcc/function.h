@@ -80,7 +80,7 @@ struct function
   int has_nonlocal_label;
   int has_nonlocal_goto;
   int contains_functions;
-  int addresses_labels;
+  int has_computed_jump;
   int is_thunk;
   rtx nonlocal_goto_handler_slots;
   rtx nonlocal_goto_stack_level;
