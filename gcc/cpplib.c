@@ -810,6 +810,7 @@ cpp_options_init (opts)
   opts->print_include_names = 0;
   opts->dump_macros = dump_none;
   opts->no_output = 0;
+  opts->remap = 0;
   opts->cplusplus = 0;
   opts->cplusplus_comments = 0;
 
@@ -5520,65 +5521,68 @@ open_include_file (pfile, filename, searchptr)
      char *filename;
      struct file_name_list *searchptr;
 {
-  register struct file_name_map *map;
-  register char *from;
-  char *p, *dir;
-
-  if (searchptr && ! searchptr->got_name_map)
+  if (CPP_OPTIONS (pfile)->remap)
     {
-      searchptr->name_map = read_name_map (pfile,
-					   searchptr->fname
-					   ? searchptr->fname : ".");
-      searchptr->got_name_map = 1;
-    }
+      register struct file_name_map *map;
+      register char *from;
+      char *p, *dir;
 
-  /* First check the mapping for the directory we are using.  */
-  if (searchptr && searchptr->name_map)
-    {
-      from = filename;
-      if (searchptr->fname)
-	from += strlen (searchptr->fname) + 1;
-      for (map = searchptr->name_map; map; map = map->map_next)
+      if (searchptr && ! searchptr->got_name_map)
 	{
-	  if (! strcmp (map->map_from, from))
+	  searchptr->name_map = read_name_map (pfile,
+					       searchptr->fname
+					       ? searchptr->fname : ".");
+	  searchptr->got_name_map = 1;
+	}
+
+      /* First check the mapping for the directory we are using.  */
+      if (searchptr && searchptr->name_map)
+	{
+	  from = filename;
+	  if (searchptr->fname)
+	    from += strlen (searchptr->fname) + 1;
+	  for (map = searchptr->name_map; map; map = map->map_next)
 	    {
-	      /* Found a match.  */
-	      return open (map->map_to, O_RDONLY, 0666);
+	      if (! strcmp (map->map_from, from))
+		{
+		  /* Found a match.  */
+		  return open (map->map_to, O_RDONLY, 0666);
+		}
 	    }
 	}
-    }
 
-  /* Try to find a mapping file for the particular directory we are
-     looking in.  Thus #include <sys/types.h> will look up sys/types.h
-     in /usr/include/header.gcc and look up types.h in
-     /usr/include/sys/header.gcc.  */
-  p = rindex (filename, '/');
-  if (! p)
-    p = filename;
-  if (searchptr
-      && searchptr->fname
-      && strlen (searchptr->fname) == p - filename
-      && ! strncmp (searchptr->fname, filename, p - filename))
-    {
-      /* FILENAME is in SEARCHPTR, which we've already checked.  */
-      return open (filename, O_RDONLY, 0666);
-    }
+      /* Try to find a mapping file for the particular directory we are
+	 looking in.  Thus #include <sys/types.h> will look up sys/types.h
+	 in /usr/include/header.gcc and look up types.h in
+	 /usr/include/sys/header.gcc.  */
+      p = rindex (filename, '/');
+      if (! p)
+	p = filename;
+      if (searchptr
+	  && searchptr->fname
+	  && strlen (searchptr->fname) == p - filename
+	  && ! strncmp (searchptr->fname, filename, p - filename))
+	{
+	  /* FILENAME is in SEARCHPTR, which we've already checked.  */
+	  return open (filename, O_RDONLY, 0666);
+	}
 
-  if (p == filename)
-    {
-      dir = ".";
-      from = filename;
+      if (p == filename)
+	{
+	  dir = ".";
+	  from = filename;
+	}
+      else
+	{
+	  dir = (char *) alloca (p - filename + 1);
+	  bcopy (filename, dir, p - filename);
+	  dir[p - filename] = '\0';
+	  from = p + 1;
+	}
+      for (map = read_name_map (pfile, dir); map; map = map->map_next)
+	if (! strcmp (map->map_from, from))
+	  return open (map->map_to, O_RDONLY, 0666);
     }
-  else
-    {
-      dir = (char *) alloca (p - filename + 1);
-      bcopy (filename, dir, p - filename);
-      dir[p - filename] = '\0';
-      from = p + 1;
-    }
-  for (map = read_name_map (pfile, dir); map; map = map->map_next)
-    if (! strcmp (map->map_from, from))
-      return open (map->map_to, O_RDONLY, 0666);
 
   return open (filename, O_RDONLY, 0666);
 }
@@ -6743,6 +6747,11 @@ cpp_handle_options (pfile, argc, argv)
 	else if (!strcmp (argv[i], "-noprecomp"))
 	  no_precomp = 1;
 #endif
+	break;
+
+      case 'r':
+	if (!strcmp (argv[i], "-remap"))
+	  opts->remap = 1;
 	break;
 
       case 'u':
