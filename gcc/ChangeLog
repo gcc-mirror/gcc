@@ -1,3 +1,12 @@
+2004-07-11  Roger Sayle  <roger@eyesopen.com>
+
+	* rs6000.c (struct processor_costs): Change semantics of fields to
+	include the COST_N_INSNS scaling, and update all initializers.
+	(rs6000_rtx_costs): Don't use COSTS_N_INSNS on rs6000_cost fields.
+	Use COSTS_N_INSNS(1) for NOT, SIGN_EXTEND, ZERO_EXTEND and COMPARE.
+	Use rs6000_cost->fp for both FLOAT_TRUNCATE and UNSPEC_FRSP.  When
+	optimizing for size, use COSTS_N_INSNS(1) for CALL and IF_THEN_ELSE.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* LANGUAGES: Remove obsolete information.
