@@ -1,3 +1,10 @@
+1999-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_cleanup_for_base): New function, split out
+	from ...
+	(emit_base_init): Here.
+	(expand_aggr_vbase_init): Use it.
+
 1999-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (class_cache_firstobj): Declare.

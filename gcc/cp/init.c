@@ -60,6 +60,7 @@ static tree initializing_context PROTO((tree));
 static void expand_vec_init_try_block PROTO((tree));
 static void expand_vec_init_catch_clause PROTO((tree, tree, tree, tree));
 static tree build_java_class_ref PROTO((tree));
+static void expand_cleanup_for_base PROTO((tree));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -593,18 +594,7 @@ emit_base_init (t, immediately)
 	  free_temp_slots ();
 	}
 
-      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
-	{
-	  tree expr;
-
-	  /* All cleanups must be on the function_obstack.  */
-	  push_obstacks_nochange ();
-	  resume_temporary_allocation ();
-	  expr = build_partial_cleanup_for (base_binfo);
-	  pop_obstacks ();
-	  add_partial_entry (expr);
-	}
-
+      expand_cleanup_for_base (base_binfo);
       rbase_init_list = TREE_CHAIN (rbase_init_list);
     }
 
@@ -766,6 +756,27 @@ expand_virtual_init (binfo, decl)
   expand_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
 }
 
+/* If an exception is thrown in a constructor, those base classes already
+   constructed must be destroyed.  This function creates the cleanup
+   for BINFO, which has just been constructed.  */
+
+static void
+expand_cleanup_for_base (binfo)
+     tree binfo;
+{
+  tree expr;
+
+  if (!TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
+    return;
+
+  /* All cleanups must be on the function_obstack.  */
+  push_obstacks_nochange ();
+  resume_temporary_allocation ();
+  expr = build_partial_cleanup_for (binfo);
+  pop_obstacks ();
+  add_partial_entry (expr);
+}
+
 /* Subroutine of `expand_aggr_vbase_init'.
    BINFO is the binfo of the type that is being initialized.
    INIT_LIST is the list of initializers for the virtual baseclass.  */
@@ -817,6 +828,7 @@ expand_aggr_vbase_init (binfo, exp, addr, init_list)
 	  expand_aggr_vbase_init_1 (vbases, exp,
 				    TREE_OPERAND (TREE_VALUE (tmp), 0),
 				    init_list);
+	  expand_cleanup_for_base (vbases);
 	}
     }
 }
