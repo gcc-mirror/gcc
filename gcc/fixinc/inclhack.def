@@ -7,9 +7,8 @@ autogen definitions fixincl;
 
    This is the sort command:
 
-   blocksort output=XXX \
+   blocksort output=inclhack.sorted \
           pattern='^/\*$' \
-          start='== REPLACEMENT FIXES ==' \
           trailer='^/\*EOF\*[/]' \
           input=inclhack.def \
           key='hackname[ 	]*=[ 	]*(.*);'
@@ -20,8 +19,6 @@ autogen definitions fixincl;
 #ifdef DEBUG
 FIXINC_DEBUG = yes;
 #endif
-
-/* == REPLACEMENT FIXES == */
 
 /*
  *  Completely replace <_int_varargs.h> with a file that includes gcc's
@@ -1145,6 +1142,21 @@ fix = {
 
 
 /*
+ *  Make sure hpux defines abs in header.
+ */
+fix = {
+    hackname  = hpux11_abs;
+    mach      = ia64-hp-hpux11*;
+    files     = stdlib.h;
+    select    = "ifndef _MATH_INCLUDED";
+    c_fix     = format;
+    c_fix_arg = "if !defined(_MATH_INCLUDED) || defined(__GNUG__)";
+//  sed       = "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/";
+    test_text = "#ifndef _MATH_INCLUDED";
+};
+
+
+/*
  *  Keep HP-UX 11 from stomping on C++ math namespace
  *  with defines for fabsf.
  */
@@ -1161,21 +1173,6 @@ fix = {
     "#ifdef _PA_RISC\n"
     "#  define fabsf(x) ((float)fabs((double)(float)(x)))\n"
     "#endif";
-};
-
-
-/*
- *  Make sure hpux defines abs in header.
- */
-fix = {
-    hackname  = hpux11_abs;
-    mach      = ia64-hp-hpux11*;
-    files     = stdlib.h;
-    select    = "ifndef _MATH_INCLUDED";
-    c_fix     = format;
-    c_fix_arg = "if !defined(_MATH_INCLUDED) || defined(__GNUG__)";
-//  sed       = "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/";
-    test_text = "#ifndef _MATH_INCLUDED";
 };
 
 
@@ -1484,6 +1481,21 @@ fix = {
 
 
 /*
+ *  Fix libc1 _G_va_list definition, used in declarations of several
+ *  more-or-less standard functions, for example vasprintf.
+ */
+fix = {
+    hackname = libc1_G_va_list;
+    files    = _G_config.h;
+    mach     = '*-*-linux*libc1';
+    select   = 'typedef void \* _G_va_list;';
+    c_fix     = format;
+    c_fix_arg = "typedef __builtin_va_list _G_va_list;";
+    test_text = 'typedef __builtin_va_list _G_va_list;';
+};
+
+
+/*
  *  GNU libc1 string.h does not prototype memcpy and memcmp for gcc
  *  versions > 1.  This fix will open up the declaration for all
  *  versions of GCC and for g++.
@@ -1515,21 +1527,6 @@ fix = {
     "extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,\n"
     "                         size_t __n));\n"
     "#endif";
-};
-
-
-/*
- *  Fix libc1 _G_va_list definition, used in declarations of several
- *  more-or-less standard functions, for example vasprintf.
- */
-fix = {
-    hackname = libc1_G_va_list;
-    files    = _G_config.h;
-    mach     = '*-*-linux*libc1';
-    select   = 'typedef void \* _G_va_list;';
-    c_fix     = format;
-    c_fix_arg = "typedef __builtin_va_list _G_va_list;";
-    test_text = 'typedef __builtin_va_list _G_va_list;';
 };
 
 
