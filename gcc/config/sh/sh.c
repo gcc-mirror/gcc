@@ -944,13 +944,13 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	    {
 	    case TLS_MODEL_GLOBAL_DYNAMIC:
 	      tga_ret = gen_rtx_REG (Pmode, R0_REG);
-	      emit_insn (gen_tls_global_dynamic (tga_ret, op1));
+	      emit_call_insn (gen_tls_global_dynamic (tga_ret, op1));
 	      op1 = tga_ret;
 	      break;
 
 	    case TLS_MODEL_LOCAL_DYNAMIC:
 	      tga_ret = gen_rtx_REG (Pmode, R0_REG);
-	      emit_insn (gen_tls_local_dynamic (tga_ret, op1));
+	      emit_call_insn (gen_tls_local_dynamic (tga_ret, op1));
 
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_move_insn (tmp, tga_ret);
