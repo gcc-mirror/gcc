@@ -695,7 +695,12 @@ DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", '1', 1)
    This corresponds to an "Unchecked Conversion" in Ada and roughly to
    the idiom *(type2 *)&X in C.  The only operand is the value to be
    viewed as being of another type.  It is undefined if the type of the
-   input and of the expression have different sizes.  */
+   input and of the expression have different sizes.
+
+   This code may also be used within the LHS of a MODIFY_EXPR, in which
+   case no actual data motion may occur.  TREE_ADDRESSABLE will be set in
+   this case and GCC must abort if it could not do the operation without
+   generating insns.  */
 DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", '1', 1)
 
 /* Represents something we computed once and will use multiple times.

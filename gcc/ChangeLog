@@ -1,3 +1,9 @@
+Wed Nov 21 17:37:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case VIEW_CONVERT_EXPR): Refine slightly
+	and also support TREE_ADDRESSABLE.
+	* tree.def (VIEW_CONVERT_EXPR): Document TREE_ADDRESSABLE.
+
 2001-11-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (cmptf_internal1): Replace %$ with $.
