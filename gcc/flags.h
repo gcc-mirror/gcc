@@ -145,9 +145,9 @@ extern int flag_pcc_struct_return;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
-   2 means C99-like requirements for complex divide (not yet implemented).  */
+   2 means C99-like requirements for complex multiply and divide.  */
 
-extern int flag_complex_divide_method;
+extern int flag_complex_method;
 
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */

@@ -187,13 +187,27 @@ enum built_in_function
 {
 #include "builtins.def"
 
+  /* Complex division routines in libgcc.  These are done via builtins
+     because emit_library_call_value can't handle complex values.  */
+  BUILT_IN_COMPLEX_MUL_MIN,
+  BUILT_IN_COMPLEX_MUL_MAX
+    = BUILT_IN_COMPLEX_MUL_MIN
+      + MAX_MODE_COMPLEX_FLOAT
+      - MIN_MODE_COMPLEX_FLOAT,
+
+  BUILT_IN_COMPLEX_DIV_MIN,
+  BUILT_IN_COMPLEX_DIV_MAX
+    = BUILT_IN_COMPLEX_DIV_MIN
+      + MAX_MODE_COMPLEX_FLOAT
+      - MIN_MODE_COMPLEX_FLOAT,
+
   /* Upper bound on non-language-specific builtins.  */
   END_BUILTINS
 };
 #undef DEF_BUILTIN
 
 /* Names for the above.  */
-extern const char *const built_in_names[(int) END_BUILTINS];
+extern const char * built_in_names[(int) END_BUILTINS];
 
 /* Helper macros for math builtins.  */
 

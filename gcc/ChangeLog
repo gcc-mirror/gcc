@@ -1,3 +1,25 @@
+2005-02-11  Richard Henderson  <rth@redhat.com>
+
+	* tree-complex.c (expand_complex_libcall): New.
+	(expand_complex_multiplication): Use it for c99 compliance.
+	(expand_complex_division): Likewise.
+	* fold-const.c (fold_complex_add, fold_complex_mult): New.
+	(fold): Call them.
+	* builtins.c (built_in_names): Remove const.
+	* tree.c (build_common_builtin_nodes): Build complex arithmetic
+	builtins.
+	* tree.h (BUILT_IN_COMPLEX_MUL_MIN, BUILT_IN_COMPLEX_MUL_MAX): New.
+	(BUILT_IN_COMPLEX_DIV_MIN, BUILT_IN_COMPLEX_DIV_MAX): New.
+	(built_in_names): Remove const.
+	* c-common.c (c_common_type_for_mode): Handle complex modes.
+	* flags.h, toplev.c (flag_complex_method): Rename from
+	flag_complex_divide_method.
+	* libgcc2.c (__divsc3, __divdc3, __divxc3, __divtc3,
+	__mulsc3, __muldc3, __mulxc3, __multc3): New.
+	* libgcc2.h: Declare them.
+ 	* libgcc-std.ver: Export them.
+	* mklibgcc.in (lib2funcs): Build them.
+
 2005-02-11  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/19876

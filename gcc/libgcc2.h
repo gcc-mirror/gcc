@@ -92,12 +92,16 @@ typedef unsigned int UTItype	__attribute__ ((mode (TI)));
 
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef		float DFtype	__attribute__ ((mode (DF)));
+typedef _Complex float SCtype	__attribute__ ((mode (SC)));
+typedef _Complex float DCtype	__attribute__ ((mode (DC)));
 
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80
 typedef		float XFtype	__attribute__ ((mode (XF)));
+typedef _Complex float XCtype	__attribute__ ((mode (XC)));
 #endif
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
 typedef		float TFtype	__attribute__ ((mode (TF)));
+typedef _Complex float TCtype	__attribute__ ((mode (TC)));
 #endif
 
 #else /* BITS_PER_UNIT != 8 */
@@ -308,12 +312,19 @@ extern DWtype __fixunssfDI (SFtype);
 extern SFtype __powisf2 (SFtype, Wtype);
 extern DFtype __powidf2 (DFtype, Wtype);
 
+extern SCtype __divsc3 (SFtype, SFtype, SFtype, SFtype);
+extern SCtype __mulsc3 (SFtype, SFtype, SFtype, SFtype);
+extern DCtype __divdc3 (DFtype, DFtype, DFtype, DFtype);
+extern DCtype __muldc3 (DFtype, DFtype, DFtype, DFtype);
+
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80
 extern DWtype __fixxfdi (XFtype);
 extern DWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);
 extern UWtype __fixunsxfSI (XFtype);
 extern XFtype __powixf2 (XFtype, Wtype);
+extern XCtype __divxc3 (XFtype, XFtype, XFtype, XFtype);
+extern XCtype __mulxc3 (XFtype, XFtype, XFtype, XFtype);
 #endif
 
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
@@ -321,6 +332,8 @@ extern DWtype __fixunstfDI (TFtype);
 extern DWtype __fixtfdi (TFtype);
 extern TFtype __floatditf (DWtype);
 extern TFtype __powitf2 (TFtype, Wtype);
+extern TCtype __divtc3 (TFtype, TFtype, TFtype, TFtype);
+extern TCtype __multc3 (TFtype, TFtype, TFtype, TFtype);
 #endif
 #endif /* BITS_PER_UNIT == 8 */
 

@@ -5903,6 +5903,48 @@ build_common_builtin_nodes (void)
 			BUILT_IN_PROFILE_FUNC_ENTER, "profile_func_enter", 0);
   local_define_builtin ("__builtin_profile_func_exit", ftype,
 			BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 0);
+
+  /* Complex multiplication and division.  These are handled as builtins
+     rather than optabs because emit_library_call_value doesn't support
+     complex.  Further, we can do slightly better with folding these 
+     beasties if the real and complex parts of the arguments are separate.  */
+  {
+    enum machine_mode mode;
+
+    for (mode = MIN_MODE_COMPLEX_FLOAT; mode <= MAX_MODE_COMPLEX_FLOAT; ++mode)
+      {
+	char mode_name_buf[4], *q;
+	const char *p;
+	enum built_in_function mcode, dcode;
+	tree type, inner_type;
+
+	type = lang_hooks.types.type_for_mode (mode, 0);
+	if (type == NULL)
+	  continue;
+	inner_type = TREE_TYPE (type);
+
+	tmp = tree_cons (NULL_TREE, inner_type, void_list_node);
+	tmp = tree_cons (NULL_TREE, inner_type, tmp);
+	tmp = tree_cons (NULL_TREE, inner_type, tmp);
+	tmp = tree_cons (NULL_TREE, inner_type, tmp);
+	ftype = build_function_type (type, tmp);
+
+        mcode = BUILT_IN_COMPLEX_MUL_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+        dcode = BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+
+        for (p = GET_MODE_NAME (mode), q = mode_name_buf; *p; p++, q++)
+	  *q = TOLOWER (*p);
+	*q = '\0';
+
+	built_in_names[mcode] = concat ("__mul", mode_name_buf, "3", NULL);
+        local_define_builtin (built_in_names[mcode], ftype, mcode,
+			      built_in_names[mcode], ECF_CONST | ECF_NOTHROW);
+
+	built_in_names[dcode] = concat ("__div", mode_name_buf, "3", NULL);
+        local_define_builtin (built_in_names[dcode], ftype, dcode,
+			      built_in_names[dcode], ECF_CONST | ECF_NOTHROW);
+      }
+  }
 }
 
 /* HACK.  GROSS.  This is absolutely disgusting.  I wish there was a

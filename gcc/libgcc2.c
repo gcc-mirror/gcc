@@ -1501,6 +1501,208 @@ NAME (TYPE x, Wtype m)
 
 #endif
 
+#if defined(L_mulsc3) || defined(L_divsc3) \
+    || defined(L_muldc3) || defined(L_divdc3) \
+    || (LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80 \
+	&& (defined(L_mulxc3) || defined(L_divxc3))) \
+    || (LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128 \
+	&& (defined(L_multc3) || defined(L_divtc3)))
+
+#undef float
+#undef double
+#undef long
+
+#if defined(L_mulsc3) || defined(L_divsc3)
+# define MTYPE	SFtype
+# define CTYPE	SCtype
+# define MODE	sc
+# define CEXT	f
+# define NOTRUNC __FLT_EVAL_METHOD__ == 0
+#elif defined(L_muldc3) || defined(L_divdc3)
+# define MTYPE	DFtype
+# define CTYPE	DCtype
+# define MODE	dc
+# if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
+#  define CEXT	l
+#  define NOTRUNC 1
+# else
+#  define CEXT
+#  define NOTRUNC __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 1
+# endif
+#elif defined(L_mulxc3) || defined(L_divxc3)
+# define MTYPE	XFtype
+# define CTYPE	XCtype
+# define MODE	xc
+# define CEXT	l
+# define NOTRUNC 1
+#elif defined(L_multc3) || defined(L_divtc3)
+# define MTYPE	TFtype
+# define CTYPE	TCtype
+# define MODE	tc
+# define CEXT	l
+# define NOTRUNC 1
+#else
+# error
+#endif
+
+#define CONCAT3(A,B,C)	_CONCAT3(A,B,C)
+#define _CONCAT3(A,B,C)	A##B##C
+
+#define CONCAT2(A,B)	_CONCAT2(A,B)
+#define _CONCAT2(A,B)	A##B
+
+/* All of these would be present in a full C99 implementation of <math.h>
+   and <complex.h>.  Our problem is that only a few systems have such full
+   implementations.  Further, libgcc_s.so isn't currenly linked against
+   libm.so, and even for systems that do provide full C99, the extra overhead
+   of all programs using libgcc having to link against libm.  So avoid it.  */
+
+#define isnan(x)	__builtin_expect ((x) != (x), 0)
+#define isfinite(x)	__builtin_expect (!isnan((x) - (x)), 1)
+#define isinf(x)	__builtin_expect (!isnan(x) & !isfinite(x), 0)
+
+#define INFINITY	CONCAT2(__builtin_inf, CEXT) ()
+#define I		1i
+
+/* Helpers to make the following code slightly less gross.  */
+#define COPYSIGN	CONCAT2(__builtin_copysign, CEXT)
+#define FABS		CONCAT2(__builtin_fabs, CEXT)
+
+/* Verify that MTYPE matches up with CEXT.  */
+extern void *compile_type_assert[sizeof(INFINITY) == sizeof(MTYPE) ? 1 : -1];
+
+/* Ensure that we've lost any extra precision.  */
+#if NOTRUNC
+# define TRUNC(x)
+#else
+# define TRUNC(x)	__asm__ ("" : "=m"(x) : "m"(x))
+#endif
+
+#if defined(L_mulsc3) || defined(L_muldc3) \
+    || defined(L_mulxc3) || defined(L_multc3)
+
+CTYPE
+CONCAT3(__mul,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
+{
+  MTYPE ac, bd, ad, bc, x, y;
+
+  ac = a * c;
+  bd = b * d;
+  ad = a * d;
+  bc = b * c;
+
+  TRUNC (ac);
+  TRUNC (bd);
+  TRUNC (ad);
+  TRUNC (bc);
+
+  x = ac - bd;
+  y = ad + bc;
+
+  if (isnan (x) && isnan (y))
+    {
+      /* Recover infinities that computed as NaN + iNaN.  */
+      _Bool recalc = 0;
+      if (isinf (a) || isinf (b))
+	{
+	  /* z is infinite.  "Box" the infinity and change NaNs in
+	     the other factor to 0.  */
+	  a = COPYSIGN (isinf (a) ? 1 : 0, a);
+	  b = COPYSIGN (isinf (b) ? 1 : 0, b);
+	  if (isnan (c)) c = COPYSIGN (0, c);
+	  if (isnan (d)) d = COPYSIGN (0, d);
+          recalc = 1;
+	}
+     if (isinf (c) || isinf (d))
+	{
+	  /* w is infinite.  "Box" the infinity and change NaNs in
+	     the other factor to 0.  */
+	  c = COPYSIGN (isinf (c) ? 1 : 0, c);
+	  d = COPYSIGN (isinf (d) ? 1 : 0, d);
+	  if (isnan (a)) a = COPYSIGN (0, a);
+	  if (isnan (b)) b = COPYSIGN (0, b);
+	  recalc = 1;
+	}
+     if (!recalc
+	  && (isinf (ac) || isinf (bd)
+	      || isinf (ad) || isinf (bc)))
+	{
+	  /* Recover infinities from overflow by changing NaNs to 0.  */
+	  if (isnan (a)) a = COPYSIGN (0, a);
+	  if (isnan (b)) b = COPYSIGN (0, b);
+	  if (isnan (c)) c = COPYSIGN (0, c);
+	  if (isnan (d)) d = COPYSIGN (0, d);
+	  recalc = 1;
+	}
+      if (recalc)
+	{
+	  x = INFINITY * (a * c - b * d);
+	  y = INFINITY * (a * d + b * c);
+	}
+    }
+
+  return x + I * y;
+}
+#endif /* complex multiply */
+
+#if defined(L_divsc3) || defined(L_divdc3) \
+    || defined(L_divxc3) || defined(L_divtc3)
+
+CTYPE
+CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
+{
+  MTYPE denom, ratio, x, y;
+
+  /* ??? We can get better behaviour from logrithmic scaling instead of 
+     the division.  But that would mean starting to link libgcc against
+     libm.  We could implement something akin to ldexp/frexp as gcc builtins
+     fairly easily...  */
+  if (FABS (c) < FABS (d))
+    {
+      ratio = c / d;
+      denom = (c * ratio) + d;
+      x = ((a * ratio) + b) / denom;
+      y = ((b * ratio) - a) / denom;
+    }
+  else
+    {
+      ratio = d / c;
+      denom = (d * ratio) + c;
+      x = ((b * ratio) + a) / denom;
+      y = (b - (a * ratio)) / denom;
+    }
+
+  /* Recover infinities and zeros that computed as NaN+iNaN; the only cases
+     are non-zero/zero, infinite/finite, and finite/infinite.  */
+  if (isnan (x) && isnan (y))
+    {
+      if (denom == 0.0 && (!isnan (a) || !isnan (b)))
+	{
+	  x = COPYSIGN (INFINITY, c) * a;
+	  y = COPYSIGN (INFINITY, c) * b;
+	}
+      else if ((isinf (a) || isinf (b)) && isfinite (c) && isfinite (d))
+	{
+	  a = COPYSIGN (isinf (a) ? 1 : 0, a);
+	  b = COPYSIGN (isinf (b) ? 1 : 0, b);
+	  x = INFINITY * (a * c + b * d);
+	  y = INFINITY * (b * c - a * d);
+	}
+      else if ((isinf (c) || isinf (d)) && isfinite (a) && isfinite (b))
+	{
+	  c = COPYSIGN (isinf (c) ? 1 : 0, c);
+	  d = COPYSIGN (isinf (d) ? 1 : 0, d);
+	  x = 0.0 * (a * c + b * d);
+	  y = 0.0 * (b * c - a * d);
+	}
+    }
+
+  return x + I * y;
+}
+#endif /* complex divide */
+
+#endif /* all complex float routines */
+
 /* From here on down, the routines use normal data types.  */
 
 #define SItype bogus_type
@@ -1772,4 +1974,3 @@ func_ptr __DTOR_LIST__[2];
 #endif
 #endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
 #endif /* L_ctors */
-
