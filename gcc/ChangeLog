@@ -1,5 +1,10 @@
 2001-04-03  Richard Henderson  <rth@redhat.com>
 
+	* configure.in (gcc_cv_as_leb128): Reject gas before 2.11.
+	* configure: Rebuild.
+
+2001-04-03  Richard Henderson  <rth@redhat.com>
+
 	* rtl.h (LCT_THROW): New.
 	* calls.c (emit_library_call_value_1): Handle it.
 	* except.c (connect_post_landing_pads): Use it.
