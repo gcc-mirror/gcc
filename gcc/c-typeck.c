@@ -731,7 +731,7 @@ c_sizeof (type)
 		  size_int (TYPE_PRECISION (char_type_node)));
   /* size_binop does not put the constant in range, so do it now.  */
   if (TREE_CODE (t) == INTEGER_CST)
-    force_fit_type (t);
+    TREE_CONSTANT_OVERFLOW (t) |= force_fit_type (t, 0);
   return t;
 }
 
@@ -752,7 +752,7 @@ c_sizeof_nowarn (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
-  force_fit_type (t);
+  force_fit_type (t, 0);
   return t;
 }
 
@@ -780,7 +780,7 @@ c_size_in_bytes (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		     size_int (BITS_PER_UNIT));
-  force_fit_type (t);
+  force_fit_type (t, 0);
   return t;
 }
 
@@ -2154,6 +2154,10 @@ parser_build_binary_op (code, arg1, arg2)
   if (TREE_CODE_CLASS (code) == '<' && extra_warnings
       && (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<'))
     warning ("comparisons like X<=Y<=Z do not have their mathematical meaning");
+
+  unsigned_conversion_warning (result, arg1);
+  unsigned_conversion_warning (result, arg2);
+  overflow_warning (result);
 
   class = TREE_CODE_CLASS (TREE_CODE (result));
 
@@ -3581,10 +3585,13 @@ build_conditional_expr (ifexp, op1, op2)
 			  TREE_READONLY (op1) || TREE_READONLY (op2),
 			  TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
     
+  if (TREE_CODE (ifexp) == INTEGER_CST)
+    return convert_and_check (result_type, integer_zerop (ifexp) ? op2 : op1);
+
   if (result_type != TREE_TYPE (op1))
-    op1 = convert (result_type, op1);
+    op1 = convert_and_check (result_type, op1);
   if (result_type != TREE_TYPE (op2))
-    op2 = convert (result_type, op2);
+    op2 = convert_and_check (result_type, op2);
     
 #if 0
   if (code1 == RECORD_TYPE || code1 == UNION_TYPE)
@@ -3623,8 +3630,6 @@ build_conditional_expr (ifexp, op1, op2)
     }
 #endif /* 0 */
 
-  if (TREE_CODE (ifexp) == INTEGER_CST)
-    return (integer_zerop (ifexp) ? op2 : op1);
   return fold (build (COND_EXPR, result_type, ifexp, op1, op2));
 }
 
@@ -3800,6 +3805,10 @@ build_c_cast (type, expr)
 	warning ("cast to pointer from integer of different size");
 
       value = convert (type, value);
+
+      /* Ignore any integer overflow caused by the cast.  */
+      if (TREE_CODE (value) == INTEGER_CST)
+	TREE_CONSTANT_OVERFLOW (value) = 0;
     }
 
   if (value == expr && pedantic)
@@ -4010,7 +4019,10 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
     return error_mark_node;
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
-    return rhs;
+    {
+      overflow_warning (rhs);
+      return rhs;
+    }
 
   if (coder == VOID_TYPE)
     {
@@ -4021,9 +4033,7 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
   if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == ENUMERAL_TYPE)
        &&
       (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE))
-    {
-      return convert (type, rhs);
-    }
+    return convert_and_check (type, rhs);
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE && coder == POINTER_TYPE)
     {
@@ -5022,6 +5032,9 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 			  || TREE_CODE (start_index) == NOP_EXPR))
 		    start_index = TREE_OPERAND (start_index, 0);
 
+		  constant_expression_warning (start_index);
+		  constant_expression_warning (end_index);
+
 		  if ((TREE_CODE (start_index) == IDENTIFIER_NODE) 
 		      || (TREE_CODE (end_index) == IDENTIFIER_NODE))
 		    error ("field name used as index in array initializer");
@@ -5060,7 +5073,10 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		       || (max_index && tree_int_cst_lt (max_index, index)))
 		error ("array index out of range in initializer");
 	      else
-		current_index = index, win = 1;
+		{
+		  constant_expression_warning (index);
+		  current_index = index, win = 1;
+		}
 
 	      if (!win)
 		{
