@@ -8226,7 +8226,7 @@ sh_media_init_builtins ()
   const struct builtin_description *d;
 
   memset (shared, 0, sizeof shared);
-  for (d = bdesc; d - bdesc < (int) (sizeof bdesc / sizeof bdesc[0]); d++)
+  for (d = bdesc; d - bdesc < (int) ARRAY_SIZE (bdesc); d++)
     {
       tree type, arg_type;
       int signature = d->signature;
