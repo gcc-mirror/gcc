@@ -1,3 +1,7 @@
+2000-06-08  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* testsuite/26_numerics/complex_inserters_extractors.cc:  Need cmath.
+
 2000-06-06  Steven King  <sxking@uswest.net>
 
 	* acconfig.h: Added defines for HAVE_BUILTIN math functs for float,
