@@ -1,3 +1,10 @@
+2003-10-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/mkfixinc.sh: Remove special cases for svr4 and ptx, and
+	related code.
+	* fixinc/fixinc.ptx: Remove.
+	* fixinc/fixinc.svr4: Remove.
+
 2003-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (load_multiple_operation): Allow both SImode
