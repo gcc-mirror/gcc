@@ -1,3 +1,10 @@
+Sat Jul  4 09:44:29 1998  Paul Edwards  <avon@matra.com.au>
+
+	* tree.c, print-tree.c, c-lang.c: Include stdio.h before tree.h.
+	* expr.c (bc_expand_component_address): Correct args to
+	bc_push_offset_and_size.
+	* reload1.c (reload_cse_simplify_operands): Add missing return value.
+
 Fri Jul  3 07:17:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alpha.c (normal_memory_operand): Handle case when REG will be
