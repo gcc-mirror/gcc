@@ -1,4 +1,8 @@
-Tue Aug 25 00:57:54 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+Tue Aug 25 01:15:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_before_p): New argument EQUIV;  Changed
+	all callers.  Abort for RELOAD_FOR_INSN.  RELOAD_FOR_OUTADDR_ADDR:
+	conflicts will all RELOAD_FOR_OUTPUT reloads.
 
 	* reload1.c (reload_cse_regs_1): When deleting a no-op move that
 	loads the function result, substitute with a USE.
