@@ -1,3 +1,7 @@
+2001-11-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* class.c (add_interface_do): Set BINFO_VPTR_FIELD.
+
 2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* jvspec.c (jvgenmain_spec): Cannot use %umain, breaks

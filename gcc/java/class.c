@@ -520,6 +520,7 @@ add_interface_do (basetype_vec, interface_class, i)
   tree interface_binfo = make_tree_vec (6);
   BINFO_TYPE (interface_binfo) = interface_class;
   BINFO_OFFSET (interface_binfo) = integer_zero_node;
+  BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;
   TREE_VIA_VIRTUAL (interface_binfo) = 1;
   TREE_VIA_PUBLIC (interface_binfo) = 1;
   TREE_VEC_ELT (basetype_vec, i) = interface_binfo;
