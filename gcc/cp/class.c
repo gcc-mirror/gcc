@@ -4763,7 +4763,7 @@ end_of_class (t, include_virtuals_p)
 
       if (!include_virtuals_p
 	  && TREE_VIA_VIRTUAL (binfo) 
-	  && !BINFO_PRIMARY_P (binfo))
+	  && BINFO_PRIMARY_BASE_OF (binfo) != TYPE_BINFO (t))
 	continue;
 
       offset = end_of_base (binfo);
