@@ -1638,9 +1638,9 @@ struct D : public B @{@};
 int D::*dp = &D::i;
 @end example
 @noindent
-The @code{PTRMEM_CST_CLASS} for @code{&D::I} is @code{D}, even though
+The @code{PTRMEM_CST_CLASS} for @code{&D::i} is @code{D}, even though
 the @code{DECL_CONTEXT} for the @code{PTRMEM_CST_MEMBER} is @code{B},
-since @code{B::I} is a member of @code{B}, not @code{D}.
+since @code{B::i} is a member of @code{B}, not @code{D}.
 
 @item VAR_DECL
 
