@@ -1,3 +1,11 @@
+2002-07-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/cpu/powerpc/cpu_limits.h (__glibcpp_long_bits): Define.
+	* configure.target (cpu_include_dir): Use cpu/powerpc for powerpc64.
+	* config/cpu/powerpc/atomicity.h (__always_swap): Remove.
+	(__test_and_set): Remove.
+	(_STWCX): Define and use.
+
 2002-07-26  Phil Edwards  <pme@gcc.gnu.org>
 
 	* libsupc++/new (placement delete):  Remove unused paramater names.
