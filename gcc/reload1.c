@@ -5753,6 +5753,14 @@ gen_input_reload (reloadreg, in, before_insn)
 	tem = op0, op0 = op1, op1 = tem;
 
       emit_insn_before (gen_move_insn (reloadreg, op0), before_insn);
+
+      /* If OP0 and OP1 are the same, we can use RELOADREG for OP1.
+	 This fixes a problem on the 32K where the stack pointer cannot
+	 be used as an operand of an add insn.  */
+
+      if (rtx_equal_p (op0, op1))
+	op1 = reloadreg;
+
       emit_insn_before (gen_add2_insn (reloadreg, op1), before_insn);
     }
 
