@@ -4951,7 +4951,7 @@ cb_register_builtins (pfile)
 
   if (fast_math_flags_set_p ())
     cpp_define (pfile, "__FAST_MATH__");
-  if (flag_no_inline)
+  if (flag_really_no_inline)
     cpp_define (pfile, "__NO_INLINE__");
   if (flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");
