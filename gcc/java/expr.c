@@ -1750,7 +1750,14 @@ build_class_init (clas, expr)
      tree clas, expr;
 {
   tree init;
-  if (inherits_from_p (current_class, clas))
+
+  /* An optimization: if CLAS is a superclass of the class we're
+     compiling, we don't need to initialize it.  However, if CLAS is
+     an interface, it won't necessarily be initialized, even if we
+     implement it.  */
+  if ((! CLASS_INTERFACE (TYPE_NAME (clas))
+       && inherits_from_p (current_class, clas))
+      || current_class == clas)
     return expr;
 
   if (always_initialize_class_p)

@@ -9473,6 +9473,19 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	return error_mark_node;
       if (is_static)
 	field_ref = maybe_build_class_init_for_field (decl, field_ref);
+
+      /* If we're looking at a static field, we may need to generate a
+	 class initialization for it.  This can happen when the access
+	 looks like `field.ref', where `field' is a static field in an
+	 interface we implement.  */
+      if (!flag_emit_class_files
+	  && !flag_emit_xref
+	  && TREE_CODE (where_found) == VAR_DECL
+	  && FIELD_STATIC (where_found))
+	{
+	  build_static_field_ref (where_found);
+	  field_ref = build_class_init (DECL_CONTEXT (where_found), field_ref);
+	}
     }
   else
     field_ref = decl;
