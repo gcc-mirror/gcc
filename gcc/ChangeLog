@@ -1,3 +1,8 @@
+2004-11-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_cc_modes_compatible): New function.
+	(TARGET_CC_MODES_COMPATIBLE): Target macro defined.
+
 2004-11-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/18447

@@ -82,6 +82,9 @@ static bool s390_call_saved_register_used (tree);
 static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
 static bool s390_fixed_condition_code_regs (unsigned int *, unsigned int *);
+static enum machine_mode s390_cc_modes_compatible (enum machine_mode,
+ 						   enum machine_mode);
+
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -159,6 +162,9 @@ static bool s390_fixed_condition_code_regs (unsigned int *, unsigned int *);
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs
+
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8336,6 +8342,40 @@ s390_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
   *p2 = INVALID_REGNUM;
  
   return true;
+}
+
+/* If two condition code modes are compatible, return a condition code
+   mode which is compatible with both.  Otherwise, return
+   VOIDmode.  */
+
+static enum machine_mode
+s390_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+{
+  if (m1 == m2)
+    return m1;
+
+  switch (m1)
+    {
+    case CCZmode:
+      if (m2 == CCUmode || m2 == CCTmode
+	  || m2 == CCSmode || m2 == CCSRmode || m2 == CCURmode)
+        return m2;
+      return VOIDmode;
+
+    case CCSmode:
+    case CCUmode:
+    case CCTmode:
+    case CCSRmode:
+    case CCURmode:
+      if (m2 == CCZmode)
+	return m1;
+      
+      return VOIDmode;
+
+    default:
+      return VOIDmode;
+    }
+  return VOIDmode;
 }
 
 /* This function is used by the call expanders of the machine description.
