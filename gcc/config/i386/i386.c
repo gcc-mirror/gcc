@@ -11525,7 +11525,7 @@ ix86_expand_strlen (out, src, eoschar, align)
    scratch = scratch register, initialized with the startaddress when
 	not aligned, otherwise undefined
 
-   This is just the body. It needs the initialisations mentioned above and
+   This is just the body. It needs the initializations mentioned above and
    some address computing at the end.  These things are done in i386.md.  */
 
 static void

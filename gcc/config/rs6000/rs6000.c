@@ -12619,7 +12619,7 @@ output_toc (file, x, labelno, mode)
       void * * found;
       
       /* Create toc_hash_table.  This can't be done at OVERRIDE_OPTIONS
-         time because GGC is not initialised at that point.  */
+         time because GGC is not initialized at that point.  */
       if (toc_hash_table == NULL)
 	toc_hash_table = htab_create_ggc (1021, toc_hash_function, 
 					  toc_hash_eq, NULL);

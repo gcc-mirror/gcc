@@ -132,7 +132,7 @@ extern void gt_pch_p_S (void *, void *, gt_pointer_operator, void *);
 extern void gt_pch_n_S (const void *);
 extern void gt_ggc_m_S (void *);
 
-/* Initialise the string pool.  */
+/* Initialize the string pool.  */
 extern void init_stringpool (void);
 
 /* A GC implementation must provide these functions.  They are internal
