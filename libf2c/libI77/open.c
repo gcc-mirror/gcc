@@ -187,7 +187,7 @@ integer f_open(olist *a)
 			opnerr(a->oerr,107,"open");
 		}
 	else
-		sprintf(buf, "fort.%ld", a->ounit);
+		sprintf(buf, "fort.%ld", (long)a->ounit);
 	b->uscrtch = 0;
 	b->uend=0;
 	b->uwrt = 0;
@@ -281,7 +281,7 @@ fk_open(int seq, int fmt, ftnint n)
 	int rtn;
 	int save_init;
 
-	(void) sprintf(nbuf,"fort.%ld",n);
+	(void) sprintf(nbuf,"fort.%ld",(long)n);
 	a.oerr=1;
 	a.ounit=n;
 	a.ofnm=nbuf;

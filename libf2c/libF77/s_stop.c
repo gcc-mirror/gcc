@@ -30,8 +30,13 @@ if(n > 0)
 f_exit();
 #endif
 exit(0);
-#ifdef __cplusplus
+
+/* We cannot avoid (useless) compiler diagnostics here:		*/
+/* some compilers complain if there is no return statement,	*/
+/* and others complain that this one cannot be reached.		*/
+
 return 0; /* NOT REACHED */
 }
-#endif
+#ifdef __cplusplus
 }
+#endif

@@ -1,3 +1,11 @@
+Mon May 10 17:33:45 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Update to Netlib version of 1999-05-10:
+	* changes.netlib, libF77/Version.c, libF77/abort_.c,
+	libF77/c_log.c, libF77/ef1asc_.c, libF77/s_rnge.c,
+	libF77/s_stop.c, libI77/Version.c, libI77/open.c,
+	readme.netlib: See changes.netlib for info.
+
 Fri May 7 9:33:55 1999 Donn Terry (donn@interix.com)
 
 	* libU77/dtime_.c (G77_dtime_0): Standard-conforming error check.

@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#)LIBF77 VERSION 19990502\n";
+static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 
 /*
 */
@@ -59,6 +59,8 @@ char __G77_LIBF77_VERSION__[] = "0.5.24";
 			c_cos.c, c_exp.c, c_sin.c, d_cnjg.c, r_cnjg.c,
 			z_cos.c, z_exp.c, z_log.c, z_sin.c: cope fully with
 			overlapping arguments caused by equivalence.
+	3 May 1999:	"invisible" tweaks to omit compiler warnings in
+			abort_.c, ef1asc_.c, s_rnge.c, s_stop.c.
 */
 
 #include <stdio.h>
