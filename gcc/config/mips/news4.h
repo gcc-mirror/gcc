@@ -24,16 +24,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC "\
 %{!mgas: \
-	%{!mrnames: -nocpp} \
+	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
 	%{pipe:%e:-pipe not supported} \
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
 	%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K}} \
 %{G*}"
 
+#define SYSTEM_INCLUDE_DIR "/usr/include2.0"
+
 #define CPP_SPEC "\
-%{!nostdinc: -I/usr/include2.0} \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
@@ -46,6 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mgas: \
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{bestGnum}}"
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
