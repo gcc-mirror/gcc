@@ -37,7 +37,7 @@ using std::new_handler;
 new_handler __new_handler;
 
 new_handler
-std::set_new_handler (new_handler handler)
+std::set_new_handler (new_handler handler) throw()
 {
   new_handler prev_handler = __new_handler;
   __new_handler = handler;
