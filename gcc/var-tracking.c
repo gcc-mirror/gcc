@@ -1700,13 +1700,10 @@ vt_find_locations (void)
   in_worklist = sbitmap_alloc (last_basic_block);
   in_pending = sbitmap_alloc (last_basic_block);
   sbitmap_zero (in_worklist);
-  sbitmap_zero (in_pending);
 
   FOR_EACH_BB (bb)
-    {
-      fibheap_insert (pending, bb_order[bb->index], bb);
-      SET_BIT (in_pending, bb->index);
-    }
+    fibheap_insert (pending, bb_order[bb->index], bb);
+  sbitmap_ones (in_pending);
 
   while (!fibheap_empty (pending))
     {
