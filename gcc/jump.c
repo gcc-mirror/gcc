@@ -4750,5 +4750,5 @@ find_insert_position (insn, new)
 			    prev))
       return 0;
 
-  return (reg_mentioned_p (SET_DEST (single_set (new)), prev)) ? 0 : prev;
+  return reg_mentioned_p (SET_DEST (single_set (new)), prev) ? 0 : prev;
 }
