@@ -195,6 +195,9 @@ static rtx loop_store_mems[NUM_STORES];
 /* Index of first available slot in above array.  */
 static int loop_store_mems_idx;
 
+/* The insn where the first of these was found.  */
+static rtx first_loop_store_insn;
+
 /* Nonzero if we don't know what MEMs were changed in the current loop.
    This happens if the loop contains a call (in which case `loop_has_call'
    will also be set) or if we store into more than NUM_STORES MEMs.  */
@@ -2288,6 +2291,7 @@ prescan_loop (start, end)
   unknown_address_altered = 0;
   loop_has_call = 0;
   loop_has_volatile = 0;
+  first_loop_store_insn = NULL_RTX;
   loop_store_mems_idx = 0;
 
   num_mem_sets = 0;
@@ -2334,6 +2338,9 @@ prescan_loop (start, end)
 		loop_has_volatile = 1;
 
 	      note_stores (PATTERN (insn), note_addr_stored);
+	      if (! first_loop_store_insn && loop_store_mems_idx != 0)
+		first_loop_store_insn = insn;
+
 	    }
 	}
     }
@@ -6274,9 +6281,26 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	 case, the insn should have been moved out of the loop.  */
 
       if (num_mem_sets == 1)
-	reversible_mem_store
-	  = (! unknown_address_altered
-	     && ! invariant_p (XEXP (loop_store_mems[0], 0)));
+	{
+	  struct induction *v;
+
+	  reversible_mem_store
+	    = (! unknown_address_altered
+	       && ! invariant_p (XEXP (loop_store_mems[0], 0)));
+
+	  /* If the store depends on a register that is set after the
+	     store, it depends on the initial value, and is thus not
+	     reversible.  */
+	  for (v = bl->giv; reversible_mem_store && v; v = v->next_iv)
+	    {
+	      if (v->giv_type == DEST_REG
+		  && reg_mentioned_p (v->dest_reg, loop_store_mems[0])
+		  && (INSN_UID (v->insn) >= max_uid_for_loop
+		      || (INSN_LUID (v->insn)
+			  > INSN_LUID (first_loop_store_insn))))
+		reversible_mem_store = 0;
+	    }
+	}
 
       /* This code only acts for innermost loops.  Also it simplifies
 	 the memory address check by only reversing loops with
