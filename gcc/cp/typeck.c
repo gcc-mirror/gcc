@@ -346,6 +346,12 @@ type_after_usual_arithmetic_conversions (t1, t2)
 
   if (code1 != REAL_TYPE)
     {
+      /* If one is a sizetype, use it so size_binop doesn't blow up.  */
+      if (TYPE_IS_SIZETYPE (t1) > TYPE_IS_SIZETYPE (t2))
+	return build_type_attribute_variant (t1, attributes);
+      if (TYPE_IS_SIZETYPE (t2) > TYPE_IS_SIZETYPE (t1))
+	return build_type_attribute_variant (t2, attributes);
+
       /* If one is unsigned long long, then convert the other to unsigned
 	 long long.  */
       if (same_type_p (TYPE_MAIN_VARIANT (t1), long_long_unsigned_type_node)

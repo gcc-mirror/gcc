@@ -1,3 +1,8 @@
+2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* typeck.c (type_after_usual_arithmetic_conversions): Prefer a
+	SIZETYPE to a non-SIZETYPE.
+
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_virtual_bases): Adjust names in conditionally
