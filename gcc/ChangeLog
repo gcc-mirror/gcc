@@ -1,3 +1,7 @@
+Wed Jan  6 00:54:21 1999  Geoff Keating  <geoffk@ozemail.com.au>
+
+	* real.c (mtherr): Print more reasonable warning messages.
+
 Tue Jan  5 21:57:42 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gcc.o, prefix.o, cccp.o, cpplib.o): Depend on prefix.h.

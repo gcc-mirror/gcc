@@ -5676,13 +5676,13 @@ eiremain (den, num)
 static char *ermsg[NMSGS] =
 {
   "unknown",			/* error code 0 */
-  "domain",			/* error code 1 */
+  "domain error",		/* error code 1 */
   "singularity",		/* et seq.      */
   "overflow",
   "underflow",
   "total loss of precision",
   "partial loss of precision",
-  "invalid operation"
+  "`not-a-number' produced"
 };
 
 int merror = 0;
@@ -5701,7 +5701,23 @@ mtherr (name, code)
 
   if ((code <= 0) || (code >= NMSGS))
     code = 0;
-  sprintf (errstr, " %s %s error", name, ermsg[code]);
+  if (strcmp (name, "esub") == 0)
+    name = "subtraction";
+  else if (strcmp (name, "ediv") == 0)
+    name = "division";
+  else if (strcmp (name, "emul") == 0)
+    name = "multiplication";
+  else if (strcmp (name, "enormlz") == 0)
+    name = "normalization";
+  else if (strcmp (name, "etoasc") == 0)
+    name = "conversion to text";
+  else if (strcmp (name, "asctoe") == 0)
+    name = "parsing";
+  else if (strcmp (name, "eremain") == 0)
+    name = "modulus";
+  else if (strcmp (name, "esqrt") == 0)
+    name = "square root";
+  sprintf (errstr, "%s during real %s", ermsg[code], name);
   if (extra_warnings)
     warning (errstr);
   /* Set global error message word */
