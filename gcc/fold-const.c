@@ -81,7 +81,6 @@ static int truth_value_p	PARAMS ((enum tree_code));
 static int operand_equal_for_comparison_p PARAMS ((tree, tree, tree));
 static int twoval_comparison_p	PARAMS ((tree, tree *, tree *, int *));
 static tree eval_subst		PARAMS ((tree, tree, tree, tree, tree));
-static tree omit_one_operand	PARAMS ((tree, tree, tree));
 static tree pedantic_omit_one_operand PARAMS ((tree, tree, tree));
 static tree distribute_bit_expr PARAMS ((enum tree_code, tree, tree, tree));
 static tree make_bit_field_ref	PARAMS ((tree, tree, int, int, int));
@@ -2256,7 +2255,7 @@ eval_subst (arg, old0, new0, old1, new1)
    If OMITTED has side effects, we must evaluate it.  Otherwise, just do
    the conversion of RESULT to TYPE.  */
 
-static tree
+tree
 omit_one_operand (type, result, omitted)
      tree type, result, omitted;
 {
