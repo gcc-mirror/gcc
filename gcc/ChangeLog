@@ -1,3 +1,8 @@
+Tue May 25 14:06:06 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (mark_set_1): Do not record BLKmode stores as dead
+	store elimination candidates.
+
 Tue May 25 08:55:57 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (ASM_OUTPUT_DOUBLE_INT) : Use 'dword' if 
