@@ -36,5 +36,5 @@ Boston, MA 02111-1307, USA. */
 
 /* Specify a different entry point when linking a DLL */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s}"
+#define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s} %{pg:gcrt1%O%s}"
 

@@ -1,3 +1,14 @@
+1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/crtdll.h (STARTFILE_SPEC): Add -pg profiling support.
+	* i386/mingw32.h (LIB_SPEC): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	* i386/uwin.h (LIB_SPEC): Likewise.
+	(STARTFILE_SPEC): Likewise.
+
+	* i386/mingw32.h (SUBTARGET_PROLOGUE): Override Cygwin definition.
+	* i386/uwin.h (SUBTARGET_PROLOGUE): Likewise.
+
 Mon Dec 13 20:25:29 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (combine_simplify_rtx): Fix order of checks for
