@@ -3825,7 +3825,11 @@ tree_forwarder_block_p (basic_block bb)
 /* Thread jumps over empty statements.
 
    This code should _not_ thread over obviously equivalent conditions
-   as that requires nontrivial updates to the SSA graph.  */
+   as that requires nontrivial updates to the SSA graph.
+
+   As a precondition, we require that all basic blocks be reachable.
+   That is, there should be no opportunities left for
+   delete_unreachable_blocks.  */
    
 static bool
 thread_jumps (void)
@@ -3839,18 +3843,14 @@ thread_jumps (void)
   FOR_EACH_BB (bb)
     bb_ann (bb)->forwardable = 1;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_EACH_BB (bb)
     {
       edge_iterator ei;
 
-      /* Don't waste time on unreachable blocks.  */
-      if (EDGE_COUNT (bb->preds) == 0)
-	continue;
-
-      /* Nor on forwarders.  */
+      /* Don't waste time on forwarders.  */
       if (tree_forwarder_block_p (bb))
 	continue;
-      
+
       /* This block is now part of a forwarding path, mark it as not
 	 forwardable so that we can detect loops.  This bit will be
 	 reset below.  */
