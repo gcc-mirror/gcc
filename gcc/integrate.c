@@ -1847,7 +1847,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  break;
 
 	case JUMP_INSN:
-	  if (GET_CODE (PATTERN (insn)) == RETURN)
+	  if (GET_CODE (PATTERN (insn)) == RETURN
+	      || (GET_CODE (PATTERN (insn)) == PARALLEL
+		  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == RETURN))
 	    {
 	      if (local_return_label == 0)
 		local_return_label = gen_label_rtx ();
