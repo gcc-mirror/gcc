@@ -1321,15 +1321,16 @@ alter_access (t, fdecl, access)
 		   IDENTIFIER_POINTER (DECL_NAME (fdecl)));
 	}
       else
-	/* They're changing the access to the same thing they changed
-	   it to before.  That's OK.  */
-	;
+	{
+	  /* They're changing the access to the same thing they changed
+	     it to before.  That's OK.  */
+	  ;
+	}
     }
   else
     {
       enforce_access (TYPE_BINFO (t), fdecl);
 
-    alter:
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }

@@ -1,3 +1,10 @@
+Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* class.c (alter_access): Remove unused label.  Add braces
+	around empty else clause.
+
+	* lex.c (yyprint): Fix argument to printf.
+
 Sat Mar 28 17:43:52 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst): Clear TREE_USED for new FUNCTION_DECLs.
