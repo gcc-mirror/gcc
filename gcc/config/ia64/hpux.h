@@ -25,26 +25,29 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (IA-64) HP-UX");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
-  -D__IA64__ -D__hpux -D__hpux__ -Dhpux -Dunix \
-  -D__BIG_ENDIAN__ -D_LONGLONG \
-  -Asystem=hpux -Asystem=posix -Asystem=unix \
-  -D_UINT128_T"
-
-/* -D__fpreg=long double is needed to compensate for the lack of __fpreg
-   which is a primitive type in HP C but does not exist in GNU C.  Same
-   for __float80 and __float128.  These types appear in HP-UX header
-   files and so must have some definition.  */
-
-#undef CPP_SPEC
-#define CPP_SPEC "\
-  %{mcpu=itanium:-D__itanium__} \
-  %{mlp64:-D__LP64__ -D_LP64} \
-  %{!ansi:%{!std=c*:%{!std=i*: -D_HPUX_SOURCE -D__STDC_EXT__}}} \
-  -D__fpreg=long\\ double \
-  -D__float80=long\\ double \
-  -D__float128=long\\ double"
+/* Target OS builtins.  */
+/* -D__fpreg=long double is needed to compensate for
+   the lack of __fpreg which is a primative type in
+   HP C but does not exist in GNU C.  */
+#define TARGET_OS_CPP_BUILTINS()			\
+do {							\
+	builtin_assert("system=hpux");			\
+	builtin_assert("system=posix");			\
+	builtin_assert("system=unix");			\
+	builtin_define_std("hpux");			\
+	builtin_define_std("unix");			\
+	builtin_define("__IA64__");			\
+	builtin_define("_LONGLONG");			\
+	builtin_define("_UINT128_T");			\
+	builtin_define("__fpreg=long double");		\
+	builtin_define("__float80=long double");	\
+	builtin_define("__float128=long double");	\
+	if (c_language == clk_cplusplus || !flag_iso)	\
+	  {						\
+	    builtin_define("_HPUX_SOURCE");		\
+	    builtin_define("__STDC_EXT__");		\
+	  }						\
+} while (0)
 
 #undef  ASM_EXTRA_SPEC
 #define ASM_EXTRA_SPEC "%{milp32:-milp32} %{mlp64:-mlp64}"

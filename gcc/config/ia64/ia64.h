@@ -31,13 +31,26 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 
-#define EXTRA_SPECS \
-  { "cpp_cpu", CPP_CPU_SPEC }, \
-  { "asm_extra", ASM_EXTRA_SPEC },
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+do {						\
+	builtin_assert("cpu=ia64");		\
+	builtin_assert("machine=ia64");		\
+	builtin_define("__ia64");		\
+	builtin_define("__ia64__");		\
+	builtin_define("__itanium__");		\
+	builtin_define("__ELF__");		\
+	if (!TARGET_ILP32)			\
+	  {					\
+	    builtin_define("_LP64");		\
+	    builtin_define("__LP64__");		\
+	  }					\
+	if (TARGET_BIG_ENDIAN)			\
+	  builtin_define("__BIG_ENDIAN__");	\
+} while (0)
 
-#define CPP_CPU_SPEC " \
-  -Acpu=ia64 -Amachine=ia64 -D__ia64 -D__ia64__ %{!milp32:-D_LP64 -D__LP64__} \
-  -D__ELF__"
+#define EXTRA_SPECS \
+  { "asm_extra", ASM_EXTRA_SPEC },
 
 #define CC1_SPEC "%(cc1_cpu) "
 
@@ -207,13 +220,6 @@ extern const char *ia64_tls_size_string;
 /* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
 
 /* Driver configuration */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   CPP.  It can also specify how to translate options you give to GNU CC into
-   options for GNU CC to pass to the CPP.  */
-
-#define CPP_SPEC \
-  "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__} %(cpp_cpu)"
 
 /* A C string constant that tells the GNU CC driver program options to pass to
    `cc1'.  It can also specify how to translate options you give to GNU CC into

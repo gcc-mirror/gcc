@@ -1,3 +1,19 @@
+2002-09-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (EXTRA_SPECS): Remove cpp_cpu.
+	(CPP_CPU_SPEC): Remove.
+	(TARGET_CPU_CPP_BUILTINS): New.
+	* config/ia64/hpux.h (CPP_PREDEFINES): Remove.
+	(CPP_SPEC): Remove.
+	(TARGET_OS_CPP_BUILTINS): New.
+	* config/ia64/linux.h (CPP_PREDEFINES): Remove.
+	(TARGET_OS_CPP_BUILTINS): New.
+	* config/ia64/aix.h (CPP_SPEC): Move some stuff to
+	TARGET_OS_CPP_BUILTINS.
+	(CPP_PREDEFINES): Remove.
+	(CPLUSPLUS_CPP_SPEC): Remove.
+	(TARGET_OS_CPP_BUILTINS): New.
+
 2002-09-03  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (USER_H): Add ginclude/float.h.
