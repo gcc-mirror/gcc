@@ -4,7 +4,7 @@
 program strarray_6
 character(5), dimension(:), allocatable :: c
 n = 3
-allocate(c(-1:n-1))
+allocate(c(-1:n-2))
 c = "BLUBB"
 call foo(c)
 call bar(c,n)
