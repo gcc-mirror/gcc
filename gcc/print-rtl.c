@@ -398,6 +398,7 @@ print_rtx (in_rtx)
   switch (GET_CODE (in_rtx))
     {
     case MEM:
+      fputc (' ', outfile);
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
       break;
 

@@ -1,3 +1,7 @@
+2000-06-14  Richard Henderson  <rth@cygnus.com>
+
+	* print-rtl.c (print_rtx): Emit space before mem alias set.
+
 2000-06-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (expand_block_move): Fix typo in earlier change.
