@@ -1,3 +1,7 @@
+2001-03-16  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * config/ia64/libgcc-ia64.ver: Add __ia64_backtrace.
+
 2001-03-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.X11: Remove obsolete file.
