@@ -1,3 +1,8 @@
+Mon Aug 24 10:25:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (emit_case_nodes): Change rtx_function to rtx_fn to avoid
+	clash with global type.
+
 Mon Aug 24 00:53:53 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* fixinc.irix: Add curses.h handling from fixinc.wrap.
