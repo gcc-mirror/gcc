@@ -1,6 +1,7 @@
 2002-04-22  Loren J. Rittle <ljrittle@acm.org>
 
 	* docs/html/17_intro/porting.texi (_GLIBCPP_AVOID_FSEEK): Remove.
+	* docs/html/17_intro/porting.html: Rebuilt.
 
 2002-04-20  Jason Merrill  <jason@redhat.com>
 

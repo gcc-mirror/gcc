@@ -1,16 +1,15 @@
-<html lang="en">
-<head>
+<html lang="en"><head>
 <title>Porting libstdc++-v3</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name=description content="Porting libstdc++-v3">
-<meta name=generator content="makeinfo 4.0b">
+<meta name=generator content="makeinfo 4.0">
 <link href="http://texinfo.org/" rel=generator-home>
-</head>
+</head><body>
 
-<body>
 <p><hr>
 Node:<a name="Top">Top</a>,
-Next:<a rel=next href="#Operating%20system">Operating system</a>
+Next:<a rel=next href="#Operating%20system">Operating system</a>,
+Up:<a rel=up href="#(dir)">(dir)</a>
 <br>
 
 <h1>Porting libstdc++-v3</h1>
@@ -105,18 +104,11 @@ need to define.  You will need to add them to the
 target.  It will not work to simply define these macros in
 <code>os_defines.h</code>.
 
-<p>At this time, there are two libstdc++-v3-specific macros which may be
+<p>At this time, there is one libstdc++-v3-specific macro which may be
 defined.  <code>_G_USING_THUNKS</code> may be defined to 0 to express that the
 port doesn't use thunks (although it is unclear that this is still
 useful since libio support isn't currently working and the g++ v3 ABI
-invalidates the assumption that some ports don't use thunks). 
-<code>_GLIBCPP_AVOID_FSEEK</code> may be defined if seeking on an interactive
-stream (or one hooked to a pipe) is not allowed by the OS.  In this
-case, getc()/ungetc() will be used at some key locations in the library
-implementation instead of fseek().  Currently, the code path to avoid
-fseek() is only enabled when the seek size is 1 character away from the
-current stream position.  This is known to improve *-unknown-freebsd*,
-sparc-sun-solaris2.* and *-*-mingw32*.
+invalidates the assumption that some ports don't use thunks).
 
 <p>Finally, you should bracket the entire file in an include-guard, like
 this:
@@ -459,7 +451,8 @@ Up:<a rel=up href="#Top">Top</a>
 
 <h1>GNU Free Documentation License</h1>
 
-<div align="center">Version 1.1, March 2000</div>
+<p align="center">Version 1.1, March 2000</p>
+
 <pre>Copyright &copy; 2000 Free Software Foundation, Inc.
 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
 
