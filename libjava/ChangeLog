@@ -1,5 +1,9 @@
 2000-10-20  Tom Tromey  <tromey@cygnus.com>
 
+	From Arno J. Klaassen:
+	* interpret.cc: Include <stdlib.h> for alloca.
+	* defineclass.cc: Include <stdlib.h> for alloca.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am: Include deps.mk.
 	(GCJCOMPILE): Added -MD, -MT, and -MF.
