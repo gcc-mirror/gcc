@@ -53,7 +53,8 @@
 
 /* Define if you want all operations on trees (the basic data structure of the
    front ends) to be checked for dynamic type safety at runtime. This is
-   moderately expensive. */
+   moderately expensive. The tree browser debugging routines will also be
+   enabled by this option. */
 #undef ENABLE_TREE_CHECKING
 
 /* Define if you want to run subprograms and generated programs through
@@ -134,6 +135,9 @@
 
 /* Define to 1 if you have the `atoq' function. */
 #undef HAVE_ATOQ
+
+/* Define if BANSHEE is available */
+#undef HAVE_BANSHEE
 
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
@@ -437,9 +441,6 @@
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
-/* Define if <sys/types.h> defines \`uchar'. */
-#undef HAVE_UCHAR
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -567,15 +568,6 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef ssize_t
-
-/* Define if your linker supports -pie option. */
-#undef HAVE_LD_PIE
-
-/* Define if BANSHEE is available */
-#undef HAVE_BANSHEE
-
-/* Define to PREFIX/include if cpp should also search that directory. */
-#undef PREFIX_INCLUDE_DIR
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t

@@ -1,3 +1,7 @@
+2004-06-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config.in: Regenerate.
+
 2004-06-06  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-cfg.c (tree_verify_flow_info): Make sure that labels in
