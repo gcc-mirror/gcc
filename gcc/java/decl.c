@@ -1920,6 +1920,7 @@ lang_mark_tree (t)
       if (ld)
 	{
 	  ggc_mark (ld);
+	  ggc_mark_tree (ld->wfl);
 	  ggc_mark_tree (ld->throws_list);
 	  ggc_mark_tree (ld->function_decl_body);
 	  ggc_mark_tree (ld->called_constructor);

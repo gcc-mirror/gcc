@@ -202,8 +202,6 @@ find_methodref_index (cpool, decl)
   tree name = DECL_CONSTRUCTOR_P (decl) ? init_identifier_node
     : DECL_NAME (decl);
   int name_type_index;
-  if (TREE_CODE (name) == EXPR_WITH_FILE_LOCATION)
-    name = EXPR_WFL_NODE (name);    
   name_type_index = 
       find_name_and_type_constant (cpool, name, TREE_TYPE (decl));
   return find_constant1 (cpool,

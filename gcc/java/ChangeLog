@@ -1,3 +1,31 @@
+2001-01-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* ChangeLog (2001-01-21): Fixed typo.
+	* class.c (layout_class_method): Code accounting for WFLed
+	method DECL_NAMEs deleted.
+	* constant.c (find_methodref_index): Likewise.
+	* decl.c (lang_mark_tree): Mark `wfl' field in struct lang_decl.
+	* java-tree.h (DECL_FUNCTION_WFL): New macro.
+	(struct lang_decl): New field `wfl'.
+	(java_get_real_method_name): Prototype deleted.
+	* mangle.c (mangle_method_decl): Code accounting for WFLed
+	method DECL_NAMEs deleted.
+	* parse.h (GET_METHOD_NAME): Macro deleted.
+	* parse.y (reset_method_name): Deleted.
+	(method_header): Set DECL_FUNCTION_WFL.
+	(check_abstract_method_header): Code accounting for WFLed method
+	DECL_NAMEs deleted.
+	(java_get_real_method_name): Deleted.
+	(check_method_redefinition): Code accounting for WFLed method
+	DECL_NAMEs deleted. Use DECL_FUNCTION_WFL.
+	(java_check_regular_methods): Likewise.
+	(java_check_abstract_methods): Likewise.
+	(java_expand_classes): Don't call `reset_method_name.'
+	(search_applicable_method_list): Use DECL_NAMEs instead of
+	GET_METHOD_NAME.
+	* typeck.c (lookup_do): Code accounting for WFLed method
+	DECL_NAMEs deleted.
+
 2001-01-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* lex.c (java_read_char): Check for EOF from getc first.
@@ -101,7 +129,7 @@
 
 2001-01-21  Per Bothner  <per@bothner.com>
 
-	* verify.c (merge_type_state):  Stil may have to merge even if
+	* verify.c (merge_type_state):  Still may have to merge even if
 	LABEL_VERIFIED (label).
 
 2001-01-21  Per Bothner  <per@bothner.com>

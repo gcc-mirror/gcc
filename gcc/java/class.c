@@ -1773,10 +1773,6 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
      tree this_class, super_class, method_decl, dtable_count;
 {
   tree method_name = DECL_NAME (method_decl);
-  int method_name_is_wfl = 
-    (TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION);
-  if (method_name_is_wfl)
-    method_name = java_get_real_method_name (method_decl);
 
   TREE_PUBLIC (method_decl) = 1;
 
@@ -1799,10 +1795,6 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 	  if (*ptr++ == '.')
 	    p = ptr;
 	}
-      if (method_name_is_wfl)
-	EXPR_WFL_NODE (DECL_NAME (method_decl)) = get_identifier (p);
-      else
-	DECL_NAME (method_decl) = get_identifier (p);
       DECL_CONSTRUCTOR_P (method_decl) = 1;
       build_java_argument_signature (TREE_TYPE (method_decl));
     }

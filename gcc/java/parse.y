@@ -249,7 +249,6 @@ static tree create_artificial_method PARAMS ((tree, int, tree, tree, tree));
 static void start_artificial_method_body PARAMS ((tree));
 static void end_artificial_method_body PARAMS ((tree));
 static int check_method_redefinition PARAMS ((tree, tree));
-static int reset_method_name PARAMS ((tree));
 static int check_method_types_complete PARAMS ((tree));
 static void java_check_regular_methods PARAMS ((tree));
 static void java_check_abstract_methods PARAMS ((tree));
@@ -4513,6 +4512,9 @@ method_header (flags, type, mdecl, throws)
       DECL_FUNCTION_THROWS (meth) = throws;
     }
 
+  if (TREE_TYPE (GET_CPC ()) != object_type_node)
+    DECL_FUNCTION_WFL (meth) = id;
+
   /* Set the flag if we correctly processed a constructor */
   if (constructor_ok)
     {
@@ -4715,15 +4717,13 @@ check_abstract_method_header (meth)
      tree meth;
 {
   int flags = get_access_flags_from_decl (meth);
-  /* DECL_NAME might still be a WFL node */
-  tree name = GET_METHOD_NAME (meth);
 
   OBSOLETE_MODIFIER_WARNING2 (MODIFIER_WFL (ABSTRACT_TK), flags,
 			      ACC_ABSTRACT, "abstract method",
-			      IDENTIFIER_POINTER (name));
+			      IDENTIFIER_POINTER (DECL_NAME (meth)));
   OBSOLETE_MODIFIER_WARNING2 (MODIFIER_WFL (PUBLIC_TK), flags, 
 			      ACC_PUBLIC, "abstract method",
-			      IDENTIFIER_POINTER (name));
+			      IDENTIFIER_POINTER (DECL_NAME (meth)));
 
   check_modifiers ("Illegal modifier `%s' for interface method",
 		  flags, INTERFACE_METHOD_MODIFIERS);
@@ -5809,50 +5809,6 @@ get_printable_method_name (decl)
   return to_return;
 }
 
-/* Reinstall the proper DECL_NAME on METHOD. Return 0 if the method
-   nevertheless needs to be verfied, 1 otherwise.  */
-
-static int
-reset_method_name (method)
-     tree method;
-{
-  if (!DECL_CLINIT_P (method) && !DECL_FINIT_P (method))
-    {
-      /* NAME is just the plain name when Object is being defined */
-      if (DECL_CONTEXT (method) != object_type_node)
-	DECL_NAME (method) = (DECL_CONSTRUCTOR_P (method) ? 
-			      init_identifier_node : GET_METHOD_NAME (method));
-      return 0;
-    }
-  else 
-    return 1;
-}
-
-/* Return the name of METHOD_DECL, when DECL_NAME is a WFL */
-
-tree
-java_get_real_method_name (method_decl)
-     tree method_decl;
-{
-  tree method_name = DECL_NAME (method_decl);
-  if (DECL_CONSTRUCTOR_P (method_decl))
-    return init_identifier_node;
-
-  /* Explain here why METHOD_DECL doesn't have the DECL_CONSTRUCTUR_P
-     and still can be a constructor. FIXME */
-
-  /* Don't confuse method only bearing the name of their class as
-     constructors */
-  else if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (method_decl))
-	   && ctxp
-	   && GET_CPC_UN () == EXPR_WFL_NODE (method_name)
-	   && get_access_flags_from_decl (method_decl) <= ACC_PROTECTED
-	   && TREE_TYPE (TREE_TYPE (method_decl)) == void_type_node)
-    return init_identifier_node;
-  else
-    return EXPR_WFL_NODE (method_name);
-}
-
 /* Track method being redefined inside the same class. As a side
    effect, set DECL_NAME to an IDENTIFIER (prior entering this
    function it's a FWL, so we can track errors more accurately.)  */
@@ -5861,28 +5817,23 @@ static int
 check_method_redefinition (class, method)
      tree class, method;
 {
-  tree redef, name;
-  tree cl = DECL_NAME (method);
-  tree sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
-  /* decl name of artificial <clinit> and finit$ doesn't need to be
-     fixed and checked */
+  tree redef, sig;
 
-  /* Reset the method name before running the check. If it returns 1,
-     the method doesn't need to be verified with respect to method
-     redeclaration and we return 0 */
-  if (reset_method_name (method))
+  /* There's no need to verify <clinit> and finit$ */
+  if (DECL_CLINIT_P (method) || DECL_FINIT_P (method))
     return 0;
 
-  name = DECL_NAME (method);
+  sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
   for (redef = TYPE_METHODS (class); redef; redef = TREE_CHAIN (redef))
     {
       if (redef == method)
 	break;
-      if (DECL_NAME (redef) == name 
-	  && sig == TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (redef)))
+      if (DECL_NAME (redef) == DECL_NAME (method)
+	  && sig == TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (redef))
+	  && !DECL_ARTIFICIAL (method))
 	{
 	  parse_error_context 
-	    (cl, "Duplicate %s declaration `%s'",
+	    (DECL_FUNCTION_WFL (method), "Duplicate %s declaration `%s'",
 	     (DECL_CONSTRUCTOR_P (redef) ? "constructor" : "method"),
 	     get_printable_method_name (redef));
 	  return 1;
@@ -6078,7 +6029,7 @@ java_check_regular_methods (class_decl)
   int saw_constructor = ANONYMOUS_CLASS_P (TREE_TYPE (class_decl));
   tree method;
   tree class = CLASS_TO_HANDLE_TYPE (TREE_TYPE (class_decl));
-  tree saved_found_wfl = NULL_TREE, found = NULL_TREE;
+  tree found = NULL_TREE;
   tree mthrows;
 
   /* It is not necessary to check methods defined in java.lang.Object */
@@ -6092,16 +6043,8 @@ java_check_regular_methods (class_decl)
   for (method = TYPE_METHODS (class); method; method = TREE_CHAIN (method))
     {
       tree sig;
-      tree method_wfl = DECL_NAME (method);
+      tree method_wfl = DECL_FUNCTION_WFL (method);
       int aflags;
-
-      /* If we previously found something and its name was saved,
-         reinstall it now */
-      if (found && saved_found_wfl)
-	{
-	  DECL_NAME (found) = saved_found_wfl;
-	  saved_found_wfl = NULL_TREE;
-	}
 
       /* Check for redefinitions */
       if (check_method_redefinition (class, method))
@@ -6149,11 +6092,6 @@ java_check_regular_methods (class_decl)
 	  found = NULL_TREE;
 	  continue;
 	}
-
-      /* If found wasn't verified, it's DECL_NAME won't be set properly. 
-	 We set it temporarily for the sake of the error report. */
-      saved_found_wfl = DECL_NAME (found);
-      reset_method_name (found);
 
       /* If `found' is declared in an interface, make sure the
 	 modifier matches. */
@@ -6245,13 +6183,6 @@ java_check_regular_methods (class_decl)
       /* Inheriting multiple methods with the same signature. FIXME */
     }
   
-  /* Don't forget eventual pending found and saved_found_wfl. Take
-     into account that we might have exited because we saw an
-     artificial method as the last entry. */
-
-  if (found && !DECL_ARTIFICIAL (found) && saved_found_wfl)
-    DECL_NAME (found) = saved_found_wfl;
-
   if (!TYPE_NVIRTUALS (class))
     TYPE_METHODS (class) = nreverse (TYPE_METHODS (class));
 
@@ -6311,8 +6242,6 @@ java_check_abstract_methods (interface_decl)
 
   for (method = TYPE_METHODS (interface); method; method = TREE_CHAIN (method))
     {
-      tree method_wfl = DECL_NAME (method);
-
       /* 2- Check for double definition inside the defining interface */
       if (check_method_redefinition (interface, method))
 	continue;
@@ -6323,17 +6252,14 @@ java_check_abstract_methods (interface_decl)
       if (found)
 	{
 	  char *t;
-	  tree saved_found_wfl = DECL_NAME (found);
-	  reset_method_name (found);
 	  t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
 	  parse_error_context 
-	    (method_wfl,
+	    (DECL_FUNCTION_WFL (found),
 	     "Method `%s' was defined with return type `%s' in class `%s'",
 	     lang_printable_name (found, 0), t,
 	     IDENTIFIER_POINTER 
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  free (t);
-	  DECL_NAME (found) = saved_found_wfl;
 	  continue;
 	}
     }
@@ -6357,8 +6283,6 @@ java_check_abstract_methods (interface_decl)
 						 sub_interface_method);
 	  if (found && (found != sub_interface_method))
 	    {
-	      tree saved_found_wfl = DECL_NAME (found);
-	      reset_method_name (found);
 	      parse_error_context 
 		(lookup_cl (sub_interface_method),
 		 "Interface `%s' inherits method `%s' from interface `%s'. This method is redefined with a different return type in interface `%s'",
@@ -6369,7 +6293,6 @@ java_check_abstract_methods (interface_decl)
 			       (DECL_CONTEXT (sub_interface_method)))),
 		 IDENTIFIER_POINTER 
 	           (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
-	      DECL_NAME (found) = saved_found_wfl;
 	    }
 	}
     }
@@ -8681,7 +8604,6 @@ java_expand_classes ()
 		  if (DECL_CONSTRUCTOR_P (d))
 		    {
 		      restore_line_number_status (1);
-		      reset_method_name (d);
 		      java_complete_expand_method (d);
 		      restore_line_number_status (0);
 		      break;	/* We now there are no other ones */
@@ -10605,7 +10527,7 @@ search_applicable_methods_list (lc, method, name, arglist, list, all_list)
       if (lc && !DECL_CONSTRUCTOR_P (method))
 	continue;
       else if (!lc && (DECL_CONSTRUCTOR_P (method) 
-		       || (GET_METHOD_NAME (method) != name)))
+		       || (DECL_NAME (method) != name)))
 	continue;
 
       if (argument_types_convertible (method, arglist))
