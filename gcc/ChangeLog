@@ -1,3 +1,13 @@
+2003-10-03  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.c (mips_emit_prefetch): Restructure
+	to avoid use of arrays, handle indexed prefetch.
+	* config/mips/mips.h (ISA_HAS_FP4, ISA_HAS_PREFETCH): Update comments.
+	(ISA_HAS_PREFETCHX): New deffine.
+	* config/mips/mips.md ("type" attr): Add new "prefetchx" value,
+	update comments.
+	(prefetch_indexed_di, prefetch_indexed_si): New insns.
+	
 2003-10-03  Jeff Sturm  <jsturm@one-point.com>
 	    Roger Sayle  <roger@eyesopen.com>
 
