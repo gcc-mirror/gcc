@@ -1,4 +1,9 @@
 2003-10-26  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): Eliminate
+	num_saved_regs, use current_frame.reg_no instead. 
+
+2003-10-26  Bernardo Innocenti  <bernie@develer.com>
 	    Paul Dale  <pauli@snapgear.com>
 
 	* doc/extend.texi (interrupt_handler): Add m68k to the

@@ -452,7 +452,6 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
 static void
 m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  int num_saved_regs = 0;
   HOST_WIDE_INT fsize_with_regs;
   HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
 
@@ -473,12 +472,10 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
     }
 
   /* On ColdFire add register save into initial stack frame setup, if possible.  */
-  num_saved_regs = 0;
+  fsize_with_regs = current_frame.size;
   if (TARGET_COLDFIRE && current_frame.reg_no > 2)
-    num_saved_regs = current_frame.reg_no;
+    fsize_with_regs += current_frame.reg_no * 4;
 
-  fsize_with_regs = current_frame.size + num_saved_regs * 4;
-  
   if (frame_pointer_needed)
     {
       if (current_frame.size == 0 && TARGET_68040)
@@ -649,7 +646,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	warning ("stack limit expression is not supported");
     }
   
-  if (num_saved_regs <= 2)
+  if (current_frame.reg_no <= 2)
     {
       /* Store each separately in the same order moveml uses.
          Using two movel instructions instead of a single moveml
