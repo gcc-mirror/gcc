@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -808,9 +808,6 @@ not_qsort (array, count, size, compare)
     }
   else  /* arbitrary size */
     {
-#ifdef USE_C_ALLOCA
-      extern void *alloca ();
-#endif
       register int i;
       register char *next, *prev, *tmp = alloca (size), *base = array;
 
