@@ -1,5 +1,10 @@
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c: Remove an extern declaration of
+	rtx_equal_function_value_matters.
+
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (fix_bit_operand): Don't generate insns
 	by hand.
 	* config/h8300/h8300.md (*andqi3_1): Change to andqi3_1.
