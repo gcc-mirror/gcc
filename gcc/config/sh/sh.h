@@ -730,6 +730,14 @@ extern enum reg_class reg_class_from_letter[];
    on the stack.  */
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)  0
 
+/* Nonzero if we do not know how to pass TYPE solely in registers.
+   Values that come in registers with inconvenient padding are stored
+   to memory at the function start.  */
+
+#define MUST_PASS_IN_STACK(MODE,TYPE)			\
+  ((TYPE) != 0						\
+   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
+       || TREE_ADDRESSABLE (TYPE)))
 /* Some subroutine macros specific to this machine. */
 
 #define BASE_RETURN_VALUE_REG(MODE) \
