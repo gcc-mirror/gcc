@@ -1,3 +1,9 @@
+2005-01-15  Ziemowit Laski  <zlaski@apple.com>
+
+	PR objc/19321
+	* objc.dg/func-ptr-2.m: New.
+	* objc.dg/volatile-1.m: New.
+
 2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/20040813-1.c: Add hppa*64*-*-* to no stabs list.
