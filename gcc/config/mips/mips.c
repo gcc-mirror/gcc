@@ -421,7 +421,7 @@ large_int (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  long value;
+  HOST_WIDE_INT value;
 
   if (GET_CODE (op) != CONST_INT)
     return FALSE;
@@ -1608,7 +1608,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   if ((GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
       && GET_CODE (cmp1) == CONST_INT)
     {
-      int value = INTVAL (cmp1);
+      HOST_WIDE_INT value = INTVAL (cmp1);
       rtx truth = (rtx)0;
 
       if (test == ITEST_GEU && value == 0)
@@ -1675,7 +1675,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 
   if (GET_CODE (cmp1) == CONST_INT)
     {
-      int value = INTVAL (cmp1);
+      HOST_WIDE_INT value = INTVAL (cmp1);
       if (value < p_info->const_low || value > p_info->const_high)
 	cmp1 = force_reg (SImode, cmp1);
     }
@@ -1833,7 +1833,42 @@ gen_conditional_branch (operands, test_code)
       }
       break;
     }
-  
+
+  /* Handle always true or always false cases directly */
+  if (GET_CODE (cmp0) == CONST_INT && GET_CODE (cmp1) == CONST_INT)
+    {
+      HOST_WIDE_INT sval0 = INTVAL (cmp0);
+      HOST_WIDE_INT sval1 = INTVAL (cmp1);
+      unsigned long uval0 = sval0;
+      unsigned long uval1 = sval1;
+      int truth		  = 0;
+
+      switch (test_code)
+	{
+	default:
+	  goto fail;
+
+	case EQ:  truth = (sval0 == sval1); break;
+	case NE:  truth = (sval0 != sval1); break;
+	case GT:  truth = (sval0 >  sval1); break;
+	case GE:  truth = (sval0 >= sval1); break;
+	case LT:  truth = (sval0 <  sval1); break;
+	case LE:  truth = (sval0 <= sval1); break;
+	case GTU: truth = (uval0 >  uval1); break;
+	case GEU: truth = (uval0 >= uval1); break;
+	case LTU: truth = (uval0 <  uval1); break;
+	case LEU: truth = (uval0 <= uval1); break;
+	}
+
+      if (invert)
+	truth = ! truth;
+
+      if (truth)
+	emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx, label1));
+
+      return;
+    }
+
   /* Generate the jump */
   if (invert)
     {
