@@ -354,7 +354,7 @@ int optimize = 0;
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
    They won't actually be used.  */
 
-struct _global_rtl global_rtl;
+rtx global_rtl[GR_MAX];
 rtx pic_offset_table_rtx;
 
 static void attr_hash_add_rtx	PROTO((int, rtx));

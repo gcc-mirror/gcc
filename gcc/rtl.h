@@ -1167,17 +1167,13 @@ extern rtx get_first_nonparm_insn	PROTO((void));
 extern void split_block_insns		PROTO((int, int));
 extern void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
 
-/* Standard pieces of rtx, to be substituted directly into things.  */
-#define pc_rtx		(&global_rtl.pc_val)
-#define cc0_rtx		(&global_rtl.cc0_val)
-
 #define MAX_SAVED_CONST_INT 64
-extern struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+extern rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
-#define const0_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT])
-#define const1_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT+1])
-#define const2_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT+2])
-#define constm1_rtx	(&const_int_rtx[MAX_SAVED_CONST_INT-1])
+#define const0_rtx	(const_int_rtx[MAX_SAVED_CONST_INT])
+#define const1_rtx	(const_int_rtx[MAX_SAVED_CONST_INT+1])
+#define const2_rtx	(const_int_rtx[MAX_SAVED_CONST_INT+2])
+#define constm1_rtx	(const_int_rtx[MAX_SAVED_CONST_INT-1])
 extern rtx const_true_rtx;
 
 extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
@@ -1192,24 +1188,64 @@ extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
 #define CONST1_RTX(MODE) (const_tiny_rtx[1][(int) (MODE)])
 #define CONST2_RTX(MODE) (const_tiny_rtx[2][(int) (MODE)])
 
-extern struct _global_rtl
+/* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
+   is used to represent the frame pointer.  This is because the
+   hard frame pointer and the automatic variables are separated by an amount
+   that cannot be determined until after register allocation.  We can assume
+   that in this case ELIMINABLE_REGS will be defined, one action of which
+   will be to eliminate FRAME_POINTER_REGNUM into HARD_FRAME_POINTER_REGNUM. */
+#ifndef HARD_FRAME_POINTER_REGNUM
+#define HARD_FRAME_POINTER_REGNUM FRAME_POINTER_REGNUM
+#endif
+
+/* Index labels for global_rtl.  */
+enum global_rtl_index
 {
-  struct rtx_def pc_val, cc0_val;
-  struct rtx_def stack_pointer_val, frame_pointer_val;
-  struct rtx_def hard_frame_pointer_val;
-  struct rtx_def arg_pointer_val;
-  struct rtx_def virtual_incoming_args_val;
-  struct rtx_def virtual_stack_vars_val;
-  struct rtx_def virtual_stack_dynamic_val;
-  struct rtx_def virtual_outgoing_args_val;
-  struct rtx_def virtual_cfa_val;
-} global_rtl;
+  GR_PC,
+  GR_CC0,
+  GR_STACK_POINTER,
+  GR_FRAME_POINTER,
+/* For register elimination to work properly these hard_frame_pointer_rtx,
+   frame_pointer_rtx, and arg_pointer_rtx must be the same if they refer to
+   the same register.  */
+#if FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
+  GR_ARG_POINTER = GR_FRAME_POINTER,
+#endif
+#if HARD_FRAME_POINTER_REGNUM == FRAME_POINTER_REGNUM
+  GR_HARD_FRAME_POINTER = GR_FRAME_POINTER,
+#else
+  GR_HARD_FRAME_POINTER,
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
+  GR_ARG_POINTER = GR_HARD_FRAME_POINTER,
+#else
+  GR_ARG_POINTER,
+#endif
+#endif
+  GR_VIRTUAL_INCOMING_ARGS,
+  GR_VIRTUAL_STACK_ARGS,
+  GR_VIRTUAL_STACK_DYNAMIC,
+  GR_VIRTUAL_OUTGOING_ARGS,
+  GR_VIRTUAL_CFA,
+
+  GR_MAX
+};
+
+/* Pointers to standard pieces of rtx are stored here.  */
+extern rtx global_rtl[GR_MAX];
+
+/* Standard pieces of rtx, to be substituted directly into things.  */
+#define pc_rtx                  (global_rtl[GR_PC])
+#define cc0_rtx                 (global_rtl[GR_CC0])
 
 /* All references to certain hard regs, except those created
    by allocating pseudo regs into them (when that's possible),
    go through these unique rtx objects.  */
-#define stack_pointer_rtx	(&global_rtl.stack_pointer_val)
-#define frame_pointer_rtx	(&global_rtl.frame_pointer_val)
+#define stack_pointer_rtx       (global_rtl[GR_STACK_POINTER])
+#define frame_pointer_rtx       (global_rtl[GR_FRAME_POINTER])
+#define hard_frame_pointer_rtx	(global_rtl[GR_HARD_FRAME_POINTER])
+#define arg_pointer_rtx		(global_rtl[GR_ARG_POINTER])
 
 extern rtx pic_offset_table_rtx;
 extern rtx struct_value_rtx;
@@ -1239,35 +1275,6 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    and without prototypes.  */
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
 
-/* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
-   is used to represent the frame pointer.  This is because the
-   hard frame pointer and the automatic variables are separated by an amount
-   that cannot be determined until after register allocation.  We can assume
-   that in this case ELIMINABLE_REGS will be defined, one action of which
-   will be to eliminate FRAME_POINTER_REGNUM into HARD_FRAME_POINTER_REGNUM. */
-#ifndef HARD_FRAME_POINTER_REGNUM
-#define HARD_FRAME_POINTER_REGNUM FRAME_POINTER_REGNUM
-#endif
-
-/* For register elimination to work properly these hard_frame_pointer_rtx,
-   frame_pointer_rtx, and arg_pointer_rtx must be the same if they refer to
-   the same register.  */
-#if HARD_FRAME_POINTER_REGNUM == FRAME_POINTER_REGNUM
-#define hard_frame_pointer_rtx	(&global_rtl.frame_pointer_val)
-#else
-#define hard_frame_pointer_rtx	(&global_rtl.hard_frame_pointer_val)
-#endif
-
-#if FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
-#define arg_pointer_rtx		(&global_rtl.frame_pointer_val)
-#else
-#if HARD_FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
-#define arg_pointer_rtx		(&global_rtl.hard_frame_pointer_val)
-#else
-#define arg_pointer_rtx		(&global_rtl.arg_pointer_val)
-#endif
-#endif
-
 /* Virtual registers are used during RTL generation to refer to locations into
    the stack frame when the actual location isn't known until RTL generation
    is complete.  The routine instantiate_virtual_regs replaces these with
@@ -1280,7 +1287,7 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    either by the caller or by the callee when pretending it was passed by the
    caller.  */
 
-#define virtual_incoming_args_rtx (&global_rtl.virtual_incoming_args_val)
+#define virtual_incoming_args_rtx       (global_rtl[GR_VIRTUAL_INCOMING_ARGS])
 
 #define VIRTUAL_INCOMING_ARGS_REGNUM	(FIRST_VIRTUAL_REGISTER)
 
@@ -1288,7 +1295,7 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    variable on the stack.  Otherwise, it points to the first variable on
    the stack.  */
 
-#define virtual_stack_vars_rtx	(&global_rtl.virtual_stack_vars_val)
+#define virtual_stack_vars_rtx	        (global_rtl[GR_VIRTUAL_STACK_ARGS])
 
 #define VIRTUAL_STACK_VARS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 1)
 
@@ -1296,7 +1303,7 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    immediately after the stack pointer has been adjusted by the amount
    desired.  */
 
-#define virtual_stack_dynamic_rtx	(&global_rtl.virtual_stack_dynamic_val)
+#define virtual_stack_dynamic_rtx	(global_rtl[GR_VIRTUAL_STACK_DYNAMIC])
 
 #define VIRTUAL_STACK_DYNAMIC_REGNUM	((FIRST_VIRTUAL_REGISTER) + 2)
 
@@ -1304,7 +1311,7 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    be written when the stack is pre-pushed (arguments pushed using push
    insns always use sp).  */
 
-#define virtual_outgoing_args_rtx	(&global_rtl.virtual_outgoing_args_val)
+#define virtual_outgoing_args_rtx	(global_rtl[GR_VIRTUAL_OUTGOING_ARGS])
 
 #define VIRTUAL_OUTGOING_ARGS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 3)
 
@@ -1314,7 +1321,7 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
    frame pointer nor stack pointer are necessarily fixed relative to 
    the CFA until after reload.  */
 
-#define virtual_cfa_rtx			(&global_rtl.virtual_cfa_val)
+#define virtual_cfa_rtx			(global_rtl[GR_VIRTUAL_CFA])
 
 #define VIRTUAL_CFA_REGNUM		((FIRST_VIRTUAL_REGISTER) + 4)
 

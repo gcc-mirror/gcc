@@ -1,3 +1,22 @@
+Sat Sep 18 11:15:58 1999  Alex Samuel  <samuel@codesourcery.com>
+
+	* rtl.h (global_rtx_index): New enum.
+	(global_rtl): Change to array of rtx.
+	(pc_rtx, cc0_rtx): Redefine accordingly.
+	(cc0_rtx, stack_pointer_rtx, frame_pointer_rtx): Likewise.
+	(hard_frame_pointer_rtx, arg_pointer_rtx): Likewise.
+	(virtual_incoming_args_rtx, virtual_stack_vars_rtx): Likewise.
+	(virtual_outgoing_args_rtx, virtual_cfa): Likewise.
+	(const_int_rtx): Change to array of rtx.
+	(const0_rtx, const1_rtx, const2_rtx, constm1_rtx): Redefine
+	accordingly. 
+	* emit-rtl.c (global_rtl): Change to array of rtx.
+	(const_int_rtx): Change to aray of rtx.
+	(gen_rtx_CONST_INT): Redefine accordingly.
+	(init_emit_once): Allocate and initialize global_rtl.  Likewise
+	for const_int_rtx.  Add both as GC roots.
+	* genattrtab.c (global_rtl): Update declaration.
+
 1999-09-17  Ulrich Drepper  <drepper@cygnus.com>
 
 	* Makefile (USER_H): Add iso646.h back.
