@@ -120,6 +120,9 @@ DEFUN(get_attribute, (jcf),
   name_length = JPOOL_UTF_LENGTH (jcf, attribute_name);
   name_data = JPOOL_UTF_DATA (jcf, attribute_name);
 
+#define MATCH_ATTRIBUTE(S) \
+  (name_length == sizeof (S)-1 && memcmp (name_data, S, sizeof (S)-1) == 0)
+
 #ifdef IGNORE_ATTRIBUTE
    if (IGNORE_ATTRIBUTE (jcf, attribute_name, attribute_length))
      {
@@ -128,7 +131,7 @@ DEFUN(get_attribute, (jcf),
    else
 #endif
 #ifdef HANDLE_SOURCEFILE
-  if (name_length == 10 && memcmp (name_data, "SourceFile", 10) == 0)
+  if (MATCH_ATTRIBUTE ("SourceFile"))
     {
       uint16 sourcefile_index = JCF_readu2 (jcf);
       HANDLE_SOURCEFILE(sourcefile_index);
@@ -136,7 +139,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_CONSTANTVALUE
-  if (name_length == 13 && memcmp (name_data, "ConstantValue", 13) == 0)
+  if (MATCH_ATTRIBUTE ("ConstantValue"))
     {
       uint16 constantvalue_index = JCF_readu2 (jcf);
       if (constantvalue_index <= 0 || constantvalue_index >= JPOOL_SIZE(jcf))
@@ -146,7 +149,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_CODE_ATTRIBUTE
-  if (name_length == 4 && memcmp (name_data, "Code", 4) == 0)
+  if (MATCH_ATTRIBUTE ("Code"))
     {
       uint16 j;
       uint16 max_stack ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
@@ -175,7 +178,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif /* HANDLE_CODE_ATTRIBUTE */
 #ifdef HANDLE_EXCEPTIONS_ATTRIBUTE
-  if (name_length == 10 && memcmp (name_data, "Exceptions", 10) == 0)
+  if (MATCH_ATTRIBUTE ("Exceptions"))
     {
       uint16 count = JCF_readu2 (jcf);
       HANDLE_EXCEPTIONS_ATTRIBUTE (count);
@@ -183,7 +186,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_LINENUMBERTABLE_ATTRIBUTE
-  if (name_length == 15 && memcmp (name_data, "LineNumberTable", 15) == 0)
+  if (MATCH_ATTRIBUTE ("LineNumberTable"))
     {
       uint16 count = JCF_readu2 (jcf);
       HANDLE_LINENUMBERTABLE_ATTRIBUTE (count);
@@ -191,7 +194,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_LOCALVARIABLETABLE_ATTRIBUTE
-  if (name_length == 18 && memcmp (name_data, "LocalVariableTable", 18) == 0)
+  if (MATCH_ATTRIBUTE ("LocalVariableTable"))
     {
       uint16 count = JCF_readu2 (jcf);
       HANDLE_LOCALVARIABLETABLE_ATTRIBUTE (count);
@@ -199,7 +202,7 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_INNERCLASSES_ATTRIBUTE
-  if (name_length == 12 && memcmp (name_data, "InnerClasses", 12) == 0)
+  if (MATCH_ATTRIBUTE ("InnerClasses"))
     {
       uint16 count = JCF_readu2 (jcf);
       HANDLE_INNERCLASSES_ATTRIBUTE (count);
@@ -207,9 +210,16 @@ DEFUN(get_attribute, (jcf),
   else
 #endif
 #ifdef HANDLE_SYNTHETIC_ATTRIBUTE
-  if (name_length == 9 && memcmp (name_data, "Synthetic", 9) == 0)
+  if (MATCH_ATTRIBUTE ("Synthetic"))
     {
       HANDLE_SYNTHETIC_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_GCJCOMPILED_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("gnu.gcj.gcj-compiled"))
+    {
+      HANDLE_GCJCOMPILED_ATTRIBUTE ();
     }
   else
 #endif
@@ -362,7 +372,7 @@ DEFUN(jcf_parse_fields, (jcf),
       uint16 attribute_count = JCF_readu2 (jcf);
 #ifdef HANDLE_START_FIELD
       HANDLE_START_FIELD (access_flags, name_index, signature_index,
-		    attribute_count);
+			  attribute_count);
 #endif
       for (j = 0; j < attribute_count; j++)
 	{

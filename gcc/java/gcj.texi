@@ -624,6 +624,20 @@ suppressed by @code{--CLASSPATH}), then its value is appended.
 Finally, the built-in system directory, @file{libgcj.jar}, is appended.
 @end itemize
 
+The classfile built by @code{gcj} for the class @code{java.lang.Object}
+(and placed in @code{libgcj.jar}) contains a special zero length
+attribute @code{gnu.gcj.gcj-compiled}. The compiler looks for this
+attribute when loading @code{java.lang.Object} and will report an error
+if it isn't found, unless it compiles to bytecode (the option
+@code{-fforce-classes-archive-check} can be used to overide this
+behavior in this particular case.)
+
+@table @code
+@item -fforce-classes-archive-check
+This forces the compiler to always check for the special zero length
+attribute @code{gnu.gcj.gcj-compiled} in @code{java.lang.Object} and
+issue an error if it isn't found.
+@end table
 
 @node Encodings
 @section Encodings
