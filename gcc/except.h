@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
