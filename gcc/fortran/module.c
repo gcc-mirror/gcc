@@ -2675,7 +2675,9 @@ mio_symbol (gfc_symbol * sym)
 
   mio_formal_arglist (sym);
 
-  mio_expr (&sym->value);
+  if (sym->attr.flavor == FL_PARAMETER)
+    mio_expr (&sym->value);
+
   mio_array_spec (&sym->as);
 
   mio_symbol_ref (&sym->result);
