@@ -4894,8 +4894,7 @@ check_final_value (v, loop_start, loop_end)
 		      break;
 		    }
 		}
-	      else if (GET_CODE (PATTERN (p)) == SET
-		       && SET_DEST (PATTERN (p)) == v->src_reg)
+	      else if (reg_set_p (v->src_reg, PATTERN (p)))
 		biv_increment_seen = 1;
 	      else if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
 		last_giv_use = p;
