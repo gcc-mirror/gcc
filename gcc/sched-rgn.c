@@ -294,6 +294,8 @@ static int haifa_classify_insn PARAMS ((rtx));
 static int is_prisky PARAMS ((rtx, int, int));
 static int is_exception_free PARAMS ((rtx, int, int));
 
+static bool sets_likely_spilled PARAMS ((rtx));
+static void sets_likely_spilled_1 PARAMS ((rtx, rtx, void *));
 static void add_branch_dependences PARAMS ((rtx, rtx));
 static void compute_block_backward_dependences PARAMS ((int));
 void debug_dependencies PARAMS ((void));
@@ -2268,6 +2270,31 @@ static struct sched_info region_sched_info =
   0, 0
 };
 
+/* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */
+
+static bool
+sets_likely_spilled (pat)
+     rtx pat;
+{
+  bool ret = false;
+  note_stores (pat, sets_likely_spilled_1, &ret);
+  return ret;
+}
+
+static void
+sets_likely_spilled_1 (x, pat, data)
+     rtx x, pat;
+     void *data;
+{
+  bool *ret = (bool *) data;
+
+  if (GET_CODE (pat) == SET
+      && REG_P (x)
+      && REGNO (x) < FIRST_PSEUDO_REGISTER
+      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (x))))
+    *ret = true;
+}
+
 /* Add dependences so that branches are scheduled to run last in their
    block.  */
 
@@ -2284,8 +2311,15 @@ add_branch_dependences (head, tail)
 
      Branches must obviously remain at the end.  Calls should remain at the
      end since moving them results in worse register allocation.  Uses remain
-     at the end to ensure proper register allocation.  cc0 setters remaim
-     at the end because they can't be moved away from their cc0 user.  */
+     at the end to ensure proper register allocation.
+
+     cc0 setters remaim at the end because they can't be moved away from
+     their cc0 user.
+
+     Insns setting CLASS_LIKELY_SPILLED_P registers (usually return values)
+     are not moved before reload because we can wind up with register
+     allocation failures.  */
+
   insn = tail;
   last = 0;
   while (GET_CODE (insn) == CALL_INSN
@@ -2297,7 +2331,8 @@ add_branch_dependences (head, tail)
 #ifdef HAVE_cc0
 		 || sets_cc0_p (PATTERN (insn))
 #endif
-	     ))
+		 || (!reload_completed
+		     && sets_likely_spilled (PATTERN (insn)))))
 	 || GET_CODE (insn) == NOTE)
     {
       if (GET_CODE (insn) != NOTE)
