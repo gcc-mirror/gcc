@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-03-11
+@c 1999-03-13
 
 @ifset BUGSONLY
 @set which-g77 @code{egcs}-1.1.2
@@ -54,6 +54,16 @@ see ``Problems Installing'' in @file{egcs/gcc/f/INSTALL}.
 @end ifset
 
 @itemize @bullet
+@item
+@code{g77} generates bad code for assignments,
+or other conversions,
+of @code{REAL} or @code{COMPLEX} constant expressions
+to type @code{INTEGER(KIND=2)}
+(often referred to as @code{INTEGER*8}).
+
+For example, @samp{INTEGER*8 J; J = 4E10} is miscompiled
+on some systems---the wrong value is stored in @var{J}.
+
 @item
 The @code{IDate} Intrinsic (VXT)
 fails to return the year in the documented, non-Y2K-compliant range

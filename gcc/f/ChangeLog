@@ -1,5 +1,9 @@
 1999-03-13  Craig Burley  <craig@jcb-sc.com>
 
+	* bugs.texi: Document newly discovered bug (19990313-*.f tests).
+
+1999-03-13  Craig Burley  <craig@jcb-sc.com>
+
 	* bugs.texi: Editorial fixes.
 
 1999-03-11  Craig Burley  <craig@jcb-sc.com>
