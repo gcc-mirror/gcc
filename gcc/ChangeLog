@@ -1,5 +1,7 @@
 Wed Jun 28 15:39:26 2000  Donn Terry (donnte@microsoft.com)
 
+	* i386-interix.h (STRIP_NAME_ENCODING): Declare _new_name properly.
+
 	* alpha/alpha-interix.h: Delete redundant -Asystem(interix),
 	use -isystem instead of -idirafter.
 	* i386/i386-interix.h: Likewise.

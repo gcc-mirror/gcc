@@ -486,7 +486,7 @@ do {									\
   if (*_p == '@')							\
     {									\
       int _len = _p - _name;						\
-      _new_name = (char *) alloca (_len + 1);				\
+      char *_new_name = (char *) alloca (_len + 1);			\
       strncpy (_new_name, _name, _len);					\
       _new_name[_len] = '\0';						\
       (VAR) = _new_name;						\
