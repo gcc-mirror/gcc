@@ -46,6 +46,7 @@ namespace std
 	_M_data = new __numpunct_cache<char>;
 
       _M_data->_M_grouping = "";
+      _M_data->_M_grouping_size = 0;
       _M_data->_M_use_grouping = false;
 
       _M_data->_M_decimal_point = '.';
@@ -56,8 +57,6 @@ namespace std
       
       for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
 	_M_data->_M_atoms_in[__i] = __num_base::_S_atoms_in[__i];
-
-      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 
       _M_data->_M_truename = "true";
       _M_data->_M_truename_size = strlen(_M_data->_M_truename);
@@ -79,6 +78,7 @@ namespace std
 	_M_data = new __numpunct_cache<wchar_t>;
 
       _M_data->_M_grouping = "";
+      _M_data->_M_grouping_size = 0;
       _M_data->_M_use_grouping = false;
       
       _M_data->_M_decimal_point = L'.';
@@ -97,8 +97,6 @@ namespace std
 	  uc = static_cast<unsigned char>(__num_base::_S_atoms_in[__i]);
 	  _M_data->_M_atoms_in[__i] = btowc(uc);
 	}
-
-      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 
       _M_data->_M_truename = L"true";
       _M_data->_M_truename_size = wcslen(_M_data->_M_truename);

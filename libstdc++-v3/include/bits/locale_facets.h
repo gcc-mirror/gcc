@@ -3464,32 +3464,55 @@ namespace std
 
     static const pattern _S_default_pattern;
 
+    enum
+    {
+      _S_minus,
+      _S_zero,
+      _S_end = 11
+    };
+
+    // String literal of acceptable (narrow) input/output, for
+    // money_get/money_put. "-0123456789"
+    static const char* _S_atoms;
+
     // Construct and return valid pattern consisting of some combination of:
     // space none symbol sign value
     static pattern
     _S_construct_pattern(char __precedes, char __space, char __posn);
   };
 
-  template<typename _CharT>
+  template<typename _CharT, bool _Intl>
     struct __moneypunct_cache : public locale::facet
     {
       const char*			_M_grouping;
+      size_t                            _M_grouping_size;
       bool				_M_use_grouping;
       _CharT				_M_decimal_point;
       _CharT				_M_thousands_sep;
       const _CharT*			_M_curr_symbol;
+      size_t                            _M_curr_symbol_size;
       const _CharT*			_M_positive_sign;
+      size_t                            _M_positive_sign_size;
       const _CharT*			_M_negative_sign;
+      size_t                            _M_negative_sign_size;
       int				_M_frac_digits;
       money_base::pattern		_M_pos_format;
       money_base::pattern	        _M_neg_format;
 
+      // A list of valid numeric literals for input and output: in the standard
+      // "C" locale, this is "-0123456789". This array contains the chars after
+      // having been passed through the current locale's ctype<_CharT>.widen().
+      _CharT				_M_atoms[money_base::_S_end];
+
       bool				_M_allocated;
 
       __moneypunct_cache(size_t __refs = 0) : facet(__refs),
-      _M_grouping(NULL), _M_use_grouping(false), _M_decimal_point(_CharT()),
-      _M_thousands_sep(_CharT()), _M_curr_symbol(NULL), _M_positive_sign(NULL),
-      _M_negative_sign(NULL), _M_frac_digits(0),
+      _M_grouping(NULL), _M_grouping_size(0), _M_use_grouping(false),
+      _M_decimal_point(_CharT()), _M_thousands_sep(_CharT()),
+      _M_curr_symbol(NULL), _M_curr_symbol_size(0),
+      _M_positive_sign(NULL), _M_positive_sign_size(0),
+      _M_negative_sign(NULL), _M_negative_sign_size(0),
+      _M_frac_digits(0),
       _M_pos_format(money_base::pattern()),
       _M_neg_format(money_base::pattern()), _M_allocated(false)
       { }
@@ -3500,13 +3523,58 @@ namespace std
       _M_cache(const locale& __loc);
     };
 
-  template<typename _CharT>
-    __moneypunct_cache<_CharT>::~__moneypunct_cache()
+  template<typename _CharT, bool _Intl>
+    __moneypunct_cache<_CharT, _Intl>::~__moneypunct_cache()
     {
       if (_M_allocated)
 	{
-	  // XXX.
+	  delete [] _M_grouping;
+	  delete [] _M_curr_symbol;
+	  delete [] _M_positive_sign;
+	  delete [] _M_negative_sign;
 	}
+    }
+
+  template<typename _CharT, bool _Intl>
+    void
+    __moneypunct_cache<_CharT, _Intl>::_M_cache(const locale& __loc)
+    {
+      _M_allocated = true;
+
+      const moneypunct<_CharT, _Intl>& __mp =
+	use_facet<moneypunct<_CharT, _Intl> >(__loc);
+
+      _M_grouping_size = __mp.grouping().size();
+      char* __grouping = new char[_M_grouping_size];
+      __mp.grouping().copy(__grouping, _M_grouping_size);
+      _M_grouping = __grouping;
+      _M_use_grouping = _M_grouping_size && __mp.grouping()[0] != 0;
+      
+      _M_decimal_point = __mp.decimal_point();
+      _M_thousands_sep = __mp.thousands_sep();
+      _M_frac_digits = __mp.frac_digits();
+      
+      _M_curr_symbol_size = __mp.curr_symbol().size();
+      _CharT* __curr_symbol = new _CharT[_M_curr_symbol_size];
+      __mp.curr_symbol().copy(__curr_symbol, _M_curr_symbol_size);
+      _M_curr_symbol = __curr_symbol;
+      
+      _M_positive_sign_size = __mp.positive_sign().size();
+      _CharT* __positive_sign = new _CharT[_M_positive_sign_size];
+      __mp.positive_sign().copy(__positive_sign, _M_positive_sign_size);
+      _M_positive_sign = __positive_sign;
+
+      _M_negative_sign_size = __mp.negative_sign().size();
+      _CharT* __negative_sign = new _CharT[_M_negative_sign_size];
+      __mp.negative_sign().copy(__negative_sign, _M_negative_sign_size);
+      _M_negative_sign = __negative_sign;
+      
+      _M_pos_format = __mp.pos_format();
+      _M_neg_format = __mp.neg_format();
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(money_base::_S_atoms,
+		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
     }
 
   /**
@@ -3525,7 +3593,7 @@ namespace std
       typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
       //@}
-      typedef __moneypunct_cache<_CharT>	__cache_type;
+      typedef __moneypunct_cache<_CharT, _Intl>     __cache_type;
 
     private:
       __cache_type*			_M_data;
@@ -4078,7 +4146,7 @@ namespace std
    *  the money_put facet.
   */
   template<typename _CharT, typename _OutIter>
-    class money_put : public locale::facet
+  class money_put : public locale::facet, public money_base
     {
     public:
       //@{
@@ -4194,9 +4262,10 @@ namespace std
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     const string_type& __digits) const;
 
-      iter_type
-      _M_insert(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-		const string_type& __digits) const;
+      template<bool _Intl>
+        iter_type
+        _M_insert(iter_type __s, ios_base& __io, char_type __fill,
+		  const string_type& __digits) const;
     };
 
   template<typename _CharT, typename _OutIter>

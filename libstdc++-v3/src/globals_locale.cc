@@ -184,8 +184,8 @@ namespace __gnu_internal
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
   fake_num_cache_c numpunct_cache_c;
 
-  typedef char fake_money_cache_c[sizeof(std::__moneypunct_cache<char>)]
-  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<char>))));
+  typedef char fake_money_cache_c[sizeof(std::__moneypunct_cache<char, true>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<char, true>))));
   fake_money_cache_c moneypunct_cache_ct;
   fake_money_cache_c moneypunct_cache_cf;
 
@@ -198,8 +198,8 @@ namespace __gnu_internal
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<wchar_t>))));
   fake_num_cache_w numpunct_cache_w;
 
-  typedef char fake_money_cache_w[sizeof(std::__moneypunct_cache<wchar_t>)]
-  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<wchar_t>))));
+  typedef char fake_money_cache_w[sizeof(std::__moneypunct_cache<wchar_t,true>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<wchar_t,true>))));
   fake_money_cache_w moneypunct_cache_wt;
   fake_money_cache_w moneypunct_cache_wf;
 

@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,6 +52,8 @@ namespace std
   // Definitions for static const data members of money_base.
   const money_base::pattern 
   money_base::_S_default_pattern =  { {symbol, sign, none, value} };
+
+  const char* money_base::_S_atoms = "-0123456789";
 
   const char* __num_base::_S_atoms_in = "-+xX0123456789abcdefABCDEF";
   const char* __num_base::_S_atoms_out ="-+xX0123456789abcdef0123456789ABCDEF";
