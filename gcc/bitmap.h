@@ -282,7 +282,7 @@ bmp_iter_single_init (bitmap_iterator *bi, bitmap bmp, unsigned min)
   return bmp_iter_single_next_1 (bi);
 }
 
-/* Returns true if all elements of the bitmap refered to by iterator BI
+/* Returns true if all elements of the bitmap referred to by iterator BI
    were processed.  */
 
 static inline bool
