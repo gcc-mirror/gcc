@@ -104,6 +104,9 @@ extern void fnotice			(FILE *, const char *, ...)
 extern int wrapup_global_declarations   (union tree_node **, int);
 extern void check_global_declarations   (union tree_node **, int);
 
+/* A unique local time stamp, might be zero if none is available.  */
+extern unsigned local_tick;
+
 extern const char *progname;
 extern const char *dump_base_name;
 extern const char *aux_base_name;

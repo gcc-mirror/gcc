@@ -4464,38 +4464,6 @@ dump_tree_statistics (void)
 
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 
-const char *flag_random_seed;
-
-/* Set up a default flag_random_seed value, if there wasn't one already.  */
-
-void
-default_flag_random_seed (void)
-{
-  unsigned HOST_WIDE_INT value;
-  char *new_random_seed;
-
-  if (flag_random_seed != NULL)
-    return;
-
-  /* Get some more or less random data.  */
-#ifdef HAVE_GETTIMEOFDAY
- {
-   struct timeval tv;
-
-   gettimeofday (&tv, NULL);
-   value = (((unsigned HOST_WIDE_INT) tv.tv_usec << 16)
-	    ^ tv.tv_sec ^ getpid ());
- }
-#else
-  value = getpid ();
-#endif
-
-  /* This slightly overestimates the space required.  */
-  new_random_seed = xmalloc (HOST_BITS_PER_WIDE_INT / 3 + 2);
-  sprintf (new_random_seed, HOST_WIDE_INT_PRINT_UNSIGNED, value);
-  flag_random_seed = new_random_seed;
-}
-
 /* Generate a crc32 of a string.  */
 
 unsigned
@@ -4568,7 +4536,6 @@ get_file_function_name_long (const char *type)
       memcpy (q, file, len + 1);
       clean_symbol_name (q);
 
-      default_flag_random_seed ();
       sprintf (q + len, "_%08X_%08X", crc32_string (0, name),
 	       crc32_string (0, flag_random_seed));
 

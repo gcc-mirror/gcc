@@ -2931,7 +2931,6 @@ extern void expand_start_case_dummy (void);
 extern HOST_WIDE_INT all_cases_count (tree, int *);
 extern void check_for_full_enumeration_handling (tree);
 extern void declare_nonlocal_label (tree);
-extern void default_flag_random_seed (void);
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */
