@@ -1,0 +1,1072 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Peephole Definitions,  Next: Expander Definitions,  Prev: Insn Canonicalizations,  Up: Machine Desc
+
+Machine-Specific Peephole Optimizers
+====================================
+
+   In addition to instruction patterns the `md' file may contain
+definitions of machine-specific peephole optimizations.
+
+   The combiner does not notice certain peephole optimizations when the
+data flow in the program does not suggest that it should try them.  For
+example, sometimes two consecutive insns related in purpose can be
+combined even though the second one does not appear to use a register
+computed in the first one.  A machine-specific peephole optimizer can
+detect such opportunities.
+
+   A definition looks like this:
+
+     (define_peephole
+       [INSN-PATTERN-1
+        INSN-PATTERN-2
+        ...]
+       "CONDITION"
+       "TEMPLATE"
+       "OPTIONAL INSN-ATTRIBUTES")
+
+The last string operand may be omitted if you are not using any
+machine-specific information in this machine description.  If present,
+it must obey the same rules as in a `define_insn'.
+
+   In this skeleton, INSN-PATTERN-1 and so on are patterns to match
+consecutive insns.  The optimization applies to a sequence of insns when
+INSN-PATTERN-1 matches the first one, INSN-PATTERN-2 matches the next,
+and so on.
+
+   Each of the insns matched by a peephole must also match a
+`define_insn'.  Peepholes are checked only at the last stage just
+before code generation, and only optionally.  Therefore, any insn which
+would match a peephole but no `define_insn' will cause a crash in code
+generation in an unoptimized compilation, or at various optimization
+stages.
+
+   The operands of the insns are matched with `match_operands',
+`match_operator', and `match_dup', as usual.  What is not usual is that
+the operand numbers apply to all the insn patterns in the definition.
+So, you can check for identical operands in two insns by using
+`match_operand' in one insn and `match_dup' in the other.
+
+   The operand constraints used in `match_operand' patterns do not have
+any direct effect on the applicability of the peephole, but they will
+be validated afterward, so make sure your constraints are general enough
+to apply whenever the peephole matches.  If the peephole matches but
+the constraints are not satisfied, the compiler will crash.
+
+   It is safe to omit constraints in all the operands of the peephole;
+or you can write constraints which serve as a double-check on the
+criteria previously tested.
+
+   Once a sequence of insns matches the patterns, the CONDITION is
+checked.  This is a C expression which makes the final decision whether
+to perform the optimization (we do so if the expression is nonzero).  If
+CONDITION is omitted (in other words, the string is empty) then the
+optimization is applied to every sequence of insns that matches the
+patterns.
+
+   The defined peephole optimizations are applied after register
+allocation is complete.  Therefore, the peephole definition can check
+which operands have ended up in which kinds of registers, just by
+looking at the operands.
+
+   The way to refer to the operands in CONDITION is to write
+`operands[I]' for operand number I (as matched by `(match_operand I
+...)').  Use the variable `insn' to refer to the last of the insns
+being matched; use `prev_active_insn' to find the preceding insns.
+
+   When optimizing computations with intermediate results, you can use
+CONDITION to match only when the intermediate results are not used
+elsewhere.  Use the C expression `dead_or_set_p (INSN, OP)', where INSN
+is the insn in which you expect the value to be used for the last time
+(from the value of `insn', together with use of `prev_nonnote_insn'),
+and OP is the intermediate value (from `operands[I]').
+
+   Applying the optimization means replacing the sequence of insns with
+one new insn.  The TEMPLATE controls ultimate output of assembler code
+for this combined insn.  It works exactly like the template of a
+`define_insn'.  Operand numbers in this template are the same ones used
+in matching the original sequence of insns.
+
+   The result of a defined peephole optimizer does not need to match
+any of the insn patterns in the machine description; it does not even
+have an opportunity to match them.  The peephole optimizer definition
+itself serves as the insn pattern to control how the insn is output.
+
+   Defined peephole optimizers are run as assembler code is being
+output, so the insns they produce are never combined or rearranged in
+any way.
+
+   Here is an example, taken from the 68000 machine description:
+
+     (define_peephole
+       [(set (reg:SI 15) (plus:SI (reg:SI 15) (const_int 4)))
+        (set (match_operand:DF 0 "register_operand" "=f")
+             (match_operand:DF 1 "register_operand" "ad"))]
+       "FP_REG_P (operands[0]) && ! FP_REG_P (operands[1])"
+       "*
+     {
+       rtx xoperands[2];
+       xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+     #ifdef MOTOROLA
+       output_asm_insn (\"move.l %1,(sp)\", xoperands);
+       output_asm_insn (\"move.l %1,-(sp)\", operands);
+       return \"fmove.d (sp)+,%0\";
+     #else
+       output_asm_insn (\"movel %1,sp@\", xoperands);
+       output_asm_insn (\"movel %1,sp@-\", operands);
+       return \"fmoved sp@+,%0\";
+     #endif
+     }
+     ")
+
+   The effect of this optimization is to change
+
+     jbsr _foobar
+     addql #4,sp
+     movel d1,sp@-
+     movel d0,sp@-
+     fmoved sp@+,fp0
+
+into
+
+     jbsr _foobar
+     movel d1,sp@
+     movel d0,sp@-
+     fmoved sp@+,fp0
+
+   INSN-PATTERN-1 and so on look *almost* like the second operand of
+`define_insn'.  There is one important difference: the second operand
+of `define_insn' consists of one or more RTX's enclosed in square
+brackets.  Usually, there is only one: then the same action can be
+written as an element of a `define_peephole'.  But when there are
+multiple actions in a `define_insn', they are implicitly enclosed in a
+`parallel'.  Then you must explicitly write the `parallel', and the
+square brackets within it, in the `define_peephole'.  Thus, if an insn
+pattern looks like this,
+
+     (define_insn "divmodsi4"
+       [(set (match_operand:SI 0 "general_operand" "=d")
+             (div:SI (match_operand:SI 1 "general_operand" "0")
+                     (match_operand:SI 2 "general_operand" "dmsK")))
+        (set (match_operand:SI 3 "general_operand" "=d")
+             (mod:SI (match_dup 1) (match_dup 2)))]
+       "TARGET_68020"
+       "divsl%.l %2,%3:%0")
+
+then the way to mention this insn in a peephole is as follows:
+
+     (define_peephole
+       [...
+        (parallel
+         [(set (match_operand:SI 0 "general_operand" "=d")
+               (div:SI (match_operand:SI 1 "general_operand" "0")
+                       (match_operand:SI 2 "general_operand" "dmsK")))
+          (set (match_operand:SI 3 "general_operand" "=d")
+               (mod:SI (match_dup 1) (match_dup 2)))])
+        ...]
+       ...)
+
+
+File: gcc.info,  Node: Expander Definitions,  Next: Insn Splitting,  Prev: Peephole Definitions,  Up: Machine Desc
+
+Defining RTL Sequences for Code Generation
+==========================================
+
+   On some target machines, some standard pattern names for RTL
+generation cannot be handled with single insn, but a sequence of RTL
+insns can represent them.  For these target machines, you can write a
+`define_expand' to specify how to generate the sequence of RTL.
+
+   A `define_expand' is an RTL expression that looks almost like a
+`define_insn'; but, unlike the latter, a `define_expand' is used only
+for RTL generation and it can produce more than one RTL insn.
+
+   A `define_expand' RTX has four operands:
+
+   * The name.  Each `define_expand' must have a name, since the only
+     use for it is to refer to it by name.
+
+   * The RTL template.  This is just like the RTL template for a
+     `define_peephole' in that it is a vector of RTL expressions each
+     being one insn.
+
+   * The condition, a string containing a C expression.  This
+     expression is used to express how the availability of this pattern
+     depends on subclasses of target machine, selected by command-line
+     options when GNU CC is run.  This is just like the condition of a
+     `define_insn' that has a standard name.  Therefore, the condition
+     (if present) may not depend on the data in the insn being matched,
+     but only the target-machine-type flags.  The compiler needs to
+     test these conditions during initialization in order to learn
+     exactly which named instructions are available in a particular run.
+
+   * The preparation statements, a string containing zero or more C
+     statements which are to be executed before RTL code is generated
+     from the RTL template.
+
+     Usually these statements prepare temporary registers for use as
+     internal operands in the RTL template, but they can also generate
+     RTL insns directly by calling routines such as `emit_insn', etc.
+     Any such insns precede the ones that come from the RTL template.
+
+   Every RTL insn emitted by a `define_expand' must match some
+`define_insn' in the machine description.  Otherwise, the compiler will
+crash when trying to generate code for the insn or trying to optimize
+it.
+
+   The RTL template, in addition to controlling generation of RTL insns,
+also describes the operands that need to be specified when this pattern
+is used.  In particular, it gives a predicate for each operand.
+
+   A true operand, which needs to be specified in order to generate RTL
+from the pattern, should be described with a `match_operand' in its
+first occurrence in the RTL template.  This enters information on the
+operand's predicate into the tables that record such things.  GNU CC
+uses the information to preload the operand into a register if that is
+required for valid RTL code.  If the operand is referred to more than
+once, subsequent references should use `match_dup'.
+
+   The RTL template may also refer to internal "operands" which are
+temporary registers or labels used only within the sequence made by the
+`define_expand'.  Internal operands are substituted into the RTL
+template with `match_dup', never with `match_operand'.  The values of
+the internal operands are not passed in as arguments by the compiler
+when it requests use of this pattern.  Instead, they are computed
+within the pattern, in the preparation statements.  These statements
+compute the values and store them into the appropriate elements of
+`operands' so that `match_dup' can find them.
+
+   There are two special macros defined for use in the preparation
+statements: `DONE' and `FAIL'.  Use them with a following semicolon, as
+a statement.
+
+`DONE'
+     Use the `DONE' macro to end RTL generation for the pattern.  The
+     only RTL insns resulting from the pattern on this occasion will be
+     those already emitted by explicit calls to `emit_insn' within the
+     preparation statements; the RTL template will not be generated.
+
+`FAIL'
+     Make the pattern fail on this occasion.  When a pattern fails, it
+     means that the pattern was not truly available.  The calling
+     routines in the compiler will try other strategies for code
+     generation using other patterns.
+
+     Failure is currently supported only for binary (addition,
+     multiplication, shifting, etc.) and bitfield (`extv', `extzv', and
+     `insv') operations.
+
+   Here is an example, the definition of left-shift for the SPUR chip:
+
+     (define_expand "ashlsi3"
+       [(set (match_operand:SI 0 "register_operand" "")
+             (ashift:SI
+
+     (match_operand:SI 1 "register_operand" "")
+               (match_operand:SI 2 "nonmemory_operand" "")))]
+       ""
+       "
+
+     {
+       if (GET_CODE (operands[2]) != CONST_INT
+           || (unsigned) INTVAL (operands[2]) > 3)
+         FAIL;
+     }")
+
+This example uses `define_expand' so that it can generate an RTL insn
+for shifting when the shift-count is in the supported range of 0 to 3
+but fail in other cases where machine insns aren't available.  When it
+fails, the compiler tries another strategy using different patterns
+(such as, a library call).
+
+   If the compiler were able to handle nontrivial condition-strings in
+patterns with names, then it would be possible to use a `define_insn'
+in that case.  Here is another case (zero-extension on the 68000) which
+makes more use of the power of `define_expand':
+
+     (define_expand "zero_extendhisi2"
+       [(set (match_operand:SI 0 "general_operand" "")
+             (const_int 0))
+        (set (strict_low_part
+               (subreg:HI
+                 (match_dup 0)
+                 0))
+             (match_operand:HI 1 "general_operand" ""))]
+       ""
+       "operands[1] = make_safe_from (operands[1], operands[0]);")
+
+Here two RTL insns are generated, one to clear the entire output operand
+and the other to copy the input operand into its low half.  This
+sequence is incorrect if the input operand refers to [the old value of]
+the output operand, so the preparation statement makes sure this isn't
+so.  The function `make_safe_from' copies the `operands[1]' into a
+temporary register if it refers to `operands[0]'.  It does this by
+emitting another RTL insn.
+
+   Finally, a third example shows the use of an internal operand.
+Zero-extension on the SPUR chip is done by `and'-ing the result against
+a halfword mask.  But this mask cannot be represented by a `const_int'
+because the constant value is too large to be legitimate on this
+machine.  So it must be copied into a register with `force_reg' and
+then the register used in the `and'.
+
+     (define_expand "zero_extendhisi2"
+       [(set (match_operand:SI 0 "register_operand" "")
+             (and:SI (subreg:SI
+                       (match_operand:HI 1 "register_operand" "")
+                       0)
+                     (match_dup 2)))]
+       ""
+       "operands[2]
+          = force_reg (SImode, gen_rtx (CONST_INT,
+                                        VOIDmode, 65535)); ")
+
+   *Note:* If the `define_expand' is used to serve a standard binary or
+unary arithmetic operation or a bitfield operation, then the last insn
+it generates must not be a `code_label', `barrier' or `note'.  It must
+be an `insn', `jump_insn' or `call_insn'.  If you don't need a real insn
+at the end, emit an insn to copy the result of the operation into
+itself.  Such an insn will generate no code, but it can avoid problems
+in the compiler.
+
+
+File: gcc.info,  Node: Insn Splitting,  Next: Insn Attributes,  Prev: Expander Definitions,  Up: Machine Desc
+
+Defining How to Split Instructions
+==================================
+
+   There are two cases where you should specify how to split a pattern
+into multiple insns.  On machines that have instructions requiring delay
+slots (*note Delay Slots::.) or that have instructions whose output is
+not available for multiple cycles (*note Function Units::.), the
+compiler phases that optimize these cases need to be able to move insns
+into one-instruction delay slots.  However, some insns may generate
+more than one machine instruction.  These insns cannot be placed into a
+delay slot.
+
+   Often you can rewrite the single insn as a list of individual insns,
+each corresponding to one machine instruction.  The disadvantage of
+doing so is that it will cause the compilation to be slower and require
+more space.  If the resulting insns are too complex, it may also
+suppress some optimizations.  The compiler splits the insn if there is a
+reason to believe that it might improve instruction or delay slot
+scheduling.
+
+   The insn combiner phase also splits putative insns.  If three insns
+are merged into one insn with a complex expression that cannot be
+matched by some `define_insn' pattern, the combiner phase attempts to
+split the complex pattern into two insns that are recognized.  Usually
+it can break the complex pattern into two patterns by splitting out some
+subexpression.  However, in some other cases, such as performing an
+addition of a large constant in two insns on a RISC machine, the way to
+split the addition into two insns is machine-dependent.
+
+   The `define_split' definition tells the compiler how to split a
+complex insn into several simpler insns.  It looks like this:
+
+     (define_split
+       [INSN-PATTERN]
+       "CONDITION"
+       [NEW-INSN-PATTERN-1
+        NEW-INSN-PATTERN-2
+        ...]
+       "PREPARATION STATEMENTS")
+
+   INSN-PATTERN is a pattern that needs to be split and CONDITION is
+the final condition to be tested, as in a `define_insn'.  When an insn
+matching INSN-PATTERN and satisfying CONDITION is found, it is replaced
+in the insn list with the insns given by NEW-INSN-PATTERN-1,
+NEW-INSN-PATTERN-2, etc.
+
+   The PREPARATION STATEMENTS are similar to those statements that are
+specified for `define_expand' (*note Expander Definitions::.)  and are
+executed before the new RTL is generated to prepare for the generated
+code or emit some insns whose pattern is not fixed.  Unlike those in
+`define_expand', however, these statements must not generate any new
+pseudo-registers.  Once reload has completed, they also must not
+allocate any space in the stack frame.
+
+   Patterns are matched against INSN-PATTERN in two different
+circumstances.  If an insn needs to be split for delay slot scheduling
+or insn scheduling, the insn is already known to be valid, which means
+that it must have been matched by some `define_insn' and, if
+`reload_completed' is non-zero, is known to satisfy the constraints of
+that `define_insn'.  In that case, the new insn patterns must also be
+insns that are matched by some `define_insn' and, if `reload_completed'
+is non-zero, must also satisfy the constraints of those definitions.
+
+   As an example of this usage of `define_split', consider the following
+example from `a29k.md', which splits a `sign_extend' from `HImode' to
+`SImode' into a pair of shift insns:
+
+     (define_split
+       [(set (match_operand:SI 0 "gen_reg_operand" "")
+             (sign_extend:SI (match_operand:HI 1 "gen_reg_operand" "")))]
+       ""
+       [(set (match_dup 0)
+             (ashift:SI (match_dup 1)
+                        (const_int 16)))
+        (set (match_dup 0)
+             (ashiftrt:SI (match_dup 0)
+                          (const_int 16)))]
+       "
+     { operands[1] = gen_lowpart (SImode, operands[1]); }")
+
+   When the combiner phase tries to split an insn pattern, it is always
+the case that the pattern is *not* matched by any `define_insn'.  The
+combiner pass first tries to split a single `set' expression and then
+the same `set' expression inside a `parallel', but followed by a
+`clobber' of a pseudo-reg to use as a scratch register.  In these
+cases, the combiner expects exactly two new insn patterns to be
+generated.  It will verify that these patterns match some `define_insn'
+definitions, so you need not do this test in the `define_split' (of
+course, there is no point in writing a `define_split' that will never
+produce insns that match).
+
+   Here is an example of this use of `define_split', taken from
+`rs6000.md':
+
+     (define_split
+       [(set (match_operand:SI 0 "gen_reg_operand" "")
+             (plus:SI (match_operand:SI 1 "gen_reg_operand" "")
+                      (match_operand:SI 2 "non_add_cint_operand" "")))]
+       ""
+       [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 3)))
+        (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 4)))]
+     "
+     {
+       int low = INTVAL (operands[2]) & 0xffff;
+       int high = (unsigned) INTVAL (operands[2]) >> 16;
+     
+       if (low & 0x8000)
+         high++, low |= 0xffff0000;
+     
+       operands[3] = gen_rtx (CONST_INT, VOIDmode, high << 16);
+       operands[4] = gen_rtx (CONST_INT, VOIDmode, low);
+     }")
+
+   Here the predicate `non_add_cint_operand' matches any `const_int'
+that is *not* a valid operand of a single add insn.  The add with the
+smaller displacement is written so that it can be substituted into the
+address of a subsequent operation.
+
+   An example that uses a scratch register, from the same file,
+generates an equality comparison of a register and a large constant:
+
+     (define_split
+       [(set (match_operand:CC 0 "cc_reg_operand" "")
+             (compare:CC (match_operand:SI 1 "gen_reg_operand" "")
+                         (match_operand:SI 2 "non_short_cint_operand" "")))
+        (clobber (match_operand:SI 3 "gen_reg_operand" ""))]
+       "find_single_use (operands[0], insn, 0)
+        && (GET_CODE (*find_single_use (operands[0], insn, 0)) == EQ
+            || GET_CODE (*find_single_use (operands[0], insn, 0)) == NE)"
+       [(set (match_dup 3) (xor:SI (match_dup 1) (match_dup 4)))
+        (set (match_dup 0) (compare:CC (match_dup 3) (match_dup 5)))]
+       "
+     {
+       /* Get the constant we are comparing against, C, and see what it
+          looks like sign-extended to 16 bits.  Then see what constant
+          could be XOR'ed with C to get the sign-extended value.  */
+     
+       int c = INTVAL (operands[2]);
+       int sextc = (c << 16) >> 16;
+       int xorv = c ^ sextc;
+     
+       operands[4] = gen_rtx (CONST_INT, VOIDmode, xorv);
+       operands[5] = gen_rtx (CONST_INT, VOIDmode, sextc);
+     }")
+
+   To avoid confusion, don't write a single `define_split' that accepts
+some insns that match some `define_insn' as well as some insns that
+don't.  Instead, write two separate `define_split' definitions, one for
+the insns that are valid and one for the insns that are not valid.
+
+
+File: gcc.info,  Node: Insn Attributes,  Prev: Insn Splitting,  Up: Machine Desc
+
+Instruction Attributes
+======================
+
+   In addition to describing the instruction supported by the target
+machine, the `md' file also defines a group of "attributes" and a set of
+values for each.  Every generated insn is assigned a value for each
+attribute.  One possible attribute would be the effect that the insn
+has on the machine's condition code.  This attribute can then be used
+by `NOTICE_UPDATE_CC' to track the condition codes.
+
+* Menu:
+
+* Defining Attributes:: Specifying attributes and their values.
+* Expressions::         Valid expressions for attribute values.
+* Tagging Insns::       Assigning attribute values to insns.
+* Attr Example::        An example of assigning attributes.
+* Insn Lengths::        Computing the length of insns.
+* Constant Attributes:: Defining attributes that are constant.
+* Delay Slots::         Defining delay slots required for a machine.
+* Function Units::      Specifying information for insn scheduling.
+
+
+File: gcc.info,  Node: Defining Attributes,  Next: Expressions,  Up: Insn Attributes
+
+Defining Attributes and their Values
+------------------------------------
+
+   The `define_attr' expression is used to define each attribute
+required by the target machine.  It looks like:
+
+     (define_attr NAME LIST-OF-VALUES DEFAULT)
+
+   NAME is a string specifying the name of the attribute being defined.
+
+   LIST-OF-VALUES is either a string that specifies a comma-separated
+list of values that can be assigned to the attribute, or a null string
+to indicate that the attribute takes numeric values.
+
+   DEFAULT is an attribute expression that gives the value of this
+attribute for insns that match patterns whose definition does not
+include an explicit value for this attribute.  *Note Attr Example::,
+for more information on the handling of defaults.  *Note Constant
+Attributes::, for information on attributes that do not depend on any
+particular insn.
+
+   For each defined attribute, a number of definitions are written to
+the `insn-attr.h' file.  For cases where an explicit set of values is
+specified for an attribute, the following are defined:
+
+   * A `#define' is written for the symbol `HAVE_ATTR_NAME'.
+
+   * An enumeral class is defined for `attr_NAME' with elements of the
+     form `UPPER-NAME_UPPER-VALUE' where the attribute name and value
+     are first converted to upper case.
+
+   * A function `get_attr_NAME' is defined that is passed an insn and
+     returns the attribute value for that insn.
+
+   For example, if the following is present in the `md' file:
+
+     (define_attr "type" "branch,fp,load,store,arith" ...)
+
+the following lines will be written to the file `insn-attr.h'.
+
+     #define HAVE_ATTR_type
+     enum attr_type {TYPE_BRANCH, TYPE_FP, TYPE_LOAD,
+                      TYPE_STORE, TYPE_ARITH};
+     extern enum attr_type get_attr_type ();
+
+   If the attribute takes numeric values, no `enum' type will be
+defined and the function to obtain the attribute's value will return
+`int'.
+
+
+File: gcc.info,  Node: Expressions,  Next: Tagging Insns,  Prev: Defining Attributes,  Up: Insn Attributes
+
+Attribute Expressions
+---------------------
+
+   RTL expressions used to define attributes use the codes described
+above plus a few specific to attribute definitions, to be discussed
+below.  Attribute value expressions must have one of the following
+forms:
+
+`(const_int I)'
+     The integer I specifies the value of a numeric attribute.  I must
+     be non-negative.
+
+     The value of a numeric attribute can be specified either with a
+     `const_int' or as an integer represented as a string in
+     `const_string', `eq_attr' (see below), and `set_attr' (*note
+     Tagging Insns::.) expressions.
+
+`(const_string VALUE)'
+     The string VALUE specifies a constant attribute value.  If VALUE
+     is specified as `"*"', it means that the default value of the
+     attribute is to be used for the insn containing this expression.
+     `"*"' obviously cannot be used in the DEFAULT expression of a
+     `define_attr'.
+
+     If the attribute whose value is being specified is numeric, VALUE
+     must be a string containing a non-negative integer (normally
+     `const_int' would be used in this case).  Otherwise, it must
+     contain one of the valid values for the attribute.
+
+`(if_then_else TEST TRUE-VALUE FALSE-VALUE)'
+     TEST specifies an attribute test, whose format is defined below.
+     The value of this expression is TRUE-VALUE if TEST is true,
+     otherwise it is FALSE-VALUE.
+
+`(cond [TEST1 VALUE1 ...] DEFAULT)'
+     The first operand of this expression is a vector containing an even
+     number of expressions and consisting of pairs of TEST and VALUE
+     expressions.  The value of the `cond' expression is that of the
+     VALUE corresponding to the first true TEST expression.  If none of
+     the TEST expressions are true, the value of the `cond' expression
+     is that of the DEFAULT expression.
+
+   TEST expressions can have one of the following forms:
+
+`(const_int I)'
+     This test is true if I is non-zero and false otherwise.
+
+`(not TEST)'
+`(ior TEST1 TEST2)'
+`(and TEST1 TEST2)'
+     These tests are true if the indicated logical function is true.
+
+`(match_operand:M N PRED CONSTRAINTS)'
+     This test is true if operand N of the insn whose attribute value
+     is being determined has mode M (this part of the test is ignored
+     if M is `VOIDmode') and the function specified by the string PRED
+     returns a non-zero value when passed operand N and mode M (this
+     part of the test is ignored if PRED is the null string).
+
+     The CONSTRAINTS operand is ignored and should be the null string.
+
+`(le ARITH1 ARITH2)'
+`(leu ARITH1 ARITH2)'
+`(lt ARITH1 ARITH2)'
+`(ltu ARITH1 ARITH2)'
+`(gt ARITH1 ARITH2)'
+`(gtu ARITH1 ARITH2)'
+`(ge ARITH1 ARITH2)'
+`(geu ARITH1 ARITH2)'
+`(ne ARITH1 ARITH2)'
+`(eq ARITH1 ARITH2)'
+     These tests are true if the indicated comparison of the two
+     arithmetic expressions is true.  Arithmetic expressions are formed
+     with `plus', `minus', `mult', `div', `mod', `abs', `neg', `and',
+     `ior', `xor', `not', `ashift', `lshiftrt', and `ashiftrt'
+     expressions.
+
+     `const_int' and `symbol_ref' are always valid terms (*note Insn
+     Lengths::.,for additional forms).  `symbol_ref' is a string
+     denoting a C expression that yields an `int' when evaluated by the
+     `get_attr_...' routine.  It should normally be a global variable.
+
+`(eq_attr NAME VALUE)'
+     NAME is a string specifying the name of an attribute.
+
+     VALUE is a string that is either a valid value for attribute NAME,
+     a comma-separated list of values, or `!' followed by a value or
+     list.  If VALUE does not begin with a `!', this test is true if
+     the value of the NAME attribute of the current insn is in the list
+     specified by VALUE.  If VALUE begins with a `!', this test is true
+     if the attribute's value is *not* in the specified list.
+
+     For example,
+
+          (eq_attr "type" "load,store")
+
+     is equivalent to
+
+          (ior (eq_attr "type" "load") (eq_attr "type" "store"))
+
+     If NAME specifies an attribute of `alternative', it refers to the
+     value of the compiler variable `which_alternative' (*note Output
+     Statement::.) and the values must be small integers.  For example,
+
+          (eq_attr "alternative" "2,3")
+
+     is equivalent to
+
+          (ior (eq (symbol_ref "which_alternative") (const_int 2))
+               (eq (symbol_ref "which_alternative") (const_int 3)))
+
+     Note that, for most attributes, an `eq_attr' test is simplified in
+     cases where the value of the attribute being tested is known for
+     all insns matching a particular pattern.  This is by far the most
+     common case.
+
+`(attr_flag NAME)'
+     The value of an `attr_flag' expression is true if the flag
+     specified by NAME is true for the `insn' currently being scheduled.
+
+     NAME is a string specifying one of a fixed set of flags to test.
+     Test the flags `forward' and `backward' to determine the direction
+     of a conditional branch.  Test the flags `very_likely', `likely',
+     `very_unlikely', and `unlikely' to determine if a conditional
+     branch is expected to be taken.
+
+     If the `very_likely' flag is true, then the `likely' flag is also
+     true.  Likewise for the `very_unlikely' and `unlikely' flags.
+
+     This example describes a conditional branch delay slot which can
+     be nullified for forward branches that are taken (annul-true) or
+     for backward branches which are not taken (annul-false).
+
+          (define_delay (eq_attr "type" "cbranch")
+            [(eq_attr "in_branch_delay" "true")
+             (and (eq_attr "in_branch_delay" "true")
+                  (attr_flag "forward"))
+             (and (eq_attr "in_branch_delay" "true")
+                  (attr_flag "backward"))])
+
+     The `forward' and `backward' flags are false if the current `insn'
+     being scheduled is not a conditional branch.
+
+     The `very_likely' and `likely' flags are true if the `insn' being
+     scheduled is not a conditional branch.  The `very_unlikely' and
+     `unlikely' flags are false if the `insn' being scheduled is not a
+     conditional branch.
+
+     `attr_flag' is only used during delay slot scheduling and has no
+     meaning to other passes of the compiler.
+
+
+File: gcc.info,  Node: Tagging Insns,  Next: Attr Example,  Prev: Expressions,  Up: Insn Attributes
+
+Assigning Attribute Values to Insns
+-----------------------------------
+
+   The value assigned to an attribute of an insn is primarily
+determined by which pattern is matched by that insn (or which
+`define_peephole' generated it).  Every `define_insn' and
+`define_peephole' can have an optional last argument to specify the
+values of attributes for matching insns.  The value of any attribute
+not specified in a particular insn is set to the default value for that
+attribute, as specified in its `define_attr'.  Extensive use of default
+values for attributes permits the specification of the values for only
+one or two attributes in the definition of most insn patterns, as seen
+in the example in the next section.
+
+   The optional last argument of `define_insn' and `define_peephole' is
+a vector of expressions, each of which defines the value for a single
+attribute.  The most general way of assigning an attribute's value is
+to use a `set' expression whose first operand is an `attr' expression
+giving the name of the attribute being set.  The second operand of the
+`set' is an attribute expression (*note Expressions::.) giving the
+value of the attribute.
+
+   When the attribute value depends on the `alternative' attribute
+(i.e., which is the applicable alternative in the constraint of the
+insn), the `set_attr_alternative' expression can be used.  It allows
+the specification of a vector of attribute expressions, one for each
+alternative.
+
+   When the generality of arbitrary attribute expressions is not
+required, the simpler `set_attr' expression can be used, which allows
+specifying a string giving either a single attribute value or a list of
+attribute values, one for each alternative.
+
+   The form of each of the above specifications is shown below.  In
+each case, NAME is a string specifying the attribute to be set.
+
+`(set_attr NAME VALUE-STRING)'
+     VALUE-STRING is either a string giving the desired attribute value,
+     or a string containing a comma-separated list giving the values for
+     succeeding alternatives.  The number of elements must match the
+     number of alternatives in the constraint of the insn pattern.
+
+     Note that it may be useful to specify `*' for some alternative, in
+     which case the attribute will assume its default value for insns
+     matching that alternative.
+
+`(set_attr_alternative NAME [VALUE1 VALUE2 ...])'
+     Depending on the alternative of the insn, the value will be one of
+     the specified values.  This is a shorthand for using a `cond' with
+     tests on the `alternative' attribute.
+
+`(set (attr NAME) VALUE)'
+     The first operand of this `set' must be the special RTL expression
+     `attr', whose sole operand is a string giving the name of the
+     attribute being set.  VALUE is the value of the attribute.
+
+   The following shows three different ways of representing the same
+attribute value specification:
+
+     (set_attr "type" "load,store,arith")
+     
+     (set_attr_alternative "type"
+                           [(const_string "load") (const_string "store")
+                            (const_string "arith")])
+     
+     (set (attr "type")
+          (cond [(eq_attr "alternative" "1") (const_string "load")
+                 (eq_attr "alternative" "2") (const_string "store")]
+                (const_string "arith")))
+
+   The `define_asm_attributes' expression provides a mechanism to
+specify the attributes assigned to insns produced from an `asm'
+statement.  It has the form:
+
+     (define_asm_attributes [ATTR-SETS])
+
+where ATTR-SETS is specified the same as for both the `define_insn' and
+the `define_peephole' expressions.
+
+   These values will typically be the "worst case" attribute values.
+For example, they might indicate that the condition code will be
+clobbered.
+
+   A specification for a `length' attribute is handled specially.  The
+way to compute the length of an `asm' insn is to multiply the length
+specified in the expression `define_asm_attributes' by the number of
+machine instructions specified in the `asm' statement, determined by
+counting the number of semicolons and newlines in the string.
+Therefore, the value of the `length' attribute specified in a
+`define_asm_attributes' should be the maximum possible length of a
+single machine instruction.
+
+
+File: gcc.info,  Node: Attr Example,  Next: Insn Lengths,  Prev: Tagging Insns,  Up: Insn Attributes
+
+Example of Attribute Specifications
+-----------------------------------
+
+   The judicious use of defaulting is important in the efficient use of
+insn attributes.  Typically, insns are divided into "types" and an
+attribute, customarily called `type', is used to represent this value.
+This attribute is normally used only to define the default value for
+other attributes.  An example will clarify this usage.
+
+   Assume we have a RISC machine with a condition code and in which only
+full-word operations are performed in registers.  Let us assume that we
+can divide all insns into loads, stores, (integer) arithmetic
+operations, floating point operations, and branches.
+
+   Here we will concern ourselves with determining the effect of an
+insn on the condition code and will limit ourselves to the following
+possible effects:  The condition code can be set unpredictably
+(clobbered), not be changed, be set to agree with the results of the
+operation, or only changed if the item previously set into the
+condition code has been modified.
+
+   Here is part of a sample `md' file for such a machine:
+
+     (define_attr "type" "load,store,arith,fp,branch" (const_string "arith"))
+     
+     (define_attr "cc" "clobber,unchanged,set,change0"
+                  (cond [(eq_attr "type" "load")
+                             (const_string "change0")
+                         (eq_attr "type" "store,branch")
+                             (const_string "unchanged")
+                         (eq_attr "type" "arith")
+                             (if_then_else (match_operand:SI 0 "" "")
+                                           (const_string "set")
+                                           (const_string "clobber"))]
+                        (const_string "clobber")))
+     
+     (define_insn ""
+       [(set (match_operand:SI 0 "general_operand" "=r,r,m")
+             (match_operand:SI 1 "general_operand" "r,m,r"))]
+       ""
+       "@
+        move %0,%1
+        load %0,%1
+        store %0,%1"
+       [(set_attr "type" "arith,load,store")])
+
+   Note that we assume in the above example that arithmetic operations
+performed on quantities smaller than a machine word clobber the
+condition code since they will set the condition code to a value
+corresponding to the full-word result.
+
+
+File: gcc.info,  Node: Insn Lengths,  Next: Constant Attributes,  Prev: Attr Example,  Up: Insn Attributes
+
+Computing the Length of an Insn
+-------------------------------
+
+   For many machines, multiple types of branch instructions are
+provided, each for different length branch displacements.  In most
+cases, the assembler will choose the correct instruction to use.
+However, when the assembler cannot do so, GCC can when a special
+attribute, the `length' attribute, is defined.  This attribute must be
+defined to have numeric values by specifying a null string in its
+`define_attr'.
+
+   In the case of the `length' attribute, two additional forms of
+arithmetic terms are allowed in test expressions:
+
+`(match_dup N)'
+     This refers to the address of operand N of the current insn, which
+     must be a `label_ref'.
+
+`(pc)'
+     This refers to the address of the *current* insn.  It might have
+     been more consistent with other usage to make this the address of
+     the *next* insn but this would be confusing because the length of
+     the current insn is to be computed.
+
+   For normal insns, the length will be determined by value of the
+`length' attribute.  In the case of `addr_vec' and `addr_diff_vec' insn
+patterns, the length is computed as the number of vectors multiplied by
+the size of each vector.
+
+   Lengths are measured in addressable storage units (bytes).
+
+   The following macros can be used to refine the length computation:
+
+`FIRST_INSN_ADDRESS'
+     When the `length' insn attribute is used, this macro specifies the
+     value to be assigned to the address of the first insn in a
+     function.  If not specified, 0 is used.
+
+`ADJUST_INSN_LENGTH (INSN, LENGTH)'
+     If defined, modifies the length assigned to instruction INSN as a
+     function of the context in which it is used.  LENGTH is an lvalue
+     that contains the initially computed length of the insn and should
+     be updated with the correct length of the insn.  If updating is
+     required, INSN must not be a varying-length insn.
+
+     This macro will normally not be required.  A case in which it is
+     required is the ROMP.  On this machine, the size of an `addr_vec'
+     insn must be increased by two to compensate for the fact that
+     alignment may be required.
+
+   The routine that returns `get_attr_length' (the value of the
+`length' attribute) can be used by the output routine to determine the
+form of the branch instruction to be written, as the example below
+illustrates.
+
+   As an example of the specification of variable-length branches,
+consider the IBM 360.  If we adopt the convention that a register will
+be set to the starting address of a function, we can jump to labels
+within 4k of the start using a four-byte instruction.  Otherwise, we
+need a six-byte sequence to load the address from memory and then
+branch to it.
+
+   On such a machine, a pattern for a branch instruction might be
+specified as follows:
+
+     (define_insn "jump"
+       [(set (pc)
+             (label_ref (match_operand 0 "" "")))]
+       ""
+       "*
+     {
+        return (get_attr_length (insn) == 4
+                ? \"b %l0\" : \"l r15,=a(%l0); br r15\");
+     }"
+       [(set (attr "length") (if_then_else (lt (match_dup 0) (const_int 4096))
+                                           (const_int 4)
+                                           (const_int 6)))])
+
+
+File: gcc.info,  Node: Constant Attributes,  Next: Delay Slots,  Prev: Insn Lengths,  Up: Insn Attributes
+
+Constant Attributes
+-------------------
+
+   A special form of `define_attr', where the expression for the
+default value is a `const' expression, indicates an attribute that is
+constant for a given run of the compiler.  Constant attributes may be
+used to specify which variety of processor is used.  For example,
+
+     (define_attr "cpu" "m88100,m88110,m88000"
+      (const
+       (cond [(symbol_ref "TARGET_88100") (const_string "m88100")
+              (symbol_ref "TARGET_88110") (const_string "m88110")]
+             (const_string "m88000"))))
+     
+     (define_attr "memory" "fast,slow"
+      (const
+       (if_then_else (symbol_ref "TARGET_FAST_MEM")
+                     (const_string "fast")
+                     (const_string "slow"))))
+
+   The routine generated for constant attributes has no parameters as it
+does not depend on any particular insn.  RTL expressions used to define
+the value of a constant attribute may use the `symbol_ref' form, but
+may not use either the `match_operand' form or `eq_attr' forms
+involving insn attributes.
+
+
+File: gcc.info,  Node: Delay Slots,  Next: Function Units,  Prev: Constant Attributes,  Up: Insn Attributes
+
+Delay Slot Scheduling
+---------------------
+
+   The insn attribute mechanism can be used to specify the requirements
+for delay slots, if any, on a target machine.  An instruction is said to
+require a "delay slot" if some instructions that are physically after
+the instruction are executed as if they were located before it.
+Classic examples are branch and call instructions, which often execute
+the following instruction before the branch or call is performed.
+
+   On some machines, conditional branch instructions can optionally
+"annul" instructions in the delay slot.  This means that the
+instruction will not be executed for certain branch outcomes.  Both
+instructions that annul if the branch is true and instructions that
+annul if the branch is false are supported.
+
+   Delay slot scheduling differs from instruction scheduling in that
+determining whether an instruction needs a delay slot is dependent only
+on the type of instruction being generated, not on data flow between the
+instructions.  See the next section for a discussion of data-dependent
+instruction scheduling.
+
+   The requirement of an insn needing one or more delay slots is
+indicated via the `define_delay' expression.  It has the following form:
+
+     (define_delay TEST
+                   [DELAY-1 ANNUL-TRUE-1 ANNUL-FALSE-1
+                    DELAY-2 ANNUL-TRUE-2 ANNUL-FALSE-2
+                    ...])
+
+   TEST is an attribute test that indicates whether this `define_delay'
+applies to a particular insn.  If so, the number of required delay
+slots is determined by the length of the vector specified as the second
+argument.  An insn placed in delay slot N must satisfy attribute test
+DELAY-N.  ANNUL-TRUE-N is an attribute test that specifies which insns
+may be annulled if the branch is true.  Similarly, ANNUL-FALSE-N
+specifies which insns in the delay slot may be annulled if the branch
+is false.  If annulling is not supported for that delay slot, `(nil)'
+should be coded.
+
+   For example, in the common case where branch and call insns require
+a single delay slot, which may contain any insn other than a branch or
+call, the following would be placed in the `md' file:
+
+     (define_delay (eq_attr "type" "branch,call")
+                   [(eq_attr "type" "!branch,call") (nil) (nil)])
+
+   Multiple `define_delay' expressions may be specified.  In this case,
+each such expression specifies different delay slot requirements and
+there must be no insn for which tests in two `define_delay' expressions
+are both true.
+
+   For example, if we have a machine that requires one delay slot for
+branches but two for calls,  no delay slot can contain a branch or call
+insn, and any valid insn in the delay slot for the branch can be
+annulled if the branch is true, we might represent this as follows:
+
+     (define_delay (eq_attr "type" "branch")
+        [(eq_attr "type" "!branch,call")
+         (eq_attr "type" "!branch,call")
+         (nil)])
+     
+     (define_delay (eq_attr "type" "call")
+                   [(eq_attr "type" "!branch,call") (nil) (nil)
+                    (eq_attr "type" "!branch,call") (nil) (nil)])
+

@@ -1,0 +1,1053 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: Insns,  Next: Calls,  Prev: Assembler,  Up: RTL
+
+Insns
+=====
+
+   The RTL representation of the code for a function is a doubly-linked
+chain of objects called "insns".  Insns are expressions with special
+codes that are used for no other purpose.  Some insns are actual
+instructions; others represent dispatch tables for `switch' statements;
+others represent labels to jump to or various sorts of declarative
+information.
+
+   In addition to its own specific data, each insn must have a unique
+id-number that distinguishes it from all other insns in the current
+function (after delayed branch scheduling, copies of an insn with the
+same id-number may be present in multiple places in a function, but
+these copies will always be identical and will only appear inside a
+`sequence'), and chain pointers to the preceding and following insns.
+These three fields occupy the same position in every insn, independent
+of the expression code of the insn.  They could be accessed with `XEXP'
+and `XINT', but instead three special macros are always used:
+
+`INSN_UID (I)'
+     Accesses the unique id of insn I.
+
+`PREV_INSN (I)'
+     Accesses the chain pointer to the insn preceding I.  If I is the
+     first insn, this is a null pointer.
+
+`NEXT_INSN (I)'
+     Accesses the chain pointer to the insn following I.  If I is the
+     last insn, this is a null pointer.
+
+   The first insn in the chain is obtained by calling `get_insns'; the
+last insn is the result of calling `get_last_insn'.  Within the chain
+delimited by these insns, the `NEXT_INSN' and `PREV_INSN' pointers must
+always correspond: if INSN is not the first insn,
+
+     NEXT_INSN (PREV_INSN (INSN)) == INSN
+
+is always true and if INSN is not the last insn,
+
+     PREV_INSN (NEXT_INSN (INSN)) == INSN
+
+is always true.
+
+   After delay slot scheduling, some of the insns in the chain might be
+`sequence' expressions, which contain a vector of insns.  The value of
+`NEXT_INSN' in all but the last of these insns is the next insn in the
+vector; the value of `NEXT_INSN' of the last insn in the vector is the
+same as the value of `NEXT_INSN' for the `sequence' in which it is
+contained.  Similar rules apply for `PREV_INSN'.
+
+   This means that the above invariants are not necessarily true for
+insns inside `sequence' expressions.  Specifically, if INSN is the
+first insn in a `sequence', `NEXT_INSN (PREV_INSN (INSN))' is the insn
+containing the `sequence' expression, as is the value of `PREV_INSN
+(NEXT_INSN (INSN))' is INSN is the last insn in the `sequence'
+expression.  You can use these expressions to find the containing
+`sequence' expression.
+
+   Every insn has one of the following six expression codes:
+
+`insn'
+     The expression code `insn' is used for instructions that do not
+     jump and do not do function calls.  `sequence' expressions are
+     always contained in insns with code `insn' even if one of those
+     insns should jump or do function calls.
+
+     Insns with code `insn' have four additional fields beyond the three
+     mandatory ones listed above.  These four are described in a table
+     below.
+
+`jump_insn'
+     The expression code `jump_insn' is used for instructions that may
+     jump (or, more generally, may contain `label_ref' expressions).  If
+     there is an instruction to return from the current function, it is
+     recorded as a `jump_insn'.
+
+     `jump_insn' insns have the same extra fields as `insn' insns,
+     accessed in the same way and in addition contain a field
+     `JUMP_LABEL' which is defined once jump optimization has completed.
+
+     For simple conditional and unconditional jumps, this field
+     contains the `code_label' to which this insn will (possibly
+     conditionally) branch.  In a more complex jump, `JUMP_LABEL'
+     records one of the labels that the insn refers to; the only way to
+     find the others is to scan the entire body of the insn.
+
+     Return insns count as jumps, but since they do not refer to any
+     labels, they have zero in the `JUMP_LABEL' field.
+
+`call_insn'
+     The expression code `call_insn' is used for instructions that may
+     do function calls.  It is important to distinguish these
+     instructions because they imply that certain registers and memory
+     locations may be altered unpredictably.
+
+     `call_insn' insns have the same extra fields as `insn' insns,
+     accessed in the same way and in addition contain a field
+     `CALL_INSN_FUNCTION_USAGE', which contains a list (chain of
+     `expr_list' expressions) containing `use' and `clobber'
+     expressions that denote hard registers used or clobbered by the
+     called function.  A register specified in a `clobber' in this list
+     is modified *after* the execution of the `call_insn', while a
+     register in a `clobber' in the body of the `call_insn' is
+     clobbered before the insn completes execution.  `clobber'
+     expressions in this list augment registers specified in
+     `CALL_USED_REGISTERS' (*note Register Basics::.).
+
+`code_label'
+     A `code_label' insn represents a label that a jump insn can jump
+     to.  It contains two special fields of data in addition to the
+     three standard ones.  `CODE_LABEL_NUMBER' is used to hold the
+     "label number", a number that identifies this label uniquely among
+     all the labels in the compilation (not just in the current
+     function).  Ultimately, the label is represented in the assembler
+     output as an assembler label, usually of the form `LN' where N is
+     the label number.
+
+     When a `code_label' appears in an RTL expression, it normally
+     appears within a `label_ref' which represents the address of the
+     label, as a number.
+
+     The field `LABEL_NUSES' is only defined once the jump optimization
+     phase is completed and contains the number of times this label is
+     referenced in the current function.
+
+`barrier'
+     Barriers are placed in the instruction stream when control cannot
+     flow past them.  They are placed after unconditional jump
+     instructions to indicate that the jumps are unconditional and
+     after calls to `volatile' functions, which do not return (e.g.,
+     `exit').  They contain no information beyond the three standard
+     fields.
+
+`note'
+     `note' insns are used to represent additional debugging and
+     declarative information.  They contain two nonstandard fields, an
+     integer which is accessed with the macro `NOTE_LINE_NUMBER' and a
+     string accessed with `NOTE_SOURCE_FILE'.
+
+     If `NOTE_LINE_NUMBER' is positive, the note represents the
+     position of a source line and `NOTE_SOURCE_FILE' is the source
+     file name that the line came from.  These notes control generation
+     of line number data in the assembler output.
+
+     Otherwise, `NOTE_LINE_NUMBER' is not really a line number but a
+     code with one of the following values (and `NOTE_SOURCE_FILE' must
+     contain a null pointer):
+
+    `NOTE_INSN_DELETED'
+          Such a note is completely ignorable.  Some passes of the
+          compiler delete insns by altering them into notes of this
+          kind.
+
+    `NOTE_INSN_BLOCK_BEG'
+    `NOTE_INSN_BLOCK_END'
+          These types of notes indicate the position of the beginning
+          and end of a level of scoping of variable names.  They
+          control the output of debugging information.
+
+    `NOTE_INSN_EH_REGION_BEG'
+    `NOTE_INSN_EH_REGION_END'
+          These types of notes indicate the position of the beginning
+          and end of a level of scoping for exception handling.
+          `NOTE_BLOCK_NUMBER' identifies which `CODE_LABEL' is
+          associated with the given region.
+
+    `NOTE_INSN_LOOP_BEG'
+    `NOTE_INSN_LOOP_END'
+          These types of notes indicate the position of the beginning
+          and end of a `while' or `for' loop.  They enable the loop
+          optimizer to find loops quickly.
+
+    `NOTE_INSN_LOOP_CONT'
+          Appears at the place in a loop that `continue' statements
+          jump to.
+
+    `NOTE_INSN_LOOP_VTOP'
+          This note indicates the place in a loop where the exit test
+          begins for those loops in which the exit test has been
+          duplicated.  This position becomes another virtual start of
+          the loop when considering loop invariants.
+
+    `NOTE_INSN_FUNCTION_END'
+          Appears near the end of the function body, just before the
+          label that `return' statements jump to (on machine where a
+          single instruction does not suffice for returning).  This
+          note may be deleted by jump optimization.
+
+    `NOTE_INSN_SETJMP'
+          Appears following each call to `setjmp' or a related function.
+
+     These codes are printed symbolically when they appear in debugging
+     dumps.
+
+   The machine mode of an insn is normally `VOIDmode', but some phases
+use the mode for various purposes; for example, the reload pass sets it
+to `HImode' if the insn needs reloading but not register elimination
+and `QImode' if both are required.  The common subexpression
+elimination pass sets the mode of an insn to `QImode' when it is the
+first insn in a block that has already been processed.
+
+   Here is a table of the extra fields of `insn', `jump_insn' and
+`call_insn' insns:
+
+`PATTERN (I)'
+     An expression for the side effect performed by this insn.  This
+     must be one of the following codes: `set', `call', `use',
+     `clobber', `return', `asm_input', `asm_output', `addr_vec',
+     `addr_diff_vec', `trap_if', `unspec', `unspec_volatile',
+     `parallel', or `sequence'.  If it is a `parallel', each element of
+     the `parallel' must be one these codes, except that `parallel'
+     expressions cannot be nested and `addr_vec' and `addr_diff_vec'
+     are not permitted inside a `parallel' expression.
+
+`INSN_CODE (I)'
+     An integer that says which pattern in the machine description
+     matches this insn, or -1 if the matching has not yet been
+     attempted.
+
+     Such matching is never attempted and this field remains -1 on an
+     insn whose pattern consists of a single `use', `clobber',
+     `asm_input', `addr_vec' or `addr_diff_vec' expression.
+
+     Matching is also never attempted on insns that result from an `asm'
+     statement.  These contain at least one `asm_operands' expression.
+     The function `asm_noperands' returns a non-negative value for such
+     insns.
+
+     In the debugging output, this field is printed as a number
+     followed by a symbolic representation that locates the pattern in
+     the `md' file as some small positive or negative offset from a
+     named pattern.
+
+`LOG_LINKS (I)'
+     A list (chain of `insn_list' expressions) giving information about
+     dependencies between instructions within a basic block.  Neither a
+     jump nor a label may come between the related insns.
+
+`REG_NOTES (I)'
+     A list (chain of `expr_list' and `insn_list' expressions) giving
+     miscellaneous information about the insn.  It is often information
+     pertaining to the registers used in this insn.
+
+   The `LOG_LINKS' field of an insn is a chain of `insn_list'
+expressions.  Each of these has two operands: the first is an insn, and
+the second is another `insn_list' expression (the next one in the
+chain).  The last `insn_list' in the chain has a null pointer as second
+operand.  The significant thing about the chain is which insns appear
+in it (as first operands of `insn_list' expressions).  Their order is
+not significant.
+
+   This list is originally set up by the flow analysis pass; it is a
+null pointer until then.  Flow only adds links for those data
+dependencies which can be used for instruction combination.  For each
+insn, the flow analysis pass adds a link to insns which store into
+registers values that are used for the first time in this insn.  The
+instruction scheduling pass adds extra links so that every dependence
+will be represented.  Links represent data dependencies,
+antidependencies and output dependencies; the machine mode of the link
+distinguishes these three types: antidependencies have mode
+`REG_DEP_ANTI', output dependencies have mode `REG_DEP_OUTPUT', and
+data dependencies have mode `VOIDmode'.
+
+   The `REG_NOTES' field of an insn is a chain similar to the
+`LOG_LINKS' field but it includes `expr_list' expressions in addition
+to `insn_list' expressions.  There are several kinds of register notes,
+which are distinguished by the machine mode, which in a register note
+is really understood as being an `enum reg_note'.  The first operand OP
+of the note is data whose meaning depends on the kind of note.
+
+   The macro `REG_NOTE_KIND (X)' returns the kind of register note.
+Its counterpart, the macro `PUT_REG_NOTE_KIND (X, NEWKIND)' sets the
+register note type of X to be NEWKIND.
+
+   Register notes are of three classes: They may say something about an
+input to an insn, they may say something about an output of an insn, or
+they may create a linkage between two insns.  There are also a set of
+values that are only used in `LOG_LINKS'.
+
+   These register notes annotate inputs to an insn:
+
+`REG_DEAD'
+     The value in OP dies in this insn; that is to say, altering the
+     value immediately after this insn would not affect the future
+     behavior of the program.
+
+     This does not necessarily mean that the register OP has no useful
+     value after this insn since it may also be an output of the insn.
+     In such a case, however, a `REG_DEAD' note would be redundant and
+     is usually not present until after the reload pass, but no code
+     relies on this fact.
+
+`REG_INC'
+     The register OP is incremented (or decremented; at this level
+     there is no distinction) by an embedded side effect inside this
+     insn.  This means it appears in a `post_inc', `pre_inc',
+     `post_dec' or `pre_dec' expression.
+
+`REG_NONNEG'
+     The register OP is known to have a nonnegative value when this
+     insn is reached.  This is used so that decrement and branch until
+     zero instructions, such as the m68k dbra, can be matched.
+
+     The `REG_NONNEG' note is added to insns only if the machine
+     description has a `decrement_and_branch_until_zero' pattern.
+
+`REG_NO_CONFLICT'
+     This insn does not cause a conflict between OP and the item being
+     set by this insn even though it might appear that it does.  In
+     other words, if the destination register and OP could otherwise be
+     assigned the same register, this insn does not prevent that
+     assignment.
+
+     Insns with this note are usually part of a block that begins with a
+     `clobber' insn specifying a multi-word pseudo register (which will
+     be the output of the block), a group of insns that each set one
+     word of the value and have the `REG_NO_CONFLICT' note attached,
+     and a final insn that copies the output to itself with an attached
+     `REG_EQUAL' note giving the expression being computed.  This block
+     is encapsulated with `REG_LIBCALL' and `REG_RETVAL' notes on the
+     first and last insns, respectively.
+
+`REG_LABEL'
+     This insn uses OP, a `code_label', but is not a `jump_insn'.  The
+     presence of this note allows jump optimization to be aware that OP
+     is, in fact, being used.
+
+   The following notes describe attributes of outputs of an insn:
+
+`REG_EQUIV'
+`REG_EQUAL'
+     This note is only valid on an insn that sets only one register and
+     indicates that that register will be equal to OP at run time; the
+     scope of this equivalence differs between the two types of notes.
+     The value which the insn explicitly copies into the register may
+     look different from OP, but they will be equal at run time.  If the
+     output of the single `set' is a `strict_low_part' expression, the
+     note refers to the register that is contained in `SUBREG_REG' of
+     the `subreg' expression.
+
+     For `REG_EQUIV', the register is equivalent to OP throughout the
+     entire function, and could validly be replaced in all its
+     occurrences by OP.  ("Validly" here refers to the data flow of the
+     program; simple replacement may make some insns invalid.)  For
+     example, when a constant is loaded into a register that is never
+     assigned any other value, this kind of note is used.
+
+     When a parameter is copied into a pseudo-register at entry to a
+     function, a note of this kind records that the register is
+     equivalent to the stack slot where the parameter was passed.
+     Although in this case the register may be set by other insns, it
+     is still valid to replace the register by the stack slot
+     throughout the function.
+
+     A `REG_EQUIV' note is also used on an instruction which copies a
+     register parameter into a pseudo-register at entry to a function,
+     if there is a stack slot where that parameter could be stored.
+     Although other insns may set the pseudo-register, it is valid for
+     the compiler to replace the pseudo-register by stack slot
+     throughout the function, provided the compiler ensures that the
+     stack slot is properly initialized by making the replacement in
+     the initial copy instruction as well.  This is used on machines
+     for which the calling convention allocates stack space for
+     register parameters.  See `REG_PARM_STACK_SPACE' in *Note Stack
+     Arguments::.
+
+     In the case of `REG_EQUAL', the register that is set by this insn
+     will be equal to OP at run time at the end of this insn but not
+     necessarily elsewhere in the function.  In this case, OP is
+     typically an arithmetic expression.  For example, when a sequence
+     of insns such as a library call is used to perform an arithmetic
+     operation, this kind of note is attached to the insn that produces
+     or copies the final value.
+
+     These two notes are used in different ways by the compiler passes.
+     `REG_EQUAL' is used by passes prior to register allocation (such as
+     common subexpression elimination and loop optimization) to tell
+     them how to think of that value.  `REG_EQUIV' notes are used by
+     register allocation to indicate that there is an available
+     substitute expression (either a constant or a `mem' expression for
+     the location of a parameter on the stack) that may be used in
+     place of a register if insufficient registers are available.
+
+     Except for stack homes for parameters, which are indicated by a
+     `REG_EQUIV' note and are not useful to the early optimization
+     passes and pseudo registers that are equivalent to a memory
+     location throughout there entire life, which is not detected until
+     later in the compilation, all equivalences are initially indicated
+     by an attached `REG_EQUAL' note.  In the early stages of register
+     allocation, a `REG_EQUAL' note is changed into a `REG_EQUIV' note
+     if OP is a constant and the insn represents the only set of its
+     destination register.
+
+     Thus, compiler passes prior to register allocation need only check
+     for `REG_EQUAL' notes and passes subsequent to register allocation
+     need only check for `REG_EQUIV' notes.
+
+`REG_UNUSED'
+     The register OP being set by this insn will not be used in a
+     subsequent insn.  This differs from a `REG_DEAD' note, which
+     indicates that the value in an input will not be used subsequently.
+     These two notes are independent; both may be present for the same
+     register.
+
+`REG_WAS_0'
+     The single output of this insn contained zero before this insn.
+     OP is the insn that set it to zero.  You can rely on this note if
+     it is present and OP has not been deleted or turned into a `note';
+     its absence implies nothing.
+
+   These notes describe linkages between insns.  They occur in pairs:
+one insn has one of a pair of notes that points to a second insn, which
+has the inverse note pointing back to the first insn.
+
+`REG_RETVAL'
+     This insn copies the value of a multi-insn sequence (for example, a
+     library call), and OP is the first insn of the sequence (for a
+     library call, the first insn that was generated to set up the
+     arguments for the library call).
+
+     Loop optimization uses this note to treat such a sequence as a
+     single operation for code motion purposes and flow analysis uses
+     this note to delete such sequences whose results are dead.
+
+     A `REG_EQUAL' note will also usually be attached to this insn to
+     provide the expression being computed by the sequence.
+
+`REG_LIBCALL'
+     This is the inverse of `REG_RETVAL': it is placed on the first
+     insn of a multi-insn sequence, and it points to the last one.
+
+`REG_CC_SETTER'
+`REG_CC_USER'
+     On machines that use `cc0', the insns which set and use `cc0' set
+     and use `cc0' are adjacent.  However, when branch delay slot
+     filling is done, this may no longer be true.  In this case a
+     `REG_CC_USER' note will be placed on the insn setting `cc0' to
+     point to the insn using `cc0' and a `REG_CC_SETTER' note will be
+     placed on the insn using `cc0' to point to the insn setting `cc0'.
+
+   These values are only used in the `LOG_LINKS' field, and indicate
+the type of dependency that each link represents.  Links which indicate
+a data dependence (a read after write dependence) do not use any code,
+they simply have mode `VOIDmode', and are printed without any
+descriptive text.
+
+`REG_DEP_ANTI'
+     This indicates an anti dependence (a write after read dependence).
+
+`REG_DEP_OUTPUT'
+     This indicates an output dependence (a write after write
+     dependence).
+
+   These notes describe information gathered from gcov profile data.
+They are stored in the `REG_NOTES' field of an insn as an `expr_list'.
+
+`REG_EXEC_COUNT'
+     This is used to indicate the number of times a basic block was
+     executed according to the profile data.  The note is attached to
+     the first insn in the basic block.
+
+`REG_BR_PROB'
+     This is used to specify the ratio of branches to non-branches of a
+     branch insn according to the profile data.  The value is stored as
+     a value between 0 and REG_BR_PROB_BASE; larger values indicate a
+     higher probability that the branch will be taken.
+
+   For convenience, the machine mode in an `insn_list' or `expr_list'
+is printed using these symbolic codes in debugging dumps.
+
+   The only difference between the expression codes `insn_list' and
+`expr_list' is that the first operand of an `insn_list' is assumed to
+be an insn and is printed in debugging dumps as the insn's unique id;
+the first operand of an `expr_list' is printed in the ordinary way as
+an expression.
+
+
+File: gcc.info,  Node: Calls,  Next: Sharing,  Prev: Insns,  Up: RTL
+
+RTL Representation of Function-Call Insns
+=========================================
+
+   Insns that call subroutines have the RTL expression code `call_insn'.
+These insns must satisfy special rules, and their bodies must use a
+special RTL expression code, `call'.
+
+   A `call' expression has two operands, as follows:
+
+     (call (mem:FM ADDR) NBYTES)
+
+Here NBYTES is an operand that represents the number of bytes of
+argument data being passed to the subroutine, FM is a machine mode
+(which must equal as the definition of the `FUNCTION_MODE' macro in the
+machine description) and ADDR represents the address of the subroutine.
+
+   For a subroutine that returns no value, the `call' expression as
+shown above is the entire body of the insn, except that the insn might
+also contain `use' or `clobber' expressions.
+
+   For a subroutine that returns a value whose mode is not `BLKmode',
+the value is returned in a hard register.  If this register's number is
+R, then the body of the call insn looks like this:
+
+     (set (reg:M R)
+          (call (mem:FM ADDR) NBYTES))
+
+This RTL expression makes it clear (to the optimizer passes) that the
+appropriate register receives a useful value in this insn.
+
+   When a subroutine returns a `BLKmode' value, it is handled by
+passing to the subroutine the address of a place to store the value.
+So the call insn itself does not "return" any value, and it has the
+same RTL form as a call that returns nothing.
+
+   On some machines, the call instruction itself clobbers some register,
+for example to contain the return address.  `call_insn' insns on these
+machines should have a body which is a `parallel' that contains both
+the `call' expression and `clobber' expressions that indicate which
+registers are destroyed.  Similarly, if the call instruction requires
+some register other than the stack pointer that is not explicitly
+mentioned it its RTL, a `use' subexpression should mention that
+register.
+
+   Functions that are called are assumed to modify all registers listed
+in the configuration macro `CALL_USED_REGISTERS' (*note Register
+Basics::.) and, with the exception of `const' functions and library
+calls, to modify all of memory.
+
+   Insns containing just `use' expressions directly precede the
+`call_insn' insn to indicate which registers contain inputs to the
+function.  Similarly, if registers other than those in
+`CALL_USED_REGISTERS' are clobbered by the called function, insns
+containing a single `clobber' follow immediately after the call to
+indicate which registers.
+
+
+File: gcc.info,  Node: Sharing,  Next: Reading RTL,  Prev: Calls,  Up: RTL
+
+Structure Sharing Assumptions
+=============================
+
+   The compiler assumes that certain kinds of RTL expressions are
+unique; there do not exist two distinct objects representing the same
+value.  In other cases, it makes an opposite assumption: that no RTL
+expression object of a certain kind appears in more than one place in
+the containing structure.
+
+   These assumptions refer to a single function; except for the RTL
+objects that describe global variables and external functions, and a
+few standard objects such as small integer constants, no RTL objects
+are common to two functions.
+
+   * Each pseudo-register has only a single `reg' object to represent
+     it, and therefore only a single machine mode.
+
+   * For any symbolic label, there is only one `symbol_ref' object
+     referring to it.
+
+   * There is only one `const_int' expression with value 0, only one
+     with value 1, and only one with value -1.  Some other integer
+     values are also stored uniquely.
+
+   * There is only one `pc' expression.
+
+   * There is only one `cc0' expression.
+
+   * There is only one `const_double' expression with value 0 for each
+     floating point mode.  Likewise for values 1 and 2.
+
+   * No `label_ref' or `scratch' appears in more than one place in the
+     RTL structure; in other words, it is safe to do a tree-walk of all
+     the insns in the function and assume that each time a `label_ref'
+     or `scratch' is seen it is distinct from all others that are seen.
+
+   * Only one `mem' object is normally created for each static variable
+     or stack slot, so these objects are frequently shared in all the
+     places they appear.  However, separate but equal objects for these
+     variables are occasionally made.
+
+   * When a single `asm' statement has multiple output operands, a
+     distinct `asm_operands' expression is made for each output operand.
+     However, these all share the vector which contains the sequence of
+     input operands.  This sharing is used later on to test whether two
+     `asm_operands' expressions come from the same statement, so all
+     optimizations must carefully preserve the sharing if they copy the
+     vector at all.
+
+   * No RTL object appears in more than one place in the RTL structure
+     except as described above.  Many passes of the compiler rely on
+     this by assuming that they can modify RTL objects in place without
+     unwanted side-effects on other insns.
+
+   * During initial RTL generation, shared structure is freely
+     introduced.  After all the RTL for a function has been generated,
+     all shared structure is copied by `unshare_all_rtl' in
+     `emit-rtl.c', after which the above rules are guaranteed to be
+     followed.
+
+   * During the combiner pass, shared structure within an insn can exist
+     temporarily.  However, the shared structure is copied before the
+     combiner is finished with the insn.  This is done by calling
+     `copy_rtx_if_shared', which is a subroutine of `unshare_all_rtl'.
+
+
+File: gcc.info,  Node: Reading RTL,  Prev: Sharing,  Up: RTL
+
+Reading RTL
+===========
+
+   To read an RTL object from a file, call `read_rtx'.  It takes one
+argument, a stdio stream, and returns a single RTL object.
+
+   Reading RTL from a file is very slow.  This is not currently a
+problem since reading RTL occurs only as part of building the compiler.
+
+   People frequently have the idea of using RTL stored as text in a
+file as an interface between a language front end and the bulk of GNU
+CC.  This idea is not feasible.
+
+   GNU CC was designed to use RTL internally only.  Correct RTL for a
+given program is very dependent on the particular target machine.  And
+the RTL does not contain all the information about the program.
+
+   The proper way to interface GNU CC to a new language front end is
+with the "tree" data structure.  There is no manual for this data
+structure, but it is described in the files `tree.h' and `tree.def'.
+
+
+File: gcc.info,  Node: Machine Desc,  Next: Target Macros,  Prev: RTL,  Up: Top
+
+Machine Descriptions
+********************
+
+   A machine description has two parts: a file of instruction patterns
+(`.md' file) and a C header file of macro definitions.
+
+   The `.md' file for a target machine contains a pattern for each
+instruction that the target machine supports (or at least each
+instruction that is worth telling the compiler about).  It may also
+contain comments.  A semicolon causes the rest of the line to be a
+comment, unless the semicolon is inside a quoted string.
+
+   See the next chapter for information on the C header file.
+
+* Menu:
+
+* Patterns::            How to write instruction patterns.
+* Example::             An explained example of a `define_insn' pattern.
+* RTL Template::        The RTL template defines what insns match a pattern.
+* Output Template::     The output template says how to make assembler code
+                          from such an insn.
+* Output Statement::    For more generality, write C code to output
+                          the assembler code.
+* Constraints::         When not all operands are general operands.
+* Standard Names::      Names mark patterns to use for code generation.
+* Pattern Ordering::    When the order of patterns makes a difference.
+* Dependent Patterns::  Having one pattern may make you need another.
+* Jump Patterns::       Special considerations for patterns for jump insns.
+* Insn Canonicalizations::Canonicalization of Instructions
+* Peephole Definitions::Defining machine-specific peephole optimizations.
+* Expander Definitions::Generating a sequence of several RTL insns
+                         for a standard operation.
+* Insn Splitting::    Splitting Instructions into Multiple Instructions
+* Insn Attributes::     Specifying the value of attributes for generated insns.
+
+
+File: gcc.info,  Node: Patterns,  Next: Example,  Up: Machine Desc
+
+Everything about Instruction Patterns
+=====================================
+
+   Each instruction pattern contains an incomplete RTL expression, with
+pieces to be filled in later, operand constraints that restrict how the
+pieces can be filled in, and an output pattern or C code to generate
+the assembler output, all wrapped up in a `define_insn' expression.
+
+   A `define_insn' is an RTL expression containing four or five
+operands:
+
+  1. An optional name.  The presence of a name indicate that this
+     instruction pattern can perform a certain standard job for the
+     RTL-generation pass of the compiler.  This pass knows certain
+     names and will use the instruction patterns with those names, if
+     the names are defined in the machine description.
+
+     The absence of a name is indicated by writing an empty string
+     where the name should go.  Nameless instruction patterns are never
+     used for generating RTL code, but they may permit several simpler
+     insns to be combined later on.
+
+     Names that are not thus known and used in RTL-generation have no
+     effect; they are equivalent to no name at all.
+
+  2. The "RTL template" (*note RTL Template::.) is a vector of
+     incomplete RTL expressions which show what the instruction should
+     look like.  It is incomplete because it may contain
+     `match_operand', `match_operator', and `match_dup' expressions
+     that stand for operands of the instruction.
+
+     If the vector has only one element, that element is the template
+     for the instruction pattern.  If the vector has multiple elements,
+     then the instruction pattern is a `parallel' expression containing
+     the elements described.
+
+  3. A condition.  This is a string which contains a C expression that
+     is the final test to decide whether an insn body matches this
+     pattern.
+
+     For a named pattern, the condition (if present) may not depend on
+     the data in the insn being matched, but only the
+     target-machine-type flags.  The compiler needs to test these
+     conditions during initialization in order to learn exactly which
+     named instructions are available in a particular run.
+
+     For nameless patterns, the condition is applied only when matching
+     an individual insn, and only after the insn has matched the
+     pattern's recognition template.  The insn's operands may be found
+     in the vector `operands'.
+
+  4. The "output template": a string that says how to output matching
+     insns as assembler code.  `%' in this string specifies where to
+     substitute the value of an operand.  *Note Output Template::.
+
+     When simple substitution isn't general enough, you can specify a
+     piece of C code to compute the output.  *Note Output Statement::.
+
+  5. Optionally, a vector containing the values of attributes for insns
+     matching this pattern.  *Note Insn Attributes::.
+
+
+File: gcc.info,  Node: Example,  Next: RTL Template,  Prev: Patterns,  Up: Machine Desc
+
+Example of `define_insn'
+========================
+
+   Here is an actual example of an instruction pattern, for the
+68000/68020.
+
+     (define_insn "tstsi"
+       [(set (cc0)
+             (match_operand:SI 0 "general_operand" "rm"))]
+       ""
+       "*
+     { if (TARGET_68020 || ! ADDRESS_REG_P (operands[0]))
+         return \"tstl %0\";
+       return \"cmpl #0,%0\"; }")
+
+   This is an instruction that sets the condition codes based on the
+value of a general operand.  It has no condition, so any insn whose RTL
+description has the form shown may be handled according to this
+pattern.  The name `tstsi' means "test a `SImode' value" and tells the
+RTL generation pass that, when it is necessary to test such a value, an
+insn to do so can be constructed using this pattern.
+
+   The output control string is a piece of C code which chooses which
+output template to return based on the kind of operand and the specific
+type of CPU for which code is being generated.
+
+   `"rm"' is an operand constraint.  Its meaning is explained below.
+
+
+File: gcc.info,  Node: RTL Template,  Next: Output Template,  Prev: Example,  Up: Machine Desc
+
+RTL Template
+============
+
+   The RTL template is used to define which insns match the particular
+pattern and how to find their operands.  For named patterns, the RTL
+template also says how to construct an insn from specified operands.
+
+   Construction involves substituting specified operands into a copy of
+the template.  Matching involves determining the values that serve as
+the operands in the insn being matched.  Both of these activities are
+controlled by special expression types that direct matching and
+substitution of the operands.
+
+`(match_operand:M N PREDICATE CONSTRAINT)'
+     This expression is a placeholder for operand number N of the insn.
+     When constructing an insn, operand number N will be substituted
+     at this point.  When matching an insn, whatever appears at this
+     position in the insn will be taken as operand number N; but it
+     must satisfy PREDICATE or this instruction pattern will not match
+     at all.
+
+     Operand numbers must be chosen consecutively counting from zero in
+     each instruction pattern.  There may be only one `match_operand'
+     expression in the pattern for each operand number.  Usually
+     operands are numbered in the order of appearance in `match_operand'
+     expressions.  In the case of a `define_expand', any operand numbers
+     used only in `match_dup' expressions have higher values than all
+     other operand numbers.
+
+     PREDICATE is a string that is the name of a C function that
+     accepts two arguments, an expression and a machine mode.  During
+     matching, the function will be called with the putative operand as
+     the expression and M as the mode argument (if M is not specified,
+     `VOIDmode' will be used, which normally causes PREDICATE to accept
+     any mode).  If it returns zero, this instruction pattern fails to
+     match.  PREDICATE may be an empty string; then it means no test is
+     to be done on the operand, so anything which occurs in this
+     position is valid.
+
+     Most of the time, PREDICATE will reject modes other than M--but
+     not always.  For example, the predicate `address_operand' uses M
+     as the mode of memory ref that the address should be valid for.
+     Many predicates accept `const_int' nodes even though their mode is
+     `VOIDmode'.
+
+     CONSTRAINT controls reloading and the choice of the best register
+     class to use for a value, as explained later (*note
+     Constraints::.).
+
+     People are often unclear on the difference between the constraint
+     and the predicate.  The predicate helps decide whether a given
+     insn matches the pattern.  The constraint plays no role in this
+     decision; instead, it controls various decisions in the case of an
+     insn which does match.
+
+     On CISC machines, the most common PREDICATE is
+     `"general_operand"'.  This function checks that the putative
+     operand is either a constant, a register or a memory reference,
+     and that it is valid for mode M.
+
+     For an operand that must be a register, PREDICATE should be
+     `"register_operand"'.  Using `"general_operand"' would be valid,
+     since the reload pass would copy any non-register operands through
+     registers, but this would make GNU CC do extra work, it would
+     prevent invariant operands (such as constant) from being removed
+     from loops, and it would prevent the register allocator from doing
+     the best possible job.  On RISC machines, it is usually most
+     efficient to allow PREDICATE to accept only objects that the
+     constraints allow.
+
+     For an operand that must be a constant, you must be sure to either
+     use `"immediate_operand"' for PREDICATE, or make the instruction
+     pattern's extra condition require a constant, or both.  You cannot
+     expect the constraints to do this work!  If the constraints allow
+     only constants, but the predicate allows something else, the
+     compiler will crash when that case arises.
+
+`(match_scratch:M N CONSTRAINT)'
+     This expression is also a placeholder for operand number N and
+     indicates that operand must be a `scratch' or `reg' expression.
+
+     When matching patterns, this is equivalent to
+
+          (match_operand:M N "scratch_operand" PRED)
+
+     but, when generating RTL, it produces a (`scratch':M) expression.
+
+     If the last few expressions in a `parallel' are `clobber'
+     expressions whose operands are either a hard register or
+     `match_scratch', the combiner can add or delete them when
+     necessary.  *Note Side Effects::.
+
+`(match_dup N)'
+     This expression is also a placeholder for operand number N.  It is
+     used when the operand needs to appear more than once in the insn.
+
+     In construction, `match_dup' acts just like `match_operand': the
+     operand is substituted into the insn being constructed.  But in
+     matching, `match_dup' behaves differently.  It assumes that operand
+     number N has already been determined by a `match_operand'
+     appearing earlier in the recognition template, and it matches only
+     an identical-looking expression.
+
+`(match_operator:M N PREDICATE [OPERANDS...])'
+     This pattern is a kind of placeholder for a variable RTL expression
+     code.
+
+     When constructing an insn, it stands for an RTL expression whose
+     expression code is taken from that of operand N, and whose
+     operands are constructed from the patterns OPERANDS.
+
+     When matching an expression, it matches an expression if the
+     function PREDICATE returns nonzero on that expression *and* the
+     patterns OPERANDS match the operands of the expression.
+
+     Suppose that the function `commutative_operator' is defined as
+     follows, to match any expression whose operator is one of the
+     commutative arithmetic operators of RTL and whose mode is MODE:
+
+          int
+          commutative_operator (x, mode)
+               rtx x;
+               enum machine_mode mode;
+          {
+            enum rtx_code code = GET_CODE (x);
+            if (GET_MODE (x) != mode)
+              return 0;
+            return (GET_RTX_CLASS (code) == 'c'
+                    || code == EQ || code == NE);
+          }
+
+     Then the following pattern will match any RTL expression consisting
+     of a commutative operator applied to two general operands:
+
+          (match_operator:SI 3 "commutative_operator"
+            [(match_operand:SI 1 "general_operand" "g")
+             (match_operand:SI 2 "general_operand" "g")])
+
+     Here the vector `[OPERANDS...]' contains two patterns because the
+     expressions to be matched all contain two operands.
+
+     When this pattern does match, the two operands of the commutative
+     operator are recorded as operands 1 and 2 of the insn.  (This is
+     done by the two instances of `match_operand'.)  Operand 3 of the
+     insn will be the entire commutative expression: use `GET_CODE
+     (operands[3])' to see which commutative operator was used.
+
+     The machine mode M of `match_operator' works like that of
+     `match_operand': it is passed as the second argument to the
+     predicate function, and that function is solely responsible for
+     deciding whether the expression to be matched "has" that mode.
+
+     When constructing an insn, argument 3 of the gen-function will
+     specify the operation (i.e. the expression code) for the
+     expression to be made.  It should be an RTL expression, whose
+     expression code is copied into a new expression whose operands are
+     arguments 1 and 2 of the gen-function.  The subexpressions of
+     argument 3 are not used; only its expression code matters.
+
+     When `match_operator' is used in a pattern for matching an insn,
+     it usually best if the operand number of the `match_operator' is
+     higher than that of the actual operands of the insn.  This improves
+     register allocation because the register allocator often looks at
+     operands 1 and 2 of insns to see if it can do register tying.
+
+     There is no way to specify constraints in `match_operator'.  The
+     operand of the insn which corresponds to the `match_operator'
+     never has any constraints because it is never reloaded as a whole.
+     However, if parts of its OPERANDS are matched by `match_operand'
+     patterns, those parts may have constraints of their own.
+
+`(match_op_dup:M N[OPERANDS...])'
+     Like `match_dup', except that it applies to operators instead of
+     operands.  When constructing an insn, operand number N will be
+     substituted at this point.  But in matching, `match_op_dup' behaves
+     differently.  It assumes that operand number N has already been
+     determined by a `match_operator' appearing earlier in the
+     recognition template, and it matches only an identical-looking
+     expression.
+
+`(match_parallel N PREDICATE [SUBPAT...])'
+     This pattern is a placeholder for an insn that consists of a
+     `parallel' expression with a variable number of elements.  This
+     expression should only appear at the top level of an insn pattern.
+
+     When constructing an insn, operand number N will be substituted at
+     this point.  When matching an insn, it matches if the body of the
+     insn is a `parallel' expression with at least as many elements as
+     the vector of SUBPAT expressions in the `match_parallel', if each
+     SUBPAT matches the corresponding element of the `parallel', *and*
+     the function PREDICATE returns nonzero on the `parallel' that is
+     the body of the insn.  It is the responsibility of the predicate
+     to validate elements of the `parallel' beyond those listed in the
+     `match_parallel'.
+
+     A typical use of `match_parallel' is to match load and store
+     multiple expressions, which can contain a variable number of
+     elements in a `parallel'.  For example,
+
+          (define_insn ""
+            [(match_parallel 0 "load_multiple_operation"
+               [(set (match_operand:SI 1 "gpc_reg_operand" "=r")
+                     (match_operand:SI 2 "memory_operand" "m"))
+                (use (reg:SI 179))
+                (clobber (reg:SI 179))])]
+            ""
+            "loadm 0,0,%1,%2")
+
+     This example comes from `a29k.md'.  The function
+     `load_multiple_operations' is defined in `a29k.c' and checks that
+     subsequent elements in the `parallel' are the same as the `set' in
+     the pattern, except that they are referencing subsequent registers
+     and memory locations.
+
+     An insn that matches this pattern might look like:
+
+          (parallel
+           [(set (reg:SI 20) (mem:SI (reg:SI 100)))
+            (use (reg:SI 179))
+            (clobber (reg:SI 179))
+            (set (reg:SI 21)
+                 (mem:SI (plus:SI (reg:SI 100)
+                                  (const_int 4))))
+            (set (reg:SI 22)
+                 (mem:SI (plus:SI (reg:SI 100)
+                                  (const_int 8))))])
+
+`(match_par_dup N [SUBPAT...])'
+     Like `match_op_dup', but for `match_parallel' instead of
+     `match_operator'.
+
+`(address (match_operand:M N "address_operand" ""))'
+     This complex of expressions is a placeholder for an operand number
+     N in a "load address" instruction: an operand which specifies a
+     memory location in the usual way, but for which the actual operand
+     value used is the address of the location, not the contents of the
+     location.
+
+     `address' expressions never appear in RTL code, only in machine
+     descriptions.  And they are used only in machine descriptions that
+     do not use the operand constraint feature.  When operand
+     constraints are in use, the letter `p' in the constraint serves
+     this purpose.
+
+     M is the machine mode of the *memory location being addressed*,
+     not the machine mode of the address itself.  That mode is always
+     the same on a given target machine (it is `Pmode', which normally
+     is `SImode'), so there is no point in mentioning it; thus, no
+     machine mode is written in the `address' expression.  If some day
+     support is added for machines in which addresses of different
+     kinds of objects appear differently or are used differently (such
+     as the PDP-10), different formats would perhaps need different
+     machine modes and these modes might be written in the `address'
+     expression.
+

@@ -1,0 +1,1171 @@
+This is Info file gcc.info, produced by Makeinfo version 1.68 from the
+input file gcc.texi.
+
+   This file documents the use and the internals of the GNU compiler.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
+Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: gcc.info,  Node: M88K Options,  Next: RS/6000 and PowerPC Options,  Prev: M32R/D Options,  Up: Submodel Options
+
+M88K Options
+------------
+
+   These `-m' options are defined for Motorola 88k architectures:
+
+`-m88000'
+     Generate code that works well on both the m88100 and the m88110.
+
+`-m88100'
+     Generate code that works best for the m88100, but that also runs
+     on the m88110.
+
+`-m88110'
+     Generate code that works best for the m88110, and may not run on
+     the m88100.
+
+`-mbig-pic'
+     Obsolete option to be removed from the next revision.  Use `-fPIC'.
+
+`-midentify-revision'
+     Include an `ident' directive in the assembler output recording the
+     source file name, compiler name and version, timestamp, and
+     compilation flags used.
+
+`-mno-underscores'
+     In assembler output, emit symbol names without adding an underscore
+     character at the beginning of each name.  The default is to use an
+     underscore as prefix on each name.
+
+`-mocs-debug-info'
+`-mno-ocs-debug-info'
+     Include (or omit) additional debugging information (about
+     registers used in each stack frame) as specified in the 88open
+     Object Compatibility Standard, "OCS".  This extra information
+     allows debugging of code that has had the frame pointer
+     eliminated.  The default for DG/UX, SVr4, and Delta 88 SVr3.2 is
+     to include this information; other 88k configurations omit this
+     information by default.
+
+`-mocs-frame-position'
+     When emitting COFF debugging information for automatic variables
+     and parameters stored on the stack, use the offset from the
+     canonical frame address, which is the stack pointer (register 31)
+     on entry to the function.  The DG/UX, SVr4, Delta88 SVr3.2, and
+     BCS configurations use `-mocs-frame-position'; other 88k
+     configurations have the default `-mno-ocs-frame-position'.
+
+`-mno-ocs-frame-position'
+     When emitting COFF debugging information for automatic variables
+     and parameters stored on the stack, use the offset from the frame
+     pointer register (register 30).  When this option is in effect,
+     the frame pointer is not eliminated when debugging information is
+     selected by the -g switch.
+
+`-moptimize-arg-area'
+`-mno-optimize-arg-area'
+     Control how function arguments are stored in stack frames.
+     `-moptimize-arg-area' saves space by optimizing them, but this
+     conflicts with the 88open specifications.  The opposite
+     alternative, `-mno-optimize-arg-area', agrees with 88open
+     standards.  By default GNU CC does not optimize the argument area.
+
+`-mshort-data-NUM'
+     Generate smaller data references by making them relative to `r0',
+     which allows loading a value using a single instruction (rather
+     than the usual two).  You control which data references are
+     affected by specifying NUM with this option.  For example, if you
+     specify `-mshort-data-512', then the data references affected are
+     those involving displacements of less than 512 bytes.
+     `-mshort-data-NUM' is not effective for NUM greater than 64k.
+
+`-mserialize-volatile'
+`-mno-serialize-volatile'
+     Do, or don't, generate code to guarantee sequential consistency of
+     volatile memory references.  By default, consistency is guaranteed.
+
+     The order of memory references made by the MC88110 processor does
+     not always match the order of the instructions requesting those
+     references.  In particular, a load instruction may execute before
+     a preceding store instruction.  Such reordering violates
+     sequential consistency of volatile memory references, when there
+     are multiple processors.   When consistency must be guaranteed,
+     GNU C generates special instructions, as needed, to force
+     execution in the proper order.
+
+     The MC88100 processor does not reorder memory references and so
+     always provides sequential consistency.  However, by default, GNU
+     C generates the special instructions to guarantee consistency even
+     when you use `-m88100', so that the code may be run on an MC88110
+     processor.  If you intend to run your code only on the MC88100
+     processor, you may use `-mno-serialize-volatile'.
+
+     The extra code generated to guarantee consistency may affect the
+     performance of your application.  If you know that you can safely
+     forgo this guarantee, you may use `-mno-serialize-volatile'.
+
+`-msvr4'
+`-msvr3'
+     Turn on (`-msvr4') or off (`-msvr3') compiler extensions related
+     to System V release 4 (SVr4).  This controls the following:
+
+       1. Which variant of the assembler syntax to emit.
+
+       2. `-msvr4' makes the C preprocessor recognize `#pragma weak'
+          that is used on System V release 4.
+
+       3. `-msvr4' makes GNU CC issue additional declaration directives
+          used in SVr4.
+
+     `-msvr4' is the default for the m88k-motorola-sysv4 and
+     m88k-dg-dgux m88k configurations. `-msvr3' is the default for all
+     other m88k configurations.
+
+`-mversion-03.00'
+     This option is obsolete, and is ignored.
+
+`-mno-check-zero-division'
+`-mcheck-zero-division'
+     Do, or don't, generate code to guarantee that integer division by
+     zero will be detected.  By default, detection is guaranteed.
+
+     Some models of the MC88100 processor fail to trap upon integer
+     division by zero under certain conditions.  By default, when
+     compiling code that might be run on such a processor, GNU C
+     generates code that explicitly checks for zero-valued divisors and
+     traps with exception number 503 when one is detected.  Use of
+     mno-check-zero-division suppresses such checking for code
+     generated to run on an MC88100 processor.
+
+     GNU C assumes that the MC88110 processor correctly detects all
+     instances of integer division by zero.  When `-m88110' is
+     specified, both `-mcheck-zero-division' and
+     `-mno-check-zero-division' are ignored, and no explicit checks for
+     zero-valued divisors are generated.
+
+`-muse-div-instruction'
+     Use the div instruction for signed integer division on the MC88100
+     processor.  By default, the div instruction is not used.
+
+     On the MC88100 processor the signed integer division instruction
+     div) traps to the operating system on a negative operand.  The
+     operating system transparently completes the operation, but at a
+     large cost in execution time.  By default, when compiling code
+     that might be run on an MC88100 processor, GNU C emulates signed
+     integer division using the unsigned integer division instruction
+     divu), thereby avoiding the large penalty of a trap to the
+     operating system.  Such emulation has its own, smaller, execution
+     cost in both time and space.  To the extent that your code's
+     important signed integer division operations are performed on two
+     nonnegative operands, it may be desirable to use the div
+     instruction directly.
+
+     On the MC88110 processor the div instruction (also known as the
+     divs instruction) processes negative operands without trapping to
+     the operating system.  When `-m88110' is specified,
+     `-muse-div-instruction' is ignored, and the div instruction is used
+     for signed integer division.
+
+     Note that the result of dividing INT_MIN by -1 is undefined.  In
+     particular, the behavior of such a division with and without
+     `-muse-div-instruction'  may differ.
+
+`-mtrap-large-shift'
+`-mhandle-large-shift'
+     Include code to detect bit-shifts of more than 31 bits;
+     respectively, trap such shifts or emit code to handle them
+     properly.  By default GNU CC makes no special provision for large
+     bit shifts.
+
+`-mwarn-passed-structs'
+     Warn when a function passes a struct as an argument or result.
+     Structure-passing conventions have changed during the evolution of
+     the C language, and are often the source of portability problems.
+     By default, GNU CC issues no such warning.
+
+
+File: gcc.info,  Node: RS/6000 and PowerPC Options,  Next: RT Options,  Prev: M88K Options,  Up: Submodel Options
+
+IBM RS/6000 and PowerPC Options
+-------------------------------
+
+   These `-m' options are defined for the IBM RS/6000 and PowerPC:
+`-mpower'
+`-mno-power'
+`-mpower2'
+`-mno-power2'
+`-mpowerpc'
+`-mno-powerpc'
+`-mpowerpc-gpopt'
+`-mno-powerpc-gpopt'
+`-mpowerpc-gfxopt'
+`-mno-powerpc-gfxopt'
+     GNU CC supports two related instruction set architectures for the
+     RS/6000 and PowerPC.  The "POWER" instruction set are those
+     instructions supported by the `rios' chip set used in the original
+     RS/6000 systems and the "PowerPC" instruction set is the
+     architecture of the Motorola MPC5xx, MPC6xx, MPC8xx
+     microprocessors, and the IBM 4xx microprocessors.
+
+     Neither architecture is a subset of the other.  However there is a
+     large common subset of instructions supported by both.  An MQ
+     register is included in processors supporting the POWER
+     architecture.
+
+     You use these options to specify which instructions are available
+     on the processor you are using.  The default value of these
+     options is determined when configuring GNU CC.  Specifying the
+     `-mcpu=CPU_TYPE' overrides the specification of these options.  We
+     recommend you use the `-mcpu=CPU_TYPE' option rather than the
+     options listed above.
+
+     The `-mpower' option allows GNU CC to generate instructions that
+     are found only in the POWER architecture and to use the MQ
+     register.  Specifying `-mpower2' implies `-power' and also allows
+     GNU CC to generate instructions that are present in the POWER2
+     architecture but not the original POWER architecture.
+
+     The `-mpowerpc' option allows GNU CC to generate instructions that
+     are found only in the 32-bit subset of the PowerPC architecture.
+     Specifying `-mpowerpc-gpopt' implies `-mpowerpc' and also allows
+     GNU CC to use the optional PowerPC architecture instructions in the
+     General Purpose group, including floating-point square root.
+     Specifying `-mpowerpc-gfxopt' implies `-mpowerpc' and also allows
+     GNU CC to use the optional PowerPC architecture instructions in
+     the Graphics group, including floating-point select.
+
+     If you specify both `-mno-power' and `-mno-powerpc', GNU CC will
+     use only the instructions in the common subset of both
+     architectures plus some special AIX common-mode calls, and will
+     not use the MQ register.  Specifying both `-mpower' and `-mpowerpc'
+     permits GNU CC to use any instruction from either architecture and
+     to allow use of the MQ register; specify this for the Motorola
+     MPC601.
+
+`-mnew-mnemonics'
+`-mold-mnemonics'
+     Select which mnemonics to use in the generated assembler code.
+     `-mnew-mnemonics' requests output that uses the assembler mnemonics
+     defined for the PowerPC architecture, while `-mold-mnemonics'
+     requests the assembler mnemonics defined for the POWER
+     architecture.  Instructions defined in only one architecture have
+     only one mnemonic; GNU CC uses that mnemonic irrespective of which
+     of these options is specified.
+
+     PowerPC assemblers support both the old and new mnemonics, as will
+     later POWER assemblers.  Current POWER assemblers only support the
+     old mnemonics.  Specify `-mnew-mnemonics' if you have an assembler
+     that supports them, otherwise specify `-mold-mnemonics'.
+
+     The default value of these options depends on how GNU CC was
+     configured.  Specifying `-mcpu=CPU_TYPE' sometimes overrides the
+     value of these option.  Unless you are building a cross-compiler,
+     you should normally not specify either `-mnew-mnemonics' or
+     `-mold-mnemonics', but should instead accept the default.
+
+`-mcpu=CPU_TYPE'
+     Set architecture type, register usage, choice of mnemonics, and
+     instruction scheduling parameters for machine type CPU_TYPE.
+     Supported values for CPU_TYPE are `rs6000', `rios1', `rios2',
+     `rsc', `601', `602', `603', `603e', `604', `604e', `620', `power',
+     `power2', `powerpc', `403', `505', `801', `821', `823', and `860'
+     and `common'.  `-mcpu=power', `-mcpu=power2', and `-mcpu=powerpc'
+     specify generic POWER, POWER2 and pure PowerPC (i.e., not MPC601)
+     architecture machine types, with an appropriate, generic processor
+     model assumed for scheduling purposes.
+
+     Specifying any of the following options: `-mcpu=rios1',
+     `-mcpu=rios2', `-mcpu=rsc', `-mcpu=power', or `-mcpu=power2'
+     enables the `-mpower' option and disables the `-mpowerpc' option;
+     `-mcpu=601' enables both the `-mpower' and `-mpowerpc' options.
+     All of `-mcpu=602', `-mcpu=603', `-mcpu=603e', `-mcpu=604',
+     `-mcpu=620', enable the `-mpowerpc' option and disable the
+     `-mpower' option.  Exactly similarly, all of `-mcpu=403',
+     `-mcpu=505', `-mcpu=821', `-mcpu=860' and `-mcpu=powerpc' enable
+     the `-mpowerpc' option and disable the `-mpower' option.
+     `-mcpu=common' disables both the `-mpower' and `-mpowerpc' options.
+
+     AIX versions 4 or greater selects `-mcpu=common' by default, so
+     that code will operate on all members of the RS/6000 and PowerPC
+     families.  In that case, GNU CC will use only the instructions in
+     the common subset of both architectures plus some special AIX
+     common-mode calls, and will not use the MQ register.  GNU CC
+     assumes a generic processor model for scheduling purposes.
+
+     Specifying any of the options `-mcpu=rios1', `-mcpu=rios2',
+     `-mcpu=rsc', `-mcpu=power', or `-mcpu=power2' also disables the
+     `new-mnemonics' option.  Specifying `-mcpu=601', `-mcpu=602',
+     `-mcpu=603', `-mcpu=603e', `-mcpu=604', `620', `403', or
+     `-mcpu=powerpc' also enables the `new-mnemonics' option.
+
+     Specifying `-mcpu=403', `-mcpu=821', or `-mcpu=860' also enables
+     the `-msoft-float' option.
+
+`-mtune=CPU_TYPE'
+     Set the instruction scheduling parameters for machine type
+     CPU_TYPE, but do not set the architecture type, register usage,
+     choice of mnemonics like `-mcpu='CPU_TYPE would.  The same values
+     for CPU_TYPE are used for `-mtune='CPU_TYPE as for
+     `-mcpu='CPU_TYPE.  The `-mtune='CPU_TYPE option overrides the
+     `-mcpu='CPU_TYPE option in terms of instruction scheduling
+     parameters.
+
+`-mfull-toc'
+`-mno-fp-in-toc'
+`-mno-sum-in-toc'
+`-mminimal-toc'
+     Modify generation of the TOC (Table Of Contents), which is created
+     for every executable file.  The `-mfull-toc' option is selected by
+     default.  In that case, GNU CC will allocate at least one TOC
+     entry for each unique non-automatic variable reference in your
+     program.  GNU CC will also place floating-point constants in the
+     TOC.  However, only 16,384 entries are available in the TOC.
+
+     If you receive a linker error message that saying you have
+     overflowed the available TOC space, you can reduce the amount of
+     TOC space used with the `-mno-fp-in-toc' and `-mno-sum-in-toc'
+     options.  `-mno-fp-in-toc' prevents GNU CC from putting
+     floating-point constants in the TOC and `-mno-sum-in-toc' forces
+     GNU CC to generate code to calculate the sum of an address and a
+     constant at run-time instead of putting that sum into the TOC.
+     You may specify one or both of these options.  Each causes GNU CC
+     to produce very slightly slower and larger code at the expense of
+     conserving TOC space.
+
+     If you still run out of space in the TOC even when you specify
+     both of these options, specify `-mminimal-toc' instead.  This
+     option causes GNU CC to make only one TOC entry for every file.
+     When you specify this option, GNU CC will produce code that is
+     slower and larger but which uses extremely little TOC space.  You
+     may wish to use this option only on files that contain less
+     frequently executed code.
+
+`-mxl-call'
+`-mno-xl-call'
+     On AIX, pass floating-point arguments to prototyped functions
+     beyond the register save area (RSA) on the stack in addition to
+     argument FPRs.  The AIX calling convention was extended but not
+     initially documented to handle an obscure K&R C case of calling a
+     function that takes the address of its arguments with fewer
+     arguments than declared.  AIX XL compilers assume that floating
+     point arguments which do not fit in the RSA are on the stack when
+     they compile a subroutine without optimization.  Because always
+     storing floating-point arguments on the stack is inefficient and
+     rarely needed, this option is not enabled by default and only is
+     necessary when calling subroutines compiled by AIX XL compilers
+     without optimization.
+
+`-mthreads'
+     Support "AIX Threads".  Link an application written to use
+     "pthreads" with special libraries and startup code to enable the
+     application to run.
+
+`-mpe'
+     Support "IBM RS/6000 SP" "Parallel Environment" (PE).  Link an
+     application written to use message passing with special startup
+     code to enable the application to run.  The system must have PE
+     installed in the standard location (`/usr/lpp/ppe.poe/'), or the
+     `specs' file must be overridden with the `-specs=' option to
+     specify the appropriate directory location.  The Parallel
+     Environment does not support threads, so the `-mpe' option and the
+     `-mthreads' option are incompatible.
+
+`-msoft-float'
+`-mhard-float'
+     Generate code that does not use (uses) the floating-point register
+     set.  Software floating point emulation is provided if you use the
+     `-msoft-float' option, and pass the option to GNU CC when linking.
+
+`-mmultiple'
+`-mno-multiple'
+     Generate code that uses (does not use) the load multiple word
+     instructions and the store multiple word instructions.  These
+     instructions are generated by default on POWER systems, and not
+     generated on PowerPC systems.  Do not use `-mmultiple' on little
+     endian PowerPC systems, since those instructions do not work when
+     the processor is in little endian mode.
+
+`-mstring'
+`-mno-string'
+     Generate code that uses (does not use) the load string
+     instructions and the store string word instructions to save
+     multiple registers and do small block moves.  These instructions
+     are generated by default on POWER systems, and not generated on
+     PowerPC systems.  Do not use `-mstring' on little endian PowerPC
+     systems, since those instructions do not work when the processor
+     is in little endian mode.
+
+`-mupdate'
+`-mno-update'
+     Generate code that uses (does not use) the load or store
+     instructions that update the base register to the address of the
+     calculated memory location.  These instructions are generated by
+     default.  If you use `-mno-update', there is a small window
+     between the time that the stack pointer is updated and the address
+     of the previous frame is stored, which means code that walks the
+     stack frame across interrupts or signals may get corrupted data.
+
+`-mfused-madd'
+`-mno-fused-madd'
+     Generate code that uses (does not use) the floating point multiply
+     and accumulate instructions.  These instructions are generated by
+     default if hardware floating is used.
+
+`-mno-bit-align'
+`-mbit-align'
+     On System V.4 and embedded PowerPC systems do not (do) force
+     structures and unions that contain bit fields to be aligned to the
+     base type of the bit field.
+
+     For example, by default a structure containing nothing but 8
+     `unsigned' bitfields of length 1 would be aligned to a 4 byte
+     boundary and have a size of 4 bytes.  By using `-mno-bit-align',
+     the structure would be aligned to a 1 byte boundary and be one
+     byte in size.
+
+`-mno-strict-align'
+`-mstrict-align'
+     On System V.4 and embedded PowerPC systems do not (do) assume that
+     unaligned memory references will be handled by the system.
+
+`-mrelocatable'
+`-mno-relocatable'
+     On embedded PowerPC systems generate code that allows (does not
+     allow) the program to be relocated to a different address at
+     runtime.  If you use `-mrelocatable' on any module, all objects
+     linked together must be compiled with `-mrelocatable' or
+     `-mrelocatable-lib'.
+
+`-mrelocatable-lib'
+`-mno-relocatable-lib'
+     On embedded PowerPC systems generate code that allows (does not
+     allow) the program to be relocated to a different address at
+     runtime.  Modules compiled with `-mreloctable-lib' can be linked
+     with either modules compiled without `-mrelocatable' and
+     `-mrelocatable-lib' or with modules compiled with the
+     `-mrelocatable' options.
+
+`-mno-toc'
+`-mtoc'
+     On System V.4 and embedded PowerPC systems do not (do) assume that
+     register 2 contains a pointer to a global area pointing to the
+     addresses used in the program.
+
+`-mno-traceback'
+`-mtraceback'
+     On embedded PowerPC systems do not (do) generate a traceback tag
+     before the start of the function.  This tag can be used by the
+     debugger to identify where the start of a function is.
+
+`-mlittle'
+`-mlittle-endian'
+     On System V.4 and embedded PowerPC systems compile code for the
+     processor in little endian mode.  The `-mlittle-endian' option is
+     the same as `-mlittle'.
+
+`-mbig'
+`-mbig-endian'
+     On System V.4 and embedded PowerPC systems compile code for the
+     processor in big endian mode.  The `-mbig-endian' option is the
+     same as `-mbig'.
+
+`-mcall-sysv'
+     On System V.4 and embedded PowerPC systems compile code using
+     calling conventions that adheres to the March 1995 draft of the
+     System V Application Binary Interface, PowerPC processor
+     supplement.  This is the default unless you configured GCC using
+     `powerpc-*-eabiaix'.
+
+`-mcall-sysv-eabi'
+     Specify both `-mcall-sysv' and `-meabi' options.
+
+`-mcall-sysv-noeabi'
+     Specify both `-mcall-sysv' and `-mno-eabi' options.
+
+`-mcall-aix'
+     On System V.4 and embedded PowerPC systems compile code using
+     calling conventions that are similar to those used on AIX.  This
+     is the default if you configured GCC using `powerpc-*-eabiaix'.
+
+`-mcall-solaris'
+     On System V.4 and embedded PowerPC systems compile code for the
+     Solaris operating system.
+
+`-mcall-linux'
+     On System V.4 and embedded PowerPC systems compile code for the
+     Linux-based GNU system.
+
+`-mprototype'
+`-mno-prototype'
+     On System V.4 and embedded PowerPC systems assume that all calls to
+     variable argument functions are properly prototyped.  Otherwise,
+     the compiler must insert an instruction before every non
+     prototyped call to set or clear bit 6 of the condition code
+     register (CR) to indicate whether floating point values were
+     passed in the floating point registers in case the function takes
+     a variable arguments.  With `-mprototype', only calls to
+     prototyped variable argument functions will set or clear the bit.
+
+`-msim'
+     On embedded PowerPC systems, assume that the startup module is
+     called `sim-crt0.o' and that the standard C libraries are
+     `libsim.a' and `libc.a'.  This is the default for
+     `powerpc-*-eabisim'.  configurations.
+
+`-mmvme'
+     On embedded PowerPC systems, assume that the startup module is
+     called `crt0.o' and the standard C libraries are `libmvme.a' and
+     `libc.a'.
+
+`-mads'
+     On embedded PowerPC systems, assume that the startup module is
+     called `crt0.o' and the standard C libraries are `libads.a' and
+     `libc.a'.
+
+`-myellowknife'
+     On embedded PowerPC systems, assume that the startup module is
+     called `crt0.o' and the standard C libraries are `libyk.a' and
+     `libc.a'.
+
+`-memb'
+     On embedded PowerPC systems, set the PPC_EMB bit in the ELF flags
+     header to indicate that `eabi' extended relocations are used.
+
+`-meabi'
+`-mno-eabi'
+     On System V.4 and embedded PowerPC systems do (do not) adhere to
+     the Embedded Applications Binary Interface (eabi) which is a set of
+     modifications to the System V.4 specifications.  Selecting `-meabi'
+     means that the stack is aligned to an 8 byte boundary, a function
+     `__eabi' is called to from `main' to set up the eabi environment,
+     and the `-msdata' option can use both `r2' and `r13' to point to
+     two separate small data areas.  Selecting `-mno-eabi' means that
+     the stack is aligned to a 16 byte boundary, do not call an
+     initialization function from `main', and the `-msdata' option will
+     only use `r13' to point to a single small data area.  The `-meabi'
+     option is on by default if you configured GCC using one of the
+     `powerpc*-*-eabi*' options.
+
+`-msdata=eabi'
+     On System V.4 and embedded PowerPC systems, put small initialized
+     `const' global and static data in the `.sdata2' section, which is
+     pointed to by register `r2'.  Put small initialized non-`const'
+     global and static data in the `.sdata' section, which is pointed
+     to by register `r13'.  Put small uninitialized global and static
+     data in the `.sbss' section, which is adjacent to the `.sdata'
+     section.  The `-msdata=eabi' option is incompatible with the
+     `-mrelocatable' option.  The `-msdata=eabi' option also sets the
+     `-memb' option.
+
+`-msdata=sysv'
+     On System V.4 and embedded PowerPC systems, put small global and
+     static data in the `.sdata' section, which is pointed to by
+     register `r13'.  Put small uninitialized global and static data in
+     the `.sbss' section, which is adjacent to the `.sdata' section.
+     The `-msdata=sysv' option is incompatible with the `-mrelocatable'
+     option.
+
+`-msdata=default'
+`-msdata'
+     On System V.4 and embedded PowerPC systems, if `-meabi' is used,
+     compile code the same as `-msdata=eabi', otherwise compile code the
+     same as `-msdata=sysv'.
+
+`-msdata-data'
+     On System V.4 and embedded PowerPC systems, put small global and
+     static data in the `.sdata' section.  Put small uninitialized
+     global and static data in the `.sbss' section.  Do not use
+     register `r13' to address small data however.  This is the default
+     behavior unless other `-msdata' options are used.
+
+`-msdata=none'
+`-mno-sdata'
+     On embedded PowerPC systems, put all initialized global and static
+     data in the `.data' section, and all uninitialized data in the
+     `.bss' section.
+
+`-G NUM'
+     On embbeded PowerPC systems, put global and static items less than
+     or equal to NUM bytes into the small data or bss sections instead
+     of the normal data or bss section.  By default, NUM is 8.  The `-G
+     NUM' switch is also passed to the linker.  All modules should be
+     compiled with the same `-G NUM' value.
+
+`-mregnames'
+`-mno-regnames'
+     On System V.4 and embedded PowerPC systems do (do not) emit
+     register names in the assembly language output using symbolic
+     forms.
+
+
+File: gcc.info,  Node: RT Options,  Next: MIPS Options,  Prev: RS/6000 and PowerPC Options,  Up: Submodel Options
+
+IBM RT Options
+--------------
+
+   These `-m' options are defined for the IBM RT PC:
+
+`-min-line-mul'
+     Use an in-line code sequence for integer multiplies.  This is the
+     default.
+
+`-mcall-lib-mul'
+     Call `lmul$$' for integer multiples.
+
+`-mfull-fp-blocks'
+     Generate full-size floating point data blocks, including the
+     minimum amount of scratch space recommended by IBM.  This is the
+     default.
+
+`-mminimum-fp-blocks'
+     Do not include extra scratch space in floating point data blocks.
+     This results in smaller code, but slower execution, since scratch
+     space must be allocated dynamically.
+
+`-mfp-arg-in-fpregs'
+     Use a calling sequence incompatible with the IBM calling
+     convention in which floating point arguments are passed in
+     floating point registers.  Note that `varargs.h' and `stdargs.h'
+     will not work with floating point operands if this option is
+     specified.
+
+`-mfp-arg-in-gregs'
+     Use the normal calling convention for floating point arguments.
+     This is the default.
+
+`-mhc-struct-return'
+     Return structures of more than one word in memory, rather than in a
+     register.  This provides compatibility with the MetaWare HighC (hc)
+     compiler.  Use the option `-fpcc-struct-return' for compatibility
+     with the Portable C Compiler (pcc).
+
+`-mnohc-struct-return'
+     Return some structures of more than one word in registers, when
+     convenient.  This is the default.  For compatibility with the
+     IBM-supplied compilers, use the option `-fpcc-struct-return' or the
+     option `-mhc-struct-return'.
+
+
+File: gcc.info,  Node: MIPS Options,  Next: i386 Options,  Prev: RT Options,  Up: Submodel Options
+
+MIPS Options
+------------
+
+   These `-m' options are defined for the MIPS family of computers:
+
+`-mcpu=CPU TYPE'
+     Assume the defaults for the machine type CPU TYPE when scheduling
+     instructions.  The choices for CPU TYPE are `r2000', `r3000',
+     `r4000', `r4400', `r4600', and `r6000'.  While picking a specific
+     CPU TYPE will schedule things appropriately for that particular
+     chip, the compiler will not generate any code that does not meet
+     level 1 of the MIPS ISA (instruction set architecture) without the
+     `-mips2' or `-mips3' switches being used.
+
+`-mips1'
+     Issue instructions from level 1 of the MIPS ISA.  This is the
+     default.  `r3000' is the default CPU TYPE at this ISA level.
+
+`-mips2'
+     Issue instructions from level 2 of the MIPS ISA (branch likely,
+     square root instructions).  `r6000' is the default CPU TYPE at this
+     ISA level.
+
+`-mips3'
+     Issue instructions from level 3 of the MIPS ISA (64 bit
+     instructions).  `r4000' is the default CPU TYPE at this ISA level.
+     This option does not change the sizes of any of the C data types.
+
+`-mfp32'
+     Assume that 32 32-bit floating point registers are available.
+     This is the default.
+
+`-mfp64'
+     Assume that 32 64-bit floating point registers are available.
+     This is the default when the `-mips3' option is used.
+
+`-mgp32'
+     Assume that 32 32-bit general purpose registers are available.
+     This is the default.
+
+`-mgp64'
+     Assume that 32 64-bit general purpose registers are available.
+     This is the default when the `-mips3' option is used.
+
+`-mint64'
+     Types long, int, and pointer are 64 bits.  This works only if
+     `-mips3' is also specified.
+
+`-mlong64'
+     Types long and pointer are 64 bits, and type int is 32 bits.  This
+     works only if `-mips3' is also specified.
+
+`-mmips-as'
+     Generate code for the MIPS assembler, and invoke `mips-tfile' to
+     add normal debug information.  This is the default for all
+     platforms except for the OSF/1 reference platform, using the
+     OSF/rose object format.  If the either of the `-gstabs' or
+     `-gstabs+' switches are used, the `mips-tfile' program will
+     encapsulate the stabs within MIPS ECOFF.
+
+`-mgas'
+     Generate code for the GNU assembler.  This is the default on the
+     OSF/1 reference platform, using the OSF/rose object format.  Also,
+     this is the default if the configure option `--with-gnu-as' is
+     used.
+
+`-msplit-addresses'
+`-mno-split-addresses'
+     Generate code to load the high and low parts of address constants
+     separately.  This allows `gcc' to optimize away redundant loads of
+     the high order bits of addresses.  This optimization requires GNU
+     as and GNU ld.  This optimization is enabled by default for some
+     embedded targets where GNU as and GNU ld are standard.
+
+`-mrnames'
+`-mno-rnames'
+     The `-mrnames' switch says to output code using the MIPS software
+     names for the registers, instead of the hardware names (ie, A0
+     instead of $4).  The only known assembler that supports this option
+     is the Algorithmics assembler.
+
+`-mgpopt'
+`-mno-gpopt'
+     The `-mgpopt' switch says to write all of the data declarations
+     before the instructions in the text section, this allows the MIPS
+     assembler to generate one word memory references instead of using
+     two words for short global or static data items.  This is on by
+     default if optimization is selected.
+
+`-mstats'
+`-mno-stats'
+     For each non-inline function processed, the `-mstats' switch
+     causes the compiler to emit one line to the standard error file to
+     print statistics about the program (number of registers saved,
+     stack size, etc.).
+
+`-mmemcpy'
+`-mno-memcpy'
+     The `-mmemcpy' switch makes all block moves call the appropriate
+     string function (`memcpy' or `bcopy') instead of possibly
+     generating inline code.
+
+`-mmips-tfile'
+`-mno-mips-tfile'
+     The `-mno-mips-tfile' switch causes the compiler not postprocess
+     the object file with the `mips-tfile' program, after the MIPS
+     assembler has generated it to add debug support.  If `mips-tfile'
+     is not run, then no local variables will be available to the
+     debugger.  In addition, `stage2' and `stage3' objects will have
+     the temporary file names passed to the assembler embedded in the
+     object file, which means the objects will not compare the same.
+     The `-mno-mips-tfile' switch should only be used when there are
+     bugs in the `mips-tfile' program that prevents compilation.
+
+`-msoft-float'
+     Generate output containing library calls for floating point.
+     *Warning:* the requisite libraries are not part of GNU CC.
+     Normally the facilities of the machine's usual C compiler are
+     used, but this can't be done directly in cross-compilation.  You
+     must make your own arrangements to provide suitable library
+     functions for cross-compilation.
+
+`-mhard-float'
+     Generate output containing floating point instructions.  This is
+     the default if you use the unmodified sources.
+
+`-mabicalls'
+`-mno-abicalls'
+     Emit (or do not emit) the pseudo operations `.abicalls',
+     `.cpload', and `.cprestore' that some System V.4 ports use for
+     position independent code.
+
+`-mlong-calls'
+`-mno-long-calls'
+     Do all calls with the `JALR' instruction, which requires loading
+     up a function's address into a register before the call.  You need
+     to use this switch, if you call outside of the current 512
+     megabyte segment to functions that are not through pointers.
+
+`-mhalf-pic'
+`-mno-half-pic'
+     Put pointers to extern references into the data section and load
+     them up, rather than put the references in the text section.
+
+`-membedded-pic'
+`-mno-embedded-pic'
+     Generate PIC code suitable for some embedded systems.  All calls
+     are made using PC relative address, and all data is addressed
+     using the $gp register.  This requires GNU as and GNU ld which do
+     most of the work.
+
+`-membedded-data'
+`-mno-embedded-data'
+     Allocate variables to the read-only data section first if
+     possible, then next in the small data section if possible,
+     otherwise in data.  This gives slightly slower code than the
+     default, but reduces the amount of RAM required when executing,
+     and thus may be preferred for some embedded systems.
+
+`-msingle-float'
+`-mdouble-float'
+     The `-msingle-float' switch tells gcc to assume that the floating
+     point coprocessor only supports single precision operations, as on
+     the `r4650' chip.  The `-mdouble-float' switch permits gcc to use
+     double precision operations.  This is the default.
+
+`-mmad'
+`-mno-mad'
+     Permit use of the `mad', `madu' and `mul' instructions, as on the
+     `r4650' chip.
+
+`-m4650'
+     Turns on `-msingle-float', `-mmad', and, at least for now,
+     `-mcpu=r4650'.
+
+`-EL'
+     Compile code for the processor in little endian mode.  The
+     requisite libraries are assumed to exist.
+
+`-EB'
+     Compile code for the processor in big endian mode.  The requisite
+     libraries are assumed to exist.
+
+`-G NUM'
+     Put global and static items less than or equal to NUM bytes into
+     the small data or bss sections instead of the normal data or bss
+     section.  This allows the assembler to emit one word memory
+     reference instructions based on the global pointer (GP or $28),
+     instead of the normal two words used.  By default, NUM is 8 when
+     the MIPS assembler is used, and 0 when the GNU assembler is used.
+     The `-G NUM' switch is also passed to the assembler and linker.
+     All modules should be compiled with the same `-G NUM' value.
+
+`-nocpp'
+     Tell the MIPS assembler to not run it's preprocessor over user
+     assembler files (with a `.s' suffix) when assembling them.
+
+   These options are defined by the macro `TARGET_SWITCHES' in the
+machine description.  The default for the options is also defined by
+that macro, which enables you to change the defaults.
+
+
+File: gcc.info,  Node: i386 Options,  Next: HPPA Options,  Prev: MIPS Options,  Up: Submodel Options
+
+Intel 386 Options
+-----------------
+
+   These `-m' options are defined for the i386 family of computers:
+
+`-m486'
+`-m386'
+     Control whether or not code is optimized for a 486 instead of an
+     386.  Code generated for an 486 will run on a 386 and vice versa.
+
+`-mieee-fp'
+`-mno-ieee-fp'
+     Control whether or not the compiler uses IEEE floating point
+     comparisons.  These handle correctly the case where the result of a
+     comparison is unordered.
+
+`-msoft-float'
+     Generate output containing library calls for floating point.
+     *Warning:* the requisite libraries are not part of GNU CC.
+     Normally the facilities of the machine's usual C compiler are
+     used, but this can't be done directly in cross-compilation.  You
+     must make your own arrangements to provide suitable library
+     functions for cross-compilation.
+
+     On machines where a function returns floating point results in the
+     80387 register stack, some floating point opcodes may be emitted
+     even if `-msoft-float' is used.
+
+`-mno-fp-ret-in-387'
+     Do not use the FPU registers for return values of functions.
+
+     The usual calling convention has functions return values of types
+     `float' and `double' in an FPU register, even if there is no FPU.
+     The idea is that the operating system should emulate an FPU.
+
+     The option `-mno-fp-ret-in-387' causes such values to be returned
+     in ordinary CPU registers instead.
+
+`-mno-fancy-math-387'
+     Some 387 emulators do not support the `sin', `cos' and `sqrt'
+     instructions for the 387.  Specify this option to avoid generating
+     those instructions. This option is the default on FreeBSD.  As of
+     revision 2.6.1, these instructions are not generated unless you
+     also use the `-ffast-math' switch.
+
+`-malign-double'
+`-mno-align-double'
+     Control whether GNU CC aligns `double', `long double', and `long
+     long' variables on a two word boundary or a one word boundary.
+     Aligning `double' variables on a two word boundary will produce
+     code that runs somewhat faster on a `Pentium' at the expense of
+     more memory.
+
+     *Warning:* if you use the `-malign-double' switch, structures
+     containing the above types will be aligned differently than the
+     published application binary interface specifications for the 386.
+
+`-msvr3-shlib'
+`-mno-svr3-shlib'
+     Control whether GNU CC places uninitialized locals into `bss' or
+     `data'.  `-msvr3-shlib' places these locals into `bss'.  These
+     options are meaningful only on System V Release 3.
+
+`-mno-wide-multiply'
+`-mwide-multiply'
+     Control whether GNU CC uses the `mul' and `imul' that produce 64
+     bit results in `eax:edx' from 32 bit operands to do `long long'
+     multiplies and 32-bit division by constants.
+
+`-mrtd'
+     Use a different function-calling convention, in which functions
+     that take a fixed number of arguments return with the `ret' NUM
+     instruction, which pops their arguments while returning.  This
+     saves one instruction in the caller since there is no need to pop
+     the arguments there.
+
+     You can specify that an individual function is called with this
+     calling sequence with the function attribute `stdcall'.  You can
+     also override the `-mrtd' option by using the function attribute
+     `cdecl'. *Note Function Attributes::
+
+     *Warning:* this calling convention is incompatible with the one
+     normally used on Unix, so you cannot use it if you need to call
+     libraries compiled with the Unix compiler.
+
+     Also, you must provide function prototypes for all functions that
+     take variable numbers of arguments (including `printf'); otherwise
+     incorrect code will be generated for calls to those functions.
+
+     In addition, seriously incorrect code will result if you call a
+     function with too many arguments.  (Normally, extra arguments are
+     harmlessly ignored.)
+
+`-mreg-alloc=REGS'
+     Control the default allocation order of integer registers.  The
+     string REGS is a series of letters specifying a register.  The
+     supported letters are: `a' allocate EAX; `b' allocate EBX; `c'
+     allocate ECX; `d' allocate EDX; `S' allocate ESI; `D' allocate
+     EDI; `B' allocate EBP.
+
+`-mregparm=NUM'
+     Control how many registers are used to pass integer arguments.  By
+     default, no registers are used to pass arguments, and at most 3
+     registers can be used.  You can control this behavior for a
+     specific function by using the function attribute `regparm'.
+     *Note Function Attributes::
+
+     *Warning:* if you use this switch, and NUM is nonzero, then you
+     must build all modules with the same value, including any
+     libraries.  This includes the system libraries and startup modules.
+
+`-malign-loops=NUM'
+     Align loops to a 2 raised to a NUM byte boundary.  If
+     `-malign-loops' is not specified, the default is 2.
+
+`-malign-jumps=NUM'
+     Align instructions that are only jumped to to a 2 raised to a NUM
+     byte boundary.  If `-malign-jumps' is not specified, the default is
+     2 if optimizing for a 386, and 4 if optimizing for a 486.
+
+`-malign-functions=NUM'
+     Align the start of functions to a 2 raised to NUM byte boundary.
+     If `-malign-functions' is not specified, the default is 2 if
+     optimizing for a 386, and 4 if optimizing for a 486.
+
+
+File: gcc.info,  Node: HPPA Options,  Next: Intel 960 Options,  Prev: i386 Options,  Up: Submodel Options
+
+HPPA Options
+------------
+
+   These `-m' options are defined for the HPPA family of computers:
+
+`-mpa-risc-1-0'
+     Generate code for a PA 1.0 processor.
+
+`-mpa-risc-1-1'
+     Generate code for a PA 1.1 processor.
+
+`-mbig-switch'
+     Generate code suitable for big switch tables.  Use this option
+     only if the assembler/linker complain about out of range branches
+     within a switch table.
+
+`-mjump-in-delay'
+     Fill delay slots of function calls with unconditional jump
+     instructions by modifying the return pointer for the function call
+     to be the target of the conditional jump.
+
+`-mdisable-fpregs'
+     Prevent floating point registers from being used in any manner.
+     This is necessary for compiling kernels which perform lazy context
+     switching of floating point registers.  If you use this option and
+     attempt to perform floating point operations, the compiler will
+     abort.
+
+`-mdisable-indexing'
+     Prevent the compiler from using indexing address modes.  This
+     avoids some rather obscure problems when compiling MIG generated
+     code under MACH.
+
+`-mno-space-regs'
+     Generate code that assumes the target has no space registers.
+     This allows GCC to generate faster indirect calls and use unscaled
+     index address modes.
+
+     Such code is suitable for level 0 PA systems and kernels.
+
+`-mfast-indirect-calls'
+     Generate code that assumes calls never cross space boundaries.
+     This allows GCC to emit code which performs faster indirect calls.
+
+     This option will not work in the presense of shared libraries or
+     nested functions.
+
+`-mspace'
+     Optimize for space rather than execution time.  Currently this only
+     enables out of line function prologues and epilogues.  This option
+     is incompatable with PIC code generation and profiling.
+
+`-mlong-load-store'
+     Generate 3-instruction load and store sequences as sometimes
+     required by the HP-UX 10 linker.  This is equivalent to the `+k'
+     option to the HP compilers.
+
+`-mportable-runtime'
+     Use the portable calling conventions proposed by HP for ELF
+     systems.
+
+`-mgas'
+     Enable the use of assembler directives only GAS understands.
+
+`-mschedule=CPU TYPE'
+     Schedule code according to the constraints for the machine type
+     CPU TYPE.  The choices for CPU TYPE are `700' for 7N0 machines,
+     `7100' for 7N5 machines, and `7100' for 7N2 machines.  `7100' is
+     the default for CPU TYPE.
+
+     Note the `7100LC' scheduling information is incomplete and using
+     `7100LC' often leads to bad schedules.  For now it's probably best
+     to use `7100' instead of `7100LC' for the 7N2 machines.
+
+`-mlinker-opt'
+     Enable the optimization pass in the HPUX linker.  Note this makes
+     symbolic debugging impossible.  It also triggers a bug in the HPUX
+     8 and HPUX 9 linkers in which they give bogus error messages when
+     linking some programs.
+
+`-msoft-float'
+     Generate output containing library calls for floating point.
+     *Warning:* the requisite libraries are not available for all HPPA
+     targets.  Normally the facilities of the machine's usual C
+     compiler are used, but this cannot be done directly in
+     cross-compilation.  You must make your own arrangements to provide
+     suitable library functions for cross-compilation.  The embedded
+     target `hppa1.1-*-pro' does provide software floating point
+     support.
+
+     `-msoft-float' changes the calling convention in the output file;
+     therefore, it is only useful if you compile *all* of a program with
+     this option.  In particular, you need to compile `libgcc.a', the
+     library that comes with GNU CC, with `-msoft-float' in order for
+     this to work.
+
+
+File: gcc.info,  Node: Intel 960 Options,  Next: DEC Alpha Options,  Prev: HPPA Options,  Up: Submodel Options
+
+Intel 960 Options
+-----------------
+
+   These `-m' options are defined for the Intel 960 implementations:
+
+`-mCPU TYPE'
+     Assume the defaults for the machine type CPU TYPE for some of the
+     other options, including instruction scheduling, floating point
+     support, and addressing modes.  The choices for CPU TYPE are `ka',
+     `kb', `mc', `ca', `cf', `sa', and `sb'.  The default is `kb'.
+
+`-mnumerics'
+`-msoft-float'
+     The `-mnumerics' option indicates that the processor does support
+     floating-point instructions.  The `-msoft-float' option indicates
+     that floating-point support should not be assumed.
+
+`-mleaf-procedures'
+`-mno-leaf-procedures'
+     Do (or do not) attempt to alter leaf procedures to be callable
+     with the `bal' instruction as well as `call'.  This will result in
+     more efficient code for explicit calls when the `bal' instruction
+     can be substituted by the assembler or linker, but less efficient
+     code in other cases, such as calls via function pointers, or using
+     a linker that doesn't support this optimization.
+
+`-mtail-call'
+`-mno-tail-call'
+     Do (or do not) make additional attempts (beyond those of the
+     machine-independent portions of the compiler) to optimize
+     tail-recursive calls into branches.  You may not want to do this
+     because the detection of cases where this is not valid is not
+     totally complete.  The default is `-mno-tail-call'.
+
+`-mcomplex-addr'
+`-mno-complex-addr'
+     Assume (or do not assume) that the use of a complex addressing
+     mode is a win on this implementation of the i960.  Complex
+     addressing modes may not be worthwhile on the K-series, but they
+     definitely are on the C-series.  The default is currently
+     `-mcomplex-addr' for all processors except the CB and CC.
+
+`-mcode-align'
+`-mno-code-align'
+     Align code to 8-byte boundaries for faster fetching (or don't
+     bother).  Currently turned on by default for C-series
+     implementations only.
+
+`-mic-compat'
+`-mic2.0-compat'
+`-mic3.0-compat'
+     Enable compatibility with iC960 v2.0 or v3.0.
+
+`-masm-compat'
+`-mintel-asm'
+     Enable compatibility with the iC960 assembler.
+
+`-mstrict-align'
+`-mno-strict-align'
+     Do not permit (do permit) unaligned accesses.
+
+`-mold-align'
+     Enable structure-alignment compatibility with Intel's gcc release
+     version 1.3 (based on gcc 1.37).  This option implies
+     `-mstrict-align'.
+
