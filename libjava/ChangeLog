@@ -1,3 +1,9 @@
+2001-03-23  Per Bothner  <per@bothner.com>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom):  Checking the
+	ancestors array is invalid for interfaces, so do that *after*
+	check that the target type is not an interface.
+
 2000-03-23  Jeff Sturm  <jsturm@one-point.com>
 
 	* prims.cc (_Jv_FindClassFromSignature): Check return of
