@@ -1,3 +1,8 @@
+2004-09-24  Andreas Schwab  <schwab@suse.de>
+
+	* tree-ssa-dom.c (record_range): Fix violation of strict aliasing
+	rules.
+
 2004-09-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config.gcc (sparc64-*-solaris2*): Include sparc/sol2-gas.h
