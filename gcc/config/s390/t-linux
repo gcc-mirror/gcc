@@ -1,7 +1,0 @@
-# The crtbegin and crtend must not depend on a small GOT
-CRTSTUFF_T_CFLAGS = -O2 -fPIC
-CRTSTUFF_T_CFLAGS_S = -O2 -fPIC
-
-# Compile libgcc2.a with pic.
-TARGET_LIBGCC2_CFLAGS = -fPIC -include $(srcdir)/config/s390/fixdfdi.h
-

@@ -1,3 +1,10 @@
+2002-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc [s390-*-linux]: Remove s390/t-linux from tmake_file.
+	[s390x-*-linux*]: Likewise.
+	* config/s390/t-linux: Remove.
+	* config/s390/s390.h: Include fixdfdi.h when building libgcc2.
+
 Tue Oct 22 19:07:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add IX86_BUILTIN_PUNPCKHQDQ128.

@@ -2170,7 +2170,7 @@ rs6000-*-lynxos*)
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux"
 	;;
 s390x-*-linux*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
@@ -2178,7 +2178,7 @@ s390x-*-linux*)
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
-	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux s390/t-linux64"
+	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux64"
 	;;
 sh-*-elf* | sh[2346l]*-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
