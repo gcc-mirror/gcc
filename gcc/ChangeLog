@@ -1,3 +1,8 @@
+Thu Sep  3 13:34:41 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* config/nextstep.c (handle_pragma): Correct name of third
+	argument.
+
 Tue Sep  1 11:30:33 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.md: Change (reg:CC 17) to (reg:SI 17).
