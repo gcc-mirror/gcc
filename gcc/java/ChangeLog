@@ -1,3 +1,10 @@
+2004-08-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* jcf-parse.c (get_constant): Adjust force_fit_type call.
+	* lex.h (SET_LVAL_NODE_TYPE): Remove.
+	* lex.c (java_perform_atof): Use SET_LVAL_NODE directly.
+	(do_java_lex): Likewise. Adjust force_fit_type call.
+
 2004-08-04  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Haley  <aph@redhat.com>
 

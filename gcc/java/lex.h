@@ -188,7 +188,6 @@ extern void java_destroy_lexer (java_lexer *);
 #define BUILD_OPERATOR(TOKEN)	return TOKEN
 #define BUILD_OPERATOR2(TOKEN)	return ASSIGN_ANY_TK
 #define SET_LVAL_NODE(NODE)
-#define SET_LVAL_NODE_TYPE(NODE, TYPE)
 #define BUILD_ID_WFL(EXP) (EXP)
 #define JAVA_FLOAT_RANGE_ERROR(S) {}
 #define JAVA_INTEGRAL_RANGE_ERROR(S) do { } while (0)
@@ -225,11 +224,6 @@ extern void java_destroy_lexer (java_lexer *);
   }
 /* Set java_lval->node and TREE_TYPE(java_lval->node) in macros */
 #define SET_LVAL_NODE(NODE) java_lval->node = (NODE)
-#define SET_LVAL_NODE_TYPE(NODE,TYPE)		\
-  {						\
-    java_lval->node = (NODE);			\
-    TREE_TYPE (java_lval->node) = (TYPE);	\
-  }
 /* Wrap identifier around a wfl */
 #define BUILD_ID_WFL(EXP) build_wfl_node ((EXP))
 /* Special ways to report error on numeric literals  */

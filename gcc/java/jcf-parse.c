@@ -275,12 +275,13 @@ get_constant (JCF *jcf, int index)
 	unsigned HOST_WIDE_INT num = JPOOL_UINT (jcf, index);
 	unsigned HOST_WIDE_INT lo;
 	HOST_WIDE_INT hi;
+	
 	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
 	num = JPOOL_UINT (jcf, index+1);
 	add_double (lo, hi, num, 0, &lo, &hi);
 	value = build_int_2 (lo, hi);
 	TREE_TYPE (value) = long_type_node;
-	force_fit_type (value, 0);
+	value = force_fit_type (value, 0, false, false);
 	break;
       }
 
