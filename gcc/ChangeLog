@@ -1,3 +1,8 @@
+Fri Apr 14 16:58:45 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/lib1funcs.asm (__divdi3, __moddi3, __udivdi3, __umoddi3):
+	Use .s1 not .s0 for all FP instructions.
+
 2000-04-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (cpp_output_tokens, cpp_scan_buffer_nooutput): New public
