@@ -1127,7 +1127,7 @@ main (argc, argv)
     special_file_handling = stdio_h;
   include_entry = std_include_table;
   while (include_entry->name != NULL
-	 && (include_entry->name == CONTINUED
+	 && ((strcmp (include_entry->name, CONTINUED) == 0)
 	     || strcmp (inc_filename, include_entry->name) != 0))
     include_entry++;
 
@@ -1140,7 +1140,7 @@ main (argc, argv)
 	  if (entry->flags)
 	    add_symbols (entry->flags, entry->names);
 	  entry++;
-	  if (entry->name != CONTINUED)
+	  if (strcmp (entry->name, CONTINUED) != 0)
 	    break;
 	}
     }
