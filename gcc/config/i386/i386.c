@@ -11713,6 +11713,11 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
       if (offset > TRAMPOLINE_SIZE)
 	abort ();
     }
+
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+		     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+#endif
 }
 
 #define def_builtin(MASK, NAME, TYPE, CODE)			\
