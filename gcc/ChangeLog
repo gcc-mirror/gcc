@@ -1,3 +1,11 @@
+2000-07-20  Kazu Hirata  <kazu@hxi.com>
+
+	* h8300.c (two_insn_adds_subs_operand): Fix a typo.
+	* h8300.h (OK_FOR_T): New.
+	(EXTRA_CONSTRAINT): Support OK_FOR_T.
+	* h8300.md: Use inc/dec.[wl] for increment/decrement
+	by 1 and 2 in HI and SI modes.
+
 2000-07-20  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.h (ASM_OUTPUT_MI_THUNK): Handle DELTA values
