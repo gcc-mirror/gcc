@@ -201,7 +201,8 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
   We return either the original T, or a copy.  */
 
 tree
-force_fit_type (tree t, int overflowable, bool overflowed, bool overflowed_const)
+force_fit_type (tree t, int overflowable,
+		bool overflowed, bool overflowed_const)
 {
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;
@@ -1417,10 +1418,7 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       && overflow == 0 && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
     return size_int_type (low, type);
   else
-    {
-      t = build_int_2 (low, hi);
-      TREE_TYPE (t) = TREE_TYPE (arg1);
-    }
+    t = build_int_cst (TREE_TYPE (arg1), low, hi);
 
   if (notrunc)
     {
@@ -1786,9 +1784,8 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */
-	  t = build_int_2 (TREE_INT_CST_LOW (arg1),
-			   TREE_INT_CST_HIGH (arg1));
-	  TREE_TYPE (t) = type;
+	  t = build_int_cst (type, TREE_INT_CST_LOW (arg1),
+			     TREE_INT_CST_HIGH (arg1));
 
 	  t = force_fit_type (t,
 			      /* Don't set the overflow when
@@ -1879,8 +1876,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	  if (! overflow)
 	    REAL_VALUE_TO_INT (&low, &high, r);
 
-	  t = build_int_2 (low, high);
-	  TREE_TYPE (t) = type;
+	  t = build_int_cst (type, low, high);
 
 	  t = force_fit_type (t, -1, overflow | TREE_OVERFLOW (arg1),
 			      TREE_CONSTANT_OVERFLOW (arg1));
@@ -2954,7 +2950,8 @@ invert_truthvalue (tree arg)
   switch (code)
     {
     case INTEGER_CST:
-      return fold_convert (type, build_int_2 (integer_zerop (arg), 0));
+      return fold_convert (type,
+			   build_int_cst (NULL_TREE, integer_zerop (arg), 0));
 
     case TRUTH_AND_EXPR:
       return build2 (TRUTH_OR_EXPR, type,
@@ -3189,8 +3186,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
     lbitpos = nbitsize - lbitsize - lbitpos;
 
   /* Make the mask to be used against the extracted field.  */
-  mask = build_int_2 (~0, ~0);
-  TREE_TYPE (mask) = unsigned_type;
+  mask = build_int_cst (unsigned_type, ~0, ~0);
   mask = force_fit_type (mask, 0, false, false);
   mask = fold_convert (unsigned_type, mask);
   mask = const_binop (LSHIFT_EXPR, mask, size_int (nbitsize - lbitsize), 0);
@@ -3346,8 +3342,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
   unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
-  mask = build_int_2 (~0, ~0);
-  TREE_TYPE (mask) = unsigned_type;
+  mask = build_int_cst (unsigned_type, ~0, ~0);
   mask = force_fit_type (mask, 0, false, false);
   
   mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
@@ -3373,8 +3368,7 @@ all_ones_mask_p (tree mask, int size)
   unsigned int precision = TYPE_PRECISION (type);
   tree tmask;
 
-  tmask = build_int_2 (~0, ~0);
-  TREE_TYPE (tmask) = lang_hooks.types.signed_type (type);
+  tmask = build_int_cst (lang_hooks.types.signed_type (type), ~0, ~0);
   tmask = force_fit_type (tmask, 0, false, false);
   
   return
@@ -5362,12 +5356,7 @@ constant_boolean_node (int value, tree type)
     return lang_hooks.truthvalue_conversion (value ? integer_one_node
 						   : integer_zero_node);
   else
-    {
-      tree t = build_int_2 (value, 0);
-
-      TREE_TYPE (t) = type;
-      return t;
-    }
+    return build_int_cst (type, value, 0);
 }
 
 /* Transform `a + (b ? x : y)' into `b ? (a + x) : (a + y)'.
@@ -5700,8 +5689,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 			 TREE_INT_CST_HIGH (arg01),
 			 TREE_INT_CST_LOW (arg1),
 			 TREE_INT_CST_HIGH (arg1), &lpart, &hpart);
-  prod = build_int_2 (lpart, hpart);
-  TREE_TYPE (prod) = TREE_TYPE (arg00);
+  prod = build_int_cst (TREE_TYPE (arg00), lpart, hpart);
   prod = force_fit_type (prod, -1, overflow, false);
 
   if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
@@ -5715,8 +5703,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 			     TREE_INT_CST_LOW (tmp),
 			     TREE_INT_CST_HIGH (tmp),
 			     &lpart, &hpart);
-      hi = build_int_2 (lpart, hpart);
-      TREE_TYPE (hi) = TREE_TYPE (arg00);
+      hi = build_int_cst (TREE_TYPE (arg00), lpart, hpart);
       hi = force_fit_type (hi, -1, overflow | TREE_OVERFLOW (prod),
 			   TREE_CONSTANT_OVERFLOW (prod));
     }
@@ -6623,7 +6610,8 @@ fold (tree expr)
 		  if (exact_log2 (int11) > 0 && int01 % int11 == 0)
 		    {
 		      alt0 = fold (build2 (MULT_EXPR, type, arg00,
-					   build_int_2 (int01 / int11, 0)));
+					   build_int_cst (NULL_TREE,
+							  int01 / int11, 0)));
 		      alt1 = arg10;
 		      same = arg11;
 		    }
@@ -7257,8 +7245,7 @@ fold (tree expr)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = build_int_2 (-1, -1);
-	  TREE_TYPE (t1) = type;
+	  t1 = build_int_cst (type, -1, -1);
 	  t1 = force_fit_type (t1, 0, false, false);
 	  return omit_one_operand (type, t1, arg1);
 	}
@@ -7267,8 +7254,7 @@ fold (tree expr)
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = build_int_2 (-1, -1);
-	  TREE_TYPE (t1) = type;
+	  t1 = build_int_cst (type, -1, -1);
 	  t1 = force_fit_type (t1, 0, false, false);
 	  return omit_one_operand (type, t1, arg0);
 	}
@@ -7308,8 +7294,7 @@ fold (tree expr)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = build_int_2 (-1, -1);
-	  TREE_TYPE (t1) = type;
+	  t1 = build_int_cst (type, -1, -1);
 	  t1 = force_fit_type (t1, 0, false, false);
 	  return omit_one_operand (type, t1, arg1);
 	}
@@ -7318,8 +7303,7 @@ fold (tree expr)
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = build_int_2 (-1, -1);
-	  TREE_TYPE (t1) = type;
+	  t1 = build_int_cst (type, -1, -1);
 	  t1 = force_fit_type (t1, 0, false, false);
 	  return omit_one_operand (type, t1, arg0);
 	}
@@ -7639,8 +7623,7 @@ fold (tree expr)
 	      low = ((unsigned HOST_WIDE_INT) 1 << l) - 1;
 	    }
 
-	  mask = build_int_2 (low, high);
-	  TREE_TYPE (mask) = type;
+	  mask = build_int_cst (type, low, high);
 	  return fold (build2 (BIT_AND_EXPR, type,
 			       fold_convert (type, arg0), mask));
 	}
@@ -7698,7 +7681,8 @@ fold (tree expr)
 	 RROTATE_EXPR by a new constant.  */
       if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
 	{
-	  tree tem = build_int_2 (GET_MODE_BITSIZE (TYPE_MODE (type)), 0);
+	  tree tem = build_int_cst (NULL_TREE,
+				    GET_MODE_BITSIZE (TYPE_MODE (type)), 0);
 	  tem = fold_convert (TREE_TYPE (arg1), tem);
 	  tem = const_binop (MINUS_EXPR, tem, arg1, 0);
 	  return fold (build2 (RROTATE_EXPR, type, arg0, tem));
@@ -8115,8 +8099,9 @@ fold (tree expr)
 		  || integer_onep (folded_compare))
 		return omit_one_operand (type, folded_compare, varop);
 
-	      shift = build_int_2 (TYPE_PRECISION (TREE_TYPE (varop)) - size,
-				   0);
+	      shift = build_int_cst (NULL_TREE,
+				     TYPE_PRECISION (TREE_TYPE (varop)) - size,
+				     0);
 	      shift = fold_convert (TREE_TYPE (varop), shift);
 	      newconst = fold (build2 (LSHIFT_EXPR, TREE_TYPE (varop),
 				       newconst, shift));
@@ -10336,8 +10321,9 @@ fold_read_from_constant_string (tree exp)
 	      == MODE_INT)
 	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))) == 1))
 	return fold_convert (TREE_TYPE (exp),
-			     build_int_2 ((TREE_STRING_POINTER (string)
-					  [TREE_INT_CST_LOW (index)]), 0));
+			     build_int_cst (NULL_TREE,
+					    (TREE_STRING_POINTER (string)
+					     [TREE_INT_CST_LOW (index)]), 0));
     }
   return NULL;
 }
@@ -10359,8 +10345,7 @@ fold_negate_const (tree arg0, tree type)
       int overflow = neg_double (TREE_INT_CST_LOW (arg0),
 				 TREE_INT_CST_HIGH (arg0),
 				 &low, &high);
-      t = build_int_2 (low, high);
-      TREE_TYPE (t) = type;
+      t = build_int_cst (type, low, high);
       t = force_fit_type (t, 1,
 			  (overflow | TREE_OVERFLOW (arg0))
 			  && !TYPE_UNSIGNED (type),
@@ -10404,8 +10389,7 @@ fold_abs_const (tree arg0, tree type)
 	  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
 				     TREE_INT_CST_HIGH (arg0),
 				     &low, &high);
-	  t = build_int_2 (low, high);
-	  TREE_TYPE (t) = type;
+	  t = build_int_cst (type, low, high);
 	  t = force_fit_type (t, -1, overflow | TREE_OVERFLOW (arg0),
 			      TREE_CONSTANT_OVERFLOW (arg0));
 	  return t;
@@ -10436,9 +10420,9 @@ fold_not_const (tree arg0, tree type)
 
   if (TREE_CODE (arg0) == INTEGER_CST)
     {
-      t = build_int_2 (~ TREE_INT_CST_LOW (arg0),
-		       ~ TREE_INT_CST_HIGH (arg0));
-      TREE_TYPE (t) = type;
+      t = build_int_cst (type,
+			 ~ TREE_INT_CST_LOW (arg0),
+			 ~ TREE_INT_CST_HIGH (arg0));
       t = force_fit_type (t, 0, TREE_OVERFLOW (arg0),
 			  TREE_CONSTANT_OVERFLOW (arg0));
     }

@@ -798,7 +798,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
           ASSIGN_ADDR can not be used. Equal -1 means that ASSIGN_ADDR is the
           target label's address. Other value is the length of format string
           and ASSIGN_ADDR is the address of format string.  */
-      DECL_INITIAL (length) = build_int_2 (-2, -1);
+      DECL_INITIAL (length) = build_int_cst (NULL_TREE, -2, -1);
     }
 
   if (sym->ts.type == BT_CHARACTER)

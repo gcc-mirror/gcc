@@ -1888,19 +1888,21 @@ i860_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   t = make_tree (TREE_TYPE (mem), virtual_incoming_args_rtx);
   off = INTVAL (current_function_arg_offset_rtx);
   off = off < 0 ? 0 : off;
-  t = build (PLUS_EXPR, TREE_TYPE (mem), t, build_int_2 (off, 0));
+  t = build (PLUS_EXPR, TREE_TYPE (mem), t, build_int_cst (NULL_TREE, off, 0));
   t = build (MODIFY_EXPR, TREE_TYPE (mem), mem, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Initialize the `ireg_used' field.  */
-  t = build_int_2 (current_function_args_info.ints / UNITS_PER_WORD, 0);
+  t = build_int_cst (NULL_TREE,
+		     current_function_args_info.ints / UNITS_PER_WORD, 0);
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
      
   /* Initialize the `freg_used' field.  */
-  t = build_int_2 (current_function_args_info.floats / UNITS_PER_WORD, 0);
+  t = build_int_cst (NULL_TREE,
+		     current_function_args_info.floats / UNITS_PER_WORD, 0);
   t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);

@@ -7404,7 +7404,7 @@ build_vtbl_initializer (tree binfo,
 	      {
 		tree fdesc = build (FDESC_EXPR, vfunc_ptr_type_node,
 				    TREE_OPERAND (init, 0),
-				    build_int_2 (i, 0));
+				    build_int_cst (NULL_TREE, i, 0));
 		TREE_CONSTANT (fdesc) = 1;
 		TREE_INVARIANT (fdesc) = 1;
 

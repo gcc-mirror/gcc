@@ -796,7 +796,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		  p = p->next;
 		}
 
-	      bound = build_int_2 (n - 1, 0);
+	      bound = build_int_cst (NULL_TREE, n - 1, 0);
               /* Create an array type to hold them.  */
 	      tmptype = build_range_type (gfc_array_index_type,
 					  gfc_index_zero_node, bound);
@@ -821,7 +821,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      init = gfc_build_addr_expr (NULL, init);
 
 	      size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
-	      bound = build_int_2 (n * size, 0);
+	      bound = build_int_cst (NULL_TREE, n * size, 0);
 	      tmp = gfc_chainon_list (NULL_TREE, tmp);
 	      tmp = gfc_chainon_list (tmp, init);
 	      tmp = gfc_chainon_list (tmp, bound);

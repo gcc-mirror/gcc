@@ -880,8 +880,8 @@ build_utf8_ref (tree name)
   FINISH_RECORD (ctype);
   START_RECORD_CONSTRUCTOR (cinit, ctype);
   name_hash = hashUtf8String (name_ptr, name_len) & 0xFFFF;
-  PUSH_FIELD_VALUE (cinit, "hash", build_int_2 (name_hash, 0));
-  PUSH_FIELD_VALUE (cinit, "length", build_int_2 (name_len, 0));
+  PUSH_FIELD_VALUE (cinit, "hash", build_int_cst (NULL_TREE, name_hash, 0));
+  PUSH_FIELD_VALUE (cinit, "length", build_int_cst (NULL_TREE, name_len, 0));
   string = build_string (name_len, name_ptr);
   TREE_TYPE (string) = str_type;
   PUSH_FIELD_VALUE (cinit, "data", string);
@@ -1081,8 +1081,8 @@ build_static_field_ref (tree fdecl)
   if (flag_indirect_dispatch)
     {
       tree table_index 
-	= build_int_2 (get_symbol_table_index 
-		       (fdecl, &TYPE_ATABLE_METHODS (output_class)), 0);
+	= build_int_cst (NULL_TREE, get_symbol_table_index 
+			 (fdecl, &TYPE_ATABLE_METHODS (output_class)), 0);
       tree field_address
 	= build4 (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
 		  TYPE_ATABLE_DECL (output_class), table_index,
@@ -1114,7 +1114,7 @@ build_static_field_ref (tree fdecl)
 	}
       field_index *= int_size_in_bytes (field_type_node);
       ref = fold (build2 (PLUS_EXPR, field_ptr_type_node,
-			  ref, build_int_2 (field_index, 0)));
+			  ref, build_int_cst (NULL_TREE, field_index, 0)));
       ref = build1 (INDIRECT_REF, field_type_node, ref);
       ref = build3 (COMPONENT_REF, field_info_union_node,
 		    ref, lookup_field (&field_type_node, info_ident),
@@ -1224,7 +1224,7 @@ make_field_value (tree fdecl)
   if (! resolved)
     flags |= 0x8000 /* FIELD_UNRESOLVED_FLAG */;
 
-  PUSH_FIELD_VALUE (finit, "accflags", build_int_2 (flags, 0));
+  PUSH_FIELD_VALUE (finit, "accflags", build_int_cst (NULL_TREE, flags, 0));
   PUSH_FIELD_VALUE (finit, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
 
   PUSH_FIELD_VALUE
@@ -1256,7 +1256,8 @@ make_method_value (tree mdecl)
   class_decl = DECL_CONTEXT (mdecl);
   /* For interfaces, the index field contains the dispatch index. */
   if (CLASS_INTERFACE (TYPE_NAME (class_decl)))
-    index = build_int_2 (get_interface_method_index (mdecl, class_decl), 0);
+    index = build_int_cst (NULL_TREE,
+			   get_interface_method_index (mdecl, class_decl), 0);
   else if (!flag_indirect_dispatch && get_method_index (mdecl) != NULL_TREE)
     index = get_method_index (mdecl);
   else
@@ -1278,7 +1279,7 @@ make_method_value (tree mdecl)
 			(IDENTIFIER_POINTER(signature),
 			 IDENTIFIER_LENGTH(signature)))));
   }
-  PUSH_FIELD_VALUE (minit, "accflags", build_int_2 (accflags, 0));
+  PUSH_FIELD_VALUE (minit, "accflags", build_int_cst (NULL_TREE, accflags, 0));
   PUSH_FIELD_VALUE (minit, "index", index);
   PUSH_FIELD_VALUE (minit, "ncode", code);
 
@@ -1391,7 +1392,7 @@ get_dispatch_table (tree type, tree this_class_addr)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
 	      {
 		tree fdesc = build2 (FDESC_EXPR, nativecode_ptr_type_node, 
-				     method, build_int_2 (j, 0));
+				     method, build_int_cst (NULL_TREE, j, 0));
 		TREE_CONSTANT (fdesc) = 1;
 		TREE_INVARIANT (fdesc) = 1;
 	        list = tree_cons (NULL_TREE, fdesc, list);
@@ -1504,7 +1505,9 @@ make_class_data (tree type)
   tree type_decl = TYPE_NAME (type);
   /** Offset from start of virtual function table declaration
       to where objects actually point at, following new g++ ABI. */
-  tree dtable_start_offset = build_int_2 (2 * POINTER_SIZE / BITS_PER_UNIT, 0);
+  tree dtable_start_offset = build_int_cst (NULL_TREE,
+					    2 * POINTER_SIZE / BITS_PER_UNIT,
+					    0);
 
   this_class_addr = build_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
@@ -1618,8 +1621,7 @@ make_class_data (tree type)
   else
     {
       int super_index = alloc_class_constant (super);
-      super = build_int_2 (super_index, 0);
-      TREE_TYPE (super) = ptr_type_node;
+      super = build_int_cst (ptr_type_node, super_index, 0);
     }
 
   /* Build and emit the array of implemented interfaces. */
@@ -1648,8 +1650,7 @@ make_class_data (tree type)
 	  else
 	    {
 	      int int_index = alloc_class_constant (iclass);
-	      index = build_int_2 (int_index, 0);
-	      TREE_TYPE (index) = ptr_type_node;
+	      index = build_int_cst (ptr_type_node, int_index, 0);
 	    }
 	  init = tree_cons (NULL_TREE, index, init); 
 	}
@@ -1694,14 +1695,16 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (cons, "next", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "name", build_utf8_ref (DECL_NAME (type_decl)));
   PUSH_FIELD_VALUE (cons, "accflags",
-		    build_int_2 (get_access_flags_from_decl (type_decl), 0));
+		    build_int_cst (NULL_TREE,
+				   get_access_flags_from_decl (type_decl), 0));
 
   PUSH_FIELD_VALUE (cons, "superclass", 
 		    CLASS_INTERFACE (type_decl) ? null_pointer_node : super);
   PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
-  PUSH_FIELD_VALUE (cons, "method_count",  build_int_2 (method_count, 0));
+  PUSH_FIELD_VALUE (cons, "method_count",
+		    build_int_cst (NULL_TREE, method_count, 0));
 
   if (flag_indirect_dispatch)
     PUSH_FIELD_VALUE (cons, "vtable_method_count", integer_minus_one_node);
@@ -1712,9 +1715,10 @@ make_class_data (tree type)
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
   PUSH_FIELD_VALUE (cons, "size_in_bytes", size_in_bytes (type));
-  PUSH_FIELD_VALUE (cons, "field_count", build_int_2 (field_count, 0));
+  PUSH_FIELD_VALUE (cons, "field_count",
+		    build_int_cst (NULL_TREE, field_count, 0));
   PUSH_FIELD_VALUE (cons, "static_field_count",
-		    build_int_2 (static_field_count, 0));
+		    build_int_cst (NULL_TREE, static_field_count, 0));
 
   if (flag_indirect_dispatch)
     PUSH_FIELD_VALUE (cons, "vtable", null_pointer_node);
@@ -1760,7 +1764,8 @@ make_class_data (tree type)
 		    build1 (ADDR_EXPR, ptr_type_node, TYPE_CTABLE_DECL (type))); 
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
+  PUSH_FIELD_VALUE (cons, "interface_count",
+		    build_int_cst (NULL_TREE, interface_len, 0));
   PUSH_FIELD_VALUE (cons, "state", integer_zero_node);
 
   PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
@@ -2394,7 +2399,7 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
      uninitialized static array of INDEX + 1 elements. The extra entry
      is used by the runtime to track whether the table has been
      initialized. */
-  table_size = build_index_type (build_int_2 (index, 0));
+  table_size = build_index_type (build_int_cst (NULL_TREE, index, 0));
   the_array_type = build_array_type (the_array_element_type, table_size);
   the_table = build_decl (VAR_DECL, name, the_array_type);
   TREE_STATIC (the_table) = 1;
@@ -2433,9 +2438,9 @@ emit_catch_table (tree this_class)
     tree_cons (NULL,
 	       make_catch_class_record (null_pointer_node, null_pointer_node),
 	       TYPE_CATCH_CLASSES (this_class));
-  table_size = 
-    build_index_type (build_int_2 
-		      (list_length (TYPE_CATCH_CLASSES (this_class)), 0));
+  table_size = build_index_type
+    (build_int_cst (NULL_TREE,
+		    list_length (TYPE_CATCH_CLASSES (this_class)), 0));
   array_type 
     = build_array_type (TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (this_class))),
 			table_size);

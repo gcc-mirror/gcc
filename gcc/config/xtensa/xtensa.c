@@ -2448,7 +2448,8 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   /* Set the __va_stk member to ($arg_ptr - 32).  */
   u = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-  u = fold (build (PLUS_EXPR, ptr_type_node, u, build_int_2 (-32, -1)));
+  u = fold (build (PLUS_EXPR, ptr_type_node, u,
+		   build_int_cst (NULL_TREE, -32, -1)));
   t = build (MODIFY_EXPR, ptr_type_node, stk, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2458,7 +2459,7 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
      alignment offset for __va_stk.  */
   if (arg_words >= MAX_ARGS_IN_REGISTERS)
     arg_words += 2;
-  u = build_int_2 (arg_words * UNITS_PER_WORD, 0);
+  u = build_int_cst (NULL_TREE, arg_words * UNITS_PER_WORD, 0);
   t = build (MODIFY_EXPR, integer_type_node, ndx, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2525,9 +2526,9 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       int align = TYPE_ALIGN (type) / BITS_PER_UNIT;
 
       t = build (PLUS_EXPR, integer_type_node, orig_ndx,
-		 build_int_2 (align - 1, 0));
+		 build_int_cst (NULL_TREE, align - 1, 0));
       t = build (BIT_AND_EXPR, integer_type_node, t,
-		 build_int_2 (-align, -1));
+		 build_int_cst (NULL_TREE, -align, -1));
       t = build (MODIFY_EXPR, integer_type_node, orig_ndx, t);
       gimplify_and_add (t, pre_p);
     }
@@ -2557,7 +2558,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       lab_false = create_artificial_label ();
       lab_over = create_artificial_label ();
 
-      t = build_int_2 (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, 0);
+      t = build_int_cst (NULL_TREE, MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, 0);
       t = build (GT_EXPR, boolean_type_node, ndx, t);
       t = build (COND_EXPR, void_type_node, t,
 		 build (GOTO_EXPR, void_type_node, lab_false),
@@ -2587,7 +2588,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
   lab_false2 = create_artificial_label ();
 
-  t = build_int_2 (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, 0);
+  t = build_int_cst (NULL_TREE, MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, 0);
   t = build (GT_EXPR, boolean_type_node, orig_ndx, t);
   t = build (COND_EXPR, void_type_node, t,
 	     build (GOTO_EXPR, void_type_node, lab_false2),

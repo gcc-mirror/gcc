@@ -150,7 +150,8 @@ build_headof (tree exp)
   exp = save_expr (exp);
 
   /* The offset-to-top field is at index -2 from the vptr.  */
-  index = build_int_2 (-2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
+  index = build_int_cst (NULL_TREE,
+			 -2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
 
   offset = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
 
@@ -225,7 +226,8 @@ get_tinfo_decl_dynamic (tree exp)
       tree index;
 
       /* The RTTI information is at index -1.  */
-      index = build_int_2 (-1 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
+      index = build_int_cst (NULL_TREE,
+			     -1 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
       t = build_vtbl_ref (exp, index);
       t = convert (type_info_ptr_type, t);
     }
@@ -588,8 +590,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 		{
 		  warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
 			      op, type);
-		  retval = build_int_2 (0, 0); 
-		  TREE_TYPE (retval) = type; 
+		  retval = build_int_cst (type, 0, 0); 
 		  return retval;
 		}
 	    }
@@ -878,7 +879,7 @@ ptr_initializer (tree desc, tree target)
   
   if (incomplete)
     flags |= 8;
-  init = tree_cons (NULL_TREE, build_int_2 (flags, 0), init);
+  init = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, flags, 0), init);
   init = tree_cons (NULL_TREE,
                     get_tinfo_ptr (TYPE_MAIN_VARIANT (to)),
                     init);
@@ -908,7 +909,7 @@ ptm_initializer (tree desc, tree target)
     flags |= 0x8;
   if (!COMPLETE_TYPE_P (klass))
     flags |= 0x10;
-  init = tree_cons (NULL_TREE, build_int_2 (flags, 0), init);
+  init = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, flags, 0), init);
   init = tree_cons (NULL_TREE,
 		    get_tinfo_ptr (TYPE_MAIN_VARIANT (to)),
                     init);
@@ -1089,9 +1090,10 @@ get_pseudo_ti_init (tree type, tree var_desc)
               
               /* Combine offset and flags into one field.  */
               offset = cp_build_binary_op (LSHIFT_EXPR, offset,
-					   build_int_2 (8, 0));
+					   build_int_cst (NULL_TREE, 8, 0));
               offset = cp_build_binary_op (BIT_IOR_EXPR, offset,
-					   build_int_2 (flags, 0));
+					   build_int_cst (NULL_TREE,
+							  flags, 0));
               base_init = tree_cons (NULL_TREE, offset, base_init);
               base_init = tree_cons (NULL_TREE, tinfo, base_init);
               base_init = build_constructor (NULL_TREE, base_init);
@@ -1101,10 +1103,12 @@ get_pseudo_ti_init (tree type, tree var_desc)
 	  base_inits = tree_cons (NULL_TREE, base_inits, NULL_TREE);
 	  /* Prepend the number of bases.  */
 	  base_inits = tree_cons (NULL_TREE,
-				  build_int_2 (nbases, 0), base_inits);
+				  build_int_cst (NULL_TREE, nbases, 0),
+				  base_inits);
 	  /* Prepend the hint flags.  */
 	  base_inits = tree_cons (NULL_TREE,
-				  build_int_2 (hint, 0), base_inits);
+				  build_int_cst (NULL_TREE, hint, 0),
+				  base_inits);
 
           return class_initializer (var_desc, type, base_inits);
         }

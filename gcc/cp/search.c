@@ -346,8 +346,7 @@ get_dynamic_cast_base_type (tree subtype, tree target)
   
   if (!boff)
     return offset;
-  offset = build_int_2 (boff, -1);
-  TREE_TYPE (offset) = ssizetype;
+  offset = build_int_cst (ssizetype, boff, -1);
   return offset;
 }
 

@@ -351,7 +351,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	 (inverse(s/d) * (c/d)) mod (size of mode/d).  */
       s = step0;
       d = integer_one_node;
-      bound = convert (niter_type, build_int_2 (~0, ~0));
+      bound = convert (niter_type, build_int_cst (NULL_TREE, ~0, ~0));
       while (1)
 	{
 	  tmp = EXEC_BINARY (BIT_AND_EXPR, niter_type, s,
@@ -877,7 +877,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	    fprintf (dump_file,
 		     "Proved that loop %d iterates %d times using brute force.\n",
 		     loop->num, i);
-	  return build_int_2 (i, 0);
+	  return build_int_cst (NULL_TREE, i, 0);
 	}
 
       for (j = 0; j < 2; j++)
@@ -1091,7 +1091,7 @@ upper_bound_in_type (tree outer, tree inner)
 
   return convert (outer,
 		  convert (inner,
-			   build_int_2 (lo, hi)));
+			   build_int_cst (NULL_TREE, lo, hi)));
 }
 
 /* Returns the smallest value obtainable by casting something in INNER type to
@@ -1118,7 +1118,7 @@ lower_bound_in_type (tree outer, tree inner)
 
   return convert (outer,
 		  convert (inner,
-			   build_int_2 (lo, hi)));
+			   build_int_cst (NULL_TREE, lo, hi)));
 }
 
 /* Returns true if statement S1 dominates statement S2.  */

@@ -1505,7 +1505,9 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		     seem worth generating rtl to say that.  */
 		  reg = gen_rtx_REG (word_mode, REGNO (reg));
 		  x = expand_shift (LSHIFT_EXPR, word_mode, reg,
-				    build_int_2 (shift, 0), reg, 1);
+				    build_int_cst (NULL_TREE, FIXMEFORMAT
+						   shift, 0),
+				    reg, 1);
 		  if (x != reg)
 		    emit_move_insn (reg, x);
 		}
@@ -1542,7 +1544,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 
 		  emit_move_insn (x, tem);
 		  x = expand_shift (dir, word_mode, x,
-				    build_int_2 (shift, 0), ri, 1);
+				    build_int_cst (NULL_TREE, shift, 0),
+				    ri, 1);
 		  if (x != ri)
 		    emit_move_insn (ri, x);
 		}

@@ -1444,13 +1444,13 @@ build_call_raise (int msg)
 
   TREE_TYPE (filename)
     = build_array_type (char_type_node,
-			build_index_type (build_int_2 (len, 0)));
+			build_index_type (build_int_cst (NULL_TREE, len, 0)));
 
   return
     build_call_2_expr (fndecl,
 		       build1 (ADDR_EXPR, build_pointer_type (char_type_node),
 			       filename),
-		       build_int_2 (input_line, 0));
+		       build_int_cst (NULL_TREE, input_line, 0));
 }
 
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
