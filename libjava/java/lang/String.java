@@ -84,8 +84,26 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   private static final long serialVersionUID = -6849794470754667710L;
 
+  /**
+   * This is the object that holds the characters that make up the
+   * String.  It might be a char[], or it could be String.  It could
+   * even be `this'.  The actual characters can't be located using
+   * pure Java code.
+   * @see #boffset
+   */
   private Object data;
-  private int boffset; // Note this is a byte offset - don't use in Java code!
+
+  /**
+   * This is a <emph>byte</emph> offset of the actual characters from
+   * the start of the character-holding object.  Don't use this field
+   * in Java code.
+   */
+  private int boffset;
+
+  /**
+   * Holds the number of characters in value.  Package visible for use
+   * by trusted code.
+   */
   int count;
 
   /**
@@ -298,7 +316,7 @@ public final class String implements Serializable, Comparable, CharSequence
   public String(byte[] data, String encoding)
     throws UnsupportedEncodingException
   {
-    this (data, 0, data.length, encoding);
+    this(data, 0, data.length, encoding);
   }
 
   /**
@@ -357,7 +375,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public String(byte[] data)
   {
-    this (data, 0, data.length);
+    this(data, 0, data.length);
   }
 
   /**
@@ -371,8 +389,11 @@ public final class String implements Serializable, Comparable, CharSequence
   {
     synchronized (buffer)
       {
-	buffer.shared = true;
-	init (buffer.value, 0, buffer.count, true);
+	// Share unless buffer is 3/4 empty.
+	boolean should_copy = ((buffer.count << 2) < buffer.value.length);
+	if (! should_copy)
+	  buffer.shared = true;
+	init (buffer.value, 0, buffer.count, ! should_copy);
       }
   }
 
@@ -721,7 +742,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public int lastIndexOf(int ch)
   {
-    return lastIndexOf (ch, count - 1);
+    return lastIndexOf(ch, count - 1);
   }
 
   /**
@@ -770,7 +791,7 @@ public final class String implements Serializable, Comparable, CharSequence
    */
   public int lastIndexOf(String str)
   {
-    return lastIndexOf (str, count - str.count);
+    return lastIndexOf(str, count - str.count);
   }
 
   /**
@@ -806,9 +827,9 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws IndexOutOfBoundsException if begin &lt; 0 || begin &gt; length()
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
-  public String substring(int beginIndex)
+  public String substring(int begin)
   {
-    return substring (beginIndex, count);
+    return substring(begin, count);
   }
 
   /**
