@@ -1490,6 +1490,64 @@ AC_DEFUN(GLIBCPP_EXPORT_FLAGS, [
 ])
 
 
+dnl  GLIBCPP_EXPORT_INSTALL_INFO
+dnl  calculates gxx_install_dir
+dnl
+AC_DEFUN(GLIBCPP_EXPORT_INSTALL_INFO, [
+
+AC_MSG_CHECKING([for interface version number])
+libstdcxx_interface=$INTERFACE
+AC_MSG_RESULT($libstdcxx_interface)
+
+# Process the option --with-gxx-include-dir=<path to include-files directory>
+AC_MSG_CHECKING([for --with-gxx-include-dir])
+AC_ARG_WITH(gxx-include-dir,
+[ --with-gxx-include-dir  the installation directory for include files],
+[case "${withval}" in
+  yes)
+    AC_MSG_ERROR(Missing directory for --with-gxx-include-dir)
+    gxx_include_dir=no
+    ;;
+  no)
+    gxx_include_dir=no
+    ;;
+  *)
+    gxx_include_dir=${withval}
+    ;;
+esac], [gxx_include_dir=no])
+AC_MSG_RESULT($gxx_include_dir)
+
+# Process the option "--enable-version-specific-runtime-libs"
+AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
+AC_ARG_ENABLE(version-specific-runtime-libs,
+[  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
+[  version_specific_libs=yes
+# Need the gcc compiler version to know where to install libraries
+# and header files if --enable-version-specific-runtime-libs option
+# is selected.
+changequote(,)dnl
+gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $6}'`
+gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
+#gcc_date=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $7}'`
+#gcc_version=$gcc_num-$gcc_date
+gcc_version=$gcc_num
+gxx_include_dir=$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++
+changequote([,])dnl
+AC_SUBST(gcc_version)
+AM_CONDITIONAL(VERSION_SPECIFIC_LIBS, test x"$version_specific_libs" = x"yes")
+],version_specific_libs=no)
+AC_MSG_RESULT($version_specific_libs)
+
+AC_MSG_CHECKING([for install location])
+if test x"$version_specific_libs" = x"no" \
+   && test x"$gxx_include_dir"=x"no"; then
+  gxx_include_dir=${prefix}/include/g++-${libstdcxx_interface}
+fi
+AC_MSG_RESULT($gxx_include_dir)
+AC_SUBST(gxx_include_dir)
+])
+
+
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #

@@ -1,5 +1,20 @@
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): New
+	macro. Consolidate all the bits to do with where includes might be
+	installed.
+	* aclocal.m4: Regenerate.
+	* configure.in: Use it.
+	* configure: Regenerate.	
+	* src/Makefile.am (targetincludep): Use simplified rules.
+	(targetincludep): Rename gxx_target_include_dir.
+	(myincludep): Rename gxx_include_dir.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Use simplified rules.
+	* libsupc++/Makefile.in: Regenerate.
+	
+2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/c_std/bits/std_cerrno.h: Correct date format for copyright.
 	* include/c_std/bits/std_cctype.h: Same.
 	* include/c_std/bits/std_cassert.h: Same.

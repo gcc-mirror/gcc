@@ -100,12 +100,9 @@ WFMT_FLAGS = @WFMT_FLAGS@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_basedir = @glibcpp_basedir@
-gxx_include_dir = @gxx_include_dir@
-gxx_target_include_dir = @gxx_target_include_dir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
-libstdcxx_interface = @libstdcxx_interface@
 toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = 1.3 gnits
@@ -195,12 +192,10 @@ libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 @GLIBCPP_USE_CSHADOW_TRUE@CSHADOW_H = $(top_builddir)/stamp-cshadow
 @GLIBCPP_USE_CSHADOW_FALSE@CSHADOW_H = 
-@GXX_INCLUDE_DIR_TRUE@myincludep = @gxx_include_dir@
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@myincludep = $(prefix)/include/g++-@libstdcxx_interface@
-@GXX_INCLUDE_DIR_TRUE@targetincludep = @gxx_include_dir@
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@targetincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@targetincludep = @gxx_target_include_dir@
+
+# Check for various configure bits that change where the headers get installed.
+gxx_include_dir = @gxx_include_dir@
+gxx_target_include_dir = $(gxx_include_dir)/$(target_alias)
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install
@@ -530,40 +525,40 @@ install-data-local: myinstalldirs myinstallheaders
 # NB: installation of shadow header directories is not attempted.
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
-	$(mkinstalldirs) $(DESTDIR)$(targetincludep)/bits; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/bits; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/ext; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_target_include_dir)/bits; \
 	fi
 myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(base_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(ext_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep); \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir); \
 	done; \
 	for i in $(c_base_headers); do \
-        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(std_headers); do \
-	echo "$(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep)";\
-	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep); \
+	echo "$(INSTALL_DATA) $(src_incdir)/std/$$i $(gxx_include_dir)";\
+	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(gxx_include_dir); \
 	done; \
 	for i in $(build_headers); do \
-        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/"; \
-	  $(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/; \
+    echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
-        echo "$(INSTALL_DATA) $$i $(myincludep)"; \
-          $(INSTALL_DATA) $$i $(myincludep); \
+        echo "$(INSTALL_DATA) $$i $(gxx_include_dir)"; \
+          $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
 
