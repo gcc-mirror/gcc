@@ -5499,7 +5499,6 @@ define_function (name, type, function_code, pfn, library_name)
   tree decl = build_lang_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
-  DECL_INTERFACE_KNOWN (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
