@@ -704,6 +704,31 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Check for (...) in C++ code in HP/UX sys/file.h.
+file=sys/file.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if egrep HPUX_SOURCE ${LIB}/$file > /dev/null; then
+    echo Fixing $file, use of '(...)'
+    sed -e 's/(\.\.\.)/(struct file * ...)/' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm ${LIB}/$file
+    else
+      # Find any include directives that use "file".
+      for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+	dir=`echo $file | sed -e s'|/[^/]*$||'`
+	required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+      done
+    fi
+  fi
+fi
+
 # Check for superfluous `static' (in Ultrix 4.2)
 # On Ultrix 4.3, includes of other files (r3_cpu.h,r4_cpu.h) is broken.
 file=machine/cpu.h
