@@ -205,6 +205,21 @@ struct tree_common
 	 && (TREE_TYPE (EXP)					\
 	     == TREE_TYPE (TREE_OPERAND (EXP, 0))))		\
     (EXP) = TREE_OPERAND (EXP, 0);
+
+/* Nonzero if TYPE represents an integral type.  Note that we do not
+   include COMPLEX types here.  */
+
+#define INTEGRAL_TYPE_P(TYPE)  \
+  (TREE_CODE (TYPE) == INTEGER_TYPE || TREE_CODE (TYPE) == ENUMERAL_TYPE  \
+   || TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == CHAR_TYPE)
+
+/* Nonzero if TYPE represents a floating-point type, including complex
+   floating-point types.  */
+
+#define FLOAT_TYPE_P(TYPE)		\
+  (TREE_CODE (TYPE) == REAL_TYPE	\
+   || (TREE_CODE (TYPE) == COMPLEX_TYPE \
+       && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE))
 
 /* Define many boolean fields that all tree nodes have.  */
 
