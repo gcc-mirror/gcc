@@ -641,6 +641,11 @@
   (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
 
+;; Return true if OP is a register or a zero.
+(define_predicate "reg_or_0_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
 ;; Return true if op if a valid address, and does not contain
 ;; a segment override.
 (define_special_predicate "no_seg_address_operand"

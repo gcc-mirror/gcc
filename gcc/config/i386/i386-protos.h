@@ -198,8 +198,6 @@ extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, int);
 extern rtx ix86_function_value (tree);
-extern void ix86_init_builtins (void);
-extern rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 #endif
 
 #endif
@@ -219,7 +217,10 @@ extern int x86_field_alignment (tree, int);
 
 extern rtx ix86_tls_get_addr (void);
 
-extern void ix86_expand_vector_init (rtx, rtx);
+extern void ix86_expand_vector_init (bool, rtx, rtx);
+extern void ix86_expand_vector_set (bool, rtx, rtx, int);
+extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
+
 /* In winnt.c  */
 extern int i386_pe_dllexport_name_p (const char *);
 extern int i386_pe_dllimport_name_p (const char *);

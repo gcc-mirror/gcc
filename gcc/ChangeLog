@@ -1,3 +1,107 @@
+2005-01-11  Richard Henderson  <rth@redhat.com>
+
+	PR target/13366
+	* config/i386/i386.h (enum ix86_builtins): Move ...
+	* config/i386/i386.c: ... here.
+	(IX86_BUILTIN_MOVDDUP, IX86_BUILTIN_MMX_ZERO, IX86_BUILTIN_PEXTRW,
+	IX86_BUILTIN_PINSRW, IX86_BUILTIN_LOADAPS, IX86_BUILTIN_LOADSS,
+	IX86_BUILTIN_STORESS, IX86_BUILTIN_SSE_ZERO, IX86_BUILTIN_PEXTRW128,
+	IX86_BUILTIN_PINSRW128, IX86_BUILTIN_LOADAPD, IX86_BUILTIN_LOADSD,
+	IX86_BUILTIN_STOREAPD, IX86_BUILTIN_STORESD,  IX86_BUILTIN_STOREHPD,
+	IX86_BUILTIN_STORELPD, IX86_BUILTIN_SETPD1, IX86_BUILTIN_SETPD,
+	IX86_BUILTIN_CLRPD, IX86_BUILTIN_LOADPD1, IX86_BUILTIN_LOADRPD,
+	IX86_BUILTIN_STOREPD1, IX86_BUILTIN_STORERPD, IX86_BUILTIN_LOADDQA,
+	IX86_BUILTIN_STOREDQA, IX86_BUILTIN_CLRTI,
+	IX86_BUILTIN_LOADDDUP): Remove.
+	(IX86_BUILTIN_VEC_INIT_V2SI, IX86_BUILTIN_VEC_INIT_V4HI,
+	IX86_BUILTIN_VEC_INIT_V8QI, IX86_BUILTIN_VEC_EXT_V2DF,
+	IX86_BUILTIN_VEC_EXT_V2DI, IX86_BUILTIN_VEC_EXT_V4SF,
+	IX86_BUILTIN_VEC_EXT_V8HI, IX86_BUILTIN_VEC_EXT_V4HI,
+	IX86_BUILTIN_VEC_SET_V8HI, IX86_BUILTIN_VEC_SET_V4HI): New.
+	(ix86_init_builtins): Make static.
+	(ix86_init_mmx_sse_builtins): Update for changed builtins.
+	(ix86_expand_binop_builtin): Only use ix86_fixup_binary_operands
+	if all the modes match.  Otherwise, fake it.
+	(get_element_number, ix86_expand_vec_init_builtin,
+	ix86_expand_vec_ext_builtin, ix86_expand_vec_set_builtin): New.
+	(ix86_expand_builtin): Make static.  Update for changed builtins.
+	(ix86_expand_vector_move_misalign): Use sse2_loadlpd with zero
+	operand instead of sse2_loadsd.  Cast sse1 fallback to V4SFmode.
+	(ix86_expand_vector_init_duplicate): New.
+	(ix86_expand_vector_init_low_nonzero): New.
+	(ix86_expand_vector_init_one_var, ix86_expand_vector_init_general):
+	Split out from ix86_expand_vector_init; handle integer modes.
+	(ix86_expand_vector_init): Use them.
+	(ix86_expand_vector_set, ix86_expand_vector_extract): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/predicates.md (reg_or_0_operand): New.
+	* config/i386/mmx.md (mov<MMXMODEI>_internal): Add 'r' variants.
+	(movv2sf_internal): Likewise.  And a splitter to match them all.
+	(vec_dupv2sf, mmx_concatv2sf, vec_setv2sf, vec_extractv2sf,
+	vec_initv2sf, vec_dupv4hi, vec_dupv2si, mmx_concatv2si, vec_setv2si,
+	vec_extractv2si, vec_initv2si, vec_setv4hi, vec_extractv4hi,
+	vec_initv4hi, vec_setv8qi, vec_extractv8qi, vec_initv8qi): New.
+	(mmx_pinsrw): Fix operand ordering.
+	* config/i386/sse.md (movv4sf splitter): Use direct pattern,
+	rather than sse_loadss expander.
+	(movv2df splitter): Similarly.
+	(sse_loadss, sse_loadlss): Remove.
+	(vec_dupv4sf, sse_concatv2sf, sse_concatv4sf, vec_extractv4sf_0): New.
+	(vec_setv4sf, vec_setv2df): Use ix86_expand_vector_set.
+	(vec_extractv4sf, vec_extractv2df): Use ix86_expand_vector_extract.
+	(sse3_movddup): Rename with '*'.
+	(sse3_movddup splitter): Use gen_rtx_REG instead of gen_lowpart.
+	(sse2_loadsd): Remove.
+	(vec_dupv2df_sse3): Rename from sse3_loadddup.
+	(vec_dupv2df, vec_concatv2df_sse3, vec_concatv2df): New.
+	(sse2_pinsrw): Fix argument ordering.
+	(sse2_loadld, sse2_loadq): Add sse1 alternatives.
+	(sse2_stored): Remove 'r' destination.
+	(vec_dupv4si, vec_dupv2di, sse2_concatv2si, sse1_concatv2si,
+	vec_concatv4si_1, vec_concatv2di, vec_setv2di, vec_extractv2di,
+	vec_initv2di, vec_setv4si, vec_extractv4si, vec_initv4si,
+	vec_setv8hi, vec_extractv8hi, vec_initv8hi, vec_setv16qi,
+	vec_extractv16qi, vec_initv16qi): New.
+
+	* config/i386/emmintrin.h (__m128i, __m128d): Use typedef, not define.
+	(_mm_set_sd, _mm_set1_pd, _mm_setzero_pd, _mm_set_epi64x, 
+	_mm_set_epi32, _mm_set_epi16, _mm_set_epi8, _mm_setzero_si128): Use
+	constructor form.
+	(_mm_load_pd, _mm_store_pd): Use plain dereference.
+	(_mm_load_si128, _mm_store_si128): Likewise.
+	(_mm_load1_pd): Use _mm_set1_pd.
+	(_mm_load_sd): Use _mm_set_sd.
+	(_mm_store_sd, _mm_storeh_pd): Use __builtin_ia32_vec_ext_v2df.
+	(_mm_store1_pd, _mm_storer_pd): Use _mm_store_pd.
+	(_mm_set_epi64): Use _mm_set_epi64x.
+	(_mm_set1_epi64x, _mm_set1_epi64, _mm_set1_epi32, _mm_set_epi16,
+	_mm_set1_epi8, _mm_setr_epi64, _mm_setr_epi32, _mm_setr_epi16,
+	_mm_setr_epi8): Use _mm_set_foo form.
+	(_mm_loadl_epi64, _mm_movpi64_epi64, _mm_move_epi64): Use _mm_set_epi64.
+	(_mm_storel_epi64, _mm_movepi64_pi64): Use __builtin_ia32_vec_ext_v2di.
+	(_mm_extract_epi16): Use __builtin_ia32_vec_ext_v8hi.
+	(_mm_insert_epi16): Use __builtin_ia32_vec_set_v8hi.
+	* config/i386/mmintrin.h (_mm_setzero_si64): Use plain cast.
+	(_mm_set_pi32): Use __builtin_ia32_vec_init_v2si.
+	(_mm_set_pi16): Use __builtin_ia32_vec_init_v4hi.
+	(_mm_set_pi8): Use __builtin_ia32_vec_init_v8qi.
+	(_mm_set1_pi16, _mm_set1_pi8): Use _mm_set_piN variant.
+	* config/i386/pmmintrin.h (_mm_loaddup_pd): Use _mm_load1_pd.
+	(_mm_movedup_pd): Use _mm_shuffle_pd.
+	* config/i386/xmmintrin.h (_mm_setzero_ps, _mm_set_ss,
+	_mm_set1_ps, _mm_set_ps, _mm_setr_ps): Use constructor form.
+	(_mm_cvtpi16_ps, _mm_cvtpu16_ps, _mm_cvtpi8_ps, _mm_cvtpu8_ps,
+	_mm_cvtps_pi8, _mm_cvtpi32x2_ps): Avoid __builtin_ia32_mmx_zero;
+	Use _mm_setzero_ps.
+	(_mm_load_ss, _mm_load1_ps): Use _mm_set* form.
+	(_mm_load_ps, _mm_loadr_ps): Use raw dereference.
+	(_mm_store_ss): Use __builtin_ia32_vec_ext_v4sf.
+	(_mm_store_ps): Use raw dereference.
+	(_mm_store1_ps): Use _mm_storeu_ps.
+	(_mm_storer_ps): Use _mm_store_ps.
+	(_mm_extract_pi16): Use __builtin_ia32_vec_ext_v4hi.
+	(_mm_insert_pi16): Use __builtin_ia32_vec_set_v4hi.
+
 2005-01-11  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (machopic_output_stub): Issue
