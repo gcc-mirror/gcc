@@ -17,10 +17,10 @@
 
 #endif
 
-/* This is tested by i386gas.h.  */
+/* This is tested by i386/gas.h.  */
 #define YES_UNDERSCORES
 
-#include "i386gstabs.h"
+#include "i386/gstabs.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
