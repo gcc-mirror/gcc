@@ -40,15 +40,15 @@ package java.security;
 /**
    This is the Service Provider Interface (SPI) for MessageDigest
    class in java.security. It provides the back end functionality
-   for the MessageDigest class so that it can compute message 
+   for the MessageDigest class so that it can compute message
    hashes. The default hashes are SHA-1 and MD5. A message hash
    takes data of arbitrary length and produces a unique number
-   representing it. 
+   representing it.
 
    Cryptography service providers who want to implement their
    own message digest hashes need only to subclass this class.
 
-   The implementation of a Cloneable interface is left to up to 
+   The implementation of a Cloneable interface is left to up to
    the programmer of a subclass.
 
    @version 0.0
@@ -135,7 +135,7 @@ public abstract class MessageDigestSpi
   }
 
   /**
-     Resets the digest engine. Reinitializes internal variables 
+     Resets the digest engine. Reinitializes internal variables
      and clears sensitive data.
    */
   protected abstract void engineReset();
@@ -150,9 +150,6 @@ public abstract class MessageDigestSpi
    */
   public Object clone() throws CloneNotSupportedException
   {
-    if (this instanceof Cloneable)
-      return super.clone();
-    else
-      throw new CloneNotSupportedException();
+    return super.clone();
   }
 }

@@ -49,11 +49,8 @@ final class DummyMessageDigest extends MessageDigest
 
   public Object clone() throws CloneNotSupportedException
   {
-    if (!(mdSpi instanceof Cloneable))
-      throw new CloneNotSupportedException();
-
     MessageDigest result = new DummyMessageDigest
-	((MessageDigestSpi) mdSpi.clone(), this.getAlgorithm());
+        ((MessageDigestSpi) mdSpi.clone(), this.getAlgorithm());
     result.provider = this.getProvider();
     return result;
   }

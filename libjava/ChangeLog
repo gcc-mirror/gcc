@@ -1,3 +1,16 @@
+2004-08-30  Casey Marshall  <csm@gnu.org>
+
+	* java/security/DummyKeyPairGenerator.java (clone): Removed
+	useless instanceof check.
+	* java/security/DummyMessageDigest.java (clone): Likewise.
+	* java/security/DummySignature.java (clone): Likewise.
+	* java/security/MessageDigest.java (clone): Remove useless
+	instanceof check.
+	* java/security/MessageDigestSpi.java (clone): Likewise.
+	* java/security/Signature.java (clone): Provide meaningful
+	implementation.
+	* java/security/SignatureSpi.java (clone): Likewise.
+
 2004-08-29  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/Arrays.java
