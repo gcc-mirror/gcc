@@ -71,6 +71,7 @@ while(<STDIN>)
 	 |(?:end\s+)?group	# @group .. @end group: ditto
 	 |page			# @page: ditto
 	 |node			# @node: useful only in .info file
+	 |(?:end\s+)?ifnottex   # @ifnottex .. @end ifnottex: use contents
 	)\b/x and next;
     
     chomp;
@@ -102,17 +103,17 @@ while(<STDIN>)
 	# Ignore @end foo, where foo is not an operation which may
 	# cause us to skip, if we are presently skipping.
 	my $ended = $1;
-	next if $skipping && $ended !~ /^(?:ifset|ifclear|ignore|menu)$/;
+	next if $skipping && $ended !~ /^(?:ifset|ifclear|ignore|menu|iftex)$/;
 
 	die "\@end $ended without \@$ended at line $.\n" unless defined $endw;
 	die "\@$endw ended by \@end $ended at line $.\n" unless $ended eq $endw;
 
 	$endw = pop @endwstack;
 
-	if ($ended =~ /^(?:ifset|ifclear|ignore|menu)$/) {
+	if ($ended =~ /^(?:ifset|ifclear|ignore|menu|iftex)$/) {
 	    $skipping = pop @skstack;
 	    next;
-	} elsif ($ended =~ /^(?:example|smallexample)$/) {
+	} elsif ($ended =~ /^(?:example|smallexample|display)$/) {
 	    $shift = "";
 	    $_ = "";	# need a paragraph break
 	} elsif ($ended =~ /^(?:itemize|enumerate|table)$/) {
@@ -142,7 +143,7 @@ while(<STDIN>)
 	next;
     };
 
-    /^\@(ignore|menu)\b/ and do {
+    /^\@(ignore|menu|iftex)\b/ and do {
 	push @endwstack, $endw;
 	push @skstack, $skipping;
 	$endw = $1;
@@ -171,6 +172,12 @@ while(<STDIN>)
     s/\@\{/&lbrace;/g;
     s/\@\}/&rbrace;/g;
     s/\@\@/&at;/g;
+
+    # Inside a verbatim block, handle @var specially.
+    if ($shift ne "") {
+	s/\@var\{([^\}]*)\}/<$1>/g;
+    }
+
     # POD doesn't interpret E<> inside a verbatim block.
     if ($shift eq "") {
 	s/</&lt;/g;
@@ -184,7 +191,7 @@ while(<STDIN>)
     /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and $defs{$1} = $2, next;
     /^\@clear\s+([a-zA-Z0-9_-]+)/ and delete $defs{$1}, next;
 
-    /^\@section\s+(.+)$/ and $_ = "\n=head2 $1\n";
+    /^\@(?:section|unnumbered|unnumberedsec|center)\s+(.+)$/ and $_ = "\n=head2 $1\n";
     /^\@subsection\s+(.+)$/ and $_ = "\n=head3 $1\n";
 
     # Block command handlers:
@@ -196,7 +203,7 @@ while(<STDIN>)
 	$endw = "itemize";
     };
 
-    /^\@enumerate(?:\s+([A-Z0-9]+))?/ and do {
+    /^\@enumerate(?:\s+([a-zA-Z0-9]+))?/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
 	if (defined $1) {
@@ -220,7 +227,7 @@ while(<STDIN>)
 	$endw = "table";
     };
 
-    /^\@((?:small)?example)/ and do {
+    /^\@((?:small)?example|display)/ and do {
 	push @endwstack, $endw;
 	$endw = $1;
 	$shift = "\t";
@@ -233,7 +240,8 @@ while(<STDIN>)
 	    $_ = "\n=item $ic\&LT;$1\&GT;\n";
 	} else {
 	    $_ = "\n=item $ic\n";
-	    $ic =~ y/A-Ya-y1-8/B-Zb-z2-9/;
+	    $ic =~ y/A-Ya-y/B-Zb-z/;
+	    $ic =~ s/(\d+)/$1 + 1/eg;
 	}
     };
 

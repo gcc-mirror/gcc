@@ -15,22 +15,18 @@ Free Software Foundation, Inc.
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
 any later version published by the Free Software Foundation.  A copy of
-the license is included in the accompanying manual for GCC, in the
-section ``GNU Free Documentation License''.
+the license is included in the
 @c man end
-@end macro
-
-@c The manpage doesn't have Front-Cover and Back-Cover Texts, but the
-@c complete manual does.  -zw
-
+section entitled ``GNU Free Documentation License''.
 @ignore
 @c man begin COPYRIGHT
-This manual contains no Invariant Sections, and has no Front-Cover Texts
-or Back-Cover Texts.
+man page gfdl(7).
 @c man end
 @end ignore
+@end macro
 
 @macro covertexts
+@c man begin COPYRIGHT
 This manual contains no Invariant Sections.  The Front-Cover Texts are
 (a) (see below), and the Back-Cover Texts are (b) (see below).
 
@@ -43,6 +39,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
+@c man end
 @end macro
 
 @macro gcctabopt{body}
@@ -92,6 +89,7 @@ useful on its own.
 * Traditional Mode::
 * Implementation Details::
 * Invocation::
+* GNU Free Documentation License::
 * Index of Directives::
 * Concept Index::
 
@@ -3800,6 +3798,7 @@ cpp [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
 Only the most useful options are listed here; see below for the remainder.
 @c man end
 @c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7),
 gcc(1), as(1), ld(1), and the Info entries for @file{cpp}, @file{gcc}, and
 @file{binutils}.
 @c man end
@@ -4273,6 +4272,8 @@ Print out GNU CPP's version number.  With one dash, proceed to
 preprocess as normal.  With two dashes, exit immediately.
 @end table
 @c man end
+
+@include fdl.texi
 
 @page
 @node Index of Directives

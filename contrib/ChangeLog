@@ -1,3 +1,10 @@
+2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Handle @ifnottex, @iftex and @display.  Handle @var
+	in verbatim blocks specially.  Handle @unnumbered, @unnumberedsec
+	and @center.  Allow [a-z] after @enumerate.  Handle 0 and numbers
+	greater than 9 in enumerations.
+
 2001-10-23  Release Manager
 
 	* GCC 3.0.2 Released.

@@ -6,20 +6,23 @@
 @c man begin COPYRIGHT
 Copyright @copyright{} 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
 
-Permission is granted to make and distribute verbatim copies of this
-manual provided the copyright notice and this permission notice are
-preserved on all copies.
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover texts being (a) (see below), and with
+the Back-Cover Texts being (b) (see below).  A copy of the license is
+included in the gfdl(7) man page.
 
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided also that the
-entire resulting derived work is distributed under the terms of a
-permission notice identical to this one.
+(a) The FSF's Front-Cover Text is:
 
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be included in translations
-approved by the Free Software Foundation instead of in the original
-English.
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
 @c man end
 @c Set file name and title for the man page.
 @setfilename gcov
@@ -116,7 +119,7 @@ gcov [-b] [-c] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
 gcov [@option{-b}] [@option{-c}] [@option{-v}] [@option{-n}] [@option{-l}] [@option{-f}] [@option{-o} @var{directory}] @var{sourcefile}
 @c man end
 @c man begin SEEALSO
-gcc(1) and the Info entry for @file{gcc}.
+gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
 @c man end
 @end ignore
 

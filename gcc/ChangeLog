@@ -1,3 +1,30 @@
+2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (POD2MAN): Don't include --section=1.
+	(manext): Rename to man1ext.  All users changed.
+	(man7ext): New.
+	(man7dir): New.
+	(generated-manpages): Also depend on $(docdir)/gfdl.7,
+	$(docdir)/gpl.7, and $(docdir)/fsf-funding.7.
+	($(docdir)/gcov.1, $(docdir)/cpp.1, $(docdir)/gcc.1): Include
+	--section=1 in calls to $(POD2MAN).
+	($(docdir)/gfdl.7, $(docdir)/gpl.7, $(docdir)/fsf-funding.7): New.
+	(maintainer-clean, install, uninstall): Handle the new man pages.
+	($(docdir)/cpp.info, cpp.dvi): Depend on fdl.texi.
+	(installdirs): Create man7dir.
+	* doc/cpp.texi: Include GFDL in this manual.  In the man page,
+	refer to gfdl(7) for the GFDL.  Apply Front Cover and Back Cover
+	texts to man page.  Include gpl(7), gfdl(7) and fsf-funding(7) in
+	the SEE ALSO man page section.
+	* doc/gcov.texi: Apply GFDL to man page.  Include gpl(7), gfdl(7)
+	and fsf-funding(7) in the SEE ALSO man page section.
+	* doc/invoke.texi: Apply GFDL to man page.  Include gpl(7),
+	gfdl(7) and fsf-funding(7) in the SEE ALSO man page section.
+	* doc/include/fdl.texi, doc/include/funding.texi,
+	doc/include/gpl.texi: Adjust for conversion by texi2pod.pl.
+	* doc/cpp.1, doc/gcc.1, doc/gcov.1: Regenerate.
+	* doc/gpl.7, doc/gfdl.7, doc/fsf-funding.7: New.
+
 2001-11-13  Jeff Sturm  <jsturm@one-point.com>
 
 	* doc/install.texi (sparc-*-linux*): Mention requirements for

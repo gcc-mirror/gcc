@@ -133,7 +133,7 @@ MAKEINFO = @MAKEINFO@
 MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
-POD2MAN = pod2man --center="GNU" --release="gcc-$(version)" --section=1
+POD2MAN = pod2man --center="GNU" --release="gcc-$(version)"
 # For GNUmake: let us decide what gets passed to recursive makes.
 MAKEOVERRIDES =
 @SET_MAKE@
@@ -340,7 +340,8 @@ cpp_install_dir = @cpp_install_dir@
 datadir = $(prefix)/@DATADIRNAME@
 localedir = $(datadir)/locale
 # Extension (if any) to put in installed man-page filename.
-manext = .1
+man1ext = .1
+man7ext = .7
 objext = .o
 exeext = @host_exeext@
 build_exeext = @build_exeext@
@@ -348,6 +349,7 @@ build_exeext = @build_exeext@
 # Directory in which to put man pages.
 mandir = @mandir@
 man1dir = $(mandir)/man1
+man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
 
@@ -2289,7 +2291,7 @@ docdir = $(srcdir)/doc
 doc: $(BUILD_INFO) gccbug
 info: $(docdir)/cpp.info $(docdir)/gcc.info lang.info $(docdir)/cppinternals.info
 
-$(docdir)/cpp.info: $(docdir)/cpp.texi
+$(docdir)/cpp.info: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cpp.info doc/cpp.texi
 
 $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi \
@@ -2307,7 +2309,7 @@ $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
 dvi: gcc.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
-cpp.dvi: $(docdir)/cpp.texi
+cpp.dvi: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cpp.texi
 
 gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
@@ -2321,12 +2323,13 @@ gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
 cppinternals.dvi: $(docdir)/cppinternals.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
 
-generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
+generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1 \
+	 $(docdir)/gfdl.7 $(docdir)/gpl.7 $(docdir)/fsf-funding.7
 
 $(docdir)/gcov.1: $(docdir)/gcov.texi
 	$(STAMP) $(docdir)/gcov.1
 	-$(TEXI2POD) < $(docdir)/gcov.texi > gcov.pod
-	-($(POD2MAN) gcov.pod > $(docdir)/gcov.1.T$$$$ && \
+	-($(POD2MAN) --section=1 gcov.pod > $(docdir)/gcov.1.T$$$$ && \
 		mv -f $(docdir)/gcov.1.T$$$$ $(docdir)/gcov.1) || \
 		(rm -f $(docdir)/gcov.1.T$$$$ && exit 1)
 	-rm -f gcov.pod
@@ -2334,7 +2337,7 @@ $(docdir)/gcov.1: $(docdir)/gcov.texi
 $(docdir)/cpp.1: $(docdir)/cpp.texi
 	$(STAMP) $(docdir)/cpp.1
 	-$(TEXI2POD) < $(docdir)/cpp.texi > cpp.pod
-	-($(POD2MAN) cpp.pod > $(docdir)/cpp.1.T$$$$ && \
+	-($(POD2MAN) --section=1 cpp.pod > $(docdir)/cpp.1.T$$$$ && \
 		mv -f $(docdir)/cpp.1.T$$$$ $(docdir)/cpp.1) || \
 		(rm -f $(docdir)/cpp.1.T$$$$ && exit 1)
 	-rm -f cpp.pod
@@ -2342,10 +2345,35 @@ $(docdir)/cpp.1: $(docdir)/cpp.texi
 $(docdir)/gcc.1: $(docdir)/invoke.texi
 	$(STAMP) $(docdir)/gcc.1
 	-$(TEXI2POD) < $(docdir)/invoke.texi > gcc.pod
-	-($(POD2MAN) gcc.pod > $(docdir)/gcc.1.T$$$$ && \
+	-($(POD2MAN) --section=1 gcc.pod > $(docdir)/gcc.1.T$$$$ && \
 		mv -f $(docdir)/gcc.1.T$$$$ $(docdir)/gcc.1) || \
 		(rm -f $(docdir)/gcc.1.T$$$$ && exit 1)
 	-rm -f gcc.pod
+
+$(docdir)/gfdl.7: $(docdir)/include/fdl.texi
+	$(STAMP) $(docdir)/gfdl.7
+	-$(TEXI2POD) < $(docdir)/include/fdl.texi > gfdl.pod
+	-($(POD2MAN) --section=7 gfdl.pod > $(docdir)/gfdl.7.T$$$$ && \
+		mv -f $(docdir)/gfdl.7.T$$$$ $(docdir)/gfdl.7) || \
+		(rm -f $(docdir)/gfdl.7.T$$$$ && exit 1)
+	-rm -f gfdl.pod
+
+$(docdir)/gpl.7: $(docdir)/include/gpl.texi
+	$(STAMP) $(docdir)/gpl.7
+	-$(TEXI2POD) < $(docdir)/include/gpl.texi > gpl.pod
+	-($(POD2MAN) --section=7 gpl.pod > $(docdir)/gpl.7.T$$$$ && \
+		mv -f $(docdir)/gpl.7.T$$$$ $(docdir)/gpl.7) || \
+		(rm -f $(docdir)/gpl.7.T$$$$ && exit 1)
+	-rm -f gpl.pod
+
+$(docdir)/fsf-funding.7: $(docdir)/include/funding.texi
+	$(STAMP) $(docdir)/fsf-funding.7
+	-$(TEXI2POD) < $(docdir)/include/funding.texi > fsf-funding.pod
+	-($(POD2MAN) --section=7 fsf-funding.pod \
+		> $(docdir)/fsf-funding.7.T$$$$ && \
+	    mv -f $(docdir)/fsf-funding.7.T$$$$ $(docdir)/fsf-funding.7) || \
+	    (rm -f $(docdir)/fsf-funding.7.T$$$$ && exit 1)
+	-rm -f fsf-funding.pod
 
 #
 # Deletion of files made during compilation.
@@ -2478,6 +2506,7 @@ maintainer-clean:
 	-rm -f $(docdir)/cpp.info* $(docdir)/gcc.info*
 	-rm -f $(docdir)/cppinternals.info*
 	-rm -f $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
+	-rm -f $(docdir)/fsf-funding.7 $(docdir)/gfdl.7 $(docdir)/gpl.7
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -2565,6 +2594,7 @@ installdirs:
 	-parent=`echo $(man1dir)|sed -e 's@/[^/]*$$@@'`; \
 	if [ -d $$parent ] ; then true ; else mkdir $$parent ; chmod a+rx $$parent ; fi
 	-if [ -d $(man1dir) ] ; then true ; else mkdir $(man1dir) ; chmod a+rx $(man1dir) ; fi
+	-if [ -d $(man7dir) ] ; then true ; else mkdir $(man7dir) ; chmod a+rx $(man7dir) ; fi
 
 # Install the compiler executables built during cross compilation.
 install-common: native installdirs $(EXTRA_PARTS) lang.install-common
@@ -2670,20 +2700,29 @@ install-info: doc installdirs lang.install-info
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
-	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
-	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
-	  chmod a-x $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
+	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
+	  chmod a-x $(man1dir)/$(GCC_CROSS_NAME)$(man1ext); \
 	else \
-	  rm -f $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
-	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
-	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
+	  rm -f $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
+	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext); \
 	fi
-	-rm -f $(man1dir)/cpp$(manext)
-	-$(INSTALL_DATA) $(docdir)/cpp.1 $(man1dir)/cpp$(manext)
-	-chmod a-x $(man1dir)/cpp$(manext)
-	-rm -f $(man1dir)/gcov$(manext)
-	-$(INSTALL_DATA) $(docdir)/gcov.1 $(man1dir)/gcov$(manext)
-	-chmod a-x $(man1dir)/gcov$(manext)
+	-rm -f $(man1dir)/cpp$(man1ext)
+	-$(INSTALL_DATA) $(docdir)/cpp.1 $(man1dir)/cpp$(man1ext)
+	-chmod a-x $(man1dir)/cpp$(man1ext)
+	-rm -f $(man1dir)/gcov$(man1ext)
+	-$(INSTALL_DATA) $(docdir)/gcov.1 $(man1dir)/gcov$(man1ext)
+	-chmod a-x $(man1dir)/gcov$(man1ext)
+	-rm -f $(man7dir)/fsf-funding$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/fsf-funding.7 $(man7dir)/fsf-funding$(man7ext)
+	-chmod a-x $(man7dir)/fsf-funding$(man7ext)
+	-rm -f $(man7dir)/gfdl$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/gfdl.7 $(man7dir)/gfdl$(man7ext)
+	-chmod a-x $(man7dir)/gfdl$(man7ext)
+	-rm -f $(man7dir)/gpl$(man7ext)
+	-$(INSTALL_DATA) $(docdir)/gpl.7 $(man7dir)/gpl$(man7ext)
+	-chmod a-x $(man7dir)/gpl$(man7ext)
 
 # Install the library.
 install-libgcc: libgcc.mk libgcc.a installdirs
@@ -2796,11 +2835,11 @@ uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GCOV_INSTALL_NAME)$(exeext)
-	-rm -rf $(man1dir)/$(GCC_INSTALL_NAME)$(manext)
-	-rm -rf $(man1dir)/$(GCC_CROSS_NAME)$(manext)
-	-rm -rf $(man1dir)/cpp$(manext)
-	-rm -rf $(man1dir)/protoize$(manext)
-	-rm -rf $(man1dir)/unprotoize$(manext)
+	-rm -rf $(man1dir)/$(GCC_INSTALL_NAME)$(man1ext)
+	-rm -rf $(man1dir)/$(GCC_CROSS_NAME)$(man1ext)
+	-rm -rf $(man1dir)/cpp$(man1ext)
+	-rm -rf $(man1dir)/protoize$(man1ext)
+	-rm -rf $(man1dir)/unprotoize$(man1ext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	-rm -f $(infodir)/cppinternals.info*
 #
