@@ -901,6 +901,9 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	  rtx diff;
 	  rtx *labels;
 	  int abs_inc, neg_inc;
+	  enum rtx_code cc = loop_info->comparison_code;
+	  int less_p     = (cc == LE  || cc == LEU || cc == LT  || cc == LTU);
+	  int unsigned_p = (cc == LEU || cc == GEU || cc == LTU || cc == GTU);
 
 	  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
 
@@ -933,11 +936,25 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	     a constant.
 
 	     We must copy the final and initial values here to avoid
-	     improperly shared rtl.  */
+	     improperly shared rtl.
 
-	  diff = expand_simple_binop (mode, MINUS, copy_rtx (final_value),
-				      copy_rtx (initial_value), NULL_RTX, 0,
-				      OPTAB_LIB_WIDEN);
+	     We have to deal with for (i = 0; --i < 6;) type loops.
+	     For such loops the real final value is the first time the
+	     loop variable overflows, so the diff we calculate is the
+	     distance from the overflow value.  This is 0 or ~0 for
+	     unsigned loops depending on the direction, or INT_MAX,
+	     INT_MAX+1 for signed loops.  We really do not need the
+	     exact value, since we are only interested in the diff
+	     modulo the increment, and the increment is a power of 2,
+	     so we can pretend that the overflow value is 0/~0.  */
+
+	  if (cc == NE || less_p != neg_inc)
+	    diff = expand_simple_binop (mode, MINUS, copy_rtx (final_value),
+					copy_rtx (initial_value), NULL_RTX, 0,
+					OPTAB_LIB_WIDEN);
+	  else
+	    diff = expand_simple_unop (mode, neg_inc ? NOT : NEG,
+				       copy_rtx (initial_value), NULL_RTX, 0);
 
 	  /* Now calculate (diff % (unroll * abs (increment))) by using an
 	     and instruction.  */
@@ -958,11 +975,17 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	     case.  This check does not apply if the loop has a NE
 	     comparison at the end.  */
 
-	  if (loop_info->comparison_code != NE)
+	  if (cc != NE)
 	    {
-	      emit_cmp_and_jump_insns (initial_value, final_value,
-				       neg_inc ? LE : GE,
-				       NULL_RTX, mode, 0, labels[1]);
+	      rtx incremented_initval;
+	      incremented_initval = expand_simple_binop (mode, PLUS,
+							 initial_value,
+							 increment,
+							 NULL_RTX, 0,
+							 OPTAB_LIB_WIDEN);
+	      emit_cmp_and_jump_insns (incremented_initval, final_value,
+				       less_p ? GE : LE, NULL_RTX,
+				       mode, unsigned_p, labels[1]);
 	      predict_insn_def (get_last_insn (), PRED_LOOP_CONDITION,
 				NOT_TAKEN);
 	      JUMP_LABEL (get_last_insn ()) = labels[1];
