@@ -59,7 +59,7 @@
 #include "backward_warning.h"
 #include <vector>
 
-typedef std::vector<bool, allocator<bool> > bit_vector;
+typedef std::vector<bool, std::allocator<bool> > bit_vector;
 
 #endif /* _BACKWARD_BVECTOR_H */
 
