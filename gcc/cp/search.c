@@ -201,8 +201,9 @@ lookup_base_r (binfo, base, access, within_current_scope,
       && !within_current_scope
       && is_friend (BINFO_TYPE (binfo), current_scope ()))
     {
+      /* Do not clear is_non_public here.  If A is a private base of B, A
+	 is not allowed to convert a B* to an A*.  */
       within_current_scope = 1;
-      is_non_public = 0;
     }
   
   if (same_type_p (BINFO_TYPE (binfo), base))
