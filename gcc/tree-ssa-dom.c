@@ -294,6 +294,8 @@ tree_ssa_dominator_optimize (void)
   struct dom_walk_data walk_data;
   unsigned int i;
 
+  memset (&opt_stats, 0, sizeof (opt_stats));
+
   for (i = 0; i < num_referenced_vars; i++)
     var_ann (referenced_var (i))->current_def = NULL;
 

@@ -1,3 +1,8 @@
+2004-10-04  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize):
+	Initialize OPT_STATS to 0.
+
 2004-10-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-data-ref.c: Fix comment typos.
