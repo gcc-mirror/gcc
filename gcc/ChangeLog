@@ -1,3 +1,8 @@
+Wed Jun 28 14:46:58 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (prologue_set_got): Set length_immediate field.
+	(testqi_ccno_1):  Add missing '@' character.
+
 2000-06-27  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Use
