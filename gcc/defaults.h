@@ -169,8 +169,3 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #ifndef PROMOTE_PROTOTYPES
 #define PROMOTE_PROTOTYPES	0
 #endif
-
-/* Define a default escape character; its different for EBCDIC.  */
-#ifndef TARGET_ESC
-#define TARGET_ESC 033
-#endif
