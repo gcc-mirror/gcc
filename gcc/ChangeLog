@@ -1,3 +1,8 @@
+2004-02-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.ac: Search for as, ld below libexec/gcc.
+	* configure: Regenerate.
+	
 2004-02-13  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (recog_for_combine): Avoid allocating unnecesary RTX.
