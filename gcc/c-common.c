@@ -294,6 +294,7 @@ combine_strings (strings)
   int wide_flag = 0;
   int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
   int nchars;
+  const int nchars_max = flag_isoc99 ? 4095 : 509;
 
   if (TREE_CHAIN (strings))
     {
@@ -372,6 +373,10 @@ combine_strings (strings)
 
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
+
+  if (pedantic && nchars > nchars_max)
+    pedwarn ("string length `%d' is greater than the minimum length `%d' ANSI C is required to support",
+	     nchars, nchars_max);
 
   /* Create the array type for the string constant.
      -Wwrite-strings says make the string constant an array of const char
