@@ -3418,18 +3418,10 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
      We use ocp_convert rather than build_user_type_conversion because the
      latter returns NULL_TREE on failure, while the former gives an error.  */
 
-  if (IS_AGGR_TYPE (TREE_TYPE (arg2)))
-    arg2 = ocp_convert (TREE_TYPE (arg2), arg2,
-			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
-  else
-    arg2 = decay_conversion (arg2);
+  arg2 = force_rvalue (arg2);
   arg2_type = TREE_TYPE (arg2);
 
-  if (IS_AGGR_TYPE (TREE_TYPE (arg3)))
-    arg3 = ocp_convert (TREE_TYPE (arg3), arg3,
-			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
-  else
-    arg3 = decay_conversion (arg3);
+  arg3 = force_rvalue (arg3);
   arg3_type = TREE_TYPE (arg3);
 
   if (arg2 == error_mark_node || arg3 == error_mark_node)

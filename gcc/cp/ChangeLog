@@ -1,3 +1,10 @@
+2003-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10245
+	* cvt.c (force_rvalue): New fn.
+	* call.c (build_conditional_expr): Use it.
+	* cp-tree.h: Declare it.
+
 2003-03-28  Mike Stump  <mrs@apple.com>
 
 	* error.c (dump_expr): Add 0x to printed hex numbers to make
