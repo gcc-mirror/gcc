@@ -1579,6 +1579,9 @@ reload (first, global, dumpfile)
 		 to spill another group.  */
 	      count_possible_groups (group_size, group_mode, max_groups);
 
+	      if (max_groups[class] <= 0)
+		break;
+
 	      /* Groups of size 2 (the only groups used on most machines)
 		 are treated specially.  */
 	      if (group_size[class] == 2)
@@ -1976,27 +1979,30 @@ count_possible_groups (group_size, group_mode, max_groups)
   for (i = 0; i < N_REG_CLASSES; i++)
     if (group_size[i] > 1)
       {
-	char regmask[FIRST_PSEUDO_REGISTER];
+	HARD_REG_SET new;
 	int j;
 
-	bzero (regmask, sizeof regmask);
+	CLEAR_HARD_REG_SET (new);
+
 	/* Make a mask of all the regs that are spill regs in class I.  */
 	for (j = 0; j < n_spills; j++)
 	  if (TEST_HARD_REG_BIT (reg_class_contents[i], spill_regs[j])
 	      && ! TEST_HARD_REG_BIT (counted_for_groups, spill_regs[j])
 	      && ! TEST_HARD_REG_BIT (counted_for_nongroups,
 				      spill_regs[j]))
-	    regmask[spill_regs[j]] = 1;
+	    SET_HARD_REG_BIT (new, spill_regs[j]);
+
 	/* Find each consecutive group of them.  */
 	for (j = 0; j < FIRST_PSEUDO_REGISTER && max_groups[i] > 0; j++)
-	  if (regmask[j] && j + group_size[i] <= FIRST_PSEUDO_REGISTER
+	  if (TEST_HARD_REG_BIT (new, j)
+	      && j + group_size[i] <= FIRST_PSEUDO_REGISTER
 	      /* Next line in case group-mode for this class
 		 demands an even-odd pair.  */
 	      && HARD_REGNO_MODE_OK (j, group_mode[i]))
 	    {
 	      int k;
 	      for (k = 1; k < group_size[i]; k++)
-		if (! regmask[j + k])
+		if (! TEST_HARD_REG_BIT (new, j + k))
 		  break;
 	      if (k == group_size[i])
 		{
