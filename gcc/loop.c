@@ -6278,7 +6278,7 @@ get_condition (jump, earliest)
 		     || (code == GE
 			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
 			 && FLOAT_STORE_FLAG_VALUE < 0)
-#eneif
+#endif
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<')
 	    {
