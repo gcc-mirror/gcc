@@ -4465,9 +4465,6 @@ independent_decode_option (argc, argv)
       return 2;
     }
 
-  if (*arg == 'Y')
-    arg++;
-
   switch (*arg)
     {
     default:
