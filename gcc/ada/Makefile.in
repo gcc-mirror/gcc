@@ -1021,10 +1021,10 @@ endif
 LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
   errno.c exit.c cal.c \
   raise.h raise.c sysdep.c types.h aux-io.c init.c \
-  final.c tracebak.c expect.c mkdir.c $(EXTRA_LIBGNAT_SRCS)
+  adafinal.c tracebak.c expect.c mkdir.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o errno.o exit.o \
-  raise.o sysdep.o aux-io.o init.o cal.o final.o \
+  raise.o sysdep.o aux-io.o init.o cal.o adafinal.o \
   tracebak.o expect.o mkdir.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
@@ -2088,7 +2088,7 @@ deftarg.o  : deftarg.c
 errno.o   : errno.c
 exit.o    : raise.h exit.c
 expect.o  : expect.c
-final.o   : raise.h final.c
+adafinal.o   : raise.h adafinal.c
 gmem.o    : gmem.c
 link.o    : link.c
 mkdir.o   : mkdir.c
@@ -2131,7 +2131,7 @@ force:
 
 # Gnatlbr is only used on VMS
 
-GNATLBR_RTL_C_OBJS = adaint.o argv.o cio.o cstreams.o exit.o final.o init.o \
+GNATLBR_RTL_C_OBJS = adaint.o argv.o cio.o cstreams.o exit.o adafinal.o init.o \
   raise.o sysdep.o tracebak.o
 GNATLBR_C_OBJS = $(GNATLBR_RTL_C_OBJS)
 

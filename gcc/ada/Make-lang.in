@@ -173,7 +173,7 @@ GNATBIND_OBJS = \
  ada/s-stoele.o ada/s-imgenu.o ada/s-strops.o ada/s-soflin.o ada/s-wchcon.o \
  ada/s-wchjis.o ada/sdefault.o ada/switch.o ada/switch-b.o ada/stylesw.o \
  ada/validsw.o ada/system.o ada/table.o ada/tree_io.o ada/types.o \
- ada/widechar.o ada/raise.o ada/exit.o ada/argv.o ada/init.o ada/final.o \
+ ada/widechar.o ada/raise.o ada/exit.o ada/argv.o ada/init.o ada/adafinal.o \
  ada/s-wchcnv.o ada/s-exctab.o ada/a-except.o ada/s-memory.o ada/s-traceb.o \
  ada/tracebak.o ada/s-mastop.o ada/s-except.o ada/s-secsta.o ada/atree.o \
  ada/scans.o ada/einfo.o ada/sinfo.o ada/scn.o ada/sinput.o ada/sinput-l.o \
@@ -980,7 +980,7 @@ ada/adaint.o   : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/argv.o     : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/cstreams.o : ada/cstreams.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h 
+ada/adafinal.o    : ada/adafinal.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h 
 ada/link.o     : ada/link.c
 
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
