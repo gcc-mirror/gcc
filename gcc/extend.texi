@@ -2396,6 +2396,14 @@ asm volatile ("movc3 %0,%1,%2"
               : "r0", "r1", "r2", "r3", "r4", "r5");
 @end example
 
+You may @emph{not} use a clobber description to specify that a register
+used for an input operand is modified by the assembler instruction
+unless you also force GCC to use that register for an output as well
+(usually by using a constraint letter representing a class consisting of
+just that register).  If there are only unused output operands when you
+do this, then you will also need to specify @code{volatile} for the
+@code{asm} construct, as described below.
+
 If you refer to a particular hardware register from the assembler code,
 you will probably have to list the register after the third colon to
 tell the compiler the register's value is modified.  In some assemblers,
