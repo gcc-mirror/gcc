@@ -1,3 +1,8 @@
+2001-12-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (OPTIMIZATION_OPTIONS): Don't unset
+	flag_strict_aliasing.  Use separate assignment statements.
+
 2001-12-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* build-make, cross-make: Delete file.
