@@ -1,3 +1,8 @@
+2005-03-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc/configure.ac (TL_AC_GNU_MAKE_GCC_LIB_PATH): Remove.
+	* gcc/configure: Regenerate.
+
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/install.texi: Update binutils requirement for powerpc*-linux.
