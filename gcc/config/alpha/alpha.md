@@ -850,6 +850,7 @@
 ;; do the right thing if the inputs are not properly sign-extended.
 ;; But Linux, for instance, does not have this problem.  Is it worth
 ;; the complication here to eliminate the sign extension?
+;; Interix/NT has the same sign-extension problem.
 
 (define_expand "divsi3"
   [(set (reg:DI 24)

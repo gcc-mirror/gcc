@@ -33,7 +33,8 @@ case $machine in
 		fixincludes=fixinc.svr4
 		;;
 
-	i[34567]86-*-interix*)
+	i[34567]86-*-interix* | \
+	alpha-*-interix*)
 		fixincludes=fixinc.interix
 		;;
 

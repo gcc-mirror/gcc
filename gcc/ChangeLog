@@ -1,3 +1,27 @@
+Tue Apr 13 22:52:04 1999  Donn Terry (donn@interix.com)
+                          Martin Heller (Ing.-Buero_Heller@t-online.de)
+
+	* configure.in (interix Alpha): Add. 
+	(winnt Alpha): Use alpha32.h
+	(interix i386): Parallel Alpha32.
+	* configure: Rebuilt.
+
+	* config/interix.h: Move common elements from i386-interix.h.
+	* config/i386/i386-interix.h: Delete same.
+	* config/alpha/alpha-interix.h: New file.
+
+	* config/alpha/alpha32.h: New file, part fron win-nt.h.
+	* config/alpha/win-nt.h: Deletions (-> alpha32.h).
+	* config/alpha/interix.h: New file
+
+	* config/alpha/alpha.md (interix): Comment.
+
+	* config/alpha/xm-alpha-interix.h: New file.
+
+        * config/alpha/t-interix: New file.
+
+	* fixinc/mkfixinc.sh (interix/Alpha): Add.
+
 1999-04-13  Mike Stump  <mrs@wrs.com>
 
 	* i386/vxi386.h (CPP_CPU_SPEC): Define appropriately for vxworks.
