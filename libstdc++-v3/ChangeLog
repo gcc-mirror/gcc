@@ -1,5 +1,10 @@
 2005-02-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/tr1/6_containers/unordered/instantiate/hash.cc: Guard
+	wchar_t use with _GLIBCXX_USE_WCHAR_T.
+
+2005-02-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/std/std_complex.h: _GLIBCXX_USE_C99_COMPLEX_MATH to
 	_GLIBCXX_USE_C99_COMPLEX.
 	* acinclude.m4: Same.
