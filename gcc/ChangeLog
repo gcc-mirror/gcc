@@ -1,5 +1,10 @@
 Sat Feb 28 08:13:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* configure.in (version_dep): New variable; if srcdir is CVS working
+	directory, set to ChangeLog.
+	(version): Supply default if no version.c.
+	* Makefile.in (version.c): New rule.
+
 	* gcc.c (snapshot_warning): New function.
 	(main): Call it for snapshots.
 
