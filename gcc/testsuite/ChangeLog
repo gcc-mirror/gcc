@@ -1,3 +1,8 @@
+2002-11-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/ext/typedef-init.C, gcc.dg/typedef-init.C:
+	Add some more cases.
+
 2002-11-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8391

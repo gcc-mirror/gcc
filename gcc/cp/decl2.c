@@ -1519,7 +1519,13 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     /* friend or constructor went bad.  */
     return value;
   if (TREE_TYPE (value) == error_mark_node)
-    return error_mark_node;  
+    return error_mark_node;
+
+  if (TREE_CODE (value) == TYPE_DECL && init)
+    {
+      error ("typedef `%D' is initialized (use __typeof__ instead)", value);
+      init = NULL_TREE;
+    }
 
   /* Pass friendly classes back.  */
   if (TREE_CODE (value) == VOID_TYPE)
