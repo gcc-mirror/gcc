@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Intel 80386 running DJGPP.
-   Copyright (C) 1988, 1996, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,11 +34,23 @@ Boston, MA 02111-1307, USA.  */
 /* Allow test for DOS drive names.  */
 #define HAVE_DOS_BASED_FILE_SYSTEM
 
-#define LIBSTDCXX "-lstdcxx"
-
 /* System dependant initialization for collect2
    to tell system() to act like Unix.  */
 #define COLLECT2_HOST_INITIALIZATION \
   do { __system_flags |= (__system_allow_multiple_cmds			\
 		          | __system_emulate_chdir); } while (0)
+
+/* Define a version appropriate for DOS.  */
+#undef XREF_FILE_NAME
+#define XREF_FILE_NAME(xref_file, file) \
+  do { \
+    const char xref_ext[] = ".gxref"; \
+    strcpy (xref_file, file); \
+    s = basename (xref_file); \
+    t = strchr (s, '.'); \
+    if (t) \
+      strcpy (t, xref_ext); \
+    else \
+      strcat (xref_file, xref_ext); \
+  while (0)
 
