@@ -273,8 +273,8 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
     AC_TRY_RUN([
      int main(void) 
      {
-       try { throw 1; }
-       catch (...) { };
+       //try { throw 1; }
+       //catch (...) { };
        return 0;
      }
     ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])

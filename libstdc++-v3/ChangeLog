@@ -1,3 +1,10 @@
+2000-10-11  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Comment out
+	  exception-throwing code for linker test.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2000-10-10  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* Makefile.am (LIBSUPCXX_INCLUDES): Adjust.
