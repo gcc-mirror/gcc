@@ -1,3 +1,8 @@
+2001-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c (affix_data_type): Use ASTRDUP in lieu of
+	alloca/strcpy.
+
 2001-09-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_lex_direct): New.

@@ -1,3 +1,8 @@
+2001-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alloca.c (libiberty_optr, libiberty_nptr, libiberty_len):
+	Define.
+
 2001-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* asprintf.c: Don't define USE_STDARG.  Use VPARAMS, VA_OPEN,

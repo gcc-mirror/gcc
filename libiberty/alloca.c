@@ -34,6 +34,12 @@
 #include <stdlib.h>
 #endif
 
+/* These variables are used by the ASTRDUP implementation that relies
+   on C_alloca.  */
+const char *libiberty_optr;
+char *libiberty_nptr;
+unsigned long libiberty_len;
+
 /* If your stack is a linked list of frames, you have to
    provide an "address metric" ADDRESS_FUNCTION macro.  */
 

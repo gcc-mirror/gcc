@@ -64,13 +64,11 @@ static char *
 affix_data_type (param)
      const char *param;
 {
-  char *type_or_decl = (char *) alloca (strlen (param) + 1);
+  char *const type_or_decl = ASTRDUP (param);
   char *p = type_or_decl;
   char *qualifiers_then_data_type;
   char saved;
 
-  strcpy (type_or_decl, param);
-  
   /* Skip as many leading const's or volatile's as there are.  */
 
   for (;;)
