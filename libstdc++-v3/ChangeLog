@@ -1,3 +1,7 @@
+2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update to 3.3.0.
+
 2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* Makefile.am (check-abi): Move...
