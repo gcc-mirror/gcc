@@ -126,6 +126,7 @@ extern char *getenv ();
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 #define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
 #define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
+#define PRINTF_PROTO_4(ARGS) PRINTF_PROTO(ARGS, 4, 5)
 
 /* VMS-specific definitions */
 #ifdef VMS
@@ -406,6 +407,8 @@ static struct file_buf {
   char *fname;
   /* Filename specified with #line directive.  */
   char *nominal_fname;
+  /* The length of nominal_fname, which may contain embedded NULs.  */
+  size_t nominal_fname_len;
   /* Include file description.  */
   struct include_file *inc;
   /* Record where in the search path this file was found.
@@ -644,6 +647,7 @@ struct definition {
   U_CHAR *expansion;
   int line;			/* Line number of definition */
   char *file;			/* File of definition */
+  size_t file_len;		/* Length of file (which can contain NULs) */
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist {
     struct reflist *next;
@@ -949,6 +953,7 @@ static char *out_fname;
 struct if_stack {
   struct if_stack *next;	/* for chaining to the next stack frame */
   char *fname;		/* copied from input when frame is made */
+  size_t fname_len;		/* similarly */
   int lineno;			/* similarly */
   int if_succeeded;		/* true if a leg of this if-group
 				    has been passed through rescan */
@@ -1048,7 +1053,7 @@ static void validate_else PROTO((U_CHAR *, U_CHAR *));
 
 static U_CHAR *skip_to_end_of_comment PROTO((FILE_BUF *, int *, int));
 static U_CHAR *skip_quoted_string PROTO((U_CHAR *, U_CHAR *, int, int *, int *, int *));
-static char *quote_string PROTO((char *, char *));
+static char *quote_string PROTO((char *, char *, size_t));
 static U_CHAR *skip_paren_group PROTO((FILE_BUF *));
 
 /* Last arg to output_line_directive.  */
@@ -1078,7 +1083,7 @@ static void vwarning_with_line PROTO((int, char *, va_list));
 static void warning_with_line PRINTF_PROTO_2((int, char *, ...));
 void pedwarn PRINTF_PROTO_1((char *, ...));
 void pedwarn_with_line PRINTF_PROTO_2((int, char *, ...));
-static void pedwarn_with_file_and_line PRINTF_PROTO_3((char *, int, char *, ...));
+static void pedwarn_with_file_and_line PRINTF_PROTO_4((char *, size_t, int, char *, ...));
 
 static void print_containing_files PROTO((void));
 
@@ -1717,6 +1722,7 @@ main (argc, argv)
   if (in_fname == NULL)
     in_fname = "";
   fp->nominal_fname = fp->fname = in_fname;
+  fp->nominal_fname_len = strlen (in_fname);
   fp->lineno = 0;
 
   /* In C++, wchar_t is a distinct basic type, and we can expect
@@ -2081,6 +2087,7 @@ main (argc, argv)
   if (fstat (f, &st) != 0)
     pfatal_with_name (in_fname);
   fp->nominal_fname = fp->fname = in_fname;
+  fp->nominal_fname_len = strlen (in_fname);
   fp->lineno = 1;
   fp->system_header_p = 0;
   /* JF all this is mine about reading pipes and ttys */
@@ -3517,6 +3524,7 @@ expand_to_temp_buffer (buf, limit, output_marks, assertions)
   ip = &instack[indepth];
   ip->fname = 0;
   ip->nominal_fname = 0;
+  ip->nominal_fname_len = 0;
   ip->inc = 0;
   ip->system_header_p = 0;
   ip->macro = 0;
@@ -4026,16 +4034,14 @@ special_symbol (hp, op)
   case T_FILE:
   case T_BASE_FILE:
     {
-      char *string;
-      if (hp->type == T_FILE)
-	string = ip->nominal_fname;
-      else
-	string = instack[0].nominal_fname;
+      FILE_BUF *p = hp->type == T_FILE ? ip : &instack[0];
+      char *string = p->nominal_fname;
 
       if (string)
 	{
-	  buf = (char *) alloca (3 + 4 * strlen (string));
-	  quote_string (buf, string);
+	  size_t string_len = p->nominal_fname_len;
+	  buf = (char *) alloca (3 + 4 * string_len);
+	  quote_string (buf, string, string_len);
 	}
       else
 	buf = "\"\"";
@@ -4289,7 +4295,8 @@ get_filename:
 	    /* Found a named file.  Figure out dir of the file,
 	       and put it in front of the search list.  */
 	    dsp = ((struct file_name_list *)
-		   alloca (sizeof (struct file_name_list) + strlen (nam)));
+		   alloca (sizeof (struct file_name_list)
+			   + fp->nominal_fname_len));
 	    strcpy (dsp->fname, nam);
 	    simplify_filename (dsp->fname);
 	    nam = base_name (dsp->fname);
@@ -5039,6 +5046,7 @@ finclude (f, inc, op, system_header_p, dirptr)
   fp = &instack[indepth + 1];
   bzero ((char *) fp, sizeof (FILE_BUF));
   fp->nominal_fname = fp->fname = fname;
+  fp->nominal_fname_len = strlen (fname);
   fp->inc = inc;
   fp->length = 0;
   fp->lineno = 1;
@@ -5426,7 +5434,8 @@ write_output ()
 				     line_directive_len *= 2);
 	sprintf (line_directive, "\n# %d ", next_string->lineno);
 	strcpy (quote_string (line_directive + strlen (line_directive),
-			      (char *) next_string->filename),
+			      (char *) next_string->filename,
+			      strlen ((char *) next_string->filename)),
 		"\n");
 	safe_write (fileno (stdout), line_directive, strlen (line_directive));
 	safe_write (fileno (stdout),
@@ -5508,6 +5517,7 @@ create_definition (buf, limit, op)
   int sym_length;		/* and how long it is */
   int line = instack[indepth].lineno;
   char *file = instack[indepth].nominal_fname;
+  size_t file_len = instack[indepth].nominal_fname_len;
   int rest_args = 0;
 
   DEFINITION *defn;
@@ -5655,6 +5665,7 @@ create_definition (buf, limit, op)
 
   defn->line = line;
   defn->file = file;
+  defn->file_len = file_len;
 
   /* OP is null if this is a predefinition */
   defn->predefined = !op;
@@ -5715,7 +5726,9 @@ do_define (buf, limit, op, keyword)
 
 	pedwarn ("`%.*s' redefined", mdef.symlen, mdef.symnam);
 	if (hp->type == T_MACRO)
-	  pedwarn_with_file_and_line (hp->value.defn->file, hp->value.defn->line,
+	  pedwarn_with_file_and_line (hp->value.defn->file,
+				      hp->value.defn->file_len,
+				      hp->value.defn->line,
 				      "this is the location of the previous definition");
       }
       /* Replace the old definition.  */
@@ -6628,7 +6641,7 @@ do_line (buf, limit, op, keyword)
 	break;
 
       case '\"':
-	p[-1] = 0;
+	*--p = 0;
 	goto fname_done;
       }
   fname_done:
@@ -6674,6 +6687,7 @@ do_line (buf, limit, op, keyword)
       if (hp->length == fname_length &&
 	  bcmp (hp->value.cpval, fname, fname_length) == 0) {
 	ip->nominal_fname = hp->value.cpval;
+	ip->nominal_fname_len = fname_length;
 	break;
       }
     if (hp == 0) {
@@ -6682,9 +6696,9 @@ do_line (buf, limit, op, keyword)
       hp->next = *hash_bucket;
       *hash_bucket = hp;
 
-      hp->length = fname_length;
       ip->nominal_fname = hp->value.cpval = ((char *) hp) + sizeof (HASHNODE);
-      bcopy (fname, hp->value.cpval, fname_length);
+      ip->nominal_fname_len = hp->length = fname_length;
+      bcopy (fname, hp->value.cpval, fname_length + 1);
     }
   } else if (*bp) {
     error ("invalid format `#line' directive");
@@ -6953,9 +6967,13 @@ do_elif (buf, limit, op, keyword)
     if (if_stack->type != T_IF && if_stack->type != T_ELIF) {
       error ("`#elif' after `#else'");
       fprintf (stderr, " (matches line %d", if_stack->lineno);
-      if (if_stack->fname != NULL && ip->fname != NULL
-	  && strcmp (if_stack->fname, ip->nominal_fname) != 0)
-	fprintf (stderr, ", file %s", if_stack->fname);
+      if (! (if_stack->fname_len == ip->nominal_fname_len
+	     && !bcmp (if_stack->fname, ip->nominal_fname,
+		       if_stack->fname_len))) {
+	fprintf (stderr, ", file ");
+	fwrite (if_stack->fname, sizeof if_stack->fname[0],
+		if_stack->fname_len, stderr);
+      }
       fprintf (stderr, ")\n");
     }
     if_stack->type = T_ELIF;
@@ -7115,6 +7133,7 @@ conditional_skip (ip, skip, type, control_macro, op)
 
   temp = (IF_STACK_FRAME *) xcalloc (1, sizeof (IF_STACK_FRAME));
   temp->fname = ip->nominal_fname;
+  temp->fname_len = ip->nominal_fname_len;
   temp->lineno = ip->lineno;
   temp->next = if_stack;
   temp->control_macro = control_macro;
@@ -7389,6 +7408,7 @@ skip_if_group (ip, any, op)
 	    if_stack = temp;
 	    temp->lineno = ip->lineno;
 	    temp->fname = ip->nominal_fname;
+	    temp->fname_len = ip->nominal_fname_len;
 	    temp->type = kt->type;
 	    break;
 	  case T_ELSE:
@@ -7490,8 +7510,13 @@ do_else (buf, limit, op, keyword)
     if (if_stack->type != T_IF && if_stack->type != T_ELIF) {
       error ("`#else' after `#else'");
       fprintf (stderr, " (matches line %d", if_stack->lineno);
-      if (strcmp (if_stack->fname, ip->nominal_fname) != 0)
-	fprintf (stderr, ", file %s", if_stack->fname);
+      if (! (if_stack->fname_len == ip->nominal_fname_len
+	     && !bcmp (if_stack->fname, ip->nominal_fname,
+		       if_stack->fname_len))) {
+	fprintf (stderr, ", file ");
+	fwrite (if_stack->fname, sizeof if_stack->fname[0],
+		if_stack->fname_len, stderr);
+      }
       fprintf (stderr, ")\n");
     }
     if_stack->type = T_ELSE;
@@ -7784,16 +7809,19 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
 }
 
 /* Place into DST a quoted string representing the string SRC.
+   SRCLEN is the length of SRC; SRC may contain null bytes.
    Return the address of DST's terminating null.  */
 
 static char *
-quote_string (dst, src)
+quote_string (dst, src, srclen)
      char *dst, *src;
+     size_t srclen;
 {
   U_CHAR c;
+  char *srclim = src + srclen;
 
   *dst++ = '\"';
-  for (;;)
+  while (src != srclim)
     switch ((c = *src++))
       {
       default:
@@ -7811,12 +7839,11 @@ quote_string (dst, src)
 	*dst++ = '\\';
 	*dst++ = c;
 	break;
-      
-      case '\0':
-	*dst++ = '\"';
-	*dst = '\0';
-	return dst;
       }
+      
+  *dst++ = '\"';
+  *dst = '\0';
+  return dst;
 }
 
 /* Skip across a group of balanced parens, starting from IP->bufp.
@@ -7915,10 +7942,10 @@ output_line_directive (ip, op, conditional, file_change)
     ip->bufp++;
   }
 
-  line_directive_buf = (char *) alloca (4 * strlen (ip->nominal_fname) + 100);
+  line_directive_buf = (char *) alloca (4 * ip->nominal_fname_len + 100);
   sprintf (line_directive_buf, "# %d ", ip->lineno);
   line_end = quote_string (line_directive_buf + strlen (line_directive_buf),
-			   ip->nominal_fname);
+			   ip->nominal_fname, ip->nominal_fname_len);
   if (file_change != same_file) {
     *line_end++ = ' ';
     *line_end++ = file_change == enter_file ? '1' : '2';
@@ -8343,6 +8370,7 @@ macroexpand (hp, op)
 
     ip2->fname = 0;
     ip2->nominal_fname = 0;
+    ip2->nominal_fname_len = 0;
     ip2->inc = 0;
     /* This may not be exactly correct, but will give much better error
        messages for nested macro calls than using a line number of zero.  */
@@ -8831,8 +8859,11 @@ verror (msg, args)
       break;
     }
 
-  if (ip != NULL)
-    fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
+  if (ip != NULL) {
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
+    fprintf (stderr, ":%d: ", ip->lineno);
+  }
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
   errors++;
@@ -8856,8 +8887,11 @@ error_from_errno (name)
       break;
     }
 
-  if (ip != NULL)
-    fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
+  if (ip != NULL) {
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
+    fprintf (stderr, ":%d: ", ip->lineno);
+  }
 
   fprintf (stderr, "%s: %s\n", name, my_strerror (e));
 
@@ -8899,8 +8933,11 @@ vwarning (msg, args)
       break;
     }
 
-  if (ip != NULL)
-    fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
+  if (ip != NULL) {
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
+    fprintf (stderr, ":%d: ", ip->lineno);
+  }
   fprintf (stderr, "warning: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
@@ -8939,8 +8976,11 @@ verror_with_line (line, msg, args)
       break;
     }
 
-  if (ip != NULL)
-    fprintf (stderr, "%s:%d: ", ip->nominal_fname, line);
+  if (ip != NULL) {
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
+    fprintf (stderr, ":%d: ", line);
+  }
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
   errors++;
@@ -8985,8 +9025,11 @@ vwarning_with_line (line, msg, args)
       break;
     }
 
-  if (ip != NULL)
-    fprintf (stderr, line ? "%s:%d: " : "%s: ", ip->nominal_fname, line);
+  if (ip != NULL) {
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
+    fprintf (stderr, line ? ":%d: " : ": ", line);
+  }
   fprintf (stderr, "warning: ");
   vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
@@ -9032,10 +9075,12 @@ pedwarn_with_line (line, PRINTF_ALIST (msg))
 
 static void
 #if defined (__STDC__) && defined (HAVE_VPRINTF)
-pedwarn_with_file_and_line (char *file, int line, PRINTF_ALIST (msg))
+pedwarn_with_file_and_line (char *file, size_t file_len, int line,
+			    PRINTF_ALIST (msg))
 #else
-pedwarn_with_file_and_line (file, line, PRINTF_ALIST (msg))
+pedwarn_with_file_and_line (file, file_len, line, PRINTF_ALIST (msg))
      char *file;
+     size_t file_len;
      int line;
      PRINTF_DCL (msg)
 #endif
@@ -9044,8 +9089,10 @@ pedwarn_with_file_and_line (file, line, PRINTF_ALIST (msg))
 
   if (!pedantic_errors && inhibit_warnings)
     return;
-  if (file != NULL)
-    fprintf (stderr, "%s:%d: ", file, line);
+  if (file) {
+    fwrite (file, sizeof file[0], file_len, stderr);
+    fprintf (stderr, ":%d: ", line);
+  }
   if (pedantic_errors)
     errors++;
   if (!pedantic_errors)
@@ -9092,7 +9139,10 @@ print_containing_files ()
 	fprintf (stderr, ",\n                ");
       }
 
-      fprintf (stderr, " from %s:%d", ip->nominal_fname, ip->lineno);
+      fprintf (stderr, " from ");
+      fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	      ip->nominal_fname_len, stderr);
+      fprintf (stderr, ":%d", ip->lineno);
     }
   if (! first)
     fprintf (stderr, ":\n");
@@ -9711,6 +9761,7 @@ make_definition (str, op)
   
   ip = &instack[++indepth];
   ip->nominal_fname = ip->fname = "*Initialization*";
+  ip->nominal_fname_len = strlen (ip->nominal_fname);
 
   ip->buf = ip->bufp = buf;
   ip->length = strlen ((char *) buf);
@@ -9740,6 +9791,7 @@ make_undef (str, op)
 
   ip = &instack[++indepth];
   ip->nominal_fname = ip->fname = "*undef*";
+  ip->nominal_fname_len = strlen (ip->nominal_fname);
 
   ip->buf = ip->bufp = (U_CHAR *) str;
   ip->length = strlen (str);
@@ -9796,6 +9848,7 @@ make_assertion (option, str)
   
   ip = &instack[++indepth];
   ip->nominal_fname = ip->fname = "*Initialization*";
+  ip->nominal_fname_len = strlen (ip->nominal_fname);
 
   ip->buf = ip->bufp = buf;
   ip->length = strlen ((char *) buf);
