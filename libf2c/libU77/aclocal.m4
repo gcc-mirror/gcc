@@ -54,8 +54,13 @@ main ()
       ],
       [
       struct timeval time;
+#ifdef HAVE_TIMEZONE
       struct timezone dummy;
-      gettimeofday (&time, &dummy);],
+#define DUMMY &dummy
+#else
+#define DUMMY NULL
+#endif
+      gettimeofday (&time, DUMMY);],
       emacs_cv_gettimeofday_two_arguments=yes,
       emacs_cv_gettimeofday_two_arguments=no))
     if test $emacs_cv_gettimeofday_two_arguments = no; then
