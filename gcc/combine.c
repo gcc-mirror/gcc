@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6965,6 +6965,14 @@ num_sign_bit_copies (x, mode)
     return MAX (1, (num_sign_bit_copies (x, GET_MODE (x))
 		    - (GET_MODE_BITSIZE (GET_MODE (x)) - bitwidth)));
      
+#ifndef WORD_REGISTER_OPERATIONS
+  /* If this machine does not do all register operations on the entire
+     register and MODE is wider than the mode of X, we can say nothing
+     at all about the high-order bits.  */
+  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_BITSIZE (GET_MODE (x)))
+    return 1;
+#endif
+
   switch (code)
     {
     case REG:
