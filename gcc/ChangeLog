@@ -1,3 +1,8 @@
+Fri Oct 23 07:05:52 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold_range_test, fold): Use global_bindings_p,
+	not checking current_function_decl, to see if in function.
+
 Mon Oct 12 06:21:08 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (gen_mem_addressof): Copy REG_USERVAR_P to new reg.
