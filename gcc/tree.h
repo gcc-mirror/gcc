@@ -2455,10 +2455,6 @@ extern const char *input_filename;
 /* Current line number in input file.  */
 extern int lineno;
 
-/* Nonzero for -pedantic switch: warn about anything
-   that standard C forbids.  */
-extern int pedantic;
-
 /* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
    Zero means allow extended lvalues.  */
 

@@ -6149,6 +6149,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"insn-attr.h\"\n");
   printf ("#include \"toplev.h\"\n");
+  printf ("#include \"flags.h\"\n");
   printf ("\n");
   printf ("#define operands recog_data.operand\n\n");
 

@@ -3409,6 +3409,3 @@ do {									\
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE (flag_pic)
 
-/* Defined in flags.h, but insn-emit.c does not include flags.h.  */
-
-extern int flag_pic;

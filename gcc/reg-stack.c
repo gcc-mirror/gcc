@@ -166,6 +166,7 @@
 #include "output.h"
 #include "basic-block.h"
 #include "varray.h"
+#include "reload.h"
 
 #ifdef STACK_REGS
 

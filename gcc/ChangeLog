@@ -1,5 +1,20 @@
 2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (reg-stack.o): Depend on reload.h.
+	(insn-attrtab.o): Depend on flags.h.
+
+	* genattrtab (main): Include flags.h in insn-attrtab.c.
+
+	* reg-stack.c: Include reload.h.
+
+	* sparc.h (flag_pic): Delete redundant declaration.
+
+	* output.h (flag_pic): Likewise.
+
+	* tree.h (pedantic): Likewise.
+
+2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (toplev.o, jump.o, regmove.o): Depend on reload.h
 
 	* jump.c, regmove.c, toplev.c: Include reload.h.
