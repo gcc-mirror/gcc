@@ -1,3 +1,9 @@
+2000-08-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (do_type_instantiation): Add complain parm; don't complain
+	if called recursively.
+	* cp-tree.h, parse.y: Adjust.
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl2.c: Silently ignore -Wstrict-prototypes; warn about
