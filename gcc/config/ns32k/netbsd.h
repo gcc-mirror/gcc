@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.
 
 /* Get generic NetBSD definitions. */
 #include <netbsd.h>
+#include <netbsd-aout.h>
 
 /* Names to predefine in the preprocessor for this target machine.  */
 

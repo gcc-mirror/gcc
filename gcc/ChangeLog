@@ -1,3 +1,48 @@
+2002-01-21  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd.h (TARGET_HAS_F_SETLKW): define.
+	Split a.out-specific bits into...
+	* config/netbsd-aout.h: ...this.
+	* config/netbsd-elf.h: New file.
+	* config/alpha/netbsd-elf.h: Remove.
+	* config/alpha/netbsd.h: Rewrite for a NetBSD/alpha ELF target.
+	* config/i386/netbsd-elf.h (LIB_SPEC): Remove.
+	(STARTFILE_SPEC): Remove redundant definition.  
+	(ENDFILE_SPEC): Likewise.
+	(LINK_SPEC): Likewise.
+	(CPP_SPEC): Likewise.
+	(ASM_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(SWITCH_TAKES_ARG): Likewise.
+	(TARGET_MEM_FUNCTIONS): Likewise.
+	(CPP_PREDEFINES): Redefine.
+	(ASM_FINAL_SPEC): Remove redefinition.
+	(ASM_COMMENT_START): Redefine.
+	(FUNCTION_PROFILER): Define.
+	(TARGET_VERSION): Redefine.
+	Comment and formatting cleanup.
+	* config/i386/netbsd.h: Include <netbsd-aout.h>.
+	* config/m68k/netbsd.h: Include <netbsd-aout.h>.
+	* config/mips/netbsd.h: Rewrite for NetBSD/mips ELF target,
+	big- or little-endian.
+	* config/ns32k/netbsd.h: Include <netbsd-aout.h>.
+	* config.gcc (*-*-netbsd*): Add definitions common to all
+	NetBSD configs.
+	(alpha*-*-netbsd*): Remove redundant xm_defines, gas, and
+	gnu_ld definitions.  Add netbsd-elf.h to and remove
+	alpha/netbsd-elf.h from tm_file.  Remove alpha/t-crtfm from
+	tmake_file, and don't lose previous tmake_file contents.
+	(arm*-*-netbsd*): Add netbsd-aout.h to tm_file.
+	(i[34567]86-*-netbsdelf*): Remove redundant xm_defines, gas, and
+	gnu_ld definitions.  Add netbsd-elf.h to tm_file.
+	(mips-dec-netbsd*): Remove as alias for mipsel-*-netbsd*.
+	(mipsel-*-netbsd*): Rename this to...
+	(mips*-*-netbsd*): ...this.  Add elfos.h to tm_file.  Add
+	mips/little.h to tm_file for mips*el-*.
+	(powerpc-*-netbsd*): Remove redundant xm_defines definition.
+	(sparc-*-netbsd*): Add netbsd-aout.h to tm_file.
+	(vax-*-netbsd*): Add netbsd-aout.h to tm_file.
+
 2002-01-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-protos.h (reg_before_reload_operand): New function prototype.
