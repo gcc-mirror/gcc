@@ -3657,8 +3657,12 @@ load_pic_register (void)
       if (align > 0)
 	ASM_OUTPUT_ALIGN (asm_out_file, align);
       ASM_OUTPUT_LABEL (asm_out_file, add_pc_to_pic_symbol_name);
-      fprintf (asm_out_file, "\tjmp %%o7+8\n\t add\t%%o7, %s, %s\n",
-	       pic_name, pic_name);
+      if (flag_delayed_branch)
+	fprintf (asm_out_file, "\tjmp %%o7+8\n\t add\t%%o7, %s, %s\n",
+		 pic_name, pic_name);
+      else
+	fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp %%o7+8\n\t nop\n",
+		 pic_name, pic_name);
     }
 
   /* Initialize every time through, since we can't easily
@@ -4453,12 +4457,18 @@ output_return (rtx insn)
 	  if (delay_slot_filled_p || sparc_skip_caller_unimp)
 	    abort ();
 
+	  if (! flag_delayed_branch)
+	    fputs ("\tadd\t%fp, %g1, %fp\n", asm_out_file);
+
 	  if (TARGET_V9)
 	    fputs ("\treturn\t%i7+8\n", asm_out_file);
 	  else
 	    fputs ("\trestore\n\tjmp\t%o7+8\n", asm_out_file);
 
-	  fputs ("\t add\t%sp, %g1, %sp\n", asm_out_file);
+	  if (flag_delayed_branch)
+	    fputs ("\t add\t%sp, %g1, %sp\n", asm_out_file);
+	  else
+	    fputs ("\t nop\n", asm_out_file);
 	}
       else if (delay_slot_filled_p)
 	{
@@ -4493,8 +4503,11 @@ output_return (rtx insn)
 	  if (TARGET_V9)
 	    fprintf (asm_out_file, "\treturn\t%%i7+%d\n\t nop\n",
 		     sparc_skip_caller_unimp ? 12 : 8);
-	  else
+	  else if (flag_delayed_branch)
 	    fprintf (asm_out_file, "\tjmp\t%%i7+%d\n\t restore\n",
+		     sparc_skip_caller_unimp ? 12 : 8);
+	  else
+	    fprintf (asm_out_file, "\trestore\n\tjmp\t%%o7+%d\n\t nop\n",
 		     sparc_skip_caller_unimp ? 12 : 8);
 	}
     }
@@ -4510,6 +4523,9 @@ output_sibcall (rtx insn, rtx call_operand)
   int leaf_function_p = current_function_uses_only_leaf_regs;
   bool delay_slot_filled_p = dbr_sequence_length () > 0;
   rtx operands[1];
+
+  if (! flag_delayed_branch)
+    abort();
 
   operands[0] = call_operand;
 
@@ -7787,7 +7803,10 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags)
 #endif /* OBJECT_FORMAT_ELF */
 
 /* We do not allow indirect calls to be optimized into sibling calls.
-   
+
+   We cannot use sibling calls when delayed branches are disabled
+   because they will likely require the call delay slot to be filled.
+
    Also, on SPARC 32-bit we cannot emit a sibling call when the
    current function returns a structure.  This is because the "unimp
    after call" convention would cause the callee to return to the
@@ -7797,14 +7816,16 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags)
    It may seem strange how this last case could occur.  Usually there
    is code after the call which jumps to epilogue code which dumps the
    return value into the struct return area.  That ought to invalidate
-   the sibling call right?  Well, in the c++ case we can end up passing
+   the sibling call right?  Well, in the C++ case we can end up passing
    the pointer to the struct return area to a constructor (which returns
    void) and then nothing else happens.  Such a sibling call would look
    valid without the added check here.  */
 static bool
 sparc_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  return (decl && (TARGET_ARCH64 || ! current_function_returns_struct));
+  return (decl
+	  && flag_delayed_branch
+	  && (TARGET_ARCH64 || ! current_function_returns_struct));
 }
 
 /* libfunc renaming.  */
@@ -8332,6 +8353,21 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
+/* Emit the sequence of insns SEQ while preserving the register REG.  */
+
+static void
+emit_and_preserve (rtx seq, rtx reg)
+{
+  rtx slot = gen_rtx_MEM (word_mode,
+			  plus_constant (stack_pointer_rtx, SPARC_STACK_BIAS));
+
+  emit_stack_pointer_decrement (GEN_INT (UNITS_PER_WORD));
+  emit_insn (gen_rtx_SET (VOIDmode, slot, reg));
+  emit_insn (seq);
+  emit_insn (gen_rtx_SET (VOIDmode, reg, slot));
+  emit_stack_pointer_increment (GEN_INT (UNITS_PER_WORD));
+}
+
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 
@@ -8341,22 +8377,42 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		       HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 		       tree function)
 {
-  rtx this, insn, funexp, delta_rtx, tmp;
+  rtx this, insn, funexp, delta_rtx;
+  unsigned int int_arg_first;
 
   reload_completed = 1;
   epilogue_completed = 1;
   no_new_pseudos = 1;
-  current_function_uses_only_leaf_regs = 1;
   reset_block_changes ();
 
   emit_note (NOTE_INSN_PROLOGUE_END);
 
+  if (flag_delayed_branch)
+    {
+      /* We will emit a regular sibcall below, so we need to instruct
+	 output_sibcall that we are in a leaf function.  */
+      current_function_uses_only_leaf_regs = 1;
+
+      /* This will cause final.c to invoke leaf_renumber_regs so we
+	 must behave as if we were in a not-yet-leafified function.  */
+      int_arg_first = SPARC_INCOMING_INT_ARG_FIRST;
+    }
+  else
+    {
+      /* We will emit the sibcall manually below, so we will need to
+	 manually spill non-leaf registers.  */
+      current_function_uses_only_leaf_regs = 0;
+
+      /* We really are in a leaf function.  */
+      int_arg_first = SPARC_OUTGOING_INT_ARG_FIRST;
+    }
+
   /* Find the "this" pointer.  Normally in %o0, but in ARCH64 if the function
      returns a structure, the structure return pointer is there instead.  */
   if (TARGET_ARCH64 && aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST + 1);
+    this = gen_rtx_REG (Pmode, int_arg_first + 1);
   else
-    this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST);
+    this = gen_rtx_REG (Pmode, int_arg_first);
 
   /* Add DELTA.  When possible use a plain add, otherwise load it into
      a register first.  */
@@ -8378,8 +8434,9 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       delta_rtx = scratch;
     }
 
-  tmp = gen_rtx_PLUS (Pmode, this, delta_rtx);
-  emit_insn (gen_rtx_SET (VOIDmode, this, tmp));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  this,
+			  gen_rtx_PLUS (Pmode, this, delta_rtx)));
 
   /* Generate a tail call to the target function.  */
   if (! TREE_USED (function))
@@ -8388,9 +8445,67 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       TREE_USED (function) = 1;
     }
   funexp = XEXP (DECL_RTL (function), 0);
-  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  insn = emit_call_insn (gen_sibcall (funexp));
-  SIBLING_CALL_P (insn) = 1;
+
+  if (flag_delayed_branch)
+    {
+      funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+      insn = emit_call_insn (gen_sibcall (funexp));
+      SIBLING_CALL_P (insn) = 1;
+    }
+  else
+    {
+      /* The hoops we have to jump through in order to generate a sibcall
+	 without using delay slots...  */
+      rtx spill_reg, seq, scratch = gen_rtx_REG (Pmode, 1);
+
+      if (flag_pic)
+        {
+	  spill_reg = gen_rtx_REG (word_mode, 15);  /* %o7 */
+	  start_sequence ();
+	  load_pic_register ();  /* clobbers %o7 */
+	  scratch = legitimize_pic_address (funexp, Pmode, scratch);
+	  seq = get_insns ();
+	  end_sequence ();
+	  emit_and_preserve (seq, spill_reg);
+	}
+      else if (TARGET_ARCH32)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  scratch,
+				  gen_rtx_HIGH (SImode, funexp)));
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  scratch,
+				  gen_rtx_LO_SUM (SImode, scratch, funexp)));
+	}
+      else  /* TARGET_ARCH64 */
+        {
+	  switch (sparc_cmodel)
+	    {
+	    case CM_MEDLOW:
+	    case CM_MEDMID:
+	      /* The destination can serve as a temporary.  */
+	      sparc_emit_set_symbolic_const64 (scratch, funexp, scratch);
+	      break;
+
+	    case CM_MEDANY:
+	    case CM_EMBMEDANY:
+	      /* The destination cannot serve as a temporary.  */
+	      spill_reg = gen_rtx_REG (DImode, 15);  /* %o7 */
+	      start_sequence ();
+	      sparc_emit_set_symbolic_const64 (scratch, funexp, spill_reg);
+	      seq = get_insns ();
+	      end_sequence ();
+	      emit_and_preserve (seq, spill_reg);
+	      break;
+
+	    default:
+	      abort();
+	    }
+	}
+
+      emit_jump_insn (gen_indirect_jump (scratch));
+    }
+
   emit_barrier ();
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
