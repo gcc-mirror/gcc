@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA. */
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#include <stdio.h>
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
@@ -536,10 +537,12 @@ do {									\
 
 /* External function declarations.  */
 
-extern void i386_pe_record_external_function PARAMS ((char *));
-/* extern void i386_pe_declare_function_type PARAMS ((FILE *, char *, int)); */
-extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
-/* extern void i386_pe_asm_file_end PARAMS ((FILE *)); */
+extern void i386_pe_record_external_function PARAMS ((const char *));
+extern void i386_pe_declare_function_type PARAMS ((FILE *, const char *, int));
+extern void i386_pe_record_exported_symbol PARAMS ((const char *, int));
+extern void i386_pe_asm_file_end PARAMS ((FILE *));
+extern int i386_pe_dllexport_name_p PARAMS ((const char *));
+extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
