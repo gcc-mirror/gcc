@@ -2389,6 +2389,11 @@ process_command (argc, argv)
 	  printf ("%s\n", version_string);
 	  exit (0);
 	}
+      else if (! strcmp (argv[i], "-dumpmachine"))
+	{
+	  printf ("%s\n", spec_machine);
+	  exit  (0);
+	}
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	  print_file_name = "libgcc.a";
       else if (! strncmp (argv[i], "-print-file-name=", 17))
