@@ -1202,7 +1202,7 @@ find_matches (insn, matchp)
 	  case '0': case '1': case '2': case '3': case '4':
 	  case '5': case '6': case '7': case '8': case '9':
 	    c -= '0';
-	    if (c < operand_number && likely_spilled[c])
+	    if (c < operand_number && likely_spilled[(unsigned char) c])
 	      break;
 	    matchp->with[operand_number] = c;
 	    any_matches = 1;
