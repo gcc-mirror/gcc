@@ -637,7 +637,7 @@ in the following sections.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{
--mcpu=@var{cpu-type} -march=@var{cpu-type} @gol
+-mtune=@var{cpu-type} -march=@var{cpu-type} @gol
 -mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64 -m31 -mdebug -mno-debug -mesa -mzarch}
@@ -9665,8 +9665,8 @@ Generate code that will run on @var{arch}, which is the name of system
 representing a certain processor type. Possible values for
 @var{cpu-type} are @samp{g5}, @samp{g6} and @samp{z900}. 
 
-@item -mcpu=@var{arch}
-@opindex mcpu
+@item -mtune=@var{arch}
+@opindex mtune
 Tune to @var{cpu-type} everything applicable about the generated code,
  except for the ABI and the set of available instructions. 
 The list of @var{arch} values is the same as for @option{-march}.
