@@ -8568,7 +8568,8 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'd':
-      if (!x)
+      /* CONST_TRUE_RTX means always -- that's the default.  */
+      if (x == const_true_rtx)
 	return;
       
       if (TARGET_ARM)
@@ -8579,8 +8580,10 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'D':
-      if (!x)
-	return;
+      /* CONST_TRUE_RTX means not always -- ie never.  We shouldn't ever
+	 want to do that.  */
+      if (x == const_true_rtx)
+	abort ();
 
       if (TARGET_ARM)
 	fputs (arm_condition_codes[ARM_INVERSE_CONDITION_CODE

@@ -6721,7 +6721,7 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (NULL, TRUE, FALSE);
+    return output_return_instruction (const_true_rtx, TRUE, FALSE);
   }"
   [(set_attr "type" "load")
    (set_attr "predicable" "yes")]
@@ -8756,7 +8756,7 @@
   "*
   output_asm_insn (\"%@ Sibcall epilogue\", operands);
   if (USE_RETURN_INSN (FALSE))
-    return output_return_instruction (NULL, FALSE, FALSE);
+    return output_return_instruction (const_true_rtx, FALSE, FALSE);
   return arm_output_epilogue (FALSE);
   "
 ;; Length is absolute worst case

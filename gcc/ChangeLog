@@ -1,3 +1,13 @@
+2002-03-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR java/5489
+	* arm.md (return, sibcall_epilogue): Pass const_true_rtx as the
+	operand argument to output_return_instruction.
+	* arm.c (arm_print_operand, case 'd'): If the operand is 
+	const_true_rtx then just return.
+	(arm_print_operand, case 'D'): If the operand is const_true_rtx
+	then abort.
+
 2002-03-23  Andrew Cagney  <ac131313@redhat.com>
 
 	* doc/invoke.texi (Option Summary): Mention -Wswitch-default.
