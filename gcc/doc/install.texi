@@ -756,20 +756,15 @@ installing GCC creates the directory.
 @item --enable-shared[=@var{package}[,@dots{}]]
 Build shared versions of libraries, if shared libraries are supported on
 the target platform.  Unlike GCC 2.95.x and earlier, shared libraries
-are enabled by default on all platforms that support shared libraries,
-except for @samp{libobjc} which is built as a static library only by
-default.
+are enabled by default on all platforms that support shared libraries.
 
 If a list of packages is given as an argument, build shared libraries
 only for the listed packages.  For other packages, only static libraries
 will be built.  Package names currently recognized in the GCC tree are
 @samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc},
-@samp{ada}, @samp{libada} and @samp{libjava}.
-Note that @samp{libobjc} does not recognize itself by
-any name, so, if you list package names in @option{--enable-shared},
-you will only get static Objective-C libraries.  @samp{libf2c} and
-@samp{libiberty} do not support shared libraries at all.
+@samp{ada}, @samp{libada}, @samp{libjava} and @samp{libobjc}.
+Note @samp{libiberty} do not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
 @option{--disable-shared} does not accept a list of package names as
