@@ -3095,7 +3095,10 @@ do {									\
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
 do {									\
   extern char *reg_names[];						\
-  asm_fprintf (FILE, "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,8(%s)\n",	\
+  asm_fprintf (FILE,							\
+	       (TARGET_32BIT)						\
+	       ? "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n"	\
+	       : "\tstdu %s,-32(%s)\n\tstd %s,24(%s)\n",		\
 	       reg_names[1], reg_names[1], reg_names[REGNO],		\
 	       reg_names[1]);						\
 } while (0)
@@ -3106,7 +3109,10 @@ do {									\
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)					\
 do {									\
   extern char *reg_names[];						\
-  asm_fprintf (FILE, "\t{l|lwz} %s,8(%s)\n\t{ai|addic} %s,%s,16\n",	\
+  asm_fprintf (FILE,							\
+	       (TARGET_32BIT)						\
+	       ? "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n"		\
+	       : "\tld %s,24(%s)\n\t{ai|addic} %s,%s,32\n",		\
 	       reg_names[REGNO], reg_names[1], reg_names[1],		\
 	       reg_names[1]);						\
 } while (0)

@@ -1,3 +1,8 @@
+Fri Mar  5 23:16:42 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (ASM_OUTPUT_REG_{PUSH,POP}): Add 64-bit support and do
+	not overwrite AIX link register save area.
+
 Fri Mar  5 23:08:01 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads_subreg_address): Actually create the USE
