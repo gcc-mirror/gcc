@@ -1,5 +1,12 @@
 2004-04-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* expmed.c (expand_mult_highpart_adjust): Do not assume OP1
+	is a CONST_INT.
+	(expand_mult_highpart_optab): Call expand_mult_highpart_adjust
+	with NARROW_OP1 instead of OP1.
+
+2004-04-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __s390__
 	and __s390x__ hosts.
 
