@@ -1,3 +1,8 @@
+Fri May 15 11:21:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (gen_shl_and): Don't sign extend constant for kind two.
+	Abort if trying to split kind 3 or 4 outside of combine.
+
 Fri May 15 01:47:37 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.c (print_operand, case 'x'): Use HOST_WIDE_INT_PRINT_HEX.
