@@ -6953,10 +6953,10 @@ do_xifdef (buf, limit, op, keyword)
       U_CHAR c = *p++;
       if (is_space[c])
 	;
-      /* ??? Why is the test with ip->bufp here?  */
-      /* ??? We don't handle \-n inside /-*.  */
-      /* ??? Comment handling in general could use a major cleanup.  */
-      else if (c == '/' && p != ip->bufp
+      /* Make no special provision for backslash-newline here; this is
+	 slower if backslash-newlines are present, but it's correct,
+	 and it's not worth it to tune for the rare backslash-newline.  */
+      else if (c == '/'
 	       && (*p == '*' || (cplusplus_comments && *p == '/'))) {
 	/* Skip this comment.  */
 	int junk = 0;
@@ -7414,7 +7414,7 @@ do_endif (buf, limit, op, keyword)
       while (p != ep) {
 	U_CHAR c = *p++;
 	if (!is_space[c]) {
-	  if (c == '/' && p != ep
+	  if (c == '/'
 	      && (*p == '*' || (cplusplus_comments && *p == '/'))) {
 	    /* Skip this comment.  */
 	    int junk = 0;
