@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -72,7 +72,7 @@ Definition (Issue 2).
 	double x,y;
 #endif
 {
-	__uint32_t hx,hy;
+	uint32_t hx,hy;
 	GET_HIGH_WORD(hx,x);
 	GET_HIGH_WORD(hy,y);
 	SET_HIGH_WORD(x,(hx&0x7fffffff)|(hy&0x80000000));

@@ -37,12 +37,34 @@ extern "C" {
 // #include <float.h>
 // #include <errno.h>
 
-/* These typedefs are true for the targets running Java. */
-
-#ifndef HAVE_INT32_DEFINED
-typedef int __int32_t;
-typedef unsigned int __uint32_t;
+#if defined HAVE_STDINT_H
+#include <stdint.h>
+#elif defined HAVE_INTTYPES_H
+#include <inttypes.h>
 #endif
+
+#if defined HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if defined HAVE_SYS_CONFIG_H
+#include <sys/config.h>
+#endif
+
+
+/* ISO C9X int type declarations */
+
+#if !defined HAVE_INT32_DEFINED && defined HAVE_BSD_INT32_DEFINED
+typedef u_int32_t uint32_t;
+#endif
+
+#if !defined HAVE_BSD_INT32_DEFINED && !defined HAVE_INT32_DEFINED
+// FIXME -- this could have problems with systems that don't define SI to be 4
+typedef int int32_t __attribute__((mode(SI)));
+typedef unsigned int uint32_t __attribute__((mode(SI)));
+#endif
+
+  /* These typedefs are true for the targets running Java. */
 
 #ifdef __IEEE_LITTLE_ENDIAN
 #define IEEE_8087
@@ -63,7 +85,7 @@ typedef unsigned int __uint32_t;
 
 
 #ifdef Unsigned_Shifts
-#define Sign_Extend(a,b) if (b < 0) a |= (__uint32_t)0xffff0000;
+#define Sign_Extend(a,b) if (b < 0) a |= (uint32_t)0xffff0000;
 #else
 #define Sign_Extend(a,b) /*no-op*/
 #endif
@@ -79,8 +101,7 @@ Exactly one of IEEE_8087, IEEE_MC68k, VAX, or IBM should be defined.
 union double_union
 {
   double d;
-  // FIXME: This should be some well-defined 32 bit type.
-  __uint32_t i[2];
+  uint32_t i[2];
 };
 
 #ifdef IEEE_8087
@@ -110,37 +131,37 @@ union double_union
 /* Int_max = floor(P*log(FLT_RADIX)/log(10) - 1) */
 
 #if defined(IEEE_8087) + defined(IEEE_MC68k)
-#if defined (_DOUBLE_IS_32BITS) 
+#if defined (_DOUBLE_IS_32BITS)
 #define Exp_shift   23
 #define Exp_shift1  23
-#define Exp_msk1    ((__uint32_t)0x00800000L)
-#define Exp_msk11   ((__uint32_t)0x00800000L)
-#define Exp_mask    ((__uint32_t)0x7f800000L)
+#define Exp_msk1    ((uint32_t)0x00800000L)
+#define Exp_msk11   ((uint32_t)0x00800000L)
+#define Exp_mask    ((uint32_t)0x7f800000L)
 #define P    	    24
 #define Bias 	    127
 #if 0
 #define IEEE_Arith  /* it is, but the code doesn't handle IEEE singles yet */
 #endif
 #define Emin        (-126)
-#define Exp_1       ((__uint32_t)0x3f800000L)
-#define Exp_11      ((__uint32_t)0x3f800000L)
+#define Exp_1       ((uint32_t)0x3f800000L)
+#define Exp_11      ((uint32_t)0x3f800000L)
 #define Ebits 	    8
-#define Frac_mask   ((__uint32_t)0x007fffffL)
-#define Frac_mask1  ((__uint32_t)0x007fffffL)
+#define Frac_mask   ((uint32_t)0x007fffffL)
+#define Frac_mask1  ((uint32_t)0x007fffffL)
 #define Ten_pmax    10
-#define Sign_bit    ((__uint32_t)0x80000000L)
+#define Sign_bit    ((uint32_t)0x80000000L)
 #define Ten_pmax    10
 #define Bletch	    2
-#define Bndry_mask  ((__uint32_t)0x007fffffL)
-#define Bndry_mask1 ((__uint32_t)0x007fffffL)
+#define Bndry_mask  ((uint32_t)0x007fffffL)
+#define Bndry_mask1 ((uint32_t)0x007fffffL)
 #define LSB 1
-#define Sign_bit    ((__uint32_t)0x80000000L)
+#define Sign_bit    ((uint32_t)0x80000000L)
 #define Log2P 	    1
 #define Tiny0 	    0
 #define Tiny1 	    1
 #define Quick_max   5
 #define Int_max     6
-#define Infinite(x) (word0(x) == ((__uint32_t)0x7f800000L))
+#define Infinite(x) (word0(x) == ((uint32_t)0x7f800000L))
 #undef word0
 #undef word1
 
@@ -150,30 +171,30 @@ union double_union
 
 #define Exp_shift  20
 #define Exp_shift1 20
-#define Exp_msk1    ((__uint32_t)0x100000L)
-#define Exp_msk11   ((__uint32_t)0x100000L)
-#define Exp_mask  ((__uint32_t)0x7ff00000L)
+#define Exp_msk1    ((uint32_t)0x100000L)
+#define Exp_msk11   ((uint32_t)0x100000L)
+#define Exp_mask  ((uint32_t)0x7ff00000L)
 #define P 53
 #define Bias 1023
 #define IEEE_Arith
 #define Emin (-1022)
-#define Exp_1  ((__uint32_t)0x3ff00000L)
-#define Exp_11 ((__uint32_t)0x3ff00000L)
+#define Exp_1  ((uint32_t)0x3ff00000L)
+#define Exp_11 ((uint32_t)0x3ff00000L)
 #define Ebits 11
-#define Frac_mask  ((__uint32_t)0xfffffL)
-#define Frac_mask1 ((__uint32_t)0xfffffL)
+#define Frac_mask  ((uint32_t)0xfffffL)
+#define Frac_mask1 ((uint32_t)0xfffffL)
 #define Ten_pmax 22
 #define Bletch 0x10
-#define Bndry_mask  ((__uint32_t)0xfffffL)
-#define Bndry_mask1 ((__uint32_t)0xfffffL)
+#define Bndry_mask  ((uint32_t)0xfffffL)
+#define Bndry_mask1 ((uint32_t)0xfffffL)
 #define LSB 1
-#define Sign_bit ((__uint32_t)0x80000000L)
+#define Sign_bit ((uint32_t)0x80000000L)
 #define Log2P 1
 #define Tiny0 0
 #define Tiny1 1
 #define Quick_max 14
 #define Int_max 14
-#define Infinite(x) (word0(x) == ((__uint32_t)0x7ff00000L)) /* sufficient test for here */
+#define Infinite(x) (word0(x) == ((uint32_t)0x7ff00000L)) /* sufficient test for here */
 #endif
 
 #else
@@ -182,24 +203,24 @@ union double_union
 #ifdef IBM
 #define Exp_shift  24
 #define Exp_shift1 24
-#define Exp_msk1   ((__uint32_t)0x1000000L)
-#define Exp_msk11  ((__uint32_t)0x1000000L)
-#define Exp_mask  ((__uint32_t)0x7f000000L)
+#define Exp_msk1   ((uint32_t)0x1000000L)
+#define Exp_msk11  ((uint32_t)0x1000000L)
+#define Exp_mask  ((uint32_t)0x7f000000L)
 #define P 14
 #define Bias 65
-#define Exp_1  ((__uint32_t)0x41000000L)
-#define Exp_11 ((__uint32_t)0x41000000L)
+#define Exp_1  ((uint32_t)0x41000000L)
+#define Exp_11 ((uint32_t)0x41000000L)
 #define Ebits 8	/* exponent has 7 bits, but 8 is the right value in b2d */
-#define Frac_mask  ((__uint32_t)0xffffffL)
-#define Frac_mask1 ((__uint32_t)0xffffffL)
+#define Frac_mask  ((uint32_t)0xffffffL)
+#define Frac_mask1 ((uint32_t)0xffffffL)
 #define Bletch 4
 #define Ten_pmax 22
-#define Bndry_mask  ((__uint32_t)0xefffffL)
-#define Bndry_mask1 ((__uint32_t)0xffffffL)
+#define Bndry_mask  ((uint32_t)0xefffffL)
+#define Bndry_mask1 ((uint32_t)0xffffffL)
 #define LSB 1
-#define Sign_bit ((__uint32_t)0x80000000L)
+#define Sign_bit ((uint32_t)0x80000000L)
 #define Log2P 4
-#define Tiny0 ((__uint32_t)0x100000L)
+#define Tiny0 ((uint32_t)0x100000L)
 #define Tiny1 0
 #define Quick_max 14
 #define Int_max 15
@@ -207,21 +228,21 @@ union double_union
 #define Exp_shift  23
 #define Exp_shift1 7
 #define Exp_msk1    0x80
-#define Exp_msk11   ((__uint32_t)0x800000L)
-#define Exp_mask  ((__uint32_t)0x7f80L)
+#define Exp_msk11   ((uint32_t)0x800000L)
+#define Exp_mask  ((uint32_t)0x7f80L)
 #define P 56
 #define Bias 129
-#define Exp_1  ((__uint32_t)0x40800000L)
-#define Exp_11 ((__uint32_t)0x4080L)
+#define Exp_1  ((uint32_t)0x40800000L)
+#define Exp_11 ((uint32_t)0x4080L)
 #define Ebits 8
-#define Frac_mask  ((__uint32_t)0x7fffffL)
-#define Frac_mask1 ((__uint32_t)0xffff007fL)
+#define Frac_mask  ((uint32_t)0x7fffffL)
+#define Frac_mask1 ((uint32_t)0xffff007fL)
 #define Ten_pmax 24
 #define Bletch 2
-#define Bndry_mask  ((__uint32_t)0xffff007fL)
-#define Bndry_mask1 ((__uint32_t)0xffff007fL)
-#define LSB ((__uint32_t)0x10000L)
-#define Sign_bit ((__uint32_t)0x8000L)
+#define Bndry_mask  ((uint32_t)0xffff007fL)
+#define Bndry_mask1 ((uint32_t)0xffff007fL)
+#define LSB ((uint32_t)0x10000L)
+#define Sign_bit ((uint32_t)0x8000L)
 #define Log2P 1
 #define Tiny0 0x80
 #define Tiny1 0
@@ -248,7 +269,7 @@ extern double rnd_prod(double, double), rnd_quot(double, double);
 #endif
 
 #define Big0 (Frac_mask1 | Exp_msk1*(DBL_MAX_EXP+Bias-1))
-#define Big1 ((__uint32_t)0xffffffffL)
+#define Big1 ((uint32_t)0xffffffffL)
 
 #ifndef Just_16
 /* When Pack_32 is not defined, we store 16 bits per 32-bit long.
@@ -266,7 +287,7 @@ extern double rnd_prod(double, double), rnd_quot(double, double);
 #define MAX_BIGNUMS 16
 #define MAX_BIGNUM_WDS 32
 
-struct _Jv_Bigint 
+struct _Jv_Bigint
 {
   struct _Jv_Bigint *_next;
   int _k, _maxwds, _sign, _wds;
@@ -333,10 +354,10 @@ typedef struct _Jv_Bigint _Jv_Bigint;
 #define _strtod_r _Jv_strtod_r
 
 extern double _EXFUN(_strtod_r, (struct _Jv_reent *ptr, const char *s00, char **se));
-extern char* _EXFUN(_dtoa_r, (struct _Jv_reent *ptr, double d, 
-			      int mode, int ndigits, int *decpt, int *sign, 
+extern char* _EXFUN(_dtoa_r, (struct _Jv_reent *ptr, double d,
+			      int mode, int ndigits, int *decpt, int *sign,
 			      char **rve, int float_type));
-void _EXFUN(_dtoa, (double d, int mode, int ndigits, int *decpt, int *sign, 
+void _EXFUN(_dtoa, (double d, int mode, int ndigits, int *decpt, int *sign,
 		    char **rve, char *buf, int float_type));
 
 double 		_EXFUN(ulp,(double x));
@@ -371,4 +392,3 @@ extern _CONST double tens[];
 #ifdef __cplusplus
 }
 #endif
-

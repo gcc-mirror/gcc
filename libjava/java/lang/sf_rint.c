@@ -8,7 +8,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -18,7 +18,7 @@
 #ifdef __STDC__
 static const float
 #else
-static float 
+static float
 #endif
 TWO23[2]={
   8.3886080000e+06, /* 0x4b000000 */
@@ -32,14 +32,14 @@ TWO23[2]={
 	float x;
 #endif
 {
-	__int32_t i0,j0,sx;
-	__uint32_t i,i1;
+	int32_t i0,j0,sx;
+	uint32_t i,i1;
 	float w,t;
 	GET_FLOAT_WORD(i0,x);
 	sx = (i0>>31)&1;
 	j0 = ((i0>>23)&0xff)-0x7f;
 	if(j0<23) {
-	    if(j0<0) { 	
+	    if(j0<0) {
 		if((i0&0x7fffffff)==0) return x;
 		i1 = (i0&0x07fffff);
 		i0 &= 0xfff00000;

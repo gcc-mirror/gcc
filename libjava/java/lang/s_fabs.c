@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -26,16 +26,16 @@ ANSI_SYNOPSIS
 
 TRAD_SYNOPSIS
 	#include <math.h>
-       double fabs(<[x]>) 
+       double fabs(<[x]>)
        double <[x]>;
 
        float fabsf(<[x]>)
        float <[x]>;
 
 DESCRIPTION
-<<fabs>> and <<fabsf>> calculate 
+<<fabs>> and <<fabsf>> calculate
 @tex
-$|x|$, 
+$|x|$,
 @end tex
 the absolute value (magnitude) of the argument <[x]>, by direct
 manipulation of the bit representation of <[x]>.
@@ -64,7 +64,7 @@ PORTABILITY
 	double x;
 #endif
 {
-	__uint32_t high;
+	uint32_t high;
 	GET_HIGH_WORD(high,x);
 	SET_HIGH_WORD(x,high&0x7fffffff);
         return x;
