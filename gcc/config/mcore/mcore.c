@@ -3540,7 +3540,7 @@ mcore_unique_section (decl, reloc)
     prefix = ".text$";
   /* For compatibility with EPOC, we ignore the fact that the
      section might have relocs against it.  */
-  else if (DECL_READONLY_SECTION (decl, 0))
+  else if (decl_readonly_section (decl, 0))
     prefix = ".rdata$";
   else
     prefix = ".data$";

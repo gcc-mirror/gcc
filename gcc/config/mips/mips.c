@@ -10310,7 +10310,7 @@ mips_unique_section (decl, reloc)
 	 read-only data if possible, in order to reduce RAM
 	 usage.  */
 
-      if (DECL_READONLY_SECTION (decl, reloc))
+      if (decl_readonly_section (decl, reloc))
 	sec = 1;
       else if (size > 0 && size <= mips_section_threshold)
 	sec = 3;
@@ -10325,7 +10325,7 @@ mips_unique_section (decl, reloc)
 
       if (size > 0 && size <= mips_section_threshold)
 	sec = 3;
-      else if (DECL_READONLY_SECTION (decl, reloc))
+      else if (decl_readonly_section (decl, reloc))
 	sec = 1;
       else
 	sec = 2;
