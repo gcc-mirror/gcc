@@ -64,13 +64,13 @@ Written by Per Bothner 1994.  */
 #define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
 #endif
 
-#define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
-			    ? (~ (~ (HOST_WIDE_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
-			    : ~ (HOST_WIDE_INT) 0)
+#define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
+			    ? (~ (~ (HOST_WIDEST_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
+			    : ~ (HOST_WIDEST_INT) 0)
 
-#define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
-			     ? ~ (~ (HOST_WIDE_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
-			     : ~ (HOST_WIDE_INT) 0)
+#define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
+			     ? ~ (~ (HOST_WIDEST_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
+			     : ~ (HOST_WIDEST_INT) 0)
 
 /* Yield nonzero if adding two numbers with A's and B's signs can yield a
    number with SUM's sign, where A, B, and SUM are all C integers.  */
@@ -101,14 +101,6 @@ static long right_shift PARAMS ((cpp_reader *, long, int, unsigned long));
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
-#ifndef CHAR_BIT
-#define CHAR_BIT 8
-#endif
-
-#ifndef HOST_BITS_PER_WIDE_INT
-#define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
-#endif
-
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 
 struct operation {
@@ -116,7 +108,7 @@ struct operation {
     char rprio; /* Priority of op (relative to it right operand).  */
     char flags;
     char unsignedp;    /* true if value should be treated as unsigned */
-    HOST_WIDE_INT value;        /* The value logically "right" of op.  */
+    HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
 };
 
 /* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
@@ -131,7 +123,7 @@ parse_number (pfile, start, end)
   struct operation op;
   U_CHAR *p = start;
   int c;
-  unsigned HOST_WIDE_INT n = 0, nd, MAX_over_base;
+  unsigned HOST_WIDEST_INT n = 0, nd, MAX_over_base;
   int base = 10;
   int overflow = 0;
   int digit, largest_digit = 0;
@@ -154,8 +146,8 @@ parse_number (pfile, start, end)
     }
 
   /* Some buggy compilers (e.g. MPW C) seem to need both casts.  */
-  MAX_over_base = (((unsigned HOST_WIDE_INT) -1)
-		   / ((unsigned HOST_WIDE_INT) base));
+  MAX_over_base = (((unsigned HOST_WIDEST_INT) -1)
+		   / ((unsigned HOST_WIDEST_INT) base));
 
   while (p < end)
     {
@@ -229,7 +221,7 @@ parse_number (pfile, start, end)
     cpp_pedwarn (pfile, "integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
-  else if ((HOST_WIDE_INT) n < 0 && ! op.unsignedp)
+  else if ((HOST_WIDEST_INT) n < 0 && ! op.unsignedp)
     {
       if (base == 10)
 	cpp_warning (pfile,
@@ -255,7 +247,7 @@ parse_charconst (pfile, start, end)
      U_CHAR *end;
 {
   struct operation op;
-  HOST_WIDE_INT result = 0;
+  HOST_WIDEST_INT result = 0;
   int num_chars = 0;
   int num_bits;
   unsigned int width = MAX_CHAR_TYPE_SIZE, mask = MAX_CHAR_TYPE_MASK;
@@ -521,11 +513,11 @@ cpp_lex (pfile, skip_evaluation)
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
 
-HOST_WIDE_INT
+HOST_WIDEST_INT
 cpp_parse_escape (pfile, string_ptr, result_mask)
      cpp_reader *pfile;
      char **string_ptr;
-     HOST_WIDE_INT result_mask;
+     HOST_WIDEST_INT result_mask;
 {
   register int c = *(*string_ptr)++;
   switch (c)
@@ -564,7 +556,7 @@ cpp_parse_escape (pfile, string_ptr, result_mask)
     case '6':
     case '7':
       {
-	register HOST_WIDE_INT i = c - '0';
+	register HOST_WIDEST_INT i = c - '0';
 	register int count = 0;
 	while (++count < 3)
 	  {
@@ -586,7 +578,7 @@ cpp_parse_escape (pfile, string_ptr, result_mask)
       }
     case 'x':
       {
-	register unsigned HOST_WIDE_INT i = 0, overflow = 0;
+	register unsigned HOST_WIDEST_INT i = 0, overflow = 0;
 	register int digits_found = 0, digit;
 	for (;;)
 	  {
@@ -692,7 +684,7 @@ right_shift (pfile, a, unsignedp, b)
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the value of the expression.  */
 
-HOST_WIDE_INT
+HOST_WIDEST_INT
 cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {

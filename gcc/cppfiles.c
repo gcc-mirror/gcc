@@ -705,8 +705,8 @@ finclude (pfile, fd, ihash)
          a single source file bigger than 4GB needs to rethink
 	 their coding style.)  */
       st_size = (size_t) st.st_size;
-      if ((unsigned HOST_WIDE_INT) st_size
-	  != (unsigned HOST_WIDE_INT) st.st_size)
+      if ((unsigned HOST_WIDEST_INT) st_size
+	  != (unsigned HOST_WIDEST_INT) st.st_size)
 	{
 	  cpp_error (pfile, "file `%s' is too large", ihash->name);
 	  goto fail;

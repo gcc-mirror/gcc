@@ -1,3 +1,18 @@
+Thu Feb 25 23:33:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (cppmain.o, cpplib.o, cpphash.o, cppalloc.o,
+ 	cpperror.o, cppexp.o, cppfiles.o, cppinit.o, fix-header.o,
+ 	scan-decls.o): Don't depend on machmode.h.
+	
+        * cppexp.c: Don't define CHAR_BIT or HOST_BITS_PER_WIDE_INT anymore.
+  	Replace all instances of HOST_WIDE_INT with HOST_WIDEST_INT.
+	
+	* cppfiles.c: Likewise.
+
+ 	* cpplib.c: Likewise.
+	 
+ 	* cpplib.h: Likewise.  Also don't include machmode.h anymore.
+
 Thu Feb 25 18:46:26 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c (default_compilers): Define __FAST_MATH__ when appropriate.

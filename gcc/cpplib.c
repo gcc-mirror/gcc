@@ -55,7 +55,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 static char *my_strerror		PROTO ((int));
 static void validate_else		PROTO ((cpp_reader *, char *));
-static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *));
+static HOST_WIDEST_INT eval_if_expression	PROTO ((cpp_reader *));
 
 static void conditional_skip		PROTO ((cpp_reader *, int,
 						enum node_type, U_CHAR *));
@@ -64,7 +64,7 @@ static int parse_name                   PARAMS ((cpp_reader *, int));
 
 /* External declarations.  */
 
-extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
+extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
@@ -1595,7 +1595,7 @@ do_if (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  HOST_WIDE_INT value = eval_if_expression (pfile);
+  HOST_WIDEST_INT value = eval_if_expression (pfile);
   conditional_skip (pfile, value == 0, T_IF, NULL_PTR);
   return 0;
 }
@@ -1631,7 +1631,7 @@ do_elif (pfile, keyword)
   if (pfile->if_stack->if_succeeded)
     skip_if_group (pfile);
   else {
-    HOST_WIDE_INT value = eval_if_expression (pfile);
+    HOST_WIDEST_INT value = eval_if_expression (pfile);
     if (value == 0)
       skip_if_group (pfile);
     else {
@@ -1647,11 +1647,11 @@ do_elif (pfile, keyword)
  * then parse the result as a C expression and return the value as an int.
  */
 
-static HOST_WIDE_INT
+static HOST_WIDEST_INT
 eval_if_expression (pfile)
      cpp_reader *pfile;
 {
-  HOST_WIDE_INT value;
+  HOST_WIDEST_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
   pfile->pcp_inside_if = 1;
