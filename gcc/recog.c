@@ -1968,7 +1968,9 @@ offsettable_address_p (strictp, mode, y)
      of the specified mode.  We assume that if Y and Y+c are
      valid addresses then so is Y+d for all 0<d<c.  adjust_address will
      go inside a LO_SUM here, so we do so as well.  */
-  if (GET_CODE (y) == LO_SUM)
+  if (GET_CODE (y) == LO_SUM
+      && mode != BLKmode
+      && mode_sz <= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
     z = gen_rtx_LO_SUM (GET_MODE (y), XEXP (y, 0),
 			plus_constant (XEXP (y, 1), mode_sz - 1));
   else
