@@ -997,17 +997,17 @@ public class DefaultMutableTreeNode
 	public int getLeafCount() {
 
 		// Variables
-		Enumeration	enum;
+		Enumeration	e;
 		int			count;
 		TreeNode	current;
 
 		// Get Enumeration of all descendants
-		enum = depthFirstEnumeration();
+		e = depthFirstEnumeration();
 
 		// Process Nodes
 		count = 0;
-		while (enum.hasMoreElements() == true) {
-			current = (TreeNode) enum.nextElement();
+		while (e.hasMoreElements() == true) {
+			current = (TreeNode) e.nextElement();
 			if (current.isLeaf() == true) {
 				count++;
 			} // if

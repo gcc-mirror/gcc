@@ -85,9 +85,9 @@ public class BeanInfoEmbryo {
 
 		PropertyDescriptor[] Aproperties = new PropertyDescriptor[properties.size()];
 		int i = 0;
-		Enumeration enum = properties.elements();
-		while(enum.hasMoreElements()) {
-			Aproperties[i] = (PropertyDescriptor)enum.nextElement();
+		Enumeration e = properties.elements();
+		while (e.hasMoreElements()) {
+			Aproperties[i] = (PropertyDescriptor) e.nextElement();
 			if(defaultPropertyName != null && Aproperties[i].getName().equals(defaultPropertyName)) {
 				defaultProperty = i;
 			}
@@ -96,9 +96,9 @@ public class BeanInfoEmbryo {
 
 		EventSetDescriptor[] Aevents = new EventSetDescriptor[events.size()];
 		i = 0;
-		enum = events.elements();
-		while(enum.hasMoreElements()) {
-			Aevents[i] = (EventSetDescriptor)enum.nextElement();
+		e = events.elements();
+		while (e.hasMoreElements()) {
+			Aevents[i] = (EventSetDescriptor) e.nextElement();
 			if(defaultEventName != null && Aevents[i].getName().equals(defaultEventName)) {
 				defaultEvent = i;
 			}
