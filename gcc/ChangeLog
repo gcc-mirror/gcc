@@ -1,3 +1,9 @@
+Thu Jan  7 11:26:17 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* calls.c (store_unaligned_arguments_into_pseudos): Use xmalloc to
+	allocate memory that will live beyond this function.
+	(expand_call): Free it here.
+
 Thu Jan  7 03:08:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.h (PREFERRED_RELOAD_CLASS): Select GENERAL_REGS for 
