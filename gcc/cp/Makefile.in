@@ -295,7 +295,7 @@ repo.o : repo.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h $(srcdir)/../ggc.h
 semantics.o: semantics.c $(CONFIG_H) $(CXX_TREE_H) lex.h \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
-  $(srcdir)/../flags.h
+  $(srcdir)/../flags.h $(srcdir)/../ggc.h
 dump.o: dump.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h
 
 #
