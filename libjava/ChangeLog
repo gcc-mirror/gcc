@@ -22,6 +22,15 @@
 	* gnu/gcj/convert/Output_UTF8.java:  Fix typo: 0xC0 -> 0c3F.
 	* gnu/gcj/convert/Input_UTF8.java:  Fix typos in bit masks.
 
+	* java/io/InputStreamReader.java (<init>):  Set super.in correctly.
+	* java/io/OutputStreamWriter.java (<init>):  Set super.in correctly.
+	(writeChars):  Don't be quite so eager to flush.
+	* java/io/PrintStream.java:  Rewrite.  Now more similar to
+	OutputStreamWriter, using explicit UnicodeToBytes converter.
+	Also, autoflush does not need to flush so often.
+	* java/lang/natString.cc (getBytes):  More efficient algorithm.
+ 	(init(jbyteArray,jint,jint,jstring)):  More efficient.
+	
 1999-04-15  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am (ordinary_java_source_files): Added new Connection 
