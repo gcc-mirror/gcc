@@ -638,7 +638,7 @@ package body Prj.Nmsc is
                   Data.Naming.Current_Spec_Suffix := Ada_Spec_Suffix;
 
                else
-                  Data.Naming.Current_Spec_Suffix := Ada_Default_Spec_Suffix;
+                  Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
                end if;
             end;
 
@@ -662,7 +662,7 @@ package body Prj.Nmsc is
                   Data.Naming.Current_Impl_Suffix := Ada_Impl_Suffix;
 
                else
-                  Data.Naming.Current_Impl_Suffix := Ada_Default_Impl_Suffix;
+                  Data.Naming.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
                end if;
             end;
 
@@ -713,9 +713,9 @@ package body Prj.Nmsc is
             Check_Ada_Naming_Scheme (Data.Naming);
 
          else
-            Data.Naming.Current_Spec_Suffix := Ada_Default_Spec_Suffix;
-            Data.Naming.Current_Impl_Suffix := Ada_Default_Impl_Suffix;
-            Data.Naming.Separate_Suffix     := Ada_Default_Impl_Suffix;
+            Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
+            Data.Naming.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
+            Data.Naming.Separate_Suffix     := Default_Ada_Impl_Suffix;
          end if;
       end;
 
