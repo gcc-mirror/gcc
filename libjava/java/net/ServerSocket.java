@@ -323,7 +323,24 @@ public class ServerSocket
       sm.checkListen (impl.getLocalPort ());
 
     Socket socket = new Socket();
-    implAccept (socket);
+    
+    try
+      {
+        implAccept(socket);
+      }
+    catch (IOException e)
+      {
+	try
+	  {
+	    socket.close();
+	  }
+	catch (IOException e2)
+	  {
+	  }
+	
+	throw e;
+      }
+    
     return socket;
   }
 
