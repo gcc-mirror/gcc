@@ -9062,7 +9062,7 @@
    (set (match_operand:SI 2 "register_operand" "")
         (match_operand:SI 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[2], operands[0]) 
-  && mems_ok_for_ldd_peep (operands[3], operands[1], operands[2])"
+  && mems_ok_for_ldd_peep (operands[3], operands[1], operands[0])"
   [(set (match_dup 2)
 	(match_dup 3))]
    "operands[3] = change_address (operands[3], DImode, NULL);
@@ -9087,7 +9087,7 @@
    (set (match_operand:SF 2 "register_operand" "")
         (match_operand:SF 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[2], operands[0]) 
-  && mems_ok_for_ldd_peep (operands[3], operands[1], operands[2])"
+  && mems_ok_for_ldd_peep (operands[3], operands[1], operands[0])"
   [(set (match_dup 2)
 	(match_dup 3))]
   "operands[3] = change_address (operands[3], DFmode, NULL);

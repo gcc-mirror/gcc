@@ -5798,6 +5798,20 @@ registers_ok_for_ldd_peep (reg1, reg2)
 	ld [%o0 + 4], %o1
    to
    	ldd [%o0], %o0
+   nor:
+	ld [%g3 + 4], %g3
+	ld [%g3], %g2
+   to
+        ldd [%g3], %g2
+
+   But, note that the transformation from:
+	ld [%g2 + 4], %g3
+        ld [%g2], %g2
+   to
+	ldd [%g2], %g2
+   is perfectly fine.  Thus, the peephole2 patterns always pass us
+   the destination register of the first load, never the second one.
+
    For stores we don't have a similar problem, so dependent_reg_rtx is
    NULL_RTX.  */
 
