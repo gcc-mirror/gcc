@@ -187,7 +187,7 @@ LSFDE1:
 	.long	L$set$1	; FDE Length
 LASFDE1:
 	.long	LASFDE1-EH_frame1 ; FDE CIE offset
-	.long	LFB0-.	; FDE initial location
+	.long	LLFB0$non_lazy_ptr-.	; FDE initial location
 	.set	L$set$3,LFE1-LFB0
 	.long	L$set$3	; FDE address range
 	.byte   0x0     ; uleb128 0x0; Augmentation size
@@ -217,3 +217,7 @@ LASFDE1:
 	.byte	0x1c	; uleb128 0x1c
 	.align 2
 LEFDE1:
+.data
+        .align 2
+LLFB0$non_lazy_ptr:
+        .long   LFB0
