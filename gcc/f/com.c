@@ -11411,6 +11411,8 @@ ffecom_init_0 ()
   /* Define `int' and `char' first so that dbx will output them first.  */
   pushdecl (build_decl (TYPE_DECL, get_identifier ("int"),
 			integer_type_node));
+  /* CHARACTER*1 is unsigned in ICHAR contexts.  */
+  char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("char"),
 			char_type_node));
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long int"),
