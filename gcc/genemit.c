@@ -707,9 +707,10 @@ output_add_clobbers (void)
   printf ("}\n");
 }
 
-/* Write a function, `added_clobbers_hard_reg_p' this is given an insn_code
-   number that needs clobbers and returns 1 if they include a clobber of a
-   hard reg and 0 if they just clobber SCRATCH.  */
+/* Write a function, `added_clobbers_hard_reg_p' that is given an insn_code
+   number that will have clobbers added (as indicated by `recog') and returns
+   1 if those include a clobber of a hard reg or 0 if all of them just clobber
+   SCRATCH.  */
 
 static void
 output_added_clobbers_hard_reg_p (void)
