@@ -1,5 +1,9 @@
 2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
 
+	* tree-flow-inline.h: Document all functions.
+	
+2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-flow-inline.h (stmt_ann): Remove use of is_essa_node.
 	* tree-dfa.c (create_stmt_ann): Ditto.
 	* tree-pretty-print.c (dump_generic_node): Remove E* node handling.
