@@ -1666,6 +1666,8 @@ typedef struct xtensa_args {
 	fprintf (FILE, "\t.begin\tliteral_prefix %s\n",			\
 		 strcmp (fnsectname, ".text") ? fnsectname : "");	\
       }									\
+    if ((SIZE) > 0)							\
+      function_section (FUNDECL);  					\
   } while (0)
 
 
