@@ -159,6 +159,12 @@ hook_bool_tree_false (tree a ATTRIBUTE_UNUSED)
 }
 
 bool
+hook_bool_tree_true (tree a ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
 hook_bool_tree_tree_false (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
 {
   return false;
@@ -190,7 +196,14 @@ hook_rtx_rtx_identity (rtx x)
 rtx
 hook_rtx_rtx_null (rtx x ATTRIBUTE_UNUSED)
 {
-  return 0;
+  return NULL;
+}
+
+/* Generic hook that takes a tree and an int and returns NULL_RTX.  */
+rtx
+hook_rtx_tree_int_null (tree a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
+{
+  return NULL;
 }
 
 /* Generic hook that takes a size_t and returns NULL.  */

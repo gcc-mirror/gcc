@@ -242,6 +242,7 @@ static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					    HOST_WIDE_INT, tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+static bool rs6000_return_in_memory (tree, tree);
 static void rs6000_file_start (void);
 #if TARGET_ELF
 static unsigned int rs6000_elf_section_type_flags (tree, const char *, int);
@@ -326,6 +327,9 @@ static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_complex_function_value (enum machine_mode);
 static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *, 
 				    enum machine_mode, tree);
+static void setup_incoming_varargs (CUMULATIVE_ARGS *,
+				    enum machine_mode, tree,
+				    int *, int);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -502,6 +506,29 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN rs6000_dwarf_register_span
+
+/* On rs6000, function arguments are promoted, as are function return
+   values.  */
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+
+/* Structure return values are passed as an extra parameter.  */
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS setup_incoming_varargs
+
+/* Always strict argument naming on rs6000.  */
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
+#undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+#define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3521,6 +3548,39 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
 }
 
+/* Return a nonzero value to say to return the function value in
+   memory, just as large structures are always returned.  TYPE will be
+   the data type of the value, and FNTYPE will be the type of the
+   function doing the returning, or @code{NULL} for libcalls.
+
+   The AIX ABI for the RS/6000 specifies that all structures are
+   returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
+   specifies that structures <= 8 bytes are returned in r3/r4, but a
+   draft put them in memory, and GCC used to implement the draft
+   instead of the final standard.  Therefore, TARGET_AIX_STRUCT_RET
+   controls this instead of DEFAULT_ABI; V.4 targets needing backward
+   compatibility can change DRAFT_V4_STRUCT_RET to override the
+   default, and -m switches get the final word.  See
+   rs6000_override_options for more details.
+
+   The PPC32 SVR4 ABI uses IEEE double extended for long double, if 128-bit
+   long double support is enabled.  These values are returned in memory.
+
+   int_size_in_bytes returns -1 for variable size objects, which go in
+   memory always.  The cast to unsigned makes -1 > 8.  */
+
+static bool
+rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  if (AGGREGATE_TYPE_P (type)
+      && (TARGET_AIX_STRUCT_RET
+	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
+    return true;
+  if (DEFAULT_ABI == ABI_V4 && TYPE_MODE (type) == TFmode)
+    return true;
+  return false;
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
@@ -3553,7 +3613,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
   else if (cum->prototype)
     cum->nargs_prototype = (list_length (TYPE_ARG_TYPES (fntype)) - 1
 			    + (TYPE_MODE (TREE_TYPE (fntype)) == BLKmode
-			       || RETURN_IN_MEMORY (TREE_TYPE (fntype))));
+			       || rs6000_return_in_memory (TREE_TYPE (fntype),
+							   fntype)));
 
   else
     cum->nargs_prototype = 0;
@@ -4011,7 +4072,7 @@ function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    Normally, this macro will push all remaining incoming registers on the
    stack and set PRETEND_SIZE to the length of the registers pushed.  */
 
-void
+static void
 setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
 		tree type, int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
 {

@@ -563,15 +563,6 @@ extern int rs6000_sched_restricted_insns_priority;
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
     (MODE) = word_mode;
 
-/* Define this if function arguments should also be promoted using the above
-   procedure.  */
-
-#define PROMOTE_FUNCTION_ARGS
-
-/* Likewise, if the function return value is promoted.  */
-
-#define PROMOTE_FUNCTION_RETURN
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 /* That is true on RS/6000.  */
@@ -1151,11 +1142,6 @@ extern int rs6000_sched_restricted_insns_priority;
 
 /* Count register number.  */
 #define COUNT_REGISTER_REGNUM 66
-
-/* Place that structure value return address is placed.
-
-   On the RS/6000, it is passed as an extra parameter.  */
-#define STRUCT_VALUE 0
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1616,28 +1602,6 @@ typedef struct rs6000_stack {
 
 #define LIBCALL_VALUE(MODE) rs6000_libcall_value ((MODE))
 
-/* The AIX ABI for the RS/6000 specifies that all structures are
-   returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
-   specifies that structures <= 8 bytes are returned in r3/r4, but a
-   draft put them in memory, and GCC used to implement the draft
-   instead of the final standard.  Therefore, TARGET_AIX_STRUCT_RET
-   controls this instead of DEFAULT_ABI; V.4 targets needing backward
-   compatibility can change DRAFT_V4_STRUCT_RET to override the
-   default, and -m switches get the final word.  See
-   rs6000_override_options for more details.
-
-   The PPC32 SVR4 ABI uses IEEE double extended for long double, if 128-bit
-   long double support is enabled.  These values are returned in memory.
-
-   int_size_in_bytes returns -1 for variable size objects, which go in
-   memory always.  The cast to unsigned makes -1 > 8.  */
-
-#define RETURN_IN_MEMORY(TYPE) \
-  ((AGGREGATE_TYPE_P (TYPE)						\
-    && (TARGET_AIX_STRUCT_RET						\
-	|| (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 8))	\
-   || (DEFAULT_ABI == ABI_V4 && TYPE_MODE (TYPE) == TFmode))
-
 /* DRAFT_V4_STRUCT_RET defaults off.  */
 #define DRAFT_V4_STRUCT_RET 0
 
@@ -1856,23 +1820,6 @@ typedef struct rs6000_args
    This should be set for Linux and Darwin as well, but we can't break
    the ABIs at the moment.  For now, only AIX gets fixed.  */
 #define SPLIT_COMPLEX_ARGS (DEFAULT_ABI == ABI_AIX)
-
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments.
-
-   CUM is as above.
-
-   MODE and TYPE are the mode and type of the current parameter.
-
-   PRETEND_SIZE is a variable that should be set to the amount of stack
-   that must be pushed by the prolog to pretend that our caller pushed
-   it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed.  */
-
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
-  setup_incoming_varargs (&CUM, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
