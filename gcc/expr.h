@@ -251,11 +251,6 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define PRETEND_OUTGOING_VARARGS_NAMED 0
 #endif
 
-/* Supply a default definition for PROMOTE_PROTOTYPES.  */
-#ifndef PROMOTE_PROTOTYPES
-#define PROMOTE_PROTOTYPES	0
-#endif
-
 /* Nonzero if we do not know how to pass TYPE solely in registers.
    We cannot do so in the following cases:
 
