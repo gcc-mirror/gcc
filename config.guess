@@ -421,6 +421,9 @@ EOF
     parisc*:Lites*:*:*)
 	echo hppa1.1-hp-lites
 	exit 0 ;;
+    hppa*:OpenBSD:*:*)
+	echo hppa-unknown-openbsd
+	exit 0 ;;
     C1*:ConvexOS:*:* | convex:ConvexOS:C1*:*)
 	echo c1-convex-bsd
         exit 0 ;;
