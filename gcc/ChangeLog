@@ -1,3 +1,8 @@
+2004-11-12  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (clean_predicate_lists): Use loop header
+	and latch directly.
+	
 2004-11-12  Richard Henderson  <rth@redhat.com>
 
 	PR 17778

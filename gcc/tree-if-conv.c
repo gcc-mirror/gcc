@@ -657,10 +657,11 @@ add_to_dst_predicate_list (struct loop * loop, basic_block bb,
 static void
 clean_predicate_lists (struct loop *loop)
 {
-  unsigned int i;
-
-  for (i = 0; i < loop->num_nodes; i++)
-    ifc_bbs[i]->aux = NULL;
+#ifdef ENABLE_CHECKING
+  gcc_assert (loop->num_nodes == 2);
+#endif
+  loop->header->aux = NULL;
+  loop->latch->aux = NULL;
 }
 
 /* Basic block BB has two predecessors. Using predecessor's aux field, set
