@@ -34,7 +34,9 @@ Boston, MA 02111-1307, USA.  */
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C}"
+%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
+%{mieee:-D_IEEE_FP} \
+%{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT}"
 
 /* Set the spec to use for signed char.  The default tests the above macro
    but DEC's compiler can't handle the conditional in a "constant"
@@ -78,23 +80,67 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
+enum alpha_trap_precision
+{
+  ALPHA_TP_PROG,	/* No precision (default).  */
+  ALPHA_TP_FUNC,      	/* Trap contained within originating function.  */
+  ALPHA_TP_INSN		/* Instruction accuracy and code is resumption safe. */
+};
+
+enum alpha_fp_rounding_mode
+{
+  ALPHA_FPRM_NORM,	/* Normal rounding mode.  */
+  ALPHA_FPRM_MINF,	/* Round towards minus-infinity.  */
+  ALPHA_FPRM_CHOP,	/* Chopped rounding mode (towards 0). */
+  ALPHA_FPRM_DYN	/* Dynamic rounding mode.  */
+};
+
+enum alpha_fp_trap_mode
+{
+  ALPHA_FPTM_N,		/* Normal trap mode. */
+  ALPHA_FPTM_U,		/* Underflow traps enabled.  */
+  ALPHA_FPTM_SU,	/* Software completion, w/underflow traps */
+  ALPHA_FPTM_SUI	/* Software completion, w/underflow & inexact traps */
+};
+
 extern int target_flags;
+
+extern enum alpha_trap_precision alpha_tp;
+extern enum alpha_fp_rounding_mode alpha_fprm;
+extern enum alpha_fp_trap_mode alpha_fptm;
 
 /* This means that floating-point support exists in the target implementation
    of the Alpha architecture.  This is usually the default.  */
 
-#define TARGET_FP	(target_flags & 1)
+#define MASK_FP		1
+#define TARGET_FP	(target_flags & MASK_FP)
 
 /* This means that floating-point registers are allowed to be used.  Note
    that Alpha implementations without FP operations are required to
    provide the FP registers.  */
 
-#define TARGET_FPREGS	(target_flags & 2)
+#define MASK_FPREGS	2
+#define TARGET_FPREGS	(target_flags & MASK_FPREGS)
 
 /* This means that gas is used to process the assembler file.  */
 
 #define MASK_GAS 4
 #define TARGET_GAS	(target_flags & MASK_GAS)
+
+/* This means that we should mark procedures as IEEE conformant. */
+
+#define MASK_IEEE_CONFORMANT 8
+#define TARGET_IEEE_CONFORMANT	(target_flags & MASK_IEEE_CONFORMANT)
+
+/* This means we should be IEEE-compliant except for inexact.  */
+
+#define MASK_IEEE	16
+#define TARGET_IEEE	(target_flags & MASK_IEEE)
+
+/* This means we should be fully IEEE-compliant.  */
+
+#define MASK_IEEE_WITH_INEXACT 32
+#define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -102,13 +148,16 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES			\
-  { {"no-soft-float", 1},		\
-    {"soft-float", -1},			\
-    {"fp-regs", 2},			\
-    {"no-fp-regs", -3},			\
-    {"alpha-as", -MASK_GAS},		\
-    {"gas", MASK_GAS},			\
+#define TARGET_SWITCHES				\
+  { {"no-soft-float", MASK_FP},			\
+    {"soft-float", - MASK_FP},			\
+    {"fp-regs", MASK_FPREGS},			\
+    {"no-fp-regs", - (MASK_FP|MASK_FPREGS)},	\
+    {"alpha-as", -MASK_GAS},			\
+    {"gas", MASK_GAS},				\
+    {"ieee-conformant", MASK_IEEE_CONFORMANT},	\
+    {"ieee", MASK_IEEE},			\
+    {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT}, \
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT 3
@@ -116,6 +165,47 @@ extern int target_flags;
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
 #endif
+
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an initializer
+   with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the fixed
+   part of the option name, and the address of a variable.  The
+   variable, type `char *', is set to the variable part of the given
+   option if the fixed part matches.  The actual option name is made
+   by appending `-m' to the specified name.
+
+   Here is an example which defines `-mshort-data-NUMBER'.  If the
+   given option is `-mshort-data-512', the variable `m88k_short_data'
+   will be set to the string `"512"'.
+
+	extern char *m88k_short_data;
+	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
+
+extern char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
+extern char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
+extern char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
+
+#define TARGET_OPTIONS				\
+{						\
+  {"fp-rounding-mode=",	&alpha_fprm_string},	\
+  {"fp-trap-mode=",	&alpha_fptm_string},	\
+  {"trap-precision=",	&alpha_tp_string},	\
+}
+
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   On the Alpha, it is used to translate target-option strings into
+   numeric values.  */
+
+extern void override_options ();
+#define OVERRIDE_OPTIONS override_options ()
+
 
 /* Define this macro to change register usage conditional on target flags.
 
@@ -1294,7 +1384,12 @@ __enable_execute_stack (addr)						\
 /* Define this if some processing needs to be done immediately before
    emitting code for an insn.  */
 
-/* #define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) */
+extern void final_prescan_insn ();
+#define FINAL_PRESCAN_INSN(INSN,OPERANDS,NOPERANDS) \
+  final_prescan_insn ((INSN), (OPERANDS), (NOPERANDS))
+
+/* Define this if FINAL_PRESCAN_INSN should be called for a CODE_LABEL.  */
+#define FINAL_PRESCAN_LABEL
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
@@ -1826,9 +1921,27 @@ literal_section ()						\
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand (FILE, X, CODE)
 
 /* Determine which codes are valid without a following integer.  These must
-   not be alphabetic.  */
+   not be alphabetic (the characters are chosen so that
+   PRINT_OPERAND_PUNCT_VALID_P translates into a simple range change when
+   using ASCII).
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) 0
+   &	Generates fp-rounding mode suffix: nothing for normal, 'c' for
+   	chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
+	mode.  alpha_fprm controls which suffix is generated.
+
+   '	Generates trap-mode suffix for instructions that accept the
+        su suffix only (cmpt et al).
+
+   )    Generates trap-mode suffix for instructions that accept the
+	u, su, and sui suffix.  This is the bulk of the IEEE floating
+	point instructions (addt et al).
+
+   +    Generates trap-mode suffix for instructions that accept the
+	sui suffix (cvtqt and cvtqs).
+   */
+
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
+  ((CODE) == '&' || (CODE) == '\'' || (CODE) == ')' || (CODE) == '+')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
