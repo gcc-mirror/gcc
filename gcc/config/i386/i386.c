@@ -546,6 +546,7 @@ i386_valid_type_attribute_p (type, attributes, identifier, args)
      tree args;
 {
   if (TREE_CODE (type) != FUNCTION_TYPE
+      && TREE_CODE (type) != METHOD_TYPE
       && TREE_CODE (type) != FIELD_DECL
       && TREE_CODE (type) != TYPE_DECL)
     return 0;

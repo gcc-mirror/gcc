@@ -1,3 +1,16 @@
+Tue Jul 28 23:29:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* i386/cygwin32.h (VALID_MACHINE_TYPE_ATTRIBUTE): New macro.
+	* i386/winnt.c (associated_type): New fn.
+	(i386_pe_valid_type_attribute_p): New fn.
+	(i386_pe_check_vtable_importexport): Remove.
+	(i386_pe_dllexport_p): Use associated_type.
+	(i386_pe_dllimport_p): Likewise.
+
+	From Antonio M. O. Neto <anmendes@cruzeironet.com.br>:
+	* i386.c (i386_valid_type_attribute_p): Also accept
+	attributes for METHOD_TYPEs.
+
 Tue Jul 28 23:17:39 1998  Peter Gerwinski <peter@gerwinski.de>
 
 	* tree.c (build_range_type): Copy TYPE_SIZE_UNIT.
