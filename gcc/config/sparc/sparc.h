@@ -57,7 +57,7 @@ extern enum arch_type sparc_arch_type;
 #else
 #define CPP_PREDEFINES \
   "-Dsparc -Dsun -Dunix -D__GCC_NEW_VARARGS__ \
-   -Asystem(unix) -Asystem(bsd)"
+   -Asystem(unix) -Asystem(bsd) -Acpu(sparc) -Amachine(sparc)"
 #endif
 
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
@@ -72,16 +72,20 @@ extern enum arch_type sparc_arch_type;
 #define ASM_SPEC " %| %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}}"
 
 /* Define macros to distinguish architectures.  */
+
+#ifdef SPARCV9
+#define CPP_SPEC "\
+%{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
+%{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
+"
+#else
 #define CPP_SPEC "\
 %{msparclite:-D__sparclite__} \
 %{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
 %{mv8:-D__sparc_v8__} \
 %{msupersparc:-D__supersparc__ -D__sparc_v8__}	\
-%{!mv9:-Acpu(sparc) -Amachine(sparc)} \
-%{mv9:-D__sparc_v9__ -Acpu(sparc64) -Amachine(sparc64)} \
-%{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
-%{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
 "
+#endif
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
@@ -89,17 +93,14 @@ extern enum arch_type sparc_arch_type;
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
-#define NO_BUILTIN_PTRDIFF_TYPE
-#define PTRDIFF_TYPE \
-  (POINTER_SIZE == 64 ? "long long int"				\
-   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long int"	\
-   : 0 /*abort*/)
-
-#define NO_BUILTIN_SIZE_TYPE
-#define SIZE_TYPE \
-  (POINTER_SIZE == 64 ? "long long unsigned int"		\
-   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long unsigned int" \
-   : 0 /*abort*/)
+#ifdef SPARCV9
+#define PTRDIFF_TYPE "long long int"
+#define SIZE_TYPE "long long unsigned int"
+#else
+#define PTRDIFF_TYPE "int"
+/* In 2.4 it should work to delete this.
+   #define SIZE_TYPE "int"  */
+#endif
 
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #define WCHAR_TYPE "short unsigned int"
@@ -230,7 +231,8 @@ extern int target_flags;
 #define TARGET_LONG64 (target_flags & MASK_LONG64)
 
 /* Nonzero if pointers are 64 bits.
-   This option is for v9 only.  */
+   This is not a user selectable option, though it may be one day -
+   so it is used to determine pointer size instead of an architecture flag.  */
 #define MASK_PTR64 0x8000
 #define TARGET_PTR64 (target_flags & MASK_PTR64)
 
@@ -245,6 +247,7 @@ extern int target_flags;
 /* Memory models.
    Two memory models are supported:
    TARGET_MEDLOW: 32 bit address space, top 32 bits = 0
+                  (pointers still 64 bits)
    TARGET_MEDANY: 32 bit address space, data segment loaded anywhere
                   (use %g4 as offset).
    TARGET_FULLANY: not supported yet.
@@ -312,7 +315,6 @@ extern int target_flags;
 
 /* ??? Until we support a combination v8/v9 compiler, the v9 specific options
    are only defined for the v9 compiler.  */
-/* ??? code models should be selected with -mcode-model=xxx.  */
 #ifdef SPARCV9
 #define V9_SWITCHES \
 /*  {"v9", MASK_V9}, */			\
