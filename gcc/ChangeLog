@@ -1,5 +1,15 @@
 2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/gcc.texi: Change the font used for @def... commands to a
+	fixed width font.
+	* doc/extend.texi: Use more logical markup.  Use "built-in"
+	instead of "builtin".  Use @deftypefn to mark up built-in
+	functions; specify their types in the @deftypefn and not in the
+	descriptive text.  Use TeX quotes and dashes.  Add more index
+	entries.
+
+2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/install.texi (--exec-prefix, --bindir, --libdir,
 	--with-slibdir, --infodir, --mandir, --with-cpp-install-dir):
 	Document.

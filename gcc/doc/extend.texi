@@ -7,8 +7,9 @@
 @cindex extensions, C language
 @cindex C language extensions
 
+@opindex pedantic
 GNU C provides several language features not found in ISO standard C.
-(The @samp{-pedantic} option directs GNU CC to print a warning message if
+(The @option{-pedantic} option directs GNU CC to print a warning message if
 any of these features is used.)  To test for the availability of these
 features in conditional compilation, check for a predefined macro
 @code{__GNUC__}, which is always defined under GNU CC.
@@ -498,10 +499,8 @@ and later return that value, without knowing what data type
 the function tried to return (as long as your caller expects
 that data type).
 
-@table @code
-@findex __builtin_apply_args
-@item __builtin_apply_args ()
-This built-in function returns a pointer of type @code{void *} to data
+@deftypefn {Built-in Function} {void *} __builtin_apply_args ()
+This built-in function returns a pointer to data
 describing how to perform a call with the same arguments as were passed
 to the current function.
 
@@ -509,18 +508,18 @@ The function saves the arg pointer register, structure value address,
 and all registers that might be used to pass arguments to a function
 into a block of memory allocated on the stack.  Then it returns the
 address of that block.
+@end deftypefn
 
-@findex __builtin_apply
-@item __builtin_apply (@var{function}, @var{arguments}, @var{size})
-This built-in function invokes @var{function} (type @code{void (*)()})
-with a copy of the parameters described by @var{arguments} (type
-@code{void *}) and @var{size} (type @code{int}).
+@deftypefn {Built-in Function} {void *} __builtin_apply (void (*@var{function})(), void *@var{arguments}, size_t @var{size})
+This built-in function invokes @var{function}
+with a copy of the parameters described by @var{arguments}
+and @var{size}.
 
 The value of @var{arguments} should be the value returned by
 @code{__builtin_apply_args}.  The argument @var{size} specifies the size
 of the stack argument data, in bytes.
 
-This function returns a pointer of type @code{void *} to data describing
+This function returns a pointer to data describing
 how to return whatever value was returned by @var{function}.  The data
 is saved in a block of memory allocated on the stack.
 
@@ -528,13 +527,13 @@ It is not always simple to compute the proper value for @var{size}.  The
 value is used by @code{__builtin_apply} to compute the amount of data
 that should be pushed on the stack and copied from the incoming argument
 area.
+@end deftypefn
 
-@findex __builtin_return
-@item __builtin_return (@var{result})
+@deftypefn {Built-in Function} {void} __builtin_return (void *@var{result})
 This built-in function returns the value described by @var{result} from
 the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
-@end table
+@end deftypefn
 
 @node Naming Types
 @section Naming an Expression's Type
@@ -794,9 +793,9 @@ ISO C99 supports data types for integers that are at least 64 bits wide,
 and as an extension GCC supports them in C89 mode and in C++.
 Simply write @code{long long int} for a signed integer, or
 @code{unsigned long long int} for an unsigned integer.  To make an
-integer constant of type @code{long long int}, add the suffix @code{LL}
+integer constant of type @code{long long int}, add the suffix @samp{LL}
 to the integer.  To make an integer constant of type @code{unsigned long
-long int}, add the suffix @code{ULL} to the integer.
+long int}, add the suffix @samp{ULL} to the integer.
 
 You can use these types in arithmetic like any other integer types.
 Addition, subtraction, and bitwise boolean operations on these types
@@ -851,14 +850,14 @@ extract the imaginary part.  This is a GNU extension; for values of
 floating type, you should use the ISO C99 functions @code{crealf},
 @code{creal}, @code{creall}, @code{cimagf}, @code{cimag} and
 @code{cimagl}, declared in @code{<complex.h>} and also provided as
-builtin functions by GCC.
+built-in functions by GCC.
 
 @cindex complex conjugation
 The operator @samp{~} performs complex conjugation when used on a value
 with a complex type.  This is a GNU extension; for values of
 floating type, you should use the ISO C99 functions @code{conjf},
 @code{conj} and @code{conjl}, declared in @code{<complex.h>} and also
-provided as builtin functions by GCC.
+provided as built-in functions by GCC.
 
 GNU CC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
@@ -882,16 +881,16 @@ decimal notation, such as @code{1.55e1}, but also numbers such as
 @code{0x1.fp3} written in hexadecimal format.  As a GNU extension, GCC
 supports this in C89 mode (except in some cases when strictly
 conforming) and in C++.  In that format the
-@code{0x} hex introducer and the @code{p} or @code{P} exponent field are
+@samp{0x} hex introducer and the @samp{p} or @samp{P} exponent field are
 mandatory.  The exponent is a decimal number that indicates the power of
-2 by which the significant part will be multiplied.  Thus @code{0x1.f} is
-1 15/16, @code{p3} multiplies it by 8, and the value of @code{0x1.fp3}
+2 by which the significant part will be multiplied.  Thus @samp{0x1.f} is
+1 15/16, @samp{p3} multiplies it by 8, and the value of @code{0x1.fp3}
 is the same as @code{1.55e1}.
 
 Unlike for floating-point numbers in the decimal notation the exponent
 is always required in the hexadecimal notation.  Otherwise the compiler
 would not be able to resolve the ambiguity of, e.g., @code{0x1.f}.  This
-could mean @code{1.0f} or @code{1.9375} since @code{f} is also the
+could mean @code{1.0f} or @code{1.9375} since @samp{f} is also the
 extension for floating-point constants of type @code{float}.
 
 @node Zero Length
@@ -1201,7 +1200,8 @@ size of a @code{void} or of a function as 1.
 A consequence of this is that @code{sizeof} is also allowed on @code{void}
 and on function types, and returns 1.
 
-The option @samp{-Wpointer-arith} requests a warning if these extensions
+@opindex Wpointer-arith
+The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
 
 @node Initializers
@@ -1640,7 +1640,7 @@ than 2.96.
 @item const
 Many functions do not examine any values except their arguments, and
 have no effects except the return value.  Basically this is just slightly
-more strict class than the "pure" attribute above, since function is not
+more strict class than the @code{pure} attribute above, since function is not
 allowed to read global memory.
 
 @cindex pointer arguments
@@ -1667,6 +1667,7 @@ specifies that the @samp{const} must be attached to the return value.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
+@opindex Wformat
 The @code{format} attribute specifies that a function takes @code{printf},
 @code{scanf}, @code{strftime} or @code{strfmon} style arguments which
 should be type-checked against a format string.  For example, the
@@ -1700,14 +1701,15 @@ argument of the function @code{my_print}, and the arguments to check
 start with the third argument, so the correct parameters for the format
 attribute are 2 and 3.
 
+@opindex ffreestanding
 The @code{format} attribute allows you to identify your own functions
 which take format strings as arguments, so that GNU CC can check the
 calls to these functions for errors.  The compiler always (unless
-@samp{-ffreestanding} is used) checks formats
+@option{-ffreestanding} is used) checks formats
 for the standard library functions @code{printf}, @code{fprintf},
 @code{sprintf}, @code{scanf}, @code{fscanf}, @code{sscanf}, @code{strftime},
 @code{vprintf}, @code{vfprintf} and @code{vsprintf} whenever such
-warnings are requested (using @samp{-Wformat}), so there is no need to
+warnings are requested (using @option{-Wformat}), so there is no need to
 modify the header file @file{stdio.h}.  In C99 mode, the functions
 @code{snprintf}, @code{vsnprintf}, @code{vscanf}, @code{vfscanf} and
 @code{vsscanf} are also checked.  Except in strictly conforming C
@@ -1716,6 +1718,7 @@ standard modes, the X/Open function @code{strfmon} is also checked.
 
 @item format_arg (@var{string-index})
 @cindex @code{format_arg} function attribute
+@opindex Wformat-nonliteral
 The @code{format_arg} attribute specifies that a function takes a format
 string for a @code{printf}, @code{scanf}, @code{strftime} or
 @code{strfmon} style function and modifies it (for example, to translate
@@ -1739,7 +1742,7 @@ consistency with the format string argument @code{my_format}.  If the
 @code{format_arg} attribute had not been specified, all the compiler
 could tell in such calls to format functions would be that the format
 string argument is not constant; this would generate a warning when
-@code{-Wformat-nonliteral} is used, but the calls could not be checked
+@option{-Wformat-nonliteral} is used, but the calls could not be checked
 without the attribute.
 
 The parameter @var{string-index} specifies which argument is the format
@@ -1751,17 +1754,18 @@ calls to @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon}
 type function whose operands are a call to one of your own function.
 The compiler always treats @code{gettext}, @code{dgettext}, and
 @code{dcgettext} in this manner except when strict ISO C support is
-requested by @samp{-ansi} or an appropriate @samp{-std} option, or
-@samp{-ffreestanding} is used.  @xref{C Dialect Options,,Options
+requested by @option{-ansi} or an appropriate @option{-std} option, or
+@option{-ffreestanding} is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute
-If @samp{-finstrument-functions} is given, profiling function calls will
+@opindex finstrument-functions
+If @option{-finstrument-functions} is given, profiling function calls will
 be generated at entry and exit of most user-compiled functions.
 Functions with this attribute will not be so instrumented.
 
-@item section ("section-name")
+@item section ("@var{section-name}")
 @cindex @code{section} function attribute
 Normally, the compiler places the code it generates in the @code{text} section.
 Sometimes, however, you need additional sections, or you need certain
@@ -1817,7 +1821,7 @@ may be treated as if it were the malloc function.  The compiler assumes
 that calls to malloc result in a pointers that cannot alias anything.
 This will often improve optimization.
 
-@item alias ("target")
+@item alias ("@var{target}")
 @cindex @code{alias} attribute
 The @code{alias} attribute causes the declaration to be emitted as an
 alias for another symbol, which must be specified.  For instance,
@@ -1834,9 +1838,10 @@ Not all target machines support this attribute.
 
 @item no_check_memory_usage
 @cindex @code{no_check_memory_usage} function attribute
+@opindex fcheck-memory-usage
 The @code{no_check_memory_usage} attribute causes GNU CC to omit checks
 of memory references when it generates code for that function.  Normally
-if you specify @samp{-fcheck-memory-usage} (see @pxref{Code Gen
+if you specify @option{-fcheck-memory-usage} (see @pxref{Code Gen
 Options}), GNU CC generates calls to support routines before most memory
 accesses to permit support code to record usage and detect uses of
 uninitialized or unallocated storage.  Since GNU CC cannot handle
@@ -1851,8 +1856,8 @@ you wish, without getting infinite recursion if they get compiled with
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to
-pass up to @var{number} integer arguments in registers @var{EAX},
-@var{EDX}, and @var{ECX} instead of on the stack.  Functions that take a
+pass up to @var{number} integer arguments in registers EAX,
+EDX, and ECX instead of on the stack.  Functions that take a
 variable number of arguments will continue to be passed all of their
 arguments on the stack.
 
@@ -1867,10 +1872,11 @@ attribute.
 
 @item cdecl
 @cindex functions that do pop the argument stack on the 386
+@opindex mrtd
 On the Intel 386, the @code{cdecl} attribute causes the compiler to
 assume that the calling function will pop off the stack space used to
 pass arguments.  This is
-useful to override the effects of the @samp{-mrtd} switch.
+useful to override the effects of the @option{-mrtd} switch.
 
 The PowerPC compiler for Windows NT currently ignores the @code{cdecl}
 attribute.
@@ -2291,8 +2297,8 @@ In GNU C, you may use C++ style comments, which start with @samp{//} and
 continue until the end of the line.  Many other C implementations allow
 such comments, and they are likely to be in a future C standard.
 However, C++ style comments are not recognized if you specify
-@w{@samp{-ansi}}, a @option{-std} option specifying a version of ISO C
-before C99, or @w{@samp{-traditional}}, since they are incompatible
+@w{@option{-ansi}}, a @option{-std} option specifying a version of ISO C
+before C99, or @w{@option{-traditional}}, since they are incompatible
 with traditional constructs like @code{dividend//*comment*/divisor}.
 
 @node Dollar Signs
@@ -2452,9 +2458,10 @@ or @samp{__pointer__} for the mode used to represent pointers.
 
 @item nocommon
 @cindex @code{nocommon} attribute
+@opindex fno-common
 This attribute specifies requests GNU CC not to place a variable
 ``common'' but instead to allocate space for it directly.  If you
-specify the @samp{-fno-common} flag, GNU CC will do this for all
+specify the @option{-fno-common} flag, GNU CC will do this for all
 variables.
 
 Specifying the @code{nocommon} attribute for a variable provides an
@@ -2479,7 +2486,7 @@ struct foo
 @};
 @end example
 
-@item section ("section-name")
+@item section ("@var{section-name}")
 @cindex @code{section} variable attribute
 Normally, the compiler places the objects it generates in sections like
 @code{data} and @code{bss}.  Sometimes, however, you need additional sections,
@@ -2518,8 +2525,8 @@ You may only use the @code{section} attribute with a fully initialized
 global definition because of the way linkers work.  The linker requires
 each object be defined once, with the exception that uninitialized
 variables tentatively go in the @code{common} (or @code{bss}) section
-and can be multiply "defined".  You can force a variable to be
-initialized with the @samp{-fno-common} flag or the @code{nocommon}
+and can be multiply ``defined''.  You can force a variable to be
+initialized with the @option{-fno-common} flag or the @code{nocommon}
 attribute.
 
 Some file formats do not support arbitrary sections so the @code{section}
@@ -2532,7 +2539,7 @@ section, consider using the facilities of the linker instead.
 On Windows NT, in addition to putting variable definitions in a named
 section, the section can also be shared among all running copies of an
 executable or DLL. For example, this small program defines shared data
-by putting it in a named section "shared" and marking the section
+by putting it in a named section @code{shared} and marking the section
 shareable:
 
 @smallexample
@@ -2705,9 +2712,10 @@ This attribute, attached to an @code{enum}, @code{struct}, or
 @code{union} type definition, specified that the minimum required memory
 be used to represent the type.
 
+@opindex fshort-enums
 Specifying this attribute for @code{struct} and @code{union} types is
 equivalent to specifying the @code{packed} attribute on each of the
-structure or union members.  Specifying the @samp{-fshort-enums}
+structure or union members.  Specifying the @option{-fshort-enums}
 flag on the line is equivalent to specifying the @code{packed}
 attribute on all @code{enum} definitions.
 
@@ -2804,7 +2812,7 @@ inline function's code needs to be included.  The effect on code size is
 less predictable; object code may be larger or smaller with function
 inlining, depending on the particular case.  Inlining of functions is an
 optimization and it really ``works'' only in optimizing compilation.  If
-you don't use @samp{-O}, no function is really inline.
+you don't use @option{-O}, no function is really inline.
 
 Inline functions are included in the ISO C99 standard, but there are
 currently substantial differences between what GCC implements and what
@@ -2824,13 +2832,14 @@ inc (int *a)
 (If you are writing a header file to be included in ISO C programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.)
 You can also make all ``simple enough'' functions inline with the option
-@samp{-finline-functions}.
+@option{-finline-functions}.
 
+@opindex Winline
 Note that certain usages in a function definition can make it unsuitable
 for inline substitution.  Among these usages are: use of varargs, use of
 alloca, use of variable sized data types (@pxref{Variable Length}),
 use of computed goto (@pxref{Labels as Values}), use of nonlocal goto,
-and nested functions (@pxref{Nested Functions}).  Using @samp{-Winline}
+and nested functions (@pxref{Nested Functions}).  Using @option{-Winline}
 will warn when a function marked @code{inline} could not be substituted,
 and will give the reason for the failure.
 
@@ -2841,17 +2850,19 @@ does not affect the linkage of the function.
 @cindex @code{inline} automatic for C++ member fns
 @cindex member fns, automatically @code{inline}
 @cindex C++ member fns, automatically @code{inline}
+@opindex fno-default-inline
 GNU CC automatically inlines member functions defined within the class
 body of C++ programs even if they are not explicitly declared
-@code{inline}.  (You can override this with @samp{-fno-default-inline};
+@code{inline}.  (You can override this with @option{-fno-default-inline};
 @pxref{C++ Dialect Options,,Options Controlling C++ Dialect}.)
 
 @cindex inline functions, omission of
+@opindex fkeep-inline-functions
 When a function is both inline and @code{static}, if all calls to the
 function are integrated into the caller, and the function's address is
 never used, then the function's own assembler code is never referenced.
 In this case, GNU CC does not actually output assembler code for the
-function, unless you specify the option @samp{-fkeep-inline-functions}.
+function, unless you specify the option @option{-fkeep-inline-functions}.
 Some calls cannot be integrated for various reasons (in particular,
 calls that precede the function's definition cannot be integrated, and
 neither can recursive calls within the definition).  If there is a
@@ -3199,7 +3210,7 @@ For any input reg that is implicitly popped by an asm, it is
 necessary to know how to adjust the stack to compensate for the pop.
 If any non-popped input is closer to the top of the reg-stack than
 the implicitly popped reg, it would not be possible to know what the
-stack looked like --- it's not clear how the rest of the stack ``slides
+stack looked like---it's not clear how the rest of the stack ``slides
 up''.
 
 All implicitly popped input regs must be closer to the top of
@@ -3229,7 +3240,7 @@ asm ("foo" : "=&t" (a) : "f" (b));
 
 @item
 Some operands need to be in particular places on the stack.  All
-output operands fall in this category --- there is no other way to
+output operands fall in this category---there is no other way to
 know which regs the outputs appear in unless the user indicates
 this in the constraints.
 
@@ -3418,7 +3429,7 @@ solve this problem.)
 If you want to recompile @code{qsort} or other source files which do not
 actually use your global register variable, so that they will not use that
 register for any other purpose, then it suffices to specify the compiler
-option @samp{-ffixed-@var{reg}}.  You need not actually add a global
+option @option{-ffixed-@var{reg}}.  You need not actually add a global
 register declaration to their source code.
 
 A function which can alter the value of a global register variable cannot
@@ -3537,7 +3548,8 @@ macros to replace them with the customary keywords.  It looks like this:
 @end example
 
 @findex __extension__
-@samp{-pedantic} and other options cause warnings for many GNU C extensions.
+@opindex pedantic
+@option{-pedantic} and other options cause warnings for many GNU C extensions.
 You can
 prevent such warnings within one expression by writing
 @code{__extension__} before the expression.  @code{__extension__} has no
@@ -3649,9 +3661,7 @@ variables, declared in the same way as @code{__func__}.
 These functions may be used to get information about the callers of a
 function.
 
-@table @code
-@findex __builtin_return_address
-@item __builtin_return_address (@var{level})
+@deftypefn {Built-in Function} {void *} __builtin_return_address (unsigned int @var{level})
 This function returns the return address of the current function, or of
 one of its callers.  The @var{level} argument is number of frames to
 scan up the call stack.  A value of @code{0} yields the return address
@@ -3666,9 +3676,9 @@ of the stack has been reached, this function will return @code{0}.
 
 This function should only be used with a non-zero argument for debugging
 purposes.
+@end deftypefn
 
-@findex __builtin_frame_address
-@item __builtin_frame_address (@var{level})
+@deftypefn {Built-in Function} {void *} __builtin_frame_address (unsigned int @var{level})
 This function is similar to @code{__builtin_return_address}, but it
 returns the address of the function frame rather than the return address
 of the function.  Calling @code{__builtin_frame_address} with a value of
@@ -3686,7 +3696,7 @@ pointer register.
 
 The caveats that apply to @code{__builtin_return_address} apply to this
 function as well.
-@end table
+@end deftypefn
 
 @node Other Builtins
 @section Other built-in functions provided by GNU CC
@@ -3760,39 +3770,42 @@ recommend general use of these functions.
 
 The remaining functions are provided for optimization purposes.
 
-GNU CC includes builtin versions of many of the functions in the
+@opindex fno-builtin
+GNU CC includes built-in versions of many of the functions in the
 standard C library.  The versions prefixed with @code{__builtin_} will
 always be treated as having the same meaning as the C library function
-even if you specify the @samp{-fno-builtin} (@pxref{C Dialect Options})
+even if you specify the @option{-fno-builtin} (@pxref{C Dialect Options})
 option.  Many of these functions are only optimized in certain cases; if
 not optimized in a particular case, a call to the library function will
 be emitted.
 
+@opindex ansi
+@opindex std
 The functions @code{abort}, @code{exit}, @code{_Exit} and @code{_exit}
 are recognized and presumed not to return, but otherwise are not built
-in.  @code{_exit} is not recognized in strict ISO C mode (@samp{-ansi},
-@samp{-std=c89} or @samp{-std=c99}).  @code{_Exit} is not recognized in
-strict C89 mode (@samp{-ansi} or @samp{-std=c89}).
+in.  @code{_exit} is not recognized in strict ISO C mode (@option{-ansi},
+@option{-std=c89} or @option{-std=c99}).  @code{_Exit} is not recognized in
+strict C89 mode (@option{-ansi} or @option{-std=c89}).
 
 Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
 @code{bzero}, @code{index}, @code{rindex} and @code{ffs} may be handled
-as builtins.  Corresponding versions @code{__builtin_alloca},
+as built-in functions.  Corresponding versions @code{__builtin_alloca},
 @code{__builtin_bcmp}, @code{__builtin_bzero}, @code{__builtin_index},
 @code{__builtin_rindex} and @code{__builtin_ffs} are also recognized in
 strict ISO C mode.
 
 The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl},
 @code{creal}, @code{crealf}, @code{creall}, @code{cimag}, @code{cimagf},
-@code{cimagl}, @code{llabs} and @code{imaxabs} are handled as builtins
-except in strict ISO C89 mode.  There are also builtin versions of the ISO C99
+@code{cimagl}, @code{llabs} and @code{imaxabs} are handled as built-in functions
+except in strict ISO C89 mode.  There are also built-in versions of the ISO C99
 functions @code{cosf}, @code{cosl}, @code{fabsf}, @code{fabsl},
 @code{sinf}, @code{sinl}, @code{sqrtf}, and @code{sqrtl}, that are
 recognized in any mode since ISO C89 reserves these names for the
 purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
 
-The following ISO C89 functions are recognized as builtins unless
-@samp{-fno-builtin} is specified: @code{abs}, @code{cos}, @code{fabs},
+The following ISO C89 functions are recognized as built-in functions unless
+@option{-fno-builtin} is specified: @code{abs}, @code{cos}, @code{fabs},
 @code{fprintf}, @code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy},
 @code{memset}, @code{printf}, @code{sin}, @code{sqrt}, @code{strcat},
 @code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
@@ -3801,17 +3814,15 @@ The following ISO C89 functions are recognized as builtins unless
 of these functions have corresponding versions prefixed with
 @code{__builtin_}.
 
-GNU CC provides builtin versions of the ISO C99 floating point
+GNU CC provides built-in versions of the ISO C99 floating point
 comparison macros (that avoid raising exceptions for unordered
 operands): @code{__builtin_isgreater}, @code{__builtin_isgreaterequal},
 @code{__builtin_isless}, @code{__builtin_islessequal},
 @code{__builtin_islessgreater}, and @code{__builtin_isunordered}.
 
 
-@table @code
-@findex __builtin_constant_p
-@item __builtin_constant_p (@var{exp})
-You can use the builtin function @code{__builtin_constant_p} to
+@deftypefn {Built-in Function} int __builtin_constant_p (@var{exp})
+You can use the built-in function @code{__builtin_constant_p} to
 determine if a value is known to be constant at compile-time and hence
 that GNU CC can perform constant-folding on expressions involving that
 value.  The argument of the function is the value to test.  The function
@@ -3819,7 +3830,7 @@ returns the integer 1 if the argument is known to be a compile-time
 constant and 0 if it is not known to be a compile-time constant.  A
 return of 0 does not indicate that the value is @emph{not} a constant,
 but merely that GNU CC cannot prove it is a constant with the specified
-value of the @samp{-O} option.
+value of the @option{-O} option.
 
 You would typically use this function in an embedded application where
 memory was a critical resource.  If you have some complex calculation,
@@ -3832,26 +3843,27 @@ a function if it does not.  For example:
   ? ((X) * SCALE + OFFSET) : Scale (X))
 @end smallexample
 
-You may use this builtin function in either a macro or an inline
+You may use this built-in function in either a macro or an inline
 function.  However, if you use it in an inlined function and pass an
-argument of the function as the argument to the builtin, GNU CC will
+argument of the function as the argument to the built-in, GNU CC will
 never return 1 when you call the inline function with a string constant
 or compound literal (@pxref{Compound Literals}) and will not return 1
 when you pass a constant numeric value to the inline function unless you
-specify the @samp{-O} option.
+specify the @option{-O} option.
+@end deftypefn
 
-@findex __builtin_expect
-@item __builtin_expect(@var{exp}, @var{c})
+@deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
+@opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
 branch prediction information.  In general, you should prefer to
-use actual profile feedback for this (@samp{-fprofile-arcs}), as
+use actual profile feedback for this (@option{-fprofile-arcs}), as
 programmers are notoriously bad at predicting how their programs
 actually perform.  However, there are applications in which this
 data is hard to collect.
 
 The return value is the value of @var{exp}, which should be an
 integral expression.  The value of @var{c} must be a compile-time
-constant.  The semantics of the builtin are that it is expected
+constant.  The semantics of the built-in are that it is expected
 that @var{exp} == @var{c}.  For example:
 
 @smallexample
@@ -3871,7 +3883,7 @@ if (__builtin_expect (ptr != NULL, 1))
 
 @noindent
 when testing pointer or floating-point values.
-@end table
+@end deftypefn
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
@@ -4037,7 +4049,7 @@ an rvalue.
 
 As with gcc, g++ understands the C99 feature of restricted pointers,
 specified with the @code{__restrict__}, or @code{__restrict} type
-qualifier. Because you cannot compile C++ by specifying the -std=c99
+qualifier. Because you cannot compile C++ by specifying the @option{-std=c99}
 language flag, @code{restrict} is not a keyword in C++.
 
 In addition to allowing restricted pointers, you can specify restricted
@@ -4261,12 +4273,13 @@ an explicit @code{extern} declaration---the compiler emits no code at
 all to define an independent version of the function.  Its definition
 is used only for inlining with its callers.
 
+@opindex fno-implement-inlines
 Conversely, when you include the same header file in a main source file
 that declares it as @samp{#pragma implementation}, the compiler emits
 code for the function itself; this defines a version of the function
 that can be found via pointers (or by callers compiled without
 inlining).  If all calls to the function can be inlined, you can avoid
-emitting the function by compiling with @samp{-fno-implement-inlines}.
+emitting the function by compiling with @option{-fno-implement-inlines}.
 If any calls were not inlined, you will get linker errors.
 
 @node Template Instantiation
@@ -4332,7 +4345,8 @@ template instantiations:
 
 @enumerate
 @item
-Compile your template-using code with @samp{-frepo}.  The compiler will
+@opindex frepo
+Compile your template-using code with @option{-frepo}.  The compiler will
 generate files with the extension @samp{.rpo} listing all of the
 template instantiations used in the corresponding object files which
 could be instantiated there; the link wrapper, @samp{collect2}, will
@@ -4356,7 +4370,8 @@ For greater control, use explicit instantiation as described in the next
 option.
 
 @item
-Compile your code with @samp{-fno-implicit-templates} to disable the
+@opindex fno-implicit-templates
+Compile your code with @option{-fno-implicit-templates} to disable the
 implicit generation of template instances, and explicitly instantiate
 all the ones you use.  This approach requires more knowledge of exactly
 which instances you need than do the others, but it's less
@@ -4380,11 +4395,11 @@ for each of the instances you need, and create a template instantiation
 library from those.
 
 If you are using Cfront-model code, you can probably get away with not
-using @samp{-fno-implicit-templates} when compiling files that don't
+using @option{-fno-implicit-templates} when compiling files that don't
 @samp{#include} the member template definitions.
 
 If you use one big file to do the instantiations, you may want to
-compile it without @samp{-fno-implicit-templates} so you get all of the
+compile it without @option{-fno-implicit-templates} so you get all of the
 instances required by your explicit instantiations (but not by any
 other files) without having to specify them as well.
 
@@ -4410,11 +4425,12 @@ uses.  In a large program, this can lead to an unacceptable amount of code
 duplication.
 
 @item
+@opindex fexternal-templates
 Add @samp{#pragma interface} to all files containing template
 definitions.  For each of these files, add @samp{#pragma implementation
 "@var{filename}"} to the top of some @samp{.C} file which
 @samp{#include}s it.  Then compile everything with
-@samp{-fexternal-templates}.  The templates will then only be expanded
+@option{-fexternal-templates}.  The templates will then only be expanded
 in the translation unit which implements them (i.e. has a @samp{#pragma
 implementation} line for the file where they live); all other files will
 use external references.  If you're lucky, everything should work
@@ -4434,8 +4450,9 @@ using code written for the Cfront model, the file containing a class
 template and the file containing its member templates should be
 implemented in the same translation unit.
 
+@opindex falt-external-templates
 A slight variation on this approach is to instead use the flag
-@samp{-falt-external-templates}; this flag causes template
+@option{-falt-external-templates}; this flag causes template
 instances to be emitted in the translation unit that implements the
 header where they are first instantiated, rather than the one which
 implements the file where the templates are defined.  This header must
@@ -4485,7 +4502,8 @@ converted to function pointers directly:
 fptr p1 = (fptr)(&A::foo);
 @end example
 
-You must specify @samp{-Wno-pmf-conversions} to use this extension.
+@opindex Wno-pmf-conversions
+You must specify @option{-Wno-pmf-conversions} to use this extension.
 
 @node C++ Attributes
 @section C++-Specific Variable, Function, and Type Attributes
