@@ -22,7 +22,8 @@ export TERM
 # Either ex might find a .exrc file and get confused,
 # or ex might complain if the EXINIT variable is invalid. 
 # We know there is no .exrc in the GCC source.
-EXINIT=true
+# `set' is a no-op ex command.
+EXINIT=set
 export EXINIT
 
 # Directory in which to store the results.
