@@ -2526,6 +2526,9 @@ java_expand_expr (exp, target, tmode, modifier)
 	    DECL_INITIAL (init_decl) = value;
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
+	    /* Hash synchronization requires at least 64-bit alignment. */
+	    if (flag_hash_synchronization && POINTER_SIZE < 64)
+	      DECL_ALIGN (init_decl) = 64;
 	    rest_of_decl_compilation (init_decl, NULL, 1, 0);
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
