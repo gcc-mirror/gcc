@@ -1,3 +1,8 @@
+Wed Jun 27 18:01:09 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* simplify-rtx.c (simplify_rtx): Canonicalize commutative expressions
+	by putting complex operands first and constants second.
+
 2001-06-27  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h: Add documentation. Make macros polymorphic.
