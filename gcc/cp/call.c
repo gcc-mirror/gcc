@@ -5125,15 +5125,17 @@ build_op_delete_call (code, addr, size, flags)
   fnname = ansi_opname[code];
 
   if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL))
-    /* Here we make assumptions about how instantiate_type works.  This comes
-       out as a simple TREE_LIST, so it looks like overloaded globals to
-       instantiate_type; this works out fine.  If something changes we
-       might have to build this up like build_offset_ref does.  */
     fns = lookup_fnfields (TYPE_BINFO (type), fnname, 0);
   else
     fns = NULL_TREE;
 
-  if (fns == NULL_TREE)
+  if (fns)
+    {
+      /* Build this up like build_offset_ref does.  */
+      fns = build_tree_list (error_mark_node, fns);
+      TREE_TYPE (fns) = build_offset_type (type, unknown_type_node);
+    }
+  else
     fns = lookup_name_nonclass (fnname);
 
   /* We can recognize a placement delete because of LOOKUP_SPECULATIVELY;
@@ -5182,7 +5184,7 @@ build_op_delete_call (code, addr, size, flags)
     {
       if (TREE_PURPOSE (fns))
 	/* TREE_PURPOSE is only set for lists of member functions.  */
-	enforce_access (TREE_PURPOSE (fns), fn);
+	enforce_access (TREE_PURPOSE (TREE_VALUE (fns)), fn);
       return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
     }
 
