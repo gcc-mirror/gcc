@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -235,7 +235,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   rtx exit_label = 0;
   rtx start_label;
   struct iv_class *bl;
-  struct induction *v;
   int splitting_not_safe = 0;
   enum unroll_types unroll_type;
   int loop_preconditioned = 0;
@@ -1174,7 +1173,6 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
      rtx *initial_value, *final_value, *increment;
      rtx loop_start, loop_end;
 {
-  int unsigned_compare, compare_dir;
 
   if (loop_n_iterations > 0)
     {
@@ -2947,7 +2945,6 @@ final_giv_value (v, loop_start, loop_end)
   struct iv_class *bl;
   rtx insn;
   rtx increment, tem;
-  enum rtx_code code;
   rtx insert_before, seq;
 
   bl = reg_biv_class[REGNO (v->src_reg)];
