@@ -9503,7 +9503,7 @@ These @samp{-m} options are defined for the H8/300 implementations:
 @opindex mrelax
 Shorten some address references at link time, when possible; uses the
 linker option @option{-relax}.  @xref{H8/300,, @code{ld} and the H8/300,
-ld.info, Using ld}, for a fuller description.
+ld, Using ld}, for a fuller description.
 
 @item -mh
 @opindex mh
@@ -11709,7 +11709,7 @@ the headers it contains change.
 
 A precompiled header file will be searched for when @code{#include} is
 seen in the compilation.  As it searches for the included file
-(@pxref{Search Path,,Search Path,cpp.info,The C Preprocessor}) the
+(@pxref{Search Path,,Search Path,cpp,The C Preprocessor}) the
 compiler looks for a precompiled header in each directory just before it
 looks for the include file in that directory.  The name searched for is
 the name specified in the @code{#include} with @samp{.gch} appended.  If
