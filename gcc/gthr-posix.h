@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define __GTHREADS 1
 
 #include <pthread.h>
+#include <unistd.h>
 
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
@@ -67,15 +68,21 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
+/* These really should be protected by _POSIX_PRIORITY_SCHEDULING, but
+   we use them inside a _POSIX_THREAD_PRIORITY_SCHEDULING block.  */
+#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 #pragma weak sched_get_priority_max
 #pragma weak sched_get_priority_min
+#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
 #pragma weak sched_yield
 #pragma weak pthread_attr_destroy
 #pragma weak pthread_attr_init
 #pragma weak pthread_attr_setdetachstate
+#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 #pragma weak pthread_getschedparam
 #pragma weak pthread_setschedparam
-#endif
+#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
+#endif /* _LIBOBJC */
 
 static inline int
 __gthread_active_p (void)
@@ -173,6 +180,7 @@ __gthread_objc_thread_set_priority(int priority)
   if (!__gthread_active_p())
     return -1;
   else {
+#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
     pthread_t thread_id = pthread_self();
     int policy;
     struct sched_param params;
@@ -180,10 +188,10 @@ __gthread_objc_thread_set_priority(int priority)
 
     if (pthread_getschedparam(thread_id, &policy, &params) == 0)
       {
-	if ((priority_max = sched_get_priority_max(policy)) != 0)
+	if ((priority_max = sched_get_priority_max(policy)) == -1)
 	  return -1;
 
-	if ((priority_min = sched_get_priority_min(policy)) != 0)
+	if ((priority_min = sched_get_priority_min(policy)) == -1)
 	  return -1;
 
 	if (priority > priority_max)
@@ -200,6 +208,7 @@ __gthread_objc_thread_set_priority(int priority)
 	if (pthread_setschedparam(thread_id, policy, &params) == 0)
 	  return 0;
       }
+#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
     return -1;
   }
 }
@@ -208,6 +217,7 @@ __gthread_objc_thread_set_priority(int priority)
 static inline int
 __gthread_objc_thread_get_priority(void)
 {
+#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
   if (__gthread_active_p ())
     {
       int policy;
@@ -219,6 +229,7 @@ __gthread_objc_thread_get_priority(void)
 	return -1;
     }
   else
+#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
 
