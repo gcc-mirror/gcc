@@ -1,6 +1,9 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
-	EH merge from mainline, parts 5 - 9.
+	EH merge from mainline, parts 5 - 10.
+	* function.h (struct function): Move all boolean valued fields
+	to single bit fields at the end of the struct.
+
 	* flow.c (cleanup_cfg): Take no argument.
 	* output.h, sibcall.c, toplev.c: Update all calls.
 
