@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -548,11 +548,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* If we are defining the object, see if it has a Size value and
-	   validate it if so.  Then get the new type, if any.  */
+	   validate it if so. If we are not defining the object and a Size
+	   clause applies, simply retrieve the value. We don't want to ignore
+	   the clause and it is expected to have been validated already.  Then
+	   get the new type, if any.  */
 	if (definition)
 	  gnu_size = validate_size (Esize (gnat_entity), gnu_type,
 				    gnat_entity, VAR_DECL, 0,
 				    Has_Size_Clause (gnat_entity));
+	else if (Has_Size_Clause (gnat_entity))
+	  gnu_size = UI_To_gnu (Esize (gnat_entity), bitsizetype);
 
 	if (gnu_size != 0)
 	  {
