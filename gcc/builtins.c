@@ -1096,7 +1096,7 @@ result_vector (int savep, rtx result)
 static rtx
 expand_builtin_apply_args_1 (void)
 {
-  rtx registers;
+  rtx registers, tem;
   int size, align, regno;
   enum machine_mode mode;
   rtx struct_incoming_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 1);
@@ -1114,8 +1114,6 @@ expand_builtin_apply_args_1 (void)
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((mode = apply_args_mode[regno]) != VOIDmode)
       {
-	rtx tem;
-
 	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
@@ -1127,8 +1125,14 @@ expand_builtin_apply_args_1 (void)
       }
 
   /* Save the arg pointer to the block.  */
-  emit_move_insn (adjust_address (registers, Pmode, 0),
-		  copy_to_reg (virtual_incoming_args_rtx));
+  tem = copy_to_reg (virtual_incoming_args_rtx);
+#ifdef STACK_GROWS_DOWNWARDS
+  /* We need the pointer as the caller actually passed them to us, not
+     as we might have pretended they were passed.  */
+  tem = plus_constant (tem, current_function_pretend_args_size);
+#endif
+  emit_move_insn (adjust_address (registers, Pmode, 0), tem);
+  
   size = GET_MODE_SIZE (Pmode);
 
   /* Save the structure value address unless this is passed as an

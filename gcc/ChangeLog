@@ -1,3 +1,8 @@
+2003-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c (expand_builtin_apply_args_1): Add pretend args size
+	to the virtual incoming args pointer for downward stacks.
+
 2003-12-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/12632
