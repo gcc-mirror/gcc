@@ -74,7 +74,6 @@ dtor_section ()							\
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
-/* Use the main_input_filename instead of dump_base_name */
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\

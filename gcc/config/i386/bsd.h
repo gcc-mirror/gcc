@@ -49,9 +49,7 @@ Boston, MA 02111-1307, USA.  */
    ??? I am skeptical of this -- RMS.  */
 
 #define ASM_FILE_START(FILE) \
-  do {	fprintf (FILE, "\t.file\t");				\
-	output_quoted_string (FILE, dump_base_name);		\
-	fprintf (FILE, "\n");					\
+  do {	output_file_directive (FILE, main_input_filename);	\
   } while (0)
 
 /* This was suggested, but it shouldn't be right for DBX output. -- RMS

@@ -1,3 +1,14 @@
+Tue Dec  8 00:34:05 1998  Mike Stump  <mrs@wrs.com>
+
+	* i386/bsd.h (ASM_FILE_START): Don't use dump_base_name, it is
+	wrong and should only be used for dump related things, not
+	debugging information, instead main_input_filename should be used.
+	Also, reuse output_file_directive if possible.
+	* i386/aix386ng.h (ASM_FILE_START): Likewise.
+	* i386/isc.h (ASM_FILE_START): Likewise.
+	* i386/win-nt.h (ASM_FILE_START): Likewise.
+	* i386/sun386.h (ASM_FILE_START): Likewise.
+
 Mon Dec  7 23:56:28 1998   Robert Lipe  <robertl@dgii.com>
 
 	* configure.in (mips*-*-linux*): Handle big and little endian

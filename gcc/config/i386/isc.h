@@ -72,20 +72,23 @@
    message.  */
 
 #undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                     \
-  do {                                           \
-   char c;                                       \
-   int max = 0;                                  \
-   char *string = dump_base_name;                \
-                                                 \
-    fputs ("\t.file\t\"", FILE);				 \
-                                                 \
-    while ((c = *string++) != 0 && max++ < 14) { \
-       if (c == '\"' || c == '\\')               \
-         putc ('\\', FILE);                      \
-       putc (c, FILE);                           \
-    }                                            \
-    fputs ("\"\n", FILE);                        \
+#define ASM_FILE_START(FILE)				\
+  do {							\
+    int len = strlen (main_input_filename);		\
+    char *na = main_input_filename + len;		\
+    char shorter[15];					\
+    /* NA gets MAIN_INPUT_FILENAME sans directory names.  */\
+    while (na > main_input_filename)			\
+      {							\
+	if (na[-1] == '/')				\
+	  break;					\
+	na--;						\
+      }							\
+    strncpy (shorter, na, 14);				\
+    shorter[14] = 0;					\
+    fprintf (FILE, "\t.file\t");			\
+    output_quoted_string (FILE, shorter);		\
+    fprintf (FILE, "\n");				\
   } while (0)
 
 /* Work around assembler forward label references generated in exception
