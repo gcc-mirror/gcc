@@ -3392,6 +3392,11 @@ for machine in $build $host $target; do
 	elxsi-elxsi-*)
 		use_collect2=yes
 		;;
+	fr30-*-elf)
+		tm_file="fr30/fr30.h"
+		tmake_file=fr30/t-fr30
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		;;
 # This hasn't been upgraded to GCC 2.
 #	fx80-alliant-*)			# Alliant FX/80
 #		;;

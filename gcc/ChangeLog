@@ -1,3 +1,17 @@
+Tue Sep 21 14:13:27 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add fr30 target.
+	* configure: Regenerate.
+	* config/fr30: New directory.
+	* config/fr30/crti.asm: New file.
+	* config/fr30/fr30.c: New file.
+	* config/fr30/crtn.asm: New file.
+	* config/fr30/fr30.h: New file.
+	* config/fr30/fr30.md: New file.
+	* config/fr30/lib1funcs.asm: New file.
+	* config/fr30/t-fr30: New file.
+	* config/fr30/xm-fr30.h: New file.
+
 Tue Sep 21 06:45:31 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (merge_blocks_move_successor_nojumps): Delete the
