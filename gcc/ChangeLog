@@ -1,3 +1,9 @@
+2003-06-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (c_common_handle_option): New, pulled out of
+	c_common_decode_option.  Substitute uses of argv.
+	(c_common_decode_option): Broken into two.
+
 2003-06-02  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 

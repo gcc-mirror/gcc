@@ -114,6 +114,7 @@ static void add_prefixed_path PARAMS ((const char *, size_t));
 static void push_command_line_include PARAMS ((void));
 static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 static void finish_options PARAMS ((void));
+static int c_common_handle_option (enum opt_code, const char *arg, int on);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -356,9 +357,8 @@ c_common_decode_option (argc, argv)
   const char *opt, *arg = 0;
   char *dup = 0;
   bool on = true;
-  int result = 0, lang_flag;
+  int result = 0, temp, lang_flag;
   const struct cl_option *option;
-  enum opt_code code;
 
   opt = argv[0];
 
@@ -446,7 +446,26 @@ c_common_decode_option (argc, argv)
       goto done;
     }
 
-  code = opt_index;
+  temp = c_common_handle_option (opt_index, arg, on);
+  if (temp <= 0)
+    result = temp;
+
+ done:
+  if (dup)
+    free (dup);
+  return result;
+}
+
+/* Handle switch OPT_INDEX with argument ARG.  ON is true, unless no-
+   form of an -f or -W option was given.  Returns 0 if the switch was
+   invalid, a negative number to prevent language-independent
+   processing in toplev.c (a hack necessary for the short-term).  */
+static int
+c_common_handle_option (enum opt_code code, const char *arg, int on)
+{
+  const struct cl_option *option = &cl_options[code];
+  int result = 1;
+
   switch (code)
     {
     case N_OPTS: /* Shut GCC up.  */
@@ -873,11 +892,11 @@ c_common_decode_option (argc, argv)
     case OPT_fthis_is_variable:
     case OPT_fvtable_thunks:
     case OPT_fxref:
-      warning ("switch \"%s\" is no longer supported", argv[0]);
+      warning ("switch \"%s\" is no longer supported", option->opt_text);
       break;
 
     case OPT_fabi_version_:
-      flag_abi_version = read_integral_parameter (arg, argv[0], 1);
+      flag_abi_version = read_integral_parameter (arg, option->opt_text, 1);
       break;
 
     case OPT_faccess_control:
@@ -889,7 +908,7 @@ c_common_decode_option (argc, argv)
       if (on)
 	flag_external_templates = true;
     cp_deprecated:
-      warning ("switch \"%s\" is deprecated, please see documentation for details", argv[0]);
+      warning ("switch \"%s\" is deprecated, please see documentation for details", option->opt_text);
       break;
 
     case OPT_fasm:
@@ -912,7 +931,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fdump_:
-      if (!dump_switch_p (argv[0] + strlen ("-f")))
+      if (!dump_switch_p (option->opt_text + strlen ("f")))
 	result = 0;
       break;
 
@@ -1009,7 +1028,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fhandle_exceptions:
-      warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
+      warning ("-fhandle-exceptions has been renamed -fexceptions (and is now on by default)");
       flag_exceptions = on;
       break;
 
@@ -1086,7 +1105,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_ftemplate_depth_:
-      max_tinst_depth = read_integral_parameter (arg, argv[0], 0);
+      max_tinst_depth = read_integral_parameter (arg, option->opt_text, 0);
       break;
 
     case OPT_fvtable_gc:
@@ -1155,10 +1174,7 @@ c_common_decode_option (argc, argv)
       if (!out_fname)
 	out_fname = arg;
       else
-	{
-	  error ("output filename specified twice");
-	  result = argc;
-	}
+	error ("output filename specified twice");
       break;
 
       /* We need to handle the -pedantic switches here, rather than in
@@ -1228,9 +1244,6 @@ c_common_decode_option (argc, argv)
       break;
     }
 
- done:
-  if (dup)
-    free (dup);
   return result;
 }
 
