@@ -1,3 +1,12 @@
+Thu May 17 20:43:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (fold_rtx): Use simplify_subreg.
+
+	* simplify-rtx.c (simplify_replace_rtx): Use simplify_gen_subreg.
+	(simplify_gen_subreg): New.
+	(simplify_rtx): Use simplify_subreg.
+	* rtl.h (simplify_gen_subreg): Declare.
+
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/install.texi: Update Solaris information.
