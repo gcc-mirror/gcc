@@ -1,3 +1,7 @@
+2003-08-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* local-alloc.c (combine_regs): Fix comment typo.
+
 2003-08-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (builtin_decls): Replace with first_builtin_decl
