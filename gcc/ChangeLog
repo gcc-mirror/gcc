@@ -1,3 +1,23 @@
+2005-02-16  Richard Henderson  <rth@redhat.com>
+
+	PR 19920
+	* libgcc2.c (WORD_SIZE): Remove all definitions; replace uses
+	with W_TYPE_SIZE.
+	(HIGH_WORD_COEFF, HIGH_HALFWORD_COEFF): Remove all definitions;
+	replace uses with Wtype_MAXp1_F.
+	(L_fixunstfdi, L_fixtfdi, L_floatditf, L_fixunsxfdi, L_fixxfdi,
+	L_floatdixf, L_fixunsxfsi, L_fixunsdfdi, L_floatdidf, L_fixunsdfsi,
+	L_powidf2, L_powixf2, L_powitf2, L_muldc3, L_divdc3, L_mulxc3,
+	L_divxc3, L_multc3, L_divtc3): Protect with HAVE_DFMODE, HAVE_XFMODE,
+	and HAVE_TFMODE as appropriate.
+	(__fixunssfDI): Provide an implementation that doesn't need DFmode.
+	(__floatdisf): Likewise.
+	* libgcc2.h (LIBGCC2_DOUBLE_TYPE_SIZE): New.
+	(HAVE_DFMODE, HAVE_XFMODE, HAVE_TFMODE): New.
+	(Wtype_MAXp1_F): New.
+	(DFtype, DCtype, __fixdfdi, __floatdidf, __fixunsdfSI, __fixunsdfDI,
+	__powidf2, __divdc3, __muldc3): Protect with HAVE_DFMODE.
+
 2005-02-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* PR target/19162
