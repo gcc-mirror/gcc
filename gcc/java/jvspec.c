@@ -223,6 +223,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      main_class_name = argv[i] + 7;
 	      added--;
 	    }
+	  else if (strcmp (argv[i], "-fhelp") == 0)
+	    will_link = 0;
 	  else if (strcmp (argv[i], "-v") == 0)
 	    {
 	      saw_verbose_flag = 1;
