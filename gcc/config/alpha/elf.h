@@ -39,6 +39,15 @@ Currently only Linux uses this. */
 -Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__"
 
 #undef LINK_SPEC
+#ifdef USE_GNULIBC_1
+#define LINK_SPEC "-m elf64alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
+  %{shared:-shared}						\
+  %{!shared:							\
+    %{!static:							\
+      %{rdynamic:-export-dynamic}				\
+      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}		\
+    %{static:-static}}"
+#else
 #define LINK_SPEC "-m elf64alpha -G 8 %{O*:-O3} %{!O*:-O1}	\
   %{shared:-shared}						\
   %{!shared:							\
@@ -46,6 +55,7 @@ Currently only Linux uses this. */
       %{rdynamic:-export-dynamic}				\
       %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}}	\
     %{static:-static}}"
+#endif
 
 /* Output at beginning of assembler file.  */
 
