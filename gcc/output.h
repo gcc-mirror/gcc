@@ -422,10 +422,10 @@ extern FILE *rtl_dump_file;
 #endif
 
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
-extern struct rtx_def *current_insn_predicate;
+extern rtx current_insn_predicate;
 
 /* Last insn processed by final_scan_insn.  */
-extern struct rtx_def *current_output_insn;
+extern rtx current_output_insn;
 
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't abort.
@@ -473,25 +473,20 @@ extern unsigned int get_named_section_flags (const char *);
 extern bool set_named_section_flags (const char *, unsigned int);
 extern void named_section_flags (const char *, unsigned int);
 extern bool named_section_first_declaration (const char *);
-
-union tree_node;
-extern unsigned int default_section_type_flags (union tree_node *,
-						const char *, int);
-extern unsigned int default_section_type_flags_1 (union tree_node *,
-						  const char *, int, int);
+extern unsigned int default_section_type_flags (tree, const char *, int);
+extern unsigned int default_section_type_flags_1 (tree, const char *, int, int);
 
 extern void default_no_named_section (const char *, unsigned int);
 extern void default_elf_asm_named_section (const char *, unsigned int);
 extern void default_coff_asm_named_section (const char *, unsigned int);
 extern void default_pe_asm_named_section (const char *, unsigned int);
 
-extern void default_stabs_asm_out_destructor (struct rtx_def *, int);
-extern void default_named_section_asm_out_destructor (struct rtx_def *, int);
-extern void default_dtor_section_asm_out_destructor (struct rtx_def *, int);
-extern void default_stabs_asm_out_constructor (struct rtx_def *, int);
-extern void default_named_section_asm_out_constructor (struct rtx_def *,
-						       int);
-extern void default_ctor_section_asm_out_constructor (struct rtx_def *, int);
+extern void default_stabs_asm_out_destructor (rtx, int);
+extern void default_named_section_asm_out_destructor (rtx, int);
+extern void default_dtor_section_asm_out_destructor (rtx, int);
+extern void default_stabs_asm_out_constructor (rtx, int);
+extern void default_named_section_asm_out_constructor (rtx, int);
+extern void default_ctor_section_asm_out_constructor (rtx, int);
 
 extern void default_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern void default_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
@@ -514,8 +509,8 @@ extern void file_end_indicate_exec_stack (void);
 extern bool default_valid_pointer_mode (enum machine_mode);
 
 /* Emit data for vtable gc for GNU binutils.  */
-extern void assemble_vtable_entry (struct rtx_def *, HOST_WIDE_INT);
-extern void assemble_vtable_inherit (struct rtx_def *, struct rtx_def *);
+extern void assemble_vtable_entry (rtx, HOST_WIDE_INT);
+extern void assemble_vtable_inherit (rtx, rtx);
 
 extern int default_address_cost (rtx);
 

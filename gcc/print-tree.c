@@ -599,7 +599,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	      indent_to (file, indent + 4);
 	      fprintf (file, "rtl %d ", i);
 	      if (TREE_OPERAND (node, i))
-		print_rtl (file, (struct rtx_def *) TREE_OPERAND (node, i));
+		print_rtl (file, (rtx) TREE_OPERAND (node, i));
 	      else
 		fprintf (file, "(nil)");
 	      fprintf (file, "\n");

@@ -40,7 +40,7 @@ struct inline_remap
      copy_rtx_and_substitute.  */
   int integrating;
   /* Definition of function be inlined.  */
-  union tree_node *fndecl;
+  tree fndecl;
   /* Place to put insns needed at start of function.  */
   rtx insns_at_start;
   /* Mapping from old BLOCKs to new BLOCKs.  */
@@ -150,14 +150,12 @@ extern void allocate_initial_values (rtx *);
 
 /* Copy a declaration when one function is substituted inline into
    another.  */
-extern union tree_node *copy_decl_for_inlining (union tree_node *,
-						union tree_node *,
-						union tree_node *);
+extern tree copy_decl_for_inlining (tree, tree, tree);
 
 /* Check whether there's any attribute in a function declaration that
    makes the function uninlinable.  Returns false if it finds any,
    true otherwise.  */
-extern bool function_attribute_inlinable_p (union tree_node *);
+extern bool function_attribute_inlinable_p (tree);
 
 extern void try_constants (rtx, struct inline_remap *);
 
