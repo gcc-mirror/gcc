@@ -6904,6 +6904,17 @@
   [(set_attr "type" "shift")
    (set_attr "length" "1")])
 
+;; We special case multiplication by two, as add can be done
+;; in both ALUs, while shift only in IEU0 on UltraSPARC.
+(define_insn "*ashlsi3_const1"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (ashift:SI (match_operand:SI 1 "register_operand" "r")
+                   (const_int 1)))]
+  ""
+  "add\\t%1, %1, %0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
+
 (define_expand "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")
@@ -6920,7 +6931,18 @@
     }
 }")
 
-(define_insn ""
+;; We special case multiplication by two, as add can be done
+;; in both ALUs, while shift only in IEU0 on UltraSPARC.
+(define_insn "*ashldi3_const1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ashift:DI (match_operand:DI 1 "register_operand" "r")
+		   (const_int 1)))]
+  "TARGET_ARCH64"
+  "add\\t%1, %1, %0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
+
+(define_insn "*ashldi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:SI 2 "arith_operand" "rI")))]
@@ -7001,6 +7023,38 @@
   [(set_attr "type" "shift")
    (set_attr "length" "1")])
 
+(define_insn "*ashrsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
+				     (match_operand:SI 2 "arith_operand" "r"))))]
+  "TARGET_ARCH64"
+  "sra\\t%1, %2, %0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "1")])
+
+;; This handles the case as above, but with constant shift instead of
+;; register. Combiner "simplifies" it for us a little bit though.
+(define_insn "*ashrsi3_extend2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(ashiftrt:DI (ashift:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
+				(const_int 32))
+		     (match_operand:SI 2 "small_int_or_double" "n")))]
+  "TARGET_ARCH64
+   && ((GET_CODE (operands[2]) == CONST_INT
+        && INTVAL (operands[2]) >= 32 && INTVAL (operands[2]) < 64)
+       || (GET_CODE (operands[2]) == CONST_DOUBLE
+	   && !CONST_DOUBLE_HIGH (operands[2])
+           && CONST_DOUBLE_LOW (operands[2]) >= 32
+           && CONST_DOUBLE_LOW (operands[2]) < 64))"
+  "*
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) - 32);
+
+  return \"sra\\t%1, %2, %0\";
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "1")])
+
 (define_expand "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "r")
@@ -7053,6 +7107,50 @@
   if (GET_CODE (operands[2]) == CONST_INT
       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return \"srl\\t%1, %2, %0\";
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "1")])
+
+;; This handles the case where
+;; (zero_extend:DI (lshiftrt:SI (match_operand:SI) (match_operand:SI))),
+;; but combiner "simplifies" it for us.
+(define_insn "*lshrsi3_extend"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (subreg:DI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
+			   (match_operand:SI 2 "arith_operand" "r")) 0)
+		(match_operand 3 "" "")))]
+  "TARGET_ARCH64
+   && ((GET_CODE (operands[3]) == CONST_DOUBLE
+           && CONST_DOUBLE_HIGH (operands[3]) == 0
+           && CONST_DOUBLE_LOW (operands[3]) == 0xffffffff)
+#if HOST_BITS_PER_WIDE_INT >= 64
+          || (GET_CODE (operands[3]) == CONST_INT
+              && (unsigned HOST_WIDE_INT) INTVAL (operands[3]) == 0xffffffff)
+#endif
+         )"
+  "srl\\t%1, %2, %0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "1")])
+
+;; This handles the case where
+;; (lshiftrt:DI (zero_extend:DI (match_operand:SI)) (const_int >=0 < 32))
+;; but combiner "simplifies" it for us.
+(define_insn "*lshrsi3_extend2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extract:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
+			 (match_operand 2 "small_int_or_double" "n")
+			 (const_int 32)))]
+  "TARGET_ARCH64
+   && ((GET_CODE (operands[2]) == CONST_INT
+        && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) < 32)
+       || (GET_CODE (operands[2]) == CONST_DOUBLE
+	   && CONST_DOUBLE_HIGH (operands[2]) == 0
+           && (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (operands[2]) < 32))"
+  "*
+{
+  operands[2] = GEN_INT (32 - INTVAL (operands[2]));
 
   return \"srl\\t%1, %2, %0\";
 }"

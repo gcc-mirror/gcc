@@ -1,3 +1,10 @@
+Sun Oct  4 02:58:20 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+        * config/sparc/sparc.md (ashldi3+1): Name it ashldi3_sp64.
+	(ashlsi3_const1, ashldi3_const1): New combiner patterns.
+	(ashrsi3_extend, ashrsi3_extend2): New combiner patterns.
+	(lshrsi3_extend, lshrsi3_extend2): Ditto.
+
 Sun Oct  4 00:23:00 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* function.c (purge_addressof_1): If trying to take a sub-word
