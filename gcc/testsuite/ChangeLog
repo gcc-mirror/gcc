@@ -1,5 +1,9 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/deduct6.C: New test.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/deduct5.C: New test.
 
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
