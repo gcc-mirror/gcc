@@ -214,6 +214,7 @@ rtx chkr_check_addr_libfunc;
 rtx chkr_set_right_libfunc;
 rtx chkr_copy_bitmap_libfunc;
 rtx chkr_check_exec_libfunc;
+rtx chkr_check_str_libfunc;
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -4395,6 +4396,7 @@ init_optabs ()
   chkr_set_right_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_set_right");
   chkr_copy_bitmap_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_copy_bitmap");
   chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_exec");
+  chkr_check_str_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_str");
 
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
