@@ -1600,7 +1600,7 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
 	  }
       }
       break;
-    case SWITCH_EXPR:
+    case ASM_EXPR:
       fold_stmt (tp);
       data->last_goto = NULL;
       break;

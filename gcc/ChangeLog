@@ -1,3 +1,10 @@
+2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17529
+	* tree-cfg.c (remove_useless_stmts_1) <case SWITCH_EXPR>:
+	Don't fold statement.
+	<case ASM_EXPR>: Fold the statement.
+
 2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary)
