@@ -1,3 +1,8 @@
+Mon Nov 23 09:53:44 1998  Richard Henderson  <rth@cygnus.com>
+
+	* local-alloc.c (local_alloc): Use malloc not alloca for
+	reg_qty, reg_offset, ref_next_in_qty.
+
 Mon Nov 23 16:46:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	Add SH4 support:
