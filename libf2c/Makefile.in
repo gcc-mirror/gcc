@@ -158,7 +158,8 @@ $(lib): stamp-libf77 stamp-libi77 stamp-libu77 stamp-libe77
 	$(AR) $(AR_FLAGS) $(lib) $(FOBJ)
 	$(AR) $(AR_FLAGS) $(lib) $(IOBJ)
 	$(AR) $(AR_FLAGS) $(lib) $(UOBJ)
-	$(AR) $(AR_FLAGS) $(lib) $(F2CEXT:%=libE77/L%.o)
+	objs=""; for i in $(F2CEXT); do objs="$$objs libE77/L$$i.o"; done; \
+	  $(AR) $(AR_FLAGS) $(lib) $$objs
 	$(RANLIB) $(lib)
 
 stamp-libi77: libI77/Makefile
