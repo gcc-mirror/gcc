@@ -1,3 +1,10 @@
+2002-11-02  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.am (AM_MAKEFLAGS): Don't pass JC1FLAGS, CC and CXX, do
+	pass GCJFLAGS.
+	(FLAGS_TO_PASS): Define.
+	* Makefile.in: Regenerated.
+
 2002-11-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteOrder.java: New file.
