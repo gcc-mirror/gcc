@@ -639,7 +639,8 @@ extern char leaf_reg_backmap[];
 
 /* Return the stack location to use for secondary memory needed reloads.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx, GEN_INT (-8)))
+  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
+	   GEN_INT (STARTING_FRAME_OFFSET)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -667,7 +668,8 @@ extern char leaf_reg_backmap[];
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-#define STARTING_FRAME_OFFSET (-8)
+/* This is 16 to allow space for one TFmode floating point value.  */
+#define STARTING_FRAME_OFFSET (-16)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
