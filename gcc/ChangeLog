@@ -1,3 +1,8 @@
+Fri May 12 19:03:58 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* ggc-simple.c (offsetof): Macro fallback definition moved from here ..
+	* system.h (offsetof): ... to here.
+
 2000-05-12  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (final.o): Depend on BASIC_BLOCK_H.

@@ -50,6 +50,10 @@ Boston, MA 02111-1307, USA.  */
 #define NULL 0
 #endif
 
+#ifndef offsetof
+#define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
 /* The compiler is not a multi-threaded application and therefore we
    do not have to use the locking functions.
 
