@@ -1,3 +1,11 @@
+Fri Feb  6 01:35:56 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config.shared (FLAGS_TO_PASS): Don't emit PICFLAG.
+	(.c.o): Check value of enable_shared, not PICFLAG.
+	(.C.o): Dito.
+	(.cc.o): Dito.
+	(stamp-picdir): Dito.
+
 1998-01-20  Andreas Schwab  (schwab@issan.informatik.uni-dortmund.de)
 
 	* iostream.cc (istream::operator>>(long double&))
