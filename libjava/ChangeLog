@@ -1,3 +1,7 @@
+2001-05-21  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* include/dwarf2-signal.h: Correct copyright date.
+
 2001-05-18  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* include/dwarf2-signal.h: New file.	
