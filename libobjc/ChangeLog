@@ -1,5 +1,12 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Replace old AC_PROG_CC hack with new one.
+	Define toplevel_srcdir in terms of srcdir, not top_srcdir (there
+	are no subdirectory output files, so this is fine).  Change prereq
+	to autoconf 2.59.
+	* aclocal.m4: Include ../config/no-executables.m4.
+	* configure: Regenerate with autoconf 2.59.
+
 	* configure.in: Improve comments on gthread_cflags.  Improve m4
 	quotation, and replace 'if test' with 'case', for --enable-objc-gc.
 	* configure: Regenerate.
