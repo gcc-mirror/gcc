@@ -79,8 +79,8 @@ extern int target_flags;
 
 /* Masks for the -m switches */
 #define MASK_80387		000000000001	/* Hardware floating point */
-#define MASK_486		000000000002	/* 80486 specific */
-#define MASK_NOTUSED1		000000000004	/* bit not currently used */
+#define MASK_NOTUSED1		000000000002	/* bit not currently used */
+#define MASK_NOTUSED2		000000000004	/* bit not currently used */
 #define MASK_RTD		000000000010	/* Use ret that pops args */
 #define MASK_ALIGN_DOUBLE	000000000020	/* align doubles to 2 word boundary */
 #define MASK_SVR3_SHLIB		000000000040	/* Uninit locals into bss */
@@ -303,12 +303,31 @@ extern int ix86_arch;
 #endif
 
 #ifndef CPP_CPU_SPEC
+#ifdef __STDC__
+#if TARGET_CPU_DEFAULT == 0
+#define CPP_CPU_DEFAULT ""
+#elif TARGET_CPU_DEFAULT == 1
+#define CPP_CPU_DEFAULT "-Di486"
+#elif TARGET_CPU_DEFAULT == 2
+#define CPP_CPU_DEFAULT "-Di586"
+#elif TARGET_CPU_DEFAULT == 3
+#define CPP_CPU_DEFAULT "-Di686"
+#endif /* TARGET_CPU_DEFAULT */
+
+#define CPP_CPU_SPEC "\
+-Di386 " CPP_CPU_DEFAULT " -Asystem(unix) -Acpu(i386) -Amachine(i386) \
+%{mcpu=i486:-Di486} %{m486:-Di486} \
+%{mpentium:-Dpentium -Di586} %{mcpu=pentium:-Dpentium -Di586} \
+%{mpentiumpro:-Dpentiumpro -Di686} %{mcpu=pentiumpro:-Dpentiumpro -Di686}"
+
+#else
 #define CPP_CPU_SPEC "\
 -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386) \
 %{mcpu=i486:-Di486} %{m486:-Di486} \
 %{mpentium:-Dpentium -Di586} %{mcpu=pentium:-Dpentium -Di586} \
 %{mpentiumpro:-Dpentiumpro -Di686} %{mcpu=pentiumpro:-Dpentiumpro -Di686}"
-#endif
+#endif /* __STDC__ */
+#endif /* CPP_CPU_SPEC */
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -373,7 +392,7 @@ extern int ix86_arch;
 #define PARM_BOUNDARY 32
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY 32
+#define STACK_BOUNDARY (TARGET_ALIGN_DOUBLE ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
