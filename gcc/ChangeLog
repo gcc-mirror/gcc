@@ -1,7 +1,7 @@
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15337
-	* error.c (c_sizeof_or_alignof_type): Use more detailed error
+	* c-common.c (c_sizeof_or_alignof_type): Use more detailed error
 	message.
 
 2004-06-06  Paolo Bonzini  <bonzini@gnu.org>
