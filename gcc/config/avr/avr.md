@@ -605,6 +605,19 @@
   [(set_attr "length" "4,3,3,4,5,5")
    (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n")])
 
+(define_insn "*addsi3_zero_extend"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (zero_extend:SI
+		  (match_operand:QI 1 "register_operand" "r"))
+		 (match_operand:SI 2 "register_operand" "0")))]
+  ""
+  "add %A0,%1
+	adc %B0,__zero_reg__
+	adc %C0,__zero_reg__
+	adc %D0,__zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_n")])
+
 ;-----------------------------------------------------------------------------
 ; sub bytes
 (define_insn "subqi3"
@@ -629,6 +642,17 @@
   [(set_attr "length" "2,2")
    (set_attr "cc" "set_czn,set_czn")])
 
+(define_insn "*subhi3_zero_extend1"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(minus:HI (match_operand:HI 1 "register_operand" "0")
+		  (zero_extend:HI
+		   (match_operand:QI 2 "register_operand" "r"))))]
+  ""
+  "sub %A0,%2
+	sbc %B0,__zero_reg__"
+  [(set_attr "length" "2")
+   (set_attr "cc" "set_n")])
+
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
         (minus:SI (match_operand:SI 1 "register_operand" "0,0")
@@ -639,6 +663,19 @@
 	subi %A0,lo8(%2)\;sbci %B0,hi8(%2)\;sbci %C0,hlo8(%2)\;sbci %D0,hhi8(%2)"
   [(set_attr "length" "4,4")
    (set_attr "cc" "set_czn,set_czn")])
+
+(define_insn "*subsi3_zero_extend"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (match_operand:SI 1 "register_operand" "0")
+		  (zero_extend:SI
+		   (match_operand:QI 2 "register_operand" "r"))))]
+  ""
+  "sub %A0,%2
+	sbc %B0,__zero_reg__
+	sbc %C0,__zero_reg__
+	sbc %D0,__zero_reg__"
+  [(set_attr "length" "4")
+   (set_attr "cc" "set_n")])
 
 ;******************************************************************************
 ; mul

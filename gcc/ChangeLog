@@ -1,3 +1,8 @@
+2002-02-20  Torbjorn Granlund  <tege@swox.com>
+
+	* config/avr/avr.md: Add more patterns for mized-mode add and subtract
+        (addsi3_zero_extend, subhi3_zero_extend1, subsi3_zero_extend).
+
 Thu Feb 21 16:20:46 2002  Alexandre Oliva  <aoliva@redhat.com>
 
 	* rtlanal.c (replace_rtx): Don't make a CONST_INT the operand of
