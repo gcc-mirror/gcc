@@ -105,53 +105,6 @@ enum internal_test {
    multi-instruction addu sequence.  Use 0x7fe0 to work around this.  */
 #define MIPS_MAX_FIRST_STACK_STEP (TARGET_MIPS16 ? 0x100 : 0x7fe0)
 
-/* Classifies a SYMBOL_REF, LABEL_REF or UNSPEC address.
-
-   SYMBOL_GENERAL
-       Used when none of the below apply.
-
-   SYMBOL_SMALL_DATA
-       The symbol refers to something in a small data section.
-
-   SYMBOL_CONSTANT_POOL
-       The symbol refers to something in the mips16 constant pool.
-
-   SYMBOL_GOT_LOCAL
-       The symbol refers to local data that will be found using
-       the global offset table.
-
-   SYMBOL_GOT_GLOBAL
-       Likewise non-local data.
-
-   SYMBOL_GOTOFF_PAGE
-       An UNSPEC wrapper around a SYMBOL_GOT_LOCAL.  It represents the
-       offset from _gp of a GOT page entry.
-
-   SYMBOL_GOTOFF_GLOBAL
-       An UNSPEC wrapper around a SYMBOL_GOT_GLOBAL.  It represents the
-       the offset from _gp of the symbol's GOT entry.
-
-   SYMBOL_GOTOFF_CALL
-       Like SYMBOL_GOTOFF_GLOBAL, but used when calling a global function.
-       The GOT entry is allowed to point to a stub rather than to the
-       function itself.
-
-   SYMBOL_GOTOFF_LOADGP
-       An UNSPEC wrapper around a function's address.  It represents the
-       offset of _gp from the start of the function.  */
-enum mips_symbol_type {
-  SYMBOL_GENERAL,
-  SYMBOL_SMALL_DATA,
-  SYMBOL_CONSTANT_POOL,
-  SYMBOL_GOT_LOCAL,
-  SYMBOL_GOT_GLOBAL,
-  SYMBOL_GOTOFF_PAGE,
-  SYMBOL_GOTOFF_GLOBAL,
-  SYMBOL_GOTOFF_CALL,
-  SYMBOL_GOTOFF_LOADGP
-};
-#define NUM_SYMBOL_TYPES (SYMBOL_GOTOFF_LOADGP + 1)
-
 
 /* Classifies an address.
 
@@ -196,7 +149,6 @@ static int mips_symbol_insns (enum mips_symbol_type);
 static bool mips16_unextended_reference_p (enum machine_mode mode, rtx, rtx);
 static rtx mips_force_temporary (rtx, rtx);
 static rtx mips_split_symbol (rtx, rtx);
-static rtx mips_unspec_address (rtx, enum mips_symbol_type);
 static rtx mips_unspec_offset_high (rtx, rtx, rtx, enum mips_symbol_type);
 static rtx mips_add_offset (rtx, HOST_WIDE_INT);
 static unsigned int mips_build_shift (struct mips_integer_op *, HOST_WIDE_INT);
@@ -951,6 +903,9 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
   switch (*symbol_type)
     {
     case SYMBOL_GENERAL:
+    case SYMBOL_64_HIGH:
+    case SYMBOL_64_MID:
+    case SYMBOL_64_LOW:
       /* If the target has 64-bit pointers and the object file only
 	 supports 32-bit symbols, the values of those symbols will be
 	 sign-extended.  In this case we can't allow an arbitrary offset
@@ -1068,6 +1023,9 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
     case SYMBOL_GOTOFF_GLOBAL:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
+    case SYMBOL_64_HIGH:
+    case SYMBOL_64_MID:
+    case SYMBOL_64_LOW:
       return true;
     }
   abort ();
@@ -1191,6 +1149,9 @@ mips_symbol_insns (enum mips_symbol_type type)
     case SYMBOL_GOTOFF_GLOBAL:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
+    case SYMBOL_64_HIGH:
+    case SYMBOL_64_MID:
+    case SYMBOL_64_LOW:
       /* Check whether the offset is a 16- or 32-bit value.  */
       return mips_split_p[type] ? 2 : 1;
     }
@@ -1637,6 +1598,19 @@ symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 
+/* Return true if OP is a symbolic constant of type SYMBOL_GENERAL.  */
+
+int
+general_symbolic_operand (rtx op, enum machine_mode mode)
+{
+  enum mips_symbol_type symbol_type;
+
+  return ((mode == VOIDmode || mode == GET_MODE (op))
+	  && mips_symbolic_constant_p (op, &symbol_type)
+	  && symbol_type == SYMBOL_GENERAL);
+}
+
+
 /* Return true if we're generating PIC and OP is a global symbol.  */
 
 int
@@ -1728,7 +1702,7 @@ mips_split_symbol (rtx temp, rtx addr)
 /* Return an UNSPEC address with underlying address ADDRESS and symbol
    type SYMBOL_TYPE.  */
 
-static rtx
+rtx
 mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
 {
   rtx base;
@@ -1758,25 +1732,6 @@ mips_unspec_offset_high (rtx temp, rtx base, rtx addr,
       return mips_force_temporary (temp, gen_rtx_PLUS (Pmode, addr, base));
     }
   return base;
-}
-
-
-/* Return the offset of a GOT page entry for local address ADDR.  */
-
-rtx
-mips_gotoff_page (rtx addr)
-{
-  return mips_unspec_address (addr, SYMBOL_GOTOFF_PAGE);
-}
-
-
-/* Return the offset of ADDR's GOT entry from _gp.  ADDR is a
-   global_got_operand.  */
-
-rtx
-mips_gotoff_global (rtx addr)
-{
-  return mips_unspec_address (addr, SYMBOL_GOTOFF_GLOBAL);
 }
 
 
@@ -4861,15 +4816,6 @@ override_options (void)
   else
     mips_split_addresses = 0;
 
-  /* -mexplicit-relocs doesn't yet support non-PIC n64.  We don't know
-     how to generate %highest/%higher/%hi/%lo sequences.  */
-  if (mips_abi == ABI_64 && !TARGET_ABICALLS)
-    {
-      if ((target_flags_explicit & target_flags & MASK_EXPLICIT_RELOCS) != 0)
-	sorry ("non-PIC n64 with explicit relocations");
-      target_flags &= ~MASK_EXPLICIT_RELOCS;
-    }
-
   /* Explicit relocations for "old" ABIs are a GNU extension.  Unless
      the user has said otherwise, assume that they are not available
      with assemblers other than gas.  */
@@ -5065,11 +5011,34 @@ override_options (void)
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
 
-  if (TARGET_EXPLICIT_RELOCS || mips_split_addresses)
+  if (ABI_HAS_64BIT_SYMBOLS)
     {
-      mips_split_p[SYMBOL_GENERAL] = true;
-      mips_hi_relocs[SYMBOL_GENERAL] = "%hi(";
-      mips_lo_relocs[SYMBOL_GENERAL] = "%lo(";
+      if (TARGET_EXPLICIT_RELOCS)
+	{
+	  mips_split_p[SYMBOL_64_HIGH] = true;
+	  mips_hi_relocs[SYMBOL_64_HIGH] = "%highest(";
+	  mips_lo_relocs[SYMBOL_64_HIGH] = "%higher(";
+
+	  mips_split_p[SYMBOL_64_MID] = true;
+	  mips_hi_relocs[SYMBOL_64_MID] = "%higher(";
+	  mips_lo_relocs[SYMBOL_64_MID] = "%hi(";
+
+	  mips_split_p[SYMBOL_64_LOW] = true;
+	  mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
+	  mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
+
+	  mips_split_p[SYMBOL_GENERAL] = true;
+	  mips_lo_relocs[SYMBOL_GENERAL] = "%lo(";
+	}
+    }
+  else
+    {
+      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses)
+	{
+	  mips_split_p[SYMBOL_GENERAL] = true;
+	  mips_hi_relocs[SYMBOL_GENERAL] = "%hi(";
+	  mips_lo_relocs[SYMBOL_GENERAL] = "%lo(";
+	}
     }
 
   if (TARGET_MIPS16)

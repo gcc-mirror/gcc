@@ -26,15 +26,76 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_MIPS_PROTOS_H
 #define GCC_MIPS_PROTOS_H
 
+/* Classifies a SYMBOL_REF, LABEL_REF or UNSPEC address.
+
+   SYMBOL_GENERAL
+       Used when none of the below apply.
+
+   SYMBOL_SMALL_DATA
+       The symbol refers to something in a small data section.
+
+   SYMBOL_CONSTANT_POOL
+       The symbol refers to something in the mips16 constant pool.
+
+   SYMBOL_GOT_LOCAL
+       The symbol refers to local data that will be found using
+       the global offset table.
+
+   SYMBOL_GOT_GLOBAL
+       Likewise non-local data.
+
+   SYMBOL_GOTOFF_PAGE
+       An UNSPEC wrapper around a SYMBOL_GOT_LOCAL.  It represents the
+       offset from _gp of a GOT page entry.
+
+   SYMBOL_GOTOFF_GLOBAL
+       An UNSPEC wrapper around a SYMBOL_GOT_GLOBAL.  It represents the
+       the offset from _gp of the symbol's GOT entry.
+
+   SYMBOL_GOTOFF_CALL
+       Like SYMBOL_GOTOFF_GLOBAL, but used when calling a global function.
+       The GOT entry is allowed to point to a stub rather than to the
+       function itself.
+
+   SYMBOL_GOTOFF_LOADGP
+       An UNSPEC wrapper around a function's address.  It represents the
+       offset of _gp from the start of the function.
+
+   SYMBOL_64_HIGH
+       For a 64-bit symbolic address X, this is the value of
+       (%highest(X) << 16) + %higher(X).
+
+   SYMBOL_64_MID
+       For a 64-bit symbolic address X, this is the value of
+       (%higher(X) << 16) + %hi(X).
+
+   SYMBOL_64_LOW
+       For a 64-bit symbolic address X, this is the value of
+       (%hi(X) << 16) + %lo(X).  */
+enum mips_symbol_type {
+  SYMBOL_GENERAL,
+  SYMBOL_SMALL_DATA,
+  SYMBOL_CONSTANT_POOL,
+  SYMBOL_GOT_LOCAL,
+  SYMBOL_GOT_GLOBAL,
+  SYMBOL_GOTOFF_PAGE,
+  SYMBOL_GOTOFF_GLOBAL,
+  SYMBOL_GOTOFF_CALL,
+  SYMBOL_GOTOFF_LOADGP,
+  SYMBOL_64_HIGH,
+  SYMBOL_64_MID,
+  SYMBOL_64_LOW
+};
+#define NUM_SYMBOL_TYPES (SYMBOL_64_LOW + 1)
+
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
 extern int mips_idiv_insns (void);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
+extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
-extern rtx mips_gotoff_page (rtx);
-extern rtx mips_gotoff_global (rtx);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
 
 extern int m16_uimm3_b (rtx, enum machine_mode);

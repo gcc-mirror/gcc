@@ -4233,6 +4233,67 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type" "store")
    (set_attr "mode" "DI")])
 
+;; An instruction to calculate the high part of a 64-bit SYMBOL_GENERAL.
+;; The required value is:
+;;
+;;	(%highest(op1) << 48) + (%higher(op1) << 32) + (%hi(op1) << 16)
+;;
+;; which translates to:
+;;
+;;	lui	op0,%highest(op1)
+;;	daddiu	op0,op0,%higher(op1)
+;;	dsll	op0,op0,16
+;;	daddiu	op0,op0,%hi(op1)
+;;	dsll	op0,op0,16
+(define_insn_and_split "*lea_high64"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(high:DI (match_operand:DI 1 "general_symbolic_operand" "")))]
+  "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (high:DI (match_dup 2)))
+   (set (match_dup 0) (lo_sum:DI (match_dup 0) (match_dup 2)))
+   (set (match_dup 0) (ashift:DI (match_dup 0) (const_int 16)))
+   (set (match_dup 0) (lo_sum:DI (match_dup 0) (match_dup 3)))
+   (set (match_dup 0) (ashift:DI (match_dup 0) (const_int 16)))]
+{
+  operands[2] = mips_unspec_address (operands[1], SYMBOL_64_HIGH);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_64_MID);
+}
+  [(set_attr "length" "20")])
+
+;; On most targets, the expansion of (lo_sum (high X) X) for a 64-bit
+;; SYMBOL_GENERAL X will take 6 cycles.  This next pattern allows combine
+;; to merge the HIGH and LO_SUM parts of a move if the HIGH part is only
+;; used once.  We can then use the sequence:
+;;
+;;	lui	op0,%highest(op1)
+;;	lui	op2,%hi(op1)
+;;	daddiu	op0,op0,%higher(op1)
+;;	daddiu	op2,op2,%lo(op1)
+;;	dsll32	op0,op0,0
+;;	daddu	op0,op0,op2
+;;
+;; which takes 4 cycles on most superscalar targets.
+(define_insn_and_split "*lea64"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(match_operand:DI 1 "general_symbolic_operand" ""))
+   (clobber (match_scratch:DI 2 "=&d"))]
+  "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS && cse_not_expected"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (high:DI (match_dup 3)))
+   (set (match_dup 2) (high:DI (match_dup 4)))
+   (set (match_dup 0) (lo_sum:DI (match_dup 0) (match_dup 3)))
+   (set (match_dup 2) (lo_sum:DI (match_dup 2) (match_dup 4)))
+   (set (match_dup 0) (ashift:DI (match_dup 0) (const_int 32)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 2)))]
+{
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_64_HIGH);
+  operands[4] = mips_unspec_address (operands[1], SYMBOL_64_LOW);
+}
+  [(set_attr "length" "24")])
+
 ;; Insns to fetch a global symbol from a big GOT.
 
 (define_insn_and_split "*xgot_hisi"
@@ -4244,7 +4305,7 @@ dsrl\t%3,%3,1\n\
   [(set (match_dup 0) (high:SI (match_dup 2)))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 3)))]
 {
-  operands[2] = mips_gotoff_global (operands[1]);
+  operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
   operands[3] = pic_offset_table_rtx;
 }
   [(set_attr "got" "xgot_high")])
@@ -4258,7 +4319,7 @@ dsrl\t%3,%3,1\n\
   "&& reload_completed"
   [(set (match_dup 0)
 	(unspec:SI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
-  { operands[3] = mips_gotoff_global (operands[2]); }
+  { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_GLOBAL); }
   [(set_attr "got" "load")])
 
 (define_insn_and_split "*xgot_hidi"
@@ -4270,7 +4331,7 @@ dsrl\t%3,%3,1\n\
   [(set (match_dup 0) (high:DI (match_dup 2)))
    (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 3)))]
 {
-  operands[2] = mips_gotoff_global (operands[1]);
+  operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
   operands[3] = pic_offset_table_rtx;
 }
   [(set_attr "got" "xgot_high")])
@@ -4284,7 +4345,7 @@ dsrl\t%3,%3,1\n\
   "&& reload_completed"
   [(set (match_dup 0)
 	(unspec:DI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
-  { operands[3] = mips_gotoff_global (operands[2]); }
+  { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_GLOBAL); }
   [(set_attr "got" "load")])
 
 ;; Insns to fetch a global symbol from a normal GOT.
@@ -4299,7 +4360,7 @@ dsrl\t%3,%3,1\n\
 	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_gotoff_global (operands[1]);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
 }
   [(set_attr "got" "load")])
 
@@ -4313,7 +4374,7 @@ dsrl\t%3,%3,1\n\
 	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_gotoff_global (operands[1]);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
 }
   [(set_attr "got" "load")])
 
@@ -4329,7 +4390,7 @@ dsrl\t%3,%3,1\n\
 	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_gotoff_page (operands[1]);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_PAGE);
 }
   [(set_attr "got" "load")])
 
@@ -4343,7 +4404,7 @@ dsrl\t%3,%3,1\n\
 	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_gotoff_page (operands[1]);
+  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_PAGE);
 }
   [(set_attr "got" "load")])
 

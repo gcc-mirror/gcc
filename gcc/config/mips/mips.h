@@ -2698,6 +2698,7 @@ typedef struct mips_args {
 #define PREDICATE_CODES							\
   {"uns_arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
   {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
+  {"general_symbolic_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"global_got_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"local_got_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"const_arith_operand",	{ CONST_INT }},				\
