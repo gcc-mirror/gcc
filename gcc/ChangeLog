@@ -2,6 +2,9 @@
 
 	* builtins.c (expand_builtin_stpcpy): Don't modify len.
 
+	* tree-ssa-ccp.c (ccp_fold_builtin): Strip conversion exprs
+	with prejudice.
+
 2004-07-10  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* flags.h: Delete redundant prototypes that are being generated

@@ -2405,7 +2405,16 @@ ccp_fold_builtin (tree stmt, tree fn)
     }
 
   if (result && ignore)
-    STRIP_NOPS (result);
+    {
+      /* STRIP_NOPS isn't strong enough -- it'll stop when we change modes,
+	 but given that we're ignoring the result, we don't care what type
+	 is being returned by the transformed function.  */
+      while (TREE_CODE (result) == NOP_EXPR
+	     || TREE_CODE (result) == CONVERT_EXPR
+	     || TREE_CODE (result) == NON_LVALUE_EXPR)
+	result = TREE_OPERAND (result, 0);
+    }
+
   return result;
 }
 
