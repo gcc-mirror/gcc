@@ -1095,7 +1095,6 @@ ffecom_stabilize_aggregate_ (tree ref)
   TREE_READONLY (result) = TREE_READONLY (ref);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
-  TREE_RAISES (result) = TREE_RAISES (ref);
 
   return result;
 }
