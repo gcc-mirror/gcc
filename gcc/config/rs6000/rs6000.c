@@ -6763,7 +6763,7 @@ first_reg_to_save ()
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic)))))
       break;
 
-  if (profile_flag)
+  if (current_function_profile)
     {
       /* AIX must save/restore every register that contains a parameter
 	 before/after the .__mcount call plus an additional register
@@ -7048,7 +7048,7 @@ rs6000_stack_info ()
 
   /* Determine if we need to save the link register.  */
   if (rs6000_ra_ever_killed ()
-      || (DEFAULT_ABI == ABI_AIX && profile_flag)
+      || (DEFAULT_ABI == ABI_AIX && current_function_profile)
 #ifdef TARGET_RELOCATABLE
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
 #endif

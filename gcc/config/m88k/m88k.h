@@ -1555,7 +1555,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   else if (GET_CODE (RTX) == NOTE					\
 	   && NOTE_LINE_NUMBER (RTX) == NOTE_INSN_PROLOGUE_END)		\
     {									\
-      if (profile_flag)							\
+      if (current_function_profile)					\
 	LENGTH += (FUNCTION_PROFILER_LENGTH + REG_PUSH_LENGTH		\
 		   + REG_POP_LENGTH);					\
     }									\

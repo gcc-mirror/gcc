@@ -1455,7 +1455,7 @@ ia64_compute_frame_size (size)
      Likwise for -a profiling for the bb_init_func argument.  For -ax
      profiling, we need two output registers for the two bb_init_trace_func
      arguments.  */
-  if (profile_flag)
+  if (current_function_profile)
     i = MAX (i, 1);
   current_frame_info.n_output_regs = i;
 

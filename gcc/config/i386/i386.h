@@ -2283,7 +2283,7 @@ while (0)
 #define FINALIZE_PIC							\
 do									\
   {									\
-    current_function_uses_pic_offset_table |= profile_flag; \
+    current_function_uses_pic_offset_table |= current_function_profile; \
   }									\
 while (0)
 

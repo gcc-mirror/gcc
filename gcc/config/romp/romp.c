@@ -1059,8 +1059,8 @@ romp_using_r14 ()
 {
   /* If we are debugging, profiling, have a non-empty constant pool, or
      call a function, we need r14.  */
-  return (write_symbols != NO_DEBUG || profile_flag || get_pool_size () != 0
-	  || romp_makes_calls ());
+  return (write_symbols != NO_DEBUG || current_function_profile
+	  || get_pool_size () != 0 || romp_makes_calls ());
 }
 
 /* Return non-zero if this function needs to push space on the stack.  */

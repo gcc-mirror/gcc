@@ -427,7 +427,7 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 #define NO_IMPLICIT_EXTERN_C
 
 #define SUBTARGET_PROLOGUE						\
-  if (profile_flag 							\
+  if (current_function_profile						\
       && MAIN_NAME_P (DECL_NAME (current_function_decl)))		\
      {									\
       emit_call_insn (gen_rtx (CALL, VOIDmode, 				\
