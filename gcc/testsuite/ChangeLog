@@ -1,3 +1,7 @@
+2004-10-28  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/tree-ssa/sra-1.c: Pass --param sra-max-structure-size.
+
 2004-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/cpp/direct2.c: Cope with different bison 'parse' or

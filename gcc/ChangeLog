@@ -1,3 +1,14 @@
+2004-10-28  Ben Elliston  <bje@au.ibm.com>
+
+	* params.def (PARAM_SRA_MAX_STRUCTURE_SIZE): New.
+	(PARAM_SRA_FIELD_STRUCTURE_RATIO): Likewise.
+	* params.h (SRA_MAX_STRUCTURE_SIZE): New.
+	(SRA_FIELD_STRUCTURE_RATIO): Likewise.
+	* tree-sra.c: Include "params.h".
+	(decide_block_copy): Use new parameters.
+	* doc/invoke.texi (Optimize Options): Document new SRA pass
+	parameters sra-max-structure-size and sra-field-structure-ratio.
+
 2004-10-27  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/ieee754-df.S (floatdidf): Fix regression with big values.
