@@ -1,3 +1,8 @@
+2003-04-27  Andreas Schwab  <schwab@suse.de>
+
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
+	(__enc_traits): Use __ibom and __ebom instead of ignoring them.
+
 2003-04-27  Nathan Myers  <ncm@cantrip.org>
 
 	Move some basic_string members out of line because

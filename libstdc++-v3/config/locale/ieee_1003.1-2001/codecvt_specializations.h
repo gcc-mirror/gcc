@@ -36,7 +36,7 @@
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
 
   // XXX
-  // Define this here to codecvt.cc can have _S_max_size definition.
+  // Define this here so codecvt.cc can have _S_max_size definition.
 #define _GLIBCPP_USE___ENC_TRAITS 1
 
   // Extension to use icov for dealing with character encodings,
@@ -81,7 +81,7 @@
 
     explicit __enc_traits(const char* __int, const char* __ext, 
 			  int __ibom = 0, int __ebom = 0)
-    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
+    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(__ebom), _M_int_bom(__ibom)
     {
       strncpy(_M_int_enc, __int, _S_max_size);
       strncpy(_M_ext_enc, __ext, _S_max_size);
