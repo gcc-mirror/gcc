@@ -75,7 +75,7 @@ cxxmain.o: cplus-dem.c demangle.h
 	ln -s $(srcdir)/cplus-dem.c cxxmain.c > /dev/null 2>&1 \
 	 || cp $(srcdir)/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DVERSION='"$(version)"' cxxmain.c
+	  -DVERSION=\"$(version)\" cxxmain.c
 	rm -f cxxmain.c
 
 $(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o
