@@ -83,6 +83,14 @@ extern int warn_inline;
 
 extern int warn_uninitialized;
 
+/* Zero if unknown pragmas are ignored
+   One if the compiler should warn about an unknown pragma not in
+   a system include file.
+   Greater than one if the compiler should warn for all unknown
+   pragmas.  */
+
+extern int warn_unknown_pragmas;
+
 /* Nonzero means warn about all declarations which shadow others.   */
 
 extern int warn_shadow;

@@ -1,3 +1,11 @@
+Sun Dec 21 16:13:55 1997  Nick Clifton  <nickc@cygnus.com
+
+	* c-pragma.c (handle_pragma_token): Generate warning messages
+	about unknown pragmas if warn_unknown_pragmas is set.
+
+	* c-decl.c (c_decode_option): Parse -Wunknown-pragmas command
+	line option to set variable: warn_unknown_pragmas.
+
 Sun Dec 21 15:51:10 1997  Manfred Hollstein  <manfred@lts.sel.alcatel.de>
 
 	* m68k/mot3300.h (ASM_BYTE_OP): Don't include '\t' in the
