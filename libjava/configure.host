@@ -127,6 +127,11 @@ case "${host}" in
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
+  s390*-*)
+	sysdeps_dir=s390
+	libgcj_interpreter=yes
+	enable_hash_synchronization_default=yes
+	;;
   sparc-*)
         ;;
   ia64-*)
