@@ -1,3 +1,9 @@
+2000-05-24  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectOutputStream.java (writeObject): Use component type
+	when writing arrays.
+	Fixed typo.
+
 2000-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR libgcj/226:

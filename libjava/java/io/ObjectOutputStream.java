@@ -1,5 +1,5 @@
 /* ObjectOutputStream.java -- Class used to write serialized objects
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -276,7 +276,7 @@ public class ObjectOutputStream extends OutputStream
 	  realOutput.writeByte (TC_ARRAY);
 	  writeObject (osc);
 	  assignNewHandle (obj);
-	  writeArraySizeAndElements (obj, clazz);
+	  writeArraySizeAndElements (obj, clazz.getComponentType ());
 	  break;
 	}
 
@@ -395,7 +395,7 @@ public class ObjectOutputStream extends OutputStream
       throw new NotActiveException ("defaultWriteObject called by non-active class and/or object");
 
     if (fieldsAlreadyWritten)
-      throw new IOException ("Only one of putFields and defalutWriteObject may be called, and it may only be called once");
+      throw new IOException ("Only one of putFields and defaultWriteObject may be called, and it may only be called once");
 
     fieldsAlreadyWritten = true;
   }
