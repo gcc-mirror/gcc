@@ -1,3 +1,9 @@
+2004-10-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/17568
+	* simplify.c (twos_complement): New function.
+	(gfc_simplify_ishft, gfc_simplify_ishftc): Revise.
+
 2004-10-06  Paul Brook  <paul@codesourcery.com>
 
 	* trans-stmt.c (gfc_trans_simple_do): New function.
