@@ -1,5 +1,9 @@
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m32r/m32r.md: Remove useless calls to gen_lowpart.
+
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/coff.h: Replace Hitachi with Renesas.
 	* config/h8300/elf.h: Likewise.
 	* config/h8300/h8300-protos.h: Likewise.
