@@ -85,13 +85,13 @@ int inhibit_defer_pop;
    function calls being expanded by expand_call.  */
 tree cleanups_this_call;
 
-/* Similarly for __builtin_apply_args.  */
-static rtx apply_args_value;
-
 /* Nonzero means __builtin_saveregs has already been done in this function.
    The value is the pseudoreg containing the value __builtin_saveregs
    returned.  */
 static rtx saveregs_value;
+
+/* Similarly for __builtin_apply_args.  */
+static rtx apply_args_value;
 
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
