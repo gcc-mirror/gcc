@@ -951,9 +951,13 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
      sense.  */
   if (sym->attr.pure || sym->attr.elemental)
     {
-      DECL_IS_PURE (fndecl) = 1;
-/* TODO: check if pure/elemental procedures can have INTENT(OUT) parameters.
-      TREE_SIDE_EFFECTS (fndecl) = 0;*/
+      if (sym->attr.function)
+	DECL_IS_PURE (fndecl) = 1;
+      /* TODO: check if pure SUBROUTINEs don't have INTENT(OUT)
+	 parameters and don't use alternate returns (is this
+	 allowed?). In that case, calls to them are meaningless, and
+	 can be optimized away. See also in gfc_build_function_decl().  */
+      TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
   sym->backend_decl = fndecl;
@@ -1060,7 +1064,11 @@ gfc_build_function_decl (gfc_symbol * sym)
      sense.  */
   if (attr.pure || attr.elemental)
     {
-      DECL_IS_PURE (fndecl) = 1;
+      /* TODO: check if a pure SUBROUTINE has no INTENT(OUT) arguments
+	 including a alternate return. In that case it can also be
+	 marked as PURE. See also in gfc_get_extern_fucntion_decl().  */
+      if (attr.function)
+	DECL_IS_PURE (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 

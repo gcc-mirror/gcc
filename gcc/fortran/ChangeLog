@@ -1,3 +1,9 @@
+2004-05-22  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-decl.c (gfc_get_extern_function_decl): Set DECL_IS_PURE
+	only for functions.
+	(gfc_build_function_decl): Likewise.
+
 2004-05-22  Steven G. Kargl  <kargls@comcast.net>
 
 	* check.c (gfc_check_system_clock): New function.
