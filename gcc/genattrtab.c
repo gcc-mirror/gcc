@@ -730,7 +730,7 @@ attr_printf VPROTO((register int len, register char *fmt, ...))
 {
 #ifndef __STDC__
   register int len;
-  register char *fmt;
+  char *fmt;
 #endif
   va_list p;
   register char *str;
