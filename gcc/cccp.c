@@ -73,9 +73,6 @@ typedef unsigned char U_CHAR;
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
-#ifdef __STDC__
-#include <stddef.h>
-#endif
 
 #ifndef VMS
 #ifndef USG
@@ -8140,10 +8137,6 @@ initialize_builtins (inp, outp)
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __WCHAR_TYPE__ %s\n", WCHAR_TYPE);
-      output_line_command (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
-
       sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
 	       monthnames[timebuf->tm_mon],
 	       timebuf->tm_mday, timebuf->tm_year + 1900);
@@ -8355,7 +8348,7 @@ append_include_chain (first, last)
     first_bracket_include = first;
 
   for (dir = first; ; dir = dir->next) {
-    size_t len = strlen (dir->fname) + INCLUDE_LEN_FUDGE;
+    int len = strlen (dir->fname) + INCLUDE_LEN_FUDGE;
     if (len > max_include_len)
       max_include_len = len;
     if (dir == last)
