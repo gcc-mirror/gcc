@@ -136,10 +136,10 @@ abstract_virtuals_error (decl, type)
   tree u;
   tree tu;
 
-  if (!CLASS_TYPE_P (type) || !CLASSTYPE_ABSTRACT_VIRTUALS (type))
+  if (!CLASS_TYPE_P (type) || !CLASSTYPE_PURE_VIRTUALS (type))
     return 0;
 
-  u = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+  u = CLASSTYPE_PURE_VIRTUALS (type);
   if (decl)
     {
       if (TREE_CODE (decl) == RESULT_DECL)

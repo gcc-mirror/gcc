@@ -1880,7 +1880,7 @@ grok_function_init (decl, init)
 	  DECL_RTL (decl) = DECL_RTL (abort_fndecl);
 	}
 #endif
-      DECL_ABSTRACT_VIRTUAL_P (decl) = 1;
+      DECL_PURE_VIRTUAL_P (decl) = 1;
       if (DECL_NAME (decl) == ansi_opname [(int) MODIFY_EXPR])
 	{
 	  tree parmtype
@@ -2420,7 +2420,7 @@ import_export_vtable (decl, type, final)
 	       method = TREE_CHAIN (method))
 	    if (DECL_VINDEX (method) != NULL_TREE
 		&& ! DECL_THIS_INLINE (method)
-		&& ! DECL_ABSTRACT_VIRTUAL_P (method))
+		&& ! DECL_PURE_VIRTUAL_P (method))
 	      {
 		found = 1;
 		break;
@@ -2489,7 +2489,7 @@ import_export_class (ctype)
 	{
 	  if (DECL_VINDEX (method) != NULL_TREE
 	      && !DECL_THIS_INLINE (method)
-	      && !DECL_ABSTRACT_VIRTUAL_P (method))
+	      && !DECL_PURE_VIRTUAL_P (method))
 	    {
 	      import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
 	      break;

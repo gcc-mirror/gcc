@@ -1240,7 +1240,7 @@ struct lang_type
 
   union tree_node *size;
 
-  union tree_node *abstract_virtuals;
+  union tree_node *pure_virtuals;
   union tree_node *friend_classes;
 
   union tree_node *rtti;
@@ -1428,7 +1428,7 @@ struct lang_type
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
    class must provide its own definition for each of these functions.  */
-#define CLASSTYPE_ABSTRACT_VIRTUALS(NODE) (TYPE_LANG_SPECIFIC(NODE)->abstract_virtuals)
+#define CLASSTYPE_PURE_VIRTUALS(NODE) (TYPE_LANG_SPECIFIC(NODE)->pure_virtuals)
 
 /* Nonzero means that this aggr type has been `closed' by a semicolon.  */
 #define CLASSTYPE_GOT_SEMICOLON(NODE) (TYPE_LANG_SPECIFIC (NODE)->got_semicolon)
@@ -1612,7 +1612,7 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned const_memfunc : 1;
   unsigned volatile_memfunc : 1;
-  unsigned abstract_virtual : 1;
+  unsigned pure_virtual : 1;
   unsigned constructor_for_vbase_attr : 1;
 
   unsigned mutable_flag : 1;
@@ -1780,9 +1780,9 @@ struct lang_decl
    constructor.  */
 #define DECL_NONCONVERTING_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.nonconverting)
 
-/* Nonzero for FUNCTION_DECL means that this member function
-   exists as part of an abstract class's interface.  */
-#define DECL_ABSTRACT_VIRTUAL_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.abstract_virtual)
+/* Nonzero for FUNCTION_DECL means that this member function is a pure
+   virtual function.  */
+#define DECL_PURE_VIRTUAL_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.pure_virtual)
 
 /* Nonzero for FUNCTION_DECL means that this member function
    must be overridden by derived classes.  */
@@ -3868,7 +3868,7 @@ extern tree lookup_fnfields			PROTO((tree, tree, int));
 extern tree lookup_member			PROTO((tree, tree, int, int));
 extern tree lookup_nested_tag			PROTO((tree, tree));
 extern tree get_matching_virtual		PROTO((tree, tree, int));
-extern tree get_abstract_virtuals		PROTO((tree));
+extern void get_pure_virtuals		        PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
 extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
 extern void clear_search_slots			PROTO((tree));

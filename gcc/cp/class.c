@@ -389,7 +389,7 @@ build_vtable_entry (delta, pfn)
   if (flag_vtable_thunks)
     {
       HOST_WIDE_INT idelta = TREE_INT_CST_LOW (delta);
-      if (idelta && ! DECL_ABSTRACT_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
+      if (idelta && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
 	{
 	  pfn = build1 (ADDR_EXPR, vtable_entry_type,
 			make_thunk (pfn, idelta));
@@ -1786,17 +1786,15 @@ finish_struct_bits (t, max_has_virtual)
     }
 
   if (n_baseclasses && max_has_virtual)
-    {
-      /* For a class w/o baseclasses, `finish_struct' has set
-         CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition). Similarly
-         for a class who's base classes do not have vtables. When neither
-         of these is true, we might have removed abstract virtuals (by
-         providing a definition), added some (by declaring new ones), or
-         redeclared ones from a base class. We need to recalculate what's
-         really an abstract virtual at this point (by looking in the
-         vtables).  */
-      CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
-    }
+    /* For a class w/o baseclasses, `finish_struct' has set
+       CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by
+       definition). Similarly for a class whose base classes do not
+       have vtables. When neither of these is true, we might have
+       removed abstract virtuals (by providing a definition), added
+       some (by declaring new ones), or redeclared ones from a base
+       class. We need to recalculate what's really an abstract virtual
+       at this point (by looking in the vtables).  */
+      get_pure_virtuals (t);
 
   if (n_baseclasses)
     {
@@ -2251,7 +2249,7 @@ build_vtbl_initializer (binfo)
 
       /* You can't call an abstract virtual function; it's abstract.
 	 So, we replace these functions with __pure_virtual.  */
-      if (DECL_ABSTRACT_VIRTUAL_P (fn))
+      if (DECL_PURE_VIRTUAL_P (fn))
 	fn = abort_fndecl;
 
       /* Package up that information for the vtable.  */
@@ -2806,8 +2804,8 @@ override_one_vtable (binfo, old, t)
 	    copy_lang_decl (fndecl);
 	    DECL_NEEDS_FINAL_OVERRIDER_P (fndecl) = 1;
 	    /* Make sure we search for it later.  */
-	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
-	      CLASSTYPE_ABSTRACT_VIRTUALS (t) = error_mark_node;
+	    if (! CLASSTYPE_PURE_VIRTUALS (t))
+	      CLASSTYPE_PURE_VIRTUALS (t) = error_mark_node;
 
 	    /* We can use integer_zero_node, as we will core dump
 	       if this is used anyway.  */
@@ -3922,7 +3920,7 @@ check_methods (t)
       DECL_FIELD_SIZE (x) = 0;
 
       check_for_override (x, t);
-      if (DECL_ABSTRACT_VIRTUAL_P (x) && ! DECL_VINDEX (x))
+      if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
 	cp_error_at ("initializer specified for non-virtual method `%D'", x);
 
       /* The name of the field is the original field name
@@ -3930,9 +3928,9 @@ check_methods (t)
       if (DECL_VINDEX (x))
 	{
 	  TYPE_POLYMORPHIC_P (t) = 1;
-	  if (DECL_ABSTRACT_VIRTUAL_P (x))
-	    CLASSTYPE_ABSTRACT_VIRTUALS (t)
-	      = tree_cons (NULL_TREE, x, CLASSTYPE_ABSTRACT_VIRTUALS (t));
+	  if (DECL_PURE_VIRTUAL_P (x))
+	    CLASSTYPE_PURE_VIRTUALS (t)
+	      = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
 	}
     }
 }

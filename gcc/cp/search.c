@@ -2138,7 +2138,7 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
       while (virtuals)
 	{
 	  tree base_fndecl = TREE_VALUE (virtuals);
-	  if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
+	  if (DECL_PURE_VIRTUAL_P (base_fndecl))
 	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
 					   abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
@@ -2147,12 +2147,10 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
   return abstract_virtuals;
 }
 
-/* Return the list of virtual functions which are abstract in type TYPE.
-   This information is cached, and so must be built on a
-   non-temporary obstack.  */
+/* Set CLASSTYPE_PURE_VIRTUALS for TYPE.  */
 
-tree
-get_abstract_virtuals (type)
+void
+get_pure_virtuals (type)
      tree type;
 {
   tree vbases;
@@ -2173,13 +2171,14 @@ get_abstract_virtuals (type)
 	  tree base_fndecl = TREE_VALUE (virtuals);
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
 	    cp_error ("`%#D' needs a final overrider", base_fndecl);
-	  else if (DECL_ABSTRACT_VIRTUAL_P (base_fndecl))
+	  else if (DECL_PURE_VIRTUAL_P (base_fndecl))
 	    abstract_virtuals = tree_cons (NULL_TREE, base_fndecl, 
 					   abstract_virtuals);
 	  virtuals = TREE_CHAIN (virtuals);
 	}
     }
-  return nreverse (abstract_virtuals);
+
+  CLASSTYPE_PURE_VIRTUALS (type) = nreverse (abstract_virtuals);
 }
 
 static tree

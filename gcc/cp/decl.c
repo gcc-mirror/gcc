@@ -3247,7 +3247,7 @@ duplicate_decls (newdecl, olddecl)
 	DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
       DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
-      DECL_ABSTRACT_VIRTUAL_P (newdecl) |= DECL_ABSTRACT_VIRTUAL_P (olddecl);
+      DECL_PURE_VIRTUAL_P (newdecl) |= DECL_PURE_VIRTUAL_P (olddecl);
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
@@ -4523,7 +4523,7 @@ redeclaration_error_message (newdecl, olddecl)
       /* If this is a pure function, its olddecl will actually be
 	 the original initialization to `0' (which we force to call
 	 abort()).  Don't complain about redefinition in this case.  */
-      if (DECL_LANG_SPECIFIC (olddecl) && DECL_ABSTRACT_VIRTUAL_P (olddecl))
+      if (DECL_LANG_SPECIFIC (olddecl) && DECL_PURE_VIRTUAL_P (olddecl))
 	return 0;
 
       /* If both functions come from different namespaces, this is not
@@ -14519,7 +14519,7 @@ lang_mark_tree (t)
 	  ggc_mark_tree (lt->tags);
 	  ggc_mark_tree (lt->search_slot);
 	  ggc_mark_tree (lt->size);
-	  ggc_mark_tree (lt->abstract_virtuals);
+	  ggc_mark_tree (lt->pure_virtuals);
 	  ggc_mark_tree (lt->friend_classes);
 	  ggc_mark_tree (lt->rtti);
 	  ggc_mark_tree (lt->methods);

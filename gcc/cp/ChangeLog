@@ -1,3 +1,32 @@
+1999-12-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Replace abstract_virtuals with pure_virtuals.
+	(CLASSTYPE_ABSTRACT_VIRTUALS): Rename to ...
+	(CLASSTYPE_PURE_VIRTUALS): ... this.
+	(lang_decl_flags): Replace abstract_virtual with pure_virtual.
+	(DECL_ABSTRACT_VIRTUAL_P): Rename to ...
+	(DECL_PURE_VIRTUAL_P): ... this.
+	(get_abstract_virtuals): Rename to ...
+	(get_pure_virtuals): ... this.
+	* call.c (build_new_method_call): Replace DECL_PURE_VIRTUAL_P with
+	DECL_ABSTRACT_VIRTUAL_P.  Replace CLASSTYPE_ABSTRACT_VIRTUALS with
+	CLASSTYPE_PURE_VIRTUALS.
+	* class.c (build_vtable_entry): Likewise.
+	(finish_struct_bits): Likewise.  Call get_pure_virtuals, not
+	get_abstract_virtuals.
+	(build_vtbl_initializer): Likewise.
+	(override_one_vtable): Likewise.
+	(check_methods): Likewise.
+	* decl.c (duplicate_decls): Likewise.
+	(redeclaration_error_message): Likewise.
+	(lang_mark_tree): Likewise.
+	* decl2.c (grok_function_init): Likewise.
+	(import_export_vtable): Likewise.
+	(import_expor_class): Likewise.
+	* typeck2.c (abstract_virtuals_error): Likewise.
+	* xref.c (GNU_xref_member): Likewise.
+	* search.c (get_abstract_virtuals): Rename to get_pure_virtuals.
+	
 1999-12-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-tree.h: Replace ENABLE_CHECKING with ENABLE_TREE_CHECKING
