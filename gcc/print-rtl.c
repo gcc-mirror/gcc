@@ -1,5 +1,5 @@
 /* Print RTL for GNU C Compiler.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987-1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -138,6 +138,16 @@ print_rtx (in_rtx)
 	fprintf (outfile, "] ");
 	sawclose = 1;
 	indent -= 2;
+	break;
+
+      case 'w':
+	fprintf (outfile,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 " %d",
+#else
+		 " %ld",
+#endif
+		 XWINT (in_rtx, i));
 	break;
 
       case 'i':
