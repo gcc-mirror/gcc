@@ -4118,6 +4118,21 @@ build_array_type (elt_type, index_type)
   return t;
 }
 
+/* Return the TYPE of the elements comprising
+   the innermost dimension of ARRAY.  */
+
+tree
+get_inner_array_type (array)
+    tree array;
+{
+  tree type = TREE_TYPE (array);
+
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return type;
+}
+
 /* Construct, lay out and return
    the type of functions returning type VALUE_TYPE
    given arguments of types ARG_TYPES.
