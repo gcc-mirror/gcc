@@ -6390,7 +6390,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   if (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node)
     return error_mark_node;
 
-  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  /* Issue warnings about peculiar, but legal, uses of NULL.  We
+     do this *before* the call to decl_constant_value so as to
+     avoid duplicate warnings on code like `const int I = NULL;
+     f(I);'.  */
   if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
     cp_warning ("converting NULL to non-pointer type");
 
@@ -6566,21 +6569,6 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
   if (IS_AGGR_TYPE (type))
     return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
-
-  if (type == TREE_TYPE (rhs))
-    {
-      /* Issue warnings about peculiar, but legal, uses of NULL.  We
-	 do this *before* the call to decl_constant_value so as to
-	 avoid duplicate warnings on code like `const int I = NULL;
-	 f(I);'.  */
-      if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-	cp_warning ("converting NULL to non-pointer type");
-
-      if (TREE_READONLY_DECL_P (rhs))
-	rhs = decl_constant_value (rhs);
-
-      return rhs;
-    }
 
   return convert_for_assignment (type, rhs, errtype, fndecl, parmnum);
 }

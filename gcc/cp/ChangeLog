@@ -1,3 +1,13 @@
+1999-11-22  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (finish_unary_op_expr): Only set TREE_NEGATED_INT
+	when actually negative.
+
+	* typeck.c (convert_for_assignment): Expand comment about
+	strange NULL check, moved from ...
+	(convert_for_initialization): ... here. Remove unneeded
+	code.
+
 1999-11-21  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cp-tree.h (build_vec_delete): Remove `auto_delete' argument.

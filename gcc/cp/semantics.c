@@ -1598,7 +1598,9 @@ finish_unary_op_expr (code, expr)
      expression. So check whether the result is folded before
      setting TREE_NEGATED_INT.  */
   if (code == NEGATE_EXPR && TREE_CODE (expr) == INTEGER_CST
-      && TREE_CODE (result) == INTEGER_CST)
+      && TREE_CODE (result) == INTEGER_CST
+      && !TREE_UNSIGNED (TREE_TYPE (result))
+      && INT_CST_LT (result, integer_zero_node))
     TREE_NEGATED_INT (result) = 1;
   overflow_warning (result);
   return result;
