@@ -2626,7 +2626,6 @@ extern char *qi_high_reg_name[];
    we can use for operand syntax in the extended asm */
 
 #define ASM_OPERAND_LETTER '#'
-
 #define RET return ""
 #define AT_SP(mode) (gen_rtx (MEM, (mode), stack_pointer_rtx))
 
