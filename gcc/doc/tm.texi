@@ -6581,16 +6581,18 @@ nothing.
 
 You may wish to use @code{ASM_OUTPUT_SIZE_DIRECTIVE} and/or
 @code{ASM_OUTPUT_MEASURED_SIZE} in the definition of this macro.
+@end table
 
 @deftypefn {Target Hook} void TARGET_ASM_GLOBALIZE_LABEL (FILE *@var{stream}, const char *@var{name})
 This target hook is a function to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} global;
 that is, available for reference from other files.
-@end deftypefn
 
 The default implementation relies on a proper definition of
 @code{GLOBAL_ASM_OP}.
+@end deftypefn
 
+@table @code
 @findex ASM_WEAKEN_LABEL
 @item ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream

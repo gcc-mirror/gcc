@@ -1,3 +1,9 @@
+2002-08-21  Andrew Pinski <pinskia@physics.uc.edu>
+            Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/tm.texi (TARGET_ASM_GLOBALIZE_LABEL): Move '@end deftypefn'
+	to the actual end.  Add '@end table' and '@table @code'.
+	
 2002-08-20  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/tm.texi (Label Output): Add missing '@end deftypefn'.
