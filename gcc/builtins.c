@@ -2245,7 +2245,7 @@ expand_builtin_bzero (exp)
 
 static rtx
 expand_builtin_memcmp (exp, arglist, target, mode)
-     tree exp;
+     tree exp ATTRIBUTE_UNUSED;
      tree arglist;
      rtx target;
      enum machine_mode mode;
