@@ -932,7 +932,8 @@ enum reg_class
    movdf to do mem-to-mem moves through integer regs. */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
-  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode ? NO_REGS	\
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode \
+   ? (standard_80387_constant_p (X) ? FP_TOP_REG : NO_REGS) \
    : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
    : ((CLASS) == ALL_REGS						\
       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) ? GENERAL_REGS	\

@@ -1,3 +1,9 @@
+Sat Sep  5 14:47:17 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (PREFERRED_RELOAD_CLASS): Standard fp constants load to TOS.
+	* i386.md (movsf, movdf, movxf): Validate memory address returned
+	from force_const_mem.  Kill useless REG_EQUAL setting code.
+
 Sat Sep  5 14:23:31 1998  Torbjorn Granlund <tege@matematik.su.se>
 
 	* m68k.md (zero_extendsidi2): Fix typo.
