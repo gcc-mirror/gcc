@@ -1,3 +1,7 @@
+2002-07-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* ssa-ccp.c (PHI_PARMS): Remove.
+
 2002-07-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (CLASS_CANNOT_CHANGE_MODE): Include FP_REGS

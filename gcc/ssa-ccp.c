@@ -120,7 +120,6 @@ static sbitmap ssa_edges;
 
 /* Simple macros to simplify code */
 #define SSA_NAME(x) REGNO (SET_DEST (x))
-#define PHI_PARMS(x) XVEC (SET_SRC (x), 0)
 #define EIE(x,y) EDGE_INDEX (edges, x, y)
 
 static void visit_phi_node             PARAMS ((rtx, basic_block));
