@@ -1,3 +1,25 @@
+2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/10876
+	* config/sparc/sparc.h (CONST_OK_FOR_LETTER): Add
+	new 'O' constraint for constant 4096.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Likewise.
+	* config/sparc/sparc.md (adddi3 expander): Canonicalize pattern.
+	Do not transform into MINUS insn for constant 4096.
+	(*adddi3_sp64 insn): Canonicalize pattern. Add new alternative
+	for constant 4096 as third operand.
+	(addsi3 expander): Remove.
+	(*addsi3 insn): Rename into 'addsi3'. Canonicalize pattern. Add
+	new alternative for constant 4096 as third operand.
+	(subdi3 expander): Do not transform into PLUS insn for constant 4096.
+	(*subdi3_sp64 insn): Add new alternative for constant 4096 as third
+	operand.
+	(subsi3 expander): Remove.
+	(*subsi3 insn): Rename into 'subsi3'. Add new alternative for
+	constant 4096 as third operand.
+	* doc/md.texi (Machine Constraints): Document new 'O' constraint for
+	the SPARC port.
+
 2003-06-03  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/t-linux64 (CRTSTUFF_T_CFLAGS_S): Define.
