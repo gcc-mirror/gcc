@@ -1348,16 +1348,23 @@
 ;; Floating point move insns
 
 ;; This pattern forces (set (reg:DF ...) (const_double ...))
-;; to be reloaded by putting the constant into memory.
-;; It must come before the more general movdf pattern.
+;; to be reloaded by putting the constant into memory when
+;; reg is a floating point register.
+;;
+;; For integer registers we use ldil;ldo to set the appropriate
+;; value.
+;; 
+;; This must come before the movdf pattern, and it must be present
+;; to handle obscure reloading cases.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=fx")
-	(match_operand:DF 1 "" "m"))]
+  [(set (match_operand:DF 0 "general_operand" "=?r,fx")
+	(match_operand:DF 1 "" "?E,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (DFmode)"
-  "fldds%F1 %1,%0"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "1")])
+  "* return (which_alternative == 0 ? output_move_double (operands)
+				    : \" fldds%F1 %1,%0\");"
+  [(set_attr "type" "move,fpload")
+   (set_attr "length" "4,1")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -1521,6 +1528,25 @@
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
   [(set_attr "length" "1,2")])
+
+;; This pattern forces (set (reg:SF ...) (const_double ...))
+;; to be reloaded by putting the constant into memory when
+;; reg is a floating point register.
+;;
+;; For integer registers we use ldil;ldo to set the appropriate
+;; value.
+;; 
+;; This must come before the movsf pattern, and it must be present
+;; to handle obscure reloading cases.
+(define_insn ""
+  [(set (match_operand:SF 0 "general_operand" "=?r,fx")
+	(match_operand:SF 1 "" "?E,m"))]
+  "GET_CODE (operands[1]) == CONST_DOUBLE
+   && operands[1] != CONST0_RTX (SFmode)"
+  "* return (which_alternative == 0 ? singlemove_string (operands)
+				    : \" fldws%F1 %1,%0\");"
+  [(set_attr "type" "move,fpload")
+   (set_attr "length" "2,1")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
