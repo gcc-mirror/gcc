@@ -1,9 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-
-   Written by Ron Guilmette (rfg@netcom.com) with help from Richard Stallman.
-
-Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
 
@@ -247,12 +245,12 @@ init_dummy ()
 #endif
   asm (TEXT_SECTION_ASM_OP);
 
-/* This is a kludge. The Linux dynamic linker needs  ___brk_addr, __environ
-   and atexit (). We have to make sure they are in the .dynsym section. We
-   accomplish it by making a dummy call here. This
+/* This is a kludge. The i386 Linux dynamic linker needs ___brk_addr,
+   __environ and atexit (). We have to make sure they are in the .dynsym
+   section. We accomplish it by making a dummy call here. This
    code is never reached. */
  
-#if defined(__linux__) && defined(__PIC__)
+#if defined(__linux__) && defined(__PIC__) && defined(__i386__)
   {
     extern void *___brk_addr;
     extern char **__environ;
