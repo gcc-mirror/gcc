@@ -1,3 +1,7 @@
+Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_throw): Call mark_used on the destructor.
+
 1997-11-26  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (unify): Handle `void' template parameters in
