@@ -6613,8 +6613,7 @@ ix86_expand_fp_movcc (operands)
       /* We may be called from the post-reload splitter.  */
       && (!REG_P (operands[0])
 	  || SSE_REG_P (operands[0])
-	  || REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-      && 0)
+	  || REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
     {
       rtx op0 = ix86_compare_op0, op1 = ix86_compare_op1;
       code = GET_CODE (operands[1]);
