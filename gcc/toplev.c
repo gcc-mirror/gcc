@@ -819,13 +819,6 @@ check_global_declarations (tree *vec, int len)
     {
       decl = vec[i];
 
-      if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	  && ! TREE_ASM_WRITTEN (decl))
-	/* Cancel the RTL for this decl so that, if debugging info
-	   output for global variables is still to come,
-	   this one will be omitted.  */
-	SET_DECL_RTL (decl, NULL_RTX);
-
       /* Warn about any function
 	 declared static but not defined.
 	 We don't warn about variables,

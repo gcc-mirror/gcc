@@ -1,3 +1,11 @@
+2004-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18416
+	* passes.c (rest_of_decl_compilation): Do not look at DECL_RTL
+	when deciding whether to pass a variable to
+	cgraph_varpool_finalize_decl or assemble_variable.
+	* toplev.c (check_global_declarations): Do not clear DECL_RTL. 
+
 2004-11-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vectorizer.c: Fix a comment typo.
