@@ -83,7 +83,7 @@ public class ProtectionDomain
    */
   public ProtectionDomain(CodeSource codesource, PermissionCollection permissions)
   {
-    this(codesource, permissions, null, null, false);
+    this(codesource, permissions, null, null, true);
   }
 
   /**

@@ -84,7 +84,7 @@ public class SecureClassLoader extends ClassLoader
     if (cs != null)
       {
 	ProtectionDomain protectionDomain
-		= new ProtectionDomain(cs, getPermissions(cs));
+          = new ProtectionDomain(cs, getPermissions(cs), this, null);
 	return super.defineClass(name, b, off, len, protectionDomain);
       } 
     else
@@ -102,7 +102,7 @@ public class SecureClassLoader extends ClassLoader
    */
   protected PermissionCollection getPermissions(CodeSource cs)
   {
-    Policy policy = Policy.getPolicy();
+    Policy policy = Policy.getCurrentPolicy();
     return policy.getPermissions(cs);
   }
 }

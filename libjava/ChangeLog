@@ -1,3 +1,14 @@
+2004-09-26  Casey Marshall <csm@gnu.org>
+
+	* java/security/ProtectionDomain.java
+	(<init>(CodeSource,PermissionCollection)): set `staticBinding' to
+	`true'.
+
+	* java/security/SecureClassLoader.java
+	(defineClass): make protection domain dynamically bound.
+	(getPermissions): call `getCurrentPolicy' to avoid permission
+	check.
+
 2004-09-25  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (core_java_source_files): Add VMTimeZone.java.
