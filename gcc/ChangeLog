@@ -35,6 +35,9 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 
 2000-07-17  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.md: Fix the format of mac.
+	(movsi_h8300hs): Output a tab after stmac instead of a space.
+
 	* h8300.c (two_insn_adds_subs_operand): Improve code for detecting
 	profitable adds/subs sequences.
 
