@@ -1912,7 +1912,7 @@ changequote([,])dnl
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
  		if test x$enable_threads = xyes; then
-			thread_file='irix'
+#			thread_file='irix'
 		fi
 		;;
 	mips-wrs-vxworks)
@@ -1933,7 +1933,7 @@ changequote([,])dnl
 		# See comment in mips/iris[56].h files.
 		use_collect2=yes
  		if test x$enable_threads = xyes; then
-			thread_file='irix'
+#			thread_file='irix'
 		fi
 		;;
         mips-sni-sysv4)
@@ -1976,7 +1976,7 @@ changequote([,])dnl
 		# See comment in mips/iris5.h file.
 		use_collect2=yes
  		if test x$enable_threads = xyes; then
-			thread_file='irix'
+#			thread_file='irix'
 		fi
 		;;
 	mips-sgi-irix4loser*)		# Mostly like a MIPS.
@@ -1997,7 +1997,7 @@ changequote([,])dnl
 			use_collect2=yes
 		fi
  		if test x$enable_threads = xyes; then
-			thread_file='irix'
+#			thread_file='irix'
 		fi
 		;;
 	mips-sgi-irix4*)		# Mostly like a MIPS.
@@ -2018,7 +2018,7 @@ changequote([,])dnl
 			use_collect2=yes
 		fi
  		if test x$enable_threads = xyes; then
-			thread_file='irix'
+#			thread_file='irix'
 		fi
 		;;
 	mips-sgi-*)			# Mostly like a MIPS.
