@@ -630,7 +630,7 @@ struct cum_arg {int nbytes; };
    is passed to a function.  On the MN10300 it's passed as
    the first parameter.  */
 
-#define STRUCT_VALUE FIRST_DATA_REGNUM
+#define STRUCT_VALUE 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
