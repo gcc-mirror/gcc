@@ -1,3 +1,36 @@
+Sat May 17 10:48:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Oops.
+
+Fri May 16 14:23:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def: Add TAG_DEFN.
+	* pt.c (tsubst_enum): New fn.
+	(instantiate_class_template): Use it.
+	(tsubst_expr): Support TAG_DEFN.
+	(tsubst): Support local enums.
+	(tsubst_copy): Likewise.
+	* decl.c (finish_enum): Likewise.
+	(start_enum): If this is a local enum, switch to permanent_obstack.
+
+Wed May 14 19:08:28 1997  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (store_parm_decls): Set last_parm_cleanup_insn here.
+	(finish_function): Put the base init code for constructors just
+	after the parm cleanup insns.
+	(struct cp_function): Add last_parm_cleanup_insn.
+	(push_cp_function_context): Likewise.
+	(pop_cp_function_context): Likewise.
+	
+Tue May 13 15:51:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_copy): Handle BIT_NOT_EXPR.
+
+Wed May  7 11:17:59 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* method.c (emit_thunk) [ASM_OUTPUT_MI_THUNK]: Build up the RTL
+	for THUNK_FNDECL before we switch to temporary allocation.
+
 Mon May  5 14:46:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_new_op): Handle null arg2 for ?:.

@@ -268,6 +268,12 @@ tree dtor_label;
 
 static rtx last_dtor_insn;
 
+/* In a constructor, the last insn emitted after the start of the
+   function and the parms, but before the start of the exception
+   specification.  */
+
+static rtx last_parm_cleanup_insn;
+
 /* In a constructor, the point at which we are ready to return
    the pointer to the initialized object.  */
 
@@ -10579,6 +10585,9 @@ start_enum (name)
   register tree enumtype = NULL_TREE;
   struct binding_level *b = inner_binding_level;
 
+  if (processing_template_decl && current_function_decl)
+    end_temporary_allocation ();
+
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
      forward reference.  */
@@ -10657,7 +10666,14 @@ finish_enum (enumtype, values)
   TYPE_VALUES (enumtype) = nreverse (values);
 
   if (processing_template_decl)
-    return enumtype;
+    {
+      if (current_function_decl)
+	{
+	  add_tree (build_min (TAG_DEFN, enumtype));
+	  resume_temporary_allocation ();
+	}
+      return enumtype;
+    }
 
   {
     int unsignedp = tree_int_cst_sgn (minnode) >= 0;
@@ -11417,6 +11433,8 @@ store_parm_decls ()
       expand_start_bindings (0);
     }
 
+  last_parm_cleanup_insn = get_last_insn ();
+
   if (! processing_template_decl && flag_exceptions)
     {
       /* Do the starting of the exception specifications, if we have any.  */
@@ -11819,19 +11837,9 @@ finish_function (lineno, call_poplevel, nested)
 	  insns = get_insns ();
 	  end_sequence ();
 
-	  /* This is where the body of the constructor begins.
-	     If there were no insns in this function body, then the
-	     last_parm_insn is also the last insn.
-	     
-	     If optimization is enabled, last_parm_insn may move, so
-	     we don't hold on to it (across emit_base_init).  */
-	  last_parm_insn = get_first_nonparm_insn ();
-	  if (last_parm_insn == NULL_RTX)
-	    last_parm_insn = get_last_insn ();
-	  else
-	    last_parm_insn = previous_insn (last_parm_insn);
+	  /* This is where the body of the constructor begins.  */
 
-	  emit_insns_after (insns, last_parm_insn);
+	  emit_insns_after (insns, last_parm_cleanup_insn);
 
 	  end_protect_partials ();
 
@@ -12480,6 +12488,7 @@ struct cp_function
   tree ctor_label;
   tree dtor_label;
   rtx last_dtor_insn;
+  rtx last_parm_cleanup_insn;
   tree base_init_list;
   tree member_init_list;
   tree base_init_expr;
@@ -12518,6 +12527,7 @@ push_cp_function_context (context)
   p->ctor_label = ctor_label;
   p->dtor_label = dtor_label;
   p->last_dtor_insn = last_dtor_insn;
+  p->last_parm_cleanup_insn = last_parm_cleanup_insn;
   p->assigns_this = current_function_assigns_this;
   p->just_assigned_this = current_function_just_assigned_this;
   p->parms_stored = current_function_parms_stored;
@@ -12558,6 +12568,7 @@ pop_cp_function_context (context)
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;
   last_dtor_insn = p->last_dtor_insn;
+  last_parm_cleanup_insn = p->last_parm_cleanup_insn;
   current_function_assigns_this = p->assigns_this;
   current_function_just_assigned_this = p->just_assigned_this;
   current_function_parms_stored = p->parms_stored;

@@ -72,6 +72,7 @@ static int comp_template_args PROTO((tree, tree));
 tree most_specialized_class PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
 tree make_temp_vec PROTO((int));
+static tree tsubst_enum				PROTO((tree, tree *, int));
 
 /* We've got a template header coming up; push to a new level for storing
    the parms.  */
@@ -1198,36 +1199,22 @@ instantiate_class_template (type)
     {
       tree name = TREE_PURPOSE (t);
       tree tag = TREE_VALUE (t);
-      tree newtag;
 
       /* These will add themselves to CLASSTYPE_TAGS for the new type.  */
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
-	newtag = start_enum (name);
-      else
-	newtag = tsubst (tag, &TREE_VEC_ELT (args, 0),
-			 TREE_VEC_LENGTH (args), NULL_TREE);
-
-      if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
-	  tree e, values = NULL_TREE, *last = &values;
-
-	  for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
-	    {
-	      tree elt = build_enumerator
-		(TREE_PURPOSE (e),
-		 tsubst_expr (TREE_VALUE (e), &TREE_VEC_ELT (args, 0),
-			      TREE_VEC_LENGTH (args), NULL_TREE));
-	      DECL_FIELD_CONTEXT (TREE_VALUE (elt)) = type;
-	      *last = elt;
-	      last = &TREE_CHAIN (elt);
-	    }
-
-	  finish_enum (newtag, values);
+	  tree e, newtag = tsubst_enum (tag, &TREE_VEC_ELT (args, 0),
+					TREE_VEC_LENGTH (args));
+	  for (e = TYPE_VALUES (newtag); e; e = TREE_CHAIN (e))
+	    DECL_FIELD_CONTEXT (TREE_VALUE (e)) = type;
 
 	  *field_chain = grok_enum_decls (newtag, NULL_TREE);
 	  while (*field_chain)
 	    field_chain = &TREE_CHAIN (*field_chain);
 	}
+      else
+	tsubst (tag, &TREE_VEC_ELT (args, 0),
+		TREE_VEC_LENGTH (args), NULL_TREE);
     }
 
   /* Don't replace enum constants here.  */
@@ -1411,6 +1398,8 @@ tsubst (t, args, nargs, in_decl)
 	tree ctx = tsubst (TYPE_CONTEXT (t), args, nargs, in_decl);
 	if (ctx == NULL_TREE)
 	  return t;
+	else if (ctx == current_function_decl)
+	  return lookup_name (TYPE_IDENTIFIER (t), 1);
 	else
 	  return lookup_nested_type_by_name (ctx, TYPE_IDENTIFIER (t));
       }
@@ -2000,7 +1989,9 @@ tsubst_copy (t, args, nargs, in_decl)
       if (DECL_CONTEXT (t))
 	{
 	  tree ctx = tsubst (DECL_CONTEXT (t), args, nargs, in_decl);
-	  if (ctx != DECL_CONTEXT (t))
+	  if (ctx == current_function_decl)
+	    return lookup_name (DECL_NAME (t), 0);
+	  else if (ctx != DECL_CONTEXT (t))
 	    return lookup_field (ctx, DECL_NAME (t), 0, 0);
 	}
       return t;
@@ -2033,6 +2024,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case POSTINCREMENT_EXPR:
     case NEGATE_EXPR:
     case TRUTH_NOT_EXPR:
+    case BIT_NOT_EXPR:
     case ADDR_EXPR:
     case CONVERT_EXPR:      /* Unary + */
     case SIZEOF_EXPR:
@@ -2489,6 +2481,13 @@ tsubst_expr (t, args, nargs, in_decl)
       tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
       expand_end_catch_block ();
       do_poplevel ();
+      break;
+
+    case TAG_DEFN:
+      lineno = TREE_COMPLEXITY (t);
+      t = TREE_TYPE (t);
+      if (TREE_CODE (t) == ENUMERAL_TYPE)
+	tsubst_enum (t, args, nargs);
       break;
 
     default:
@@ -3577,4 +3576,29 @@ add_maybe_template (d, fns)
   *maybe_template_tail = perm_tree_cons (t, d, NULL_TREE);
   maybe_template_tail = &TREE_CHAIN (*maybe_template_tail);
   DECL_MAYBE_TEMPLATE (d) = 1;
+}
+
+/* Instantiate an enumerated type.  Used by instantiate_class_template and
+   tsubst_expr.  */
+
+static tree
+tsubst_enum (tag, args, nargs)
+     tree tag, *args;
+     int nargs;
+{
+  tree newtag = start_enum (TYPE_IDENTIFIER (tag));
+  tree e, values = NULL_TREE;
+
+  for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
+    {
+      tree elt = build_enumerator (TREE_PURPOSE (e),
+				   tsubst_expr (TREE_VALUE (e), args,
+						nargs, NULL_TREE));
+      TREE_CHAIN (elt) = values;
+      values = elt;
+    }
+
+  finish_enum (newtag, values);
+
+  return newtag;
 }
