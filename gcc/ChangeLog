@@ -1,3 +1,11 @@
+2004-07-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/16130
+	PR target/16142
+	PR target/16143
+	* config/ia64/ia64.c (ia64_dfa_new_cycle): Reset DFA state for asm
+	insn.
+	
 2004-07-06  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	PR target/1679.
