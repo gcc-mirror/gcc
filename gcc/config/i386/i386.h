@@ -613,7 +613,7 @@ march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp: -D__3dNOW__ }\
 %{march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp: -D__3dNOW_A__ }\
-%{march=mcpu=pentium4: -D__SSE2__ }\
+%{march=pentium4: -D__SSE2__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 
 #ifndef CPP_CPU_SPEC
