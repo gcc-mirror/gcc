@@ -937,13 +937,13 @@ push_reload (in, out, inloc, outloc, class,
 
      Finally, reload the inner expression if it is a register that is in
      the class whose registers cannot be referenced in a different size
-     and M1 is not the same size as M2.  If SUBREG_BYTE is nonzero, we
+     and M1 is not the same size as M2.  If subreg_lowpart_p is false, we
      cannot reload just the inside since we might end up with the wrong
      register class.  But if it is inside a STRICT_LOW_PART, we have
      no choice, so we hope we do get the right register class there.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG
-      && (SUBREG_BYTE (in) == 0 || strict_low)
+      && (subreg_lowpart_p (in) || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_MODE
       && (class != CLASS_CANNOT_CHANGE_MODE
 	  || ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (in)), inmode))
@@ -977,7 +977,7 @@ push_reload (in, out, inloc, outloc, class,
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
 		 is handled differently in the following statement.  */
-	      && (out == 0 || SUBREG_BYTE (in) == 0)
+	      && (out == 0 || subreg_lowpart_p (in))
 	      && ((GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 		       > UNITS_PER_WORD)
@@ -1056,7 +1056,7 @@ push_reload (in, out, inloc, outloc, class,
      (except in the case of STRICT_LOW_PART,
      and in that case the constraint should label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
-      && (SUBREG_BYTE (out) == 0 || strict_low)
+      && (subreg_lowpart_p (out) || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_MODE
       && (class != CLASS_CANNOT_CHANGE_MODE
 	  || ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (out)),
