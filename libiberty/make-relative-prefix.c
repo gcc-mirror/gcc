@@ -362,6 +362,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
     return NULL;
 
   /* Build up the pathnames in argv[0].  */
+  *ret = '\0';
   for (i = 0; i < prog_num; i++)
     strcat (ret, prog_dirs[i]);
 
