@@ -1,3 +1,7 @@
+Tue Apr 28 07:25:53 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (libgcc2.ready): Revert last patch (Apr 24).
+
 Mon Apr 27 18:36:28 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reg-stack.c: Revert last patch (Apr 20).
