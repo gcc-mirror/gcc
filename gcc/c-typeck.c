@@ -4511,15 +4511,6 @@ static int spelling_size;		/* Size of the spelling stack.  */
 #define SPELLING_DEPTH() (spelling - spelling_base)
 #define RESTORE_SPELLING_DEPTH(DEPTH) (spelling = spelling_base + (DEPTH))
 
-/* Save and restore the spelling stack around arbitrary C code.  */
-
-#define SAVE_SPELLING_DEPTH(code)		\
-{						\
-  int __depth = SPELLING_DEPTH ();		\
-  code;						\
-  RESTORE_SPELLING_DEPTH (__depth);		\
-}
-
 /* Push an element on the spelling stack with type KIND and assign VALUE
    to MEMBER.  */
 
