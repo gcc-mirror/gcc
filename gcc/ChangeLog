@@ -1,3 +1,10 @@
+2002-01-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* alias.c (find_base_value): Add cases for HIGH, PRE_INC, PRE_DEC,
+	POST_INC, POST_DEC, PRE_MODIFY, and POST_MODIFY.
+	(find_base_term): Add cases for TRUNCATE, PRE_MODIFY, and POST_MODIFY.
+	Recurse for any operand of AND as long as constant is non-zero.
+
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Remove constraints from expanders.

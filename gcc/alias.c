@@ -849,6 +849,12 @@ find_base_value (src)
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* used for NT/Alpha pointers */
     case HIGH:
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
       return find_base_value (XEXP (src, 0));
 
     default:
@@ -1220,6 +1226,10 @@ find_base_term (x)
     case REG:
       return REG_BASE_VALUE (x);
 
+    case TRUNCATE:
+      if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (Pmode))
+        return 0;
+      /* Fall through.  */
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
     case HIGH:
@@ -1227,6 +1237,8 @@ find_base_term (x)
     case PRE_DEC:
     case POST_INC:
     case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
       return find_base_term (XEXP (x, 0));
 
     case VALUE:
@@ -1300,8 +1312,8 @@ find_base_term (x)
       }
 
     case AND:
-      if (GET_CODE (XEXP (x, 0)) == REG && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	return REG_BASE_VALUE (XEXP (x, 0));
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) != 0)
+	return find_base_term (XEXP (x, 0));
       return 0;
 
     case SYMBOL_REF:
