@@ -1,3 +1,13 @@
+2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpphash.h (struct cpp_reader): Remove mls_line and mls_col.
+        * cpplex.c (unterminated): Delete.
+        (parse_string): No string literal may extend over multiple
+        lines.  Suppress the error when preprocessing assembly.
+	* cppmain.c (scan_translation_unit): Strings are single-line.
+
+        * doc/cpp.texi: Update to match.
+
 2002-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5854

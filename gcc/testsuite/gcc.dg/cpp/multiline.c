@@ -22,5 +22,11 @@ L"line 1
    { dg-final { if \{ [grep multiline.i "^$"] == "" \} \{               } }
    { dg-final { return \}                                               } }
    { dg-final { fail "multiline.c: multi-line tokens"                   } } */
-/* { dg-warning "deprecated" "multiline strings" { target *-*-* } 11 } */
-/* { dg-warning "deprecated" "multiline strings" { target *-*-* } 15 } */
+/* { dg-error "missing term" "multiline strings" { target *-*-* } 11 } */
+/* { dg-error "missing term" "multiline strings" { target *-*-* } 14 } */
+/* { dg-error "missing term" "multiline strings" { target *-*-* } 15 } */
+/* { dg-error "missing term" "multiline strings" { target *-*-* } 18 } */
+/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 11 } */
+/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 14 } */
+/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 15 } */
+/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 18 } */

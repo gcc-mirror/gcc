@@ -259,8 +259,7 @@ scan_translation_unit (pfile)
       print.prev = token;
       cpp_output_token (token, print.outf);
 
-      if (token->type == CPP_STRING || token->type == CPP_WSTRING
-	  || token->type == CPP_COMMENT)
+      if (token->type == CPP_COMMENT)
 	check_multiline_token (&token->val.str);
     }
 }
