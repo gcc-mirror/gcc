@@ -910,7 +910,7 @@ yyprint (file, yychar, yylval)
       t = yylval.ttype;
       if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == TEMPLATE_DECL)
 	{
-	  fprintf (file, " `%s'", DECL_NAME (t));
+	  fprintf (file, " `%s'", IDENTIFIER_POINTER (DECL_NAME (t)));
 	  break;
 	}
       my_friendly_assert (TREE_CODE (t) == IDENTIFIER_NODE, 224);
