@@ -1,3 +1,11 @@
+2005-01-13  Jan Beulich  <jbeulich@novell.com>
+
+	* config/ia64/ia64.md (ashlti3, ashlti3_internal): New.
+	(ashrti3_internal): Indicate output is early clobber. Generate result
+	into output rather than first input. Use move for low word of output
+	if shift count is exactly 64.
+	(lshrti3_internal): Likewise.
+
 2005-01-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18329
