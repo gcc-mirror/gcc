@@ -1,3 +1,7 @@
+2002-12-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/t-netbsd (USER_H): Set to $(EXTRA_HEADERS).
+
 2002-12-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.md (*movv1di_const0): New pattern.
