@@ -3232,7 +3232,7 @@ handle_directive (ip, op)
       register U_CHAR *limit;
       int unterminated;
       int junk;
-      int *already_output = 0;
+      int *already_output;
 
       /* Nonzero means do not delete comments within the directive.
 	 #define needs this when -traditional.  */
@@ -3242,6 +3242,7 @@ handle_directive (ip, op)
 
       limit = ip->buf + ip->length;
       unterminated = 0;
+      already_output = 0;
       keep_comments = traditional && kt->traditional_comments;
       /* #import is defined only in Objective C, or when on the NeXT.  */
       if (kt->type == T_IMPORT && !(objc || lookup ("__NeXT__", -1, -1)))
@@ -4183,6 +4184,14 @@ finclude (f, fname, op, system_header_p, dirptr)
     fp->length = st_size;
   }
 
+  if ((fp->length > 0 && fp->buf[fp->length - 1] != '\n')
+      /* Backslash-newline at end is not good enough.  */
+      || (fp->length > 1 && fp->buf[fp->length - 2] == '\\')) {
+    fp->buf[fp->length++] = '\n';
+    missing_newline = 1;
+  }
+  fp->buf[fp->length] = '\0';
+
   /* Close descriptor now, so nesting does not use lots of descriptors.  */
   close (f);
 
@@ -4194,14 +4203,6 @@ finclude (f, fname, op, system_header_p, dirptr)
 
   if (!no_trigraphs)
     trigraph_pcp (fp);
-
-  if ((fp->length > 0 && fp->buf[fp->length - 1] != '\n')
-      /* Backslash-newline at end is not good enough.  */
-      || (fp->length > 1 && fp->buf[fp->length - 2] == '\\')) {
-    fp->buf[fp->length++] = '\n';
-    missing_newline = 1;
-  }
-  fp->buf[fp->length] = '\0';
 
   output_line_command (fp, op, 0, enter_file);
   rescan (op, 0);
@@ -4646,6 +4647,7 @@ write_output ()
       cur_buf_loc += len;
     }
   }
+  free (line_command);
 }
 
 /* Pass a directive through to the output file.
