@@ -1,3 +1,10 @@
+2003-02-07  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/jar/JarFile.java (JarFile(String, boolean)): Read manifest
+	when verify is true.
+	(JarFile(File, boolean)): Likewise.
+	(manifestRead): Set manifestRead field correctly.
+
 2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
 
 	* java/math/BigDecimal(valueOf): fix DiagBigDecimal val008, val013
