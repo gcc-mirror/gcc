@@ -1,5 +1,9 @@
 2002-10-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/static_members.cc (test02): Fix.
+
+2002-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acconfig.h (_GLIBCPP_SYMVER): Add.
 	(_GLIBCPP_ASM_SYMVER): Add.
 	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS): Define _GLIBCPP_SYMVER.
