@@ -1,5 +1,10 @@
 2004-08-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/ext/visibility/visibility-8.C: Add constructor and
+	destructor tests.
+
+2004-08-05  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.dg/ext/visibility/assign1.C: Use scan-hidden and
 	dg-require-visiblity.
 	* g++.dg/ext/visibility/fvisibility-inlines-hidden.C: Likewise.
