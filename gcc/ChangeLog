@@ -1,5 +1,30 @@
 2005-04-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (init_cumulative_args): For -m32 -mfpmath=sse
+	and local functions, set sse_nregs to 8 and float_in_sse.
+	(function_arg_advance, function_arg): If float_in_sse, pass
+	SFmode and DFmode arguments in SSE registers.
+	* config/i386/i386.h (CUMULATIVE_ARGS): Add float_in_sse field.
+
+	* config/i386/i386.c (ix86_value_regno): Only optimize local functions
+	of -funit-at-a-time.
+
+2005-04-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/i386/i386-protos.h (ix86_function_value): Accept two
+	arguments, like the target macro.
+	* config/i386/i386.h (FUNCTION_VALUE): Pass both arguments.
+	* config/i386/i386.c (ix86_function_value): Accept the second
+	argument of the target macro.
+	(ix86_function_ok_for_sibcall): Pass a function pointer to
+	ix86_function_value.
+	(ix86_function_value, ix86_libcall_value) [!TARGET_64BIT]: Adjust
+	call to ix86_value_regno).
+	(ix86_value_regno): Add support for returning floating point values
+	in SSE registers.
+
+2005-04-05  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/20076
 	* tree-inline.c (inline_forbidden_p_1): Prevent inlining functions
 	that call __builtin_return or __builtin_apply_args.
