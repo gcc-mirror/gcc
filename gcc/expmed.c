@@ -878,7 +878,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
       if (GET_MODE (value) != mode)
 	{
 	  if ((REG_P (value) || GET_CODE (value) == SUBREG)
-	      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (value)))
+	      && GET_MODE_SIZE (GET_MODE (value)) <= bitsize)
 	    value = gen_lowpart (mode, value);
 	  else
 	    value = convert_to_mode (mode, value, 1);
