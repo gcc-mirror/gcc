@@ -122,11 +122,26 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
+/* Unblock a signal.  Unless we do this, the signal may only be sent
+   once.  */
+static void 
+unblock_signal (int signum)
+{
+#ifdef _POSIX_VERSION
+  sigset_t sigs;
+
+  sigemptyset (&sigs);
+  sigaddset (&sigs, signum);
+  sigprocmask (SIG_UNBLOCK, &sigs, NULL);
+#endif
+}
+
 #ifdef HANDLE_SEGV
 SIGNAL_HANDLER (catch_segv)
 {
   java::lang::NullPointerException *nullp 
     = new java::lang::NullPointerException;
+  unblock_signal (SIGSEGV);
   MAKE_THROW_FRAME (nullp);
   throw nullp;
 }
@@ -137,6 +152,7 @@ SIGNAL_HANDLER (catch_fpe)
 {
   java::lang::ArithmeticException *arithexception 
     = new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));
+  unblock_signal (SIGFPE);
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else
