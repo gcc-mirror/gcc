@@ -1380,6 +1380,7 @@ compile_file (name)
   init_optabs ();
   init_stmt ();
   init_expmed ();
+  init_expr_once ();
   init_loop ();
   init_reload ();
 
