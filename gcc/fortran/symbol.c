@@ -673,24 +673,6 @@ gfc_add_save (symbol_attribute * attr, locus * where)
 
 
 try
-gfc_add_saved_common (symbol_attribute * attr, locus * where)
-{
-
-  if (check_used (attr, where))
-    return FAILURE;
-
-  if (attr->saved_common)
-    {
-      duplicate_attr ("SAVE", where);
-      return FAILURE;
-    }
-
-  attr->saved_common = 1;
-  return check_conflict (attr, where);
-}
-
-
-try
 gfc_add_target (symbol_attribute * attr, locus * where)
 {
 
@@ -722,22 +704,6 @@ gfc_add_dummy (symbol_attribute * attr, locus * where)
 
 
 try
-gfc_add_common (symbol_attribute * attr, locus * where)
-{
-  /* TODO: We currently add common blocks into the same namespace as normal
-     variables.  This is wrong.  Disable the checks below as a temporary
-     hack.  See PR13249  */
-#if 0
-  if (check_used (attr, where) || check_done (attr, where))
-    return FAILURE;
-#endif
-
-  attr->common = 1;
-  return check_conflict (attr, where);
-}
-
-
-try
 gfc_add_in_common (symbol_attribute * attr, locus * where)
 {
 
@@ -753,6 +719,18 @@ gfc_add_in_common (symbol_attribute * attr, locus * where)
     return SUCCESS;
 
   return gfc_add_flavor (attr, FL_VARIABLE, where);
+}
+
+
+try
+gfc_add_data (symbol_attribute *attr, locus *where)
+{
+
+  if (check_used (attr, where))
+    return FAILURE;
+
+  attr->data = 1;
+  return check_conflict (attr, where);
 }
 
 
@@ -1061,7 +1039,6 @@ gfc_clear_attr (symbol_attribute * attr)
   attr->save = 0;
   attr->target = 0;
   attr->dummy = 0;
-  attr->common = 0;
   attr->result = 0;
   attr->entry = 0;
   attr->data = 0;
@@ -1069,7 +1046,6 @@ gfc_clear_attr (symbol_attribute * attr)
   attr->in_namelist = 0;
 
   attr->in_common = 0;
-  attr->saved_common = 0;
   attr->function = 0;
   attr->subroutine = 0;
   attr->generic = 0;
@@ -1122,8 +1098,6 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
     goto fail;
   if (src->dummy && gfc_add_dummy (dest, where) == FAILURE)
     goto fail;
-  if (src->common && gfc_add_common (dest, where) == FAILURE)
-    goto fail;
   if (src->result && gfc_add_result (dest, where) == FAILURE)
     goto fail;
   if (src->entry)
@@ -1133,8 +1107,6 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
     goto fail;
 
   if (src->in_common && gfc_add_in_common (dest, where) == FAILURE)
-    goto fail;
-  if (src->saved_common && gfc_add_saved_common (dest, where) == FAILURE)
     goto fail;
 
   if (src->generic && gfc_add_generic (dest, where) == FAILURE)
@@ -2323,25 +2295,16 @@ clear_sym_mark (gfc_symtree * st)
 
 /* Recursively traverse the symtree nodes.  */
 
-static void
-traverse_symtree (gfc_symtree * st, void (*func) (gfc_symtree *))
+void
+gfc_traverse_symtree (gfc_symtree * st, void (*func) (gfc_symtree *))
 {
-
   if (st != NULL)
     {
       (*func) (st);
 
-      traverse_symtree (st->left, func);
-      traverse_symtree (st->right, func);
+      gfc_traverse_symtree (st->left, func);
+      gfc_traverse_symtree (st->right, func);
     }
-}
-
-
-void
-gfc_traverse_symtree (gfc_namespace * ns, void (*func) (gfc_symtree *))
-{
-
-  traverse_symtree (ns->sym_root, func);
 }
 
 
@@ -2370,7 +2333,7 @@ void
 gfc_traverse_ns (gfc_namespace * ns, void (*func) (gfc_symbol *))
 {
 
-  gfc_traverse_symtree (ns, clear_sym_mark);
+  gfc_traverse_symtree (ns->sym_root, clear_sym_mark);
 
   traverse_ns (ns->sym_root, func);
 }
@@ -2384,12 +2347,6 @@ save_symbol (gfc_symbol * sym)
 
   if (sym->attr.use_assoc)
     return;
-
-  if (sym->attr.common)
-    {
-      gfc_add_saved_common (&sym->attr, &sym->declared_at);
-      return;
-    }
 
   if (sym->attr.in_common
       || sym->attr.dummy

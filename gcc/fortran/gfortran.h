@@ -385,12 +385,12 @@ typedef struct
   /* Variable attributes.  */
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, save:1, target:1,
-    dummy:1, common:1, result:1, entry:1, assign:1;
+    dummy:1, result:1, entry:1, assign:1;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     use_assoc:1;		/* Symbol has been use-associated.  */
 
-  unsigned in_namelist:1, in_common:1, saved_common:1;
+  unsigned in_namelist:1, in_common:1;
   unsigned function:1, subroutine:1, generic:1;
   unsigned implicit_type:1;	/* Type defined via implicit rules */
 
@@ -642,8 +642,7 @@ typedef struct gfc_symbol
   struct gfc_symbol *result;	/* function result symbol */
   gfc_component *components;	/* Derived type components */
 
-  /* TODO: These three fields are mutually exclusive.  */
-  struct gfc_symbol *common_head, *common_next;	/* Links for COMMON syms */
+  struct gfc_symbol *common_next;	/* Links for COMMON syms */
   /* Make sure setup code for dummy arguments is generated in the correct
      order.  */
   int dummy_order;
@@ -671,6 +670,20 @@ typedef struct gfc_symbol
 gfc_symbol;
 
 
+/* This structure is used to keep track of symbols in common blocks.  */
+
+typedef struct
+{
+  locus where;
+  int use_assoc, saved;
+  gfc_symbol *head;
+} 
+gfc_common_head;
+
+#define gfc_get_common_head() gfc_getmem(sizeof(gfc_common_head))
+
+
+
 /* Within a namespace, symbols are pointed to by symtree nodes that
    are linked together in a balanced binary tree.  There can be
    several symtrees pointing to the same symbol node via USE
@@ -687,6 +700,7 @@ typedef struct gfc_symtree
   {
     gfc_symbol *sym;		/* Symbol associated with this node */
     gfc_user_op *uop;
+    gfc_common_head *common;
   }
   n;
 
@@ -696,7 +710,8 @@ gfc_symtree;
 
 typedef struct gfc_namespace
 {
-  gfc_symtree *sym_root, *uop_root;	/* Roots of the red/black symbol trees */
+  /* Roots of the red/black symbol trees */
+  gfc_symtree *sym_root, *uop_root, *common_root;	
 
   int set_flag[GFC_LETTERS];
   gfc_typespec default_type[GFC_LETTERS];	/* IMPLICIT typespecs */
@@ -705,7 +720,7 @@ typedef struct gfc_namespace
   gfc_interface *operator[GFC_INTRINSIC_OPS];
   struct gfc_namespace *parent, *contained, *sibling;
   struct gfc_code *code;
-  gfc_symbol *blank_common;
+  gfc_common_head blank_common;
   struct gfc_equiv *equiv;
   gfc_access default_access, operator_access[GFC_INTRINSIC_OPS];
 
@@ -1447,6 +1462,7 @@ try gfc_add_dummy (symbol_attribute *, locus *);
 try gfc_add_generic (symbol_attribute *, locus *);
 try gfc_add_common (symbol_attribute *, locus *);
 try gfc_add_in_common (symbol_attribute *, locus *);
+try gfc_add_data (symbol_attribute *, locus *);
 try gfc_add_in_namelist (symbol_attribute *, locus *);
 try gfc_add_sequence (symbol_attribute *, locus *);
 try gfc_add_elemental (symbol_attribute *, locus *);
@@ -1501,7 +1517,7 @@ void gfc_free_namespace (gfc_namespace *);
 void gfc_symbol_init_2 (void);
 void gfc_symbol_done_2 (void);
 
-void gfc_traverse_symtree (gfc_namespace *, void (*)(gfc_symtree *));
+void gfc_traverse_symtree (gfc_symtree *, void (*)(gfc_symtree *));
 void gfc_traverse_ns (gfc_namespace *, void (*)(gfc_symbol *));
 void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
