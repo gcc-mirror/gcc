@@ -1,5 +1,23 @@
 2003-03-18  Michael Koch  <konqueror@gmx.de>
 
+	* configure.in: Create links to architecture dependent files,
+	introduced PLATFORMNET variable (set to NoNet for newlib usage).
+	* configure: Regenerated.
+	* java/net/natInetAddressNoNet.cc,
+	java/net/natInetAddressPosix.cc,
+	java/net/natInetAddressWin32.cc,
+	java/net/natNetworkInterfaceNoNet.cc,
+	java/net/natNetworkInterfacePosix.cc,
+	java/net/natNetworkInterfaceWin32.cc,
+	java/net/natPlainDatagramSocketImplNoNet.cc,
+	java/net/natPlainDatagramSocketImplPosix.cc,
+	java/net/natPlainDatagramSocketImplWin32.cc,
+	java/net/natPlainSocketImplNoNet.cc,
+	java/net/natPlainSocketImplPosix.cc,
+	java/net/natPlainSocketImplWin32.cc: New files.
+
+2003-03-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/BufferedReader.java,
 	java/io/BufferedWriter.java,
 	java/io/ByteArrayOutputStream.java,
