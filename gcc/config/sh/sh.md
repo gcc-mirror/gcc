@@ -1305,6 +1305,13 @@
      invariant code motion can move it.  */
   REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last, REG_NOTES (first));
   REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  /* expand_binop can't find a suitable code in mul_highpart_optab to
+     make a REG_EQUAL note from, so make one here.
+     ??? Alternatively, we could put this at the calling site of expand_binop,
+     i.e. expand_mult_highpart.  */
+  REG_NOTES (last)
+    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
+			 REG_NOTES (last));
   DONE;
 }")
 
