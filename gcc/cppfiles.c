@@ -97,27 +97,24 @@ static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
-static void destroy_include_file_node	PARAMS ((splay_tree_value));
+static void destroy_node	PARAMS ((splay_tree_value));
 static int report_missing_guard		PARAMS ((splay_tree_node, void *));
+static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
+						     const char *));
+static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
 
-/* We use a splay tree to store information about all the include
-   files seen in this compilation.  The key of each tree node is the
-   physical path to the file.  The value is 0 if the file does not
-   exist, or a struct include_file pointer.  */
+/* Set up the splay tree we use to store information about all the
+   file names seen in this compilation.  We also have entries for each
+   file we tried to open but failed; this saves system calls since we
+   don't try to open it again in future.
 
-static void
-destroy_include_file_node (v)
-     splay_tree_value v;
-{
-  struct include_file *f = (struct include_file *)v;
+   The key of each node is the file name, after processing by
+   _cpp_simplify_pathname.  The path name may or may not be absolute.
+   The path string has been malloced, as is automatically freed by
+   registering free () as the splay tree key deletion function.
 
-  if (f)
-    {
-      purge_cache (f);
-      free (f);  /* The tree is registered with free to free f->name.  */
-    }
-}
-
+   A node's value is a pointer to a struct include_file, and is never
+   NULL.  */
 void
 _cpp_init_includes (pfile)
      cpp_reader *pfile;
@@ -125,14 +122,29 @@ _cpp_init_includes (pfile)
   pfile->all_include_files
     = splay_tree_new ((splay_tree_compare_fn) strcmp,
 		      (splay_tree_delete_key_fn) free,
-		      destroy_include_file_node);
+		      destroy_node);
 }
 
+/* Tear down the splay tree.  */
 void
 _cpp_cleanup_includes (pfile)
      cpp_reader *pfile;
 {
   splay_tree_delete (pfile->all_include_files);
+}
+
+/* Free a node.  The path string is automatically freed.  */
+static void
+destroy_node (v)
+     splay_tree_value v;
+{
+  struct include_file *f = (struct include_file *)v;
+
+  if (f)
+    {
+      purge_cache (f);
+      free (f);
+    }
 }
 
 /* Mark a file to not be reread (e.g. #import, read failure).  */
@@ -143,24 +155,36 @@ _cpp_never_reread (file)
   file->cmacro = NEVER_REREAD;
 }
 
-/* Put a file name in the splay tree, for the sake of cpp_included ().
-   Assume that FNAME has already had its path simplified.  */
+/* Lookup a simplified filename, and create an entry if none exists.  */
+static splay_tree_node
+find_or_create_entry (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  splay_tree_node node;
+  struct include_file *file;
+
+  node = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
+  if (! node)
+    {
+      file = xcnew (struct include_file);
+      file->name = xstrdup (fname);
+      node = splay_tree_insert (pfile->all_include_files,
+				(splay_tree_key) file->name,
+				(splay_tree_value) file);
+    }
+
+  return node;
+}
+
+/* Enter a simplified file name in the splay tree, for the sake of
+   cpp_included ().  */
 void
 _cpp_fake_include (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  splay_tree_node nd;
-
-  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
-  if (! nd)
-    {
-      struct include_file *file = xcnew (struct include_file);
-      file->name = xstrdup (fname);
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) file->name,
-			 (splay_tree_value) file);
-    }
+  find_or_create_entry (pfile, fname);
 }
 
 /* Given a file name, look it up in the cache; if there is no entry,
@@ -178,36 +202,20 @@ open_file (pfile, filename)
      cpp_reader *pfile;
      const char *filename;
 {
-  splay_tree_node nd;
-  struct include_file *file;
+  splay_tree_node nd = find_or_create_entry (pfile, filename);
+  struct include_file *file = (struct include_file *) nd->value;
 
-  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) filename);
+  /* Don't retry opening if we failed previously.  */
+  if (file->fd == -2)
+    return 0;
 
-  if (nd)
-    {
-      file = (struct include_file *) nd->value;
-
-      /* Don't retry opening if we failed previously.  */
-      if (file->fd == -2)
-	return 0;
-
-      /* Don't reopen an idempotent file. */
-      if (DO_NOT_REREAD (file))
-        return file;
+  /* Don't reopen an idempotent file. */
+  if (DO_NOT_REREAD (file))
+    return file;
       
-      /* Don't reopen one which is already loaded. */
-      if (file->buffer != NULL)
-        return file;
-    }
-  else
-    {
-      /* In particular, this clears foundhere.  */
-      file = xcnew (struct include_file);
-      file->name = xstrdup (filename);
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) file->name,
-			 (splay_tree_value) file);
-    }
+  /* Don't reopen one which is already loaded. */
+  if (file->buffer != NULL)
+    return file;
 
   /* We used to open files in nonblocking mode, but that caused more
      problems than it solved.  Do take care not to acquire a
@@ -568,6 +576,54 @@ report_missing_guard (n, b)
   return 0;
 }
 
+/* Create a dependency, or issue an error message as appropriate.   */
+static void
+handle_missing_header (pfile, fname, angle_brackets)
+     cpp_reader *pfile;
+     const char *fname;
+     int angle_brackets;
+{
+  /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
+  int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
+					   || pfile->system_include_depth);
+  if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
+    {
+      if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
+	deps_add_dep (pfile->deps, fname);
+      else
+	{
+	  /* If requested as a system header, assume it belongs in
+	     the first system header directory.  */
+	  struct search_path *ptr = CPP_OPTION (pfile, bracket_include);
+	  char *p;
+	  int len = 0, fname_len = strlen (fname);
+
+	  if (ptr)
+	    len = ptr->len;
+
+	  p = (char *) alloca (len + fname_len + 2);
+	  if (len)
+	    {
+	      memcpy (p, ptr->name, len);
+	      p[len++] = '/';
+	    }
+	  memcpy (p + len, fname, fname_len + 1);
+	  _cpp_simplify_pathname (p);
+	  deps_add_dep (pfile->deps, p);
+	}
+    }
+  /* If -M was specified, and this header file won't be added to
+     the dependency list, then don't count this as an error,
+     because we can still produce correct output.  Otherwise, we
+     can't produce correct output, because there may be
+     dependencies we need inside the missing file, and we don't
+     know what directory this missing file exists in. */
+  else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
+    cpp_warning (pfile, "No include path in which to find %s", fname);
+  else
+    cpp_error_from_errno (pfile, fname);
+}
+
 void
 _cpp_execute_include (pfile, header, no_reinclude, include_next)
      cpp_reader *pfile;
@@ -579,7 +635,6 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
   unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
   const char *fname = (const char *) header->val.str.text;
   struct include_file *inc;
-  int print_dep;
 
   /* Help protect #include or similar from recursion.  */
   if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
@@ -652,53 +707,9 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	      fprintf (stderr, " %s\n", inc->name);
 	    }
 	}
-
-      return;
     }
-      
-  /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
-  print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
-				       || pfile->system_include_depth);
-  if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
-    {
-      if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
-	deps_add_dep (pfile->deps, fname);
-      else
-	{
-	  char *p;
-	  struct search_path *ptr;
-	  int len;
-
-	  /* If requested as a system header, assume it belongs in
-	     the first system header directory.  */
-	  if (CPP_OPTION (pfile, bracket_include))
-	    ptr = CPP_OPTION (pfile, bracket_include);
-	  else
-	    ptr = CPP_OPTION (pfile, quote_include);
-
-	  /* FIXME: ptr can be null, no?  */
-	  len = ptr->len;
-	  p = (char *) alloca (len + header->val.str.len + 2);
-	  if (len)
-	    {
-	      memcpy (p, ptr->name, len);
-	      p[len++] = '/';
-	    }
-	  memcpy (p + len, fname, header->val.str.len + 1);
-	  _cpp_simplify_pathname (p);
-	  deps_add_dep (pfile->deps, p);
-	}
-    }
-  /* If -M was specified, and this header file won't be added to
-     the dependency list, then don't count this as an error,
-     because we can still produce correct output.  Otherwise, we
-     can't produce correct output, because there may be
-     dependencies we need inside the missing file, and we don't
-     know what directory this missing file exists in. */
-  else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
-    cpp_warning (pfile, "No include path in which to find %s", fname);
   else
-    cpp_error_from_errno (pfile, fname);
+    handle_missing_header (pfile, fname, angle_brackets);
 }
 
 /* Locate file F, and determine whether it is newer than PFILE. Return -1,
