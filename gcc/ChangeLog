@@ -1,3 +1,20 @@
+Sun Oct 11 01:03:05 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cppexp.c: When forcing unsigned comparisons, cast both sides
+	of the operation.
+
+	* cpphash.h: Move static declaration of hashtab[]...
+	* cpphash.c: ...here.
+
+	* cpplib.c: Cast difference of two pointers to size_t before
+	comparing it to size_t.  Cast signed to unsigned
+	before comparing to size_t. (FIXME: struct argdata should use
+	unsigned buffer sizes.)
+	* cpplib.h (struct cpp_reader): Declare token_buffer_size as
+	unsigned int. (CPP_WRITTEN): Cast return value to size_t.
+	(CPP_RESERVE): Parenthesize N for evaluation order, cast to
+	size_t before comparison.
+
 Sun Oct 11 00:15:29 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (find_basic_blocks): Delte "live_reachable_p" argument.

@@ -31,7 +31,6 @@ typedef struct hashnode HASHNODE;
    politeness, for use when speed isn't so important. */
 
 #define HASHSIZE 1403
-static HASHNODE *hashtab[HASHSIZE];
 #define HASHSTEP(old, c) ((old << 2) + c)
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 

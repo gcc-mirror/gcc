@@ -179,7 +179,7 @@ struct cpp_reader {
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
   /* Allocated size of token_buffer.  CPP_RESERVE allocates space.  */
-  int token_buffer_size;
+  unsigned int token_buffer_size;
   /* End of the written part of token_buffer. */
   unsigned char *limit;
 
@@ -279,12 +279,12 @@ struct cpp_reader {
 #define CPP_OUT_BUFFER(PFILE) ((PFILE)->token_buffer)
 
 /* Number of characters currently in PFILE's output buffer. */
-#define CPP_WRITTEN(PFILE) ((PFILE)->limit - (PFILE)->token_buffer)
+#define CPP_WRITTEN(PFILE) ((size_t)((PFILE)->limit - (PFILE)->token_buffer))
 #define CPP_PWRITTEN(PFILE) ((PFILE)->limit)
 
 /* Make sure PFILE->token_buffer has space for at least N more characters. */
 #define CPP_RESERVE(PFILE, N) \
-  (CPP_WRITTEN (PFILE) + N > (PFILE)->token_buffer_size \
+  (CPP_WRITTEN (PFILE) + (size_t)(N) > (PFILE)->token_buffer_size \
    && (cpp_grow_buffer (PFILE, N), 0))
 
 /* Append string STR (of length N) to PFILE's output buffer.

@@ -30,6 +30,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 extern char *xmalloc PARAMS ((unsigned));
 
+static HASHNODE *hashtab[HASHSIZE];
+
 /* Return hash function on name.  must be compatible with the one
    computed a step at a time, elsewhere  */
 
