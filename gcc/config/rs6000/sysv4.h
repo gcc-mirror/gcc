@@ -686,11 +686,10 @@ do {									\
    || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V'			\
    || (CHAR) == 'B' || (CHAR) == 'b' || (CHAR) == 'G')
 
-/* Output .file and comments listing what options there are */
+/* Output .file.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
 do {									\
-  ASM_OUTPUT_OPTIONS (FILE);						\
   output_file_directive ((FILE), main_input_filename);			\
 } while (0)
 
