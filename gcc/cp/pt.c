@@ -7506,7 +7506,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 		   template <class T, class Allocator = allocator> 
 		   class vector.  */
 
-		if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 1, 1)
+		if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1)
 		    == error_mark_node)
 		  return 1;
 	  

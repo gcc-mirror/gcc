@@ -3671,6 +3671,15 @@ pushdecl (x)
 
       check_template_shadow (x);
 
+      /* If this is a function conjured up by the backend, massage it
+	 so it looks friendly.  */
+      if (TREE_CODE (x) == FUNCTION_DECL
+	  && ! DECL_LANG_SPECIFIC (x))
+	{
+	  retrofit_lang_decl (x);
+	  DECL_LANGUAGE (x) = lang_c;
+	}
+
       if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
 	{
 	  t = push_overloaded_decl (x, PUSH_LOCAL);
