@@ -21,7 +21,8 @@ load_lib gcc-dg.exp
 
 # Skip these tests for non-PowerPC targets and for Aix, where AltiVec
 # is not yet supported.
-if {![istarget powerpc*-*-*] || [istarget powerpc*-*-aix*]} {
+if {![istarget powerpc*-*-*] || [istarget powerpc*-*-aix*]
+    || [istarget powerpc*-*eabispe*] } {
     return
 }
 
