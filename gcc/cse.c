@@ -5855,10 +5855,17 @@ cse_insn (insn, in_libcall_block)
       for (i = 0; i < lim; i++)
 	{
 	  register rtx y = XVECEXP (x, 0, i);
-	  if (GET_CODE (y) == CLOBBER
-	      && (GET_CODE (XEXP (y, 0)) == REG
-		  || GET_CODE (XEXP (y, 0)) == SUBREG))
-	    invalidate (XEXP (y, 0));
+	  if (GET_CODE (y) == CLOBBER)
+	    {
+	      rtx clobbered = XEXP (y, 0);
+
+	      if (GET_CODE (clobbered) == REG
+		  || GET_CODE (clobbered) == SUBREG)
+		invalidate (clobbered);
+	      else if (GET_CODE (clobbered) == STRICT_LOW_PART
+		       || GET_CODE (clobbered) == ZERO_EXTRACT)
+		invalidate (XEXP (clobbered, 0));
+	    }
 	}
 	    
       for (i = 0; i < lim; i++)
@@ -6717,6 +6724,9 @@ cse_insn (insn, in_libcall_block)
 	  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
 	      || GET_CODE (dest) == MEM)
 	    invalidate (dest);
+	  else if (GET_CODE (dest) == STRICT_LOW_PART
+		   || GET_CODE (dest) == ZERO_EXTRACT)
+	    invalidate (XEXP (dest, 0));
 	  sets[i].rtl = 0;
 	}
 
@@ -6860,6 +6870,9 @@ cse_insn (insn, in_libcall_block)
 	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
 	    || (! writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
 	  invalidate (dest);
+	else if (GET_CODE (dest) == STRICT_LOW_PART
+		 || GET_CODE (dest) == ZERO_EXTRACT)
+	  invalidate (XEXP (dest, 0));
       }
 
   /* Make sure registers mentioned in destinations
@@ -7176,10 +7189,15 @@ invalidate_from_clobbers (w, x)
   if (GET_CODE (x) == CLOBBER)
     {
       rtx ref = XEXP (x, 0);
-      if (ref
-	  && (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
-	      || (GET_CODE (ref) == MEM && ! w->all)))
-	invalidate (ref);
+      if (ref)
+	{
+	  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
+	      || (GET_CODE (ref) == MEM && ! w->all))
+	    invalidate (ref);
+	  else if (GET_CODE (ref) == STRICT_LOW_PART
+		   || GET_CODE (ref) == ZERO_EXTRACT)
+	    invalidate (XEXP (ref, 0));
+	}
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -7190,10 +7208,15 @@ invalidate_from_clobbers (w, x)
 	  if (GET_CODE (y) == CLOBBER)
 	    {
 	      rtx ref = XEXP (y, 0);
-	      if (ref
-		  &&(GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
-		     || (GET_CODE (ref) == MEM && !w->all)))
-		invalidate (ref);
+	      if (ref)
+		{
+		  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
+		      || (GET_CODE (ref) == MEM && !w->all))
+		    invalidate (ref);
+		  else if (GET_CODE (ref) == STRICT_LOW_PART
+			   || GET_CODE (ref) == ZERO_EXTRACT)
+		    invalidate (XEXP (ref, 0));
+		}
 	    }
 	}
     }
@@ -7322,6 +7345,9 @@ cse_around_loop (loop_start)
       if (GET_CODE (p->exp) == MEM || GET_CODE (p->exp) == REG
 	  || GET_CODE (p->exp) == SUBREG)
 	invalidate (p->exp);
+      else if (GET_CODE (p->exp) == STRICT_LOW_PART
+	       || GET_CODE (p->exp) == ZERO_EXTRACT)
+	invalidate (XEXP (p->exp, 0));
 
   /* Process insns starting after LOOP_START until we hit a CALL_INSN or
      a CODE_LABEL (we could handle a CALL_INSN, but it isn't worth it).
@@ -7381,6 +7407,9 @@ invalidate_skipped_set (dest, set)
   if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
       || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
     invalidate (dest);
+  else if (GET_CODE (dest) == STRICT_LOW_PART
+	   || GET_CODE (dest) == ZERO_EXTRACT)
+    invalidate (XEXP (dest, 0));
 }
 
 /* Invalidate all insns from START up to the end of the function or the
@@ -7533,6 +7562,9 @@ cse_set_around_loop (x, insn, loop_start)
       || (GET_CODE (SET_DEST (x)) == MEM && ! writes_memory.all
 	  && ! cse_rtx_addr_varies_p (SET_DEST (x))))
     invalidate (SET_DEST (x));
+  else if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
+	   || GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
+    invalidate (XEXP (SET_DEST (x), 0));
 }
 
 /* Find the end of INSN's basic block and return its range,
