@@ -2353,6 +2353,7 @@ emit_library_call_value (va_alist)
   rtx value;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
+  int struct_value_size = 0;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
 
@@ -2376,6 +2377,7 @@ emit_library_call_value (va_alist)
       if (value == 0)
 	value = gen_reg_rtx (outmode);
 #else /* not PCC_STATIC_STRUCT_RETURN */
+      struct_value_size = GET_MODE_SIZE (outmode);
       if (value != 0 && GET_CODE (value) == MEM)
 	mem_value = value;
       else
@@ -2662,7 +2664,8 @@ emit_library_call_value (va_alist)
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
 
-  emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
+  emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant,
+	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       (outmode != VOIDmode && mem_value == 0
 		? hard_libcall_value (outmode) : NULL_RTX),
