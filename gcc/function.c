@@ -1074,8 +1074,11 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode)
       /* Variable is inherited; fix it up when we get back to its function.  */
       push_obstacks (function->function_obstack,
 		     function->function_maybepermanent_obstack);
+
+      /* See comment in restore_tree_status in tree.c for why this needs to be
+	 on saveable obstack.  */
       temp
-	= (struct var_refs_queue *) oballoc (sizeof (struct var_refs_queue));
+	= (struct var_refs_queue *) savealloc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
       temp->unsignedp = TREE_UNSIGNED (type);
