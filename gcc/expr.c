@@ -10033,11 +10033,7 @@ expand_increment (exp, post, ignore)
 	  rtx temp, result;
 
 	  op0 = change_address (op0, VOIDmode, addr);
-	  if (GET_CODE (op0) != REG)
-	    temp = gen_reg_rtx (GET_MODE (op0));
-	  else
-	    temp = op0;
-
+	  temp = force_reg (GET_MODE (op0), op0);
 	  if (! (*insn_operand_predicate[icode][2]) (op1, mode))
 	    op1 = force_reg (mode, op1);
 
@@ -10045,9 +10041,6 @@ expand_increment (exp, post, ignore)
 	     the instructions in reverse order.  */
 	  enqueue_insn (op0, gen_move_insn (op0, temp));
 	  result = enqueue_insn (temp, GEN_FCN (icode) (temp, temp, op1));
-	  if (temp != op0)
-	    result = enqueue_insn (temp, gen_move_insn (temp, op0));
-
 	  return result;
 	}
     }
