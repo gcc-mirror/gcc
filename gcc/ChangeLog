@@ -1,3 +1,9 @@
+2003-10-08  Carlo Wood  <carlo@alinoe.com>
+
+	* Makefile.in (gengtype-lex.c): flex 2.5.4[a] doesn't understand
+	a space after the -o option.  flex 2.5.31 understands both, with
+	and without the space. Removed that space.
+
 2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_frame_info): Add cprestore_size field.

@@ -2204,7 +2204,7 @@ gengtype-yacc.o : $(parsedir)/gengtype-yacc.c gengtype.h $(BCONFIG_H) $(SYSTEM_H
 	  $(parsedir)/gengtype-yacc.c $(OUTPUT_OPTION)
 
 $(parsedir)/gengtype-lex.c : $(srcdir)/gengtype-lex.l
-	if $(FLEX) $(FLEXFLAGS) -o g-$$$$ $(srcdir)/gengtype-lex.l; then \
+	if $(FLEX) $(FLEXFLAGS) -og-$$$$ $(srcdir)/gengtype-lex.l; then \
 	  mv -f g-$$$$ $(parsedir)/gengtype-lex.c ; \
 	else \
 	  rm -f g-$$$$ ; \
