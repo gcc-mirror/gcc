@@ -1,3 +1,9 @@
+2003-03-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9970
+	* decl.c (duplicate_decls): Only copy DECL_THUNKS for virtual
+	functions.
+
 2003-03-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* lang-specs.h (c++-header): Change .pch to .gch.

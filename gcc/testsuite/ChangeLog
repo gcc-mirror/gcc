@@ -1,3 +1,8 @@
+2003-03-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9970
+	* g++.dg/lookup/friend1.C: New test.
+
 2003-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9823
