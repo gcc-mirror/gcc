@@ -1,3 +1,8 @@
+2000-04-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* emit-rtl.c (gen_rtx_CONST_INT): Create cached CONST_INTs on the
+	permanent obstack.
+
 2000-04-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c: Include symcat.h.  Add 'origin' field to struct

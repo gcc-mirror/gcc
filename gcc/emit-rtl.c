@@ -253,7 +253,16 @@ gen_rtx_CONST_INT (mode, arg)
 				   (hashval_t) arg,
 				   /*insert=*/1);
   if (!*slot)
-    *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
+    {
+      if (!ggc_p)
+	{
+	  push_obstacks_nochange ();
+	  end_temporary_allocation ();
+	}
+      *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
+      if (!ggc_p)
+	pop_obstacks ();
+    }
 
   return (rtx) *slot;
 }
