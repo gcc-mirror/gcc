@@ -1,3 +1,7 @@
+2004-08-12 Jan Beulich <jbeulich@novell.com>
+
+	* g++.dg/ext/asm5.C: New.
+
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16698

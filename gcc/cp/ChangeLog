@@ -1,3 +1,10 @@
+2004-08-12 Jan Beulich <jbeulich@novell.com>
+
+	* parser.c (cp_parser_asm_definition): Properly consume scope operator
+	tokens preceding the clobbers. Don't check for scope operator
+	following inputs. Simplify inputs handling to match that now used for
+	clobbers.
+
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16698
