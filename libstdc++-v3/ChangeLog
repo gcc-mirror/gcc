@@ -1,3 +1,12 @@
+2003-11-07  Carlo Wood  <carlo@alinoe.com>
+
+	PR libstdc++/12736
+	* bits/demangle.h (qualifier_list<Allocator>::decode_KVrA): Added.
+	(qualifier_list<Allocator>::decode_qualifiers): Collect concatenated
+	K, V, r and A qualifiers before processing them as a group.
+	* testsuite/demangle/abi_text/01.cc: Reordered CV-qualifiers.
+	* testsuite/demangle/regression/cw-16.cc: New.
+
 2003-11-07  Robert Millan  <robertmh@gnu.org>
 
         * configure.host: Add kfreebsd*-gnu and knetbsd*-gnu.
