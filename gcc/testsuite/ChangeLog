@@ -1,3 +1,7 @@
+2005-03-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/torture/cris-asm-mof-1.c: New test.
+
 2005-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/max1.C: Run with -Wno-deprecated.
