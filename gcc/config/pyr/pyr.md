@@ -1,5 +1,5 @@
 ;; GNU C machine description for Pyramid 90x, 9000, MIServer Series
-;; Copyright (C) 1989, 1990, 1995 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1990, 1995, 1997 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -903,7 +903,6 @@
   ""
   "*
 {
-  extern int optimize;
   if (optimize && REG_P (operands[0]) && REG_P (operands[1])
       && REGNO (operands[0]) == REGNO (operands[1])
       && already_sign_extended (insn, HImode, operands[0]))
@@ -920,7 +919,6 @@
   ""
   "*
 {
-  extern int optimize;
   if (optimize && REG_P (operands[0]) && REG_P (operands[1])
       && REGNO (operands[0]) == REGNO (operands[1])
       && already_sign_extended (insn, QImode, operands[0]))
@@ -1029,7 +1027,6 @@
   ""
   "*
 {
-  extern int optimize;
   if (optimize)
     switch (GET_CODE (operands[0]))
       {
@@ -1056,7 +1053,6 @@
   ""
   "*
 {
-  extern int optimize;
   if (optimize)
     switch (GET_CODE (operands[0]))
       {
@@ -1228,6 +1224,8 @@
 	(sign_extend:SI (match_dup 1)))
    (set (cc0)
 	(match_dup 2))]
+;; ??? This is WRONG, dead_or_set_p cannot be used after reload
+;; because the REG_DEAD notes are not maintained after reload.
   "dead_or_set_p (insn, operands[2])"
   "*
   cc_status.flags |= CC_NO_OVERFLOW;
