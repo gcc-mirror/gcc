@@ -37,8 +37,15 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "except.h"
+#include "function.h"
+
+/* External data.  */
+extern char *version_string;
+extern int rtx_equal_function_value_matters;
 
 /* Specify which cpu to schedule for. */
+
 enum processor_type alpha_cpu;
 
 /* Specify how accurate floating-point traps need to be.  */
@@ -54,6 +61,7 @@ enum alpha_fp_rounding_mode alpha_fprm;
 enum alpha_fp_trap_mode alpha_fptm;
 
 /* Strings decoded into the above options.  */
+
 char *alpha_cpu_string;		/* -mcpu=ev[4|5] */
 char *alpha_tp_string;		/* -mtrap-precision=[p|s|i] */
 char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
@@ -79,8 +87,9 @@ static int inside_function = FALSE;
 
 int alpha_function_needs_gp;
 
-extern char *version_string;
-extern int rtx_equal_function_value_matters;
+/* If non-null, this rtx holds the return address for the function.  */
+
+static rtx alpha_return_addr_rtx;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
@@ -91,10 +100,16 @@ static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 /* Compute the size of the save area in the stack.  */
 static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 				       unsigned long *fmaskP));
+
 /* Strip type information.  */
 #define CURRENT_FUNCTION_ARGS_INFO  \
 (TARGET_OPEN_VMS ? current_function_args_info & 0xff \
  : current_function_args_info)
+
+/* Some helpful register info.  */
+#define REG_PV 27
+#define REG_RA 26
+
 
 /* Parse target option strings. */
 
@@ -1270,6 +1285,87 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   return cost;
 }
 
+/* Functions to save and restore alpha_return_addr_rtx.  */
+
+struct machine_function
+{
+  rtx ra_rtx;
+};
+
+static void
+alpha_save_machine_status (p)
+     struct function *p;
+{
+  struct machine_function *machine =
+    (struct machine_function *) xmalloc (sizeof (struct machine_function));
+
+  p->machine = machine;
+  machine->ra_rtx = alpha_return_addr_rtx;
+}
+
+static void
+alpha_restore_machine_status (p)
+     struct function *p;
+{
+  struct machine_function *machine = p->machine;
+
+  alpha_return_addr_rtx = machine->ra_rtx;
+
+  free (machine);
+  p->machine = (struct machine_function *)0;
+}
+
+/* Do anything needed before RTL is emitted for each function.  */
+
+void
+alpha_init_expanders ()
+{
+  alpha_return_addr_rtx = NULL_RTX;
+
+  /* Arrange to save and restore machine status around nested functions.  */
+  save_machine_status = alpha_save_machine_status;
+  restore_machine_status = alpha_restore_machine_status;
+}
+
+/* Start the ball rolling with RETURN_ADDR_RTX.  */
+
+rtx
+alpha_return_addr (count, frame)
+     int count;
+     rtx frame;
+{
+  rtx init, first;
+
+  if (count != 0)
+    return const0_rtx;
+
+  if (alpha_return_addr_rtx)
+    return alpha_return_addr_rtx;
+
+  /* No rtx yet.  Invent one, and initialize it from $26 in the prologue.  */
+  alpha_return_addr_rtx = gen_reg_rtx (Pmode);
+  init = gen_rtx (SET, Pmode, alpha_return_addr_rtx, gen_rtx (REG, Pmode, 26));
+
+  /* Emit the insn to the prologue with the other argument copies.  */
+  push_topmost_sequence ();
+  emit_insn_after (init, get_insns ());
+  pop_topmost_sequence ();
+
+  return alpha_return_addr_rtx;
+}
+
+static int
+alpha_ra_ever_killed ()
+{
+  rtx i, ra;
+
+  if (!alpha_return_addr_rtx)
+    return regs_ever_live[REG_RA];
+
+  return reg_set_between_p (gen_rtx (REG, REG_RA), get_insns(), NULL_RTX);
+}
+
+
 /* Print an operand.  Recognize special options, documented below.  */
 
 void
@@ -1661,9 +1757,6 @@ alpha_builtin_saveregs (arglist)
 
 #if OPEN_VMS
 
-#define REG_PV 27
-#define REG_RA 26
-
 /* These variables are used for communication between the following functions.
    They indicate various things about the current function being compiled
    that are used to tell what kind of prologue, epilogue and procedure
@@ -1700,13 +1793,16 @@ alpha_sa_mask (imaskP, fmaskP)
   /* One for every register we have to save.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
+    if (! fixed_regs[i] && ! call_used_regs[i]
+	&& regs_ever_live[i] && i != REG_RA)
       {
 	if (i < 32)
 	  imask |= (1L << i);
 	else
 	  fmask |= (1L << (i - 32));
       }
+  if (alpha_ra_ever_killed ())
+    imask |= (1L << REG_RA);
 
   *imaskP = imask;
   *fmaskP = fmask;
@@ -1724,13 +1820,14 @@ alpha_sa_size ()
   /* One for every register we have to save.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
+    if (! fixed_regs[i] && ! call_used_regs[i]
+	&& regs_ever_live[i] && i != REG_RA)
       sa_size++;
 
   /* Start by assuming we can use a register procedure if we don't make any
      calls (REG_RA not used) or need to save any registers and a stack
      procedure if we do.  */
-  is_stack_procedure = regs_ever_live[REG_RA] || sa_size != 0;
+  is_stack_procedure = sa_size != 0 || alpha_ra_ever_killed ();
 
   /* Decide whether to refer to objects off our PV via FP or PV.
      If we need need FP for something else or if we receive a nonlocal
@@ -1788,12 +1885,13 @@ alpha_sa_size ()
   int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
+    if (! fixed_regs[i] && ! call_used_regs[i]
+	&& regs_ever_live[i] && i != REG_RA)
       size++;
 
   /* If some registers were saved but not reg 26, reg 26 must also
      be saved, so leave space for it.  */
-  if (size != 0 && ! regs_ever_live[26])
+  if (size != 0 || alpha_ra_ever_killed ())
     size++;
 
   /* Our size must be even (multiple of 16 bytes).  */
@@ -2333,6 +2431,37 @@ output_epilog (file, size)
 
 #else /* !OPEN_VMS */
 
+static int
+alpha_does_function_need_gp ()
+{
+  rtx insn;
+
+  /* We never need a GP for Windows/NT.  */
+  if (TARGET_WINDOWS_NT)
+    return 0;
+
+#ifdef TARGET_PROFILING_NEEDS_GP
+  if (profile_flag)
+    return 1;
+#endif
+
+  /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
+     Even if we are a static function, we still need to do this in case
+     our address is taken and passed to something like qsort.  */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	&& GET_CODE (PATTERN (insn)) != USE
+	&& GET_CODE (PATTERN (insn)) != CLOBBER)
+      {
+	enum attr_type type = get_attr_type (insn);
+	if (type == TYPE_LDSYM || type == TYPE_JSR)
+	  return 1;
+      }
+
+  return 0;
+}
+
 void
 output_prolog (file, size)
      FILE *file;
@@ -2348,7 +2477,6 @@ output_prolog (file, size)
   HOST_WIDE_INT start_reg_offset = reg_offset;
   HOST_WIDE_INT actual_start_reg_offset = start_reg_offset;
   int int_reg_save_area_size = 0;
-  rtx insn;
   unsigned reg_mask = 0;
   int i, sa_reg;
 
@@ -2393,30 +2521,7 @@ output_prolog (file, size)
   alpha_auto_offset = -frame_size + current_function_pretend_args_size;
   alpha_arg_offset = -frame_size + 48;
 
-  /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
-     Even if we are a static function, we still need to do this in case
-     our address is taken and passed to something like qsort.
-
-     We never need a GP for Windows/NT.  */
-
-  alpha_function_needs_gp = 0;
-
-#ifdef TARGET_PROFILING_NEEDS_GP
-  if (profile_flag)
-    alpha_function_needs_gp = 1;
-#endif
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if ((GET_CODE (insn) == CALL_INSN)
-	|| (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	    && GET_CODE (PATTERN (insn)) != USE
-	    && GET_CODE (PATTERN (insn)) != CLOBBER
-	    && (get_attr_type (insn) == TYPE_LDSYM
-		|| get_attr_type (insn) == TYPE_ISUBR)))
-      {
-	alpha_function_needs_gp = 1;
-	break;
-      }
+  alpha_function_needs_gp = alpha_does_function_need_gp ();
 
   if (TARGET_WINDOWS_NT == 0)
     {
@@ -2515,10 +2620,10 @@ output_prolog (file, size)
       sa_reg = 24;
     }
     
-  /* Save register 26 if any other register needs to be saved.  */
+  /* Save register RA if any other register needs to be saved.  */
   if (sa_size != 0)
     {
-      reg_mask |= 1 << 26;
+      reg_mask |= 1 << REG_RA;
       fprintf (file, "\tstq $26,%d($%d)\n", reg_offset, sa_reg);
       reg_offset += 8;
       int_reg_save_area_size += 8;
@@ -2526,7 +2631,8 @@ output_prolog (file, size)
 
   /* Now save any other used integer registers required to be saved.  */
   for (i = 0; i < 32; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i] && i != 26)
+    if (! fixed_regs[i] && ! call_used_regs[i]
+	&& regs_ever_live[i] && i != REG_RA)
       {
 	reg_mask |= 1 << i;
 	fprintf (file, "\tstq $%d,%d($%d)\n", i, reg_offset, sa_reg);

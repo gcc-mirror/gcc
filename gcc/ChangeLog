@@ -1,3 +1,25 @@
+Thu Oct 16 11:20:30 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_return_addr_rtx): New variable.
+	(alpha_save_machine_status): New; save it.
+	(alpha_restore_machine_status): New; restore it.
+	(alpha_init_expanders): New; clear it.
+	(alpha_return_addr): New; set it.
+	(alpha_ra_ever_killed): New; if alpha_return_addr_rtx, regs_ever_live
+	is overly conservative, so search the insns explicitly.
+	(alpha_sa_mask [VMS]): Check alpha_ra_ever_killed.
+	(alpha_sa_size [VMS && !VMS]): Likewise.
+	* alpha.h (RETURN_ADDR_RTX): Call alpha_return_addr.
+	(INIT_EXPANDERS): New definition.
+	
+	* alpha.c: Move REG_PV, REG_RA somewhere more visible in the file.
+	(output_prolog [!VMS]): Use them.
+
+	* alpha.c (output_prolog [!VMS]): Move gp detection to ...
+	(alpha_does_function_need_gp): ... a new function.  Refine the 
+	CALL_INSN test to just TYPE_JSR.
+	* alpha.md (most call insns): Fix some jsr/ibr type transpositions.
+
 Thu Oct 16 09:36:47 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
