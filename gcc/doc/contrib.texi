@@ -72,6 +72,9 @@ Joe Buck for his direction via the steering committee.
 Craig Burley for leadership of the Fortran effort.
 
 @item
+Paolo Carlini for his work on the C++ run time library.
+
+@item
 John Carr for his alias work, SPARC hacking, infrastructure improvements,
 previous contributions to the steering committee, loop optimizations, etc.
 
@@ -80,7 +83,7 @@ Steve Chamberlain wrote the support for the Hitachi SH and H8 processors
 and the PicoJava processor.
 
 @item
-Scott Christley for his ObjC contributions.
+Scott Christley for his Objective-C contributions.
 
 @item
 Branko Cibej for more warning contributions.
@@ -185,9 +188,10 @@ fixes.
 Kate Hedstrom for staking the g77 folks with an initial testsuite.
 
 @item
-Richard Henderson for his ongoing SPARC and alpha work, loop opts, and
-generally fixing lots of old problems we've ignored for years, flow
-rewrite and lots of stuff I've forgotten.
+Richard Henderson for his ongoing SPARC, alpha, and ia32 work, loop
+opts, and generally fixing lots of old problems we've ignored for
+years, flow rewrite and lots of further stuff, including reviewing
+tons of patches.
 
 @item
 Nobuyuki Hikichi of Software Research Associates, Tokyo, contributed
@@ -216,7 +220,12 @@ Lee Iverson for random fixes and mips testing.
 Andreas Jaeger for various fixes to the MIPS port
 
 @item
-Jakub Jelinek for his SPARC work and sibling call optimizations.
+Jakub Jelinek for his SPARC work and sibling call optimizations as well
+as lots of bug fixes and test cases.
+
+@item
+Janis Johnson for ia64 testing and fixes and for her quality improvement
+sidetracks.
 
 @item
 J. Kean Johnston for OpenServer support.
@@ -293,7 +302,7 @@ Warren Levy major work on libgcj (Java Runtime Library) and random
 work on the Java front end.
 
 @item
-Alain Lichnewsky ported GCC to the Mips cpu.
+Alain Lichnewsky ported GCC to the Mips CPU.
 
 @item
 Robert Lipe for OpenServer support, new testsuites, testing, etc.
@@ -347,7 +356,7 @@ Gary Miller ported GCC to Charles River Data Systems machines.
 @item
 Mark Mitchell for his direction via the steering committee, mountains of
 C++ work, load/store hoisting out of loops, alias analysis improvements,
-ISO C @code{restrict} support, and serving as release manager for GCC 3.0.
+ISO C @code{restrict} support, and serving as release manager for GCC 3.x.
 
 @item
 Alan Modra for various GNU/Linux bits and testing.
@@ -429,7 +438,8 @@ out lots of problems we need to solve, maintenance of the web pages, and
 taking care of documentation maintenance in general.
 
 @item
-Ovidiu Predescu for his work on the ObjC front end and runtime libraries.
+Ovidiu Predescu for his work on the Objective-C front end and runtime
+libraries.
 
 @item
 Ken Raeburn for various improvements to checker, mips ports and various
@@ -538,7 +548,7 @@ Ian Lance Taylor for his mips16 work, general configury hacking,
 fixincludes, etc.
 
 @item
-Holger Teutsch provided the support for the Clipper cpu.
+Holger Teutsch provided the support for the Clipper CPU.
 
 @item
 Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
@@ -552,7 +562,7 @@ language.
 
 @item
 Michael Tiemann for random bugfixes the first instruction scheduler,
-initial C++ support, function integration, NS32k, sparc and M88k
+initial C++ support, function integration, NS32k, SPARC and M88k
 machine description work, delay slot scheduling.
 
 @item

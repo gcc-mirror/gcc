@@ -1,3 +1,11 @@
+2002-04-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Paolo Carlini and
+	Janis Johnson.
+	Update Richard Henderson, Jakub Jelinek, and Mark Mitchell.
+	Refer to Objective-C instead of	ObjC, SPARC instead of sparc,
+	and CPU instead of cpu.
+
 2002-04-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.gcc: Revert i386 changes inadvertently brought in
