@@ -20,7 +20,6 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-
 GLIBCPP_3.2 {
 
   global:
@@ -29,7 +28,18 @@ GLIBCPP_3.2 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za-z]*;
+      std::[A-Za-k]*;
+      std::length_error*;
+      std::logic_error*;
+      std::locale::[A-Za-z]*;
+      std::locale::_Impl*;
+      std::locale::_S_classic;
+      std::locale::_S_global;
+      std::locale::_S_num_categories;
+      std::locale::facet*;
+      std::locale::id*;
+      std::locale::locale*;
+      std::[A-Zm-z]*;
       std::__throw_*;
       std::__basic_file*;
       std::__num_base*;
@@ -42,6 +52,11 @@ GLIBCPP_3.2 {
     };
 
     # Names not in an 'extern' block are mangled names.
+
+    _ZNSt6localeC1E*;
+    _ZNSt6locale11_M_coalesceERKS_S1_j;
+    _ZNSt6locale21_S_normalize_categoryEj;
+    _ZNSt6localeD*;
 
     # std::has_facet*
     _ZSt9has_facet*;
@@ -97,6 +112,15 @@ GLIBCPP_3.2 {
     *;
 };
 
+# Symbols added after GLIBCPP_3.2
+GLIBCPP_3.2.1 {
+
+  _ZNSt7codecvtIcc11__mbstate_tEC1EP15__locale_structj;
+  _ZNSt7codecvtIcc11__mbstate_tEC2EP15__locale_structj;
+  _ZNSt7codecvtIwc11__mbstate_tEC1EP15__locale_structj;
+  _ZNSt7codecvtIwc11__mbstate_tEC2EP15__locale_structj;
+
+} GLIBCPP_3.2;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {

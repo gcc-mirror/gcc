@@ -34,11 +34,16 @@
 #include <locale>
 #include <bits/atomicity.h>
 
-namespace std 
+namespace __gnu_cxx
 {
   // Defined in globals.cc.
-  extern locale 		c_locale;
-  extern locale::_Impl 		c_locale_impl;
+  extern std::locale 		c_locale;
+  extern std::locale::_Impl 	c_locale_impl;
+} // namespace __gnu_cxx
+
+namespace std 
+{
+  using namespace __gnu_cxx;
 
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
@@ -50,9 +55,15 @@ namespace std
   const locale::category 	locale::messages;
   const locale::category 	locale::all;
 
+  // In the future, GLIBCXX_ABI > 5 should remove all asm directives
+  // in this file, and remove exports of any static data members of locale.
   locale::_Impl* 		locale::_S_classic;
+
   locale::_Impl* 		locale::_S_global; 
+
   const size_t 			locale::_S_categories_size;
+  asm (".symver _ZNSt6locale18_S_categories_sizeE,_ZNSt6locale17_S_num_categoriesE@@GLIBCPP_3.2");
+
   const size_t 			locale::_S_extra_categories_size;
 
   // Definitions for static const data members of locale::id
