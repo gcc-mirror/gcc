@@ -402,6 +402,27 @@ gen_reg_rtx (mode)
   if (reload_in_progress || reload_completed)
     abort ();
 
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    {
+      /* For complex modes, don't make a single pseudo.
+	 Instead, make a CONCAT of two pseudos.
+	 This allows noncontiguous allocation of the real and imaginary parts,
+	 which makes much better code.  Besides, allocating DCmode
+	 pseudos overstrains reload on some machines like the 386.  */
+      rtx realpart, imagpart;
+      int size = GET_MODE_UNIT_SIZE (mode);
+      enum machine_mode partmode
+	= mode_for_size (size * BITS_PER_UNIT,
+			 (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+			  ? MODE_FLOAT : MODE_INT),
+			 0);
+
+      realpart = gen_reg_rtx (partmode);
+      imagpart = gen_reg_rtx (partmode);
+      return gen_rtx (CONCAT, mode, realpart, imagpart);
+    }
+
   /* Make sure regno_pointer_flag and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 
@@ -542,7 +563,12 @@ gen_lowpart_common (mode, x)
       else
 	return gen_rtx (SUBREG, mode, x, word);
     }
-
+  else if (GET_CODE (x) == CONCAT)
+    {
+      if (GET_MODE (XEXP (x, 0)) != mode)
+	abort ();
+      return XEXP (x, 0);
+    }
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
   else if ((GET_MODE_CLASS (mode) == MODE_INT
@@ -831,6 +857,12 @@ gen_highpart (mode, x)
       else
 	return gen_rtx (SUBREG, mode, x, word);
     }
+  else if (GET_CODE (x) == CONCAT)
+    {
+      if (GET_MODE (XEXP (x, 1)) != mode)
+	abort ();
+      return XEXP (x, 1);
+    }
   else
     abort ();
 }
@@ -924,6 +956,14 @@ operand_subword (op, i, validate_address, mode)
     }
   else if (GET_CODE (op) == SUBREG)
     return gen_rtx (SUBREG, word_mode, SUBREG_REG (op), i + SUBREG_WORD (op));
+  else if (GET_CODE (op) == CONCAT)
+    {
+      int partwords = GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
+      if (i < partwords)
+	return operand_subword (XEXP (op, 0), i, validate_address, mode);
+      return operand_subword (XEXP (op, 1), i - partwords,
+			      validate_address, mode);
+    }
 
   /* Form a new MEM at the requested address.  */
   if (GET_CODE (op) == MEM)
