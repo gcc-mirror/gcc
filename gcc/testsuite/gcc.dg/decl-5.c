@@ -1,4 +1,4 @@
-/* PR debug/14114 */
+/* PR c/14114 */
 /* Origin: <snyder@fnal.gov> */
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
