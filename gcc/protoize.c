@@ -2168,7 +2168,14 @@ gen_aux_info_file (base_filename)
 	  write (f, ": ", 2);
 	  write (f, compile_params[0], strlen (compile_params[0]));
 	  write (f, ": ", 2);
+#ifdef HAVE_STRERROR
+	  {
+	    char *p = strerror(e);
+	    write (f, p, strlen (p));
+	  }
+#else
 	  write (f, sys_errlist[e], strlen (sys_errlist[e]));
+#endif
 	  write (f, "\n", 1);
           _exit (1);
         }
