@@ -6,10 +6,11 @@
 
 2001-09-10  David Edelsohn  <edelsohn@gnu.org>
 
-	* rs6000.c (scc_eq_operand): New predicate.
-	* rs6000-protos.h: Declare it.
-	* rs6000.h (PREDICATE_CODES): Add it.
-	* rs6000.md (SCC eq:DI): Use it.
+	* config/rs6000/rs6000.c (scc_eq_operand): New predicate.
+	* config/rs6000/rs6000-protos.h: Declare it.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add it.
+	* config/rs6000/rs6000.md (SCC eq:DI): Use it.
+	* config/rs6000/t-aix43 (SHLIB_INSTALL): Use mode 751 (a+x,r-o).
 
 2001-09-07  Jim Wilson  <wilson@redhat.com>
 
