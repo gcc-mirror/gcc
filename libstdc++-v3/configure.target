@@ -72,6 +72,9 @@ case "${target_cpu}" in
   athlon* | i586 | i686 | i786 | x86_64)
     cpu_include_dir="cpu/i486"
     ;;
+  hppa*)
+    cpu_include_dir="cpu/hppa"
+    ;;
   m680[246]0)
     cpu_include_dir="cpu/m68k"
     ;;
