@@ -70,7 +70,7 @@ init_expmed ()
   char *free_point;
   /* This is "some random pseudo register" for purposes of calling recog
      to see what insns exist.  */
-  rtx reg = gen_rtx (REG, word_mode, FIRST_PSEUDO_REGISTER);
+  rtx reg = gen_rtx (REG, word_mode, 10000);
   rtx shift_insn, shiftadd_insn, shiftsub_insn;
   int dummy;
   int m;
@@ -2100,7 +2100,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	 vice versa.  */
 
       mult_cost = rtx_cost (gen_rtx (MULT, mode, op0, op1), SET);
-      mult_cost = MIN (12 * add_cost, mult_cost);
+      mult_cost = MIN (8 * add_cost, mult_cost);
 
       synth_mult (&alg, val, mult_cost);
       synth_mult (&neg_alg, - val,
