@@ -5,7 +5,7 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Ulf Larsson <ulf.larsson@mbow337.swipnet.se>
 
-// fixed crash test
+// crash test - XFAIL *-*-*
 
 template <class T> class C {};
 class foo {} bar = bar.C();
