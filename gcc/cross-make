@@ -12,7 +12,8 @@ RANLIB = $(RANLIB_FOR_TARGET)
 RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
 
 # Dir to search for system headers.  Normally /usr/include.
-SYSTEM_HEADER_DIR = $(tooldir)/include
+# Use CROSS_INCLUDE_DIR not TOOL_INCLUDE_DIR for other vendor's headers.
+SYSTEM_HEADER_DIR = $(tooldir)/sys-include
 
 # Don't try to compile the things we can't compile.
 ALL = all.cross

@@ -2026,10 +2026,15 @@ stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 # Files related to the fixproto script.
 
 deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
-	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -I. -I$(srcdir) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
+	if [ -d $(SYSTEM_HEADER_DIR) ]; \
+	then \
+	  CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -I. -I$(srcdir) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
 	  export CC; \
-	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
-	mv tmp-deduced.h deduced.h
+	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h; \
+	  mv tmp-deduced.h deduced.h; \
+	else \
+	  touch deduced.h; \
+	fi
 
 gen-protos: gen-protos.o scan.o cppalloc.o $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
