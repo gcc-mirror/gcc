@@ -1,5 +1,12 @@
 2002-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.md (pic): New attribute.
+	(do_builtin_setjmp_setup): Save %fp, %i7 and %l7 for TARGET_V9
+	into stack slots.
+	(split after do_builtin_setjmp_setup): New.
+
+2002-04-04  Jakub Jelinek  <jakub@redhat.com>
+
 	PR fortran/6106
 	* config/sparc/sparc.h (MIN_UNITS_PER_WORD): Backout 2001-01-01
 	change.
