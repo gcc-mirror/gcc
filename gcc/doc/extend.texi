@@ -486,7 +486,6 @@ extensions, accepted by GCC in C89 mode and in C++.
 
 @c the above section title wrapped and causes an underfull hbox.. i
 @c changed it from "within" to "in". --mew 4feb93
-
 A compound statement enclosed in parentheses may appear as an expression
 in GNU C@.  This allows you to use loops, switches, and local variables
 within an expression.
@@ -1033,6 +1032,7 @@ This will work with all versions of GCC@.
 @cindex lvalues, generalized
 @cindex extensions, @code{?:}
 @cindex @code{?:} extensions
+
 Compound expressions, conditional expressions and casts are allowed as
 lvalues provided their operands are lvalues.  This means that you can take
 their addresses or store values into them.
@@ -7309,7 +7309,6 @@ If any calls were not inlined, you will get linker errors.
 
 @node Template Instantiation
 @section Where's the Template?
-
 @cindex template instantiation
 
 C++ templates are the first language feature to require more
@@ -7455,7 +7454,6 @@ more discussion of these pragmas.
 
 @node Bound member functions
 @section Extracting the function pointer from a bound pointer to member function
-
 @cindex pmf
 @cindex pointer to member function
 @cindex bound pointer to member function

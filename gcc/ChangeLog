@@ -1,3 +1,13 @@
+2003-04-11  Simon Law  <sfllaw@engmail.uwaterloo.ca>
+
+	* doc/bugreport.texi: Fix paragraph breaking between sections
+	in preparation for TeXinfo's paragraph indentation fixes.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+	* doc/objc.texi: Ditto.
+	* doc/gcov.texi: Wrap 'gcov' in @command{}.
+	* doc/invoke.texi (Darwin Options): Add a preamble.
+
 2003-04-11  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (tls_model_chars): Remove.

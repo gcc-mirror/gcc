@@ -25,7 +25,6 @@ comments about this document to Ovidiu Predescu
 @node Executing code before main, Type encoding, Objective-C, Objective-C
 @section @code{+load}: Executing code before main
 
-
 The GNU Objective-C runtime provides a way that allows you to execute
 code before the execution of the program enters the @code{main}
 function.  The code is executed on a per-class and a per-category basis,
