@@ -1187,8 +1187,15 @@ extern int may_call_alloca;
 		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))\
    : ((C) == 'U' ?					\
       (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63)	\
+   : ((C) == 'A' ?					\
+      (GET_CODE (OP) == MEM				\
+       && GET_CODE (XEXP (OP, 0)) == LO_SUM		\
+       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG	\
+       && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))	\
+       && GET_CODE (XEXP (XEXP (OP, 0), 1)) == UNSPEC		\
+       && GET_MODE (XEXP (OP, 0)) == Pmode)			\
    : ((C) == 'S' ?					\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0)))))
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0))))))
 	
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
