@@ -1642,7 +1642,7 @@ find_matches (insn, matchp)
 }
 
 /* Try to replace output operand DST in SET, with input operand SRC.  SET is
-   the only set in INSN.  INSN has just been recgnized and constrained.
+   the only set in INSN.  INSN has just been recognized and constrained.
    SRC is operand number OPERAND_NUMBER in INSN.
    DST is operand number MATCH_NUMBER in INSN.
    If BACKWARD is nonzero, we have been called in a backward pass.
