@@ -70,6 +70,9 @@
 
     X x __attribute__((...)) (1);
 
+* Covariant returns are implemented for all but varadic functions that
+  require an adjustment.
+
 *** Changes in GCC 3.3:
 
 * The "new X = 3" extension has been removed; you must now use "new X(3)".
