@@ -36,6 +36,19 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_DEFAULT (MASK_GAS|MASK_ABICALLS)
 
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      NETBSD_OS_CPP_BUILTINS_ELF();			\
+      builtin_define ("__NO_LEADING_UNDERSCORES__");	\
+      builtin_define ("__mips__");			\
+      builtin_define ("__GP_SUPPORT__");		\
+      builtin_assert ("machine=mips");			\
+      if (TARGET_LONG64)				\
+	builtin_define ("__LONG64");			\
+    }							\
+  while (0)
+
 
 /* XXX Don't use DWARF-2 debugging info, for now.  */
 #undef DBX_DEBUGGING_INFO
@@ -54,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #undef US_SOFTWARE_GOFAST
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS
+#undef CPP_PREDEFINES
 
 
 /* Get generic NetBSD definitions.  */
@@ -64,30 +78,21 @@ Boston, MA 02111-1307, USA.  */
 #include <netbsd-elf.h>
 
 
-/* Provide CPP predefines appropriate for NetBSD.  We default to
-   MIPS-I.  */
-
-#undef CPP_PREDEFINES
-#if TARGET_ENDIAN_DEFAULT != 0 
-#define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D__ELF__ -D__mips__ -D__mips=1 -D__MIPSEB__		\
-   -D__NO_LEADING_UNDERSCORES__	-D__GP_SUPPORT__			\
-   -Asystem=unix -Asystem=NetBSD -Amachine=mips"
-#else
-#define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D__ELF__ -D__mips__ -D__mips=1 -D__MIPSEL__		\
-   -D__NO_LEADING_UNDERSCORES__	-D__GP_SUPPORT__			\
-   -Asystem=unix -Asystem=NetBSD -Amachine=mips"
-#endif
-
-
 /* Provide a CPP_SPEC appropriate for NetBSD.  This is a simplified
-   CPP_SPEC from <mips/mips.h>.  We use the SUBTARGET_CPP_SPEC to
-   deal with NetBSD-specific CPP options.  */
+   CPP_SPEC from <mips/mips.h>.  We (mostly) use the SUBTARGET_CPP_SPEC
+   to deal with NetBSD-specific CPP options.
+
+   We default to MIPS-I at the very beginning of the spec, and let the
+   value get overridden later, as necessary.  We also set up a default
+   endian spec.
+
+   This will get cleaned up once the MIPS target uses
+   TARGET_CPU_CPP_BUILTINS().  */
 
 #undef CPP_SPEC
 #define CPP_SPEC							\
-  "%(subtarget_cpp_size_spec)						\
+  "-D__mips=1								\
+   %(subtarget_cpp_size_spec)						\
    %{mips3:-U__mips -D__mips=3 -D__mips64}				\
    %{mips4:-U__mips -D__mips=4 -D__mips64}				\
    %{mips32:-U__mips -D__mips=32}					\
@@ -105,18 +110,26 @@ Boston, MA 02111-1307, USA.  */
    %{msoft-float:-D__mips_soft_float}					\
    %{mabi=eabi:-D__mips_eabi}						\
    %{mips16:%{!mno-mips16:-D__mips16}}					\
-   %{EB:-U__MIPSEL__ -D__MIPSEB__}					\
-   %{EL:-U__MIPSEB__ -D__MIPSEL__}					\
+   %{EB:-D__MIPSEB__} %{EL:-D__MIPSEL__}				\
+   %{!EB:%{!EL:%(subtarget_endian_default)}}				\
    %(subtarget_cpp_spec) "
 
-/* Provide a SUBTARGET_CPP_SPEC appropriate for NetBSD.  Currently,
-   we just deal with the GCC option '-posix', and define __LONG64
-   as appropriate for <machine/ansi.h>.  */
+/* Extra specs we need.  */
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS						\
+  { "subtarget_endian_default",	SUBTARGET_ENDIAN_DEFAULT_SPEC },	\
+  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },
+
+#if TARGET_ENDIAN_DEFAULT != 0
+#define SUBTARGET_ENDIAN_DEFAULT_SPEC "-D__MIPSEB__"
+#else
+#define SUBTARGET_ENDIAN_DEFAULT_SPEC "-D__MIPSEL__"
+#endif
+
+/* Provide a SUBTARGET_CPP_SPEC appropriate for NetBSD.  */
 
 #undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE}    \
-   %{mlong64:%{!mips1:%{!mips2:%{!mips32:-D__LONG64}}}} \
-   %{!mlong64:-U__LONG64}"
+#define SUBTARGET_CPP_SPEC "%(netbsd_cpp_spec)"
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/mips target.
    This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
