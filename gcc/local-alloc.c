@@ -105,14 +105,13 @@ static HARD_REG_SET *qty_phys_copy_sugg;
 
 static HARD_REG_SET *qty_phys_sugg;
 
-/* Element Q is non-zero if there is a suggested register in
-   qty_phys_copy_sugg.  */
+/* Element Q is the number of suggested registers in qty_phys_copy_sugg.  */
 
-static char *qty_phys_has_copy_sugg;
+static short *qty_phys_num_copy_sugg;
 
-/* Element Q is non-zero if there is a suggested register in qty_phys_sugg. */
+/* Element Q is the number of suggested registers in qty_phys_sugg. */
 
-static char *qty_phys_has_sugg;
+static short *qty_phys_num_sugg;
 
 /* Element Q is the number of refs to quantity Q.  */
 
@@ -247,6 +246,8 @@ static void optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
 static void block_alloc		PROTO((int));
+static int qty_sugg_compare    	PROTO((int, int));
+static int qty_sugg_compare_1	PROTO((int *, int *));
 static int qty_compare    	PROTO((int, int));
 static int qty_compare_1	PROTO((int *, int *));
 static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
@@ -421,9 +422,9 @@ local_alloc ()
 
   qty_phys_reg = (short *) alloca (max_qty * sizeof (short));
   qty_phys_copy_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_has_copy_sugg = (char *) alloca (max_qty * sizeof (char));
+  qty_phys_num_copy_sugg = (short *) alloca (max_qty * sizeof (char));
   qty_phys_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_has_sugg = (char *) alloca (max_qty * sizeof (char));
+  qty_phys_num_sugg = (short *) alloca (max_qty * sizeof (char));
   qty_birth = (int *) alloca (max_qty * sizeof (int));
   qty_death = (int *) alloca (max_qty * sizeof (int));
   qty_scratch_rtx = (rtx *) alloca (max_qty * sizeof (rtx));
@@ -483,9 +484,9 @@ local_alloc ()
 	    {
 	      qty_scratch_rtx[i] = 0;
 	      CLEAR_HARD_REG_SET (qty_phys_copy_sugg[i]);
-	      qty_phys_has_copy_sugg[i] = 0;
+	      qty_phys_num_copy_sugg[i] = 0;
 	      CLEAR_HARD_REG_SET (qty_phys_sugg[i]);
-	      qty_phys_has_sugg[i] = 0;
+	      qty_phys_num_sugg[i] = 0;
 	    }
 	}
       else
@@ -495,9 +496,9 @@ local_alloc ()
 
 	  CLEAR (qty_scratch_rtx);
 	  CLEAR (qty_phys_copy_sugg);
-	  CLEAR (qty_phys_has_copy_sugg);
+	  CLEAR (qty_phys_num_copy_sugg);
 	  CLEAR (qty_phys_sugg);
-	  CLEAR (qty_phys_has_sugg);
+	  CLEAR (qty_phys_num_sugg);
 	}
 
       next_qty = 0;
@@ -1392,11 +1393,60 @@ block_alloc (b)
      should have been given a quantity, or else -1 meaning ignore it.
      Every quantity should have a known birth and death.  
 
-     Order the qtys so we assign them registers in order of 
+     Order the qtys so we assign them registers in order of the
+     number of suggested registers they need so we allocate those with
+     the most restrictive needs first.  */
+
+  qty_order = (int *) alloca (next_qty * sizeof (int));
+  for (i = 0; i < next_qty; i++)
+    qty_order[i] = i;
+
+#define EXCHANGE(I1, I2)  \
+  { i = qty_order[I1]; qty_order[I1] = qty_order[I2]; qty_order[I2] = i; }
+
+  switch (next_qty)
+    {
+    case 3:
+      /* Make qty_order[2] be the one to allocate last.  */
+      if (qty_sugg_compare (0, 1) > 0)
+	EXCHANGE (0, 1);
+      if (qty_sugg_compare (1, 2) > 0)
+	EXCHANGE (2, 1);
+
+      /* ... Fall through ... */
+    case 2:
+      /* Put the best one to allocate in qty_order[0].  */
+      if (qty_sugg_compare (0, 1) > 0)
+	EXCHANGE (0, 1);
+
+      /* ... Fall through ... */
+
+    case 1:
+    case 0:
+      /* Nothing to do here.  */
+      break;
+
+    default:
+      qsort (qty_order, next_qty, sizeof (int), qty_sugg_compare_1);
+    }
+
+  /* Try to put each quantity in a suggested physical register, if it has one.
+     This may cause registers to be allocated that otherwise wouldn't be, but
+     this seems acceptable in local allocation (unlike global allocation).  */
+  for (i = 0; i < next_qty; i++)
+    {
+      q = qty_order[i];
+      if (qty_phys_num_sugg[q] != 0 || qty_phys_num_copy_sugg[q] != 0)
+	qty_phys_reg[q] = find_free_reg (qty_min_class[q], qty_mode[q], q,
+					 0, 1, qty_birth[q], qty_death[q]);
+      else
+	qty_phys_reg[q] = -1;
+    }
+
+  /* Order the qtys so we assign them registers in order of 
      decreasing length of life.  Normally call qsort, but if we 
      have only a very small number of quantities, sort them ourselves.  */
 
-  qty_order = (int *) alloca (next_qty * sizeof (int));
   for (i = 0; i < next_qty; i++)
     qty_order[i] = i;
 
@@ -1427,19 +1477,6 @@ block_alloc (b)
 
     default:
       qsort (qty_order, next_qty, sizeof (int), qty_compare_1);
-    }
-
-  /* Try to put each quantity in a suggested physical register, if it has one.
-     This may cause registers to be allocated that otherwise wouldn't be, but
-     this seems acceptable in local allocation (unlike global allocation).  */
-  for (i = 0; i < next_qty; i++)
-    {
-      q = qty_order[i];
-      if (qty_phys_has_sugg[q] || qty_phys_has_copy_sugg[q])
-	qty_phys_reg[q] = find_free_reg (qty_min_class[q], qty_mode[q], q,
-					 0, 1, qty_birth[q], qty_death[q]);
-      else
-	qty_phys_reg[q] = -1;
     }
 
   /* Now for each qty that is not a hardware register,
@@ -1547,6 +1584,79 @@ qty_compare_1 (q1, q2)
 
   tem = pri2 - pri1;
   if (tem != 0) return tem;
+  /* If qtys are equally good, sort by qty number,
+     so that the results of qsort leave nothing to chance.  */
+  return *q1 - *q2;
+}
+
+/* Compare two quantities' priority for getting real registers.  This version
+   is called for quantities that have suggested hard registers.  First priority
+   goes to quantities that have copy preferences, then to those that have
+   normal preferences.  Within those groups, quantities with the lower
+   number of preferenes have the highest priority.  Of those, we use the same
+   algorithm as above.  */
+
+static int
+qty_sugg_compare (q1, q2)
+     int q1, q2;
+{
+  register int sugg1 = (qty_phys_num_copy_sugg[q1]
+			? qty_phys_num_copy_sugg[q1]
+			: qty_phys_num_sugg[q1] * FIRST_PSEUDO_REGISTER);
+  register int sugg2 = (qty_phys_num_copy_sugg[q2]
+			? qty_phys_num_copy_sugg[q2]
+			: qty_phys_num_sugg[q2] * FIRST_PSEUDO_REGISTER);
+  /* Note that the quotient will never be bigger than
+     the value of floor_log2 times the maximum number of
+     times a register can occur in one insn (surely less than 100).
+     Multiplying this by 10000 can't overflow.  */
+  register int pri1
+    = (((double) (floor_log2 (qty_n_refs[q1]) * qty_n_refs[q1] * qty_size[q1])
+	/ (qty_death[q1] - qty_birth[q1]))
+       * 10000);
+  register int pri2
+    = (((double) (floor_log2 (qty_n_refs[q2]) * qty_n_refs[q2] * qty_size[q2])
+	/ (qty_death[q2] - qty_birth[q2]))
+       * 10000);
+
+  if (sugg1 != sugg2)
+    return sugg1 - sugg2;
+  
+  return pri2 - pri1;
+}
+
+static int
+qty_sugg_compare_1 (q1, q2)
+     int *q1, *q2;
+{
+  register int sugg1 = (qty_phys_num_copy_sugg[*q1]
+			? qty_phys_num_copy_sugg[*q1]
+			: qty_phys_num_sugg[*q1] * FIRST_PSEUDO_REGISTER);
+  register int sugg2 = (qty_phys_num_copy_sugg[*q2]
+			? qty_phys_num_copy_sugg[*q2]
+			: qty_phys_num_sugg[*q2] * FIRST_PSUEDO_REGISTER);
+
+  /* Note that the quotient will never be bigger than
+     the value of floor_log2 times the maximum number of
+     times a register can occur in one insn (surely less than 100).
+     Multiplying this by 10000 can't overflow.  */
+  register int pri1
+    = (((double) (floor_log2 (qty_n_refs[*q1]) * qty_n_refs[*q1]
+		  * qty_size[*q1])
+	/ (qty_death[*q1] - qty_birth[*q1]))
+       * 10000);
+  register int pri2
+    = (((double) (floor_log2 (qty_n_refs[*q2]) * qty_n_refs[*q2]
+		  * qty_size[*q2])
+	/ (qty_death[*q2] - qty_birth[*q2]))
+       * 10000);
+
+  if (sugg1 != sugg2)
+    return sugg1 - sugg2;
+  
+  if (pri1 != pri2)
+    return pri2 - pri1;
+
   /* If qtys are equally good, sort by qty number,
      so that the results of qsort leave nothing to chance.  */
   return *q1 - *q2;
@@ -1661,15 +1771,16 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
 
       if (reg_qty[sreg] >= 0)
 	{
-	  if (may_save_copy)
+	  if (may_save_copy
+	      && ! TEST_HARD_REG_BIT (qty_phys_copy_sugg[reg_qty[sreg]], ureg))
 	    {
 	      SET_HARD_REG_BIT (qty_phys_copy_sugg[reg_qty[sreg]], ureg);
-	      qty_phys_has_copy_sugg[reg_qty[sreg]] = 1;
+	      qty_phys_num_copy_sugg[reg_qty[sreg]]++;
 	    }
-	  else
+	  else if (! TEST_HARD_REG_BIT (qty_phys_sugg[reg_qty[sreg]], ureg))
 	    {
 	      SET_HARD_REG_BIT (qty_phys_sugg[reg_qty[sreg]], ureg);
-	      qty_phys_has_sugg[reg_qty[sreg]] = 1;
+	      qty_phys_num_sugg[reg_qty[sreg]]++;
 	    }
 	}
       return 0;
@@ -1679,15 +1790,16 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
 
   if (sreg < FIRST_PSEUDO_REGISTER)
     {
-      if (may_save_copy)
+      if (may_save_copy
+	  && ! TEST_HARD_REG_BIT (qty_phys_copy_sugg[reg_qty[ureg]], sreg))
 	{
 	  SET_HARD_REG_BIT (qty_phys_copy_sugg[reg_qty[ureg]], sreg);
-	  qty_phys_has_copy_sugg[reg_qty[ureg]] = 1;
+	  qty_phys_num_copy_sugg[reg_qty[ureg]]++;
 	}
-      else
+      else if (! TEST_HARD_REG_BIT (qty_phys_sugg[reg_qty[ureg]], sreg))
 	{
 	  SET_HARD_REG_BIT (qty_phys_sugg[reg_qty[ureg]], sreg);
-	  qty_phys_has_sugg[reg_qty[ureg]] = 1;
+	  qty_phys_num_sugg[reg_qty[ureg]]++;
 	}
       return 0;
     }
@@ -1984,7 +2096,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 
   if (just_try_suggested)
     {
-      if (qty_phys_has_copy_sugg[qty])
+      if (qty_phys_num_copy_sugg[qty] != 0)
 	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_copy_sugg[qty]);
       else
 	IOR_COMPL_HARD_REG_SET (first_used, qty_phys_sugg[qty]);
@@ -2029,11 +2141,11 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
   
   /* If it would be profitable to allocate a call-clobbered register
      and save and restore it around calls, do that.  */
-  if (just_try_suggested && qty_phys_has_copy_sugg[qty]
-      && qty_phys_has_sugg[qty])
+  if (just_try_suggested && qty_phys_num_copy_sugg[qty] != 0
+      && qty_phys_num_sugg[qty] != 0)
     {
       /* Don't try the copy-suggested regs again.  */
-      qty_phys_has_copy_sugg[qty] = 0;
+      qty_phys_num_copy_sugg[qty] = 0;
       return find_free_reg (class, mode, qty, accept_call_clobbered, 1,
 			    born_index, dead_index);
     }
