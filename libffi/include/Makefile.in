@@ -59,18 +59,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
-AMTAR = @AMTAR@
-AMTARFLAGS = @AMTARFLAGS@
 AS = @AS@
 CC = @CC@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
-LD = @LD@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -78,7 +74,7 @@ SHELL = @SHELL@
 TARGET = @TARGET@
 TARGETDIR = @TARGETDIR@
 VERSION = @VERSION@
-install_sh = @install_sh@
+libffi_basedir = @libffi_basedir@
 
 
 AUTOMAKE_OPTIONS = foreign
