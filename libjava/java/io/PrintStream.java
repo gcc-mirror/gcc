@@ -37,23 +37,54 @@ exception statement from your version. */
 
 
 package java.io;
-import gnu.gcj.convert.UnicodeToBytes;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date September 24, 1998 
- */
+import gnu.gcj.convert.UnicodeToBytes;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Believed complete and correct to 1.3
  */
 
+/**
+ * This class prints Java primitive values and object to a stream as
+ * text.  None of the methods in this class throw an exception.  However,
+ * errors can be detected by calling the <code>checkError()</code> method.
+ * Additionally, this stream can be designated as "autoflush" when 
+ * created so that any writes are automatically flushed to the underlying
+ * output sink when the current line is terminated.
+ * <p>
+ * <b>Note that this class is deprecated</b>.  It exists for backward  
+ * compatibility only.  New code should be written to use 
+ * <code>PrintWriter</code> instead.  
+ * <p>
+ * This class converts char's into byte's using the system default encoding.
+ *
+ * @deprecated
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Tom Tromey <tromey@cygnus.com>
+ */
 public class PrintStream extends FilterOutputStream
 {
   /* Notice the implementation is quite similar to OutputStreamWriter.
    * This leads to some minor duplication, because neither inherits
    * from the other, and we want to maximize performance. */
+
+  // Line separator string.
+  private static final char[] line_separator
+    = System.getProperty("line.separator").toCharArray();
+  
+  UnicodeToBytes converter;
+
+  // Work buffer of characters for converter.
+  char[] work = new char[100];
+  // Work buffer of bytes where we temporarily keep converter output.
+  byte[] work_bytes = new byte[100];
+
+  // True if error occurred.
+  private boolean error;
+  // True if auto-flush.
+  private boolean auto_flush;
 
   public PrintStream (OutputStream out)
   {
@@ -312,19 +343,4 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
-  UnicodeToBytes converter;
-
-  // Work buffer of characters for converter.
-  char[] work = new char[100];
-  // Work buffer of bytes where we temporarily keep converter output.
-  byte[] work_bytes = new byte[100];
-
-  // True if error occurred.
-  private boolean error;
-  // True if auto-flush.
-  private boolean auto_flush;
-
-  // Line separator string.
-  private static final char[] line_separator
-    = System.getProperty("line.separator").toCharArray();
 }

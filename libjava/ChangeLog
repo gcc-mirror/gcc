@@ -1,5 +1,19 @@
 2003-03-28  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/File.java:
+	Import needed classes instead of whole packages, merged class
+	documentation with classpath, moved constants and variables to top of
+	class.
+	* java/io/PrintStream.java:
+	Merged class documentation with classpath, moved constants and
+	variables to top of class.
+	* java/io/RandomAccessFile.java
+	(RandomAccessFile): Merged with classpath.
+	(read): Merged with classpath).
+	(read*): Reformatted.
+
+2003-03-28  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileDescriptor.java
 	(finalize): Throws Throwable, not IOException.
 	* java/io/ObjectOutputStream.java
