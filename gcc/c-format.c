@@ -77,10 +77,16 @@ enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type, strfmon_format_type,
 		   format_type_error };
 
+typedef struct function_format_info
+{
+  enum format_type format_type;	/* type of format (printf, scanf, etc.) */
+  unsigned HOST_WIDE_INT format_num;	/* number of format argument */
+  unsigned HOST_WIDE_INT first_arg_num;	/* number of first arg (zero for varargs) */
+} function_format_info;
+
+static bool decode_format_attr		PARAMS ((tree,
+						 function_format_info *, int));
 static enum format_type decode_format_type	PARAMS ((const char *));
-static void record_function_format	PARAMS ((tree, tree, enum format_type,
-						 int, int));
-static void record_international_format	PARAMS ((tree, tree, int));
 
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -92,72 +98,13 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
      int flags;
      bool *no_add_attrs;
 {
-  tree decl = *node;
-  tree type = TREE_TYPE (decl);
-  tree format_type_id = TREE_VALUE (args);
-  tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
-  tree first_arg_num_expr
-    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
-  unsigned HOST_WIDE_INT format_num, first_arg_num;
-  enum format_type format_type;
+  tree type = *node;
+  function_format_info info;
   tree argument;
-  unsigned int arg_num;
+  unsigned HOST_WIDE_INT arg_num;
 
-  if (TREE_CODE (decl) != FUNCTION_DECL)
+  if (!decode_format_attr (args, &info, 0))
     {
-      error_with_decl (decl,
-		       "argument format specified for non-function `%s'");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-
-  if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
-    {
-      error ("unrecognized format specifier");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-  else
-    {
-      const char *p = IDENTIFIER_POINTER (format_type_id);
-
-      format_type = decode_format_type (p);
-
-      if (format_type == format_type_error)
-	{
-	  warning ("`%s' is an unrecognized format function type", p);
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
-    }
-
-  /* Strip any conversions from the string index and first arg number
-     and verify they are constants.  */
-  while (TREE_CODE (format_num_expr) == NOP_EXPR
-	 || TREE_CODE (format_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-    format_num_expr = TREE_OPERAND (format_num_expr, 0);
-
-  while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
-	 || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
-	 || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
-    first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
-
-  if (TREE_CODE (format_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (format_num_expr) != 0
-      || TREE_CODE (first_arg_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (first_arg_num_expr) != 0)
-    {
-      error ("format string has invalid operand number");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-
-  format_num = TREE_INT_CST_LOW (format_num_expr);
-  first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
-  if (first_arg_num != 0 && first_arg_num <= format_num)
-    {
-      error ("format string arg follows the args to be formatted");
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -168,7 +115,7 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
   argument = TYPE_ARG_TYPES (type);
   if (argument)
     {
-      for (arg_num = 1; argument != 0 && arg_num != format_num;
+      for (arg_num = 1; argument != 0 && arg_num != info.format_num;
 	   ++arg_num, argument = TREE_CHAIN (argument))
 	;
 
@@ -183,14 +130,14 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
 	  return NULL_TREE;
 	}
 
-      else if (first_arg_num != 0)
+      else if (info.first_arg_num != 0)
 	{
 	  /* Verify that first_arg_num points to the last arg,
 	     the ...  */
 	  while (argument)
 	    arg_num++, argument = TREE_CHAIN (argument);
 
-	  if (arg_num != first_arg_num)
+	  if (arg_num != info.first_arg_num)
 	    {
 	      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 		error ("args to be formatted is not '...'");
@@ -200,20 +147,18 @@ handle_format_attribute (node, name, args, flags, no_add_attrs)
 	}
     }
 
-  if (format_type == strftime_format_type && first_arg_num != 0)
+  if (info.format_type == strftime_format_type && info.first_arg_num != 0)
     {
       error ("strftime formats cannot format arguments");
       *no_add_attrs = true;
       return NULL_TREE;
     }
 
-  record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
-			  format_type, format_num, first_arg_num);
   return NULL_TREE;
 }
 
 
-/* Handle a "format" attribute; arguments as in
+/* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
 handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
@@ -223,20 +168,11 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
      int flags;
      bool *no_add_attrs;
 {
-  tree decl = *node;
-  tree type = TREE_TYPE (decl);
+  tree type = *node;
   tree format_num_expr = TREE_VALUE (args);
   unsigned HOST_WIDE_INT format_num;
-  unsigned int arg_num;
+  unsigned HOST_WIDE_INT arg_num;
   tree argument;
-
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    {
-      error_with_decl (decl,
-		       "argument format specified for non-function `%s'");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
 
   /* Strip any conversions from the first arg number and verify it
      is a constant.  */
@@ -277,8 +213,8 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
 	}
     }
 
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) != POINTER_TYPE
-      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (TREE_TYPE (decl))))
+  if (TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
 	  != char_type_node))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
@@ -287,114 +223,85 @@ handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
       return NULL_TREE;
     }
 
-  record_international_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
-			       format_num);
   return NULL_TREE;
 }
 
-typedef struct function_format_info
+
+/* Decode the arguments to a "format" attribute into a function_format_info
+   structure.  It is already known that the list is of the right length.
+   If VALIDATED_P is true, then these attributes have already been validated
+   and this function will abort if they are erroneous; if false, it
+   will give an error message.  Returns true if the attributes are
+   successfully decoded, false otherwise.  */
+
+static bool
+decode_format_attr (args, info, validated_p)
+     tree args;
+     function_format_info *info;
+     int validated_p;
 {
-  struct function_format_info *next;  /* next structure on the list */
-  tree name;			/* identifier such as "printf" */
-  tree assembler_name;		/* optional mangled identifier (for C++) */
-  enum format_type format_type;	/* type of format (printf, scanf, etc.) */
-  int format_num;		/* number of format argument */
-  int first_arg_num;		/* number of first arg (zero for varargs) */
-} function_format_info;
+  tree format_type_id = TREE_VALUE (args);
+  tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
+  tree first_arg_num_expr
+    = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
 
-static function_format_info *function_format_list = NULL;
-
-typedef struct international_format_info
-{
-  struct international_format_info *next;  /* next structure on the list */
-  tree name;			/* identifier such as "gettext" */
-  tree assembler_name;		/* optional mangled identifier (for C++) */
-  int format_num;		/* number of format argument */
-} international_format_info;
-
-static international_format_info *international_format_list = NULL;
-
-/* Record information for argument format checking.  FUNCTION_IDENT is
-   the identifier node for the name of the function to check (its decl
-   need not exist yet).
-   FORMAT_TYPE specifies the type of format checking.  FORMAT_NUM is the number
-   of the argument which is the format control string (starting from 1).
-   FIRST_ARG_NUM is the number of the first actual argument to check
-   against the format string, or zero if no checking is not be done
-   (e.g. for varargs such as vfprintf).  */
-
-static void
-record_function_format (name, assembler_name, format_type,
-			format_num, first_arg_num)
-      tree name;
-      tree assembler_name;
-      enum format_type format_type;
-      int format_num;
-      int first_arg_num;
-{
-  function_format_info *info;
-
-  /* Re-use existing structure if it's there.  */
-
-  for (info = function_format_list; info; info = info->next)
+  if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
     {
-      if (info->name == name && info->assembler_name == assembler_name)
-	break;
+      if (validated_p)
+	abort ();
+      error ("unrecognized format specifier");
+      return false;
     }
-  if (! info)
+  else
     {
-      info = (function_format_info *) xmalloc (sizeof (function_format_info));
-      info->next = function_format_list;
-      function_format_list = info;
+      const char *p = IDENTIFIER_POINTER (format_type_id);
 
-      info->name = name;
-      info->assembler_name = assembler_name;
+      info->format_type = decode_format_type (p);
+
+      if (info->format_type == format_type_error)
+	{
+	  if (validated_p)
+	    abort ();
+	  warning ("`%s' is an unrecognized format function type", p);
+	  return false;
+	}
     }
 
-  info->format_type = format_type;
-  info->format_num = format_num;
-  info->first_arg_num = first_arg_num;
+  /* Strip any conversions from the string index and first arg number
+     and verify they are constants.  */
+  while (TREE_CODE (format_num_expr) == NOP_EXPR
+	 || TREE_CODE (format_num_expr) == CONVERT_EXPR
+	 || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+    format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+  while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
+	 || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
+	 || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
+    first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
+
+  if (TREE_CODE (format_num_expr) != INTEGER_CST
+      || TREE_INT_CST_HIGH (format_num_expr) != 0
+      || TREE_CODE (first_arg_num_expr) != INTEGER_CST
+      || TREE_INT_CST_HIGH (first_arg_num_expr) != 0)
+    {
+      if (validated_p)
+	abort ();
+      error ("format string has invalid operand number");
+      return false;
+    }
+
+  info->format_num = TREE_INT_CST_LOW (format_num_expr);
+  info->first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
+  if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
+    {
+      if (validated_p)
+	abort ();
+      error ("format string arg follows the args to be formatted");
+      return false;
+    }
+
+  return true;
 }
-
-/* Record information for the names of function that modify the format
-   argument to format functions.  FUNCTION_IDENT is the identifier node for
-   the name of the function (its decl need not exist yet) and FORMAT_NUM is
-   the number of the argument which is the format control string (starting
-   from 1).  */
-
-static void
-record_international_format (name, assembler_name, format_num)
-      tree name;
-      tree assembler_name;
-      int format_num;
-{
-  international_format_info *info;
-
-  /* Re-use existing structure if it's there.  */
-
-  for (info = international_format_list; info; info = info->next)
-    {
-      if (info->name == name && info->assembler_name == assembler_name)
-	break;
-    }
-
-  if (! info)
-    {
-      info
-	= (international_format_info *)
-	  xmalloc (sizeof (international_format_info));
-      info->next = international_format_list;
-      international_format_list = info;
-
-      info->name = name;
-      info->assembler_name = assembler_name;
-    }
-
-  info->format_num = format_num;
-}
-
-
-
 
 /* Check a call to a format function against a parameter list.  */
 
@@ -988,10 +895,11 @@ typedef struct
 static void check_format_info	PARAMS ((int *, function_format_info *, tree));
 static void check_format_info_recurse PARAMS ((int *, format_check_results *,
 					       function_format_info *, tree,
-					       tree, int));
+					       tree, unsigned HOST_WIDE_INT));
 static void check_format_info_main PARAMS ((int *, format_check_results *,
 					    function_format_info *,
-					    const char *, int, tree, int));
+					    const char *, int, tree,
+					    unsigned HOST_WIDE_INT));
 static void status_warning PARAMS ((int *, const char *, ...))
      ATTRIBUTE_PRINTF_2;
 
@@ -1032,43 +940,42 @@ decode_format_type (s)
 
 
 /* Check the argument list of a call to printf, scanf, etc.
-   NAME is the function identifier.
-   ASSEMBLER_NAME is the function's assembler identifier.
-   (Either NAME or ASSEMBLER_NAME, but not both, may be NULL_TREE.)
+   ATTRS are the attributes on the function type.
    PARAMS is the list of argument values.  Also, if -Wmissing-format-attribute,
    warn for calls to vprintf or vscanf in functions with no such format
    attribute themselves.  */
 
 void
-check_function_format (status, name, assembler_name, params)
+check_function_format (status, attrs, params)
      int *status;
-     tree name;
-     tree assembler_name;
+     tree attrs;
      tree params;
 {
-  function_format_info *info;
+  tree a;
 
-  /* See if this function is a format function.  */
-  for (info = function_format_list; info; info = info->next)
+  /* See if this function has any format attributes.  */
+  for (a = attrs; a; a = TREE_CHAIN (a))
     {
-      if (info->assembler_name
-	  ? (info->assembler_name == assembler_name)
-	  : (info->name == name))
+      if (is_attribute_p ("format", TREE_PURPOSE (a)))
 	{
 	  /* Yup; check it.  */
-	  check_format_info (status, info, params);
-	  if (warn_missing_format_attribute && info->first_arg_num == 0
-	      && (format_types[info->format_type].flags
+	  function_format_info info;
+	  decode_format_attr (TREE_VALUE (a), &info, 1);
+	  check_format_info (status, &info, params);
+	  if (warn_missing_format_attribute && info.first_arg_num == 0
+	      && (format_types[info.format_type].flags
 		  & (int) FMT_FLAG_ARG_CONVERT))
 	    {
-	      function_format_info *info2;
-	      for (info2 = function_format_list; info2; info2 = info2->next)
-		if ((info2->assembler_name
-		     ? (info2->assembler_name == DECL_ASSEMBLER_NAME (current_function_decl))
-		     : (info2->name == DECL_NAME (current_function_decl)))
-		    && info2->format_type == info->format_type)
+	      tree c;
+	      for (c = TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl));
+		   c;
+		   c = TREE_CHAIN (c))
+		if (is_attribute_p ("format", TREE_PURPOSE (c))
+		    && (decode_format_type (IDENTIFIER_POINTER
+					    (TREE_VALUE (TREE_VALUE (c))))
+			== info.format_type))
 		  break;
-	      if (info2 == NULL)
+	      if (c == NULL_TREE)
 		{
 		  /* Check if the current function has a parameter to which
 		     the format attribute could be attached; if not, it
@@ -1086,10 +993,9 @@ check_function_format (status, name, assembler_name, params)
 		    }
 		  if (args != 0)
 		    warning ("function might be possible candidate for `%s' format attribute",
-			     format_types[info->format_type].name);
+			     format_types[info.format_type].name);
 		}
 	    }
-	  break;
 	}
     }
 }
@@ -1347,7 +1253,7 @@ check_format_info (status, info, params)
      function_format_info *info;
      tree params;
 {
-  int arg_num;
+  unsigned HOST_WIDE_INT arg_num;
   tree format_tree;
   format_check_results res;
   /* Skip to format argument.  If the argument isn't available, there's
@@ -1442,7 +1348,7 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
      function_format_info *info;
      tree format_tree;
      tree params;
-     int arg_num;
+     unsigned HOST_WIDE_INT arg_num;
 {
   int format_length;
   HOST_WIDE_INT offset;
@@ -1459,40 +1365,58 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
       return;
     }
 
-  if (TREE_CODE (format_tree) == CALL_EXPR
-      && TREE_CODE (TREE_OPERAND (format_tree, 0)) == ADDR_EXPR
-      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (format_tree, 0), 0))
-	  == FUNCTION_DECL))
+  if (TREE_CODE (format_tree) == CALL_EXPR)
     {
-      tree function = TREE_OPERAND (TREE_OPERAND (format_tree, 0), 0);
+      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (format_tree, 0)));
+      tree attrs;
+      bool found_format_arg = false;
 
       /* See if this is a call to a known internationalization function
-	 that modifies the format arg.  */
-      international_format_info *iinfo;
+	 that modifies the format arg.  Such a function may have multiple
+	 format_arg attributes (for example, ngettext).  */
 
-      for (iinfo = international_format_list; iinfo; iinfo = iinfo->next)
-	if (iinfo->assembler_name
-	    ? (iinfo->assembler_name == DECL_ASSEMBLER_NAME (function))
-	    : (iinfo->name == DECL_NAME (function)))
+      for (attrs = TYPE_ATTRIBUTES (type);
+	   attrs;
+	   attrs = TREE_CHAIN (attrs))
+	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
 	  {
 	    tree inner_args;
+	    tree format_num_expr;
+	    int format_num;
 	    int i;
+
+	    /* Extract the argument number, which was previously checked
+	       to be valid.  */
+	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
+	    while (TREE_CODE (format_num_expr) == NOP_EXPR
+		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
+		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+	    if (TREE_CODE (format_num_expr) != INTEGER_CST
+		|| TREE_INT_CST_HIGH (format_num_expr) != 0)
+	      abort ();
+
+	    format_num = TREE_INT_CST_LOW (format_num_expr);
 
 	    for (inner_args = TREE_OPERAND (format_tree, 1), i = 1;
 		 inner_args != 0;
 		 inner_args = TREE_CHAIN (inner_args), i++)
-	      if (i == iinfo->format_num)
+	      if (i == format_num)
 		{
-		  /* FIXME: with Marc Espie's __attribute__((nonnull))
-		     patch in GCC, we will have chained attributes,
-		     and be able to handle functions like ngettext
-		     with multiple format_arg attributes properly.  */
 		  check_format_info_recurse (status, res, info,
 					     TREE_VALUE (inner_args), params,
 					     arg_num);
-		  return;
+		  found_format_arg = true;
+		  break;
 		}
 	  }
+
+      /* If we found a format_arg attribute and did a recursive check,
+	 we are done with checking this format string.  Otherwise, we
+	 continue and this will count as a non-literal format string.  */
+      if (found_format_arg)
+	return;
     }
 
   if (TREE_CODE (format_tree) == COND_EXPR)
@@ -1666,7 +1590,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
      const char *format_chars;
      int format_length;
      tree params;
-     int arg_num;
+     unsigned HOST_WIDE_INT arg_num;
 {
   const char *orig_format_chars = format_chars;
   tree first_fillin_param = params;

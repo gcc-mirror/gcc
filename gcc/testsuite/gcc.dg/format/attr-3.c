@@ -25,21 +25,13 @@ extern void fc3 (const char *) __attribute__((format_arg(1, 2))); /* { dg-error 
 /* These attributes presently only apply to declarations, not to types.
    Eventually, they should be usable with declarators for function types
    anywhere, but still not with structure/union/enum types.  */
-struct s0 { int i; } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply" "format on struct" } */
-union u0 { int i; } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply" "format on union" } */
-enum e0 { E0V0 } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply" "format on enum" } */
+struct s0 { int i; } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply|only applies" "format on struct" } */
+union u0 { int i; } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply|only applies" "format on union" } */
+enum e0 { E0V0 } __attribute__((format(printf, 1, 2))); /* { dg-error "does not apply|only applies" "format on enum" } */
 
-struct s1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not apply" "format_arg on struct" } */
-union u1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not apply" "format_arg on union" } */
-enum e1 { E1V0 } __attribute__((format_arg(1))); /* { dg-error "does not apply" "format_arg on enum" } */
-
-/* At present, only functions can be declared with these attributes.
-   Once they can be applied to function types in function pointers, etc.,
-   these tests should be removed, and tests should be added (say in a new
-   testcase attr-<num>.c) that such attributes work and calls through such
-   function pointers (etc.) get checked.  */
-extern void (*fd0) (const char *, ...) __attribute__((format(printf, 1, 2))); /* { dg-error "non-function" "format on non-function" } */
-extern char *(*fd1) (const char *) __attribute__((format_arg(1))); /* { dg-error "non-function" "format on non-function" } */
+struct s1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not apply|only applies" "format_arg on struct" } */
+union u1 { int i; } __attribute__((format_arg(1))); /* { dg-error "does not apply|only applies" "format_arg on union" } */
+enum e1 { E1V0 } __attribute__((format_arg(1))); /* { dg-error "does not apply|only applies" "format_arg on enum" } */
 
 /* The format type must be an identifier, one of those recognised.  */
 extern void fe0 (const char *, ...) __attribute__((format(12345, 1, 2))); /* { dg-error "format specifier" "non-id format" } */

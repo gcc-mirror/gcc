@@ -1498,6 +1498,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      tree trytype
 		= build_function_type (newreturntype,
 				       TYPE_ARG_TYPES (oldtype));
+	      trytype = build_type_attribute_variant (trytype,
+						      TYPE_ATTRIBUTES (oldtype));
 
               types_match = comptypes (newtype, trytype);
 	      if (types_match)
@@ -1519,6 +1521,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 				       tree_cons (NULL_TREE,
 						  TREE_VALUE (TYPE_ARG_TYPES (newtype)),
 						  TREE_CHAIN (TYPE_ARG_TYPES (oldtype))));
+	      trytype = build_type_attribute_variant (trytype,
+						      TYPE_ATTRIBUTES (oldtype));
 
 	      types_match = comptypes (newtype, trytype);
 	      if (types_match)

@@ -4204,9 +4204,9 @@ build_over_call (cand, args, flags)
 
   converted_args = nreverse (converted_args);
 
-  if (warn_format && (DECL_NAME (fn) || DECL_ASSEMBLER_NAME (fn)))
-    check_function_format (NULL, DECL_NAME (fn), DECL_ASSEMBLER_NAME (fn),
-			   converted_args); 
+  if (warn_format)
+    check_function_format (NULL, TYPE_ATTRIBUTES (TREE_TYPE (fn)),
+			   converted_args);
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
