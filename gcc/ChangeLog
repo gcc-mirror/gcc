@@ -1,3 +1,8 @@
+2002-10-11  Richard Henderson  <rth@redhat.com>
+
+	PR opt/8165
+	* gcse.c (adjust_libcall_notes): Also adjust notes for INSN.
+
 2002-10-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cfganal.c (dfs_enumerate_from): Use PARAMS.
