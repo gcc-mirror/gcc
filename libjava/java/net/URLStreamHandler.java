@@ -26,7 +26,7 @@ public abstract class URLStreamHandler
   protected abstract URLConnection openConnection(URL u)
     throws java.io.IOException;
 
-protected void parseURL(URL u, String spec, int start, int limit)
+  protected void parseURL(URL u, String spec, int start, int limit)
   {
     String tmpStr;
     String host = "";	// Initialize to null string.

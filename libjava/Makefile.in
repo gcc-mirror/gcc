@@ -212,6 +212,8 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
+gnu/gcj/protocol/file/Connection.java \
+gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
 java/io/BufferedInputStream.java \
@@ -552,6 +554,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P .deps/boehm.P \
 .deps/gnu/gcj/convert/Output_JavaSrc.P \
 .deps/gnu/gcj/convert/Output_UTF8.P \
 .deps/gnu/gcj/convert/UnicodeToBytes.P \
+.deps/gnu/gcj/protocol/file/Connection.P \
+.deps/gnu/gcj/protocol/file/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \

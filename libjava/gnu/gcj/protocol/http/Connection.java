@@ -135,6 +135,8 @@ class Connection extends HttpURLConnection
     if (!connected)
       connect();
 
+    if (! doInput)
+      throw new ProtocolException("Can't open InputStream if doInput is false");
     if (bufferedIn == null)
       bufferedIn = new BufferedInputStream(sock.getInputStream());
     return bufferedIn;
@@ -146,6 +148,9 @@ class Connection extends HttpURLConnection
     if (!connected)
       connect();
 
+    if (! doOutput)
+      throw new
+	ProtocolException("Can't open OutputStream if doOutput is false");
     return sock.getOutputStream();
   }
 

@@ -1,3 +1,16 @@
+1999-04-15  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am (ordinary_java_source_files): Added new Connection 
+	and Handler classes in gnu.gcj.protocol.file package.
+	* Makefile.in: Rebuilt.
+
+	* gnu/gcj/protocol/file/Connection.java: New file.
+	* gnu/gcj/protocol/file/Handler.java: New file.
+	* gnu/gcj/protocol/http/Connection.java (getInputStream): Check
+	if doInput allows input.
+	(getOutputStream): Check if doOutput allows output.
+	* java/net/URLStreamHandler.java (parseURL): Fix indentation.
+
 1999-04-14  Tom Tromey  <tromey@cygnus.com>
 
 	* java/net/natInetAddress.cc (lookup): On glibc2.0 systems, make
