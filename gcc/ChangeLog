@@ -1,5 +1,23 @@
 2000-09-13  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.md (divsf3): New.
+	(divsf3_internal_lat, divsf3_internal_thr): New.
+	(divdf3, divdf3_internal_lat, divdf3_internal_thr): New.
+	(divtf3, divtf3_internal_lat, divtf3_internal_thr): New.
+	(adddf3_trunc, subdf3_trunc, muldf3_trunc): New.
+	(madddf4_trunc, msubdf4_trunc, nmuldf3_trunc): New.
+	(nmadddf4_alts, nmadddf4_trunc): New.
+	(addtf3_truncsf, addtf3_truncdf, subtf3_truncsf): New.
+	(subtf3_truncdf, multf3_truncsf, multf3_truncdf): New.
+	(multf3_truncsf_alts, multf3_truncdf_alts): New.
+	(maddtf4_truncsf, maddtf4_truncdf, maddtf4_alts_truncdf): New.
+	(msubtf4_truncsf, msubtf4_truncdf, nmultf3_truncsf): New.
+	(nmultf3_truncdf, nmaddtf4_truncsf, nmaddtf4_truncdf): New.
+	(nmaddtf4_truncdf_alts): New.
+	(recip_approx): Don't predicate.
+
+2000-09-13  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/lib1funcs.asm (__divsf3): Protect fnorm.s with p6.
 
 2000-09-13  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
