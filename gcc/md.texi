@@ -2691,7 +2691,7 @@ hard register or a stack memory reference.
 @cindex @code{prologue} instruction pattern
 @item @samp{prologue}
 This pattern, if defined, emits RTL for entry to a function.  The function
-entry is resposible for setting up the stack frame, initializing the frame
+entry is responsible for setting up the stack frame, initializing the frame
 pointer register, saving callee saved registers, etc.
 
 Using a prologue pattern is generally preferred over defining
@@ -2703,7 +2703,7 @@ instruction scheduling.
 @cindex @code{epilogue} instruction pattern
 @item @samp{epilogue}
 This pattern, if defined, emits RTL for exit from a function.  The function
-exit is resposible for deallocating the stack frame, restoring callee saved
+exit is responsible for deallocating the stack frame, restoring callee saved
 registers and emitting the return instruction.
 
 Using an epilogue pattern is generally preferred over defining
@@ -3768,7 +3768,7 @@ able to schedule around the memory load latency.  It allocates a single
 @code{SImode} register of class @code{GENERAL_REGS} (@code{"r"}) that needs
 to be live only at the point just before the arithmetic.
 
-A real example requring extended scratch lifetimes is harder to come by,
+A real example requiring extended scratch lifetimes is harder to come by,
 so here's a silly made-up example:
 
 @smallexample
@@ -4604,7 +4604,7 @@ the @code{predicable} instruction attribute is made.
 @xref{Insn Attributes}.  This attribute must be boolean (i.e. have
 exactly two elements in its @var{list-of-values}).  Further, it must
 not be used with complex expressions.  That is, the default and all
-uses in the insns must be a simple constant, not dependant on the 
+uses in the insns must be a simple constant, not dependent on the 
 alternative or anything else.
 
 For each @code{define_insn} for which the @code{predicable} 

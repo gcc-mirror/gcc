@@ -33,7 +33,7 @@ options for compiling C++ programs.
 @cindex grouping options
 @cindex options, grouping
 The @code{gcc} program accepts options and file names as operands.  Many
-options have multiletter names; therefore multiple single-letter options
+options have multi-letter names; therefore multiple single-letter options
 may @emph{not} be grouped: @samp{-dr} is very different from @w{@samp{-d
 -r}}.
 
@@ -1378,7 +1378,7 @@ In this example, g++ will synthesize a default @samp{A& operator =
 @cindex diagnostic messages
 @cindex message formatting
 
-Traditionally, diagnostic messages have been formatted irrespetive of
+Traditionally, diagnostic messages have been formatted irrespective of
 the output device's aspect (e.g. its width, ...).  The options described
 below can be used to control the diagnostic messages formatting
 algorithm, e.g. how many characters per line, how often source location
@@ -1395,7 +1395,7 @@ line-wrapping will be done; each error message will appear on a single
 line.
 
 @item -fdiagnostics-show-location=once
-Only meaningful in line-wrapping mode.  Intructs the diagnostic messages
+Only meaningful in line-wrapping mode.  Instructs the diagnostic messages
 reporter to emit @emph{once} source location information; that is, in
 case the message is too long to fit on a single physical line and has to
 be wrapped, the source location won't be emitted (as prefix) again,
@@ -1406,7 +1406,7 @@ behaviour.
 Only meaningful in line-wrapping mode.  Instructs the diagnostic
 messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking a
-a message which is too long to fit on a signe line.
+a message which is too long to fit on a single line.
 
 @end table
 
@@ -1603,7 +1603,7 @@ To suppress this warning cast the expression to @samp{void}.
 All all the above @samp{-Wunused} options combined.
 
 In order to get a warning about an unused function parameter, you must
-either specify @samp{-W -Wunused} or separatly specify
+either specify @samp{-W -Wunused} or separately specify
 @samp{-Wunused-parameter}.
 
 @item -Wuninitialized
@@ -1664,7 +1664,7 @@ another common case:
 This has no bug because @code{save_y} is used only if it is set.
 
 @cindex @code{longjmp} warnings
-This option also warns when a nonvolatile automatic variable might be
+This option also warns when a non-volatile automatic variable might be
 changed by a call to @code{longjmp}.  These warnings as well are possible
 only in optimizing compilation.
 
@@ -2328,7 +2328,7 @@ also printed.
 @item v
 For each of the other indicated dump files (except for
 @file{@var{file}.00.rtl}), dump a representation of the control flow graph
-suitible for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
+suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
 @item w
 Dump after the second flow pass to @file{@var{file}.19.flow2}. 
 @item x
@@ -2343,7 +2343,7 @@ Dump after the peephole2 pass to @file{@var{file}.21.peephole2}.
 @item -fdump-unnumbered
 When doing debugging dumps (see -d option above), suppress instruction
 numbers and line number note output.  This makes it more feasible to
-use diff on debugging dumps for compiler invokations with different
+use diff on debugging dumps for compiler invocations with different
 options, in particular with and without -g.
 
 @item -fdump-translation-unit-@var{file} (C++ only)
@@ -3663,7 +3663,7 @@ Like %@{@code{S}*@}, but don't put a blank between a switch and its
 argument.  Thus %@{^o*@} would only generate one argument, not two.
 
 @item %@{<@code{S}@}
-Remove all occurences of @code{S} from the command line.  Note - this
+Remove all occurrences of @code{S} from the command line.  Note - this
 command is position dependent.  @samp{%} commands in the spec string
 before this option will see @code{S}, @samp{%} commands in the spec
 string after this option will not.
@@ -4674,7 +4674,7 @@ armv3, armv3m, armv4, armv4t, armv5.
 @itemx -mfp=<number>
 @kindex -mfpe=
 @kindex -mfp=
-This specifes the version of the floating point emulation available on
+This specifies the version of the floating point emulation available on
 the target.  Permissible values are 2 and 3.  @samp{-mfp=} is a synonym
 for @samp{-mfpe=} to support older versions of GCC.
 
@@ -4711,7 +4711,7 @@ which have the @samp{short-call} attribute, functions that are inside
 the scope of a @samp{#pragma no_long_calls} directive and functions whose
 definitions have already been compiled within the current compilation
 unit, will not be turned into long calls.  The exception to this rule is
-that weak function defintions, functions with the @samp{long-call}
+that weak function definitions, functions with the @samp{long-call}
 attribute or the @samp{section} attribute, and functions that are within
 the scope of a @samp{#pragma long_calls} directive, will always be
 turned into long calls.
@@ -5715,7 +5715,7 @@ explanation of the default, and the width of pointers.
 Force long, int, and pointer types to be 32 bits wide.
 
 If none of @samp{-mlong32}, @samp{-mlong64}, or @samp{-mint64} are set,
-the size of ints, longs, and pointers depends on the ABI and ISA choosen.
+the size of ints, longs, and pointers depends on the ABI and ISA chosen.
 For @samp{-mabi=32}, and @samp{-mabi=n32}, ints and longs are 32 bits
 wide.  For @samp{-mabi=64}, ints are 32 bits, and longs are 64 bits wide.
 For @samp{-mabi=eabi} and either @samp{-mips1} or @samp{-mips2}, ints
@@ -6081,7 +6081,7 @@ The stack is required to be aligned on a 4 byte boundary.  On Pentium
 and PentiumPro, @code{double} and @code{long double} values should be
 aligned to an 8 byte boundary (see @samp{-malign-double}) or suffer
 significant run time performance penalties.  On Pentium III, the
-Streaming SIMD Extention (SSE) data type @code{__m128} suffers similar
+Streaming SIMD Extension (SSE) data type @code{__m128} suffers similar
 penalties if it is not 16 byte aligned.
 
 To ensure proper alignment of this values on the stack, the stack boundary
@@ -6108,7 +6108,7 @@ improved scheduling and reduced dependencies.
 @kindex -maccumulate-outgoing-args
 If enabled, the maximum amount of space required for outgoing arguments will be
 computed in the function prologue. This in faster on most modern CPUs
-because of reduced dependecies, improved scheduling and reduced stack usage
+because of reduced dependencies, improved scheduling and reduced stack usage
 when preferred stack boundary is not equal to 2.  The drawback is a notable
 increase in code size. This switch implies -mno-push-args.
 
@@ -6189,7 +6189,7 @@ Such code is suitable for level 0 PA systems and kernels.
 Generate code that assumes calls never cross space boundaries.  This
 allows GCC to emit code which performs faster indirect calls.
 
-This option will not work in the presense of shared libraries or nested
+This option will not work in the presence of shared libraries or nested
 functions.
 
 @item -mlong-load-store
@@ -6543,7 +6543,7 @@ for the EV6) and supports the BWX, CIX, and MAX extensions.
 @item -mmemory-latency=@var{time}
 Sets the latency the scheduler should assume for typical memory
 references as seen by the application.  This number is highly
-dependant on the memory access patterns used by the application
+dependent on the memory access patterns used by the application
 and the size of the external cache on the machine.
 
 Valid options for @var{time} are
@@ -6756,7 +6756,7 @@ emit a RPTS instruction instead of a RPTB.  If no value is specified,
 then a RPTS will be emitted even if the loop count cannot be determined
 at compile time.  Note that the repeated instruction following RPTS does
 not have to be reloaded from memory each iteration, thus freeing up the
-CPU buses for oeprands.  However, since interrupts are blocked by this
+CPU buses for operands.  However, since interrupts are blocked by this
 instruction, it is disabled by default.
 
 @item -mloop-unsigned
@@ -7047,7 +7047,7 @@ Use the divide instruction.  (Enabled by default).
 @item -mrelax-immediate
 @itemx -mrelax-immediate
 @itemx -mno-relax-immediate
-Allow arbitary sized immediated in bit operations.
+Allow arbitrary sized immediates in bit operations.
 
 @item -mwide-bitfields
 @itemx -mwide-bitfields
@@ -7057,7 +7057,7 @@ Always treat bitfields as int-sized.
 @item -m4byte-functions
 @itemx -m4byte-functions
 @itemx -mno-4byte-functions
-Force all functions to be aligfned to a four byte boundary.
+Force all functions to be aligned to a four byte boundary.
 
 @item -mcallgraph-data
 @itemx -mcallgraph-data
@@ -7072,7 +7072,7 @@ Prefer word access when reading byte quantities.
 @item -mlittle-endian
 @itemx -mlittle-endian
 @itemx -mbig-endian
-Genreate code for a little endian target.
+Generate code for a little endian target.
 
 @item -m210
 @itemx -m210
