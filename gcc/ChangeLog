@@ -1,3 +1,7 @@
+Sat Jan 16 10:48:16 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (movdf, movsf): Temporary workaround for no_new_pseudos lossage.
+
 Fri Jan 15 23:44:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (sparc_issue): Add hypersparc/sparclite86x entries.

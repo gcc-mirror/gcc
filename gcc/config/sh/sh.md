@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1993 - 1999 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -2786,6 +2786,13 @@
   if (prepare_move_operands (operands, DFmode)) DONE;
   if (TARGET_SH4)
     {
+      if (no_new_pseudos)
+	{
+	  /* ??? FIXME: This is only a stopgap fix.  There is no guarantee
+	     that fpscr is in the right state. */
+	  emit_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
+	  DONE;
+	}
       emit_df_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       /* We need something to tag possible REG_LIBCALL notes on to.  */
       if (TARGET_FPU_SINGLE && rtx_equal_function_value_matters
@@ -2875,6 +2882,13 @@
     DONE;
   if (TARGET_SH3E)
     {
+      if (no_new_pseudos)
+	{
+	  /* ??? FIXME: This is only a stopgap fix.  There is no guarantee
+	     that fpscr is in the right state. */
+	  emit_insn (gen_movsf_ie (operands[0], operands[1], get_fpscr_rtx ()));
+	  DONE;
+	}
       emit_sf_insn (gen_movsf_ie (operands[0], operands[1], get_fpscr_rtx ()));
       /* We need something to tag possible REG_LIBCALL notes on to.  */
       if (! TARGET_FPU_SINGLE && rtx_equal_function_value_matters
