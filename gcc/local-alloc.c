@@ -708,12 +708,6 @@ optimize_reg_copy_1 (insn, dest, src)
 	  int n_calls = 0;
 	  int d_n_calls = 0;
 
-	  /* If P is a CALL_INSN, SRC crosses one more call, since it
-	     used to die there.  */
-
-	  if (GET_CODE (p) == CALL_INSN)
-	    n_calls++;
-
 	  /* We can do the optimization.  Scan forward from INSN again,
 	     replacing regs as we go.  Set FAILED if a replacement can't
 	     be done.  In that case, we can't move the death note for SRC.
