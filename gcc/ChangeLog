@@ -1,3 +1,8 @@
+Sat May 20 07:27:35 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* fold-const.c (make_range): Handle degenerated intervals.
+	Fixes c-torture/execute/991221-1.c
+
 Fri May 19 18:16:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cse.c (cse_basic_block): Only call find_reg_note if REG_NOTES not 0.
