@@ -7424,27 +7424,24 @@ mips_expand_prologue ()
     {
       rtx tsize_rtx = GEN_INT (tsize);
 
-      /* If we are doing svr4-abi, sp move is done by
-         function_prologue.  In mips16 mode with a large frame, we
-         save the registers before adjusting the stack.  */
-      if (!TARGET_MIPS16 || tsize <= 32767)
+      /* In mips16 mode with a large frame, we save the registers before
+         adjusting the stack.  */
+      if (!TARGET_MIPS16 || tsize <= 32768)
 	{
-	  rtx adjustment_rtx;
-
-	  if (tsize > 32767)
+	  if (tsize > 32768)
 	    {
+	      rtx adjustment_rtx;
+
 	      adjustment_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
 	      emit_move_insn (adjustment_rtx, tsize_rtx);
+	      emit_insn (gen_sub3_insn (stack_pointer_rtx,
+					stack_pointer_rtx,
+					adjustment_rtx));
 	    }
 	  else
-	    adjustment_rtx = tsize_rtx;
-
-	  if (Pmode == DImode)
-	    emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   adjustment_rtx));
-	  else
-	    emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   adjustment_rtx));
+	    emit_insn (gen_add3_insn (stack_pointer_rtx,
+				      stack_pointer_rtx,
+				      GEN_INT (-tsize)));
 
 	  mips_set_frame_expr
 	    (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
@@ -7460,7 +7457,7 @@ mips_expand_prologue ()
 	emit_insn (gen_cprestore
 		   (GEN_INT (current_function_outgoing_args_size)));
 
-      if (TARGET_MIPS16 && tsize > 32767)
+      if (TARGET_MIPS16 && tsize > 32768)
 	{
 	  rtx reg_rtx;
 
@@ -7470,14 +7467,9 @@ mips_expand_prologue ()
 	  reg_rtx = gen_rtx (REG, Pmode, 3);
   	  emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
   	  emit_move_insn (reg_rtx, tsize_rtx);
-  	  if (Pmode == DImode)
-	    emit_insn (gen_subdi3 (hard_frame_pointer_rtx,
-				   hard_frame_pointer_rtx,
-				   reg_rtx));
-	  else
-	    emit_insn (gen_subsi3 (hard_frame_pointer_rtx,
-				   hard_frame_pointer_rtx,
-				   reg_rtx));
+	  emit_insn (gen_sub3_insn (hard_frame_pointer_rtx,
+				    hard_frame_pointer_rtx,
+				    reg_rtx));
 	  emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 	}
 
