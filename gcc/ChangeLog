@@ -1,7 +1,12 @@
+2003-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c/10175
+	* jump.c (never_reached_warning): Look backwards for a line note.
+
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
-        * dwarf2out.c (output_call_frame_info): Ignore fde->nothrow as an
-        optimization when flag_exceptions not enabled.
+	* dwarf2out.c (output_call_frame_info): Ignore fde->nothrow as an
+	optimization when flag_exceptions not enabled.
 
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
