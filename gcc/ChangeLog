@@ -1,3 +1,13 @@
+Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.h (add_clobbers): Remove duplicate declaration.
+	* recog.h (added_clobbers_hard_reg_p): New declaration.
+	* genemit.c (struct clobber_pat): New field has_hard_reg.
+	(gen_insn): Record if added clobbers clobber hard reg.
+	(gen_split): Avoid unused warning if number of operands is 0.
+	(output_added_clobbers_hard_reg_p): New function.
+	(main): Call it.
+
 2001-02-18  Alan Modra <alan@linuxcare.com.au>
 
  	* pa.c (hppa_expand_prologue): Simplify code storing return

@@ -1783,9 +1783,6 @@ void restore_line_number_status PARAMS ((int old_value));
 extern void renumber_insns                      PARAMS ((FILE *));
 extern void remove_unnecessary_notes             PARAMS ((void));
 
-/* In insn-emit.c */
-extern void add_clobbers		PARAMS ((rtx, int));
-
 /* In combine.c */
 extern int combine_instructions		PARAMS ((rtx, unsigned int));
 extern unsigned int extended_count	PARAMS ((rtx, enum machine_mode, int));

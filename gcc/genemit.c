@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987, 1988, 1991, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1987, 1988, 1991, 1994, 1995, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -44,6 +44,7 @@ struct clobber_pat
   rtx pattern;
   int first_clobber;
   struct clobber_pat *next;
+  int has_hard_reg;
 } *clobber_list;
 
 /* Records one insn that uses the clobber list.  */
@@ -62,6 +63,7 @@ static void gen_insn			PARAMS ((rtx));
 static void gen_expand			PARAMS ((rtx));
 static void gen_split			PARAMS ((rtx));
 static void output_add_clobbers		PARAMS ((void));
+static void output_added_clobbers_hard_reg_p PARAMS ((void));
 static void gen_rtx_scratch		PARAMS ((rtx, enum rtx_code));
 static void output_peephole2_scratches	PARAMS ((rtx));
 
@@ -297,11 +299,18 @@ gen_insn (insn)
 
   if (XVEC (insn, 1))
     {
+      int has_hard_reg = 0;
+
       for (i = XVECLEN (insn, 1) - 1; i > 0; i--)
-	if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER
-	    || (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) != REG
-		&& GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) != MATCH_SCRATCH))
-	  break;
+	{
+	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER)
+	    break;
+
+	  if (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) == REG)
+	    has_hard_reg = 1;
+	  else if (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) != MATCH_SCRATCH)
+	    break;
+	}
 
       if (i != XVECLEN (insn, 1) - 1)
 	{
@@ -349,6 +358,7 @@ gen_insn (insn)
 	      p->pattern = insn;
 	      p->first_clobber = i + 1;
 	      p->next = clobber_list;
+	      p->has_hard_reg = has_hard_reg;
 	      clobber_list = p;
 	    }
 
@@ -549,6 +559,7 @@ gen_split (split)
   register int i;
   int operands;
   const char *name = "split";
+  const char *unused;
 
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     name = "peephole2";
@@ -564,22 +575,23 @@ gen_split (split)
 
   max_operand_vec (split, 2);
   operands = MAX (max_opno, MAX (max_dup_opno, max_scratch_opno)) + 1;
+  unused = (operands == 0 ? " ATTRIBUTE_UNUSED" : "");
 
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
       printf ("extern rtx gen_%s_%d PARAMS ((rtx, rtx *));\n",
 	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (curr_insn, operands)\n\
-     rtx curr_insn ATTRIBUTE_UNUSED;\n\
-     rtx *operands;\n", 
+      printf ("rtx\ngen_%s_%d (curr_insn, operands)\n",
 	      name, insn_code_number);
+      printf ("     rtx curr_insn ATTRIBUTE_UNUSED;\n");
+      printf ("     rtx *operands%s;\n", unused);
     }
   else
     {
       printf ("extern rtx gen_split_%d PARAMS ((rtx *));\n", insn_code_number);
-      printf ("rtx\ngen_%s_%d (operands)\n     rtx *operands;\n", name,
-	      insn_code_number);
+      printf ("rtx\ngen_%s_%d (operands)\n", name, insn_code_number);
+      printf ("      rtx *operands%s;\n", unused);
     }
   printf ("{\n");
 
@@ -681,6 +693,39 @@ output_add_clobbers ()
 	}
 
       printf ("      break;\n\n");
+    }
+
+  printf ("    default:\n");
+  printf ("      abort ();\n");
+  printf ("    }\n");
+  printf ("}\n");
+}
+
+/* Write a function, `added_clobbers_hard_reg_p' this is given an insn_code
+   number that needs clobbers and returns 1 if they include a clobber of a
+   hard reg and 0 if they just clobber SCRATCH.  */
+
+static void
+output_added_clobbers_hard_reg_p ()
+{
+  struct clobber_pat *clobber;
+  struct clobber_ent *ent;
+  int clobber_p;
+
+  printf ("\n\nint\nadded_clobbers_hard_reg_p (insn_code_number)\n");
+  printf ("     int insn_code_number;\n");
+  printf ("{\n");
+  printf ("  switch (insn_code_number)\n");
+  printf ("    {\n");
+
+  for (clobber_p = 0; clobber_p <= 1; clobber_p++)
+    {
+      for (clobber = clobber_list; clobber; clobber = clobber->next)
+	if (clobber->has_hard_reg == clobber_p)
+	  for (ent = clobber->insns; ent; ent = ent->next)
+	    printf ("    case %d:\n", ent->code_number);
+
+      printf ("      return %d;\n\n", clobber_p);
     }
 
   printf ("    default:\n");
@@ -812,8 +857,10 @@ from the machine description file `md'.  */\n\n");
       ++insn_index_number;
     }
 
-  /* Write out the routine to add CLOBBERs to a pattern.  */
+  /* Write out the routines to add CLOBBERs to a pattern and say whether they
+     clobber a hard reg.  */
   output_add_clobbers ();
+  output_added_clobbers_hard_reg_p ();
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
