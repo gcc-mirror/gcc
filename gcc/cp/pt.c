@@ -712,15 +712,13 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	  explicit_instantiation = 1;
 	}
-      else if ((ctype != NULL_TREE
-		&& !TYPE_BEING_DEFINED (ctype)
-		&& CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
-	       || TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+      else if (ctype != NULL_TREE
+	       && !TYPE_BEING_DEFINED (ctype)
+	       && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
 	{
-	  /* The first part of the above clause catches illegal code
-	     that looks like this:
+	  /* This case catches outdated code that looks like this:
 
-	     template <class T> struct S { void f(); }
+	     template <class T> struct S { void f(); };
 	     void S<int>::f() {} // Missing template <>
 
 	     We disable this check when the type is being defined to
@@ -728,18 +726,31 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     constructors, destructors, and assignment operators.
 	     Since the type is an instantiation, not a specialization,
 	     these are the only functions that can be defined before
-	     the class is complete.
+	     the class is complete.  */
 
-	     The second part handles bogus declarations like
+	  /* If they said
+	       template <class T> void S<int>::f() {}
+	     that's bogus.  */
+	  if (template_header_count)
+	    {
+	      cp_error ("template parameters specified in specialization");
+	      return decl;
+	    }
+
+	  if (pedantic)
+	    cp_pedwarn
+	      ("explicit specialization not preceded by `template <>'");
+	  specialization = 1;
+	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	}
+      else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+	{
+	  /* This case handles bogus declarations like
 	     template <> template <class T>
 	     void f<int>();  */
 
-	  if (template_header_count > template_count)
-	    cp_error ("template-id `%D' in declaration of primary template",
-		      declarator);
-	  else
-	    cp_error ("explicit specialization not preceded by `template <>'");
-
+	  cp_error ("template-id `%D' in declaration of primary template",
+		    declarator);
 	  return decl;
 	}
     }
