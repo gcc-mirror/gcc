@@ -1,4 +1,8 @@
-2004-01-02  Greg McGary  <greg@mcgary.org>
+2005-01-05  Richard Henderson  <rth@redhat.com>
+
+	* testsuite/libmudflap.c/pass32-frag.c: Fix typo.
+
+2005-01-02  Greg McGary  <greg@mcgary.org>
 
 	* mf-impl.h (uintptr_t): Get typedef via stdint.h or define explicitly.
 	* mf-runtime.h: New file, replaces mf-runtime.h.in.
