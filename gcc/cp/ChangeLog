@@ -31,6 +31,7 @@ Fri Apr 17 14:30:45 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	(comp_target_parms): Tweak pedantic case.  Clean up somewhat.
 	Return -1 or 1 instead of 1 or 2.
 	(compparms): Remove STRICT handling.
+	(convert_for_assignment): Fix handling of pmfs.
 
 Fri Apr 17 14:04:16 1998  Mark Mitchell  <mmitchell@usa.net>
 
