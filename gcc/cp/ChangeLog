@@ -1,3 +1,8 @@
+1998-08-07  Mark Mitchell  <mark@markmitchell.com>
+
+	* cvt.c (cp_convert_to_pointer): Handle a NULL pointer
+	conversions, even in complex virtual base class hierarchies.
+
 1998-08-06  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (ENUM_TEMPLATE_INFO): New macro.

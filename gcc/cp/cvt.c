@@ -154,7 +154,15 @@ cp_convert_to_pointer (type, expr)
 	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
 	  && IS_AGGR_TYPE (TREE_TYPE (type))
 	  && IS_AGGR_TYPE (TREE_TYPE (intype))
-	  && TREE_CODE (TREE_TYPE (intype)) == RECORD_TYPE)
+	  && TREE_CODE (TREE_TYPE (intype)) == RECORD_TYPE
+	  /* If EXPR is NULL, then we don't need to do any arithmetic
+	     to convert it:
+
+	       [conv.ptr]
+
+	       The null pointer value is converted to the null pointer
+	       value of the destination type.  */
+	  && !integer_zerop (expr))
 	{
 	  enum tree_code code = PLUS_EXPR;
 	  tree binfo = get_binfo (TREE_TYPE (type), TREE_TYPE (intype), 1);
