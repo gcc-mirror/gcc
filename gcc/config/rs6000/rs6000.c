@@ -305,286 +305,286 @@ const struct processor_costs *rs6000_cost;
 /* Instruction size costs on 32bit processors.  */
 static const
 struct processor_costs size32_cost = {
-  1,    /* mulsi */
-  1,    /* mulsi_const */
-  1,    /* mulsi_const9 */
-  1,    /* muldi */
-  1,    /* divsi */
-  1,    /* divdi */
-  1,    /* fp */
-  1,    /* dmul */
-  1,    /* sdiv */
-  1,    /* ddiv */
+  COSTS_N_INSNS (1),    /* mulsi */
+  COSTS_N_INSNS (1),    /* mulsi_const */
+  COSTS_N_INSNS (1),    /* mulsi_const9 */
+  COSTS_N_INSNS (1),    /* muldi */
+  COSTS_N_INSNS (1),    /* divsi */
+  COSTS_N_INSNS (1),    /* divdi */
+  COSTS_N_INSNS (1),    /* fp */
+  COSTS_N_INSNS (1),    /* dmul */
+  COSTS_N_INSNS (1),    /* sdiv */
+  COSTS_N_INSNS (1),    /* ddiv */
 };
 
 /* Instruction size costs on 64bit processors.  */
 static const
 struct processor_costs size64_cost = {
-  1,    /* mulsi */
-  1,    /* mulsi_const */
-  1,    /* mulsi_const9 */
-  1,    /* muldi */
-  1,    /* divsi */
-  1,    /* divdi */
-  1,    /* fp */
-  1,    /* dmul */
-  1,    /* sdiv */
-  1,    /* ddiv */
+  COSTS_N_INSNS (1),    /* mulsi */
+  COSTS_N_INSNS (1),    /* mulsi_const */
+  COSTS_N_INSNS (1),    /* mulsi_const9 */
+  COSTS_N_INSNS (1),    /* muldi */
+  COSTS_N_INSNS (1),    /* divsi */
+  COSTS_N_INSNS (1),    /* divdi */
+  COSTS_N_INSNS (1),    /* fp */
+  COSTS_N_INSNS (1),    /* dmul */
+  COSTS_N_INSNS (1),    /* sdiv */
+  COSTS_N_INSNS (1),    /* ddiv */
 };
 
 /* Instruction costs on RIOS1 processors.  */
 static const
 struct processor_costs rios1_cost = {
-  5,    /* mulsi */
-  4,    /* mulsi_const */
-  3,    /* mulsi_const9 */
-  5,    /* muldi */
-  19,   /* divsi */
-  19,   /* divdi */
-  2,    /* fp */
-  2,    /* dmul */
-  19,   /* sdiv */
-  19,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (3),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (19),   /* divsi */
+  COSTS_N_INSNS (19),   /* divdi */
+  COSTS_N_INSNS (2),    /* fp */
+  COSTS_N_INSNS (2),    /* dmul */
+  COSTS_N_INSNS (19),   /* sdiv */
+  COSTS_N_INSNS (19),   /* ddiv */
 };
 
 /* Instruction costs on RIOS2 processors.  */
 static const
 struct processor_costs rios2_cost = {
-  2,    /* mulsi */
-  2,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  2,    /* muldi */
-  13,   /* divsi */
-  13,   /* divdi */
-  2,    /* fp */
-  2,    /* dmul */
-  17,   /* sdiv */
-  17,   /* ddiv */
+  COSTS_N_INSNS (2),    /* mulsi */
+  COSTS_N_INSNS (2),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (2),    /* muldi */
+  COSTS_N_INSNS (13),   /* divsi */
+  COSTS_N_INSNS (13),   /* divdi */
+  COSTS_N_INSNS (2),    /* fp */
+  COSTS_N_INSNS (2),    /* dmul */
+  COSTS_N_INSNS (17),   /* sdiv */
+  COSTS_N_INSNS (17),   /* ddiv */
 };
 
 /* Instruction costs on RS64A processors.  */
 static const
 struct processor_costs rs64a_cost = {
-  20,   /* mulsi */
-  12,   /* mulsi_const */
-  8,    /* mulsi_const9 */
-  34,   /* muldi */
-  65,   /* divsi */
-  67,   /* divdi */
-  4,    /* fp */
-  4,    /* dmul */
-  31,   /* sdiv */
-  31,   /* ddiv */
+  COSTS_N_INSNS (20),   /* mulsi */
+  COSTS_N_INSNS (12),   /* mulsi_const */
+  COSTS_N_INSNS (8),    /* mulsi_const9 */
+  COSTS_N_INSNS (34),   /* muldi */
+  COSTS_N_INSNS (65),   /* divsi */
+  COSTS_N_INSNS (67),   /* divdi */
+  COSTS_N_INSNS (4),    /* fp */
+  COSTS_N_INSNS (4),    /* dmul */
+  COSTS_N_INSNS (31),   /* sdiv */
+  COSTS_N_INSNS (31),   /* ddiv */
 };
 
 /* Instruction costs on MPCCORE processors.  */
 static const
 struct processor_costs mpccore_cost = {
-  2,    /* mulsi */
-  2,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  2,    /* muldi */
-  6,    /* divsi */
-  6,    /* divdi */
-  4,    /* fp */
-  5,    /* dmul */
-  10,   /* sdiv */
-  17,   /* ddiv */
+  COSTS_N_INSNS (2),    /* mulsi */
+  COSTS_N_INSNS (2),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (2),    /* muldi */
+  COSTS_N_INSNS (6),    /* divsi */
+  COSTS_N_INSNS (6),    /* divdi */
+  COSTS_N_INSNS (4),    /* fp */
+  COSTS_N_INSNS (5),    /* dmul */
+  COSTS_N_INSNS (10),   /* sdiv */
+  COSTS_N_INSNS (17),   /* ddiv */
 };
 
 /* Instruction costs on PPC403 processors.  */
 static const
 struct processor_costs ppc403_cost = {
-  4,    /* mulsi */
-  4,    /* mulsi_const */
-  4,    /* mulsi_const9 */
-  4,    /* muldi */
-  33,   /* divsi */
-  33,   /* divdi */
-  11,   /* fp */
-  11,   /* dmul */
-  11,   /* sdiv */
-  11,   /* ddiv */
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (33),   /* divsi */
+  COSTS_N_INSNS (33),   /* divdi */
+  COSTS_N_INSNS (11),   /* fp */
+  COSTS_N_INSNS (11),   /* dmul */
+  COSTS_N_INSNS (11),   /* sdiv */
+  COSTS_N_INSNS (11),   /* ddiv */
 };
 
 /* Instruction costs on PPC405 processors.  */
 static const
 struct processor_costs ppc405_cost = {
-  5,    /* mulsi */
-  4,    /* mulsi_const */
-  3,    /* mulsi_const9 */
-  5,    /* muldi */
-  35,   /* divsi */
-  35,   /* divdi */
-  11,   /* fp */
-  11,   /* dmul */
-  11,   /* sdiv */
-  11,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (3),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (35),   /* divsi */
+  COSTS_N_INSNS (35),   /* divdi */
+  COSTS_N_INSNS (11),   /* fp */
+  COSTS_N_INSNS (11),   /* dmul */
+  COSTS_N_INSNS (11),   /* sdiv */
+  COSTS_N_INSNS (11),   /* ddiv */
 };
 
 /* Instruction costs on PPC440 processors.  */
 static const
 struct processor_costs ppc440_cost = {
-  3,    /* mulsi */
-  2,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  3,    /* muldi */
-  34,   /* divsi */
-  34,   /* divdi */
-  5,    /* fp */
-  5,    /* dmul */
-  19,   /* sdiv */
-  33,   /* ddiv */
+  COSTS_N_INSNS (3),    /* mulsi */
+  COSTS_N_INSNS (2),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (3),    /* muldi */
+  COSTS_N_INSNS (34),   /* divsi */
+  COSTS_N_INSNS (34),   /* divdi */
+  COSTS_N_INSNS (5),    /* fp */
+  COSTS_N_INSNS (5),    /* dmul */
+  COSTS_N_INSNS (19),   /* sdiv */
+  COSTS_N_INSNS (33),   /* ddiv */
 };
 
 /* Instruction costs on PPC601 processors.  */
 static const
 struct processor_costs ppc601_cost = {
-  5,    /* mulsi */
-  5,    /* mulsi_const */
-  5,    /* mulsi_const9 */
-  5,    /* muldi */
-  36,   /* divsi */
-  36,   /* divdi */
-  4,    /* fp */
-  5,    /* dmul */
-  17,   /* sdiv */
-  31,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (5),    /* mulsi_const */
+  COSTS_N_INSNS (5),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (36),   /* divsi */
+  COSTS_N_INSNS (36),   /* divdi */
+  COSTS_N_INSNS (4),    /* fp */
+  COSTS_N_INSNS (5),    /* dmul */
+  COSTS_N_INSNS (17),   /* sdiv */
+  COSTS_N_INSNS (31),   /* ddiv */
 };
 
 /* Instruction costs on PPC603 processors.  */
 static const
 struct processor_costs ppc603_cost = {
-  5,    /* mulsi */
-  3,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  5,    /* muldi */
-  37,   /* divsi */
-  37,   /* divdi */
-  3,    /* fp */
-  4,    /* dmul */
-  18,   /* sdiv */
-  33,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (3),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (37),   /* divsi */
+  COSTS_N_INSNS (37),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (4),    /* dmul */
+  COSTS_N_INSNS (18),   /* sdiv */
+  COSTS_N_INSNS (33),   /* ddiv */
 };
 
 /* Instruction costs on PPC604 processors.  */
 static const
 struct processor_costs ppc604_cost = {
-  4,    /* mulsi */
-  4,    /* mulsi_const */
-  4,    /* mulsi_const9 */
-  4,    /* muldi */
-  20,   /* divsi */
-  20,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  18,   /* sdiv */
-  32,   /* ddiv */
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (20),   /* divsi */
+  COSTS_N_INSNS (20),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (18),   /* sdiv */
+  COSTS_N_INSNS (32),   /* ddiv */
 };
 
 /* Instruction costs on PPC604e processors.  */
 static const
 struct processor_costs ppc604e_cost = {
-  2,    /* mulsi */
-  2,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  2,    /* muldi */
-  20,   /* divsi */
-  20,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  18,   /* sdiv */
-  32,   /* ddiv */
+  COSTS_N_INSNS (2),    /* mulsi */
+  COSTS_N_INSNS (2),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (2),    /* muldi */
+  COSTS_N_INSNS (20),   /* divsi */
+  COSTS_N_INSNS (20),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (18),   /* sdiv */
+  COSTS_N_INSNS (32),   /* ddiv */
 };
 
 /* Instruction costs on PPC620 processors.  */
 static const
 struct processor_costs ppc620_cost = {
-  5,    /* mulsi */
-  4,    /* mulsi_const */
-  3,    /* mulsi_const9 */
-  7,    /* muldi */
-  21,   /* divsi */
-  37,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  18,   /* sdiv */
-  32,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (3),    /* mulsi_const9 */
+  COSTS_N_INSNS (7),    /* muldi */
+  COSTS_N_INSNS (21),   /* divsi */
+  COSTS_N_INSNS (37),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (18),   /* sdiv */
+  COSTS_N_INSNS (32),   /* ddiv */
 };
 
 /* Instruction costs on PPC630 processors.  */
 static const
 struct processor_costs ppc630_cost = {
-  5,    /* mulsi */
-  4,    /* mulsi_const */
-  3,    /* mulsi_const9 */
-  7,    /* muldi */
-  21,   /* divsi */
-  37,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  17,   /* sdiv */
-  21,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (3),    /* mulsi_const9 */
+  COSTS_N_INSNS (7),    /* muldi */
+  COSTS_N_INSNS (21),   /* divsi */
+  COSTS_N_INSNS (37),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (17),   /* sdiv */
+  COSTS_N_INSNS (21),   /* ddiv */
 };
 
 /* Instruction costs on PPC750 and PPC7400 processors.  */
 static const
 struct processor_costs ppc750_cost = {
-  5,    /* mulsi */
-  3,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  5,    /* muldi */
-  17,   /* divsi */
-  17,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  17,   /* sdiv */
-  31,   /* ddiv */
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (3),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (17),   /* divsi */
+  COSTS_N_INSNS (17),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (17),   /* sdiv */
+  COSTS_N_INSNS (31),   /* ddiv */
 };
 
 /* Instruction costs on PPC7450 processors.  */
 static const
 struct processor_costs ppc7450_cost = {
-  4,    /* mulsi */
-  3,    /* mulsi_const */
-  3,    /* mulsi_const9 */
-  4,    /* muldi */
-  23,   /* divsi */
-  23,   /* divdi */
-  5,    /* fp */
-  5,    /* dmul */
-  21,   /* sdiv */
-  35,   /* ddiv */
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (3),    /* mulsi_const */
+  COSTS_N_INSNS (3),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (23),   /* divsi */
+  COSTS_N_INSNS (23),   /* divdi */
+  COSTS_N_INSNS (5),    /* fp */
+  COSTS_N_INSNS (5),    /* dmul */
+  COSTS_N_INSNS (21),   /* sdiv */
+  COSTS_N_INSNS (35),   /* ddiv */
 };
 
 /* Instruction costs on PPC8540 processors.  */
 static const
 struct processor_costs ppc8540_cost = {
-  4,    /* mulsi */
-  4,    /* mulsi_const */
-  4,    /* mulsi_const9 */
-  4,    /* muldi */
-  19,   /* divsi */
-  19,   /* divdi */
-  4,    /* fp */
-  4,    /* dmul */
-  29,   /* sdiv */
-  29,   /* ddiv */
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (19),   /* divsi */
+  COSTS_N_INSNS (19),   /* divdi */
+  COSTS_N_INSNS (4),    /* fp */
+  COSTS_N_INSNS (4),    /* dmul */
+  COSTS_N_INSNS (29),   /* sdiv */
+  COSTS_N_INSNS (29),   /* ddiv */
 };
 
 /* Instruction costs on POWER4 and POWER5 processors.  */
 static const
 struct processor_costs power4_cost = {
-  3,    /* mulsi */
-  2,    /* mulsi_const */
-  2,    /* mulsi_const9 */
-  4,    /* muldi */
-  18,   /* divsi */
-  34,   /* divdi */
-  3,    /* fp */
-  3,    /* dmul */
-  17,   /* sdiv */
-  17,   /* ddiv */
+  COSTS_N_INSNS (3),    /* mulsi */
+  COSTS_N_INSNS (2),    /* mulsi_const */
+  COSTS_N_INSNS (2),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (18),   /* divsi */
+  COSTS_N_INSNS (34),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (17),   /* sdiv */
+  COSTS_N_INSNS (17),   /* ddiv */
 };
 
 
@@ -16531,10 +16531,10 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
     case PLUS:
       if (mode == DFmode)
 	*total = GET_CODE (XEXP (x, 0)) == MULT
-		 ? COSTS_N_INSNS (rs6000_cost->dmul)
-		 : COSTS_N_INSNS (rs6000_cost->fp);
+		 ? rs6000_cost->dmul
+		 : rs6000_cost->fp;
       else if (mode == SFmode)
-	*total = COSTS_N_INSNS (rs6000_cost->fp);
+	*total = rs6000_cost->fp;
       else
 	*total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
 		  && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1))
@@ -16547,10 +16547,10 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
     case MINUS:
       if (mode == DFmode)
 	*total = GET_CODE (XEXP (x, 0)) == MULT
-		 ? COSTS_N_INSNS (rs6000_cost->dmul)
-		 : COSTS_N_INSNS (rs6000_cost->fp);
+		 ? rs6000_cost->dmul
+		 : rs6000_cost->fp;
       else if (mode == SFmode)
-	*total = COSTS_N_INSNS (rs6000_cost->fp);
+	*total = rs6000_cost->fp;
       else
         *total = COSTS_N_INSNS (1);
       return true;
@@ -16570,26 +16570,26 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	{
 	  if (INTVAL (XEXP (x, 1)) >= -256
 	      && INTVAL (XEXP (x, 1)) <= 255)
-	    *total = COSTS_N_INSNS (rs6000_cost->mulsi_const9);
+	    *total = rs6000_cost->mulsi_const9;
 	  else
-	    *total = COSTS_N_INSNS (rs6000_cost->mulsi_const);
+	    *total = rs6000_cost->mulsi_const;
 	}
       else if (mode == DFmode)
-	*total = COSTS_N_INSNS (rs6000_cost->dmul);
+	*total = rs6000_cost->dmul;
       else if (mode == SFmode)
-	*total = COSTS_N_INSNS (rs6000_cost->fp);
+	*total = rs6000_cost->fp;
       else if (mode == DImode)
-	*total = COSTS_N_INSNS (rs6000_cost->muldi);
+	*total = rs6000_cost->muldi;
       else
-	*total = COSTS_N_INSNS (rs6000_cost->mulsi);
+	*total = rs6000_cost->mulsi;
       return true;
 
     case DIV:
     case MOD:
       if (FLOAT_MODE_P (mode))
 	{
-	  *total = mode == DFmode ? COSTS_N_INSNS (rs6000_cost->ddiv)
-				  : COSTS_N_INSNS (rs6000_cost->sdiv);
+	  *total = mode == DFmode ? rs6000_cost->ddiv
+				  : rs6000_cost->sdiv;
 	  return true;
 	}
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
@@ -16603,9 +16603,9 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
     case UDIV:
     case UMOD:
       if (GET_MODE (XEXP (x, 1)) == DImode)
-	*total = COSTS_N_INSNS (rs6000_cost->divdi);
+	*total = rs6000_cost->divdi;
       else
-	*total = COSTS_N_INSNS (rs6000_cost->divsi);
+	*total = rs6000_cost->divsi;
       return true;
 
     case FFS:
@@ -16615,7 +16615,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
     case NEG:
     case ABS:
       if (FLOAT_MODE_P (mode))
-	*total = COSTS_N_INSNS (rs6000_cost->fp);
+	*total = rs6000_cost->fp;
       else
 	*total = COSTS_N_INSNS (1);
       return true;
@@ -16625,9 +16625,43 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (1) + 1;
       return true;
 
+    case NOT:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+    case COMPARE:
+      *total = COSTS_N_INSNS (1);
+      break;
+
+    case FLOAT_TRUNCATE:
+      *total = rs6000_cost->fp;
+      return true;
+
+    case UNSPEC:
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_FRSP:
+	  *total = rs6000_cost->fp;
+	  return true;
+
+	default:
+	  break;
+	}
+      break;
+
+    case CALL:
+    case IF_THEN_ELSE:
+      if (optimize_size)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      break;
+
     default:
-      return false;
+      break;
     }
+
+  return false;
 }
 
 /* A C expression returning the cost of moving data from a register of class
