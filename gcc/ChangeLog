@@ -1,3 +1,8 @@
+2002-02-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_chunkify_pool): Do not confuse
+	insn UIDs with insn addresses.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.c, c-common.h, c-decl.c, c-lex.c, c-parse.in,
