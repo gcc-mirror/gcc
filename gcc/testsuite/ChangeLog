@@ -1,3 +1,8 @@
+2002-01-28  Paul Koning  <pkoning@equallogic.com>
+
+	* gcc.c-torture/execute/builtin-prefetch-1.c: Changed first
+	argument to __builtin_prefetch to be const ptr.
+
 2002-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020120-1.c: New test.
