@@ -39,7 +39,7 @@ with Repinfo;  use Repinfo;
 with Sem;      use Sem;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
+--  with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
@@ -638,7 +638,7 @@ package body Layout is
          end if;
       end Min_Discrim;
 
-   --  Start of processing for Layout_Array_Type
+   --  Start of processing for Get_Max_Size
 
    begin
       pragma Assert (Size_Depends_On_Discriminant (E));
@@ -903,7 +903,13 @@ package body Layout is
                 Prefix        => Make_Identifier (Loc, Chars => Vname),
                 Selector_Name => New_Occurrence_Of (Entity (N), Loc));
 
-            Analyze_And_Resolve (N, Typ);
+            --  Set the Etype attributes of the selected name and its prefix.
+            --  Analyze_And_Resolve can't be called here because the Vname
+            --  entity denoted by the prefix will not yet exist (it's created
+            --  by SO_Ref_From_Expr, called at the end of Layout_Array_Type).
+
+            Set_Etype (Prefix (N), Vtyp);
+            Set_Etype (N, Typ);
          end if;
       end Discrimify;
 

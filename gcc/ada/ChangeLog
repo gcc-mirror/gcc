@@ -1,3 +1,12 @@
+2001-12-04  Gary Dismukes <dismukes@gnat.com>
+	
+	* layout.adb:
+	(Get_Max_Size): Fix "start of processing" comment to say Get_Max_Size.
+	(Discrimify): Go back to setting the Etypes of the selected component
+	because the Vname component does not exist at this point and will 
+	fail name resolution. Also set Analyzed.
+	Remove with and use of Sem_Res.
+
 2001-12-04  Arnaud Charlet <charlet@gnat.com>
 
 	* Makefile.in: (HIE_SOURCES): add s-fat*.
