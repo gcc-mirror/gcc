@@ -3892,10 +3892,18 @@ delete_prior_computation (note, insn)
   rtx reg = XEXP (note, 0);
 
   for (our_prev = prev_nonnote_insn (insn);
-       our_prev && GET_CODE (our_prev) == INSN;
+       our_prev && (GET_CODE (our_prev) == INSN
+		    || GET_CODE (our_prev) == CALL_INSN);
        our_prev = prev_nonnote_insn (our_prev))
     {
       rtx pat = PATTERN (our_prev);
+
+      /* If we reach a CALL which is not calling a const function
+	 or the callee pops the arguments, then give up.  */
+      if (GET_CODE (our_prev) == CALL_INSN
+	  && (! CONST_CALL_P (our_prev)
+	      || GET_CODE (pat) != SET || GET_CODE (SET_SRC (pat)) != CALL))
+	break;
 
       /* If we reach a SEQUENCE, it is too complex to try to
 	 do anything with it, so give up.  */
@@ -3910,7 +3918,7 @@ delete_prior_computation (note, insn)
 
       if (reg_set_p (reg, pat))
 	{
-	  if (side_effects_p (pat))
+	  if (side_effects_p (pat) && GET_CODE (our_prev) != CALL_INSN)
 	    break;
 
 	  if (GET_CODE (pat) == PARALLEL)
@@ -3953,8 +3961,7 @@ delete_prior_computation (note, insn)
 		 insns.  Write REG_UNUSED notes for those parts that were not
 		 needed.  */
 	      else if (dest_regno <= regno
-		       && dest_endregno >= endregno
-		       && ! find_regno_note (our_prev, REG_UNUSED, REGNO(reg)))
+		       && dest_endregno >= endregno)
 		{
 		  int i;
 
@@ -4040,7 +4047,30 @@ delete_computation (insn)
     }
 #endif
 
+  /* The REG_DEAD note may have been omitted for a register
+     which is both set and used by the insn.  */
   set = single_set (insn);
+  if (set && GET_CODE (SET_DEST (set)) == REG)
+    {
+    int dest_regno = REGNO (SET_DEST (set));
+    int dest_endregno
+	  = dest_regno + (dest_regno < FIRST_PSEUDO_REGISTER 
+	    ? HARD_REGNO_NREGS (dest_regno,
+				GET_MODE (SET_DEST (set))) : 1);
+    int i;
+
+    for (i = dest_regno; i < dest_endregno; i++)
+      {
+	if (! refers_to_regno_p (i, i + 1, SET_SRC (set), NULL_PTR)
+	    || find_regno_note (insn, REG_DEAD, i))
+	  continue;
+
+	note = gen_rtx_EXPR_LIST (REG_DEAD, (i < FIRST_PSEUDO_REGISTER
+					     ? gen_rtx_REG (reg_raw_mode[i], i)
+					     : SET_DEST (set)), NULL_RTX);
+	delete_prior_computation (note, insn);
+      }
+    }
 
   for (note = REG_NOTES (insn); note; note = next)
     {
@@ -4051,19 +4081,6 @@ delete_computation (insn)
 	  || GET_CODE (XEXP (note, 0)) != REG)
 	continue;
 
-      if (set && reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
-	set = NULL_RTX;
-
-      delete_prior_computation (note, insn);
-    }
-
-  /* The REG_DEAD note may have been omitted for a register
-     which is both set and used by the insn.  */
-  if (set
-      && GET_CODE (SET_DEST (set)) == REG
-      && reg_mentioned_p (SET_DEST (set), SET_SRC (set)))
-    {
-      note = gen_rtx_EXPR_LIST (REG_DEAD, SET_DEST (set), NULL_RTX);
       delete_prior_computation (note, insn);
     }
 

@@ -1,3 +1,12 @@
+Sun Aug 29 04:30:52 1999  John Wehle  (john@feith.com)
+
+	* jump.c (delete_prior_computation): Also check calls
+	to constant functions.  Don't bother checking for a
+	REG_UNUSED note before adding it.
+	(delete_computation): Handle multi-word hard registers
+	when synthesizing missing REG_DEAD notes for a register
+	which is both set and used by an insn.
+
 1999-08-29  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (this_loop_info): New variable.
