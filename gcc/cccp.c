@@ -2876,12 +2876,12 @@ do { ip = &instack[indepth];		\
 			     "unterminated character constant");
 	    goto while2end;
 	  }
-	  if (pedantic && multiline_string_line == 0) {
-	    pedwarn_with_line (line_for_error (start_line),
-			       "string constant runs past end of line");
-	  }
-	  if (multiline_string_line == 0)
+	  if (multiline_string_line == 0) {
+	    if (pedantic)
+	      pedwarn_with_line (line_for_error (start_line),
+				 "string constant runs past end of line");
 	    multiline_string_line = ip->lineno - 1;
+	  }
 	  break;
 
 	case '\\':
@@ -7708,7 +7708,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
  	  *eofp = 1;
  	break;
       }
-      if (pedantic || match == '\'') {
+      if (match == '\'') {
 	error_with_line (line_for_error (start_line),
 			 "unterminated string or character constant");
 	bp--;
@@ -7719,8 +7719,12 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       /* If not traditional, then allow newlines inside strings.  */
       if (count_newlines)
 	++*count_newlines;
-      if (multiline_string_line == 0)
+      if (multiline_string_line == 0) {
+	if (pedantic)
+	  pedwarn_with_line (line_for_error (start_line),
+			     "string constant runs past end of line");
 	multiline_string_line = start_line;
+      }
     } else if (c == match)
       break;
   }
