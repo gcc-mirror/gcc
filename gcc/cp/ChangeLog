@@ -1,5 +1,8 @@
 1998-07-19  Mark Mitchell  <mark@markmitchell.com>
 
+	* error.c (dump_type_real): Don't crash when presented with
+	intQI_type_node or the like.
+
 	* semantics.c (finish_translation_unit): Fix spelling error in
 	comment.
 
