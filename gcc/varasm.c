@@ -2672,6 +2672,15 @@ output_constant_def_contents (symbol)
 		   align);
 
 }
+
+/* A constant which was deferred in its original location has been
+   inserted by the RTL inliner into a different function.  The
+   current function's deferred constant count must be incremented.  */
+void
+notice_rtl_inlining_of_deferred_constant ()
+{
+  n_deferred_constants++;
+}
 
 /* Used in the hash tables to avoid outputting the same constant
    twice.  Unlike 'struct constant_descriptor_tree', RTX constants

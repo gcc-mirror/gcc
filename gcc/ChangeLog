@@ -1,3 +1,10 @@
+2003-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (notice_rtl_inlining_of_deferred_constant): New function.
+	* rtl.h: Prototype it.
+	* integrate.c (copy_rtx_and_substitute <SYMBOL_REF>): Call it
+	when appropriate.
+
 2003-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*iordi3_oi"): Do not mark commutative.
