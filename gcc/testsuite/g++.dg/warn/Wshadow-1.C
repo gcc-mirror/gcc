@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
 /* { dg-options -Wshadow } */
@@ -30,7 +30,6 @@ void foo1 (int d)
   double d;			// { dg-error "shadows a parameter" }
 }
 
-// { dg-error "In member function" "ignored" { target *-*-* } 0 }
 void status::foo2 ()
 {
   int member;			// { dg-warning "shadows a member" }
