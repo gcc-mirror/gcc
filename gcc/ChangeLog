@@ -1,3 +1,8 @@
+2004-04-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (*-ibm-aix*): Add AIX 5.1 assembler and archiver
+	fix information.
+	
 2004-04-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips-sgi-irix5): Fix IRIX 5.3 IDO
