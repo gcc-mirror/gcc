@@ -1,3 +1,8 @@
+2003-06-03  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (emit_move_insn_1): Use emit_move_insn to move the parts
+	of a complex number rather than invoke mov_optab directly.
+
 2003-06-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_set): Don't move a subreg in SET_SRC to
