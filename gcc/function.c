@@ -67,10 +67,6 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
 
-#ifndef PREFERRED_STACK_BOUNDARY
-#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
-#endif
-
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You

@@ -37,10 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
 #endif
 
-#if !defined PREFERRED_STACK_BOUNDARY
-#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
-#endif
-
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 

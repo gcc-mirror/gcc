@@ -352,6 +352,12 @@ do {								\
 #endif
 #endif
 
+/* If PREFERRED_STACK_BOUNDARY is not defined, set it to STACK_BOUNDARY.
+   STACK_BOUNDARY is required.  */
+#ifndef PREFERRED_STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */
