@@ -1,5 +1,8 @@
 2003-01-28  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.loader/TestEarlyGC.java: Added comment explaining
+	bytecode.
+
 	* libjava.jacks/jacks.xfail: More lexer tests now pass.
 
 2003-01-27  Tom Tromey  <tromey@redhat.com>
