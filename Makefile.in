@@ -245,6 +245,10 @@ CXX_FOR_BUILD = $(CXX)
 BUILD_PREFIX = @BUILD_PREFIX@
 BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 
+# Flags to pass to stage2 and later makes.  They are defined
+# here so that they can be overridden by Makefile fragments.
+BOOT_CFLAGS= -g -O2
+
 CONFIGURED_BISON = @CONFIGURED_BISON@
 BISON = `if [ -f $$r/$(BUILD_SUBDIR)/bison/tests/bison ] ; then \
 	    echo $$r/$(BUILD_SUBDIR)/bison/tests/bison ; \
@@ -477,19 +481,6 @@ PICFLAG_FOR_TARGET =
 # ------------------------------------
 # Miscellaneous targets and flag lists
 # ------------------------------------
-
-@if gcc-bootstrap
-# Let's leave this as the first rule in the file until toplevel
-# bootstrap is fleshed out completely.
-sorry:
-	@echo Toplevel bootstrap temporarily out of commission.
-	@echo Please reconfigure without --enable-bootstrap
-@endif gcc-bootstrap
-
-# Flags to pass to stage2 and later makes. -- define here so fragments can
-# override them.
-BOOT_CFLAGS= -g -O2
-
 
 # The first rule in the file had better be this one.  Don't put any above it.
 # This lives here to allow makefile fragments to contain dependencies.
@@ -28190,7 +28181,9 @@ stage:
 # (both in a combined tree, or separately).  This however requires some
 # change to the gcc driver, again in order to avoid comparison failures.
 
-# Bugs: This is almost certainly not parallel-make safe.
+# Bugs: This is crippled when doing parallel make, the `make all-host'
+# and `make all-target' phases can be parallelized.
+
 
 # 'touch' doesn't work right on some platforms.
 STAMP = echo timestamp > 
@@ -28319,10 +28312,10 @@ stage1-bubble::
 	@if test -f stage1-lean  ; then \
 	  echo Skipping rebuild of stage1 ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage1; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stage1; \
 	fi
 
-.PHONY: all-stage1
+.PHONY: all-stage1 clean-stage1
 all-stage1:     \
   maybe-all-stage1-bfd \
   maybe-all-stage1-opcodes \
@@ -28336,12 +28329,28 @@ all-stage1:     \
   maybe-all-stage1-libiberty                        \
   maybe-all-stage1-zlib       
 
+do-clean: clean-stage1
+clean-stage1:     \
+  maybe-clean-stage1-bfd \
+  maybe-clean-stage1-opcodes \
+  maybe-clean-stage1-binutils             \
+  maybe-clean-stage1-gas \
+  maybe-clean-stage1-gcc        \
+  maybe-clean-stage1-intl   \
+  maybe-clean-stage1-ld \
+  maybe-clean-stage1-libcpp  \
+  maybe-clean-stage1-libbanshee \
+  maybe-clean-stage1-libiberty                        \
+  maybe-clean-stage1-zlib       
+
 
 .PHONY: configure-stage1-bfd maybe-configure-stage1-bfd
 .PHONY: all-stage1-bfd maybe-all-stage1-bfd
+.PHONY: clean-stage1-bfd maybe-clean-stage1-bfd
 
 maybe-configure-stage1-bfd:
 maybe-all-stage1-bfd:
+maybe-clean-stage1-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage1-bfd: configure-stage1-bfd
@@ -28377,13 +28386,25 @@ all-stage1-bfd: configure-stage1-bfd
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-bfd: clean-stage1-bfd
+clean-stage1-bfd:
+	@[ -f bfd/Makefile ] || [ -f stage1-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stage1-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stage1-opcodes maybe-configure-stage1-opcodes
 .PHONY: all-stage1-opcodes maybe-all-stage1-opcodes
+.PHONY: clean-stage1-opcodes maybe-clean-stage1-opcodes
 
 maybe-configure-stage1-opcodes:
 maybe-all-stage1-opcodes:
+maybe-clean-stage1-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage1-opcodes: configure-stage1-opcodes
@@ -28419,13 +28440,25 @@ all-stage1-opcodes: configure-stage1-opcodes
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-opcodes: clean-stage1-opcodes
+clean-stage1-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stage1-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stage1-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stage1-binutils maybe-configure-stage1-binutils
 .PHONY: all-stage1-binutils maybe-all-stage1-binutils
+.PHONY: clean-stage1-binutils maybe-clean-stage1-binutils
 
 maybe-configure-stage1-binutils:
 maybe-all-stage1-binutils:
+maybe-clean-stage1-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage1-binutils: configure-stage1-binutils
@@ -28461,13 +28494,25 @@ all-stage1-binutils: configure-stage1-binutils
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-binutils: clean-stage1-binutils
+clean-stage1-binutils:
+	@[ -f binutils/Makefile ] || [ -f stage1-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stage1-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stage1-gas maybe-configure-stage1-gas
 .PHONY: all-stage1-gas maybe-all-stage1-gas
+.PHONY: clean-stage1-gas maybe-clean-stage1-gas
 
 maybe-configure-stage1-gas:
 maybe-all-stage1-gas:
+maybe-clean-stage1-gas:
 
 @if gas-bootstrap
 maybe-configure-stage1-gas: configure-stage1-gas
@@ -28503,13 +28548,25 @@ all-stage1-gas: configure-stage1-gas
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-gas: clean-stage1-gas
+clean-stage1-gas:
+	@[ -f gas/Makefile ] || [ -f stage1-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stage1-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stage1-gcc maybe-configure-stage1-gcc
 .PHONY: all-stage1-gcc maybe-all-stage1-gcc
+.PHONY: clean-stage1-gcc maybe-clean-stage1-gcc
 
 maybe-configure-stage1-gcc:
 maybe-all-stage1-gcc:
+maybe-clean-stage1-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage1-gcc: configure-stage1-gcc
@@ -28545,13 +28602,25 @@ all-stage1-gcc: configure-stage1-gcc
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stage1-gcc: clean-stage1-gcc
+clean-stage1-gcc:
+	@[ -f gcc/Makefile ] || [ -f stage1-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stage1-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)" $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stage1-intl maybe-configure-stage1-intl
 .PHONY: all-stage1-intl maybe-all-stage1-intl
+.PHONY: clean-stage1-intl maybe-clean-stage1-intl
 
 maybe-configure-stage1-intl:
 maybe-all-stage1-intl:
+maybe-clean-stage1-intl:
 
 @if intl-bootstrap
 maybe-configure-stage1-intl: configure-stage1-intl
@@ -28587,13 +28656,25 @@ all-stage1-intl: configure-stage1-intl
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-intl: clean-stage1-intl
+clean-stage1-intl:
+	@[ -f intl/Makefile ] || [ -f stage1-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stage1-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stage1-ld maybe-configure-stage1-ld
 .PHONY: all-stage1-ld maybe-all-stage1-ld
+.PHONY: clean-stage1-ld maybe-clean-stage1-ld
 
 maybe-configure-stage1-ld:
 maybe-all-stage1-ld:
+maybe-clean-stage1-ld:
 
 @if ld-bootstrap
 maybe-configure-stage1-ld: configure-stage1-ld
@@ -28629,13 +28710,25 @@ all-stage1-ld: configure-stage1-ld
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-ld: clean-stage1-ld
+clean-stage1-ld:
+	@[ -f ld/Makefile ] || [ -f stage1-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stage1-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stage1-libcpp maybe-configure-stage1-libcpp
 .PHONY: all-stage1-libcpp maybe-all-stage1-libcpp
+.PHONY: clean-stage1-libcpp maybe-clean-stage1-libcpp
 
 maybe-configure-stage1-libcpp:
 maybe-all-stage1-libcpp:
+maybe-clean-stage1-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage1-libcpp: configure-stage1-libcpp
@@ -28671,13 +28764,25 @@ all-stage1-libcpp: configure-stage1-libcpp
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-libcpp: clean-stage1-libcpp
+clean-stage1-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stage1-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stage1-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stage1-libbanshee maybe-configure-stage1-libbanshee
 .PHONY: all-stage1-libbanshee maybe-all-stage1-libbanshee
+.PHONY: clean-stage1-libbanshee maybe-clean-stage1-libbanshee
 
 maybe-configure-stage1-libbanshee:
 maybe-all-stage1-libbanshee:
+maybe-clean-stage1-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage1-libbanshee: configure-stage1-libbanshee
@@ -28713,13 +28818,25 @@ all-stage1-libbanshee: configure-stage1-libbanshee
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-libbanshee: clean-stage1-libbanshee
+clean-stage1-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stage1-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stage1-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stage1-libiberty maybe-configure-stage1-libiberty
 .PHONY: all-stage1-libiberty maybe-all-stage1-libiberty
+.PHONY: clean-stage1-libiberty maybe-clean-stage1-libiberty
 
 maybe-configure-stage1-libiberty:
 maybe-all-stage1-libiberty:
+maybe-clean-stage1-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage1-libiberty: configure-stage1-libiberty
@@ -28755,13 +28872,25 @@ all-stage1-libiberty: configure-stage1-libiberty
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-libiberty: clean-stage1-libiberty
+clean-stage1-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stage1-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stage1-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stage1-zlib maybe-configure-stage1-zlib
 .PHONY: all-stage1-zlib maybe-all-stage1-zlib
+.PHONY: clean-stage1-zlib maybe-clean-stage1-zlib
 
 maybe-configure-stage1-zlib:
 maybe-all-stage1-zlib:
+maybe-clean-stage1-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage1-zlib: configure-stage1-zlib
@@ -28797,7 +28926,17 @@ all-stage1-zlib: configure-stage1-zlib
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" 
+
+maybe-clean-stage1-zlib: clean-stage1-zlib
+clean-stage1-zlib:
+	@[ -f zlib/Makefile ] || [ -f stage1-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stage1-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -28807,10 +28946,9 @@ all-stage1-zlib: configure-stage1-zlib
 
 
 
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
+
 .PHONY: distclean-stage1
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
-
 distclean-stage1::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stage1-* 
@@ -28936,10 +29074,10 @@ stage2-bubble:: stage1-bubble
 	@if test -f stage2-lean || test -f stage1-lean  ; then \
 	  echo Skipping rebuild of stage2 ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage2; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stage2; \
 	fi
 
-.PHONY: all-stage2
+.PHONY: all-stage2 clean-stage2
 all-stage2:     \
   maybe-all-stage2-bfd \
   maybe-all-stage2-opcodes \
@@ -28953,12 +29091,28 @@ all-stage2:     \
   maybe-all-stage2-libiberty                        \
   maybe-all-stage2-zlib       
 
+do-clean: clean-stage2
+clean-stage2:     \
+  maybe-clean-stage2-bfd \
+  maybe-clean-stage2-opcodes \
+  maybe-clean-stage2-binutils             \
+  maybe-clean-stage2-gas \
+  maybe-clean-stage2-gcc        \
+  maybe-clean-stage2-intl   \
+  maybe-clean-stage2-ld \
+  maybe-clean-stage2-libcpp  \
+  maybe-clean-stage2-libbanshee \
+  maybe-clean-stage2-libiberty                        \
+  maybe-clean-stage2-zlib       
+
 
 .PHONY: configure-stage2-bfd maybe-configure-stage2-bfd
 .PHONY: all-stage2-bfd maybe-all-stage2-bfd
+.PHONY: clean-stage2-bfd maybe-clean-stage2-bfd
 
 maybe-configure-stage2-bfd:
 maybe-all-stage2-bfd:
+maybe-clean-stage2-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage2-bfd: configure-stage2-bfd
@@ -28995,13 +29149,26 @@ all-stage2-bfd: configure-stage2-bfd
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-bfd: clean-stage2-bfd
+clean-stage2-bfd:
+	@[ -f bfd/Makefile ] || [ -f stage2-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stage2-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stage2-opcodes maybe-configure-stage2-opcodes
 .PHONY: all-stage2-opcodes maybe-all-stage2-opcodes
+.PHONY: clean-stage2-opcodes maybe-clean-stage2-opcodes
 
 maybe-configure-stage2-opcodes:
 maybe-all-stage2-opcodes:
+maybe-clean-stage2-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage2-opcodes: configure-stage2-opcodes
@@ -29038,13 +29205,26 @@ all-stage2-opcodes: configure-stage2-opcodes
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-opcodes: clean-stage2-opcodes
+clean-stage2-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stage2-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stage2-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stage2-binutils maybe-configure-stage2-binutils
 .PHONY: all-stage2-binutils maybe-all-stage2-binutils
+.PHONY: clean-stage2-binutils maybe-clean-stage2-binutils
 
 maybe-configure-stage2-binutils:
 maybe-all-stage2-binutils:
+maybe-clean-stage2-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage2-binutils: configure-stage2-binutils
@@ -29081,13 +29261,26 @@ all-stage2-binutils: configure-stage2-binutils
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-binutils: clean-stage2-binutils
+clean-stage2-binutils:
+	@[ -f binutils/Makefile ] || [ -f stage2-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stage2-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stage2-gas maybe-configure-stage2-gas
 .PHONY: all-stage2-gas maybe-all-stage2-gas
+.PHONY: clean-stage2-gas maybe-clean-stage2-gas
 
 maybe-configure-stage2-gas:
 maybe-all-stage2-gas:
+maybe-clean-stage2-gas:
 
 @if gas-bootstrap
 maybe-configure-stage2-gas: configure-stage2-gas
@@ -29124,13 +29317,26 @@ all-stage2-gas: configure-stage2-gas
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-gas: clean-stage2-gas
+clean-stage2-gas:
+	@[ -f gas/Makefile ] || [ -f stage2-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stage2-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stage2-gcc maybe-configure-stage2-gcc
 .PHONY: all-stage2-gcc maybe-all-stage2-gcc
+.PHONY: clean-stage2-gcc maybe-clean-stage2-gcc
 
 maybe-configure-stage2-gcc:
 maybe-all-stage2-gcc:
+maybe-clean-stage2-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage2-gcc: configure-stage2-gcc
@@ -29167,13 +29373,26 @@ all-stage2-gcc: configure-stage2-gcc
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stage2-gcc: clean-stage2-gcc
+clean-stage2-gcc:
+	@[ -f gcc/Makefile ] || [ -f stage2-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stage2-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stage2-intl maybe-configure-stage2-intl
 .PHONY: all-stage2-intl maybe-all-stage2-intl
+.PHONY: clean-stage2-intl maybe-clean-stage2-intl
 
 maybe-configure-stage2-intl:
 maybe-all-stage2-intl:
+maybe-clean-stage2-intl:
 
 @if intl-bootstrap
 maybe-configure-stage2-intl: configure-stage2-intl
@@ -29210,13 +29429,26 @@ all-stage2-intl: configure-stage2-intl
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-intl: clean-stage2-intl
+clean-stage2-intl:
+	@[ -f intl/Makefile ] || [ -f stage2-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stage2-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stage2-ld maybe-configure-stage2-ld
 .PHONY: all-stage2-ld maybe-all-stage2-ld
+.PHONY: clean-stage2-ld maybe-clean-stage2-ld
 
 maybe-configure-stage2-ld:
 maybe-all-stage2-ld:
+maybe-clean-stage2-ld:
 
 @if ld-bootstrap
 maybe-configure-stage2-ld: configure-stage2-ld
@@ -29253,13 +29485,26 @@ all-stage2-ld: configure-stage2-ld
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-ld: clean-stage2-ld
+clean-stage2-ld:
+	@[ -f ld/Makefile ] || [ -f stage2-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stage2-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stage2-libcpp maybe-configure-stage2-libcpp
 .PHONY: all-stage2-libcpp maybe-all-stage2-libcpp
+.PHONY: clean-stage2-libcpp maybe-clean-stage2-libcpp
 
 maybe-configure-stage2-libcpp:
 maybe-all-stage2-libcpp:
+maybe-clean-stage2-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage2-libcpp: configure-stage2-libcpp
@@ -29296,13 +29541,26 @@ all-stage2-libcpp: configure-stage2-libcpp
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-libcpp: clean-stage2-libcpp
+clean-stage2-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stage2-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stage2-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stage2-libbanshee maybe-configure-stage2-libbanshee
 .PHONY: all-stage2-libbanshee maybe-all-stage2-libbanshee
+.PHONY: clean-stage2-libbanshee maybe-clean-stage2-libbanshee
 
 maybe-configure-stage2-libbanshee:
 maybe-all-stage2-libbanshee:
+maybe-clean-stage2-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage2-libbanshee: configure-stage2-libbanshee
@@ -29339,13 +29597,26 @@ all-stage2-libbanshee: configure-stage2-libbanshee
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-libbanshee: clean-stage2-libbanshee
+clean-stage2-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stage2-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stage2-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stage2-libiberty maybe-configure-stage2-libiberty
 .PHONY: all-stage2-libiberty maybe-all-stage2-libiberty
+.PHONY: clean-stage2-libiberty maybe-clean-stage2-libiberty
 
 maybe-configure-stage2-libiberty:
 maybe-all-stage2-libiberty:
+maybe-clean-stage2-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage2-libiberty: configure-stage2-libiberty
@@ -29382,13 +29653,26 @@ all-stage2-libiberty: configure-stage2-libiberty
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-libiberty: clean-stage2-libiberty
+clean-stage2-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stage2-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stage2-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stage2-zlib maybe-configure-stage2-zlib
 .PHONY: all-stage2-zlib maybe-all-stage2-zlib
+.PHONY: clean-stage2-zlib maybe-clean-stage2-zlib
 
 maybe-configure-stage2-zlib:
 maybe-all-stage2-zlib:
+maybe-clean-stage2-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage2-zlib: configure-stage2-zlib
@@ -29425,7 +29709,18 @@ all-stage2-zlib: configure-stage2-zlib
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage2-zlib: clean-stage2-zlib
+clean-stage2-zlib:
+	@[ -f zlib/Makefile ] || [ -f stage2-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stage2-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -29438,10 +29733,9 @@ all-stage2-zlib: configure-stage2-zlib
 bootstrap2: stage2-bubble  all
 
 
-.PHONY: distclean-stage2
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stage1:: distclean-stage2 
+.PHONY: distclean-stage2
 distclean-stage2::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stage2-* 
@@ -29568,10 +29862,10 @@ stage3-bubble:: stage2-bubble
 	@if test -f stage3-lean || test -f stage2-lean  ; then \
 	  echo Skipping rebuild of stage3 ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stage3; \
 	fi
 
-.PHONY: all-stage3
+.PHONY: all-stage3 clean-stage3
 all-stage3:     \
   maybe-all-stage3-bfd \
   maybe-all-stage3-opcodes \
@@ -29585,12 +29879,28 @@ all-stage3:     \
   maybe-all-stage3-libiberty                        \
   maybe-all-stage3-zlib       
 
+do-clean: clean-stage3
+clean-stage3:     \
+  maybe-clean-stage3-bfd \
+  maybe-clean-stage3-opcodes \
+  maybe-clean-stage3-binutils             \
+  maybe-clean-stage3-gas \
+  maybe-clean-stage3-gcc        \
+  maybe-clean-stage3-intl   \
+  maybe-clean-stage3-ld \
+  maybe-clean-stage3-libcpp  \
+  maybe-clean-stage3-libbanshee \
+  maybe-clean-stage3-libiberty                        \
+  maybe-clean-stage3-zlib       
+
 
 .PHONY: configure-stage3-bfd maybe-configure-stage3-bfd
 .PHONY: all-stage3-bfd maybe-all-stage3-bfd
+.PHONY: clean-stage3-bfd maybe-clean-stage3-bfd
 
 maybe-configure-stage3-bfd:
 maybe-all-stage3-bfd:
+maybe-clean-stage3-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage3-bfd: configure-stage3-bfd
@@ -29627,13 +29937,26 @@ all-stage3-bfd: configure-stage3-bfd
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-bfd: clean-stage3-bfd
+clean-stage3-bfd:
+	@[ -f bfd/Makefile ] || [ -f stage3-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stage3-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stage3-opcodes maybe-configure-stage3-opcodes
 .PHONY: all-stage3-opcodes maybe-all-stage3-opcodes
+.PHONY: clean-stage3-opcodes maybe-clean-stage3-opcodes
 
 maybe-configure-stage3-opcodes:
 maybe-all-stage3-opcodes:
+maybe-clean-stage3-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage3-opcodes: configure-stage3-opcodes
@@ -29670,13 +29993,26 @@ all-stage3-opcodes: configure-stage3-opcodes
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-opcodes: clean-stage3-opcodes
+clean-stage3-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stage3-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stage3-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stage3-binutils maybe-configure-stage3-binutils
 .PHONY: all-stage3-binutils maybe-all-stage3-binutils
+.PHONY: clean-stage3-binutils maybe-clean-stage3-binutils
 
 maybe-configure-stage3-binutils:
 maybe-all-stage3-binutils:
+maybe-clean-stage3-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage3-binutils: configure-stage3-binutils
@@ -29713,13 +30049,26 @@ all-stage3-binutils: configure-stage3-binutils
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-binutils: clean-stage3-binutils
+clean-stage3-binutils:
+	@[ -f binutils/Makefile ] || [ -f stage3-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stage3-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stage3-gas maybe-configure-stage3-gas
 .PHONY: all-stage3-gas maybe-all-stage3-gas
+.PHONY: clean-stage3-gas maybe-clean-stage3-gas
 
 maybe-configure-stage3-gas:
 maybe-all-stage3-gas:
+maybe-clean-stage3-gas:
 
 @if gas-bootstrap
 maybe-configure-stage3-gas: configure-stage3-gas
@@ -29756,13 +30105,26 @@ all-stage3-gas: configure-stage3-gas
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-gas: clean-stage3-gas
+clean-stage3-gas:
+	@[ -f gas/Makefile ] || [ -f stage3-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stage3-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stage3-gcc maybe-configure-stage3-gcc
 .PHONY: all-stage3-gcc maybe-all-stage3-gcc
+.PHONY: clean-stage3-gcc maybe-clean-stage3-gcc
 
 maybe-configure-stage3-gcc:
 maybe-all-stage3-gcc:
+maybe-clean-stage3-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage3-gcc: configure-stage3-gcc
@@ -29799,13 +30161,26 @@ all-stage3-gcc: configure-stage3-gcc
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stage3-gcc: clean-stage3-gcc
+clean-stage3-gcc:
+	@[ -f gcc/Makefile ] || [ -f stage3-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stage3-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stage3-intl maybe-configure-stage3-intl
 .PHONY: all-stage3-intl maybe-all-stage3-intl
+.PHONY: clean-stage3-intl maybe-clean-stage3-intl
 
 maybe-configure-stage3-intl:
 maybe-all-stage3-intl:
+maybe-clean-stage3-intl:
 
 @if intl-bootstrap
 maybe-configure-stage3-intl: configure-stage3-intl
@@ -29842,13 +30217,26 @@ all-stage3-intl: configure-stage3-intl
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-intl: clean-stage3-intl
+clean-stage3-intl:
+	@[ -f intl/Makefile ] || [ -f stage3-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stage3-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stage3-ld maybe-configure-stage3-ld
 .PHONY: all-stage3-ld maybe-all-stage3-ld
+.PHONY: clean-stage3-ld maybe-clean-stage3-ld
 
 maybe-configure-stage3-ld:
 maybe-all-stage3-ld:
+maybe-clean-stage3-ld:
 
 @if ld-bootstrap
 maybe-configure-stage3-ld: configure-stage3-ld
@@ -29885,13 +30273,26 @@ all-stage3-ld: configure-stage3-ld
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-ld: clean-stage3-ld
+clean-stage3-ld:
+	@[ -f ld/Makefile ] || [ -f stage3-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stage3-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stage3-libcpp maybe-configure-stage3-libcpp
 .PHONY: all-stage3-libcpp maybe-all-stage3-libcpp
+.PHONY: clean-stage3-libcpp maybe-clean-stage3-libcpp
 
 maybe-configure-stage3-libcpp:
 maybe-all-stage3-libcpp:
+maybe-clean-stage3-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage3-libcpp: configure-stage3-libcpp
@@ -29928,13 +30329,26 @@ all-stage3-libcpp: configure-stage3-libcpp
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-libcpp: clean-stage3-libcpp
+clean-stage3-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stage3-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stage3-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stage3-libbanshee maybe-configure-stage3-libbanshee
 .PHONY: all-stage3-libbanshee maybe-all-stage3-libbanshee
+.PHONY: clean-stage3-libbanshee maybe-clean-stage3-libbanshee
 
 maybe-configure-stage3-libbanshee:
 maybe-all-stage3-libbanshee:
+maybe-clean-stage3-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage3-libbanshee: configure-stage3-libbanshee
@@ -29971,13 +30385,26 @@ all-stage3-libbanshee: configure-stage3-libbanshee
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-libbanshee: clean-stage3-libbanshee
+clean-stage3-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stage3-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stage3-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stage3-libiberty maybe-configure-stage3-libiberty
 .PHONY: all-stage3-libiberty maybe-all-stage3-libiberty
+.PHONY: clean-stage3-libiberty maybe-clean-stage3-libiberty
 
 maybe-configure-stage3-libiberty:
 maybe-all-stage3-libiberty:
+maybe-clean-stage3-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage3-libiberty: configure-stage3-libiberty
@@ -30014,13 +30441,26 @@ all-stage3-libiberty: configure-stage3-libiberty
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-libiberty: clean-stage3-libiberty
+clean-stage3-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stage3-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stage3-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stage3-zlib maybe-configure-stage3-zlib
 .PHONY: all-stage3-zlib maybe-all-stage3-zlib
+.PHONY: clean-stage3-zlib maybe-clean-stage3-zlib
 
 maybe-configure-stage3-zlib:
 maybe-all-stage3-zlib:
+maybe-clean-stage3-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage3-zlib: configure-stage3-zlib
@@ -30057,7 +30497,18 @@ all-stage3-zlib: configure-stage3-zlib
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage3-zlib: clean-stage3-zlib
+clean-stage3-zlib:
+	@[ -f zlib/Makefile ] || [ -f stage3-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stage3-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -30097,17 +30548,16 @@ compare:
 bootstrap: stage3-bubble compare all
 
 
-.PHONY: distclean-stage3
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stage2:: distclean-stage3 
+.PHONY: distclean-stage3
 distclean-stage3::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stage3-* compare 
 
 
 .PHONY: cleanstrap
-cleanstrap: distclean-stage1 bootstrap
+cleanstrap: distclean bootstrap
 
 @endif gcc-bootstrap
 
@@ -30230,10 +30680,10 @@ stage4-bubble:: stage3-bubble
 	@if test -f stage4-lean || test -f stage3-lean  ; then \
 	  echo Skipping rebuild of stage4 ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stage4; \
 	fi
 
-.PHONY: all-stage4
+.PHONY: all-stage4 clean-stage4
 all-stage4:     \
   maybe-all-stage4-bfd \
   maybe-all-stage4-opcodes \
@@ -30247,12 +30697,28 @@ all-stage4:     \
   maybe-all-stage4-libiberty                        \
   maybe-all-stage4-zlib       
 
+do-clean: clean-stage4
+clean-stage4:     \
+  maybe-clean-stage4-bfd \
+  maybe-clean-stage4-opcodes \
+  maybe-clean-stage4-binutils             \
+  maybe-clean-stage4-gas \
+  maybe-clean-stage4-gcc        \
+  maybe-clean-stage4-intl   \
+  maybe-clean-stage4-ld \
+  maybe-clean-stage4-libcpp  \
+  maybe-clean-stage4-libbanshee \
+  maybe-clean-stage4-libiberty                        \
+  maybe-clean-stage4-zlib       
+
 
 .PHONY: configure-stage4-bfd maybe-configure-stage4-bfd
 .PHONY: all-stage4-bfd maybe-all-stage4-bfd
+.PHONY: clean-stage4-bfd maybe-clean-stage4-bfd
 
 maybe-configure-stage4-bfd:
 maybe-all-stage4-bfd:
+maybe-clean-stage4-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage4-bfd: configure-stage4-bfd
@@ -30289,13 +30755,26 @@ all-stage4-bfd: configure-stage4-bfd
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-bfd: clean-stage4-bfd
+clean-stage4-bfd:
+	@[ -f bfd/Makefile ] || [ -f stage4-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stage4-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stage4-opcodes maybe-configure-stage4-opcodes
 .PHONY: all-stage4-opcodes maybe-all-stage4-opcodes
+.PHONY: clean-stage4-opcodes maybe-clean-stage4-opcodes
 
 maybe-configure-stage4-opcodes:
 maybe-all-stage4-opcodes:
+maybe-clean-stage4-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage4-opcodes: configure-stage4-opcodes
@@ -30332,13 +30811,26 @@ all-stage4-opcodes: configure-stage4-opcodes
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-opcodes: clean-stage4-opcodes
+clean-stage4-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stage4-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stage4-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stage4-binutils maybe-configure-stage4-binutils
 .PHONY: all-stage4-binutils maybe-all-stage4-binutils
+.PHONY: clean-stage4-binutils maybe-clean-stage4-binutils
 
 maybe-configure-stage4-binutils:
 maybe-all-stage4-binutils:
+maybe-clean-stage4-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage4-binutils: configure-stage4-binutils
@@ -30375,13 +30867,26 @@ all-stage4-binutils: configure-stage4-binutils
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-binutils: clean-stage4-binutils
+clean-stage4-binutils:
+	@[ -f binutils/Makefile ] || [ -f stage4-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stage4-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stage4-gas maybe-configure-stage4-gas
 .PHONY: all-stage4-gas maybe-all-stage4-gas
+.PHONY: clean-stage4-gas maybe-clean-stage4-gas
 
 maybe-configure-stage4-gas:
 maybe-all-stage4-gas:
+maybe-clean-stage4-gas:
 
 @if gas-bootstrap
 maybe-configure-stage4-gas: configure-stage4-gas
@@ -30418,13 +30923,26 @@ all-stage4-gas: configure-stage4-gas
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-gas: clean-stage4-gas
+clean-stage4-gas:
+	@[ -f gas/Makefile ] || [ -f stage4-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stage4-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stage4-gcc maybe-configure-stage4-gcc
 .PHONY: all-stage4-gcc maybe-all-stage4-gcc
+.PHONY: clean-stage4-gcc maybe-clean-stage4-gcc
 
 maybe-configure-stage4-gcc:
 maybe-all-stage4-gcc:
+maybe-clean-stage4-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage4-gcc: configure-stage4-gcc
@@ -30461,13 +30979,26 @@ all-stage4-gcc: configure-stage4-gcc
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stage4-gcc: clean-stage4-gcc
+clean-stage4-gcc:
+	@[ -f gcc/Makefile ] || [ -f stage4-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stage4-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stage4-intl maybe-configure-stage4-intl
 .PHONY: all-stage4-intl maybe-all-stage4-intl
+.PHONY: clean-stage4-intl maybe-clean-stage4-intl
 
 maybe-configure-stage4-intl:
 maybe-all-stage4-intl:
+maybe-clean-stage4-intl:
 
 @if intl-bootstrap
 maybe-configure-stage4-intl: configure-stage4-intl
@@ -30504,13 +31035,26 @@ all-stage4-intl: configure-stage4-intl
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-intl: clean-stage4-intl
+clean-stage4-intl:
+	@[ -f intl/Makefile ] || [ -f stage4-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stage4-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stage4-ld maybe-configure-stage4-ld
 .PHONY: all-stage4-ld maybe-all-stage4-ld
+.PHONY: clean-stage4-ld maybe-clean-stage4-ld
 
 maybe-configure-stage4-ld:
 maybe-all-stage4-ld:
+maybe-clean-stage4-ld:
 
 @if ld-bootstrap
 maybe-configure-stage4-ld: configure-stage4-ld
@@ -30547,13 +31091,26 @@ all-stage4-ld: configure-stage4-ld
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-ld: clean-stage4-ld
+clean-stage4-ld:
+	@[ -f ld/Makefile ] || [ -f stage4-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stage4-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stage4-libcpp maybe-configure-stage4-libcpp
 .PHONY: all-stage4-libcpp maybe-all-stage4-libcpp
+.PHONY: clean-stage4-libcpp maybe-clean-stage4-libcpp
 
 maybe-configure-stage4-libcpp:
 maybe-all-stage4-libcpp:
+maybe-clean-stage4-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage4-libcpp: configure-stage4-libcpp
@@ -30590,13 +31147,26 @@ all-stage4-libcpp: configure-stage4-libcpp
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-libcpp: clean-stage4-libcpp
+clean-stage4-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stage4-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stage4-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stage4-libbanshee maybe-configure-stage4-libbanshee
 .PHONY: all-stage4-libbanshee maybe-all-stage4-libbanshee
+.PHONY: clean-stage4-libbanshee maybe-clean-stage4-libbanshee
 
 maybe-configure-stage4-libbanshee:
 maybe-all-stage4-libbanshee:
+maybe-clean-stage4-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage4-libbanshee: configure-stage4-libbanshee
@@ -30633,13 +31203,26 @@ all-stage4-libbanshee: configure-stage4-libbanshee
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-libbanshee: clean-stage4-libbanshee
+clean-stage4-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stage4-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stage4-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stage4-libiberty maybe-configure-stage4-libiberty
 .PHONY: all-stage4-libiberty maybe-all-stage4-libiberty
+.PHONY: clean-stage4-libiberty maybe-clean-stage4-libiberty
 
 maybe-configure-stage4-libiberty:
 maybe-all-stage4-libiberty:
+maybe-clean-stage4-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage4-libiberty: configure-stage4-libiberty
@@ -30676,13 +31259,26 @@ all-stage4-libiberty: configure-stage4-libiberty
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-libiberty: clean-stage4-libiberty
+clean-stage4-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stage4-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stage4-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stage4-zlib maybe-configure-stage4-zlib
 .PHONY: all-stage4-zlib maybe-all-stage4-zlib
+.PHONY: clean-stage4-zlib maybe-clean-stage4-zlib
 
 maybe-configure-stage4-zlib:
 maybe-all-stage4-zlib:
+maybe-clean-stage4-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage4-zlib: configure-stage4-zlib
@@ -30719,7 +31315,18 @@ all-stage4-zlib: configure-stage4-zlib
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 
+
+maybe-clean-stage4-zlib: clean-stage4-zlib
+clean-stage4-zlib:
+	@[ -f zlib/Makefile ] || [ -f stage4-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stage4-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -30759,10 +31366,9 @@ compare3:
 bootstrap4: stage4-bubble compare3 all
 
 
-.PHONY: distclean-stage4
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stage3:: distclean-stage4 
+.PHONY: distclean-stage4
 distclean-stage4::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stage4-* compare3 
@@ -30888,10 +31494,10 @@ stageprofile-bubble:: stage1-bubble
 	@if test -f stageprofile-lean || test -f stage1-lean  ; then \
 	  echo Skipping rebuild of stageprofile ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageprofile; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stageprofile; \
 	fi
 
-.PHONY: all-stageprofile
+.PHONY: all-stageprofile clean-stageprofile
 all-stageprofile:     \
   maybe-all-stageprofile-bfd \
   maybe-all-stageprofile-opcodes \
@@ -30905,12 +31511,28 @@ all-stageprofile:     \
   maybe-all-stageprofile-libiberty                        \
   maybe-all-stageprofile-zlib       
 
+do-clean: clean-stageprofile
+clean-stageprofile:     \
+  maybe-clean-stageprofile-bfd \
+  maybe-clean-stageprofile-opcodes \
+  maybe-clean-stageprofile-binutils             \
+  maybe-clean-stageprofile-gas \
+  maybe-clean-stageprofile-gcc        \
+  maybe-clean-stageprofile-intl   \
+  maybe-clean-stageprofile-ld \
+  maybe-clean-stageprofile-libcpp  \
+  maybe-clean-stageprofile-libbanshee \
+  maybe-clean-stageprofile-libiberty                        \
+  maybe-clean-stageprofile-zlib       
+
 
 .PHONY: configure-stageprofile-bfd maybe-configure-stageprofile-bfd
 .PHONY: all-stageprofile-bfd maybe-all-stageprofile-bfd
+.PHONY: clean-stageprofile-bfd maybe-clean-stageprofile-bfd
 
 maybe-configure-stageprofile-bfd:
 maybe-all-stageprofile-bfd:
+maybe-clean-stageprofile-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stageprofile-bfd: configure-stageprofile-bfd
@@ -30947,13 +31569,26 @@ all-stageprofile-bfd: configure-stageprofile-bfd
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-bfd: clean-stageprofile-bfd
+clean-stageprofile-bfd:
+	@[ -f bfd/Makefile ] || [ -f stageprofile-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stageprofile-opcodes maybe-configure-stageprofile-opcodes
 .PHONY: all-stageprofile-opcodes maybe-all-stageprofile-opcodes
+.PHONY: clean-stageprofile-opcodes maybe-clean-stageprofile-opcodes
 
 maybe-configure-stageprofile-opcodes:
 maybe-all-stageprofile-opcodes:
+maybe-clean-stageprofile-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stageprofile-opcodes: configure-stageprofile-opcodes
@@ -30990,13 +31625,26 @@ all-stageprofile-opcodes: configure-stageprofile-opcodes
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-opcodes: clean-stageprofile-opcodes
+clean-stageprofile-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stageprofile-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stageprofile-binutils maybe-configure-stageprofile-binutils
 .PHONY: all-stageprofile-binutils maybe-all-stageprofile-binutils
+.PHONY: clean-stageprofile-binutils maybe-clean-stageprofile-binutils
 
 maybe-configure-stageprofile-binutils:
 maybe-all-stageprofile-binutils:
+maybe-clean-stageprofile-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stageprofile-binutils: configure-stageprofile-binutils
@@ -31033,13 +31681,26 @@ all-stageprofile-binutils: configure-stageprofile-binutils
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-binutils: clean-stageprofile-binutils
+clean-stageprofile-binutils:
+	@[ -f binutils/Makefile ] || [ -f stageprofile-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stageprofile-gas maybe-configure-stageprofile-gas
 .PHONY: all-stageprofile-gas maybe-all-stageprofile-gas
+.PHONY: clean-stageprofile-gas maybe-clean-stageprofile-gas
 
 maybe-configure-stageprofile-gas:
 maybe-all-stageprofile-gas:
+maybe-clean-stageprofile-gas:
 
 @if gas-bootstrap
 maybe-configure-stageprofile-gas: configure-stageprofile-gas
@@ -31076,13 +31737,26 @@ all-stageprofile-gas: configure-stageprofile-gas
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-gas: clean-stageprofile-gas
+clean-stageprofile-gas:
+	@[ -f gas/Makefile ] || [ -f stageprofile-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stageprofile-gcc maybe-configure-stageprofile-gcc
 .PHONY: all-stageprofile-gcc maybe-all-stageprofile-gcc
+.PHONY: clean-stageprofile-gcc maybe-clean-stageprofile-gcc
 
 maybe-configure-stageprofile-gcc:
 maybe-all-stageprofile-gcc:
+maybe-clean-stageprofile-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stageprofile-gcc: configure-stageprofile-gcc
@@ -31119,13 +31793,26 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stageprofile-gcc: clean-stageprofile-gcc
+clean-stageprofile-gcc:
+	@[ -f gcc/Makefile ] || [ -f stageprofile-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stageprofile-intl maybe-configure-stageprofile-intl
 .PHONY: all-stageprofile-intl maybe-all-stageprofile-intl
+.PHONY: clean-stageprofile-intl maybe-clean-stageprofile-intl
 
 maybe-configure-stageprofile-intl:
 maybe-all-stageprofile-intl:
+maybe-clean-stageprofile-intl:
 
 @if intl-bootstrap
 maybe-configure-stageprofile-intl: configure-stageprofile-intl
@@ -31162,13 +31849,26 @@ all-stageprofile-intl: configure-stageprofile-intl
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-intl: clean-stageprofile-intl
+clean-stageprofile-intl:
+	@[ -f intl/Makefile ] || [ -f stageprofile-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stageprofile-ld maybe-configure-stageprofile-ld
 .PHONY: all-stageprofile-ld maybe-all-stageprofile-ld
+.PHONY: clean-stageprofile-ld maybe-clean-stageprofile-ld
 
 maybe-configure-stageprofile-ld:
 maybe-all-stageprofile-ld:
+maybe-clean-stageprofile-ld:
 
 @if ld-bootstrap
 maybe-configure-stageprofile-ld: configure-stageprofile-ld
@@ -31205,13 +31905,26 @@ all-stageprofile-ld: configure-stageprofile-ld
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-ld: clean-stageprofile-ld
+clean-stageprofile-ld:
+	@[ -f ld/Makefile ] || [ -f stageprofile-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stageprofile-libcpp maybe-configure-stageprofile-libcpp
 .PHONY: all-stageprofile-libcpp maybe-all-stageprofile-libcpp
+.PHONY: clean-stageprofile-libcpp maybe-clean-stageprofile-libcpp
 
 maybe-configure-stageprofile-libcpp:
 maybe-all-stageprofile-libcpp:
+maybe-clean-stageprofile-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stageprofile-libcpp: configure-stageprofile-libcpp
@@ -31248,13 +31961,26 @@ all-stageprofile-libcpp: configure-stageprofile-libcpp
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-libcpp: clean-stageprofile-libcpp
+clean-stageprofile-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stageprofile-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stageprofile-libbanshee maybe-configure-stageprofile-libbanshee
 .PHONY: all-stageprofile-libbanshee maybe-all-stageprofile-libbanshee
+.PHONY: clean-stageprofile-libbanshee maybe-clean-stageprofile-libbanshee
 
 maybe-configure-stageprofile-libbanshee:
 maybe-all-stageprofile-libbanshee:
+maybe-clean-stageprofile-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stageprofile-libbanshee: configure-stageprofile-libbanshee
@@ -31291,13 +32017,26 @@ all-stageprofile-libbanshee: configure-stageprofile-libbanshee
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-libbanshee: clean-stageprofile-libbanshee
+clean-stageprofile-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stageprofile-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stageprofile-libiberty maybe-configure-stageprofile-libiberty
 .PHONY: all-stageprofile-libiberty maybe-all-stageprofile-libiberty
+.PHONY: clean-stageprofile-libiberty maybe-clean-stageprofile-libiberty
 
 maybe-configure-stageprofile-libiberty:
 maybe-all-stageprofile-libiberty:
+maybe-clean-stageprofile-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stageprofile-libiberty: configure-stageprofile-libiberty
@@ -31334,13 +32073,26 @@ all-stageprofile-libiberty: configure-stageprofile-libiberty
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-libiberty: clean-stageprofile-libiberty
+clean-stageprofile-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stageprofile-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stageprofile-zlib maybe-configure-stageprofile-zlib
 .PHONY: all-stageprofile-zlib maybe-all-stageprofile-zlib
+.PHONY: clean-stageprofile-zlib maybe-clean-stageprofile-zlib
 
 maybe-configure-stageprofile-zlib:
 maybe-all-stageprofile-zlib:
+maybe-clean-stageprofile-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stageprofile-zlib: configure-stageprofile-zlib
@@ -31377,7 +32129,18 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
+
+maybe-clean-stageprofile-zlib: clean-stageprofile-zlib
+clean-stageprofile-zlib:
+	@[ -f zlib/Makefile ] || [ -f stageprofile-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stageprofile-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -31387,10 +32150,9 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 
 
 
-.PHONY: distclean-stageprofile
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stage1:: distclean-stageprofile 
+.PHONY: distclean-stageprofile
 distclean-stageprofile::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stageprofile-* 
@@ -31516,10 +32278,10 @@ stagefeedback-bubble:: stage1-bubble
 	@if test -f stagefeedback-lean || test -f stage1-lean  ; then \
 	  echo Skipping rebuild of stagefeedback ; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stagefeedback; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stagefeedback; \
 	fi
 
-.PHONY: all-stagefeedback
+.PHONY: all-stagefeedback clean-stagefeedback
 all-stagefeedback:     \
   maybe-all-stagefeedback-bfd \
   maybe-all-stagefeedback-opcodes \
@@ -31533,12 +32295,28 @@ all-stagefeedback:     \
   maybe-all-stagefeedback-libiberty                        \
   maybe-all-stagefeedback-zlib       
 
+do-clean: clean-stagefeedback
+clean-stagefeedback:     \
+  maybe-clean-stagefeedback-bfd \
+  maybe-clean-stagefeedback-opcodes \
+  maybe-clean-stagefeedback-binutils             \
+  maybe-clean-stagefeedback-gas \
+  maybe-clean-stagefeedback-gcc        \
+  maybe-clean-stagefeedback-intl   \
+  maybe-clean-stagefeedback-ld \
+  maybe-clean-stagefeedback-libcpp  \
+  maybe-clean-stagefeedback-libbanshee \
+  maybe-clean-stagefeedback-libiberty                        \
+  maybe-clean-stagefeedback-zlib       
+
 
 .PHONY: configure-stagefeedback-bfd maybe-configure-stagefeedback-bfd
 .PHONY: all-stagefeedback-bfd maybe-all-stagefeedback-bfd
+.PHONY: clean-stagefeedback-bfd maybe-clean-stagefeedback-bfd
 
 maybe-configure-stagefeedback-bfd:
 maybe-all-stagefeedback-bfd:
+maybe-clean-stagefeedback-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stagefeedback-bfd: configure-stagefeedback-bfd
@@ -31575,13 +32353,26 @@ all-stagefeedback-bfd: configure-stagefeedback-bfd
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-bfd: clean-stagefeedback-bfd
+clean-stagefeedback-bfd:
+	@[ -f bfd/Makefile ] || [ -f stagefeedback-bfd/Makefile ] \
+	  || exit 0 ; \
+	[ -f bfd/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif bfd-bootstrap
+
 
 .PHONY: configure-stagefeedback-opcodes maybe-configure-stagefeedback-opcodes
 .PHONY: all-stagefeedback-opcodes maybe-all-stagefeedback-opcodes
+.PHONY: clean-stagefeedback-opcodes maybe-clean-stagefeedback-opcodes
 
 maybe-configure-stagefeedback-opcodes:
 maybe-all-stagefeedback-opcodes:
+maybe-clean-stagefeedback-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stagefeedback-opcodes: configure-stagefeedback-opcodes
@@ -31618,13 +32409,26 @@ all-stagefeedback-opcodes: configure-stagefeedback-opcodes
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-opcodes: clean-stagefeedback-opcodes
+clean-stagefeedback-opcodes:
+	@[ -f opcodes/Makefile ] || [ -f stagefeedback-opcodes/Makefile ] \
+	  || exit 0 ; \
+	[ -f opcodes/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif opcodes-bootstrap
+
 
 .PHONY: configure-stagefeedback-binutils maybe-configure-stagefeedback-binutils
 .PHONY: all-stagefeedback-binutils maybe-all-stagefeedback-binutils
+.PHONY: clean-stagefeedback-binutils maybe-clean-stagefeedback-binutils
 
 maybe-configure-stagefeedback-binutils:
 maybe-all-stagefeedback-binutils:
+maybe-clean-stagefeedback-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stagefeedback-binutils: configure-stagefeedback-binutils
@@ -31661,13 +32465,26 @@ all-stagefeedback-binutils: configure-stagefeedback-binutils
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-binutils: clean-stagefeedback-binutils
+clean-stagefeedback-binutils:
+	@[ -f binutils/Makefile ] || [ -f stagefeedback-binutils/Makefile ] \
+	  || exit 0 ; \
+	[ -f binutils/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif binutils-bootstrap
+
 
 .PHONY: configure-stagefeedback-gas maybe-configure-stagefeedback-gas
 .PHONY: all-stagefeedback-gas maybe-all-stagefeedback-gas
+.PHONY: clean-stagefeedback-gas maybe-clean-stagefeedback-gas
 
 maybe-configure-stagefeedback-gas:
 maybe-all-stagefeedback-gas:
+maybe-clean-stagefeedback-gas:
 
 @if gas-bootstrap
 maybe-configure-stagefeedback-gas: configure-stagefeedback-gas
@@ -31704,13 +32521,26 @@ all-stagefeedback-gas: configure-stagefeedback-gas
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-gas: clean-stagefeedback-gas
+clean-stagefeedback-gas:
+	@[ -f gas/Makefile ] || [ -f stagefeedback-gas/Makefile ] \
+	  || exit 0 ; \
+	[ -f gas/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif gas-bootstrap
+
 
 .PHONY: configure-stagefeedback-gcc maybe-configure-stagefeedback-gcc
 .PHONY: all-stagefeedback-gcc maybe-all-stagefeedback-gcc
+.PHONY: clean-stagefeedback-gcc maybe-clean-stagefeedback-gcc
 
 maybe-configure-stagefeedback-gcc:
 maybe-all-stagefeedback-gcc:
+maybe-clean-stagefeedback-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stagefeedback-gcc: configure-stagefeedback-gcc
@@ -31747,13 +32577,26 @@ all-stagefeedback-gcc: configure-stagefeedback-gcc
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(EXTRA_GCC_FLAGS)
+
+maybe-clean-stagefeedback-gcc: clean-stagefeedback-gcc
+clean-stagefeedback-gcc:
+	@[ -f gcc/Makefile ] || [ -f stagefeedback-gcc/Makefile ] \
+	  || exit 0 ; \
+	[ -f gcc/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
+
 
 .PHONY: configure-stagefeedback-intl maybe-configure-stagefeedback-intl
 .PHONY: all-stagefeedback-intl maybe-all-stagefeedback-intl
+.PHONY: clean-stagefeedback-intl maybe-clean-stagefeedback-intl
 
 maybe-configure-stagefeedback-intl:
 maybe-all-stagefeedback-intl:
+maybe-clean-stagefeedback-intl:
 
 @if intl-bootstrap
 maybe-configure-stagefeedback-intl: configure-stagefeedback-intl
@@ -31790,13 +32633,26 @@ all-stagefeedback-intl: configure-stagefeedback-intl
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-intl: clean-stagefeedback-intl
+clean-stagefeedback-intl:
+	@[ -f intl/Makefile ] || [ -f stagefeedback-intl/Makefile ] \
+	  || exit 0 ; \
+	[ -f intl/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif intl-bootstrap
+
 
 .PHONY: configure-stagefeedback-ld maybe-configure-stagefeedback-ld
 .PHONY: all-stagefeedback-ld maybe-all-stagefeedback-ld
+.PHONY: clean-stagefeedback-ld maybe-clean-stagefeedback-ld
 
 maybe-configure-stagefeedback-ld:
 maybe-all-stagefeedback-ld:
+maybe-clean-stagefeedback-ld:
 
 @if ld-bootstrap
 maybe-configure-stagefeedback-ld: configure-stagefeedback-ld
@@ -31833,13 +32689,26 @@ all-stagefeedback-ld: configure-stagefeedback-ld
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-ld: clean-stagefeedback-ld
+clean-stagefeedback-ld:
+	@[ -f ld/Makefile ] || [ -f stagefeedback-ld/Makefile ] \
+	  || exit 0 ; \
+	[ -f ld/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif ld-bootstrap
+
 
 .PHONY: configure-stagefeedback-libcpp maybe-configure-stagefeedback-libcpp
 .PHONY: all-stagefeedback-libcpp maybe-all-stagefeedback-libcpp
+.PHONY: clean-stagefeedback-libcpp maybe-clean-stagefeedback-libcpp
 
 maybe-configure-stagefeedback-libcpp:
 maybe-all-stagefeedback-libcpp:
+maybe-clean-stagefeedback-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stagefeedback-libcpp: configure-stagefeedback-libcpp
@@ -31876,13 +32745,26 @@ all-stagefeedback-libcpp: configure-stagefeedback-libcpp
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-libcpp: clean-stagefeedback-libcpp
+clean-stagefeedback-libcpp:
+	@[ -f libcpp/Makefile ] || [ -f stagefeedback-libcpp/Makefile ] \
+	  || exit 0 ; \
+	[ -f libcpp/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif libcpp-bootstrap
+
 
 .PHONY: configure-stagefeedback-libbanshee maybe-configure-stagefeedback-libbanshee
 .PHONY: all-stagefeedback-libbanshee maybe-all-stagefeedback-libbanshee
+.PHONY: clean-stagefeedback-libbanshee maybe-clean-stagefeedback-libbanshee
 
 maybe-configure-stagefeedback-libbanshee:
 maybe-all-stagefeedback-libbanshee:
+maybe-clean-stagefeedback-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
@@ -31919,13 +32801,26 @@ all-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-libbanshee: clean-stagefeedback-libbanshee
+clean-stagefeedback-libbanshee:
+	@[ -f libbanshee/Makefile ] || [ -f stagefeedback-libbanshee/Makefile ] \
+	  || exit 0 ; \
+	[ -f libbanshee/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd libbanshee && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif libbanshee-bootstrap
+
 
 .PHONY: configure-stagefeedback-libiberty maybe-configure-stagefeedback-libiberty
 .PHONY: all-stagefeedback-libiberty maybe-all-stagefeedback-libiberty
+.PHONY: clean-stagefeedback-libiberty maybe-clean-stagefeedback-libiberty
 
 maybe-configure-stagefeedback-libiberty:
 maybe-all-stagefeedback-libiberty:
+maybe-clean-stagefeedback-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stagefeedback-libiberty: configure-stagefeedback-libiberty
@@ -31962,13 +32857,26 @@ all-stagefeedback-libiberty: configure-stagefeedback-libiberty
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-libiberty: clean-stagefeedback-libiberty
+clean-stagefeedback-libiberty:
+	@[ -f libiberty/Makefile ] || [ -f stagefeedback-libiberty/Makefile ] \
+	  || exit 0 ; \
+	[ -f libiberty/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif libiberty-bootstrap
+
 
 .PHONY: configure-stagefeedback-zlib maybe-configure-stagefeedback-zlib
 .PHONY: all-stagefeedback-zlib maybe-all-stagefeedback-zlib
+.PHONY: clean-stagefeedback-zlib maybe-clean-stagefeedback-zlib
 
 maybe-configure-stagefeedback-zlib:
 maybe-all-stagefeedback-zlib:
+maybe-clean-stagefeedback-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stagefeedback-zlib: configure-stagefeedback-zlib
@@ -32005,7 +32913,18 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
+
+maybe-clean-stagefeedback-zlib: clean-stagefeedback-zlib
+clean-stagefeedback-zlib:
+	@[ -f zlib/Makefile ] || [ -f stagefeedback-zlib/Makefile ] \
+	  || exit 0 ; \
+	[ -f zlib/Makefile ] || $(MAKE) stagefeedback-start ; \
+	cd zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
 @endif zlib-bootstrap
+
 
 
 # FIXME: Will not need to be conditional when toplevel bootstrap is the
@@ -32015,10 +32934,9 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 
 
 
-.PHONY: distclean-stagefeedback
-
-# Rules to wipe a stage and all the following ones, used for cleanstrap
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
 distclean-stage1:: distclean-stagefeedback 
+.PHONY: distclean-stagefeedback
 distclean-stagefeedback::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 	rm -rf stagefeedback-* 
@@ -32056,6 +32974,12 @@ profiledbootstrap:
 	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	$(MAKE) stagefeedback-bubble stagefeedback-end
+@endif gcc-bootstrap
+
+@if gcc-bootstrap
+NOTPARALLEL = .NOTPARALLEL
+$(NOTPARALLEL):
+do-distclean: distclean-stage1
 @endif gcc-bootstrap
 
 # --------------------------------------
