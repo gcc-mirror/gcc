@@ -116,8 +116,6 @@ while (0)
   CTORS_SECTION_FUNCTION						\
   DTORS_SECTION_FUNCTION
 
-extern void text_section ();
-
 #define CTORS_SECTION_FUNCTION						\
 void									\
 ctors_section ()							\

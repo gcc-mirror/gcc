@@ -322,7 +322,6 @@ extern int handle_pragma ();
 void									\
 FUNCTION ()								\
 {									\
-  extern void text_section ();					 	\
   extern void objc_section_init ();					\
   extern int flag_no_mach_text_sections;				\
   									\

@@ -124,7 +124,6 @@ Boston, MA 02111-1307, USA.  */
 void									\
 const_section ()							\
 {									\
-  extern void text_section();						\
   text_section();							\
 }
 

@@ -486,8 +486,6 @@ do {									\
 
 #define READONLY_DATA_SECTION() const_section ()
 
-extern void text_section PARAMS ((void));
-
 extern void const_section PARAMS ((void));
 #define CONST_SECTION_FUNCTION						\
 void									\
@@ -502,7 +500,6 @@ const_section ()							\
     }									\
 }
 
-extern void ctors_section PARAMS ((void));
 #define CTORS_SECTION_FUNCTION						\
 void									\
 ctors_section ()							\
@@ -514,7 +511,6 @@ ctors_section ()							\
     }									\
 }
 
-extern void dtors_section PARAMS ((void));
 #define DTORS_SECTION_FUNCTION						\
 void									\
 dtors_section ()							\
