@@ -3623,7 +3623,13 @@
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
-(define_insn "negdi2"
+(define_expand "negdi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(neg:DI (match_operand:DI 1 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   ""
