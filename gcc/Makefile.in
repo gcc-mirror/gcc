@@ -1261,7 +1261,7 @@ extraclean: distclean
 	-rm -rf =* #* *~* config/=* config/#* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
 	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar
-	-rm -f *.s *.s[0-9] *.i install1.texi
+	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
