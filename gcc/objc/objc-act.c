@@ -6587,7 +6587,7 @@ start_method_def (method)
   push_parm_decl (build_tree_list
 		  (build_tree_list (decl_specs,
 				    build1 (INDIRECT_REF, NULLT, self_id)),
-		   build_tree_list (NULL_TREE, NULL_TREE)));
+		   build_tree_list (unused_list, NULL_TREE)));
 
 #ifdef OBJC_INT_SELECTORS
   decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_UNSIGNED]);
