@@ -2335,6 +2335,8 @@ duplicate_loop_exit_test (loop_start)
 	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	    return 0;
 	  break;
+	default:
+	  break;
 	}
     }
 
@@ -3085,6 +3087,9 @@ comparison_dominates_p (code1, code2)
       if (code2 == GEU || code2 == NE)
 	return 1;
       break;
+      
+    default:
+      break;
     }
 
   return 0;
@@ -3405,8 +3410,11 @@ mark_jump_label (x, insn, cross_jump)
 
 	for (i = 0; i < XVECLEN (x, eltnum); i++)
 	  mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, cross_jump);
-	return;
       }
+      return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -4174,6 +4182,9 @@ rtx_renumbered_equal_p (x, y)
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
+
+    default:
+      break;
     }
 
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.  */
@@ -4641,6 +4652,9 @@ rtx_equal_for_thread_p (x, y, yinsn)
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
+      
+    default:
+      break;
     }
 
   if (x == y)
