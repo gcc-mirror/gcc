@@ -3639,24 +3639,16 @@ coerce_template_parms (tree parms,
 	}
       else if (i < nargs)
 	arg = TREE_VEC_ELT (inner_args, i);
-      else
-        /* If no template argument was supplied, look for a default
-	   value.  */
+      else if (require_all_arguments)
+	/* There must be a default arg in this case. */
 	arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
 				   complain, in_decl);
-
-      /* Now, convert the Ith argument, as necessary.  */
-      if (arg == NULL_TREE)
-	/* We're out of arguments.  */
-	{
-	  my_friendly_assert (!require_all_arguments, 0);
-	  break;
-	}
-      else if (arg == error_mark_node)
-	{
-	  error ("template argument %d is invalid", i + 1);
-	  arg = error_mark_node;
-	}
+      else
+	break;
+      
+      my_friendly_assert (arg, 20030727);
+      if (arg == error_mark_node)
+	error ("template argument %d is invalid", i + 1);
       else 
 	arg = convert_template_argument (TREE_VALUE (parm), 
 					 arg, new_args, complain, i,
@@ -8578,6 +8570,7 @@ fn_type_unification (tree fn,
 	 template results in an invalid type, type deduction fails.  */
       int i;
       tree converted_args;
+      bool incomplete;
 
       converted_args
 	= (coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
@@ -8586,12 +8579,22 @@ fn_type_unification (tree fn,
       if (converted_args == error_mark_node)
 	return 1;
 
+      /* Substitute the explicit args into the function type.  This is
+         necessary so that, for instance, explicitly declared function
+         arguments can match null pointed constants.  If we were given
+         an incomplete set of explicit args, we must not do semantic
+         processing during substitution as we could create partial
+         instantiations.  */
+      incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
+      processing_template_decl += incomplete;
       fntype = tsubst (fntype, converted_args, tf_none, NULL_TREE);
+      processing_template_decl -= incomplete;
+      
       if (fntype == error_mark_node)
 	return 1;
 
       /* Place the explicitly specified arguments in TARGS.  */
-      for (i = 0; i < TREE_VEC_LENGTH (targs); i++)
+      for (i = NUM_TMPL_ARGS (converted_args); i--;)
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (converted_args, i);
     }
      

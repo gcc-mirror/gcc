@@ -1,5 +1,9 @@
 2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/template/explicit3.C: New.
+	* g++.dg/template/explicit4.C: New.
+	* g++.dg/template/explicit5.C: New.
+
 	PR c++/11347
 	* g++.dg/template/memtmpl1.C: New.
 

@@ -1,5 +1,9 @@
 2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (coerce_template_parms): Refactor.
+	(fn_type_unification): Increment processing_template_decl when
+	tsubsting an incomplete set of explicit args.
+
 	PR c++/11347
 	* pt.c (instantiate_class_template): Increment
 	processing_template_decl around the tsubst of a template member
