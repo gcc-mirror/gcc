@@ -1,3 +1,17 @@
+2004-06-03  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(requestFocus): Revert last changes.
+	(gtkRequestFocus): Removed.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkRequestFocus):
+	Renamed to ...
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetRequestFocus):
+	Reverted last patch.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_setupAccelGroup):
+	Reverted comment change.
+
 2004-06-02  Olga Rodimina  <rodimina@redhat.com>
 
 	* javax/swing/JCheckBoxMenuItem.java:

@@ -472,7 +472,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkRequestFocus
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetRequestFocus
   (JNIEnv *env, jobject obj)
 {
   void *ptr;

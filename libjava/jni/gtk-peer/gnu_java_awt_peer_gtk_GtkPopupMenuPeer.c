@@ -91,8 +91,7 @@ Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_setupAccelGroup
   gdk_threads_enter ();
   menu = GTK_MENU (GTK_MENU_ITEM (ptr1)->submenu);
   gtk_menu_set_accel_group (menu, gtk_accel_group_new ());
-  /* FIXME: _gtk_accel_group_attach is a GTK-private function, so
-     we'll need a different approach here: */
+  /* FIXME: update this to use GTK-2.4 GtkActions. */
 #if 0
   _gtk_accel_group_attach (gtk_menu_get_accel_group (menu),
 			   G_OBJECT (gtk_widget_get_toplevel (ptr2)));
