@@ -1,3 +1,12 @@
+2001-11-28  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/locale/moneypunct_members_gnu.cc
+	(moneypunct<wchar_t>::_M_initialize_moneypunct): Correctly cast
+	for ia64, others.
+	* config/locale/numpunct_members_gnu.cc
+	(numpunct<wchar_t>::_M_initialize_numpunct): Same.
+
 2001-11-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc: Formatting tweaks.
@@ -440,7 +449,7 @@
 	* testsuite/21_strings/replace.cc (test02): Add test.
 	* testsuite/21_strings/assign.cc (test01): New file.
 	
-001-10-30  Jakub Jelinek  <jakub@redhat.com>
+2001-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/stl_deque.h (_M_new_elements_at_front): Use
 	__throw_exception_again.
