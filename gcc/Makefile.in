@@ -2421,6 +2421,9 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	mkdir tmp
 	mkdir tmp/config
 	mkdir tmp/ginclude
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
+	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
 	  if test -d $$file && test "$$file" != RCS; then \
