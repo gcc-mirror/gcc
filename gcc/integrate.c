@@ -1673,9 +1673,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       /* Machine mode function was declared to return.   */
       enum machine_mode departing_mode = TYPE_MODE (type);
       /* (Possibly wider) machine mode it actually computes
-	 (for the sake of callers that fail to declare it right).  */
+	 (for the sake of callers that fail to declare it right).
+	 We have to use the mode of the result's RTL, rather than
+	 its type, since expand_function_start may have promoted it.  */
       enum machine_mode arriving_mode
-	= TYPE_MODE (TREE_TYPE (DECL_RESULT (fndecl)));
+	= GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
       rtx reg_to_map;
 
       /* Don't use MEMs as direct targets because on some machines
