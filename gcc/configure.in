@@ -2286,16 +2286,28 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnu*)			# Sparc's running Linux, ELF
-		xm_file=sparc/xm-linux.h
+	sparc-*-linux-gnulibc1*)		 # Sparc's running Linux
+		xm_file=sparc/xm-linux.h # with ELF format using the
+		xmake_file=x-linux	 # Linux C library 5.
 		tm_file=sparc/linux.h
-		xmake_file=x-linux
+		tmake_file=t-linux t-linux-gnulibc1
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
-		# Don't use it. Linux uses a slightly different one.
-		# The real one comes with the Linux C library.
-		#extra_parts="crtbegin.o crtend.o"
+		;;
+	sparc-*-linux-gnu*)			 # Sparc's running Linux
+		xm_file=sparc/xm-linux.h # with ELF format using glibc 2
+		xmake_file=x-linux	 # aka the Linux C library 6.
+		tm_file=sparc/linux.h
+		tmake_file=t-linux
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		broken_install=yes
+		gnu_ld=yes
+ 		if [[ x$thread_file = x ]]; then
+ 			thread_file='posix'
+ 		fi
 		;;
 	sparc-*-lynxos*)
 		if [[ x$gas = xyes ]]
