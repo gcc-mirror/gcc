@@ -111,6 +111,7 @@ predict.def		Jan Hubicka		jh@suse.cz
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 CRIS port		Hans-Peter Nilsson	hp@axis.com
+MMIX port		Hans-Peter Nilsson	hp@bitrange.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -160,7 +161,6 @@ Bryce McKinlay					bryce@gcc.gnu.org
 Alan Modra					amodra@bigpond.net.au
 Toon Moene					toon@moene.indiv.nluug.nl
 Catherine Moore					clm@redhat.com
-Hans-Peter Nilsson				hp@bitrange.com
 Diego Novillo					dnovillo@redhat.com
 David O'Brien					obrien@FreeBSD.org
 Jeffrey D. Oldham				oldham@codesourcery.com

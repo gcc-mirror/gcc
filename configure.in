@@ -843,6 +843,9 @@ case "${target}" in
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
+  mmix-*-*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then

@@ -1,3 +1,9 @@
+2001-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (noconfigdirs) [mmix-*-*]: Disable libgcj.
+	* MAINTAINERS: Add self as maintainer of MMIX port.
+	Remove old after-approval entry.
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog, configure: Fix spelling errors.
