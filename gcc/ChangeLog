@@ -1,3 +1,8 @@
+2004-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (-static-libgcc): Explicitly mention
+	non-GNU linkers.
+
 2004-06-01  Bernardo Innocenti  <bernie@develer.com>
 
 	PR target/12968
