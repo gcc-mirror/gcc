@@ -60,11 +60,11 @@ Boston, MA 02111-1307, USA.  */
 /* libpm.o and guard.o are for the performance monitoring modules (ignored) */
 /* /usr/lib/noieee contains non-IEEE compliant (but faster) math routines */
 #if	HAVE_DASH_G
-#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx -lmach} %
-{g*:-lg} -lc -lic"
+#define LIB_SPEC \
+"%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx} %{g*:-lg} -lc -lmach -lc -lic"
 #else	/* HAVE_DASH_G */
 /* can't use -g for -lg; libg.a doesn't have a symbol table and ld complains */
-#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx -lmach} -lc -lic"
+#define LIB_SPEC "%{mnoieee:-L/usr/lib/noieee} %{mnx:-lnx} -lc -lmach -lc -lic"
 #endif	/* HAVE_DASH_G */
 
 /* Get rid of definition from svr3.h.  */
