@@ -1,3 +1,8 @@
+Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.md (adddi_dilshr32): One of the operands must be a register.
+	(adddi_dishl32): Similarly.
+
 Fri Aug 14 14:12:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* i386.h (MODES_TIEABLE_P): Reorganize to shut up warnings.
