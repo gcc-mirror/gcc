@@ -77,10 +77,3 @@
     void    
     messages<_CharT>::do_close(catalog) const 
     { }
-
-
-
-
-
-
-
