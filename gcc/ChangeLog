@@ -1,3 +1,8 @@
+Wed Sep  9 23:00:48 1998  Nathan Sidwell  <nathan@acm.org>
+
+	* c-lex.c (real_yylex): Don't warn about long long constants if 
+	we're allowing long long
+
 Wed Sep  9 21:58:41 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* except.h (current_function_eh_stub_label): Declare.

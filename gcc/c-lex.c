@@ -1646,7 +1646,7 @@ yylex ()
 		      {
 			if (spec_long_long)
 			  error ("three `l's in integer constant");
-			else if (pedantic)
+			else if (pedantic && ! in_system_header && warn_long_long)
 			  pedwarn ("ANSI C forbids long long integer constants");
 			spec_long_long = 1;
 		      }
