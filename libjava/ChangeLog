@@ -1,4 +1,9 @@
-1999-08-09  Anthony Green  <green@cygnus.com>
+1999-08-08  Anthony Green  <green@cygnus.com>
+
+	* defineclass.cc (_Jv_VerifyClassName): Verify array names
+	correctly.
+
+1999-08-08  Anthony Green  <green@cygnus.com>
 
 	* gij.cc: New file.
 
@@ -30,7 +35,7 @@
 	* NEWS: More news.
 	* THANKS: More thanks.
 
-1999-08-09  Kresten Krab Thorup  <krab@gnu.org>
+1999-08-08  Kresten Krab Thorup  <krab@gnu.org>
 
 	* resolve.cc (get_ffi_type_from_signature): Generate uint16 for
 	jchar type.
