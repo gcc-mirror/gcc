@@ -722,8 +722,8 @@ namespace std
 
   template <typename _CharT, typename _RaIter>
     _RaIter
-    __pad(_RaIter __s, _CharT __fill, int __padding,
-            random_access_iterator_tag)
+    __pad(_RaIter __s, _CharT __fill, int __padding, 
+	  random_access_iterator_tag)
     {
       fill_n(__s, __fill);
       return __s + __padding;
@@ -741,8 +741,8 @@ namespace std
     inline _OutIter
     __pad(_OutIter __s, _CharT __fill, int __padding)
     {
-      return __pad(__s, __fill, __padding,
-                     iterator_traits<_OutIter>::iterator_category());
+      return __pad(__s, __fill, __padding, 
+		   typename iterator_traits<_OutIter>::iterator_category());
     }
 
   template <typename _CharT, typename _OutIter>

@@ -1,3 +1,15 @@
+2001-02-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* tests_flags.in (CXXFLAGS): Add -rpath to gcc build dir.
+
+	* include/bits/codecvt.h: Use alloca instead of __extension__ for
+	the time being.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/std_ostream.h: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/locale_facets.tcc: Add typename.
+	* include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS): Enable.
+
 2001-02-21  Phil Edwards  <pme@sources.redhat.com>
 
 	* tests_flags.in:  Remove -n flag from call to echo.
