@@ -1,3 +1,7 @@
+Fri Apr  7 11:50:54 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c: Delete stdio.h and ctype.h includes.
+
 2000-04-07  Jason Merrill  <jason@casey.cygnus.com>
 
 	* calls.c (expand_call): emit_queue if we're trying a sibcall.
