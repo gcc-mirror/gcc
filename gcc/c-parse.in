@@ -417,7 +417,7 @@ fndef:
 		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0, 1);
+		{ finish_function ();
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -430,7 +430,7 @@ fndef:
 		{ DECL_SOURCE_LOCATION (current_function_decl) = $6;
 		  store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0, 1);
+		{ finish_function ();
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -443,7 +443,7 @@ fndef:
 		{ DECL_SOURCE_LOCATION (current_function_decl) = $5;
 		  store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0, 1);
+		{ finish_function ();
 		  POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -1566,7 +1566,7 @@ nested_function:
    which called YYERROR1 again, and so on.  */
 	  compstmt
 		{ tree decl = current_function_decl;
-		  finish_function (1, 1);
+		  finish_function ();
 		  pop_function_context ();
 		  add_decl_stmt (decl); }
 	;
@@ -1597,7 +1597,7 @@ notype_nested_function:
    which called YYERROR1 again, and so on.  */
 	  compstmt
 		{ tree decl = current_function_decl;
-		  finish_function (1, 1);
+		  finish_function ();
 		  pop_function_context ();
 		  add_decl_stmt (decl); }
 	;

@@ -41,11 +41,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static bool c_tree_printer (pretty_printer *, text_info *);
 static tree inline_forbidden_p (tree *, int *, void *);
-static void expand_deferred_fns (void);
 static tree start_cdtor (int);
 static void finish_cdtor (tree);
-
-static GTY(()) varray_type deferred_fns;
 
 int
 c_missing_noreturn_ok_p (tree decl)
@@ -267,67 +264,7 @@ c_objc_common_init (void)
 	mesg_implicit_function_declaration = 0;
     }
 
-  VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-
   return true;
-}
-
-/* Register a function tree, so that its optimization and conversion
-   to RTL is only done at the end of the compilation.  */
-
-int
-defer_fn (tree fn)
-{
-  VARRAY_PUSH_TREE (deferred_fns, fn);
-
-  return 1;
-}
-
-/* Expand deferred functions for C and ObjC.  */
-
-static void
-expand_deferred_fns (void)
-{
-  unsigned int i;
-  bool reconsider;
-
-  do
-    {
-      reconsider = false;
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-	{
-	  tree decl = VARRAY_TREE (deferred_fns, i);
-
-	  if (TREE_ASM_WRITTEN (decl))
-	    continue;
-
-	  /* "extern inline" says the symbol exists externally,
-	      which means we should *never* expand it locally 
-	      unless we're actually inlining it.  */
-	  /* ??? Why did we queue these in the first place?  */
-	  if (DECL_DECLARED_INLINE_P (decl) && DECL_EXTERNAL (decl))
-	    continue;
-	      
-	  /* With flag_keep_inline_functions, we're emitting everything,
-	     so we never need to reconsider.  */
-	  if (flag_keep_inline_functions)
-	    ;
-	  /* Must emit all public functions.  C doesn't have COMDAT
-	     functions, so we don't need to check that, like C++.  */
-	  else if (TREE_PUBLIC (decl))
-	    reconsider = true;
-	  /* Must emit if the symbol is referenced.  */
-	  else if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    reconsider = true;
-	  else
-	    continue;
-
-	  c_expand_deferred_function (decl);
-	}
-    }
-  while (reconsider);
-
-  deferred_fns = 0;
 }
 
 static tree
@@ -369,7 +306,7 @@ finish_cdtor (tree body)
 
   RECHAIN_STMTS (body, COMPOUND_BODY (body));
 
-  finish_function (0, 0);
+  finish_function ();
 }
 
 /* Called at end of parsing, but before end-of-file processing.  */
@@ -384,13 +321,8 @@ c_objc_common_finish_file (void)
      them based on linkage rules.  */
   merge_translation_unit_decls ();
 
-  if (flag_unit_at_a_time)
-    {
-      cgraph_finalize_compilation_unit ();
-      cgraph_optimize ();
-    }
-  else
-    expand_deferred_fns ();
+  cgraph_finalize_compilation_unit ();
+  cgraph_optimize ();
 
   if (static_ctors)
     {
@@ -468,5 +400,3 @@ c_tree_printer (pretty_printer *pp, text_info *text)
       return false;
     }
 }
-
-#include "gt-c-objc-common.h"

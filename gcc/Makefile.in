@@ -1290,7 +1290,7 @@ c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) $(EXPR_H) $(C_TREE_H) \
     flags.h toplev.h tree-inline.h $(DIAGNOSTIC_H) $(VARRAY_H) \
-    langhooks.h $(GGC_H) gt-c-objc-common.h $(TARGET_H) cgraph.h
+    langhooks.h $(GGC_H) $(TARGET_H) cgraph.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -2038,7 +2038,7 @@ gt-lists.h gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h \
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h \
 gt-dwarf2out.h gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h \
 gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
-gt-c-pragma.h gt-c-objc-common.h gtype-c.h gt-input.h gt-cfglayout.h \
+gt-c-pragma.h gtype-c.h gt-input.h gt-cfglayout.h \
 gt-stringpool.h gt-langhooks.h : s-gtype ; @true
 
 gtyp-gen.h: Makefile

@@ -47,6 +47,8 @@ static void cgraph_expand_function (struct cgraph_node *);
 static tree record_call_1 (tree *, int *, void *);
 static void cgraph_mark_local_functions (void);
 static void cgraph_optimize_function (struct cgraph_node *);
+static bool cgraph_default_inline_p (struct cgraph_node *n);
+static void cgraph_analyze_function (struct cgraph_node *node);
 
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
@@ -69,6 +71,8 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
      if needed.  */
   if (node->needed)
     cgraph_mark_needed_node (node, 0);
+  if (!flag_unit_at_a_time)
+    cgraph_analyze_function (node);
   if (/* Externally visible functions must be output.  The exception are
 	 COMDAT functions that must be output only when they are needed.
 	 Similarly are handled deferred functions and
@@ -85,9 +89,28 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
       || (DECL_ASSEMBLER_NAME_SET_P (decl)
 	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
       || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-    {
-      cgraph_mark_needed_node (node, 1);
-    }
+     cgraph_mark_needed_node (node, 1);
+  /* When not doing unit-at-a-time deffer only inline functions.  */
+  else if (!flag_unit_at_a_time
+	   && !DECL_EXTERNAL (decl)
+	   && !node->origin
+	   && (!DECL_INLINE (decl)
+	       || (!node->local.disregard_inline_limits
+		   /* When declared inline, deffer even the uninlinable functions.
+		      This allows them to be elliminated when unused.  */
+		   && !DECL_DECLARED_INLINE_P (decl) 
+		   && (node->local.inlinable
+		       || !cgraph_default_inline_p (node)))))
+     cgraph_mark_needed_node (node, 1);
+
+  if (!flag_unit_at_a_time)
+    while (cgraph_nodes_queue)
+      {
+	 struct cgraph_node *n = cgraph_nodes_queue;
+	 cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
+	 if (!n->origin)
+	   cgraph_expand_function (n);
+      }
 
   (*debug_hooks->deferred_inline_function) (decl);
 }
@@ -184,6 +207,9 @@ void
 cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
+
+  if (!flag_unit_at_a_time)
+    return;
 
   cgraph_varpool_assemble_pending_decls ();
   if (!quiet_flag)
@@ -320,11 +346,21 @@ cgraph_expand_function (struct cgraph_node *node)
      via lang_expand_decl_stmt.  */
   (*lang_hooks.callgraph.expand_function) (decl);
 
-  for (e = node->callers; e; e = e->next_caller)
-    if (e->inline_call)
-      break;
-  if (!e)
-    DECL_SAVED_TREE (decl) = NULL;
+  if (!flag_unit_at_a_time)
+    {
+       if (!node->local.inlinable
+	   || (!node->local.disregard_inline_limits
+	       && !cgraph_default_inline_p (node)))
+	 DECL_SAVED_TREE (node->decl) = NULL;
+    }
+  else
+    {
+      for (e = node->callers; e; e = e->next_caller)
+	if (e->inline_call)
+	  break;
+      if (!e)
+	DECL_SAVED_TREE (decl) = NULL;
+    }
   current_function_decl = NULL;
 }
 
@@ -1090,6 +1126,8 @@ cgraph_mark_local_functions (void)
 void
 cgraph_optimize (void)
 {
+  if (!flag_unit_at_a_time)
+    return;
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
     fprintf (stderr, "Performing intraprocedural optimizations\n");

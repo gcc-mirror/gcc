@@ -1,3 +1,28 @@
+Wed Sep  3 16:55:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (c-objc-common.o): Kill gt-c-objc-common.h dependency.
+	* c-decl.c (finish_function):  Kill arguments, always use cgraph path.
+	* c-objc-common.c: Kill include of gt-c-objc-common.h
+	(expand_deferred_fns, deffer_fn): Kill function.
+	(deferred_fns): Kill variable.
+	(finish_cdtor): Update finish_function call.
+	(c_objc_common_finish_file): Always call cgraph code.
+	* c-parse.c: Regenerate.
+	* c-parse.y: Regenerate.
+	* c-tree.h (finish_function): Update prototype.
+	* objc-acct.c (build_module_descriptor, finish_method_def):
+	Update call of finish_function.
+	* cgraphunit.c (cgraph_default_inline_p, cgraph_analyze_function): Add
+	forward prototype.
+	(cgraph_finalize_function): In non-unit-at-a-time mode analyze the
+	function and assemble it if needed.
+	(cgraph_finalize_compilation_unit): Do nothing in non-unit-at-a-time
+	mode.
+	(cgraph_optimize): Likewise.
+	(cgraph_expand_function): In non-unit-at-a-time mode keep function body
+	even when it has no inline callees.
+	* c-parse.in: Update calls to finish_function.
+
 2003-09-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h: Handle TARGET_CPU_iwmmxt.
