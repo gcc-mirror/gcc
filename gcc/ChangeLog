@@ -1,5 +1,92 @@
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
+        * config/i386/i386.h: Update copyright date.
+        (HALF_PIC_PTR): Add parenthesis.
+        (OPTIMIZATION_OPTIONS): Whitespace, add parenthesis and wrap.
+        (CONSTANT_ALIGNMENT): Add parenthesis.
+        (DATA_ALIGNMENT): Likewise.
+        (LOCAL_ALIGNMENT): Likewise.
+        (FUNCTION_ARG_BOUNDARY): Whitespace, add parenthesis and wrap.
+        (IS_STACK_MODE): Uppercase macro parameter, add parenthesis and wrap.
+        (CONDITIONAL_REGISTER_USAGE): Wrap in do {...} while (0).
+        (HARD_REGNO_NREGS): Add paranethesis.
+        (VALID_SSE_REG_MODE): Whitespace.
+        (VALID_MMX_REG_MODE): Whitespace.
+        (VALID_FP_MODE_P): Uppercase macros parameter and whitespace.
+        (ix86_hard_regno_mode_ok): Add parenthesis.
+        (HARD_REGNO_CALLER_SAVE_MODE): Whitespace.
+        (RETURN_IN_MEMORY): Whitespace.
+        (N_REG_CLASSES): Add parenthesis.
+        (INTEGER_CLASS_P): Add parenthesis and wrap.
+        (FLOAT_CLASS_P): Likewise.
+        (SSE_CLASS_P): Likewise.
+        (MMX_CLASS_P): Likewise.
+        (MAYBE_INTEGER_CLASS_P): Likewise.
+        (MAYBE_FLOAT_CLASS_P): Likewise.
+        (MAYBE_SSE_CLASS_P): Likewise.
+        (MAYBE_MMX_CLASS_P): Likewise. 
+        (Q_CLASS_P): Likewise.
+        (GENERAL_REGNO_P): Uppercase macro parameter.
+        (REX_INT_REGNO_P): Uppercase macro parameter and wrap.
+        (FP_REGNO_P): Likewise.
+        (ANY_FP_REGNO_P): Uppercase macro parameter.
+        (SSE_REGNO_P): Likewise.
+        (SSE_REGNO): Likewise.
+        (SSE_REG_P): Likewise.
+        (SSE_FLOAT_MODE_P): Likewise.
+        (MMX_REGNO_P): Likewise.
+        (MMX_REG_P):Likewise. 
+        (STACK_REG_P): Likewise.
+        (NON_STACK_REG_P): Likewise.
+        (STACK_TOP_P): Likewise.
+        (CONVERT_HARD_REGISTER_TO_SSA_P): Add parenthesis.
+        (PREFERRED_RELOAD_CLASS): Add parenthesis and whitespace.
+        (SECONDARY_MEMORY_NEEDED): Likewise.
+        (SECONDARY_OUTPUT_RELOAD_CLASS): Whitespace.
+        (MD_ASM_CLOBBERS): Whitespace and wrap.
+        (MUST_PASS_IN_STACK): Whitespace and wrap.
+        (RETURN_POPS_ARGS): Add parenthesis.
+        (INIT_CUMULATIVE_ARGS): Likewise.
+        (FUNCTION_ARG): Likewise.
+        (FUNCTION_OK_FOR_SIBCALL): Add parenthesis and whitespace.
+        (SETUP_INCOMING_VARARGS): Likewise.
+        (BUILD_VA_LIST_TYPE):  Add parenthesis.
+        (EXPAND_BUILTIN_VA_START): Uppercase macro paremeters and add
+        parenthsis.
+        (EXPAND_BUILTIN_VA_ARG): Likewise.
+        (FUNCTION_PROFILER): Wrap in do { ... } while (0) and add parenthesis.
+        (INITIALIZE_TRAMPOLINE): Add parenthesis.
+        (INITIAL_ELIMINATION_OFFSET): Likewise.
+        (REGNO_OK_FOR_INDEX_P): Add parenthesis.
+        (REGNO_OK_FOR_BASE_P): Likewise.
+        (REGNO_OK_FOR_SIREG_P): Add parenthesis and wrap.
+        (REGNO_OK_FOR_DIREG_P): Likewise.
+        (REG_OK_FOR_INDEX_P): Whitespace.
+        (REG_OK_FOR_BASE_P): Whitespace.
+        (GO_IF_LEGITIMATE_ADDRESS): Wrap in do { ... } while (0) and add
+        parenthesis.
+        (FIND_BASE_TERM): Fix typo.
+        (LEGITIMIZE_ADDRESS): Wrap in  { .. } while (0) and add parenthesis.
+        (REWRITE_ADDRESS): Uppercase macro parameter and whitespace.
+        (SYMBOLIC_CONST; Whitespace.
+        (GO_IF_MODE_DEPENDENT_ADDRESS):Wrap in  { .. } while (0) and wrap.
+        (ENCODE_SECTION_INFO): Whitespace.
+        (FINALIZE_PIC): Remove do { ... } while (0).
+        (PROMOTE_MODE): Wrap in do { ... } while (0).
+        (CONST_COSTS): Whitespace.
+        (RTX_COSTS): Add paramethesis, whitespace and wrap.
+        (REGISTER_MOVE_COST): Add parenthesis.
+        (MEMORY_MOVE_COST): Likewise.
+        (EXTRA_CC_MODES): Whitespace.
+        (SELECT_CC_MODE): Add parenthesis and whitespace.
+        (DBX_REGISTER_NUMBER): Uppercase macro parameter and add parenthsis.
+        (ASM_PREFERRED_EH_DATA_FORMAT): Add parenthesis and whitespace.
+        (ASM_OUTPUT_LABEL): Add paramethesis.
+        (ASM_OUTPUT_REG_PUSH): Add parenthesis and whitespace.
+        (ASM_OUTPUT_REG_POP): Likewise.
+        (ASM_OUTPUT_ADDR_VEC_ELT): Add parenthesis.
+        (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+
 	* config/i386/i386.c: Update copyright.
 	(CHECK_STACK_LIMIT): Add parenthesis.
 	(AT_BP): Uppercase macro parameter.
