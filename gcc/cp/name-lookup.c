@@ -1329,11 +1329,16 @@ leave_scope (void)
 
   /* Find the innermost enclosing class scope, and reset
      CLASS_BINDING_LEVEL appropriately.  */
-  for (scope = current_binding_level;
-       scope && scope->kind != sk_class;
-       scope = scope->level_chain)
-    ;
-  class_binding_level = scope && scope->kind == sk_class ? scope : NULL;
+  if (scope->kind == sk_class)
+    {
+      class_binding_level = NULL;
+      for (scope = current_binding_level; scope; scope = scope->level_chain)
+	if (scope->kind == sk_class)
+	  {
+	    class_binding_level = scope;
+	    break;
+	  }
+    }
 
   return current_binding_level;
 }
