@@ -228,7 +228,7 @@ start_directive (cpp_reader *pfile)
   pfile->state.save_comments = 0;
 
   /* Some handlers need the position of the # for diagnostics.  */
-  pfile->directive_line = pfile->line;
+  pfile->directive_line = pfile->line_table->highest_line;
 }
 
 /* Called when leaving a directive, _Pragma or command-line directive.  */
@@ -777,7 +777,8 @@ strtoul_for_line (const uchar *str, unsigned int len, long unsigned int *nump)
 static void
 do_line (cpp_reader *pfile)
 {
-  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
+  const struct line_maps *line_table = pfile->line_table;
+  const struct line_map *map = &line_table->maps[line_table->used - 1];
   const cpp_token *token;
   const char *new_file = map->to_file;
   unsigned long new_lineno;
@@ -827,7 +828,8 @@ do_line (cpp_reader *pfile)
 static void
 do_linemarker (cpp_reader *pfile)
 {
-  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
+  const struct line_maps *line_table = pfile->line_table;
+  const struct line_map *map = &line_table->maps[line_table->used - 1];
   const cpp_token *token;
   const char *new_file = map->to_file;
   unsigned long new_lineno;
@@ -907,10 +909,8 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 {
   const struct line_map *map = linemap_add (pfile->line_table, reason, sysp,
 					    to_file, file_line);
-  if (map == NULL)
-    pfile->line = 0;
-  else
-    pfile->line = linemap_line_start (pfile->line_table, map->to_line, 127);
+  if (map != NULL)
+    linemap_line_start (pfile->line_table, map->to_line, 127);
 
   if (pfile->cb.file_change)
     pfile->cb.file_change (pfile, map);

@@ -1,3 +1,35 @@
+2004-04-22  Per Bothner  <per@bothner.com>
+
+	* line-map.h (struct line_maps):  New field highest_line.
+	(linemap_position_for_column):  Make non-inline function.
+	(LINEMAP_POSITION_FOR_COLUMN):  New macro.
+	* line-map.c (linemap_init):  Clear highest_line field.
+	(linemap_add):  Set highest_line field.
+	(linemap_line_start):  Minor optimization - use highest_line field.
+	Reduce maximum column hint to 10000.  Update highest_line field.
+	(linemap_position_for_column):  Moved from line-map.h.  Optimize a bit.
+	* cpphash.h (struct cpp_reader):  Remove line field - instead use
+	line_table->highest_line.
+	(saved_line):  Remove unused field.
+	(CPP_INCREMENT_FILE):  Don't do linemap_lookup - just use newest map.
+	Use  line_table's highest_line field instead of cpp_reader's line.
+	* cpplib.c (start_directive):  Likewise use highest_line field.
+	(do_line, do_linemarker):  Likewise just use newest map.
+	(_cpp_do_file_change):  Don't need to set cpp_reader's line field.
+	* cpperror.c (cpp_error):  Likewise use highest_line field.
+	* cppfiles.c (open_file_failed:  Likewise.
+	(cpp_make_system_header):  Likewise use newest map and highest_line.
+	* cppinit.c (cpp_create_reader):  Don't initialize removed field.
+	* cpplex.c (_cpp_process_line_notes, _cpp_skip_block_comment,
+	skip_line_comment, skip_whitespace, _cpp_get_fresh_line,
+	_cpp_lex_direct):  Likewise use highest_line.
+	(_cpp_lex_direct):  Use new LINEMAP_POSITION_FOR_COLUMN macro.
+	* cppmacro.c (_cpp_builtin_macro_text):  Likewise use highest_line,
+	and use newest map.
+	* cpppch.c (cpp_read_state):  Don't save+restore cpp_reader's line.
+	* cpptrad.c (_cpp_overlay_buffer):  Don't save cpp_reader's line.
+	(copy_comment, _cpp_scan_out_logical_line):  Likewise use highest_line.
+
 2004-04-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR bootstrap/14992
