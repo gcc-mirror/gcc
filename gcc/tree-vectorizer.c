@@ -168,13 +168,15 @@ static void slpeel_update_phi_nodes_for_guard (edge, struct loop *, bool, bool);
 static void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 static edge slpeel_add_loop_guard (basic_block, tree, basic_block, basic_block);
 static bool slpeel_can_duplicate_loop_p (struct loop *, edge);
-static void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
 static void allocate_new_names (bitmap);
 static void rename_use_op (use_operand_p);
 static void rename_def_op (def_operand_p, tree);
 static void rename_variables_in_bb (basic_block);
 static void free_new_names (bitmap);
 static void rename_variables_in_loop (struct loop *);
+#ifdef ENABLE_CHECKING
+static void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
+#endif
 
 
 /*************************************************************************
@@ -876,7 +878,7 @@ slpeel_can_duplicate_loop_p (struct loop *loop, edge e)
   return true;
 }
 
-
+#ifdef ENABLE_CHECKING
 static void
 slpeel_verify_cfg_after_peeling (struct loop *first_loop,
                                  struct loop *second_loop)
@@ -909,7 +911,7 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
      second_loop.  */
   /* TODO */
 }
-
+#endif
 
 /* Function slpeel_tree_peel_loop_to_edge.
 

@@ -1,3 +1,8 @@
+2004-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* tree-vectorizer.c (slpeel_verify_cfg_after_peeling): Define only
+	if checking is enabled.
+
 2004-11-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (push_scope): Remove "\n" from end of diagnostic for
