@@ -256,7 +256,8 @@ public class File implements Serializable
     for (int i = 0; i < 100; ++i)
       {
 	// This is ugly.
-	String l = prefix + (nextValue () + "ZZZZZZ").substring(0,6) + suffix;
+	String t = "ZZZZZZ" + nextValue ();
+	String l = prefix + t.substring(t.length() - 6) + suffix;
 	try
 	  {
 	    desc.open (l, FileDescriptor.WRITE | FileDescriptor.EXCL);

@@ -1,3 +1,8 @@
+2000-02-12  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/File.java (createTempFile): Use low bits from counter,
+	not high bits.
+
 Fri Feb 11 19:48:08 2000  Anthony Green  <green@cygnus.com>
 
 	* THANKS: More thanks.
