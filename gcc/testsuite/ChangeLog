@@ -1,11 +1,16 @@
+2001-05-30  David.Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* gcc.misc-tests/linkage.exp: Pass appropriate flags to native
+	compiler for irix6.2
+
 2001-05-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/optimize3.C: New file.
 
 2001-05-29  Jeffrey Oldham  <oldham@codesourcery.com>
 
-        * gcc.c-torture/compile/20010518-2.x: New file to compile, not
-        assemble.
+	* gcc.c-torture/compile/20010518-2.x: New file to compile, not
+	assemble.
 
 2001-05-26  Nathan Sidwell  <nathan@codesourcery.com>
 
