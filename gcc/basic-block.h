@@ -333,3 +333,7 @@ extern struct edge_list *pre_edge_rev_lcm PROTO ((FILE *, int, sbitmap *,
 						  sbitmap **));
 extern int compute_available		PROTO ((sbitmap *, sbitmap *,
 						sbitmap *, sbitmap *));
+
+/* In emit-rtl.c.  */
+extern rtx emit_block_insn_after	PROTO((rtx, rtx, basic_block));
+extern rtx emit_block_insn_before	PROTO((rtx, rtx, basic_block));

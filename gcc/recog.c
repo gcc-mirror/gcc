@@ -1045,10 +1045,12 @@ scratch_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (GET_MODE (op) == mode
-	  && (GET_CODE (op) == SCRATCH
-	      || (GET_CODE (op) == REG
-		  && REGNO (op) < FIRST_PSEUDO_REGISTER)));
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+
+  return (GET_CODE (op) == SCRATCH
+	  || (GET_CODE (op) == REG
+	      && REGNO (op) < FIRST_PSEUDO_REGISTER));
 }
 
 /* Return 1 if OP is a valid immediate operand for mode MODE.

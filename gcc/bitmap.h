@@ -18,6 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef _BITMAP_H
+#define _BITMAP_H 1
+
 /* Number of words to use for each element in the linked list.  */
 
 #ifndef BITMAP_ELEMENT_WORDS
@@ -319,3 +322,5 @@ do {									\
       word_num_ = 0;							\
     }									\
 } while (0)
+
+#endif /* _BITMAP_H */

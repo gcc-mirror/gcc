@@ -3163,25 +3163,8 @@ output_fix_trunc (insn, operands)
   /* Jump through a hoop or two for DImode, since the hardware has no
      non-popping instruction.  We used to do this a different way, but
      that was somewhat fragile and broke with post-reload splitters.  */
-  if (dimode_p)
-    {
-      if (! STACK_TOP_P (operands[1]))
-	{
-	  rtx tmp;
-
-	  output_asm_insn ("fst\t%y1", operands);
-
-	  /* The scratch we allocated sure better have died.  */
-	  if (! stack_top_dies)
-	    abort ();
-
-	  tmp = operands[1];
-	  operands[1] = operands[5];
-	  operands[5] = tmp;
-	}
-      else if (! stack_top_dies)
-	output_asm_insn ("fld\t%y1", operands);
-    }
+  if (dimode_p && !stack_top_dies)
+    output_asm_insn ("fld\t%y1", operands);
 
   if (! STACK_TOP_P (operands[1]))
     abort ();
