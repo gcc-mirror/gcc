@@ -1,3 +1,8 @@
+2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14028
+	* g++.dg/parse/angle-bracket2.C: New test.
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR middle-end/13750
