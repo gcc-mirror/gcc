@@ -1,3 +1,22 @@
+2000-05-12  Nick Clifton  <nickc@cygnus.com>
+
+	* config/fr30/fr30.c (fr30_move_double): New function:  Emit code
+	to move a double word value.
+	(di_operand): New function: Return true if the operand is suitbale
+	for a double word move operation.
+	(nonimmediate_di_operand): New function: Return true if the
+	operand is a DImode register or MEM.
+
+	* config/fr30/fr30.h (PREDICATE_CODES): Add di_operand and
+	nonimmediate_di_operand.
+
+	* config/fr30/fr30-protos.h Add fr30_move_double, di_operand, and
+	nonimmediate_di_operand.
+
+	* config/fr30/fr30.md (movdi): New pattern.  Required because
+	other patterns generate DImode results.
+	(movdi_insn): New pattern.
+
 2000-05-12  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (struct shadow_summary): Define
