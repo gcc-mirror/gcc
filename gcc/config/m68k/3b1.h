@@ -137,15 +137,24 @@ output_file_directive ((FILE), main_input_filename)
 /* The unixpc doesn't know about double's and float's */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { union { double d; long l[2]; } tem;		\
-     tem.d = (VALUE);					\
-     fprintf(FILE, "\tlong 0x%x,0x%x\n", tem.l[0], tem.l[1]); \
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
    } while (0)
 
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
+do { long l[3];								\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+   } while (0)
+
+/* This is how to output an assembler line defining a `float' constant.  */
+
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { union { float f; long l;} tem;			\
-     tem.f = (VALUE);					\
-     fprintf (FILE, "\tlong 0x%x\n", tem.l);	\
+do { long l;					\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
+     fprintf ((FILE), "\tlong 0x%x\n", l);	\
    } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
