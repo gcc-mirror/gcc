@@ -1,5 +1,8 @@
 1999-10-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (start_static_storage_duration_function): Push the
+	function declaration so it ends up in namespace scope.
+
 	* dump.c (DUMP_CHILDREN): Remove.
 	(DUMP_BINFO): Adjust.
 	(struct dump_node_info): Remove dump_children_p.
