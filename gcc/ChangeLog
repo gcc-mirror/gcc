@@ -1,3 +1,7 @@
+Fri Jan 16 00:46:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.def (INLINE_HEADER): Fix bug exposed by gen_rtx_FOO changes.
+
 Thu Jan 15 01:02:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

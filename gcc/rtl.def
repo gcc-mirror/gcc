@@ -160,6 +160,11 @@ DEF_RTL_EXPR(MATCH_OP_DUP, "match_op_dup", "iE", 'm')
 DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", 'm')
 
 /* Appears only in machine descriptions.
+   Should be used only in attribute tests.
+   The predicate in operand 0 is applied to the whole insn being checked.  */
+DEF_RTL_EXPR(MATCH_INSN, "match_insn", "s", 'm')
+
+/* Appears only in machine descriptions.
    Defines the pattern for one kind of instruction.
    Operand:
    0: names this instruction.
@@ -385,7 +390,7 @@ DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
    it contains helps to build the mapping function between the rtx's of
    the function to be inlined and the current function being expanded.  */
 
-DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEsse", 'x')
+DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEssE", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
