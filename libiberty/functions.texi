@@ -317,6 +317,34 @@ between calls to @code{getpwd}.
 
 @end deftypefn
 
+@c hex.c:25
+@deftypefn Extension void hex_init (void)
+
+Initializes the array mapping the current character set to
+corresponding hex values.  This function must be called before any
+call to @code{hex_p} or @code{hex_value}.
+
+@end deftypefn
+
+@c hex.c:33
+@deftypefn Extension int hex_p (int @var{c})
+
+Evaluates to non-zero if the given character is a valid hex character,
+or zero if it is not.  Note that the value you pass will be cast to
+@code{unsigned char} within the macro.
+
+@end deftypefn
+
+@c hex.c:41
+@deftypefn Extension int hex_value (int @var{c})
+
+Returns the numeric equivalent of the given character when interpreted
+as a hexidecimal digit.  The result is undefined if you pass an
+invalid hex digit.  Note that the value you pass will be cast to
+@code{unsigned char} within the macro.
+
+@end deftypefn
+
 @c index.c:5
 @deftypefn Supplemental char* index (char *@var{s}, int @var{c})
 
