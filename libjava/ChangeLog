@@ -1,3 +1,10 @@
+1999-07-02  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/PlainDatagramSocketImpl.java (ttl): Removed.
+	* java/net/natPlainDatagramSocketImpl.cc (setTimeToLive): Implemented.
+	(getTimeToLive): Implemented.
+	(setOption): Implemented IP_MULTICAST_IF.
+
 1999-07-01  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/String.java (toString): Check for this == null and throw

@@ -51,6 +51,14 @@ union McastReq
 #endif
 };
 
+union InAddr
+{
+  struct in_addr addr;
+#ifdef HAVE_INET6
+  struct in6_addr addr6;
+#endif
+};
+
 
 // FIXME: routines here and/or in natPlainSocketImpl.cc could throw
 // NoRouteToHostException; also consider UnknownHostException, ConnectException.
@@ -268,17 +276,31 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
 void
 java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
 {
-  this->ttl = ttl;
-  // throws IOException;
-  // FIXME: TODO - PlainDatagramSocketImpl::setTimeToLive
+  // Assumes IPPROTO_IP rather than IPPROTO_IPV6 since socket created is IPv4.
+  char val = (char) ttl;
+  socklen_t val_len = sizeof(val);
+  if (::setsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
+    return;
+
+  char msg[100];
+  char* strerr = strerror (errno);
+  sprintf (msg, "DatagramSocketImpl.setTimeToLime: %.*s", 80, strerr);
+  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
 jint
 java::net::PlainDatagramSocketImpl::getTimeToLive ()
 {
-  // throws IOException;
-  // FIXME: TODO - PlainDatagramSocketImpl::getTimeToLive
-  return ttl;
+  // Assumes IPPROTO_IP rather than IPPROTO_IPV6 since socket created is IPv4.
+  char val;
+  socklen_t val_len = sizeof(val);
+  if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
+    return ((int) val) & 0xFF;
+
+  char msg[100];
+  char* strerr = strerror (errno);
+  sprintf (msg, "DatagramSocketImpl.setTimeToLime: %.*s", 80, strerr);
+  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
 void
@@ -385,9 +407,38 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
           JvNewStringUTF ("SO_BINDADDR: read only option")));
         return;
       case _Jv_IP_MULTICAST_IF_ :
-	// FIXME: TODO - Implement IP_MULTICAST_IF.
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+	union InAddr u;
+        jbyteArray haddress;
+	jbyte *bytes;
+	int len;
+	int level, opname;
+	const char *ptr;
+
+	haddress = ((java::net::InetAddress *) value)->address;
+	bytes = elements (haddress);
+	len = haddress->length;
+	if (len == 4)
+	  {
+	    level = IPPROTO_IP;
+	    opname = IP_MULTICAST_IF;
+	    memcpy (&u.addr, bytes, len);
+	    len = sizeof (struct in_addr);
+	    ptr = (const char *) &u.addr;
+	  }
+#ifdef HAVE_INET6
+	else if (len == 16)
+	  {
+	    level = IPPROTO_IPV6;
+	    opname = IPV6_MULTICAST_IF;
+	    memcpy (&u.addr6, bytes, len);
+	    len = sizeof (struct in_addr6);
+	    ptr = (const char *) &u.addr6;
+	  }
+#endif
+	else
+	  goto error;
+	if (::setsockopt (fnum, level, opname, ptr, len) != 0)
+	  goto error;
         return;
       case _Jv_SO_TIMEOUT_ :
 	timeout = val;

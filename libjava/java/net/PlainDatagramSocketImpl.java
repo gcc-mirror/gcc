@@ -43,10 +43,8 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   // localAddress cache  
   InetAddress localAddress;
 
-  // These values are set/read by setOption/getOption.
+  // 'timeout' is set/read by setOption/getOption.
   int timeout = 0;
-  /* InetAddress iface = null; */
-  int ttl = -1;
 
   // FIXME: Probably should have bind (and create?) calls from DatagramSocket
   // constuctor.  If so, then same change should be made to the corresponding
