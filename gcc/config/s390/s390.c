@@ -1756,6 +1756,34 @@ legitimate_la_operand_p (op)
   return FALSE;
 }
 
+/* Return 1 if OP is a valid operand for the LA instruction,
+   and we prefer to use LA over addition to compute it.
+   If STRICT is true, only accept operands that will never
+   change to something we cannot recognize as preferred.  */
+   
+int
+preferred_la_operand_p (op, strict)
+     register rtx op;
+     int strict;
+{
+  struct s390_address addr;
+  if (!s390_decompose_address (op, &addr))
+    return FALSE;
+
+  if (!TARGET_64BIT && !addr.pointer)
+    return FALSE;
+
+  if (addr.pointer)
+    return TRUE;
+
+  if (!strict) 
+    if ((addr.base && REG_P (addr.base) && REG_POINTER (addr.base))
+        || (addr.indx && REG_P (addr.indx) && REG_POINTER (addr.indx)))
+      return TRUE;
+
+  return FALSE;
+}
+
 /* Emit a forced load-address operation to load SRC into DST.
    This will use the LOAD ADDRESS instruction even in situations
    where legitimate_la_operand_p (SRC) returns false.  */
