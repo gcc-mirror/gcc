@@ -1,3 +1,7 @@
+2003-02-12  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* decl.c (define_label): Don't forget to pop TV_NAME_LOOKUP.
+
 2003-02-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c: Include "timevar.h".

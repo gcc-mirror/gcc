@@ -5159,6 +5159,7 @@ define_label (filename, line, name)
       check_previous_gotos (decl);
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
     }
+  timevar_pop (TV_NAME_LOOKUP);
 }
 
 struct cp_switch
