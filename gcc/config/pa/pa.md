@@ -1994,7 +1994,7 @@
 			       (label_ref (match_operand 3 "" "")))
 		      (pc)))
    (use (label_ref (match_operand 4 "" "")))
-   (clobber (match_scratch:SI 5 "=r"))]
+   (clobber (match_scratch:SI 5 "=&r"))]
   ""
   "*
 {
