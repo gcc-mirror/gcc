@@ -1,4 +1,11 @@
-Mon Nov  8 03:03:07 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+Mon Nov  8 07:25:37 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (get_containing_scope): Declare it.
+	* tree.c (get_containing_scope): New fucntion.
+	(decl_function_context): Use it.
+	* toplev.c (rest_of_compilation): Use get_containing_scope.
+
+aMon Nov  8 03:03:07 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* Makefile.in (rtl.o): Depend on toplev.h.
 

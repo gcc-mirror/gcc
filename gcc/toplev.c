@@ -3594,7 +3594,8 @@ rest_of_compilation (decl)
 	 generating code for this one is not only not necessary but will
 	 confuse some debugging output writers.  */
       for (parent = DECL_CONTEXT (current_function_decl);
-	   parent != 0; parent = DECL_CONTEXT (parent))
+	   parent != NULL_TREE; 
+	   parent = get_containing_scope (parent))
 	if (TREE_CODE (parent) == FUNCTION_DECL
 	    && DECL_INLINE (parent) && DECL_EXTERNAL (parent))
 	  {

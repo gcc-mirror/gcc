@@ -1950,6 +1950,11 @@ extern tree get_inner_reference		PROTO((tree, int *, int *, tree *,
 					       enum machine_mode *, int *,
 					       int *, int *));
 
+/* Given a DECL or TYPE, return the scope in which it was declared, or
+   NUL_TREE if there is no containing scope.  */
+
+extern tree get_containing_scope        PROTO((tree));
+
 /* Return the FUNCTION_DECL which provides this _DECL with its context,
    or zero if none.  */
 extern tree decl_function_context 	PROTO((tree));
