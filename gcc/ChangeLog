@@ -1,3 +1,10 @@
+Fri Nov  3 13:41:04 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* config/mips/iris6.h (SUBTARGET_CC1_SPEC): Remove -static
+	handling.
+	(STARTFILE_SPEC): Likewise.
+	(LINK_SPEC): Likewise.
+
 2000-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (fold-const.o): Depend on $(GGC_H), not ggc.h.
