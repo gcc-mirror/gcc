@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define OUTPUT_TDESC
 
-#include "i860v4.h"
+#include "i860/sysv4.h"
 
 /* The Alliant fx2800 running Concentrix 2.x is weird.  This is basically
    a BSD 4.3 based operating system, but it uses svr4 ELF format object
