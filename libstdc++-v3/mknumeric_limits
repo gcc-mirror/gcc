@@ -178,18 +178,17 @@ namespace std {
 
 EOF
 
-echo "$CXX $CPPFLAGS -I$BUILD_DIR/include \
+echo "$CXX -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
      $LDFLAGS"
 
-$CXX $CPPFLAGS -I$BUILD_DIR/include \
+{ $CXX -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc" \
      $LDFLAGS
-
-if [ ! -f "$BUILD_DIR/src/gen-num-limits" ]; then
+} || {
   echo "gen-num-limits failed to build, exiting."
   exit 1
-fi
+}
 
 "$BUILD_DIR/src/gen-num-limits" >> $OUT_H-t
 

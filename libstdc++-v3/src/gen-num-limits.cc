@@ -35,6 +35,10 @@
 
 #include <bits/c++config.h>
 
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 //
 // Force Linux <limits.h> to define the *LONG_LONG*
 //
@@ -57,6 +61,18 @@
 #include <wchar.h>
 #endif
 
+// mknumeric_limits will first try to compile this file with
+// HAVE_SIGSETJMP.  If it fails, then it will try without it.  Some
+// systems, such as GNU/Linux/sparc, would remain with the signal
+// blocked if the signal handler uses longjmp instead of siglongjmp.
+// We assume here setjmp/longjmp will preserve the sigblock mask if
+// sigsetjmp is not present.
+
+#if ! HAVE_SIGSETJMP 
+# define sigjmp_buf jmp_buf 
+# define sigsetjmp(buf, save) setjmp (buf) 
+# define siglongjmp(env, ret) longjmp (env, ret) 
+#endif 
 
 const char tab[] = "    ";
 const char tab2[] = "        ";
@@ -90,7 +106,7 @@ const int integer_base_rep = 2;
 // occur for int, unsigned, long, unsigned long. Furthermore
 // overflow cannot happen for unsigned integer types.
 
-jmp_buf env;
+sigjmp_buf env;
 
 /* The prototype of signal() may vary.  Accomodate variations such as
    void(*)(int) and void(*)(...).  */
@@ -112,13 +128,13 @@ void signal_handler(int sig)
   sigemptyset (&x);
   sigprocmask(SIG_SETMASK, &x, NULL);
 #endif /* __CYGWIN__ */
-  longjmp(env, sig); 
+  siglongjmp(env, sig); 
 }
 
 template<typename Operation>
 bool trapping(const Operation& op)
 {
-    if (setjmp(env) == 0) op();
+    if (sigsetjmp(env, 1) == 0) op();
     else return true;
     return false;
 }
