@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -562,6 +562,18 @@ static struct compiler default_compilers[] =
    "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
 		    %{!pipe:%g.s} %A\n }}}}"},
+  {".ads", "@ada"},
+  {".adb", "@ada"},
+  {".ada", "@ada"},
+  {"@ada",
+   "gnat1 %{gnat*} %{k8:-gnatk8} %{!v:-quiet -gnatb} %{w:-gnatws}\
+       -dumpbase %b.ada\
+       %{g*} %{O*} %{p} %{pg:-p} %{f*} %{d*}\
+       %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+       %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} | \n",
+   "%{!S:%{!gnatc:%{!gnats:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+        %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+        %{!pipe:%g.s} %A\n}}} "},
   /* Mark end of table */
   {0, 0}
 };
