@@ -1,3 +1,8 @@
+Fri Jun  5 12:29:28 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (rank_for_schedule): For "equally good insns", prefer
+	the insn which has the most insns dependent on it.
+
 Fri Jun  5 09:03:22 1998  John Carr  <jfc@mit.edu>
 
 	* alias.c (find_base_value): Avoid reading past	end of reg_base_value.
