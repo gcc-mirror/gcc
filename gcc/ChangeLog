@@ -1,4 +1,8 @@
-2000-04-05  Alex Samuel  <samuel@codesourcery.com>
+2000-04-06  Michael Matz  <matzmich@cs.tu-berlin.de>
+
+	* flow.c (compute_flow_dominators): Process blocks FIFO not LIFO.
+
+2000-04-06  Alex Samuel  <samuel@codesourcery.com>
 
 	* rtl.h (INSN_P): New macro.
 	(successor_phi_fn): New typedef.

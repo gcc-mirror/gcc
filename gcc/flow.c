@@ -5252,13 +5252,14 @@ compute_flow_dominators (dominators, post_dominators)
   int bb;
   sbitmap *temp_bitmap;
   edge e;
-  basic_block *worklist, *tos;
+  basic_block *worklist, *workend, *qin, *qout;
+  int qlen;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block)
-		    * n_basic_blocks);
+  worklist = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
+  workend = &worklist[n_basic_blocks];
 
   temp_bitmap = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   sbitmap_vector_zero (temp_bitmap, n_basic_blocks);
@@ -5267,11 +5268,14 @@ compute_flow_dominators (dominators, post_dominators)
     {
       /* The optimistic setting of dominators requires us to put every
 	 block on the work list initially.  */
+      qin = qout = worklist;
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
-	  *tos++ = BASIC_BLOCK (bb);
+	  *qin++ = BASIC_BLOCK (bb);
 	  BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
 	}
+      qlen = n_basic_blocks;
+      qin = worklist;
 
       /* We want a maximal solution, so initially assume everything dominates
 	 everything else.  */
@@ -5282,10 +5286,14 @@ compute_flow_dominators (dominators, post_dominators)
 	e->dest->aux = ENTRY_BLOCK_PTR;
 
       /* Iterate until the worklist is empty.  */
-      while (tos != worklist)
+      while (qlen)
 	{
 	  /* Take the first entry off the worklist.  */
-	  basic_block b = *--tos;
+	  basic_block b = *qout++;
+	  if (qout >= workend)
+	    qout = worklist;
+	  qlen--;
+
 	  bb = b->index;
 
 	  /* Compute the intersection of the dominators of all the
@@ -5325,7 +5333,11 @@ compute_flow_dominators (dominators, post_dominators)
 		{
 		  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
 		    {
-		      *tos++ = e->dest;
+		      *qin++ = e->dest;
+		      if (qin >= workend)
+			qin = worklist;
+		      qlen++;
+
 		      e->dest->aux = e;
 		    }
 		}
@@ -5337,11 +5349,14 @@ compute_flow_dominators (dominators, post_dominators)
     {
       /* The optimistic setting of dominators requires us to put every
 	 block on the work list initially.  */
+      qin = qout = worklist;
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
-	  *tos++ = BASIC_BLOCK (bb);
+	  *qin++ = BASIC_BLOCK (bb);
 	  BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
 	}
+      qlen = n_basic_blocks;
+      qin = worklist;
 
       /* We want a maximal solution, so initially assume everything post
 	 dominates everything else.  */
@@ -5352,10 +5367,14 @@ compute_flow_dominators (dominators, post_dominators)
 	e->src->aux = EXIT_BLOCK_PTR;
 
       /* Iterate until the worklist is empty.  */
-      while (tos != worklist)
+      while (qlen)
 	{
 	  /* Take the first entry off the worklist.  */
-	  basic_block b = *--tos;
+	  basic_block b = *qout++;
+	  if (qout >= workend)
+	    qout = worklist;
+	  qlen--;
+
 	  bb = b->index;
 
 	  /* Compute the intersection of the post dominators of all the
@@ -5398,13 +5417,18 @@ compute_flow_dominators (dominators, post_dominators)
 		{
 		  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
 		    {
-		      *tos++ = e->src;
+		      *qin++ = e->src;
+		      if (qin >= workend)
+			qin = worklist;
+		      qlen++;
+
 		      e->src->aux = e;
 		    }
 		}
 	    }
 	}
     }
+
   free (temp_bitmap);
 }
 
