@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4410,6 +4410,10 @@ pushcase (value, converter, label, duplicate)
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
 
+  /* Fail if the range is empty.  */
+  if (tree_int_cst_lt (value2, value1))
+    return 4;
+
   if (stack_block_stack
       && stack_block_stack->depth > case_stack->depth)
     return 5;
@@ -4524,11 +4528,11 @@ pushcase_range (value1, value2, converter, label, duplicate)
 
   /* Convert VALUEs to type in which the comparisons are nominally done.  */
   if (value1 == 0)  /* Negative infinity.  */
-    value1 = TYPE_MIN_VALUE(index_type);
+    value1 = TYPE_MIN_VALUE (index_type);
   value1 = (*converter) (nominal_type, value1);
 
   if (value2 == 0)  /* Positive infinity.  */
-    value2 = TYPE_MAX_VALUE(index_type);
+    value2 = TYPE_MAX_VALUE (index_type);
   value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
@@ -4537,10 +4541,6 @@ pushcase_range (value1, value2, converter, label, duplicate)
 
   if (! int_fits_type_p (value2, index_type))
     return 3;
-
-  /* Fail if the range is empty.  */
-  if (tree_int_cst_lt (value2, value1))
-    return 4;
 
   return add_case_node (value1, value2, label, duplicate);
 }
