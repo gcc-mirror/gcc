@@ -386,7 +386,9 @@ decl_attributes (node, attributes, flags)
 
       /* Layout the decl in case anything changed.  */
       if (spec->type_required && DECL_P (*node)
-	  && TREE_CODE (*node) == VAR_DECL)
+	  && (TREE_CODE (*node) == VAR_DECL
+	      || TREE_CODE (*node) == PARM_DECL
+	      || TREE_CODE (*node) == RESULT_DECL))
 	{
 	  /* Force a recalculation of mode and size.  */
 	  DECL_MODE (*node) = VOIDmode;
