@@ -1330,12 +1330,8 @@ do {									\
 
 #ifndef CPP_OS_LINUX_SPEC
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
-%{!ansi: -Dunix -Dlinux } \
--Asystem(unix) -Asystem(linux)"
-#endif
-
-#ifndef CPP_OS_LINUX_SPEC
-#define CPP_OS_LINUX_SPEC ""
+%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}}
+-Asystem(unix) -Asystem(posix)"
 #endif
 
 /* Solaris support.  */
@@ -1389,7 +1385,8 @@ do {									\
 
 #ifndef CPP_OS_SOLARIS_SPEC
 #define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
-%{!ansi: -Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__ } \
+%{!undef:%{!ansi:%{!std=*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__} \
+               %{std=gnu*:-Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__}}} \
 -Amachine(prep)"
 #endif
 
