@@ -584,6 +584,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 #define CLASS_MAX_NREGS(CLASS, MODE)				\
  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the size of the object.  */
+
+#define CLASS_CANNOT_CHANGE_SIZE	FLOAT_REGS
+
 /* Define the cost of moving between registers of various classes.  Moving
    between FLOAT_REGS and anything else except float regs is expensive. 
    In fact, we make it quite expensive because we really don't want to
