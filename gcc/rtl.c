@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "hashtab.h"
 
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
@@ -290,10 +291,15 @@ const char * const reg_note_name[] =
   "REG_EH_RETHROW", "REG_SAVE_NOTE", "REG_MAYBE_DEAD", "REG_NORETURN"
 };
 
+static htab_t md_constants;
+
 static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 static void fatal_expected_char PARAMS ((FILE *, int, int)) ATTRIBUTE_NORETURN;
 static void read_name		PARAMS ((char *, FILE *));
+static unsigned def_hash PARAMS ((const void *));
+static int def_name_eq_p PARAMS ((const void *, const void *));
+static void read_constants PARAMS ((FILE *infile, char *tmp_char));
 
 
 /* Allocate an rtx vector of N elements.
@@ -829,6 +835,25 @@ read_name (str, infile)
     read_rtx_lineno++;
 
   *p = 0;
+
+  if (md_constants)
+    {
+      /* Do constant expansion.  */
+      struct md_constant *def;
+
+      p = str;
+      do
+	{
+	  struct md_constant tmp_def;
+
+	  tmp_def.name = p;
+	  def = htab_find (md_constants, &tmp_def);
+	  if (def)
+	    p = def->value;
+	} while (def);
+      if (p != str)
+	strcpy (str, p);
+    }
 }
 
 /* Provide a version of a function to read a long long if the system does
@@ -867,6 +892,98 @@ atoll(p)
   return tmp_wide;
 }
 #endif
+
+/* Given a constant definition, return a hash code for its name.  */
+static unsigned
+def_hash (def)
+     const void *def;
+{
+  unsigned result, i;
+  const char *string = ((const struct md_constant *)def)->name;
+
+  for (result = i = 0;*string++ != '\0'; i++)
+    result += ((unsigned char) *string << (i % CHAR_BIT));
+  return result;
+}
+
+/* Given two constant definitions, return true if they have the same name.  */
+static int
+def_name_eq_p (def1, def2)
+     const void *def1, *def2;
+{
+  return ! strcmp (((const struct md_constant *)def1)->name,
+		   ((const struct md_constant *)def2)->name);
+}
+
+/* INFILE is a FILE pointer to read text from.  TMP_CHAR is a buffer suitable
+   to read a name or number into.  Process a define_constants directive,
+   starting with the optional space after the "define_constants".  */
+static void
+read_constants (infile, tmp_char)
+     FILE *infile;
+     char *tmp_char;
+{
+  int c;
+  htab_t defs;
+
+  c = read_skip_spaces (infile);
+  if (c != '[')
+    fatal_expected_char (infile, '[', c);
+  defs = md_constants;
+  if (! defs)
+    defs = htab_create (32, def_hash, def_name_eq_p, (htab_del) 0);
+  /* Disable constant expansion during definition processing.  */
+  md_constants = 0;
+  while ( (c = read_skip_spaces (infile)) != ']')
+    {
+      struct md_constant *def;
+      void **entry_ptr;
+
+      if (c != '(')
+	fatal_expected_char (infile, '(', c);
+      def = xmalloc (sizeof (struct md_constant));
+      def->name = tmp_char;
+      read_name (tmp_char, infile);
+      entry_ptr = htab_find_slot (defs, def, TRUE);
+      if (! *entry_ptr)
+	def->name = xstrdup (tmp_char);
+      c = read_skip_spaces (infile);
+      ungetc (c, infile);
+      read_name (tmp_char, infile);
+      if (! *entry_ptr)
+	{
+	  def->value = xstrdup (tmp_char);
+	  *entry_ptr = def;
+	}
+      else
+	{
+	  def = *entry_ptr;
+	  if (strcmp (def->value, tmp_char))
+	    fatal_with_file_and_line (infile,
+				      "redefinition of %s, was %s, now %s",
+				      def->name, def->value, tmp_char);
+	}
+      c = read_skip_spaces (infile);
+      if (c != ')')
+	fatal_expected_char (infile, ')', c);
+    }
+  md_constants = defs;
+  c = read_skip_spaces (infile);
+  if (c != ')')
+    fatal_expected_char (infile, ')', c);
+}
+
+/* For every constant definition, call CALLBACK with two arguments:
+   a pointer a pointer to the constant definition and INFO.
+   Stops when CALLBACK returns zero.  */
+void
+traverse_md_constants (callback, info)
+     htab_trav callback;
+     void *info;
+{
+  if (md_constants)
+    htab_traverse (md_constants, callback, info);
+}
 
 /* Read an rtx in printed representation from INFILE
    and return an actual rtx in core constructed accordingly.
@@ -907,6 +1024,7 @@ read_rtx (infile)
     initialized = 1;
   }
 
+again:
   c = read_skip_spaces (infile); /* Should be open paren.  */
   if (c != '(')
     fatal_expected_char (infile, '(', c);
@@ -915,6 +1033,11 @@ read_rtx (infile)
 
   tmp_code = UNKNOWN;
 
+  if (! strcmp (tmp_char, "define_constants"))
+    {
+      read_constants (infile, tmp_char);
+      goto again;
+    }
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (! strcmp (tmp_char, GET_RTX_NAME (i)))
       {

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 static int insn_code_number;
 
 static void gen_insn PARAMS ((rtx));
+static int print_md_constant PARAMS ((void **, void *));
 
 static void
 gen_insn (insn)
@@ -86,9 +87,11 @@ from the machine description file `md'.  */\n\n");
 
   printf ("  CODE_FOR_nothing = %d };\n", insn_code_number + 1);
 
-  printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n");
+  printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n\n");
 
-  printf ("#endif /* MAX_INSN_CODE */\n");
+  traverse_md_constants (print_md_constant, stdout);
+
+  printf ("\n#endif /* MAX_INSN_CODE */\n");
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
@@ -100,4 +103,18 @@ get_insn_name (code)
      int code ATTRIBUTE_UNUSED;
 {
   return NULL;
+}
+
+/* Called via traverse_md_constants; emit a #define for
+   the current constant definition.  */
+static int
+print_md_constant (slot, info)
+     void **slot;
+     void *info;
+{
+  struct md_constant *def = *slot;
+  FILE *file = info;
+
+  fprintf (file, "#define %s %s\n", def->name, def->value);
+  return 1;
 }
