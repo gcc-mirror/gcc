@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfglayout.h"
 #include "cfgloop.h"
 #include "target.h"
+#include "ggc.h"
 
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.  */
@@ -54,6 +55,7 @@ static void cleanup_unconditional_jumps	PARAMS ((struct loops *));
 static void fixup_fallthru_exit_predecessor PARAMS ((void));
 static rtx duplicate_insn_chain PARAMS ((rtx, rtx));
 static void break_superblocks PARAMS ((void));
+static tree insn_scope PARAMS ((rtx));
 
 rtx
 unlink_insn_chain (first, last)
@@ -212,22 +214,83 @@ record_effective_endpoints ()
     cfg_layout_function_footer = unlink_insn_chain (cfg_layout_function_footer, get_last_insn ());
 }
 
-/* Build a varray mapping INSN_UID to lexical block.  Return it.  */
+/* Data structures representing mapping of INSN_LOCATOR into scope blocks, line
+   numbers and files.  In order to be GGC friendly we need to use separate
+   varrays.  This also slightly improve the memory locality in binary search.
+   The _locs array contains locators where the given property change.  The
+   block_locators_blocks contains the scope block that is used for all insn
+   locator greater than corresponding block_locators_locs value and smaller
+   than the following one.  Similarly for the other properties.  */
+static GTY(()) varray_type block_locators_locs;
+static GTY(()) varray_type block_locators_blocks;
+static GTY(()) varray_type line_locators_locs;
+static GTY(()) varray_type line_locators_lines;
+static GTY(()) varray_type file_locators_locs;
+static GTY(()) varray_type file_locators_files;
+int prologue_locator;
+int epilogue_locator;
+
+/* During the RTL expansion the lexical blocks and line numbers are
+   represented via INSN_NOTEs.  Replace them by representation using
+   INSN_LOCATORs.  */
 
 void
-scope_to_insns_initialize ()
+insn_locators_initialize ()
 {
   tree block = NULL;
+  tree last_block = NULL;
   rtx insn, next;
+  int loc = 0;
+  int line_number = 0, last_line_number = 0;
+  char *file_name = NULL, *last_file_name = NULL;
+
+  prologue_locator = epilogue_locator = 0;
+
+  VARRAY_INT_INIT (block_locators_locs, 32, "block_locators_locs");
+  VARRAY_TREE_INIT (block_locators_blocks, 32, "block_locators_blocks");
+  VARRAY_INT_INIT (line_locators_locs, 32, "line_locators_locs");
+  VARRAY_INT_INIT (line_locators_lines, 32, "line_locators_lines");
+  VARRAY_INT_INIT (file_locators_locs, 32, "file_locators_locs");
+  VARRAY_CHAR_PTR_INIT (file_locators_files, 32, "file_locators_files");
 
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
 
-      if (active_insn_p (insn)
-	  && GET_CODE (PATTERN (insn)) != ADDR_VEC
-	  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
-        INSN_SCOPE (insn) = block;
+      if ((active_insn_p (insn)
+	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
+	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
+	  || !NEXT_INSN (insn)
+	  || (!prologue_locator && file_name))
+	{
+	  if (last_block != block)
+	    {
+	      loc++;
+	      VARRAY_PUSH_INT (block_locators_locs, loc);
+	      VARRAY_PUSH_TREE (block_locators_blocks, block);
+	      last_block = block;
+	    }
+	  if (last_line_number != line_number)
+	    {
+	      loc++;
+	      VARRAY_PUSH_INT (line_locators_locs, loc);
+	      VARRAY_PUSH_INT (line_locators_lines, line_number);
+	      last_line_number = line_number;
+	    }
+	  if (last_file_name != file_name)
+	    {
+	      loc++;
+	      VARRAY_PUSH_INT (file_locators_locs, loc);
+	      VARRAY_PUSH_CHAR_PTR (file_locators_files, file_name);
+	      last_file_name = file_name;
+	    }
+	}
+      if (!prologue_locator && file_name)
+	prologue_locator = loc;
+      if (!NEXT_INSN (insn))
+	epilogue_locator = loc;
+      if (active_insn_p (insn))
+        INSN_LOCATOR (insn) = loc;
       else if (GET_CODE (insn) == NOTE)
 	{
 	  switch (NOTE_LINE_NUMBER (insn))
@@ -243,6 +306,11 @@ scope_to_insns_initialize ()
 	      delete_insn (insn);
 	      break;
 	    default:
+	      if (NOTE_LINE_NUMBER (insn) > 0)
+		{
+		  line_number = NOTE_LINE_NUMBER (insn);
+		  file_name = (char *)NOTE_SOURCE_FILE (insn);
+		}
 	      break;
 	    }
 	}
@@ -330,11 +398,98 @@ change_scope (orig_insn, s1, s2)
     }
 }
 
+/* Return lexical scope block insn belong to.  */
+static tree
+insn_scope (insn)
+   rtx insn;
+{
+  int max = VARRAY_ACTIVE_SIZE (block_locators_locs);
+  int min = 0;
+  int loc = INSN_LOCATOR (insn);
+
+  if (!max || !loc)
+    return NULL;
+  while (1)
+    {
+      int pos = (min + max) / 2;
+      int tmp = VARRAY_INT (block_locators_locs, pos);
+
+      if (tmp <= loc && min != pos)
+	min = pos;
+      else if (tmp > loc && max != pos)
+	max = pos;
+      else
+	{
+	  min = pos;
+	  break;
+	}
+    }
+   return VARRAY_TREE (block_locators_blocks, min);
+}
+
+/* Return line number of the statement that produced this insn.  */
+int
+insn_line (insn)
+   rtx insn;
+{
+  int max = VARRAY_ACTIVE_SIZE (line_locators_locs);
+  int min = 0;
+  int loc = INSN_LOCATOR (insn);
+
+  if (!max || !loc)
+    return 0;
+  while (1)
+    {
+      int pos = (min + max) / 2;
+      int tmp = VARRAY_INT (line_locators_locs, pos);
+
+      if (tmp <= loc && min != pos)
+	min = pos;
+      else if (tmp > loc && max != pos)
+	max = pos;
+      else
+	{
+	  min = pos;
+	  break;
+	}
+    }
+   return VARRAY_INT (line_locators_lines, min);
+}
+
+/* Return source file of the statement that produced this insn.  */
+const char *
+insn_file (insn)
+   rtx insn;
+{
+  int max = VARRAY_ACTIVE_SIZE (file_locators_locs);
+  int min = 0;
+  int loc = INSN_LOCATOR (insn);
+
+  if (!max || !loc)
+    return NULL;
+  while (1)
+    {
+      int pos = (min + max) / 2;
+      int tmp = VARRAY_INT (file_locators_locs, pos);
+
+      if (tmp <= loc && min != pos)
+	min = pos;
+      else if (tmp > loc && max != pos)
+	max = pos;
+      else
+	{
+	  min = pos;
+	  break;
+	}
+    }
+   return VARRAY_CHAR_PTR (file_locators_files, min);
+}
+
 /* Rebuild all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes based
    on the scope tree and the newly reordered instructions.  */
 
 void
-scope_to_insns_finalize ()
+reemit_insn_block_notes ()
 {
   tree cur_block = DECL_INITIAL (cfun->decl);
   rtx insn, note;
@@ -346,7 +501,7 @@ scope_to_insns_finalize ()
     {
       tree this_block;
 
-      this_block = INSN_SCOPE (insn);
+      this_block = insn_scope (insn);
       /* For sequences compute scope resulting from merging all scopes
          of instructions nested inside.  */
       if (GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -357,7 +512,7 @@ scope_to_insns_finalize ()
 	  this_block = NULL;
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    this_block = choose_inner_scope (this_block,
-			    		 INSN_SCOPE (XVECEXP (body, 0, i)));
+			    		 insn_scope (XVECEXP (body, 0, i)));
 	}
       if (! this_block)
 	continue;
@@ -1051,3 +1206,5 @@ cfg_layout_finalize ()
   verify_flow_info ();
 #endif
 }
+
+#include "gt-cfglayout.h"

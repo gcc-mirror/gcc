@@ -2040,7 +2040,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	      copy = emit_insn (pattern);
 	    }
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 
 	  /* If there is a REG_EQUAL note present whose value
 	     is not loop invariant, then delete it, since it
@@ -2094,7 +2094,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 	  copy = emit_jump_insn (pattern);
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 
 	  if (JUMP_LABEL (insn))
 	    {
@@ -2218,7 +2218,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
 	  copy = emit_call_insn (pattern);
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 	  SIBLING_CALL_P (copy) = SIBLING_CALL_P (insn);
 	  CONST_OR_PURE_CALL_P (copy) = CONST_OR_PURE_CALL_P (insn);
 

@@ -379,7 +379,17 @@ print_rtx (in_rtx)
 	break;
 
       case 'i':
-	if (i == 6 && GET_CODE (in_rtx) == NOTE)
+	if (i == 4 && GET_RTX_CLASS (GET_CODE (in_rtx)) == 'i')
+	  {
+#ifndef GENERATOR_FILE
+	    /*  Pretty-print insn locators.  Ignore scoping as it is mostly
+		redundant with line number information and do not print anything
+		when there is no location information available.  */
+	    if (INSN_LOCATOR (in_rtx) && insn_file (in_rtx))
+	      fprintf(outfile, " %s:%i", insn_file (in_rtx), insn_line (in_rtx));
+#endif
+	  }
+	else if (i == 6 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
 	       other times often contains garbage from INSN->NOTE death.  */

@@ -603,18 +603,18 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", 'x')
    ---------------------------------------------------------------------- */
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuuBteiee", 'i')
+DEF_RTL_EXPR(INSN, "insn", "iuuBieiee", 'i')
 
 /* An instruction that can possibly jump.
    Fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBteiee0", 'i')
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBieiee0", 'i')
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
    Field ( rtx->fld[9] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBteieee", 'i')
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBieieee", 'i')
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu000000", 'x')

@@ -3586,7 +3586,7 @@ try_split (pat, trial, last)
 	}
     }
 
-  tem = emit_insn_after_scope (seq, trial, INSN_SCOPE (trial));
+  tem = emit_insn_after_setloc (seq, trial, INSN_LOCATOR (trial));
 
   delete_insn (trial);
   if (has_barrier)
@@ -3624,7 +3624,7 @@ make_insn_raw (pattern)
   INSN_CODE (insn) = -1;
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
-  INSN_SCOPE (insn) = NULL;
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
 #ifdef ENABLE_RTL_CHECKING
@@ -3658,7 +3658,7 @@ make_jump_insn_raw (pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   JUMP_LABEL (insn) = NULL;
-  INSN_SCOPE (insn) = NULL;
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -3680,7 +3680,7 @@ make_call_insn_raw (pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
   CALL_INSN_FUNCTION_USAGE (insn) = NULL;
-  INSN_SCOPE (insn) = NULL;
+  INSN_LOCATOR (insn) = 0;
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -4653,11 +4653,11 @@ emit_line_note_after (file, line, after)
   return note;
 }
 
-/* Like emit_insn_after, but set INSN_SCOPE according to SCOPE.  */
+/* Like emit_insn_after, but set INSN_LOCATOR according to SCOPE.  */
 rtx
-emit_insn_after_scope (pattern, after, scope)
+emit_insn_after_setloc (pattern, after, loc)
      rtx pattern, after;
-     tree scope;
+     int loc;
 {
   rtx last = emit_insn_after (pattern, after);
 
@@ -4665,7 +4665,7 @@ emit_insn_after_scope (pattern, after, scope)
   while (1)
     {
       if (active_insn_p (after))
-	INSN_SCOPE (after) = scope;
+	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4673,11 +4673,11 @@ emit_insn_after_scope (pattern, after, scope)
   return last;
 }
 
-/* Like emit_jump_insn_after, but set INSN_SCOPE according to SCOPE.  */
+/* Like emit_jump_insn_after, but set INSN_LOCATOR according to SCOPE.  */
 rtx
-emit_jump_insn_after_scope (pattern, after, scope)
+emit_jump_insn_after_setloc (pattern, after, loc)
      rtx pattern, after;
-     tree scope;
+     int loc;
 {
   rtx last = emit_jump_insn_after (pattern, after);
 
@@ -4685,7 +4685,7 @@ emit_jump_insn_after_scope (pattern, after, scope)
   while (1)
     {
       if (active_insn_p (after))
-	INSN_SCOPE (after) = scope;
+	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4693,11 +4693,11 @@ emit_jump_insn_after_scope (pattern, after, scope)
   return last;
 }
 
-/* Like emit_call_insn_after, but set INSN_SCOPE according to SCOPE.  */
+/* Like emit_call_insn_after, but set INSN_LOCATOR according to SCOPE.  */
 rtx
-emit_call_insn_after_scope (pattern, after, scope)
+emit_call_insn_after_setloc (pattern, after, loc)
      rtx pattern, after;
-     tree scope;
+     int loc;
 {
   rtx last = emit_call_insn_after (pattern, after);
 
@@ -4705,7 +4705,7 @@ emit_call_insn_after_scope (pattern, after, scope)
   while (1)
     {
       if (active_insn_p (after))
-	INSN_SCOPE (after) = scope;
+	INSN_LOCATOR (after) = loc;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4713,11 +4713,11 @@ emit_call_insn_after_scope (pattern, after, scope)
   return last;
 }
 
-/* Like emit_insn_before, but set INSN_SCOPE according to SCOPE.  */
+/* Like emit_insn_before, but set INSN_LOCATOR according to SCOPE.  */
 rtx
-emit_insn_before_scope (pattern, before, scope)
+emit_insn_before_setloc (pattern, before, loc)
      rtx pattern, before;
-     tree scope;
+     int loc;
 {
   rtx first = PREV_INSN (before);
   rtx last = emit_insn_before (pattern, before);
@@ -4726,7 +4726,7 @@ emit_insn_before_scope (pattern, before, scope)
   while (1)
     {
       if (active_insn_p (first))
-	INSN_SCOPE (first) = scope;
+	INSN_LOCATOR (first) = loc;
       if (first == last)
 	break;
       first = NEXT_INSN (first);
@@ -5798,7 +5798,7 @@ emit_copy_of_insn_after (insn, after)
   /* Update LABEL_NUSES.  */
   mark_jump_label (PATTERN (new), new, 0);
 
-  INSN_SCOPE (new) = INSN_SCOPE (insn);
+  INSN_LOCATOR (new) = INSN_LOCATOR (insn);
 
   /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
      make them.  */

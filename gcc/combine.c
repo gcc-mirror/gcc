@@ -1702,7 +1702,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	     as I2 will not cause a problem.  */
 
 	  i1 = gen_rtx_INSN (VOIDmode, INSN_UID (i2), NULL_RTX, i2,
-			     BLOCK_FOR_INSN (i2), INSN_SCOPE (i2),
+			     BLOCK_FOR_INSN (i2), INSN_LOCATOR (i2),
 			     XVECEXP (PATTERN (i2), 0, 1), -1, NULL_RTX,
 			     NULL_RTX);
 

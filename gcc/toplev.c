@@ -3570,7 +3570,7 @@ rest_of_compilation (tree decl)
 
   timevar_pop (TV_JUMP);
 
-  scope_to_insns_initialize ();
+  insn_locators_initialize ();
   /* Complete generation of exception handling code.  */
   if (doing_eh (0))
     {

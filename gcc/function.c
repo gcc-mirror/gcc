@@ -300,6 +300,7 @@ static void do_clobber_return_reg PARAMS ((rtx, void *));
 static void do_use_return_reg PARAMS ((rtx, void *));
 static void instantiate_virtual_regs_lossage PARAMS ((rtx));
 static tree split_complex_args (tree);
+static void set_insn_locators (rtx, int);
 
 /* Pointer to chain of `struct function' for containing functions.  */
 static GTY(()) struct function *outer_function_chain;
@@ -7348,6 +7349,20 @@ record_insns (insns, vecp)
     }
 }
 
+/* Set the specified locator to the insn chain.  */
+static void
+set_insn_locators (insn, loc)
+  rtx insn;
+  int loc;
+{
+  while (insn != NULL_RTX)
+    {
+      if (INSN_P (insn))
+	INSN_LOCATOR (insn) = loc;
+      insn = NEXT_INSN (insn);
+    }
+}
+
 /* Determine how many INSN_UIDs in VEC are part of INSN.  Because we can
    be running after reorg, SEQUENCE rtl is possible.  */
 
@@ -7754,6 +7769,7 @@ thread_prologue_and_epilogue_insns (f)
 
       seq = get_insns ();
       end_sequence ();
+      set_insn_locators (seq, prologue_locator);
 
       /* Can't deal with multiple successors of the entry block
          at the moment.  Function should always have at least one
@@ -7901,6 +7917,7 @@ thread_prologue_and_epilogue_insns (f)
 
       /* Retain a map of the epilogue insns.  */
       record_insns (seq, &epilogue);
+      set_insn_locators (seq, epilogue_locator);
 
       seq = get_insns ();
       end_sequence ();
@@ -7936,6 +7953,7 @@ epilogue_done:
 	 avoid getting rid of sibcall epilogue insns.  Do this before we
 	 actually emit the sequence.  */
       record_insns (seq, &sibcall_epilogue);
+      set_insn_locators (seq, epilogue_locator);
 
       i = PREV_INSN (insn);
       newinsn = emit_insn_before (seq, insn);

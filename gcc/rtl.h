@@ -538,7 +538,7 @@ do {				\
 #define NEXT_INSN(INSN)	XEXP (INSN, 2)
 
 #define BLOCK_FOR_INSN(INSN) XBBDEF (INSN, 3)
-#define INSN_SCOPE(INSN) XTREE (INSN, 4)
+#define INSN_LOCATOR(INSN) XINT (INSN, 4)
 /* The body of an insn.  */
 #define PATTERN(INSN)	XEXP (INSN, 5)
 
@@ -1513,20 +1513,20 @@ extern rtx assign_stack_temp_for_type	PARAMS ((enum machine_mode,
 extern rtx assign_temp			PARAMS ((tree, int, int, int));
 /* In emit-rtl.c */
 extern rtx emit_insn_before		PARAMS ((rtx, rtx));
-extern rtx emit_insn_before_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_insn_before_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_jump_insn_before	PARAMS ((rtx, rtx));
-extern rtx emit_jump_insn_before_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_jump_insn_before_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_call_insn_before	PARAMS ((rtx, rtx));
-extern rtx emit_call_insn_before_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_call_insn_before_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_barrier_before		PARAMS ((rtx));
 extern rtx emit_label_before		PARAMS ((rtx, rtx));
 extern rtx emit_note_before		PARAMS ((int, rtx));
 extern rtx emit_insn_after		PARAMS ((rtx, rtx));
-extern rtx emit_insn_after_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_insn_after_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_jump_insn_after		PARAMS ((rtx, rtx));
-extern rtx emit_jump_insn_after_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_jump_insn_after_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_call_insn_after		PARAMS ((rtx, rtx));
-extern rtx emit_call_insn_after_scope	PARAMS ((rtx, rtx, tree));
+extern rtx emit_call_insn_after_setloc	PARAMS ((rtx, rtx, int));
 extern rtx emit_barrier_after		PARAMS ((rtx));
 extern rtx emit_label_after		PARAMS ((rtx, rtx));
 extern rtx emit_note_after		PARAMS ((int, rtx));
@@ -1558,6 +1558,9 @@ extern rtx prev_cc0_setter		PARAMS ((rtx));
 
 /* In cfglayout.c  */
 extern tree choose_inner_scope		PARAMS ((tree, tree));
+extern int insn_line 			PARAMS ((rtx));
+extern const char * insn_file 		PARAMS ((rtx));
+extern int prologue_locator, epilogue_locator;
 
 /* In jump.c */
 extern rtx next_nondeleted_insn		PARAMS ((rtx));

@@ -1,3 +1,43 @@
+Sun Jun  8 21:27:41 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (insn_scope): New static function
+	(block_locators_*, line_locators*, file_locators*): New static varrays.
+	(scope_to_insns_initialize): Use them.
+	(insn_line, insn_file): New functions.
+	(scope_to_insns_finalize): Use insn_scope.
+	(prologue_locator, epilogue_locator): New global variables.
+	* emit-rt.c (try_split, make_insn_raw, make_jump_insn_raw,
+	make_call_insn_raw, emit_copy_of_insn_after): Use locators.
+	(emit_insn_after_scope, emit_insn_before_scope
+	emit_jump_insn_after_scope, emit_jump_insn_before_scope
+	emit_call_insn_after_scope, emit_call_insn_before_scope): Rename to...
+	(emit_insn_after_setloc, emit_insn_before_setloc
+	emit_jump_insn_after_setloc, emit_jump_insn_before_setloc
+	emit_call_insn_after_setloc, emit_call_insn_before_setloc): ... these;
+	use locators.
+	* final.c (notice_source_line): Use locators.
+	(final_start_function): Set initial source file and line.
+	(final_scan_insn): Use locators.
+	* ifcvt.c (noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_addcc, noce_try_store_flag_mask, noce_try_cmove,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs,
+	noce_process_if_block, find_cond_trap): Likewise.
+	* integrate.c (copy_insn_list): Likewise.
+	* jump.c (duplicate_loop_exit_test): LIkewise.
+	* print-rtl.c (print_rtx): Print locators.
+	* recog.c (peephole2_optimize): Likewise.
+	* rtl.h (INSN_SCOPE): Remove.
+	(emit_insn_after_scope, emit_insn_before_scope
+	emit_jump_insn_after_scope, emit_jump_insn_before_scope
+	emit_call_insn_after_scope, emit_call_insn_before_scope): Rename to...
+	(emit_insn_after_setloc, emit_insn_before_setloc
+	emit_jump_insn_after_setloc, emit_jump_insn_before_setloc
+	emit_call_insn_after_setloc, emit_call_insn_before_setloc): ... these;
+	(insn_file, insn_line, prologue_locator, epilogue_locator): Declare.
+	* unroll.c (copy_loop_body): Use locators.
+	* function.c (set_insn_locators): New function.
+	(thread_prologue_and_epilogue_insns): Set the locators accordingly.
+
 2003-06-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (LONG_LONG_TYPE_SIZE): Set to 64.

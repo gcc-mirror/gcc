@@ -205,7 +205,7 @@ static int asm_insn_count	PARAMS ((rtx));
 #endif
 static void profile_function	PARAMS ((FILE *));
 static void profile_after_prologue PARAMS ((FILE *));
-static void notice_source_line	PARAMS ((rtx));
+static bool notice_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx *));
 static void output_asm_name	PARAMS ((void));
 static void output_alternate_entry_point PARAMS ((FILE *, rtx));
@@ -1338,7 +1338,7 @@ asm_insn_count (body)
 
 void
 final_start_function (first, file, optimize)
-     rtx first;
+     rtx first ATTRIBUTE_UNUSED;
      FILE *file;
      int optimize ATTRIBUTE_UNUSED;
 {
@@ -1359,8 +1359,8 @@ final_start_function (first, file, optimize)
     }
 #endif
 
-  if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
-    notice_source_line (first);
+  last_linenum = 0;
+  last_filename = 0;
   high_block_linenum = high_function_linenum = last_linenum;
 
   (*debug_hooks->begin_prologue) (last_linenum, last_filename);
@@ -1392,7 +1392,7 @@ final_start_function (first, file, optimize)
   if (write_symbols)
     {
       remove_unnecessary_notes ();
-      scope_to_insns_finalize ();
+      reemit_insn_block_notes ();
       number_blocks (current_function_decl);
       /* We never actually put out begin/end notes for the top-level
 	 block in the function.  But, conceptually, that block is
@@ -1821,51 +1821,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	default:
 	  if (NOTE_LINE_NUMBER (insn) <= 0)
 	    abort ();
-
-	  /* This note is a line-number.  */
-	  {
-	    rtx note;
-	    int note_after = 0;
-
-	    /* If there is anything real after this note, output it.
-	       If another line note follows, omit this one.  */
-	    for (note = NEXT_INSN (insn); note; note = NEXT_INSN (note))
-	      {
-		if (GET_CODE (note) != NOTE && GET_CODE (note) != CODE_LABEL)
-		  break;
-
-		/* These types of notes can be significant
-		   so make sure the preceding line number stays.  */
-		else if (GET_CODE (note) == NOTE
-			 && (NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_BEG
-			     || NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_END
-			     || NOTE_LINE_NUMBER (note) == NOTE_INSN_FUNCTION_BEG))
-		  break;
-		else if (GET_CODE (note) == NOTE && NOTE_LINE_NUMBER (note) > 0)
-		  {
-		    /* Another line note follows; we can delete this note
-		       if no intervening line numbers have notes elsewhere.  */
-		    int num;
-		    for (num = NOTE_LINE_NUMBER (insn) + 1;
-		         num < NOTE_LINE_NUMBER (note);
-		         num++)
-		      if (line_note_exists[num])
-			break;
-
-		    if (num >= NOTE_LINE_NUMBER (note))
-		      note_after = 1;
-		    break;
-		  }
-	      }
-
-	    /* Output this line note if it is the first or the last line
-	       note in a row.  */
-	    if (!note_after)
-	      {
-		notice_source_line (insn);
-		(*debug_hooks->source_line) (last_linenum, last_filename);
-	      }
-	  }
 	  break;
 	}
       break;
@@ -2090,6 +2045,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    function_section (current_function_decl);
 
 	    break;
+	  }
+	/* Output this line note if it is the first or the last line
+	   note in a row.  */
+	if (notice_source_line (insn))
+	  {
+	    (*debug_hooks->source_line) (last_linenum, last_filename);
 	  }
 
 	if (GET_CODE (body) == ASM_INPUT)
@@ -2561,16 +2522,22 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 /* Output debugging info to the assembler file FILE
    based on the NOTE-insn INSN, assumed to be a line number.  */
 
-static void
+static bool
 notice_source_line (insn)
      rtx insn;
 {
-  const char *filename = NOTE_SOURCE_FILE (insn);
+  const char *filename = insn_file (insn);
+  int linenum = insn_line (insn);
 
-  last_filename = filename;
-  last_linenum = NOTE_LINE_NUMBER (insn);
-  high_block_linenum = MAX (last_linenum, high_block_linenum);
-  high_function_linenum = MAX (last_linenum, high_function_linenum);
+  if (filename && (filename != last_filename || last_linenum != linenum))
+    {
+      last_filename = filename;
+      last_linenum = linenum;
+      high_block_linenum = MAX (last_linenum, high_block_linenum);
+      high_function_linenum = MAX (last_linenum, high_function_linenum);
+      return true;
+    }
+  return false;
 }
 
 /* For each operand in INSN, simplify (subreg (reg)) so that it refers
