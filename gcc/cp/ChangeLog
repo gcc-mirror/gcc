@@ -1,3 +1,23 @@
+2003-02-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7129
+	* call.c (z_candidate): Add args.
+	(convert_class_to_reference): Set it.
+	(implicit_conversion): Tidy.
+	(add_candidate): Add args parameter.
+	(add_function_candidate): Adjust call to add_candidate.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(build_user_type_conversion_1): Eliminate wasteful tree_cons
+	usage.
+	(build_new_function_call): Likewise.
+	(build_object_call): Likewise.
+	(add_candidates): New function.
+	(build_new_op): Use it.
+	(covert_like_real): Adjust call to build_over_call.
+	(build_over_call): Remove args parameter.
+	* operators.def: Add <?= and >?=.
+
 2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* typeck.c (build_indirect_ref): Don't check flag_volatile.

@@ -1,3 +1,8 @@
+2003-02-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7129
+	* testsuite/g++.dg/ext/max.C: New test.
+
 Mon Feb  3 16:05:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20030203-1.c: New test.
