@@ -1,3 +1,13 @@
+1999-07-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* egcs_update (files_and_dependencies): New function, with
+	complete list of files to be updated, as well as their
+	dependencies.
+	(touch_files): Check the timestamp of each generated file against
+	its dependencies'.
+	(main): New flags --touch, --list and --help.  Remove the
+	pre-update step.
+
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
         
 	* test_summary: Replace egcs with gcc.  Update e-mail address.
