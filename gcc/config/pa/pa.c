@@ -797,7 +797,19 @@ emit_move_sequence (operands, mode, scratch_reg)
 	operand1 = XEXP (operand1, 0);
 
       scratch_reg = gen_rtx (REG, SImode, REGNO (scratch_reg));
-      emit_move_insn (scratch_reg, XEXP (operand1, 0));
+
+      /* D might not fit in 14 bits either; for such cases load D into
+	 scratch reg.  */
+      if (!memory_address_p (SImode, XEXP (operand1, 0)))
+	{
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
+	  emit_move_insn (scratch_reg, gen_rtx (GET_CODE (XEXP (operand1, 0)),
+						SImode,
+						XEXP (XEXP (operand1, 0), 0),
+						scratch_reg));
+	}
+      else
+	emit_move_insn (scratch_reg, XEXP (operand1, 0));
       emit_insn (gen_rtx (SET, VOIDmode, operand0, gen_rtx (MEM, mode,
 							    scratch_reg)));
       return 1;
@@ -814,7 +826,18 @@ emit_move_sequence (operands, mode, scratch_reg)
 	operand0 = XEXP (operand0, 0);
 
       scratch_reg = gen_rtx (REG, SImode, REGNO (scratch_reg));
-      emit_move_insn (scratch_reg, XEXP (operand0, 0));
+      /* D might not fit in 14 bits either; for such cases load D into
+	 scratch reg.  */
+      if (!memory_address_p (SImode, XEXP (operand0, 0)))
+	{
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
+	  emit_move_insn (scratch_reg, gen_rtx (GET_CODE (XEXP (operand0, 0)),
+						SImode,
+						XEXP (XEXP (operand0, 0), 0),
+						scratch_reg));
+	}
+      else
+	emit_move_insn (scratch_reg, XEXP (operand0, 0));
       emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, mode, scratch_reg),
 			  operand1));
       return 1;
