@@ -333,11 +333,24 @@
   return \"movb %1,%0\";
 }")
 
+;; This is here to accept 4 arguments and pass the first 3 along
+;; to the movstrhi1 pattern that really does the work.
+(define_expand "movstrhi"
+  [(set (match_operand:BLK 0 "general_operand" "=g")
+	(match_operand:BLK 1 "general_operand" "g"))
+   (use (match_operand:HI 2 "general_operand" "g"))
+   (match_operand 3 "" "")]
+  ""
+  "
+  emit_insn (gen_movstrhi1 (operands[0], operands[1], operands[2]));
+  DONE;
+")
+
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
 ;; that anything generated as this insn will be recognized as one
 ;; and that it won't successfully combine with anything.
-(define_insn "movstrhi"
+(define_insn "movstrhi1"
   [(set (match_operand:BLK 0 "general_operand" "=g")
 	(match_operand:BLK 1 "general_operand" "g"))
    (use (match_operand:HI 2 "general_operand" "g"))
@@ -1853,7 +1866,29 @@
   ""
   "jmp (%0)")
 
-(define_insn "casesi"
+;; This is here to accept 5 arguments (as passed by expand_end_case)
+;; and pass the first 4 along to the casesi1 pattern that really does the work.
+(define_expand "casesi"
+  [(set (pc)
+	(if_then_else (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
+				     (match_operand:SI 1 "general_operand" "g"))
+			   (match_operand:SI 2 "general_operand" "g"))
+		      (plus:SI (sign_extend:SI
+				(mem:HI
+				 (plus:SI (pc)
+					  (mult:SI (minus:SI (match_dup 0)
+							     (match_dup 1))
+						   (const_int 2)))))
+			       (label_ref:SI (match_operand 3 "" "")))
+		      (pc)))
+   (match_operand 4 "" "")]
+  ""
+  "
+  emit_insn (gen_casesi1 (operands[0], operands[1], operands[2], operands[3]));
+  DONE;
+")
+
+(define_insn "casesi1"
   [(set (pc)
 	(if_then_else (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
 				     (match_operand:SI 1 "general_operand" "g"))
