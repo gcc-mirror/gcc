@@ -2899,8 +2899,8 @@ generate_classfile (clas, state)
 	{
 	  tree init = DECL_INITIAL (part);
 	  static tree ConstantValue_node = NULL_TREE;
-	  // This conversion is a work-around for front-end bug.
-	  init = convert (TREE_TYPE (part), init);
+	  if (TREE_TYPE (part) != TREE_TYPE (init))
+	    fatal_error ("field initializer type mismatch.");
 	  ptr = append_chunk (NULL, 8, state);
 	  if (ConstantValue_node == NULL_TREE)
 	    ConstantValue_node = get_identifier ("ConstantValue");
