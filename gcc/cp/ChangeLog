@@ -1,3 +1,12 @@
+1997-10-22  Brendan Kehoe  <brendan@cygnus.com>
+
+	* method.c (build_template_parm_names, build_decl_overload_real):
+	Add static to definitions.
+	* pt.c (add_to_template_args, note_template_header,
+	processing_explicit_specialization, type_unification_real): Likewise.
+	({determine,check}_explicit_specialization): Use a single string for
+	error messages.
+
 Mon Oct 20 12:06:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_exception_blocks): Call do_pending_stack_adust.

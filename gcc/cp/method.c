@@ -656,7 +656,7 @@ build_overload_value (type, value, in_template)
 /* Add encodings for the vector of template parameters in PARMLIST,
    given the vector of arguments to be substituted in ARGLIST.  */
 
-void
+static void
 build_template_parm_names (parmlist, arglist)
      tree parmlist;
      tree arglist;
@@ -1104,7 +1104,7 @@ build_static_name (context, name)
   return get_identifier ((char *)obstack_base (&scratch_obstack));
 }
 
-tree 
+static tree 
 build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 			  for_method) 
      tree dname;

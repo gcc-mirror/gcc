@@ -214,7 +214,7 @@ is_member_template (t)
 /* Return a new template argument vector which contains all of ARGS,
    but has as its innermost set of arguments the EXTRA_ARGS.  */
 
-tree
+static tree
 add_to_template_args (args, extra_args)
      tree args;
      tree extra_args;
@@ -288,7 +288,7 @@ reset_specialization ()
 /* We've just seen a template header.  If SPECIALIZATION is non-zero,
    it was of the form template <>.  */
 
-void 
+static void 
 note_template_header (specialization)
      int specialization;
 {
@@ -301,8 +301,8 @@ note_template_header (specialization)
    types that appeared was TEMPLATE_COUNT, is an explicit
    specialization.  */
 
-int
-processing_explicit_specialization(template_count)
+static int
+processing_explicit_specialization (template_count)
      int template_count;
 {
   /* A function declaration is an explicit specialization of a member
@@ -424,8 +424,8 @@ determine_explicit_specialization (template_id, type, targs_out,
   if (matching_fns == NULL_TREE)
     {
       if (complain)
-	cp_error ("Specialization of `%s' does not match any template "
-		  "declaration.", IDENTIFIER_POINTER (name));
+	cp_error ("Specialization of `%s' does not match any template declaration.",
+		  IDENTIFIER_POINTER (name));
       *targs_out = NULL_TREE;
       return NULL_TREE;
     }
@@ -501,8 +501,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	       an explicit instantiation.  */
 	    return 2;
 	  else if (pedantic)
-	    pedwarn ("Explicit specialization not preceeded by "
-		     "`template <>'");
+	    pedwarn ("Explicit specialization not preceeded by `template <>'");
 	}
 
       if (TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
@@ -3564,7 +3563,7 @@ type_unification (tparms, targs, parms, args, targs_in, nsubsts,
 }
 
 
-int
+static int
 type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 		       strict, allow_incomplete)
      tree tparms, *targs, parms, args;
