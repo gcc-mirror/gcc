@@ -1,3 +1,8 @@
+2001-08-03  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cpplex.c (parse_string): Warn once per string.
+	* cpplib.c (_cpp_do_file_change): Call hook correctly.
+
 2001-08-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Configuration): Fix markup.

@@ -645,6 +645,7 @@ parse_string (pfile, token, terminator)
   unsigned char *dest, *limit;
   cppchar_t c;
   unsigned int nulls = 0;
+  bool warned_multi = false;
 
   dest = POOL_FRONT (pool);
   limit = POOL_LIMIT (pool);
@@ -694,7 +695,12 @@ parse_string (pfile, token, terminator)
 	      break;
 	    }
 
-	  cpp_pedwarn (pfile, "multi-line string literals are deprecated");
+	  if (!warned_multi)
+	    {
+	      warned_multi = true;
+	      cpp_pedwarn (pfile, "multi-line string literals are deprecated");
+	    }
+
 	  if (pfile->mlstring_pos.line == 0)
 	    pfile->mlstring_pos = pfile->lexer_pos;
 	      

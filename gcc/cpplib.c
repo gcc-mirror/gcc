@@ -867,7 +867,7 @@ _cpp_do_file_change (pfile, reason, from_file, from_lineno)
 
       fc.from.filename = from_file;
       fc.from.lineno = from_lineno;
-      pfile->cb.file_change (pfile, &fc);
+      (*pfile->cb.file_change) (pfile, &fc);
     }
 }
 
