@@ -1775,7 +1775,7 @@ yylex ()
 
 	    warn = overflow;
 	    if (warn)
-	      pedwarn ("integer constant out of range");
+	      pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
@@ -1866,7 +1866,7 @@ yylex ()
 		    < TYPE_PRECISION (type)))
 	      {
 		warn = 1;
-		pedwarn ("integer constant out of range");
+		pedwarn ("integer constant larger than the maximum value of an unsigned long int");
 	      }
 
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
@@ -1903,7 +1903,7 @@ yylex ()
 	    if (! warn
 		&& TREE_CODE (TREE_TYPE (yylval.ttype)) == INTEGER_TYPE
 		&& ! int_fits_type_p (yylval.ttype, TREE_TYPE (yylval.ttype)))
-	      pedwarn ("integer constant out of range");
+	      pedwarn ("integer constant is larger than the maximum value for its type");
 	  }
 
 	UNGETC (c);
