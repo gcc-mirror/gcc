@@ -212,7 +212,7 @@ int
 merge_type_state (label)
      tree label;
 {
-  int nlocals = DECL_MAX_LOCALS(current_function_decl);
+  int nlocals = DECL_MAX_LOCALS (current_function_decl);
   int cur_length = stack_pointer + nlocals;
   tree vec = LABEL_TYPE_STATE (label);
   tree return_map;
