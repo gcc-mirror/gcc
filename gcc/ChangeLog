@@ -1,3 +1,19 @@
+2002-06-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* Makefile.in (tm_defines): New configuration variable.
+	(cs-config.h, cs-hconfig.h, cs-tconfig.h): Rename DEFINES to XM_DEFINES.
+	Pass tm_defines in TM_DEFINES.
+	(cs-tm_p.h): Rename DEFINES to XM_DEFINES.  Pass TM_DEFINES.
+	* config.gcc (tm_defines): New configuration variable.
+	(hppa*-*-* | parisc*-*-*): Use tm_defines instead of pa-700.h and
+	pa-7100.h headers.  Change hppa1* scheduling default to 7100LC.
+	* configure.in: Substitute tm_defines.
+	* configure: Rebuilt.
+	* mkconfig.sh: Rename DEFINES to XM_DEFINES.  Output TM_DEFINES.
+	* doc/install.texi: Update.
+	* pa/pa-700.h: Delete file.
+	* pa/pa-7100.h: Delete file.
+
 2002-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (comparison_to_compcode): New function to convert

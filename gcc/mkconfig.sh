@@ -2,11 +2,11 @@
 
 # Generate gcc's config.h, which is not your normal autoconf-generated
 # config.h (that's auto-(host|build).h).  $1 is the file to generate.
-# HEADERS, DEFINES, and possibly TARGET_CPU_DEFAULT are expected to be
-# set in the environment.
+# TM_DEFINES, HEADERS, XM_DEFINES, and possibly TARGET_CPU_DEFAULT are
+# expected to be set in the environment.
 
 if [ -z "$1" ]; then
-    echo "Usage: HEADERS='list' DEFINES='list' mkconfig.sh FILE" >&2
+    echo "Usage: TM_DEFINES='list' HEADERS='list' XM_DEFINES='list' mkconfig.sh FILE" >&2
     exit 1
 fi
 
@@ -18,6 +18,13 @@ rm -f ${output}T
 if [ "$TARGET_CPU_DEFAULT" != "" ]; then
     echo "#define TARGET_CPU_DEFAULT ($TARGET_CPU_DEFAULT)" >> ${output}T
 fi
+
+# Provide defines for other target machine macros to be used everywhere.
+for def in $TM_DEFINES; do
+    echo "#ifndef $def" | sed 's/=.*//' >> ${output}T
+    echo "# define $def" | sed 's/=/ /' >> ${output}T
+    echo "#endif" >> ${output}T
+done
 
 # The first entry in HEADERS may be auto-host.h or auto-build.h;
 # it wants to be included even when not -DIN_GCC.
@@ -63,7 +70,7 @@ if [ -n "$HEADERS" ]; then
     echo '#endif' >> ${output}T
 fi
 
-for def in $DEFINES; do
+for def in $XM_DEFINES; do
     echo "#ifndef $def" | sed 's/=.*//' >> ${output}T
     echo "# define $def" | sed 's/=/ /' >> ${output}T
     echo "#endif" >> ${output}T

@@ -45,6 +45,8 @@
 #
 #  cpu_type		The name of the cpu, if different from machine.
 #
+#  tm_defines		List of target macros to define for all compilations.
+#
 #  tm_file		A list of target macro files, if different from
 #			"$cpu_type/$cpu_type.h". Usually it's constructed
 #			per target in a way like this:
@@ -188,6 +190,7 @@ extra_host_objs=
 extra_gcc_objs=
 c_target_objs=
 cxx_target_objs=
+tm_defines=
 xm_defines=
 float_format=
 # Set this to force installation and use of collect2.
@@ -2850,11 +2853,8 @@ hppa*-*-* | parisc*-*-*)
 		target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
 	fi
 	case $machine in
-		hppa1.0* | parisc1.0*)
-			tm_file="pa/pa-700.h ${tm_file}"
-			;;
-		hppa1.1* | parisc1.1*)
-			tm_file="pa/pa-7100.h ${tm_file}"
+		hppa1* | parisc1*)
+			tm_defines="TARGET_SCHED_DEFAULT=\\\"7100LC\\\""
 			;;
 	esac
 	;;

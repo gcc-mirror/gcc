@@ -259,6 +259,7 @@ tmake_file=@dep_tmake_file@
 out_file=$(srcdir)/config/@out_file@
 out_object_file=@out_object_file@
 md_file=$(srcdir)/config/@md_file@
+tm_defines=@tm_defines@
 tm_p_file_list=@tm_p_file_list@
 tm_p_file=@tm_p_file@
 build_xm_file_list=@build_xm_file_list@
@@ -845,22 +846,26 @@ tconfig.h: cs-tconfig.h ; @true
 tm_p.h: cs-tm_p.h ; @true
 
 cs-config.h: Makefile
-	HEADERS="$(host_xm_file)" DEFINES="$(host_xm_defines)" \
+	TM_DEFINES="$(tm_defines)" \
+	HEADERS="$(host_xm_file)" XM_DEFINES="$(host_xm_defines)" \
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	$(SHELL) $(srcdir)/mkconfig.sh config.h
 
 cs-hconfig.h: Makefile
-	HEADERS="$(build_xm_file)" DEFINES="$(build_xm_defines)" \
+	TM_DEFINES="$(tm_defines)" \
+	HEADERS="$(build_xm_file)" XM_DEFINES="$(build_xm_defines)" \
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
 cs-tconfig.h: Makefile
-	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
+	TM_DEFINES="$(tm_defines)" \
+	HEADERS="$(xm_file)" XM_DEFINES="$(xm_defines)" \
 	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 
 cs-tm_p.h: Makefile
-	HEADERS="$(tm_p_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
+	TM_DEFINES="" \
+	HEADERS="$(tm_p_file)" XM_DEFINES="" TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm_p.h
 
 # Don't automatically run autoconf, since configure.in might be accidentally
