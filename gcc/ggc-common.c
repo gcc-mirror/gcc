@@ -48,7 +48,7 @@ static void ggc_mark_rtx_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_varray_ptr PARAMS ((void *));
 static void ggc_mark_tree_hash_table_ptr PARAMS ((void *));
 static void ggc_mark_trees PARAMS ((void));
-static boolean ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
+static bool ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
 						       hash_table_key));
 
 /* Maintain global roots that are preserved during GC.  */
@@ -462,7 +462,7 @@ ggc_mark_tree_varray (v)
 
 /* Mark the hash table-entry HE.  It's key field is really a tree.  */
 
-static boolean
+static bool
 ggc_mark_tree_hash_table_entry (he, k)
      struct hash_entry *he;
      hash_table_key k ATTRIBUTE_UNUSED;

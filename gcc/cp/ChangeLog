@@ -1,5 +1,9 @@
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
+	* decl.c: Replace all uses of 'boolean' with 'bool'.
+
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
 	* lang-specs.h: Add zero initializer for cpp_spec field to
 	all array elements that need one.  Don't put an #ifdef inside
 	the initializer list; set a default for CPLUSPLUS_CPP_SPEC and

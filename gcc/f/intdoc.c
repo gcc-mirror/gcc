@@ -1,5 +1,5 @@
 /* intdoc.c
-   Copyright (C) 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2001 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -25,17 +25,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hconfig.h"
 #include "system.h"
 #include "assert.h"
-
-typedef enum
-  {
-#if !defined(false) || !defined(true)
-    false = 0, true = 1,
-#endif
-#if !defined(FALSE) || !defined(TRUE)
-    FALSE = 0, TRUE = 1,
-#endif
-    Doggone_Trailing_Comma_Dont_Work = 1
-  } bool;
 
 /* Pull in the intrinsics info, but only the doc parts.  */
 #define FFEINTRIN_DOC 1

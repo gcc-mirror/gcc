@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for PA-RISC.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,11 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* HP-UX is a flavor of System V */
 #define USG
-
-/* Use System V memory functions.  */
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
 
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8

@@ -1,3 +1,49 @@
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* config/xm-lynx.h, config/xm-std32.h, config/a29k/xm-a29k.h,
+	config/a29k/xm-unix.h, config/alpha/xm-alpha.h,
+	config/arc/xm-arc.h, config/arm/xm-arm.h, config/c4x/xm-c4x.h,
+	config/clipper/xm-clix.h, config/convex/xm-convex.h,
+	config/d30v/xm-d30v.h, config/dsp16xx/xm-dsp16xx.h,
+	config/elxsi/xm-elxsi.h, config/fr30/xm-fr30.h,
+	config/h8300/xm-h8300.h, config/i370/xm-i370.h,
+	config/i370/xm-linux.h, config/i370/xm-mvs.h,
+	config/i370/xm-oe.h, config/i386/xm-aix.h,
+	config/i386/xm-i386.h, config/i386/xm-osf.h,
+	config/i860/xm-i860.h, config/i960/xm-i960.h,
+	config/ia64/xm-ia64.h, config/m32r/xm-m32r.h,
+	config/m68k/xm-m68k.h, config/m88k/xm-m88k.h,
+	config/mcore/xm-mcore.h, config/mips/xm-mips.h,
+	config/mn10200/xm-mn10200.h, config/mn10300/xm-mn10300.h,
+	config/ns32k/xm-ns32k.h, config/pa/xm-linux.h,
+	config/pa/xm-pa.h, config/pa/xm-pa64hpux.h,
+	config/pa/xm-pahpux.h, config/pa/xm-papro.h,
+	config/pj/xm-pj.h, config/romp/xm-romp.h,
+	config/rs6000/xm-beos.h, config/rs6000/xm-rs6000.h,
+	config/rs6000/xm-sysv4.h, config/sh/xm-sh.h,
+	config/sparc/xm-sparc.h, config/sparc/xm-sysv4.h,
+	config/v850/xm-v850.h, config/vax/xm-vax.h,
+	config/vax/xm-vms.h, config/we32k/xm-we32k.h:
+	Do not define TRUE or FALSE.
+
+	* config/i386/xm-aix.h, config/i386/xm-osf.h: Delete; made
+	empty by above change.
+	* config.gcc: Remove references to these files.
+
+	* configure.in: Detect stdbool.h.
+	* configure, config.in: Regenerate.
+	* system.h: Include stddef.h here if available.  
+	Set HAVE__BOOL based on GCC_VERSION and __STDC_VERSION__.
+	Then set up a sensible boolean type at the very end.
+
+	* combine.c, cse.c, expr.c, fold-const.c, gensupport.c,
+	config/mcore/mcore.c: Rename variables named 'true' and/or 'false'.
+
+	* hash.h: Delete 'boolean' typedef and related #undefs.
+
+	* function.c, ggc-common.c, hash.h, hash.c, tlink.c: Replace
+	all uses of 'boolean' with 'bool'.
+
 2001-03-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cpplib.c (_cpp_init_stacks): Cast enum for comparison.
@@ -221,7 +267,7 @@ Tue Feb 27 16:01:13 CET 2001  Jan Hubicka  <jh@suse.cz>
 			      Fergus Henderson
 
 	* md.texi (min, max): Document
-	
+
 Tue Feb 27 15:51:35 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsf, movdf): Use movaps for reg-reg moves if
@@ -239,7 +285,7 @@ Tue Feb 27 15:36:48 CET 2001  Jan Hubicka  <jh@suse.cz>
 2001-02-26  Jason Eckhardt  <jle@redhat.com>
 
 	* combine.c (known_cond): Do not reverse the condition when
-	SMAX/UMAX is being considered and the condition is for equality 
+	SMAX/UMAX is being considered and the condition is for equality
 	or inequality.
 
 	* testsuite/gcc.c-torture/execute/20010221-1.c: New test.

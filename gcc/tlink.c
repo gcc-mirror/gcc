@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -72,7 +72,7 @@ static struct hash_entry * symbol_hash_newfunc PARAMS ((struct hash_entry *,
 							struct hash_table *,
 							hash_table_key));
 static struct symbol_hash_entry * symbol_hash_lookup PARAMS ((const char *,
-							      boolean));
+							      bool));
 static struct hash_entry * file_hash_newfunc PARAMS ((struct hash_entry *,
 						      struct hash_table *,
 						      hash_table_key));
@@ -81,7 +81,7 @@ static struct hash_entry * demangled_hash_newfunc PARAMS ((struct hash_entry *,
 							   struct hash_table *,
 							   hash_table_key));
 static struct demangled_hash_entry *
-  demangled_hash_lookup PARAMS ((const char *, boolean));
+  demangled_hash_lookup PARAMS ((const char *, bool));
 static void symbol_push PARAMS ((symbol *));
 static symbol * symbol_pop PARAMS ((void));
 static void file_push PARAMS ((file *));
@@ -129,7 +129,7 @@ symbol_hash_newfunc (entry, table, string)
 static struct symbol_hash_entry *
 symbol_hash_lookup (string, create)
      const char *string;
-     boolean create;
+     bool create;
 {
   return ((struct symbol_hash_entry *)
 	  hash_lookup (&symbol_table, (const hash_table_key) string, 
@@ -201,7 +201,7 @@ demangled_hash_newfunc (entry, table, string)
 static struct demangled_hash_entry *
 demangled_hash_lookup (string, create)
      const char *string;
-     boolean create;
+     bool create;
 {
   return ((struct demangled_hash_entry *)
 	  hash_lookup (&demangled_table, (const hash_table_key) string, 

@@ -2091,7 +2091,7 @@ fi
 for ac_hdr in limits.h stddef.h string.h strings.h stdlib.h time.h \
 		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h iconv.h
+		 direct.h malloc.h langinfo.h iconv.h stdbool.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6

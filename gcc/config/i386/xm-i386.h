@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Intel 80386.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,10 +21,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __i386__
 #define __i386__ 1
 #endif
-
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
 
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8

@@ -1,7 +1,3 @@
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
-
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 32
 #define HOST_BITS_PER_SHORT 32
@@ -18,4 +14,3 @@
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-

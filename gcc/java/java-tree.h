@@ -1109,7 +1109,7 @@ extern void safe_layout_class PARAMS ((tree));
 
 extern tree get_boehm_type_descriptor PARAMS ((tree));
 extern unsigned long java_hash_hash_tree_node PARAMS ((hash_table_key));
-extern boolean java_hash_compare_tree_node PARAMS ((hash_table_key, 
+extern bool java_hash_compare_tree_node PARAMS ((hash_table_key, 
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));

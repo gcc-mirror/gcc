@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for PowerPC running System V.4.
-   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2001 Free Software Foundation, Inc.
    Cloned from sparc/xm-sysv4.h by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -18,11 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-
-/* #defines that need visibility everywhere.  */
-#define FALSE 0
-#define TRUE 1
 
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8

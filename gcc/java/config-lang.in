@@ -1,6 +1,6 @@
 # Top level configure fragment for the GNU compiler for the Java(TM)
 # language.
-#  Copyright (C) 1994, 1995, 2000 Free Software Foundation, Inc.
+#  Copyright (C) 1994, 1995, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -39,4 +39,4 @@ stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext) jv-sc
 
 target_libs=${libgcj}
 lang_dirs=fastjar
-build_by_default=no
+#build_by_default=no

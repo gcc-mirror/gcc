@@ -1,5 +1,5 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2634,8 +2634,8 @@ mcore_dependent_simplify_rtx (x, int_op0_mode, last, in_dest, general_simplify)
     {
       int i;
       rtx cond = XEXP(x, 0);
-      rtx true = XEXP(x, 1);
-      rtx false = XEXP(x, 2);
+      rtx true_rtx = XEXP(x, 1);
+      rtx false_rtx = XEXP(x, 2);
       enum rtx_code true_code = GET_CODE (cond);
 
       /* On the mcore, when doing -mcmov-one, we don't want to simplify:
@@ -2648,12 +2648,12 @@ mcore_dependent_simplify_rtx (x, int_op0_mode, last, in_dest, general_simplify)
          not typically help.  see combine.c, line 4217.  BRC  */
 
       if (true_code == NE && XEXP (cond, 1) == const0_rtx
-	  && false == const0_rtx && GET_CODE (true) == CONST_INT
+	  && false_rtx == const0_rtx && GET_CODE (true_rtx) == CONST_INT
 	  && ((1 == nonzero_bits (XEXP (cond, 0), mode)
-	       && (i = exact_log2 (INTVAL (true))) >= 0)
+	       && (i = exact_log2 (INTVAL (true_rtx))) >= 0)
 	      || ((num_sign_bit_copies (XEXP (cond, 0), mode)
 	           == GET_MODE_BITSIZE (mode))
-		  && (i = exact_log2 (- INTVAL (true))) >= 0)))
+		  && (i = exact_log2 (- INTVAL (true_rtx))) >= 0)))
 	{
 	  *general_simplify = 0; 
 	  return x;
