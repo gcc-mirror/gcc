@@ -19,6 +19,7 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
+#include <testsuite_hooks.h>
 
 void test03()
 {
@@ -36,6 +37,7 @@ void test03()
       // seekoff should flush the output sequence, which will fail
       // if the output buffer contains illegal characters.
       fb.pubseekoff(0, ios_base::cur);
+      VERIFY( false );
     }
   catch (exception&)
     {
