@@ -347,7 +347,7 @@ ffi_closure_unix64:
 	.uleb128 2
 
 	.byte	0x4			/* DW_CFA_advance_loc4 */
-	.long	.LUW2-.LUW3
+	.long	.LUW2-.LUW1
 	.byte	0xc			/* DW_CFA_def_cfa, %rsp offset 8 */
 	.uleb128 7
 	.uleb128 8
