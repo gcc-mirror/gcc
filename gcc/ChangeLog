@@ -125,7 +125,6 @@
 	previous args.
 	(copy_object): Caller changed.
 
->>>>>>> 1.10722
 2001-07-19  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in (assembler dwarf2 debug_line support): Define nop
