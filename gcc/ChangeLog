@@ -1,3 +1,27 @@
+2004-06-25  DJ Delorie  <dj@redhat.com>
+
+	* c-common.h (warn_cast_qual, warn_missing_format_attribute,
+	warn_pointer_arith, warn_missing_prototypes, warn_parentheses,
+	warn_missing_braces, warn_sign_compare, warn_long_long,
+	warn_redundant_decls, warn_float_equal, warn_char_subscripts,
+	warn_conversion, warn_format_y2k, warn_format_extra_args,
+	warn_format_zero_length, warn_format_nonliteral,
+	warn_format_security, mesg_implicit_function_declaration,
+	warn_bad_function_cast, warn_traditional,
+	warn_declaration_after_statement, warn_strict_prototypes,
+	warn_missing_declarations, warn_nested_externs,
+	warn_sequence_point, warn_init_self, warn_div_by_zero,
+	warn_implicit_int, warn_nonnull, warn_old_style_definition,
+	warn_selector, warn_undeclared_selector, warn_protocol,
+	warn_abi, warn_invalid_offsetof, warn_ctor_dtor_privacy,
+	warn_overloaded_virtual, warn_nonvdtor, warn_reorder,
+	warn_synth, warn_pmf2ptr, warn_ecpp, warn_sign_promo,
+	warn_old_style_cast, warn_nontemplate_friend,
+	warn_deprecated): Remove explicit declarations.
+	* c-common.c: Likewise, remove explicit definitions.
+	* c-opts.c: Likewise, remove explicit assignments.
+	* c.opts: Likewise, add implicit declare/define/assign.
+
 2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gimplify.c (lookup_tmp_var): Set TREE_READONLY in is_formal case.
