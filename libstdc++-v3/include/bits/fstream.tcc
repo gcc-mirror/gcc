@@ -210,7 +210,8 @@ namespace std
 	    {
 	      // Worst-case number of external bytes.
 	      // XXX Not done encoding() == -1.
-	      const streamsize __blen = __buflen * _M_codecvt->max_length();
+	      const int __enc = _M_codecvt->encoding();
+	      const streamsize __blen = __enc > 0 ? __buflen * __enc : __buflen;
 	      char* __buf = static_cast<char*>(__builtin_alloca(__blen));
 	      __elen = _M_file.xsgetn(__buf, __blen);
 
