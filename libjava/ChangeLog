@@ -1,5 +1,10 @@
 2004-08-30  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/java/security/util/Prime.java (generateRandomPrime): Use
+	return result from `add'.
+
+2004-08-30  Tom Tromey  <tromey@redhat.com>
+
 	* java/rmi/server/UID.java (UID): Read `nextCount', not count.
 
 2004-08-30  Andreas Tobler  <a.tobler@schweiz.ch>

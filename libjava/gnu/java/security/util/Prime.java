@@ -1,5 +1,5 @@
 /* Prime.java --- Prime number generation utilities
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,12 +55,12 @@ public final class Prime
     BigInteger p = new BigInteger( (pmax + pmin)/2, new Random() );
     if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmin ) ) <= 0 )
       {
-	p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin ).subtract( p ) );
+	p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin ).subtract( p ) );
       }
 	
     //Step 2 - test for even
     if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
-      p.add( BigInteger.valueOf( 1 ) );
+      p = p.add( BigInteger.valueOf( 1 ) );
 
     for(;;)
       {
@@ -76,7 +76,7 @@ public final class Prime
 	    // put step 2 code here so looping code is cleaner
 	    //Step 2 - test for even
 	    if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
-	      p.add( BigInteger.valueOf( 1 ) );
+	      p = p.add( BigInteger.valueOf( 1 ) );
 	    continue;
 	  }
 	
@@ -122,7 +122,7 @@ public final class Prime
 
       //Step 4 - test for even
       if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
-	p.add( r );
+	p = p.add( r );
 
       for(;;)
 	{
