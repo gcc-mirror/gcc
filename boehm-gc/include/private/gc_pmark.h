@@ -25,6 +25,8 @@
 #ifndef GC_PMARK_H
 # define GC_PMARK_H
 
+# include "gc.h"	/* For configuration */
+
 # if defined(KEEP_BACK_PTRS) || defined(PRINT_BLACK_LIST)
 #   include "dbg_mlc.h"
 # endif

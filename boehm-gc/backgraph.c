@@ -24,6 +24,8 @@
  * a growing space leak.
  */
 
+#include "gc.h"	/* For configuration information. */
+
 #ifdef MAKE_BACK_GRAPH
 
 #define MAX_IN	10	/* Maximum in-degree we handle directly */

@@ -26,9 +26,10 @@
  * as a base instead.
  */
 
+# include "private/gc_priv.h"
+
 # if defined(GC_IRIX_THREADS) || defined(GC_AIX_THREADS)
 
-# include "private/gc_priv.h"
 # include <pthread.h>
 # include <assert.h>
 # include <semaphore.h>
