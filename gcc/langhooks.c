@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
+#include "flags.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
