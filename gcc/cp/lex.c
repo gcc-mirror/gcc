@@ -894,12 +894,6 @@ init_parse (filename)
     }
 #endif
 
-  if (!flag_rtti || flag_no_gnu_keywords)
-    {
-      UNSET_RESERVED_WORD ("classof");
-      UNSET_RESERVED_WORD ("headof");
-    }
-
   if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
   if (! flag_operator_names)
