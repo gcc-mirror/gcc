@@ -1,4 +1,4 @@
-2004-05-13  Paul Brook  <paul@codesourcery.com>
+2004-05-13  Victor Leikehman  <lei@haifasphere.co.il>
 
 	PR fortran/15314
 	* trans-expr.c (gfc_conv_structure): Use field type, not expr type.
