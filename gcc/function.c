@@ -1307,15 +1307,37 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
       rtx note;
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
+	  /* If this is a CLOBBER of VAR, delete it.
+
+	     If it has a REG_LIBCALL note, delete the REG_LIBCALL
+	     and REG_RETVAL notes too.  */
+	  if (GET_CODE (PATTERN (insn)) == CLOBBER
+	      && XEXP (PATTERN (insn), 0) == var)
+	    {
+	      if ((note = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0)
+		/* The REG_LIBCALL note will go away since we are going to
+		   turn INSN into a NOTE, so just delete the
+		   corresponding REG_RETVAL note.  */
+		remove_note (XEXP (note, 0),
+			     find_reg_note (XEXP (note, 0), REG_RETVAL,
+					    NULL_RTX));
+
+	      /* In unoptimized compilation, we shouldn't call delete_insn
+		 except in jump.c doing warnings.  */
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+	    }
+
 	  /* The insn to load VAR from a home in the arglist
 	     is now a no-op.  When we see it, just delete it.  */
-	  if (toplevel
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && SET_DEST (PATTERN (insn)) == var
-	      /* If this represents the result of an insn group,
-		 don't delete the insn.  */
-	      && find_reg_note (insn, REG_RETVAL, NULL_RTX) == 0
-	      && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
+	  else if (toplevel
+		   && GET_CODE (PATTERN (insn)) == SET
+		   && SET_DEST (PATTERN (insn)) == var
+		   /* If this represents the result of an insn group,
+		      don't delete the insn.  */
+		   && find_reg_note (insn, REG_RETVAL, NULL_RTX) == 0
+		   && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
 	    {
 	      /* In unoptimized compilation, we shouldn't call delete_insn
 		 except in jump.c doing warnings.  */
