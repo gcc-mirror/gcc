@@ -6052,248 +6052,248 @@ msgstr "ungültiges »%s« in Reservierung »%s«"
 #: genautomata.c:1932
 #, c-format
 msgid "repetition `%s' <= 1 in reservation `%s'"
-msgstr ""
+msgstr "Wiederholung »%s« <= 1 in Reservierung »%s«"
 
 #: genautomata.c:2425
 #, c-format
 msgid "unit `%s' in exclusion is not declared"
-msgstr ""
+msgstr "Einheit »%s« ist nicht im Ausschluss deklariert"
 
 #: genautomata.c:2427
 #, c-format
 msgid "`%s' in exclusion is not unit"
-msgstr ""
+msgstr "»%s« im Ausschluss ist keine Einheit"
 
 #: genautomata.c:2465
 #, c-format
 msgid "unit `%s' excludes itself"
-msgstr ""
+msgstr "Einheit »%s« schließt sich selbst aus"
 
 #: genautomata.c:2473
 #, c-format
 msgid "units `%s' and `%s' in exclusion set belong to different automata"
-msgstr ""
+msgstr "Einheiten »%s« und »%s« in Ausschlussmenge gehören zu verschiedenen Automaten"
 
 #: genautomata.c:2603 genautomata.c:2609
 #, c-format
 msgid "unit `%s' excludes and requires presence of `%s'"
-msgstr ""
+msgstr "Einheit »%s« schließt »%s« aus und erfordert dessen Anwesenheit"
 
 #: genautomata.c:2623 genautomata.c:2629
 #, c-format
 msgid "unit `%s' requires absence and presence of `%s'"
-msgstr ""
+msgstr "Einheit »%s« erfordert die An- und Abwesenheit von »%s«"
 
 #: genautomata.c:2692 genautomata.c:2695
-#, fuzzy, c-format
+#, c-format
 msgid "repeated declaration of automaton `%s'"
-msgstr "Deklaration von »%D« als %s"
+msgstr "wiederholte Deklaration des Automaten %s"
 
 #: genautomata.c:2711
 #, c-format
 msgid "define_insn_reservation `%s' has negative latency time"
-msgstr ""
+msgstr "define_insn_reservation »%s« hat negative Latenzzeit"
 
 #: genautomata.c:2717
 #, c-format
 msgid "`%s' is already used as insn reservation name"
-msgstr ""
+msgstr "»%s« wurde bereits als insn Reservierungsname verwendet"
 
 #: genautomata.c:2723
 #, c-format
 msgid "define_bypass `%s - %s' has negative latency time"
-msgstr ""
+msgstr "define_bypass »%s - %s« hat negative Latenzzeit"
 
 #: genautomata.c:2737
 #, c-format
 msgid "automaton `%s' is not declared"
-msgstr ""
+msgstr "Automat »%s« wurde nicht deklariert"
 
 #: genautomata.c:2747
 #, c-format
 msgid "define_unit `%s' without automaton when one defined"
-msgstr ""
+msgstr "define_unit »%s« ohne Automat trotz Automatendefinition"
 
 #: genautomata.c:2753
 #, c-format
 msgid "`%s' is declared as cpu unit"
-msgstr ""
+msgstr "»%s« wurde als CPU-Einheit deklariert"
 
 #: genautomata.c:2762
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is declared as cpu reservation"
-msgstr "»%s« als »static« deklariert, aber nirgendwo definiert"
+msgstr "»%s« wurde als CPU-Reservierung deklariert"
 
 #: genautomata.c:2772
 #, c-format
 msgid "repeated declaration of unit `%s'"
-msgstr "wiederholte Deklaration von Unit »%s«"
+msgstr "wiederholte Deklaration der Einheit »%s«"
 
 #: genautomata.c:2775
 #, c-format
 msgid "repeated declaration of reservation `%s'"
-msgstr ""
+msgstr "wiederholte Deklaration der Reservierung »%s«"
 
 #: genautomata.c:2790 genautomata.c:2793
 #, c-format
 msgid "there is no insn reservation `%s'"
-msgstr ""
+msgstr "es gibt keine insn-Reservierung »%s«"
 
 #: genautomata.c:2810 genautomata.c:2815
 #, c-format
 msgid "the same bypass `%s - %s' is already defined"
-msgstr ""
+msgstr "die selbe Überbrückung »%s - %s« wurde bereits definiert"
 
 #: genautomata.c:2820
 #, c-format
 msgid "bypass `%s - %s' is already defined"
-msgstr ""
+msgstr "Überbrückung »%s - %s« wurde bereits definiert"
 
 #: genautomata.c:2925 genautomata.c:2927
 #, c-format
 msgid "automaton `%s' is not used"
-msgstr ""
+msgstr "Automat »%s« ist unbenutzt"
 
 #: genautomata.c:2950
 #, c-format
 msgid "undeclared unit or reservation `%s'"
-msgstr ""
+msgstr "nicht deklarierte Einheit oder Reservierung »%s«"
 
 #: genautomata.c:3028 genautomata.c:3030
 #, c-format
 msgid "unit `%s' is not used"
-msgstr "Unit »%s« wird nicht verwendet"
+msgstr "Einheit »%s« wird nicht verwendet"
 
 #: genautomata.c:3035 genautomata.c:3037
 #, c-format
 msgid "reservation `%s' is not used"
-msgstr ""
+msgstr "Reservierung »%s« ist unbenutzt"
 
 #: genautomata.c:3134
 #, c-format
 msgid "cycle in definition of reservation `%s'"
-msgstr ""
+msgstr "Zyklus in Definition der Reservierung »%s«"
 
 #: genautomata.c:5333
 #, c-format
 msgid "Units `%s' and `%s' should be in the same automaton"
-msgstr ""
+msgstr "Einheiten »%s« und »%s« sollten im selben Automat sein"
 
 #: genautomata.c:9441
 msgid "-split has no argument."
-msgstr ""
+msgstr "-split hat kein Argument."
 
 #: genautomata.c:9442
 msgid "option `-split' has not been implemented yet\n"
-msgstr ""
+msgstr "Option »-split« wurde noch nicht implementiert\n"
 
 #: genautomata.c:9486 genautomata.c:9491
 #, c-format
 msgid "Automaton `%s': Insn `%s' will never be issued"
-msgstr ""
+msgstr "Automat »%s«: Insn »%s« wird nie verwendet"
 
 #: genautomata.c:9498 genautomata.c:9501
 #, c-format
 msgid "Insn `%s' will never be issued"
-msgstr ""
+msgstr "Insn »%s« wird nie verwendet"
 
 #: genautomata.c:9649
 msgid "Errors in DFA description"
-msgstr ""
+msgstr "Fehler in DFA-Beschreibung"
 
 #: genautomata.c:9732
 #, c-format
 msgid "Error in writing DFA description file %s"
-msgstr ""
+msgstr "Fehler beim Schreiben der DFA-Definitionsdatei %s"
 
 #: genconditions.c:196
 msgid "No input file name."
-msgstr "Kein Eingabedateiname,"
+msgstr "Kein Eingabedateiname."
 
 #: ggc-page.c:1265
 msgid "open /dev/zero"
-msgstr ""
+msgstr "/dev/zero öffnen"
 
 #: graph.c:420 profile.c:1204 profile.c:1211 toplev.c:1836 toplev.c:5168
 #: f/com.c:14210 java/jcf-parse.c:917 java/jcf-parse.c:1063 java/lex.c:1776
 #: objc/objc-act.c:449
 #, c-format
 msgid "can't open %s"
-msgstr "Es ist nicht möglich »%s« zu öffnen"
+msgstr "Es ist nicht möglich, »%s« zu öffnen"
 
 #: haifa-sched.c:196
 #, c-format
 msgid "fix_sched_param: unknown param: %s"
-msgstr ""
+msgstr "fix_sched_param: unbekannter Parameter: %s"
 
 #: integrate.c:174
 msgid "function cannot be inline"
-msgstr ""
+msgstr "Funktion kann nicht »inline« sein"
 
 #: integrate.c:178
 msgid "varargs function cannot be inline"
-msgstr ""
+msgstr "Varargs-Funktion kann nicht »inline« sein"
 
 #: integrate.c:181
 msgid "function using alloca cannot be inline"
-msgstr ""
+msgstr "alloca benutzende Funktion kann nicht »inline« sein"
 
 #: integrate.c:184
 msgid "function using setjmp cannot be inline"
-msgstr ""
+msgstr "setjmp benutzende Funktion kann nicht »inline« sein"
 
 #: integrate.c:187
 msgid "function uses __builtin_eh_return"
-msgstr ""
+msgstr "Funktion verwendet __builtin_eh_return"
 
 #: integrate.c:190
 msgid "function with nested functions cannot be inline"
-msgstr ""
+msgstr "Funktion mit geschachtelten Funktionen kann nicht »inline« sein"
 
 #: integrate.c:194
 msgid "function with label addresses used in initializers cannot inline"
-msgstr ""
+msgstr "Funktion mit Markenadressen in Initialisierungen kann nicht »inline« sein"
 
 #: integrate.c:201 integrate.c:245
 msgid "function too large to be inline"
-msgstr ""
+msgstr "Funktion zu groß um »inline« sein zu können"
 
 #: integrate.c:211
 msgid "no prototype, and parameter address used; cannot be inline"
-msgstr ""
+msgstr "kein Prototyp, und Parameteradresse verwendet; kann nicht »inline« sein"
 
 #: integrate.c:218 integrate.c:263
 msgid "inline functions not supported for this return value type"
-msgstr ""
+msgstr "»inline«-Funktionen für diesen Rückgabetyp nicht unterstützt"
 
 #: integrate.c:223
 msgid "function with varying-size return value cannot be inline"
-msgstr ""
+msgstr "Funktion mit Rückgabetyp variabler Größe kann nicht »inline« sein"
 
 #: integrate.c:230
 msgid "function with varying-size parameter cannot be inline"
-msgstr ""
+msgstr "Funktion mit Parameter variabler Größe kann nicht »inline« sein"
 
 #: integrate.c:233
 msgid "function with transparent unit parameter cannot be inline"
-msgstr ""
+msgstr "Funktion mit transparentem Einheiten-Parameter kann nicht »inline« sein"
 
 #: integrate.c:252
 msgid "function with computed jump cannot inline"
-msgstr ""
+msgstr "Funktion mit berechnetem Sprung kann nicht »inline« sein"
 
 #: integrate.c:256
 msgid "function with nonlocal goto cannot be inline"
-msgstr ""
+msgstr "Funktion mit nichtlokalem Goto kann nicht »inline« sein"
 
 #: integrate.c:270
 msgid "function with target specific attribute(s) cannot be inlined"
-msgstr ""
+msgstr "Funktion mit zielspezifischen Attributen kann nicht »inline« sein"
 
 #: line-map.c:198
 #, c-format
 msgid "In file included from %s:%u"
-msgstr ""
+msgstr "In Datei, eingefügt von %s:%u"
 
 #. Translators note: this message is used in conjunction
 #. with "In file included from %s:%ld" and some other
@@ -6313,66 +6313,68 @@ msgid ""
 ",\n"
 "                 from %s:%u"
 msgstr ""
+",\n"
+"                    von %s:%u"
 
 #. If we didn't find this parameter, issue an error message.
 #: params.c:80
 #, c-format
 msgid "invalid parameter `%s'"
-msgstr ""
+msgstr "ungültiger Parameter »%s«"
 
 #: profile.c:397
 #, c-format
 msgid "Profile does not match flowgraph of function %s (out of date?)"
-msgstr ""
+msgstr "Profil passt nicht zum Flussgraphen der Funktion %s (veraltet?)"
 
 #: profile.c:400
 msgid ".da file corrupted"
-msgstr ""
+msgstr ".da-Datei beschädigt"
 
 #: profile.c:634
 #, c-format
 msgid "corrupted profile info: prob for %d-%d thought to be %d"
-msgstr ""
+msgstr "Info zum beschädigten Profil: Problem mit »%d-%d«, sollte %d sein"
 
 #: profile.c:1226
 #, c-format
 msgid "file %s not found, execution counts assumed to be zero"
-msgstr ""
+msgstr "Datei %s nicht gefunden, Ausführungszähler als null angenommen"
 
 #: protoize.c:542
 #, c-format
 msgid "%s: internal abort\n"
-msgstr ""
+msgstr "%s: interner Abbruch\n"
 
 #: protoize.c:633
 #, c-format
 msgid "%s: error writing file `%s': %s\n"
-msgstr ""
+msgstr "%s: Fehler beim Schreiben der Datei »%s«: %s\n"
 
 #: protoize.c:678
 #, c-format
 msgid "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n"
-msgstr ""
+msgstr "%s: Aufruf '%s [ -VqfnkN ] [ -i <istring> ] [ Dateiname ... ]'\n"
 
 #: protoize.c:681
 #, c-format
 msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
-msgstr ""
+msgstr "%s: Aufruf '%s [ -VqfnkNlgC ] [ -B <VerzName> ] [ Dateiname ... ]'\n"
 
 #: protoize.c:788
 #, c-format
 msgid "%s: warning: no read access for file `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: kein Leserecht für Datei »%s«\n"
 
 #: protoize.c:796
 #, c-format
 msgid "%s: warning: no write access for file `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: kein Schreibrecht für Datei »%s«\n"
 
 #: protoize.c:804
 #, c-format
 msgid "%s: warning: no write access for dir containing `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: kein Schreibrecht für Verzeichnis von »%s«\n"
 
 #. Catch cases like /.. where we try to backup to a
 #. point above the absolute root of the logical file
@@ -6380,12 +6382,12 @@ msgstr ""
 #: protoize.c:1222
 #, c-format
 msgid "%s: invalid file name: %s\n"
-msgstr ""
+msgstr "%s: ungültiger Dateiname: %s\n"
 
 #: protoize.c:1374
 #, c-format
 msgid "%s: %s: can't get status: %s\n"
-msgstr ""
+msgstr "%s: %s: kann Status nicht ermitteln: %s\n"
 
 #: protoize.c:1395
 #, c-format
@@ -6393,136 +6395,138 @@ msgid ""
 "\n"
 "%s: fatal error: aux info file corrupted at line %d\n"
 msgstr ""
+"\n"
+"%s: kritischer Fehler: Datei mit Hilfsinformationen beschädigt in Zeile %d\n"
 
 #: protoize.c:1731
 #, c-format
 msgid "%s:%d: declaration of function `%s' takes different forms\n"
-msgstr ""
+msgstr "%s:%d: Deklaration der Funktion »%s« nimmt verschiedene Formen an\n"
 
 #: protoize.c:1989
 #, c-format
 msgid "%s: compiling `%s'\n"
-msgstr ""
+msgstr "%s: kompiliere »%s«\n"
 
 #: protoize.c:2012
 #, c-format
 msgid "%s: wait: %s\n"
-msgstr ""
+msgstr "%s: warte: %s\n"
 
 #: protoize.c:2017
 #, c-format
 msgid "%s: subprocess got fatal signal %d\n"
-msgstr ""
+msgstr "%s: Subprozess empfing kritischen Fehler %d\n"
 
 #: protoize.c:2025
 #, c-format
 msgid "%s: %s exited with status %d\n"
-msgstr ""
+msgstr "%s: %s beendet mit Status %d\n"
 
 #: protoize.c:2077
 #, c-format
 msgid "%s: warning: missing SYSCALLS file `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: SYSCALLS-Datei »%s« fehlt\n"
 
 #: protoize.c:2086 protoize.c:2115
 #, c-format
 msgid "%s: can't read aux info file `%s': %s\n"
-msgstr ""
+msgstr "%s: kann Datei mit Hilfsinformationen »%s« nicht lesen: %s\n"
 
 #: protoize.c:2131 protoize.c:2159
 #, c-format
 msgid "%s: can't get status of aux info file `%s': %s\n"
-msgstr ""
+msgstr "%s: kann Status der Datei mit Hilfsinformationen »%s« nicht ermitteln: %s\n"
 
 #: protoize.c:2187
 #, c-format
 msgid "%s: can't open aux info file `%s' for reading: %s\n"
-msgstr ""
+msgstr "%s: kann Datei mit Hilfsinformationen »%s« nicht zum Lesen öffnen: %s\n"
 
 #: protoize.c:2205
 #, c-format
 msgid "%s: error reading aux info file `%s': %s\n"
-msgstr ""
+msgstr "%s: Fehler beim Lesen der Datei mit Hilfsinformationen »%s«: %s\n"
 
 #: protoize.c:2218
 #, c-format
 msgid "%s: error closing aux info file `%s': %s\n"
-msgstr ""
+msgstr "%s: Fehler beim Schließen der Datei mit Hilfsinformationen »%s«: %s\n"
 
 #: protoize.c:2234
 #, c-format
 msgid "%s: can't delete aux info file `%s': %s\n"
-msgstr ""
+msgstr "%s: Fehler beim Löschen der Datei mit Hilfsinformationen »%s«: %s\n"
 
 #: protoize.c:2316 protoize.c:4318
 #, c-format
 msgid "%s: can't delete file `%s': %s\n"
-msgstr ""
+msgstr "%s: Fehler beim Löschen der Datei »%s«: %s\n"
 
 #: protoize.c:2395
 #, c-format
 msgid "%s: warning: can't rename file `%s' to `%s': %s\n"
-msgstr ""
+msgstr "%s: Warnung: Fehler beim Umbenennen der Datei »%s« in »%s«: %s\n"
 
 #: protoize.c:2520
 #, c-format
 msgid "%s: conflicting extern definitions of '%s'\n"
-msgstr ""
+msgstr "%s: externe Definitionen von »%s« stehen in Konflikt\n"
 
 #: protoize.c:2524
 #, c-format
 msgid "%s: declarations of '%s' will not be converted\n"
-msgstr ""
+msgstr "%s: Deklarationen von »%s« werden nicht konvertiert\n"
 
 #: protoize.c:2526
 #, c-format
 msgid "%s: conflict list for '%s' follows:\n"
-msgstr ""
+msgstr "%s: Konfliktliste für »%s« folgt:\n"
 
 #: protoize.c:2559
 #, c-format
 msgid "%s: warning: using formals list from %s(%d) for function `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: Formalliste von %s(%d) für Funktion »%s« verwendet\n"
 
 #: protoize.c:2599
 #, c-format
 msgid "%s: %d: `%s' used but missing from SYSCALLS\n"
-msgstr ""
+msgstr "%s: %d: »%s« verwendet, fehlt jedoch in SYSCALLS\n"
 
 #: protoize.c:2605
 #, c-format
 msgid "%s: %d: warning: no extern definition for `%s'\n"
-msgstr ""
+msgstr "%s: %d: Warning: keine externe Definition für »%s«\n"
 
 #: protoize.c:2636
 #, c-format
 msgid "%s: warning: no static definition for `%s' in file `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: keine statische Definition für »%s« in Datei »%s«\n"
 
 #: protoize.c:2642
 #, c-format
 msgid "%s: multiple static defs of `%s' in file `%s'\n"
-msgstr ""
+msgstr "%s: mehrere statische Definitionen von »%s« in Datei »%s«\n"
 
 #: protoize.c:2815 protoize.c:2818
 #, c-format
 msgid "%s: %d: warning: source too confusing\n"
-msgstr ""
+msgstr "%s: %d: Warnung: Quelle zu verworren\n"
 
 #: protoize.c:3024
 #, c-format
 msgid "%s: %d: warning: varargs function declaration not converted\n"
-msgstr ""
+msgstr "%s: %d: Warnung: Funktionsdeklaration mit variablen Argumenten nicht konvertiert\n"
 
 #: protoize.c:3039
 #, c-format
 msgid "%s: declaration of function `%s' not converted\n"
-msgstr ""
+msgstr "%s: Deklaration der Funktion »%s« nicht konvertiert\n"
 
 #: protoize.c:3162
 #, c-format
 msgid "%s: warning: too many parameter lists in declaration of `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: zu viele Parameterlisten in Deklaration von »%s«\n"
 
 #: protoize.c:3183
 #, c-format
@@ -6530,16 +6534,18 @@ msgid ""
 "\n"
 "%s: warning: too few parameter lists in declaration of `%s'\n"
 msgstr ""
+"\n"
+"%s: Warnung: zu wenige Parameterlisten in Deklaration von »%s«\n"
 
 #: protoize.c:3281
 #, c-format
 msgid "%s: %d: warning: found `%s' but expected `%s'\n"
-msgstr ""
+msgstr "%s: %d: Warnung: »%s« gefunden, aber »%s« erwartet\n"
 
 #: protoize.c:3459
 #, c-format
 msgid "%s: local declaration for function `%s' not inserted\n"
-msgstr ""
+msgstr "%s: lokale Deklaration für Funktion »%s« nicht eingefügt\n"
 
 #: protoize.c:3486
 #, c-format
@@ -6547,63 +6553,65 @@ msgid ""
 "\n"
 "%s: %d: warning: can't add declaration of `%s' into macro call\n"
 msgstr ""
+"\n"
+"%s: %d: Warnung: kann Deklaration von »%s« nicht zu Makro-Aufruf hinzufügen\n"
 
 #: protoize.c:3560
 #, c-format
 msgid "%s: global declarations for file `%s' not inserted\n"
-msgstr ""
+msgstr "%s: globale Deklarationen für Datei »%s« wurden nicht eingefügt\n"
 
 #: protoize.c:3651 protoize.c:3681
 #, c-format
 msgid "%s: definition of function `%s' not converted\n"
-msgstr ""
+msgstr "%s: Definition der Funktion »%s« nicht konvertiert\n"
 
 #: protoize.c:3670
 #, c-format
 msgid "%s: %d: warning: definition of %s not converted\n"
-msgstr ""
+msgstr "%s: %d: Warnung: Definition von %s nicht konvertiert\n"
 
 #: protoize.c:4000
 #, c-format
 msgid "%s: found definition of `%s' at %s(%d)\n"
-msgstr ""
+msgstr "%s: Definition von »%s« an Stelle %s(%d) gefunden\n"
 
 #. If we make it here, then we did not know about this
 #. function definition.
 #: protoize.c:4016
 #, c-format
 msgid "%s: %d: warning: `%s' excluded by preprocessing\n"
-msgstr ""
+msgstr "%s: %d: Warnung: »%s« durch Präprozessor ausgeschlossen\n"
 
 #: protoize.c:4019
 #, c-format
 msgid "%s: function definition not converted\n"
-msgstr ""
+msgstr "%s: Funktionsdefinition nicht konvertiert\n"
 
 #: protoize.c:4078
 #, c-format
 msgid "%s: `%s' not converted\n"
-msgstr ""
+msgstr "%s: »%s« nicht konvertiert\n"
 
 #: protoize.c:4086
 #, c-format
 msgid "%s: would convert file `%s'\n"
-msgstr ""
+msgstr "%s: würde Datei »%s« konvertieren\n"
 
 #: protoize.c:4089
 #, c-format
 msgid "%s: converting file `%s'\n"
-msgstr ""
+msgstr "%s: Datei »%s« wird konvertiert\n"
 
 #: protoize.c:4099
 #, c-format
 msgid "%s: can't get status for file `%s': %s\n"
-msgstr ""
+msgstr "%s: Status der Datei »%s« kann nicht ermittelt werden: %s\n"
 
 #: protoize.c:4141
 #, c-format
 msgid "%s: can't open file `%s' for reading: %s\n"
-msgstr ""
+msgstr "%s: Datei »%s« kann nicht zum Schreiben geöffnet werden: %s\n"
 
 #: protoize.c:4156
 #, c-format
@@ -6611,384 +6619,386 @@ msgid ""
 "\n"
 "%s: error reading input file `%s': %s\n"
 msgstr ""
+"\n"
+"%s: Fehler beim Lesen der Eingabedatei »%s«: %s\n"
 
 #: protoize.c:4190
 #, c-format
 msgid "%s: can't create/open clean file `%s': %s\n"
-msgstr ""
+msgstr "%s: die leere Datei »%s« kann nicht erzeugt oder geöffnet werden: %s\n"
 
 #: protoize.c:4295
 #, c-format
 msgid "%s: warning: file `%s' already saved in `%s'\n"
-msgstr ""
+msgstr "%s: Warnung: Datei »%s« bereits in »%s« gesichert\n"
 
 #: protoize.c:4303
 #, c-format
 msgid "%s: can't link file `%s' to `%s': %s\n"
-msgstr ""
+msgstr "%s: die Datei »%s« kann nicht mit »%s« verbunden werden (Link): %s\n"
 
 #: protoize.c:4333
 #, c-format
 msgid "%s: can't create/open output file `%s': %s\n"
-msgstr ""
+msgstr "%s: die Ausgabedatei »%s« kann nicht erzeugt oder geöffnet werden: %s\n"
 
 #: protoize.c:4366
 #, c-format
 msgid "%s: can't change mode of file `%s': %s\n"
-msgstr ""
+msgstr "%s: Rechte der Datei »%s« können nicht geändert werden: %s\n"
 
 #: protoize.c:4541
 #, c-format
 msgid "%s: cannot get working directory: %s\n"
-msgstr ""
+msgstr "%s: aktuelles Verzeichnis kann nicht ermittelt werden: %s\n"
 
 #: protoize.c:4639
 #, c-format
 msgid "%s: input file names must have .c suffixes: %s\n"
-msgstr ""
+msgstr "%s: Namen der Eingabedateien müssen Suffix ».c« haben: %s\n"
 
 #: ra.c:750
 msgid "Didn't find a coloring.\n"
-msgstr ""
+msgstr "Färbung konnte nicht gefunden werden.\n"
 
 #: reg-stack.c:673
 #, c-format
 msgid "output constraint %d must specify a single register"
-msgstr ""
+msgstr "Ausgabebedingung %d muss ein einzelnes Register angeben"
 
 #: reg-stack.c:683
 #, c-format
 msgid "output constraint %d cannot be specified together with \"%s\" clobber"
-msgstr ""
+msgstr "Ausgabebedingung %d kann nicht zusammen mit »%s« angegeben werden"
 
 #: reg-stack.c:706
 msgid "output regs must be grouped at top of stack"
-msgstr ""
+msgstr "Ausgaberegister müssen oben auf dem Stack gruppiert werden"
 
 #: reg-stack.c:743
 msgid "implicitly popped regs must be grouped at top of stack"
-msgstr ""
+msgstr "implizit geholte (»pop«) Register müssen oben auf dem Stack gruppiert werden"
 
 #: reg-stack.c:762
 #, c-format
 msgid "output operand %d must use `&' constraint"
-msgstr ""
+msgstr "Ausgabeoperand %d muss »&«-Bedingung benutzen"
 
 #: regclass.c:756
 #, c-format
 msgid "can't use '%s' as a %s register"
-msgstr ""
+msgstr "»%s« kann nicht als ein %s-Register verwendet werden"
 
 #: regclass.c:771 config/ia64/ia64.c:4304 config/ia64/ia64.c:4311
 #, c-format
 msgid "unknown register name: %s"
-msgstr ""
+msgstr "unbekannter Registername: %s"
 
 #: regclass.c:782
 msgid "global register variable follows a function definition"
-msgstr ""
+msgstr "globale Registervariable folgt einer Funktionsdefinition"
 
 #: regclass.c:786
 msgid "register used for two global register variables"
-msgstr ""
+msgstr "Register für zwei globale Registervariablen verwendet"
 
 #: regclass.c:791
 msgid "call-clobbered register used for global register variable"
-msgstr ""
+msgstr "für Ruf vorgesehenes Register wurde für globale Registervariable verwendet"
 
 #: regrename.c:1899
 #, c-format
 msgid "validate_value_data: [%u] Bad next_regno for empty chain (%u)"
-msgstr ""
+msgstr "validate_value_data: [%u] Falsches next_regno für leere Kette (%u)"
 
 #: regrename.c:1911
 #, c-format
 msgid "validate_value_data: Loop in regno chain (%u)"
-msgstr ""
+msgstr "validate_value_data: Zyklus in regno-Kette (%u)"
 
 #: regrename.c:1914
 #, c-format
 msgid "validate_value_data: [%u] Bad oldest_regno (%u)"
-msgstr ""
+msgstr "validate_value_data: [%u] Falsches oldest_regno (%u)"
 
 #: regrename.c:1926
 #, c-format
 msgid "validate_value_data: [%u] Non-empty reg in chain (%s %u %i)"
-msgstr ""
+msgstr "validate_value_data: [%u] Nicht leeres Register in Kette (%s %u %i)"
 
 #: reload.c:1229
 msgid "cannot reload integer constant operand in `asm'"
-msgstr ""
+msgstr "Ganzzahlkonstantenoperand kann in »asm« nicht neu geladen werden"
 
 #: reload.c:1251
 msgid "impossible register constraint in `asm'"
-msgstr ""
+msgstr "unmögliche Registerbedingung in »asm«"
 
 #: reload.c:3461
 msgid "`&' constraint used with no register class"
-msgstr ""
+msgstr "»&«-Bedingung ohne Registerklasse verwendet"
 
 #: reload.c:3629
 msgid "unable to generate reloads for:"
-msgstr ""
+msgstr "Neuladungen konnten nicht generiert werden für:"
 
 #: reload.c:3630 reload.c:3844
 msgid "inconsistent operand constraints in an `asm'"
-msgstr ""
+msgstr "inkonsistente Operandenbedingungen in einem »asm«"
 
 #: reload1.c:1250
 msgid "frame size too large for reliable stack checking"
-msgstr ""
+msgstr "Rahmengröße zu groß für zuverlässige Kellerüberprüfung"
 
 #: reload1.c:1253
 msgid "try reducing the number of local variables"
-msgstr ""
+msgstr "versuchen Sie, die Anzahl der lokalen Variablen zu verringern"
 
 #: reload1.c:1909
 #, c-format
 msgid "can't find a register in class `%s' while reloading `asm'"
-msgstr ""
+msgstr "in der Klasse »%s« konnte während des Neuladens von »asm« kein Register gefunden werden"
 
 #: reload1.c:1913
 #, c-format
 msgid "unable to find a register to spill in class `%s'"
-msgstr ""
+msgstr "in Klasse »%s« konnte kein Register für Überlauf gefunden werden"
 
 #: reload1.c:1915
 msgid "this is the insn:"
-msgstr ""
+msgstr "dies ist das insn:"
 
 #: reload1.c:3938
 msgid "`asm' operand requires impossible reload"
-msgstr ""
+msgstr "»asm«-Operand erfordert unmögliches Neuladen"
 
 #. It's the compiler's fault.
 #: reload1.c:5052
 msgid "could not find a spill register"
-msgstr ""
+msgstr "es konnte kein Überlaufregister gefunden werden"
 
 #: reload1.c:5057
 msgid "`asm' operand constraint incompatible with operand size"
-msgstr ""
+msgstr "»asm«-Operandenbedingung inkompatibel mit Operandengröße"
 
 #. It's the compiler's fault.
 #: reload1.c:6679
 msgid "VOIDmode on an output"
-msgstr ""
+msgstr "VOIDmode bei einer Ausgabe"
 
 #: reload1.c:6680
 msgid "output operand is constant in `asm'"
-msgstr ""
+msgstr "Ausgabeoperand ist in »asm« konstant"
 
 #: rtl-error.c:140
 msgid "unrecognizable insn:"
-msgstr ""
+msgstr "unerkennbares insn:"
 
 #: rtl-error.c:142
 msgid "insn does not satisfy its constraints:"
-msgstr ""
+msgstr "insn erfüllt nicht seine Bedingungen:"
 
 #: rtl.c:535
 #, c-format
 msgid "RTL check: access of elt %d of `%s' with last elt %d in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Zugriff von Elt %d von »%s« mit letztem Elt %d in %s, bei %s:%d"
 
 #: rtl.c:550
 #, c-format
 msgid "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Elt-%d-Typ %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
 
 #: rtl.c:566
 #, c-format
 msgid "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Elt-%d-Typ %c oder %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
 
 #: rtl.c:579
 #, c-format
 msgid "RTL check: expected code `%s', have `%s' in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Code »%s« erwartet, haben »%s« in %s, bei %s:%d"
 
 #: rtl.c:593
 #, c-format
 msgid "RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Code »%s« oder »%s« erwartet, haben »%s« in %s, bei %s:%d"
 
 #: rtl.c:608
 #, c-format
 msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Überprüfung: Zugriff von Elt %d von Vektor mit letztem Elt %d in %s, bei %s:%d"
 
 #: rtl.c:623
 #, c-format
 msgid "RTL flag check: %s used with unexpected rtx code `%s' in %s, at %s:%d"
-msgstr ""
+msgstr "RTL-Kennzeichenüberprüfung: %s mit unerwartetem RTX-Code »%s« in %s bei %s:%d verwendet"
 
 #: stmt.c:766
 #, c-format
 msgid "jump to `%s' invalidly jumps into binding contour"
-msgstr ""
+msgstr "Sprung zu »%s« springt ungültig in bindenden Querschnitt"
 
 #: stmt.c:1002 stmt.c:3766
 #, c-format
 msgid "label `%s' used before containing binding contour"
-msgstr ""
+msgstr "Marke »%s« verwendet vor enthaltendem bindenden Querschnitt"
 
 #: stmt.c:1190
 msgid "output operand constraint lacks `='"
-msgstr ""
+msgstr "Bedingung des Ausgabeoperanden erfordert »=«"
 
 #: stmt.c:1205
 #, c-format
 msgid "output constraint `%c' for operand %d is not at the beginning"
-msgstr ""
+msgstr "Ausgabebedingung »%c« für Operand %d steht nicht am Anfang"
 
 #: stmt.c:1227
 msgid "operand constraint contains incorrectly positioned '+' or '='"
-msgstr ""
+msgstr "Operandenbedingung enthält falsch positioniertes »+« oder »=«"
 
 #: stmt.c:1233 stmt.c:1337
 #, c-format
 msgid "`%%' constraint used with last operand"
-msgstr ""
+msgstr "»%%«-Bedingung mit letztem Operanden verwendet"
 
 #: stmt.c:1252
 msgid "matching constraint not valid in output operand"
-msgstr ""
+msgstr "dazu passende Bedingung in Ausgabeoperanden ungültig"
 
 #: stmt.c:1328
 #, c-format
 msgid "input operand constraint contains `%c'"
-msgstr ""
+msgstr "Bedingung für Eingabeoperanden enthält »%c«"
 
 #: stmt.c:1368
 msgid "matching constraint references invalid operand number"
-msgstr ""
+msgstr "dazu passende Bedingung referenziert ungültige Operandennummer"
 
 #: stmt.c:1400
 #, c-format
 msgid "invalid punctuation `%c' in constraint"
-msgstr ""
+msgstr "ungültiges Zeichen »%c« in Bedingung"
 
 #: stmt.c:1450
 #, c-format
 msgid "asm-specifier for variable `%s' conflicts with asm clobber list"
-msgstr ""
+msgstr "asm-Spezifizierer für Variable »%s« steht in Konflikt mit asm-Konflikt-Liste"
 
 #: stmt.c:1540
 #, c-format
 msgid "unknown register name `%s' in `asm'"
-msgstr ""
+msgstr "unbekannter Registername »%s« in »asm«"
 
 #: stmt.c:1588
 #, c-format
 msgid "more than %d operands in `asm'"
-msgstr ""
+msgstr "mehr als %d Operanden in »asm«"
 
 #: stmt.c:1650
 #, c-format
 msgid "output number %d not directly addressable"
-msgstr ""
+msgstr "Ausgabezahl %d nicht direkt adressierbar"
 
 #: stmt.c:1728
 #, c-format
 msgid "asm operand %d probably doesn't match constraints"
-msgstr ""
+msgstr "asm-Operand %d passt wahrscheinlich nicht zu den Bedingungen"
 
 #: stmt.c:1738
 #, c-format
 msgid "use of memory input without lvalue in asm operand %d is deprecated"
-msgstr ""
+msgstr "die Verwendung einer Speichereingabe ohne L-Wert in asm-Operand %d ist veraltet"
 
 #: stmt.c:1889
 msgid "asm clobber conflict with output operand"
-msgstr ""
+msgstr "asm-Konflikt mit Ausgabeoperand"
 
 #: stmt.c:1894
 msgid "asm clobber conflict with input operand"
-msgstr ""
+msgstr "asm-Konflikt mit Eingabeoperand"
 
 #: stmt.c:1929
 msgid "too many alternatives in `asm'"
-msgstr ""
+msgstr "zu viele Alternativen in »asm«"
 
 #: stmt.c:1941
 msgid "operand constraints for `asm' differ in number of alternatives"
-msgstr ""
+msgstr "Operandenbedingungen für »asm« unterscheiden sich in der Anzahl der Alternativen"
 
 #: stmt.c:1994
 #, c-format
 msgid "duplicate asm operand name '%s'"
-msgstr ""
+msgstr "doppelter asm-Operandenname »%s«"
 
 #: stmt.c:2081
 msgid "missing close brace for named operand"
-msgstr ""
+msgstr "schließende geschweifte Klammer für benannten Operanden fehlt"
 
 #: stmt.c:2109
 #, c-format
 msgid "undefined named operand '%s'"
-msgstr ""
+msgstr "benannter Operand »%s« ist nicht definiert"
 
 #: stmt.c:3703
 #, c-format
 msgid "unused variable `%s'"
-msgstr ""
+msgstr "Variable »%s« wird nicht verwendet"
 
 #: stmt.c:5189
 #, c-format
 msgid "enumeration value `%s' not handled in switch"
-msgstr ""
+msgstr "Aufzählungswert »%s« wird nicht von switch behandelt"
 
 #: stmt.c:5214 stmt.c:5234
 #, c-format
 msgid "case value `%ld' not in enumerated type"
-msgstr ""
+msgstr "case-Wert »%ld« nicht in Aufzählungstyp"
 
 #: stmt.c:5217 stmt.c:5237
 #, c-format
 msgid "case value `%ld' not in enumerated type `%s'"
-msgstr ""
+msgstr "case-Wert »%ld« nicht in Aufzählungstyp »%s«"
 
 #: stmt.c:5310
 msgid "switch missing default case"
-msgstr ""
+msgstr "die Standardfallbehandlung in switch fehlt"
 
 #: stor-layout.c:178
 msgid "type size can't be explicitly evaluated"
-msgstr ""
+msgstr "die Typgröße kann nicht explizit ausgewertet werden"
 
 #: stor-layout.c:180
 msgid "variable-size type declared outside of any function"
-msgstr ""
+msgstr "Typ mit variabler Größe wurde außerhalb einer Funktion definiert"
 
 #: stor-layout.c:487
 #, c-format
 msgid "size of `%s' is %d bytes"
-msgstr ""
+msgstr "Größe von »%s« ist %d Bytes"
 
 #: stor-layout.c:489
 #, c-format
 msgid "size of `%s' is larger than %d bytes"
-msgstr ""
+msgstr "Größe von »%s« übertrifft %d Bytes"
 
 #: stor-layout.c:909 stor-layout.c:1325
 #, c-format
 msgid "packed attribute causes inefficient alignment for `%s'"
-msgstr ""
+msgstr "gepacktes Attribut verursacht ineffiziente Ausrichtung für »%s«"
 
 #: stor-layout.c:911 stor-layout.c:1327
 #, c-format
 msgid "packed attribute is unnecessary for `%s'"
-msgstr ""
+msgstr "gepacktes Attribut ist unnötig für »%s«"
 
 #: stor-layout.c:926
 #, c-format
 msgid "padding struct to align `%s'"
-msgstr ""
+msgstr "struct wird aufgefüllt, um »%s« auszurichten"
 
 #: stor-layout.c:1289
 msgid "padding struct size to alignment boundary"
-msgstr ""
+msgstr "struct wird bis zur Ausrichtungsgrenze aufgefüllt"
 
 #: stor-layout.c:1332
 msgid "packed attribute causes inefficient alignment"
