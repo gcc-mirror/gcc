@@ -117,12 +117,9 @@
 
 #define JC1_LITE
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "config.h"
+#include "system.h"
 
-/* Definitions for PROTO and VPROTO macros */
-#include "gansidecl.h"
 #include "obstack.h"
 
 extern char *input_filename;
@@ -171,14 +168,10 @@ struct method_declarator {
 static void report_class_declaration PROTO ((char *));
 static void report_main_declaration PROTO ((struct method_declarator *));
 
-/* Other extern functions */
-char *xmalloc PROTO ((unsigned));
-char *xstrdup PROTO ((char *));
-
 #include "lex.h"
 #include "parse.h"
 
-#line 102 "./parse-scan.y"
+#line 95 "./parse-scan.y"
 typedef union {
   char *node;
   struct method_declarator *declarator;
@@ -403,41 +396,41 @@ static const short yyrhs[] = {   123,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   173,   178,   180,   181,   182,   183,   184,   188,   190,   193,
-   199,   204,   211,   213,   216,   220,   224,   228,   230,   237,
-   247,   249,   252,   256,   265,   270,   271,   272,   273,   274,
-   275,   276,   277,   280,   282,   285,   287,   290,   295,   297,
-   300,   304,   308,   310,   311,   317,   326,   337,   344,   344,
-   347,   349,   350,   353,   354,   357,   360,   364,   366,   369,
-   371,   374,   376,   377,   378,   381,   383,   384,   385,   389,
-   392,   396,   399,   402,   404,   407,   410,   413,   415,   419,
-   423,   426,   427,   429,   436,   443,   449,   452,   454,   462,
-   468,   472,   473,   476,   479,   483,   485,   486,   490,   492,
-   495,   505,   507,   510,   512,   518,   521,   525,   527,   528,
-   529,   533,   535,   538,   540,   544,   546,   551,   553,   555,
-   556,   560,   562,   565,   567,   570,   572,   575,   577,   578,
-   579,   582,   586,   591,   593,   594,   595,   598,   600,   604,
-   606,   609,   611,   614,   616,   617,   620,   624,   627,   631,
-   633,   634,   635,   636,   637,   640,   642,   643,   644,   645,
-   648,   650,   651,   652,   653,   654,   655,   656,   657,   658,
-   659,   662,   666,   671,   675,   681,   685,   687,   688,   689,
-   690,   691,   692,   695,   699,   703,   707,   711,   713,   714,
-   715,   718,   720,   723,   728,   730,   733,   735,   738,   742,
-   746,   750,   754,   758,   760,   763,   765,   768,   772,   775,
-   776,   777,   780,   781,   784,   786,   789,   791,   794,   796,
-   799,   801,   804,   808,   810,   813,   818,   820,   821,   824,
-   826,   829,   833,   838,   840,   843,   845,   846,   847,   848,
-   849,   850,   854,   856,   858,   862,   866,   868,   872,   873,
-   877,   878,   879,   880,   883,   886,   889,   891,   892,   895,
-   897,   898,   899,   902,   903,   906,   908,   911,   915,   917,
-   920,   922,   925,   928,   930,   931,   932,   933,   936,   939,
-   942,   944,   946,   947,   950,   954,   958,   960,   961,   962,
-   963,   966,   970,   974,   976,   977,   978,   981,   983,   984,
-   985,   988,   990,   991,   992,   995,   997,   998,  1001,  1003,
-  1004,  1005,  1008,  1010,  1011,  1012,  1013,  1014,  1017,  1019,
-  1020,  1023,  1025,  1028,  1030,  1033,  1035,  1038,  1040,  1043,
-  1045,  1048,  1050,  1053,  1055,  1058,  1062,  1065,  1066,  1069,
-  1071,  1074,  1078
+   166,   171,   173,   174,   175,   176,   177,   181,   183,   186,
+   192,   197,   204,   206,   209,   213,   217,   221,   223,   230,
+   240,   242,   245,   249,   258,   263,   264,   265,   266,   267,
+   268,   269,   270,   273,   275,   278,   280,   283,   288,   290,
+   293,   297,   301,   303,   304,   310,   319,   330,   337,   337,
+   340,   342,   343,   346,   347,   350,   353,   357,   359,   362,
+   364,   367,   369,   370,   371,   374,   376,   377,   378,   382,
+   385,   389,   392,   395,   397,   400,   403,   406,   408,   412,
+   416,   419,   420,   422,   429,   436,   442,   445,   447,   455,
+   461,   465,   466,   469,   472,   476,   478,   479,   483,   485,
+   488,   498,   500,   503,   505,   511,   514,   518,   520,   521,
+   522,   526,   528,   531,   533,   537,   539,   544,   546,   548,
+   549,   553,   555,   558,   560,   563,   565,   568,   570,   571,
+   572,   575,   579,   584,   586,   587,   588,   591,   593,   597,
+   599,   602,   604,   607,   609,   610,   613,   617,   620,   624,
+   626,   627,   628,   629,   630,   633,   635,   636,   637,   638,
+   641,   643,   644,   645,   646,   647,   648,   649,   650,   651,
+   652,   655,   659,   664,   668,   674,   678,   680,   681,   682,
+   683,   684,   685,   688,   692,   696,   700,   704,   706,   707,
+   708,   711,   713,   716,   721,   723,   726,   728,   731,   735,
+   739,   743,   747,   751,   753,   756,   758,   761,   765,   768,
+   769,   770,   773,   774,   777,   779,   782,   784,   787,   789,
+   792,   794,   797,   801,   803,   806,   811,   813,   814,   817,
+   819,   822,   826,   831,   833,   836,   838,   839,   840,   841,
+   842,   843,   847,   849,   851,   855,   859,   861,   865,   866,
+   870,   871,   872,   873,   876,   879,   882,   884,   885,   888,
+   890,   891,   892,   895,   896,   899,   901,   904,   908,   910,
+   913,   915,   918,   921,   923,   924,   925,   926,   929,   932,
+   935,   937,   939,   940,   943,   947,   951,   953,   954,   955,
+   956,   959,   963,   967,   969,   970,   971,   974,   976,   977,
+   978,   981,   983,   984,   985,   988,   990,   991,   994,   996,
+   997,   998,  1001,  1003,  1004,  1005,  1006,  1007,  1010,  1012,
+  1013,  1016,  1018,  1021,  1023,  1026,  1028,  1031,  1033,  1036,
+  1038,  1041,  1043,  1046,  1048,  1051,  1055,  1058,  1059,  1062,
+  1064,  1067,  1071
 };
 #endif
 
@@ -1875,28 +1868,28 @@ yyreduce:
   switch (yyn) {
 
 case 10:
-#line 195 "./parse-scan.y"
+#line 188 "./parse-scan.y"
 {
 		  /* use preset global here. FIXME */
 		  yyval.node = xstrdup ("int");
 		;
     break;}
 case 11:
-#line 200 "./parse-scan.y"
+#line 193 "./parse-scan.y"
 {
 		  /* use preset global here. FIXME */
 		  yyval.node = xstrdup ("double");
 		;
     break;}
 case 12:
-#line 205 "./parse-scan.y"
+#line 198 "./parse-scan.y"
 {
 		  /* use preset global here. FIXME */
 		  yyval.node = xstrdup ("boolean");
 		;
     break;}
 case 19:
-#line 231 "./parse-scan.y"
+#line 224 "./parse-scan.y"
 {
 		  char *n = xmalloc (strlen (yyvsp[-2].node)+2);
 		  n [0] = '[';
@@ -1905,7 +1898,7 @@ case 19:
 		;
     break;}
 case 20:
-#line 238 "./parse-scan.y"
+#line 231 "./parse-scan.y"
 {	
 		  char *n = xmalloc (strlen (yyvsp[-2].node)+2);
 		  n [0] = '[';
@@ -1914,7 +1907,7 @@ case 20:
 		;
     break;}
 case 24:
-#line 258 "./parse-scan.y"
+#line 251 "./parse-scan.y"
 { 
 		  char *n = xmalloc (strlen (yyvsp[-2].node)+strlen (yyvsp[0].node)+2);
 		  sprintf (n, "%s.s", yyvsp[-2].node, yyvsp[0].node);
@@ -1922,11 +1915,11 @@ case 24:
 		;
     break;}
 case 38:
-#line 292 "./parse-scan.y"
+#line 285 "./parse-scan.y"
 { package_name = yyvsp[-1].node; ;
     break;}
 case 46:
-#line 319 "./parse-scan.y"
+#line 312 "./parse-scan.y"
 { 
 		  if (yyvsp[0].value == PUBLIC_TK)
 		    modifier_value++;
@@ -1936,7 +1929,7 @@ case 46:
 		;
     break;}
 case 47:
-#line 327 "./parse-scan.y"
+#line 320 "./parse-scan.y"
 { 
 		  if (yyvsp[0].value == PUBLIC_TK)
 		    modifier_value++;
@@ -1946,53 +1939,53 @@ case 47:
 		;
     break;}
 case 48:
-#line 339 "./parse-scan.y"
+#line 332 "./parse-scan.y"
 { 
 		  report_class_declaration(yyvsp[-2].node);
 		  modifier_value = 0;
                 ;
     break;}
 case 50:
-#line 345 "./parse-scan.y"
+#line 338 "./parse-scan.y"
 { report_class_declaration(yyvsp[-2].node); ;
     break;}
 case 56:
-#line 359 "./parse-scan.y"
+#line 352 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 57:
-#line 361 "./parse-scan.y"
+#line 354 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 70:
-#line 391 "./parse-scan.y"
+#line 384 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 71:
-#line 393 "./parse-scan.y"
+#line 386 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 76:
-#line 409 "./parse-scan.y"
+#line 402 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 81:
-#line 425 "./parse-scan.y"
+#line 418 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 83:
-#line 428 "./parse-scan.y"
+#line 421 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 84:
-#line 430 "./parse-scan.y"
+#line 423 "./parse-scan.y"
 { 
                   report_main_declaration (yyvsp[-1].declarator);
 		  modifier_value = 0;
 		;
     break;}
 case 85:
-#line 438 "./parse-scan.y"
+#line 431 "./parse-scan.y"
 { 
 		  struct method_declarator *d;
 		  NEW_METHOD_DECLARATOR (d, yyvsp[-2].node, NULL);
@@ -2000,7 +1993,7 @@ case 85:
 		;
     break;}
 case 86:
-#line 444 "./parse-scan.y"
+#line 437 "./parse-scan.y"
 { 
 		  struct method_declarator *d;
 		  NEW_METHOD_DECLARATOR (d, yyvsp[-3].node, yyvsp[-1].node);
@@ -2008,7 +2001,7 @@ case 86:
 		;
     break;}
 case 89:
-#line 455 "./parse-scan.y"
+#line 448 "./parse-scan.y"
 {
 		  char *n = xmalloc (strlen (yyvsp[-2].node)+strlen(yyvsp[0].node)+2);
 		  sprintf (n, "%s,%s", yyvsp[-2].node, yyvsp[0].node);
@@ -2016,110 +2009,110 @@ case 89:
 		;
     break;}
 case 90:
-#line 464 "./parse-scan.y"
+#line 457 "./parse-scan.y"
 { 
 		  USE_ABSORBER;
 		  yyval.node = yyvsp[-1].node;
 		;
     break;}
 case 91:
-#line 469 "./parse-scan.y"
+#line 462 "./parse-scan.y"
 { yyval.node = yyvsp[-1].node; ;
     break;}
 case 94:
-#line 478 "./parse-scan.y"
+#line 471 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 95:
-#line 480 "./parse-scan.y"
+#line 473 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 101:
-#line 497 "./parse-scan.y"
+#line 490 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 103:
-#line 508 "./parse-scan.y"
+#line 501 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 105:
-#line 513 "./parse-scan.y"
+#line 506 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 106:
-#line 520 "./parse-scan.y"
+#line 513 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 107:
-#line 522 "./parse-scan.y"
+#line 515 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 114:
-#line 539 "./parse-scan.y"
+#line 532 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 115:
-#line 541 "./parse-scan.y"
+#line 534 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 119:
-#line 554 "./parse-scan.y"
+#line 547 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 121:
-#line 557 "./parse-scan.y"
+#line 550 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 148:
-#line 626 "./parse-scan.y"
+#line 619 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 149:
-#line 628 "./parse-scan.y"
+#line 621 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 173:
-#line 668 "./parse-scan.y"
+#line 661 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 226:
-#line 815 "./parse-scan.y"
+#line 808 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 243:
-#line 855 "./parse-scan.y"
+#line 848 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 244:
-#line 857 "./parse-scan.y"
+#line 850 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 246:
-#line 863 "./parse-scan.y"
+#line 856 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 255:
-#line 885 "./parse-scan.y"
+#line 878 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 273:
-#line 927 "./parse-scan.y"
+#line 920 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 274:
-#line 929 "./parse-scan.y"
+#line 922 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 279:
-#line 938 "./parse-scan.y"
+#line 931 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 282:
-#line 945 "./parse-scan.y"
+#line 938 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 337:
-#line 1064 "./parse-scan.y"
+#line 1057 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 }
@@ -2320,7 +2313,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1082 "./parse-scan.y"
+#line 1075 "./parse-scan.y"
 
 
 #include "lex.c"
@@ -2401,4 +2394,15 @@ void
 yyerror (msg)
      char *msg;
 {
+}
+
+char *
+xstrdup (s)
+     const char *s;
+{
+  char *ret;
+
+  ret = xmalloc (strlen (s) + 1);
+  strcpy (ret, s);
+  return ret;
 }

@@ -37,12 +37,9 @@ definitions and other extensions.  */
 %{
 #define JC1_LITE
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "config.h"
+#include "system.h"
 
-/* Definitions for PROTO and VPROTO macros */
-#include "gansidecl.h"
 #include "obstack.h"
 
 extern char *input_filename;
@@ -90,10 +87,6 @@ struct method_declarator {
 /* Two actions for this grammar */
 static void report_class_declaration PROTO ((char *));
 static void report_main_declaration PROTO ((struct method_declarator *));
-
-/* Other extern functions */
-char *xmalloc PROTO ((unsigned));
-char *xstrdup PROTO ((char *));
 
 #include "lex.h"
 #include "parse.h"
@@ -1159,4 +1152,15 @@ void
 yyerror (msg)
      char *msg;
 {
+}
+
+char *
+xstrdup (s)
+     const char *s;
+{
+  char *ret;
+
+  ret = xmalloc (strlen (s) + 1);
+  strcpy (ret, s);
+  return ret;
 }
