@@ -227,10 +227,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_SCHED_INIT_DFA_BUBBLES,				\
    TARGET_SCHED_DFA_BUBBLE}
 
-/* All in tree.c.  */
+/* In tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
 #define TARGET_ATTRIBUTE_TABLE NULL
+
+/* In cse.c.  */
+#define TARGET_ADDRESS_COST default_address_cost
 
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS default_init_builtins
@@ -262,7 +265,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_INSERT_ATTRIBUTES hook_void_tree_treeptr
 #define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_tree_false
 #define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_tree_false
-/* #define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false */
+#define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false
 
 #ifndef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P hook_bool_tree_false
@@ -297,6 +300,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_STRIP_NAME_ENCODING,			\
   TARGET_VALID_POINTER_MODE,                    \
   TARGET_RTX_COSTS,				\
+  TARGET_ADDRESS_COST,				\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\

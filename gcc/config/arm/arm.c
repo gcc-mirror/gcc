@@ -143,6 +143,7 @@ static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 static int arm_rtx_costs_1			PARAMS ((rtx, enum rtx_code,
 							 enum rtx_code));
 static bool arm_rtx_costs			PARAMS ((rtx, int, int, int*));
+static int arm_address_cost			PARAMS ((rtx));
 
 #undef Hint
 #undef Mmode
@@ -218,6 +219,8 @@ static bool arm_rtx_costs			PARAMS ((rtx, int, int, int*));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS arm_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST arm_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3308,6 +3311,40 @@ arm_rtx_costs (x, code, outer_code, total)
 {
   *total = arm_rtx_costs_1 (x, code, outer_code);
   return true;
+}
+
+/* All address computations that can be done are free, but rtx cost returns
+   the same for practically all of them.  So we weight the different types
+   of address here in the order (most pref first):
+   PRE/POST_INC/DEC, SHIFT or NON-INT sum, INT sum, REG, MEM or LABEL. */
+
+static int
+arm_address_cost (X)
+    rtx X;
+{
+#define ARM_ADDRESS_COST(X)						     \
+  (10 - ((GET_CODE (X) == MEM || GET_CODE (X) == LABEL_REF		     \
+	  || GET_CODE (X) == SYMBOL_REF)				     \
+	 ? 0								     \
+	 : ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC		     \
+	     || GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	     \
+	    ? 10							     \
+	    : (((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS)		     \
+		? 6 + (GET_CODE (XEXP (X, 1)) == CONST_INT ? 2 		     \
+		       : ((GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == '2'     \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == 'c'  \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == '2'  \
+			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == 'c') \
+			  ? 1 : 0))					     \
+		: 4)))))
+	 
+#define THUMB_ADDRESS_COST(X) 					\
+  ((GET_CODE (X) == REG 					\
+    || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
+	&& GET_CODE (XEXP (X, 1)) == CONST_INT))		\
+   ? 1 : 2)
+     
+  return (TARGET_ARM ? ARM_ADDRESS_COST (X) : THUMB_ADDRESS_COST (X));
 }
 
 static int

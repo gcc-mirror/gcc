@@ -79,6 +79,7 @@ static tree ip2k_handle_progmem_attribute PARAMS ((tree *, tree, tree, int,
 static tree ip2k_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
 static bool ip2k_rtx_costs PARAMS ((rtx, int, int, int *));
+static int ip2k_address_cost PARAMS ((rtx));
 
 const struct attribute_spec ip2k_attribute_table[];
 
@@ -104,6 +105,8 @@ const struct attribute_spec ip2k_attribute_table[];
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ip2k_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST ip2k_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3418,7 +3421,7 @@ ip2k_rtx_costs (x, code, outer_code, total)
 
 /* Calculate the cost of a memory address.  */
 
-int
+static int
 ip2k_address_cost (x)
      rtx x;
 {

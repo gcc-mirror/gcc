@@ -1673,12 +1673,6 @@ do {									\
 
 /* Describing Relative Costs of Operations */
 
-/* An expression giving the cost of an addressing mode that contains ADDRESS.
-   If not defined, the cost is computed from the ADDRESS expression and the
-   `CONST_COSTS' values.  */
-
-#define ADDRESS_COST(ADDRESS) 0
-
 /* A C expression for the cost of moving data from a register in class FROM to
    one in class TO, using MODE.  */
 

@@ -175,6 +175,8 @@ static bool mmix_rtx_costs
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_0
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1207,18 +1209,6 @@ mmix_rtx_costs (x, code, outer_code, total)
      generic calculations, until we can do measurements, at least.
      Say we did not modify any calculated costs.  */
   return false;
-}
-
-/* ADDRESS_COST.  */
-
-int
-mmix_address_cost (addr)
-     rtx addr ATTRIBUTE_UNUSED;
-{
-  /* There's no difference in the address costs and we have lots of
-     registers.  Some targets use constant 0, many others use 1 to say
-     this.  Let's start with 1.  */
-  return 1;
 }
 
 /* REGISTER_MOVE_COST.  */

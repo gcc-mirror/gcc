@@ -2144,35 +2144,6 @@ typedef struct
    ((GET_MODE_SIZE (M) < 4 ? 8 : 2 * GET_MODE_SIZE (M))	\
     * (CLASS == LO_REGS ? 1 : 2)))
  
-/* All address computations that can be done are free, but rtx cost returns
-   the same for practically all of them.  So we weight the different types
-   of address here in the order (most pref first):
-   PRE/POST_INC/DEC, SHIFT or NON-INT sum, INT sum, REG, MEM or LABEL. */
-#define ARM_ADDRESS_COST(X)						     \
-  (10 - ((GET_CODE (X) == MEM || GET_CODE (X) == LABEL_REF		     \
-	  || GET_CODE (X) == SYMBOL_REF)				     \
-	 ? 0								     \
-	 : ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC		     \
-	     || GET_CODE (X) == POST_INC || GET_CODE (X) == POST_DEC)	     \
-	    ? 10							     \
-	    : (((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS)		     \
-		? 6 + (GET_CODE (XEXP (X, 1)) == CONST_INT ? 2 		     \
-		       : ((GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == '2'     \
-			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 0))) == 'c'  \
-			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == '2'  \
-			   || GET_RTX_CLASS (GET_CODE (XEXP (X, 1))) == 'c') \
-			  ? 1 : 0))					     \
-		: 4)))))
-	 
-#define THUMB_ADDRESS_COST(X) 					\
-  ((GET_CODE (X) == REG 					\
-    || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
-	&& GET_CODE (XEXP (X, 1)) == CONST_INT))		\
-   ? 1 : 2)
-     
-#define ADDRESS_COST(X) \
-     (TARGET_ARM ? ARM_ADDRESS_COST (X) : THUMB_ADDRESS_COST (X))
-   
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST \

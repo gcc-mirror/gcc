@@ -60,7 +60,6 @@ extern int arith32_operand PARAMS ((rtx, enum machine_mode));
 extern int power2_operand PARAMS ((rtx, enum machine_mode));
 extern int cmplpower2_operand PARAMS ((rtx, enum machine_mode));
 extern enum machine_mode select_cc_mode PARAMS ((RTX_CODE, rtx));
-extern int i960_address_cost PARAMS ((rtx));
 extern int emit_move_sequence PARAMS ((rtx *, enum machine_mode));
 extern int i960_bypass PARAMS ((rtx, rtx, rtx, int));
 extern void i960_print_operand_addr PARAMS ((FILE *, rtx));

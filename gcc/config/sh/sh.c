@@ -219,6 +219,7 @@ static int andcosts PARAMS ((rtx));
 static int addsubcosts PARAMS ((rtx));
 static int multcosts PARAMS ((rtx));
 static bool sh_rtx_costs PARAMS ((rtx, int, int, int *));
+static int sh_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -272,6 +273,8 @@ static bool sh_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sh_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST sh_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1522,6 +1525,18 @@ sh_rtx_costs (x, code, outer_code, total)
     }
 }
 
+/* Compute the cost of an address.  For the SH, all valid addresses are
+   the same cost.  Use a slightly higher cost for reg + reg addressing,
+   since it increases pressure on r0.  */
+
+static int
+sh_address_cost (X)
+     rtx X;
+{
+  return (GET_CODE (X) == PLUS
+	  && ! CONSTANT_P (XEXP (X, 1))
+	  && ! TARGET_SHMEDIA ? 1 : 0);
+}
 
 /* Code to expand a shift.  */
 

@@ -152,6 +152,7 @@ static int reg_save_size PARAMS ((void));
 static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static bool dsp16xx_rtx_costs PARAMS ((rtx, int, int, int *));
+static int dsp16xx_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 
@@ -169,6 +170,8 @@ static bool dsp16xx_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS dsp16xx_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST dsp16xx_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2230,7 +2233,7 @@ asm_output_local(file, name, size, rounded)
 	fprintf (file, "int\n");
 }
 
-int
+static int
 dsp16xx_address_cost (addr)
      rtx addr;
 {

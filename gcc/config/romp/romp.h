@@ -1162,29 +1162,6 @@ struct rt_cargs {int gregs, fregs; };
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
-/* Compute the cost of an address.  This is meant to approximate the size
-   and/or execution delay of an insn using that address.  If the cost is
-   approximated by the RTL complexity, including CONST_COSTS above, as
-   is usually the case for CISC machines, this macro should not be defined.
-   For aggressively RISCy machines, only one insn format is allowed, so
-   this macro should be a constant.  The value of this macro only matters
-   for valid addresses.
-
-   For the ROMP, everything is cost 0 except for addresses involving
-   symbolic constants, which are cost 1.  */
-
-#define ADDRESS_COST(RTX)				\
-  ((GET_CODE (RTX) == SYMBOL_REF			\
-    && ! CONSTANT_POOL_ADDRESS_P (RTX))			\
-   || GET_CODE (RTX) == LABEL_REF			\
-   || (GET_CODE (RTX) == CONST				\
-       && ! constant_pool_address_operand (RTX, Pmode))	\
-   || (GET_CODE (RTX) == PLUS				\
-       && ((GET_CODE (XEXP (RTX, 1)) == SYMBOL_REF	\
-	    && ! CONSTANT_POOL_ADDRESS_P (XEXP (RTX, 0))) \
-	   || GET_CODE (XEXP (RTX, 1)) == LABEL_REF	\
-	   || GET_CODE (XEXP (RTX, 1)) == CONST)))
-
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and
    should be adjusted to reflect any required changes.  This macro is used when
    there is some systematic length adjustment required that would be difficult

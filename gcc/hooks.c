@@ -97,6 +97,13 @@ hook_int_tree_tree_1 (a, b)
   return 1;
 }
 
+int
+hook_int_rtx_0 (a)
+     rtx a ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
 void
 hook_void_tree (a)
      tree a ATTRIBUTE_UNUSED;

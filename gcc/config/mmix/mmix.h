@@ -881,8 +881,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Costs */
 
-#define ADDRESS_COST(ADDRESS) mmix_address_cost (ADDRESS)
-
 /* The special registers can only move to and from general regs, and we
    need to check that their constraints match, so say 3 for them.  */
 /* WARNING: gcc-2.7.2.2 i686-pc-linux-gnulibc1 (as shipped with RH 4.2)

@@ -156,6 +156,7 @@ static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static void mips_encode_section_info		PARAMS ((tree, int));
 static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
+static int mips_address_cost			PARAMS ((rtx));
 
 
 /* Structure to be filled in by compute_frame_size with register
@@ -674,6 +675,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_VALID_POINTER_MODE mips_valid_pointer_mode
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mips_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST mips_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3324,12 +3327,15 @@ mips_rtx_costs (x, code, outer_code, total)
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 
-int
+static int
 mips_address_cost (addr)
      rtx addr;
 {
   switch (GET_CODE (addr))
     {
+    case REG:
+      return 1;
+
     case LO_SUM:
       return 1;
 

@@ -65,7 +65,6 @@ extern void hppa_encode_label PARAMS ((rtx));
 extern int arith11_operand PARAMS ((rtx, enum machine_mode));
 extern int adddi3_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_expression_p PARAMS ((rtx));
-extern int hppa_address_cost PARAMS ((rtx));
 extern int symbolic_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int pa_adjust_insn_length PARAMS ((rtx, int));
 extern int int11_operand PARAMS ((rtx, enum machine_mode));

@@ -45,6 +45,8 @@ static int follows_p PARAMS ((rtx, rtx));
 static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, tree));
+static int vax_address_cost_1 PARAMS ((rtx));
+static int vax_address_cost PARAMS ((rtx));
 static int vax_rtx_costs_1 PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static bool vax_rtx_costs PARAMS ((rtx, int, int, int *));
 
@@ -62,6 +64,8 @@ static bool vax_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS vax_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST vax_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -418,8 +422,8 @@ vax_float_literal(c)
    2 - indirect */
 
 
-int
-vax_address_cost (addr)
+static int
+vax_address_cost_1 (addr)
     register rtx addr;
 {
   int reg = 0, indexed = 0, indir = 0, offset = 0, predec = 0;
@@ -485,6 +489,13 @@ vax_address_cost (addr)
   if (reg && indexed && offset)
     return reg + indir + offset + predec;
   return reg + indexed + indir + offset + predec;
+}
+
+static int
+vax_address_cost (x)
+     rtx x;
+{
+  return (1 + (GET_CODE (x) == REG ? 0 : vax_address_cost_1 (x)));
 }
 
 /* Cost of an expression on a VAX.  This version has costs tuned for the
@@ -649,7 +660,7 @@ vax_rtx_costs_1 (x, code, outer_code)
       x = XEXP (x, 0);
       if (GET_CODE (x) == REG || GET_CODE (x) == POST_INC)
 	return c;
-      return c + vax_address_cost (x);
+      return c + vax_address_cost_1 (x);
     default:
       c = 3;
       break;
@@ -703,7 +714,7 @@ vax_rtx_costs_1 (x, code, outer_code)
 	case MEM:
 	  c += 1;		/* 2 on VAX 2 */
 	  if (GET_CODE (XEXP (op, 0)) != REG)
-	    c += vax_address_cost (XEXP (op, 0));
+	    c += vax_address_cost_1 (XEXP (op, 0));
 	  break;
 	case REG:
 	case SUBREG:

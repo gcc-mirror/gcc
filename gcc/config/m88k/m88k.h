@@ -1504,18 +1504,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    state with CC_STATUS_INIT for now.  */
 #define CC_STATUS_INIT m88k_volatile_code = '\0'
 
-/* Provide the costs of an addressing mode that contains ADDR.
-   If ADDR is not a valid address, its cost is irrelevant.
-   REG+REG is made slightly more expensive because it might keep
-   a register live for longer than we might like.  */
-#define ADDRESS_COST(ADDR)				\
-  (GET_CODE (ADDR) == REG ? 1 :				\
-   GET_CODE (ADDR) == LO_SUM ? 1 :			\
-   GET_CODE (ADDR) == HIGH ? 2 :			\
-   GET_CODE (ADDR) == MULT ? 1 :			\
-   GET_CODE (ADDR) != PLUS ? 4 :			\
-   (REG_P (XEXP (ADDR, 0)) && REG_P (XEXP (ADDR, 1))) ? 2 : 1)
-
 /* A C expressions returning the cost of moving data of MODE from a register
    to or from memory.  This is more costly than between registers.  */
 #define MEMORY_MOVE_COST(MODE,CLASS,IN) 4

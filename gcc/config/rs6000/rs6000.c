@@ -407,6 +407,8 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_0
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

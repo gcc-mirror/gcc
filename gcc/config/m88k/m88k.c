@@ -80,6 +80,7 @@ static void m88k_encode_section_info PARAMS ((tree, int));
 static void m88k_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #endif
 static bool m88k_rtx_costs PARAMS ((rtx, int, int, int *));
+static int m88k_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -114,6 +115,8 @@ static bool m88k_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m88k_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST m88k_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3427,5 +3430,28 @@ m88k_rtx_costs (x, code, outer_code, total)
 
     default:
       return false;
+    }
+}
+
+/* Provide the costs of an addressing mode that contains ADDR.
+   If ADDR is not a valid address, its cost is irrelevant.
+   REG+REG is made slightly more expensive because it might keep
+   a register live for longer than we might like.  */
+static int
+m88k_address_cost (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case REG:
+    case LO_SUM:
+    case MULT:
+      return 1;
+    case HIGH:
+      return 2;
+    case PLUS:
+      return (REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1))) ? 2 : 1;
+    default:
+      return 4;
     }
 }

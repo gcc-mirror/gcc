@@ -812,8 +812,6 @@ struct cum_arg {int nbytes; };
    (CLASS1 == EXTENDED_REGS || CLASS2 == EXTENDED_REGS) ? 4 : \
    4)
 
-#define ADDRESS_COST(X) mn10300_address_cost((X), 0)
-
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1

@@ -2608,8 +2608,6 @@ do {                                                                    \
          : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
             ? 9 : 3))
 
-#define ADDRESS_COST(RTX)  1
-
 #define PREFETCH_BLOCK \
 	((sparc_cpu == PROCESSOR_ULTRASPARC \
           || sparc_cpu == PROCESSOR_ULTRASPARC3) \

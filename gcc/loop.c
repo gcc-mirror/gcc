@@ -7333,21 +7333,8 @@ combine_givs_p (g1, g2)
      the expression of G2 in terms of G1 can be used.  */
   if (ret != NULL_RTX
       && g2->giv_type == DEST_ADDR
-      && memory_address_p (GET_MODE (g2->mem), ret)
-      /* ??? Looses, especially with -fforce-addr, where *g2->location
-	 will always be a register, and so anything more complicated
-	 gets discarded.  */
-#if 0
-#ifdef ADDRESS_COST
-      && ADDRESS_COST (tem) <= ADDRESS_COST (*g2->location)
-#else
-      && rtx_cost (tem, MEM) <= rtx_cost (*g2->location, MEM)
-#endif
-#endif
-      )
-    {
-      return ret;
-    }
+      && memory_address_p (GET_MODE (g2->mem), ret))
+    return ret;
 
   return NULL_RTX;
 }

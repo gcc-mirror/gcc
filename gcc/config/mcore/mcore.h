@@ -1004,10 +1004,6 @@ extern const enum reg_class reg_class_from_letter[];
 #define Pmode          SImode
 #define FUNCTION_MODE  Pmode
 
-/* provide the cost for an address calculation.
-   All addressing modes cost the same on the MCore.  */
-#define	ADDRESS_COST(RTX)	1
-
 /* Compute extra cost of moving data between one register class
    and another.  All register moves are cheap.  */
 #define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) 2

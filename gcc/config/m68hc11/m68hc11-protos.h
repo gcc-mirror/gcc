@@ -89,8 +89,6 @@ extern int m68hc11_memory_move_cost PARAMS((enum machine_mode, enum reg_class,
                                            int));
 extern int m68hc11_register_move_cost PARAMS((enum machine_mode,
 					      enum reg_class, enum reg_class));
-extern int m68hc11_address_cost PARAMS((rtx));
-
 
 extern void m68hc11_emit_libcall PARAMS((const char*, enum rtx_code,
                                          enum machine_mode, enum machine_mode,

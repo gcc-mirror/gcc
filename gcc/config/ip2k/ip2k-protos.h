@@ -39,7 +39,6 @@ extern int ip2k_return_pops_args PARAMS ((tree, tree, int));
 #ifdef RTX_CODE
 extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
 extern void machine_dependent_reorg PARAMS ((rtx));
-extern int ip2k_address_cost PARAMS ((rtx));
 extern int ip2k_extra_constraint PARAMS ((rtx, int));
 extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode, rtx));
 extern int adjust_insn_length PARAMS ((rtx insn, int len));

@@ -1391,11 +1391,6 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 #define NOTICE_UPDATE_CC(EXP, INSN) \
 	m68hc11_notice_update_cc ((EXP), (INSN))
 
-/* An expression giving the cost of an addressing mode that contains
-   ADDRESS.  */
-
-#define ADDRESS_COST(RTX) m68hc11_address_cost (RTX)
-
 /* Move costs between classes of registers */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
     (m68hc11_register_move_cost (MODE, CLASS1, CLASS2))

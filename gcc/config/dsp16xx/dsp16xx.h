@@ -1431,10 +1431,6 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 /* DESCRIBING RELATIVE COSTS OF OPERATIONS */
 
-/* An expression giving the cost of an addressing mode that contains
-   address.  */
-#define ADDRESS_COST(ADDR)  dsp16xx_address_cost (ADDR)
-
 /* A c expression for the cost of moving data from a register in
    class FROM to one in class TO. The classes are expressed using
    the enumeration values such as GENERAL_REGS. A value of 2 is

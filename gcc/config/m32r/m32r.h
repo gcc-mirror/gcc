@@ -1420,9 +1420,6 @@ do {									\
 
 /* Costs.  */
 
-/* Compute the cost of an address.  */
-#define ADDRESS_COST(ADDR) m32r_address_cost (ADDR)
-
 /* Compute extra cost of moving data between one register class
    and another.  */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) 2

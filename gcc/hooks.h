@@ -38,6 +38,7 @@ void hook_void_tree PARAMS ((tree));
 void hook_void_tree_treeptr PARAMS ((tree, tree *));
 
 int hook_int_tree_tree_1 PARAMS ((tree, tree));
+int hook_int_rtx_0 PARAMS ((rtx));
 
 bool default_can_output_mi_thunk_no_vcall
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));

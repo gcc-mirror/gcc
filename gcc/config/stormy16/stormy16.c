@@ -58,6 +58,7 @@ static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 static void xstormy16_init_builtins PARAMS ((void));
 static rtx xstormy16_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static bool xstormy16_rtx_costs PARAMS ((rtx, int, int, int *));
+static int xstormy16_address_cost PARAMS ((rtx));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -138,6 +139,14 @@ xstormy16_rtx_costs (x, code, outer_code, total)
     }
 }
 
+static int
+xstormy16_address_cost (x)
+     rtx x;
+{
+  return (GET_CODE (x) == CONST_INT ? 2
+	  : GET_CODE (x) == PLUS ? 7
+	  : 5);
+}
 
 /* Branches are handled as follows:
 
@@ -2209,5 +2218,7 @@ xstormy16_expand_builtin(exp, target, subtarget, mode, ignore)
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xstormy16_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST xstormy16_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -2752,14 +2752,6 @@ while (0)
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
   && nonpic_symbol_mentioned_p (X))
 
-/* Compute the cost of an address.  For the SH, all valid addresses are
-   the same cost.  Use a slightly higher cost for reg + reg addressing,
-   since it increases pressure on r0.  */
-
-#define ADDRESS_COST(X) (GET_CODE (X) == PLUS && ! CONSTANT_P (XEXP (X, 1)) \
-			 && ! TARGET_SHMEDIA \
-			 ? 1 : 0)
-
 /* Compute extra cost of moving data between one register class
    and another.  */
 

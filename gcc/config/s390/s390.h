@@ -812,11 +812,6 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
 /* Relative costs of operations.  */
 
-/* An expression giving the cost of an addressing mode that contains
-   ADDRESS.  If not defined, the cost is computed from the ADDRESS
-   expression and the `CONST_COSTS' values.  */
-#define ADDRESS_COST(RTX) s390_address_cost ((RTX))
-
 /* On s390, copy between fprs and gprs is expensive.  */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)                        \
   ((   (   reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\

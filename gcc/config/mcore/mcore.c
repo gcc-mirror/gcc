@@ -170,6 +170,8 @@ static bool       mcore_rtx_costs		PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mcore_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_0
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
