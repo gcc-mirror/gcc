@@ -1,3 +1,14 @@
+2005-02-23  Robert Schuster  <thebohemian@gmx.net>
+
+	* gnu/java/nio/ChannelReader: Fixed comments.
+
+2005-02-23  Robert Schuster  <thebohemian@gmx.net>
+
+	* java/nio/channels/Channels: Added FIXMEs about
+	stub method implementation.
+	(newReader): Implemented.
+	* gnu/java/nio/ChannelReader: New class.
+
 2005-02-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/SimpleDateFormat.java:
