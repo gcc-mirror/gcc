@@ -7218,16 +7218,18 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
       for (p = v->insn; INSN_UID (p) >= max_uid_for_loop; )
 	p = PREV_INSN (p);
       stats[i].start_luid = INSN_LUID (p);
-      v->ix = i;
       i++;
     }
 
   qsort (stats, giv_count, sizeof(*stats), cmp_recombine_givs_stats);
 
-  /* Do the actual most-recently-used recombination.  */
+  /* Set up the ix field for each giv in stats to name
+     the corresponding index into stats, and
+     do the actual most-recently-used recombination.  */
   for (last_giv = 0, i = giv_count - 1; i >= 0; i--)
     {
       v = giv_array[stats[i].giv_number];
+      v->ix = i;
       if (v->same)
 	{
 	  struct induction *old_same = v->same;
@@ -7273,8 +7275,9 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
   ends_need_computing = 0;
   /* For each DEST_REG giv, compute lifetime starts, and try to compute
      lifetime ends from regscan info.  */
-  for (i = 0, v = bl->giv; v; v = v->next_iv)
+  for (i = giv_count - 1; i >= 0; i--)
     {
+      v = giv_array[stats[i].giv_number];
       if (v->ignore)
 	continue;
       if (v->giv_type == DEST_ADDR)
@@ -7343,7 +7346,6 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 		}
 	    }
 	}
-      i++;
     }
 
   /* If the regscan information was unconclusive for one or more DEST_REG
@@ -7367,21 +7369,22 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 
   /* Set start_luid back to the last insn that sets the giv.  This allows
      more combinations.  */
-  for (i = 0, v = bl->giv; v; v = v->next_iv)
+  for (i = giv_count - 1; i >= 0; i--)
     {
+      v = giv_array[stats[i].giv_number];
       if (v->ignore)
 	continue;
       if (INSN_UID (v->insn) < max_uid_for_loop)
 	stats[i].start_luid = INSN_LUID (v->insn);
-      i++;
     }
 
   /* Now adjust lifetime ends by taking combined givs into account.  */
-  for (i = 0, v = bl->giv; v; v = v->next_iv)
+  for (i = giv_count - 1; i >= 0; i--)
     {
       unsigned luid;
       int j;
 
+      v = giv_array[stats[i].giv_number];
       if (v->ignore)
 	continue;
       if (v->same && ! v->same->ignore)
@@ -7393,7 +7396,6 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	      > (unsigned) stats[j].end_luid - stats[j].start_luid)
 	    stats[j].end_luid = luid;
 	}
-      i++;
     }
 
   qsort (stats, giv_count, sizeof(*stats), cmp_recombine_givs_stats);
