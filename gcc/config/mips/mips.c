@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "output.h"
-
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
@@ -50,6 +49,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "ggc.h"
 #include "gstab.h"
+#include "hashtab.h"
+#include "debug.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -90,7 +91,6 @@ static void block_move_loop			PARAMS ((rtx, rtx,
 							 int,
 							 rtx, rtx));
 static void block_move_call			PARAMS ((rtx, rtx, rtx));
-static FILE *mips_make_temp_file		PARAMS ((void));
 static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT,
 							 FILE *));
 static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
@@ -115,8 +115,18 @@ static void mips_add_gc_roots                   PARAMS ((void));
 static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static enum processor_type mips_parse_cpu       PARAMS ((const char *));
+static void copy_file_data			PARAMS ((FILE *, FILE *));
+#ifdef TARGET_IRIX6
+static void iris6_asm_named_section_1		PARAMS ((const char *,
+							 unsigned int,
+							 unsigned int));
 static void iris6_asm_named_section		PARAMS ((const char *,
 							 unsigned int));
+static int iris_section_align_entry_eq		PARAMS ((const PTR, const PTR));
+static hashval_t iris_section_align_entry_hash	PARAMS ((const PTR));
+static int iris6_section_align_1		PARAMS ((void **, void *));
+#endif
+
 /* Global variables for machine-dependent things.  */
 
 /* Threshold for data being put into the small data/bss area, instead
@@ -275,10 +285,6 @@ struct mips_frame_info current_frame_info;
 
 /* Zero structure to initialize current_frame_info.  */
 struct mips_frame_info zero_frame_info;
-
-/* Temporary filename used to buffer .text until end of program
-   for -mgpopt.  */
-static char *temp_filename;
 
 /* Pseudo-reg holding the address of the current function when
    generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS, used
@@ -5786,20 +5792,6 @@ mips_output_external_libcall (file, name)
 }
 #endif
 
-/* Compute a string to use as a temporary file name.  */
-
-static FILE *
-mips_make_temp_file ()
-{
-  FILE *stream;
-
-  temp_filename = make_temp_file (0);
-  stream = fopen (temp_filename, "w+");
-  if (!stream)
-    fatal_io_error ("can't open %s", temp_filename);
-  return stream;
-}
-
 /* Emit a new filename to a stream.  If this is MIPS ECOFF, watch out
    for .file's that start within a function.  If we are smuggling stabs, try to
    put out a MIPS ECOFF file and a stab.  */
@@ -6045,20 +6037,14 @@ mips_asm_file_start (stream)
   if (TARGET_MIPS16)
     fprintf (stream, "\t.set\tmips16\n");
 
-  /* Start a section, so that the first .popsection directive is guaranteed
-     to have a previously defined section to pop back to.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_O64 && mips_abi != ABI_EABI)
-    fprintf (stream, "\t.section\t.text\n");
-
   /* This code exists so that we can put all externs before all symbol
      references.  This is necessary for the MIPS assembler's global pointer
      optimizations to work.  */
   if (TARGET_FILE_SWITCHING)
     {
       asm_out_data_file = stream;
-      asm_out_text_file = mips_make_temp_file ();
+      asm_out_text_file = tmpfile ();
     }
-
   else
     asm_out_data_file = asm_out_text_file = stream;
 
@@ -6077,10 +6063,8 @@ void
 mips_asm_file_end (file)
      FILE *file;
 {
-  char buffer[8192];
   tree name_tree;
   struct extern_list *p;
-  int len;
 
   if (HALF_PIC_P ())
     {
@@ -6116,23 +6100,30 @@ mips_asm_file_end (file)
   if (TARGET_FILE_SWITCHING)
     {
       fprintf (file, "\n\t.text\n");
-      rewind (asm_out_text_file);
-      if (ferror (asm_out_text_file))
-	fatal_io_error ("can't rewind %s", temp_filename);
-
-      while ((len = fread (buffer, 1, sizeof (buffer), asm_out_text_file)) > 0)
-	if ((int) fwrite (buffer, 1, len, file) != len)
-	  fatal_io_error ("can't write to %s", asm_file_name);
-
-      if (len < 0)
-	fatal_io_error ("can't read from %s", temp_filename);
-
-      if (fclose (asm_out_text_file) != 0)
-	fatal_io_error ("can't close %s", temp_filename);
-
-      unlink (temp_filename);
-      free (temp_filename);
+      copy_file_data (file, asm_out_text_file);
     }
+}
+
+static void
+copy_file_data (to, from)
+     FILE *to, *from;
+{
+  char buffer[8192];
+  size_t len;
+
+  rewind (from);
+  if (ferror (from))
+    fatal_io_error ("can't rewind temp file");
+
+  while ((len = fread (buffer, 1, sizeof (buffer), from)) > 0)
+    if (fwrite (buffer, 1, len, to) != len)
+      fatal_io_error ("can't write to output file");
+
+  if (ferror (from))
+    fatal_io_error ("can't read from temp file");
+
+  if (fclose (from))
+    fatal_io_error ("can't close temp file");
 }
 
 /* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
@@ -9752,43 +9743,6 @@ mips_parse_cpu (cpu_string)
   return cpu;
 }
 
-/* Output assembly to switch to section NAME with attribute FLAGS.  */
-
-static void
-iris6_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags;
-{
-  unsigned int sh_type, sh_flags, sh_entsize;
-
-  sh_flags = 0;
-  if (!(flags & SECTION_DEBUG))
-    sh_flags |= 2; /* SHF_ALLOC */
-  if (flags & SECTION_WRITE)
-    sh_flags |= 1; /* SHF_WRITE */
-  if (flags & SECTION_CODE)
-    sh_flags |= 4; /* SHF_EXECINSTR */
-  if (flags & SECTION_SMALL)
-    sh_flags |= 0x10000000; /* SHF_MIPS_GPREL */
-  if (strcmp (name, ".debug_frame") == 0)
-    sh_flags |= 0x08000000; /* SHF_MIPS_NOSTRIP */
-
-  if (flags & SECTION_DEBUG)
-    sh_type = 0x7000001e; /* SHT_MIPS_DWARF */
-  else if (flags & SECTION_BSS)
-    sh_type = 8; /* SHT_NOBITS */
-  else
-    sh_type = 1; /* SHT_PROGBITS */
-
-  if (flags & SECTION_CODE)
-    sh_entsize = 4;
-  else
-    sh_entsize = 0;
-
-  fprintf (asm_out_file, "\t.section %s,%u,%u,%u,%u\n",
-	   name, sh_type, sh_flags, sh_entsize, 0);
-}
-
 /* Cover function for UNIQUE_SECTION.  */
 
 void
@@ -9797,8 +9751,9 @@ mips_unique_section (decl, reloc)
      int reloc;
 {
   int len, size, sec;
-  char *name, *string, *prefix;
-  static char *prefixes[4][2] = {
+  const char *name, *prefix;
+  char *string;
+  static const char *prefixes[4][2] = {
     { ".text.", ".gnu.linkonce.t." },
     { ".rodata.", ".gnu.linkonce.r." },
     { ".data.", ".gnu.linkonce.d." },
@@ -9860,3 +9815,164 @@ mips_unique_section (decl, reloc)
 
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
+
+#ifdef TARGET_IRIX6
+/* Output assembly to switch to section NAME with attribute FLAGS.  */
+
+static void
+iris6_asm_named_section_1 (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align;
+{
+  unsigned int sh_type, sh_flags, sh_entsize;
+
+  sh_flags = 0;
+  if (!(flags & SECTION_DEBUG))
+    sh_flags |= 2; /* SHF_ALLOC */
+  if (flags & SECTION_WRITE)
+    sh_flags |= 1; /* SHF_WRITE */
+  if (flags & SECTION_CODE)
+    sh_flags |= 4; /* SHF_EXECINSTR */
+  if (flags & SECTION_SMALL)
+    sh_flags |= 0x10000000; /* SHF_MIPS_GPREL */
+  if (strcmp (name, ".debug_frame") == 0)
+    sh_flags |= 0x08000000; /* SHF_MIPS_NOSTRIP */
+
+  if (flags & SECTION_DEBUG)
+    sh_type = 0x7000001e; /* SHT_MIPS_DWARF */
+  else if (flags & SECTION_BSS)
+    sh_type = 8; /* SHT_NOBITS */
+  else
+    sh_type = 1; /* SHT_PROGBITS */
+
+  if (flags & SECTION_CODE)
+    sh_entsize = 4;
+  else
+    sh_entsize = 0;
+
+  fprintf (asm_out_file, "\t.section %s,%#x,%#x,%u,%u\n",
+	   name, sh_type, sh_flags, sh_entsize, align);
+}
+
+static void
+iris6_asm_named_section (name, flags)
+     const char *name;
+     unsigned int flags;
+{
+  if (TARGET_FILE_SWITCHING && (flags & SECTION_CODE))
+    asm_out_file = asm_out_text_file;
+  iris6_asm_named_section_1 (name, flags, 0);
+}
+
+/* In addition to emitting a .align directive, record the maximum
+   alignment requested for the current section.  */
+
+struct iris_section_align_entry
+{
+  const char *name;
+  unsigned int log;
+  unsigned int flags;
+};
+
+static htab_t iris_section_align_htab;
+static FILE *iris_orig_asm_out_file;
+
+static int
+iris_section_align_entry_eq (p1, p2)
+     const PTR p1;
+     const PTR p2;
+{
+  const struct iris_section_align_entry *old = p1;
+  const char *new = p2;
+
+  return strcmp (old->name, new) == 0;
+}
+
+static hashval_t
+iris_section_align_entry_hash (p)
+     const PTR p;
+{
+  const struct iris_section_align_entry *old = p;
+  return htab_hash_string (old->name);
+}
+
+void
+iris6_asm_output_align (file, log)
+     FILE *file;
+     unsigned int log;
+{
+  const char *section = current_section_name ();
+  struct iris_section_align_entry **slot, *entry;
+
+  if (! section)
+    abort ();
+
+  slot = (struct iris_section_align_entry **)
+    htab_find_slot_with_hash (iris_section_align_htab, section,
+			      htab_hash_string (section), INSERT);
+  entry = *slot;
+  if (! entry)
+    {
+      entry = (struct iris_section_align_entry *)
+	xmalloc (sizeof (struct iris_section_align_entry));
+      *slot = entry;
+      entry->name = section;
+      entry->log = log;
+      entry->flags = current_section_flags ();
+    }
+  else if (entry->log < log)
+    entry->log = log;
+
+  fprintf (file, "\t.align\t%u\n", log);
+}
+
+/* The Iris assembler does not record alignment from .align directives,
+   but takes it from the first .section directive seen.  Play yet more
+   file switching games so that we can emit a .section directive at the
+   beginning of the file with the proper alignment attached.  */
+   
+void
+iris6_asm_file_start (stream)
+     FILE *stream;
+{
+  mips_asm_file_start (stream);
+
+  iris_orig_asm_out_file = asm_out_file;
+  stream = tmpfile ();
+  asm_out_file = stream;
+  asm_out_data_file = stream;
+  if (! TARGET_FILE_SWITCHING)
+    asm_out_text_file = stream;
+
+  iris_section_align_htab = htab_create (31, iris_section_align_entry_hash,
+					 iris_section_align_entry_eq, NULL);
+}
+
+static int
+iris6_section_align_1 (slot, data)
+     void **slot;
+     void *data ATTRIBUTE_UNUSED;
+{
+  const struct iris_section_align_entry *entry
+    = *(const struct iris_section_align_entry **) slot;
+
+  iris6_asm_named_section_1 (entry->name, entry->flags, 1 << entry->log);
+  return 1;
+}
+
+void
+iris6_asm_file_end (stream)
+     FILE *stream;
+{
+  /* Emit section directives with the proper alignment at the top of the
+     real output file.  */
+  asm_out_file = iris_orig_asm_out_file;
+  htab_traverse (iris_section_align_htab, iris6_section_align_1, NULL);
+
+  /* Copy the data emitted to the temp file to the real output file.  */
+  copy_file_data (asm_out_file, stream);
+
+  mips_asm_file_end (stream);
+}
+#endif /* TARGET_IRIX6 */
