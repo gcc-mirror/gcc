@@ -831,7 +831,8 @@ demangle_signature (work, mangled, declp)
 	    {
 	      /* A G++ template function.  Read the template arguments. */
 	      success = demangle_template (work, mangled, declp, 0, 0);
-	      expect_return_type = 1;
+	      if (!(work->constructor & 1))
+		expect_return_type = 1;
 	      (*mangled)++;
 	      break;
 	    }
@@ -1534,7 +1535,8 @@ demangle_prefix (work, mangled, declp)
 	}
     }
   else if ((scan == *mangled)
-	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')))
+	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')
+	       || (scan[2] == 'H')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
@@ -1551,7 +1553,8 @@ demangle_prefix (work, mangled, declp)
 	{
 	  /* A GNU style constructor starts with __[0-9Qt].  But cfront uses
 	     names like __Q2_3foo3bar for nested type names.  So don't accept
-	     this style of constructor for cfront demangling.  */
+	     this style of constructor for cfront demangling.  A GNU
+	     style member-template constructor starts with 'H'. */
 	  if (!(LUCID_DEMANGLING || ARM_DEMANGLING))
 	    work -> constructor += 1;
 	  *mangled = scan + 2;
