@@ -21,10 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
-#ifndef DWARF_VERSION
-#define DWARF_VERSION 1
-#endif
-#if defined (DWARF_DEBUGGING_INFO) && (DWARF_VERSION != 2)
+#ifdef DWARF_DEBUGGING_INFO
 #include <stdio.h>
 #include "dwarf.h"
 #include "tree.h"
@@ -5734,4 +5731,4 @@ dwarfout_finish ()
     }
 }
 
-#endif /* DWARF_DEBUGGING_INFO && DWARF_VERSION != 2 */
+#endif /* DWARF_DEBUGGING_INFO */
