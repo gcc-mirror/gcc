@@ -107,6 +107,7 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
+#include \"reload.h\"\n\
 #include \"gensupport.h\"\n");
 
   if (saw_eh_return)

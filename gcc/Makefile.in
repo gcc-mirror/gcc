@@ -2141,7 +2141,8 @@ s-conditions : $(md_file) genconditions$(build_exeext)
 
 insn-conditions.o : insn-conditions.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(GTM_H) $(RTL_H) $(TM_P_H) $(REGS_H) function.h $(RECOG_H) real.h output.h \
-  flags.h hard-reg-set.h $(RESOURCE_H) toplev.h gensupport.h insn-constants.h
+  flags.h hard-reg-set.h $(RESOURCE_H) toplev.h reload.h gensupport.h \
+  insn-constants.h
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) insn-conditions.c
 
 dummy-conditions.o : dummy-conditions.c $(BCONFIG_H) $(SYSTEM_H) \
