@@ -1,3 +1,8 @@
+2001-10-24  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* ssa-ccp.c (ssa_ccp_substitute_constants): Don't do anything if
+	the node was already a set to a constant. 
+
 Wed Oct 24 12:41:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (set_mem_attributes): Fix typo in last change.
