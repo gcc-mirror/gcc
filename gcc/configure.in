@@ -1256,7 +1256,7 @@ changequote([,])dnl
 		use_collect2=yes
 		;;
 	hppa*-*-mpeix*)
-		tm_file="${tm_file} pa/pa-mpeix.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-mpeix.h"
 		xm_file=pa/xm-pampeix.h 
 		xmake_file=pa/x-pa-mpeix 
 		echo "You must use gas. Assuming it is already installed." 

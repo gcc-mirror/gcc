@@ -1,3 +1,8 @@
+Mon Jun  12  9:44:00 2000  Mark Klein  <mklein@dis.com>
+
+	* configure.in: Update tm dependencies for MPE.
+	* configure: Rebuilt.
+
 2000-06-12  H.J. Lu  <hjl@gnu.org>
 
 	* gengenrtl.c (obstack_alloc_rtx): Correct the allocated size.
