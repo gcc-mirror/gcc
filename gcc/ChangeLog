@@ -1,3 +1,9 @@
+2004-11-07  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR pch/14940
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __sparc__
+	definitions.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* builtins.c, c-common.c, c-decl.c, c-format.c: Say "argument"
