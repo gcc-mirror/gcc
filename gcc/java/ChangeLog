@@ -1,3 +1,8 @@
+2002-01-15  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/5365:
+	* gjavah.c (process_file): Turn class name into a file name.
+
 2002-01-14  Matthias Klose  <doko@debian.org>
 
 	* gcj.texi: Fix whitespace and formatting errors in the
