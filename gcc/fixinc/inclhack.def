@@ -888,7 +888,7 @@ fix = {
  */
 fix = {
     hackname  = ctrl_quotes_def;
-    select    = "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z],";
+    select    = "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z][,)]";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";
     test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)\n"
@@ -1142,7 +1142,7 @@ fix = {
  */
 fix = {
     hackname  = io_quotes_def;
-    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\([a-zA-Z],";
+    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\([a-zA-Z][,)]";
     c_fix     = char_macro_def;
     c_fix_arg = "IO";
     test_text =

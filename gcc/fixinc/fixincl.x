@@ -1472,7 +1472,7 @@ tSCC zCtrl_Quotes_DefName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zCtrl_Quotes_DefSelect0[] =
-       "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z],";
+       "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z][,)]";
 
 #define    CTRL_QUOTES_DEF_TEST_CT  1
 tTestDesc aCtrl_Quotes_DefTests[] = {
@@ -1959,7 +1959,7 @@ tSCC zIo_Quotes_DefName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIo_Quotes_DefSelect0[] =
-       "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\([a-zA-Z],";
+       "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\([a-zA-Z][,)]";
 
 #define    IO_QUOTES_DEF_TEST_CT  1
 tTestDesc aIo_Quotes_DefTests[] = {
