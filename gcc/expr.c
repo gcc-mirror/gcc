@@ -2933,7 +2933,6 @@ compress_float_constant (rtx x, rtx y)
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.
-   Note that it is not possible for the value returned to be a QUEUED.
    The value may be virtual_outgoing_args_rtx.
 
    EXTRA is the number of bytes of padding to push in addition to SIZE.
@@ -3411,8 +3410,7 @@ get_subtarget (rtx x)
 
 /* Expand an assignment that stores the value of FROM into TO.
    If WANT_VALUE is nonzero, return an rtx for the value of TO.
-   (This may contain a QUEUED rtx;
-   if the value is constant, this rtx is a constant.)
+   (If the value is constant, this rtx is a constant.)
    Otherwise, the returned value is NULL_RTX.  */
 
 rtx
@@ -3730,7 +3728,6 @@ expand_assignment (tree to, tree from, int want_value)
 
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
-   TARGET may contain a QUEUED rtx.
 
    If WANT_VALUE & 1 is nonzero, return a copy of the value
    not in TARGET, so that we can be sure to use the proper
@@ -8957,10 +8954,6 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
 
   if (target == 0)
     target = gen_reg_rtx (mode);
-
-  /* Pass copies of OP0 and OP1 in case they contain a QUEUED.  This is safe
-     because, if the emit_store_flag does anything it will succeed and
-     OP0 and OP1 will not be used subsequently.  */
 
   result = emit_store_flag (target, code, op0, op1,
 			    operand_mode, unsignedp, 1);
