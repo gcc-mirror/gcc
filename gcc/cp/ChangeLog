@@ -1,3 +1,9 @@
+1999-01-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (struct tree_binding): Replace scope field with a union.
+	(BINDING_SCOPE): Adjust.
+	* decl.c (BINDING_LEVEL): Adjust.
+
 1999-01-26  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_class_template): Set up the DECL_INITIAL of

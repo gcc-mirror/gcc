@@ -138,7 +138,7 @@ typedef struct ptrmem_cst
    _TYPE node, or a NAMESPACE_DECL.)  This macro should be used only
    for namespace-level bindings; on the IDENTIFIER_BINDING list
    BINDING_LEVEL is used instead.  */
-#define BINDING_SCOPE(NODE) ((tree) ((struct tree_binding*)NODE)->scope)
+#define BINDING_SCOPE(NODE) (((struct tree_binding*)NODE)->scope.scope)
 
 /* This is the declaration bound to the name. Possible values:
    variable, overloaded function, namespace, template, enumerator.  */
@@ -159,7 +159,10 @@ typedef struct ptrmem_cst
 struct tree_binding
 {
   char common[sizeof (struct tree_common)];
-  void* scope;
+  union {
+    tree scope;
+    struct binding_level *level;
+  } scope;
   tree value;
 };
 
