@@ -1,6 +1,6 @@
 # Makefile for GNU compilers.
 #
-#   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -23,6 +23,11 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 SHELL=/bin/sh
+
+# Some versions of `touch' (such as the version on Solaris 2.8) 
+# do not correctly set the timestamp due to buggy versions of `utime'
+# in the kernel.  So, we use `echo' instead. 
+STAMP = echo timestamp >
 
 FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
 FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
@@ -80,11 +85,11 @@ twoprocess : test-stamp $(AF)
 
 full-stamp : $(ALLOBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBERTY)
-	touch $@
+	$(STAMP) $@
 
 test-stamp : $(TESTOBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBERTY)
-	touch $@
+	$(STAMP) $@
 
 $(AF): $(FIXOBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBERTY)

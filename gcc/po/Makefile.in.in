@@ -10,6 +10,7 @@ PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
 SHELL = /bin/sh
+STAMP = echo timestamp >
 @SET_MAKE@
 
 srcdir = @srcdir@
@@ -83,7 +84,7 @@ all-yes: $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c
 all-no:
 
 stamp-check-po: $(POTFILES)
-	touch stamp-check-po
+	$(STAMP) stamp-check-po
 
 check-po: stamp-check-po
 
