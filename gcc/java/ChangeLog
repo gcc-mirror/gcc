@@ -1,3 +1,7 @@
+2001-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* config-lang.in (lang_requires): Define.
+
 2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
 
 	* typeck.c (convert): Check flag_unsafe_math_optimizations,
