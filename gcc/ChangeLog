@@ -1,3 +1,8 @@
+Sat Mar 20 16:26:18 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (simplify_comparison): When making comparison in wider
+	mode, check for having commuted an AND and a SUBREG.
+
 Mon Mar 15 07:32:54 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* optabs.c (expand_abs): If machine has MAX, ABS (x) is MAX (x, -x).
