@@ -7065,9 +7065,10 @@ cse_insn (insn, in_libcall_block)
 	  && qty_first_reg[reg_qty[REGNO (dest)]] != REGNO (dest)
 	  && GET_CODE (src) == REG && REGNO (src) == REGNO (dest)
 	  /* Don't do this if the original insn had a hard reg as
-	     SET_SRC.  */
+	     SET_SRC or SET_DEST.  */
 	  && (GET_CODE (sets[i].src) != REG
-	      || REGNO (sets[i].src) >= FIRST_PSEUDO_REGISTER))
+	      || REGNO (sets[i].src) >= FIRST_PSEUDO_REGISTER)
+	  && (GET_CODE (dest) != REG || REGNO (dest) >= FIRST_PSEUDO_REGISTER))
 	/* We can't call canon_reg here because it won't do anything if
 	   SRC is a hard register.  */
 	{
@@ -8611,7 +8612,8 @@ cse_basic_block (from, to, next_branch, around_loop)
 
   qty_first_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
   qty_last_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
-  qty_mode= (enum machine_mode *) alloca ((max_qty - max_reg) * sizeof (enum machine_mode));
+  qty_mode = (enum machine_mode *) alloca ((max_qty - max_reg)
+					   * sizeof (enum machine_mode));
   qty_const = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
   qty_const_insn = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
   qty_comparison_code
