@@ -1,3 +1,9 @@
+Thu Oct 28 10:20:02 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (movsf): Don't convert a SUBREG
+	of the function return register into a plain REG until
+	after function inlining is done.
+
 Wed Oct 27 15:21:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): If we did cross-jumping, and
