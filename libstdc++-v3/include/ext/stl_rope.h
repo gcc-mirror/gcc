@@ -1375,7 +1375,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         static _RopeLeaf* _S_new_RopeLeaf(__GC_CONST _CharT *__s,
                                           size_t __size, allocator_type __a)
         {
-            _RopeLeaf* __space = _LAllocator(__a).allocate(1);
+            _RopeLeaf* __space = typename _Base::_LAllocator(__a).allocate(1);
             return new(__space) _RopeLeaf(__s, __size, __a);
         }
 
@@ -1383,14 +1383,14 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                         _RopeRep* __left, _RopeRep* __right,
                         allocator_type __a)
         {
-            _RopeConcatenation* __space = _CAllocator(__a).allocate(1);
+            _RopeConcatenation* __space = typename _Base::_CAllocator(__a).allocate(1);
             return new(__space) _RopeConcatenation(__left, __right, __a);
         }
 
         static _RopeFunction* _S_new_RopeFunction(char_producer<_CharT>* __f,
                 size_t __size, bool __d, allocator_type __a)
         {
-            _RopeFunction* __space = _FAllocator(__a).allocate(1);
+            _RopeFunction* __space = typename _Base::_FAllocator(__a).allocate(1);
             return new(__space) _RopeFunction(__f, __size, __d, __a);
         }
 
@@ -1398,7 +1398,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
                 _Rope_RopeRep<_CharT,_Alloc>* __b, size_t __s,
                 size_t __l, allocator_type __a)
         {
-            _RopeSubstring* __space = _SAllocator(__a).allocate(1);
+            _RopeSubstring* __space = typename _Base::_SAllocator(__a).allocate(1);
             return new(__space) _RopeSubstring(__b, __s, __l, __a);
         }
 
