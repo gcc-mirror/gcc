@@ -3491,23 +3491,35 @@ This is typical output:-
 /tmp/test.h:
 @end smallexample
 
+@item -MQ @var{target}
 @item -MT @var{target}
 @findex -MT
-By default CPP uses the base file name and appends the object suffix,
-normally ``.o'', to it to obtain the name of the target for dependency
-generation.  With @samp{-MT} you can specify a target yourself,
-overriding the default one.
+@findex -MQ
+By default CPP uses the main file name, including any path, and appends
+the object suffix, normally ``.o'', to it to obtain the name of the
+target for dependency generation.  With @samp{-MT} you can specify a
+target yourself, overriding the default one.
 
 If you want multiple targets, you can specify them as a single argument
 to @samp{-MT}, or use multiple @samp{-MT} options.
 
 The targets you specify are output in the order they appear on the
-command line, and, unlike the default target, are not quoted for MAKE.
-This allows you to do things like, for example,
+command line.  @samp{-MQ} is identical to @samp{-MT}, except that the
+target name is quoted for Make, but with @samp{-MT} it isn't.  For
+example, -MT '$(objpfx)foo.o' gives
 
 @smallexample
--MT '$(objpfx)foo.o $(objpfx)foo.os $(objpfx)foo.op'
+$(objpfx)foo.o: /tmp/foo.c
 @end smallexample
+
+but -MQ '$(objpfx)foo.o' gives
+
+@smallexample
+$$(objpfx)foo.o: /tmp/foo.c
+@end smallexample
+
+The default target is automatically quoted, as if it were given with
+@samp{-MQ}.
 
 @item -H
 @findex -H
