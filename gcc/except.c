@@ -1240,6 +1240,8 @@ convert_from_eh_region_ranges_1 (pinsns, orig_sp, cur)
 		  /* If we wanted exceptions for non-call insns, then
 		     any may_trap_p instruction could throw.  */
 		  || (flag_non_call_exceptions
+		      && GET_CODE (PATTERN (insn)) != CLOBBER
+		      && GET_CODE (PATTERN (insn)) != USE
 		      && may_trap_p (PATTERN (insn)))))
 	    {
 	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION, GEN_INT (cur),
