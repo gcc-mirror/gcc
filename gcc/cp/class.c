@@ -2836,8 +2836,8 @@ override_one_vtable (binfo, old, t)
 
 	    /* We can use integer_zero_node, as we will core dump
 	       if this is used anyway.  */
-	    TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, 
-							fndecl);
+	    TREE_PURPOSE (virtuals) = integer_zero_node;
+	    TREE_VALUE (virtuals) = fndecl;
 	  }
 	}
       virtuals = TREE_CHAIN (virtuals);
