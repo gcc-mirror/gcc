@@ -1,3 +1,9 @@
+2002-03-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (lang_mark_tree): Rename java_mark_tree.
+	* java-tree.h (java_mark_tree): New.
+	* java-lang.c (LANG_HOOKS_MARK_TREE): Redefine.
+
 2002-03-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* lex.c: Change java_perform_atof to take normal parameters

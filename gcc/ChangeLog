@@ -1,3 +1,19 @@
+2002-03-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (ggc-common.o): Update.
+	* c-decl.c (lang_mark_tree): Rename c_mark_tree.
+	* c-lang.c (LANG_HOOKS_MARK_TREE): Redefine.
+	* c-tree.h (c_mark_tree): New.
+	* ggc-common.c: Include langhooks.h.
+	(gcc_mark_trees): Use new langhook.
+	* ggc-callbacks.c: Delete file.
+	* ggc.h (lang_mark_tree): Remove.
+	* langhooks-def.h (LANG_HOOKS_MARK_TREE): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New hook.
+objc:
+	* objc-lang.c (LANG_HOOKS_MARK_TREE): Redefine.
+
 2002-03-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/cpp.texi: Exclude entire Top node from printed manual.

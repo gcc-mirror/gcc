@@ -1835,7 +1835,7 @@ end_java_method ()
 /* Mark language-specific parts of T for garbage-collection.  */
 
 void
-lang_mark_tree (t)
+java_mark_tree (t)
      tree t;
 {
   if (TREE_CODE (t) == IDENTIFIER_NODE)

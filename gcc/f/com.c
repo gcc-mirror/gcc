@@ -14205,6 +14205,7 @@ static const char *ffe_init PARAMS ((const char *));
 static void ffe_finish PARAMS ((void));
 static void ffe_init_options PARAMS ((void));
 static void ffe_print_identifier PARAMS ((FILE *, tree, int));
+static void ffe_mark_tree (tree);
 
 #undef  LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME			"GNU F77"
@@ -14218,6 +14219,8 @@ static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 #define LANG_HOOKS_DECODE_OPTION	ffe_decode_option
 #undef  LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		ffe_parse_file
+#undef  LANG_HOOKS_MARK_TREE
+#define LANG_HOOKS_MARK_TREE		ffe_mark_tree
 #undef  LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER	ffe_print_identifier
 #undef  LANG_HOOKS_DECL_PRINTABLE_NAME
@@ -15126,9 +15129,9 @@ unsigned_type (type)
   return type;
 }
 
-void
-lang_mark_tree (t)
-     union tree_node *t ATTRIBUTE_UNUSED;
+static void
+ffe_mark_tree (t)
+     tree t;
 {
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     {

@@ -184,6 +184,9 @@ struct lang_hooks
      for the passed TARGET_EXPR.  Return NULL if there is none.  */
   tree (*maybe_build_cleanup) PARAMS ((tree));
 
+  /* Mark nodes held through the lang_specific hooks in the tree.  */
+  void (*mark_tree) PARAMS ((tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

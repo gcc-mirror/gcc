@@ -86,6 +86,7 @@ static const char *gnat_printable_name	PARAMS  ((tree, int));
 static tree gnat_eh_runtime_type	PARAMS ((tree));
 static int gnat_eh_type_covers		PARAMS ((tree, tree));
 static void gnat_parse_file		PARAMS ((void));
+static void gnat_mark_tree		PARAMS ((tree));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -101,6 +102,8 @@ static void gnat_parse_file		PARAMS ((void));
 #define LANG_HOOKS_DECODE_OPTION	gnat_decode_option
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
+#undef LANG_HOOKS_MARK_TREE
+#define LANG_HOOKS_MARK_TREE		gnat_mark_tree
 #undef LANG_HOOKS_HONOR_READONLY
 #define LANG_HOOKS_HONOR_READONLY	1
 #undef LANG_HOOKS_GET_ALIAS_SET
@@ -271,8 +274,8 @@ gnat_init_options ()
   gnat_argc = 1;
 }
 
-void
-lang_mark_tree (t)
+static void
+gnat_mark_tree (t)
      tree t;
 {
   switch (TREE_CODE (t))

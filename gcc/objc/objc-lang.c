@@ -46,6 +46,8 @@ static void objc_post_options                   PARAMS ((void));
 #define LANG_HOOKS_POST_OPTIONS objc_post_options
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
+#undef LANG_HOOKS_MARK_TREE
+#define LANG_HOOKS_MARK_TREE c_mark_tree
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL

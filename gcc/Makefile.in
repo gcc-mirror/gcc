@@ -1296,7 +1296,7 @@ dumpvers: dumpvers.c
 version.o: version.c version.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) \
-	flags.h $(GGC_H) varray.h hash.h $(HASHTAB_H) $(TM_P_H)
+	flags.h $(GGC_H) varray.h hash.h $(HASHTAB_H) $(TM_P_H) langhooks.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
 	$(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H)

@@ -3668,6 +3668,7 @@ extern void insert_block			PARAMS ((tree));
 extern void set_block				PARAMS ((tree));
 extern tree pushdecl				PARAMS ((tree));
 extern void cxx_init_decl_processing		PARAMS ((void));
+extern void cxx_mark_tree			PARAMS ((tree));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));

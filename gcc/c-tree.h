@@ -178,6 +178,7 @@ extern tree pushdecl				PARAMS ((tree));
 extern void c_init_decl_processing		PARAMS ((void));
 extern void c_dup_lang_specific_decl		PARAMS ((tree));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
+extern void c_mark_tree				PARAMS ((tree));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
 extern int  c_decode_option                     PARAMS ((int, char **));

@@ -179,10 +179,6 @@ extern int ggc_marked_p			PARAMS ((const void *));
 
 /* Callbacks to the languages.  */
 
-/* This is the language's opportunity to mark nodes held through
-   the lang_specific hooks in the tree.  */
-extern void lang_mark_tree		PARAMS ((union tree_node *));
-
 /* The FALSE_LABEL_STACK, declared in except.h, has language-dependent
    semantics.  If a front-end needs to mark the false label stack, it
    should set this pointer to a non-NULL value.  Otherwise, no marking
