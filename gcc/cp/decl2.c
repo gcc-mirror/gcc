@@ -2236,6 +2236,8 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 	  if (!decl)
 	    continue;
 	}
+      else if (DECL_NAME (field) == NULL_TREE)
+	continue;
       else
 	{
 	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
@@ -2304,18 +2306,16 @@ finish_anon_union (anon_union_decl)
   main_decl = build_anon_union_vars (anon_union_decl, &elems, 
 				     static_p, external_p);
 
+  if (main_decl == NULL_TREE)
+    {
+      warning ("anonymous union with no members");
+      return;
+    }
+
   if (static_p)
     {
-      if (main_decl)
-	{
-	  make_decl_rtl (main_decl, 0, toplevel_bindings_p ());
-	  DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
-	}
-      else
-	{
-	  warning ("anonymous union with no members");
-	  return;
-	}
+      make_decl_rtl (main_decl, 0, toplevel_bindings_p ());
+      DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
     }
 
   /* The following call assumes that there are never any cleanups
