@@ -2663,10 +2663,9 @@ __asm__("\n"								\
    macro if you do not define `EXTRA_SECTIONS'.  */
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
-SDATA_SECTION_FUNCTION                                                  \
-SBSS_SECTION_FUNCTION							\
-FIXUP_SECTION_FUNCTION
-
+	SDATA_SECTION_FUNCTION						\
+	SBSS_SECTION_FUNCTION						\
+	FIXUP_SECTION_FUNCTION
 
 #define SDATA_SECTION_FUNCTION						\
 void									\
@@ -2677,7 +2676,7 @@ sdata_section ()							\
       fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
       in_section = in_sdata;						\
     }									\
-}									\
+}
 
 #define SBSS_SECTION_FUNCTION						\
 void									\
@@ -2688,7 +2687,7 @@ sbss_section ()								\
       fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
       in_section = in_sbss;						\
     }									\
-}									\
+}
 
 #define FIXUP_SECTION_FUNCTION						\
 void									\
@@ -2699,11 +2698,7 @@ fixup_section ()							\
       fprintf (asm_out_file, "%s\n", FIXUP_SECTION_ASM_OP);		\
       in_section = in_fixup;						\
     }									\
-}									\
-
-#define SDATA_FLAG_CHAR '@'
-
-#define SDATA_NAME_P(NAME) (*(NAME) == SDATA_FLAG_CHAR)
+}
 
 /* Position Independent Code.  */
 
@@ -2788,10 +2783,10 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
-  if (SDATA_NAME_P (NAME))                                             	\
+  if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
     sbss_section ();                                                 	\
   else                                                                 	\
-     bss_section ();                                                  	\
+    bss_section ();                                                  	\
   ASM_OUTPUT_ALIGN (STREAM, floor_log2 ((ALIGN) / BITS_PER_UNIT));     	\
   ASM_DECLARE_OBJECT_NAME (STREAM, NAME, DECL);                        	\
   ASM_OUTPUT_SKIP (STREAM, (SIZE) ? (SIZE) : 1);                       	\
@@ -2813,19 +2808,6 @@ do {									\
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
-
-/* A C statement (sans semicolon) to output to the stdio stream STREAM a
-   reference in assembler syntax to a label named NAME.  This should add `_' to
-   the front of the name, if that is customary on your operating system, as it
-   is in most Berkeley Unix systems.  This macro is used in `assemble_name'.  */
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(STREAM, NAME)				\
-do {									\
-  const char *_name = (NAME);						\
-  while (*_name == '*' || *_name == SDATA_FLAG_CHAR)			\
-    _name++;								\
-  asm_fprintf (STREAM, "%U%s", _name);					\
-} while (0)
 
 /* A C statement to store into the string STRING a label whose name is made
    from the string PREFIX and the number NUM.
@@ -2980,7 +2962,7 @@ do {									\
    * == temporary integer CCR register (cr3)
    & == temporary integer ICC register (icc3)  */
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-((CODE) == '.' || (CODE) == '#' || (CODE) == SDATA_FLAG_CHAR || (CODE) == '~'	\
+((CODE) == '.' || (CODE) == '#' || (CODE) == '@' || (CODE) == '~'	\
  || (CODE) == '*' || (CODE) == '&')
 
 /* A C compound statement to output to stdio stream STREAM the assembler syntax

@@ -198,7 +198,6 @@ int frv_sched_lookahead = 4;		 /* -msched-lookahead=n */
 /* Forward references */
 static int frv_default_flags_for_cpu		PARAMS ((void));
 static int frv_string_begins_with		PARAMS ((tree, const char *));
-static FRV_INLINE int symbol_ref_small_data_p	PARAMS ((rtx));
 static FRV_INLINE int const_small_data_p	PARAMS ((rtx));
 static FRV_INLINE int plus_small_data_p		PARAMS ((rtx, rtx));
 static void frv_print_operand_memory_reference_reg
@@ -276,8 +275,6 @@ static void frv_pack_insns			PARAMS ((void));
 static void frv_function_prologue		PARAMS ((FILE *, HOST_WIDE_INT));
 static void frv_function_epilogue		PARAMS ((FILE *, HOST_WIDE_INT));
 static bool frv_assemble_integer		PARAMS ((rtx, unsigned, int));
-static const char * frv_strip_name_encoding	PARAMS ((const char *));
-static void frv_encode_section_info		PARAMS ((tree, int));
 static void frv_init_builtins			PARAMS ((void));
 static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static bool frv_in_small_data_p			PARAMS ((tree));
@@ -294,10 +291,6 @@ static void frv_asm_out_destructor		PARAMS ((rtx, int));
 #define TARGET_ASM_FUNCTION_EPILOGUE frv_function_epilogue
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER frv_assemble_integer
-#undef  TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING frv_strip_name_encoding
-#undef  TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO frv_encode_section_info
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
@@ -318,15 +311,6 @@ static void frv_asm_out_destructor		PARAMS ((rtx, int));
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Given a SYMBOL_REF, return true if it points to small data.  */
-
-static FRV_INLINE int
-symbol_ref_small_data_p (x)
-     rtx x;
-{
-  return SDATA_NAME_P (XSTR (x, 0));
-}
-
 /* Given a CONST, return true if the symbol_ref points to small data.  */
 
 static FRV_INLINE int
@@ -339,7 +323,7 @@ const_small_data_p (x)
     return FALSE;
 
   x0 = XEXP (XEXP (x, 0), 0);
-  if (GET_CODE (x0) != SYMBOL_REF || !SDATA_NAME_P (XSTR (x0, 0)))
+  if (GET_CODE (x0) != SYMBOL_REF || !SYMBOL_REF_SMALL_P (x0))
     return FALSE;
 
   x1 = XEXP (XEXP (x, 0), 1);
@@ -362,7 +346,7 @@ plus_small_data_p (op0, op1)
       && REGNO (op0) == SDA_BASE_REG)
     {
       if (GET_CODE (op1) == SYMBOL_REF)
-	return symbol_ref_small_data_p (op1);
+	return SYMBOL_REF_SMALL_P (op1);
 
       if (GET_CODE (op1) == CONST)
 	return const_small_data_p (op1);
@@ -655,64 +639,6 @@ frv_string_begins_with (name, prefix)
   return (TREE_STRING_LENGTH (name) > prefix_len
 	  && strncmp (TREE_STRING_POINTER (name), prefix, prefix_len) == 0);
 }
-
-/* Encode section information of DECL, which is either a VAR_DECL,
-   FUNCTION_DECL, STRING_CST, CONSTRUCTOR, or ???.
-
-   For the FRV we want to record:
-
-   - whether the object lives in .sdata/.sbss.
-     objects living in .sdata/.sbss are prefixed with SDATA_FLAG_CHAR
-
-*/
-
-static void
-frv_encode_section_info (decl, first)
-     tree decl;
-     int first;
-{
-  if (! first)
-    return;
-  if (TREE_CODE (decl) == VAR_DECL)
-    {
-      int size = int_size_in_bytes (TREE_TYPE (decl));
-      tree section_name = DECL_SECTION_NAME (decl);
-      int is_small = 0;
-
-      /* Don't apply the -G flag to internal compiler structures.  We
-	 should leave such structures in the main data section, partly
-	 for efficiency and partly because the size of some of them
-	 (such as C++ typeinfos) is not known until later.  */
-      if (!DECL_ARTIFICIAL (decl) && size > 0 && size <= g_switch_value)
-	is_small = 1;
-
-      /* If we already know which section the decl should be in, see if
-	 it's a small data section.  */
-      if (section_name)
-	{
-	  if (TREE_CODE (section_name) == STRING_CST)
-	    {
-	      if (frv_string_begins_with (section_name, ".sdata"))
-		is_small = 1;
-	      if (frv_string_begins_with (section_name, ".sbss"))
-		is_small = 1;
-	    }
-	  else
-	    abort ();
-	}
-
-      if (is_small)
-	{
-	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-	  char * str = xmalloc (2 + strlen (XSTR (sym_ref, 0)));
-
-	  str[0] = SDATA_FLAG_CHAR;
-	  strcpy (&str[1], XSTR (sym_ref, 0));
-	  XSTR (sym_ref, 0) = str;
-	}
-    }
-}
-
 
 /* Zero or more C statements that may conditionally modify two variables
    `fixed_regs' and `call_used_regs' (both of type `char []') after they have
@@ -2622,7 +2548,7 @@ frv_print_operand_memory_reference (stream, x, addr_offset)
 
 	case SYMBOL_REF:
 	  if (x0 && GET_CODE (x0) == REG && REGNO (x0) == SDA_BASE_REG
-	      && symbol_ref_small_data_p (x1))
+	      && SYMBOL_REF_SMALL_P (x1))
 	    {
 	      fputs ("#gprel12(", stream);
 	      assemble_name (stream, XSTR (x1, 0));
@@ -2805,7 +2731,7 @@ frv_print_operand (file, x, code)
       fprintf (file, "%d", frv_print_operand_jump_hint (current_output_insn));
       break;
 
-    case SDATA_FLAG_CHAR:
+    case '@':
       /* Output small data area base register (gr16). */
       fputs (reg_names[SDA_BASE_REG], file);
       break;
@@ -3522,7 +3448,7 @@ frv_legitimate_address_p (mode, x, strict_p, condexec_p)
 	case SYMBOL_REF:
 	  if (!condexec_p
 	      && regno0 == SDA_BASE_REG
-	      && symbol_ref_small_data_p (x1))
+	      && SYMBOL_REF_SMALL_P (x1))
 	    ret = TRUE;
 	  break;
 
@@ -3580,7 +3506,7 @@ frv_legitimize_address (x, oldx, mode)
      things up when force_reg is called to try and put it in a register because
      we aren't optimizing.  */
   if (optimize
-      && ((GET_CODE (x) == SYMBOL_REF && symbol_ref_small_data_p (x))
+      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x))
 	  || (GET_CODE (x) == CONST && const_small_data_p (x))))
     {
       ret = gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, SDA_BASE_REG), x);
@@ -3889,7 +3815,7 @@ int int_2word_operand (op, mode)
 
     case SYMBOL_REF:
       /* small data references are already 1 word */
-      return (flag_pic == 0) && (! symbol_ref_small_data_p (op));
+      return (flag_pic == 0) && (! SYMBOL_REF_SMALL_P (op));
 
     case CONST_INT:
       return ! IN_RANGE_P (INTVAL (op), -32768, 32767);
@@ -3951,7 +3877,7 @@ int pic_symbolic_operand (op, mode)
 
     case SYMBOL_REF:
       /* small data references are already 1 word */
-      return ! symbol_ref_small_data_p (op);
+      return ! SYMBOL_REF_SMALL_P (op);
 
     case CONST:
       /* small data references are already 1 word */
@@ -3992,7 +3918,7 @@ int small_data_symbolic_operand (op, mode)
       return const_small_data_p (op);
 
     case SYMBOL_REF:
-      return symbol_ref_small_data_p (op);
+      return SYMBOL_REF_SMALL_P (op);
     }
 
   return FALSE;
@@ -5504,7 +5430,7 @@ frv_emit_movsi (dest, src)
       break;
 
     case SYMBOL_REF:
-      if (symbol_ref_small_data_p (src))
+      if (SYMBOL_REF_SMALL_P (src))
 	base_regno = SDA_BASE_REG;
 
       else if (flag_pic)
@@ -9779,23 +9705,38 @@ frv_expand_builtin (exp, target, subtarget, mode, ignore)
   return 0;
 }
 
-static const char *
-frv_strip_name_encoding (str)
-     const char *str;
-{
-  while (*str == '*' || *str == SDATA_FLAG_CHAR)
-    str++;
-  return str;
-}
-
 static bool
 frv_in_small_data_p (decl)
      tree decl;
 {
-  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+  HOST_WIDE_INT size;
+  tree section_name;
 
-  return symbol_ref_small_data_p (XEXP (DECL_RTL (decl), 0))
-    && size > 0 && size <= g_switch_value;
+  /* Don't apply the -G flag to internal compiler structures.  We
+     should leave such structures in the main data section, partly
+     for efficiency and partly because the size of some of them
+     (such as C++ typeinfos) is not known until later.  */
+  if (TREE_CODE (decl) != VAR_DECL || DECL_ARTIFICIAL (decl))
+    return false;
+
+  size = int_size_in_bytes (TREE_TYPE (decl));
+  if (size > 0 && size <= g_switch_value)
+    return true;
+
+  /* If we already know which section the decl should be in, see if
+     it's a small data section.  */
+  section_name = DECL_SECTION_NAME (decl);
+  if (section_name)
+    {
+      if (TREE_CODE (section_name) != STRING_CST)
+	abort ();
+      if (frv_string_begins_with (section_name, ".sdata"))
+	return true;
+      if (frv_string_begins_with (section_name, ".sbss"))
+	return true;
+    }
+
+  return false;
 }
 
 static bool
