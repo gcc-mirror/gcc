@@ -1,5 +1,12 @@
 2001-08-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* calls.c (emit_library_call_value): Don't use a fixed
+	argument after VA_CLOSE, i.e. out of scope in traditional C.
+
+	* emit-rtl.c (gen_rtvec): Likewise.
+
+2001-08-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (c-pragma.o): Depend on output.h.
 	(reorg.o): Depend on except.h.
 

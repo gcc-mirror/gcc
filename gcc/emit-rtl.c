@@ -517,7 +517,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 rtvec
 gen_rtvec VPARAMS ((int n, ...))
 {
-  int i;
+  int i, save_n;
   rtx *vector;
 
   VA_OPEN (p, n);
@@ -530,9 +530,12 @@ gen_rtvec VPARAMS ((int n, ...))
 
   for (i = 0; i < n; i++)
     vector[i] = va_arg (p, rtx);
+
+  /* The definition of VA_* in K&R C causes `n' to go out of scope.  */
+  save_n = n;
   VA_CLOSE (p);
 
-  return gen_rtvec_v (n, vector);
+  return gen_rtvec_v (save_n, vector);
 }
 
 rtvec
