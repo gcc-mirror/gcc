@@ -856,10 +856,14 @@ ssa_ccp_substitute_constants ()
     {
       if (values[i].lattice_val == CONSTANT)
 	{
-	  rtx def = VARRAY_RTX (ssa_definition, i);
-	  rtx set = single_set (def);
+	  rtx def = VARRAY_RTX (ssa_definition, i), set;
 	  struct df_link *curruse;
 
+	  /* Definition might have been deleted already.  */
+	  if (! def)
+	    continue;
+
+	  set = single_set (def);
 	  if (! set)
 	    continue;
 
