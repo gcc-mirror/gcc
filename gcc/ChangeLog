@@ -1,5 +1,11 @@
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
+        PR debug/15860
+        * dwarf2out.c (rtl_for_decl_location): Apply big-endian correction
+        for DECL_INCOMING_RTL.
+
+2004-10-13  Richard Henderson  <rth@redhat.com>
+
 	PR c/17384
 	* c-common.c (handle_mode_attribute): Disallow mode changes that
 	alter the CODE of the top-level type.
