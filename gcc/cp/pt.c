@@ -453,8 +453,7 @@ comp_template_args (oldargs, newargs)
 	continue;
       if (TREE_CODE (nt) != TREE_CODE (ot))
 	return 0;
-      if (TREE_CODE (ot) == TEMPLATE_TYPE_PARM
-	  && comptypes (ot, nt, 1))
+      if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't' && comptypes (ot, nt, 1))
 	continue;
       if (TREE_CODE (ot) == TEMPLATE_CONST_PARM
 	  && TEMPLATE_CONST_IDX (nt) == TEMPLATE_CONST_IDX (ot))
@@ -1775,7 +1774,7 @@ tsubst (t, args, nargs, in_decl)
     case ARRAY_REF:
       return build_parse_node
 	(ARRAY_REF, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl));
+	 tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl));
 
     case CALL_EXPR:
       return build_parse_node
@@ -2085,7 +2084,8 @@ tsubst_expr (t, args, nargs, in_decl)
 	emit_line_note (input_filename, lineno);
 	if (init_scope)
 	  do_pushlevel ();
-	tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+	for (tmp = TREE_OPERAND (t, 0); tmp; tmp = TREE_CHAIN (tmp))
+	  tsubst_expr (tmp, args, nargs, in_decl);
 	emit_nop ();
 	emit_line_note (input_filename, lineno);
 	expand_start_loop_continue_elsewhere (1); 
@@ -2971,6 +2971,15 @@ instantiate_decl (d)
 
       start_function (NULL_TREE, d, NULL_TREE, NULL_TREE, 1);
       store_parm_decls ();
+
+      if (t && TREE_CODE (t) == RETURN_INIT)
+	{
+	  store_return_init
+	    (TREE_OPERAND (t, 0),
+	     tsubst_expr (TREE_OPERAND (t, 1), &TREE_VEC_ELT (args, 0),
+			  TREE_VEC_LENGTH (args), tmpl));
+	  t = TREE_CHAIN (t);
+	}
 
       if (t && TREE_CODE (t) == CTOR_INITIALIZER)
 	{

@@ -2991,6 +2991,7 @@ finish_file ()
 		expand_assignment (decl, init, 0, 0);
 
 	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
+	      DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
 	    }
 	  else if (TREE_CODE (decl) == SAVE_EXPR)
 	    {
@@ -3098,6 +3099,13 @@ finish_file ()
       {
 	tree *p = &saved_inlines;
 	reconsider = 0;
+
+	/* We need to do this each time so that newly completed template
+           types don't wind up at the front of the list.  Sigh.  */
+	vars = build_decl (TYPE_DECL, make_anon_name (), integer_type_node);
+	DECL_IGNORED_P (vars) = 1;
+	SET_DECL_ARTIFICIAL (vars);
+	pushdecl (vars);
 
 	walk_vtables ((void (*)())0, finish_vtable_vardecl);
 

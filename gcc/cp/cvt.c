@@ -1257,7 +1257,13 @@ cp_convert (type, expr, convtype, flags)
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
-	return truthvalue_conversion (e);
+	{
+	  /* Common Ada/Pascal programmer's mistake.  We always warn
+             about this since it is so bad.  */
+	  if (TREE_CODE (expr) == FUNCTION_DECL)
+	    cp_warning ("the address of `%D', will always be `true'", expr);
+	  return truthvalue_conversion (e);
+	}
       return fold (convert_to_integer (type, e));
     }
   if (code == POINTER_TYPE || code == REFERENCE_TYPE

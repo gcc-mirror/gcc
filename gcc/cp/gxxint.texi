@@ -1169,9 +1169,10 @@ thrown is used instead.  All code that originates exceptions, even code
 that throws exceptions as a side effect, like dynamic casting, and all
 code that catches exceptions must be compiled with either -frtti, or
 -fno-rtti.  It is not possible to mix rtti base exception handling
-objects with code that doesn't use rtti.  The exceptions to this, are
-code that doesn't catch or throw exceptions, catch (...), and code that
-just rethrows an exception.
+objects with code that doesn't use rtti.  Also, -frtti can alter the
+binary layout of classes, so mixing -frtti code and -fno-rtti code can
+be dangerous.  The exceptions to this, are code that doesn't catch or
+throw exceptions, catch (...), and code that just rethrows an exception.
 
 Currently we use the normal mangling used in building functions names
 (int's are "i", const char * is PCc) to build the non-rtti base type
@@ -1225,9 +1226,14 @@ stands.
 
 Only exact type matching or reference matching of throw types works when
 -fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm,
-rs6000, Alpha and mips machines.  Partial support is in for all other
-machines, but a stack unwinder called __unwind_function has to be
-written, and added to libgcc2 for them.  See below for details on
+rs6000, PowerPC, Alpha, mips and VAX machines.  Partial support is in
+for all other machines, but a stack unwinder called __unwind_function
+has to be written, and added to libgcc2 for them.  The new EH code
+doesn't rely upon the __unwind_function for C++ code, instead it creates
+per function unwinders right inside the function, unfortunately, on many
+platforms the definition of RETURN_ADDR_RTX in the tm.h file for the
+machine port is wrong.  The HPPA has a brain dead abi that prevents
+exception handling from just working.  See below for details on
 __unwind_function.  Don't expect exception handling to work right if you
 optimize, in fact the compiler will probably core dump.  RTL_EXPRs for
 EH cond variables for && and || exprs should probably be wrapped in

@@ -539,13 +539,13 @@ build_overload_value (type, value)
       if (TREE_CODE (value) == VAR_DECL)
 	{
 	  my_friendly_assert (DECL_NAME (value) != 0, 245);
-	  build_overload_identifier (DECL_NAME (value));
+	  build_overload_identifier (DECL_ASSEMBLER_NAME (value));
 	  return;
 	}
       else if (TREE_CODE (value) == FUNCTION_DECL)
 	{
 	  my_friendly_assert (DECL_NAME (value) != 0, 246);
-	  build_overload_identifier (DECL_NAME (value));
+	  build_overload_identifier (DECL_ASSEMBLER_NAME (value));
 	  return;
 	}
       else
@@ -1591,17 +1591,17 @@ hack_identifier (value, name)
   else
     mark_used (value);
 
-  if (pedantic
-      && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == PARM_DECL))
+  if (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == PARM_DECL)
     {
       tree context = decl_function_context (value);
       if (context != NULL_TREE && context != current_function_decl
 	  && ! TREE_STATIC (value))
 	{
-	  cp_pedwarn ("use of %s from containing function",
+	  cp_error ("use of %s from containing function",
 		      (TREE_CODE (value) == VAR_DECL
 		       ? "`auto' variable" : "parameter"));
-	  cp_pedwarn_at ("  `%#D' declared here", value);
+	  cp_error_at ("  `%#D' declared here", value);
+	  value = error_mark_node;
 	}
     }
 
@@ -2265,16 +2265,13 @@ synthesize_method (fndecl)
      tree fndecl;
 {
   int nested = (current_function_decl != NULL_TREE);
-  tree context = decl_function_context (fndecl);
-  char *f = input_filename;
+  tree context = hack_decl_function_context (fndecl);
   tree base = DECL_CLASS_CONTEXT (fndecl);
 
   if (nested)
     push_cp_function_context (context);
 
-  input_filename = DECL_SOURCE_FILE (fndecl);
-  interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (base);
-  interface_only = CLASSTYPE_INTERFACE_ONLY (base);
+  interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, NULL_TREE, 1);
   store_parm_decls ();
 
@@ -2305,7 +2302,6 @@ synthesize_method (fndecl)
 	DECL_INLINE (fndecl) = 1;
     }
 
-  input_filename = f;
   extract_interface_info ();
   if (nested)
     pop_cp_function_context (context);

@@ -3318,7 +3318,7 @@ simple_stmt:
 		    {
 		      if (last_tree != $<ttype>2)
 			{
-			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
+			  TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
 			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
 			  last_tree = $<ttype>2;
 			}

@@ -1128,7 +1128,7 @@ do_pending_inlines ()
     return;
 	    
   /* Now start processing the first inline function.  */
-  context = decl_function_context (t->fndecl);
+  context = hack_decl_function_context (t->fndecl);
   if (context)
     push_cp_function_context (context);
   if (t->len > 0)
@@ -1167,7 +1167,7 @@ process_next_inline (t)
 {
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
-  context = decl_function_context (i->fndecl);
+  context = hack_decl_function_context (i->fndecl);
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1191,7 +1191,7 @@ process_next_inline (t)
   to_be_restored = 0;
   if (i && i->fndecl != NULL_TREE)
     {
-      context = decl_function_context (i->fndecl);
+      context = hack_decl_function_context (i->fndecl);
       if (context)
 	push_cp_function_context (context);
       feed_input (i->buf, i->len, i->can_free ? &inline_text_obstack : 0);

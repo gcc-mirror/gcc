@@ -185,7 +185,10 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 
     TREE_CHAIN (optr) = sptr;
     TYPE_FIELDS (t) = optr;
-    TYPE_ALIGN (t) = TYPE_ALIGN (optr_type);
+    /* Allow signature pointers/references to be grabbed 2 words at a time.
+       For this to work on a Sparc, we need 8-byte alignment.  */
+    TYPE_ALIGN (t) = MAX (TYPE_ALIGN (double_type_node),
+			  TYPE_ALIGN (optr_type));
 
     /* A signature pointer/reference type isn't a `real' class type.  */
     IS_AGGR_TYPE (t) = 0;

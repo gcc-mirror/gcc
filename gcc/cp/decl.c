@@ -1074,6 +1074,8 @@ poplevel (keep, reverse, functionbody)
 	{
 	  if (TREE_CODE (link) == VAR_DECL)
 	    DECL_DEAD_FOR_LOCAL (link) = 1;
+	  else
+	    IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = NULL_TREE;
 	}
 
       /* Save declarations made in a 'for' statement so we can support pre-ANSI
@@ -1084,11 +1086,16 @@ poplevel (keep, reverse, functionbody)
 	  tree id = TREE_PURPOSE (link);
 	  tree decl = IDENTIFIER_LOCAL_VALUE (id);
 
-	  /* In this case keep the dead for-decl visible,
-	     but remember what (if anything) it shadowed. */
-	  DECL_SHADOWED_FOR_VAR (decl) = TREE_VALUE (link);
-	  TREE_CHAIN (decl) = outer->dead_vars_from_for;
-	  outer->dead_vars_from_for = decl;
+	  if (decl && DECL_DEAD_FOR_LOCAL (decl))
+	    {
+	      /* In this case keep the dead for-decl visible,
+		 but remember what (if anything) it shadowed. */
+	      DECL_SHADOWED_FOR_VAR (decl) = TREE_VALUE (link);
+	      TREE_CHAIN (decl) = outer->dead_vars_from_for;
+	      outer->dead_vars_from_for = decl;
+	    }
+	  else
+	    IDENTIFIER_LOCAL_VALUE (id) = TREE_VALUE (link);
 	}
     }
   else /* Not special for scope. */
@@ -1399,7 +1406,10 @@ poplevel_class (force)
   else
     /* Remember to save what IDENTIFIER's were bound in this scope so we
        can recover from cache misses.  */
-    previous_class_values = class_binding_level->class_shadowed;
+    {
+      previous_class_type = current_class_type;
+      previous_class_values = class_binding_level->class_shadowed;
+    }
   for (shadowed = level->type_shadowed;
        shadowed;
        shadowed = TREE_CHAIN (shadowed))
@@ -1730,12 +1740,12 @@ struct saved_scope {
   tree class_name, class_type, function_decl;
   tree base_init_list, member_init_list;
   struct binding_level *class_bindings;
-  tree previous_class_type, previous_class_values;
   tree *lang_base, *lang_stack, lang_name;
   int lang_stacksize;
   tree named_labels;
   int minimal_parse_mode;
   tree last_function_parms;
+  tree template_parms;
 };
 static struct saved_scope *current_saved_scope;
 extern tree prev_class_type;
@@ -1811,13 +1821,6 @@ maybe_push_to_top_level (pseudo)
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
-  /* Clear out class-level bindings cache.  */
-  if (current_binding_level == global_binding_level
-      && previous_class_type != NULL_TREE)
-    {
-      popclass (-1);
-      previous_class_type = NULL_TREE;
-    }
 
   s->old_binding_level = current_binding_level;
   current_binding_level = b;
@@ -1828,8 +1831,6 @@ maybe_push_to_top_level (pseudo)
   s->base_init_list = current_base_init_list;
   s->member_init_list = current_member_init_list;
   s->class_bindings = class_binding_level;
-  s->previous_class_type = previous_class_type;
-  s->previous_class_values = previous_class_values;
   s->lang_stack = current_lang_stack;
   s->lang_base = current_lang_base;
   s->lang_stacksize = current_lang_stacksize;
@@ -1837,10 +1838,10 @@ maybe_push_to_top_level (pseudo)
   s->named_labels = named_labels;
   s->minimal_parse_mode = minimal_parse_mode;
   s->last_function_parms = last_function_parms;
+  s->template_parms = current_template_parms;
   current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
   class_binding_level = (struct binding_level *)0;
-  previous_class_type = NULL_TREE;
   current_lang_stacksize = 10;
   current_lang_stack = current_lang_base
     = (tree *) xmalloc (current_lang_stacksize * sizeof (tree));
@@ -1848,6 +1849,8 @@ maybe_push_to_top_level (pseudo)
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
   minimal_parse_mode = 0;
+  if (!pseudo)
+    current_template_parms = NULL_TREE;
 
   s->prev = current_saved_scope;
   s->old_bindings = old_bindings;
@@ -1869,8 +1872,12 @@ pop_from_top_level ()
   struct saved_scope *s = current_saved_scope;
   tree t;
 
+  /* Clear out class-level bindings cache.  */
   if (previous_class_type)
-    previous_class_type = NULL_TREE;
+    {
+      popclass (-1);
+      previous_class_type = NULL_TREE;
+    }
 
   pop_obstacks ();
 
@@ -1892,8 +1899,6 @@ pop_from_top_level ()
   current_member_init_list = s->member_init_list;
   current_function_decl = s->function_decl;
   class_binding_level = s->class_bindings;
-  previous_class_type = s->previous_class_type;
-  previous_class_values = s->previous_class_values;
   free (current_lang_base);
   current_lang_base = s->lang_base;
   current_lang_stack = s->lang_stack;
@@ -1906,6 +1911,7 @@ pop_from_top_level ()
   named_labels = s->named_labels;
   minimal_parse_mode = s->minimal_parse_mode;
   last_function_parms = s->last_function_parms;
+  current_template_parms = s->template_parms;
 
   free (s);
 }
@@ -4317,7 +4323,7 @@ make_typename_type (context, name)
       t = lookup_field (context, name, 0, 1);
       if (t == NULL_TREE)
 	{
-	  cp_error_at ("no type matching `%#T' in `%#T'", name, context);
+	  cp_error ("no type named `%#T' in `%#T'", name, context);
 	  return error_mark_node;
 	}
       return TREE_TYPE (t);
@@ -4359,6 +4365,7 @@ lookup_name_real (name, prefer_type, nonclass)
   register tree val;
   int yylex = 0;
   tree from_obj = NULL_TREE;
+  tree locval, classval;
 
   if (prefer_type == -2)
     {
@@ -4425,30 +4432,59 @@ lookup_name_real (name, prefer_type, nonclass)
       else if (got_object && val && TREE_CODE (val) == TYPE_DECL)
 	from_obj = val;
     }
-    
+
+  locval = classval = NULL_TREE;
+
   if (current_binding_level != global_binding_level
       && IDENTIFIER_LOCAL_VALUE (name))
-    val = IDENTIFIER_LOCAL_VALUE (name);
+    locval = IDENTIFIER_LOCAL_VALUE (name);
+
   /* In C++ class fields are between local and global scope,
      just before the global scope.  */
-  else if (current_class_type && ! nonclass)
+  if (current_class_type && ! nonclass)
     {
-      val = IDENTIFIER_CLASS_VALUE (name);
-      if (val == NULL_TREE && TYPE_BEING_DEFINED (current_class_type))
+      classval = IDENTIFIER_CLASS_VALUE (name);
+      if (classval == NULL_TREE && TYPE_BEING_DEFINED (current_class_type))
 	/* Try to find values from base classes if we are presently
 	   defining a type.  We are presently only interested in
 	   TYPE_DECLs.  */
-	val = lookup_field (current_class_type, name, 0, 1);
+	classval = lookup_field (current_class_type, name, 0, 1);
 
       /* yylex() calls this with -2, since we should never start digging for
 	 the nested name at the point where we haven't even, for example,
 	 created the COMPONENT_REF or anything like that.  */
-      if (val == NULL_TREE)
-	val = lookup_nested_field (name, ! yylex);
-
-      if (val == NULL_TREE)
-	val = IDENTIFIER_GLOBAL_VALUE (name);
+      if (classval == NULL_TREE)
+	classval = lookup_nested_field (name, ! yylex);
     }
+
+  if (locval && classval)
+    {
+      if (current_scope () == current_function_decl
+	  && ! hack_decl_function_context (current_function_decl))
+	/* Not in a nested function.  */
+	val = locval;
+      else
+	{
+	  /* This is incredibly horrible.  The whole concept of
+	     IDENTIFIER_LOCAL_VALUE / IDENTIFIER_CLASS_VALUE /
+	     IDENTIFIER_GLOBAL_VALUE needs to be scrapped for local
+	     classes.  */
+	  tree lctx = hack_decl_function_context (locval);
+	  tree cctx = hack_decl_function_context (classval);
+
+	  if (lctx == current_scope ())
+	    val = locval;
+	  else if (lctx == cctx)
+	    val = classval;
+	  else
+	    /* I don't know which is right; let's just guess for now.  */
+	    val = locval;
+	}
+    }
+  else if (locval)
+    val = locval;
+  else if (classval)
+    val = classval;
   else
     val = IDENTIFIER_GLOBAL_VALUE (name);
 
@@ -7085,8 +7121,10 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
     {
       DECL_STATIC_FUNCTION_P (decl) = 1;
       DECL_CONTEXT (decl) = ctype;
-      DECL_CLASS_CONTEXT (decl) = ctype;
     }
+
+  if (ctype)
+    DECL_CLASS_CONTEXT (decl) = ctype;
 
   /* All function decls start out public; we'll fix their linkage later (at
      definition or EOF) if appropriate.  */
@@ -7118,6 +7156,9 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
     grok_op_properties (decl, virtualp, check < 0);
+
+  if (ctype && hack_decl_function_context (decl))
+      DECL_NO_STATIC_CHAIN (decl) = 1;
 
   /* Caller will do the rest of this.  */
   if (check < 0)
@@ -11092,7 +11133,7 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
       if ((DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1))
 	  && ! DECL_INTERFACE_KNOWN (decl1)
 	  /* Don't try to defer nested functions for now.  */
-	  && ! decl_function_context (decl1))
+	  && ! hack_decl_function_context (decl1))
 	DECL_DEFER_OUTPUT (decl1) = 1;
       else
 	{
@@ -11425,8 +11466,7 @@ store_return_init (return_id, init)
 	  DECL_ASSEMBLER_NAME (decl) = return_id;
 	}
       else
-	error ("return identifier `%s' already in place",
-	       IDENTIFIER_POINTER (DECL_NAME (decl)));
+	cp_error ("return identifier `%D' already in place", decl);
     }
 
   /* Can't let this happen for constructors.  */
@@ -11450,7 +11490,12 @@ store_return_init (return_id, init)
       /* Let `cp_finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
       pushdecl (decl);
-      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+
+      if (minimal_parse_mode)
+	add_tree (build_min_nt (RETURN_INIT, return_id,
+				copy_to_permanent (init)));
+      else
+	cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
 }
 
@@ -11485,7 +11530,7 @@ finish_function (lineno, call_poplevel, nested)
   if (fndecl == NULL_TREE)
     return;
 
-  if (! nested && decl_function_context (fndecl) != NULL_TREE)
+  if (! nested && hack_decl_function_context (fndecl) != NULL_TREE)
     nested = 1;
 
   fntype = TREE_TYPE (fndecl);
