@@ -1,3 +1,10 @@
+2003-04-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR/8705
+	* pa.md (movccfp): New expander.
+	(setccfp0, setccfp1): Rename to movccfp0 and movccfp1, respectively.
+	Reverse fcmp conditions.
+
 2003-04-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.md (*cmpqi_sign_extend): Handle negative values
