@@ -31,7 +31,9 @@ Boston, MA 02111-1307, USA.
 
      - A help string explaining how the parameter is used.
 
-     - A default value for the parameter.  */
+     - A default value for the parameter.
+
+   Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
 /* The maximum number of instructions accepted for inlining a
    function.  Increasing values mean more agressive inlining.

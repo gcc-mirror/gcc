@@ -1,3 +1,13 @@
+2001-05-01  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* invoke.texi (Optimize Options): Add documentation for `--param
+	max-delay-slot-insn-search' and `--param
+	max-delay-slot-live-search' and reorder --param section.
+	* params.def: Modify initial comment.
+	* params.h (param_info): Add `help' member.
+	* toplev.c (lang_independent_params): Include `help' description.
+	(display_help): Print --param parameters.
+
 2001-05-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc: Don't default xmake_file to ${cpu_type}/x-${cpu_type}.
