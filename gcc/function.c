@@ -5562,7 +5562,7 @@ fix_lexical_addr (addr, var)
       addr = memory_address (Pmode, addr);
 
       base = gen_rtx_MEM (Pmode, addr);
-      MEM_ALIAS_SET (base) = get_frame_alias_set ();
+      set_mem_alias_set (base, get_frame_alias_set ());
       base = copy_to_reg (base);
 #else
       displacement += (FIRST_PARM_OFFSET (context) - STARTING_FRAME_OFFSET);
@@ -6533,7 +6533,7 @@ expand_function_start (subr, parms_have_cleanups)
 				    -(HOST_WIDE_INT) GET_MODE_SIZE (Pmode));
 #endif
 	  last_ptr = gen_rtx_MEM (Pmode, memory_address (Pmode, last_ptr));
-	  MEM_ALIAS_SET (last_ptr) = get_frame_alias_set ();
+	  set_mem_alias_set (last_ptr, get_frame_alias_set ());
 	  last_ptr = copy_to_reg (last_ptr);
 
 	  /* If we are not optimizing, ensure that we know that this

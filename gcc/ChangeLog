@@ -1,5 +1,9 @@
 Sat Sep 22 09:09:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (fix_lexical_address): Use set_mem_alias_set.
+	(expand_function_start): Likewise.
+	* config/alpha/alpha.h (SETUP_INCOMING_VARARGS): Likewise.
+
 	* varasm.c (output_constant): Fix unused variable warning.
 
 	* attribs.c: New file, from c-common.c.
