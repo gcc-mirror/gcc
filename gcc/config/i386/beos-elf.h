@@ -235,8 +235,5 @@ Boston, MA 02111-1307, USA.  */
 /* BeOS headers are C++-aware (and often use C++).  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* Define this macro if in some cases global symbols from one translation
-   unit may not be bound to undefined symbols in another translation unit
-   without user intervention.  For instance, under Microsoft Windows
-   symbols must be explicitly imported from shared libraries (DLLs).  */
-#define MULTIPLE_SYMBOL_SPACES
+/* BeOS uses explicit import from shared libraries.  */
+#define MULTIPLE_SYMBOL_SPACES 1

@@ -9114,10 +9114,13 @@ You need not define this macro if it would always return zero.
 @end defmac
 
 @defmac MULTIPLE_SYMBOL_SPACES
-Define this macro if in some cases global symbols from one translation
-unit may not be bound to undefined symbols in another translation unit
-without user intervention.  For instance, under Microsoft Windows
-symbols must be explicitly imported from shared libraries (DLLs).
+Define this macro as a C expression that is nonzero if, in some cases,
+global symbols from one translation unit may not be bound to undefined
+symbols in another translation unit without user intervention.  For
+instance, under Microsoft Windows symbols must be explicitly imported
+from shared libraries (DLLs).
+
+You need not define this macro if it would always evaluate to zero.
 @end defmac
 
 @deftypefn {Target Hook} tree TARGET_MD_ASM_CLOBBERS (tree @var{clobbers})

@@ -291,6 +291,11 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 # define USE_COMMON_FOR_ONE_ONLY 1
 #endif
 
+/* By default we can assume that all global symbols are in one namespace,
+   across all shared libraries.  */
+#ifndef MULTIPLE_SYMBOL_SPACES
+# define MULTIPLE_SYMBOL_SPACES 0
+#endif
 
 /* If the target supports init_priority C++ attribute, give
    SUPPORTS_INIT_PRIORITY a nonzero value.  */

@@ -1,3 +1,9 @@
+2004-09-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl2.c (import_export_class)
+	* lex.c (handle_pragma_interface):
+	Test MULTIPLE_SYMBOL_SPACES with if, not #ifdef.
+
 2004-09-08  Ziemowit Laski  <zlaski@apple.com>
 
 	* Make-lang.in (cp/semantics.o): Depend on c-common.h.

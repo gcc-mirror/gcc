@@ -78,11 +78,8 @@
   call_used_regs [11] = 1;
 
 
-/* Define this macro if in some cases global symbols from one translation
-   unit may not be bound to undefined symbols in another translation unit
-   without user intervention.  For instance, under Microsoft Windows
-   symbols must be explicitly imported from shared libraries (DLLs).  */
-#define MULTIPLE_SYMBOL_SPACES
+/* PE/COFF uses explicit import from shared libraries.  */
+#define MULTIPLE_SYMBOL_SPACES 1
 
 #define TARGET_ASM_UNIQUE_SECTION arm_pe_unique_section
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section

@@ -505,9 +505,9 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
     }
 
   interface_only = interface_strcmp (main_filename);
-#ifdef MULTIPLE_SYMBOL_SPACES
-  if (! interface_only)
-#endif
+  /* If MULTIPLE_SYMBOL_SPACES is set, we cannot assume that we can see
+     a definition in another file.  */
+  if (!MULTIPLE_SYMBOL_SPACES || !interface_only)
     interface_unknown = 0;
 
   finfo->interface_only = interface_only;
