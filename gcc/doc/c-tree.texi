@@ -84,8 +84,8 @@ we will refer to trees in ordinary type, rather than in @code{this
 font}, except when talking about the actual C type @code{tree}.
 
 You can tell what kind of node a particular tree is by using the
-@code{TREE_CODE} macro.  Many, many macros take a trees as input and
-return trees as output.  However, most macros require a certain kinds of
+@code{TREE_CODE} macro.  Many, many macros take trees as input and
+return trees as output.  However, most macros require a certain kind of
 tree node as input.  In other words, there is a type-system for trees,
 but it is not reflected in the C type-system.
 

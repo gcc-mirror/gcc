@@ -1,3 +1,7 @@
+2002-10-28  Andreas Bauer  <baueran@in.tum.de>
+
+	* doc/c-tree.texi (Tree overview): Fix typos.
+
 2002-10-29  Phil Edwards  <pme@gcc.gnu.org>
 
 	* Makefile.in (gnucompare*):  Only record bad comparisons
