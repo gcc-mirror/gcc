@@ -4209,6 +4209,7 @@ fixup_inline_methods (type)
        method; 
        method = TREE_CHAIN (method))
     fixup_pending_inline (DECL_PENDING_INLINE_INFO (TREE_VALUE (method)));
+  CLASSTYPE_INLINE_FRIENDS (type) = NULL_TREE;
 }
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
