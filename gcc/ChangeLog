@@ -1,3 +1,23 @@
+2004-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc-protos.h (output_cbranch): Constify return
+	value.
+	(output_v9branch): Likewise.
+	(sparc_v8plus_shift): Likewise.  Rename into output_v8plus_shift.
+	* config/sparc/sparc.c (output_cbranch): Constify return value.
+	Prettify output for delay slots.
+	(output_v9branch): Likewise.
+	(sparc_v8plus_shift): Constify return value.  Rename into
+	output_v8plus_shift.
+	* config/sparc/sparc.md (ashldi3_v8plus): Adjust call to
+	sparc_v8plus_shift.
+	(ashrdi3_v8plus): Likewise.
+	(lshrdi3_v8plus): Likewise.
+	(call_address_struct_value_sp32): Prettify output for delay slots.
+	(call_symbolic_struct_value_sp32): Likewise.
+	(call_address_untyped_struct_value_sp32): Likewise.
+	(call_symbolic_untyped_struct_value_sp32): Likewise.
+
 2004-06-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* common.opt (ftree-loop-optimize): New flag.
