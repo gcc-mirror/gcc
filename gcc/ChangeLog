@@ -1,3 +1,11 @@
+2002-11-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (an anonymous pattern): Give an
+	internal name *tst_extzv_bitqi_1_n.
+	Accept bit_operand instead of bit_memory_operand.
+	Do not accept bit tests with the MSB.
+	(*tst_extzv_memqi_1_n): New.
+
 2002-11-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_eightbit_constant_address_p):
