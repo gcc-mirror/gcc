@@ -37,18 +37,28 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* The compiler is not a multi-threaded application and therefore we
-   do not have to use the locking functions.  */
-#ifdef HAVE_PUTC_UNLOCKED
+   do not have to use the locking functions.
+
+   NEED_DECLARATION_PUTC_UNLOCKED actually indicates whether or not
+   the IO code is multi-thread safe by default.  If it is not declared,
+   then do not worry about using the _unlocked functions.
+   
+   fputs_unlocked is an extension and needs to be prototyped specially.  */
+
+#if defined HAVE_PUTC_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
 # undef putc
 # define putc(C, Stream) putc_unlocked (C, Stream)
 #endif
-#ifdef HAVE_FPUTC_UNLOCKED
+#if defined HAVE_FPUTC_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
 # undef fputc
 # define fputc(C, Stream) fputc_unlocked (C, Stream)
 #endif
-#ifdef HAVE_FPUTS_UNLOCKED
+#if defined HAVE_FPUTS_UNLOCKED && !defined NEED_DECLARATION_PUTC_UNLOCKED
 # undef fputs
 # define fputs(String, Stream) fputs_unlocked (String, Stream)
+# ifdef NEED_DECLARATION_FPUTS_UNLOCKED
+extern int fputs_unlocked PROTO ((const char *, FILE *));
+# endif
 #endif
 
 #include <ctype.h>
