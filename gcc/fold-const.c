@@ -118,7 +118,7 @@ decode (shorts, low, hi)
    by setting to 0 or 1 all the bits in the constant
    that don't belong in the type.  */
 
-static void
+void
 force_fit_type (t)
      tree t;
 {
@@ -1031,12 +1031,15 @@ split_tree (in, code, varp, conp, varsignp)
 /* Combine two constants NUM and ARG2 under operation CODE
    to produce a new constant.
    We assume ARG1 and ARG2 have the same data type,
-   or at least are the same kind of constant and the same machine mode.  */
+   or at least are the same kind of constant and the same machine mode.
+
+   If NOTRUNC is nonzero, do not truncate the result to fit the data type.  */
 
 static tree
-const_binop (code, arg1, arg2)
+const_binop (code, arg1, arg2, notrunc)
      enum tree_code code;
      register tree arg1, arg2;
+     int notrunc;
 {
   if (TREE_CODE (arg1) == INTEGER_CST)
     {
@@ -1269,7 +1272,8 @@ const_binop (code, arg1, arg2)
 	}
     got_it:
       TREE_TYPE (t) = TREE_TYPE (arg1);
-      force_fit_type (t);
+      if (! notrunc)
+	force_fit_type (t);
       TREE_CONSTANT_OVERFLOW (t) = overflow;
       return t;
     }
@@ -1345,40 +1349,49 @@ const_binop (code, arg1, arg2)
       switch (code)
 	{
 	case PLUS_EXPR:
-	  t = build_complex (const_binop (PLUS_EXPR, r1, r2),
-			     const_binop (PLUS_EXPR, i1, i2));
+	  t = build_complex (const_binop (PLUS_EXPR, r1, r2, notrunc),
+			     const_binop (PLUS_EXPR, i1, i2, notrunc));
 	  break;
 
 	case MINUS_EXPR:
-	  t = build_complex (const_binop (MINUS_EXPR, r1, r2),
-			     const_binop (MINUS_EXPR, i1, i2));
+	  t = build_complex (const_binop (MINUS_EXPR, r1, r2, notrunc),
+			     const_binop (MINUS_EXPR, i1, i2, notrunc));
 	  break;
 
 	case MULT_EXPR:
 	  t = build_complex (const_binop (MINUS_EXPR,
-					  const_binop (MULT_EXPR, r1, r2),
-					  const_binop (MULT_EXPR, i1, i2)),
+					  const_binop (MULT_EXPR,
+						       r1, r2, notrunc),
+					  const_binop (MULT_EXPR,
+						       i1, i2, notrunc),
+					  notrunc),
 			     const_binop (PLUS_EXPR,
-					  const_binop (MULT_EXPR, r1, i2),
-					  const_binop (MULT_EXPR, i1, r2)));
+					  const_binop (MULT_EXPR,
+						       r1, i2, notrunc),
+					  const_binop (MULT_EXPR,
+						       i1, r2, notrunc),
+					  notrunc));
 	  break;
 
 	case RDIV_EXPR:
 	  {
 	    register tree magsquared
 	      = const_binop (PLUS_EXPR,
-			     const_binop (MULT_EXPR, r2, r2),
-			     const_binop (MULT_EXPR, i2, i2));
+			     const_binop (MULT_EXPR, r2, r2, notrunc),
+			     const_binop (MULT_EXPR, i2, i2, notrunc),
+			     notrunc);
 	    t = build_complex (const_binop (RDIV_EXPR,
 					    const_binop (PLUS_EXPR,
-							 const_binop (MULT_EXPR, r1, r2),
-							 const_binop (MULT_EXPR, i1, i2)),
-					    magsquared),
+							 const_binop (MULT_EXPR, r1, r2, notrunc),
+							 const_binop (MULT_EXPR, i1, i2, notrunc),
+							 notrunc),
+					    magsquared, notrunc),
 			       const_binop (RDIV_EXPR,
 					    const_binop (MINUS_EXPR,
-							 const_binop (MULT_EXPR, i1, r2),
-							 const_binop (MULT_EXPR, r1, i2)),
-					    magsquared));
+							 const_binop (MULT_EXPR, i1, r2, notrunc),
+							 const_binop (MULT_EXPR, r1, i2, notrunc),
+							 notrunc),
+					    magsquared, notrunc));
 	  }
 	  break;
 
@@ -1448,7 +1461,7 @@ size_binop (code, arg0, arg1)
 	  && TREE_INT_CST_HIGH (arg0) == 0)
 	return arg1;
       /* Handle general case of two integer constants.  */
-      return const_binop (code, arg0, arg1);
+      return const_binop (code, arg0, arg1, 1);
     }
 
   if (arg0 == error_mark_node || arg1 == error_mark_node)
@@ -2239,9 +2252,9 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 
   /* Make the mask to be used against the extracted field.  */
   mask = convert (unsigned_type, build_int_2 (~0, ~0));
-  mask = const_binop (LSHIFT_EXPR, mask, size_int (lnbitsize - lbitsize));
+  mask = const_binop (LSHIFT_EXPR, mask, size_int (lnbitsize - lbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask,
-		      size_int (lnbitsize - lbitsize - lbitpos));
+		      size_int (lnbitsize - lbitsize - lbitpos), 0);
 
   if (! const_p)
     /* If not comparing with constant, just rework the comparison
@@ -2269,7 +2282,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
     {
       if (! integer_zerop (const_binop (RSHIFT_EXPR,
 					convert (unsigned_type, rhs),
-					size_int (lbitsize))))
+					size_int (lbitsize), 0)))
 	{
 	  warning ("comparison is always %s due to width of bitfield",
 		   code == NE_EXPR ? "one" : "zero");
@@ -2281,7 +2294,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   else
     {
       tree tem = const_binop (RSHIFT_EXPR, convert (signed_type, rhs),
-			      size_int (lbitsize - 1));
+			      size_int (lbitsize - 1), 0);
       if (! integer_zerop (tem) && ! integer_all_onesp (tem))
 	{
 	  warning ("comparison is always %s due to width of bitfield",
@@ -2308,7 +2321,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 			   const_binop (LSHIFT_EXPR,
 					convert (unsigned_type, rhs),
 					size_int (lbitpos)),
-			   mask));
+			   mask, 0));
 
   return build (code, compare_type,
 		build (BIT_AND_EXPR, unsigned_type, lhs, mask),
@@ -2375,8 +2388,8 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
       int precision = TYPE_PRECISION (unsigned_type);
 
       mask = convert (unsigned_type, build_int_2 (~0, ~0));
-      mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize));
-      mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize));
+      mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
+      mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
     }
 
   *pmask = mask;
@@ -2400,8 +2413,9 @@ all_ones_mask_p (mask, size)
 				  const_binop (LSHIFT_EXPR,
 					       convert (signed_type (type),
 							build_int_2 (~0, ~0)),
-					       size_int (precision - size)),
-				  size_int (precision - size)), 0);
+					       size_int (precision - size), 0),
+				  size_int (precision - size), 0),
+		     0);
 }
 
 /* Subroutine for fold_truthop: determine if an operand is simple enough
@@ -2471,7 +2485,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
 		 && tree_int_cst_equal (integer_one_node,
 					const_binop (MINUS_EXPR,
-						     hi_cst, lo_cst))))
+						     hi_cst, lo_cst, 0))))
 	    return 0;
 
 	  rcode = GT_EXPR;
@@ -2480,12 +2494,12 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 	case GT_EXPR:
 	case GE_EXPR:
 	  if (hi_code == LT_EXPR)
-	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node);
+	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node, 0);
 	  else if (hi_code != LE_EXPR)
 	    return 0;
 
 	  if (lo_code == GT_EXPR)
-	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node);
+	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node, 0);
 
 	  /* We now have VAR >= LO_CST && VAR <= HI_CST.  */
 	  rcode = LE_EXPR;
@@ -2505,7 +2519,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
 		 && tree_int_cst_equal (integer_one_node,
 					const_binop (MINUS_EXPR,
-						     hi_cst, lo_cst))))
+						     hi_cst, lo_cst, 0))))
 	    return 0;
 
 	  rcode = LE_EXPR;
@@ -2514,12 +2528,12 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 	case LE_EXPR:
 	case LT_EXPR:
 	  if (hi_code == GE_EXPR)
-	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node);
+	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node, 0);
 	  else if (hi_code != GT_EXPR)
 	    return 0;
 
 	  if (lo_code == LE_EXPR)
-	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node);
+	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node, 0);
 
 	  /* We now have VAR < LO_CST || VAR > HI_CST.  */
 	  rcode = GT_EXPR;
@@ -2558,7 +2572,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
   return fold (convert (type,
 			build (rcode, utype,
 			       build (MINUS_EXPR, utype, var, lo_cst),
-			       const_binop (MINUS_EXPR, hi_cst, lo_cst))));
+			       const_binop (MINUS_EXPR, hi_cst, lo_cst, 0))));
 }
 
 /* Find ways of folding logical expressions of LHS and RHS:
@@ -2763,9 +2777,9 @@ fold_truthop (code, truth_type, lhs, rhs)
 #endif
 
   ll_mask = const_binop (LSHIFT_EXPR, convert (type, ll_mask),
-			 size_int (xll_bitpos));
+			 size_int (xll_bitpos), 0);
   rl_mask = const_binop (LSHIFT_EXPR, convert (type, rl_mask),
-			 size_int (xrl_bitpos));
+			 size_int (xrl_bitpos), 0);
 
   /* Make sure the constants are interpreted as unsigned, so we
      don't have sign bits outside the range of their type.  */
@@ -2774,13 +2788,13 @@ fold_truthop (code, truth_type, lhs, rhs)
     {
       l_const = convert (unsigned_type (TREE_TYPE (l_const)), l_const);
       l_const = const_binop (LSHIFT_EXPR, convert (type, l_const),
-			     size_int (xll_bitpos));
+			     size_int (xll_bitpos), 0);
     }
   if (r_const)
     {
       r_const = convert (unsigned_type (TREE_TYPE (r_const)), r_const);
       r_const = const_binop (LSHIFT_EXPR, convert (type, r_const),
-			     size_int (xrl_bitpos));
+			     size_int (xrl_bitpos), 0);
     }
 
   /* If the right sides are not constant, do the same for it.  Also,
@@ -2813,16 +2827,16 @@ fold_truthop (code, truth_type, lhs, rhs)
 #endif
 
       lr_mask = const_binop (LSHIFT_EXPR, convert (type, lr_mask),
-			     size_int (xlr_bitpos));
+			     size_int (xlr_bitpos), 0);
       rr_mask = const_binop (LSHIFT_EXPR, convert (type, rr_mask),
-			     size_int (xrr_bitpos));
+			     size_int (xrr_bitpos), 0);
 
       /* Make a mask that corresponds to both fields being compared.
 	 Do this for both items being compared.  If the masks agree,
 	 we can do this by masking both and comparing the masked
 	 results.  */
-      ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
-      lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask);
+      ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask, 0);
+      lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask, 0);
       if (operand_equal_p (ll_mask, lr_mask, 0) && lnbitsize == rnbitsize)
 	{
 	  lhs = make_bit_field_ref (ll_inner, type, lnbitsize, lnbitpos,
@@ -2861,10 +2875,10 @@ fold_truthop (code, truth_type, lhs, rhs)
      common between the masks, those bits of the constants must be the same.
      If not, the condition is always false.  Test for this to avoid generating
      incorrect code below.  */
-  result = const_binop (BIT_AND_EXPR, ll_mask, rl_mask);
+  result = const_binop (BIT_AND_EXPR, ll_mask, rl_mask, 0);
   if (! integer_zerop (result)
-      && simple_cst_equal (const_binop (BIT_AND_EXPR, result, l_const),
-			   const_binop (BIT_AND_EXPR, result, r_const)) != 1)
+      && simple_cst_equal (const_binop (BIT_AND_EXPR, result, l_const, 0),
+			   const_binop (BIT_AND_EXPR, result, r_const, 0)) != 1)
     {
       if (wanted_code == NE_EXPR)
 	{
@@ -2885,12 +2899,12 @@ fold_truthop (code, truth_type, lhs, rhs)
   result = make_bit_field_ref (ll_inner, type, lnbitsize, lnbitpos,
 			       ll_unsignedp || rl_unsignedp);
 
-  ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask);
+  ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask, 0);
   if (! all_ones_mask_p (ll_mask, lnbitsize))
     result = build (BIT_AND_EXPR, type, result, ll_mask);
 
   return build (wanted_code, truth_type, result,
-		const_binop (BIT_IOR_EXPR, l_const, r_const));
+		const_binop (BIT_IOR_EXPR, l_const, r_const, 0));
 }
 
 /* Perform constant folding and related simplification of EXPR.
@@ -3307,7 +3321,7 @@ fold (expr)
 	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
 	      && integer_zerop (const_binop (BIT_AND_EXPR,
 					     TREE_OPERAND (arg0, 1),
-					     TREE_OPERAND (arg1, 1))))
+					     TREE_OPERAND (arg1, 1), 0)))
 	    {
 	      code = BIT_IOR_EXPR;
 	      goto bit_ior;
@@ -3407,7 +3421,7 @@ fold (expr)
 	return t;
 #endif /* REAL_IS_NOT_DOUBLE, and no REAL_ARITHMETIC */
       if (wins)
-	t1 = const_binop (code, arg0, arg1);
+	t1 = const_binop (code, arg0, arg1, 0);
       if (t1 != NULL_TREE)
 	{
 	  /* The return value should always have
@@ -3807,14 +3821,14 @@ fold (expr)
 	    case GE_EXPR:
 	      code = GT_EXPR;
 	      TREE_SET_CODE (t, code);
-	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node);
+	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
 	      TREE_OPERAND (t, 1) = arg1;
 	      break;
 
 	    case LT_EXPR:
 	      code = LE_EXPR;
 	      TREE_SET_CODE (t, code);
-	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node);
+	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
 	      TREE_OPERAND (t, 1) = arg1;
 	    }
 	}
@@ -4237,7 +4251,7 @@ fold (expr)
 		if (! operand_equal_p (arg2, TYPE_MAX_VALUE (type), 1)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (PLUS_EXPR, arg2,
-						     integer_one_node), 1))
+						     integer_one_node, 0), 1))
 		  return fold (build (MIN_EXPR, type, arg1, arg2));
 		break;
 
@@ -4246,7 +4260,7 @@ fold (expr)
 		if (! operand_equal_p (arg2, TYPE_MIN_VALUE (type), 1)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (MINUS_EXPR, arg2,
-						     integer_one_node), 1))
+						     integer_one_node, 0), 1))
 		  return fold (build (MIN_EXPR, type, arg1, arg2));
 		break;
 
@@ -4255,7 +4269,7 @@ fold (expr)
 		if (! operand_equal_p (arg2, TYPE_MIN_VALUE (type), 1)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (MINUS_EXPR, arg2,
-						     integer_one_node), 1))
+						     integer_one_node, 0), 1))
 		  return fold (build (MAX_EXPR, type, arg1, arg2));
 		break;
 
@@ -4264,7 +4278,7 @@ fold (expr)
 		if (! operand_equal_p (arg2, TYPE_MAX_VALUE (type), 1)
 		    && operand_equal_p (TREE_OPERAND (arg0, 1),
 					const_binop (PLUS_EXPR, arg2,
-						     integer_one_node), 1))
+						     integer_one_node, 0), 1))
 		  return fold (build (MAX_EXPR, type, arg1, arg2));
 		break;
 	      }
