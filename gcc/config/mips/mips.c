@@ -2693,54 +2693,14 @@ trace (s, s1, s2)
 
 #ifdef SIGINFO
 
-#include <sys/wait.h>
-
 static void
 siginfo (signo)
      int signo;
 {
-  char select_pgrp[15];
-  char *argv[4];
-  pid_t pid;
-  pid_t pgrp;
-  int status;
-
   fprintf (stderr, "compiling '%s' in '%s'\n",
 	   (current_function_name != (char *)0) ? current_function_name : "<toplevel>",
 	   (current_function_file != (char *)0) ? current_function_file : "<no file>");
-
-  pgrp = getpgrp ();
-  if (pgrp != -1)
-    sprintf (select_pgrp, "-g%d", pgrp);
-  else
-    strcpy (select_pgrp, "-a");
-
-  /* Spawn a ps to tell about current memory usage, etc. */
-  argv[0] = "ps";
-  argv[1] = "-ouser,pid,pri,nice,usertime,systime,pcpu,cp,inblock,oublock,vsize,rss,pmem,ucomm";
-  argv[2] = select_pgrp;
-  argv[3] = (char *)0;
-
-  pid = vfork ();
-  if (pid == 0)			/* child context */
-    {
-      execv ("/usr/bin/ps", argv);
-      execv ("/usr/sbin/ps", argv);
-      execvp ("ps", argv);
-      perror ("ps");
-      _exit (1);
-    }
-
-  else if (pid > 0)		/* parent context */
-    {
-      void (*sigint)(int)  = signal (SIGINT, SIG_IGN);
-      void (*sigquit)(int) = signal (SIGQUIT, SIG_IGN);
-
-      (void) waitpid (pid, &status, 0);
-
-      (void) signal (SIGINT,  sigint);
-      (void) signal (SIGQUIT, sigquit);
-    }
+  fflush (stderr);
 }
 #endif /* SIGINFO */
 

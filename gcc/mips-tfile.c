@@ -637,7 +637,11 @@ typedef char *CPTR_T;
    the fact that including stddef.h gets you GCC's version
    instead of the standard one it's not worth it to fix it.  */
 
+#if defined(__OSF1__) || defined(__OSF__) || defined(__osf__)
+#define Size_t		long unsigned int
+#else
 #define Size_t		unsigned int
+#endif
 #define Ptrdiff_t	int
 
 /* The following might be called from obstack or malloc,
@@ -655,8 +659,13 @@ extern void	xfree		__proto((PTR_T));
 extern void	fatal();	/* can't use prototypes here */
 extern void	error();
 
+#if !defined(__OSF1__) && !defined(__OSF__) && !defined(__osf__)
 extern char *index ();
 extern char *rindex ();
+#else
+#undef rindex
+#undef index
+#endif
 
 #ifndef MIPS_DEBUGGING_INFO
 

@@ -1,5 +1,6 @@
-/* Definitions of target machine for GNU compiler.  DECstation (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.
+   DECstation (OSF/1 reference port with OSF/rose) version.
+   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -73,7 +74,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
-#define MACHINE_TYPE "DECstation running OSF/1 with OSF/rose objects"
+#define MACHINE_TYPE "DECstation with OSF/rose objects"
 
 #ifndef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX		"/usr/ccs/gcc/"
