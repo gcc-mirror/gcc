@@ -1,3 +1,7 @@
+2001-11-07  Graham Stott  <grahams@redhat.com>
+
+	* cse.c (cse_insn): Emit BARRIER after unconditional jump.
+
 Wed Nov  7 13:33:34 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* expmed.c (expand_mult): Force operand to register before computing
