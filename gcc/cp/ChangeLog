@@ -1,3 +1,8 @@
+2004-02-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/14085
+	* error.c (dump_decl): Handle TEMPLATE_TYPE_PARM.
+
 2004-02-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13635

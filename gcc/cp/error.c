@@ -940,6 +940,13 @@ dump_decl (tree t, int flags)
       dump_expr (t, flags);
       break;
 
+    case TEMPLATE_TYPE_PARM:
+      if (flags & TFF_DECL_SPECIFIERS)
+        pp_cxx_declaration (cxx_pp, t);
+      else
+        pp_type_id (cxx_pp, t);
+      break;
+
     default:
       pp_unsupported_tree (cxx_pp, t);
       /* Fallthrough to error.  */
