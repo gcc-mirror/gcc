@@ -1,5 +1,5 @@
 # Makefile for Texinfo distribution.
-# $Id: Makefile.in,v 1.11 1996/10/04 18:40:33 karl Exp $
+# $Id: Makefile.in,v 1.1.1.1 1997/08/21 22:57:51 jason Exp $
 # 
 # Copyright (C) 1993, 96 Free Software Foundation, Inc.
 
@@ -87,40 +87,7 @@ installcheck:
 dvi: texinfo.dvi license.dvi lgpl.dvi
 	@for dir in $(SUBDIRS); do cd $$dir; $(MAKE) $(FLAGS_TO_PASS) $@; cd ..; done
 
-install: all installdirs
-	test -f $(infodir)/dir || $(INSTALL_DATA) $(srcdir)/dir $(infodir)  
-	for dir in $(SUBDIRS); do \
-	   echo making $@ in $$dir; \
-	   (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
-	done
-	d=$(srcdir); test -f ./texinfo && d=.; \
-	(cd $$d && for f in texinfo* ; do \
-	    $(INSTALL_DATA) $$f $(infodir)/$$f; done)
-	$(POST_INSTALL)
-	./util/install-info --info-dir=$(infodir) $(infodir)/texinfo
-	@echo Please install $(srcdir)/texinfo.tex manually.
-
-installdirs:
-	-$(SHELL) $(srcdir)/util/mkinstalldirs $(bindir) $(datadir) $(infodir) $(mandir)
-
-.PHONY: install-info
-install-info: info
-	for dir in $(SUBDIRS); do \
-	   echo making $@ in $$dir; \
-	   (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
-	done
-	d=$(srcdir); test -f ./texinfo && d=.; \
-	(cd $$d; \
-	  for f in texinfo* ; do \
-	    $(INSTALL_DATA) $$f $(infodir)/$$f; \
-	  done)
-
-uninstall:
-	for dir in $(SUBDIRS); do \
-	  echo making $@ in $$dir; \
-	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
-	done
-	$(RM) $(infodir)/texinfo $(infodir)/texinfo-*
+.PHONY: install installdirs installcheck install-info uninstall
 
 Makefile: Makefile.in config.status
 	$(SHELL) ./config.status

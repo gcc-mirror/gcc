@@ -1,7 +1,7 @@
 /* install-info -- create Info directory entry(ies) for an Info file.
    Copyright (C) 1996 Free Software Foundation, Inc.
 
-$Id: install-info.c,v 1.12 1996/10/03 23:13:36 karl Exp $
+$Id: install-info.c,v 1.1.1.1 1997/08/21 22:58:12 jason Exp $
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include <errno.h>
 #include <getopt.h>
 #include <sys/types.h>
+
+#if defined (HAVE_STRING_H)
+#include <string.h>
+#else
+#include <strings.h>
+#endif /* !HAVE_STRING_H */
 
 /* Get O_RDONLY.  */
 #ifdef HAVE_SYS_FCNTL_H
@@ -342,12 +348,16 @@ char *
 my_strerror (errnum)
      int errnum;
 {
+#ifdef HAVE_STRERROR
+  return strerror(errnum);
+#else
   extern char *sys_errlist[];
   extern int sys_nerr;
 
   if (errnum >= 0 && errnum < sys_nerr)
     return sys_errlist[errnum];
   return (char *) "Unknown error";
+#endif
 }
 
 /* This table defines all the long-named options, says whether they

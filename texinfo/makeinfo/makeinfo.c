@@ -1,5 +1,5 @@
 /* Makeinfo -- convert texinfo format files into info files.
-   $Id: makeinfo.c,v 1.37 1996/10/04 18:20:52 karl Exp $
+   $Id: makeinfo.c,v 1.1.1.1 1997/08/21 22:58:07 jason Exp $
 
    Copyright (C) 1987, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
 
@@ -77,6 +77,10 @@ int minor_version = 67;
 
 #if defined (VMS)
 #include <perror.h>
+#endif
+
+#if defined (STDC_HEADERS)
+#include <stdlib.h>
 #endif
 
 #if defined (HAVE_STRING_H)

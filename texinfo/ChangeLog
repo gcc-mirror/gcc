@@ -1,3 +1,14 @@
+Tue Sep  2 22:25:34 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (install, install-info, installdirs, uninstall): Make
+	these phony targets.
+
+Tue Sep  2 10:19:48 1997  Richard Henderson  <rth@cygnus.com>
+
+	* makeinfo/makeinfo.c: Maybe include <stdlib.h> for malloc et al.
+	* util/install-info.c: Include <string*.h>.
+	(my_strerror): Use strerror if available.
+
 Tue Aug 26 11:18:52 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* libtxi/Makefile.in: Add dependencies for memcpy, memmove and strdup.
