@@ -1,3 +1,31 @@
+Tue Oct 20 09:15:38 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (is_compiled_class): New local variable
+ 	seen_in_zip. Identify classes found in currently compiled source
+ 	file(s).
+	* decl.c (complete_start_java_method): Fixed typo.
+	* java-tree.h (CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P,
+ 	HAS_BEEN_ALREADY_PARSED_P, IS_A_COMMAND_LINE_FILENAME_P): New macros.
+	(CLASS_P): Moved around.
+	(java_parse_abort_on_error): Macro moved from jcf-parse.c
+	* jcf-parse.c (java_parse_abort_on_error): Macro moved to
+ 	java-parse.h
+	(jcf_parse_source): Changed leading comment. Removed unnecessary
+ 	fclose and CLASS_FROM_SOURCE_P marking.
+	(parse_source_file): New local variables remember_for_generation
+ 	and filename. Mark parsed file name identifier node. Removed block
+ 	executed when parse_only was null. Set remember_for_generation. 
+	Use it as an argument to java_pop_parser_context.
+	(yyparse): New local variables several_files, list, next node and
+ 	current_file_list. Split ampersand separated file names into
+ 	current_file_list. Iterate through the list and parse accordingly.
+	* parse.h (java_pop_parser_context): New function prototype.
+	* parse.y (ctxp_for_generation): New static global variable.
+	(java_pop_parser_context): New argument generate. Link popped ctxp
+ 	to ctxp_for_generation list accordingly.
+	(java_complete_expand_methods): Fixed indentation.
+	(java_expand_classes): New function.
+	
 Sat Oct 17 11:25:21 1998  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in:  Link with libiberty.a instead of memmove.o.

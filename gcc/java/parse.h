@@ -720,6 +720,7 @@ tree java_get_catch_block PROTO ((tree, int));
 /* Always in use, no matter what you compile */
 
 void java_push_parser_context PROTO ((void));
+void java_pop_parser_context PROTO ((int));
 void java_init_lex PROTO ((void));
 int yyparse PROTO ((void));
 int yylex ();

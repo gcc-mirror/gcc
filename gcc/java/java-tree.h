@@ -49,8 +49,10 @@ struct JCF;
       MODIFY_EXPR_FROM_INITIALIZATION_P (in MODIFY_EXPR)
    3: IS_AN_IMPORT_ON_DEMAND_P (in IDENTIFIER_NODE)
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
-   4: RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
-   5: IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
+   4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
+      RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
+   5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
+      IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
 
    Usage of TYPE_LANG_FLAG_?:
@@ -58,6 +60,7 @@ struct JCF;
    2: CLASS_LOADED_P (in RECORD_TYPE).
    3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
    4: CLASS_P (in RECORD_TYPE).
+   5: CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (in RECORD_TYPE)
 
    Usage of DECL_LANG_FLAG_?:
    1: METHOD_PUBLIC (in FUNCTION_DECL).
@@ -521,6 +524,8 @@ extern void init_outgoing_cpool PROTO (());
 extern void make_class_data PROTO ((tree));
 extern void register_class PROTO (());
 extern int alloc_name_constant PROTO ((int, tree));
+extern void emit_register_class PROTO (());
+extern void lang_init_source PROTO ((int));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -567,8 +572,6 @@ extern int alloc_name_constant PROTO ((int, tree));
    virtual methods. */
 #define TYPE_VTABLE(TYPE) TYPE_BINFO_VTABLE(TYPE)
 
-/* True of a RECORD_TYPE of a class/interface type (not array type) */
-#define CLASS_P(TYPE) TYPE_LANG_FLAG_4 (TYPE)
 /* Use CLASS_LOADED_P? FIXME */
 #define CLASS_COMPLETE_P(DECL) DECL_LANG_FLAG_2 (DECL) 
 
@@ -653,6 +656,13 @@ extern tree *type_map;
 /* True if class TYPE was defined in Java source code. */
 #define CLASS_FROM_SOURCE_P(TYPE) TYPE_LANG_FLAG_3 (TYPE)
 
+/* True of a RECORD_TYPE of a class/interface type (not array type) */
+#define CLASS_P(TYPE) TYPE_LANG_FLAG_4 (TYPE)
+
+/* True if class TYPE was defined in a Java source file compiled. */
+#define CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P(TYPE) \
+  TYPE_LANG_FLAG_5 (TYPE)
+
 /* True if identifier ID was seen while processing a single type import stmt */
 #define IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P(ID) TREE_LANG_FLAG_0 (ID)
 
@@ -664,6 +674,12 @@ extern tree *type_map;
 
 /* True if ID is an already processed import on demand */
 #define IS_AN_IMPORT_ON_DEMAND_P(ID) TREE_LANG_FLAG_3 (ID)
+
+/* True if ID is a command-line specified filename */
+#define IS_A_COMMAND_LINE_FILENAME_P(ID) TREE_LANG_FLAG_4 (ID)
+
+/* True if filename ID has already been parsed */
+#define HAS_BEEN_ALREADY_PARSED_P(ID) TREE_LANG_FLAG_5 (ID)
 
 /* True if EXPR is RHS sub-tree of a compound assign expression */
 #define COMPOUND_ASSIGN_P(EXPR) TREE_LANG_FLAG_1 (EXPR)
@@ -754,3 +770,16 @@ extern tree *type_map;
 #define IS_UNCHECKED_EXPRESSION_P(TYPE)				\
   (inherits_from_p ((TYPE), runtime_exception_type_node)	\
    || inherits_from_p ((TYPE), error_exception_type_node))
+
+/* Make the current function where this macro is invoked report error
+   messages and and return, if any */
+#define java_parse_abort_on_error()		\
+  {						\
+     extern int java_error_count;		\
+     if (java_error_count)			\
+       {					\
+         java_report_errors ();			\
+	 java_pop_parser_context (0);		\
+	 return;				\
+       }					\
+   }

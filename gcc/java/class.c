@@ -1131,6 +1131,7 @@ int
 is_compiled_class (class)
      tree class;
 {
+  int seen_in_zip;
   if (TREE_CODE (class) == POINTER_TYPE)
     class = TREE_TYPE (class);
   if (TREE_CODE (class) != RECORD_TYPE)  /* Primitive types are static. */
@@ -1139,18 +1140,21 @@ is_compiled_class (class)
     return 0;
   if (class == current_class)
     return 2;
-  if ((TYPE_LANG_SPECIFIC (class) &&  TYPE_LANG_SPECIFIC (class)->jcf && 
-       TYPE_LANG_SPECIFIC (class)->jcf->seen_in_zip))
+
+  seen_in_zip = (TYPE_LANG_SPECIFIC (class) && TYPE_LANG_SPECIFIC (class)->jcf
+		 && TYPE_LANG_SPECIFIC (class)->jcf->seen_in_zip);
+  if (CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (class) || seen_in_zip)
     {
       /* The class was seen in the current ZIP file and will be
 	 available as a compiled class in the future but may not have
 	 been loaded already. Load it if necessary. This prevent
-	 build_class_ref () from crashing.  This should take into
-	 consideration class specified in a multiple class file
-	 command line. FIXME if necessary.  */
+	 build_class_ref () from crashing. */
 
-      if (!CLASS_LOADED_P (class))
+      if (seen_in_zip && !CLASS_LOADED_P (class))
         load_class (class, 1);
+
+      /* We return 2 for class seen in ZIP and class from files
+         belonging to the same compilation unit */
       return 2;
     }
 

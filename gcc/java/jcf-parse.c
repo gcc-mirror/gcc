@@ -73,16 +73,6 @@ void process_zip_dir();
 
 /* Source file compilation declarations */
 static void parse_source_file ();
-extern int java_error_count;
-#define java_parse_abort_on_error()		\
-  {						\
-     if (java_error_count)			\
-       {					\
-         java_report_errors ();			\
-	 java_pop_parser_context ();		\
-	 return;				\
-       }					\
-   }
 
 /* Handle "SourceFile" attribute. */
 
@@ -525,8 +515,7 @@ load_class (class_or_name, verbose)
     fseek (current_jcf->read_state, saved_pos, SEEK_SET);
 }
 
-/* Parse a source file when JCF refers to a source file. This piece
-   needs further work as far as error handling and report. */
+/* Parse a source file when JCF refers to a source file.  */
 
 int
 jcf_parse_source (jcf)
@@ -538,12 +527,7 @@ jcf_parse_source (jcf)
   if (!(finput = fopen (input_filename, "r")))
     fatal ("input file `%s' just disappeared - jcf_parse_source",
 	   input_filename);
-
   parse_source_file (1);	/* Parse only */
-  if (current_class && TREE_TYPE (current_class))
-    CLASS_FROM_SOURCE_P (TREE_TYPE (current_class)) = 1;
-
-  fclose (finput);
   java_parser_context_restore_global ();
 }
 
@@ -696,6 +680,12 @@ static void
 parse_source_file (parse_only)
      int parse_only;
 {
+  int remember_for_generation;
+  tree filename = get_identifier (input_filename);
+
+  /* Mark the file as parsed */
+  HAS_BEEN_ALREADY_PARSED_P (filename) = 1;
+
   lang_init_source (1);		    /* Error msgs have no method prototypes */
   java_push_parser_context ();
   java_init_lex ();		    /* Initialize the parser */
@@ -710,45 +700,96 @@ parse_source_file (parse_only)
   java_parse_abort_on_error ();
   java_layout_classes ();
   java_parse_abort_on_error ();
-  if (!parse_only)
-    {
-      lang_init_source (2);	        /* Error msgs have method prototypes */
-      java_complete_expand_methods ();  /* Complete and expand method bodies */
-      java_parse_abort_on_error ();
-      java_expand_finals ();	        /* Expand and check the finals */
-      java_parse_abort_on_error ();
-      java_check_final ();              /* Check unitialized final  */
-      java_parse_abort_on_error ();
-      if (! flag_emit_class_files)
-	emit_register_class ();
-      java_report_errors ();	        /* Final step for this file */
-    }
+
   if (flag_emit_class_files)
     write_classfile (current_class);
-  java_pop_parser_context ();
+
+  /* If only parsing, make sure that the currently parsed file isn't
+     also present in the argument list. If it's the case, remember
+     that we should generate it. */
+  remember_for_generation = !parse_only 
+    || IS_A_COMMAND_LINE_FILENAME_P (filename);
+  java_pop_parser_context (remember_for_generation);
 }
 
 int
 yyparse ()
 {
-  /* Everything migh be enclosed within a loop processing each file after
-     the other one.  */
+  int several_files = 0;
+  char *list = strdup (input_filename), *next;
+  tree node, current_file_list = NULL_TREE;
 
-  switch (jcf_figure_file_type (current_jcf))
+  do 
     {
-    case JCF_ZIP:
-      parse_zip_file_entries ();
-      emit_register_class ();
-      break;
-    case JCF_CLASS:
-      jcf_parse (current_jcf);
-      parse_class_file ();
-      emit_register_class ();
-      break;
-    case JCF_SOURCE:
-      parse_source_file (0);	/* Parse and generate */
-      break;
+      next = strchr (list, '&');
+      if (next)
+	{
+	  *next++ = '\0';
+	  several_files = 1;
+	}
+
+      if (list[0]) 
+	{
+	  char *value;
+
+	  if (*list != '/' && several_files)
+	    obstack_grow (&temporary_obstack, "./", 2);
+      
+	  obstack_grow0 (&temporary_obstack, list, strlen (list));
+	  value = obstack_finish (&temporary_obstack);
+	  node = get_identifier (value);
+	  IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
+	  current_file_list = tree_cons (NULL_TREE, node, current_file_list);
+	}
+      list = next;
     }
+  while (next);
+
+  current_file_list = nreverse (current_file_list);
+  for (node = current_file_list; node; node = TREE_CHAIN (node))
+    {
+      /* Don't substitute if INPUT_FILENAME doesn't feature the &
+         separator: we have only one file to deal with, we're fine */
+      if (several_files)
+	{
+	  tree name = TREE_VALUE (node);
+
+	  /* Skip already parsed files */
+	  if (HAS_BEEN_ALREADY_PARSED_P (name))
+	    continue;
+
+	  /* Close previous descriptor, if any */
+	  if (main_jcf->read_state && fclose (main_jcf->read_state))
+	    fatal ("failed to close input file `%s' - yyparse",
+		   (main_jcf->filename ? main_jcf->filename : "<unknown>"));
+
+	  /* Open new file */
+	  main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "r");
+	  if (main_jcf->read_state == NULL)
+	    pfatal_with_name (IDENTIFIER_POINTER (name));
+
+	  /* Set new input_filename and finput */
+	  input_filename = IDENTIFIER_POINTER (name);
+	  finput = main_jcf->read_state;
+	}
+
+      switch (jcf_figure_file_type (current_jcf))
+	{
+	case JCF_ZIP:
+	  parse_zip_file_entries ();
+	  emit_register_class ();
+	  break;
+	case JCF_CLASS:
+	  jcf_parse (current_jcf);
+	  parse_class_file ();
+	  emit_register_class ();
+	  break;
+	case JCF_SOURCE:
+	  parse_source_file (0);	/* Parse and generate */
+	  break;
+	}
+    }
+  java_expand_classes ();
   return 0;
 }
 
