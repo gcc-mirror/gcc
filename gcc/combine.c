@@ -6118,7 +6118,10 @@ simplify_and_const_int (x, mode, varop, constop)
 		   + num_sign_bit_copies (XEXP (varop, 0),
 					  GET_MODE (XEXP (varop, 0))))
 		  >= GET_MODE_BITSIZE (GET_MODE (varop)))
-	      && exact_log2 (constop + 1) >= 0)
+	      && exact_log2 (constop + 1) >= 0
+	      && (num_sign_bit_copies (XEXP (varop, 0),
+				       GET_MODE (XEXP (varop, 0)))
+		  >= exact_log2 (constop + 1)))
 	    varop
 	      = gen_rtx_combine (LSHIFTRT, GET_MODE (varop), XEXP (varop, 0),
 				 GEN_INT (GET_MODE_BITSIZE (GET_MODE (varop))
