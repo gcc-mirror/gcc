@@ -1,3 +1,10 @@
+2004-08-06  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/16807
+	* loop-iv.c (dump_iv_info): Dump invariants correctly.
+	(iv_subreg, iv_extend): Express value of invariant purely in
+	base field.
+
 2004-08-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/symbian.h (CC1_SPEC): Add -fno-short-enums.
