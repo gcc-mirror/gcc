@@ -4207,7 +4207,7 @@ do {									\
    to assemble a single byte containing the number VALUE.  */
 
 #define ASM_OUTPUT_BYTE(STREAM, VALUE) \
-  fprintf (STREAM, "\t%s %d\n", ASM_BYTE_OP, (int)(VALUE))
+  fprintf (STREAM, "%s%d\n", ASM_BYTE_OP, (int)(VALUE))
 
 /* A C string constant giving the pseudo-op to use for a sequence of
    single-byte constants.  If this macro is not defined, the default

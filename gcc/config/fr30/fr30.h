@@ -1513,7 +1513,7 @@ do										\
 /* A C statement to output to the stdio stream STREAM an assembler instruction
    to assemble a single byte containing the number VALUE.  */
 #define ASM_OUTPUT_BYTE(STREAM, VALUE) \
-  fprintf (STREAM, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf (STREAM, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* These macros are defined as C string constant, describing the syntax in the
    assembler for grouping arithmetic expressions.  The following definitions
