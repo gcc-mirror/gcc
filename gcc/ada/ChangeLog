@@ -1,5 +1,14 @@
 2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
 
+	* exp_dist.adb: Split declaration of asynchronous flag out of
+	Add_RACW_Read_Attribute.
+	Minor reformatting for better alignment with PolyORB version.
+	Store the entity for the asynchronous flag of an RACW, rather than the
+	expression, in the asynchronous flags table. This will allow this flag
+	to be used in other subprograms beside Add_RACW_Read_Attribute.
+
+2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
+
 	* g-socket.ads, g-socket.adb, g-socthi.adb, socket.c,
 	g-soccon-aix.ads, g-soccon-irix.ads, g-soccon-hpux.ads, 
 	g-soccon-interix.ads, g-soccon-solaris.ads, g-soccon-vms.adb, 

@@ -131,7 +131,7 @@ package body Exp_Dist is
       Is_Known_Non_Asynchronous : Boolean := False;
       Is_Function               : Boolean;
       Spec                      : Node_Id;
-      Object_Type               : Entity_Id := Empty;
+      Stub_Type                 : Entity_Id := Empty;
       Nod                       : Node_Id);
    --  Build calling stubs for general purpose. The parameters are:
    --    Decls             : a place to put declarations
@@ -147,10 +147,10 @@ package body Exp_Dist is
    --    Is_Known_Non_A... : True if we know that this is not asynchronous
    --    Spec              : a node with a Parameter_Specifications and
    --                        a Subtype_Mark if applicable
-   --    Object_Type       : in case of a RACW, parameters of type access to
-   --                        Object_Type will be marshalled using the
-   --                        address of this object (the addr field) rather
-   --                        than using the 'Write on the object itself
+   --    Stub_Type         : in case of RACW stubs, parameters of type access
+   --                        to Stub_Type will be marshalled using the
+   --                        address of the object (the addr field) rather
+   --                        than using the 'Write on the stub itself
    --    Nod               : used to provide sloc for generated code
 
    function Build_Subprogram_Calling_Stubs
@@ -292,13 +292,13 @@ package body Exp_Dist is
 
    package Asynchronous_Flags_Table is
       new Simple_HTable (Header_Num => Hash_Index,
-                         Element    => Node_Id,
+                         Element    => Entity_Id,
                          No_Element => Empty,
                          Key        => Entity_Id,
                          Hash       => Hash,
                          Equal      => "=");
-   --  Mapping between a RACW type and the node holding the value True if
-   --  the RACW is asynchronous and False otherwise.
+   --  Mapping between a RACW type and a constant having the value True
+   --  if the RACW is asynchronous and False otherwise.
 
    package RCI_Locator_Table is
       new Simple_HTable (Header_Num => Hash_Index,
@@ -331,6 +331,12 @@ package body Exp_Dist is
    --  object RPC receiver at the end of Decls. If these already exist,
    --  then nothing is added in the tree but the right values are returned
    --  anyhow and Existing is set to True.
+
+   procedure Add_RACW_Asynchronous_Flag
+     (Declarations : List_Id;
+      RACW_Type    : Entity_Id);
+   --  Declare a boolean constant associated with RACW_Type whose value
+   --  indicates at run time whether a pragma Asynchronous applies to it.
 
    procedure Add_RACW_Read_Attribute
      (RACW_Type           : Entity_Id;
@@ -470,6 +476,34 @@ package body Exp_Dist is
       end loop;
    end Add_Calling_Stubs_To_Declarations;
 
+   --------------------------------
+   -- Add_RACW_Asynchronous_Flag --
+   --------------------------------
+
+   procedure Add_RACW_Asynchronous_Flag
+     (Declarations : List_Id;
+      RACW_Type    : Entity_Id)
+   is
+      Loc : constant Source_Ptr := Sloc (RACW_Type);
+
+      Asynchronous_Flag : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc,
+                              New_External_Name (Chars (RACW_Type), 'A'));
+
+   begin
+      --  Declare the asynchronous flag. This flag will be changed to True
+      --  whenever it is known that the RACW type is asynchronous.
+
+      Append_To (Declarations,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Asynchronous_Flag,
+          Constant_Present    => True,
+          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+          Expression          => New_Occurrence_Of (Standard_False, Loc)));
+
+      Asynchronous_Flags_Table.Set (RACW_Type, Asynchronous_Flag);
+   end Add_RACW_Asynchronous_Flag;
+
    -----------------------
    -- Add_RACW_Features --
    -----------------------
@@ -527,6 +561,10 @@ package body Exp_Dist is
          Object_RPC_Receiver => Object_RPC_Receiver,
          Existing            => Existing);
 
+      Add_RACW_Asynchronous_Flag
+        (Declarations        => Decls,
+         RACW_Type           => RACW_Type);
+
       Add_RACW_Read_Write_Attributes
         (RACW_Type           => RACW_Type,
          Stub_Type           => Stub_Type,
@@ -537,9 +575,8 @@ package body Exp_Dist is
       if not Same_Scope and then not Existing then
 
          --  The RACW has been declared in another scope than the designated
-         --  type and has not been handled by another RACW in the same
-         --  package as the first one, so add primitive for the stub type
-         --  here.
+         --  type and has not been handled by another RACW in the same package
+         --  as the first one, so add primitive for the stub type here.
 
          Add_RACW_Primitive_Declarations_And_Bodies
            (Designated_Type  => Desig,
@@ -561,9 +598,8 @@ package body Exp_Dist is
       Insertion_Node  : Node_Id;
       Decls           : List_Id)
    is
-      --  Set sloc of generated declaration to be that of the
-      --  insertion node, so the declarations are recognized as
-      --  belonging to the current package.
+      --  Set sloc of generated declaration copy of insertion node sloc, so
+      --  the declarations are recognized as belonging to the current package.
 
       Loc : constant Source_Ptr := Sloc (Insertion_Node);
 
@@ -789,50 +825,42 @@ package body Exp_Dist is
       Source_Address    : constant Entity_Id :=
                             Make_Defining_Identifier
                               (Loc, New_Internal_Name ('P'));
-      Local_Stub        : constant Entity_Id  :=
+      Local_Stub        : constant Entity_Id :=
                             Make_Defining_Identifier
                               (Loc, New_Internal_Name ('L'));
-      Stubbed_Result    : constant Entity_Id  :=
+      Stubbed_Result    : constant Entity_Id :=
                             Make_Defining_Identifier
                               (Loc, New_Internal_Name ('S'));
       Asynchronous_Flag : constant Entity_Id :=
-                            Make_Defining_Identifier
-                              (Loc, New_Internal_Name ('S'));
-      Asynchronous_Node : constant Node_Id   :=
-                            New_Occurrence_Of (Standard_False, Loc);
-
-      --  Functions to create occurrences of the formal
-      --  parameter names.
+                            Asynchronous_Flags_Table.Get (RACW_Type);
+      pragma Assert (Present (Asynchronous_Flag));
 
       function Stream_Parameter return Node_Id;
       function Result return Node_Id;
+      --  Functions to create occurrences of the formal parameter names
 
-      function Stream_Parameter return Node_Id is
-      begin
-         return Make_Identifier (Loc, Name_S);
-      end Stream_Parameter;
+      ------------
+      -- Result --
+      ------------
 
       function Result return Node_Id is
       begin
          return Make_Identifier (Loc, Name_V);
       end Result;
 
+      ----------------------
+      -- Stream_Parameter --
+      ----------------------
+
+      function Stream_Parameter return Node_Id is
+      begin
+         return Make_Identifier (Loc, Name_S);
+      end Stream_Parameter;
+
+   --  Start of processing for Add_RACW_Read_Attribute
+
    begin
-      --  Declare the asynchronous flag. This flag will be changed to True
-      --  whenever it is known that the RACW type is asynchronous. Also, the
-      --  node gets stored since it may be rewritten when we process the
-      --  asynchronous pragma.
-
-      Append_To (Declarations,
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Asynchronous_Flag,
-          Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
-          Expression          => Asynchronous_Node));
-
-      Asynchronous_Flags_Table.Set (RACW_Type, Asynchronous_Node);
-
-      --  Object declarations
+      --  Generate object declarations
 
       Decls := New_List (
         Make_Object_Declaration (Loc,
@@ -1374,17 +1402,19 @@ package body Exp_Dist is
               Attribute_Name => Name_Unchecked_Access)));
 
       Set_Etype (Stub_Ptr, Stub_Elements.Stub_Type_Access);
-      --  Build_Get_Unique_RP_Call needs this information.
+      --  Build_Get_Unique_RP_Call needs this information
 
       --  Note: Here we assume that the Fat_Type is a record
       --  containing just a pointer to a proxy or stub object.
 
       Proc_Statements := New_List (
 
-      --  Get_RAS_Info (Pkg, Subp, PA);
-      --  if Origin = Local_Partition_Id and then not All_Calls_Remote then
-      --     return Fat_Type!(PA);
-      --  end if;
+      --  Generate:
+
+      --    Get_RAS_Info (Pkg, Subp, PA);
+      --    if Origin = Local_Partition_Id and then not All_Calls_Remote then
+      --       return Fat_Type!(PA);
+      --    end if;
 
          Make_Procedure_Call_Statement (Loc,
            Name =>
@@ -1426,16 +1456,18 @@ package body Exp_Dist is
 
         Set_Field (Name_Addr, New_Occurrence_Of (Proxy_Addr, Loc)),
 
+      --  E.4.1(9) A remote call is asynchronous if it is a call to
+      --  a procedure, or a call through a value of an access-to-procedure
+      --  type, to which a pragma Asynchronous applies.
+
+      --    Parameter Asynch_P is true when the procedure is asynchronous;
+      --    Expression Asynch_T is true when the type is asynchronous.
+
         Set_Field (Name_Asynchronous,
           Make_Or_Else (Loc,
             New_Occurrence_Of (Asynch_P, Loc),
             New_Occurrence_Of (Boolean_Literals (
               Is_Asynchronous (Ras_Type)), Loc))));
-      --  E.4.1(9) A remote call is asynchronous if it is a call to
-      --  a procedure, or a call through a value of an access-to-procedure
-      --  type, to which a pragma Asynchronous applies.
-      --  Parameter Asynch_P is true when the procedure is asynchronous;
-      --  Expression Asynch_T is true when the type is asynchronous.
 
       Append_List_To (Proc_Statements,
         Build_Get_Unique_RP_Call
@@ -1496,6 +1528,8 @@ package body Exp_Dist is
    -----------------------------
    -- Add_RAS_Dereference_TSS --
    -----------------------------
+
+   --  This subprogram could use more comments ???
 
    procedure Add_RAS_Dereference_TSS (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -1611,7 +1645,7 @@ package body Exp_Dist is
              Parameter_Associations => Param_Assoc));
       end if;
 
-      --  Build the complete subprogram.
+      --  Build the complete subprogram
 
       if Is_Function then
          Proc_Spec :=
@@ -1744,7 +1778,6 @@ package body Exp_Dist is
       --  full view when freezing the public view.
 
       Set_Comes_From_Source (Proxy_Type_Full_View, True);
-
 
       --  procedure Call
       --    (Self : access O;
@@ -1918,6 +1951,10 @@ package body Exp_Dist is
       --  Add one case to the specified RPC receiver case list
       --  associating Subprogram_Number with the subprogram declared
       --  by Declaration, for which we have receiving stubs in Stubs.
+
+      ---------------------
+      -- Append_Stubs_To --
+      ---------------------
 
       procedure Append_Stubs_To
         (RPC_Receiver_Cases : List_Id;
@@ -2435,7 +2472,7 @@ package body Exp_Dist is
       Is_Known_Non_Asynchronous : Boolean   := False;
       Is_Function               : Boolean;
       Spec                      : Node_Id;
-      Object_Type               : Entity_Id := Empty;
+      Stub_Type                 : Entity_Id := Empty;
       Nod                       : Node_Id)
    is
       Loc : constant Source_Ptr := Sloc (Nod);
@@ -2459,7 +2496,7 @@ package body Exp_Dist is
 
       Asynchronous_Statements     : List_Id := No_List;
       Non_Asynchronous_Statements : List_Id := No_List;
-      --  Statements specifics to the Asynchronous/Non-Asynchronous cases.
+      --  Statements specifics to the Asynchronous/Non-Asynchronous cases
 
       Extra_Formal_Statements : constant List_Id := New_List;
       --  List of statements for extra formal parameters. It will appear after
@@ -2575,7 +2612,7 @@ package body Exp_Dist is
             Extra_Parameter : Entity_Id;
 
          begin
-            if Is_RACW_Controlling_Formal (Current_Parameter, Object_Type) then
+            if Is_RACW_Controlling_Formal (Current_Parameter, Stub_Type) then
 
                --  In the case of a controlling formal argument, we marshall
                --  its addr field rather than the local stub.
@@ -2802,7 +2839,7 @@ package body Exp_Dist is
 
                   if (Out_Present (Current_Parameter)
                        or else Nkind (Typ) = N_Access_Definition)
-                    and then Etyp /= Object_Type
+                    and then Etyp /= Stub_Type
                   then
                      Append_To (Non_Asynchronous_Statements,
                         Make_Attribute_Reference (Loc,
@@ -3287,7 +3324,7 @@ package body Exp_Dist is
          Is_Function           => Nkind (Spec_To_Use) =
                                     N_Function_Specification,
          Spec                  => Spec_To_Use,
-         Object_Type           => Stub_Type,
+         Stub_Type             => Stub_Type,
          Nod                   => Vis_Decl);
 
       RCI_Calling_Stubs_Table.Set
@@ -4279,10 +4316,11 @@ package body Exp_Dist is
    -------------------------------
 
    procedure RACW_Type_Is_Asynchronous (RACW_Type : Entity_Id) is
-      N : constant Node_Id := Asynchronous_Flags_Table.Get (RACW_Type);
-      pragma Assert (N /= Empty);
+      Asynchronous_Flag : constant Entity_Id :=
+                           Asynchronous_Flags_Table.Get (RACW_Type);
    begin
-      Replace (N, New_Occurrence_Of (Standard_True, Sloc (N)));
+      Replace (Expression (Parent (Asynchronous_Flag)),
+        New_Occurrence_Of (Standard_True, Sloc (Asynchronous_Flag)));
    end RACW_Type_Is_Asynchronous;
 
    -------------------------
