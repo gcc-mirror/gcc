@@ -13,6 +13,7 @@ int main ()
 {
   const char *const s1 = "hello world";
   const char *s2, *s3;
+  int n = 6, x;
   
   if (strncmp (s1, "hello world", 12) != 0)
     abort();
@@ -64,7 +65,7 @@ int main ()
   s2 = s1; s3 = s1+4;
   if (strncmp (++s2, ++s3+2, 1) >= 0 || s2 != s1+1 || s3 != s1+5)
     abort();
-#if defined(__i386__)
+#if defined(__i386__) || defined (__pj__) || defined (__i370__)
   /* These tests work on platforms which support cmpstrsi.  */
   s2 = s1;
   if (strncmp (++s2, "ello", 3) != 0 || s2 != s1+1)
@@ -140,6 +141,82 @@ int main ()
   s2 = s1;
   if (strncmp ("allo", ++s2, 6) >= 0 || s2 != s1+1)
     abort();
+
+  s2 = s1; n = 2; x = 1;
+  if (strncmp (++s2, s1+(x&3), ++n) != 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 2; x = 1;
+  if (strncmp (s1+(x&3), ++s2, ++n) != 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp (++s2, s1+(x&3), ++n) != 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp (s1+(x&3), ++s2, ++n) != 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp (++s2, s1+(x&3), ++n) != 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp (s1+(x&3), ++s2, ++n) != 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp (++s2, s1+(x&3), ++n) != 0 || s2 != s1+1 || n != 6)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp (s1+(x&3), ++s2, ++n) != 0 || s2 != s1+1 || n != 6)
+    abort();
+
+  s2 = s1; n = 2;
+  if (strncmp (++s2, "zllo", ++n) >= 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 2; x = 1;
+  if (strncmp ("zllo", ++s2, ++n) <= 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp (++s2, "zllo", ++n) >= 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp ("zllo", ++s2, ++n) <= 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp (++s2, "zllo", ++n) >= 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp ("zllo", ++s2, ++n) <= 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp (++s2, "zllo", ++n) >= 0 || s2 != s1+1 || n != 6)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp ("zllo", ++s2, ++n) <= 0 || s2 != s1+1 || n != 6)
+    abort();
+
+  s2 = s1; n = 2;
+  if (strncmp (++s2, "allo", ++n) <= 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 2; x = 1;
+  if (strncmp ("allo", ++s2, ++n) >= 0 || s2 != s1+1 || n != 3)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp (++s2, "allo", ++n) <= 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 3; x = 1;
+  if (strncmp ("allo", ++s2, ++n) >= 0 || s2 != s1+1 || n != 4)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp (++s2, "allo", ++n) <= 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 4; x = 1;
+  if (strncmp ("allo", ++s2, ++n) >= 0 || s2 != s1+1 || n != 5)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp (++s2, "allo", ++n) <= 0 || s2 != s1+1 || n != 6)
+    abort();
+  s2 = s1; n = 5; x = 1;
+  if (strncmp ("allo", ++s2, ++n) >= 0 || s2 != s1+1 || n != 6)
+    abort();
+
 #endif  
   
   /* Test at least one instance of the __builtin_ style.  We do this

@@ -2330,12 +2330,8 @@ expand_builtin_strncmp (exp, target, mode)
   arg2 = TREE_VALUE (TREE_CHAIN (arglist));
   arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
-  /* We must be passed a constant len parameter.  */
-  if (TREE_CODE (arg3) != INTEGER_CST)
-    return 0;
-  
   /* If the len parameter is zero, return zero.  */
-  if (compare_tree_int (arg3, 0) == 0)
+  if (host_integerp (arg3, 1) && tree_low_cst (arg3, 1) == 0)
   {
     /* Evaluate and ignore arg1 and arg2 in case they have
        side-effects.  */
@@ -2348,17 +2344,18 @@ expand_builtin_strncmp (exp, target, mode)
   p2 = c_getstr (arg2);
 
   /* If all arguments are constant, evaluate at compile-time.  */
-  if (p1 && p2)
+  if (host_integerp (arg3, 1) && p1 && p2)
   {
-    const int r = strncmp (p1, p2, TREE_INT_CST_LOW (arg3));
+    const int r = strncmp (p1, p2, tree_low_cst (arg3, 1));
     return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
   }
 
   /* If len == 1 or (either string parameter is "" and (len >= 1)),
-      return (*(u_char*)arg1 - *(u_char*)arg2).  */
-  if (compare_tree_int (arg3, 1) == 0
-      || (compare_tree_int (arg3, 1) > 0
-	  && ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))))
+      return (*(const u_char*)arg1 - *(const u_char*)arg2).  */
+  if (host_integerp (arg3, 1)
+      && (tree_low_cst (arg3, 1) == 1
+	  || (tree_low_cst (arg3, 1) > 1
+	      && ((p1 && *p1 == '\0') || (p2 && *p2 == '\0')))))
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
@@ -2375,28 +2372,40 @@ expand_builtin_strncmp (exp, target, mode)
     }
 
 #ifdef HAVE_cmpstrsi
-  /* If the length parameter is constant (checked above) and either
-     string parameter is constant, call expand_builtin_memcmp() using
-     a length parameter equal to the lesser of the given length and
-     the strlen+1 of the constant string.  */
-  if (HAVE_cmpstrsi && (p1 || p2))
-    {
-      /* Exactly one of the strings is constant at this point, because
-	 if both were then we'd have expanded this at compile-time.  */
-      tree string_len = p1 ? c_strlen (arg1) : c_strlen (arg2);
+  /* If c_strlen can determine an expression for one of the string
+     lengths, and it doesn't have side effects, then call
+     expand_builtin_memcmp() using length MIN(strlen(string)+1, arg3).  */
+  if (HAVE_cmpstrsi)
+    { 
+      tree newarglist, len = 0;
 
-      string_len = size_binop (PLUS_EXPR, string_len, ssize_int (1));
-      
-      if (tree_int_cst_lt (string_len, arg3))
-        {
-	  /* The strlen+1 is strictly shorter, use it.  */
-	  tree newarglist = build_tree_list (NULL_TREE, string_len);
-	  newarglist = tree_cons (NULL_TREE, arg2, newarglist);
-	  newarglist = tree_cons (NULL_TREE, arg1, newarglist);
-	  return expand_builtin_memcmp (exp, newarglist, target);
-	}
-      else
-	return expand_builtin_memcmp (exp, arglist, target);
+      /* Perhaps one of the strings is really constant, if so prefer
+         that constant length over the other string's length.  */
+      if (p1)
+	len = c_strlen (arg1);
+      else if (p2)
+	len = c_strlen (arg2);
+
+      /* If we still don't have a len, try either string arg as long
+	 as they don't have side effects.  */
+      if (!len && !TREE_SIDE_EFFECTS (arg1))
+	len = c_strlen (arg1);
+      if (!len && !TREE_SIDE_EFFECTS (arg2))
+	len = c_strlen (arg2);
+      /* If we still don't have a length, punt.  */
+      if (!len)
+	return 0;
+	
+      /* Add one to the string length.  */
+      len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
+        
+      /* The actual new length parameter is MIN(len,arg3).  */
+      len = fold (build (MIN_EXPR, TREE_TYPE (len), len, arg3));
+
+      newarglist = build_tree_list (NULL_TREE, len);
+      newarglist = tree_cons (NULL_TREE, arg2, newarglist);
+      newarglist = tree_cons (NULL_TREE, arg1, newarglist);
+      return expand_builtin_memcmp (exp, newarglist, target);
     }
 #endif
   
