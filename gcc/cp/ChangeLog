@@ -1,3 +1,7 @@
+1998-05-27  Kevin Buhr  <buhr@stat.wisc.edu>
+
+	* parse.y (base_class): Use is_aggr_type, not IS_AGGR_TYPE.
+
 1998-05-26  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (process_template_parm): Accept TYPENAME_TYPE nodes.

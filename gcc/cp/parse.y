@@ -2206,7 +2206,7 @@ base_class:
 		  tree type = TREE_TYPE ($3);
 		  if (current_aggr == signature_type_node)
 		    error ("access and source specifiers not allowed in signature");
-		  if (! IS_AGGR_TYPE (type))
+		  if (! is_aggr_type (type, 1))
 		    $$ = NULL_TREE;
 		  else if (current_aggr == signature_type_node
 			   && (! type) && (! IS_SIGNATURE (type)))
