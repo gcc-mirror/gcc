@@ -260,7 +260,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(match_operand:DI 1 "const_double_operand" "F"))]
-  "CONST_DOUBLE_MEM (operands[1]) == const0_rtx"
+  "mem_for_const_double (operands[1]) == 0"
   "ld.u %u1,%0\;ld.w %v1,%0"
   [(set_attr "type" "xalu")])
 
