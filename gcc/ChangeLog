@@ -1,3 +1,11 @@
+Mon Feb  9 22:16:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* c-decl.c (grokdeclarator): Get parameter tags from
+	last_function_parm_tags.
+	* dwarfout.c (output_formal_types): Set TREE_ASM_WRITTEN before
+	traversing the parameter types.
+	(output_type): No early exit for FUNCTION_TYPE / METHOD_TYPE context.
+
 Mon Feb  9 22:10:58 1998  Todd Vierling <tv@pobox.com>
 
 	* fixincludes: Tweak fix for struct exception in math.h

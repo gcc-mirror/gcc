@@ -4827,7 +4827,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  {
 	    register tree link;
 
-	    for (link = current_function_parm_tags;
+	    for (link = last_function_parm_tags;
 		 link;
 		 link = TREE_CHAIN (link))
 	      TYPE_CONTEXT (TREE_VALUE (link)) = type;

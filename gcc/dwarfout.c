@@ -3988,6 +3988,12 @@ output_formal_types (function_or_method_type)
   register tree formal_type = NULL;
   register tree first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
 
+  /* Set TREE_ASM_WRITTEN while processing the parameters, lest we
+     get bogus recursion when outputting tagged types local to a
+     function declaration.  */
+  int save_asm_written = TREE_ASM_WRITTEN (function_or_method_type);
+  TREE_ASM_WRITTEN (function_or_method_type) = 1;
+
   /* In the case where we are generating a formal types list for a C++
      non-static member function type, skip over the first thing on the
      TYPE_ARG_TYPES list because it only represents the type of the
@@ -4033,6 +4039,8 @@ output_formal_types (function_or_method_type)
 
       output_type (formal_type, function_or_method_type);
     }
+
+  TREE_ASM_WRITTEN (function_or_method_type) = save_asm_written;
 }
 
 /* Remember a type in the pending_types_list.  */
@@ -4323,7 +4331,9 @@ output_type (type, containing_scope)
 
 	if (TYPE_SIZE (type) == 0
 	    && (TYPE_CONTEXT (type) == NULL
-		|| TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't')
+		|| (TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+		    && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_TYPE
+		    && TREE_CODE (TYPE_CONTEXT (type)) != METHOD_TYPE))
 	    && !finalizing)
 	  return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
 
