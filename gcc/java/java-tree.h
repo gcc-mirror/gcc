@@ -141,6 +141,10 @@ extern int flag_emit_class_files;
 
 extern int flag_jni;
 
+/* When non zero, report the now deprecated empty statements.  */
+
+extern int flag_extraneous_semicolon;
+
 /* When non zero, we emit xref strings. Values of the flag for xref
    backends are defined in xref.h.  */
 
