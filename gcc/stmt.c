@@ -1,5 +1,6 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3768,11 +3769,11 @@ expand_decl (decl)
 			   / BITS_PER_UNIT));
     }
 
-  else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
+  else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
 	   && ! (flag_stack_check && ! STACK_CHECK_BUILTIN
-		 && (TREE_INT_CST_HIGH (DECL_SIZE (decl)) != 0
-		     || (TREE_INT_CST_LOW (DECL_SIZE (decl))
-			 > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
+		 && (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (decl)) != 0
+		     || (TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl))
+			 > STACK_CHECK_MAX_VAR_SIZE))))
     {
       /* Variable of fixed size that goes on the stack.  */
       rtx oldaddr = 0;
@@ -3842,10 +3843,7 @@ expand_decl (decl)
 		     const0_rtx, VOIDmode, 0);
 
       /* Compute the variable's size, in bytes.  */
-      size = expand_expr (size_binop (CEIL_DIV_EXPR,
-				      DECL_SIZE (decl),
-				      size_int (BITS_PER_UNIT)),
-			  NULL_RTX, VOIDmode, 0);
+      size = expand_expr (DECL_SIZE_UNIT (decl), NULL_RTX, VOIDmode, 0);
       free_temp_slots ();
 
       /* Allocate space on the stack for the variable.  Note that
