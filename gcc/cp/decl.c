@@ -5333,11 +5333,9 @@ init_decl_processing ()
 
   if (!flag_no_builtin)
     {
-#if 0 /* These do not work well with libg++.  */
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
       builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, NULL_PTR);
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, NULL_PTR);
-#endif
       builtin_function ("fabsf", float_ftype_float, BUILT_IN_FABS, NULL_PTR);
       builtin_function ("fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
 			NULL_PTR);

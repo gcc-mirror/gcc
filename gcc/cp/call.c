@@ -5656,6 +5656,23 @@ build_over_call (fn, convs, args, flags)
   else
     fn = build_addr_func (fn);
 
+  /* Recognize certain built-in functions so we can make tree-codes
+     other than CALL_EXPR.  We do this when it enables fold-const.c
+     to do something useful.  */
+
+  if (TREE_CODE (fn) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+      && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
+    switch (DECL_FUNCTION_CODE (TREE_OPERAND (fn, 0)))
+      {
+      case BUILT_IN_ABS:
+      case BUILT_IN_LABS:
+      case BUILT_IN_FABS:
+	if (converted_args == 0)
+	  return integer_zero_node;
+	return build_unary_op (ABS_EXPR, TREE_VALUE (converted_args), 0);
+      }
+
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);
   if (TREE_TYPE (fn) == void_type_node)
     return fn;

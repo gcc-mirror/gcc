@@ -1,3 +1,10 @@
+Fri Feb 13 02:26:10 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* call.c (build_over_call): Convert builtin abs, labs and fabs to
+	tree-codes.
+	* decl.c (init_decl_processing): Reenable abs, labs and fabs as
+	builtins.
+
 Fri Feb 13 01:36:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (standard_conversion): A BASE_CONV replaces an RVALUE_CONV.
