@@ -1,3 +1,8 @@
+2000-03-07  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/PR162.java: Mention `PR162', not `Test', as class
+	name.
+
 2000-03-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Test for PR gcj/163:
