@@ -1,3 +1,7 @@
+2001-10-16  Florian Weimer  <fw@deneb.enyo.de>
+
+	* stmt.c (expand_asm_operands): Update commentary.
+
 2001-10-16  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (GCC_NAME): Remove, no longer used.
