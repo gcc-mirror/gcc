@@ -1,5 +1,8 @@
 Wed Mar 18 00:24:10 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (check_explicit_specialization): Complain about default args
+	in explicit specialization.
+
 	* parse.y (nomods_initdcl0): Also call cp_finish_decl for a 
 	constructor_declarator.
 

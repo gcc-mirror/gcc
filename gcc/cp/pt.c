@@ -839,6 +839,18 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	}
     }
 
+  if (specialization || member_specialization)
+    {
+      tree t = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      for (; t; t = TREE_CHAIN (t))
+	if (TREE_PURPOSE (t))
+	  {
+	    cp_pedwarn
+	      ("default argument specified in explicit specialization");
+	    break;
+	  }
+    }
+
   if (specialization || member_specialization || explicit_instantiation)
     {
       tree tmpl = NULL_TREE;
