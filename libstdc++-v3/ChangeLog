@@ -1,3 +1,10 @@
+2003-12-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/C++STYLE: Add exception bits.
+	* include/bits/fstream.tcc: Add location info to exception strings.
+
+	* include/bits/stl_construct.h: Formatting tweaks.
+
 2003-12-01  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/10378
