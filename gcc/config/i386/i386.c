@@ -976,8 +976,6 @@ print_operand (file, x, code)
 	    putc ('*', file);
 	  return;
 
-	case 'D':
-	  PUT_OP_SIZE (code, 'l', file);
 	case 'L':
 	  PUT_OP_SIZE (code, 'l', file);
 	  return;
@@ -996,10 +994,6 @@ print_operand (file, x, code)
 
 	case 'S':
 	  PUT_OP_SIZE (code, 's', file);
-	  return;
-
-	case 'R':
-	  fprintf (file, "%s", RP);
 	  return;
 
 	case 'z':
@@ -1037,6 +1031,17 @@ print_operand (file, x, code)
 	      PUT_OP_SIZE ('Q', 'l', file);
 	      return;
 	    }
+
+	case 'b':
+	case 'w':
+	case 'k':
+	case 'h':
+	case 'y':
+	case 'P':
+	  break;
+
+	default:
+	  abort ();
 	}
     }
   if (GET_CODE (x) == REG)
@@ -1063,13 +1068,8 @@ print_operand (file, x, code)
       u.i[0] = CONST_DOUBLE_LOW (x);
       u.i[1] = CONST_DOUBLE_HIGH (x);
       u1.f = u.d;
-      if (code == 'f')
-        fprintf (file, "%.22e", u1.f);
-      else
-        {
-	  PRINT_IMMED_PREFIX (file);
-	  fprintf (file, "0x%x", u1.i);
-	}
+      PRINT_IMMED_PREFIX (file);
+      fprintf (file, "0x%x", u1.i);
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
     {
@@ -1080,7 +1080,7 @@ print_operand (file, x, code)
     }
   else 
     {
-      if (code != 'c' && code != 'P')
+      if (code != 'P')
 	{
 	  if (GET_CODE (x) == CONST_INT)
 	    PRINT_IMMED_PREFIX (file);

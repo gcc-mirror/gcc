@@ -2204,6 +2204,8 @@ store_constructor (exp, target)
      tree exp;
      rtx target;
 {
+  tree type = TREE_TYPE (exp);
+
   /* We know our target cannot conflict, since safe_from_p has been called.  */
 #if 0
   /* Don't try copying piece by piece into a hard register
@@ -2218,19 +2220,25 @@ store_constructor (exp, target)
     }
 #endif
 
-  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-      || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
+  if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE)
     {
       register tree elt;
 
-      if (TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
-	/* Inform later passes that the whole union value is dead.  */
+      /* Inform later passes that the whole union value is dead.  */
+      if (TREE_CODE (type) == UNION_TYPE)
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+
+      /* If we are building a static constructor into a register,
+	 set the initial value as zero so we can fold the value into
+	 a constant.  */
+      else if (GET_CODE (target) == REG && TREE_STATIC (exp))
+	emit_move_insn (target, const0_rtx);
+
       /* If the constructor has fewer fields than the structure,
 	 clear the whole structure first.  */
       else if (list_length (CONSTRUCTOR_ELTS (exp))
-	       != list_length (TYPE_FIELDS (TREE_TYPE (exp))))
-	clear_storage (target, int_size_in_bytes (TREE_TYPE (exp)));
+	       != list_length (TYPE_FIELDS (type)))
+	clear_storage (target, int_size_in_bytes (type));
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
@@ -2262,23 +2270,25 @@ store_constructor (exp, target)
 		       /* The alignment of TARGET is
 			  at least what its type requires.  */
 		       VOIDmode, 0,
-		       TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT,
-		       int_size_in_bytes (TREE_TYPE (exp)));
+		       TYPE_ALIGN (type) / BITS_PER_UNIT,
+		       int_size_in_bytes (type));
 	}
     }
-  else if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       register tree elt;
       register int i;
-      tree domain = TYPE_DOMAIN (TREE_TYPE (exp));
+      tree domain = TYPE_DOMAIN (type);
       int minelt = TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain));
       int maxelt = TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain));
-      tree elttype = TREE_TYPE (TREE_TYPE (exp));
+      tree elttype = TREE_TYPE (type);
 
       /* If the constructor has fewer fields than the structure,
-	 clear the whole structure first.  */
+	 clear the whole structure first.  Similarly if this this is
+	 static constructor of a non-BLKmode object.  */
 
-      if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1)
+      if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1
+	  || (GET_CODE (target) == REG && TREE_STATIC (exp)))
 	clear_storage (target, maxelt - minelt + 1);
       else
 	/* Inform later passes that the old value is dead.  */
@@ -2306,8 +2316,8 @@ store_constructor (exp, target)
 		       /* The alignment of TARGET is
 			  at least what its type requires.  */
 		       VOIDmode, 0,
-		       TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT,
-		       int_size_in_bytes (TREE_TYPE (exp)));
+		       TYPE_ALIGN (type) / BITS_PER_UNIT,
+		       int_size_in_bytes (type));
 	}
     }
 
@@ -2930,7 +2940,7 @@ expand_expr (exp, target, tmode, modifier)
       if (DECL_RTL (exp) == 0)
 	{
 	  error_with_decl (exp, "prior parameter's size depends on `%s'");
-	  return const0_rtx;
+	  return CONST0_RTX (mode);
 	}
 
     case FUNCTION_DECL:
@@ -2968,6 +2978,7 @@ expand_expr (exp, target, tmode, modifier)
 	    addr = fix_lexical_addr (addr, exp);
 	  return change_address (DECL_RTL (exp), mode, addr);
 	}
+
       /* This is the case of an array whose size is to be determined
 	 from its initializer, while the initializer is still being parsed.
 	 See expand_decl.  */
@@ -3125,10 +3136,11 @@ expand_expr (exp, target, tmode, modifier)
       return RTL_EXPR_RTL (exp);
 
     case CONSTRUCTOR:
-      /* All elts simple constants => refer to a constant in memory.  */
-      if (TREE_STATIC (exp))
-	/* For aggregate types with non-BLKmode modes,
-	   this should ideally construct a CONST_INT.  */
+      /* All elts simple constants => refer to a constant in memory.  But
+	 if this is a non-BLKmode mode, let it store a field at a time
+	 since that should make a CONST_INT or CONST_DOUBLE when we
+	 fold.  */
+      if (TREE_STATIC (exp) && (mode == BLKmode || TREE_ADDRESSABLE (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
 	  if (! memory_address_p (GET_MODE (constructor),
@@ -3290,13 +3302,36 @@ expand_expr (exp, target, tmode, modifier)
       }
 
       /* If this is a constant index into a constant array,
-	 just get the value from the array.  */
-      if (TREE_READONLY (TREE_OPERAND (exp, 0))
-	  && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == ARRAY_TYPE
-	  && TREE_CODE (TREE_OPERAND (exp, 0)) == VAR_DECL
-	  && DECL_INITIAL (TREE_OPERAND (exp, 0))
-	  && TREE_CODE (DECL_INITIAL (TREE_OPERAND (exp, 0))) != ERROR_MARK)
+	 just get the value from the array.  Handle both the cases when
+	 we have an explicit constructor and when our operand is a variable
+	 that was declared const.  */
+
+      if (TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
+	  && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0)))
+	{
+	  tree index = fold (TREE_OPERAND (exp, 1));
+	  if (TREE_CODE (index) == INTEGER_CST
+	      && TREE_INT_CST_HIGH (index) == 0)
+	    {
+	      int i = TREE_INT_CST_LOW (index);
+	      tree elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+
+	      while (elem && i--)
+		elem = TREE_CHAIN (elem);
+	      if (elem)
+		return expand_expr (fold (TREE_VALUE (elem)), target,
+				    tmode, modifier);
+	    }
+	}
+	  
+      else if (TREE_READONLY (TREE_OPERAND (exp, 0))
+	       && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
+	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == ARRAY_TYPE
+	       && TREE_CODE (TREE_OPERAND (exp, 0)) == VAR_DECL
+	       && DECL_INITIAL (TREE_OPERAND (exp, 0))
+	       && optimize >= 1
+	       && (TREE_CODE (DECL_INITIAL (TREE_OPERAND (exp, 0)))
+		   != ERROR_MARK))
 	{
 	  tree index = fold (TREE_OPERAND (exp, 1));
 	  if (TREE_CODE (index) == INTEGER_CST
@@ -3328,6 +3363,19 @@ expand_expr (exp, target, tmode, modifier)
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
+      /* If the operand is a CONSTRUCTOR, we can just extract the
+	 appropriate field if it is present.  */
+      if (code != ARRAY_REF
+	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR)
+	{
+	  tree elt;
+
+	  for (elt = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)); elt;
+	       elt = TREE_CHAIN (elt))
+	    if (TREE_PURPOSE (elt) == TREE_OPERAND (exp, 1))
+	      return expand_expr (TREE_VALUE (elt), target, tmode, modifier);
+	}
+
       {
 	enum machine_mode mode1;
 	int bitsize;
@@ -4736,7 +4784,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       lab2 = gen_label_rtx ();
 
       /* By default check the arguments.  If flag_fast_math is turned on,
-	 then assume sqrt will always be called with valid arguments.  */
+	 then assume sqrt will always be called with valid arguments. 
+	 Note changing the test below from "> 0" to ">= 0" would cause
+	 incorrect results when computing sqrt(-0.0).  */
+
       if (! flag_fast_math) 
 	{
 	  /* By checking op > 0 we are able to catch all of the
@@ -4745,8 +4796,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 			 GET_MODE (op0), 0, 0);
           emit_jump_insn (gen_bgt (lab1));
 
-          /* The argument was not in the domain; do this via library call.  */
+          /* The argument was not in the domain; do this via library call.
+	     Pop the arguments right away in case the call gets deleted. */
+	  NO_DEFER_POP;
           expand_call (exp, target, 0, 0);
+	  OK_DEFER_POP;
 
           /* Branch around open coded version */
           emit_jump_insn (gen_jump (lab2));
