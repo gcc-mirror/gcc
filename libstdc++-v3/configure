@@ -19345,8 +19345,8 @@ echo "$ac_t""$glibcpp_shared_libgcc" 1>&6
 # as the tested-for version.  See GLIBCPP_CHECK_LINKER_FEATURES for more.
 glibcpp_min_gnu_ld_version=21200
 
-# Check to see if unspecified default "yes" value can win, given
-# results above.  
+# Check to see if unspecified "yes" value can win, given results
+# above.  
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
     test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version &&
@@ -19378,8 +19378,8 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE='#'
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
-echo $ac_n "checking versioning on shared lib symbols""... $ac_c" 1>&6
-echo "configure:19383: checking versioning on shared lib symbols" >&5
+echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
+echo "configure:19383: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
 
 
