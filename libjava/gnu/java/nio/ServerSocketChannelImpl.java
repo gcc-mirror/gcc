@@ -54,9 +54,6 @@ class ServerSocketChannelImpl extends ServerSocketChannel
   boolean connected = false;
 //   InetSocketAddress sa;
 
-  private static native int SocketAccept (ServerSocketChannelImpl server,
-                                          SocketChannelImpl s);
-
   protected ServerSocketChannelImpl (SelectorProvider provider)
     throws IOException
   {
@@ -103,7 +100,7 @@ class ServerSocketChannelImpl extends ServerSocketChannel
   {
     SocketChannelImpl result = new SocketChannelImpl (provider ());
     result.sa = new InetSocketAddress (0);
-    int res = SocketAccept (this,result);
+    //int res = SocketAccept (this,result);
     return result;
   }
 
