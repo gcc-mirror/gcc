@@ -1,3 +1,8 @@
+2004-06-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/15296
+	* gcc.c-torture/execute/pr15296.c: New test.
+
 2004-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15862

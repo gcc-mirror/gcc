@@ -2358,7 +2358,9 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && eligible_for_delay (insn, slots_filled, next_trial, flags)
 	      && ! can_throw_internal (trial))
 	    {
-	      rtx new_label = next_active_insn (next_trial);
+	      /* See comment in relax_delay_slots about necessity of using
+		 next_real_insn here.  */
+	      rtx new_label = next_real_insn (next_trial);
 
 	      if (new_label != 0)
 		new_label = get_label_before (new_label);
@@ -3083,7 +3085,9 @@ relax_delay_slots (rtx first)
 	  && (target_label = JUMP_LABEL (insn)) != 0)
 	{
 	  target_label = follow_jumps (target_label);
-	  target_label = prev_label (next_active_insn (target_label));
+	  /* See comment further down why we must use next_real_insn here,
+	     instead of next_active_insn.  */
+	  target_label = prev_label (next_real_insn (target_label));
 
 	  if (target_label == 0)
 	    target_label = find_end_label ();

@@ -1,3 +1,10 @@
+2004-06-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/15296
+	* reorg.c (fill_simple_delay_slots): Use next_real_insn when
+	getting last consecutive label at a branch.
+	(relax_delay_slots): Similar, near top of loop.
+
 2004-06-12  Andreas Jaeger  <aj@suse.de>
 
 	* libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
