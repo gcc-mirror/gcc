@@ -4068,8 +4068,7 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 	   conversion, but is not considered during overload resolution.
 
 	   If the target is a class, that means call a ctor.  */
-	if (IS_AGGR_TYPE (totype)
-	    && (inner >= 0 || !lvalue_p (expr)))
+	if (IS_AGGR_TYPE (totype) && inner >= 0)
 	  {
 	    expr = (build_temp 
 		    (expr, totype, 
