@@ -151,5 +151,5 @@ template c sqrt (ccr);
 template istream& operator>> (istream&, complex<f>&);
 #endif
 #ifdef INSERT
-template ostream& operator<< (ostream&, complex<f>);
+template ostream& operator<< (ostream&, const complex<f>&);
 #endif
