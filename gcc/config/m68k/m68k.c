@@ -870,6 +870,7 @@ singlemove_string (operands)
   return "sub%.l %0,%0";
 }
 
+
 /* Output assembler code to perform a doubleword move insn
    with operands OPERANDS.  */
 
@@ -877,9 +878,17 @@ char *
 output_move_double (operands)
      rtx *operands;
 {
-  enum { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
+  enum
+    {
+      REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP
+    } optype0, optype1;
   rtx latehalf[2];
+  rtx middlehalf[2];
   rtx addreg0 = 0, addreg1 = 0;
+  int size = GET_MODE_SIZE (GET_MODE (operands[1]));
+
+  middlehalf[0] = 0;
+  middlehalf[1] = 0;
 
   /* First classify both operands.  */
 
@@ -925,15 +934,31 @@ output_move_double (operands)
   if (optype0 == PUSHOP && optype1 == POPOP)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
-      output_asm_insn ("subq%.l %#8,%0", operands);
-      operands[0] = gen_rtx (MEM, DImode, operands[0]);
+      if (size == 12)
+        output_asm_insn ("sub%.l %#12,%0", operands);
+      else
+        output_asm_insn ("subq%.l %#8,%0", operands);
+      if (GET_MODE (operands[1]) == XFmode)
+	operands[0] = gen_rtx (MEM, XFmode, operands[0]);
+      else if (GET_MODE (operands[0]) == DFmode)
+	operands[0] = gen_rtx (MEM, DFmode, operands[0]);
+      else
+	operands[0] = gen_rtx (MEM, DImode, operands[0]);
       optype0 = OFFSOP;
     }
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
-      output_asm_insn ("subq%.l %#8,%1", operands);
-      operands[1] = gen_rtx (MEM, DImode, operands[1]);
+      if (size == 12)
+        output_asm_insn ("sub%.l %#12,%1", operands);
+      else
+        output_asm_insn ("subq%.l %#8,%1", operands);
+      if (GET_MODE (operands[1]) == XFmode)
+	operands[1] = gen_rtx (MEM, XFmode, operands[1]);
+      else if (GET_MODE (operands[1]) == DFmode)
+	operands[1] = gen_rtx (MEM, DFmode, operands[1]);
+      else
+	operands[1] = gen_rtx (MEM, DImode, operands[1]);
       optype1 = OFFSOP;
     }
 
@@ -955,21 +980,83 @@ output_move_double (operands)
      for the high-numbered word and in some cases alter the
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
-  if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-  else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 4);
-  else
-    latehalf[0] = operands[0];
+  if (size == 12)
+    {
+      if (optype0 == REGOP)
+	{
+	  latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 2);
+	  middlehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	}
+      else if (optype0 == OFFSOP)
+	{
+	  middlehalf[0] = adj_offsettable_operand (operands[0], 4);
+	  latehalf[0] = adj_offsettable_operand (operands[0], size - 4);
+	}
+      else
+	{
+	  middlehalf[0] = operands[0];
+	  latehalf[0] = operands[0];
+	}
 
-  if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
-  else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 4);
-  else if (optype1 == CNSTOP)
-    split_double (operands[1], &operands[1], &latehalf[1]);
+      if (optype1 == REGOP)
+	{
+	  latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 2);
+	  middlehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	}
+      else if (optype1 == OFFSOP)
+	{
+	  middlehalf[1] = adj_offsettable_operand (operands[1], 4);
+	  latehalf[1] = adj_offsettable_operand (operands[1], size - 4);
+	}
+      else if (optype1 == CNSTOP)
+	{
+	  if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	    {
+	      REAL_VALUE_TYPE r;
+	      long l[3];
+
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+	      operands[1] = GEN_INT (l[0]);
+	      middlehalf[1] = GEN_INT (l[1]);
+	      latehalf[1] = GEN_INT (l[2]);
+	    }
+	  else if (CONSTANT_P (operands[1]))
+	    {
+	      /* actually, no non-CONST_DOUBLE constant should ever
+		 appear here.  */
+	      abort ();
+	      if (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) < 0)
+		latehalf[1] = constm1_rtx;
+	      else
+		latehalf[1] = const0_rtx;
+	    }
+	}
+      else
+	{
+	  middlehalf[1] = operands[1];
+	  latehalf[1] = operands[1];
+	}
+    }
   else
-    latehalf[1] = operands[1];
+    /* size is not 12: */
+    {
+      if (optype0 == REGOP)
+	latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      else if (optype0 == OFFSOP)
+	latehalf[0] = adj_offsettable_operand (operands[0], size - 4);
+      else
+	latehalf[0] = operands[0];
+
+      if (optype1 == REGOP)
+	latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+      else if (optype1 == OFFSOP)
+	latehalf[1] = adj_offsettable_operand (operands[1], size - 4);
+      else if (optype1 == CNSTOP)
+	split_double (operands[1], &operands[1], &latehalf[1]);
+      else
+	latehalf[1] = operands[1];
+    }
 
   /* If insn is effectively movd N(sp),-(sp) then we will do the
      high word first.  We should use the adjusted operand 1 (which is N+4(sp))
@@ -989,13 +1076,24 @@ output_move_double (operands)
 
   if (optype0 == PUSHOP || optype1 == PUSHOP
       || (optype0 == REGOP && optype1 == REGOP
-	  && REGNO (operands[0]) == REGNO (latehalf[1])))
+	  && ((middlehalf[1] && REGNO (operands[0]) == REGNO (middlehalf[1]))
+	      || REGNO (operands[0]) == REGNO (latehalf[1]))))
     {
       /* Make any unoffsettable addresses point at high-numbered word.  */
       if (addreg0)
-	output_asm_insn ("addql %#4,%0", &addreg0);
+	{
+	  if (size == 12)
+	    output_asm_insn ("addql %#8,%0", &addreg0);
+	  else
+	    output_asm_insn ("addql %#4,%0", &addreg0);
+	}
       if (addreg1)
-	output_asm_insn ("addql %#4,%0", &addreg1);
+	{
+	  if (size == 12)
+	    output_asm_insn ("addql %#8,%0", &addreg1);
+	  else
+	    output_asm_insn ("addql %#4,%0", &addreg1);
+	}
 
       /* Do that word.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -1006,6 +1104,15 @@ output_move_double (operands)
       if (addreg1)
 	output_asm_insn ("subql %#4,%0", &addreg1);
 
+      if (size == 12)
+	{
+	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
+	  if (addreg0)
+	    output_asm_insn ("subql %#4,%0", &addreg0);
+	  if (addreg1)
+	    output_asm_insn ("subql %#4,%0", &addreg1);
+	}
+
       /* Do low-numbered word.  */
       return singlemove_string (operands);
     }
@@ -1013,6 +1120,17 @@ output_move_double (operands)
   /* Normal case: do the two words, low-numbered first.  */
 
   output_asm_insn (singlemove_string (operands), operands);
+
+  /* Do the middle one of the three words for long double */
+  if (size == 12)
+    {
+      if (addreg0)
+	output_asm_insn ("addql %#4,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("addql %#4,%0", &addreg1);
+
+      output_asm_insn (singlemove_string (middlehalf), middlehalf);
+    }
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
@@ -1025,9 +1143,19 @@ output_move_double (operands)
 
   /* Undo the adds we just did.  */
   if (addreg0)
-    output_asm_insn ("subql %#4,%0", &addreg0);
+    {
+      if (size == 12)
+        output_asm_insn ("subql %#8,%0", &addreg0);
+      else
+        output_asm_insn ("subql %#4,%0", &addreg0);
+    }
   if (addreg1)
-    output_asm_insn ("subql %#4,%0", &addreg1);
+    {
+      if (size == 12)
+        output_asm_insn ("subql %#8,%0", &addreg1);
+      else
+        output_asm_insn ("subql %#4,%0", &addreg1);
+    }
 
   return "";
 }
