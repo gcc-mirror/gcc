@@ -59,19 +59,19 @@ namespace std
 	    else
 	      {
 		// LANG may set a default different from "C".
-		string __res;
-		char* __env = std::getenv("LANG");
+		string __lang;
+		__env = std::getenv("LANG");
 		if (!__env || std::strcmp(__env, "") == 0 
 		    || std::strcmp(__env, "C") == 0 
 		    || std::strcmp(__env, "POSIX") == 0)
-		  __res = "C";
+		  __lang = "C";
 		else 
-		  __res = __env;
+		  __lang = __env;
 		
 		// Scan the categories looking for the first one
 		// different from LANG.
 		size_t __i = 0;
-		if (__res == "C")
+		if (__lang == "C")
 		  for (; __i < _S_categories_size; ++__i)
 		    {
 		      __env = std::getenv(_S_categories[__i]);
@@ -85,7 +85,7 @@ namespace std
 		    {
 		      __env = std::getenv(_S_categories[__i]);
 		      if (__env && std::strcmp(__env, "") != 0
-			  && __res != __env)
+			  && __lang != __env)
 			break;
 		    }
 	
@@ -99,33 +99,29 @@ namespace std
 		      {
 			__str += _S_categories[__j];
 			__str += '=';
-			__str += __res;
+			__str += __lang;
 			__str += ';';
 		      }
 		    __str += _S_categories[__i];
 		    __str += '=';
 		    __str += __env;
 		    __str += ';';
-		    __i++;
+		    ++__i;
 		    for (; __i < _S_categories_size; ++__i)
 		      {
 			__env = std::getenv(_S_categories[__i]);
+			__str += _S_categories[__i];
 			if (!__env || std::strcmp(__env, "") == 0)
 			  {
-			    __str += _S_categories[__i];
 			    __str += '=';
-			    __str += __res;
+			    __str += __lang;
 			    __str += ';';
 			  }
 			else if (std::strcmp(__env, "C") == 0
 				 || std::strcmp(__env, "POSIX") == 0)
-			  {
-			    __str += _S_categories[__i];
-			    __str += "=C;";
-			  }
+			  __str += "=C;";
 			else
 			  {
-			    __str += _S_categories[__i];
 			    __str += '=';
 			    __str += __env;
 			    __str += ';';
@@ -136,10 +132,10 @@ namespace std
 		  }
 		// ... otherwise either an additional instance of
 		// the "C" locale or LANG.
-		else if (__res == "C")
+		else if (__lang == "C")
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
-		  _M_impl = new _Impl(__res.c_str(), 1);
+		  _M_impl = new _Impl(__lang.c_str(), 1);
 	      }
 	  }
       }
@@ -179,9 +175,9 @@ namespace std
 
   // Construct named _Impl.
   locale::_Impl::
-  _Impl(const char* __s, size_t __refs) 
+  _Impl(const char* __s, size_t __refs)
   : _M_refcount(__refs), _M_facets(0), _M_facets_size(_GLIBCXX_NUM_FACETS),
-  _M_caches(0), _M_names(0)
+    _M_caches(0), _M_names(0)
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.
@@ -202,7 +198,7 @@ namespace std
 
 	// Name the categories.
 	const size_t __len = std::strlen(__s);
-	if (!std::strchr(__s, ';'))
+	if (!std::memchr(__s, ';', __len))
 	  {
 	    _M_names[0] = new char[__len + 1];
 	    std::memcpy(_M_names[0], __s, __len + 1);	    
