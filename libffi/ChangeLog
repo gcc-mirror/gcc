@@ -1,3 +1,9 @@
+2004-10-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* testsuite/lib/libffi-db.exp (load_gcc_lib): New function.
+	(libffi_exit): New function.
+	(libffi_init): Build the testglue wrapper if needed.
+
 2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18138

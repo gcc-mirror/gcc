@@ -14,9 +14,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+proc load_gcc_lib { filename } {
+    global srcdir
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+}
+
 load_lib dg.exp
 load_lib libgloss.exp
-
+load_gcc_lib wrapper.exp
 
 
 # Define libffi callbacks for dg.exp.
@@ -71,6 +76,7 @@ proc libffi-init { args } {
     global gluefile wrap_flags;
     global srcdir
     global blddirffi
+    global objdir
     global blddircxx
     global TOOL_OPTIONS
     global tool
@@ -147,6 +153,16 @@ proc libffi-init { args } {
 		setenv $path "$ld_library_path"
 	    }
 	}
+    }
+    libffi_maybe_build_wrapper "${objdir}/testglue.o"
+}
+
+proc libffi_exit { } {
+    global gluefile;
+
+    if [info exists gluefile] {
+	file_on_build delete $gluefile;
+	unset gluefile;
     }
 }
 
