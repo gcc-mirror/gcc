@@ -39,8 +39,8 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.Comparable;
 import java.util.Comparator;
 import java.util.Locale;
@@ -68,8 +68,8 @@ import java.util.regex.PatternSyntaxException;
  * literal in the object stream.
  *
  * @author Paul N. Fisher
- * @author Eric Blake <ebb9@email.byu.edu>
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Per Bothner (bothner@cygnus.com)
  * @since 1.0
  * @status updated to 1.4
  */
@@ -207,7 +207,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param count the number of characters from data to copy
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
-   *         || offset + count > data.length)
+   *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
   public String(char[] data, int offset, int count)
@@ -221,7 +221,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * corresponding byte b, is created in the new String as if by performing:
    *
    * <pre>
-   * c = (char) (((hibyte & 0xff) << 8) | (b & 0xff))
+   * c = (char) (((hibyte &amp; 0xff) &lt;&lt; 8) | (b &amp; 0xff))
    * </pre>
    *
    * @param ascii array of integer values
@@ -230,7 +230,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param count the number of characters from ascii to copy
    * @throws NullPointerException if ascii is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
-   *         || offset + count > ascii.length)
+   *         || offset + count &gt; ascii.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(byte[])
    * @see #String(byte[], String)
@@ -250,7 +250,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * as if by performing:
    *
    * <pre>
-   * c = (char) (((hibyte & 0xff) << 8) | (b & 0xff))
+   * c = (char) (((hibyte &amp; 0xff) &lt;&lt; 8) | (b &amp; 0xff))
    * </pre>
    *
    * @param ascii array of integer values
@@ -613,7 +613,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * character of the string. This is unsatisfactory for locale-based
    * comparison, in which case you should use {@link java.text.Collator}.
    *
-   * @param s the string to compare against
+   * @param str the string to compare against
    * @return the comparison
    * @see Collator#compare(String, String)
    * @since 1.2
@@ -632,7 +632,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @param toffset index to start comparison at for this String
    * @param other String to compare region to this String
-   * @param oofset index to start comparison at for other
+   * @param ooffset index to start comparison at for other
    * @param len number of characters to compare
    * @return true if regions match (case sensitive)
    * @throws NullPointerException if other is null
@@ -678,7 +678,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * Predicate which determines if this String starts with a given prefix.
    * If the prefix is an empty String, true is returned.
    *
-   * @param prefex String to compare
+   * @param prefix String to compare
    * @return true if this String starts with the prefix
    * @throws NullPointerException if prefix is null
    * @see #startsWith(String, int)
@@ -840,26 +840,26 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param end index to end at (exclusive)
    * @return new String which is a substring of this String
    * @throws IndexOutOfBoundsException if begin &lt; 0 || end &gt; length()
-   *         || begin > end (while unspecified, this is a
+   *         || begin &gt; end (while unspecified, this is a
    *         StringIndexOutOfBoundsException)
    */
-  public native String substring(int beginIndex, int endIndex);
+  public native String substring(int begin, int end);
 
   /**
    * Creates a substring of this String, starting at a specified index
    * and ending at one character before a specified index. This behaves like
-   * <code>substring(beginIndex, endIndex)</code>.
+   * <code>substring(begin, end)</code>.
    *
-   * @param beginIndex index to start substring (inclusive, base 0)
-   * @param endIndex index to end at (exclusive)
+   * @param begin index to start substring (inclusive, base 0)
+   * @param end index to end at (exclusive)
    * @return new String which is a substring of this String
    * @throws IndexOutOfBoundsException if begin &lt; 0 || end &gt; length()
-   *         || begin > end
+   *         || begin &gt; end
    * @since 1.4
    */
-  public CharSequence subSequence(int beginIndex, int endIndex)
+  public CharSequence subSequence(int begin, int end)
   {
-    return substring(beginIndex, endIndex);
+    return substring(begin, end);
   }
 
   /**
@@ -1129,7 +1129,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the chars from data[offset..offset+count]
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
-   *         || offset + count > data.length)
+   *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(char[], int, int)
    */
@@ -1146,7 +1146,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the chars from data[offset..offset+count]
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
-   *         || offset + count > data.length)
+   *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(char[], int, int)
    */
