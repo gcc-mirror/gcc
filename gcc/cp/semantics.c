@@ -45,29 +45,6 @@ static void expand_stmts PROTO((tree));
 static void do_pushlevel PROTO((void));
 static tree do_poplevel PROTO((void));
 
-/* Non-zero if we should generate RTL for functions that we process.
-   When this is zero, we just accumulate tree structure, without
-   interacting with the back end.  */
-int expanding_p = 1;
-
-/* Non-zero if we should treat statements as full expressions.  In
-   particular, this variable is no-zero if at the end of a statement
-   we should destroy any temporaries created during that statement.
-   Similarly, if, at the end of a block, we should destroy any local
-   variables in this block.  Normally, this variable is non-zero,
-   since those are the normal semantics of C++.
-
-   However, in order to represent aggregate initialization code as
-   tree structure, we use statement-expressions.  The statements
-   within the statement expression should not result in cleanups being
-   run until the entire enclosing statement is complete.  */
-int stmts_are_full_exprs_p = 1;
-
-/* The type of the last expression-statement we have seen.  This is
-   required because the type of a statement-expression is the type of
-   the last expression statement.  */
-tree last_expr_type;
-
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
    but often need to be re-organized since the parse is performed
@@ -1030,8 +1007,6 @@ finish_named_return_value (return_id, init)
 void
 setup_vtbl_ptr ()
 {
-  extern tree base_init_expr;
-
   if (base_init_expr == 0
       && DECL_CONSTRUCTOR_P (current_function_decl))
     {

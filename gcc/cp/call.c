@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 extern int inhibit_warnings;
-extern tree ctor_label, dtor_label;
 
 static tree build_new_method_call PROTO((tree, tree, tree, tree, int));
 

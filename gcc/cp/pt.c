@@ -9874,8 +9874,6 @@ tsubst_expr_values (t, argvec)
   return first;
 }
 
-tree last_tree;
-
 void
 add_tree (t)
      tree t;

@@ -71,11 +71,6 @@ typedef struct class_stack_node {
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
-/* When we're processing a member function, current_class_ptr is the
-   PARM_DECL for the `this' pointer.  The current_class_ref is an
-   expression for `*this'.  */
-tree current_class_ptr, current_class_ref;
-
 /* The following two can be derived from the previous one */
 tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 tree current_class_type;	/* _TYPE: the type of the current class */

@@ -6773,7 +6773,6 @@ void
 c_expand_return (retval)
      tree retval;
 {
-  extern tree dtor_label, ctor_label;
   tree result = DECL_RESULT (current_function_decl);
   tree valtype = TREE_TYPE (result);
 

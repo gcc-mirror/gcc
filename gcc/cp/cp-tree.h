@@ -432,10 +432,138 @@ extern tree cp_global_trees[CPTI_MAX];
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 
-extern int current_function_returns_value;
-extern int current_function_returns_null;
-extern tree current_function_return_value;
+/* Global state pertinent to the current function.  */
 
+struct cp_function
+{
+  tree named_labels;
+  tree ctor_label;
+  tree dtor_label;
+  tree base_init_list;
+  tree member_init_list;
+  tree base_init_expr;
+  tree current_class_ptr;
+  tree current_class_ref;
+  tree last_tree;
+  tree last_expr_type;
+
+  struct rtx_def *last_dtor_insn;
+  struct rtx_def *last_parm_cleanup_insn;
+  struct rtx_def *result_rtx;
+
+  int returns_value;
+  int returns_null;
+  int assigns_this;
+  int just_assigned_this;
+  int parms_stored;
+  int temp_name_counter;
+  int static_labelno;
+  int in_function_try_handler;
+  int expanding_p;
+  int stmts_are_full_exprs_p; 
+
+  struct named_label_list *named_label_uses;
+  struct binding_level *binding_level;
+
+  struct cp_function *next;
+};
+
+/* A stack of cp_functions.  The head is the one that is used for all
+   the per-function globals.  */
+
+extern struct cp_function *cp_function_chain;
+
+/* In a destructor, the point at which all derived class destroying
+   has been done, just before any base class destroying will be done.  */
+
+#define dtor_label cp_function_chain->dtor_label
+
+/* In a constructor, the point at which we are ready to return
+   the pointer to the initialized object.  */
+
+#define ctor_label cp_function_chain->ctor_label
+
+/* In C++, structures with well-defined constructors are initialized by
+   those constructors, unasked.  CURRENT_BASE_INIT_LIST
+   holds a list of stmts for a BASE_INIT term in the grammar.
+   This list has one element for each base class which must be
+   initialized.  The list elements are [basename, init], with
+   type basetype.  This allows the possibly anachronistic form
+   (assuming d : a, b, c) "d (int a) : c(a+5), b (a-4), a (a+3)"
+   where each successive term can be handed down the constructor
+   line.  Perhaps this was not intended.  */
+
+#define current_base_init_list cp_function_chain->base_init_list
+#define current_member_init_list cp_function_chain->member_init_list
+
+/* Sequence of insns which represents base initialization.  */
+
+#define base_init_expr cp_function_chain->base_init_expr
+
+/* When we're processing a member function, current_class_ptr is the
+   PARM_DECL for the `this' pointer.  The current_class_ref is an
+   expression for `*this'.  */
+
+#define current_class_ptr cp_function_chain->current_class_ptr
+#define current_class_ref cp_function_chain->current_class_ref
+
+/* When building a statement-tree, this is the last node added to the
+   tree.  */
+
+#define last_tree cp_function_chain->last_tree
+
+/* The type of the last expression-statement we have seen.  This is
+   required because the type of a statement-expression is the type of
+   the last expression statement.  */
+
+#define last_expr_type cp_function_chain->last_expr_type
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a return statement that specifies a return value is seen.  */
+
+#define current_function_returns_value cp_function_chain->returns_value
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a return statement with no argument is seen.  */
+
+#define current_function_returns_null cp_function_chain->returns_null
+
+#define current_function_just_assigned_this \
+  cp_function_chain->just_assigned_this
+
+#define current_function_parms_stored \
+  cp_function_chain->parms_stored
+
+/* Used to help generate temporary names which are unique within
+   a function.  Reset to 0 by start_function.  */
+
+#define temp_name_counter cp_function_chain->temp_name_counter
+
+#define static_labelno cp_function_chain->static_labelno
+
+/* Non-zero if we should generate RTL for functions that we process.
+   When this is zero, we just accumulate tree structure, without
+   interacting with the back end.  */
+
+#define expanding_p cp_function_chain->expanding_p
+
+/* Non-zero if we should treat statements as full expressions.  In
+   particular, this variable is no-zero if at the end of a statement
+   we should destroy any temporaries created during that statement.
+   Similarly, if, at the end of a block, we should destroy any local
+   variables in this block.  Normally, this variable is non-zero,
+   since those are the normal semantics of C++.
+
+   However, in order to represent aggregate initialization code as
+   tree structure, we use statement-expressions.  The statements
+   within the statement expression should not result in cleanups being
+   run until the entire enclosing statement is complete.  */
+
+#define stmts_are_full_exprs_p cp_function_chain->stmts_are_full_exprs_p
+
+#define in_function_try_handler cp_function_chain->in_function_try_handler
+
+extern tree current_function_return_value;
 extern tree current_namespace;
 extern tree global_namespace;
 
@@ -753,67 +881,64 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    a minimum.  */
 struct lang_type
 {
-  struct
-    {
-      unsigned has_type_conversion : 1;
-      unsigned has_init_ref : 1;
-      unsigned has_default_ctor : 1;
-      unsigned uses_multiple_inheritance : 1;
-      unsigned const_needs_init : 1;
-      unsigned ref_needs_init : 1;
-      unsigned has_const_assign_ref : 1;
-      unsigned anon_aggr : 1;
+  unsigned char align;
 
-      unsigned has_nonpublic_ctor : 2;
-      unsigned has_nonpublic_assign_ref : 2;
-      unsigned vtable_needs_writing : 1;
-      unsigned has_assign_ref : 1;
-      unsigned gets_new : 2;
+  unsigned has_type_conversion : 1;
+  unsigned has_init_ref : 1;
+  unsigned has_default_ctor : 1;
+  unsigned uses_multiple_inheritance : 1;
+  unsigned const_needs_init : 1;
+  unsigned ref_needs_init : 1;
+  unsigned has_const_assign_ref : 1;
+  unsigned anon_aggr : 1;
 
-      unsigned gets_delete : 2;
-      unsigned has_call_overloaded : 1;
-      unsigned has_array_ref_overloaded : 1;
-      unsigned has_arrow_overloaded : 1;
-      unsigned interface_only : 1;
-      unsigned interface_unknown : 1;
-      unsigned needs_virtual_reinit : 1;
+  unsigned has_nonpublic_ctor : 2;
+  unsigned has_nonpublic_assign_ref : 2;
+  unsigned vtable_needs_writing : 1;
+  unsigned has_assign_ref : 1;
+  unsigned gets_new : 2;
 
-      unsigned marks: 6;
-      unsigned vec_delete_takes_size : 1;
-      unsigned declared_class : 1;
+  unsigned gets_delete : 2;
+  unsigned has_call_overloaded : 1;
+  unsigned has_array_ref_overloaded : 1;
+  unsigned has_arrow_overloaded : 1;
+  unsigned interface_only : 1;
+  unsigned interface_unknown : 1;
+  unsigned needs_virtual_reinit : 1;
 
-      unsigned being_defined : 1;
-      unsigned redefined : 1;
-      unsigned debug_requested : 1;
-      unsigned use_template : 2;
-      unsigned got_semicolon : 1;
-      unsigned ptrmemfunc_flag : 1;
-      unsigned was_anonymous : 1;
+  unsigned marks: 6;
+  unsigned vec_delete_takes_size : 1;
+  unsigned declared_class : 1;
 
-      unsigned has_real_assign_ref : 1;
-      unsigned has_const_init_ref : 1;
-      unsigned has_complex_init_ref : 1;
-      unsigned has_complex_assign_ref : 1;
-      unsigned has_abstract_assign_ref : 1;
-      unsigned non_aggregate : 1;
-      unsigned is_partial_instantiation : 1;
-      unsigned has_mutable : 1;
+  unsigned being_defined : 1;
+  unsigned redefined : 1;
+  unsigned debug_requested : 1;
+  unsigned use_template : 2;
+  unsigned got_semicolon : 1;
+  unsigned ptrmemfunc_flag : 1;
+  unsigned was_anonymous : 1;
 
-      unsigned com_interface : 1;
-      unsigned non_pod_class : 1;
+  unsigned has_real_assign_ref : 1;
+  unsigned has_const_init_ref : 1;
+  unsigned has_complex_init_ref : 1;
+  unsigned has_complex_assign_ref : 1;
+  unsigned has_abstract_assign_ref : 1;
+  unsigned non_aggregate : 1;
+  unsigned is_partial_instantiation : 1;
+  unsigned has_mutable : 1;
 
-      /* When adding a flag here, consider whether or not it ought to
-	 apply to a template instance if it applies to the template.
-	 If so, make sure to copy it in instantiate_class_template!  */
+  unsigned com_interface : 1;
+  unsigned non_pod_class : 1;
 
-      /* The MIPS compiler gets it wrong if this struct also
-	 does not fill out to a multiple of 4 bytes.  Add a
-	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 6;
+  /* When adding a flag here, consider whether or not it ought to
+     apply to a template instance if it applies to the template.  If
+     so, make sure to copy it in instantiate_class_template!  */
+
+  /* There are six bits left to fill out a 32-bit word.  Keep track of
+     this by updating the size of this bitfield whenever you add or
+     remove a flag.  */
+  unsigned dummy : 6;
       
-      unsigned char align;
-    } type_flags;
-
   int vsize;
   int vfield_parent;
 
@@ -842,7 +967,7 @@ struct lang_type
      1=implicit template instantiation
      2=explicit template specialization
      3=explicit template instantiation  */
-#define CLASSTYPE_USE_TEMPLATE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.use_template)
+#define CLASSTYPE_USE_TEMPLATE(NODE) (TYPE_LANG_SPECIFIC(NODE)->use_template)
 
 /* Fields used for storing information before the class is defined.
    After the class is defined, these fields hold other information.  */
@@ -852,53 +977,53 @@ struct lang_type
 
 /* Nonzero for _CLASSTYPE means that operator new and delete are defined,
    respectively.  */
-#define TYPE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_new)
-#define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_delete)
+#define TYPE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_new)
+#define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_delete)
 #define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
 
 /* Nonzero for _CLASSTYPE means that operator vec delete is defined and
    takes the optional size_t argument.  */
 #define TYPE_VEC_DELETE_TAKES_SIZE(NODE) \
-  (TYPE_LANG_SPECIFIC(NODE)->type_flags.vec_delete_takes_size)
+  (TYPE_LANG_SPECIFIC(NODE)->vec_delete_takes_size)
 #define TYPE_VEC_NEW_USES_COOKIE(NODE) \
   (TYPE_NEEDS_DESTRUCTOR (NODE) \
    || (TYPE_LANG_SPECIFIC (NODE) && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
-#define TYPE_HAS_CONVERSION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_type_conversion)
+#define TYPE_HAS_CONVERSION(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_type_conversion)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
-#define TYPE_HAS_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_assign_ref)
-#define TYPE_HAS_CONST_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_const_assign_ref)
+#define TYPE_HAS_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_assign_ref)
+#define TYPE_HAS_CONST_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_const_assign_ref)
 
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
-#define TYPE_HAS_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_init_ref)
-#define TYPE_HAS_CONST_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_const_init_ref)
+#define TYPE_HAS_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_init_ref)
+#define TYPE_HAS_CONST_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_const_init_ref)
 
 /* Nonzero means that this type is being defined.  I.e., the left brace
    starting the definition of this type has been seen.  */
-#define TYPE_BEING_DEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.being_defined)
+#define TYPE_BEING_DEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->being_defined)
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
-#define TYPE_REDEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.redefined)
+#define TYPE_REDEFINED(NODE) (TYPE_LANG_SPECIFIC(NODE)->redefined)
 
 /* The is the basetype that contains NODE's rtti.  */
 #define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC(NODE)->rtti)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator().  */
-#define TYPE_OVERLOADS_CALL_EXPR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_call_overloaded)
+#define TYPE_OVERLOADS_CALL_EXPR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_call_overloaded)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator[].  */
-#define TYPE_OVERLOADS_ARRAY_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_array_ref_overloaded)
+#define TYPE_OVERLOADS_ARRAY_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_array_ref_overloaded)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator->.  */
-#define TYPE_OVERLOADS_ARROW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_arrow_overloaded)
+#define TYPE_OVERLOADS_ARROW(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_arrow_overloaded)
 
 /* Nonzero means that this _CLASSTYPE (or one of its ancestors) uses
    multiple inheritance.  If this is 0 for the root of a type
    hierarchy, then we can use more efficient search techniques.  */
-#define TYPE_USES_MULTIPLE_INHERITANCE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.uses_multiple_inheritance)
+#define TYPE_USES_MULTIPLE_INHERITANCE(NODE) (TYPE_LANG_SPECIFIC(NODE)->uses_multiple_inheritance)
 
 /* Nonzero means that this _CLASSTYPE (or one of its ancestors) uses
    virtual base classes.  If this is 0 for the root of a type
@@ -925,19 +1050,19 @@ struct lang_type
 
 /* Get the value of the Nth mark bit.  */
 #define CLASSTYPE_MARKED_N(NODE, N)					\
-  (((CLASS_TYPE_P (NODE) ? TYPE_LANG_SPECIFIC (NODE)->type_flags.marks	\
+  (((CLASS_TYPE_P (NODE) ? TYPE_LANG_SPECIFIC (NODE)->marks	\
      : TYPE_ALIAS_SET (NODE)) & (1 << N)) != 0)
 
 /* Set the Nth mark bit.  */
 #define SET_CLASSTYPE_MARKED_N(NODE, N)					\
   (CLASS_TYPE_P (NODE)							\
-   ? (TYPE_LANG_SPECIFIC (NODE)->type_flags.marks |= (1 << (N)))	\
+   ? (TYPE_LANG_SPECIFIC (NODE)->marks |= (1 << (N)))	\
    : (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
 
 /* Clear the Nth mark bit.  */
 #define CLEAR_CLASSTYPE_MARKED_N(NODE, N)				\
   (CLASS_TYPE_P (NODE)							\
-   ? (TYPE_LANG_SPECIFIC (NODE)->type_flags.marks &= ~(1 << (N)))	\
+   ? (TYPE_LANG_SPECIFIC (NODE)->marks &= ~(1 << (N)))	\
    : (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
 
 /* Get the value of the mark bits.  */
@@ -998,7 +1123,7 @@ struct lang_type
 /* These are the size, mode and alignment of the type without its
    virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
-#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.align)
+#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
 
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
@@ -1006,39 +1131,39 @@ struct lang_type
 #define CLASSTYPE_ABSTRACT_VIRTUALS(NODE) (TYPE_LANG_SPECIFIC(NODE)->abstract_virtuals)
 
 /* Nonzero means that this aggr type has been `closed' by a semicolon.  */
-#define CLASSTYPE_GOT_SEMICOLON(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.got_semicolon)
+#define CLASSTYPE_GOT_SEMICOLON(NODE) (TYPE_LANG_SPECIFIC (NODE)->got_semicolon)
 
 /* Nonzero means that the main virtual function table pointer needs to be
    set because base constructors have placed the wrong value there.
    If this is zero, it means that they placed the right value there,
    and there is no need to change it.  */
-#define CLASSTYPE_NEEDS_VIRTUAL_REINIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.needs_virtual_reinit)
+#define CLASSTYPE_NEEDS_VIRTUAL_REINIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->needs_virtual_reinit)
 
 /* Nonzero means that if this type has virtual functions, that
    the virtual function table will be written out.  */
-#define CLASSTYPE_VTABLE_NEEDS_WRITING(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.vtable_needs_writing)
+#define CLASSTYPE_VTABLE_NEEDS_WRITING(NODE) (TYPE_LANG_SPECIFIC(NODE)->vtable_needs_writing)
 
 /* Nonzero means that this type has an X() constructor.  */
-#define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_default_ctor)
+#define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_default_ctor)
 
 /* Nonzero means the type declared a ctor as private or protected.  We
    use this to make sure we don't try to generate a copy ctor for a 
    class that has a member of type NODE.  */
-#define TYPE_HAS_NONPUBLIC_CTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_nonpublic_ctor)
+#define TYPE_HAS_NONPUBLIC_CTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_nonpublic_ctor)
 
 /* Ditto, for operator=.  */
-#define TYPE_HAS_NONPUBLIC_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_nonpublic_assign_ref)
+#define TYPE_HAS_NONPUBLIC_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_nonpublic_assign_ref)
 
 /* Nonzero means that this type contains a mutable member */
-#define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_mutable)
+#define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
 
 /*  Nonzero means that this class type is a non-POD class.  */
-#define CLASSTYPE_NON_POD_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.non_pod_class)
+#define CLASSTYPE_NON_POD_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->non_pod_class)
 
 /* Nonzero means that this type is meant for communication via COM.  */
 #define CLASSTYPE_COM_INTERFACE(NODE) \
-  (TYPE_LANG_SPECIFIC(NODE)->type_flags.com_interface)
+  (TYPE_LANG_SPECIFIC(NODE)->com_interface)
 
 /* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
@@ -1050,27 +1175,27 @@ struct lang_type
   (TYPE_LANG_SPECIFIC (NODE)->befriending_classes)
 
 /* Say whether this node was declared as a "class" or a "struct".  */
-#define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
+#define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->declared_class)
 
 /* Nonzero if this class has const members which have no specified initialization.  */
-#define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.const_needs_init)
+#define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->const_needs_init)
 
 /* Nonzero if this class has ref members which have no specified initialization.  */
-#define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.ref_needs_init)
+#define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->ref_needs_init)
 
 /* Nonzero if this class is included from a header file which employs
    `#pragma interface', and it is not included in its implementation file.  */
-#define CLASSTYPE_INTERFACE_ONLY(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_only)
+#define CLASSTYPE_INTERFACE_ONLY(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_only)
 
 /* Same as above, but for classes whose purpose we do not know.  */
-#define CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_unknown)
-#define CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_unknown == 0)
-#define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE,X) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_unknown = !!(X))
-#define SET_CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_unknown = 1)
-#define SET_CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.interface_unknown = 0)
+#define CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown)
+#define CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown == 0)
+#define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE,X) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = !!(X))
+#define SET_CLASSTYPE_INTERFACE_UNKNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 1)
+#define SET_CLASSTYPE_INTERFACE_KNOWN(NODE) (TYPE_LANG_SPECIFIC(NODE)->interface_unknown = 0)
 
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
-#define CLASSTYPE_DEBUG_REQUESTED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.debug_requested)
+#define CLASSTYPE_DEBUG_REQUESTED(NODE) (TYPE_LANG_SPECIFIC(NODE)->debug_requested)
 
 /* Additional macros for inheritance information.  */
 
@@ -1692,15 +1817,15 @@ extern int flag_new_for_scope;
 /* Nonzero means that an object of this type can not be initialized using
    an initializer list.  */
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->type_flags.non_aggregate)
+  (TYPE_LANG_SPECIFIC (NODE)->non_aggregate)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
   (IS_AGGR_TYPE (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
-#define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assign_ref)
-#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_complex_assign_ref)
-#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_abstract_assign_ref)
-#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_complex_init_ref)
+#define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_real_assign_ref)
+#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_complex_assign_ref)
+#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_abstract_assign_ref)
+#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_complex_init_ref)
 
 /* Nonzero for _TYPE node means that destroying an object of this type
    will involve a call to a destructor.  This can apply to objects
@@ -1740,7 +1865,7 @@ extern int flag_new_for_scope;
    && TYPE_PTRMEMFUNC_FLAG (NODE))
 
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
-  (TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
+  (TYPE_LANG_SPECIFIC(NODE)->ptrmemfunc_flag)
 
 /* A pointer-to-function member type looks like:
 
@@ -1848,9 +1973,9 @@ extern int flag_new_for_scope;
    flag for this because "A union for which objects or pointers are
    declared is not an anonymous union" [class.union].  */
 #define ANON_AGGR_TYPE_P(NODE)				\
-  (CLASS_TYPE_P (NODE) && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr)
+  (CLASS_TYPE_P (NODE) && TYPE_LANG_SPECIFIC (NODE)->anon_aggr)
 #define SET_ANON_AGGR_TYPE_P(NODE)			\
-  (TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr = 1)
+  (TYPE_LANG_SPECIFIC (NODE)->anon_aggr = 1)
 
 #define UNKNOWN_TYPE LANG_TYPE
 
@@ -1868,7 +1993,7 @@ extern int flag_new_for_scope;
 #define DECL_VPARENT(NODE) ((NODE)->decl.arguments)
 #endif
 
-#define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.was_anonymous)
+#define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->was_anonymous)
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 
@@ -2072,7 +2197,7 @@ extern int flag_new_for_scope;
    i.e., an instantiation whose instantiation arguments involve
    template types.  */
 #define PARTIAL_INSTANTIATION_P(TYPE) \
-  (TYPE_LANG_SPECIFIC (TYPE)->type_flags.is_partial_instantiation)
+  (TYPE_LANG_SPECIFIC (TYPE)->is_partial_instantiation)
 
 /* Non-zero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
@@ -2265,8 +2390,6 @@ extern tree tag_identifier;
 extern tree vt_off_identifier;
 extern tree empty_except_spec;
 
-extern int in_function_try_handler;
-
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
 
@@ -2297,7 +2420,6 @@ typedef enum unification_kind_t {
 
 extern tree current_template_parms;
 extern HOST_WIDE_INT processing_template_decl;
-extern tree last_tree;
 
 /* The template currently being instantiated, and where the instantiation
    was triggered.  */
@@ -2321,9 +2443,7 @@ extern tree current_access_specifier;
 
 extern tree current_class_name;
 extern tree current_class_type;
-extern tree current_class_ptr;
 extern tree previous_class_type;
-extern tree current_class_ref;
 extern int current_class_depth;
 
 extern tree current_lang_name;
@@ -2338,10 +2458,7 @@ extern tree original_function_name;
 
 /* in init.c  */
 extern tree global_base_init_list;
-extern tree current_base_init_list, current_member_init_list;
 
-extern int current_function_just_assigned_this;
-extern int current_function_parms_stored;
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -3402,9 +3519,6 @@ extern tree expand_stmt                         PROTO((tree));
 extern void expand_body                         PROTO((tree));
 extern void begin_stmt_tree                     PROTO((tree));
 extern void finish_stmt_tree                    PROTO((tree));
-extern int expanding_p;
-extern int stmts_are_full_exprs_p;
-extern tree last_expr_type;
 /* Non-zero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
 #define building_stmt_tree() \

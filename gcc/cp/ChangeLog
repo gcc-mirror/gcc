@@ -1,3 +1,61 @@
+1999-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_function): Move here, from decl.c.
+	(cp_function_chain): Declare.
+	(dtor_label): New macro, instead of variable.
+	(ctor_label): Likewise.
+	(current_base_init_list): Likewise.
+	(current_member_init_list): Likewise.
+	(base_init_expr): Likewise.
+	(current_class_ptr): Likewise.
+	(current_class_ref): Likewise.
+	(last_tree): Likewise.
+	(last_expr_type): Likewise.
+	(current_function_returns_value): Likewise.
+	(current_function_returns_null): Likewise.
+	(current_function_just_assigned_this): Likewise.
+	(current_function_parms_stored): Likewise.
+	(temp_name_counter): Likewise.
+	(static_labelno): Likewise.
+	(expanding_p): Likewise.
+	(stmts_are_full_exprs_p): Likewise.
+	(in_function_try_handler): Likewise.
+	(lang_type): Remove nested type_flags.  All uses changed.
+	* call.c (ctor_label): Remove.
+	(dtor_label): Likewise.
+	* class.c (current_class_ptr): Remove.
+	(current_class_ref): Likewise.
+	* decl.c (static_labelno): Remove.
+	(dtor_label): Likewise.
+	(last_dtor_insn): New macro, instead of variable.
+	(last_parm_cleanup_insn): Likewise.
+	(original_result_rtx): Likewise.
+	(in_function_try_handler): Remove.
+	(named_label_uses): New macro, instead of variable.
+	(named_labels): Likewise.
+	(current_function_returns_value): Remove.
+	(current_function_returns_null): Likewise.
+	(current_function_assigns_this): New macro, instead of variable.
+	(current_function_just_assigned_this): Likewise.
+	(current_binding_level): Likewise.
+	(init_decl_processing): Call push_cp_function_context.
+	(cp_function): Move to cp-tree.h
+	(cp_function_chain): Make it global.
+	(temp_name_counter): Remove.
+	(push_cp_function_context): Simplify.
+	(pop_cp_function_context): Likewise.
+	* decl2.c (temp_name_counter): Remove.
+	* init_c (current_base_init_list): Likewise.
+	(current_member_init_list): Likewise.
+	(base_init_expr): Likewise.
+	* method.c (static_labelno): Likewise.
+	* pt.c (last_tree): Likewise.
+	* semantics.c (expanding_p): Likewise.
+	(stmts_are_full_exprs_p): Likewise.
+	(last_expr_type): Likewise.
+	* typeck.c (dtor_label): Likewise.
+	(ctor_label): Likewise.
+	
 1999-09-01  Alex Samuel  <samuel@codesourcery.com>
 
 	* decl2.c (arg_assoc_template_arg): New prototype.  New function.

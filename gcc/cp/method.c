@@ -47,8 +47,6 @@ Boston, MA 02111-1307, USA.  */
    processed.  */
 struct pending_inline *pending_inlines;
 
-int static_labelno;
-
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 

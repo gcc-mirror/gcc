@@ -33,17 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 
-/* In C++, structures with well-defined constructors are initialized by
-   those constructors, unasked.  CURRENT_BASE_INIT_LIST
-   holds a list of stmts for a BASE_INIT term in the grammar.
-   This list has one element for each base class which must be
-   initialized.  The list elements are [basename, init], with
-   type basetype.  This allows the possibly anachronistic form
-   (assuming d : a, b, c) "d (int a) : c(a+5), b (a-4), a (a+3)"
-   where each successive term can be handed down the constructor
-   line.  Perhaps this was not intended.  */
-tree current_base_init_list, current_member_init_list;
-
 static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
 static void construct_virtual_bases PROTO((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
@@ -501,8 +490,6 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
-
-extern tree base_init_expr;
 
 void
 emit_base_init (t)

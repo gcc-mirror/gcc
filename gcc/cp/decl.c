@@ -55,8 +55,6 @@ extern int current_class_depth;
 
 extern tree static_ctors, static_dtors;
 
-extern int static_labelno;
-
 extern tree current_namespace;
 extern tree global_namespace;
 
@@ -300,36 +298,24 @@ int in_std;
 /* Expect only namespace names now. */
 static int only_namespace_names;
 
-/* In a destructor, the point at which all derived class destroying
-   has been done, just before any base class destroying will be done.  */
-
-tree dtor_label;
-
 /* In a destructor, the last insn emitted after the start of the
    function and the parms.  */
 
-static rtx last_dtor_insn;
+#define last_dtor_insn cp_function_chain->last_dtor_insn
 
 /* In a constructor, the last insn emitted after the start of the
    function and the parms, the exception specification and any
    function-try-block.  The constructor initializers are emitted after
    this insn.  */
 
-static rtx last_parm_cleanup_insn;
-
-/* In a constructor, the point at which we are ready to return
-   the pointer to the initialized object.  */
-
-tree ctor_label;
+#define last_parm_cleanup_insn cp_function_chain->last_parm_cleanup_insn
 
 /* If original DECL_RESULT of current function was a register,
    but due to being an addressable named return value, would up
    on the stack, this variable holds the named return value's
    original location.  */
-static rtx original_result_rtx;
 
-/* Sequence of insns which represents base initialization.  */
-tree base_init_expr;
+#define original_result_rtx cp_function_chain->result_rtx
 
 /* C++: Keep these around to reduce calls to `get_identifier'.
    Identifiers for `this' in member functions and the auto-delete
@@ -343,9 +329,6 @@ tree vt_off_identifier;
 
 /* Exception specifier used for throw().  */
 tree empty_except_spec;
-
-/* Nonzero if we're in a handler for a function-try-block.  */
-int in_function_try_handler;
 
 struct named_label_list
 {
@@ -374,7 +357,7 @@ struct named_label_list
    jumps to defined labels can have their validity checked
    by stmt.c.  */
 
-static struct named_label_list *named_label_uses = NULL;
+#define named_label_uses cp_function_chain->named_label_uses
 
 /* A list of objects which have constructors or destructors
    which reside in the global scope.  The decl is stored in
@@ -431,21 +414,11 @@ static tree current_function_parm_tags;
    at the end of the function.  The TREE_VALUE is a LABEL_DECL; the
    TREE_PURPOSE is the previous binding of the label.  */
 
-static tree named_labels;
+#define named_labels cp_function_chain->named_labels
 
 /* The FUNCTION_DECL for the function currently being compiled,
    or 0 if between functions.  */
 tree current_function_decl;
-
-/* Set to 0 at beginning of a function definition, set to 1 if
-   a return statement that specifies a return value is seen.  */
-
-int current_function_returns_value;
-
-/* Set to 0 at beginning of a function definition, set to 1 if
-   a return statement with no argument is seen.  */
-
-int current_function_returns_null;
 
 /* Set to 0 at beginning of a function definition, and whenever
    a label (case or named) is defined.  Set to value of expression
@@ -491,13 +464,9 @@ extern tree *current_lang_base, *current_lang_stack;
 /* Set to 0 at beginning of a constructor, set to 1
    if that function does an allocation before referencing its
    instance variable.  */
-static int current_function_assigns_this;
-int current_function_just_assigned_this;
-
-/* Set to 0 at beginning of a function.  Set non-zero when
-   store_parm_decls is called.  Don't call store_parm_decls
-   if this flag is non-zero!  */
-int current_function_parms_stored;
+#define current_function_assigns_this cp_function_chain->assigns_this
+#define current_function_just_assigned_this \
+  cp_function_chain->just_assigned_this
 
 /* Flag used when debugging spew.c */
 
@@ -664,7 +633,7 @@ struct binding_level
   
 /* The binding level currently in effect.  */
 
-static struct binding_level *current_binding_level;
+#define current_binding_level cp_function_chain->binding_level
 
 /* The binding level of the current class, if any.  */
 
@@ -6203,6 +6172,9 @@ init_decl_processing ()
   lang_name_cplusplus = get_identifier ("C++");
   lang_name_c = get_identifier ("C");
   lang_name_java = get_identifier ("Java");
+
+  /* Create the global per-function variables.  */
+  push_cp_function_context (NULL_TREE);
 
   /* Enter the global namespace. */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
@@ -14522,39 +14494,7 @@ revert_static_member_fn (decl, fn, argtypes)
     *argtypes = args;
 }
 
-struct cp_function
-{
-  int returns_value;
-  int returns_null;
-  int assigns_this;
-  int just_assigned_this;
-  int parms_stored;
-  int temp_name_counter;
-  tree named_labels;
-  struct named_label_list *named_label_uses;
-  tree ctor_label;
-  tree dtor_label;
-  rtx last_dtor_insn;
-  rtx last_parm_cleanup_insn;
-  tree base_init_list;
-  tree member_init_list;
-  tree base_init_expr;
-  tree current_class_ptr;
-  tree current_class_ref;
-  rtx result_rtx;
-  struct cp_function *next;
-  struct binding_level *binding_level;
-  int static_labelno;
-  int in_function_try_handler;
-  int expanding_p;
-  int stmts_are_full_exprs_p; 
-  tree last_tree;
-  tree last_expr_type;
-};
-
-static struct cp_function *cp_function_chain;
-
-extern int temp_name_counter;
+struct cp_function *cp_function_chain;
 
 /* Save and reinitialize the variables
    used during compilation of a C++ function.  */
@@ -14563,39 +14503,19 @@ void
 push_cp_function_context (context)
      tree context;
 {
-  struct cp_function *p
-    = (struct cp_function *) xmalloc (sizeof (struct cp_function));
+  struct cp_function *p;
 
+  /* Push the language-independent context.  */
   push_function_context_to (context);
 
+  /* Push the C++-specific context.  */
+  p = (struct cp_function *) xmalloc (sizeof (struct cp_function));
+  if (cp_function_chain)
+    *p = *cp_function_chain;
+  else
+    bzero (p, sizeof (struct cp_function));
   p->next = cp_function_chain;
   cp_function_chain = p;
-
-  p->named_labels = named_labels;
-  p->named_label_uses = named_label_uses;
-  p->returns_value = current_function_returns_value;
-  p->returns_null = current_function_returns_null;
-  p->binding_level = current_binding_level;
-  p->ctor_label = ctor_label;
-  p->dtor_label = dtor_label;
-  p->last_dtor_insn = last_dtor_insn;
-  p->last_parm_cleanup_insn = last_parm_cleanup_insn;
-  p->assigns_this = current_function_assigns_this;
-  p->just_assigned_this = current_function_just_assigned_this;
-  p->parms_stored = current_function_parms_stored;
-  p->result_rtx = original_result_rtx;
-  p->base_init_expr = base_init_expr;
-  p->temp_name_counter = temp_name_counter;
-  p->base_init_list = current_base_init_list;
-  p->member_init_list = current_member_init_list;
-  p->current_class_ptr = current_class_ptr;
-  p->current_class_ref = current_class_ref;
-  p->static_labelno = static_labelno;
-  p->in_function_try_handler = in_function_try_handler;
-  p->last_tree = last_tree;
-  p->last_expr_type = last_expr_type;
-  p->expanding_p = expanding_p;
-  p->stmts_are_full_exprs_p = stmts_are_full_exprs_p;
 
   /* For now, we always assume we're expanding all the way to RTL
      unless we're explicitly doing otherwise.  */
@@ -14612,38 +14532,14 @@ void
 pop_cp_function_context (context)
      tree context;
 {
-  struct cp_function *p = cp_function_chain;
+  struct cp_function *p;
 
+  /* Pop the language-independent context.  */
   pop_function_context_from (context);
 
+  /* Pop the C++-specific context.  */
+  p = cp_function_chain;
   cp_function_chain = p->next;
-
-  named_labels = p->named_labels;
-  named_label_uses = p->named_label_uses;
-  current_function_returns_value = p->returns_value;
-  current_function_returns_null = p->returns_null;
-  current_binding_level = p->binding_level;
-  ctor_label = p->ctor_label;
-  dtor_label = p->dtor_label;
-  last_dtor_insn = p->last_dtor_insn;
-  last_parm_cleanup_insn = p->last_parm_cleanup_insn;
-  current_function_assigns_this = p->assigns_this;
-  current_function_just_assigned_this = p->just_assigned_this;
-  current_function_parms_stored = p->parms_stored;
-  original_result_rtx = p->result_rtx;
-  base_init_expr = p->base_init_expr;
-  temp_name_counter = p->temp_name_counter;
-  current_base_init_list = p->base_init_list;
-  current_member_init_list = p->member_init_list;
-  current_class_ptr = p->current_class_ptr;
-  current_class_ref = p->current_class_ref;
-  static_labelno = p->static_labelno;
-  in_function_try_handler = p->in_function_try_handler;
-  last_tree = p->last_tree;
-  last_expr_type = p->last_expr_type;
-  expanding_p = p->expanding_p;
-  stmts_are_full_exprs_p = p->stmts_are_full_exprs_p;
-
   free (p);
 }
 
