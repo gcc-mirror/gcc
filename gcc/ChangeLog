@@ -1,3 +1,7 @@
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
+	* function.c (pass_by_reference): True for all variable sized types.
+
 2004-07-16  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* Makefile.in (tree-pretty-print.o): Depend on tree-chrec.h.

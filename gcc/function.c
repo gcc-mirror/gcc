@@ -2039,9 +2039,8 @@ pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
       if (TREE_ADDRESSABLE (type))
 	return true;
 
-      /* If an object's size is dependent on itself, there's no way
-	 to *not* pass by reference.  */
-      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type)))
+      /* GCC post 3.4 passes *all* variable sized types by reference.  */
+      if (!TYPE_SIZE (type) || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	return true;
     }
 
