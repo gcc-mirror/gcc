@@ -5494,6 +5494,26 @@ expand_function_end (filename, line, end_bindings)
       emit_insns_before (seq, tail_recursion_reentry);
     }
 
+  /* If we are doing stack checking and this function makes calls,
+     do a stack probe at the start of the function to ensure we have enough
+     space for another stack frame.  */
+  if (flag_stack_check && ! STACK_CHECK_BUILTIN)
+    {
+      rtx insn, seq;
+
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (GET_CODE (insn) == CALL_INSN)
+	  {
+	    start_sequence ();
+	    probe_stack_range (STACK_CHECK_PROTECT,
+			       GEN_INT (STACK_CHECK_MAX_FRAME_SIZE));
+	    seq = get_insns ();
+	    end_sequence ();
+	    emit_insns_before (seq, tail_recursion_reentry);
+	    break;
+	  }
+    }
+
   /* Warn about unused parms if extra warnings were specified.  */
   if (warn_unused && extra_warnings)
     {
