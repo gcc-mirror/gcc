@@ -1,6 +1,6 @@
 // 2003-11-09 Paolo Carlini <pcarlini@suse.de>
 
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,8 @@ void test01()
   
   // cache the money_put facet
   wostringstream oss;
-  const money_put<wchar_t>& mon_put = use_facet<money_put<wchar_t> >(oss.getloc()); 
+  const money_put<wchar_t>& mon_put =
+    use_facet<money_put<wchar_t> >(oss.getloc()); 
 
   iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, L' ', amount);
   wstring result = oss.str();

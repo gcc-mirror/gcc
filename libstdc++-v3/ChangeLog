@@ -1,5 +1,16 @@
 2004-08-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Use proper
+	wchar_t	type for the fill argument; minor formatting tweaks.
+	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/6.cc: Likewise.
+
+2004-08-21  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_ios.tcc (basic_ios<>::copyfmt): Don't deal
 	with _M_word != _M_local_word two times, redundantly.
 

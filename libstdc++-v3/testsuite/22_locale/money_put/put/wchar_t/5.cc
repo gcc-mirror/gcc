@@ -1,6 +1,6 @@
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,8 @@
 
 struct My_money_io : public std::moneypunct<wchar_t,false>
 {
-  char_type do_decimal_point() const { return '.'; }
-  char_type do_thousands_sep() const { return ','; }
+  char_type do_decimal_point() const { return L'.'; }
+  char_type do_thousands_sep() const { return L','; }
   std::string do_grouping() const { return "\003"; }
   
   std::wstring do_negative_sign() const { return L"()"; }
@@ -53,13 +53,13 @@ void test05()
   bool intl = false;
 
   wstring val(L"-123456");
-  const money_put<wchar_t,OutIt>& mp  =
+  const money_put<wchar_t, OutIt>& mp  =
     use_facet<money_put<wchar_t, OutIt> >(loc);
 
   wostringstream fmt;
   fmt.imbue(loc);
   OutIt out(fmt);
-  mp.put(out,intl,fmt,'*',val);
+  mp.put(out, intl, fmt, L'*', val);
   VERIFY( fmt.str() == L"*(1,234.56)" );
 }
 
