@@ -1,3 +1,8 @@
+2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (multilib): Enable by default only for target.
+	* configure: Rebuilt.
+
 Sun Sep  3 12:37:12 2000  Anthony Green  <green@redhat.com>
 
 	* configure.in: Add TARGET_LIBRARY conditional.
