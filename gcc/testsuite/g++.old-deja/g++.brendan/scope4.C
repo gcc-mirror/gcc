@@ -1,5 +1,4 @@
 // Build don't link: 
-// excess errors test - XFAIL *-*-*
 // GROUPS passed scoping
 class BitString {
 public:
