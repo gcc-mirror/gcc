@@ -1,3 +1,10 @@
+2002-05-02  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-8.c: New.
+
+        * config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
+        PRE_INC and PRE_DEC for altivec modes.
+
 2002-05-01  Jeff Law  <law@redhat.com>
 
 	* pa.h (EXTRA_CONSTRAINT): Don't accept PIC addresses for the
