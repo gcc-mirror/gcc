@@ -1,3 +1,9 @@
+Wed Oct 10 23:49:06 EDT 2001  John Wehle  (john@feith.com)
+
+	* rtlanal.c (noop_move_p): Insns with a REG_RETVAL note
+	should not be considered as a no-op.
+	* flow.c (delete_noop_moves): Handle REG_LIBCALL notes.
+
 2001-10-10  Stan Shebs  <shebs@apple.com>
 
 	* alias.c: Remove uses of "register" specifier in declarations

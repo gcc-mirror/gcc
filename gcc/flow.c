@@ -771,8 +771,25 @@ delete_noop_moves (f)
 	  next = NEXT_INSN (insn);
 	  if (INSN_P (insn) && noop_move_p (insn))
 	    {
-	      /* Do not call delete_insn here to not confuse backward
-	         pointers of LIBCALL block.  */
+	      rtx note;
+
+	      /* If we're about to remove the first insn of a libcall
+		 then move the libcall note to the next real insn and
+		 update the retval note.  */
+	      if ((note = find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+		       && XEXP (note, 0) != insn)
+		{
+		  rtx new_libcall_insn = next_real_insn (insn);
+		  rtx retval_note = find_reg_note (XEXP (note, 0),
+						   REG_RETVAL, NULL_RTX);
+		  REG_NOTES (new_libcall_insn)
+		    = gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
+					 REG_NOTES (new_libcall_insn));
+		  XEXP (retval_note, 0) = new_libcall_insn;
+		}
+
+	      /* Do not call delete_insn here since that may change
+	         the basic block boundaries which upsets some callers.  */
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
