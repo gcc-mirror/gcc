@@ -1,3 +1,8 @@
+1999-09-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Also call check_global_declarations for
+	the pending_statics list.
+
 1999-09-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (cp_pragma_implementation): Allow #pragma implementation
