@@ -18050,16 +18050,15 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	    || outer_code == MINUS)
 	   && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
 	       || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')))
-	  || ((outer_code == IOR || outer_code == XOR)
-	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')))
-	  || ((outer_code == DIV || outer_code == UDIV
-	       || outer_code == MOD || outer_code == UMOD)
-	      && exact_log2 (INTVAL (x)) >= 0)
 	  || (outer_code == AND
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
-		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')
+		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
+					     mode == SImode ? 'L' : 'J'))
 		  || mask_operand (x, VOIDmode)))
+	  || ((outer_code == IOR || outer_code == XOR)
+	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
+		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
+					     mode == SImode ? 'L' : 'J'))))
 	  || outer_code == ASHIFT
 	  || outer_code == ASHIFTRT
 	  || outer_code == LSHIFTRT
@@ -18068,9 +18067,21 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  || outer_code == ZERO_EXTRACT
 	  || (outer_code == MULT
 	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'I'))
+	  || ((outer_code == DIV || outer_code == UDIV
+	       || outer_code == MOD || outer_code == UMOD)
+	      && exact_log2 (INTVAL (x)) >= 0)
 	  || (outer_code == COMPARE
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K'))))
+		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')))
+	  || (outer_code == EQ
+	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
+		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
+		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
+					     mode == SImode ? 'L' : 'J'))))
+	  || (outer_code == GTU
+	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'I'))
+	  || (outer_code == LTU
+	      && CONST_OK_FOR_LETTER_P (INTVAL (x), 'P')))
 	{
 	  *total = 0;
 	  return true;
@@ -18348,26 +18359,44 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
     case EQ:
     case GTU:
     case LTU:
-      if (mode == Pmode)
+      /* Carry bit requires mode == Pmode.
+	 NEG or PLUS already counted so only add one.  */
+      if (mode == Pmode
+	  && (outer_code == NEG || outer_code == PLUS))
 	{
-	  switch (outer_code)
-	    {
-	    case PLUS:
-	    case NEG:
-	      /* PLUS or NEG already counted so only add one more.  */
-	      *total = COSTS_N_INSNS (1);
-	      break;
-	    case SET:
-	      *total = COSTS_N_INSNS (3);
-	      break;
-	    case COMPARE:
-	      *total = 0;
-	      return true;
-	    default:
-	      break;
-	    }
-	  return false;
+	  *total = COSTS_N_INSNS (1);
+	  return true;
 	}
+      if (outer_code == SET)
+	{
+	  if (XEXP (x, 1) == const0_rtx)
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      return true;
+	    }
+	  else if (mode == Pmode)
+	    {
+	      *total = COSTS_N_INSNS (3);
+	      return false;
+	    }
+	}
+      /* FALLTHRU */
+
+    case GT:
+    case LT:
+    case UNORDERED:
+      if (outer_code == SET && (XEXP (x, 1) == const0_rtx))
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      /* CC COMPARE.  */
+      if (outer_code == COMPARE)
+	{
+	  *total = 0;
+	  return true;
+	}
+      break;
 
     default:
       break;
