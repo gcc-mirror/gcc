@@ -475,7 +475,8 @@ extern int target_flags;
    || ((REGNO) >= 16 && (REGNO) < 24				        \
        && TARGET_68881                                  \
        && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)))
+	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
+       && GET_MODE_UNIT_SIZE (MODE) <= 12))
 
 #else /* defined SUPPORT_SUN_FPA */
 
@@ -499,9 +500,11 @@ extern int target_flags;
        && (REGNO) < 8 && (REGNO) + GET_MODE_SIZE ((MODE)) / 4 > 8	\
        && (REGNO) % (GET_MODE_UNIT_SIZE ((MODE)) / 4) != 0))		\
  || ((REGNO) < 24							\
-     ? TARGET_68881 && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-			|| GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
-     : ((REGNO) < 56 ? TARGET_FPA : 0)))
+     ? (TARGET_68881							\
+	&& (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+	    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
+	&& GET_MODE_UNIT_SIZE (MODE) <= 12)				\
+     : ((REGNO) < 56 ? TARGET_FPA && GET_MODE_UNIT_SIZE (MODE) <= 8 : 0)))
 
 #endif /* defined SUPPORT_SUN_FPA */
 

@@ -1,3 +1,11 @@
+1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* dwarf2out.c (expand_builtin_dwarf_reg_size): Look at all ranges
+	when generating the decision tree for the general case.
+
+	* config/m68k/m68k.h (HARD_REGNO_MODE_OK): Don't accept modes
+	wider that 12 bytes in fpu regs or wider than 8 byte in fpa regs.
+
 Wed Oct 14 11:14:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (sched.o): Depend on recog.h.
