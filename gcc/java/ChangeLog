@@ -1,4 +1,4 @@
-2001-01-03  Graham Stott  <grahams@redhat.com>
+2002-01-03  Graham Stott  <grahams@redhat.com>
 
         * class.c (compile_resource_file): Update copyright date.
         Constify filename parameter.
