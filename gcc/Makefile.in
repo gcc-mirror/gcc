@@ -2450,7 +2450,6 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	then \
 	    rm -f $(bindir)/gcov$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(bindir)/gcov$(exeext); \
 	fi
 
 # Install the driver program as $(target_alias)-gcc

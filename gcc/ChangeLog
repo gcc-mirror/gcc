@@ -1,3 +1,8 @@
+Thu Jan 21 00:29:35 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* Makefile.in (install-common): Remove extraneous chmod for gcov
+	install.
+
 Wed Jan 20 18:15:08 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* function.c (assign_parms): Save and restore setting of
