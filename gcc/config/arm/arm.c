@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM/RISCiX.
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -1603,7 +1603,6 @@ arm_gen_movstrqi (operands)
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
   int i, r;
-  rtx const_sxteen = gen_rtx (CONST_INT, SImode, 16);
   rtx src, dst;
   rtx st_src, st_dst, end_src, end_dst, fin_src, fin_dst;
   rtx part_bytes_reg = NULL;
