@@ -1,3 +1,8 @@
+Mon Jul 16 18:07:07 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* gcse.c (pre_insert_copy_insn): Use gen_move_insn instead of
+	gen_rtx_SET.
+
 2001-07-16  Steve Ellcey <sje@cup.hp.com>
 
 	* dominance.c (calc_dfs_tree_nonrec): Reverse order of tests
