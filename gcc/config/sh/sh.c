@@ -3466,7 +3466,7 @@ gen_block_redirect (jump, addr, need_block)
 	 NOTE_INSN_BLOCK_END notes between the indirect_jump_scratch and
 	 the jump.  */
 	 
-      INSN_SCOPE (insn) = INSN_SCOPE (jump);
+      INSN_LOCATOR (insn) = INSN_LOCATOR (jump);
       INSN_CODE (insn) = CODE_FOR_indirect_jump_scratch;
       return insn;
     }
