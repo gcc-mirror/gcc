@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1989,1991 Free Software Foundation, Inc.
+   Copyright (C) 1988,1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,6 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
+#include "tree.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -25,78 +26,234 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
-#include "output.h"
 #include "insn-attr.h"
+#include "output.h"
+#include "expr.h"
+
+#undef NULL
+#include <stdio.h>
+
+/* Tables used in convex.h */
+
+char regno_ok_for_index_p_base[1 + LAST_VIRTUAL_REGISTER + 1];
+enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
+enum reg_class reg_class_from_letter[256];
+
+/* Target cpu index. */
+
+int target_cpu;
 
 /* Boolean to keep track of whether the current section is .text or not.
    Used by .align handler in convex.h. */
 
 int current_section_is_text;
 
-/* set_cmp saves the operands of a "cmp" insn, along with the type character
- * to be used in the compare instruction.
- *
- * gen_cmp finds out what comparison is to be performed and outputs the
- * necessary instructions, e.g.
- *    "eq.w a1,a2\;jbra.t L5"
- * for (cmpsi a1 a2) (beq L5)  */
- 
-static rtx xop0, xop1;
-static char typech, regch;
+/* Communication between output_compare and output_condjump. */
+
+static rtx cmp_operand0, cmp_operand1;
+static char cmp_modech;
+
+/* Forwards */
+
+static rtx frame_argblock;
+static int frame_argblock_size;
+static rtx convert_arg_pushes ();
+static void expand_movstr_call ();
+
+/* Here from OVERRIDE_OPTIONS at startup.  Initialize constant tables. */
+
+init_convex ()
+{
+  int regno;
+
+  /* Set A and S reg classes. */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (A_REGNO_P (regno))
+      {
+	regno_ok_for_index_p[regno] = 1;
+	regno_reg_class[regno] = INDEX_REGS;
+      }
+    else
+      {
+	regno_ok_for_index_p[regno] = 0;
+	regno_reg_class[regno] = S_REGS;
+      }
+
+  /* Can't index off the stack pointer, register 0. */
+  regno_ok_for_index_p[STACK_POINTER_REGNUM] = 0;
+  regno_reg_class[STACK_POINTER_REGNUM] = SP_REGS;
+
+  /* Can't index off aliases of the stack pointer.  */
+  regno_ok_for_index_p[VIRTUAL_INCOMING_ARGS_REGNUM] = 1;
+  regno_ok_for_index_p[VIRTUAL_STACK_VARS_REGNUM] = 1;
+  regno_ok_for_index_p[VIRTUAL_STACK_DYNAMIC_REGNUM] = 0;
+  regno_ok_for_index_p[VIRTUAL_OUTGOING_ARGS_REGNUM] = 0;
+
+  /* Can't index off hard reg -1 == pseudos not assigned */
+  regno_ok_for_index_p[-1] = 0;
+
+  /* Set reg class letters */
+  reg_class_from_letter['a'] = A_REGS;
+  reg_class_from_letter['A'] = INDEX_REGS;
+  reg_class_from_letter['d'] = S_REGS;
+
+  /* Turn off floating point exception enables in the psw. */
+  psw_disable_float ();
+}
+
+psw_disable_float ()
+{
+#if __convex__ && __GNUC__
+  register int *p;
+  asm ("mov fp,%0" : "=a" (p));
+  while (p)
+    {
+      p[1] &= ~0x1000c400;
+      p = (int *) p[2];
+    }
+#endif  
+}
+
+/* Here to output code for a compare insn.  Output nothing, just
+   record the operands and their mode. */
 
 char *
-set_cmp (op0, op1, typechr)
-     rtx op0, op1;
-     char typechr;
+output_cmp (operand0, operand1, modech)
+     rtx operand0, operand1;
+     char modech;
 {
-  xop0 = op0;
-  xop1 = op1;
-  typech = typechr;
-  if (GET_CODE (op0) == REG)
-    regch = A_REGNO_P (REGNO (op0)) ? 'a' : 's';
-  else if (GET_CODE (op1) == REG)
-    regch = A_REGNO_P (REGNO (op1)) ? 'a' : 's';
-  else abort ();
+  cmp_operand0 = operand0;
+  cmp_operand1 = operand1;
+  cmp_modech = modech;
   return "";
 }
 
-char *
-gen_cmp (label, cmpop, tf)
-     rtx label;
-     char *cmpop;
-     char tf;
-{
-  char buf[80];
-  char revop[4];
-  rtx ops[3];
+/* Output code for a conditional jump.  The preceding instruction
+   is necessarily a compare.  Output two instructions, for example
+       eq.w a1,a2
+       jbra.t L5
+   for
+       (cmpsi a1 a2)
+       (beq L5)
+ */
 
-  ops[2] = label;
+char *
+output_condjump (label, cond, jbr_sense)
+     rtx label;
+     char *cond;
+     char jbr_sense;
+{
+  rtx operands[3];
+  char cmp_op[4];
+  char buf[80];
+  char jbr_regch;
+
+  strcpy (cmp_op, cond);
+
+  /* [BL] mean the value is being compared against immediate 0.
+     Use neg.x, which produces the same carry that eq.x #0 would if it
+     existed.  In this case operands[1] is a scratch register, not a
+     compare operand. */
+
+  if (cmp_modech == 'B' || cmp_modech == 'L')
+    {
+      cmp_modech = cmp_modech - 'A' + 'a';
+      strcpy (cmp_op, "neg");
+    }
+
+  /* [WH] mean the value being compared resulted from "add.[wh] #-1,rk"
+     when rk was nonnegative -- we can omit equality compares against -1
+     or inequality compares against 0. */
+
+  else if (cmp_modech == 'W' || cmp_modech == 'H')
+    {
+      if (! strcmp (cmp_op, "eq") && cmp_operand1 == constm1_rtx)
+	jbr_sense ^= 't' ^ 'f';
+      else if (! strcmp (cmp_op, "lt") && cmp_operand1 == const0_rtx)
+	;
+      else
+	cmp_modech = cmp_modech - 'A' + 'a';
+    }
 
   /* Constant must be first; swap operands if necessary.
      If lt, le, ltu, leu are swapped, change to le, lt, leu, ltu
      and reverse the sense of the jump. */
 
-  if (CONSTANT_P (xop1))
+  if (! REG_P (cmp_operand1))
     {
-      ops[0] = xop1;
-      ops[1] = xop0;
-      if (cmpop[0] == 'l')
+      operands[0] = cmp_operand1;
+      operands[1] = cmp_operand0;
+      if (cmp_op[0] == 'l')
 	{
-	  bcopy (cmpop, revop, sizeof revop);
-	  revop[1] ^= 'e' ^ 't';
-	  tf ^= 't' ^ 'f';
-	  cmpop = revop;
+	  cmp_op[1] ^= 'e' ^ 't';
+	  jbr_sense ^= 't' ^ 'f';
 	}
     }
   else
     {
-      ops[0] = xop0;
-      ops[1] = xop1;
+      operands[0] = cmp_operand0;
+      operands[1] = cmp_operand1;
     }
 
-  sprintf (buf, "%s.%c %%0,%%1\n\tjbr%c.%c %%l2", cmpop, typech, regch, tf);
-  output_asm_insn (buf, ops);
+  operands[2] = label;
+
+  if (S_REG_P (operands[1]))
+    jbr_regch = 's';
+  else if (A_REG_P (operands[1]))
+    jbr_regch = 'a';
+  else
+    abort ();
+
+  if (cmp_modech == 'W' || cmp_modech == 'H')
+    sprintf (buf, "jbr%c.%c %%l2", jbr_regch, jbr_sense);
+  else
+    sprintf (buf, "%s.%c %%0,%%1\n\tjbr%c.%c %%l2",
+	     cmp_op, cmp_modech, jbr_regch, jbr_sense);
+  output_asm_insn (buf, operands);
   return "";
+}
+
+/* Return 1 if OP is valid for cmpsf.
+   In IEEE mode, +/- zero compares are not handled by 
+     the immediate versions of eq.s and on some machines, lt.s, and le.s.  
+   So disallow 0.0 as the immediate operand of xx.s compares in IEEE mode. */
+
+int
+nonmemory_cmpsf_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+#if _IEEE_FLOAT_
+  if (op == CONST0_RTX (SFmode))
+    return 0;
+#endif
+
+  return nonmemory_operand (op, mode);
+}
+
+/* Convex /bin/as does not like unary minus in some contexts.
+   Simplify CONST addresses to remove it. */
+
+rtx
+simplify_for_convex (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case MINUS:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) < 0)
+	{
+	  PUT_CODE (x, PLUS);
+	  XEXP (x, 1) = GEN_INT (- INTVAL (XEXP (x, 1)));
+	}
+      break;
+
+    case CONST:
+      return simplify_for_convex (XEXP (x, 0));
+    }
+
+  return x;
 }
 
 /* Routines to separate CONST_DOUBLEs into component parts. */
@@ -121,100 +278,738 @@ const_double_low_int (x)
     return CONST_DOUBLE_LOW (x);
 }
 
-/* Return the number of args in the call insn X. */
+/* Inline block copy. */
 
-static int
-call_num_args (x)
-     rtx x;
+void
+expand_movstr (operands)
+     rtx *operands;
 {
-  if (GET_CODE (x) == CALL)
-    return INTVAL (x->fld[1].rtx);
-  if (GET_CODE (x) == SET)
-    return call_num_args (SET_SRC (x));
-  abort ();
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  int align = INTVAL (operands[3]);
+  int nregs, maxsize;
+  unsigned len;
+  enum machine_mode mode;
+  rtx reg, load, store, prev_store, prev_store_2;
+  int size;
+
+  /* Decide how many regs to use, depending on load latency, and what
+     size pieces to move, depending on whether machine does unaligned
+     loads and stores efficiently. */
+
+  if (TARGET_C1)
+    {
+      /* ld.l latency is 4, no alignment problems. */
+      nregs = 3, maxsize = 8;
+    }
+  else if (TARGET_C2)
+    {
+      /* loads are latency 2 if we avoid ld.l not at least word aligned. */
+      if (align >= 4)
+	nregs = 2, maxsize = 8;
+      else
+	nregs = 2, maxsize = 4;
+    }
+  else if (TARGET_C34)
+    {
+      /* latency is 4 if aligned, horrible if not. */
+      nregs = 3, maxsize = align;
+    }
+  else if (TARGET_C38)
+    {
+      /* latency is 2 if at least word aligned, 3 or 4 if unaligned. */
+      if (align >= 4)
+	nregs = 2, maxsize = 8;
+      else
+	nregs = 3, maxsize = 8;
+    }
+  else
+    abort ();
+
+  /* Caller is not necessarily prepared for us to fail in this
+     expansion.  So fall back by generating memcpy call here. */
+
+  if (GET_CODE (operands[2]) != CONST_INT
+      || (len = INTVAL (operands[2])) > (unsigned) 32 * maxsize)
+    {
+      expand_movstr_call (operands);
+      return;
+    }
+
+  reg = 0;
+  prev_store = prev_store_2 = 0;
+
+  while (len > 0)
+    {
+      if (len >= 8 && maxsize >= 8)
+	mode = DImode;
+      else if (len >= 4 && maxsize >= 4)
+	mode = SImode;
+      else if (len >= 2 && maxsize >= 2)
+	mode = HImode;
+      else
+	mode = QImode;
+
+      /* If no temp pseudo to reuse, or not the right mode, make one */
+      if (! reg || GET_MODE (reg) != mode)
+	reg = gen_reg_rtx (mode);
+
+      /* Get src and dest in the right mode */
+      if (GET_MODE (src) != mode)
+	src = change_address (src, mode, 0),
+	dest = change_address (dest, mode, 0);
+
+      /* Make load and store patterns for this piece */
+      load = gen_rtx (SET, VOIDmode, reg, src);
+      store = gen_rtx (SET, VOIDmode, dest, reg);
+
+      /* Emit the load and the store from last time. 
+	 When we emit a store, we can reuse its temp reg. */
+      emit_insn (load);
+      if (prev_store)
+	{
+	  reg = SET_SRC (prev_store);
+	  emit_insn (prev_store);
+	}
+      else
+	reg = 0;
+
+      /* Queue up the store, for next time or the time after that. */
+      if (nregs == 2)
+	prev_store = store;
+      else
+	prev_store = prev_store_2, prev_store_2 = store;
+
+      /* Advance to next piece. */
+      size = GET_MODE_SIZE (mode);
+      src = adj_offsettable_operand (src, size);
+      dest = adj_offsettable_operand (dest, size);
+      len -= size;
+    }
+
+  /* Finally, emit the last stores. */
+  if (prev_store)
+    emit_insn (prev_store);
+  if (prev_store_2)
+    emit_insn (prev_store_2);
 }
 
-/* Scan forward from a call to decide whether we need to reload AP
-   from 12(FP) after it.  We need to if there can be a reference to
-   arg_pointer_rtx before the next call, which will clobber AP.
-   Look forward in the instruction list until encountering a call
-   (don't need the load), or a reference to AP (do need it), or
-   a jump (don't know, do the load).  */
-
-static int
-ap_reload_needed (insn)
-     rtx insn;
+static void
+expand_movstr_call (operands)
+     rtx *operands;
 {
-  for (;;)
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+		     VOIDmode, 3,
+		     XEXP (operands[0], 0), Pmode,
+		     XEXP (operands[1], 0), Pmode,
+		     operands[2], SImode);
+}
+
+#if _IEEE_FLOAT_
+#define MAX_FLOAT 3.4028234663852886e+38
+#define MIN_FLOAT 1.1754943508222875e-38
+#else
+#define MAX_FLOAT 1.7014117331926443e+38
+#define MIN_FLOAT 2.9387358770557188e-39
+#endif
+
+void
+check_float_value (mode, dp)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *dp;
+{
+  REAL_VALUE_TYPE d = *dp;
+
+  if (mode == SFmode)
     {
-      insn = NEXT_INSN (insn);
-      switch (GET_CODE (insn))
+      if (d > MAX_FLOAT)
 	{
-	case JUMP_INSN:
-	  /* Basic block ends.  If return, no AP needed, else assume it is. */
-	  return GET_CODE (PATTERN (insn)) != RETURN;
-	case CALL_INSN:
-	  /* A subsequent call.  AP isn't needed unless the call itself
-	     requires it.  But zero-arg calls don't clobber AP, so
-	     don't terminate the search in that case. */
-	  if (reg_mentioned_p (arg_pointer_rtx, PATTERN (insn)))
-	    return 1;
-	  if (! TARGET_ARGCOUNT && call_num_args (PATTERN (insn)) == 0)
-	    break;
-	  return 0;
-	case BARRIER:
-	  /* Barrier, don't need AP. */
-	  return 0;
-	case INSN:
-	  /* Other insn may need AP; if not, keep looking. */
-	  if (reg_mentioned_p (arg_pointer_rtx, PATTERN (insn)))
-	    return 1;
+	  error ("magnitude of constant too large for `float'");
+	  *dp = MAX_FLOAT;
+	}
+      else if (d < -MAX_FLOAT)
+	{
+	  error ("magnitude of constant too large for `float'");
+	  *dp = -MAX_FLOAT;
+	}	
+      else if ((d > 0 && d < MIN_FLOAT) || (d < 0 && d > -MIN_FLOAT))
+	{
+	  warning ("`float' constant truncated to zero");
+	  *dp = 0.0;
+	}
+    }
+}
+
+/* Output the label at the start of a function.
+   Precede it with the number of formal args so debuggers will have
+   some idea of how many args to print. */
+
+void
+asm_declare_function_name (file, name, decl)
+    FILE *file;
+    char *name;
+    tree decl;
+{
+  tree parms;
+  int nargs = list_length (DECL_ARGUMENTS (decl));
+
+  char *p, c;
+  extern char *version_string;
+  static char vers[4];
+  int i;
+  
+  p = version_string;
+  for (i = 0; i < 3; ) {
+    c = *p;
+    if (c - '0' < (unsigned) 10)
+      vers[i++] = c;
+    if (c == 0 || c == ' ')
+      vers[i++] = '0';
+    else
+      p++;
+  }
+  fprintf (file, "\tds.b \"g%s\"\n", vers);
+
+  if (nargs < 100)
+    fprintf (file, "\tds.b \"+%02d\\0\"\n", nargs);
+  else
+    fprintf (file, "\tds.b \"+00\\0\"\n");
+
+  ASM_OUTPUT_LABEL (file, name);
+}
+
+/* Print an instruction operand X on file FILE.
+   CODE is the code from the %-spec that requested printing this operand;
+   if `%z3' was used to print operand 3, then CODE is 'z'. */
+/* Convex codes:
+    %u prints a CONST_DOUBLE's high word
+    %v prints a CONST_DOUBLE's low word
+    %z prints a CONST_INT shift count as a multiply operand -- viz. 1 << n.
+ */
+
+print_operand (file, x, code)
+     FILE *file;
+     rtx x;
+     char code;
+{
+  long u[2];
+  REAL_VALUE_TYPE d;
+
+  switch (GET_CODE (x))
+    {
+    case REG:
+      fprintf (file, "%s", reg_names[REGNO (x)]);
+      break;
+
+    case MEM:
+      output_address (XEXP (x, 0));
+      break;
+
+    case CONST_DOUBLE:
+      REAL_VALUE_FROM_CONST_DOUBLE (d, x);
+      switch (GET_MODE (x)) {
+      case DFmode:
+#if 0 /* doesn't work, produces dfloats */
+	REAL_VALUE_TO_TARGET_DOUBLE (d, u); 
+#else
+	{
+	  union { double d; int i[2]; } t;
+	  t.d = d;
+	  u[0] = t.i[0];
+	  u[1] = t.i[1];
+	}
+#endif
+	if (code == 'u')
+	  fprintf (file, "#%#x", u[0]);
+	else if (code == 'v')
+	  fprintf (file, "#%#x", u[1]);
+	else
+	  outfloat (file, d, "%.17e", "#", "");
+	break;
+      case SFmode:
+	outfloat (file, d, "%.9e", "#", "");
+	break;
+      default:
+	if (code == 'u')
+	  fprintf (file, "#%d", CONST_DOUBLE_HIGH (x));
+	else
+	  fprintf (file, "#%d", CONST_DOUBLE_LOW (x));
+      }
+      break;
+
+    default:
+      if (code == 'z')
+	{
+	  if (GET_CODE (x) != CONST_INT)
+	    abort ();
+	  fprintf (file, "#%d", 1 << INTVAL (x));
+	}
+      else
+	{
+	  putc ('#', file);
+	  output_addr_const (file, x);
 	}
     }
 }
 
-/* Output the insns needed to do a call. */
+/* Print a memory operand whose address is X, on file FILE. */
 
-char *
-output_call (insn, address, argcount)
-    rtx insn, address, argcount;
+print_operand_address (file, addr)
+     FILE *file;
+     rtx addr;
 {
-  int set_ap = TARGET_ARGCOUNT || argcount != const0_rtx;
+  rtx index = 0;
+  rtx offset = 0;
 
-  /* If AP is used by the call address, evaluate the address into a temp. */
-  if (reg_mentioned_p (arg_pointer_rtx, address))
-    if (set_ap)
+  if (GET_CODE (addr) == MEM)
+    {
+      fprintf (file, "@");
+      addr = XEXP (addr, 0);
+    }
+
+  switch (GET_CODE (addr))
+    {
+    case REG:
+      index = addr;
+      break;
+
+    case PLUS:
+      index = XEXP (addr, 0);
+      if (REG_P (index))
+	offset = XEXP (addr, 1);
+      else
+	{
+	  offset = XEXP (addr, 0);
+	  index = XEXP (addr, 1);
+	  if (! REG_P (index))
+	    abort ();
+        }
+      break;
+
+    default:
+      offset = addr;
+      break;
+    }
+
+  if (offset)
+    output_addr_const (file, offset);
+
+  if (index)
+    fprintf (file, "(%s)", reg_names[REGNO (index)]);
+}
+
+/* Output a float to FILE, value VALUE, format FMT, preceded by PFX
+   and followed by SFX. */
+
+outfloat (file, value, fmt, pfx, sfx)
+     FILE *file;
+     REAL_VALUE_TYPE value;
+     char *fmt, *pfx, *sfx;
+{
+  char buf[64];
+  fputs (pfx, file);
+  REAL_VALUE_TO_DECIMAL (value, fmt, buf);
+  fputs (buf, file);
+  fputs (sfx, file);
+}
+
+/* Here during RTL generation of return.  If we are at the final return
+   in a function, go through the function and replace pushes with stores
+   into a frame arg block.  This is similar to what ACCUMULATE_OUTGOING_ARGS
+   does, but we must index off the frame pointer, not the stack pointer,
+   and the calling sequence does not require the arg block to be at the
+   top of the stack.  */
+
+replace_arg_pushes ()
+{
+  end_sequence ();
+  replace_arg_pushes_1 ();
+  start_sequence ();
+}
+
+replace_arg_pushes_1 ()
+{
+  rtx insn, argblock;
+  int size;
+  int n;
+
+  /* Look back to see if we are at the return at the end of the function. */
+  n = 0;
+  for (insn = get_last_insn (); ; insn = PREV_INSN (insn))
+    if (! insn || ++n > 5)
+      return;
+    else if (GET_CODE (insn) == NOTE
+	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END)
+      break;
+
+  /* Yes, we are.  Find the max stack depth used by fixable arg pushes. */
+  size = replace_pushes (0);
+
+  /* Allocate block in frame to hold all arg lists. */
+  argblock = assign_stack_local (BLKmode, size, STACK_BOUNDARY);
+  
+  /* Replace pushes with stores into the block. */
+  replace_pushes (plus_constant (XEXP (argblock, 0), size));
+}
+
+int
+replace_pushes (arg_addr)
+     rtx arg_addr;
+{
+  struct slot_info { rtx insn; int offs; int size; };
+#define MAXSLOTS 1024
+  struct slot_info slots[MAXSLOTS];
+  rtx insn, pattern, dest;
+  enum machine_mode mode;
+  int offs, minoffs;
+  int nslot, islot;
+  int args_size, slots_size;
+  
+  nslot = 0;
+  offs = 0;
+  minoffs = 0;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    switch (GET_CODE (insn))
       {
-	address = XEXP (address, 0);
-	output_asm_insn ("ld.w %0,a1", &address);
-	address = gen_rtx (MEM, QImode, gen_rtx (REG, Pmode, 9));
+      case INSN:
+	pattern = PATTERN (insn);
+	if (GET_CODE (pattern) == SET)
+	  {
+	    dest = SET_DEST (pattern);
+	    mode = GET_MODE (dest);
+	    if (push_operand (dest, mode))
+	      {
+		offs -= 
+		  slots[nslot].size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
+		slots[nslot].offs = offs;
+		slots[nslot].insn = insn;
+		nslot++;
+	      }
+	    else if (dest == stack_pointer_rtx)
+	      {
+		rtx src = SET_SRC (pattern);
+		if (GET_CODE (src) == PLUS
+		    && XEXP (src, 0) == stack_pointer_rtx
+		    && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		  {
+		    offs -=
+		      slots[nslot].size = - INTVAL (XEXP (src, 1));
+		    slots[nslot].offs = 0;
+		    slots[nslot].insn = insn;
+		    nslot++;
+		  }
+		else
+		  {
+		    slots[nslot].size = 0;
+		    slots[nslot].offs = 0;
+		    slots[nslot].insn = 0;
+		    nslot++;
+		  }
+	      }
+	    else if (reg_mentioned_p (stack_pointer_rtx, pattern))
+	      {
+		slots[nslot].size = 0;
+		slots[nslot].offs = 0;
+		slots[nslot].insn = 0;
+		nslot++;
+	      }
+	    else if (reg_mentioned_p (virtual_stack_dynamic_rtx, pattern)
+		     || reg_mentioned_p (virtual_outgoing_args_rtx, pattern))
+	      {
+		slots[nslot].size = 0;
+		slots[nslot].offs = 0;
+		slots[nslot].insn = 0;
+		nslot++;
+	      }
+	  }
+	else
+	  if (reg_mentioned_p (stack_pointer_rtx, pattern)
+	      || reg_mentioned_p (virtual_stack_dynamic_rtx, pattern)
+	      || reg_mentioned_p (virtual_outgoing_args_rtx, pattern)
+	      || reg_mentioned_p (frame_pointer_rtx, pattern))
+	    abort ();
+
+	break;
+
+      case CALL_INSN:
+	{
+	  pattern = PATTERN (insn);
+	  if (GET_CODE (pattern) != PARALLEL)
+	    abort ();
+	  pattern = XVECEXP (pattern, 0, 0);
+	  if (GET_CODE (pattern) == SET)
+	    pattern = SET_SRC (pattern);
+	  if (GET_CODE (pattern) != CALL)
+	    abort ();
+	  args_size = INTVAL (XEXP (pattern, 1));
+
+	  slots_size = 0;
+	  for (islot = nslot; islot > 0; islot--)
+	    {
+	      if (slots[islot - 1].insn == 0)
+		break;
+	      if (slots_size >= args_size)
+		break;
+	      slots_size += slots[islot - 1].size;
+	    }
+
+	  if (slots_size != args_size)
+	    {
+	      offs += args_size;
+	      if (offs > 0)
+		offs = 0;
+	      slots[nslot].size = 0;
+	      slots[nslot].offs = 0;
+	      slots[nslot].insn = 0;
+	      nslot++;
+
+	      if (arg_addr)
+		{
+		  /* add insn to pop arg list if left on stack */
+		  rtx pop_size = XVECEXP (PATTERN (insn), 0, 2);
+		  if (pop_size != const0_rtx)
+		    emit_insn_after (gen_addsi3 (stack_pointer_rtx,
+						 stack_pointer_rtx,
+						 pop_size),
+				     insn);
+		  insn = NEXT_INSN (insn);
+		}
+	      break;
+	    }
+
+	  /* Record size of arg block */
+	  if (offs < minoffs)
+	    minoffs = offs;
+
+	  /*printf ("call %d, args", INSN_UID (insn));*/
+	  if (arg_addr)
+	    {
+	      /* store arg block + offset as arg list address for call */
+	      XVECEXP (PATTERN (insn), 0, 3) = plus_constant (arg_addr, offs);
+
+	      /* rewrite arg instructions to use block */
+	      while (nslot > islot)
+		{
+		  nslot--;
+		  /*printf (" insn %d size %d offs %d",
+			  INSN_UID(slots[nslot].insn),
+			  slots[nslot].size,
+			  slots[nslot].offs);*/
+
+		  if (slots[nslot].offs == 0)
+		    delete_insn (slots[nslot].insn);
+		  else
+		    {
+		      rtx pattern = PATTERN (slots[nslot].insn);
+		      enum machine_mode mode = GET_MODE (SET_DEST (pattern));
+		      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode))
+			{
+			  SET_SRC (pattern) =
+			    gen_lowpart (SImode, SET_SRC (pattern));
+			  SET_DEST (pattern) =
+			    gen_rtx (MEM, SImode,
+				     plus_constant (arg_addr,
+						    slots[nslot].offs));
+			}
+		      else
+			SET_DEST (pattern) = 
+			  gen_rtx (MEM, mode,
+				   plus_constant (arg_addr,
+						  slots[nslot].offs));
+		    }
+		}
+	      /*printf ("\n");*/
+	    }
+
+	  nslot = islot;
+
+	  offs += args_size;
+	  if (offs > 0)
+	    abort ();
+	}
+	break;
+
+      case CODE_LABEL:
+      case JUMP_INSN:
+      case BARRIER:
+	nslot = offs = 0;
       }
 
-  /* If there are args, point AP to them. */
-  if (set_ap)
-    output_asm_insn ("mov sp,ap", 0);
+  /*printf ("min offset %d\n", minoffs);*/
+  return -minoffs;
+}
 
-  /* If we are passing an arg count, convert it to words and push it. */
+/* Output the insns needed to do a call.  operands[] are
+     0 - MEM, the place to call
+     1 - CONST_INT, the number of bytes in the arg list
+     2 - CONST_INT, the number of arguments
+     3 - address of the arg list.  
+ */
+
+char *
+output_call (insn, operands)
+     rtx insn, *operands;
+{
+  /*if (operands[3] == stack_pointer_rtx)
+    output_asm_insn ("mov sp,ap");
+  else
+    output_asm_insn ("ldea %a4,ap", operands);*/
+
   if (TARGET_ARGCOUNT)
-    {
-      argcount = gen_rtx (CONST_INT, VOIDmode, (INTVAL (argcount) + 3) / 4);
-      output_asm_insn ("pshea %a0", &argcount);
-    }
+    output_asm_insn ("pshea %a2", operands);
 
-  /* The call. */
-  output_asm_insn ("calls %0", &address);
+  output_asm_insn ("calls %0", operands);
 
-  /* If we clobbered AP, reload it if it is live. */
-  if (set_ap)
-    if (ap_reload_needed (insn))
-      output_asm_insn ("ld.w 12(fp),ap", 0);
+  /*output_asm_insn ("ld.w 12(fp),ap");*/
 
-  /* If we pushed an arg count, pop it and the args. */
-  if (TARGET_ARGCOUNT)
-    {
-      argcount = gen_rtx (CONST_INT, VOIDmode, INTVAL (argcount) * 4 + 4);
-      output_asm_insn ("add.w %0,sp", &argcount);
-    }
-  
+  /*if (operands[3] == stack_pointer_rtx && operands[1] != const0_rtx)
+    output_asm_insn ("add.w %1,sp", operands);*/
+
   return "";
+}
+
+
+/* Here after reloading, before the second scheduling pass.
+   Insert explicit AP moves. */
+
+emit_ap_optimizations ()
+{
+  end_sequence ();
+  insert_ap_loads ();
+  start_sequence ();
+}
+
+#define LABEL_DEAD_AP(INSN) ((INSN)->volatil)
+
+insert_ap_loads ()
+{
+  rtx insn, pattern, src;
+  int ap_is_live, doagain;
+
+  /* Check that code_label->volatil is not being used for something else */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_DEAD_AP (insn))
+	abort ();
+
+  ap_is_live = 0;
+
+  do
+    {
+      doagain = 0;
+      for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+	switch (GET_CODE (insn))
+	  {
+	  case INSN:
+	    pattern = PATTERN (insn);
+	    if (! ap_is_live)
+	      {
+		if (reg_mentioned_p (arg_pointer_rtx, pattern))
+		  ap_is_live = 1;
+	      }
+	    break;
+
+	  case CALL_INSN:
+	    pattern = PATTERN (insn);
+	    if (XVECEXP (pattern, 0, 2) != const0_rtx)
+	      ap_is_live = reg_mentioned_p (arg_pointer_rtx, pattern);
+	    break;
+
+	  case CODE_LABEL:
+	    if (! ap_is_live)
+	      {
+		if (! LABEL_DEAD_AP (insn))
+		  doagain = 1;
+		LABEL_DEAD_AP (insn) = 1;
+	      }
+	    break;
+
+	  case JUMP_INSN:
+	    pattern = PATTERN (insn);
+	    if (GET_CODE (pattern) == RETURN)
+	      ap_is_live = 0;
+	    else if (JUMP_LABEL (insn))
+	      {
+		if (simplejump_p (insn))
+		  ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
+		else if (! ap_is_live && condjump_p (insn))
+		  ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
+		else
+		  ap_is_live = 1;
+	      }
+	    else
+	      ap_is_live = 1;
+	    break;
+
+	  case BARRIER:
+	    ap_is_live = 0;
+	    break;
+	  }
+    } while (doagain);
+
+  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+    switch (GET_CODE (insn))
+      {
+      case INSN:
+	pattern = PATTERN (insn);
+	if (! ap_is_live)
+	  {
+	    if (reg_mentioned_p (arg_pointer_rtx, pattern))
+	      ap_is_live = 1;
+	  }
+	break;
+
+      case CALL_INSN:
+	pattern = PATTERN (insn);
+	if (XVECEXP (pattern, 0, 2) != const0_rtx)
+	  {
+	    rtx arg_addr = XVECEXP (pattern, 0, 3);
+	    emit_insn_before (gen_movsi (arg_pointer_rtx, arg_addr), insn);
+	    if (ap_is_live)
+	      emit_insn_after (gen_movsi (arg_pointer_rtx,
+					  gen_rtx (MEM, SImode,
+						   gen_rtx (PLUS, Pmode,
+							    frame_pointer_rtx,
+							    GEN_INT (12)))),
+			       insn);
+	    XVECEXP (pattern, 0, 3) = const0_rtx;
+	    insn = PREV_INSN (insn);
+	    ap_is_live = 0;
+	  }
+	break;
+
+      case CODE_LABEL:
+	if (ap_is_live != ! LABEL_DEAD_AP (insn))
+	  abort ();
+	break;
+
+      case JUMP_INSN:
+	pattern = PATTERN (insn);
+	if (GET_CODE (pattern) == RETURN)
+	  ap_is_live = 0;
+	else if (JUMP_LABEL (insn))
+	  {
+	    if (simplejump_p (insn))
+	      ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
+	    else if (! ap_is_live && condjump_p (insn))
+	      ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
+	    else
+	      ap_is_live = 1;
+	  }
+	else
+	  ap_is_live = 1;
+	break;
+
+      case BARRIER:
+	ap_is_live = 0;
+	break;
+      }
+
+  /* Clear code-label flag recording dead ap's. */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == CODE_LABEL)
+      LABEL_DEAD_AP (insn) = 0;
 }

@@ -1,3 +1,5 @@
-# Use -pcc to avoid surprises.
+# ld can make exe's c2-only if this lib is searched even though not loaded
+CCLIBFLAGS = -tm c1 
 
+# Use -pcc to avoid surprises.
 CC = cc -pcc
