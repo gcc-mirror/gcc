@@ -1,5 +1,5 @@
 /* LinkedList.java -- Linked list implementation of the List interface
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -32,25 +32,50 @@ import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
-// TO DO:
-// ~ Doc comment for the class.
-// ~ Doc comments for the non-list methods.
-// ~ other general implementation notes.
-
 /**
- * Linked list implementation of the List interface.
+ * Linked list implementation of the List interface. In addition to the
+ * methods of the List interface, this class provides access to the first
+ * and last list elements in O(1) time for easy stack, queue, or double-ended
+ * queue (deque) creation. The list is doubly-linked, with traversal to a
+ * given index starting from the end closest to the element.<p>
+ *
+ * LinkedList is not synchronized, so if you need multi-threaded access,
+ * consider using:<br>
+ * <code>List l = Collections.synchronizedList(new LinkedList(...));</code>
+ * <p>
+ *
+ * The iterators are <i>fail-fast</i>, meaning that any structural
+ * modification, except for <code>remove()</code> called on the iterator
+ * itself, cause the iterator to throw a
+ * {@link ConcurrentModificationException} rather than exhibit
+ * non-deterministic behavior.
+ *
+ * @author Original author unknown
+ * @author Bryce McKinlay
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see List
+ * @see ArrayList
+ * @see Vector
+ * @see Collections#synchronizedList(List)
+ * @since 1.2
+ * @status missing javadoc, but complete to 1.4
  */
 public class LinkedList extends AbstractSequentialList
   implements List, Cloneable, Serializable
 {
-  static final long serialVersionUID = 876323262645176354L;
+  /**
+   * Compatible with JDK 1.2.
+   */
+  private static final long serialVersionUID = 876323262645176354L;
 
   /**
-   * An Entry containing the head (in the next field) and the tail (in the
-   * previous field) of the list. The data field is null. If the list is empty,
-   * both the head and the tail point to ends itself.
+   * The first element in the list.
    */
   transient Entry first;
+
+  /**
+   * The last element in the list.
+   */
   transient Entry last;
 
   /**
@@ -61,18 +86,27 @@ public class LinkedList extends AbstractSequentialList
   /**
    * Class to represent an entry in the list. Holds a single element.
    */
-  private static class Entry
+  private static final class Entry
   {
+    /** The element in the list. */
     Object data;
+
+    /** The next list entry, null if this is last. */
     Entry next;
+
+    /** The previous list entry, null if this is first. */
     Entry previous;
-    
+
+    /**
+     * Construct an entry.
+     * @param data the list element
+     */
     Entry(Object data)
     {
       this.data = data;
     }
-  }
-  
+  } // class Entry
+
   /**
    * Obtain the Entry at a given position in a list. This method of course
    * takes linear time, but it is intelligent enough to take the shorter of the
@@ -82,7 +116,8 @@ public class LinkedList extends AbstractSequentialList
    * For speed and flexibility, range checking is not done in this method:
    * Incorrect values will be returned if (n < 0) or (n >= size).
    *
-   * @param n the number of the entry to get.
+   * @param n the number of the entry to get
+   * @return the entry at position n
    */
   private Entry getEntry(int n)
   {
@@ -90,50 +125,76 @@ public class LinkedList extends AbstractSequentialList
     if (n < size / 2)
       {
         e = first;
-	// n less than size/2, iterate from start
-	while (n-- > 0)
-	  {
-	    e = e.next;
-	  }
+        // n less than size/2, iterate from start
+        while (n-- > 0)
+          e = e.next;
       }
     else
       {
-        e = last;      
-	// n greater than size/2, iterate from end
-	while (++n < size)
-	  {
-	    e = e.previous;
-	  }
+        e = last;
+        // n greater than size/2, iterate from end
+        while (++n < size)
+          e = e.previous;
       }
     return e;
   }
-  
-  /** Remove an entry from the list. This will adjust size and deal with
-   *  `first' and  `last' appropriatly. It does not effect modCount, that is 
-   *  the responsibility of the caller. */
+
+  /**
+   * Remove an entry from the list. This will adjust size and deal with
+   *  `first' and  `last' appropriatly.
+   *
+   * @param e the entry to remove
+   */
   private void removeEntry(Entry e)
   {
-    if (size == 1)
+    modCount++;
+    size--;
+    if (size == 0)
       first = last = null;
     else
       {
-	if (e == first)
-	  {
-	    first = e.next;
-	    e.next.previous = null;
-	  }
-	else if (e == last)
-	  {
-	    last = e.previous;
-	    e.previous.next = null;
-	  }
-	else
-	  {
-	    e.next.previous = e.previous;	
-	    e.previous.next = e.next;
-	  }
+        if (e == first)
+          {
+            first = e.next;
+            e.next.previous = null;
+          }
+        else if (e == last)
+          {
+            last = e.previous;
+            e.previous.next = null;
+          }
+        else
+          {
+            e.next.previous = e.previous;
+            e.previous.next = e.next;
+          }
       }
-    size--;
+  }
+
+  /**
+   * Checks that the index is in the range of possible elements (inclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size
+   */
+  private void checkBoundsInclusive(int index)
+  {
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
+                                          + size);
+  }
+
+  /**
+   * Checks that the index is in the range of existing elements (exclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size
+   */
+  private void checkBoundsExclusive(int index)
+  {
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:"
+                                          + size);
   }
 
   /**
@@ -141,24 +202,26 @@ public class LinkedList extends AbstractSequentialList
    */
   public LinkedList()
   {
-    super();
   }
 
   /**
    * Create a linked list containing the elements, in order, of a given
    * collection.
    *
-   * @param c the collection to populate this list from.
+   * @param c the collection to populate this list from
+   * @throws NullPointerException if c is null
    */
   public LinkedList(Collection c)
   {
-    super();
-    // Note: addAll could be made slightly faster, but not enough so to justify
-    // re-implementing it from scratch. It is just a matter of a relatively
-    // small constant factor.
     addAll(c);
   }
 
+  /**
+   * Returns the first element in the list.
+   *
+   * @return the first list element
+   * @throws NoSuchElementException if the list is empty
+   */
   public Object getFirst()
   {
     if (size == 0)
@@ -166,6 +229,12 @@ public class LinkedList extends AbstractSequentialList
     return first.data;
   }
 
+  /**
+   * Returns the last element in the list.
+   *
+   * @return the last list element
+   * @throws NoSuchElementException if the list is empty
+   */
   public Object getLast()
   {
     if (size == 0)
@@ -173,273 +242,374 @@ public class LinkedList extends AbstractSequentialList
     return last.data;
   }
 
+  /**
+   * Remove and return the first element in the list.
+   *
+   * @return the former first element in the list
+   * @throws NoSuchElementException if the list is empty
+   */
   public Object removeFirst()
   {
     if (size == 0)
       throw new NoSuchElementException();
-    size--;
     modCount++;
+    size--;
     Object r = first.data;
-    
+
     if (first.next != null)
       first.next.previous = null;
     else
       last = null;
 
     first = first.next;
-    
+
     return r;
   }
 
+  /**
+   * Remove and return the last element in the list.
+   *
+   * @return the former last element in the list
+   * @throws NoSuchElementException if the list is empty
+   */
   public Object removeLast()
   {
     if (size == 0)
       throw new NoSuchElementException();
-    size--;
     modCount++;
+    size--;
     Object r = last.data;
-    
+
     if (last.previous != null)
       last.previous.next = null;
     else
       first = null;
-    
+
     last = last.previous;
-    
+
     return r;
   }
 
+  /**
+   * Insert an element at the first of the list.
+   *
+   * @param o the element to insert
+   */
   public void addFirst(Object o)
   {
-    modCount++;
     Entry e = new Entry(o);
-    
-    if (size == 0)
-      first = last = e;
-    else
-      {
-	e.next = first;
-        first.previous = e;
-	first = e;
-      }    
-    size++;
-  }
 
-  public void addLast(Object o)
-  {
     modCount++;
-    addLastEntry(new Entry(o));
-  }
-  
-  private void addLastEntry(Entry e)
-  {
     if (size == 0)
       first = last = e;
     else
       {
-	e.previous = last;
-        last.next = e;
-	last = e;
+        e.next = first;
+        first.previous = e;
+        first = e;
       }
     size++;
   }
 
+  /**
+   * Insert an element at the last of the list.
+   *
+   * @param o the element to insert
+   */
+  public void addLast(Object o)
+  {
+    addLastEntry(new Entry(o));
+  }
+
+  /**
+   * Inserts an element at the end of the list.
+   *
+   * @param e the entry to add
+   */
+  private void addLastEntry(Entry e)
+  {
+    modCount++;
+    if (size == 0)
+      first = last = e;
+    else
+      {
+        e.previous = last;
+        last.next = e;
+        last = e;
+      }
+    size++;
+  }
+
+  /**
+   * Returns true if the list contains the given object. Comparison is done by
+   * <code>o == null ? e = null : o.equals(e)</code>.
+   *
+   * @param o the element to look for
+   * @return true if it is found
+   */
   public boolean contains(Object o)
   {
     Entry e = first;
     while (e != null)
       {
-        if (e.data == null ? o == null : o.equals(e.data))
-	  return true;
+        if (equals(o, e.data))
+          return true;
         e = e.next;
       }
     return false;
   }
 
+  /**
+   * Returns the size of the list.
+   *
+   * @return the list size
+   */
   public int size()
   {
     return size;
   }
-  
+
+  /**
+   * Adds an element to the end of the list.
+   *
+   * @param e the entry to add
+   * @return true, as it always succeeds
+   */
   public boolean add(Object o)
   {
-    modCount++;
     addLastEntry(new Entry(o));
     return true;
   }
-  
+
+  /**
+   * Removes the entry at the lowest index in the list that matches the given
+   * object, comparing by <code>o == null ? e = null : o.equals(e)</code>.
+   *
+   * @param o the object to remove
+   * @return true if an instance of the object was removed
+   */
   public boolean remove(Object o)
   {
-    modCount++;
     Entry e = first;
     while (e != null)
       {
-        if (e.data == null ? o == null : o.equals(e.data))
-	  {
-	    removeEntry(e);
-	    return true;
-	  }
+        if (equals(o, e.data))
+          {
+            removeEntry(e);
+            return true;
+          }
         e = e.next;
       }
     return false;
   }
 
+  /**
+   * Append the elements of the collection in iteration order to the end of
+   * this list. If this list is modified externally (for example, if this
+   * list is the collection), behavior is unspecified.
+   *
+   * @param c the collection to append
+   * @return true if the list was modified
+   * @throws NullPointerException if c is null
+   */
   public boolean addAll(Collection c)
   {
     return addAll(size, c);
   }
-  
+
+  /**
+   * Insert the elements of the collection in iteration order at the given
+   * index of this list. If this list is modified externally (for example,
+   * if this list is the collection), behavior is unspecified.
+   *
+   * @param c the collection to append
+   * @return true if the list was modified
+   * @throws NullPointerException if c is null
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   */
   public boolean addAll(int index, Collection c)
   {
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    modCount++;
+    checkBoundsInclusive(index);
     int csize = c.size();
 
     if (csize == 0)
       return false;
 
     Iterator itr = c.iterator();
-    
+
     // Get the entries just before and after index. If index is at the start
-    // of the list, BEFORE is null. If index is at the end of thelist, AFTER is
-    // null. If the list is empty, both are null.
+    // of the list, BEFORE is null. If index is at the end of the list, AFTER
+    // is null. If the list is empty, both are null.
     Entry after = null;
-    Entry before = null;    
+    Entry before = null;
     if (index != size)
       {
-	after = getEntry(index);
-	before = after.previous;
+        after = getEntry(index);
+        before = after.previous;
       }
     else
       before = last;
-      
+
     // Create the first new entry. We do not yet set the link from `before'
-    // to the first entry, in order to deal with the case where (c == this). 
-    // [Actually, we don't have to handle this case to fufill the 
+    // to the first entry, in order to deal with the case where (c == this).
+    // [Actually, we don't have to handle this case to fufill the
     // contract for addAll(), but Sun's implementation appears to.]
     Entry e = new Entry(itr.next());
     e.previous = before;
     Entry prev = e;
     Entry firstNew = e;
-    
+
     // Create and link all the remaining entries.
     for (int pos = 1; pos < csize; pos++)
       {
         e = new Entry(itr.next());
-	e.previous = prev;	
-	prev.next = e;
-	prev = e;
+        e.previous = prev;
+        prev.next = e;
+        prev = e;
       }
+
     // Link the new chain of entries into the list.
+    modCount++;
+    size += csize;
     prev.next = after;
     if (after != null)
       after.previous = e;
     else
       last = e;
-    
+
     if (before != null)
       before.next = firstNew;
     else
       first = firstNew;
-    
-    size += csize;
     return true;
   }
 
+  /**
+   * Remove all elements from this list.
+   */
   public void clear()
   {
-    modCount++;
-    first = null;
-    last = null;
-    size = 0;
+    if (size > 0)
+      {
+        modCount++;
+        first = null;
+        last = null;
+        size = 0;
+      }
   }
 
+  /**
+   * Return the element at index.
+   *
+   * @param index the place to look
+   * @return the element at index
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   */
   public Object get(int index)
   {
-    if (index < 0 || index >= size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    Entry e = getEntry(index);
-    return e.data;
+    checkBoundsExclusive(index);
+    return getEntry(index).data;
   }
-  
+
+  /**
+   * Replace the element at the given location in the list.
+   *
+   * @param index which index to change
+   * @param o the new element
+   * @return the prior element
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   */
   public Object set(int index, Object o)
   {
-    if (index < 0 || index >= size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
+    checkBoundsExclusive(index);
     Entry e = getEntry(index);
     Object old = e.data;
     e.data = o;
     return old;
   }
 
+  /**
+   * Inserts an element in the given position in the list.
+   *
+   * @param index where to insert the element
+   * @param o the element to insert
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   */
   public void add(int index, Object o)
   {
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    modCount++;
-    addEntry(index, new Entry(o));    
-  }
-  
-  private void addEntry(int index, Entry e)
-  {
+    checkBoundsInclusive(index);
+    Entry e = new Entry(o);
+
     if (index < size)
       {
-	Entry after = getEntry(index);
-	e.next = after;
-	e.previous = after.previous;
-	if (after.previous == null)
-	  first = e;
-	else
-	  after.previous.next = e;
-	after.previous = e;
-	size++;        
+        modCount++;
+        Entry after = getEntry(index);
+        e.next = after;
+        e.previous = after.previous;
+        if (after.previous == null)
+          first = e;
+        else
+          after.previous.next = e;
+        after.previous = e;
+        size++;
       }
     else
       addLastEntry(e);
   }
-  
+
+  /**
+   * Removes the element at the given position from the list.
+   *
+   * @param index the location of the element to remove
+   * @return the removed element
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   */
   public Object remove(int index)
   {
-    if (index < 0 || index >= size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    modCount++;
+    checkBoundsExclusive(index);
     Entry e = getEntry(index);
     removeEntry(e);
     return e.data;
   }
-  
+
+  /**
+   * Returns the first index where the element is located in the list, or -1.
+   *
+   * @param o the element to look for
+   * @return its position, or -1 if not found
+   */
   public int indexOf(Object o)
   {
     int index = 0;
     Entry e = first;
     while (e != null)
       {
-        if (e.data == null ? o == null : o.equals(e.data))
-	  return index;
-	++index;
+        if (equals(o, e.data))
+          return index;
+        index++;
         e = e.next;
       }
     return -1;
   }
-  
+
+  /**
+   * Returns the last index where the element is located in the list, or -1.
+   *
+   * @param o the element to look for
+   * @return its position, or -1 if not found
+   */
   public int lastIndexOf(Object o)
   {
     int index = size - 1;
     Entry e = last;
     while (e != null)
       {
-        if (e.data == null ? o == null : o.equals(e.data))
-	  return index;
-	--index;
+        if (equals(o, e.data))
+          return index;
+        index--;
         e = e.previous;
       }
-    return -1;  
+    return -1;
   }
 
   /**
@@ -448,28 +618,27 @@ public class LinkedList extends AbstractSequentialList
    * methods.
    *
    * @param index the index of the element to be returned by the first call to
-   *   next(), or size() to be initially positioned at the end of the list.
-   * @exception IndexOutOfBoundsException if index < 0 || index > size().
+   *        next(), or size() to be initially positioned at the end of the list
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   public ListIterator listIterator(int index)
   {
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
+    checkBoundsInclusive(index);
     return new LinkedListItr(index);
   }
 
   /**
-   * Create a shallow copy of this LinkedList.
+   * Create a shallow copy of this LinkedList (the elements are not cloned).
+   *
    * @return an object of the same class as this object, containing the
-   * same elements in the same order.
+   *         same elements in the same order
    */
   public Object clone()
   {
     LinkedList copy = null;
     try
       {
-	copy = (LinkedList) super.clone();
+        copy = (LinkedList) super.clone();
       }
     catch (CloneNotSupportedException ex)
       {
@@ -478,7 +647,12 @@ public class LinkedList extends AbstractSequentialList
     copy.addAll(this);
     return copy;
   }
-  
+
+  /**
+   * Returns an array which contains the elements of the list in order.
+   *
+   * @return an array containing the list elements
+   */
   public Object[] toArray()
   {
     Object[] array = new Object[size];
@@ -490,182 +664,282 @@ public class LinkedList extends AbstractSequentialList
       }
     return array;
   }
-  
-  public Object[] toArray(Object[] array)
+
+  /**
+   * Returns an Array whose component type is the runtime component type of
+   * the passed-in Array.  The returned Array is populated with all of the
+   * elements in this LinkedList.  If the passed-in Array is not large enough
+   * to store all of the elements in this List, a new Array will be created 
+   * and returned; if the passed-in Array is <i>larger</i> than the size
+   * of this List, then size() index will be set to null.
+   *
+   * @param a the passed-in Array
+   * @return an array representation of this list
+   * @throws ArrayStoreException if the runtime type of a does not allow
+   *         an element in this list
+   * @throws NullPointerException if a is null
+   */
+  public Object[] toArray(Object[] a)
   {
-    if (array.length < size)
-      array = (Object[]) Array.newInstance(array.getClass().getComponentType(), 
-        				   size);
-    else if (array.length > size)
-      array[size] = null;
+    if (a.length < size)
+      a = (Object[]) Array.newInstance(a.getClass().getComponentType(), size);
+    else if (a.length > size)
+      a[size] = null;
     Entry e = first;
     for (int i = 0; i < size; i++)
       {
-        array[i] = e.data;
+        a[i] = e.data;
         e = e.next;
       }
-    return array;  
+    return a;
   }
 
   /**
-   * Serialize an object to a stream.
-   * @serialdata the size of the list (int), followed by all the elements
-   * (Object) in proper order.
+   * Serializes this object to the given stream.
+   *
+   * @param s the stream to write to
+   * @throws IOException if the underlying stream fails
+   * @serialData the size of the list (int), followed by all the elements
+   *             (Object) in proper order
    */
   private void writeObject(ObjectOutputStream s) throws IOException
   {
+    s.defaultWriteObject();
     s.writeInt(size);
-    Iterator itr = iterator();
-    for (int i = 0; i < size; i++)
-      s.writeObject(itr.next());
+    Entry e = first;
+    while (e != null)
+      {
+        s.writeObject(e.data);
+        e = e.next;
+      }
   }
 
   /**
-   * Deserialize an object from a stream.
-   * @serialdata the size of the list (int), followed by all the elements
-   * (Object) in proper order.
+   * Deserializes this object from the given stream.
+   *
+   * @param s the stream to read from
+   * @throws ClassNotFoundException if the underlying stream fails
+   * @throws IOException if the underlying stream fails
+   * @serialData the size of the list (int), followed by all the elements
+   *             (Object) in proper order
    */
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    int serialSize = s.readInt();
-    for (int i = 0; i < serialSize; i++)
+    s.defaultReadObject();
+    int i = s.readInt();
+    while (--i >= 0)
       addLastEntry(new Entry(s.readObject()));
   }
-  
-  /** A ListIterator over the list. This class keeps track of its
-   * position in the list and the two list entries it is between.
-   */
-  class LinkedListItr implements ListIterator
-  {
-    int knownMod;
-    Entry next;         // entry that will be returned by next().
-    Entry previous;     // entry that will be returned by previous().
-    Entry lastReturned; // entry that will be affected by remove() or set().
-    int position;       // index of `next'.
 
+  /**
+   * A ListIterator over the list. This class keeps track of its
+   * position in the list and the two list entries it is between.
+   *
+   * @author Original author unknown
+   * @author Eric Blake <ebb9@email.byu.edu>
+   */
+  private final class LinkedListItr implements ListIterator
+  {
+    /** Number of modifications we know about. */
+    private int knownMod = modCount;
+
+    /** Entry that will be returned by next(). */
+    private Entry next;
+
+    /** Entry that will be returned by previous(). */
+    private Entry previous;
+
+    /** Entry that will be affected by remove() or set(). */
+    private Entry lastReturned;
+
+    /** Index of `next'. */
+    private int position;
+
+    /**
+     * Initialize the iterator.
+     *
+     * @param index the initial index
+     */
     LinkedListItr(int index)
     {
       if (index == size)
         {
           next = null;
-	  previous = last;
-	}
+          previous = last;
+        }
       else
         {
           next = getEntry(index);
-	  previous = next.previous;
-	}
+          previous = next.previous;
+        }
       position = index;
-      knownMod = modCount;
     }
 
+    /**
+     * Checks for iterator consistency.
+     *
+     * @throws ConcurrentModificationException if the list was modified
+     */
     private void checkMod()
     {
       if (knownMod != modCount)
-	throw new ConcurrentModificationException();
+        throw new ConcurrentModificationException();
     }
 
+    /**
+     * Returns the index of the next element.
+     *
+     * @return the next index
+     * @throws ConcurrentModificationException if the list was modified
+     */
     public int nextIndex()
     {
       checkMod();
       return position;
     }
 
+    /**
+     * Returns the index of the previous element.
+     *
+     * @return the previous index
+     * @throws ConcurrentModificationException if the list was modified
+     */
     public int previousIndex()
     {
       checkMod();
       return position - 1;
     }
 
+    /**
+     * Returns true if more elements exist via next.
+     *
+     * @return true if next will succeed
+     * @throws ConcurrentModificationException if the list was modified
+     */
     public boolean hasNext()
     {
       checkMod();
       return (next != null);
     }
 
+    /**
+     * Returns true if more elements exist via previous.
+     *
+     * @return true if previous will succeed
+     * @throws ConcurrentModificationException if the list was modified
+     */
     public boolean hasPrevious()
     {
       checkMod();
       return (previous != null);
     }
 
+    /**
+     * Returns the next element.
+     *
+     * @return the next element
+     * @throws ConcurrentModificationException if the list was modified
+     * @throws NoSuchElementException if there is no next
+     */
     public Object next()
     {
       checkMod();
       if (next == null)
-	throw new NoSuchElementException();
+        throw new NoSuchElementException();
       position++;
       lastReturned = previous = next;
       next = lastReturned.next;
       return lastReturned.data;
     }
 
+    /**
+     * Returns the previous element.
+     *
+     * @return the previous element
+     * @throws ConcurrentModificationException if the list was modified
+     * @throws NoSuchElementException if there is no previous
+     */
     public Object previous()
     {
       checkMod();
       if (previous == null)
-	throw new NoSuchElementException();
+        throw new NoSuchElementException();
       position--;
       lastReturned = next = previous;
       previous = lastReturned.previous;
       return lastReturned.data;
     }
 
+    /**
+     * Remove the most recently returned element from the list.
+     *
+     * @throws ConcurrentModificationException if the list was modified
+     * @throws IllegalStateException if there was no last element
+     */
     public void remove()
     {
       checkMod();
       if (lastReturned == null)
-	throw new IllegalStateException();
+        throw new IllegalStateException();
 
       // Adjust the position to before the removed element, if the element
       // being removed is behind the cursor.
       if (lastReturned == previous)
-	position--;
+        position--;
 
       next = lastReturned.next;
       previous = lastReturned.previous;
-      modCount++;
-      knownMod++;
       removeEntry(lastReturned);
-      
+      knownMod++;
+
       lastReturned = null;
     }
 
+    /**
+     * Adds an element between the previous and next, and advance to the next.
+     *
+     * @param o the element to add
+     * @throws ConcurrentModificationException if the list was modified
+     */
     public void add(Object o)
     {
       checkMod();
       modCount++;
       knownMod++;
+      size++;
+      position++;
       Entry e = new Entry(o);
       e.previous = previous;
       e.next = next;
 
       if (previous != null)
-	previous.next = e;
+        previous.next = e;
       else
-	first = e;
+        first = e;
 
       if (next != null)
-        {
-	  next.previous = e;
-	  next = next.next;
-	}
+        next.previous = e;
       else
-	last = e;
+        last = e;
 
       previous = e;
-      size++;
-      position++;
       lastReturned = null;
     }
 
+    /**
+     * Changes the contents of the element most recently returned.
+     *
+     * @param o the new element
+     * @throws ConcurrentModificationException if the list was modified
+     * @throws IllegalStateException if there was no last element
+     */
     public void set(Object o)
     {
       checkMod();
       if (lastReturned == null)
-	throw new IllegalStateException();
+        throw new IllegalStateException();
       lastReturned.data = o;
     }
-  }  // class LinkedListItr  
+  } // class LinkedListItr
 }

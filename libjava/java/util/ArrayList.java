@@ -1,6 +1,6 @@
 /* ArrayList.java -- JDK1.2's answer to Vector; this is an array-backed
    implementation of the List interface
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,112 +35,143 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * An array-backed implementation of the List interface.  ArrayList
- * performs well on simple tasks:  random access into a list, appending
- * to or removing from the end of a list, checking the size, &c.
+ * An array-backed implementation of the List interface.  This implements
+ * all optional list operations, and permits null elements, so that it is
+ * better than Vector, which it replaces. Random access is roughly constant
+ * time, and iteration is roughly linear time, so it is nice and fast, with
+ * less overhead than a LinkedList.
+ * <p>
  *
- * @author        Jon A. Zeppieri
- * @see           java.util.AbstractList
- * @see           java.util.List
+ * Each list has a capacity, and as the array reaches that capacity it
+ * is automatically transferred to a larger array. You also have access to
+ * ensureCapacity and trimToSize to control the backing array's size, avoiding
+ * reallocation or wasted memory.
+ * <p>
+ *
+ * ArrayList is not synchronized, so if you need multi-threaded access,
+ * consider using:<br>
+ * <code>List l = Collections.synchronizedList(new ArrayList(...));</code>
+ * <p>
+ *
+ * The iterators are <i>fail-fast</i>, meaning that any structural
+ * modification, except for <code>remove()</code> called on the iterator
+ * itself, cause the iterator to throw a
+ * {@link ConcurrentModificationException} rather than exhibit
+ * non-deterministic behavior.
+ *
+ * @author Jon A. Zeppieri
+ * @author Bryce McKinlay
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see List
+ * @see LinkedList
+ * @see Vector
+ * @see Collections#synchronizedList(List)
+ * @see AbstractList
+ * @status updated to 1.4
  */
 public class ArrayList extends AbstractList
-  implements List, Cloneable, Serializable
+  implements List, RandomAccess, Cloneable, Serializable
 {
-  /** the default capacity for new ArrayLists */
+  /**
+   * Compatible with JDK 1.2
+   */
+  private static final long serialVersionUID = 8683452581122892189L;
+
+  /**
+   * The default capacity for new ArrayLists.
+   */
   private static final int DEFAULT_CAPACITY = 16;
 
-  /** the number of elements in this list */
-  int size;
+  /**
+   * The number of elements in this list.
+   * @serial the list size
+   */
+  private int size;
 
-  /** where the data is stored */
-  transient Object[] data;
+  /**
+   * Where the data is stored.
+   */
+  private transient Object[] data;
 
-  /** 
-   * Construct a new ArrayList with the supplied initial capacity. 
+  /**
+   * Construct a new ArrayList with the supplied initial capacity.
    *
-   * @param capacity Initial capacity of this ArrayList
+   * @param capacity initial capacity of this ArrayList
+   * @throws IllegalArgumentException if capacity is negative
    */
   public ArrayList(int capacity)
   {
+    // Must explicitly check, to get correct exception.
+    if (capacity < 0)
+      throw new IllegalArgumentException();
     data = new Object[capacity];
   }
 
-
   /**
-   * Construct a new ArrayList with the default capcity 
+   * Construct a new ArrayList with the default capcity (16).
    */
   public ArrayList()
   {
     this(DEFAULT_CAPACITY);
   }
 
-  /** 
+  /**
    * Construct a new ArrayList, and initialize it with the elements
-   * in the supplied Collection; Sun specs say that the initial 
-   * capacity is 110% of the Collection's size.
+   * in the supplied Collection. The initial capacity is 110% of the
+   * Collection's size.
    *
    * @param c the collection whose elements will initialize this list
+   * @throws NullPointerException if c is null
    */
   public ArrayList(Collection c)
   {
-    this((int) (c.size() * 1.1));
+    this((int) (c.size() * 1.1f));
     addAll(c);
   }
 
   /**
-   * Guarantees that this list will have at least enough capacity to
-   * hold minCapacity elements. 
-   *
-   * @specnote This implementation will grow the list to 
-   *   max(current * 2, minCapacity) if (minCapacity > current). The JCL says
-   *   explictly that "this method increases its capacity to minCap", while
-   *   the JDK 1.3 online docs specify that the list will grow to at least the
-   *   size specified.
-   * @param minCapacity the minimum guaranteed capacity
+   * Trims the capacity of this List to be equal to its size;
+   * a memory saver.
    */
-  public void ensureCapacity(int minCapacity)
+  public void trimToSize()
   {
-    Object[] newData;
-    int current = data.length;
-
-    if (minCapacity > current)
+    // Not a structural change from the perspective of iterators on this list,
+    // so don't update modCount.
+    if (size != data.length)
       {
-	newData = new Object[Math.max((current * 2), minCapacity)];
-	System.arraycopy(data, 0, newData, 0, size);
-	data = newData;
+        Object[] newData = new Object[size];
+        System.arraycopy(data, 0, newData, 0, size);
+        data = newData;
       }
   }
 
   /**
-   * Appends the supplied element to the end of this list.
+   * Guarantees that this list will have at least enough capacity to
+   * hold minCapacity elements. This implementation will grow the list to
+   * max(current * 2, minCapacity) if (minCapacity > current). The JCL says
+   * explictly that "this method increases its capacity to minCap", while
+   * the JDK 1.3 online docs specify that the list will grow to at least the
+   * size specified.
    *
-   * @param       e      the element to be appended to this list
+   * @param minCapacity the minimum guaranteed capacity
    */
-  public boolean add(Object e)
+  public void ensureCapacity(int minCapacity)
   {
-    modCount++;
-    if (size == data.length)
-      ensureCapacity(size + 1);
-    data[size++] = e;
-    return true;
+    int current = data.length;
+
+    if (minCapacity > current)
+      {
+        Object[] newData = new Object[Math.max(current * 2, minCapacity)];
+        System.arraycopy(data, 0, newData, 0, size);
+        data = newData;
+      }
   }
 
   /**
-   * Retrieves the element at the user-supplied index.
+   * Returns the number of elements in this list.
    *
-   * @param    index        the index of the element we are fetching
-   * @throws   IndexOutOfBoundsException  (iIndex < 0) || (iIndex >= size())
-   */
-  public Object get(int index)
-  {
-    if (index < 0 || index >= size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    return data[index];
-  }
-
-  /**
-   * Returns the number of elements in this list 
+   * @return the list size
    */
   public int size()
   {
@@ -148,202 +179,81 @@ public class ArrayList extends AbstractList
   }
 
   /**
-   * Removes the element at the user-supplied index
+   * Checks if the list is empty.
    *
-   * @param     iIndex      the index of the element to be removed
-   * @return    the removed Object
-   * @throws    IndexOutOfBoundsException  (iIndex < 0) || (iIndex >= size())
+   * @return true if there are no elements
    */
-  public Object remove(int index)
+  public boolean isEmpty()
   {
-    modCount++;
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    Object r = data[index];
-    if (index != --size)
-      System.arraycopy(data, (index + 1), data, index, (size - index));
-    data[size] = null;
-    return r;
+    return size == 0;
   }
 
   /**
-   * Removes all elements in the half-open interval [iFromIndex, iToIndex).
+   * Returns true iff element is in this ArrayList.
    *
-   * @param     fromIndex   the first index which will be removed
-   * @param     toIndex     one greater than the last index which will be 
-   *                         removed
+   * @param e the element whose inclusion in the List is being tested
+   * @return true if the list contains e
    */
-  protected void removeRange(int fromIndex, int toIndex)
+  public boolean contains(Object e)
   {
-    modCount++;
-    if (fromIndex != toIndex)
-      {
-	System.arraycopy(data, toIndex, data, fromIndex, size - toIndex);
-	size -= (toIndex - fromIndex);
-      }
+    return indexOf(e) != -1;
   }
 
   /**
-   * Adds the supplied element at the specified index, shifting all
-   * elements currently at that index or higher one to the right.
+   * Returns the lowest index at which element appears in this List, or
+   * -1 if it does not appear.
    *
-   * @param     index      the index at which the element is being added
-   * @param     e          the item being added
+   * @param e the element whose inclusion in the List is being tested
+   * @return the index where e was found
    */
-  public void add(int index, Object e)
+  public int indexOf(Object e)
   {
-    modCount++;
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    if (size == data.length)
-      ensureCapacity(size + 1);
-    if (index != size)
-      System.arraycopy(data, index, data, index + 1, size - index);    
-    data[index] = e;
-    size++;
-  }
-
-  /** 
-   * Add each element in the supplied Collection to this List.
-   *
-   * @param        c          a Collection containing elements to be 
-   *                          added to this List
-   */
-  public boolean addAll(Collection c)
-  {
-    return addAll(size, c);
-  }
-
-  /** 
-   * Add all elements in the supplied collection, inserting them beginning
-   * at the specified index.
-   *
-   * @param     index       the index at which the elements will be inserted
-   * @param     c           the Collection containing the elements to be
-   *                        inserted
-   */
-  public boolean addAll(int index, Collection c)
-  {
-    if (index < 0 || index > size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    modCount++;
-    Iterator itr = c.iterator();
-    int csize = c.size();
-
-    if (csize + size > data.length)
-      ensureCapacity(size + csize);
-    int end = index + csize;
-    if (size > 0 && index != size)
-      System.arraycopy(data, index, data, end, csize);
-    size += csize;
-    for (; index < end; index++)
-      {
-        data[index] = itr.next();
-      }
-    return (csize > 0);
+    for (int i = 0; i < size; i++)
+      if (equals(e, data[i]))
+        return i;
+    return -1;
   }
 
   /**
-   * Creates a shallow copy of this ArrayList
+   * Returns the highest index at which element appears in this List, or
+   * -1 if it does not appear.
+   *
+   * @param e the element whose inclusion in the List is being tested
+   * @return the index where e was found
+   */
+  public int lastIndexOf(Object e)
+  {
+    for (int i = size - 1; i >= 0; i--)
+      if (equals(e, data[i]))
+        return i;
+    return -1;
+  }
+
+  /**
+   * Creates a shallow copy of this ArrayList (elements are not cloned).
+   *
+   * @return the cloned object
    */
   public Object clone()
   {
     ArrayList clone = null;
     try
       {
-	clone = (ArrayList) super.clone();
-	clone.data = new Object[data.length];
-	System.arraycopy(data, 0, clone.data, 0, size);
+        clone = (ArrayList) super.clone();
+        clone.data = (Object[]) data.clone();
       }
-    catch (CloneNotSupportedException e) {}
+    catch (CloneNotSupportedException e)
+      {
+        // Impossible to get here.
+      }
     return clone;
   }
 
-  /** 
-   * Returns true iff oElement is in this ArrayList.
+  /**
+   * Returns an Object array containing all of the elements in this ArrayList.
+   * The array is independent of this list.
    *
-   * @param     e     the element whose inclusion in the List is being
-   *                  tested
-   */
-  public boolean contains(Object e)
-  {
-    return (indexOf(e) != -1);
-  }
-
-  /**
-   * Returns the lowest index at which oElement appears in this List, or 
-   * -1 if it does not appear.
-   *
-   * @param    e       the element whose inclusion in the List is being
-   *                   tested
-   */
-  public int indexOf(Object e)
-  {
-    for (int i = 0; i < size; i++)
-      {
-	if (e == null ? data[i] == null : e.equals(data[i]))
-	  return i;
-      }
-    return -1;
-  }
-
-  /**
-   * Returns the highest index at which oElement appears in this List, or 
-   * -1 if it does not appear.
-   *
-   * @param    e       the element whose inclusion in the List is being
-   *                   tested
-   */
-  public int lastIndexOf(Object e)
-  {
-    int i;
-
-    for (i = size - 1; i >= 0; i--)
-      {
-	if (e == null ? data[i] == null : e.equals(data[i]))
-	  return i;
-      }
-    return -1;
-  }
-
-  /**
-   * Removes all elements from this List
-   */
-  public void clear()
-  {
-    modCount++;
-    for (int i = 0; i < size; i++)
-      {
-	data[i] = null;
-      }    
-    size = 0;
-  }
-
-  /**
-   * Sets the element at the specified index.
-   *
-   * @param     index   the index at which the element is being set
-   * @param     e       the element to be set
-   * @return    the element previously at the specified index, or null if
-   *            none was there
-   */
-  public Object set(int index, Object e)
-  {
-    Object result;
-    if (index < 0 || index >= size)
-      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
-                                          size);
-    result = data[index];
-    // SEH: no structural change, so don't update modCount
-    data[index] = e;
-    return result;
-  }
-
-  /**
-   * Returns an Object Array containing all of the elements in this ArrayList
+   * @return an array representation of this list
    */
   public Object[] toArray()
   {
@@ -356,62 +266,304 @@ public class ArrayList extends AbstractList
    * Returns an Array whose component type is the runtime component type of
    * the passed-in Array.  The returned Array is populated with all of the
    * elements in this ArrayList.  If the passed-in Array is not large enough
-   * to store all of the elements in this List, a new Array will be created 
+   * to store all of the elements in this List, a new Array will be created
    * and returned; if the passed-in Array is <i>larger</i> than the size
    * of this List, then size() index will be set to null.
    *
-   * @param      array      the passed-in Array
+   * @param a the passed-in Array
+   * @return an array representation of this list
+   * @throws ArrayStoreException if the runtime type of a does not allow
+   *         an element in this list
+   * @throws NullPointerException if a is null
    */
-  public Object[] toArray(Object[] array)
+  public Object[] toArray(Object[] a)
   {
-    if (array.length < size)
-      array = (Object[]) Array.newInstance(array.getClass().getComponentType(), 
-        				   size);
-    else if (array.length > size)
-      array[size] = null;
-    System.arraycopy(data, 0, array, 0, size);
-    return array;
+    if (a.length < size)
+      a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
+                                       size);
+    else if (a.length > size)
+      a[size] = null;
+    System.arraycopy(data, 0, a, 0, size);
+    return a;
   }
 
   /**
-   * Trims the capacity of this List to be equal to its size; 
-   * a memory saver.   
+   * Retrieves the element at the user-supplied index.
+   *
+   * @param index the index of the element we are fetching
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
-  public void trimToSize()
+  public Object get(int index)
   {
-    // not a structural change from the perspective of iterators on this list, 
-    // so don't update modCount
-    Object[] newData = new Object[size];
-    System.arraycopy(data, 0, newData, 0, size);
-    data = newData;
+    checkBoundExclusive(index);
+    return data[index];
   }
 
-  private void writeObject(ObjectOutputStream out) throws IOException
+  /**
+   * Sets the element at the specified index.
+   *
+   * @param index the index at which the element is being set
+   * @param e the element to be set
+   * @return the element previously at the specified index
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
+   */
+  public Object set(int index, Object e)
+  {
+    checkBoundExclusive(index);
+    Object result = data[index];
+    data[index] = e;
+    return result;
+  }
+
+  /**
+   * Appends the supplied element to the end of this list.
+   *
+   * @param e the element to be appended to this list
+   * @return true, the add will always succeed
+   */
+  public boolean add(Object e)
+  {
+    modCount++;
+    if (size == data.length)
+      ensureCapacity(size + 1);
+    data[size++] = e;
+    return true;
+  }
+
+  /**
+   * Adds the supplied element at the specified index, shifting all
+   * elements currently at that index or higher one to the right.
+   *
+   * @param index the index at which the element is being added
+   * @param e the item being added
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   */
+  public void add(int index, Object e)
+  {
+    checkBoundInclusive(index);
+    modCount++;
+    if (size == data.length)
+      ensureCapacity(size + 1);
+    if (index != size)
+      System.arraycopy(data, index, data, index + 1, size - index);
+    data[index] = e;
+    size++;
+  }
+
+  /**
+   * Removes the element at the user-supplied index.
+   *
+   * @param index the index of the element to be removed
+   * @return the removed Object
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   */
+  public Object remove(int index)
+  {
+    checkBoundExclusive(index);
+    Object r = data[index];
+    modCount++;
+    if (index != --size)
+      System.arraycopy(data, index + 1, data, index, size - index);
+    // Aid for garbage collection by releasing this pointer.
+    data[size] = null;
+    return r;
+  }
+
+  /**
+   * Removes all elements from this List
+   */
+  public void clear()
+  {
+    if (size > 0)
+      {
+        modCount++;
+        // Allow for garbage collection.
+        Arrays.fill(data, 0, size, null);
+        size = 0;
+      }
+  }
+
+  /**
+   * Add each element in the supplied Collection to this List. It is undefined
+   * what happens if you modify the list while this is taking place; for
+   * example, if the collection contains this list.
+   *
+   * @param c a Collection containing elements to be added to this List
+   * @return true if the list was modified, in other words c is not empty
+   * @throws NullPointerException if c is null
+   */
+  public boolean addAll(Collection c)
+  {
+    return addAll(size, c);
+  }
+
+  /**
+   * Add all elements in the supplied collection, inserting them beginning
+   * at the specified index.
+   *
+   * @param index the index at which the elements will be inserted
+   * @param c the Collection containing the elements to be inserted
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; 0
+   * @throws NullPointerException if c is null
+   */
+  public boolean addAll(int index, Collection c)
+  {
+    checkBoundInclusive(index);
+    Iterator itr = c.iterator();
+    int csize = c.size();
+
+    modCount++;
+    if (csize + size > data.length)
+      ensureCapacity(size + csize);
+    int end = index + csize;
+    if (index != size)
+      System.arraycopy(data, index, data, end, csize);
+    size += csize;
+    for ( ; index < end; index++)
+      data[index] = itr.next();
+    return csize > 0;
+  }
+
+  /**
+   * Removes all elements in the half-open interval [fromIndex, toIndex).
+   * You asked for it if you call this with invalid arguments.
+   *
+   * @param fromIndex the first index which will be removed
+   * @param toIndex one greater than the last index which will be removed
+   */
+  protected void removeRange(int fromIndex, int toIndex)
+  {
+    if (fromIndex != toIndex)
+      {
+        modCount++;
+        System.arraycopy(data, toIndex, data, fromIndex, size - toIndex);
+        size -= toIndex - fromIndex;
+      }
+  }
+
+  /**
+   * Checks that the index is in the range of possible elements (inclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &gt; size
+   */
+  private void checkBoundInclusive(int index)
+  {
+    // Implementation note: we do not check for negative ranges here, since
+    // use of a negative index will cause an ArrayIndexOutOfBoundsException,
+    // a subclass of the required exception, with no effort on our part.
+    if (index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size: "
+                                          + size);
+  }
+
+  /**
+   * Checks that the index is in the range of existing elements (exclusive).
+   *
+   * @param index the index to check
+   * @throws IndexOutOfBoundsException if index &gt;= size
+   */
+  private void checkBoundExclusive(int index)
+  {
+    // Implementation note: we do not check for negative ranges here, since
+    // use of a negative index will cause an ArrayIndexOutOfBoundsException,
+    // a subclass of the required exception, with no effort on our part.
+    if (index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size: "
+                                          + size);
+  }
+
+  /**
+   * Remove from this list all elements contained in the given collection.
+   * This is not public, due to Sun's API, but this performs in linear
+   * time while the default behavior of AbstractList would be quadratic.
+   *
+   * @param c the collection to filter out
+   * @return true if this list changed
+   * @throws NullPointerException if c is null
+   */
+  boolean removeAllInternal(Collection c)
   {
     int i;
+    int j;
+    for (i = 0; i < size; i++)
+      if (c.contains(data[i]))
+        break;
+    if (i == size)
+      return false;
 
-    // The 'size' field.
-    out.defaultWriteObject();
-
-    // FIXME: Do we really want to serialize unused list entries??
-    out.writeInt(data.length);
-    for (i = 0; i < data.length; i++)
-      out.writeObject(data[i]);
+    modCount++;
+    for (j = i++; i < size; i++)
+      if (! c.contains(data[i]))
+        data[j++] = data[i];
+    size -= i - j;
+    return true;
   }
 
-  private void readObject(ObjectInputStream in)
+  /**
+   * Retain in this vector only the elements contained in the given collection.
+   * This is not public, due to Sun's API, but this performs in linear
+   * time while the default behavior of AbstractList would be quadratic.
+   *
+   * @param c the collection to filter by
+   * @return true if this vector changed
+   * @throws NullPointerException if c is null
+   * @since 1.2
+   */
+  boolean retainAllInternal(Collection c)
+  {
+    int i;
+    int j;
+    for (i = 0; i < size; i++)
+      if (! c.contains(data[i]))
+        break;
+    if (i == size)
+      return false;
+
+    modCount++;
+    for (j = i++; i < size; i++)
+      if (c.contains(data[i]))
+        data[j++] = data[i];
+    size -= i - j;
+    return true;
+  }
+
+  /**
+   * Serializes this object to the given stream.
+   *
+   * @param out the stream to write to
+   * @throws IOException if the underlying stream fails
+   * @serialData the size field (int), the length of the backing array
+   *             (int), followed by its elements (Objects) in proper order.
+   */
+  private void writeObject(ObjectOutputStream s) throws IOException
+  {
+    // The 'size' field.
+    s.defaultWriteObject();
+    // We serialize unused list entries to preserve capacity.
+    int len = data.length;
+    s.writeInt(len);
+    for (int i = 0; i < len; i++)
+      s.writeObject(data[i]);
+  }
+
+  /**
+   * Deserializes this object from the given stream.
+   *
+   * @param in the stream to read from
+   * @throws ClassNotFoundException if the underlying stream fails
+   * @throws IOException if the underlying stream fails
+   * @serialData the size field (int), the length of the backing array
+   *             (int), followed by its elements (Objects) in proper order.
+   */
+  private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    int i;
-    int capacity;
-
     // the `size' field.
-    in.defaultReadObject();
-
-    capacity = in.readInt();
+    s.defaultReadObject();
+    int capacity = s.readInt();
     data = new Object[capacity];
-
-    for (i = 0; i < capacity; i++)
-      data[i] = in.readObject();
+    for (int i = 0; i < capacity; i++)
+      data[i] = s.readObject();
   }
 }

@@ -1,5 +1,5 @@
-/* HashSet.java -- a class providing a HashMap-backet Set
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+/* HashSet.java -- a class providing a HashMap-backed Set
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -33,87 +33,115 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * This class provides a HashMap-backed implementation of the 
- * Set interface.
- *
- * Each element in the Set is a key in the backing HashMap; each key
- * maps to a static token, denoting that the key does, in fact, exist.
+ * This class provides a HashMap-backed implementation of the Set interface.
+ * <p>
  *
  * Most operations are O(1), assuming no hash collisions.  In the worst
- * case (where all hases collide), operations are O(n).
+ * case (where all hashes collide), operations are O(n). Setting the
+ * initial capacity too low will force many resizing operations, but
+ * setting the initial capacity too high (or loadfactor too low) leads
+ * to wasted memory and slower iteration.
+ * <p>
  *
- * HashSet is a part of the JDK1.2 Collections API.
+ * HashSet accepts the null key and null values.  It is not synchronized,
+ * so if you need multi-threaded access, consider using:<br>
+ * <code>Set s = Collections.synchronizedSet(new HashSet(...));</code>
+ * <p>
  *
- * @author      Jon Zeppieri
+ * The iterators are <i>fail-fast</i>, meaning that any structural
+ * modification, except for <code>remove()</code> called on the iterator
+ * itself, cause the iterator to throw a
+ * {@link ConcurrentModificationException} rather than exhibit
+ * non-deterministic behavior.
+ *
+ * @author Jon Zeppieri
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see Set
+ * @see TreeSet
+ * @see Collections#synchronizedSet(Set)
+ * @see HashMap
+ * @see LinkedHashSet
+ * @since 1.2
+ * @status updated to 1.4
  */
 public class HashSet extends AbstractSet
   implements Set, Cloneable, Serializable
 {
-  /** the HashMap which backs this Set */
-  transient HashMap map;
-  static final long serialVersionUID = -5024744406713321676L;
+  /**
+   * Compatible with JDK 1.2.
+   */
+  private static final long serialVersionUID = -5024744406713321676L;
 
   /**
-   * construct a new, empty HashSet whose backing HashMap has the default 
-   * capacity and loadFacor
+   * The HashMap which backs this Set.
+   */
+  private transient HashMap map;
+
+  /**
+   * Construct a new, empty HashSet whose backing HashMap has the default
+   * capacity (11) and loadFacor (0.75).
    */
   public HashSet()
   {
-    map = new HashMap();
+    this(HashMap.DEFAULT_CAPACITY, HashMap.DEFAULT_LOAD_FACTOR);
   }
 
   /**
-   * construct a new, empty HashSet whose backing HashMap has the supplied
-   * capacity and the default load factor
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and the default load factor (0.75).
    *
-   * @param          initialCapacity          the initial capacity of the backing
-   *                                          HashMap
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @throws IllegalArgumentException if the capacity is negative
    */
   public HashSet(int initialCapacity)
   {
-    map = new HashMap(initialCapacity);
+    this(initialCapacity, HashMap.DEFAULT_LOAD_FACTOR);
   }
 
   /**
-   * construct a new, empty HashSet whose backing HashMap has the supplied
-   * capacity and load factor
+   * Construct a new, empty HashSet whose backing HashMap has the supplied
+   * capacity and load factor.
    *
-   * @param          initialCapacity          the initial capacity of the backing
-   *                                          HashMap
-   * @param          loadFactor               the load factor of the backing HashMap
+   * @param initialCapacity the initial capacity of the backing HashMap
+   * @param loadFactor the load factor of the backing HashMap
+   * @throws IllegalArgumentException if either argument is negative, or
+   *         if loadFactor is POSITIVE_INFINITY or NaN
    */
   public HashSet(int initialCapacity, float loadFactor)
   {
-    map = new HashMap(initialCapacity, loadFactor);
+    map = init(initialCapacity, loadFactor);
   }
 
   /**
-   * construct a new HashSet with the same elements as are in the supplied
-   * collection (eliminating any duplicates, of course; the backing HashMap
-   * will have the default capacity and load factor
+   * Construct a new HashSet with the same elements as are in the supplied
+   * collection (eliminating any duplicates, of course). The backing storage
+   * has twice the size of the collection, or the default size of 11,
+   * whichever is greater; and the default load factor (0.75).
    *
-   * @param          c          a collection containing the elements with
-   *                            which this set will be initialized
+   * @param c a collection of initial set elements
+   * @throws NullPointerException if c is null
    */
   public HashSet(Collection c)
   {
-    map = new HashMap();
+    this(Math.max(2 * c.size(), HashMap.DEFAULT_CAPACITY));
     addAll(c);
   }
 
   /**
-   * adds the given Object to the set if it is not already in the Set,
-   * returns true if teh element was added, false otherwise
+   * Adds the given Object to the set if it is not already in the Set.
+   * This set permits a null element.
    *
-   * @param       o       the Object to add to this Set
+   * @param o the Object to add to this Set
+   * @return true if the set did not already contain o
    */
   public boolean add(Object o)
   {
-    return (map.put(o, Boolean.TRUE) == null);
+    return map.put(o, "") == null;
   }
 
   /**
-   * empties this Set of all elements; this is a fast operation [O(1)]
+   * Empties this Set of all elements; this takes constant time.
    */
   public void clear()
   {
@@ -121,53 +149,67 @@ public class HashSet extends AbstractSet
   }
 
   /**
-   * returns a shallow copy of this Set (the Set itself is cloned; its 
-   * elements are not)
+   * Returns a shallow copy of this Set. The Set itself is cloned; its
+   * elements are not.
+   *
+   * @return a shallow clone of the set
    */
   public Object clone()
   {
     HashSet copy = null;
     try
       {
-	copy = (HashSet) super.clone();
+        copy = (HashSet) super.clone();
       }
     catch (CloneNotSupportedException x)
       {
+        // Impossible to get here.
       }
     copy.map = (HashMap) map.clone();
     return copy;
   }
 
   /**
-   * returns true if the supplied element is in this Set, false otherwise
+   * Returns true if the supplied element is in this Set.
    *
-   * @param        o         the Object whose presence in this Set we are testing for
+   * @param o the Object to look for
+   * @return true if it is in the set
    */
   public boolean contains(Object o)
   {
     return map.containsKey(o);
   }
 
-  /** 
-   * returns true if this set has no elements in it (size() == 0)
+  /**
+   * Returns true if this set has no elements in it.
+   *
+   * @return <code>size() == 0</code>.
    */
   public boolean isEmpty()
   {
-    return map.isEmpty();
+    return map.size == 0;
   }
 
   /**
-   * returns an Iterator over the elements of this Set; the Iterator allows
-   * removal of elements
+   * Returns an Iterator over the elements of this Set, which visits the
+   * elements in no particular order.  For this class, the Iterator allows
+   * removal of elements. The iterator is fail-fast, and will throw a
+   * ConcurrentModificationException if the set is modified externally.
+   *
+   * @return a set iterator
+   * @see ConcurrentModificationException
    */
   public Iterator iterator()
   {
-    return map.keySet().iterator();
+    // Avoid creating intermediate keySet() object by using non-public API.
+    return map.iterator(HashMap.KEYS);
   }
 
   /**
-   * removes the supplied Object from this Set if it is in the Set; returns
-   * true if an element was removed, false otherwise
+   * Removes the supplied Object from this Set if it is in the Set.
+   *
+   * @param o the object to remove
+   * @return true if an element was removed
    */
   public boolean remove(Object o)
   {
@@ -175,18 +217,42 @@ public class HashSet extends AbstractSet
   }
 
   /**
-   * returns the number of elements in this Set
+   * Returns the number of elements in this Set (its cardinality).
+   *
+   * @return the size of the set
    */
   public int size()
   {
-    return map.size();
+    return map.size;
   }
 
-  /** Serialize this Object in a manner which is binary-compatible with the 
-    * JDK */
+  /**
+   * Helper method which initializes the backing Map. Overridden by
+   * LinkedHashSet for correct semantics.
+   *
+   * @param capacity the initial capacity
+   * @param load the initial load factor
+   * @return the backing HashMap
+   */
+  HashMap init(int capacity, float load)
+  {
+    return new HashMap(capacity, load);
+  }
+
+  /**
+   * Serializes this object to the given stream.
+   *
+   * @param s the stream to write to
+   * @throws IOException if the underlying stream fails
+   * @serialData the <i>capacity</i> (int) and <i>loadFactor</i> (float)
+   *             of the backing store, followed by the set size (int),
+   *             then a listing of its elements (Object) in no order
+   */
   private void writeObject(ObjectOutputStream s) throws IOException
   {
-    Iterator it = iterator();
+    s.defaultWriteObject();
+    // Avoid creating intermediate keySet() object by using non-public API.
+    Iterator it = map.iterator(HashMap.KEYS);
     s.writeInt(map.buckets.length);
     s.writeFloat(map.loadFactor);
     s.writeInt(map.size);
@@ -194,25 +260,23 @@ public class HashSet extends AbstractSet
       s.writeObject(it.next());
   }
 
-  /** Deserialize this Object in a manner which is binary-compatible with 
-    * the JDK */
-  private void readObject(ObjectInputStream s) throws IOException,
-    ClassNotFoundException
+  /**
+   * Deserializes this object from the given stream.
+   *
+   * @param s the stream to read from
+   * @throws ClassNotFoundException if the underlying stream fails
+   * @throws IOException if the underlying stream fails
+   * @serialData the <i>capacity</i> (int) and <i>loadFactor</i> (float)
+   *             of the backing store, followed by the set size (int),
+   *             then a listing of its elements (Object) in no order
+   */
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
   {
-    int i, size, capacity;
-    float loadFactor;
-    Object element;
+    s.defaultReadObject();
 
-    capacity = s.readInt();
-    loadFactor = s.readFloat();
-    size = s.readInt();
-
-    map = new HashMap(capacity, loadFactor);
-
-    for (i = 0; i < size; i++)
-      {
-	element = s.readObject();
-	map.put(element, Boolean.TRUE);
-      }
+    map = init(s.readInt(), s.readFloat());
+    for (int size = s.readInt(); size > 0; size--)
+      map.put(s.readObject(), "");
   }
 }

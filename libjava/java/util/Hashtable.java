@@ -66,7 +66,9 @@ import java.io.ObjectOutputStream;
  * Unlike HashMap, Hashtable does not accept `null' as a key value. Also,
  * all accesses are synchronized: in a single thread environment, this is
  * expensive, but in a multi-thread environment, this saves you the effort
- * of extra synchronization.
+ * of extra synchronization. However, the old-style enumerators are not
+ * synchronized, because they can lead to unspecified behavior even if
+ * they were synchronized. You have been warned.
  * <p>
  *
  * The iterators are <i>fail-fast</i>, meaning that any structural
@@ -84,6 +86,7 @@ import java.io.ObjectOutputStream;
  * @see IdentityHashMap
  * @see LinkedHashMap
  * @since 1.0
+ * @status updated to 1.4
  */
 public class Hashtable extends Dictionary
   implements Map, Cloneable, Serializable
@@ -92,6 +95,12 @@ public class Hashtable extends Dictionary
    * early documentation specified this value as 101. That is incorrect.
    */
   private static final int DEFAULT_CAPACITY = 11;
+
+  /** An "enum" of iterator types. */
+  // Package visible for use by nested classes.
+  static final int KEYS = 0,
+                   VALUES = 1,
+                   ENTRIES = 2;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
@@ -106,39 +115,57 @@ public class Hashtable extends Dictionary
   /**
    * The rounded product of the capacity and the load factor; when the number
    * of elements exceeds the threshold, the Hashtable calls
-   * <pre>rehash()</pre>.
+   * <code>rehash()</code>.
    * @serial
    */
-  int threshold;
+  private int threshold;
 
   /**
    * Load factor of this Hashtable:  used in computing the threshold.
    * @serial
    */
-  final float loadFactor;
+  private final float loadFactor;
 
   /**
    * Array containing the actual key-value mappings.
    */
+  // Package visible for use by nested classes.
   transient HashEntry[] buckets;
 
   /**
    * Counts the number of modifications this Hashtable has undergone, used
    * by Iterators to know when to throw ConcurrentModificationExceptions.
    */
+  // Package visible for use by nested classes.
   transient int modCount;
 
   /**
    * The size of this Hashtable:  denotes the number of key-value pairs.
    */
+  // Package visible for use by nested classes.
   transient int size;
+
+  /**
+   * The cache for {@link #keySet()}.
+   */
+  private transient Set keys;
+
+  /**
+   * The cache for {@link #values()}.
+   */
+  private transient Collection values;
+
+  /**
+   * The cache for {@link #entrySet()}.
+   */
+  private transient Set entries;
 
   /**
    * Class to represent an entry in the hash table. Holds a single key-value
    * pair. A Hashtable Entry is identical to a HashMap Entry, except that
    * `null' is not allowed for keys and values.
    */
-  static class HashEntry extends BasicMapEntry
+  private static final class HashEntry extends BasicMapEntry
   {
     /** The next entry in the linked list. */
     HashEntry next;
@@ -159,7 +186,7 @@ public class Hashtable extends Dictionary
      * @return the prior value
      * @throws NullPointerException if <code>newVal</code> is null
      */
-    public final Object setValue(Object newVal)
+    public Object setValue(Object newVal)
     {
       if (newVal == null)
         throw new NullPointerException();
@@ -193,15 +220,15 @@ public class Hashtable extends Dictionary
   public Hashtable(Map m)
   {
     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
-    putAll(m);
+    putAllInternal(m);
   }
 
   /**
    * Construct a new Hashtable with a specific inital capacity and
    * default load factor of 0.75.
    *
-   * @param initialCapacity the initial capacity of this Hashtable (>=0)
-   * @throws IllegalArgumentException if (initialCapacity < 0)
+   * @param initialCapacity the initial capacity of this Hashtable (&gt;= 0)
+   * @throws IllegalArgumentException if (initialCapacity &lt; 0)
    */
   public Hashtable(int initialCapacity)
   {
@@ -212,10 +239,10 @@ public class Hashtable extends Dictionary
    * Construct a new Hashtable with a specific initial capacity and
    * load factor.
    *
-   * @param initialCapacity the initial capacity (>=0)
-   * @param loadFactor the load factor (>0, not NaN)
-   * @throws IllegalArgumentException if (initialCapacity < 0) ||
-   *                                     ! (loadFactor > 0.0)
+   * @param initialCapacity the initial capacity (&gt;= 0)
+   * @param loadFactor the load factor (&gt; 0, not NaN)
+   * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
+   *                                     ! (loadFactor &gt; 0.0)
    */
   public Hashtable(int initialCapacity, float loadFactor)
   {
@@ -251,30 +278,36 @@ public class Hashtable extends Dictionary
   }
 
   /**
-   * Return an enumeration of the keys of this table.
+   * Return an enumeration of the keys of this table. There's no point
+   * in synchronizing this, as you have already been warned that the
+   * enumeration is not specified to be thread-safe.
+   *
    * @return the keys
    * @see #elements()
    * @see #keySet()
    */
-  public synchronized Enumeration keys()
+  public Enumeration keys()
   {
-    return new Enumerator(Enumerator.KEYS);
+    return new Enumerator(KEYS);
   }
 
   /**
-   * Return an enumeration of the values of this table.
+   * Return an enumeration of the values of this table. There's no point
+   * in synchronizing this, as you have already been warned that the
+   * enumeration is not specified to be thread-safe.
+   *
    * @return the values
    * @see #keys()
    * @see #values()
    */
-  public synchronized Enumeration elements()
+  public Enumeration elements()
   {
-    return new Enumerator(Enumerator.VALUES);
+    return new Enumerator(VALUES);
   }
 
   /**
-   * Returns true if this Hashtable contains a value <pre>o</pre>,
-   * such that <pre>o.equals(value)</pre>.  This is the same as
+   * Returns true if this Hashtable contains a value <code>o</code>,
+   * such that <code>o.equals(value)</code>.  This is the same as
    * <code>containsValue()</code>, and is O(n).
    * <p>
    *
@@ -284,22 +317,37 @@ public class Hashtable extends Dictionary
    *
    * @param value the value to search for in this Hashtable
    * @return true if at least one key maps to the value
-   * @throws NullPointerException if <pre>value</pre> is null
+   * @throws NullPointerException if <code>value</code> is null
    * @see #containsValue(Object)
    * @see #containsKey(Object)
    */
   public synchronized boolean contains(Object value)
   {
-    // Check if value is null in case Hashtable is empty.
+    // Check if value is null.
     if (value == null)
       throw new NullPointerException();
+    return containsValue(value);
+  }
 
+  /**
+   * Returns true if this Hashtable contains a value <code>o</code>, such that
+   * <code>o.equals(value)</code>. This is the new API for the old
+   * <code>contains()</code>, except that it is forgiving of null.
+   *
+   * @param value the value to search for in this Hashtable
+   * @return true if at least one key maps to the value
+   * @see #contains(Object)
+   * @see #containsKey(Object)
+   * @since 1.2
+   */
+  public boolean containsValue(Object value)
+  {
     for (int i = buckets.length - 1; i >= 0; i--)
       {
         HashEntry e = buckets[i];
         while (e != null)
           {
-            if (value.equals(e.value))
+            if (AbstractCollection.equals(value, e.value))
               return true;
             e = e.next;
           }
@@ -308,24 +356,7 @@ public class Hashtable extends Dictionary
   }
 
   /**
-   * Returns true if this Hashtable contains a value <pre>o</pre>, such that
-   * <pre>o.equals(value)</pre>. This is the new API for the old
-   * <code>contains()</code>.
-   *
-   * @param value the value to search for in this Hashtable
-   * @return true if at least one key maps to the value
-   * @throws NullPointerException if <pre>value</pre> is null
-   * @see #contains(Object)
-   * @see #containsKey(Object)
-   * @since 1.2
-   */
-  public boolean containsValue(Object value)
-  {
-    return contains(value);
-  }
-
-  /**
-   * Returns true if the supplied object <pre>equals()</pre> a key
+   * Returns true if the supplied object <code>equals()</code> a key
    * in this Hashtable.
    *
    * @param key the key to search for in this Hashtable
@@ -348,7 +379,7 @@ public class Hashtable extends Dictionary
 
   /**
    * Return the value in this Hashtable associated with the supplied key,
-   * or <pre>null</pre> if the key maps to nothing.
+   * or <code>null</code> if the key maps to nothing.
    *
    * @param key the key for which to fetch an associated value
    * @return what the key maps to, if present
@@ -383,7 +414,6 @@ public class Hashtable extends Dictionary
    */
   public synchronized Object put(Object key, Object value)
   {
-    modCount++;
     int idx = hash(key);
     HashEntry e = buckets[idx];
 
@@ -407,6 +437,7 @@ public class Hashtable extends Dictionary
       }
 
     // At this point, we know we need to add a new entry.
+    modCount++;
     if (++size > threshold)
       {
         rehash();
@@ -425,15 +456,18 @@ public class Hashtable extends Dictionary
   /**
    * Removes from the table and returns the value which is mapped by the
    * supplied key. If the key maps to nothing, then the table remains
-   * unchanged, and <pre>null</pre> is returned.
+   * unchanged, and <code>null</code> is returned.
+   * <b>NOTE:</b>Map.remove and Dictionary.remove disagree whether null
+   * is a valid parameter; at the moment, this implementation obeys Map.remove,
+   * and silently ignores null.
    *
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
-   * @throws NullPointerException if key is null
    */
   public synchronized Object remove(Object key)
   {
-    modCount++;
+    if (key == null)
+      return null;
     int idx = hash(key);
     HashEntry e = buckets[idx];
     HashEntry last = null;
@@ -442,6 +476,7 @@ public class Hashtable extends Dictionary
       {
         if (key.equals(e.key))
           {
+            modCount++;
             if (last == null)
               buckets[idx] = e.next;
             else
@@ -488,9 +523,12 @@ public class Hashtable extends Dictionary
    */
   public synchronized void clear()
   {
-    modCount++;
-    Arrays.fill(buckets, null);
-    size = 0;
+    if (size > 0)
+      {
+        modCount++;
+        Arrays.fill(buckets, null);
+        size = 0;
+      }
   }
 
   /**
@@ -511,36 +549,18 @@ public class Hashtable extends Dictionary
         // This is impossible.
       }
     copy.buckets = new HashEntry[buckets.length];
-
-    for (int i = buckets.length - 1; i >= 0; i--)
-      {
-        HashEntry e = buckets[i];
-        HashEntry last = null;
-
-        while (e != null)
-          {
-            if (last == null)
-              {
-                last = new HashEntry(e.key, e.value);
-                copy.buckets[i] = last;
-              }
-            else
-              {
-                last.next = new HashEntry(e.key, e.value);
-                last = last.next;
-              }
-            e = e.next;
-          }
-      }
+    copy.putAllInternal(this);
+    // Clear the caches.
+    copy.keys = null;
+    copy.values = null;
+    copy.entries = null;
     return copy;
   }
 
   /**
-   * Converts this Hashtable to a String, surrounded by braces (<pre>'{'</pre>
-   * and <pre>'}'</pre>), key/value pairs listed with an equals sign between,
-   * (<pre>'='</pre>), and pairs separated by comma and space
-   * (<pre>", "</pre>).
-   * <p>
+   * Converts this Hashtable to a String, surrounded by braces, and with
+   * key/value pairs listed with an equals sign between, separated by a
+   * comma and space. For example, <code>"{a=1, b=2}"</code>.<p>
    *
    * NOTE: if the <code>toString()</code> method of any key or value
    * throws an exception, this will fail for the same reason.
@@ -552,7 +572,7 @@ public class Hashtable extends Dictionary
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized HashIterator instead.
-    Iterator entries = new HashIterator(HashIterator.ENTRIES);
+    Iterator entries = new HashIterator(ENTRIES);
     StringBuffer r = new StringBuffer("{");
     for (int pos = size; pos > 0; pos--)
       {
@@ -568,9 +588,11 @@ public class Hashtable extends Dictionary
    * Returns a "set view" of this Hashtable's keys. The set is backed by
    * the hashtable, so changes in one show up in the other.  The set supports
    * element removal, but not element addition.  The set is properly
-   * synchronized on the original hashtable.  The set will throw a
-   * {@link NullPointerException} if null is passed to <code>contains</code>,
-   * <code>remove</code>, or related methods.
+   * synchronized on the original hashtable.  Sun has not documented the
+   * proper interaction of null with this set, but has inconsistent behavior
+   * in the JDK. Therefore, in this implementation, contains, remove,
+   * containsAll, retainAll, removeAll, and equals just ignore a null key
+   * rather than throwing a {@link NullPointerException}.
    *
    * @return a set view of the keys
    * @see #values()
@@ -579,50 +601,56 @@ public class Hashtable extends Dictionary
    */
   public Set keySet()
   {
-    // Create a synchronized AbstractSet with custom implementations of those
-    // methods that can be overridden easily and efficiently.
-    Set r = new AbstractSet()
-    {
-      public int size()
+    if (keys == null)
       {
-        return size;
-      }
+        // Create a synchronized AbstractSet with custom implementations of
+        // those methods that can be overridden easily and efficiently.
+        Set r = new AbstractSet()
+        {
+          public int size()
+          {
+            return size;
+          }
 
-      public Iterator iterator()
-      {
-        return new HashIterator(HashIterator.KEYS);
-      }
+          public Iterator iterator()
+          {
+            return new HashIterator(KEYS);
+          }
 
-      public void clear()
-      {
-        Hashtable.this.clear();
-      }
+          public void clear()
+          {
+            Hashtable.this.clear();
+          }
 
-      public boolean contains(Object o)
-      {
-        return Hashtable.this.containsKey(o);
-      }
+          public boolean contains(Object o)
+          {
+            if (o == null)
+              return false;
+            return containsKey(o);
+          }
 
-      public boolean remove(Object o)
-      {
-        return (Hashtable.this.remove(o) != null);
+          public boolean remove(Object o)
+          {
+            return Hashtable.this.remove(o) != null;
+          }
+        };
+        // We must specify the correct object to synchronize upon, hence the
+        // use of a non-public API
+        keys = new Collections.SynchronizedSet(this, r);
       }
-    };
-
-    // We must specify the correct object to synchronize upon, hence the
-    // use of a non-public API
-    return new Collections.SynchronizedSet(this, r);
+    return keys;
   }
-
 
   /**
    * Returns a "collection view" (or "bag view") of this Hashtable's values.
    * The collection is backed by the hashtable, so changes in one show up
    * in the other.  The collection supports element removal, but not element
    * addition.  The collection is properly synchronized on the original
-   * hashtable.  The collection will throw a {@link NullPointerException}
-   * if null is passed to <code>contains</code> or related methods, but not
-   * if passed to <code>remove</code> or related methods.
+   * hashtable.  Sun has not documented the proper interaction of null with
+   * this set, but has inconsistent behavior in the JDK. Therefore, in this
+   * implementation, contains, remove, containsAll, retainAll, removeAll, and
+   * equals just ignore a null value rather than throwing a
+   * {@link NullPointerException}.
    *
    * @return a bag view of the values
    * @see #keySet()
@@ -631,46 +659,45 @@ public class Hashtable extends Dictionary
    */
   public Collection values()
   {
-    // We don't bother overriding many of the optional methods, as doing so
-    // wouldn't provide any significant performance advantage.
-    Collection r = new AbstractCollection()
-    {
-      public int size()
+    if (values == null)
       {
-        return size;
-      }
+        // We don't bother overriding many of the optional methods, as doing so
+        // wouldn't provide any significant performance advantage.
+        Collection r = new AbstractCollection()
+        {
+          public int size()
+          {
+            return size;
+          }
 
-      public Iterator iterator()
-      {
-        return new HashIterator(HashIterator.VALUES);
-      }
+          public Iterator iterator()
+          {
+            return new HashIterator(VALUES);
+          }
 
-      public void clear()
-      {
-        Hashtable.this.clear();
+          public void clear()
+          {
+            Hashtable.this.clear();
+          }
+        };
+        // We must specify the correct object to synchronize upon, hence the
+        // use of a non-public API
+        values = new Collections.SynchronizedCollection(this, r);
       }
-
-      // Override this so that we check for null
-      public boolean contains(Object o)
-      {
-        return Hashtable.this.contains(o);
-      }
-    };
-
-    // We must specify the correct object to synchronize upon, hence the
-    // use of a non-public API
-    return new Collections.SynchronizedCollection(this, r);
+    return values;
   }
 
   /**
    * Returns a "set view" of this Hashtable's entries. The set is backed by
    * the hashtable, so changes in one show up in the other.  The set supports
    * element removal, but not element addition.  The set is properly
-   * synchronized on the original hashtable.  The set will throw a
-   * {@link NullPointerException} if the Map.Entry passed to
-   * <code>contains</code>, <code>remove</code>, or related methods returns
-   * null for <code>getKey</code>, but not if the Map.Entry is null or
-   * returns null for <code>getValue</code>.
+   * synchronized on the original hashtable.  Sun has not documented the
+   * proper interaction of null with this set, but has inconsistent behavior
+   * in the JDK. Therefore, in this implementation, contains, remove,
+   * containsAll, retainAll, removeAll, and equals just ignore a null entry,
+   * or an entry with a null key or value, rather than throwing a
+   * {@link NullPointerException}. However, calling entry.setValue(null)
+   * will fail.
    * <p>
    *
    * Note that the iterators for all three views, from keySet(), entrySet(),
@@ -684,49 +711,52 @@ public class Hashtable extends Dictionary
    */
   public Set entrySet()
   {
-    // Create an AbstractSet with custom implementations of those methods that
-    // can be overridden easily and efficiently.
-    Set r = new AbstractSet()
-    {
-      public int size()
+    if (entries == null)
       {
-        return size;
-      }
-
-      public Iterator iterator()
-      {
-        return new HashIterator(HashIterator.ENTRIES);
-      }
-
-      public void clear()
-      {
-        Hashtable.this.clear();
-      }
-
-      public boolean contains(Object o)
-      {
-        return getEntry(o) != null;
-      }
-
-      public boolean remove(Object o)
-      {
-        HashEntry e = getEntry(o);
-        if (e != null)
+        // Create an AbstractSet with custom implementations of those methods
+        // that can be overridden easily and efficiently.
+        Set r = new AbstractSet()
+        {
+          public int size()
           {
-            Hashtable.this.remove(e.key);
-            return true;
+            return size;
           }
-        return false;
-      }
-    };
 
-    // We must specify the correct object to synchronize upon, hence the
-    // use of a non-public API
-    return new Collections.SynchronizedSet(this, r);
+          public Iterator iterator()
+          {
+            return new HashIterator(ENTRIES);
+          }
+
+          public void clear()
+          {
+            Hashtable.this.clear();
+          }
+
+          public boolean contains(Object o)
+          {
+            return getEntry(o) != null;
+          }
+
+          public boolean remove(Object o)
+          {
+            HashEntry e = getEntry(o);
+            if (e != null)
+              {
+                Hashtable.this.remove(e.key);
+                return true;
+              }
+            return false;
+          }
+        };
+        // We must specify the correct object to synchronize upon, hence the
+        // use of a non-public API
+        entries = new Collections.SynchronizedSet(this, r);
+      }
+    return entries;
   }
 
   /**
-   * Returns true if this Hashtable equals the supplied Object <pre>o</pre>.
+   * Returns true if this Hashtable equals the supplied Object <code>o</code>.
    * As specified by Map, this is:
    * <pre>
    * (o instanceof Map) && entrySet().equals(((Map) o).entrySet());
@@ -759,7 +789,7 @@ public class Hashtable extends Dictionary
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized HashIterator instead.
-    Iterator itr = new HashIterator(HashIterator.ENTRIES);
+    Iterator itr = new HashIterator(ENTRIES);
     int hashcode = 0;
     for (int pos = size; pos > 0; pos--)
       hashcode += itr.next().hashCode();
@@ -782,27 +812,53 @@ public class Hashtable extends Dictionary
 
   /**
    * Helper method for entrySet(), which matches both key and value
-   * simultaneously.
+   * simultaneously. Ignores null, as mentioned in entrySet().
    *
    * @param o the entry to match
    * @return the matching entry, if found, or null
-   * @throws NullPointerException if me.getKey() returns null
    * @see #entrySet()
    */
   private HashEntry getEntry(Object o)
   {
-    if (!(o instanceof Map.Entry))
+    if (! (o instanceof Map.Entry))
       return null;
-    Map.Entry me = (Map.Entry) o;
-    int idx = hash(me.getKey());
+    Object key = ((Map.Entry) o).getKey();
+    if (key == null)
+      return null;
+
+    int idx = hash(key);
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (e.equals(me))
+        if (o.equals(e))
           return e;
         e = e.next;
       }
     return null;
+  }
+
+  /**
+   * A simplified, more efficient internal implementation of putAll(). The 
+   * Map constructor and clone() should not call putAll or put, in order to 
+   * be compatible with the JDK implementation with respect to subclasses.
+   *
+   * @param m the map to initialize this from
+   */
+  void putAllInternal(Map m)
+  {
+    Iterator itr = m.entrySet().iterator();
+    int msize = m.size();
+    this.size = msize;
+
+    for (; msize > 0; msize--)
+      {
+	Map.Entry e = (Map.Entry) itr.next();
+	Object key = e.getKey();
+	int idx = hash(key);
+	HashEntry he = new HashEntry(key, e.getValue());
+	he.next = buckets[idx];
+	buckets[idx] = he;
+      }
   }
 
   /**
@@ -813,7 +869,8 @@ public class Hashtable extends Dictionary
    * <p>
    *
    * This is not specified, but the new size is twice the current size plus
-   * one; this number is not always prime, unfortunately.
+   * one; this number is not always prime, unfortunately. This implementation
+   * is not synchronized, as it is only invoked from synchronized methods.
    */
   protected void rehash()
   {
@@ -854,8 +911,8 @@ public class Hashtable extends Dictionary
    *
    * @param s the stream to write to
    * @throws IOException if the underlying stream fails
-   * @serialData the <i>capacity</i>(int) that is the length of the
-   *             bucket array, the <i>size</i>(int) of the hash map
+   * @serialData the <i>capacity</i> (int) that is the length of the
+   *             bucket array, the <i>size</i> (int) of the hash map
    *             are emitted first.  They are followed by size entries,
    *             each consisting of a key (Object) and a value (Object).
    */
@@ -870,7 +927,7 @@ public class Hashtable extends Dictionary
     // Since we are already synchronized, and entrySet().iterator()
     // would repeatedly re-lock/release the monitor, we directly use the
     // unsynchronized HashIterator instead.
-    Iterator it = new HashIterator(HashIterator.ENTRIES);
+    Iterator it = new HashIterator(ENTRIES);
     while (it.hasNext())
       {
         HashEntry entry = (HashEntry) it.next();
@@ -885,8 +942,8 @@ public class Hashtable extends Dictionary
    * @param s the stream to read from
    * @throws ClassNotFoundException if the underlying stream fails
    * @throws IOException if the underlying stream fails
-   * @serialData the <i>capacity</i>(int) that is the length of the
-   *             bucket array, the <i>size</i>(int) of the hash map
+   * @serialData the <i>capacity</i> (int) that is the length of the
+   *             bucket array, the <i>size</i> (int) of the hash map
    *             are emitted first.  They are followed by size entries,
    *             each consisting of a key (Object) and a value (Object).
    */
@@ -901,7 +958,8 @@ public class Hashtable extends Dictionary
     int len = s.readInt();
 
     // Read and use key/value pairs.
-    for ( ; len > 0; len--)
+    // TODO: should we be defensive programmers, and check for illegal nulls?
+    while (--len >= 0)
       put(s.readObject(), s.readObject());
   }
 
@@ -916,13 +974,8 @@ public class Hashtable extends Dictionary
    *
    * @author Jon Zeppieri
    */
-  class HashIterator implements Iterator
+  private final class HashIterator implements Iterator
   {
-    /** "enum" of iterator types. */
-    static final int KEYS = 0,
-                     VALUES = 1,
-                     ENTRIES = 2;
-
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
      * or {@link #ENTRIES}.
@@ -988,14 +1041,14 @@ public class Hashtable extends Dictionary
       last = e;
       if (type == VALUES)
         return e.value;
-      else if (type == KEYS)
+      if (type == KEYS)
         return e.key;
       return e;
     }
 
     /**
      * Removes from the backing Hashtable the last element which was fetched
-     * with the <pre>next()</pre> method.
+     * with the <code>next()</code> method.
      * @throws ConcurrentModificationException if the hashtable was modified
      * @throws IllegalStateException if called when there is no last element
      */
@@ -1007,10 +1060,10 @@ public class Hashtable extends Dictionary
         throw new IllegalStateException();
 
       Hashtable.this.remove(last.key);
-      knownMod++;
       last = null;
+      knownMod++;
     }
-  }
+  } // class HashIterator
 
 
   /**
@@ -1027,21 +1080,21 @@ public class Hashtable extends Dictionary
    *
    * @author Jon Zeppieri
    */
-  class Enumerator implements Enumeration
+  private final class Enumerator implements Enumeration
   {
-    /** "enum" of iterator types. */
-    static final int KEYS = 0,
-                     VALUES = 1;
-
     /**
      * The type of this Iterator: {@link #KEYS} or {@link #VALUES}.
      */
-    int type;
+    final int type;
+    /** The number of elements remaining to be returned by next(). */
+    int count = size;
     /** Current index in the physical hash table. */
-    int idx;
-    /** The last Entry returned by nextEntry(). */
-    HashEntry last;
-    /** Entry which will be returned by the next nextElement() call. */
+    int idx = buckets.length;
+    /**
+     * Entry which will be returned by the next nextElement() call. It is
+     * set if we are iterating through a bucket with multiple entries, or null
+     * if we must look in the next bucket.
+     */
     HashEntry next;
 
     /**
@@ -1051,25 +1104,6 @@ public class Hashtable extends Dictionary
     Enumerator(int type)
     {
       this.type = type;
-      this.idx = buckets.length;
-    }
-
-    /**
-     * Helper method to find the next entry.
-     * @return the next entry, or null
-     */
-    private HashEntry nextEntry()
-    {
-      HashEntry e = null;
-
-      if (last != null)
-        e = last.next;
-
-      while (e == null && idx > 0)
-        e = buckets[--idx];
-
-      last = e;
-      return e;
     }
 
     /**
@@ -1078,10 +1112,7 @@ public class Hashtable extends Dictionary
      */
     public boolean hasMoreElements()
     {
-      if (next != null)
-        return true;
-      next = nextEntry();
-      return next != null;
+      return count > 0;
     }
 
     /**
@@ -1091,19 +1122,16 @@ public class Hashtable extends Dictionary
      */
     public Object nextElement()
     {
-      HashEntry e;
-      if (next != null)
-        {
-          e = next;
-          next = null;
-        }
-      else
-        e = nextEntry();
-      if (e == null)
+      if (count == 0)
         throw new NoSuchElementException("Hashtable Enumerator");
-      if (type == VALUES)
-        return e.value;
-      return e.key;
+      count--;
+      HashEntry e = next;
+
+      while (e == null)
+        e = buckets[--idx];
+
+      next = e.next;
+      return type == VALUES ? e.value : e.key;
     }
-  }
+  } // class Enumerator
 }

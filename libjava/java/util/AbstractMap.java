@@ -1,5 +1,5 @@
 /* AbstractMap.java -- Abstract implementation of most of Map
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -25,22 +25,71 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-// TO DO:
-// comments
-// test suite
-
 package java.util;
 
+/**
+ * An abstract implementation of Map to make it easier to create your own
+ * implementations. In order to create an unmodifiable Map, subclass
+ * AbstractMap and implement the <code>entrySet</code> (usually via an
+ * AbstractSet).  To make it modifiable, also implement <code>put</code>,
+ * and have <code>entrySet().iterator()</code> support <code>remove</code>.
+ * <p>
+ *
+ * It is recommended that classes which extend this support at least the
+ * no-argument constructor, and a constructor which accepts another Map.
+ * Further methods in this class may be overridden if you have a more
+ * efficient implementation.
+ *
+ * @author Original author unknown
+ * @author Bryce McKinlay
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Map
+ * @see Collection
+ * @see HashMap
+ * @see LinkedHashMap
+ * @see TreeMap
+ * @see WeakHashMap
+ * @see IdentityHashMap
+ * @since 1.2
+ * @status updated to 1.4
+ */
 public abstract class AbstractMap implements Map
 {
+  /** An "enum" of iterator types. */
+  // Package visible for use by subclasses.
+  static final int KEYS = 0,
+                   VALUES = 1,
+                   ENTRIES = 2;
+
   /**
-   * Remove all entries from this Map. This default implementation calls
-   * entrySet().clear().
+   * The cache for {@link #keySet()}.
+   */
+  // Package visible for use by subclasses.
+  Set keys;
+
+  /**
+   * The cache for {@link #values()}.
+   */
+  // Package visible for use by subclasses.
+  Collection values;
+
+  /**
+   * The main constructor, for use by subclasses.
+   */
+  protected AbstractMap()
+  {
+  }
+
+  /**
+   * Remove all entries from this Map (optional operation). This default
+   * implementation calls entrySet().clear(). NOTE: If the entry set does
+   * not permit clearing, then this will fail, too. Subclasses often
+   * override this for efficiency.  Your implementation of entrySet() should
+   * not call <code>AbstractMap.clear</code> unless you want an infinite loop.
    *
-   * @throws UnsupportedOperationException
-   * @specnote The JCL book claims that this implementation always throws 
-   *           UnsupportedOperationException, while the online docs claim it
-   *           calls entrySet().clear(). We take the later to be correct.
+   * @throws UnsupportedOperationException if <code>entrySet().clear()</code>
+   *         does not support clearing.
+   * @see Set#clear()
    */
   public void clear()
   {
@@ -48,246 +97,414 @@ public abstract class AbstractMap implements Map
   }
 
   /**
-   * Create a shallow copy of this Map, no keys or values are copied.
+   * Create a shallow copy of this Map, no keys or values are copied. The
+   * default implementation simply calls <code>super.clone()</code>.
+   *
+   * @return the shallow clone
+   * @throws CloneNotSupportedException if a subclass is not Cloneable
+   * @see Cloneable
+   * @see Object#clone()
    */
-  protected Object clone () throws CloneNotSupportedException
+  protected Object clone() throws CloneNotSupportedException
   {
-    return super.clone ();
+    AbstractMap copy = (AbstractMap) super.clone();
+    // Clear out the caches; they are stale.
+    copy.keys = null;
+    copy.values = null;
+    return copy;
   }
 
+  /**
+   * Returns true if this contains a mapping for the given key. This
+   * implementation does a linear search, O(n), over the
+   * <code>entrySet()</code>, returning <code>true</code> if a match
+   * is found, <code>false</code> if the iteration ends. Many subclasses
+   * can implement this more efficiently.
+   *
+   * @param key the key to search for
+   * @return true if the map contains the key
+   * @throws NullPointerException if key is <code>null</code> but the map
+   *         does not permit null keys
+   * @see #containsValue(Object)
+   */
   public boolean containsKey(Object key)
   {
-    Object k;
-    Set es = entrySet();
-    Iterator entries = es.iterator();
-    int size = size();
-    for (int pos = 0; pos < size; pos++)
-      {
-	k = ((Map.Entry) entries.next()).getKey();
-	if (key == null ? k == null : key.equals(k))
-	  return true;
-      }
+    Iterator entries = entrySet().iterator();
+    int pos = size();
+    while (--pos >= 0)
+      if (equals(key, ((Map.Entry) entries.next()).getKey()))
+        return true;
     return false;
   }
 
+  /**
+   * Returns true if this contains at least one mapping with the given value.
+   * This implementation does a linear search, O(n), over the
+   * <code>entrySet()</code>, returning <code>true</code> if a match
+   * is found, <code>false</code> if the iteration ends. A match is
+   * defined as <code>(value == null ? v == null : value.equals(v))</code>
+   * Subclasses are unlikely to implement this more efficiently.
+   *
+   * @param value the value to search for
+   * @return true if the map contains the value
+   * @see #containsKey(Object)
+   */
   public boolean containsValue(Object value)
   {
-    Object v;
-    Set es = entrySet();
-    Iterator entries = es.iterator();
-    int size = size();
-    for (int pos = 0; pos < size; pos++)
-      {
-	v = ((Map.Entry) entries.next()).getValue();
-	if (value == null ? v == null : value.equals(v))
-	  return true;
-      }
+    Iterator entries = entrySet().iterator();
+    int pos = size();
+    while (--pos >= 0)
+      if (equals(value, ((Map.Entry) entries.next()).getValue()))
+        return true;
     return false;
   }
 
+  /**
+   * Returns a set view of the mappings in this Map.  Each element in the
+   * set must be an implementation of Map.Entry.  The set is backed by
+   * the map, so that changes in one show up in the other.  Modifications
+   * made while an iterator is in progress cause undefined behavior.  If
+   * the set supports removal, these methods must be valid:
+   * <code>Iterator.remove</code>, <code>Set.remove</code>,
+   * <code>removeAll</code>, <code>retainAll</code>, and <code>clear</code>.
+   * Element addition is not supported via this set.
+   *
+   * @return the entry set
+   * @see Map.Entry
+   */
   public abstract Set entrySet();
 
+  /**
+   * Compares the specified object with this map for equality. Returns
+   * <code>true</code> if the other object is a Map with the same mappings,
+   * that is,<br>
+   * <code>o instanceof Map && entrySet().equals(((Map) o).entrySet();</code>
+   *
+   * @param o the object to be compared
+   * @return true if the object equals this map
+   * @see Set#equals(Object)
+   */
   public boolean equals(Object o)
   {
-    if (o == this)
-      return true;
-    if (!(o instanceof Map))
-      return false;
-
-    Map m = (Map) o;
-    Set s = m.entrySet();
-    Iterator itr = entrySet().iterator();
-    int size = size();
-
-    if (m.size() != size)
-      return false;
-
-    for (int pos = 0; pos < size; pos++)
-      {
-	if (!s.contains(itr.next()))
-	  return false;
-      }
-    return true;
+    return (o == this ||
+            (o instanceof Map &&
+             entrySet().equals(((Map) o).entrySet())));
   }
 
+  /**
+   * Returns the value mapped by the given key. Returns <code>null</code> if
+   * there is no mapping.  However, in Maps that accept null values, you
+   * must rely on <code>containsKey</code> to determine if a mapping exists.
+   * This iteration takes linear time, searching entrySet().iterator() of
+   * the key.  Many implementations override this method.
+   *
+   * @param key the key to look up
+   * @return the value associated with the key, or null if key not in map
+   * @throws NullPointerException if this map does not accept null keys
+   * @see #containsKey(Object)
+   */
   public Object get(Object key)
   {
-    Set s = entrySet();
-    Iterator entries = s.iterator();
-    int size = size();
-
-    for (int pos = 0; pos < size; pos++)
+    Iterator entries = entrySet().iterator();
+    int pos = size();
+    while (--pos >= 0)
       {
-	Map.Entry entry = (Map.Entry) entries.next();
-	Object k = entry.getKey();
-	if (key == null ? k == null : key.equals(k))
-	  return entry.getValue();
+        Map.Entry entry = (Map.Entry) entries.next();
+        if (equals(key, entry.getKey()))
+          return entry.getValue();
       }
-
     return null;
   }
 
+  /**
+   * Returns the hash code for this map. As defined in Map, this is the sum
+   * of all hashcodes for each Map.Entry object in entrySet, or basically
+   * entrySet().hashCode().
+   *
+   * @return the hash code
+   * @see Map.Entry#hashCode()
+   * @see Set#hashCode()
+   */
   public int hashCode()
   {
-    int hashcode = 0;
-    Iterator itr = entrySet().iterator();
-    int size = size();
-    for (int pos = 0; pos < size; pos++)
-      {
-	hashcode += itr.next().hashCode();
-      }
-    return hashcode;
+    return entrySet().hashCode();
   }
 
+  /**
+   * Returns true if the map contains no mappings. This is implemented by
+   * <code>size() == 0</code>.
+   *
+   * @return true if the map is empty
+   * @see #size()
+   */
   public boolean isEmpty()
   {
     return size() == 0;
   }
 
+  /**
+   * Returns a set view of this map's keys. The set is backed by the map,
+   * so changes in one show up in the other. Modifications while an iteration
+   * is in progress produce undefined behavior. The set supports removal
+   * if entrySet() does, but does not support element addition.
+   * <p>
+   *
+   * This implementation creates an AbstractSet, where the iterator wraps
+   * the entrySet iterator, size defers to the Map's size, and contains
+   * defers to the Map's containsKey. The set is created on first use, and
+   * returned on subsequent uses, although since no synchronization occurs,
+   * there is a slight possibility of creating two sets.
+   *
+   * @return a Set view of the keys
+   * @see Set#iterator()
+   * @see #size()
+   * @see #containsKey(Object)
+   * @see #values()
+   */
   public Set keySet()
   {
-    if (this.keySet == null)
+    if (keys == null)
+      keys = new AbstractSet()
       {
-	this.keySet = new AbstractSet()
-	{
-	  public int size()
-	  {
-	    return AbstractMap.this.size();
-	  }
+        public int size()
+        {
+          return AbstractMap.this.size();
+        }
 
-	  public boolean contains(Object key)
-	  {
-	    return AbstractMap.this.containsKey(key);
-	  }
+        public boolean contains(Object key)
+        {
+          return containsKey(key);
+        }
 
-	  public Iterator iterator()
-	  {
-	    return new Iterator()
-	    {
-	      Iterator map_iterator = AbstractMap.this.entrySet().iterator();
+        public Iterator iterator()
+        {
+          return new Iterator()
+          {
+            private final Iterator map_iterator = entrySet().iterator();
 
-	      public boolean hasNext()
-	      {
-		return map_iterator.hasNext();
-	      }
+            public boolean hasNext()
+            {
+              return map_iterator.hasNext();
+            }
 
-	      public Object next()
-	      {
-		return ((Map.Entry) map_iterator.next()).getKey();
-	      }
+            public Object next()
+            {
+              return ((Map.Entry) map_iterator.next()).getKey();
+            }
 
-	      public void remove()
-	      {
-		map_iterator.remove();
-	      }
-	    };
-	  }
-	};
-      }
-
-    return this.keySet;
+            public void remove()
+            {
+              map_iterator.remove();
+            }
+          };
+        }
+      };
+    return keys;
   }
 
+  /**
+   * Associates the given key to the given value (optional operation). If the
+   * map already contains the key, its value is replaced. This implementation
+   * simply throws an UnsupportedOperationException. Be aware that in a map
+   * that permits <code>null</code> values, a null return does not always
+   * imply that the mapping was created.
+   *
+   * @param key the key to map
+   * @param value the value to be mapped
+   * @return the previous value of the key, or null if there was no mapping
+   * @throws UnsupportedOperationException if the operation is not supported
+   * @throws ClassCastException if the key or value is of the wrong type
+   * @throws IllegalArgumentException if something about this key or value
+   *         prevents it from existing in this map
+   * @throws NullPointerException if the map forbids null keys or values
+   * @see #containsKey(Object)
+   */
   public Object put(Object key, Object value)
   {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Copies all entries of the given map to this one (optional operation). If
+   * the map already contains a key, its value is replaced. This implementation
+   * simply iterates over the map's entrySet(), calling <code>put</code>,
+   * so it is not supported if puts are not.
+   *
+   * @param m the mapping to load into this map
+   * @throws UnsupportedOperationException if the operation is not supported
+   * @throws ClassCastException if a key or value is of the wrong type
+   * @throws IllegalArgumentException if something about a key or value
+   *         prevents it from existing in this map
+   * @throws NullPointerException if the map forbids null keys or values, or
+   *         if <code>m</code> is null.
+   * @see #put(Object, Object)
+   */
   public void putAll(Map m)
   {
-    Map.Entry entry;
     Iterator entries = m.entrySet().iterator();
-    int size = m.size();
-
-    for (int pos = 0; pos < size; pos++)
+    int pos = size();
+    while (--pos >= 0)
       {
-	entry = (Map.Entry) entries.next();
-	put(entry.getKey(), entry.getValue());
+        Map.Entry entry = (Map.Entry) entries.next();
+        put(entry.getKey(), entry.getValue());
       }
   }
 
+  /**
+   * Removes the mapping for this key if present (optional operation). This
+   * implementation iterates over the entrySet searching for a matching
+   * key, at which point it calls the iterator's <code>remove</code> method.
+   * It returns the result of <code>getValue()</code> on the entry, if found,
+   * or null if no entry is found. Note that maps which permit null values
+   * may also return null if the key was removed.  If the entrySet does not
+   * support removal, this will also fail. This is O(n), so many
+   * implementations override it for efficiency.
+   *
+   * @param key the key to remove
+   * @return the value the key mapped to, or null if not present
+   * @throws UnsupportedOperationException if deletion is unsupported
+   * @see Iterator#remove()
+   */
   public Object remove(Object key)
   {
     Iterator entries = entrySet().iterator();
-    int size = size();
-
-    for (int pos = 0; pos < size; pos++)
+    int pos = size();
+    while (--pos >= 0)
       {
-	Map.Entry entry = (Map.Entry) entries.next();
-	Object k = entry.getKey();
-	if (key == null ? k == null : key.equals(k))
-	  {
-	    Object value = entry.getValue();
-	    entries.remove();
-	    return value;
-	  }
+        Map.Entry entry = (Map.Entry) entries.next();
+        if (equals(key, entry.getKey()))
+          {
+            // Must get the value before we remove it from iterator.
+            Object r = entry.getValue();
+            entries.remove();
+            return r;
+          }
       }
-
     return null;
   }
 
+  /**
+   * Returns the number of key-value mappings in the map. If there are more
+   * than Integer.MAX_VALUE mappings, return Integer.MAX_VALUE. This is
+   * implemented as <code>entrySet().size()</code>.
+   *
+   * @return the number of mappings
+   * @see Set#size()
+   */
   public int size()
   {
     return entrySet().size();
   }
 
+  /**
+   * Returns a String representation of this map. This is a listing of the
+   * map entries (which are specified in Map.Entry as being
+   * <code>getKey() + "=" + getValue()</code>), separated by a comma and
+   * space (", "), and surrounded by braces ('{' and '}'). This implementation
+   * uses a StringBuffer and iterates over the entrySet to build the String.
+   * Note that this can fail with an exception if underlying keys or
+   * values complete abruptly in toString().
+   *
+   * @return a String representation
+   * @see Map.Entry#toString()
+   */
   public String toString()
   {
     Iterator entries = entrySet().iterator();
-    int size = size();
     StringBuffer r = new StringBuffer("{");
-    for (int pos = 0; pos < size; pos++)
+    for (int pos = size(); pos > 0; pos--)
       {
-        // Append the toString value of the entries rather than calling 
-	// getKey/getValue. This is more efficient and it matches the JDK
-	// behaviour.
-	r.append(entries.next());	
-	if (pos < size - 1)
-	  r.append(", ");
+        // Append the toString value of the entries rather than calling
+        // getKey/getValue. This is more efficient and it matches the JDK
+        // behaviour.
+        r.append(entries.next());
+        if (pos > 1)
+          r.append(", ");
       }
     r.append("}");
     return r.toString();
   }
 
+  /**
+   * Returns a collection or bag view of this map's values. The collection
+   * is backed by the map, so changes in one show up in the other.
+   * Modifications while an iteration is in progress produce undefined
+   * behavior. The collection supports removal if entrySet() does, but
+   * does not support element addition.
+   * <p>
+   *
+   * This implementation creates an AbstractCollection, where the iterator
+   * wraps the entrySet iterator, size defers to the Map's size, and contains
+   * defers to the Map's containsValue. The collection is created on first
+   * use, and returned on subsequent uses, although since no synchronization
+   * occurs, there is a slight possibility of creating two collections.
+   *
+   * @return a Collection view of the values
+   * @see Collection#iterator()
+   * @see #size()
+   * @see #containsValue(Object)
+   * @see #keySet()
+   */
   public Collection values()
   {
-    if (this.valueCollection == null)
+    if (values == null)
+      values = new AbstractCollection()
       {
-	this.valueCollection = new AbstractCollection()
-	{
-	  public int size()
-	  {
-	    return AbstractMap.this.size();
-	  }
+        public int size()
+        {
+          return AbstractMap.this.size();
+        }
 
-	  public Iterator iterator()
-	  {
-	    return new Iterator()
-	    {
-	      Iterator map_iterator = AbstractMap.this.entrySet().iterator();
+        public Iterator iterator()
+        {
+          return new Iterator()
+          {
+            private final Iterator map_iterator = entrySet().iterator();
 
-	      public boolean hasNext()
-	      {
-		return map_iterator.hasNext();
-	      }
+            public boolean hasNext()
+            {
+              return map_iterator.hasNext();
+            }
 
-	      public Object next()
-	      {
-		return ((Map.Entry) map_iterator.next()).getValue();
-	      }
+            public Object next()
+            {
+              return ((Map.Entry) map_iterator.next()).getValue();
+            }
 
-	      public void remove()
-	      {
-		map_iterator.remove();
-	      }
-	    };
-	  }
-	};
-      }
-
-    return this.valueCollection;
+            public void remove()
+            {
+              map_iterator.remove();
+            }
+          };
+        }
+      };
+    return values;
   }
 
-  private Collection valueCollection = null;
-  private Set keySet = null;
+  /**
+   * Compare two objects according to Collection semantics.
+   *
+   * @param o1 the first object
+   * @param o2 the second object
+   * @return o1 == null ? o2 == null : o1.equals(o2)
+   */
+  // Package visible for use throughout java.util.
+  // It may be inlined since it is final.
+  static final boolean equals(Object o1, Object o2)
+  {
+    return o1 == null ? o2 == null : o1.equals(o2);
+  }
+
+  /**
+   * Hash an object according to Collection semantics.
+   *
+   * @param o the object to hash
+   * @return o1 == null ? 0 : o1.hashCode()
+   */
+  // Package visible for use throughout java.util.
+  // It may be inlined since it is final.
+  static final int hashCode(Object o)
+  {
+    return o == null ? 0 : o.hashCode();
+  }
 }

@@ -1200,6 +1200,7 @@ java/util/IdentityHashMap.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
 java/util/LinkedHashMap.java \
+java/util/LinkedHashSet.java \
 java/util/List.java \
 java/util/ListIterator.java \
 java/util/ListResourceBundle.java \
