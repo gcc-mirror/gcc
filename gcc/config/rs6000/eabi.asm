@@ -5,19 +5,25 @@
 	.section ".text"
 	.globl	 __eabi
 
-	.long	0x4000				# traceback table
-__eabi:	mflr	0
-	bl	.Laddr				# get current address
+	 .section ".got2","aw"
+.LCTOC1 = .+32768
 
 # Table of addresses
-.Ltable:
-	.long	.Ltable				# address we are really at
+.Ltable = .-.LCTOC1
+	.long	.Laddr				# address we are really at
 	.long	_GLOBAL_OFFSET_TABLE_		# normal GOT address
 	.long	_GOT2_START_			# -mrelocatable GOT pointers start
 	.long	_GOT2_END_			# -mrelocatable GOT pointers end
 
+	.text
+.Lptr:	.long	.LCTOC1-.Laddr			# PC relative pointer to .got2
+	.long	0x4000				# traceback table
+
+__eabi:	mflr	0
+	bl	.Laddr				# get current address
 .Laddr:	mflr	11				# real address of .Ltable
-	lwz	12,0(11)			# linker generated address of .Ltable
+	lwz	12,(.Laddr-.Lptr)(11)		# linker generated address of .Ltable
+	add	12,12,11			# correct to real pointer
 	subf.	12,12,11			# calculate difference
 	bc	4,2,.Lreloc			# skip if we need to relocate
 
