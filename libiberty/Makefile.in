@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91, 91 - 99, 2000
+#   Copyright (C) 1990, 91-99, 2000
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -244,9 +244,9 @@ all-subdir check-subdir installcheck-subdir info-subdir	\
 install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
 etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
 maintainer-clean-subdir:
-	@if test "x$(SUBDIRS)" = x; then exit 0; fi; \
+	@subdirs='$(SUBDIRS)'; \
 	target=`echo $@ | sed -e 's/-subdir//'`; \
-	for dir in $(SUBDIRS) ; do \
+	for dir in $$subdirs ; do \
 	  cd $$dir && $(MAKE) $$target; \
 	done
 

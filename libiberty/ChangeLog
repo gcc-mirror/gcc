@@ -1,3 +1,8 @@
+2000-04-29  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* Makefile.in (maintainer-clean-subdir): Fix handling of empty
+	SUBDIRS.
+
 2000-04-28  Kenneth Block  <block@zk3.dec.com>
 	    Jason Merrill  <jason@casey.cygnus.com>
 
