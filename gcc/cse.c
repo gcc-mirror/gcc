@@ -302,14 +302,8 @@ static struct reg_eqv_elem *reg_eqv_table;
 
 struct cse_reg_info
 {
-  /* Next in hash chain.  */
-  struct cse_reg_info *hash_next;
-
-  /* The next cse_reg_info structure in the free or used list.  */
-  struct cse_reg_info *next;
-
-  /* Search key */
-  unsigned int regno;
+  /* The timestamp at which this register is initialized.  */
+  unsigned int timestamp;
 
   /* The quantity number of the register's current contents.  */
   int reg_qty;
@@ -329,39 +323,22 @@ struct cse_reg_info
   unsigned int subreg_ticked;
 };
 
-/* We maintain a linked list of cse_reg_info instances, which is
-   partitioned into two pieces.  The first part, pointed to by
-   cse_reg_info_list, is a list of those entries that are in use.  The
-   second part, pointed to by cse_reg_info_list_free, is a list of
-   those entries that are not in use.
+/* A table of cse_reg_info indexed by register numbers.  */
+struct cse_reg_info *cse_reg_info_table;
 
-   We combine these two parts into one linked list for efficiency.
-   Specifically, when we take an element from the second part and want
-   to move it to the first part, all we have to do is move the pointer
-   cse_reg_info_list_free to the next element.  Also, if we wish to
-   move all elements into the second part, we just have to move the
-   pointer to the first element of the list.  */
+/* The size of the above table.  */
+static unsigned int cse_reg_info_table_size;
 
-/* A linked list of cse_reg_info entries that have been allocated so
-   far.  */
-static struct cse_reg_info *cse_reg_info_list;
+/* The index of the first entry that has not been initialized.  */
+static unsigned int cse_reg_info_table_first_uninitialized;
 
-/* A pointer to the first unused entry in the above linked list.  */
-static struct cse_reg_info *cse_reg_info_list_free;
-
-/* A mapping from registers to cse_reg_info data structures.  */
-#define REGHASH_SHIFT	7
-#define REGHASH_SIZE	(1 << REGHASH_SHIFT)
-#define REGHASH_MASK	(REGHASH_SIZE - 1)
-static struct cse_reg_info *reg_hash[REGHASH_SIZE];
-
-#define REGHASH_FN(REGNO)	\
-	(((REGNO) ^ ((REGNO) >> REGHASH_SHIFT)) & REGHASH_MASK)
-
-/* The last lookup we did into the cse_reg_info_tree.  This allows us
-   to cache repeated lookups.  */
-static unsigned int cached_regno;
-static struct cse_reg_info *cached_cse_reg_info;
+/* The timestamp at the beginning of the current run of
+   cse_basic_block.  We increment this variable at at the beginning of
+   the current run of cse_basic_block.  The timestamp field of a
+   cse_reg_info entry matches the value of this variable if and only
+   if the entry has been initialized during the current run of
+   cse_basic_block.  */
+static unsigned int cse_reg_info_timestamp;
 
 /* A HARD_REG_SET containing all the hard registers for which there is
    currently a REG expression in the hash table.  Note the difference
@@ -523,29 +500,23 @@ struct table_elt
 #define COST(X) (REG_P (X) ? 0 : notreg_cost (X, SET))
 #define COST_IN(X,OUTER) (REG_P (X) ? 0 : notreg_cost (X, OUTER))
 
-/* Get the info associated with register N.  */
-
-#define GET_CSE_REG_INFO(N)			\
-  (((N) == cached_regno && cached_cse_reg_info)	\
-   ? cached_cse_reg_info : get_cse_reg_info ((N)))
-
 /* Get the number of times this register has been updated in this
    basic block.  */
 
-#define REG_TICK(N) ((GET_CSE_REG_INFO (N))->reg_tick)
+#define REG_TICK(N) (get_cse_reg_info (N)->reg_tick)
 
 /* Get the point at which REG was recorded in the table.  */
 
-#define REG_IN_TABLE(N) ((GET_CSE_REG_INFO (N))->reg_in_table)
+#define REG_IN_TABLE(N) (get_cse_reg_info (N)->reg_in_table)
 
 /* Get the SUBREG set at the last increment to REG_TICK (-1 if not a
    SUBREG).  */
 
-#define SUBREG_TICKED(N) ((GET_CSE_REG_INFO (N))->subreg_ticked)
+#define SUBREG_TICKED(N) (get_cse_reg_info (N)->subreg_ticked)
 
 /* Get the quantity number for REG.  */
 
-#define REG_QTY(N) ((GET_CSE_REG_INFO (N))->reg_qty)
+#define REG_QTY(N) (get_cse_reg_info (N)->reg_qty)
 
 /* Determine if the quantity number for register X represents a valid index
    into the qty_table.  */
@@ -647,7 +618,8 @@ static rtx cse_basic_block (rtx, rtx, struct branch_path *);
 static void count_reg_usage (rtx, int *, int);
 static int check_for_label_ref (rtx *, void *);
 extern void dump_class (struct table_elt*);
-static struct cse_reg_info * get_cse_reg_info (unsigned int);
+static void get_cse_reg_info_1 (unsigned int regno);
+static struct cse_reg_info * get_cse_reg_info (unsigned int regno);
 static int check_dependence (rtx *, void *);
 
 static void flush_hash_table (void);
@@ -862,47 +834,87 @@ notreg_cost (rtx x, enum rtx_code outer)
 }
 
 
-static struct cse_reg_info *
-get_cse_reg_info (unsigned int regno)
+/* Initialize CSE_REG_INFO_TABLE.  */
+
+static void
+init_cse_reg_info (unsigned int nregs)
 {
-  struct cse_reg_info **hash_head = &reg_hash[REGHASH_FN (regno)];
-  struct cse_reg_info *p;
-
-  for (p = *hash_head; p != NULL; p = p->hash_next)
-    if (p->regno == regno)
-      break;
-
-  if (p == NULL)
+  /* Do we need to grow the table?  */
+  if (nregs > cse_reg_info_table_size)
     {
-      /* Get a new cse_reg_info structure.  */
-      if (cse_reg_info_list_free)
+      unsigned int new_size;
+
+      if (cse_reg_info_table_size < 2048)
 	{
-	  p = cse_reg_info_list_free;
-	  cse_reg_info_list_free = p->next;
+	  /* Compute a new size that is a power of 2 and no smaller
+	     than the large of NREGS and 64.  */
+	  new_size = (cse_reg_info_table_size
+		      ? cse_reg_info_table_size : 64);
+
+	  while (new_size < nregs)
+	    new_size *= 2;
 	}
       else
 	{
-	  p = xmalloc (sizeof (struct cse_reg_info));
-	  p->next = cse_reg_info_list;
-	  cse_reg_info_list = p;
+	  /* If we need a big table, allocate just enough to hold
+	     NREGS registers.  */
+	  new_size = nregs;
 	}
 
-      /* Insert into hash table.  */
-      p->hash_next = *hash_head;
-      *hash_head = p;
-
-      /* Initialize it.  */
-      p->reg_tick = 1;
-      p->reg_in_table = -1;
-      p->subreg_ticked = -1;
-      p->reg_qty = -regno - 1;
-      p->regno = regno;
+      /* Reallocate the table with NEW_SIZE entries.  */
+      cse_reg_info_table = xrealloc (cse_reg_info_table,
+				     (sizeof (struct cse_reg_info)
+				      * new_size));
+      cse_reg_info_table_size = new_size;
     }
 
-  /* Cache this lookup; we tend to be looking up information about the
-     same register several times in a row.  */
-  cached_regno = regno;
-  cached_cse_reg_info = p;
+  /* Do we have all of the first NREGS entries initialized?  */
+  if (cse_reg_info_table_first_uninitialized < nregs)
+    {
+      unsigned int old_timestamp = cse_reg_info_timestamp - 1;
+      unsigned int i;
+
+      /* Put the old timestamp on newly allocated entries so that they
+	 will all be considered out of date.  We do not touch those
+	 entries beyond the first NREGS entries to be nice to the
+	 virtual memory.  */
+      for (i = cse_reg_info_table_first_uninitialized; i < nregs; i++)
+	cse_reg_info_table[i].timestamp = old_timestamp;
+
+      cse_reg_info_table_first_uninitialized = nregs;
+    }
+}
+
+/* Given REGNO, ensure that a cse_reg_info entry exists for REGNO by
+   growing the cse_reg_info_table and/or initializing the entry for
+   REGNO.  */
+
+static void
+get_cse_reg_info_1 (unsigned int regno)
+{
+  /* Set TIMESTAMP field to CSE_REG_INFO_TIMESTAMP so that this
+     entry will be considered to have been initialized.  */
+  cse_reg_info_table[regno].timestamp = cse_reg_info_timestamp;
+
+  /* Initialize the rest of the entry.  */
+  cse_reg_info_table[regno].reg_tick = 1;
+  cse_reg_info_table[regno].reg_in_table = -1;
+  cse_reg_info_table[regno].subreg_ticked = -1;
+  cse_reg_info_table[regno].reg_qty = -regno - 1;
+}
+
+/* Find a cse_reg_info entry for REGNO.  */
+
+static inline struct cse_reg_info *
+get_cse_reg_info (unsigned int regno)
+{
+  struct cse_reg_info *p = &cse_reg_info_table[regno];
+
+  /* If we are looking for REGNO that is different from the last
+     look-up, make sure the entry for REGNO exists and has been
+     initialized.  */
+  if (p->timestamp != cse_reg_info_timestamp)
+    get_cse_reg_info_1 (regno);
 
   return p;
 }
@@ -917,14 +929,10 @@ new_basic_block (void)
 
   next_qty = 0;
 
+  /* Invalidate cse_reg_info_table and its cache.  */
+  cse_reg_info_timestamp++;
+
   /* Clear out hash table state for this pass.  */
-
-  memset (reg_hash, 0, sizeof reg_hash);
-
-  cse_reg_info_list_free = cse_reg_info_list;
-
-  cached_cse_reg_info = 0;
-
   CLEAR_HARD_REG_SET (hard_regs_in_table);
 
   /* The per-quantity values used to be initialized here, but it is
@@ -6697,6 +6705,8 @@ cse_main (rtx f, int nregs, FILE *file)
   struct cse_basic_block_data val;
   rtx insn = f;
   int i;
+
+  init_cse_reg_info (nregs);
 
   val.path = xmalloc (sizeof (struct branch_path)
 		      * PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
