@@ -1374,9 +1374,9 @@ A scope-statement represents the beginning or end of a scope.  If
 scope; if @code{SCOPE_END_P} holds this statement represents the end of
 a scope.  On exit from a scope, all cleanups from @code{CLEANUP_STMT}s
 occurring in the scope must be run, in reverse order to the order in
-which they were encountered.  If @code{SCOPE_NULLIFIED_P} holds of the
-scope, back-ends should behave as if the @code{SCOPE_STMT} were not
-present at all.
+which they were encountered.  If @code{SCOPE_NULLIFIED_P} or
+@code{SCOPE_NO_CLEANUPS_P} holds of the scope, back-ends should behave
+as if the @code{SCOPE_STMT} were not present at all.
 
 @item START_CATCH_STMT
 
