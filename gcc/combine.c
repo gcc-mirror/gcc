@@ -2091,10 +2091,11 @@ try_combine (i3, i2, i1)
 
     /* If I3 is now an unconditional jump, ensure that it has a 
        BARRIER following it since it may have initially been a
-       conditional jump.  */
+       conditional jump.  It may also be the last nonnote insn.  */
 
     if ((GET_CODE (newpat) == RETURN || simplejump_p (i3))
-	&& GET_CODE (next_nonnote_insn (i3)) != BARRIER)
+	&& ((temp = next_nonnote_insn (i3)) == NULL_RTX
+	    || GET_CODE (temp) != BARRIER))
       emit_barrier_after (i3);
   }
 
