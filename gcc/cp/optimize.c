@@ -1019,6 +1019,7 @@ maybe_clone_body (fn)
 {
   inline_data id;
   tree clone;
+  int first = 1;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
@@ -1032,7 +1033,7 @@ maybe_clone_body (fn)
      list.  */
   for (clone = TREE_CHAIN (fn);
        clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
+       clone = TREE_CHAIN (clone), first = 0)
     {
       tree parm;
       tree clone_parm;
@@ -1052,6 +1053,30 @@ maybe_clone_body (fn)
       DECL_INTERFACE_KNOWN (clone) = DECL_INTERFACE_KNOWN (fn);
       DECL_NOT_REALLY_EXTERN (clone) = DECL_NOT_REALLY_EXTERN (fn);
       TREE_PUBLIC (clone) = TREE_PUBLIC (fn);
+
+      /* Adjust the parameter names and locations. */
+      parm = DECL_ARGUMENTS (fn);
+      clone_parm = DECL_ARGUMENTS (clone);
+      if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+	parm = TREE_CHAIN (parm);
+      if (DECL_HAS_VTT_PARM_P (fn))
+	parm = TREE_CHAIN (parm);
+      if (DECL_HAS_VTT_PARM_P (clone))
+	clone_parm = TREE_CHAIN (clone_parm);
+      for (; parm;
+	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
+	{
+	  DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
+
+	  /* The name may have changed from the declaration. */
+	  DECL_NAME (clone_parm) = DECL_NAME (parm);
+	  DECL_SOURCE_FILE (clone_parm) = DECL_SOURCE_FILE (parm);
+	  DECL_SOURCE_LINE (clone_parm) = DECL_SOURCE_LINE (parm);
+ 
+	  /* We should only give unused information for one clone. */
+	  if (!first)
+	    TREE_USED (clone_parm) = 1;
+	}
 
       /* Start processing the function.  */
       push_to_top_level ();
@@ -1115,7 +1140,6 @@ maybe_clone_body (fn)
 	     function.  */
 	  else
 	    {
-	      DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
 	      splay_tree_insert (id.decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_value) clone_parm);
