@@ -1542,8 +1542,7 @@ finish_translation_unit ()
 {
   /* In case there were missing closebraces,
      get us back to the global binding level.  */
-  while (! toplevel_bindings_p ())
-    poplevel (0, 0, 0);
+  pop_everything ();
   while (current_namespace != global_namespace)
     pop_namespace ();
   finish_file ();

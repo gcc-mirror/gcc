@@ -3120,6 +3120,7 @@ extern void insert_block			PROTO((tree));
 extern void add_block_current_level		PROTO((tree));
 extern void set_block				PROTO((tree));
 extern void pushlevel_class			PROTO((void));
+extern void poplevel_class                      PROTO((void));
 extern void print_binding_stack			PROTO((void));
 extern void print_binding_level			PROTO((struct binding_level *));
 extern void push_namespace			PROTO((tree));

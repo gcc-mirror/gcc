@@ -158,7 +158,6 @@ static tree record_builtin_java_type PROTO((const char *, int));
 static const char *tag_name PROTO((enum tag_types code));
 static void find_class_binding_level PROTO((void));
 static struct binding_level *innermost_nonclass_level PROTO((void));
-static tree poplevel_class PROTO((void));
 static void warn_about_implicit_typename_lookup PROTO((tree, tree));
 static int walk_namespaces_r PROTO((tree, walk_namespaces_fn, void *));
 static int walk_globals_r PROTO((tree, void *));
@@ -1201,8 +1200,8 @@ poplevel (keep, reverse, functionbody)
   int block_previously_created;
   int leaving_for_scope;
 
-  if (current_binding_level->parm_flag == 2)
-    return poplevel_class ();
+  my_friendly_assert (current_binding_level->parm_flag != 2,
+		      19990916);
 
   my_friendly_assert (!current_binding_level->class_shadowed,
 		      19990414);
@@ -1576,7 +1575,7 @@ pushlevel_class ()
 
 /* ...and a poplevel for class declarations.  */
 
-static tree
+void
 poplevel_class ()
 {
   register struct binding_level *level = class_binding_level;
@@ -1652,8 +1651,6 @@ poplevel_class ()
 #endif /* defined(DEBUG_CP_BINDING_LEVELS) */
 
   pop_binding_level ();
-
-  return NULL_TREE;
 }
 
 /* We are entering the scope of a class.  Clear IDENTIFIER_CLASS_VALUE

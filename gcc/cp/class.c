@@ -4573,7 +4573,7 @@ invalidate_class_lookup_cache ()
 void
 popclass ()
 {
-  poplevel (1, 0, 0);
+  poplevel_class ();
   /* Since poplevel_class does the popping of class decls nowadays,
      this really only frees the obstack used for these decls.  */
   pop_class_decls ();

@@ -15,10 +15,10 @@ protected:
 
 SimQuery::SimQuery():scaling(A) {}// ERROR - .*
 
-SimQuery::~SimQuery() {}// ERROR - 
+SimQuery::~SimQuery() {}
 
 int SimQuery::SetMeshFile(char name[])
-{// ERROR - 
+{
   mesh = new C;// ERROR - .*
   return 0; // needed to avoid warning of reaching end of non-void fn
 }
