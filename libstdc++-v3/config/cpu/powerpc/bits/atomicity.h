@@ -57,7 +57,7 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 
 static __ATOMICITY_INLINE int
 __attribute__ ((unused))
-__compare_and_swap (volatile long *p, long int __oldval, long int __newval)
+__compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 {
   int __result;
   __asm__ ("\

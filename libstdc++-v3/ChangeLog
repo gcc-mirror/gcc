@@ -1,5 +1,7 @@
 2000-04-30  Benjamin Kosnik  <bkoz@gnu.org>
 
+	* config/cpu/powerpc/bits/atomicity.h (__compare_and_swap): Fix typo.
+
 	* mknumeric_limits (trait_name): Fix copyright notice.
 	* src/gen-num-limits.cc: Explicitly instantiate epsilon and
 	round_error data members of struct value. This works around
