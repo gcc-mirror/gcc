@@ -136,10 +136,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	    {
 	      library = -1;
 	    }
-	  else if (strcmp (argv[i], "-lm") == 0
-		   || strcmp (argv[i], "-lmath") == 0
-		   || strcmp (argv[i], MATH_LIBRARY) == 0
-		  )
+	  else if (strcmp (argv[i], MATH_LIBRARY) == 0)
 	    {
 	      args[i] |= MATHLIB;
 	      need_math = 0;
