@@ -3854,6 +3854,23 @@ fold_rtx (x, insn)
 		|| (new_cost == old_cost && CONSTANT_P (XEXP (x, i))))
 	      break;
 
+	    /* It's not safe to substitute the operand of a conversion
+	       operator with a constant, as the conversion's identity
+	       depends upon the mode of it's operand.  This optimization
+	       is handled by the call to simplify_unary_operation.  */
+	    if (GET_RTX_CLASS (code) == '1'
+		&& GET_MODE (replacements[j]) != mode_arg0
+		&& (code == ZERO_EXTEND
+		    || code == SIGN_EXTEND
+		    || code == TRUNCATE
+		    || code == FLOAT_TRUNCATE
+		    || code == FLOAT_EXTEND
+		    || code == FLOAT
+		    || code == FIX
+		    || code == UNSIGNED_FLOAT
+		    || code == UNSIGNED_FIX))
+	      continue;
+
 	    if (validate_change (insn, &XEXP (x, i), replacements[j], 0))
 	      break;
 
