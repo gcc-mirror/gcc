@@ -29,6 +29,7 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "toplev.h"
+#include "graph.h"
 
 static const char *graph_ext[] =
 {

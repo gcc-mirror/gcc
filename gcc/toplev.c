@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "intl.h"
 #include "ggc.h"
+#include "graph.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -204,9 +205,6 @@ static int print_single_switch PROTO((FILE *, int, int, const char *,
 static void print_switch_values PROTO((FILE *, int, int, const char *,
 				       const char *, const char *));
 
-void print_rtl_graph_with_bb PROTO ((const char *, const char *, rtx));
-void clean_graph_dump_file PROTO ((const char *, const char *));
-void finish_graph_dump_file PROTO ((const char *, const char *));
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
