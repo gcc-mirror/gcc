@@ -6161,40 +6161,8 @@ move\\t%0,%z4\\n\\
 ;; byte loads.
 
 (define_insn ""
-  [(set (match_operand:BLK 0 "memory_operand" "=d")	;; destination
-	(match_operand:BLK 1 "memory_operand" "d"))	;; source
-   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
-   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
-   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
-   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
-   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
-   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
-   (use (const_int 0))]					;; normal block move
-  "TARGET_MIPS16"
-  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NORMAL);"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"80")])
-
-(define_insn ""
-  [(set (match_operand:BLK 0 "memory_operand" "=d")	;; destination
-	(match_operand:BLK 1 "memory_operand" "o"))	;; source
-   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
-   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
-   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
-   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
-   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
-   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
-   (use (const_int 0))]					;; normal block move
-  "TARGET_MIPS16"
-  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_NORMAL);"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"80")])
-
-(define_insn ""
   [(set (match_operand:BLK 0 "memory_operand" "=o")	;; destination
-	(match_operand:BLK 1 "memory_operand" "d"))	;; source
+	(match_operand:BLK 1 "memory_operand" "o"))	;; source
    (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
    (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
    (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
@@ -6268,8 +6236,8 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"80")])
 
 (define_insn ""
-  [(set (match_operand:BLK 0 "memory_operand" "=d")	;; destination
-	(match_operand:BLK 1 "memory_operand" "d"))	;; source
+  [(set (match_operand:BLK 0 "memory_operand" "=o")	;; destination
+	(match_operand:BLK 1 "memory_operand" "o"))	;; source
    (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
    (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
    (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
@@ -6297,22 +6265,6 @@ move\\t%0,%z4\\n\\
   "* return output_block_move (insn, operands, 4, BLOCK_MOVE_LAST);"
   [(set_attr "type"	"store")
    (set_attr "mode"	"none")])
-
-(define_insn ""
-  [(set (match_operand:BLK 0 "memory_operand" "=d")	;; destination
-	(match_operand:BLK 1 "memory_operand" "d"))	;; source
-   (clobber (match_scratch:SI 4 "=&d"))			;; temp 1
-   (clobber (match_scratch:SI 5 "=&d"))			;; temp 2
-   (clobber (match_scratch:SI 6 "=&d"))			;; temp 3
-   (clobber (match_scratch:SI 7 "=&d"))			;; temp 4
-   (use (match_operand:SI 2 "small_int" "I"))		;; # bytes to move
-   (use (match_operand:SI 3 "small_int" "I"))		;; alignment
-   (use (const_int 2))]					;; just last store of block move
-  "TARGET_MIPS16"
-  "* return output_block_move (insn, operands, 4, BLOCK_MOVE_LAST);"
-  [(set_attr "type"	"store")
-   (set_attr "mode"	"none")])
-
 
 ;;
 ;;  ....................
@@ -9141,7 +9093,7 @@ move\\t%0,%z4\\n\\
 (define_expand "tablejump_internal3"
   [(parallel [(set (pc)
 		   (plus:SI (match_operand:SI 0 "register_operand" "d")
-			    (label_ref:SI (match_operand:SI 1 "" ""))))
+			    (label_ref:SI (match_operand 1 "" ""))))
 	      (use (label_ref:SI (match_dup 1)))])]
   ""
   "")
@@ -9149,7 +9101,7 @@ move\\t%0,%z4\\n\\
 (define_expand "tablejump_mips161"
   [(set (pc) (plus:SI (sign_extend:SI
 		       (match_operand:HI 0 "register_operand" "d"))
-		      (label_ref:SI (match_operand:SI 1 "" ""))))]
+		      (label_ref:SI (match_operand 1 "" ""))))]
   "TARGET_MIPS16 && !(Pmode == DImode)"
   "
 {
@@ -9171,7 +9123,7 @@ move\\t%0,%z4\\n\\
 (define_expand "tablejump_mips162"
   [(set (pc) (plus:DI (sign_extend:DI
 		       (match_operand:HI 0 "register_operand" "d"))
-		      (label_ref:DI (match_operand:SI 1 "" ""))))]
+		      (label_ref:DI (match_operand 1 "" ""))))]
   "TARGET_MIPS16 && Pmode == DImode"
   "
 {
@@ -9200,7 +9152,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (pc)
 	(plus:SI (match_operand:SI 0 "register_operand" "d")
-		 (label_ref:SI (match_operand:SI 1 "" ""))))
+		 (label_ref:SI (match_operand 1 "" ""))))
    (use (label_ref:SI (match_dup 1)))]
   "!(Pmode == DImode) && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
@@ -9219,7 +9171,7 @@ move\\t%0,%z4\\n\\
 (define_expand "tablejump_internal4"
   [(parallel [(set (pc)
 		   (plus:DI (match_operand:DI 0 "se_register_operand" "d")
-			    (label_ref:DI (match_operand:SI 1 "" ""))))
+			    (label_ref:DI (match_operand 1 "" ""))))
 	      (use (label_ref:DI (match_dup 1)))])]
   ""
   "")
@@ -9231,7 +9183,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "se_register_operand" "d")
-		 (label_ref:DI (match_operand:SI 1 "" ""))))
+		 (label_ref:DI (match_operand 1 "" ""))))
    (use (label_ref:DI (match_dup 1)))]
   "Pmode == DImode && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
