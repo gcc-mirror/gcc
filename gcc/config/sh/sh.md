@@ -3884,27 +3884,25 @@
 ;; ??? All patterns should have a type attribute.
 
 (define_expand "fpu_switch0"
-  [(set (match_operand:SI 0 "" "") (symbol_ref "__fpscr_values"))
-   (set (match_dup 2) (match_dup 1))]
+  [(set (match_operand:SI 0 "" "") (match_dup 2))
+   (set (match_dup 1) (mem:PSI (match_dup 0)))]
   ""
   "
 {
-  operands[1] = gen_rtx (MEM, PSImode, operands[0]);
-  RTX_UNCHANGING_P (operands[1]) = 1;
-  operands[2] = get_fpscr_rtx ();
+  operands[1] = get_fpscr_rtx ();
+  operands[2] = gen_rtx_SYMBOL_REF (SImode, \"__fpscr_values\");
 }")
 
 (define_expand "fpu_switch1"
-  [(set (match_operand:SI 0 "" "") (symbol_ref "__fpscr_values"))
-   (set (match_dup 1) (plus:SI (match_dup 0) (const_int 4)))
-   (set (match_dup 3) (match_dup 2))]
+  [(set (match_operand:SI 0 "" "") (match_dup 2))
+   (set (match_dup 3) (plus:SI (match_dup 0) (const_int 4)))
+   (set (match_dup 1) (mem:PSI (match_dup 3)))]
   ""
   "
 {
-  operands[1] = gen_reg_rtx (SImode);
-  operands[2] = gen_rtx (MEM, PSImode, operands[1]);
-  RTX_UNCHANGING_P (operands[2]) = 1;
-  operands[3] = get_fpscr_rtx ();
+  operands[1] = get_fpscr_rtx ();
+  operands[2] = gen_rtx_SYMBOL_REF (SImode, \"__fpscr_values\");
+  operands[3] = no_new_pseudos ? operands[0] : gen_reg_rtx (SImode);
 }")
 
 (define_expand "movpsi"
