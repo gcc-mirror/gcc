@@ -1,3 +1,9 @@
+2001-11-08  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (GCC_FOR_TARGET): Add build_tooldir/sys-include.
+	(CROSS_SYSTEM_HEADER_DIR): Use build_tooldir not tooldir.
+	(ORDINARY_FLAGS_TO_PASS, stmp-fixinc): Likewise.
+
 2001-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.h (ASM_CPU_SPEC): Add -maltivec.
