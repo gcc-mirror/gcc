@@ -1,3 +1,7 @@
+2003-03-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* expr.c (convert_modes): Check for legal hard register.
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* doc/sourcebuild.texi (Front End Directory): Document tags.

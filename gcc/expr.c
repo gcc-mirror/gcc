@@ -1406,6 +1406,8 @@ convert_modes (mode, oldmode, x, unsignedp)
 		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])
 		      || (GET_CODE (x) == REG
+			  && (! HARD_REGISTER_P (x)
+			      || HARD_REGNO_MODE_OK (REGNO (x), mode))
 			  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 						    GET_MODE_BITSIZE (GET_MODE (x)))))))))
     {
