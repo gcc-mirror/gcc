@@ -5977,6 +5977,23 @@
 }"
 [(set_attr "type" "store4")])
 
+;; Similarly for the the floating point registers
+(define_insn "*push_fp_multi"
+  [(match_parallel 2 "multi_register_push"
+    [(set (match_operand:BLK 0 "memory_operand" "=m")
+	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "f")] 2))])]
+  ""
+  "*
+{
+  char pattern[100];
+  int i;
+
+  sprintf (pattern, \"sfmfd\\t%%1, %d, [%%m0]!\", XVECLEN (operands[2], 0));
+  output_asm_insn (pattern, operands);
+  return \"\";
+}"
+[(set_attr "type" "f_store")])
+
 ;; Special patterns for dealing with the constant pool
 
 (define_insn "consttable_4"
