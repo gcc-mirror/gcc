@@ -1,5 +1,6 @@
 2002-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/5908
 	* call.c (build_over_call): Set TREE_NO_UNUSED_WARNING too.
 	* cvt.c (convert_to_void): Preserve TREE_NO_UNUSED_WARNING.
 
