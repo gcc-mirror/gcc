@@ -157,11 +157,11 @@ such as one option that enables many options, some of which select
 multilibs.  Example nonsensical definition, where @code{-malt-abi},
 @code{-EB}, and @code{-mspoo} cause different multilibs to be chosen:
 
-@example
+@smallexample
 #define TARGET_OPTION_TRANSLATE_TABLE \
 @{ "-fast",   "-march=fast-foo -malt-abi -I/usr/fast-foo" @}, \
 @{ "-compat", "-EB -malign=4 -mspoo" @}
-@end example
+@end smallexample
 
 @findex CPP_SPEC
 @item CPP_SPEC
