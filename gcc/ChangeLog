@@ -1,3 +1,38 @@
+2000-06-18  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64-protos.h (process_for_unwind_directive): Declare.
+	(ia64_file_start): Declare.
+	* config/ia64/ia64.h (ADDL_REGNO_P): Don't compare unsigned against 0.
+	(GR_REGNO_P): Likewise.
+	* config/ia64/ia64.c: Many prototypes.
+	(ia64_reg_numbers): Constify.
+	(ia64_input_reg_names, ia64_local_reg_names): Likewise.
+	(ia64_section_threshold): Make unsigned.
+	(ia64_print_operand): Constify.
+	(fix_range): Constify.
+	(ia64_init_builtins): Don't compare signed vs unsigned.
+	(ia64_expand_builtin): Likewise.
+
+	* config/ia64/ia64.h (EXTRA_CONSTRAINT): New.
+	(CONSTRAINT_OK_FOR_Q): New.
+	* config/ia64/ia64.md (movdi_internal): Use Q for fp<->mem.
+	(movsf_internal, movdf_internal): Likewise.
+	(cmovdi_internal): Rewrite so that constraints and predicates match;
+	simplify splitters.
+	(cmovsi_internal): Likewise.
+
+	* config/ia64/ia64.h (ASM_SPEC): Add -x for gas.
+	(ASM_FILE_START): New.
+	* config/ia64/ia64.c (ia64_file_start): New.
+	(rtx_needs_barrier): Handle pred.rel.mutex.
+	(emit_predicate_relation_info): New.
+	* config/ia64/ia64.md (pred_rel_mutex): New.
+	* config/ia64/linux.h (ASM_SPEC): Define.
+	* config/ia64/sysv4.h (ASM_FILE_START): Define.
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Fix thinko
+	filtering global register variables.
+
 2000-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (add_c_tree_codes): Fix definition for traditional C.

@@ -179,14 +179,12 @@ do {									\
 /* ??? Unrelated, but dwarf2out.c emits unnecessary newlines after strings,
    may as well fix at the same time.  */
 
-#if 0
 #undef ASM_FILE_START
 #define ASM_FILE_START(STREAM) \
 do {									\
-  fputs (ASM_APP_OFF, STREAM);						\
   output_file_directive (STREAM, main_input_filename);			\
+  ia64_file_start(STREAM);						\
 } while (0)
-#endif
 
 /* Case label alignment is handled by ADDR_VEC_ALIGN now.  */
 
@@ -228,7 +226,7 @@ do {									\
 
 /* Similarly for constant pool data.  */
 
-extern int ia64_section_threshold;
+extern unsigned int ia64_section_threshold;
 #undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE, RTX)					\
 {									\
