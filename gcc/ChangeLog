@@ -1,3 +1,9 @@
+Wed Jul 29 22:39:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* unroll.c (unroll_loop): Do not abort for an UNROLL_MODULO
+	or UNROLL_COMPLETELY loop that starts with a jump to its
+	exit code.
+
 Wed Jul 29 22:18:14 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000/rs6000.md (absdi2 define_split): Swap operands of MINUS.
