@@ -1,3 +1,8 @@
+2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (WINT_TYPE): Redefine.
+	(WINT_TYPE_SIZE): Likewise.
+
 2001-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c: Check HAVE_DUP2 instead of NO_DUP2.
