@@ -1212,7 +1212,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	    {
 	      /* We explicitly evaluate the divide results into temporary
 		 variables so as to avoid excess precision problems that occur
-		 on a i386-unknown-sysv4.2 (unixware) host.  */
+		 on an i386-unknown-sysv4.2 (unixware) host.  */
 		 
 	      double tmp1 = ((double) local_reg_freq[regno]
 			    / local_reg_live_length[regno]);

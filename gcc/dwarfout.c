@@ -5428,7 +5428,7 @@ output_decl (decl, containing_scope)
 	  output_pending_types_for_scope (decl);
 
 	  /*
-	    Decide whether we need a unspecified_parameters DIE at the end.
+	    Decide whether we need an unspecified_parameters DIE at the end.
 	    There are 2 more cases to do this for:
 	    1) the ansi ... declaration - this is detectable when the end
 		of the arg list is not a void_type_node

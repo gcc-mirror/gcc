@@ -874,7 +874,7 @@ redirect_edge_and_branch (e, target)
   return true;
 }
 
-/* Like force_nonfallthru bellow, but additionally performs redirection
+/* Like force_nonfallthru below, but additionally performs redirection
    Used by redirect_edge_and_branch_force.  */
 
 static basic_block

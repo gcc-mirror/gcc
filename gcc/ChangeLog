@@ -1,3 +1,34 @@
+2001-10-09  Kazu Hirata  <kazu@hxi.com>
+
+	* c-common.c: Fix comment typos.
+	* cfgrtl.c: Likewise.
+	* collect2.c: Likewise.
+	* cpplex.c: Likewise.
+	* doloop.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c: Likewise.
+	* gcse.c: Likewise.
+	* global.c: Likewise.
+	* ifcvt.c: Likewise.
+	* loop.c: Likewise.
+	* optabs.c: Likewise.
+	* protoize.c: Likewise.
+	* regclass.c: Likewise.
+	* reorg.c: Likewise.
+	* rtl.h: Likewise.
+	* stmt.c: Likewise.
+	* tree.h: Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/c-tree.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/objc.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (set_named_section_flags): Initialize "declared".

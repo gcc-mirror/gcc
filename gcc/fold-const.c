@@ -517,7 +517,7 @@ rrotate_double (l1, h1, count, prec, lv, hv)
    CODE is a tree code for a kind of division, one of
    TRUNC_DIV_EXPR, FLOOR_DIV_EXPR, CEIL_DIV_EXPR, ROUND_DIV_EXPR
    or EXACT_DIV_EXPR
-   It controls how the quotient is rounded to a integer.
+   It controls how the quotient is rounded to an integer.
    Return nonzero if the operation overflows.
    UNS nonzero says do unsigned division.  */
 

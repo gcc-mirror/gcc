@@ -5884,7 +5884,7 @@ main (argc, argv)
 
       /* We do not exit here.  Instead we have created a fake input file
 	 called 'help-dummy' which needs to be compiled, and we pass this
-	 on the the various sub-processes, along with the --help switch.  */
+	 on the various sub-processes, along with the --help switch.  */
     }
 
   if (verbose_flag)

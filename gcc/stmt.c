@@ -2784,7 +2784,7 @@ expand_exit_loop_if_false (whichloop, cond)
   if (whichloop == 0)
     return 0;
   /* In order to handle fixups, we actually create a conditional jump
-     around a unconditional branch to exit the loop.  If fixups are
+     around an unconditional branch to exit the loop.  If fixups are
      necessary, they go before the unconditional branch.  */
 
   do_jump (cond, NULL_RTX, label);
@@ -5308,7 +5308,7 @@ expand_end_case (orig_index)
 		}
 
 	      /* For constant index expressions we need only
-		 issue a unconditional branch to the appropriate
+		 issue an unconditional branch to the appropriate
 		 target code.  The job of removing any unreachable
 		 code is left to the optimisation phase if the
 		 "-O" option is specified.  */

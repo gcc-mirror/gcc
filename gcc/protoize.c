@@ -1135,7 +1135,7 @@ unexpand_if_needed (aux_info_line)
               strcpy (copy_p, unexp_p->contracted);
               copy_p += size;
 
-              /* Assume the there will not be another replacement required
+              /* Assume that there will not be another replacement required
                  within the text just replaced.  */
 
               s += len;

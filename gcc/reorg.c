@@ -3105,7 +3105,7 @@ relax_delay_slots (first)
 	  if (target_label != JUMP_LABEL (insn))
 	    reorg_redirect_jump (insn, target_label);
 
-	  /* See if this jump branches around a unconditional jump.
+	  /* See if this jump branches around an unconditional jump.
 	     If so, invert this jump and point it to the target of the
 	     second jump.  */
 	  if (next && GET_CODE (next) == JUMP_INSN

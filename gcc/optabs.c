@@ -3220,7 +3220,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 
 /* Before emitting an insn with code ICODE, make sure that X, which is going
    to be used for operand OPNUM of the insn, is converted from mode MODE to
-   WIDER_MODE (UNSIGNEDP determines whether it is a unsigned conversion), and
+   WIDER_MODE (UNSIGNEDP determines whether it is an unsigned conversion), and
    that it is accepted by the operand predicate.  Return the new value.  */
 
 rtx

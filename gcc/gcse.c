@@ -5424,7 +5424,7 @@ delete_null_pointer_checks (f)
       /* LAST_INSN is a conditional jump.  Get its condition.  */
       condition = get_condition (last_insn, &earliest);
 
-      /* If we were unable to get the condition, or it is not a equality
+      /* If we were unable to get the condition, or it is not an equality
 	 comparison against zero then there's nothing we can do.  */
       if (!condition
 	  || (GET_CODE (condition) != NE && GET_CODE (condition) != EQ)

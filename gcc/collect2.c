@@ -2321,7 +2321,7 @@ libcompare (d1, d2)
       /* It has a valid numeric extension, prefer this one.  */
       if (*e1 == '.' && e1[1] && ISDIGIT (e1[1]))
 	return 1;
-      /* It has a invalid numeric extension, must prefer the other one.  */
+      /* It has an invalid numeric extension, must prefer the other one.  */
       else
 	return -1;
     }
@@ -2330,7 +2330,7 @@ libcompare (d1, d2)
       /* It has a valid numeric extension, prefer this one.  */
       if (*e2 == '.' && e2[1] && ISDIGIT (e2[1]))
 	return -1;
-      /* It has a invalid numeric extension, must prefer the other one.  */
+      /* It has an invalid numeric extension, must prefer the other one.  */
       else
 	return 1;
     }

@@ -560,7 +560,7 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
 			   || code == GEU || code == GTU), normalize);
 }
 
-/* Emit instruction to move a rtx into STRICT_LOW_PART.  */
+/* Emit instruction to move an rtx into STRICT_LOW_PART.  */
 static void
 noce_emit_move_insn (x, y)
      rtx x, y;
