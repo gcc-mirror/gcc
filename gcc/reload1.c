@@ -8377,6 +8377,7 @@ reload_combine ()
   rtx insn, set;
   int first_index_reg = 1, last_index_reg = 0;
   int i;
+  unsigned int r;
   int last_label_ruid;
   int min_labelno, n_labels;
   HARD_REG_SET ever_live_at_start, *label_live;
@@ -8389,15 +8390,14 @@ reload_combine ()
 
   /* To avoid wasting too much time later searching for an index register,
      determine the minimum and maximum index register numbers.  */
-  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-    {
-      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i))
-	{
-	  if (! last_index_reg)
-	    last_index_reg = i;
-	  first_index_reg = i;
-	}
-    }
+  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+    if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], r))
+      {
+	if (! last_index_reg)
+	  last_index_reg = r;
+	first_index_reg = i;
+      }
+
   /* If no index register is available, we can quit now.  */
   if (first_index_reg > last_index_reg)
     return;
@@ -8410,6 +8410,7 @@ reload_combine ()
   n_labels = max_label_num () - min_labelno;
   label_live = (HARD_REG_SET *) xmalloc (n_labels * sizeof (HARD_REG_SET));
   CLEAR_HARD_REG_SET (ever_live_at_start);
+
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       insn = BLOCK_HEAD (i);
@@ -8417,8 +8418,10 @@ reload_combine ()
 	{
 	  HARD_REG_SET live;
 
-	  REG_SET_TO_HARD_REG_SET (live, BASIC_BLOCK (i)->global_live_at_start);
-	  compute_use_by_pseudos (&live, BASIC_BLOCK (i)->global_live_at_start);
+	  REG_SET_TO_HARD_REG_SET (live,
+				   BASIC_BLOCK (i)->global_live_at_start);
+	  compute_use_by_pseudos (&live,
+				  BASIC_BLOCK (i)->global_live_at_start);
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}
@@ -8426,13 +8429,13 @@ reload_combine ()
 
   /* Initialize last_label_ruid, reload_combine_ruid and reg_state.  */
   last_label_ruid = reload_combine_ruid = 0;
-  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
+  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
     {
-      reg_state[i].store_ruid = reload_combine_ruid;
-      if (fixed_regs[i])
-	reg_state[i].use_index = -1;
+      reg_state[r].store_ruid = reload_combine_ruid;
+      if (fixed_regs[r])
+	reg_state[r].use_index = -1;
       else
-	reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
+	reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;
     }
 
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
@@ -8444,14 +8447,14 @@ reload_combine ()
 	 is and then later disable any optimization that would cross it.  */
       if (GET_CODE (insn) == CODE_LABEL)
 	last_label_ruid = reload_combine_ruid;
-      if (GET_CODE (insn) == BARRIER)
-	{
-	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-	    if (! fixed_regs[i])
-	      reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
-	}
+      else if (GET_CODE (insn) == BARRIER)
+	for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	  if (! fixed_regs[r])
+	      reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;
+
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
+
       reload_combine_ruid++;
 
       /* Look for (set (REGX) (CONST_INT))
@@ -8481,7 +8484,7 @@ reload_combine ()
 	  rtx base = XEXP (plus, 1);
 	  rtx prev = prev_nonnote_insn (insn);
 	  rtx prev_set = prev ? single_set (prev) : NULL_RTX;
-	  int regno = REGNO (reg);
+	  unsigned int regno = REGNO (reg);
 	  rtx const_reg = NULL_RTX;
 	  rtx reg_sum = NULL_RTX;
 
@@ -8508,31 +8511,35 @@ reload_combine ()
 		 two registers.  */
 	      for (i = first_index_reg; i <= last_index_reg; i++)
 		{
-		  if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i)
+		  if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS],
+					 i)
 		      && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
 		      && reg_state[i].store_ruid <= reg_state[regno].use_ruid
 		      && HARD_REGNO_NREGS (i, GET_MODE (reg)) == 1)
 		    {
 		      rtx index_reg = gen_rtx_REG (GET_MODE (reg), i);
+
 		      const_reg = index_reg;
 		      reg_sum = gen_rtx_PLUS (GET_MODE (reg), index_reg, base);
 		      break;
 		    }
 		}
 	    }
+
 	  /* Check that PREV_SET is indeed (set (REGX) (CONST_INT)) and that
 	     (REGY), i.e. BASE, is not clobbered before the last use we'll
 	     create.  */
-	  if (prev_set
+	  if (prev_set != 0
 	      && GET_CODE (SET_SRC (prev_set)) == CONST_INT
 	      && rtx_equal_p (SET_DEST (prev_set), reg)
 	      && reg_state[regno].use_index >= 0
-	      && reg_state[REGNO (base)].store_ruid <= reg_state[regno].use_ruid
-	      && reg_sum)
+	      && (reg_state[REGNO (base)].store_ruid
+		  <= reg_state[regno].use_ruid)
+	      && reg_sum != 0)
 	    {
 	      int i;
 
-	      /* Change destination register and - if necessary - the
+	      /* Change destination register and, if necessary, the
 		 constant value in PREV, the constant loading instruction.  */
 	      validate_change (prev, &SET_DEST (prev_set), const_reg, 1);
 	      if (reg_state[regno].offset != const0_rtx)
@@ -8541,6 +8548,7 @@ reload_combine ()
 				 GEN_INT (INTVAL (SET_SRC (prev_set))
 					  + INTVAL (reg_state[regno].offset)),
 				 1);
+
 	      /* Now for every use of REG that we have recorded, replace REG
 		 with REG_SUM.  */
 	      for (i = reg_state[regno].use_index;
@@ -8559,67 +8567,72 @@ reload_combine ()
 		  NOTE_SOURCE_FILE (insn) = 0;
 
 		  if (reg_state[regno].offset != const0_rtx)
-		    {
-		      /* Previous REG_EQUIV / REG_EQUAL notes for PREV
-			 are now invalid.  */
-		      for (np = &REG_NOTES (prev); *np; )
-			{
-			  if (REG_NOTE_KIND (*np) == REG_EQUAL
-			      || REG_NOTE_KIND (*np) == REG_EQUIV)
-			    *np = XEXP (*np, 1);
-			  else
-			    np = &XEXP (*np, 1);
-			}
-		    }
+		    /* Previous REG_EQUIV / REG_EQUAL notes for PREV
+		       are now invalid.  */
+		    for (np = &REG_NOTES (prev); *np; )
+		      {
+			if (REG_NOTE_KIND (*np) == REG_EQUAL
+			    || REG_NOTE_KIND (*np) == REG_EQUIV)
+			  *np = XEXP (*np, 1);
+			else
+			  np = &XEXP (*np, 1);
+		      }
+
 		  reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-		  reg_state[REGNO (const_reg)].store_ruid = reload_combine_ruid;
+		  reg_state[REGNO (const_reg)].store_ruid
+		    = reload_combine_ruid;
 		  continue;
 		}
 	    }
 	}
-      note_stores (PATTERN (insn), reload_combine_note_store, NULL);
+
+  note_stores (PATTERN (insn), reload_combine_note_store, NULL);
+
       if (GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx link;
 
-	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-	    {
-	      if (call_used_regs[i])
-		{
-		  reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
-		  reg_state[i].store_ruid = reload_combine_ruid;
-		}
-	    }
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	    if (call_used_regs[r])
+	      {
+		reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;
+		reg_state[r].store_ruid = reload_combine_ruid;
+	      }
+
 	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
 	       link = XEXP (link, 1))
-	    {
-	      rtx use = XEXP (link, 0);
-	      int regno = REGNO (XEXP (use, 0));
-	      if (GET_CODE (use) == CLOBBER)
-		{
-		  reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-		  reg_state[regno].store_ruid = reload_combine_ruid;
-		}
-	      else
-		reg_state[regno].use_index = -1;
-	    }
+	    if (GET_CODE (XEXP (XEXP (link, 0), 0)) == REG)
+	      {
+		unsigned int regno = REGNO (XEXP (XEXP (link, 0), 0));
+
+		if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+		  {
+		    reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
+		    reg_state[regno].store_ruid = reload_combine_ruid;
+		  }
+		else
+		  reg_state[regno].use_index = -1;
+	      }
 	}
-      if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) != RETURN)
+
+      else if (GET_CODE (insn) == JUMP_INSN
+	       && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  /* Non-spill registers might be used at the call destination in
 	     some unknown fashion, so we have to mark the unknown use.  */
 	  HARD_REG_SET *live;
+
 	  if ((condjump_p (insn) || condjump_in_parallel_p (insn))
 	      && JUMP_LABEL (insn))
 	    live = &LABEL_LIVE (JUMP_LABEL (insn));
 	  else
 	    live = &ever_live_at_start;
+
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-	    {
-	      if (TEST_HARD_REG_BIT (*live, i))
-		reg_state[i].use_index = -1;
-	    }
+	    if (TEST_HARD_REG_BIT (*live, i))
+	      reg_state[i].use_index = -1;
 	}
+
       reload_combine_note_use (&PATTERN (insn), insn);
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	{
@@ -8633,12 +8646,14 @@ reload_combine ()
 	    }
 	}
     }
+
   free (label_live);
 }
 
 /* Check if DST is a register or a subreg of a register; if it is,
    update reg_state[regno].store_ruid and reg_state[regno].use_index
    accordingly.  Called via note_stores from reload_combine.  */
+
 static void
 reload_combine_note_store (dst, set, data)
      rtx dst, set;
