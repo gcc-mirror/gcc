@@ -4395,7 +4395,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
         return NULL_RTX;
 
       if (TARGET_32BIT && TARGET_POWERPC64
-	  && (mode == DFmode || mode == DImode || mode == BLKmode))
+	  && (mode == DImode || mode == BLKmode))
 	return rs6000_mixed_function_arg (cum, mode, type, align_words);
 
       if (USE_FP_FOR_ARG_P (cum, mode, type))
@@ -4409,6 +4409,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		      || ! TARGET_XL_CALL
 		      || (align_words < GP_ARG_NUM_REG))))
 	    return gen_rtx_REG (mode, cum->fregno);
+
+          if (TARGET_32BIT && TARGET_POWERPC64
+              && mode == DFmode && cum->stdarg)
+            return rs6000_mixed_function_arg (cum, mode, type, align_words);
 
           return gen_rtx_PARALLEL (mode,
 	    gen_rtvec (2,
