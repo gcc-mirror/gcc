@@ -315,7 +315,7 @@ in the following sections.
 -mabicalls  -mcpu=@var{cpu type}  -membedded-data
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1
--mips2  -mips3  -mlong64  -mlong-calls  -mmemcpy
+-mips2  -mips3 -mips4 -mlong64  -mlong-calls  -mmemcpy
 -mmips-as  -mmips-tfile  -mno-abicalls
 -mno-embedded-data  -mno-embedded-pic
 -mno-gpopt  -mno-long-calls
@@ -323,6 +323,7 @@ in the following sections.
 -mrnames  -msoft-float
 -m4650  -msingle-float  -mmad
 -mstats  -EL  -EB  -G @var{num}  -nocpp
+-mabi=32 -mabi=n32 -mabi=64 -mabi=eabi
 
 @emph{i386 Options}
 -mcpu=@var{cpu type}
@@ -4615,6 +4616,10 @@ Issue instructions from level 3 of the MIPS ISA (64 bit instructions).
 @samp{r4000} is the default @var{cpu type} at this ISA level.
 This option does not change the sizes of any of the C data types.
 
+@item -mips4
+Issue instructions from level 4 of the MIPS ISA.  @samp{r8000} is the
+default @var{cpu type} at this ISA level.
+
 @item -mfp32
 Assume that 32 32-bit floating point registers are available.  This is
 the default.
@@ -4638,6 +4643,12 @@ is also specified.
 @item -mlong64
 Types long and pointer are 64 bits, and type int is 32 bits.
 This works only if @samp{-mips3} is also specified.
+
+@itemx -mabi=32
+@itemx -mabi=n32
+@itemx -mabi=64
+@itemx -mabi=eabi
+Generate code for the indicated ABI.
 
 @item -mmips-as
 Generate code for the MIPS assembler, and invoke @file{mips-tfile} to
