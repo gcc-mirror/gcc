@@ -3,6 +3,10 @@
 	* emit-rtl.c (classify_insn): Make it static.
 	* rtl.h: Remove the corresponding prototype.
 
+	* integrate.c (has_func_hard_reg_initial_val,
+	get_func_hard_reg_initial_val): Make them static.
+	* integrate.h: Remove the corresponding prototypes.
+
 2004-11-19  Ben Elliston  <bje@au.ibm.com>
 
 	* dwarf2asm.h (dw2_asm_output_pcel): Stub out with #if 0.
