@@ -53,7 +53,10 @@ struct arg_data
   /* Number of registers to use.  0 means put the whole arg in registers.
      Also 0 if not passed in registers.  */
   int partial;
-  /* Non-zero if argument must be passed on stack.  */
+  /* Non-zero if argument must be passed on stack.
+     Note that some arguments may be passed on the stack
+     even though pass_on_stack is zero, just because FUNCTION_ARG says so.
+     pass_on_stack identifies arguments that *cannot* go in registers.  */
   int pass_on_stack;
   /* Offset of this argument from beginning of stack-args.  */
   struct args_size offset;
@@ -595,6 +598,14 @@ expand_call (exp, target, ignore)
 	{
 	  int i;
 
+	  /* Perform all cleanups needed for the arguments of this call
+	     (i.e. destructors in C++).  It is ok if these destructors
+	     clobber RETURN_VALUE_REG, because the only time we care about
+	     this is when TARGET is that register.  But in C++, we take
+	     care to never return that register directly.  */
+	  expand_cleanups_to (old_cleanups);
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* If the outgoing argument list must be preserved, push
 	     the stack before executing the inlined function if it
 	     makes any calls.  */
@@ -605,19 +616,44 @@ expand_call (exp, target, ignore)
 
 	  if (stack_arg_under_construction || i >= 0)
 	    {
-	      rtx insn, seq;
+	      rtx insn = NEXT_INSN (before_call), seq;
 
-	      for (insn = NEXT_INSN (before_call); insn;
-		   insn = NEXT_INSN (insn))
-		if (GET_CODE (insn) == CALL_INSN)
-		  break;
+	      /* Look for a call in the inline function code.
+		 If OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl)) is
+		 nonzero then there is a call and it is not necessary
+		 to scan the insns.  */
+
+	      if (OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl)) == 0)
+		for (; insn; insn = NEXT_INSN (insn))
+		  if (GET_CODE (insn) == CALL_INSN)
+		    break;
 
 	      if (insn)
 		{
+		  /* Reserve enough stack space so that the largest
+		     argument list of any function call in the inline
+		     function does not overlap the argument list being
+		     evaluated.  This is usually an overestimate because
+		     allocate_dynamic_stack_space reserves space for an
+		     outgoing argument list in addition to the requested
+		     space, but there is no way to ask for stack space such
+		     that an argument list of a certain length can be
+		     safely constructed.  */
+
+		  int adjust = OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl));
+#ifdef REG_PARM_STACK_SPACE
+		  /* Add the stack space reserved for register arguments
+		     in the inline function.  What is really needed is the
+		     largest value of reg_parm_stack_space in the inline
+		     function, but that is not available.  Using the current
+		     value of reg_parm_stack_space is wrong, but gives
+		     correct results on all supported machines.  */
+		  adjust += reg_parm_stack_space;
+#endif
 		  start_sequence ();
 		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
 		  allocate_dynamic_stack_space (gen_rtx (CONST_INT, VOIDmode,
-							 highest_outgoing_arg_in_use),
+							 adjust),
 						0, BITS_PER_UNIT);
 		  seq = get_insns ();
 		  end_sequence ();
@@ -625,13 +661,7 @@ expand_call (exp, target, ignore)
 		  emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
 		}
 	    }
-
-	  /* Perform all cleanups needed for the arguments of this call
-	     (i.e. destructors in C++).  It is ok if these destructors
-	     clobber RETURN_VALUE_REG, because the only time we care about
-	     this is when TARGET is that register.  But in C++, we take
-	     care to never return that register directly.  */
-	  expand_cleanups_to (old_cleanups);
+#endif
 
 	  /* If the result is equivalent to TARGET, return TARGET to simplify
 	     checks in store_expr.  They can be equivalent but not equal in the
@@ -743,11 +773,16 @@ expand_call (exp, target, ignore)
      as if it were an extra parameter.  */
   if (structure_value_addr && struct_value_rtx == 0)
     {
+#ifdef ACCUMULATE_OUTGOING_ARGS
       /* If the stack will be adjusted, make sure the structure address
 	 does not refer to virtual_outgoing_args_rtx.  */
       rtx temp = (stack_arg_under_construction
 		  ? copy_addr_to_reg (structure_value_addr)
 		  : force_reg (Pmode, structure_value_addr));
+#else
+      rtx temp = force_reg (Pmode, structure_value_addr);
+#endif
+
       actparms
 	= tree_cons (error_mark_node,
 		     make_tree (build_pointer_type (TREE_TYPE (funtype)),
@@ -1111,11 +1146,13 @@ expand_call (exp, target, ignore)
 	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
 	  old_pending_adj = pending_stack_adjust;
 	  pending_stack_adjust = 0;
+#ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* stack_arg_under_construction says whether a stack arg is
 	     being constructed at the old stack level.  Pushing the stack
 	     gets a clean outgoing argument block.  */
 	  old_stack_arg_under_construction = stack_arg_under_construction;
 	  stack_arg_under_construction = 0;
+#endif
 	}
       argblock = push_block (ARGS_SIZE_RTX (args_size), 0, 0);
     }
@@ -1273,13 +1310,18 @@ expand_call (exp, target, ignore)
 #endif
 #endif
 
+#ifdef ACCUMULATE_OUTGOING_ARGS
   /* The save/restore code in store_one_arg handles all cases except one:
      a constructor call (including a C function returning a BLKmode struct)
      to initialize an argument.  */
   if (stack_arg_under_construction)
     {
+#if defined(REG_PARM_STACK_SPACE) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
       rtx push_size = gen_rtx (CONST_INT, VOIDmode,
-			       highest_outgoing_arg_in_use);
+			       reg_parm_stack_space + args_size.constant);
+#else
+      rtx push_size = gen_rtx (CONST_INT, VOIDmode, args_size.constant);
+#endif
       if (old_stack_level == 0)
 	{
 	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
@@ -1297,6 +1339,7 @@ expand_call (exp, target, ignore)
 	}
       allocate_dynamic_stack_space (push_size, 0, BITS_PER_UNIT);
     }
+#endif
 
   /* Don't try to defer pops if preallocating, not even from the first arg,
      since ARGBLOCK probably refers to the SP.  */
@@ -1635,9 +1678,11 @@ expand_call (exp, target, ignore)
     {
       emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
       pending_stack_adjust = old_pending_adj;
+#ifdef ACCUMULATE_OUTGOING_ARGS
       stack_arg_under_construction = old_stack_arg_under_construction;
       highest_outgoing_arg_in_use = initial_highest_arg_in_use;
       stack_usage_map = initial_stack_usage_map;
+#endif
     }
 #ifdef ACCUMULATE_OUTGOING_ARGS
   else
@@ -1849,7 +1894,35 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   /* If this is being passes partially in a register, we can't evaluate
      it directly into its stack slot.  Otherwise, we can.  */
   if (arg->value == 0)
-    arg->value = expand_expr (pval, partial ? 0 : arg->stack, VOIDmode, 0);
+    {
+#ifdef ACCUMULATE_OUTGOING_ARGS
+      /* stack_arg_under_construction is nonzero if a function argument is
+	 being evaluated directly into the outgoing argument list and
+	 expand_call must take special action to preserve the argument list
+	 if it is called recursively.
+
+	 For scalar function arguments stack_usage_map is sufficient to
+	 determine which stack slots must be saved and restored.  Scalar
+	 arguments in general have pass_on_stack == 0.
+
+	 If this argument is initialized by a function which takes the
+	 address of the argument (a C++ constructor or a C function
+	 returning a BLKmode structure), then stack_usage_map is
+	 insufficient and expand_call must push the stack around the
+	 function call.  Such arguments have pass_on_stack == 1.
+
+	 Note that it is always safe to set stack_arg_under_construction,
+	 but this generates suboptimal code if set when not needed.  */
+
+      if (arg->pass_on_stack)
+	stack_arg_under_construction++;
+#endif
+      arg->value = expand_expr (pval, partial ? 0 : arg->stack, VOIDmode, 0);
+#ifdef ACCUMULATE_OUTGOING_ARGS
+      if (arg->pass_on_stack)
+	stack_arg_under_construction--;
+#endif
+    }
 
   /* Don't allow anything left on stack from computation
      of argument to alloca.  */
