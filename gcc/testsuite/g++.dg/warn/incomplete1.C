@@ -16,6 +16,6 @@ A *a;		// { dg-warning "`a' has incomplete type" "" }
 int
 main (int argc, char **argv)
 {
-  delete a;	// { dg-warning "delete" "" { xfail *-*-* } }
+  delete a;	// { dg-warning "delete" "" }
   return 0;
 }
