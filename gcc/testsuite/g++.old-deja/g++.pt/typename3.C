@@ -1,17 +1,20 @@
 // Build don't link:
-// GROUPS passed templates
+
 template <class T>
-struct bar { 
-  typedef typename T::baz baz;
+struct A
+{
+  typedef T A_Type;
 };
 
-template <class T>
-void foo(T)
-{
-  bar<T>::baz(); // ERROR - T is int.
-}
 
-void foobar()
+template <class U>
+struct B : public A<U>
 {
-  foo(3);
+  A_Type Func();
+};
+
+
+template <class U>
+A<U>::A_Type B<U>::Func()
+{
 }

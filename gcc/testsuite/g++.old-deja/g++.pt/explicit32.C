@@ -12,7 +12,7 @@ struct S<int>
   void foo();
 };
 
-template <>
+
 void S<int>::foo()
 {
 }
