@@ -58,27 +58,32 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
   // have the compiler insert the caller as a hidden argument in some
   // calls.  However, we never implemented that, so we have to find
   // the caller by hand instead.
-  gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(7);
-  try
-    {
-      // We want to skip all the frames on the stack from this class.
-      for (int i = 1;
-	   !caller || caller == &java::lang::reflect::Field::class$;
-	   i++)
-	caller = t->classAt (i);
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
-    }
-
+  
+  using namespace java::lang::reflect;
+  
   jfieldID fld = _Jv_FromReflectedField (field);
   _Jv_ushort flags = fld->getModifiers();
-  if (! field->isAccessible ()
-      && ! _Jv_CheckAccess (caller, field->getDeclaringClass(), flags))
-    throw new java::lang::IllegalAccessException;
+  
+  // Check accessibility, if required.
+  if (! (Modifier::isPublic (flags) || field->isAccessible()))
+    {
+      gnu::gcj::runtime::StackTrace *t 
+	= new gnu::gcj::runtime::StackTrace(7);
+      try
+	{
+	  // We want to skip all the frames on the stack from this class.
+	  for (int i = 1; !caller || caller == &Field::class$; i++)
+	    caller = t->classAt (i);
+	}
+      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+	{
+	}
 
-  if (flags & java::lang::reflect::Modifier::STATIC)
+      if (! _Jv_CheckAccess (caller, field->getDeclaringClass(), flags))
+	throw new java::lang::IllegalAccessException;
+    }
+
+  if (flags & Modifier::STATIC)
     {
       jclass fldClass = field->getDeclaringClass ();
       JvInitClass(fldClass);

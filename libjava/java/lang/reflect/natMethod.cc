@@ -28,6 +28,7 @@ details.  */
 #include <java/lang/Long.h>
 #include <java/lang/Float.h>
 #include <java/lang/Double.h>
+#include <java/lang/IllegalAccessException.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
@@ -141,26 +142,15 @@ get_ffi_type (jclass klass)
 jobject
 java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
 {
+  using namespace java::lang::reflect;
+  
   if (parameter_types == NULL)
     getType ();
-
-  gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(4);
-  Class *caller = NULL;
-  try
-    {
-      for (int i = 1; !caller; i++)
-	{
-	  caller = t->classAt (i);
-	}
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
-    }
-
+    
   jmethodID meth = _Jv_FromReflectedMethod (this);
+
   jclass klass;
-  if (! java::lang::reflect::Modifier::isStatic(meth->accflags))
+  if (! Modifier::isStatic(meth->accflags))
     {
       if (! obj)
 	throw new java::lang::NullPointerException;
@@ -181,8 +171,26 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
       klass = declaringClass;
     }
 
-  if (! isAccessible() && ! _Jv_CheckAccess(caller, klass, meth->accflags))
-    throw new IllegalArgumentException;
+  // Check accessibility, if required.
+  if (! (Modifier::isPublic (meth->accflags) || this->isAccessible()))
+    {
+      gnu::gcj::runtime::StackTrace *t 
+	= new gnu::gcj::runtime::StackTrace(4);
+      Class *caller = NULL;
+      try
+	{
+	  for (int i = 1; !caller; i++)
+	    {
+	      caller = t->classAt (i);
+	    }
+	}
+      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
+	{
+	}
+
+      if (! _Jv_CheckAccess(caller, klass, meth->accflags))
+	throw new IllegalAccessException;
+    }
 
   return _Jv_CallAnyMethodA (obj, return_type, meth, false,
 			     parameter_types, args);
