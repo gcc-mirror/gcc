@@ -233,7 +233,7 @@ int CORD_vsprintf(CORD * out, CORD format, va_list args)
 			if (width == NONE && prec == NONE) {
 			    register char c;
 
-			    c = va_arg(args, char);
+			    c = va_arg(args, int);
 			    CORD_ec_append(result, c);
 			    goto done;
 			}

@@ -387,7 +387,8 @@ int GC_is_thread_stack(ptr_t addr)
 }
 # endif
 
-/* We hold allocation lock.  We assume the world is stopped.	*/
+/* We hold allocation lock.  Should do exactly the right thing if the	*/
+/* world is stopped.  Should not fail if it isn't.			*/
 void GC_push_all_stacks()
 {
     register int i;
