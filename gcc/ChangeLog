@@ -1,5 +1,11 @@
 2000-05-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* print-rtl.c (print_rtx): Only print note line number as string
+	if between NOTE_INSN_BIAS and NOTE_INSN_MAX.
+	* final.c (final_scan_insn): Do nothing for note line number 0.
+
+2000-05-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc-common.c (ggc_mark_rtx_children): Mark NOTE_EXPECTED_VALUE
 	from NOTE_INSN_EXPECTED_VALUE notes and NOTE_SOURCE_FILE from
 	NOTE_INSN_DELETED_LABEL.
