@@ -1805,11 +1805,8 @@ walk_vtables_r (namespace, data)
 /* Walk the vtable declarations.  Whenever one is found for which P
    returns nonzero, call F with its address.  If any call to F
    returns a nonzero value, return a nonzero value.  */
-int
-walk_vtables (p, f, data)
-     walk_globals_pred p;
-     walk_globals_fn f;
-     void *data;
+bool
+walk_vtables (walk_globals_pred p, walk_globals_fn f, void *data)
 {    
   struct walk_globals_data wgd;
   wgd.p = p;    
@@ -1885,14 +1882,11 @@ walk_globals_r (namespace, data)
 }
 
 /* Walk the global declarations.  Whenever one is found for which P
-   returns nonzero, call F with its address.  If any call to F
-   returns a nonzero value, return a nonzero value.  */
+   returns true, call F with its address.  If any call to F
+   returns true, return true.  */
 
-int
-walk_globals (p, f, data)
-     walk_globals_pred p;
-     walk_globals_fn f;
-     void *data;
+bool
+walk_globals (walk_globals_pred p, walk_globals_fn f, void *data)
 {
   struct walk_globals_data wgd;
   wgd.p = p;

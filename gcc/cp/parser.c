@@ -11755,7 +11755,7 @@ cp_parser_class_head (parser,
     }
   else
     {
-      int new_type_p;
+      bool new_type_p;
       tree class_type;
 
       /* Given:
@@ -11779,7 +11779,7 @@ cp_parser_class_head (parser,
 					   nested_name_specifier,
 					   type,
 					   attributes,
-					   /*defn_p=*/1,
+					   /*defn_p=*/true,
 					   &new_type_p));
       if (type != error_mark_node)
 	{

@@ -29,10 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 
 void
-cxx_print_decl (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+cxx_print_decl (FILE *file, tree node, int indent)
 {
   if (TREE_CODE (node) == FIELD_DECL)
     {
@@ -68,10 +65,7 @@ cxx_print_decl (file, node, indent)
 }
 
 void
-cxx_print_type (file, node, indent)
-     FILE *file;
-     register tree node;
-     int indent;
+cxx_print_type (FILE *file, tree node, int indent)
 {
   switch (TREE_CODE (node))
     {
@@ -160,10 +154,7 @@ cxx_print_type (file, node, indent)
 }
 
 void
-cxx_print_identifier (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+cxx_print_identifier (FILE *file, tree node, int indent)
 {
   print_node (file, "bindings", IDENTIFIER_NAMESPACE_BINDINGS (node), indent + 4);
   print_node (file, "class", IDENTIFIER_CLASS_VALUE (node), indent + 4);
@@ -175,10 +166,7 @@ cxx_print_identifier (file, node, indent)
 }
 
 void
-cxx_print_xnode (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+cxx_print_xnode (FILE *file, tree node, int indent)
 {
   switch (TREE_CODE (node))
     {

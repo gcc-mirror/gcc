@@ -33,14 +33,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static const char *program_name;
 static int flags = DMGL_PARAMS | DMGL_ANSI | DMGL_VERBOSE;
 
-static void demangle_it PARAMS ((char *));
-static void usage PARAMS ((FILE *, int)) ATTRIBUTE_NORETURN;
-static void fatal PARAMS ((const char *)) ATTRIBUTE_NORETURN;
-static void print_demangler_list PARAMS ((FILE *));
+static void demangle_it (char *);
+static void usage (FILE *, int) ATTRIBUTE_NORETURN;
+static void fatal (const char *) ATTRIBUTE_NORETURN;
+static void print_demangler_list (FILE *);
 
 static void
-demangle_it (mangled_name)
-     char *mangled_name;
+demangle_it (char *mangled_name)
 {
   char *result;
 
@@ -58,8 +57,7 @@ demangle_it (mangled_name)
 }
 
 static void 
-print_demangler_list (stream)
-     FILE *stream;
+print_demangler_list (FILE *stream)
 {
   const struct demangler_engine *demangler; 
 
@@ -74,9 +72,7 @@ print_demangler_list (stream)
 }
 
 static void
-usage (stream, status)
-     FILE *stream;
-     int status;
+usage (FILE *stream, int status)
 {
   fprintf (stream, "\
 Usage: %s [-_] [-n] [--strip-underscores] [--no-strip-underscores] \n",
@@ -100,7 +96,7 @@ Usage: %s [-_] [-n] [--strip-underscores] [--no-strip-underscores] \n",
 #define MBUF_SIZE 32767
 char mbuffer[MBUF_SIZE];
 
-int strip_underscore = 0;
+bool strip_underscore = false;
 
 static const struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
@@ -111,18 +107,16 @@ static const struct option long_options[] = {
   {0, no_argument, 0, 0}
 };
 
-static const char *
-standard_symbol_characters PARAMS ((void));
+static const char *standard_symbol_characters (void);
 
-static const char *
-hp_symbol_characters PARAMS ((void));
+static const char *hp_symbol_characters (void);
 
 /* Return the string of non-alnum characters that may occur 
    as a valid symbol component, in the standard assembler symbol
    syntax.  */
 
 static const char *
-standard_symbol_characters ()
+standard_symbol_characters (void)
 {
   return "_$.";
 }
@@ -159,17 +153,15 @@ standard_symbol_characters ()
 
    So have fun.  */
 static const char *
-hp_symbol_characters ()
+hp_symbol_characters (void)
 {
   return "_$.<>#,*&[]:(){}";
 }
 
-extern int main PARAMS ((int, char **));
+extern int main (int, char **);
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   char *result;
   int c;
@@ -190,14 +182,14 @@ main (argc, argv)
 	case 'h':
 	  usage (stdout, 0);
 	case 'n':
-	  strip_underscore = 0;
+	  strip_underscore = false;
 	  break;
 	case 'v':
 	  printf ("GNU %s (C++ demangler), version %s\n",
 		  program_name, version_string);
 	  return (0);
 	case '_':
-	  strip_underscore = 1;
+	  strip_underscore = true;
 	  break;
 	case 's':
 	  {
@@ -296,8 +288,7 @@ main (argc, argv)
 }
 
 static void
-fatal (str)
-     const char *str;
+fatal (const char *str)
 {
   fprintf (stderr, "%s: %s\n", program_name, str);
   exit (1);
