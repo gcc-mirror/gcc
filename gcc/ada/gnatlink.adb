@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,28 +172,28 @@ procedure Gnatlink is
    --  Set to True to force generation of a response file
 
    function Base_Name (File_Name : in String) return String;
-   --  Return just the file name part without the extension (if present).
+   --  Return just the file name part without the extension (if present)
 
    procedure Delete (Name : in String);
-   --  Wrapper to unlink as status is ignored by this application.
+   --  Wrapper to unlink as status is ignored by this application
 
    procedure Error_Msg (Message : in String);
    --  Output the error or warning Message
 
    procedure Exit_With_Error (Error : in String);
-   --  Output Error and exit program with a fatal condition.
+   --  Output Error and exit program with a fatal condition
 
    procedure Process_Args;
-   --  Go through all the arguments and build option tables.
+   --  Go through all the arguments and build option tables
 
    procedure Process_Binder_File (Name : in String);
-   --  Reads the binder file and extracts linker arguments.
+   --  Reads the binder file and extracts linker arguments
 
    procedure Write_Header;
-   --  Show user the program name, version and copyright.
+   --  Show user the program name, version and copyright
 
    procedure Write_Usage;
-   --  Show user the program options.
+   --  Show user the program options
 
    ---------------
    -- Base_Name --
@@ -514,7 +514,7 @@ procedure Gnatlink is
                                 new String'(Arg);
                            end if;
 
-                           --  Pass to gcc for linking program.
+                           --  Pass to gcc for linking program
 
                            Gcc_Linker_Options.Increment_Last;
                            Gcc_Linker_Options.Table
@@ -639,10 +639,10 @@ procedure Gnatlink is
       --  For call to Close
 
       GNAT_Static : Boolean := False;
-      --  Save state of -static option.
+      --  Save state of -static option
 
       GNAT_Shared : Boolean := False;
-      --  Save state of -shared option.
+      --  Save state of -shared option
 
       Xlinker_Was_Previous : Boolean := False;
       --  Indicate that "-Xlinker" was the option preceding the current
@@ -704,7 +704,7 @@ procedure Gnatlink is
       --  terminator.
 
       function Index (S, Pattern : String) return Natural;
-      --  Return the last occurrence of Pattern in S, or 0 if none.
+      --  Return the last occurrence of Pattern in S, or 0 if none
 
       function Is_Option_Present (Opt : in String) return Boolean;
       --  Return true if the option Opt is already present in
@@ -1279,7 +1279,7 @@ procedure Gnatlink is
          Write_Str ("GNATLINK ");
          Write_Str (Gnat_Version_String);
          Write_Eol;
-         Write_Str ("Copyright 1995-2004 Free Software Foundation, Inc");
+         Write_Str ("Copyright 1995-2005 Free Software Foundation, Inc");
          Write_Eol;
       end if;
    end Write_Header;
@@ -1663,7 +1663,7 @@ begin
       end Bind_Step;
    end if;
 
-   --  Now, actually link the program.
+   --  Now, actually link the program
 
    --  Skip this step for now on the JVM since the Java interpreter will do
    --  the actual link at run time. We might consider packing all class files

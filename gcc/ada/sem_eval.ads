@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -411,7 +411,6 @@ private
    pragma Inline (Eval_Character_Literal);
    pragma Inline (Eval_Conditional_Expression);
    pragma Inline (Eval_Indexed_Component);
-   pragma Inline (Eval_Integer_Literal);
    pragma Inline (Eval_Named_Integer);
    pragma Inline (Eval_Named_Real);
    pragma Inline (Eval_Real_Literal);

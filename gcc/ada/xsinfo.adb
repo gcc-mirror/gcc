@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to construct C header file a-sinfo.h (C version of sinfo.ads spec,
+--  Program to construct C header file sinfo.h (C version of sinfo.ads spec,
 --  for use by Gigi, contains all definitions and access functions, but does
 --  not contain set procedures, since Gigi never modifies the GNAT tree)
 
@@ -34,14 +34,14 @@
 
 --    Output files:
 
---       a-sinfo.h     Corresponding c header file
+--       sinfo.h       Corresponding c header file
 
 --  Note: this program assumes that sinfo.ads has passed the error checks
 --  which are carried out by the CSinfo utility, so it does not duplicate
 --  these checks and assumes the soruce is correct.
 
 --  An optional argument allows the specification of an output file name to
---  override the default a-sinfo.h file name for the generated output file.
+--  override the default sinfo.h file name for the generated output file.
 
 with Ada.Command_Line;              use Ada.Command_Line;
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
@@ -118,7 +118,7 @@ begin
    if Argument_Count > 0 then
       Create (Ofile, Out_File, Argument (1));
    else
-      Create (Ofile, Out_File, "a-sinfo.h");
+      Create (Ofile, Out_File, "sinfo.h");
    end if;
 
    Open (InS, In_File, "sinfo.ads");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,9 +80,9 @@ package body Clean is
    --  files will be done.
 
    Do_Nothing : Boolean := False;
-   --  Set to True when switch -n is specified.
-   --  When True, no file is deleted. gnatclean only lists the files that
-   --  would have been deleted if the switch -n had not been specified.
+   --  Set to True when switch -n is specified. When True, no file is deleted.
+   --  gnatclean only lists the files that would have been deleted if the
+   --  switch -n had not been specified.
 
    File_Deleted : Boolean := False;
    --  Set to True if at least one file has been deleted
@@ -151,7 +151,7 @@ package body Clean is
    --  Extracts the first element from the Q
 
    Q_Front : Natural;
-   --  Points to the first valid element in the Q.
+   --  Points to the first valid element in the Q
 
    package Q is new Table.Table (
      Table_Component_Type => File_Name_Type,
@@ -1041,7 +1041,7 @@ package body Clean is
       if not Copyright_Displayed then
          Copyright_Displayed := True;
          Put_Line ("GNATCLEAN " & Gnatvsn.Gnat_Version_String
-                   & " Copyright 2003-2004 Free Software Foundation, Inc.");
+                   & " Copyright 2003-2005 Free Software Foundation, Inc.");
       end if;
    end Display_Copyright;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1998-2004 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2005 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,10 +87,8 @@ procedure Gnatfind is
             when 'a'    =>
                if GNAT.Command_Line.Full_Switch = "a" then
                   Read_Only := True;
-
                elsif GNAT.Command_Line.Full_Switch = "aI" then
                   Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
-
                else
                   Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
                end if;
@@ -117,7 +115,6 @@ procedure Gnatfind is
             when 'n'    =>
                if GNAT.Command_Line.Full_Switch = "nostdinc" then
                   Opt.No_Stdinc := True;
-
                elsif GNAT.Command_Line.Full_Switch = "nostlib" then
                   Opt.No_Stdlib := True;
                end if;
@@ -125,7 +122,6 @@ procedure Gnatfind is
             when 'p'    =>
                declare
                   S : constant String := GNAT.Command_Line.Parameter;
-
                begin
                   Prj_File_Length := S'Length;
                   Prj_File (1 .. Prj_File_Length) := S;
@@ -241,7 +237,7 @@ procedure Gnatfind is
    procedure Write_Usage is
    begin
       Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String);
-      Put_Line ("Copyright 1998-2004, Ada Core Technologies Inc.");
+      Put_Line ("Copyright 1998-2005, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;
