@@ -1,5 +1,7 @@
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.c-torture/execute/ieee/rbug.x: XFAIL FreeBSD 4.x.
+
 	* g++.old-deja/g++.abi/cxa_vec.C: Use <stdlib.h> instead
 	of <malloc.h>.
 
