@@ -5014,38 +5014,14 @@ void
 emit_sf_insn (pat)
      rtx pat;
 {
-  rtx addr;
-  /* When generating reload insns,  we must not create new registers.  FPSCR
-     should already have the correct value, so do nothing to change it.  */
-  if (! TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
-    {
-      addr = gen_reg_rtx (SImode);
-      emit_insn (gen_fpu_switch0 (addr));
-    }
   emit_insn (pat);
-  if (! TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
-    {
-      addr = gen_reg_rtx (SImode);
-      emit_insn (gen_fpu_switch1 (addr));
-    }
 }
 
 void
 emit_df_insn (pat)
      rtx pat;
 {
-  rtx addr;
-  if (TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
-    {
-      addr = gen_reg_rtx (SImode);
-      emit_insn (gen_fpu_switch0 (addr));
-    }
   emit_insn (pat);
-  if (TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
-    {
-      addr = gen_reg_rtx (SImode);
-      emit_insn (gen_fpu_switch1 (addr));
-    }
 }
 
 void
