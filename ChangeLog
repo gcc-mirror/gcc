@@ -1,3 +1,8 @@
+Tue Apr 13 22:50:54 1999  Donn Terry (donn@interix.com)
+                          Martin Heller (Ing.-Buero_Heller@t-online.de)
+
+	* config.guess (interix Alpha): Add.
+
 Sun Apr 11 23:55:34 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	
 	* config-ml.in: On mips*-*-*, if multidirs contains mabi=64, try to
