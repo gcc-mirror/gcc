@@ -319,6 +319,7 @@ static void reload_as_needed ();
 static int modes_equiv_for_class_p ();
 static void alter_reg ();
 static void delete_dead_insn ();
+static void spill_failure ();
 static int new_spill_reg();
 static void set_label_offsets ();
 static int eliminate_regs_in_insn ();
@@ -477,9 +478,12 @@ init_reload ()
    DUMPFILE is the global-reg debugging dump file stream, or 0.
    If it is nonzero, messages are written to it to describe
    which registers are seized as reload regs, which pseudo regs
-   are spilled from them, and where the pseudo regs are reallocated to.  */
+   are spilled from them, and where the pseudo regs are reallocated to.
 
-void
+   Return value is nonzero if reload failed
+   and we must not do any more for this function.  */
+
+int
 reload (first, global, dumpfile)
      rtx first;
      int global;
@@ -496,6 +500,9 @@ reload (first, global, dumpfile)
   int new_basic_block_needs;
   enum reg_class caller_save_spill_class = NO_REGS;
   int caller_save_group_size = 1;
+
+  /* Nonzero means we couldn't get enough spill regs.  */
+  int failure = 0;
 
   /* The basic block number currently being processed for INSN.  */
   int this_block;
@@ -777,12 +784,19 @@ reload (first, global, dumpfile)
 	 they must be the same size and equally restrictive for that class,
 	 otherwise we can't handle the complexity.  */
       enum machine_mode group_mode[N_REG_CLASSES];
+      /* Record the insn where each maximum need is first found.  */
+      rtx max_needs_insn[N_REG_CLASSES];
+      rtx max_groups_insn[N_REG_CLASSES];
+      rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
 
       something_changed = 0;
       bzero (max_needs, sizeof max_needs);
       bzero (max_groups, sizeof max_groups);
       bzero (max_nongroups, sizeof max_nongroups);
+      bzero (max_needs_insn, sizeof max_needs_insn);
+      bzero (max_groups_insn, sizeof max_groups_insn);
+      bzero (max_nongroups_insn, sizeof max_nongroups_insn);
       bzero (group_size, sizeof group_size);
       for (i = 0; i < N_REG_CLASSES; i++)
 	group_mode[i] = VOIDmode;
@@ -1271,12 +1285,21 @@ reload (first, global, dumpfile)
 	      for (i = 0; i < N_REG_CLASSES; i++)
 		{
 		  if (max_needs[i] < insn_needs[i])
-		    max_needs[i] = insn_needs[i];
+		    {
+		      max_needs[i] = insn_needs[i];
+		      max_needs_insn[i] = insn;
+		    }
 		  if (max_groups[i] < insn_groups[i])
-		    max_groups[i] = insn_groups[i];
+		    {
+		      max_groups[i] = insn_groups[i];
+		      max_groups_insn[i] = insn;
+		    }
 		  if (insn_total_groups > 0)
 		    if (max_nongroups[i] < insn_needs[i])
-		      max_nongroups[i] = insn_needs[i];
+		      {
+			max_nongroups[i] = insn_needs[i];
+			max_nongroups_insn[i] = insn;
+		      }
 		}
 	    }
 	  /* Note that there is a continue statement above.  */
@@ -1567,9 +1590,17 @@ reload (first, global, dumpfile)
 		  /* I should be the index in potential_reload_regs
 		     of the new reload reg we have found.  */
 
-		  something_changed
-		    |= new_spill_reg (i, class, max_needs, 0,
-				      global, dumpfile);
+		  if (i >= FIRST_PSEUDO_REGISTER)
+		    {
+		      /* There are no groups left to spill.  */
+		      spill_failure (max_groups_insn[class]);
+		      failure = 1;
+		      goto failed;
+		    }
+		  else
+		    something_changed
+		      |= new_spill_reg (i, class, max_needs, 0,
+					global, dumpfile);
 		}
 	      else
 		{
@@ -1600,9 +1631,17 @@ reload (first, global, dumpfile)
 				  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
 				    if (potential_reload_regs[idx] == j + k)
 				      break;
-				  something_changed
-				    |= new_spill_reg (idx, class, max_needs, 0,
-						      global, dumpfile);
+				    if (i >= FIRST_PSEUDO_REGISTER)
+				      {
+					/* There are no groups left.  */
+					spill_failure (max_groups_insn[class]);
+					failure = 1;
+					goto failed;
+				      }
+				    else
+				      something_changed
+					|= new_spill_reg (idx, class, max_needs, 0,
+							  global, dumpfile);
 				}
 
 			      /* We have found one that will complete a group,
@@ -1648,9 +1687,18 @@ reload (first, global, dumpfile)
 	      /* I should be the index in potential_reload_regs
 		 of the new reload reg we have found.  */
 
-	      something_changed
-		|= new_spill_reg (i, class, max_needs, max_nongroups,
-				  global, dumpfile);
+	      if (i >= FIRST_PSEUDO_REGISTER)
+		{
+		  /* There are no possible registers left to spill.  */
+		  spill_failure (max_needs[class] > 0 ? max_needs_insn[class]
+				 : max_nongroups_insn[class]);
+		  failure = 1;
+		  goto failed;
+		}
+	      else
+		something_changed
+		  |= new_spill_reg (i, class, max_needs, max_nongroups,
+				    global, dumpfile);
 	    }
 	}
     }
@@ -1705,6 +1753,10 @@ reload (first, global, dumpfile)
     reload_as_needed (first, global);
 
   reload_in_progress = 0;
+
+  /* Come here (with failure set nonzero) if we can't get enough spill regs
+     and we decide not to abort about it.  */
+ failed:
 
   /* Now eliminate all pseudo regs by modifying them into
      their equivalent memory references.
@@ -1766,6 +1818,8 @@ reload (first, global, dumpfile)
   /* Indicate that we no longer have known memory locations or constants.  */
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;
+
+  return failure;
 }
 
 /* Nonzero if, after spilling reg REGNO for non-groups,
@@ -1915,6 +1969,19 @@ modes_equiv_for_class_p (allocate_mode, other_mode, class)
 	return 0;
     }
   return 1;
+}
+
+/* Handle the failure to find a register to spill.
+   INSN should be one of the insns which needed this particular spill reg.  */
+
+static void
+spill_failure (insn)
+     rtx insn;
+{
+  if (asm_noperands (PATTERN (insn)) >= 0)
+    error_for_asm (insn, "`asm' needs too many reloads");
+  else
+    abort ();
 }
 
 /* Add a new register to the tables of available spill-registers
