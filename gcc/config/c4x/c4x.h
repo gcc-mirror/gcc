@@ -1778,26 +1778,26 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 			   GEN_INT (0x5069), size_int (16), 0, 1);	\
       emit_insn (gen_iorqi3 (tmp1, tmp1, tmp2));			\
       emit_move_insn (gen_rtx_MEM (QImode,				\
-			       plus_constant (tramp, 0)), tmp1);	\
+			       plus_constant (TRAMP, 0)), tmp1);	\
       tmp1 = expand_and (QImode, FNADDR, GEN_INT (0xffff), 0);		\
       tmp2 = expand_shift (LSHIFT_EXPR, QImode,				\
 			   GEN_INT (0x1069), size_int (16), 0, 1);	\
       emit_insn (gen_iorqi3 (tmp1, tmp1, tmp2));			\
       emit_move_insn (gen_rtx_MEM (QImode,				\
-			       plus_constant (tramp, 2)), tmp1);	\
+			       plus_constant (TRAMP, 2)), tmp1);	\
       tmp1 = expand_shift (RSHIFT_EXPR, QImode, CXT,			\
 			   size_int (16), 0, 1);			\
       tmp2 = expand_shift (LSHIFT_EXPR, QImode,				\
 			   GEN_INT (0x5068), size_int (16), 0, 1);	\
       emit_insn (gen_iorqi3 (tmp1, tmp1, tmp2));			\
       emit_move_insn (gen_rtx_MEM (QImode,				\
-			       plus_constant (tramp, 3)), tmp1);	\
+			       plus_constant (TRAMP, 3)), tmp1);	\
       tmp1 = expand_and (QImode, CXT, GEN_INT (0xffff), 0);		\
       tmp2 = expand_shift (LSHIFT_EXPR, QImode,				\
 			   GEN_INT (0x1068), size_int (16), 0, 1);	\
       emit_insn (gen_iorqi3 (tmp1, tmp1, tmp2));			\
       emit_move_insn (gen_rtx_MEM (QImode,				\
-			       plus_constant (tramp, 6)), tmp1);	\
+			       plus_constant (TRAMP, 6)), tmp1);	\
     }									\
   else									\
     {									\
