@@ -1,3 +1,8 @@
+2000-07-24  Michael Meissner  <meissner@redhat.com>
+
+	* d30v.h (FUNCTION_ARG_KEEP_AS_REFERENCE): Delete references to
+	unsupported macro.
+
 2000-07-24  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (emit_multi_reg_push): Generate a
