@@ -2896,7 +2896,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		      z = gen_lowpart (GET_MODE (x), z);
 
 		    *loc = z;
-		    return;
+		    return true;
 		  }
 
 	      /* Sometimes we may not be able to find the replacement.  For
@@ -3033,7 +3033,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
   else if (code == ADDRESSOF)
     {
       put_addressof_into_stack (x, ht);
-      return;
+      return true;
     }
   else if (code == SET)
     {
