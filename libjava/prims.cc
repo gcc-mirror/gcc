@@ -964,8 +964,7 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   // of VMClassLoader.
   _Jv_InitClass (&java::lang::ClassLoader::class$);
 
-  // Once the bootstrap loader is in place, change it into a kind of
-  // system loader, by having it read the class path.
+  // Set up the system class loader.
   gnu::gcj::runtime::VMClassLoader::initialize();
 
   _Jv_RegisterBootstrapPackages();
