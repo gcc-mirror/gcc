@@ -822,18 +822,19 @@
 ;; These processors have PRId values of 0x00004220 and 0x00004300,
 ;; respectively.
 
-(define_expand "mulsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(mult:SI (match_operand:SI 1 "register_operand")
-		 (match_operand:SI 2 "register_operand")))]
+(define_expand "mul<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(mult:GPR (match_operand:GPR 1 "register_operand")
+		  (match_operand:GPR 2 "register_operand")))]
   ""
 {
-  if (GENERATE_MULT3_SI || TARGET_MAD)
-    emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
+  if (GENERATE_MULT3_<MODE>)
+    emit_insn (gen_mul<mode>3_mult3 (operands[0], operands[1], operands[2]));
   else if (!TARGET_FIX_R4000)
-    emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mul<mode>3_internal (operands[0], operands[1],
+					operands[2]));
   else
-    emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mul<mode>3_r4000 (operands[0], operands[1], operands[2]));
   DONE;
 })
 
@@ -843,8 +844,7 @@
 		 (match_operand:SI 2 "register_operand" "d,d")))
    (clobber (match_scratch:SI 3 "=h,h"))
    (clobber (match_scratch:SI 4 "=l,X"))]
-  "GENERATE_MULT3_SI
-   || TARGET_MAD"
+  "GENERATE_MULT3_SI"
 {
   if (which_alternative == 1)
     return "mult\t%1,%2";
@@ -859,8 +859,19 @@
     return "mul\t%0,%1,%2";
   return "mult\t%0,%1,%2";
 }
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")])
+
+(define_insn "muldi3_mult3"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(mult:DI (match_operand:DI 1 "register_operand" "d")
+		 (match_operand:DI 2 "register_operand" "d")))
+   (clobber (match_scratch:DI 3 "=h"))
+   (clobber (match_scratch:DI 4 "=l"))]
+  "TARGET_64BIT && GENERATE_MULT3_DI"
+  "dmult\t%0,%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "DI")])
 
 ;; If a register gets allocated to LO, and we spill to memory, the reload
 ;; will include a move from LO to a GPR.  Merge it into the multiplication
@@ -888,27 +899,27 @@
         (clobber (match_dup 3))
         (clobber (match_dup 0))])])
 
-(define_insn "mulsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(mult:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
+(define_insn "mul<mode>3_internal"
+  [(set (match_operand:GPR 0 "register_operand" "=l")
+	(mult:GPR (match_operand:GPR 1 "register_operand" "d")
+		  (match_operand:GPR 2 "register_operand" "d")))
+   (clobber (match_scratch:GPR 3 "=h"))]
   "!TARGET_FIX_R4000"
-  "mult\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")])
+  "<d>mult\t%1,%2"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "mulsi3_r4000"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(mult:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))
-   (clobber (match_scratch:SI 4 "=l"))]
+(define_insn "mul<mode>3_r4000"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(mult:GPR (match_operand:GPR 1 "register_operand" "d")
+		  (match_operand:GPR 2 "register_operand" "d")))
+   (clobber (match_scratch:GPR 3 "=h"))
+   (clobber (match_scratch:GPR 4 "=l"))]
   "TARGET_FIX_R4000"
-  "mult\t%1,%2\;mflo\t%0"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "8")])
+  "<d>mult\t%1,%2\;mflo\t%0"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "<MODE>")
+   (set_attr "length" "8")])
 
 ;; On the VR4120 and VR4130, it is better to use "mtlo $0; macc" instead
 ;; of "mult; mflo".  They have the same latency, but the first form gives
@@ -1283,54 +1294,6 @@
    muls\t%0,%1,%2"
   [(set_attr "type"     "imul")
    (set_attr "mode"     "SI")])
-
-(define_expand "muldi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(mult:DI (match_operand:DI 1 "register_operand")
-		 (match_operand:DI 2 "register_operand")))]
-  "TARGET_64BIT"
-{
-  if (GENERATE_MULT3_DI)
-    emit_insn (gen_muldi3_mult3 (operands[0], operands[1], operands[2]));
-  else if (!TARGET_FIX_R4000)
-    emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
-  else
-    emit_insn (gen_muldi3_r4000 (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_insn "muldi3_mult3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(mult:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))
-   (clobber (match_scratch:DI 4 "=l"))]
-  "TARGET_64BIT && GENERATE_MULT3_DI"
-  "dmult\t%0,%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"DI")])
-
-(define_insn "muldi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=l")
-	(mult:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))]
-  "TARGET_64BIT && !TARGET_FIX_R4000"
-  "dmult\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"DI")])
-
-(define_insn "muldi3_r4000"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(mult:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))
-   (clobber (match_scratch:DI 4 "=l"))]
-  "TARGET_64BIT && TARGET_FIX_R4000"
-  "dmult\t%1,%2\;mflo\t%0"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
 
 ;; ??? We could define a mulditi3 pattern when TARGET_64BIT.
 

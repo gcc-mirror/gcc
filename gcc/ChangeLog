@@ -1,5 +1,13 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (GENERATE_MULT3_SI): Check TARGET_MAD.
+	* config/mips/mips.md (mul[sd]i3, mul[sd]i3_internal)
+	(mul[sd]i3_r4000): Redefine using :GPR.
+	(mulsi3_mult3): Don't check TARGET_MAD separately.
+	(muldi3_mult3): Moved after mulsi_mult3.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config.gcc (mips-*-*): Remove definitions of MASK_GAS and
 	OBJECT_FORMAT_ELF.  Set MASK_SPLIT_ADDR by default if using GNU ld.
 	* config/mips/mips.h (MASK_GAS): Delete.  Shuffle later masks down.
