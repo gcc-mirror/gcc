@@ -42,10 +42,6 @@ lose
 #endif /* static */
 #endif /* emacs */
 
-#ifdef emacs
-#define free xfree
-#endif
-
 /* If your stack is a linked list of frames, you have to
    provide an "address metric" ADDRESS_FUNCTION macro.  */
 
@@ -63,8 +59,6 @@ typedef char *pointer;
 #endif
 
 #define	NULL	0
-
-extern pointer xmalloc ();
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
@@ -181,7 +175,7 @@ alloca (size)
   /* Allocate combined header + user data storage.  */
 
   {
-    register pointer new = xmalloc (sizeof (header) + size);
+    register pointer new = malloc (sizeof (header) + size);
     /* Address of header.  */
 
     ((header *) new)->h.next = last_alloca_header;
