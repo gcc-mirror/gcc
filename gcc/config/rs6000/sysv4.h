@@ -302,16 +302,22 @@ extern int rs6000_pic_labelno;
 #define	DBX_DEBUGGING_INFO
 #define	DWARF_DEBUGGING_INFO
 
-/* Line numbers are relative to the current function.  */
+/* Like block addresses, stabs line numbers are relative to the
+   current function.  */
 
 #undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",\
-	     line, sym_lineno, 				\
-	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
-	     sym_lineno);				\
-    sym_lineno += 1; }
+#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
+do									\
+  {									\
+    static int sym_lineno = 1;						\
+    fprintf (file, "\t.stabn 68,0,%d,.LM%d-",				\
+	     line, sym_lineno);						\
+    assemble_name (file,						\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
+    fprintf (file, "\n.LM%d:\n", sym_lineno);				\
+    sym_lineno += 1;							\
+  }									\
+while (0)
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */

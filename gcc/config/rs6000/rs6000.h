@@ -155,6 +155,7 @@ extern int target_flags;
 
 /* Use string instructions for block moves */
 #define MASK_STRING		0x4000
+#define MASK_STRING_SET		0x8000
 
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
@@ -171,6 +172,7 @@ extern int target_flags;
 #define	TARGET_MULTIPLE		(target_flags & MASK_MULTIPLE)
 #define	TARGET_MULTIPLE_SET	(target_flags & MASK_MULTIPLE_SET)
 #define TARGET_STRING		(target_flags & MASK_STRING)
+#define TARGET_STRING_SET	(target_flags & MASK_STRING_SET)
 
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
 
@@ -187,40 +189,42 @@ extern int target_flags;
 #define SUBTARGET_SWITCHES
 #endif
 
-#define TARGET_SWITCHES						\
- {{"power",		MASK_POWER  | MASK_MULTIPLE},		\
-  {"power2",		MASK_POWER | MASK_MULTIPLE | MASK_POWER2}, \
-  {"no-power2",		- MASK_POWER2},				\
-  {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE)}, \
-  {"powerpc",		MASK_POWERPC},				\
-  {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT 	\
-			   | MASK_PPC_GFXOPT | MASK_POWERPC64)}, \
-  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT},		\
-  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},			\
-  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},	\
-  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},			\
-  {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
-  {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
-  {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC \
-			   | MASK_MINIMAL_TOC)},		\
-  {"fp-in-toc",		- MASK_NO_FP_IN_TOC},			\
-  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC},			\
-  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC},			\
-  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC},			\
-  {"minimal-toc",	MASK_MINIMAL_TOC},			\
-  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)}, \
-  {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
-  {"hard-float",	- MASK_SOFT_FLOAT},			\
-  {"soft-float",	MASK_SOFT_FLOAT},			\
-  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET},	\
-  {"no-multiple",	- MASK_MULTIPLE},			\
-  {"no-multiple",	MASK_MULTIPLE_SET},			\
-  {"string",		MASK_STRING},				\
-  {"no-string",		- MASK_STRING},				\
-  SUBTARGET_SWITCHES						\
+#define TARGET_SWITCHES							\
+ {{"power",		MASK_POWER  | MASK_MULTIPLE | MASK_STRING},	\
+  {"power2",		(MASK_POWER | MASK_MULTIPLE | MASK_STRING	\
+			 | MASK_POWER2)},				\
+  {"no-power2",		- MASK_POWER2},					\
+  {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE	\
+			   | MASK_STRING)},				\
+  {"powerpc",		MASK_POWERPC},					\
+  {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT		\
+			   | MASK_PPC_GFXOPT | MASK_POWERPC64)},	\
+  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT},			\
+  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},				\
+  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},		\
+  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},				\
+  {"new-mnemonics",	MASK_NEW_MNEMONICS},				\
+  {"old-mnemonics",	-MASK_NEW_MNEMONICS},				\
+  {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC	\
+			   | MASK_MINIMAL_TOC)},			\
+  {"fp-in-toc",		- MASK_NO_FP_IN_TOC},				\
+  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC},				\
+  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC},				\
+  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC},				\
+  {"minimal-toc",	MASK_MINIMAL_TOC},				\
+  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)},	\
+  {"no-minimal-toc",	- MASK_MINIMAL_TOC},				\
+  {"hard-float",	- MASK_SOFT_FLOAT},				\
+  {"soft-float",	MASK_SOFT_FLOAT},				\
+  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET},		\
+  {"no-multiple",	- MASK_MULTIPLE},				\
+  {"no-multiple",	MASK_MULTIPLE_SET},				\
+  {"string",		MASK_STRING | MASK_STRING_SET},			\
+  {"no-string",		- MASK_STRING},					\
+  SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE)
+#define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
 
 /* Processor type.  */
 enum processor_type
