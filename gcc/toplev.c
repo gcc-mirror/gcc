@@ -1166,9 +1166,9 @@ documented_lang_options[] =
      used here is to only describe those options which are not
      enabled by default.  */
 
-  { "-ansi", 
+  { "-ansi",
     N_("Compile just for ISO C89") },
-  { "-std= ", 
+  { "-std= ",
     N_("Determine language standard") },
 
   { "-fsigned-bitfields", "" },
@@ -1176,44 +1176,44 @@ documented_lang_options[] =
     N_("Make bit-fields by unsigned by default") },
   { "-fno-signed-bitfields", "" },
   { "-fno-unsigned-bitfields","" },
-  { "-fsigned-char", 
+  { "-fsigned-char",
     N_("Make 'char' be signed by default") },
-  { "-funsigned-char", 
+  { "-funsigned-char",
     N_("Make 'char' be unsigned by default") },
   { "-fno-signed-char", "" },
   { "-fno-unsigned-char", "" },
 
   { "-fasm", "" },
-  { "-fno-asm", 
+  { "-fno-asm",
     N_("Do not recognize the 'asm' keyword") },
   { "-fbuiltin", "" },
-  { "-fno-builtin", 
+  { "-fno-builtin",
     N_("Do not recognize any built in functions") },
-  { "-fhosted", 
+  { "-fhosted",
     N_("Assume normal C execution environment") },
   { "-fno-hosted", "" },
   { "-ffreestanding",
     N_("Assume that standard libraries & main might not exist") },
   { "-fno-freestanding", "" },
-  { "-fcond-mismatch", 
+  { "-fcond-mismatch",
     N_("Allow different types as args of ? operator") },
   { "-fno-cond-mismatch", "" },
-  { "-fdollars-in-identifiers", 
+  { "-fdollars-in-identifiers",
     N_("Allow the use of $ inside identifiers") },
   { "-fno-dollars-in-identifiers", "" },
   { "-fpreprocessed", "" },
   { "-fno-preprocessed", "" },
-  { "-fshort-double", 
+  { "-fshort-double",
     N_("Use the same size for double as for float") },
   { "-fno-short-double", "" },
-  { "-fshort-enums", 
+  { "-fshort-enums",
     N_("Use the smallest fitting integer to hold enums") },
   { "-fno-short-enums", "" },
-  { "-fshort-wchar", 
+  { "-fshort-wchar",
     N_("Override the underlying type for wchar_t to `unsigned short'") },
   { "-fno-short-wchar", "" },
 
-  { "-Wall", 
+  { "-Wall",
     N_("Enable most warning messages") },
   { "-Wbad-function-cast",
     N_("Warn about casting functions to incompatible types") },
@@ -1221,34 +1221,34 @@ documented_lang_options[] =
   { "-Wmissing-format-attribute",
     N_("Warn about functions which might be candidates for format attributes") },
   { "-Wno-missing-format-attribute", "" },
-  { "-Wcast-qual", 
+  { "-Wcast-qual",
     N_("Warn about casts which discard qualifiers") },
   { "-Wno-cast-qual", "" },
-  { "-Wchar-subscripts", 
+  { "-Wchar-subscripts",
     N_("Warn about subscripts whose type is 'char'") },
   { "-Wno-char-subscripts", "" },
-  { "-Wcomment", 
+  { "-Wcomment",
     N_("Warn if nested comments are detected") },
   { "-Wno-comment", "" },
-  { "-Wcomments", 
+  { "-Wcomments",
     N_("Warn if nested comments are detected") },
   { "-Wno-comments", "" },
-  { "-Wconversion", 
+  { "-Wconversion",
     N_("Warn about possibly confusing type conversions") },
   { "-Wno-conversion", "" },
   { "-Wdiv-by-zero", "" },
-  { "-Wno-div-by-zero", 
+  { "-Wno-div-by-zero",
     N_("Do not warn about compile-time integer division by zero") },
-  { "-Wfloat-equal", 
+  { "-Wfloat-equal",
     N_("Warn about testing equality of floating point numbers") },
   { "-Wno-float-equal", "" },
-  { "-Wformat", 
+  { "-Wformat",
     N_("Warn about printf/scanf/strftime/strfmon format anomalies") },
   { "-Wno-format", "" },
   { "-Wformat-extra-args", "" },
   { "-Wno-format-extra-args",
     N_("Don't warn about too many arguments to format functions") },
-  { "-Wformat-nonliteral", 
+  { "-Wformat-nonliteral",
     N_("Warn about non-string-literal format strings") },
   { "-Wno-format-nonliteral", "" },
   { "-Wformat-security",
@@ -1261,18 +1261,18 @@ documented_lang_options[] =
     N_("Warn about implicit function declarations") },
   { "-Wno-implicit-function-declaration", "" },
   { "-Werror-implicit-function-declaration", "" },
-  { "-Wimplicit-int", 
+  { "-Wimplicit-int",
     N_("Warn when a declaration does not specify a type") },
   { "-Wno-implicit-int", "" },
   { "-Wimplicit", "" },
   { "-Wno-implicit", "" },
-  { "-Wimport", 
+  { "-Wimport",
     N_("Warn about the use of the #import directive") },
   { "-Wno-import", "" },
   { "-Wlong-long","" },
-  { "-Wno-long-long", 
+  { "-Wno-long-long",
     N_("Do not warn about using 'long long' when -pedantic") },
-  { "-Wmain", 
+  { "-Wmain",
     N_("Warn about suspicious declarations of main") },
   { "-Wno-main", "" },
   { "-Wmissing-braces",
@@ -1281,19 +1281,19 @@ documented_lang_options[] =
   { "-Wmissing-declarations",
     N_("Warn about global funcs without previous declarations") },
   { "-Wno-missing-declarations", "" },
-  { "-Wmissing-prototypes", 
+  { "-Wmissing-prototypes",
     N_("Warn about global funcs without prototypes") },
   { "-Wno-missing-prototypes", "" },
-  { "-Wmultichar", 
+  { "-Wmultichar",
     N_("Warn about use of multicharacter literals") },
   { "-Wno-multichar", "" },
-  { "-Wnested-externs", 
+  { "-Wnested-externs",
     N_("Warn about externs not at file scope level") },
   { "-Wno-nested-externs", "" },
-  { "-Wparentheses", 
+  { "-Wparentheses",
     N_("Warn about possible missing parentheses") },
   { "-Wno-parentheses", "" },
-  { "-Wpointer-arith", 
+  { "-Wpointer-arith",
     N_("Warn about function pointer arithmetic") },
   { "-Wno-pointer-arith", "" },
   { "-Wredundant-decls",
@@ -1305,24 +1305,24 @@ documented_lang_options[] =
   { "-Wsequence-point",
     N_("Warn about possible violations of sequence point rules") },
   { "-Wno-sequence-point", "" },
-  { "-Wsign-compare", 
+  { "-Wsign-compare",
     N_("Warn about signed/unsigned comparisons") },
   { "-Wno-sign-compare", "" },
-  { "-Wstrict-prototypes", 
+  { "-Wstrict-prototypes",
     N_("Warn about non-prototyped function decls") },
   { "-Wno-strict-prototypes", "" },
-  { "-Wtraditional", 
+  { "-Wtraditional",
     N_("Warn about constructs whose meanings change in ISO C") },
   { "-Wno-traditional", "" },
-  { "-Wtrigraphs", 
+  { "-Wtrigraphs",
     N_("Warn when trigraphs are encountered") },
   { "-Wno-trigraphs", "" },
   { "-Wundef", "" },
   { "-Wno-undef", "" },
-  { "-Wunknown-pragmas", 
+  { "-Wunknown-pragmas",
     N_("Warn about unrecognized pragmas") },
   { "-Wno-unknown-pragmas", "" },
-  { "-Wwrite-strings", 
+  { "-Wwrite-strings",
     N_("Mark strings as 'const char *'") },
   { "-Wno-write-strings", "" },
 
@@ -1344,7 +1344,7 @@ static const struct
   const int value;
   const char *const description;
 }
-target_switches [] = TARGET_SWITCHES;
+target_switches[] = TARGET_SWITCHES;
 
 /* This table is similar, but allows the switch to have a value.  */
 
@@ -1355,7 +1355,7 @@ static const struct
   const char **const variable;
   const char *const description;
 }
-target_options [] = TARGET_OPTIONS;
+target_options[] = TARGET_OPTIONS;
 #endif
 
 /* Options controlling warnings.  */
@@ -1453,7 +1453,7 @@ int warn_disabled_optimization;
 
 int warn_missing_noreturn;
 
-/* Nonzero means warn about uses of __attribute__((deprecated)) 
+/* Nonzero means warn about uses of __attribute__((deprecated))
    declarations.  */
 
 int warn_deprecated_decl = 1;
@@ -1655,7 +1655,7 @@ strip_off_ending (name, len)
      int len;
 {
   int i;
-  for (i = 2;  i < 6 && len > i;  i++)
+  for (i = 2; i < 6 && len > i;  i++)
     {
       if (name[len - i] == '.')
 	{
@@ -1707,7 +1707,7 @@ output_file_directive (asm_file, input_name)
   while (na > input_name)
     {
       if (IS_DIR_SEPARATOR (na[-1]))
-        break;
+	break;
       na--;
     }
 
@@ -2185,7 +2185,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       {
 	alias = TREE_VALUE (TREE_VALUE (alias));
 	alias = get_identifier (TREE_STRING_POINTER (alias));
-        assemble_alias (decl, alias);
+	assemble_alias (decl, alias);
       }
   }
 
@@ -2197,7 +2197,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       timevar_push (TV_VARCONST);
 
       if (asmspec)
-        make_decl_rtl (decl, asmspec);
+	make_decl_rtl (decl, asmspec);
 
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.  */
@@ -2480,7 +2480,7 @@ rest_of_compilation (decl)
      distinguish between the return value of this function and the
      return value of called functions.  Also, we can remove all SETs
      of subregs of hard registers; they are only here because of
-     integrate.  Also, we can now initialize pseudos intended to 
+     integrate.  Also, we can now initialize pseudos intended to
      carry magic hard reg data throughout the function.  */
   rtx_equal_function_value_matters = 0;
   purge_hard_subreg_sets (get_insns ());
@@ -2624,7 +2624,7 @@ rest_of_compilation (decl)
 	  open_dump_file (DFI_ssa_dce, decl);
 
 	  insns = get_insns ();
-	  ssa_eliminate_dead_code();
+	  ssa_eliminate_dead_code ();
 
 	  close_dump_file (DFI_ssa_dce, print_rtl_with_bb, insns);
 	  timevar_pop (TV_SSA_DCE);
@@ -2663,7 +2663,7 @@ rest_of_compilation (decl)
 
       timevar_push (TV_IFCVT);
       if (flag_if_conversion)
-        if_convert (0);
+	if_convert (0);
       timevar_pop (TV_IFCVT);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       close_dump_file (DFI_null, print_rtl_with_bb, insns);
@@ -2914,7 +2914,7 @@ rest_of_compilation (decl)
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	  if (flag_if_conversion)
 	    if_convert (0);
-	  timevar_pop(TV_IFCVT);
+	  timevar_pop (TV_IFCVT);
 
 	  timevar_pop (TV_JUMP);
 	  /* CFG is no longer maintained up-to-date.  */
@@ -3245,9 +3245,9 @@ rest_of_compilation (decl)
       open_dump_file (DFI_rnreg, decl);
 
       if (flag_rename_registers)
-        regrename_optimize ();
+	regrename_optimize ();
       if (flag_cprop_registers)
-        copyprop_hardreg_forward ();
+	copyprop_hardreg_forward ();
 
       close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
       timevar_pop (TV_RENAME_REGISTERS);
@@ -3311,7 +3311,7 @@ rest_of_compilation (decl)
 
       /* Last attempt to optimize CFG, as scheduling, peepholing and insn
 	 splitting possibly introduced more crossjumping oppurtuntities.
-	 Except that we can't actually run crossjumping without running 
+	 Except that we can't actually run crossjumping without running
 	 another DCE pass, which we can't do after reg-stack.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
 		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
@@ -3523,7 +3523,7 @@ display_help ()
     {
       const char *description = f_options[i].description;
 
-      if (description != NULL && * description != 0)
+      if (description != NULL && *description != 0)
 	printf ("  -f%-21s %s\n",
 		f_options[i].string, _(description));
     }
@@ -3533,9 +3533,9 @@ display_help ()
   for (i = LAST_PARAM; i--;)
     {
       const char *description = compiler_params[i].help;
-      const int length = 21-strlen(compiler_params[i].option);
+      const int length = 21 - strlen (compiler_params[i].option);
 
-      if (description != NULL && * description != 0)
+      if (description != NULL && *description != 0)
 	printf ("  --param %s=<value>%.*s%s\n",
 		compiler_params[i].option,
 		length > 0 ? length : 1, "                     ",
@@ -3550,7 +3550,7 @@ display_help ()
     {
       const char *description = W_options[i].description;
 
-      if (description != NULL && * description != 0)
+      if (description != NULL && *description != 0)
 	printf ("  -W%-21s %s\n",
 		W_options[i].string, _(description));
     }
@@ -3676,7 +3676,7 @@ display_target_options ()
 	      if (extra_warnings)
 		printf (_("  -m%-23.23s [undocumented]\n"), option);
 	    }
-	  else if (* description != 0)
+	  else if (*description != 0)
 	    doc += printf ("  -m%-23.23s %s\n", option, _(description));
 	}
 
@@ -3695,7 +3695,7 @@ display_target_options ()
 	      if (extra_warnings)
 		printf (_("  -m%-23.23s [undocumented]\n"), option);
 	    }
-	  else if (* description != 0)
+	  else if (*description != 0)
 	    doc += printf ("  -m%-23.23s %s\n", option, _(description));
 	}
 #endif
@@ -3731,9 +3731,9 @@ decode_d_option (arg)
 	flag_print_asm_name = 1;
 	break;
       case 'P':
-        flag_dump_rtl_in_asm = 1;
-        flag_print_asm_name = 1;
-        break;
+	flag_dump_rtl_in_asm = 1;
+	flag_print_asm_name = 1;
+	break;
       case 'v':
 	graph_dump_format = vcg;
 	break;
@@ -3847,10 +3847,10 @@ decode_f_option (arg)
 	    = skip_leading_substring (arg, "diagnostics-show-location=")))
     {
       if (!strcmp (option_value, "once"))
-        diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+	diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
       else if (!strcmp (option_value, "every-line"))
-        diagnostic_prefixing_rule (global_dc)
-          = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+	diagnostic_prefixing_rule (global_dc)
+	  = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
       else
 	error ("unrecognized option `%s'", arg - 2);
     }
@@ -3925,7 +3925,7 @@ static int
 decode_g_option (arg)
      const char *arg;
 {
-  static unsigned level=0;
+  static unsigned level = 0;
   /* A lot of code assumes write_symbols == NO_DEBUG if the
      debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
      of what debugging type has been selected).  This records the
@@ -4449,25 +4449,25 @@ init_asm_output (name)
   else
     {
       if (asm_file_name == 0)
-        {
-          int len = strlen (dump_base_name);
-          char *dumpname = (char *) xmalloc (len + 6);
-          memcpy (dumpname, dump_base_name, len + 1);
-          strip_off_ending (dumpname, len);
-          strcat (dumpname, ".s");
-          asm_file_name = dumpname;
-        }
+	{
+	  int len = strlen (dump_base_name);
+	  char *dumpname = (char *) xmalloc (len + 6);
+	  memcpy (dumpname, dump_base_name, len + 1);
+	  strip_off_ending (dumpname, len);
+	  strcat (dumpname, ".s");
+	  asm_file_name = dumpname;
+	}
       if (!strcmp (asm_file_name, "-"))
-        asm_out_file = stdout;
+	asm_out_file = stdout;
       else
-        asm_out_file = fopen (asm_file_name, "w");
+	asm_out_file = fopen (asm_file_name, "w");
       if (asm_out_file == 0)
 	fatal_io_error ("can't open %s for writing", asm_file_name);
     }
 
 #ifdef IO_BUFFER_SIZE
   setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
-           _IOFBF, IO_BUFFER_SIZE);
+	   _IOFBF, IO_BUFFER_SIZE);
 #endif
 
   if (!flag_syntax_only)
@@ -4835,7 +4835,7 @@ process_options ()
       error ("profiling does not work without a frame pointer");
       flag_omit_frame_pointer = 0;
     }
-    
+
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
     {
@@ -5142,7 +5142,7 @@ toplev_main (argc, argv)
   hex_init ();
 
   /* Initialization of GCC's environment, and diagnostics.  */
-  general_init (argv [0]);
+  general_init (argv[0]);
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
