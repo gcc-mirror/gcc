@@ -39,14 +39,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 
-#ifdef POSIX /* We should be able to define _POSIX_SOURCE unconditionally,
-		but some systems respond in buggy ways to it,
-		including Sunos 4.1.1.  Which we don't classify as POSIX.  */
-/* In case this is a POSIX system with an ANSI C compiler,
-   ask for definition of all POSIX facilities.  */
-#define _POSIX_SOURCE
-#endif
-
 #if 0
 /* Users are not supposed to use _POSIX_SOURCE to say the
    system is a POSIX system.  That is not what _POSIX_SOURCE means! -- rms  */ 
@@ -56,12 +48,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #endif /* 0 */
 
+#ifdef POSIX /* We should be able to define _POSIX_SOURCE unconditionally,
+		but some systems respond in buggy ways to it,
+		including Sunos 4.1.1.  Which we don't classify as POSIX.  */
+/* In case this is a POSIX system with an ANSI C compiler,
+   ask for definition of all POSIX facilities.  */
+#undef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#endif
+
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef POSIX
+#include <dirent.h>
+#else
 #include <sys/dir.h>
+#endif
 #if ! defined (USG) || defined (SVR4)
 #include <sys/wait.h>
 #endif
@@ -93,10 +98,11 @@ extern char *version_string;
 #define my_open(file, mode, flag)	open((char *)file, mode, flag)
 #define my_chmod(file, mode)	chmod((char *)file, mode)
 
-char *getpwd ();
+extern char *getpwd ();
 
 /* Aliases for pointers to void.
-   These were made to facilitate compilation with other compilers.  */
+   These were made to facilitate compilation with old brain-dead DEC C
+   compilers which didn't properly grok `void*' types.  */
 
 #ifdef __STDC__
 typedef void * pointer_type;
@@ -135,6 +141,7 @@ extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
+extern int open (const char *, int, ...);
 #endif /* 0 */
 extern void exit ();
 extern pointer_type malloc ();
@@ -148,6 +155,10 @@ extern int atoi ();
 extern int puts ();
 extern int fputs ();
 extern int fputc ();
+extern int link ();
+extern int unlink ();
+extern int access ();
+extern int execvp ();
 #ifndef setjmp
 extern int setjmp ();
 #endif
@@ -159,9 +170,8 @@ extern char *   strcat ();
 extern int      strcmp ();
 extern char *   strcpy ();
 #if 0 /* size_t from sys/types.h may fail to match GCC.
-	 If so, we would get a warning from this.
-	 So do without the prototype.  */
-extern size_t   strlen (const char *);
+	 If so, we would get a warning from this.  */
+extern size_t   strlen ()
 #endif
 extern int      strncmp ();
 extern char *   strncpy ();
@@ -4430,7 +4440,7 @@ main (argc, argv)
 {
   int longind;
   int c;
-  char *params = "";
+  const char *params = "";
 
   pname = strrchr (argv[0], '/');
   pname = pname ? pname+1 : argv[0];
