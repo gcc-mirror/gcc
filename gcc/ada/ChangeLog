@@ -1,3 +1,9 @@
+2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Disable build of gnatpa. PR ada/10110.
+	* cstreams.c (__gnat_full_name): Minor improvements and clean up
+	of previous change.
+
 2003-10-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* tracebak.c (MAX): Avoid redefinition warning.
