@@ -2514,15 +2514,24 @@ check_format_types (types)
     {
       tree cur_param;
       tree cur_type;
+      tree orig_cur_type;
       tree wanted_type;
       int arg_num;
       int i;
       int char_type_flag;
       cur_param = types->param;
       cur_type = TREE_TYPE (cur_param);
+      if (TREE_CODE (cur_type) == ERROR_MARK)
+	continue;
       char_type_flag = 0;
       wanted_type = types->wanted_type;
       arg_num = types->arg_num;
+
+      /* The following should not occur here.  */
+      if (wanted_type == 0)
+	abort ();
+      if (wanted_type == void_type_node && types->pointer_count == 0)
+	abort ();
 
       STRIP_NOPS (cur_param);
 
@@ -2533,6 +2542,8 @@ check_format_types (types)
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
+	      if (TREE_CODE (cur_type) == ERROR_MARK)
+		break;
 
 	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
 		cur_param = TREE_OPERAND (cur_param, 0);
@@ -2546,7 +2557,6 @@ check_format_types (types)
 		 const void ** is simply passing an incompatible type.  */
 	      if (types->writing_in_flag
 		  && i == 0
-		  && TREE_CODE (cur_type) != ERROR_MARK
 		  && (TYPE_READONLY (cur_type)
 		      || (cur_param != 0
 			  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
@@ -2559,117 +2569,118 @@ check_format_types (types)
 		 incompatible.  */
 	      if (i > 0
 		  && pedantic
-		  && TREE_CODE (cur_type) != ERROR_MARK
 		  && (TYPE_READONLY (cur_type)
 		      || TYPE_VOLATILE (cur_type)
 		      || TYPE_RESTRICT (cur_type)))
 		warning ("extra type qualifiers in format argument (arg %d)",
 			 arg_num);
 
-	      continue;
 	    }
-	  if (TREE_CODE (cur_type) != ERROR_MARK)
+	  else
 	    {
 	      if (types->pointer_count == 1)
 		warning ("format argument is not a pointer (arg %d)", arg_num);
 	      else
 		warning ("format argument is not a pointer to a pointer (arg %d)", arg_num);
+	      break;
 	    }
-	  break;
 	}
+
+      if (i < types->pointer_count)
+	continue;
+
+      orig_cur_type = cur_type;
+      cur_type = TYPE_MAIN_VARIANT (cur_type);
 
       /* Check whether the argument type is a character type.  This leniency
 	 only applies to certain formats, flagged with 'c'.
       */
-      if (TREE_CODE (cur_type) != ERROR_MARK && types->char_lenient_flag)
-	char_type_flag = (TYPE_MAIN_VARIANT (cur_type) == char_type_node
-			  || TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
-			  || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node);
+      if (types->char_lenient_flag)
+	char_type_flag = (cur_type == char_type_node
+			  || cur_type == signed_char_type_node
+			  || cur_type == unsigned_char_type_node);
 
       /* Check the type of the "real" argument, if there's a type we want.  */
-      if (i == types->pointer_count && wanted_type != 0
-	  && TREE_CODE (cur_type) != ERROR_MARK
-	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
-	  /* If we want `void *', allow any pointer type.
-	     (Anything else would already have got a warning.)
-	     With -pedantic, only allow pointers to void and to character
-	     types.
-	  */
-	  && ! (wanted_type == void_type_node
-		&& types->pointer_count > 0
-		&& (! pedantic
-		    || TYPE_MAIN_VARIANT (cur_type) == void_type_node
-		    || (i == 1 && char_type_flag)))
-	  /* Don't warn about differences merely in signedness, unless
-	     -pedantic.  With -pedantic, warn if the type is a pointer
-	     target and not a character type, and for character types at
-	     a second level of indirection.
-	  */
-	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
-	       && TREE_CODE (TYPE_MAIN_VARIANT (cur_type)) == INTEGER_TYPE
-	       && (! pedantic || i == 0 || (i == 1 && char_type_flag))
-	       && (TREE_UNSIGNED (wanted_type)
-		   ? wanted_type == (cur_type = unsigned_type (cur_type))
-		   : wanted_type == (cur_type = signed_type (cur_type))))
-	  /* Likewise, "signed char", "unsigned char" and "char" are
-	     equivalent but the above test won't consider them equivalent.  */
-	  && ! (wanted_type == char_type_node
-		&& (! pedantic || i < 2)
-		&& char_type_flag))
-	{
-	  register const char *this;
-	  register const char *that;
+      if (wanted_type == cur_type)
+	continue;
+      /* If we want `void *', allow any pointer type.
+	 (Anything else would already have got a warning.)
+	 With -pedantic, only allow pointers to void and to character
+	 types.  */
+      if (wanted_type == void_type_node
+	  && (!pedantic || (i == 1 && char_type_flag)))
+	continue;
+      /* Don't warn about differences merely in signedness, unless
+	 -pedantic.  With -pedantic, warn if the type is a pointer
+	 target and not a character type, and for character types at
+	 a second level of indirection.  */
+      if (TREE_CODE (wanted_type) == INTEGER_TYPE
+	  && TREE_CODE (cur_type) == INTEGER_TYPE
+	  && (! pedantic || i == 0 || (i == 1 && char_type_flag))
+	  && (TREE_UNSIGNED (wanted_type)
+	      ? wanted_type == unsigned_type (cur_type)
+	      : wanted_type == signed_type (cur_type)))
+	continue;
+      /* Likewise, "signed char", "unsigned char" and "char" are
+	 equivalent but the above test won't consider them equivalent.  */
+      if (wanted_type == char_type_node
+	  && (! pedantic || i < 2)
+	  && char_type_flag)
+	continue;
+      /* Now we have a type mismatch.  */
+      {
+	register const char *this;
+	register const char *that;
 
-	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
-	  that = 0;
-	  if (TREE_CODE (cur_type) != ERROR_MARK
-	      && TYPE_NAME (cur_type) != 0
-	      && TREE_CODE (cur_type) != INTEGER_TYPE
-	      && !(TREE_CODE (cur_type) == POINTER_TYPE
-		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE))
-	    {
-	      if (TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL
-		  && DECL_NAME (TYPE_NAME (cur_type)) != 0)
-		that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
-	      else
-		that = IDENTIFIER_POINTER (TYPE_NAME (cur_type));
-	    }
+	this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
+	that = 0;
+	if (TYPE_NAME (orig_cur_type) != 0
+	    && TREE_CODE (orig_cur_type) != INTEGER_TYPE
+	    && !(TREE_CODE (orig_cur_type) == POINTER_TYPE
+		 && TREE_CODE (TREE_TYPE (orig_cur_type)) == INTEGER_TYPE))
+	  {
+	    if (TREE_CODE (TYPE_NAME (orig_cur_type)) == TYPE_DECL
+		&& DECL_NAME (TYPE_NAME (orig_cur_type)) != 0)
+	      that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (orig_cur_type)));
+	    else
+	      that = IDENTIFIER_POINTER (TYPE_NAME (orig_cur_type));
+	  }
 
-	  /* A nameless type can't possibly match what the format wants.
-	     So there will be a warning for it.
-	     Make up a string to describe vaguely what it is.  */
-	  if (that == 0)
-	    {
-	      if (TREE_CODE (cur_type) == POINTER_TYPE)
-		that = "pointer";
-	      else
-		that = "different type";
-	    }
+	/* A nameless type can't possibly match what the format wants.
+	   So there will be a warning for it.
+	   Make up a string to describe vaguely what it is.  */
+	if (that == 0)
+	  {
+	    if (TREE_CODE (orig_cur_type) == POINTER_TYPE)
+	      that = "pointer";
+	    else
+	      that = "different type";
+	  }
 
-	  /* Make the warning better in case of mismatch of int vs long.  */
-	  if (TREE_CODE (cur_type) == INTEGER_TYPE
-	      && TREE_CODE (wanted_type) == INTEGER_TYPE
-	      && TYPE_PRECISION (cur_type) == TYPE_PRECISION (wanted_type)
-	      && TYPE_NAME (cur_type) != 0
-	      && TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL)
-	    that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+	/* Make the warning better in case of mismatch of int vs long.  */
+	if (TREE_CODE (orig_cur_type) == INTEGER_TYPE
+	    && TREE_CODE (wanted_type) == INTEGER_TYPE
+	    && TYPE_PRECISION (orig_cur_type) == TYPE_PRECISION (wanted_type)
+	    && TYPE_NAME (orig_cur_type) != 0
+	    && TREE_CODE (TYPE_NAME (orig_cur_type)) == TYPE_DECL)
+	  that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (orig_cur_type)));
 
-	  if (strcmp (this, that) != 0)
-	    {
-	      /* There may be a better name for the format, e.g. size_t,
-		 but we should allow for programs with a perverse typedef
-		 making size_t something other than what the compiler
-		 thinks.  */
-	      if (types->wanted_type_name != 0
-		  && strcmp (types->wanted_type_name, that) != 0)
-		this = types->wanted_type_name;
-	      if (types->name != 0)
-		warning ("%s is not type %s (arg %d)", types->name, this,
-			 arg_num);
-	      else
-		warning ("%s format, %s arg (arg %d)", this, that, arg_num);
-	    }
-	}
+	if (strcmp (this, that) != 0)
+	  {
+	    /* There may be a better name for the format, e.g. size_t,
+	       but we should allow for programs with a perverse typedef
+	       making size_t something other than what the compiler
+	       thinks.  */
+	    if (types->wanted_type_name != 0
+		&& strcmp (types->wanted_type_name, that) != 0)
+	      this = types->wanted_type_name;
+	    if (types->name != 0)
+	      warning ("%s is not type %s (arg %d)", types->name, this,
+		       arg_num);
+	    else
+	      warning ("%s format, %s arg (arg %d)", this, that, arg_num);
+	  }
+      }
     }
 }
 
