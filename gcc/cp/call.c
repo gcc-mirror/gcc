@@ -2892,11 +2892,6 @@ build_conditional_expr (arg1, arg2, arg3)
       || TREE_TYPE (arg3) == error_mark_node)
     return error_mark_node;
 
-  /* Convert from reference types to ordinary types; no expressions
-     really have reference type in C++.  */
-  arg2 = convert_from_reference (arg2);
-  arg3 = convert_from_reference (arg3);
-     
   /* [expr.cond]
 
      If either the second or the third operand has type (possibly
@@ -3244,6 +3239,12 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (arg3 && TREE_CODE (arg3) == OFFSET_REF)
     arg3 = resolve_offset_ref (arg3);
 
+  arg1 = convert_from_reference (arg1);
+  if (arg2)
+    arg2 = convert_from_reference (arg2);
+  if (arg3)
+    arg3 = convert_from_reference (arg3);
+  
   if (code == COND_EXPR)
     {
       if (arg2 == NULL_TREE

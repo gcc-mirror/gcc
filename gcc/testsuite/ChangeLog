@@ -1,3 +1,7 @@
+2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/ref4.C: New test.
+
 2001-04-30  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20000724-1.c: Revert last change.
