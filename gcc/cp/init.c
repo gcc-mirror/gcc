@@ -101,8 +101,10 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 static tree
 dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 {
-  if ((!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
-      && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    return dfs_skip_bases;
+  
+  if (!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 
@@ -110,8 +112,6 @@ dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 
       expand_virtual_init (binfo, base_ptr);
     }
-
-  BINFO_MARKED (binfo) = 1;
 
   return NULL_TREE;
 }
@@ -132,9 +132,7 @@ initialize_vtbl_ptrs (tree addr)
      class.  We do these in pre-order because we can't find the virtual
      bases for a class until we've initialized the vtbl for that
      class.  */
-  dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs,
-		 NULL, unmarkedp, list);
-  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, type);
+  dfs_walk_once (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, NULL, list);
 }
 
 /* Return an expression for the zero-initialization of an object with

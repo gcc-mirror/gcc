@@ -155,9 +155,8 @@ static void add_vcall_offset_vtbl_entries_1 (tree, vtbl_init_data *);
 static void build_vcall_offset_vtbl_entries (tree, vtbl_init_data *);
 static void add_vcall_offset (tree, tree, vtbl_init_data *);
 static void layout_vtable_decl (tree, int);
-static tree dfs_find_final_overrider (tree, void *);
+static tree dfs_find_final_overrider_pre (tree, void *);
 static tree dfs_find_final_overrider_post (tree, void *);
-static tree dfs_find_final_overrider_q (tree, int, void *);
 static tree find_final_overrider (tree, tree, tree);
 static int make_new_vtable (tree, tree);
 static int maybe_indent_hierarchy (FILE *, int, int);
@@ -171,15 +170,14 @@ static void dump_thunk (FILE *, int, tree);
 static tree build_vtable (tree, tree, tree);
 static void initialize_vtable (tree, tree);
 static void layout_nonempty_base_or_field (record_layout_info,
-						   tree, tree, splay_tree);
+					   tree, tree, splay_tree);
 static tree end_of_class (tree, int);
 static bool layout_empty_base (tree, tree, splay_tree);
 static void accumulate_vtbl_inits (tree, tree, tree, tree, tree);
 static tree dfs_accumulate_vtbl_inits (tree, tree, tree, tree,
 					       tree);
 static void build_rtti_vtbl_entries (tree, vtbl_init_data *);
-static void build_vcall_and_vbase_vtbl_entries (tree, 
-							vtbl_init_data *);
+static void build_vcall_and_vbase_vtbl_entries (tree, vtbl_init_data *);
 static void clone_constructors_and_destructors (tree);
 static tree build_clone (tree, tree);
 static void update_vtable_entry_for_fn (tree, tree, tree, tree *, unsigned);
@@ -192,11 +190,11 @@ static tree dfs_fixup_binfo_vtbls (tree, void *);
 static int record_subobject_offset (tree, tree, splay_tree);
 static int check_subobject_offset (tree, tree, splay_tree);
 static int walk_subobject_offsets (tree, subobject_offset_fn,
-					   tree, splay_tree, tree, int);
+				   tree, splay_tree, tree, int);
 static void record_subobject_offsets (tree, tree, splay_tree, int);
 static int layout_conflict_p (tree, tree, splay_tree, int);
 static int splay_tree_compare_integer_csts (splay_tree_key k1,
-						    splay_tree_key k2);
+					    splay_tree_key k2);
 static void warn_about_ambiguous_bases (tree);
 static bool type_requires_array_cookie (tree);
 static bool contains_empty_class_p (tree);
@@ -1788,15 +1786,10 @@ typedef struct find_final_overrider_data_s {
   tree fn;
   /* The base class in which the function was declared.  */
   tree declaring_base;
-  /* The most derived class in the hierarchy.  */
-  tree most_derived_type;
   /* The candidate overriders.  */
   tree candidates;
-  /* Each entry in this array is the next-most-derived class for a
-     virtual base class along the current path.  */
-  tree *vpath_list;
-  /* A pointer one past the top of the VPATH_LIST.  */
-  tree *vpath;
+  /* Path to most derived.  */
+  VEC (tree) *path;
 } find_final_overrider_data;
 
 /* Add the overrider along the current path to FFOD->CANDIDATES.
@@ -1804,22 +1797,18 @@ typedef struct find_final_overrider_data_s {
 
 static bool
 dfs_find_final_overrider_1 (tree binfo, 
-			    tree *vpath, 
-			    find_final_overrider_data *ffod)
+			    find_final_overrider_data *ffod,
+			    unsigned depth)
 {
   tree method;
 
   /* If BINFO is not the most derived type, try a more derived class.
      A definition there will overrider a definition here.  */
-  if (!same_type_p (BINFO_TYPE (binfo), ffod->most_derived_type))
+  if (depth)
     {
-      tree derived;
-
-      if (BINFO_VIRTUAL_P (binfo))
-	derived = *--vpath;
-      else
-	derived = BINFO_INHERITANCE_CHAIN (binfo);
-      if (dfs_find_final_overrider_1 (derived, vpath, ffod))
+      depth--;
+      if (dfs_find_final_overrider_1
+	  (VEC_index (tree, ffod->path, depth), ffod, depth))
 	return true;
     }
 
@@ -1853,36 +1842,23 @@ dfs_find_final_overrider_1 (tree binfo,
 /* Called from find_final_overrider via dfs_walk.  */
 
 static tree
-dfs_find_final_overrider (tree binfo, void* data)
+dfs_find_final_overrider_pre (tree binfo, void *data)
 {
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
 
   if (binfo == ffod->declaring_base)
-    dfs_find_final_overrider_1 (binfo, ffod->vpath, ffod);
+    dfs_find_final_overrider_1 (binfo, ffod, VEC_length (tree, ffod->path));
+  VEC_safe_push (tree, ffod->path, binfo);
 
   return NULL_TREE;
 }
 
 static tree
-dfs_find_final_overrider_q (tree derived, int ix, void *data)
-{
-  tree binfo = BINFO_BASE_BINFO (derived, ix);
-  find_final_overrider_data *ffod = (find_final_overrider_data *) data;
-
-  if (BINFO_VIRTUAL_P (binfo))
-    *ffod->vpath++ = derived;
-  
-  return binfo;
-}
-
-static tree
-dfs_find_final_overrider_post (tree binfo, void *data)
+dfs_find_final_overrider_post (tree binfo ATTRIBUTE_UNUSED, void *data)
 {
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
+  VEC_pop (tree, ffod->path);
 
-  if (BINFO_VIRTUAL_P (binfo))
-    ffod->vpath--;
-  
   return NULL_TREE;
 }
 
@@ -1920,23 +1896,14 @@ find_final_overrider (tree derived, tree binfo, tree fn)
   /* Determine the depth of the hierarchy.  */
   ffod.fn = fn;
   ffod.declaring_base = binfo;
-  ffod.most_derived_type = BINFO_TYPE (derived);
   ffod.candidates = NULL_TREE;
-  /* The virtual depth cannot be greater than the number of virtual
-     bases.  */
-  ffod.vpath_list = (tree *) xcalloc
-    (VEC_length (tree, CLASSTYPE_VBASECLASSES (BINFO_TYPE (derived))),
-     sizeof (tree));
-  ffod.vpath = ffod.vpath_list;
+  ffod.path = VEC_alloc (tree, 30);
 
-  dfs_walk_real (derived,
-		 dfs_find_final_overrider,
-		 dfs_find_final_overrider_post,
-		 dfs_find_final_overrider_q,
-		 &ffod);
+  dfs_walk_all (derived, dfs_find_final_overrider_pre,
+		dfs_find_final_overrider_post, &ffod);
 
-  free (ffod.vpath_list);
-
+  VEC_free (tree, ffod.path);
+  
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
     {
@@ -2208,8 +2175,6 @@ dfs_modify_vtables (tree binfo, void* data)
 				    &virtuals, ix);
     }
 
-  BINFO_MARKED (binfo) = 1;
-
   return NULL_TREE;
 }
 
@@ -2229,8 +2194,7 @@ modify_all_vtables (tree t, tree virtuals)
   tree *fnsp;
 
   /* Update all of the vtables.  */
-  dfs_walk (binfo, dfs_modify_vtables, unmarkedp, t);
-  dfs_walk (binfo, dfs_unmark, markedp, t);
+  dfs_walk_once (binfo, NULL, dfs_modify_vtables, t);
 
   /* Add virtual functions not already in our primary vtable. These
      will be both those introduced by this class, and those overridden
@@ -6763,7 +6727,7 @@ build_vtt_inits (tree binfo, tree t, tree *inits, tree *index)
   /* Recursively add the secondary VTTs for non-virtual bases.  */
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, b); ++i)
     if (!BINFO_VIRTUAL_P (b))
-      inits = build_vtt_inits (BINFO_BASE_BINFO (binfo, i), t, inits, index);
+      inits = build_vtt_inits (b, t, inits, index);
       
   /* Add secondary virtual pointers for all subobjects of BINFO with
      either virtual bases or reachable along a virtual path, except
@@ -6773,9 +6737,7 @@ build_vtt_inits (tree binfo, tree t, tree *inits, tree *index)
   data.inits = NULL;
   data.type_being_constructed = BINFO_TYPE (binfo);
   
-  dfs_walk_real (binfo, dfs_build_secondary_vptr_vtt_inits,
-		 NULL, unmarkedp, &data);
-  dfs_walk (binfo, dfs_unmark, markedp, 0);
+  dfs_walk_once (binfo, dfs_build_secondary_vptr_vtt_inits, NULL, &data);
 
   *index = data.index;
 
@@ -6802,7 +6764,7 @@ build_vtt_inits (tree binfo, tree t, tree *inits, tree *index)
       }
   else
     /* Remove the ctor vtables we created.  */
-    dfs_walk (binfo, dfs_fixup_binfo_vtbls, 0, binfo);
+    dfs_walk_all (binfo, dfs_fixup_binfo_vtbls, NULL, binfo);
 
   return inits;
 }
@@ -6815,27 +6777,25 @@ dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data_)
 {
   secondary_vptr_vtt_init_data *data = (secondary_vptr_vtt_init_data *)data_;
 
-  BINFO_MARKED (binfo) = 1;
-
   /* We don't care about bases that don't have vtables.  */
   if (!TYPE_VFIELD (BINFO_TYPE (binfo)))
-    return NULL_TREE;
+    return dfs_skip_bases;
 
   /* We're only interested in proper subobjects of the type being
      constructed.  */
   if (same_type_p (BINFO_TYPE (binfo), data->type_being_constructed))
     return NULL_TREE;
 
+  /* We're only interested in bases with virtual bases or reachable
+     via a virtual path from the type being constructed.  */
+  if (!(CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo))
+	|| binfo_via_virtual (binfo, data->type_being_constructed)))
+    return dfs_skip_bases;
+  
   /* We're not interested in non-virtual primary bases.  */
   if (!BINFO_VIRTUAL_P (binfo) && BINFO_PRIMARY_P (binfo))
     return NULL_TREE;
-
-  /* We're only interested in bases with virtual bases or reachable
-     via a virtual path from the type being constructed.  */
-  if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo))
-      && !binfo_via_virtual (binfo, data->type_being_constructed))
-    return NULL_TREE;
-
+  
   /* Record the index where this secondary vptr can be found.  */
   if (data->top_level_p)
     {
@@ -6873,9 +6833,18 @@ dfs_fixup_binfo_vtbls (tree binfo, void* data)
 {
   tree vtable = BINFO_VTABLE (binfo);
 
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    /* If this class has no vtable, none of its bases do.  */
+    return dfs_skip_bases;
+  
+  if (!vtable)
+    /* This might be a primary base, so have no vtable in this
+       hierarchy.  */
+    return NULL_TREE;
+  
   /* If we scribbled the construction vtable vptr into BINFO, clear it
      out now.  */
-  if (vtable && TREE_CODE (vtable) == TREE_LIST
+  if (TREE_CODE (vtable) == TREE_LIST
       && (TREE_PURPOSE (vtable) == (tree) data))
     BINFO_VTABLE (binfo) = TREE_CHAIN (vtable);
 

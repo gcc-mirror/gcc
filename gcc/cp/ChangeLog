@@ -1,3 +1,46 @@
+2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (dfs_walk, dfs_walk_real, dfs_unmark, markedp,
+	unmarkedp): Remove.
+	(dfs_skip_bases, dfs_walk_all, dfs_walk_once): New.
+	* class.c (struct find_final_overrider_data): Remove most_derived,
+	vpath_list and vpath fields.  Add path field.
+	(dfs_find_final_ocerrider_1): Add DEPTH parameter. Adjust.
+	(dfs_find_final_overrider): Rename to ...
+	(dfs_find_final_overrider_pre): ... here. Adjust.
+	(dfs_find_final_overrider_post): Adjust.
+	(dfs_find_final_overrider_q): Fold into
+	dfs_find_final_overrider_pre.
+	(find_final_overrider): Adjust dfs searching.
+	(dfs_modify_vtables): Don't mark binfo here.
+	(modify_all_vtables): Use dfs_walk_once.
+	(build_vtt_inits): Likwise. Use dfs_walk_all.
+	(dfs_build_secondary_vptr_vtt_inits): Don't mark binfo here.
+	Return dfs_skip_bases as appropriate.
+	(dfs_fixup_binfo_vtbls): Return dfs_skip_bases as appropriate.
+	* init.c (dfs_initialized_vtbl_ptrs): Return dfs_skip_bases as
+	appropriate. Don't mark binfo here.
+	(initialize_vtbl_ptrs): Use dfs_walk_once.
+	* search.c (struct vbase_info): Remove unused struct.
+	(access_in_type): Use dfs_walk_once.
+	(dfs_access_in_type): Don't mark binfo here.
+	(dfs_accessible_queue_p, dfs_accessible_p) Remove.
+	Fold into ...
+	(accessible_r): ... here. New. Specialize dfs_walk_once.
+	(accessible_p): Use accessible_r.
+	(lookup_field_queue_p): Remove. Fold into ...
+	(lookup_field_r): ... here. Adjust.
+	(lookup_member): Use dfs_walk_all.
+	(dfs_walk_real, dfs_walk): Replace with ...
+	(dfs_walk_all, dfs_walk_once): ... these.
+	(dfs_walk_once_r, dfs_unmark_r): Workers for dfs_walk_once.
+	(dfs_unmark, unmarkedp, markedp): Remove.
+	(dfs_get_pure_virtuals): Don't mark binfo here.
+	(get_pure_virtuals): Use dfs_walk_once.
+	(dfs_debug_unmarked_p): Remove. Fold into ...
+	(dfs_debug_mark): ... here.
+	(note_debug_info_needed): Use dfs_walk_all.
+
 2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* pt.c (tsubst_expr) <case ASM_EXPR>: Look passed the
