@@ -2806,9 +2806,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
 	   && TREE_CODE (TYPE_NAME (arg)) == TYPE_DECL
 	   && DECL_ARTIFICIAL (TYPE_NAME (arg))
 	   && requires_tmpl_type
-	   && current_class_type
-	   /* FIXME what about nested types?  */
-	   && get_binfo (arg, current_class_type, 0)));
+	   && is_base_of_enclosing_class (arg, current_class_type)));
   if (is_tmpl_type && TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
     arg = TYPE_STUB_DECL (arg);
   else if (is_tmpl_type && TREE_CODE (arg) == RECORD_TYPE)

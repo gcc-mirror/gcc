@@ -1,4 +1,15 @@
+1998-09-09  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+	* class.c (get_enclosing_class): New function.
+	(is_base_of_enclosing_class): Likewise.
+	* cp-tree.h (get_enclosing_class): Declare.
+	(is_base_of_enclosing_class): Likewise.
+	* pt.c (coerce_template_parms): Use them.
+
 1998-09-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* g++spec.c (lang_specific_driver): Check whether MATH_LIBRARY is
+	null to decide whether to use it.
 
 	* error.c (dump_type_real): Handle NAMESPACE_DECL.
 	* parse.y (base_class.1): Avoid crash on error.

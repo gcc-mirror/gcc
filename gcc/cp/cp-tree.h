@@ -2425,6 +2425,8 @@ extern void maybe_push_cache_obstack		PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
 extern tree build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
+extern tree get_enclosing_class			PROTO((tree));
+int is_base_of_enclosing_class			PROTO((tree, tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
