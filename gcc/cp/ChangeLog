@@ -194,7 +194,7 @@
 	(pp_cxx_namespace_alias_definition): Likewise.
 	(pp_cxx_declaration): Use them.  Handle NAMESPACE_DECLs.
 
-Sun Sep  7 13:15:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_emit_vtables, write_out_vars, finish_file):
 	Avoid re-emitting variables in unit-at-a-time mode.
@@ -713,7 +713,7 @@ Sun Sep  7 13:15:14 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* pt.c (instantiate_class_template): Push to class's scope before
 	tsubsting base.
 
-Sun Aug 17 10:05:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-08-17  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/11702
 	* semantics.c (finish_id_expression): Mark all functions as used.
@@ -757,7 +757,7 @@ Sun Aug 17 10:05:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* decl.c (make_typename_type): Use my_friendly_assert.
 	* pt.c (tsubst_aggr_type): Rearrange context substitution.
 
-Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-08-14  Jan Hubicka  <jh@suse.cz>
 
 	* method.c (use_thunk): Expand body directly.
 
@@ -1096,12 +1096,12 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	can_complete_type_without_circularity, instantiate_class_template,
 	tsubst_decl, unify): Reformat.
 
-Thu Jul 31 01:07:41 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-31  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_make_one_only): Use mark_referenced.
 	* method.c (use_thunk): Likewsie.
 
-Wed Jul 30 19:12:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-30  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (build_vtable_entry_ref): Kill.
 	(build_vtbl_ref_1): Do not call build_vtable_entry_ref.
@@ -1170,7 +1170,7 @@ Wed Jul 30 19:12:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(get_delta_difference): Use convert_to_integer.
 	(build_ptrmemfunc): Avoid unncessary conversions.
 
-Mon Jul 28 23:55:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-28  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (mark_member_pointers): Verify that member pointer points to
 	the function.
@@ -1887,7 +1887,7 @@ Mon Jul 28 23:55:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(build_x_compound_expr): Likewise.
 	* typeck2.c (build_x_arrow): Likewise.
 
-Wed Jul  9 02:28:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* cp-lang.c (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): New.
 	* decl.c (duplicate_decls): Use DECL_ESTIMATED_INSNS.
@@ -2191,7 +2191,7 @@ Wed Jul  9 02:28:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* error.c (locate_error): %P takes an `int', not a `tree'.
 
-Wed Jul  2 00:36:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (defer_fn): Set DECL_DEFER_OUTPUT.
 	(finish-file): Do not process function with DECL_DEFER_OUTPUT clear;
@@ -2398,12 +2398,12 @@ Wed Jul  2 00:36:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* pt.c (check_default_tmpl_args): Likewise.
 	(lookup_template_class): Likewise.
 
-Tue Jun 24 15:30:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* method.c (thunk_labelno): Move outside ifdef block to make garbage
 	collector happy.
 
-Tue Jun 24 13:52:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* class.c (build_vtable): Make vtables.
 	* cp-tree.h (DECL_VTABLE_OR_VTT_P): New macro.
@@ -2430,7 +2430,7 @@ Tue Jun 24 13:52:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(cp/method.o): Depend on gt-cp-method.h.
 	* config-lang.in (gtfiles): Add $(srcdir)/cp/method.c.
 
-Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-23  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (register_dtor_fn): Mark cleanup as used.
 	* decl2.c (mark_vtable_entries): Skip nops.
@@ -2724,7 +2724,7 @@ Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cp-tree.h (cxx_init_options): Update.
 	* lex.c (cxx_init_options): Update.
 
-Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
 

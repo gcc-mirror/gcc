@@ -120,7 +120,7 @@
 
 	* treetree.c (c_lex): Add fake routine to satisfy RS6000 backend.
 
-Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
 

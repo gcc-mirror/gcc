@@ -152,7 +152,7 @@
 
 	* expr.c: Remove the last argument to expand_assignment().
 
-Wed Jul  9 02:29:15 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* java-tree.h (DECL_NUM_STMTS): Rename to...
 	(DECL_ESTIMATED_INSNS): ... this.
@@ -337,7 +337,7 @@ Wed Jul  9 02:29:15 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* lang.c (java_init_options): Update.
 
-Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
 

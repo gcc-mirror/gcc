@@ -647,7 +647,7 @@
 	* gcc.dg/i386-387-1.c (dg-options): Add -march=i386.
 	* gcc.dg/i386-387-5.c (dg-options): Likewise.
 
-Wed Jul 30 19:13:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-30  Jan Hubicka  <jh@suse.cz>
 
 	* vtgc1.c: Kill.
 
@@ -1828,7 +1828,7 @@ Wed Jul 30 19:13:34 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* lib/gcc-dg.exp (dg-require-alias): Fix typo.
 	(dg-require-gc-sections): Likewise.
 
-Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-06-08  Jan Hubicka  <jh@suse.cz>
 
 	* i386-cmov1.c: Fix regular expression.
 	* i386-cvt-1.c: Likewise.

@@ -282,7 +282,7 @@
 	* combine.c (force_to_mode): Set fuller_mask based only on mask,
 	not op_mode.
 
-Thu Sep 11 01:21:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* c-objc-common.c (c_cannot_inline_tree_fn): Warn
 	on why function is not inlinable; do not check
@@ -355,7 +355,7 @@ Thu Sep 11 01:21:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(tree_expr_nonnegative_p): Likewise.
 	* real.h (dconst3, dconst10, dconstthird): New.
 
-Tue Sep  9 22:18:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_function): Fix handling of extern
 	inline functions.
@@ -367,7 +367,7 @@ Tue Sep  9 22:18:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* builtins.c (fold_builtin_cabs): Protect the complex argument
 	against multiple evaluation when optimizing cabs* into sqrt*.
 
-Tue Sep  9 15:36:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (notice_global_symbol):  Properly deal with weak symbols.
 
@@ -440,7 +440,7 @@ Tue Sep  9 15:36:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	New.
 	* doc/extend.texi: Document new builtins.
 
-Tue Sep  9 02:18:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_varpool_finalize_decl): Sanity check duplicated
 	finalization.
@@ -564,7 +564,7 @@ Tue Sep  9 02:18:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* c-pretty-print.c (pp_c_left_brace): Now a function
 	(pp_c_right_brace): Likewise.
 
-Sun Sep  7 14:50:03 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix again the preivous patch.
 
@@ -650,7 +650,7 @@ Sun Sep  7 14:50:03 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* expmed.c (expand_divmod <EXACT_DIV_EXPR>): Use an unsigned
 	multiplication to implement division by constant integer.
 
-Fri Sep  5 07:35:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-05  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (decode_options): Enable unit-at-a-time at -O2.
 	* params.def (max-inline-insns-single): Set to 500
@@ -763,7 +763,7 @@ Fri Sep  5 07:35:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(*divdf3): New pattern.
 	(*divsf3): Ditto.
 
-Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (wrapup_global_declarations): Fix final pass in
 	unit-at-atime mode.
@@ -971,7 +971,7 @@ Thu Sep  4 10:43:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/sol2.h (NO_IMPLICIT_EXTERN_C): Update comment.
 
-Wed Sep  3 16:55:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (c-objc-common.o): Kill gt-c-objc-common.h dependency.
 	* c-decl.c (finish_function):  Kill arguments, always use cgraph path.
@@ -1910,7 +1910,7 @@ Wed Sep  3 16:55:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(finish_struct): If not removing type from incomplete
 	list, update prev.
 
-Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-08-20  Jan Hubicka  <jh@suse.cz>
 
 	PR target/11369
 	* i386.c (ix86_expand_carry_flag_compare): Validate operand.
@@ -3752,7 +3752,7 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* fold-const.c (fold): Fold some comparisons of bit operations.
 
-Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-31  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (create_edge): Fix typo.
 	* i386.c (pic_symbolic_operand): Reorder tests.
@@ -3832,7 +3832,7 @@ Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(all insns and expanders): Write output control string as brace block
 	where appropriate.  Remove \-escapes for doublequote characters.
 
-Thu Jul 31 01:04:19 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-31  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (insert_store): Fix typo in previous patch.
 
@@ -3867,7 +3867,7 @@ Thu Jul 31 01:04:19 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.h (EH_RETURN_HANDLER_RTX): Compute offset
 	symbolically.
 
-Wed Jul 30 19:12:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-30  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (insert_store): Ignore fake edges.
 
@@ -4029,7 +4029,7 @@ Wed Jul 30 19:12:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* configure: Regenerate.
 
-Tue Jul 29 19:24:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-29  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/11131
 	* tree-inline.c (expand_call_inline): Always call inlinable_function_p
@@ -4083,7 +4083,7 @@ Tue Jul 29 19:24:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	-Wdeclaration-after-statement.
 	(Warning Options): Ditto.
 
-Mon Jul 28 20:13:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-28  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (memory attribute) Avoid accessing uninitialized memory
 	for ishift1 type instructions.
@@ -4548,7 +4548,7 @@ Mon Jul 28 20:13:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/i386/i386.md (*movsi_or): Likewise.
 	(*movdi_or_rex6): Likewise.
 
-Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-22  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Remove redundant if.
 
@@ -4849,12 +4849,12 @@ Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cfgrtl.c (force_nonfallthru_and_redirect): Use tablejump_p
 	to skip the addr_vec.
 
-Fri Jul 18 15:22:28 2003  Alexandre Oliva  <aoliva@redhat.com>
+2003-07-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (combinable_i3pat): Don't forbid occurrences of
 	i2dest or i1dest in inner_dest if inner_dest is a mem.
 
-Fri Jul 18 17:05:57 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Clear the hash table slot.
 
@@ -5349,7 +5349,7 @@ objc:
 	* objc/objc-act.c (get_static_reference): Use SET_TYPE_PROTOCOL_LIST.
 	(get_object_reference): Likewise.
 
-Mon Jul 14 23:14:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-14  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (locator_file): Break out from ....
 	(insn_file): ... here.
@@ -5647,12 +5647,12 @@ Mon Jul 14 23:14:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* ra.h: Likewise.
 	* protoize.c: Likewise.
 
-Sat Jul 12 06:09:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_inlined_into, cgraph_inlined_calees): Fix
 	warning.
 
-Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-12  Jan Hubicka  <jh@suse.cz>
 			       Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* cgraph.c (cgraph_max_uid): New global variable.
@@ -6138,7 +6138,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* (movsf): Likewise.
 	* (movdi): Likewise.
 	* (movdf): Likewise.
-	Wed May 24 13:16:09 2000  Alexandre Oliva  <aoliva@cygnus.com>
+	2000-05-24  Alexandre Oliva  <aoliva@cygnus.com>
 	* config/mn10300/mn10300.c (fp_regs_to_save): New function.
 	(can_use_return_insn, initial_offset): Add fp_regs_to_save.
 	(expand_prologue, expand_epilogue): Save and restore FP regs.
@@ -6246,7 +6246,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/install.texi (Configuration): Document the valgrind option
 	to --enable-checking.
 
-Wed Jul  9 16:16:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* objc-lang.c (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS): New.
 
@@ -6321,7 +6321,7 @@ Wed Jul  9 16:16:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/i386/i386.md: Remove an old comment about
 	NOTICE_UPDATE_CC.
 
-Wed Jul  9 03:00:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_node_name): New function.
 	(dump_cgraph): Use it.
@@ -6377,7 +6377,7 @@ Wed Jul  9 03:00:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	Use attr `special' macros in all calls to make_internal_attr.
 	* genautomata.c: Likewise.
 
-Wed Jul  9 02:25:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (c_estimate_num_insns_1): New static function.
 	(c_estimate_num_insns): New global function.
@@ -6746,7 +6746,7 @@ Wed Jul  9 02:25:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68k/m68k.md (movxf): Add reload_in_progress guard.  Add
 	comment about confused support for XFmode constants.
 
-Mon Jul  7 02:03:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-07  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (fixup_reorder_chain): Call delete_dead_jumptables.
 
@@ -7040,7 +7040,7 @@ Mon Jul  7 02:03:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cppcharset.c: Use the correct return type for the fallback iconv
 	macro.
 
-Sat Jul  5 16:18:53 CEST 2003  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+2003-07-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	Blame to Jan Hubicka  <jh@suse.cz>
 	* cfglayout.c (record_effective_endpoints): Split insns before
@@ -7340,7 +7340,7 @@ Sat Jul  5 16:18:53 CEST 2003  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	SPARC_INT_ARG_MAX to determine where to split unnamed
 	complex FP arguments.
 
-Thu Jul  3 20:36:47 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (create_basic_block, merge_blocks_nomove): Kill.
 	* cfgcleanup.c (merge_blocks): Rename to merge_blocks_move.
@@ -7635,7 +7635,7 @@ Thu Jul  3 20:36:47 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(exception_receiver): Explicitly set $28.
 	(hazard_nop): New pattern.
 
-Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_unit): Set current_function_decl
 	before calling tree_inlinable_function_p.
@@ -7684,7 +7684,7 @@ Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/mips/iris6.h: Move explicit includes ...
 	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here.
 
-Wed Jul  2 02:16:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_mark_needed_node, cgraph_varpool_mark_needed_node,
 	cgraph_varpool_finalize_decl, cgraph_varpool_assemble_pending_decls):
@@ -7693,7 +7693,7 @@ Wed Jul  2 02:16:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(cgraph_varpool_node): Add next_needed; remove aux.
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Use next_needed.
 
-Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
+2003-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_function): Set finalized.
 	(cgraph_finalize_function): Do not examine inlinablility.
