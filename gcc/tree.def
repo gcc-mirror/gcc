@@ -743,11 +743,12 @@ DEFTREECODE (EXIT_EXPR, "exit_expr", 's', 1)
    The type should be void and the value should be ignored.  */
 DEFTREECODE (LOOP_EXPR, "loop_expr", 's', 1)
 
-/* Used to represent a tree node, such as IDENTIFIER_NODE or an EXPR
-   node, adding several location information: a file name, a line
-   number and column number. It is expanded as the node it refers to
-   and can be considered a no-op "conversion" with an annotation.  */
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", '1', 2)
+/* Annotates a tree node (usually an expression) with source location
+   information: a file name (EXPR_WFL_FILENAME);  a line number
+   (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
+   expanded as the contained node (EXPR_WFL_NODE);  a line note should
+   be emitted first if EXPR_WFL_EMIT_LINE_NOTE. */
+DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 2)
 /*
 Local variables:
 mode:c
