@@ -1,3 +1,8 @@
+2003-06-09  David Taylor  <dtaylor@emc.com>
+
+	* config/rs6000/rs6000.c (rs6000_va_start, rs6000_va_arg):  Skip over
+	the f_res field.
+
 2003-06-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Remove references to host_truncate_target.
