@@ -4923,8 +4923,9 @@ joust (cand1, cand2, warn)
     return -1;
 
   /* If we have two pseudo-candidates for conversions to the same type,
-     arbitrarily pick one.  */
-  if (TYPE_P (cand1->fn) && cand1->fn == cand2->fn)
+     or two candidates for the same function, arbitrarily pick one.  */
+  if (cand1->fn == cand2->fn
+      && (TYPE_P (cand1->fn) || DECL_P (cand1->fn)))
     return 1;
 
   /* a viable function F1

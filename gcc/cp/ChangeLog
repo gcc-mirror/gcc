@@ -1,3 +1,12 @@
+2000-04-20  Jason Merrill  <jason@casey.cygnus.com>
+
+	* typeck.c (build_x_function_call): Resolve an OFFSET_REF.
+
+	* call.c (joust): Exit early if we get the same function, too.
+
+	* decl2.c (key_method): Return NULL_TREE for template classes.
+	(import_export_class): Don't need to check for template classes.
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* lex.c: Remove references to cccp.c.

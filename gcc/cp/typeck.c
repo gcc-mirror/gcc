@@ -2574,6 +2574,9 @@ build_x_function_call (function, params, decl)
 				TYPE_BINFO (type), LOOKUP_NORMAL);
     }
     
+  if (TREE_CODE (function) == OFFSET_REF)
+    function = resolve_offset_ref (function);
+
   if ((TREE_CODE (function) == FUNCTION_DECL
        && DECL_STATIC_FUNCTION_P (function))
       || (TREE_CODE (function) == TEMPLATE_DECL
@@ -2669,8 +2672,6 @@ build_x_function_call (function, params, decl)
       return build_method_call (decl, function, params,
 				NULL_TREE, LOOKUP_NORMAL);
     }
-  else if (TREE_CODE (function) == OFFSET_REF)
-    my_friendly_abort (20000406);
   else if (TREE_CODE (function) == COMPONENT_REF
 	   && type == unknown_type_node)
     {
