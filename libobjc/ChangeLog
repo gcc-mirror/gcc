@@ -1,3 +1,7 @@
+2000-08-11  Manfred Hollstein  <manfredh@redhat.com>
+
+	* objc-features.texi: Move @node Top before @menu.
+
 Sun Aug  6 23:27:49 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc-features.texi: Documented the new -fconstant-string-class
