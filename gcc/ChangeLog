@@ -1,5 +1,9 @@
 2001-09-01  Geoffrey Keating  <geoffk@redhat.com>
 
+	* expr.c (push_block): Make sane use of STACK_GROWS_DOWNWARD.
+	(emit_push_insn): Use specified padding direction when
+	STACK_PUSH_CODE is POST_INC.
+
 	* config/stormy16/stormy16.h (DWARF2_UNWIND_INFO): Define to 0.
 
 2001-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

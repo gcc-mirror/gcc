@@ -3102,18 +3102,11 @@ push_block (size, extra, below)
     }
 
 #ifndef STACK_GROWS_DOWNWARD
-#ifdef ARGS_GROW_DOWNWARD
-  if (!ACCUMULATE_OUTGOING_ARGS)
-#else
   if (0)
-#endif
 #else
   if (1)
 #endif
     {
-      /* Return the lowest stack address when STACK or ARGS grow downward and
-	 we are not aaccumulating outgoing arguments (the c4x port uses such
-	 conventions).  */
       temp = virtual_outgoing_args_rtx;
       if (extra != 0 && below)
 	temp = plus_constant (temp, extra);
@@ -3273,8 +3266,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      Default is below for small data on big-endian machines; else above.  */
   enum direction where_pad = FUNCTION_ARG_PADDING (mode, type);
 
-  /* Invert direction if stack is post-update.  */
-  if (STACK_PUSH_CODE == POST_INC || STACK_PUSH_CODE == POST_DEC)
+  /* Invert direction if stack is post-decrement. 
+     FIXME: why?  */
+  if (STACK_PUSH_CODE == POST_DEC)
     if (where_pad != none)
       where_pad = (where_pad == downward ? upward : downward);
 
