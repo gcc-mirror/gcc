@@ -1292,7 +1292,7 @@ dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h except.h \
    function.h expr.h output.h hard-reg-set.h regs.h defaults.h real.h \
-   bytecode.h obstack.h xcoffout.h c-pragma.h
+   insn-config.h bytecode.h obstack.h xcoffout.h c-pragma.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
    insn-config.h reload.h output.h defaults.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf2.h flags.h \
