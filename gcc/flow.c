@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2169,6 +2169,13 @@ mark_used_regs (needed, live, x, final, insn)
       cc0_live = 1;
       return;
 #endif
+
+    case CLOBBER:
+      /* If we are clobbering a MEM, mark any registers inside the address
+	 as being used.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	mark_used_regs (needed, live, XEXP (XEXP (x, 0), 0), final, insn);
+      return;
 
     case MEM:
       /* Invalidate the data for the last MEM stored.  We could do this only
