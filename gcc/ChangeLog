@@ -1,5 +1,9 @@
 2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
 
+	* config.gcc: Only process --with-cpu logic in the third pass.
+
+2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
+
 	* config.gcc: Reorganize --with-cpu section.  Remove an
 	obsolete comment about the default CPU for x86-64.  Fix
 	a typo for the ep9312.  Update the list of supported PowerPC
