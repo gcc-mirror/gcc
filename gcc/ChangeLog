@@ -1,3 +1,8 @@
+Mon Dec 10 09:19:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.md (leave, leave_rex64): Adjust pattern to match
+	what insn does.
+
 2001-12-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/cpp.texi: Don't condition menus on @ifinfo.  Condition the
