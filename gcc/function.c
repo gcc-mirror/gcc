@@ -2246,8 +2246,11 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
      the machine requires these objects be passed that way.  */
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (passed_type))
       || TREE_ADDRESSABLE (passed_type)
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       || FUNCTION_ARG_PASS_BY_REFERENCE (all->args_so_far, passed_mode,
-					 passed_type, data->named_arg))
+					 passed_type, data->named_arg)
+#endif
+      )
     {
       passed_type = nominal_type = build_pointer_type (passed_type);
       data->passed_pointer = true;
