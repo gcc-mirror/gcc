@@ -1,0 +1,11 @@
+# SunOS 4.1.*
+
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
+
+MULTILIB_OPTIONS=mv8
+MULTILIB_DIRNAMES=v8
+MULTILIB_MATCHES=
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
