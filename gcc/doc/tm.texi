@@ -7137,10 +7137,10 @@ the target supports DWARF 2 frame unwind information.
 This describes commands for alignment.
 
 @table @code
-@findex LABEL_ALIGN_AFTER_BARRIER
-@item LABEL_ALIGN_AFTER_BARRIER (@var{label})
-The alignment (log base 2) to put in front of @var{label}, which follows
-a @code{BARRIER}.
+@findex JUMP_ALIGN_AFTER_BARRIER
+@item JUMP_ALIGN (@var{label})
+The alignment (log base 2) to put in front of @var{label}, which is
+a common destination of jumps and has no fallthru incomming edge.
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
@@ -7149,8 +7149,17 @@ define the macro.
 Unless it's necessary to inspect the @var{label} parameter, it is better
 to set the variable @var{align_jumps} in the target's
 @code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
-selection in @var{align_jumps} in a @code{LABEL_ALIGN_AFTER_BARRIER}
-implementation.
+selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
+
+@table @code
+@findex LABEL_ALIGN_AFTER_BARRIER
+@item LABEL_ALIGN_AFTER_BARRIER (@var{label})
+The alignment (log base 2) to put in front of @var{label}, which follows
+a @code{BARRIER}.
+
+This macro need not be defined if you don't want any special alignment
+to be done at such a time.  Most machine descriptions do not currently
+define the macro.
 
 @findex LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
 @item LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
