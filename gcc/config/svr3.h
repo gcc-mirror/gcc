@@ -39,6 +39,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    appropriate define for the type of hardware that you are targeting.
 */
 
+/* Define a symbol indicating that we are using svr3.h.  */
+#define USING_SVR3_H
+
 /* Define a symbol so that libgcc* can know what sort of operating
    environment and assembler syntax we are targeting for.  */
 #define SVR3_target
