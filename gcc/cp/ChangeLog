@@ -36,7 +36,7 @@
 	(lookup_tag_reverse): Likewise.
 	(getdecls): Likewise.
 	(storedecls): Remove.
-	(cxx_remember_type_decls): Likewise.
+	(cxx_remember_type_decls): Move to name-lookup.c.
 	(global_bindings_p): Likewise.
 	(innermost_nonclass_level): Likewise.
 	(toplevel_bindings_p): Likewise.
@@ -49,7 +49,7 @@
 	(add_decl_to_level): Likewise.  Make extern.
 	(push_class_binding): Move to name-lookup.c.
 	(resume_level): Likewise.  Rename to resume_scope.
-	(begin_scope): Likewise.
+	(begin_scope): Move to name-lookup.c.
 	(indent): Likewise.
 	(binding_depth): Likewise.
 	(is_class_level): Likewise.
