@@ -1,3 +1,7 @@
+2003-02-07  Andrey Petrov <petrov@netbsd.org>
+
+	* optabs.c (expand_float): Search wider integer modes first.
+
 2003-02-07  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (LIBGCC2_WORDS_BIG_ENDIAN): Set this
