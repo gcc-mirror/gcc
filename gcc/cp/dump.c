@@ -482,7 +482,7 @@ dequeue_and_dump (di)
 	{
 	  dump_string (di, "ptrmem");
 	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
-	  dump_child ("csl", TYPE_PTRMEM_CLASS_TYPE (t));
+	  dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
 	}
       else
 	dump_child ("ptd", TREE_TYPE (t));
