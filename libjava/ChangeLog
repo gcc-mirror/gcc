@@ -1,3 +1,7 @@
+2001-10-03  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* resolve.cc (_Jv_PrepareClass): Fix typos in vtable layout.
+
 2001-10-02  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (core_java_source_files): add InheritableThreadLocal
