@@ -323,8 +323,6 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
   if (is_const)
     CONST_CALL_P (call_insn) = 1;
 
-  inhibit_defer_pop = old_inhibit_defer_pop;
-
 #ifndef ACCUMULATE_OUTGOING_ARGS
   /* If returning from the subroutine does not automatically pop the args,
      we need an instruction to pop them sooner or later.
@@ -349,6 +347,8 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
 	adjust_stack (stack_size_rtx);
     }
 #endif
+
+  inhibit_defer_pop = old_inhibit_defer_pop;
 }
 
 /* Generate all the code for a function call
