@@ -38,49 +38,49 @@ exception statement from your version. */
 package gnu.java.nio;
 
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
+import java.nio.ReadOnlyBufferException;
 
+/**
+ * This is a Heap memory implementation
+ */
 public final class FloatBufferImpl extends FloatBuffer
 {
-  private int array_offset;
-  private boolean ro;
+  private boolean readOnly;
   
   public FloatBufferImpl(int cap, int off, int lim)
   {
-    this.backing_buffer = new float[cap];
-    this.cap = cap;
-    this.limit(lim);
-    this.position(off);
+    super (cap, lim, off, 0);
+    this.backing_buffer = new float [cap];
+    readOnly = false;
   }
   
   public FloatBufferImpl(float[] array, int off, int lim)
   {
+    super (array.length, lim, off, 0);
     this.backing_buffer = array;
-    this.cap = array.length;
-    this.limit(lim);
-    this.position(off);
+    readOnly = false;
   }
   
   public FloatBufferImpl(FloatBufferImpl copy)
   {
+    super (copy.capacity (), copy.limit (), copy.position (), 0);
     backing_buffer = copy.backing_buffer;
-    ro = copy.ro;
-    limit(copy.limit());
-    position(copy.position());
+    readOnly = copy.isReadOnly ();
   }
   
-  void inc_pos(int a)
+  private static native float[] nio_cast (byte[] copy);
+  
+  FloatBufferImpl (byte[] copy)
   {
-    position(position() + a);
+    super (copy.length, copy.length, 0, 0);
+    this.backing_buffer = copy != null ? nio_cast  (copy) : null;
+    readOnly = false;
   }
-  
-  FloatBufferImpl(byte[] copy) { this.backing_buffer = copy != null ? nio_cast (copy) : null; }
+
   private static native byte nio_get_Byte (FloatBufferImpl b, int index, int limit);
+
   private static native void nio_put_Byte (FloatBufferImpl b, int index, int limit, byte value);
 
   public ByteBuffer asByteBuffer()
@@ -90,54 +90,14 @@ public final class FloatBufferImpl extends FloatBuffer
     return res;
   }
   
-  FloatBufferImpl(char[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native char nio_get_Char(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Char(FloatBufferImpl b, int index, int limit, char value);
-  public CharBuffer asCharBuffer() { CharBufferImpl res = new CharBufferImpl(backing_buffer); res.limit((limit()*2)/4); return res; }
-
-  FloatBufferImpl(short[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native short nio_get_Short(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Short(FloatBufferImpl b, int index, int limit, short value);
-  public ShortBuffer asShortBuffer() { ShortBufferImpl res = new ShortBufferImpl(backing_buffer); res.limit((limit()*2)/4); return res; }
-  
-  FloatBufferImpl(int[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native int nio_get_Int(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Int(FloatBufferImpl b, int index, int limit, int value);
-  public IntBuffer asIntBuffer() { IntBufferImpl res = new IntBufferImpl(backing_buffer); res.limit((limit()*4)/4); return res; }
-  
-  FloatBufferImpl(long[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native long nio_get_Long(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Long(FloatBufferImpl b, int index, int limit, long value);
-  public LongBuffer asLongBuffer() { LongBufferImpl res = new LongBufferImpl(backing_buffer); res.limit((limit()*8)/4); return res; }
-
-  FloatBufferImpl(float[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native float nio_get_Float(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Float(FloatBufferImpl b, int index, int limit, float value);
-  public FloatBuffer asFloatBuffer() { FloatBufferImpl res = new FloatBufferImpl(backing_buffer); res.limit((limit()*4)/4); return res; }
-
-  FloatBufferImpl(double[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native double nio_get_Double(FloatBufferImpl b, int index, int limit);
-  private static native void nio_put_Double(FloatBufferImpl b, int index, int limit, double value);
-  public DoubleBuffer asDoubleBuffer() { DoubleBufferImpl res = new DoubleBufferImpl(backing_buffer); res.limit((limit()*8)/4); return res; }
-
-  private static native float[] nio_cast(byte[]copy);
-  private static native float[] nio_cast(char[]copy);
-  private static native float[] nio_cast(short[]copy);
-  private static native float[] nio_cast(long[]copy);
-  private static native float[] nio_cast(int[]copy);
-  private static native float[] nio_cast(float[]copy);
-  private static native float[] nio_cast(double[]copy);
-  
-  public boolean isReadOnly()
+  public boolean isReadOnly ()
   {
-    return ro;
+    return readOnly;
   }
   
   public FloatBuffer slice()
   {
-    FloatBufferImpl A = new FloatBufferImpl(this);
-    A.array_offset = position();
-    return A;
+    return new FloatBufferImpl (this);
   }
   
   public FloatBuffer duplicate()
@@ -147,9 +107,9 @@ public final class FloatBufferImpl extends FloatBuffer
   
   public FloatBuffer asReadOnlyBuffer()
   {
-    FloatBufferImpl a = new FloatBufferImpl(this);
-    a.ro = true;
-    return a;
+    FloatBufferImpl result = new FloatBufferImpl (this);
+    result.readOnly = true;
+    return result;
   }
   
   public FloatBuffer compact()
@@ -159,7 +119,7 @@ public final class FloatBufferImpl extends FloatBuffer
   
   public boolean isDirect()
   {
-    return backing_buffer != null;
+    return false;
   }
   
   final public float get()
@@ -171,6 +131,9 @@ public final class FloatBufferImpl extends FloatBuffer
   
   final public FloatBuffer put(float b)
   {
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+    
     backing_buffer[position()] = b;
     position(position()+1);
     return this;
@@ -183,14 +146,15 @@ public final class FloatBufferImpl extends FloatBuffer
   
   final public FloatBuffer put(int index, float b)
   {
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+    
     backing_buffer[index] = b;
     return this;
   }
   
-  final public char getChar() { char a = nio_get_Char(this, position(), limit()); inc_pos(2); return a; } final public FloatBuffer putChar(char value) { nio_put_Char(this, position(), limit(), value); inc_pos(2); return this; } final public char getChar(int index) { char a = nio_get_Char(this, index, limit()); return a; } final public FloatBuffer putChar(int index, char value) { nio_put_Char(this, index, limit(), value); return this; };
-  final public short getShort() { short a = nio_get_Short(this, position(), limit()); inc_pos(2); return a; } final public FloatBuffer putShort(short value) { nio_put_Short(this, position(), limit(), value); inc_pos(2); return this; } final public short getShort(int index) { short a = nio_get_Short(this, index, limit()); return a; } final public FloatBuffer putShort(int index, short value) { nio_put_Short(this, index, limit(), value); return this; };
-  final public int getInt() { int a = nio_get_Int(this, position(), limit()); inc_pos(4); return a; } final public FloatBuffer putInt(int value) { nio_put_Int(this, position(), limit(), value); inc_pos(4); return this; } final public int getInt(int index) { int a = nio_get_Int(this, index, limit()); return a; } final public FloatBuffer putInt(int index, int value) { nio_put_Int(this, index, limit(), value); return this; };
-  final public long getLong() { long a = nio_get_Long(this, position(), limit()); inc_pos(8); return a; } final public FloatBuffer putLong(long value) { nio_put_Long(this, position(), limit(), value); inc_pos(8); return this; } final public long getLong(int index) { long a = nio_get_Long(this, index, limit()); return a; } final public FloatBuffer putLong(int index, long value) { nio_put_Long(this, index, limit(), value); return this; };
-  final public float getFloat() { return get(); } final public FloatBuffer putFloat(float value) { return put(value); } final public float getFloat(int index) { return get(index); } final public FloatBuffer putFloat(int index, float value) { return put(index, value); };
-  final public double getDouble() { double a = nio_get_Double(this, position(), limit()); inc_pos(8); return a; } final public FloatBuffer putDouble(double value) { nio_put_Double(this, position(), limit(), value); inc_pos(8); return this; } final public double getDouble(int index) { double a = nio_get_Double(this, index, limit()); return a; } final public FloatBuffer putDouble(int index, double value) { nio_put_Double(this, index, limit(), value); return this; };
+  final public ByteOrder order ()
+  {
+    return ByteOrder.BIG_ENDIAN;
+  }
 }

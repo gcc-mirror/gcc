@@ -1797,6 +1797,13 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
+gnu/java/nio/ByteBufferImpl.java \
+gnu/java/nio/CharBufferImpl.java \
+gnu/java/nio/DoubleBufferImpl.java \
+gnu/java/nio/FloatBufferImpl.java \
+gnu/java/nio/IntBufferImpl.java \
+gnu/java/nio/LongBufferImpl.java \
+gnu/java/nio/ShortBufferImpl.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \
 gnu/java/nio/charset/US_ASCII.java \
@@ -1899,9 +1906,14 @@ java/nio/BufferUnderflowException.java \
 java/nio/ByteBuffer.java \
 java/nio/ByteOrder.java \
 java/nio/CharBuffer.java \
+java/nio/DoubleBuffer.java \
+java/nio/FloatBuffer.java \
+java/nio/IntBuffer.java \
 java/nio/InvalidMarkException.java \
+java/nio/LongBuffer.java \
 java/nio/MappedByteBuffer.java \
 java/nio/ReadOnlyBufferException.java \
+java/nio/ShortBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/AsynchronousCloseException.java \
 java/nio/channels/ByteChannel.java \
@@ -2190,6 +2202,13 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
+gnu/java/nio/natByteBufferImpl.cc \
+gnu/java/nio/natCharBufferImpl.cc \
+gnu/java/nio/natDoubleBufferImpl.cc \
+gnu/java/nio/natFloatBufferImpl.cc \
+gnu/java/nio/natIntBufferImpl.cc \
+gnu/java/nio/natLongBufferImpl.cc \
+gnu/java/nio/natShortBufferImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
@@ -2361,8 +2380,14 @@ gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
-gnu/gcj/runtime/natVMClassLoader.lo java/io/natFile.lo \
-java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
+gnu/gcj/runtime/natVMClassLoader.lo gnu/java/nio/natByteBufferImpl.lo \
+gnu/java/nio/natCharBufferImpl.lo gnu/java/nio/natDoubleBufferImpl.lo \
+gnu/java/nio/natFloatBufferImpl.lo gnu/java/nio/natIntBufferImpl.lo \
+gnu/java/nio/natLongBufferImpl.lo \
+gnu/java/nio/natSelectorImpl.lo \
+gnu/java/nio/natShortBufferImpl.lo \
+java/io/natFile.lo java/io/natFileDescriptor.lo \
+java/io/natObjectInputStream.lo \
 java/io/natObjectOutputStream.lo java/io/natVMObjectStreamClass.lo \
 java/lang/natCharacter.lo java/lang/natClass.lo \
 java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
@@ -2820,7 +2845,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/locale/LocaleInformation_zh_HK.P \
 .deps/gnu/java/locale/LocaleInformation_zh_SG.P \
 .deps/gnu/java/locale/LocaleInformation_zh_TW.P \
-.deps/gnu/java/math/MPN.P .deps/gnu/java/nio/charset/ISO_8859_1.P \
+.deps/gnu/java/math/MPN.P .deps/gnu/java/nio/ByteBufferImpl.P \
+.deps/gnu/java/nio/CharBufferImpl.P \
+.deps/gnu/java/nio/DoubleBufferImpl.P \
+.deps/gnu/java/nio/FloatBufferImpl.P .deps/gnu/java/nio/IntBufferImpl.P \
+.deps/gnu/java/nio/LongBufferImpl.P \
+.deps/gnu/java/nio/ShortBufferImpl.P \
+.deps/gnu/java/nio/charset/ISO_8859_1.P \
 .deps/gnu/java/nio/charset/Provider.P \
 .deps/gnu/java/nio/charset/US_ASCII.P \
 .deps/gnu/java/nio/charset/UTF_16.P \
@@ -2829,6 +2860,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16Encoder.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
 .deps/gnu/java/nio/charset/UTF_8.P \
+.deps/gnu/java/nio/natByteBufferImpl.P \
+.deps/gnu/java/nio/natCharBufferImpl.P \
+.deps/gnu/java/nio/natDoubleBufferImpl.P \
+.deps/gnu/java/nio/natFloatBufferImpl.P \
+.deps/gnu/java/nio/natIntBufferImpl.P \
+.deps/gnu/java/nio/natLongBufferImpl.P \
+.deps/gnu/java/nio/natShortBufferImpl.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \
@@ -3298,8 +3336,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/BufferOverflowException.P \
 .deps/java/nio/BufferUnderflowException.P .deps/java/nio/ByteBuffer.P \
 .deps/java/nio/ByteOrder.P .deps/java/nio/CharBuffer.P \
-.deps/java/nio/InvalidMarkException.P .deps/java/nio/MappedByteBuffer.P \
-.deps/java/nio/ReadOnlyBufferException.P \
+.deps/java/nio/DoubleBuffer.P .deps/java/nio/FloatBuffer.P \
+.deps/java/nio/IntBuffer.P .deps/java/nio/InvalidMarkException.P \
+.deps/java/nio/LongBuffer.P .deps/java/nio/MappedByteBuffer.P \
+.deps/java/nio/ReadOnlyBufferException.P .deps/java/nio/ShortBuffer.P \
 .deps/java/nio/channels/AlreadyConnectedException.P \
 .deps/java/nio/channels/AsynchronousCloseException.P \
 .deps/java/nio/channels/ByteChannel.P \

@@ -40,101 +40,65 @@ package gnu.java.nio;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
+import java.nio.ReadOnlyBufferException;
 
+/**
+ * This is a Heap memory implementation
+ */
 public final class CharBufferImpl extends CharBuffer
 {
-  private boolean ro;
+  private boolean readOnly;
 
-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
-  
   public CharBufferImpl(int cap, int off, int lim)
   {
-    this.backing_buffer = new char[cap];
-    this.cap = cap;
-    this.limit(lim);
-    this.position(off);
+    super (cap, lim, off, 0);
+    this.backing_buffer = new char [cap];
+    readOnly = false;
   }
   
   public CharBufferImpl(char[] array, int off, int lim)
   {
+    super (array.length, lim, off, 0);
     this.backing_buffer = array;
-    this.cap = array.length;
-    this.limit(lim);
-    this.position(off);
+    readOnly = false;
   }
   
   public CharBufferImpl (CharBufferImpl copy)
   {
+    super (copy.capacity (), copy.limit (), copy.position (), 0);
     backing_buffer = copy.backing_buffer;
-    ro = copy.ro;
-    limit (copy.limit());
-    position (copy.position ());
+    readOnly = copy.isReadOnly ();
   }
   
-  void inc_pos (int a)
+  private static native char[] nio_cast (byte[] copy);
+
+  CharBufferImpl (byte[] copy)
   {
-    position (position () + a);
+    super (copy.length / 2, copy.length / 2, 0, 0);
+    this.backing_buffer = (copy != null ? nio_cast (copy) : null);
+    readOnly = false;
   }
 
-  CharBufferImpl(byte[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native byte nio_get_Byte(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Byte(CharBufferImpl b, int index, int limit, byte value);
-  public ByteBuffer asByteBuffer() { ByteBufferImpl res = new ByteBufferImpl(backing_buffer); res.limit((limit()*1)/2); return res; }
+  private static native byte nio_get_Byte (CharBufferImpl b, int index, int limit);
 
-  CharBufferImpl(char[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native char nio_get_Char(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Char(CharBufferImpl b, int index, int limit, char value);
-  public CharBuffer asCharBuffer() { CharBufferImpl res = new CharBufferImpl(backing_buffer); res.limit((limit()*2)/2); return res; }
+  private static native void nio_put_Byte (CharBufferImpl b, int index, int limit, byte value);
 
-  CharBufferImpl(short[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native short nio_get_Short(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Short(CharBufferImpl b, int index, int limit, short value);
-  public ShortBuffer asShortBuffer() { ShortBufferImpl res = new ShortBufferImpl(backing_buffer); res.limit((limit()*2)/2); return res; }
-
-  CharBufferImpl(int[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native int nio_get_Int(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Int(CharBufferImpl b, int index, int limit, int value);
-  public IntBuffer asIntBuffer() { IntBufferImpl res = new IntBufferImpl(backing_buffer); res.limit((limit()*4)/2); return res; }
-
-  CharBufferImpl(long[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native long nio_get_Long(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Long(CharBufferImpl b, int index, int limit, long value);
-  public LongBuffer asLongBuffer() { LongBufferImpl res = new LongBufferImpl(backing_buffer); res.limit((limit()*8)/2); return res; }
-
-  CharBufferImpl(float[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native float nio_get_Float(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Float(CharBufferImpl b, int index, int limit, float value);
-  public FloatBuffer asFloatBuffer() { FloatBufferImpl res = new FloatBufferImpl(backing_buffer); res.limit((limit()*4)/2); return res; }
-
-  CharBufferImpl(double[] copy) { this.backing_buffer = copy != null ? nio_cast(copy) : null; }
-  private static native double nio_get_Double(CharBufferImpl b, int index, int limit);
-  private static native void nio_put_Double(CharBufferImpl b, int index, int limit, double value);
-  public DoubleBuffer asDoubleBuffer() { DoubleBufferImpl res = new DoubleBufferImpl(backing_buffer); res.limit((limit()*8)/2); return res; }
-  
-  private static native char[] nio_cast(byte[]copy);
-  private static native char[] nio_cast(char[]copy);
-  private static native char[] nio_cast(short[]copy);
-  private static native char[] nio_cast(long[]copy);
-  private static native char[] nio_cast(int[]copy);
-  private static native char[] nio_cast(float[]copy);
-  private static native char[] nio_cast(double[]copy);
+  public ByteBuffer asByteBuffer ()
+  {
+    ByteBufferImpl res = new ByteBufferImpl (backing_buffer);
+    res.limit ((limit () * 1) / 2);
+    return res;
+  }
 
   
   public boolean isReadOnly()
   {
-    return ro;
+    return readOnly;
   }
   
   public CharBuffer slice()
   {
-    CharBufferImpl buffer = new CharBufferImpl (this);
-    buffer.array_offset = position ();
-    return buffer;
+    return new CharBufferImpl (this);
   }
   
   public CharBuffer duplicate()
@@ -144,9 +108,9 @@ public final class CharBufferImpl extends CharBuffer
   
   public CharBuffer asReadOnlyBuffer()
   {
-    CharBufferImpl a = new CharBufferImpl(this);
-    a.ro = true;
-    return a;
+    CharBufferImpl result = new CharBufferImpl (this);
+    result.readOnly = true;
+    return result;
   }
   
   public CharBuffer compact()
@@ -156,7 +120,7 @@ public final class CharBufferImpl extends CharBuffer
   
   public boolean isDirect()
   {
-    return backing_buffer != null;
+    return false;
   }
 
   final public CharSequence subSequence (int start, int end)
@@ -172,6 +136,9 @@ public final class CharBufferImpl extends CharBuffer
                                position () + end);
   }
   
+  /**
+   * Relative get method. Reads the next character from the buffer.
+   */
   final public char get()
   {
     char e = backing_buffer[position()];
@@ -179,27 +146,54 @@ public final class CharBufferImpl extends CharBuffer
     return e;
   }
   
+  /**
+   * Relative put method. Writes <code>value</code> to the next position
+   * in the buffer.
+   * 
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
   final public CharBuffer put(char b)
   {
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+    
     backing_buffer[position()] = b;
     position(position()+1);
     return this;
   }
-  
-  final public char getChar() { return get(); } final public CharBuffer putChar(char value) { return put(value); } final public char getChar(int index) { return get(index); } final public CharBuffer putChar(int index, char value) { return put(index, value); };
-  final public short getShort() { short a = nio_get_Short(this, position(), limit()); inc_pos(2); return a; } final public CharBuffer putShort(short value) { nio_put_Short(this, position(), limit(), value); inc_pos(2); return this; } final public short getShort(int index) { short a = nio_get_Short(this, index, limit()); return a; } final public CharBuffer putShort(int index, short value) { nio_put_Short(this, index, limit(), value); return this; };
-  final public int getInt() { int a = nio_get_Int(this, position(), limit()); inc_pos(4); return a; } final public CharBuffer putInt(int value) { nio_put_Int(this, position(), limit(), value); inc_pos(4); return this; } final public int getInt(int index) { int a = nio_get_Int(this, index, limit()); return a; } final public CharBuffer putInt(int index, int value) { nio_put_Int(this, index, limit(), value); return this; };
-  final public long getLong() { long a = nio_get_Long(this, position(), limit()); inc_pos(8); return a; } final public CharBuffer putLong(long value) { nio_put_Long(this, position(), limit(), value); inc_pos(8); return this; } final public long getLong(int index) { long a = nio_get_Long(this, index, limit()); return a; } final public CharBuffer putLong(int index, long value) { nio_put_Long(this, index, limit(), value); return this; };
-  final public float getFloat() { float a = nio_get_Float(this, position(), limit()); inc_pos(4); return a; } final public CharBuffer putFloat(float value) { nio_put_Float(this, position(), limit(), value); inc_pos(4); return this; } final public float getFloat(int index) { float a = nio_get_Float(this, index, limit()); return a; } final public CharBuffer putFloat(int index, float value) { nio_put_Float(this, index, limit(), value); return this; };
-  final public double getDouble() { double a = nio_get_Double(this, position(), limit()); inc_pos(8); return a; } final public CharBuffer putDouble(double value) { nio_put_Double(this, position(), limit(), value); inc_pos(8); return this; } final public double getDouble(int index) { double a = nio_get_Double(this, index, limit()); return a; } final public CharBuffer putDouble(int index, double value) { nio_put_Double(this, index, limit(), value); return this; };
 
+  /**
+   * Absolute get method. Reads the character at position <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
   final public char get(int index)
   {
+    if (index < 0
+        || index >= limit ())
+      throw new IndexOutOfBoundsException ();
+    
     return backing_buffer[index];
   }
   
+  /**
+   * Absolute put method. Writes <code>value</value> to position
+   * <code>index</code> in the buffer.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
   final public CharBuffer put(int index, char b)
   {
+    if (index < 0
+        || index >= limit ())
+      throw new IndexOutOfBoundsException ();
+    
+    if (readOnly)
+      throw new ReadOnlyBufferException ();
+    
     backing_buffer[index] = b;
     return this;
   }
@@ -207,6 +201,6 @@ public final class CharBufferImpl extends CharBuffer
 
   public final ByteOrder order()
   {
-    return endian;
+    return ByteOrder.BIG_ENDIAN;
   }
 }
