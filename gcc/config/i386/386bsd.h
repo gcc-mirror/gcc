@@ -3,7 +3,7 @@
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
-#include "i386gstabs.h"
+#include "i386/gstabs.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D____386BSD____ -D__386BSD__ -DBSD_NET2"
