@@ -1,3 +1,7 @@
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: Fix comment typos.
+
 2004-02-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/t-iris6gld: Renamed to ...
