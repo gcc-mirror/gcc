@@ -1,3 +1,10 @@
+Wed Apr  5 09:44:07 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* basic-block.h (verify_flow_info): Declare.
+	(flow_loop_outside_edge_p): Declare.
+	* flow.c (verify_flow_info): Remove declaration.
+	(clear_log_links, flow_loop_outside_edge_p): Likewise.
+
 Wed Apr  5 09:34:26 2000  Philippe De Muyter <phdm@macqel.be>
 
 	* m68k/m68k-protos.h (finalize_pic): Turn prototype off using `#if 0',
