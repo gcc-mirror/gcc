@@ -4016,6 +4016,19 @@ expand_decl_cleanup (decl, cleanup)
   return 1;
 }
 
+/* Like expand_decl_cleanup, but suppress generating an exception handler
+   to perform the cleanup.  */
+
+int
+expand_decl_cleanup_no_eh (decl, cleanup)
+     tree decl, cleanup;
+{
+  int save_eh = using_eh_for_cleanups_p;
+  using_eh_for_cleanups_p = 0;
+  expand_decl_cleanup (decl, cleanup);
+  using_eh_for_cleanups_p = save_eh;
+}
+
 /* Arrange for the top element of the dynamic cleanup chain to be
    popped if we exit the current binding contour.  DECL is the
    associated declaration, if any, otherwise NULL_TREE.  If the
