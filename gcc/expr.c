@@ -9759,7 +9759,7 @@ expand_builtin_apply (function, arguments, argsize)
   /* Restore the stack.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    emit_stack_restore (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+    emit_stack_restore (SAVE_NONLOCAL, old_stack_level, NULL_RTX);
   else
 #endif
     emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
