@@ -43,7 +43,6 @@ static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
 static cp_lvalue_kind lvalue_p_1 (tree, int);
 static tree mark_local_for_remap_r (tree *, int *, void *);
-static tree cp_unsave_r (tree *, int *, void *);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -2169,65 +2168,6 @@ mark_local_for_remap_r (tree* tp,
     }
 
   return NULL_TREE;
-}
-
-/* Called via walk_tree when an expression is unsaved.  Using the
-   splay_tree pointed to by ST (which is really a `splay_tree'),
-   remaps all local declarations to appropriate replacements.  */
-
-static tree
-cp_unsave_r (tree* tp,
-             int* walk_subtrees,
-             void* data)
-{
-  splay_tree st = (splay_tree) data;
-  splay_tree_node n;
-
-  /* Only a local declaration (variable or label).  */
-  if (nonstatic_local_decl_p (*tp))
-    {
-      /* Lookup the declaration.  */
-      n = splay_tree_lookup (st, (splay_tree_key) *tp);
-
-      /* If it's there, remap it.  */
-      if (n)
-	*tp = (tree) n->value;
-    }
-  else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, st, walk_subtrees);
-  else
-    {
-      copy_tree_r (tp, walk_subtrees, NULL);
-
-      /* Do whatever unsaving is required.  */
-      unsave_expr_1 (*tp);
-    }
-
-  /* Keep iterating.  */
-  return NULL_TREE;
-}
-
-/* Called whenever an expression needs to be unsaved.  */
-
-tree
-cxx_unsave_expr_now (tree tp)
-{
-  splay_tree st;
-
-  /* Create a splay-tree to map old local variable declarations to new
-     ones.  */
-  st = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
-
-  /* Walk the tree once figuring out what needs to be remapped.  */
-  walk_tree (&tp, mark_local_for_remap_r, st, NULL);
-
-  /* Walk the tree again, copying, remapping, and unsaving.  */
-  walk_tree (&tp, cp_unsave_r, st, NULL);
-
-  /* Clean up.  */
-  splay_tree_delete (st);
-
-  return tp;
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)

@@ -135,6 +135,7 @@ static void remap_block (tree *, inline_data *);
 static tree remap_decls (tree, inline_data *);
 static void copy_bind_expr (tree *, int *, inline_data *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
+static void unsave_expr_1 (tree);
 static tree unsave_r (tree *, int *, void *);
 static void declare_inline_vars (tree bind_expr, tree vars);
 
@@ -2370,6 +2371,31 @@ mark_local_for_remap_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Perform any modifications to EXPR required when it is unsaved.  Does
+   not recurse into EXPR's subtrees.  */
+
+static void
+unsave_expr_1 (tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case TARGET_EXPR:
+      /* Don't mess with a TARGET_EXPR that hasn't been expanded.
+         It's OK for this to happen if it was part of a subtree that
+         isn't immediately expanded, such as operand 2 of another
+         TARGET_EXPR.  */
+      if (TREE_OPERAND (expr, 1))
+	break;
+
+      TREE_OPERAND (expr, 1) = TREE_OPERAND (expr, 3);
+      TREE_OPERAND (expr, 3) = NULL_TREE;
+      break;
+
+    default:
+      break;
+    }
+}
+
 /* Called via walk_tree when an expression is unsaved.  Using the
    splay_tree pointed to by ST (which is really a `splay_tree'),
    remaps all local declarations to appropriate replacements.  */
@@ -2411,11 +2437,11 @@ unsave_r (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* Default lang hook for "unsave_expr_now".  Copies everything in EXPR and
-   replaces variables, labels and SAVE_EXPRs local to EXPR.  */
+/* Copies everything in EXPR and replaces variables, labels
+   and SAVE_EXPRs local to EXPR.  */
 
 tree
-lhd_unsave_expr_now (tree expr)
+unsave_expr_now (tree expr)
 {
   inline_data id;
 

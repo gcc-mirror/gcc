@@ -1,3 +1,9 @@
+2004-08-19  Eric Christopher  <echristo@redhat.com>
+
+	* cp-tree.h (cxx_unsave_expr_now): Delete prototype.
+	* tree.c (cxx_unsave_expr_now): Delete.
+	(cp_unsave_r): Ditto.
+
 2004-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15890
@@ -16,7 +22,7 @@
 	* decl.c (finish_enum): Do not copy value node early, copy
 	later.
 	* lex.c (cxx_init): Force null_node to be unique.
-	
+
 2004-08-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c++/17041
@@ -191,7 +197,7 @@
 	PR c++/16929
 	* pt.c (tsubst_default_argument): Clear out current_class_ptr and
 	current_class_ref while tsubsting.
-	
+
 2004-08-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16971
@@ -415,7 +421,7 @@
 	static_dtors to ...
 	(expand_or_defer_fn): ... here.
 	* tree.c (no_linkage_check): Add relaxed_p parameter.
-	
+
 2004-07-28  Eric Christopher  <echristo@redhat.com>
 
 	* cp-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.

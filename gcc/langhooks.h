@@ -305,11 +305,6 @@ struct lang_hooks
      DECL_NODE with a newly GC-allocated copy.  */
   void (*dup_lang_specific_decl) (tree);
 
-  /* Reset argument so that it can be expanded again.
-     Modify it in-place so that all the evaluate only once
-     things are cleared out.  */
-  tree (*unsave_expr_now) (tree);
-
   /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of
      thing that the assembler should talk about, set
      DECL_ASSEMBLER_NAME to an appropriate IDENTIFIER_NODE.

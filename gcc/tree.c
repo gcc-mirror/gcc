@@ -433,7 +433,7 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 
   if (!type)
     type = integer_type_node;
-  
+
   switch (TREE_CODE (type))
     {
     case POINTER_TYPE:
@@ -445,14 +445,14 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 	  ix = 0;
 	}
       break;
-      
+
     case BOOLEAN_TYPE:
       /* Cache false or true.  */
       limit = 2;
       if (!hi && low < 2)
 	ix = low;
       break;
-      
+
     case INTEGER_TYPE:
     case CHAR_TYPE:
     case OFFSET_TYPE:
@@ -476,7 +476,7 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
     default:
       break;
     }
-  
+
   if (ix >= 0)
     {
       if (!TYPE_CACHED_VALUES_P (type))
@@ -484,7 +484,7 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 	  TYPE_CACHED_VALUES_P (type) = 1;
 	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
 	}
-      
+
       t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
       if (t)
 	{
@@ -496,7 +496,7 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 	  return t;
 	}
     }
-  
+
   t = make_node (INTEGER_CST);
 
   TREE_INT_CST_LOW (t) = low;
@@ -505,7 +505,7 @@ build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 
   if (ix >= 0)
     TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
-  
+
   return t;
 }
 
@@ -1562,31 +1562,6 @@ tree_node_structure (tree t)
 
     default:
       abort ();
-    }
-}
-
-/* Perform any modifications to EXPR required when it is unsaved.  Does
-   not recurse into EXPR's subtrees.  */
-
-void
-unsave_expr_1 (tree expr)
-{
-  switch (TREE_CODE (expr))
-    {
-    case TARGET_EXPR:
-      /* Don't mess with a TARGET_EXPR that hasn't been expanded.
-         It's OK for this to happen if it was part of a subtree that
-         isn't immediately expanded, such as operand 2 of another
-         TARGET_EXPR.  */
-      if (TREE_OPERAND (expr, 1))
-	break;
-
-      TREE_OPERAND (expr, 1) = TREE_OPERAND (expr, 3);
-      TREE_OPERAND (expr, 3) = NULL_TREE;
-      break;
-
-    default:
-      break;
     }
 }
 
