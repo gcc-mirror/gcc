@@ -1,5 +1,10 @@
 2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* interpret.cc (_Jv_InterpMethod::run): Use UINT32 instead of
+	unsigned long temporary to implement insn_iushr shifts.
+
+2002-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* configure.host [s390*-*]: Enable Java interpreter.
 	Enable hash synchronization.  Add sysdeps dir.
 	* sysdep/s390/locks.h: New file.

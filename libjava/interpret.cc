@@ -1883,7 +1883,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_iushr:
       {
 	jint shift = (POPI() & 0x1f);
-	unsigned long value = POPI();
+	UINT32 value = (UINT32) POPI();
 	PUSHI ((jint) (value >> shift));
       }
       NEXT_INSN;
