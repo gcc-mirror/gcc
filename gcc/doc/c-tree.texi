@@ -2091,7 +2091,10 @@ These nodes represent array accesses.  The first operand is the array;
 the second is the index.  To calculate the address of the memory
 accessed, you must scale the index by the size of the type of the array
 elements.  The type of these expressions must be the type of a component of
-the array.
+the array.  The third and fourth operands are used after gimplification
+to represent the lower bound and component size but should not be used
+directly; call @code{array_ref_low_bound} and @code{array_ref_element_size}
+instead.
 
 @item ARRAY_RANGE_REF
 These nodes represent access to a range (or ``slice'') of an array.  The
@@ -2166,7 +2169,9 @@ variable is initialized, rather than assigned to subsequently.
 @item COMPONENT_REF
 These nodes represent non-static data member accesses.  The first
 operand is the object (rather than a pointer to it); the second operand
-is the @code{FIELD_DECL} for the data member.
+is the @code{FIELD_DECL} for the data member.  The third operand represents
+the byte offset of the field, but should not be used directly; call 
+@code{component_ref_field_offset} instead.
 
 @item COMPOUND_EXPR
 These nodes represent comma-expressions.  The first operand is an
