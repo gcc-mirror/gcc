@@ -1,3 +1,8 @@
+2005-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary (keywordFilter): Update sed pattern for new quoting
+	style in warnings.
+
 2005-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary: Add -fortran subdir flag.
