@@ -1,3 +1,8 @@
+2003-09-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*tstsi_variable_bit): New.
+	(*tstsi_variable_bit_qi): Likewise.
+
 2003-09-28  Phil Edwards  <phil@codesourcery.com>
 
 	* doc/cppopts.texi:  Use 'dashMP' instead of '-MP' as a cross-
