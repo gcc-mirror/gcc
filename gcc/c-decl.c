@@ -5661,7 +5661,7 @@ int
 start_function (tree declspecs, tree declarator, tree attributes)
 {
   tree decl1, old_decl;
-  tree restype;
+  tree restype, resdecl;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -5857,8 +5857,11 @@ start_function (tree declspecs, tree declarator, tree attributes)
       else
 	restype = integer_type_node;
     }
-  DECL_RESULT (current_function_decl)
-    = build_decl (RESULT_DECL, NULL_TREE, restype);
+
+  resdecl = build_decl (RESULT_DECL, NULL_TREE, restype);
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (current_function_decl) = resdecl;
 
   start_fname_decls ();
 

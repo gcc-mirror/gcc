@@ -141,6 +141,11 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
 	}
     }
 
+  /* Don't generate debug information for the copy if we wouldn't have
+     generated it for the copy either.  */
+  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (decl);
+  DECL_IGNORED_P (copy) = DECL_IGNORED_P (decl);
+
   /* Set the DECL_ABSTRACT_ORIGIN so the debugging routines know what
      declaration inspired this copy.  */
   DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);

@@ -1796,7 +1796,7 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 {
   static int counter = 0;
   char which_buf[16];
-  tree decl, name;
+  tree decl, name, resdecl;
 
   sprintf (which_buf, "%c_%d", which, counter++);
   name = get_file_function_name_long (which_buf);
@@ -1805,7 +1805,11 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 		     build_function_type (void_type_node, void_list_node));
   current_function_decl = decl;
 
-  DECL_RESULT (decl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  resdecl = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (decl) = resdecl;
+
   allocate_struct_function (decl);
 
   TREE_STATIC (decl) = 1;

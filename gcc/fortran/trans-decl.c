@@ -1030,6 +1030,8 @@ gfc_build_function_decl (gfc_symbol * sym)
     }
 
   result_decl = build_decl (RESULT_DECL, result_decl, type);
+  DECL_ARTIFICIAL (result_decl) = 1;
+  DECL_IGNORED_P (result_decl) = 1;
   DECL_CONTEXT (result_decl) = fndecl;
   DECL_RESULT (fndecl) = result_decl;
 
@@ -2124,6 +2126,8 @@ gfc_generate_constructors (void)
   TREE_PUBLIC (fndecl) = 1;
 
   decl = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
   DECL_CONTEXT (decl) = fndecl;
   DECL_RESULT (fndecl) = decl;
 

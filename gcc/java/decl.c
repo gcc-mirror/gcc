@@ -1804,6 +1804,8 @@ build_result_decl (tree fndecl)
 	  && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
 	restype = integer_type_node;
       result = build_decl (RESULT_DECL, NULL_TREE, restype);
+      DECL_ARTIFICIAL (result) = 1;
+      DECL_IGNORED_P (result) = 1;
       DECL_CONTEXT (result) = fndecl;
       DECL_RESULT (fndecl) = result;
     }
