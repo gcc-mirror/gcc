@@ -95,7 +95,15 @@ extern const struct floatformat floatformat_i387_ext;
 extern const struct floatformat floatformat_m68881_ext;
 extern const struct floatformat floatformat_i960_ext;
 extern const struct floatformat floatformat_m88110_ext;
-extern const struct floatformat floatformat_arm_ext;
+extern const struct floatformat floatformat_m88110_harris_ext;
+extern const struct floatformat floatformat_arm_ext; /* deprecated. */
+extern const struct floatformat floatformat_arm_ext_big;
+extern const struct floatformat floatformat_arm_ext_littlebyte_bigword;
+/* IA-64 Floating Point register spilt into memory.  */
+extern const struct floatformat floatformat_ia64_spill_big;
+extern const struct floatformat floatformat_ia64_spill_little;
+extern const struct floatformat floatformat_ia64_quad_big;
+extern const struct floatformat floatformat_ia64_quad_little;
 
 /* Convert from FMT to a double.
    FROM is the address of the extended float.
