@@ -573,9 +573,17 @@ int main(int argc, char **argv){
     
     create_central_header(jarfd);
 
+#if ! (HAVE_FTRUNCATE || HAVE__CHSIZE)
+  #error neither ftruncate() or _chsize() available
+#endif
     /* Check if the file shrunk when we updated it. */
     if (action == ACTION_UPDATE)
+#if HAVE_FTRUNCATE
       ftruncate (jarfd, lseek (jarfd, 0, SEEK_CUR));
+#endif
+#if HAVE__CHSIZE
+      _chsize (jarfd, lseek (jarfd, 0, SEEK_CUR));
+#endif
 
     if (jarfd != STDIN_FILENO && close(jarfd) != 0) {
       fprintf(stderr, "%s: error closing jar archive: %s\n",
