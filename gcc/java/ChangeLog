@@ -1,3 +1,9 @@
+2000-04-05  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.h (THIS_MODIFIER_ONLY): Changed meaning of `v' parameter.
+	* parse.y (check_modifiers_consistency): Check for final/volatile
+	clash.  Fixes PR gcj/164.
+
 2000-04-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c: (java_hash_hash_tree_node): Renamed from `decl_hash',

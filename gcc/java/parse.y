@@ -4570,12 +4570,22 @@ check_modifiers_consistency (flags)
   int acc_count = 0;
   tree cl = NULL_TREE;
 
-  THIS_MODIFIER_ONLY (flags, ACC_PUBLIC, 0, acc_count, cl);
-  THIS_MODIFIER_ONLY (flags, ACC_PRIVATE, 1, acc_count, cl);
-  THIS_MODIFIER_ONLY (flags, ACC_PROTECTED, 2, acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_PUBLIC, PUBLIC_TK, acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_PRIVATE, PRIVATE_TK, acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_PROTECTED, PROTECTED_TK, acc_count, cl);
   if (acc_count > 1)
     parse_error_context
-      (cl, "Inconsistent member declaration. At most one of `public', `private', or `protected' may be specified");
+      (cl, "Inconsistent member declaration.  At most one of `public', `private', or `protected' may be specified");
+
+  acc_count = 0;
+  cl = NULL_TREE;
+  THIS_MODIFIER_ONLY (flags, ACC_FINAL, FINAL_TK - PUBLIC_TK,
+		      acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_VOLATILE, VOLATILE_TK - PUBLIC_TK,
+		      acc_count, cl);
+  if (acc_count > 1)
+    parse_error_context (cl,
+			 "Inconsistent member declaration.  At most one of `final' or `volatile' may be specified");
 }
 
 /* Check the methode header METH for abstract specifics features */

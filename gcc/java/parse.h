@@ -89,7 +89,7 @@ extern tree stabilize_reference PARAMS ((tree));
 #define THIS_MODIFIER_ONLY(f, m, v, count, l)				\
   if ((f) & (m))							\
     {									\
-      tree node = ctxp->modifier_ctx [v];				\
+      tree node = MODIFIER_WFL (v);					\
       if ((l)								\
 	  && ((EXPR_WFL_COLNO (node) > EXPR_WFL_COLNO (l))		\
 	      || (EXPR_WFL_LINENO (node) > EXPR_WFL_LINENO (l))))	\
