@@ -2290,8 +2290,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       tree phi;
-      int phi_num_args;
-      int hint;
+      int index;
 
       /* If this is an abnormal edge, then we do not want to copy propagate
 	 into the PHI alternative associated with this edge.  */
@@ -2302,46 +2301,16 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
       if (! phi)
 	continue;
 
-      /* There is no guarantee that for any two PHI nodes in a block that
-	 the phi alternative associated with a particular edge will be
-	 at the same index in the phi alternative array.
-
-	 However, it is very likely they will be the same.  So we keep
-	 track of the index of the alternative where we found the edge in
-	 the previous phi node and check that index first in the next
-	 phi node.  If that hint fails, then we actually search all
-	 the entries.  */
-      phi_num_args = PHI_NUM_ARGS (phi);
-      hint = phi_num_args;
+      index = e->dest_idx;
       for ( ; phi; phi = PHI_CHAIN (phi))
 	{
-	  int i;
 	  tree new;
 	  use_operand_p orig_p;
 	  tree orig;
 
-	  /* If the hint is valid (!= phi_num_args), see if it points
-	     us to the desired phi alternative.  */
-	  if (hint != phi_num_args && PHI_ARG_EDGE (phi, hint) == e)
-	    ;
-	  else
-	    {
-	      /* The hint was either invalid or did not point to the
-		 correct phi alternative.  Search all the alternatives
-		 for the correct one.  Update the hint.  */
-	      for (i = 0; i < phi_num_args; i++)
-		if (PHI_ARG_EDGE (phi, i) == e)
-		  break;
-	      hint = i;
-	    }
-
-	  /* If we did not find the proper alternative, then something is
-	     horribly wrong.  */
-	  gcc_assert (hint != phi_num_args);
-
 	  /* The alternative may be associated with a constant, so verify
 	     it is an SSA_NAME before doing anything with it.  */
-	  orig_p = PHI_ARG_DEF_PTR (phi, hint);
+	  orig_p = PHI_ARG_DEF_PTR (phi, index);
 	  orig = USE_FROM_PTR (orig_p);
 	  if (TREE_CODE (orig) != SSA_NAME)
 	    continue;
@@ -2349,7 +2318,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 	  /* If the alternative is known to have a nonzero value, record
 	     that fact in the PHI node itself for future use.  */
 	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (orig)))
-	    PHI_ARG_NONZERO (phi, hint) = true;
+	    PHI_ARG_NONZERO (phi, index) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
