@@ -1,3 +1,11 @@
+/* h8300 does not have long long */
+/* PowerPC-64 doesn't handle this; see PR target/9680 */
+/* { dg-do assemble { xfail h8300-*-* powerpc64-*-* } } */
+/* On SPARC64/SPARC-V9 it fails, except with -m32. */
+/* { dg-xfail-if "PR target/9200" { "sparc64-*-*" "sparcv9-*-*" } { "*" } { "-m32" } } */
+/* On regular SPARC it doesn't fail, except with -m64. */
+/* { dg-xfail-if "PR target/9200" { "sparc*-*-*" } { "-m64" } { "" } } */
+
 #define vector64 __attribute__((vector_size(8)))
 
 main(){

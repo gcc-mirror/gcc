@@ -1,3 +1,7 @@
+/* The structure is too large for the xstormy16 - won't fit in 16
+   bits.  */
+/* { dg-do assemble { xfail xstormy16-*-* h8300-*-* m6811-*-* m6812-*-* } } */
+
 struct s {
   char a[0x32100000];
   int x:30, y:30;
