@@ -141,6 +141,7 @@ static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
 static void output_constructor		PROTO((tree, int));
+static void remove_from_pending_weak_list	PROTO ((char *));
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PROTO((FILE *, tree, char *, int, int));
 #endif
@@ -1012,7 +1013,13 @@ assemble_start_function (decl, fnname)
 
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, fnname);
+	{
+	  ASM_WEAKEN_LABEL (asm_out_file, fnname);
+	  /* Remove this function from the pending weak list so that
+	     we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
@@ -1445,8 +1452,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
 #ifdef ASM_WEAKEN_LABEL
-      if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, name);
+      if (DECL_WEAK (decl)) 
+	{
+	  ASM_WEAKEN_LABEL (asm_out_file, name);
+	   /* Remove this variable from the pending weak list so that
+	      we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, name);
@@ -4351,9 +4364,32 @@ weak_finish ()
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
-	  if (t->value)
-	    ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
+	  if (t->name)
+	    {
+	      ASM_WEAKEN_LABEL (asm_out_file, t->name);
+	      if (t->value)
+		ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
+	    }
+	}
+    }
+#endif
+}
+
+/* Remove NAME from the pending list of weak symbols.  This prevents
+   the compiler from emitting multiple .weak directives which confuses
+   some assemblers.  */
+static void
+remove_from_pending_weak_list (name)
+     char *name;
+{
+#ifdef HANDLE_PRAGMA_WEAK
+  if (HANDLE_PRAGMA_WEAK)
+    {
+      struct weak_syms *t;
+      for (t = weak_decls; t; t = t->next)
+	{
+	  if (strcmp (name, t->name) == 0)
+	    t->name = NULL;
 	}
     }
 #endif
@@ -4375,7 +4411,13 @@ assemble_alias (decl, target)
     {
 #ifdef ASM_WEAKEN_LABEL
       if (DECL_WEAK (decl))
-	ASM_WEAKEN_LABEL (asm_out_file, name);
+ 	{
+	  ASM_WEAKEN_LABEL (asm_out_file, name);
+	  /* Remove this function from the pending weak list so that
+	     we do not emit multiple .weak directives for it.  */
+	  remove_from_pending_weak_list
+	    (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
       else
 #endif
 	ASM_GLOBALIZE_LABEL (asm_out_file, name);
