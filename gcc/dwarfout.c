@@ -578,9 +578,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 
-/* IMPORTANT NOTE: Please see the file README.DWARF for important details
-   regarding the GNU implementation of Dwarf.  */
-
 /* NOTE: In the comments in this file, many references are made to
    so called "Debugging Information Entries".  For the sake of brevity,
    this term is abbreviated to `DIE' throughout the remainder of this

@@ -1,3 +1,7 @@
+2001-08-01  Robert Lipe  <robertl@caldera.com>
+
+	* dwarfout.c: Remove reference to README.DWARF.
+
 2001-08-01  Richard Henderson  <rth@redhat.com>
 
 	* rtl.c (read_name): Consider \r whitespace.
