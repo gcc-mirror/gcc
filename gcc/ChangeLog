@@ -1,3 +1,8 @@
+2002-02-06  Richard Henderson  <rth@redhat.com>
+
+	* cfganal.c (keep_with_call_p): Source for fixed_reg dest must
+	be a general_operand.  Dest for function value must be a pseudo.
+
 2002-02-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* dbxout.c (dbxout_symbol_location): Accept LABEL_REFs as well
