@@ -1,3 +1,9 @@
+2004-01-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (scan_record_type): New function.
+	(function_arg_slotno): Use it to determine which kinds of
+	registers the record can be passed in.
+
 2004-01-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac (enable_werror): Fixed typo.
