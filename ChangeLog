@@ -1,3 +1,9 @@
+2004-12-07  Matt Kraai  <kraai@ftbfs.org>
+
+	* Makefile.tpl: Generate normal dependencies if the LHS module is
+	not bootstrapped.
+	* Makefile.in: Regenerate.
+
 2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.in: Include config/gxx-include-dir.m4.  Use
