@@ -478,7 +478,8 @@ in the following sections.
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
--mfix-r4000  -mno-fix-r4000  -mfix-sb1  -mno-fix-sb1 @gol
+-mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
+-mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-likely  -mno-branch-likely}
 
@@ -8075,6 +8076,20 @@ immediately after starting an integer division.
 @item
 A double-word or a variable shift may give an incorrect result if executed
 while an integer multiplication is in progress.
+@item
+An integer division may give an incorrect result if started in a delay slot
+of a taken branch or a jump.
+@end itemize
+
+@item -mfix-r4400
+@itemx -mno-fix-r4400
+@opindex mfix-r4400
+@opindex mno-fix-r4400
+Work around certain R4400 CPU errata:
+@itemize @minus
+@item
+A double-word or a variable shift may give an incorrect result if executed
+immediately after starting an integer division.
 @end itemize
 
 @item -mfix-sb1
