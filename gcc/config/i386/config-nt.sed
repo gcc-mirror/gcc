@@ -18,7 +18,7 @@ out_object_file=i386.obj
 /^md_file/ c\
 md_file=config/i386/i386.md
 /^tm_file/ c\
-tm_file=config/i386/winnt.h
+tm_file=config/i386/win-nt.h
 /^build_xm_file/ c\
 build_xm_file=config/i386/xm-winnt.h
 /^host_xm_file/ c\
