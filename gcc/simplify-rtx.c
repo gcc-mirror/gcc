@@ -2826,7 +2826,7 @@ simplify_relational_operation (enum rtx_code code,
 	{
 	  if (tmp == const0_rtx)
 	    return CONST0_RTX (mode);
-	  return CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALE (mode),
+	  return CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE (mode),
 					       mode);
 	}
 #endif
