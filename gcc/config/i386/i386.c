@@ -1061,9 +1061,9 @@ const struct attribute_spec ix86_attribute_table[] =
      passed in registers.  */
   { "regparm",   1, 1, false, true,  true,  ix86_handle_regparm_attribute },
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 1, 1, false, false, false, ix86_handle_dll_attribute },
-  { "dllexport", 1, 1, false, false, false, ix86_handle_dll_attribute },
-  { "shared",    1, 1, true,  false, false, ix86_handle_shared_attribute },
+  { "dllimport", 0, 0, false, false, false, ix86_handle_dll_attribute },
+  { "dllexport", 0, 0, false, false, false, ix86_handle_dll_attribute },
+  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
 #endif
   { NULL,        0, 0, false, false, false, NULL }
 };
