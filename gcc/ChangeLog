@@ -1,3 +1,9 @@
+Tue Mar 30 13:19:36 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* libgcc2.c (throw_helper): Just return the SP offset, rather than
+	a whole udata.  Include args_size in the offset.
+	(__throw, __rethrow): Adjust.
+
 Tue Mar 30 11:39:27 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* extend.texi (Extended Asm): Delete spurious `b' before
