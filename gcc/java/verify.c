@@ -734,8 +734,8 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
         handlers.  */
 	prev_eh_ranges = NULL_EH_RANGE;
 
-	/* Allocate decl and rtx for this variable now, so if we're not
-	   optimizing, we get a temporary that survives the whole method.  */
+	/* Allocate decl for this variable now, so we get a temporary
+! 	   that survives the whole method. */
 	find_local_variable (index, type, oldpc);
 
         if (TYPE_IS_WIDE (type))

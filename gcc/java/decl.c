@@ -57,7 +57,6 @@ static tree lookup_name_current_level (tree);
 static tree push_promoted_type (const char *, tree);
 static struct binding_level *make_binding_level (void);
 static tree create_primitive_vtable (const char *);
-static tree check_local_named_variable (tree, tree, int, int *);
 static tree check_local_unnamed_variable (tree, tree, tree);
 
 /* Name of the Cloneable class.  */
@@ -76,13 +75,19 @@ tree java_io_serializable_identifier_node;
 
 static GTY(()) tree decl_map;
 
+/* The base_decl_map is contains one variable of ptr_type: this is
+   used to contain every variable of reference type that is ever
+   stored in a local variable slot.  */
+
+static GTY(()) tree base_decl_map;
+
+/* An index used to make temporary identifiers unique.  */
+static int uniq;
+
 /* A list of local variables VAR_DECLs for this method that we have seen
    debug information, but we have not reached their starting (byte) PC yet. */
 
 static GTY(()) tree pending_local_decls;
-
-/* Push a local variable or stack slot into the decl_map,
-   and assign it an rtl. */
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
 int binding_depth = 0;
@@ -99,50 +104,66 @@ indent (void)
 }
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
-/* Copy the value in decl into every alias in the same local variable
-   slot.  */
-void 
-update_aliases (tree decl, int index)
+/* True if decl is a named local variable, i.e. if it is an alias
+   that's used only for debugging purposes.  */
+
+static bool
+debug_variable_p (tree decl)
 {
-  tree tmp = TREE_VEC_ELT (decl_map, index);
-  tree type = TREE_TYPE (decl);
-  while (tmp != NULL_TREE)
+  if (TREE_CODE (decl) == PARM_DECL)
+    return false;
+
+  if (LOCAL_SLOT_P (decl))
+    return false;
+
+  return true;
+}
+ 
+/* Copy the value in decl into every live alias in the same local
+   variable slot.  Some of these will be dead stores removed by the
+   optimizer.  */
+
+void 
+update_aliases (tree decl, int index, int pc)
+{
+  tree decl_type = TREE_TYPE (decl);
+  tree tmp;
+
+  if (debug_variable_p (decl))
+    abort ();
+
+  for (tmp = TREE_VEC_ELT (decl_map, index); 
+       tmp != NULL_TREE; 
+       tmp = DECL_LOCAL_SLOT_CHAIN (tmp))
     {
+      tree tmp_type = TREE_TYPE (tmp);
       if (tmp != decl
-	  && ! LOCAL_VAR_OUT_OF_SCOPE_P (tmp)
-	  && TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
+	  && LOCAL_SLOT_P (tmp) == 0
+	  && (pc == -1
+	      || (pc >= DECL_LOCAL_START_PC (tmp)
+		  && pc <= DECL_LOCAL_END_PC (tmp)))
+	  && (tmp_type == decl_type
+	      || (INTEGRAL_TYPE_P (tmp_type)
+		  && INTEGRAL_TYPE_P (decl_type)
+		  && TYPE_PRECISION (decl_type) <= 32
+		  && TYPE_PRECISION (tmp_type) <= 32)
+	      || (TREE_CODE (tmp_type) == POINTER_TYPE
+		  && TREE_CODE (decl_type) == POINTER_TYPE)))
 	{
-	  tree src = build1 (NOP_EXPR, TREE_TYPE (tmp), decl);
-	  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (tmp), tmp, src));
+	  tree src = build1 (NOP_EXPR, tmp_type, decl);
+	  if (LOCAL_VAR_OUT_OF_SCOPE_P (tmp))
+	    abort ();
+	  java_add_stmt 
+	    (build (MODIFY_EXPR, tmp_type, tmp, src));
 	}
-      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);      
     }
 }
 
 static tree
 push_jvm_slot (int index, tree decl)
 {
-  tree type = TREE_TYPE (decl);
-  tree tmp;
-
   DECL_CONTEXT (decl) = current_function_decl;
   layout_decl (decl, 0);
-
-  /* Look for another variable of the same mode in this slot.  */ 
-  tmp = TREE_VEC_ELT (decl_map, index);
-  while (tmp != NULL_TREE)
-    {
-      if (! LOCAL_VAR_OUT_OF_SCOPE_P (tmp)
-	  && TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
-	{
-	  /* At the point of its creation this decl inherits whatever
-	     is in the slot.  */
-	  tree src = build1 (NOP_EXPR, TREE_TYPE (decl), tmp);
-	  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, src));	
-	  break;
-	}
-      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
-    }
 
   /* Now link the decl into the decl_map. */
   if (DECL_LANG_SPECIFIC (decl) == NULL)
@@ -155,31 +176,54 @@ push_jvm_slot (int index, tree decl)
   DECL_LOCAL_SLOT_CHAIN (decl) = TREE_VEC_ELT (decl_map, index);
   TREE_VEC_ELT (decl_map, index) = decl;
 
-  if (TREE_CODE (decl) != PARM_DECL)
-    pushdecl (decl);
   return decl;
 }
 
-/* Find out if 'decl' passed in fits the defined PC location better than
-   'best'.  Return decl if it does, return best if it doesn't.  If decl
-   is returned, then updated is set to true.  */
+/*  At the point of its creation a local variable decl inherits
+    whatever is already in the same slot.  In the case of a local
+    variable that is declared but unused, we won't find anything.  */
 
-static tree
-check_local_named_variable (tree best, tree decl, int pc, int *updated)
+static void
+initialize_local_variable (tree decl, int index)
 {
-  if (pc >= DECL_LOCAL_START_PC (decl)
-      && pc < DECL_LOCAL_END_PC (decl))
+  tree decl_type = TREE_TYPE (decl);
+  if (TREE_CODE (decl_type) == POINTER_TYPE)
     {
-      if (best == NULL_TREE
-	  || (DECL_LOCAL_START_PC (decl) > DECL_LOCAL_START_PC (best)
-	      && DECL_LOCAL_END_PC (decl) < DECL_LOCAL_END_PC (best)))
+      tree tmp = TREE_VEC_ELT (base_decl_map, index);
+
+      if (tmp)
         {
-	  *updated = 1;
-	  return decl;
+	  /* At the point of its creation this decl inherits whatever
+	     is in the slot.  */
+	  tree src = build1 (NOP_EXPR, decl_type, tmp);
+	  java_add_stmt 
+	    (build (MODIFY_EXPR, decl_type, decl, src));	
 	}
     }
+  else
+    {
+      tree tmp;
   
-  return best;
+      for (tmp = TREE_VEC_ELT (decl_map, index); 
+	   tmp != NULL_TREE; 
+	   tmp = DECL_LOCAL_SLOT_CHAIN (tmp))
+	{
+	  tree tmp_type = TREE_TYPE (tmp);
+	  if (tmp != decl
+	      && ! debug_variable_p (tmp)
+	      && (tmp_type == decl_type
+		  || (INTEGRAL_TYPE_P (tmp_type)
+		      && INTEGRAL_TYPE_P (decl_type)
+		      && TYPE_PRECISION (decl_type) <= 32
+		      && TYPE_PRECISION (tmp_type) <= 32
+		      && TYPE_PRECISION (tmp_type) >= TYPE_PRECISION (decl_type))))
+	    {
+	      java_add_stmt 
+		(build (MODIFY_EXPR, decl_type, decl, tmp));	
+	      return;
+	    }
+	}  
+    }
 }
 
 /* Find the best declaration based upon type.  If 'decl' fits 'type' better
@@ -188,16 +232,25 @@ check_local_named_variable (tree best, tree decl, int pc, int *updated)
 static tree
 check_local_unnamed_variable (tree best, tree decl, tree type)
 {
-    if (TREE_TYPE (decl) == type
-	|| (TREE_CODE (TREE_TYPE (decl)) == TREE_CODE (type)
-	    && TYPE_PRECISION (TREE_TYPE (decl)) <= 32
+  tree decl_type = TREE_TYPE (decl);
+  
+  if (LOCAL_VAR_OUT_OF_SCOPE_P (decl))
+    abort ();
+
+  /* Use the same decl for all integer types <= 32 bits.  This is
+     necessary because sometimes a value is stored as (for example)
+     boolean but loaded as int.  */
+  if (decl_type == type
+      || (INTEGRAL_TYPE_P (decl_type)
+	  && INTEGRAL_TYPE_P (type)
+	  && TYPE_PRECISION (decl_type) <= 32
 	    && TYPE_PRECISION (type) <= 32
-	    && TREE_CODE (type) != POINTER_TYPE)
+	  && TYPE_PRECISION (decl_type) >= TYPE_PRECISION (type))      
 	|| (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	    && type == ptr_type_node))
       {
 	if (best == NULL_TREE
-	    || (TREE_TYPE (decl) == type && TREE_TYPE (best) != type))
+	  || (decl_type == type && TREE_TYPE (best) != type))
 	  return decl;
       }
 
@@ -210,63 +263,103 @@ check_local_unnamed_variable (tree best, tree decl, tree type)
    If there is no existing matching decl, allocate one.  */
 
 tree
-find_local_variable (int index, tree type, int pc)
+find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
 {
-  tree decl = TREE_VEC_ELT (decl_map, index);
-  tree best = NULL_TREE;
-  int found_scoped_var = 0;
+  tree tmp = TREE_VEC_ELT (decl_map, index);
+  tree decl = NULL_TREE;
 
-  /* Scan through every declaration that has been created in this slot. */
-  while (decl != NULL_TREE)
+  /* Scan through every declaration that has been created in this
+     slot.  We're only looking for variables that correspond to local
+     index declarations and PARM_DECLs, not named variables: such
+     local variables are used only for debugging information.  */
+  while (tmp != NULL_TREE)
     {
-      bool has_name = false;
-      tree name = DECL_NAME (decl);
-      if (name && IDENTIFIER_POINTER (name))
-	has_name = IDENTIFIER_POINTER (name)[0] != '#';
-      
-       /* Variables created in give_name_to_locals() have a name and have
- 	 a specified scope, so we can handle them specifically.  We want
- 	 to use the specific decls created for those so they are assigned
- 	 the right variables in the debugging information. */
-      if (has_name)
-	{
-	  /* This is a variable we have a name for, so it has a scope
-	     supplied in the class file.  But it only matters when we
-	     actually have a PC to use.  If pc<0, then we are asking
-	     for a stack slot and this decl won't be one of those. */
- 	  if (pc >= 0)
- 	    best = check_local_named_variable (best, decl, pc,
- 					       &found_scoped_var);
- 	}
-      /* We scan for type information unless we found a variable in the
-	 proper scope already. */
-      else if (!found_scoped_var)
- 	{
- 	  /* If we don't have scoping information for a variable, we use
- 	     a different method to look it up. */
- 	  best = check_local_unnamed_variable (best, decl, type);
- 	}
-
-      decl = DECL_LOCAL_SLOT_CHAIN (decl);
+      if (! debug_variable_p (tmp))
+	decl = check_local_unnamed_variable (decl, tmp, type);
+      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
     }
 
-  if (best != NULL_TREE)
-    return best;
-
   /* If we don't find a match, create one with the type passed in.
-     Ths name of the variable is #n#m, which n is the variable index
+     The name of the variable is #n#m, which n is the variable index
      in the local variable area and m is a dummy identifier for
      uniqueness -- multiple variables may share the same local
-     variable index.  */
+     variable index.  We don't call pushdecl() to push pointer types
+     into a binding expr because they'll all be replaced by a single
+     variable that is used for every reference in that local variable
+     slot.  */
+  if (! decl)
   {
     char buf[64];
     tree name;
-    static int uniq;
-    sprintf (buf, "#%d#%d", index, uniq++);
-    name = get_identifier (buf);
+      sprintf (buf, "#slot#%d#%d", index, uniq++);
+      name = get_identifier (buf);
+      decl = build_decl (VAR_DECL, name, type);
+      DECL_IGNORED_P (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      decl = push_jvm_slot (index, decl);
+      LOCAL_SLOT_P (decl) = 1;
 
-    return push_jvm_slot (index, build_decl (VAR_DECL, name, type));
-  }
+      if (TREE_CODE (type) != POINTER_TYPE)
+	pushdecl_function_level (decl);
+    }
+
+  /* As well as creating a local variable that matches the type, we
+     also create a base variable (of ptr_type) that will hold all its
+     aliases.  */
+  if (TREE_CODE (type) == POINTER_TYPE
+      && ! TREE_VEC_ELT (base_decl_map, index))
+    {
+      char buf[64];
+      tree name;
+      tree base_decl;
+      sprintf (buf, "#ref#%d#%d", index, uniq++);
+      name = get_identifier (buf);
+      base_decl
+	= TREE_VEC_ELT (base_decl_map, index)
+	= build_decl (VAR_DECL, name, ptr_type_node);
+      pushdecl_function_level (base_decl);
+      DECL_IGNORED_P (base_decl) = 1;
+      DECL_ARTIFICIAL (base_decl) = 1;
+    }
+
+  return decl;
+}
+
+/* Called during gimplification for every variable.  If the variable
+   is a temporary of pointer type, replace it with a common variable
+   thath is used to hold all pointer types that are ever stored in
+   that slot.  Set WANT_LVALUE if you want a variable that is to be
+   written to.  */
+
+tree 
+java_replace_reference (tree var_decl, bool want_lvalue)
+{
+  tree decl_type;
+
+  if (! base_decl_map)
+    return var_decl;
+
+  decl_type = TREE_TYPE (var_decl);
+
+  if (TREE_CODE (decl_type) == POINTER_TYPE)
+    {
+      if (DECL_LANG_SPECIFIC (var_decl)
+	  && LOCAL_SLOT_P (var_decl))
+	{
+	  int index = DECL_LOCAL_SLOT_NUMBER (var_decl);
+	  tree base_decl = TREE_VEC_ELT (base_decl_map, index); 
+
+	  if (! base_decl)
+	    abort ();
+
+	  if (! want_lvalue)
+	    base_decl = build1 (NOP_EXPR, decl_type, base_decl);
+
+	  return base_decl;
+	}
+    }
+
+  return var_decl;
 }
 
 
@@ -330,6 +423,11 @@ static GTY(()) struct binding_level *free_binding_level;
    through the entire run.  */
 
 static GTY(()) struct binding_level *global_binding_level;
+
+/* The binding level that holds variables declared at the outermost
+   level within a function body.  */
+
+static struct binding_level *function_binding_level;
 
 /* A PC value bigger than any PC value we may ever may encounter. */
 
@@ -1174,6 +1272,20 @@ pushdecl_top_level (tree x)
   return t;
 }
 
+/* Like pushdecl, only it places X in FUNCTION_BINDING_LEVEL, if appropriate.  */
+
+tree
+pushdecl_function_level (tree x)
+{
+  tree t;
+  struct binding_level *b = current_binding_level;
+
+  current_binding_level = function_binding_level;
+  t = pushdecl (x);
+  current_binding_level = b;
+  return t;
+}
+
 /* Nonzero if we are currently in the global binding level.  */
 
 int
@@ -1497,9 +1609,13 @@ maybe_pushlevels (int pc)
       pending_local_decls = *ptr;
       *ptr = NULL_TREE;
 
-      /* Force non-nested range to be nested in current range. */
+      /* Force non-nested range to be nested in current range by
+	 truncating variable lifetimes. */
       if (end_pc > current_binding_level->end_pc)
-	end_pc = current_binding_level->end_pc;
+	{
+	  end_pc = current_binding_level->end_pc;
+	  DECL_LOCAL_END_PC (decl) = end_pc;
+	}
 
       maybe_start_try (pc, end_pc);
       
@@ -1512,6 +1628,8 @@ maybe_pushlevels (int pc)
 	{
 	  next = TREE_CHAIN (decl);
 	  push_jvm_slot (DECL_LOCAL_SLOT_NUMBER (decl), decl);
+	  pushdecl (decl);
+	  initialize_local_variable (decl, DECL_LOCAL_SLOT_NUMBER (decl));
 	}
     }      
 
@@ -1698,11 +1816,14 @@ start_java_method (tree fndecl)
   tree tem, *ptr;
   int i;
 
+  uniq = 0;
+
   current_function_decl = fndecl;
   announce_function (fndecl);
 
   i = DECL_MAX_LOCALS(fndecl) + DECL_MAX_STACK(fndecl);
   decl_map = make_tree_vec (i);
+  base_decl_map = make_tree_vec (i);
   type_map = xrealloc (type_map, i * sizeof (tree));
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
@@ -1751,6 +1872,8 @@ start_java_method (tree fndecl)
 
   /* Push local variables.  */
   pushlevel (2);
+
+  function_binding_level = current_binding_level;
 }
 
 void
@@ -1769,6 +1892,14 @@ end_java_method (void)
   flag_unit_at_a_time = 0;
   finish_method (fndecl);
 
+  if (! flag_unit_at_a_time)
+    {
+      /* Nulling these fields when we no longer need them saves
+	 memory.  */
+      DECL_SAVED_TREE (fndecl) = NULL;
+      DECL_STRUCT_FUNCTION (fndecl) = NULL;
+      DECL_INITIAL (fndecl) = NULL_TREE;
+    }
   if (! flag_unit_at_a_time)
     {
       /* Nulling these fields when we no longer need them saves

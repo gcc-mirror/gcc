@@ -391,9 +391,17 @@ build_java_array_type (tree element_type, HOST_WIDE_INT length)
   el_name = TYPE_NAME (el_name);
   if (TREE_CODE (el_name) == TYPE_DECL)
     el_name = DECL_NAME (el_name);
-  TYPE_NAME (t) = build_decl (TYPE_DECL,
-                             identifier_subst (el_name, "", '.', '.', "[]"),
+  {
+    char suffix[12];
+    if (length >= 0)
+      sprintf (suffix, "[%d]", (int)length); 
+    else
+      strcpy (suffix, "[]");
+    TYPE_NAME (t) 
+      = build_decl (TYPE_DECL,
+		    identifier_subst (el_name, "", '.', '.', suffix),
                              t);
+  }
 
   set_java_signature (t, sig);
   set_super_info (0, t, object_type_node, 0);
