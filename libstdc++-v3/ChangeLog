@@ -1,3 +1,9 @@
+2001-04-02  Stephen M. Webb  <stephen@bregmasoft.com> 
+	
+	* include/c_std/bits/std_cstring.h: Fix for const-correctness.
+	* include/c_std/bits/std_cwchar.h: Same.
+	* testsuite/21_strings/c_strings.cc: Add.
+	
 2001-04-01  Benjamin Kosnik  <bkoz@codesourcery.com>
 
 	* docs/html/configopts.html: Add --enable-sjlj-exceptions docs.
