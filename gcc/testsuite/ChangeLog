@@ -1,3 +1,8 @@
+2003-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11059
+	* g++.dg/opt/emptyunion.C: New testcase.
+
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 

@@ -1,3 +1,15 @@
+2003-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/11059
+	* expr.c (can_store_by_pieces): Return true if length is zero.
+	(store_by_pieces): If length is zero and endp is two, abort,
+	othwerise, if length is zero and endp is not two, return "to".
+	(clear_by_pieces): Do nothing if length is zero.
+	(clear_storage): Do nothing if length is zero.
+	(store_constructor): Simplify code when size is zero, or the
+	target has already been cleared.  This avoids emitting a
+	blockage instruction when initializing empty structures.
+
 2003-07-07  Andreas Jaeger  <aj@suse.de>
 
 	* mips-tfile.c: Convert prototypes to ISO C90.
