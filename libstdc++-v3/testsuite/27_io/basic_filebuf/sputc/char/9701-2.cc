@@ -55,7 +55,7 @@ void test11()
   dfbuf_01.open(name_05, std::ios_base::out);
   over_called = false;
   dfbuf_01.sputc('i');
-  VERIFY( !over_called );
+  VERIFY( over_called );
   over_expected = dfbuf_01.pub_epptr() == dfbuf_01.pub_pptr();
   over_called = false;
   dfbuf_01.sputc('v');

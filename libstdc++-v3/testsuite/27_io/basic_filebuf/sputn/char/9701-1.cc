@@ -59,7 +59,7 @@ void test11()
   dfbuf_02.open(name_05, std::ios_base::out);
   over_called = false;
   dfbuf_02.sputn("sonne's", 7);
-  VERIFY( !over_called );
+  VERIFY( over_called );
   over_expected = dfbuf_02.pub_epptr() == dfbuf_02.pub_pptr();
   over_called = false;
   dfbuf_02.sputn(" peak", 5);

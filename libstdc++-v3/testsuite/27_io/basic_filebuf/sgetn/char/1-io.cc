@@ -55,11 +55,11 @@ void test05()
   {
     constraint_filebuf fb_03; 
     fb_03.open(name_03, ios_base::out | ios_base::in | ios_base::trunc); 
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
     strmsz_1 = fb_03.sgetn(carray1, 10);
     VERIFY( strmsz_1 == 0 ); 
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
   }
 
@@ -70,7 +70,7 @@ void test05()
     // to trigger the same underflow situation everywhere.
     fb_01.pubsetbuf(buffer, 8192);
     fb_01.open(name_01, ios_base::in | ios_base::out);
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     strmsz_1 = fb_01.in_avail();
     strmsz_2 = fb_01.sgetn(carray1, 10);
     VERIFY( strmsz_2 == 10 );
@@ -87,7 +87,7 @@ void test05()
     VERIFY( strmsz_1 > 0 );
     strmsz_2 = fb_01.sgetn(carray2, strmsz_1 + 5);
     VERIFY( strmsz_1 == strmsz_2 ); //at the end of the actual file 
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( !fb_01.read_position() );
   }
 }

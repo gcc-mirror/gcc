@@ -79,7 +79,7 @@ void test05()
     // setbuf
     // pubsetbuf(char_type* s, streamsize n)
     f_tmp.pubsetbuf(0, 0);
-    VERIFY( !f_tmp.check_pointers() );
+    VERIFY( f_tmp.check_pointers() );
   }
 }
 

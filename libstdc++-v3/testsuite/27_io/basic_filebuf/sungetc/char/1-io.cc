@@ -50,7 +50,7 @@ void test01()
   {
     constraint_filebuf fb_01; 
     fb_01.open(name_01, ios_base::out | ios_base::in | ios_base::trunc);
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( !fb_01.read_position() );
     fb_01.sputc('u');
     fb_01.sputc('v');
@@ -71,7 +71,7 @@ void test01()
     VERIFY( c1 != c2 );
     VERIFY( strmsz_2 != strmsz_1 );
     VERIFY( strmsz_2 == 1 );
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( fb_01.read_position() );
   }
 }

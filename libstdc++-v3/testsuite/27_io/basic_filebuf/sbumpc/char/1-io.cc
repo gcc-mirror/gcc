@@ -46,11 +46,11 @@ void test05()
   {
     constraint_filebuf fb_03; 
     fb_03.open(name_03, ios_base::out | ios_base::in | ios_base::trunc); 
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
     int_type c5 = fb_03.sbumpc();
     VERIFY( c5 == traits_type::eof() );
-    VERIFY( fb_03.write_position() );
+    VERIFY( !fb_03.write_position() );
     VERIFY( !fb_03.read_position() );
   }
 
@@ -58,9 +58,9 @@ void test05()
   {
     constraint_filebuf fb_01; 
     fb_01.open(name_01, ios_base::in | ios_base::out);
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
 
-     int_type c1 = fb_01.sbumpc();
+    int_type c1 = fb_01.sbumpc();
     VERIFY( c1 == '/' );
     int_type c3 = fb_01.sbumpc();
     VERIFY( c3 == '/' );
@@ -80,7 +80,7 @@ void test05()
     VERIFY( c2 == '9' );
     VERIFY( c3 == '0' );
 
-    VERIFY( fb_01.write_position() );
+    VERIFY( !fb_01.write_position() );
     VERIFY( fb_01.read_position() );
   }
 }

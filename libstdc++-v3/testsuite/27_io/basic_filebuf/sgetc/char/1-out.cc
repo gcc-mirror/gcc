@@ -47,7 +47,7 @@ void test05()
   {
     constraint_filebuf fb_02; // out
     fb_02.open(name_02, ios::out | ios::trunc);    
-    VERIFY( fb_02.write_position() );
+    VERIFY( !fb_02.write_position() );
     VERIFY( !fb_02.read_position() );
     c1 = fb_02.sgetc();
     VERIFY( c1 == traits_type::eof() );
@@ -57,7 +57,7 @@ void test05()
     c1 = fb_02.sbumpc();
     c2 = fb_02.sgetc();
     VERIFY( c1 == c2 );
-    VERIFY( fb_02.write_position() );
+    VERIFY( !fb_02.write_position() );
     VERIFY( !fb_02.read_position() );
   }
 }

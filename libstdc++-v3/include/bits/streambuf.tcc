@@ -45,10 +45,10 @@ namespace std
     sbumpc()
     {
       int_type __ret;
-      if (_M_in_cur < _M_in_end)
+      if (this->gptr() < this->egptr())
 	{
-	  __ret = traits_type::to_int_type(*this->_M_in_cur);
-	  _M_move_in_cur(1);
+	  __ret = traits_type::to_int_type(*this->gptr());
+	  this->gbump(1);
 	}
       else 
 	__ret = this->uflow();
@@ -61,13 +61,13 @@ namespace std
     sputbackc(char_type __c) 
     {
       int_type __ret;
-      const bool __testpos = _M_in_beg < _M_in_cur;
-      if (!__testpos || !traits_type::eq(__c, this->_M_in_cur[-1]))
+      const bool __testpos = this->eback() < this->gptr();
+      if (!__testpos || !traits_type::eq(__c, this->gptr()[-1]))
 	__ret = this->pbackfail(traits_type::to_int_type(__c));
       else 
 	{
-	  _M_move_in_cur(-1);
-	  __ret = traits_type::to_int_type(*this->_M_in_cur);
+	  this->gbump(-1);
+	  __ret = traits_type::to_int_type(*this->gptr());
 	}
       return __ret;
     }
@@ -78,10 +78,10 @@ namespace std
     sungetc()
     {
       int_type __ret;
-      if (_M_in_beg < _M_in_cur)
+      if (this->eback() < this->gptr())
 	{
-	  _M_move_in_cur(-1);
-	  __ret = traits_type::to_int_type(*_M_in_cur);
+	  this->gbump(-1);
+	  __ret = traits_type::to_int_type(*this->gptr());
 	}
       else 
 	__ret = this->pbackfail();
@@ -94,10 +94,10 @@ namespace std
     sputc(char_type __c)
     {
       int_type __ret;
-      if (_M_out_cur < _M_out_end)
+      if (this->pptr() < this->epptr())
 	{
-	  *_M_out_cur = __c;
-	  _M_move_out_cur(1);
+	  *this->pptr() = __c;
+	  this->pbump(1);
 	  __ret = traits_type::to_int_type(__c);
 	}
       else
@@ -113,15 +113,15 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  const size_t __buf_len = _M_in_end - _M_in_cur;
+	  const size_t __buf_len = this->egptr() - this->gptr();
 	  if (__buf_len)
 	    {
 	      const size_t __remaining = __n - __ret;
 	      const size_t __len = std::min(__buf_len, __remaining);
-	      traits_type::copy(__s, _M_in_cur, __len);
+	      traits_type::copy(__s, this->gptr(), __len);
 	      __ret += __len;
 	      __s += __len;
-	      _M_move_in_cur(__len);
+	      this->gbump(__len);
 	    }
 	  
 	  if (__ret < __n)
@@ -147,15 +147,15 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  const size_t __buf_len = _M_out_end - _M_out_cur;
+	  const size_t __buf_len = this->epptr() - this->pptr();
 	  if (__buf_len)
 	    {
 	      const size_t __remaining = __n - __ret;
 	      const size_t __len = std::min(__buf_len, __remaining);
-	      traits_type::copy(_M_out_cur, __s, __len);
+	      traits_type::copy(this->pptr(), __s, __len);
 	      __ret += __len;
 	      __s += __len;
-	      _M_move_out_cur(__len);
+	      this->pbump(__len);
 	    }
 
 	  if (__ret < __n)
@@ -189,12 +189,12 @@ namespace std
 	  typename _Traits::int_type __c = __sbin->sgetc();
 	  while (!_Traits::eq_int_type(__c, _Traits::eof()))
 	    {
-	      const size_t __n = __sbin->_M_in_end - __sbin->_M_in_cur;
+	      const size_t __n = __sbin->egptr() - __sbin->gptr();
 	      if (__n > 1)
 		{
-		  const size_t __wrote = __sbout->sputn(__sbin->_M_in_cur,
+		  const size_t __wrote = __sbout->sputn(__sbin->gptr(),
 							__n);
-		  __sbin->_M_move_in_cur(__wrote);
+		  __sbin->gbump(__wrote);
 		  __ret += __wrote;
 		  if (__wrote < __n)
 		    break;

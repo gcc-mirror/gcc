@@ -1,3 +1,67 @@
+2003-06-24  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan C. Myers  <ncm-nospam@cantrip.org>
+
+	* include/std/std_fstream.h (_M_filepos): Remove.
+	(_M_reading, _M_writing): New, encode the various I/O modes:
+	'read', 'write' and 'uncommitted'.
+	(sync): If there is something to flush, do it, then go to
+	'uncommitted' mode.
+	* include/bits/fstream.tcc (_M_set_buffer): Overhaul to deal
+	with three different cases: __off > 0 (upon underflow),
+	__off == 0 (upon overflow), __off == -1 (upon open, setbuf,
+	seekoff/pos).
+	(_M_underflow): Don't call overflow, set _M_reading to true
+	on success, tweak.
+	(pbackfail): Set _M_reading to true on pback creation, tweak.
+	(overflow): Don't seek, deal with overflow in 'uncommitted' mode,
+	set _M_writing to true on success, tweak.
+	(seekoff): Simplify, set _M_reading, _M_writing to false, call
+	_M_set_buffer(-1) ('uncommitted').
+	(open, close, setbuf): Set _M_reading, _M_writing to false and
+	call _M_set_buffer(-1), tweak.
+	(basic_filebuf): Don't set _M_buf_unified.
+	(_M_destroy_internal_buffer): Don't call setg and setp.
+	* include/ext/stdio_filebuf.h (stdio_filebuf): Use _M_reading,
+	_M_writing and _M_set_buffer(-1).
+	* include/std/std_streambuf.h (_M_move_out_cur, _M_move_in_cur,
+	_M_out_lim, _M_buf_unified): Remove.
+	(basic_streambuf): Don't set _M_out_lim and _M_buf_unified.
+	(setp): Don't set _M_out_lim.	
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-io.cc: Fix for
+	the new logic ('read', 'write' and 'uncommitted' modes): e.g.,
+	upon open the mode is 'uncommitted' and therefore the put area
+	pointers are null.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/setbuf/char/1.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputc/char/9701-2.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-out.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sputn/char/9701-1.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-out.cc: Ditto.
+
+	* include/bits/fstream.tcc (showmanyc): Use only the
+	documented derivation interface to basic_streambuf (gptr(),
+	setg(), etc.) to work right with user specializations.
+	* include/bits/streambuf.tcc (sbumpc, sputbackc, sungetc,
+	sputc, xsgetn, xsputn, __copy_streambufs): Likewise.
+	* include/std/std_streambuf.h (in_avail, sgetc, uflow, stossc):
+	Likewise.
+	* include/std/std_fstream.h (_M_create_pback, _M_destroy_pback,
+	xsgetn): Likewise.
+
 2003-06-23  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.host (freebsd*): Set abi_baseline_pair.
