@@ -1,3 +1,11 @@
+2005-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (fortran-warn): Set to $(STRICT_WARN) -Wno-error.
+	* decl.c, trans.c: Don't use C++ style comments.
+	* gfortran.h (sym_flavor, procedure_type, sym_intent, gfc_access,
+	ifsrc): Give names to enums and use ENUM_BITFIELD.
+	(gfc_access): Remove trailing comma.
+
 2005-03-05  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 19936

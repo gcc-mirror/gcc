@@ -48,14 +48,8 @@ GFORTRAN_CROSS_NAME := $(shell echo gfortran|sed '$(program_transform_cross_name
 
 #^L
 
-# This is in addition to the warning flags defined by default.
-# You can use it to enable/disable warnings globally or for specific
-# files, e.g.
-# fortran-warn = -Wno-strict-prototypes
-# fortran/arith.o-warn = -Wno-error
-#
-# We don't need these cheats, everything builds fine with all warnings
-# enabled and -Werror.
+# Use strict warnings for this front end.
+fortran-warn = $(STRICT_WARN) -Wno-error
 
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
