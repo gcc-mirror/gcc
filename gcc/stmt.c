@@ -798,7 +798,7 @@ expand_goto (label)
     {
       struct function *p = find_function_data (context);
       rtx label_ref = gen_rtx_LABEL_REF (Pmode, label_rtx (label));
-      rtx temp, handler_slot;
+      rtx handler_slot, static_chain, save_area;
       tree link;
 
       /* Find the corresponding handler slot for this label.  */
@@ -816,49 +816,40 @@ expand_goto (label)
 	 case the virtual stack vars register gets instantiated differently
 	 in the parent than in the child.  */
 
+      static_chain = copy_to_reg (lookup_static_chain (label));
+
+      /* Get addr of containing function's current nonlocal goto handler,
+	 which will do any cleanups and then jump to the label.  */
+      handler_slot = copy_to_reg (replace_rtx (copy_rtx (handler_slot),
+					       virtual_stack_vars_rtx,
+					       static_chain));
+
+      /* Get addr of containing function's nonlocal save area.  */
+      save_area = p->x_nonlocal_goto_stack_level;
+      if (save_area)
+	save_area = replace_rtx (copy_rtx (save_area),
+				 virtual_stack_vars_rtx, static_chain);
+
 #if HAVE_nonlocal_goto
       if (HAVE_nonlocal_goto)
-	emit_insn (gen_nonlocal_goto (lookup_static_chain (label),
-				      copy_rtx (handler_slot),
-				      copy_rtx (p->x_nonlocal_goto_stack_level),
-				      label_ref));
+	emit_insn (gen_nonlocal_goto (static_chain, handler_slot,
+				      save_area, label_ref));
       else
 #endif
 	{
-	  rtx addr;
-
 	  /* Restore frame pointer for containing function.
 	     This sets the actual hard register used for the frame pointer
 	     to the location of the function's incoming static chain info.
 	     The non-local goto handler will then adjust it to contain the
 	     proper value and reload the argument pointer, if needed.  */
-	  emit_move_insn (hard_frame_pointer_rtx, lookup_static_chain (label));
+	  emit_move_insn (hard_frame_pointer_rtx, static_chain);
+	  emit_stack_restore (SAVE_NONLOCAL, save_area, NULL_RTX);
 
-	  /* We have now loaded the frame pointer hardware register with
-	     the address of that corresponds to the start of the virtual
-	     stack vars.  So replace virtual_stack_vars_rtx in all
-	     addresses we use with stack_pointer_rtx.  */
-
-	  /* Get addr of containing function's current nonlocal goto handler,
-	     which will do any cleanups and then jump to the label.  */
-	  addr = copy_rtx (handler_slot);
-	  temp = copy_to_reg (replace_rtx (addr, virtual_stack_vars_rtx,
-					   hard_frame_pointer_rtx));
-	  
-	  /* Restore the stack pointer.  Note this uses fp just restored.  */
-	  addr = p->x_nonlocal_goto_stack_level;
-	  if (addr)
-	    addr = replace_rtx (copy_rtx (addr),
-				virtual_stack_vars_rtx,
-				hard_frame_pointer_rtx);
-
-	  emit_stack_restore (SAVE_NONLOCAL, addr, NULL_RTX);
-
-	  /* USE of hard_frame_pointer_rtx added for consistency; not clear if
-	     really needed.  */
+	  /* USE of hard_frame_pointer_rtx added for consistency;
+	     not clear if really needed.  */
 	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-	  emit_indirect_jump (temp);
+	  emit_indirect_jump (handler_slot);
 	}
      }
   else

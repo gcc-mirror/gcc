@@ -1,3 +1,10 @@
+2000-08-06  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_goto): Do virtual_stack_vars_rtx replacement for
+	HAVE_nonlocal_goto as well.
+	* config/i960/i960.md (nonlocal_goto): Don't do it here.
+	* config/pj/pj.md (nonlocal_goto): Likewise.
+
 2000-08-07  Michael Hayes  <mhayes@cygnus.com>
 
  	* loop.c (try_swap_copy_prop): New function.
