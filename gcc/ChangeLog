@@ -1,3 +1,29 @@
+1999-12-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gthr-single.h (__gthread_active_p): Add prototype arguments.
+
+	* libgcc2.c (__udivmoddi4): Remove unnecessary decls.
+	(__dummy, __builtin_saveregs, __bb_exit_trace_func, __bb_init_prg,
+	__bb_trace_func, __bb_trace_func_ret, __bb_trace_ret,
+	function_ptr, getpagesize, __enable_execute_stack,
+	__enable_execute_stack, __clear_insn_cache,
+	__enable_execute_stack, __do_global_dtors, __do_global_ctors,
+	_cleanup, _exit, __default_terminate, __terminate_func,
+	__terminate, __empty, __throw, new_eh_context,
+	eh_context_initialize, eh_context_static, eh_context_specific,
+	get_eh_context, __get_eh_context, __get_eh_info,
+	init_reg_size_table, eh_threads_initialize,
+	__get_dynamic_handler_chain, __sjthrow, __sjpopnthrow,
+	__unwinding_cleanup, throw_helper, __throw, __rethrow,
+	__pure_virtual): Add prototype arguments.	
+	(__bb_exit_func): Cast a sizeof to long when comparing against one.
+	Cast a signed value to unsigned long when comparing against one.
+	(new_eh_context): Wrap in _GTHREADS macro.
+	(__sjthrow, __sjpopnthrow): Initialize variable `cleanup' at
+	declaration.
+	(in_reg_window): Mark parameters with __attribute__ ((__unused__)).
+	(throw_helper): Initialize variables `handler_p' and `pc_p'.
+	
 1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* combine.c (record_promoted_value): Remove unused variable
