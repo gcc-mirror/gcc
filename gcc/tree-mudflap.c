@@ -883,19 +883,23 @@ mx_register_decls (tree decl, tree *stmt_list)
               size = convert (size_type_node, TYPE_SIZE_UNIT (TREE_TYPE (decl)));
             }
 
-          /* (& VARIABLE, sizeof (VARIABLE)) */
+          /* (& VARIABLE, sizeof (VARIABLE), __MF_TYPE_STACK) */
           unregister_fncall_params =
             tree_cons (NULL_TREE,
                        convert (ptr_type_node,
                                 mf_mark (build1 (ADDR_EXPR,
                                                  build_pointer_type (TREE_TYPE (decl)),
                                                  decl))),
-                       tree_cons (NULL_TREE, size, NULL_TREE));
+                       tree_cons (NULL_TREE, 
+                                  size,
+                                  tree_cons (NULL_TREE, 
+                                             build_int_2 (3, 0), /* __MF_TYPE_STACK */
+                                             NULL_TREE)));
           /* __mf_unregister (...) */
           unregister_fncall = build_function_call_expr (mf_unregister_fndecl,
                                                         unregister_fncall_params);
 
-          /* (& VARIABLE, sizeof (VARIABLE), __MF_TYPE_STACK) */
+          /* (& VARIABLE, sizeof (VARIABLE), __MF_TYPE_STACK, "name") */
           variable_name = mf_varname_tree (decl);
           register_fncall_params =
             tree_cons (NULL_TREE,
