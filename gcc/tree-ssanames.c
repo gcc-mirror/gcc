@@ -296,25 +296,11 @@ duplicate_ssa_name (tree name, tree stmt)
 void
 release_defs (tree stmt)
 {
-  size_t i;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  def_optype defs;
-  stmt_ann_t ann;
+  tree def;
+  ssa_op_iter iter;
 
-  ann = stmt_ann (stmt);
-  defs = DEF_OPS (ann);
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  v_must_defs = V_MUST_DEF_OPS (ann);
-
-  for (i = 0; i < NUM_DEFS (defs); i++)
-    release_ssa_name (DEF_OP (defs, i));
-
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    release_ssa_name (V_MAY_DEF_RESULT (v_may_defs, i));
-
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    release_ssa_name (V_MUST_DEF_OP (v_must_defs, i));
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
+    release_ssa_name (def);
 }
 
 

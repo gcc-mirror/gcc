@@ -276,12 +276,11 @@ mark_operand_necessary (tree op)
 static void
 mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 {
-  def_optype defs;
   v_may_def_optype v_may_defs;
   v_must_def_optype v_must_defs;
   stmt_ann_t ann;
-  size_t i;
-  tree op;
+  tree op, def;
+  ssa_op_iter iter;
 
   /* Statements that are implicitly live.  Most function calls, asm and return
      statements are required.  Labels and BIND_EXPR nodes are kept because
@@ -370,10 +369,8 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 
   get_stmt_operands (stmt);
 
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
     {
-      tree def = DEF_OP (defs, i);
       if (is_global_var (SSA_NAME_VAR (def)))
 	{
 	  mark_stmt_necessary (stmt, true);
@@ -627,30 +624,18 @@ propagate_necessity (struct edge_list *el)
 	  /* Propagate through the operands.  Examine all the USE, VUSE and
 	     V_MAY_DEF operands in this statement.  Mark all the statements 
 	     which feed this statement's uses as necessary.  */
-	  vuse_optype vuses;
-	  v_may_def_optype v_may_defs;
-	  use_optype uses;
-	  stmt_ann_t ann;
-	  size_t k;
+	  ssa_op_iter iter;
+	  tree use;
 
 	  get_stmt_operands (i);
-	  ann = stmt_ann (i);
-
-	  uses = USE_OPS (ann);
-	  for (k = 0; k < NUM_USES (uses); k++)
-	    mark_operand_necessary (USE_OP (uses, k));
-
-	  vuses = VUSE_OPS (ann);
-	  for (k = 0; k < NUM_VUSES (vuses); k++)
-	    mark_operand_necessary (VUSE_OP (vuses, k));
 
 	  /* The operands of V_MAY_DEF expressions are also needed as they
 	     represent potential definitions that may reach this
 	     statement (V_MAY_DEF operands allow us to follow def-def 
 	     links).  */
-	  v_may_defs = V_MAY_DEF_OPS (ann);
-	  for (k = 0; k < NUM_V_MAY_DEFS (v_may_defs); k++)
-	    mark_operand_necessary (V_MAY_DEF_OP (v_may_defs, k));
+
+	  FOR_EACH_SSA_TREE_OPERAND (use, i, iter, SSA_OP_ALL_USES)
+	    mark_operand_necessary (use);
 	}
     }
 }

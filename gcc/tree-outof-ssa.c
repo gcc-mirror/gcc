@@ -1461,8 +1461,9 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   def_optype defs;
   use_optype uses;
   tree var, def;
-  int num_use_ops, version, i;
+  int num_use_ops, version;
   var_map map = tab->map;
+  ssa_op_iter iter;
 
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
@@ -1512,9 +1513,8 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   version = SSA_NAME_VERSION (def);
 
   /* Add this expression to the dependency list for each use partition.  */
-  for (i = 0; i < num_use_ops; i++)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     {
-      var = USE_OP (uses, i);
       add_dependance (tab, version, var);
     }
 
@@ -1646,11 +1646,10 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
   block_stmt_iterator bsi;
   tree stmt, def;
   stmt_ann_t ann;
-  int partition, num, i;
-  use_optype uses;
-  def_optype defs;
+  int partition;
   var_map map = tab->map;
   value_expr_p p;
+  ssa_op_iter iter;
 
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
@@ -1658,11 +1657,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
       ann = stmt_ann (stmt);
 
       /* Determine if this stmt finishes an existing expression.  */
-      uses = USE_OPS (ann);
-      num = NUM_USES (uses);
-      for (i = 0; i < num; i++)
+      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_USE)
 	{
-	  def = USE_OP (uses, i);
 	  if (tab->version_info[SSA_NAME_VERSION (def)])
 	    {
 	      /* Mark expression as replaceable unless stmt is volatile.  */
@@ -1674,11 +1670,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	}
       
       /* Next, see if this stmt kills off an active expression.  */
-      defs = DEF_OPS (ann);
-      num = NUM_DEFS (defs);
-      for (i = 0; i < num; i++)
+      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
 	{
-	  def = DEF_OP (defs, i);
 	  partition = var_to_partition (map, def);
 	  if (partition != NO_PARTITION && tab->partition_dep_list[partition])
 	    kill_expr (tab, partition, true);
@@ -1880,13 +1873,15 @@ rewrite_trees (var_map map, tree *values)
     {
       for (si = bsi_start (bb); !bsi_end_p (si); )
 	{
-	  size_t i, num_uses, num_defs;
+	  size_t num_uses, num_defs;
 	  use_optype uses;
 	  def_optype defs;
 	  tree stmt = bsi_stmt (si);
 	  use_operand_p use_p;
+	  def_operand_p def_p;
 	  int remove = 0, is_copy = 0;
 	  stmt_ann_t ann;
+	  ssa_op_iter iter;
 
 	  get_stmt_operands (stmt);
 	  ann = stmt_ann (stmt);
@@ -1898,10 +1893,8 @@ rewrite_trees (var_map map, tree *values)
 
 	  uses = USE_OPS (ann);
 	  num_uses = NUM_USES (uses);
-
-	  for (i = 0; i < num_uses; i++)
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	    {
-	      use_p = USE_OP_PTR (uses, i);
 	      if (replace_use_variable (map, use_p, values))
 	        changed = true;
 	    }
@@ -1921,10 +1914,8 @@ rewrite_trees (var_map map, tree *values)
 	    }
 	  if (!remove)
 	    {
-	      for (i = 0; i < num_defs; i++)
+	      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
 		{
-		  def_operand_p def_p = DEF_OP_PTR (defs, i);
-
 		  if (replace_def_variable (map, def_p, NULL))
 		    changed = true;
 

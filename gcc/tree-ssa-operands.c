@@ -114,10 +114,14 @@ static GTY (()) varray_type build_vuses;
 /* Array for building all the v_must_def operands.  */
 static GTY (()) varray_type build_v_must_defs;
 
+
 #ifdef ENABLE_CHECKING
 /* Used to make sure operand construction is working on the proper stmt.  */
 tree check_build_stmt;
 #endif
+
+def_operand_p NULL_DEF_OPERAND_P = { NULL };
+use_operand_p NULL_USE_OPERAND_P = { NULL };
 
 static void note_addressable (tree, stmt_ann_t);
 static void get_expr_operands (tree, tree *, int);

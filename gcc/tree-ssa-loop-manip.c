@@ -236,27 +236,14 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks)
 static void
 find_uses_to_rename_stmt (tree stmt, bitmap *use_blocks)
 {
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  stmt_ann_t ann;
-  unsigned i;
+  ssa_op_iter iter;
+  tree var;
   basic_block bb = bb_for_stmt (stmt);
 
   get_stmt_operands (stmt);
-  ann = stmt_ann (stmt);
 
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    find_uses_to_rename_use (bb, USE_OP (uses, i), use_blocks);
-
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    find_uses_to_rename_use (bb, VUSE_OP (vuses, i),use_blocks);
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    find_uses_to_rename_use (bb, V_MAY_DEF_OP (v_may_defs, i), use_blocks);
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+    find_uses_to_rename_use (bb, var, use_blocks);
 }
 
 /* Marks names that are used outside of the loop they are defined in
@@ -363,26 +350,13 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
 static void
 check_loop_closed_ssa_stmt (basic_block bb, tree stmt)
 {
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  stmt_ann_t ann;
-  unsigned i;
+  ssa_op_iter iter;
+  tree var;
 
   get_stmt_operands (stmt);
-  ann = stmt_ann (stmt);
 
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    check_loop_closed_ssa_use (bb, USE_OP (uses, i));
-
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    check_loop_closed_ssa_use (bb, VUSE_OP (vuses, i));
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    check_loop_closed_ssa_use (bb, V_MAY_DEF_OP (v_may_defs, i));
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+    check_loop_closed_ssa_use (bb, var);
 }
 
 /* Checks that invariants of the loop closed ssa form are preserved.  */

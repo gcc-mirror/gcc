@@ -1397,27 +1397,13 @@ decide_instantiations (void)
 static void
 mark_all_v_defs (tree stmt)
 {
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  size_t i, n;
+  tree sym;
+  ssa_op_iter iter;
 
   get_stmt_operands (stmt);
 
-  v_may_defs = V_MAY_DEF_OPS (stmt_ann (stmt));
-  n = NUM_V_MAY_DEFS (v_may_defs);
-  for (i = 0; i < n; i++)
+  FOR_EACH_SSA_TREE_OPERAND (sym, stmt, iter, SSA_OP_VIRTUAL_DEFS)
     {
-      tree sym = V_MAY_DEF_RESULT (v_may_defs, i);
-      if (TREE_CODE (sym) == SSA_NAME)
-	sym = SSA_NAME_VAR (sym);
-      bitmap_set_bit (vars_to_rename, var_ann (sym)->uid);
-    }
-
-  v_must_defs = V_MUST_DEF_OPS (stmt_ann (stmt));
-  n = NUM_V_MUST_DEFS (v_must_defs);
-  for (i = 0; i < n; i++)
-    {
-      tree sym = V_MUST_DEF_OP (v_must_defs, i);
       if (TREE_CODE (sym) == SSA_NAME)
 	sym = SSA_NAME_VAR (sym);
       bitmap_set_bit (vars_to_rename, var_ann (sym)->uid);

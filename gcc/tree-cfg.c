@@ -4245,11 +4245,8 @@ tree_duplicate_bb (basic_block bb)
 {
   basic_block new_bb;
   block_stmt_iterator bsi, bsi_tgt;
-  tree phi;
-  def_optype defs;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  unsigned j;
+  tree phi, val;
+  ssa_op_iter op_iter;
 
   new_bb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
 
@@ -4270,17 +4267,8 @@ tree_duplicate_bb (basic_block bb)
       /* Record the definitions.  */
       get_stmt_operands (stmt);
 
-      defs = STMT_DEF_OPS (stmt);
-      for (j = 0; j < NUM_DEFS (defs); j++)
-	mark_for_rewrite (DEF_OP (defs, j));
-
-      v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-      for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
-	mark_for_rewrite (V_MAY_DEF_RESULT (v_may_defs, j));
-
-      v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-      for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
-	mark_for_rewrite (V_MUST_DEF_OP (v_must_defs, j));
+      FOR_EACH_SSA_TREE_OPERAND (val, stmt, op_iter, SSA_OP_ALL_DEFS)
+	mark_for_rewrite (val);
 
       copy = unshare_expr (stmt);
 

@@ -674,11 +674,6 @@ vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
   tree vect_ptr_type;
   tree vect_ptr;
   tree addr_ref;
-  v_may_def_optype v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-  v_must_def_optype v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
-  vuse_optype vuses = STMT_VUSE_OPS (stmt);
-  int nvuses, nv_may_defs, nv_must_defs;
-  int i;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree array_type;
   tree base_addr = NULL_TREE;
@@ -687,6 +682,8 @@ vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
   tree tag;
   tree addr_expr;
   tree scalar_ptr_type;
+  tree use;
+  ssa_op_iter iter;
 
   /* FORNOW: make sure the data reference is aligned.  */
   vect_align_data_ref (stmt);
@@ -743,26 +740,11 @@ vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
   
   /* Mark for renaming all aliased variables
      (i.e, the may-aliases of the type-mem-tag) */
-  nvuses = NUM_VUSES (vuses);
-  nv_may_defs = NUM_V_MAY_DEFS (v_may_defs);
-  nv_must_defs = NUM_V_MUST_DEFS (v_must_defs);
-  for (i = 0; i < nvuses; i++)
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter,
+			     (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE))
     {
-      tree use = VUSE_OP (vuses, i);
       if (TREE_CODE (use) == SSA_NAME)
         bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (use))->uid);
-    }
-  for (i = 0; i < nv_may_defs; i++)
-    {
-      tree def = V_MAY_DEF_RESULT (v_may_defs, i);
-      if (TREE_CODE (def) == SSA_NAME)
-        bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (def))->uid);
-    }
-  for (i = 0; i < nv_must_defs; i++)
-    {
-      tree def = V_MUST_DEF_OP (v_must_defs, i);
-      if (TREE_CODE (def) == SSA_NAME)
-        bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (def))->uid);
     }
 
   pe = loop_preheader_edge (loop);

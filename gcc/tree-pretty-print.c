@@ -2036,38 +2036,35 @@ newline_and_indent (pretty_printer *buffer, int spc)
 static void
 dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
 {
-  size_t i;
-  stmt_ann_t ann = stmt_ann (stmt);
-  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
-  v_must_def_optype v_must_defs = V_MUST_DEF_OPS (ann);
-  vuse_optype vuses = VUSE_OPS (ann);
+  tree use, def;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
 
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
     {
       pp_string (buffer, "#   ");
-      dump_generic_node (buffer, V_MAY_DEF_RESULT (v_may_defs, i),
+      dump_generic_node (buffer, DEF_FROM_PTR (def_p),
                          spc + 2, flags, false);
       pp_string (buffer, " = V_MAY_DEF <");
-      dump_generic_node (buffer, V_MAY_DEF_OP (v_may_defs, i),
+      dump_generic_node (buffer, USE_FROM_PTR (use_p),
                          spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
     }
 
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VMUSTDEF)
     {
-      tree v_must_def = V_MUST_DEF_OP (v_must_defs, i);
       pp_string (buffer, "#   V_MUST_DEF <");
-      dump_generic_node (buffer, v_must_def, spc + 2, flags, false);
+      dump_generic_node (buffer, def, spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
     }
 
-  for (i = 0; i < NUM_VUSES (vuses); i++)
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_VUSE)
     {
-      tree vuse = VUSE_OP (vuses, i);
       pp_string (buffer, "#   VUSE <");
-      dump_generic_node (buffer, vuse, spc + 2, flags, false);
+      dump_generic_node (buffer, use, spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
     }

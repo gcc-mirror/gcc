@@ -406,11 +406,8 @@ determine_max_movement (tree stmt, bool must_preserve_exec)
   struct loop *loop = bb->loop_father;
   struct loop *level;
   struct lim_aux_data *lim_data = LIM_DATA (stmt);
-  use_optype uses;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  stmt_ann_t ann = stmt_ann (stmt);
-  unsigned i;
+  tree val;
+  ssa_op_iter iter;
   
   if (must_preserve_exec)
     level = ALWAYS_EXECUTED_IN (bb);
@@ -418,19 +415,12 @@ determine_max_movement (tree stmt, bool must_preserve_exec)
     level = superloop_at_depth (loop, 1);
   lim_data->max_loop = level;
 
-  uses = USE_OPS (ann);
-  for (i = 0; i < NUM_USES (uses); i++)
-    if (!add_dependency (USE_OP (uses, i), lim_data, loop, true))
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
+    if (!add_dependency (val, lim_data, loop, true))
       return false;
 
-  vuses = VUSE_OPS (ann);
-  for (i = 0; i < NUM_VUSES (vuses); i++)
-    if (!add_dependency (VUSE_OP (vuses, i), lim_data, loop, false))
-      return false;
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    if (!add_dependency (V_MAY_DEF_OP (v_may_defs, i), lim_data, loop, false))
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
+    if (!add_dependency (val, lim_data, loop, false))
       return false;
 
   lim_data->cost += stmt_cost (stmt);
@@ -926,10 +916,10 @@ single_reachable_address (struct loop *loop, tree stmt,
   unsigned in_queue = 1;
   dataflow_t df;
   unsigned i, n;
-  v_may_def_optype v_may_defs;
-  vuse_optype vuses;
   struct sra_data sra_data;
   tree call;
+  tree val;
+  ssa_op_iter iter;
 
   sbitmap_zero (seen);
 
@@ -970,15 +960,9 @@ single_reachable_address (struct loop *loop, tree stmt,
 
 	  /* Traverse also definitions of the VUSES (there may be other
 	     distinct from the one we used to get to this statement).  */
-	  v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
-	  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-	    maybe_queue_var (V_MAY_DEF_OP (v_may_defs, i), loop,
-			     seen, queue, &in_queue);
+	  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
+	    maybe_queue_var (val, loop, seen, queue, &in_queue);
 
-	  vuses = STMT_VUSE_OPS (stmt);
-	  for (i = 0; i < NUM_VUSES (vuses); i++)
-	    maybe_queue_var (VUSE_OP (vuses, i), loop,
-			     seen, queue, &in_queue);
 	  break;
 
 	case PHI_NODE:
@@ -1029,32 +1013,15 @@ fail:
 static void
 rewrite_mem_refs (tree tmp_var, struct mem_ref *mem_refs)
 {
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  vuse_optype vuses;
-  unsigned i;
   tree var;
+  ssa_op_iter iter;
 
   for (; mem_refs; mem_refs = mem_refs->next)
     {
-      v_may_defs = STMT_V_MAY_DEF_OPS (mem_refs->stmt);
-      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+      FOR_EACH_SSA_TREE_OPERAND (var, mem_refs->stmt, iter,
+				 (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE))
 	{
-	  var = SSA_NAME_VAR (V_MAY_DEF_RESULT (v_may_defs, i));
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-
-      v_must_defs = STMT_V_MUST_DEF_OPS (mem_refs->stmt);
-      for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-	{
-	  var = SSA_NAME_VAR (V_MUST_DEF_OP (v_must_defs, i));
-	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
-	}
-
-      vuses = STMT_VUSE_OPS (mem_refs->stmt);
-      for (i = 0; i < NUM_VUSES (vuses); i++)
-	{
-	  var = SSA_NAME_VAR (VUSE_OP (vuses, i));
+	  var = SSA_NAME_VAR (var);
 	  bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
 	}
 

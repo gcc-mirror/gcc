@@ -253,7 +253,7 @@ static void restore_vars_to_original_value (varray_type locals,
 					    varray_type table);
 static void restore_currdefs_to_original_value (varray_type locals,
 						unsigned limit);
-static void register_definitions_for_stmt (stmt_ann_t, varray_type *);
+static void register_definitions_for_stmt (tree, varray_type *);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 
 /* Local version of fold that doesn't introduce cruft.  */
@@ -2698,41 +2698,16 @@ static bool
 cprop_into_stmt (tree stmt, varray_type const_and_copies)
 {
   bool may_have_exposed_new_symbols = false;
-  stmt_ann_t ann = stmt_ann (stmt);
-  size_t i, num_uses, num_vuses, num_v_may_defs;
-  vuse_optype vuses;
-  v_may_def_optype v_may_defs;
-  use_optype uses;
+  use_operand_p op_p;
+  ssa_op_iter iter;
 
-  uses = USE_OPS (ann);
-  num_uses = NUM_USES (uses);
-  for (i = 0; i < num_uses; i++)
+  FOR_EACH_SSA_USE_OPERAND (op_p, stmt, iter, SSA_OP_ALL_USES)
     {
-      use_operand_p op_p = USE_OP_PTR (uses, i);
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
 	  |= cprop_operand (stmt, op_p, const_and_copies);
     }
 
-  vuses = VUSE_OPS (ann);
-  num_vuses = NUM_VUSES (vuses);
-  for (i = 0; i < num_vuses; i++)
-    {
-      use_operand_p op_p = VUSE_OP_PTR (vuses, i);
-      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
-	may_have_exposed_new_symbols
-	  |= cprop_operand (stmt, op_p, const_and_copies);
-    }
-
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  num_v_may_defs = NUM_V_MAY_DEFS (v_may_defs);
-  for (i = 0; i < num_v_may_defs; i++)
-    {
-      use_operand_p op_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
-      if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
-	may_have_exposed_new_symbols
-	  |= cprop_operand (stmt, op_p, const_and_copies);
-    }
   return may_have_exposed_new_symbols;
 }
 
@@ -2830,7 +2805,7 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 				   may_optimize_p,
 				   ann);
 
-  register_definitions_for_stmt (ann, &bd->block_defs);
+  register_definitions_for_stmt (stmt, &bd->block_defs);
 
   /* If STMT is a COND_EXPR and it was modified, then we may know
      where it goes.  If that is the case, then mark the CFG as altered.
@@ -3373,39 +3348,17 @@ avail_expr_eq (const void *p1, const void *p2)
    and CURRDEFS.  */
 
 static void
-register_definitions_for_stmt (stmt_ann_t ann, varray_type *block_defs_p)
+register_definitions_for_stmt (tree stmt, varray_type *block_defs_p)
 {
-  def_optype defs;
-  v_may_def_optype v_may_defs;
-  v_must_def_optype v_must_defs;
-  unsigned int i;
+  tree def;
+  ssa_op_iter iter;
 
-  defs = DEF_OPS (ann);
-  for (i = 0; i < NUM_DEFS (defs); i++)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
-      tree def = DEF_OP (defs, i);
 
       /* FIXME: We shouldn't be registering new defs if the variable
 	 doesn't need to be renamed.  */
       register_new_def (def, block_defs_p);
-    }
-
-  /* Register new virtual definitions made by the statement.  */
-  v_may_defs = V_MAY_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    {
-      /* FIXME: We shouldn't be registering new defs if the variable
-	 doesn't need to be renamed.  */
-      register_new_def (V_MAY_DEF_RESULT (v_may_defs, i), block_defs_p);
-    }
-    
-  /* Register new virtual mustdefs made by the statement.  */
-  v_must_defs = V_MUST_DEF_OPS (ann);
-  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-    {
-      /* FIXME: We shouldn't be registering new defs if the variable
-	 doesn't need to be renamed.  */
-      register_new_def (V_MUST_DEF_OP (v_must_defs, i), block_defs_p);
     }
 }
 
