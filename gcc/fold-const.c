@@ -4007,9 +4007,12 @@ fold (expr)
 
       /* If we have A op B ? A : C, we may be able to convert this to a
 	 simpler expression, depending on the operation and the values
-	 of B and C.  */
+	 of B and C.  IEEE floating point prevents this though,
+	 because A or B might be -0.0 or a NaN.  */
 
       if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
+	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	      || TREE_CODE (TREE_TYPE (TREE_OPERAND (arg0, 0))) != REAL_TYPE)
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
 					     arg1, TREE_OPERAND (arg0, 1)))
 	{
