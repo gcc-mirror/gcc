@@ -1,4 +1,4 @@
-/* patch-header.c - Make C header file suitable for C++.
+/* fix-header.c - Make C header file suitable for C++.
    Copyright (C) 1993 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -59,7 +59,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    b) it would be nice to allow update in place.
 
    Usage:
-	patch-header FOO.H INFILE.H OUTFILE.H REQUIRED_FUNCS <SCAN-FILE
+	fix-header FOO.H INFILE.H OUTFILE.H REQUIRED_FUNCS <SCAN-FILE
    where:
    * FOO.H is the relative file name of the include file,
    as it would be #include'd by a C file.  (E.g. stdio.h)
@@ -148,7 +148,7 @@ lookup_std_proto (name)
 
 char *inc_filename;
 int inc_filename_length;
-char *progname = "patch-header";
+char *progname = "fix-header";
 FILE *outf;
 sstring buf;
 sstring line;
