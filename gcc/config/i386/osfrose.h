@@ -182,11 +182,27 @@ do									\
 									\
     if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)			\
       {									\
-	if (!flag_pic)							\
+	if (!flag_pic && !HALF_PIC_P ())				\
 	  {								\
-	    fprintf (FILE, "\tleal %sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
 	    fprintf (FILE, "\tcall *%s_mcount_ptr\n", prefix);		\
 	  }								\
+									\
+	else if (HALF_PIC_P ())						\
+	  {								\
+	    rtx symref;							\
+									\
+	    HALF_PIC_EXTERNAL ("_mcount_ptr");				\
+	    symref = HALF_PIC_PTR (gen_rtx (SYMBOL_REF, Pmode,		\
+					    "_mcount_ptr"));		\
+									\
+	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix,		\
+		     XSTR (symref, 0));					\
+	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
+	    fprintf (FILE, "\tcall *%%eax\n");				\
+	  }								\
+									\
 	else								\
 	  {								\
 	    static int call_no = 0;					\
@@ -199,6 +215,7 @@ do									\
 		     lprefix, labelno);					\
 	    fprintf (FILE, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",	\
 		     prefix);						\
+	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
 	    fprintf (FILE, "\tcall *%%eax\n");				\
 	  }								\
       }									\
@@ -246,6 +263,17 @@ do									\
 	    fprintf (FILE, "\tcall *%smcount@GOT(%%ebx)\n", prefix);	\
 	  }								\
 									\
+	else if (TARGET_MCOUNT && HALF_PIC_P ())			\
+	  {								\
+	    rtx symdef;							\
+									\
+	    HALF_PIC_EXTERNAL ("mcount");				\
+	    symdef = HALF_PIC_PTR (gen_rtx (SYMBOL_REF, Pmode, "mcount")); \
+	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix, XSTR (symdef, 0)); \
+	    fprintf (FILE, "\tcall *%%eax\n");				\
+	  }								\
+									\
 	else if (TARGET_MCOUNT)						\
 	  {								\
 	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
@@ -259,6 +287,7 @@ do									\
 	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%ebx),%%edx\n",	\
 		     lprefix, labelno);					\
 	    fprintf (FILE, "\tmovl _mcount_ptr@GOT(%%eax),%%eax\n");	\
+	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
 	    fprintf (FILE, "\tcall *%%eax\n");				\
 	    fprintf (FILE, "\tpopl %%eax\n");				\
 	  }								\
@@ -267,7 +296,7 @@ do									\
 	  {								\
 	    fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
 	    fprintf (FILE, "\tpushl %%ecx\n");				\
-	    fprintf (FILE, "\tleal $%sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
 	    fprintf (FILE, "\tcall *_mcount_ptr\n");			\
 	    fprintf (FILE, "\tpopl %%eax\n");				\
 	  }								\
@@ -565,8 +594,17 @@ while (0)
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
   {									\
-   if (HALF_PIC_P ())						        \
+   if (HALF_PIC_P ())							\
       HALF_PIC_ENCODE (DECL);						\
+									\
+   else if (flag_pic)							\
+     {									\
+       rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+		  ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+       SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
+	 = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
+	    || ! TREE_PUBLIC (DECL));					\
+      }									\
   }									\
 while (0)
 

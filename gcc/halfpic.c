@@ -268,6 +268,30 @@ half_pic_declare (name)
 }
 
 
+/* Mark that an object is explicitly external.  */
+
+void
+half_pic_external (name)
+     char *name;
+{
+  struct all_refs *ptr;
+
+  if (!flag_half_pic)
+    return;
+
+  ptr = half_pic_hash (name, 0, TRUE);
+  if (!ptr)
+    return;
+
+  ptr->external_p = TRUE;
+
+#ifdef HALF_PIC_DEBUG
+  if (HALF_PIC_DEBUG)
+    fprintf (stderr, "\n========== Half_pic_external %s\n", name);
+#endif
+}
+
+
 /* Return whether an address is half-pic.  */
 
 int

@@ -57,6 +57,7 @@ extern int  half_pic_number_ptrs;				/* # distinct pointers found */
 extern int  half_pic_number_refs;				/* # half-pic references */
 extern void half_pic_encode PROTO((union tree_node *));		/* encode whether half-pic */
 extern void half_pic_declare PROTO((char *));			/* declare object local */
+extern void half_pic_external PROTO((char *));			/* declare object external */
 extern void half_pic_init PROTO((void));			/* half_pic initialization */
 extern void half_pic_finish STDIO_PROTO((FILE *));		/* half_pic termination */
 extern int  half_pic_address_p PROTO((struct rtx_def *));	/* true if an address is half-pic */
@@ -71,6 +72,7 @@ extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for
 
 #define HALF_PIC_ENCODE(DECL)	half_pic_encode (DECL)
 #define HALF_PIC_DECLARE(NAME)	half_pic_declare (NAME)
+#define HALF_PIC_EXTERNAL(NAME)	half_pic_external (NAME)
 #define HALF_PIC_INIT()		half_pic_init ()
 #define HALF_PIC_FINISH(STREAM)	half_pic_finish (STREAM)
 #define HALF_PIC_ADDRESS_P(X)	((*ptr_half_pic_address_p) (X))
