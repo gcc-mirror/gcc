@@ -7804,9 +7804,6 @@ expand_expr (exp, target, tmode, modifier)
       return op0;
 
     case PLUS_EXPR:
-      /* We come here from MINUS_EXPR when the second operand is a
-         constant.  */
-    plus_expr:
       this_optab = ! unsignedp && flag_trapv
                    && (GET_MODE_CLASS (mode) == MODE_INT)
                    ? addv_optab : add_optab;
@@ -7916,6 +7913,8 @@ expand_expr (exp, target, tmode, modifier)
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
       op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
 
+      /* We come here from MINUS_EXPR when the second operand is a
+         constant.  */
     both_summands:
       /* Make sure any term that's a sum with a constant comes last.  */
       if (GET_CODE (op0) == PLUS
@@ -7985,27 +7984,33 @@ expand_expr (exp, target, tmode, modifier)
 	  else
 	    return gen_rtx_MINUS (mode, op0, op1);
 	}
-      /* Convert A - const to A + (-const).  */
-      if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
-	{
-	  tree negated = fold (build1 (NEGATE_EXPR, type,
-				       TREE_OPERAND (exp, 1)));
 
-	  if (TREE_UNSIGNED (type) || TREE_OVERFLOW (negated))
-	    /* If we can't negate the constant in TYPE, leave it alone and
-	       expand_binop will negate it for us.  We used to try to do it
-	       here in the signed version of TYPE, but that doesn't work
-	       on POINTER_TYPEs.  */;
-	  else
-	    {
-	      exp = build (PLUS_EXPR, type, TREE_OPERAND (exp, 0), negated);
-	      goto plus_expr;
-	    }
-	}
       this_optab = ! unsignedp && flag_trapv
                    && (GET_MODE_CLASS(mode) == MODE_INT)
                    ? subv_optab : sub_optab;
-      goto binop;
+
+      /* No sense saving up arithmetic to be done
+	 if it's all in the wrong mode to form part of an address.
+	 And force_operand won't know whether to sign-extend or
+	 zero-extend.  */
+      if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
+	  || mode != ptr_mode)
+	goto binop;
+
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
+	subtarget = 0;
+
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
+      op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
+
+      /* Convert A - const to A + (-const).  */
+      if (GET_CODE (op1) == CONST_INT)
+	{
+	  op1 = negate_rtx (mode, op1);
+	  goto both_summands;
+	}
+
+      goto binop2;
 
     case MULT_EXPR:
       /* If first operand is constant, swap them.
