@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
@@ -166,7 +166,7 @@ next_fde (fde *f)
 extern fde * _Unwind_Find_FDE (void *, struct dwarf_eh_bases *);
 
 static inline int
-last_fde (struct object *obj, fde *f)
+last_fde (struct object *obj ATTRIBUTE_UNUSED, fde *f)
 {
 #ifdef DWARF2_OBJECT_END_PTR_EXTENSION
   return (char *)f == obj->fde_end || f->length == 0;

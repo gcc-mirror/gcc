@@ -1,10 +1,14 @@
+2003-01-05  Andreas Jaeger  <aj@suse.de>
+
+	* unwind-dw2-fde.h (last_fde): Add unused attribute for obj.
+
 2003-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa64-hpux.h (JCR_SECTION_NAME): Define.
 	(PA_INIT_FRAME_DUMMY_ASM_OP): Check EH_FRAME_SECTION_NAME instead of
 	USE_EH_FRAME_REGISTRY when defining.
 
-2002-01-04  John David Anglin  <dave.anglin@nrc.ca>
+2003-01-04  John David Anglin  <dave.anglin@nrc.ca>
 
 	* config.gcc (hppa*64*-*-hpux11*): Define extra_parts.  Don't use
 	collect2.
@@ -1324,7 +1328,7 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 	(ggc_realloc): Update valgrind annotations.
 	* ggc-page.c [!ENABLE_VALGRIND_CHECKING] (VALGRIND_DISCARD):
 	Define as empty.
- 	(alloc_anon, free_page, ggc_alloc, poison_pages): Add machinery to
+	(alloc_anon, free_page, ggc_alloc, poison_pages): Add machinery to
 	valgrind-annotate memory.
 
 2002-11-20  Ulrich Weigand  <uweigand@de.ibm.com>
