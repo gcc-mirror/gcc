@@ -1,3 +1,8 @@
+2003-03-25  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* doc/contrib.texi (Contributors): Mention self as 68HC11/68HC12
+	contributor.
+
 Tue Mar 25 20:35:51 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_rtx_costs): For -fpic and x86-64 local symbolic

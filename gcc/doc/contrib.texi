@@ -109,6 +109,9 @@ John Carr for his alias work, SPARC hacking, infrastructure improvements,
 previous contributions to the steering committee, loop optimizations, etc.
 
 @item
+Stephane Carrez for 68HC11 and 68HC12 ports.
+
+@item
 Steve Chamberlain for support for the Hitachi SH and H8 processors
 and the PicoJava processor, and for GCJ config fixes.
 
