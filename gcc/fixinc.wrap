@@ -53,6 +53,35 @@ __EOF__
   fi
 fi
 
+# Similarly for struct queue in sys/stream.h.
+file=sys/stream.h
+if [ -r $INPUT/$file ]; then
+  echo Checking $INPUT/$file
+  if grep 'struct[ 	]*queue' $INPUT/$file >/dev/null
+  then
+    echo Fixed $file
+    mkdir -p $LIB/`dirname $file`
+    rm -f $LIB/$file
+    cat <<'__EOF__' >$LIB/$file
+#ifndef _SYS_STREAM_H_WRAPPER
+#ifdef __cplusplus
+# define queue __stream_queue
+#endif
+#include_next <sys/stream.h>
+#ifdef __cplusplus
+# undef queue
+#endif
+#define _SYS_STREAM_H_WRAPPER
+#endif /* _SYS_STREAM_H_WRAPPER */
+__EOF__
+    # Define _SYS_STREAM_H_WRAPPER at the end of the wrapper, not the start,
+    # so that if #include_next gets another instance of the wrapper,
+    # this will follow the #include_next chain until we arrive at
+    # the real <sys/stream.h>.
+    chmod a+r $LIB/$file
+  fi
+fi
+
 # Avoid the definition of the bool type in the Solaris 2.x curses.h when using
 # g++, since it's now an official type in the C++ language.
 file=curses.h
