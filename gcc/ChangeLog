@@ -1,3 +1,9 @@
+Thu Jun 21 22:15:10 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (barrier_align): Also recognize branch-around-a-jump-sequence
+	from machine-depedent_reorg for purposes of alignment supression
+	when no delay slot insn has been added.
+
 2001-06-21  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cppmacro.c (make_string_token): Null terminate.

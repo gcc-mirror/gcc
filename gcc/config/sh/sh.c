@@ -2948,11 +2948,10 @@ barrier_align (barrier_or_label)
 	      /* There is no upper bound on redundant instructions that
 		 might have been skipped, but we must not put an alignment
 		 where none had been before.  */
-	      || (NEXT_INSN (PREV_INSN (prev)) != prev
-		  && ((INSN_CODE (NEXT_INSN (NEXT_INSN (prev)))
-		       == CODE_FOR_block_branch_redirect)
-		      || (INSN_CODE (NEXT_INSN (NEXT_INSN (prev)))
-			  == CODE_FOR_indirect_jump_scratch)))))
+	      || (INSN_CODE (NEXT_INSN (NEXT_INSN (PREV_INSN (prev))))
+		  == CODE_FOR_block_branch_redirect)
+	      || (INSN_CODE (NEXT_INSN (NEXT_INSN (PREV_INSN (prev))))
+		  == CODE_FOR_indirect_jump_scratch)))
 	{
 	  rtx pat = PATTERN (prev);
 	  if (GET_CODE (pat) == PARALLEL)
