@@ -1,3 +1,7 @@
+2003-02-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): Add a case of 255.
+
 2003-02-11  Roger Sayle  <roger@eyesopen.com>
 
 	* optabs.h (enum optab_index): Add new OTI_pow and OTI_atan2.
