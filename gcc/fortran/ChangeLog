@@ -1,4 +1,71 @@
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Andrew Vaught  <andyv@firstinter.net>
+
+	PR fortran/13249
+	PR fortran/15481
+	* declc (gfc_match_save): Adapt to new common structures,
+	don't allow saving USE-associated common.
+	* dump-parse-tree (gfc_show_attr): (saved_)common are not
+	symbol attributes any longer.
+	(gfc_show_symbol): Don't show old-style commons any longer.
+	(gfc_show_namespace): Adapt call to gfc_traverse_symtree to new
+	interface.
+	* gfortran.h (symbol_attribute): Remove common and saved_common
+	attributes.
+	(gfc_symbol): Remove common_head element.
+	(gfc_common_head): New struct.
+	(gfc_get_common_head): New macro.
+	(gfc_symtree): Add field 'common' to union.
+	(gfc_namespace): Add field 'common_root'; change type of field
+	'blank_common' to blank_common.
+	(gfc_add_data): New prototype.
+	(gfc_traverse_symtree): Expect a symtree as first argument
+	instead of namespace.
+	* match.c (gfc_get_common): New function.
+	(match_common_name): Change to take char * as argument, adapt,
+	fix bug with empty name.
+	(gfc_match_common): Adapt to new data structures. Disallow
+	redeclaration of USE-associated COMMON-block. Fix bug with
+	empty common.
+	(var_element): Adapt to new common structures.
+	* match.h (gfc_get_common): Declare.
+	* module.c: Add 2004 to copyright years, add commons to module
+	file layout description.
+	(ab_attribute, attr_bits, mio_symbol_attributes): Remove code
+	for removed attributes.
+	(mio_symbol): Adapt to new way of storing common relations.
+	(load_commons): New function.
+	(read_module): Skip common list on first pass, load_commons at
+	second.
+	(write_commons): New function.
+	(write_module): Call write_commons().
+	* symbol.c (gfc_add_saved_comon, gfc_add_common): Remove
+	functions related to removed attributes.
+	(gfc_add_data): New function.
+	(gfc_clear_attr): Don't set removed attributes.
+	(gfc_copy_attr): Don't copy removed attributes.
+	(traverse_symtree): Remove.
+	(gfc_traverse_symtree): Don't traverse symbol 
+	tree of the passed namespace, but require a symtree to be passed
+	instead. Unify with traverse_symtree.
+	(gfc_traverse_ns): Call gfc_traverse_symtree according to new
+	interface.
+	(save_symbol): Remove setting of removed attribute.
+	* trans-common.c (gfc_sym_mangled_common_id): Change to
+	take 'char *' argument instead of 'gfc_symbol'.
+	(build_common_decl, new_segment, translate_common): Adapt to new
+	data structures, add new
+	argument name.
+	(create_common): Adapt to new data structures, add new
+	argument name. Fix typo in intialization of derived types.
+	(finish_equivalences): Add second argument in call to
+	create_common.
+	(named_common): take 'gfc_symtree' instead of 'gfc_symbol'.
+	(gfc_trans_common): Adapt to new data structures.
+	* trans-decl.c (gfc_create_module_variables): Also output
+	symbols from commons.
+
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io.c: Add 2004 to copyright years.
 

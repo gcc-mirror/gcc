@@ -2246,23 +2246,49 @@ error:
 }
 
 
+/* Given a name, return a pointer to the common head structure,
+   creating it if it does not exist.
+   TODO: Add to global symbol tree.  */
+
+gfc_common_head *
+gfc_get_common (char *name)
+{
+  gfc_symtree *st;
+
+  st = gfc_find_symtree (gfc_current_ns->common_root, name);
+  if (st == NULL)
+    st = gfc_new_symtree (&gfc_current_ns->common_root, name);
+
+  if (st->n.common == NULL)
+    {
+      st->n.common = gfc_get_common_head ();
+      st->n.common->where = gfc_current_locus;
+    }
+
+  return st->n.common;
+}
+
+
 /* Match a common block name.  */
 
 static match
-match_common_name (gfc_symbol ** sym)
+match_common_name (char *name)
 {
   match m;
 
   if (gfc_match_char ('/') == MATCH_NO)
-    return MATCH_NO;
-
-  if (gfc_match_char ('/') == MATCH_YES)
     {
-      *sym = NULL;
+      name[0] = '\0';
       return MATCH_YES;
     }
 
-  m = gfc_match_symbol (sym, 0);
+  if (gfc_match_char ('/') == MATCH_YES)
+    {
+      name[0] = '\0';
+      return MATCH_YES;
+    }
+
+  m = gfc_match_name (name);
 
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
@@ -2279,18 +2305,19 @@ match_common_name (gfc_symbol ** sym)
 match
 gfc_match_common (void)
 {
-  gfc_symbol *sym, *common_name, **head, *tail, *old_blank_common;
+  gfc_symbol *sym, **head, *tail, *old_blank_common;
+  char name[GFC_MAX_SYMBOL_LEN+1];
+  gfc_common_head *t;
   gfc_array_spec *as;
   match m;
 
-  old_blank_common = gfc_current_ns->blank_common;
+  old_blank_common = gfc_current_ns->blank_common.head;
   if (old_blank_common)
     {
       while (old_blank_common->common_next)
 	old_blank_common = old_blank_common->common_next;
     }
 
-  common_name = NULL;
   as = NULL;
 
   if (gfc_match_eos () == MATCH_YES)
@@ -2298,19 +2325,28 @@ gfc_match_common (void)
 
   for (;;)
     {
-      m = match_common_name (&common_name);
+      m = match_common_name (name);
       if (m == MATCH_ERROR)
 	goto cleanup;
 
-      if (common_name == NULL)
-	head = &gfc_current_ns->blank_common;
+      if (name[0] == '\0')
+	{
+	  t = &gfc_current_ns->blank_common;
+	  if (t->head == NULL)
+	    t->where = gfc_current_locus;
+	  head = &t->head;
+	}
       else
 	{
-	  head = &common_name->common_head;
+	  t = gfc_get_common (name);
+	  head = &t->head;
 
-	  if (!common_name->attr.common
-	      && gfc_add_common (&common_name->attr, NULL) == FAILURE)
-	    goto cleanup;
+	  if (t->use_assoc)
+	    {
+	      gfc_error ("COMMON block '%s' at %C has already "
+			 "been USE-associated");
+	      goto cleanup;
+	    }
 	}
 
       if (*head == NULL)
@@ -2323,6 +2359,9 @@ gfc_match_common (void)
 	}
 
       /* Grab the list of symbols.  */
+      if (gfc_match_eos () == MATCH_YES)
+	goto done;
+  
       for (;;)
 	{
 	  m = gfc_match_symbol (&sym, 0);
@@ -2338,16 +2377,18 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
+	  if (gfc_add_in_common (&sym->attr, NULL) == FAILURE) 
+	    goto cleanup;
+
 	  if (sym->value != NULL
-	      && (common_name == NULL || !sym->attr.data))
+	      && (name[0] == '\0' || !sym->attr.data))
 	    {
-	      if (common_name == NULL)
+	      if (name[0] == '\0')
 		gfc_error ("Previously initialized symbol '%s' in "
 			   "blank COMMON block at %C", sym->name);
 	      else
 		gfc_error ("Previously initialized symbol '%s' in "
-			   "COMMON block '%s' at %C", sym->name,
-			   common_name->name);
+			   "COMMON block '%s' at %C", sym->name, name);
 	      goto cleanup;
 	    }
 
@@ -2422,7 +2463,7 @@ cleanup:
   if (old_blank_common)
     old_blank_common->common_next = NULL;
   else
-    gfc_current_ns->blank_common = NULL;
+    gfc_current_ns->blank_common.head = NULL;
   gfc_free_array_spec (as);
   return MATCH_ERROR;
 }
@@ -2827,7 +2868,8 @@ static match
 var_element (gfc_data_variable * new)
 {
   match m;
-  gfc_symbol *sym, *t;
+  gfc_symbol *sym;
+  gfc_common_head *t;
 
   memset (new, '\0', sizeof (gfc_data_variable));
 
@@ -2847,17 +2889,20 @@ var_element (gfc_data_variable * new)
       return MATCH_ERROR;
     }
 
+#if 0 // TODO: Find out where to move this message
   if (sym->attr.in_common)
     /* See if sym is in the blank common block.  */
-    for (t = sym->ns->blank_common; t; t = t->common_next)
-      if (sym == t)
+    for (t = &sym->ns->blank_common; t; t = t->common_next)
+      if (sym == t->head)
 	{
 	  gfc_error ("DATA statement at %C may not initialize variable "
 		     "'%s' from blank COMMON", sym->name);
 	  return MATCH_ERROR;
 	}
+#endif
 
-  sym->attr.data = 1;
+  if (gfc_add_data (&sym->attr, &new->expr->where) == FAILURE)
+    return MATCH_ERROR;
 
   return MATCH_YES;
 }

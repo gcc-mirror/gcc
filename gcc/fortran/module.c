@@ -1,6 +1,7 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, 
+   Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -41,6 +42,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      ...
    )
    ( ( <name of generic interface> <module of generic interface> <i/f1> ... )
+     ...
+   )
+   ( ( <common name> <symbol> <saved flag>)
      ...
    )
    ( <Symbol Number (in no particular order)>
@@ -1361,8 +1365,8 @@ mio_internal_string (char *string)
 
 typedef enum
 { AB_ALLOCATABLE, AB_DIMENSION, AB_EXTERNAL, AB_INTRINSIC, AB_OPTIONAL,
-  AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_COMMON, AB_RESULT,
-  AB_ENTRY, AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, AB_SAVED_COMMON,
+  AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_RESULT,
+  AB_ENTRY, AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
   AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
   AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT
 }
@@ -1379,13 +1383,11 @@ static const mstring attr_bits[] =
     minit ("SAVE", AB_SAVE),
     minit ("TARGET", AB_TARGET),
     minit ("DUMMY", AB_DUMMY),
-    minit ("COMMON", AB_COMMON),
     minit ("RESULT", AB_RESULT),
     minit ("ENTRY", AB_ENTRY),
     minit ("DATA", AB_DATA),
     minit ("IN_NAMELIST", AB_IN_NAMELIST),
     minit ("IN_COMMON", AB_IN_COMMON),
-    minit ("SAVED_COMMON", AB_SAVED_COMMON),
     minit ("FUNCTION", AB_FUNCTION),
     minit ("SUBROUTINE", AB_SUBROUTINE),
     minit ("SEQUENCE", AB_SEQUENCE),
@@ -1450,8 +1452,6 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_TARGET, attr_bits);
       if (attr->dummy)
 	MIO_NAME(ab_attribute) (AB_DUMMY, attr_bits);
-      if (attr->common)
-	MIO_NAME(ab_attribute) (AB_COMMON, attr_bits);
       if (attr->result)
 	MIO_NAME(ab_attribute) (AB_RESULT, attr_bits);
       if (attr->entry)
@@ -1463,8 +1463,6 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_IN_NAMELIST, attr_bits);
       if (attr->in_common)
 	MIO_NAME(ab_attribute) (AB_IN_COMMON, attr_bits);
-      if (attr->saved_common)
-	MIO_NAME(ab_attribute) (AB_SAVED_COMMON, attr_bits);
 
       if (attr->function)
 	MIO_NAME(ab_attribute) (AB_FUNCTION, attr_bits);
@@ -1527,9 +1525,6 @@ mio_symbol_attribute (symbol_attribute * attr)
 	    case AB_DUMMY:
 	      attr->dummy = 1;
 	      break;
-	    case AB_COMMON:
-	      attr->common = 1;
-	      break;
 	    case AB_RESULT:
 	      attr->result = 1;
 	      break;
@@ -1544,9 +1539,6 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_IN_COMMON:
 	      attr->in_common = 1;
-	      break;
-	    case AB_SAVED_COMMON:
-	      attr->saved_common = 1;
 	      break;
 	    case AB_FUNCTION:
 	      attr->function = 1;
@@ -2679,7 +2671,6 @@ mio_symbol (gfc_symbol * sym)
     }
 
   /* Save/restore common block links */
-  mio_symbol_ref (&sym->common_head);
   mio_symbol_ref (&sym->common_next);
 
   mio_formal_arglist (sym);
@@ -2697,9 +2688,6 @@ mio_symbol (gfc_symbol * sym)
   if (sym->components != NULL)
     sym->component_access =
       MIO_NAME(gfc_access) (sym->component_access, access_types);
-
-  mio_symbol_ref (&sym->common_head);
-  mio_symbol_ref (&sym->common_next);
 
   mio_rparen ();
 }
@@ -2820,6 +2808,34 @@ load_generic_interfaces (void)
 }
 
 
+/* Load common blocks.  */
+
+static void
+load_commons(void)
+{
+  char name[GFC_MAX_SYMBOL_LEN+1];
+  gfc_common_head *p;
+
+  mio_lparen ();
+
+  while (peek_atom () != ATOM_RPAREN)
+    {
+      mio_lparen ();
+      mio_internal_string (name);
+
+      p = gfc_get_common (name);
+
+      mio_symbol_ref (&p->head);
+      mio_integer (&p->saved);
+      p->use_assoc = 1;
+
+      mio_rparen();
+    }
+
+  mio_rparen();
+}
+
+
 /* Recursive function to traverse the pointer_info tree and load a
    needed symbol.  We return nonzero if we load a symbol and stop the
    traversal, because the act of loading can alter the tree.  */
@@ -2929,6 +2945,7 @@ read_module (void)
   skip_list ();
 
   get_module_locus (&user_operators);
+  skip_list ();
   skip_list ();
   skip_list ();
 
@@ -3067,6 +3084,8 @@ read_module (void)
   load_operator_interfaces ();
   load_generic_interfaces ();
 
+  load_commons ();
+
   /* At this point, we read those symbols that are needed but haven't
      been loaded yet.  If one symbol requires another, the other gets
      marked as NEEDED if its previous state was UNUSED.  */
@@ -3134,6 +3153,30 @@ check_access (gfc_access specific_access, gfc_access default_access)
     }
 
   return 0;
+}
+
+
+/* Write a common block to the module */
+
+static void
+write_common (gfc_symtree *st)
+{
+  gfc_common_head *p;
+
+  if (st == NULL)
+    return;
+
+  write_common(st->left);
+  write_common(st->right);
+
+  mio_lparen();
+  mio_internal_string(st->name);
+
+  p = st->n.common;
+  mio_symbol_ref(&p->head);
+  mio_integer(&p->saved);
+
+  mio_rparen();
 }
 
 
@@ -3329,6 +3372,12 @@ write_module (void)
   write_char ('\n');
   write_char ('\n');
 
+  mio_lparen ();
+  write_common (gfc_current_ns->common_root);
+  mio_rparen ();
+  write_char ('\n');
+  write_char ('\n');
+
   /* Write symbol information.  First we traverse all symbols in the
      primary namespace, writing those that need to be written.
      Sometimes writing one symbol will cause another to need to be
@@ -3347,7 +3396,7 @@ write_module (void)
   write_char ('\n');
 
   mio_lparen ();
-  gfc_traverse_symtree (gfc_current_ns, write_symtree);
+  gfc_traverse_symtree (gfc_current_ns->sym_root, write_symtree);
   mio_rparen ();
 }
 

@@ -2427,6 +2427,8 @@ gfc_match_parameter (void)
 match
 gfc_match_save (void)
 {
+  char n[GFC_MAX_SYMBOL_LEN+1];
+  gfc_common_head *c;
   gfc_symbol *sym;
   match m;
 
@@ -2469,14 +2471,22 @@ gfc_match_save (void)
 	  return MATCH_ERROR;
 	}
 
-      m = gfc_match (" / %s /", &sym);
+      m = gfc_match (" / %n /", &n);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
       if (m == MATCH_NO)
 	goto syntax;
 
-      if (gfc_add_saved_common (&sym->attr, NULL) == FAILURE)
-	return MATCH_ERROR;
+      c = gfc_get_common (n);
+
+      if (c->use_assoc) 
+	{       
+	  gfc_error("COMMON block '%s' at %C is already USE associated", n);
+	  return MATCH_ERROR;
+	}
+
+      c->saved = 1;
+
       gfc_current_ns->seen_save = 1;
 
     next_item:

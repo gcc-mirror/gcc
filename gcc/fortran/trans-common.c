@@ -168,24 +168,24 @@ add_segments (segment_info *list, segment_info *v)
 /* Construct mangled common block name from symbol name.  */
 
 static tree
-gfc_sym_mangled_common_id (gfc_symbol *sym)
+gfc_sym_mangled_common_id (const char  *name)
 {
   int has_underscore;
-  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
+  char mangled_name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
 
-  if (strcmp (sym->name, BLANK_COMMON_NAME) == 0)
-    return get_identifier (sym->name);
+  if (strcmp (name, BLANK_COMMON_NAME) == 0)
+    return get_identifier (name);
   if (gfc_option.flag_underscoring)
     {
-      has_underscore = strchr (sym->name, '_') != 0;
+      has_underscore = strchr (name, '_') != 0;
       if (gfc_option.flag_second_underscore && has_underscore)
-        snprintf (name, sizeof name, "%s__", sym->name);
+        snprintf (mangled_name, sizeof mangled_name, "%s__", name);
       else
-        snprintf (name, sizeof name, "%s_", sym->name);
-      return get_identifier (name);
+        snprintf (mangled_name, sizeof mangled_name, "%s_", name);
+      return get_identifier (mangled_name);
     }
   else
-    return get_identifier (sym->name);
+    return get_identifier (name);
 }
 
 
@@ -252,7 +252,8 @@ build_equiv_decl (tree union_type, bool is_init)
 /* Get storage for common block.  */
 
 static tree
-build_common_decl (gfc_symbol *sym, tree union_type, bool is_init)
+build_common_decl (gfc_common_head *com, const char *name, 
+		   tree union_type, bool is_init)
 {
   gfc_symbol *common_sym;
   tree decl;
@@ -261,7 +262,7 @@ build_common_decl (gfc_symbol *sym, tree union_type, bool is_init)
   if (gfc_common_ns == NULL)
     gfc_common_ns = gfc_get_namespace (NULL);
 
-  gfc_get_symbol (sym->name, gfc_common_ns, &common_sym);
+  gfc_get_symbol (name, gfc_common_ns, &common_sym);
   decl = common_sym->backend_decl;
 
   /* Update the size of this common block as needed.  */
@@ -273,9 +274,9 @@ build_common_decl (gfc_symbol *sym, tree union_type, bool is_init)
           /* Named common blocks of the same name shall be of the same size
              in all scoping units of a program in which they appear, but
              blank common blocks may be of different sizes.  */
-          if (strcmp (sym->name, BLANK_COMMON_NAME))
+          if (strcmp (name, BLANK_COMMON_NAME))
               gfc_warning ("Named COMMON block '%s' at %L shall be of the "
-                           "same size", sym->name, &sym->declared_at);
+                           "same size", name, &com->where);
           DECL_SIZE_UNIT (decl) = size;
         }
      }
@@ -289,8 +290,8 @@ build_common_decl (gfc_symbol *sym, tree union_type, bool is_init)
   /* If there is no backend_decl for the common block, build it.  */
   if (decl == NULL_TREE)
     {
-      decl = build_decl (VAR_DECL, get_identifier (sym->name), union_type);
-      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (sym));
+      decl = build_decl (VAR_DECL, get_identifier (name), union_type);
+      SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (name));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
       DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
@@ -323,7 +324,7 @@ build_common_decl (gfc_symbol *sym, tree union_type, bool is_init)
    backend declarations for all of the elements.  */
 
 static void
-create_common (gfc_symbol *sym)
+create_common (gfc_common_head *com, const char *name)
 { 
   segment_info *h, *next_s; 
   tree union_type;
@@ -354,8 +355,8 @@ create_common (gfc_symbol *sym)
     }
   finish_record_layout (rli, true);
 
-  if (sym)
-    decl = build_common_decl (sym, union_type, is_init);
+  if (com)
+    decl = build_common_decl (com, name, union_type, is_init);
   else
     decl = build_equiv_decl (union_type, is_init);
 
@@ -395,7 +396,7 @@ create_common (gfc_symbol *sym)
 
 		    case BT_DERIVED:
 		      gfc_init_se (&se, NULL);
-		      gfc_conv_structure (&se, sym->value, 1);
+		      gfc_conv_structure (&se, h->sym->value, 1);
 		      break;
 
 		    default:
@@ -725,7 +726,7 @@ add_equivalences (void)
    and all of the symbols equivalenced with that symbol.  */
  
 static void
-new_segment (gfc_symbol *common_sym, gfc_symbol *sym)
+new_segment (gfc_common_head *common, const char *name, gfc_symbol *sym)
 {
   HOST_WIDE_INT length;
 
@@ -742,7 +743,7 @@ new_segment (gfc_symbol *common_sym, gfc_symbol *sym)
   if (current_segment->offset < 0)
     gfc_error ("The equivalence set for '%s' cause an invalid extension "
 	       "to COMMON '%s' at %L",
-	       sym->name, common_sym->name, &common_sym->declared_at);
+	       sym->name, name, &common->where);
 
   /* The offset of the next common variable.  */ 
   current_offset += length;
@@ -783,7 +784,7 @@ finish_equivalences (gfc_namespace *ns)
 	  v->offset -= min_offset;
 
         current_common = current_segment;
-        create_common (NULL);
+        create_common (NULL, NULL);
         break;
       }
 }
@@ -792,7 +793,8 @@ finish_equivalences (gfc_namespace *ns)
 /* Translate a single common block.  */
 
 static void 
-translate_common (gfc_symbol *common_sym, gfc_symbol *var_list)
+translate_common (gfc_common_head *common, const char *name, 
+		  gfc_symbol *var_list)
 {
   gfc_symbol *sym;
 
@@ -803,20 +805,19 @@ translate_common (gfc_symbol *common_sym, gfc_symbol *var_list)
   for (sym = var_list; sym; sym = sym->common_next)
     {
       if (! sym->equiv_built)
-	new_segment (common_sym, sym);
+	new_segment (common, name, sym);
     }
 
-  create_common (common_sym);
+  create_common (common, name);
 }          
  
 
 /* Work function for translating a named common block.  */
 
 static void
-named_common (gfc_symbol *s)
+named_common (gfc_symtree *st)
 {
-  if (s->attr.common)
-    translate_common (s, s->common_head);
+  translate_common (st->n.common, st->name, st->n.common->head);
 }
 
 
@@ -827,17 +828,17 @@ named_common (gfc_symbol *s)
 void 
 gfc_trans_common (gfc_namespace *ns)
 {
-  gfc_symbol *sym;
+  gfc_common_head *c;
 
   /* Translate the blank common block.  */
-  if (ns->blank_common != NULL)
+  if (ns->blank_common.head != NULL)
     {
-      gfc_get_symbol (BLANK_COMMON_NAME, ns, &sym);
-      translate_common (sym, ns->blank_common);
+      c = gfc_get_common_head ();
+      translate_common (c, BLANK_COMMON_NAME, ns->blank_common.head);
     }
  
   /* Translate all named common blocks.  */
-  gfc_traverse_ns (ns, named_common); 
+  gfc_traverse_symtree (ns->common_root, named_common); 
 
   /* Commit the newly created symbols for common blocks.  */
   gfc_commit_symbols ();

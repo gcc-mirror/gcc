@@ -1787,10 +1787,6 @@ gfc_create_module_variable (gfc_symbol * sym)
       internal_error ("module symbol %s in wrong namespace", sym->name);
     }
 
-  /* Don't ouptut symbols from common blocks.  */
-  if (sym->attr.common)
-    return;
-
   /* Only output variables and array valued parametes.  */
   if (sym->attr.flavor != FL_VARIABLE
       && (sym->attr.flavor != FL_PARAMETER || sym->attr.dimension == 0))
