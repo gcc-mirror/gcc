@@ -1,3 +1,8 @@
+Tue Feb  2 23:38:35 1999  David O'Brien <obrien@FreeBSD.org>
+
+	* i386/freebsd*.h now allows '$' in label names and does not use the PCC struct
+	return method.
+
 Tue Feb  2 22:38:23 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in: Change all uses of AR to AR_FOR_TARGET.  Change all uses
