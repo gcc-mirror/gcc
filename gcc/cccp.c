@@ -3275,10 +3275,10 @@ startagain:
 	      /* This is now known to be a macro call.
 		 Discard the macro name from the output,
 		 along with any following whitespace just copied,
-		 but preserve newlines at the top level since this
+		 but preserve newlines if not outputting marks since this
 		 is more likely to do the right thing with line numbers.  */
 	      obp = op->buf + obufp_before_macroname;
-	      if (ip->macro != 0)
+	      if (output_marks)
 		op->lineno = op_lineno_before_macroname;
 	      else {
 		int newlines = op->lineno - op_lineno_before_macroname;
