@@ -1,3 +1,10 @@
+2005-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/20527
+	* combine.c (can_combine_p) [AUTO_INC_DEC]: When INSN has an
+	REG_INC note, test that the register also isn't mentioned in PRED
+	or SUCC.
+
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (TARGET_ASM_FILE_END): Undefine before

@@ -1316,9 +1316,9 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
     if (INSN_P (p) && p != succ && volatile_insn_p (PATTERN (p)))
       return 0;
 
-  /* If INSN or I2 contains an autoincrement or autodecrement,
-     make sure that register is not used between there and I3,
-     and not already used in I3 either.
+  /* If INSN contains an autoincrement or autodecrement, make sure that
+     register is not used between there and I3, and not already used in
+     I3 either.  Neither must it be used in PRED or SUCC, if they exist.
      Also insist that I3 not be a jump; if it were one
      and the incremented register were spilled, we would lose.  */
 
@@ -1327,6 +1327,10 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
     if (REG_NOTE_KIND (link) == REG_INC
 	&& (JUMP_P (i3)
 	    || reg_used_between_p (XEXP (link, 0), insn, i3)
+	    || (pred != NULL_RTX
+		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (pred)))
+	    || (succ != NULL_RTX
+		&& reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (succ)))
 	    || reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i3))))
       return 0;
 #endif
