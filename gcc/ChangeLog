@@ -1,3 +1,8 @@
+2000-05-11  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* mklibgcc.in (EQ): Define it to an equal sign in the Makefile,
+	and replace any occurrences of `=' in multilib dirs with `$(EQ)'.
+
 2000-05-11  Jason Merrill  <jason@casey.cygnus.com>
 
 	* fixinc/fixincl.c (run_compiles): Don't crash on null pz_machine.

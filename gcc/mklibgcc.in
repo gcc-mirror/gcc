@@ -27,6 +27,7 @@
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
 echo 'VPATH = @srcdir@'
+echo 'EQ = ='
 echo
 
 # Detect gcc as OLDCC.  This indicates a target for which LIB1FUNCS
@@ -87,7 +88,7 @@ case X"$LIBGCC1" in
   Xlibgcc1-asm.a)
     for name in $LIB1ASMFUNCS; do
       for ml in $MULTILIBS; do
-        dir=`echo ${ml} | sed -e 's/;.*$//'`
+        dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
         out="libgcc/${dir}/${name}${objext}"
 
@@ -150,7 +151,7 @@ libgcc2_objs=""
 
 for name in $LIB2FUNCS; do
   for ml in $MULTILIBS; do
-    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
@@ -163,7 +164,7 @@ done
 
 for name in $LIB2FUNCS_EH; do
   for ml in $MULTILIBS; do
-    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
@@ -177,7 +178,7 @@ done
 if [ "$FPBIT" ]; then
   for name in $FPBIT_FUNCS; do
     for ml in $MULTILIBS; do
-      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
@@ -192,7 +193,7 @@ fi
 if [ "$DPBIT" ]; then
   for name in $DPBIT_FUNCS; do
     for ml in $MULTILIBS; do
-      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
@@ -214,7 +215,7 @@ for file in $LIB2ADD; do
 
       lastout=""
       for ml in $MULTILIBS; do
-        dir=`echo ${ml} | sed -e 's/;.*$//'`
+        dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
         out="libgcc/${dir}/${f}"
 
@@ -234,7 +235,7 @@ for file in $LIB2ADD; do
     done
   else
     for ml in $MULTILIBS; do
-      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${oname}${objext}"
       if [ ${name}.asm = ${file} ]; then
@@ -249,7 +250,7 @@ for file in $LIB2ADD; do
 done
 
 for ml in $MULTILIBS; do
-  dir=`echo ${ml} | sed -e 's/;.*$//'`
+  dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
 
   libgcc_objs=""
   for o in $libgcc1_objs; do
@@ -276,7 +277,7 @@ echo ""
 all=""
 
 for ml in $MULTILIBS; do
-  dir=`echo ${ml} | sed -e 's/;.*$//'`
+  dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   if [ $dir = . ]; then
     echo "libgcc:; mkdir libgcc"
     all="$all libgcc"
@@ -291,7 +292,7 @@ done
 for f in $EXTRA_MULTILIB_PARTS; do
   lastout=""
   for ml in $MULTILIBS; do
-    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="$dir/$f"
 
