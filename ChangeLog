@@ -1,3 +1,10 @@
+2002-05-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.in (noconfigdirs): Replace [ ] with test.
+
+	* configure.in (noconfigdirs): Do not add target-newlib if
+	target == i[3456]86-*-linux*, and host == target.
+
 2002-04-29  Nathanael Nerode  <neroden@doctormoo.dyndns.org>
 
 	* configure.in: delete reference to absent file
