@@ -128,32 +128,6 @@ Boston, MA 02111-1307, USA.  */
   output_file_directive (FILE, main_input_filename);		\
 }
 
-/* Define the extra sections we need.  We define three: one is the read-only
-   data section which is used for constants.  This is a csect whose name is
-   derived from the name of the input file.  The second is for initialized
-   global variables.  This is a csect whose name is that of the variable.
-   The third is the TOC.  */
-
-#undef SELECT_SECTION
-
-#undef	READONLY_DATA_SECTION
-#undef	EXTRA_SECTIONS
-#define EXTRA_SECTIONS toc
-
-/* Define the routines to implement these extra sections.  */
-
-#undef	EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS				\
-							\
-void							\
-toc_section ()						\
-{							\
-}
-
-
-#undef SELECT_RTX_SECTION
-#undef ASM_DECLARE_FUNCTION_NAME
-
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -250,6 +224,7 @@ do {									\
 }
 
 
+#undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
 {                                                               \
   if (TREE_PUBLIC (DECL))					\
@@ -338,6 +313,81 @@ do {									\
 /* Output to the bss section.  */
 #undef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP "\t.section .bss"
+
+/* Define the extra sections we need.  We define a dummy TOC section,
+   plus sections to hold the list of static constructors (.ctors) and
+   destructors (.dtors).  */
+
+#undef	READONLY_DATA_SECTION
+#undef	EXTRA_SECTIONS
+#define EXTRA_SECTIONS in_toc, in_ctors, in_dtors
+
+/* Define the routines to implement these extra sections.  */
+
+#undef	EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS						\
+  CTORS_SECTION_FUNCTION						\
+  DTORS_SECTION_FUNCTION						\
+  TOC_SECTION_FUNCTION							\
+
+#define TOC_SECTION_FUNCTION						\
+void									\
+toc_section ()								\
+{									\
+}
+
+#define CTORS_SECTION_ASM_OP	".section\t.ctors"
+#define CTORS_SECTION_FUNCTION						\
+void									\
+ctors_section ()							\
+{									\
+  if (in_section != in_ctors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
+      in_section = in_ctors;						\
+    }									\
+}
+
+#define DTORS_SECTION_ASM_OP	".section\t.dtors"
+#define DTORS_SECTION_FUNCTION						\
+void									\
+dtors_section ()							\
+{									\
+  if (in_section != in_dtors)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
+      in_section = in_dtors;						\
+    }									\
+}
+
+#undef SELECT_SECTION
+#undef SELECT_RTX_SECTION
+
+/* Make sure __main gets called */
+#define INVOKE__main 1
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global constructors.  */
+#undef	ASM_OUTPUT_CONSTRUCTOR
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+  do {									\
+    ctors_section ();							\
+    fprintf (FILE, "\t.ualong ");					\
+    assemble_name (FILE, NAME);						\
+    fprintf (FILE, "\n");						\
+  } while (0)
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  */
+#undef	ASM_OUTPUT_DESTRUCTOR
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
+  do {									\
+    dtors_section ();                   				\
+    fprintf (FILE, "\t.ualong ");					\
+    assemble_name (FILE, NAME);              				\
+    fprintf (FILE, "\n");						\
+  } while (0)
+
 
 /* Text to write out after a CALL that may be replaced by glue code by
    the loader.  The motorola asm demands that, for dll support, a .znop

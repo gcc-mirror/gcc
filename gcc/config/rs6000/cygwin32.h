@@ -50,14 +50,15 @@ Boston, MA 02111-1307, USA. */
 
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!:crt0%O%s}"
+#define STARTFILE_SPEC "crti%O%s %{!:crt0%O%s}"
+
+#undef	ENDFILE_SPEC
+#define	ENDFILE_SPEC "crtn%O%s"
 
 #define PTRDIFF_TYPE "int"
 #define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
-
-/* XXX set up stack probing */
 
 #define DBX_DEBUGGING_INFO 
 #undef SDB_DEBUGGING_INFO 

@@ -1,15 +1,13 @@
 # Do not build libgcc1.
-LIBGCC1 =
+LIBGCC = stmp-crt
+INSTALL_LIBGCC = install-crt
 CROSS_LIBGCC1 =
 
 EXTRA_HEADERS = $(srcdir)/ginclude/ppc-asm.h
 
-# At present, we don't have a cross linker, so turn this off
-LIBGCC1_TEST = 
-
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-sparclite]
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c ntstack.s
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c ntstack.S
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
@@ -18,5 +16,41 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-ntstack.s: $(srcdir)/config/rs6000/ntstack.asm
-	cat $(srcdir)/config/rs6000/ntstack.asm > ntstack.s
+ntstack.S: $(srcdir)/config/rs6000/ntstack.asm
+	cat $(srcdir)/config/rs6000/ntstack.asm > ntstack.S
+
+# For NT we build crti.o and crtn.o which serve to add begin and
+# end labels for the static constructors and destructors.
+
+# Assemble startup files.
+crti.s: $(srcdir)/config/rs6000/nt-ci.asm
+	cat $(srcdir)/config/rs6000/nt-ci.asm >crti.s
+
+crtn.s: $(srcdir)/config/rs6000/nt-cn.asm
+	cat $(srcdir)/config/rs6000/nt-cn.asm >crtn.s
+
+# Build multiple copies of crt{i,n}.o, one for each target switch.
+stmp-crt: crti.s crtn.s $(GCC_PASSES) stmp-multilib config.status
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
+	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
+	    dir="$${dir}" stmp-crt-sub; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	done
+	touch stmp-crt
+
+# Subroutine of stmp-crt so make -n works.
+stmp-crt-sub:
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/crti.o crti.s
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/crtn.o crtn.s
+
+# Install multiple versions of crt[in].o
+install-crt: stmp-crt install-dir install-multilib
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  rm -f $(libsubdir)/$${dir}/crt[in].o; \
+	  $(INSTALL_DATA) $${dir}/crti.o $(libsubdir)/$${dir}/crti.o; \
+	  $(INSTALL_DATA) $${dir}/crtn.o $(libsubdir)/$${dir}/crtn.o; \
+	done
