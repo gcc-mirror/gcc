@@ -1539,7 +1539,9 @@ reg_scan (f, nregs, repeat)
 	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
 	  max_parallel = XVECLEN (PATTERN (insn), 0);
 	reg_scan_mark_refs (PATTERN (insn), insn, 0);
-	reg_scan_mark_refs (REG_NOTES (insn), insn, 1);
+
+	if (REG_NOTES (insn))
+	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1);
       }
 }
 
@@ -1579,6 +1581,17 @@ reg_scan_mark_refs (x, insn, note_flag)
 	if (regno_first_uid[regno] == 0)
 	  regno_first_uid[regno] = INSN_UID (insn);
       }
+      break;
+
+    case EXPR_LIST:
+      reg_scan_mark_refs (XEXP (x, 0), insn, note_flag);
+      if (XEXP (x, 1))
+	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag);
+      break;
+
+    case INSN_LIST:
+      if (XEXP (x, 1))
+	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag);
       break;
 
     case SET:
