@@ -1,3 +1,8 @@
+Tue May 12 22:21:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload): Fix check for USEs to use code of pattern.
+	(choose_reload_regs): Remove dead variable use_insn.
+
 Tue May 12 14:04:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (DBX_CONTIN_LENGTH): Reduce to 3000 bytes. 
@@ -531,6 +536,7 @@ Sat May  2 01:37:29 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	Don't apply avoid_return_reg logic to USEs.
 	When done, remove USEs that have a REG_EQUAL note on them.
 	(emit_reload_insns): Handle case where we have inherited a MEM.
+	(choose_reload_regs): Likewise.
 	(delete_output_reload): Don't use cannot_omit_stores.
 
 Thu Apr 30 18:59:03 1998  Jim Wilson  <wilson@cygnus.com>

@@ -2110,7 +2110,7 @@ reload (first, global, dumpfile)
       {
 	rtx note, next;
 
-	if (GET_CODE (insn) == USE
+	if (GET_CODE (PATTERN (insn)) == USE
 	    && find_reg_note (insn, REG_EQUAL, NULL_RTX))
 	  {
 	    PUT_CODE (insn, NOTE);
@@ -5448,7 +5448,7 @@ choose_reload_regs (insn, avoid_return_reg)
 	    {
 	      register int regno = -1;
 	      enum machine_mode mode;
-	      rtx in, use_insn = 0;
+	      rtx in;
 
 	      if (reload_in[r] == 0)
 		;
@@ -5486,7 +5486,6 @@ choose_reload_regs (insn, avoid_return_reg)
 			{
 			  regno = REGNO (XEXP (PATTERN (prev), 0));
 			  mode = GET_MODE (reload_in[r]);
-			  use_insn = prev;
 			}
 		    }
 		}
