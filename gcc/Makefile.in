@@ -2160,11 +2160,21 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 stmp-headers:
 	touch $@
 
+# fixinc.sh depends on this, not on specs directly.
+# The idea is to make sure specs gets built, but not rerun fixinc.sh
+# after each stage just because specs' mtime has changed.
+specs.ready: specs
+	-if [ -f specs.ready ] ; then \
+		true; \
+	else \
+		touch specs.ready; \
+	fi
+
 FIXINCSRCDIR=$(srcdir)/fixinc
 fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/gnu-regex.c \
 	$(FIXINCSRCDIR)/server.c $(FIXINCSRCDIR)/gnu-regex.h \
-	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs
+	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc; pwd` ; \
 	export MAKE srcdir ; \
 	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
