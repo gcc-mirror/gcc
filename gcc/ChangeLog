@@ -1,5 +1,8 @@
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
+	* Makefile.in (libbackend.o): Remove options_.h.
+	(mostlyclean): Likewise.
+
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Don't
 	insert a label at the end of an function under Mach-O.
 
