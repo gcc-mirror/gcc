@@ -1,3 +1,7 @@
+2005-01-13  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/doxygen/user.cfg.in: Set HAVE_DOT back to YES.
+
 2005-01-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/26_numerics/cmath/c99_classification_macros_c++.cc:
