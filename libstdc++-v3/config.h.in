@@ -29,6 +29,9 @@
 // Define to use concept checking code from the boost libraries.
 #undef _GLIBCXX_CONCEPT_CHECKS
 
+// Define to use __cxa_atexit.
+#undef _GLIBCXX_USE___CXA_ATEXIT
+
 // Define to use symbol versioning in the shared library.
 #undef _GLIBCXX_SYMVER
 

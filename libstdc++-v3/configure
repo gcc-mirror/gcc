@@ -856,6 +856,8 @@ Optional Features:
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
                           [default=auto]
+  --enable-__cxa_atexit   Define if __cxa_atexit is to be used instead of
+                          atexit. [default=no]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
                           [default=$is_hosted]
   --enable-cstdio=PACKAGE use target-specific I/O package
@@ -4397,7 +4399,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4400 "configure"' > conftest.$ac_ext
+  echo '#line 4402 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5018,7 +5020,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5021 "configure"
+#line 5023 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -5072,6 +5074,29 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
  echo "$as_me:$LINENO: result: $ac_exception_model_name" >&5
 echo "${ECHO_T}$ac_exception_model_name" >&6
+
+
+   # Check whether --enable-__cxa_atexit or --disable-__cxa_atexit was given.
+if test "${enable___cxa_atexit+set}" = set; then
+  enableval="$enable___cxa_atexit"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable __cxa_atexit must be yes or no" >&5
+echo "$as_me: error: Argument to enable/disable __cxa_atexit must be yes or no" >&2;}
+   { (exit 1); exit 1; }; } ;;
+      esac
+
+else
+  enable___cxa_atexit=no
+fi;
+
+  if test $enable___cxa_atexit = yes; then
+    cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_USE___CXA_ATEXIT 1
+_ACEOF
+
+  fi
 
 
   echo "$as_me:$LINENO: checking for enabled PCH" >&5
