@@ -372,7 +372,7 @@ layout_decl (decl, known_align)
 	      && TYPE_ALIGN (type) > DECL_ALIGN (decl))))
     {	      
       DECL_ALIGN (decl) = TYPE_ALIGN (type);
-      DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
+      DECL_USER_ALIGN (decl) = 0;
     }
 
   /* For fields, set the bit field type and update the alignment.  */
@@ -993,7 +993,7 @@ finalize_record_size (rli)
 #else
   TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
-  TYPE_USER_ALIGN (rli->t) = 1;
+  TYPE_USER_ALIGN (rli->t) = 0;
 
   /* Compute the size so far.  Be sure to allow for extra bits in the
      size in bytes.  We have guaranteed above that it will be no more

@@ -1,3 +1,8 @@
+2001-08-16  Jason Merrill  <jason_merrill@redhat.com>
+
+	* stor-layout.c (layout_decl): Don't set DECL_USER_ALIGN.
+	(finalize_record_size): Don't set TYPE_USER_ALIGN.
+
 2001-08-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove unused
