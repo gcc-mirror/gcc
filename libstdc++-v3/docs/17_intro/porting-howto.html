@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+
+  <head>
+    <title>Libstdc++-porting-howto</title>
+  </head>
+
+  <body>
+
+  <h1>Porting to libstdc++-v3</h1>
+
+  <center>
+  <li><a href = "#std">Namespaces std</a>
+  <li><a href = "#nocreate">File-flags: <tt>ios::nocreate</tt> and
+  <tt>ios::noreplace</tt></a>
+  <li><a href = "#headers">The new headers</a>
+  <li><a href = "#about">Comments, suggestions, corrections, questions...</a>
+  </center>
+
+    <a name = "std">
+	<h2>Namespace std::</h2>
+	</a>
+	  <p>
+The latest C++-standard (ISO-14882) requires that the standard C++-library
+is defined in namespace std::. Thus, to use classes from the standard c++
+library, you can do one of three things:
+<ul>
+  <li>wrap your code in <tt>namespace std { ... }</tt>
+=> This is not an option because only symbols from the standard c++-library are
+defined in namespace std::.
+  <li>put a kind of <dfn>using-declaration</dfn> in your source
+(either <tt>using namespace std;</tt> or i.e. <tt>using std::string;</tt>)
+=> works well for source-files, but cannot be used in header-files
+  <li>use a <dfn>fully qualified name</dfn> for each libstdc++-symbol
+(i.e. <tt>std::string</tt>, <tt>std::cout</tt>)
+=> can always be used
+</ul>
+</p>
+      <p>
+Namespace portability-issues are not a problem with g++, because versions
+of g++ that do not have libstdc++ in std:: use <tt>-fno-honor-std</tt>
+(ignore <tt>std::</tt>, <tt>:: = std::</tt>) by default. This probably
+applies to some other compilers as well.
+
+The following sections list some possible solutions to support compilers
+that cannot ignore std::.
+</p> 
+      <h3>Using <dfn>namespace composition</dfn> if the project uses a separate
+      namespace</h3>
+
+	    <p>
+<a href = "http://gtkmm.sourcforge.net">Gtk--</a> defines most of its
+classes in namespace Gtk::. Thus, it was possible to adapt Gtk-- to
+namespace std:: by using a C++-feature called <dfn>namespace
+composition</dfn>. This is what happens if you put a
+<dfn>using</dfn>-declaration into a namespace-definition: the imported
+symbol(s) gets imported into the currently active namespace(s). This is
+what it looks like in Gtk--:
+<pre>
+namespace Gtk {
+	using std::string;
+	class Window { ... }
+}
+</pre>
+In this example, <tt>std::string</tt> gets imported into namespace Gtk::.
+The result is that you don't have to use <tt>std::string</tt> in this header,
+but still <tt>std::string</tt> does not get imported into user-space (the
+global namespace ::) unless the user does <tt>using namespace Gtk;</tt>
+(which is not recommended practice for Gtk--, so it is not a problem).
+</p>
+
+      <h3>Defining an empty namespace std for backwards-compatibility</h3>
+	    <p>
+By defining an (empty) namespace std:: before using it, you can avoid
+getting errors on systems where no part of the library is in std:
+<pre>
+namespace std { }
+using namespace std;
+</pre>
+</p>
+      <h3>Avoid to use fully qualified names (i.e. std::string)</h3>
+	    <p>
+If some compilers complain about <tt>using std::string;</tt>, and if the
+hack for gtk-- mentioned above does not work, then it might be a good idea
+to define a macro <tt>NS_STD</tt>, which is defined to either "" or "std"
+based on an autoconf-test. Then you should be able to use
+<tt>NS_STD::string</tt>, which will evaluate to <tt>::string</tt> ("string
+in the global namespace") on systems that do not put string in std::.
+(This is untested and might not even be necessary)
+</p>
+
+      <h3>How some open-source-projects deal with this</h3>
+	    <p>
+
+<table>
+  <tr><td><a href = "http://www.clanlib.org">clanlib</a></td> <td>usual</td>
+  </tr>
+  <tr><td><a href = "http://pingus.seul.org">pingus</a></td> <td>usual</td>
+  </tr>
+  <tr><td><a href = "http://www.mozilla.org">mozilla</a></td> <td>usual</td>
+  </tr>
+  <tr><td><a href = "http://www.mnemonic.org">mnemonic</a></td> <td>none</td>
+  </tr>
+  <tr><td><a href = "http://libsigc.sourceforge.net">libsigc++</a></td>
+      <td>portable-impl</td>
+  </tr>
+</table>
+
+<table>
+  <caption>Notations for categories</caption>
+  <tr>
+    <td>usual</td> <td>mostly fully qualified names and some
+    using-declarations (but not in headers)</td>
+  </tr>
+  <tr>
+    <td>none</td> <td>no namespace std at all</td>
+  </tr>
+  <tr>
+    <td>portable-impl</td> <td>wrap all namespace-handling in macros to support
+	compilers without namespace-support (no libstdc++ used in headers)</td>
+  </tr>
+</table>
+	
+</p>
+    <a name = "nocreate">    
+    <h2>there is no ios::nocreate/ios::noreplace in ISO 14882</h2>
+	</a>
+	  <p>
+I have seen <tt>ios::nocreate</tt> being used for input-streams, most
+probably because the authors thought it would be more correct to specify
+nocreate "explicitly".  So you can simply leave it out for
+input-streams.
+</p>
+<p>
+For output streams, "nocreate" is probably the default, unless you specify
+<tt>std::ios::trunc</tt> ? To be safe, you can open the file for
+reading, check if it has been opened, and then decide whether you want to
+create/replace or not.
+</p>
+    <a name = "attach">    
+	<h2><tt>stream::attach(int fd)</tt> is not in the standard any more</h2>
+	</a>
+	  <p>
+With libstdc++-v3, you can use
+<pre>
+basic_filebuf(int __fd, const char*__name, ios_base::openmode __mode)
+</pre>
+For a portable solution (if there is one), you need to implement
+a subclass of <tt>streambuf</tt> which opens a file given a descriptor,
+and then pass an instance of this to the stream-constructor (from the
+Josuttis-book).
+</p>
+	<a name = "headers">
+	<h2>The new headers</h2>
+	</a>
+	  <p>
+The new headers can be seen in this
+<a href = "../../testsuite/17_intro/headers.cc">source file</a>.
+</p>
+      <p>
+I think it is a problem for libstdc++-v3 to add links or wrappers for the
+old headers, because the implementation has changed, and the
+header-name-changes indicate this. It might be preferable to use the new
+headers and tell users of old compilers that they should create links
+(which is what they will have to do sometime anyway).
+</p>
+
+	  <h3><tt>&lt;ctype.h&gt;</tt> introduces ambiguity when used with
+	  <tt>&lt;cctype&gt;</tt></h3>
+	  <p>
+The best solution I came up with so far is to include <tt>cctype</tt>
+instead of <tt>ctype.h</tt> wherever possible, and then use fully
+qualified names to refer to the libstdc++-versions: std::islower,
+std::isalnum etc.  (you will need to as soon as any header includes
+<tt>&lt;ctype.h&gt;</tt>, because then there will be an ambiguity with the
+C-versions in the global namespace defined in <tt>&lt;ctype.h&gt;</tt>)
+</p>
+
+      <h3><tt>&lt;fstream&gt;</tt> does not define <tt>std::cout</tt>,
+      <tt>std::cin</tt> etc.</h3>
+        <p>
+In previous versions of the standard, <tt>&lt;fstream.h&gt;</tt>,
+<tt>&lt;ostream.h&gt;</tt> and <tt>&lt;istream.h&gt;</tt> used to define
+<tt>cout</tt>, <tt>cin</tt> and so on. With libstdc++-v3, you need
+to include <tt>&lt;iostream&gt;</tt> to define these.
+</p>
+    <a name = "about">
+	<h2>About...</h2>
+	</a>
+      <p>
+Please send any experience, additions, corrections or questions to <a href =
+"mailto:fnatter@gmx.net">fnatter@gmx.net</a> or for discussion to
+the libstdc++-v3-mailing-list.
+</p>
+	
+  </body>
+
+</html>
