@@ -304,14 +304,84 @@ decl_attributes (decl, attributes)
       }
 }
 
-/* Print a warning if a constant expression had overflow in folding.  */
+/* Print a warning if a constant expression had overflow in folding.
+   Invoke this function on every expression that the language
+   requires to be a constant expression.
+   Note the ANSI C standard says it is erroneous for a
+   constant expression to overflow.  */
 
 void
 constant_expression_warning (value)
      tree value;
 {
   if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
-    pedwarn ("overflow in constant expression");
+    {
+      pedwarn ("overflow in constant expression");
+      /* Suppress duplicate warnings.  */
+      TREE_CONSTANT_OVERFLOW (value) = 0;
+    }
+}
+
+/* Print a warning if an expression had overflow in folding.
+   Invoke this function on every expression that
+   (1) appears in the source code, and
+   (2) might be a constant expression that overflowed, and
+   (3) is not already checked by convert_and_check;
+   however, do not invoke this function on operands of explicit casts.  */
+
+void
+overflow_warning (value)
+     tree value;
+{
+  if (TREE_CODE (value) == INTEGER_CST && TREE_CONSTANT_OVERFLOW (value))
+    {
+      pedwarn ("integer overflow in expression");
+      TREE_CONSTANT_OVERFLOW (value) = 0;
+    }
+}
+
+/* Print a warning if a large constant is truncated to unsigned,
+   or if -Wconversion is used and a constant < 0 is converted to unsigned.
+   Invoke this function on every expression that might be implicitly
+   converted to an unsigned type.  */
+
+void
+unsigned_conversion_warning (result, operand)
+     tree result, operand;
+{
+  if (TREE_CODE (operand) == INTEGER_CST
+      && TREE_CODE (TREE_TYPE (result)) == INTEGER_TYPE
+      && TREE_UNSIGNED (TREE_TYPE (result))
+      && !int_fits_type_p (operand, TREE_TYPE (result)))
+    {
+      if (!int_fits_type_p (operand, signed_type (TREE_TYPE (result))))
+	/* This detects cases like converting -129 or 256 to unsigned char.  */
+	pedwarn ("large integer implicitly truncated to unsigned type");
+      else if (warn_conversion)
+	pedwarn ("negative integer implicitly converted to unsigned type");
+    }
+}
+
+/* Convert EXPR to TYPE, warning about conversion problems with constants.
+   Invoke this function on every expression that is converted implicitly,
+   i.e. because of language rules and not because of an explicit cast.  */
+
+tree
+convert_and_check (type, expr)
+     tree type, expr;
+{
+  tree t = convert (type, expr);
+  if (TREE_CODE (t) == INTEGER_CST)
+    {
+      if (TREE_CONSTANT_OVERFLOW (t))
+	{
+	  pedwarn ("overflow in implicit constant conversion");
+	  TREE_CONSTANT_OVERFLOW (t) = 0;
+	}
+      else
+	unsigned_conversion_warning (t, expr);
+    }
+  return t;
 }
 
 void
