@@ -1081,12 +1081,14 @@ check_format_info (info, params)
 		}
 	    }
 	}
-      if (*format_chars == 'h' || *format_chars == 'l' || *format_chars == 'q' ||
-	  *format_chars == 'L')
+      if (*format_chars == 'h' || *format_chars == 'l')
+	length_char = *format_chars++;
+      else if (*format_chars == 'q' || *format_chars == 'L')
 	{
 	  length_char = *format_chars++;
 	  if (pedantic)
-	    pedwarn ("ANSI C does not support the `q' length modifier");
+	    pedwarn ("ANSI C does not support the `%c' length modifier",
+		     length_char);
 	}
       else
 	length_char = 0;
