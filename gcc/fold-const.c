@@ -2617,15 +2617,21 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
   if (! TREE_UNSIGNED (utype))
     {
       utype = unsigned_type (utype);
-      var = convert (utype, var);
-      lo_cst = convert (utype, lo_cst);
-      hi_cst = convert (utype, hi_cst);
+      return fold (convert (type,
+			    build (rcode, utype,
+				   convert (utype,
+					    build (MINUS_EXPR, TREE_TYPE (var),
+						   var, lo_cst)),
+				   convert (utype,
+					    const_binop (MINUS_EXPR, hi_cst,
+							 lo_cst, 0)))));
     }
-
-  return fold (convert (type,
-			build (rcode, utype,
-			       build (MINUS_EXPR, utype, var, lo_cst),
-			       const_binop (MINUS_EXPR, hi_cst, lo_cst, 0))));
+  else
+      return fold (convert (type,
+			    build (rcode, utype,
+				   build (MINUS_EXPR, utype, var, lo_cst),
+				   const_binop (MINUS_EXPR, hi_cst,
+						lo_cst, 0))));
 }
 
 /* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
