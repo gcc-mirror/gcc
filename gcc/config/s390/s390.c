@@ -6219,8 +6219,9 @@ s390_register_info (int live_regs[])
         cfun_frame_layout.last_save_gpr = 6;
 
       /* Mark f0, f2 for 31 bit and f0-f4 for 64 bit to be saved.  */
-      for (i = 0; i < (TARGET_64BIT ? 4 : 2); i++)
-	cfun_set_fpr_bit (i);
+      if (TARGET_HARD_FLOAT)
+	for (i = 0; i < (TARGET_64BIT ? 4 : 2); i++)
+	  cfun_set_fpr_bit (i);
     }
 
   if (!TARGET_64BIT)
@@ -8402,6 +8403,12 @@ s390_conditional_register_usage (void)
     {
       for (i = 18; i < 20; i++)
 	call_used_regs[i] = call_really_used_regs[i] = 0;
+    }
+
+  if (TARGET_SOFT_FLOAT)
+    {
+      for (i = 16; i < 32; i++)
+	call_used_regs[i] = fixed_regs[i] = 1;
     }
 }
 
