@@ -2711,7 +2711,8 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
   /* If this is a commutative operation, move a constant to the second
      operand unless the second operand is already a CONST_INT.  */
   if (! memonly
-      && (GET_RTX_CLASS (code) == 'c' || code == NE || code == EQ)
+      && (GET_RTX_CLASS (code) == RTX_COMM_ARITH
+	  || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
       && CONSTANT_P (XEXP (x, 0)) && GET_CODE (XEXP (x, 1)) != CONST_INT)
     {
       rtx tem = XEXP (x, 0);
@@ -2723,14 +2724,15 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
   if (! memonly)
     switch (GET_RTX_CLASS (code))
       {
-      case '1':
+      case RTX_UNARY:
 	if (op0_mode == MAX_MACHINE_MODE)
 	  abort ();
 	new = simplify_unary_operation (code, GET_MODE (x),
 					XEXP (x, 0), op0_mode);
 	break;
 
-      case '<':
+      case RTX_COMPARE:
+      case RTX_COMM_COMPARE:
 	{
 	  enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
 
@@ -2757,14 +2759,14 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	  break;
 	}
 
-      case '2':
-      case 'c':
+      case RTX_BIN_ARITH:
+      case RTX_COMM_ARITH:
 	new = simplify_binary_operation (code, GET_MODE (x),
 					 XEXP (x, 0), XEXP (x, 1));
 	break;
 
-      case 'b':
-      case '3':
+      case RTX_BITFIELD_OPS:
+      case RTX_TERNARY:
 	if (op0_mode == MAX_MACHINE_MODE)
 	  abort ();
 
@@ -2772,7 +2774,7 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	  {
 	    rtx op0 = XEXP (x, 0);
 
-	    if (GET_RTX_CLASS (GET_CODE (op0)) == '<'
+	    if (COMPARISON_P (op0)
 		&& GET_MODE (op0) == VOIDmode
 		&& ! side_effects_p (op0)
 		&& XEXP (op0, 0) == map->compare_src
@@ -2796,6 +2798,9 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	  new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
 					    XEXP (x, 0), XEXP (x, 1),
 					    XEXP (x, 2));
+	break;
+
+      default:
 	break;
       }
 

@@ -346,7 +346,7 @@ is_cfg_nonregular (void)
     for (insn = BB_HEAD (b); ; insn = NEXT_INSN (insn))
       {
 	code = GET_CODE (insn);
-	if (GET_RTX_CLASS (code) == 'i' && code != JUMP_INSN)
+	if (INSN_P (insn) && code != JUMP_INSN)
 	  {
 	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
 

@@ -1134,13 +1134,13 @@ alpha_zero_comparison_operator (rtx op, enum machine_mode mode)
 int
 alpha_swapped_comparison_operator (rtx op, enum machine_mode mode)
 {
-  enum rtx_code code = GET_CODE (op);
+  enum rtx_code code;
 
   if ((mode != GET_MODE (op) && mode != VOIDmode)
-      || GET_RTX_CLASS (code) != '<')
+      || COMPARISON_P (op));
     return 0;
 
-  code = swap_condition (code);
+  code = swap_condition (GET_CODE (op));
   return (code == EQ || code == LE || code == LT
 	  || code == LEU || code == LTU);
 }
@@ -5637,7 +5637,7 @@ print_operand (FILE *file, rtx x, int code)
       {
 	enum rtx_code c = GET_CODE (x);
 
-        if (GET_RTX_CLASS (c) != '<')
+        if (!COMPARISON_P (x))
 	  output_operand_lossage ("invalid %%C value");
 
 	else if (code == 'D')

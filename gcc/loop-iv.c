@@ -1469,7 +1469,7 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
 {
   rtx rev, reve, exp = *expr;
 
-  if (GET_RTX_CLASS (GET_CODE (*expr)) != '<')
+  if (!COMPARISON_P (exp))
     return;
 
   /* If some register gets altered later, we do not really speak about its
@@ -1894,7 +1894,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   desc->niter_max = 0;
 
   cond = GET_CODE (condition);
-  if (GET_RTX_CLASS (cond) != '<')
+  if (!COMPARISON_P (condition))
     abort ();
 
   mode = GET_MODE (XEXP (condition, 0));

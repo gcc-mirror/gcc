@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 
@@ -130,9 +130,11 @@ ra_print_rtx_2op (FILE *file, rtx x)
       case AND: opname = "&"; break;
       case IOR: opname = "|"; break;
       case XOR: opname = "^"; break;
-      /* class '<' */
+      /* class '=' */
       case NE: opname = "!="; break;
       case EQ: opname = "=="; break;
+      case LTGT: opname = "<>"; break;
+      /* class '<' */
       case GE: opname = "s>="; break;
       case GT: opname = "s>"; break;
       case LE: opname = "s<="; break;
@@ -196,7 +198,7 @@ ra_print_rtx_3op (FILE *file, rtx x)
     }
 }
 
-/* Print rtx X, which represents an object (class 'o' or some constructs
+/* Print rtx X, which represents an object (class 'o', 'C', or some constructs
    of class 'x' (e.g. subreg)), to FILE.
    (reg XX) rtl is represented as "pXX", of XX was a pseudo,
    as "name" it name is the nonnull hardreg name, or as "hXX", if XX
@@ -340,12 +342,10 @@ void
 ra_print_rtx (FILE *file, rtx x, int with_pn)
 {
   enum rtx_code code;
-  char class;
   int unhandled = 0;
   if (!x)
     return;
   code = GET_CODE (x);
-  class = GET_RTX_CLASS (code);
 
   /* First handle the insn like constructs.  */
   if (INSN_P (x) || code == NOTE || code == CODE_LABEL || code == BARRIER)
@@ -492,16 +492,24 @@ ra_print_rtx (FILE *file, rtx x, int with_pn)
     }
   if (!unhandled)
     return;
-  if (class == '1')
-    ra_print_rtx_1op (file, x);
-  else if (class == '2' || class == 'c' || class == '<')
-    ra_print_rtx_2op (file, x);
-  else if (class == '3' || class == 'b')
-    ra_print_rtx_3op (file, x);
-  else if (class == 'o')
-    ra_print_rtx_object (file, x);
-  else
-    print_inline_rtx (file, x, 0);
+  switch (GET_RTX_CLASS (code))
+    {
+      case RTX_UNARY:
+        ra_print_rtx_1op (file, x);
+      case RTX_BIN_ARITH:
+      case RTX_COMM_ARITH:
+      case RTX_COMPARE:
+      case RTX_COMM_COMPARE:
+        ra_print_rtx_2op (file, x);
+      case RTX_TERNARY:
+      case RTX_BITFIELD_OPS:
+        ra_print_rtx_3op (file, x);
+      case RTX_OBJ:
+      case RTX_CONST_OBJ:
+        ra_print_rtx_object (file, x);
+      default:
+        print_inline_rtx (file, x, 0);
+    }
 }
 
 /* This only calls ra_print_rtx(), but emits a final newline.  */

@@ -4251,6 +4251,7 @@ _reg_unused_after (rtx insn, rtx reg)
 
   while ((insn = NEXT_INSN (insn)))
     {
+      rtx set;
       code = GET_CODE (insn);
 
 #if 0
@@ -4262,6 +4263,9 @@ _reg_unused_after (rtx insn, rtx reg)
 	return 1;
       /* else */
 #endif
+
+      if (!INSN_P (insn))
+	continue;
 
       if (code == JUMP_INSN)
 	return 0;
@@ -4320,17 +4324,14 @@ _reg_unused_after (rtx insn, rtx reg)
 	    return 1;
 	}
 
-      if (GET_RTX_CLASS (code) == 'i')
-	{
-	  rtx set = single_set (insn);
+      set = single_set (insn);
 
-	  if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
-	    return 0;
-	  if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-	    return GET_CODE (SET_DEST (set)) != MEM;
-	  if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
-	    return 0;
-	}
+      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+	return 0;
+      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	return GET_CODE (SET_DEST (set)) != MEM;
+      if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	return 0;
     }
   return 1;
 }

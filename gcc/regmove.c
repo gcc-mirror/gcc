@@ -2046,7 +2046,13 @@ stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
   RTX_CODE code = GET_CODE (x);
   switch (GET_RTX_CLASS (code))
     {
-    case '<': case '1': case 'c': case '2': case 'b': case '3':
+    case RTX_UNARY:
+    case RTX_BIN_ARITH:
+    case RTX_COMM_ARITH:
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
+    case RTX_TERNARY:
+    case RTX_BITFIELD_OPS:
       {
 	int i;
 	const char *fmt = GET_RTX_FORMAT (code);
@@ -2056,7 +2062,7 @@ stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
 	      return 0;
 	return 1;
       }
-    case 'o':
+    case RTX_OBJ:
       if (code == REG)
 	return x == src || x == dst;
       /* If this is a MEM, look inside - there might be a register hidden in

@@ -3514,7 +3514,7 @@ gen_block_redirect (rtx jump, int addr, int need_block)
 	  if (INSN_DELETED_P (scan))
 	    continue;
 	  code = GET_CODE (scan);
-	  if (GET_RTX_CLASS (code) == 'i')
+	  if (INSN_P (scan))
 	    {
 	      used |= regs_used (PATTERN (scan), 0);
 	      if (code == CALL_INSN)
@@ -7667,6 +7667,10 @@ reg_unused_after (rtx reg, rtx insn)
 
   while ((insn = NEXT_INSN (insn)))
     {
+      rtx set;
+      if (!INSN_P (insn))
+	continue;
+
       code = GET_CODE (insn);
 
 #if 0
@@ -7723,17 +7727,14 @@ reg_unused_after (rtx reg, rtx insn)
 	  else if (code == JUMP_INSN)
 	    return 0;
 	}
-      else if (GET_RTX_CLASS (code) == 'i')
-	{
-	  rtx set = single_set (insn);
 
-	  if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
-	    return 0;
-	  if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
-	    return GET_CODE (SET_DEST (set)) != MEM;
-	  if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
-	    return 0;
-	}
+      set = single_set (insn);
+      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+	return 0;
+      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+	return GET_CODE (SET_DEST (set)) != MEM;
+      if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	return 0;
 
       if (code == CALL_INSN && call_used_regs[REGNO (reg)])
 	return 1;

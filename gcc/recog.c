@@ -521,11 +521,11 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
   /* Do changes needed to keep rtx consistent.  Don't do any other
      simplifications, as it is not our job.  */
 
-  if ((GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == 'c')
+  if (SWAPPABLE_OPERANDS_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
     {
       validate_change (object, loc,
-		       gen_rtx_fmt_ee (GET_RTX_CLASS (code) == 'c' ? code
+		       gen_rtx_fmt_ee (COMMUTATIVE_ARITH_P (x) ? code
 				       : swap_condition (code),
 				       GET_MODE (x), XEXP (x, 1),
 				       XEXP (x, 0)), 1);
@@ -1370,7 +1370,7 @@ int
 comparison_operator (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && GET_RTX_CLASS (GET_CODE (op)) == '<');
+	  && COMPARISON_P (op));
 }
 
 /* If BODY is an insn body that uses ASM_OPERANDS,
@@ -1931,7 +1931,7 @@ offsettable_address_p (int strictp, enum machine_mode mode, rtx y)
       return good;
     }
 
-  if (GET_RTX_CLASS (ycode) == 'a')
+  if (GET_RTX_CLASS (ycode) == RTX_AUTOINC)
     return 0;
 
   /* The offset added here is chosen as the maximum offset that
@@ -2304,7 +2304,7 @@ constrain_operands (int strict)
 
 	  /* A unary operator may be accepted by the predicate, but it
 	     is irrelevant for matching constraints.  */
-	  if (GET_RTX_CLASS (GET_CODE (op)) == '1')
+	  if (UNARY_P (op))
 	    op = XEXP (op, 0);
 
 	  if (GET_CODE (op) == SUBREG)
@@ -2377,9 +2377,9 @@ constrain_operands (int strict)
 
 		      /* A unary operator may be accepted by the predicate,
 			 but it is irrelevant for matching constraints.  */
-		      if (GET_RTX_CLASS (GET_CODE (op1)) == '1')
+		      if (UNARY_P (op1))
 			op1 = XEXP (op1, 0);
-		      if (GET_RTX_CLASS (GET_CODE (op2)) == '1')
+		      if (UNARY_P (op2))
 			op2 = XEXP (op2, 0);
 
 		      val = operands_match_p (op1, op2);

@@ -8105,7 +8105,8 @@ stmw_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 static void
 validate_condition_mode (enum rtx_code code, enum machine_mode mode)
 {
-  if (GET_RTX_CLASS (code) != '<' 
+  if ((GET_RTX_CLASS (code) != RTX_COMPARE
+       && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
       || GET_MODE_CLASS (mode) != MODE_CC)
     abort ();
 
@@ -8149,7 +8150,7 @@ branch_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   enum rtx_code code = GET_CODE (op);
   enum machine_mode cc_mode;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
   cc_mode = GET_MODE (XEXP (op, 0));
@@ -8194,7 +8195,7 @@ trap_comparison_operator (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
-  return GET_RTX_CLASS (GET_CODE (op)) == '<';
+  return COMPARISON_P (op);
 }
 
 int
@@ -8574,7 +8575,7 @@ ccr_bit (rtx op, int scc_p)
   int base_bit;
   rtx reg;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return -1;
 
   reg = XEXP (op, 0);

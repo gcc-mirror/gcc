@@ -863,7 +863,7 @@ int
 not_postinc_memory_operand (rtx op, enum machine_mode mode)
 {
   return (memory_operand (op, mode)
-	  && GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != 'a');
+	  && GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC);
 }
 
 /* Return 1 if this is a comparison operator, which accepts a normal 8-bit
@@ -4356,7 +4356,7 @@ ia64_print_operand (FILE * file, rtx x, int code)
     case MEM:
       {
 	rtx addr = XEXP (x, 0);
-	if (GET_RTX_CLASS (GET_CODE (addr)) == 'a')
+	if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC)
 	  addr = XEXP (addr, 0);
 	fprintf (file, "[%s]", reg_names [REGNO (addr)]);
 	break;
@@ -5159,7 +5159,7 @@ update_set_flags (rtx x, struct reg_flags *pflags, int *ppred, rtx *pcond)
       /* ... fall through ...  */
 
     default:
-      if (GET_RTX_CLASS (GET_CODE (src)) == '<'
+      if (COMPARISON_P (src)
 	  && GET_MODE_CLASS (GET_MODE (XEXP (src, 0))) == MODE_FLOAT)
 	/* Set pflags->is_fp to 1 so that we know we're dealing
 	   with a floating point comparison when processing the
@@ -5883,8 +5883,8 @@ errata_emit_nops (rtx insn)
 	  || GET_CODE (XEXP (SET_SRC (set), 0)) != POST_MODIFY)
       && GENERAL_REGNO_P (REGNO (SET_DEST (set))))
     {
-      if (GET_RTX_CLASS (GET_CODE (cond)) != '<'
-	  || ! REG_P (XEXP (cond, 0)))
+      if (!COMPARISON_P (cond)
+	  || !REG_P (XEXP (cond, 0)))
 	abort ();
 
       if (TEST_HARD_REG_BIT (prev_group->p_reg_set, REGNO (XEXP (cond, 0))))

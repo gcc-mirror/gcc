@@ -565,7 +565,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
      Use that entry if one is found; otherwise create a new RTL and add it
      to the table.  */
 
-  if (GET_RTX_CLASS (code) == '1')
+  if (GET_RTX_CLASS (code) == RTX_UNARY)
     {
       rtx arg0 = va_arg (p, rtx);
 
@@ -591,9 +591,10 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	  XEXP (rt_val, 0) = arg0;
 	}
     }
-  else if (GET_RTX_CLASS (code) == 'c'
-	   || GET_RTX_CLASS (code) == '2'
-	   || GET_RTX_CLASS (code) == '<')
+  else if (GET_RTX_CLASS (code) == RTX_BIN_ARITH
+  	   || GET_RTX_CLASS (code) == RTX_COMM_ARITH
+  	   || GET_RTX_CLASS (code) == RTX_COMPARE
+  	   || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
     {
       rtx arg0 = va_arg (p, rtx);
       rtx arg1 = va_arg (p, rtx);

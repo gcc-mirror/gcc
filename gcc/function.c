@@ -7677,8 +7677,7 @@ update_epilogue_consts (rtx dest, rtx x, void *data)
 
   /* If this is a binary operation between a register we have been tracking
      and a constant, see if we can compute a new constant value.  */
-  else if ((GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == 'c'
-	    || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '2')
+  else if (ARITHMETIC_P (SET_SRC (x))
 	   && GET_CODE (XEXP (SET_SRC (x), 0)) == REG
 	   && REGNO (XEXP (SET_SRC (x), 0)) < FIRST_PSEUDO_REGISTER
 	   && p->const_equiv[REGNO (XEXP (SET_SRC (x), 0))] != 0

@@ -1008,13 +1008,12 @@ record_operand_costs (rtx insn, struct costs *op_costs,
 static rtx
 scan_one_insn (rtx insn, int pass)
 {
-  enum rtx_code code = GET_CODE (insn);
   enum rtx_code pat_code;
   rtx set, note;
   int i, j;
   struct costs op_costs[MAX_RECOG_OPERANDS];
 
-  if (GET_RTX_CLASS (code) != 'i')
+  if (!INSN_P (insn))
     return insn;
 
   pat_code = GET_CODE (PATTERN (insn));

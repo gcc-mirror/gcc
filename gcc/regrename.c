@@ -1173,7 +1173,7 @@ kill_autoinc_value (rtx *px, void *data)
   rtx x = *px;
   struct value_data *vd = data;
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == 'a')
+  if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     {
       x = XEXP (x, 0);
       kill_value (x, vd);

@@ -77,7 +77,7 @@ simplify_gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0,
   rtx tem;
 
   /* Put complex operands first and constants second if commutative.  */
-  if (GET_RTX_CLASS (code) == 'c'
+  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem;
 
@@ -236,7 +236,7 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
 				    XEXP (op0, 0), XEXP (op0, 1));
 
   /* If op0 is a comparison, extract the comparison arguments form it.  */
-  if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && op1 == const0_rtx)
+  if (COMPARISON_P (op0) && op1 == const0_rtx)
     {
       if (code == NE)
 	{
@@ -277,7 +277,7 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 
   switch (GET_RTX_CLASS (code))
     {
-    case '1':
+    case RTX_UNARY:
       op0 = XEXP (x, 0);
       op_mode = GET_MODE (op0);
       op0 = simplify_replace_rtx (op0, old, new);
@@ -285,15 +285,16 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	return x;
       return simplify_gen_unary (code, mode, op0, op_mode);
 
-    case '2':
-    case 'c':
+    case RTX_BIN_ARITH:
+    case RTX_COMM_ARITH:
       op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
       op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
       if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	return x;
       return simplify_gen_binary (code, mode, op0, op1);
 
-    case '<':
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
       op_mode = GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
@@ -303,8 +304,8 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	return x;
       return simplify_gen_relational (code, mode, op_mode, op0, op1);
 
-    case '3':
-    case 'b':
+    case RTX_TERNARY:
+    case RTX_BITFIELD_OPS:
       op0 = XEXP (x, 0);
       op_mode = GET_MODE (op0);
       op0 = simplify_replace_rtx (op0, old, new);
@@ -316,7 +317,7 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	op_mode = GET_MODE (op0);
       return simplify_gen_ternary (code, mode, op_mode, op0, op1, op2);
 
-    case 'x':
+    case RTX_EXTRA:
       /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
 	{
@@ -330,7 +331,7 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 	}
       break;
 
-    case 'o':
+    case RTX_OBJ:
       if (code == MEM)
 	{
 	  op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
@@ -902,7 +903,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return XEXP (op, 0);
 
 	  /* (not (eq X Y)) == (ne X Y), etc.  */
-	  if (GET_RTX_CLASS (GET_CODE (op)) == '<'
+	  if (COMPARISON_P (op)
 	      && (mode == BImode || STORE_FLAG_VALUE == -1)
 	      && ((reversed = reversed_comparison_code (op, NULL_RTX))
 		  != UNKNOWN))
@@ -942,7 +943,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  /* If STORE_FLAG_VALUE is -1, (not (comparison X Y)) can be done
 	     by reversing the comparison code if valid.  */
 	  if (STORE_FLAG_VALUE == -1
-	      && GET_RTX_CLASS (GET_CODE (op)) == '<'
+	      && COMPARISON_P (op)
 	      && (reversed = reversed_comparison_code (op, NULL_RTX))
 		 != UNKNOWN)
 	    return simplify_gen_relational (reversed, mode, VOIDmode,
@@ -1165,16 +1166,19 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
   rtx trueop0, trueop1;
   rtx tem;
 
+#ifdef ENABLE_CHECKING
   /* Relational operations don't work here.  We must know the mode
      of the operands in order to do the comparison correctly.
      Assuming a full word can give incorrect results.
      Consider comparing 128 with -128 in QImode.  */
 
-  if (GET_RTX_CLASS (code) == '<')
+  if (GET_RTX_CLASS (code) == RTX_COMPARE
+      || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
     abort ();
+#endif
 
   /* Make sure the constant is second.  */
-  if (GET_RTX_CLASS (code) == 'c'
+  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
     {
       tem = op0, op0 = op1, op1 = tem;
@@ -2885,7 +2889,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 		  && rtx_equal_p (XEXP (op0, 1), op1))))
 	return op2;
 
-      if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && ! side_effects_p (op0))
+      if (COMPARISON_P (op0) && ! side_effects_p (op0))
 	{
 	  enum machine_mode cmp_mode = (GET_MODE (XEXP (op0, 0)) == VOIDmode
 					? GET_MODE (XEXP (op0, 1))
@@ -3536,25 +3540,26 @@ simplify_rtx (rtx x)
 
   switch (GET_RTX_CLASS (code))
     {
-    case '1':
+    case RTX_UNARY:
       return simplify_unary_operation (code, mode,
 				       XEXP (x, 0), GET_MODE (XEXP (x, 0)));
-    case 'c':
+    case RTX_COMM_ARITH:
       if (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
 	return simplify_gen_binary (code, mode, XEXP (x, 1), XEXP (x, 0));
 
       /* Fall through....  */
 
-    case '2':
+    case RTX_BIN_ARITH:
       return simplify_binary_operation (code, mode, XEXP (x, 0), XEXP (x, 1));
 
-    case '3':
-    case 'b':
+    case RTX_TERNARY:
+    case RTX_BITFIELD_OPS:
       return simplify_ternary_operation (code, mode, GET_MODE (XEXP (x, 0)),
 					 XEXP (x, 0), XEXP (x, 1),
 					 XEXP (x, 2));
 
-    case '<':
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
       temp = simplify_relational_operation (code,
 					    ((GET_MODE (XEXP (x, 0))
 					      != VOIDmode)
@@ -3573,7 +3578,7 @@ simplify_rtx (rtx x)
 #endif
       return temp;
 
-    case 'x':
+    case RTX_EXTRA:
       if (code == SUBREG)
 	return simplify_gen_subreg (mode, SUBREG_REG (x),
 				    GET_MODE (SUBREG_REG (x)),
@@ -3585,7 +3590,7 @@ simplify_rtx (rtx x)
 	}
       break;
 
-    case 'o':
+    case RTX_OBJ:
       if (code == LO_SUM)
 	{
 	  /* Convert (lo_sum (high FOO) FOO) to FOO.  */

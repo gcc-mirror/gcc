@@ -914,7 +914,7 @@ notice_stack_pointer_modification_1 (rtx x, rtx pat ATTRIBUTE_UNUSED,
 	 of a push until later in flow.  See the comments in rtl.texi
 	 regarding Embedded Side-Effects on Addresses.  */
       || (GET_CODE (x) == MEM
-	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == 'a'
+	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == RTX_AUTOINC
 	  && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx))
     current_function_sp_is_unchanging = 0;
 }
@@ -2439,7 +2439,7 @@ invalidate_mems_from_autoinc (rtx *px, void *data)
   rtx x = *px;
   struct propagate_block_info *pbi = data;
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == 'a')
+  if (GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     {
       invalidate_mems_from_set (pbi, XEXP (x, 0));
       return -1;
@@ -3054,9 +3054,9 @@ ior_reg_cond (rtx old, rtx x, int add)
 {
   rtx op0, op1;
 
-  if (GET_RTX_CLASS (GET_CODE (old)) == '<')
+  if (COMPARISON_P (old))
     {
-      if (GET_RTX_CLASS (GET_CODE (x)) == '<'
+      if (COMPARISON_P (x))
 	  && REVERSE_CONDEXEC_PREDICATES_P (GET_CODE (x), GET_CODE (old))
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const1_rtx;
@@ -3149,7 +3149,7 @@ not_reg_cond (rtx x)
   x_code = GET_CODE (x);
   if (x_code == NOT)
     return XEXP (x, 0);
-  if (GET_RTX_CLASS (x_code) == '<'
+  if (COMPARISON_P (x)
       && GET_CODE (XEXP (x, 0)) == REG)
     {
       if (XEXP (x, 1) != const0_rtx)
@@ -3166,9 +3166,9 @@ and_reg_cond (rtx old, rtx x, int add)
 {
   rtx op0, op1;
 
-  if (GET_RTX_CLASS (GET_CODE (old)) == '<')
+  if (COMPARISON_P (old))
     {
-      if (GET_RTX_CLASS (GET_CODE (x)) == '<'
+      if (COMPARISON_P (x))
 	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const0_rtx;
@@ -3259,7 +3259,7 @@ elim_reg_cond (rtx x, unsigned int regno)
 {
   rtx op0, op1;
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+  if (COMPARISON_P (x))
     {
       if (REGNO (XEXP (x, 0)) == regno)
 	return const0_rtx;

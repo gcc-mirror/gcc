@@ -4006,7 +4006,7 @@ ix86_comparison_operator (rtx op, enum machine_mode mode)
   enum rtx_code code = GET_CODE (op);
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
   inmode = GET_MODE (XEXP (op, 0));
 
@@ -4048,7 +4048,7 @@ ix86_carry_flag_operator (rtx op, enum machine_mode mode)
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
   inmode = GET_MODE (XEXP (op, 0));
   if (GET_CODE (XEXP (op, 0)) != REG
@@ -4080,7 +4080,7 @@ fcmov_comparison_operator (rtx op, enum machine_mode mode)
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
   inmode = GET_MODE (XEXP (op, 0));
   if (inmode == CCFPmode || inmode == CCFPUmode)
@@ -4199,8 +4199,7 @@ int
 arith_or_logical_operator (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
-          && (GET_RTX_CLASS (GET_CODE (op)) == 'c'
-              || GET_RTX_CLASS (GET_CODE (op)) == '2'));
+          && ARITHMETIC_P (op));
 }
 
 /* Returns 1 if OP is memory operand with a displacement.  */
@@ -7416,7 +7415,7 @@ print_operand (FILE *file, rtx x, int code)
 	case 'c':
 	  /* Check to see if argument to %c is really a constant
 	     and not a condition code which needs to be reversed.  */
-	  if (GET_RTX_CLASS (GET_CODE (x)) != '<')
+	  if (!COMPARISON_P (x))
 	  {
 	    output_operand_lossage ("operand is neither a constant nor a condition code, invalid operand code 'c'");
 	     return;
@@ -8439,7 +8438,7 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
   src2 = operands[2];
 
   /* Recognize <var1> = <value> <op> <var1> for commutative operators */
-  if (GET_RTX_CLASS (code) == 'c'
+  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && (rtx_equal_p (dst, src2)
 	  || immediate_operand (src1, mode)))
     {
@@ -8455,7 +8454,7 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
     {
       if (rtx_equal_p (dst, src1))
 	matching_memory = 1;
-      else if (GET_RTX_CLASS (code) == 'c'
+      else if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
 	       && rtx_equal_p (dst, src2))
 	matching_memory = 2;
       else
@@ -8475,7 +8474,7 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
      or non-matching memory.  */
   if ((CONSTANT_P (src1)
        || (!matching_memory && GET_CODE (src1) == MEM))
-      && GET_RTX_CLASS (code) != 'c')
+      && GET_RTX_CLASS (code) != RTX_COMM_ARITH)
     src1 = force_reg (mode, src1);
 
   /* If optimizing, copy to regs to improve CSE */
@@ -8523,18 +8522,18 @@ ix86_binary_operator_ok (enum rtx_code code,
   if (GET_CODE (operands[1]) == MEM && GET_CODE (operands[2]) == MEM)
     return 0;
   /* If the operation is not commutable, source 1 cannot be a constant.  */
-  if (CONSTANT_P (operands[1]) && GET_RTX_CLASS (code) != 'c')
+  if (CONSTANT_P (operands[1]) && GET_RTX_CLASS (code) != RTX_COMM_ARITH)
     return 0;
   /* If the destination is memory, we must have a matching source operand.  */
   if (GET_CODE (operands[0]) == MEM
       && ! (rtx_equal_p (operands[0], operands[1])
-	    || (GET_RTX_CLASS (code) == 'c'
+	    || (GET_RTX_CLASS (code) == RTX_COMM_ARITH
 		&& rtx_equal_p (operands[0], operands[2]))))
     return 0;
   /* If the operation is not commutable and the source 1 is memory, we must
      have a matching destination.  */
   if (GET_CODE (operands[1]) == MEM
-      && GET_RTX_CLASS (code) != 'c'
+      && GET_RTX_CLASS (code) != RTX_COMM_ARITH
       && ! rtx_equal_p (operands[0], operands[1]))
     return 0;
   return 1;

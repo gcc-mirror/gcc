@@ -3678,15 +3678,14 @@ rtx_equal_for_prefetch_p (rtx x, rtx y)
   if (code != GET_CODE (y))
     return 0;
 
-  code = GET_CODE (x);
-
-  if (GET_RTX_CLASS (code) == 'c')
+  if (COMMUTATIVE_ARITH_P (x))
     {
       return ((rtx_equal_for_prefetch_p (XEXP (x, 0), XEXP (y, 0))
 	       && rtx_equal_for_prefetch_p (XEXP (x, 1), XEXP (y, 1)))
 	      || (rtx_equal_for_prefetch_p (XEXP (x, 0), XEXP (y, 1))
 	          && rtx_equal_for_prefetch_p (XEXP (x, 1), XEXP (y, 0))));
     }
+
   /* Compare the elements.  If any pair of corresponding elements fails to
      match, return 0 for the whole thing.  */
 
@@ -8607,7 +8606,7 @@ maybe_eliminate_biv (const struct loop *loop, struct iv_class *bl,
       rtx note;
 
       /* If this is a libcall that sets a giv, skip ahead to its end.  */
-      if (GET_RTX_CLASS (code) == 'i')
+      if (INSN_P (p))
 	{
 	  note = find_reg_note (p, REG_LIBCALL, NULL_RTX);
 
@@ -9222,7 +9221,8 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
      the same tests as a function of STORE_FLAG_VALUE as find_comparison_args
      in cse.c  */
 
-  while (GET_RTX_CLASS (code) == '<'
+  while ((GET_RTX_CLASS (code) == RTX_COMPARE
+	  || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
 	 && op1 == CONST0_RTX (GET_MODE (op0))
 	 && op0 != want_reg)
     {
@@ -9312,7 +9312,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 			     REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		     ))
-		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'))
+		   && COMPARISON_P (SET_SRC (set))))
 	      && (((GET_MODE_CLASS (mode) == MODE_CC)
 		   == (GET_MODE_CLASS (inner_mode) == MODE_CC))
 		  || mode == VOIDmode || inner_mode == VOIDmode))
@@ -9332,7 +9332,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 			     REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		     ))
-		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'
+		   && COMPARISON_P (SET_SRC (set))
 		   && (((GET_MODE_CLASS (mode) == MODE_CC)
 			== (GET_MODE_CLASS (inner_mode) == MODE_CC))
 		       || mode == VOIDmode || inner_mode == VOIDmode))
@@ -9351,7 +9351,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 
       if (x)
 	{
-	  if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+	  if (COMPARISON_P (x))
 	    code = GET_CODE (x);
 	  if (reverse_code)
 	    {
