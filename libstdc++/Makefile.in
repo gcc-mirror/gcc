@@ -271,6 +271,7 @@ install:
 	else true ; \
 	fi
 	rootme=`pwd`/ ; export rootme ; \
+	rm -f $(INSTALLDIR)$(MULTISUBDIR)/$(SHLINK) ; \
 	for FILE in $(LIBS) ; do \
 	  rm -f $(INSTALLDIR)$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \

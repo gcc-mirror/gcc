@@ -1,3 +1,8 @@
+Mon Feb  9 00:09:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (install): Remove the shared library symlink even if
+	we aren't installing it.
+
 Thu Nov 27 01:33:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (install): Change gxx_includedir to gxx_include_dir.
