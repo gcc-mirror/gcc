@@ -2950,7 +2950,7 @@ parse_def (name_start)
 	{
 	  int ch2;
 	  arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
-	  if (arg_end_p1 != arg_start || (ch2 = *arg_end_p1 != ';') || ch2 != ',')
+	  if (arg_end_p1 != arg_start || ((ch2 = *arg_end_p1) != ';') || ch2 != ',')
 	    arg_was_number++;
 	}
 
@@ -3006,7 +3006,7 @@ parse_def (name_start)
 		    {
 		      int ch2;
 		      arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
-		      if (arg_end_p1 != arg_start || (ch2 = *arg_end_p1 != ';') || ch2 != ',')
+		      if (arg_end_p1 != arg_start || ((ch2 = *arg_end_p1) != ';') || ch2 != ',')
 			arg_was_number++;
 
 		      if (t_ptr == &temp_array[0])
@@ -3080,7 +3080,7 @@ parse_def (name_start)
 		    {
 		      int ch2;
 		      arg_number = strtol (arg_start, (char **) &arg_end_p1, 0);
-		      if (arg_end_p1 != arg_start || (ch2 = *arg_end_p1 != ';') || ch2 != ',')
+		      if (arg_end_p1 != arg_start || ((ch2 = *arg_end_p1) != ';') || ch2 != ',')
 			arg_was_number++;
 
 		      if (t_ptr == &temp_array[0])

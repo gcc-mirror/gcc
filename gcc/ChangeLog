@@ -1,5 +1,10 @@
+2003-02-07  Fred Fish  <fnf@intrinsity.com>
+
+	* mips-tfile.c (parse_def): Parenthesize assignments to fix
+        precedence bugs.
+
 2003-02-07  Segher Boessenkool  <segher@koffie.nl>
- 
+
         * genoutput.c (output_get_insn_name): Handle NOOP_MOVE_INSN_CODE.
 
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
@@ -265,7 +270,7 @@ Wed Feb  5 23:12:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): Do not use the mode specified in the insn
-	pattern as reload mode for address operands.  Do not generate optional 
+	pattern as reload mode for address operands.  Do not generate optional
 	reloads for operands where a mandatory reload was already pushed.
 
 2003-02-04  Richard Henderson  <rth@redhat.com>
@@ -274,7 +279,7 @@ Wed Feb  5 23:12:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 	builtins instead of inline assembly.
 
 2003-02-04  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
- 
+
 	PR c/9376
 	* libgcc2.c (__subvdi3): Fix typo.
 
