@@ -132,7 +132,8 @@ in the following sections.
 -Wparentheses -Wpointer-arith  -Wredundant-decls
 -Wreturn-type -Wshadow  -Wsign-compare -Wswitch
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
--Wunused  -Wwrite-strings
+-Wunused -Wunused-function -Wunused-label -Wunused-parameter
+-Wunused-variable -Wunused-value -Wwrite-strings
 @end smallexample
 
 @item C-only Warning Options
@@ -1538,18 +1539,40 @@ provoke warnings when this option is used.
 @item -Wtrigraphs
 Warn if any trigraphs are encountered (assuming they are enabled).
 
+@item -Wunused-function
+Warn whenever a static function is declared but not defined or a
+non\-inline static function is unused.
+
+@item -Wunused-label
+Warn whenever a label is declared but not used.
+
+To suppress this warning use the @samp{unused} attribute
+(@pxref{Variable Attributes}).
+
+@item -Wunused-parameter
+Warn whenever a function parameter is unused aside from its declaration.
+
+To suppress this warning use the @samp{unused} attribute
+(@pxref{Variable Attributes}).
+
+@item -Wunused-variable
+Warn whenever a local variable or non-constant static variable is unused
+aside from its declaration
+
+To suppress this warning use the @samp{unused} attribute
+(@pxref{Variable Attributes}).
+
+@item -Wunused-value
+Warn whenever a statement computes a result that is explicitly not used.
+
+To suppress this warning cast the expression to @samp{void}.
+
 @item -Wunused
-Warn whenever a variable is unused aside from its declaration,
-whenever a function is declared static but never defined, whenever a
-label is declared but not used, and whenever a statement computes a
-result that is explicitly not used.
+All all the above @samp{-Wunused} options combined.
 
 In order to get a warning about an unused function parameter, you must
-specify both @samp{-W} and @samp{-Wunused}.
-
-To suppress this warning for an expression, simply cast it to void.  For
-unused variables, parameters and labels, use the @samp{unused} attribute
-(@pxref{Variable Attributes}).
+either specify @samp{-W -Wunused} or separatly specify
+@samp{-Wunused-parameter}.
 
 @item -Wuninitialized
 Warn if an automatic variable is used without first being initialized or

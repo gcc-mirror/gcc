@@ -1387,7 +1387,7 @@ poplevel (keep, reverse, functionbody)
 	      define_label (input_filename, lineno,
 			    DECL_NAME (label));
 	    }
-	  else if (warn_unused && !TREE_USED (label))
+	  else if (warn_unused[UNUSED_LABEL] && !TREE_USED (label))
 	    warning_with_decl (label, "label `%s' defined but not used");
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
 

@@ -754,7 +754,7 @@ c_decode_option (argc, argv)
       warn_implicit_int = 1;
       mesg_implicit_function_declaration = 1;
       warn_return_type = 1;
-      warn_unused = 1;
+      set_Wunused (1);
       warn_switch = 1;
       warn_format = 1;
       warn_char_subscripts = 1;
@@ -1121,7 +1121,7 @@ poplevel (keep, reverse, functionbody)
 	      define_label (input_filename, lineno,
 			    DECL_NAME (label));
 	    }
-	  else if (warn_unused && !TREE_USED (label))
+	  else if (warn_unused_label && !TREE_USED (label))
 	    warning_with_decl (label, "label `%s' defined but not used");
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
 
@@ -1282,7 +1282,7 @@ pop_label_level ()
 	      define_label (input_filename, lineno,
 			    DECL_NAME (TREE_VALUE (link)));
 	    }
-	  else if (warn_unused && !TREE_USED (TREE_VALUE (link)))
+	  else if (warn_unused_label && !TREE_USED (TREE_VALUE (link)))
 	    warning_with_decl (TREE_VALUE (link), 
 			       "label `%s' defined but not used");
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link))) = 0;

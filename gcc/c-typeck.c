@@ -3531,7 +3531,7 @@ internal_build_compound_expr (list, first_p)
       /* The left-hand operand of a comma expression is like an expression
          statement: with -W or -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
-      if ((extra_warnings || warn_unused)
+      if ((extra_warnings || warn_unused_value)
            && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR
                 && TREE_TYPE (TREE_VALUE (list)) == void_type_node))
         warning ("left-hand operand of comma expression has no effect");
@@ -3546,7 +3546,7 @@ internal_build_compound_expr (list, first_p)
      side-effects, but computes a value which is not used.  For example, in
      `foo() + bar(), baz()' the result of the `+' operator is not used,
      so we should issue a warning.  */
-  else if (warn_unused)
+  else if (warn_unused_value)
     warn_if_unused_value (TREE_VALUE (list));
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest), TREE_VALUE (list), rest);

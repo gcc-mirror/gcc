@@ -5058,13 +5058,13 @@ build_x_compound_expr (list)
       /* the left-hand operand of a comma expression is like an expression
          statement: we should warn if it doesn't have any side-effects,
          unless it was explicitly cast to (void).  */
-      if ((extra_warnings || warn_unused)
+      if ((extra_warnings || warn_unused_value)
            && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
                 && TREE_TYPE (TREE_VALUE(list)) == void_type_node))
         warning("left-hand operand of comma expression has no effect");
     }
 #if 0 /* this requires a gcc backend patch to export warn_if_unused_value */
-  else if (warn_unused)
+  else if (warn_unused_value)
     warn_if_unused_value (TREE_VALUE(list));
 #endif
 

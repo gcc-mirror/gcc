@@ -510,7 +510,7 @@ ffe_decode_option (argc, argv)
 	     warning about not using it without also specifying -O.  */
 	  if (warn_uninitialized != 1)
 	    warn_uninitialized = 2;
-	  warn_unused = 1;
+	  set_Wunused (1);
 	}
       else
 	return 0;
