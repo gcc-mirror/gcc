@@ -1,5 +1,11 @@
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/14343
+	* config/i386/i386.md (movv2di_internal): Conditionalize on
+	TARGET_SSE, not TARGET_SSE2.
+
+2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR c/14114
 	* c-decl (pushdecl): Do not record a previous, not-in-scope,
 	external decl for restoration.

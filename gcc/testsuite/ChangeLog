@@ -1,5 +1,9 @@
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/i386-sse-8.c: New test.
+
+2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/decl-5.c: New test.
 
 2004-03-05  Roger Sayle  <roger@eyesopen.com>
