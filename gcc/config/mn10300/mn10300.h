@@ -287,8 +287,10 @@ enum reg_class {
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'd' ? DATA_REGS : \
    (C) == 'a' ? ADDRESS_REGS : \
+   (C) == 'y' ? SP_REGS : \
+   ! TARGET_AM33 ? NO_REGS : \
    (C) == 'x' ? EXTENDED_REGS : \
-   (C) == 'y' ? SP_REGS : NO_REGS)
+   NO_REGS)
 
 /* Macros to check register numbers against specific register classes.  */
 
