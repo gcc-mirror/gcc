@@ -2024,6 +2024,15 @@ field_byte_offset (decl)
   bitpos_tree = DECL_FIELD_BITPOS (decl);
   field_size_tree = DECL_SIZE (decl);
 
+  /* If there was an error, the size could be zero.  */
+  if (! field_size_tree)
+    {
+      if (errorcount)
+	return 0;
+      abort ();
+    }
+    
+
   /* We cannot yet cope with fields whose positions or sizes are variable,
      so for now, when we see such things, we simply return 0.  Someday,
      we may be able to handle such cases, but it will be damn difficult.  */
