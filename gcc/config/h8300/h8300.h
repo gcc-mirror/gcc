@@ -932,6 +932,13 @@ extern int current_function_anonymous_args;
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
+/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
+   is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+extern int h8300_valid_machine_decl_attribute ();
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
+h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
@@ -1080,6 +1087,14 @@ dtors_section() 						\
       (*p)();					\
     }						\
 }						 
+
+/* If we are referencing a function that is supposed to be called
+   through the function vector, the SYMBOL_REF_FLAG in the rtl
+   so the call patterns can generate the correct code.  */
+#define ENCODE_SECTION_INFO(DECL)  \
+  if (TREE_CODE (DECL) == FUNCTION_DECL \
+      && h8300_funcvec_function_p (DECL)) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
