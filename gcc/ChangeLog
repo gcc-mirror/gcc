@@ -1,3 +1,8 @@
+2004-11-29  Roger Sayle  <roger@eyesopen.com>
+
+	* reg-stack.c (change_stack): Improve algorithm used to pop regs
+	off the stack to maximize ffreep usage and reduce fxch count.
+
 2004-11-30  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR middle-end/18596
