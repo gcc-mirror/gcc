@@ -1,3 +1,7 @@
+2002-01-18  Kazu Hirata  <kazu@hxi.com>
+
+	* testsuite/gcc.c-torture/execute/20020118-1.c: New test.
+
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* g++.dg/other/deprecated.C: Fix FAIL from 
