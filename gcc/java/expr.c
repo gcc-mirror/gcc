@@ -695,15 +695,13 @@ java_check_reference (tree expr, int check)
 {
   if (!flag_syntax_only && check)
     {
-      tree cond;
       expr = save_expr (expr);
-      cond = build (COND_EXPR, void_type_node,
+      expr = build (COND_EXPR, TREE_TYPE (expr),
 		    build (EQ_EXPR, boolean_type_node, expr, null_pointer_node),
 		    build (CALL_EXPR, void_type_node, 
 			   build_address_of (soft_nullpointer_node),
 			   NULL_TREE, NULL_TREE),
-		    empty_stmt_node);
-      expr = build (COMPOUND_EXPR, TREE_TYPE (expr), cond, expr);
+		    expr);
     }
 
   return expr;
