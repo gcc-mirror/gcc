@@ -1194,16 +1194,13 @@ c_build_type_variant (type, constp, volatilep)
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree real_main_variant = TYPE_MAIN_VARIANT (type);
-      int permanent = TREE_PERMANENT (type);
 
-      if (permanent)
-	push_obstacks (&permanent_obstack, &permanent_obstack);
+      push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
       type = build_array_type (c_build_type_variant (TREE_TYPE (type),
 						     constp, volatilep),
 			       TYPE_DOMAIN (type));
       TYPE_MAIN_VARIANT (type) = real_main_variant;
-      if (permanent)
-	pop_obstacks ();
+      pop_obstacks ();
     }
   return build_type_variant (type, constp, volatilep);
 }
