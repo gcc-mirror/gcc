@@ -2368,7 +2368,7 @@
 			  (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 3 "const_int_operand" "rJ")))]
   "reload_in_progress"
-  "sh1add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  "sh1add %2,%1,%0\;add%I3 %3,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
@@ -2379,7 +2379,7 @@
 			  (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 3 "const_int_operand" "rJ")))]
   "reload_in_progress"
-  "sh2add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  "sh2add %2,%1,%0\;add%I3 %3,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
@@ -2390,7 +2390,7 @@
 			  (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 3 "const_int_operand" "rJ")))]
   "reload_in_progress"
-  "sh3add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  "sh3add %2,%1,%0\;add%I3 %3,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
 
