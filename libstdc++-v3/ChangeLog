@@ -1,3 +1,9 @@
+2002-07-03  Steev Wilcox  <steev@paradigmds.com>
+	 
+	PR libstdc++/7057
+	* include/ext/stl_hashtable.h: Fix.
+	* testsuite/ext/hash_map.cc: New.
+	
 2002-07-03  Jack Reeves  <jackw_reeves@hotmail.com>
             Kenny Simpson  <theonetruekenny@yahoo.com>
             Phil Edwards  <pme@gcc.gnu.org>
