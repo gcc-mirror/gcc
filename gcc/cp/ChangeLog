@@ -1,3 +1,8 @@
+2000-03-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c: Reorganize to put virtual function table initialization
+	machinery at the end of the file.
+
 2000-03-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* class.c (finish_struct): Use bitsize_zero_node.
