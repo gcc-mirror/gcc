@@ -1,5 +1,8 @@
 2003-04-18  Loren J. Rittle  <ljrittle@acm.org>
 
+	* config/os/bsd/freebsd/ctype_inline.h:  Support _M_table
+	when so installed.
+
 	* docs/html/17_intro/porting.texi (_GLIBCPP_USE_C99_CHECK): New macro.
 	(_GLIBCPP_USE_C99_DYNAMIC): New macro.
 	(_GLIBCPP_USE_C99_LONG_LONG_CHECK): New macro.

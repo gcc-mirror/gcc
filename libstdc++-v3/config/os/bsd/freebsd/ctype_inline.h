@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,35 +38,42 @@
   ctype<char>::
   is(mask __m, char __c) const
   { 
-    return __istype(__c, __m);
+    if (_M_table)
+      return _M_table[static_cast<unsigned char>(__c)] & __m;
+    else
+      return __istype(__c, __m);
   }
 
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const
   {
-    for (;__low < __high; ++__vec, ++__low)
-      {
+    if (_M_table)
+      while (__low < __high)
+	*__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
+    else
+      for (;__low < __high; ++__vec, ++__low)
+	{
 #if defined (_CTYPE_S) || defined (__istype)
-	*__vec = __maskrune (*__low, upper | lower | alpha | digit | xdigit
-			     | space | print | graph | cntrl | punct | alnum);
+	  *__vec = __maskrune (*__low, upper | lower | alpha | digit | xdigit
+			       | space | print | graph | cntrl | punct | alnum);
 #else
-	mask __m = 0;
-	if (this->is(upper, *__low)) __m |= upper;
-	if (this->is(lower, *__low)) __m |= lower;
-	if (this->is(alpha, *__low)) __m |= alpha;
-	if (this->is(digit, *__low)) __m |= digit;
-	if (this->is(xdigit, *__low)) __m |= xdigit;
-	if (this->is(space, *__low)) __m |= space;
-	if (this->is(print, *__low)) __m |= print;
-	if (this->is(graph, *__low)) __m |= graph;
-	if (this->is(cntrl, *__low)) __m |= cntrl;
-	if (this->is(punct, *__low)) __m |= punct;
-	// Do not include explicit line for alnum mask since it is a
-	// pure composite of masks on FreeBSD.
-	*__vec = __m;
+	  mask __m = 0;
+	  if (this->is(upper, *__low)) __m |= upper;
+	  if (this->is(lower, *__low)) __m |= lower;
+	  if (this->is(alpha, *__low)) __m |= alpha;
+	  if (this->is(digit, *__low)) __m |= digit;
+	  if (this->is(xdigit, *__low)) __m |= xdigit;
+	  if (this->is(space, *__low)) __m |= space;
+	  if (this->is(print, *__low)) __m |= print;
+	  if (this->is(graph, *__low)) __m |= graph;
+	  if (this->is(cntrl, *__low)) __m |= cntrl;
+	  if (this->is(punct, *__low)) __m |= punct;
+	  // Do not include explicit line for alnum mask since it is a
+	  // pure composite of masks on FreeBSD.
+	  *__vec = __m;
 #endif
-      }
+	}
     return __high;
   }
 
@@ -74,8 +81,13 @@
   ctype<char>::
   scan_is(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high && !this->is(__m, *__low))
-      ++__low;
+    if (_M_table)
+      while (__low < __high
+	     && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
+	++__low;
+    else
+      while (__low < __high && !this->is(__m, *__low))
+	++__low;
     return __low;
   }
 
@@ -83,12 +95,12 @@
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high && this->is(__m, *__low) != 0)
-      ++__low;
+    if (_M_table)
+      while (__low < __high
+	     && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
+	++__low;
+    else
+      while (__low < __high && this->is(__m, *__low) != 0)
+	++__low;
     return __low;
   }
-
-
-
-
-
