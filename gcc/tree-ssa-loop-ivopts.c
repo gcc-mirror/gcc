@@ -2533,6 +2533,9 @@ peel_address (tree addr, unsigned HOST_WIDE_INT *diff)
 
       return TREE_OPERAND (addr, 0);
 
+    case VIEW_CONVERT_EXPR:
+      return TREE_OPERAND (addr, 0);
+
     case ARRAY_REF:
       off = TREE_OPERAND (addr, 1);
 

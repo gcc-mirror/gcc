@@ -1,3 +1,8 @@
+2004-09-09  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (peel_address): Fix abort on
+	VIEW_CONVERT_EXPR.
+
 2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (gengtype): Use $(BUILD_ERRORS).
