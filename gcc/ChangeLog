@@ -1,3 +1,7 @@
+Sun Mar 15 16:01:19 1998  Andrew Pochinsky  <avp@ctp.mit.edu>
+
+	* sparc.h (ASM_OUTPUT_LOOP_ALIGN): Write nop's.
+
 Sun Mar 15 15:53:39 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* libgcc2.c (exit): Don't call __bb_exit_func if HAVE_ATEXIT.
