@@ -4902,9 +4902,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* Move type qualifiers down to element of an array.  */
 	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
 	  {
+	    int saved_align = TYPE_ALIGN(type);
 	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
 							     type_quals),
 				     TYPE_DOMAIN (type));
+	    TYPE_ALIGN (type) = saved_align;
 #if 0 /* Leave the variable const or volatile as well.  */
 	    type_quals = TYPE_UNQUALIFIED;
 #endif
