@@ -1,5 +1,8 @@
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (init_decl_processing): Complain if -fnew-abi
+	-fno-vtable-thunks is used.
+
 	* decl2.c (lang_decode_option): Don't couple flag_honor_std to
 	flag_new_abi.
 

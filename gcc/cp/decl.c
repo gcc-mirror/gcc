@@ -5956,6 +5956,11 @@ init_decl_processing ()
   int wchar_type_size;
   tree array_domain_type;
 
+  /* Check to see that the user did not specify an invalid combination
+     of command-line options.  */
+  if (flag_new_abi && !flag_vtable_thunks)
+    fatal ("the new ABI requires vtable thunks");
+
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
   lang_name_c = get_identifier ("C");
