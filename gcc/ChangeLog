@@ -1,3 +1,16 @@
+2001-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config.gcc (mmix-*-*): New target.
+	* doc/invoke.texi: Document MMIX options.
+	* doc/contrib.texi: Add note about MMIX port to my entry.
+	* config/mmix/t-mmix: New file.
+	* config/mmix/mmix.h: New file.
+	* config/mmix/mmix-protos.h: New file.
+	* config/mmix/mmix.c: New file.
+	* config/mmix/mmix.md: New file.
+	* config/mmix/crti.asm: New file.
+	* config/mmix/crtn.asm: New file.
+
 2001-11-03  Kazu Hirata  <kazu@hxi.com>
 
 	* config/sparc/linux-aout.h: Fix comment formatting.

@@ -574,6 +574,12 @@ in the following sections.
 -mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim @gol
 -mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
+@emph{MMIX Options}
+@gccoptlist{
+-mlibfuncs -mno-libfuncs -mepsilon -mno-epsilon -mabi=gnu @gol
+-mabi=mmixware -mzero-extend -mknuthdiv -mtoplevel-symbols @gol
+-melf}
+
 @emph{IA-64 Options}
 @gccoptlist{
 -mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
@@ -5116,6 +5122,7 @@ that macro, which enables you to change the defaults.
 * D30V Options::
 * S/390 and zSeries Options::
 * CRIS Options::
+* MMIX Options::
 @end menu
 
 @node M680x0 Options
@@ -9631,6 +9638,52 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
+@end table
+
+@node MMIX Options
+@subsection MMIX Options
+@cindex MMIX Options
+
+These options are defined for the MMIX:
+
+@table @code
+@item -mlibfuncs
+@itemx -mno-libfuncs
+Specify that intrinsic library functions are being compiled, passing all
+values in registers, no matter the size.
+
+@item -mepsilon
+@itemx -mno-epsilon
+Generate floating-point comparison instructions that compare with respect
+to the @code{rE} epsilon register.
+
+@item -mabi=mmixware
+@itemx -mabi=gnu
+Generate code that passes function parameters and return values that (in
+the called function) are seen as registers @code{$0} and up, as opposed to
+the GNU ABI which uses global registers @code{$231} and up.
+
+@item -mzero-extend
+@item -mno-zero-extend
+When reading data from memory in sizes shorter than 64 bits, use (do not
+use) zero-extending load instructions by default, rather than
+sign-extending ones.
+
+@item -mknuthdiv
+@itemx -mno-knuthdiv
+Make the result of a division yielding a remainder have the same sign as
+the divisor.  With the default, @option{-mno-knuthdiv}, the sign of the
+result follows the sign of the dividend.  Both methods are arithmetically
+valid, the latter being almost exclusively used.
+
+@item -mtoplevel-symbols
+@itemx -mno-toplevel-symbols
+Prepend (do not prepend) a @code{:} to all global symbols, so the assembly
+code can be used with the @code{PREFIX} assembly directive.
+
+@item -melf
+Generate an executable in the @samp{ELF} format, rather than the default
+@samp{mmo} format used by the @command{mmix} simulator.
 @end table
 
 

@@ -2554,6 +2554,8 @@ mips-*-*)				# Default MIPS RISC-OS 4.0.
 		use_collect2=yes
 	fi
 	;;
+mmix-knuth-mmixware)
+	;;
 mn10200-*-*)
 	float_format=i32
 	tm_file="elfos.h svr4.h ${tm_file}"

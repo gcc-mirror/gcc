@@ -384,8 +384,8 @@ NeXT, Inc.@: donated the front end that supports the Objective-C
 language.
 
 @item
-Hans-Peter Nilsson for the CRIS port, improvements to the search engine
-setup, various documentation fixes and other small fixes.
+Hans-Peter Nilsson for the CRIS and MMIX ports, improvements to the search
+engine setup, various documentation fixes and other small fixes.
 
 @item
 Geoff Noer for this work on getting cygwin native builds working.
