@@ -266,8 +266,8 @@ extern int target_flags;
    available for storage of persistent values.  */
 
 #define REG_ALLOC_ORDER \
-/*dx,cx,ax,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
-{  1, 2, 0, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16 }
+/*ax,cx,dx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
+{  0, 2, 1, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16 }
 
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define CONDITIONAL_REGISTER_USAGE			\
