@@ -2184,7 +2184,7 @@ s390x-*-linux*)
 		thread_file='posix'
 	fi
 	;;
-sh-*-elf* | shl*-*-elf* | sh64*-*-elf*)
+sh-*-elf* | sh[2346l]*-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
 	case $machine in
 	shl* | sh64l*)
@@ -2204,6 +2204,14 @@ sh-*-elf* | shl*-*-elf* | sh64*-*-elf*)
 			target_requires_64bit_host_wide_int=yes
 		fi
 		;;
+	sh4_single*)  target_cpu_default="SELECT_SH4_SINGLE" ;;
+	sh4*)  target_cpu_default="SELECT_SH4" ;;
+	sh3e*) target_cpu_default="SELECT_SH3E" ;;
+	sh3*)  target_cpu_default="SELECT_SH3" ;;
+	sh2*)  target_cpu_default="SELECT_SH2" ;;
+	esac
+	case $machine in
+	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
 	esac
 	;;
 sh-*-rtemself*)
@@ -2224,14 +2232,42 @@ sh-*-rtems*)
 	  thread_file='rtems'
 	fi
 	;;
-sh-*-linux*)
-	tm_file="sh/little.h ${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
-	tmake_file="sh/t-sh sh/t-elf sh/t-le sh/t-linux"
+sh-*-linux* | sh[2346lbe]*-*-linux*)
+	tmake_file="sh/t-sh sh/t-elf sh/t-linux"
+	case $machine in
+	sh*be-*-* | sh*eb-*-*) ;;
+	*)
+		tm_file="sh/little.h ${tm_file}"
+		tmake_file="${tmake_file} sh/t-le"
+		;;
+	esac
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
 	float_format=sh
+	case $machine in
+	sh64*)
+		tmake_file="${tmake_file} sh/t-sh64"
+		tm_file="${tm_file} sh/sh64.h"
+		extra_headers="shmedia.h ushmedia.h sshmedia.h"
+		# Not strictly necessary to check this, but a good idea anyway.
+		if test $machine = $target; then
+			target_requires_64bit_host_wide_int=yes
+		fi
+		;;
+	sh4_single*) target_cpu_default="SELECT_SH4_SINGLE" ;;
+	sh4*) target_cpu_default="SELECT_SH4" ;;
+	sh3e[lb]e*) target_cpu_default="SELECT_SH3E" ;;
+	sh3e[lb]*) target_cpu_default="SELECT_SH3" ;;
+	sh3e*) target_cpu_default="SELECT_SH3E" ;;
+	sh3*) target_cpu_default="SELECT_SH3" ;;
+	sh2*) target_cpu_default="SELECT_SH2" ;;
+	esac
+	case $machine in
+	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
+	esac
 	;;
 sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
   sh64-*-netbsd* | sh64l*-*-netbsd*)
