@@ -1,3 +1,22 @@
+Mon Mar  3 19:47:26 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OVERRIDE_OPTIONS): Set default values for align_loops
+	and align_jumps if not set.
+	Force align_jumps to be at least 2.
+	When relaxing, force align_functions to be at least the maximum of
+	align_loops, align_jumps and 4.
+	* sh.c (find_barrier, barrier_align): Honour align_jumps_log.
+	(sh_loop_align): Honour align_loops_log.
+
+	* sh.md (length attribute): Use prev_nonnote_insn instead of PREV_INSN
+	to check for indirect_jump_scratch.
+	(indirect_jump_scratch): Add second set.
+	* sh.c (output_far_jump): Use prev_nonnote_insn instead of PREV_INSN
+	when looking for indirect_jump_scratch.
+	Extract scratch register taking new structure of indirect_jump_scratch
+	into account.
+	(gen_block_redirect): Set INSN_SCOPE for indirect_jump_scratch.
+
 Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (rtx_for_function_call): Take the address as an argument

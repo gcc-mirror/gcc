@@ -489,6 +489,13 @@ do {									\
       flag_schedule_insns = 0;						\
     }									\
 									\
+  if (align_loops == 0)							\
+    align_loops =  1 << (TARGET_SH5 ? 3 : 2);				\
+  if (align_jumps == 0)							\
+    align_jumps = 1 << CACHE_LOG;					\
+  else if (align_jumps <= 1)						\
+    align_jumps = 2;							\
+									\
   /* Allocation boundary (in *bytes*) for the code of a function.	\
      SH1: 32 bit alignment is faster, because instructions are always	\
      fetched as a pair from a longword boundary.			\
@@ -496,6 +503,20 @@ do {									\
   if (align_functions == 0)						\
     align_functions							\
       = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);	\
+  /* The linker relaxation code breaks when a function contains		\
+     alignments that are larger than that at the start of a		\
+     compilation unit.  */						\
+  if (TARGET_RELAX)							\
+    {									\
+      int min_align							\
+	= align_loops > align_jumps ? align_loops : align_jumps;	\
+									\
+      /* Also take possible .long constants / mova tables int account.	*/\
+      if (min_align < 4)						\
+	min_align = 4;							\
+      if (align_functions < min_align)					\
+	align_functions = min_align;					\
+    }									\
 } while (0)
 
 /* Target machine storage layout.  */
