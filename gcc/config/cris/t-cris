@@ -39,5 +39,3 @@ $(LIB2FUNCS_EXTRA): $(CRIS_LIB1CSRC)
 	echo "#define L$$name" > tmp-$@ \
 	&& echo '#include "$<"' >> tmp-$@ \
 	&& mv -f tmp-$@ $@
-
-TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc
