@@ -626,7 +626,15 @@ main (argc, argv)
   long int inf_size;
 
   if (argv[0] && argv[0][0])
-    progname = argv[0];
+    {
+      register char *p;
+
+      progname = 0;
+      for (p = argv[0]; *p; p++)
+        if (*p == '/')
+          progname = p;
+      progname = progname ? progname+1 : argv[0];
+    }
 
   if (argc < 4)
     {
@@ -717,6 +725,7 @@ main (argc, argv)
   if (inf_limit > inf_buffer && inf_limit[-1] != '\n')
     inf_limit++;
 
+  unlink (argv[3]);
   outf = fopen (argv[3], "w");
   if (outf == NULL)
     {
