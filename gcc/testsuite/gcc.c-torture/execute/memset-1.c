@@ -12,7 +12,7 @@
 #endif
 
 #ifndef MAX_COPY
-#define MAX_COPY (8 * sizeof (long long))
+#define MAX_COPY (10 * sizeof (long long))
 #endif
 
 #ifndef MAX_EXTRA
