@@ -1185,6 +1185,7 @@ i960-*-coff*)
 	tmake_file=i960/t-960bare
 	c_target_objs="i960-c.o"
 	cxx_target_objs="i960-c.o"
+	use_fixproto=no
 	;;
 i960-*-rtems)
 	tmake_file="i960/t-960bare t-rtems"
@@ -1306,6 +1307,7 @@ m68k-hp-hpux*)	# HP 9000 series 300
 m68k-*-aout*)
 	tmake_file=m68k/t-m68kbare
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
+	use_fixproto=no
 	;;
 m68k-*-coff*)
 	tmake_file=m68k/t-m68kbare
@@ -2014,6 +2016,7 @@ sparc-*-sysv4*)
 sparclite-*-coff*)
 	tm_file="${tm_file} gofast.h sparc/lite.h svr3.h sparc/litecoff.h dbxcoff.h libgloss.h"
 	tmake_file=sparc/t-sparclite
+	use_fixproto=no
 	;;
 sparclite-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h gofast.h sparc/liteelf.h"
