@@ -6128,30 +6128,21 @@ store_parm_decls (void)
   cfun->x_dont_save_pending_sizes_p = 1;
 }
 
-/* Give FNDECL and all its nested functions to cgraph for compilation.  */
+/* Handle attribute((warn_unused_result)) on FNDECL and all its nested
+   functions.  */
 
 static void
-c_finalize (tree fndecl)
+c_warn_unused_result_recursively (tree fndecl)
 {
   struct cgraph_node *cgn;
 
   /* Handle attribute((warn_unused_result)).  Relies on gimple input.  */
   c_warn_unused_result (&DECL_SAVED_TREE (fndecl));
 
-  /* ??? Objc emits functions after finalizing the compilation unit.
-     This should be cleaned up later and this conditional removed.  */
-  if (cgraph_global_info_ready)
-    {
-      c_expand_body (fndecl);
-      return;
-    }
-
   /* Finalize all nested functions now.  */
   cgn = cgraph_node (fndecl);
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
-    c_finalize (cgn->decl);
-
-  cgraph_finalize_function (fndecl, false);
+    c_warn_unused_result_recursively (cgn->decl);
 }
 
 /* Finish up a function declaration and compile that function
@@ -6255,8 +6246,17 @@ finish_function (void)
       if (!decl_function_context (fndecl))
         {
           c_genericize (fndecl);
-	  lower_nested_functions (fndecl);
-          c_finalize (fndecl);
+          c_warn_unused_result_recursively (fndecl);
+
+	  /* ??? Objc emits functions after finalizing the compilation unit.
+	     This should be cleaned up later and this conditional removed.  */
+	  if (cgraph_global_info_ready)
+	    {
+	      c_expand_body (fndecl);
+	      return;
+	    }
+
+	  cgraph_finalize_function (fndecl, false);
         }
       else
         {
