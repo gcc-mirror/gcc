@@ -1,5 +1,18 @@
 1999-04-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (TREE_NONLOCAL_FLAG): Remove.
+	(storetags): Declare.
+	* class.c (finish_struct): Don't use TREE_NONLOCAL_FLAG.
+	(pushclass): Likewise.  Use storetags to install tag declarations,
+	not pushtag.
+	(invalidate_class_lookup_cache): Don't use TREE_NONLOCAL_FLAG.
+	* decl.c (storetags): Make it global.
+	(push_class_binding): Set INHERITED_VALUE_BINDING_P for an
+	implicit typename declaration.
+	(pushtag): Tidy.  Don't use TREE_NONLOCAL_FLAG.
+	* method.c (hack_identifier): Likewise.
+	* search.c (lookup_member): Likewise.
+	
 	* decl.c (warn_about_implicit_typename_lookup): New function.
 	(lookup_name_real): Use it.  Rework handling of implicit typename
 	extension.

@@ -23,8 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define _CP_TREE_H
 
 /* Usage of TREE_LANG_FLAG_?:
-   0: TREE_NONLOCAL_FLAG (in TREE_LIST or _TYPE).
-      BINFO_MARKED (BINFO nodes).
+   0: BINFO_MARKED (BINFO nodes).
       COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
@@ -802,9 +801,6 @@ struct lang_type
 #define TYPE_VEC_NEW_USES_COOKIE(NODE) \
   (TYPE_NEEDS_DESTRUCTOR (NODE) \
    || (TYPE_LANG_SPECIFIC (NODE) && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
-
-/* Nonzero for TREE_LIST or _TYPE node means that this node is class-local.  */
-#define TREE_NONLOCAL_FLAG(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
@@ -2885,6 +2881,7 @@ extern int push_class_binding                   PROTO((tree, tree));
 extern tree check_default_argument              PROTO((tree, tree));
 extern tree push_overloaded_decl		PROTO((tree, int));
 extern void clear_identifier_class_values       PROTO((void));
+extern void storetags                           PROTO((tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));

@@ -4185,10 +4185,6 @@ finish_struct (t, attributes, warn_anon)
      as necessary.  */
   unreverse_member_declarations (t);
 
-  /* Mark all the tags in the class as class-local.  */
-  for (x = CLASSTYPE_TAGS (t); x; x = TREE_CHAIN (x))
-    TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
-
   cplus_decl_attributes (t, attributes, NULL_TREE);
 
   if (processing_template_decl)
@@ -4511,17 +4507,7 @@ pushclass (type, modify)
 	  unuse_fields (type);
 	}
 
-      for (tags = CLASSTYPE_TAGS (type); tags; tags = TREE_CHAIN (tags))
-	{
-	  tree tag_type = TREE_VALUE (tags);
-
-	  TREE_NONLOCAL_FLAG (tag_type) = 1;
-	  if (! TREE_PURPOSE (tags))
-	    continue;
-	  if (! (IS_AGGR_TYPE_CODE (TREE_CODE (tag_type))
-		 && CLASSTYPE_IS_TEMPLATE (tag_type)))
-	    pushtag (TREE_PURPOSE (tags), tag_type, 0);
-	}
+      storetags (CLASSTYPE_TAGS (type));
     }
 }
 
@@ -4541,11 +4527,6 @@ invalidate_class_lookup_cache ()
      them.  This is it!  */
   for (t = previous_class_values; t; t = TREE_CHAIN (t))
     IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
-  while (tags)
-    {
-      TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
-      tags = TREE_CHAIN (tags);
-    }
   
   previous_class_type = NULL_TREE;
 }
@@ -4556,16 +4537,6 @@ invalidate_class_lookup_cache ()
 void
 popclass ()
 {
-  /* Just remove from this class what didn't make
-	 it into IDENTIFIER_CLASS_VALUE.  */
-  tree tags = CLASSTYPE_TAGS (current_class_type);
-
-  while (tags)
-    {
-      TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
-      tags = TREE_CHAIN (tags);
-    }
-
   poplevel (1, 0, 0);
   /* Since poplevel_class does the popping of class decls nowadays,
      this really only frees the obstack used for these decls.  */

@@ -148,7 +148,6 @@ static struct binding_level *make_binding_level PROTO((void));
 static void declare_namespace_level PROTO((void));
 static void signal_catch PROTO((int)) ATTRIBUTE_NORETURN;
 static void storedecls PROTO((tree));
-static void storetags PROTO((tree));
 static void require_complete_types_for_parms PROTO((tree));
 static void push_overloaded_decl_1 PROTO((tree));
 static int ambi_op_p PROTO((tree));
@@ -1231,19 +1230,29 @@ push_class_binding (id, decl)
   binding = IDENTIFIER_BINDING (id);
   if (BINDING_VALUE (binding) == decl && TREE_CODE (decl) != TREE_LIST)
     {
-      if (TREE_CODE (decl) == OVERLOAD)
-	context = DECL_REAL_CONTEXT (OVL_CURRENT (decl));
-      else
-	{
-	  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd',
-			      0);
-	  context = DECL_REAL_CONTEXT (decl);
-	}
-
-      if (is_properly_derived_from (current_class_type, context))
+      /* Any implicit typename must be from a base-class.  The
+	 context for an implicit typename declaration is always
+	 the derived class in which the lookup was done, so the checks
+	 based on the context of DECL below will not trigger.  */
+      if (TREE_CODE (decl) == TYPE_DECL 
+	  && IMPLICIT_TYPENAME_P (TREE_TYPE (decl)))
 	INHERITED_VALUE_BINDING_P (binding) = 1;
       else
-	INHERITED_VALUE_BINDING_P (binding) = 0;
+	{
+	  if (TREE_CODE (decl) == OVERLOAD)
+	    context = DECL_REAL_CONTEXT (OVL_CURRENT (decl));
+	  else
+	    {
+	      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd',
+				  0);
+	      context = DECL_REAL_CONTEXT (decl);
+	    }
+
+	  if (is_properly_derived_from (current_class_type, context))
+	    INHERITED_VALUE_BINDING_P (binding) = 1;
+	  else
+	    INHERITED_VALUE_BINDING_P (binding) = 0;
+	}
     }
   else if (BINDING_VALUE (binding) == decl)
     /* We only encounter a TREE_LIST when push_class_decls detects an
@@ -2616,7 +2625,6 @@ maybe_process_template_type_declaration (type, globalize, b)
 		 binding level, but is instead the pseudo-global level.  */
 	      b->level_chain->tags = 
 		saveable_tree_cons (name, type, b->level_chain->tags);
-	      TREE_NONLOCAL_FLAG (type) = 1;
 	      if (TYPE_SIZE (current_class_type) == NULL_TREE)
 		CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
 	    }
@@ -2637,8 +2645,6 @@ pushtag (name, type, globalize)
      int globalize;
 {
   register struct binding_level *b;
-  tree context = 0;
-  tree c_decl = 0;
 
   b = current_binding_level;
   while (b->tag_transparent
@@ -2652,32 +2658,34 @@ pushtag (name, type, globalize)
 
   if (name)
     {
-      context = type ? TYPE_CONTEXT (type) : NULL_TREE;
-      if (! context)
-	{
-	  tree cs = current_scope ();
-
-	  if (! globalize)
-	    context = cs;
-	  else if (cs != NULL_TREE 
-		   && TREE_CODE_CLASS (TREE_CODE (cs)) == 't')
-	    /* When declaring a friend class of a local class, we want
-	       to inject the newly named class into the scope
-	       containing the local class, not the namespace scope.  */
-	    context = hack_decl_function_context (get_type_decl (cs));
-	}
-      if (context)
-	c_decl = TREE_CODE (context) == FUNCTION_DECL
-	  ? context : TYPE_MAIN_DECL (context);
-
-      if (!context)
-	context = current_namespace;
-
       /* Do C++ gratuitous typedefing.  */
       if (IDENTIFIER_TYPE_VALUE (name) != type)
         {
           register tree d = NULL_TREE;
 	  int newdecl = 0, in_class = 0;
+	  tree context;
+	  tree c_decl = NULL_TREE;
+
+	  context = type ? TYPE_CONTEXT (type) : NULL_TREE;
+	  if (! context)
+	    {
+	      tree cs = current_scope ();
+
+	      if (! globalize)
+		context = cs;
+	      else if (cs != NULL_TREE 
+		       && TREE_CODE_CLASS (TREE_CODE (cs)) == 't')
+		/* When declaring a friend class of a local class, we want
+		   to inject the newly named class into the scope
+		   containing the local class, not the namespace scope.  */
+		context = hack_decl_function_context (get_type_decl (cs));
+	    }
+	  if (context)
+	    c_decl = TREE_CODE (context) == FUNCTION_DECL
+	      ? context : TYPE_MAIN_DECL (context);
+
+	  if (!context)
+	    context = current_namespace;
 
 	  if ((b->pseudo_global && b->level_chain->parm_flag == 2)
 	      || b->parm_flag == 2)
@@ -2732,7 +2740,6 @@ pushtag (name, type, globalize)
         }
       if (b->parm_flag == 2)
 	{
-	  TREE_NONLOCAL_FLAG (type) = 1;
 	  if (TYPE_SIZE (current_class_type) == NULL_TREE)
 	    CLASSTYPE_TAGS (current_class_type) = b->tags;
 	}
@@ -4931,7 +4938,7 @@ storedecls (decls)
 
 /* Similarly, store the list of tags of the current level.  */
 
-static void
+void
 storetags (tags)
      tree tags;
 {
