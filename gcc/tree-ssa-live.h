@@ -356,7 +356,6 @@ static inline int tpa_next_partition (tpa_p, int);
 static inline int tpa_num_trees (tpa_p);
 static inline int tpa_find_tree (tpa_p, int);
 static inline void tpa_decompact (tpa_p);
-extern tpa_p tpa_init (var_map);
 extern void tpa_delete (tpa_p);
 extern void tpa_dump (FILE *, tpa_p);
 extern void tpa_remove_partition (tpa_p, int, int);
@@ -707,7 +706,6 @@ extern void dump_coalesce_list (FILE *, coalesce_list_p);
 extern void delete_coalesce_list (coalesce_list_p);
 
 #define NO_BEST_COALESCE	-1
-extern int pop_best_coalesce (coalesce_list_p, int *, int *);
 
 extern conflict_graph build_tree_conflict_graph (tree_live_info_p, tpa_p,
 						 coalesce_list_p);
