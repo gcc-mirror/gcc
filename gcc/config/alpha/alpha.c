@@ -1302,16 +1302,16 @@ print_operand (file, x, code)
 
     case '(':
       /* Generates trap-mode suffix for instructions that accept the
-	 c, svc, and svic suffix.  The only instruction that needs this
+	 v, sv, and svi suffix.  The only instruction that needs this
 	 is cvttq.  */
       switch (alpha_fptm)
 	{
 	case ALPHA_FPTM_N:
 	case ALPHA_FPTM_U:
-	  fputs ("vc", file);
+	  fputs ("v", file);
 	  break;
 	case ALPHA_FPTM_SU:
-	  fputs ("svc", file);
+	  fputs ("sv", file);
 	  break;
 	case ALPHA_FPTM_SUI:
 	  fputs ("svi", file);
