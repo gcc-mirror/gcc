@@ -1,5 +1,16 @@
 2002-03-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/5857
+	* decl.c (duplicate_decls): Use merge_types instead of common_type.
+	* typeck.c (common_type): Just hand off to
+	type_after_usual_arithmetic_conversions and
+	composite_pointer_type.
+	(merge_types): New fn.
+	(commonparms): Use it instead of common_type.
+	(type_after_usual_arithmetic_conversions): Also handle COMPLEX_TYPE.
+	(composite_pointer_type): Also handle attributes.
+	* cp-tree.h: Declare merge_types.
+
 	* decl.c (make_rtl_for_nonlocal_decl): Also defer COMDAT
 	variables.
 	* decl2.c (maybe_make_one_only): Also mark the decl as needed.

@@ -4355,6 +4355,7 @@ extern tree pfn_from_ptrmemfunc                 PARAMS ((tree));
 extern tree type_after_usual_arithmetic_conversions PARAMS ((tree, tree));
 extern tree composite_pointer_type              PARAMS ((tree, tree, tree, tree,
 						       const char*));
+extern tree merge_types				PARAMS ((tree, tree));
 extern tree check_return_expr                   PARAMS ((tree));
 #define cp_build_binary_op(code, arg1, arg2) \
   build_binary_op(code, arg1, arg2, 1)

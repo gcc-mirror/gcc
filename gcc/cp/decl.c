@@ -3515,16 +3515,16 @@ duplicate_decls (newdecl, olddecl)
       tree newtype;
 
       /* Merge the data types specified in the two decls.  */
-      newtype = common_type (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
+      newtype = merge_types (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
 
-      /* If common_type produces a non-typedef type, just use the old type.  */
+      /* If merge_types produces a non-typedef type, just use the old type.  */
       if (TREE_CODE (newdecl) == TYPE_DECL
 	  && newtype == DECL_ORIGINAL_TYPE (newdecl))
 	newtype = oldtype;
 
       if (TREE_CODE (newdecl) == VAR_DECL)
 	DECL_THIS_EXTERN (newdecl) |= DECL_THIS_EXTERN (olddecl);
-      /* Do this after calling `common_type' so that default
+      /* Do this after calling `merge_types' so that default
 	 parameters don't confuse us.  */
       else if (TREE_CODE (newdecl) == FUNCTION_DECL
 	  && (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (newdecl))
