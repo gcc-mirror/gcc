@@ -1,3 +1,8 @@
+2004-09-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030123-1.c: Add prototypes for builtin functions.
+	* gcc.dg/20040305-1.c: Likewise.
+
 2004-09-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16566
