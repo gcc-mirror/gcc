@@ -1096,7 +1096,7 @@ get_file_basename (const char *f)
       s2 = lang_dir_names [i];
       l1 = strlen (s1);
       l2 = strlen (s2);
-      if (l1 >= l2 && !memcmp (s1, s2, l2))
+      if (l1 >= l2 && IS_DIR_SEPARATOR (s1[-1]) && !memcmp (s1, s2, l2))
         {
           basename -= l2 + 1;
           if ((basename - f - 1) != srcdir_len)
@@ -1125,6 +1125,10 @@ get_base_file_bitmap (const char *input_file)
   unsigned k;
   unsigned bitmap;
 
+  /* If the file resides in a language subdirectory (e.g., 'cp'), assume that
+     it belongs to the corresponding language.  The file may belong to other
+     languages as well (which is checked for below).  */
+
   if (slashpos)
     {
       size_t i;
@@ -1134,10 +1138,7 @@ get_base_file_bitmap (const char *input_file)
           {
             /* It's in a language directory, set that language.  */
             bitmap = 1 << i;
-            return bitmap;
           }
-
-      abort (); /* Should have found the language.  */
     }
 
   /* If it's in any config-lang.in, then set for the languages
@@ -1200,11 +1201,19 @@ get_output_file_with_visibility (const char *input_file)
       memcpy (s, ".h", sizeof (".h"));
       for_name = basename;
     }
+  /* Some headers get used by more than one front-end; hence, it
+     would be inappropriate to spew them out to a single gtype-<lang>.h
+     (and gengtype doesn't know how to direct spewage into multiple
+     gtype-<lang>.h headers at this time).  Instead, we pair up these
+     headers with source files (and their special purpose gt-*.h headers).  */
   else if (strcmp (basename, "c-common.h") == 0)
     output_name = "gt-c-common.h", for_name = "c-common.c";
   else if (strcmp (basename, "c-tree.h") == 0)
     output_name = "gt-c-decl.h", for_name = "c-decl.c";
-  else
+  else if (strncmp (basename, "objc", 4) == 0 && IS_DIR_SEPARATOR (basename[4])
+	   && strcmp (basename + 5, "objc-act.h") == 0)
+    output_name = "gt-objc-objc-act.h", for_name = "objc/objc-act.c";
+  else 
     {
       size_t i;
 

@@ -918,6 +918,8 @@ static const struct compiler default_compilers[] =
      and be given a more meaningful error than "file not used since
      linking is not done".  */
   {".m",  "#Objective-C", 0, 0, 0}, {".mi",  "#Objective-C", 0, 0, 0},
+  {".mm", "#Objective-C++", 0, 0, 0}, {".M", "#Objective-C++", 0, 0, 0},
+  {".mii", "#Objective-C++", 0, 0, 0},
   {".cc", "#C++", 0, 0, 0}, {".cxx", "#C++", 0, 0, 0}, 
   {".cpp", "#C++", 0, 0, 0}, {".cp", "#C++", 0, 0, 0}, 
   {".c++", "#C++", 0, 0, 0}, {".C", "#C++", 0, 0, 0},
