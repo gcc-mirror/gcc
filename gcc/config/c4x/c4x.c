@@ -851,13 +851,6 @@ c4x_expand_prologue ()
       return;
     }
   
-#ifdef FUNCTION_BLOCK_PROFILER_EXIT
-  if (profile_block_flag == 2)
-    {
-      FUNCTION_BLOCK_PROFILER_EXIT
-    }
-#endif
-
   /* For __interrupt__ function build specific prologue.  */
   if (c4x_interrupt_function_p ())
     {
@@ -1239,7 +1232,6 @@ c4x_null_epilogue_p ()
       && ! c4x_interrupt_function_p ()
       && ! current_function_calls_alloca
       && ! current_function_args_size
-      && ! (profile_block_flag == 2)
       && ! (optimize < 2)
       && ! get_frame_size ())
     {

@@ -2495,17 +2495,6 @@ s390_function_prologue (file, lsize)
 
   /* Profile code (-p, -a, -ax needs some literals).  */
 
-  if (profile_block_flag && !TARGET_64BIT)
-    {
-      s390_profile[0] = s390_force_const_mem_symbol ("__bb_init_func", 1, 1);
-      s390_profile[1] = s390_force_const_mem_symbol ("__bb_init_trace_func", 1, 1);
-      s390_profile[2] = s390_force_const_mem_symbol ("__bb_trace_func", 1, 1);
-      s390_profile[3] = s390_force_const_mem_symbol ("__bb_trace_ret", 1, 1);
-      s390_profile[5] = s390_force_const_mem_symbol ("__bb", 0, 1);
-      s390_profile[6] = s390_force_const_mem_symbol (".LPBX0", 0, 0);
-      s390_profile[7] = s390_force_const_mem_symbol (".LPBX2", 0, 0);
-    }
-
   if (profile_flag && !TARGET_64BIT)
     {
       static char label[128];

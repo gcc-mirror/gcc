@@ -2013,7 +2013,7 @@ m32r_expand_prologue ()
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     emit_insn (gen_blockage ());
 }
 

@@ -7505,7 +7505,7 @@ mips_expand_prologue ()
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */
 
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     emit_insn (gen_blockage ());
 }
 

@@ -771,26 +771,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
  mmix_function_profiler (FILE, LABELNO)
 
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)	\
- mmix_function_block_profiler (FILE, LABELNO)
-
-#define BLOCK_PROFILER(FILE, BLOCKNO)		\
- mmix_block_profiler (FILE, BLOCKNO)
-
-#define FUNCTION_BLOCK_PROFILER_EXIT(FILE)	\
- mmix_function_block_profiler_exit PARAMS ((FILE *));
-
-#define MACHINE_STATE_SAVE(ID)			\
-  __asm__ ("SAVE $255,0		\n\t"		\
-	   "SUBU $254,$254,8	\n\t"		\
- 	   "STOU $255,$254,0")
-
-#define MACHINE_STATE_RESTORE(ID)		\
-  __asm__ ("LDOU  $255,$254,0	\n\t"		\
-	   "UNSAVE $255,0")
-
-
-
 /* Node: Varargs */
 
 /* For the moment, let's stick to pushing argument registers on the stack.

@@ -408,10 +408,6 @@ int flag_eliminate_dwarf2_dups = 0;
 
 int profile_flag = 0;
 
-/* Nonzero if generating code to do profiling on a line-by-line basis.  */
-
-int profile_block_flag;
-
 /* Nonzero if generating code to profile program flow graph arcs.  */
 
 int profile_arc_flag = 0;
@@ -4238,47 +4234,6 @@ independent_decode_option (argc, argv)
 	return decode_W_option (arg + 1);
       break;
 
-    case 'a':
-      if (arg[1] == 0)
-	{
-#if !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
-	  warning ("`-a' option (basic block profile) not supported");
-#else
-	  profile_block_flag = (profile_block_flag < 2) ? 1 : 3;
-#endif
-	}
-      else if (!strcmp (arg, "ax"))
-	{
-#if !defined (FUNCTION_BLOCK_PROFILER_EXIT) || !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
-	  warning ("`-ax' option (jump profiling) not supported");
-#else
-	  profile_block_flag = (!profile_block_flag
-				|| profile_block_flag == 2) ? 2 : 3;
-#endif
-	}
-      else if (!strncmp (arg, "aux-info", 8))
-	{
-	  if (arg[8] == '\0')
-	    {
-	      if (argc == 1)
-		return 0;
-
-	      aux_info_file_name = argv[1];
-	      flag_gen_aux_info = 1;
-	      return 2;
-	    }
-	  else if (arg[8] == '=')
-	    {
-	      aux_info_file_name = arg + 9;
-	      flag_gen_aux_info = 1;
-	    }
-	  else
-	    return 0;
-	}
-      else
-	return 0;
-      break;
-
     case 'o':
       if (arg[1] == 0)
 	{
@@ -4837,12 +4792,6 @@ process_options ()
   if (align_functions <= 0) align_functions = 1;
   align_functions_log = floor_log2 (align_functions * 2 - 1);
 
-  if (profile_block_flag == 3)
-    {
-      warning ("`-ax' and `-a' are conflicting options. `-a' ignored");
-      profile_block_flag = 2;
-    }
-
   /* Unrolling all loops implies that standard loop unrolling must also
      be done.  */
   if (flag_unroll_all_loops)
@@ -4913,7 +4862,6 @@ process_options ()
     {
       write_symbols = NO_DEBUG;
       profile_flag = 0;
-      profile_block_flag = 0;
     }
 
   /* Now we know write_symbols, set up the debug hooks based on it.
@@ -4967,8 +4915,7 @@ process_options ()
 	}
     }
 
-  if (flag_function_sections
-      && (profile_flag || profile_block_flag))
+  if (flag_function_sections && profile_flag)
     {
       warning ("-ffunction-sections disabled; it makes profiling impossible");
       flag_function_sections = 0;

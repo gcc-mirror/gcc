@@ -1,3 +1,89 @@
+Thu Dec  6 12:45:33 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (count_basic_block, add_bb, add_bb_string):
+	Kill.
+	(end_final, final_start_function, final, final_scan_insn,
+	leaf_function_p): Kill BB profiler related code.
+	* flags.h (profile_block_flag): Kill.
+	* libgcc2.c (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE,
+	BB_BUCKETS, BBINBUFSIZE, bb_edge, bb_func_mode, bb_func,
+	__bb, bb_src, bb_dst, bb_tracefile, bb_hashbuckets,
+	bb_func_head, bb_callcount, bb_mode, bb_stack, bb_stacksize
+	reported, GOPENDECOMPRESS, GOPENCOMPRESS, gopen, gclose,
+	__bb_exit_trace_func, __bb_init_prg, __bb_trace_func,
+	__bb_trace_func_ret, __bb_init_file, __bb_trace_ret,
+	__bb_init_trace_func): Kill.
+	* toplev.c (profile_block_flag): Kill.
+	(indepdendent_decode_option, process_options): Kill -a related code.
+	* alpha.c (direct_call_operand): Likewise.
+	* arm.c (arm_expand_prologue, thumb_expand_prologue,
+	thumb_expand_epilogue): Likewise.
+	* c4x.c (c4x_expand_prologue, c4x_null_epilogue_p): Likewise.
+	* c4x.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* d30v.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* fr30.c (fr30_expand_prologue): Kill BB profiler related code.
+	* i386.c (ix86_can_use_return_insn_p, ix86_expand_prologue,
+	ix86_expand_epilogue, ix86_expand_epilogue): Kill BB profiler related
+	code.
+	(ix86_output_function_block_profiler, ix86_output_block_profiler): Kill.
+	* i386.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* fr30.c (fr30_expand_prologue): Kill BB profiler related code.
+	* i960.c (i960_output_function_prologue): Kill BB profiler related
+	code.
+	* ia64.c (ia64_compute_frame_size): Likewise.
+	* ia64.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* m32r.c (m32r_expand_prolofue): Kill BB profiler related code.
+	* m68hc11.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* m68k.c (m68k_output_function_epilogue): Kill BB profiler related code.
+	* m68k.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* m88k.c (output_options, m88k_layout_frame, m88k_expand_prologue):
+	Kill BB profiler related code.
+	* m88k.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* mips.c (mips_expand_prologue): Kill BB profiler related code.
+	* mmix.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* rs6000.c (rs6000_override_options): Kill BB profiler related code.
+	* s960.c (s390_function_prologue): Kill BB profiler related code.
+	* s960.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* linux-aout.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* linux.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* linux64.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* sol2.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* sparc.c (sparc_override_options, eligible_for_sibcall_delay,
+	sparc_nonflat_function_epilogue): Kill BB profiler related code.
+	(sparc_function_block_profiler, sparc_block_profiler,
+	sparc_function_block_profiler_exit): Kill.
+	* sparc.h (OVERRIDE_OPTIONS): Kill BB profiler related code.
+	(FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* sun4o3.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* sunos4.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Kill.
+	* stormy16.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+	* doc/invoke.texi: Kill documentation of -a and -ax.
+	* tm.texi (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER,
+	FUNCTION_BLOCK_PROFILER_EXIT, MACHINE_STATE_SAVE,
+	MACHINE_STATE_RESTORE): Kill.
+
 2001-10-26  Steve Christiansen  <smc@us.ibm.com>
 
 	* doc/rtl.texi: Use a table to display RTL format characters.

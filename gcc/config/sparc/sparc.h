@@ -388,7 +388,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define OVERRIDE_OPTIONS \
   do {									\
-    if (profile_flag || profile_block_flag || profile_arc_flag)		\
+    if (profile_flag || profile_arc_flag)				\
       {									\
 	if (flag_pic)							\
 	  {								\
@@ -1070,13 +1070,6 @@ do								\
 	reg_names[FRAME_POINTER_REGNUM] = "%i7";		\
 	/* Disable leaf functions */				\
 	memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);	\
-      }								\
-    if (profile_block_flag)					\
-      {								\
-	/* %g1 and %g2 (sparc32) resp. %g4 (sparc64) must be	\
-	   fixed, because BLOCK_PROFILER uses them.  */		\
-	fixed_regs[1] = 1;					\
-	fixed_regs[TARGET_ARCH64 ? 4 : 2] = 1;			\
       }								\
   }								\
 while (0)
@@ -1869,165 +1862,6 @@ do {									\
 /* Set the name of the mcount function for the system.  */
 
 #define MCOUNT_FUNCTION "*mcount"
-
-/* The following macro shall output assembler code to FILE
-   to initialize basic-block profiling.  */
-
-#define FUNCTION_BLOCK_PROFILER(FILE, BLOCK_OR_LABEL) \
-  sparc_function_block_profiler(FILE, BLOCK_OR_LABEL)
-
-/* The following macro shall output assembler code to FILE
-   to increment a counter associated with basic block number BLOCKNO.  */
-
-#define BLOCK_PROFILER(FILE, BLOCKNO) \
-  sparc_block_profiler (FILE, BLOCKNO)
-
-/* The following macro shall output assembler code to FILE
-   to indicate a return from function during basic-block profiling.  */
-
-#define FUNCTION_BLOCK_PROFILER_EXIT(FILE) \
-  sparc_function_block_profiler_exit(FILE)
-
-#ifdef IN_LIBGCC2
-
-/* The function `__bb_trace_func' is called in every basic block
-   and is not allowed to change the machine state. Saving (restoring)
-   the state can either be done in the BLOCK_PROFILER macro,
-   before calling function (rsp. after returning from function)
-   `__bb_trace_func', or it can be done inside the function by
-   defining the macros:
-
-	MACHINE_STATE_SAVE(ID)
-	MACHINE_STATE_RESTORE(ID)
-
-   In the latter case care must be taken, that the prologue code
-   of function `__bb_trace_func' does not already change the
-   state prior to saving it with MACHINE_STATE_SAVE.
-
-   The parameter `ID' is a string identifying a unique macro use.
-
-   On sparc it is sufficient to save the psw register to memory.
-   Unfortunately the psw register can be read in supervisor mode only,
-   so we read only the condition codes by using branch instructions
-   and hope that this is enough.
-   
-   On V9, life is much sweater:  there is a user accessible %ccr
-   register, but we use it for 64bit libraries only.  */
-
-#if TARGET_ARCH32
-
-#define MACHINE_STATE_SAVE(ID)			\
-  int ms_flags, ms_saveret;			\
-  asm volatile(					\
-	"mov %%g2,%1\n\
-	mov %%g0,%0\n\
-	be,a LFLGNZ"ID"\n\
-	or %0,4,%0\n\
-LFLGNZ"ID":\n\
-	bcs,a LFLGNC"ID"\n\
-	or %0,1,%0\n\
-LFLGNC"ID":\n\
-	bvs,a LFLGNV"ID"\n\
-	or %0,2,%0\n\
-LFLGNV"ID":\n\
-	bneg,a LFLGNN"ID"\n\
-	or %0,8,%0\n\
-LFLGNN"ID":"					\
-	: "=r"(ms_flags), "=r"(ms_saveret));
-
-#else
-
-#define MACHINE_STATE_SAVE(ID)			\
-  unsigned long ms_flags, ms_saveret;		\
-  asm volatile(					\
-	"mov %%g4,%1\n\
-	rd %%ccr,%0"				\
-	: "=r"(ms_flags), "=r"(ms_saveret));
-
-#endif
-
-/* On sparc MACHINE_STATE_RESTORE restores the psw register from memory.
-   The psw register can be written in supervisor mode only,
-   which is true even for simple condition codes.
-   We use some combination of instructions to produce the
-   proper condition codes, but some flag combinations can not
-   be generated in this way. If this happens an unimplemented
-   instruction will be executed to abort the program.  */
-
-#if TARGET_ARCH32
-
-#define MACHINE_STATE_RESTORE(ID)				\
-{ extern char flgtab[] __asm__("LFLGTAB"ID);			\
-  int scratch;							\
-  asm volatile (						\
-	"jmpl %2+%1,%%g0\n\
-    ! Do part of VC in the delay slot here, as it needs 3 insns.\n\
-	 addcc 2,%3,%%g0\n\
-LFLGTAB" ID ":\n\
-    ! 0\n\
-	ba LFLGRET"ID"\n\
-	 orcc 1,%%g0,%%g0\n\
-    ! C\n\
-	ba LFLGRET"ID"\n\
-	 addcc 2,%3,%%g0\n\
-    ! V\n\
-	unimp\n\
-	nop\n\
-    ! VC\n\
-	ba LFLGRET"ID"\n\
-	 addxcc %4,%4,%0\n\
-    ! Z\n\
-	ba LFLGRET"ID"\n\
-	 subcc %%g0,%%g0,%%g0\n\
-    ! ZC\n\
-	ba LFLGRET"ID"\n\
-	 addcc 1,%3,%0\n\
-    ! ZVC\n\
-	ba LFLGRET"ID"\n\
-	 addcc %4,%4,%0\n\
-    ! N\n\
-	ba LFLGRET"ID"\n\
-	 orcc %%g0,-1,%%g0\n\
-    ! NC\n\
-	ba LFLGRET"ID"\n\
-	 addcc %%g0,%3,%%g0\n\
-    ! NV\n\
-	unimp\n\
-	nop\n\
-    ! NVC\n\
-	unimp\n\
-	nop\n\
-    ! NZ\n\
-	unimp\n\
-	nop\n\
-    ! NZC\n\
-	unimp\n\
-	nop\n\
-    ! NZV\n\
-	unimp\n\
-	nop\n\
-    ! NZVC\n\
-	unimp\n\
-	nop\n\
-LFLGRET"ID":\n\
-	mov %5,%%g2"						\
-	: "=r"(scratch)						\
-	: "r"(ms_flags*8), "r"(flgtab), "r"(-1),		\
-	  "r"(0x80000000), "r"(ms_saveret)			\
-	: "cc", "g2"); }
-
-#else
-
-#define MACHINE_STATE_RESTORE(ID)				\
-  asm volatile (						\
-	"wr %0,0,%%ccr\n\
-	mov %1,%%g4"						\
-	: : "r"(ms_flags), "r"(ms_saveret)			\
-	: "cc", "g4");
-
-#endif
-
-#endif /* IN_LIBGCC2 */
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in

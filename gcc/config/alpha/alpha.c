@@ -875,7 +875,7 @@ direct_call_operand (op, mode)
      but is approximately correct for the OSF ABIs.  Don't know
      what to do for VMS, NT, or UMK.  */
   if (! TARGET_PROFILING_NEEDS_GP
-      && ! profile_flag && ! profile_block_flag)
+      && ! profile_flag)
     return 0;
 
   return 1;

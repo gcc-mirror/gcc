@@ -330,7 +330,7 @@ fr30_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (profile_flag || profile_block_flag)
+  if (profile_flag)
     emit_insn (gen_blockage ());
 }
 

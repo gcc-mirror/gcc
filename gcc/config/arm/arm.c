@@ -8302,7 +8302,7 @@ arm_expand_prologue ()
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
      scheduling in the prolog.  */
-  if (profile_flag || profile_block_flag || TARGET_NO_SCHED_PRO)
+  if (profile_flag || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
 
   /* If the link register is being kept alive, with the return address in it,
@@ -10079,7 +10079,7 @@ thumb_expand_prologue ()
 	}
     }
   
-  if (profile_flag || profile_block_flag || TARGET_NO_SCHED_PRO)
+  if (profile_flag || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
 }
 
@@ -10116,7 +10116,7 @@ thumb_expand_epilogue ()
      the stack adjustment will not be deleted.  */
   emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
 
-  if (profile_flag || profile_block_flag || TARGET_NO_SCHED_PRO)
+  if (profile_flag || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
 }
 

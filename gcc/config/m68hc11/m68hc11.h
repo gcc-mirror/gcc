@@ -1131,44 +1131,6 @@ typedef struct m68hc11_args
    for profiling a function entry.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)		\
     asm_fprintf (FILE, "\tldy\t.LP%d\n\tjsr mcount\n", (LABELNO))
-
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-#define FUNCTION_BLOCK_PROFILER(FILE, BLOCK_OR_LABEL)	\
-    m68hc11_function_block_profiler(FILE, BLOCK_OR_LABEL)
-
-/* Output assembler code to FILE to increment the counter for
-  the BLOCKNO'th basic block in this source file.  */
-#define BLOCK_PROFILER(FILE, BLOCKNO)			\
-    m68hc11_block_profiler(FILE, BLOCKNO)
-
-/* Output assembler code to FILE to indicate return from 
-   a function during basic block profiling.  */
-#define FUNCTION_BLOCK_PROFILER_EXIT(FILE)		\
-    asm_fprintf (FILE, "\tjsr %U__bb_trace_ret\n");
-
-/* Save all registers which may be clobbered by a function call.
-   MACHINE_STATE_SAVE and MACHINE_STATE_RESTORE are target-code macros,
-   used in libgcc2.c.  They may not refer to TARGET_* macros !!!
-
-   We don't need to save the CCR nor the soft registers because
-   they will be saved by gcc.  */
-#define MACHINE_STATE_SAVE(id) \
-  {			       \
-    asm ("pshy");	       \
-    asm ("pshx");	       \
-    asm ("psha");	       \
-    asm ("pshb");	       \
-  }
-
-#define MACHINE_STATE_RESTORE(id) \
-  {			       \
-    asm ("pulb");	       \
-    asm ("pula");	       \
-    asm ("pulx");	       \
-    asm ("puly");	       \
-  }
-
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE		(TARGET_M6811 ? 11 : 9)
 
