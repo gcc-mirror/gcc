@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,13 +36,13 @@
 #pragma GCC system_header
 
 #include <cerrno>
-#include <clocale>   // For localeconv
-#include <cstdlib>   // For strof, strtold
-#include <cmath>     // For ceil
-#include <cctype>    // For isspace
-#include <limits>    // For numeric_limits
+#include <clocale>   		// For localeconv
+#include <cstdlib>   		// For strof, strtold
+#include <cmath>     		// For ceil
+#include <cctype>    		// For isspace
+#include <limits>    		// For numeric_limits
+#include <typeinfo>  		// For bad_cast.
 #include <bits/streambuf_iterator.h>
-#include <typeinfo>  // For bad_cast.
 
 namespace std
 {
@@ -1965,22 +1965,6 @@ namespace std
       return static_cast<long>(__val);
     }
 
-  // Convert string to numeric value of type _Tv and store results.  
-  // NB: This is specialized for all required types, there is no
-  // generic definition.
-  template<typename _Tv>
-    void
-    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err, 
-		   const __c_locale& __cloc, int __base = 10);
-
-  // Convert numeric value of type _Tv to string and return length of string.
-  // If snprintf is available use it, otherwise fall back to the unsafe sprintf
-  // which, in general, can be dangerous and should be avoided.
-  template<typename _Tv>
-    int
-    __convert_from_v(char* __out, const int __size, const char* __fmt,
-		     _Tv __v, const __c_locale&, int __prec = -1);
-
   // Construct correctly padded string, as per 22.2.2.2.2
   // Assumes 
   // __newlen > __oldlen
@@ -1992,15 +1976,6 @@ namespace std
 
   // NB: Of the two parameters, _CharT can be deduced from the
   // function arguments. The other (_Traits) has to be explicitly specified.
-  template<typename _CharT, typename _Traits>
-    struct __pad
-    {
-      static void
-      _S_pad(ios_base& __io, _CharT __fill, _CharT* __news, 
-	     const _CharT* __olds, const streamsize __newlen, 
-	     const streamsize __oldlen, const bool __num);
-    };
-
   template<typename _CharT, typename _Traits>
     void 
     __pad<_CharT, _Traits>::_S_pad(ios_base& __io, _CharT __fill, 

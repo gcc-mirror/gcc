@@ -1,3 +1,27 @@
+2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h: Move non-facet classes requiring
+	<string> to...  
+	* include/bits/locale_classes.h: New.  
+	* include/bits/Makefile.am (bits_headers_src): Add locale_classes.h.
+	* include/bits/Makefile.in: Regenerate.
+
+	* include/bits/locale_facets.tcc (__convert_from_v): Move to...
+	* config/locale/gnu/c_locale.h: ...here.
+	* config/locale/generic/c_locale.h: Same.
+	
+	* include/bits/locale_facets.tcc: Move declarations to...
+	* include/bits/locale_facets.h: ...here.
+	* include/bits/basic_ios.h: Tweak includes accordingly.
+	* include/std/std_sstream.h: Add streambuf include.
+	* include/std/std_fstream.h: Ditto.
+	* include/std/std_locale.h: Add locale_classes.h include.
+	* include/std/std_iosfwd.h: Tweak.
+	* src/concept-inst.cc: Add iterator include.
+
+	* config/linker-map.gnu: Specify __cxa functions, mark __cxa_dyn_*
+	bits as unexported in the future.
+	
 2003-01-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Reshuffle 22_locale testsuite.
