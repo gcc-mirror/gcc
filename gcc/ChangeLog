@@ -1,3 +1,11 @@
+2001-02-16  Richard Henderson  <rth@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* jump.c (jump_optimize_1): When we delete a conditional jump
+	preceeding a non-conditional jump to effectively the same place,
+	make sure that the combined jump skips any clobber insns between
+	the two labels.
+
 2001-02-16  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (add_bound_info): Don't crash if SAVE_EXPR_RTL is
