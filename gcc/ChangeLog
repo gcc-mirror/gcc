@@ -1,3 +1,8 @@
+2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (several peephole2): Replace
+	find_regno_note with peep2_reg_dead_p.
+
 2003-02-11  Richard Henderson  <rth@redhat.com>
 
 	* gcse.c (lookup_set): Remove unused argument PAT.  Update
