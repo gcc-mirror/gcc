@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+## Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -27,6 +27,7 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CC = @CC@
 CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
@@ -66,10 +67,12 @@ headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
 
 sources = \
+	cxa_demangle.c \
 	del_op.cc \
 	del_opnt.cc \
 	del_opv.cc \
 	del_opvnt.cc \
+	dyn-string.c \
 	eh_alloc.cc \
 	eh_aux_runtime.cc \
 	eh_catch.cc \
@@ -96,6 +99,28 @@ glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
 
 LIBSUPCXX_CXXFLAGS = $(LIBSUPCXX_PICFLAGS)
+
+# Use special rules for pulling things out of libiberty.
+cxa_demangle.c:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libiberty/cp-demangle.c $@
+cxa_demangle.lo: cxa_demangle.c
+	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+cxa_demangle.o: cxa_demangle.c
+	$(COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+dyn-string.c:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libiberty/dyn-string.c $@
+dyn-string.lo: dyn-string.c
+	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+dyn-string.o: dyn-string.c
+	$(COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+
+# LTCOMPILE is copied from LTCXXCOMPILE below.
+LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared \
+               --mode=compile $(CC) $(INCLUDES) \
+               $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
