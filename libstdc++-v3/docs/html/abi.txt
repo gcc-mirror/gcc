@@ -6,7 +6,7 @@ document exists, why it's incomplete, and what needs to be done still.
 
 ===========================
 
-2002-07-30 Benjamin Kosnik
+2002-09-06 Benjamin Kosnik
 
 Description of the libstdc++ ABI.
 
@@ -131,7 +131,7 @@ I. What is an ABI? What's covered? What's not?
     gcc-3.0.4: 20020220
     gcc-3.1.0: 20020514
     gcc-3.1.1: 20020725
-    gcc-3.2.0: (20020731)
+    gcc-3.2.0: 20020814
 
 
   - Incremental bumping of a library pre-defined macro,
@@ -152,7 +152,7 @@ I. What is an ABI? What's covered? What's not?
     gcc-3.0.4: "3.0.0" (Error, should be "3.0.4")
     gcc-3.1.0: "3.1.0"
     gcc-3.1.1: "3.1.1"
-    gcc-3.2.0: ("3.2.0")
+    gcc-3.2.0: "3.2"
 
 
   - Matching each specific C++ compiler release to a specific set of
@@ -281,40 +281,53 @@ III. Versioning
 
 IV. Testing ABI changes
 
-Currently, there is no formal testing for changes in the libstdc++
-ABI. It would be in the best interest of GNU C++ users everywhere to
-have such a test, and work to develop this test is ongoing.
+Currently, there are formal tests for changes in the libstdc++ ABI,
+and in addition informal testing procedures. Work to develop these
+tests is ongoing.
 
 There is a formal method for checking the compiler parts of the C++
 ABI, donated by Intel. More information can be obtained
 <a href="http://developer.intel.com/software/products/opensource/">here.</a>
 
-To test the library, the following two ideas have been suggested:
+Also, it seems as if some members of the open source community are
+working on C++ ABI testers for the compiler. It is yet unspecified if
+these tools will be freely available, and able to be included in a GNU
+project. Please contact Mark Mitchell (mark@codesoucery.com) for more
+details, and current status.
+
+
+To test the library, there are two methods:
 
 One. 
 (Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways, 
 one with a new compiler and an old library, and the other with an old
 compiler and a new library, and look for testsuite regressions)
 
+Details on how to set this kind of test up can be found here:
+http://gcc.gnu.org/ml/gcc/2002-08/msg00142.html
+
 Two.  
-Have the libstdc++ testsuite proactive check the library ABI. Probably
-a couple of items would be covered, although perhaps not all would
-need to be done at once for this to be useful. Compute the list of
-names exported in the shared version of libstdc++ binary. Then, save
-this list of names. Have this list of names re-computed for each new
-binary of the same version. Next, use sizeof, alignof, and offset to
-compute offsets for each structure and type in the standard library,
-saving to another datafile. Then, compute this for new binaries, and
-look for differences.
+Use the 'make check-abi' rule in the libstdc++-v3 Makefile. 
 
-An example of a way to compute the list of names exported by the
-shared libstdc++ binary is:
+This is a proactive check the library ABI. Currently, exported symbol
+names are checked against a last known good baseline. Currently, this
+baseline is keyed off of 3.2.0 binaries, as this was the last time the
+.so number was incremented. In addition, all exported names are
+demangled, and the exported objects are checked to make sure they are
+the same size as the same object in the baseline.
 
-nm --extern-only --portability libstdc++.so.5.0.0 | awk '{ print $1 $2}'
+In the future, more tests should be added. In particular, vtable
+information, offsets of data members in class objects, and other
+layout information should be checked.
 
-The thought is to choose one or both of these approaches, and to use a
-Makefile hook, perhaps 'make check-abi', to add this capability to the
-libstdc++ testsuite.
+It should be possible to use sizeof, alignof, and offset to compute
+offsets for each structure and type in the standard library, saving to
+another datafile. Then, compute this for new binaries, and look for
+differences.
+
+Another approach might be to use the -fdump-class-hierarchy flag to
+get information.
+(See g++/7470 on how this was used to find bugs.)
 
 Perhaps there are other Library ABI checkers. If so, please notify us.
 
@@ -327,7 +340,7 @@ V. Issues not directly addressed, and possible suggestions
 
   --enable-version-specific-runtime-libs
 
-  - Alexandre Oliva proposal to have extended name attributes, modify ld
+  - Alexandre Olva proposal to have extended name attributes, modify ld
  
   - directory-level versioning
 

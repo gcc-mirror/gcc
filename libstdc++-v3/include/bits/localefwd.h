@@ -387,12 +387,12 @@ namespace std
     friend class locale;
     friend class locale::_Impl;
 
-    _Atomic_word _M_references;
+    _Atomic_word 			_M_references;
 
   protected:
     // Contains data from the underlying "C" library for default "C"
     // or "POSIX" locale.
-    static __c_locale		     _S_c_locale;
+    static __c_locale		     	_S_c_locale;
     
     explicit 
     facet(size_t __refs = 0) throw();
