@@ -815,8 +815,8 @@ extern struct rtx_def *i960_function_arg ();
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 
-extern struct rtx_def *i960_function_value ();
-#define FUNCTION_VALUE(TYPE, FUNC) i960_function_value (TYPE)
+#define FUNCTION_VALUE(TYPE, FUNC) \
+  gen_rtx (REG, TYPE_MODE (TYPE), 0)
 
 /* Force objects larger than 16 bytes to be returned in memory, since we
    only have 4 registers available for return values.  */
