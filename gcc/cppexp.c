@@ -746,12 +746,6 @@ _cpp_parse_expr (pfile)
 	  if (want_value)
 	    op.op = CPP_UMINUS;
 	  break;
-	case CPP_OTHER:
-	  if (ISGRAPH (op.token->val.c))
-	    SYNTAX_ERROR2 ("invalid character '%c' in #if", op.token->val.c);
-	  else
-	    SYNTAX_ERROR2 ("invalid character '\\%03o' in #if",
-			   op.token->val.c);
 
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)

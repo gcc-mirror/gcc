@@ -31,7 +31,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 enum spell_type
 {
   SPELL_OPERATOR = 0,
-  SPELL_CHAR,
   SPELL_IDENT,
   SPELL_NUMBER,
   SPELL_STRING,
@@ -1076,10 +1075,16 @@ _cpp_lex_direct (pfile)
 	    break;
 	  }
 	buffer->cur++;
+      }
 
-      default:
+    default:
+      {
+	uchar *dest = _cpp_unaligned_alloc (pfile, 1 + 1);
+	dest[0] = c;
+	dest[1] = '\0';
 	result->type = CPP_OTHER;
-	result->val.c = c;
+	result->val.str.len = 1;
+	result->val.str.text = dest;
 	break;
       }
     }
@@ -1134,10 +1139,6 @@ cpp_spell_token (pfile, token, buffer)
 	while ((c = *spelling++) != '\0')
 	  *buffer++ = c;
       }
-      break;
-
-    case SPELL_CHAR:
-      *buffer++ = token->val.c;
       break;
 
     spell_ident:
@@ -1237,10 +1238,6 @@ cpp_output_token (token, fp)
       }
       break;
 
-    case SPELL_CHAR:
-      putc (token->val.c, fp);
-      break;
-
     spell_ident:
     case SPELL_IDENT:
       fwrite (NODE_NAME (token->val.node), 1, NODE_LEN (token->val.node), fp);
@@ -1288,8 +1285,6 @@ _cpp_equiv_tokens (a, b)
       default:			/* Keep compiler happy.  */
       case SPELL_OPERATOR:
 	return 1;
-      case SPELL_CHAR:
-	return a->val.c == b->val.c; /* Character.  */
       case SPELL_NONE:
 	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
       case SPELL_IDENT:
@@ -1352,9 +1347,10 @@ cpp_avoid_paste (pfile, token1, token2)
     case CPP_NUMBER:	return (b == CPP_NUMBER || b == CPP_NAME
 				|| c == '.' || c == '+' || c == '-');
 				      /* UCNs */
-    case CPP_OTHER:	return ((token1->val.c == '\\' && b == CPP_NAME)
+    case CPP_OTHER:	return ((token1->val.str.text[0] == '\\'
+				 && b == CPP_NAME)
 				|| (CPP_OPTION (pfile, objc)
-				    && token1->val.c == '@'
+				    && token1->val.str.text[0] == '@'
 				    && (b == CPP_NAME || b == CPP_STRING)));
     default:		break;
     }
