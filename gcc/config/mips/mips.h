@@ -950,18 +950,18 @@ while (0)
    Do not define this macro if it does not need to do anything.  */
 
 #define EXTRA_SPECS							\
-  { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
-  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
-  { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
-  { "long_max_spec", LONG_MAX_SPEC },					\
-  { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
-  { "gas_asm_spec", GAS_ASM_SPEC },					\
-  { "target_asm_spec", TARGET_ASM_SPEC },				\
-  { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC },		\
-  { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
-  { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
-  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
-  { "linker_endian_spec", LINKER_ENDIAN_SPEC },				\
+  { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC, 0, 0, 0, 0 },		\
+  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC, 0, 0, 0, 0 },		\
+  { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC, 0, 0, 0, 0 },	\
+  { "long_max_spec", LONG_MAX_SPEC, 0, 0, 0, 0 },			\
+  { "mips_as_asm_spec", MIPS_AS_ASM_SPEC, 0, 0, 0, 0 },			\
+  { "gas_asm_spec", GAS_ASM_SPEC, 0, 0, 0, 0 },				\
+  { "target_asm_spec", TARGET_ASM_SPEC, 0, 0, 0, 0 },			\
+  { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC, 0, 0, 0, 0 }, \
+  { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC, 0, 0, 0, 0 }, \
+  { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC, 0, 0, 0, 0 }, \
+  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC, 0, 0, 0, 0 },		\
+  { "linker_endian_spec", LINKER_ENDIAN_SPEC, 0, 0, 0, 0 },		\
   SUBTARGET_EXTRA_SPECS
 
 #ifndef SUBTARGET_EXTRA_SPECS
