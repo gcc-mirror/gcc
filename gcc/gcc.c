@@ -1561,7 +1561,7 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
 /* Initialize the specs lookup routines.  */
 
 static void
-init_spec ()
+init_spec (void)
 {
   struct spec_list *next = (struct spec_list *) 0;
   struct spec_list *sl   = (struct spec_list *) 0;
@@ -1802,7 +1802,7 @@ static const char *programname;
 /* Allocate the argument vector.  */
 
 static void
-alloc_args ()
+alloc_args (void)
 {
   argbuf_length = 10;
   argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));

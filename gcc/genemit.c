@@ -671,7 +671,7 @@ gen_split (rtx split)
    the end of the vector.  */
 
 static void
-output_add_clobbers ()
+output_add_clobbers (void)
 {
   struct clobber_pat *clobber;
   struct clobber_ent *ent;

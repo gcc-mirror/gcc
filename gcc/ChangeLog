@@ -1,5 +1,11 @@
 2003-07-06  Andreas Jaeger  <aj@suse.de>
 
+	* stmt.c: Convert remaining prototypes to ISO C90.
+	* cfglayout.c: Likewise.
+	* dbxout.c: Likewise.
+	* gcc.c: Likewise.
+	* genemit.c: Likewise.
+
 	* basic-block.h: Convert prototypes to ISO C90.
 	* c-parse.in: Likewise.
 	* c-pragma.h: Likewise.
