@@ -1,3 +1,9 @@
+2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* dbz/dbz.c, dbz/dbzmain.c: Include stdlib.h.  Don't declare
+	malloc, calloc, free, atol, atoi, or errno.  (errno.h was
+	already being included.)
+
 2000-01-12  Fred Fish <fnf@be.com>
 
 	* configure.in (*-*-beos*): Recognize.

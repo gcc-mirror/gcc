@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 #include <dbz.h>
 
 #ifdef FUNNYSEEKS
@@ -73,8 +74,6 @@ extern char *rfc822ize();
 #else
 #define	rfc822ize(n)	(n)
 #endif
-
-extern char *malloc();
 
 /*
  - main - parse arguments and handle options
