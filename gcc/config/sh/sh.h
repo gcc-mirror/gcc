@@ -3251,7 +3251,9 @@ extern struct rtx_def *fpscr_rtx;
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) TARGET_SH4
 
 #define NORMAL_MODE(ENTITY) \
-   (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE) 
+  (sh_cfun_interrupt_handler_p () ? FP_MODE_NONE \
+   : TARGET_FPU_SINGLE ? FP_MODE_SINGLE \
+   : FP_MODE_DOUBLE)
 
 #define EPILOGUE_USES(REGNO)       ((TARGET_SH3E || TARGET_SH4)		\
 				    && (REGNO) == FPSCR_REG)
