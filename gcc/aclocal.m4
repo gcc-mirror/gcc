@@ -285,6 +285,52 @@ AC_DEFUN(AC_ISC_POSIX,
   ]
 )
 
+
+dnl GCC_PATH_PROG(VARIABLE, PROG-TO-CHECK-FOR [, VALUE-IF-NOT-FOUND [, PATH]])
+dnl like AC_PATH_PROG but use other cache variables
+AC_DEFUN(GCC_PATH_PROG,
+[# Extract the first word of "$2", so it can be a program name with args.
+set dummy $2; ac_word=[$]2
+AC_MSG_CHECKING([for $ac_word])
+AC_CACHE_VAL(gcc_cv_path_$1,
+[case "[$]$1" in
+  /*)
+  gcc_cv_path_$1="[$]$1" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  gcc_cv_path_$1="[$]$1" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+dnl $ac_dummy forces splitting on constant user-supplied paths.
+dnl POSIX.2 word splitting is done only on the output of word expansions,
+dnl not every word.  This closes a longstanding sh security hole.
+  ac_dummy="ifelse([$4], , $PATH, [$4])"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      gcc_cv_path_$1="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+dnl If no 3rd arg is given, leave the cache variable unset,
+dnl so GCC_PATH_PROGS will keep looking.
+ifelse([$3], , , [  test -z "[$]gcc_cv_path_$1" && gcc_cv_path_$1="$3"
+])dnl
+  ;;
+esac])dnl
+$1="$gcc_cv_path_$1"
+if test -n "[$]$1"; then
+  AC_MSG_RESULT([$]$1)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_SUBST($1)dnl
+])
+
+
+
 # Macro to add for using GNU gettext.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
@@ -344,12 +390,12 @@ AC_DEFUN(AM_WITH_NLS,
 	   if test "$gt_cv_func_gettext_libc" = "yes" \
 	      || test "$gt_cv_func_gettext_libintl" = "yes"; then
 	      AC_DEFINE(HAVE_GETTEXT)
-	      AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
+	      GCC_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
 		[test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], no)dnl
 	      if test "$MSGFMT" != "no"; then
 		AC_CHECK_FUNCS(dcgettext)
-		AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
-		AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+		GCC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
+		GCC_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
 		  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
 		AC_TRY_LINK(, [extern int _nl_msg_cat_cntr;
 			       return _nl_msg_cat_cntr],
@@ -375,18 +421,18 @@ AC_DEFUN(AM_WITH_NLS,
 	    AC_CHECK_FUNC(catgets,
 	      [AC_DEFINE(HAVE_CATGETS)
 	       INTLOBJS="\$(CATOBJS)"
-	       AC_PATH_PROG(GENCAT, gencat, no)dnl
+	       GCC_PATH_PROG(GENCAT, gencat, no)dnl
 	       if test "$GENCAT" != "no"; then
-		 AC_PATH_PROG(GMSGFMT, gmsgfmt, no)
+		 GCC_PATH_PROG(GMSGFMT, gmsgfmt, no)
 		 if test "$GMSGFMT" = "no"; then
-		   AM_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
+		   GCC_PATH_PROG_WITH_TEST(GMSGFMT, msgfmt,
 		    [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
 		   if test "$GMSGFMT" = "msgfmt"; then
 		     AC_MSG_WARN(No program for catalog building found, so disabling building them)
 		     create_catalogs="no"
 		   fi
 		 fi
-		 AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+		 GCC_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
 		   [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
 		 USE_INCLUDED_LIBINTL=yes
 		 CATOBJEXT=.cat
@@ -411,16 +457,16 @@ AC_DEFUN(AM_WITH_NLS,
       if test "$nls_cv_use_gnu_gettext" = "yes"; then
         dnl Mark actions used to generate GNU NLS library.
         INTLOBJS="\$(GETTOBJS)"
-        AM_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
+        GCC_PATH_PROG_WITH_TEST(MSGFMT, msgfmt,
 	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep 'dv '`"], msgfmt)
-        AC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
+        GCC_PATH_PROG(GMSGFMT, gmsgfmt, $MSGFMT)
         dnl If we didn't find either msgfmt or gmsgfmt, don't try to
         dnl create a catalog.
 	if test "$MSGFMT" = "msgfmt" && test "$GMSGFMT" = "msgfmt"; then
 	  AC_MSG_WARN(Neither msgfmt nor gmsgfmt found. No catalogs will be built)
 	  create_catalogs="no"
 	fi
-        AM_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
+        GCC_PATH_PROG_WITH_TEST(XGETTEXT, xgettext,
 	  [test -z "`$ac_dir/$ac_word -h 2>&1 | grep '(HELP)'`"], :)
         AC_SUBST(MSGFMT)
 	USE_INCLUDED_LIBINTL=yes
@@ -646,16 +692,16 @@ AC_DEFUN(AM_LC_MESSAGES,
 
 # serial 1
 
-dnl AM_PATH_PROG_WITH_TEST(VARIABLE, PROG-TO-CHECK-FOR,
+dnl GCC_PATH_PROG_WITH_TEST(VARIABLE, PROG-TO-CHECK-FOR,
 dnl   TEST-PERFORMED-ON-FOUND_PROGRAM [, VALUE-IF-NOT-FOUND [, PATH]])
-AC_DEFUN(AM_PATH_PROG_WITH_TEST,
+AC_DEFUN(GCC_PATH_PROG_WITH_TEST,
 [# Extract the first word of "$2", so it can be a program name with args.
 set dummy $2; ac_word=[$]2
 AC_MSG_CHECKING([for $ac_word])
-AC_CACHE_VAL(ac_cv_path_$1,
+AC_CACHE_VAL(gcc_cv_path_$1,
 [case "[$]$1" in
   /*)
-  ac_cv_path_$1="[$]$1" # Let the user override the test with a path.
+  gcc_cv_path_$1="[$]$1" # Let the user override the test with a path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
@@ -663,19 +709,19 @@ AC_CACHE_VAL(ac_cv_path_$1,
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
       if [$3]; then
-	ac_cv_path_$1="$ac_dir/$ac_word"
+	gcc_cv_path_$1="$ac_dir/$ac_word"
 	break
       fi
     fi
   done
   IFS="$ac_save_ifs"
 dnl If no 4th arg is given, leave the cache variable unset,
-dnl so AC_PATH_PROGS will keep looking.
-ifelse([$4], , , [  test -z "[$]ac_cv_path_$1" && ac_cv_path_$1="$4"
+dnl so GCC_PATH_PROGS will keep looking.
+ifelse([$4], , , [  test -z "[$]gcc_cv_path_$1" && gcc_cv_path_$1="$4"
 ])dnl
   ;;
 esac])dnl
-$1="$ac_cv_path_$1"
+$1="$gcc_cv_path_$1"
 if test -n "[$]$1"; then
   AC_MSG_RESULT([$]$1)
 else

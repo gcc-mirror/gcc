@@ -1,3 +1,11 @@
+2000-10-08  Philipp Thomas  <pthomas@suse.de>
+	* aclocal.m4 (GCC_PATH_PROG): New. Like AC_PATH_PROG but uses
+	different cache variables.
+	(GCC_PATH_PROG_WITH_TEST): New. Like AM_PATH_PROG_WITH_TEST but
+	uses different cache variables.
+	(AM_WITH_NLS): Use GCC_PATH_PROG and GCC_PATH_PROG_WITH_TEST.
+	* configure: Regenerated.
+	
 2000-10-08  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (libgcc.mk): Pass SHLIB_EXT, not SHLIB_LIBS.
