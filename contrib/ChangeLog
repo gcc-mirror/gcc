@@ -1,3 +1,7 @@
+1998-05-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* index-prop: New file.
+
 Sat May 23 23:38:49 1998  Matthias Klose  <doko@cs.tu-berlin.de>
 
 	* test_summary: find good awk (copied from warn_summary).
