@@ -1,3 +1,8 @@
+2002-02-13  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (_Jv_JNI_AttachCurrentThread): env->locals assigned
+	correctly.
+
 2002-02-13  Todd Stock  <toddastock@yahoo.com>
 
 	Fix for PR libgcj/5671:
