@@ -2020,6 +2020,11 @@ may_trap_p (x)
 	return 1;
       break;
 
+    case NEG:
+    case ABS:
+      /* These operations don't trap even with floating point.  */
+      break;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
