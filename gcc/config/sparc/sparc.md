@@ -5031,7 +5031,7 @@
       else
 	slot0 = operands[0];
 
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_stoq\"), 0,
+      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_stoq\"), LCT_NORMAL,
 			 VOIDmode, 2,
 			 XEXP (slot0, 0), Pmode,
 			 operands[1], SFmode);
@@ -5066,7 +5066,7 @@
       else
 	slot0 = operands[0];
 
-      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_dtoq\"), 0,
+      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_dtoq\"), LCT_NORMAL,
 			 VOIDmode, 2,
 			 XEXP (slot0, 0), Pmode,
 			 operands[1], DFmode);
@@ -5114,7 +5114,7 @@
 	slot0 = operands[1];
 
       emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtos\"),
-			       operands[0], 0, SFmode, 1,
+			       operands[0], LCT_NORMAL, SFmode, 1,
 			       XEXP (slot0, 0), Pmode);
       DONE;
     }
@@ -5148,7 +5148,7 @@
 	slot0 = operands[1];
 
       emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtod\"),
-			       operands[0], 0, DFmode, 1,
+			       operands[0], LCT_NORMAL, DFmode, 1,
 			       XEXP (slot0, 0), Pmode);
       DONE;
     }
@@ -5360,7 +5360,7 @@
 	slot0 = operands[1];
 
       emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoi\"),
-			       operands[0], 0, SImode, 1,
+			       operands[0], LCT_NORMAL, SImode, 1,
 			       XEXP (slot0, 0), Pmode);
       DONE;
     }
@@ -5390,7 +5390,7 @@
     slot0 = operands[1];
 
   emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoui\"),
-			   operands[0], 0, SImode, 1,
+			   operands[0], LCT_NORMAL, SImode, 1,
 			   XEXP (slot0, 0), Pmode);
   DONE;
 }")
@@ -5432,7 +5432,7 @@
 	slot0 = operands[1];
 
       emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtox\"),
-			       operands[0], 0, DImode, 1,
+			       operands[0], LCT_NORMAL, DImode, 1,
 			       XEXP (slot0, 0), Pmode);
       DONE;
     }
@@ -5462,7 +5462,7 @@
     slot0 = operands[1];
 
   emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode, \"_Qp_qtoux\"),
-			   operands[0], 0, DImode, 1,
+			   operands[0], LCT_NORMAL, DImode, 1,
 			   XEXP (slot0, 0), Pmode);
   DONE;
 }")

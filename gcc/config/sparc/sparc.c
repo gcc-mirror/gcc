@@ -5374,7 +5374,7 @@ sparc_emit_float_lib_cmp (x, y, comparison)
       else
 	slot1 = y;
 
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), 1,
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
 			 DImode, 2,
 			 XEXP (slot0, 0), Pmode,
 			 XEXP (slot1, 0), Pmode);
@@ -5383,7 +5383,7 @@ sparc_emit_float_lib_cmp (x, y, comparison)
     }
   else
     {
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), 1,
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, qpfunc), LCT_NORMAL,
 			 SImode, 2,
 			 x, TFmode, y, TFmode);
 
@@ -6391,7 +6391,7 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
    */
 #ifdef TRANSFER_FROM_TRAMPOLINE
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
-                     0, VOIDmode, 1, tramp, Pmode);
+                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
 #endif
 
   emit_move_insn
@@ -6442,7 +6442,7 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
 {
 #ifdef TRANSFER_FROM_TRAMPOLINE
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
-                     0, VOIDmode, 1, tramp, Pmode);
+                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
 #endif
 
   /*
@@ -8547,7 +8547,7 @@ sparc_profile_hook (labelno)
   lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
   fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_FUNCTION);
 
-  emit_library_call (fun, 0, VOIDmode, 1, lab, Pmode);
+  emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
 }
 
 /* Mark ARG, which is really a struct ultrasparc_pipline_state *, for
@@ -8613,7 +8613,7 @@ sparc_elf_asm_named_section (name, flags)
 int
 sparc_extra_constraint_check (op, c, strict)
      rtx op;
-     char c;
+     int c;
      int strict;
 {
   int reload_ok_mem;
