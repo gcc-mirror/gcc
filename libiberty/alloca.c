@@ -22,10 +22,26 @@
    your main control loop, etc. to force garbage collection.  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #endif
 
-/* If compiling with GCC, this file's not needed.  */
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef emacs
+#include "blockinput.h"
+#endif
+
+/* If compiling with GCC 2, this file's not needed.  Except of course if
+   the C alloca is explicitly requested.  */
+#if defined (USE_C_ALLOCA) || !defined (__GNUC__) || __GNUC__ < 2
+
+/* If someone has defined alloca as a macro,
+   there must be some other way alloca is supposed to work.  */
 #ifndef alloca
 
 #ifdef emacs
@@ -53,11 +69,9 @@ long i00afunc ();
 #endif
 
 #if __STDC__
-#include <stddef.h>
 typedef void *pointer;
 #else
 typedef char *pointer;
-typedef unsigned size_t;
 #endif
 
 #ifndef NULL
@@ -76,8 +90,8 @@ typedef unsigned size_t;
 
 #ifndef emacs
 #define malloc xmalloc
-extern pointer xmalloc ();
 #endif
+extern pointer malloc ();
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
@@ -156,7 +170,7 @@ static header *last_alloca_header = NULL;	/* -> last alloca header.  */
 
 pointer
 alloca (size)
-     size_t size;
+     unsigned size;
 {
   auto char probe;		/* Probes stack depth: */
   register char *depth = ADDRESS_FUNCTION (probe);
@@ -167,10 +181,14 @@ alloca (size)
 #endif
 
   /* Reclaim garbage, defined as all alloca'd storage that
-     was allocated from deeper in the stack than currently. */
+     was allocated from deeper in the stack than currently.  */
 
   {
     register header *hp;	/* Traverses linked list.  */
+
+#ifdef emacs
+    BLOCK_INPUT;
+#endif
 
     for (hp = last_alloca_header; hp != NULL;)
       if ((STACK_DIR > 0 && hp->h.deep > depth)
@@ -186,6 +204,10 @@ alloca (size)
 	break;			/* Rest are not deeper.  */
 
     last_alloca_header = hp;	/* -> last valid storage.  */
+
+#ifdef emacs
+    UNBLOCK_INPUT;
+#endif
   }
 
   if (size == 0)
@@ -196,6 +218,9 @@ alloca (size)
   {
     register pointer new = malloc (sizeof (header) + size);
     /* Address of header.  */
+
+    if (new == 0)
+      abort();
 
     ((header *) new)->h.next = last_alloca_header;
     ((header *) new)->h.deep = depth;
@@ -326,7 +351,7 @@ struct stk_trailer
 
 #ifdef CRAY2
 /* Determine a "stack measure" for an arbitrary ADDRESS.
-   I doubt that "lint" will like this much. */
+   I doubt that "lint" will like this much.  */
 
 static long
 i00afunc (long *address)
@@ -477,3 +502,4 @@ i00afunc (long address)
 #endif /* CRAY */
 
 #endif /* no alloca */
+#endif /* not GCC version 2 */
