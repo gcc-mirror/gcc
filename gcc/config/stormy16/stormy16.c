@@ -641,6 +641,7 @@ stormy16_split_move (mode, dest, src)
   int src_volatile = 0;
   int dest_volatile = 0;
   rtx mem_operand;
+  rtx auto_inc_reg_rtx = NULL_RTX;
   
   /* Check initial conditions.  */
   if (! reload_completed
@@ -673,6 +674,8 @@ stormy16_split_move (mode, dest, src)
     {
       mem_operand = XEXP (dest, 0);
       dest_modifies = side_effects_p (mem_operand);
+      if (auto_inc_p (mem_operand))
+        auto_inc_reg_rtx = XEXP (mem_operand, 0);
       dest_volatile = MEM_VOLATILE_P (dest);
       if (dest_volatile)
 	{
@@ -684,6 +687,8 @@ stormy16_split_move (mode, dest, src)
     {
       mem_operand = XEXP (src, 0);
       src_modifies = side_effects_p (mem_operand);
+      if (auto_inc_p (mem_operand))
+        auto_inc_reg_rtx = XEXP (mem_operand, 0);
       src_volatile = MEM_VOLATILE_P (src);
       if (src_volatile)
 	{
@@ -733,7 +738,8 @@ stormy16_split_move (mode, dest, src)
   end = direction < 0 ? -1 : num_words;
   for (i = direction < 0 ? num_words - 1 : 0; i != end; i += direction)
     {
-      rtx w_src, w_dest;
+      rtx w_src, w_dest, insn;
+
       if (src_modifies)
 	w_src = gen_rtx_MEM (word_mode, mem_operand);
       else
@@ -753,7 +759,11 @@ stormy16_split_move (mode, dest, src)
 	  || GET_CODE (w_dest) == SUBREG)
 	abort ();
       
-      emit_insn (gen_rtx_SET (VOIDmode, w_dest, w_src));
+      insn = emit_insn (gen_rtx_SET (VOIDmode, w_dest, w_src));
+      if (auto_inc_reg_rtx)
+        REG_NOTES (insn) = alloc_EXPR_LIST (REG_INC,
+                                            auto_inc_reg_rtx,
+					    REG_NOTES (insn));
     }
 }
 
