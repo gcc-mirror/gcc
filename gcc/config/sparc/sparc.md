@@ -50,6 +50,7 @@
 ;;			2	goto_handler_and_restore
 ;;			3	goto_handler_and_restore_v9*
 ;;			4	flush
+;;			5	do_builtin_setjmp_setup
 ;;
 
 ;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
@@ -9013,6 +9014,32 @@
 ;;   sethi\\t%%hi(%2), %1\\n\\treturn\\t%0+0\\n\\tor\\t%Y1, %%lo(%2), %Y1"
 ;;  [(set_attr "type" "misc")
 ;;   (set_attr "length" "2,3")])
+
+;; For __builtin_setjmp we need to flush register windows iff the function
+;; calls alloca as well, because otherwise the register window might be
+;; saved after %sp adjustement and thus setjmp would crash
+(define_expand "builtin_setjmp_setup"
+  [(match_operand 0 "register_operand" "r")]
+  ""
+  "
+{
+  emit_insn (gen_do_builtin_setjmp_setup ());
+  DONE;
+}")
+
+(define_insn "do_builtin_setjmp_setup"
+  [(unspec_volatile [(const_int 0)] 5)]
+  ""
+  "*
+{
+  if (!current_function_calls_alloca)
+    return \"\";
+  if (TARGET_V9)
+    return \"flushw\";
+  return \"ta\\t3\";
+}"
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
 ;; Pattern for use after a setjmp to store FP and the return register
 ;; into the stack area.
