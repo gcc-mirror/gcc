@@ -45,7 +45,7 @@ SHELL = @SHELL@
 
 #### End of system configuration section. ####
 
-ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
+ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $(WARN_CFLAGS) $(CFLAGS)
 
 .SUFFIXES:
 .SUFFIXES: .c .lo
