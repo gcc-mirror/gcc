@@ -1120,7 +1120,7 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)"
 
 
-CONFIG_STATUS_DEPENDENCIES = $(libgcj_basedir)/configure.host
+CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES = 
 
@@ -2439,6 +2439,9 @@ java/io/ObjectInputStream$$GetField.h: libgcj.jar
 java/io/ObjectOutputStream$$PutField.h: libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
+
+$(extra_headers):
+	@:
 
 install-data-local:
 	$(PRE_INSTALL)

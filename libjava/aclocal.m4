@@ -34,8 +34,14 @@ else
   libgcj_basedir="[$]{srcdir}/$1"
 fi
 AC_SUBST(libgcj_basedir)
+AC_CONFIG_AUX_DIR($libgcj_basedir/..)
+if :; then :; else
+  # This overrides the previous occurrence for automake, but not for
+  # autoconf, which is exactly what we want.
+  AC_CONFIG_AUX_DIR(..)
+fi
 
-AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
 
 dnl This shouldn't be needed, as long as top-level dependencies are
 dnl defined correctly and shared-library paths are set up so that
