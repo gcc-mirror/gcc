@@ -5,7 +5,7 @@
 
 /* Tags and typedefs are C_DECL in XCOFF, not C_LSYM.  */
 
-#define DBX_DECL_STABS_CODE N_DECL
+#define DBX_TYPE_DECL_STABS_CODE N_DECL
 
 /* Use the XCOFF predefined type numbers.  */
 
