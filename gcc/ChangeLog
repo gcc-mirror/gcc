@@ -1,3 +1,8 @@
+Sat Sep 13 12:57:26 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (add_branch_dependences): Make each insn in
+	a SCHED_GROUP_P block explicitly depend on the previous insn.
+
 Thu Sep 11 17:43:55 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (native_prefix): Delete.
