@@ -122,8 +122,6 @@ static tree resolve_expression_name (tree, tree *);
 static tree maybe_create_class_interface_decl (tree, tree, tree, tree);
 static int check_class_interface_creation (int, int, tree, tree, tree, tree);
 static tree patch_method_invocation (tree, tree, tree, int, int *, tree *);
-static int breakdown_qualified (tree *, tree *, tree);
-static int in_same_package (tree, tree);
 static tree resolve_and_layout (tree, tree);
 static tree qualify_and_find (tree, tree, tree);
 static tree resolve_no_layout (tree, tree);
@@ -5744,7 +5742,7 @@ do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
 	 class and then treat Id as a member type.  If we can't find Q
 	 as a class then we fall through.  */
       tree q, left, left_type, right;
-      if (breakdown_qualified (&left, &right, TYPE_NAME (class_type)) == 0)
+      if (split_qualified_name (&left, &right, TYPE_NAME (class_type)) == 0)
 	{
 	  BUILD_PTR_FROM_NAME (left_type, left);
 	  q = do_resolve_class (enclosing, left_type, decl, cl);
@@ -6823,7 +6821,7 @@ process_imports (void)
 	     inner class.  The only way for us to know is to try again
 	     after having dropped a qualifier. If we can't break it further,
 	     we have an error. */
-	  if (breakdown_qualified (&left, NULL, to_be_found))
+	  if (split_qualified_name (&left, NULL, to_be_found))
 	    break;
 
 	  to_be_found = left;
@@ -7257,7 +7255,7 @@ check_pkg_class_access (tree class_name, tree cl, bool verbose, tree this_decl)
       /* Access to a private class within the same package is
          allowed. */
       tree l, r;
-      breakdown_qualified (&l, &r, class_name);
+      split_qualified_name (&l, &r, class_name);
       if (!QUALIFIED_P (class_name) && !ctxp->package)
 	/* Both in the empty package. */
         return 0;
@@ -10193,7 +10191,7 @@ class_in_current_package (tree class)
     return 1;
 
   /* Compare the left part of the name of CLASS with the package name */
-  breakdown_qualified (&left, NULL, DECL_NAME (TYPE_NAME (class)));
+  split_qualified_name (&left, NULL, DECL_NAME (TYPE_NAME (class)));
   if (ctxp->package == left)
     {
       cicp_cache = class;
@@ -11343,60 +11341,6 @@ qualify_ambiguous_name (tree id)
     RESOLVE_TYPE_NAME_P (id) = 1;
   else if (RESOLVE_PACKAGE_NAME_P (qual_wfl))
     RESOLVE_PACKAGE_NAME_P (id) = 1;
-}
-
-static int
-breakdown_qualified (tree *left, tree *right, tree source)
-{
-  char *p, *base;
-  int l = IDENTIFIER_LENGTH (source);
-
-  base = alloca (l + 1);
-  memcpy (base, IDENTIFIER_POINTER (source), l + 1);
-
-  /* Breakdown NAME into REMAINDER . IDENTIFIER.  */
-  p = base + l - 1;
-  while (*p != '.' && p != base)
-    p--;
-
-  /* We didn't find a '.'. Return an error.  */
-  if (p == base)
-    return 1;
-
-  *p = '\0';
-  if (right)
-    *right = get_identifier (p+1);
-  *left = get_identifier (base);
-
-  return 0;
-}
-
-/* Return TRUE if two classes are from the same package. */
-
-static int
-in_same_package (tree name1, tree name2)
-{
-  tree tmp;
-  tree pkg1;
-  tree pkg2;
-
-  if (TREE_CODE (name1) == TYPE_DECL)
-    name1 = DECL_NAME (name1);
-  if (TREE_CODE (name2) == TYPE_DECL)
-    name2 = DECL_NAME (name2);
-
-  if (QUALIFIED_P (name1) != QUALIFIED_P (name2))
-    /* One in empty package. */
-    return 0;
-
-  if (QUALIFIED_P (name1) == 0 && QUALIFIED_P (name2) == 0)
-    /* Both in empty package. */
-    return 1;
-
-  breakdown_qualified (&pkg1, &tmp, name1);
-  breakdown_qualified (&pkg2, &tmp, name2);
-
-  return (pkg1 == pkg2);
 }
 
 /* Patch tree nodes in a function body. When a BLOCK is found, push

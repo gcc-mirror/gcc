@@ -1,3 +1,16 @@
+2004-06-29  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/1262
+	* class.c (layout_class_method): Do not override package-private
+	method if its in a different package.
+	(split_qualified_name): Move here from parse.y. Rename from
+	breakdown_qualified. Add comment.
+	(in_same_package): Move here from parse.y. Add comment.
+	* java-tree.h (break_down_qualified, in_same_package): Declare.
+	(in_same_package): Likewise.
+	* parse.y (breakdown_qualified, in_same_package): Moved to class.c.
+	Callers updated.
+
 2004-06-29  Andrew Haley  <aph@redhat.com>
 
 	* except.c (expand_start_java_handler): Push a new binding level.

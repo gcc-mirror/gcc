@@ -1359,6 +1359,9 @@ extern tree make_catch_class_record (tree, tree);
 extern tree emit_catch_table (tree);
 
 extern void gen_indirect_dispatch_tables (tree type);
+extern int split_qualified_name (tree *left, tree *right, tree source);
+extern int in_same_package (tree, tree);
+
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 

@@ -2214,9 +2214,24 @@ layout_class_method (tree this_class, tree super_class,
     {
       tree method_sig =
 	build_java_argument_signature (TREE_TYPE (method_decl));
+      bool method_override = false;
       tree super_method = lookup_argument_method (super_class, method_name,
 						  method_sig);
-      if (super_method != NULL_TREE && ! METHOD_PRIVATE (super_method))
+      if (super_method != NULL_TREE)
+        {
+	  method_override = true;
+	  if (! METHOD_PUBLIC (super_method) && 
+	      ! METHOD_PROTECTED (super_method))
+	    {
+	      /* Don't override private method, or default-access method in 
+		 another package.  */
+	      if (METHOD_PRIVATE (super_method) ||
+		  ! in_same_package (TYPE_NAME (this_class), 
+				     TYPE_NAME (super_class)))
+		method_override = false;
+	   }
+	}
+      if (method_override)
 	{
 	  tree method_index = get_method_index (super_method);
 	  set_method_index (method_decl, method_index);
@@ -2536,6 +2551,65 @@ java_treetreehash_create (size_t size, int gc)
   else
     return htab_create_alloc (size, java_treetreehash_hash,
 			      java_treetreehash_compare, free, xcalloc, free);
+}
+
+/* Break down qualified IDENTIFIER into package and class-name components.
+   For example, given SOURCE "pkg.foo.Bar", LEFT will be set to
+   "pkg.foo", and RIGHT to "Bar". */
+
+int
+split_qualified_name (tree *left, tree *right, tree source)
+{
+  char *p, *base;
+  int l = IDENTIFIER_LENGTH (source);
+
+  base = alloca (l + 1);
+  memcpy (base, IDENTIFIER_POINTER (source), l + 1);
+
+  /* Breakdown NAME into REMAINDER . IDENTIFIER.  */
+  p = base + l - 1;
+  while (*p != '.' && p != base)
+    p--;
+
+  /* We didn't find a '.'. Return an error.  */
+  if (p == base)
+    return 1;
+
+  *p = '\0';
+  if (right)
+    *right = get_identifier (p+1);
+  *left = get_identifier (base);
+
+  return 0;
+}
+
+/* Given two classes (TYPE_DECL) or class names (IDENTIFIER), return TRUE 
+   if the classes are from the same package. */
+
+int
+in_same_package (tree name1, tree name2)
+{
+  tree tmp;
+  tree pkg1;
+  tree pkg2;
+
+  if (TREE_CODE (name1) == TYPE_DECL)
+    name1 = DECL_NAME (name1);
+  if (TREE_CODE (name2) == TYPE_DECL)
+    name2 = DECL_NAME (name2);
+
+  if (QUALIFIED_P (name1) != QUALIFIED_P (name2))
+    /* One in empty package. */
+    return 0;
+
+  if (QUALIFIED_P (name1) == 0 && QUALIFIED_P (name2) == 0)
+    /* Both in empty package. */
+    return 1;
+
+  split_qualified_name (&pkg1, &tmp, name1);
+  split_qualified_name (&pkg2, &tmp, name2);
+
+  return (pkg1 == pkg2);
 }
 
 #include "gt-java-class.h"
