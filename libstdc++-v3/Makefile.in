@@ -111,6 +111,7 @@ enable_static = @enable_static@
 gcc_version = @gcc_version@
 glibcpp_basedir = @glibcpp_basedir@
 gxx_include_dir = @gxx_include_dir@
+gxx_target_include_dir = @gxx_target_include_dir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@

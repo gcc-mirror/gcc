@@ -1,8 +1,23 @@
+2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in: Set os_include_dir for cross_compiles.
+	* configure: Regenerate.
+	* configure.target (l_glibcpp_cxxflags): Don't try to be clever
+	when assigning ATOMICITYH. Only special case the special cases...
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* docs/html/17_intro/COPYING: Update to current
 	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
 	to 19yy as example year in copyright notice).
+
+2000-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (gxx_target_include_dir): Install target-dependent
+	include files in a target-dependent place.
+	* configure: Regenerate.
+	* src/Makefile.am: Add in support here.
+	* src/Makefile.in: Regenerate.
 
 2000-12-14  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 

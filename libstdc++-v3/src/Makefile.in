@@ -101,6 +101,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_basedir = @glibcpp_basedir@
 gxx_include_dir = @gxx_include_dir@
+gxx_target_include_dir = @gxx_target_include_dir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
@@ -194,6 +195,8 @@ libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 @GXX_INCLUDE_DIR_TRUE@myincludep = @gxx_include_dir@
 @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
 @GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@myincludep = $(prefix)/include/g++-@libstdcxx_interface@
+
+targetincludep = @gxx_target_include_dir@
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install
@@ -526,6 +529,7 @@ myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
 	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
+	$(mkinstalldirs) $(DESTDIR)$(targetincludep)/bits; \
 	fi
 myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
@@ -550,8 +554,8 @@ myinstallheaders:
 	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
-        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/"; \
+	  $(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \

@@ -162,6 +162,7 @@ if test -n "$with_cross_host"; then
 	AC_DEFINE(HAVE_ISINFF)
 
 	ctype_include_dir="config/os/newlib"
+	os_include_dir="config/os/newlib"
 
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
 	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
@@ -203,10 +204,10 @@ include/bits/ctype_inline.h)
 AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
 include/bits/ctype_noninline.h)
 
-AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
  
 AC_CACHE_SAVE
 AC_LC_MESSAGES
@@ -274,6 +275,12 @@ if test x${version_specific_libs} = xyes; then
   AC_MSG_WARN(version specific directory is: $gcc_version)
 fi
 
+# We have to install all the generated or linked includes files
+# specified as build_headers in src/Makefile.am in a target-dependent
+# place, or else multiple installs for different compilers will
+# overwrite these files.
+gxx_target_include_dir='$(exec_prefix)/$(target_alias)/include/g++-$(libstdcxx_interface)'
+AC_SUBST(gxx_target_include_dir)
 
 
 # Export all the include and flag information to makefiles.
