@@ -1,3 +1,15 @@
+1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Add prototype for set_identifier_local_value.
+	* decl.c (set_identifier_local_value_with_scope): Make static,
+	prototype.
+	* search.c (covariant_return_p): Likewise.
+	* except.c (build_terminate_handler, alloc_eh_object): Likewise.
+
+	* call.c (build_method_call): Only pull out the type of a destructor
+	if it's a template type parm.
+	* decl.c (lookup_name_real): Never return the from_obj value.
+
 1998-07-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (process_start_catch_block_old): Call start_decl_1 for

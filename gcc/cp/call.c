@@ -626,11 +626,13 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (processing_template_decl)
     {
+      /* We need to process template parm names here so that tsubst catches
+	 them properly.  Other type names can wait.  */
       if (TREE_CODE (name) == BIT_NOT_EXPR
 	  && TREE_CODE (TREE_OPERAND (name, 0)) == IDENTIFIER_NODE)
 	{
 	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
-	  if (type)
+	  if (type && TREE_CODE (type) == TEMPLATE_TYPE_PARM)
 	    name = build_min_nt (BIT_NOT_EXPR, type);
 	}
 
