@@ -1,5 +1,11 @@
 2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
 
+	PR libgcj/12647:
+	* win32-threads.cc (_Jv_CondWait): Respect mutex's
+	refcount when releasing and reacquiring it.
+
+2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* win32.cc: (dirExists) Internal helper function to
 	test for directory existence.
 	(getUserHome) New helper function refactored out
