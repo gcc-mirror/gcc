@@ -1,3 +1,7 @@
+2003-09-15  Daniel Jacobowitz  <drow@mvista.com>
+
+	* floatformat.h (floatformat_is_valid): Add prototype.
+
 2003-07-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h: Undef all macros before defining them.
