@@ -43,6 +43,7 @@ static void setup_callbacks PARAMS ((void));
 
 /* General output routines.  */
 static void scan_buffer	PARAMS ((cpp_reader *));
+static void check_multiline_token PARAMS ((cpp_string *));
 static int printer_init PARAMS ((cpp_reader *));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
@@ -218,9 +219,24 @@ scan_buffer (pfile)
 
 	  cpp_output_token (token, print.outf);
 	  print.printed = 1;
+	  if (token->type == CPP_STRING || token->type == CPP_WSTRING
+	      || token->type == CPP_COMMENT)
+	    check_multiline_token (&token->val.str);
 	}
     }
   while (cpp_pop_buffer (pfile) != 0);
+}
+
+/* Adjust print.lineno for newlines embedded in tokens.  */
+static void
+check_multiline_token (str)
+     cpp_string *str;
+{
+  unsigned int i;
+
+  for (i = 0; i < str->len; i++)
+    if (str->text[i] == '\n')
+      print.lineno++;
 }
 
 /* Initialize a cpp_printer structure.  As a side effect, open the
@@ -362,8 +378,6 @@ cb_change_file (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
-  const char *flags;
-
   /* Bring current file to correct line (except first file).  */
   if (fc->reason == FC_ENTER && fc->from.filename)
     maybe_print_line (fc->from.lineno);
@@ -378,14 +392,13 @@ cb_change_file (pfile, fc)
 
   if (print.lineno)
     {
-      print.lineno = fc->to.lineno;
-      switch (fc->reason)
-	{
-	case FC_ENTER : flags = " 1"; break;
-	case FC_LEAVE : flags = " 2"; break;
-	case FC_RENAME: flags = ""; break;
-	}
+      const char *flags = "";
 
+      print.lineno = fc->to.lineno;
+      if (fc->reason == FC_ENTER)
+	flags = " 1";
+      else if (fc->reason == FC_LEAVE)
+	flags = " 2";
       print_line (flags);
     }
 }

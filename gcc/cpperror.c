@@ -86,7 +86,7 @@ print_location (pfile, filename, pos)
     fprintf (stderr, "%s: ", progname);
   else
     {
-      unsigned int line, col;
+      unsigned int line, col = 0;
       enum cpp_buffer_type type = buffer->type;
 
       /* For _Pragma buffers, we want to print the location as
