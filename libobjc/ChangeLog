@@ -1,3 +1,10 @@
+2003-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 11433
+	* Protocol.m (descriptionForInstanceMethod): Don't dereference
+	instance_methods if it's NULL.
+	(descriptionForClassMethod): Likewise for class_methods.
+
 2003-10-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (runtime-info.h): Remove -Wp.
@@ -36,14 +43,14 @@ Thu Jul 10 10:27:43 2003  Nicola Pero  <n.pero@mi.flashnet.it>
 	(objc_msg_lookup): Similar fixes.
 	(__objc_init_install_dtable): Lock the runtime before checking if the
 	table is installed.
-	
+
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* hash.c, init.c, libobjc.def, libobjc_entry.c, linking.m,
 	makefile.dos, misc.c, nil_method.c, objects.c, sarray.c,
 	selector.c, sendmsg.c, thr-dce.c, thr-decosf1.c, thr-irix.c,
 	thr-mach.c, thr-objc.c, thr-os2.c, thr-posix.c, thr-pthreads.c,
-	thr-rtems.c, thr-single.c, thr-solaris.c, thr-vxworks.c, 
+	thr-rtems.c, thr-single.c, thr-solaris.c, thr-vxworks.c,
 	thr-win32.c, thr.c: Replace "GNU CC" with "GCC".
 	* Makefile.in, NXConstStr.m, Object.m, Protocol.m, archive.c,
 	class.c, encoding.c, gc.c, objc/NXConstStr.h, objc/Object.h,
@@ -52,14 +59,14 @@ Thu Jul 10 10:27:43 2003  Nicola Pero  <n.pero@mi.flashnet.it>
 	objc/thr.h, objc/typedstream.h: Replace "GNU CC" with "GCC".
 
 Tue May 13 14:56:03 2003  Richard Frith-Macdonald <rfm@gnu.org>
-	                  Nicola Pero  <n.pero@mi.flashnet.it>
+			  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	libobjc/10742
 	* init.c (class_superclass_of_class): New function.
 	(create_tree_of_subclasses_inherited_from): Use it.
 	(__objc_tree_insert_class): Likewise.
 	(class_is_subclass_of_class): Likewise.
-	
+
 2003-04-11  David Chad  <davidc@freebsd.org>
 	    Loren J. Rittle  <ljrittle@acm.org>
 
