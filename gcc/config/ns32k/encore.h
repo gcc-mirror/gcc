@@ -126,7 +126,7 @@ do {									\
   */
 
 #define ASM_OUTPUT_ASCII(file, p, size)			\
-{							\
+do {							\
   int i;						\
   for (i = 0; i < (size); i++)				\
     {							\
