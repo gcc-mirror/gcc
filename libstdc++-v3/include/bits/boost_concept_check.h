@@ -412,9 +412,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     void __constraints() {
       __function_requires< _TrivialIteratorConcept<_Tp> >();
       // require iterator_traits typedef's
-      typedef typename std::iterator_traits<_Tp>::difference_type _D;
-//      __function_requires< _SignedIntegerConcept<_D> >();
-      typedef typename std::iterator_traits<_Tp>::reference _R;
+      typedef typename std::iterator_traits<_Tp>::difference_type _Diff;
+//      __function_requires< _SignedIntegerConcept<_Diff> >();
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
       typedef typename std::iterator_traits<_Tp>::pointer _Pt;
       typedef typename std::iterator_traits<_Tp>::iterator_category _Cat;
       __function_requires< _ConvertibleConcept<
@@ -447,8 +447,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _ConvertibleConcept<
         typename std::iterator_traits<_Tp>::iterator_category,
         std::forward_iterator_tag> >();
-      typedef typename std::iterator_traits<_Tp>::reference _R;
-      _R __r _IsUnused = *__i;
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
+      _Ref __r _IsUnused = *__i;
     }
     _Tp __i;
   };
@@ -498,8 +498,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _ConvertibleConcept<
         typename std::iterator_traits<_Tp>::iterator_category,
         std::random_access_iterator_tag> >();
-      // ??? We don't use _R, are we just checking for "referenceability"?
-      typedef typename std::iterator_traits<_Tp>::reference _R;
+      // ??? We don't use _Ref, are we just checking for "referenceability"?
+      typedef typename std::iterator_traits<_Tp>::reference _Ref;
 
       __i += __n;                       // require assignment addition operator
       __i = __i + __n; __i = __n + __i; // require addition with difference type
@@ -828,7 +828,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       typedef typename _SimpleAssociativeContainer::key_type _Key_type;
       typedef typename _SimpleAssociativeContainer::value_type _Value_type;
       typedef typename _Aux_require_same<_Key_type, _Value_type>::_Type
-        _Requqired;
+        _Required;
     }
   };
 
