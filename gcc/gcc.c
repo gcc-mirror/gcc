@@ -266,6 +266,7 @@ static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
 static void pfatal_pexecute	PROTO((char *, char *));
+static void snapshot_warning	PROTO((void));
 #ifdef HAVE_VPRINTF
 static void fatal		PVPROTO((char *, ...));
 static void error		PVPROTO((char *, ...));
@@ -4383,6 +4384,10 @@ main (argc, argv)
     signal (SIGPIPE, fatal_error);
 #endif
 
+  /* If this is a test release of GCC, issue a warning.  */
+  if (version_string[0] == 't' && version_string[1] == 'e')
+    snapshot_warning ();
+
   argbuf_length = 10;
   argbuf = (char **) xmalloc (argbuf_length * sizeof (char *));
 
@@ -4994,6 +4999,8 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
      char *errmsg_fmt;
      char *errmsg_arg;
 {
+  int save_errno = errno;
+
   if (errmsg_arg)
     {
       /* Space for trailing '\0' is in %s.  */
@@ -5002,7 +5009,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
       errmsg_fmt = msg;
     }
 
-  fatal ("%s: %s", errmsg_fmt, my_strerror (errno));
+  fatal ("%s: %s", errmsg_fmt, my_strerror (save_errno));
 }
 
 /* More 'friendly' abort that prints the line and file.
@@ -5532,5 +5539,63 @@ print_multilib_info ()
 	}
 
       ++p;
+    }
+}
+
+/* If a snapshot, warn the user that this version of gcc is for testing and
+   developing only. If we can find a home directory, we can restrict the
+   warning to once per day.  Otherwise always issue it.  */
+
+#define TIMESTAMP_FILE ".gcc-test-time"
+#define ONE_DAY (24*60*60)
+
+static void
+snapshot_warning ()
+{
+  char *home;
+  int print_p = 1;
+
+  /* Every function here but `time' is called elsewhere in this file, 
+     but we only can be sure we have it for Unix and the Windows systems,
+     so conditionalize this on those.
+
+     ??? This should use autoconf at some point.  */
+
+#if defined(unix) || defined(__CYGWIN32__) || defined(_MINGW32__)
+
+  home = getenv ("HOME");
+  if (home != 0)
+    {
+      char *file_name
+	= (char *) alloca (strlen (home) + 1 + sizeof (TIMESTAMP_FILE));
+      struct stat statbuf;
+      time_t now = time (NULL);
+      int s;
+
+      sprintf (file_name, "%s/%s", home, TIMESTAMP_FILE);
+      s = stat (file_name, &statbuf);
+      if (s == 0
+	  && (statbuf.st_mtime + ONE_DAY > now))
+	print_p = 0;
+      else
+	{
+	  FILE *f = fopen (file_name, "w");
+
+	  if (f != 0)
+	    {
+	      fputc ('\n', f);
+	      fclose (f);
+	    }
+	}
+    }
+#endif
+
+  if (print_p)
+    {
+      fprintf (stderr, "*** This is a development snapshot of GCC.\n");
+      fprintf (stderr,
+	       "*** It is not a reliable release, and the GCC developers\n");
+      fprintf (stderr,
+	       "*** warn you not to use it for anything except to test it.\n");
     }
 }
