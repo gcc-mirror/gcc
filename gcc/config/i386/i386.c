@@ -566,7 +566,7 @@ static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
-static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int));
+static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, bool));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
@@ -606,7 +606,7 @@ static int ix86_fp_comparison_arithmetics_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_fcomi_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
-static int ix86_save_reg PARAMS ((int));
+static int ix86_save_reg PARAMS ((int, bool));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 
 /* Sometimes certain combinations of command options do not make
@@ -1475,6 +1475,10 @@ general_no_elim_operand (op, mode)
       || t == virtual_incoming_args_rtx || t == virtual_stack_vars_rtx
       || t == virtual_stack_dynamic_rtx)
     return 0;
+  if (REG_P (t)
+      && REGNO (t) >= FIRST_VIRTUAL_REGISTER
+      && REGNO (t) <= LAST_VIRTUAL_REGISTER)
+    return 0;
 
   return general_operand (op, mode);
 }
@@ -2249,17 +2253,35 @@ gen_push (arg)
 
 /* Return 1 if we need to save REGNO.  */
 static int
-ix86_save_reg (regno)
-	int regno;
+ix86_save_reg (regno, maybe_eh_return)
+     int regno;
+     bool maybe_eh_return;
 {
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool)
-		     && !TARGET_64BIT;
-  return ((regs_ever_live[regno] && !call_used_regs[regno]
-	   && !fixed_regs[regno]
-	   && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
-	  || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used));
+  if (flag_pic
+      && ! TARGET_64BIT
+      && regno == PIC_OFFSET_TABLE_REGNUM
+      && (current_function_uses_pic_offset_table
+	  || current_function_uses_const_pool
+	  || current_function_calls_eh_return))
+    return 1;
 
+  if (current_function_calls_eh_return && maybe_eh_return)
+    {
+      unsigned i;
+      for (i = 0; ; i++)
+	{
+	  unsigned test = EH_RETURN_DATA_REGNO(i);
+	  if (test == INVALID_REGNUM)
+	    break;
+	  if (test == (unsigned) regno)
+	    return 1;
+	}
+    }
+
+  return (regs_ever_live[regno]
+	  && !call_used_regs[regno]
+	  && !fixed_regs[regno]
+	  && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed));
 }
 
 /* Return number of registers to be saved on the stack.  */
@@ -2271,7 +2293,7 @@ ix86_nsaved_regs ()
   int regno;
 
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
-    if (ix86_save_reg (regno))
+    if (ix86_save_reg (regno, true))
       nregs++;
   return nregs;
 }
@@ -2423,7 +2445,7 @@ ix86_emit_save_regs ()
   rtx insn;
 
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
-    if (ix86_save_reg (regno))
+    if (ix86_save_reg (regno, true))
       {
 	insn = emit_insn (gen_push (gen_rtx_REG (Pmode, regno)));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -2535,14 +2557,15 @@ ix86_emit_epilogue_esp_adjustment (tsize)
 /* Emit code to restore saved registers using MOV insns.  First register
    is restored from POINTER + OFFSET.  */
 static void
-ix86_emit_restore_regs_using_mov (pointer, offset)
-	rtx pointer;
-	int offset;
+ix86_emit_restore_regs_using_mov (pointer, offset, maybe_eh_return)
+     rtx pointer;
+     int offset;
+     bool maybe_eh_return;
 {
   int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (ix86_save_reg (regno))
+    if (ix86_save_reg (regno, maybe_eh_return))
       {
 	emit_move_insn (gen_rtx_REG (Pmode, regno),
 			adj_offsettable_operand (gen_rtx_MEM (Pmode,
@@ -2555,8 +2578,8 @@ ix86_emit_restore_regs_using_mov (pointer, offset)
 /* Restore function stack, frame, and registers.  */
 
 void
-ix86_expand_epilogue (emit_return)
-     int emit_return;
+ix86_expand_epilogue (style)
+     int style;
 {
   int regno;
   int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
@@ -2588,7 +2611,8 @@ ix86_expand_epilogue (emit_return)
   if ((!sp_valid && frame.nregs <= 1)
       || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
       || (frame_pointer_needed && TARGET_USE_LEAVE && !optimize_size
-	  && frame.nregs == 1))
+	  && frame.nregs == 1)
+      || style == 2)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
 	 locations.  If both are available, default to ebp, since offsets
@@ -2597,12 +2621,41 @@ ix86_expand_epilogue (emit_return)
 	 mode.  */
 
       if (!frame_pointer_needed || (sp_valid && !frame.to_allocate))
-	ix86_emit_restore_regs_using_mov (stack_pointer_rtx, frame.to_allocate);
+	ix86_emit_restore_regs_using_mov (stack_pointer_rtx,
+					  frame.to_allocate, style == 2);
       else
-	ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx, offset);
+	ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx,
+					  offset, style == 2);
 
-      if (!frame_pointer_needed)
-	ix86_emit_epilogue_esp_adjustment (frame.to_allocate + frame.nregs * UNITS_PER_WORD);
+      /* eh_return epilogues need %ecx added to the stack pointer.  */
+      if (style == 2)
+	{
+	  rtx tmp, sa = EH_RETURN_STACKADJ_RTX;
+
+	  if (frame_pointer_needed)
+	    {
+	      tmp = gen_rtx_PLUS (Pmode, hard_frame_pointer_rtx, sa);
+	      tmp = plus_constant (tmp, UNITS_PER_WORD);
+	      emit_insn (gen_rtx_SET (VOIDmode, sa, tmp));
+
+	      tmp = gen_rtx_MEM (Pmode, hard_frame_pointer_rtx);
+	      emit_move_insn (hard_frame_pointer_rtx, tmp);
+
+	      emit_insn (gen_pro_epilogue_adjust_stack
+			 (stack_pointer_rtx, sa, const0_rtx,
+			  hard_frame_pointer_rtx));
+	    }
+	  else
+	    {
+	      tmp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, sa);
+	      tmp = plus_constant (tmp, (frame.to_allocate
+                                         + frame.nregs * UNITS_PER_WORD));
+	      emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx, tmp));
+	    }
+	}
+      else if (!frame_pointer_needed)
+	ix86_emit_epilogue_esp_adjustment (frame.to_allocate
+					   + frame.nregs * UNITS_PER_WORD);
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_size)
 	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
@@ -2635,7 +2688,7 @@ ix86_expand_epilogue (emit_return)
 	ix86_emit_epilogue_esp_adjustment (frame.to_allocate);
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (ix86_save_reg (regno))
+	if (ix86_save_reg (regno, false))
 	  {
 	    if (TARGET_64BIT)
 	      emit_insn (gen_popdi1 (gen_rtx_REG (Pmode, regno)));
@@ -2652,7 +2705,7 @@ ix86_expand_epilogue (emit_return)
     }
 
   /* Sibcall epilogues don't want a return instruction.  */
-  if (! emit_return)
+  if (style == 0)
     return;
 
   if (current_function_pops_args && current_function_args_size)

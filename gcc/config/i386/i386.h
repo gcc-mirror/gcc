@@ -2779,16 +2779,20 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
  
 /* After the prologue, RA is at -4(AP) in the current frame.  */
-#define RETURN_ADDR_RTX(COUNT, FRAME)					\
-  ((COUNT) == 0								\
-   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, TARGET_64BIT ? -8 : -4))\
-   : gen_rtx_MEM (Pmode, plus_constant (FRAME, TARGET_64BIT ? 8 : 4)))
+#define RETURN_ADDR_RTX(COUNT, FRAME)					   \
+  ((COUNT) == 0								   \
+   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -UNITS_PER_WORD)) \
+   : gen_rtx_MEM (Pmode, plus_constant (FRAME, UNITS_PER_WORD)))
 
 /* PC is dbx register 8; let's use that column for RA. */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
 
 /* Before the prologue, the top of the frame is at 4(%esp).  */
 #define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
+
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N)	((N) < 2 ? (N) : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 2)
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

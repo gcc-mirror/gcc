@@ -1,13 +1,24 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.c (alpha_sa_mask): Add EH_RETURN_DATA_REGNOs.
-        (alpha_mark_machine_status): No eh_epilogue_sp_ofs ...
-        (alpha_expand_epilogue): ... use EH_RETURN_STACKADJ_RTX instead.
-        * config/alpha/alpha.h (machine_function): Remove eh_epilogue_sp_ofs.
-        (EH_RETURN_DATA_REGNO): New.
-        (EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): New.
-        * config/alpha/alpha.md (eh_epilogue): Remove.
-        (exception_receiver): Use $26 for ldgp input.
+	* config/i386/i386.c (general_no_elim_operand): Disallow virtual regs.
+	(ix86_save_reg): If maybe_eh_return, true for EH_RETURN_DATA_REGNOs.
+	True for pic register if current_function_calls_eh_return.
+	(ix86_expand_epilogue): Change "emit_return" argument into "style".
+	Handle eh_return requirements.
+	* config/i386/i386.h (EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX): New.
+	* config/i386/i386.md (exception_receiver): Remove.
+	(eh_return, eh_return_1): New.
+	* config/i386/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
+
+	* config/alpha/alpha.c (alpha_sa_mask): Add EH_RETURN_DATA_REGNOs.
+	(alpha_mark_machine_status): No eh_epilogue_sp_ofs ...
+	(alpha_expand_epilogue): ... use EH_RETURN_STACKADJ_RTX instead.
+	* config/alpha/alpha.h (machine_function): Remove eh_epilogue_sp_ofs.
+	(EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): New.
+	* config/alpha/alpha.md (eh_epilogue): Remove.
+	(exception_receiver): Use $26 for ldgp input.
 	* config/alpha/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
 
 2001-03-28  Richard Henderson  <rth@redhat.com>
