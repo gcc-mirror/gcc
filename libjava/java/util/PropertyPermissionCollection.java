@@ -1,5 +1,5 @@
 /* PropertyPermissionCollection.java -- a collection of PropertyPermissions
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -103,10 +103,12 @@ class PropertyPermissionCollection extends PermissionCollection
   /**
    * Returns true if this collection implies the given permission. This even
    * returns true for this case:
-   * <p>
-<pre>collection.add(new PropertyPermission("a.*", "read"));
-collection.add(new PropertyPermission("a.b.*", "write"));
-collection.implies(new PropertyPermission("a.b.c", "read,write"));</pre>
+   *
+   * <pre>
+   * collection.add(new PropertyPermission("a.*", "read"));
+   * collection.add(new PropertyPermission("a.b.*", "write"));
+   * collection.implies(new PropertyPermission("a.b.c", "read,write"));
+   * </pre>
    *
    * @param permission the permission to check
    * @return true if it is implied by this
