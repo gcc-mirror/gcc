@@ -2058,7 +2058,7 @@ h8300_interrupt_function_p (func)
   if (TREE_CODE (func) != FUNCTION_DECL)
     return 0;
 
-  a = lookup_attribute ("interrupt-handler", DECL_MACHINE_ATTRIBUTES (func));
+  a = lookup_attribute ("interrupt_handler", DECL_MACHINE_ATTRIBUTES (func));
   return a != NULL_TREE;
 }
 
@@ -2074,7 +2074,7 @@ h8300_funcvec_function_p (func)
   if (TREE_CODE (func) != FUNCTION_DECL)
     return 0;
 
-  a = lookup_attribute ("function-vector", DECL_MACHINE_ATTRIBUTES (func));
+  a = lookup_attribute ("function_vector", DECL_MACHINE_ATTRIBUTES (func));
   return a != NULL_TREE;
 }
 
@@ -2084,10 +2084,10 @@ h8300_funcvec_function_p (func)
 
    Supported attributes:
 
-   interrupt-handler: output a prologue and epilogue suitable for an
+   interrupt_handler: output a prologue and epilogue suitable for an
    interrupt handler.
 
-   function-vector: This function should be called through the
+   function_vector: This function should be called through the
    function vector.  */
 
 int
@@ -2100,8 +2100,8 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
   if (args != NULL_TREE)
     return 0;
 
-  if (is_attribute_p ("interrupt-handler", attr)
-      || is_attribute_p ("function-vector", attr))
+  if (is_attribute_p ("interrupt_handler", attr)
+      || is_attribute_p ("function_vector", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
   return 0;
 }
