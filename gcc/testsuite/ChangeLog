@@ -1,5 +1,9 @@
 2001-09-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* mi6.c, mi6a.h, mi6b.h, mi6c.h, mi6d.h, mi6e.h: New test.
+
+2001-09-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gcc.dg/cpp/redef2.c: Add test.
 
 2001-09-27  Geoffrey Keating  <geoffk@redhat.com>
