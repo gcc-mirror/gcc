@@ -554,6 +554,35 @@ AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
 
 
 dnl
+dnl Check to see if the (stdlib function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a function with THREE parameters
+dnl
+dnl GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3
+AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <stdlib.h>], 
+                     [ $1(0, 0, 0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
+
+
+dnl
 dnl Because the builtins are picky picky picky about the arguments they take, 
 dnl do an explict linkage tests here.
 dnl Check to see if the (math function) argument passed is
@@ -1989,7 +2018,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   GLIBCPP_CHECK_SETRLIMIT
 
   # Look for setenv, so that extended locale tests can be performed.
-  AC_CHECK_FUNCS(setenv)
+  GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
 ])
 
 
