@@ -1,3 +1,11 @@
+2005-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/20314
+	* gimplify.c (gimplify_asm_expr): Handle input/output constraints
+	with multiple alternatives.
+
+	* stmt.c (parse_output_constraint): Fix a typo.
+
 2005-03-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_secondary_output_reload_class): Adapt check
