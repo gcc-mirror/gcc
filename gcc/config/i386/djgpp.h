@@ -30,10 +30,6 @@ Boston, MA 02111-1307, USA.  */
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
-#include "i386/unix.h"
-#include "i386/bsd.h"
-#include "i386/gas.h"
-
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
    uninitialized global data.  If not defined, and neither
@@ -129,17 +125,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_coff_asm_named_section
-
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-  do {									\
-	if (ix86_asm_dialect == ASM_INTEL)				\
-	  fputs ("\t.intel_syntax\n", FILE);				\
-	output_file_directive (FILE, main_input_filename);		\
-  } while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter

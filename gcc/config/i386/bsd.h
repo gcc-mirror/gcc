@@ -36,13 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_LONG "\t.long\t"
 #define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
 
-/* Output at beginning of assembler file.
-   ??? I am skeptical of this -- RMS.  */
-
-#define ASM_FILE_START(FILE) \
-  do {	output_file_directive (FILE, main_input_filename);	\
-  } while (0)
-
 /* This was suggested, but it shouldn't be right for DBX output. -- RMS
    #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) */
 
