@@ -1406,16 +1406,22 @@ struct lang_type
 /* The number of virtual functions defined for this
    _CLASSTYPE node.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
-/* The direct and indirect virtual base classes that this type uses in
-   depth-first left-to-right order.  */
+
+/* A chain of BINFOs for the direct and indirect virtual base classes
+   that this type uses in depth-first left-to-right order.  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
+
+/* The BINFO (if any) for the virtual baseclass T of the class C.  */
+#define BINFO_FOR_VBASE(T, C) \
+  (binfo_member (T, CLASSTYPE_VBASECLASSES (C)))
+
 /* The virtual function pointer fields that this type contains.  */
 #define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC(NODE)->vfields)
 
-/* Number of baseclasses defined for this type.
-   0 means no base classes.  */
+/* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
-  (TYPE_BINFO_BASETYPES (NODE) ? TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES(NODE)) : 0)
+  (TYPE_BINFO_BASETYPES (NODE) ? \
+   TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES(NODE)) : 0)
 
 /* Used for keeping search-specific information.  Any search routine
    which uses this must define what exactly this slot is used for.  */
@@ -3877,7 +3883,7 @@ extern void get_pure_virtuals		        PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
 extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
 extern void clear_search_slots			PROTO((tree));
-extern tree get_vbase_types			PROTO((tree));
+extern void get_vbase_types			PROTO((tree));
 extern void maybe_suppress_debug_info		PROTO((tree));
 extern void note_debug_info_needed		PROTO((tree));
 extern void push_class_decls			PROTO((tree));

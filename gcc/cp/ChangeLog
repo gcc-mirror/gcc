@@ -1,3 +1,25 @@
+1999-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_VBASECLASSES): Update documentation.
+	(CLASSTYPE_N_BASECLASSES): Likewise.
+	(BINFO_FOR_VBASE): New macro.
+	(get_vbase_types): Change prototype.
+	* class.c (build_vbase_path): Use BINFO_FOR_VBASE.
+	(prepare_fresh_vtable): Likewise.
+	(finish_vtbls): Likewise.
+	(get_class_offset_1): Likewise.
+	(modify_all_indirect_vtables): Likewise.
+	(build_vbase_pointer_fields): Likewise.
+	* decl.c (xref_basetypes): Don't set CLASSTYPE_VBASECLASSES here.
+	* init.c (sort_base_init): Use BINFO_FOR_VBASE.
+	(expand_member_init): Likewise.
+	* search.c (get_base_distance): Likewise.
+	(lookup_field_queue_p): Likewise.
+	(virtual_context): Likewise.
+	(get_vbase_types): Don't return a value.  Set
+	CLASSTYPE_VBASECLASSES here.
+	* typeck.c (get_delta_difference): Use BINFO_FOR_VBASE.
+	
 1999-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (fixup_inline_methods): Clear CLASSTYPE_INLINE_FRIENDS.

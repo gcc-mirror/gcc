@@ -388,10 +388,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 	     this constructor is the top-level constructor called.  */
 	  if (TREE_VIA_VIRTUAL (binfo))
 	    {
-	      tree v = CLASSTYPE_VBASECLASSES (t);
-	      while (BINFO_TYPE (v) != BINFO_TYPE (binfo))
-		v = TREE_CHAIN (v);
-
+	      tree v = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
 	      vbases = tree_cons (v, TREE_VALUE (x), vbases);
 	      continue;
 	    }
@@ -916,7 +913,7 @@ expand_member_init (exp, name, init)
 	       && ! current_template_parms
 	       && ! vec_binfo_member (basetype,
 				      TYPE_BINFO_BASETYPES (type))
-	       && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
+	       && ! BINFO_FOR_VBASE (basetype, type))
 	{
 	  if (IDENTIFIER_CLASS_VALUE (name))
 	    goto try_member;

@@ -485,8 +485,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
      tree, deal with it.  This happens when we are called from
      expand_upcast_fixups.  */
   if (rval == -1 && TREE_CODE (parent) == TREE_VEC
-      && parent == binfo_member (BINFO_TYPE (parent),
-				 CLASSTYPE_VBASECLASSES (type)))
+      && parent == BINFO_FOR_VBASE (BINFO_TYPE (parent), type))
     {
       my_friendly_assert (BINFO_INHERITANCE_CHAIN (parent) == binfo, 980827);
       new_binfo = parent;
@@ -1287,8 +1286,7 @@ lookup_field_queue_p (binfo, data)
     return NULL_TREE;
 
   if (TREE_VIA_VIRTUAL (binfo))
-    return binfo_member (BINFO_TYPE (binfo),
-			 CLASSTYPE_VBASECLASSES (lfi->type));
+    return BINFO_FOR_VBASE (BINFO_TYPE (binfo), lfi->type);
   else
     return binfo;
 }
@@ -2557,7 +2555,7 @@ virtual_context (fndecl, t, vbase)
 	      /* Not sure if checking path == vbase is necessary here, but just in
 		 case it is.  */
 	      if (TREE_VIA_VIRTUAL (path) || path == vbase)
-		return binfo_member (BINFO_TYPE (path), CLASSTYPE_VBASECLASSES (t));
+		return BINFO_FOR_VBASE (BINFO_TYPE (path), t);
 	      path = BINFO_INHERITANCE_CHAIN (path);
 	    }
 	}
@@ -2886,7 +2884,7 @@ dfs_get_vbase_types (binfo, data)
    depth-first search order.  The list is freshly allocated, so
    no modification is made to  the current binfo hierarchy.  */
 
-tree
+void
 get_vbase_types (type)
      tree type;
 {
@@ -2906,7 +2904,7 @@ get_vbase_types (type)
   for (vbases = vbase_types; vbases; vbases = TREE_CHAIN (vbases))
     CLEAR_BINFO_VBASE_MARKED (vbases);
 
-  return vbase_types;
+  CLASSTYPE_VBASECLASSES (type) = vbase_types;
 }
 
 /* Debug info for C++ classes can get very large; try to avoid
