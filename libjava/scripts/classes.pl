@@ -1,7 +1,7 @@
 # classes.pl - A perl program to generate most of the contents of
 # javaprims.h automatically.
 
-# Copyright (C) 1998, 1999  Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 #
 # This file is part of libjava.
 #
@@ -65,14 +65,29 @@ sub scan
 	    next unless $name =~ /\.java$/;
 
 	    open (FILE, "< $dir/$name");
+	    local ($outer, $classname);
 	    while (<FILE>)
 	    {
 		# NOTE: we don't skip `/*' comments.
 		s,//.*$,,;
 		# For now assume that class names start with upper
 		# case letter.
-		next unless /(class|interface) ([A-Z][A-Za-z0-9]+)/;
-		$classes{$2} = 1;
+		next unless /\b(class|interface) ([A-Z][A-Za-z0-9]+)/;
+		$classname = $2;
+
+		# We assume the code is properly indented, so that we
+		# can print inner classes properly.
+		if (/^\s/)
+		{
+		    die "no outer class for $classname in $dir/$name"
+			unless $outer;
+		    $classes{$outer . "\$" . $classname} = 1;
+		}
+		else
+		{
+		    $classes{$classname} = 1;
+		    $outer = $classname;
+		}
 	    }
 	    close (FILE);
 	}

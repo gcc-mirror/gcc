@@ -1,5 +1,8 @@
 2000-07-20  Tom Tromey  <tromey@cygnus.com>
 
+	* scripts/classes.pl (scan): Print inner classes properly.
+	* gcj/javaprims.h: Updated class list.
+
 	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Only
 	initialize String fields for interpreted classes.  Fixes bug
 	reported by Hans Boehm.
