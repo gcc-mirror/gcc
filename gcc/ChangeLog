@@ -1,3 +1,8 @@
+Thu Nov 11 02:21:16 1999  Rodney Brown <RodneyBrown@pmsc.com>
+
+	* xcoffout.c (xcoffout_source_file): Change ggc_add_root to
+	gcc_add_string_root.
+
 Wed Nov 10 21:24:19 1999  Jason Eckhardt  <jle@cygnus.com>
 
 	* config/pa/pa.h (MASK_RETURN_ADDR): Change 0xfffffffc to -4.

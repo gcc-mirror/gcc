@@ -353,7 +353,7 @@ xcoffout_source_file (file, filename, inline_p)
 	}
       
       if (!xcoff_lastfile)
-	ggc_add_root (&xcoff_lastfile, 1);
+	ggc_add_string_root (&xcoff_lastfile, 1);
 
       xcoff_lastfile = filename;
     }
