@@ -1,3 +1,9 @@
+2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/aix/bits/ctype_noninline.h: Fix formatting.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h: Fix typo.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h: Fix formatting.
+
 2002-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (ctype<char>::classic_table):
