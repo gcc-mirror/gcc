@@ -306,6 +306,7 @@ static void hack_vms_include_specification ();
 /* External declarations.  */
 
 extern char *version_string;
+extern char *update_path PROTO((char *, char *));
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
@@ -586,6 +587,7 @@ struct file_name_list
 /* The */
 static struct default_include {
   char *fname;			/* The name of the directory.  */
+  char *component;		/* The component containing the directory */
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
@@ -596,40 +598,43 @@ static struct default_include {
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
-    { OLD_GPLUSPLUS_INCLUDE_DIR, 1, 1 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
+    { OLD_GPLUSPLUS_INCLUDE_DIR, 0, 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0, 0 },
+    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
 #ifdef TOOL_INCLUDE_DIR
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
 #endif
 #else /* not CROSS_COMPILE */
 #ifdef LOCAL_INCLUDE_DIR
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 1 },
+    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
 #endif
 #ifdef TOOL_INCLUDE_DIR
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
 #endif
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0 },
+    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
 #endif
-    { STANDARD_INCLUDE_DIR, 0, 0 },
+#ifndef STANDARD_INCLUDE_COMPONENT
+#define STANDARD_INCLUDE_COMPONENT 0
+#endif
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
 #endif /* not CROSS_COMPILE */
-    { 0, 0, 0 }
+    { 0, 0, 0, 0 }
     };
 #endif /* no INCLUDE_DEFAULTS */
 
@@ -1199,7 +1204,7 @@ static void make_undef PROTO((char *, FILE_BUF *));
 
 static void make_assertion PROTO((char *, char *));
 
-static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *));
+static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *, char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
 static void deps_output PROTO((char *, int));
@@ -1418,7 +1423,8 @@ main (argc, argv)
 	if (!strcmp (argv[i], "-isystem")) {
 	  struct file_name_list *dirtmp;
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, "", argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      "", argv[++i])))
 	    break;
 	  dirtmp->c_system_include_path = 1;
 
@@ -1443,7 +1449,8 @@ main (argc, argv)
 	      prefix[strlen (prefix) - 7] = 0;
 	  }
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, prefix, argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      prefix, argv[++i])))
 	    break;
 
 	  if (after_include == 0)
@@ -1467,14 +1474,15 @@ main (argc, argv)
 	      prefix[strlen (prefix) - 7] = 0;
 	  }
 
-	  dirtmp = new_include_prefix (NULL_PTR, prefix, argv[++i]);
+	  dirtmp = new_include_prefix (NULL_PTR, NULL_PTR, prefix, argv[++i]);
 	  append_include_chain (dirtmp, dirtmp);
 	}
 	/* Add directory to end of path for includes.  */
 	if (!strcmp (argv[i], "-idirafter")) {
 	  struct file_name_list *dirtmp;
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, "", argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      "", argv[++i])))
 	    break;
 
 	  if (after_include == 0)
@@ -1741,7 +1749,7 @@ main (argc, argv)
 	    first_bracket_include = 0;
 	  }
 	  else {
-	    dirtmp = new_include_prefix (last_include, "",
+	    dirtmp = new_include_prefix (last_include, NULL_PTR, "",
 					 argv[i][2] ? argv[i] + 2 : argv[++i]);
 	    append_include_chain (dirtmp, dirtmp);
 	  }
@@ -1947,6 +1955,7 @@ main (argc, argv)
 	  include_defaults[num_dirs].fname
 	    = startp == endp ? "." : savestring (startp);
 	  endp[-1] = c;
+	  include_defaults[num_dirs].component = 0;
 	  include_defaults[num_dirs].cplusplus = cplusplus;
 	  include_defaults[num_dirs].cxx_aware = 1;
 	  num_dirs++;
@@ -1987,7 +1996,7 @@ main (argc, argv)
 	  if (!strncmp (p->fname, default_prefix, default_len)) {
 	    /* Yes; change prefix and add to search list.  */
 	    struct file_name_list *new
-	      = new_include_prefix (NULL_PTR, specd_prefix,
+	      = new_include_prefix (NULL_PTR, NULL_PTR, specd_prefix,
 				    p->fname + default_len);
 	    if (new) {
 	      new->c_system_include_path = !p->cxx_aware;
@@ -2003,7 +2012,7 @@ main (argc, argv)
       /* Some standard dirs are only for C++.  */
       if (!p->cplusplus || (cplusplus && !no_standard_cplusplus_includes)) {
 	struct file_name_list *new
-	  = new_include_prefix (NULL_PTR, "", p->fname);
+	  = new_include_prefix (NULL_PTR, p->component, "", p->fname);
 	if (new) {
 	  new->c_system_include_path = !p->cxx_aware;
 	  append_include_chain (new, new);
@@ -2317,7 +2326,8 @@ path_include (path)
 	continue;
 
       q[-1] = 0;
-      dirtmp = new_include_prefix (last_include, "", p == q ? "." : p);
+      dirtmp = new_include_prefix (last_include, NULL_PTR,
+				   "", p == q ? "." : p);
       q[-1] = c;
       append_include_chain (dirtmp, dirtmp);
 
@@ -9789,7 +9799,12 @@ make_assertion (option, str)
   --indepth;
 }
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 /* The previous include prefix, if any, is PREV_FILE_NAME.
+   Translate any pathnames with COMPONENT.
    Allocate a new include prefix whose name is the
    simplified concatenation of PREFIX and NAME,
    with a trailing / added if needed.
@@ -9797,33 +9812,38 @@ make_assertion (option, str)
    e.g. because it is a duplicate of PREV_FILE_NAME.  */
 
 static struct file_name_list *
-new_include_prefix (prev_file_name, prefix, name)
+new_include_prefix (prev_file_name, component, prefix, name)
      struct file_name_list *prev_file_name;
+     char *component;
      char *prefix;
      char *name;
 {
-  if (!name)
+  if (name == 0)
     fatal ("Directory name missing after command line option");
 
-  if (!*name)
+  if (*name == 0)
     /* Ignore the empty string.  */
     return 0;
-  else {
+
+  prefix = update_path (prefix, component);
+  name = update_path (name, component);
+
+  {
     struct file_name_list *dir
       = ((struct file_name_list *)
 	 xmalloc (sizeof (struct file_name_list)
-		  + strlen (prefix) + strlen (name) + 1 /* for trailing / */));
+		  + strlen (prefix) + strlen (name) + 2));
     size_t len;
     strcpy (dir->fname, prefix);
     strcat (dir->fname, name);
     len = simplify_filename (dir->fname);
 
     /* Convert directory name to a prefix.  */
-    if (dir->fname[len - 1] != '/') {
+    if (dir->fname[len - 1] != DIR_SEPARATOR) {
       if (len == 1 && dir->fname[len - 1] == '.')
 	len = 0;
       else
-	dir->fname[len++] = '/';
+	dir->fname[len++] = DIR_SEPARATOR;
       dir->fname[len] = 0;
     }
 
@@ -9839,6 +9859,14 @@ new_include_prefix (prev_file_name, prefix, name)
 #ifndef VMS
     /* VMS can't stat dir prefixes, so skip these optimizations in VMS.  */
 
+    /* Add a trailing "." if there is a filename.  This increases the number
+       of systems that can stat directories.  We remove it below.  */
+    if (len != 0)
+      {
+	dir->fname[len] = '.';
+	dir->fname[len + 1] = 0;
+      }
+
     /* Ignore a nonexistent directory.  */
     if (stat (len ? dir->fname : ".", &dir->st) != 0) {
       if (errno != ENOENT && errno != ENOTDIR)
@@ -9846,6 +9874,9 @@ new_include_prefix (prev_file_name, prefix, name)
       free (dir);
       return 0;
     }
+
+    if (len != 0)
+      dir->fname[len] = 0;
 
     /* Ignore a directory whose identity matches the previous one.  */
     if (prev_file_name
