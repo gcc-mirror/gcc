@@ -1635,6 +1635,36 @@ the target machine.  If you don't define this, the default is two
 words.
 @end defmac
 
+@defmac LIBGCC2_LONG_DOUBLE_TYPE_SIZE
+Define this macro if @code{LONG_DOUBLE_TYPE_SIZE} is not constant or
+if you want routines in @file{libgcc2.a} for a size other than
+@code{LONG_DOUBLE_TYPE_SIZE}.  If you don't define this, the
+default is @code{LONG_DOUBLE_TYPE_SIZE}.
+@end defmac
+
+@defmac LIBGCC2_HAS_DF_MODE
+Define this macro if neither @code{LIBGCC2_DOUBLE_TYPE_SIZE} nor 
+@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
+@code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
+anyway.  If you don't define this and either @code{LIBGCC2_DOUBLE_TYPE_SIZE}
+or @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64 then the default is 1,
+otherwise it is 0.
+@end defmac
+
+@defmac LIBGCC2_HAS_XF_MODE
+Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not 
+@code{XFmode} but you want @code{XFmode} routines in @file{libgcc2.a}
+anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
+is 80 then the default is 1, otherwise it is 0.
+@end defmac
+
+@defmac LIBGCC2_HAS_TF_MODE
+Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not 
+@code{TFmode} but you want @code{TFmode} routines in @file{libgcc2.a}
+anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
+is 128 then the default is 1, otherwise it is 0.
+@end defmac
+
 @defmac TARGET_FLT_EVAL_METHOD
 A C expression for the value for @code{FLT_EVAL_METHOD} in @file{float.h},
 assuming, if applicable, that the floating-point control word is in its
