@@ -374,8 +374,8 @@
   [(parallel [(set (reg:SI 27)
 		   (umod:SI (match_operand:SI 1 "general_operand" "")
 			    (match_operand:SI 2 "general_operand" "")))
-	      (clobber (reg:DI 28))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
@@ -392,8 +392,8 @@
   [(parallel [(set (reg:DI 27)
 		   (div:DI (match_operand:DI 1 "general_operand" "")
 			   (match_operand:DI 2 "general_operand" "")))
-	      (clobber (reg:DI 28))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
@@ -410,8 +410,8 @@
   [(parallel [(set (reg:DI 27)
 		   (udiv:DI (match_operand:DI 1 "general_operand" "")
 			    (match_operand:DI 2 "general_operand" "")))
-	      (clobber (reg:DI 28))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
@@ -428,8 +428,8 @@
   [(parallel [(set (reg:DI 27)
 		   (mod:DI (match_operand:DI 1 "general_operand" "")
 			   (match_operand:DI 2 "general_operand" "")))
-	      (clobber (reg:DI 28))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
@@ -446,8 +446,8 @@
   [(parallel [(set (reg:DI 27)
 		   (umod:DI (match_operand:DI 1 "general_operand" "")
 			    (match_operand:DI 2 "general_operand" "")))
-	      (clobber (reg:DI 28))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
   ""
