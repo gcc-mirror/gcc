@@ -427,6 +427,13 @@ in the following sections.
 -m32032 -m32332 -m32532 -m32081 -m32381 -mmult-add -mnomult-add
 -msoft-float -mrtd -mnortd -mregparam -mnoregparam -msb -mnosb
 -mbitfield -mnobitfield -mhimem -mnohimem
+
+@emph{MCore Options}
+-mhardlit, -mno-hardlit -mdiv -mno-div -mrelax-immediates 
+-mno-relax-immediates -mwide-bitfields -mno-wide-bitfields
+-m4byte-functions -mno-4byte-functions -mcallgraph-data
+-mno-callgraph-data -mslow-bytes -mno-slow-bytes -mno-lsim
+-mlittle-endian -mbig-endian -m210 -m340 -mstack-increment
 @end smallexample
 
 @item Code Generation Options
@@ -3758,6 +3765,7 @@ that macro, which enables you to change the defaults.
 * TMS320C3x/C4x Options::
 * V850 Options::
 * ARC Options::
+* MCore Options::
 * NS32K Options::
 @end menu
 
@@ -6833,6 +6841,62 @@ This is the default for all platforms.
 
 @end table
 
+@node MCore Options
+@subsection MCore Options
+@cindex MCore options
+
+These are the @samp{-m} options defined for the Motorola M*Core
+processors.  
+
+@table @code
+
+@item -mhardlit
+@itemx -mhardlit
+@itemx -mno-hardlit
+Inline constants into the code stream if it can be done in two
+instructions or less.
+
+@item -mdiv
+@itemx -mdiv
+@itemx -mno-div
+Use the divide instruction.  (Enabled by default).
+
+@item -mrelax-immediate
+@itemx -mrelax-immediate
+@itemx -mno-relax-immediate
+Allow arbitary sized immediated in bit operations.
+
+@item -mwide-bitfields
+@itemx -mwide-bitfields
+@itemx -mno-wide-bitfields
+Always treat bitfields as int-sized.
+
+@item -m4byte-functions
+@itemx -m4byte-functions
+@itemx -mno-4byte-functions
+Force all functions to be aligfned to a four byte boundary.
+
+@item -mcallgraph-data
+@itemx -mcallgraph-data
+@itemx -mno-callgraph-data
+Emit callgraph information.
+
+@item -mslow-bytes
+@itemx -mslow-bytes
+@itemx -mno-slow-bytes
+Prefer word access when reading byte quantities.
+
+@item -mlittle-endian
+@itemx -mlittle-endian
+@itemx -mbig-endian
+Genreate code for a little endian target.
+
+@item -m210
+@itemx -m210
+@itemx -m340
+Generate code for the 210 processor.
+
+@end table
 
 
 @node Code Gen Options

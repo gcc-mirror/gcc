@@ -6,6 +6,8 @@ Target specific NEWS
     RS6000/PowerPC: -mcpu=401 was added as an alias for -mcpu=403.  -mcpu=e603e
 		    was added to do -mcpu=603e and -msoft-float.
 
+    MCore: Port of gcc to Motorola's MCore 210 and 340 contributed.
+    
 Noteworthy changes in GCC for EGCS 1.1.
 ---------------------------------------
 
