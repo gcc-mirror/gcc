@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 137 fixup descriptions.
+ * This file contains 138 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3849,9 +3849,46 @@ static const char* apzSco_UtimePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Solaris27_Mutex_Init fix
+ */
+#define SOLARIS27_MUTEX_INIT_FIXIDX      94
+tSCC zSolaris27_Mutex_InitName[] =
+     "solaris27_mutex_init";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris27_Mutex_InitList[] =
+  "|pthread.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSolaris27_Mutex_InitMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSolaris27_Mutex_InitSelect0[] =
+       "@\\(#\\)pthread.h[ \t]+1.26[ \t]+98/04/12 SMI";
+
+#define    SOLARIS27_MUTEX_INIT_TEST_CT  1
+static tTestDesc aSolaris27_Mutex_InitTests[] = {
+  { TT_EGREP,    zSolaris27_Mutex_InitSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Solaris27_Mutex_Init
+ */
+static const char* apzSolaris27_Mutex_InitPatch[] = {
+    "format",
+    "%1, {0}}",
+    "(define[ \t]+PTHREAD_MUTEX_INITIALIZER.*),[ \t]*0}$",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Statsswtch fix
  */
-#define STATSSWTCH_FIXIDX                94
+#define STATSSWTCH_FIXIDX                95
 tSCC zStatsswtchName[] =
      "statsswtch";
 
@@ -3887,7 +3924,7 @@ static const char* apzStatsswtchPatch[] = {
  *
  *  Description of Stdio_Stdarg_H fix
  */
-#define STDIO_STDARG_H_FIXIDX            95
+#define STDIO_STDARG_H_FIXIDX            96
 tSCC zStdio_Stdarg_HName[] =
      "stdio_stdarg_h";
 
@@ -3924,7 +3961,7 @@ static const char* apzStdio_Stdarg_HPatch[] = {
  *
  *  Description of Stdio_Va_List fix
  */
-#define STDIO_VA_LIST_FIXIDX             96
+#define STDIO_VA_LIST_FIXIDX             97
 tSCC zStdio_Va_ListName[] =
      "stdio_va_list";
 
@@ -3969,7 +4006,7 @@ s@_Va_LIST@_VA_LIST@",
  *
  *  Description of Struct_File fix
  */
-#define STRUCT_FILE_FIXIDX               97
+#define STRUCT_FILE_FIXIDX               98
 tSCC zStruct_FileName[] =
      "struct_file";
 
@@ -4006,7 +4043,7 @@ static const char* apzStruct_FilePatch[] = {
  *
  *  Description of Struct_Sockaddr fix
  */
-#define STRUCT_SOCKADDR_FIXIDX           98
+#define STRUCT_SOCKADDR_FIXIDX           99
 tSCC zStruct_SockaddrName[] =
      "struct_sockaddr";
 
@@ -4050,7 +4087,7 @@ static const char* apzStruct_SockaddrPatch[] = {
  *
  *  Description of Sun_Auth_Proto fix
  */
-#define SUN_AUTH_PROTO_FIXIDX            99
+#define SUN_AUTH_PROTO_FIXIDX            100
 tSCC zSun_Auth_ProtoName[] =
      "sun_auth_proto";
 
@@ -4091,7 +4128,7 @@ static const char* apzSun_Auth_ProtoPatch[] = {
  *
  *  Description of Sun_Bogus_Ifdef fix
  */
-#define SUN_BOGUS_IFDEF_FIXIDX           100
+#define SUN_BOGUS_IFDEF_FIXIDX           101
 tSCC zSun_Bogus_IfdefName[] =
      "sun_bogus_ifdef";
 
@@ -4127,7 +4164,7 @@ static const char* apzSun_Bogus_IfdefPatch[] = {
  *
  *  Description of Sun_Catmacro fix
  */
-#define SUN_CATMACRO_FIXIDX              101
+#define SUN_CATMACRO_FIXIDX              102
 tSCC zSun_CatmacroName[] =
      "sun_catmacro";
 
@@ -4167,7 +4204,7 @@ static const char* apzSun_CatmacroPatch[] = {
  *
  *  Description of Sun_Malloc fix
  */
-#define SUN_MALLOC_FIXIDX                102
+#define SUN_MALLOC_FIXIDX                103
 tSCC zSun_MallocName[] =
      "sun_malloc";
 
@@ -4198,7 +4235,7 @@ static const char* apzSun_MallocPatch[] = { "sed",
  *
  *  Description of Sun_Rusers_Semi fix
  */
-#define SUN_RUSERS_SEMI_FIXIDX           103
+#define SUN_RUSERS_SEMI_FIXIDX           104
 tSCC zSun_Rusers_SemiName[] =
      "sun_rusers_semi";
 
@@ -4233,7 +4270,7 @@ static const char* apzSun_Rusers_SemiPatch[] = { "sed",
  *
  *  Description of Sun_Signal fix
  */
-#define SUN_SIGNAL_FIXIDX                104
+#define SUN_SIGNAL_FIXIDX                105
 tSCC zSun_SignalName[] =
      "sun_signal";
 
@@ -4273,7 +4310,7 @@ void\t(*signal(...))(...);\n\
  *
  *  Description of Sunos_Matherr_Decl fix
  */
-#define SUNOS_MATHERR_DECL_FIXIDX        105
+#define SUNOS_MATHERR_DECL_FIXIDX        106
 tSCC zSunos_Matherr_DeclName[] =
      "sunos_matherr_decl";
 
@@ -4316,7 +4353,7 @@ static const char* apzSunos_Matherr_DeclPatch[] = {
  *
  *  Description of Sunos_Strlen fix
  */
-#define SUNOS_STRLEN_FIXIDX              106
+#define SUNOS_STRLEN_FIXIDX              107
 tSCC zSunos_StrlenName[] =
      "sunos_strlen";
 
@@ -4352,7 +4389,7 @@ static const char* apzSunos_StrlenPatch[] = {
  *
  *  Description of Svr4__P fix
  */
-#define SVR4__P_FIXIDX                   107
+#define SVR4__P_FIXIDX                   108
 tSCC zSvr4__PName[] =
      "svr4__p";
 
@@ -4390,7 +4427,7 @@ static const char* apzSvr4__PPatch[] = {
  *
  *  Description of Svr4_Getcwd fix
  */
-#define SVR4_GETCWD_FIXIDX               108
+#define SVR4_GETCWD_FIXIDX               109
 tSCC zSvr4_GetcwdName[] =
      "svr4_getcwd";
 
@@ -4426,7 +4463,7 @@ static const char* apzSvr4_GetcwdPatch[] = {
  *
  *  Description of Svr4_Profil fix
  */
-#define SVR4_PROFIL_FIXIDX               109
+#define SVR4_PROFIL_FIXIDX               110
 tSCC zSvr4_ProfilName[] =
      "svr4_profil";
 
@@ -4462,7 +4499,7 @@ static const char* apzSvr4_ProfilPatch[] = {
  *
  *  Description of Gnu_Types fix
  */
-#define GNU_TYPES_FIXIDX                 110
+#define GNU_TYPES_FIXIDX                 111
 tSCC zGnu_TypesName[] =
      "gnu_types";
 
@@ -4504,7 +4541,7 @@ static const char* apzGnu_TypesPatch[] = {
  *
  *  Description of Sysv68_String fix
  */
-#define SYSV68_STRING_FIXIDX             111
+#define SYSV68_STRING_FIXIDX             112
 tSCC zSysv68_StringName[] =
      "sysv68_string";
 
@@ -4541,7 +4578,7 @@ extern unsigned int\\\n\
  *
  *  Description of Sysz_Stdlib_For_Sun fix
  */
-#define SYSZ_STDLIB_FOR_SUN_FIXIDX       112
+#define SYSZ_STDLIB_FOR_SUN_FIXIDX       113
 tSCC zSysz_Stdlib_For_SunName[] =
      "sysz_stdlib_for_sun";
 
@@ -4577,7 +4614,7 @@ static const char* apzSysz_Stdlib_For_SunPatch[] = {
  *
  *  Description of Tinfo_Cplusplus fix
  */
-#define TINFO_CPLUSPLUS_FIXIDX           113
+#define TINFO_CPLUSPLUS_FIXIDX           114
 tSCC zTinfo_CplusplusName[] =
      "tinfo_cplusplus";
 
@@ -4613,7 +4650,7 @@ static const char* apzTinfo_CplusplusPatch[] = {
  *
  *  Description of Ultrix_Atof_Param fix
  */
-#define ULTRIX_ATOF_PARAM_FIXIDX         114
+#define ULTRIX_ATOF_PARAM_FIXIDX         115
 tSCC zUltrix_Atof_ParamName[] =
      "ultrix_atof_param";
 
@@ -4649,7 +4686,7 @@ static const char* apzUltrix_Atof_ParamPatch[] = {
  *
  *  Description of Ultrix_Const fix
  */
-#define ULTRIX_CONST_FIXIDX              115
+#define ULTRIX_CONST_FIXIDX              116
 tSCC zUltrix_ConstName[] =
      "ultrix_const";
 
@@ -4686,7 +4723,7 @@ static const char* apzUltrix_ConstPatch[] = {
  *
  *  Description of Ultrix_Const2 fix
  */
-#define ULTRIX_CONST2_FIXIDX             116
+#define ULTRIX_CONST2_FIXIDX             117
 tSCC zUltrix_Const2Name[] =
      "ultrix_const2";
 
@@ -4723,7 +4760,7 @@ static const char* apzUltrix_Const2Patch[] = {
  *
  *  Description of Ultrix_Fix_Fixproto fix
  */
-#define ULTRIX_FIX_FIXPROTO_FIXIDX       117
+#define ULTRIX_FIX_FIXPROTO_FIXIDX       118
 tSCC zUltrix_Fix_FixprotoName[] =
      "ultrix_fix_fixproto";
 
@@ -4761,7 +4798,7 @@ static const char* apzUltrix_Fix_FixprotoPatch[] = {
  *
  *  Description of Ultrix_Ifdef fix
  */
-#define ULTRIX_IFDEF_FIXIDX              118
+#define ULTRIX_IFDEF_FIXIDX              119
 tSCC zUltrix_IfdefName[] =
      "ultrix_ifdef";
 
@@ -4797,7 +4834,7 @@ static const char* apzUltrix_IfdefPatch[] = {
  *
  *  Description of Ultrix_Math_Ifdef fix
  */
-#define ULTRIX_MATH_IFDEF_FIXIDX         119
+#define ULTRIX_MATH_IFDEF_FIXIDX         120
 tSCC zUltrix_Math_IfdefName[] =
      "ultrix_math_ifdef";
 
@@ -4833,7 +4870,7 @@ static const char* apzUltrix_Math_IfdefPatch[] = {
  *
  *  Description of Ultrix_Nested_Ioctl fix
  */
-#define ULTRIX_NESTED_IOCTL_FIXIDX       120
+#define ULTRIX_NESTED_IOCTL_FIXIDX       121
 tSCC zUltrix_Nested_IoctlName[] =
      "ultrix_nested_ioctl";
 
@@ -4868,7 +4905,7 @@ static const char* apzUltrix_Nested_IoctlPatch[] = { "sed",
  *
  *  Description of Ultrix_Nested_Svc fix
  */
-#define ULTRIX_NESTED_SVC_FIXIDX         121
+#define ULTRIX_NESTED_SVC_FIXIDX         122
 tSCC zUltrix_Nested_SvcName[] =
      "ultrix_nested_svc";
 
@@ -4903,7 +4940,7 @@ static const char* apzUltrix_Nested_SvcPatch[] = { "sed",
  *
  *  Description of Ultrix_Stat fix
  */
-#define ULTRIX_STAT_FIXIDX               122
+#define ULTRIX_STAT_FIXIDX               123
 tSCC zUltrix_StatName[] =
      "ultrix_stat";
 
@@ -4944,7 +4981,7 @@ static const char* apzUltrix_StatPatch[] = { "sed",
  *
  *  Description of Ultrix_Static fix
  */
-#define ULTRIX_STATIC_FIXIDX             123
+#define ULTRIX_STATIC_FIXIDX             124
 tSCC zUltrix_StaticName[] =
      "ultrix_static";
 
@@ -4981,7 +5018,7 @@ static const char* apzUltrix_StaticPatch[] = { "sed",
  *
  *  Description of Ultrix_Strings fix
  */
-#define ULTRIX_STRINGS_FIXIDX            124
+#define ULTRIX_STRINGS_FIXIDX            125
 tSCC zUltrix_StringsName[] =
      "ultrix_strings";
 
@@ -5016,7 +5053,7 @@ static const char* apzUltrix_StringsPatch[] = {
  *
  *  Description of Undefine_Null fix
  */
-#define UNDEFINE_NULL_FIXIDX             125
+#define UNDEFINE_NULL_FIXIDX             126
 tSCC zUndefine_NullName[] =
      "undefine_null";
 
@@ -5062,7 +5099,7 @@ static const char* apzUndefine_NullPatch[] = {
  *
  *  Description of Uw7_Byteorder_Fix fix
  */
-#define UW7_BYTEORDER_FIX_FIXIDX         126
+#define UW7_BYTEORDER_FIX_FIXIDX         127
 tSCC zUw7_Byteorder_FixName[] =
      "uw7_byteorder_fix";
 
@@ -5113,7 +5150,7 @@ static const char* apzUw7_Byteorder_FixPatch[] = {
  *
  *  Description of Va_I960_Macro fix
  */
-#define VA_I960_MACRO_FIXIDX             127
+#define VA_I960_MACRO_FIXIDX             128
 tSCC zVa_I960_MacroName[] =
      "va_i960_macro";
 
@@ -5149,7 +5186,7 @@ static const char* apzVa_I960_MacroPatch[] = {
  *
  *  Description of Void_Null fix
  */
-#define VOID_NULL_FIXIDX                 128
+#define VOID_NULL_FIXIDX                 129
 tSCC zVoid_NullName[] =
      "void_null";
 
@@ -5185,7 +5222,7 @@ static const char* apzVoid_NullPatch[] = {
  *
  *  Description of Vxworks_Gcc_Problem fix
  */
-#define VXWORKS_GCC_PROBLEM_FIXIDX       129
+#define VXWORKS_GCC_PROBLEM_FIXIDX       130
 tSCC zVxworks_Gcc_ProblemName[] =
      "vxworks_gcc_problem";
 
@@ -5235,7 +5272,7 @@ static const char* apzVxworks_Gcc_ProblemPatch[] = { "sed",
  *
  *  Description of Vxworks_Needs_Vxtypes fix
  */
-#define VXWORKS_NEEDS_VXTYPES_FIXIDX     130
+#define VXWORKS_NEEDS_VXTYPES_FIXIDX     131
 tSCC zVxworks_Needs_VxtypesName[] =
      "vxworks_needs_vxtypes";
 
@@ -5271,7 +5308,7 @@ static const char* apzVxworks_Needs_VxtypesPatch[] = {
  *
  *  Description of Vxworks_Needs_Vxworks fix
  */
-#define VXWORKS_NEEDS_VXWORKS_FIXIDX     131
+#define VXWORKS_NEEDS_VXWORKS_FIXIDX     132
 tSCC zVxworks_Needs_VxworksName[] =
      "vxworks_needs_vxworks";
 
@@ -5320,7 +5357,7 @@ static const char* apzVxworks_Needs_VxworksPatch[] = { "sed",
  *
  *  Description of Vxworks_Time fix
  */
-#define VXWORKS_TIME_FIXIDX              132
+#define VXWORKS_TIME_FIXIDX              133
 tSCC zVxworks_TimeName[] =
      "vxworks_time";
 
@@ -5371,7 +5408,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\n\
  *
  *  Description of X11_Class fix
  */
-#define X11_CLASS_FIXIDX                 133
+#define X11_CLASS_FIXIDX                 134
 tSCC zX11_ClassName[] =
      "x11_class";
 
@@ -5418,7 +5455,7 @@ static const char* apzX11_ClassPatch[] = {
  *
  *  Description of X11_Class_Usage fix
  */
-#define X11_CLASS_USAGE_FIXIDX           134
+#define X11_CLASS_USAGE_FIXIDX           135
 tSCC zX11_Class_UsageName[] =
      "x11_class_usage";
 
@@ -5461,7 +5498,7 @@ static const char* apzX11_Class_UsagePatch[] = {
  *
  *  Description of X11_New fix
  */
-#define X11_NEW_FIXIDX                   135
+#define X11_NEW_FIXIDX                   136
 tSCC zX11_NewName[] =
      "x11_new";
 
@@ -5502,7 +5539,7 @@ static const char* apzX11_NewPatch[] = { "sed",
  *
  *  Description of X11_Sprintf fix
  */
-#define X11_SPRINTF_FIXIDX               136
+#define X11_SPRINTF_FIXIDX               137
 tSCC zX11_SprintfName[] =
      "x11_sprintf";
 
@@ -5541,9 +5578,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          144
+#define REGEX_COUNT          145
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            137
+#define FIX_COUNT            138
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAaa_Ki_IfaceName,    zAaa_Ki_IfaceList,
@@ -6015,6 +6052,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSco_UtimeMachs,
      SCO_UTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSco_UtimeTests,   apzSco_UtimePatch, 0 },
+
+  {  zSolaris27_Mutex_InitName,    zSolaris27_Mutex_InitList,
+     apzSolaris27_Mutex_InitMachs,
+     SOLARIS27_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSolaris27_Mutex_InitTests,   apzSolaris27_Mutex_InitPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,

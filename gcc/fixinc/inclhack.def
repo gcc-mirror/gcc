@@ -2044,6 +2044,24 @@ fix = {
 
 
 /*
+ * Sun Solaris 2.7 defines PTHREAD_MUTEX_INITIALIZER with a trailing
+ * "0" for the last field of the pthread_mutex_t structure, which is
+ * of type upad64_t, which itself is typedef'd to int64_t, but with
+ * __STDC__ defined (e.g. by -ansi) it is a union. So change the
+ * initializer to "{0}" instead
+ */
+fix = {
+  hackname = solaris27_mutex_init;
+  select = '@\(#\)pthread.h' "[ \t]+1.26[ \t]+98/04/12 SMI";
+  files = pthread.h;
+  c_fix = format;
+  c_fix_arg = "%1, {0}}";
+  c_fix_arg = "(define[ \t]+PTHREAD_MUTEX_INITIALIZER.*),[ \t]*0}$";
+  test_text = "#define PTHREAD_MUTEX_INITIALIZER {{{0},0}, {{{0}}}, 0}";
+};
+
+
+/*
  *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
  */
 #ifdef SONY
