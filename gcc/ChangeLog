@@ -1,3 +1,8 @@
+2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+        * Makefile.in (STRICT_WARN): Don't warn for ISO C constructs.
+        (STRICT2_WARN): Likewise.
+	
 2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/6955
