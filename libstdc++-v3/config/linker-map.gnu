@@ -33,7 +33,8 @@ GLIBCPP_3.1 {
       std::__throw_*;
       std::__basic_file*;
       std::__num_base*;
-      std::__timepunct*
+      std::__timepunct*;
+      std::__numeric_limits_base*
     };
 
     # Names not in an 'extern' block are mangled names.

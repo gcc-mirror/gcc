@@ -55,6 +55,7 @@ DEFINE_EXTREMA(long double, LDBL_MIN, LDBL_MAX);
 template<typename T>
 void test_extrema()
 {
+  bool test = true;
   VERIFY( extrema<T>::min == std::numeric_limits<T>::min() );
   VERIFY( extrema<T>::max == std::numeric_limits<T>::max() );
 }
@@ -73,6 +74,7 @@ template<>
 void test_extrema<long double>()
 {
   typedef long double T;
+  bool test = true;
   VERIFY( (extrema<T>::min - std::numeric_limits<T>::min())
             < std::numeric_limits<T>::epsilon() );
   VERIFY( (std::numeric_limits<T>::min() - extrema<T>::min)
@@ -92,6 +94,7 @@ void test_extrema<long double>()
 
 void test_sign()
 {
+  bool test = true;
   VERIFY( std::numeric_limits<char>::is_signed == char_is_signed );
   VERIFY( std::numeric_limits<signed char>::is_signed == true );
   VERIFY( std::numeric_limits<unsigned char>::is_signed == false );
@@ -230,9 +233,3 @@ int main()
 
     return 0;
 }
-
-
-
-
-
-

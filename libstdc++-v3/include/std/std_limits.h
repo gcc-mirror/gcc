@@ -908,140 +908,52 @@ namespace std
   //
   // The primary class traits
   //
-  template<typename _Tp> 
-    struct numeric_limits 
-    {
-      static const bool is_specialized = false;
+  struct __numeric_limits_base
+  {
+    static const bool is_specialized = false;
 
+    static const int digits = 0;
+    static const int digits10 = 0;
+    static const bool is_signed = false;
+    static const bool is_integer = false;
+    static const bool is_exact = false;
+    static const int radix = 0;
+
+    static const int min_exponent = 0;
+    static const int min_exponent10 = 0;
+    static const int max_exponent = 0;
+    static const int max_exponent10 = 0;
+    
+    static const bool has_infinity = false;
+    static const bool has_quiet_NaN = false;
+    static const bool has_signaling_NaN = false;
+    static const float_denorm_style has_denorm = denorm_absent;
+    static const bool has_denorm_loss = false;
+
+    static const bool is_iec559 = false;
+    static const bool is_bounded = false;
+    static const bool is_modulo = false;
+
+    static const bool traps = false;
+    static const bool tinyness_before = false;
+    static const float_round_style round_style = round_toward_zero;
+  };
+
+  template<typename _Tp> 
+    struct numeric_limits : public __numeric_limits_base 
+    {
       static _Tp min() throw() { return static_cast<_Tp>(0); }
       static _Tp max() throw() { return static_cast<_Tp>(0); }
-
-      static const int digits = 0;
-      static const int digits10 = 0;
-      static const bool is_signed = false;
-      static const bool is_integer = false;
-      static const bool is_exact = false;
-      static const int radix = 0;
-
       static _Tp epsilon() throw() { return static_cast<_Tp>(0); }
       static _Tp round_error() throw() { return static_cast<_Tp>(0); }
-
-      static const int min_exponent = 0;
-      static const int min_exponent10 = 0;
-      static const int max_exponent = 0;
-      static const int max_exponent10 = 0;
-
-      static const bool has_infinity = false;
-      static const bool has_quiet_NaN = false;
-      static const bool has_signaling_NaN = false;
-      static const float_denorm_style has_denorm = denorm_absent;
-      static const bool has_denorm_loss = false;
-
       static _Tp infinity() throw()  { return static_cast<_Tp>(0); }
       static _Tp quiet_NaN() throw() { return static_cast<_Tp>(0); }
       static _Tp signaling_NaN() throw() { return static_cast<_Tp>(0); }
       static _Tp denorm_min() throw() { return static_cast<_Tp>(0); }
-
-      static const bool is_iec559 = false;
-      static const bool is_bounded = false;
-      static const bool is_modulo = false;
-
-      static const bool traps = false;
-      static const bool tinyness_before = false;
-      static const float_round_style round_style = round_toward_zero;
     };
 
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_specialized;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::digits;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::digits10;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_signed;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_integer;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_exact;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::radix;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::min_exponent;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::min_exponent10;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::max_exponent;
-
-  template<typename _Tp> 
-    const int
-    numeric_limits<_Tp>::max_exponent10;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::has_infinity;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::has_quiet_NaN;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::has_signaling_NaN;
-
-  template<typename _Tp> 
-    const float_denorm_style
-    numeric_limits<_Tp>::has_denorm;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::has_denorm_loss;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_iec559;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_bounded;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::is_modulo;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::traps;
-
-  template<typename _Tp> 
-    const bool
-    numeric_limits<_Tp>::tinyness_before;
-
-  template<typename _Tp> 
-    const float_round_style
-    numeric_limits<_Tp>::round_style;
-
   // Now there follow 15 explicit specializations.  Yes, 15.  Make sure
-  // you get the count right.
-  
+  // you get the count right.  
   template<>
     struct numeric_limits<bool>
     {

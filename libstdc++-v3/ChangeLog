@@ -1,3 +1,11 @@
+2002-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_limits.h: Move static const data members out of
+	generic template, into base class __numeric_limits_base.
+	* src/limits.cc: Add definitions.
+	* config/linker-map.gnu: Add __numeric_limits_base.
+	* testsuite/18_support/numeric_limits.cc: Declare test in scope.
+	
 2002-03-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_alloc.h: Add extern implicit allocator
