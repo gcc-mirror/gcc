@@ -328,6 +328,15 @@
        (eq_attr "type" "!mult,load,store1,store2,store3,store4")) 32 32)
 
 ;;---------------------------------------------------------------------------
+;; Make code more maintainable by using names for fixed registers.
+
+(define_constants
+  [(LR_REGNUM       14)
+   (LAST_ARM_REGNUM 15)
+   (CC_REGNUM       24)]
+)
+
+;;---------------------------------------------------------------------------
 
 ;; Note: For DImode insns, there is normally no reason why operands should
 ;; not be in the same register, what we don't want is for something being
@@ -339,14 +348,14 @@
   [(set (match_operand:DI          0 "s_register_operand" "")
 	(plus:DI (match_operand:DI 1 "s_register_operand" "")
 		 (match_operand:DI 2 "s_register_operand" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed
   "
-  [(parallel [(set (reg:CC_C 24)
+  [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
 	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 			       (plus:SI (match_dup 4) (match_dup 5))))]
   "
   {
@@ -367,14 +376,14 @@
   [(set (match_operand:DI 0 "s_register_operand" "")
 	(plus:DI (sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
 		 (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed
   "
-  [(parallel [(set (reg:CC_C 24)
+  [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
 	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 			       (plus:SI (ashiftrt:SI (match_dup 2)
 						     (const_int 31))
 					(match_dup 4))))]
@@ -396,14 +405,14 @@
   [(set (match_operand:DI 0 "s_register_operand" "")
 	(plus:DI (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
 		 (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed
   "
-  [(parallel [(set (reg:CC_C 24)
+  [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
 	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 			       (plus:SI (match_dup 4) (const_int 0))))]
   "
   {
@@ -422,7 +431,7 @@
    [(set (match_operand:DI           0 "s_register_operand" "")
 	  (plus:DI (match_operand:DI 1 "s_register_operand" "")
 	           (match_operand:DI 2 "s_register_operand" "")))
-    (clobber (reg:CC 24))])]
+    (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
   if (TARGET_THUMB)
@@ -439,7 +448,7 @@
   [(set (match_operand:DI          0 "register_operand" "=l")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0")
 		 (match_operand:DI 2 "register_operand" "l")))
-   (clobber (reg:CC 24))
+   (clobber (reg:CC CC_REGNUM))
   ]
   "TARGET_THUMB"
   "add\\t%Q0, %Q0, %Q2\;adc\\t%R0, %R0, %R2"
@@ -450,7 +459,7 @@
   [(set (match_operand:DI          0 "s_register_operand" "=&r,&r")
 	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0")
 		 (match_operand:DI 2 "s_register_operand" "r,  0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM
   "
   "#"
@@ -463,7 +472,7 @@
 	(plus:DI (sign_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM
   "
   "#"
@@ -476,7 +485,7 @@
 	(plus:DI (zero_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
-   (clobber (reg:CC 24))
+   (clobber (reg:CC CC_REGNUM))
   ]
   "TARGET_ARM
   "
@@ -573,7 +582,7 @@
 )
 
 (define_insn "*addsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (plus:SI (match_operand:SI 1 "s_register_operand" "r, r")
 		  (match_operand:SI 2 "arm_add_operand"    "rI,L"))
@@ -588,7 +597,7 @@
 )
 
 (define_insn "*addsi3_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r, r")
 		  (match_operand:SI 1 "arm_add_operand"    "rI,L"))
@@ -604,7 +613,7 @@
 ;; patterns, except we write them slightly different - the combiner
 ;; tends to generate them this way.
 (define_insn "*addsi3_compare0_for_combiner"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
 	 (neg:SI (match_operand:SI 2 "arm_add_operand" "rI,L"))))
@@ -618,7 +627,7 @@
 )
 
 (define_insn "*addsi3_compare0_scratch_for_combiner"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 0 "s_register_operand" "r,r")
 	 (neg:SI (match_operand:SI 1 "arm_add_operand" "rI,L"))))]
@@ -634,7 +643,7 @@
 ;; either GEU or LTU, so we can use the carry flag from the addition
 ;; instead of doing the compare a second time.
 (define_insn "*addsi3_compare_op1"
-  [(set (reg:CC_C 24)
+  [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		  (match_operand:SI 2 "arm_add_operand" "rI,L"))
@@ -649,7 +658,7 @@
 )
 
 (define_insn "*addsi3_compare_op2"
-  [(set (reg:CC_C 24)
+  [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		  (match_operand:SI 2 "arm_add_operand" "rI,L"))
@@ -664,7 +673,7 @@
 )
 
 (define_insn "*compare_addsi2_op0"
-  [(set (reg:CC_C 24)
+  [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r,r")
 		  (match_operand:SI 1 "arm_add_operand" "rI,L"))
@@ -677,7 +686,7 @@
 )
 
 (define_insn "*compare_addsi2_op1"
-  [(set (reg:CC_C 24)
+  [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r,r")
 		  (match_operand:SI 1 "arm_add_operand" "rI,L"))
@@ -691,7 +700,7 @@
 
 (define_insn "*addsi3_carryin"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+	(plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 		 (plus:SI (match_operand:SI 1 "s_register_operand" "r")
 			  (match_operand:SI 2 "arm_rhs_operand" "rI"))))]
   "TARGET_ARM"
@@ -701,7 +710,7 @@
 
 (define_insn "*addsi3_carryin_shift"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+	(plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 		 (plus:SI
 		   (match_operator:SI 2 "shift_operator"
 		      [(match_operand:SI 3 "s_register_operand" "")
@@ -716,7 +725,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
 			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
-		 (ltu:SI (reg:CC_C 24) (const_int 0))))]
+		 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
   "TARGET_ARM"
   "adc%?\\t%0, %1, %2"
   [(set_attr "conds" "use")]
@@ -724,7 +733,7 @@
 
 (define_insn "*addsi3_carryin_alt2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+	(plus:SI (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 			  (match_operand:SI 1 "s_register_operand" "r"))
 		 (match_operand:SI 2 "arm_rhs_operand" "rI")))]
   "TARGET_ARM"
@@ -734,7 +743,7 @@
 
 (define_insn "*addsi3_carryin_alt3"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+	(plus:SI (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
 			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
 		 (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM"
@@ -896,7 +905,7 @@
    [(set (match_operand:DI            0 "s_register_operand" "")
 	  (minus:DI (match_operand:DI 1 "s_register_operand" "")
 	            (match_operand:DI 2 "s_register_operand" "")))
-    (clobber (reg:CC 24))])]
+    (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
   if (TARGET_THUMB)
@@ -913,7 +922,7 @@
   [(set (match_operand:DI           0 "s_register_operand" "=&r,&r,&r")
 	(minus:DI (match_operand:DI 1 "s_register_operand" "0,r,0")
 		  (match_operand:DI 2 "s_register_operand" "r,0,0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
   [(set_attr "conds" "clob")
@@ -924,7 +933,7 @@
   [(set (match_operand:DI           0 "register_operand" "=l")
 	(minus:DI (match_operand:DI 1 "register_operand"  "0")
 		  (match_operand:DI 2 "register_operand"  "l")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB"
   "sub\\t%Q0, %Q0, %Q2\;sbc\\t%R0, %R0, %R2"
   [(set_attr "length" "4")]
@@ -935,7 +944,7 @@
 	(minus:DI (match_operand:DI 1 "s_register_operand"  "?r,0")
 		  (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, #0"
   [(set_attr "conds" "clob")
@@ -947,7 +956,7 @@
 	(minus:DI (match_operand:DI  1 "s_register_operand"  "r,0")
 		  (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "subs\\t%Q0, %Q1, %2\;sbc\\t%R0, %R1, %2, asr #31"
   [(set_attr "conds" "clob")
@@ -959,7 +968,7 @@
 	(minus:DI (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))
 		  (match_operand:DI  1 "s_register_operand" "?r,0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, #0"
   [(set_attr "conds" "clob")
@@ -971,7 +980,7 @@
 	(minus:DI (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"   "r,r"))
 		  (match_operand:DI  1 "s_register_operand"  "?r,0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, %2, asr #31"
   [(set_attr "conds" "clob")
@@ -984,7 +993,7 @@
 		   (match_operand:SI 1 "s_register_operand"  "r"))
 		  (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "subs\\t%Q0, %1, %2\;rsc\\t%R0, %1, %1"
   [(set_attr "conds" "clob")
@@ -1048,7 +1057,7 @@
 )
 
 (define_insn "*subsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (minus:SI (match_operand:SI 1 "arm_rhs_operand" "r,I")
 		   (match_operand:SI 2 "arm_rhs_operand" "rI,r"))
@@ -1188,7 +1197,7 @@
 )
 
 (define_insn "*mulsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
@@ -1202,7 +1211,7 @@
 )
 
 (define_insn "*mulsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
@@ -1229,7 +1238,7 @@
 )
 
 (define_insn "*mulsi3addsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
@@ -1246,7 +1255,7 @@
 )
 
 (define_insn "*mulsi3addsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
@@ -1848,7 +1857,7 @@
 )
 
 (define_insn "*andsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (and:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		 (match_operand:SI 2 "arm_not_operand" "rI,K"))
@@ -1863,7 +1872,7 @@
 )
 
 (define_insn "*andsi3_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (and:SI (match_operand:SI 0 "s_register_operand" "r,r")
 		 (match_operand:SI 1 "arm_not_operand" "rI,K"))
@@ -1877,7 +1886,7 @@
 )
 
 (define_insn "*zeroextractsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (zero_extract:SI
 			  (match_operand:SI 0 "s_register_operand" "r")
 		 	  (match_operand 1 "const_int_operand" "n")
@@ -2129,7 +2138,7 @@
 )
 
 (define_insn "*andsi_notsi_si_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
 		 (match_operand:SI 1 "s_register_operand" "r"))
@@ -2142,7 +2151,7 @@
 )
 
 (define_insn "*andsi_notsi_si_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
 		 (match_operand:SI 1 "s_register_operand" "r"))
@@ -2244,7 +2253,7 @@
 )
   
 (define_insn "*iorsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (ior:SI (match_operand:SI 1 "s_register_operand" "%r")
 				 (match_operand:SI 2 "arm_rhs_operand" "rI"))
 			 (const_int 0)))
@@ -2256,7 +2265,7 @@
 )
 
 (define_insn "*iorsi3_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (ior:SI (match_operand:SI 1 "s_register_operand" "%r")
 				 (match_operand:SI 2 "arm_rhs_operand" "rI"))
 			 (const_int 0)))
@@ -2330,7 +2339,7 @@
 )
 
 (define_insn "*xorsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (xor:SI (match_operand:SI 1 "s_register_operand" "r")
 				 (match_operand:SI 2 "arm_rhs_operand" "rI"))
 			 (const_int 0)))
@@ -2342,7 +2351,7 @@
 )
 
 (define_insn "*xorsi3_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (xor:SI (match_operand:SI 0 "s_register_operand" "r")
 				 (match_operand:SI 1 "arm_rhs_operand" "rI"))
 			 (const_int 0)))]
@@ -2387,7 +2396,7 @@
   [(set (match_operand:SI          0 "s_register_operand" "=r,r,r")
 	(smax:SI (match_operand:SI 1 "s_register_operand"  "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand"    "rI,0,rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movlt\\t%0, %2
@@ -2401,7 +2410,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(smin:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movge\\t%0, %2
@@ -2415,7 +2424,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(umax:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movcc\\t%0, %2
@@ -2429,7 +2438,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(umin:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
 		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movcs\\t%0, %2
@@ -2444,7 +2453,7 @@
 	(match_operator:SI 3 "minmax_operator"
 	 [(match_operand:SI 1 "s_register_operand" "r")
 	  (match_operand:SI 2 "s_register_operand" "r")]))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
   operands[3] = gen_rtx (minmax_code (operands[3]), SImode, operands[1],
@@ -2468,7 +2477,7 @@
 	   [(match_operand:SI 2 "s_register_operand" "r,r")
 	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])
 	  (match_operand:SI 1 "s_register_operand" "0,?r")]))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM
    && (GET_CODE (operands[1]) != REG
        || (REGNO(operands[1]) != FRAME_POINTER_REGNUM
@@ -2620,7 +2629,7 @@
 )
 
 (define_insn "*shiftsi3_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r")
 			   (match_operand:SI 2 "arm_rhs_operand" "rM")])
@@ -2634,7 +2643,7 @@
 )
 
 (define_insn "*shiftsi3_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r")
 			   (match_operand:SI 2 "arm_rhs_operand" "rM")])
@@ -2658,7 +2667,7 @@
 )
 
 (define_insn "*notsi_shiftsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (not:SI (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r")
 			   (match_operand:SI 2 "arm_rhs_operand" "rM")]))
@@ -2672,7 +2681,7 @@
 )
 
 (define_insn "*not_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (not:SI (match_operator:SI 3 "shift_operator"
 			  [(match_operand:SI 1 "s_register_operand" "r")
 			   (match_operand:SI 2 "arm_rhs_operand" "rM")]))
@@ -2720,7 +2729,7 @@
  [(parallel
    [(set (match_operand:DI          0 "s_register_operand" "")
 	  (neg:DI (match_operand:DI 1 "s_register_operand" "")))
-    (clobber (reg:CC 24))])]
+    (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
   "
   if (TARGET_THUMB)
@@ -2736,7 +2745,7 @@
 (define_insn "*arm_negdi2"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,r")
 	(neg:DI (match_operand:DI 1 "s_register_operand"  "?r,0")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
   [(set_attr "conds" "clob")
@@ -2746,7 +2755,7 @@
 (define_insn "*thumb_negdi2"
   [(set (match_operand:DI         0 "register_operand" "=&l")
 	(neg:DI (match_operand:DI 1 "register_operand"   "l")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB"
   "mov\\t%R0, #0\;neg\\t%Q0, %Q1\;sbc\\t%R0, %R1"
   [(set_attr "length" "6")]
@@ -2820,7 +2829,7 @@
 (define_insn "abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%0, #0\;rsblt\\t%0, %0, #0
@@ -2833,7 +2842,7 @@
 (define_insn "*neg_abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(neg:SI (abs:SI (match_operand:SI 1 "s_register_operand" "0,r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%0, #0\;rsbgt\\t%0, %0, #0
@@ -3010,7 +3019,7 @@
 )
 
 (define_insn "*notsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (not:SI (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r")
@@ -3021,7 +3030,7 @@
 )
 
 (define_insn "*notsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (not:SI (match_operand:SI 1 "s_register_operand" "r"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=r"))]
@@ -3388,7 +3397,7 @@
 )
 
 (define_insn "*compareqi_eq0"
-  [(set (reg:CC_Z 24)
+  [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z (match_operand:QI 0 "s_register_operand" "r")
 			 (const_int 0)))]
   "TARGET_ARM"
@@ -4237,7 +4246,7 @@
 ;; result is being tested against zero.
 
 (define_insn "*movsi_compare0"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 1 "s_register_operand" "0,r")
 		    (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -5202,14 +5211,14 @@
                      (use (match_operand:SI 2 "" ""))])]
   "TARGET_ARM"
   "
-  /* Support only fixed point registers */
+  /* Support only fixed point registers.  */
   if (GET_CODE (operands[2]) != CONST_INT
       || INTVAL (operands[2]) > 14
       || INTVAL (operands[2]) < 2
       || GET_CODE (operands[1]) != MEM
       || GET_CODE (operands[0]) != REG
-      || REGNO (operands[0]) > 14
-      || REGNO (operands[0]) + INTVAL (operands[2]) > 15)
+      || REGNO (operands[0]) > (LAST_ARM_REGNUM - 1)
+      || REGNO (operands[0]) + INTVAL (operands[2]) > LAST_ARM_REGNUM)
     FAIL;
 
   operands[3]
@@ -5284,8 +5293,8 @@
       || INTVAL (operands[2]) < 2
       || GET_CODE (operands[1]) != REG
       || GET_CODE (operands[0]) != MEM
-      || REGNO (operands[1]) > 14
-      || REGNO (operands[1]) + INTVAL (operands[2]) > 15)
+      || REGNO (operands[1]) > (LAST_ARM_REGNUM - 1)
+      || REGNO (operands[1]) + INTVAL (operands[2]) > LAST_ARM_REGNUM)
     FAIL;
 
   operands[3]
@@ -5552,7 +5561,7 @@
 )
 
 (define_insn "*arm_cmpsi_insn"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 0 "s_register_operand" "r,r")
 		    (match_operand:SI 1 "arm_add_operand"    "rI,L")))]
   "TARGET_ARM"
@@ -5563,7 +5572,7 @@
 )
 
 (define_insn "*cmpsi_shiftsi"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI   0 "s_register_operand" "r")
 		    (match_operator:SI  3 "shift_operator"
 		     [(match_operand:SI 1 "s_register_operand" "r")
@@ -5575,7 +5584,7 @@
 )
 
 (define_insn "*cmpsi_shiftsi_swp"
-  [(set (reg:CC_SWP 24)
+  [(set (reg:CC_SWP CC_REGNUM)
 	(compare:CC_SWP (match_operator:SI 3 "shift_operator"
 			 [(match_operand:SI 1 "s_register_operand" "r")
 			  (match_operand:SI 2 "reg_or_int_operand" "rM")])
@@ -5587,7 +5596,7 @@
 )
 
 (define_insn "*cmpsi_neg_shiftsi"
-  [(set (reg:CC 24)
+  [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 0 "s_register_operand" "r")
 		    (neg:SI (match_operator:SI 3 "shift_operator"
 			     [(match_operand:SI 1 "s_register_operand" "r")
@@ -5599,7 +5608,7 @@
 )
 
 (define_insn "*cmpsf_insn"
-  [(set (reg:CCFP 24)
+  [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand" "f,f")
 		      (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -5611,7 +5620,7 @@
 )
 
 (define_insn "*cmpdf_insn"
-  [(set (reg:CCFP 24)
+  [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand" "f,f")
 		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -5623,7 +5632,7 @@
 )
 
 (define_insn "*cmpesfdf_df"
-  [(set (reg:CCFP 24)
+  [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (float_extend:DF
 		       (match_operand:SF 0 "s_register_operand" "f,f"))
 		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
@@ -5636,7 +5645,7 @@
 )
 
 (define_insn "*cmpdf_esfdf"
-  [(set (reg:CCFP 24)
+  [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand" "f")
 		      (float_extend:DF
 		       (match_operand:SF 1 "s_register_operand" "f"))))]
@@ -5647,7 +5656,7 @@
 )
 
 (define_insn "*cmpxf_insn"
-  [(set (reg:CCFP 24)
+  [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:XF 0 "s_register_operand" "f,f")
 		      (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
@@ -5659,7 +5668,7 @@
 )
 
 (define_insn "*cmpsf_trap"
-  [(set (reg:CCFPE 24)
+  [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand" "f,f")
 		       (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -5671,7 +5680,7 @@
 )
 
 (define_insn "*cmpdf_trap"
-  [(set (reg:CCFPE 24)
+  [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand" "f,f")
 		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -5683,7 +5692,7 @@
 )
 
 (define_insn "*cmp_esfdf_df_trap"
-  [(set (reg:CCFPE 24)
+  [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (float_extend:DF
 			(match_operand:SF 0 "s_register_operand" "f,f"))
 		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
@@ -5696,7 +5705,7 @@
 )
 
 (define_insn "*cmp_df_esfdf_trap"
-  [(set (reg:CCFPE 24)
+  [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand" "f")
 		       (float_extend:DF
 			(match_operand:SF 1 "s_register_operand" "f"))))]
@@ -5707,7 +5716,7 @@
 )
 
 (define_insn "*cmpxf_trap"
-  [(set (reg:CCFPE 24)
+  [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:XF 0 "s_register_operand" "f,f")
 		       (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
   "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
@@ -6364,7 +6373,7 @@
   [(parallel [(call (match_operand 0 "memory_operand" "")
 	            (match_operand 1 "general_operand" ""))
 	      (use (match_operand 2 "" ""))
-	      (clobber (reg:SI 14))])]
+	      (clobber (reg:SI LR_REGNUM))])]
   "TARGET_EITHER"
   "
   {
@@ -6396,7 +6405,7 @@
   [(call (mem:SI (match_operand:SI 0 "s_register_operand" "r"))
          (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM"
   "*
   return output_call (operands);
@@ -6410,7 +6419,7 @@
   [(call (mem:SI (match_operand:SI 0 "memory_operand" "m"))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM"
   "*
   return output_call_mem (operands);
@@ -6423,7 +6432,7 @@
   [(call (mem:SI (match_operand:SI 0 "register_operand" "l*r"))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB"
   "*
   {
@@ -6440,7 +6449,7 @@
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB"
   "*
   {
@@ -6457,7 +6466,7 @@
 	           (call (match_operand 1 "memory_operand" "")
 		         (match_operand 2 "general_operand" "")))
 	      (use (match_operand 3 "" ""))
-	      (clobber (reg:SI 14))])]
+	      (clobber (reg:SI LR_REGNUM))])]
   "TARGET_EITHER"
   "
   {
@@ -6479,7 +6488,7 @@
         (call (mem:SI (match_operand:SI 1 "s_register_operand" "r,r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM"
   "*
   return output_call (&operands[1]);
@@ -6493,7 +6502,7 @@
 	(call (mem:SI (match_operand:SI 1 "memory_operand" "m,m"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM && (!CONSTANT_ADDRESS_P (XEXP (operands[1], 0)))"
   "*
   return output_call_mem (&operands[1]);
@@ -6509,7 +6518,7 @@
   [(call (mem:SI (match_operand:SI 0 "" "X"))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM
    && (GET_CODE (operands[0]) == SYMBOL_REF)
    && !arm_is_longcall_p (operands[0], INTVAL (operands[2]), 1)"
@@ -6525,7 +6534,7 @@
 	(call (mem:SI (match_operand:SI 1 "" "X,X"))
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_ARM
    && (GET_CODE (operands[1]) == SYMBOL_REF)
    && !arm_is_longcall_p (operands[1], INTVAL (operands[3]), 1)"
@@ -6540,7 +6549,7 @@
   [(call (mem:SI (match_operand:SI 0 "" "X"))
 	 (match_operand:SI 1 "" ""))
    (use (match_operand 2 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB
    && operands[2] == const0_rtx && (GET_CODE (operands[0]) == SYMBOL_REF)"
   "bl\\t%a0"
@@ -6553,7 +6562,7 @@
 	(call (mem:SI (match_operand 1 "" "X"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
-   (clobber (reg:SI 14))]
+   (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB
    && operands[3] == const0_rtx && (GET_CODE (operands[1]) == SYMBOL_REF)"
   "bl\\t%a1"
@@ -6747,7 +6756,7 @@
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
 				 (label_ref (match_operand 2 "" ""))))
 		(label_ref (match_operand 3 "" ""))))
-	      (clobber (reg:CC 24))
+	      (clobber (reg:CC CC_REGNUM))
 	      (use (label_ref (match_dup 2)))])]
   "TARGET_ARM"
   "*
@@ -6828,7 +6837,7 @@
 )
 
 (define_insn "*arith_shiftsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
         (compare:CC_NOOV (match_operator:SI 1 "shiftable_operator"
 		          [(match_operator:SI 3 "shift_operator"
 		            [(match_operand:SI 4 "s_register_operand" "r")
@@ -6845,7 +6854,7 @@
 )
 
 (define_insn "*arith_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
         (compare:CC_NOOV (match_operator:SI 1 "shiftable_operator"
 		          [(match_operator:SI 3 "shift_operator"
 		            [(match_operand:SI 4 "s_register_operand" "r")
@@ -6872,7 +6881,7 @@
 )
 
 (define_insn "*sub_shiftsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (minus:SI (match_operand:SI 1 "s_register_operand" "r")
 		   (match_operator:SI 2 "shift_operator"
@@ -6889,7 +6898,7 @@
 )
 
 (define_insn "*sub_shiftsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
 	 (minus:SI (match_operand:SI 1 "s_register_operand" "r")
 		   (match_operator:SI 2 "shift_operator"
@@ -6931,7 +6940,7 @@
 )
 
 (define_insn "*reload_mulsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (plus:SI
 			  (plus:SI 
 			   (match_operator:SI 5 "shift_operator"
@@ -6954,7 +6963,7 @@
 )
 
 (define_insn "*reload_mulsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (plus:SI
 			  (plus:SI 
 			   (match_operator:SI 5 "shift_operator"
@@ -6994,7 +7003,7 @@
 )
 
 (define_insn "*reload_muladdsi_compare0"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (plus:SI (plus:SI (mult:SI
 					    (match_operand:SI 3 "" "r")
 					    (match_operand:SI 4 "" "r"))
@@ -7016,7 +7025,7 @@
 )
 
 (define_insn "*reload_muladdsi_compare0_scratch"
-  [(set (reg:CC_NOOV 24)
+  [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (plus:SI (plus:SI (mult:SI
 					    (match_operand:SI 3 "" "r")
 					    (match_operand:SI 4 "" "r"))
@@ -7065,7 +7074,7 @@
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
     if (GET_CODE (operands[1]) == LT && operands[3] == const0_rtx)
@@ -7125,7 +7134,7 @@
            [(match_operand:SI 2 "s_register_operand" "r,r")
 	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])
           (match_operand:SI 1 "s_register_operand" "0,?r")]))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
     if (GET_CODE (operands[4]) == LT && operands[3] == const0_rtx)
@@ -7150,7 +7159,7 @@
 		  (match_operator:SI 4 "arm_comparison_operator"
                    [(match_operand:SI 2 "s_register_operand" "r,r")
 		    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
     output_asm_insn (\"cmp\\t%2, %3\", operands);
@@ -7238,7 +7247,7 @@
 	(neg:SI (match_operator 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
   if (GET_CODE (operands[3]) == LT && operands[3] == const0_rtx)
@@ -7266,7 +7275,7 @@
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL,rIL")])
 	 (match_operand:SI 1 "arm_rhs_operand" "0,rI,?rI")
 	 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
   if (GET_CODE (operands[5]) == LT
@@ -7330,7 +7339,7 @@
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 3 "arm_add_operand" "rIL,rIL"))
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7366,7 +7375,7 @@
 			 (plus:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
 			  (match_operand:SI 3 "arm_add_operand" "rIL,rIL"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7404,7 +7413,7 @@
 			 (match_operator:SI 7 "shiftable_operator"
 			  [(match_operand:SI 3 "s_register_operand" "r")
 			   (match_operand:SI 4 "arm_rhs_operand" "rI")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7436,7 +7445,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r,r")
 			   (match_operand:SI 5 "arm_rhs_operand" "rI,rI")])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
   /* If we have an operation where (op x 0) is the identity operation and
@@ -7494,7 +7503,7 @@
 			 (match_operator:SI 7 "shiftable_operator"
 			  [(match_operand:SI 2 "s_register_operand" "r,r")
 			   (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
   /* If we have an operation where (op x 0) is the identity operation and
@@ -7554,7 +7563,7 @@
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
 	 (not:SI
 	  (match_operand:SI 2 "s_register_operand" "r,r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7586,7 +7595,7 @@
 	 (not:SI
 	  (match_operand:SI 2 "s_register_operand" "r,r"))
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7619,7 +7628,7 @@
 	  [(match_operand:SI 2 "s_register_operand" "r,r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rM,rM")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7654,7 +7663,7 @@
 	 (match_operator:SI 7 "shift_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r,r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rM,rM")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7691,7 +7700,7 @@
 	 (match_operator:SI 9 "shift_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r")
 	   (match_operand:SI 4 "arm_rhs_operand" "rM")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7725,7 +7734,7 @@
 	 (match_operator:SI 7 "shiftable_operator"
 	  [(match_operand:SI 2 "s_register_operand" "r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rI")])))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7757,7 +7766,7 @@
 	  [(match_operand:SI 2 "s_register_operand" "r")
 	   (match_operand:SI 3 "arm_rhs_operand" "rI")])
 	 (not:SI (match_operand:SI 1 "s_register_operand" "r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7787,7 +7796,7 @@
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "r,r"))
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -7818,7 +7827,7 @@
 	   (match_operand:SI 4 "arm_add_operand" "rIL,rIL")])
 	 (match_operand:SI 1 "arm_not_operand" "0,?rIK")
 	 (neg:SI (match_operand:SI 2 "s_register_operand" "r,r"))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "#"
   [(set_attr "conds" "clob")
@@ -8411,7 +8420,7 @@
 (define_peephole
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(match_operand:SI 1 "s_register_operand" "r"))
-   (set (reg:CC 24)
+   (set (reg:CC CC_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))]
   "TARGET_ARM
   "
@@ -8520,7 +8529,7 @@
 ;; extension is not needed.
 
 (define_split
-  [(set (reg:CC_Z 24)
+  [(set (reg:CC_Z CC_REGNUM)
 	(compare:CC_Z
 	 (ashift:SI (subreg:SI (match_operand:QI 0 "memory_operand" "") 0)
 		    (const_int 24))
@@ -8530,7 +8539,7 @@
    && (((unsigned HOST_WIDE_INT) INTVAL (operands[1]))
        == (((unsigned HOST_WIDE_INT) INTVAL (operands[1])) >> 24) << 24)"
   [(set (match_dup 2) (zero_extend:SI (match_dup 0)))
-   (set (reg:CC 24) (compare:CC (match_dup 2) (match_dup 1)))]
+   (set (reg:CC CC_REGNUM) (compare:CC (match_dup 2) (match_dup 1)))]
   "
   operands[1] = GEN_INT (((unsigned long) INTVAL (operands[1])) >> 24);
   "
@@ -8625,7 +8634,7 @@
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_dup 0)
 			 (match_operand 4 "" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_dup 7)
@@ -8636,7 +8645,7 @@
 					     operands[2], operands[3]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
-    operands[5] = gen_rtx_REG (mode, 24);
+    operands[5] = gen_rtx_REG (mode, CC_REGNUM);
     operands[6] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
     if (mode == CCFPmode || mode == CCFPEmode)
       rc = reverse_condition_maybe_unordered (rc);
@@ -8653,7 +8662,7 @@
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_operand 4 "" "")
 			 (match_dup 0)))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_op_dup 1 [(match_dup 5) (const_int 0)])
@@ -8663,7 +8672,7 @@
     enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
 
-    operands[5] = gen_rtx_REG (mode, 24);
+    operands[5] = gen_rtx_REG (mode, CC_REGNUM);
     operands[6] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
   }"
 )
@@ -8674,7 +8683,7 @@
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
@@ -8687,7 +8696,7 @@
 					     operands[2], operands[3]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
-    operands[6] = gen_rtx_REG (mode, 24);
+    operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
     if (mode == CCFPmode || mode == CCFPEmode)
       rc = reverse_condition_maybe_unordered (rc);
@@ -8704,7 +8713,7 @@
 			  [(match_operand 2 "" "") (match_operand 3 "" "")])
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed && 0"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0) 
@@ -8716,7 +8725,7 @@
     enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
 
-    operands[6] = gen_rtx_REG (mode, 24);
+    operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
   }"
 )
@@ -8729,7 +8738,7 @@
 			 (match_operand:SI 4 "arm_rhs_operand" "")
 			 (not:SI
 			  (match_operand:SI 5 "s_register_operand" ""))))
-   (clobber (reg:CC 24))]
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0) 
@@ -8741,7 +8750,7 @@
     enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
 
-    operands[6] = gen_rtx_REG (mode, 24);
+    operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     operands[7] = gen_rtx (COMPARE, mode, operands[2], operands[3]);
   }"
 )
