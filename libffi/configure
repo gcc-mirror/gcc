@@ -633,7 +633,7 @@ fi
 
 if test "${srcdir}" = "."; then
   if test "${with_target_subdir}" != "."; then
-    libffi_basedir="${with_multisrctop}.."
+    libffi_basedir="${with_multisrctop}../"
   else
     libffi_basedir="${with_multisrctop}"
   fi
@@ -3527,6 +3527,10 @@ if test $ac_cv_c_bigendian = yes; then
 #define WORDS_BIGENDIAN 1
 EOF
 
+  cat >> confdefs.h <<\EOF
+#define HOST_WORDS_BIG_ENDIAN 1
+EOF
+
   BYTEORDER=4321
 else
   BYTEORDER=1234
@@ -3542,7 +3546,7 @@ fi
 
 if test x$TARGET = xSPARC; then
     echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:3546: checking assembler and linker support unaligned pc related relocs" >&5
+echo "configure:3550: checking assembler and linker support unaligned pc related relocs" >&5
 if eval "test \"`echo '$''{'libffi_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3552,14 +3556,14 @@ else
 	CFLAGS="$CFLAGS -fpic"
 	LDFLAGS="$LDFLAGS -shared"
 	cat > conftest.$ac_ext <<EOF
-#line 3556 "configure"
+#line 3560 "configure"
 #include "confdefs.h"
 asm (".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo); .text");
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:3563: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3567: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   libffi_cv_as_sparc_ua_pcrel=yes
 else
@@ -4090,7 +4094,7 @@ test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 
 if test -n "$CONFIG_FILES"; then
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${srcdir}/${libffi_basedir}/../config-ml.in
+   ac_file=Makefile . ${srcdir}/${libffi_basedir}../config-ml.in
 fi
 
 exit 0
