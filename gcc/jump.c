@@ -3763,7 +3763,7 @@ static int modified_mem;
 static void
 mark_modified_reg (dest, x, data)
      rtx dest;
-     rtx x ATTRIBUTE_UNUSED;
+     rtx x;
      void *data ATTRIBUTE_UNUSED;
 {
   int regno;
@@ -3781,7 +3781,13 @@ mark_modified_reg (dest, x, data)
   regno = REGNO (dest);
   if (regno >= FIRST_PSEUDO_REGISTER)
     modified_regs[regno] = 1;
-  else
+  /* Don't consider a hard condition code register as modified,
+     if it is only being set.  thread_jumps will check if it is set
+     to the same value.  */
+  else if (GET_MODE_CLASS (GET_MODE (dest)) != MODE_CC
+	   || GET_CODE (x) != SET
+	   || ! rtx_equal_p (dest, SET_DEST (x))
+	   || HARD_REGNO_NREGS (regno, GET_MODE (dest)) != 1)
     for (i = 0; i < HARD_REGNO_NREGS (regno, GET_MODE (dest)); i++)
       modified_regs[regno + i] = 1;
 }
