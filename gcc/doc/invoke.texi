@@ -1,12 +1,12 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -242,7 +242,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
 -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition @gol
 -Wstrict-prototypes  -Wtraditional @gol
--Wdeclaration-after-statement}
+-Wdeclaration-after-statement -Wno-pointer-sign}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
@@ -3134,6 +3134,12 @@ merely indicates that GCC's optimizers were unable to handle the code
 effectively.  Often, the problem is that your code is too big or too
 complex; GCC will refuse to optimize programs when the optimization
 itself is likely to take inordinate amounts of time.
+
+@item -Wno-pointer-sign
+@opindex Wno-pointer-sign
+Don't warn for pointer argument passing or assignment with different signedness.
+Only useful in the negative form since this warning is enabled by default.
+This option is only supported for C and Objective-C@.
 
 @item -Werror
 @opindex Werror
@@ -10900,7 +10906,7 @@ However, when @option{-mbackchain} is also in effect, the topmost word of
 the save area is always used to store the backchain, and the return address
 register is always saved two words below the backchain.
 
-As long as the stack frame backchain is not used, code generated with 
+As long as the stack frame backchain is not used, code generated with
 @option{-mpacked-stack} is call-compatible with code generated with
 @option{-mno-packed-stack}.  Note that some non-FSF releases of GCC 2.95 for
 S/390 or zSeries generated code that uses the stack frame backchain at run
