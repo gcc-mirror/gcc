@@ -1298,11 +1298,19 @@ compute_sets (f)
 
 /* Hash table support.  */
 
-/* For each register, the cuid of the first/last insn in the block to set it,
-   or -1 if not set.  */
+/* For each register, the cuid of the first/last insn in the block
+   that set it, or -1 if not set.  */
 #define NEVER_SET -1
-static int *reg_first_set;
-static int *reg_last_set;
+
+struct reg_avail_info
+{
+  int last_bb;
+  int first_set;
+  int last_set;
+};
+
+static struct reg_avail_info *reg_avail_info;
+static int current_bb;
 
 
 /* See whether X, the source of a set, is something we want to consider for
@@ -1376,15 +1384,19 @@ oprs_unchanged_p (x, insn, avail_p)
   switch (code)
     {
     case REG:
-      if (avail_p)
-	return (reg_last_set[REGNO (x)] == NEVER_SET
-		|| reg_last_set[REGNO (x)] < INSN_CUID (insn));
-      else
-	return (reg_first_set[REGNO (x)] == NEVER_SET
-		|| reg_first_set[REGNO (x)] >= INSN_CUID (insn));
+      {
+	struct reg_avail_info *info = &reg_avail_info[REGNO (x)];
+
+	if (info->last_bb != current_bb)
+	  return 1;
+        if (avail_p)
+	  return info->last_set < INSN_CUID (insn);
+	else
+	  return info->first_set >= INSN_CUID (insn);
+      }
 
     case MEM:
-      if (load_killed_in_block_p (BLOCK_FOR_INSN (insn), INSN_CUID (insn),
+      if (load_killed_in_block_p (BASIC_BLOCK (current_bb), INSN_CUID (insn),
 				  x, avail_p))
 	return 0;
       else
@@ -2328,11 +2340,14 @@ dump_hash_table (file, name, table, table_size, total_size)
 
 /* Record register first/last/block set information for REGNO in INSN.
 
-   reg_first_set records the first place in the block where the register
+   first_set records the first place in the block where the register
    is set and is used to compute "anticipatability".
 
-   reg_last_set records the last place in the block where the register
+   last_set records the last place in the block where the register
    is set and is used to compute "availability".
+
+   last_bb records the block for which first_set and last_set are
+   valid, as a quick test to invalidate them.
 
    reg_set_in_block records whether the register is set in the block
    and is used to compute "transparency".  */
@@ -2342,11 +2357,16 @@ record_last_reg_set_info (insn, regno)
      rtx insn;
      int regno;
 {
-  if (reg_first_set[regno] == NEVER_SET)
-    reg_first_set[regno] = INSN_CUID (insn);
+  struct reg_avail_info *info = &reg_avail_info[regno];
+  int cuid = INSN_CUID (insn);
 
-  reg_last_set[regno] = INSN_CUID (insn);
-  SET_BIT (reg_set_in_block[BLOCK_NUM (insn)], regno);
+  info->last_set = cuid;
+  if (info->last_bb != current_bb)
+    {
+      info->last_bb = current_bb;
+      info->first_set = cuid;
+      SET_BIT (reg_set_in_block[current_bb], regno);
+    }
 }
 
 
@@ -2453,7 +2473,7 @@ static void
 compute_hash_table (set_p)
      int set_p;
 {
-  int bb;
+  unsigned int i;
 
   /* While we compute the hash table we also compute a bit array of which
      registers are set in which blocks.
@@ -2473,29 +2493,25 @@ compute_hash_table (set_p)
       }
   }
   /* Some working arrays used to track first and last set in each block.  */
-  /* ??? One could use alloca here, but at some size a threshold is crossed
-     beyond which one should use malloc.  Are we at that threshold here?  */
-  reg_first_set = (int *) gmalloc (max_gcse_regno * sizeof (int));
-  reg_last_set = (int *) gmalloc (max_gcse_regno * sizeof (int));
+  reg_avail_info = (struct reg_avail_info*)
+    gmalloc (max_gcse_regno * sizeof (struct reg_avail_info));
 
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  for (i = 0; i < max_gcse_regno; ++i)
+    reg_avail_info[i].last_bb = NEVER_SET;
+
+  for (current_bb = 0; current_bb < n_basic_blocks; current_bb++)
     {
       rtx insn;
       unsigned int regno;
       int in_libcall_block;
-      unsigned int i;
 
       /* First pass over the instructions records information used to
 	 determine when registers and memory are first and last set.
 	 ??? hard-reg reg_set_in_block computation
 	 could be moved to compute_sets since they currently don't change.  */
 
-      for (i = 0; i < max_gcse_regno; i++)
-	reg_first_set[i] = reg_last_set[i] = NEVER_SET;
-
-
-      for (insn = BLOCK_HEAD (bb);
-	   insn && insn != NEXT_INSN (BLOCK_END (bb));
+      for (insn = BLOCK_HEAD (current_bb);
+	   insn && insn != NEXT_INSN (BLOCK_END (current_bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (! INSN_P (insn))
@@ -2523,8 +2539,8 @@ compute_hash_table (set_p)
 
       /* The next pass builds the hash table.  */
 
-      for (insn = BLOCK_HEAD (bb), in_libcall_block = 0;
-	   insn && insn != NEXT_INSN (BLOCK_END (bb));
+      for (insn = BLOCK_HEAD (current_bb), in_libcall_block = 0;
+	   insn && insn != NEXT_INSN (BLOCK_END (current_bb));
 	   insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
 	  {
@@ -2536,11 +2552,8 @@ compute_hash_table (set_p)
 	}
     }
 
-  free (reg_first_set);
-  free (reg_last_set);
-
-  /* Catch bugs early.  */
-  reg_first_set = reg_last_set = 0;
+  free (reg_avail_info);
+  reg_avail_info = NULL;
 }
 
 /* Allocate space for the set hash table.
