@@ -1,3 +1,12 @@
+2002-11-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-protos.h (xtensa_copy_incoming_a7): Declare.
+	* config/xtensa/xtensa.c (struct machine_function): Add
+	incoming_a7_copied flag.
+	(xtensa_copy_incoming_a7): Define.
+	(xtensa_emit_move_sequence): Use xtensa_copy_incoming_a7.
+	* config/xtensa/xtensa.md (movdi, movsf, movdf): Ditto.
+
 Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 
 	* i386-protos.h (x86_64_sign_extended_value): Fix prototype.

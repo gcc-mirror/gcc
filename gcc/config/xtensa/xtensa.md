@@ -929,12 +929,8 @@
 	  && !register_operand (operands[1], DImode))
 	operands[1] = force_reg (DImode, operands[1]);
 
-      if (a7_overlap_mentioned_p (operands[1]))
-	{
-	  emit_insn (gen_movdi_internal (operands[0], operands[1]));
-	  emit_insn (gen_set_frame_ptr ());
-	  DONE;
-	}
+      if (xtensa_copy_incoming_a7 (operands, DImode))
+	DONE;
     }
 }")
 
@@ -1107,12 +1103,8 @@
 	      && constantpool_mem_p (operands[1]))))
 	operands[1] = force_reg (SFmode, operands[1]);
 
-      if (a7_overlap_mentioned_p (operands[1]))
-	{
-	  emit_insn (gen_movsf_internal (operands[0], operands[1]));
-	  emit_insn (gen_set_frame_ptr ());
-	  DONE;
-	}
+      if (xtensa_copy_incoming_a7 (operands, SFmode))
+	DONE;
     }
 }")
 
@@ -1193,12 +1185,8 @@
 	  && !register_operand (operands[1], DFmode))
 	operands[1] = force_reg (DFmode, operands[1]);
 
-      if (a7_overlap_mentioned_p (operands[1]))
-	{
-	  emit_insn (gen_movdf_internal (operands[0], operands[1]));
-	  emit_insn (gen_set_frame_ptr ());
-	  DONE;
-	}
+      if (xtensa_copy_incoming_a7 (operands, DFmode))
+	DONE;
     }
 }")
 
