@@ -1535,11 +1535,56 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	  if (methods == OPTAB_WIDEN)
 	    continue;
 	  else if (methods == OPTAB_LIB_WIDEN)
-	    methods = OPTAB_LIB;
+	    {
+	      /* If we are rotating by a constant that is valid and
+		 we have been unable to open-code this by a rotation,
+		 do it as the IOR of two shifts.  I.e., to rotate A
+		 by N bits, compute (A << N) | ((unsigned) A >> (C - N))
+		 where C is the bitsize of A.
+
+		 It is theoretically possible that the target machine might
+		 not be able to perform either shift and hence we would
+		 be making two libcalls rather than just the one for the
+		 shift (similarly if IOR could not be done).  We will allow
+		 this extremely unlikely lossage to avoid complicating the
+		 code below.  */
+
+	      if (GET_CODE (op1) == CONST_INT && INTVAL (op1) > 0
+		  && INTVAL (op1) < GET_MODE_BITSIZE (mode))
+		{
+		  rtx subtarget = target == shifted ? 0 : target;
+		  rtx temp1;
+		  tree other_amount
+		    = build_int_2 (GET_MODE_BITSIZE (mode) - INTVAL (op1), 0);
+
+		  shifted = force_reg (mode, shifted);
+
+		  temp = expand_shift (left ? LSHIFT_EXPR : RSHIFT_EXPR,
+				       mode, shifted, amount, subtarget, 1);
+		  temp1 = expand_shift (left ? RSHIFT_EXPR : LSHIFT_EXPR,
+					mode, shifted, other_amount, 0, 1);
+		  return expand_binop (mode, ior_optab, temp, temp1, target,
+				       unsignedp, methods);
+		}
+	      else
+		methods = OPTAB_LIB;
+	    }
 
 	  temp = expand_binop (mode,
 			       left ? rotl_optab : rotr_optab,
 			       shifted, op1, target, unsignedp, methods);
+
+	  /* If we don't have the rotate, but we are rotating by a constant
+	     that is in range, try a rotate in the opposite direction.  */
+
+	  if (temp == 0 && GET_CODE (op1) == CONST_INT
+	      && INTVAL (op1) > 0 && INTVAL (op1) < GET_MODE_BITSIZE (mode))
+	    temp = expand_binop (mode,
+				 left ? rotr_optab : rotl_optab,
+				 shifted, 
+				 GEN_INT (GET_MODE_BITSIZE (mode)
+					  - INTVAL (op1)),
+				 target, unsignedp, methods);
 	}
       else if (unsignedp)
 	{
