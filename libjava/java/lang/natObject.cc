@@ -18,6 +18,7 @@ details.  */
 #include <jvm.h>
 #include <java/lang/Object.h>
 #include <java-threads.h>
+#include <java-signal.h>
 #include <java/lang/CloneNotSupportedException.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IllegalMonitorStateException.h>
@@ -224,8 +225,10 @@ _Jv_InitializeSyncMutex (void)
 jint
 _Jv_MonitorEnter (jobject obj)
 {
+#ifndef HANDLE_SEGV
   if (! obj)
     JvThrow (new java::lang::NullPointerException);
+#endif
   if (INIT_NEEDED (obj))
     obj->sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;

@@ -180,6 +180,6 @@ public class StringTokenizer implements Enumeration
   // more readable this way, so we'll take the hit on efficiency.
   private boolean isDelimiter(char ch)
   {
-    return delimiters.indexOf(ch) >= 0;
+    return delimiters.indexOf(ch, 0) >= 0;
   }
 }

@@ -38,7 +38,7 @@ class VectorEnumeration implements Enumeration
 
   public Object nextElement()
   {
-    if (!hasMoreElements())
+    if (! (enumIndex < enumVec.size()))
       throw new NoSuchElementException();
 
     return enumVec.elementData[enumIndex++];
