@@ -1,3 +1,13 @@
+2002-02-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* configure.in: Set up PLATFORMOBJS not PLATFORM_SPECIFIC_SOURCES.
+	Symlink PLATFORMH to platform.h.
+	* Makefile.am (libgcj_la_DEPENDENCIES, libgcj_la_LIBADD): Add
+	PLATFORMOBJS.
+	* java/lang/natSystem.cc: #include platform.h not posix.h.
+	* Makefile.in: Rebuilt with libgcj automake.
+	* configure: Rebuilt.
+
 2002-02-05  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in: Undo munging last change.
