@@ -2254,7 +2254,7 @@ layout_class_method (tree this_class, tree super_class,
       DECL_CONSTRUCTOR_P (method_decl) = 1;
       build_java_argument_signature (TREE_TYPE (method_decl));
     }
-  else if (! METHOD_STATIC (method_decl) && !DECL_ARTIFICIAL (method_decl))
+  else if (! METHOD_STATIC (method_decl))
     {
       tree method_sig =
 	build_java_argument_signature (TREE_TYPE (method_decl));
