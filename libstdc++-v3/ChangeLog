@@ -1,3 +1,31 @@
+2002-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/4150
+	* include/std/std_streambuf.h (basic_streambuf::_M_set_indeterminate): 
+	Move to filebuf.
+	(basic_streambuf::_M_set_determinate): Likewise.
+	(basic_streambuf::_M_is_indeterminate): Likewise.
+	* include/bits/std_fstream.h (basic_filebuf::_M_filepos): New 
+	non-static data member.
+	(basic_filebuf::_M_underflow_common): New non-static member function.
+	(basic_filebuf::_M_underflow, _M_uflow): Call it.
+	(basic_filebuf::sync): Avoid useless seeking.
+	(basic_filebuf::_M_set_indeterminate): Move here from streambuf.
+	Set _M_filepos.
+	(basic_filebuf::_M_set_determinate): Likewise.
+	(basic_filebuf::_M_is_indeterminate): Likewise.
+	* include/bits/fstream.tcc (basic_filebuf::_M_really_overflow): Seek
+	back to _M_out_beg if necessary.
+	(basic_filebuf::seekoff): Likewise.
+	(basic_filebuf::_M_underflow_common): Generalization of old 
+	underflow().  Don't seek back to _M_in_beg.
+	* src/ios.cc: Lose _GLIBCPP_AVOID_FSEEK stuff.
+	* config/os/solaris/solaris2.?/bits/os_defines.h: Likewise.
+	* config/os/bsd/freebsd/bits/os_defines.h: Likewise.
+	* config/os/mingw32/bits/os_defines.h: Likewise.
+	* testsuite/27_io/filebuf_virtuals.cc (test05): Don't overspecify 
+	ungetc test.
+
 2002-04-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/istream.tcc (istream::read): Fix.

@@ -206,7 +206,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
-    underflow()
+    _M_underflow_common(bool __bump)
     {
       int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
@@ -232,12 +232,8 @@ namespace std
 	    {
 	      if (__testout)
 		_M_really_overflow();
-#if _GLIBCPP_AVOID_FSEEK
-	      else if ((_M_in_cur - _M_in_beg) == 1)
-		_M_file.sys_getc();
-#endif
-	      else 
-		_M_file.seekoff(_M_in_cur - _M_in_beg, 
+	      else if (_M_in_cur != _M_filepos)
+		_M_file.seekoff(_M_in_cur - _M_filepos,
 				ios_base::cur, ios_base::in);
 	    }
 
@@ -280,16 +276,16 @@ namespace std
 		  if (__testout)
 		    _M_out_cur = _M_in_cur;
 		  __ret = traits_type::to_int_type(*_M_in_cur);
-#if _GLIBCPP_AVOID_FSEEK
-		  if (__elen == 1)
-		    _M_file.sys_ungetc(*_M_in_cur);
-		  else
+		  if (__bump)
+		    _M_in_cur_move(1);
+		  else if (_M_buf_size == 1)
 		    {
-#endif
-		      _M_file.seekoff(-__elen, ios_base::cur, ios_base::in);
-#if _GLIBCPP_AVOID_FSEEK
+		      // If we are synced with stdio, we have to unget the
+		      // character we just read so that the file pointer
+		      // doesn't move.
+		      _M_file.sys_ungetc(*_M_in_cur);
+		      _M_set_indeterminate();
 		    }
-#endif
 		}	   
 	    }
 	}
@@ -464,6 +460,15 @@ namespace std
 	  streamsize __elen = 0;
 	  streamsize __plen = 0;
 
+	  // Need to restore current position. The position of the external
+	  // byte sequence (_M_file) corresponds to _M_filepos, and we need
+	  // to move it to _M_out_beg for the write.
+	  if (_M_filepos && _M_filepos != _M_out_beg)
+	    {
+	      off_type __off = _M_out_beg - _M_filepos;
+	      _M_file.seekoff(__off, ios_base::cur);
+	    }
+
 	  // Convert internal buffer to external representation, output.
 	  // NB: In the unbuffered case, no internal buffer exists. 
 	  if (!__testunbuffered)
@@ -551,9 +556,8 @@ namespace std
 		  _M_output_unshift();
 		}
 	      //in
-	      // NB: underflow() rewinds the external buffer.
 	      else if (__testget && __way == ios_base::cur)
-		__computed_off += _M_in_cur - _M_in_beg;
+		__computed_off += _M_in_cur - _M_filepos;
 	  
 	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
 	      _M_set_indeterminate();
