@@ -858,7 +858,7 @@ lang_independent_options f_options[] =
   {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1,
    "Allow speculative motion of more loads" },
   {"branch-count-reg",&flag_branch_on_count_reg, 1,
-   "Replace add,compare,branch with branch on count register"},
+   "Replace add,compare,branch with branch on count reg"},
 #endif  /* HAIFA */
   {"pic", &flag_pic, 1,
    "Generate position independent code, if possible"},
@@ -1030,6 +1030,7 @@ documented_lang_options[] =
 
   /* These are for languages with USE_CPPLIB.  */
   /* These options are already documented in cpplib.c */
+  { "--help", "" },
   { "-A", "" },
   { "-D", "" },
   { "-I", "" },
@@ -3940,8 +3941,10 @@ display_help ()
   long	 i;
   char * lang;
   
+#ifndef USE_CPPLIB  
   printf ("Usage: %s input [switches]\n", progname);
   printf ("Switches:\n");
+#endif
   printf ("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n");
   printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
   printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
@@ -3982,7 +3985,7 @@ display_help ()
 #endif  
   printf ("  -o <file>               Place output into <file> \n");
   printf ("  -G <number>             Put global and static data smaller than <number>\n");
-  printf ("                           bytes into a special section [on some targets]\n");
+  printf ("                           bytes into a special section (on some targets)\n");
   
   for (i = NUM_ELEM (debug_args); i--;)
     {
@@ -4318,6 +4321,13 @@ main (argc, argv, envp)
 	  /* If the option is valid for *some* language,
 	     treat it as valid even if this language doesn't understand it.  */
 	  int strings_processed = lang_decode_option (argc - i, argv + i);
+	  
+	  if (!strcmp (argv[i], "--help"))
+	    {
+	      display_help ();
+	      exit (0);
+	    }
+	  
 	  if (strings_processed != 0)
 	    i += strings_processed - 1;
 	}
