@@ -1,3 +1,0 @@
-test_libio putbackdog.cc "" hounddog.inp hounddog.exp ""
-test_libio putbackdog.cc "" hounddog.inp hounddog.exp "-b0"
-test_libio putbackdog.cc "" hounddog.inp hounddog.exp "-b2"

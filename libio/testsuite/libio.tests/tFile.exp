@@ -1,3 +1,0 @@
-test_libio tFile.cc "" tFile.inp tFile.exp ""
-test_libio tFile.cc "" tFile.inp tFile.exp "-b0"
-test_libio tFile.cc "" tFile.inp tFile.exp "-b3"
