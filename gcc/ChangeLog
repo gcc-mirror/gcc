@@ -1,3 +1,8 @@
+2004-07-23  Mike Stump  <mrs@apple.com>
+
+	* c-typeck.c (convert_for_assignment): Tightened up pointer converstions
+	that differ in signedness.
+
 2004-07-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* genmodes.c (make_vector_modes): Mark with ATTRIBUTE_UNUSED.
