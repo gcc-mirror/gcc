@@ -298,7 +298,7 @@ namespace std
      insert(size_type __pos, const _CharT* __s, size_type __n)
      {
        __glibcxx_requires_string_len(__s, __n);
-       __pos = _M_check(__pos, "basic_string::insert");
+       _M_check(__pos, "basic_string::insert");
        if (this->max_size() - this->size() < __n)
 	 __throw_length_error("basic_string::insert");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
@@ -333,7 +333,7 @@ namespace std
 	     size_type __n2)
      {
        __glibcxx_requires_string_len(__s, __n2);
-       __pos = _M_check(__pos, "basic_string::replace");
+       _M_check(__pos, "basic_string::replace");
        __n1 = _M_limit(__pos, __n1);
        if (this->max_size() - (this->size() - __n1) < __n2)
          __throw_length_error("basic_string::replace");
@@ -651,7 +651,7 @@ namespace std
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
       // pointer __str._M_data() formed here.
-      __pos = __str._M_check(__pos, "basic_string::append");
+      __str._M_check(__pos, "basic_string::append");
       __n = __str._M_limit(__pos, __n);
       const size_type __len = __n + this->size();
       if (__len > this->capacity())
@@ -707,7 +707,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     copy(_CharT* __s, size_type __n, size_type __pos) const
     {
-      __pos = _M_check(__pos, "basic_string::copy");
+      _M_check(__pos, "basic_string::copy");
       __n = _M_limit(__pos, __n);
       __glibcxx_requires_string_len(__s, __n);
       if (__n)
@@ -774,13 +774,14 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(_CharT __c, size_type __pos) const
     {
-      const size_type __size = this->size();
+      size_type __size = this->size();
       if (__size)
 	{
-	  __pos = std::min(size_type(__size - 1), __pos);
-	  for (++__pos; __pos-- > 0; )
-	    if (traits_type::eq(_M_data()[__pos], __c))
-	      return __pos;
+	  if (--__size > __pos)
+	    __size = __pos;
+	  for (++__size; __size-- > 0; )
+	    if (traits_type::eq(_M_data()[__size], __c))
+	      return __size;
 	}
       return npos;
     }
@@ -850,16 +851,17 @@ namespace std
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-      const size_type __size = this->size();
+      size_type __size = this->size();
       if (__size)
-	{ 
-	  __pos = std::min(size_type(__size - 1), __pos);
-	  do
+	{
+	  if (--__size > __pos)
+	    __size = __pos;
+ 	  do
 	    {
-	      if (!traits_type::find(__s, __n, _M_data()[__pos]))
-		return __pos;
+	      if (!traits_type::find(__s, __n, _M_data()[__size]))
+		return __size;
 	    } 
-	  while (__pos--);
+	  while (__size--);
 	}
       return npos;
     }
@@ -869,16 +871,17 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(_CharT __c, size_type __pos) const
     {
-      const size_type __size = this->size();
+      size_type __size = this->size();
       if (__size)
 	{
-	  __pos = std::min(size_type(__size - 1), __pos);
+	  if (--__size > __pos)
+	    __size = __pos;	  
 	  do
 	    {
-	      if (!traits_type::eq(_M_data()[__pos], __c))
-		return __pos;
+	      if (!traits_type::eq(_M_data()[__size], __c))
+		return __size;
 	    } 
-	  while (__pos--);
+	  while (__size--);
 	}
       return npos;
     }
@@ -888,7 +891,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n, const basic_string& __str) const
     {
-      __pos = _M_check(__pos, "basic_string::compare");
+      _M_check(__pos, "basic_string::compare");
       __n = _M_limit(__pos, __n);
       const size_type __osize = __str.size();
       const size_type __len = std::min(__n, __osize);
@@ -904,8 +907,8 @@ namespace std
     compare(size_type __pos1, size_type __n1, const basic_string& __str,
 	    size_type __pos2, size_type __n2) const
     {
-      __pos1 = _M_check(__pos1, "basic_string::compare");
-      __pos2 = __str._M_check(__pos2, "basic_string::compare");
+      _M_check(__pos1, "basic_string::compare");
+      __str._M_check(__pos2, "basic_string::compare");
       __n1 = _M_limit(__pos1, __n1);
       __n2 = __str._M_limit(__pos2, __n2);
       const size_type __len = std::min(__n1, __n2);
@@ -937,7 +940,7 @@ namespace std
     compare(size_type __pos, size_type __n1, const _CharT* __s) const
     {
       __glibcxx_requires_string(__s);
-      __pos = _M_check(__pos, "basic_string::compare");
+      _M_check(__pos, "basic_string::compare");
       __n1 = _M_limit(__pos, __n1);
       const size_type __osize = traits_type::length(__s);
       const size_type __len = std::min(__n1, __osize);
@@ -954,7 +957,7 @@ namespace std
 	    size_type __n2) const
     {
       __glibcxx_requires_string_len(__s, __n2);
-      __pos = _M_check(__pos, "basic_string::compare");
+      _M_check(__pos, "basic_string::compare");
       __n1 = _M_limit(__pos, __n1);
       const size_type __len = std::min(__n1, __n2);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
