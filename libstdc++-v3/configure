@@ -4173,7 +4173,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-  for ac_func in nan hypot hypotf atan2f expf copysignf
+  for ac_func in nan hypot hypotf copysignf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:4180: checking for $ac_func" >&5
@@ -14969,7 +14969,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-  for ac_func in nan hypot hypotf atan2f expf copysignf
+  for ac_func in nan hypot hypotf copysignf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:14976: checking for $ac_func" >&5
