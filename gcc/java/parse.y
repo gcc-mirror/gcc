@@ -3635,7 +3635,7 @@ maybe_create_class_interface_decl (decl, raw_name, qualified_name, cl)
   else
     DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
-  CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (TREE_TYPE (decl)) =
+  CLASS_FROM_CURRENTLY_COMPILED_P (TREE_TYPE (decl)) =
     IS_A_COMMAND_LINE_FILENAME_P (EXPR_WFL_FILENAME_NODE (cl));
 
   PUSH_CPC (decl, raw_name);
@@ -5274,7 +5274,12 @@ jdep_resolve_class (dep)
   if (!decl)
     complete_class_report_errors (dep);
   else if (PURE_INNER_CLASS_DECL_P (decl))
-    check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
+    {
+      tree inner = TREE_TYPE (decl);
+      if (! CLASS_LOADED_P (inner))
+	safe_layout_class (inner);
+      check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
+    }
   return decl;
 }
 

@@ -1,9 +1,38 @@
 2001-03-19  Per Bothner  <per@bothner.com>
 
+	Fixes to process to command-line .class files in two passes.
+	* java-tree.h (JAVA_FILE_P, CLASS_FILE_P, ZIP_FILE_P):  New flags.
+	(CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P):  Rename to ..
+	(CLASS_FROM_CURRENTLY_COMPILED_P):  ... because it is more general now.
+	* class.c (is_compiled_class):  Fix for renamed flag.
+	* parse.y (maybe_create_class_interface_decl):  Likewise.
+	* jcf-parse.c (yyparse):  Also set if compiling .class files.
+	* jcf-parse.c (read_class);  Read current_class.
+	(jcf_parse):  Make static.
+	(load_inner_classes):  New function, with code moved from jcf_parse,
+	because we need to inner classes after the command-line files are read.
+	(yyparse):  Set finput to NULL when it doesn't need to be closed.
+	Reduce use of main_jcf (basically only for archive) and
+	use finput instead of main_jcf->read_state.
+	Inline jcf_figure_file_type into yyparse.
+	Set JAVA_FILE_P, CLASS_FILE_P, or ZIP_FILE_P on filename list name.
+	Defer load_inner_classes and parse_class_file to a second pass,
+	after we've correctly mapped command-line .clas fiels to classes.
+	(jcf_figure_file_type):  Removed.
+	* jcf.h (JCF_ZIP, JCF_CLASS, JCF_SOURCE):  Removed flags.
+	(JCF_ZERO):  Also clear zipd field.
+	* zipfile.h:  Conditionalize on JCF_H insread of JCF_ZIP.
+
+2001-03-18  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* jcf-parse.c (yyparse): Change ch from char * to char.
+
+2001-03-19  Per Bothner  <per@bothner.com>
+
 	* jvspec.c (lang_specific_driver):  Check for .zip and .jar files.
 	Add constructed filelist-file at end, following -xjava.  Thus any .o
 	and library files are not affected by the -xjava.  Also wrap
-	explicut @FILE with -xjava and -xnone.
+	explicit @FILE with -xjava and -xnone.
 
 2001-03-19  Andrew Haley  <aph@cambridge.redhat.com>
 

@@ -49,14 +49,17 @@ struct JCF;
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
       BLOCK_IS_IMPLICIT (in BLOCK)
+      JAVA_FILE_P (in TREE_LIST in current_file_list)
    2: RETURN_MAP_ADJUSTED (in TREE_VEC).
       QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
       MODIFY_EXPR_FROM_INITIALIZATION_P (in MODIFY_EXPR)
       CLASS_METHOD_CHECKED_P (in RECORD_TYPE) 
+      CLASS_FILE_P (in TREE_LIST in current_file_list)
    3: IS_AN_IMPORT_ON_DEMAND_P (in IDENTIFIER_NODE)
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       SWITCH_HAS_DEFAULT (in SWITCH_EXPR)
+      ZIP_FILE_P (in TREE_LIST in current_file_list)
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       CALL_USING_SUPER (in CALL_EXPR)
@@ -947,7 +950,6 @@ extern tree get_constant PARAMS ((struct JCF*, int));
 extern tree get_name_constant PARAMS ((struct JCF*, int));
 extern tree get_class_constant PARAMS ((struct JCF*, int));
 extern tree parse_signature PARAMS ((struct JCF *jcf, int sig_index));
-extern void jcf_parse PARAMS ((struct JCF*));
 extern tree add_field PARAMS ((tree, tree, tree, int));
 extern tree add_method PARAMS ((tree, int, tree, tree));
 extern tree add_method_1 PARAMS ((tree, int, tree, tree));
@@ -1138,6 +1140,10 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define METHOD_TRANSIENT(DECL) DECL_LANG_FLAG_6 (DECL)
 
+#define JAVA_FILE_P(NODE) TREE_LANG_FLAG_2 (NODE)
+#define CLASS_FILE_P(NODE) TREE_LANG_FLAG_3 (NODE)
+#define ZIP_FILE_P(NODE) TREE_LANG_FLAG_4 (NODE)
+
 /* Other predicates on method decls  */
 
 #define DECL_CONSTRUCTOR_P(DECL) DECL_LANG_FLAG_7(DECL)
@@ -1291,8 +1297,8 @@ extern tree *type_map;
 /* True of a RECORD_TYPE of a class/interface type (not array type) */
 #define CLASS_P(TYPE) TYPE_LANG_FLAG_4 (TYPE)
 
-/* True if class TYPE was defined in a Java source file compiled. */
-#define CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P(TYPE) \
+/* True if class TYPE was requested (on command line) to be compiled.*/
+#define CLASS_FROM_CURRENTLY_COMPILED_P(TYPE) \
   TYPE_LANG_FLAG_5 (TYPE)
 
 /* True if class TYPE is currently being laid out. Helps in detection
