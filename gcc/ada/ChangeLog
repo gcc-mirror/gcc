@@ -1,3 +1,8 @@
+2001-11-28  Doug Rupp <rupp@gnat.com>
+
+	* init.c: (__gnat_install_handler,VMS): Increase size of alternate 
+	signal stack.
+
 2001-11-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* misc.c (gnat_expand_constant): Move declaration above
