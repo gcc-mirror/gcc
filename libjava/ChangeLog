@@ -1,3 +1,8 @@
+2004-05-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/logging/Level.java
+	(parse): Use == instead of String.equals().
+
 2004-05-06  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* defineclass.cc (_Jv_ClassReader::prepare_pool_entry): Use 

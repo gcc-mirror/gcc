@@ -343,7 +343,7 @@ public class Level implements Serializable
 
     for (int i = 0; i < knownLevels.length; i++)
     {
-      if (name.equals(knownLevels[i].name))
+      if (name == knownLevels[i].name)
 	return knownLevels[i];
     }
     
