@@ -1,3 +1,10 @@
+2004-09-08  Eric Christopher  <echristo@redhat.com>
+
+	* builtins.c (fold_builtin_strlen, fold_builtin_sqrt, fold_builtin_cbrt,
+	fold_builtin_pow, fold_builtin_sin, fold_builtin_cos, fold_builtin_tan,
+	fold_builtin_atan): New functions. Migrate function bodies...
+	(fold_builtin_1): ... from here.
+
 2004-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Correct alignment of
@@ -100,7 +107,7 @@
 	edge block.
 	(replace_phi_with_cond_modify_expr): Select conditional expr args
 	based on true edge basic block.
-	
+
 2004-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-operands.c (add_stmt_operand): Use V_MUST_DEF even for
@@ -149,7 +156,7 @@
 	(gcc_loop_to_lambda_loop): Handle all exit tests.
 	Handle case where we have (invariant >= induction var).
 	(find_induction_var_from_exit_cond): Ditto.
-	
+
 2004-09-08  Jie Zhang  <zhangjie@magima.com.cn>
 
 	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): If type
@@ -289,7 +296,7 @@
 	force operand 0.0 into register in XFmode. Also do not force
 	operand 0.0 into register if !TARGET_CMOVE.
 	* config/i386/i386.md (*cmpfp_0): Delete. Remove comment.
-	(*cmpfp_0_sf, cmpfp_0_df, cmpfp_0_xf): New patterns to 
+	(*cmpfp_0_sf, cmpfp_0_df, cmpfp_0_xf): New patterns to
 	implement ftst x87 instruction.
 	(*fp_jcc_7): New insn pattern. Change corresponding split
 	pattern to handle "general_operand" instead of
@@ -420,7 +427,7 @@
 
 	* cfgrtl.c (rtl_verify_flow_info_1):  Add new edge flag,
 	EDGE_CROSSING, to flags test case.
-	
+
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Deal with '<'
@@ -520,7 +527,7 @@
 	check_format_types, format_type_warning,
 	find_char_info_specifier_index, init_dynamic_asm_fprintf_info,
 	init_dynamic_diag_info, handle_format_attribute): Likewise.
-	* c-gimplify.c (push_context, pop_context, finish_bc_block): 
+	* c-gimplify.c (push_context, pop_context, finish_bc_block):
 	* c-lex.c (c_lex_with_flags, lex_string): Likewise.
 	* c-objc-common.c (c_tree_printer): Likewise.
 	* c-pch.c (pch_init): Likewise.

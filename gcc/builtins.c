@@ -139,6 +139,7 @@ static tree stabilize_va_list (tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_classify_type (tree);
+static tree fold_builtin_strlen (tree);
 static tree fold_builtin_inf (tree, int);
 static tree fold_builtin_nan (tree, tree, int);
 static int validate_arglist (tree, ...);
@@ -148,6 +149,13 @@ static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_cabs (tree, tree);
+static tree fold_builtin_sqrt (tree, tree);
+static tree fold_builtin_cbrt (tree, tree);
+static tree fold_builtin_pow (tree, tree, tree);
+static tree fold_builtin_sin (tree);
+static tree fold_builtin_cos (tree, tree, tree);
+static tree fold_builtin_tan (tree);
+static tree fold_builtin_atan (tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
@@ -6255,6 +6263,29 @@ fold_builtin_classify_type (tree arglist)
 			type_to_class (TREE_TYPE (TREE_VALUE (arglist))));
 }
 
+/* Fold a call to __builtin_strlen.  */
+
+static tree
+fold_builtin_strlen (tree arglist)
+{
+  if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
+    return NULL_TREE;
+  else
+    {
+      tree len = c_strlen (TREE_VALUE (arglist), 0);
+
+      if (len)
+	{
+	  /* Convert from the internal "sizetype" type to "size_t".  */
+	  if (size_type_node)
+	    len = fold_convert (size_type_node, len);
+	  return len;
+	}
+
+      return NULL_TREE;
+    }
+}
+
 /* Fold a call to __builtin_inf or __builtin_huge_val.  */
 
 static tree
@@ -6532,6 +6563,235 @@ fold_builtin_cabs (tree arglist, tree type)
 	  arglist = build_tree_list (NULL_TREE, result);
 	  return build_function_call_expr (sqrtfn, arglist);
 	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Fold a builtin function call to sqrt, sqrtf, or sqrtl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_sqrt (tree arglist, tree type)
+{
+
+  enum built_in_function fcode;
+  tree arg = TREE_VALUE (arglist);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize sqrt of constant value.  */
+  if (TREE_CODE (arg) == REAL_CST
+      && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE r, x;
+
+      x = TREE_REAL_CST (arg);
+      if (real_sqrt (&r, TYPE_MODE (type), &x)
+	  || (!flag_trapping_math && !flag_errno_math))
+	return build_real (type, r);
+    }
+
+  /* Optimize sqrt(expN(x)) = expN(x*0.5).  */
+  fcode = builtin_mathfn_code (arg);
+  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
+    {
+      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+      arg = fold (build2 (MULT_EXPR, type,
+			  TREE_VALUE (TREE_OPERAND (arg, 1)),
+			  build_real (type, dconsthalf)));
+      arglist = build_tree_list (NULL_TREE, arg);
+      return build_function_call_expr (expfn, arglist);
+    }
+
+  /* Optimize sqrt(Nroot(x)) -> pow(x,1/(2*N)).  */
+  if (flag_unsafe_math_optimizations && BUILTIN_ROOT_P (fcode))
+    {
+      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
+
+      if (powfn)
+	{
+	  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
+	  tree tree_root;
+	  /* The inner root was either sqrt or cbrt.  */
+	  REAL_VALUE_TYPE dconstroot =
+	    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconstthird;
+
+	  /* Adjust for the outer root.  */
+	  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
+	  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
+	  tree_root = build_real (type, dconstroot);
+	  arglist = tree_cons (NULL_TREE, arg0,
+			       build_tree_list (NULL_TREE, tree_root));
+	  return build_function_call_expr (powfn, arglist);
+	}
+    }
+
+  /* Optimize sqrt(pow(x,y)) = pow(x,y*0.5).  */
+  if (flag_unsafe_math_optimizations
+      && (fcode == BUILT_IN_POW
+	  || fcode == BUILT_IN_POWF
+	  || fcode == BUILT_IN_POWL))
+    {
+      tree powfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+      tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
+      tree arg1 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg, 1)));
+      tree narg1 = fold (build2 (MULT_EXPR, type, arg1,
+				 build_real (type, dconsthalf)));
+      arglist = tree_cons (NULL_TREE, arg0,
+			   build_tree_list (NULL_TREE, narg1));
+      return build_function_call_expr (powfn, arglist);
+    }
+
+  return NULL_TREE;
+}
+
+/* Fold a builtin function call to cbrt, cbrtf, or cbrtl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_cbrt (tree arglist, tree type)
+{
+  tree arg = TREE_VALUE (arglist);
+  const enum built_in_function fcode = builtin_mathfn_code (arg);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize cbrt of constant value.  */
+  if (real_zerop (arg) || real_onep (arg) || real_minus_onep (arg))
+    return arg;
+
+  /* Optimize cbrt(expN(x)) -> expN(x/3).  */
+  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
+    {
+      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+      const REAL_VALUE_TYPE third_trunc =
+	real_value_truncate (TYPE_MODE (type), dconstthird);
+      arg = fold (build2 (MULT_EXPR, type,
+			  TREE_VALUE (TREE_OPERAND (arg, 1)),
+			  build_real (type, third_trunc)));
+      arglist = build_tree_list (NULL_TREE, arg);
+      return build_function_call_expr (expfn, arglist);
+    }
+
+  /* Optimize cbrt(sqrt(x)) -> pow(x,1/6).  */
+  /* We don't optimize cbrt(cbrt(x)) -> pow(x,1/9) because if
+     x is negative pow will error but cbrt won't.  */
+  if (flag_unsafe_math_optimizations && BUILTIN_SQRT_P (fcode))
+    {
+      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
+
+      if (powfn)
+	{
+	  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
+	  tree tree_root;
+	  REAL_VALUE_TYPE dconstroot = dconstthird;
+
+	  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
+	  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
+	  tree_root = build_real (type, dconstroot);
+	  arglist = tree_cons (NULL_TREE, arg0,
+			       build_tree_list (NULL_TREE, tree_root));
+	  return build_function_call_expr (powfn, arglist);
+	}
+
+    }
+  return NULL_TREE;
+}
+
+/* Fold function call to builtin sin, sinf, or sinl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_sin (tree arglist)
+{
+  tree arg = TREE_VALUE (arglist);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize sin (0.0) = 0.0.  */
+  if (real_zerop (arg))
+    return arg;
+
+  return NULL_TREE;
+}
+
+/* Fold function call to builtin cos, cosf, or cosl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_cos (tree arglist, tree type, tree fndecl)
+{
+  tree arg = TREE_VALUE (arglist);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize cos (0.0) = 1.0.  */
+  if (real_zerop (arg))
+    return build_real (type, dconst1);
+
+  /* Optimize cos(-x) into cos (x).  */
+  if (TREE_CODE (arg) == NEGATE_EXPR)
+    {
+      tree args = build_tree_list (NULL_TREE,
+				   TREE_OPERAND (arg, 0));
+      return build_function_call_expr (fndecl, args);
+    }
+
+  return NULL_TREE;
+}
+
+/* Fold function call to builtin tan, tanf, or tanl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_tan (tree arglist)
+{
+  enum built_in_function fcode;
+  tree arg = TREE_VALUE (arglist);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize tan(0.0) = 0.0.  */
+  if (real_zerop (arg))
+    return arg;
+
+  /* Optimize tan(atan(x)) = x.  */
+  fcode = builtin_mathfn_code (arg);
+  if (flag_unsafe_math_optimizations
+      && (fcode == BUILT_IN_ATAN
+	  || fcode == BUILT_IN_ATANF
+	  || fcode == BUILT_IN_ATANL))
+    return TREE_VALUE (TREE_OPERAND (arg, 1));
+
+  return NULL_TREE;
+}
+
+/* Fold function call to builtin atan, atanf, or atanl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_atan (tree arglist, tree type)
+{
+
+  tree arg = TREE_VALUE (arglist);
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize atan(0.0) = 0.0.  */
+  if (real_zerop (arg))
+    return arg;
+
+  /* Optimize atan(1.0) = pi/4.  */
+  if (real_onep (arg))
+    {
+      REAL_VALUE_TYPE cst;
+
+      real_convert (&cst, TYPE_MODE (type), &dconstpi);
+      SET_REAL_EXP (&cst, REAL_EXP (&cst) - 2);
+      return build_real (type, cst);
     }
 
   return NULL_TREE;
@@ -6933,6 +7193,117 @@ fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
     }
 
   return 0;
+}
+
+/* Fold a builtin function call to pow, powf, or powl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_pow (tree fndecl, tree arglist, tree type)
+{
+  enum built_in_function fcode;
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize pow(1.0,y) = 1.0.  */
+  if (real_onep (arg0))
+    return omit_one_operand (type, build_real (type, dconst1), arg1);
+
+  if (TREE_CODE (arg1) == REAL_CST
+      && ! TREE_CONSTANT_OVERFLOW (arg1))
+    {
+      REAL_VALUE_TYPE c;
+      c = TREE_REAL_CST (arg1);
+
+      /* Optimize pow(x,0.0) = 1.0.  */
+      if (REAL_VALUES_EQUAL (c, dconst0))
+	return omit_one_operand (type, build_real (type, dconst1),
+				 arg0);
+
+      /* Optimize pow(x,1.0) = x.  */
+      if (REAL_VALUES_EQUAL (c, dconst1))
+	return arg0;
+
+      /* Optimize pow(x,-1.0) = 1.0/x.  */
+      if (REAL_VALUES_EQUAL (c, dconstm1))
+	return fold (build2 (RDIV_EXPR, type,
+			     build_real (type, dconst1), arg0));
+
+      /* Optimize pow(x,0.5) = sqrt(x).  */
+      if (flag_unsafe_math_optimizations
+	  && REAL_VALUES_EQUAL (c, dconsthalf))
+	{
+	  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+
+	  if (sqrtfn != NULL_TREE)
+	    {
+	      tree arglist = build_tree_list (NULL_TREE, arg0);
+	      return build_function_call_expr (sqrtfn, arglist);
+	    }
+	}
+
+      /* Attempt to evaluate pow at compile-time.  */
+      if (TREE_CODE (arg0) == REAL_CST
+	  && ! TREE_CONSTANT_OVERFLOW (arg0))
+	{
+	  REAL_VALUE_TYPE cint;
+	  HOST_WIDE_INT n;
+
+	  n = real_to_integer (&c);
+	  real_from_integer (&cint, VOIDmode, n,
+			     n < 0 ? -1 : 0, 0);
+	  if (real_identical (&c, &cint))
+	    {
+	      REAL_VALUE_TYPE x;
+	      bool inexact;
+
+	      x = TREE_REAL_CST (arg0);
+	      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
+	      if (flag_unsafe_math_optimizations || !inexact)
+		return build_real (type, x);
+	    }
+	}
+    }
+
+  /* Optimize pow(expN(x),y) = expN(x*y).  */
+  fcode = builtin_mathfn_code (arg0);
+  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
+    {
+      tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+      tree arg = TREE_VALUE (TREE_OPERAND (arg0, 1));
+      arg = fold (build2 (MULT_EXPR, type, arg, arg1));
+      arglist = build_tree_list (NULL_TREE, arg);
+      return build_function_call_expr (expfn, arglist);
+    }
+
+  /* Optimize pow(sqrt(x),y) = pow(x,y*0.5).  */
+  if (flag_unsafe_math_optimizations && BUILTIN_SQRT_P (fcode))
+    {
+      tree narg0 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+      tree narg1 = fold (build2 (MULT_EXPR, type, arg1,
+				 build_real (type, dconsthalf)));
+
+      arglist = tree_cons (NULL_TREE, narg0,
+			   build_tree_list (NULL_TREE, narg1));
+      return build_function_call_expr (fndecl, arglist);
+    }
+
+  /* Optimize pow(pow(x,y),z) = pow(x,y*z).  */
+  if (flag_unsafe_math_optimizations
+      && (fcode == BUILT_IN_POW
+	  || fcode == BUILT_IN_POWF
+	  || fcode == BUILT_IN_POWL))
+    {
+      tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+      tree arg01 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg0, 1)));
+      tree narg1 = fold (build2 (MULT_EXPR, type, arg01, arg1));
+      arglist = tree_cons (NULL_TREE, arg00,
+			   build_tree_list (NULL_TREE, narg1));
+      return build_function_call_expr (fndecl, arglist);
+    }
+  return NULL_TREE;
 }
 
 /* A subroutine of fold_builtin to fold the various exponent
@@ -7834,18 +8205,7 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_classify_type (arglist);
 
     case BUILT_IN_STRLEN:
-      if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
-	{
-	  tree len = c_strlen (TREE_VALUE (arglist), 0);
-	  if (len)
-	    {
-	      /* Convert from the internal "sizetype" type to "size_t".  */
-	      if (size_type_node)
-		len = fold_convert (size_type_node, len);
-	      return len;
-	    }
-	}
-      break;
+      return fold_builtin_strlen (arglist);
 
     case BUILT_IN_FABS:
     case BUILT_IN_FABSF:
@@ -7889,159 +8249,22 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  enum built_in_function fcode;
-	  tree arg = TREE_VALUE (arglist);
-
-	  /* Optimize sqrt of constant value.  */
-	  if (TREE_CODE (arg) == REAL_CST
-	      && ! TREE_CONSTANT_OVERFLOW (arg))
-	    {
-	      REAL_VALUE_TYPE r, x;
-
-	      x = TREE_REAL_CST (arg);
-	      if (real_sqrt (&r, TYPE_MODE (type), &x)
-		  || (!flag_trapping_math && !flag_errno_math))
-		return build_real (type, r);
-	    }
-
-	  /* Optimize sqrt(expN(x)) = expN(x*0.5).  */
-	  fcode = builtin_mathfn_code (arg);
-	  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
-	    {
-	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	      arg = fold (build2 (MULT_EXPR, type,
-				  TREE_VALUE (TREE_OPERAND (arg, 1)),
-				  build_real (type, dconsthalf)));
-	      arglist = build_tree_list (NULL_TREE, arg);
-	      return build_function_call_expr (expfn, arglist);
-	    }
-
-	  /* Optimize sqrt(Nroot(x)) -> pow(x,1/(2*N)).  */
-	  if (flag_unsafe_math_optimizations && BUILTIN_ROOT_P (fcode))
-	    {
-	      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
-
-	      if (powfn)
-	        {
-		  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
-		  tree tree_root;
-		  /* The inner root was either sqrt or cbrt.  */
-		  REAL_VALUE_TYPE dconstroot =
-		    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconstthird;
-
-		  /* Adjust for the outer root.  */
-		  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
-		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
-		  tree_root = build_real (type, dconstroot);
-		  arglist = tree_cons (NULL_TREE, arg0,
-				       build_tree_list (NULL_TREE, tree_root));
-		  return build_function_call_expr (powfn, arglist);
-		}
-	    }
-
-	  /* Optimize sqrt(pow(x,y)) = pow(x,y*0.5).  */
-	  if (flag_unsafe_math_optimizations
-	      && (fcode == BUILT_IN_POW
-		  || fcode == BUILT_IN_POWF
-		  || fcode == BUILT_IN_POWL))
-	    {
-	      tree powfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	      tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
-	      tree arg1 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg, 1)));
-	      tree narg1 = fold (build2 (MULT_EXPR, type, arg1,
-					 build_real (type, dconsthalf)));
-	      arglist = tree_cons (NULL_TREE, arg0,
-				   build_tree_list (NULL_TREE, narg1));
-	      return build_function_call_expr (powfn, arglist);
-	    }
-	}
-      break;
+      return fold_builtin_sqrt (arglist, type);
 
     case BUILT_IN_CBRT:
     case BUILT_IN_CBRTF:
     case BUILT_IN_CBRTL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  tree arg = TREE_VALUE (arglist);
-	  const enum built_in_function fcode = builtin_mathfn_code (arg);
-
-	  /* Optimize cbrt of constant value.  */
-	  if (real_zerop (arg) || real_onep (arg) || real_minus_onep (arg))
-	    return arg;
-
-	  /* Optimize cbrt(expN(x)) -> expN(x/3).  */
-	  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
-	    {
-	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	      const REAL_VALUE_TYPE third_trunc =
-		real_value_truncate (TYPE_MODE (type), dconstthird);
-	      arg = fold (build2 (MULT_EXPR, type,
-				  TREE_VALUE (TREE_OPERAND (arg, 1)),
-				  build_real (type, third_trunc)));
-	      arglist = build_tree_list (NULL_TREE, arg);
-	      return build_function_call_expr (expfn, arglist);
-	    }
-
-	  /* Optimize cbrt(sqrt(x)) -> pow(x,1/6).  */
-	  /* We don't optimize cbrt(cbrt(x)) -> pow(x,1/9) because if
-             x is negative pow will error but cbrt won't.  */
-	  if (flag_unsafe_math_optimizations && BUILTIN_SQRT_P (fcode))
-	    {
-	      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
-
-	      if (powfn)
-	        {
-		  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
-		  tree tree_root;
-		  REAL_VALUE_TYPE dconstroot = dconstthird;
-
-		  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
-		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
-		  tree_root = build_real (type, dconstroot);
-		  arglist = tree_cons (NULL_TREE, arg0,
-				       build_tree_list (NULL_TREE, tree_root));
-		  return build_function_call_expr (powfn, arglist);
-		}
-
-	    }
-	}
-      break;
+      return fold_builtin_cbrt (arglist, type);
 
     case BUILT_IN_SIN:
     case BUILT_IN_SINF:
     case BUILT_IN_SINL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  tree arg = TREE_VALUE (arglist);
-
-	  /* Optimize sin(0.0) = 0.0.  */
-	  if (real_zerop (arg))
-	    return arg;
-	}
-      break;
+      return fold_builtin_sin (arglist);
 
     case BUILT_IN_COS:
     case BUILT_IN_COSF:
     case BUILT_IN_COSL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  tree arg = TREE_VALUE (arglist);
-
-	  /* Optimize cos(0.0) = 1.0.  */
-	  if (real_zerop (arg))
-	    return build_real (type, dconst1);
-
-	  /* Optimize cos(-x) into cos(x).  */
-	  if (TREE_CODE (arg) == NEGATE_EXPR)
-	    {
-	      tree arglist = build_tree_list (NULL_TREE,
-					      TREE_OPERAND (arg, 0));
-	      return build_function_call_expr (fndecl, arglist);
-	    }
-	}
-      break;
+      return fold_builtin_cos (arglist, type, fndecl);
 
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
@@ -8079,155 +8302,17 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_TAN:
     case BUILT_IN_TANF:
     case BUILT_IN_TANL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  enum built_in_function fcode;
-	  tree arg = TREE_VALUE (arglist);
-
-	  /* Optimize tan(0.0) = 0.0.  */
-	  if (real_zerop (arg))
-	    return arg;
-
-	  /* Optimize tan(atan(x)) = x.  */
-	  fcode = builtin_mathfn_code (arg);
-	  if (flag_unsafe_math_optimizations
-	      && (fcode == BUILT_IN_ATAN
-		  || fcode == BUILT_IN_ATANF
-		  || fcode == BUILT_IN_ATANL))
-	    return TREE_VALUE (TREE_OPERAND (arg, 1));
-	}
-      break;
+      return fold_builtin_tan (arglist);
 
     case BUILT_IN_ATAN:
     case BUILT_IN_ATANF:
     case BUILT_IN_ATANL:
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	{
-	  tree arg = TREE_VALUE (arglist);
-
-	  /* Optimize atan(0.0) = 0.0.  */
-	  if (real_zerop (arg))
-	    return arg;
-
-	  /* Optimize atan(1.0) = pi/4.  */
-	  if (real_onep (arg))
-	    {
-	      REAL_VALUE_TYPE cst;
-
-	      real_convert (&cst, TYPE_MODE (type), &dconstpi);
-	      SET_REAL_EXP (&cst, REAL_EXP (&cst) - 2);
-	      return build_real (type, cst);
-	    }
-	}
-      break;
+      return fold_builtin_atan (arglist, type);
 
     case BUILT_IN_POW:
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
-      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-	{
-	  enum built_in_function fcode;
-	  tree arg0 = TREE_VALUE (arglist);
-	  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-
-	  /* Optimize pow(1.0,y) = 1.0.  */
-	  if (real_onep (arg0))
-	    return omit_one_operand (type, build_real (type, dconst1), arg1);
-
-	  if (TREE_CODE (arg1) == REAL_CST
-	      && ! TREE_CONSTANT_OVERFLOW (arg1))
-	    {
-	      REAL_VALUE_TYPE c;
-	      c = TREE_REAL_CST (arg1);
-
-	      /* Optimize pow(x,0.0) = 1.0.  */
-	      if (REAL_VALUES_EQUAL (c, dconst0))
-		return omit_one_operand (type, build_real (type, dconst1),
-					 arg0);
-
-	      /* Optimize pow(x,1.0) = x.  */
-	      if (REAL_VALUES_EQUAL (c, dconst1))
-		return arg0;
-
-	      /* Optimize pow(x,-1.0) = 1.0/x.  */
-	      if (REAL_VALUES_EQUAL (c, dconstm1))
-		return fold (build2 (RDIV_EXPR, type,
-				     build_real (type, dconst1), arg0));
-
-	      /* Optimize pow(x,0.5) = sqrt(x).  */
-	      if (flag_unsafe_math_optimizations
-		  && REAL_VALUES_EQUAL (c, dconsthalf))
-		{
-		  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-
-		  if (sqrtfn != NULL_TREE)
-		    {
-		      tree arglist = build_tree_list (NULL_TREE, arg0);
-		      return build_function_call_expr (sqrtfn, arglist);
-		    }
-		}
-
-	      /* Attempt to evaluate pow at compile-time.  */
-	      if (TREE_CODE (arg0) == REAL_CST
-		  && ! TREE_CONSTANT_OVERFLOW (arg0))
-		{
-		  REAL_VALUE_TYPE cint;
-		  HOST_WIDE_INT n;
-
-		  n = real_to_integer (&c);
-		  real_from_integer (&cint, VOIDmode, n,
-				     n < 0 ? -1 : 0, 0);
-		  if (real_identical (&c, &cint))
-		    {
-		      REAL_VALUE_TYPE x;
-		      bool inexact;
-
-		      x = TREE_REAL_CST (arg0);
-		      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
-		      if (flag_unsafe_math_optimizations || !inexact)
-			return build_real (type, x);
-		    }
-		}
-	    }
-
-	  /* Optimize pow(expN(x),y) = expN(x*y).  */
-	  fcode = builtin_mathfn_code (arg0);
-	  if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))
-	    {
-	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-	      tree arg = TREE_VALUE (TREE_OPERAND (arg0, 1));
-	      arg = fold (build2 (MULT_EXPR, type, arg, arg1));
-	      arglist = build_tree_list (NULL_TREE, arg);
-	      return build_function_call_expr (expfn, arglist);
-	    }
-
-	  /* Optimize pow(sqrt(x),y) = pow(x,y*0.5).  */
-	  if (flag_unsafe_math_optimizations && BUILTIN_SQRT_P (fcode))
-	    {
-	      tree narg0 = TREE_VALUE (TREE_OPERAND (arg0, 1));
-	      tree narg1 = fold (build2 (MULT_EXPR, type, arg1,
-					 build_real (type, dconsthalf)));
-
-	      arglist = tree_cons (NULL_TREE, narg0,
-				   build_tree_list (NULL_TREE, narg1));
-	      return build_function_call_expr (fndecl, arglist);
-	    }
-
-	  /* Optimize pow(pow(x,y),z) = pow(x,y*z).  */
-	  if (flag_unsafe_math_optimizations
-	      && (fcode == BUILT_IN_POW
-		  || fcode == BUILT_IN_POWF
-		  || fcode == BUILT_IN_POWL))
-	    {
-	      tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
-	      tree arg01 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg0, 1)));
-	      tree narg1 = fold (build2 (MULT_EXPR, type, arg01, arg1));
-	      arglist = tree_cons (NULL_TREE, arg00,
-				   build_tree_list (NULL_TREE, narg1));
-	      return build_function_call_expr (fndecl, arglist);
-	    }
-	}
-      break;
+      return fold_builtin_pow (fndecl, arglist, type);
 
     case BUILT_IN_INF:
     case BUILT_IN_INFF:
