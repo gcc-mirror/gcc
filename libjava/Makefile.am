@@ -2225,6 +2225,7 @@ gnu/java/nio/NIODatagramSocket.java \
 gnu/java/nio/NIOServerSocket.java \
 gnu/java/nio/NIOSocket.java \
 gnu/java/nio/ChannelInputStream.java \
+gnu/java/nio/ChannelOutputStream.java \
 gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/OutputStreamChannel.java \
 gnu/java/nio/PipeImpl.java \
