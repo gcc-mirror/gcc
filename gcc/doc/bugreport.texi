@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -76,8 +76,8 @@ compiler bug.
 @item
 If the compiler does not produce an error message for invalid input,
 that is a compiler bug.  However, you should note that your idea of
-``invalid input'' might be my idea of ``an extension'' or ``support
-for traditional practice''.
+``invalid input'' might be someone else's idea of ``an extension'' or
+``support for traditional practice''.
 
 @item
 If you are an experienced user of one of the languages GCC supports, your
@@ -88,7 +88,7 @@ suggestions for improvement of GCC are welcome in any case.
 @section How and where to Report Bugs
 @cindex compiler bugs, reporting
 
-Bugs should be reported to our bug database.  Please refer to
+Bugs should be reported to the GCC bug database.  Please refer to
 @uref{http://gcc.gnu.org/bugs.html} for up-to-date instructions how to
 submit bug reports.  Copies of this file in HTML (@file{bugs.html}) and
 plain text (@file{BUGS}) are also part of GCC releases.

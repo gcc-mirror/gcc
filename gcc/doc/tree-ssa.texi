@@ -408,7 +408,7 @@ block exits, the cleanup is run.
 
 @code{TRY_FINALLY_EXPR} complicates the flow graph, since the cleanup
 needs to appear on every edge out of the controlled block; this
-reduces our freedom to move code across these edges.  Therefore, the
+reduces the freedom to move code across these edges.  Therefore, the
 EH lowering pass which runs before most of the optimization passes
 eliminates these expressions by explicitly adding the cleanup to each
 edge.
