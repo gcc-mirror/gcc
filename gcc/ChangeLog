@@ -1,3 +1,8 @@
+Tue Jul  7 11:40:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.md (various zero/sign extension patterns): zero and sign
+	extensions which use "sub" clobber cc0.
+
 Tue Jul 7 09:12:08 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
