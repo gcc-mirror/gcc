@@ -1,63 +1,86 @@
+	.arch ev6
 
-# This is BROKEN on a 21264 running gcc, and probably in other cases.
-# The compiler may spill pointers to fp registers, and this code doesn't
-# scan those.
-
-# define call_push(x)    						\
-	lda   $16, 0(x);    	/* copy x to first argument register */	\
-	jsr   $26, GC_push_one; /* call GC_push_one, ret addr in $26 */	\
-	ldgp  $gp, 0($26)	/* restore $gp register from $ra */
-	
         .text
         .align  4
         .globl  GC_push_regs
         .ent    GC_push_regs 2
 GC_push_regs:
-	ldgp    $gp, 0($27)		# set gp from the procedure value reg
-	lda     $sp, -32($sp)		# make stack frame
-	stq     $26, 8($sp)		# save return address
-        .mask   0x04000000, -8
+	ldgp    $gp, 0($27)
+	lda     $sp, -16($sp)
+	stq     $26, 0($sp)
+        .mask   0x04000000, 0
         .frame  $sp, 16, $26, 0
 
- #      call_push($0)    # expression eval and int func result
+ # $0		integer result
+ # $1-$8	temp regs - not preserved cross calls
+ # $9-$15	call saved regs
+ # $16-$21	argument regs - not preserved cross calls
+ # $22-$28	temp regs - not preserved cross calls
+ # $29		global pointer - not preserved cross calls
+ # $30		stack pointer
 
- #      call_push($1)    # temp regs - not preserved cross calls
- #      call_push($2)
- #      call_push($3)
- #      call_push($4)
- #      call_push($5)
- #      call_push($6)
- #      call_push($7)
- #      call_push($8)
-
-        call_push($9)    # Saved regs
+# define call_push(x)			\
+	mov   x, $16;			\
+	jsr   $26, GC_push_one;		\
+	ldgp  $gp, 0($26)
+	
+        call_push($9)
         call_push($10)
         call_push($11)
         call_push($12)
         call_push($13)
         call_push($14)
+        call_push($15)
 
-        call_push($15)   # frame ptr or saved reg
+ # $f0-$f1	floating point results
+ # $f2-$f9	call saved regs
+ # $f10-$f30	temp regs - not preserved cross calls
 
- #      call_push($16)   # argument regs - not preserved cross calls
- #      call_push($17)
- #      call_push($18)
- #      call_push($19)
- #      call_push($20)
- #      call_push($21)
+	# Use the most efficient transfer method for this hardware.
+	# Bit 1 detects the FIX extension, which includes ftoit.
+	amask	2, $0
+	bne	$0, $use_stack
 
- #      call_push($22)   # temp regs - not preserved cross calls
- #      call_push($23)
- #      call_push($24)
- #      call_push($25)
+#undef call_push
+#define call_push(x)			\
+	ftoit	x, $16;			\
+	jsr	$26, GC_push_one;	\
+	ldgp	$gp, 0($26)
 
- #      call_push($26)   # return address - expression eval
- #      call_push($27)   # procedure value or temporary reg
- #      call_push($28)   # assembler temp - not presrved
-        call_push($29)   # Global Pointer
- #      call_push($30)   # Stack Pointer
+	call_push($f2)
+	call_push($f3)
+	call_push($f4)
+	call_push($f5)
+	call_push($f6)
+	call_push($f7)
+	call_push($f8)
+	call_push($f9)
 
-	ldq     $26, 8($sp)		# restore return address
-	lda     $sp, 32($sp)		# pop stack frame
-	ret     $31, ($26), 1		# return ($31 == hardwired zero)
+	ldq     $26, 0($sp)
+	lda     $sp, 16($sp)
+	ret     $31, ($26), 1
+
+	.align	4
+$use_stack:
+
+#undef call_push
+#define call_push(x)			\
+	stt	x, 8($sp);		\
+	ldq	$16, 8($sp);		\
+	jsr	$26, GC_push_one;	\
+	ldgp	$gp, 0($26)
+
+	call_push($f2)
+	call_push($f3)
+	call_push($f4)
+	call_push($f5)
+	call_push($f6)
+	call_push($f7)
+	call_push($f8)
+	call_push($f9)
+
+	ldq     $26, 0($sp)
+	lda     $sp, 16($sp)
+	ret     $31, ($26), 1
+
 	.end    GC_push_regs
