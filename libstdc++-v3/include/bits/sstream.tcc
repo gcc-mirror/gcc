@@ -47,8 +47,9 @@ namespace std
     pbackfail(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
-      bool __testpos = this->_M_in_cur && this->_M_in_beg < this->_M_in_cur; 
+      const bool __testeof = 
+	traits_type::eq_int_type(__c, traits_type::eof());
+      const bool __testpos = this->_M_in_beg < this->_M_in_cur; 
       
       // Try to put back __c into input sequence in one of three ways.
       // Order these tests done in is unspecified by the standard.
@@ -80,11 +81,12 @@ namespace std
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     overflow(int_type __c)
     {
-      bool __testout = this->_M_mode & ios_base::out;
+      const bool __testout = this->_M_mode & ios_base::out;
       if (__builtin_expect(!__testout, false))
 	return traits_type::eof();
 
-      bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
+      const bool __testeof =
+	traits_type::eq_int_type(__c, traits_type::eof());
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
@@ -94,7 +96,7 @@ namespace std
       // suit particular needs.
       __size_type __len = std::max(__size_type(_M_string.capacity() + 1),
 				   __size_type(512));
-      bool __testput = this->_M_out_cur < this->_M_out_end;
+      const bool __testput = this->_M_out_cur < this->_M_out_end;
       if (__builtin_expect(!__testput && __len > _M_string.max_size(), false))
 	return traits_type::eof();
 
@@ -123,7 +125,7 @@ namespace std
       pos_type __ret =  pos_type(off_type(-1)); 
       bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
       bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-      bool __testboth = __testin && __testout && __way != ios_base::cur;
+      const bool __testboth = __testin && __testout && __way != ios_base::cur;
       __testin &= !(__mode & ios_base::out);
       __testout &= !(__mode & ios_base::in);
 
@@ -189,8 +191,8 @@ namespace std
 	  off_type __pos = __sp; // Use streamoff operator to do conversion.
 	  char_type* __beg = NULL;
 	  char_type* __end = NULL;
-	  bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
-	  bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
+	  const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
+	  const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
 	  
 	  // NB: Ordered.
 	  bool __testposi = false;

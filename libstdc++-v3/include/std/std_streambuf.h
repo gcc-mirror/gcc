@@ -452,12 +452,10 @@ namespace std
       int_type 
       sgetc()
       {
-	int_type __ret;
 	if (_M_in_cur < _M_in_end)
-	  __ret = traits_type::to_int_type(*(this->gptr()));
+	  return traits_type::to_int_type(*(this->gptr()));
 	else 
-	  __ret = this->underflow();
-	return __ret;
+	  return this->underflow();
       }
 
       /**

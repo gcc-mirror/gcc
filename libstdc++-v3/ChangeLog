@@ -1,3 +1,18 @@
+2003-04-20  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/sstream.tcc (pbackfail): Remove redundant
+	NULL pointer check from test involving _M_in_*.
+	(overflow, seekoff, seekpos): Const qualify bool variables.
+	* include/std/std_sstream.h (underflow): Remove redundant
+	NULL pointer check from test involving _M_in_*.
+	(_M_really_sync): Const qualify bool variables.
+	* src/fstream.cc (_M_underflow_common): Remove redundant
+	NULL pointer check from test involving _M_in_*, const qualify
+	bool variables.
+
+	* include/std/std_streambuf.h (sgetc): Remove redundant
+	variable.
+
 2003-04-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	According to 5.9 para 2 (second bullet) for pointers p, q
