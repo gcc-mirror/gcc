@@ -218,6 +218,7 @@ if [ "${SUBDIRS}" != "" ] ; then
   echo >&2 '	"prefix=$(prefix)" \'
   echo >&2 '	"exec_prefix=$(exec_prefix)" \'
   echo >&2 '	"tooldir=$(tooldir)" \'
+  echo >&2 '	"gxx_include_dir=$(gxx_include_dir)" \'
   echo >&2 '	"AR=$(AR)" \'
   echo >&2 '	"AR_FLAGS=$(AR_FLAGS)" \'
   echo >&2 '	"CC=$(CC)" \'
@@ -453,7 +454,7 @@ echo >&2 ''
 echo >&2 '.NOEXPORT:'
 echo >&2 'MAKEOVERRIDES='
 
-cat <<"EOF"
+cat >&2 <<"EOF"
 DEPEND_SOURCES = ${srcdir}/*.cc ${srcdir}/*.c
 depend.new:
 # The sed script below attempts to make the depend output portable.
