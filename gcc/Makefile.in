@@ -1906,9 +1906,9 @@ cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
 	libcpp.a $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h machmode.h system.h
 
-cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h
+cpplib.o: cpplib.c $(CONFIG_H) cpplib.h machmode.h cpphash.h config.status system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1917,15 +1917,15 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h machmode.h system.h
 
-cppexp.o: cppexp.c $(CONFIG_H) cpplib.h system.h
+cppexp.o: cppexp.c $(CONFIG_H) cpplib.h machmode.h system.h
 
-cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h system.h
+cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h machmode.h system.h
 
-cpphash.o: cpphash.c cpplib.h cpphash.h $(CONFIG_H) system.h
+cpphash.o: cpphash.c cpplib.h machmode.h cpphash.h $(CONFIG_H) system.h
 
-cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h system.h
+cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h machmode.h system.h
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -2142,10 +2142,10 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o libcpp.a $(HOST_LIBS)
 
 fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
-	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
+	xsys-protos.h $(build_xm_file) system.h cpplib.h machmode.h cpphash.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
-scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h
+scan-decls.o: scan-decls.c scan.h cpplib.h machmode.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.
