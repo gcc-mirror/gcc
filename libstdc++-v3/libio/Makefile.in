@@ -85,11 +85,13 @@ LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
+STRIP = @STRIP@
 THREADDEPS = @THREADDEPS@
 THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
@@ -109,19 +111,13 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_INCLUDES = @GLIBCPP_NEED_LIBIO_TRUE@\
-@GLIBCPP_NEED_LIBIO_TRUE@	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_INCLUDES = 	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_INCLUDES = 
 
-CONFIG_INCLUDES = \
-	-I$(top_srcdir)/@cpu_include_dir@ \
-	-I$(top_srcdir)/@ctype_include_dir@
+CONFIG_INCLUDES =  	-I$(top_srcdir)/@cpu_include_dir@ 	-I$(top_srcdir)/@ctype_include_dir@
 
 
-INCLUDES = \
-	-nostdinc++ -I$(top_srcdir) \
-	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)	
+INCLUDES =  	-nostdinc++ -I$(top_srcdir) 	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) 	$(TOPLEVEL_INCLUDES)	
 
 
 noinst_LTLIBRARIES = libio.la
@@ -129,40 +125,32 @@ noinst_LTLIBRARIES = libio.la
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set.
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-AC_CFLAGS = \
-	$(WERROR) @CPU_FLAGS@ @DEBUG_FLAGS@ 
+AC_CFLAGS =  	$(WERROR) @CPU_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Need to manually set this option because AC_CXXFLAGS has to be at
 # the end of the compile line so that -O2 can be overridden as the
 # occasion call for it. (ie, --enable-debug)
-AM_CFLAGS = \
-	-D_GNU_SOURCE $(AC_CFLAGS) 
+AM_CFLAGS =  	-D_GNU_SOURCE $(AC_CFLAGS) 
 
 
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(CFLAGS) \
-	$(AM_CFLAGS) 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(CFLAGS) 	$(AM_CFLAGS) 
 
 
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) \$(CPPFLAGS)  $(CFLAGS) $(AM_CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) 	$(AM_CPPFLAGS) \$(CPPFLAGS)  $(CFLAGS) $(AM_CFLAGS)
 
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(CFLAGS) $(AM_CFLAGS) $(LDFLAGS) -o $@
 
 #includes = 
 
-libio_headers = \
-        libio.h libioP.h iolibio.h
+libio_headers =          libio.h libioP.h iolibio.h
 
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = @GLIBCPP_NEED_LIBIO_TRUE@\
-@GLIBCPP_NEED_LIBIO_TRUE@	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = 	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = 
-@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = @GLIBCPP_NEED_WLIBIO_TRUE@\
-@GLIBCPP_NEED_WLIBIO_TRUE@	iofwide.c wfiledoalloc.c wfileops.c wgenops.c
+@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = 	iofwide.c wfiledoalloc.c wfileops.c wgenops.c
 @GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = 
-@GLIBCPP_NEED_XTRA_LIBIO_TRUE@LIBIO_XTRASRCS = @GLIBCPP_NEED_XTRA_LIBIO_TRUE@\
-@GLIBCPP_NEED_XTRA_LIBIO_TRUE@	iofclose.c iofopen.c stdio.c
+@GLIBCPP_NEED_XTRA_LIBIO_TRUE@LIBIO_XTRASRCS = 	iofclose.c iofopen.c stdio.c
 @GLIBCPP_NEED_XTRA_LIBIO_FALSE@LIBIO_XTRASRCS = 
 
 EXTRA_DIST = iostreamP.h
@@ -251,7 +239,7 @@ OBJECTS = $(libio_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --cygnus libio/Makefile
 
@@ -272,6 +260,11 @@ maintainer-clean-noinstLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -280,6 +273,7 @@ maintainer-clean-noinstLTLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
