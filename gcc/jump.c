@@ -1191,7 +1191,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     TEMP3 to the condition being tested.
 	     TEMP4 to the earliest insn used to find the condition.  */
 
-	  if (BRANCH_COST >= 2
+	  if ((BRANCH_COST >= 2
+#ifdef HAVE_incscc
+	       || HAVE_incscc
+#endif
+	      )
 	      && ! reload_completed
 	      && this_is_condjump && ! this_is_simplejump
 	      && (temp = next_nonnote_insn (insn)) != 0
