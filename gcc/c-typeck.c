@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -88,6 +88,8 @@ static tree digest_init			PROTO((tree, tree, int, int));
 static void check_init_type_bitfields	PROTO((tree));
 static void output_init_element		PROTO((tree, tree, tree, int));
 static void output_pending_init_elements PROTO((int));
+static void add_pending_init		PROTO((tree, tree));
+static int pending_init_member		PROTO((tree));
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -5094,11 +5096,23 @@ static int constructor_erroneous;
 /* 1 if have called defer_addressed_constants.  */
 static int constructor_subconstants_deferred;
 
-/* List of pending elements at this constructor level.
+/* Structure for managing pending initializer elements, organized as an
+   AVL tree.  */
+
+struct init_node
+{
+  struct init_node *left, *right;
+  struct init_node *parent;
+  int balance;
+  tree purpose;
+  tree value;
+};
+
+/* Tree of pending elements at this constructor level.
    These are elements encountered out of order
    which belong at places we haven't reached yet in actually
    writing the output.  */
-static tree constructor_pending_elts;
+static struct init_node *constructor_pending_elts;
 
 /* The SPELLING_DEPTH of this constructor.  */
 static int constructor_depth;
@@ -5148,7 +5162,7 @@ struct constructor_stack
   tree bit_index;
   tree elements;
   int offset;
-  tree pending_elts;
+  struct init_node *pending_elts;
   int depth;
   /* If nonzero, this value should replace the entire
      constructor at this level.  */
@@ -5885,6 +5899,251 @@ set_init_label (fieldname)
     }
 }
 
+/* Add a new initializer to the tree of pending initializers.  PURPOSE
+   indentifies the initializer, either array index or field in a structure. 
+   VALUE is the value of that index or field.  */
+
+static void
+add_pending_init (purpose, value)
+     tree purpose, value;
+{
+  struct init_node *p, **q, *r;
+
+  q = &constructor_pending_elts;
+  p = 0;
+
+  if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      while (*q != 0)
+	{
+	  p = *q;
+	  if (tree_int_cst_lt (purpose, p->purpose))
+	    q = &p->left;
+	  else if (tree_int_cst_lt (p->purpose, purpose))
+	    q = &p->right;
+	  else
+	    abort ();
+	}
+    }
+  else
+    {
+      while (*q != NULL)
+	{
+	  p = *q;
+	  if (tree_int_cst_lt (DECL_FIELD_BITPOS (purpose),
+			       DECL_FIELD_BITPOS (p->purpose)))
+	    q = &p->left;
+	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (p->purpose),
+				    DECL_FIELD_BITPOS (purpose)))
+	    q = &p->right;
+	  else
+	    abort ();
+	}
+    }
+
+  r = (struct init_node *) oballoc (sizeof (struct init_node));
+  r->purpose = purpose;
+  r->value = value;
+
+  *q = r;
+  r->parent = p;
+  r->left = 0;
+  r->right = 0;
+  r->balance = 0;
+
+  while (p)
+    {
+      struct init_node *s;
+
+      if (r == p->left)
+	{
+	  if (p->balance == 0)
+	    p->balance = -1;
+	  else if (p->balance < 0)
+	    {
+	      if (r->balance < 0)
+		{
+		  /* L rotation. */
+		  p->left = r->right;
+		  if (p->left)
+		    p->left->parent = p;
+		  r->right = p;
+
+		  p->balance = 0;
+		  r->balance = 0;
+
+		  s = p->parent;
+		  p->parent = r;
+		  r->parent = s;
+		  if (s)
+		    {
+		      if (s->left == p)
+			s->left = r;
+		      else
+			s->right = r;
+		    }
+		  else
+		    constructor_pending_elts = r;
+		}
+	      else
+		{
+		  /* LR rotation. */
+		  struct init_node *t = r->right;
+
+		  r->right = t->left;
+		  if (r->right)
+		    r->right->parent = r;
+		  t->left = r;
+
+		  p->left = t->right;
+		  if (p->left)
+		    p->left->parent = p;
+		  t->right = p;
+
+		  p->balance = t->balance < 0;
+		  r->balance = -(t->balance > 0);
+		  t->balance = 0;
+
+		  s = p->parent;
+		  p->parent = t;
+		  r->parent = t;
+		  t->parent = s;
+		  if (s)
+		    {
+		      if (s->left == p)
+			s->left = t;
+		      else
+			s->right = t;
+		    }
+		  else
+		    constructor_pending_elts = t;
+		}
+	      break;
+	    }
+	  else
+	    {
+	      /* p->balance == +1; growth of left side balances the node.  */
+	      p->balance = 0;
+	      break;
+	    }
+	}
+      else /* r == p->right */
+	{
+	  if (p->balance == 0)
+	    /* Growth propagation from right side.  */
+	    p->balance++;
+	  else if (p->balance > 0)
+	    {
+	      if (r->balance > 0)
+		{
+		  /* R rotation. */
+		  p->right = r->left;
+		  if (p->right)
+		    p->right->parent = p;
+		  r->left = p;
+
+		  p->balance = 0;
+		  r->balance = 0;
+
+		  s = p->parent;
+		  p->parent = r;
+		  r->parent = s;
+		  if (s)
+		    {
+		      if (s->left == p)
+			s->left = r;
+		      else
+			s->right = r;
+		    }
+		  else
+		    constructor_pending_elts = r;
+		}
+	      else /* r->balance == -1 */
+		{
+		  /* RL rotation */
+		  struct init_node *t = r->left;
+
+		  r->left = t->right;
+		  if (r->left)
+		    r->left->parent = r;
+		  t->right = r;
+
+		  p->right = t->left;
+		  if (p->right)
+		    p->right->parent = p;
+		  t->left = p;
+
+		  r->balance = (t->balance < 0);
+		  p->balance = -(t->balance > 0);
+		  t->balance = 0;
+
+		  s = p->parent;
+		  p->parent = t;
+		  r->parent = t;
+		  t->parent = s;
+		  if (s)
+		    {
+		      if (s->left == p)
+			s->left = t;
+		      else
+			s->right = t;
+		    }
+		  else
+		    constructor_pending_elts = t;
+		}
+	      break;
+	    }
+	  else
+	    {
+	      /* p->balance == -1; growth of right side balances the node. */
+	      p->balance = 0;
+	      break;
+	    }
+	}
+
+      r = p;
+      p = p->parent;
+    }
+}
+
+/* Return nonzero if FIELD is equal to the index of a pending initializer.  */
+
+static int
+pending_init_member (field)
+     tree field;
+{
+  struct init_node *p;
+
+  p = constructor_pending_elts;
+  if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      while (p)
+	{
+	  if (tree_int_cst_equal (field, p->purpose))
+	    return 1;
+	  else if (tree_int_cst_lt (field, p->purpose))
+	    p = p->left;
+	  else
+	    p = p->right;
+	}
+    }
+  else
+    {
+      while (p)
+	{
+	  if (field == p->purpose)
+	    return 1;
+	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (field),
+				    DECL_FIELD_BITPOS (p->purpose)))
+	    p = p->left;
+	  else
+	    p = p->right;
+	}
+    }
+
+  return 0;
+}
+
 /* "Output" the next constructor element.
    At top level, really output it to assembler code now.
    Otherwise, collect it in a list from which we will make a CONSTRUCTOR.
@@ -5943,25 +6202,10 @@ output_init_element (value, type, field, pending)
   if (pending)
     {
       if (TREE_CODE (constructor_type) == RECORD_TYPE
-	  || TREE_CODE (constructor_type) == UNION_TYPE)
+	  || TREE_CODE (constructor_type) == UNION_TYPE
+	  || TREE_CODE (constructor_type) == ARRAY_TYPE)
 	{
-	  if (purpose_member (field, constructor_pending_elts))
-	    {
-	      error_init ("duplicate initializer%s", " for `%s'", NULL);
-	      duplicate = 1;
-	    }
-	}
-      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
-	{
-	  tree tail;
-	  for (tail = constructor_pending_elts; tail;
-	       tail = TREE_CHAIN (tail))
-	    if (TREE_PURPOSE (tail) != 0
-		&& TREE_CODE (TREE_PURPOSE (tail)) == INTEGER_CST
-		&& tree_int_cst_equal (TREE_PURPOSE (tail), constructor_index))
-	      break;
-
-	  if (tail != 0)
+	  if (pending_init_member (field))
 	    {
 	      error_init ("duplicate initializer%s", " for `%s'", NULL);
 	      duplicate = 1;
@@ -5977,11 +6221,9 @@ output_init_element (value, type, field, pending)
       if (! duplicate)
 	/* The copy_node is needed in case field is actually
 	   constructor_index, which is modified in place.  */
-	constructor_pending_elts
-	  = tree_cons (copy_node (field),
-		       digest_init (type, value, require_constant_value, 
-				    require_constant_elements),
-		       constructor_pending_elts);
+	add_pending_init (copy_node (field),
+			  digest_init (type, value, require_constant_value, 
+				       require_constant_elements));
     }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   && field != constructor_unfilled_fields)
@@ -5990,11 +6232,9 @@ output_init_element (value, type, field, pending)
 	 no matter which field is specified, it can be initialized
 	 right away since it starts at the beginning of the union.  */
       if (!duplicate)
-	constructor_pending_elts
-	  = tree_cons (field,
-		       digest_init (type, value, require_constant_value, 
-				    require_constant_elements),
-		       constructor_pending_elts);
+	add_pending_init (field,
+			  digest_init (type, value, require_constant_value, 
+				       require_constant_elements));
     }
   else
     {
@@ -6087,56 +6327,109 @@ static void
 output_pending_init_elements (all)
      int all;
 {
-  tree tail;
+  struct init_node *elt = constructor_pending_elts;
   tree next;
 
  retry:
 
-  /* Look thru the whole pending list.
+  /* Look thru the whole pending tree.
      If we find an element that should be output now,
      output it.  Otherwise, set NEXT to the element
      that comes first among those still pending.  */
      
   next = 0;
-  for (tail = constructor_pending_elts; tail;
-       tail = TREE_CHAIN (tail))
+  while (elt)
     {
       if (TREE_CODE (constructor_type) == ARRAY_TYPE)
 	{
-	  if (tree_int_cst_equal (TREE_PURPOSE (tail),
+	  if (tree_int_cst_equal (elt->purpose,
 				  constructor_unfilled_index))
+	    output_init_element (elt->value,
+				 TREE_TYPE (constructor_type),
+				 constructor_unfilled_index, 0);
+	  else if (tree_int_cst_lt (constructor_unfilled_index,
+				    elt->purpose))
 	    {
-	      output_init_element (TREE_VALUE (tail),
-				   TREE_TYPE (constructor_type),
-				   constructor_unfilled_index, 0);
-	      goto retry;
+	      /* Advance to the next smaller node.  */
+	      if (elt->left)
+		elt = elt->left;
+	      else
+		{
+		  /* We have reached the smallest node bigger than the
+		     current unfilled index.  Fill the space first.  */
+		  next = elt->purpose;
+		  break;
+		}
 	    }
-	  else if (tree_int_cst_lt (TREE_PURPOSE (tail),
-				    constructor_unfilled_index))
-	    ;
-	  else if (next == 0
-		   || tree_int_cst_lt (TREE_PURPOSE (tail), next))
-	    next = TREE_PURPOSE (tail);
+	  else
+	    {
+	      /* Advance to the next bigger node.  */
+	      if (elt->right)
+		elt = elt->right;
+	      else
+		{
+		  /* We have reached the biggest node in a subtree.  Find
+		     the parent of it, which is the next bigger node.  */
+		  while (elt->parent && elt->parent->right == elt)
+		    elt = elt->parent;
+		  elt = elt->parent;
+		  if (elt && tree_int_cst_lt (constructor_unfilled_index,
+					      elt->purpose))
+		    {
+		      next = elt->purpose;
+		      break;
+		    }
+		}
+	    }
 	}
       else if (TREE_CODE (constructor_type) == RECORD_TYPE
 	       || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
-	  if (TREE_PURPOSE (tail) == constructor_unfilled_fields)
+	  /* If the current record is complete we are done.  */
+	  if (constructor_unfilled_fields == 0)
+	    break;
+	  if (elt->purpose == constructor_unfilled_fields)
 	    {
-	      output_init_element (TREE_VALUE (tail),
+	      output_init_element (elt->value,
 				   TREE_TYPE (constructor_unfilled_fields),
 				   constructor_unfilled_fields,
 				   0);
-	      goto retry;
 	    }
-	  else if (constructor_unfilled_fields == 0
-		   || tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
-				       DECL_FIELD_BITPOS (constructor_unfilled_fields)))
-	    ;
-	  else if (next == 0
-		   || tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
-				       DECL_FIELD_BITPOS (next)))
-	    next = TREE_PURPOSE (tail);
+	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (constructor_unfilled_fields),
+				    DECL_FIELD_BITPOS (elt->purpose)))
+	    {
+	      /* Advance to the next smaller node.  */
+	      if (elt->left)
+		elt = elt->left;
+	      else
+		{
+		  /* We have reached the smallest node bigger than the
+		     current unfilled field.  Fill the space first.  */
+		  next = elt->purpose;
+		  break;
+		}
+	    }
+	  else
+	    {
+	      /* Advance to the next bigger node.  */
+	      if (elt->right)
+		elt = elt->right;
+	      else
+		{
+		  /* We have reached the biggest node in a subtree.  Find
+		     the parent of it, which is the next bigger node.  */
+		  while (elt->parent && elt->parent->right == elt)
+		    elt = elt->parent;
+		  elt = elt->parent;
+		  if (elt
+		      && tree_int_cst_lt (DECL_FIELD_BITPOS (constructor_unfilled_fields),
+					  DECL_FIELD_BITPOS (elt->purpose)))
+		    {
+		      next = elt->purpose;
+		      break;
+		    }
+		}
+	    }
 	}
     }
 
@@ -6154,6 +6447,7 @@ output_pending_init_elements (all)
       if (TREE_CODE (constructor_type) == RECORD_TYPE
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
+	  tree tail;
 	  /* Find the last field written out, if any.  */
 	  for (tail = TYPE_FIELDS (constructor_type); tail;
 	       tail = TREE_CHAIN (tail))
@@ -6219,6 +6513,8 @@ output_pending_init_elements (all)
 	}
     }
 
+  /* ELT now points to the node in the pending tree with the next
+     initializer to output.  */
   goto retry;
 }
 
