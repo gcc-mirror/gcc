@@ -1,3 +1,11 @@
+2005-03-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/20532
+	* simplify-rtx.c (simplify_binary_operation_1): Protect from
+	overflow when adding coefficients for PLUS or MINUS.
+	(simplify_binary_operation_1): Handle CONST_DOUBLE exact power of
+	two as multiplier.
+
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* langhooks.h (truthvalue_conversion): Remove.
