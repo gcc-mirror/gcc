@@ -1,5 +1,7 @@
 Wed May  6 16:46:01 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (regs_match_p): Fix typo in prototype.
+
 	* regmove.c (try_auto_increment): Wrap declaration inside an
 	#ifdef AUTO_INC_DEC.
 
