@@ -422,6 +422,54 @@ extern int ix86_arch;
 /* align DFmode constants and nonaggregates */
 #define ALIGN_DFmode (!TARGET_386)
 
+/* If defined, a C expression to compute the alignment for a static
+   variable.  TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this macro is used
+   instead of that alignment to align the object.
+
+   If this macro is not defined, then ALIGN is used.
+
+   One use of this macro is to increase alignment of medium-size
+   data to make it all fit in fewer cache lines.  Another is to
+   cause character arrays to be word-aligned so that `strcpy' calls
+   that copy constants to character arrays can be done inline.  */
+
+#define DATA_ALIGNMENT(TYPE, ALIGN)					\
+  ((AGGREGATE_TYPE_P (TYPE)						\
+    && TYPE_SIZE (TYPE)							\
+    && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST			\
+    && (TREE_INT_CST_LOW (TYPE_SIZE (TYPE)) >= 256			\
+	|| TREE_INT_CST_HIGH (TYPE_SIZE (TYPE))) && (ALIGN) < 256)	\
+    ? 256								\
+    : TREE_CODE (TYPE) == ARRAY_TYPE					\
+    ? ((TYPE_MODE (TREE_TYPE (TYPE)) == DFmode && (ALIGN) < 64)	\
+	? 64								\
+   	: (TYPE_MODE (TREE_TYPE (TYPE)) == XFmode && (ALIGN) < 128)	\
+	? 128								\
+	: (ALIGN))							\
+    : TREE_CODE (TYPE) == COMPLEX_TYPE					\
+    ? ((TYPE_MODE (TYPE) == DCmode && (ALIGN) < 64)			\
+	? 64								\
+   	: (TYPE_MODE (TYPE) == XCmode && (ALIGN) < 128)			\
+	? 128								\
+	: (ALIGN))							\
+    : ((TREE_CODE (TYPE) == RECORD_TYPE					\
+	|| TREE_CODE (TYPE) == UNION_TYPE				\
+	|| TREE_CODE (TYPE) == QUAL_UNION_TYPE)				\
+	&& TYPE_FIELDS (TYPE))						\
+    ? ((DECL_MODE (TYPE_FIELDS (TYPE)) == DFmode && (ALIGN) < 64)	\
+	? 64								\
+	: (DECL_MODE (TYPE_FIELDS (TYPE)) == XFmode && (ALIGN) < 128)	\
+	? 128								\
+	: (ALIGN))							\
+    : TREE_CODE (TYPE) == REAL_TYPE					\
+    ? ((TYPE_MODE (TYPE) == DFmode && (ALIGN) < 64)			\
+	? 64								\
+   	: (TYPE_MODE (TYPE) == XFmode && (ALIGN) < 128)			\
+	? 128								\
+	: (ALIGN))							\
+    : (ALIGN))
+
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
