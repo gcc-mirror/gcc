@@ -3556,6 +3556,22 @@ put_reg (unsigned reg, void *val, frame_state *udata)
     abort ();
 }
 
+/* Copy the saved value for register REG from frame UDATA to frame
+   TARGET_UDATA.  Unlike the previous two functions, this can handle
+   registers that are not one word large.  */
+
+static void
+copy_reg (unsigned reg, frame_state *udata, frame_state *target_udata)
+{
+  if (udata->saved[reg] == REG_SAVED_OFFSET
+      && target_udata->saved[reg] == REG_SAVED_OFFSET)
+    memcpy (target_udata->cfa + target_udata->reg_or_offset[reg],
+	    udata->cfa + udata->reg_or_offset[reg],
+	    __builtin_dwarf_reg_size (reg));
+  else
+    abort ();
+}
+
 /* Retrieve the return address for frame UDATA, where SUB_UDATA is a
    frame called by UDATA or 0.  */
 
@@ -3729,8 +3745,7 @@ label:
 		    && udata->reg_or_offset[udata->retaddr_column] == i)
 		  continue;
 #endif
-		val = get_reg (i, udata, sub_udata);
-		put_reg (i, val, my_udata);
+		copy_reg (i, udata, my_udata);
 	      }
 
 	  pc = get_return_addr (udata, sub_udata) - 1;
@@ -3744,10 +3759,7 @@ label:
 	{
 	  i = udata->reg_or_offset[udata->retaddr_column];
 	  if (in_reg_window (i, udata))
-	    {
-	      val = get_reg (i, udata, sub_udata);
-	      put_reg (i, val, my_udata);
-	    }
+	    copy_reg (i, udata, sub_udata);
 	}
 #endif
     }
