@@ -1,3 +1,7 @@
+2002-04-18  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/execute/20020418-1.c: New test.
+
 2002-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020416-1.c: New test.
