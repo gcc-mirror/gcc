@@ -3287,7 +3287,7 @@
    (use (reg:SI 48))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI 17))]
-  ""
+  "TARGET_SH2"
   "bsrf	%0\\n%O2:%#"
   [(set_attr "type" "call")
    (set (attr "fp_mode")
@@ -3316,7 +3316,7 @@
    (use (reg:SI 48))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 17))]
-  ""
+  "TARGET_SH2"
   "bsrf	%1\\n%O3:%#"
   [(set_attr "type" "call")
    (set (attr "fp_mode")
