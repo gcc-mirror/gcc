@@ -55,6 +55,7 @@
    (UNSPEC_SDR			25)
    (UNSPEC_LOADGP		26)
    (UNSPEC_LOAD_CALL		27)
+   (UNSPEC_LOAD_GOT		28)
 
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -4170,8 +4171,9 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 3))]
-  { operands[3] = mips_load_got_global (operands[1], operands[2]); }
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
+  { operands[3] = mips_gotoff_global (operands[2]); }
   [(set_attr "got" "load")])
 
 (define_insn_and_split "*xgot_hidi"
@@ -4195,8 +4197,9 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 3))]
-  { operands[3] = mips_load_got_global (operands[1], operands[2]); }
+  [(set (match_dup 0)
+	(unspec:DI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
+  { operands[3] = mips_gotoff_global (operands[2]); }
   [(set_attr "got" "load")])
 
 ;; Insns to fetch a global symbol from a normal GOT.
@@ -4207,8 +4210,12 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 2))]
-  { operands[2] = mips_load_got_global (pic_offset_table_rtx, operands[1]); }
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+{
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = mips_gotoff_global (operands[1]);
+}
   [(set_attr "got" "load")])
 
 (define_insn_and_split "*got_dispdi"
@@ -4217,8 +4224,12 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 2))]
-  { operands[2] = mips_load_got_global (pic_offset_table_rtx, operands[1]); }
+  [(set (match_dup 0)
+	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+{
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = mips_gotoff_global (operands[1]);
+}
   [(set_attr "got" "load")])
 
 ;; Insns for loading the high part of a local symbol.
@@ -4229,8 +4240,12 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 2))]
-  { operands[2] = mips_load_got_page (operands[1]); }
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+{
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = mips_gotoff_page (operands[1]);
+}
   [(set_attr "got" "load")])
 
 (define_insn_and_split "*got_pagedi"
@@ -4239,9 +4254,37 @@ dsrl\t%3,%3,1\n\
   "TARGET_EXPLICIT_RELOCS"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (match_dup 2))]
-  { operands[2] = mips_load_got_page (operands[1]); }
+  [(set (match_dup 0)
+	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+{
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = mips_gotoff_page (operands[1]);
+}
   [(set_attr "got" "load")])
+
+;; Lower-level instructions for loading an address from the GOT.
+;; We could use MEMs, but an unspec gives more optimization
+;; opportunities.
+
+(define_insn "*load_gotsi"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")
+		    (match_operand:SI 2 "immediate_operand" "")]
+		   UNSPEC_LOAD_GOT))]
+  "TARGET_ABICALLS"
+  "lw\t%0,%R2(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "*load_gotdi"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "d")
+		    (match_operand:DI 2 "immediate_operand" "")]
+		   UNSPEC_LOAD_GOT))]
+  "TARGET_ABICALLS"
+  "ld\t%0,%R2(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
 
 ;; Instructions for adding the low 16 bits of an address to a register.
 ;; Operand 2 is the address: print_operand works out which relocation
