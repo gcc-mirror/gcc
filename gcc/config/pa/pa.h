@@ -1007,7 +1007,7 @@ extern union tree_node *current_function_decl;
   /* fdc and fic only use registers for the address to flush,	\
      they do not accept integer displacements.  */ 		\
   start_addr = force_reg (SImode, (TRAMP));			\
-  end_addr = force_reg (SImode, plus_constant (start_addr, TRAMPOLINE_SIZE));\
+  end_addr = force_reg (SImode, plus_constant ((TRAMP), 8));	\
   emit_insn (gen_cacheflush (start_addr, end_addr));		\
 }
 
