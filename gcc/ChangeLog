@@ -1,3 +1,10 @@
+Wed May  3 09:29:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COMPONENT_REF): Don't check for checking
+	memory usage if not in a function.
+	* varasm.c (initializer_constant_valid_p, case ADDR_EXPR): Only
+	return address if static.
+
 Wed May  3 13:14:49 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (noce_try_cmove_arith):  Use may_trap_p to thest

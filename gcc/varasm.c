@@ -4068,7 +4068,7 @@ initializer_constant_valid_p (value, endtype)
       return null_pointer_node;
 
     case ADDR_EXPR:
-      return TREE_OPERAND (value, 0);
+      return staticp (TREE_OPERAND (value, 0) ? TREE_OPERAND (value, 0) : 0);
 
     case NON_LVALUE_EXPR:
       return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
