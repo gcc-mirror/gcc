@@ -310,6 +310,8 @@ c_cpp_builtins (pfile)
       if (warn_deprecated)
 	cpp_define (pfile, "__DEPRECATED");
     }
+  /* Note that we define this for C as well, so that we know if
+     __attribute__((cleanup)) will interface with EH.  */
   if (flag_exceptions)
     cpp_define (pfile, "__EXCEPTIONS");
 
