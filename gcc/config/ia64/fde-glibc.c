@@ -54,7 +54,8 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr)
   Elf64_Phdr *phdr, *p_unwind;
   long n, match;
   Elf64_Addr load_base, seg_base;
-  fde *f;
+  fde *f_base;
+  size_t lo, hi;
 
   /* Verify that we are looking at an ELF header.  */
   if (ehdr->e_ident[0] != 0x7f
@@ -88,14 +89,24 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr)
     return NULL;
 
   /* Search for the FDE within the unwind segment.  */
-  /* ??? Ideally ld would have sorted this for us by address.  Until
-     that's fixed, we must do a linear search.  */
 
-  f = (fde *) (p_unwind->p_vaddr + load_base);
+  f_base = (fde *) (p_unwind->p_vaddr + load_base);
   seg_base = (Elf64_Addr) ehdr;
-  for (n = p_unwind->p_memsz / sizeof (fde); --n >= 0; ++f)
-    if (pc >= f->start_offset + seg_base && pc < f->end_offset + seg_base)
-      return f;
+  lo = 0;
+  hi = p_unwind->p_memsz / sizeof (fde);
+
+  while (lo < hi)
+    {
+      size_t mid = (lo + hi) / 2;
+      fde *f = f_base + mid;
+
+      if (pc < f->start_offset + seg_base)
+	hi = mid;
+      else if (pc >= f->end_offset + seg_base)
+	lo = mid + 1;
+      else
+        return f;
+    }
 
   return NULL;
 }
