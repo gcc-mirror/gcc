@@ -1,3 +1,9 @@
+2001-12-11  Stan Shebs  <shebs@apple.com>
+
+	* objc/compile: New test directory.
+	* objc/compile/compile.exp: New expect script.
+	* objc/compile/20011211-1.m: New compile test.
+
 2001-12-11  Jason Merrill  <jason@redhat.com>
 
 	* lib/prune.exp (prune_gcc_output): Also handle "In member
