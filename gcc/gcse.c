@@ -585,7 +585,7 @@ static void alloc_pre_mem	     PROTO ((int, int));
 static void free_pre_mem	      PROTO ((void));
 static void compute_pre_data	  PROTO ((void));
 static int pre_expr_reaches_here_p    PROTO ((int, struct expr *,
-					      int, int, char *));
+					      int, int));
 static void insert_insn_end_bb	PROTO ((struct expr *, int, int));
 static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
 static void pre_insert_copies	 PROTO ((void));
@@ -614,7 +614,7 @@ static void compute_ae_gen	    PROTO ((void));
 static int expr_killed_p	      PROTO ((rtx, int));
 static void compute_ae_kill	   PROTO ((sbitmap *, sbitmap *));
 static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
-					      int, int, char *));
+					      int, int));
 static rtx computing_insn	     PROTO ((struct expr *, rtx));
 static int def_reaches_here_p	 PROTO ((rtx, rtx));
 static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
@@ -2881,7 +2881,7 @@ compute_ae_kill (ae_gen, ae_kill)
    the closest such expression.  */
 
 static int
-expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
+expr_reaches_here_p_work (occr, expr, bb, check_self_loop, visited)
      struct occr *occr;
      struct expr *expr;
      int bb;
@@ -2889,12 +2889,6 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
      char *visited;
 {
   edge pred;
-
-  if (visited == NULL)
-    {
-      visited = (char *) alloca (n_basic_blocks);
-      bzero (visited, n_basic_blocks);
-    }
 
   for (pred = BASIC_BLOCK(bb)->pred; pred != NULL; pred = pred->pred_next)
     {
@@ -2932,13 +2926,34 @@ expr_reaches_here_p (occr, expr, bb, check_self_loop, visited)
       else
 	{
 	  visited[pred_bb] = 1;
-	  if (expr_reaches_here_p (occr, expr, pred_bb, check_self_loop, visited))
+	  if (expr_reaches_here_p_work (occr, expr, pred_bb, check_self_loop, 
+	      visited))
 	    return 1;
 	}
     }
 
   /* All paths have been checked.  */
   return 0;
+}
+
+/* This wrapper for expr_reaches_here_p_work() is to ensure that any
+   memory allocated for that function is returned. */
+
+static int
+expr_reaches_here_p (occr, expr, bb, check_self_loop)
+     struct occr *occr;
+     struct expr *expr;
+     int bb;
+     int check_self_loop;
+{
+  int rval;
+  char * visited = (char *) xcalloc (n_basic_blocks, 1);
+
+  rval = expr_reaches_here_p_work(occr, expr, bb, check_self_loop, visited);
+  
+  free (visited);
+
+  return (rval);
 }
 
 /* Return the instruction that computes EXPR that reaches INSN's basic block.
@@ -2984,7 +2999,7 @@ computing_insn (expr, insn)
 		 We let the normal cse pass handle the other cases.  */
 	      if (INSN_CUID (insn) < INSN_CUID (occr->insn))
 		{
-		  if (expr_reaches_here_p (occr, expr, bb, 1, NULL))
+		  if (expr_reaches_here_p (occr, expr, bb, 1))
 		    {
 		      can_reach++;
 		      if (can_reach > 1)
@@ -2995,7 +3010,7 @@ computing_insn (expr, insn)
 	    }
 	  else /* Computation of the pattern outside this block.  */
 	    {
-	      if (expr_reaches_here_p (occr, expr, bb, 0, NULL))
+	      if (expr_reaches_here_p (occr, expr, bb, 0))
 		{
 		  can_reach++;
 		  if (can_reach > 1)
@@ -4178,7 +4193,7 @@ compute_pre_data ()
    the closest such expression.  */
 
 static int
-pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
+pre_expr_reaches_here_p_work (occr_bb, expr, bb, check_pre_comp, visited)
      int occr_bb;
      struct expr *expr;
      int bb;
@@ -4186,12 +4201,6 @@ pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
      char *visited;
 {
   edge pred;
-
-  if (visited == NULL)
-    {
-      visited = (char *) alloca (n_basic_blocks);
-      bzero (visited, n_basic_blocks);
-    }
 
   for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
     {
@@ -4221,14 +4230,35 @@ pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
       else
 	{
 	  visited[pred_bb] = 1;
-	  if (pre_expr_reaches_here_p (occr_bb, expr, pred_bb,
-				       check_pre_comp, visited))
+	  if (pre_expr_reaches_here_p_work (occr_bb, expr, pred_bb,
+				            check_pre_comp, visited))
 	    return 1;
 	}
     }
 
   /* All paths have been checked.  */
   return 0;
+}
+
+/* The wrapper for pre_expr_reaches_here_work that ensures that any
+   memory allocated for that function is returned. */
+
+static int
+pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp)
+     int occr_bb;
+     struct expr *expr;
+     int bb;
+     int check_pre_comp;
+{
+  int rval;
+  char * visited = (char *) xcalloc (n_basic_blocks, 1);
+
+  rval = pre_expr_reaches_here_p_work(occr_bb, expr, bb, check_pre_comp, 
+				      visited);
+
+  free (visited);
+
+  return (rval);
 }
 
 
@@ -4472,8 +4502,7 @@ pre_edge_insert (edge_list, index_map)
 		      if (!TEST_BIT (inserted[e], j)
 			  && (bb == ENTRY_BLOCK 
 			      || pre_expr_reaches_here_p (bb, expr,
-						   BLOCK_NUM (occr->insn), 0,
-						   NULL)))
+						   BLOCK_NUM (occr->insn), 0)))
 			{
 			  rtx insn;
 			  edge eg = INDEX_EDGE (edge_list, e);
@@ -4597,8 +4626,7 @@ pre_insert_copies ()
 		    continue;
 		  /* Or if the expression doesn't reach the deleted one.  */
 		  if (! pre_expr_reaches_here_p (BLOCK_NUM (avail->insn), expr,
-						 BLOCK_NUM (occr->insn),
-						 1, NULL))
+						 BLOCK_NUM (occr->insn),1))
 		    continue;
 
 		  /* Copy the result of avail to reaching_reg.  */
@@ -4719,8 +4747,7 @@ pre_gcse ()
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = (struct expr **) alloca (n_exprs * sizeof (struct expr *));
-  bzero ((char *) index_map, n_exprs * sizeof (struct expr *));
+  index_map = xcalloc (n_exprs, sizeof (struct expr *));
   for (i = 0; i < expr_hash_table_size; i++)
     {
       struct expr *expr;
@@ -4749,6 +4776,7 @@ pre_gcse ()
       changed = 1;
     }
 
+  free (index_map);
   free (pre_redundant_insns);
 
   return changed;
@@ -4985,10 +5013,10 @@ delete_null_pointer_checks (f)
 
   /* We need predecessor/successor lists as well as pred/succ counts for
      each basic block.  */
-  s_preds = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  s_succs = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
-  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
+  s_preds = (int_list_ptr *) gmalloc (n_basic_blocks * sizeof (int_list_ptr));
+  s_succs = (int_list_ptr *) gmalloc (n_basic_blocks * sizeof (int_list_ptr));
+  num_preds = (int *) gmalloc (n_basic_blocks * sizeof (int));
+  num_succs = (int *) gmalloc (n_basic_blocks * sizeof (int));
   compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
   /* Allocate bitmaps to hold local and global properties.  */
@@ -5141,6 +5169,12 @@ delete_null_pointer_checks (f)
   /* Free storage allocated by find_basic_blocks.  */
   free_basic_block_vars (0);
 
+  /* Free our local predecessor/successor lists. */
+  free (s_preds);
+  free (s_succs);
+  free (num_preds);
+  free (num_succs);
+
   /* Free bitmaps.  */
   free (nonnull_local);
   free (nonnull_killed);
@@ -5273,11 +5307,13 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
      char *visited;
 {
   edge pred;
+  int visited_allocated_locally = 0;
+  
 
   if (visited == NULL)
     {
-      visited = (char *) alloca (n_basic_blocks);
-      bzero (visited, n_basic_blocks);
+       visited_allocated_locally = 1;
+       visited = xcalloc (n_basic_blocks, 1);
     }
 
   visited[expr_bb] = 1;
@@ -5303,7 +5339,8 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
 	    break;
 	}
     }
-
+  if (visited_allocated_locally) 
+    free (visited);
   return (pred == NULL);
 }
 
@@ -5319,8 +5356,7 @@ hoist_code ()
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = (struct expr **) alloca (n_exprs * sizeof (struct expr *));
-  bzero ((char *) index_map, n_exprs * sizeof (struct expr *));
+  index_map = xcalloc (n_exprs, sizeof (struct expr *));
   for (i = 0; i < expr_hash_table_size; i++)
     {
       struct expr *expr;
@@ -5473,6 +5509,7 @@ hoist_code ()
 	    }
 	}
     }
+    free (index_map);
 }
 
 /* Top level routine to perform one code hoisting (aka unification) pass
