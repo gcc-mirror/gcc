@@ -1,3 +1,9 @@
+2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def:  Remove special cases for unsupported
+	PTX 1 and PTX 2 (including i[34567]86-sequent-sysv3).
+	* fixinc/fixincl.x: Regenerate.
+
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (cpp.info): Just state dependencies.

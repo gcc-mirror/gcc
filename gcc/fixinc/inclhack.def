@@ -235,7 +235,6 @@ fix = {
     mach     = "powerpcle-*-solaris2.[0-4]";
     mach     = "sparc-*-solaris2.[0-4]";
     mach     = "i[34567]86-sequent-ptx*";
-    mach     = "i[34567]86-sequent-sysv3*";
     files    = sys/byteorder.h;
     replace  = <<-  _EndOfHeader_
 	#ifndef _SYS_BYTEORDER_H
@@ -2017,55 +2016,6 @@ fix = {
 
 
 /*
- * In netinet/in.h, the network byte swapping asm functions supported by the
- * native cc compiler on PTX 1.x and 2.x are not supported by gcc.  Instead,
- * include <sys/byteorder.h>, written out by fixincludes, which has
- * these same routines written in an asm format supported by gcc.
- */
-#ifdef PTX
-fix = {
-    hackname  = ptx_netswap;
-    files     = netinet/in.h;
-    sed       = "/#define NETSWAP/a\\\n"
-                "\\\n"
-                "#if defined (__GNUC__) || defined (__GNUG__)\\\n"
-                "#include <sys/byteorder.h>\\\n"
-                "#else  /* not __GNUC__ */\n";
-    sed       = "/#endif[ \t]*\\/\\* NETSWAP \\*\\//i\\\n"
-                "#endif /* not __GNUC__ */\n";
-    /* Half-hearted test case: I have no idea what the file this is really
-       supposed to operate on looks like. */
-    test_text = "#define NETSWAP\n"
-                "#endif /* NETSWAP */";
-};
-#endif
-
-
-/*
- * In pwd.h, PTX 1.x needs stdio.h included since FILE * was added in a
- * prototype later on in the file.  (It's not clear that this is
- * still true, and even if it is, FILE * may be added after this fix runs by
- * fixproto.)
- */
-#ifdef PTX
-fix = {
-    hackname  = ptx_pwd_h;
-    files     = pwd.h;
-    select    = 'FILE \*';
-    bypass    = 'stdio.h';
-    sed       = "/#include <sys\\/types\\.h/a\\\n"
-                "\\\n"
-                "#if defined(__STDC__) || defined(__cplusplus)\\\n"
-                "#include <stdio.h>\\\n"
-                "#endif  /*  __STDC__ */\\\n"
-                "\n";
-    test_text = "#include <sys/types.h>\n"
-                "void foo (FILE *)";
-};
-#endif
-
-
-/*
  * On DYNIX/ptx, sys/mc_param.h has an embedded asm for the cpuid instruction
  * on the P5. This is not used by anything else so we ifdef it out.
  * Current GCC doesn't seem to complain about the asm, though.
@@ -2894,7 +2844,6 @@ fix = {
      * in any case. -- Nathanael */
     mach     = '*-*-sysv4*';
     mach     = 'i?86-sequent-ptx*';
-    mach     = 'i?86-sequent-sysv3*';
     files    = fs/rfs/rf_cache.h;
     files    = sys/erec.h;
     files    = sys/err.h;
