@@ -86,10 +86,10 @@ public final class OutputDeviceAssigned extends TextSyntax
   /**
    * Returns name of this class.
    *
-   * @return the string "output-device-assigened"
+   * @return the string "output-device-assigned"
    */
   public final String getName()
   {
-    return "output-device-assigened";
+    return "output-device-assigned";
   }
 }

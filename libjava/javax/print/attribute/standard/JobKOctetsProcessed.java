@@ -1,5 +1,5 @@
 /* JobKOctetsProcessed.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,13 +39,12 @@ package javax.print.attribute.standard;
 
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
-import javax.print.attribute.PrintRequestAttribute;
 
 /**
  * @author Michael Koch
  */
 public final class JobKOctetsProcessed extends IntegerSyntax
-  implements PrintJobAttribute, PrintRequestAttribute
+  implements PrintJobAttribute
 {
   private static final long serialVersionUID = -6265238509657881806L;
   

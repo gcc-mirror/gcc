@@ -44,7 +44,7 @@ import javax.print.attribute.TextSyntax;
 public final class RequestingUserName extends TextSyntax
   implements PrintRequestAttribute
 {
-  private static final long serialVersionUID = 4660359192078689545L;
+  private static final long serialVersionUID = -2683049894310331454L;
 
   /**
    * Creates a <code>RequestingUserName</code> object.
