@@ -83,9 +83,11 @@ written with the preprocessing token as the fundamental unit; the
 preprocessor in previous versions of GCC would operate on text strings
 as the fundamental unit.
 
-This brief manual documents some of the internals of cpplib, and a few
-tricky issues encountered.  It also describes certain behaviour we would
-like to preserve, such as the format and spacing of its output.
+This brief manual documents the internals of cpplib, and explains some
+of the tricky issues.  It is intended that, along with the comments in
+the source code, a reasonably competent C programmer should be able to
+figure out what the code is doing, and why things have been implemented
+the way they have.
 
 @menu
 * Conventions::         Conventions used in the code.
@@ -201,14 +203,14 @@ error about an unterminated macro argument list.
 The C standard also specifies that a new line in the middle of the
 arguments to a macro is treated as whitespace.  This white space is
 important in case the macro argument is stringified.  The state variable
-@code{parsing_args} is non-zero when the preprocessor is collecting the
+@var{parsing_args} is non-zero when the preprocessor is collecting the
 arguments to a macro call.  It is set to 1 when looking for the opening
 parenthesis to a function-like macro, and 2 when collecting the actual
 arguments up to the closing parenthesis, since these two cases need to
 be distinguished sometimes.  One such time is here: the lexer sets the
 @code{PREV_WHITE} flag of a token if it meets a new line when
-@code{parsing_args} is set to 2.  It doesn't set it if it meets a new
-line when @code{parsing_args} is 1, since then code like
+@var{parsing_args} is set to 2.  It doesn't set it if it meets a new
+line when @var{parsing_args} is 1, since then code like
 
 @smallexample
 #define foo() bar
@@ -224,7 +226,7 @@ foo
 @end smallexample
 
 This is a good example of the subtlety of getting token spacing correct
-in the preprocessor; there are plenty of tests in the test-suite for
+in the preprocessor; there are plenty of tests in the test suite for
 corner cases like this.
 
 The lexer is written to treat each of @samp{\r}, @samp{\n}, @samp{\r\n}
@@ -381,7 +383,7 @@ issues, but not all.  The opening parenthesis after a function-like
 macro name might lie on a different line, and the front ends definitely
 want the ability to look ahead past the end of the current line.  So
 cpplib only moves back to the start of the token run at the end of a
-line if the variable @code{keep_tokens} is zero.  Line-buffering is
+line if the variable @var{keep_tokens} is zero.  Line-buffering is
 quite natural for the preprocessor, and as a result the only time cpplib
 needs to increment this variable is whilst looking for the opening
 parenthesis to, and reading the arguments of, a function-like macro.  In
@@ -623,8 +625,131 @@ variable, which is updated with every newline whether escaped or not.
 
 @node Guard Macros
 @unnumbered The Multiple-Include Optimization
+@cindex guard macros
+@cindex controlling macros
+@cindex multiple-include optimization
 
-@c TODO
+Header files are often of the form
+
+@smallexample
+#ifndef FOO
+#define FOO
+@dots{}
+#endif
+@end smallexample
+
+@noindent
+to prevent the compiler from processing them more than once.  The
+preprocessor notices such header files, so that if the header file
+appears in a subsequent @code{#include} directive and @var{FOO} is
+defined, then it is ignored and it doesn't preprocess or even re-open
+the file a second time.  This is referred to as the @dfn{multiple
+include optimization}.
+
+Under what circumstances is such an optimization valid?  If the file
+were included a second time, it can only be optimized away if that
+inclusion would result in no tokens to return, and no relevant
+directives to process.  Therefore the current implementation imposes
+requirements and makes some allowances as follows:
+
+@enumerate
+@item
+There must be no tokens outside the controlling @code{#if}-@code{#endif}
+pair, but whitespace and comments are permitted.
+
+@item
+There must be no directives outside the controlling directive pair, but
+the @dfn{null directive} (a line containing nothing other than a single
+@samp{#} and possibly whitespace) is permitted.
+
+@item
+The opening directive must be of the form
+
+@display
+#ifndef FOO
+@end display
+
+or
+
+@display
+#if !defined FOO     [equivalently, #if !defined(FOO)]
+@end display
+
+@item
+In the second form above, the tokens forming the @code{#if} expression
+must have come directly from the source file---no macro expansion must
+have been involved.  This is because macro definitions can change, and
+tracking whether or not a relevant change has been made is not worth the
+implementation cost.
+
+@item
+There can be no @code{#else} or @code{#elif} directives at the outer
+conditional block level, because they would probably contain something
+of interest to a subsequent pass.
+@end enumerate
+
+First, when pushing a new file on the buffer stack,
+@code{_stack_include_file} sets the controlling macro @var{mi_cmacro} to
+@code{NULL}, and sets @var{mi_valid} to @code{true}.  This indicates
+that the preprocessor has not yet encountered anything that would
+invalidate the multiple-include optimization.  As described in the next
+few paragraphs, these two variables having these values effectively
+indicates top-of-file.
+
+When about to return a token that is not part of a directive,
+@code{_cpp_lex_token} sets @var{mi_valid} to @code{false}.  This
+enforces the constraint that tokens outside the controlling conditional
+block invalidate the optimization.
+
+The @code{do_if}, when appropriate, and @code{do_ifndef} directive
+handlers pass the controlling macro to the function
+@code{push_conditional}.  cpplib maintains a stack of nested conditional
+blocks, and after processing every opening conditional this function
+pushes an @code{if_stack} structure onto the stack.  In this structure
+it records the controlling macro for the block, provided there is one
+and we're at top-of-file (as described above).  If an @code{#elif} or
+@code{#else} directive is encountered, the controlling macro for that
+block is cleared to @code{NULL}.  Otherwise, it survives until the
+@code{#endif} closing the block, upon which @code{do_endif} sets
+@var{mi_valid} to true and stores the controlling macro in
+@var{mi_cmacro}.
+
+@code{_cpp_handle_directive} clears @var{mi_valid} when processing any
+directive other than an opening conditional and the null directive.
+With this, and requiring top-of-file to record a controlling macro, and
+no @code{#else} or @code{#elif} for it to survive and be copied to
+@var{mi_cmacro} by @code{do_endif}, we have enforced the absence of
+directives outside the main conditional block for the optimization to be
+on.
+
+Note that whilst we are inside the conditional block, @var{mi_valid} is
+likely to be reset to @code{false}, but this does not matter since the
+the closing @code{#endif} restores it to @code{true} if appropriate.
+
+Finally, since @code{_cpp_lex_direct} pops the file off the buffer stack
+at @code{EOF} without returning a token, if the @code{#endif} directive
+was not followed by any tokens, @var{mi_valid} is @code{true} and
+@code{_cpp_pop_file_buffer} remembers the controlling macro associated
+with the file.  Subsequent calls to @code{stack_include_file} result in
+no buffer being pushed if the controlling macro is defined, effecting
+the optimization.
+
+A quick word on how we handle the
+
+@display
+#if !defined FOO
+@end display
+
+@noindent
+case.  @code{_cpp_parse_expr} and @code{parse_defined} take steps to see
+whether the three stages @samp{!}, @samp{defined-expression} and
+@samp{end-of-directive} occur in order in a @code{#if} expression.  If
+so, they return the guard macro to @code{do_if} in the variable
+@var{mi_ind_cmacro}, and otherwise set it to @code{NULL}.
+@code{enter_macro_context} sets @var{mi_valid} to false, so if a macro
+was expanded whilst parsing any part of the expression, then the
+top-of-file test in @code{push_conditional} fails and the optimization
+is turned off.
 
 @node Files
 @unnumbered File Handling
