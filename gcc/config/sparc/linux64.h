@@ -249,6 +249,7 @@ ENDFILE_SPEC_COMMON
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+%{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}} \
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
@@ -259,6 +260,7 @@ ENDFILE_SPEC_COMMON
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
+%{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \

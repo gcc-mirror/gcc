@@ -1,3 +1,8 @@
+2002-04-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc/linux64.h (CC1_SPEC): Error for -m32 and -m64.
+	* sparc/netbsd-elf.h (CC1_SPEC32, CC1_SPEC64): Likewise.
+
 2002-04-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR optimization/6305
