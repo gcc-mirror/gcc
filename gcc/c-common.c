@@ -24,6 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "obstack.h"
 #include <stdio.h>
+#include <ctype.h>
 
 extern struct obstack permanent_obstack;
 
@@ -335,10 +336,575 @@ decl_attributes (decl, attributes)
 		return;
 	      }
 	  }
-	
-	record_format_info (DECL_NAME (decl), is_scan, format_num,
-			    first_arg_num);
+
+	record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
+				is_scan, format_num, first_arg_num);
       }
+}
+
+/* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
+   a parameter list.  */
+
+#define T_I	&integer_type_node
+#define T_L	&long_integer_type_node
+#define T_S	&short_integer_type_node
+#define T_UI	&unsigned_type_node
+#define T_UL	&long_unsigned_type_node
+#define T_US	&short_unsigned_type_node
+#define T_F	&float_type_node
+#define T_D	&double_type_node
+#define T_LD	&long_double_type_node
+#define T_C	&char_type_node
+#define T_V	&void_type_node
+#define T_W	&wchar_type_node
+
+typedef struct {
+  char *format_chars;
+  int pointer_count;
+  /* Type of argument if no length modifier is used.  */
+  tree *nolen;
+  /* Type of argument if length modifier for shortening is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *hlen;
+  /* Type of argument if length modifier `l' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *llen;
+  /* Type of argument if length modifier `L' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *bigllen;
+  /* List of other modifier characters allowed with these options.  */
+  char *flag_chars;
+} format_char_info;
+
+static format_char_info print_char_table[] = {
+  { "di",	0,	T_I,	T_I,	T_L,	NULL,	"-wp0 +"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0#"		},
+  { "u",	0,	T_UI,	T_UI,	T_UL,	NULL,	"-wp0"		},
+  { "feEgG",	0,	T_D,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
+  { "c",	0,	T_I,	NULL,	T_W,	NULL,	"-w"		},
+  { "C",	0,	T_W,	NULL,	NULL,	NULL,	"-w"		},
+  { "s",	1,	T_C,	NULL,	T_W,	NULL,	"-wp"		},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
+  { "p",	1,	T_V,	NULL,	NULL,	NULL,	"-w"		},
+  { "n",	1,	T_I,	T_S,	T_L,	NULL,	""		},
+  { NULL }
+};
+
+static format_char_info scan_char_table[] = {
+  { "di",	1,	T_I,	T_S,	T_L,	NULL,	"*"	},
+  { "ouxX",	1,	T_UI,	T_US,	T_UL,	NULL,	"*"	},	
+  { "efgEG",	1,	T_F,	NULL,	T_D,	T_LD,	"*"	},
+  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	"*"	},
+  { "[",	1,	T_C,	NULL,	NULL,	NULL,	"*"	},
+  { "C",	1,	T_W,	NULL,	NULL,	NULL,	"*"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	"*"	},
+  { "p",	2,	T_V,	NULL,	NULL,	NULL,	"*"	},
+  { "n",	1,	T_I,	T_S,	T_L,	NULL,	""	},
+  { NULL }
+};
+
+typedef struct function_format_info {
+  struct function_format_info *next;  /* next structure on the list */
+  tree name;			/* identifier such as "printf" */
+  tree assembler_name;		/* optional mangled identifier (for C++) */
+  int is_scan;			/* TRUE if *scanf */
+  int format_num;		/* number of format argument */
+  int first_arg_num;		/* number of first arg (zero for varargs) */
+} function_format_info;
+
+static function_format_info *function_format_list = NULL;
+
+static void check_format_info PROTO((function_format_info *, tree));
+
+/* Initialize the table of functions to perform format checking on.
+   The ANSI functions are always checked (whether <stdio.h> is
+   included or not), since it is common to call printf without
+   including <stdio.h>.  There shouldn't be a problem with this,
+   since ANSI reserves these function names whether you include the
+   header file or not.  In any case, the checking is harmless.  */
+
+void
+init_function_format_info ()
+{
+  record_function_format (get_identifier ("printf"), NULL_TREE, 0, 1, 2);
+  record_function_format (get_identifier ("fprintf"), NULL_TREE, 0, 2, 3);
+  record_function_format (get_identifier ("sprintf"), NULL_TREE, 0, 2, 3);
+  record_function_format (get_identifier ("scanf"), NULL_TREE, 1, 1, 2);
+  record_function_format (get_identifier ("fscanf"), NULL_TREE, 1, 2, 3);
+  record_function_format (get_identifier ("sscanf"), NULL_TREE, 1, 2, 3);
+  record_function_format (get_identifier ("vprintf"), NULL_TREE, 0, 1, 0);
+  record_function_format (get_identifier ("vfprintf"), NULL_TREE, 0, 2, 0);
+  record_function_format (get_identifier ("vsprintf"), NULL_TREE, 0, 2, 0);
+}
+
+/* Record information for argument format checking.  FUNCTION_IDENT is
+   the identifier node for the name of the function to check (its decl
+   need not exist yet).  IS_SCAN is true for scanf-type format checking;
+   false indicates printf-style format checking.  FORMAT_NUM is the number
+   of the argument which is the format control string (starting from 1).
+   FIRST_ARG_NUM is the number of the first actual argument to check
+   against teh format string, or zero if no checking is not be done
+   (e.g. for varargs such as vfprintf).  */
+
+void
+record_function_format (name, assembler_name, is_scan,
+			format_num, first_arg_num)
+      tree name;
+      tree assembler_name;
+      int is_scan;
+      int format_num;
+      int first_arg_num;
+{
+  function_format_info *info;
+
+  /* Re-use existing structure if it's there.  */
+
+  for (info = function_format_list; info; info = info->next)
+    {
+      if (info->name == name && info->assembler_name == assembler_name)
+	break;
+    }
+  if (! info)
+    {
+      info = (function_format_info *) xmalloc (sizeof (function_format_info));
+      info->next = function_format_list;
+      function_format_list = info;
+
+      info->name = name;
+      info->assembler_name = assembler_name;
+    }
+
+  info->is_scan = is_scan;
+  info->format_num = format_num;
+  info->first_arg_num = first_arg_num;
+}
+
+static char	tfaff[] = "too few arguments for format";
+
+/* Check the argument list of a call to printf, scanf, etc.
+   NAME is the function identifier.
+   ASSEMBLER_NAME is the function's assembler identifier.
+   (Either NAME or ASSEMBLER_NAME, but not both, may be NULL_TREE.)
+   PARAMS is the list of argument values.  */
+
+void
+check_function_format (name, assembler_name, params)
+     tree name;
+     tree assembler_name;
+     tree params;
+{
+  function_format_info *info;
+
+  /* See if this function is a format function.  */
+  for (info = function_format_list; info; info = info->next)
+    {
+      if ((info->assembler_name || assembler_name)
+	  ? (info->assembler_name == assembler_name)
+	  : (info->name == name))
+	{
+	  /* Yup; check it.  */
+	  check_format_info (info, params);
+	  break;
+	}
+    }
+}
+
+/* Check the argument list of a call to printf, scanf, etc.
+   INFO points to the function_format_info structure.
+   PARAMS is the list of argument values.  */
+
+static void
+check_format_info (info, params)
+     function_format_info *info;
+     tree params;
+{
+  int i;
+  int arg_num;
+  int suppressed, wide, precise;
+  int length_char;
+  int format_char;
+  int format_length;
+  tree format_tree;
+  tree cur_param;
+  tree cur_type;
+  tree wanted_type;
+  char *format_chars;
+  format_char_info *fci;
+  static char message[132];
+  char flag_chars[8];
+
+  /* Skip to format argument.  If the argument isn't available, there's
+     no work for us to do; prototype checking will catch the problem.  */
+  for (arg_num = 1; ; ++arg_num)
+    {
+      if (params == 0)
+	return;
+      if (arg_num == info->format_num)
+	break;
+      params = TREE_CHAIN (params);
+    }
+  format_tree = TREE_VALUE (params);
+  params = TREE_CHAIN (params);
+  if (format_tree == 0)
+    return;
+  /* We can only check the format if it's a string constant.  */
+  while (TREE_CODE (format_tree) == NOP_EXPR)
+    format_tree = TREE_OPERAND (format_tree, 0); /* strip coercion */
+  if (format_tree == null_pointer_node)
+    {
+      warning ("null format string");
+      return;
+    }
+  if (TREE_CODE (format_tree) != ADDR_EXPR)
+    return;
+  format_tree = TREE_OPERAND (format_tree, 0);
+  if (TREE_CODE (format_tree) != STRING_CST)
+    return;
+  format_chars = TREE_STRING_POINTER (format_tree);
+  format_length = TREE_STRING_LENGTH (format_tree);
+  if (format_length <= 1)
+    warning ("zero-length format string");
+  if (format_chars[--format_length] != 0)
+    {
+      warning ("unterminated format string");
+      return;
+    }
+  /* Skip to first argument to check.  */
+  while (arg_num + 1 < info->first_arg_num)
+    {
+      if (params == 0)
+	return;
+      params = TREE_CHAIN (params);
+      ++arg_num;
+    }
+  while (1)
+    {
+      if (*format_chars == 0)
+	{
+	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
+	    warning ("embedded `\\0' in format");
+	  if (info->first_arg_num != 0 && params != 0)
+	    warning ("too many arguments for format");
+	  return;
+	}
+      if (*format_chars++ != '%')
+	continue;
+      if (*format_chars == 0)
+	{
+	  warning ("spurious trailing `%%' in format");
+	  continue;
+	}
+      if (*format_chars == '%')
+	{
+	  ++format_chars;
+	  continue;
+	}
+      flag_chars[0] = 0;
+      suppressed = wide = precise = FALSE;
+      if (info->is_scan)
+	{
+	  suppressed = *format_chars == '*';
+	  if (suppressed)
+	    ++format_chars;
+	  while (isdigit (*format_chars))
+	    ++format_chars;
+	}
+      else
+	{
+	  while (*format_chars != 0 && index (" +#0-", *format_chars) != 0)
+	    {
+	      if (index (flag_chars, *format_chars) != 0)
+		{
+		  sprintf (message, "repeated `%c' flag in format",
+			   *format_chars);
+		  warning (message);
+		}
+	      i = strlen (flag_chars);
+	      flag_chars[i++] = *format_chars++;
+	      flag_chars[i] = 0;
+	    }
+	  /* "If the space and + flags both appear, 
+	     the space flag will be ignored."  */
+	  if (index (flag_chars, ' ') != 0
+	      && index (flag_chars, '+') != 0)
+	    warning ("use of both ` ' and `+' flags in format");
+	  /* "If the 0 and - flags both appear,
+	     the 0 flag will be ignored."  */
+	  if (index (flag_chars, '0') != 0
+	      && index (flag_chars, '-') != 0)
+	    warning ("use of both `0' and `-' flags in format");
+	  if (*format_chars == '*')
+	    {
+	      wide = TRUE;
+	      /* "...a field width...may be indicated by an asterisk.
+		 In this case, an int argument supplies the field width..."  */
+	      ++format_chars;
+	      if (params == 0)
+		{
+		  warning (tfaff);
+		  return;
+		}
+	      if (info->first_arg_num != 0)
+		{
+		  cur_param = TREE_VALUE (params);
+		  params = TREE_CHAIN (params);
+		  ++arg_num;
+		  /* size_t is generally not valid here.
+		     It will work on most machines, because size_t and int
+		     have the same mode.  But might as well warn anyway,
+		     since it will fail on other machines.  */
+		  if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+		      != integer_type_node)
+		    {
+		      sprintf (message,
+			       "field width is not type int (arg %d)",
+			       arg_num);
+		      warning (message);
+		    }
+		}
+	    }
+	  else
+	    {
+	      while (isdigit (*format_chars))
+		{
+		  wide = TRUE;
+		  ++format_chars;
+		}
+	    }
+	  if (*format_chars == '.')
+	    {
+	      precise = TRUE;
+	      ++format_chars;
+	      if (*format_chars != '*' && !isdigit (*format_chars))
+		warning ("`.' not followed by `*' or digit in format");
+	      /* "...a...precision...may be indicated by an asterisk.
+		 In this case, an int argument supplies the...precision."  */
+	      if (*format_chars == '*')
+		{
+		  if (info->first_arg_num != 0)
+		    {
+		      ++format_chars;
+		      if (params == 0)
+		        {
+			  warning (tfaff);
+			  return;
+			}
+		      cur_param = TREE_VALUE (params);
+		      params = TREE_CHAIN (params);
+		      ++arg_num;
+		      if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+			  != integer_type_node)
+		        {
+		          sprintf (message,
+				   "field width is not type int (arg %d)",
+				   arg_num);
+		          warning (message);
+		        }
+		    }
+		}
+	      else
+		{
+		  while (isdigit (*format_chars))
+		    ++format_chars;
+		}
+	    }
+	}
+      if (*format_chars == 'h' || *format_chars == 'l' || *format_chars == 'L')
+	length_char = *format_chars++;
+      else
+	length_char = 0;
+      if (suppressed && length_char != 0)
+	{
+	  sprintf (message,
+		   "use of `*' and `%c' together in format",
+		   length_char);
+	  warning (message);
+	}
+      format_char = *format_chars;
+      if (format_char == 0)
+	{
+	  warning ("conversion lacks type at end of format");
+	  continue;
+	}
+      format_chars++;
+      fci = info->is_scan ? scan_char_table : print_char_table;
+      while (fci->format_chars != 0
+	     && index (fci->format_chars, format_char) == 0)
+	  ++fci;
+      if (fci->format_chars == 0)
+	{
+	  if (format_char >= 040 && format_char < 0177)
+	    sprintf (message,
+		     "unknown conversion type character `%c' in format",
+		     format_char);
+	  else
+	    sprintf (message,
+		     "unknown conversion type character 0x%x in format",
+		     format_char);
+	  warning (message);
+	  continue;
+	}
+      if (wide && index (fci->flag_chars, 'w') == 0)
+	{
+	  sprintf (message, "width used with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      if (precise && index (fci->flag_chars, 'p') == 0)
+	{
+	  sprintf (message, "precision used with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      if (info->is_scan && format_char == '[')
+	{
+	  /* Skip over scan set, in case it happens to have '%' in it.  */
+	  if (*format_chars == '^')
+	    ++format_chars;
+	  /* Find closing bracket; if one is hit immediately, then
+	     it's part of the scan set rather than a terminator.  */
+	  if (*format_chars == ']')
+	    ++format_chars;
+	  while (*format_chars && *format_chars != ']')
+	    ++format_chars;
+	  if (*format_chars != ']')
+	      /* The end of the format string was reached.  */
+	      warning ("no closing `]' for `%%[' format");
+	}
+      if (suppressed)
+	{
+	  if (index (fci->flag_chars, '*') == 0)
+	    {
+	      sprintf (message,
+		       "suppression of `%c' conversion in format",
+		       format_char);
+	      warning (message);
+	    }
+	  continue;
+	}
+      for (i = 0; flag_chars[i] != 0; ++i)
+	{
+	  if (index (fci->flag_chars, flag_chars[i]) == 0)
+	    {
+	      sprintf (message, "flag `%c' used with type `%c'",
+		       flag_chars[i], format_char);
+	      warning (message);
+	    }
+	}
+      if (precise && index (flag_chars, '0') != 0
+	  && (format_char == 'd' || format_char == 'i'
+	      || format_char == 'o' || format_char == 'u'
+	      || format_char == 'x' || format_char == 'x'))
+	{
+	  sprintf (message,
+		   "precision and `0' flag not both allowed with `%c' format",
+		   format_char);
+	  warning (message);
+	}
+      switch (length_char)
+	{
+	default: wanted_type = fci->nolen ? *(fci->nolen) : 0; break;
+	case 'h': wanted_type = fci->hlen ? *(fci->hlen) : 0; break;
+	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
+	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
+	}
+      if (wanted_type == 0)
+	{
+	  sprintf (message,
+		   "use of `%c' length character with `%c' type character",
+		   length_char, format_char);
+	  warning (message);
+	}
+
+      /*
+       ** XXX -- should kvetch about stuff such as
+       **	{
+       **		const int	i;
+       **
+       **		scanf ("%d", &i);
+       **	}
+       */
+
+      /* Finally. . .check type of argument against desired type!  */
+      if (info->first_arg_num == 0)
+	continue;
+      if (params == 0)
+	{
+	  warning (tfaff);
+	  return;
+	}
+      cur_param = TREE_VALUE (params);
+      params = TREE_CHAIN (params);
+      ++arg_num;
+      cur_type = TREE_TYPE (cur_param);
+
+      /* Check the types of any additional pointer arguments
+	 that precede the "real" argument.  */
+      for (i = 0; i < fci->pointer_count; ++i)
+	{
+	  if (TREE_CODE (cur_type) == POINTER_TYPE)
+	    {
+	      cur_type = TREE_TYPE (cur_type);
+	      continue;
+	    }
+	  sprintf (message,
+		   "format argument is not a %s (arg %d)",
+		   ((fci->pointer_count == 1) ? "pointer" : "pointer to a pointer"),
+		   arg_num);
+	  warning (message);
+	  break;
+	}
+
+      /* Check the type of the "real" argument, if there's a type we want.  */
+      if (i == fci->pointer_count && wanted_type != 0
+	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
+	  /* If we want `void *', allow any pointer type.
+	     (Anything else would already have got a warning.)  */
+	  && ! (wanted_type == void_type_node
+		&& fci->pointer_count > 0)
+	  /* Don't warn about differences merely in signedness.  */
+	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
+	       && TREE_CODE (cur_type) == INTEGER_TYPE
+	       && (wanted_type == (TREE_UNSIGNED (wanted_type)
+				   ? unsigned_type : signed_type) (cur_type))))
+	{
+	  register char *this;
+	  register char *that;
+  
+	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
+	  that = 0;
+	  if (TREE_CODE (cur_type) != ERROR_MARK
+	      && TYPE_NAME (cur_type) != 0
+	      && TREE_CODE (cur_type) != INTEGER_TYPE
+	      && !(TREE_CODE (cur_type) == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (cur_type)) == INTEGER_TYPE))
+	    {
+	      if (TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL
+		  && DECL_NAME (TYPE_NAME (cur_type)) != 0)
+		that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
+	      else
+		that = IDENTIFIER_POINTER (TYPE_NAME (cur_type));
+	    }
+
+	  /* A nameless type can't possibly match what the format wants.
+	     So there will be a warning for it.
+	     Make up a string to describe vaguely what it is.  */
+	  if (that == 0)
+	    {
+	      if (TREE_CODE (cur_type) == POINTER_TYPE)
+		that = "pointer";
+	      else
+		that = "different type";
+	    }
+
+	  if (strcmp (this, that) != 0)
+	    {
+	      sprintf (message, "%s format, %s arg (arg %d)",
+			this, that, arg_num);
+	      warning (message);
+	    }
+	}
+    }
 }
 
 /* Print a warning if a constant expression had overflow in folding.
