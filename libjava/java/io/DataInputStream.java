@@ -27,7 +27,6 @@ package java.io;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date October 20, 1998.  
  */
-
 public class DataInputStream extends FilterInputStream implements DataInput
 {
   // readLine() hack to ensure that an '\r' not followed by an '\n' is
@@ -61,7 +60,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int read(byte[] b) throws IOException
   {
-    return super.read(b, 0, b.length);
+    return in.read(b, 0, b.length);
   }
 
   /**
@@ -82,10 +81,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int read(byte[] b, int off, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
-      throw new ArrayIndexOutOfBoundsException();
-
-    return super.read(b, off, len);
+    return in.read(b, off, len);
   }
 
   /**
@@ -106,7 +102,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final boolean readBoolean() throws IOException
   {
-    return (readByte() != 0);
+    int b = in.read();
+    if (b < 0)
+      throw new EOFException();    
+    return (b != 0);
   }
 
   /**
@@ -126,7 +125,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final byte readByte() throws IOException
   {
-    int i = read();
+    int i = in.read();
     if (i < 0)
       throw new EOFException();
 
@@ -160,7 +159,11 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final char readChar() throws IOException
   {
-    return (char) ((readByte() << 8) | readUnsignedByte());
+    int a = in.read();
+    int b = in.read();
+    if (b < 0)
+      throw new EOFException();
+    return (char) ((a << 8) | (b & 0xff));
   }
 
   /**
@@ -247,13 +250,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final void readFully(byte[] b, int off, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
-      throw new ArrayIndexOutOfBoundsException();
-
     while (len > 0)
       {
-	// super.read will block until some data is available.
-	int numread = super.read(b, off, len);
+	// in.read will block until some data is available.
+	int numread = in.read(b, off, len);
 	if (numread < 0)
 	  throw new EOFException();
 	len -= numread;
@@ -290,11 +290,15 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int readInt() throws IOException
   {
-    int retval = 0;
-    for (int i = 0; i < 4; i++)
-      retval |= readUnsignedByte() << (24 - i * 8);
-
-    return retval;
+    int a = in.read();
+    int b = in.read();
+    int c = in.read();
+    int d = in.read();
+    if (d < 0)
+      throw new EOFException();
+    
+    return (((a & 0xff) << 24) | ((b & 0xff) << 16) |
+	    ((c & 0xff) << 8) | (d & 0xff));
   }
 
   /**
@@ -335,7 +339,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
         while (getnext)
           {
 	    getnext = false;
-	    c = read();
+	    c = in.read();
 	    if (c < 0)	// got an EOF
 	      return strb.length() > 0 ? strb.toString() : null;
 	    ch = (char) c;
@@ -377,7 +381,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
             char next_ch = ' ';
 	    if (in instanceof BufferedInputStream)
 	      {
-	        next_c = read();
+	        next_c = in.read();
 	        next_ch = (char) (next_c & 0xFF);
 		if ((next_ch != '\n') && (next_c >= 0)) 
 		  {
@@ -388,12 +392,12 @@ public class DataInputStream extends FilterInputStream implements DataInput
 	      }
 	    else if (markSupported())
 	      {
-	        next_c = read();
+	        next_c = in.read();
 	        next_ch = (char) (next_c & 0xFF);
 		if ((next_ch != '\n') && (next_c >= 0)) 
 		  {
 		    mark(1);
-		    if ((read() & 0xFF) != '\n')
+		    if ((in.read() & 0xFF) != '\n')
 		      reset();
 		  }
 	      } 
@@ -441,11 +445,25 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final long readLong() throws IOException
   {
-    long retval = 0L;
-    for (int i = 0; i < 8; i++)
-      retval |= (long) readUnsignedByte() << (56 - i * 8);
-
-    return retval;
+    int a = in.read();
+    int b = in.read();
+    int c = in.read();
+    int d = in.read();
+    int e = in.read();
+    int f = in.read();
+    int g = in.read();
+    int h = in.read();
+    if (h < 0)
+      throw new EOFException();
+    
+    return (((long)(a & 0xff) << 56) |
+	    ((long)(b & 0xff) << 48) |
+	    ((long)(c & 0xff) << 40) |
+	    ((long)(d & 0xff) << 32) |
+	    ((long)(e & 0xff) << 24) |
+	    ((long)(f & 0xff) << 16) |
+	    ((long)(g & 0xff) <<  8) |
+	    ((long)(h & 0xff)));
   }
 
   /**
@@ -477,7 +495,11 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final short readShort() throws IOException
   {
-    return (short) ((readByte() << 8) | readUnsignedByte());
+    int a = in.read();
+    int b = in.read();
+    if (b < 0)
+      throw new EOFException();
+    return (short) ((a << 8) | (b & 0xff));
   }
 
   /**
@@ -498,7 +520,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int readUnsignedByte() throws IOException
   {
-    int i = read();
+    int i = in.read();
     if (i < 0)
       throw new EOFException();
 
@@ -532,7 +554,11 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int readUnsignedShort() throws IOException
   {
-    return (readUnsignedByte() << 8) | readUnsignedByte();
+    int a = in.read();
+    int b = in.read();
+    if (b < 0)
+      throw new EOFException();
+    return (((a & 0xff) << 8) | (b & 0xff));
   }
 
   /**
@@ -664,34 +690,29 @@ public class DataInputStream extends FilterInputStream implements DataInput
   /**
    * This method attempts to skip and discard the specified number of bytes 
    * in the input stream.  It may actually skip fewer bytes than requested. 
-   * The actual number of bytes skipped is returned.  This method will not
-   * skip any bytes if passed a negative number of bytes to skip.
+   * This method will not skip any bytes if passed a negative number of bytes 
+   * to skip. 
    *
    * @param n The requested number of bytes to skip.
-   *
-   * @return The number of bytes actually skipped.
-   *
+   * @return The requested number of bytes to skip.
    * @exception IOException If an error occurs.
+   * @specnote The JDK docs claim that this returns the number of bytes 
+   *  actually skipped. The JCL claims that this method can throw an 
+   *  EOFException. Neither of these appear to be true in the JDK 1.3's
+   *  implementation. This tries to implement the actual JDK behaviour.
    */
   public final int skipBytes(int n) throws IOException
   {
-    // The contract in the Java Lang. Spec. says that this never
-    // throws an EOFException and infers that it doesn't block (since
-    // it may skip less than the requested number of bytes).
-    // BUT, the JCL book specifically says that this method blocks
-    // and can throw an EOFException.  Finally, the Java 1.2 online
-    // doc simply refers to the general contract.  As such, we will
-    // stick to the contract and assume for now that the JCL book
-    // is incorrect.
-
-    // Since we're only skipping at most an int number of bytes, the cast
-    // of return value to an int is fine.
-    if (n > 0)
+    if (n <= 0)
+      return 0;    
+    try
       {
-	n = Math.min(n, available());
-        return (int) super.skip((long) n);
+        return (int) in.skip(n);
       }
-
-    return 0;
+    catch (EOFException x)
+      {
+        // do nothing.
+      }         
+    return n;
   }
 }

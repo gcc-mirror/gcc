@@ -1,3 +1,14 @@
+2000-11-28  Bryce McKinlay  <bryce@abatross.co.nz>
+
+	* java/io/DataInputStream.java: Merge classpath docs. Call in.read()
+	directly rather than read() in all cases. Make primitive read 
+	implementations	more efficient, as defined in JDK online docs.
+	(skipBytes): Behave like the JDK's implementation.
+	* java/io/BufferedReader.java: Merge classpath docs. Check for a 
+	closed stream with checkStatus() whenever an IOException can be 
+	thrown.
+	(checkStatus): New private method.
+
 2000-11-27  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am: Added natTimeZone.cc.
