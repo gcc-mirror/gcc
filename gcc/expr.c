@@ -5827,20 +5827,21 @@ highest_pow2_factor (exp)
   switch (TREE_CODE (exp))
     {
     case INTEGER_CST:
-      /* If the integer is expressable in a HOST_WIDE_INT, we can find the
-	 lowest bit that's a one.  If the result is zero, return
-	 BIGGEST_ALIGNMENT.  We need to handle this case since we can find it
-	 in a COND_EXPR, a MIN_EXPR, or a MAX_EXPR.  If the constant overlows,
-	 we have an erroneous program, so return BIGGEST_ALIGNMENT to avoid any
+      /* We can find the lowest bit that's a one.  If the low
+	 HOST_BITS_PER_WIDE_INT bits are zero, return BIGGEST_ALIGNMENT.
+	 We need to handle this case since we can find it in a COND_EXPR,
+	 a MIN_EXPR, or a MAX_EXPR.  If the constant overlows, we have an
+	 erroneous program, so return BIGGEST_ALIGNMENT to avoid any
 	 later ICE.  */
-      if (TREE_CONSTANT_OVERFLOW (exp)
-	  || integer_zerop (exp))
+      if (TREE_CONSTANT_OVERFLOW (exp))
 	return BIGGEST_ALIGNMENT;
-      else if (host_integerp (exp, 0))
+      else
 	{
-	  c0 = tree_low_cst (exp, 0);
-	  c0 = c0 < 0 ? - c0 : c0;
-	  return c0 & -c0;
+	  /* Note: tree_low_cst is intentionally not used here,
+	     we don't care about the upper bits.  */
+	  c0 = TREE_INT_CST_LOW (exp);
+	  c0 &= -c0;
+	  return c0 ? c0 : BIGGEST_ALIGNMENT;
 	}
       break;
 
