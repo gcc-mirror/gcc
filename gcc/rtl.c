@@ -284,10 +284,10 @@ copy_rtx (orig)
 	return orig;
       break;
 
-    case MEM:
-      if (CONSTANT_ADDRESS_P (XEXP (orig, 0)))
-	return orig;
-      break;
+      /* A MEM with a constant address is not sharable.  The problem is that
+	 the constant address may need to be reloaded.  If the mem is shared,
+	 then reloading one copy of this mem will cause all copies to appear
+	 to have been reloaded.  */
     }
 
   copy = rtx_alloc (code);
