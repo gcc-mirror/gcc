@@ -1,3 +1,8 @@
+2004-04-30  Uros Bizjak  <uros@kss-loka.si>
+
+        * config/i386/i386.md (atansf2, atandf2, atanxf2): Move near
+        atan2?f3 expanders.
+
 2004-04-29  Nick Clifton  <nickc@redhat.com>
 
 	Bug 14093
