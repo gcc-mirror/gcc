@@ -1,3 +1,8 @@
+Sat Apr 10 13:09:18 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (di_operand): Allow SUBREGs as well.
+	(soft_df_operand): Allow SUBREGs as well.
+
 Sat Apr 10 06:14:31 1999  Jan Hubicka  <hubicka@paru.cas.cz>
 
 	* extend.texi (Assembler Instructions with C Expression Operands):
