@@ -478,11 +478,13 @@ public abstract class URLStreamHandler
       }
 
     if (host.length() != 0)
-      sb.append("//").append(host);
+      {
+        sb.append("//").append(host);
 
-    // Append port if port was in URL spec.
-    if (port != -1)
-      sb.append(':').append(port);
+        // Append port if port was in URL spec.
+        if (port >= 0)
+          sb.append(':').append(port);
+      }
 
     sb.append(file);
 
