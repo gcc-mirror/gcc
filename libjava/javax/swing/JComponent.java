@@ -1,5 +1,5 @@
 /* JComponent.java -- Every component in swing inherits from this class.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,8 +63,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.EventListener;
 import java.util.Hashtable;
+import java.util.Vector;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleExtendedComponent;
@@ -86,6 +87,9 @@ import javax.swing.plaf.ComponentUI;
 public abstract class JComponent extends Container implements Serializable
 {
   static final long serialVersionUID = -5242478962609715464L;
+
+  protected EventListenerList listenerList = new EventListenerList();
+
         /**
          * accessibleContext
          */
@@ -98,9 +102,6 @@ public abstract class JComponent extends Container implements Serializable
 	boolean use_double_buffer, opaque;
 	protected ComponentUI ui;
 
-	Vector ancestor_list;
-	Vector veto_list;
-	Vector change_list;
 	Hashtable prop_hash;
 
 	/**
@@ -273,15 +274,11 @@ public abstract class JComponent extends Container implements Serializable
 		super();
 		super.setLayout(new FlowLayout());
 		
-		listenerList = new EventListenerList();
-    
 		//eventMask |= AWTEvent.COMP_KEY_EVENT_MASK;
 		// enableEvents( AWTEvent.KEY_EVENT_MASK );
 
 		//updateUI(); // get a proper ui
 	}
-
-	protected EventListenerList listenerList;
 
 	public boolean contains(int x, int y)
 	{
@@ -301,24 +298,6 @@ public abstract class JComponent extends Container implements Serializable
 			prop_hash = new Hashtable();
 		return prop_hash;
 	}
-	public Vector get_veto_list()
-	{
-		if (veto_list == null)
-			veto_list = new Vector();
-		return veto_list;
-	}
-	public Vector get_change_list()
-	{
-		if (change_list == null)
-			change_list = new Vector();
-		return change_list;
-	}
-	public Vector get_ancestor_list()
-	{
-		if (ancestor_list == null)
-			ancestor_list = new Vector();
-		return ancestor_list;
-	}
 
 	public Object getClientProperty(Object key)
         {	return get_prop_hash().get(key);    }
@@ -326,29 +305,99 @@ public abstract class JComponent extends Container implements Serializable
 	public void putClientProperty(Object key, Object value)
 	{    get_prop_hash().put(key, value);   }
 
-	public void removeAncestorListener(AncestorListener listener)
-	{  get_ancestor_list().removeElement(listener);  }
+  /**
+   * Unregister an <code>AncestorListener</code>.
+   */
+  public void removeAncestorListener(AncestorListener listener)
+  {
+    listenerList.remove(AncestorListener.class, listener);
+  }
 
-        public void removePropertyChangeListener(PropertyChangeListener listener)
-	{  get_change_list().removeElement(listener);   }
+  /**
+   * Unregister a <code>PropertyChangeListener</code>.
+   */
+  public void removePropertyChangeListener(PropertyChangeListener listener)
+  {
+    listenerList.remove(PropertyChangeListener.class, listener);
+  }
 
-	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
-	{  /* FIXME */   get_change_list().removeElement(listener);   }
+  /**
+   * Unregister a <code>PropertyChangeListener</code>.
+   */
+  public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener)
+  {
+    listenerList.remove(PropertyChangeListener.class, listener);
+  }
 
-	public void removeVetoableChangeListener(VetoableChangeListener listener)
-	{  get_veto_list().removeElement(listener);   }
+  /**
+   * Unregister a <code>VetoableChangeChangeListener</code>.
+   */
+  public void removeVetoableChangeListener(VetoableChangeListener listener)
+  {
+    listenerList.remove(VetoableChangeListener.class, listener);
+  }
 
-	public void addAncestorListener(AncestorListener listener)
-	{   get_ancestor_list().addElement(listener);  }
+  /**
+   * Register an <code>AncestorListener</code>.
+   */
+  public void addAncestorListener(AncestorListener listener)
+  {
+    listenerList.add(AncestorListener.class, listener);
+  }
 
-	public void addPropertyChangeListener(PropertyChangeListener listener)
-	{  get_change_list().addElement(listener);   }
+  /**
+   * Register a <code>PropertyChangeListener</code>.
+   */
+  public void addPropertyChangeListener(PropertyChangeListener listener)
+  {
+    listenerList.add(PropertyChangeListener.class, listener);
+  }
 
-	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-	{ /* FIXME */ get_change_list().addElement(listener);   }
+  /**
+   * Register a <code>PropertyChangeListener</code>.
+   */
+  public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
+  {
+    listenerList.add(PropertyChangeListener.class, listener);
+  }
 
-	public void addVetoableChangeListener(VetoableChangeListener listener)
-	{  get_veto_list().addElement(listener);    }
+  /**
+   * Register a <code>VetoableChangeListener</code>.
+   */
+  public void addVetoableChangeListener(VetoableChangeListener listener)
+  {
+    listenerList.add(VetoableChangeListener.class, listener);
+  }
+
+  /**
+   * Return all registered listeners of a special type.
+   * 
+   * @since 1.3
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    return listenerList.getListeners (listenerType);
+  }
+  
+  /**
+   * Return all registered <code>Ancestor</code> objects.
+   * 
+   * @since 1.4
+   */
+  public AncestorListener[] getAncestorListeners()
+  {
+    return (AncestorListener[]) getListeners (AncestorListener.class);
+  }
+
+  /**
+   * Return all registered <code>VetoableChangeListener</code> objects.
+   * 
+   * @since 1.4
+   */
+  public VetoableChangeListener[] getVetoableChangeListeners()
+  {
+    return (VetoableChangeListener[]) getListeners (VetoableChangeListener.class);
+  }
 
 	public void computeVisibleRect(Rectangle rect)
 	{
@@ -397,6 +446,7 @@ public abstract class JComponent extends Container implements Serializable
 	}
 
 	protected  void fireVetoableChange(String propertyName, Object oldValue, Object newValue)
+          throws PropertyVetoException
 	{
 		//       Support for reporting constrained property changes.
 	}
