@@ -3910,22 +3910,22 @@ add_using_namespace (user, used, indirect)
     add_using_namespace (TREE_PURPOSE (t), used, 1);
 }
 
-/* Combines two sets of overloaded functions into an OVERLOAD chain.
-   The first list becomes the tail of the result. */
+/* Combines two sets of overloaded functions into an OVERLOAD chain, removing
+   duplicates.  The first list becomes the tail of the result.
+
+   The algorithm is O(n^2).  */
 
 static tree
 merge_functions (s1, s2)
      tree s1;
      tree s2;
 {
-  if (TREE_CODE (s2) == OVERLOAD)
-    while (s2)
-      {
-	s1 = build_overload (OVL_FUNCTION (s2), s1);
-	s2 = OVL_CHAIN (s2);
-      }
-  else
-    s1 = build_overload (s2, s1);
+  for (; s2; s2 = OVL_NEXT (s2))
+    {
+      tree fn = OVL_CURRENT (s2);
+      if (! ovl_member (fn, s1))
+	s1 = build_overload (fn, s1);
+    }
   return s1;
 }
 
@@ -4458,8 +4458,11 @@ validate_nonmember_using_decl (decl, scope, name)
 {
   if (TREE_CODE (decl) == SCOPE_REF
       && TREE_OPERAND (decl, 0) == std_node)
-    return NULL_TREE;
-  if (TREE_CODE (decl) == SCOPE_REF)
+    {
+      *scope = global_namespace;
+      *name = TREE_OPERAND (decl, 1);
+    }
+  else if (TREE_CODE (decl) == SCOPE_REF)
     {
       *scope = TREE_OPERAND (decl, 0);
       *name = TREE_OPERAND (decl, 1);

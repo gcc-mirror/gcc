@@ -4751,7 +4751,7 @@ case 187:
 { 
 		  cp_finish_decl (yyvsp[-1].ttype, yyvsp[0].ttype, yyvsp[-3].ttype, 1, LOOKUP_ONLYCONVERTING);
 		  resume_momentary (yyvsp[-2].itype);
-		  yyval.ttype = yyvsp[-1].ttype; 
+		  yyval.ttype = convert_from_reference (yyvsp[-1].ttype); 
 		  if (TREE_CODE (TREE_TYPE (yyval.ttype)) == ARRAY_TYPE)
 		    cp_error ("definition of array `%#D' in condition", yyval.ttype); 
 		;

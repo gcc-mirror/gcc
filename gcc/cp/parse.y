@@ -991,7 +991,7 @@ condition:
 		{ 
 		  cp_finish_decl ($<ttype>6, $7, $4, 1, LOOKUP_ONLYCONVERTING);
 		  resume_momentary ($<itype>5);
-		  $$ = $<ttype>6; 
+		  $$ = convert_from_reference ($<ttype>6); 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
 		    cp_error ("definition of array `%#D' in condition", $$); 
 		}

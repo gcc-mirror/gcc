@@ -1,6 +1,16 @@
+1998-10-23  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* parse.y (condition): Convert VAR_DECL from reference to indirect
+	reference.
+
 1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (hack_identifier): Just return a member function.
+
+1998-10-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (validate_nonmember_using_decl): Fix using-directives of
+	std if std is ignored.
 
 1998-10-14  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -23,6 +33,24 @@
 	(operator!=): Just call operator==.
 	* tinfo.cc: Add #pragma implementation.
 	(operator==): Move from inc/typeinfo and tinfo2.cc.
+
+1998-10-05  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* method.c (build_decl_overload_real): Clear
+	numeric_output_need_bar after __.
+
+1998-10-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (cp_finish_decl): Make statics in extern inlines and
+	templates common, if possible and the target doesn't support weak
+	symbols.
+
+1998-10-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (merge_functions): Remove duplicates.
+
+	* typeck.c (build_conditional_expr): Only fold if ifexp is an
+	INTEGER_CST.
 
 Fri Oct  2 02:07:26 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
