@@ -994,6 +994,9 @@ check_attr_test (exp, is_const)
 	}
       break;
 
+    case ATTR_FLAG:
+      break;
+
     case CONST_INT:
       /* Either TRUE or FALSE.  */
       if (XWINT (exp, 0))
@@ -3855,6 +3858,7 @@ clear_struct_flag (x)
     case PC:
     case CC0:
     case EQ_ATTR:
+    case ATTR_FLAG:
       return;
     }
 
@@ -3905,6 +3909,7 @@ count_sub_rtxs (x, max)
     case PC:
     case CC0:
     case EQ_ATTR:
+    case ATTR_FLAG:
       return 1;
     }
 
@@ -4410,6 +4415,13 @@ write_test_expr (exp, in_comparison)
 	}
       break;
 
+    /* Comparison test of flags for define_delays.  */
+    case ATTR_FLAG:
+      if (in_comparison)
+	fatal ("ATTR_FLAG not valid inside comparison");
+      printf ("(flags & ATTR_FLAG_%s) != 0", XSTR (exp, 0));
+      break;
+
     /* See if an operand matches a predicate.  */
     case MATCH_OPERAND:
       /* If only a mode is given, just ensure the mode matches the operand.
@@ -4550,6 +4562,9 @@ walk_attr_value (exp)
     case MATCH_DUP:
     case PC:
       address_used = 1;
+      return;
+
+    case ATTR_FLAG:
       return;
     }
 
@@ -4919,10 +4934,12 @@ write_eligible_delay (kind)
   /* Write function prelude.  */
 
   printf ("int\n");
-  printf ("eligible_for_%s (delay_insn, slot, candidate_insn)\n", kind);
+  printf ("eligible_for_%s (delay_insn, slot, candidate_insn, flags)\n", 
+	   kind);
   printf ("     rtx delay_insn;\n");
   printf ("     int slot;\n");
   printf ("     rtx candidate_insn;\n");
+  printf ("     int flags;\n");
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("\n");
