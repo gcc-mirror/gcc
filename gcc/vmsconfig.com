@@ -224,6 +224,7 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 	SET(OUTPUT_FILE, compiler_list, "compilers.list");
       write_file (compiler_list);
    generate_option_file(LINE_BEGIN & "OBJS" & ((SPAN(" ") & "=") | "="),"independent.opt");
+   generate_option_file(LINE_BEGIN & "LIB2FUNCS" & ((SPAN(" ") & "=") | "="),"libgcc2.list");
 !
 ! Now change OBJS in the Makefile, so each language specific options file 
 ! does not pick up all of the language independent files.
