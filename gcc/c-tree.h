@@ -106,6 +106,17 @@ struct lang_type GTY(())
    sizeof and typeof it is set for other function decls as well.  */
 #define C_DECL_USED(EXP) DECL_LANG_FLAG_5 (EXP)
 
+/* Record whether a label was defined in a statement expression which
+   has finished and so can no longer be jumped to.  */
+#define C_DECL_UNJUMPABLE_STMT_EXPR(EXP)	\
+  DECL_LANG_FLAG_6 (LABEL_DECL_CHECK (EXP))
+
+/* Record whether a label was the subject of a goto from outside the
+   current level of statement expression nesting and so cannot be
+   defined right now.  */
+#define C_DECL_UNDEFINABLE_STMT_EXPR(EXP)	\
+  DECL_LANG_FLAG_7 (LABEL_DECL_CHECK (EXP))
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
@@ -350,6 +361,27 @@ struct language_function GTY(())
   int extern_inline;
 };
 
+/* Save lists of labels used or defined in particular statement
+   expression contexts.  Allocated on the parser obstack.  */
+
+struct c_label_list
+{
+  /* The label at the head of the list.  */
+  tree label;
+  /* The rest of the list.  */
+  struct c_label_list *next;
+};
+
+struct c_label_context
+{
+  /* The labels defined at this level of nesting.  */
+  struct c_label_list *labels_def;
+  /* The labels used at this level of nesting.  */
+  struct c_label_list *labels_used;
+  /* The next outermost context.  */
+  struct c_label_context *next;
+};
+
 
 /* in c-parser.c */
 extern void c_parse_init (void);
@@ -452,6 +484,7 @@ extern int in_sizeof;
 extern int in_typeof;
 
 extern struct c_switch *c_switch_stack;
+extern struct c_label_context *label_context_stack;
 
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (tree, tree);
