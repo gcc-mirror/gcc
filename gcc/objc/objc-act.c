@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Author: Steve Naroff.
 
 This file is part of GNU CC.
@@ -6448,7 +6448,7 @@ start_method_def (method)
 static void
 warn_with_method (message, mtype, method)
      char *message;
-     char mtype;
+     int mtype;
      tree method;
 {
   if (count_error (1) == 0)
