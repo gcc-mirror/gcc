@@ -482,7 +482,7 @@ update_phis_for_duplicate_loop (struct loop *loop,
   for (phi_new = phi_nodes (new_loop->header),
        phi_old = phi_nodes (loop->header);
        phi_new && phi_old;
-       phi_new = TREE_CHAIN (phi_new), phi_old = TREE_CHAIN (phi_old))
+       phi_new = PHI_CHAIN (phi_new), phi_old = PHI_CHAIN (phi_old))
     {
       def = PHI_ARG_DEF_FROM_EDGE (phi_old, old_latch);
 
@@ -577,7 +577,7 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 	/* Update all phi nodes at the loop exit successor.  */
 	for (phi1 = phi_nodes (EDGE_SUCC (bb, 0)->dest); 
 	     phi1; 
-	     phi1 = TREE_CHAIN (phi1))
+	     phi1 = PHI_CHAIN (phi1))
 	  {
 	    tree old_arg = PHI_ARG_DEF_FROM_EDGE (phi1, EDGE_SUCC (bb, 0));
 	    if (old_arg == phi_arg)

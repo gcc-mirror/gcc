@@ -824,7 +824,7 @@ process_phi_nodes (struct loop *loop)
 
       while (phi)
 	{
-	  tree next = TREE_CHAIN (phi);
+	  tree next = PHI_CHAIN (phi);
 	  replace_phi_with_cond_modify_expr (phi, cond, true_bb, &bsi);
 	  release_phi_node (phi);
 	  phi = next;

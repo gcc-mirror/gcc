@@ -4515,9 +4515,9 @@ add_phi_args_after_copy_bb (basic_block bb_copy)
 
       for (phi = phi_nodes (e->dest), phi_copy = phi_nodes (e_copy->dest);
 	   phi;
-	   phi = phi_next, phi_copy = TREE_CHAIN (phi_copy))
+	   phi = phi_next, phi_copy = PHI_CHAIN (phi_copy))
 	{
-	  phi_next = TREE_CHAIN (phi);
+	  phi_next = PHI_CHAIN (phi);
 
 	  gcc_assert (PHI_RESULT (phi) == PHI_RESULT (phi_copy));
 	  def = PHI_ARG_DEF_FROM_EDGE (phi, e);

@@ -4659,7 +4659,7 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
 
   for (phi = phi_nodes (exit->dest); phi; phi = next)
     {
-      next = TREE_CHAIN (phi);
+      next = PHI_CHAIN (phi);
 
       if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == op)
 	{
