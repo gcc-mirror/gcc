@@ -153,13 +153,11 @@ qualify_type (type, like)
 
 /* Return the common type of two types.
    We assume that comptypes has already been done and returned 1;
-   if that isn't so, this may crash.
+   if that isn't so, this may crash.  In particular, we assume that qualifiers
+   match.
 
    This is the type for the result of most arithmetic operations
-   if the operands have the given two types.
-
-   We do not deal with enumeral types here because they have already been
-   converted to integer types.  */
+   if the operands have the given two types.  */
 
 tree
 common_type (t1, t2)
@@ -603,7 +601,7 @@ self_promoting_args_p (parms)
       if (TREE_CHAIN (t) == 0 && type != void_type_node)
 	return 0;
 
-      if (type == float_type_node)
+      if (TYPE_MAIN_VARIANT (type) == float_type_node)
 	return 0;
 
       if (type
@@ -620,7 +618,7 @@ static int
 self_promoting_type_p (type)
      tree type;
 {
-  if (type == float_type_node)
+  if (TYPE_MAIN_VARIANT (type) == float_type_node)
     return 0;
 
   if (TREE_CODE (type) == INTEGER_TYPE
@@ -636,15 +634,16 @@ tree
 unsigned_type (type)
      tree type;
 {
-  if (type == signed_char_type_node || type == char_type_node)
+  tree type1 = TYPE_MAIN_VARIANT (type);
+  if (type1 == signed_char_type_node || type1 == char_type_node)
     return unsigned_char_type_node;
-  if (type == integer_type_node)
+  if (type1 == integer_type_node)
     return unsigned_type_node;
-  if (type == short_integer_type_node)
+  if (type1 == short_integer_type_node)
     return short_unsigned_type_node;
-  if (type == long_integer_type_node)
+  if (type1 == long_integer_type_node)
     return long_unsigned_type_node;
-  if (type == long_long_integer_type_node)
+  if (type1 == long_long_integer_type_node)
     return long_long_unsigned_type_node;
   return type;
 }
@@ -655,15 +654,16 @@ tree
 signed_type (type)
      tree type;
 {
-  if (type == unsigned_char_type_node || type == char_type_node)
+  tree type1 = TYPE_MAIN_VARIANT (type);
+  if (type1 == unsigned_char_type_node || type1 == char_type_node)
     return signed_char_type_node;
-  if (type == unsigned_type_node)
+  if (type1 == unsigned_type_node)
     return integer_type_node;
-  if (type == short_unsigned_type_node)
+  if (type1 == short_unsigned_type_node)
     return short_integer_type_node;
-  if (type == long_unsigned_type_node)
+  if (type1 == long_unsigned_type_node)
     return long_integer_type_node;
-  if (type == long_long_unsigned_type_node)
+  if (type1 == long_long_unsigned_type_node)
     return long_long_integer_type_node;
   return type;
 }
@@ -917,7 +917,7 @@ default_conversion (exp)
 	return convert (unsigned_type_node, exp);
       return convert (integer_type_node, exp);
     }
-  if (flag_traditional && type == float_type_node)
+  if (flag_traditional && TYPE_MAIN_VARIANT (type) == float_type_node)
     return convert (double_type_node, exp);
   if (code == VOID_TYPE)
     {
@@ -1537,7 +1537,8 @@ check_format (info, params)
 		     It will work on most machines, because size_t and int
 		     have the same mode.  But might as well warn anyway,
 		     since it will fail on other machines.  */
-		  if (TREE_TYPE (cur_param) != integer_type_node)
+		  if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+		      != integer_type_node)
 		    {
 		      sprintf (message,
 			       "field width is not type int (arg %d)",
@@ -1580,7 +1581,8 @@ check_format (info, params)
 		      cur_param = TREE_VALUE (params);
 		      params = TREE_CHAIN (params);
 		      ++arg_num;
-		      if (TREE_TYPE (cur_param) != integer_type_node)
+		      if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+			  != integer_type_node)
 		        {
 		          sprintf (message,
 				   "field width is not type int (arg %d)",
@@ -1723,7 +1725,7 @@ check_format (info, params)
 
       /* Check the type of the "real" argument, if there's a type we want.  */
       if (i == fci->pointer_count && wanted_type != 0
-	  && wanted_type != cur_type
+	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
 	  /* If we want `void *', allow any pointer type.
 	     (Anything else would already have got a warning.)  */
 	  && ! (wanted_type == void_type_node
@@ -2363,7 +2365,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      if (TREE_TYPE (op1) != integer_type_node)
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
@@ -2387,7 +2389,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      if (TREE_TYPE (op1) != integer_type_node)
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
@@ -2412,7 +2414,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      if (TREE_TYPE (op1) != integer_type_node)
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
@@ -5312,10 +5314,11 @@ c_expand_start_case (exp)
   else
     {
       tree index;
+      type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
       if (warn_traditional
-	  && (TREE_TYPE (exp) == long_integer_type_node
-	      || TREE_TYPE (exp) == long_unsigned_type_node))
+	  && (type == long_integer_type_node
+	      || type == long_unsigned_type_node))
 	pedwarn ("`long' switch expression not converted to `int' in ANSI C");
 
       exp = default_conversion (exp);
