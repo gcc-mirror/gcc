@@ -1,5 +1,13 @@
 2001-12-03  Ed Schonberg <schonber@gnat.com>
 
+	* sem_ch12.adb (Inline_Instance_Body): Use Save_Scope_Stack and 
+	push Standard on the stack before analyzing the instance body, 
+	in order to have a clean visibility environment.
+	
+	* sem_ch12.adb (Inline_Instance_Body): Remove redundant code. 
+
+2001-12-03  Ed Schonberg <schonber@gnat.com>
+
 	* sem_ch12.adb (Instantiate_Package_Body): Protect against double 
 	instantiation of a body that contains an inlined body.
 

@@ -2728,6 +2728,11 @@ package body Sem_Ch12 is
             then
                Removed := True;
 
+               --  Remove entities in current scopes from visibility, so
+               --  than instance body is compiled in a clean environment.
+
+               Save_Scope_Stack;
+
                if Is_Child_Unit (S) then
                   --  Remove child unit from stack, as well as inner scopes.
                   --  Removing the context of a child unit removes parent
@@ -2755,8 +2760,11 @@ package body Sem_Ch12 is
             S := Scope (S);
          end loop;
 
+         New_Scope (Standard_Standard);
          Instantiate_Package_Body
            ((N, Act_Decl, Expander_Active, Current_Sem_Unit));
+         Pop_Scope;
+
 
          --  Restore context.
 
@@ -2771,36 +2779,7 @@ package body Sem_Ch12 is
          end loop;
 
          if Removed then
-            --  Make local entities not visible, so that when the context of
-            --  unit is restored, there are not spurious hidings of use-
-            --  visible entities (which appear in the environment before the
-            --  current scope).
-
-            if Current_Scope /= Standard_Standard then
-               S := First_Entity (Current_Scope);
-
-               while Present (S) loop
-                  if Is_Overloadable (S) then
-                     Set_Is_Immediately_Visible (S, False);
-                  end if;
-
-                  Next_Entity (S);
-               end loop;
-            end if;
-
             Install_Context (Curr_Comp);
-
-            if Current_Scope /= Standard_Standard then
-               S := First_Entity (Current_Scope);
-
-               while Present (S) loop
-                  if Is_Overloadable (S) then
-                     Set_Is_Immediately_Visible (S);
-                  end if;
-
-                  Next_Entity (S);
-               end loop;
-            end if;
 
             if Present (Curr_Scope)
               and then Is_Child_Unit (Curr_Scope)
@@ -2814,6 +2793,8 @@ package body Sem_Ch12 is
                   New_Scope (Inner_Scopes (J));
                end loop;
             end if;
+
+            Restore_Scope_Stack;
          end if;
 
          for J in reverse 1 .. Num_Scopes loop
