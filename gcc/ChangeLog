@@ -1,5 +1,10 @@
-2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
-                                                                                
+2004-07-26  Eric Christopher  <echristo@redhat.com>
+
+	* tree-dfa.c (add_referenced_var): Register initializers of global
+	variables.
+
+2004-07-26  Paolo Bonzini  <bonzini@gnu.org>
+
         * config/i386/i386.c (function_arg): Always treat 8-
         and 16-byte wide vectors the same, even if MMX/SSE
         are disabled.
@@ -23,11 +28,11 @@
 	unadjusted_alignment unsigned.
 	(expand_call): Make preferred_stack_boundary and
 	preferred_unit_stack_boundary variables unsigned.
-	* function.c (assign_stack_local_1): Make alignment unsigned. 
-	* function.h (struct function): Make stack_alignment_needed, 
+	* function.c (assign_stack_local_1): Make alignment unsigned.
+	* function.h (struct function): Make stack_alignment_needed,
 	preferred_stack_boundary unsigned.
 	* config/i386/i386.c (ix86_preferred_stack_boundary): Make unsigned.
-	(ix86_compute_frame_layout): Make stack_alignment_needed, 
+	(ix86_compute_frame_layout): Make stack_alignment_needed,
 	preferred_alignment variables unsigned.
 	* config/i386/i386.h (ix86_preferred_stack_boundary): Make unsigned.
 
