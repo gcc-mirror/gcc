@@ -2802,6 +2802,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			reject that case.  */
 		     && (ind_levels ? offsettable_memref_p (operand)
 			 : offsettable_nonstrict_memref_p (operand)))
+		    /* A reloaded auto-increment address is offsettable,
+		       because it is now just a simple register indirect.  */
+		    || (GET_CODE (operand) == MEM
+			&& address_reloaded[i]
+			&& (GET_CODE (XEXP (operand, 0)) == PRE_INC
+			    || GET_CODE (XEXP (operand, 0)) == PRE_DEC
+			    || GET_CODE (XEXP (operand, 0)) == POST_INC
+			    || GET_CODE (XEXP (operand, 0)) == POST_DEC))
 		    /* Certain mem addresses will become offsettable
 		       after they themselves are reloaded.  This is important;
 		       we don't want our own handling of unoffsettables
