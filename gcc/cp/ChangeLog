@@ -1,5 +1,10 @@
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (start_function): Clear last_dtor_insn and
+	last_parm_cleanup_insn. 
+	(push_cp_function_context): Just copy over a little of
+	the old context, not all of it.
+
 	* cp-tree.h (copy_to_permanent): Remove.
 	(permanent_p): Likewise.
 	* decl.c (building_typename_type): Don't use copy_to_permanent.
