@@ -1480,7 +1480,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
      register rtx i3, i2, i1;
      register int *new_direct_jump_p;
 {
-  /* New patterns for I3 and I3, respectively.  */
+  /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
   /* Indicates need to preserve SET in I1 or I2 in I3 if it is not dead.  */
   int added_sets_1, added_sets_2;
