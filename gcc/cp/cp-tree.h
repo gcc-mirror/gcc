@@ -20,6 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "c-common.h"
+#include "function.h"
 
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
@@ -434,7 +435,7 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* Global state pertinent to the current function.  */
 
-struct cp_function
+struct language_function
 {
   tree named_labels;
   tree ctor_label;
@@ -464,14 +465,11 @@ struct cp_function
 
   struct named_label_list *named_label_uses;
   struct binding_level *binding_level;
-
-  struct cp_function *next;
 };
 
-/* A stack of cp_functions.  The head is the one that is used for all
-   the per-function globals.  */
+/* The current C++-specific per-function global variables.  */
 
-extern struct cp_function *cp_function_chain;
+#define cp_function_chain (outer_function_chain->language)
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -3074,8 +3072,6 @@ extern tree maybe_build_cleanup_and_delete	PROTO((tree));
 extern tree maybe_build_cleanup			PROTO((tree));
 extern void cplus_expand_expr_stmt		PROTO((tree));
 extern void finish_stmt				PROTO((void));
-extern void push_cp_function_context		PROTO((tree));
-extern void pop_cp_function_context		PROTO((tree));
 extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));

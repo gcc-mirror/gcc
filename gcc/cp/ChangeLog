@@ -1,5 +1,45 @@
 1999-09-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in (CXX_TREE_H): Include function.h.
+	(decl.o): Don't depend on function.h.
+	(decl2.o): Likewise.
+	(typeck.o): Likewise.
+	(init.o): Likewise.
+	(method.o): Likewise.
+	* cp-tree.h: Include function.h.
+	(cp_function): Rename to language_function.  Remove next.
+	(cp_function_chain): Make it a macro, not a variable.
+	(push_cp_function_context): Don't declare.
+	(pop_cp_function_context): Likewise.
+	* decl.c: Don't include function.h.
+	(push_cp_function_context): Make it static.  Make it suitable for
+	a save_lang_status callback.
+	(pop_cp_function_context): Likewise.
+	(maybe_push_to_top_level): Call push_function_context_to, not
+	push_cp_function_context.
+	(pop_from_top_level): Call pop_function_context_from, not
+	pop_cp_function_context.
+	(init_decl_processing):  Set save_lang_status and
+	restore_lang_status.  Call push_function_context_to, not
+	push_cp_function_context.
+	(cp_function_chain): Remove.
+	* decl2.c: Don't include function.h.
+	* except.c: Don't include function.h.
+	(start_anon_func): Call push_function_context_to, not
+	push_cp_function_context.
+	(end_anon_func):  Call pop_function_context_from, not
+	pop_cp_function_context.
+	* init.c: Don't include function.h.
+	* lex.c (begin_definition_of_inclass_inline): Call
+	push_function_context_to, not push_cp_function_context. 
+	(process_next_inline):  Call pop_function_context_from, not
+	pop_cp_function_context.
+	* method.c: Don't include function.h.
+	(synthesize_method): Call push_function_context_to, not
+	push_cp_function_context.  Call pop_function_context_from, not
+	pop_cp_function_context.
+	* typeck.c: Don't include function.h.
+	
 	* decl.c (expand_static_init): Tweak handling of static
 	initializations for objects without constructors.
 

@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "rtl.h"
 #include "expr.h"
-#include "function.h"
 #include "output.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -2365,7 +2364,7 @@ synthesize_method (fndecl)
   if (! context)
     push_to_top_level ();
   else if (nested)
-    push_cp_function_context (context);
+    push_function_context_to (context);
 
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
@@ -2399,5 +2398,5 @@ synthesize_method (fndecl)
   if (! context)
     pop_from_top_level ();
   else if (nested)
-    pop_cp_function_context (context);
+    pop_function_context_from (context);
 }

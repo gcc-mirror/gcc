@@ -1265,7 +1265,7 @@ begin_definition_of_inclass_inline (pi)
      surrounding the local class.  */
   context = hack_decl_function_context (pi->fndecl);
   if (context)
-    push_cp_function_context (context);
+    push_function_context_to (context);
 
   feed_input (pi->buf, pi->len, pi->filename, pi->lineno);
   yychar = PRE_PARSED_FUNCTION_DECL;
@@ -1327,7 +1327,7 @@ process_next_inline (t)
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
   context = hack_decl_function_context (i->fndecl);  
   if (context)
-    pop_cp_function_context (context);
+    pop_function_context_from (context);
   i = i->next;
   if (yychar == YYEMPTY)
     yychar = yylex ();
