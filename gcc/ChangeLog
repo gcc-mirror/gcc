@@ -1,3 +1,19 @@
+Thu Nov 19 23:44:38 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* expr.c (STACK_BYTES): Delete unused macro.
+	* calls.c: Provide default for PREFERRED_STACK_BOUNDARY.
+	(STACK_BYTES): Use PREFERRED_STACK_BOUNDARY, not STACK_BOUNDARY.
+	(expand_call): Likewise.
+	(emit_library_call): Likewise.
+	(emit_library_call_value): Likewise.
+	* function.c: Provide default for PREFERRED_STACK_BOUNDARY.
+	(STACK_BYTES): Use PREFERRED_STACK_BOUNDARY, not STACK_BOUNDARY.
+	* explow.c: Provide default for PREFERRED_STACK_BOUNDARY.
+	(round_push): Use PREFERRED_STACK_BOUNDARY, not STACK_BOUNDARY.
+	(allocate_dynamic_stack_space): Likewise.
+	* tm.texi (PREFERRED_STACK_BOUNDARY): Document new macro.
+	(STACK_BOUNDARY): Update description to reflect the new situation.
+
 Thu Nov 19 22:20:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reorg.c (relax_delay_slots): When optimizing for code size, if a

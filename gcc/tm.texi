@@ -790,15 +790,24 @@ size of an integer.
 
 @findex STACK_BOUNDARY
 @item STACK_BOUNDARY
+Define this macro if there is a guaranteed alignment for the stack
+pointer on this machine.  The definition is a C expression
+for the desired alignment (measured in bits).  This value is used as a
+default if PREFERRED_STACK_BOUNDARY is not defined.
+
+@findex PREFERRED_STACK_BOUNDARY
+@item PREFERRED_STACK_BOUNDARY
 Define this macro if you wish to preserve a certain alignment for
 the stack pointer.  The definition is a C expression
-for the desired alignment (measured in bits).
+for the desired alignment (measured in bits).  If STACK_BOUNDARY is
+also defined, this macro must evaluate to a value equal to or larger
+than STACK_BOUNDARY.
 
-@cindex @code{PUSH_ROUNDING}, interaction with @code{STACK_BOUNDARY}
+@cindex @code{PUSH_ROUNDING}, interaction with @code{PREFERRED_STACK_BOUNDARY}
 If @code{PUSH_ROUNDING} is not defined, the stack will always be aligned
-to the specified boundary.  If @code{PUSH_ROUNDING} is defined and specifies a
-less strict alignment than @code{STACK_BOUNDARY}, the stack may be
-momentarily unaligned while pushing arguments.
+to the specified boundary.  If @code{PUSH_ROUNDING} is defined and specifies
+a less strict alignment than @code{PREFERRED_STACK_BOUNDARY}, the stack may
+be momentarily unaligned while pushing arguments.
 
 @findex FUNCTION_BOUNDARY
 @item FUNCTION_BOUNDARY

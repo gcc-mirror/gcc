@@ -65,9 +65,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-/* Like STACK_BOUNDARY but in units of bytes, not bits.  */
-#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
-
 /* Assume that case vectors are not pc-relative.  */
 #ifndef CASE_VECTOR_PC_RELATIVE
 #define CASE_VECTOR_PC_RELATIVE 0
