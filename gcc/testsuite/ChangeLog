@@ -1,3 +1,8 @@
+2005-02-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.test-framework/gen_directive_tests: Generate tests for
+	selector expressions.
+
 2005-02-02  Matt Austern  <austern@apple.com>
 
 	PR c++/19628

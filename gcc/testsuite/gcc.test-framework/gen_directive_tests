@@ -36,8 +36,10 @@ cd $1
 
 GOOD0='*-*-*'
 GOOD1="yes"
+GOOD2='empty-*-* *-*-empty *-*-*'
 BAD0='empty-empty-empty'
 BAD1="no"
+BAD2='empty-*-* *-empty-* *-*-empty'
 
 # Programs used in the tests: good compile and run, bad compile, and
 # bad run.
@@ -440,6 +442,127 @@ three_all() {
 	done
     done
 }
+
+# Generate a test that uses a dg-do directive with a selector expression.
+dgdo_progs() {
+    WHAT=$1
+    KIND=$2
+    PROG="$3"
+    NAME="$4"
+    XPR="$5"
+    
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    echo '/* { dg-do' $WHAT '{' $KIND "$XPR" '} } */' >> $FILE1
+    echo "${PROG}" >> $FILE1
+    echo "${GOOD_PROG}" > $FILE2
+}
+
+# Use various selector-expressions that evaluate to TRUE in dg-do directives.
+selector_good() {
+    NUM=101
+    for xpr in \
+        "$GOOD0" \
+        "$GOOD1" \
+        "$GOOD2" \
+        "{ ! $BAD0 }" \
+        "{ ! $BAD1 }" \
+	"{ ! { $BAD2 } }" \
+	"{ ! \"${BAD2}\" }" \
+        "{ $GOOD1 || $GOOD0 }"  \
+        "{ $BAD1 || $GOOD0 }" \
+        "{ $GOOD0 && $GOOD1 }"  \
+        "{ $BAD1 || { \"${GOOD2}\" && $GOOD1 } }" \
+        "{ { $BAD0 || $GOOD0 } && $GOOD0 }" \
+        "{ $GOOD1 && { \"${GOOD2}\" || $BAD1 } }" \
+        "{ \"${GOOD2}\" && { $GOOD1 || $BAD1 } }"
+    do
+        dgdo_progs compile target "$GOOD_PROG" "dots${NUM}-exp-P" "$xpr"
+        dgdo_progs compile target "$BADC_PROG" "dots${NUM}-exp-F" "$xpr"
+        dgdo_progs run xfail "$GOOD_PROG" "doxf${NUM}-exp-XP" "$xpr"
+        dgdo_progs run xfail "$BADR_PROG" "doxf${NUM}-exp-XF" "$xpr"
+        let NUM=NUM+1
+    done
+}
+
+# Use various selector-expressions that evaluate to FALSE in dg-do directives.
+selector_bad() {
+    NUM=101
+    for xpr in \
+        "$BAD0" \
+        "$BAD1" \
+        "$BAD2" \
+        "{ ! $GOOD0 }" \
+        "{ ! $GOOD1 }" \
+	"{ ! { $GOOD2 } }" \
+	"{ ! \"${GOOD2}\" }" \
+        "{ $BAD1 || $BAD0 }" \
+        "{ $BAD0 && $GOOD1 }" \
+        "{ $GOOD1 && $BAD0 }" \
+        "{ $BAD1 || { $GOOD1 && $BAD0 } }" \
+        "{ { $GOOD1 || $BAD1 } && $BAD0 }" \
+        "{ $BAD1 || { \"${BAD2}\" && $GOOD1 } }" \
+        "{ \"${BAD2}\" && { $GOOD1 || $BAD1 } }"
+    do
+        dgdo_progs compile target "$GOOD_PROG" "dotn${NUM}-exp-U" "$xpr"
+        dgdo_progs run xfail "$GOOD_PROG" "doxp${NUM}-exp-P" "$xpr"
+        dgdo_progs run xfail "$BADR_PROG" "doxp${NUM}-exp-F" "$xpr"
+        let NUM=NUM+1
+    done
+}
+
+# Write a test whose directive is too long and messy to do as one string.
+deep_progs() {
+    PROG="$1"
+    NAME=$2
+    CMD1="$3"
+    CMD2="$4"
+    CMD3="$5"
+
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    echo "$CMD1" "$CMD2" "$CMD3" > $FILE1
+    echo "$PROG" >> $FILE1
+    echo "$GOOD_PROG" > $FILE2
+}
+
+# Use nested expressions in various test directives.
+selector_deep() {
+    GOODXPR="{ \"${GOOD2}\" && { ! { $BAD0 || $BAD1 } } }"
+    BADXPR="{ ! { \"${GOOD2}\" || { $GOOD1 && $BAD1 } } }"
+    NUM=100
+    dgdo_progs compile target "$GOOD_PROG" "dots${NUM}-exp-P" "$GOODXPR"
+    dgdo_progs compile target "$GOOD_PROG" "dotn${NUM}-exp-U" "$BADXPR"
+
+    deep_progs "$BADC_PROG" "xiff-100-exp-XF" \
+      '/* { dg-xfail-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "xifp-100-exp-P" \
+      '/* { dg-xfail-if "no match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$BADC_PROG" "xifn-100-exp-U" \
+      '/* { dg-skip-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "xifs-100-exp-P" \
+      '/* { dg-skip-if "match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "satn-100-exp-P" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { target ' \
+      "$GOODXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satn-100-exp-U" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { target ' \
+      "$BADXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satf-100-exp-XP" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { xfail ' \
+      "$GOODXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satp-100-exp-P" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { xfail ' \
+      "$BADXPR" ' } } } */'
+}
+
+selector_good
+selector_bad
+selector_deep
 
 one_all saxp $EXP_PASS no
 one_all saxf $EXP_XPASS no
