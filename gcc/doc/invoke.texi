@@ -3124,9 +3124,11 @@ Dump after instruction combination, to the file @file{@var{file}.21.combine}.
 @item C
 @opindex dC
 Dump after the first if conversion, to the file @file{@var{file}.16.ce1}.
+Also dump after the second if conversion, to the file @file{@var{file}.22.ce2}.
 @item d
 @opindex dd
-Dump after delayed branch scheduling, to @file{@var{file}.36.dbr}.
+Dump after branch target load optimization, to to @file{@var{file}.33.btl}.
+Also dump after delayed branch scheduling, to @file{@var{file}.36.dbr}.
 @item D
 @opindex dD
 Dump all macro definitions, at the end of preprocessing, in addition to
@@ -3140,7 +3142,8 @@ Dump after SSA optimizations, to @file{@var{file}.04.ssa} and
 Dump after the second if conversion, to @file{@var{file}.32.ce3}.
 @item f
 @opindex df
-Dump after life analysis, to @file{@var{file}.20.life}.
+Dump after control and data flow analysis, to @file{@var{file}.14.cfg}.
+Also dump after life analysis, to @file{@var{file}.20.life}.
 @item F
 @opindex dF
 Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.10.addressof}.
@@ -3150,6 +3153,8 @@ Dump after global register allocation, to @file{@var{file}.26.greg}.
 @item G
 @opindex dG
 Dump after GCSE, to @file{@var{file}.11.gcse}.
+Also dump after jump bypassing and control flow optimizations, to
+@file{@var{file}.13.bypass}.
 @item h
 @opindex dh
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
