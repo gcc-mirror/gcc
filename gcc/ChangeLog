@@ -1,3 +1,8 @@
+2002-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/6782
+	* final.c (get_mem_expr_from_op): Return 0 if op is NULL.
+
 2002-05-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/6780
