@@ -10,4 +10,4 @@ int main() {
   return 0;
 }
 
-// { dg-excess-errors "operator new" "list of candidates" }
+// { dg-excess-errors "operator new" }
