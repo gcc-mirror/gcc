@@ -486,6 +486,7 @@ layout_vbasetypes (rec, max)
 #else
   unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
 #endif
+  int desired_align;
 
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
      where CONST_SIZE is an integer
@@ -512,17 +513,25 @@ layout_vbasetypes (rec, max)
       tree basetype = BINFO_TYPE (vbase_types);
       tree offset;
 
+      desired_align = TYPE_ALIGN (basetype);
+      record_align = MAX (record_align, desired_align);
+
       if (const_size == 0)
 	offset = integer_zero_node;
       else
-	offset = size_int ((const_size + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
+	{
+	  /* Give each virtual base type the alignment it wants.  */
+	  const_size = CEIL (const_size, TYPE_ALIGN (basetype))
+	    * TYPE_ALIGN (basetype);
+	  offset = size_int (CEIL (const_size, BITS_PER_UNIT));
+	}
 
       if (CLASSTYPE_VSIZE (basetype) > max)
 	max = CLASSTYPE_VSIZE (basetype);
       BINFO_OFFSET (vbase_types) = offset;
 
       if (TREE_CODE (TYPE_SIZE (basetype)) == INTEGER_CST)
-	const_size += MAX (record_align,
+	const_size += MAX (BITS_PER_UNIT,
 			   TREE_INT_CST_LOW (TYPE_SIZE (basetype))
 			   - TREE_INT_CST_LOW (CLASSTYPE_VBASE_SIZE (basetype)));
       else if (var_size == 0)
@@ -533,6 +542,9 @@ layout_vbasetypes (rec, max)
       vbase_types = TREE_CHAIN (vbase_types);
     }
 
+  /* Set the alignment in the complete type.  We don't set CLASSTYPE_ALIGN
+   here, as that is for this class, without any virtual base classes.  */
+  TYPE_ALIGN (rec) = record_align;
   if (const_size != nonvirtual_const_size)
     {
       CLASSTYPE_VBASE_SIZE (rec)

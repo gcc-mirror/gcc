@@ -3990,6 +3990,8 @@ build_unary_op (code, xarg, noconvert)
 	  case FIX_CEIL_EXPR:
 	    {
 	      tree incremented, modify, value;
+	      if (! lvalue_p (arg) && pedantic)
+		pedwarn ("cast to non-reference type used as lvalue");
 	      arg = stabilize_reference (arg);
 	      if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
 		value = arg;
@@ -4143,11 +4145,6 @@ build_unary_op (code, xarg, noconvert)
       if (val != 0)
 	return val;
 
-#if 0 /* Turned off because inconsistent;
-	 float f; *&(int)f = 3.4 stores in int format
-	 whereas (int)f = 3.4 stores in float format.  */
-      /* Address of a cast is just a cast of the address
-	 of the operand of the cast.  */
       switch (TREE_CODE (arg))
 	{
 	case NOP_EXPR:
@@ -4157,12 +4154,9 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_FLOOR_EXPR:
 	case FIX_ROUND_EXPR:
 	case FIX_CEIL_EXPR:
-	  if (pedantic)
-	    pedwarn ("ANSI C++ forbids taking the address of a cast expression");
-	  return convert (build_pointer_type (TREE_TYPE (arg)),
-			  build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0));
+	  if (! lvalue_p (arg) && pedantic)
+	    pedwarn ("taking the address of a cast to non-reference type");
 	}
-#endif
 
       /* Allow the address of a constructor if all the elements
 	 are constant.  */
@@ -4950,20 +4944,11 @@ build_c_cast (type, expr)
       return error_mark_node;
     }
 
-  if (TREE_TYPE (value)
-      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (value)))
-    return build1 (NOP_EXPR, type, value);
-
   /* If there's only one function in the overloaded space,
      just take it.  */
   if (TREE_CODE (value) == TREE_LIST
       && TREE_CHAIN (value) == NULL_TREE)
     value = TREE_VALUE (value);
-
-  /* Make up for the fact that we do not always perform
-     `default_conversion' anymore.  */
-  if (TREE_READONLY_DECL_P (value))
-    value = decl_constant_value (value);
 
   if (TREE_CODE (type) == VOID_TYPE)
     value = build1 (NOP_EXPR, type, value);
@@ -5579,7 +5564,7 @@ build_modify_expr (lhs, modifycode, rhs)
 					     convert (lhstype, newrhs)));
 	if (TREE_CODE (result) == ERROR_MARK)
 	  return result;
-	return convert_force (TREE_TYPE (lhs), result);
+	return convert (TREE_TYPE (lhs), result);
       }
     }
 

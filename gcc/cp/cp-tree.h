@@ -438,11 +438,12 @@ struct lang_type
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
       unsigned vec_delete_takes_size : 1;
+      unsigned has_abstract_assign_ref : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 20;
+      unsigned dummy : 19;
 
       unsigned n_vancestors : 16;
     } type_flags;
@@ -1182,6 +1183,7 @@ struct lang_decl
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
 #define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assign_ref)
 #define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_complex_assign_ref)
+#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_abstract_assign_ref)
 #define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_complex_init_ref)
 
 /* Nonzero for _TYPE node means that destroying an object of this type
@@ -2160,7 +2162,8 @@ extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int));
 extern int do_pending_expansions		PROTO((void));
 extern void do_pending_templates		PROTO((void));
 struct tinst_level *tinst_for_decl		PROTO((void));
-extern void do_function_instantiation		PROTO((tree, tree));
+extern void do_function_instantiation		PROTO((tree, tree, tree));
+extern void do_type_instantiation		PROTO((tree, tree));
 extern tree create_nested_upt			PROTO((tree, tree));
 
 /* in search.c */

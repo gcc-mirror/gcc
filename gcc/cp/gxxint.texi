@@ -24,7 +24,8 @@ Questions and comments to mrs@@cygnus.com.
 * Error Reporting::             
 * Parser::                      
 * Copying Objects::             
-* Exception Handling::             
+* Exception Handling::          
+* Free Store::                  
 * Concept Index::               
 @end menu
 
@@ -44,22 +45,9 @@ I suspect there are other uses of pushdecl_class_level that do not call
 set_identifier_type_value in tandem with the call to
 pushdecl_class_level.  It would seem to be an omission.
 
-@cindex delete, two argument
-@item
-For two argument delete, the second argument is always calculated by
-``virtual_size ='' in the source.  It currently has a problem, in that
-object size is not calculated by the virtual destructor and passed back
-for the second parameter to delete.  Destructors need to return a value
-just like constructors.  ANSI C++ Jun 5 92 wp 12.5.6
-
-The second argument is magically deleted in build_method_call, if it is
-not used.  It needs to be deleted for global operator delete also.
-
 @cindex access checking
 @item
-Access checking in general is unimplemented, there are a few cases
-where it is implemented.  grok_enum_decls should be used in more places
-to do access checking, but this is only the tip of a bigger problem.
+Access checking is unimplemented for nested types.
 
 @cindex @code{volatile}
 @item
@@ -1142,7 +1130,7 @@ them.
 This issue is currently under discussion in the core reflector
 (2/28/94).
 
-@node  Copying Objects, Concept Index, Copying Objects, Top
+@node  Exception Handling, Free Store, Copying Objects, Top
 @section Exception Handling
 
 This section describes the mapping of C++ exceptions in the C++
@@ -1155,7 +1143,7 @@ independent representation for exceptions.
 The C++ front-end exceptions are mapping into the unwind-protect
 semantics by the C++ front-end.  The mapping is describe below.
 
-Objects with RTTI support, should use the RTTI information to do mapping
+Objects with RTTI support should use the RTTI information to do mapping
 and checking.  Objects without RTTI, like int and const char *, have to
 use another means of matching.  Currently we use the normal mangling used in
 building functions names.  Int's are "i", const char * is PCc, etc...
@@ -1189,7 +1177,43 @@ hit before the section finishes normally, they examine the list for
 actions to perform.  I hope they add this logic into the back-end, as it
 would be nice to get that alternative approach in C++.
 
-@node Concept Index,  , Exception Handling, Top
+@node Free Store, Concept Index, Exception Handling, Top
+@section Free Store
+
+operator new [] adds a magic cookie to the beginning of arrays for which
+the number of elements will be needed by operator delete [].  These are
+arrays of objects with destructors and arrays of objects that define
+operator delete [] with the optional size_t argument.  This cookie can
+be examined from a program as follows:
+
+@example
+typedef unsigned long size_t;
+extern "C" int printf (const char *, ...);
+
+size_t nelts (void *p)
+@{
+  struct cookie @{
+    size_t nelts __attribute__ ((aligned (sizeof (double))));
+  @};
+
+  cookie *cp = (cookie *)p;
+  --cp;
+
+  return cp->nelts;
+@}
+
+struct A @{
+  ~A() @{ @}
+@};
+
+main()
+@{
+  A *ap = new A[3];
+  printf ("%ld\n", nelts (ap));
+@}
+@end example
+
+@node Concept Index,  , Free Store, Top
 @section Concept Index
 
 @printindex cp

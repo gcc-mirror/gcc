@@ -1,7 +1,133 @@
+Tue Jun 14 12:23:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grok_op_properties): Const objects can be passed by value.
+
+Mon Jun 13 03:10:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl2.c (import_export_vtable): Force implicit instantiations to
+	be interface_only when -fno-implicit-templates.
+
+	* decl.c (duplicate_decls): Redeclaring a class template name is an
+	error.
+
+	* pt.c (end_template_decl): Call GNU_xref_decl for class templates.
+	* xref.c (GNU_xref_decl): Support templates.
+
+Sat Jun 11 17:09:05 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grok_op_properties): Split out checking for whether this
+	function should suppress the default assignment operator.
+	* decl2.c (grok_function_init): Ditto.
+	(copy_assignment_arg_p): New function do do just that.
+	Now considers virtual assignment operators that take a base as an
+	argument to count as copy assignment operators.
+
+	* search.c (dfs_debug_mark): Lose checks for DWARF_DEBUG and
+	TREE_ASM_WRITTEN, as they are redundant.
+
+	* pt.c (end_template_decl): Don't try to set DECL_CLASS_CONTEXT on a
+	decl that has no LANG_SPECIFIC part.
+	(do_type_instantiation): Force the debugging information for this
+	type to be emitted.
+
+	* decl.c (start_decl): Clear up uses of various types of templates
+	(say sorry for static data members, rather than "invalid template"). 
+	(expand_static_init): Fix initialization of static data members of
+	template classes.
+
+Fri Jun 10 00:41:19 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): Set DECL_CONTEXT on static data members.
+
+	* g++.c (main): Use -xc++-cpp-output for .i files.
+
+	* pt.c (tsubst): Give meaningful error about declaring template for
+	a copy constructor which was not declared in the class template.
+	(do_type_instantiation): Explicit instantiation before the class
+	template is an error.
+	(instantiate_template): Don't die if tsubst returns error_mark_node.
+
+Thu Jun  9 19:04:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	Don't synthesize the copy assignment operator if the one in a base
+	class is pure virtual.
+	* cp-tree.h (TYPE_HAS_ABSTRACT_ASSIGN_REF): New macro to indicate
+	whether the type has a pure virtual copy assignment operator.
+	* class.c (finish_base_struct): Don't generate the copy assignment
+	operator if a base class has a pure virtual one.
+	* decl.c (grok_op_properties): Add disabled code to set
+	TYPE_HAS_ABSTRACT_ASSIGN_REF with comment pointing to where it is
+	actually set.
+	* decl2.c (grok_function_init): Set TYPE_HAS_ABSTRACT_ASSIGN_REF.
+
+	* decl2.c (import_export_vtable): Always treat template
+	instantiations as if write_virtuals >= 2, and treat implicit
+	instantiations as external if -fno-implicit-templates.
+	(finish_file): Output all pending inlines if
+	flag_keep_inline_functions.
+
+Wed Jun  8 20:48:02 1994  Mike Stump  (mrs@cygnus.com)
+
+	* tree.c (layout_vbasetypes): Align virtual base classes inside
+	complete objects, so that we don't core dump on machines such as
+	SPARCs when we access members that require larger than normal
+	alignments, such as a double.  Also, we bump up the total alignment
+	on the complete type, as necessary.
+
+Wed Jun  8 16:18:14 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* gxxint.texi (Free Store): New section with code for examining
+	cookie.
+	(Limitations of g++): Remove operator delete entry, since it is no
+	longer accurate.  Fix access control entry.
+
+	* typeck.c (build_unary_op): Pedwarn about taking the address of or
+	incrementing a cast to non-reference type.
+	(build_modify_expr): Use convert instead of convert_force again.
+
+	* search.c (get_base_distance): Use IS_AGGR_TYPE_CODE to check for
+	class type, not == RECORD_TYPE.
+
+	* decl.c (grokdeclarator): Cope with grokfndecl returning NULL_TREE.
+
+	* typeck2.c (report_case_error): #if 0 out.
+	* lex.c (real_yylex): Lose RANGE.
+	* parse.y: Ditto.
+
+Tue Jun  7 18:17:35 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (simple_stmt, case ranges): Use ELLIPSIS instead of RANGE.
+
+Mon Jun  6 19:39:57 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_c_cast): Don't shortcut conversions to the same
+	type.  Don't replace consts with their values here, since that's now
+	done in cp_convert.
+
+	* cvt.c (cp_convert): When converting to bool, take
+	integer_zero_node to false_node and all other INTEGER_CSTs to
+	true_node.
+	(build_type_conversion): Don't complain about multiple conversions
+	to float if we're not really converting.
+
 Fri Jun  3 02:10:56 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	Implement 'extern template class A<int>;' syntax for suppressing
+	specific implicit instantiations.
+	* cp-tree.h: Update prototypes for do_*_instantiation.
+	* pt.c (do_pending_expansions): Don't compile 'extern' explicit
+	instantiations.
+	(do_function_instantiation): Set DECL_EXTERNAL on 'extern' explicit
+	instantiations.
+	(do_type_instantiation): Ditto.
+	* parse.y (explicit_instantiation): Support 'extern template class
+	A<int>;' syntax.
+	* decl.c (start_function): Don't modify the settings of TREE_PUBLIC
+	and DECL_EXTERNAL on explicit instantiations.
 
 	* cvt.c (cp_convert): Replace constants with their values before
 	converting.
+	(cp_convert): Consistently use 'e' instead of 'expr'.
 
 Thu Jun  2 03:53:30 1994  Jason Merrill  (jason@deneb.cygnus.com)
 

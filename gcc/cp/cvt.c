@@ -1194,15 +1194,15 @@ cp_convert (type, expr, convtype, flags)
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
 
-  if (type == TREE_TYPE (expr)
-      || TREE_CODE (expr) == ERROR_MARK)
-    return expr;
-  if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
+  if (type == TREE_TYPE (e)
+      || TREE_CODE (e) == ERROR_MARK)
+    return e;
+  if (TREE_CODE (TREE_TYPE (e)) == ERROR_MARK)
     return error_mark_node;
 
   /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-    return fold (build1 (NOP_EXPR, type, expr));
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
+    return fold (build1 (NOP_EXPR, type, e));
   
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     return build1 (CONVERT_EXPR, type, e);
@@ -1210,8 +1210,8 @@ cp_convert (type, expr, convtype, flags)
 #if 0
   /* This is incorrect.  A truncation can't be stripped this way.
      Extensions will be stripped by the use of get_unwidened.  */
-  if (TREE_CODE (expr) == NOP_EXPR)
-    return convert (type, TREE_OPERAND (expr, 0));
+  if (TREE_CODE (e) == NOP_EXPR)
+    return convert (type, TREE_OPERAND (e, 0));
 #endif
 
   /* Just convert to the type of the member.  */
@@ -1231,7 +1231,7 @@ cp_convert (type, expr, convtype, flags)
 
   if (INTEGRAL_CODE_P (code))
     {
-      tree intype = TREE_TYPE (expr);
+      tree intype = TREE_TYPE (e);
       enum tree_code form = TREE_CODE (intype);
       /* enum = enum, enum = int, enum = float are all errors. */
       if (flag_int_enum_equivalence == 0
@@ -1249,7 +1249,7 @@ cp_convert (type, expr, convtype, flags)
       else if (IS_AGGR_TYPE (intype))
 	{
 	  tree rval;
-	  rval = build_type_conversion (CONVERT_EXPR, type, expr, 1);
+	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);
 	  if (rval) return rval;
 	  if (code == BOOLEAN_TYPE)
 	    cp_error ("`%#T' used where a `bool' was expected", intype);
@@ -1265,6 +1265,13 @@ cp_convert (type, expr, convtype, flags)
 	    e = newe;
 	  if (TREE_TYPE (e) == bool_type_node)
 	    return e;
+	  else if (TREE_CODE (e) == INTEGER_CST)
+	    {
+	      if (e == integer_zero_node)
+		e = false_node;
+	      else
+		e = true_node;
+	    }
 	  else
 	    return build1 (NOP_EXPR, bool_type_node, e);
 	}
@@ -1413,13 +1420,13 @@ cp_convert (type, expr, convtype, flags)
 	}
     }
 
-  /* If TYPE or TREE_TYPE (EXPR) is not on the permanent_obstack,
+  /* If TYPE or TREE_TYPE (E) is not on the permanent_obstack,
      then the it won't be hashed and hence compare as not equal,
      even when it is.  */
   if (code == ARRAY_TYPE
-      && TREE_TYPE (TREE_TYPE (expr)) == TREE_TYPE (type)
-      && index_type_equal (TYPE_DOMAIN (TREE_TYPE (expr)), TYPE_DOMAIN (type)))
-    return expr;
+      && TREE_TYPE (TREE_TYPE (e)) == TREE_TYPE (type)
+      && index_type_equal (TYPE_DOMAIN (TREE_TYPE (e)), TYPE_DOMAIN (type)))
+    return e;
 
   cp_error ("conversion from `%T' to non-scalar type `%T' requested",
 	    TREE_TYPE (expr), type);
@@ -1789,9 +1796,13 @@ build_type_conversion (code, xtype, expr, for_sure)
 	 operator int().  */
       if (TYPE_HAS_INT_CONVERSION (basetype))
 	{
-	  error ("two possible conversions for type `%s'",
-		 TYPE_NAME_STRING (type));
-	  return error_mark_node;
+	  if (for_sure)
+	    {
+	      cp_error ("two possible conversions for type `%T'", type);
+	      return error_mark_node;
+	    }
+	  else
+	    return NULL_TREE;
 	}
 
       typename = DECL_NAME (CLASSTYPE_CONVERSION (basetype, real_conv));
