@@ -1,4 +1,4 @@
-/* YACC parser for C syntax and for Objective C.
+/* YACC parser for C syntax and for Objective C.  -*-c-*-
    Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
