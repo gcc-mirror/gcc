@@ -442,10 +442,6 @@ MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # so don't override it here.
 USE_COLLECT2 = collect2$(exeext)
 
-# configure sets this to 'libcpp.a' if cpplib is being merged into
-# C-family front ends.
-MAYBE_CPPLIB = @maybe_cpplib@
-
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
 LIB1FUNCS_EXTRA =
@@ -721,7 +717,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-common.o c-semantics.o c-dump.o $(MAYBE_CPPLIB) \
+  c-convert.o c-aux-info.o c-common.o c-semantics.o c-dump.o libcpp.a \
   $(C_TARGET_OBJS)
 
 # Language-specific object files for C.

@@ -1,3 +1,21 @@
+2000-11-26  Neil Booth  <neilb@earthling.net>
+
+        * Makefile.in: Remove MAYBE_CPPLIB and maybe_cpplib.
+        * c-decl.c: Remove parse_in declaration.
+        * c-lang.c: Similarly.
+        * c-lex.c: Similarly.
+        * c-parse.in: Similarly.
+        * c-pragma.c: Similarly.
+        * configure.in: Similarly.
+        * cp/Make-lang.in: Similarly.
+        * cp/spew.c: Similarly.
+        * cp/decl2.c: Remove check for lang-c++ option.
+        * cp/lang-specs.h: Remove -lang-c++ from cc1plus command line.
+        * cp/lex.c (lang_init_options): With cpp_reader_init, default to C++.
+        * c-lex.h: Add declaration of parse_in.
+        * cppinit.c: Call set_lang after allocating pfile->pending.
+        * configure: Regenerate.
+
 2000-11-25  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* combine.c (try_combine): Remove redundant test.

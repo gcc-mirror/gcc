@@ -2830,7 +2830,6 @@ end ifobjc
    cpplib.h's token codes into yacc's token codes.  */
 
 static enum cpp_ttype last_token;
-extern cpp_reader parse_in;
 
 /* The reserved keyword table.  */
 struct resword

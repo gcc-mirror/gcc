@@ -573,8 +573,6 @@ lang_decode_option (argc, argv)
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
-  else if (!strcmp (p, "-lang-c++"))
-    /* ignore - cpplib needs to see this */;
   else if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.

@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
        %{save-temps:cpp0 -lang-c++ %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 		    %(cpp_options) %b.ii \n}\
       cc1plus %{save-temps:-fpreprocessed %b.ii}\
-              %{!save-temps:%(cpp_options)} -lang-c++\
+              %{!save-temps:%(cpp_options)}\
        %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -47,5 +47,5 @@ Boston, MA 02111-1307, USA.  */
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
-    cc1plus -lang-c++ -fpreprocessed %i %(cc1_options) %2 %{+e*}\
+    cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
     %{!fsyntax-only:%(invoke_as)}}}}"},

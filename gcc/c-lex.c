@@ -53,8 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
 #endif
 
-extern cpp_reader  parse_in;
-
 /* The original file name, before changing "-" to "stdin".  */
 static const char *orig_filename;
 

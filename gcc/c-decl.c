@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "cpplib.h"
-extern cpp_reader parse_in;
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context

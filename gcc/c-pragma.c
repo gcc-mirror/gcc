@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "tm_p.h"
 
-extern cpp_reader parse_in;
-
 #define BAD(msgid) do { warning (msgid); return; } while (0)
 #define BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
 
