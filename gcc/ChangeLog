@@ -1,3 +1,7 @@
+Tue Oct 15 16:51:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (movv8qi_i+2): Don't split if source is -1.
+
 2002-10-15  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi: Formatting changes for conformance to HTML 4.01.

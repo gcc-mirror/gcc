@@ -9149,7 +9149,9 @@
    && VECTOR_MODE_SUPPORTED_P (GET_MODE (operands[0]))
    && GET_MODE_SIZE (GET_MODE (operands[0])) == 8
    && (XVECEXP (operands[1], 0, 0) != const0_rtx
-       || XVECEXP (operands[1], 0, 1) != const0_rtx)"
+       || XVECEXP (operands[1], 0, 1) != const0_rtx)
+   && (XVECEXP (operands[1], 0, 0) != constm1_rtx
+       || XVECEXP (operands[1], 0, 1) != constm1_rtx)"
   [(set (match_dup 0) (match_dup 1))
    (match_dup 2)]
   "
