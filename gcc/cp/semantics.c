@@ -2606,7 +2606,8 @@ genrtl_finish_function (fn)
 
   /* Finish building code that will trigger warnings if users forget
      to make their functions return values.  */
-  emit_jump (return_label);
+  if (return_label)
+    emit_jump (return_label);
   if (no_return_label)
     {
       /* We don't need to call `expand_*_return' here because we don't
