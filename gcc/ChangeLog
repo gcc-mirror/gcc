@@ -1,5 +1,15 @@
 2000-07-03  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_move): New function.
+	* config/rs6000/rs6000-proto.h: Prototype rs6000_emit_move.
+	* config/rs6000/rs6000.md (movsi): Use rs6000_emit_move.
+	(movhi): Likewise.
+	(movqi): Likewise.
+	(movdf): Likewise.
+	(movsf): Likewise.
+	(movdi): Likewise.
+	(movti): Likewise.
+
 	* expmed.c (expand_mult_highpart): Use op1 instead of wide_op1 when
 	mode instead of wider_mode is being used.
 

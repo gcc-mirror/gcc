@@ -1458,8 +1458,277 @@ rs6000_legitimize_address (x, oldx, mode)
   else
     return NULL_RTX;
 }
+
+/* Emit a move from SOURCE to DEST in mode MODE.  */
+void
+rs6000_emit_move (dest, source, mode)
+     rtx dest;
+     rtx source;
+     enum machine_mode mode;
+{
+  rtx operands[2];
+  operands[0] = dest;
+  operands[1] = source;
+  
+  /* Sanity checks.  Check that we get CONST_DOUBLE only when we should.  */
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && ! FLOAT_MODE_P (mode)
+      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+    {
+      /* FIXME.  This should never happen.  */
+      /* Since it seems that it does, do the safe thing and convert
+	 to a CONST_INT.  */
+      operands[1] = 
+	GEN_INT (trunc_int_for_mode (CONST_DOUBLE_LOW (operands[1]), mode));
+    }
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && ! FLOAT_MODE_P (mode)
+      && ((CONST_DOUBLE_HIGH (operands[1]) == 0
+	   && CONST_DOUBLE_LOW (operands[1]) >= 0)
+	  || (CONST_DOUBLE_HIGH (operands[1]) == -1
+	      && CONST_DOUBLE_LOW (operands[1]) < 0)))
+    abort ();
+  
+  if (! no_new_pseudos && GET_CODE (operands[0]) != REG)
+    operands[1] = force_reg (mode, operands[1]);
+  
+  if (mode == SFmode && ! TARGET_POWERPC && TARGET_HARD_FLOAT)
+    {
+      int regnum = true_regnum (operands[1]);
+      /* regnum may be -1 in which case the test below will fail.  */	
+      
+      /* If operands[1] is a register, on POWER it may have
+	 double-precision data in it, so truncate it to single
+	 precision.  */
+      if (FP_REGNO_P (regnum) || regnum >= FIRST_PSEUDO_REGISTER)
+	{
+	  rtx newreg;
+	  newreg = (no_new_pseudos ? operands[1] : gen_reg_rtx (mode));
+	  emit_insn (gen_aux_truncdfsf2 (newreg, operands[1]));
+	  operands[1] = newreg;
+	}
+    }
 
+  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
+  if (GET_CODE (operands[1]) == CONSTANT_P_RTX)
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+      return;
+    }
 
+  /* FIXME:  In the long term, this switch statement should go away
+     and be replaced by a sequence of tests based on things like
+     mode == Pmode.  */
+  switch (mode)
+    {
+    case HImode:
+    case QImode:
+      if (CONSTANT_P (operands[1])
+	  && GET_CODE (operands[1]) != CONST_INT)
+	{
+	  operands[1] = force_const_mem (mode, operands[1]);
+	  if (! memory_address_p (mode, XEXP (operands[1], 0))
+	      && ! reload_in_progress)
+	    operands[1] = change_address (operands[1], mode,
+					  XEXP (operands[1], 0));
+	}
+      break;
+
+    case DFmode:
+    case SFmode:
+      if (CONSTANT_P (operands[1]) 
+	  && ! easy_fp_constant (operands[1], mode))
+	{
+	  operands[1] = force_const_mem (mode, operands[1]);
+	  if (! memory_address_p (mode, XEXP (operands[1], 0))
+	      && ! reload_in_progress)
+	    operands[1] = change_address (operands[1], mode,
+					  XEXP (operands[1], 0));
+	}
+      break;
+      
+    case SImode:
+      /* Use default pattern for address of ELF small data */
+      if (TARGET_ELF
+	  && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+	  && (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
+	  && small_data_operand (operands[1], SImode))
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+	  return;
+	}
+
+      if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+	  && flag_pic == 1 && got_operand (operands[1], SImode))
+	{
+	  emit_insn (gen_movsi_got (operands[0], operands[1]));
+	  return;
+	}
+
+      if (TARGET_ELF && TARGET_NO_TOC && ! TARGET_64BIT
+	  && ! flag_pic
+	  && CONSTANT_P (operands[1])
+	  && GET_CODE (operands[1]) != HIGH
+	  && GET_CODE (operands[1]) != CONST_INT)
+	{
+	  rtx target = (no_new_pseudos ? operands[0] : gen_reg_rtx (SImode));
+
+	  /* If this is a function address on -mcall-aixdesc,
+	     convert it to the address of the descriptor.  */
+	  if (DEFAULT_ABI == ABI_AIX
+	      && GET_CODE (operands[1]) == SYMBOL_REF
+	      && XSTR (operands[1], 0)[0] == '.')
+	    {
+	      const char *name = XSTR (operands[1], 0);
+	      rtx new_ref;
+	      while (*name == '.')
+		name++;
+	      new_ref = gen_rtx_SYMBOL_REF (Pmode, name);
+	      CONSTANT_POOL_ADDRESS_P (new_ref)
+		= CONSTANT_POOL_ADDRESS_P (operands[1]);
+	      SYMBOL_REF_FLAG (new_ref) = SYMBOL_REF_FLAG (operands[1]);
+	      SYMBOL_REF_USED (new_ref) = SYMBOL_REF_USED (operands[1]);
+	      operands[1] = new_ref;
+	    }
+
+	  emit_insn (gen_elf_high (target, operands[1]));
+	  emit_insn (gen_elf_low (operands[0], target, operands[1]));
+	  return;
+	}
+
+      if (CONSTANT_P (operands[1])
+	  && GET_CODE (operands[1]) != CONST_INT
+	  && GET_CODE (operands[1]) != HIGH
+	  && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
+	  && ! TOC_RELATIVE_EXPR_P (operands[1]))
+	{
+	  /* Emit a USE operation so that the constant isn't deleted if
+	     expensive optimizations are turned on because nobody
+	     references it.  This should only be done for operands that
+	     contain SYMBOL_REFs with CONSTANT_POOL_ADDRESS_P set.
+	     This should not be done for operands that contain LABEL_REFs.
+	     For now, we just handle the obvious case.  */
+	  if (GET_CODE (operands[1]) != LABEL_REF)
+	    emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+
+      /* If we are to limit the number of things we put in the TOC and
+	 this is a symbol plus a constant we can add in one insn,
+	 just put the symbol in the TOC and add the constant.  Don't do
+	 this if reload is in progress.  */
+	  if (GET_CODE (operands[1]) == CONST
+	      && TARGET_NO_SUM_IN_TOC && ! reload_in_progress
+	      && GET_CODE (XEXP (operands[1], 0)) == PLUS
+	      && add_operand (XEXP (XEXP (operands[1], 0), 1), SImode)
+	      && (GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
+		  || GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == SYMBOL_REF)
+	      && ! side_effects_p (operands[0]))
+	    {
+	      rtx sym = force_const_mem (SImode, XEXP (XEXP (operands[1], 0), 0));
+	      rtx other = XEXP (XEXP (operands[1], 0), 1);
+
+	      emit_insn (gen_addsi3 (operands[0], force_reg (SImode, sym), other));
+	      return;
+	    }
+
+	  operands[1] = force_const_mem (SImode, operands[1]);
+
+	  if (TARGET_TOC 
+	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
+	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (
+								     XEXP (operands[1], 0))))
+	    {
+	      operands[1] = gen_rtx_MEM (SImode,
+					 create_TOC_reference (XEXP (operands[1], 0)));
+	      MEM_ALIAS_SET (operands[1]) = get_TOC_alias_set ();	
+	      RTX_UNCHANGING_P (operands[1]) = 1;
+	    }
+
+	  if (! memory_address_p (SImode, XEXP (operands[1], 0))
+	      && ! reload_in_progress)
+	    operands[1] = change_address (operands[1], SImode,
+					  XEXP (operands[1], 0));
+	}
+      break;
+
+    case DImode:
+      if (TARGET_64BIT
+	  && CONSTANT_P (operands[1])
+#if HOST_BITS_PER_WIDE_INT == 32
+	  && GET_CODE (operands[1]) != CONST_INT
+#endif
+	  && ! easy_fp_constant (operands[1], DImode)
+	  && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
+	  && ! TOC_RELATIVE_EXPR_P (operands[1]))
+	{
+	  /* Emit a USE operation so that the constant isn't deleted if
+	     expensive optimizations are turned on because nobody
+	     references it.  This should only be done for operands that
+	     contain SYMBOL_REFs with CONSTANT_POOL_ADDRESS_P set.
+	     This should not be done for operands that contain LABEL_REFs.
+	     For now, we just handle the obvious case.  */
+	  if (GET_CODE (operands[1]) != LABEL_REF)
+	    emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+
+	  /* If we are to limit the number of things we put in the TOC and
+	     this is a symbol plus a constant we can add in one insn,
+	     just put the symbol in the TOC and add the constant.  Don't do
+	     this if reload is in progress.  */
+	  if (GET_CODE (operands[1]) == CONST
+	      && TARGET_NO_SUM_IN_TOC && ! reload_in_progress
+	      && GET_CODE (XEXP (operands[1], 0)) == PLUS
+	      && add_operand (XEXP (XEXP (operands[1], 0), 1), DImode)
+	      && (GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
+		  || GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == SYMBOL_REF)
+	      && ! side_effects_p (operands[0]))
+	    {
+	      rtx sym = force_const_mem (DImode, XEXP (XEXP (operands[1], 0), 0));
+	      rtx other = XEXP (XEXP (operands[1], 0), 1);
+
+	      emit_insn (gen_adddi3 (operands[0], force_reg (DImode, sym), other));
+	      return;
+	    }
+
+	  operands[1] = force_const_mem (DImode, operands[1]);
+
+	  if (TARGET_TOC 
+	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
+	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (
+								     XEXP (operands[1], 0))))
+	    {
+	      operands[1] = gen_rtx_MEM (DImode,
+					 create_TOC_reference (XEXP (operands[1], 0)));
+
+	      MEM_ALIAS_SET (operands[1]) = get_TOC_alias_set ();	
+	      RTX_UNCHANGING_P (operands[1]) = 1;
+	    }	
+
+	  if (! memory_address_p (DImode, XEXP (operands[1], 0))
+	      && ! reload_in_progress)
+	    operands[1] = change_address (operands[1], DImode,
+					  XEXP (operands[1], 0));
+	}
+      break;
+  
+    case TImode:
+      if (GET_CODE (operands[0]) == MEM
+	  && GET_CODE (XEXP (operands[0], 0)) != REG
+	  && ! reload_in_progress)
+	operands[0] = change_address (operands[0], TImode,
+				      copy_addr_to_reg (XEXP (operands[0], 0)));
+
+      if (GET_CODE (operands[1]) == MEM
+	  && GET_CODE (XEXP (operands[1], 0)) != REG
+	  && ! reload_in_progress)
+	operands[1] = change_address (operands[1], TImode,
+				      copy_addr_to_reg (XEXP (operands[1], 0)));
+      break;
+
+    default:
+      abort ();
+    }
+
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+}
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
