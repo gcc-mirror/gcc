@@ -65,11 +65,11 @@ typedef __loff_t __off64_t;
 #define __NO_STRING_INLINES
 #endif
 
-#if defined(__powerpc64__) || defined(__s390x__) || (defined(__sparc__) && defined(__arch64__))
+#if (defined(__hppa__) && defined(__LP64__)) || defined(__powerpc64__) || defined(__s390x__) || (defined(__sparc__) && defined(__arch64__))
 #define __glibcpp_long_bits 64
 #endif
 
-#if defined(__sparc__) && !defined(__arch64__)
+#if defined(__hppa__) || (defined(__sparc__) && !defined(__arch64__))
 #define __glibcpp_long_double_bits 64
 #endif
 

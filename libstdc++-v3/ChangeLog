@@ -1,3 +1,9 @@
+2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/os/gnu-linux/bits/os_defines.h (__glibcpp_long_bits): Define
+	to 64 for hppa 64-bit port.
+	(__glibcpp_long_double_bits): Define to 64 for all hppa ports.
+
 2002-05-30	Marc Espie <espie@openbsd.org>
 	* configure.in:  Always check for sys/types.h.
 	* configure:  Regenerate.
