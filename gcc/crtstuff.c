@@ -74,6 +74,16 @@ static void force_to_text () { }
 
 asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 
+/* On some svr4 systems, the .init section preamble code provided in
+   crti.o may do some evil things which we have to undo before we reach
+   the function prologue code for __do_global_ctors (directly below).
+   For such systems, define the macro INIT_SECTION_PREAMBLE to
+   expand into the code needed to undo the actions of the crti.o file.  */
+   
+#ifdef INIT_SECTION_PREAMBLE
+  INIT_SECTION_PREAMBLE;
+#endif
+
 /* A routine to invoke all of the global constructors upon entry to the
    program.  We put this into the .init section (for systems that have
    such a thing) so that we can properly perform the construction of
