@@ -166,9 +166,6 @@
 #
 #  host_hook_obj	An object file that provides the host hooks.
 #
-#  install_headers_dir	Makefile-target for how the header file directory
-#			is installed.
-#
 #  exeext		The suffix for executables on this system.
 #
 #  gnu_ld		Set to yes or no depending on whether the target
@@ -193,8 +190,6 @@ xm_defines=
 use_collect2=
 # Set this to override the default target model.
 target_cpu_default=
-# Set this to control how the header file directory is installed.
-install_headers_dir=install-headers-tar
 # Set this if gdb needs a dir command with `dirname $out_file`
 gdb_needs_out_file_path=
 # Set this if the build machine requires executables to have a
@@ -587,9 +582,6 @@ alpha*-dec-osf[45]*)
 	extra_headers=va_list.h
 	case $machine in
 	  *-*-osf4*)
-	    # Some versions of OSF4 (specifically X4.0-9 296.7) have
-	    # a broken tar, so we use cpio instead.
-	    install_headers_dir=install-headers-cpio
 	    # Set target_cpu_default except on 4.0a.
 	    case $machine in
 		*-*-osf4.0a) ;;
@@ -621,7 +613,6 @@ alpha64-dec-*vms*)
 		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
 		;;
 	esac
-	install_headers_dir=install-headers-cp
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
@@ -638,7 +629,6 @@ alpha*-dec-*vms*)
 		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
 		;;
 	esac
-	install_headers_dir=install-headers-cp
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
@@ -832,7 +822,6 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 		tmake_file="${tmake_file} pa/t-dce-thr"
 		;;
 	esac
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux10*)
@@ -847,7 +836,6 @@ hppa1.0-*-hpux10*)
 		tmake_file="${tmake_file} pa/t-dce-thr"
 		;;
 	esac
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa*64*-*-hpux11*)
@@ -875,7 +863,6 @@ hppa*64*-*-hpux11*)
 		thread_file=posix 
 		;;
 	esac
-	install_headers_dir=install-headers-cpio
 	;;
 hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"
@@ -887,7 +874,6 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 		thread_file=posix 
 		;;
 	esac
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux11*)
@@ -899,7 +885,6 @@ hppa1.0-*-hpux11*)
 		thread_file=posix 
 		;;
 	esac
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 i370-*-opened*)			 # IBM 360/370/390 Architecture
@@ -948,7 +933,6 @@ i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ptx4.h i386/ptx4-i.h"
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
-	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-*-aout*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/i386-aout.h"
@@ -1066,7 +1050,6 @@ i[34567]86-*-rtems*)
 	fi
 	;;
 i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
-	install_headers_dir=install-headers-cpio
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/sco5.h"
 	if test x$gas = xyes
 	then
@@ -1125,7 +1108,6 @@ i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv5.h i386/udk.h"
 	tmake_file="i386/t-crtpic i386/t-udk t-svr4"
 	extra_parts="crtbegin.o crtend.o"
-	install_headers_dir=install-headers-cpio
 	;;
 i[34567]86-*-sysv*)		# Intel 80386's running system V
 	if test x$gas = xyes
@@ -1219,7 +1201,6 @@ i[34567]86-*-kaos*)
 	;;
 i860-*-sysv4*)
         tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
-        xm_defines="USG SVR3"
         xmake_file=i860/x-sysv4
         tmake_file="i860/t-i860 i860/t-svr4"
         extra_parts="crtbegin.o crtend.o"
@@ -1323,7 +1304,6 @@ m68000-hp-hpux*)		# HP 9000 series 300
 		tm_defines="${tm_defines} DBX_DEBUGGING_INFO=1 USE_GAS"
 	fi
 	tmake_file=m68k/t-hp320
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
@@ -1334,7 +1314,6 @@ m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 	else
 		tm_defines="NO_DOT_IN_LABEL NO_BUGS"
 	fi
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-hp-hpux*)	# HP 9000 series 300
@@ -1343,7 +1322,6 @@ m68k-hp-hpux*)	# HP 9000 series 300
 	then
 		tm_defines="DBX_DEBUGGING_INFO=1 USE_GAS"
 	fi
-	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 m68k-*-aout*)
@@ -2194,12 +2172,6 @@ am33_2.0-*-linux*)
 *)
 	echo "*** Configuration $machine not supported" 1>&2
 	exit 1
-	;;
-esac
-
-case $machine in
-*-*-sysv*)
-	install_headers_dir=install-headers-cpio
 	;;
 esac
 

@@ -1,3 +1,17 @@
+2003-08-31  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc:  Remove references to install_headers_dir, now unused
+	since introduction of config.build.
+	* config.gcc (i860-*-sysv4*): Don't set unused USG, SVR3 defines.
+
+	* doc/fragments.texi, doc/sourcebuild.texi: Mention new file
+	config.build.
+
+	* config.build: New file.
+	* config.gcc: Remove some build-specific stuff.
+	* configure.in: Use config.build.
+	* configure: Regnerate.
+
 2003-08-31  Steven Bosscher  <steven@gcc.gnu.org>
 	    Roger Sayle  <roger@eyesopen.com>
 
