@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001 Free Software Foundation.
+# Copyright (c) 2001, 2002 Free Software Foundation.
 #
 # This file is part of GNU CC.
 #
@@ -284,13 +284,6 @@ build_tarfiles() {
   build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
     `basename ${SOURCE_DIRECTORY}`
 
-  # Possibly build diffs.
-  if [ -n "$OLD_TARS" ]; then
-    for old_tar in $OLD_TARS; do
-      build_diffs $old_tar
-    done
-  fi
-
   # Build .bz2 files.
   for f in ${FILE_LIST}; do
     bzfile=${f%.gz}.bz2
@@ -301,7 +294,7 @@ build_tarfiles() {
 
 # Build diffs against an old release.
 build_diffs() {
-  old_dir=${1%/*}
+  old_dir=${1%/}
   old_file=${1##*/}
   old_vers=${old_file%.tar.gz}
   old_vers=${old_vers#gcc-}
@@ -346,7 +339,8 @@ upload_files() {
       || error "Could not create \`${FTP_PATH}'"
   fi
 
-  # Copy the tar files to the FTP server.
+  # Make sure the directory exists on the server.
+  ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} mkdir ${FTP_PATH}
   for x in gcc*.gz gcc*.bz2; do
     if [ -e ${x} ]; then
       # Make sure the file will be readable on the server.
@@ -375,8 +369,12 @@ CVS_PROTOCOL="ext"
 # The username to use when connecting to the server.
 CVS_USERNAME="${USER}"
 
-# The path to the directory where the files are uploaded for FTP.
-FTP_PATH="gccadmin@gcc.gnu.org:~ftp/pub/gcc"
+# The machine to which files will be uploaded.
+GCC_HOSTNAME="gcc.gnu.org"
+# The name of the account on the machine to which files are uploaded.
+GCC_USERNAME="gccadmin"
+# The directory in which the files will be placed.
+FTP_PATH="~ftp/pub/gcc"
 
 # The major number for the release.  For release `3.0.2' this would be 
 # `3'
@@ -429,6 +427,7 @@ SNAPSHOT=0
 LOCAL=0
 
 # Major operation modes.
+MODE_DIFFS=0
 MODE_SOURCES=0
 MODE_TARFILES=0
 MODE_UPLOAD=0
@@ -444,6 +443,7 @@ DIFF="${DIFF:-diff -Nrc3pad}"
 ENV="${ENV:-env}"
 GZIP="${GZIP:-gzip --best}"
 SCP="${SCP:-scp -p}"
+SSH="${SSH:-ssh}"
 TAR="${TAR:-tar}"
 
 ########################################################################
@@ -506,9 +506,9 @@ if [ $SNAPSHOT -eq 0 ]; then
   # If this is not a final release, set various parameters acordingly.
   if [ ${FINAL} -ne 1 ]; then
     RELEASE="${RELEASE}-${DATE}"
-    FTP_PATH="${FTP_PATH}/snapshots"
+    FTP_PATH="${FTP_PATH}/snapshots/"
   else
-    FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}"
+    FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}/"
   fi
 else
   RELEASE=$DATE
@@ -557,6 +557,7 @@ export CVSROOT
 # Handle the major modes.
 while [ $# -ne 0 ]; do
     case $1 in
+    diffs)    MODE_DIFFS=1;;
     sources)  MODE_SOURCES=1;;
     tarfiles) MODE_TARFILES=1;;
     upload)   MODE_UPLOAD=1;;
@@ -576,6 +577,17 @@ fi
 
 if [ $MODE_TARFILES -ne 0 ]; then
   build_tarfiles
+fi
+
+# Build diffs
+
+if [ $MODE_DIFFS -ne 0 ]; then
+  # Possibly build diffs.
+  if [ -n "$OLD_TARS" ]; then
+    for old_tar in $OLD_TARS; do
+      build_diffs $old_tar
+    done
+  fi
 fi
 
 # Upload them to the FTP server.
