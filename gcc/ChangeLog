@@ -1,5 +1,11 @@
 2005-04-06  Ben Elliston  <bje@au.ibm.com>
 
+	* gcc.c: Correct comment about DEFAULT_SWITCH_TAKES_ARG and
+	DEFAULT_WORD_SWITCH_TAKES_ARG which incorrectly reported these
+	macros as living in "this file" and not gcc.h.
+
+2005-04-06  Ben Elliston  <bje@au.ibm.com>
+
 	* doc/invoke.texi (Optimize Options): Mention -ftree-lrs, not
 	-ftree-live_range_split.  Perhaps renamed at some point?
 
