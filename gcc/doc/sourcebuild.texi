@@ -738,6 +738,7 @@ here; FIXME: document the others.
 @menu
 * Test Idioms::  Idioms used in test suite code.
 * C Tests::      The C language test suites.
+* libgcj Tests:: The Java library test suites.
 @end menu
 
 @node Test Idioms
@@ -870,3 +871,23 @@ shouldn't.
 
 FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
+
+@node libgcj Tests
+@subsection The Java library test suites.
+
+Runtime tests are executed via @samp{make check} from the @samp{testsuite}
+directory of the libjava hierarchy in the build tree.  Additional runtime
+tests can be checked into this testsuite.
+
+Regression testing of the core packages in libgcj is also covered by the
+Mauve test suite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
+develops tests for the Java Class Libraries.  These tests are run as part
+of libgcj testing by specifying the location of the Mauve tree when invoking
+@samp{make}, as in @samp{make MAUVEDIR=~/mauve check}.
+
+The @uref{http://oss.software.ibm.com/developerworks/opensource/jacks/,,
+Jacks} project provides a test suite for Java compilers that can be used
+to test changes that affect the GCJ front end.  There is no automated
+mechanism to run the Jacks suite as part of GCJ testing.
+
+We encourage developers to contribute test cases to Mauve and Jacks.

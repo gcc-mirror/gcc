@@ -1,3 +1,8 @@
+2002-11-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Testing): Document extra Java testing.
+	* doc/sourcebuild.texi (Test Suites): Document libgcj testing.
+
 2002-11-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* doc/install.texi (powerpc-*-linux-gnu*): Update binutils requirement.
