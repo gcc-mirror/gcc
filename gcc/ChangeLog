@@ -1,3 +1,9 @@
+2004-08-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* PR target/15948
+	* arm.md (bicsi3_cbranch): Add alternative to handle tying operands
+	one and two.
+
 2004-08-24  Richard Henderson  <rth@redhat.com>
                                                                                 
 	PR target/16298
