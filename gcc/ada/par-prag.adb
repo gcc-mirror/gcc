@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.149 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -854,6 +854,7 @@ begin
            Pragma_Export_Procedure         |
            Pragma_Export_Valued_Procedure  |
            Pragma_Extend_System            |
+           Pragma_External                 |
            Pragma_External_Name_Casing     |
            Pragma_Finalize_Storage_Only    |
            Pragma_Float_Representation     |

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.205 $                            --
+--                            $Revision$                            --
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -204,6 +204,7 @@ package body Snames is
      "export_object#" &
      "export_procedure#" &
      "export_valued_procedure#" &
+     "external#" &
      "finalize_storage_only#" &
      "ident#" &
      "import#" &
@@ -289,7 +290,6 @@ package body Snames is
      "dot_replacement#" &
      "dynamic#" &
      "entity#" &
-     "external#" &
      "external_name#" &
      "first_optional_parameter#" &
      "form#" &
