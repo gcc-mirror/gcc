@@ -1,3 +1,8 @@
+2001-08-23  Richard Henderson  <rth@redhat.com>
+
+	* regclass.c (init_reg_sets_1): Don't assume cost 2 within
+	a register class.
+
 2001-08-22  Geoffrey Keating  <geoffk@redhat.com>
 
 	* reload1.c (emit_reload_insns): Don't look for notes
