@@ -1,3 +1,45 @@
+Mon Oct 10 00:56:53 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * lex.c (cons_up_default_function): Mark methods in a template class
+        as template instances.  Store the values of interface_unknown and
+        interface_only for do_pending_inlines.
+        (do_pending_inlines): Use them.
+
+Sun Oct  9 02:42:29 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * method.c (do_build_copy_constructor): Handle anonymous unions.
+        (do_build_assign_ref): Ditto.
+        (largest_union_member): Move from lex.c.
+
+Wed Oct  5 13:44:41 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * call.c (build_overload_call_real): Don't immediately do
+        array->pointer conversion.
+
+        * pt.c (type_unification): If not passing to a reference, strip
+        cv-quals.  Also handle array->pointer conversion.
+
+Tue Oct  4 17:45:37 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * decl.c (grokdeclarator): Don't warn about applying const to a
+        const typedef or template type parameter.
+
+Mon Oct  3 15:02:41 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * decl.c (shadow_tag): Remove obsolete code for pushing tags and
+        dealing with exceptions.
+
+Sun Oct  2 00:21:56 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * parse.y (expr_or_declarator): Add '(' expr_or_declarator ')' rule.
+        (direct_notype_declarator): Ditto.
+        (complex_direct_notype_declarator): Remove it here.
+
+Sat Oct  1 21:42:18 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+        * init.c (resolve_offset_ref): Fix types used in resolving .*
+        expressions.
+
 Thu Sep 29 16:15:36 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
 
 	* g++.c: Rework last change so it's done like collect.c (and 
