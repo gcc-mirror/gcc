@@ -1,5 +1,10 @@
 2004-02-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/vector.tcc (vector::_M_insert_aux(iterator)):
+	Remove, unused.
+
+2004-02-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_function.h: Additional minor tweaks.
 
 2004-02-01  Paolo Carlini  <pcarlini@suse.de>
