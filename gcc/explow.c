@@ -610,12 +610,10 @@ validize_mem (ref)
 {
   if (GET_CODE (ref) != MEM)
     return ref;
-  if (! (flag_force_addr && CONSTANT_ADDRESS_P (XEXP (ref, 0)))
-      || memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
+  if (memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     return ref;
-
   /* Don't alter REF itself, since that is probably a stack slot.  */
-  return replace_equiv_address (ref, XEXP (ref, 0));
+  return change_address (ref, GET_MODE (ref), XEXP (ref, 0));
 }
 
 /* Given REF, either a MEM or a REG, and T, either the type of X or
