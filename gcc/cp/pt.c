@@ -3699,25 +3699,28 @@ print_template_context (err)
   int line = lineno;
   char *file = input_filename;
 
-  if (err)
+  if (err && p)
     {
-      if (current_function_decl == p->decl)
-	/* Avoid redundancy with the the "In function" line.  */;
-      else if (current_function_decl == NULL_TREE)
-	fprintf (stderr, "%s: In instantiation of `%s':\n",
-		 file, decl_as_string (p->decl, 0));
+      if (current_function_decl != p->decl
+	  && current_function_decl != NULL_TREE)
+	/* We can get here during the processing of some synthesized
+	   method.  Then, p->decl will be the function that's causing
+	   the synthesis.  */
+	;
       else
-	my_friendly_abort (980521);
-
-      if (p)
 	{
+	  if (current_function_decl == p->decl)
+	    /* Avoid redundancy with the the "In function" line.  */;
+	  else 
+	    fprintf (stderr, "%s: In instantiation of `%s':\n",
+		     file, decl_as_string (p->decl, 0));
+	  
 	  line = p->line;
 	  file = p->file;
 	  p = p->next;
 	}
     }
 
- next:
   for (; p; p = p->next)
     {
       fprintf (stderr, "%s:%d:   instantiated from `%s'\n", file, line,
