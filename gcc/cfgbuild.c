@@ -559,14 +559,73 @@ enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
 #define STATE(BB) (enum state) ((size_t) (BB)->aux)
 #define SET_STATE(BB, STATE) ((BB)->aux = (void *) (size_t) (STATE))
 
+/* Used internally by purge_dead_tablejump_edges, ORed into state.  */
+#define BLOCK_USED_BY_TABLEJUMP		32
+#define FULL_STATE(BB) ((size_t) (BB)->aux)
+
+static void
+mark_tablejump_edge (rtx label)
+{
+  basic_block bb;
+
+  gcc_assert (LABEL_P (label));
+  /* See comment in make_label_edge.  */
+  if (INSN_UID (label) == 0)
+    return;
+  bb = BLOCK_FOR_INSN (label);
+  SET_STATE (bb, FULL_STATE (bb) | BLOCK_USED_BY_TABLEJUMP);
+}
+
+static void
+purge_dead_tablejump_edges (basic_block bb, rtx table)
+{
+  rtx insn = BB_END (bb), tmp;
+  rtvec vec;
+  int j;
+  edge_iterator ei;
+  edge e;
+
+  if (GET_CODE (PATTERN (table)) == ADDR_VEC)
+    vec = XVEC (PATTERN (table), 0);
+  else
+    vec = XVEC (PATTERN (table), 1);
+
+  for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+    mark_tablejump_edge (XEXP (RTVEC_ELT (vec, j), 0));
+
+  /* Some targets (eg, ARM) emit a conditional jump that also
+     contains the out-of-range target.  Scan for these and
+     add an edge if necessary.  */
+  if ((tmp = single_set (insn)) != NULL
+       && SET_DEST (tmp) == pc_rtx
+       && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
+       && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
+    mark_tablejump_edge (XEXP (XEXP (SET_SRC (tmp), 2), 0));
+
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+    {
+      if (FULL_STATE (e->dest) & BLOCK_USED_BY_TABLEJUMP)
+        SET_STATE (e->dest, FULL_STATE (e->dest)
+                            & ~(size_t) BLOCK_USED_BY_TABLEJUMP);
+      else if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
+        {
+          remove_edge (e);
+          continue;
+        }
+      ei_next (&ei);
+    }
+}
+
 /* Scan basic block BB for possible BB boundaries inside the block
    and create new basic blocks in the progress.  */
 
 static void
 find_bb_boundaries (basic_block bb)
 {
+  basic_block orig_bb = bb;
   rtx insn = BB_HEAD (bb);
   rtx end = BB_END (bb);
+  rtx table;
   rtx flow_transfer_insn = NULL_RTX;
   edge fallthru = NULL;
 
@@ -623,6 +682,11 @@ find_bb_boundaries (basic_block bb)
      followed by cleanup at fallthru edge, so the outgoing edges may
      be dead.  */
   purge_dead_edges (bb);
+
+  /* purge_dead_edges doesn't handle tablejump's, but if we have split the
+     basic block, we might need to kill some edges.  */
+  if (bb != orig_bb && tablejump_p (BB_END (bb), NULL, &table))
+    purge_dead_tablejump_edges (bb, table);
 }
 
 /*  Assume that frequency of basic block B is known.  Compute frequencies
