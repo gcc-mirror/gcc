@@ -4687,9 +4687,17 @@ rtx
 init_one_libfunc (name)
      register const char *name;
 {
-  name = ggc_strdup (name);
+  /* Create a FUNCTION_DECL that can be passed to ENCODE_SECTION_INFO.  */
+  /* ??? We don't have any type information except for this is
+     a function.  See if error_mark_node is good enough.  */
+  tree decl = build_decl (FUNCTION_DECL, get_identifier (name),
+			  error_mark_node);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
 
-  return gen_rtx_SYMBOL_REF (Pmode, name);
+  /* Return the symbol_ref from the mem rtx.  */
+  return XEXP (DECL_RTL (decl), 0);
 }
 
 /* Mark ARG (which is really an OPTAB *) for GC.  */

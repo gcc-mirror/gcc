@@ -1,5 +1,10 @@
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
+	* optabs.c (init_one_libfunc): Gen a FUNCTION_DECL for use by
+	ENCODE_SECTION_INFO; get SYMBOL_REF from make_decl_rtl.
+
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
 	* rtl.h (LCT_RETURNS_TWICE): New.
 	* calls.c (emit_call_1): Set current_function_calls_setjmp for
 	ECF_RETURNS_TWICE.
