@@ -1817,8 +1817,7 @@ simplify_relational_operation (code, mode, op0, op1)
     return 0;
 
   /* Make sure the constant is second.  */
-  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
-      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+  if (swap_commutative_operands_p (op0, op1))
     {
       tem = op0, op0 = op1, op1 = tem;
       code = swap_condition (code);
