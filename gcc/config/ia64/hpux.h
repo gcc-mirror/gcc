@@ -47,6 +47,8 @@ do {							\
 	    builtin_define("_HPUX_SOURCE");		\
 	    builtin_define("__STDC_EXT__");		\
 	  }						\
+	if (TARGET_ILP32)				\
+	  builtin_define("_ILP32");			\
 } while (0)
 
 #undef CPP_SPEC
