@@ -5296,7 +5296,7 @@ acc_operand (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || mode == GET_MODE (op))
 	  && REG_P (op) && ACC_P (REGNO (op))
-	  && ((INTVAL (op) - ACC_FIRST) & ~ACC_MASK) == 0);
+	  && ((REGNO (op) - ACC_FIRST) & ~ACC_MASK) == 0);
 }
 
 /* Return 1 if operand is a valid even ACC register number.  */
@@ -5322,7 +5322,7 @@ accg_operand (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || mode == GET_MODE (op))
 	  && REG_P (op) && ACCG_P (REGNO (op))
-	  && ((INTVAL (op) - ACCG_FIRST) & ~ACC_MASK) == 0);
+	  && ((REGNO (op) - ACCG_FIRST) & ~ACC_MASK) == 0);
 }
 
 
