@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native System V Release 4 system include files.
-# Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 # Contributed by Ron Guilmette (rfg@monkeys.com).
 #
 # This file is part of GNU CC.
@@ -1520,6 +1520,40 @@ if [ \! -z "$file_to_fix" ]; then
     true
   else
     echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
+# Similarly for struct queue in sys/stream.h.
+file=sys/stream.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/struct[ 	]*queue/i\
+#ifdef __cplusplus\
+#define queue __stream_queue\
+#endif'\
+      -e '/struct[ 	]*queue/a\
+#ifdef __cplusplus\
+#undef queue\
+#endif' $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    mkdir -p $LIB/`dirname $file`
     rm -f ${LIB}/$file
     cp /tmp/$base ${LIB}/$file
     chmod a+r ${LIB}/$file
