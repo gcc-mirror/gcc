@@ -1,3 +1,8 @@
+2001-03-06  Stephen L Moshier  <moshier@mediaone.net>
+
+	* config/m68k/m68k.c (const_uint32_operand): Accept any
+	const_int on a 32-bit host.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* c-parse.in (yylexname): New function, split out of _yylex.
