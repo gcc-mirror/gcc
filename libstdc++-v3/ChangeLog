@@ -1,3 +1,8 @@
+2004-09-14  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/fstream.tcc (xsgetn): Slightly tweak the recent fix
+	for 11722: copy can replace move; the common case is __avail == 0.
+
 2004-09-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/cpp_type_traits.h: Rename __is_trivially_copyable
