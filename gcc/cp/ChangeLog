@@ -1,3 +1,7 @@
+2004-10-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* semantics.c: Fix comment typos.
+
 2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17554

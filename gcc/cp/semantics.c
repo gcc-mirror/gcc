@@ -363,9 +363,9 @@ maybe_cleanup_point_expr (tree expr)
 }
 
 /* Like maybe_cleanup_point_expr except have the type of the new expression be
-   void so we don't need to create a temprary variable to hold the inner
-   expression.  The reason why we do this is because the orginal type might be
-   an aggregate and we cannot create a temprary variable for that type.  */
+   void so we don't need to create a temporary variable to hold the inner
+   expression.  The reason why we do this is because the original type might be
+   an aggregate and we cannot create a temporary variable for that type.  */
 
 static tree
 maybe_cleanup_point_expr_void (tree expr)
