@@ -1,4 +1,8 @@
 2002-10-26  Roger Sayle  <roger@eyesopen.com>
+
+	* partition.h:  Close the extern "C" scope when compiling with C++.
+
+2002-10-26  Roger Sayle  <roger@eyesopen.com>
 	    DJ Delorie <dj@redhat.com>
 
 	PR bootstrap/8351
