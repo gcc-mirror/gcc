@@ -1,3 +1,8 @@
+1999-05-27  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* fold-const.c (fold_truthop): Make the field reference unsigned
+	when converting a single bit compare.
+
 Thu May 27 03:07:13 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	Based on patch by Scott Bambrough and Pat Beirne:
