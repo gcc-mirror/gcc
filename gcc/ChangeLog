@@ -1,5 +1,8 @@
 2001-04-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* dwarf2out.c (mem_loc_descriptor): If a SYMBOL_REF is in the
+	constant pool, use the pool's SYMBOL_REF instead.
+
 	* config/v850/v850.h (STRICT_ALIGNMENT): Always set, even for the
 	v850e.
 
