@@ -969,7 +969,15 @@ do { char dstr[30];					\
 
 #define REGISTER_NAMES \
 { "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp", \
-  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" }
+  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" \
+}
+
+#define ADDITIONAL_REGISTER_NAMES \
+{ {"r8",  4}, {"r9",  5}, {"r10", 6}, {"r11", 7}, \
+  {"r12", 0}, {"r13", 1}, {"r14", 2}, {"r15", 3}, \
+  {"e0", 10}, {"e1", 11}, {"e2", 12}, {"e3", 13}, \
+  {"e4", 14}, {"e5", 15}, {"e6", 16}, {"e7", 17} \
+}
 
 /* Print an instruction operand X on file FILE.
    look in mn10300.c for details */
