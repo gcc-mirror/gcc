@@ -1,3 +1,7 @@
+2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.am (all-multi): Fix multilib parallel build.
+
 2002-07-18  Bo Thorsen  <bo@suse.de>
 
 	* include/private/gcconfig.h: Add x86-64 definitions.
