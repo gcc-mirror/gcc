@@ -1,3 +1,8 @@
+2001-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Copy from 3.0 branch.  Add support for building the
+	weekly snapshots on gcc.gnu.org.
+
 2001-08-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* update_web_docs: Also check out texinfo.tex from

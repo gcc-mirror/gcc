@@ -1,0 +1,613 @@
+#! /bin/sh
+
+########################################################################
+#
+# File:   gcc_release
+# Author: Jeffrey Law, Bernd Schmidt, Mark Mitchell
+# Date:   2001-05-25
+#
+# Contents:
+#   Script to create a GCC release.
+#
+# Copyright (c) 2001 Free Software Foundation.
+#
+# This file is part of GNU CC.
+#
+# GNU CC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# GNU CC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU CC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+########################################################################
+
+########################################################################
+# Notes
+########################################################################
+
+# Here is an example usage of this script, to create a GCC 3.0.2
+# prerelease:
+#
+#   gcc_release -r 3.0.2
+#
+# This script will automatically use the head of the release branch
+# to generate the release.
+
+########################################################################
+# Functions
+########################################################################
+
+# Issue the error message given by $1 and exit with a non-zero
+# exit code.
+
+error() {
+    echo "gcc_release: error: $1"
+    exit 1
+}
+
+# Issue the informational message given by $1.
+
+inform() {
+    echo "gcc_release: $1"
+}
+
+# Issue a usage message explaining how to use this script.
+
+usage() {
+cat <<EOF
+gcc_release     [-d destination]
+                [-u username]
+		[-r release]
+		[-t tag]
+		[-p previous-tarball]
+		[-s] [-f] [-l]
+EOF
+    exit 1
+}
+
+# Change to the directory given by $1.
+
+changedir() {
+  cd $1 || \
+    error "Could not change directory to $1"
+}
+
+# Each of the arguments is a directory name, relative to the top
+# of the source tree.  Return another name for that directory, relative
+# to the working directory.
+
+adjust_dirs() {
+  for x in $@; do
+    echo `basename ${SOURCE_DIRECTORY}`/$x
+  done
+}
+
+# Build the source tree that will be the basis for the release
+# in ${WORKING_DIRECTORY}/gcc-${RELEASE}.
+
+build_sources() {
+  # If the WORKING_DIRECTORY already exists, do not risk destroying it.
+  if [ -r ${WORKING_DIRECTORY} ]; then
+    error "\`${WORKING_DIRECTORY}' already exists"
+  fi
+  # Create the WORKING_DIRECTORY.
+  mkdir "${WORKING_DIRECTORY}" \
+    || error "Could not create \`${WORKING_DIRECTORY}'"
+  changedir "${WORKING_DIRECTORY}"
+
+  # If this is a final release, make sure that the ChangeLogs
+  # and version strings are updated.
+  if [ ${FINAL} -ne 0 ]; then
+    inform "Updating ChangeLogs and version files"
+
+    ${CVS} co -d "`basename ${SOURCE_DIRECTORY}`" \
+           -r ${BRANCH} gcc || \
+           error "Could not check out release sources"
+    for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
+      cat - ${x} > ${x}.new <<EOF
+${LONG_DATE}  Release Manager
+
+	* GCC ${RELEASE} Released.
+
+EOF
+      mv ${x}.new ${x} || \
+        error "Could not update ${x}"
+      (changedir `dirname ${x}` && \
+        ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
+        error "Could not commit ${x}"
+    done
+
+    # Update `gcc/version.c'.  There are other version files
+    # as well, which should have release status updated.
+    for x in gcc/version.c; do 
+      y=`basename ${x}`
+      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
+          sed -e 's|= \".*\"|= \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
+	  mv ${y}.new ${y} && \
+          ${CVS} ci -m 'Update version' ${y}) || \
+	  error "Could not update ${x}"
+    done
+    for x in gcc/f/version.c libf2c/libF77/Version.c \
+             libf2c/libI77/Version.c libf2c/libU77/Version.c; do
+      y=`basename ${x}`
+      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
+          sed -e 's/experimental\|prerelease/release/g' < ${y} > ${y}.new && \
+	  mv ${y}.new ${y} && \
+          ${CVS} ci -m 'Update version' ${y}) || \
+	  error "Could not update ${x}"
+    done
+
+    # Make sure we tag the sources for a final release.
+    TAG="gcc_`echo ${RELEASE} | tr . _`_release"
+
+    rm -rf ${SOURCE_DIRECTORY}
+  fi
+
+  # Tag the sources.
+  if [ -n "${TAG}" ]; then
+    inform "Tagging release sources"
+    ${CVS} rtag -r ${BRANCH} -F ${TAG} gcc || \
+      error "Could not tag release sources"
+    BRANCH=$TAG
+  fi
+
+  # Export the current sources.
+  inform "Retrieving release sources"
+  ${CVS} \
+       export -d "`basename ${SOURCE_DIRECTORY}`" \
+       -r ${BRANCH} gcc || \
+    error "Could not retrieve release sources"
+
+  # Run gcc_update on them to set up the timestamps nicely.
+  changedir "gcc-${RELEASE}"
+  contrib/gcc_update --touch
+
+  # Obtain some documentation files from the wwwdocs module.
+  inform "Retrieving HTML documentation"
+  changedir "${WORKING_DIRECTORY}"
+  for x in bugs gnats faq; do
+    (${CVS} export -r HEAD wwwdocs/htdocs/${x}.html && \
+     cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/${x}.html \
+        ${SOURCE_DIRECTORY}) || \
+      error "Could not retrieve ${x}.html"
+  done
+
+  inform "Generating plain-text documentation from HTML"
+  changedir "${SOURCE_DIRECTORY}"
+  for file in *.html; do
+    newfile=`echo $file | sed -e 's/.html//' | tr "[:lower:]" "[:upper:]"`
+    (${ENV} TERM=vt100 lynx -dump $file \
+       | sed -e "s#file://localhost`/bin/pwd`\(.*\)#http://gcc.gnu.org\1#g" \
+       > $newfile) || \
+     error "Could not regenerate documentation"
+  done
+
+  # For a prerelease or real release, we need to generate additional
+  # files not present in CVS.
+  changedir "${SOURCE_DIRECTORY}"
+  if [ $SNAPSHOT -ne 1 ]; then
+    # Generate the documentation.
+    inform "Building install docs"
+    SOURCEDIR=${SOURCE_DIRECTORY}/gcc/doc
+    DESTDIR=${SOURCE_DIRECTORY}/INSTALL
+    export SOURCEDIR
+    export DESTDIR
+    ${SOURCE_DIRECTORY}/gcc/doc/install.texi2html
+
+    # Regenerate the NEWS file.
+    contrib/gennews > gcc/NEWS || \
+      error "Could not regenerate NEWS files"
+
+    # Now, we must build the compiler in order to create any generated
+    # files that are supposed to go in the source directory.  This is
+    # also a good sanity check to make sure that the release builds
+    # on at least one platform.
+    inform "Building compiler"
+    OBJECT_DIRECTORY=../objdir
+    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} build || \
+      error "Could not rebuild GCC"
+
+    # Regenerate the Fotran NEWS and BUGS files.
+    (cd ${OBJECT_DIRECTORY}/gcc && make f77.rebuilt) || \
+      error "Could not regenerate Fortran NEWS and BUGS files"
+  fi
+
+  # Move message catalogs to source directory.
+  mv ../objdir/gcc/po/*.gmo gcc/po/
+
+  # Create a `.brik' file to use for checking the validity of the
+  # release.
+  changedir "${SOURCE_DIRECTORY}"
+  BRIK_FILE=`mktemp /tmp/gcc_release.XXXXXXX`
+  ((find . -type f | sort > $BRIK_FILE) && \
+       brik -Gb -f ${BRIK_FILE} > .brik && \
+       rm ${BRIK_FILE}) || \
+     error "Could not compute brik checksum"
+}
+
+# Buid a single tarfile.  The first argument is the name of the name
+# of the tarfile to build, without any suffixes.  They will be added
+# automatically.  The rest of the arguments are the files or
+# directories to include.
+
+build_tarfile() {
+  # Get the name of the destination tar file.
+  TARFILE="$1.tar.gz"
+  shift
+
+  # Build the tar file itself.
+  (${TAR} cf - "$@" | ${GZIP} > ${TARFILE}) || \
+    error "Could not build tarfile"
+  FILE_LIST="${FILE_LIST} ${TARFILE}"
+}
+
+# Build the various tar files for the release.
+
+build_tarfiles() {
+  inform "Building tarfiles"
+
+  changedir "${WORKING_DIRECTORY}"
+
+  # The GNU Coding Standards specify that all files should
+  # world readable.
+  chmod -R a+r ${SOURCE_DIRECTORY}
+  # And that all directories have mode 777.
+  find ${SOURCE_DIRECTORY} -type d -exec chmod 777 {} \;
+ 
+  # Build one huge tarfile for the entire distribution.
+  build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
+
+  # Now, build one for each of the languages.
+  build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
+  build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
+  build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
+  build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
+  build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
+   
+  # The core is everything else.
+  EXCLUDES=""
+  for x in ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${JAVA_DIRS} \
+           ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
+    EXCLUDES="${EXCLUDES} --exclude $x"
+  done
+  build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
+    `basename ${SOURCE_DIRECTORY}`
+
+  # Possibly build diffs.
+  if [ -n "$OLD_TARS" ]; then
+    for old_tar in $OLD_TARS; do
+      build_diffs $old_tar
+    done
+  fi
+
+  # Build .bz2 files.
+  for f in ${FILE_LIST}; do
+    bzfile=${f%.gz}.bz2
+    zcat $f | ${BZIP2} > ${bzfile}
+    FILE_LIST="${FILE_LIST} ${bzfile}"
+  done
+}
+
+# Build diffs against an old release.
+build_diffs() {
+  old_dir=${1%/*}
+  old_file=${1##*/}
+  old_vers=${old_file%.tar.gz}
+  old_vers=${old_vers#gcc-}
+  inform "Building diffs against version $old_vers"
+  for f in gcc gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
+    old_tar=${old_dir}/${f}-${old_vers}.tar.gz
+    new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.gz
+    if [ -e $old_tar ] && [ -e $new_tar ]; then
+      build_diff $old_tar gcc-${old_vers} $new_tar gcc-${RELEASE} \
+        ${f}-${old_vers}-${RELEASE}.diff.gz
+    fi
+  done
+}
+
+# Build an individual diff.
+build_diff() {
+  changedir "${WORKING_DIRECTORY}"
+  tmpdir=gccdiff.$$
+  mkdir $tmpdir || error "Could not create directory $tmpdir"
+  changedir $tmpdir
+  tar xfz $1 || error "Could not unpack $1 for diffs"
+  tar xfz $3 || error "Could not unpack $3 for diffs"
+  ${DIFF} $2 $4 | ${GZIP} > ../$5
+  if [ $? -eq 2 ]; then
+    error "Trouble making diffs from $1 to $3"
+  fi
+  changedir ..
+  rm -rf $tmpdir
+  FILE_LIST="${FILE_LIST} $5"
+}
+
+# Upload the files to the FTP server.
+
+upload_files() {
+  inform "Uploading files"
+
+  changedir "${WORKING_DIRECTORY}"
+
+  if [ $LOCAL -ne 0 ]; then
+    mkdir -p "${FTP_PATH}" \
+      || error "Could not create \`${FTP_PATH}'"
+  fi
+
+  # Copy the tar files to the FTP server.
+  for x in gcc*.gz gcc*.bz2; do
+    if [ -e ${x} ]; then
+      # Make sure the file will be readable on the server.
+      chmod a+r ${x}
+      # Copy it.
+      ${SCP} ${x} ${FTP_PATH} || \
+        error "Could not upload ${x}"
+    fi
+  done
+}
+
+########################################################################
+# Initialization
+########################################################################
+
+# Today's date.
+DATE=`date "+%Y%m%d"`
+LONG_DATE=`date "+%Y-%m-%d"`
+
+# The CVS server containing the GCC repository.
+CVS_SERVER="gcc.gnu.org"
+# The path to the repository on that server.
+CVS_REPOSITORY="/cvs/gcc"
+# The CVS protocol to use.
+CVS_PROTOCOL="ext"
+# The username to use when connecting to the server.
+CVS_USERNAME="${USER}"
+
+# The path to the directory where the files are uploaded for FTP.
+FTP_PATH="gccadmin@gcc.gnu.org:~ftp/pub/gcc"
+
+# The major number for the release.  For release `3.0.2' this would be 
+# `3'
+RELEASE_MAJOR=""
+# The minor number for the release.  For release `3.0.2' this would be
+# `0'.
+RELEASE_MINOR=""
+# The revision number for the release.  For release `3.0.2' this would
+# be `2'.
+RELEASE_REVISION=""
+# The complete name of the release.
+RELEASE=""
+
+# The name of the branch from which the release should be made.
+BRANCH=""
+
+# The tag to apply to the sources used for the release.
+TAG=""
+
+# The old tarballs from which to generate diffs.
+OLD_TARS=""
+
+# The directory that will be used to construct the release.  The
+# release itself will be placed in a subdirectory of this diretory.
+DESTINATION=${HOME}
+# The subdirectory.
+WORKING_DIRECTORY=""
+# The directory that will contain the GCC sources.
+SOURCE_DIRECTORY=""
+
+# The directories that should be part of the various language-specific
+# tar files.  These are all relative to the top of the source tree.
+CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
+FORTRAN_DIRS="gcc/f libf2c"
+JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
+OBJECTIVEC_DIRS="gcc/objc libobjc"
+TESTSUITE_DIRS="gcc/testsuite"
+
+# Non-zero if this is the final release, rather than a prerelease.
+FINAL=0
+
+# Non-zero if we are building a snapshot, and don't build gcc or
+# include generated files.
+SNAPSHOT=0
+
+# Non-zero if we are running locally on gcc.gnu.org, and use local CVS
+# and copy directly to the FTP directory.
+LOCAL=0
+
+# Major operation modes.
+MODE_SOURCES=0
+MODE_TARFILES=0
+MODE_UPLOAD=0
+
+# Files generated to upload.
+FILE_LIST=""
+
+# Programs we use.
+
+BZIP2="${BZIP2:-bzip2}"
+CVS="${CVS:-cvs -f -Q -z9}"
+DIFF="${DIFF:-diff -Nrc3pad}"
+ENV="${ENV:-env}"
+GZIP="${GZIP:-gzip --best}"
+SCP="${SCP:-scp -p}"
+TAR="${TAR:-tar}"
+
+########################################################################
+# Command Line Processing
+########################################################################
+
+# Parse the options.
+while getopts "d:fr:u:t:p:sl" ARG; do
+    case $ARG in
+    d)    DESTINATION="${OPTARG}";;
+    r)    RELEASE="${OPTARG}";;
+    t)    TAG="${OPTARG}";;
+    u)    CVS_USERNAME="${OPTARG}";;
+    f)    FINAL=1;;
+    s)    SNAPSHOT=1;;
+    l)    LOCAL=1
+	  SCP=cp
+	  FTP_PATH=~ftp/pub/gcc
+	  PATH=~:$PATH;;
+    p)    OLD_TARS="${OLD_TARS} ${OPTARG}";;
+    \?)   usage;;
+    esac
+done
+shift `expr ${OPTIND} - 1`
+
+# Perform consistency checking.
+if [ -z ${CVS_USERNAME} ]; then
+  error "No username specified"
+fi
+
+if [ ! -d ${DESTINATION} ]; then
+  error "\`${DESTINATION}' is not a directory"
+fi
+
+if [ $SNAPSHOT -eq 0 ]; then
+  if [ -z ${RELEASE} ]; then
+    error "No release number specified"
+  fi
+
+  # Compute the major and minor release numbers.
+  RELEASE_MAJOR=`echo $RELEASE | awk --assign FS=. '{ print $1; }'`
+  RELEASE_MINOR=`echo $RELEASE | awk --assign FS=. '{ print $2; }'`
+  RELEASE_REVISION=`echo $RELEASE | awk --assign FS=. '{ print $3; }'`
+
+  if [ -z "${RELEASE_MAJOR}" ] || [ -z "${RELEASE_MINOR}" ]; then
+    error "Release number \`${RELEASE}' is invalid"
+  fi
+
+  # Compute the full name of the release.
+  if [ -z "${RELEASE_REVISION}" ]; then
+    RELEASE="${RELEASE_MAJOR}.${RELEASE_MINOR}"
+  else
+    RELEASE="${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_REVISION}"
+  fi
+
+  # Compute the name of the branch, which is based solely on the major
+  # and minor release numbers.
+  BRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+
+  # If this is not a final release, set various parameters acordingly.
+  if [ ${FINAL} -ne 1 ]; then
+    RELEASE="${RELEASE}-${DATE}"
+    FTP_PATH="${FTP_PATH}/snapshots"
+  else
+    FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}"
+  fi
+else
+  RELEASE=$DATE
+  # For now snapshots come from the 3.0 branch.
+  BRANCH=gcc-3_0-branch
+  FTP_PATH="${FTP_PATH}/snapshots/${LONG_DATE}"
+  TAG=gcc_ss_${DATE}
+
+  # Building locally on gcc.gnu.org, we know what the last snapshot date
+  # was.
+  if [ $LOCAL -ne 0 ]; then
+    LAST_DATE=`cat ~/.snapshot_date`
+    PREV_LAST_DATE=`cat ~/.prev_snapshot_date`
+    LAST_LONG_DATE=`date --date=$LAST_DATE +%Y-%m-%d`
+    LAST_DIR=~ftp/pub/gcc/snapshots/${LAST_LONG_DATE}
+    OLD_TARS=${LAST_DIR}/gcc-${LAST_DATE}.tar.gz
+  fi
+fi
+
+# Compute the name of the WORKING_DIRECTORY and the SOURCE_DIRECTORY.
+WORKING_DIRECTORY="${DESTINATION}/gcc-${RELEASE}"
+SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
+
+# Recompute the names of all the language-specific directories,
+# relative to the WORKING_DIRECTORY.
+CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
+FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
+JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
+OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
+TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
+
+# Set up CVSROOT.
+if [ $LOCAL -eq 0 ]; then
+    CVSROOT=":${CVS_PROTOCOL}:${CVS_USERNAME}@"
+    CVSROOT="${CVSROOT}${CVS_SERVER}:${CVS_REPOSITORY}"
+else
+    CVSROOT="${CVS_REPOSITORY}"
+fi
+export CVSROOT
+
+########################################################################
+# Main Program
+########################################################################
+
+# Handle the major modes.
+while [ $# -ne 0 ]; do
+    case $1 in
+    sources)  MODE_SOURCES=1;;
+    tarfiles) MODE_TARFILES=1;;
+    upload)   MODE_UPLOAD=1;;
+    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_UPLOAD=1;;
+    *)        error "Unknown mode $1";;
+    esac
+    shift
+done
+
+# Build the source directory.
+
+if [ $MODE_SOURCES -ne 0 ]; then
+  build_sources
+fi
+
+# Build the tar files.
+
+if [ $MODE_TARFILES -ne 0 ]; then
+  build_tarfiles
+fi
+
+# Upload them to the FTP server.
+
+if [ $MODE_UPLOAD -ne 0 ]; then
+  upload_files
+
+  # For snapshots, make some further updates.
+  if [ $SNAPSHOT -ne 0 ] && [ $LOCAL -ne 0 ]; then
+    # Update links on the FTP server.
+    TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
+    LAST_TEXT_DATE=`date --date=$LAST_DATE +%B\ %d,\ %Y`
+    cd ~ftp/pub/gcc/snapshots
+    sed -e "s%$LAST_DATE%$DATE%g" -e "s%$PREV_LAST_DATE%$LAST_DATE%g" \
+      -e "s%$LAST_LONG_DATE%$LONG_DATE%g" \
+      -e "s%$LAST_TEXT_DATE%$TEXT_DATE%g" < README > $$
+    mv $$ README
+    sed -e "s%$LAST_DATE%$DATE%g" -e "s%$PREV_LAST_DATE%$LAST_DATE%g" \
+      -e "s%$LAST_LONG_DATE%$LONG_DATE%g" \
+      -e "s%$LAST_TEXT_DATE%$TEXT_DATE%g" < index.html > $$
+    mv $$ index.html
+
+    touch LATEST-IS-$LONG_DATE
+    rm -f LATEST-IS-$LAST_LONG_DATE
+
+    # Update snapshot date file.
+    changedir ~
+    mv .snapshot_date .prev_snapshot_date
+    echo $DATE >.snapshot_date
+
+    # Update gcc_latest_snapshot tag.
+    ${CVS} rtag -d gcc_latest_snapshot gcc
+    ${CVS} rtag -rgcc_ss_${DATE} gcc_latest_snapshot gcc
+
+    # Announce the snapshot.
+    mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
+
+    # Remove working directory
+    rm -rf ${WORKING_DIRECTORY}
+  fi
+fi
