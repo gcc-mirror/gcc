@@ -1,3 +1,8 @@
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.c (verify_flow_insensitive_alias_info): Process
+	every variable that may have aliases, not just tags.
+
 2004-07-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md ("move_from_CR_gt_bit"): Rename to

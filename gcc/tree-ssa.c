@@ -348,28 +348,25 @@ verify_flow_insensitive_alias_info (void)
 
   for (i = 0; i < num_referenced_vars; i++)
     {
+      size_t j;
       var_ann_t ann;
+      varray_type may_aliases;
 
       var = referenced_var (i);
       ann = var_ann (var);
+      may_aliases = ann->may_aliases;
 
-      if (ann->mem_tag_kind == TYPE_TAG || ann->mem_tag_kind == NAME_TAG)
+      for (j = 0; may_aliases && j < VARRAY_ACTIVE_SIZE (may_aliases); j++)
 	{
-	  size_t j;
-	  varray_type may_aliases = ann->may_aliases;
+	  tree alias = VARRAY_TREE (may_aliases, j);
 
-	  for (j = 0; may_aliases && j < VARRAY_ACTIVE_SIZE (may_aliases); j++)
+	  bitmap_set_bit (visited, var_ann (alias)->uid);
+
+	  if (!may_be_aliased (alias))
 	    {
-	      tree alias = VARRAY_TREE (may_aliases, j);
-
-	      bitmap_set_bit (visited, var_ann (alias)->uid);
-
-	      if (!may_be_aliased (alias))
-		{
-		  error ("Non-addressable variable inside an alias set.");
-		  debug_variable (alias);
-		  goto err;
-		}
+	      error ("Non-addressable variable inside an alias set.");
+	      debug_variable (alias);
+	      goto err;
 	    }
 	}
     }
