@@ -1,3 +1,9 @@
+Tue Apr 14 14:55:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.md (reload_outdi): Change the scratch mode from DImode to
+	TImode.  New variable scratch, used instead of operand[2] in template.
+	Add code for MIPS16 HILO_REGNUM case where output reg is not M16_REG_P.
+
 Tue Apr 14 16:19:03 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* expr.c (MOVE_RATIO): Set to 3 if optimizing for space.

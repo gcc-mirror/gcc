@@ -4639,20 +4639,25 @@ move\\t%0,%z4\\n\\
 
 ;; Handle output reloads in DImode.
 
+;; Reloading HILO_REG in MIPS16 mode requires two scratch registers, so we
+;; use a TImode scratch reg.
+
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "general_operand" "=b")
 	(match_operand:DI 1 "se_register_operand" "b"))
-   (clobber (match_operand:DI 2 "register_operand" "=&d"))]
+   (clobber (match_operand:TI 2 "register_operand" "=&d"))]
   "TARGET_64BIT"
   "
 {
+  rtx scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
+
   if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == HILO_REGNUM)
     {
-      emit_insn (gen_ashrdi3 (operands[2], operands[1], GEN_INT (32)));
-      emit_insn (gen_movdi (gen_rtx (REG, DImode, 64), operands[2]));
-      emit_insn (gen_ashldi3 (operands[2], operands[1], GEN_INT (32)));
-      emit_insn (gen_ashrdi3 (operands[2], operands[2], GEN_INT (32)));
-      emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), operands[2]));
+      emit_insn (gen_ashrdi3 (scratch, operands[1], GEN_INT (32)));
+      emit_insn (gen_movdi (gen_rtx (REG, DImode, 64), scratch));
+      emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
+      emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
+      emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
       DONE;
     }
   if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == HILO_REGNUM)
@@ -4680,20 +4685,34 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (scratch, gen_rtx (REG, SImode, 65));
 	  emit_move_insn (loword, scratch);
 	}
+      else if (TARGET_MIPS16 && ! M16_REG_P (REGNO (operands[0])))
+	{
+	  /* Handle the case where operand[0] is not a 'd' register,
+	     and hence we can not directly move from the HILO register
+	     into it.  */
+	  rtx scratch2 = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
+	  emit_insn (gen_movdi (scratch, gen_rtx (REG, DImode, 65)));
+	  emit_insn (gen_ashldi3 (scratch, scratch, GEN_INT (32)));
+	  emit_insn (gen_lshrdi3 (scratch, scratch, GEN_INT (32)));
+	  emit_insn (gen_movdi (scratch2, gen_rtx (REG, DImode, 64)));
+	  emit_insn (gen_ashldi3 (scratch2, scratch2, GEN_INT (32)));
+	  emit_insn (gen_iordi3 (scratch, scratch, scratch2));
+	  emit_insn (gen_movdi (operands[0], scratch));
+	}
       else
 	{
-	  emit_insn (gen_movdi (operands[2], gen_rtx (REG, DImode, 65)));
-	  emit_insn (gen_ashldi3 (operands[2], operands[2], GEN_INT (32)));
-	  emit_insn (gen_lshrdi3 (operands[2], operands[2], GEN_INT (32)));
+	  emit_insn (gen_movdi (scratch, gen_rtx (REG, DImode, 65)));
+	  emit_insn (gen_ashldi3 (scratch, scratch, GEN_INT (32)));
+	  emit_insn (gen_lshrdi3 (scratch, scratch, GEN_INT (32)));
 	  emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
 	  emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
-	  emit_insn (gen_iordi3 (operands[0], operands[0], operands[2]));
+	  emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
 	}
       DONE;
     }
   /* This handles moves between a float register and HI/LO.  */
-  emit_move_insn (operands[2], operands[1]);
-  emit_move_insn (operands[0], operands[2]);
+  emit_move_insn (scratch, operands[1]);
+  emit_move_insn (operands[0], scratch);
   DONE;
 }")
 
