@@ -1,3 +1,15 @@
+1999-09-10 22:37 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* cppalloc.c (xstrdup): Use memcpy.
+	* cpperror.c (cpp_print_containing_files): Don't use
+	cpp_notice.
+	* cpplib.c (conditional_skip): Set temp->lineno.
+	(do_endif): Make error message less obscure.
+	(if_directive_name): New function.
+	(cpp_get_token [case EOF]): Unwind the if stack and generate
+	error messages for each unterminated conditional in this file.
+	(parse_string):  Do not behave differently if -traditional.
+
 Fri Sep 10 14:04:07 1999  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_va_arg): Cope with an array-type
@@ -110,7 +122,7 @@ Thu Sep  9 16:42:06 1999  Richard Henderson  <rth@cygnus.com>
 	* i386.h (CC1_CPU_SPEC): Don't add -march=foo.  Remove -mno-foo.
 	(CPP_486_SPEC, CPP_586_SPEC, CPP_686_SPEC): Delete.
 	(CPP_CPU_DEFAULT_SPEC): Define to __tune_foo__.
-	(CC1_CPU_SPEC): Make -march=foo define __foo__, and provide 
+	(CC1_CPU_SPEC): Make -march=foo define __foo__, and provide
 	__tune_foo__ if no -mcpu.  Make -mcpu=bar define __tune_bar__.
 	(EXTRA_SPECS): Remove deleted specs.
 
@@ -124,7 +136,7 @@ Thu Sep  9 14:36:31 1999  Mark Mitchell  <mark@codesourcery.com>
 	* ggc.h (lang_cleanup_tree): Remove.
 	* gcc-simple.c (ggc_free_tree): Don't call lang_cleanup_tree.
 	* ggc-callbacks.c (lang_cleanup_tree): Remove.
-	
+
 	* c-decl.c (finish_struct): Use ggc_alloc to allocate
 	TYPE_LANG_SPECIFIC when garbage collecting.
 	(lang_mark_tree): Mark TYPE_LANG_SPECIFIC.
@@ -152,7 +164,7 @@ Thu Sep  9 09:40:58 1999  Mark Mitchell  <mark@codesourcery.com>
 	(free_lang_status): Likewise.
 	(push_function_context_to): Don't set function::decl here.
 	(free_after_copmilation): Make decl parameter implicit.  Call
-	free_lang_status if defined. 
+	free_lang_status if defined.
 	(prepare_function_start): Call init_lang_status if defined.
 	(init_function_start): Set function::decl here.
 	* profile.c (output_func_start_profiler): Don't call pushdecl
@@ -161,7 +173,7 @@ Thu Sep  9 09:40:58 1999  Mark Mitchell  <mark@codesourcery.com>
 	* toplev.c (rest_of_compilation): Don't pass decl to
 	free_after_compilation.
 	* varasm.c (free_varasm_status): Likewise.
-	
+
 Thu Sep  9 17:23:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* except.c (call_get_eh_context): Add root when allocating static
@@ -195,7 +207,7 @@ Thu Sep  9 03:37:31 1999  Richard Henderson  <rth@cygnus.com>
 	Use IS_MARKED. Use ggc_free_any.
 
 1999-09-09  Scott Bambrough <scottb@netwinder.org>
- 
+
 	* config/arm/linux-elf.h: define NO_IMPLICIT_EXTERN_C
 
 Thu Sep  9 01:55:21 1999  Richard Henderson  <rth@cygnus.com>
@@ -254,8 +266,8 @@ Thu Sep  9 13:46:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
 	(do_xifdef): Handle `#ifdef xxx' for poisoned xxx.
 
 	* cccp.c: Add T_POISON node type.
-	(special_symbol): Handle `defined(xxx)' and plain `xxx' for 
-	poisoned xxx.  
+	(special_symbol): Handle `defined(xxx)' and plain `xxx' for
+	poisoned xxx.
 	(do_define): Generalise to handle poisoned definitions,
 	redefining poisoned identifiers, etc.
 	(do_undef): Don't allow poisoned identifiers to be undefined.
@@ -287,7 +299,7 @@ Wed Sep  8 16:41:27 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed Sep  8 16:07:52 1999  Richard Henderson  <rth@cygnus.com>
 
-	* gengenrtl.c (CONST_DOUBLE_FORMAT): Take the size REAL_ARITHMETIC 
+	* gengenrtl.c (CONST_DOUBLE_FORMAT): Take the size REAL_ARITHMETIC
 	will use into account.  Expand the max width to 5.
 	* rtl.c: Likewise.
 
@@ -312,7 +324,7 @@ Wed Sep  8 15:32:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	NEED_DECLARATION_REALLOC test.
 
 	* mips-tdump.c (malloc, calloc, realloc): Don't prototype.
-	
+
 Wed Sep  8 11:40:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h (__attribute__, ATTRIBUTE_UNUSED_LABEL,
@@ -325,7 +337,7 @@ Wed Sep  8 11:40:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* cccp.c (pcfinclude): Likewise.
 
 	* global.c (allocno_compare): Likewise.
-	
+
 	* haifa-sched.c (rank_for_schedule): Likewise.
 
 	* local-alloc.c (qty_sugg_compare_1, qty_compare_1): Likewise.
@@ -378,7 +390,7 @@ Wed Sep  8 00:33:43 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 Wed Sep  8 18:55:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
-	* config/c4x/c4x.c: Include ggc.h. 
+	* config/c4x/c4x.c: Include ggc.h.
 	(c4x_add_gc_roots): New function.
 	(c4x_override_options): Call c4x_add_gc_roots.
 
@@ -485,7 +497,7 @@ Tue Sep  7 21:41:38 1999  Richard Henderson  <rth@cygnus.com>
 Tue Sep  7 17:15:21 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	Add some machine-dependent GC roots.
-	* sparc.c: Include ggc.h. 
+	* sparc.c: Include ggc.h.
 	(sparc_add_gc_roots): New function.
 	(mark_ultrasparc_pipeline_state): Likewise.
 	(override_options): Call sparc_add_gc_roots.
@@ -564,7 +576,7 @@ Tue Sep  7 00:47:52 1999  Mark Mitchell  <mark@codesourcery.com>
 	(free_varasm_status): Likewise.
 	(free_emit_status): Likewise.
 	(free_stmt_status): New function.
-	* ggc-simple.c (rtx, vecs, trees, strings, bytes_alloced_since_gc): 
+	* ggc-simple.c (rtx, vecs, trees, strings, bytes_alloced_since_gc):
 	Remove, replacing with ...
 	(ggc_status): New structure.
 	(ggc_chain): New variable.
@@ -593,7 +605,7 @@ Tue Sep  7 00:47:52 1999  Mark Mitchell  <mark@codesourcery.com>
 	(push_obstacks_nochange): Likewise.
 	(pop_obstacks): Liekwise.
 	* varasm.c (free_varasm_status): Take decl as a parameter.
-	
+
 Tue Sep  7 08:15:49 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (MULTILIB_ENDIAN_DEFAULT) : New macro.
@@ -779,12 +791,12 @@ Sun Sep  5 18:57:42 1999  Mark Mitchell  <mark@codesourcery.com>
 	(ggc_add_tree_hash_table_root): Likewise.
 	* varray.h (const_equiv_data): Use struct rtx_def *, rather than
 	rtx, when defining fields.
-	
+
 Sun Sep  5 18:57:42 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* profile.c (output_func_start_profiler): Remove apparently
 	nonsensical call to start_sequence.
-	
+
 Sun Sep  5 17:34:33 1999  Richard Henderson  <rth@cygnus.com>
 
 	* clipper/clipper.c (clipper_va_start): Fix typos.
@@ -802,14 +814,14 @@ Sun Sep  5 19:11:01 1999  Michael Meissner  <meissner@cygnus.com>
 	defines.
 
 Sun Sep  5 09:31:56 1999  Richard Henderson  <rth@cygnus.com>
-	                  Bernd Schmidt <bernds@cygnus.co.uk>
+			  Bernd Schmidt <bernds@cygnus.co.uk>
 
 	* integrate.c (function_cannot_inline_p): Do not inline
 	functions with forced labels.
 
 Sun Sep  5 00:35:17 1999  Richard Henderson  <rth@cygnus.com>
-	                  Bernd Schmidt <bernds@cygnus.co.uk>
-	                  Mark Mitchell  <mark@codesourcery.com>
+			  Bernd Schmidt <bernds@cygnus.co.uk>
+			  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (ggc-simple.o): Depend on varray.h.
 	(rtl.o): Depend on ggc.h.
@@ -866,15 +878,15 @@ Sun Sep  5 00:35:17 1999  Richard Henderson  <rth@cygnus.com>
 	(tree_cons): Likewise.
 	(build1): Likewise.
 	(type_hash_canon): Don't call obstack_free when GC'ing.
-	
+
 Sat Sep  4 21:52:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Use next_nonnote_insn instead
 	of NEXT_INSN when examining speculative insns for SCHED_GROUP_P.
 
 Sat Sep  4 20:40:19 1999  Richard Henderson  <rth@cygnus.com>
-	                  Bernd Schmidt <bernds@cygnus.co.uk>
-	                  Mark Mitchell  <mark@codesourcery.com>
+			  Bernd Schmidt <bernds@cygnus.co.uk>
+			  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (stor-layout.o): Depend on ggc.h.
 	(expr.o): Depend on ggc.h.
@@ -893,9 +905,9 @@ Sat Sep  4 20:40:19 1999  Richard Henderson  <rth@cygnus.com>
 	(set_sizetype): Add gc root.
 	(init_stor_layout_once): New function.
 	* toplev.c (compile_file): Call it.
-	
+
 Sat Sep  4 19:26:25 1999  Richard Henderson  <rth@cygnus.com>
-	                  Bernd Schmidt <bernds@cygnus.co.uk>
+			  Bernd Schmidt <bernds@cygnus.co.uk>
 			  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (tree.o): Depend on ggc.h.
@@ -943,7 +955,7 @@ Sat Sep  4 19:26:25 1999  Richard Henderson  <rth@cygnus.com>
 	* varasm.c: Include ggc.h.
 	(mark_pool_constant): New function.
 	(mark_varasm_state): New function.
-	
+
 Sat Sep  4 22:28:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc-simple.c (ggc_root, ggc_collect): Wrap prototype with PROTO.
@@ -1042,7 +1054,7 @@ Sat Sep  4 11:19:52 1999  Richard Henderson  <rth@cygnus.com>
 	(all_time): New variable.
 	(compile_file): Print gc time.
 	(print_time): Calculate percentage of the whole.
-	
+
 Sat Sep  4 13:11:01 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	Change obstack memory management and varasm constant pool handling so
@@ -1148,7 +1160,7 @@ Fri Sep  3 19:02:38 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 	(restore_lang_status): Likewise.
 	(push_function_context_to): Call language-specific save function.
 	(pop_function_context_from): Call language-specific restore function.
-	
+
 Fri Sep  3 01:16:18 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* i386.md (movsf_1): Check REG_P before use of REGNO.
@@ -1167,7 +1179,7 @@ Sat Sep  4 11:37:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	(c4x_shiftable_constant): Declare.
 	* config/c4x/c4x.md (loadqi_big_constant, loadhi_big_constant,
  	ashlqi3_noclobber): Add new patterns and associated splitters.
-	
+
 Fri Sep  3 16:22:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* dbxout.c (dbxout_init): Use xcalloc instead of xmalloc+bzero.
@@ -1239,11 +1251,11 @@ Fri Sep  3 15:10:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	scan_linker_output): Constify a char*.
 	(symbol_hash_newfunc, file_hash_newfunc, demangled_hash_newfunc,
 	do_tlink): Mark parameters with ATTRIBUTE_UNUSED.
-	
+
 Fri Sep  3 18:09:24 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/m68k/m68kelf.h: Set USE_GAS; this makes gcc generate jbsr
-	(relative) rather than jsr (absolute) subroutine call insns.  
+	(relative) rather than jsr (absolute) subroutine call insns.
 	* config/m68k/m68k-coff.h: Ditto.
 
 Fri Sep  3 17:24:31 1999  Richard Earnshaw <rearnsha@arm.com>
@@ -1458,7 +1470,7 @@ Tue Aug 31 13:35:42 1999  Richard Henderson  <rth@cygnus.com>
 	* genpeep.c (main): Conditionalize entire output on HAVE_peephole.
 	* flags.h (flag_peephole2): Declare.
 	* toplev.c: New pass peephole2.  New flag -fpeephole2.
- 
+
 	* genattrtab.c (main): Count DEFINE_PEEPHOLE2.
 	* gencodes.c (main): Likewise.
 	* genextract.c (main): Likewise.
@@ -2652,7 +2664,7 @@ Fri Aug 20 22:32:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	* gencheck.c: Do not define any *_CHECK1 macros.
 
 Thu Aug 19 14:42:38 1999  Mike Stump <mrs@wrs.com>
-		          Mark Mitchell <mark@codesourcery.com>
+			  Mark Mitchell <mark@codesourcery.com>
 
 	* c-common.c (c_get_alias_set): Fix support for poitners and
 	references.
@@ -5119,7 +5131,7 @@ Fri Jul  2 01:36:36 1999  Robert Lipe  <robertlipe@usa.net>
 	ntohs.
 
 Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
-	                  Jeff Law <law@cygnus.com>
+			  Jeff Law <law@cygnus.com>
 
 	* ginclude/varargs.h (va_dcl): Use word_mode for type of
 	__builtin_va_list.
@@ -5878,7 +5890,7 @@ Mon Jun  7 22:05:03 1999  Mark Kettenis  <kettenis@gnu.org>
 	* fixinc/fixincl.x, fixinc/fixincl.sh: Rebuilt.
 
 Mon Jun  7 20:34:20 1999  Robert Lipe <robertlipe@usa.net>
-	                  Jeffrey A Law  (law@cygnus.com)
+			  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (assemble_start_function): Remove the function
 	from the pending weak decls list when we define a function.

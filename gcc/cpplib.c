@@ -1944,9 +1944,7 @@ conditional_skip (pfile, skip, type, control_macro)
 
   temp = (IF_STACK_FRAME *) xcalloc (1, sizeof (IF_STACK_FRAME));
   temp->fname = CPP_BUFFER (pfile)->nominal_fname;
-#if 0
   temp->lineno = CPP_BUFFER (pfile)->lineno;
-#endif
   temp->next = pfile->if_stack;
   temp->control_macro = control_macro;
   pfile->if_stack = temp;
@@ -2177,7 +2175,7 @@ do_endif (pfile, keyword)
   skip_rest_of_line (pfile);
 
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack)
-    cpp_error (pfile, "unbalanced `#endif'");
+    cpp_error (pfile, "`#endif' not within a conditional");
   else
     {
       IF_STACK_FRAME *temp = pfile->if_stack;
@@ -2235,6 +2233,25 @@ validate_else (pfile, directive)
 		 "text following `%s' violates ANSI standard", directive);
 }
 
+/* Convert T_IF, etc. to a string.   Used in error messages.  */
+static const char *
+if_directive_name (pfile, ifs)
+     cpp_reader *pfile;
+     struct if_stack *ifs;
+{
+  switch (ifs->type)
+    {
+    case T_IF:	    return "#if";
+    case T_IFDEF:   return "#ifdef";
+    case T_IFNDEF:  return "#ifndef";
+    case T_ELIF:    return "#elif";
+    case T_ELSE:    return "#else";
+    default:
+      cpp_fatal (pfile, "impossible if_stack->type value %d", ifs->type);
+      return "unknown";
+    }
+}
+
 /* Get the next token, and add it to the text in pfile->token_buffer.
    Return the kind of token we got.  */
   
@@ -2265,9 +2282,23 @@ cpp_get_token (pfile)
 	}
       else
 	{
-	  cpp_buffer *next_buf
-	    = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
-	  CPP_BUFFER (pfile)->seen_eof = 1;
+	  cpp_buffer *next_buf = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
+	  struct if_stack *ifs, *nifs;
+
+	  /* Unwind the conditional stack and generate error messages.  */
+	  for (ifs = pfile->if_stack;
+	       ifs != CPP_BUFFER (pfile)->if_stack;
+	       ifs = nifs)
+	    {
+	      cpp_error_with_line (pfile, ifs->lineno, -1,
+				   "unterminated `%s' conditional",
+				   if_directive_name (pfile, ifs));
+
+	      nifs = ifs->next;
+	      free (ifs);
+	    }
+	  pfile->if_stack = ifs;
+
 	  if (CPP_BUFFER (pfile)->nominal_fname
 	      && next_buf != CPP_NULL_BUFFER (pfile))
 	    {
@@ -2280,6 +2311,8 @@ cpp_get_token (pfile)
 	      output_line_command (pfile, leave_file);
 	      CPP_BUFFER (pfile) = cur_buffer;
 	    }
+
+	  CPP_BUFFER (pfile)->seen_eof = 1;
 	  return CPP_POP;
 	}
     }
@@ -2824,17 +2857,15 @@ parse_string (pfile, c)
 	      cpp_pop_buffer (pfile);
 	      continue;
 	    }
-	  if (!CPP_TRADITIONAL (pfile))
-	    {
-	      cpp_error_with_line (pfile, start_line, start_column,
-				 "unterminated string or character constant");
-	      if (pfile->multiline_string_line != start_line
-		  && pfile->multiline_string_line != 0)
-		cpp_error_with_line (pfile,
-				     pfile->multiline_string_line, -1,
-			       "possible real start of unterminated constant");
-	      pfile->multiline_string_line = 0;
-	    }
+
+	  cpp_error_with_line (pfile, start_line, start_column,
+			       "unterminated string or character constant");
+	  if (pfile->multiline_string_line != start_line
+	      && pfile->multiline_string_line != 0)
+	    cpp_error_with_line (pfile,
+				 pfile->multiline_string_line, -1,
+			 "possible real start of unterminated constant");
+	  pfile->multiline_string_line = 0;
 	  break;
 	}
       CPP_PUTC (pfile, cc);
@@ -2843,11 +2874,9 @@ parse_string (pfile, c)
 	case '\n':
 	  CPP_BUMP_LINE (pfile);
 	  pfile->lineno++;
-	  /* Traditionally, end of line ends a string constant with
-	     no error.  */
-	  if (CPP_TRADITIONAL (pfile))
-	    return;
-	  /* Character constants may not extend over multiple lines.  */
+	  /* Character constants may not extend over multiple lines.
+	     In ANSI, neither may strings.  We accept multiline strings
+	     as an extension.  */
 	  if (c == '\'')
 	    {
 	      cpp_error_with_line (pfile, start_line, start_column,
