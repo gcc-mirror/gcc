@@ -177,7 +177,7 @@ Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc/doc/invoke.texi (Optimization Options): Group together
 	optional and experimental flags.  Move trapv and bounds-check
-	out of this section.
+	out of this section.  Group floating point flags together.
 	(Code Gen Options): Move trapv and bounds-check to here.
 
 2003-01-27  Josef Zlomek  <zlomekj@suse.cz>
