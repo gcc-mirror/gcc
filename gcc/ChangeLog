@@ -1,3 +1,10 @@
+2003-04-23  Richard Henderson  <rth@redhat.com>
+
+	PR opt/8300
+	* toplev.c (rest_of_compilation): Delay no_new_pseudos until
+	after initialize_uninitialized_subregs; update reg info assuming
+	new pseudos were created.
+
 2003-04-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (c-lex.o, LIBCPP_OBJS, cpplex.o): Update.
