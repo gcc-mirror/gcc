@@ -1,3 +1,9 @@
+Thu Nov 26 23:45:37 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* README.C4X: Updated URLs.
+	* config/c4x/c4x.c (c4x_address_conflict): Fix typo.
+	(valid_parallel_operands_5): Remove unused variable.
+
 Thu Nov 26 23:40:03 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (TARGET_DEFAULT): Fix typo.

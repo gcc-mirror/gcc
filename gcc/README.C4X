@@ -23,7 +23,7 @@ not currently included as part of the binutils package, due to the
 many hacks required to be compatible with TI's kludged COFF
 implementation, and the binutils not being designed for 32-bit bytes.
 Patches against binutils-2.7.2 can be obtained from
-ftp://ongaonga.chch.cri.nz/pub/c4x.  This site also has patches for
+http://www.elec.canterbury.ac.nz/c4x.  This site also has patches for
 the GNU debugger (GDB), incoporating a cycle accurate simulator that
 can display profiles and histories of code execution, detailing
 pipeline conflicts etc.
@@ -35,8 +35,8 @@ configure GCC for both the C3x and C4x.  Then use the -m30 option to
 generate code for the C30 or -m40 (the default) for the C40.
 
 
-Further installation notes and other optimization patches for GCC can
-also be obtained from ftp://ongaonga.chch.cri.nz/pub/c4x.
+Further installation notes and other optimization patches for the C4x
+target can also be obtained from http://www.elec.canterbury.ac.nz/c4x.
 
 
 A Majordomo mailing list, gcc_c40@atlantek.com.au, exists to discuss
@@ -45,4 +45,4 @@ subscribe send a message with `subscribe gcc_c40' in the body to
 majordomo@atlantek.com.au.
 
 
-Michael Hayes,  16 Sep 98
+Michael Hayes,  26 Nov 98

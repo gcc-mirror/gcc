@@ -3154,7 +3154,7 @@ c4x_address_conflict (op0, op1, store0, store1)
 	 have an aliased address if both locations are not marked
 	 volatile, it is probably safer to flag a potential conflict
 	 if either location is volatile.  */
-      if (!flag_argument_alias)
+      if (!flag_argument_noalias)
 	{
 	  if (MEM_VOLATILE_P (op0) || MEM_VOLATILE_P (op1))
 	    return 1;
@@ -3276,7 +3276,6 @@ valid_parallel_operands_5 (operands, mode)
 {
   int regs = 0;
   rtx op0 = operands[0];
-  rtx op1 = operands[1];
   rtx op2 = operands[2];
   rtx op3 = operands[3];
 
