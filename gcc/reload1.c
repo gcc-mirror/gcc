@@ -9300,7 +9300,7 @@ move2add_note_store (dst, set, data)
   if (GET_CODE (dst) == MEM)
     {
       dst = XEXP (dst, 0);
-      if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_DEC
+      if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC
 	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
 	reg_set_luid[REGNO (XEXP (dst, 0))] = 0;
       return;
