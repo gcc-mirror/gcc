@@ -1785,6 +1785,35 @@ reload (first, global, dumpfile)
 
 	  while (max_needs[class] > 0 || max_nongroups[class] > 0)
 	    {
+#ifdef SMALL_REGISTER_CLASSES
+	      /* This should be right for all machines, but only the 386
+		 is known to need it, so this conditional plays safe.
+		 ??? For 2.5, try making this unconditional.  */
+	      /* If we spilled enough regs, but they weren't counted
+		 against the non-group need, see if we can count them now.
+		 If so, we can avoid some actual spilling.  */
+	      if (max_needs[class] <= 0 && max_nongroups[class] > 0)
+		for (i = 0; i < n_spills; i++)
+		  if (TEST_HARD_REG_BIT (reg_class_contents[class],
+					 spill_regs[i])
+		      && !TEST_HARD_REG_BIT (counted_for_groups,
+					     spill_regs[i])
+		      && !TEST_HARD_REG_BIT (counted_for_nongroups,
+					     spill_regs[i])
+		      && max_nongroups[class] > 0)
+		    {
+		      register enum reg_class *p;
+
+		      SET_HARD_REG_BIT (counted_for_nongroups, spill_regs[i]);
+		      max_nongroups[class]--;
+		      p = reg_class_superclasses[class];
+		      while (*p != LIM_REG_CLASSES)
+			max_nongroups[(int) *p++]--;
+		    }
+	      if (max_needs[class] <= 0 && max_nongroups[class] <= 0)
+		break;
+#endif
+
 	      /* Consider the potential reload regs that aren't
 		 yet in use as reload regs, in order of preference.
 		 Find the most preferred one that's in this class.  */
