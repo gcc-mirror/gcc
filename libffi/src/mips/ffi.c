@@ -23,6 +23,7 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
+#include <sgidefs.h>
 #include <ffi.h>
 #include <ffi_common.h>
 
