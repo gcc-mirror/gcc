@@ -3856,11 +3856,17 @@ push_using_directive (used, ancestor)
      tree ancestor;
 {
   tree ud = current_binding_level->using_directives;
+  tree iter;
   
   /* Check if we already have this. */
   if (purpose_member (used, ud) != NULL_TREE)
     return NULL_TREE;
- 
+
+  /* Recursively add all namespaces used. */
+  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
+    push_using_directive (TREE_PURPOSE (iter), ancestor);
+
+  ud = current_binding_level->using_directives;
   ud = perm_tree_cons (used, ancestor, ud);
   current_binding_level->using_directives = ud;
   return ud;
