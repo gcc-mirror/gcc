@@ -2392,12 +2392,16 @@ expand_stmt (t)
 		  expand_anon_union_decl (decl, NULL_TREE, 
 					  DECL_ANON_UNION_ELEMS (decl));
 	      }
-	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	             && TREE_USED (decl))
-	      /* Do not emit unused decls. This is not just an
-                 optimization. We really do not want to emit
-                 __PRETTY_FUNCTION__ etc, if they're never used.  */
-	      make_rtl_for_local_static (decl);
+	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	      {
+		if (DECL_ARTIFICIAL (decl) && ! TREE_USED (decl))
+		  /* Do not emit unused decls. This is not just an
+		     optimization. We really do not want to emit
+		     __PRETTY_FUNCTION__ etc, if they're never used.  */
+		  DECL_IGNORED_P (decl) = 1;
+		else
+		  make_rtl_for_local_static (decl);
+	      }
 	  }
 	  break;
 

@@ -719,6 +719,7 @@ expand_end_eh_spec (raises, try_block)
       tmp = tree_cons
 	(NULL_TREE, integer_type_node, tree_cons
 	 (NULL_TREE, TREE_TYPE (decl), void_list_node));
+      tmp = build_function_type (void_type_node, tmp);
 
       fn = push_throw_library_fn (fn, tmp);
     }

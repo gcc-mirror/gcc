@@ -5924,11 +5924,6 @@ tsubst_decl (t, args, type, in_decl)
 	    TREE_TYPE (r) = TREE_TYPE (DECL_INITIAL (r));
 	  }
 
-	/* If the template variable was marked TREE_ASM_WRITTEN, that
-	   means we don't need to write out any of the instantiations
-	   either.  (__FUNCTION__ and its ilk are marked thusly.)  */
-	TREE_ASM_WRITTEN (r) = TREE_ASM_WRITTEN (t);
-
 	/* Even if the original location is out of scope, the newly
 	   substituted one is not.  */
 	if (TREE_CODE (r) == VAR_DECL)

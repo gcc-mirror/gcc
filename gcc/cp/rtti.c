@@ -175,7 +175,8 @@ throw_bad_cast ()
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
-    fn = push_throw_library_fn (fn, ptr_type_node);
+    fn = push_throw_library_fn (fn, build_function_type (ptr_type_node,
+							 void_list_node));
   
   return build_call (fn, NULL_TREE);
 }
@@ -187,9 +188,11 @@ throw_bad_typeid ()
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
-    fn = push_throw_library_fn (fn, build_reference_type
-				(build_qualified_type
-				 (type_info_type_node, TYPE_QUAL_CONST)));
+    {
+      tree t = build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
+      t = build_function_type (build_reference_type (t), void_list_node);
+      fn = push_throw_library_fn (fn, t);
+    }
 
   return build_call (fn, NULL_TREE);
 }

@@ -1789,9 +1789,12 @@ wrapup_globals_for_namespace (namespace, data)
       /* Pretend we've output an unused static variable.  This ensures
          that the toplevel __FUNCTION__ etc won't be emitted, unless
          needed. */
-      if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-          && !TREE_USED (decl))
-        TREE_ASM_WRITTEN (decl) = 1;
+      if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl)
+	  && !TREE_PUBLIC (decl) && !TREE_USED (decl))
+	{
+	  TREE_ASM_WRITTEN (decl) = 1;
+	  DECL_IGNORED_P (decl) = 1;
+	}
       vec[len - i - 1] = decl;
     }
 
@@ -6578,14 +6581,14 @@ push_void_library_fn (name, parmtypes)
   return push_library_fn (name, type);
 }
 
-/* Like push_void_library_fn, but also note that this function throws
+/* Like push_library_fn, but also note that this function throws
    and does not return.  Used for __throw_foo and the like.  */
 
 tree
-push_throw_library_fn (name, parmtypes)
-     tree name, parmtypes;
+push_throw_library_fn (name, type)
+     tree name, type;
 {
-  tree fn = push_void_library_fn (name, parmtypes);
+  tree fn = push_library_fn (name, type);
   TREE_THIS_VOLATILE (fn) = 1;
   TREE_NOTHROW (fn) = 0;
   return fn;
@@ -7272,7 +7275,7 @@ maybe_commonize_var (decl)
      linkage.  */
   if (TREE_STATIC (decl)
       /* Don't mess with __FUNCTION__.  */
-      && ! TREE_ASM_WRITTEN (decl)
+      && ! DECL_ARTIFICIAL (decl)
       && current_function_decl
       && DECL_CONTEXT (decl) == current_function_decl
       && (DECL_THIS_INLINE (current_function_decl)
@@ -7307,7 +7310,7 @@ maybe_commonize_var (decl)
 	  if (TREE_PUBLIC (decl))
 	    DECL_ASSEMBLER_NAME (decl)
 	      = build_static_name (current_function_decl, DECL_NAME (decl));
-	  else if (! DECL_ARTIFICIAL (decl))
+	  else
 	    {
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
 	      cp_warning_at ("  you can work around this by removing the initializer", decl);

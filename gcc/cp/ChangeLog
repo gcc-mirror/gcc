@@ -1,5 +1,21 @@
 2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
 
+	* decl.c (push_throw_library_fn): Take the FUNCTION_TYPE.
+	* except.c (expand_end_eh_spec): Add the return type.
+	* rtti.c (throw_bad_cast): Add the parmtypes.
+	(throw_bad_typeid): Likewise.
+
+	* semantics.c (expand_stmt): Only leave out rtl for unused
+	artificials, and set DECL_IGNORED_P on them as well.
+	* decl.c (wrapup_globals_for_namespace): Likewise.
+
+2000-03-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (maybe_commonize_var): Skip all artificial decls.
+	* pt.c (tsubst_decl): Don't copy TREE_ASM_WRITTEN.
+
+2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
+
 	* lang-options.h, decl2.c: Add -fno-enforce-eh-specs.
 	* cp-tree.h: Declare flag_enforce_eh_specs.
 	* decl.c (store_parm_decls, finish_function): Check it.
