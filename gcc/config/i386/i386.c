@@ -404,6 +404,7 @@ static rtx * ix86_pent_find_pair PARAMS ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
 static void ix86_init_machine_status PARAMS ((struct function *));
 static void ix86_mark_machine_status PARAMS ((struct function *));
+static void ix86_free_machine_status PARAMS ((struct function *));
 static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
 static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
@@ -536,6 +537,7 @@ override_options ()
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
   mark_machine_status = ix86_mark_machine_status;
+  free_machine_status = ix86_free_machine_status;
 
   /* Validate registers in register allocation order.  */
   if (ix86_reg_alloc_order)
@@ -6336,15 +6338,8 @@ static void
 ix86_init_machine_status (p)
      struct function *p;
 {
-  enum machine_mode mode;
-  int n;
-  p->machine
-    = (struct machine_function *) xmalloc (sizeof (struct machine_function));
-
-  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
-       mode = (enum machine_mode) ((int) mode + 1))
-    for (n = 0; n < MAX_386_STACK_LOCALS; n++)
-      ix86_stack_locals[(int) mode][n] = NULL_RTX;
+  p->machine = (struct machine_function *)
+    xcalloc (1, sizeof (struct machine_function));
 }
 
 /* Mark machine specific bits of P for GC.  */
@@ -6352,13 +6347,25 @@ static void
 ix86_mark_machine_status (p)
      struct function *p;
 {
+  struct machine_function *machine = p->machine;
   enum machine_mode mode;
   int n;
+
+  if (! machine)
+    return;
 
   for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
        mode = (enum machine_mode) ((int) mode + 1))
     for (n = 0; n < MAX_386_STACK_LOCALS; n++)
-      ggc_mark_rtx (p->machine->stack_locals[(int) mode][n]);
+      ggc_mark_rtx (machine->stack_locals[(int) mode][n]);
+}
+
+static void
+ix86_free_machine_status (p)
+     struct function *p;
+{
+  free (p->machine);
+  p->machine = NULL;
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.

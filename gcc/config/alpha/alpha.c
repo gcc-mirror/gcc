@@ -119,6 +119,8 @@ static void alpha_init_machine_status
   PARAMS ((struct function *p));
 static void alpha_mark_machine_status
   PARAMS ((struct function *p));
+static void alpha_free_machine_status
+  PARAMS ((struct function *p));
 static int alpha_ra_ever_killed
   PARAMS ((void));
 static rtx set_frame_related_p
@@ -347,6 +349,7 @@ override_options ()
   /* Set up function hooks.  */
   init_machine_status = alpha_init_machine_status;
   mark_machine_status = alpha_mark_machine_status;
+  free_machine_status = alpha_free_machine_status;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -3660,8 +3663,19 @@ alpha_mark_machine_status (p)
 {
   struct machine_function *machine = p->machine;
 
-  ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
-  ggc_mark_rtx (machine->ra_rtx);
+  if (machine)
+    {
+      ggc_mark_rtx (machine->eh_epilogue_sp_ofs);
+      ggc_mark_rtx (machine->ra_rtx);
+    }
+}
+
+static void
+alpha_free_machine_status (p)
+     struct function *p;
+{
+  free (p->machine);
+  p->machine = NULL;
 }
 
 /* Start the ball rolling with RETURN_ADDR_RTX.  */
