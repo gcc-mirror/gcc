@@ -201,7 +201,7 @@ enum mips_abi_type mips_abi;
 /* Strings to hold which cpu and instruction set architecture to use.  */
 char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3,4} */
-char *mips_abi_string;		/* for -mabi={32,n32,64} */
+char *mips_abi_string;		/* for -mabi={o32,32,n32,n64,64} */
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
@@ -3300,11 +3300,13 @@ override_options ()
   /* Get the ABI to use.  Currently this code is only used for Irix 6.  */
   if (mips_abi_string == (char *) 0)
     mips_abi = MIPS_ABI_DEFAULT;
-  else if (! strcmp (mips_abi_string, "32"))
+  else if (! strcmp (mips_abi_string, "32")
+	   || ! strcmp (mips_abi_string, "o32"))
     mips_abi = ABI_32;
   else if (! strcmp (mips_abi_string, "n32"))
     mips_abi = ABI_N32;
-  else if (! strcmp (mips_abi_string, "64"))
+  else if (! strcmp (mips_abi_string, "64")
+	   || ! strcmp (mips_abi_string, "n64"))
     mips_abi = ABI_64;
   else
     error ("bad value (%s) for -mabi= switch", mips_abi_string);
