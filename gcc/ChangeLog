@@ -1,5 +1,11 @@
 2004-01-14  Richard Henderson  <rth@redhat.com>
 
+	PR debug/13231
+	* dwarf2out.c (dwarf2out_stack_adjust): Skip prologue and epilogue
+	instructions.
+
+2004-01-14  Richard Henderson  <rth@redhat.com>
+
 	PR c++/12491
 	* except.c (struct eh_region): Add u.fixup.resolved.
 	(resolve_one_fixup_region): Split out from ...
