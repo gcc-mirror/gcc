@@ -1,5 +1,14 @@
 Sat Jan 30 08:27:23 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cccp.c (main): Only call setlocale (LC_MESSAGES, ...) if LC_MESSAGES
+	is defined.
+	* collect2.c (main): Likewise.
+	* cppmain.c (main): Likewise.
+	* gcc.c (main): Likewise.
+	* gcov.c (main): Likewise.
+	* protoize.c (main): Likewise.
+	* toplev.c (main): Likewise.
+
 	* pa.md (parallel shift and shiftadd): Mark output of shift as an
 	earlyclobber.
 
