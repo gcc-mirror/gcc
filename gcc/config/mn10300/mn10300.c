@@ -452,11 +452,7 @@ expand_epilogue ()
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
       size = 0;
     }
-  else if ((regs_ever_live[2] || regs_ever_live[3]
-	    || regs_ever_live[14] || regs_ever_live[15]
-	    || regs_ever_live[16] || regs_ever_live[17]
-	    || regs_ever_live[6] || regs_ever_live[7])
-	   && size + REG_SAVE_BYTES > 255)
+  else if (size + REG_SAVE_BYTES > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
@@ -464,31 +460,16 @@ expand_epilogue ()
       size = 0;
     }
 
-  /* For simplicity, we just movm all the callee saved registers to
-     the stack with one instruction.
-
-     ?!? Only save registers which are actually used.  Reduces
-     stack requirements and is faster.  */
-  if (regs_ever_live[2] || regs_ever_live[3]
+  /* Adjust the stack and restore callee-saved registers, if any.  */
+  if (size || regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || regs_ever_live[14] || regs_ever_live[15]
       || regs_ever_live[16] || regs_ever_live[17]
       || frame_pointer_needed)
-    emit_jump_insn (gen_return_internal_regs (GEN_INT (size + REG_SAVE_BYTES)));
+    emit_jump_insn (gen_return_internal_regs
+		    (GEN_INT (size + REG_SAVE_BYTES)));
   else
-    {
-      if (size)
-	{
-	  emit_insn (gen_addsi3 (stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 GEN_INT (size)));
-	  emit_jump_insn (gen_return_internal ());
-	}
-      else
-	{
-	  emit_jump_insn (gen_return ());
-	}
-    }
+    emit_jump_insn (gen_return_internal ());
 }
 
 /* Update the condition code from the insn.  */
