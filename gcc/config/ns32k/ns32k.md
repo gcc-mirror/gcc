@@ -2560,13 +2560,3 @@
 	(leu:QI (cc0) (const_int 0)))]
   ""
   "slsb %0")
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:

@@ -2646,15 +2646,3 @@
   return \"fmov.d %+,%0\";
 }
 ")
-
-
-;;- Local variables:
-;;- mode:emacs-lisp
-;;- comment-start: ";;- "
-;;- comment-start-skip: ";+- *"
-;;- eval: (set-syntax-table (copy-sequence (syntax-table)))
-;;- eval: (modify-syntax-entry ?[ "(]")
-;;- eval: (modify-syntax-entry ?] ")[")
-;;- eval: (modify-syntax-entry ?{ "(}")
-;;- eval: (modify-syntax-entry ?} "){")
-;;- End:

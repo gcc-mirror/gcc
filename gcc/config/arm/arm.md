@@ -1303,15 +1303,3 @@
 ;;  operands[1] = gen_rtx (CONST_INT, VOIDmode, -INTVAL (operands[1]));
 ;;  return (arm_output_asm_insn (\"cmn\\t%0, %1\\t\\t@ ph negate comparison\", operands));
 ;;")
-
-;; Local variables:
-;; mode:emacs-lisp
-;; eval: (setq comment-start ";; ")
-;; eval: (setq comment-end "")
-;; eval: (setq comment-start-skip ";;+ *")
-;; eval: (set-syntax-table (copy-sequence (syntax-table)))
-;; eval: (modify-syntax-entry ?[ "(]")
-;; eval: (modify-syntax-entry ?] ")[")
-;; eval: (modify-syntax-entry ?{ "(}")
-;; eval: (modify-syntax-entry ?} "){")
-;; End:
