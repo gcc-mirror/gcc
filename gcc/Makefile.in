@@ -2449,7 +2449,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
-	-rmdir cp f java objc fixinc intl po 2>/dev/null
+	-rmdir ada cp f java objc fixinc intl po 2>/dev/null
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
@@ -3363,29 +3363,35 @@ build-po: $(CATALOGS)
 # by people who are interested in updating .po files.
 update-po: $(CATALOGS:.gmo=.pox)
 
-# Update files in $(srcdir) atomically.
+# N.B. We do not attempt to copy these into $(srcdir).  The snapshot
+# script does that.
 .po.gmo:
 	test -d po || mkdir po
 	$(GMSGFMT) --statistics $< -o $@
-	$(SHELL) $(srcdir)/move-if-change $@ $(srcdir)/$@
 
-# This rule does _not_ copy into $(srcdir).  User must do this
-# by hand.  (User is a translation maintainer and is expected to
-# go through the new .po by hand anyway.)
+# The new .po has to be gone over by hand, so we deposit it into
+# build/po with a different extension.
 .po.pox:
 	test -d po || mkdir po
 	$(MSGMERGE) $< $(srcdir)/po/$(PACKAGE).pot -o $@
 
+# This rule has to look for .gmo modules in both srcdir and
+# the cwd, and has to check that we actually have a catalog
+# for each language, in case they weren't built or included
+# with the distribution.
 install-po:
 	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(datadir)
 	for cat in $(CATALOGS); do \
-	  cat=`basename $$cat`; \
-	  lang=`echo $$cat | sed 's/\.gmo$$//'`; \
+	  lang=`basename $$cat | sed 's/\.gmo$$//'`; \
+	  if [ -f $$cat ]; then :; \
+	  elif [ -f $(srcdir)/$$cat ]; then cat=$(srcdir)/$$cat; \
+	  else continue; \
+	  fi; \
 	  dir=$(localedir)/$$lang/LC_MESSAGES; \
 	  echo $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir; \
 	  $(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$$dir || exit 1; \
-	  echo $(INSTALL_DATA) $(srcdir)/po/$$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
-	  $(INSTALL_DATA) $(srcdir)/po/$$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
 	done
 
 # Rule for regenerating the message template (gcc.pot).
