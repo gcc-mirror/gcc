@@ -1196,7 +1196,7 @@ DEF_RTL_EXPR(SS_TRUNCATE, "ss_truncate", "e", RTX_UNARY)
 DEF_RTL_EXPR(US_TRUNCATE, "us_truncate", "e", RTX_UNARY)
 
 /* Information about the variable and its location.  */
-DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", 'x')
+DEF_RTL_EXPR(VAR_LOCATION, "var_location", "te", RTX_EXTRA)
 
 /*
 Local variables:
