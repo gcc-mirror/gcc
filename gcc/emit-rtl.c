@@ -1218,9 +1218,9 @@ operand_subword (op, i, validate_address, mode)
      are defined as returning one or two 32 bit values, respectively,
      and not values of BITS_PER_WORD bits.  */
 #ifdef REAL_ARITHMETIC
-/*  The output is some bits, the width of the target machine's word.
-    A wider-word host can surely hold them in a CONST_INT. A narrower-word
-    host can't.  */
+  /* The output is some bits, the width of the target machine's word.
+     A wider-word host can surely hold them in a CONST_INT. A narrower-word
+     host can't.  */
   if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) == 64
@@ -1271,22 +1271,31 @@ operand_subword (op, i, validate_address, mode)
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) > 64
 	   && GET_CODE (op) == CONST_DOUBLE)
-  {
-    long k[4];
-    REAL_VALUE_TYPE rv;
+    {
+      long k[4];
+      REAL_VALUE_TYPE rv;
 
-    REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-    REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
 
-    if (BITS_PER_WORD == 32)
-      {
-	val = k[i];
-	val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
-	return GEN_INT (val);
-      }
-    else
-      abort ();
-  }
+      if (BITS_PER_WORD == 32)
+	{
+	  val = k[i];
+	  val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
+	  return GEN_INT (val);
+	}
+#if HOST_BITS_PER_WIDE_INT >= 64
+      else if (BITS_PER_WORD >= 64 && i <= 1)
+	{
+	  val = k[i*2 + ! WORDS_BIG_ENDIAN];
+	  val = (((val & 0xffffffff) ^ 0x80000000) - 0x80000000) << 32;
+	  val |= (HOST_WIDE_INT) k[i*2 + WORDS_BIG_ENDIAN] & 0xffffffff;
+	  return GEN_INT (val);
+	}
+#endif
+      else
+	abort ();
+    }
 #else /* no REAL_ARITHMETIC */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)

@@ -3434,7 +3434,7 @@ for machine in $build $host $target; do
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		  *-*-osf5*)
-		    tm_file="${tm_file} alpha/osf.h"
+		    tm_file="${tm_file} alpha/osf.h alpha/osf5.h"
 		    ;;
 		esac
 		case $machine in
