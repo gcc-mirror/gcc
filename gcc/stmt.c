@@ -4026,9 +4026,13 @@ expand_decl_cleanup_no_eh (decl, cleanup)
      tree decl, cleanup;
 {
   int save_eh = using_eh_for_cleanups_p;
+  int result;
+
   using_eh_for_cleanups_p = 0;
-  expand_decl_cleanup (decl, cleanup);
+  result = expand_decl_cleanup (decl, cleanup);
   using_eh_for_cleanups_p = save_eh;
+
+  return result;
 }
 
 /* Arrange for the top element of the dynamic cleanup chain to be
