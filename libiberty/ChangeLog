@@ -1,3 +1,7 @@
+2001-08-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* concat.c (concat): Use VPARAMS, VA_OPEN, VA_FIXEDARG & VA_CLOSE.
+
 2001-08-23  Ulrich Drepper  <drepper@redhat.com>
 
 	* regex.c (truncate_wchar): Use wcrtomb not wctomb.

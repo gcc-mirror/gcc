@@ -74,48 +74,29 @@ NOTES
 #  endif
 # endif
 
-/* VARARGS */
-#ifdef ANSI_PROTOTYPES
 char *
-concat (const char *first, ...)
-#else
-char *
-concat (va_alist)
-     va_dcl
-#endif
+concat VPARAMS ((const char *first, ...))
 {
   register size_t length;
   register char *newstr;
   register char *end;
   register const char *arg;
-  va_list args;
-#ifndef ANSI_PROTOTYPES
-  const char *first;
-#endif
 
   /* First compute the size of the result and get sufficient memory.  */
-#ifdef ANSI_PROTOTYPES
-  va_start (args, first);
-#else
-  va_start (args);
-  first = va_arg (args, const char *);
-#endif
-
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
+  
   length = 0;
   for (arg = first; arg ; arg = va_arg (args, const char *))
     length += strlen (arg);
 
-  va_end (args);
+  VA_CLOSE (args);
 
   newstr = (char *) xmalloc (length + 1);
 
   /* Now copy the individual pieces to the result string. */
-#ifdef ANSI_PROTOTYPES
-  va_start (args, first);
-#else
-  va_start (args);
-  first = va_arg (args, const char *);
-#endif
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
 
   end = newstr;
   for (arg = first; arg ; arg = va_arg (args, const char *))
@@ -125,7 +106,7 @@ concat (va_alist)
       end += length;
     }
   *end = '\000';
-  va_end (args);
+  VA_CLOSE (args);
 
   return newstr;
 }
