@@ -1,3 +1,7 @@
+2004-01-25  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (recog_for_combine): Avoid allocating unnecesary RTX.
+
 2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_reg_mode_ok_for_base_p): Delete.
