@@ -730,6 +730,7 @@ Print extra information while running.
 gij [@option{OPTION}] @dots{} @var{JARFILE} [@var{ARGS}@dots{}]
 
 gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
+  [@option{-cp} @var{path}] [@option{-classpath} @var{path}]
   [@option{-D}@var{name}[=@var{value}]@dots{}]
   [@option{-ms=}@var{number}] [@option{-mx=}@var{number}]
   [@option{--version}] [@option{--help}]
@@ -772,6 +773,13 @@ been compiled and put into a shared library on the class path.
 @c man begin OPTIONS gij
 
 @table @gcctabopt
+@item -cp @var{path}
+@itemx -classpath @var{path}
+Set the initial class path.  The class path is used for finding
+class and resource files.  If specified, this option overrides the
+@code{CLASSPATH} environment variable.  Note that this option is
+ignored if @code{-jar} is used.
+
 @item -D@var{name}[=@var{value}]
 This defines a system property named @var{name} with value @var{value}.
 If @var{value} is not specified then it defaults to the empty string.
