@@ -59,8 +59,8 @@ _FOR fix "\n\n" =]
 
     _IF bypass _exist =]
     if ( test [=
-            _FOR bypass=] -a \
-              -z [=bypass _shrstr "#`egrep %s ${file}`"
+            _FOR bypass " -a \\\n              "
+              =]-z [=bypass _shrstr "#`egrep %s ${file}`"
                             _printf _shstr =][=
             /bypass=]
        ) > /dev/null 2>&1 ; then[=

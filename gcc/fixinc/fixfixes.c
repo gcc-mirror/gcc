@@ -312,10 +312,6 @@ FIX_PROC_HEAD( else_endif_label_fix )
                   break;
                 }
 
-              /*
-                FIXME:  if this is a C++ file, then a double slash comment
-                is allowed to follow the directive.  */
-
               /* FALLTHROUGH */
 
             default:
