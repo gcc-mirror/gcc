@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -483,26 +483,36 @@ maybe_apply_renaming_pragma (decl, asmname)
   return asmname;
 }
 
+/* Front-end wrapper for pragma registration to avoid dragging
+   cpplib.h in almost everywhere.  */
+void
+c_register_pragma (space, name, handler)
+     const char *space;
+     const char *name;
+     void (*handler) PARAMS ((struct cpp_reader *));
+{
+  cpp_register_pragma (parse_in, space, name, handler);
+}
+
+/* Set up front-end pragmas.  */
 void
 init_pragma ()
 {
 #ifdef HANDLE_PRAGMA_PACK
-  cpp_register_pragma (parse_in, 0, "pack", handle_pragma_pack);
+  c_register_pragma (0, "pack", handle_pragma_pack);
 #endif
 #ifdef HANDLE_PRAGMA_WEAK
-  cpp_register_pragma (parse_in, 0, "weak", handle_pragma_weak);
+  c_register_pragma (0, "weak", handle_pragma_weak);
 #endif
 #ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
-  cpp_register_pragma (parse_in, 0, "redefine_extname",
-		       handle_pragma_redefine_extname);
+  c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
 #endif
 #ifdef HANDLE_PRAGMA_EXTERN_PREFIX
-  cpp_register_pragma (parse_in, 0, "extern_prefix",
-		       handle_pragma_extern_prefix);
+  c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
 #endif
 
 #ifdef REGISTER_TARGET_PRAGMAS
-  REGISTER_TARGET_PRAGMAS (parse_in);
+  REGISTER_TARGET_PRAGMAS ();
 #endif
 }
 

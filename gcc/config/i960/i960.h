@@ -130,9 +130,9 @@ Boston, MA 02111-1307, USA.  */
 extern int i960_maxbitalignment;
 extern int i960_last_maxbitalignment;
 
-#define REGISTER_TARGET_PRAGMAS(PFILE) do {			\
-  cpp_register_pragma (PFILE, 0, "align", i960_pr_align);	\
-  cpp_register_pragma (PFILE, 0, "noalign", i960_pr_noalign);	\
+#define REGISTER_TARGET_PRAGMAS() do {			\
+  c_register_pragma (0, "align", i960_pr_align);	\
+  c_register_pragma (0, "noalign", i960_pr_noalign);	\
 } while (0)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -2438,10 +2438,10 @@ extern const char * arm_pic_register_string;
 extern int making_const_table;
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
-#define REGISTER_TARGET_PRAGMAS(PFILE) do { \
-  cpp_register_pragma (PFILE, 0, "long_calls", arm_pr_long_calls); \
-  cpp_register_pragma (PFILE, 0, "no_long_calls", arm_pr_no_long_calls); \
-  cpp_register_pragma (PFILE, 0, "long_calls_off", arm_pr_long_calls_off); \
+#define REGISTER_TARGET_PRAGMAS() do {					\
+  c_register_pragma (0, "long_calls", arm_pr_long_calls);		\
+  c_register_pragma (0, "no_long_calls", arm_pr_no_long_calls);		\
+  c_register_pragma (0, "long_calls_off", arm_pr_long_calls_off);	\
 } while (0)
 
 /* Condition code information. */

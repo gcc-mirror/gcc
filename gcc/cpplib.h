@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -31,10 +31,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 extern "C" {
 #endif
 
-/* For complex reasons, cpp_reader is also typedefed in c-pragma.h.  */
-#ifndef GCC_C_PRAGMA_H
 typedef struct cpp_reader cpp_reader;
-#endif
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
 typedef struct cpp_token cpp_token;

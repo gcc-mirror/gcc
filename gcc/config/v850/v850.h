@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -1413,15 +1413,15 @@ zbss_section ()								\
 #define FUNCTION_MODE QImode
 
 /* Tell compiler we want to support GHS pragmas */
-#define REGISTER_TARGET_PRAGMAS(PFILE) do {				  \
-  cpp_register_pragma (PFILE, "ghs", "interrupt", ghs_pragma_interrupt);  \
-  cpp_register_pragma (PFILE, "ghs", "section",   ghs_pragma_section);    \
-  cpp_register_pragma (PFILE, "ghs", "starttda",  ghs_pragma_starttda);   \
-  cpp_register_pragma (PFILE, "ghs", "startsda",  ghs_pragma_startsda);   \
-  cpp_register_pragma (PFILE, "ghs", "startzda",  ghs_pragma_startzda);   \
-  cpp_register_pragma (PFILE, "ghs", "endtda",    ghs_pragma_endtda);	  \
-  cpp_register_pragma (PFILE, "ghs", "endsda",    ghs_pragma_endsda);	  \
-  cpp_register_pragma (PFILE, "ghs", "endzda",    ghs_pragma_endzda);	  \
+#define REGISTER_TARGET_PRAGMAS() do {				\
+  c_register_pragma ("ghs", "interrupt", ghs_pragma_interrupt);	\
+  c_register_pragma ("ghs", "section",   ghs_pragma_section);	\
+  c_register_pragma ("ghs", "starttda",  ghs_pragma_starttda);	\
+  c_register_pragma ("ghs", "startsda",  ghs_pragma_startsda);	\
+  c_register_pragma ("ghs", "startzda",  ghs_pragma_startzda);	\
+  c_register_pragma ("ghs", "endtda",    ghs_pragma_endtda);	\
+  c_register_pragma ("ghs", "endsda",    ghs_pragma_endsda);	\
+  c_register_pragma ("ghs", "endzda",    ghs_pragma_endzda);	\
 } while (0)
 
 /* enum GHS_SECTION_KIND is an enumeration of the kinds of sections that
