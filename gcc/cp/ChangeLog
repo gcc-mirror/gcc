@@ -1,3 +1,12 @@
+2000-01-31  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+	    Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo.h: Rename USItype to myint32, depend on BITS_PER_UNIT.
+
+2000-01-31  Alfred Minarik <a8601248@unet.univie.ac.at>
+
+	* exception.cc (__throw_bad_typeid): Add missing std::.
+
 2000-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (make_thunk): PROTO -> PARAMS.
