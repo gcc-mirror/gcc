@@ -830,9 +830,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
   (((TYPE) != 0)							\
-	? ((TYPE_ALIGN(TYPE) <= PARM_BOUNDARY)				\
-		? PARM_BOUNDARY						\
-		: TYPE_ALIGN(TYPE))					\
+	? (((int_size_in_bytes (TYPE)) + 3) / 4) * BITS_PER_WORD	\
 	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
 		? PARM_BOUNDARY						\
 		: GET_MODE_ALIGNMENT(MODE)))
