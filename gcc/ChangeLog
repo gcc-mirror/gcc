@@ -1,3 +1,8 @@
+2003-01-25  Richard Henderson  <rth@redhat.com>
+
+	2002-02-19  Robert Lipe  <robertlipe@usa.net>
+	* config/i386/t-sco5gas: (CRTSTUFF_T_CFLAGS_S): Delete -mcoff.
+
 2003-01-23  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/crtend.asm [HAVE_INITFINI_ARRAY]: Make
@@ -17,10 +22,10 @@
 
 2003-01-24  Richard Henderson  <rth@redhat.com>
 
-        PR optimization/4382
-        * tree-inline.c (find_builtin_longjmp_call_1): New.
-        (find_builtin_longjmp_call): New.
-        (inlinable_function_p): Use it.
+	PR optimization/4382
+	* tree-inline.c (find_builtin_longjmp_call_1): New.
+	(find_builtin_longjmp_call): New.
+	(inlinable_function_p): Use it.
 
 2003-01-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -144,14 +149,14 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
-        PR opt/7507
-        * calls.c (fix_unsafe_tree): Split out from ...
-        (expand_call): ... here.  Use it on the function address too.
+	PR opt/7507
+	* calls.c (fix_unsafe_tree): Split out from ...
+	(expand_call): ... here.  Use it on the function address too.
 
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
-        PR opt/7154
-        * stmt.c (expand_asm_operands): Validize memory operands.
+	PR opt/7154
+	* stmt.c (expand_asm_operands): Validize memory operands.
 
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
@@ -209,8 +214,8 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-        * config/sh/sh.c (sh_initialize_trampoline): Emit rotrdi3_mextr
-        instead of rotldi3_mextr.
+	* config/sh/sh.c (sh_initialize_trampoline): Emit rotrdi3_mextr
+	instead of rotldi3_mextr.
 
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
@@ -285,8 +290,8 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-10  Andrew Haley  <aph@redhat.com>
 
-        * config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Rename
-        registers to be in correct order.  Add rip.
+	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Rename
+	registers to be in correct order.  Add rip.
 
 2003-01-14  Denis Chertykov  <denisc@overta.ru>
 
@@ -294,7 +299,7 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
 
 	* config/ip2k/ip2k.c (ip2k_attribute_table): New table of
-        attributes.
+	attributes.
 	(TARGET_ATTRIBUTE_TABLE): New macro.
 	(valid_machine_type_attribute): Remove.
 	(valid_machine_decl_attribute): Remove.
@@ -400,9 +405,9 @@ Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
-        PR optimization/8750
-        * config/i386/i386.c (ix86_expand_prologue): Don't allow
-        scheduling pass to move insns across __alloca call.
+	PR optimization/8750
+	* config/i386/i386.c (ix86_expand_prologue): Don't allow
+	scheduling pass to move insns across __alloca call.
 
 2003-01-08  Jeff Sturm  <jsturm@one-point.com>
 
@@ -440,16 +445,16 @@ Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-07  Sylvain Pion <Sylvain.Pion@mpi-sb.mpg.de>
   
-        * config/i386/i386.c (ix86_init_mmx_sse_builtins):
-        __builtin_ia32_ldmxcsr and __builtin_ia32_stmxcsr are SSE, not MXX.
-        * config/i386/i386.md (ldmxcsr, stmxcsr): SSE, not MMX.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
+	__builtin_ia32_ldmxcsr and __builtin_ia32_stmxcsr are SSE, not MXX.
+	* config/i386/i386.md (ldmxcsr, stmxcsr): SSE, not MMX.
 
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
-            Sunil Davasam  <sunil.k.davasam@intel.com>
+	    Sunil Davasam  <sunil.k.davasam@intel.com>
 
-        PR libstdc++/9076 
-        * unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
-        DW_CFA_same_value, read next and ignore.
+	PR libstdc++/9076 
+	* unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
+	DW_CFA_same_value, read next and ignore.
 
 2003-01-07  Richard Henderson  <rth@redhat.com>
 
@@ -459,9 +464,9 @@ Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	Segher Boessenkool  <segher@koffie.nl>
 
-        * config/rs6000/rs6000.c (rs6000_reg_names): Add missing registers.
-        (alt_reg_names): Ditto, fix formatting.
-        * config/rs6000/rs6000.h (DEBUG_REGISTER_NAMES): Fix formatting.
+	* config/rs6000/rs6000.c (rs6000_reg_names): Add missing registers.
+	(alt_reg_names): Ditto, fix formatting.
+	* config/rs6000/rs6000.h (DEBUG_REGISTER_NAMES): Fix formatting.
 
 2003-01-06  Bruce Korb  <bkorb@gnu.org>
 
@@ -1122,7 +1127,7 @@ Wed Dec  4 15:20:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-12-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md (*movv1di_const0): New pattern.
+	* config/rs6000/spe.md (*movv1di_const0): New pattern.
 
 2002-12-03  Richard Henderson  <rth@redhat.com>
 
