@@ -1,3 +1,7 @@
+2003-01-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-parse.in: Remove '%expect 32' directive in objc mode.
+
 2003-01-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (LIB2FUNCS_ST): Remove _gcov.
