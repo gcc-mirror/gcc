@@ -23,7 +23,7 @@ for (L = 0; L < 1000; L++) {
    Sort_array(Tab,99);	   /* Sort it. */
 /*   Print_array(); */
 }
-/* */ exit(0); /* */
+   return 0;
 }
 
 void Sort_array(Tab,Last) int Tab[]; int Last; {
