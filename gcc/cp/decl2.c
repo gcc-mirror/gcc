@@ -590,14 +590,14 @@ cxx_decode_option (argc, argv)
 		     but breaks the VAX pcc.  */
 		  found = 1;
 		}
-	      if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-		  && ! strcmp (p+3, lang_f_options[j].string))
+	      else if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
+		       && ! strcmp (p+3, lang_f_options[j].string))
 		{
 		  *lang_f_options[j].variable = ! lang_f_options[j].on_value;
 		  found = 1;
 		}
 	    }
-	      
+
 	  return found;
 	}
     }
