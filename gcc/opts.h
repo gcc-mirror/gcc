@@ -21,7 +21,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
-extern void decode_options (unsigned int argc, const char **argv);
+/* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
+enum cl_var_cond {
+  /* The switch is enabled when FLAG_VAR is nonzero.  */
+  CLVC_BOOLEAN,
+
+  /* The switch is enabled when FLAG_VAR == VAR_VALUE.  */
+  CLVC_EQUAL,
+
+  /* The switch is enabled when VAR_VALUE is not set in FLAG_VAR.  */
+  CLVC_BIT_CLEAR,
+
+  /* The switch is enabled when VAR_VALUE is set in FLAG_VAR.  */
+  CLVC_BIT_SET
+};
 
 struct cl_option
 {
@@ -31,14 +44,15 @@ struct cl_option
   unsigned char opt_len;
   unsigned int flags;
   int *flag_var;
-  int has_set_value;
-  int set_value;
+  enum cl_var_cond var_cond;
+  int var_value;
 };
 
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 
+#define CL_TARGET		(1 << 22) /* Target-specific option.  */
 #define CL_REPORT		(1 << 23) /* Report argument with -fverbose-asm  */
 #define CL_JOINED		(1 << 24) /* If takes joined argument.  */
 #define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
@@ -55,5 +69,9 @@ extern const char **in_fnames;
 /* The count of input filenames.  */
 
 extern unsigned num_in_fnames;
+
+extern void decode_options (unsigned int argc, const char **argv);
+extern int option_enabled (const struct cl_option *);
+extern void print_filtered_help (unsigned int);
 
 #endif

@@ -1,3 +1,62 @@
+2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (extra_options): New variable for listing option files.
+	Add ${cpu_type}/${cpu_type}.opt to it if that file exists.
+	* configure.ac (extra_opt_files): New AC_SUBST variable.
+	(tm_file_list, tm_include_list): Include options.h first.
+	* configure: Regenerate.
+	* Makefile.in (extra_opt_files, ALL_OPT_FILES): New variables.
+	(s-options): Use $(ALL_OPT_FILES) instead of $(lang_opt_files)
+	(s-options-h): New rule.
+	(options.h): Depend on it.
+	(TEXI_GCCINT_FILES): Add options.texi.
+	* hooks.h (hook_bool_size_t_constcharptr_int_true): Declare.
+	* hooks.c (hook_bool_size_t_constcharptr_int_true): New function.
+	* target.h (gcc_target): Add default_target_flags and handle_option.
+	* target-def.h (TARGET_DEFAULT_TARGET_FLAGS)
+	(TARGET_HANDLE_OPTION): New macros.
+	(TARGET_INITIALIZER): Include them.
+	* opt-functions.awk (opt_args, nth_arg): New functions.
+	(switch_flags): Handle the "Target" flag.
+	(var_args): Delete.
+	(var_name): Use opt_args and nth_arg.
+	(var_set, var_ref): Likewise.  Handle "Mask" and "InverseMask".
+	* opth-gen.awk: Declare target_flags.  Declare MASK_* and TARGET_*
+	macros for the "Mask" and "InverseMask" options.
+	* opts.h (cl_var_cond): New enum.
+	(cl_option): Replace the "has_set_value" and "set_value" fields with 
+	"var_cond" and "var_value".
+	(CL_TARGET): New macro.
+	(option_enabled, print_filtered_help): Declare.
+	(decode_options): Move definition.
+	* opts.c (handle_option): Search for the original option before
+	removing any "no-" prefix.  Handle CL_TARGET.  Adjust for the new
+	var_cond and var_value fields.  Use targetm.handle_option to handle
+	target options.
+	(decode_options): Set target_flags to targetm.default_target_flags.
+	(print_filtered_help): Make global.  Handle CL_TARGET.
+	(option_enabled): New function.
+	* toplev.c (target_switches): Guard with #ifdef TARGET_SWITCHES.
+	(display_target_options, set_target_switch, print_switch_values)
+	(default_pch_valid_p): Guard uses of target_switches with
+	#ifdef TARGET_SWITCHES.  Also...
+	(display_target_options): Display the CL_TARGET entries in cl_options.
+	(set_target_option): Don't complain about the "" option when
+	TARGET_SWITCHES is undefined.
+	(print_switch_values): Use option_enabled.
+	(default_pch_valid_p): Check cl_options[] when looking for something
+	that has changed the value of target_flags.
+	* c.opt: Remove documentation from top of file.
+	* doc/gccint.texi: Add an "Options" chapter.  Include options.texi.
+	* doc/sourecebuild.texi: Refer to the new options documentation
+	instead of c.opt.  Document machine-specific .opt files.
+	* doc/tm.texi (target_flags): Say that this variable is declared
+	by options.h.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Document.
+	(TARGET_SWITCHES, TARGET_OPTIONS): Refer to the option files as
+	an alternative.
+	* doc/options.texi: New file.
+
 2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/18628

@@ -98,6 +98,8 @@
 #
 #  extra_programs	Like extra_passes, but these are used when linking.
 #
+#  extra_options	List of target-dependent .opt files.
+#
 #  c_target_objs	List of extra target-dependent objects that be
 #			linked into the C compiler only.
 #
@@ -151,6 +153,7 @@ extra_parts=
 extra_programs=
 extra_objs=
 extra_gcc_objs=
+extra_options=
 c_target_objs=
 cxx_target_objs=
 tm_defines=
@@ -317,6 +320,10 @@ extra_modes=
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-modes.def
 then
 	extra_modes=${cpu_type}/${cpu_type}-modes.def
+fi
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}.opt
+then
+	extra_options="${extra_options} ${cpu_type}/${cpu_type}.opt"
 fi
 
 case ${target} in
