@@ -726,7 +726,7 @@ decode_signature_piece (stream, signature, limit, need_space)
 	  /* We have to generate a reference to JArray here, so that
 	     our output matches what the compiler does.  */
 	  ++signature;
-	  fputs ("JArray<::", stream);
+	  fputs ("JArray<", stream);
 	  while (signature < limit && *signature != ';')
 	    {
 	      int ch = UTF8_GET (signature, limit);
@@ -1215,7 +1215,10 @@ print_namelet (out, name, depth)
 	{
 	  for (i = 0; i < depth; ++i)
 	    fputc (' ', out);
-	  fputs ("};\n", out);
+	  fputs ("}\n", out);
+	  /* Only print a `;' when printing a class.  C++ is evil.  */
+	  if (name->is_class)
+	    fputs (";", out);
 	}
 
       free (name->name);
@@ -1247,7 +1250,7 @@ add_class_decl (out, jcf, signature)
       /* If we see an array, then we include the array header.  */
       if (s[i] == '[')
 	{
-	  print_include (out, "java-array", -1);
+	  print_include (out, "gcj/array", -1);
 	  continue;
 	}
 
