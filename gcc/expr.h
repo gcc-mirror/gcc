@@ -81,7 +81,7 @@ do {							\
   if (host_integerp (inc, 0))				\
     (TO).constant += tree_low_cst (inc, 0);		\
   else if ((TO).var == 0)				\
-    (TO).var = inc;					\
+    (TO).var = convert (ssizetype, inc);		\
   else							\
     (TO).var = size_binop (PLUS_EXPR, (TO).var,		\
 			   convert (ssizetype, inc));	\
