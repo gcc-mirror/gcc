@@ -27,6 +27,7 @@
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "except.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "expr.h"
@@ -104,6 +105,7 @@ static int find_if_block		PARAMS ((basic_block, edge, edge));
 static int find_if_case_1		PARAMS ((basic_block, edge, edge));
 static int find_if_case_2		PARAMS ((basic_block, edge, edge));
 static int find_cond_trap		PARAMS ((basic_block, edge, edge));
+static rtx block_has_only_trap		PARAMS ((basic_block));
 static int find_memory			PARAMS ((rtx *, void *));
 static int dead_or_predicable		PARAMS ((basic_block, basic_block,
 						 basic_block, basic_block, int));
@@ -1844,11 +1846,14 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 
   /* First merge TEST block into THEN block.  This is a no-brainer since
      the THEN block did not have a code label to begin with.  */
-
-  if (life_data_ok)
-    COPY_REG_SET (combo_bb->global_live_at_end, then_bb->global_live_at_end);
-  merge_blocks_nomove (combo_bb, then_bb);
-  num_removed_blocks++;
+  if (then_bb)
+    {
+      if (life_data_ok)
+        COPY_REG_SET (combo_bb->global_live_at_end,
+		      then_bb->global_live_at_end);
+      merge_blocks_nomove (combo_bb, then_bb);
+      num_removed_blocks++;
+    }
 
   /* The ELSE block, if it existed, had a label.  That label count
      will almost always be zero, but odd things can happen when labels
@@ -1864,14 +1869,34 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 
   if (! join_bb)
     {
+      rtx last = combo_bb->end;
+
       /* The outgoing edge for the current COMBO block should already
 	 be correct.  Verify this.  */
       if (combo_bb->succ == NULL_EDGE)
-	abort ();
+	{
+	  if (find_reg_note (last, REG_NORETURN, NULL))
+	    ;
+	  else if (GET_CODE (last) == INSN
+		   && GET_CODE (PATTERN (last)) == TRAP_IF
+		   && TRAP_CONDITION (PATTERN (last)) == const_true_rtx)
+	    ;
+	  else
+	    abort ();
+	}
 
-      /* There should still be a branch at the end of the THEN or ELSE
+      /* There should still be something at the end of the THEN or ELSE
          blocks taking us to our final destination.  */
-      if (GET_CODE (combo_bb->end) != JUMP_INSN)
+      else if (GET_CODE (last) == JUMP_INSN)
+	;
+      else if (combo_bb->succ->dest == EXIT_BLOCK_PTR
+	       && GET_CODE (last) == CALL_INSN
+	       && SIBLING_CALL_P (last))
+	;
+      else if ((combo_bb->succ->flags & EDGE_EH)
+	       && can_throw_internal (last))
+	;
+      else
 	abort ();
     }
 
@@ -2104,7 +2129,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
   /* ??? We can't currently handle merging the blocks if they are not
      already adjacent.  Prevent losage in merge_if_block by detecting
      this now.  */
-  if (then_bb->succ == NULL)
+  if ((trap = block_has_only_trap (then_bb)) != NULL)
     {
       trap_bb = then_bb;
       if (else_bb->index != then_bb->index + 1)
@@ -2112,7 +2137,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
       join_bb = else_bb;
       else_bb = NULL;
     }
-  else if (else_bb->succ == NULL)
+  else if ((trap = block_has_only_trap (else_bb)) != NULL)
     {
       trap_bb = else_bb;
       if (else_bb->index != then_bb->index + 1)
@@ -2124,18 +2149,6 @@ find_cond_trap (test_bb, then_edge, else_edge)
 	join_bb = then_bb->succ->dest;
     }
   else
-    return FALSE;
-
-  /* Don't confuse a conditional return with something we want to
-     optimize here.  */
-  if (trap_bb == EXIT_BLOCK_PTR)
-    return FALSE;
-
-  /* The only instruction in the THEN block must be the trap.  */
-  trap = first_active_insn (trap_bb);
-  if (! (trap == trap_bb->end
-	 && GET_CODE (PATTERN (trap)) == TRAP_IF
-         && TRAP_CONDITION (PATTERN (trap)) == const_true_rtx))
     return FALSE;
 
   if (rtl_dump_file)
@@ -2184,24 +2197,53 @@ find_cond_trap (test_bb, then_edge, else_edge)
   if (seq == NULL)
     return FALSE;
 
-  /* Emit the new insns before cond_earliest; delete the old jump
-     and trap insns.  */
-
+  /* Emit the new insns before cond_earliest; delete the old jump.  */
   emit_insn_before (seq, cond_earliest);
-
   delete_insn (jump);
 
-  delete_insn (trap);
+  /* Delete the trap block together with its insn.  */
+  if (trap_bb == then_bb)
+    then_bb = NULL;
+  else if (else_bb == NULL)
+    ;
+  else if (trap_bb == else_bb)
+    else_bb = NULL;
+  else
+    abort ();
+  flow_delete_block (trap_bb);
+  num_removed_blocks++;
 
-  /* Merge the blocks!  */
-  if (trap_bb != then_bb && ! else_bb)
-    {
-      flow_delete_block (trap_bb);
-      num_removed_blocks++;
-    }
+  /* Merge what's left.  */
   merge_if_block (test_bb, then_bb, else_bb, join_bb);
 
   return TRUE;
+}
+
+/* Subroutine of find_cond_trap: if BB contains only a trap insn, 
+   return it.  */
+
+static rtx
+block_has_only_trap (bb)
+     basic_block bb;
+{
+  rtx trap;
+
+  /* We're not the exit block.  */
+  if (bb == EXIT_BLOCK_PTR)
+    return NULL_RTX;
+
+  /* The block must have no successors.  */
+  if (bb->succ)
+    return NULL_RTX;
+
+  /* The only instruction in the THEN block must be the trap.  */
+  trap = first_active_insn (bb);
+  if (! (trap == bb->end
+	 && GET_CODE (PATTERN (trap)) == TRAP_IF
+         && TRAP_CONDITION (PATTERN (trap)) == const_true_rtx))
+    return NULL_RTX;
+
+  return trap;
 }
 
 /* Look for IF-THEN-ELSE cases in which one of THEN or ELSE is
