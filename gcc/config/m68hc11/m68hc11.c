@@ -912,7 +912,8 @@ d_register_operand (operand, mode)
 
   return GET_CODE (operand) == REG
     && (REGNO (operand) >= FIRST_PSEUDO_REGISTER
-	|| REGNO (operand) == HARD_D_REGNUM);
+	|| REGNO (operand) == HARD_D_REGNUM
+        || (mode == QImode && REGNO (operand) == HARD_B_REGNUM));
 }
 
 int
