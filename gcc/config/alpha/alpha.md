@@ -5292,10 +5292,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    itofs %1,%0"
   [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
-(define_insn "*movsi_nt_vms"
+(define_insn "*movsi_nt_vms_nofix"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,m")
 	(match_operand:SI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,m,*f"))]
   "(TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
+    && !TARGET_FIX
     && (register_operand (operands[0], SImode)
         || reg_or_0_operand (operands[1], SImode))"
   "@
@@ -5309,6 +5310,27 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    ld%, %0,%1
    st%, %R1,%0"
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
+
+(define_insn "*movsi_nt_vms_fix"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,m,r,*f")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,m,*f,*f,r"))]
+  "(TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
+    && TARGET_FIX
+    && (register_operand (operands[0], SImode)
+        || reg_or_0_operand (operands[1], SImode))"
+  "@
+   bis $31,%1,%0
+   lda %0,%1
+   ldah %0,%h1
+   lda %0,%1
+   ldl %0,%1
+   stl %r1,%0
+   cpys %R1,%R1,%0
+   ld%, %0,%1
+   st%, %R1,%0
+   ftois %1,%0
+   itofs %1,%0"
+  [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
 (define_insn "*movhi_nobwx"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
