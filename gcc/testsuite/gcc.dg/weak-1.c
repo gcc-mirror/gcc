@@ -4,6 +4,9 @@
 /* COFF does not support weak, and dg doesn't support UNSUPPORTED.  */
 /* { dg-do compile { xfail *-*-coff i?86-pc-cygwin } } */
 
+/* { dg-final { global target_triplet } } */
+/* { dg-final { if [string match i?86-pc-cygwin $target_triplet ] {return} } } */
+/* { dg-final { if [string match *-*-coff $target_triplet ] {return} } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t]_?a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t]_?b" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t]_?c" } } */

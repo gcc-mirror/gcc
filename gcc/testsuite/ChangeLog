@@ -1,3 +1,12 @@
+2002-02-26  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* lib/g++.exp:  Fix handling of LD_LIBRARY_PATH et al
+	* lib/g77.exp:  Likewise
+	* lib/objc.exp: Likewise
+	* gcc.dg/weak-1.c:  Early return from dg-final on platforms
+	that do not support weak symbols
+
+
 2002-03-25  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20001013-1.c: Add -mcpu=ultrasparc.  Only run on
