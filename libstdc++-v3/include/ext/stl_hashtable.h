@@ -422,8 +422,7 @@ public:
   void insert_unique(_ForwardIterator __f, _ForwardIterator __l,
                      forward_iterator_tag)
   {
-    size_type __n = 0;
-    distance(__f, __l, __n);
+    size_type __n = distance(__f, __l);
     resize(_M_num_elements + __n);
     for ( ; __n > 0; --__n, ++__f)
       insert_unique_noresize(*__f);
@@ -433,8 +432,7 @@ public:
   void insert_equal(_ForwardIterator __f, _ForwardIterator __l,
                     forward_iterator_tag)
   {
-    size_type __n = 0;
-    distance(__f, __l, __n);
+    size_type __n = distance(__f, __l);
     resize(_M_num_elements + __n);
     for ( ; __n > 0; --__n, ++__f)
       insert_equal_noresize(*__f);

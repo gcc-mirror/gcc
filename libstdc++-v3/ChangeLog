@@ -1,5 +1,19 @@
 2001-12-31  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/bits/stl_bvector.h:  Change calls to 3-argument distance()
+	into standard 2-argument version.
+	* include/bits/stl_deque.h:  Likewise.
+	* include/bits/stl_tempbuf.h:  Likewise.
+	* include/bits/stl_tree.h:  Likewise.
+	* include/bits/stl_vector.h:  Likewise.
+	* include/ext/stl_hashtable.h:  Likewise.
+	* include/bits/stl_iterator_base_funcs.h:  Move distance() extension...
+	* include/ext/iterator:  to here.  New file.
+	* include/Makefile.am (ext_headers):  Add new file, alphabatize.
+	* include/Makefile.in:  Regenerate.
+
+2001-12-31  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/bits/stl_deque.h:  Doxygenate with initial/example hooks.
 	Clean up spacing and indentation.
 

@@ -1022,8 +1022,7 @@ typename _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::size_type
 _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::erase(const _Key& __x)
 {
   pair<iterator,iterator> __p = equal_range(__x);
-  size_type __n = 0;
-  distance(__p.first, __p.second, __n);
+  size_type __n = distance(__p.first, __p.second);
   erase(__p.first, __p.second);
   return __n;
 }
@@ -1139,8 +1138,7 @@ _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>
   ::count(const _Key& __k) const
 {
   pair<const_iterator, const_iterator> __p = equal_range(__k);
-  size_type __n = 0;
-  distance(__p.first, __p.second, __n);
+  size_type __n = distance(__p.first, __p.second);
   return __n;
 }
 

@@ -173,14 +173,15 @@ ext_srcdir = ${glibcpp_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
-	${ext_srcdir}/rope \
-	${ext_srcdir}/ropeimpl.h \
-	${ext_srcdir}/stl_rope.h \
-	${ext_srcdir}/slist \
 	${ext_srcdir}/hash_map \
 	${ext_srcdir}/hash_set \
+	${ext_srcdir}/iterator \
+	${ext_srcdir}/rope \
+	${ext_srcdir}/ropeimpl.h \
+	${ext_srcdir}/slist \
+	${ext_srcdir}/stl_hash_fun.h \
 	${ext_srcdir}/stl_hashtable.h \
-	${ext_srcdir}/stl_hash_fun.h
+	${ext_srcdir}/stl_rope.h
 
 # This is the common subset of files that all three "C" header models use.
 c_base_srcdir = @C_INCLUDE_DIR@/bits
