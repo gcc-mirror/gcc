@@ -365,7 +365,7 @@ rtx pic_offset_table_rtx;
 static void attr_hash_add_rtx	PARAMS ((int, rtx));
 static void attr_hash_add_string PARAMS ((int, char *));
 static rtx attr_rtx		PARAMS ((enum rtx_code, ...));
-static char *attr_printf	PARAMS ((int, const char *, ...))
+static char *attr_printf	PARAMS ((unsigned int, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 static char *attr_string        PARAMS ((const char *, int));
 static rtx check_attr_test	PARAMS ((rtx, int, int));
@@ -743,15 +743,15 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
 static char *
-attr_printf VPARAMS ((register int len, const char *fmt, ...))
+attr_printf VPARAMS ((register unsigned int len, const char *fmt, ...))
 {
   char str[256];
 
   VA_OPEN (p, fmt);
-  VA_FIXEDARG (p, int, len);
+  VA_FIXEDARG (p, unsigned int, len);
   VA_FIXEDARG (p, const char *, fmt);
   
-  if (len > (sizeof(str) - 1)) /* leave room for \0 */
+  if (len > sizeof str - 1) /* leave room for \0. */
     abort ();
 
   vsprintf (str, fmt, p);
@@ -1637,9 +1637,8 @@ expand_delays ()
 	  newexp = attr_rtx (IF_THEN_ELSE, condexp,
 			     make_numeric_value (1), make_numeric_value (0));
 
-	  p = attr_printf (sizeof ("*delay__") + MAX_DIGITS * 2,
-			   "*delay_%d_%d",
-			   delay->num, i / 3);
+	  p = attr_printf (sizeof "*delay__" + MAX_DIGITS * 2,
+			   "*delay_%d_%d", delay->num, i / 3);
 	  make_internal_attr (p, newexp, 1);
 
 	  if (have_annul_true)
@@ -1649,7 +1648,7 @@ expand_delays ()
 	      newexp = attr_rtx (IF_THEN_ELSE, condexp,
 				 make_numeric_value (1),
 				 make_numeric_value (0));
-	      p = attr_printf (sizeof ("*annul_true__") + MAX_DIGITS * 2,
+	      p = attr_printf (sizeof "*annul_true__" + MAX_DIGITS * 2,
 			       "*annul_true_%d_%d", delay->num, i / 3);
 	      make_internal_attr (p, newexp, 1);
 	    }
@@ -1661,7 +1660,7 @@ expand_delays ()
 	      newexp = attr_rtx (IF_THEN_ELSE, condexp,
 				 make_numeric_value (1),
 				 make_numeric_value (0));
-	      p = attr_printf (sizeof ("*annul_false__") + MAX_DIGITS * 2,
+	      p = attr_printf (sizeof "*annul_false__" + MAX_DIGITS * 2,
 			       "*annul_false_%d_%d", delay->num, i / 3);
 	      make_internal_attr (p, newexp, 1);
 	    }
@@ -1914,7 +1913,8 @@ expand_units ()
 					   != unit->issue_delay.max);
 	  if (unit->needs_conflict_function)
 	    {
-	      str = attr_printf (strlen (unit->name) + sizeof ("*_cost_") + MAX_DIGITS,
+	      str = attr_printf ((strlen (unit->name) + sizeof "*_cost_"
+				  + MAX_DIGITS),
 				 "*%s_cost_%d", unit->name, op->num);
 	      make_internal_attr (str, issue_exp, 1);
 	    }
@@ -2143,7 +2143,8 @@ expand_units ()
 		}
 
 	      /* Make an attribute for use in the blockage function.  */
-	      str = attr_printf (strlen (unit->name) + sizeof ("*_block_") + MAX_DIGITS,
+	      str = attr_printf ((strlen (unit->name) + sizeof "*_block_"
+				  + MAX_DIGITS),
 				 "*%s_block_%d", unit->name, op->num);
 	      make_internal_attr (str, blockage, 1);
 	    }
@@ -2176,12 +2177,13 @@ expand_units ()
 	      newexp = operate_exp (RANGE_OP, min_blockage, max_blockage);
 	      newexp = simplify_knowing (newexp, unit->condexp);
 
-	      str = attr_printf (strlen (unit->name) + sizeof ("*_unit_blockage_range"),
+	      str = attr_printf ((strlen (unit->name)
+				  + sizeof "*_unit_blockage_range"),
 				 "*%s_unit_blockage_range", unit->name);
 	      make_internal_attr (str, newexp, 20);
 	    }
 
-	  str = attr_printf (strlen (unit->name) + sizeof ("*_unit_ready_cost"),
+	  str = attr_printf (strlen (unit->name) + sizeof "*_unit_ready_cost",
 			     "*%s_unit_ready_cost", unit->name);
 	}
       else
@@ -2223,7 +2225,7 @@ expand_units ()
 	}
 
       /* Simplifying caseexp with simplify_by_exploding doesn't win.  */
-      str = attr_printf (strlen (unit->name) + sizeof ("*_cases"),
+      str = attr_printf (strlen (unit->name) + sizeof "*_cases",
 			 "*%s_cases", unit->name);
       make_internal_attr (str, caseexp, 1);
     }
