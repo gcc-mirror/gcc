@@ -1,3 +1,8 @@
+Wed May 26 03:58:20 1999  "Melissa O'Neill" <oneill@cs.sfu.ca>
+
+	* getcwd.c (getcwd): If pathname is NULL, then obtain SIZE
+	bytes of space using malloc.
+
 Mon May 17 01:42:34 1999  Stu Grossman  <grossman@babylon-5.cygnus.com>
 
 	* cplus-dem.c (demangle_fund_type (near 'I' case)): Don't advance
