@@ -1,3 +1,7 @@
+2002-10-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gengtype.c (rtx_next): Change type to int.
+
 2002-10-04  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/t-linux64 (MULTILIB_OSDIRNAMES): Fix value.

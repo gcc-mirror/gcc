@@ -360,7 +360,7 @@ static const char * const rtx_format[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
-static char rtx_next[NUM_RTX_CODE];
+static int rtx_next[NUM_RTX_CODE];
 
 /* Generate the contents of the rtx_next array.  This really doesn't belong
    in gengtype at all, but it's needed for adjust_field_rtx_def.  */
