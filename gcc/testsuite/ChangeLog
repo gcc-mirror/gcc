@@ -1,3 +1,7 @@
+2004-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/i386-rotate-1.c: New test.
+
 2004-10-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/ref12.C: Add "run" marker.
