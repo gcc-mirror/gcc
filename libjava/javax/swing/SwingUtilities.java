@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -667,10 +668,19 @@ public class SwingUtilities implements SwingConstants
     else
       {
         iconR.width = icon.getIconWidth();
-        iconR.height = icon.getIconWidth();
+        iconR.height = icon.getIconHeight();
       }
-    textR.width = fm.stringWidth(text);
-    textR.height = fm.getHeight(); 
+    if (text == null)
+      {
+        textIconGap = 0;
+	textR.width = 0;
+	textR.height = 0;
+      }
+    else
+      {
+        textR.width = fm.stringWidth(text);
+        textR.height = fm.getHeight(); 
+      }
 
     // Work out the position of text and icon, assuming the top-left coord
     // starts at (0,0). We will fix that up momentarily, after these
@@ -776,5 +786,53 @@ public class SwingUtilities implements SwingConstants
   {
     return java.awt.EventQueue.isDispatchThread();
   }
+  
+  /**
+   * This method paints the given component at the given position and size.
+   * The component will be reparented to the container given.
+   * 
+   * @param g The Graphics object to draw with.
+   * @param c The Component to draw
+   * @param p The Container to reparent to.
+   * @param x The x coordinate to draw at.
+   * @param y The y coordinate to draw at.
+   * @param w The width of the drawing area.
+   * @param h The height of the drawing area.
+   */
+  public static void paintComponent(Graphics g, Component c, Container p, 
+                                    int x, int y, int w, int h)
+  {       
+    Container parent = c.getParent();
+    if (parent != null)
+      parent.remove(c);
+    if (p != null)
+      p.add(c);
+    
+    Shape savedClip = g.getClip();
+    
+    g.setClip(x, y, w, h);
+    g.translate(x, y);
+
+    c.paint(g);
+    
+    g.translate(-x, -y);
+    g.setClip(savedClip);
+  }
+
+  /**
+   * This method paints the given component in the given rectangle.
+   * The component will be reparented to the container given.
+   * 
+   * @param g The Graphics object to draw with.
+   * @param c The Component to draw
+   * @param p The Container to reparent to.
+   * @param r The rectangle that describes the drawing area.
+   */  
+  public static void paintComponent(Graphics g, Component c, 
+                                    Container p, Rectangle r)
+  {
+    paintComponent(g, c, p, r.x, r.y, r.width, r.height);
+  }
+  
 
 }

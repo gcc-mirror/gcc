@@ -39,6 +39,7 @@ package java.awt.image;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -255,7 +256,8 @@ public class BufferedImage extends Image
   public WritableRaster copyData(WritableRaster dest)
   {
     if (dest == null)
-      dest = raster.createCompatibleWritableRaster();
+      dest = raster.createCompatibleWritableRaster(getMinX(), getMinY(),
+                                                   getWidth(),getHeight());
 
     int x = dest.getMinX();
     int y = dest.getMinY();
@@ -282,8 +284,9 @@ public class BufferedImage extends Image
 
   public Graphics2D createGraphics()
   {
-    throw new UnsupportedOperationException("not implemented");
-    // will require a lot of effort to implement
+    GraphicsEnvironment env;
+    env = GraphicsEnvironment.getLocalGraphicsEnvironment ();
+    return env.createGraphics (this);
   }
 
   public void flush() {

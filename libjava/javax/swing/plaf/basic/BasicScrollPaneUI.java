@@ -41,14 +41,14 @@ package javax.swing.plaf.basic;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import javax.swing.JComponent;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneLayout;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ScrollPaneUI;
 
 public class BasicScrollPaneUI extends ScrollPaneUI
 {
-    int min_w = 50;
-    int min_h = 50;
 
     public static ComponentUI createUI(final JComponent c) 
     {
@@ -61,33 +61,25 @@ public class BasicScrollPaneUI extends ScrollPaneUI
 	super.installUI(c);
     }
     
+    public Dimension getMinimumSize(JComponent c) 
+    {
+	JScrollPane p = (JScrollPane ) c;
+        ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
+        return sl.minimumLayoutSize(c);
+    }
 
     public Dimension getPreferredSize(JComponent c) 
     {
 	JScrollPane p = (JScrollPane ) c;
-	
-	Dimension d = new Dimension(min_w,
-				    min_h);
-	
-	Dimension a = p.getViewport().getPreferredSize();
-
-	if (a != null)
-	    {
-		d.width = Math.max(d.width, a.width);
-		d.height = Math.max(d.height, a.height);
-	    }
-			   
-
-	System.out.println("BasicScrollPaneUI->preff->"+d);
-	return d;
+        ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
+        return sl.preferredLayoutSize(c);
     }
+
 
     public void paint(Graphics g, JComponent c)
     {      
-	System.out.println("BasicScrollPaneUI->paint()->"+c);
-
-	JScrollPane p = (JScrollPane ) c;
-	p.getViewport().paint(g);
+      // do nothing; the normal painting-of-children algorithm, along with
+      // ScrollPaneLayout, does all the relevant work.
     }
 }
 

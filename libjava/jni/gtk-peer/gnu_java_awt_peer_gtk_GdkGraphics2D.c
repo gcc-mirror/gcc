@@ -114,6 +114,15 @@ enum java_awt_geom_path_iterator_winding_rule
     java_awt_geom_path_iterator_WIND_NON_ZERO = 1
   };
 
+enum java_awt_rendering_hints_filter
+  {
+    java_awt_rendering_hints_VALUE_INTERPOLATION_NEAREST_NEIGHBOR = 0,    
+    java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR = 1,
+    java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED = 2,
+    java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY = 3,
+    java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT = 4
+ 
+  };
 
 static void 
 grab_current_drawable (GtkWidget *widget, GdkDrawable **draw, GdkWindow **win)
@@ -683,21 +692,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_drawPixels
 			    native_matrix[2], native_matrix[3],
 			    native_matrix[4], native_matrix[5]);
    cairo_surface_set_matrix (surf, mat);
-   if (native_matrix[0] != 1.
-       || native_matrix[1] != 0.
-       || native_matrix[2] != 0.
-       || native_matrix[3] != 1.)
-     {
-       cairo_surface_set_filter (surf, CAIRO_FILTER_BILINEAR);
-       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_BILINEAR);
-     }
-   else
-     {
-       cairo_surface_set_filter (surf, CAIRO_FILTER_FAST);
-       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_FAST);
-     }
+   cairo_surface_set_filter (surf, cairo_surface_get_filter(gr->surface));
    cairo_show_surface (gr->cr, surf, w, h);
-   cairo_surface_set_filter (gr->surface, CAIRO_FILTER_FAST);
    cairo_matrix_destroy (mat);
    cairo_surface_destroy (surf);
  }
@@ -707,6 +703,71 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_drawPixels
   (*env)->ReleaseIntArrayElements (env, java_pixels, native_pixels, 0);
   (*env)->ReleaseDoubleArrayElements (env, java_matrix, native_matrix, 0);
 
+}
+
+JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_getImagePixels 
+   (JNIEnv *env, jobject obj)
+{
+  struct graphics2d *gr = NULL;
+  jintArray java_pixels;
+  jint* native_pixels;
+  GdkPixbuf *buf = NULL;
+  gint width, height;
+  gint bits_per_sample = 8;
+  gboolean has_alpha = TRUE;
+  gint total_channels = 4;
+  jint i, px;
+
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+  
+  if (gr->debug) printf ("getImagePixels\n");
+  
+  gdk_drawable_get_size (gr->drawable, &width, &height);
+    
+  buf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, has_alpha, 
+                        bits_per_sample,
+                        width, height);
+  g_assert (buf != NULL);
+  g_assert (gdk_pixbuf_get_bits_per_sample (buf) == bits_per_sample);
+  g_assert (gdk_pixbuf_get_n_channels (buf) == total_channels);
+  
+      
+  /* copy pixels from drawable to pixbuf */
+  
+  gdk_pixbuf_get_from_drawable (buf, gr->drawable,
+                                NULL, 
+                                0, 0, 0, 0,
+                                width, height);
+ 								      				      
+  native_pixels= gdk_pixbuf_get_pixels (buf);
+  
+     
+  /* NOTE: The pixels we got in the pixbuf are stored 
+     in reversed order. i.e 0xBBGGRRAA. 
+     We need to convert them to  0xAARRGGBB. */
+   
+  for (i=0; i<width * height; i++) 
+    {	     
+  	      
+        /* convert pixels from 0xBBGGRRAA to 0xAARRGGBB */
+        
+        px = native_pixels[i];
+        px = ((px >> 24) & 0xff) | ((px << 8) & 0xffffff00); 
+        px = ((px >>  8) & 0x00ff00ff) | ((px <<  8) & 0xff00ff00); 
+        px = ((px >> 16) & 0x0000ffff) | ((px << 16) & 0xffff0000); 
+        native_pixels[i] = px;
+      
+    }
+
+   java_pixels = (*env) -> NewIntArray (env, width * height);   
+   
+   (*env)->SetIntArrayRegion(env, java_pixels, 
+                            (jsize)0, (jsize) width*height, 
+                            (jint*) native_pixels);
+   
+   return java_pixels;
+  
 }
 
 /* passthrough methods to cairo */
@@ -1157,3 +1218,30 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoClip
   cairo_clip (gr->cr);
 }
 
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSurfaceSetFilter
+   (JNIEnv *env, jobject obj, jint filter)
+{
+
+   struct graphics2d *gr = NULL;   
+   gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+   g_assert (gr != NULL);
+   if (gr->debug) printf ("cairo_surface_set_filter %d\n", filter);   
+   switch ((enum java_awt_rendering_hints_filter) filter)
+     {
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_NEAREST_NEIGHBOR:
+       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR:
+       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_BILINEAR);
+       break; 
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED:
+       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_FAST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT:
+       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY:
+       cairo_surface_set_filter (gr->surface, CAIRO_FILTER_BEST);
+       break;
+     }
+}

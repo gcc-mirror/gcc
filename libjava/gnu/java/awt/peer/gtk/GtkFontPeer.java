@@ -62,11 +62,17 @@ public class GtkFontPeer extends ClasspathFontPeer
       }
   }
 
-  final private String Xname; // uses %d for font size.
+  final private String Xname;
 
   public GtkFontPeer (String name, int style)
   {
-    super(name, style, 12 /* kludge */);
+    // All fonts get a default size of 12 if size is not specified.
+    this(name, style, 12);
+  }
+
+  public GtkFontPeer (String name, int style, int size)
+  {
+    super(name, style, size);
 
     if (bundle != null)
       Xname = bundle.getString (name.toLowerCase () + "." + style);
@@ -90,7 +96,7 @@ public class GtkFontPeer extends ClasspathFontPeer
 	else
 	  spacing = "c";
 
-        Xname = "-*-*-" + weight + "-" + slant + "-normal-*-%d-*-*-*-" + spacing + "-*-*-*";
+        Xname = "-*-*-" + weight + "-" + slant + "-normal-*-*-" + size + "-*-*-" + spacing + "-*-*-*";
       }
   }
 

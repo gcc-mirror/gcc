@@ -47,442 +47,628 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import javax.swing.plaf.ProgressBarUI;
 
+
 /**
- * JProgressBar
- * @author	Andrew Selkirk
- * @version	1.0
+ * <p>
+ * The ProgressBar is a widget that displays in two modes. In 
+ * determinate mode, it displays fills a percentage of its bar
+ * based on its current value. In indeterminate mode, it creates
+ * box and bounces it between its bounds.
+ * </p>
+ *
+ * <p>
+ * JProgressBars have the following properties:
+ * </p>
+ * 
+ * <table>
+ * <tr><th> Property         </td><th> Stored in   </td><th> Bound? </td></tr>
+ * <tr><td> borderPainted    </td><td> progressBar </td><td> yes    </td></tr>
+ * <tr><td> changeListeners  </td><td> progressBar </td><td> no     </td></tr>
+ * <tr><td> indeterminate    </td><td> progressBar </td><td> yes    </td></tr> 
+ * <tr><td> maximum          </td><td> model       </td><td> no     </td></tr>
+ * <tr><td> minimum          </td><td> model       </td><td> no     </td></tr>
+ * <tr><td> model            </td><td> progressBar </td><td> no     </td></tr> 
+ * <tr><td> orientation      </td><td> progressBar </td><td> yes    </td></tr>
+ * <tr><td> percentComplete  </td><td> progressBar </td><td> no     </td></tr>
+ * <tr><td> string           </td><td> progressBar </td><td> yes    </td></tr>
+ * <tr><td> stringPainted    </td><td> progressBar </td><td> yes    </td></tr>
+ * <tr><td> value            </td><td> model       </td><td> no     </td></tr>
+ * </table>
  */
-public class JProgressBar extends JComponent implements SwingConstants, Accessible
+public class JProgressBar extends JComponent implements SwingConstants,
+                                                        Accessible
 {
-
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
-
-	/**
-	 * AccessibleJProgressBar
-	 */
-	protected class AccessibleJProgressBar extends AccessibleJComponent 
-			implements AccessibleValue {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor AccessibleJProgressBar
-		 * @param component TODO
-		 */
-		protected AccessibleJProgressBar(JProgressBar component) {
-			super(component);
-			// TODO
-		} // AccessibleJProgressBar()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getAccessibleStateSet
-		 * @returns AccessibleStateSet
-		 */
-		public AccessibleStateSet getAccessibleStateSet() {
-			return null; // TODO
-		} // getAccessibleStateSet()
-
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.PROGRESS_BAR;
-		} // getAccessibleRole()
-
-		/**
-		 * getAccessibleValue
-		 * @returns AccessibleValue
-		 */
-		public AccessibleValue getAccessibleValue() {
-			return null; // TODO
-		} // getAccessibleValue()
-
-		/**
-		 * getCurrentAccessibleValue
-		 * @returns Number
-		 */
-		public Number getCurrentAccessibleValue() {
-			return null; // TODO
-		} // getCurrentAccessibleValue()
-
-		/**
-		 * setCurrentAccessibleValue
-		 * @param value0 TODO
-		 * @returns boolean
-		 */
-		public boolean setCurrentAccessibleValue(Number value0) {
-			return false; // TODO
-		} // setCurrentAccessibleValue()
-
-		/**
-		 * getMinimumAccessibleValue
-		 * @returns Number
-		 */
-		public Number getMinimumAccessibleValue() {
-			return null; // TODO
-		} // getMinimumAccessibleValue()
-
-		/**
-		 * getMaximumAccessibleValue
-		 * @returns Number
-		 */
-		public Number getMaximumAccessibleValue() {
-			return null; // TODO
-		} // getMaximumAccessibleValue()
-
-
-	} // AccessibleJProgressBar
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "ProgressBarUI";
-
-	/**
-	 * orientation
-	 */
-	protected int orientation;
-
-	/**
-	 * paintBorder
-	 */
-	protected boolean paintBorder;
-
-	/**
-	 * model
-	 */
-	protected BoundedRangeModel model;
-
-	/**
-	 * progressString
-	 */
-	protected String progressString;
-
-	/**
-	 * paintString
-	 */
-	protected boolean paintString;
-
-	/**
-	 * changeEvent
-	 */
-	protected transient ChangeEvent changeEvent;
-
-	/**
-	 * changeListener
-	 */
-	protected ChangeListener changeListener;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor JProgressBar
-	 */
-	public JProgressBar() {
-		// TODO
-	} // JProgressBar()
-
-	/**
-	 * Constructor JProgressBar
-	 * @param orientation TODO
-	 */
-	public JProgressBar(int orientation) {
-		// TODO
-	} // JProgressBar()
-
-	/**
-	 * Constructor JProgressBar
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 */
-	public JProgressBar(int minimum, int maximum) {
-		// TODO
-	} // JProgressBar()
-
-	/**
-	 * Constructor JProgressBar
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 * @param orientation TODO
-	 */
-	public JProgressBar(int minimum, int maximum, int orientation) {
-		// TODO
-	} // JProgressBar()
-
-	/**
-	 * Constructor JProgressBar
-	 * @param model TODO
-	 */
-	public JProgressBar(BoundedRangeModel model) {
-		// TODO
-	} // JProgressBar()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * getValue
-	 * @returns int
-	 */
-	public int getValue() {
-		return 0; // TODO
-	} // getValue()
-
-	/**
-	 * setValue
-	 * @param value TODO
-	 */
-	public void setValue(int value) {
-		// TODO
-	} // setValue()
-
-	/**
-	 * paintBorder
-	 * @param graphics TODO
-	 */
-	protected void paintBorder(Graphics graphics) {
-		// TODO
-	} // paintBorder()
-
-	/**
-	 * getOrientation
-	 * @returns int
-	 */
-	public int getOrientation() {
-		return 0; // TODO
-	} // getOrientation()
-
-	/**
-	 * setOrientation
-	 * @param orientation TODO
-	 */
-	public void setOrientation(int orientation) {
-		// TODO
-	} // setOrientation()
-
-	/**
-	 * isStringPainted
-	 * @returns boolean
-	 */
-	public boolean isStringPainted() {
-		return false; // TODO
-	} // isStringPainted()
-
-	/**
-	 * setStringPainted
-	 * @param painted TODO
-	 */
-	public void setStringPainted(boolean painted) {
-		// TODO
-	} // setStringPainted()
-
-	/**
-	 * getString
-	 * @returns String
-	 */
-	public String getString() {
-		return null; // TODO
-	} // getString()
-
-	/**
-	 * setString
-	 * @param string TODO
-	 */
-	public void setString(String string) {
-		// TODO
-	} // setString()
-
-	/**
-	 * getPercentComplete
-	 * @returns double
-	 */
-	public double getPercentComplete() {
-		return 0.0; // TODO
-	} // getPercentComplete()
-
-	/**
-	 * isBorderPainted
-	 * @returns boolean
-	 */
-	public boolean isBorderPainted() {
-		return false; // TODO
-	} // isBorderPainted()
-
-	/**
-	 * setBorderPainted
-	 * @param painted TODO
-	 */
-	public void setBorderPainted(boolean painted) {
-		// TODO
-	} // setBorderPainted()
-
-	/**
-	 * getUI
-	 * @returns ProgressBarUI
-	 */
-	public ProgressBarUI getUI() {
-		return (ProgressBarUI) ui;
-	} // getUI()
-
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(ProgressBarUI ui) {
-		super.setUI(ui);
-		// TODO
-	} // setUI()
-
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((ProgressBarUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
-
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
-
-	/**
-	 * createChangeListener
-	 * @returns ChangeListener
-	 */
-	protected ChangeListener createChangeListener() {
-		return null; // TODO
-	} // createChangeListener()
-
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	public void addChangeListener(ChangeListener listener) {
-		// TODO
-	} // addChangeListener()
-
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	public void removeChangeListener(ChangeListener valulistener) {
-		// TODO
-	} // removeChangeListener()
-
-	/**
-	 * fireStateChanged
-	 */
-	protected void fireStateChanged() {
-		// TODO
-	} // fireStateChanged()
-
-	/**
-	 * getModel
-	 * @returns BoundedRangeModel
-	 */
-	public BoundedRangeModel getModel() {
-		return null; // TODO
-	} // getModel()
-
-	/**
-	 * setModel
-	 * @param model TODO
-	 */
-	public void setModel(BoundedRangeModel model) {
-		// TODO
-	} // setModel()
-
-	/**
-	 * getMinimum
-	 * @returns int
-	 */
-	public int getMinimum() {
-		return 0; // TODO
-	} // getMinimum()
-
-	/**
-	 * setMinimum
-	 * @param minimum TODO
-	 */
-	public void setMinimum(int minimum) {
-		// TODO
-	} // setMinimum()
-
-	/**
-	 * getMaximum
-	 * @returns int
-	 */
-	public int getMaximum() {
-		return 0; // TODO
-	} // getMaximum()
-
-	/**
-	 * setMaximum
-	 * @param maximum TODO
-	 */
-	public void setMaximum(int maximum) {
-		// TODO
-	} // setMaximum()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
-
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJProgressBar(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
-
-
-} // JProgressBar
+  /**
+   * AccessibleJProgressBar
+   */
+  protected class AccessibleJProgressBar extends AccessibleJComponent
+    implements AccessibleValue
+  {
+    /**
+     * Constructor AccessibleJProgressBar
+     *
+     * @param component TODO
+     */
+    protected AccessibleJProgressBar(JProgressBar component)
+    {
+      super(component);
+    } 
+
+    /**
+     * getAccessibleStateSet
+     *
+     * @return AccessibleStateSet
+     */
+    public AccessibleStateSet getAccessibleStateSet()
+    {
+      return null; 
+    } 
+
+    /**
+     * getAccessibleRole
+     *
+     * @return AccessibleRole
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PROGRESS_BAR;
+    } 
+
+    /**
+     * getAccessibleValue
+     *
+     * @return AccessibleValue
+     */
+    public AccessibleValue getAccessibleValue()
+    {
+      return null;
+    } 
+
+    /**
+     * getCurrentAccessibleValue
+     *
+     * @return Number
+     */
+    public Number getCurrentAccessibleValue()
+    {
+      return null;
+    } 
+
+    /**
+     * setCurrentAccessibleValue
+     *
+     * @param value0 TODO
+     *
+     * @return boolean
+     */
+    public boolean setCurrentAccessibleValue(Number value0)
+    {
+      return false; 
+    } 
+
+    /**
+     * getMinimumAccessibleValue
+     *
+     * @return Number
+     */
+    public Number getMinimumAccessibleValue()
+    {
+      return null; 
+    } 
+
+    /**
+     * getMaximumAccessibleValue
+     *
+     * @return Number
+     */
+    public Number getMaximumAccessibleValue()
+    {
+      return null; 
+    } 
+  } 
+
+  /** Fired in a PropertyChangeEvent when the "borderPainted" property changes. */
+  public static final String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted";
+  
+  /** Fired in a PropertyChangeEvent when the "orientation" property changes. */
+  public static final String ORIENTATION_CHANGED_PROPERTY = "orientation";
+  
+  /** Fired in a PropertyChangeEvent when the "string" property changes. */
+  public static final String STRING_CHANGED_PROPERTY = "string";
+  
+  /** Fired in a PropertyChangeEvent when the "stringPainted" property changes. */
+  public static final String STRING_PAINTED_CHANGED_PROPERTY = "stringPainted";
+  
+  /** Fired in a PropertyChangeEvent when the "indeterminate" property changes. */
+  public static final String INDETERMINATE_CHANGED_PROPERTY = "indeterminate";
+
+  /** A list of ChangeListeners registered with this ProgressBar. */
+  private transient EventListenerList changeListenerList;
+
+  /** Whether the ProgressBar is determinate. */
+  private transient boolean indeterminate = false;
+
+  /** The orientation of the ProgressBar */
+  protected int orientation = HORIZONTAL;
+
+  /** Whether borders should be painted. */
+  protected boolean paintBorder = true;
+
+  /** The model describing this ProgressBar. */
+  protected BoundedRangeModel model;
+
+  /** The string that is displayed by the ProgressBar. */
+  protected String progressString;
+
+  /** Whether the string should be painted. */
+  protected boolean paintString = false;
+
+  /** The static changeEvent passed to all ChangeListeners. */
+  protected transient ChangeEvent changeEvent;
+
+  /** The ChangeListener that listens to the model. */
+  protected ChangeListener changeListener;
+
+  /**
+   * Creates a new horizontally oriented JProgressBar object 
+   * with a minimum of 0 and a maximum of 100.
+   */
+  public JProgressBar()
+  {
+    this(0, 100, HORIZONTAL);
+  }
+
+  /**
+   * Creates a new JProgressBar object with a minimum of 0,
+   * a maximum of 100, and the given orientation.
+   *
+   * @param orientation The orientation of the JProgressBar.
+   */
+  public JProgressBar(int orientation)
+  {
+    this(0, 100, orientation);
+  }
+
+  /**
+   * Creates a new horizontally oriented JProgressBar object
+   * with the given minimum and maximum.
+   *
+   * @param minimum The minimum of the JProgressBar.
+   * @param maximum The maximum of the JProgressBar.
+   */
+  public JProgressBar(int minimum, int maximum)
+  {
+    this(minimum, maximum, HORIZONTAL);
+  }
+
+  /**
+   * Creates a new JProgressBar object with the given minimum,
+   * maximum, and orientation.
+   *
+   * @param minimum The minimum of the JProgressBar.
+   * @param maximum The maximum of the JProgressBar.
+   * @param orientation The orientation of the JProgressBar.
+   */
+  public JProgressBar(int minimum, int maximum, int orientation)
+  {
+    model = new DefaultBoundedRangeModel(minimum, 0, minimum, maximum);
+    if (orientation != HORIZONTAL && orientation != VERTICAL)
+      throw new IllegalArgumentException(orientation + " is not a legal orientation");    
+    this.orientation = orientation;
+    changeListener = createChangeListener();
+    model.addChangeListener(changeListener);
+    changeListenerList = new EventListenerList();
+    updateUI();
+  }
+
+  /**
+   * Creates a new horizontally oriented JProgressBar object 
+   * with the given model.
+   *
+   * @param model The model to be used with the JProgressBar.
+   */
+  public JProgressBar(BoundedRangeModel model)
+  {
+    this.model = model;
+    changeListener = createChangeListener();
+    model.addChangeListener(changeListener);
+    changeListenerList = new EventListenerList();
+    updateUI();    
+  }
+
+  /**
+   * This method returns the current value of the JProgressBar.
+   *
+   * @return The current value of the JProgressBar.
+   */
+  public int getValue()
+  {
+    return model.getValue();
+  }
+
+  /**
+   * This method sets the value of the JProgressBar.
+   *
+   * @param value The value of the JProgressBar.
+   */
+  public void setValue(int value)
+  {
+    model.setValue(value);
+  }
+
+  /**
+   * This method paints the border of the JProgressBar
+   *
+   * @param graphics The graphics object to paint with.
+   */
+  protected void paintBorder(Graphics graphics)
+  {
+    getBorder().paintBorder(this, graphics, 0, 0,
+                            getWidth(),
+                            getHeight());
+  }
+
+  /**
+   * This method returns the orientation of the JProgressBar.
+   *
+   * @return The orientation of the JProgressBar.
+   */
+  public int getOrientation()
+  {
+    return orientation;
+  }
+
+  /**
+   * This method changes the orientation property. The orientation of the 
+   * JProgressBar can be either horizontal or vertical.
+   *
+   * @param orientation The orientation of the JProgressBar.
+   */
+  public void setOrientation(int orientation)
+  {
+    if (orientation != VERTICAL && orientation != HORIZONTAL)
+      throw new IllegalArgumentException("orientation must be one of VERTICAL or HORIZONTAL");
+    if (this.orientation != orientation)
+      {
+	int oldOrientation = this.orientation;
+	this.orientation = orientation;
+	firePropertyChange(ORIENTATION_CHANGED_PROPERTY, oldOrientation,
+	                   this.orientation);
+      }
+  }
+
+  /**
+   * This method returns whether the progressString will be painted.
+   *
+   * @return Whether the string is painted.
+   */
+  public boolean isStringPainted()
+  {
+    return paintString;
+  }
+
+  /**
+   * This method changes the stringPainted property.
+   *
+   * @param painted Whether the string is painted.
+   */
+  public void setStringPainted(boolean painted)
+  {
+    if (paintString != painted)
+      {
+	boolean oldPainted = paintString;
+	paintString = painted;
+	firePropertyChange(STRING_PAINTED_CHANGED_PROPERTY, oldPainted,
+	                   paintString);
+      }
+  }
+
+  /**
+   * This method returns the string that is painted if the 
+   * stringPainted property is set to true. If there is no
+   * string set, it will return a string containing the 
+   * JProgressBar's value as a percent.
+   *
+   * @return The string that is painted.
+   */
+  public String getString()
+  {
+    if (progressString != null)
+      return progressString;
+    else
+      return (int) (getPercentComplete() * 100) + "%";
+  }
+
+  /**
+   * This method changes the string property. The string
+   * given will be the one painted. If you want to 
+   * revert to the default string given, set the
+   * string to null.
+   *
+   * @param string The string to be painted.
+   */
+  public void setString(String string)
+  {
+    if (((string == null || progressString == null) &&
+        string != progressString) || (string != null &&
+	! string.equals(progressString)))
+      {
+	String oldString = progressString;
+	progressString = string;
+	firePropertyChange(STRING_CHANGED_PROPERTY, oldString, progressString);
+      }
+  }
+
+  /**
+   * This method returns the percent of the bar
+   * that is "complete". (This is the amount value / (max - min)).
+   *
+   * @return DOCUMENT ME!
+   */
+  public double getPercentComplete()
+  {
+    if (getMaximum() == getMinimum())
+      return 1.0;
+    else
+      return (double) (model.getValue() - model.getMinimum()) / (model
+                                                                 .getMaximum()
+             - model.getMinimum());
+  }
+
+  /**
+   * This method returns whether the border is painted.
+   *
+   * @return Whether the border is painted.
+   */
+  public boolean isBorderPainted()
+  {
+    return paintBorder;
+  }
+
+  /**
+   * This method changes the borderPainted property.
+   *
+   * @param painted Whether the border is painted.
+   */
+  public void setBorderPainted(boolean painted)
+  {
+    if (painted != paintBorder)
+      {
+	boolean oldPainted = paintBorder;
+	paintBorder = painted;
+	firePropertyChange(BORDER_PAINTED_CHANGED_PROPERTY, oldPainted,
+	                   paintBorder);
+      }
+  }
+
+  /**
+   * This method returns the JProgressBar's UI delegate.
+   *
+   * @return This JProgressBar's UI delegate.
+   */
+  public ProgressBarUI getUI()
+  {
+    return (ProgressBarUI) ui;
+  }
+
+  /**
+   * This method changes the UI property for this JProgressBar.
+   *
+   * @param ui The new UI delegate.
+   */
+  public void setUI(ProgressBarUI ui)
+  {
+    super.setUI(ui);
+  }
+
+  /**
+   * This method reverts the UI delegate for this JProgressBar
+   * to the default for this Look and Feel.
+   */
+  public void updateUI()
+  {
+    setUI((ProgressBarUI) UIManager.getUI(this));
+    invalidate();
+  }
+
+  /**
+   * This method returns the identifier to allow the UIManager
+   * to pick the correct class to act as the UI for
+   * this JProgressBar.
+   *
+   * @return The UIClassID: "ProgressBarUI".
+   */
+  public String getUIClassID()
+  {
+    return "ProgressBarUI";
+  }
+
+  /**
+   * This method returns a ChangeListener that gets registered
+   * model. By default, the ChangeListener, propagates the 
+   * ChangeEvents to the ChangeListeners of the JProgressBar.
+   *
+   * @return A new ChangeListener.
+   */
+  protected ChangeListener createChangeListener()
+  {
+    return new ChangeListener()
+      {
+	public void stateChanged(ChangeEvent ce)
+	{
+	  fireStateChanged();
+	}
+      };
+  }
+
+  /**
+   * This method adds a ChangeListener to this JProgressBar.
+   *
+   * @param listener The ChangeListener to add to this JProgressBar.
+   */
+  public void addChangeListener(ChangeListener listener)
+  {
+    changeListenerList.add(ChangeListener.class, listener);
+  }
+
+  /**
+   * This method removes a ChangeListener from this JProgressBar.
+   *
+   * @param listener The ChangeListener to remove from this JProgressBar.
+   */
+  public void removeChangeListener(ChangeListener listener)
+  {
+    changeListenerList.remove(ChangeListener.class, listener);
+  }
+  
+  /**
+   * This method returns an array of all ChangeListeners listening to this
+   * progress bar.
+   *
+   * @return An array of ChangeListeners listening to this progress bar.
+   */
+  public ChangeListener[] getChangeListeners()
+  {
+    return (ChangeListener[]) changeListenerList.getListenerList();
+  }  
+
+  /**
+   * This method is called when the JProgressBar receives a ChangeEvent
+   * from its model. This simply propagates the event (changing the source
+   * to the JProgressBar) to the JProgressBar's listeners.
+   */
+  protected void fireStateChanged()
+  {
+    Object[] changeListeners = changeListenerList.getListenerList();
+    if (changeEvent == null)
+      changeEvent = new ChangeEvent(this);
+    for (int i = changeListeners.length - 2; i >= 0; i -= 2)
+      {
+	if (changeListeners[i] == ChangeListener.class)
+	  ((ChangeListener) changeListeners[i + 1]).stateChanged(changeEvent);
+      }
+  }
+
+  /**
+   * This method returns the model used with this JProgressBar.
+   *
+   * @return The model used with this JProgressBar.
+   */
+  public BoundedRangeModel getModel()
+  {
+    return model;
+  }
+
+  /**
+   * This method changes the model property for this JProgressBar.
+   *
+   * @param model The model to use with this JProgressBar.
+   */
+  public void setModel(BoundedRangeModel model)
+  {
+    if (model != this.model)
+      {
+        this.model.removeChangeListener(changeListener);
+	this.model = model;
+	this.model.addChangeListener(changeListener);
+	fireStateChanged();
+      }
+  }
+
+  /**
+   * This method returns the minimum value of this JProgressBar.
+   *
+   * @return The minimum value of this JProgressBar.
+   */
+  public int getMinimum()
+  {
+    return model.getMinimum();
+  }
+
+  /**
+   * This method sets the minimum value of this JProgressBar.
+   *
+   * @param minimum The minimum value of this JProgressBar.
+   */
+  public void setMinimum(int minimum)
+  {
+    model.setMinimum(minimum);
+  }
+
+  /**
+   * This method returns the maximum value of this JProgressBar.
+   *
+   * @return The maximum value of this JProgressBar.
+   */
+  public int getMaximum()
+  {
+    return model.getMaximum();
+  }
+
+  /**
+   * This method sets the maximum value of this JProgressBar.
+   *
+   * @param maximum The maximum value of this JProgressBar.
+   */
+  public void setMaximum(int maximum)
+  {
+    model.setMaximum(maximum);
+  }
+
+  /**
+   * This method returns a string that can be used to 
+   * describe this JProgressBar. This method is usually
+   * only used for debugging purposes.
+   *
+   * @return A string that describes this JProgressBar.
+   */
+  protected String paramString()
+  {
+    return "JProgressBar";
+  }
+
+  /**
+   * This method changes the indeterminate property. If the
+   * JProgressBar is determinate, it paints a percentage
+   * of the bar described by its value. If it is indeterminate,
+   * it simply bounces a box between the ends of the bar; the 
+   * value of the JProgressBar is ignored.
+   *
+   * @param newValue Whether the JProgressBar is indeterminate.
+   */
+  public void setIndeterminate(boolean newValue)
+  {
+    if (indeterminate != newValue)
+      {
+	boolean olddeter = indeterminate;
+	indeterminate = newValue;
+	firePropertyChange(INDETERMINATE_CHANGED_PROPERTY, olddeter,
+	                   indeterminate);
+      }
+  }
+
+  /**
+   * This method returns whether the JProgressBar is indeterminate.
+   *
+   * @return Whether this JProgressBar is indeterminate.
+   */
+  public boolean isIndeterminate()
+  {
+    return indeterminate;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJProgressBar(this);
+    return accessibleContext;
+  } 
+}

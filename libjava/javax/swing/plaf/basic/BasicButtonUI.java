@@ -250,7 +250,8 @@ public class BasicButtonUI extends ButtonUI
       paintButtonNormal(g, br, c);
 	
     paintIcon(g, c, ir);
-    paintText(g, c, tr, b.getText());
+    if (text != null)
+      paintText(g, c, tr, b.getText());
     paintFocus(g, c, vr, tr, ir);
   }
 

@@ -44,6 +44,12 @@ exception statement from your version. */
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 
+static int filter_added = 0;
+
+static GdkFilterReturn window_wm_protocols_filter (GdkXEvent *xev,
+                                                   GdkEvent  *event,
+                                                   gpointer   data);
+
 static void window_get_frame_extents (GtkWidget *window,
                                       int *top, int *left,
                                       int *bottom, int *right);
@@ -59,12 +65,9 @@ static void window_delete_cb (GtkWidget *widget, GdkEvent *event,
 static void window_destroy_cb (GtkWidget *widget, GdkEvent *event,
 			       jobject peer);
 static void window_show_cb (GtkWidget *widget, jobject peer);
-static gboolean window_focus_in_cb (GtkWidget * widget,
-				    GdkEventFocus *event,
-				    jobject peer);
-static gboolean window_focus_out_cb (GtkWidget * widget,
-				     GdkEventFocus *event,
-				     jobject peer);
+static void window_focus_or_active_state_change_cb (GtkWidget *widget,
+                                                    GParamSpec *pspec,
+                                                    jobject peer);
 static gboolean window_window_state_cb (GtkWidget *widget,
 					GdkEvent *event,
 					jobject peer);
@@ -146,6 +149,20 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   insets[1] = left;
   insets[2] = bottom;
   insets[3] = right;
+
+  /* We must filter out WM_TAKE_FOCUS messages.  Otherwise we get two
+     focus in events when a window becomes active and two focus out
+     events when a window becomes inactive. */
+  if (!filter_added)
+    {
+      GdkAtom wm_protocols_atom =
+        gdk_x11_xatom_to_atom (gdk_x11_get_xatom_by_name ("WM_PROTOCOLS"));
+
+      gdk_add_client_message_filter (wm_protocols_atom,
+                                     window_wm_protocols_filter,
+                                     NULL);
+      filter_added = 1;
+    }
 
   gdk_threads_leave ();
 
@@ -251,11 +268,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
   g_signal_connect (G_OBJECT (ptr), "show",
 		    G_CALLBACK (window_show_cb), *gref);
 
-  g_signal_connect (G_OBJECT (ptr), "focus-in-event",
-		    G_CALLBACK (window_focus_in_cb), *gref);
-
-  g_signal_connect (G_OBJECT (ptr), "focus-out-event",
-		    G_CALLBACK (window_focus_out_cb), *gref);
+  g_signal_connect (G_OBJECT (ptr), "notify",
+		    G_CALLBACK (window_focus_or_active_state_change_cb), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "window-state-event",
 		    G_CALLBACK (window_window_state_cb), *gref);
@@ -661,40 +675,37 @@ window_show_cb (GtkWidget *widget __attribute__((unused)),
 			      (jobject) NULL, (jint) 0);
 }
 
-static gboolean
-window_focus_in_cb (GtkWidget * widget __attribute__((unused)),
-		    GdkEventFocus *event __attribute__((unused)),
-		    jobject peer)
+static void
+window_focus_or_active_state_change_cb (GtkWidget *widget,
+                                        GParamSpec *pspec,
+                                        jobject peer)
 {
-  /* FIXME: when hiding then showing, we get two sets of
-     (LOST_FOCUS/DEACTIVATED, ACTIVATED/GAINED_FOCUS) events. */
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
-			      postWindowEventID,
-			      (jint) AWT_WINDOW_ACTIVATED,
-			      (jobject) NULL, (jint) 0);
-
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
-			      postWindowEventID,
-			      (jint) AWT_WINDOW_GAINED_FOCUS,
-			      (jobject) NULL, (jint) 0);
-  return TRUE;
-}
-
-static gboolean
-window_focus_out_cb (GtkWidget * widget __attribute__((unused)),
-		     GdkEventFocus *event __attribute__((unused)),
-		     jobject peer)
-{
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
-			      postWindowEventID,
-			      (jint) AWT_WINDOW_LOST_FOCUS,
-			      (jobject) NULL, (jint) 0);
-
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
-			      postWindowEventID,
-			      (jint) AWT_WINDOW_DEACTIVATED,
-			      (jobject) NULL, (jint) 0);
-  return TRUE;
+  if (!strcmp (g_param_spec_get_name (pspec), "is-active"))
+    {
+      if (GTK_WINDOW (widget)->is_active)
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postWindowEventID,
+                                    (jint) AWT_WINDOW_GAINED_FOCUS,
+                                    (jobject) NULL, (jint) 0);
+      else
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postWindowEventID,
+                                    (jint) AWT_WINDOW_DEACTIVATED,
+                                    (jobject) NULL, (jint) 0);
+    }
+  else if (!strcmp (g_param_spec_get_name (pspec), "has-toplevel-focus"))
+    {
+      if (GTK_WINDOW (widget)->has_toplevel_focus)
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postWindowEventID,
+                                    (jint) AWT_WINDOW_ACTIVATED,
+                                    (jobject) NULL, (jint) 0);
+      else
+        (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                    postWindowEventID,
+                                    (jint) AWT_WINDOW_LOST_FOCUS,
+                                    (jobject) NULL, (jint) 0);
+    }
 }
 
 static gboolean
@@ -820,4 +831,17 @@ window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
 				(jint) extents[1]); /* right */
 
   return FALSE;
+}
+
+static GdkFilterReturn
+window_wm_protocols_filter (GdkXEvent *xev,
+                            GdkEvent  *event __attribute__((unused)),
+                            gpointer data __attribute__((unused)))
+{
+  XEvent *xevent = (XEvent *)xev;
+
+  if ((Atom) xevent->xclient.data.l[0] == gdk_x11_get_xatom_by_name ("WM_TAKE_FOCUS"))
+    return GDK_FILTER_REMOVE;
+
+  return GDK_FILTER_CONTINUE;
 }

@@ -47,10 +47,11 @@ typedef struct {
   double height;
 } rect_t;
 
-#define DOUBLE_TO_26_6(d) ((FT_F26Dot6)((d) * 63.0))
-#define DOUBLE_FROM_26_6(t) (((double)((t) >> 6)) \
-			     + ((double)((t) & 0x3F) / 63.0))
-
+#define DOUBLE_TO_26_6(d) ((FT_F26Dot6)((d) * 64.0))
+#define DOUBLE_FROM_26_6(t) ((double)(t) / 64.0)
+#define DOUBLE_TO_16_16(d) ((FT_Fixed)((d) * 65536.0))
+#define DOUBLE_FROM_16_16(t) ((double)(t) / 65536.0)
+ 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
@@ -401,6 +402,21 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphCharIndex
   return idx;
 }
 
+static void 
+assume_pointsize_and_identity_transform(double pointsize,
+					FT_Face face)
+{
+  FT_Matrix mat;
+  mat.xx = DOUBLE_TO_16_16(1);
+  mat.xy = DOUBLE_TO_16_16(0);
+  mat.yx = DOUBLE_TO_16_16(0);
+  mat.yy = DOUBLE_TO_16_16(1);    
+  FT_Set_Transform(face, &mat, NULL);
+  FT_Set_Char_Size( face, 
+		    DOUBLE_TO_26_6 (pointsize),
+		    DOUBLE_TO_26_6 (pointsize),
+		    0, 0);  
+}				    
 
 JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allInkExtents 
   (JNIEnv *env, jobject self)
@@ -432,10 +448,7 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allInkE
       g_assert (gi->glyphs != NULL);
 
       face = pango_ft2_font_get_face (gi->item->analysis.font);
-      FT_Set_Char_Size( face, 
-			DOUBLE_TO_26_6 (pointsize),
-			DOUBLE_TO_26_6 (pointsize),
-			0, 0);
+      assume_pointsize_and_identity_transform (pointsize, face);
       
       for (j = 0; j < gi->glyphs->num_glyphs; ++j)
 	{
@@ -487,10 +500,7 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allLogi
       g_assert (gi->glyphs != NULL);
 
       face = pango_ft2_font_get_face (gi->item->analysis.font);
-      FT_Set_Char_Size( face, 
-			DOUBLE_TO_26_6 (pointsize),
-			DOUBLE_TO_26_6 (pointsize),
-			0, 0);
+      assume_pointsize_and_identity_transform (pointsize, face);
       
       for (j = 0; j < gi->glyphs->num_glyphs; ++j)
 	{
@@ -541,11 +551,9 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphLo
   pointsize = pango_font_description_get_size (vec->desc);
   pointsize /= (double) PANGO_SCALE;
   face = pango_ft2_font_get_face (font);
-  FT_Set_Char_Size( face, 
-		    DOUBLE_TO_26_6 (pointsize),
-		    DOUBLE_TO_26_6 (pointsize),
-		    0, 0);
-  
+
+  assume_pointsize_and_identity_transform (pointsize, face);  
+
   FT_Load_Glyph (face, gi->glyph, FT_LOAD_DEFAULT);
 
   /* FIXME: this is probably not the correct set of metrics;
@@ -588,10 +596,8 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphIn
   pointsize = pango_font_description_get_size (vec->desc);
   pointsize /= (double) PANGO_SCALE;
   face = pango_ft2_font_get_face (font);
-  FT_Set_Char_Size( face, 
-		    DOUBLE_TO_26_6 (pointsize),
-		    DOUBLE_TO_26_6 (pointsize),
-		    0, 0);
+
+  assume_pointsize_and_identity_transform (pointsize, face);  
   
   FT_Load_Glyph (face, gi->glyph, FT_LOAD_DEFAULT);
   /* FIXME: this needs to change for vertical layouts */

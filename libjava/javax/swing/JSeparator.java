@@ -44,183 +44,163 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.plaf.SeparatorUI;
 
+
 /**
- * JSeparator
- * @author	Andrew Selkirk
- * @version	1.0
+ * The JSeparator. It is mostly used to divide/space out
+ * components.
  */
-public class JSeparator extends JComponent 
-  implements SwingConstants, Accessible
+public class JSeparator extends JComponent implements SwingConstants,
+                                                      Accessible
 {
+  /**
+   * AccessibleJSeparator
+   */
+  protected class AccessibleJSeparator extends AccessibleJComponent
+  {
+    /**
+     * Constructor AccessibleJSeparator
+     *
+     * @param component TODO
+     */
+    protected AccessibleJSeparator(JSeparator component)
+    {
+      super(component);
+    }
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * getAccessibleRole
+     *
+     * @return AccessibleRole
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.SEPARATOR;
+    }
+  }
 
-	/**
-	 * AccessibleJSeparator
-	 */
-	protected class AccessibleJSeparator extends AccessibleJComponent {
+  /** The orientation of the JSeparator. */
+  private transient int orientation = HORIZONTAL;
 
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
+  /**
+   * Creates a new horizontal JSeparator object.
+   */
+  public JSeparator()
+  {
+    this(HORIZONTAL);
+  }
 
+  /**
+   * Creates a new JSeparator object with the given orientation.
+   *
+   * @param orientation The orientation of the JSeparator.
+   */
+  public JSeparator(int orientation)
+  {
+    if (orientation != HORIZONTAL && orientation != VERTICAL)
+      throw new IllegalArgumentException(orientation
+                                         + " is not a valid orientation.");
+    this.orientation = orientation;
+    updateUI();
+  }
 
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
+  /**
+   * This method returns the UI delegate being
+   * used with the JSeparator.
+   *
+   * @return SeparatorUI The JSeparator's UI delegate.
+   */
+  public SeparatorUI getUI()
+  {
+    return (SeparatorUI) ui;
+  }
 
-		/**
-		 * Constructor AccessibleJSeparator
-		 * @param component TODO
-		 */
-		protected AccessibleJSeparator(JSeparator component) {
-			super(component);
-			// TODO
-		} // AccessibleJSeparator()
+  /**
+   * This method sets the UI delegate to use
+   * with the JSeparator.
+   *
+   * @param ui The UI delegate to use.
+   */
+  public void setUI(SeparatorUI ui)
+  {
+    super.setUI(ui);
+  }
 
+  /**
+   * This method resets the UI delegate to the 
+   * default for the current look and feel.
+   */
+  public void updateUI()
+  {
+    setUI((SeparatorUI) UIManager.getUI(this));
+    invalidate();
+  }
 
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
+  /**
+   * This method returns the identifier string
+   * that is used to determine the UI delegate
+   * from the current look and feel.
+   *
+   * @return String The identifier string for the UI.
+   */
+  public String getUIClassID()
+  {
+    return "SeparatorUI";
+  }
 
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.SEPARATOR;
-		} // getAccessibleRole()
+  /**
+   * This method returns the JSeparator's orientation.
+   *
+   * @return int The JSeparator's orientation.
+   */
+  public int getOrientation()
+  {
+    return orientation;
+  }
 
+  /**
+   * This method changes the JSeparator's orientation.
+   *
+   * @param orientation The JSeparator's orientation.
+   */
+  public void setOrientation(int orientation)
+  {
+    if (orientation != HORIZONTAL && orientation != VERTICAL)
+      throw new IllegalArgumentException(orientation
+                                         + " is not a valid orientation.");
+    this.orientation = orientation;
+  }
 
-	} // AccessibleJSeparator
+  /**
+   * This method returns a string desribing the JSeparator.
+   * Normally only used in debugging.
+   *
+   * @return String A string describing the JSeparator.
+   */
+  protected String paramString()
+  {
+    return "JSeparator";
+  }
 
+  /**
+   * This method overrides the isFocusTraversable method from
+   * Component to false. JSeparator cannot be focused on.
+   *
+   * @return boolean False.
+   */
+  public boolean isFocusTraversable()
+  {
+    return false;
+  }
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "SeparatorUI";
-
-	/**
-	 * orientation
-	 */
-	private int orientation;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor JSeparator
-	 */
-	public JSeparator() {
-		this(HORIZONTAL);
-	} // JSeparator()
-
-	/**
-	 * Constructor JSeparator
-	 * @param value0 TODO
-	 */
-	public JSeparator(int orientation) {
-		this.orientation = orientation;
-		// TODO
-	} // JSeparator()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * getUI
-	 * @returns SeparatorUI
-	 */
-	public SeparatorUI getUI() {
-		return (SeparatorUI) ui;
-	} // getUI()
-
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(SeparatorUI ui) {
-		super.setUI(ui);
-	} // setUI()
-
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((SeparatorUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
-
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
-
-	/**
-	 * getOrientation
-	 * @returns int
-	 */
-	public int getOrientation() {
-		return orientation;
-	} // getOrientation()
-
-	/**
-	 * setOrientation
-	 * @param orientation TODO
-	 */
-	public void setOrientation(int orientation) {
-		this.orientation = orientation;
-		// TODO
-	} // setOrientation()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
-
-	/**
-	 * isFocusTraversable
-	 * @returns boolean
-	 */
-	public boolean isFocusTraversable() {
-		return false;
-	} // isFocusTraversable()
-
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJSeparator(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
-
-
-} // JSeparator
+  /**
+   * getAccessibleContext
+   *
+   * @return AccessibleContext
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJSeparator(this);
+    return accessibleContext;
+  }
+}
