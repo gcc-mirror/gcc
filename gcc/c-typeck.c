@@ -83,6 +83,9 @@ require_complete_type (value)
 {
   tree type = TREE_TYPE (value);
 
+  if (TREE_CODE (value) == ERROR_MARK)
+    return error_mark_node;
+
   /* First, detect a valid value with a complete type.  */
   if (TYPE_SIZE (type) != 0
       && type != void_type_node)
