@@ -1,3 +1,8 @@
+2000-03-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (cp_finish_decl): Remove obsolete obstack comments, fix
+	typos.
+
 2000-03-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (TYPE_NEEDS_DESTRUCTOR): Rename to ...
