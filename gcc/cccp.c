@@ -73,6 +73,9 @@ typedef unsigned char U_CHAR;
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
+#ifdef __STDC__
+#include <stddef.h>
+#endif
 
 #ifndef VMS
 #ifndef USG
