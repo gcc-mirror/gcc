@@ -103,6 +103,13 @@ static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
 
+#ifdef CALL_REALLY_USED_REGISTERS
+#define CALL_REALLY_USED_REGNO_P(X)  call_really_used_regs[X]
+#else
+#define CALL_REALLY_USED_REGNO_P(X)  call_used_regs[X]
+#endif
+
+
 /* Indexed by hard register number, contains 1 for registers that are
    fixed use or call used registers that cannot hold quantities across
    calls even if we are willing to save and restore them.  call fixed
@@ -436,7 +443,11 @@ init_reg_sets_1 (void)
 	 If we are generating PIC code, the PIC offset table register is
 	 preserved across calls, though the target can override that.  */
 
-      if (i == STACK_POINTER_REGNUM || i == FRAME_POINTER_REGNUM)
+      if (i == STACK_POINTER_REGNUM)
+	;
+      else if (global_regs[i])
+	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+      else if (i == FRAME_POINTER_REGNUM)
 	;
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       else if (i == HARD_FRAME_POINTER_REGNUM)
@@ -450,13 +461,7 @@ init_reg_sets_1 (void)
       else if (i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
 #endif
-      else if (0
-#ifdef CALL_REALLY_USED_REGISTERS
-	       || call_really_used_regs[i]
-#else
-	       || call_used_regs[i]
-#endif
-	       || global_regs[i])
+      else if (CALL_REALLY_USED_REGNO_P (i))
 	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
@@ -778,6 +783,12 @@ globalize_reg (int i)
 
   global_regs[i] = 1;
 
+  /* If we're globalizing the frame pointer, we need to set the
+     appropriate regs_invalidated_by_call bit, even if it's already
+     set in fixed_regs.  */
+  if (i != STACK_POINTER_REGNUM)
+    SET_HARD_REG_BIT (regs_invalidated_by_call, i);
+
   /* If already fixed, nothing else to do.  */
   if (fixed_regs[i])
     return;
@@ -788,7 +799,6 @@ globalize_reg (int i)
   SET_HARD_REG_BIT (fixed_reg_set, i);
   SET_HARD_REG_BIT (call_used_reg_set, i);
   SET_HARD_REG_BIT (call_fixed_reg_set, i);
-  SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 }
 
 /* Now the data and code for the `regclass' pass, which happens

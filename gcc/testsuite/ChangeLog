@@ -1,3 +1,8 @@
+2004-09-24  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/9771
+	* gcc.dg/pr9771-1.c: New test case.
+
 2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16566
