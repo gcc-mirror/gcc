@@ -14332,6 +14332,19 @@ pop_cp_function_context (f)
   f->language = 0;
 }
 
+/* Mark I for GC.  */
+
+static void
+mark_inlined_fns (i)
+     struct lang_decl_inlined_fns *i;
+{
+  int n;
+
+  for (n = i->num_fns - 1; n >= 0; n--)
+    ggc_mark_tree (i->fns [n]);
+  ggc_set_mark (i);
+}
+
 /* Mark P for GC.  */
 
 static void
@@ -14418,6 +14431,8 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->context);
 	      ggc_mark_tree (ld->cloned_function);
+	      if (ld->inlined_fns)
+		mark_inlined_fns (ld->inlined_fns);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL

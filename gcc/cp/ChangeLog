@@ -1,3 +1,19 @@
+2001-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct lang_decl_inlined_fns): New.
+	(struct lang_decls): Add inlined_fns.
+	(DECL_INLINED_FNS): New macro.
+	* optimize.c (struct inline_data): Add inlined_fns.
+	(declare_return_variable): Use VARRAY_ACTIVE_SIZE macro.
+	(inlinable_function_p): Likewise, fix typo in comment,
+	function is not inlinable if it already inlined function currently
+	being optimized.
+	(expand_call_inline): Add fn to inlined_fns if neccessary.
+	(optimize_function): Initialize inlined_fns.
+	Save inlined_fns into DECL_INLINED_FNS after expanding inlines.
+	* decl.c (mark_inlined_fns): New function.
+	(lang_mark_tree): Call it.
+
 2001-02-19  Mark Mitchell  <mark@codesourcery.com>
 
         * decl2.c (set_decl_namespace): Allow explicit instantiations in

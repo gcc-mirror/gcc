@@ -1,3 +1,7 @@
+2001-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/inline20.C: New test.
+
 2001-02-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* g++.old-deja/g++.other/lookup22.C: New test.
