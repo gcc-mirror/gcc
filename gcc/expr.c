@@ -6936,10 +6936,17 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
       {
+	tree parm;
 	tree fntype = TREE_TYPE (current_function_decl);
+	tree fnargs = DECL_ARGUMENTS (current_function_decl);
 	if (!(TYPE_ARG_TYPES (fntype) != 0
 	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node)))
+		  != void_type_node))
+	    && !(fnargs
+		 && (parm = tree_last (fnargs)) != 0
+		 && DECL_NAME (parm)
+		 && (! strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
+			       "__builtin_va_alist"))))
 	  {
 	    error ("`va_start' used in function with fixed args");
 	    return const0_rtx;
