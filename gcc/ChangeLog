@@ -1,5 +1,13 @@
 2004-05-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* pretty-print.c (pp_base_format_text): Support %< instead of %`
+	and %> as well as %'.
+	* c-format.c: Use %< and %>.
+	(gcc_diag_char_table, gcc_cdiag_char_table,
+	gcc_cxxdiag_char_table): Update.
+
+2004-05-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-typeck.c (common_type): Correct comment.
 
 2004-05-29  Peter Barada  <peter@the-baradas.com>

@@ -179,8 +179,10 @@ pp_base_indent (pretty_printer *pp)
    %p: pointer.
    %m: strerror(text->err_no) - does not consume a value from args_ptr.
    %%: '%'.
-   %`: opening quote.
-   %': closing quote.
+   %<: opening quote.
+   %>: closing quote.
+   %': apostrophe (should only be used in untranslated messages;
+       translations should use appropriate punctuation directly).
    %.*s: a substring the length of which is specified by an integer.
    %H: location_t.
    Flag 'q': quote formatted text (must come immediately after '%').  */
@@ -292,10 +294,11 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 	  pp_character (pp, '%');
 	  break;
 
-	case '`':
+	case '<':
 	  pp_string (pp, open_quote);
 	  break;
 
+	case '>':
 	case '\'':
 	  pp_string (pp, close_quote);
 	  break;
