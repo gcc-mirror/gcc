@@ -100,6 +100,9 @@ CXXABI_1 {
     __gxx_personality_v0;
     __dynamic_cast;
 
+    # __gnu_cxx::_verbose_terminate_handler()
+    _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
+
   local:
     *;
 };

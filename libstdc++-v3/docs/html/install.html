@@ -75,6 +75,13 @@
       well as releases) of binutils
       <a href="ftp://sources.redhat.com/pub/binutils">here</a>.
    </p>
+
+   <p>If you are using a 3.1-series libstdc++ snapshot, then the
+      requirements are slightly more stringent:  the compiler sources must
+      also be 3.1 or later (for both technical and licensing reasons), and
+      your binutils must be 2.11.95 or later if you want to use symbol
+      versioning in shared libraries.
+   </p>
  
  <!-- Commented until some system-specific requirements appear.
    <p>Finally, a few system-specific requirements:
@@ -145,7 +152,8 @@
 <h2><a name="config">Configuring</a></h2>
    <p>If you have never done this before, you should read the basic
       <a href="http://gcc.gnu.org/install/">GCC Installation
-      Instructions</a> first.  Read <em>all of them</em>.  Twice.
+      Instructions</a> first.  Read <em>all of them</em>.
+      <strong>Twice.</strong>
    </p>
    <p>When building libstdc++-v3 you'll have to configure
       the entire <em>gccsrcdir</em> directory.  The full list of libstdc++-v3
@@ -214,6 +222,10 @@
       <em>cpu-vendor-os</em>/bits/
       ext/</pre>
    </p>
+   <p>If you used the version-specific-libs configure option, then most of
+      the headers and library files will be moved under
+      <code>lib/gcc-lib/</code> instead.
+   </p>
    <p>You can check the status of the build without installing it using
       <pre>
    make check</pre>
@@ -254,7 +266,7 @@
   <li>GNU ld (default on Linux):<code>  -Wl,--rpath,<em>destdir</em>/lib</code>
   <li>IRIX ld:<code>  -Wl,-rpath,<em>destdir</em>/lib</code>
   <li>Solaris ld:<code>  -Wl,-R<em>destdir</em>/lib</code>
-  <li>More...?
+  <li>More...?  Let us know!
               </ul>
           </ul>
        </p>

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -71,7 +71,6 @@ BASIC_FILE_H = @BASIC_FILE_H@
 BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
-CC = @CC@
 CCODECVT_C = @CCODECVT_C@
 CCODECVT_H = @CCODECVT_H@
 CLOCALE_H = @CLOCALE_H@
@@ -154,6 +153,7 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CC = @CC@
 CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
@@ -195,10 +195,12 @@ headers = \
 
 
 sources = \
+	cxa_demangle.c \
 	del_op.cc \
 	del_opnt.cc \
 	del_opv.cc \
 	del_opvnt.cc \
+	dyn-string.c \
 	eh_alloc.cc \
 	eh_aux_runtime.cc \
 	eh_catch.cc \
@@ -226,6 +228,12 @@ glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
 
 LIBSUPCXX_CXXFLAGS = $(LIBSUPCXX_PICFLAGS)
+
+# LTCOMPILE is copied from LTCXXCOMPILE below.
+LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared \
+               --mode=compile $(CC) $(INCLUDES) \
+               $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -287,21 +295,25 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libsupc__convenience_la_LDFLAGS = 
 libsupc__convenience_la_LIBADD = 
-libsupc__convenience_la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo \
-del_opvnt.lo eh_alloc.lo eh_aux_runtime.lo eh_catch.lo eh_exception.lo \
-eh_globals.lo eh_personality.lo eh_terminate.lo eh_throw.lo eh_type.lo \
-new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo pure.lo \
-tinfo.lo tinfo2.lo vec.lo
+libsupc__convenience_la_OBJECTS =  cxa_demangle.lo del_op.lo del_opnt.lo \
+del_opv.lo del_opvnt.lo dyn-string.lo eh_alloc.lo eh_aux_runtime.lo \
+eh_catch.lo eh_exception.lo eh_globals.lo eh_personality.lo \
+eh_terminate.lo eh_throw.lo eh_type.lo new_handler.lo new_op.lo \
+new_opnt.lo new_opv.lo new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 libsupc___la_LDFLAGS = 
 libsupc___la_LIBADD = 
-libsupc___la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo del_opvnt.lo \
-eh_alloc.lo eh_aux_runtime.lo eh_catch.lo eh_exception.lo eh_globals.lo \
-eh_personality.lo eh_terminate.lo eh_throw.lo eh_type.lo new_handler.lo \
-new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo pure.lo tinfo.lo \
-tinfo2.lo vec.lo
+libsupc___la_OBJECTS =  cxa_demangle.lo del_op.lo del_opnt.lo del_opv.lo \
+del_opvnt.lo dyn-string.lo eh_alloc.lo eh_aux_runtime.lo eh_catch.lo \
+eh_exception.lo eh_globals.lo eh_personality.lo eh_terminate.lo \
+eh_throw.lo eh_type.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
+new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 HEADERS =  $(glibcppinstall_HEADERS)
 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -546,6 +558,22 @@ install uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+# Use special rules for pulling things out of libiberty.
+cxa_demangle.c:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libiberty/cp-demangle.c $@
+cxa_demangle.lo: cxa_demangle.c
+	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+cxa_demangle.o: cxa_demangle.c
+	$(COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+dyn-string.c:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libiberty/dyn-string.c $@
+dyn-string.lo: dyn-string.c
+	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+dyn-string.o: dyn-string.c
+	$(COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 
 # We have to have rules modified from the default to counteract SUN make
 # prepending each of $(glibcppinstall_HEADERS) with VPATH below.

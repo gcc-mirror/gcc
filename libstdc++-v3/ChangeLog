@@ -1,3 +1,16 @@
+2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/linker-map.gnu:  Export __verbose_terminate_handler.
+	* libsupc++/Makefile.am (sources):  Add cxa_demangle.c, dyn-string.c.
+	Make new LTCOMPILE variable, use it in new special build rules.
+	* libsupc++/Makefile.in:  Rebuild.
+	* src/vterminate.cc (__verbose_terminate_handler):  Enable use of
+	runtime __cxa_demangle.
+
+	* docs/html/install.html:  Update prereqs and instructions.
+	* docs/html/19_diagnostics/howto.html:  Bring naming for
+	verbose_terminate_handler into line with reality.
+
 2002-04-01  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	libstdc++/3129
