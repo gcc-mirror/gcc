@@ -93,8 +93,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
-  func_ptr *__CTOR_LIST__ = __builtin_alloca (0), *p;			\
-  for (p = __CTOR_LIST__; *p; p += 4)					\
+  func_ptr *__CTOR_LIST__ = __builtin_alloca (1), *p;			\
+  for (p = __CTOR_LIST__ + 4; *p; p += 4)				\
     (*p) ();								\
 } while (0)
 
