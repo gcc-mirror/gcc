@@ -1,3 +1,7 @@
+2002-07-24  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* g++.dg/ext/alignof1.C (main): Return 0 for success.
+
 2002-07-24  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/memset-3.c: New testcase.
