@@ -20,38 +20,40 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Define the type of a set of hard registers.  */
 
-/* If HARD_REG_SET is a macro, its definition is a scalar type
-   that has enough bits for all the target machine's hard registers.
-   Otherwise, it is a typedef for a suitable array of HOST_WIDE_INTs,
-   and HARD_REG_SET_LONGS is how many.
+/* HARD_REG_ELT_TYPE is a typedef of the unsigned integral type which
+   will be used for hard reg sets, either alone or in an array.
+
+   If HARD_REG_SET is a macro, its definition is HARD_REG_ELT_TYPE,
+   and it has enough bits to represent all the target machine's hard
+   registers.  Otherwise, it is a typedef for a suitably sized array
+   of HARD_REG_ELT_TYPEs.  HARD_REG_SET_LONGS is defined as how many.
 
    Note that lots of code assumes that the first part of a regset is
    the same format as a HARD_REG_SET.  To help make sure this is true,
    we only try the widest integer mode (HOST_WIDE_INT) instead of all the
-   smaller types.  This only loses if there are a very few registers and
-   then only in the few cases where we have an array of HARD_REG_SETs,
-   so it isn't worth making this as complex as it used to be.  */
+   smaller types.  This approach loses only if there are a very few
+   registers and then only in the few cases where we have an array of
+   HARD_REG_SETs, so it needn't be as complex as it used to be.  */
+
+typedef unsigned HOST_WIDE_INT HARD_REG_ELT_TYPE;
 
 #if FIRST_PSEUDO_REGISTER <= HOST_BITS_PER_WIDE_INT
-#define HARD_REG_SET HOST_WIDE_INT
+
+#define HARD_REG_SET HARD_REG_ELT_TYPE
 
 #else
 
 #define HARD_REG_SET_LONGS \
  ((FIRST_PSEUDO_REGISTER + HOST_BITS_PER_WIDE_INT - 1)	\
   / HOST_BITS_PER_WIDE_INT)
-typedef HOST_WIDE_INT HARD_REG_SET[HARD_REG_SET_LONGS];
+typedef HARD_REG_ELT_TYPE HARD_REG_SET[HARD_REG_SET_LONGS];
 
 #endif
 
-/* HARD_CONST is used to cast a constant to a HARD_REG_SET
-   if that is a scalar wider than an integer.  */
+/* HARD_CONST is used to cast a constant to the appropriate type
+   for use with a HARD_REG_SET.  */
 
-#ifdef HARD_REG_SET
-#define HARD_CONST(X) ((HARD_REG_SET) (X))
-#else
-#define HARD_CONST(X) (X)
-#endif
+#define HARD_CONST(X) ((HARD_REG_ELT_TYPE) (X))
 
 /* Define macros SET_HARD_REG_BIT, CLEAR_HARD_REG_BIT and TEST_HARD_REG_BIT
    to set, clear or test one bit in a hard reg set of type HARD_REG_SET.
@@ -90,7 +92,7 @@ typedef HOST_WIDE_INT HARD_REG_SET[HARD_REG_SET_LONGS];
  ((SET) & (HARD_CONST (1) << (BIT)))
 
 #define CLEAR_HARD_REG_SET(TO) ((TO) = HARD_CONST (0))
-#define SET_HARD_REG_SET(TO) ((TO) = HARD_CONST (-1))
+#define SET_HARD_REG_SET(TO) ((TO) = ~ HARD_CONST (0))
 
 #define COPY_HARD_REG_SET(TO, FROM) ((TO) = (FROM))
 #define COMPL_HARD_REG_SET(TO, FROM) ((TO) = ~(FROM))
@@ -103,82 +105,83 @@ typedef HOST_WIDE_INT HARD_REG_SET[HARD_REG_SET_LONGS];
 #define GO_IF_HARD_REG_SUBSET(X,Y,TO) if (HARD_CONST (0) == ((X) & ~(Y))) goto TO
 
 #define GO_IF_HARD_REG_EQUAL(X,Y,TO) if ((X) == (Y)) goto TO
+
 #else
 
 #define UHOST_BITS_PER_WIDE_INT ((unsigned) HOST_BITS_PER_WIDE_INT)
 
 #define SET_HARD_REG_BIT(SET, BIT)		\
   ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-   |= (HOST_WIDE_INT) 1 << ((BIT) % UHOST_BITS_PER_WIDE_INT))
+   |= HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT))
 
 #define CLEAR_HARD_REG_BIT(SET, BIT)		\
   ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-   &= ~((HOST_WIDE_INT) 1 << ((BIT) % UHOST_BITS_PER_WIDE_INT)))
+   &= ~(HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT)))
 
 #define TEST_HARD_REG_BIT(SET, BIT)		\
   ((SET)[(BIT) / UHOST_BITS_PER_WIDE_INT]	\
-   & ((HOST_WIDE_INT) 1 << ((BIT) % UHOST_BITS_PER_WIDE_INT)))
+   & (HARD_CONST (1) << ((BIT) % UHOST_BITS_PER_WIDE_INT)))
 
 #define CLEAR_HARD_REG_SET(TO)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO);			\
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO);		\
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = 0; } while (0)
 
 #define SET_HARD_REG_SET(TO)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO);			\
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO);		\
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = -1; } while (0)
 
 #define COPY_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = *scan_fp_++; } while (0)
 
 #define COMPL_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ = ~ *scan_fp_++; } while (0)
 
 #define AND_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ &= *scan_fp_++; } while (0)
 
 #define AND_COMPL_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ &= ~ *scan_fp_++; } while (0)
 
 #define IOR_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ |= *scan_fp_++; } while (0)
 
 #define IOR_COMPL_HARD_REG_SET(TO, FROM)  \
-do { register HOST_WIDE_INT *scan_tp_ = (TO), *scan_fp_ = (FROM); \
+do { register HARD_REG_ELT_TYPE *scan_tp_ = (TO), *scan_fp_ = (FROM); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
        *scan_tp_++ |= ~ *scan_fp_++; } while (0)
 
 #define GO_IF_HARD_REG_SUBSET(X,Y,TO)  \
-do { register HOST_WIDE_INT *scan_xp_ = (X), *scan_yp_ = (Y);	\
+do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       if (0 != (*scan_xp_++ & ~*scan_yp_++)) break;		\
+       if (0 != (*scan_xp_++ & ~ *scan_yp_++)) break;		\
      if (i == HARD_REG_SET_LONGS) goto TO; } while (0)
 
 #define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
-do { register HOST_WIDE_INT *scan_xp_ = (X), *scan_yp_ = (Y);	\
+do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
      register int i;						\
      for (i = 0; i < HARD_REG_SET_LONGS; i++)			\
-       if (*scan_xp_++ != ~*scan_yp_++)) break;			\
+       if (*scan_xp_++ != ~ *scan_yp_++)) break;		\
      if (i == HARD_REG_SET_LONGS) goto TO; } while (0)
 
 #endif
