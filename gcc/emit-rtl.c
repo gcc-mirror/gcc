@@ -1584,9 +1584,13 @@ change_address (memref, mode, addr)
   if (addr == 0)
     addr = XEXP (memref, 0);
 
-  /* If reload is in progress or has completed, ADDR must be valid.
-     Otherwise, we can call memory_address to make it valid.  */
-  if (reload_completed || reload_in_progress)
+  /* If reload is in progress, don't check for validity of the address since we
+     assume the caller knows what they are doing.  If reload has completed, the
+     address must be valid.  Otherwise, we call memory_address to make it
+     valid.  */
+  if (reload_in_progress)
+    ;
+  else if (reload_completed)
     {
       if (! memory_address_p (mode, addr))
 	abort ();

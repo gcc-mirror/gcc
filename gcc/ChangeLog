@@ -1,3 +1,8 @@
+Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (change_address): Don't abort if invalid address while
+	reload is in progress.
+
 2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* c-lex.c (cb_file_change): Pass line number to
@@ -14,14 +19,16 @@
 	* toplev.h (debug_start_source_file): Add line number to
 	parameters.
 	
-	* dwarf2out.h (dwarf2out_start_source_file): Add line number to parameters.
+	* dwarf2out.h (dwarf2out_start_source_file): Add line number to
+	parameters.
 
 	* dwarf2out.c (dwarf2out_start_source_file): Add line number to
 	parameters.
 	Output debug_macinfo data for starting file if requested. 
 	(dwarf2out_end_source_file): Output debug_macinfo data for ending
 	file if requested.
-	(dwarf2out_define): Output debug_macinfo data for defining a macro if requested.
+	(dwarf2out_define): Output debug_macinfo data for defining a macro
+	if requested.
 	(dwarf2out_undef): Output debug_macinfo data for undefining a
 	macro if requested.
 	(DEBUG_MACINFO_SECTION): New. DWARF2 macro info section name.
