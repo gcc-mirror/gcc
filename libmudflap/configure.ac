@@ -61,10 +61,11 @@ enable_shared=no])
 
 AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h dirent.h pwd.h grp.h \
   netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h ctype.h mntent.h \
-  sys/socket.h netinet/in.h arpa/inet.h dlfcn.h)
+  sys/socket.h netinet/in.h arpa/inet.h dlfcn.h sys/mman.h)
 
 AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
-AC_CHECK_FUNCS(fopen64 fseeko64 ftello64 stat64)
+AC_CHECK_FUNCS(fopen64 fseeko64 ftello64 stat64 freopen64)
+AC_CHECK_FUNCS(setbuf setbuffer setlinebuf setvbuf)
 AC_CHECK_FUNCS(strnlen memrchr strncpy memmem sethostname)
 AC_CHECK_FUNCS(__ctype_b_loc __ctype_tolower_loc __ctype_toupper_loc)
 AC_CHECK_FUNCS(getlogin cuserid getpwnam getpwuid getpwent getgrnam getgrgid getgrent)
@@ -72,7 +73,7 @@ AC_CHECK_FUNCS(getlogin_r getpwnam_r getpwuid_r getgrnam_r getgrgid_r)
 AC_CHECK_FUNCS(getservent getservbyname getservbyport getaddrinfo gai_strerror)
 AC_CHECK_FUNCS(getprotoent getprotobyname getprotobynumber)
 AC_CHECK_FUNCS(getmntent setmntent addmntent)
-AC_CHECK_FUNCS(inet_ntoa)
+AC_CHECK_FUNCS(inet_ntoa mmap munmap)
 
 AC_TRY_COMPILE([#include <sys/types.h>
 #include <sys/ipc.h>

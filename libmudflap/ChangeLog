@@ -1,3 +1,21 @@
+2004-10-12  Frank Ch. Eigler  <fche@redhat.com>
+
+	* configure.ac: Check for more headers, functions.
+	* mf-hooks2.c (mkbuffer, unmkbuffer): New helper functions for
+	tracking overridden FILE buffers.
+	(fopen, setvbuf): New/revised hook functions for buffer overriding.
+	(setbuf,setlinebuf,fdopen,freopen,fopen64,freopen64,fclose): Ditto.
+	(fflush): Accept given NULL stream (means "all streams").
+	* mf-runtime.h.in: 
+	* mf-runtime.c (__mfu_check): Accept accesses that span adjacent
+	HEAP/GUESS objects.
+	(LOOKUP_CACHE_SIZE_MAX): Raise to 64K entries tentatively.
+	(__mf_adapt_cache): Use them all.
+	* testsuite/libmudflap.c/pass35-frag.c: Update warning message.
+	* testsuite/libmudflap.c++/ctors.exp: Ditto.
+	* testsuite/libmudflap.c/{pass51,pass52}-frag.c: New tests.
+	* configure, config.h.in: Regenerated.
+
 2004-10-05  Frank Ch. Eigler  <fche@redhat.com>
 
 	* configure.ac: Checking for sys/socket.h once is enough.
