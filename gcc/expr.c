@@ -606,9 +606,9 @@ convert_move (rtx to, rtx from, int unsignedp)
       rtx value, insns;
       convert_optab tab;
 
-      if (GET_MODE_BITSIZE (from_mode) < GET_MODE_BITSIZE (to_mode))
+      if (GET_MODE_PRECISION (from_mode) < GET_MODE_PRECISION (to_mode))
 	tab = sext_optab;
-      else if (GET_MODE_BITSIZE (from_mode) > GET_MODE_BITSIZE (to_mode))
+      else if (GET_MODE_PRECISION (from_mode) > GET_MODE_PRECISION (to_mode))
 	tab = trunc_optab;
       else
 	abort ();
