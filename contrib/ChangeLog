@@ -1,3 +1,8 @@
+2000-11-08  Jeff Law  <law@redhat.com>,
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* snapshot: New file.
+
 2000-11-08  Jeffrey Oldham  <oldham@oz.codesourcery.com>
 
 	* gcc_build (bootstrap_gcc): New function.
