@@ -377,7 +377,7 @@
 
 (define_insn ""
   [(set (reg:CC 0)
-	(compare:CC (match_operand:SI 0 "register_operand" "rJ")
+	(compare:CC (match_operand:SI 0 "register_operand" "r")
 		    (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "cmp %r0,%1"
