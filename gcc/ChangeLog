@@ -1,3 +1,12 @@
+2002-05-26  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Makefile.in (INSTALL_HEADERS): Add 'install-mkheaders'.
+	(mkheaders): New rule.
+	(install-mkheaders): New rule.
+	* configure.in (all_outputs): Add mkheaders.
+	* configure: Regenerate.
+	* mkheaders.in: New file.
+
 2002-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* cse.c (fold_rtx): Don't optimize if SUBREG changes mode class.

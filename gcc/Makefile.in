@@ -434,7 +434,7 @@ FLOAT_H=@float_h_file@
 LIBCONVERT =
 
 # Control whether header files are installed.
-INSTALL_HEADERS=install-headers
+INSTALL_HEADERS=install-headers install-mkheaders
 
 # Control whether Info documentation is built and installed.
 BUILD_INFO = @BUILD_INFO@
@@ -877,6 +877,9 @@ gccbug:	$(srcdir)/gccbug.in
 
 mklibgcc: $(srcdir)/mklibgcc.in
 	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status
+
+mkheaders: $(srcdir)/mkheaders.in
+	CONFIG_FILES=mkheaders CONFIG_HEADERS= ./config.status
 
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
@@ -2839,6 +2842,47 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # Install the include directory using cp.
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 	cp -p -r include $(libsubdir)
+
+itoolsdir = $(libsubdir)/install-tools
+# Don't install the headers.  Instead, install appropriate scripts
+# and supporting files for fixincludes to be run later.
+install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
+    mkheaders xlimits.h
+	-rm -rf $(itoolsdir)
+	$(SHELL) $(srcdir)/mkinstalldirs $(itoolsdir)/include
+	for file in $(USER_H); do \
+	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	  $(INSTALL_DATA) $$file \
+	    $(itoolsdir)/include/$$realfile ; \
+	done
+	if [ x$(FLOAT_H) != xMakefile.in ]; then \
+	  $(INSTALL_DATA) $(srcdir)/config/$(FLOAT_H) \
+	     $(itoolsdir)/include/float.h ; \
+	else :; fi
+	$(INSTALL_DATA) xlimits.h $(itoolsdir)/include/limits.h
+	if [ x$(STMP_FIXINC) != x ] ; then \
+	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
+	    $(itoolsdir)/include/README ; \
+	  $(INSTALL_PROGRAM) fixinc.sh $(itoolsdir)/fixinc.sh ; \
+	  $(INSTALL_PROGRAM) fixinc/fixincl $(itoolsdir)/fixincl ; \
+	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h $(itoolsdir)/gsyslimits.h ; \
+	else :; fi
+	if [ x$(STMP_FIXPROTO) != x ] ; then \
+	  $(INSTALL_PROGRAM) $(srcdir)/mkinstalldirs \
+		$(itoolsdir)/mkinstalldirs ; \
+	  $(INSTALL_PROGRAM) $(srcdir)/fixproto $(itoolsdir)/fixproto ; \
+	  $(INSTALL_PROGRAM) fix-header$(build_exeext) \
+		$(itoolsdir)/fix-header$(build_exeext) ; \
+	else :; fi
+	$(INSTALL_PROGRAM) mkheaders $(itoolsdir)/mkheaders
+	echo 'SYSTEM_HEADER_DIR="$(SYSTEM_HEADER_DIR)"' \
+		> $(itoolsdir)/mkheaders.conf
+	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \
+		>> $(itoolsdir)/mkheaders.conf
+	echo 'FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"' \
+		>> $(itoolsdir)/mkheaders.conf
+	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' >> $(itoolsdir)/mkheaders.conf
+	echo 'STMP_FIXINC="$(STMP_FIXINC)"' >> $(itoolsdir)/mkheaders.conf
 
 # Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs
