@@ -40,13 +40,13 @@ typedef diagnostic_starter_fn diagnostic_finalizer_fn;
    everything goes well. */
 typedef int (*printer_fn) PARAMS ((output_buffer *));
 
-/* This data structure encapulates an output_buffer's state.  */
+/* This data structure encapsulates an output_buffer's state.  */
 typedef struct
 {
   /* The prefix for each new line.   */
   const char *prefix;
   /* The real upper bound of number of characters per line, taking into
-     accompt the case of a very very looong prefix.  */  
+     account the case of a very very looong prefix.  */  
   int maximum_length;
   /* The ideal upper bound of number of characters per line, as suggested
      by front-end. */  
@@ -96,7 +96,7 @@ struct output_buffer
 #define output_message_text(BUFFER) \
    ((const char *) obstack_base (&(BUFFER)->obstack))
 
-/* This data structure bundles altogether any information relevent to
+/* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 struct diagnostic_context
 {
@@ -104,7 +104,7 @@ struct diagnostic_context
   const char *message;
 
   /* A pointer to a variable list of the arguments necessary for the
-     purpose of  message formatting.  */
+     purpose of message formatting.  */
   va_list *args_ptr;
 
   /* The name of the source file involved in the diiagnostic.  */     
@@ -113,11 +113,11 @@ struct diagnostic_context
   /* The line-location in the source file.  */
   int line;
 
-  /* Is it message a warning?  */
+  /* Is this message a warning?  */
   int warn;
 
   /* This function is called before any message is printed out.  It is
-     respondible for preparing message prefix and such.  For example, it
+     responsible for preparing message prefix and such.  For example, it
      might say:
      In file included from "/usr/local/include/curses.h:5:
                       from "/home/gdr/src/nifty_printer.h:56:
@@ -160,7 +160,7 @@ extern int diagnostic_message_length_per_line;
 
 /* This output buffer is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
-   and simillar functions.  In general, such usage should be
+   and similar functions.  In general, such usage should be
    avoided.  This global buffer will go away, once all such usage
    has been removed.  */
 extern output_buffer *diagnostic_buffer;

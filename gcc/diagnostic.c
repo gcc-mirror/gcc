@@ -147,7 +147,7 @@ diagnostic_finalizer_fn lang_diagnostic_finalizer;
 int diagnostic_message_length_per_line;
 
 /* Used to control every diagnostic message formatting.  Front-ends should
-   call set_message_prefixing_rule to set up their politics.  */
+   call set_message_prefixing_rule to set up their policies.  */
 static int current_prefixing_rule;
 
 /* Prevent recursion into the error handler.  */
@@ -373,7 +373,7 @@ output_clear (buffer)
   clear_diagnostic_info (buffer);
 }
 
-/* Finishes to construct a NULL-terminated character string representing
+/* Finishes constructing a NULL-terminated character string representing
    the BUFFERed message.  */
 
 const char *
@@ -636,7 +636,7 @@ maybe_wrap_text (buffer, start, end)
 }
 
 
-/* Append a STRING to BUFFER; the STRING maybe be line-wrapped if in
+/* Append a STRING to BUFFER; the STRING might be line-wrapped if in
    appropriate mode.  */
 
 void
@@ -661,7 +661,7 @@ output_to_stream (buffer, file)
 
 /* Format a message pointed to by output_buffer_text_cursor (BUFFER) using
    output_buffer_format_args (BUFFER) as appropriate.  The following format
-   specifiers are recognized as  being language independent:
+   specifiers are recognized as being language independent:
    %d, %i: (signed) integer in base ten.
    %u: unsigned integer in base ten.
    %o: unsigned integer in base eight.
@@ -1696,7 +1696,7 @@ See %s for instructions.\n",
   exit (FATAL_EXIT_CODE);
 }
 
-/* Setup DC for reporting a diagnostic MESSAGE (an error of a WARNING),
+/* Setup DC for reporting a diagnostic MESSAGE (an error or a WARNING),
    using arguments pointed to by ARGS_PTR, issued at a location specified
    by FILE and LINE.  */
 void
