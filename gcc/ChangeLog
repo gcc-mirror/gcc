@@ -1,3 +1,8 @@
+2004-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/mips/iris5.h (current_section_flags):  Add
+	in_unlikely_executed_text and default case.
+
 2004-04-11  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* bb-reorder.c (fix_crossing_conditional_branches): Fix bootstrap
