@@ -43,9 +43,9 @@ void __objc_init_selector_tables (void)
   __objc_selector_array = sarray_new (SELECTOR_HASH_SIZE, 0);
   __objc_selector_names = sarray_new (SELECTOR_HASH_SIZE, 0);
   __objc_selector_hash
-    = hash_new (SELECTOR_HASH_SIZE,
-		(hash_func_type) hash_string,
-		(compare_func_type) compare_strings);
+    = objc_hash_new (SELECTOR_HASH_SIZE,
+		     (hash_func_type) objc_hash_string,
+		     (compare_func_type) objc_compare_strings);
 }  
 
 /* This routine is given a class and records all of the methods in its class
@@ -195,7 +195,7 @@ sel_get_typed_uid (const char *name, const char *types)
 
   objc_mutex_lock (__objc_runtime_mutex);
 
-  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (i == 0)
     {
       objc_mutex_unlock (__objc_runtime_mutex);
@@ -235,7 +235,7 @@ sel_get_any_typed_uid (const char *name)
 
   objc_mutex_lock (__objc_runtime_mutex);
 
-  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (i == 0)
     {
       objc_mutex_unlock (__objc_runtime_mutex);
@@ -266,7 +266,7 @@ sel_get_any_uid (const char *name)
 
   objc_mutex_lock (__objc_runtime_mutex);
 
-  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (soffset_decode (i) == 0)
     {
       objc_mutex_unlock (__objc_runtime_mutex);
@@ -368,7 +368,7 @@ __sel_register_typed_name (const char *name, const char *types,
   sidx i;
   struct objc_list *l;
 
-  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
   if (soffset_decode (i) != 0)
     {
       for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
@@ -453,7 +453,7 @@ __sel_register_typed_name (const char *name, const char *types,
     sarray_at_put_safe (__objc_selector_names, i, (void *) new_name);
     sarray_at_put_safe (__objc_selector_array, i, (void *) l);
     if (is_new)
-      hash_add (&__objc_selector_hash, (void *) new_name, (void *) i);
+      objc_hash_add (&__objc_selector_hash, (void *) new_name, (void *) i);
   }
 
   sarray_realloc (__objc_uninstalled_dtable, __objc_selector_max_index + 1);
