@@ -64,6 +64,7 @@ if [ "${shared}" = "yes" ]; then
     i[3456]86-*-*)	frags=../../config/mh-x86pic ;;
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	frags=../../config/mh-ppcpic ;;
+    sparc*-*-*)		frags=../../config/mh-sparcpic ;;
     *-*-*) 		frags=../../config/mh-${target_cpu}pic ;;
   esac
   case "${target}" in

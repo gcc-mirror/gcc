@@ -1,3 +1,7 @@
+2000-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: Use mh-sparcpic for sparc*-*-*.
+
 2000-04-24  Magnus Fromreide  <magfr@lysator.liu.se>
 
 	* sstream: New file.
