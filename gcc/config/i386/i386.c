@@ -8866,8 +8866,8 @@ ix86_expand_int_movcc (operands)
 				 ix86_compare_op1, VOIDmode, 0, 1);
 
 	  nops = 0;
-	  /* On x86_64 the lea instruction operates on Pmode, so we need to get arithmetics
-	     done in proper mode to match.  */
+	  /* On x86_64 the lea instruction operates on Pmode, so we need
+	     to get arithmetics done in proper mode to match.  */
 	  if (diff == 1)
 	    tmp = out;
 	  else
@@ -8931,10 +8931,10 @@ ix86_expand_int_movcc (operands)
 
       if (!optimize_size && !TARGET_CMOVE)
 	{
-	  if (ct == 0)
+	  if (cf == 0)
 	    {
-	      ct = cf;
-	      cf = 0;
+	      cf = ct;
+	      ct = 0;
 	      if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
 		/* We may be reversing unordered compare to normal compare,
 		   that is not valid in general (we may convert non-trapping
@@ -8983,18 +8983,16 @@ ix86_expand_int_movcc (operands)
 	      out = emit_store_flag (out, code, ix86_compare_op0,
 				     ix86_compare_op1, VOIDmode, 0, 1);
 
-	      out = expand_simple_binop (mode, PLUS,
-					 out, constm1_rtx,
+	      out = expand_simple_binop (mode, PLUS, out, constm1_rtx,
 					 out, 1, OPTAB_DIRECT);
 	    }
 
-	  out = expand_simple_binop (mode, AND,
-				     out,
+	  out = expand_simple_binop (mode, AND, out,
 				     gen_int_mode (cf - ct, mode),
 				     out, 1, OPTAB_DIRECT);
-	  out = expand_simple_binop (mode, PLUS,
-				     out, GEN_INT (ct),
-				     out, 1, OPTAB_DIRECT);
+	  if (ct)
+	    out = expand_simple_binop (mode, PLUS, out, GEN_INT (ct),
+				       out, 1, OPTAB_DIRECT);
 	  if (out != operands[0])
 	    emit_move_insn (operands[0], out);
 
