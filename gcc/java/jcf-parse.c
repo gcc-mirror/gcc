@@ -632,7 +632,7 @@ jcf_parse (JCF* jcf)
   if (CLASS_PARSED_P (current_class))
     {
       /* FIXME - where was first time */
-      fatal_error ("reading class %s for the second time from %s",
+      fatal_error (stderr, "READING CLASS %s for the second time from %s",
 		   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))),
 		   jcf->filename);
     }
@@ -1137,6 +1137,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    (get_identifier ("atable"), 
 	     atable_decl, atable_methods, atable_syms_decl, ptr_type_node);
 	}
+      emit_catch_table ();
     }
 
   write_resource_constructor ();

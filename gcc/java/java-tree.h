@@ -167,6 +167,9 @@ extern int compiling_from_source;
    otable. */
 #define atable_syms_decl java_global_trees [JTI_ATABLE_SYMS_DECL]
 
+#define ctable_decl java_global_trees [JTI_CTABLE_DECL]
+#define catch_classes java_global_trees [JTI_CATCH_CLASSES]
+
 extern int flag_emit_class_files;
 
 extern int flag_filelist_file;
@@ -424,6 +427,9 @@ enum java_tree_index
   JTI_ATABLE_DECL,
   JTI_ATABLE_SYMS_DECL,
 
+  JTI_CTABLE_DECL,
+  JTI_CATCH_CLASSES,
+
   JTI_PREDEF_FILENAMES,
 
   JTI_MAX
@@ -629,6 +635,8 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_SYMBOLS_ARRAY_TYPE]
 #define symbols_array_ptr_type \
   java_global_trees[JTI_SYMBOLS_ARRAY_PTR_TYPE]
+#define class_refs_decl \
+  Jjava_global_trees[TI_CLASS_REFS_DECL]
 
 #define end_params_node \
   java_global_trees[JTI_END_PARAMS_NODE]
@@ -1320,6 +1328,9 @@ extern void java_expand_body (tree);
 
 extern int get_symbol_table_index (tree, tree *);
 
+extern tree make_catch_class_record (tree, tree);
+extern void emit_catch_table (void);
+
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
@@ -1678,11 +1689,16 @@ extern tree *type_map;
 /* Append a field initializer to CONS for a field with the given VALUE.
    NAME is a char* string used for error checking;
    the initializer must be specified in order. */
-  #define PUSH_FIELD_VALUE(CONS, NAME, VALUE) {\
-    tree field = TREE_CHAIN(CONS);\
-    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), NAME) != 0) abort();\
-    CONSTRUCTOR_ELTS(CONS) = tree_cons (field, VALUE, CONSTRUCTOR_ELTS(CONS));\
-    TREE_CHAIN(CONS) = TREE_CHAIN (field); }
+#define PUSH_FIELD_VALUE(CONS, NAME, VALUE) 					\
+do										\
+{										\
+  tree field = TREE_CHAIN(CONS);						\
+  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), NAME) != 0) 		\
+    abort();									\
+  CONSTRUCTOR_ELTS(CONS) = tree_cons (field, VALUE, CONSTRUCTOR_ELTS(CONS));	\
+  TREE_CHAIN(CONS) = TREE_CHAIN (field); 					\
+}										\
+while (0)
 
 /* Finish creating a record CONSTRUCTOR CONS. */
 #define FINISH_RECORD_CONSTRUCTOR(CONS) \

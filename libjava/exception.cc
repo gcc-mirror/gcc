@@ -161,7 +161,7 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
   return p;
 }
 
-static jclass
+static void **
 get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
 {
   _Unwind_Ptr ptr;
@@ -169,7 +169,7 @@ get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
   i *= size_of_encoded_value (info->ttype_encoding);
   read_encoded_value (context, info->ttype_encoding, info->TType - i, &ptr);
 
-  return reinterpret_cast<jclass>(ptr);
+  return reinterpret_cast<void **>(ptr);
 }
 
 
@@ -336,23 +336,15 @@ PERSONALITY_FUNCTION (int version,
 	    {
 	      // Positive filter values are handlers.
 
-	      jclass catch_type = get_ttype_entry (context, &info, ar_filter);
+	      void **catch_word = get_ttype_entry (context, &info, ar_filter);
+	      jclass catch_type = (jclass)*catch_word;
 
-	      typedef struct {
-		int __attribute__ ((mode (pointer))) dummy; 
-		Utf8Const *utf8;
-	      } utf8_hdr;
-	      utf8_hdr *p = (utf8_hdr *)catch_type;
-	      if (p->dummy == -1)
-		{
-		  using namespace gnu::gcj::runtime;
-		  java::lang::Class *klass 
-		    = StackTrace::getClass ((gnu::gcj::RawData *)ip);
-		  java::lang::ClassLoader *loader 
-		    = klass ? klass->getClassLoaderInternal () : NULL;
-		  catch_type = _Jv_FindClass (p->utf8, loader);
-		}
-	      
+	      // FIXME: This line is a kludge to work around exception
+	      // handlers written in C++, which don't yet use indirect
+	      // dispatch.
+	      if (catch_type == *(void **)&java::lang::Class::class$)
+		catch_type = (jclass)catch_word;
+
 	      if (_Jv_IsInstanceOf (xh->value, catch_type))
 		{
 		  handler_switch_value = ar_filter;

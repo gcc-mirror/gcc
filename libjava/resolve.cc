@@ -575,6 +575,16 @@ _Jv_PrepareClass(jclass klass)
 	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
 	  _Jv_VerifyMethod (im);
 	  clz->methods[i].ncode = im->ncode ();
+
+	  // Resolve ctable entries pointing to this method.  See
+	  // _Jv_Defer_Resolution.
+	  void **code = (void **)imeth->deferred;
+	  while (code)
+	    {
+	      void **target = (void **)*code;
+	      *code = clz->methods[i].ncode;
+	      code = target;
+	    }
 	}
     }
 

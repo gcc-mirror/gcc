@@ -663,6 +663,23 @@ java_init_decl_processing (void)
       pushdecl (atable_syms_decl);
     }
   
+  {  
+    tree catch_class_type = make_node (RECORD_TYPE);
+    PUSH_FIELD (catch_class_type, field, "address", utf8const_ptr_type);
+    PUSH_FIELD (catch_class_type, field, "classname", ptr_type_node);
+    FINISH_RECORD (catch_class_type);
+    
+    ctable_decl 
+      = build_decl (VAR_DECL, get_identifier ("catch_classes"), 
+		    build_array_type 
+		    (catch_class_type, 0));
+    DECL_EXTERNAL (ctable_decl) = 1;
+    TREE_STATIC (ctable_decl) = 1;
+    TREE_READONLY (ctable_decl) = 1;
+    TREE_CONSTANT (ctable_decl) = 1;
+    pushdecl (ctable_decl);  
+  }
+
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
   /* This isn't exactly true, but it is what we have in the source.
      There is an unresolved issue here, which is whether the vtable
@@ -702,6 +719,7 @@ java_init_decl_processing (void)
   PUSH_FIELD (class_type_node, field, "atable", atable_ptr_type);
   PUSH_FIELD (class_type_node, field, "atable_syms", 
   	      symbols_array_ptr_type);
+  PUSH_FIELD (class_type_node, field, "catch_classes", ptr_type_node);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);

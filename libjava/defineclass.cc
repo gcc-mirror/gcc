@@ -1270,6 +1270,7 @@ void _Jv_ClassReader::handleCodeAttribute
   _Jv_InterpMethod *method = 
     (_Jv_InterpMethod*) (_Jv_AllocBytes (size));
 
+  method->deferred	 = NULL;
   method->max_stack      = max_stack;
   method->max_locals     = max_locals;
   method->code_length    = code_length;
@@ -1328,6 +1329,7 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	      m->self = method;
 	      m->function = NULL;
 	      def->interpreted_methods[i] = m;
+	      m->deferred = NULL;
 
 	      if ((method->accflags & Modifier::STATIC))
 		{

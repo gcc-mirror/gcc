@@ -1,3 +1,29 @@
+2003-10-22  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (initializeClass): Call
+	_Jv_linkExceptionClassTable.
+	(_Jv_LinkSymbolTable): Call )_Jv_ThrowNoSuchMethodError.  Call
+	_Jv_Defer_Resolution on a method whose ncode is NULL.
+	(_Jv_linkExceptionClassTable): New function.
+	(_Jv_LayoutVTableMethods): If superclass looks like a constant pool
+	entry, look it up.
+	* java/lang/Class.h (struct _Jv_CatchClass): New.
+	(_Jv_linkExceptionClassTable): New friend.
+	(_Jv_Defer_Resolution): New friend.
+	(class Class.catch_classes): New field.
+	* include/java-interp.h (Jv_Defer_Resolution): New method.
+	(_Jv_PrepareClass): Make a friend of _Jv_MethodBase.
+	(_Jv_MethodBase.deferred): New field.
+	(_Jv_Defer_Resolution): New function.
+	* resolve.cc (_Jv_PrepareClass): Resolve deferred handlers.
+	* exception.cc (get_ttype_entry): Change return type to void**.
+	(PERSONALITY_FUNCTION): Remove all code related to using a
+	Utf8Const* for a match type.  Change match type to be a pointer to
+	a pointer, rather than a pointer to a Class.
+	* defineclass.cc (handleCodeAttribute): Initialize
+	method->deferred.
+	(handleMethodsEnd): Likewise.
+
 2003-10-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* java/lang/natObject.cc (_Jv_ObjectCheckMonitor): Use

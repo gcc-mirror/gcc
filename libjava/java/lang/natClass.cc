@@ -12,6 +12,7 @@ details.  */
 
 #include <limits.h>
 #include <string.h>
+#include <stddef.h>
 
 #pragma implementation "Class.h"
 
@@ -56,7 +57,7 @@ details.  */
 #include <gnu/gcj/RawData.h>
 
 #include <java-cpool.h>
-
+#include <java-interp.h>
 
 
 using namespace gcj;
@@ -795,6 +796,8 @@ java::lang::Class::initializeClass (void)
 
   if (otable || atable)
     _Jv_LinkSymbolTable(this);
+
+  _Jv_linkExceptionClassTable (this);
 
   // Steps 8, 9, 10, 11.
   try
@@ -1541,14 +1544,18 @@ _Jv_LinkSymbolTable(jclass klass)
 
   for (index = 0; sym = klass->otable_syms[index], sym.name != NULL; index++)
     {
+      // FIXME: Why are we passing NULL as the class loader?
       jclass target_class = _Jv_FindClass (sym.class_name, NULL);
       _Jv_Method *meth = NULL;            
 
       const _Jv_Utf8Const *signature = sym.signature;
 
-      // FIXME: This should be special index for ThrowNoSuchMethod().
-      klass->otable->offsets[index] = -1;
-      
+      {
+	static char *bounce = (char *)_Jv_ThrowNoSuchMethodError;
+	ptrdiff_t offset = (char *)(klass->vtable) - bounce;
+	klass->otable->offsets[index] = offset;
+      }
+
       if (target_class == NULL)
 	continue;
 
@@ -1658,6 +1665,7 @@ _Jv_LinkSymbolTable(jclass klass)
 
   for (index = 0; sym = klass->atable_syms[index], sym.name != NULL; index++)
     {
+      // FIXME: Why are we passing NULL as the class loader?
       jclass target_class = _Jv_FindClass (sym.class_name, NULL);
       _Jv_Method *meth = NULL;            
       const _Jv_Utf8Const *signature = sym.signature;
@@ -1687,7 +1695,13 @@ _Jv_LinkSymbolTable(jclass klass)
 					  sym.signature);
 	  
 	  if (meth != NULL)
-	    klass->atable->addresses[index] = meth->ncode;
+	    {
+	      if (meth->ncode) // Maybe abstract?
+		klass->atable->addresses[index] = meth->ncode;
+	      else if (_Jv_IsInterpretedClass (target_class))
+		_Jv_Defer_Resolution (target_class, meth, 
+				      &klass->atable->addresses[index]);
+	    }
 	  else
 	    klass->atable->addresses[index] = (void *)_Jv_ThrowNoSuchMethodError;
 
@@ -1743,6 +1757,27 @@ _Jv_LinkSymbolTable(jclass klass)
     }
 }
 
+
+// For each catch_record in the list of caught classes, fill in the
+// address field.
+void 
+_Jv_linkExceptionClassTable (jclass self)
+{
+  struct _Jv_CatchClass *catch_record = self->catch_classes;
+  if (!catch_record || catch_record->classname)
+    return;  
+  catch_record++;
+  while (catch_record->classname)
+    {
+      jclass target_class = _Jv_FindClass (catch_record->classname,  
+					   self->getClassLoaderInternal ());
+      *catch_record->address = target_class;
+      catch_record++;
+    }
+  self->catch_classes->classname = (_Jv_Utf8Const *)-1;
+}
+  
+
 // Returns true if METH should get an entry in a VTable.
 static jboolean
 isVirtualMethod (_Jv_Method *meth)
@@ -1771,6 +1806,26 @@ _Jv_LayoutVTableMethods (jclass klass)
     return;
 
   jclass superclass = klass->superclass;
+
+  typedef unsigned int uaddr __attribute__ ((mode (pointer)));
+
+  // If superclass looks like a constant pool entry,
+  // resolve it now.
+  if ((uaddr)superclass < (uaddr)klass->constants.size)
+    {
+      if (klass->state < JV_STATE_LINKED)
+	{
+	  _Jv_Utf8Const *name = klass->constants.data[(int)superclass].utf8;
+	  superclass = _Jv_FindClass (name, klass->loader);
+	  if (! superclass)
+	    {
+	      jstring str = _Jv_NewStringUTF (name->data);
+	      throw new java::lang::NoClassDefFoundError (str);
+	    }
+	}
+      else
+	superclass = klass->constants.data[(int)superclass].clazz;
+    }
 
   if (superclass != NULL && superclass->vtable_method_count == -1)
     {
