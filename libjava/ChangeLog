@@ -1,5 +1,14 @@
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
+	* include/jvm.h (_Jv_VTable): Handle function descriptors for ia64;
+	add get_method, set_method, vtable_elt_size, new_vtable.
+	(_Jv_ArrayVTable): Derive from _Jv_VTable.
+	* resolve.cc (_Jv_PrepareClass): Use new _Jv_VTable methods.
+	* interpret.cc (_Jv_InterpMethod::continue1): Likewise.
+	* java/lang/natClassLoader.cc (_Jv_NewArrayClass): Likewise.
+
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
 	* no-threads.cc (_Jv_ThreadStart): Remove names of unused arguments.
 	* java/lang/mprec.c (lo0bits): Fix paren typo.
 
@@ -127,8 +136,8 @@
 
 2001-09-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-        * java/text/MessageFormat.java (setLocale): Don't catch ParseException
-        here, DecimalFormat.applyPattern() does not throw it.
+	* java/text/MessageFormat.java (setLocale): Don't catch ParseException
+	here, DecimalFormat.applyPattern() does not throw it.
 
 2001-09-04  Tom Tromey  <tromey@redhat.com>
 
@@ -510,8 +519,8 @@
 
 2001-08-21  Anthony Green  <green@redhat.com>
 
-        * java/lang/natClassLoader.cc (findClass): Search for
-        lib-gnu-pkg-quux.so, not gnu-pkg-quux.so.
+	* java/lang/natClassLoader.cc (findClass): Search for
+	lib-gnu-pkg-quux.so, not gnu-pkg-quux.so.
 
 2001-08-21  Jeff Sturm  <jsturm@one-point.com>
 
@@ -1098,23 +1107,23 @@
 
 2001-05-29  Andrew Haley  <aph@redhat.com>
 
-        * include/i386-signal.h (MAKE_THROW_FRAME): Don't fix up frame
-        pointer: the dwarf unwinder in libgcc will do everything that's
-        needed.
-        (HANDLE_DIVIDE_OVERFLOW): Tidy.  Don't mess with stack frames any
-        more than we absolutely need to.
-        * configure.host (EXCEPTIONSPEC): Remove libgcj_sjlj on Alpha.
-        * configure.in (SIGNAL_HANDLER): Use include/dwarf2-signal.h on
-        Alpha.
-        (SIGNAL_HANDLER): Test "$enable_sjlj_exceptions", not
-        "$libgcj_sjlj".
-        * configure: Rebuilt.
-        * include/dwarf2-signal.h (MAKE_THROW_FRAME): Adjust PC
-        for Alpha.
-        (SIGNAL_HANDLER): Use siginfo style handler.
-        (INIT_SEGV): Likewise.
-        (INIT_FPE): Likewise.
-        * include/ppc-signal.h: Delete whole file.
+	* include/i386-signal.h (MAKE_THROW_FRAME): Don't fix up frame
+	pointer: the dwarf unwinder in libgcc will do everything that's
+	needed.
+	(HANDLE_DIVIDE_OVERFLOW): Tidy.  Don't mess with stack frames any
+	more than we absolutely need to.
+	* configure.host (EXCEPTIONSPEC): Remove libgcj_sjlj on Alpha.
+	* configure.in (SIGNAL_HANDLER): Use include/dwarf2-signal.h on
+	Alpha.
+	(SIGNAL_HANDLER): Test "$enable_sjlj_exceptions", not
+	"$libgcj_sjlj".
+	* configure: Rebuilt.
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME): Adjust PC
+	for Alpha.
+	(SIGNAL_HANDLER): Use siginfo style handler.
+	(INIT_SEGV): Likewise.
+	(INIT_FPE): Likewise.
+	* include/ppc-signal.h: Delete whole file.
 
 2001-05-24  Tom Tromey  <tromey@redhat.com>
 
@@ -1286,7 +1295,7 @@
 	* include/dwarf2-signal.h: New file.
 	* configure.in (SYSDEP_SOURCES): Add dwarf2-signal.h for PPC.
 	* configure.host (EXCEPTIONSPEC): Don't use sjlj on PPC.
-        * configure: Rebuilt.
+	* configure: Rebuilt.
 
 2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
@@ -1354,7 +1363,7 @@
 
 2001-05-11  Richard Henderson  <rth@redhat.com>
 
-        * exception.cc: Include unwind-pe.h.  Remove all pointer
+	* exception.cc: Include unwind-pe.h.  Remove all pointer
 	encoding logic.
 
 2001-05-10  Tom Tromey  <tromey@redhat.com>
