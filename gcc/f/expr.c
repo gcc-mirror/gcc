@@ -12680,11 +12680,12 @@ again:				/* :::::::::::::::::::: */
       switch (ffeinfo_basictype (info))
 	{
 	case FFEINFO_basictypeLOGICAL:
-	  error = error && !ffe_is_ugly_logint ();
-	  if (!ffeexpr_stack_->is_rhs)
-	    break;		/* Don't convert lhs variable. */
+	  if (! ffe_is_ugly_logint ())
+	    error = TRUE;
+	  if (! ffeexpr_stack_->is_rhs)
+	    break;
 	  expr = ffeexpr_convert (expr, ft, ft, FFEINFO_basictypeINTEGER,
-				  ffeinfo_kindtype (ffebld_info (expr)), 0,
+				  ffeinfo_kindtype (info), 0,
 				  FFETARGET_charactersizeNONE,
 				  FFEEXPR_contextLET);
 	  break;
@@ -12728,18 +12729,21 @@ again:				/* :::::::::::::::::::: */
       switch (ffeinfo_basictype (info))
 	{
 	case FFEINFO_basictypeLOGICAL:
-	  error = error
-	    && (ffeinfo_kindtype (info) != FFEINFO_kindtypeLOGICALDEFAULT);
-	  if (!ffeexpr_stack_->is_rhs)
-	    break;		/* Don't convert lhs variable. */
+	  if (! ffeexpr_stack_->is_rhs)
+	    break;
 	  expr = ffeexpr_convert (expr, ft, ft, FFEINFO_basictypeINTEGER,
-	     FFEINFO_kindtypeINTEGERDEFAULT, 0, FFETARGET_charactersizeNONE,
+				  ffeinfo_kindtype (info), 0,
+				  FFETARGET_charactersizeNONE,
 				  FFEEXPR_contextLET);
-	  break;
-
+	  /* Fall through.  */
 	case FFEINFO_basictypeINTEGER:
-	  error = error &&
-	    (ffeinfo_kindtype (info) != FFEINFO_kindtypeINTEGERDEFAULT);
+	  if (ffeexpr_stack_->is_rhs
+	      && (ffeinfo_kindtype (ffebld_info (expr))
+		  != FFEINFO_kindtypeINTEGERDEFAULT))
+	    expr = ffeexpr_convert (expr, ft, ft, FFEINFO_basictypeINTEGER,
+				    FFEINFO_kindtypeINTEGERDEFAULT, 0,
+				    FFETARGET_charactersizeNONE,
+				    FFEEXPR_contextLET);
 	  break;
 
 	case FFEINFO_basictypeHOLLERITH:
