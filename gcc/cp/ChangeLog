@@ -1,3 +1,8 @@
+2005-04-04  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (finish_objects): Revert my previous patch.
+	(cp_finish_file): Likewise.
+
 2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* pt.c: Fix comment typos.
