@@ -1,3 +1,8 @@
+2004-06-09  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/abi/bitfield3.C: Add -mno-align-double compile option
+	for mingw32 and cygwin targets.
+
 2004-06-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/macro-4.c: New.

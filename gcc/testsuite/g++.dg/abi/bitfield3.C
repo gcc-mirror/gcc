@@ -1,6 +1,7 @@
 // Test for oversized bitfield alignment in structs on IA-32
 // { dg-do run { target i?86-*-* } }
 // { dg-options "-O2" }
+// { dg-options "-mno-align-double" { target i?86-*-cygwin* i?86-*-mingw* } }
 
 struct A
 {
