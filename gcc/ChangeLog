@@ -1,3 +1,26 @@
+Mon Jun 22 08:18:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (varasm.o): Depend on sdbout.h.
+	(sdbout.o): Depend on toplev.h.
+
+	* collect2.c (scan_prog_file): Cast fprintf argument to `long' and
+	use %ld specifier.
+
+	* final.c (shorten_branches): Cast first arg of `bzero' to char *.
+
+	* genextract.c (main): When creating insn-extract.c, mark variable
+	`i' with ATTRIBUTE_UNUSED.
+
+	* genpeep.c (main): When creating insn-peep.c, mark variables
+	`insn', `x' and `pat' with ATTRIBUTE_UNUSED.
+
+	* objc/init.c (__objc_tree_print): Wrap function definition in
+	macro `DEBUG'.
+
+	* objc/objc-act.c (encode_array): Cast sprintf argument to `long'
+	and use %ld specifier.
+	(adorn_decl): Likewise, twice.
+
 Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (install-info): Use install-info program if

@@ -59,7 +59,7 @@ static void __objc_class_add_protocols (Class, struct objc_protocol_list*);
    or a category is loaded into the runtime.  This may e.g. help a
    dynamic loader determine the classes that have been loaded when
    an object file is dynamically linked in */
-void (*_objc_load_callback)(Class class, Category* category) = 0; /* !T:SAFE */
+void (*_objc_load_callback)(Class class, Category* category); /* !T:SAFE */
 
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
@@ -280,6 +280,7 @@ objc_postorder_traverse (objc_class_tree *tree,
 }
 
 /* Used to print a tree class hierarchy. */
+#ifdef DEBUG
 static void
 __objc_tree_print (objc_class_tree *tree, int level)
 {
@@ -289,6 +290,7 @@ __objc_tree_print (objc_class_tree *tree, int level)
     printf ("  ");
   printf ("%s\n", tree->class->name);
 }
+#endif
 
 /* Walks on a linked list of methods in the reverse order and executes all
    the methods corresponding to `op' selector. Walking in the reverse order
@@ -381,7 +383,7 @@ __objc_force_linking (void)
 /* Run through the statics list, removing modules as soon as all its statics
    have been initialized.  */
 static void
-objc_init_statics ()
+objc_init_statics (void)
 {
   struct objc_list **cell = &uninitialized_statics;
   struct objc_static_instances **statics_in_module;
