@@ -187,13 +187,13 @@ java.maintainer-clean:
 # Stage hooks:
 # The main makefile has already created stage?/java.
 
-java.stage1:
+java.stage1: stage1-start
 	-mv java/*$(objext) stage1/java
-java.stage2:
+java.stage2: stage2-start
 	-mv java/*$(objext) stage2/java
-java.stage3:
+java.stage3: stage3-start
 	-mv java/*$(objext) stage3/java
-java.stage4:
+java.stage4: stage4-start
 	-mv java/*$(objext) stage4/java
 #
 # Maintenance hooks:
