@@ -2719,22 +2719,18 @@ floating_exact_log2 (x)
      rtx x;
 {
   REAL_VALUE_TYPE r, r1;
-  int i;
+  int exp;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-  if (REAL_VALUES_LESS (r, dconst0))
+  if (REAL_VALUES_LESS (r, dconst1))
     return 0;
 
-  r1 = dconst1;
-  i = 0;
-  while (REAL_VALUES_LESS (r1, r))
-    {
-      r1 = REAL_VALUE_LDEXP (dconst1, i);
-      if (REAL_VALUES_EQUAL (r1, r))
-        return i;
-      i = i + 1;
-    }
+  exp = real_exponent (&r);
+  real_2expN (&r1, exp);
+  if (REAL_VALUES_EQUAL (r1, r))
+    return exp;
+
   return 0;
 }
 

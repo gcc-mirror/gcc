@@ -4667,7 +4667,7 @@ move\\t%0,%z4\\n\\
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  offset = REAL_VALUE_LDEXP (dconst1, 31);
+  real_2expN (&offset, 31);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4713,7 +4713,7 @@ move\\t%0,%z4\\n\\
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  offset = REAL_VALUE_LDEXP (dconst1, 63);
+  real_2expN (&offset, 63);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4759,7 +4759,7 @@ move\\t%0,%z4\\n\\
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  offset = REAL_VALUE_LDEXP (dconst1, 31);
+  real_2expN (&offset, 31);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
@@ -4805,7 +4805,7 @@ move\\t%0,%z4\\n\\
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  offset = REAL_VALUE_LDEXP (dconst1, 63);
+  real_2expN (&offset, 63);
 
   if (reg1)			/* turn off complaints about unreached code */
     {
