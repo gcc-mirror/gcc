@@ -944,6 +944,10 @@ namespace std
     complex<_Tp>
     pow(const complex<_Tp>& __x, const _Tp& __y)
     {
+#ifndef _GLIBCXX_USE_C99_COMPLEX
+      if (__x == _Tp())
+	return _Tp();
+#endif
       if (__x.imag() == _Tp() && __x.real() > _Tp())
         return pow(__x.real(), __y);
 

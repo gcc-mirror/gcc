@@ -1,3 +1,10 @@
+2005-03-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/20352
+	* include/std/std_complex.h (pow(const complex<_Tp>&,
+	const _Tp&)): On non-c99 platforms, don't try to compute
+	log of complex zero.
+
 2005-03-17  Benjamin Kosnik  <bkoz@redhat.com>
 
         * testsuite/testsuite_abi.cc: Add CXXABI_1.3.1.
