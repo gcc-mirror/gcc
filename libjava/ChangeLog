@@ -1,3 +1,8 @@
+2003-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GtkToolkit.java:
+	Reworked imports.
+
 2003-07-14  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/rmi/server/UnicastServerRef.java:
