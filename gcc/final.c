@@ -2660,11 +2660,13 @@ walk_alter_subreg (rtx *xp)
     {
     case PLUS:
     case MULT:
+    case AND:
       XEXP (x, 0) = walk_alter_subreg (&XEXP (x, 0));
       XEXP (x, 1) = walk_alter_subreg (&XEXP (x, 1));
       break;
 
     case MEM:
+    case ZERO_EXTEND:
       XEXP (x, 0) = walk_alter_subreg (&XEXP (x, 0));
       break;
 

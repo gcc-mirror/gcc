@@ -2976,6 +2976,72 @@ expand_builtin_bcopy (tree arglist)
   return expand_builtin_memmove (newarglist, const0_rtx, VOIDmode);
 }
 
+#ifndef HAVE_movstr
+# define HAVE_movstr 0
+# define CODE_FOR_movstr CODE_FOR_nothing
+#endif
+
+/* Expand into a movstr instruction, if one is available.  Return 0 if
+   we failed, the caller should emit a normal call, otherwise try to
+   get the result in TARGET, if convenient.  If ENDP is 0 return the
+   destination pointer, if ENDP is 1 return the end pointer ala
+   mempcpy, and if ENDP is 2 return the end pointer minus one ala
+   stpcpy.  */
+
+static rtx
+expand_movstr (tree dest, tree src, rtx target, int endp)
+{
+  rtx end;
+  rtx dest_mem;
+  rtx src_mem;
+  rtx insn;
+  const struct insn_data * data;
+
+  if (!HAVE_movstr)
+    return 0;
+
+  dest_mem = get_memory_rtx (dest);
+  src_mem = get_memory_rtx (src);
+  if (!endp)
+    {
+      target = force_reg (Pmode, XEXP (dest_mem, 0));
+      dest_mem = replace_equiv_address (dest_mem, target);
+      end = gen_reg_rtx (Pmode);
+    }
+  else
+    {
+      if (target == 0 || target == const0_rtx)
+	{
+	  end = gen_reg_rtx (Pmode);
+	  if (target == 0)
+	    target = end;
+	}
+      else
+	end = target;
+    }
+
+  data = insn_data + CODE_FOR_movstr;
+
+  if (data->operand[0].mode != VOIDmode)
+    end = gen_lowpart (data->operand[0].mode, end);
+
+  insn = data->genfun (end, dest_mem, src_mem);
+
+  if (insn == 0)
+    abort ();
+
+  emit_insn (insn);
+
+  /* movstr is supposed to set end to the address of the NUL
+     terminator.  If the caller requested a mempcpy-like return value,
+     adjust it.  */
+  if (endp == 1 && target != const0_rtx)
+    emit_move_insn (target, plus_constant (gen_lowpart (GET_MODE (target),
+							end), 1));
+
+  return target;
+}
+
 /* Expand expression EXP, which is a call to the strcpy builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise try to get
    the result in TARGET, if convenient (and in mode MODE if that's
@@ -2996,12 +3062,14 @@ expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
   if (operand_equal_p (src, dst, 0))
     return expand_expr (dst, target, mode, EXPAND_NORMAL);
 
-  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-  if (!fn)
-    return 0;
-
   len = c_strlen (src, 1);
   if (len == 0 || TREE_SIDE_EFFECTS (len))
+    return expand_movstr (TREE_VALUE (arglist),
+			  TREE_VALUE (TREE_CHAIN (arglist)),
+			  target, /*endp=*/0);
+
+  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+  if (!fn)
     return 0;
 
   len = size_binop (PLUS_EXPR, len, ssize_int (1));
@@ -3020,22 +3088,17 @@ expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
 static rtx
 expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 {
+  /* If return value is ignored, transform stpcpy into strcpy.  */
+  if (target == const0_rtx)
+    return expand_builtin_strcpy (arglist, target, mode);
+
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
       tree dst, src, len;
-
-      /* If return value is ignored, transform stpcpy into strcpy.  */
-      if (target == const0_rtx)
-	{
-	  tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
-	  if (!fn)
-	    return 0;
-
-	  return expand_expr (build_function_call_expr (fn, arglist),
-			      target, mode, EXPAND_NORMAL);
-	}
+      tree narglist;
+      rtx ret;
 
       /* Ensure we get an actual string whose length can be evaluated at
          compile-time, not an expression containing a string.  This is
@@ -3043,14 +3106,49 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
          when used to produce the return value.  */
       src = TREE_VALUE (TREE_CHAIN (arglist));
       if (! c_getstr (src) || ! (len = c_strlen (src, 0)))
-	return 0;
+	return expand_movstr (TREE_VALUE (arglist),
+			      TREE_VALUE (TREE_CHAIN (arglist)),
+			      target, /*endp=*/2);
 
       dst = TREE_VALUE (arglist);
       len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
-      arglist = build_tree_list (NULL_TREE, len);
-      arglist = tree_cons (NULL_TREE, src, arglist);
-      arglist = tree_cons (NULL_TREE, dst, arglist);
-      return expand_builtin_mempcpy (arglist, target, mode, /*endp=*/2);
+      narglist = build_tree_list (NULL_TREE, len);
+      narglist = tree_cons (NULL_TREE, src, narglist);
+      narglist = tree_cons (NULL_TREE, dst, narglist);
+      ret = expand_builtin_mempcpy (narglist, target, mode, /*endp=*/2);
+
+      if (ret)
+	return ret;
+
+      if (TREE_CODE (len) == INTEGER_CST)
+	{
+	  rtx len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+
+	  if (GET_CODE (len_rtx) == CONST_INT)
+	    {
+	      ret = expand_builtin_strcpy (arglist, target, mode);
+
+	      if (ret)
+		{
+		  if (! target)
+		    target = gen_reg_rtx (mode);
+		  if (GET_MODE (target) != GET_MODE (ret))
+		    ret = gen_lowpart (GET_MODE (target), ret);
+
+		  ret = emit_move_insn (target,
+					plus_constant (ret,
+						       INTVAL (len_rtx)));
+		  if (! ret)
+		    abort ();
+
+		  return target;
+		}
+	    }
+	}
+
+      return expand_movstr (TREE_VALUE (arglist),
+			    TREE_VALUE (TREE_CHAIN (arglist)),
+			    target, /*endp=*/2);
     }
 }
 

@@ -2778,8 +2778,9 @@ The @samp{cmp@var{m}} patterns should be used instead.
 
 @cindex @code{movmem@var{m}} instruction pattern
 @item @samp{movmem@var{m}}
-Block move instruction.  The addresses of the destination and source
-strings are the first two operands, and both are in mode @code{Pmode}.
+Block move instruction.  The destination and source blocks of memory
+are the first two operands, and both are @code{mem:BLK}s with an
+address in mode @code{Pmode}.
 
 The number of bytes to move is the third operand, in mode @var{m}.
 Usually, you specify @code{word_mode} for @var{m}.  However, if you can
@@ -2803,12 +2804,21 @@ individually moved data units in the block.
 These patterns need not give special consideration to the possibility
 that the source and destination strings might overlap.
 
+@cindex @code{movstr} instruction pattern
+@item @samp{movstr}
+String copy instruction, with @code{stpcpy} semantics.  Operand 0 is
+an output operand in mode @code{Pmode}.  The addresses of the
+destination and source strings are operands 1 and 2, and both are
+@code{mem:BLK}s with addresses in mode @code{Pmode}.  The execution of
+the expansion of this pattern should store in operand 0 the address in
+which the @code{NUL} terminator was stored in the destination string.
+
 @cindex @code{clrmem@var{m}} instruction pattern
 @item @samp{clrmem@var{m}}
-Block clear instruction.  The addresses of the destination string is the
-first operand, in mode @code{Pmode}.  The number of bytes to clear is
-the second operand, in mode @var{m}.  See @samp{movmem@var{m}} for
-a discussion of the choice of mode.
+Block clear instruction.  The destination string is the first operand,
+given as a @code{mem:BLK} whose address is in mode @code{Pmode}.  The
+number of bytes to clear is the second operand, in mode @var{m}.  See
+@samp{movmem@var{m}} for a discussion of the choice of mode.
 
 The third operand is the known alignment of the destination, in the form
 of a @code{const_int} rtx.  Thus, if the compiler knows that the
