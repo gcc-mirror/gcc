@@ -1,3 +1,9 @@
+2003-04-08  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* doc/extend.texi (Template Instantiation): Refer to ISO standard,
+	not Working Paper.
+	* doc/invoke.texi (C++ Dialect Options): Same.
+
 2003-04-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.c (tree_operand_check_failed): New function.
