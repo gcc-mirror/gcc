@@ -1,5 +1,7 @@
 Tue Sep  8 01:18:39 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* config.guess: Correctly identify Pentium II sco boxes.
+
 	* config.guess: Fix "tr" code.  From Weiwen Liu.
 
 Sat Sep  5 13:56:52 1998  John Hughes  <john@Calva.COM>
