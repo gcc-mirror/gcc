@@ -42,6 +42,9 @@
 /* Get 64-bit file size support */
 #undef _FILE_OFFSET_BITS
 
+/* Define for HP-UX ftello and fseeko extension. */
+#undef _LARGEFILE_SOURCE
+
 /* Define if fcntl.h is missing. */
 #undef NO_FCNTL
 

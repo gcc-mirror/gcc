@@ -1,3 +1,9 @@
+2002-01-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* libI77/configure.in (_LARGEFILE_SOURCE): AC_DEFINE.
+	* libI77/configure: Rebuilt.
+	* libI77/config.h.in: Rebuilt.
+
 2002-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libI77/fio.h (FSEEK): Enforce type of second parameter to be

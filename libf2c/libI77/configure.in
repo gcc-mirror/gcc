@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 2001, 2002 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -31,6 +31,7 @@ AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
 # The following is needed by Solaris2.5.1 so that struct timeval is declared.
 AC_DEFINE(__EXTENSIONS__, 1, [Solaris extensions])
 AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
+AC_DEFINE(_LARGEFILE_SOURCE, 1, [Define for HP-UX ftello and fseeko extension.])
 
 dnl Checks for programs.
 
