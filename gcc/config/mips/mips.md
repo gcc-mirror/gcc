@@ -8820,35 +8820,64 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"6")])
 
-;; ??? This is a hack to work around a problem with expand_builtin_setjmp.
-;; It restores the frame pointer, and then does a call to restore the global
-;; pointer (gp) register.  The call insn implicitly (via the assembler) reloads
-;; gp from the stack.  However, call insns do not depend on $fp, so it is
-;; possible for the instruction scheduler to move the fp restore after the
-;; call, which then causes gp to be corrupted.  We fix this by emitting a
-;; scheduler barrier.  A better fix is to put code here that restores the
-;; $gp, and then the call is unnecessary.  This is only a problem when PIC
-;; (TARGET_ABICALLS), and only when the gp register is caller-saved
-;; (irix5/o32, but not irix6/n32/n64).
+;; For o32/n32/n64, we save the gp in the jmp_buf as well.  While it is
+;; possible to either pull it off the stack (in the o32 case) or recalculate
+;; it given t9 and our target label, it takes 3 or 4 insns to do so, and
+;; this is easy.
 
-(define_expand "nonlocal_goto_receiver"
-  [(const_int 0)]
-  ""
+(define_expand "builtin_setjmp_setup"
+  [(unspec [(match_operand 0 "register_operand" "r")] 20)]
+  "TARGET_ABICALLS"
   "
 {
-  emit_insn (gen_blockage ());
+  if (TARGET_LONG64)
+    emit_insn (gen_builtin_setjmp_setup_64 (operands[0]));
+  else
+    emit_insn (gen_builtin_setjmp_setup_32 (operands[0]));
+  DONE;
 }")
 
-;; For n32/n64, we need to restore gp after a builtin setjmp.   We do this
-;; by making use of the fact that we've just called __dummy.
+(define_expand "builtin_setjmp_setup_32"
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "r")
+		   (const_int 12)))
+      (reg:SI 28))]
+  "TARGET_ABICALLS && ! TARGET_LONG64"
+  "")
 
-(define_expand "builtin_setjmp_receiver"
-  [(const_int 0)]
-  "TARGET_ABICALLS && mips_abi != ABI_32"
+(define_expand "builtin_setjmp_setup_64"
+  [(set (mem:DI (plus:DI (match_operand:DI 0 "register_operand" "r")
+		   (const_int 24)))
+      (reg:DI 28))]
+  "TARGET_ABICALLS && TARGET_LONG64"
+  "")
+
+;; For o32/n32/n64, we need to arrange for longjmp to put the 
+;; target address in t9 so that we can use it for loading $gp.
+
+(define_expand "builtin_longjmp"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
+  "TARGET_ABICALLS"
   "
 {
-  emit_insn (gen_loadgp (gen_rtx (SYMBOL_REF, Pmode, \"__dummy\")));
-  emit_insn (gen_blockage ());
+  /* The elements of the buffer are, in order:  */
+  int W = (TARGET_LONG64 ? 8 : 4);
+  rtx fp = gen_rtx_MEM (Pmode, operands[0]);
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 1*W));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 2*W));
+  rtx gpv = gen_rtx_MEM (Pmode, plus_constant (operands[0], 3*W));
+  rtx pv = gen_rtx_REG (Pmode, 25);
+  rtx gp = gen_rtx_REG (Pmode, 28);
+
+  /* This bit is the same as expand_builtin_longjmp.  */
+  emit_move_insn (hard_frame_pointer_rtx, fp);
+  emit_move_insn (pv, lab);
+  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_move_insn (gp, gpv);
+  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, gp));
+  emit_indirect_jump (pv);
+  DONE;
 }")
 
 ;;
