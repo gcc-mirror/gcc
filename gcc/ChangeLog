@@ -1,5 +1,10 @@
 2003-09-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* toplev.c (rest_of_handle_stack_regs): Call split_all_insns before
+	regstack if optimizing but not scheduling after reload.
+
+2003-09-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.c (struct machine_function): New type.
 	(TARGET_HAVE_TLS, TARGET_CANNOT_FORCE_CONST_MEM): Define.
 	(sparc_override_options): Initialize init_machine_status.
