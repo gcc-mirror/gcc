@@ -23,13 +23,9 @@
 	(inlinable_function_p): Don't look at DECL_INLINE if we're
 	inlining all functions.  Make it work with a NULL id.
 	Re-check DECL_UNINLINABLE after language-specific checks.
-	(varargs_function_p): Move back to cp/tree.c.
 	* tree-inline.h (tree_inlinable_function_p): Declare it.
-	(varargs_function_p): Removed declaration.
-	* integrate.h (function_attribute_inlinable_p): Declare it.
-	* integrate.c (function_attribute_inlinable_p): Export it.
-	(save_for_inline): Don't bother to prepare argvec when not
-	inlining.
+	* integrate.c (save_for_inline): Don't bother to prepare argvec
+	when not inlining.
 	* cse.c (check_for_label_ref): Don't check deleted labels.
 
 	* Makefile.in (tree-inline.o): Depend on newly-included headers.
