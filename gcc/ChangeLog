@@ -1,3 +1,8 @@
+2003-02-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (TARGET_SUBTARGET_DEFAULT): Set
+	MASK_ALIGN_DOUBLE.
+
 2003-02-15  Adam Nemet  <anemet@lnxw.com>
 
         PR opt/2391 
