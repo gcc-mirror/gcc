@@ -1,3 +1,7 @@
+2002-12-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/varmod1.C: Fix typo.
+
 2002-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021204-1.c: New test.
