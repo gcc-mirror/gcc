@@ -862,7 +862,7 @@ do {							\
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
 */
-/* #define BITS_BIG_ENDIAN */
+#define BITS_BIG_ENDIAN 0
 
 /* Define this if most significant byte of a word is the lowest numbered. */
 #ifndef BYTES_BIG_ENDIAN
