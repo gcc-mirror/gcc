@@ -15,8 +15,8 @@ void Foo(void)
     Boz++;	 
   }
  
-void Bar(void)
-  {			// { dg-warning "defined" }
+void Bar(void)		// { dg-warning "defined" }
+  {
   }
 
 void Baz(void);		// { dg-warning "redeclared" }
