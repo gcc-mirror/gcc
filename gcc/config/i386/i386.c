@@ -4025,8 +4025,9 @@ ix86_compute_frame_layout (frame)
   else
     frame->outgoing_arguments_size = 0;
 
-  /* Align stack boundary.  Only needed if we're calling another function.  */
-  if (!current_function_is_leaf)
+  /* Align stack boundary.  Only needed if we're calling another function
+     or using alloca.  */
+  if (!current_function_is_leaf || current_function_calls_alloca)
     frame->padding2 = ((offset + preferred_alignment - 1)
 		       & -preferred_alignment) - offset;
   else
