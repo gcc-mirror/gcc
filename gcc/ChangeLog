@@ -1,3 +1,10 @@
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* mkdeps.c (deps_add_default_target): Robustify. Add
+	basename component only.
+	* cpp.texi (-M): Describe how default target is generated.
+	* invoke.texi (-M): Likewise.
+
 2001-02-13  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* ggc-common.c (ggc_mark_rtx_children): No need to mark 'S' or

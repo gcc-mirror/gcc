@@ -180,8 +180,6 @@ deps_add_default_target (d, tgt)
      struct deps *d;
      const char *tgt;
 {
-  char *o, *suffix;
-
   /* Only if we have no targets.  */
   if (d->ntargets)
     return;
@@ -190,19 +188,20 @@ deps_add_default_target (d, tgt)
     deps_add_target (d, "-", 1);
   else
     {
-      o = (char *) alloca (strlen (tgt) + 8);
-
-      strcpy (o, tgt);
-      suffix = strrchr (o, '.');
-
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"
 #endif
+      char *start = basename (tgt);
+      char *o = (char *) alloca (strlen (start) + strlen (OBJECT_SUFFIX) + 1);
+      char *suffix;
 
-      if (suffix)
-	strcpy (suffix, OBJECT_SUFFIX);
-      else
-	strcat (o, OBJECT_SUFFIX);
+      strcpy (o, start);
+      
+      suffix = strrchr (o, '.');
+      if (!suffix)
+        suffix = o + strlen (o);
+      strcpy (suffix, OBJECT_SUFFIX);
+      
       deps_add_target (d, o, 1);
     }
 }

@@ -3495,7 +3495,10 @@ suitable for @code{make} describing the dependencies of the main source
 file.  The preprocessor outputs one @code{make} rule containing the
 object file name for that source file, a colon, and the names of all the
 included files, including those coming from @samp{-include} or
-@samp{-imacros} command line options.  If there are many included files
+@samp{-imacros} command line options.  Unless specified explicitly (with
+@samp{-MT} or @samp{-MQ}), the object file name consists of the basename
+of the source file with any suffix replaced with object file suffix.
+If there are many included files
 then the rule is split into several lines using @samp{\}-newline.
 
 @item -MM
