@@ -1,3 +1,8 @@
+2003-02-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (reload_cse_move2add): Use STRICT_LOW_PART if PLUS
+	does not reduce the cost of SET.
+
 2003-02-25  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR target/9732
