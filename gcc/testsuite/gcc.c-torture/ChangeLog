@@ -1,3 +1,7 @@
+Sun May 31 23:23:29 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/ieee/mzero2.c: New test to better test IEEE -0 support.
+
 Wed Apr  8 13:09:15 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* execute/980407-1.c: Delete test.  Is duplicate of loop-4.c.
