@@ -159,6 +159,9 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
 
   if (!DECL_SAVED_TREE (callee->decl))
     edge->inline_failed = N_("function body not available");
+  else if (callee->local.redefined_extern_inline)
+    edge->inline_failed = N_("redefined extern inline functions are not "
+			     "considered for inlining");
   else if (callee->local.inlinable)
     edge->inline_failed = N_("function not considered for inlining");
   else

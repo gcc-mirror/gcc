@@ -1,5 +1,16 @@
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (create_edge): Use local.redefined_extern_inline.
+	* cgraph.h (cgraph_local_info): Sort fields by size; add
+	redefined_extern_inline
+	(cgraph_global_info): Sort fields by size.
+	(cgraph_node): Likewise.
+	* cgraphunit.c (cgraph_finalize_function): Se
+	local.redefined_extern_inline on redefinition.
+	(cgraph_analyze_function): Use it; fix formating.
+
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
 	PR c++/10776
 	* sched-deps.c (trye_dependency_cache, anti_dependency_cache,
 	outptu_dependency_cache, forward_dependency_cahe): Trun to vectors of
