@@ -3695,10 +3695,17 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	  break;
 
 	case EXEC_GOTO:
-          if (code->expr != NULL && code->expr->ts.type != BT_INTEGER)
-            gfc_error ("ASSIGNED GOTO statement at %L requires an INTEGER "
+          if (code->expr != NULL)
+	    {
+	      if (code->expr->ts.type != BT_INTEGER)
+		gfc_error ("ASSIGNED GOTO statement at %L requires an INTEGER "
                        "variable", &code->expr->where);
-          else
+	      else if (code->expr->symtree->n.sym->attr.assign != 1)
+		gfc_error ("Variable '%s' has not been assigned a target label "
+			"at %L", code->expr->symtree->n.sym->name,
+			&code->expr->where);
+	    }
+	  else
             resolve_branch (code->label, code);
 	  break;
 

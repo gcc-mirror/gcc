@@ -1,3 +1,18 @@
+2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/18827
+	* io.c (resolve_tag): Add checking on assigned label.
+	(match_dt_format): Does not set symbol assign attribute.
+	* match.c (gfc_match_goto):Does not set symbol assign attribute.
+	* resolve.c (resolve_code): Add checking on assigned label.
+	* trans-common.c (build_field): Deals with common variable assigned
+	a label.
+	* trans-stmt.c (gfc_conv_label_variable): New function.
+	(gfc_trans_label_assign): Use it.
+	(gfc_trans_goto): Ditto.
+	* trans-io.c (set_string): Ditto.
+	* trans.h (gfc_conv_label_variable): Add prototype.
+
 2005-03-14  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20467

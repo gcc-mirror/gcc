@@ -1526,7 +1526,6 @@ gfc_match_goto (void)
 	  == FAILURE)
 	return MATCH_ERROR;
 
-      expr->symtree->n.sym->attr.assign = 1;
       new_st.op = EXEC_GOTO;
       new_st.expr = expr;
 
