@@ -1,3 +1,10 @@
+Wed Mar 27 23:19:30 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i960.md (ret): Set PC.
+	(nonlocal_goto): Fix expander.
+	* builtins.c (epxand_builin_longjmp): Check that we've emitted
+	some jump or call.
+
 Wed Mar 27 23:11:35 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (emit_no_conflict_block, emit_libcall_block): Avoid nesting
