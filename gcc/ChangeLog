@@ -1,3 +1,10 @@
+Sat Sep 11 23:23:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (cse_main): If gc'ing, collect around cse_basic_block.
+
+	* ggc-simple.c (ggc_pop_context): Fold outstanding bytes into
+	surrounding context.
+
 Sat Sep 11 19:52:43 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (type_hash_canon): Put all types in the hash-table, when
