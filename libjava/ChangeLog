@@ -1,3 +1,7 @@
+2000-07-26  Andrew Haley  <aph@cygnus.com>
+
+	* interpret.cc (continue1): Insert missing break into switch.
+
 2000-07-28  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectStreamException.java: Made constructors protected.
