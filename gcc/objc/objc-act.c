@@ -2364,8 +2364,15 @@ build_selector_translation_table (void)
               }
           }
         if (!found)
-	  warning ("%Jcreating selector for nonexistent method %qE",
-		   TREE_PURPOSE (chain), TREE_VALUE (chain));
+	  {
+	    location_t *loc;
+	    if (flag_next_runtime && TREE_PURPOSE (chain))
+	      loc = &DECL_SOURCE_LOCATION (TREE_PURPOSE (chain));
+	    else
+	      loc = &input_location;
+	    warning ("%Hcreating selector for nonexistent method %qE",
+		     loc, TREE_VALUE (chain));
+	  }
       }
 
       expr = build_selector (TREE_VALUE (chain));
