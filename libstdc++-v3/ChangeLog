@@ -4,6 +4,8 @@
 
 2003-03-08  Loren J. Rittle  <ljrittle@acm.org>
 
+	* testsuite/26_numerics/c99_classification_macros_c.cc: Tweak test.
+
 	* config/locale/generic/c_locale.cc (locale::facet::_S_create_c_locale):
 	Throw runtime exception when unsupported language is specified.
 	* testsuite/testsuite_hooks.h
