@@ -1,5 +1,7 @@
 2002-01-17  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/ActiveEvent.java: Updated copyright.
+
 	* java/awt/AWTError.java: Replaced with Classpath version.
 	* java/awt/AWTException.java: Replaced with Classpath version.
 	* java/awt/IllegalComponentStateException.java: Replaced with
