@@ -1,3 +1,8 @@
+2003-01-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (PREDICATE_CODES): Add entries for
+	general_operand_src and general_operand_dst.
+
 2003-01-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (function_arg_pass_by_reference):
@@ -13,24 +18,24 @@
 	(LEGITIMIZE_ADDRESS, THUMB_LEGITIMIZE_ADDRESS): Wrap with
 	do ... while (0)
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
 	* gthr-rtems.h: Define __GTHREAD_MUTEX_INIT.  Apparently no code
 	depended on it being defined until now. This was tracked as PR9296.
 
-2003-01-13	Joel Sherrill <joel@OARcorp.com>
+2003-01-13  Joel Sherrill  <joel@OARcorp.com>
 
 	* config/mips/rtems.h: Predefine __USE_INIT_FINI__ so generic
 	RTEMS code knows which C++ initialization style the toolset
 	configuration is using. This was tracked as PR9295.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
 	* config/m68k/t-crtstuff: Replace spaces with tabs, add 
 	 $(MULTILIB_CFLAGS) as compiler option and multilib crtbegin/end.o.
 	This issue was tracked as PR9293.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
 	* config.gcc (hppa1.1-rtems):  Did not include t-rtems nor enable
 	RTEMS threads.
