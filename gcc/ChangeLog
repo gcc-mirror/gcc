@@ -5,6 +5,9 @@
 
 2005-03-25  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/darwin-fallback.c: Don't include <ucontext.h>.
+	Use our own structure definitions.
+
 	* config/rs6000/rs6000.md (UNSPEC constants): Add UNSPEC_STFIWX.
 	(fix_truncdfsi2): Allow registers or memory as destination.
 	When TARGET_PPC_GFXOPT, generate simplified pattern.
