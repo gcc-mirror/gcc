@@ -1,3 +1,10 @@
+2001-11-29  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/4932
+	* config/i386/i386.c (print_operand):  Verify that the
+	  argument to %c is a constant and not a conditional which
+	  needs to be reversed.
+
 Thu Nov 29 11:12:59 2001  Geoffrey Keating (geoffk@redhat.com)
 
         * emit-rtl.c (gen_lowpart_common): Fix conversion of 
