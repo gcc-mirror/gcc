@@ -895,6 +895,9 @@ gimplify_return_expr (tree stmt, tree *pre_p)
   else
     {
       result_decl = TREE_OPERAND (ret_expr, 0);
+      if (TREE_CODE (result_decl) == INDIRECT_REF)
+	/* See through a return by reference.  */
+	result_decl = TREE_OPERAND (result_decl, 0);
 #ifdef ENABLE_CHECKING
       if ((TREE_CODE (ret_expr) != MODIFY_EXPR
 	   && TREE_CODE (ret_expr) != INIT_EXPR)

@@ -267,7 +267,7 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
 static inline bool
 is_invisiref_parm (tree t)
 {
-  return (TREE_CODE (t) == PARM_DECL
+  return ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
 	  && DECL_BY_REFERENCE (t));
 }
 
@@ -283,7 +283,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   if (is_invisiref_parm (stmt))
     {
-      *stmt_p = build_fold_indirect_ref (stmt);
+      *stmt_p = convert_from_reference (stmt);
       *walk_subtrees = 0;
       return NULL;
     }
@@ -302,6 +302,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
       *walk_subtrees = 0;
     }
+  else if (TREE_CODE (stmt) == RETURN_EXPR
+	   && TREE_OPERAND (stmt, 0)
+	   && is_invisiref_parm (TREE_OPERAND (stmt, 0)))
+    /* Don't dereference an invisiref RESULT_DECL inside a RETURN_EXPR.  */
+    *walk_subtrees = 0;
   else if (DECL_P (stmt) || TYPE_P (stmt))
     *walk_subtrees = 0;
 
@@ -331,10 +336,21 @@ cp_genericize (tree fndecl)
 	{
 	  if (DECL_ARG_TYPE (t) == TREE_TYPE (t))
 	    abort ();
-	  DECL_BY_REFERENCE (t) = 1;
 	  TREE_TYPE (t) = DECL_ARG_TYPE (t);
+	  DECL_BY_REFERENCE (t) = 1;
+	  TREE_ADDRESSABLE (t) = 0;
 	  relayout_decl (t);
 	}
+    }
+
+  /* Do the same for the return value.  */
+  if (TREE_ADDRESSABLE (TREE_TYPE (DECL_RESULT (fndecl))))
+    {
+      t = DECL_RESULT (fndecl);
+      TREE_TYPE (t) = build_reference_type (TREE_TYPE (t));
+      DECL_BY_REFERENCE (t) = 1;
+      TREE_ADDRESSABLE (t) = 0;
+      relayout_decl (t);
     }
 
   /* If we're a clone, the body is already GIMPLE.  */

@@ -1883,6 +1883,11 @@ aggregate_value_p (tree exp, tree fntype)
 
   if (TREE_CODE (type) == VOID_TYPE)
     return 0;
+  /* If the front end has decided that this needs to be passed by
+     reference, do so.  */
+  if ((TREE_CODE (exp) == PARM_DECL || TREE_CODE (exp) == RESULT_DECL)
+      && DECL_BY_REFERENCE (exp))
+    return 1;
   if (targetm.calls.return_in_memory (type, fntype))
     return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
@@ -2185,15 +2190,6 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
     {
       passed_type = nominal_type = build_pointer_type (passed_type);
       data->passed_pointer = true;
-      passed_mode = nominal_mode = Pmode;
-    }
-  /* See if the frontend wants to pass this by invisible reference.  */
-  else if (passed_type != nominal_type
-	   && POINTER_TYPE_P (passed_type)
-	   && TREE_TYPE (passed_type) == nominal_type)
-    {
-      nominal_type = passed_type;
-      data->passed_pointer = 1;
       passed_mode = nominal_mode = Pmode;
     }
 
@@ -3095,9 +3091,14 @@ assign_parms (tree fndecl)
       rtx addr = DECL_RTL (all.function_result_decl);
       rtx x;
 
-      addr = convert_memory_address (Pmode, addr);
-      x = gen_rtx_MEM (DECL_MODE (result), addr);
-      set_mem_attributes (x, result, 1);
+      if (DECL_BY_REFERENCE (result))
+	x = addr;
+      else
+	{
+	  addr = convert_memory_address (Pmode, addr);
+	  x = gen_rtx_MEM (DECL_MODE (result), addr);
+	  set_mem_attributes (x, result, 1);
+	}
       SET_DECL_RTL (result, x);
     }
 
@@ -4385,17 +4386,22 @@ expand_function_end (void)
   if (current_function_returns_struct
       || current_function_returns_pcc_struct)
     {
-      rtx value_address
-	= XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
+      rtx value_address = DECL_RTL (DECL_RESULT (current_function_decl));
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
+      rtx outgoing;
+
+      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+	type = TREE_TYPE (type);
+      else
+	value_address = XEXP (value_address, 0);
+
 #ifdef FUNCTION_OUTGOING_VALUE
-      rtx outgoing
-	= FUNCTION_OUTGOING_VALUE (build_pointer_type (type),
-				   current_function_decl);
+      outgoing = FUNCTION_OUTGOING_VALUE (build_pointer_type (type),
+					  current_function_decl);
 #else
-      rtx outgoing
-	= FUNCTION_VALUE (build_pointer_type (type), current_function_decl);
-#endif
+      outgoing = FUNCTION_VALUE (build_pointer_type (type),
+				 current_function_decl);
+#endif 
 
       /* Mark this as a function return value so integrate will delete the
 	 assignment and USE below when inlining this function.  */
