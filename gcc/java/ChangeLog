@@ -1,3 +1,14 @@
+2001-07-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_method_invocation): Don't override primary if one
+	is already provided, but let this$<n> be built. Fixed comment.
+
+2001-07-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (empty_statement:): Report empty statement error only
+	when found at class declaration level.
+	Fixes PR java/3635
+
 2001-07-12  Tom Tromey  <tromey@redhat.com>
 
 	* expr.c (expand_load_internal): New function.

@@ -1453,7 +1453,13 @@ statement_without_trailing_substatement:
 empty_statement:
 	SC_TK
 		{ 
-		  if (flag_extraneous_semicolon)
+		  if (flag_extraneous_semicolon 
+		      && ! current_static_block 
+		      && (! current_function_decl || 
+			  /* Verify we're not in a inner class declaration */
+			  (GET_CPC () != TYPE_NAME
+			   (DECL_CONTEXT (current_function_decl)))))
+			   
 		    {
 		      EXPR_WFL_SET_LINECOL (wfl_operator, lineno, -1);
 		      parse_warning_context (wfl_operator, "An empty declaration is a deprecated feature that should not be used");
@@ -10030,7 +10036,7 @@ patch_method_invocation (patch, primary, where, from_super,
 	     - LIST is non static. It's invocation is transformed from
 	       x(a1,....,an) into access$<n>(this$<n>,a1,...,an).
 	     - LIST is static. It's invocation is transformed from
-	       x(a1,....,an) into TYPEOF(this$<n>).x(a1,....an).
+	       x(a1,....,an) into TYPE_OF(this$<n>).x(a1,....an).
 
 	     Of course, this$<n> can be abitrary complex, ranging from
 	     this$0 (the immediate outer context) to 
@@ -10040,7 +10046,8 @@ patch_method_invocation (patch, primary, where, from_super,
 	     this_arg has to be moved into the (then generated) stub
 	     argument list. In the meantime, the selected function
 	     might have be replaced by a generated stub. */
-	  if (maybe_use_access_method (is_super_init, &list, &this_arg))
+	  if (!primary &&
+	      maybe_use_access_method (is_super_init, &list, &this_arg))
 	    {
 	      args = tree_cons (NULL_TREE, this_arg, args);
 	      this_arg = NULL_TREE; /* So it doesn't get chained twice */
