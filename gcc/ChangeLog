@@ -1,3 +1,18 @@
+Tue Jul 20 18:02:42 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (insn_cost): FREE implies cost 0 and vice versa.
+	(adjust_priority): Always call ADJUST_PRIORITY.
+	(schedule_insn): Only put insns into the ready at cost 0.
+	(schedule_block): Remove redundant initial sort.  Give clock_var
+	and can_issue_more to MD_SCHED_REORDER.  Requeue if hazard cost
+	is not 0.
+	* tm.texi (MD_SCHED_REORDER): Update docs.
+
+	* sparc.h (MD_SCHED_REORDER): Update.  Set CAN_ISSUE_MORE.
+	* sparc.c (ultra_reorder_called_this_block): Delete.
+	(ultrasparc_sched_init): Don't set it.
+	(ultrasparc_sched_reorder): Don't check it.
+	
 Tue Jul 20 17:07:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rs6000.h (struct rs6000_args): Add sysv_gregno.

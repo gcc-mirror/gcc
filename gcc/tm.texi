@@ -7656,7 +7656,8 @@ debug output to.  @var{verbose} is the verbose level provided by
 @samp{-fsched-verbose-}@var{n}.
 
 @findex MD_SCHED_REORDER
-@item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready})
+@item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready},
+			@var{clock}, @var{can_issue_more})
 A C statement which is executed by the @samp{Haifa} scheduler after it
 has scheduled the ready list to allow the machine description to reorder
 it (for example to combine two small instructions together on
@@ -7666,7 +7667,10 @@ provided by @samp{-fsched-verbose-}@var{n}.  @var{ready} is a pointer to
 the ready list of instructions that are ready to be scheduled.
 @var{n_ready} is the number of elements in the ready list.  The
 scheduler reads the ready list in reverse order, starting with
-@var{ready}[@var{n_ready}-1] and going to @var{ready}[0].
+@var{ready}[@var{n_ready}-1] and going to @var{ready}[0].  @var{clock}
+is the timer tick of the scheduler.  @var{can_issue_more} is an output
+parameter that is set to the number of insns that can issue this clock;
+normally this is just @code{issue_rate}.
 
 @findex MD_SCHED_VARIABLE_ISSUE
 @item MD_SCHED_VARIABLE_ISSUE (@var{file}, @var{verbose}, @var{insn}, @var{more})

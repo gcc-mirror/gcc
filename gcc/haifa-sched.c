@@ -3147,15 +3147,18 @@ insn_cost (insn, link, used)
      and LINK_COST_ZERO.  */
 
   if (LINK_COST_FREE (link))
-    cost = 1;
+    cost = 0;
 #ifdef ADJUST_COST
   else if (!LINK_COST_ZERO (link))
     {
       int ncost = cost;
 
       ADJUST_COST (used, link, insn, ncost);
-      if (ncost <= 1)
-	LINK_COST_FREE (link) = ncost = 1;
+      if (ncost < 1)
+	{
+	  LINK_COST_FREE (link) = 1;
+	  ncost = 0;
+	}
       if (cost == ncost)
 	LINK_COST_ZERO (link) = 1;
       cost = ncost;
@@ -4362,10 +4365,13 @@ adjust_priority (prev)
 	    }
 	  break;
 	}
-#ifdef ADJUST_PRIORITY
-      ADJUST_PRIORITY (prev);
-#endif
     }
+
+  /* That said, a target might have it's own reasons for adjusting
+     priority after reload.  */
+#ifdef ADJUST_PRIORITY
+  ADJUST_PRIORITY (prev);
+#endif
 }
 
 /* Clock at which the previous instruction was issued.  */
@@ -4439,7 +4445,7 @@ schedule_insn (insn, ready, n_ready, clock)
 	      if (current_nr_blocks > 1 && INSN_BB (next) != target_bb)
 		fprintf (dump, "/b%d ", INSN_BLOCK (next));
 
-	      if (effective_cost <= 1)
+	      if (effective_cost < 1)
 		fprintf (dump, "into ready\n");
 	      else
 		fprintf (dump, "into queue with cost=%d\n", effective_cost);
@@ -4448,7 +4454,7 @@ schedule_insn (insn, ready, n_ready, clock)
 	  /* Adjust the priority of NEXT and either put it on the ready
 	     list or queue it.  */
 	  adjust_priority (next);
-	  if (effective_cost <= 1)
+	  if (effective_cost < 1)
 	    ready[n_ready++] = next;
 	  else
 	    queue_insn (next, effective_cost);
@@ -6675,7 +6681,6 @@ schedule_block (bb, rgn_n_insns)
   /* Local variables.  */
   rtx insn, last;
   rtx *ready;
-  int i;
   int n_ready = 0;
   int can_issue_more;
 
@@ -6857,24 +6862,14 @@ schedule_block (bb, rgn_n_insns)
   /* no insns scheduled in this block yet */
   last_scheduled_insn = 0;
 
-  /* Sort the ready list */
-  SCHED_SORT (ready, n_ready);
-#ifdef MD_SCHED_REORDER
-  MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready);
-#endif
-
-  if (sched_verbose >= 2)
-    {
-      fprintf (dump, ";;\t\tReady list initially:             ");
-      debug_ready_list (ready, n_ready);
-    }
-
   /* Q_SIZE is the total number of insns in the queue.  */
   q_ptr = 0;
   q_size = 0;
-  clock_var = 0;
   last_clock_var = 0;
   bzero ((char *) insn_queue, sizeof (insn_queue));
+
+  /* Start just before the beginning of time.  */
+  clock_var = -1;
 
   /* We start inserting insns after PREV_HEAD.  */
   last = prev_head;
@@ -6907,10 +6902,16 @@ schedule_block (bb, rgn_n_insns)
 	  debug_ready_list (ready, n_ready);
 	}
 
-      /* Sort the ready list.  */
+      /* Sort the ready list based on priority.  */
       SCHED_SORT (ready, n_ready);
+
+      /* Allow the target to reorder the list, typically for 
+	 better instruction bundling.  */
 #ifdef MD_SCHED_REORDER
-      MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready);
+      MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready, clock_var,
+			can_issue_more);
+#else
+      can_issue_more = issue_rate;
 #endif
 
       if (sched_verbose)
@@ -6919,110 +6920,96 @@ schedule_block (bb, rgn_n_insns)
 	  debug_ready_list (ready, n_ready);
 	}
 
-      /* Issue insns from ready list.
-         It is important to count down from n_ready, because n_ready may change
-         as insns are issued.  */
-      can_issue_more = issue_rate;
-      for (i = n_ready - 1; i >= 0 && can_issue_more; i--)
+      /* Issue insns from ready list.  */
+      while (n_ready != 0 && can_issue_more)
 	{
-	  rtx insn = ready[i];
+	  /* Select and remove the insn from the ready list.  */
+	  rtx insn = ready[--n_ready];
 	  int cost = actual_hazard (insn_unit (insn), insn, clock_var, 0);
 
-	  if (cost > 1)
+	  if (cost >= 1)
 	    {
 	      queue_insn (insn, cost);
-	      ready[i] = ready[--n_ready];	/* remove insn from ready list */
+	      continue;
 	    }
-	  else if (cost == 0)
+
+	  /* An interblock motion?  */
+	  if (INSN_BB (insn) != target_bb)
 	    {
-	      /* an interblock motion? */
-	      if (INSN_BB (insn) != target_bb)
+	      rtx temp;
+
+	      if (IS_SPECULATIVE_INSN (insn))
 		{
-		  rtx temp;
+		  if (!check_live (insn, INSN_BB (insn)))
+		    continue;
+		  update_live (insn, INSN_BB (insn));
 
-		  if (IS_SPECULATIVE_INSN (insn))
-		    {
+		  /* For speculative load, mark insns fed by it.  */
+		  if (IS_LOAD_INSN (insn) || FED_BY_SPEC_LOAD (insn))
+		    set_spec_fed (insn);
 
-		      if (!check_live (insn, INSN_BB (insn)))
-			{
-			  /* speculative motion, live check failed, remove
-			     insn from ready list */
-			  ready[i] = ready[--n_ready];
-			  continue;
-			}
-		      update_live (insn, INSN_BB (insn));
-
-		      /* for speculative load, mark insns fed by it.  */
-		      if (IS_LOAD_INSN (insn) || FED_BY_SPEC_LOAD (insn))
-			set_spec_fed (insn);
-
-		      nr_spec++;
-		    }
-		  nr_inter++;
-
-		  temp = insn;
-		  while (SCHED_GROUP_P (temp))
-		    temp = PREV_INSN (temp);
-
-		  /* Update source block boundaries.   */
-		  b1 = INSN_BLOCK (temp);
-		  if (temp == BLOCK_HEAD (b1)
-		      && insn == BLOCK_END (b1))
-		    {
-		      /* We moved all the insns in the basic block.
-			 Emit a note after the last insn and update the
-			 begin/end boundaries to point to the note.  */
-		      emit_note_after (NOTE_INSN_DELETED, insn);
-		      BLOCK_END (b1) = NEXT_INSN (insn);
-		      BLOCK_HEAD (b1) = NEXT_INSN (insn);
-		    }
-		  else if (insn == BLOCK_END (b1))
-		    {
-		      /* We took insns from the end of the basic block,
-			 so update the end of block boundary so that it
-			 points to the first insn we did not move.  */
-		      BLOCK_END (b1) = PREV_INSN (temp);
-		    }
-		  else if (temp == BLOCK_HEAD (b1))
-		    {
-		      /* We took insns from the start of the basic block,
-			 so update the start of block boundary so that
-			 it points to the first insn we did not move.  */
-		      BLOCK_HEAD (b1) = NEXT_INSN (insn);
-		    }
+		  nr_spec++;
 		}
-	      else
+	      nr_inter++;
+
+	      temp = insn;
+	      while (SCHED_GROUP_P (temp))
+		temp = PREV_INSN (temp);
+
+	      /* Update source block boundaries.   */
+	      b1 = INSN_BLOCK (temp);
+	      if (temp == BLOCK_HEAD (b1)
+		  && insn == BLOCK_END (b1))
 		{
-		  /* in block motion */
-		  sched_target_n_insns++;
+		  /* We moved all the insns in the basic block.
+		     Emit a note after the last insn and update the
+		     begin/end boundaries to point to the note.  */
+		  emit_note_after (NOTE_INSN_DELETED, insn);
+		  BLOCK_END (b1) = NEXT_INSN (insn);
+		  BLOCK_HEAD (b1) = NEXT_INSN (insn);
 		}
+	      else if (insn == BLOCK_END (b1))
+		{
+		  /* We took insns from the end of the basic block,
+		     so update the end of block boundary so that it
+		     points to the first insn we did not move.  */
+		  BLOCK_END (b1) = PREV_INSN (temp);
+		}
+	      else if (temp == BLOCK_HEAD (b1))
+		{
+		  /* We took insns from the start of the basic block,
+		     so update the start of block boundary so that
+		     it points to the first insn we did not move.  */
+		  BLOCK_HEAD (b1) = NEXT_INSN (insn);
+		}
+	    }
+	  else
+	    {
+	      /* In block motion.  */
+	      sched_target_n_insns++;
+	    }
 
-	      last_scheduled_insn = insn;
-	      last = move_insn (insn, last);
-	      sched_n_insns++;
+	  last_scheduled_insn = insn;
+	  last = move_insn (insn, last);
+	  sched_n_insns++;
 
 #ifdef MD_SCHED_VARIABLE_ISSUE
-	      MD_SCHED_VARIABLE_ISSUE (dump, sched_verbose, insn, can_issue_more);
+	  MD_SCHED_VARIABLE_ISSUE (dump, sched_verbose, insn,
+				   can_issue_more);
 #else
-	      can_issue_more--;
+	  can_issue_more--;
 #endif
 
-	      n_ready = schedule_insn (insn, ready, n_ready, clock_var);
+	  n_ready = schedule_insn (insn, ready, n_ready, clock_var);
 
-	      /* remove insn from ready list */
-	      ready[i] = ready[--n_ready];
-
-	      /* close this block after scheduling its jump */
-	      if (GET_CODE (last_scheduled_insn) == JUMP_INSN)
-		break;
-	    }
+	  /* Close this block after scheduling its jump.  */
+	  if (GET_CODE (last_scheduled_insn) == JUMP_INSN)
+	    break;
 	}
 
-      /* debug info */
+      /* Debug info.  */
       if (sched_verbose)
-	{
-	  visualize_scheduled_insns (b, clock_var);
-	}
+	visualize_scheduled_insns (b, clock_var);
     }
 
   /* debug info */

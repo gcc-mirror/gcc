@@ -6879,8 +6879,6 @@ ultra_flush_pipeline ()
   ultra_pipe.free_slot_mask = 0xf;
 }
 
-static int ultra_reorder_called_this_block;
-
 /* Init our data structures for this current block.  */
 void
 ultrasparc_sched_init (dump, sched_verbose)
@@ -6890,7 +6888,6 @@ ultrasparc_sched_init (dump, sched_verbose)
   bzero ((char *) ultra_pipe_hist, sizeof ultra_pipe_hist);
   ultra_cur_hist = 0;
   ultra_cycles_elapsed = 0;
-  ultra_reorder_called_this_block = 0;
   ultra_pipe.free_slot_mask = 0xf;
 }
 
@@ -6979,14 +6976,6 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 {
   struct ultrasparc_pipeline_state *up = &ultra_pipe;
   int i, this_insn;
-
-  /* We get called once unnecessarily per block of insns
-     scheduled.  */
-  if (ultra_reorder_called_this_block == 0)
-    {
-      ultra_reorder_called_this_block = 1;
-      return;
-    }
 
   if (sched_verbose)
     {
