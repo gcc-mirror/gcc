@@ -546,6 +546,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if sigsetjmp is available.   */
+#undef HAVE_SIGSETJMP
+
 //
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.

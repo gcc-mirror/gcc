@@ -1,3 +1,10 @@
+2001-02-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/gen-num-limits.cc: Use sigsetjmp and siglongjmp if available.
+	* mknumeric_limits: Compile it with -DHAVE_CONFIG_H.
+	* configure.in: Test for sigsetjmp.
+	* configure, config.h.in: Rebuilt.
+
 2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/valarray-inst.cc (gslice::_Indexer::_Indexer): Don't flip 

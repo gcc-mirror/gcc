@@ -217,6 +217,11 @@ else
   GLIBCPP_CHECK_WCHAR_T_SUPPORT
   GLIBCPP_CHECK_STDLIB_SUPPORT
 
+  AC_TRY_COMPILE([
+#include <setjmp.h>
+], [sigjmp_buf env; while (! sigsetjmp (env, 1)) siglongjmp (env, 1);],
+[AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.  ])])
+
   AC_FUNC_MMAP
 fi
 
