@@ -1,3 +1,8 @@
+2002-1-1  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* libjava/java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for
+	PPC Darwin, not for all of Darwin.
+
 2001-12-29 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* libjava/java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for
