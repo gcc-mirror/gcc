@@ -1,3 +1,7 @@
+2003-02-07  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
+
+	* doc/trouble.texi: Document pitfalls of two-stage name lookup.
+
 2003-02-07  Richard Henderson  <rth@redhat.com>
 
 	PR 9226
