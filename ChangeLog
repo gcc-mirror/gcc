@@ -1,3 +1,10 @@
+2005-04-06  Paolo Bonzini  <bonzini@gnu.org>
+
+        * Makefile.tpl (BUILD_CONFIGARGS): Include --with-build-subdir.
+	(TARGET_CONFIGARGS): Include --with-target-subdir.
+	(configure, all): New macros.  Use them throughout.
+	* Makefile.in: Regenerate.
+
 2005-04-04  Jon Grimm  <jgrimm2@us.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

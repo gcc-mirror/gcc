@@ -93,7 +93,7 @@ BUILD_CONFIGDIRS = libiberty
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
-BUILD_CONFIGARGS = @build_configargs@
+BUILD_CONFIGARGS = @build_configargs@ --with-build-subdir="$(BUILD_SUBDIR)"
 
 # This is the list of variables to export in the environment when
 # configuring any subdirectory.  It must also be exported whenever
@@ -178,7 +178,7 @@ TARGET_CONFIGDIRS = @target_configdirs@
 TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
-TARGET_CONFIGARGS = @target_configargs@
+TARGET_CONFIGARGS = @target_configargs@ --with-target-subdir="$(TARGET_SUBDIR)"
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the host system.
 BASE_TARGET_EXPORTS = \
@@ -818,92 +818,74 @@ etags tags: TAGS
 # built are.
 TAGS: do-TAGS
 
-# --------------------------------------
-# Modules which run on the build machine
-# --------------------------------------
-[+ FOR build_modules +]
-.PHONY: configure-build-[+module+] maybe-configure-build-[+module+]
-maybe-configure-build-[+module+]:
-@if build-[+module+]
-maybe-configure-build-[+module+]: configure-build-[+module+]
-configure-build-[+module+]:
-	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/[+module+] ; \
+# ------------------------------------
+# Macros for configure and all targets
+# ------------------------------------
+
+[+ DEFINE configure +]
+.PHONY: configure-[+prefix+][+module+] maybe-configure-[+prefix+][+module+]
+maybe-configure-[+prefix+][+module+]:
+@if [+prefix+][+module+]
+maybe-configure-[+prefix+][+module+]: configure-[+prefix+][+module+]
+configure-[+prefix+][+module+]: [+deps+]
+	@[+ IF bootstrap +]test -f stage_last && exit 0; \
+	[+ ENDIF bootstrap +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(BUILD_EXPORTS) \
-	echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
-	cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
+	[+exports+] \
+	echo Configuring in [+subdir+]/[+module+]; \
+	cd "[+subdir+]/[+module+]" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(BUILD_SUBDIR)/[+module+]/ | \
+	  *) topdir=`echo [+subdir+]/[+module+]/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
 	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
 	libsrcdir="$$s/[+module+]"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)" [+extra_configure_flags+] \
+	[+ IF no-config-site +]rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file [+ ENDIF +]$(SHELL) $${libsrcdir}/configure \
+	  [+args+] $${srcdiroption} [+extra_configure_flags+] \
 	  || exit 1
-@endif build-[+module+]
+@endif [+prefix+][+module+]
+[+ ENDDEF +]
 
-.PHONY: all-build-[+module+] maybe-all-build-[+module+]
-maybe-all-build-[+module+]:
-@if build-[+module+]
-TARGET-build-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
-maybe-all-build-[+module+]: all-build-[+module+]
-all-build-[+module+]: configure-build-[+module+]
-	@r=`${PWD_COMMAND}`; export r; \
+[+ DEFINE all +]
+.PHONY: all-[+prefix+][+module+] maybe-all-[+prefix+][+module+]
+maybe-all-[+prefix+][+module+]:
+@if [+prefix+][+module+]
+TARGET-[+prefix+][+module+]=[+
+  IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
+maybe-all-[+prefix+][+module+]: all-[+prefix+][+module+]
+all-[+prefix+][+module+]: configure-[+prefix+][+module+]
+	@[+ IF bootstrap +]test -f stage_last && exit 0; \
+	[+ ENDIF bootstrap +]r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(BUILD_EXPORTS) \
-	(cd $(BUILD_SUBDIR)/[+module+] && \
-	  $(MAKE) [+extra_make_flags+] $(TARGET-build-[+module+]))
-@endif build-[+module+]
-[+ ENDFOR build_modules +]
+	[+exports+] \
+	(cd [+subdir+]/[+module+] && \
+	  $(MAKE) [+args+] [+extra_make_flags+] $(TARGET-[+prefix+][+module+]))
+@endif [+prefix+][+module+]
+[+ ENDDEF +]
+
+# --------------------------------------
+# Modules which run on the build machine
+# --------------------------------------
+[+ FOR build_modules +]
+[+ configure prefix="build-" subdir="$(BUILD_SUBDIR)" exports="$(BUILD_EXPORTS)"
+	     args="$(BUILD_CONFIGARGS)" no-config-site=true +]
+
+[+ all prefix="build-" subdir="$(BUILD_SUBDIR)" exports="$(BUILD_EXPORTS)" +]
+[+ ENDFOR build_module +]
 
 # --------------------------------------
 # Modules which run on the host machine
 # --------------------------------------
 [+ FOR host_modules +]
-.PHONY: configure-[+module+] maybe-configure-[+module+]
-maybe-configure-[+module+]:
-@if [+module+]
-maybe-configure-[+module+]: configure-[+module+]
-configure-[+module+]:
-	@[+ IF bootstrap +]test -f stage_last && exit 0; \
-	[+ ENDIF bootstrap +]test ! -f $(HOST_SUBDIR)/[+module+]/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/[+module+] ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo Configuring in [+module+]; \
-	cd $(HOST_SUBDIR)/[+module+] || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/[+module+]/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	libsrcdir="$$s/[+module+]"; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} [+extra_configure_flags+] \
-	  || exit 1
-@endif [+module+]
+[+ configure prefix="" subdir="$(HOST_SUBDIR)" exports="$(HOST_EXPORTS)"
+	     args="$(HOST_CONFIGARGS)" +]
 
-.PHONY: all-[+module+] maybe-all-[+module+]
-maybe-all-[+module+]:
-@if [+module+]
-TARGET-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
-maybe-all-[+module+]: all-[+module+]
-all-[+module+]: configure-[+module+]
-	@[+ IF bootstrap +]test -f stage_last && exit 0; \
-	[+ ENDIF bootstrap +]r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/[+module+] && \
-	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] $(TARGET-[+module+]))
-@endif [+module+]
+[+ all prefix="" subdir="$(HOST_SUBDIR)" exports="$(HOST_EXPORTS)"
+       args="$(FLAGS_TO_PASS)" +]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
 maybe-check-[+module+]:
@@ -985,63 +967,34 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 # Modules which run on the target machine
 # ---------------------------------------
 [+ FOR target_modules +]
-.PHONY: configure-target-[+module+] maybe-configure-target-[+module+]
-maybe-configure-target-[+module+]:
-@if target-[+module+]
-maybe-configure-target-[+module+]: configure-target-[+module+]
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-[+module+]
 $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
 	rm -f $(TARGET_SUBDIR)/[+module+]/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
-
-configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
-	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
-IF raw_cxx +]
-	$(RAW_CXX_TARGET_EXPORTS) \[+
-ELSE normal_cxx +]
-	$(NORMAL_TARGET_EXPORTS) \[+
-ENDIF raw_cxx +]
-	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
-	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/[+module+]/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	libsrcdir="$$s/[+module+]"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)" [+extra_configure_flags+] \
-	  || exit 1
 @endif target-[+module+]
 
-.PHONY: all-target-[+module+] maybe-all-target-[+module+]
-maybe-all-target-[+module+]:
-@if target-[+module+]
-TARGET-target-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +]
-maybe-all-target-[+module+]: all-target-[+module+]
-all-target-[+module+]: configure-target-[+module+]
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
-IF raw_cxx +]
-	$(RAW_CXX_TARGET_EXPORTS) \[+
-ELSE normal_cxx +]
-	$(NORMAL_TARGET_EXPORTS) \[+
-ENDIF raw_cxx +]
-	(cd $(TARGET_SUBDIR)/[+module+] && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
-	    IF raw_cxx 
-	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
-	    ENDIF raw_cxx 
-	  +] [+extra_make_flags+] $(TARGET-target-[+module+]))
-@endif target-[+module+]
+[+ IF raw_cxx +]
+[+ configure prefix="target-" subdir="$(TARGET_SUBDIR)"
+	     deps=(string-append "$(TARGET_SUBDIR)/" (get "module") "/multilib.out")
+	     exports="$(RAW_CXX_TARGET_EXPORTS)"
+	     args="$(TARGET_CONFIGARGS)" no-config-site=true +]
+
+[+ all prefix="target-" subdir="$(TARGET_SUBDIR)"
+       exports="$(RAW_CXX_TARGET_EXPORTS)"
+       args="$(TARGET_FLAGS_TO_PASS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'" +]
+[+ ELSE +]
+[+ configure prefix="target-" subdir="$(TARGET_SUBDIR)"
+	     deps=(string-append "$(TARGET_SUBDIR)/" (get "module") "/multilib.out")
+	     exports="$(NORMAL_TARGET_EXPORTS)"
+	     args="$(TARGET_CONFIGARGS)" no-config-site=true +]
+
+[+ all prefix="target-" subdir="$(TARGET_SUBDIR)"
+       exports="$(NORMAL_TARGET_EXPORTS)"
+       args="$(TARGET_FLAGS_TO_PASS)" +]
+[+ ENDIF +]
 
 .PHONY: check-target-[+module+] maybe-check-target-[+module+]
 maybe-check-target-[+module+]:
