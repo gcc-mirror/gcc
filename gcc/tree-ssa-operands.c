@@ -120,7 +120,7 @@ static GTY (()) varray_type build_v_must_defs;
 bool ssa_call_clobbered_cache_valid;
 bool ssa_ro_call_cache_valid;
 
-/* These arrays are the cached operand vectors for call clobberd calls.  */
+/* These arrays are the cached operand vectors for call clobbered calls.  */
 static GTY (()) varray_type clobbered_v_may_defs;
 static GTY (()) varray_type clobbered_vuses;
 static GTY (()) varray_type ro_call_vuses;
@@ -1709,7 +1709,7 @@ add_call_clobber_ops (tree stmt)
       s_ann->makes_aliased_stores = empty_ann.makes_aliased_stores;
     }
 
-  /* Perpare empty cache vectors.  */
+  /* Prepare empty cache vectors.  */
   if (clobbered_v_may_defs)
     {
       VARRAY_POP_ALL (clobbered_vuses);
@@ -1780,7 +1780,7 @@ add_call_read_ops (tree stmt)
   if (s_ann)
     s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
 
-  /* Perpare empty cache vectors.  */
+  /* Prepare empty cache vectors.  */
   if (ro_call_vuses)
     VARRAY_POP_ALL (ro_call_vuses);
   else

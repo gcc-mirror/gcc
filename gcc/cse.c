@@ -762,8 +762,8 @@ approx_reg_cost (rtx x)
 }
 
 /* Returns a canonical version of X for the address, from the point of view,
-   that all multiplications are repesented as MULT instead of the multiply
-   by a power of 2 being repesented as ASHIFT.  */
+   that all multiplications are represented as MULT instead of the multiply
+   by a power of 2 being represented as ASHIFT.  */
 
 static rtx
 canon_for_address (rtx x)
