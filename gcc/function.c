@@ -4863,7 +4863,19 @@ assign_parms (fndecl)
 
 	  /* If something wants our address, try to use ADDRESSOF.  */
 	  if (TREE_ADDRESSABLE (parm))
-	    put_var_into_stack (parm);
+	    {
+	      /* If we end up putting something into the stack,
+		 fixup_var_refs_insns will need to make a pass over
+		 all the instructions.  It looks throughs the pending
+		 sequences -- but it can't see the ones in the
+		 CONVERSION_INSNS, if they're not on the sequence
+		 stack.  So, we go back to that sequence, just so that
+		 the fixups will happen.  */
+	      push_to_sequence (conversion_insns);
+	      put_var_into_stack (parm);
+	      conversion_insns = get_insns ();
+	      end_sequence ();
+	    }
 	}
       else
 	{
