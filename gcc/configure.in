@@ -2141,6 +2141,21 @@ changequote([,])dnl
     fi
     AC_MSG_RESULT($gcc_cv_as_instructions)
 
+    AC_MSG_CHECKING(cmov syntax)
+    gcc_cv_as_ix86_cmov_sun_syntax=no
+    if test x$gcc_cv_as != x; then
+	echo 'cmovl.l %edx, %eax' > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		    gcc_cv_as_ix86_cmov_sun_syntax=yes
+	fi
+	rm -f conftest.s conftest.o
+    fi
+    if test "x$gcc_cv_as_ix86_cmov_sun_syntax" = xyes; then
+	AC_DEFINE(HAVE_AS_IX86_CMOV_SUN_SYNTAX, 1,
+          [Define if your assembler supports the Sun syntax for cmov.])
+    fi
+    AC_MSG_RESULT($gcc_cv_as_ix86_cmov_sun_syntax)
+
     AC_MSG_CHECKING(assembler GOTOFF in data directives)
     gcc_cv_as_gotoff_in_data=no
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
@@ -19,8 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#define CMOV_SUN_AS_SYNTAX 1
 
 /* The Solaris 2.0 x86 linker botches alignment of code sections.
    It tries to align to a 16 byte boundary by padding with 0x00000090

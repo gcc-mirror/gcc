@@ -1,5 +1,16 @@
 2003-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* configure.in (gcc_cv_as_ix86_cmov_sun_syntax): Check if
+	assembler supports Sun syntax for cmov.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config/i386/i386.c: Rename CMOV_SUN_AS_SYNTAX to
+	HAVE_AS_IX86_CMOV_SUN_SYNTAX. 
+	* config/i386/sol2.h (CMOV_SUN_AS_SYNTAX): Remove.
+	Fixes PR target/12101.
+
+2003-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* configure.in (gcc_cv_as_hidden): Disable unless using GNU ld.
 	* configure: Regenerate.
 
