@@ -1,3 +1,8 @@
+2002-12-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.md (load_multiple): Use adjust_address_nv.
+	(store_multiple): Likewise.
+
 2002-12-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/fptr.c (__canonicalize_funcptr_for_compare): Don't canonicalize
@@ -29,8 +34,8 @@
 
 Sun Dec  8 14:57:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_expand_int_movcc):  Use force_operand instead of constructing
-	insn directly.
+	* i386.c (ix86_expand_int_movcc): Use force_operand instead of
+	constructing insn directly.
 
 2002-12-07  Kazu Hirata  <kazu@cs.umass.edu>
 
