@@ -2484,6 +2484,20 @@ simplify_subreg (outermode, op, innermode, byte)
 	    return new;
 	}
 
+      if (GET_MODE_CLASS (outermode) != MODE_INT
+	  && GET_MODE_CLASS (outermode) != MODE_CC)
+	{
+	  enum machine_mode new_mode = int_mode_for_mode (outermode);
+
+	  if (new_mode != innermode || byte != 0)
+	    {
+	      op = simplify_subreg (new_mode, op, innermode, byte);
+	      if (! op)
+		return NULL_RTX;
+	      return simplify_subreg (outermode, op, new_mode, 0);
+	    }
+	}
+
       offset = byte * BITS_PER_UNIT;
       switch (GET_CODE (op))
 	{
