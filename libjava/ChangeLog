@@ -1,3 +1,8 @@
+2003-09-25  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* gnu/java/net/natPlainSocketImplWin32.cc: Add missing #includes.
+	PR libgcj/12388.
+
 2003-09-24  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/StringBuffer.java (substring): Don't set `shared' on small
