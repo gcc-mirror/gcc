@@ -1228,7 +1228,7 @@ extern union tree_node *current_function_decl;
   if (memory_address_p (MODE, X))				\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  else if ((GET_CODE (X) == SYMBOL_REF & read_only_operand (X))	\
+  else if ((GET_CODE (X) == SYMBOL_REF && read_only_operand (X))	\
 	    || GET_CODE (X) == LABEL_REF)			\
     (X) = gen_rtx (LO_SUM, Pmode,				\
 		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
@@ -1407,7 +1407,7 @@ while (0)
   case MOD:						\
   case UMOD:						\
     return COSTS_N_INSNS (60);				\
-   case PLUS: /* this includes shNadd insns */		\
+  case PLUS: /* this includes shNadd insns */		\
     return COSTS_N_INSNS (1) + 2;
 
 /* Conditional branches with empty delay slots have a length of two.  */
