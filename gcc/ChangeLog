@@ -1,3 +1,10 @@
+2003-04-29  Danny Smith  <dannysmith@users.sourceforge.net>
+
+        * config/i386/mingw32.h (LIBGCC_SPEC): Add libmingwex.a.
+        Update copyright.
+        * config/i386/cygwin.h (LIBGCC_SPEC): Add libmingwex.a, for
+        -mno-cygwin case.
+
 2003-04-29  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* varasm.c (default_assemble_visibility): Use assemble_name.
