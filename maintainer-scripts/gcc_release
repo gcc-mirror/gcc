@@ -283,12 +283,13 @@ build_tarfiles() {
   done
   build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
     `basename ${SOURCE_DIRECTORY}`
+}
 
-  # Build .bz2 files.
+# Build .bz2 files.
+build_bzip2() {
   for f in ${FILE_LIST}; do
     bzfile=${f%.gz}.bz2
     (zcat $f | ${BZIP2} > ${bzfile}) || error "Could not create ${bzfile}"
-    FILE_LIST="${FILE_LIST} ${bzfile}"
   done
 }
 
@@ -299,7 +300,7 @@ build_diffs() {
   old_vers=${old_file%.tar.gz}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc gcc-ada gcc-chill gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.gz
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.gz
     if [ -e $old_tar ] && [ -e $new_tar ]; then
@@ -428,12 +429,13 @@ SNAPSHOT=0
 LOCAL=0
 
 # Major operation modes.
+MODE_BZIP2=0
 MODE_DIFFS=0
 MODE_SOURCES=0
 MODE_TARFILES=0
 MODE_UPLOAD=0
 
-# Files generated to upload.
+# .gz files generated to create .bz2 files from.
 FILE_LIST=""
 
 # Programs we use.
@@ -561,11 +563,12 @@ export CVSROOT
 # Handle the major modes.
 while [ $# -ne 0 ]; do
     case $1 in
+    bzip2)    MODE_BZIP2=1;;
     diffs)    MODE_DIFFS=1;;
     sources)  MODE_SOURCES=1;;
     tarfiles) MODE_TARFILES=1;;
     upload)   MODE_UPLOAD=1;;
-    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_UPLOAD=1;;
+    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_BZIP2=1; MODE_UPLOAD=1;;
     *)        error "Unknown mode $1";;
     esac
     shift
@@ -592,6 +595,11 @@ if [ $MODE_DIFFS -ne 0 ]; then
       build_diffs $old_tar
     done
   fi
+fi
+
+# Build bzip2 files
+if [ $MODE_BZIP2 -ne 0 ]; then
+  build_bzip2
 fi
 
 # Upload them to the FTP server.

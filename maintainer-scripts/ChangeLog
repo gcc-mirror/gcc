@@ -1,3 +1,8 @@
+2002-03-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Build diffs for ada and chill.  Make "bzip2" a new
+	major mode.
+
 2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* update_version:  Don't indent the version string.
