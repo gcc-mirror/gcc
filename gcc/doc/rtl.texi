@@ -2368,9 +2368,9 @@ the operands of these.
 @item (set @var{lval} @var{x})
 Represents the action of storing the value of @var{x} into the place
 represented by @var{lval}.  @var{lval} must be an expression
-representing a place that can be stored in: @code{reg} (or @code{subreg}
-or @code{strict_low_part}), @code{mem}, @code{pc}, @code{parallel}, or
-@code{cc0}.
+representing a place that can be stored in: @code{reg} (or @code{subreg},
+@code{strict_low_part} or @code{zero_extract}), @code{mem}, @code{pc},
+@code{parallel}, or @code{cc0}.
 
 If @var{lval} is a @code{reg}, @code{subreg} or @code{mem}, it has a
 machine mode; then @var{x} must be valid for that mode.
@@ -2383,10 +2383,10 @@ rest of the register receives an undefined value.  Likewise, if
 the mode of the register, the rest of the register can be changed in
 an undefined way.
 
-If @var{lval} is a @code{strict_low_part} of a @code{subreg}, then the
-part of the register specified by the machine mode of the
-@code{subreg} is given the value @var{x} and the rest of the register
-is not changed.
+If @var{lval} is a @code{strict_low_part} or @code{zero_extract} 
+of a @code{subreg}, then the part of the register specified by the
+machine mode of the @code{subreg} is given the value @var{x} and
+the rest of the register is not changed.
 
 If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may
 be either a @code{compare} expression or a value that may have any mode.

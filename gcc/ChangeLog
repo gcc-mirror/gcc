@@ -1,3 +1,8 @@
+2003-05-12  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/rtl.texi: Document zero_extract as a valid destination
+	of a set insn.
+
 2003-05-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/lib1funcs.asm (LSYM): Define -- on ELF prefix a local symbol with
