@@ -35,32 +35,82 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.util;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 /**
+ * <p>
  * This class represents a specific time in milliseconds since the epoch.
  * The epoch is 1970, January 1 00:00:00.0000 UTC.  
+ * </p>
+ * <p>
+ * <code>Date</code> is intended to reflect universal time coordinate (UTC),
+ * but this depends on the underlying host environment.  Most operating systems 
+ * don't handle the leap second, which occurs about once every year or
+ * so.  The leap second is added to the last minute of the day on either
+ * the 30th of June or the 31st of December, creating a minute 61 seconds
+ * in length.
+ * </p>
+ * <p>
+ * The representations of the date fields are as follows:
+ * <ul>
+ * <li>
+ * Years are specified as the difference between the year
+ * and 1900.  Thus, the final year used is equal to
+ * 1900 + y, where y is the input value.
+ * </li>
+ * <li>
+ * Months are represented using zero-based indexing,
+ * making 0 January and 11 December.
+ * </li>
+ * <li>
+ * Dates are represented with the usual values of
+ * 1 through to 31.
+ * </li>
+ * <li>
+ * Hours are represented in the twenty-four hour clock,
+ * with integer values from 0 to 23.  12am is 0, and
+ * 12pm is 12.
+ * </li>
+ * <li>
+ * Minutes are again as usual, with values from 0 to 59.
+ * </li>
+ * <li>
+ * Seconds are represented with the values 0 through to 61,
+ * with 60 and 61 being leap seconds (as per the ISO C standard).
+ * </li>
+ * </ul>
+ * </p>
+ * <p>
+ * Prior to JDK 1.1, this class was the sole class handling date and time
+ * related functionality.  However, this particular solution was not
+ * amenable to internationalization.  The new <code>Calendar</code>
+ * class should now be used to handle dates and times, with <code>Date</code>
+ * being used only for values in milliseconds since the epoch.  The
+ * <code>Calendar</code> class, and its concrete implementations, handle
+ * the interpretation of these values into minutes, hours, days, months
+ * and years.  The formatting and parsing of dates is left to the
+ * <code>DateFormat</code> class, which is able to handle the different
+ * types of date format which occur in different locales.
+ * </p>
  *
- * Date is intended to reflect universal time coordinate (UTC), but doesn't
- * handle the leap seconds.
- *
- * Prior to jdk 1.1 this class was the sole Time class and had also 
- * calendar functionality.  But this can't be localized, so a new Calendar
- * class was created, that you should use instead.  The functions which
- * get or return a year, month, day etc. are all deprecated and shouldn't be
- * used.  Use Calendar instead.
- * 
  * @see Calendar
  * @see GregorianCalendar
  * @see java.text.DateFormat
  * @author Jochen Hoenicke
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
-public class Date implements Cloneable, Comparable, java.io.Serializable
+public class Date
+    implements Cloneable, Comparable, Serializable
 {
   /**
    * This is the serialization UID for this class
+   * for compatability with Sun's JDK.
    */
   private static final long serialVersionUID = 7523967970034938905L;
 
@@ -69,6 +119,17 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
    */
   private transient long time;
 
+  /**
+   * An array of week names used to map names to integer values.
+   */
+  private static final String[] weekNames = { "Sun", "Mon", "Tue", "Wed",
+					      "Thu", "Fri", "Sat" };
+  /**
+   * An array of month names used to map names to integer values.
+   */
+  private static final String[] monthNames = { "Jan", "Feb", "Mar", "Apr",
+					       "May", "Jun", "Jul", "Aug",
+					       "Sep", "Oct", "Nov", "Dec" };
   /**
    * Creates a new Date Object representing the current time.
    */
@@ -79,6 +140,7 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Creates a new Date Object representing the given time.
+   *
    * @param time the time in milliseconds since the epoch.
    */
   public Date(long time)
@@ -88,8 +150,12 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Creates a new Date Object representing the given time.
+   *
    * @deprecated use <code>new GregorianCalendar(year+1900, month,
-   * day)</code> instead.  
+   * day)</code> instead.
+   * @param year the difference between the required year and 1900.
+   * @param month the month as a value between 0 and 11.
+   * @param day the day as a value between 0 and 31.
    */
   public Date(int year, int month, int day)
   {
@@ -98,8 +164,15 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Creates a new Date Object representing the given time.
+   *
    * @deprecated use <code>new GregorianCalendar(year+1900, month,
-   * day, hour, min)</code> instead.  
+   * day, hour, min)</code> instead.
+   * @param year the difference between the required year and 1900.
+   * @param month the month as a value between 0 and 11.
+   * @param day the day as a value between 0 and 31.
+   * @param hour the hour as a value between 0 and 23, in 24-hour
+   *        clock notation.
+   * @param min the minute as a value between 0 and 59.
    */
   public Date(int year, int month, int day, int hour, int min)
   {
@@ -110,8 +183,17 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Creates a new Date Object representing the given time.
+   *
    * @deprecated use <code>new GregorianCalendar(year+1900, month,
-   * day)</code> instead.  
+   * day, hour, min, sec)</code> instead. 
+   * @param year the difference between the required year and 1900.
+   * @param month the month as a value between 0 and 11.
+   * @param day the day as a value between 0 and 31.
+   * @param hour the hour as a value between 0 and 23, in 24-hour
+   *        clock notation.
+   * @param min the minute as a value between 0 and 59.
+   * @param sec the second as a value between 0 and 61 (with 60
+   *        and 61 being leap seconds).
    */
   public Date(int year, int month, int day, int hour, int min, int sec)
   {
@@ -131,6 +213,13 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     time = parse(s);
   }
 
+  /**
+   * Returns a copy of this <code>Date</code> object.
+   *
+   * @return a copy, or null if the object couldn't be
+   *         cloned.
+   * @see Object#clone()
+   */
   public Object clone()
   {
     try
@@ -144,8 +233,22 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * @deprecated Use Calendar with a UTC TimeZone instead.
-   * @return the time in millis since the epoch.
+   * Returns the number of milliseconds since the epoch
+   * specified by the given arguments.  The arguments are
+   * interpreted relative to UTC rather than the local
+   * time zone.
+   *
+   * @deprecated Use <code>Calendar</code> with a UTC
+   *             <code>TimeZone</code> instead.
+   * @param year the difference between the required year and 1900.
+   * @param month the month as a value between 0 and 11.
+   * @param day the day as a value between 0 and 31.
+   * @param hour the hour as a value between 0 and 23, in 24-hour
+   *        clock notation.
+   * @param min the minute as a value between 0 and 59.
+   * @param sec the second as a value between 0 and 61 (with 60
+   *        and 61 being leap seconds).
+   * @return the time in milliseconds since the epoch.
    */
   public static long UTC(int year, int month, int date,
 			 int hrs, int min, int sec)
@@ -158,7 +261,8 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Gets the time represented by this Object
+   * Gets the time represented by this object.
+   *
    * @return the time in milliseconds since the epoch.
    */
   public long getTime()
@@ -167,8 +271,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the number of minutes offset used with UTC to give the time
+   * represented by this object in the current time zone.  The date information
+   * from this object is also used to determine whether or not daylight savings
+   * time is in effect.  For example, the offset for the UK would be 0 if the
+   * month of the date object was January, and 1 if the month was August.
+   * 
    * @deprecated use
-   * Calendar.get(Calendar.ZONE_OFFSET)+Calendar.get(Calendar.DST_OFFSET)
+   * <code>Calendar.get(Calendar.ZONE_OFFSET)+Calendar.get(Calendar.DST_OFFSET)</code>
    * instead.
    * @return The time zone offset in minutes of the local time zone
    * relative to UTC.  The time represented by this object is used to
@@ -183,8 +293,10 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the time which this Object should represented.
-   * @param time the time in milliseconds since the epoch.  */
+   * Sets the time which this object should represent.
+   *
+   * @param time the time in milliseconds since the epoch.  
+   */
   public void setTime(long time)
   {
     this.time = time;
@@ -192,8 +304,9 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Tests if this date is after the specified date.
+   *
    * @param when the other date
-   * @return true, if the date represented by this Object is
+   * @return true, if the date represented by this object is
    * strictly later than the time represented by when.  
    */
   public boolean after(Date when)
@@ -203,6 +316,7 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Tests if this date is before the specified date.
+   *
    * @param when the other date
    * @return true, if the date represented by when is strictly later
    * than the time represented by this object.
@@ -214,8 +328,9 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Compares two dates for equality.
+   *
    * @param obj the object to compare.
-   * @return true, if obj is a Date object and the date represented
+   * @return true, if obj is a Date object and the time represented
    * by obj is exactly the same as the time represented by this
    * object.  
    */
@@ -226,6 +341,7 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 
   /**
    * Compares two dates.
+   *
    * @param when the other date.
    * @return 0, if the date represented
    * by obj is exactly the same as the time represented by this
@@ -238,9 +354,11 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Compares this Date to another.  This behaves like
-   * <code>compareTo(Date)</code>, but it may throw a
-   * <code>ClassCastException</code>
+   * Compares this Date to another object.  This behaves like
+   * <code>compareTo(Date)</code>, but it takes a generic object
+   * and throws a <code>ClassCastException</code> if obj is
+   * not a <code>Date</code>.
+   * 
    * @param obj the other date.
    * @return 0, if the date represented
    * by obj is exactly the same as the time represented by this
@@ -253,18 +371,73 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return compareTo((Date) obj);
   }
 
+  /**
+   * Computes the hash code of this <code>Date</code> as the
+   * XOR of the most significant and the least significant
+   * 32 bits of the 64 bit milliseconds value.
+   *
+   * @return the hash code.
+   */
   public int hashCode()
   {
     return (int) time ^ (int) (time >>> 32);
   }
 
-  private static final String[] weekNames = { "Sun", "Mon", "Tue", "Wed",
-					      "Thu", "Fri", "Sat" };
-
-  private static final String[] monthNames = { "Jan", "Feb", "Mar", "Apr",
-					       "May", "Jun", "Jul", "Aug",
-					       "Sep", "Oct", "Nov", "Dec" };
-
+  /**
+   * <p>
+   * Returns a string representation of this date using
+   * the following date format:
+   * </p>
+   * <p>
+   * <code>day mon dd hh:mm:ss zz yyyy</code>
+   * </p>
+   * <p>where the fields used here are:
+   * <ul>
+   * <li>
+   * <code>day</code> -- the day of the week
+   * (Sunday through to Saturday).
+   * </li>
+   * <li>
+   * <code>mon</code> -- the month (Jan to Dec).
+   * </li>
+   * <li>
+   * <code>dd</code> -- the day of the month
+   * as two decimal digits (01 to 31).
+   * </li>
+   * <li>
+   * <code>hh</code> -- the hour of the day
+   * as two decimal digits in 24-hour clock notation
+   * (01 to 23).
+   * </li>
+   * <li>
+   * <code>mm</code> -- the minute of the day
+   * as two decimal digits (01 to 59).
+   * </li>
+   * <li>
+   * <code>ss</code> -- the second of the day
+   * as two decimal digits (01 to 61).
+   * </li>
+   * <li>
+   * <code>zz</code> -- the time zone information if available.
+   * The possible time zones used include the abbreviations
+   * recognised by <code>parse()</code> (e.g. GMT, CET, etc.)
+   * and may reflect the fact that daylight savings time is in
+   * effect.  The empty string is used if there is no time zone
+   * information.
+   * </li>
+   * <li>
+   * <code>yyyy</code> -- the year as four decimal digits.
+   * </li>
+   * </ul>
+   * <p>
+   * The <code>DateFormat</code> class should now be 
+   * preferred over using this method.
+   * </p>
+   *
+   * @return A string of the form 'day mon dd hh:mm:ss zz yyyy'
+   * @see #parse(String)
+   * @see DateFormat
+   */
   public String toString()
   {
     Calendar cal = Calendar.getInstance();
@@ -286,16 +459,66 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
       year.substring(year.length() - 4);
   }
 
-  /** Format this object in a locale-specific way.
+  /** 
+   * Returns a locale-dependent string representation of this
+   * <code>Date</code> object.
+   *
    * @deprecated Use DateFormat.format(Date)
+   * @return A locale-dependent string representation.
+   * @see #parse(String)
+   * @see DateFormat
    */
   public String toLocaleString()
   {
     return java.text.DateFormat.getInstance().format(this);
   }
 
-  /** Format this object in a standard format in the GMT timezone.
+  /** 
+   * <p>
+   * Returns a string representation of this <code>Date</code>
+   * object using GMT rather than the local timezone.
+   * The following date format is used:
+   * </p>
+   * <p>
+   * <code>d mon yyyy hh:mm:ss GMT</code>
+   * </p>
+   * <p>where the fields used here are:
+   * <ul>
+   * <li>
+   * <code>d</code> -- the day of the month
+   * as one or two decimal digits (1 to 31).
+   * </li>
+   * <li>
+   * <code>mon</code> -- the month (Jan to Dec).
+   * </li>
+   * <li>
+   * <code>yyyy</code> -- the year as four decimal digits.
+   * </li>
+   * <li>
+   * <code>hh</code> -- the hour of the day
+   * as two decimal digits in 24-hour clock notation
+   * (01 to 23).
+   * </li>
+   * <li>
+   * <code>mm</code> -- the minute of the day
+   * as two decimal digits (01 to 59).
+   * </li>
+   * <li>
+   * <code>ss</code> -- the second of the day
+   * as two decimal digits (01 to 61).
+   * </li>
+   * <li>
+   * <code>GMT</code> -- the literal string "GMT"
+   * indicating Greenwich Mean Time as opposed to
+   * the local timezone.
+   * </li>
+   * </ul>
+   * 
    * @deprecated Use DateFormat.format(Date) with a GMT TimeZone.
+   * @return A string of the form 'd mon yyyy hh:mm:ss GMT' using
+   *         GMT as opposed to the local timezone.
+   * @see #parse(String)
+   * @see DateFormat
    */
   public String toGMTString()
   {
@@ -304,6 +527,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return format.format(this);
   }
 
+  /**
+   * Parses the time zone string.
+   *
+   * @param tok The token containing the time zone.
+   * @param sign The sign (+ or -) used by the time zone.
+   * @return An integer representing the number of minutes offset
+   *         from GMT for the time zone.
+   */
   private static int parseTz(String tok, char sign)
     throws IllegalArgumentException
   {
@@ -328,6 +559,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return sign == '-' ? -num : num;
   }
 
+  /**
+   * Parses the month string.
+   *
+   * @param tok the token containing the month.
+   * @return An integer between 0 and 11, representing
+   *         a month from January (0) to December (11),
+   *         or -1 if parsing failed.
+   */
   private static int parseMonth(String tok)
   {
     // Initialize strings for month names.
@@ -346,6 +585,12 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return -1;
   }
 
+  /**
+   * Parses the day of the week string.
+   *
+   * @param tok the token containing the day of the week.
+   * @return true if the token was parsed successfully.
+   */
   private static boolean parseDayOfWeek(String tok)
   {
     // Initialize strings for days of the week names.
@@ -362,9 +607,124 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
     return false;
   }
 
-  /** Parse a String and return the time it represents.
+  /** 
+   * <p>
+   * Parses a String and returns the time, in milliseconds since the
+   * epoch, it represents.  Most syntaxes are handled, including
+   * the IETF date standard "day, dd mon yyyy hh:mm:ss zz" (see
+   * <code>toString()</code> for definitions of these fields).
+   * Standard U.S. time zone abbreviations are recognised, in
+   * addition to time zone offsets in positive or negative minutes.
+   * If a time zone is specified, the specified time is assumed to
+   * be in UTC and the appropriate conversion is applied, following
+   * parsing, to convert this to the local time zone.  If no zone
+   * is specified, the time is assumed to already be in the local
+   * time zone.
+   * </p>
+   * <p>
+   * The method parses the string progressively from left to right.
+   * At the end of the parsing process, either a time is returned
+   * or an <code>IllegalArgumentException</code> is thrown to signify
+   * failure.  The ASCII characters A-Z, a-z, 0-9, and ',', '+', '-',
+   * ':' and '/' are the only characters permitted within the string,
+   * besides whitespace and characters enclosed within parantheses
+   * '(' and ')'.  
+   * </p>
+   * <p>
+   * A sequence of consecutive digits are recognised as a number,
+   * and interpreted as follows:
+   * <ul>
+   * <li>
+   * A number preceded by a sign (+ or -) is taken to be a time zone
+   * offset.  The time zone offset can be specified in either hours
+   * or minutes.  The former is assumed if the number is less than 24.
+   * Otherwise, the offset is assumed to be in minutes.  A - indicates
+   * a time zone west of GMT, while a + represents a time zone to the
+   * east of GMT.  The time zones are always assumed to be relative
+   * to GMT, and a (redundant) specification of this can be included
+   * with the time zone.  For example, '-9', 'utc-9' and 'GMT-9' all
+   * represent a time zone nine hours west of GMT.  Similarly,
+   * '+4', 'ut+4' and 'UTC+4' all give 4 hours east of GMT.
+   * </li>
+   * <li>
+   * A number equal to or greater than 70 is regarded as a year specification.
+   * Values lower than 70 are only assumed to indicate a year if both the
+   * day of the month and the month itself have already been recognised.
+   * Year values less than 100 are interpreted as being relative to the current
+   * century when the <code>Date</code> class is initialised..  Given a century,
+   * x, the year is assumed to be within the range x - 80 to x + 19.  The value
+   * itself is then used as a match against the two last digits of one of these
+   * years.  For example, take x to be 2004.  A two-digit year is assumed to fall
+   * within the range x - 80 (1924) and x + 19 (2023).  Thus, any intepreted value
+   * between 0 and 23 is assumed to be 2000 to 2023 and values between 24 and 99
+   * are taken as being 1924 to 1999.  This only applies for the case of 2004.
+   * With a different year, the values will be interpreted differently. 2005
+   * will used 0 to 24 as 2000 to 2024 and 25 to 99 as 1925 to 1999, for example.
+   * This behaviour differs from that of <code>SimpleDateFormat</code> and is
+   * time-dependent (a two-digit year will be interpreted differently depending
+   * on the time the code is run).
+   * </li>
+   * <li>
+   * Numbers followed by a colon are interpreted by first an hour, and then
+   * as a minute, once an hour has been found.
+   * </li>
+   * <li>
+   * <li>
+   * Numbers followed by a slash are regarded first as a month, and then as
+   * a day of the month once the month has been found.  This follows the
+   * U.S. date format of mm/dd, rather than the European dd/mm.  Months
+   * are converted to the recognised value - 1 before storage, in order
+   * to put the number within the range 0 to 11.
+   * </li>
+   * <li>
+   * Numbers followed by commas, whitespace, hyphens or the end of the string
+   * are interpreted in the following order: hour, minute, second, day of month.
+   * The first type not already recognised in the current string being parsed is
+   * assumed.
+   * </li>
+   * </ul>
+   * </p>
+   * <p>
+   * A sequence of consecutive alphabetic characters is recognised as a word,
+   * and interpreted as follows, in a case-insentive fashion:
+   * <li>
+   * The characters 'AM' or 'PM' restrict the hour value to a value between 0
+   * and 12.  In the latter case, 12 is added to the hour value before storage.
+   * </li>
+   * <li>
+   * Any words which match any prefix of one of the days of the week ('Monday',
+   * 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' and 'Sunday'),
+   * are simply ignored.
+   * </li>
+   * <li>
+   * Any words which match any prefix of one of the months of the year ('January',
+   * 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+   * 'October', 'November', 'December') are recognised and interpreted as the
+   * appropriate value between 0 and 11.  The first match made against a
+   * month is the one used, in the order specified here.  For example, 'Ma' is
+   * intepreted as 'March' (2) and not as 'May' (4).  Similarly, 'Ju' is 'June',
+   * and not 'July'.
+   * </li>
+   * <li>
+   * The words 'GMT', 'UT' and 'UTC' are interpreted as specifying UTC as the
+   * time zone in use for this date.
+   * </li>
+   * <li>
+   * The word pairs 'EST'/'EDT', 'CST'/'CDT', 'MST'/'MDT' and 'PST'/'PDT' are
+   * interpreted as the appropriate U.S. time zone abbreviation.  Each pair
+   * is the standard and daylight savings time zone specification, respectively,
+   * for each zone within the U.S, these being Eastern Standard/Daylight Time
+   * (-5), Central Standard/Daylight Time (-6), Mountain Standard/Daylight Time
+   * (-7) and Pacific Standard/Daylight Time (-8).
+   * </li>
+   * </ul>
+   *
    * @param s The String to parse.
+   * @return The time in milliseconds since the epoch.
+   * @throws IllegalArgumentException if the string fails to parse.
    * @deprecated Use DateFormat.parse(String)
+   * @see #toString()
+   * @see SimpleDateFormat
    */
   public static long parse(String string)
   {
@@ -578,9 +938,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the difference between the year represented by this
+   * <code>Date</code> object and 1900.
+   *
    * @return the year minus 1900 represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.YEAR)
-   * instead.  Note about the 1900 difference in year.
+   * instead.  Note the 1900 difference in the year.
+   * @see Calendar
+   * @see #setYear(int)
    */
   public int getYear()
   {
@@ -590,11 +955,25 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the year to year minus 1900, not changing the other fields.
+   * Sets the year to the specified year, plus 1900.  The other
+   * fields are only altered as required to match the same date
+   * and time in the new year.  Usually, this will mean that
+   * the fields are not changed at all, but in the case of
+   * a leap day or leap second, the fields will change in
+   * relation to the existence of such an event in the new year.
+   * For example, if the date specifies February the 29th, 2000,
+   * then this will become March the 1st if the year is changed
+   * to 2001, as 2001 is not a leap year.  Similarly, a seconds
+   * value of 60 or 61 may result in the seconds becoming 0 and
+   * the minute increasing by 1, if the new time does not include
+   * a leap second.
+   *
    * @param year the year minus 1900.
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.YEAR, year) instead.  Note about the 1900
    * difference in year.  
+   * @see #getYear()
+   * @see Calendar
    */
   public void setYear(int year)
   {
@@ -605,9 +984,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the month represented by this <code>Date</code> object,
+   * as a value between 0 (January) and 11 (December).
+   *
    * @return the month represented by this date object (zero based).
    * @deprecated Use Calendar instead of Date, and use get(Calendar.MONTH)
    * instead.
+   * @see #setMonth(int)
+   * @see Calendar
    */
   public int getMonth()
   {
@@ -617,10 +1001,26 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the month to the given value, not changing the other fields.
-   * @param month the month, zero based.
+   * Sets the month to the given value.  The other
+   * fields are only altered as necessary to match
+   * the same date and time in the new month.  In most
+   * cases, the other fields won't change at all.  However,
+   * in the case of a shorter month or a leap second, values
+   * may be adjusted.  For example, if the day of the month
+   * is currently 31, and the month value is changed from
+   * January (0) to September (8), the date will become
+   * October the 1st, as September only has 30 days.  Similarly,
+   * a seconds value of 60 or 61 (a leap second) may result
+   * in the seconds value being reset to 0 and the minutes
+   * value being incremented by 1, if the new time does
+   * not include a leap second.
+   * 
+   * @param month the month, with a zero-based index
+   *        from January.
    * @deprecated Use Calendar instead of Date, and use
-   * set(Calendar.MONTH, month) instead. 
+   * set(Calendar.MONTH, month) instead.
+   * @see #getMonth()
+   * @see Calendar 
    */
   public void setMonth(int month)
   {
@@ -631,9 +1031,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the day of the month of this <code>Date</code>
+   * object, as a value between 0 and 31.
+   *
    * @return the day of month represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.DATE)
    * instead.
+   * @see Calendar
+   * @see #setDate(int)
    */
   public int getDate()
   {
@@ -643,10 +1048,26 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the date to the given value, not changing the other fields.
+   * Sets the date to the given value. The other
+   * fields are only altered as necessary to match
+   * the same date and time on the new day of the month.  In most
+   * cases, the other fields won't change at all.  However,
+   * in the case of a leap second or the day being out of
+   * the range of the current month, values
+   * may be adjusted.  For example, if the day of the month
+   * is currently 30 and the month is June, a new day of the
+   * month value of 31 will cause the month to change to July,
+   * as June only has 30 days .  Similarly,
+   * a seconds value of 60 or 61 (a leap second) may result
+   * in the seconds value being reset to 0 and the minutes
+   * value being incremented by 1, if the new time does
+   * not include a leap second.
+   *
    * @param date the date.
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.DATE, date) instead. 
+   * @see Calendar
+   * @see #getDate()
    */
   public void setDate(int date)
   {
@@ -657,9 +1078,13 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the day represented by this <code>Date</code>
+   * object as an integer between 0 (Sunday) and 6 (Saturday).
+   *
    * @return the day represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.DAY_OF_WEEK)
    * instead.
+   * @see Calendar
    */
   public int getDay()
   {
@@ -670,9 +1095,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the hours represented by this <code>Date</code>
+   * object as an integer between 0 and 23.
+   *
    * @return the hours represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.HOUR_OF_DAY)
    * instead.
+   * @see Calendar
+   * @see #setHours(int)
    */
   public int getHours()
   {
@@ -682,10 +1112,22 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the hours to the given value, not changing the other fields.
+   * Sets the hours to the given value.  The other
+   * fields are only altered as necessary to match
+   * the same date and time in the new hour.  In most
+   * cases, the other fields won't change at all.  However,
+   * in the case of a leap second, values
+   * may be adjusted.  For example,
+   * a seconds value of 60 or 61 (a leap second) may result
+   * in the seconds value being reset to 0 and the minutes
+   * value being incremented by 1 if the new hour does
+   * not contain a leap second.
+   *
    * @param hours the hours.
    * @deprecated Use Calendar instead of Date, and use
-   * set(Calendar.HOUR_OF_DAY, hours) instead. 
+   * set(Calendar.HOUR_OF_DAY, hours) instead.
+   * @see Calendar
+   * @see #getHours() 
    */
   public void setHours(int hours)
   {
@@ -696,9 +1138,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the number of minutes represented by the <code>Date</code>
+   * object, as an integer between 0 and 59.
+   *
    * @return the minutes represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.MINUTE)
    * instead.
+   * @see Calendar
+   * @see #setMinutes(int)
    */
   public int getMinutes()
   {
@@ -708,10 +1155,22 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the minutes to the given value, not changing the other fields.
+   * Sets the minutes to the given value.  The other
+   * fields are only altered as necessary to match
+   * the same date and time in the new minute.  In most
+   * cases, the other fields won't change at all.  However,
+   * in the case of a leap second, values
+   * may be adjusted.  For example,
+   * a seconds value of 60 or 61 (a leap second) may result
+   * in the seconds value being reset to 0 and the minutes
+   * value being incremented by 1 if the new minute does
+   * not contain a leap second.
+   *
    * @param minutes the minutes.
    * @deprecated Use Calendar instead of Date, and use
    * set(Calendar.MINUTE, minutes) instead. 
+   * @see Calendar
+   * @see #getMinutes()
    */
   public void setMinutes(int minutes)
   {
@@ -722,9 +1181,14 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
+   * Returns the number of seconds represented by the <code>Date</code>
+   * object, as an integer between 0 and 61 (60 and 61 being leap seconds).
+   *
    * @return the seconds represented by this date object.
    * @deprecated Use Calendar instead of Date, and use get(Calendar.SECOND)
    * instead.
+   * @see Calendar
+   * @see #setSeconds(int)
    */
   public int getSeconds()
   {
@@ -734,10 +1198,22 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Sets the seconds to the given value, not changing the other fields.
+   * Sets the seconds to the given value.  The other
+   * fields are only altered as necessary to match
+   * the same date and time in the new minute.  In most
+   * cases, the other fields won't change at all.  However,
+   * in the case of a leap second, values
+   * may be adjusted.  For example, setting the
+   * seconds value to 60 or 61 (a leap second) may result
+   * in the seconds value being reset to 0 and the minutes
+   * value being incremented by 1, if the current time does
+   * not contain a leap second.
+   *
    * @param seconds the seconds.
    * @deprecated Use Calendar instead of Date, and use
-   * set(Calendar.SECOND, seconds) instead. 
+   * set(Calendar.SECOND, seconds) instead.
+   * @see Calendar
+   * @see #getSeconds() 
    */
   public void setSeconds(int seconds)
   {
@@ -748,25 +1224,39 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
   }
 
   /**
-   * Reads an Object from the stream.
+   * Deserializes a <code>Date</code> object from an
+   * input stream, setting the time (in milliseconds
+   * since the epoch) to the long value read from the
+   * stream.
+   *
+   * @param input the input stream.
+   * @throws IOException if an I/O error occurs in the stream.
+   * @throws ClassNotFoundException if the class of the
+   *         serialized object could not be found.
    */
-  private void readObject(java.io.ObjectInputStream input)
-    throws java.io.IOException, ClassNotFoundException
+  private void readObject(ObjectInputStream input)
+    throws IOException, ClassNotFoundException
   {
     input.defaultReadObject();
     time = input.readLong();
   }
 
   /**
-   * Writes an Object to the stream.
+   * Serializes a <code>Date</code> object to an output stream,
+   * storing the time (in milliseconds since the epoch) as a long
+   * value in the stream.
+   *
    * @serialdata A long value representing the offset from the epoch
    * in milliseconds.  This is the same value that is returned by the
    * method getTime().
+   * @param output the output stream.
+   * @throws IOException if an I/O error occurs in the stream.
    */
-  private void writeObject(java.io.ObjectOutputStream output)
-    throws java.io.IOException
+  private void writeObject(ObjectOutputStream output)
+    throws IOException
   {
     output.defaultWriteObject();
     output.writeLong(time);
   }
+
 }

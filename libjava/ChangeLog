@@ -1,3 +1,8 @@
+2004-11-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Date.java
+	Added missing documentation.
+
 2004-11-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/zip/CheckedInputStream.java,
