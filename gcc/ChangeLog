@@ -1,3 +1,8 @@
+2002-05-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/sourcebuild.texi: Mention snapshot-README and
+	snapshot-index.html as needing updating for new front ends.
+
 2002-05-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (SUBREG_PROMOTED_UNSIGNED_SET): Avoid warnings when
