@@ -990,8 +990,7 @@ decode_signature_piece (stream, signature, limit, need_space)
       while (*signature && *signature != ';')
 	{
 	  int ch = UTF8_GET (signature, limit);
-	  /* `$' is the separator for an inner class.  */
-	  if (ch == '/' || ch == '$')
+	  if (ch == '/')
 	    fputs ("::", stream);
 	  else
 	    jcf_print_char (stream, ch);

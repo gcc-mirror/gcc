@@ -98,7 +98,7 @@ union Word {
 #endif
 #ifndef IMMEDIATE_s4
 #define IMMEDIATE_s4 (PC+=4, CHECK_PC_IN_RANGE(PC), \
-  ((jint)((BCODE[PC-4] << 24) | (BCODE[PC-3] << 16) \
+  (WORD_TO_INT((BCODE[PC-4] << 24) | (BCODE[PC-3] << 16) \
          | (BCODE[PC-2] << 8) | (BCODE[PC-1]))))
 #endif
 
@@ -107,6 +107,16 @@ WORD_TO_FLOAT(jword w)
 { union Word wu;
   wu.i = w;
   return wu.f;
+} 
+
+/* Sign extend w. */
+static inline jint
+WORD_TO_INT(jword w)
+{
+  jint n = w;
+  n ^= (jint)1 << 31;
+  n -= (jint)1 << 31;
+  return n;
 } 
 
 static inline jlong
