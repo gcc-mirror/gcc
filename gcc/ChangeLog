@@ -1,3 +1,12 @@
+Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
+
+	* c-parse.in: save and restore warn_pointer_arith on __extension__
+	along with pedantic.
+	(SAVE_WARN_FLAGS, RESTORE_WARN_FLAGS): Added.
+	Set the type of extension to itype rather than $<itype>1 kludge.
+	* extend.texi (Alternate Keywords): Adjust documentation.
+	* c-parse.c, c-parse.y, objc-parse.c, objc-parse.y: Rebuilt.
+
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (record_active_eh_regions): Terminate loop after finding
