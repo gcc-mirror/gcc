@@ -1,3 +1,13 @@
+2004-08-24  Richard Henderson  <rth@redhat.com>
+            Andrew Pinski  <apinski@apple.com>
+
+	* gimplify.c (gimplify_array_ref_to_plus): Delete.
+	(gimplify_addr_expr): Do not call gimplify_array_ref_to_plus
+	for ARRAY_REF.
+
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Go passed
+	ARRAY_REF also to get to the STRING_CST.
+
 2004-08-24  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_override_options): Update error message.
