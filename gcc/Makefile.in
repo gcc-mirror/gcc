@@ -1367,6 +1367,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES)
 
 # copy objc header files
 objc-headers: force
+	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
