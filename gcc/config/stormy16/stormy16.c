@@ -1251,8 +1251,8 @@ xstormy16_setup_incoming_varargs (CUMULATIVE_ARGS cum ATTRIBUTE_UNUSED,
    for arguments that have not been passed in registers.  
    To keep the layout nice, the pointer is first in the structure.  */
 
-tree
-xstormy16_build_va_list (void)
+static tree
+xstormy16_build_builtin_va_list (void)
 {
   tree f_1, f_2, record, type_decl;
 
@@ -2210,5 +2210,8 @@ xstormy16_expand_builtin(tree exp, rtx target,
 #define TARGET_RTX_COSTS xstormy16_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST xstormy16_address_cost
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST_TYPE
+#define TARGET_BUILD_BUILTIN_VA_LIST_TYPE xstormy16_build_builtin_va_list
 
 struct gcc_target targetm = TARGET_INITIALIZER;

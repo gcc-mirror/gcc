@@ -1,3 +1,12 @@
+2003-11-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.h (BUILD_VA_LIST_TYPE): Delete.
+	* config/stormy16/stormy16-protos.h (xstormy16_build_va_list):
+	Remove prototype.
+	* config/stormy16/stormy16.c (xstormy16_build_va_list): Rename
+	to xstormy16_build_builtin_va_list and make static.
+        (TARGET_BUILD_BUILTIN_VA_LIST): Define.
+
 2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add the prototype for
