@@ -1,3 +1,8 @@
+Wed Jul 29 11:47:10 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.md (extendqisi2_insn): Remove earlyclobber
+	constraint from second alternative.
+
 Tue Jul 28 23:29:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Fix --without/--disable cases for local-prefix, 
