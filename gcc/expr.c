@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4076,6 +4076,7 @@ expand_expr (exp, target, tmode, modifier)
 	abort ();
       emit_insns (RTL_EXPR_SEQUENCE (exp));
       RTL_EXPR_SEQUENCE (exp) = const0_rtx;
+      preserve_rtl_expr_result (RTL_EXPR_RTL (exp));
       free_temps_for_rtl_expr (exp);
       return RTL_EXPR_RTL (exp);
 
