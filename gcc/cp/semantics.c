@@ -79,7 +79,7 @@ static tree clear_decl_rtl PARAMS ((tree *, int *, void *));
       (SUBSTMT) = (COND);				\
   } while (0)
 
-/* Returns non-zero if the current statement is a full expression,
+/* Returns nonzero if the current statement is a full expression,
    i.e. temporaries created during that statement should be destroyed
    at the end of the statement.  */
 
@@ -801,7 +801,7 @@ finish_handler (handler)
   RECHAIN_STMTS (handler, HANDLER_BODY (handler));
 }
 
-/* Begin a compound-statement.  If HAS_NO_SCOPE is non-zero, the
+/* Begin a compound-statement.  If HAS_NO_SCOPE is nonzero, the
    compound-statement does not define a scope.  Returns a new
    COMPOUND_STMT if appropriate.  */
 
@@ -840,7 +840,7 @@ begin_compound_stmt (has_no_scope)
 }
 
 /* Finish a compound-statement, which may be given by COMPOUND_STMT.
-   If HAS_NO_SCOPE is non-zero, the compound statement does not define
+   If HAS_NO_SCOPE is nonzero, the compound statement does not define
    a scope.  */
 
 tree
@@ -1572,7 +1572,7 @@ reset_type_access_control ()
 }
 
 /* Begin a function definition declared with DECL_SPECS, ATTRIBUTES,
-   and DECLARATOR.  Returns non-zero if the function-declaration is
+   and DECLARATOR.  Returns nonzero if the function-declaration is
    valid.  */
 
 int
@@ -1696,7 +1696,7 @@ check_template_template_default_arg (tree argument)
 }
 
 /* Finish a parameter list, indicated by PARMS.  If ELLIPSIS is
-   non-zero, the parameter list was terminated by a `...'.  */
+   nonzero, the parameter list was terminated by a `...'.  */
 
 tree
 finish_parmlist (parms, ellipsis)
@@ -2022,7 +2022,7 @@ finish_template_decl (parms)
 
 /* Finish processing a template-id (which names a type) of the form
    NAME < ARGS >.  Return the TYPE_DECL for the type named by the
-   template-id.  If ENTERING_SCOPE is non-zero we are about to enter
+   template-id.  If ENTERING_SCOPE is nonzero we are about to enter
    the scope of template-id indicated.  */
 
 tree

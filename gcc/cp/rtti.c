@@ -697,7 +697,7 @@ qualifier_flags (type)
   return flags;
 }
 
-/* Return non-zero, if the pointer chain TYPE ends at an incomplete type, or
+/* Return nonzero, if the pointer chain TYPE ends at an incomplete type, or
    contains a pointer to member of an incomplete class.  */
 
 static int
@@ -977,7 +977,7 @@ class_initializer (desc, target, trail)
   return init;  
 }
 
-/* Returns non-zero if the typeinfo for type should be placed in 
+/* Returns nonzero if the typeinfo for type should be placed in
    the runtime library.  */
 
 static int
@@ -1006,7 +1006,7 @@ typeinfo_in_lib_p (type)
 }
 
 /* Generate the initializer for the type info describing
-   TYPE. VAR_DESC is a . NON_PUBLIC_P is set non-zero, if the VAR_DECL
+   TYPE. VAR_DESC is a . NON_PUBLIC_P is set nonzero, if the VAR_DECL
    should not be exported from this object file.  This should only be
    called at the end of translation, when we know that no further
    types will be completed.  */
@@ -1407,7 +1407,7 @@ emit_support_tinfos ()
     }
 }
 
-/* Return non-zero, iff T is a type_info variable which has not had a
+/* Return nonzero, iff T is a type_info variable which has not had a
    definition emitted for it.  */
 
 int

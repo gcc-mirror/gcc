@@ -1,3 +1,30 @@
+2002-09-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.2: Likewise.
+	* call.c: Likewise.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	* friend.c: Likewise.
+	* g++spec.c: Likewise.
+	* init.c: Likewise.
+	* lex.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* operators.def: Likewise.
+	* optimize.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* spew.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+
 2002-09-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokdeclarator): Use assert, not internal_error. Don't
@@ -4261,7 +4288,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	PR c++/3621
 	* spew.c (yylex): Only copy the token's lineno, if it is
-	non-zero.
+	nonzero.
 
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -4399,7 +4426,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove old-abi remnants. Remove comments about old abi
-	behaviour. Remove references to 'new-abi' in comments.
+	behavior. Remove references to 'new-abi' in comments.
 	* cp-tree.h: Adjust comments.
 	(vbase_offsets_in_vtable_p): Delete.
 	(vcall_offsets_in_vtable_p): Delete.
@@ -5601,7 +5628,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	(maybe_commonize_var): Allow inlining functions even if they have
 	static local variables, use comdat_linkage for them if flag_weak.
 	(check_initializer): Call obscure_complex_init if
-	grok_reference_init returned non-zero.
+	grok_reference_init returned nonzero.
 	(save_function_data): Clear x_local_names.
 	(pop_cp_function_context): Free x_local_names.
 	(mark_inlined_fns): Remove.
@@ -12748,7 +12775,7 @@ Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(add_method): Used functions are hidden by local functions.
 	(check_bases_and_members): Handle using-decls before finalizing
 	CLASSTYPE_METHOD_VEC.
-	* call.c (add_function_candidate): Add ctype parm; if non-zero,
+	* call.c (add_function_candidate): Add ctype parm; if nonzero,
 	override the type of 'this' accordingly.
 	(add_template_candidate, add_template_candidate_real): Add ctype parm.
 	(convert_class_to_reference, build_user_type_conversion_1,

@@ -832,7 +832,7 @@ yylex ()
 }
 
 /* Unget character CH from the input stream.
-   If RESCAN is non-zero, then we want to `see' this
+   If RESCAN is nonzero, then we want to `see' this
    character as the next input token.  */
 
 void

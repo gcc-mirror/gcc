@@ -350,7 +350,7 @@ make_thunk (function, delta, vcall_index)
 }
 
 /* Emit the definition of a C++ multiple inheritance vtable thunk.  If
-   EMIT_P is non-zero, the thunk is emitted immediately.  */
+   EMIT_P is nonzero, the thunk is emitted immediately.  */
 
 void
 use_thunk (thunk_fndecl, emit_p)

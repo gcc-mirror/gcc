@@ -647,7 +647,7 @@ null_ptr_cst_p (t)
 }
 
 
-/* Returns non-zero if PARMLIST consists of only default parms and/or
+/* Returns nonzero if PARMLIST consists of only default parms and/or
    ellipsis.  */
 
 int
@@ -938,7 +938,7 @@ standard_conversion (to, from, expr)
   return conv;
 }
 
-/* Returns non-zero if T1 is reference-related to T2.  */
+/* Returns nonzero if T1 is reference-related to T2.  */
 
 static int
 reference_related_p (t1, t2)
@@ -958,7 +958,7 @@ reference_related_p (t1, t2)
 	      && DERIVED_FROM_P (t1, t2)));
 }
 
-/* Returns non-zero if T1 is reference-compatible with T2.  */
+/* Returns nonzero if T1 is reference-compatible with T2.  */
 
 static int
 reference_compatible_p (t1, t2)
@@ -1623,7 +1623,7 @@ is_complete (t)
   return COMPLETE_TYPE_P (complete_type (t));
 }
 
-/* Returns non-zero if TYPE is a promoted arithmetic type.  */
+/* Returns nonzero if TYPE is a promoted arithmetic type.  */
 
 static int
 promoted_arithmetic_type_p (type)
@@ -3874,7 +3874,7 @@ enforce_access (basetype_path, decl)
 
 /* Perform the conversions in CONVS on the expression EXPR. 
    FN and ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
-   indicates the `this' argument of a method.  INNER is non-zero when
+   indicates the `this' argument of a method.  INNER is nonzero when
    being called to continue a conversion chain. It is negative when a
    reference binding will be applied, positive otherwise.  */
 
@@ -4118,7 +4118,7 @@ convert_arg_to_ellipsis (arg)
   
   if (arg != error_mark_node && ! pod_type_p (TREE_TYPE (arg)))
     {
-      /* Undefined behaviour [expr.call] 5.2.2/7.  We used to just warn
+      /* Undefined behavior [expr.call] 5.2.2/7.  We used to just warn
 	 here and do a bitwise copy, but now cp_expr_size will abort if we
 	 try to do that.  */
       error ("cannot pass objects of non-POD type `%#T' through `...'",
@@ -4146,7 +4146,7 @@ build_x_va_arg (expr, type)
   
   if (! pod_type_p (type))
     {
-      /* Undefined behaviour [expr.call] 5.2.2/7.  */
+      /* Undefined behavior [expr.call] 5.2.2/7.  */
       warning ("cannot receive objects of non-POD type `%#T' through `...'",
 		  type);
     }
@@ -4906,7 +4906,7 @@ build_new_method_call (tree instance, tree fns, tree args,
   return call;
 }
 
-/* Returns non-zero iff standard conversion sequence ICS1 is a proper
+/* Returns nonzero iff standard conversion sequence ICS1 is a proper
    subsequence of ICS2.  */
 
 static int
@@ -4946,7 +4946,7 @@ is_subseq (ics1, ics2)
     }
 }
 
-/* Returns non-zero iff DERIVED is derived from BASE.  The inputs may
+/* Returns nonzero iff DERIVED is derived from BASE.  The inputs may
    be any _TYPE nodes.  */
 
 int
@@ -5044,7 +5044,7 @@ compare_ics (ics1, ics2)
   tree deref_to_type2 = NULL_TREE;
   int rank1, rank2;
 
-  /* REF_BINDING is non-zero if the result of the conversion sequence
+  /* REF_BINDING is nonzero if the result of the conversion sequence
      is a reference type.   In that case TARGET_TYPE is the
      type referred to by the reference.  */
   tree target_type1;
@@ -5743,7 +5743,7 @@ tourney (candidates)
   return champ;
 }
 
-/* Returns non-zero if things of type FROM can be converted to TO.  */
+/* Returns nonzero if things of type FROM can be converted to TO.  */
 
 int
 can_convert (to, from)
@@ -5752,7 +5752,7 @@ can_convert (to, from)
   return can_convert_arg (to, from, NULL_TREE);
 }
 
-/* Returns non-zero if ARG (of type FROM) can be converted to TO.  */
+/* Returns nonzero if ARG (of type FROM) can be converted to TO.  */
 
 int
 can_convert_arg (to, from, arg)

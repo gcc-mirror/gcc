@@ -532,7 +532,7 @@ build_vtable (class_type, name, vtable_type)
 
 /* Get the VAR_DECL of the vtable for TYPE. TYPE need not be polymorphic,
    or even complete.  If this does not exist, create it.  If COMPLETE is
-   non-zero, then complete the definition of it -- that will render it
+   nonzero, then complete the definition of it -- that will render it
    impossible to actually build the vtable, but is useful to get at those
    which are known to exist in the runtime.  */
 
@@ -593,7 +593,7 @@ copy_virtuals (binfo)
 /* Build the primary virtual function table for TYPE.  If BINFO is
    non-NULL, build the vtable starting with the initial approximation
    that it is the same as the one which is the head of the association
-   list.  Returns a non-zero value if a new vtable is actually
+   list.  Returns a nonzero value if a new vtable is actually
    created.  */
 
 static int
@@ -645,7 +645,7 @@ build_primary_vtable (binfo, type)
    FOR_TYPE is the most derived type which caused this table to
    be needed.
 
-   Returns non-zero if we haven't met BINFO before.
+   Returns nonzero if we haven't met BINFO before.
 
    The order in which vtables are built (by calling this function) for
    an object must remain the same, otherwise a binary incompatibility
@@ -676,7 +676,7 @@ build_secondary_vtable (binfo, for_type)
 }
 
 /* Create a new vtable for BINFO which is the hierarchy dominated by
-   T. Return non-zero if we actually created a new vtable.  */
+   T. Return nonzero if we actually created a new vtable.  */
 
 static int
 make_new_vtable (t, binfo)
@@ -2158,7 +2158,7 @@ layout_vtable_decl (binfo, n)
       layout_decl (vtable, 0);
 
       /* At one time the vtable info was grabbed 2 words at a time.  This
-	 fails on Sparc unless you have 8-byte alignment.  */
+	 fails on SPARC unless you have 8-byte alignment.  */
       DECL_ALIGN (vtable) = MAX (TYPE_ALIGN (double_type_node),
 				 DECL_ALIGN (vtable));
     }
@@ -2645,7 +2645,7 @@ modify_all_vtables (t, vfuns_p, virtuals)
 /* Here, we already know that they match in every respect.
    All we have to check is where they had their declarations.
 
-   Return non-zero iff FNDECL1 is declared in a class which has a
+   Return nonzero iff FNDECL1 is declared in a class which has a
    proper base class containing FNDECL2.  We don't care about
    ambiguity or accessibility.  */
 
@@ -3454,7 +3454,7 @@ record_subobject_offset (type, offset, offsets)
   return 0;
 }
 
-/* Returns non-zero if TYPE is an empty class type and there is
+/* Returns nonzero if TYPE is an empty class type and there is
    already an entry in OFFSETS for the same TYPE as the same OFFSET.  */
 
 static int
@@ -3483,13 +3483,13 @@ check_subobject_offset (type, offset, offsets)
 
 /* Walk through all the subobjects of TYPE (located at OFFSET).  Call
    F for every subobject, passing it the type, offset, and table of
-   OFFSETS.  If VBASES_P is non-zero, then even virtual non-primary
+   OFFSETS.  If VBASES_P is nonzero, then even virtual non-primary
    bases should be traversed; otherwise, they are ignored.  
 
    If MAX_OFFSET is non-NULL, then subobjects with an offset greater
    than MAX_OFFSET will not be walked.
 
-   If F returns a non-zero value, the traversal ceases, and that value
+   If F returns a nonzero value, the traversal ceases, and that value
    is returned.  Otherwise, returns zero.  */
 
 static int
@@ -3588,7 +3588,7 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
 }
 
 /* Record all of the empty subobjects of TYPE (located at OFFSET) in
-   OFFSETS.  If VBASES_P is non-zero, virtual bases of TYPE are
+   OFFSETS.  If VBASES_P is nonzero, virtual bases of TYPE are
    examined.  */
 
 static void
@@ -3602,8 +3602,8 @@ record_subobject_offsets (type, offset, offsets, vbases_p)
 			  offsets, /*max_offset=*/NULL_TREE, vbases_p);
 }
 
-/* Returns non-zero if any of the empty subobjects of TYPE (located at
-   OFFSET) conflict with entries in OFFSETS.  If VBASES_P is non-zero,
+/* Returns nonzero if any of the empty subobjects of TYPE (located at
+   OFFSET) conflict with entries in OFFSETS.  If VBASES_P is nonzero,
    virtual bases of TYPE are examined.  */
 
 static int
@@ -3671,7 +3671,7 @@ layout_nonempty_base_or_field (rli, decl, binfo, offsets, t)
 	 offset zero -- its S component would be at the same address
 	 as the S we already allocated.  So, we have to skip ahead.
 	 Since all data members, including those whose type is an
-	 empty class, have non-zero size, any overlap can happen only
+	 empty class, have nonzero size, any overlap can happen only
 	 with a direct or indirect base-class -- it can't happen with
 	 a data member.  */
       if (layout_conflict_p (TREE_TYPE (decl),
@@ -3708,7 +3708,7 @@ layout_nonempty_base_or_field (rli, decl, binfo, offsets, t)
    past the end of the class, and should be correctly aligned for a
    class of the type indicated by BINFO; OFFSETS gives the offsets of
    the empty bases allocated so far. T is the most derived
-   type.  Return non-zero iff we added it at the end.  */
+   type.  Return nonzero iff we added it at the end.  */
 
 static bool
 layout_empty_base (binfo, eoc, offsets, t)
@@ -3756,7 +3756,7 @@ layout_empty_base (binfo, eoc, offsets, t)
    indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
    *BASE_ALIGN is a running maximum of the alignments of any base
    class.  OFFSETS gives the location of empty base subobjects.  T is
-   the most derived type.  Return non-zero if the new object cannot be
+   the most derived type.  Return nonzero if the new object cannot be
    nearly-empty.  */
 
 static bool
@@ -3818,7 +3818,7 @@ build_base_field (rli, binfo, empty_p, offsets, t)
 
 /* Layout all of the non-virtual base classes.  Record empty
    subobjects in OFFSETS.  T is the most derived type.  Return
-   non-zero if the type cannot be nearly empty.  */
+   nonzero if the type cannot be nearly empty.  */
 
 static bool
 build_base_fields (rli, empty_p, offsets, t)
@@ -4018,7 +4018,7 @@ build_clone (fn, name)
 }
 
 /* Produce declarations for all appropriate clones of FN.  If
-   UPDATE_METHOD_VEC_P is non-zero, the clones are added to the
+   UPDATE_METHOD_VEC_P is nonzero, the clones are added to the
    CLASTYPE_METHOD_VEC as well.  */
 
 void
@@ -4934,7 +4934,7 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
     }
 
   /* We make all structures have at least one element, so that they
-     have non-zero size.  The class may be empty even if it has
+     have nonzero size.  The class may be empty even if it has
      basetypes.  Therefore, we add the fake field after all the other
      fields; if there are already FIELD_DECLs on the list, their
      offsets will not be disturbed.  */
@@ -5400,7 +5400,7 @@ fixed_type_or_null (instance, nonnull, cdtorp)
     }
 }
 
-/* Return non-zero if the dynamic type of INSTANCE is known, and
+/* Return nonzero if the dynamic type of INSTANCE is known, and
    equivalent to the static type.  We also handle the case where
    INSTANCE is really a pointer. Return negative if this is a
    ctor/dtor. There the dynamic type is known, but this might not be
@@ -5746,7 +5746,7 @@ pop_lang_context ()
 /* Given an OVERLOAD and a TARGET_TYPE, return the function that
    matches the TARGET_TYPE.  If there is no satisfactory match, return
    error_mark_node, and issue an error message if COMPLAIN is
-   non-zero.  Permit pointers to member function if PTRMEM is non-zero.
+   nonzero.  Permit pointers to member function if PTRMEM is nonzero.
    If TEMPLATE_ONLY, the name of the overloaded function
    was a template-id, and EXPLICIT_TARGS are the explicitly provided
    template arguments.  */
@@ -6587,7 +6587,7 @@ get_primary_binfo (binfo)
   return result;
 }
 
-/* If INDENTED_P is zero, indent to INDENT. Return non-zero.  */
+/* If INDENTED_P is zero, indent to INDENT. Return nonzero.  */
 
 static int
 maybe_indent_hierarchy (stream, indent, indented_p)

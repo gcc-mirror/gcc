@@ -796,7 +796,7 @@ build_throw (exp)
 
 /* Make sure TYPE is complete, pointer to complete, reference to
    complete, or pointer to cv void. Issue diagnostic on failure.
-   Return the zero on failure and non-zero on success. FROM can be
+   Return the zero on failure and nonzero on success. FROM can be
    the expr or decl from whence TYPE came, if available.  */
 
 static int

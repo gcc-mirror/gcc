@@ -57,7 +57,7 @@ static tree handle_init_priority_attribute PARAMS ((tree *, tree, tree, int, boo
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
-   non-zero, rvalues of class type are considered lvalues.  */
+   nonzero, rvalues of class type are considered lvalues.  */
 
 static cp_lvalue_kind
 lvalue_p_1 (ref, treat_class_rvalues_as_lvalues, allow_cast_as_lvalue)
@@ -1092,7 +1092,7 @@ is_aggr_type_2 (t1, t2)
   return IS_AGGR_TYPE (t1) && IS_AGGR_TYPE (t2);
 }
 
-/* Returns non-zero if CODE is the code for a statement.  */
+/* Returns nonzero if CODE is the code for a statement.  */
 
 int
 cp_statement_code_p (code)
@@ -2362,7 +2362,7 @@ cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
   return var;
 }
 
-/* Record that we're about to start inlining FN, and return non-zero if
+/* Record that we're about to start inlining FN, and return nonzero if
    that's OK.  Used for lang_hooks.tree_inlining.start_inlining.  */
 
 int
@@ -2549,7 +2549,7 @@ name_p (tree node)
 	  || TREE_CODE (node) == SCOPE_REF);
 }
 
-/* Returns non-zero if TYPE is a character type, including wchar_t.  */
+/* Returns nonzero if TYPE is a character type, including wchar_t.  */
 
 int
 char_type_p (type)
