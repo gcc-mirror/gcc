@@ -1352,6 +1352,8 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
       TYPE_POLYMORPHIC_P (t) |= TYPE_POLYMORPHIC_P (basetype);
+      CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) 
+	|= CLASSTYPE_CONTAINS_EMPTY_CLASS_P (basetype);
     }
 }
 
@@ -3167,10 +3169,18 @@ check_field_decls (tree t, tree *access_decls,
 	    ;
 	  else
 	    {
+	      tree element_type;
+
 	      /* The class is non-empty.  */
 	      CLASSTYPE_EMPTY_P (t) = 0;
 	      /* The class is not even nearly empty.  */
 	      CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+	      /* If one of the data members contains an empty class,
+		 so does T.  */
+	      element_type = strip_array_types (type);
+	      if (CLASS_TYPE_P (element_type) 
+		  && CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type))
+		CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type) = 1;
 	    }
 	}
 
@@ -3440,6 +3450,10 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
       tree binfo;
       int i;
 
+      /* Avoid recursing into objects that are not interesting.  */
+      if (!CLASSTYPE_CONTAINS_EMPTY_CLASS_P (type))
+	return 0;
+
       /* Record the location of TYPE.  */
       r = (*f) (type, offset, offsets);
       if (r)
@@ -3523,8 +3537,14 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
+      tree element_type = strip_array_types (type);
       tree domain = TYPE_DOMAIN (type);
       tree index;
+
+      /* Avoid recursing into objects that are not interesting.  */
+      if (!CLASS_TYPE_P (element_type)
+	  || !CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type))
+	return 0;
 
       /* Step through each of the elements in the array.  */
       for (index = size_zero_node;
@@ -4988,6 +5008,10 @@ layout_class_type (tree t, int *vfuns_p, tree *virtuals_p)
   else
     CLASSTYPE_AS_BASE (t) = t;
 
+  /* Every empty class contains an empty class.  */
+  if (CLASSTYPE_EMPTY_P (t))
+    CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
+
   /* Set the TYPE_DECL for this type to contain the right
      value for DECL_OFFSET, so that we can use it as part
      of a COMPONENT_REF for multiple inheritance.  */
@@ -5076,10 +5100,11 @@ finish_struct_1 (t)
 
   fixup_inline_methods (t);
   
-  /* Assume that the class is both empty and nearly empty; we'll clear
-     these flag if necessary.  */
+  /* Make assumptions about the class; we'll reset the flags if
+     necessary.  */
   CLASSTYPE_EMPTY_P (t) = 1;
   CLASSTYPE_NEARLY_EMPTY_P (t) = 1;
+  CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 0;
 
   /* Do end-of-class semantic processing: checking the validity of the
      bases and members and add implicitly generated methods.  */
