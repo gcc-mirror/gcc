@@ -94,11 +94,12 @@ mark_reference_fields (field, low, high, ubit,
 
   for (; field != NULL_TREE; field = TREE_CHAIN (field))
     {
-      HOST_WIDE_INT offset = tree_low_cst (byte_position (field), 1);
+      HOST_WIDE_INT offset;
 
       if (FIELD_STATIC (field))
 	continue;
 
+      offset = tree_low_cst (byte_position (field), 1);
       if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
 	{
 	  unsigned int count;
