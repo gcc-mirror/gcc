@@ -546,7 +546,7 @@ extern int ix86_arch;
    : FP_REGNO_P (REGNO)						\
    ? (((int) GET_MODE_CLASS (MODE) == (int) MODE_FLOAT		\
        || (int) GET_MODE_CLASS (MODE) == (int) MODE_COMPLEX_FLOAT)	\
-      && GET_MODE_UNIT_SIZE (MODE) <= 12)			\
+      && GET_MODE_UNIT_SIZE (MODE) <= (LONG_DOUBLE_TYPE_SIZE == 96 ? 12 : 8))\
    : (int) (MODE) != (int) QImode ? 1				\
    : (reload_in_progress | reload_completed) == 1)
 
@@ -2233,7 +2233,7 @@ extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  */
 
-/* Set if the cc value is was actually from the 80387 and
+/* Set if the cc value was actually from the 80387 and
    we are testing eax directly (i.e. no sahf) */
 #define CC_TEST_AX 020000
 
@@ -2244,6 +2244,10 @@ extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 /* Set if the CC value was stored in a nonstandard way, so that
    the state of equality is indicated by zero in the carry bit.  */
 #define CC_Z_IN_NOT_C 010000
+
+/* Set if the CC value was actually from the 80387 and loaded directly
+   into the eflags instead of via eax/sahf.  */
+#define CC_FCOMI 040000
 
 /* Store in cc_status the expressions
    that the condition codes will describe
