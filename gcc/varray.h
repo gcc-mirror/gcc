@@ -1,5 +1,6 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -56,7 +57,7 @@ struct const_equiv_data GTY(()) {
   unsigned age;
 };
 
-/* Enum indicating what the varray contains.  
+/* Enum indicating what the varray contains.
    If this is changed, `element' in varray.c needs to be updated.  */
 
 enum varray_data_enum {
@@ -120,7 +121,7 @@ typedef union varray_data_tag GTY (()) {
   struct reg_info_def	 *GTY ((length ("%0.num_elements"), skip (""),
 				tag ("VARRAY_DATA_REG")))	reg[1];
   struct const_equiv_data GTY ((length ("%0.num_elements"),
-			tag ("VARRAY_DATA_CONST_EQUIV"))) 	const_equiv[1];
+			tag ("VARRAY_DATA_CONST_EQUIV")))	const_equiv[1];
   struct basic_block_def *GTY ((length ("%0.num_elements"), skip (""),
 				tag ("VARRAY_DATA_BB")))	bb[1];
   struct elt_list	 *GTY ((length ("%0.num_elements"),
@@ -134,15 +135,14 @@ struct varray_head_tag GTY(()) {
 				   using VARRAY_PUSH/VARRAY_POP.  */
   enum varray_data_enum type;	/* The kind of elements in the varray.  */
   const char   *name;		/* name of the varray for reporting errors */
-  varray_data	GTY ((desc ("%0.type"))) data;	/* The data elements follow, 
+  varray_data	GTY ((desc ("%0.type"))) data;	/* The data elements follow,
 						   must be last.  */
 };
 typedef struct varray_head_tag *varray_type;
 
 /* Allocate a virtual array with NUM elements, each of which is SIZE bytes
    long, named NAME.  Array elements are zeroed.  */
-extern varray_type varray_init	PARAMS ((size_t, enum varray_data_enum, 
-					 const char *));
+extern varray_type varray_init (size_t, enum varray_data_enum, const char *);
 
 #define VARRAY_CHAR_INIT(va, num, name) \
   va = varray_init (num, VARRAY_DATA_C, name)
@@ -210,7 +210,7 @@ extern varray_type varray_init	PARAMS ((size_t, enum varray_data_enum,
   do { if (vp) { free (vp); vp = (varray_type) 0; } } while (0)
 
 /* Grow/shrink the virtual array VA to N elements.  */
-extern varray_type varray_grow	PARAMS ((varray_type, size_t));
+extern varray_type varray_grow (varray_type, size_t);
 
 #define VARRAY_GROW(VA, N) ((VA) = varray_grow (VA, N))
 
@@ -221,16 +221,15 @@ extern varray_type varray_grow	PARAMS ((varray_type, size_t));
 
 #define VARRAY_CLEAR(VA) varray_clear(VA)
 
-extern void varray_clear	PARAMS ((varray_type));
+extern void varray_clear (varray_type);
 
 /* Check for VARRAY_xxx macros being in bound.  */
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
-extern void varray_check_failed PARAMS ((varray_type, size_t,
-					const char *, int,
-					const char *)) ATTRIBUTE_NORETURN;
+extern void varray_check_failed (varray_type, size_t, const char *, int,
+				 const char *) ATTRIBUTE_NORETURN;
 #define VARRAY_CHECK(VA, N, T) __extension__			\
 (*({ varray_type const _va = (VA);				\
-     const size_t _n = (N); 					\
+     const size_t _n = (N);					\
      if (_n >= _va->num_elements)				\
        varray_check_failed (_va, _n, __FILE__, __LINE__, __FUNCTION__);	\
      &_va->data.T[_n]; }))

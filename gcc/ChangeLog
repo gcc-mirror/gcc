@@ -1,3 +1,13 @@
+2003-07-06  Andreas Jaeger  <aj@suse.de>
+
+	* unroll.c: Likewise.
+	* varasm.c: Likewise.
+	* varray.c: Likewise.
+	* varray.h: Likewise.
+	* vmsdbgout.c: Likewise.
+	* xcoffout.c: Likewise.
+	* xcoffout.h: Likewise.
+
 2003-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h: Add a local time stamp.
