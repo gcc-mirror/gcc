@@ -1,3 +1,10 @@
+2000-12-02  Neil Booth  <neilb@earthling.net>
+
+        * tradcpp.c (struct answer, parse_assertion, parse_answer,
+        canonicalize_text, find_answer): New.
+        (do_assert, do_unassert): Provide appropriate function bodies.
+        (union hashval): New member answers.
+
 2000-11-23  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.md: Document UNSPEC usage.
