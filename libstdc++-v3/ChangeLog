@@ -1,3 +1,12 @@
+2004-02-25  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR bootstrap/14207
+	Revert patch of 2004-02-17, as it breaks mips-sgi-irix6.5 -o32
+	(Almost certainly a target issue)
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int, money_get<>::do_get): Simplify
+	grouping fidelity conditional.
+
 2004-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14252
