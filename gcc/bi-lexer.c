@@ -21,10 +21,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "hconfig.h"
 #include "bi-parser.h"
 
-extern char *malloc ();
-extern char *realloc ();
-
-
 /* Current read buffer and point */
 static char *buffer = NULL;
 static char *inpoint = NULL;
