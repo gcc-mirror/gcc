@@ -1633,13 +1633,16 @@ output_prolog (file, size)
      to the .ent directive, the lex_level, is ignored by the assembler,
      so we might as well omit it.  */
      
-  fprintf (file, "\t.ent ");
-  assemble_name (file, alpha_function_name);
-  fprintf (file, "\n");
+  if (!flag_inhibit_size_directive)
+    {
+      fprintf (file, "\t.ent ");
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "\n");
+    }
   ASM_OUTPUT_LABEL (file, alpha_function_name);
   inside_function = TRUE;
 
-  if (TARGET_IEEE_CONFORMANT)
+  if (TARGET_IEEE_CONFORMANT && !flag_inhibit_size_directive)
     /* Set flags in procedure descriptor to request IEEE-conformant
        math-library routines.  The value we set it to is PDSC_EXC_IEEE
        (/usr/include/pdsc.h). */
@@ -1746,10 +1749,13 @@ output_prolog (file, size)
     }
 
   /* Describe our frame.  */
-  fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
-	   (frame_pointer_needed
-	    ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
-	   frame_size, current_function_pretend_args_size);
+  if (!flag_inhibit_size_directive)
+    {
+      fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
+	       (frame_pointer_needed
+	        ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
+	       frame_size, current_function_pretend_args_size);
+    }
     
   /* Save register 26 if any other register needs to be saved.  */
   if (sa_size != 0)
@@ -1771,7 +1777,7 @@ output_prolog (file, size)
       }
 
   /* Print the register mask and do floating-point saves.  */
-  if (reg_mask)
+  if (reg_mask && !flag_inhibit_size_directive)
     fprintf (file, "\t.mask 0x%x,%d\n", reg_mask,
 	     actual_start_reg_offset - frame_size);
 
@@ -1788,7 +1794,7 @@ output_prolog (file, size)
       }
 
   /* Print the floating-point mask, if we've saved any fp register.  */
-  if (reg_mask)
+  if (reg_mask && !flag_inhibit_size_directive)
     fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask,
 	     actual_start_reg_offset - frame_size + int_reg_save_area_size);
 
@@ -1798,7 +1804,8 @@ output_prolog (file, size)
     fprintf (file, "\tbis $30,$30,$15\n");
 
   /* End the prologue and say if we used gp.  */
-  fprintf (file, "\t.prologue %d\n", alpha_function_needs_gp);
+  if (!flag_inhibit_size_directive)
+    fprintf (file, "\t.prologue %d\n", alpha_function_needs_gp);
 }
 
 /* Write function epilogue.  */
@@ -1894,9 +1901,12 @@ output_epilog (file, size)
     }
 
   /* End the function.  */
-  fprintf (file, "\t.end ");
-  assemble_name (file, alpha_function_name);
-  fprintf (file, "\n");
+  if (!flag_inhibit_size_directive)
+    {
+      fprintf (file, "\t.end ");
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "\n");
+    }
   inside_function = FALSE;
 
   /* Show that we know this function if it is called again.  */
@@ -1983,7 +1993,7 @@ alpha_output_lineno (stream, line)
      FILE *stream;
      int line;
 {
-  if (! TARGET_GAS && write_symbols == DBX_DEBUG)
+  if (TARGET_GAS && write_symbols == DBX_DEBUG)
     {
       /* mips-tfile doesn't understand .stabd directives.  */
       ++sym_lineno;
