@@ -1,3 +1,12 @@
+Thu Dec 11 23:06:48 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* objc/objc-act.c (lang_report_error_function): Disable.
+	* objc/objc-parse.y: Include "output.h".
+	(yyerror): Remove redundant decl.
+	(yyprint): Fix prototype.
+	(apply_args_register_offset): Remove redundant decl.
+	(get_file_function_name): Likewise.
+
 Thu Dec 11 22:02:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* flow.c (find_basic_blocks): A CALL_INSN that can throw starts
