@@ -1,3 +1,13 @@
+2003-08-20  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (IS_EXPR_CODE_CLASS): Also include 'r' and 's'.
+	(EXPR_CHECK): Don't check for 'r' or 's' if we're
+	checking IS_EXPR_CODE_CLASS.
+	* calls.c (calls_function_1): Likewise.
+	* fold-const.c (fold): Likewise.
+	* tree.c (iterative_hash_expr): Likewise.
+	* tree-inline.c (walk_tree, copy_tree_r): Likewise.
+
 2003-08-20  Gunther Nikl  <gni@gecko.de>
 
 	* config/m68k/m68k.c (m68k_output_mi_thunk): delete obsolete code

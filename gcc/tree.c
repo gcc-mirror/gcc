@@ -3527,7 +3527,7 @@ iterative_hash_expr (tree t, hashval_t val)
       else
 	abort ();
     }
-  else if (IS_EXPR_CODE_CLASS (class) || class == 'r')
+  else if (IS_EXPR_CODE_CLASS (class))
     {
       val = iterative_hash_object (code, val);
 
