@@ -1,0 +1,20 @@
+# we need startup files for solaris, since we don't get them with the system
+
+EXTRA_PARTS=crt1.o crti.o crtn.o gmon.o
+
+# For svr4 we run the special svr4 fixincludes script.
+
+FIXINCLUDES=fixinc.svr4
+
+# we need to supply our own assembly versions of libgcc1.c files,
+# since the user may not have native 'cc' available
+
+# ??? This is wrong!
+INSTALL_TARGET = install-cross
+
+LIBGCC1 = libgcc1.null
+
+# gmon build rule:
+gmon.o:	gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
+		-c $(srcdir)/gmon-sol2.c -o gmon.o
