@@ -1662,7 +1662,7 @@ vec_dst (const long *a1, int a2, const int a3)
 }
 
 inline void
-vec_dst (float *a1, int a2, const int a3)
+vec_dst (const float *a1, int a2, const int a3)
 {
   __builtin_altivec_dst ((void *) a1, a2, a3);
 }
@@ -1784,7 +1784,7 @@ vec_dstst (const long *a1, int a2, const int a3)
 }
 
 inline void
-vec_dstst (float *a1, int a2, const int a3)
+vec_dstst (const float *a1, int a2, const int a3)
 {
   __builtin_altivec_dstst ((void *) a1, a2, a3);
 }
@@ -1906,7 +1906,7 @@ vec_dststt (const long *a1, int a2, const int a3)
 }
 
 inline void
-vec_dststt (float *a1, int a2, const int a3)
+vec_dststt (const float *a1, int a2, const int a3)
 {
   __builtin_altivec_dststt ((void *) a1, a2, a3);
 }
@@ -2028,7 +2028,7 @@ vec_dstt (const long *a1, int a2, const int a3)
 }
 
 inline void
-vec_dstt (float *a1, int a2, const int a3)
+vec_dstt (const float *a1, int a2, const int a3)
 {
   __builtin_altivec_dstt ((void *) a1, a2, a3);
 }

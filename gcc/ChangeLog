@@ -1,5 +1,8 @@
 2004-08-12  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/rs6000/altivec.h (vec_dst): Fix C++ functions whose first
+	argument is float*.
+
 	* config/rs6000/rs6000.c (altivec_init_builtins): Fix argument type
 	for vec_dss.
 
