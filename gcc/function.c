@@ -1319,6 +1319,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	  
 	  replacement->new = *loc = fixup_memory_subreg (x, insn, 0);
 
+	  INSN_CODE (insn) = -1;
 	  if (! flag_force_mem && recog_memoized (insn) >= 0)
 	    return;
 
