@@ -1046,39 +1046,52 @@ output_scc_di(op, operand1, operand2, dest)
     }
   loperands[4] = gen_label_rtx();
   if (operand2 != const0_rtx)
+    {
 #ifdef MOTOROLA
 #ifdef SGS_CMP_ORDER
-    output_asm_insn ("cmp%.l %0,%2\n\tjbne %l4\n\tcmp%.l %1,%3", loperands);
+      output_asm_insn ("cmp%.l %0,%2\n\tjbne %l4\n\tcmp%.l %1,%3", loperands);
 #else
-    output_asm_insn ("cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1", loperands);
+      output_asm_insn ("cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1", loperands);
 #endif
 #else
 #ifdef SGS_CMP_ORDER
-    output_asm_insn ("cmp%.l %0,%2\n\tjne %l4\n\tcmp%.l %1,%3", loperands);
+      output_asm_insn ("cmp%.l %0,%2\n\tjne %l4\n\tcmp%.l %1,%3", loperands);
 #else
-    output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
+      output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
 #endif
 #endif
-  else if (TARGET_68020 || TARGET_5200)
-#ifdef MOTOROLA
-    output_asm_insn ("tst%.l %0\n\tjbne %l4\n\ttst%.l %1", loperands);
-#else
-    output_asm_insn ("tst%.l %0\n\tjne %l4\n\ttst%.l %1", loperands);
-#endif
+    }
   else
+    {
+      if (TARGET_68020 || TARGET_5200 || ! ADDRESS_REG_P (loperands[0]))
+	output_asm_insn ("tst%.l %0", loperands);
+      else
+	{
+#ifdef SGS_CMP_ORDER
+	  output_asm_insn ("cmp%.w %0,%#0", loperands);
+#else
+	  output_asm_insn ("cmp%.w %#0,%0", loperands);
+#endif
+	}
+
 #ifdef MOTOROLA
+      output_asm_insn ("jbne %l4", loperands);
+#else
+      output_asm_insn ("jne %l4", loperands);
+#endif
+
+      if (TARGET_68020 || TARGET_5200 || ! ADDRESS_REG_P (loperands[1]))
+	output_asm_insn ("tst%.l %1", loperands);
+      else
+	{
 #ifdef SGS_CMP_ORDER
-    output_asm_insn ("cmp%.w %0,%#0\n\tjbne %l4\n\tcmp%.w %1,%#0", loperands);
+	  output_asm_insn ("cmp%.w %1,%#0", loperands);
 #else
-    output_asm_insn ("cmp%.w %#0,%0\n\tjbne %l4\n\tcmp%.w %#0,%1", loperands);
+	  output_asm_insn ("cmp%.w %#0,%1", loperands);
 #endif
-#else
-#ifdef SGS_CMP_ORDER
-    output_asm_insn ("cmp%.w %0,%#0\n\tjne %l4\n\tcmp%.w %1,%#0", loperands);
-#else
-    output_asm_insn ("cmp%.w %#0,%0\n\tjne %l4\n\tcmp%.w %#0,%1", loperands);
-#endif
-#endif
+	}
+    }
+
   loperands[5] = dest;
   
   switch (op_code)
