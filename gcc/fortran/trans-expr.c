@@ -55,7 +55,7 @@ gfc_copy_se_loopvars (gfc_se * dest, gfc_se * src)
 }
 
 
-/* Initialise a simple expression holder.
+/* Initialize a simple expression holder.
 
    Care must be taken when multiple se are created with the same parent.
    The child se must be kept in sync.  The easiest way is to delay creation
@@ -76,7 +76,7 @@ gfc_init_se (gfc_se * se, gfc_se * parent)
 
 
 /* Advances to the next SS in the chain.  Use this rather than setting
-   se->ss = se->ss->next because all the parent needs to be kept in sync.
+   se->ss = se->ss->next because all the parents needs to be kept in sync.
    See gfc_init_se.  */
 
 void
@@ -90,7 +90,7 @@ gfc_advance_se_ss_chain (gfc_se * se)
   /* Walk down the parent chain.  */
   while (p != NULL)
     {
-      /* Simple consistancy check.  */
+      /* Simple consistency check.  */
       assert (p->parent == NULL || p->parent->ss == p->ss);
 
       p->ss = p->ss->next;
@@ -111,7 +111,7 @@ gfc_make_safe_expr (gfc_se * se)
   if (TREE_CODE_CLASS (TREE_CODE (se->expr)) == 'c')
     return;
 
-  /* we need a temporary for this result */
+  /* We need a temporary for this result.  */
   var = gfc_create_var (TREE_TYPE (se->expr), NULL);
   gfc_add_modify_expr (&se->pre, var, se->expr);
   se->expr = var;
@@ -157,6 +157,7 @@ gfc_trans_init_string_length (gfc_charlen * cl, stmtblock_t * pblock)
   tmp = cl->backend_decl;
   gfc_add_modify_expr (pblock, tmp, se.expr);
 }
+
 
 static void
 gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
@@ -345,7 +346,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       ref = ref->next;
     }
   /* Pointer assignment, allocation or pass by reference.  Arrays are handled
-     seperately.  */
+     separately.  */
   if (se->want_pointer)
     {
       if (expr->ts.type == BT_CHARACTER)
@@ -376,7 +377,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
 
   /* TRUTH_NOT_EXPR is not a "true" unary operator in GCC.
      We must convert it to a compare to 0 (e.g. EQ_EXPR (op1, 0)).
-     All other unary operators have an equivalent GIMPLE unary operator  */
+     All other unary operators have an equivalent GIMPLE unary operator.  */
   if (code == TRUTH_NOT_EXPR)
     se->expr = build (EQ_EXPR, type, operand.expr,
 		      convert (type, integer_zero_node));
@@ -386,7 +387,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
 }
 
 /* Expand power operator to optimal multiplications when a value is raised
-   to an constant integer n. See section 4.6.3, "Evaluation of Powers" of
+   to a constant integer n. See section 4.6.3, "Evaluation of Powers" of
    Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art of Computer
    Programming", 3rd Edition, 1998.  */
 
@@ -397,7 +398,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
    with the first node being one.  */
 #define POWI_TABLE_SIZE 256
 
-/* The table is from Builtins.c.  */
+/* The table is from builtins.c.  */
 static const unsigned char powi_table[POWI_TABLE_SIZE] =
   {
       0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
@@ -434,11 +435,12 @@ static const unsigned char powi_table[POWI_TABLE_SIZE] =
     124, 166, 125, 214, 126, 138, 127, 153,  /* 248 - 255 */
   };
 
-/* If n is larger than lookup table's max index, we use "window method".  */
+/* If n is larger than lookup table's max index, we use the "window 
+   method".  */
 #define POWI_WINDOW_SIZE 3
 
-/* Recursive function to expand power operator. The temporary values are put
-   in tmpvar. The function return tmpvar[1] ** n.  */
+/* Recursive function to expand the power operator. The temporary 
+   values are put in tmpvar. The function returns tmpvar[1] ** n.  */
 static tree
 gfc_conv_powi (gfc_se * se, int n, tree * tmpvar)
 {
@@ -476,8 +478,10 @@ gfc_conv_powi (gfc_se * se, int n, tree * tmpvar)
   return tmp;
 }
 
-/* Expand lhs ** rhs. rhs is an constant integer. If expand successfully,
-   return 1. Else return 0 and will call runtime library functions.  */
+
+/* Expand lhs ** rhs. rhs is a constant integer. If it expands successfully,
+   return 1. Else return 0 and a call to runtime library functions
+   will have to be built.  */
 static int
 gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 {
@@ -509,7 +513,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
       cond = build (EQ_EXPR, boolean_type_node, lhs,
 		    convert (TREE_TYPE (lhs), integer_one_node));
 
-      /* If rhs is an even,
+      /* If rhs is even,
 	 result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
       if ((n & 1) == 0)
         {
@@ -519,7 +523,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 			    convert (type, integer_zero_node));
 	  return 1;
 	}
-      /* If rhs is an odd,
+      /* If rhs is odd,
 	 result = (lhs == 1) ? 1 : (lhs == -1) ? -1 : 0.  */
       tmp = build (COND_EXPR, type, tmp,
 		   convert (type, integer_minus_one_node),
@@ -777,9 +781,9 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
 /* Translates an op expression. Common (binary) cases are handled by this
    function, others are passed on. Recursion is used in either case.
    We use the fact that (op1.ts == op2.ts) (except for the power
-   operand **).
+   operator **).
    Operators need no special handling for scalarized expressions as long as
-   they call gfc_conv_siple_val to get their operands.
+   they call gfc_conv_simple_val to get their operands.
    Character strings get special handling.  */
 
 static void
@@ -900,7 +904,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       return;
     }
 
-  /* The only exception to this is **, which is handled seperately anyway.  */
+  /* The only exception to this is **, which is handled separately anyway.  */
   assert (expr->op1->ts.type == expr->op2->ts.type);
 
   if (checkstring && expr->op1->ts.type != BT_CHARACTER)
@@ -946,11 +950,11 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   else
     se->expr = fold (build (code, type, lse.expr, rse.expr));
 
-
   /* Add the post blocks.  */
   gfc_add_block_to_block (&se->post, &rse.post);
   gfc_add_block_to_block (&se->post, &lse.post);
 }
+
 
 static void
 gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
@@ -1125,11 +1129,13 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
             }
 	  else
 	    {
-	      /* If the procedure requires explicit interface, actual argument
-	         is passed according to corresponing formal argument.  We
-		 do not use g77 method and the address of array descriptor
-		 is passed if corresponing formal is pointer or
-		 assumed-shape,  Otherwise use g77 method.  */
+	      /* If the procedure requires an explicit interface, the
+		 actual argument is passed according to the
+		 corresponding formal argument.  If the corresponding
+		 formal argument is a POINTER or assumed shape, we do
+		 not use g77's calling aonvention, and pass the
+		 address of the array descriptor instead. Otherwise we
+		 use g77's calling convention.  */
 	      int f;
 	      f = (formal != NULL)
 		  && !formal->sym->attr.pointer
@@ -1164,8 +1170,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   se->expr = build (CALL_EXPR, TREE_TYPE (fntype), se->expr,
 		    arglist, NULL_TREE);
 
-/* A pure function may still have side-effects - it may modify its
-   parameters.  */
+  /* A pure function may still have side-effects - it may modify its
+     parameters.  */
   TREE_SIDE_EFFECTS (se->expr) = 1;
 #if 0
   if (!sym->attr.pure)
@@ -1324,7 +1330,7 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
       se->string_length = sym->ts.cl->backend_decl;
     }
 
-  /* Resore the original variables.  */
+  /* Restore the original variables.  */
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
   gfc_free (saved_vars);
@@ -1344,7 +1350,7 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
       return;
     }
 
-  /* We distinguish the statement function from general function to improve
+  /* We distinguish statement functions from general functions to improve
      runtime performance.  */
   if (expr->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
     {
@@ -1360,6 +1366,7 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   gfc_conv_function_call (se, sym, expr->value.function.actual);
 }
 
+
 static void
 gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 {
@@ -1372,8 +1379,8 @@ gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 
 
 /* Build a static initializer.  EXPR is the expression for the initial value.
-   The other parameters describe the variable of component being initialized.
-   EXPR may be null.  */
+   The other parameters describe the variable of the component being 
+   initialized. EXPR may be null.  */
 
 tree
 gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
@@ -1673,7 +1680,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 }
 
 
-/*translate a substring expression */
+/* Translate a substring expression.  */
 
 static void
 gfc_conv_substring_expr (gfc_se * se, gfc_expr * expr)
@@ -1780,7 +1787,7 @@ gfc_conv_expr_type (gfc_se * se, gfc_expr * expr, tree type)
 }
 
 
-/* Converts an expression so that it can be passed by refernece.  Scalar
+/* Converts an expression so that it can be passed by reference.  Scalar
    values only.  */
 
 void

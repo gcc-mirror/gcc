@@ -46,6 +46,7 @@ tree gfc_strconst_current_filename;
 tree gfc_rank_cst[GFC_MAX_DIMENSIONS + 1];
 
 /* Build a constant with given type from an int_cst.  */
+
 tree
 gfc_build_const (tree type, tree intval)
 {
@@ -175,7 +176,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
   char *q;
   int n;
 
-  /* TODO: could be wrong if sizeof(HOST_WIDE_INT) |= SIZEOF (int).  */
+  /* TODO: could be wrong if sizeof(HOST_WIDE_INT) != SIZEOF (int).  */
   if (mpz_fits_slong_p (i))
     {
       val = mpz_get_si (i);
@@ -229,6 +230,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
 
 /* Converts a real constant into backend form.  Uses an intermediate string
    representation.  */
+
 tree
 gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
 {
@@ -343,7 +345,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 }
 
 
-/* Like gfc_conv_contrant_to_tree, but for a simplified expression.
+/* Like gfc_conv_constant_to_tree, but for a simplified expression.
    We can handle character literal constants here as well.  */
 
 void
@@ -366,7 +368,7 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
   /* Translate the constant and put it in the simplifier structure.  */
   se->expr = gfc_conv_constant_to_tree (expr);
 
-  /* If this is a CHARACTER string, set it's length in the simplifier
+  /* If this is a CHARACTER string, set its length in the simplifier
      structure, too.  */
   if (expr->ts.type == BT_CHARACTER)
     se->string_length = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (se->expr)));
