@@ -673,6 +673,17 @@ reload (rtx first, int global)
       if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
 	regs_ever_live[i] = 1;
 
+#ifdef NON_SAVING_SETJMP
+  /* A function that calls setjmp should save and restore all the
+     call-saved registers on a system where longjmp clobbers them.  */
+  if (NON_SAVING_SETJMP && current_function_calls_setjmp)
+    {
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (! call_used_regs[i])
+	  regs_ever_live[i] = 1;
+    }
+#endif
+
   /* Find all the pseudo registers that didn't get hard regs
      but do have known equivalent constants or memory slots.
      These include parameters (known equivalent to parameter slots)

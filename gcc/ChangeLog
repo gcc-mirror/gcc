@@ -1,3 +1,8 @@
+2003-11-29  James E Wilson  <wilson@specifixinc.com>
+
+	* final.c (final_start_function): Delete code for NON_SAVING_SETJMP.
+	* reload1.c (reload): Re-add it here.
+
 2003-11-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): Don't

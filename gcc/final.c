@@ -1336,19 +1336,6 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
   this_is_asm_operands = 0;
 
-#ifdef NON_SAVING_SETJMP
-  /* A function that calls setjmp should save and restore all the
-     call-saved registers on a system where longjmp clobbers them.  */
-  if (NON_SAVING_SETJMP && current_function_calls_setjmp)
-    {
-      int i;
-
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (!call_used_regs[i])
-	  regs_ever_live[i] = 1;
-    }
-#endif
-
   last_filename = locator_file (prologue_locator);
   last_linenum = locator_line (prologue_locator);
 
