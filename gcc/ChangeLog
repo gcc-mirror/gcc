@@ -1,3 +1,13 @@
+2004-01-24  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR bootstrap/13848
+	* cse.c (cse_cc_succs): Change the mode of the source expression
+	as soon as decide we need a new mode.  Don't permit changing modes
+	if we found a match in a successor block.
+	(cse_condition_code_reg): Save original mode of source expression
+	so that we know whether we have to change the mode in other
+	insns.
+
 2004-01-24  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (change_address, adjust_address_1, offset_address,
