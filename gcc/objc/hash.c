@@ -16,10 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.4 1991/11/19 12:34:41 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.5 1991/11/20 23:29:20 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/19 12:34:41 $
+  $Date: 1991/11/20 23:29:20 $
   $Log: hash.c,v $
+ * Revision 0.5  1991/11/20  23:29:20  dennisg
+ * converted hashIndex() to a inline.
+ *
  * Revision 0.4  1991/11/19  12:34:41  dennisg
  * bug in hash_delete().  It was using void* to obtain nodes to
  * pass to hash_remove().  The value passed to hash_removed() is a
@@ -60,24 +63,18 @@
 	(((cache)->sizeOfHash * 175 ) / 100 )
 
 
-static inline u_int hashValue( Cache_t theCache, void* aKey ) {
+static inline u_int hashIndex( Cache_t theCache, void* aKey ) {
 
-  u_int hash = 0;
-  int   i;
-  
-  
-  assert( theCache->numberOfMaskBits );
-  for( i = 0; i < ( sizeof( aKey ) * 8 ); i += theCache->numberOfMaskBits )
-    hash ^= (( u_int )aKey ) >> i ;
 
-  return ( hash & theCache->mask ) % theCache->sizeOfHash;
+	assert (sizeof (u_int) == sizeof (void*));
+	
+	return ((u_int)aKey) % theCache->sizeOfHash ;
 }
 
 
 Cache_t hash_new( u_int sizeOfHash ) {
 
   Cache_t retCache;
-  int     i;
 
 
   assert( sizeOfHash );
@@ -97,20 +94,6 @@ Cache_t hash_new( u_int sizeOfHash ) {
   assert( retCache->theNodeTable );
   
   retCache->sizeOfHash = sizeOfHash;
-
-                                                /* Calculate the number of 
-                                                  bits required to represent 
-                                                  the hash mask. */
-  retCache->numberOfMaskBits = 
-    ceil( log( retCache->sizeOfHash ) / log( 2 ));
-
-                                                /* Form a bit mask for the 
-                                                  hash. */
-  for( i = 0; i < retCache->numberOfMaskBits; ++i )
-    retCache->mask = ( retCache->mask << 1 ) | 0x01 ;
-
-  assert( retCache->numberOfMaskBits );
-  assert( retCache->mask );
 
   return retCache;
 }
@@ -135,7 +118,7 @@ void hash_delete( Cache_t theCache ) {
 
 void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
-  u_int       indx = hashValue( *theCache, aKey );
+  u_int       indx = hashIndex( *theCache, aKey );
   CacheNode_t aCacheNode = calloc( 1, sizeof( CacheNode ));
 
 
@@ -207,7 +190,7 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
 void hash_remove( Cache_t theCache, void* aKey ) {
 
-  u_int       indx = hashValue( theCache, aKey );
+  u_int       indx = hashIndex( theCache, aKey );
   CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
   
   
@@ -247,7 +230,7 @@ void hash_remove( Cache_t theCache, void* aKey ) {
 
 void* hash_value_for_key( Cache_t theCache, void* aKey ) {
 
-  u_int       indx = hashValue( theCache, aKey );
+  u_int       indx = hashIndex( theCache, aKey );
   CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
   void*       retVal = NULL;
   
