@@ -612,7 +612,11 @@ typedef enum
 # define UCHAR_T unsigned char
 # define COMPILED_BUFFER_VAR bufp->buffer
 # define OFFSET_ADDRESS_SIZE 2
-# define PREFIX(name) byte_##name
+# if defined __STDC__ && __STDC__
+#  define PREFIX(name) byte_##name
+# else
+#  define PREFIX(name) byte_/**/name
+# endif
 # define ARG_PREFIX(name) name
 # define PUT_CHAR(c) putchar (c)
 #else
@@ -622,8 +626,13 @@ typedef enum
 #  define COMPILED_BUFFER_VAR wc_buffer
 #  define OFFSET_ADDRESS_SIZE 1 /* the size which STORE_NUMBER macro use */
 #  define CHAR_CLASS_SIZE ((__alignof__(wctype_t)+sizeof(wctype_t))/sizeof(CHAR_T)+1)
-#  define PREFIX(name) wcs_##name
-#  define ARG_PREFIX(name) c##name
+#  if defined __STDC__ && __STDC__
+#   define PREFIX(name) wcs_##name
+#   define ARG_PREFIX(name) c##name
+#  else
+#   define PREFIX(name) wcs_/**/name
+#   define ARG_PREFIX(name) c/**/name
+#  endif
 /* Should we use wide stream??  */
 #  define PUT_CHAR(c) printf ("%C", c);
 #  define TRUE 1
