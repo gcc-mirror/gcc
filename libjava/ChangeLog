@@ -674,7 +674,6 @@
 	* include/i386-signal.h (MAKE_THROW_FRAME): Ditto.
 	* include/ppc-signal.h: New file.
 
->>>>>>> 1.385
 2000-05-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Thread.java: Declare `data' as Object, not RawData.
