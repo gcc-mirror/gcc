@@ -8649,7 +8649,7 @@ ia64_hpux_file_end (void)
   for (p = extern_func_head; p; p = p->next)
     {
       tree decl = p->decl;
-      tree id = DECL_NAME (decl);
+      tree id = DECL_ASSEMBLER_NAME (decl);
 
       if (!id)
 	abort ();

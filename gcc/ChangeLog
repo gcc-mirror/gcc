@@ -1,3 +1,10 @@
+2004-04-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Look only at
+	mode argument.
+	* config/ia64/ia64.c (ia64_hpux_file_end): Check
+	TREE_SYMBOL_REFERENCED on DECL_ASSEMBLER_NAME, not DECL_NAME.
+
 2004-04-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi (Precompiled Headers): Warn about known
@@ -105,10 +112,10 @@
 	"bitfld++ == const" to "++bitfld == const + incr" transformations.
 
 2004-03-30  Aldy Hernandez  <aldyh@redhat.com>
- 
-        PR 14219
-        * c-typeck.c (build_binary_op): Do not allow comparisons of
-        vectors.
+
+	PR 14219
+	* c-typeck.c (build_binary_op): Do not allow comparisons of
+	vectors.
 
 2004-03-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
@@ -390,7 +397,7 @@
 
 	PR middle-end/14477
 	* except.c (remove_unreachable_regions): Look thru CALL_PLACEHOLDER.
-	
+
 2004-03-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/14496
