@@ -193,6 +193,7 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* pred */
     NULL,			/* succ */
     NULL,			/* local_set */
+    NULL,			/* cond_local_set */
     NULL,			/* global_live_at_start */
     NULL,			/* global_live_at_end */
     NULL,			/* aux */
@@ -207,6 +208,7 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* pred */
     NULL,			/* succ */
     NULL,			/* local_set */
+    NULL,			/* cond_local_set */
     NULL,			/* global_live_at_start */
     NULL,			/* global_live_at_end */
     NULL,			/* aux */
@@ -293,8 +295,13 @@ struct propagate_block_info
      elimination.  */
   rtx mem_set_list;
 
-  /* If non-null, record the set of registers set in the basic block.  */
+  /* If non-null, record the set of registers set unconditionally in the
+     basic block.  */
   regset local_set;
+
+  /* If non-null, record the set of registers set conditionally in the
+     basic block.  */
+  regset cond_local_set;
 
 #ifdef HAVE_conditional_execution
   /* Indexed by register number, holds a reg_cond_life_info for each
@@ -1544,7 +1551,7 @@ split_block (bb, insn)
 	 at the end of the original basic block and get
 	 propagate_block to determine which registers are live.  */
       COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_end);
-      propagate_block (new_bb, new_bb->global_live_at_start, NULL, 0);
+      propagate_block (new_bb, new_bb->global_live_at_start, NULL, NULL, 0);
       COPY_REG_SET (bb->global_live_at_end, 
 		    new_bb->global_live_at_start);
     }
@@ -2966,7 +2973,7 @@ update_life_info (blocks, extent, prop_flags)
 	  basic_block bb = BASIC_BLOCK (i);
 
 	  COPY_REG_SET (tmp, bb->global_live_at_end);
-	  propagate_block (bb, tmp, (regset) NULL, prop_flags);
+	  propagate_block (bb, tmp, NULL, NULL, prop_flags);
 
 	  if (extent == UPDATE_LIFE_LOCAL)
 	    verify_local_live_at_start (tmp, bb);
@@ -2979,7 +2986,7 @@ update_life_info (blocks, extent, prop_flags)
 	  basic_block bb = BASIC_BLOCK (i);
 
 	  COPY_REG_SET (tmp, bb->global_live_at_end);
-	  propagate_block (bb, tmp, (regset) NULL, prop_flags);
+	  propagate_block (bb, tmp, NULL, NULL, prop_flags);
 
 	  if (extent == UPDATE_LIFE_LOCAL)
 	    verify_local_live_at_start (tmp, bb);
@@ -3378,6 +3385,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
       if (bb->local_set == NULL)
 	{
 	  bb->local_set = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	  bb->cond_local_set = OBSTACK_ALLOC_REG_SET (&flow_obstack);
 	  rescan = 1;
 	}
       else
@@ -3389,6 +3397,20 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  CLEAR_REG_SET (tmp);
 	  rescan = bitmap_operation (tmp, bb->global_live_at_end,
 				     new_live_at_end, BITMAP_AND_COMPL);
+
+	  if (! rescan)
+	    {
+	      /* If any of the registers in the new live_at_end set are
+		 conditionally set in this basic block, we must rescan.
+	         This is because conditional lifetimes at the end of the
+		 block do not just take the live_at_end set into account,
+		 but also the liveness at the start of each successor
+		 block.  We can miss changes in those sets if we only
+		 compare the new live_at_end against the previous one.  */
+	      CLEAR_REG_SET (tmp);
+	      rescan = bitmap_operation (tmp, new_live_at_end,
+					 bb->cond_local_set, BITMAP_AND);
+	    }
 
 	  if (! rescan)
 	    {
@@ -3434,7 +3456,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
-	  propagate_block (bb, new_live_at_end, bb->local_set, flags);
+	  propagate_block (bb, new_live_at_end, bb->local_set,
+			   bb->cond_local_set, flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
 	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))
@@ -3467,6 +3490,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
 	  FREE_REG_SET (bb->local_set);
+	  FREE_REG_SET (bb->cond_local_set);
 	});
     }
   else
@@ -3475,6 +3499,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
 	  FREE_REG_SET (bb->local_set);
+	  FREE_REG_SET (bb->cond_local_set);
 	}
     }
 
@@ -3811,10 +3836,9 @@ propagate_one_insn (pbi, insn)
    the user can use the regsets provided here.  */
 
 struct propagate_block_info *
-init_propagate_block_info (bb, live, local_set, flags)
+init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
      basic_block bb;
-     regset live;
-     regset local_set;
+     regset live, local_set, cond_local_set;
      int flags;
 {
   struct propagate_block_info *pbi = xmalloc (sizeof (*pbi));
@@ -3823,6 +3847,7 @@ init_propagate_block_info (bb, live, local_set, flags)
   pbi->reg_live = live;
   pbi->mem_set_list = NULL_RTX;
   pbi->local_set = local_set;
+  pbi->cond_local_set = cond_local_set;
   pbi->cc0_live = 0;
   pbi->flags = flags;
 
@@ -4000,20 +4025,28 @@ free_propagate_block_info (pbi)
    When called, REG_LIVE contains those live at the end.  On return, it
    contains those live at the beginning.
 
-   LOCAL_SET, if non-null, will be set with all registers killed by
-   this basic block.  */
+   LOCAL_SET, if non-null, will be set with all registers killed
+   unconditionally by this basic block.
+   Likewise, COND_LOCAL_SET, if non-null, will be set with all registers
+   killed conditionally by this basic block.  If there is any unconditional
+   set of a register, then the corresponding bit will be set in LOCAL_SET
+   and cleared in COND_LOCAL_SET.
+   It is valid for LOCAL_SET and COND_LOCAL_SET to be the same set.  In this
+   case, the resulting set will be equal to the union of the two sets that
+   would otherwise be computed.  */
 
 void
-propagate_block (bb, live, local_set, flags)
+propagate_block (bb, live, local_set, cond_local_set, flags)
      basic_block bb;
      regset live;
      regset local_set;
+     regset cond_local_set;
      int flags;
 {
   struct propagate_block_info *pbi;
   rtx insn, prev;
 
-  pbi = init_propagate_block_info (bb, live, local_set, flags);
+  pbi = init_propagate_block_info (bb, live, local_set, cond_local_set, flags);
 
   if (flags & PROP_REG_INFO)
     {
@@ -4635,7 +4668,16 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	{
 	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, i);
 	  if (pbi->local_set)
-	    SET_REGNO_REG_SET (pbi->local_set, i);
+	    {
+	      /* Order of the set operation matters here since both
+		 sets may be the same.  */
+	      CLEAR_REGNO_REG_SET (pbi->cond_local_set, i);
+	      if (cond != NULL_RTX
+		  && ! REGNO_REG_SET_P (pbi->local_set, i))
+		SET_REGNO_REG_SET (pbi->cond_local_set, i);
+	      else
+		SET_REGNO_REG_SET (pbi->local_set, i);
+	    }
 	  if (code != CLOBBER)
 	    SET_REGNO_REG_SET (pbi->new_set, i);
 

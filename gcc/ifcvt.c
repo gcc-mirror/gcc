@@ -1973,7 +1973,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       /* ??? bb->local_set is only valid during calculate_global_regs_live,
 	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose, 
          since we've already asserted that MERGE_BB is small.  */
-      propagate_block (merge_bb, tmp, merge_set, 0);
+      propagate_block (merge_bb, tmp, merge_set, merge_set, 0);
 
       /* For small register class machines, don't lengthen lifetimes of
 	 hard registers before reload.  */
@@ -1993,7 +1993,8 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 	 Moreover, we're interested in the insns live from OTHER_BB.  */
 
       COPY_REG_SET (test_live, other_bb->global_live_at_start);
-      pbi = init_propagate_block_info (test_bb, test_live, test_set, 0);
+      pbi = init_propagate_block_info (test_bb, test_live, test_set, test_set,
+				       0);
 
       for (insn = jump; ; insn = prev)
 	{
