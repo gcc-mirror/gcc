@@ -2115,9 +2115,9 @@ beq\t%2,%.,1b\;\
   [(set_attr "type"	"fneg")
    (set_attr "mode"	"SF")])
 
-(define_insn "one_cmplsi2"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(not:SI (match_operand:SI 1 "register_operand" "d")))]
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(not:GPR (match_operand:GPR 1 "register_operand" "d")))]
   ""
 {
   if (TARGET_MIPS16)
@@ -2125,21 +2125,8 @@ beq\t%2,%.,1b\;\
   else
     return "nor\t%0,%.,%1";
 }
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
-
-(define_insn "one_cmpldi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(not:DI (match_operand:DI 1 "register_operand" "d")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16)
-    return "not\t%0,%1";
-  else
-    return "nor\t%0,%.,%1";
-}
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
 ;;
 ;;  ....................
@@ -2152,167 +2139,95 @@ beq\t%2,%.,1b\;\
 ;; Many of these instructions use trivial define_expands, because we
 ;; want to use a different set of constraints when TARGET_MIPS16.
 
-(define_expand "andsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(and:SI (match_operand:SI 1 "uns_arith_operand")
-		(match_operand:SI 2 "uns_arith_operand")))]
+(define_expand "and<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(and:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "uns_arith_operand")))]
   ""
 {
   if (TARGET_MIPS16)
-    {
-      operands[1] = force_reg (SImode, operands[1]);
-      operands[2] = force_reg (SImode, operands[2]);
-    }
+    operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(and:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+(define_insn "*and<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(and:GPR (match_operand:GPR 1 "register_operand" "%d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
   "!TARGET_MIPS16"
   "@
    and\t%0,%1,%2
    andi\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(and:SI (match_operand:SI 1 "register_operand" "%0")
-		(match_operand:SI 2 "register_operand" "d")))]
+(define_insn "*and<mode>3_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(and:GPR (match_operand:GPR 1 "register_operand" "%0")
+		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "and\t%0,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
-(define_expand "anddi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(and:DI (match_operand:DI 1 "register_operand")
-		(match_operand:DI 2 "uns_arith_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16)
-    {
-      operands[1] = force_reg (DImode, operands[1]);
-      operands[2] = force_reg (DImode, operands[2]);
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(and:DI (match_operand:DI 1 "register_operand" "d,d")
-		(match_operand:DI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "@
-   and\t%0,%1,%2
-   andi\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(and:DI (match_operand:DI 1 "register_operand" "0")
-		(match_operand:DI 2 "register_operand" "d")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-  "and\t%0,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_expand "iorsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(ior:SI (match_operand:SI 1 "uns_arith_operand")
-		(match_operand:SI 2 "uns_arith_operand")))]
+(define_expand "ior<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(ior:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "uns_arith_operand")))]
   ""
 {
   if (TARGET_MIPS16)
-    {
-      operands[1] = force_reg (SImode, operands[1]);
-      operands[2] = force_reg (SImode, operands[2]);
-    }
+    operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ior:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+(define_insn "*ior<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(ior:GPR (match_operand:GPR 1 "register_operand" "%d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
   "!TARGET_MIPS16"
   "@
    or\t%0,%1,%2
    ori\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0")
-		(match_operand:SI 2 "register_operand" "d")))]
+(define_insn "*ior<mode>3_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(ior:GPR (match_operand:GPR 1 "register_operand" "%0")
+		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "or\t%0,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
-(define_expand "iordi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(ior:DI (match_operand:DI 1 "register_operand")
-		(match_operand:DI 2 "uns_arith_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16)
-    {
-      operands[1] = force_reg (DImode, operands[1]);
-      operands[2] = force_reg (DImode, operands[2]);
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(ior:DI (match_operand:DI 1 "register_operand" "d,d")
-		(match_operand:DI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "@
-   or\t%0,%1,%2
-   ori\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(ior:DI (match_operand:DI 1 "register_operand" "0")
-		(match_operand:DI 2 "register_operand" "d")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-  "or\t%0,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_expand "xorsi3"
-  [(set (match_operand:SI 0 "register_operand")
-	(xor:SI (match_operand:SI 1 "uns_arith_operand")
-		(match_operand:SI 2 "uns_arith_operand")))]
+(define_expand "xor<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+	(xor:GPR (match_operand:GPR 1 "register_operand")
+		 (match_operand:GPR 2 "uns_arith_operand")))]
   ""
   "")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(xor:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(xor:GPR (match_operand:GPR 1 "register_operand" "%d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
   "!TARGET_MIPS16"
   "@
    xor\t%0,%1,%2
    xori\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,t,t")
-	(xor:SI (match_operand:SI 1 "uns_arith_operand" "%0,d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K,d")))]
+  [(set (match_operand:GPR 0 "register_operand" "=d,t,t")
+	(xor:GPR (match_operand:GPR 1 "register_operand" "%0,d,d")
+		 (match_operand:GPR 2 "uns_arith_operand" "d,K,d")))]
   "TARGET_MIPS16"
   "@
    xor\t%0,%2
    cmpi\t%1,%2
    cmp\t%1,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(const_int 4)
 		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
@@ -2320,65 +2235,14 @@ beq\t%2,%.,1b\;\
 			       (const_int 8))
 		 (const_int 4)])])
 
-(define_expand "xordi3"
-  [(set (match_operand:DI 0 "register_operand")
-	(xor:DI (match_operand:DI 1 "register_operand")
-		(match_operand:DI 2 "uns_arith_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16)
-    {
-      operands[1] = force_reg (DImode, operands[1]);
-      operands[2] = force_reg (DImode, operands[2]);
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(xor:DI (match_operand:DI 1 "register_operand" "d,d")
-		(match_operand:DI 2 "uns_arith_operand" "d,K")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "@
-   xor\t%0,%1,%2
-   xori\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,t,t")
-	(xor:DI (match_operand:DI 1 "register_operand" "%0,d,d")
-		(match_operand:DI 2 "uns_arith_operand" "d,K,d")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-  "@
-   xor\t%0,%2
-   cmpi\t%1,%2
-   cmp\t%1,%2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")
-   (set_attr_alternative "length"
-		[(const_int 4)
-		 (if_then_else (match_operand:VOID 2 "m16_uimm8_1")
-			       (const_int 4)
-			       (const_int 8))
-		 (const_int 4)])])
-
-(define_insn "*norsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(and:SI (not:SI (match_operand:SI 1 "register_operand" "d"))
-		(not:SI (match_operand:SI 2 "register_operand" "d"))))]
+(define_insn "*nor<mode>3"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(and:GPR (not:GPR (match_operand:GPR 1 "register_operand" "d"))
+		 (not:GPR (match_operand:GPR 2 "register_operand" "d"))))]
   "!TARGET_MIPS16"
-  "nor\t%0,%z1,%z2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
-
-(define_insn "*nordi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(and:DI (not:DI (match_operand:DI 1 "register_operand" "d"))
-		(not:DI (match_operand:DI 2 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "nor\t%0,%z1,%z2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
+  "nor\t%0,%1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
 ;;
 ;;  ....................

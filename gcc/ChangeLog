@@ -1,3 +1,17 @@
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (one_cmpl[sd]i2): Redefine using :GPR.
+	(and[sd]3, ior[sd]i3, xor[sd]i3): Likewise.  Change 32-bit patterns
+	to use register_operand rather than uns_arith_operand as the predicate
+	for operand 1.  Remove redundant MIPS16 force_reg() for operand 1.
+	(*and[sd]i3, *ior[sd]i3, *xor[sd]i3): Name formerly unnamed patterns.
+	Redefine using :GPR.  Make same predicate change here.  Extend the
+	commutativity of operands 1 and 2 from the SImode version to the
+	DImode one.
+	(*and[sd]i3_mips16, *ior[sd]i3_mips16, *xor[sd]i3_mips16): Likewise,
+	but with no predicate changes.
+	(*nor[sd]i3): Redefine using :GPR.
+
 2004-08-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-operands.c (get_call_expr_operands): Add VUSE operands for
