@@ -37,31 +37,31 @@
 (define_attr "length" ""
   (cond [(eq_attr "type" "load,fpload")
 	 (if_then_else (match_operand 1 "symbolic_memory_operand" "")
-		       (const_int 2) (const_int 1))
+		       (const_int 8) (const_int 4))
 
 	 (eq_attr "type" "store,fpstore")
 	 (if_then_else (match_operand 0 "symbolic_memory_operand" "")
-		       (const_int 2) (const_int 1))
+		       (const_int 8) (const_int 4))
 
 	 (eq_attr "type" "binary")
 	 (if_then_else (match_operand 2 "arith_operand" "")
-		       (const_int 1) (const_int 3))
+		       (const_int 4) (const_int 12))
 
 	 (eq_attr "type" "move,unary")
 	 (if_then_else (match_operand 1 "arith_operand" "")
-		       (const_int 1) (const_int 2))]
+		       (const_int 4) (const_int 8))]
 
-	(const_int 1)))
+	(const_int 4)))
 
 (define_asm_attributes
-  [(set_attr "length" "1")
+  [(set_attr "length" "4")
    (set_attr "type" "multi")])
 
 ;; Attributes for instruction and branch scheduling
 
 (define_attr "in_branch_delay" "false,true"
   (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli")
-		     (eq_attr "length" "1"))
+		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
 
@@ -69,7 +69,7 @@
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
   (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
-		     (eq_attr "length" "1"))
+		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
 
@@ -363,7 +363,7 @@
   ""
   "com%I2clr,%B3 %2,%1,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ;; Combiner patterns for common operations performed with the output
 ;; from an scc insn (negscc and incscc).  
@@ -375,7 +375,7 @@
   ""
   "com%I2clr,%B3 %2,%1,%0\;ldi -1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ;; Patterns for adding/subtracting the result of a boolean expression from
 ;; a register.  First we have special patterns that make use of the carry
@@ -391,7 +391,7 @@
   ""
   "sub%I3 %3,%2,0\;addc 0,%1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ; This need only accept registers for op3, since canonicalization
 ; replaces geu with gtu when op3 is an integer.
@@ -403,7 +403,7 @@
   ""
   "sub %2,%3,0\;addc 0,%1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ; Match only integers for op3 here.  This is used as canonical form of the
 ; geu pattern when op3 is an integer.  Don't match registers since we can't
@@ -416,7 +416,7 @@
   ""
   "addi %k3,%2,0\;addc 0,%1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "incscc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -429,7 +429,7 @@
    com%I3clr,%B4 %3,%2,0\;addi 1,%0,%0
    com%I3clr,%B4 %3,%2,0\;addi,tr 1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
-   (set_attr "length" "2,3")])
+   (set_attr "length" "8,12")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -439,7 +439,7 @@
   ""
   "sub%I3 %3,%2,0\;subb %1,0,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ; This need only accept registers for op3, since canonicalization
 ; replaces ltu with leu when op3 is an integer.
@@ -451,7 +451,7 @@
   ""
   "sub %2,%3,0\;subb %1,0,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ; Match only integers for op3 here.  This is used as canonical form of the
 ; ltu pattern when op3 is an integer.  Don't match registers since we can't
@@ -464,7 +464,7 @@
   ""
   "addi %k3,%2,0\;subb %1,0,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "decscc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -477,7 +477,7 @@
    com%I3clr,%B4 %3,%2,0\;addi -1,%0,%0
    com%I3clr,%B4 %3,%2,0\;addi,tr -1,%1,%0\;copy %1,%0"
   [(set_attr "type" "binary,binary")
-   (set_attr "length" "2,3")])
+   (set_attr "length" "8,12")])
 
 ; Patterns for max and min.  (There is no need for an earlyclobber in the
 ; last alternative since the middle alternative will match if op0 == op1.)
@@ -492,7 +492,7 @@
   comiclr,> %2,%0,0\;ldi %2,%0
   comclr,> %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
- (set_attr "length" "2,2,2")])
+ (set_attr "length" "8,8,8")])
 
 (define_insn "uminsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -503,7 +503,7 @@
   comclr,>> %2,%0,0\;copy %2,%0
   comiclr,>> %2,%0,0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
- (set_attr "length" "2,2")])
+ (set_attr "length" "8,8")])
 
 (define_insn "smaxsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
@@ -515,7 +515,7 @@
   comiclr,< %2,%0,0\;ldi %2,%0
   comclr,< %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
- (set_attr "length" "2,2,2")])
+ (set_attr "length" "8,8,8")])
 
 (define_insn "umaxsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -526,7 +526,7 @@
   comclr,<< %2,%0,0\;copy %2,%0
   comiclr,<< %2,%0,0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
- (set_attr "length" "2,2")])
+ (set_attr "length" "8,8")])
 ;;; Experimental conditional move patterns
 
 ; We need the first constraint alternative in order to avoid
@@ -547,7 +547,7 @@
    com%I4clr,%B5 %4,%3,%0\;ldil L'%1,%0
    com%I4clr,%B5 %4,%3,%0\;zdepi %Z1,%0"
   [(set_attr "type" "multi,multi,multi,multi,multi")
-   (set_attr "length" "2,2,2,2,2")])
+   (set_attr "length" "8,8,8,8,8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
@@ -568,7 +568,7 @@
    com%I4clr,%B5 %4,%3,0\;ldil L'%1,%0
    com%I4clr,%B5 %4,%3,0\;zdepi %Z1,%0"
   [(set_attr "type" "multi,multi,multi,multi,multi,multi,multi,multi")
-   (set_attr "length" "2,2,2,2,2,2,2,2")])
+   (set_attr "length" "8,8,8,8,8,8,8,8")])
 
 ;; Conditional Branches
 
@@ -742,7 +742,7 @@
 
 
 ;; Note a long backward conditional branch with an annulled delay slot
-;; has a length of 3.  
+;; has a length of 12.  
 (define_insn ""
   [(set (pc)
 	(if_then_else
@@ -759,10 +759,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2)))])
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
 
 ;; Match the negated branch.
 
@@ -782,10 +782,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2)))])
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
 
 ;; Branch on Bit patterns.
 (define_insn ""
@@ -807,10 +807,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2)))])
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
 
 (define_insn ""
   [(set (pc)
@@ -831,10 +831,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2)))])
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
 
 ;; Floating point branches
 (define_insn ""
@@ -850,7 +850,7 @@
     return \"ftest\;bl%* %0,0\";
 }"
   [(set_attr "type" "fbranch")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
@@ -865,7 +865,7 @@
     return \"ftest\;add,tr 0,0,0\;bl%* %0,0\";
 }"
   [(set_attr "type" "fbranch")
-   (set_attr "length" "3")])
+   (set_attr "length" "12")])
 
 ;; Move instructions
 
@@ -921,7 +921,7 @@
   "flag_pic && operands[1] == pic_offset_table_rtx"
   "ldw T'%2(%1),%0"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" 
@@ -942,7 +942,7 @@
    fldws%F1 %1,%0
    fstws%F0 %1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,fpalu,fpload,fpstore")
-   (set_attr "length" "1,1,1,1,1,1,1,1,1,1")])
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,4")])
 
 ;; Load indexed.  We don't use unscaled modes since they can't be used
 ;; unless we can tell which of the registers is the base and which is
@@ -957,7 +957,7 @@
   "! TARGET_DISABLE_INDEXING"
   "ldwx,s %1(0,%2),%0"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; Load or store with base-register modification.
 
@@ -975,7 +975,7 @@
   return \"ldws,mb %2(0,%0),%3\";
 }"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "pre_stwm"
   [(set (mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
@@ -991,7 +991,7 @@
   return \"stws,mb %r3,%2(0,%0)\";
 }"
   [(set_attr "type" "store")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "post_ldwm"
   [(set (match_operand:SI 3 "register_operand" "r")
@@ -1007,7 +1007,7 @@
   return \"ldws,ma %2(0,%0),%3\";
 }"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "post_stwm"
   [(set (mem:SI (match_operand:SI 1 "register_operand" "0"))
@@ -1023,7 +1023,7 @@
   return \"stws,ma %r3,%2(0,%0)\";
 }"
   [(set_attr "type" "store")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; For pic
 (define_insn ""
@@ -1047,7 +1047,7 @@
   }
 "
   [(set_attr "type" "multi")
-   (set_attr "length" "3")])
+   (set_attr "length" "12")])
 
 ;; For kernel code always use addil; else we can lose due to a linker
 ;; bug involving absolute symbols and "ldil;add" style relocations
@@ -1060,7 +1060,7 @@
   "@
    addil L'%G1,%%r27"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; For all symbolic operands *except* function addresses and read-only
 ;; operands (which live in TEXT space and do not require relocation).  
@@ -1086,7 +1086,7 @@
    addil L'%G1,%%r27
    ldil L'%G1,%0\;add %0,%%r27,%0"
   [(set_attr "type" "binary,binary")
-   (set_attr "length" "1,2")])
+   (set_attr "length" "4,8")])
 
 ;; This is for use in the prologue/epilogue code.  We need it 
 ;; to add large constants to a stack pointer or frame pointer.
@@ -1102,7 +1102,7 @@
    addil L'%G2,%1
    ldil L'%G2,%0\;add %0,%1,%0"
   [(set_attr "type" "binary,binary")
-   (set_attr "length" "1,2")])
+   (set_attr "length" "4,8")])
 
 ;; For function addresses.
 (define_insn ""
@@ -1111,7 +1111,7 @@
   ""
   "ldil LP'%G1,%0"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1119,7 +1119,7 @@
   "check_pic (1)"
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; lo_sum of a function address.
 (define_insn ""
@@ -1130,7 +1130,7 @@
   ""
   "ldo RP'%G2(%1),%0\;extru,= %0,31,1,%3\;ldw -4(0,%%r27),%3\;add %0,%3,%0"
   [(set_attr "type" "multi")
-   (set_attr "length" "4")])
+   (set_attr "length" "16")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1138,7 +1138,7 @@
 		   (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
-  [(set_attr "length" "1")])
+  [(set_attr "length" "4")])
 
 ;; Now that a symbolic_address plus a constant is broken up early
 ;; in the compilation phase (for better CSE) we need a special
@@ -1179,7 +1179,7 @@
    mtsar %r1
    fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,1")])
+   (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1189,7 +1189,7 @@
   "! TARGET_DISABLE_INDEXING"
   "ldhx,s %2(0,%1),%0"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:HI 3 "register_operand" "=r")
@@ -1200,7 +1200,7 @@
   ""
   "ldhs,mb %2(0,%0),%3"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
@@ -1211,7 +1211,7 @@
   ""
   "sths,mb %r3,%2(0,%0)"
   [(set_attr "type" "store")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1219,7 +1219,7 @@
   "check_pic (1)"
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1227,7 +1227,7 @@
 		   (match_operand 2 "immediate_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
-  [(set_attr "length" "1")])
+  [(set_attr "length" "4")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -1254,7 +1254,7 @@
    mtsar %r1
    fcpy,sgl %r1,%0"
   [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,1")])
+   (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:QI 3 "register_operand" "=r")
@@ -1265,7 +1265,7 @@
   ""
   "ldbs,mb %2(0,%0),%3"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
@@ -1276,7 +1276,7 @@
   ""
   "stbs,mb %r3,%2(0,%0)"
   [(set_attr "type" "store")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
@@ -1346,7 +1346,7 @@
   "* return (which_alternative == 0 ? output_move_double (operands)
 				    : \" fldds%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
-   (set_attr "length" "4,1")])
+   (set_attr "length" "16,4")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -1373,7 +1373,7 @@
   return output_move_double (operands);
 }"
   [(set_attr "type" "fpalu,move,fpstore,store,fpload,load")
-   (set_attr "length" "1,2,1,2,1,2")])
+   (set_attr "length" "4,8,4,8,4,8")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=fx")
@@ -1383,7 +1383,7 @@
   "! TARGET_DISABLE_INDEXING"
   "flddx,s %1(0,%2),%0"
   [(set_attr "type" "fpload")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
@@ -1393,7 +1393,7 @@
   "! TARGET_DISABLE_INDEXING"
   "fstdx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
@@ -1471,7 +1471,7 @@
     abort ();
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 ;;; Experimental
 
@@ -1490,7 +1490,7 @@
   return output_move_double (operands);
 }"
   [(set_attr "type" "move,store,load,misc,fpalu,fpload,fpstore")
-   (set_attr "length" "2,3,3,3,1,1,1")])
+   (set_attr "length" "8,12,12,12,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1509,7 +1509,7 @@
 }"
   ;; Need to set length for this arith insn because operand2
   ;; is not an "arith_operand".
-  [(set_attr "length" "1,2")])
+  [(set_attr "length" "4,8")])
 
 ;; This pattern forces (set (reg:SF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory when
@@ -1528,7 +1528,7 @@
   "* return (which_alternative == 0 ? singlemove_string (operands)
 				    : \" fldws%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
-   (set_attr "length" "2,1")])
+   (set_attr "length" "8,4")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
@@ -1555,7 +1555,7 @@
    fstws%F0 %r1,%0
    stw%M0 %r1,%0"
   [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
-   (set_attr "length" "1,1,1,1,1,1")])
+   (set_attr "length" "4,4,4,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=fx")
@@ -1565,7 +1565,7 @@
   "! TARGET_DISABLE_INDEXING"
   "fldwx,s %1(0,%2),%0"
   [(set_attr "type" "fpload")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
@@ -1575,7 +1575,7 @@
   "! TARGET_DISABLE_INDEXING"
   "fstwx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;;- zero extension instructions
 
@@ -1598,7 +1598,7 @@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
   [(set_attr "type" "unary,load")
-   (set_attr "length" "1,1")])
+   (set_attr "length" "4,4")])
 
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -1609,7 +1609,7 @@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
   [(set_attr "type" "unary,load")
-   (set_attr "length" "1,1")])
+   (set_attr "length" "4,4")])
 
 ;;- sign extension instructions
 
@@ -1669,7 +1669,7 @@
   ""
   "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "general_operand" "=fx")
@@ -1677,7 +1677,7 @@
   ""
   "fcnvxf,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; This pattern forces (set (reg:DF ...) (float:DF (const_int ...)))
 ;; to be reloaded by putting the constant into memory.
@@ -1688,7 +1688,7 @@
   ""
   "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "floatsidf2"
   [(set (match_operand:DF 0 "general_operand" "=fx")
@@ -1696,7 +1696,7 @@
   ""
   "fcnvxf,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_expand "floatunssisf2"
   [(set (subreg:SI (match_dup 2) 1)
@@ -1724,7 +1724,7 @@
   "TARGET_SNAKE"
   "fcnvxf,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "general_operand" "=x")
@@ -1732,7 +1732,7 @@
   "TARGET_SNAKE"
   "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; Convert a float to an actual integer.
 ;; Truncation is performed as part of the conversion.
@@ -1743,7 +1743,7 @@
   ""
   "fcnvfxt,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "=fx")
@@ -1751,7 +1751,7 @@
   ""
   "fcnvfxt,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=x")
@@ -1759,7 +1759,7 @@
   "TARGET_SNAKE"
   "fcnvfxt,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=x")
@@ -1767,7 +1767,7 @@
   "TARGET_SNAKE"
   "fcnvfxt,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;;- arithmetic instructions
 
@@ -1788,7 +1788,7 @@
   else
     return \"add %R2,%R1,%R0\;addc %2,%1,%0\";
 }"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1868,7 +1868,7 @@
 		  (match_operand:DI 2 "register_operand" "r")))]
   ""
   "sub %R1,%R2,%R0\;subb %1,%2,%0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2124,7 +2124,7 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "and %1,%2,%0\;and %R1,%R2,%R0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2133,7 +2133,7 @@
   ""
   "* return output_and (operands); "
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2141,7 +2141,7 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "andcm %2,%1,%0\;andcm %R2,%R1,%R0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2169,7 +2169,7 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "or %1,%2,%0\;or %R1,%R2,%R0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 ;; Need a define_expand because we've run out of CONST_OK... characters.
 (define_expand "iorsi3"
@@ -2190,7 +2190,7 @@
   ""
   "* return output_ior (operands); "
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2218,7 +2218,7 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "xor %1,%2,%0\;xor %R1,%R2,%R0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2233,7 +2233,7 @@
   ""
   "sub 0,%R1,%R0\;subb 0,%1,%0"
   [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2258,7 +2258,7 @@
   ""
   "uaddcm 0,%1,%0\;uaddcm 0,%R1,%R0"
   [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2386,7 +2386,7 @@
   ""
   "ldb%M1 %1,%0"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2395,7 +2395,7 @@
   ""
   "ldh%M1 %1,%0"
   [(set_attr "type" "load")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2418,7 +2418,7 @@
   "reload_in_progress"
   "sh%O4add %2,%1,%0\;add%I3 %3,%0,%0"
   [(set_attr "type" "multi")
-   (set_attr "length" "2")])
+   (set_attr "length" "8")])
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -2449,7 +2449,7 @@
   ""
   "zdep %1,%P2,%L2,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ; Match cases of op1 a CONST_INT here that zvdep_imm doesn't handle.
 ; Doing it like this makes slightly better code since reload can
@@ -2504,7 +2504,7 @@
   ""
   "extrs %1,%P2,%L2,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "vextrs32"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2523,7 +2523,7 @@
    vshd 0,%1,%0
    extru %1,%P2,%L2,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2541,7 +2541,7 @@
     return \"vshd %1,%1,%0\";
 }"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2554,7 +2554,7 @@
   return \"shd %1,%1,%2,%0\";
 }"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2566,7 +2566,7 @@
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
   "shd %1,%2,%4,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2578,7 +2578,7 @@
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
   "shd %1,%2,%4,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2594,7 +2594,7 @@
   return \"zdep %1,%2,%3,%0\";
 }"
   [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+   (set_attr "length" "4")])
 
 ;; Unconditional and other jump instructions.
 
@@ -2643,7 +2643,7 @@
    (use (match_operand:SI 0 "const_int_operand" ""))]
   ""
   "bl _mcount,%%r2\;ldo %0(%%r2),%%r25"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "8")])
 
 (define_insn "blockage"
   [(unspec_volatile [(const_int 2)] 0)]
@@ -2717,7 +2717,7 @@
       return \"sub,>> %0,%1,0\;blr,n %0,0\;b,n %l3\";
     }
 }"
- [(set_attr "length" "3")])
+ [(set_attr "length" "12")])
 
 ;; Need nops for the calls because execution is supposed to continue
 ;; past; we don't want to nullify an instruction that we need.
@@ -2769,7 +2769,7 @@
   return \"bl %0,2%#\";
 }"
  [(set_attr "type" "call")
-  (set_attr "length" "1")])
+  (set_attr "length" "4")])
 
 (define_insn "call_internal_reg"
  [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
@@ -2779,7 +2779,7 @@
  ""
  "copy %0,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
  [(set_attr "type" "dyncall")
-  (set_attr "length" "3")])
+  (set_attr "length" "12")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -2832,7 +2832,7 @@
   return \"bl %1,2%#\";
 }"
  [(set_attr "type" "call")
-  (set_attr "length" "1")])
+  (set_attr "length" "4")])
 
 (define_insn "call_value_internal_reg"
   [(set (match_operand 0 "" "=rfx")
@@ -2844,7 +2844,7 @@
   ""
   "copy %1,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
  [(set_attr "type" "dyncall")
-  (set_attr "length" "3")])
+  (set_attr "length" "12")])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -2923,40 +2923,40 @@
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
-;; Short branch has length of 1
-;; Long branch has length of 2
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2))
+;; Short branch has length of 4
+;; Long branch has length of 8
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 6))))
-		  (const_int 2047))
-	      (const_int 6)
-	      (const_int 7))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
+		  (const_int 8188))
+	      (const_int 24)
+	      (const_int 28))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		  (const_int 2047))
-	      (const_int 6)
-	      (const_int 7)))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int 8188))
+	      (const_int 24)
+	      (const_int 28)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (lt (match_dup 3) (pc))
 	  (if_then_else 
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
-		(const_int 2047))
-	    (const_int 3)
-	    (const_int 4))
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		(const_int 8188))
+	    (const_int 12)
+	    (const_int 16))
 	  (if_then_else 
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		(const_int 2047))
-	    (const_int 3)
-	    (const_int 4))))))])
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		(const_int 8188))
+	    (const_int 12)
+	    (const_int 16))))))])
 
 ;; Simply another variant of the dbra pattern.  More restrictive 
 ;; in testing the comparison operator as it must worry about overflow
@@ -2979,40 +2979,40 @@
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
-;; Short branch has length of 1
-;; Long branch has length of 2
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2))
+;; Short branch has length of 4
+;; Long branch has length of 8
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 6))))
-		  (const_int 2047))
-	      (const_int 6)
-	      (const_int 7))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
+		  (const_int 8188))
+	      (const_int 24)
+	      (const_int 28))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		  (const_int 2047))
-	      (const_int 6)
-	      (const_int 7)))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int 8188))
+	      (const_int 24)
+	      (const_int 28)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (lt (match_dup 3) (pc))
 	  (if_then_else 
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
-		(const_int 2047))
-	    (const_int 3)
-	    (const_int 4))
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		(const_int 8188))
+	    (const_int 12)
+	    (const_int 16))
 	  (if_then_else 
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		(const_int 2047))
-	    (const_int 3)
-	    (const_int 4))))))])
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		(const_int 8188))
+	    (const_int 12)
+	    (const_int 16))))))])
 
 (define_insn ""
   [(set (pc)
@@ -3030,34 +3030,34 @@
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
-;; Short branch has length of 1
-;; Long branch has length of 2
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2))
+;; Short branch has length of 4
+;; Long branch has length of 8
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
-		  (const_int 2047))
-	      (const_int 3)
-	      (const_int 4))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		  (const_int 8188))
+	      (const_int 12)
+	      (const_int 16))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		  (const_int 2047))
-	      (const_int 3)
-	      (const_int 4)))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int 8188))
+	      (const_int 12)
+	      (const_int 16)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else 
-	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-	      (const_int 2047))
-	  (const_int 2)
-	  (const_int 3)))))])
+	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	      (const_int 8188))
+	  (const_int 8)
+	  (const_int 12)))))])
 
 ;; Handle negated branch.
 (define_insn ""
@@ -3076,34 +3076,34 @@
  (set (attr "length")
       (if_then_else (eq_attr "alternative" "0")
 ;; Loop counter in register case
-;; Short branch has length of 1
-;; Long branch has length of 2
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		      (const_int 2047))
-           (const_int 1)
-	   (const_int 2))
+;; Short branch has length of 4
+;; Long branch has length of 8
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8))
 
 ;; Loop counter in FP reg case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else (eq_attr "alternative" "1")
 	  (if_then_else (lt (match_dup 3) (pc))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
-		  (const_int 2047))
-	      (const_int 3)
-	      (const_int 4))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
+		  (const_int 8188))
+	      (const_int 12)
+	      (const_int 16))
 	    (if_then_else 
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-		  (const_int 2047))
-	      (const_int 3)
-	      (const_int 4)))
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		  (const_int 8188))
+	      (const_int 12)
+	      (const_int 16)))
 ;; Loop counter in memory case.
 ;; Extra goo to deal with additional reload insns.
 	(if_then_else 
-	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
-	      (const_int 2047))
-	  (const_int 2)
-	  (const_int 3)))))])
+	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+	      (const_int 8188))
+	  (const_int 8)
+	  (const_int 12)))))])
 
 ;; The next four peepholes take advantage of the new 5 operand 
 ;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
@@ -3207,4 +3207,4 @@
    (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "fdc 0(0,%0)\;sync\;fic 0(0,%0)\;sync\;fdc 0(0,%1)\;sync\;fic 0(0,%1)\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
-  [(set_attr "length" "15")])
+  [(set_attr "length" "60")])
