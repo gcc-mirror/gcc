@@ -94,8 +94,8 @@ struct cpp_pending
 static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
-static void initialize			PARAMS ((void));
-static void initialize_builtins		PARAMS ((cpp_reader *));
+static void init			PARAMS ((void));
+static void init_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 struct file_name_list * remove_dup_dir	PARAMS ((cpp_reader *,
@@ -107,14 +107,12 @@ static void do_includes			PARAMS ((cpp_reader *,
 						 struct pending_option *,
 						 int));
 static void set_lang			PARAMS ((cpp_reader *, enum c_lang));
-static void initialize_dependency_output PARAMS ((cpp_reader *));
-static void initialize_standard_includes PARAMS ((cpp_reader *));
+static void init_dependency_output	PARAMS ((cpp_reader *));
+static void init_standard_includes	PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 const char *,
 						 cl_directive_handler));
-#ifdef HOST_EBCDIC
-static int opt_comp			PARAMS ((const void *, const void *));
-#endif
+static void output_deps			PARAMS ((cpp_reader *));
 static int parse_option			PARAMS ((const char *));
 
 /* Fourth argument to append_include_chain: chain to use.  */
@@ -454,25 +452,42 @@ set_lang (pfile, lang)
     }
 }
 
-/* initialize initializes library global state.  It might not need to
-   do anything depending on the platform and compiler.  */
-
-static int initialized = 0;
-
-static void
-initialize ()
-{
 #ifdef HOST_EBCDIC
-  /* For non-ASCII hosts, the cl_options array needs to be sorted at
-     runtime.  */
-  qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
+static int opt_comp PARAMS ((const void *, const void *));
+
+/* Run-time sorting of options array.  */
+static int
+opt_comp (p1, p2)
+     const void *p1, *p2;
+{
+  return strcmp (((struct cl_option *) p1)->opt_text,
+		 ((struct cl_option *) p2)->opt_text);
+}
 #endif
 
-  /* Set up the trigraph map.  This doesn't need to do anything if we were
-     compiled with a compiler that supports C99 designated initializers.  */
-  init_trigraph_map ();
+/* init initializes library global state.  It might not need to
+   do anything depending on the platform and compiler.  */
 
-  initialized = 1;
+static void
+init ()
+{
+  static int initialized = 0;
+
+  if (! initialized)
+    {
+      initialized = 1;
+
+#ifdef HOST_EBCDIC
+      /* For non-ASCII hosts, the cl_options array needs to be sorted at
+	 runtime.  */
+      qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
+#endif
+
+      /* Set up the trigraph map.  This doesn't need to do anything if
+	 we were compiled with a compiler that supports C99 designated
+	 initializers.  */
+      init_trigraph_map ();
+    }
 }
 
 /* Initialize a cpp_reader structure. */
@@ -481,11 +496,12 @@ cpp_create_reader (lang)
      enum c_lang lang;
 {
   struct spec_nodes *s;
-  cpp_reader *pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
+  cpp_reader *pfile;
 
   /* Initialise this instance of the library if it hasn't been already.  */
-  if (! initialized)
-    initialize ();
+  init ();
+
+  pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
 
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
@@ -667,7 +683,7 @@ static const struct builtin builtin_array[] =
 /* Subroutine of cpp_start_read; reads the builtins table above and
    enters the macros into the hash table.  */
 static void
-initialize_builtins (pfile)
+init_builtins (pfile)
      cpp_reader *pfile;
 {
   const struct builtin *b;
@@ -729,60 +745,9 @@ initialize_builtins (pfile)
 #undef CPLUS
 #undef builtin_array_end
 
-/* Another subroutine of cpp_start_read.  This one sets up to do
-   dependency-file output. */
-static void
-initialize_dependency_output (pfile)
-     cpp_reader *pfile;
-{
-  char *spec, *s, *output_file;
-
-  /* Either of two environment variables can specify output of deps.
-     Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
-     where OUTPUT_FILE is the file to write deps info to
-     and DEPS_TARGET is the target to mention in the deps.  */
-
-  if (CPP_OPTION (pfile, print_deps) == 0)
-    {
-      spec = getenv ("DEPENDENCIES_OUTPUT");
-      if (spec)
-	CPP_OPTION (pfile, print_deps) = 1;
-      else
-	{
-	  spec = getenv ("SUNPRO_DEPENDENCIES");
-	  if (spec)
-	    CPP_OPTION (pfile, print_deps) = 2;
-	  else
-	    return;
-	}
-
-      /* Find the space before the DEPS_TARGET, if there is one.  */
-      s = strchr (spec, ' ');
-      if (s)
-	{
-	  /* Let the caller perform MAKE quoting.  */
-	  deps_add_target (pfile->deps, s + 1, 0);
-	  output_file = (char *) xmalloc (s - spec + 1);
-	  memcpy (output_file, spec, s - spec);
-	  output_file[s - spec] = 0;
-	}
-      else
-	output_file = spec;
-
-      CPP_OPTION (pfile, deps_file) = output_file;
-      CPP_OPTION (pfile, print_deps_append) = 1;
-    }
-
-  /* Set the default target (if there is none already).  */
-  deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
-
-  if (CPP_OPTION (pfile, in_fname))
-    deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
-}
-
 /* And another subroutine.  This one sets up the standard include path.  */
 static void
-initialize_standard_includes (pfile)
+init_standard_includes (pfile)
      cpp_reader *pfile;
 {
   char *path;
@@ -923,7 +888,7 @@ cpp_start_read (pfile, fname)
 
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))
-    initialize_standard_includes (pfile);
+    init_standard_includes (pfile);
 
   merge_include_chains (pfile);
 
@@ -956,10 +921,10 @@ cpp_start_read (pfile, fname)
   if (!_cpp_read_file (pfile, fname))
     return 0;
 
-  initialize_dependency_output (pfile);
+  init_dependency_output (pfile);
 
   /* Install __LINE__, etc.  */
-  initialize_builtins (pfile);
+  init_builtins (pfile);
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
   p = CPP_OPTION (pfile, pending)->directive_head;
@@ -986,6 +951,39 @@ cpp_start_read (pfile, fname)
   return 1;
 }
 
+static void
+output_deps (pfile)
+     cpp_reader *pfile;
+{
+  /* Stream on which to print the dependency information.  */
+  FILE *deps_stream = 0;
+  const char *deps_mode = CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
+
+  if (CPP_OPTION (pfile, deps_file) == 0)
+    deps_stream = stdout;
+  else
+    {
+      deps_stream = fopen (CPP_OPTION (pfile, deps_file), deps_mode);
+      if (deps_stream == 0)
+	{
+	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, deps_file));
+	  return;
+	}
+    }
+
+  deps_write (pfile->deps, deps_stream, 72);
+
+  if (CPP_OPTION (pfile, deps_phony_targets))
+    deps_phony_targets (pfile->deps, deps_stream);
+
+  /* Don't close stdout.  */
+  if (CPP_OPTION (pfile, deps_file))
+    {
+      if (ferror (deps_stream) || fclose (deps_stream) != 0)
+	cpp_fatal (pfile, "I/O error on output");
+    }
+}
+
 /* This is called at the end of preprocessing.  It pops the
    last buffer and writes dependency output.  It should also
    clear macro definitions, such that you could call cpp_start_read
@@ -1003,33 +1001,7 @@ cpp_finish (pfile)
 
   /* Don't write the deps file if preprocessing has failed.  */
   if (CPP_OPTION (pfile, print_deps) && pfile->errors == 0)
-    {
-      /* Stream on which to print the dependency information.  */
-      FILE *deps_stream = 0;
-      const char *deps_mode
-	= CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
-      if (CPP_OPTION (pfile, deps_file) == 0)
-	deps_stream = stdout;
-      else
-	{
-	  deps_stream = fopen (CPP_OPTION (pfile, deps_file), deps_mode);
-	  if (deps_stream == 0)
-	    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, deps_file));
-	}
-      if (deps_stream)
-	{
-	  deps_write (pfile->deps, deps_stream, 72);
-
-	  if (CPP_OPTION (pfile, deps_phony_targets))
-	    deps_phony_targets (pfile->deps, deps_stream);
-
-	  if (CPP_OPTION (pfile, deps_file))
-	    {
-	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
-		cpp_fatal (pfile, "I/O error on output");
-	    }
-	}
-    }
+    output_deps (pfile);
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))
@@ -1689,15 +1661,6 @@ cpp_handle_option (pfile, argc, argv)
   return i + 1;
 }
 
-#ifdef HOST_EBCDIC
-static int
-opt_comp (const void *p1, const void *p2)
-{
-  return strcmp (((struct cl_option *)p1)->opt_text,
-		 ((struct cl_option *)p2)->opt_text);
-}
-#endif
-
 /* Handle command-line options in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns if an unrecognized option is seen.
@@ -1718,6 +1681,56 @@ cpp_handle_options (pfile, argc, argv)
 	break;
     }
   return i;
+}
+
+/* Set up dependency-file output.  */
+static void
+init_dependency_output (pfile)
+     cpp_reader *pfile;
+{
+  char *spec, *s, *output_file;
+
+  /* Either of two environment variables can specify output of deps.
+     Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
+     where OUTPUT_FILE is the file to write deps info to
+     and DEPS_TARGET is the target to mention in the deps.  */
+
+  if (CPP_OPTION (pfile, print_deps) == 0)
+    {
+      spec = getenv ("DEPENDENCIES_OUTPUT");
+      if (spec)
+	CPP_OPTION (pfile, print_deps) = 1;
+      else
+	{
+	  spec = getenv ("SUNPRO_DEPENDENCIES");
+	  if (spec)
+	    CPP_OPTION (pfile, print_deps) = 2;
+	  else
+	    return;
+	}
+
+      /* Find the space before the DEPS_TARGET, if there is one.  */
+      s = strchr (spec, ' ');
+      if (s)
+	{
+	  /* Let the caller perform MAKE quoting.  */
+	  deps_add_target (pfile->deps, s + 1, 0);
+	  output_file = (char *) xmalloc (s - spec + 1);
+	  memcpy (output_file, spec, s - spec);
+	  output_file[s - spec] = 0;
+	}
+      else
+	output_file = spec;
+
+      CPP_OPTION (pfile, deps_file) = output_file;
+      CPP_OPTION (pfile, print_deps_append) = 1;
+    }
+
+  /* Set the default target (if there is none already).  */
+  deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
+
+  if (CPP_OPTION (pfile, in_fname))
+    deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
 }
 
 static void
