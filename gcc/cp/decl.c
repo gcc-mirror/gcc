@@ -9921,14 +9921,24 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
   if (RIDBIT_SETP (RID_UNSIGNED, specbits)
-      || (bitfield && ! flag_signed_bitfields
-	  && (explicit_int || defaulted_int || explicit_char
-	      /* A typedef for plain `int' without `signed'
-		 can be controlled just like plain `int'.  */
-	      || ! (typedef_decl != NULL_TREE
-		    && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
-	  && TREE_CODE (type) != ENUMERAL_TYPE
-	  && RIDBIT_NOTSETP (RID_SIGNED, specbits)))
+      /* [class.bit]
+
+	 It is implementation-defined whether a plain (neither
+	 explicitly signed or unsigned) char, short, int, or long
+	 bit-field is signed or unsigned.
+	     
+	 Naturally, we extend this to long long as well.  Note that
+	 this does not include wchar_t.  */
+      || (bitfield && !flag_signed_bitfields
+	  && RIDBIT_NOTSETP (RID_SIGNED, specbits)
+	  /* A typedef for plain `int' without `signed' can be
+	     controlled just like plain `int', but a typedef for
+	     `signed int' cannot be so controlled.  */
+	  && !(typedef_decl 
+	       && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == CHAR_TYPE)
+	  && !same_type_p (TYPE_MAIN_VARIANT (type), wchar_type_node))
     {
       if (longlong)
 	type = long_long_unsigned_type_node;
