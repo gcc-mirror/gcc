@@ -1,3 +1,7 @@
+2001-08-01  Jeff Sturm  <jsturm@one-point.com>
+
+	* libgcj.spec.in: Pass -fkeep-inline-functions to jc1.
+
 2001-07-30  Christian Iseli  <chris@ludwig-alpha.unil.ch>
 
 	* Makefile.in: Rebuilt.
