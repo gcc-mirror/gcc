@@ -674,7 +674,43 @@ reg_or_arith_cint_operand (op, mode)
 	     || (GET_CODE (op) == CONST_INT
 #if HOST_BITS_PER_WIDE_INT != 32
 		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
-		     < 0x100000000u)
+		     < 0x100000000ll)
+#endif
+		 ));
+}
+
+/* Return 1 is the operand is either a non-special register or a 32-bit
+   signed constant integer valid for 64-bit addition.  */
+
+int
+reg_or_add_cint64_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+		 && INTVAL (op) < 0x7fff8000
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
+		     < 0x100000000ll)
+#endif
+		 ));
+}
+
+/* Return 1 is the operand is either a non-special register or a 32-bit
+   signed constant integer valid for 64-bit subtraction.  */
+
+int
+reg_or_sub_cint64_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+		 && (- INTVAL (op)) < 0x7fff8000
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
+		     < 0x100000000ll)
 #endif
 		 ));
 }
@@ -973,9 +1009,11 @@ add_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  return (reg_or_short_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL(op), 'L')));
+  if (GET_CODE (op) == CONST_INT)
+    return (CONST_OK_FOR_LETTER_P (INTVAL(op), 'I')
+	    || CONST_OK_FOR_LETTER_P (INTVAL(op), 'L'));
+
+  return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if OP is a constant but not a valid add_operand.  */
@@ -4046,6 +4084,7 @@ print_operand (file, x, code)
     case 'p':
       /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
       if (! INT_P (x)
+	  || INT_LOWPART (x) < 0
 	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
 	output_operand_lossage ("invalid %%p value");
       else

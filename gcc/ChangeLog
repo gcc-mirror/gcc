@@ -1,3 +1,17 @@
+2001-07-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (reg_or_{add,sub}_cint64_operand): New predicates.
+	(add_operand): Compare CONST_INT with fewer function calls.
+	(print_operand, case 'p'): Ensure positive operand.
+	* rs6000.h (CONST_OK_FOR_LETTER_P, case 'N'): Ensure positive value.
+	(PREDICATE_CODES): Add new predicates.
+	* rs6000.md (addsi3): Split 32-bit constants more correctly.
+	(divsi3, modsi3): Ensure positive power-of-2.
+	(adddi3): Use new predicate.  Split 32-bit constants more
+	correctly.  Re-arrange splitter to handle any constant.
+	(subdi3): Use new predicate.
+	(divdi3, moddi3): Ensure positive power-of-2.
+
 2001-07-13  Kazu Hirata  <kazu@hxi.com>
 
 	* jump.c (reversed_comparison_code_parts): Fix comment typos.
