@@ -142,20 +142,13 @@ mangle_method_decl (mdecl)
   /* Mangle the name of the type that contains mdecl */
   mangle_record_type (DECL_CONTEXT (mdecl), /* for_pointer = */ 0);
 
-  /* Mangle the function name. There three cases
-       - mdecl is java.lang.Object.Object(), use `C2' for its name
-         (denotes a base object constructor.)
+  /* Mangle the function name.  There are two cases:
        - mdecl is a constructor, use `C1' for its name, (denotes a
          complete object constructor.)
        - mdecl is not a constructor, standard mangling is performed.
      We terminate the mangled function name with a `E'. */
   if (ID_INIT_P (method_name))
-    {
-      if (DECL_CONTEXT (mdecl) == object_type_node)
-	obstack_grow (mangle_obstack, "C2", 2);
-      else
-	obstack_grow (mangle_obstack, "C1", 2);
-    }
+    obstack_grow (mangle_obstack, "C1", 2);
   else
     mangle_member_name (method_name);
   obstack_1grow (mangle_obstack, 'E');

@@ -1,3 +1,8 @@
+2001-12-16  Tom Tromey  <tromey@redhat.com>
+
+	* mangle.c (mangle_method_decl): Never emit `C2' constructor.
+	Fixes PR java/5088.
+
 2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog, Make-lang.in, class.c, expr.c, gcj.texi, java-tree.h,
