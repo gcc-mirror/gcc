@@ -44,6 +44,7 @@
 #include <ext/new_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <ext/bitmap_allocator.h>
+#include <ext/pool_allocator.h>
 #include <cxxabi.h>
 #include <testsuite_performance.h>
 
@@ -148,6 +149,7 @@ int main(void)
   typedef __gnu_cxx::new_allocator<test_type> n_alloc_type;
   typedef __gnu_cxx::__mt_alloc<test_type> so_alloc_type;
   typedef __gnu_cxx::bitmap_allocator<test_type> bit_alloc_type;
+  typedef __gnu_cxx::__pool_alloc<test_type> po_alloc_type;
 
 #ifdef TEST_B0
   test_container(vector<test_type, m_alloc_type>());
@@ -161,58 +163,73 @@ int main(void)
 #ifdef TEST_B3
   test_container(vector<test_type, bit_alloc_type>());
 #endif
-
 #ifdef TEST_B4
+  test_container(vector<test_type, po_alloc_type>());
+#endif
+
+#ifdef TEST_B5
   test_container(list<test_type, m_alloc_type>());
 #endif
-#ifdef TEST_B5
+#ifdef TEST_B6
   test_container(list<test_type, n_alloc_type>());
 #endif
-#ifdef TEST_B6
+#ifdef TEST_B7
   test_container(list<test_type, so_alloc_type>());
 #endif
-#ifdef TEST_B7
+#ifdef TEST_B8
   test_container(list<test_type, bit_alloc_type>());
 #endif
+#ifdef TEST_B9
+  test_container(list<test_type, po_alloc_type>());
+#endif
 
-#ifdef TEST_B8
+#ifdef TEST_B10
   test_container(deque<test_type, m_alloc_type>());
 #endif
-#ifdef TEST_B9
+#ifdef TEST_B11
   test_container(deque<test_type, n_alloc_type>());
 #endif
-#ifdef TEST_B10
+#ifdef TEST_B12
   test_container(deque<test_type, so_alloc_type>());
 #endif
-#ifdef TEST_B11
+#ifdef TEST_B13
   test_container(deque<test_type, bit_alloc_type>());
+#endif
+#ifdef TEST_B14
+  test_container(deque<test_type, po_alloc_type>());
 #endif
 
   typedef less<test_type> compare_type;
-#ifdef TEST_B12
+#ifdef TEST_B15
   test_container(map<test_type, test_type, compare_type, m_alloc_type>());
 #endif
-#ifdef TEST_B13
+#ifdef TEST_B16
   test_container(map<test_type, test_type, compare_type, n_alloc_type>());
 #endif
-#ifdef TEST_B14
+#ifdef TEST_B17
   test_container(map<test_type, test_type, compare_type, so_alloc_type>());
 #endif
-#ifdef TEST_B15
+#ifdef TEST_B18
   test_container(map<test_type, test_type, compare_type, bit_alloc_type>());
 #endif
+#ifdef TEST_B19
+  test_container(map<test_type, test_type, compare_type, po_alloc_type>());
+#endif
 
-#ifdef TEST_B16
+#ifdef TEST_B20
   test_container(set<test_type, compare_type, m_alloc_type>());
 #endif
-#ifdef TEST_B17
+#ifdef TEST_B21
   test_container(set<test_type, compare_type, n_alloc_type>());
 #endif
-#ifdef TEST_B18
+#ifdef TEST_B22
   test_container(set<test_type, compare_type, so_alloc_type>());
 #endif
-#ifdef TEST_B19
+#ifdef TEST_B23
   test_container(set<test_type, compare_type, bit_alloc_type>());
+#endif
+#ifdef TEST_B24
+  test_container(set<test_type, compare_type, po_alloc_type>());
 #endif
 
 #ifdef TEST_T0
@@ -227,59 +244,73 @@ int main(void)
 #ifdef TEST_T3
   test_container(vector<test_type, bit_alloc_type>(), true);
 #endif
-
 #ifdef TEST_T4
+  test_container(vector<test_type, po_alloc_type>(), true);
+#endif
+
+#ifdef TEST_T5
   test_container(list<test_type, m_alloc_type>(), true);
 #endif
-#ifdef TEST_T5
+#ifdef TEST_T6
   test_container(list<test_type, n_alloc_type>(), true);
 #endif
-#ifdef TEST_T6
+#ifdef TEST_T7
   test_container(list<test_type, so_alloc_type>(), true);
 #endif
-#ifdef TEST_T7
+#ifdef TEST_T8
   test_container(list<test_type, bit_alloc_type>(), true);
 #endif
+#ifdef TEST_T9
+  test_container(list<test_type, po_alloc_type>(), true);
+#endif
 
-#ifdef TEST_T8
+#ifdef TEST_T10
   test_container(deque<test_type, m_alloc_type>(), true);
 #endif
-#ifdef TEST_T9
+#ifdef TEST_T11
   test_container(deque<test_type, n_alloc_type>(), true);
 #endif
-#ifdef TEST_T10
+#ifdef TEST_T12
   test_container(deque<test_type, so_alloc_type>(), true);
 #endif
-#ifdef TEST_T11
+#ifdef TEST_T13
   test_container(deque<test_type, bit_alloc_type>(), true);
+#endif
+#ifdef TEST_T14
+  test_container(deque<test_type, po_alloc_type>(), true);
 #endif
 
   typedef less<test_type> compare_type;
-#ifdef TEST_T12
+#ifdef TEST_T15
   test_container(map<test_type, test_type, compare_type, m_alloc_type>(), true);
 #endif
-#ifdef TEST_T13
+#ifdef TEST_T16
   test_container(map<test_type, test_type, compare_type, n_alloc_type>(), true);
 #endif
-#ifdef TEST_T14
+#ifdef TEST_T17
   test_container(map<test_type, test_type, compare_type, so_alloc_type>(), true);
 #endif
-#ifdef TEST_T15
+#ifdef TEST_T18
   test_container(map<test_type, test_type, compare_type, bit_alloc_type>(), true);
 #endif
+#ifdef TEST_T19
+  test_container(map<test_type, test_type, compare_type, po_alloc_type>(), true);
+#endif
 
-#ifdef TEST_T16
+#ifdef TEST_T20
   test_container(set<test_type, compare_type, m_alloc_type>(), true);
 #endif
-#ifdef TEST_T17
+#ifdef TEST_T21
   test_container(set<test_type, compare_type, n_alloc_type>(), true);
 #endif
-#ifdef TEST_T18
+#ifdef TEST_T22
   test_container(set<test_type, compare_type, so_alloc_type>(), true);
 #endif
-#ifdef TEST_T19
+#ifdef TEST_T23
   test_container(set<test_type, compare_type, bit_alloc_type>(), true);
 #endif
-
+#ifdef TEST_T24
+  test_container(set<test_type, compare_type, po_alloc_type>(), true);
+#endif
   return 0;
 }

@@ -1,3 +1,19 @@
+2004-05-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Add pool_allocator.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config/allocator/pool_allocator_base.h: New.
+	* include/ext/pool_allocator.h: Convert to a standard-conforming
+	allocator.
+	* src/allocator.cc: Tweak instantiations.
+	* testsuite/performance/20_util/allocator/insert.cc: Add __pool_alloc.
+	* testsuite/performance/20_util/allocator/insert_insert.cc: Ditto.
+	* testsuite/performance/20_util/allocator/list_sort_search.cc: Ditto.
+	* testsuite/performance/20_util/allocator/map_mt_find.cc: Ditto.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Ditto.
+	* testsuite/performance/20_util/allocator/producer_consumer.cc: Ditto.
+
 2004-04-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14220

@@ -1180,7 +1180,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   AC_MSG_CHECKING([for std::allocator base class to use])
   GLIBCXX_ENABLE(libstdcxx-allocator,auto,[=KIND],
     [use KIND for target std::allocator base],
-    [permit new|malloc|mt|bitmap|yes|no|auto])
+    [permit new|malloc|mt|bitmap|pool|yes|no|auto])
   # If they didn't use this option switch, or if they specified --enable
   # with no specific model, we'll have to look for one.  If they
   # specified --disable (???), do likewise.
@@ -1221,6 +1221,10 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
       ALLOCATOR_H=config/allocator/new_allocator_base.h
       ALLOCATOR_NAME=__gnu_cxx::new_allocator
       ;;
+    pool)
+      ALLOCATOR_H=config/allocator/pool_allocator_base.h
+      ALLOCATOR_NAME=__gnu_cxx::__pool_alloc
+      ;;	
   esac
 
   AC_SUBST(ALLOCATOR_H)
