@@ -358,6 +358,13 @@ CHECK_PUT(ptr, state, i)
 #define PUT4(X)  (PUT2((X) >> 16), PUT2((X) & 0xFFFF))
 #define PUTN(P, N)  (CHECK_PUT(ptr, state, N), memcpy(ptr, P, N), ptr += (N))
 
+/* There are some cases below where CHECK_PUT is guaranteed to fail.
+   Use the following macros in those specific cases.  */
+#define UNSAFE_PUT1(X)  (*ptr++ = (X))
+#define UNSAFE_PUT2(X)  (UNSAFE_PUT1((X) >> 8), UNSAFE_PUT1((X) & 0xFF))
+#define UNSAFE_PUT4(X)  (UNSAFE_PUT2((X) >> 16), UNSAFE_PUT2((X) & 0xFFFF))
+#define UNSAFE_PUTN(P, N)  (memcpy(ptr, P, N), ptr += (N))
+
 
 /* Allocate a new chunk on obstack WORK, and link it in after LAST.
    Set the data and size fields to DATA and SIZE, respectively.
@@ -2807,7 +2814,7 @@ generate_classfile (clas, state)
 	}
       fields_count++;
     }
-  ptr = fields_count_ptr;  PUT2 (fields_count);
+  ptr = fields_count_ptr;  UNSAFE_PUT2 (fields_count);
 
   ptr = methods_count_ptr = append_chunk (NULL, 2, state);
   PUT2 (0);
@@ -2873,10 +2880,10 @@ generate_classfile (clas, state)
 	      code_attributes_count++;
 	      i += 8 + 10 * state->lvar_count;
 	    }
-	  PUT4 (i); /* attribute_length */
-	  PUT2 (state->code_SP_max);  /* max_stack */
-	  PUT2 (localvar_max);  /* max_locals */
-	  PUT4 (state->code_length);
+	  UNSAFE_PUT4 (i); /* attribute_length */
+	  UNSAFE_PUT2 (state->code_SP_max);  /* max_stack */
+	  UNSAFE_PUT2 (localvar_max);  /* max_locals */
+	  UNSAFE_PUT4 (state->code_length);
 
 	  /* Emit the exception table. */
 	  ptr = append_chunk (NULL, 2 + 8 * state->num_handlers, state);
@@ -2966,7 +2973,7 @@ generate_classfile (clas, state)
       methods_count++;
       current_function_decl = save_function;
     }
-  ptr = methods_count_ptr;  PUT2 (methods_count);
+  ptr = methods_count_ptr;  UNSAFE_PUT2 (methods_count);
 
   source_file = DECL_SOURCE_FILE (TYPE_NAME (clas));
   for (ptr = source_file;  ;  ptr++)
