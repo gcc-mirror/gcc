@@ -801,8 +801,12 @@ fname_decl (unsigned int rid, tree id)
 	 To avoid this problem set the lineno to 0 here; that prevents
 	 it from appearing in the RTL.  */
       tree stmts;
-      location_t saved_locus = input_location;
+      location_t saved_location = input_location;
+#ifdef USE_MAPPED_LOCATION
+      input_location = UNKNOWN_LOCATION;
+#else
       input_line = 0;
+#endif
 
       stmts = push_stmt_list ();
       decl = (*make_fname_decl) (id, fname_vars[ix].pretty);
@@ -811,7 +815,7 @@ fname_decl (unsigned int rid, tree id)
 	saved_function_name_decls
 	  = tree_cons (decl, stmts, saved_function_name_decls);
       *fname_vars[ix].decl = decl;
-      input_location = saved_locus;
+      input_location = saved_location;
     }
   if (!ix && !current_function_decl)
     pedwarn ("%J'%D' is not defined outside of function scope", decl, decl);
@@ -3599,20 +3603,22 @@ void
 c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 {
   splay_tree_node default_node;  
-  location_t *switch_locus;
+  location_t switch_location;
   tree type;
 
   if (!warn_switch && !warn_switch_enum && !warn_switch_default)
     return;
 
-  switch_locus = EXPR_LOCUS (switch_stmt);
-  if (!switch_locus)
-    switch_locus = &input_location;
+  if (EXPR_HAS_LOCATION (switch_stmt))
+    switch_location = EXPR_LOCATION (switch_stmt);
+  else
+    switch_location = input_location;
+
   type = SWITCH_TYPE (switch_stmt);
 
   default_node = splay_tree_lookup (cases, (splay_tree_key) NULL);
   if (warn_switch_default && !default_node)
-    warning ("%Hswitch missing default case", switch_locus);
+    warning ("%Hswitch missing default case", &switch_location);
 
   /* If the switch expression was an enumerated type, check that
      exactly all enumeration literals are covered by the cases.
@@ -3647,7 +3653,7 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 	      /* Warn if there are enumerators that don't correspond to
 		 case expressions.  */
 	      warning ("%Henumeration value `%E' not handled in switch",
-		       switch_locus, TREE_PURPOSE (chain));
+		       &switch_location, TREE_PURPOSE (chain));
 	    }
 	}
 

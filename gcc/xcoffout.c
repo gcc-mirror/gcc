@@ -156,7 +156,7 @@ xcoff_assign_fundamental_type_number (tree decl)
   size_t i;
 
   /* Do not waste time searching the list for non-intrinsic types.  */
-  if (DECL_NAME (decl) == 0 || DECL_SOURCE_LINE (decl) > 0)
+  if (DECL_NAME (decl) == 0 || ! DECL_IS_BUILTIN (decl))
     return 0;
 
   name = IDENTIFIER_POINTER (DECL_NAME (decl));

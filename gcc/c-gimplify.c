@@ -458,7 +458,7 @@ gimplify_switch_stmt (tree *stmt_p)
 
   *stmt_p = build (SWITCH_EXPR, SWITCH_TYPE (stmt), SWITCH_COND (stmt),
 		   body, NULL_TREE);
-  annotate_with_locus (*stmt_p, stmt_locus);
+  SET_EXPR_LOCATION (*stmt_p, stmt_locus);
   gimplify_stmt (stmt_p);
 
   *stmt_p = finish_bc_block (break_block, *stmt_p);

@@ -51,8 +51,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define TARGET_OPTF(ARG)
 #endif
 
-static int saved_lineno;
-
 /* CPP's options.  */
 static cpp_options *cpp_opts;
 
@@ -998,7 +996,7 @@ c_common_post_options (const char **pfilename)
       init_c_lex ();
 
       /* Yuk.  WTF is this?  I do know ObjC relies on it somewhere.  */
-      input_line = 0;
+      input_location = UNKNOWN_LOCATION;
     }
 
   cb = cpp_get_callbacks (parse_in);
@@ -1006,8 +1004,7 @@ c_common_post_options (const char **pfilename)
   cb->dir_change = cb_dir_change;
   cpp_post_options (parse_in);
 
-  saved_lineno = input_line;
-  input_line = 0;
+  input_location = UNKNOWN_LOCATION;
 
   /* If an error has occurred in cpplib, note it so we fail
      immediately.  */
@@ -1033,8 +1030,6 @@ c_common_post_options (const char **pfilename)
 bool
 c_common_init (void)
 {
-  input_line = saved_lineno;
-
   /* Set up preprocessor arithmetic.  Must be done after call to
      c_common_nodes_and_builtins for type nodes to be good.  */
   cpp_opts->precision = TYPE_PRECISION (intmax_type_node);
