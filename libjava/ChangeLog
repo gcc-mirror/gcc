@@ -1,5 +1,12 @@
 2000-04-08  Anthony Green  <green@cygnus.com>
 
+	* posix-threads.cc (_Jv_MutexLock): Moved back to posix-threads.h.
+	(_Jv_MutexUnlock): Ditto.
+	* include/posix-threads.h (_Jv_MutexLock): From posix-threads.cc.
+	(_Jv_MutexUnlock): Ditto.
+
+2000-04-08  Anthony Green  <green@cygnus.com>
+
 	* java/lang/StringBuffer.java (ensureCapacity): Don't call Math::max.
 	(ensureCapacity_unsynchronized): New private method.
 	(append): Use ensureCapacity_unsynchronized.
