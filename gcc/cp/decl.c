@@ -4159,9 +4159,6 @@ pushdecl_class_level (x)
 
   if (name)
     {
-      if (TYPE_BEING_DEFINED (current_class_type))
-	check_template_shadow (x);
-
       push_class_level_binding (name, x);
       if (TREE_CODE (x) == TYPE_DECL)
 	set_identifier_type_value (name, TREE_TYPE (x));
@@ -4213,6 +4210,11 @@ push_class_level_binding (name, x)
      parameter name in a member template.  */
   if (!class_binding_level)
     return;
+
+  /* Make sure that this new member does not have the same name
+     as a template parameter.  */
+  if (TYPE_BEING_DEFINED (current_class_type))
+    check_template_shadow (x);
 
   /* If this declaration shadows a declaration from an enclosing
      class, then we will need to restore IDENTIFIER_CLASS_VALUE when
