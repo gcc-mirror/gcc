@@ -1,9 +1,6 @@
-# We don't want debugging info in Win32-hosted toolchains.
-# Accomplish this by overriding CFLAGS.
-CFLAGS=-O2
-CXXFLAGS=-O2
+EXTRA_TARGET_HOST_ALL_MODULES=all-libtermcap
+EXTRA_TARGET_HOST_INSTALL_MODULES=install-libtermcap
 
-# We also need to override LIBGCC2_DEBUG_CFLAGS so libgcc2 will be
-# built without debugging information
+all-gdb: all-libtermcap
 
-LIBGCC2_DEBUG_CFLAGS=
+install-gdb: all-libtermcap
