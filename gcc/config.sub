@@ -391,11 +391,11 @@ case $basic_machine in
 		;;
 	mipsel*-linux*)
 		basic_machine=mipsel-unknown
-		os=-linux
+		os=-linux-gnu
 		;;
 	mips*-linux*)
 		basic_machine=mips-unknown
-		os=-linux
+		os=-linux-gnu
 		;;
 	mips3*-*)
 		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`
@@ -585,7 +585,7 @@ case $basic_machine in
 		basic_machine=vax-dec
 		os=-vms
 		;;
-       vpp*|vx|vx-*)
+	vpp*|vx|vx-*)
                basic_machine=f301-fujitsu
                ;;
 	vxworks960)
@@ -615,7 +615,7 @@ case $basic_machine in
 # Here we handle the default manufacturer of certain CPU types.  It is in
 # some cases the only manufacturer, in others, it is the most popular.
 	mips)
-		if [ x$os = x-linux ]; then
+		if [ x$os = x-linux-gnu ]; then
 			basic_machine=mips-unknown
 		else
 			basic_machine=mips-mips
