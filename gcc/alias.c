@@ -36,6 +36,12 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
+/* Cap the number of passes we make over the insns propagating alias
+   information through set chains.
+
+   10 is a completely arbitrary choice.  */
+#define MAX_ALIAS_LOOP_PASSES 10
+   
 /* reg_base_value[N] gives an address to which register N is related.
    If all sets after the first add or subtract to the current value
    or otherwise modify it so it does not point to a different top level
@@ -962,7 +968,7 @@ void
 init_alias_analysis ()
 {
   int maxreg = max_reg_num ();
-  int changed;
+  int changed, pass;
   register int i;
   register rtx insn;
   rtx note;
@@ -1002,10 +1008,21 @@ init_alias_analysis ()
 
      We could propagate more information in the first pass by making use
      of REG_N_SETS to determine immediately that the alias information
-     for a pseudo is "constant".  */
+     for a pseudo is "constant".
+
+     A program with an uninitialized variable can cause an infinite loop
+     here.  Instead of doing a full dataflow analysis to detect such problems
+     we just cap the number of iterations for the loop.
+
+     The state of the arrays for the set chain in question does not matter
+     since the program has undefined behavior.  */
   changed = 1;
-  while (changed)
+  pass = 0;
+  while (changed && pass < MAX_ALIAS_LOOP_PASSES)
     {
+      /* Keep track of the pass number so we can break out of the loop.  */
+      pass++;
+
       /* Assume nothing will change this iteration of the loop.  */
       changed = 0;
 
@@ -1130,10 +1147,15 @@ init_alias_analysis ()
 
      In theory this loop can take as long as O(registers^2), but unless
      there are very long dependency chains it will run in close to linear
-     time.  */
+     time.
+
+     This loop may not be needed any longer now that the main loop does
+     a better job at propagating alias information.  */
+  pass = 0;
   do
     {
       changed = 0;
+      pass++;
       for (i = 0; i < reg_base_value_size; i++)
 	{
 	  rtx base = reg_base_value[i];
@@ -1148,7 +1170,7 @@ init_alias_analysis ()
 	    }
 	}
     }
-  while (changed);
+  while (changed && pass < MAX_ALIAS_LOOP_PASSES);
 
   new_reg_base_value = 0;
   reg_seen = 0;
