@@ -1,5 +1,20 @@
 1998-11-13  Tom Tromey  <tromey@cygnus.com>
 
+	* gjavah.c (main): Handle --output-class-directory argument.
+	* jvspec.c (lang_specific_driver): Translate `-d' into
+	-foutput-class-dir.
+	* jcf.h (jcf_write_base_directory): Declare.
+	* lang.c (lang_decode_option): Recognize -foutput-class-dir.
+	* lang-options.h: Mention -foutput-class-dir.
+	* jcf-write.c (jcf_write_base_directory): New global.
+	(make_class_file_name): Put generated .class file into `-d'
+	directory, or into source directory if -d not given.  Function now
+	static.
+	(write_classfile): Free class file name.  Handle case where class
+	file name is NULL.
+	(DIR_SEPARATOR): New macro.
+	Include <sys/stat.h>
+
 	* Makefile.in (prefix): New macro.
 
 Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>

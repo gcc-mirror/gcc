@@ -302,6 +302,12 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      /* Remember this so we can confirm -fmain option.  */
 	      will_link = 0;
 	    }
+	  else if (strcmp (argv[i], "-d") == 0)
+	    {
+	      /* `-d' option is for javac compatibility.  */
+	      quote = argv[i];
+	      added -= 1;
+	    }
 	  else
 	    /* Pass other options through.  */
 	    continue;
@@ -401,6 +407,16 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  sprintf (patharg, "-f%s=%s", argv[i]+1, argv[i+1]);
 	  arglist[j] = patharg;
 	  i++;
+	  continue;
+	}
+
+      if (strcmp (argv[i], "-d") == 0)
+	{
+	  char *patharg = (char *) xmalloc (sizeof ("-foutput-class-dir=")
+					    + strlen (argv[i + 1]) + 1);
+	  sprintf (patharg, "-foutput-class-dir=%s", argv[i + 1]);
+	  arglist[j] = patharg;
+	  ++i;
 	  continue;
 	}
 

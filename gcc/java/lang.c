@@ -147,6 +147,14 @@ lang_decode_option (argc, argv)
       return 1;
     }
 
+#define ARG "-foutput-class-dir="
+  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
+    {
+      jcf_write_base_directory = p + sizeof (ARG) - 1;
+      return 1;
+    }
+#undef ARG
+
   if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
