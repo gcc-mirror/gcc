@@ -145,7 +145,7 @@ void s(int n, ...)
   va_list list;
 
   va_start (list, n);
-  while (--n)
+  while (n--)
     {
       int *a = va_arg (list, int *);
       a[0] = n;
@@ -158,7 +158,7 @@ void z(int n, ...)
   va_list list;
 
   va_start (list, n);
-  while (--n)
+  while (n--)
     {
       int *a = va_arg (list, int *);
       bzero (a, sizeof (l));
@@ -171,7 +171,7 @@ void c(int n, ...)
   va_list list;
 
   va_start (list, n);
-  while (--n)
+  while (n--)
     {
       int *a = va_arg (list, int *);
       if (a[n] != n)

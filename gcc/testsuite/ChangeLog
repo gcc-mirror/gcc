@@ -1,3 +1,7 @@
+2003-06-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.c-torture/execute/multi-ix.c: Fix off-by-one bugs.
+
 2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.robertl/eb133.C: Set expected line number.
