@@ -485,7 +485,9 @@ build_vtable_entry_ref (basetype, vtbl, idx)
   static char asm_stmt[] = ".vtable_entry %c0, %c1";
   tree s, i, i2;
 
-  s = build_unary_op (ADDR_EXPR, get_vtbl_decl_for_binfo (basetype), 0);
+  s = build_unary_op (ADDR_EXPR, 
+		      get_vtbl_decl_for_binfo (TYPE_BINFO (basetype)), 
+		      0);
   s = build_tree_list (build_string (1, "s"), s);
 
   i = build_array_ref (vtbl, idx);
