@@ -1,3 +1,8 @@
+2000-10-12  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (output_movhi, output_movsisf): Fix loading
+	constants 1 and 2 to NO_LD_REGS.
+
 2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (c-parse.c, tradcif.c): Create atomically.
