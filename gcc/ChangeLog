@@ -1,3 +1,8 @@
+2002-07-14  Andreas Jaeger  <aj@suse.de>
+
+	* config.gcc (sh64): Remove unused
+	target_requires_64bit_host_wide_int.
+
 2002-07-12  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c [CLEAR_RATIO]: New macro defining the maximum number
@@ -42,7 +47,7 @@ Thu Jul 11 22:02:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/mips/iris6-o32-as.h: New file.
 	* config/mips/iris6-o32.h: New file.
-	
+
 	* config/mips/iris5gas.h (TARGET_ASM_NAMED_SECTION): Define.
 	(NM_FLAGS): Define.
 	(HAVE_AS_SHF_MERGE): Undefine.
@@ -97,7 +102,7 @@ Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-07-11  Tim Josling  <tej@melbpc.org.au>
 
-	Remove front end hard coding from gengtype.c.  
+	Remove front end hard coding from gengtype.c.
 
 	* Makefile.in
 	(STAGESTUFF): add gtyp-gen.h
@@ -121,9 +126,9 @@ Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(srcdir): AC-SUBST this variable.
 	(all_gtfiles_files_langs): AC-SUBST this variable.
 	(all_gtfiles_files_files): AC-SUBST this variable.
-	
+
 	* configure: Regenerate.
-	
+
 	* gengtype-lex.l (parse_file): Make parameter const.
 
 	* gengtype.c (toplevel): include gtyp-gen.h.
@@ -143,10 +148,10 @@ Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(close_output_files): Add prototype to rmove warning.
 	(main): Iterate through list of generated files from gtyp-gen.h
 	rather than command line paramaters.  Ignore duplicated file
-	names. 
+	names.
 
 	* gengtype.h (parse_file): Amend prototype for const parameter.
-	
+
 	* doc/sourcebuild.texi: Document gtfiles variable.
 
 	* doc/gty.texi: Document changes to gtfiles variable for front
@@ -273,7 +278,7 @@ Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* objc/objc-act.c (adjust_type_for_id_default): Fix my previous patch.
 	Do not allow ObjC objects as a parameter type for Objective-C methods.
 	My previous patch restricted  'struct' also.
-	
+
 2002-07-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpperror.c (cpp_error): Default to directive_line within

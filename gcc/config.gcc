@@ -2232,10 +2232,6 @@ sh-*-elf* | sh[2346l]*-*-elf*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
-		# Not strictly necessary to check this, but a good idea anyway.
-		if test $machine = $target; then
-			target_requires_64bit_host_wide_int=yes
-		fi
 		;;
 	sh4_single*)  target_cpu_default="SELECT_SH4_SINGLE" ;;
 	sh4*)  target_cpu_default="SELECT_SH4" ;;
@@ -2285,10 +2281,6 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
-		# Not strictly necessary to check this, but a good idea anyway.
-		if test $machine = $target; then
-			target_requires_64bit_host_wide_int=yes
-		fi
 		;;
 	sh4_single*) target_cpu_default="SELECT_SH4_SINGLE" ;;
 	sh4*) target_cpu_default="SELECT_SH4" ;;
