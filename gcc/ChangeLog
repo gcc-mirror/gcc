@@ -1,3 +1,8 @@
+2000-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libgcc2.h: New file.
+	* libgcc2.c: Move macros, typedefs and prototypes to libgcc2.h.
+
 Wed Mar  8 16:19:42 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (ia64*-*-elf*, ia64*-*-linux*): New.
