@@ -2093,7 +2093,7 @@
 (define_expand "fix_trunctfdi2"
   [(use (match_operand:DI 0 "register_operand" ""))
    (use (match_operand:TF 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FIX, operands); DONE;")
 
 (define_insn ""
@@ -2131,25 +2131,25 @@
 (define_expand "floatditf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:DI 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT, operands); DONE;")
 
 (define_expand "floatunsdisf2"
   [(use (match_operand:SF 0 "register_operand" ""))
    (use (match_operand:DI 1 "register_operand" ""))]
-  ""
+  "TARGET_FP"
   "alpha_emit_floatuns (operands); DONE;")
 
 (define_expand "floatunsdidf2"
   [(use (match_operand:DF 0 "register_operand" ""))
    (use (match_operand:DI 1 "register_operand" ""))]
-  ""
+  "TARGET_FP"
   "alpha_emit_floatuns (operands); DONE;")
 
 (define_expand "floatunsditf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:DI 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (UNSIGNED_FLOAT, operands); DONE;")
 
 (define_expand "extendsfdf2"
@@ -2183,7 +2183,7 @@
 (define_expand "extendsftf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:SF 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "
 {
   rtx tmp = gen_reg_rtx (DFmode);
@@ -2195,7 +2195,7 @@
 (define_expand "extenddftf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:DF 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT_EXTEND, operands); DONE;")
 
 (define_insn ""
@@ -2217,13 +2217,13 @@
 (define_expand "trunctfdf2"
   [(use (match_operand:DF 0 "register_operand" ""))
    (use (match_operand:TF 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT_TRUNCATE, operands); DONE;")
 
 (define_expand "trunctfsf2"
   [(use (match_operand:SF 0 "register_operand" ""))
    (use (match_operand:TF 1 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "
 {
   rtx tmpf, sticky, arg, lo, hi;
@@ -2317,7 +2317,7 @@
   [(use (match_operand 0 "register_operand" ""))
    (use (match_operand 1 "general_operand" ""))
    (use (match_operand 2 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (DIV, operands); DONE;")
 
 (define_insn ""
@@ -2381,7 +2381,7 @@
   [(use (match_operand 0 "register_operand" ""))
    (use (match_operand 1 "general_operand" ""))
    (use (match_operand 2 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MULT, operands); DONE;")
 
 (define_insn ""
@@ -2455,7 +2455,7 @@
   [(use (match_operand 0 "register_operand" ""))
    (use (match_operand 1 "general_operand" ""))
    (use (match_operand 2 "general_operand" ""))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_arith (MINUS, operands); DONE;")
 
 (define_insn ""
@@ -3172,7 +3172,7 @@
 (define_expand "cmptf"
   [(set (cc0) (compare (match_operand:TF 0 "general_operand" "")
 		       (match_operand:TF 1 "general_operand" "")))]
-  "TARGET_HAS_XFLOATING_LIBS"
+  "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
   "
 {
   alpha_compare.op0 = operands[0];
@@ -4209,7 +4209,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
 	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "! TARGET_FIX
+  "TARGET_FPREGS && ! TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
@@ -4224,7 +4224,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FIX
+  "TARGET_FPREGS && TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
@@ -4239,9 +4239,21 @@
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
 
 (define_insn ""
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
+	(match_operand:SF 1 "input_operand" "rG,m,r"))]
+  "! TARGET_FPREGS
+   && (register_operand (operands[0], SFmode)
+       || reg_or_fp0_operand (operands[1], SFmode))"
+  "@
+   mov %r1,%0
+   ldl %0,%1
+   stl %r1,%0"
+  [(set_attr "type" "ilog,ild,ist")])
+
+(define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
 	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
-  "! TARGET_FIX
+  "TARGET_FPREGS && ! TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
@@ -4256,7 +4268,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
 	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
-  "TARGET_FIX
+  "TARGET_FPREGS && TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
@@ -4269,6 +4281,18 @@
    itoft %1,%0
    ftoit %1,%0"
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
+	(match_operand:DF 1 "input_operand" "rG,m,r"))]
+  "! TARGET_FPREGS
+   && (register_operand (operands[0], DFmode)
+       || reg_or_fp0_operand (operands[1], DFmode))"
+  "@
+   mov %r1,%0
+   ldq %0,%1
+   stq %r1,%0"
+  [(set_attr "type" "ilog,ild,ist")])
 
 ;; Subregs suck for register allocation.  Pretend we can move TFmode
 ;; data between general registers until after reload.
