@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.541 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2169,6 +2169,7 @@ package body Sem_Util is
 
    procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id) is
       Kind : constant Node_Kind := Nkind (N);
+      R    : Node_Id;
 
    begin
       if Kind = N_Range then
@@ -2176,8 +2177,17 @@ package body Sem_Util is
          H := High_Bound (N);
 
       elsif Kind = N_Subtype_Indication then
-         L := Low_Bound  (Range_Expression (Constraint (N)));
-         H := High_Bound (Range_Expression (Constraint (N)));
+         R := Range_Expression (Constraint (N));
+
+         if R = Error then
+            L := Error;
+            H := Error;
+            return;
+
+         else
+            L := Low_Bound  (Range_Expression (Constraint (N)));
+            H := High_Bound (Range_Expression (Constraint (N)));
+         end if;
 
       elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
          if Error_Posted (Scalar_Range (Entity (N))) then
@@ -2198,7 +2208,6 @@ package body Sem_Util is
          L := N;
          H := N;
       end if;
-
    end Get_Index_Bounds;
 
    ------------------------

@@ -1,5 +1,14 @@
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
+	* sem_ch3.adb:
+	(Analyze_Number_Declaration): Handle error expression.
+	(Signed_Integer_Type_Declaration): Handle error bound.
+	(Analyze_Subtype_Indication): Handle error range.
+	
+	* sem_util.adb (Get_Index_Bounds): Check for Error.
+
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
 	* restrict.adb (Set_No_Run_Time_Mode): Set Discard_Names as default 
 	in no run time mode.
 

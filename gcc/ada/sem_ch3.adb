@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1354 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1146,6 +1146,17 @@ package body Sem_Ch3 is
       end if;
 
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
+
+      --  Process expression, replacing error by integer zero, to avoid
+      --  cascaded errors or aborts further along in the processing
+
+      --  Replace Error by integer zero, which seems least likely to
+      --  cause cascaded errors.
+
+      if E = Error then
+         Rewrite (E, Make_Integer_Literal (Sloc (E), Uint_0));
+         Set_Error_Posted (E);
+      end if;
 
       Analyze (E);
 
@@ -2302,8 +2313,14 @@ package body Sem_Ch3 is
 
    begin
       Analyze (T);
-      Analyze (R);
-      Set_Etype (N, Etype (R));
+
+      if R /= Error then
+         Analyze (R);
+         Set_Etype (N, Etype (R));
+      else
+         Set_Error_Posted (R);
+         Set_Error_Posted (T);
+      end if;
    end Analyze_Subtype_Indication;
 
    ------------------------------
@@ -12062,42 +12079,53 @@ package body Sem_Ch3 is
 
       Lo := Low_Bound (Def);
       Hi := High_Bound (Def);
-      Analyze_And_Resolve (Lo, Any_Integer);
-      Analyze_And_Resolve (Hi, Any_Integer);
 
-      Check_Bound (Lo);
-      Check_Bound (Hi);
+      --  Arbitrarily use Integer as the type if either bound had an error
 
-      if Errs then
-         Hi := Type_High_Bound (Standard_Long_Long_Integer);
-         Lo := Type_Low_Bound (Standard_Long_Long_Integer);
-      end if;
+      if Hi = Error or else Lo = Error then
+         Base_Typ := Any_Integer;
+         Set_Error_Posted (T, True);
 
-      --  Find type to derive from
-
-      Lo_Val := Expr_Value (Lo);
-      Hi_Val := Expr_Value (Hi);
-
-      if Can_Derive_From (Standard_Short_Short_Integer) then
-         Base_Typ := Base_Type (Standard_Short_Short_Integer);
-
-      elsif Can_Derive_From (Standard_Short_Integer) then
-         Base_Typ := Base_Type (Standard_Short_Integer);
-
-      elsif Can_Derive_From (Standard_Integer) then
-         Base_Typ := Base_Type (Standard_Integer);
-
-      elsif Can_Derive_From (Standard_Long_Integer) then
-         Base_Typ := Base_Type (Standard_Long_Integer);
-
-      elsif Can_Derive_From (Standard_Long_Long_Integer) then
-         Base_Typ := Base_Type (Standard_Long_Long_Integer);
+      --  Here both bounds are OK expressions
 
       else
-         Base_Typ := Base_Type (Standard_Long_Long_Integer);
-         Error_Msg_N ("integer type definition bounds out of range", Def);
-         Hi := Type_High_Bound (Standard_Long_Long_Integer);
-         Lo := Type_Low_Bound (Standard_Long_Long_Integer);
+         Analyze_And_Resolve (Lo, Any_Integer);
+         Analyze_And_Resolve (Hi, Any_Integer);
+
+         Check_Bound (Lo);
+         Check_Bound (Hi);
+
+         if Errs then
+            Hi := Type_High_Bound (Standard_Long_Long_Integer);
+            Lo := Type_Low_Bound (Standard_Long_Long_Integer);
+         end if;
+
+         --  Find type to derive from
+
+         Lo_Val := Expr_Value (Lo);
+         Hi_Val := Expr_Value (Hi);
+
+         if Can_Derive_From (Standard_Short_Short_Integer) then
+            Base_Typ := Base_Type (Standard_Short_Short_Integer);
+
+         elsif Can_Derive_From (Standard_Short_Integer) then
+            Base_Typ := Base_Type (Standard_Short_Integer);
+
+         elsif Can_Derive_From (Standard_Integer) then
+            Base_Typ := Base_Type (Standard_Integer);
+
+         elsif Can_Derive_From (Standard_Long_Integer) then
+            Base_Typ := Base_Type (Standard_Long_Integer);
+
+         elsif Can_Derive_From (Standard_Long_Long_Integer) then
+            Base_Typ := Base_Type (Standard_Long_Long_Integer);
+
+         else
+            Base_Typ := Base_Type (Standard_Long_Long_Integer);
+            Error_Msg_N ("integer type definition bounds out of range", Def);
+            Hi := Type_High_Bound (Standard_Long_Long_Integer);
+            Lo := Type_Low_Bound (Standard_Long_Long_Integer);
+         end if;
       end if;
 
       --  Complete both implicit base and declared first subtype entities
