@@ -497,7 +497,8 @@ namespace std
 
 	// At this point, base is determined. If not hex, only allow
 	// base digits as valid input.
-	const size_t __len = __base == 16 ? __num_base::_S_iend - __num_base::_S_izero : __base;
+	const size_t __len = (__base == 16 ? __num_base::_S_iend
+			      - __num_base::_S_izero : __base);
 
 	// Extract.
 	string __found_grouping;
@@ -826,7 +827,11 @@ namespace std
     inline int
     __int_to_char(_CharT* __bufend, unsigned long __v, const _CharT* __lit,
 		  ios_base::fmtflags __flags)
-    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
+    {
+      // About showpos, see Table 60 and C99 7.19.6.1, p6 (+).
+      return __int_to_char(__bufend, __v, __lit,
+			   __flags & ~ios_base::showpos, false);
+    }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT>
@@ -848,7 +853,8 @@ namespace std
     inline int
     __int_to_char(_CharT* __bufend, unsigned long long __v, 
 		  const _CharT* __lit, ios_base::fmtflags __flags)
-    { return __int_to_char(__bufend, __v, __lit, __flags, false); }
+    { return __int_to_char(__bufend, __v, __lit,
+			   __flags & ~ios_base::showpos, false); }
 #endif
 
   template<typename _CharT, typename _ValueT>

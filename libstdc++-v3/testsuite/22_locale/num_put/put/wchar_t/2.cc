@@ -54,7 +54,7 @@ void test02()
   oss.str(empty);
   oss.width(20);
   oss.setf(ios_base::right, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', b0);
+  np.put(oss.rdbuf(), oss, L'+', b0);
   result1 = oss.str();
   VERIFY( result1 == L"+++++++++++++++++++0" );
 
@@ -62,7 +62,7 @@ void test02()
   oss.width(20);
   oss.setf(ios_base::left, ios_base::adjustfield);
   oss.setf(ios_base::boolalpha);
-  np.put(oss.rdbuf(), oss, '+', b1);
+  np.put(oss.rdbuf(), oss, L'+', b1);
   result2 = oss.str();
   VERIFY( result2 == L"true++++++++++++++++" );
 
@@ -70,7 +70,7 @@ void test02()
   oss.imbue(loc_c);
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, '+', ul1);
+  np.put(oss.rdbuf(), oss, L'+', ul1);
   result1 = oss.str();
   VERIFY( result1 == L"1294967294" );
 
@@ -78,7 +78,7 @@ void test02()
   oss.clear();
   oss.width(20);
   oss.setf(ios_base::left, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, '+', ul2);
+  np.put(oss.rdbuf(), oss, L'+', ul2);
   result1 = oss.str();
   VERIFY( result1 == L"0+++++++++++++++++++" );
 }
@@ -88,5 +88,3 @@ int main()
   test02();
   return 0;
 }
-
-

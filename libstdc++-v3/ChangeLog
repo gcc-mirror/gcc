@@ -1,3 +1,21 @@
+2004-05-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/15565
+	* include/bits/locale_facets.tcc (__int_to_char(unsigned long),
+	__int_to_char(unsigned long long)): Showpos is not relevant
+	for unsigned types.
+	* testsuite/22_locale/num_put/put/char/15565.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/15565.cc: New.
+
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Use L for the fill
+	char.
+	* testsuite/22_locale/num_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/8.cc: Likewise.
+
 2004-05-21  Matthias Klose  <doko@debian.org>
  
 	* docs/doxygen/run_doxygen:  Bump required version.
