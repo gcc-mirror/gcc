@@ -2821,6 +2821,7 @@ make_range (exp, pin_p, plow, phigh)
 {
   enum tree_code code;
   tree arg0, arg1, type = NULL_TREE;
+  tree orig_type = NULL_TREE;
   int in_p, n_in_p;
   tree low, high, n_low, n_high;
 
@@ -2958,6 +2959,11 @@ make_range (exp, pin_p, plow, phigh)
 	  continue;
 
 	case NOP_EXPR:  case NON_LVALUE_EXPR:  case CONVERT_EXPR:
+	  if (orig_type == NULL_TREE)
+	    orig_type = type;
+	  if (TYPE_PRECISION (type) > TYPE_PRECISION (orig_type))
+	    break;
+
 	  if (! INTEGRAL_TYPE_P (type)
 	      || (low != 0 && ! int_fits_type_p (low, type))
 	      || (high != 0 && ! int_fits_type_p (high, type)))
