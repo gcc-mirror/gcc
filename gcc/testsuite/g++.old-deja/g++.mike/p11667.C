@@ -2,7 +2,7 @@
 // excess errors test - XFAIL a29k-*-* sparc64-*-elf sh-*-* arm-*-pe**-*
 // prms-id: 11667
 
-extern "C" printf(const char *,...);
+extern "C" int printf(const char *,...);
 
 template < class T >
 class LIST {
