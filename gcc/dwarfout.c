@@ -532,6 +532,12 @@ static unsigned lookup_filename ();
 #ifndef SL_END_LABEL_FMT
 #define SL_END_LABEL_FMT	".L_sl%u_e"
 #endif
+#ifndef BODY_BEGIN_LABEL_FMT
+#define BODY_BEGIN_LABEL_FMT	".L_b%u"
+#endif
+#ifndef BODY_END_LABEL_FMT
+#define BODY_END_LABEL_FMT	".L_b%u_e"
+#endif
 #ifndef FUNC_END_LABEL_FMT
 #define FUNC_END_LABEL_FMT	".L_f%u_e"
 #endif
@@ -888,6 +894,8 @@ dwarf_attr_name (attr)
     case AT_src_info:			return "AT_src_info";
     case AT_mac_info:			return "AT_mac_info";
     case AT_src_coords:			return "AT_src_coords";
+    case AT_body_begin:			return "AT_body_begin";
+    case AT_body_end:			return "AT_body_end";
 
     default:				return "AT_<unknown>";
     }
@@ -2552,6 +2560,26 @@ high_pc_attribute (asm_high_label)
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_high_label);
 }
 
+/* Generate an AT_body_begin attribute for a subroutine DIE.  */
+
+inline void
+body_begin_attribute (asm_begin_label)
+     register char *asm_begin_label;
+{
+  ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_begin);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_begin_label);
+}
+
+/* Generate an AT_body_end attribute for a subroutine DIE.  */
+
+inline void
+body_end_attribute (asm_end_label)
+     register char *asm_end_label;
+{
+  ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_end);
+  ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_end_label);
+}
+
 /* Generate an AT_language attribute given a LANG value.  These attributes
    are used only within TAG_compile_unit DIEs.  */
 
@@ -3108,11 +3136,15 @@ output_global_subroutine_die (arg)
     {
       if (! DECL_EXTERNAL (decl))
 	{
-	  char func_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 	  low_pc_attribute (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	  sprintf (func_end_label, FUNC_END_LABEL_FMT, current_funcdef_number);
-	  high_pc_attribute (func_end_label);
+	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
+	  high_pc_attribute (label);
+	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+	  body_begin_attribute (label);
+	  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+	  body_end_attribute (label);
 	}
     }
 }
@@ -3446,11 +3478,15 @@ output_local_subroutine_die (arg)
 
       if (TREE_ASM_WRITTEN (decl))
 	{
-	  char func_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 	  low_pc_attribute (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-	  sprintf (func_end_label, FUNC_END_LABEL_FMT, current_funcdef_number);
-	  high_pc_attribute (func_end_label);
+	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
+	  high_pc_attribute (label);
+	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+	  body_begin_attribute (label);
+	  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+	  body_end_attribute (label);
 	}
     }
 }
@@ -4832,6 +4868,33 @@ dwarfout_label (insn)
 				      (unsigned) INSN_UID (insn));
       ASM_OUTPUT_LABEL (asm_out_file, label);
     }
+}
+
+/* Output a marker (i.e. a label) for the point in the generated code where
+   the real body of the function begins (after parameters have been moved
+   to their home locations).  */
+
+void
+dwarfout_begin_function ()
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  text_section ();
+  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+  ASM_OUTPUT_LABEL (asm_out_file, label);
+}
+
+/* Output a marker (i.e. a label) for the point in the generated code where
+   the real body of the function ends (just before the epilogue code).  */
+
+void
+dwarfout_end_function ()
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  text_section ();
+  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+  ASM_OUTPUT_LABEL (asm_out_file, label);
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code
