@@ -3,7 +3,7 @@
    Copyright (C) 1988, 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
+   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
 
 This file is part of GNU CC.
 
@@ -79,6 +79,18 @@ enum m88k_instruction {
   m88k_oru_or
 };
 
+/* Which processor to schedule for.  The elements of the enumeration
+   must match exactly the cpu attribute in the m88k.md machine description. */
+
+enum processor_type {
+  PROCESSOR_M88100,
+  PROCESSOR_M88110,
+  PROCESSOR_M88000,
+};
+
+/* Recast the cpu class to be the cpu attribute.  */
+#define m88k_cpu_attr ((enum attr_cpu)m88k_cpu)
+
 /* External variables/functions defined in m88k.c.  */
 
 extern char *m88k_pound_sign;
@@ -86,19 +98,18 @@ extern char *m88k_short_data;
 extern char *m88k_version;
 extern char m88k_volatile_code;
 
-extern int m88k_gp_threshold;
+extern unsigned m88k_gp_threshold;
 extern int m88k_prologue_done;
 extern int m88k_function_number;
 extern int m88k_fp_offset;
 extern int m88k_stack_size;
 extern int m88k_case_index;
-extern int m88k_version_0300;
 
 extern struct rtx_def *m88k_compare_reg;
 extern struct rtx_def *m88k_compare_op0;
 extern struct rtx_def *m88k_compare_op1;
 
-extern enum attr_cpu m88k_cpu;
+extern enum processor_type m88k_cpu;
 
 extern int null_prologue ();
 extern int integer_ok_for_set ();
@@ -157,6 +168,7 @@ extern char * reg_names[];
 #define MONITOR_GCC 0
 #endif
 
+/*** Controlling the Compilation Driver, `gcc' ***/
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
@@ -176,7 +188,7 @@ extern char * reg_names[];
 
 /* Names to predefine in the preprocessor for this target machine.
    Redefined in m88kv3.h, m88kv4.h, m88kdgux.h, and m88kluna.h.  */
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Acpu(m88k) -Amachine(m88k)"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -D__CLASSIFY_TYPE__=2"
 
 #define TARGET_VERSION fprintf (stderr, " (%s%s)", \
 				VERSION_INFO1, VERSION_INFO2)
@@ -184,9 +196,15 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"12/16/92"
-#define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.3.3.2 12/16/92 08:26:09"
+#ifndef VERSION_INFO2
+#define VERSION_INFO2   "$Revision: 1.15 $"
+#endif
+#ifndef VERSION_STRING
+#define VERSION_STRING  version_string
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.15 $ " __DATE__
+#else
+#define TM_RCS_ID      "@(#)" __FILE__ " " VERSION_INFO2 " " __DATE__
+#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -286,8 +304,14 @@ extern char * reg_names[];
     if ((target_flags & MASK_88000) == 0)				     \
       target_flags |= CPU_DEFAULT;					     \
 									     \
-    m88k_cpu = (TARGET_88000 ? CPU_M88000				     \
-		: (TARGET_88100 ? CPU_M88100 : CPU_M88110));		     \
+    if (TARGET_88110)							     \
+      {									     \
+        target_flags |= MASK_USE_DIV;					     \
+        target_flags &= ~MASK_CHECK_ZERO_DIV;				     \
+      }									     \
+      									     \
+    m88k_cpu = (TARGET_88000 ? PROCESSOR_M88000				     \
+		: (TARGET_88100 ? PROCESSOR_M88100 : PROCESSOR_M88110));		     \
 									     \
     if (TARGET_BIG_PIC)							     \
       flag_pic = 2;							     \
@@ -295,23 +319,12 @@ extern char * reg_names[];
     if ((target_flags & MASK_EITHER_LARGE_SHIFT) == MASK_EITHER_LARGE_SHIFT) \
       error ("-mtrap-large-shift and -mhandle-large-shift are incompatible");\
 									     \
-    m88k_version_0300 = (m88k_version != 0				     \
-			 && strcmp (m88k_version, "03.00") >= 0);	     \
-									     \
-    if (VERSION_0300_SYNTAX)						     \
+    if (TARGET_SVR4)						     	     \
       {									     \
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			     \
 	  reg_names[i]--;						     \
 	m88k_pound_sign = "#";						     \
-	if (m88k_version == 0)						     \
-	  m88k_version = VERSION_0400_SYNTAX ? "04.00" : "03.00";	     \
-	else if (strcmp (m88k_version, "03.00") < 0)			     \
-	  error ("Specified assembler version (%s) is less that 03.00",	     \
-		 m88k_version);						     \
       }									     \
-									     \
-    m88k_version_0300 = (m88k_version != 0				     \
-			 && strcmp (m88k_version, "03.00") >= 0);	     \
 									     \
     if (m88k_short_data)						     \
       {									     \
@@ -325,6 +338,8 @@ extern char * reg_names[];
 	      break;							     \
 	    }								     \
 	m88k_gp_threshold = atoi (m88k_short_data);			     \
+	if (m88k_gp_threshold > 0x7fffffff)				     \
+	  error ("-mshort-data-%s is too large ", m88k_short_data);          \
 	if (flag_pic)							     \
 	  error ("-mshort-data-%s and PIC are incompatible", m88k_short_data); \
       }									     \
@@ -1229,11 +1244,16 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* #define HAVE_PRE_DECREMENT */
 /* #define HAVE_PRE_INCREMENT */
 
-/* Recognize any constant value that is a valid address.  */
+/* Recognize any constant value that is a valid address.
+   When PIC, we do not accept an address that would require a scratch reg
+   to load into a register.  */
+
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH)
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH                 \
+   || (GET_CODE (X) == CONST                                            \
+       && ! (flag_pic && pic_address_needs_scratch (X))))
+
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 2
@@ -1392,6 +1412,12 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 #define LEGITIMATE_CONSTANT_P(X) (1)
+
+/* Define this, so that when PIC, reload won't try to reload invalid
+   addresses which require two reload registers.  */
+
+#define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
+
 
 /*** Condition Code Information ***/
 
@@ -1426,7 +1452,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   {"add_operand", {SUBREG, REG, CONST_INT}},				\
   {"reg_or_bbx_mask_operand", {SUBREG, REG, CONST_INT}},		\
   {"real_or_0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},                       \
   {"relop", {EQ, NE, LT, LE, GE, GT, LTU, LEU, GEU, GTU}},		\
   {"even_relop", {EQ, LT, GT, LTU, GTU}},		\
   {"odd_relop", { NE, LE, GE, LEU, GEU}},		\
@@ -1486,15 +1512,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
-/* Define if operations between registers always perform the operation
-   on the full register even if a narrower mode is specified.  */
-#define WORD_REGISTER_OPERATIONS
-
-/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
-   will either zero-extend or sign-extend.  The value of this macro should
-   be the code that says which one of the two operations is implicitly
-   done, NIL if none.  */
-#define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
+/* Define if normal loads of shorter-than-word items from memory clears
+   the rest of the bigs in the register.  */
+#define BYTE_LOADS_ZERO_EXTEND
 
 /* Zero if access to memory by bytes is faster.  */
 #define SLOW_BYTE_ACCESS 1
@@ -1659,12 +1679,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Control the assembler format that we output.  */
 
-/* Which assembler syntax.  Redefined in m88kdgux.h.  */
-#define VERSION_0300_SYNTAX TARGET_SVR4
-
-/* At some point, m88kv4.h will redefine this.  */
-#define VERSION_0400_SYNTAX 0
-
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
 #undef	INT_ASM_OP
 #undef	ASCII_DATA_ASM_OP
@@ -1687,10 +1701,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define DATA_SECTION_ASM_OP	"data"
 
 /* Other sections.  */
-#define CONST_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
+#define CONST_SECTION_ASM_OP (TARGET_SVR4			\
 			      ? "section\t .rodata,\"a\""	\
 			      : "section\t .rodata,\"x\"")
-#define TDESC_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
+#define TDESC_SECTION_ASM_OP (TARGET_SVR4			\
 			      ? "section\t .tdesc,\"a\""	\
 			      : "section\t .tdesc,\"x\"")
 
@@ -1784,8 +1798,13 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
-    if (m88k_version)							\
-      fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, m88k_version);	\
+    if (TARGET_SVR4)							\
+      {									\
+	if (TARGET_88110)						\
+	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "04.00");   \
+	else								\
+	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "03.00");   \
+      }									\
   } while (0)
 
 /* Override svr[34].h.  */
@@ -1797,10 +1816,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_FILE_END
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) \
-  do {	fprintf (FILE, "\t%s\t ", FILE_ASM_OP);			\
-	output_quoted_string (FILE, NAME);			\
-	fprintf (FILE, "\n");					\
-  } while (0)
+  fprintf (FILE, "\t%s\t \"%s\"\n", FILE_ASM_OP, NAME)
 
 #ifdef SDB_DEBUGGING_INFO
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
@@ -1974,7 +1990,7 @@ do {									 \
 #undef	ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)			\
   {							\
-    if (! TARGET_NO_UNDERSCORES && ! VERSION_0300_SYNTAX) \
+    if (!TARGET_NO_UNDERSCORES && !TARGET_SVR4) 	\
       fputc ('_', FILE);				\
     fputs (NAME, FILE);					\
   }
@@ -1986,11 +2002,11 @@ do {									 \
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #ifdef AS_BUG_DOT_LABELS /* The assembler requires a declaration of local.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
-  fprintf (FILE, VERSION_0300_SYNTAX ? ".%s%d:\n\t%s\t .%s%d\n" : "@%s%d:\n", \
+  fprintf (FILE, TARGET_SVR4 ? ".%s%d:\n\t%s\t .%s%d\n" : "@%s%d:\n", \
 	   PREFIX, NUM, INTERNAL_ASM_OP, PREFIX, NUM)
 #else
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
-  fprintf (FILE, VERSION_0300_SYNTAX ? ".%s%d:\n" : "@%s%d:\n", PREFIX, NUM)
+  fprintf (FILE, TARGET_SVR4 ? ".%s%d:\n" : "@%s%d:\n", PREFIX, NUM)
 #endif /* AS_BUG_DOT_LABELS */
 
 /* This is how to store into the string LABEL
@@ -2002,7 +2018,7 @@ do {									 \
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
-  sprintf (LABEL, VERSION_0300_SYNTAX ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
+  sprintf (LABEL, TARGET_SVR4 ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
 
 /* Internal macro to get a single precision floating point value into
    an int, so we can print it's value in hex.  */
@@ -2502,8 +2518,7 @@ sdata_section ()							\
     {									\
       if (! flag_writable_strings)					\
 	const_section ();						\
-      else if (m88k_gp_threshold > 0					\
-	       && TREE_STRING_LENGTH (DECL) <= m88k_gp_threshold)	\
+      else if ( TREE_STRING_LENGTH (DECL) <= m88k_gp_threshold)		\
 	sdata_section ();						\
       else								\
 	data_section ();						\
@@ -2565,3 +2580,8 @@ sdata_section ()							\
 
 /* Print a memory address as an operand to reference that memory location.  */
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
+
+/* This says not to strength reduce the addr calculations within loops
+   (otherwise it does not take advantage of m88k scaled loads and stores */
+
+#define DONT_REDUCE_ADDR

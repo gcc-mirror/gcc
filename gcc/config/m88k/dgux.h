@@ -3,7 +3,7 @@
    Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
+   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
 
 This file is part of GNU CC.
 
@@ -22,16 +22,16 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* You're not seeing double!  To transition to dwarf debugging, both are
-   supported.  The option -msvr4 and -mversion-03.00 specify (for DG/UX)
-   `real' elf.  With these combinations, -g means dwarf.  */
+   supported.  The option -msvr4 specifies elf.  With these combinations, 
+   -g means dwarf.  */
 /* DWARF_DEBUGGING_INFO defined in svr4.h.  */
 #define SDB_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE \
-  (GET_VERSION_0300_SYNTAX ? DWARF_DEBUG : SDB_DEBUG)
-/* This controls a bug fix in cp-decl.c.
-   For version 2.6, someone should figure out the right condition.  */
-#define RMS_QUICK_HACK_1
+  (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
+#ifndef VERSION_INFO2
+#define VERSION_INFO2   "$Revision: 1.6 $"
+#endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
 /* The DG/UX 4.30 assembler doesn't accept the symbol `fcr63'.  */
@@ -73,7 +73,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
-   -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(m88k) -Amachine(m88k)"
+   -D__svr4__ -Asystem(unix) -Acpu(m88k) -Amachine(m88k)"
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
@@ -90,7 +90,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
 %{msvr4:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-2.3.3\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
@@ -125,27 +125,27 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			  %{!ansi:%{traditional:/lib/values-Xt.o} \
 			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
 
+#undef	GPLUSPLUS_INCLUDE_DIR
+#define GPLUSPLUS_INCLUDE_DIR "/usr/opt/g++/lib/g++-include"
+
 /* Fast DG/UX version of profiler that does not require lots of
    registers to be stored.  */
 #undef	FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   output_function_profiler (FILE, LABELNO, "gcc.mcount", 0)
 
-/* DGUX V.4 isn't quite ELF--yet.  */
-#undef  VERSION_0300_SYNTAX
-#define VERSION_0300_SYNTAX (TARGET_SVR4 && m88k_version_0300)
-
-/* Same, but used before OVERRIDE_OPTIONS has been processed.  */
-#define GET_VERSION_0300_SYNTAX \
-  (TARGET_SVR4 && m88k_version != 0 && strcmp (m88k_version, "03.00") >= 0)
-
 /* Output the legend info for mxdb when debugging except if standard
    debugging information only is explicitly requested.  */
 #undef  ASM_FIRST_LINE
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
-    if (m88k_version)							\
-      fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, m88k_version);	\
+    if (TARGET_SVR4)							\
+      {									\
+	if (TARGET_88110)						\
+	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "04.00");   \
+	else								\
+	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "03.00");   \
+      }									\
     if (write_symbols != NO_DEBUG					\
 	&& ! (TARGET_STANDARD && ! TARGET_LEGEND))			\
       {									\
@@ -172,15 +172,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    -mversion-STRING option used.  */
 #if !defined (CRT_BEGIN) && !defined (CRT_END)
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			     ? "section\t .init,\"xa\""	\
+#define INIT_SECTION_ASM_OP (TARGET_SVR4			\
+			     ? "section\t .init,\"xa\""		\
 			     : "section\t .init,\"x\"")
 #undef	CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
+#define CTORS_SECTION_ASM_OP (TARGET_SVR4			\
 			      ? "section\t .ctors,\"aw\""	\
 			      : "section\t .ctors,\"d\"")
 #undef	DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
+#define DTORS_SECTION_ASM_OP (TARGET_SVR4			\
 			      ? "section\t .dtors,\"aw\""	\
 			      : "section\t .dtors,\"d\"")
 #endif /* crtstuff.c */
