@@ -1,3 +1,9 @@
+2003-03-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (MULTIOSDIR): New macro.  Use $(CC) $(LIBCFLAGS)
+	instead of $$CC alone.
+	(install_to_tooldir): Use it.
+
 2003-03-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cplus-dem.c: Add license exception to copyright notice.
