@@ -1,3 +1,5 @@
+// Build don't link:
+
 template <bool B>
 struct S
 {
