@@ -1071,26 +1071,28 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
+@defmac PROMOTE_FUNCTION_MODE
+Like @code{PROMOTE_MODE}, but is applied to outgoing function arguments or
+function return values, as specified by @code{TARGET_PROMOTE_FUNCTION_ARGS}
+and @code{TARGET_PROMOTE_FUNCTION_RETURN}, respectively.
+
+The default is @code{PROMOTE_MODE}.
+@end defmac
+
 @deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_ARGS (tree @var{fntype})
 This target hook should return @code{true} if the promotion described by
-@code{PROMOTE_MODE} should also be done for outgoing function arguments.
+@code{PROMOTE_FUNCTION_MODE} should be done for outgoing function
+arguments.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_RETURN (tree @var{fntype})
 This target hook should return @code{true} if the promotion described by
-@code{PROMOTE_MODE} should also be done for the return value of
+@code{PROMOTE_FUNCTION_MODE} should be done for the return value of
 functions.
 
 If this target hook returns @code{true}, @code{FUNCTION_VALUE} must
-perform the same promotions done by @code{PROMOTE_MODE}.
+perform the same promotions done by @code{PROMOTE_FUNCTON_MODE}.
 @end deftypefn
-
-@defmac PROMOTE_FOR_CALL_ONLY
-Define this macro if the promotion described by @code{PROMOTE_MODE}
-should @emph{only} be performed for outgoing function arguments or
-function return values, as specified by @code{TARGET_PROMOTE_FUNCTION_ARGS}
-and @code{TARGET_PROMOTE_FUNCTION_RETURN}, respectively.
-@end defmac
 
 @defmac PARM_BOUNDARY
 Normal alignment required for function parameters on the stack, in

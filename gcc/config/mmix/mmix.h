@@ -280,8 +280,10 @@ extern int target_flags;
 
 /* FIXME: Promotion of modes currently generates slow code, extending
    before every operation.  */
+/* I'm a little bit undecided about this one.  It might be beneficial to
+   promote all operations.  */
 
-#define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)	\
+#define PROMOTE_FUNCTION_MODE(MODE, UNSIGNEDP, TYPE)	\
  do {						\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
       && GET_MODE_SIZE (MODE) < 8)		\
@@ -292,10 +294,6 @@ extern int target_flags;
      if (0) (UNSIGNEDP) = 0;			\
    }						\
  } while (0)
-
-/* I'm a little bit undecided about this one.  It might be beneficial to
-   promote all operations.  */
-#define PROMOTE_FOR_CALL_ONLY
 
 /* We need to align everything to 64 bits that can affect the alignment
    of other types.  Since address N is interpreted in MMIX as (N modulo

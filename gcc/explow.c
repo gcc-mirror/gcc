@@ -799,6 +799,10 @@ copy_to_suggested_reg (rtx x, rtx target, enum machine_mode mode)
 
    FOR_CALL is nonzero if this call is promoting args for a call.  */
 
+#if defined(PROMOTE_MODE) && !defined(PROMOTE_FUNCTION_MODE)
+#define PROMOTE_FUNCTON_MODE PROMOTE_MODE
+#endif
+
 enum machine_mode
 promote_mode (tree type, enum machine_mode mode, int *punsignedp,
 	      int for_call ATTRIBUTE_UNUSED)
@@ -806,17 +810,28 @@ promote_mode (tree type, enum machine_mode mode, int *punsignedp,
   enum tree_code code = TREE_CODE (type);
   int unsignedp = *punsignedp;
 
-#ifdef PROMOTE_FOR_CALL_ONLY
+#ifndef PROMOTE_MODE
   if (! for_call)
     return mode;
 #endif
 
   switch (code)
     {
-#ifdef PROMOTE_MODE
+#ifdef PROMOTE_FUNCTION_MODE
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case CHAR_TYPE:      case REAL_TYPE:       case OFFSET_TYPE:
-      PROMOTE_MODE (mode, unsignedp, type);
+#ifdef PROMOTE_MODE
+      if (for_call)
+	{
+#endif
+	  PROMOTE_FUNCTION_MODE (mode, unsignedp, type);
+#ifdef PROMOTE_MODE
+	}
+      else
+	{
+	  PROMOTE_MODE (mode, unsignedp, type);
+	}
+#endif
       break;
 #endif
 

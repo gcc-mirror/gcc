@@ -208,9 +208,7 @@ extern int target_flags;
 #define MAX_BITS_PER_WORD 64
 
 /* Function arguments and return values are promoted to word size.  */
-#define PROMOTE_FOR_CALL_ONLY
-
-#define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)		\
+#define PROMOTE_FUNCTION_MODE(MODE, UNSIGNEDP, TYPE)		\
 if (INTEGRAL_MODE_P (MODE) &&	        	    	\
     GET_MODE_SIZE (MODE) < UNITS_PER_WORD) { 		\
   (MODE) = Pmode;					\
