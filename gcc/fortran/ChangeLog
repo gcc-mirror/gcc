@@ -1,3 +1,7 @@
+2004-10-08  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
+
+	* arith.c: Fix formatting issues.
+	
 2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17676
