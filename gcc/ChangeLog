@@ -1,3 +1,11 @@
+2003-01-14  Steven Bosscher  <stevenb@suse.de>
+
+	* system.h: Poison PROMOTED_MODE
+	* integrate.c (expand_inline_function): Don't mention the
+	PROMOTED_MODE.
+	* loop.c (update_giv_derive): Same.
+	* tree.h (DECL_RTL): Same.
+
 2004-01-14  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR target/9365
@@ -117,7 +125,7 @@
 
 2004-01-13  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * rtl.def: Add comment about new option in automata_option.
+	* rtl.def: Add comment about new option in automata_option.
 	
 	* genautomata.c (PROGRESS_OPTION): New macro.
 	(progress_flag): New global variable.
