@@ -1586,6 +1586,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   else if (DECL_INITIAL (decl) == 0
 	   || DECL_INITIAL (decl) == error_mark_node
 	   || (flag_zero_initialized_in_bss
+	       /* Leave constant zeroes in .rodata so they can be shared.  */
+	       && !TREE_READONLY (decl)
 	       && initializer_zerop (DECL_INITIAL (decl))))
     {
       unsigned HOST_WIDE_INT size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
