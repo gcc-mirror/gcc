@@ -70,7 +70,7 @@
 typedef unsigned int U_int32_t __attribute ((mode (SI)));
 typedef int Int32_t __attribute ((mode (SI)));
 typedef unsigned int U_int64_t __attribute ((mode (DI)));
-typedef int Uint64_t __attribute ((mode (DI)));
+typedef int Int64_t __attribute ((mode (DI)));
 
 #ifdef _GLIBCPP_HAVE_NAN_H
 # include <nan.h>
@@ -260,7 +260,7 @@ typedef union
 do {								\
   ieee_quad_double_shape_type qw_u;				\
   qw_u.value = (d);						\
-  (ix0) = qw_u.parts64.msw;					\
+  (msw) = qw_u.parts64.msw;					\
 } while (0)
         
 
