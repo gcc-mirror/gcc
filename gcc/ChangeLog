@@ -1,3 +1,7 @@
+Sun Dec 28 00:30:24 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* config/fp-bit.c (L_df_to_sf): Fix typo in last change.
+
 Sat Dec 27 22:43:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (rtx_cost): Remove conflicting default case.

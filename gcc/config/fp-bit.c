@@ -1482,7 +1482,7 @@ __make_dp (fp_class_type class, unsigned int sign, int exp, UDItype frac)
 }
 #endif
 
-#if (L_df_to_sf)
+#if defined(L_df_to_sf)
 SFtype
 df_to_sf (DFtype arg_a)
 {
