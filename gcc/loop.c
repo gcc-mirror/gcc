@@ -253,7 +253,7 @@ static rtx gen_add_mult PARAMS ((rtx, rtx, rtx, rtx));
 static void loop_regs_update PARAMS ((const struct loop *, rtx));
 static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
-static rtx loop_insn_emit_after PARAMS((const struct loop *, basic_block, 
+static rtx loop_insn_emit_after PARAMS((const struct loop *, basic_block,
 					rtx, rtx));
 static rtx loop_call_insn_emit_before PARAMS((const struct loop *,
 					      basic_block, rtx, rtx));
@@ -283,8 +283,8 @@ typedef struct loop_replace_args
 } loop_replace_args;
 
 /* Nonzero iff INSN is between START and END, inclusive.  */
-#define INSN_IN_RANGE_P(INSN, START, END) 	\
-  (INSN_UID (INSN) < max_uid_for_loop 		\
+#define INSN_IN_RANGE_P(INSN, START, END)	\
+  (INSN_UID (INSN) < max_uid_for_loop		\
    && INSN_LUID (INSN) >= INSN_LUID (START)	\
    && INSN_LUID (INSN) <= INSN_LUID (END))
 
@@ -1347,7 +1347,7 @@ combine_movables (movables, regs)
 	/* We want later insns to match the first one.  Don't make the first
 	   one match any later ones.  So start this loop at m->next.  */
 	for (m1 = m->next; m1; m1 = m1->next)
-	  if (m != m1 && m1->match == 0 
+	  if (m != m1 && m1->match == 0
 	      && regs->array[m1->regno].n_times_set == 1
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
@@ -1626,7 +1626,7 @@ add_label_notes (x, insns)
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (reg_mentioned_p (XEXP (x, 0), insn))
 	  {
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, XEXP (x, 0),
 						  REG_NOTES (insn));
 	    if (LABEL_P (XEXP (x, 0)))
 	      LABEL_NUSES (XEXP (x, 0))++;
@@ -2179,7 +2179,7 @@ loop_movables_free (movables)
       m_next = m->next;
       free (m);
     }
-}  
+}
 
 #if 0
 /* Scan X and replace the address of any MEM in it with ADDR.
@@ -2336,7 +2336,7 @@ prescan_loop (loop)
   loop_info->num_mem_sets = 0;
 
 
-  for (insn = start; insn && GET_CODE (insn) != CODE_LABEL; 
+  for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
        insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) == CALL_INSN)
@@ -3620,7 +3620,7 @@ loop_bivs_find (loop)
   ivs->list = 0;
 
   for_each_insn_in_loop (loop, check_insn_for_bivs);
-  
+
   /* Scan ivs->list to remove all regs that proved not to be bivs.
      Make a sanity check against regs->n_times_set.  */
   for (backbl = &ivs->list, bl = *backbl; bl; bl = bl->next)
@@ -3747,8 +3747,8 @@ loop_bivs_check (loop)
 
       if ((GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
 	   || GET_MODE (src) == VOIDmode)
-	  && valid_initial_value_p (src, bl->init_insn, 
-				    LOOP_INFO (loop)->pre_header_has_call, 
+	  && valid_initial_value_p (src, bl->init_insn,
+				    LOOP_INFO (loop)->pre_header_has_call,
 				    loop->start))
 	{
 	  bl->initial_value = src;
@@ -3831,7 +3831,7 @@ loop_biv_eliminable_p (loop, bl, threshold, insn_count)
      loop->start since these won't be affected by the value of the biv
      elsewhere in the function, so long as init_insn doesn't use the
      biv itself.  */
-  
+
   if ((REGNO_LAST_LUID (bl->regno) < INSN_LUID (loop->end)
        && bl->init_insn
        && INSN_UID (bl->init_insn) < max_uid_for_loop
@@ -3839,7 +3839,7 @@ loop_biv_eliminable_p (loop, bl, threshold, insn_count)
        && ! reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
       || (bl->final_value = final_biv_value (loop, bl)))
     return maybe_eliminate_biv (loop, bl, 0, threshold,	insn_count);
-  
+
   if (loop_dump_stream)
     {
       fprintf (loop_dump_stream,
@@ -3869,12 +3869,12 @@ loop_givs_reduce (loop, bl)
       if (! v->ignore && v->same == 0)
 	{
 	  int auto_inc_opt = 0;
-	  
+
 	  /* If the code for derived givs immediately below has already
 	     allocated a new_reg, we must keep it.  */
 	  if (! v->new_reg)
 	    v->new_reg = gen_reg_rtx (v->mode);
-	  
+
 #ifdef AUTO_INC_DEC
 	  /* If the target has auto-increment addressing modes, and
 	     this is an address giv, then try to put the increment
@@ -3891,7 +3891,7 @@ loop_givs_reduce (loop, bl)
 	      /* If other giv's have been combined with this one, then
 		 this will work only if all uses of the other giv's occur
 		 before this giv's insn.  This is difficult to check.
-		 
+
 		 We simplify this by looking for the common case where
 		 there is one DEST_REG giv, and this giv's insn is the
 		 last use of the dest_reg of that DEST_REG giv.  If the
@@ -3903,7 +3903,7 @@ loop_givs_reduce (loop, bl)
 	      if (v->combined_with)
 		{
 		  struct induction *other_giv = 0;
-		  
+
 		  for (tv = bl->giv; tv; tv = tv->next_iv)
 		    if (tv->same == v)
 		      {
@@ -3931,11 +3931,11 @@ loop_givs_reduce (loop, bl)
 		auto_inc_opt = -1;
 	      else
 		auto_inc_opt = 1;
-	      
+
 #ifdef HAVE_cc0
 	      {
 		rtx prev;
-		
+
 		/* We can't put an insn immediately after one setting
 		   cc0, or immediately before one using cc0.  */
 		if ((auto_inc_opt == 1 && sets_cc0_p (PATTERN (v->insn)))
@@ -3946,39 +3946,39 @@ loop_givs_reduce (loop, bl)
 		  auto_inc_opt = 0;
 	      }
 #endif
-	      
+
 	      if (auto_inc_opt)
 		v->auto_inc_opt = 1;
 	    }
 #endif
-	  
+
 	  /* For each place where the biv is incremented, add an insn
 	     to increment the new, reduced reg for the giv.  */
 	  for (tv = bl->biv; tv; tv = tv->next_iv)
 	    {
 	      rtx insert_before;
-	      
+
 	      if (! auto_inc_opt)
 		insert_before = tv->insn;
 	      else if (auto_inc_opt == 1)
 		insert_before = NEXT_INSN (v->insn);
 	      else
 		insert_before = v->insn;
-	      
+
 	      if (tv->mult_val == const1_rtx)
 		loop_iv_add_mult_emit_before (loop, tv->add_val, v->mult_val,
-					      v->new_reg, v->new_reg, 
+					      v->new_reg, v->new_reg,
 					      0, insert_before);
 	      else /* tv->mult_val == const0_rtx */
 		/* A multiply is acceptable here
 		   since this is presumed to be seldom executed.  */
 		loop_iv_add_mult_emit_before (loop, tv->add_val, v->mult_val,
-					      v->add_val, v->new_reg, 
+					      v->add_val, v->new_reg,
 					      0, insert_before);
 	    }
-	  
+
 	  /* Add code at loop start to initialize giv's reduced reg.  */
-	  
+
 	  loop_iv_add_mult_hoist (loop,
 				  extend_value_for_giv (v, bl->initial_value),
 				  v->mult_val, v->add_val, v->new_reg);
@@ -4004,12 +4004,12 @@ loop_givs_dead_check (loop, bl)
       if (v->ignore
 	  || (v->same && v->same->ignore))
 	continue;
-      
+
       if (v->giv_type == DEST_REG
 	  && REGNO_FIRST_UID (REGNO (v->dest_reg)) == INSN_UID (v->insn))
 	{
 	  struct induction *v1;
-	  
+
 	  for (v1 = bl->giv; v1; v1 = v1->next_iv)
 	    if (REGNO_LAST_UID (REGNO (v->dest_reg)) == INSN_UID (v1->insn))
 	      v->maybe_dead = 1;
@@ -4030,16 +4030,16 @@ loop_givs_rescan (loop, bl, reg_map)
     {
       if (v->same && v->same->ignore)
 	v->ignore = 1;
-      
+
       if (v->ignore)
 	continue;
-      
+
       /* Update expression if this was combined, in case other giv was
 	 replaced.  */
       if (v->same)
 	v->new_reg = replace_rtx (v->new_reg,
 				  v->same->dest_reg, v->same->new_reg);
-      
+
       /* See if this register is known to be a pointer to something.  If
 	 so, see if we can find the alignment.  First see if there is a
 	 destination register that is a pointer.  If so, this shares the
@@ -4056,12 +4056,12 @@ loop_givs_rescan (loop, bl, reg_map)
 	       && REG_POINTER (v->src_reg))
 	{
 	  unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->src_reg));
-	  
+
 	  if (align == 0
 	      || GET_CODE (v->add_val) != CONST_INT
 	      || INTVAL (v->add_val) % (align / BITS_PER_UNIT) != 0)
 	    align = 0;
-	  
+
 	  mark_reg_pointer (v->new_reg, align);
 	}
       else if (GET_CODE (v->new_reg) == REG
@@ -4069,16 +4069,16 @@ loop_givs_rescan (loop, bl, reg_map)
 	       && REG_POINTER (v->add_val))
 	{
 	  unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->add_val));
-	  
+
 	  if (align == 0 || GET_CODE (v->mult_val) != CONST_INT
 	      || INTVAL (v->mult_val) % (align / BITS_PER_UNIT) != 0)
 	    align = 0;
-	  
+
 	  mark_reg_pointer (v->new_reg, align);
 	}
       else if (GET_CODE (v->new_reg) == REG && v->giv_type == DEST_ADDR)
 	mark_reg_pointer (v->new_reg, 0);
-      
+
       if (v->giv_type == DEST_ADDR)
 	/* Store reduced reg as the address in the memref where we found
 	   this giv.  */
@@ -4091,23 +4091,23 @@ loop_givs_rescan (loop, bl, reg_map)
 	{
 	  /* Not replaceable; emit an insn to set the original giv reg from
 	     the reduced giv, same as above.  */
-	  loop_insn_emit_after (loop, 0, v->insn, 
+	  loop_insn_emit_after (loop, 0, v->insn,
 				gen_move_insn (v->dest_reg, v->new_reg));
 	}
-      
+
       /* When a loop is reversed, givs which depend on the reversed
 	 biv, and which are live outside the loop, must be set to their
 	 correct final value.  This insn is only needed if the giv is
 	 not replaceable.  The correct final value is the same as the
 	 value that the giv starts the reversed loop with.  */
       if (bl->reversed && ! v->replaceable)
-	loop_iv_add_mult_sink (loop, 
+	loop_iv_add_mult_sink (loop,
 			       extend_value_for_giv (v, bl->initial_value),
 			       v->mult_val, v->add_val, v->dest_reg);
       else if (v->final_value)
-	loop_insn_sink_or_swim (loop, 
+	loop_insn_sink_or_swim (loop,
 				gen_move_insn (v->dest_reg, v->final_value));
-      
+
       if (loop_dump_stream)
 	{
 	  fprintf (loop_dump_stream, "giv at %d reduced to ",
@@ -4133,7 +4133,7 @@ loop_giv_reduce_benefit (loop, bl, v, test_reg)
   PUT_MODE (test_reg, v->mode);
   add_cost = iv_add_mult_cost (bl->biv->add_val, v->mult_val,
 			       test_reg, test_reg);
-  
+
   /* Reduce benefit if not replaceable, since we will insert a
      move-insn to replace the insn that calculates this giv.  Don't do
      this unless the giv is a user variable, since it will often be
@@ -4147,7 +4147,7 @@ loop_giv_reduce_benefit (loop, bl, v, test_reg)
   if (! v->replaceable && ! bl->eliminable
       && REG_USERVAR_P (v->dest_reg))
     benefit -= copy_cost;
-  
+
   /* Decrease the benefit to count the add-insns that we will insert
      to increment the reduced reg for the giv.  ??? This can
      overestimate the run-time cost of the additional insns, e.g. if
@@ -4202,7 +4202,7 @@ loop_ivs_free (loop)
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
   struct iv_class *iv = ivs->list;
-  
+
   free (ivs->regs);
 
   while (iv)
@@ -4210,7 +4210,7 @@ loop_ivs_free (loop)
       struct iv_class *next = iv->next;
       struct induction *induction;
       struct induction *next_induction;
-      
+
       for (induction = iv->biv; induction; induction = next_induction)
 	{
 	  next_induction = induction->next_iv;
@@ -4221,7 +4221,7 @@ loop_ivs_free (loop)
 	  next_induction = induction->next_iv;
 	  free (induction);
 	}
-      
+
       free (iv);
       iv = next;
     }
@@ -4322,7 +4322,7 @@ strength_reduce (loop, flags)
     {
       struct induction *v;
       int benefit;
-      
+
       /* Test whether it will be possible to eliminate this biv
 	 provided all givs are reduced.  */
       bl->eliminable = loop_biv_eliminable_p (loop, bl, threshold, insn_count);
@@ -5009,12 +5009,12 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
     {
       /* The giv can be replaced outright by the reduced register only if all
 	 of the following conditions are true:
- 	 - the insn that sets the giv is always executed on any iteration
+	 - the insn that sets the giv is always executed on any iteration
 	   on which the giv is used at all
 	   (there are two ways to deduce this:
 	    either the insn is executed on every iteration,
 	    or all uses follow that insn in the same basic block),
- 	 - the giv is not used outside the loop
+	 - the giv is not used outside the loop
 	 - no assignments to the biv occur during the giv's lifetime.  */
 
       if (REGNO_FIRST_UID (REGNO (dest_reg)) == INSN_UID (insn)
@@ -5498,7 +5498,7 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
       /* Fall through.  */
 
       /* Can accept constant setting of biv only when inside inner most loop.
-  	 Otherwise, a biv of an inner loop may be incorrectly recognized
+	 Otherwise, a biv of an inner loop may be incorrectly recognized
 	 as a biv of the outer loop,
 	 causing code to be moved INTO the inner loop.  */
     case MEM:
@@ -5660,7 +5660,7 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
 
 /* Given an expression, X, try to form it as a linear function of a biv.
    We will canonicalize it to be of the form
-   	(plus (mult (BIV) (invar_1))
+	(plus (mult (BIV) (invar_1))
 	      (invar_2))
    with possible degeneracies.
 
@@ -5726,7 +5726,7 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 	  case CONST_INT:
 	  case USE:
 	    /* Adding two invariants must result in an invariant, so enclose
- 	       addition operation inside a USE and return it.  */
+	       addition operation inside a USE and return it.  */
 	    if (GET_CODE (arg0) == USE)
 	      arg0 = XEXP (arg0, 0);
 	    if (GET_CODE (arg1) == USE)
@@ -6280,7 +6280,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
    it cannot possibly be a valid address, 0 is returned.
 
    To perform the computation, we note that
-   	G1 = x * v + a		and
+	G1 = x * v + a		and
 	G2 = y * v + b
    where `v' is the biv.
 
@@ -6944,7 +6944,7 @@ loop_regs_update (loop, seq)
 	    record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
 	}
     }
-  else 
+  else
     {
       rtx set = single_set (seq);
       if (set && GET_CODE (SET_DEST (set)) == REG)
@@ -8095,7 +8095,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 				 v->new_reg, 1);
 
 		/* Compute value to compare against.  */
-		loop_iv_add_mult_emit_before (loop, arg, 
+		loop_iv_add_mult_emit_before (loop, arg,
 					      v->mult_val, v->add_val,
 					      tem, where_bb, where_insn);
 		/* Use it in this insn.  */
@@ -8133,7 +8133,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 				     v->new_reg, 1);
 
 		    /* Compute value to compare against.  */
-		    loop_iv_add_mult_emit_before (loop, arg, 
+		    loop_iv_add_mult_emit_before (loop, arg,
 						  v->mult_val, v->add_val,
 						  tem, where_bb, where_insn);
 		    validate_change (insn, &XEXP (x, arg_operand), tem, 1);
@@ -8169,7 +8169,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 	      if (v->ignore || v->maybe_dead || v->mode != mode)
 		continue;
 
-	      for (tv = REG_IV_CLASS (ivs, REGNO (arg))->giv; tv; 
+	      for (tv = REG_IV_CLASS (ivs, REGNO (arg))->giv; tv;
 		   tv = tv->next_iv)
 		if (! tv->ignore && ! tv->maybe_dead
 		    && rtx_equal_p (tv->mult_val, v->mult_val)
@@ -8291,8 +8291,8 @@ update_reg_last_use (x, insn)
   /* Check for the case where INSN does not have a valid luid.  In this case,
      there is no need to modify the regno_last_uid, as this can only happen
      when code is inserted after the loop_end to set a pseudo's final value,
-     and hence this insn will never be the last use of x. 
-     ???? This comment is not correct.  See for example loop_givs_reduce.  
+     and hence this insn will never be the last use of x.
+     ???? This comment is not correct.  See for example loop_givs_reduce.
      This may insert an insn before another new insn.  */
   if (GET_CODE (x) == REG && REGNO (x) < max_reg_before_loop
       && INSN_UID (insn) < max_uid_for_loop
@@ -8762,7 +8762,7 @@ loop_regs_scan (loop, extra_size)
   if (regs->num >= regs->size)
     {
       regs->size = regs->num + extra_size;
-      
+
       regs->array = (struct loop_reg *)
 	xrealloc (regs->array, regs->size * sizeof (*regs->array));
 
@@ -8823,7 +8823,7 @@ loop_regs_scan (loop, extra_size)
     if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
       regs->array[i].may_not_optimize = 1;
 #endif
-  
+
   /* Set regs->array[I].n_times_set for the new registers.  */
   for (i = old_nregs; i < regs->num; i++)
     regs->array[i].n_times_set = regs->array[i].set_in_loop;
@@ -9723,7 +9723,7 @@ loop_iv_class_dump (bl, file, verbose)
   /* List the givs.  */
   for (i = 0, v = bl->giv; v; v = v->next_iv, i++)
     {
-      fprintf (file, " Giv%d: insn %d, benefit %d, ", 
+      fprintf (file, " Giv%d: insn %d, benefit %d, ",
 	       i, INSN_UID (v->insn), v->benefit);
       if (v->giv_type == DEST_ADDR)
 	  print_simple_rtl (file, v->mem);
@@ -9751,7 +9751,7 @@ loop_biv_dump (v, file, verbose)
 
   if (verbose && v->final_value)
     {
-      fputc ('\n', file);  
+      fputc ('\n', file);
       fprintf (file, " final ");
       print_simple_rtl (file, v->final_value);
     }
@@ -9771,22 +9771,22 @@ loop_giv_dump (v, file, verbose)
 
   if (v->giv_type == DEST_REG)
     fprintf (file, "Giv %d: insn %d",
-	     REGNO (v->dest_reg),  INSN_UID (v->insn)); 
+	     REGNO (v->dest_reg),  INSN_UID (v->insn));
   else
     fprintf (file, "Dest address: insn %d",
 	     INSN_UID (v->insn));
-  
+
   fprintf (file, " src reg %d benefit %d",
 	   REGNO (v->src_reg), v->benefit);
   fprintf (file, " lifetime %d",
 	   v->lifetime);
-  
+
   if (v->replaceable)
     fprintf (file, " replaceable");
-  
+
   if (v->no_const_addval)
     fprintf (file, " ncav");
-  
+
   if (v->ext_dependant)
     {
       switch (GET_CODE (v->ext_dependant))
@@ -9805,22 +9805,22 @@ loop_giv_dump (v, file, verbose)
 	}
     }
 
-  fputc ('\n', file);  
+  fputc ('\n', file);
   fprintf (file, " mult ");
   print_simple_rtl (file, v->mult_val);
 
-  fputc ('\n', file);  
+  fputc ('\n', file);
   fprintf (file, " add  ");
   print_simple_rtl (file, v->add_val);
 
   if (verbose && v->final_value)
     {
-      fputc ('\n', file);  
+      fputc ('\n', file);
       fprintf (file, " final ");
       print_simple_rtl (file, v->final_value);
     }
 
-  fputc ('\n', file);  
+  fputc ('\n', file);
 }
 
 

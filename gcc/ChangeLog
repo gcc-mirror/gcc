@@ -1,3 +1,10 @@
+2001-08-31  Andreas Jaeger  <aj@suse.de>
+
+	* gcse.c (add_label_notes): REG_LABEL is an INSN_LIST.
+	* loop.c (add_label_notes): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* config/sh/sh.c (machine_dependent_reorg): Likewise.
+
 2001-08-31  Jason Merrill  <jason_merrill@redhat.com>
 
 	* unwind-pe.h (read_uleb128, read_sleb128): Move actual reading

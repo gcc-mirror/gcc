@@ -3238,9 +3238,9 @@ machine_dependent_reorg (first)
              or pseudo-op.  */
 
 	  label = gen_label_rtx ();
-	  REG_NOTES (link) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+	  REG_NOTES (link) = gen_rtx_INSN_LIST (REG_LABEL, label,
 						REG_NOTES (link));
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+	  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
 						REG_NOTES (insn));
 	  if (rescan)
 	    {
@@ -3256,7 +3256,7 @@ machine_dependent_reorg (first)
 			  || ((reg2 = sfunc_uses_reg (scan))
 			      && REGNO (reg2) == REGNO (reg))))
 		    REG_NOTES (scan)
-		      = gen_rtx_EXPR_LIST (REG_LABEL, label, REG_NOTES (scan));
+		      = gen_rtx_INSN_LIST (REG_LABEL, label, REG_NOTES (scan));
 		}
 	      while (scan != dies);
 	    }
