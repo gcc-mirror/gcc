@@ -3945,12 +3945,24 @@ expand_expr (exp, target, tmode, modifier)
 
       /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
 	 must be a promoted value.  We return a SUBREG of the wanted mode,
-	 but mark it so that we know that it was already extended.  Note
-	 that `unsignedp' was modified above in this case.  */
+	 but mark it so that we know that it was already extended. */
 
       if (GET_CODE (SAVE_EXPR_RTL (exp)) == REG
 	  && GET_MODE (SAVE_EXPR_RTL (exp)) != mode)
 	{
+	  enum machine_mode var_mode = mode;
+
+	  if (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == ENUMERAL_TYPE
+	      || TREE_CODE (type) == BOOLEAN_TYPE
+	      || TREE_CODE (type) == CHAR_TYPE
+	      || TREE_CODE (type) == REAL_TYPE
+	      || TREE_CODE (type) == POINTER_TYPE
+	      || TREE_CODE (type) == OFFSET_TYPE)
+	    {
+	      PROMOTE_MODE (var_mode, unsignedp, type);
+	    }
+
 	  temp = gen_rtx (SUBREG, mode, SAVE_EXPR_RTL (exp), 0);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
