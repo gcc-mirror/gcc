@@ -2730,8 +2730,8 @@ all_ones_mask_p (tree mask, int size)
 static tree
 sign_bit_p (tree exp, tree val)
 {
-  unsigned HOST_WIDE_INT lo;
-  HOST_WIDE_INT hi;
+  unsigned HOST_WIDE_INT mask_lo, lo;
+  HOST_WIDE_INT mask_hi, hi;
   int width;
   tree t;
 
@@ -2750,14 +2750,25 @@ sign_bit_p (tree exp, tree val)
     {
       hi = (unsigned HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT - 1);
       lo = 0;
+
+      mask_hi = ((unsigned HOST_WIDE_INT) -1
+		 >> (2 * HOST_BITS_PER_WIDE_INT - width));
+      mask_lo = -1;
     }
   else
     {
       hi = 0;
       lo = (unsigned HOST_WIDE_INT) 1 << (width - 1);
+
+      mask_hi = 0;
+      mask_lo = ((unsigned HOST_WIDE_INT) -1
+		 >> (HOST_BITS_PER_WIDE_INT - width));
     }
 
-  if (TREE_INT_CST_HIGH (val) == hi && TREE_INT_CST_LOW (val) == lo)
+  /* We mask off those bits beyond TREE_TYPE (exp) so that we can
+     treat VAL as if it were unsigned.  */
+  if ((TREE_INT_CST_HIGH (val) & mask_hi) == hi
+      && (TREE_INT_CST_LOW (val) & mask_lo) == lo)
     return exp;
 
   /* Handle extension from a narrower type.  */
@@ -4840,6 +4851,10 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 			      convert (stype, arg00),
 			      convert (stype, integer_zero_node)));
 	}
+
+      /* At this point, we know that arg0 is not testing the sign bit.  */
+      if (TYPE_PRECISION (type) - 1 == bitnum)
+	abort ();
       
       /* Otherwise we have (A & C) != 0 where C is a single bit, 
 	 convert that into ((A >> C2) & 1).  Where C2 = log2(C).
@@ -4861,13 +4876,11 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
       /* If we are going to be able to omit the AND below, we must do our
 	 operations as unsigned.  If we must use the AND, we have a choice.
 	 Normally unsigned is faster, but for some machines signed is.  */
-      ops_unsigned = (bitnum == TYPE_PRECISION (type) - 1 ? 1
 #ifdef LOAD_EXTEND_OP
-		      : (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND ? 0 : 1)
+      ops_unsigned = (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND ? 0 : 1);
 #else
-		      : 1
+      ops_unsigned = 1;
 #endif
-		      );
 
       signed_type = (*lang_hooks.types.type_for_mode) (operand_mode, 0);
       unsigned_type = (*lang_hooks.types.type_for_mode) (operand_mode, 1);
@@ -4881,9 +4894,8 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 		       inner, integer_one_node);
 
       /* Put the AND last so it can combine with more things.  */
-      if (bitnum != TYPE_PRECISION (type) - 1)
-	inner = build (BIT_AND_EXPR, ops_unsigned ? unsigned_type : signed_type,
-		       inner, integer_one_node);
+      inner = build (BIT_AND_EXPR, ops_unsigned ? unsigned_type : signed_type,
+		     inner, integer_one_node);
 
       /* Make sure to return the proper type.  */
       if (TREE_TYPE (inner) != result_type)
