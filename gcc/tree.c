@@ -2226,9 +2226,10 @@ staticp (arg)
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Wrap a SAVE_EXPR around EXPR, if appropriate.
@@ -2372,6 +2373,9 @@ unsave_expr_now (expr)
     case METHOD_CALL_EXPR:
       first_rtl = 3;
       break;
+
+    default:
+      break;
     }
 
   switch (TREE_CODE_CLASS (code))
@@ -2444,6 +2448,9 @@ contains_placeholder_p (exp)
 	case SAVE_EXPR:
 	   return (SAVE_EXPR_RTL (exp) == 0
 		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
+
+	default:
+	  break;
 	}
 
       switch (tree_code_length[(int) code])
@@ -2453,10 +2460,13 @@ contains_placeholder_p (exp)
 	case 2:
 	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
 		  || contains_placeholder_p (TREE_OPERAND (exp, 1)));
+	default:
+	  return 0;
 	}
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
@@ -2472,7 +2482,7 @@ substitute_in_expr (exp, f, r)
 {
   enum tree_code code = TREE_CODE (exp);
   tree op0, op1, op2;
-  tree new = 0;
+  tree new;
   tree inner;
 
   switch (TREE_CODE_CLASS (code))
@@ -2484,7 +2494,7 @@ substitute_in_expr (exp, f, r)
     case 'x':
       if (code == PLACEHOLDER_EXPR)
 	return exp;
-      break;
+      abort ();
 
     case '1':
     case '2':
@@ -2533,6 +2543,10 @@ substitute_in_expr (exp, f, r)
 	    return exp;
 
 	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
+	  break;
+
+	default:
+	  abort ();
 	}
 
       break;
@@ -2584,12 +2598,15 @@ substitute_in_expr (exp, f, r)
 
 	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
-	}
-    }
 
-  /* If it wasn't one of the cases we handle, give up.  */
-  if (new == 0)
-    abort ();
+	default:
+	  abort ();
+	}
+      break;
+      
+    default:
+      abort ();
+    }
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
@@ -3069,18 +3086,20 @@ build_type_attribute_variant (ttype, attribute)
 
       switch (TREE_CODE (ntype))
         {
-	  case FUNCTION_TYPE:
-	    hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
-	    break;
-	  case ARRAY_TYPE:
-	    hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
-	    break;
-	  case INTEGER_TYPE:
-	    hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
-	    break;
-	  case REAL_TYPE:
-	    hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
-	    break;
+	case FUNCTION_TYPE:
+	  hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
+	  break;
+	case ARRAY_TYPE:
+	  hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
+	  break;
+	case INTEGER_TYPE:
+	  hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
+	  break;
+	case REAL_TYPE:
+	  hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
+	  break;
+	default:
+	  break;
         }
 
       ntype = type_hash_canon (hashcode, ntype);
@@ -3747,6 +3766,9 @@ simple_cst_equal (t1, t2)
     case CONST_DECL:
     case FUNCTION_DECL:
       return 0;
+      
+    default:
+      break;
     }
 
   /* This general rule works for most tree codes.  All exceptions should be
@@ -3774,9 +3796,10 @@ simple_cst_equal (t1, t2)
 	    return cmp;
 	}
       return cmp;
-    }
 
-  return -1;
+    default:
+      return -1;
+    }
 }
 
 /* Constructors for pointer, array and function types.
