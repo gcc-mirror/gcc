@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -391,7 +391,6 @@ save_for_inline_copying (fndecl)
   int max_uid;
   rtx first_nonparm_insn;
   char *new, *new1;
-  rtx *new2;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers. */
@@ -470,16 +469,14 @@ save_for_inline_copying (fndecl)
      Make these new rtx's now, and install them in regno_reg_rtx, so they
      will be the official pseudo-reg rtx's for the rest of compilation.  */
 
-  reg_map = (rtx *) alloca ((max_reg + 1) * sizeof (rtx));
+  reg_map = (rtx *) savealloc ((max_reg + 1) * sizeof (rtx));
 
   len = sizeof (struct rtx_def) + (GET_RTX_LENGTH (REG) - 1) * sizeof (rtunion);
   for (i = max_reg - 1; i > LAST_VIRTUAL_REGISTER; i--)
     reg_map[i] = (rtx)obstack_copy (function_maybepermanent_obstack,
 				    regno_reg_rtx[i], len);
 
-  bcopy ((char *) (reg_map + LAST_VIRTUAL_REGISTER + 1),
-	 (char *) (regno_reg_rtx + LAST_VIRTUAL_REGISTER + 1),
-	 (max_reg - (LAST_VIRTUAL_REGISTER + 1)) * sizeof (rtx));
+  regno_reg_rtx = reg_map;
 
   /* Likewise each label rtx must have a unique rtx as its copy.  */
 
@@ -612,13 +609,9 @@ save_for_inline_copying (fndecl)
   bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
   new1 = (char *) savealloc (regno_pointer_flag_length);
   bcopy (regno_pointer_align, new1, regno_pointer_flag_length);
-  new2 = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
-  bcopy ((char *) regno_reg_rtx, (char *) new2,
-	 regno_pointer_flag_length * sizeof (rtx));
 
   regno_pointer_flag = new;
   regno_pointer_align = new1;
-  regno_reg_rtx = new2;
 
   set_new_first_and_last_insn (first_insn, last_insn);
 }
