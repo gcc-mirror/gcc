@@ -1,5 +1,11 @@
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
+	PR bootstrap/4020
+	* mklibgcc.in: Add missing semi-colons.
+	* Makefile.in: Same.
+
+2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
 	PR c/4448
 	* gthr-win32.h: (__gthread_objc_thread_exit): Fix variable
 	name __objc_thread_exit_status so that it matches the 

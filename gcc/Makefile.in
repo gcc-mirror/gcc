@@ -2690,7 +2690,7 @@ install-info: doc installdirs lang.install-info
 	    for f in cpp.info gcc.info cppinternals.info; do \
 		if [ -f $(infodir)/$$f ]; then \
 		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
-		else true; fi \
+		else true; fi; \
 	    done; \
 	  else true; fi; \
 	else true; fi;
@@ -3086,7 +3086,7 @@ unstage1 unstage2 unstage3 unstage4:
 	      mv $$stage/$$i/* $$i/. 2>/dev/null; \
 	    else \
 	      mv $$stage/$$i .; \
-	    fi \
+	    fi; \
 	  done \
 	fi ; \
 	rm -f $${stage}_build $${stage}_copy ;\
