@@ -4830,15 +4830,13 @@ tsubst (t, args, in_decl)
     case TREE_VEC:
       if (type != NULL_TREE)
 	{
-	  /* A binfo node.  */
+	  /* A binfo node.  We always need to make a copy, of the node
+	     itself and of its BINFO_BASETYPES.  */
 
 	  t = copy_node (t);
 
 	  /* Make sure type isn't a typedef copy.  */
 	  type = BINFO_TYPE (TYPE_BINFO (type));
-
-	  if (type == TREE_TYPE (t))
-	    return t;
 
 	  TREE_TYPE (t) = complete_type (type);
 	  if (IS_AGGR_TYPE (type))
