@@ -1,3 +1,8 @@
+2003-12-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/13037
+	* g77.f-torture/execute/13037.f: New test case.
+
 2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12881
