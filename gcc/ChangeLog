@@ -1,3 +1,11 @@
+2004-02-27  Eric Botcazou  <ebotcazou@act-europe.fr>
+            Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold): Revert 2004-02-25 change.  Use the original
+	operands to build a tree with swapped operands.
+	* expr.c (expand_expr_real) <MAX_EXPR>: Consistently use the
+	'unsignedp' predicate to specify the signedness.
+
 2004-02-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md: Add fixuns_truncsfsi2 and

@@ -5377,10 +5377,7 @@ fold (tree expr)
 	  if (op == 0)
 	    continue;		/* Valid for CALL_EXPR, at least.  */
 
-	  if (kind == '<'
-	      || code == MAX_EXPR
-	      || code == MIN_EXPR
-	      || code == RSHIFT_EXPR)
+	  if (kind == '<' || code == RSHIFT_EXPR)
 	    {
 	      /* Signedness matters here.  Perhaps we can refine this
 		 later.  */
@@ -5415,7 +5412,8 @@ fold (tree expr)
        || code == MAX_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR
        || code == BIT_AND_EXPR)
       && tree_swap_operands_p (arg0, arg1, true))
-    return fold (build (code, type, arg1, arg0));
+    return fold (build (code, type, TREE_OPERAND (t, 1),
+			TREE_OPERAND (t, 0)));
 
   /* Now WINS is set as described above,
      ARG0 is the first operand of EXPR,
