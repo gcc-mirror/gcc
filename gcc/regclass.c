@@ -321,10 +321,7 @@ init_reg_sets_1 (void)
     {
       for (j = 0; j < N_REG_CLASSES; j++)
 	{
-#ifdef HARD_REG_SET
-	  register		/* Declare it register if it's a scalar.  */
-#endif
-	    HARD_REG_SET c;
+	  HARD_REG_SET c;
 	  int k;
 
 	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
@@ -355,10 +352,7 @@ init_reg_sets_1 (void)
     {
       for (j = 0; j < N_REG_CLASSES; j++)
 	{
-#ifdef HARD_REG_SET
-	  register		/* Declare it register if it's a scalar.  */
-#endif
-	    HARD_REG_SET c;
+	  HARD_REG_SET c;
 	  int k;
 
 	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
@@ -2544,10 +2538,7 @@ reg_class_subset_p (enum reg_class c1, enum reg_class c2)
 int
 reg_classes_intersect_p (enum reg_class c1, enum reg_class c2)
 {
-#ifdef HARD_REG_SET
-  register
-#endif
-    HARD_REG_SET c;
+  HARD_REG_SET c;
 
   if (c1 == c2) return 1;
 

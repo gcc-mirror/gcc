@@ -3720,7 +3720,7 @@ output_formal_parameter_die (void *arg)
     {
     case 'd':	/* We were called with some kind of a ..._DECL node.  */
       {
-	register tree origin = decl_ultimate_origin (node);
+	tree origin = decl_ultimate_origin (node);
 
 	if (origin != NULL)
 	  abstract_origin_attribute (origin);
@@ -4774,8 +4774,8 @@ output_type (tree type, tree containing_scope)
 	      {
 		tree bases = BINFO_BASETYPES (binfo);
 		tree accesses = BINFO_BASEACCESSES (binfo);
-		register int n_bases = BINFO_N_BASETYPES (binfo);
-		register int i;
+		int n_bases = BINFO_N_BASETYPES (binfo);
+		int i;
 
 		for (i = 0; i < n_bases; i++)
 		  {
@@ -5092,7 +5092,7 @@ output_decl (tree decl, tree containing_scope)
 
       {
 	/* And its containing type.  */
-	register tree origin = decl_class_context (decl);
+	tree origin = decl_class_context (decl);
 	if (origin)
 	  output_type (origin, containing_scope);
       }
@@ -5337,7 +5337,7 @@ output_decl (tree decl, tree containing_scope)
 
       {
 	/* And its containing type.  */
-	register tree origin = decl_class_context (decl);
+	tree origin = decl_class_context (decl);
 	if (origin)
 	  output_type (origin, containing_scope);
       }
@@ -5363,7 +5363,7 @@ output_decl (tree decl, tree containing_scope)
 
       {
 	void (*func) (void *);
-	register tree origin = decl_ultimate_origin (decl);
+	tree origin = decl_ultimate_origin (decl);
 
 	if (origin != NULL && TREE_CODE (origin) == PARM_DECL)
 	  func = output_formal_parameter_die;

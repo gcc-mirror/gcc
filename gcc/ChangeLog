@@ -1,3 +1,11 @@
+2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dwarfout.c: Remove uses of "register" specifier in
+	declarations of arguments and local variables.
+	* gensupport.c: Likewise.
+	* local-alloc.c: Likewise.
+	* regclass.c: Likewise.
+
 2003-12-19  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* config.guess: Remove.
