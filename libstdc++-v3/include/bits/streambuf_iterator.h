@@ -110,11 +110,11 @@ namespace std
 	__glibcxx_requires_cond(!_M_at_eof(),
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
 				._M_iterator(*this));
-	const int_type __eof = traits_type::eof();
-	if (_M_sbuf && traits_type::eq_int_type(_M_sbuf->sbumpc(), __eof))
-	  _M_sbuf = 0;
-	else
-	  _M_c = __eof;
+	if (_M_sbuf)
+	  {
+	    _M_sbuf->sbumpc();
+	    _M_c = traits_type::eof();
+	  }
 	return *this;
       }
 
@@ -126,14 +126,12 @@ namespace std
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
 				._M_iterator(*this));
 
-	const int_type __eof = traits_type::eof();
 	istreambuf_iterator __old = *this;
-	if (_M_sbuf
-	    && traits_type::eq_int_type((__old._M_c = _M_sbuf->sbumpc()),
-					__eof))
-	  _M_sbuf = 0;
-	else
-	  _M_c = __eof;
+	if (_M_sbuf)
+	  {
+	    __old._M_c = _M_sbuf->sbumpc();
+	    _M_c = traits_type::eof();
+	  }
 	return __old;
       }
 
