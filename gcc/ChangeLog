@@ -1,3 +1,10 @@
+1999-08-02  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (override_options): Move ev6 alpha_tp frobbing out of
+	-mcpu parsing code.
+	(print_operand): Notice alpha_fptm not alpha_tp for sw completion.
+	* alpha.md (all fp insns): Likewise.
+
 1999-08-02  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850.h (STRICT_ALIGNMENT): Only define if not
