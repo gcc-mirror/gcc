@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GNU CC.
@@ -95,6 +95,8 @@ static void record_set			PARAMS ((rtx, rtx, void *));
 static rtx find_base_term		PARAMS ((rtx));
 static int base_alias_check		PARAMS ((rtx, rtx, enum machine_mode,
 						 enum machine_mode));
+static int handled_component_p		PARAMS ((tree));
+static int can_address_p		PARAMS ((tree));
 static rtx find_base_value		PARAMS ((rtx));
 static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
 static int insert_subset_children       PARAMS ((splay_tree_node, void*));
@@ -400,6 +402,58 @@ find_base_decl (t)
     }
 }
 
+/* Return 1 if T is an expression that get_inner_reference handles.  */
+
+static int
+handled_component_p (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case NON_LVALUE_EXPR:
+      return 1;
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      return (TYPE_MODE (TREE_TYPE (t))
+	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))));
+
+    default:
+      return 0;
+    }
+}
+
+/* Return 1 if all the nested component references handled by
+   get_inner_reference in T are such that we can address the object in T.  */
+
+static int
+can_address_p (t)
+     tree t;
+{
+  /* If we're at the end, it is vacuously addressable.  */
+  if (! handled_component_p (t))
+    return 1;
+
+  /* Bitfields are never addressable.  */
+  else if (TREE_CODE (t) == BIT_FIELD_REF)
+    return 0;
+
+  else if (TREE_CODE (t) == COMPONENT_REF
+	   && ! DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1))
+	   && can_address_p (TREE_OPERAND (t, 0)))
+    return 1;
+
+  else if (TREE_CODE (t) == ARRAY_REF
+	   && ! TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0)))
+	   && can_address_p (TREE_OPERAND (t, 0)))
+    return 1;
+
+  return 0;
+}
+
 /* Return the alias set for T, which may be either a type or an
    expression.  Call language-specific routine for help, if needed.  */
 
@@ -439,35 +493,9 @@ get_alias_set (t)
       /* Now loop the same way as get_inner_reference and get the alias
 	 set to use.  Pick up the outermost object that we could have
 	 a pointer to.  */
-      while (1)
-	{
-	  /* Unnamed bitfields are not an addressable object.  */
-	  if (TREE_CODE (t) == BIT_FIELD_REF)
-	    ;
-	  else if (TREE_CODE (t) == COMPONENT_REF)
-	    {
-	      if (! DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
-		/* Stop at an adressable decl.  */
-		break;
-	    }
-	  else if (TREE_CODE (t) == ARRAY_REF)
-	    {
-	      if (! TYPE_NONALIASED_COMPONENT
-		  (TREE_TYPE (TREE_OPERAND (t, 0))))
-		/* Stop at an addresssable array element.  */
-		break;
-	    }
-	  else if (TREE_CODE (t) != NON_LVALUE_EXPR
-		   && ! ((TREE_CODE (t) == NOP_EXPR
-		      || TREE_CODE (t) == CONVERT_EXPR)
-		     && (TYPE_MODE (TREE_TYPE (t))
-			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))))))
-	    /* Stop if not one of above and not mode-preserving conversion. */
-	    break;
+      while (handled_component_p (t) && ! can_address_p (t))
+	t = TREE_OPERAND (t, 0);
 
-	  t = TREE_OPERAND (t, 0);
-	}
-		   
       if (TREE_CODE (t) == INDIRECT_REF)
 	{
 	  /* Check for accesses through restrict-qualified pointers.  */
