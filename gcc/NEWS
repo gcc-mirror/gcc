@@ -5,6 +5,350 @@ on the line of development that led to GCC 3; for information on GCC
 2.8.1 and older releases of GCC 2, see ONEWS.
 
 ======================================================================
+http://gcc.gnu.org/gcc-3.0/gcc-3.0.html
+
+                                  GCC 3.0
+
+   TBA
+
+   The [1]GNU project and the GCC developers are pleased to announce the
+   release of GCC version 3.0.
+
+   GCC used to stand for the GNU C Compiler, but since the compiler
+   supports several other languages aside from C, it now stands for the
+   GNU Compiler Collection.
+
+   GCC 3.0 has several new optimizations, new targets, new languages and
+   many other new features. See the [2]new features page for a more
+   complete list.
+
+   The GCC developers would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc to GCC. This
+   [3]amazing group of volunteers is what makes GCC successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [4]caveats to using GCC 3.0.
+
+   For additional information about GCC please refer to the [5]GCC
+   project web site or contact the [6]GCC development mailing list.
+     _________________________________________________________________
+
+
+    Please send FSF & GNU inquiries & questions to [7]gnu@gnu.org. There
+    are also [8]other ways to contact the FSF.
+    These pages are maintained by [9]The GCC team.
+    Please send comments on these web pages and GCC to
+    [10]gcc@gcc.gnu.org, send other questions to [11]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-12.
+
+References
+
+   1. http://www.gnu.org/
+   2. http://gcc.gnu.org/gcc-3.0/features.html
+   3. http://gcc.gnu.org/thanks.html
+   4. http://gcc.gnu.org/gcc-3.0/caveats.html
+   5. http://gcc.gnu.org/index.html
+   6. mailto:gcc@gcc.gnu.org
+   7. mailto:gnu@gnu.org
+   8. http://www.gnu.org/home.html#ContactInfo
+   9. http://gcc.gnu.org/about.html
+  10. mailto:gcc@gcc.gnu.org
+  11. mailto:gnu@gnu.org
+======================================================================
+http://gcc.gnu.org/gcc-3.0/features.html
+
+                            GCC 3.0 New Features
+
+     * General Optimizer Improvements:
+          + [1]Basic block reordering pass.
+          + New if-conversion pass with support for conditional
+            (predicated) execution.
+          + New tail call and sibling call elimination optimizations.
+          + New register renaming pass.
+          + New (experimental) [2]static single assignment (SSA)
+            representation support.
+          + New dead-code elimination pass implemented using the SSA
+            representation.
+          + [3]Global null pointer test elimination.
+          + [4]Global code hoisting/unification.
+          + More builtins and optimizations for stdio.h, string.h and old
+            BSD functions, as well as for ISO C99 functions.
+          + New builtin __builtin_expect for giving hints to the branch
+            predictor.
+     * New Languages and Language specific improvements:
+          + The GNU Compiler for the Java(TM) language (GCJ) is now
+            integrated and supported, including the run-time library
+            containing most common non-GUI Java classes, a bytecode
+            interpreter, and the Boehm conservative garbage collector.
+            Many bugs have been fixed. GCJ can compile Java source or
+            Java bytecodes to either native code or Java class files, and
+            supports native methods written in either the standard JNI or
+            the more efficient and convenient CNI.
+          + New C++ ABI, capable of inter-operating with other IA-64
+            compilers.
+          + The new ABI also significantly reduces the size of symbol and
+            debug information.
+          + New C++ support library and many C++ bug fixes, vastly
+            improving our conformance to the ISO C++ standard.
+          + New [5]inliner for C++.
+          + Rewritten C preprocessor, integrated into the C, C++ and
+            Objective C compilers, with very many improvements including
+            ISO C99 support and [6]improvements to dependency generation.
+          + Support for more [7]ISO C99 features.
+          + Many improvements to support for checking calls to format
+            functions such as printf and scanf, including support for ISO
+            C99 format features, extensions from the Single Unix
+            Specification and GNU libc 2.2, checking of strfmon formats
+            and features to assist in auditing for format string security
+            bugs.
+          + New warnings for C code that may have undefined semantics
+            because of violations of sequence point rules in the C
+            standard (such as a = a++;, a[n] = b[n++]; and a[i++] = i;),
+            included in -Wall.
+          + Additional warning option -Wfloat-equal.
+          + Improvements to -Wtraditional.
+          + Fortran improvements are listed in [8]the Fortran
+            documentation.
+     * New Targets and Target Specific Improvements:
+          + New x86 back-end, generating much improved code.
+          + Support for a generic i386-elf target contributed.
+          + New option to emit x86 assembly code using Intel style syntax
+            (-mintel-syntax).
+          + HPUX 11 support contributed.
+          + Improved PowerPC code generation, including scheduled
+            prologue and epilogue.
+          + Port of gcc to Intel's IA-64 processor contributed.
+          + Port of gcc to Motorola's MCore 210 and 340 contributed.
+          + New unified back-end for Arm, Thumb and StrongArm
+            contributed.
+          + Port of gcc to Intel's XScale processor contributed.
+          + Port of gcc to Atmel's AVR microcontrollers contributed.
+          + Port of gcc to Mitsubishi's D30V processor contributed.
+          + Port of gcc to Matsushita's AM33 processor (a member of the
+            MN10300 processor family) contributed.
+          + Port of gcc to Fujitsu's FR30 processor contributed.
+          + Port of gcc to Motorola's 68HC11 and 68HC12 processors
+            contributed.
+          + Port of gcc to Sun's picoJava processor core contributed.
+     * Documentation improvements:
+          + Substantially rewritten and improved C preprocessor manual.
+          + Many improvements to other documentation.
+          + Manpages for gcc, cpp and gcov are now generated
+            automatically from the master Texinfo manual, eliminating the
+            problem of manpages being out of date. (The generated
+            manpages are only extracts from the full manual, which is
+            provided in Texinfo form, from which info, HTML, other
+            formats and a printed manual can be generated.)
+          + Generated info files are included in the release tarballs
+            alongside their Texinfo sources, avoiding problems on some
+            platforms with building makeinfo as part of the GCC
+            distribution.
+     * Other significant improvements:
+          + Garbage collection used internally by the compiler for most
+            memory allocation instead of obstacks.
+          + Lengauer and Tarjan algorithm used for computing dominators
+            in the CFG. This algorithm can be significantly faster and
+            more space efficient than our older algorithm.
+          + gccbug script provided to assist in submitting bug reports to
+            the GCC GNATS bug tracking database. (Bug reports previously
+            submitted directly to the GCC mailing lists, for which no
+            GNATS bug tracking number has been received, should be
+            submitted again to the bug tracking database using gccbug if
+            you can reproduce the problem with GCC 3.0.)
+          + The internal libgcc library is [9]built as a shared library
+            on systems that support it.
+          + Extensive testsuite included with GCC, with many new tests.
+            In addition to tests for GCC bugs that have been fixed, many
+            tests have been added for language features, compiler
+            warnings and builtin functions.
+          + Additional language-independent warning options -Wpacked,
+            -Wpadded, -Wunreachable-code and -Wdisabled-optimization.
+          + Target-independent options -falign-functions, -falign-loops
+            and -falign-jumps.
+     * Plus a great many bugfixes and almost all the [10]features found
+       in GCC 2.95.
+     _________________________________________________________________
+
+
+    Please send FSF & GNU inquiries & questions to [11]gnu@gnu.org.
+    There are also [12]other ways to contact the FSF.
+    These pages are maintained by [13]The GCC team.
+    Please send comments on these web pages and GCC to
+    [14]gcc@gcc.gnu.org, send other questions to [15]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-30.
+
+References
+
+   1. http://gcc.gnu.org/news/reorder.html
+   2. http://gcc.gnu.org/news/ssa.html
+   3. http://gcc.gnu.org/news/null.html
+   4. http://gcc.gnu.org/news/unify.html
+   5. http://gcc.gnu.org/news/inlining.html
+   6. http://gcc.gnu.org/news/dependencies.html
+   7. http://gcc.gnu.org/gcc-3.0/c99status.html
+   8. http://gcc.gnu.org/onlinedocs/g77_news.html
+   9. http://gcc.gnu.org/gcc-3.0/libgcc.html
+  10. http://gcc.gnu.org/gcc-2.95/features.html
+  11. mailto:gnu@gnu.org
+  12. http://www.gnu.org/home.html#ContactInfo
+  13. http://gcc.gnu.org/about.html
+  14. mailto:gcc@gcc.gnu.org
+  15. mailto:gnu@gnu.org
+======================================================================
+http://gcc.gnu.org/gcc-3.0/caveats.html
+
+                              GCC 3.0 Caveats
+
+     * Enumerations are now properly promoted to int in function
+       parameters and function returns. Normally this change is not
+       visible, but when using -fshort-enums this is an ABI change.
+     * The undocumented extension that allowed C programs to have a label
+       at the end of a compound statement has been deprecated and may be
+       removed in a future version. Programs that now generate a warning
+       about this may be fixed by adding a null statement (a single
+       semicolon) after the label.
+     * The poorly documented extension that allowed string constants in
+       C, C++ and Objective C to contain unescaped newlines has been
+       deprecated and may be removed in a future version. Programs using
+       this extension may be fixed in several ways: the bare newline may
+       be replaced by \n, or preceded by \n\, or string concatenation may
+       be used with the bare newline preceded by \n" and " placed at the
+       start of the next line.
+     * The Chill compiler is not included in GCC 3.0, because of the lack
+       of a volunteer to convert it to use garbage collection.
+     _________________________________________________________________
+
+
+    Please send FSF & GNU inquiries & questions to [1]gnu@gnu.org. There
+    are also [2]other ways to contact the FSF.
+    These pages are maintained by [3]The GCC team.
+    Please send comments on these web pages and GCC to
+    [4]gcc@gcc.gnu.org, send other questions to [5]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
+
+References
+
+   1. mailto:gnu@gnu.org
+   2. http://www.gnu.org/home.html#ContactInfo
+   3. http://gcc.gnu.org/about.html
+   4. mailto:gcc@gcc.gnu.org
+   5. mailto:gnu@gnu.org
+======================================================================
+http://gcc.gnu.org/gcc-2.95/gcc-2.95.3.html
+
+                                 GCC 2.95.3
+
+   March 16, 2001
+
+   The GNU project and the GCC developers are pleased to announce the
+   release of GCC version 2.95.3. GCC used to stand for the GNU C
+   Compiler, but since the compiler supports several other languages
+   aside from C, it now stands for the GNU Compiler Collection.
+
+   This is a minor release to address several bugs in the [1]GCC version
+   2.95.2 release.
+
+     * Generic bugfixes and improvements
+          + Fix numerous problems that caused incorrect optimization in
+            the register reloading code.
+          + Fix numerous problems that caused incorrect optimization in
+            the loop optimizer.
+          + Fix aborts in the functions build_insn_chain and scan_loops
+            under some circumstances.
+          + Fix an alias analysis bug.
+          + Fix an infinite compilation bug in the combiner.
+          + A few problems with complex number support have been fixed.
+          + It is no longer possible for gcc to act as a fork bomb when
+            installed incorrectly.
+          + The -fpack-struct option should be recognized now.
+          + Fixed a bug that caused incorrect code to be generated due to
+            a lost stack adjustment.
+     * Platform specific bugfixes and improvements
+          + Support building ARM toolchains hosted on Windows.
+          + Fix attribute calculations in ARM toolchains.
+          + arm-linux support has been improved.
+          + Fix a PIC failure on sparc targets.
+          + On ix86 targets, the regparm attribute should now work
+            reliably.
+          + Several updates for the h8300 port.
+
+   The whole suite has been extensively [2]regression tested and
+   [3]package tested. It should be reliable and suitable for widespread
+   use.
+
+   The GCC 2.95 release has several new optimizations, new targets, new
+   languages and other new features as compared to EGCS 1.1 or GCC 2.8.
+   See the [4]new features page for a more complete list of new features
+   found in the GCC 2.95 releases.
+
+   The sources include installation instructions in both HTML and
+   plaintext forms in the install directory in the distribution. However,
+   the most up to date [5]installation instructions and [6]build/test
+   status are on the web pages. We will update those pages as new
+   information becomes available.
+
+   The GCC developers would like to thank the numerous people that have
+   contributed new features, test results, bugfixes, etc to GCC. This
+   [7]amazing group of volunteers is what makes GCC successful.
+
+   And finally, we can't in good conscience fail to mention some
+   [8]caveats to using GCC 2.95.3.
+
+   Download GCC 2.95.3 from the [9]GNU FTP server (ftp://ftp.gnu.org)
+   Download GCC 2.95.3 from the [10]GCC FTP server (ftp://gcc.gnu.org)
+   [11]Find a GNU mirror site
+   [12]Find a GCC mirror site
+
+   For additional information about GCC please see the [13]GCC project
+   web server or contact the [14]GCC development mailing list.
+     _________________________________________________________________
+
+
+    Please send FSF & GNU inquiries & questions to [15]gnu@gnu.org.
+    There are also [16]other ways to contact the FSF.
+    These pages are maintained by [17]The GCC team.
+    Please send comments on these web pages and GCC to
+    [18]gcc@gcc.gnu.org, send other questions to [19]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
+
+References
+
+   1. http://gcc.gnu.org/gcc-2.95/gcc-2.95.2.html
+   2. http://gcc.gnu.org/gcc-2.95/regress.html
+   3. http://gcc.gnu.org/gcc-2.95/othertest.html
+   4. http://gcc.gnu.org/gcc-2.95/features.html
+   5. http://gcc.gnu.org/install/index.html
+   6. http://gcc.gnu.org/gcc-2.95/buildstat.html
+   7. http://gcc.gnu.org/thanks.html
+   8. http://gcc.gnu.org/gcc-2.95/caveats.html
+   9. ftp://ftp.gnu.org/pub/gnu/gcc/
+  10. ftp://gcc.gnu.org/pub/gcc/releases/index.html
+  11. http://www.gnu.org/order/ftp.html
+  12. http://gcc.gnu.org/mirrors.html
+  13. http://gcc.gnu.org/index.html
+  14. mailto:gcc@gcc.gnu.org
+  15. mailto:gnu@gnu.org
+  16. http://www.gnu.org/home.html#ContactInfo
+  17. http://gcc.gnu.org/about.html
+  18. mailto:gcc@gcc.gnu.org
+  19. mailto:gnu@gnu.org
+======================================================================
 http://gcc.gnu.org/gcc-2.95/gcc-2.95.2.html
 
                                  GCC 2.95.2
@@ -132,8 +476,16 @@ http://gcc.gnu.org/gcc-2.95/gcc-2.95.2.html
      _________________________________________________________________
 
 
-    [14]The GCC team
-    Last modified 2000-11-10
+    Please send FSF & GNU inquiries & questions to [14]gnu@gnu.org.
+    There are also [15]other ways to contact the FSF.
+    These pages are maintained by [16]The GCC team.
+    Please send comments on these web pages and GCC to
+    [17]gcc@gcc.gnu.org, send other questions to [18]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
 
 References
 
@@ -150,7 +502,11 @@ References
   11. http://gcc.gnu.org/mirrors.html
   12. http://gcc.gnu.org/index.html
   13. mailto:gcc@gcc.gnu.org
-  14. http://gcc.gnu.org/about.html
+  14. mailto:gnu@gnu.org
+  15. http://www.gnu.org/home.html#ContactInfo
+  16. http://gcc.gnu.org/about.html
+  17. mailto:gcc@gcc.gnu.org
+  18. mailto:gnu@gnu.org
 ======================================================================
 http://gcc.gnu.org/gcc-2.95/gcc-2.95.1.html
 
@@ -254,8 +610,16 @@ http://gcc.gnu.org/gcc-2.95/gcc-2.95.1.html
      _________________________________________________________________
 
 
-    [14]The GCC team
-    Last modified 2000-11-10
+    Please send FSF & GNU inquiries & questions to [14]gnu@gnu.org.
+    There are also [15]other ways to contact the FSF.
+    These pages are maintained by [16]The GCC team.
+    Please send comments on these web pages and GCC to
+    [17]gcc@gcc.gnu.org, send other questions to [18]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
 
 References
 
@@ -272,7 +636,11 @@ References
   11. http://gcc.gnu.org/mirrors.html
   12. http://gcc.gnu.org/index.html
   13. mailto:gcc@gcc.gnu.org
-  14. http://gcc.gnu.org/about.html
+  14. mailto:gnu@gnu.org
+  15. http://www.gnu.org/home.html#ContactInfo
+  16. http://gcc.gnu.org/about.html
+  17. mailto:gcc@gcc.gnu.org
+  18. mailto:gnu@gnu.org
 ======================================================================
 http://gcc.gnu.org/gcc-2.95/gcc-2.95.html
 
@@ -321,8 +689,16 @@ http://gcc.gnu.org/gcc-2.95/gcc-2.95.html
      _________________________________________________________________
 
 
-    [14]The GCC team
-    Last modified 2000-11-10
+    Please send FSF & GNU inquiries & questions to [14]gnu@gnu.org.
+    There are also [15]other ways to contact the FSF.
+    These pages are maintained by [16]The GCC team.
+    Please send comments on these web pages and GCC to
+    [17]gcc@gcc.gnu.org, send other questions to [18]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
 
 References
 
@@ -339,7 +715,11 @@ References
   11. http://gcc.gnu.org/mirrors.html
   12. http://gcc.gnu.org/index.html
   13. mailto:gcc@gcc.gnu.org
-  14. http://gcc.gnu.org/about.html
+  14. mailto:gnu@gnu.org
+  15. http://www.gnu.org/home.html#ContactInfo
+  16. http://gcc.gnu.org/about.html
+  17. mailto:gcc@gcc.gnu.org
+  18. mailto:gnu@gnu.org
 ======================================================================
 http://gcc.gnu.org/gcc-2.95/features.html
 
@@ -410,8 +790,16 @@ http://gcc.gnu.org/gcc-2.95/features.html
      _________________________________________________________________
 
 
-    [18]The GCC team
-    Last modified 2000-12-04
+    Please send FSF & GNU inquiries & questions to [18]gnu@gnu.org.
+    There are also [19]other ways to contact the FSF.
+    These pages are maintained by [20]The GCC team.
+    Please send comments on these web pages and GCC to
+    [21]gcc@gcc.gnu.org, send other questions to [22]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
 
 References
 
@@ -426,13 +814,17 @@ References
    9. http://gcc.gnu.org/gcc-2.95/c++features.html
   10. http://gcc.gnu.org/onlinedocs/g77_news.html
   11. http://sources.redhat.com/java/gcj-announce.txt
-  12. http://gcc.gnu.org/javaannounce.html
+  12. http://gcc.gnu.org/news/javaannounce.html
   13. http://gcc.gnu.org/c99status.html
   14. http://gcc.gnu.org/news/chill.html
   15. http://gcc.gnu.org/news/sparc.html
   16. http://gcc.gnu.org/news/egcs-vcg.html
   17. http://gcc.gnu.org/egcs-1.0/features-2.8.html
-  18. http://gcc.gnu.org/about.html
+  18. mailto:gnu@gnu.org
+  19. http://www.gnu.org/home.html#ContactInfo
+  20. http://gcc.gnu.org/about.html
+  21. mailto:gcc@gcc.gnu.org
+  22. mailto:gnu@gnu.org
 ======================================================================
 http://gcc.gnu.org/gcc-2.95/caveats.html
 
@@ -480,15 +872,27 @@ http://gcc.gnu.org/gcc-2.95/caveats.html
      _________________________________________________________________
 
 
-    [4]The GCC team
-    Last modified 2000-11-10
+    Please send FSF & GNU inquiries & questions to [4]gnu@gnu.org. There
+    are also [5]other ways to contact the FSF.
+    These pages are maintained by [6]The GCC team.
+    Please send comments on these web pages and GCC to
+    [7]gcc@gcc.gnu.org, send other questions to [8]gnu@gnu.org.
+    Copyright (C) Free Software Foundation, Inc., 59 Temple Place -
+    Suite 330, Boston, MA 02111, USA.
+    Verbatim copying and distribution of this entire article is
+    permitted in any medium, provided this notice is preserved.
+    Last modified 2001-05-04.
 
 References
 
    1. http://gcc.gnu.org/faq.html#asmclobber
    2. http://gcc.gnu.org/fom_serv/cache/24.html
    3. ftp://gcc.gnu.org/pub/gcc/infrastructure/libg++-2.8.1.3.tar.gz
-   4. http://gcc.gnu.org/about.html
+   4. mailto:gnu@gnu.org
+   5. http://www.gnu.org/home.html#ContactInfo
+   6. http://gcc.gnu.org/about.html
+   7. mailto:gcc@gcc.gnu.org
+   8. mailto:gnu@gnu.org
 ======================================================================
 http://gcc.gnu.org/egcs-1.1/egcs-1.1.2.html
 
@@ -939,7 +1343,7 @@ http://gcc.gnu.org/egcs-1.1/caveats.html
 References
 
    1. ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz
-   2. http://gcc.gnu.org/faq.html#linuxkernel
+   2. http://gcc.gnu.org/fom_serv/cache/24.html
    3. http://gcc.gnu.org/index.html
 ======================================================================
 http://gcc.gnu.org/egcs-1.0/egcs-1.0.3.html
@@ -1443,6 +1847,6 @@ http://gcc.gnu.org/egcs-1.0/caveats.html
 References
 
    1. ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1.2.tar.gz
-   2. http://gcc.gnu.org/faq.html#linuxkernel
+   2. http://gcc.gnu.org/fom_serv/cache/24.html
    3. http://gcc.gnu.org/index.html
 ======================================================================
