@@ -241,7 +241,7 @@ extern int jcf_unexpected_eof PROTO ((JCF*, int));
    ? (((PTR)[-2] & 0x1F) << 6) + ((PTR)[-1] & 0x3F) \
    : (*(PTR) & 0xF0) == 0xE0 && ((PTR) += 3) <= (LIMIT) \
    && ((PTR)[-2] & 0xC0) == 0x80 && ((PTR)[-1] & 0xC0) == 0x80 \
-   ? (((PTR)[-3]&0x1F) << 12) + (((PTR)[-2]&0x3F) << 6) + ((PTR)[-1]&0x3F) \
+   ? (((PTR)[-3]&0x0F) << 12) + (((PTR)[-2]&0x3F) << 6) + ((PTR)[-1]&0x3F) \
    : ((PTR)++, -1))
 
 extern char *jcf_write_base_directory;
