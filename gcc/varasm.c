@@ -1442,9 +1442,16 @@ asm_emit_uninitialised (tree decl, const char *name,
 	destination = asm_dest_common;
     }
 
+  if (destination != asm_dest_common)
+    {
+      resolve_unique_section (decl, 0, flag_data_sections);
+      /* Custom sections don't belong here.  */
+      if (DECL_SECTION_NAME (decl))
+        return false;
+    }
+
   if (destination == asm_dest_bss)
     globalize_decl (decl);
-  resolve_unique_section (decl, 0, flag_data_sections);
 
   if (flag_shared_data)
     {
@@ -1625,16 +1632,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (DECL_PRESERVE_P (decl))
     targetm.asm_out.mark_decl_preserved (name);
 
-  /* Output any data that we will need to use the address of.  */
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    {
-      reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
-      output_addressed_constants (DECL_INITIAL (decl));
-    }
-  resolve_unique_section (decl, reloc, flag_data_sections);
-
   /* Handle uninitialized definitions.  */
 
   /* If the decl has been given an explicit section name, then it
@@ -1688,7 +1685,17 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     globalize_decl (decl);
 
+  /* Output any data that we will need to use the address of.  */
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    {
+      reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+      output_addressed_constants (DECL_INITIAL (decl));
+    }
+
   /* Switch to the appropriate section.  */
+  resolve_unique_section (decl, reloc, flag_data_sections);
   variable_section (decl, reloc);
 
   /* dbxout.c needs to know this.  */
