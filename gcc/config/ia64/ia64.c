@@ -3527,9 +3527,10 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 		      ? 1 : GET_MODE_SIZE (gr_mode) / UNITS_PER_WORD;
 	}
 
-      /* If we ended up using just one location, just return that one loc.  */
+      /* If we ended up using just one location, just return that one loc, but
+	 change the mode back to the argument mode.  */
       if (i == 1)
-	return XEXP (loc[0], 0);
+	return gen_rtx_REG (mode, REGNO (XEXP (loc[0], 0)));
       else
 	return gen_rtx_PARALLEL (mode, gen_rtvec_v (i, loc));
     }
