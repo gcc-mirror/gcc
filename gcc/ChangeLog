@@ -1,3 +1,9 @@
+2003-03-17  Olivier Hainque  <hainque@act-europe.fr>
+
+	* function.c (assign_parms): For a struct value address passed as
+	first argument, delay the function's result RTL setup code until
+	after the emission of parameter conversions.
+	
 2003-03-17  Dave Love  <fx@gnu.org>
 	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
