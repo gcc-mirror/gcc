@@ -600,6 +600,18 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		 "Unrolling failure: unknown insns between BEG note and loop label.\n");
       return;
     }
+  if (LABEL_NAME (start_label))
+    {
+      /* The jump optimization pass must have combined the original start label
+	 with a named label for a goto.  We can't unroll this case because
+	 jumps which go to the named label must be handled differently than
+	 jumps to the loop start, and it is impossible to differentiate them
+	 in this case.  */
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Unrolling failure: loop start label is gone\n");
+      return;
+    }
 
   if (unroll_type == UNROLL_NAIVE
       && GET_CODE (last_loop_insn) == BARRIER
