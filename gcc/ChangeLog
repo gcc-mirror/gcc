@@ -1,3 +1,8 @@
+2003-06-12  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/10557
+	* rtlanal.c (subreg_offset_representable_p): Relax subreg check.
+
 2003-06-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Fix a comment typo.

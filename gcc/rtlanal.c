@@ -3427,16 +3427,10 @@ subreg_offset_representable_p (xregno, xmode, offset, ymode)
 
 #ifdef ENABLE_CHECKING
   /* This should always pass, otherwise we don't know how to verify the
-     constraint. 
-
-     These conditions may be relaxed but subreg_offset would need to be
-     redesigned.  */
+     constraint.  These conditions may be relaxed but subreg_offset would
+     need to be redesigned.  */
   if (GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)
       || GET_MODE_SIZE (ymode) % nregs_ymode
-      || (GET_MODE_BITSIZE (mode_for_size (GET_MODE_BITSIZE (xmode)
-			      		   / nregs_xmode,
-					   MODE_INT, 0))
-	  != GET_MODE_BITSIZE (xmode) / nregs_xmode)
       || nregs_xmode % nregs_ymode)
     abort ();
 #endif
