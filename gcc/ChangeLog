@@ -1,3 +1,9 @@
+2004-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR wrong-code/16129
+	* alias.c (get_alias_set): Adjust setting of
+	DECL_POINTER_ALIAS_SET for pointers to aggregates.
+	
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16144

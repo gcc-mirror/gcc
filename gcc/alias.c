@@ -500,6 +500,8 @@ get_alias_set (tree t)
 	      /* If we haven't computed the actual alias set, do it now.  */
 	      if (DECL_POINTER_ALIAS_SET (decl) == -2)
 		{
+		  tree pointed_to_type = TREE_TYPE (TREE_TYPE (decl));
+
 		  /* No two restricted pointers can point at the same thing.
 		     However, a restricted pointer can point at the same thing
 		     as an unrestricted pointer, if that unrestricted pointer
@@ -508,11 +510,22 @@ get_alias_set (tree t)
 		     alias set for the type pointed to by the type of the
 		     decl.  */
 		  HOST_WIDE_INT pointed_to_alias_set
-		    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
+		    = get_alias_set (pointed_to_type);
 
 		  if (pointed_to_alias_set == 0)
 		    /* It's not legal to make a subset of alias set zero.  */
 		    DECL_POINTER_ALIAS_SET (decl) = 0;
+		  else if (AGGREGATE_TYPE_P (pointed_to_type))
+		    /* For an aggregate, we must treat the restricted
+		       pointer the same as an ordinary pointer.  If we
+		       were to make the type pointed to by the
+		       restricted pointer a subset of the pointed-to
+		       type, then we would believe that other subsets
+		       of the pointed-to type (such as fields of that
+		       type) do not conflict with the type pointed to
+		       by the restricted pointer.   */
+		    DECL_POINTER_ALIAS_SET (decl)
+		      = pointed_to_alias_set;
 		  else
 		    {
 		      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
