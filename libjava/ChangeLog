@@ -1,3 +1,9 @@
+2001-07-30  Christian Iseli  <chris@ludwig-alpha.unil.ch>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (GCJLINK): Added --tag=GCJ.
+	(LIBLINK): Likewise.
+
 2001-07-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Date.java: Re-merged with Classpath.
