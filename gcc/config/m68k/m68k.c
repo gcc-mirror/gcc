@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -211,24 +211,61 @@ output_function_prologue (stream, size)
     }
   else if (fsize)
     {
-      /* Adding negative number is faster on the 68040.  */
       if (fsize + 4 < 0x8000)
 	{
-	  if (!TARGET_68040)
+#ifdef NO_ADDSUB_Q
+	  if (fsize + 4 <= 8)
 	    {
+	      if (!TARGET_5200)
+		{
+		  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", - (fsize + 4));
+		  asm_fprintf (stream, "\tsubq.w %OI%d,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", - (fsize + 4));
+		  asm_fprintf (stream, "\tsubqw %OI%d,%Rsp\n", fsize + 4);
+#endif
+		}
+	      else
+		{
+#ifdef MOTOROLA
+		  asm_fprintf (stream, "\tsubq.l %OI%d,%Rsp\n", fsize + 4);
+#else
+		  asm_fprintf (stream, "\tsubql %OI%d,%Rsp\n", fsize + 4);
+#endif
+		}
+	    }
+	  else if (fsize + 4 <= 16 && TARGET_CPU32)
+	    {
+	      /* On the CPU32 it is faster to use two subqw instructions to
+		 subtract a small integer (8 < N <= 16) to a register. */
+	      /* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tsubq.w %OI8,%Rsp\n\tsubq.w %OI%d,%Rsp\n",
+			   fsize + 4);
+#else
+	      asm_fprintf (stream, "\tsubqw %OI8,%Rsp\n\tsubqw %OI%d,%Rsp\n",
+			   fsize + 4);
+#endif
+	    }
+	  else 
+#endif /* NO_ADDSUB_Q */
+	  if (TARGET_68040)
+	    {
+	      /* Adding negative number is faster on the 68040.  */
+	      /* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
+#else
+	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
 #endif
 	    }
 	  else
 	    {
 	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", - (fsize + 4));
 #else
-	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", - (fsize + 4));
 #endif
 	    }
 	}
@@ -640,23 +677,58 @@ output_function_epilogue (stream, size)
 	     reg_names[FRAME_POINTER_REGNUM]);
   else if (fsize)
     {
+#ifdef NO_ADDSUB_Q
+      if (fsize + 4 <= 8) 
+	{
+	  if (!TARGET_5200)
+	    {
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\taddq.w %OI%d,%Rsp\n", fsize + 4);
+#else
+	      asm_fprintf (stream, "\taddqw %OI%d,%Rsp\n", fsize + 4);
+#endif
+	    }
+	  else
+	    {
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\taddq.l %OI%d,%Rsp\n", fsize + 4);
+#else
+	      asm_fprintf (stream, "\taddql %OI%d,%Rsp\n", fsize + 4);
+#endif
+	    }
+	}
+      else if (fsize + 4 <= 16 && TARGET_CPU32)
+	{
+	  /* On the CPU32 it is faster to use two addqw instructions to
+	     add a small integer (8 < N <= 16) to a register. */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\taddq.w %OI8,%Rsp\n\taddq.w %OI%d,%Rsp\n",
+		       fsize + 4);
+#else
+	  asm_fprintf (stream, "\taddqw %OI8,%Rsp\n\taddqw %OI%d,%Rsp\n",
+		       fsize + 4);
+#endif
+	}
+      else
+#endif /* NO_ADDSUB_Q */
       if (fsize + 4 < 0x8000)
 	{
-	  if (!TARGET_68040)
+	  if (TARGET_68040)
 	    { 
+	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
 #endif
 	    }
 	  else
 	    {
 	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", fsize + 4);
 #endif
 	    }
 	}
