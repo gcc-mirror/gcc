@@ -51,3 +51,20 @@ enum bytecode_opcode\n{");
 
   return 0;
 }
+
+/* Safely allocate NBYTES bytes of memory. Returns pointer to block of
+   memory. */
+char *
+xmalloc (nbytes)
+     int nbytes;
+{
+  char *tmp = (char *) malloc (nbytes);
+  
+  if (!tmp)
+    {
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      exit (1);
+    }
+
+  return tmp;
+}
