@@ -28,7 +28,7 @@ if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then
    AC_LIBLTDL_CONVENIENCE
    AC_LIBTOOL_DLOPEN
    DIRLTDL=libltdl
-   AC_DEFINE(USE_LTDL)
+   AC_DEFINE(USE_LTDL, 1, [Define if libltdl is in use.])
    # Sigh.  Libtool's macro doesn't do the right thing.
    INCLTDL="-I\$(top_srcdir)/libltdl $INCLTDL"
    # FIXME: this is a hack.
@@ -62,7 +62,8 @@ if test -z "$enable_getenv_properties"; then
    enable_getenv_properties=${enable_getenv_properties_default-yes}
 fi
 if test "$enable_getenv_properties" = no; then
-   AC_DEFINE(DISABLE_GETENV_PROPERTIES)
+   AC_DEFINE(DISABLE_GETENV_PROPERTIES, 1,
+     [Define if system properties shouldn't be read from getenv("GCJ_PROPERTIES").])
 fi
 
 dnl Whether we should use arguments to main()
@@ -70,7 +71,7 @@ if test -z "$enable_main_args"; then
    enable_main_args=${enable_main_args_default-yes}
 fi
 if test "$enable_main_args" = no; then
-   AC_DEFINE(DISABLE_MAIN_ARGS)
+   AC_DEFINE(DISABLE_MAIN_ARGS, 1, [Define if we should ignore arguments to main().])
 fi
 
 
@@ -88,7 +89,8 @@ fi
 dnl configure.host sets slow_pthread_self if the synchronization code should 
 dnl try to avoid pthread_self calls by caching thread IDs in a hashtable.
 if test "${slow_pthread_self}" = "yes"; then
-  AC_DEFINE(SLOW_PTHREAD_SELF)
+  AC_DEFINE(SLOW_PTHREAD_SELF, 1,
+    [Define if if the synchronization code should try to avoid pthread_self calls by caching thread IDs in a hashtable.])
 fi
 
 
@@ -98,7 +100,7 @@ AC_SUBST(LIBGCJDEBUG)
 AC_ARG_ENABLE(libgcj-debug,
 [  --enable-libgcj-debug   enable runtime debugging code],
   if test "$enable_libgcj_debug" = yes; then
-    AC_DEFINE(DEBUG)
+    AC_DEFINE(DEBUG, 1, [Define this if you want runtime debugging enabled.])
     LIBGCJDEBUG="true"
   fi)
 
@@ -113,7 +115,7 @@ AC_ARG_ENABLE(interpreter,
   fi)
 
 if test "$libgcj_interpreter" = yes; then
-   AC_DEFINE(INTERPRETER)
+   AC_DEFINE(INTERPRETER, 1, [Define if you want a bytecode interpreter.])
 fi
 INTERPRETER="$libgcj_interpreter"
 AC_SUBST(INTERPRETER)
@@ -182,7 +184,7 @@ if test -z "$enable_java_net"; then
    enable_java_net=${enable_java_net_default-yes}
 fi
 if test "$enable_java_net" = no; then
-   AC_DEFINE(DISABLE_JAVA_NET)
+   AC_DEFINE(DISABLE_JAVA_NET, 1, [Define if java.net native functions should be stubbed out.])
 fi
 
 dnl See if the user wants to configure without libffi.  Some
@@ -194,7 +196,7 @@ AC_ARG_WITH(libffi,
 LIBFFI=
 LIBFFIINCS=
 if test "$with_libffi" != no; then
-   AC_DEFINE(USE_LIBFFI)
+   AC_DEFINE(USE_LIBFFI, 1, [Define if we're to use libffi.])
    LIBFFI=../libffi/libffi_convenience.la
    LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I../libffi/include'
 fi
@@ -206,7 +208,7 @@ AC_ARG_ENABLE(jvmpi,
 [  --disable-jvmpi         disable JVMPI support])
 
 if test "$enable_jvmpi" != no; then
-    AC_DEFINE(ENABLE_JVMPI)
+    AC_DEFINE(ENABLE_JVMPI, 1, [Define if you are using JVMPI.])
 fi
 
 dnl If the target is an eCos system, use the appropriate eCos
@@ -240,7 +242,7 @@ case "$TARGET_ECOS" in
    *)
       PLATFORM=Ecos
       PLATFORMNET=NoNet
-      AC_DEFINE(ECOS)
+      AC_DEFINE(ECOS, 1, [Define if you're running eCos.])
       PLATFORMOBJS=posix.lo
       PLATFORMH=posix.h
       ;;
@@ -248,16 +250,22 @@ esac
 AC_SUBST(PLATFORMOBJS)
 AC_LINK_FILES(include/$PLATFORMH, include/platform.h)
 
-AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED))
-AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED))
-AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED))
-AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED))
+AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED, 1,
+                                      [Define if you have int32_t and uint32_t.]))
+AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED, 1,
+                                        [Define if you have int32_t and uint32_t.]))
+AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1,
+                                          [Define if you have u_int32_t]))
+AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1,
+                                           [Define if you have u_int32_t]))
 
 
 dnl These may not be defined in a non-ANS conformant embedded system.
 dnl FIXME: Should these case a runtime exception in that case?
-AC_EGREP_HEADER(mktime, time.h, AC_DEFINE(HAVE_MKTIME))
-AC_EGREP_HEADER(localtime, time.h, AC_DEFINE(HAVE_LOCALTIME))
+AC_EGREP_HEADER(mktime, time.h, AC_DEFINE(HAVE_MKTIME, 1,
+                                  [Define is you have 'mktime' in <time.h>]))
+AC_EGREP_HEADER(localtime, time.h, AC_DEFINE(HAVE_LOCALTIME, 1,
+                                  [Define is you have 'localtime' in <time.h>]))
 
 dnl Create the subdirectory for natFileDescriptor.cc, or the attempt
 dnl to create the link will fail.
@@ -387,7 +395,7 @@ case "$GC" in
     GCOBJS=boehm.lo
     GCHDR=boehm-gc.h
     dnl The POSIX thread support needs to know this.
-    AC_DEFINE(HAVE_BOEHM_GC)
+    AC_DEFINE(HAVE_BOEHM_GC, 1, [Define if Boehm GC in use.])
     ;;
  no)
     AC_MSG_RESULT(none)
@@ -420,7 +428,7 @@ case "$THREADS" in
     THREADS=posix
     case "$host" in
      *-*-linux*)
-	AC_DEFINE(LINUX_THREADS)
+	AC_DEFINE(LINUX_THREADS, 1, [Define if using POSIX threads on Linux.])
 	;;
     esac
     ;;
@@ -485,7 +493,7 @@ changequote([,])
     # MIT pthreads doesn't seem to have the mutexattr functions.
     # But for now we don't check for it.  We just assume you aren't
     # using MIT pthreads.
-    AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT)
+    AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT, 1, [Define if using POSIX threads that have the mutexattr functions.])
 
     # If we're using the Boehm GC, then we happen to know that it
     # defines _REENTRANT, so we don't bother.  Eww.
@@ -552,19 +560,19 @@ if test "x${with_newlib}" = "xyes"; then
 
    # We assume newlib.  This lets us hard-code the functions we know
    # we'll have.
-   AC_DEFINE(HAVE_MEMMOVE)
-   AC_DEFINE(HAVE_MEMCPY)
-   AC_DEFINE(HAVE_STRERROR)
-   AC_DEFINE(HAVE_TIME)
-   AC_DEFINE(HAVE_GMTIME_R)
-   AC_DEFINE(HAVE_LOCALTIME_R)
+   AC_DEFINE(HAVE_MEMMOVE, 1, [Define if you have memmove.])
+   AC_DEFINE(HAVE_MEMCPY, 1, [Define if you have memcpy.])
+   AC_DEFINE(HAVE_STRERROR, 1, [Define if you have strerror.])
+   AC_DEFINE(HAVE_TIME, 1, [Define if you have time.])
+   AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have the 'gmtime_r' function])
+   AC_DEFINE(HAVE_LOCALTIME_R, 1, [Define if you have the 'localtime_r' function.])
    dnl This is only for POSIX threads.
-   AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT)
+   AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT, 1, [Define if using POSIX threads that have the mutexattr functions.])
    dnl We also assume we are using gcc, which provides alloca.
    AC_DEFINE(HAVE_ALLOCA)
 
    dnl Assume we do not have getuid and friends.
-   AC_DEFINE(NO_GETUID)
+   AC_DEFINE(NO_GETUID, 1, [Define if getuid() and friends are missing.])
    PLATFORMNET=NoNet
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep opendir)
@@ -581,27 +589,29 @@ else
 	 # Has broken backtrace()
 	 ;;
        *)
-         AC_DEFINE(HAVE_BACKTRACE)
+         AC_DEFINE(HAVE_BACKTRACE, 1,
+           [Define if your platform has a working backtrace() function.])
 	 ;;
      esac
    ], [
      case "$host" in
        *mingw*)
          # Has backtrace() defined in libgcj itself
-         AC_DEFINE(HAVE_BACKTRACE)
+         AC_DEFINE(HAVE_BACKTRACE, 1,
+           [Define if your platform has a working backtrace() function.])
          ;;
      esac
    ])
 
    AC_CHECK_LIB(dl, dladdr, [
-     AC_DEFINE(HAVE_DLADDR)])
+     AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])
    if test x"$build" = x"$host"; then
      AC_CHECK_FILES(/proc/self/exe, [
-       AC_DEFINE(HAVE_PROC_SELF_EXE)])
+       AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])])
    else
      case $host in
      *-linux*)
-       AC_DEFINE(HAVE_PROC_SELF_EXE)
+       AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])
        ;;
      esac
    fi
@@ -611,12 +621,13 @@ else
    AC_STRUCT_TIMEZONE
 
    AC_CHECK_FUNCS(gethostbyname_r, [
-     AC_DEFINE(HAVE_GETHOSTBYNAME_R)
+     AC_DEFINE(HAVE_GETHOSTBYNAME_R, 1,
+       [Define if you have the 'gethostbyname_r' function.])
      # There are two different kinds of gethostbyname_r.
      # We look for the one that returns `int'.
      # Hopefully this check is robust enough.
      AC_EGREP_HEADER(int.*gethostbyname_r, netdb.h, [
-       AC_DEFINE(GETHOSTBYNAME_R_RETURNS_INT)])
+       AC_DEFINE(GETHOSTBYNAME_R_RETURNS_INT, 1, [Define if gethostbyname_r returns 'int'.])])
 
      case " $GCINCS " in
      *" -D_REENTRANT "*) ;;
@@ -666,21 +677,26 @@ else
    # linkage check is enough, yet C++ code requires proper prototypes.)
    AC_EGREP_HEADER(gethostbyaddr_r, netdb.h, [
    AC_CHECK_FUNCS(gethostbyaddr_r, [
-     AC_DEFINE(HAVE_GETHOSTBYADDR_R)
+     AC_DEFINE(HAVE_GETHOSTBYADDR_R, 1,
+       [Define if you have the 'gethostbyaddr_r' function.])
      # There are two different kinds of gethostbyaddr_r.
      # We look for the one that returns `int'.
      # Hopefully this check is robust enough.
      AC_EGREP_HEADER(int.*gethostbyaddr_r, netdb.h, [
-       AC_DEFINE(GETHOSTBYADDR_R_RETURNS_INT)])])])
+       AC_DEFINE(GETHOSTBYADDR_R_RETURNS_INT, 1,
+         [Define if gethostbyaddr_r returns 'int'.])])])])
 
    AC_CHECK_FUNCS(gethostname, [
-     AC_DEFINE(HAVE_GETHOSTNAME)
+     AC_DEFINE(HAVE_GETHOSTNAME, 1,
+       [Define if you have the 'gethostname' function.])
      AC_EGREP_HEADER(gethostname, unistd.h, [
-       AC_DEFINE(HAVE_GETHOSTNAME_DECL)])])
+       AC_DEFINE(HAVE_GETHOSTNAME_DECL, 1,
+         [Define if gethostname is declared in <unistd.h>.])])])
 
    AC_CHECK_FUNCS(usleep, [
      AC_EGREP_HEADER(usleep, unistd.h, [
-       AC_DEFINE(HAVE_USLEEP_DECL)])])
+       AC_DEFINE(HAVE_USLEEP_DECL, 1,
+          [Define if usleep is declared in <unistd.h>.])])])
 
    # Look for these functions in the thread library, but only bother
    # if using POSIX threads.
@@ -708,10 +724,12 @@ else
       # or __m_count.  This is a nice hack for Linux.
       AC_TRY_COMPILE([#include <pthread.h>], [
           extern pthread_mutex_t *mutex; int q = mutex->m_count;
-        ], AC_DEFINE(PTHREAD_MUTEX_HAVE_M_COUNT), [
+        ], AC_DEFINE(PTHREAD_MUTEX_HAVE_M_COUNT, 1,
+             [Define if pthread_mutex_t has m_count member.]), [
 	AC_TRY_COMPILE([#include <pthread.h>], [
 	    extern pthread_mutex_t *mutex; int q = mutex->__m_count;
-	  ], AC_DEFINE(PTHREAD_MUTEX_HAVE___M_COUNT))])
+	  ], AC_DEFINE(PTHREAD_MUTEX_HAVE___M_COUNT, 1,
+            [Define if pthread_mutex_t has __m_count member.]))])
    fi
 
    # We require a way to get the time.
@@ -979,25 +997,29 @@ AC_TRY_COMPILE([#include <sys/types.h>
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif], [in_addr_t foo;],
-  [AC_DEFINE([HAVE_IN_ADDR_T])
+  [AC_DEFINE(HAVE_IN_ADDR_T, 1,
+     [Define to 1 if 'in_addr_t' is defined in sys/types.h or netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct ip_mreq is in netinet/in.h])
 AC_TRY_COMPILE([#include <netinet/in.h>], [struct ip_mreq mreq;],
-  [AC_DEFINE(HAVE_STRUCT_IP_MREQ)
+  [AC_DEFINE(HAVE_STRUCT_IP_MREQ, 1,
+     [Define if struct ip_mreq is defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct ipv6_mreq is in netinet/in.h])
 AC_TRY_COMPILE([#include <netinet/in.h>], [struct ipv6_mreq mreq6;],
-  [AC_DEFINE(HAVE_STRUCT_IPV6_MREQ)
+  [AC_DEFINE(HAVE_STRUCT_IPV6_MREQ, 1,
+     [Define if struct ipv6_mreq is defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct sockaddr_in6 is in netinet/in.h])
 AC_TRY_COMPILE([#include <netinet/in.h>], [struct sockaddr_in6 addr6;],
-  [AC_DEFINE(HAVE_INET6)
+  [AC_DEFINE(HAVE_INET6, 1,
+     [Define if inet6 structures are defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
@@ -1005,13 +1027,13 @@ AC_MSG_CHECKING([for socklen_t in sys/socket.h])
 AC_TRY_COMPILE([#define _POSIX_PII_SOCKET
 #include <sys/types.h>
 #include <sys/socket.h>], [socklen_t x = 5;],
-  [AC_DEFINE(HAVE_SOCKLEN_T)
+  [AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define it socklen_t typedef is in sys/socket.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([for tm_gmtoff in struct tm])
 AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
-  [AC_DEFINE(STRUCT_TM_HAS_GMTOFF)
+  [AC_DEFINE(STRUCT_TM_HAS_GMTOFF, 1, [Define if struct tm has tm_gmtoff field.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)
    AC_MSG_CHECKING([for global timezone variable])
@@ -1020,13 +1042,14 @@ AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
    dnl the header file will mention timezone if it exists.
    dnl Don't find the win32 function timezone
    AC_TRY_COMPILE([#include <time.h>], [void i(){long z2 = 2*timezone;}],
-     [AC_DEFINE(HAVE_TIMEZONE)
+     [AC_DEFINE(HAVE_TIMEZONE, 1, [Define if global 'timezone' exists.])
       AC_MSG_RESULT(yes)],
      [AC_MSG_RESULT(no)
        AC_MSG_CHECKING([for global _timezone variable])
        dnl FIXME: As above, don't want link check
        AC_TRY_COMPILE([#include <time.h>], [long z2 = _timezone;],
-         [AC_DEFINE(HAVE_UNDERSCORE_TIMEZONE)
+         [AC_DEFINE(HAVE_UNDERSCORE_TIMEZONE, 1,
+            [Define if your platform has the global _timezone variable.])
           AC_MSG_RESULT(yes)],
           [AC_MSG_RESULT(no)])])])
 
