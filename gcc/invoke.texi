@@ -119,7 +119,8 @@ in the following sections.
 -Wcast-align  -Wcast-qual  -Wchar-subscript  -Wcomment
 -Wconversion  -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
--Wimplicit-function-declarations -Wimport  -Winline
+-Wimplicit-function-declaration  -Wimport
+-Werror-implicit-function-declaration  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs  -Wno-import  
 -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
@@ -1230,8 +1231,10 @@ specified.
 @item -Wimplicit-int
 Warn when a declaration does not specify a type.
 
-@item -Wimplicit-function-declarations
-Warn whenever a function is used before being declared.
+@item -Wimplicit-function-declaration
+@itemx -Werror-implicit-function-declaration
+Give a warning (or error) whenever a function is used before being
+declared.
 
 @item -Wimplicit
 Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
