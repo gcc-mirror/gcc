@@ -1128,6 +1128,7 @@ AC_FUNC_MMAP
 AC_CHECK_PROGS(PERL, perl, false)
 
 SYSDEP_SOURCES=
+SIGNAL_HANDLER_AUX=
 
 case "${host}" in
  i?86-*-linux*)
@@ -1143,7 +1144,7 @@ case "${host}" in
  ia64-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- powerpc-*-linux*)
+ powerpc*-*-linux*)
     SIGNAL_HANDLER=include/powerpc-signal.h
     ;;
  alpha*-*-linux*)
@@ -1154,6 +1155,7 @@ case "${host}" in
     ;;
  x86_64*-*-linux*)
     SIGNAL_HANDLER=include/x86_64-signal.h
+    SIGNAL_HANDLER_AUX=include/i386-signal.h
     ;;
  sparc*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
@@ -1175,6 +1177,7 @@ esac
 # If we're using sjlj exceptions, forget what we just learned.
 if test "$enable_sjlj_exceptions" = yes; then
    SIGNAL_HANDLER=include/default-signal.h
+   SIGNAL_HANDLER_AUX=
 fi
 
 # Define here any compiler flags that you need in order to make backtrace() work.
@@ -1188,7 +1191,12 @@ AC_SUBST(BACKTRACESPEC)
 
 AC_SUBST(SYSDEP_SOURCES)
 
-AC_LINK_FILES($SIGNAL_HANDLER, include/java-signal.h)
+if test -z "$SIGNAL_HANDLER_AUX"; then
+  SIGNAL_HANDLER_AUX=$SIGNAL_HANDLER
+fi
+
+AC_LINK_FILES($SIGNAL_HANDLER $SIGNAL_HANDLER_AUX,
+	      include/java-signal.h include/java-signal-aux.h)
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
