@@ -472,6 +472,9 @@ object_is_meta_class(id object)
   return CLS_ISMETA((Class)object);
 }
 
+struct sarray* 
+objc_get_uninstalled_dtable();
+
 #endif /* not __objc_api_INCLUDE_GNU */
 
 
