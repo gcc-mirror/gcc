@@ -1,4 +1,9 @@
-2002-11-07  Vijay L. Khuspe  <vijayk1@kpit.com>
+2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_init_once): Replace 1 with
+	MASK_H8300S.
+
+2002-11-19  Vijay L. Khuspe  <vijayk1@kpit.com>
 
 	* config/h8300/h8300.c (h8300_init_once): Allow -mn switch
 	only if -mh or -ms present.
