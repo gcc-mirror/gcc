@@ -1,5 +1,26 @@
 2003-04-11  Richard Henderson  <rth@redhat.com>
 
+	* rtl.def (SYMBOL_REF): Add two 0 fields.
+	* gengtype.c (adjust_field_rtx_def): Handle them.
+	* print-rtl.c (print_rtx): Print them.
+	* rtl.h (SYMBOL_REF_DECL, SYMBOL_REF_FLAGS): New.
+	(SYMBOL_FLAG_FUNCTION, SYMBOL_REF_FUNCTION_P): New.
+	(SYMBOL_FLAG_LOCAL, SYMBOL_REF_LOCAL_P): New.
+	(SYMBOL_FLAG_SMALL, SYMBOL_REF_SMALL_P): New.
+	(SYMBOL_FLAG_TLS_SHIFT, SYMBOL_REF_TLS_MODEL): New.
+	(SYMBOL_FLAG_EXTERNAL, SYMBOL_REF_EXTERNAL_P): New.
+	(SYMBOL_FLAG_MACH_DEP): New.
+	* optabs.c (init_one_libfunc): Zap fake SYMBOL_REF_DECL.
+	* varasm.c (make_decl_rtl): Set SYMBOL_REF_DECL.
+	(assemble_static_space): Set SYMBOL_REF_FLAGS.
+	(assemble_trampoline_template): Likewise.
+	(output_constant_def, force_const_mem): Likewise.
+	(default_encode_section_info): New.
+	* output.h: Declare it.
+	* target-def.h (TARGET_ENCODE_SECTION_INFO): Use it.
+
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
 	* libfuncs.h (LTI_setbits, LTI_gcov_flush, LTI_gcov_init): New.
 	(setbits_libfunc, gcov_flush_libfunc, gcov_init_libfunc): New.
 	* optabs.c (init_optabs): Initialize them.

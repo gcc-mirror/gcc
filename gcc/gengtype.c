@@ -544,6 +544,10 @@ adjust_field_rtx_def (t, opt)
 		t = reg_attrs_tp, subname = "rtreg";
 	      else if (i == SCRATCH && aindex == 0)
 		t = scalar_tp, subname = "rtint";
+	      else if (i == SYMBOL_REF && aindex == 1)
+		t = scalar_tp, subname = "rtint";
+	      else if (i == SYMBOL_REF && aindex == 2)
+		t = tree_tp, subname = "rttree";
 	      else if (i == BARRIER && aindex >= 3)
 		t = scalar_tp, subname = "rtint";
 	      else

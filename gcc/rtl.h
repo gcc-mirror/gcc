@@ -1245,6 +1245,46 @@ do {						\
 #define SYMBOL_REF_WEAK(RTX)						\
   (RTL_FLAG_CHECK1("SYMBOL_REF_WEAK", (RTX), SYMBOL_REF)->integrated)
 
+/* The tree decl associated with the symbol, or null.  */
+#define SYMBOL_REF_DECL(RTX)	X0TREE ((RTX), 2)
+
+/* A set of flags on a symbol_ref that are, in some respects, redundant with
+   information derivable from the tree decl associated with this symbol.
+   Except that we build a *lot* of SYMBOL_REFs that aren't associated with a
+   decl.  In some cases this is a bug.  But beyond that, it's nice to cache
+   this information to avoid recomputing it.  Finally, this allows space for
+   the target to store more than one bit of information, as with
+   SYMBOL_REF_FLAG.  */
+#define SYMBOL_REF_FLAGS(RTX)	X0INT ((RTX), 1)
+
+/* These flags are common enough to be defined for all targets.  They
+   are computed by the default version of targetm.encode_section_info.  */
+
+/* Set if this symbol is a function.  */
+#define SYMBOL_FLAG_FUNCTION	(1 << 0)
+#define SYMBOL_REF_FUNCTION_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_FUNCTION) != 0)
+/* Set if targetm.binds_local_p is true.  */
+#define SYMBOL_FLAG_LOCAL	(1 << 1)
+#define SYMBOL_REF_LOCAL_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_LOCAL) != 0)
+/* Set if targetm.in_small_data_p is true.  */
+#define SYMBOL_FLAG_SMALL	(1 << 2)
+#define SYMBOL_REF_SMALL_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_SMALL) != 0)
+/* The three-bit field at [5:3] is true for TLS variables; use
+   SYMBOL_REF_TLS_MODEL to extract the field as an enum tls_model.  */
+#define SYMBOL_FLAG_TLS_SHIFT	3
+#define SYMBOL_REF_TLS_MODEL(RTX) \
+  ((enum tls_model) ((SYMBOL_REF_FLAGS (RTX) >> SYMBOL_FLAG_TLS_SHIFT) & 3))
+/* Set if this symbol is not defined in this translation unit.  */
+#define SYMBOL_FLAG_EXTERNAL	(1 << 6)
+#define SYMBOL_REF_EXTERNAL_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_EXTERNAL) != 0)
+
+/* Subsequent bits are available for the target to use.  */
+#define SYMBOL_FLAG_MACH_DEP	(1 << 7)
+
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
 

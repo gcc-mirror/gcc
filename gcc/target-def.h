@@ -280,7 +280,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif
 
 #ifndef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO hook_void_tree_int
+#define TARGET_ENCODE_SECTION_INFO default_encode_section_info
 #endif
 
 /* The whole shebang.  */
