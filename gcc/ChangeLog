@@ -1,3 +1,11 @@
+2005-02-03  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/19775
+
+	* builtins.c (fold_builtin_sqrt): Transform
+	sqrt(pow(x,y)) to pow(fabs(x),y*0.5), not
+	pow(x,y*0.5).
+
 2005-02-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/16201

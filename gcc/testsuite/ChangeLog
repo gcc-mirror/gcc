@@ -1,3 +1,12 @@
+2005-02-03  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/19775
+
+	* gcc.dg/builtins-10.c: Disable test for
+	invalid transformation and one test we no
+	longer optimize.
+	* gcc.dg/builtins-47.c: New testcase.
+
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/parse/typename7.C: Adjust error messages.
