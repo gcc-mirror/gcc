@@ -2494,11 +2494,15 @@ output_constant_pool (fnname, fndecl)
       /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
 	 whose CODE_LABEL has been deleted.  This can occur if a jump table
 	 is eliminated by optimization.  If so, write a constant of zero
-	 instead.  */
-      if ((GET_CODE (x) == LABEL_REF && INSN_DELETED_P (XEXP (x, 0)))
+	 instead.  Note that this can also happen by turning the
+	 CODE_LABEL into a NOTE.  */
+      if (((GET_CODE (x) == LABEL_REF
+	    && (INSN_DELETED_P (XEXP (x, 0))
+		|| GET_CODE (XEXP (x, 0)) == NOTE)))
 	  || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
 	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
-	      && INSN_DELETED_P (XEXP (XEXP (XEXP (x, 0), 0), 0))))
+	      && (INSN_DELETED_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
+		  || GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == NOTE)))
 	x = const0_rtx;
 
       /* First switch to correct section.  */
