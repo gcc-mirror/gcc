@@ -58,7 +58,7 @@ i386_pe_valid_decl_attribute_p (decl, attributes, attr, args)
 	return 1;
     }
 
-  return i386_valid_decl_attribute_p (decl, attributes, attr, args);
+  return ix86_valid_decl_attribute_p (decl, attributes, attr, args);
 }
 
 /* Return nonzero if ATTR is a valid attribute for TYPE.
@@ -81,7 +81,7 @@ i386_pe_valid_type_attribute_p (type, attributes, attr, args)
 	return 1;
     }
 
-  return i386_valid_type_attribute_p (type, attributes, attr, args);
+  return ix86_valid_type_attribute_p (type, attributes, attr, args);
 }
 
 /* Merge attributes in decls OLD and NEW.
