@@ -74,6 +74,7 @@
 #undef pow
 #undef sin
 #undef sinh
+#undef sqrt
 #undef tan
 #undef tanh
 
