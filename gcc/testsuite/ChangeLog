@@ -1,5 +1,8 @@
 1998-10-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/using4.C: New test.  Test using
+ 	declarations of methods from base classes.
+
 	* g++.old-deja/g++.ns/extern1.C: New test.  Extern declarations
  	within functions should introduce names into the innermost
  	enclosing namespace
