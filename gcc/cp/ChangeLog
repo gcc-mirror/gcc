@@ -1,5 +1,18 @@
 1998-07-23  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c (process_start_catch_block_old): Call start_decl_1 for
+	catch parm.
+	* decl.c (start_decl_1): Avoid duplicate error.
+
+	* init.c (expand_default_init): Only perform the initialization if
+	it will do something.
+
+1998-07-23  H.J. Lu  (hjl@gnu.org)
+
+	* parse.y (base_class): Check for invalid base class.
+
+1998-07-23  Jason Merrill  <jason@yorick.cygnus.com>
+
 	* decl2.c (import_export_template): Fold in...
 	(import_export_class): ...to here.  Handle dllimport/export.
 

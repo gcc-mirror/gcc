@@ -6617,6 +6617,7 @@ start_decl_1 (decl)
 	  cp_error ("variable `%#D' has initializer but incomplete type",
 		    decl);
 	  initialized = 0;
+	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
 	{
@@ -6639,8 +6640,7 @@ start_decl_1 (decl)
 		 decl);
 	  /* Change the type so that assemble_variable will give
 	     DECL an rtl we can live with: (mem (const_int 0)).  */
-	  TREE_TYPE (decl) = error_mark_node;
-	  type = error_mark_node;
+	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else
 	{
