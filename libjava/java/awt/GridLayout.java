@@ -320,8 +320,8 @@ public class GridLayout implements LayoutManager, Serializable
     Insets ins = parent.getInsets ();
     // We subtract out an extra gap here because the gaps are only
     // between cells.
-    w = ins.left + ins.right + real_rows * (w + hgap) - hgap;
-    h = ins.top + ins.bottom + real_cols * (h + vgap) - vgap;
+    w = ins.left + ins.right + real_cols * (w + hgap) - hgap;
+    h = ins.top + ins.bottom + real_rows * (h + vgap) - vgap;
     return new Dimension (w, h);
   }
 
