@@ -1,3 +1,14 @@
+2001-12-03  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb:
+	(Analyze_generic_subprogram_Declaration): Set outer_generic_scope,
+	to prevent freezing within formal packages.
+	(Freeze_Subprogram_Body): If body comes from another instance that
+	appeared before its own body, place freeze node at end of current
+	declarative part, to prevent a back-end crash.
+	(Inline_Instance_Body): Handle properly a package instance within
+	a subprogram instance that is a child unit.
+
 2001-12-01  Graham Stott  <grahams@redhat.com>
 
 	* Makefile.in (misc.o): Add missing $(srcdir) prefix
