@@ -35,8 +35,8 @@ void test01()
   const char* ccarray2 = "san francisco sunny-day park inspectors";
   char carray[30];
   strcpy(carray, ccarray1);
-  void* v;
-  const void* cv;
+  void* v = carray;
+  const void* cv = ccarray1;
   
   // const char* strchr(const char* s, int c);
   // char* strchr(char* s, int c);
@@ -72,8 +72,8 @@ void test02()
   const char* ccarray2 = "san francisco sunny-day park inspectors";
   char carray[30];
   strcpy(carray, ccarray1);
-  void* v;
-  const void* cv;
+  void* v = carray;
+  const void* cv = ccarray1;
  
   memchr(cv, '/', 3);
   strchr(ccarray1, '/');
