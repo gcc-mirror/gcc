@@ -1,3 +1,14 @@
+2003-10-29  James E Wilson  <wilson@specifixinc.com>
+
+	* recog.c (asm_operand_ok): Add missing break after case 'X'.
+	Change if statements to else if statements in default case.
+	(extract_constrain_insn_cached): Fix misspelling of constrain_operands
+	in comment.
+	(constrain_operands_cached): Likewise.
+	(constrain_operands): Change if statements to else if statements in
+	default case.
+	* reload.c (find_reloads): Likewise.
+
 2003-10-29  Richard Henderson  <rth@redhat.com>
 
 	* config/m68k/m68k.c (notice_update_cc): Clear cc status for
