@@ -255,10 +255,9 @@ make_friend_class (type, friend_type)
       error ("`friend' declaration in signature definition");
       return;
     }
-  if (IS_SIGNATURE (friend_type))
+  if (IS_SIGNATURE (friend_type) || ! IS_AGGR_TYPE (friend_type))
     {
-      error ("signature type `%s' declared `friend'",
-	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
+      cp_error ("invalid type `%T' declared `friend'", friend_type);
       return;
     }
 
