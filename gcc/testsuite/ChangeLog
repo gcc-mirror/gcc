@@ -1,6 +1,10 @@
 1998-10-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/init7.C: New test: retry initialization
+	* g++.old-deja/g++.ns/extern1.C: New test.  Extern declarations
+ 	within functions should introduce names into the innermost
+ 	enclosing namespace
+
+	* g++.old-deja/g++.other/init7.C: New test.  Retry initialization
  	of static locals if first initialization throws
 
 Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
