@@ -1,3 +1,11 @@
+Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
+
+	* lex.c (finput): New variable.
+	(init_cpp_parse):  Renamed from init_parse.
+	(init_parse): Handle !USE_CPPLIB.  Call init_cpp_parse when finished.
+	(finish_parse): New function.
+	* cp-tree.h (init_lex, init_parse): Remove declarations.
+
 Mon Apr  6 02:25:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_call): Still evaluate the actual argument.

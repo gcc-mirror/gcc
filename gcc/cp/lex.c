@@ -108,6 +108,9 @@ file_name_nondirectory (x)
 struct obstack inline_text_obstack;
 char *inline_text_firstobj;
 
+#if !USE_CPPLIB
+FILE *finput;
+#endif
 int end_of_file;
 
 /* Pending language change.
@@ -425,7 +428,7 @@ init_filename_times ()
 
 /* Change by Bryan Boreham, Kewill, Thu Jul 27 09:46:05 1989.
    Stuck this hack in to get the files open correctly; this is called
-   in place of init_lex if we are an unexec'd binary.    */
+   in place of init_parse if we are an unexec'd binary.    */
 
 #if 0
 void
@@ -436,13 +439,47 @@ reinit_lang_specific ()
 }
 #endif
 
+static int *
+init_cpp_parse ()
+{
+#ifdef GATHER_STATISTICS
+#ifdef REDUCE_LENGTH
+  reduce_count = (int *)malloc (sizeof (int) * (REDUCE_LENGTH + 1));
+  bzero (reduce_count, sizeof (int) * (REDUCE_LENGTH + 1));
+  reduce_count += 1;
+  token_count = (int *)malloc (sizeof (int) * (TOKEN_LENGTH + 1));
+  bzero (token_count, sizeof (int) * (TOKEN_LENGTH + 1));
+  token_count += 1;
+#endif
+#endif
+  return token_count;
+}
+
 void
-init_lex ()
+init_parse (filename)
+     char *filename;
 {
   extern int flag_no_gnu_keywords;
   extern int flag_operator_names;
 
   int i;
+
+#if !USE_CPPLIB
+  /* Open input file.  */
+  if (filename == 0 || !strcmp (filename, "-"))
+    {
+      finput = stdin;
+      filename = "stdin";
+    }
+  else
+    finput = fopen (filename, "r");
+  if (finput == 0)
+    pfatal_with_name (filename);
+
+#ifdef IO_BUFFER_SIZE
+  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+#endif
+#endif /* !USE_CPPLIB */
 
   /* Initialize the lookahead machinery.  */
   init_spew ();
@@ -851,8 +888,18 @@ init_lex ()
       UNSET_RESERVED_WORD ("xor_eq");
     }
 
-  token_count = init_parse ();
+  token_count = init_cpp_parse ();
   interface_unknown = 1;
+}
+
+void
+finish_parse ()
+{
+#if USE_CPPLIB
+  cpp_finish (&parse_in);
+#else
+  fclose (finput);
+#endif
 }
 
 void
@@ -921,22 +968,6 @@ int *token_count;
 #define REDUCE_LENGTH (sizeof (yyr2) / sizeof (yyr2[0]))
 #define TOKEN_LENGTH (256 + sizeof (yytname) / sizeof (yytname[0]))
 #endif
-
-int *
-init_parse ()
-{
-#ifdef GATHER_STATISTICS
-#ifdef REDUCE_LENGTH
-  reduce_count = (int *)malloc (sizeof (int) * (REDUCE_LENGTH + 1));
-  bzero (reduce_count, sizeof (int) * (REDUCE_LENGTH + 1));
-  reduce_count += 1;
-  token_count = (int *)malloc (sizeof (int) * (TOKEN_LENGTH + 1));
-  bzero (token_count, sizeof (int) * (TOKEN_LENGTH + 1));
-  token_count += 1;
-#endif
-#endif
-  return token_count;
-}
 
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
