@@ -34,3 +34,16 @@ do {                                                  \
   extern FILE *asm_out_text_file;                     \
   fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));        \
 } while (0)
+
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
+
+/* Add -g to mips.h default to avoid confusing gas with local symbols
+   generated from stabs info.  */
+#undef NM_FLAGS
+#define NM_FLAGS "-Bng"
+
+/* Disable SHF_MERGE support.  Even if gas supports it, the IRIX ld does not
+   without a special elspec(5) file.  */
+#undef HAVE_GAS_SHF_MERGE

@@ -1,3 +1,8 @@
+2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.target (target_os switch): Allow for irix6*o32
+	configurations.
+
 2002-07-10  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* include/bits/valarray_meta.h (_UnFunBase): Take a second
