@@ -59,6 +59,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# 1.2 uses "1.2" for uname -r.
 	echo alpha-dec-osf${UNAME_RELEASE}
         exit 0 ;;
+    21064:Windows_NT:50:3)
+	echo alpha-dec-winnt3.5
+	exit 0 ;;
     amiga:NetBSD:*:*)
       echo m68k-cbm-netbsd${UNAME_RELEASE}
       exit 0 ;;
