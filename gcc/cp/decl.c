@@ -14583,6 +14583,7 @@ lang_mark_tree (t)
       if (lt && !(TREE_CODE (t) == POINTER_TYPE 
 		  && TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE))
 	{
+	  ggc_mark (lt);
 	  ggc_mark_tree (lt->vfields);
 	  ggc_mark_tree (lt->vbases);
 	  ggc_mark_tree (lt->tags);
@@ -14602,13 +14603,3 @@ lang_mark_tree (t)
     }
 }
 
-void
-lang_cleanup_tree (t)
-     tree t;
-{
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-      && TYPE_LANG_SPECIFIC (t) != NULL
-      && !(TREE_CODE (t) == POINTER_TYPE 
-		  && TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE))
-    free (TYPE_LANG_SPECIFIC (t));
-}

@@ -1,5 +1,10 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (lang_mark_tree): Mark TYPE_LANG_SPECIFIC.
+	(lang_cleanup_tree): Remove.
+	* lex.c (make_lang_type): Use ggc_alloc to allocate
+	TYPE_LANG_SPECIFIC.
+
 	Reorganize per-function data.
 	* cp-tree.h (saved_scope): Add function_decl, bindings.
 	(language_function): Rename binding_level to bindings.

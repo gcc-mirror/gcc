@@ -4828,7 +4828,7 @@ make_lang_type (code)
 
       SET_IS_AGGR_TYPE (t, 1);
 
-      pi = (struct lang_type *) xmalloc (sizeof (struct lang_type));
+      pi = (struct lang_type *) ggc_alloc (sizeof (struct lang_type));
       bzero ((char *) pi, (int) sizeof (struct lang_type));
 
       TYPE_LANG_SPECIFIC (t) = pi;
