@@ -3878,7 +3878,7 @@ output_type (type, containing_scope)
       case POINTER_TYPE:
       case REFERENCE_TYPE:
 	/* For these types, all that is required is that we output a DIE
-	   (or a set of DIEs) to represent that "basis" type.  */
+	   (or a set of DIEs) to represent the "basis" type.  */
 	output_type (TREE_TYPE (type), containing_scope);
 	break;
 
@@ -4774,9 +4774,18 @@ dwarfout_file_scope_decl (decl, set_finalizing)
       break;
 
     case TYPE_DECL:
-      /* Don't generate any DIEs to represent the standard built-in types.  */
+      /* Don't bother trying to generate any DIEs to represent any of the
+	 normal built-in types for the language we are compiling, except
+	 in cases where the types in question are *not* DWARF fundamental
+	 types.  We make an exception in the case of non-fundamental types
+	 for the sake of objective C (and perhaps C++) because the GNU
+	 front-ends for these languages may in fact create certain "built-in"
+	 types which are (for example) RECORD_TYPEs.  In such cases, we
+	 really need to output these (non-fundamental) types because other
+	 DIEs may contain references to them.  */
 
-      if (DECL_SOURCE_LINE (decl) == 0)
+      if (DECL_SOURCE_LINE (decl) == 0
+	  && type_is_fundamental (TREE_TYPE (decl)))
 	return;
 
       /* If we are in terse mode, don't generate any DIEs to represent
