@@ -6357,7 +6357,7 @@ update_ld_motion_stores (expr)
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;
-	  rtx copy, i;
+	  rtx copy, new;
 
 	  /* If we've already copied it, continue.  */
 	  if (expr->reaching_reg == src)
@@ -6373,9 +6373,9 @@ update_ld_motion_stores (expr)
 	    }
 	  
 	  copy = gen_move_insn ( reg, SET_SRC (pat));
-	  i = emit_insn_before (copy, insn);
-	  record_one_set (REGNO (reg), i);
-	  set_block_for_new_insns (i, BLOCK_FOR_INSN (insn));
+	  new = emit_insn_before (copy, insn);
+	  record_one_set (REGNO (reg), new);
+	  set_block_for_new_insns (new, BLOCK_FOR_INSN (insn));
 	  SET_SRC (pat) = reg;
 
 	  /* un-recognize this pattern since it's probably different now.  */
