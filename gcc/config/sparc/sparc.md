@@ -778,7 +778,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, SImode, 0))
+  if (emit_move_sequence (operands, SImode, NULL_RTX))
     DONE;
 }")
 
@@ -867,6 +867,7 @@
     }
   else
     abort ();
+  return \"\";
 }"
   [(set_attr "type" "move")
    (set_attr "length" "2")])
@@ -951,7 +952,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, HImode, 0))
+  if (emit_move_sequence (operands, HImode, NULL_RTX))
     DONE;
 }")
 
@@ -992,7 +993,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, QImode, 0))
+  if (emit_move_sequence (operands, QImode, NULL_RTX))
     DONE;
 }")
 
@@ -1105,7 +1106,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, TFmode, 0))
+  if (emit_move_sequence (operands, TFmode, NULL_RTX))
     DONE;
 }")
 
@@ -1189,7 +1190,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, DFmode, 0))
+  if (emit_move_sequence (operands, DFmode, NULL_RTX))
     DONE;
 }")
 
@@ -1246,7 +1247,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, DImode, 0))
+  if (emit_move_sequence (operands, DImode, NULL_RTX))
     DONE;
 }")
 
@@ -1295,7 +1296,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, SFmode, 0))
+  if (emit_move_sequence (operands, SFmode, NULL_RTX))
     DONE;
 }")
 
