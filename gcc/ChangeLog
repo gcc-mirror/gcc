@@ -1,3 +1,9 @@
+Thu Jun 18 11:43:54 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.h (GO_IF_LEGITIMATE_ADDRESS): Disallow REG+REG 
+	addressing when one register is the frame pointer or stack
+	pointer.  Disallow REG+CONST addressing in HI mode.
+
 Thu Jun 18 17:30:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Don't narrow scope of RELOAD_OTHER to
