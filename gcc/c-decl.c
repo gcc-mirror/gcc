@@ -5284,9 +5284,19 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   TYPE_MIN_VALUE (enumtype) = minnode;
   TYPE_MAX_VALUE (enumtype) = maxnode;
-  TYPE_PRECISION (enumtype) = precision;
   TREE_UNSIGNED (enumtype) = unsign;
   TYPE_SIZE (enumtype) = 0;
+
+  /* If the precision of the type was specific with an attribute and it
+     was too small, give an error.  Otherwise, use it.  */
+  if (TYPE_PRECISION (enumtype))
+    {
+      if (precision > TYPE_PRECISION (enumtype))
+	error ("specified mode too small for enumeral values");
+    }
+  else
+    TYPE_PRECISION (enumtype) = precision;
+
   layout_type (enumtype);
 
   if (values != error_mark_node)

@@ -1,3 +1,8 @@
+2004-12-23  Richard Henderson  <rth@redhat.com>
+
+        PR c/18282
+	* c-decl.c (finish_enum): Retain precision acquired from an attribute.
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/16819
