@@ -64,6 +64,7 @@ extern int promotable_binary_operator PARAMS ((rtx, enum machine_mode));
 extern int memory_displacement_operand PARAMS ((rtx, enum machine_mode));
 extern int cmpsi_operand PARAMS ((rtx, enum machine_mode));
 extern int long_memory_operand PARAMS ((rtx, enum machine_mode));
+extern int aligned_operand PARAMS ((rtx, enum machine_mode));
 
 
 extern int legitimate_pic_address_disp_p PARAMS ((rtx));

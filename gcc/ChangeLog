@@ -1,3 +1,11 @@
+Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (PREDICATE_CODES): Add aligned_operand.
+	* i386.c (aligned_operand): New function.
+	(ix86_aligned_p): Kill.
+	* i386.md (movhi_1): Emit mov for aligned operands.
+	(promoting peep2s): Use aligned_operand.
+
 2000-01-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* fixinc/fixfixes.c (fix_char_macro_uses): Correct regular
