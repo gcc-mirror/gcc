@@ -1,3 +1,9 @@
+2004-11-19  Roger Sayle  <roger@eyesopen.com>
+
+	* objalloc.c, strsignal.c, xstrerror.c: Include "config.h" before
+	"ansidecl.h" to avoid redeclaration errors with native compilers.
+	* regex.c: Protect config.h from multiple inclusion.
+
 2004-11-12  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in (libiberty.html): Fix html generation.
