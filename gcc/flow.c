@@ -1821,7 +1821,20 @@ merge_blocks_nomove (a, b)
       else
 	{
 	  rtx tmp = a->end;
+
 	  a->end = prev_nonnote_insn (tmp);
+
+#ifdef HAVE_cc0
+	  /* If this was a conditional jump, we need to also delete
+	     the insn that set cc0.  */
+	  if (! simplejump_p (tmp) && condjump_p (tmp))
+	    {
+	      PUT_CODE (PREV_INSN (tmp), NOTE);
+	      NOTE_LINE_NUMBER (PREV_INSN (tmp)) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (PREV_INSN (tmp)) = 0;
+	    }
+#endif
+
 	  flow_delete_insn (tmp);
 	}
     }
