@@ -53,18 +53,12 @@
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "errors.h"
 #include "gensupport.h"
 
+
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
   printf("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
-
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 
 /* Holds an array of names indexed by insn_code_number.  */
 static char **insn_name_ptr = 0;
@@ -231,9 +225,6 @@ static const char * special_mode_pred_table[] = {
 #define NUM_SPECIAL_MODE_PREDS \
   (sizeof (special_mode_pred_table) / sizeof (special_mode_pred_table[0]))
 
-static void message_with_line
-  PARAMS ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
-
 static struct decision *new_decision
   PARAMS ((const char *, struct decision_head *));
 static struct decision_test *new_decision_test
@@ -316,29 +307,6 @@ extern void debug_decision
   PARAMS ((struct decision *));
 extern void debug_decision_list
   PARAMS ((struct decision *));
-
-static void
-message_with_line VPARAMS ((int lineno, const char *msg, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  int lineno;
-  const char *msg;
-#endif
-  va_list ap;
-
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  lineno = va_arg (ap, int);
-  msg = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
-  vfprintf (stderr, msg, ap);
-  fputc ('\n', stderr);
-
-  va_end (ap);
-}
 
 /* Create a new node in sequence after LAST.  */
 
@@ -2509,7 +2477,6 @@ main (argc, argv)
   register int c;
 
   progname = "genrecog";
-  obstack_init (rtl_obstack);
 
   memset (&recog_tree, 0, sizeof recog_tree);
   memset (&split_tree, 0, sizeof split_tree);

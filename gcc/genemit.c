@@ -23,15 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "errors.h"
 #include "gensupport.h"
 
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 
 static int max_opno;
 static int max_dup_opno;
@@ -782,7 +776,6 @@ main (argc, argv)
   rtx desc;
 
   progname = "genemit";
-  obstack_init (rtl_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");

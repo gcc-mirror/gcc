@@ -111,8 +111,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "errors.h"
 
-static struct obstack obstack, obstack1, obstack2;
-struct obstack *rtl_obstack = &obstack;
+static struct obstack obstack1, obstack2;
 struct obstack *hash_obstack = &obstack1;
 struct obstack *temp_obstack = &obstack2;
 
@@ -5978,9 +5977,6 @@ main (argc, argv)
   if (argc <= 1)
     fatal ("No input file name.");
 
-  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
-    return (FATAL_EXIT_CODE);
-
 #if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
   /* Get rid of any avoidable limit on stack size.  */
   {
@@ -5993,8 +5989,9 @@ main (argc, argv)
   }
 #endif
 
-  progname = "genattrtab";
-  obstack_init (rtl_obstack);
+  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+    return (FATAL_EXIT_CODE);
+
   obstack_init (hash_obstack);
   obstack_init (temp_obstack);
 

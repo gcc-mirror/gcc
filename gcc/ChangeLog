@@ -1,5 +1,31 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
+	* Makefile.in (gensupport.o): Compile for the host.
+	(host-prefix gensuuprt.o): Remove.
+	(genflags.o): Depend on gensupport.h and OBSTACK_H.
+	(genattrtab.o): Likewise.
+	(gencodes.o): Depend on gensupport.h.
+	(genemit.o, genopinit.o, genrecog.o, genextract.o): Likewise.
+	(genpeep.o, genattr.o, genoutput.o): Likewise.
+
+	* gensupport.c (obstack, rtl_obstack): New.
+	(init_md_reader): Initialize rtl_obstack.
+	* gensupport.h (rtl_obstack): Declare.
+	(message_with_line): Declare.
+
+	* genattr.c: Remove all traces of obstack manipulation.
+	* gencodes.c, genconfig.c, genemit.c, genextract.c: Likewise.
+	* genopinit.c, genoutput.c, genpeep.c, genrecog.c: Likewise.
+
+	* genattrtab.c (obstack, rtl_obstack): Remove.
+	(main): Don't init rtl_obstack.
+	* genflags.c: Likewise.
+
+	* genrecog.c (message_with_line): Move ...
+	* gensupport.c: ... here.
+
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
 	* c-typeck.c (build_c_cast): Remove dead code.
 
 2000-05-06  Richard Henderson  <rth@cygnus.com>
