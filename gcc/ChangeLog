@@ -1,3 +1,8 @@
+2003-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_va_arg): Only align vector
+	arguments if TARGET_ALTIVEC.
+
 2003-10-15  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_memcpy, fold_builtin_mempcpy,
