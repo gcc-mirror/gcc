@@ -12,6 +12,8 @@
 #define DEBUG_NL putc ('\n', stdout)
 #define DEBUG_FAIL putc ('F', stdout); fails++
 #define DEBUG_CHECK { DEBUG_FAIL; } else { DEBUG_DOT; }
+#define DEBUG_FINI if (fails) DEBUG_FPUTS ("failed\n"); \
+		   else DEBUG_FPUTS ("passed\n");
 #else
 #define DEBUG_INIT
 #define DEBUG_FPUTS(x)
@@ -19,6 +21,7 @@
 #define DEBUG_NL
 #define DEBUG_FAIL abort ()
 #define DEBUG_CHECK abort ();
+#define DEBUG_FINI
 #endif
 
 extern void abort (void);

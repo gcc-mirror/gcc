@@ -209,6 +209,8 @@ T(13, ui, unsigned int)
 T(14, ui, unsigned int)
 T(15, ui, unsigned int)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

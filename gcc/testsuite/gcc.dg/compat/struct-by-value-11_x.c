@@ -50,6 +50,8 @@ T(Scc14, _Complex char)
 T(Scc15, _Complex char)
 T(Scc16, _Complex char)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

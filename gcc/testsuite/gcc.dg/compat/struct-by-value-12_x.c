@@ -50,6 +50,8 @@ T(Scs14, _Complex short)
 T(Scs15, _Complex short)
 T(Scs16, _Complex short)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -50,6 +50,8 @@ T(Scll14, _Complex long long)
 T(Scll15, _Complex long long)
 T(Scll16, _Complex long long)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -171,6 +171,8 @@ T(sll)
 T(d)
 T(ld)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

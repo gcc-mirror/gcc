@@ -207,6 +207,8 @@ T(13, Scis)
 T(14, Scis)
 T(15, Scis)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -50,6 +50,8 @@ T(Sf14, float)
 T(Sf15, float)
 T(Sf16, float)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

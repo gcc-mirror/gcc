@@ -50,6 +50,8 @@ T(Sd14, double)
 T(Sd15, double)
 T(Sd16, double)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -50,6 +50,8 @@ T(Scf14, _Complex float)
 T(Scf15, _Complex float)
 T(Scf16, _Complex float)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 
