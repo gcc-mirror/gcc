@@ -26,6 +26,9 @@
    by UNIX International.  Copies of this specification are available from
    UNIX International, 20 Waterview Boulevard, Parsippany, NJ, 07054.  */
 
+/* This file is shared between GCC and GDB, and should not contain
+   prototypes.  */
+
 /* Tag names and codes.  */
 
 enum dwarf_tag
