@@ -49,6 +49,7 @@
 #include "insn-codes.h"
 #include "insn-flags.h"
 #include "insn-config.h"
+#include "optabs.h"
 #include "recog.h"
 #include "toplev.h"
 #include "output.h"

@@ -1,3 +1,9 @@
+2002-10-30   Geert Bosch <bosch@gnat.com>
+	PR ada/6558
+	* misc.c : Include optabs.h
+
+	* Make-lang.in (misc.o): Add dependency on optabs.h
+
 2002-10-29   Geert Bosch <bosch@gnat.com>
         PR ada/6558
 	* Make-lang.in (gnatbind): Depend on CONFIG_H

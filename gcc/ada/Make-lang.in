@@ -1012,8 +1012,8 @@ ada/decl.o : ada/decl.c $(CONFIG_H) $(TREE_H) $(srcdir)/flags.h \
 ada/misc.o : ada/misc.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(srcdir)/expr.h \
    insn-codes.h insn-flags.h insn-config.h $(srcdir)/recog.h \
    $(srcdir)/flags.h $(srcdir)/diagnostic.h $(srcdir)/output.h \
-   $(srcdir)/except.h tm_p.h $(srcdir)/langhooks.h \
-   $(srcdir)/debug.h $(srcdir)/langhooks-def.h $(srcdir)/libfuncs.h \
+   $(srcdir)/except.h tm_p.h $(srcdir)/langhooks.h $(srcdir)/debug.h \
+   $(srcdir)/langhooks-def.h $(srcdir)/libfuncs.h $(srcdir)/optabs.h \
    ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h \
    ada/einfo.h ada/namet.h ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) \
    ada/gigi.h ada/adadecode.h
