@@ -1,5 +1,10 @@
 2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
 	
+	* include/ext/bitmap_allocator.h: Make doxygen style comments for
+	internal functions and classes.
+
+2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
+	
 	* docs/html/20_util/allocator.html: Correct link.
 	* docs/html/ext/ballocator_doc.txt: Remove.
 	* docs/html/ext/ballocator_doc.html: Add.
