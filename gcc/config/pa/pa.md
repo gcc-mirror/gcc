@@ -340,44 +340,6 @@
 ;; emit RTL for both the compare and the branch.
 ;;
 
-;; This expander is not used by the FSF compiler, refer to
-;; FUNCTION_POINTER_COMPARISON_MODE in pa.h for a brief discussion why.
-(define_expand "cmppsi"
-  [(set (reg:CC 0)
-	(compare:CC (match_operand:SI 0 "reg_or_0_operand" "")
-		    (match_operand:SI 1 "reg_or_0_operand" "")))]
-  ""
-  "
-{
-  rtx res0, res1;
-
-  /* We need two new pseudos to hold the value of the dereferenced
-     plabel.  */
-  res0 = gen_reg_rtx (Pmode);
-  res1 = gen_reg_rtx (Pmode);
-
-  /* Move the first function pointer into %r26 and call the
-     magic millicode routine to get the function's actual
-     address.   Copy the result from %r29 into the first
-     psuedo.  */
-  emit_move_insn (gen_rtx (REG, Pmode, 26), operands[0]);
-  emit_insn (gen_plabel_dereference (gen_reg_rtx (SImode)));
-  emit_move_insn (res0, gen_rtx (REG, Pmode, 29));
-
-  /* Likewise for the second function pointer. */
-  emit_move_insn (gen_rtx (REG, Pmode, 26), operands[1]);
-  emit_insn (gen_plabel_dereference (gen_reg_rtx (SImode)));
-  emit_move_insn (res1, gen_rtx (REG, Pmode, 29));
-
-  /* Put the results in hppa_compare_op0 and hppa_compare_op1.  */
-  hppa_compare_op0 = res0;
-  hppa_compare_op1 = res1;
-  /* The branch is really a SImode branch.  PSImode was used just
-     so we could identify this as a function pointer comparison.  */
- hppa_branch_type = CMP_SI;
- DONE;
-}")
-
 (define_expand "cmpsi"
   [(set (reg:CC 0)
 	(compare:CC (match_operand:SI 0 "reg_or_0_operand" "")
@@ -5300,15 +5262,38 @@
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
-/* Given a function pointer (aka plabel) in %r26, return (in %r29) the
-   actual address of the function that would be called if the function
-   pointer was used in an indirect call.
 
-   We must show %r1 as clobbered since the linker might insert a stub
-   in the call path that clobbers %r1 (yes, it really happens).  */
-;; This expander is not used by the FSF compiler, refer to
-;; FUNCTION_POINTER_COMPARISON_MODE in pa.h for a brief discussion why.
-(define_insn "plabel_dereference"
+;; XXX FIXME.  The function pointer comparison code is only at the FSF
+;; for documentation and merging purposes, it is _NOT_ actually used.
+;;
+;; I've been trying to get Kenner to deal with the machine independent
+;; problems for many months, and for whatever reason nothing ever seems
+;; to happen.
+;;
+;; If you want function pointer comparisons to work, first scream at
+;; Kenner to deal with the MI problems, then email me for a hack that
+;; will get the job done (law@cygnus.com).
+
+;; Given a function pointer, canonicalize it so it can be 
+;; reliably compared to another function pointer.  */
+(define_expand "canonicalize_funcptr_for_compare"
+  [(set (reg:SI 26) (match_operand:SI 1 "register_operand" ""))
+   (parallel [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] 0))
+	      (clobber (match_dup 2))
+	      (clobber (reg:SI 26))
+	      (clobber (reg:SI 22))
+	      (clobber (reg:SI 31))])
+   (set (match_operand:SI 0 "register_operand" "")
+	(reg:SI 29))]
+  "! TARGET_PORTABLE_RUNTIME"
+  "
+{
+  operands[2] = gen_reg_rtx (SImode);
+  if (GET_CODE (operands[1]) != REG)
+    force_reg (SImode, operands[1]);
+}")
+
+(define_insn ""
   [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] 0))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
    (clobber (reg:SI 26))
