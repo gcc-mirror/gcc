@@ -1,5 +1,9 @@
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/sparc/sparc.c (eligible_for_epilogue_delay): Don't put
+	assignments from FP constants sonce 'Y' output code can't handle it.
+	(eligible_for_sibcall_delay): Likewise.
+
 	* flow.c (print_rtl_and_abort_fcn): Renamed from print_rtl_and_abort.
 	Call fancy_abort directly, passing args.
 	(print_rtl_and_abort): Now a macro, like fancy_abort.
