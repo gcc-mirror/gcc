@@ -925,10 +925,20 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[1]));
+  rtx op1 = operands[1];
+
+  /* If there is a constant argument, complement that one.  */
+  if (GET_CODE (operands[2]) == CONST_INT && GET_CODE (op1) != CONST_INT)
+    {
+      operands[1] = operands[2];
+      operands[2] = op1;
+      op1 = operands[1];
+    }
+
+  if (GET_CODE (op1) == CONST_INT)
+    operands[1] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (op1));
   else
-    operands[1] = expand_unop (SImode, one_cmpl_optab, operands[1], 0, 1);
+    operands[1] = expand_unop (SImode, one_cmpl_optab, op1, 0, 1);
 }")
 
 (define_expand "andhi3"
@@ -938,12 +948,19 @@
   ""
   "
 {
-  rtx op = operands[1];
-  if (GET_CODE (op) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode,
-			   ((1 << 16) - 1) & ~INTVAL (op));
+  rtx op1 = operands[1];
+
+  if (GET_CODE (operands[2]) == CONST_INT && GET_CODE (op1) != CONST_INT)
+    {
+      operands[1] = operands[2];
+      operands[2] = op1;
+      op1 = operands[1];
+    }
+
+  if (GET_CODE (op1) == CONST_INT)
+    operands[1] = gen_rtx (CONST_INT, VOIDmode, 65535 & ~INTVAL (op1));
   else
-    operands[1] = expand_unop (HImode, one_cmpl_optab, op, 0, 1);
+    operands[1] = expand_unop (HImode, one_cmpl_optab, op1, 0, 1);
 }")
 
 (define_expand "andqi3"
@@ -953,12 +970,19 @@
   ""
   "
 {
-  rtx op = operands[1];
-  if (GET_CODE (op) == CONST_INT)
-    operands[1] = gen_rtx (CONST_INT, VOIDmode,
-			   ((1 << 8) - 1) & ~INTVAL (op));
+  rtx op1 = operands[1];
+
+  if (GET_CODE (operands[2]) == CONST_INT && GET_CODE (op1) != CONST_INT)
+    {
+     operands[1] = operands[2];
+     operands[2] = op1;
+     op1 = operands[1];
+   }
+
+  if (GET_CODE (op1) == CONST_INT)
+    operands[1] = gen_rtx (CONST_INT, VOIDmode, 255 & ~INTVAL (op1));
   else
-    operands[1] = expand_unop (QImode, one_cmpl_optab, op, 0, 1);
+    operands[1] = expand_unop (QImode, one_cmpl_optab, op1, 0, 1);
 }")
 
 (define_insn ""
