@@ -67,6 +67,11 @@ static GTY(()) tree current_tinst_level;
 
 static GTY(()) tree saved_access_scope;
 
+/* Live only within one (recursive) call to tsubst_expr.  We use
+   this to pass the statement expression node from the STMT_EXPR
+   to the EXPR_STMT that is its result.  */
+static tree cur_stmt_expr;
+
 /* A map from local variable declarations in the body of the template
    presently being instantiated to the corresponding instantiated
    local variables.  */
@@ -7790,11 +7795,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 static tree
 tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  /* Live only within one (recursive) call to tsubst_expr.  We use
-     this to pass the statement expression node from the STMT_EXPR
-     to the EXPR_STMT that is its result.  */
-  static tree cur_stmt_expr;
-
   tree stmt, tmp;
 
   if (t == NULL_TREE || t == error_mark_node)
@@ -7824,19 +7824,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       finish_return_stmt (tsubst_expr (TREE_OPERAND (t, 0),
 				       args, complain, in_decl));
       break;
-
-    case STMT_EXPR:
-      {
-	tree old_stmt_expr = cur_stmt_expr;
-	tree stmt_expr = begin_stmt_expr ();
-
-	cur_stmt_expr = stmt_expr;
-	tsubst_expr (STMT_EXPR_STMT (t), args, complain, in_decl);
-	stmt_expr = finish_stmt_expr (stmt_expr, false);
-	cur_stmt_expr = old_stmt_expr;
-
-	return stmt_expr;
-      }
 
     case EXPR_STMT:
       tmp = tsubst_expr (EXPR_STMT_EXPR (t), args, complain, in_decl);
@@ -8625,6 +8612,19 @@ tsubst_copy_and_build (tree t,
 
     case OFFSETOF_EXPR:
       return fold_offsetof (RECUR (TREE_OPERAND (t, 0)));
+
+    case STMT_EXPR:
+      {
+	tree old_stmt_expr = cur_stmt_expr;
+	tree stmt_expr = begin_stmt_expr ();
+
+	cur_stmt_expr = stmt_expr;
+	tsubst_expr (STMT_EXPR_STMT (t), args, complain, in_decl);
+	stmt_expr = finish_stmt_expr (stmt_expr, false);
+	cur_stmt_expr = old_stmt_expr;
+
+	return stmt_expr;
+      }
 
     default:
       return tsubst_copy (t, args, complain, in_decl);
