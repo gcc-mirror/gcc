@@ -1,3 +1,16 @@
+2001-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (structsp): Pedwarn when "enum foo" refers to an
+	incomplete type.
+	(typename): Call pending_xref_error after parsing typed_typespecs.
+	* c-decl.c (lookup_tag): Give error immediately rather than
+	leaving it pending if the tag of the wrong type is in the same
+	binding level.
+	(xref_tag): Don't pedwarn for forward declarations of enum types
+	here.
+	* gcc.texi (Actual Bugs): Remove entry for misuse of struct, union
+	and enum tags.
+
 2001-01-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/float-sparc.h (LDBL_MAX) [sparc32]: Fix typo.

@@ -537,10 +537,6 @@ edit the offending file and place the typedef in front of the
 prototypes.
 
 @item
-There are several obscure case of mis-using struct, union, and
-enum tags that are not detected as errors by the compiler.
-
-@item
 When @samp{-pedantic-errors} is specified, GCC will incorrectly give
 an error message when a function name is specified in an expression
 involving the comma operator.
