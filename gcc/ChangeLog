@@ -1,3 +1,8 @@
+Fri Apr 12 12:11:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (calc_live_regs, sh_pr_n_sets): Use of PR_MEDIA_REG / PR_REG
+	depends on TARGET_SHMEDIA, not TARGET_SH5.
+
 2002-04-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* function.c (fixup_var_refs_1) <SET, handling VAR in SET_SRC>:
