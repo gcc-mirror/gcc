@@ -139,7 +139,14 @@ for INPUT in ${INPUTLIST} ; do
 
 cd ${ORIGDIR}
 
-cd ${INPUT} || continue
+#  Make sure a directory exists before changing into it,
+#  otherwise Solaris2 will fail-exit the script.
+#
+if [ ! -d ${INPUT} ]; then
+  continue
+fi
+cd ${INPUT}
+
 INPUT=`${PWDCMD}`
 
 #
