@@ -4335,7 +4335,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
   tree usings;
   while (scope && (result != error_mark_node))
     {
-      seen = temp_tree_cons (scope, NULL_TREE, seen);
+      seen = tree_cons (scope, NULL_TREE, seen);
       result = ambiguous_decl (name, result,
                                binding_for_name (name, scope), flags);
       if (!BINDING_VALUE (result) && !BINDING_TYPE (result))
@@ -4345,7 +4345,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
 	  /* If this was a real directive, and we have not seen it. */
 	  if (!TREE_INDIRECT_USING (usings)
 	      && !purpose_member (TREE_PURPOSE (usings), seen))
-	    todo = temp_tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
+	    todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
       if (todo)
 	{
 	  scope = TREE_PURPOSE (todo);

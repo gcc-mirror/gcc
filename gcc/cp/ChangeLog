@@ -1,3 +1,30 @@
+1999-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (handle_using_decl): Get TYPE_FIELDS and TYPE_METHODS
+	out of the class, rather than taking them as parameters.
+	(build_vbase_pointer_fields): Move here from tree.c.
+	(build_vtbl_or_vbase_field): New function.
+	(check_methods): Likewise.
+	(remove_zero_width_bitfields): Likewise.
+	(add_virtual_function): Use tree_cons instead of temp_tree_cons.
+	(delete_duplicate_fields_1): Tidy.  Don't delete duplicate
+	USING_DECLs here.
+	(finish_struct_methods): Handle the case where there are no
+	methods here.
+	(get_basefndecls): Use tree_cons instead of temp_tree_cons.
+	(check_field_decls): Call delete_duplicate_fields here.
+	(finish_struct_1): Tidy.  Use check_methods and
+	remove_zero_width_bitfields.
+	* cp-tree.h (build_vbase_pointer_fields): Remove.
+	* decl.c (grokdeclarator): Use tree_cons instead of
+	temp_tree_cons.
+	* decl2.c (qualified_lookup_using_namespace): Use tree_cons
+	instead of temp_tree_cons.
+	* lex.c (cons_up_default_function): Remove dead code.
+	* method.c (fixup_pending_inline): New function, split out from	...
+	(do_inline_function_hair): ... here.
+	* tree.c (build_vbase_pointer_fields): Remove.
+	
 1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (walk_tree): Walk operand subtrees in forward order.

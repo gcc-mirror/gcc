@@ -4012,7 +4012,6 @@ extern tree build_cplus_method_type		PROTO((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PROTO((tree, tree, tree));
 extern tree build_cplus_array_type		PROTO((tree, tree));
 extern int layout_basetypes			PROTO((tree, int));
-extern tree build_vbase_pointer_fields		PROTO((tree));
 extern tree build_base_fields			PROTO((tree));
 extern tree hash_tree_cons			PROTO((tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));

@@ -2000,9 +2000,6 @@ cons_up_default_function (type, full_name, kind)
   switch (kind)
     {
       /* Destructors.  */
-    case 1:
-      declspecs = build_decl_list (NULL_TREE, ridpointers [(int) RID_VIRTUAL]);
-      /* Fall through...  */
     case 0:
       name = build_parse_node (BIT_NOT_EXPR, name);
       args = void_list_node;
