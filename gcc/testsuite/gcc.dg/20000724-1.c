@@ -22,7 +22,7 @@ int baz(void *x)
 
 void do_check (struct s *) asm ("do_check") __attribute__((regparm(1)));
 
-void do_check(struct s *x)
+void __attribute__((regparm(1))) do_check(struct s *x)
 {
   if (x->a.a || x->b || x->c.a.a)
     abort();
