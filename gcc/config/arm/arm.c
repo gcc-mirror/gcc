@@ -8631,7 +8631,7 @@ arm_compute_save_reg0_reg12_mask (void)
 	    || (! current_function_is_leaf && call_used_regs [reg]))
 	  save_reg_mask |= (1 << reg);
 
-      /* Also save the pic base register if neccessary.  */
+      /* Also save the pic base register if necessary.  */
       if (flag_pic
 	  && !TARGET_SINGLE_PIC_BASE
 	  && current_function_uses_pic_offset_table)
