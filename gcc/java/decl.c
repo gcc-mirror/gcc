@@ -634,17 +634,21 @@ java_init_decl_processing (void)
   method_symbols_array_ptr_type = build_pointer_type 
 				  (method_symbols_array_type);
 
-  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), otable_type);
-  DECL_EXTERNAL (otable_decl) = 1;
-  TREE_STATIC (otable_decl) = 1;
-  TREE_READONLY (otable_decl) = 1;
-  pushdecl (otable_decl);
+  if (flag_indirect_dispatch)
+    {
+      otable_decl = build_decl (VAR_DECL, get_identifier ("otable"),
+				otable_type);
+      DECL_EXTERNAL (otable_decl) = 1;
+      TREE_STATIC (otable_decl) = 1;
+      TREE_READONLY (otable_decl) = 1;
+      pushdecl (otable_decl);
   
-  otable_syms_decl = build_decl (VAR_DECL, get_identifier ("otable_syms"), 
-    method_symbols_array_type);
-  TREE_STATIC (otable_syms_decl) = 1;
-  TREE_CONSTANT (otable_syms_decl) = 1;
-  pushdecl (otable_syms_decl);
+      otable_syms_decl = build_decl (VAR_DECL, get_identifier ("otable_syms"), 
+				     method_symbols_array_type);
+      TREE_STATIC (otable_syms_decl) = 1;
+      TREE_CONSTANT (otable_syms_decl) = 1;
+      pushdecl (otable_syms_decl);
+    }
   
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
   /* This isn't exactly true, but it is what we have in the source.
