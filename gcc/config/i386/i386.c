@@ -9920,8 +9920,48 @@ ix86_split_sse_movcc (rtx operands[])
   mode = GET_MODE (dest);
   vmode = GET_MODE (scratch);
 
-  emit_insn (gen_rtx_SET (VOIDmode, dest, cmp));
+  /* We need to make sure that the TRUE and FALSE operands are out of the
+     way of the destination.  Marking the destination earlyclobber doesn't
+     work, since we want matching constraints for the actual comparison, so
+     at some point we always wind up having to do a copy ourselves here.
+     We very much prefer the TRUE value to be in SCRATCH.  If it turns out
+     that FALSE overlaps DEST, then we invert the comparison so that we
+     still only have to do one move.  */
+  if (rtx_equal_p (op_false, dest))
+    {
+      enum rtx_code code;
 
+      if (rtx_equal_p (op_true, dest))
+	{
+	  /* ??? Really ought not happen.  It means some optimizer managed
+	     to prove the operands were identical, but failed to fold the
+	     conditional move to a straight move.  Do so here, because 
+	     otherwise we'll generate incorrect code.  And since they're
+	     both already in the destination register, nothing to do.  */
+	  return;
+	}
+
+      x = gen_rtx_REG (mode, REGNO (scratch));
+      emit_move_insn (x, op_false);
+      op_false = op_true;
+      op_true = x;
+
+      code = GET_CODE (cmp);
+      code = reverse_condition_maybe_unordered (code);
+      cmp = gen_rtx_fmt_ee (code, mode, XEXP (cmp, 0), XEXP (cmp, 1));
+    }
+  else if (op_true == CONST0_RTX (mode))
+    ;
+  else if (op_false == CONST0_RTX (mode) && !rtx_equal_p (op_true, dest))
+    ;
+  else
+    {
+      x = gen_rtx_REG (mode, REGNO (scratch));
+      emit_move_insn (x, op_true);
+      op_true = x;
+    }
+
+  emit_insn (gen_rtx_SET (VOIDmode, dest, cmp));
   dest = simplify_gen_subreg (vmode, dest, mode, 0);
 
   if (op_false == CONST0_RTX (mode))
