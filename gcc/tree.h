@@ -2014,6 +2014,10 @@ struct tree_binfo GTY (())
    writing debugging information about vfield and vbase decls for C++.  */
 #define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.vindex)
 
+/* For VAR_DECL, this is set to the variable we were split from, due to
+   optimization. */
+#define DECL_DEBUG_ALIAS_OF(NODE) (DECL_CHECK (NODE)->decl.vindex)
+
 /* Every ..._DECL node gets a unique number.  */
 #define DECL_UID(NODE) (DECL_CHECK (NODE)->decl.uid)
 
