@@ -149,6 +149,16 @@ if test $gcc_cv_header_inttypes_h = yes; then
   AC_DEFINE(HAVE_INTTYPES_H)
 fi
 
+AC_CHECK_FUNCS(strerror)
+AC_CHECK_FUNCS(putenv)
+AC_CHECK_FUNCS(popen)
+AC_CHECK_FUNCS(vprintf)
+AC_CHECK_FUNCS(bcopy)
+AC_CHECK_FUNCS(bzero)
+AC_CHECK_FUNCS(bcmp)
+AC_CHECK_FUNCS(index)
+AC_CHECK_FUNCS(rindex)
+
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
 GCC_NEED_DECLARATION(calloc)
@@ -157,11 +167,6 @@ GCC_NEED_DECLARATION(index)
 GCC_NEED_DECLARATION(rindex)
 
 AC_DECL_SYS_SIGLIST
-
-AC_CHECK_FUNCS(strerror)
-AC_CHECK_FUNCS(putenv)
-AC_CHECK_FUNCS(popen)
-AC_CHECK_FUNCS(vprintf)
 
 # File extensions
 manext='.1'
