@@ -142,14 +142,18 @@ _Unwind_ForcedUnwind_Phase2(struct _Unwind_Exception *exc,
   while (1)
     {
       _Unwind_FrameState fs;
+      int action;
 
       code = uw_frame_state_for (context, &fs);
       if (code != _URC_NO_REASON && code != _URC_END_OF_STACK)
 	return _URC_FATAL_PHASE2_ERROR;
 
       /* Unwind successful.  */
-      stop_code = (*stop) (1, _UA_FORCE_UNWIND | _UA_CLEANUP_PHASE,
-			   exc->exception_class, exc, context, stop_argument);
+      action = _UA_FORCE_UNWIND | _UA_CLEANUP_PHASE;
+      if (code == _URC_END_OF_STACK)
+	action |= _UA_END_OF_STACK;
+      stop_code = (*stop) (1, action, exc->exception_class, exc,
+			   context, stop_argument);
       if (stop_code != _URC_NO_REASON)
 	return _URC_FATAL_PHASE2_ERROR;
 
