@@ -472,10 +472,15 @@ find_basic_blocks (f, nonlocal_label_list)
       /* If we encounter a CALL_INSN, note which exception handler it
 	 might pass control to.
 
+	 Because we do rethrows by loading the address of a label into
+	 __eh_pc and throwing, we need to treat labels as potentially
+	 jumping to exception handlers.
+
 	 If doing asynchronous exceptions, record the active EH handler
 	 for every insn, since most insns can throw.  */
       else if (eh_note
 	       && (asynchronous_exceptions
+		   || code == CODE_LABEL
 		   || (GET_CODE (insn) == CALL_INSN
 		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))))
 	active_eh_handler[INSN_UID (insn)] = XEXP (eh_note, 0);
