@@ -268,8 +268,7 @@ static void is_altivec_return_reg PARAMS ((rtx, void *));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
 static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
 static int easy_vector_constant PARAMS ((rtx));
-static int is_ev64_opaque_type PARAMS ((tree));
-static bool rs6000_spe_vector_types_compatible PARAMS ((tree, tree));
+static bool is_ev64_opaque_type PARAMS ((tree));
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -422,8 +421,8 @@ static const char alt_reg_names[][8] =
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
 
-#undef TARGET_VECTOR_TYPES_COMPATIBLE
-#define TARGET_VECTOR_TYPES_COMPATIBLE  rs6000_spe_vector_types_compatible
+#undef TARGET_VECTOR_OPAQUE_P
+#define TARGET_VECTOR_OPAQUE_P is_ev64_opaque_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13599,35 +13598,17 @@ rs6000_memory_move_cost (mode, class, in)
 
 /* Return true if TYPE is of type __ev64_opaque__.  */
 
-static int
+static bool
 is_ev64_opaque_type (type)
      tree type;
 {
-  return (TYPE_NAME (type)
+  return (TARGET_SPE
+	  && TREE_CODE (type) == VECTOR_TYPE
+	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && DECL_NAME (TYPE_NAME (type))
 	  && strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
 		     "__ev64_opaque__") == 0);
-}
-
-/* Return true if vector type1 can be converted into vector type2.  */
-
-static bool
-rs6000_spe_vector_types_compatible (t1, t2)
-     tree t1;
-     tree t2;
-{
-  if (!TARGET_SPE
-      || TREE_CODE (t1) != VECTOR_TYPE || TREE_CODE (t2) != VECTOR_TYPE)
-    return 0;
-
-  if (TYPE_NAME (t1) || TYPE_NAME (t2))
-    return is_ev64_opaque_type (t1) || is_ev64_opaque_type (t2);
-
-  /* FIXME: We assume V2SI is the opaque type, so we accidentally
-     allow inter conversion to and from V2SI modes.  We could use
-     V1D1, and rewrite <spe.h> accordingly.  */
-  return t1 == V2SI_type_node || t2 == V2SI_type_node;
 }
 
 #include "gt-rs6000.h"

@@ -576,7 +576,8 @@ comptypes (type1, type2)
 
     case VECTOR_TYPE:
       /* The target might allow certain vector types to be compatible.  */
-      val = (*targetm.vector_types_compatible) (t1, t2);
+      val = (*targetm.vector_opaque_p) (t1)
+	|| (*targetm.vector_opaque_p) (t2);
       break;
 
     default:
@@ -4071,7 +4072,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
     }
   /* Some types can interconvert without explicit casts.  */
   else if (codel == VECTOR_TYPE && coder == VECTOR_TYPE
-	   && (*targetm.vector_types_compatible) (type, rhstype))
+	   && ((*targetm.vector_opaque_p) (type)
+	       || (*targetm.vector_opaque_p) (rhstype)))
     return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE 
@@ -5157,6 +5159,9 @@ really_start_incremental_init (type)
 
   if (type == 0)
     type = TREE_TYPE (constructor_decl);
+
+  if ((*targetm.vector_opaque_p) (type))
+    error ("opaque vector types cannot be initialized");
 
   p->type = constructor_type;
   p->fields = constructor_fields;
