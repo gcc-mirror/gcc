@@ -155,37 +155,42 @@ c++.install-normal:
 c++.install-common: installdirs
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
-	    rm -f $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) g++-cross$(exeext) $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
-	    rm -f $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
-	    $(LN) $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
-	    if [ -d $(gcc_tooldir)/bin/. ] ; then \
-	      rm -f $(gcc_tooldir)/bin/g++$(exeext); \
-	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(gcc_tooldir)/bin/g++$(exeext); \
-	      rm -f $(gcc_tooldir)/bin/c++$(exeext); \
-	      $(LN) $(gcc_tooldir)/bin/g++$(exeext) $(gcc_tooldir)/bin/c++$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g++-cross$(exeext) $(DESTDIR)$(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(CXX_CROSS_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GXX_CROSS_NAME)$(exeext) $(CXX_CROSS_NAME)$(exeext) ); \
+	    if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
+	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
+	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
+	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/c++$(exeext); \
+	      ( cd $(DESTDIR)$(gcc_tooldir)/bin && \
+	        $(LN) g++$(exeext) c++$(exeext) ); \
 	    else true; fi; \
 	  else \
-	    rm -f $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) g++$(exeext) $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
-	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
-	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
-	    rm -f $(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
-	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
-	    rm -f $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
-	    $(LN) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
+	    rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
+	    rm -f $(DESTDIR)$(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi ; \
 	  if [ x$(DEMANGLER_PROG) != x ] && [ -x "$(DEMANGLER_PROG)" ]; then \
 	    if [ -f g++-cross$(exeext) ] ; then \
-	      rm -f $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
-	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
-	      chmod a+x $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	      rm -f $(DESTDIR)$(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(DESTDIR)$(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	      chmod a+x $(DESTDIR)$(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
 	    else \
-	      rm -f $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
-	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
-	      chmod a+x $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	      rm -f $(DESTDIR)$(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(DESTDIR)$(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	      chmod a+x $(DESTDIR)$(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
 	    fi ; \
 	  fi ; \
 	fi
@@ -195,25 +200,25 @@ c++.install-info:
 c++.install-man: installdirs $(srcdir)/cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
-	    rm -f $(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext); \
 	  else \
-	    rm -f $(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
 	  fi; \
 	else true; fi
 
 c++.uninstall:
-	-rm -rf $(bindir)/$(CXX_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(CXX_CROSS_NAME)$(exeext)
-	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
-	-rm -rf $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
-	-rm -rf $(man1dir)/$(GXX_INSTALL_NAME)$(man1ext)
-	-rm -rf $(man1dir)/$(GXX_CROSS_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(CXX_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(GXX_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(GXX_CROSS_NAME)$(man1ext)
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

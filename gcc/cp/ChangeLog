@@ -1,3 +1,11 @@
+2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (c++.install-common, c++.install-man)
+	(c++.uninstall): Prepend $(DESTDIR) to destination paths
+	in all (un)installation commands.
+	(c++.install-common): Rewrite $(LN) commands to support
+	DESTDIR with "ln" as well as with "ln -s".
+
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9328
