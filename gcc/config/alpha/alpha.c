@@ -129,6 +129,8 @@ static void alpha_emit_xfloating_libcall
   PARAMS ((const char *, rtx, rtx[], int, rtx));
 static rtx alpha_emit_xfloating_compare
   PARAMS ((enum rtx_code, rtx, rtx));
+static void alpha_output_function_end_prologue
+  PARAMS ((FILE *));
 
 /* Get the number of args of a function in one of two ways.  */
 #ifdef OPEN_VMS
@@ -146,6 +148,9 @@ static rtx alpha_emit_xfloating_compare
 #  undef TARGET_VALID_DECL_ATTRIBUTE
 #  define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
 #endif
+
+#undef TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE alpha_output_function_end_prologue
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5001,8 +5006,8 @@ alpha_start_function (file, fnname, decl)
 
 /* Emit the .prologue note at the scheduled end of the prologue.  */
 
-void
-output_end_prologue (file)
+static void
+alpha_output_function_end_prologue (file)
      FILE *file;
 {
   if (TARGET_OPEN_VMS)

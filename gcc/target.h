@@ -52,6 +52,12 @@ struct gcc_target
     /* Output the assembler code for entry to a function.  */
     void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
 
+    /* Output the assembler code for end of prologue.  */
+    void (* function_end_prologue) PARAMS ((FILE *));
+
+    /* Output the assembler code for start of epilogue.  */
+    void (* function_begin_epilogue) PARAMS ((FILE *));
+
     /* Output the assembler code for function exit.  */
     void (* function_epilogue) PARAMS ((FILE *, HOST_WIDE_INT));
   } asm_out;

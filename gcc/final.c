@@ -546,6 +546,13 @@ default_function_pro_epilogue (file, size)
 {
 }
 
+/* Default target hook that outputs nothing to a stream.  */
+void
+no_asm_to_stream (file)
+     FILE *file ATTRIBUTE_UNUSED;
+{
+}
+
 /* Enable APP processing of subsequent output.
    Used before the output from an `asm' statement.  */
 
@@ -2090,16 +2097,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_PROLOGUE_END:
-#ifdef FUNCTION_END_PROLOGUE
-	  FUNCTION_END_PROLOGUE (file);
-#endif
+	  (*targetm.asm_out.function_end_prologue) (file);	     
 	  profile_after_prologue (file);
 	  break;
 
 	case NOTE_INSN_EPILOGUE_BEG:
-#ifdef FUNCTION_BEGIN_EPILOGUE
-	  FUNCTION_BEGIN_EPILOGUE (file);
-#endif
+	  (*targetm.asm_out.function_begin_epilogue) (file);	     
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:

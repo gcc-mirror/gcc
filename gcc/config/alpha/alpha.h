@@ -1202,10 +1202,6 @@ extern struct alpha_compare alpha_compare;
 #define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
   alpha_end_function(FILE,NAME,DECL)
    
-/* This macro notes the end of the prologue.  */
-
-#define FUNCTION_END_PROLOGUE(FILE)  output_end_prologue (FILE)
-
 /* Output any profiling code before the prologue.  */
 
 #define PROFILE_BEFORE_PROLOGUE 1

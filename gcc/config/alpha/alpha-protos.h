@@ -28,7 +28,6 @@ extern int alpha_pv_save_size PARAMS ((void));
 extern int alpha_using_fp PARAMS ((void));
 extern void alpha_write_verstamp PARAMS ((FILE *));
 extern void alpha_expand_prologue PARAMS ((void));
-extern void output_end_prologue PARAMS ((FILE *));
 extern void alpha_expand_epilogue PARAMS ((void));
 extern void alpha_output_filename PARAMS ((FILE *, const char *));
 extern void alpha_output_lineno PARAMS ((FILE *, int));
