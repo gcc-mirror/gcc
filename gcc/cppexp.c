@@ -48,9 +48,12 @@ struct op
   HOST_WIDEST_INT value; /* The value logically "right" of op.  */
 };
 
-/* There is no "error" token, but we can't get comments in #if, so we can
-   abuse that token type.  */
+/* Token type abuse.  There is no "error" token, but we can't get
+   comments in #if, so we can abuse that token type.  Similarly,
+   create unary plus and minus operators.  */
 #define CPP_ERROR CPP_COMMENT
+#define CPP_UPLUS (CPP_LAST_CPP_OP + 1)
+#define CPP_UMINUS (CPP_LAST_CPP_OP + 2)
 
 /* With -O2, gcc appears to produce nice code, moving the error
    message load and subsequent jump completely out of the main path.  */
@@ -454,10 +457,9 @@ same way as the ultra-low priority end-of-expression dummy operator.
 The exit code checks to see if the operator that caused it is ')', and
 if so outputs an appropriate error message.
 
-The parser assumes all shifted operators require a right operand
-unless the flag NO_R_OPERAND is set, and similarly for NO_L_OPERAND.
-These semantics are automatically checked, any extra semantics need to
-be handled with operator-specific code.  */
+The parser assumes all shifted operators require a left operand unless
+the flag NO_L_OPERAND is set.  These semantics are automatic; any
+extra semantics need to be handled with operator-specific code.  */
 
 #define FLAG_BITS  8
 #define FLAG_MASK ((1 << FLAG_BITS) - 1)
@@ -466,10 +468,8 @@ be handled with operator-specific code.  */
 #define EXTRACT_FLAGS(CNST) ((CNST) & FLAG_MASK)
 
 /* Flags.  */
-#define HAVE_VALUE     (1 << 0)
-#define NO_L_OPERAND   (1 << 1)
-#define NO_R_OPERAND   (1 << 2)
-#define SHORT_CIRCUIT  (1 << 3)
+#define NO_L_OPERAND   (1 << 0)
+#define SHORT_CIRCUIT  (1 << 1)
 
 /* Priority and flag combinations.  */
 #define RIGHT_ASSOC         (1 << FLAG_BITS)
@@ -501,8 +501,8 @@ op_to_prio[] =
   /* NOT */		UNARY_PRIO,
   /* GREATER */		LESS_PRIO,
   /* LESS */		LESS_PRIO,
-  /* PLUS */		UNARY_PRIO,	/* note these two can be unary */
-  /* MINUS */		UNARY_PRIO,	/* or binary */
+  /* PLUS */		PLUS_PRIO,
+  /* MINUS */		PLUS_PRIO,
   /* MULT */		MUL_PRIO,
   /* DIV */		MUL_PRIO,
   /* MOD */		MUL_PRIO,
@@ -525,7 +525,10 @@ op_to_prio[] =
   /* EQ_EQ */		EQUAL_PRIO,
   /* NOT_EQ */		EQUAL_PRIO,
   /* GREATER_EQ */	LESS_PRIO,
-  /* LESS_EQ */		LESS_PRIO
+  /* LESS_EQ */		LESS_PRIO,
+  /* EOF */		FORCE_REDUCE_PRIO,
+  /* UPLUS */		UNARY_PRIO,
+  /* UMINUS */		UNARY_PRIO
 };
 
 #define COMPARE(OP) \
@@ -544,8 +547,7 @@ op_to_prio[] =
   top->unsignedp = unsigned1 | unsigned2;
 #define UNARY(OP) \
   top->value = OP v2; \
-  top->unsignedp = unsigned2; \
-  top->flags |= HAVE_VALUE;
+  top->unsignedp = unsigned2;
 #define SHIFT(PSH, MSH) \
   if (skip_evaluation)  \
     break;		\
@@ -568,8 +570,7 @@ _cpp_parse_expr (pfile)
      There is a stack element for each operator (only),
      and the most recently pushed operator is 'top->op'.
      An operand (value) is stored in the 'value' field of the stack
-     element of the operator that precedes it.
-     In that case the 'flags' field has the HAVE_VALUE flag set.  */
+     element of the operator that precedes it.  */
 
 #define INIT_STACK_SIZE 20
   struct op init_stack[INIT_STACK_SIZE];
@@ -579,6 +580,7 @@ _cpp_parse_expr (pfile)
   int skip_evaluation = 0;
   int result;
   unsigned int lex_count, saw_leading_not;
+  bool want_value = true;
 
   /* Set up detection of #if ! defined().  */
   pfile->mi_ind_cmacro = 0;
@@ -589,8 +591,6 @@ _cpp_parse_expr (pfile)
   top->op = CPP_EOF;
   /* Nifty way to catch missing '('.  */
   top->prio = EXTRACT_PRIO(CLOSE_PAREN_PRIO);
-  /* Avoid missing right operand checks.  */
-  top->flags = NO_R_OPERAND;
 
   for (;;)
     {
@@ -603,38 +603,41 @@ _cpp_parse_expr (pfile)
       lex_count++;
 
       /* If the token is an operand, push its value and get next
-	 token.  If it is an operator, get its priority and flags, and
-	 try to reduce the expression on the stack.  */
+	 token.  If it is an operator, handle some special cases, get
+	 its priority and flags, and try to reduce the expression on
+	 the stack.  */
       switch (op.op)
 	{
 	case CPP_ERROR:
 	  goto syntax_error;
-	push_immediate:
 	case CPP_NUMBER:
 	  /* Push a value onto the stack.  */
-	  if (top->flags & HAVE_VALUE)
+	  if (!want_value)
 	    SYNTAX_ERROR ("missing binary operator");
+	push_immediate:
+	  want_value = false;
 	  top->value = op.value;
 	  top->unsignedp = op.unsignedp;
-	  top->flags |= HAVE_VALUE;
 	  continue;
-
-	case CPP_EOF:	prio = FORCE_REDUCE_PRIO;	break;
 
 	case CPP_NOT:
 	  saw_leading_not = lex_count == 1;
-	  prio = op_to_prio[op.op];
 	  break;
 	case CPP_PLUS:
-	case CPP_MINUS: prio = PLUS_PRIO;  if (top->flags & HAVE_VALUE) break;
-          /* else unary; fall through */
-	default:	prio = op_to_prio[op.op];	break;
+	  if (want_value)
+	    op.op = CPP_UPLUS;
+	  break;
+	case CPP_MINUS:
+	  if (want_value)
+	    op.op = CPP_UMINUS;
+	  break;
+	default:
+	  break;
 	}
 
-      /* Separate the operator's code into priority and flags.  */
-      flags = EXTRACT_FLAGS(prio);
-      prio = EXTRACT_PRIO(prio);
-      if (prio == EXTRACT_PRIO(OPEN_PAREN_PRIO))
+      flags = EXTRACT_FLAGS (op_to_prio[op.op]);
+      prio = EXTRACT_PRIO (op_to_prio[op.op]);
+      if (prio == EXTRACT_PRIO (OPEN_PAREN_PRIO))
 	goto skip_reduction;
 
       /* Check for reductions.  Then push the operator.  */
@@ -645,13 +648,15 @@ _cpp_parse_expr (pfile)
 	  
 	  /* Most operators that can appear on the stack require a
 	     right operand.  Check this before trying to reduce.  */
-	  if ((top->flags & (HAVE_VALUE | NO_R_OPERAND)) == 0)
+	  if (want_value)
 	    {
 	      if (top->op == CPP_OPEN_PAREN)
 		SYNTAX_ERROR ("void expression between '(' and ')'");
-	      else
+	      else if (top->op != CPP_EOF)
 		SYNTAX_ERROR2 ("operator '%s' has no right operand",
 			       op_as_text (pfile, top->op));
+	      else if (op.op != CPP_CLOSE_PAREN)
+		SYNTAX_ERROR ("#if with no expression");
 	    }
 
 	  unsigned2 = top->unsignedp, v2 = top->value;
@@ -682,44 +687,35 @@ _cpp_parse_expr (pfile)
 	    case CPP_MIN:	 MINMAX(<);	break;
 	    case CPP_MAX:	 MINMAX(>);	break;
 
-	    case CPP_PLUS:
-	      if (!(top->flags & HAVE_VALUE))
-		{
-		  /* Can't use UNARY(+) because K+R C did not have unary
-		     plus.  Can't use UNARY() because some compilers object
-		     to the empty argument.  */
-		  top->value = v2;
-		  top->unsignedp = unsigned2;
-		  top->flags |= HAVE_VALUE;
+	    case CPP_UPLUS:
+	      /* Can't use UNARY(+) because K+R C did not have unary
+		 plus.  Can't use UNARY() because some compilers object
+		 to the empty argument.  */
+	      top->value = v2;
+	      top->unsignedp = unsigned2;
+	      if (CPP_WTRADITIONAL (pfile))
+		cpp_error (pfile, DL_WARNING,
+			   "traditional C rejects the unary plus operator");
+	      break;
+	    case CPP_UMINUS:
+	      UNARY(-);
+	      if (!skip_evaluation && (top->value & v2) < 0 && !unsigned2)
+		integer_overflow (pfile);
+	      break;
 
-		  if (CPP_WTRADITIONAL (pfile))
-		    cpp_error (pfile, DL_WARNING,
-			"traditional C rejects the unary plus operator");
-		}
-	      else
-		{
-		  top->value = v1 + v2;
-		  top->unsignedp = unsigned1 | unsigned2;
-		  if (! top->unsignedp && ! skip_evaluation
-		      && ! possible_sum_sign (v1, v2, top->value))
-		    integer_overflow (pfile);
-		}
+	    case CPP_PLUS:
+	      top->value = v1 + v2;
+	      top->unsignedp = unsigned1 | unsigned2;
+	      if (! top->unsignedp && ! skip_evaluation
+		  && ! possible_sum_sign (v1, v2, top->value))
+		integer_overflow (pfile);
 	      break;
 	    case CPP_MINUS:
-	      if (!(top->flags & HAVE_VALUE))
-		{
-		  UNARY(-);
-		  if (!skip_evaluation && (top->value & v2) < 0 && !unsigned2)
-		    integer_overflow (pfile);
-		}
-	      else
-		{ /* Binary '-' */
-		  top->value = v1 - v2;
-		  top->unsignedp = unsigned1 | unsigned2;
-		  if (! top->unsignedp && ! skip_evaluation
-		      && ! possible_sum_sign (top->value, v2, v1))
-		    integer_overflow (pfile);
-		}
+	      top->value = v1 - v2;
+	      top->unsignedp = unsigned1 | unsigned2;
+	      if (! top->unsignedp && ! skip_evaluation
+		  && ! possible_sum_sign (top->value, v2, v1))
+		integer_overflow (pfile);
 	      break;
 	    case CPP_MULT:
 	      top->unsignedp = unsigned1 | unsigned2;
@@ -821,16 +817,17 @@ _cpp_parse_expr (pfile)
       /* Check we have a left operand iff we need one.  */
       if (flags & NO_L_OPERAND)
 	{
-	  if (top->flags & HAVE_VALUE)
+	  if (!want_value)
 	    SYNTAX_ERROR2 ("missing binary operator before '%s'",
 			   op_as_text (pfile, op.op));
 	}
       else
 	{
-	  if (!(top->flags & HAVE_VALUE))
+	  if (want_value)
 	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
 			   op_as_text (pfile, op.op));
 	}
+      want_value = true;
 
       /* Check for and handle stack overflow.  */
       top++;
@@ -868,11 +865,6 @@ _cpp_parse_expr (pfile)
   if (top != stack)
     {
       cpp_error (pfile, DL_ICE, "unbalanced stack in #if");
-      goto syntax_error;
-    }
-  else if (!(top[1].flags & HAVE_VALUE))
-    {
-      SYNTAX_ERROR ("#if with no expression");
     syntax_error:
       result = 0;  /* Return 0 on syntax error.  */
     }
@@ -890,6 +882,11 @@ op_as_text (pfile, op)
      enum cpp_ttype op;
 {
   cpp_token token;
+
+  if (op == CPP_UPLUS)
+    op = CPP_PLUS;
+  else if (op == CPP_UMINUS)
+    op = CPP_MINUS;
 
   token.type = op;
   token.flags = 0;

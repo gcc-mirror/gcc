@@ -46,9 +46,9 @@ typedef struct cpp_callbacks cpp_callbacks;
 struct answer;
 struct file_name_map_list;
 
-/* The first two groups, apart from '=', can appear in preprocessor
-   expressions.  This allows a lookup table to be implemented in
-   _cpp_parse_expr.
+/* The first three groups, apart from '=', can appear in preprocessor
+   expressions (+= and -= are used to indicate unary + and - resp.).
+   This allows a lookup table to be implemented in _cpp_parse_expr.
 
    The first group, to CPP_LAST_EQ, can be immediately followed by an
    '='.  The lexer needs operators ending in '=', like ">>=", to be in
@@ -58,6 +58,7 @@ struct file_name_map_list;
 #define CPP_LAST_EQ CPP_MAX
 #define CPP_FIRST_DIGRAPH CPP_HASH
 #define CPP_LAST_PUNCTUATOR CPP_DOT_STAR
+#define CPP_LAST_CPP_OP CPP_EOF
 
 #define TTYPE_TABLE				\
   OP(CPP_EQ = 0,	"=")			\
@@ -90,8 +91,11 @@ struct file_name_map_list;
   OP(CPP_GREATER_EQ,	">=")			\
   OP(CPP_LESS_EQ,	"<=")			\
 \
+  /* These 3 are special in preprocessor expressions.  */ \
+  TK(CPP_EOF,		SPELL_NONE)		\
   OP(CPP_PLUS_EQ,	"+=")	/* math */	\
   OP(CPP_MINUS_EQ,	"-=")			\
+\
   OP(CPP_MULT_EQ,	"*=")			\
   OP(CPP_DIV_EQ,	"/=")			\
   OP(CPP_MOD_EQ,	"%=")			\
@@ -135,8 +139,7 @@ struct file_name_map_list;
   TK(CPP_COMMENT,	SPELL_NUMBER)	/* Only if output comments.  */ \
                                         /* SPELL_NUMBER happens to DTRT.  */ \
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
-  TK(CPP_PADDING,	SPELL_NONE)	/* Whitespace for cpp0.  */	\
-  TK(CPP_EOF,		SPELL_NONE)	/* End of line or file.  */
+  TK(CPP_PADDING,	SPELL_NONE)	/* Whitespace for cpp0.  */
 
 #define OP(e, s) e,
 #define TK(e, s) e,
