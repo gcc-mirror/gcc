@@ -8609,7 +8609,9 @@ register_dtor_fn (decl)
   cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
   if (flag_use_cxa_atexit)
     {
-      args = tree_cons (NULL_TREE, get_dso_handle_node (), NULL_TREE);
+      args = tree_cons (NULL_TREE, 
+			build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0),
+			NULL_TREE);
       args = tree_cons (NULL_TREE, null_pointer_node, args);
       args = tree_cons (NULL_TREE, cleanup, args);
     }
