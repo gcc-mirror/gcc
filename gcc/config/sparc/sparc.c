@@ -5750,6 +5750,18 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	    abort (); /* shouldn't get here */
 
 	  mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
+
+	  /* ??? We probably should have made the same ABI change in
+	     3.4.0 as the one we made for unions.   The latter was
+	     required by the SCD though, while the former is not
+	     specified, so we favored compatibility and efficiency.
+
+	     Now we're stuck for aggregates larger than 16 bytes,
+	     because OImode vanished in the meantime.  Let's not
+	     try to be unduly clever, and simply follow the ABI
+	     for unions in that case.  */
+	  if (mode == BLKmode)
+	    return function_arg_union_value (bytes, mode, regbase);
 	}
       else if (GET_MODE_CLASS (mode) == MODE_INT
 	       && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
