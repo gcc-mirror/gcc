@@ -1,5 +1,6 @@
 Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/execute/20000412-5.c: New test.
 	* g77.f-torture/compile/20000412-1.f: New test.
 	* gcc.c-torture/execute/20000412-4.c: New test.
 	* gcc.c-torture/compile/20000412-2.c: New test.
