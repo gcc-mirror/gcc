@@ -5046,29 +5046,6 @@ package body Exp_Ch3 is
          return
            Make_Null (Loc);
 
-      --  We initialize modular packed bit arrays to zero, to make sure that
-      --  unused bits are zero, as required (see spec of Exp_Pakd). Also note
-      --  that this improves gigi code, since the value tracing knows that
-      --  all bits of the variable start out at zero. The value of zero has
-      --  to be unchecked converted to the proper array type.
-
-      elsif Is_Bit_Packed_Array (T) then
-         declare
-            PAT : constant Entity_Id := Packed_Array_Type (T);
-            Nod : Node_Id;
-
-         begin
-            pragma Assert (Is_Modular_Integer_Type (PAT));
-
-            Nod :=
-              Make_Unchecked_Type_Conversion (Loc,
-                Subtype_Mark => New_Occurrence_Of (T, Loc),
-                Expression   => Make_Integer_Literal (Loc, 0));
-
-            Set_Etype (Expression (Nod), PAT);
-            return Nod;
-         end;
-
       --  No other possibilities should arise, since we should only be
       --  calling Get_Simple_Init_Val if Needs_Simple_Initialization
       --  returned True, indicating one of the above cases held.
@@ -5586,8 +5563,6 @@ package body Exp_Ch3 is
 
       elsif Is_Access_Type (T)
         or else (Init_Or_Norm_Scalars and then (Is_Scalar_Type (T)))
-        or else (Is_Bit_Packed_Array (T)
-                   and then Is_Modular_Integer_Type (Packed_Array_Type (T)))
       then
          return True;
 
