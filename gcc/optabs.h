@@ -197,6 +197,13 @@ enum optab_index
   /* Conditional add instruction.  */
   OTI_addcc,
 
+  /* Set specified field of vector operand.  */
+  OTI_vec_set,
+  /* Extract specified field of vector operand.  */
+  OTI_vec_extract,
+  /* Initialize vector operand.  */
+  OTI_vec_init,
+
   OTI_MAX
 };
 
@@ -280,6 +287,10 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define cstore_optab (optab_table[OTI_cstore])
 #define push_optab (optab_table[OTI_push])
 #define addcc_optab (optab_table[OTI_addcc])
+
+#define vec_set_optab (optab_table[OTI_vec_set])
+#define vec_extract_optab (optab_table[OTI_vec_extract])
+#define vec_init_optab (optab_table[OTI_vec_init])
 
 /* Conversion optabs have their own table and indexes.  */
 enum convert_optab_index

@@ -4710,6 +4710,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       int const_bounds_p;
       HOST_WIDE_INT minelt = 0;
       HOST_WIDE_INT maxelt = 0;
+      int icode = 0;
+      rtx *vector = NULL;
+      int elt_size = 0;
+      unsigned n_elts = 0;
 
       /* Vectors are like arrays, but the domain is stored via an array
 	 type indirectly.  */
@@ -4720,6 +4724,22 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	     it always will.  */
 	  domain = TYPE_DEBUG_REPRESENTATION_TYPE (type);
 	  domain = TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (domain)));
+	  if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
+	    {
+	      enum machine_mode mode = GET_MODE (target);
+
+	      icode = (int) vec_init_optab->handlers[mode].insn_code;
+	      if (icode != CODE_FOR_nothing)
+		{
+		  unsigned int i;
+
+		  elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
+		  n_elts = (GET_MODE_SIZE (mode) / elt_size);
+		  vector = alloca (n_elts);
+		  for (i = 0; i < n_elts; i++)
+		    vector [i] = CONST0_RTX (GET_MODE_INNER (mode));
+		}
+	    }
 	}
 
       const_bounds_p = (TYPE_MIN_VALUE (domain)
@@ -4784,7 +4804,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    need_to_clear = 1;
 	}
 
-      if (need_to_clear && size > 0)
+      if (need_to_clear && size > 0 && !vector)
 	{
 	  if (! cleared)
 	    {
@@ -4834,6 +4854,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      struct nesting *loop;
 	      HOST_WIDE_INT lo, hi, count;
 	      tree position;
+
+	      if (vector)
+		abort ();
 
 	      /* If the range is constant and "small", unroll the loop.  */
 	      if (const_bounds_p
@@ -4926,6 +4949,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    {
 	      tree position;
 
+	      if (vector)
+		abort ();
+
 	      if (index == 0)
 		index = ssize_int (1);
 
@@ -4943,6 +4969,16 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      xtarget = adjust_address (xtarget, mode, 0);
 	      store_expr (value, xtarget, 0);
 	    }
+	  else if (vector)
+	    {
+	      int pos;
+
+	      if (index != 0)
+		pos = tree_low_cst (index, 0) - minelt;
+	      else
+		pos = i;
+	      vector[pos] = expand_expr (value, NULL_RTX, VOIDmode, 0);
+	    }
 	  else
 	    {
 	      if (index != 0)
@@ -4958,11 +4994,16 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  target = copy_rtx (target);
 		  MEM_KEEP_ALIAS_SET_P (target) = 1;
 		}
-
-	      store_constructor_field (target, bitsize, bitpos, mode, value,
-				       type, cleared, get_alias_set (elttype));
-
+	      else
+		store_constructor_field (target, bitsize, bitpos, mode, value,
+					 type, cleared, get_alias_set (elttype));
 	    }
+	}
+      if (vector)
+	{
+	  emit_insn (GEN_FCN (icode) (target,
+				      gen_rtx_PARALLEL (GET_MODE (target),
+						        gen_rtvec_v (n_elts, vector))));
 	}
     }
 
