@@ -1,3 +1,12 @@
+2004-09-29  Per Bothner  <per@bothner.com>
+
+	* java-tree.h:  Redefine some macros and add soem declaration
+	to handle the USE_MAPPED_LOCATION case.
+	* parse.h (EXPR_WFL_QUALIFICATION):  Use operand 1, not 2.
+	* java-tree.h (EXPR_WFL_FILENAME_NODE):  Use operand 2, not 1.
+	* java-tree.def (EXPR_WITH_FILE_LOCATION): Only need two operands in
+	USE_MAPPED_LOCATION case, since EXPR_WFL_FILENAME_NODE is gone.
+
 2004-09-29  Andrew Haley  <aph@redhat.com>
 
 	PR java/17007
