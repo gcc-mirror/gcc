@@ -1,3 +1,11 @@
+2003-02-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (defineClass(byte[],int,int)):
+	Deprecate.
+	* java/lang/Thread.java (resume): Deprecate.
+	* java/io/ByteArrayOutputStream.java (toString(int)): Fixed typo
+	in @deprecated.
+
 2003-02-23  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

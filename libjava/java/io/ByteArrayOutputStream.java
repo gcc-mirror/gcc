@@ -1,5 +1,5 @@
 /* BufferedReader.java
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -190,7 +190,7 @@ public class ByteArrayOutputStream extends OutputStream
    * @return A <code>String</code> containing the data written to this
    * stream so far
    *
-   * @deprecrated
+   * @deprecated
    */
   public String toString (int hibyte)
   {

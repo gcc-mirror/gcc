@@ -297,6 +297,7 @@ public class Thread implements Runnable
    * Resume a suspended thread.
    *
    * @see #resume()
+   * @deprecated pointless, since suspend is deprecated
    */
   public final native void resume ();
 
