@@ -24,10 +24,10 @@ esac
 find $topdir \( -name Repository -o -name Root \) -print | while read f; do
 
 case "$f" in
-*/CVS/Root) echo $root > $f ;;
+*/CVS/Root) echo $root > "$f" ;;
 */CVS/Repository)
   r=${module}${f#${topdir}}
-  echo > $f $rep/${r%/CVS/Repository}
+  echo > "$f" $rep/${r%/CVS/Repository}
   ;;
 esac
 

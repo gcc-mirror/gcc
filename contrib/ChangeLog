@@ -1,3 +1,7 @@
+2000-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* newcvsroot: Handle filenames that contain spaces.
+
 2000-06-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* test_summary: In generated script, use cat <<'EOF' not cat <<\EOF.
