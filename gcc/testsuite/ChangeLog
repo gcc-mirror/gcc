@@ -1,3 +1,7 @@
+2004-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* README.QMTEST: Fix out-of-date link.
+
 2004-09-03  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/16579
