@@ -1,3 +1,8 @@
+2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* pt.c (tsubst_expr) <case ASM_EXPR>: Look passed the
+	CLEANUP_POINT_EXPR to get the asm expression.
+
 2004-10-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (ICS_USER_FLAG): Remove comment about obsolete flag.

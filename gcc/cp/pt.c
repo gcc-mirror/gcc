@@ -8058,7 +8058,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 tsubst_expr (ASM_OUTPUTS (t), args, complain, in_decl),
 	 tsubst_expr (ASM_INPUTS (t), args, complain, in_decl), 
 	 tsubst_expr (ASM_CLOBBERS (t), args, complain, in_decl));
-      ASM_INPUT_P (tmp) = ASM_INPUT_P (t);
+      {
+	tree asm_expr = tmp;
+	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)
+	  asm_expr = TREE_OPERAND (asm_expr, 0);
+	ASM_INPUT_P (asm_expr) = ASM_INPUT_P (t);
+      }
       break;
 
     case TRY_BLOCK:
