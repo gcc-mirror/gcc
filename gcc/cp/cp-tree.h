@@ -841,7 +841,6 @@ extern struct saved_scope *scope_chain;
 
 struct language_function
 {
-  tree x_named_labels;
   tree x_ctor_label;
   tree x_dtor_label;
   tree x_base_init_list;
@@ -867,7 +866,8 @@ struct language_function
 
   struct stmt_tree x_stmt_tree;
 
-  struct named_label_list *x_named_label_uses;
+  struct named_label_use_list *x_named_label_uses;
+  struct named_label_list *x_named_labels;
   struct binding_level *bindings;
 
   const char *cannot_inline;
@@ -3892,6 +3892,7 @@ extern void set_class_shadows			PARAMS ((tree));
 extern void begin_scope                         PARAMS ((scope_kind));
 extern void finish_scope                        PARAMS ((void));
 extern void note_level_for_for			PARAMS ((void));
+extern void note_level_for_eh			PARAMS ((void));
 extern void resume_level			PARAMS ((struct binding_level *));
 extern void delete_block			PARAMS ((tree));
 extern void insert_block			PARAMS ((tree));
@@ -3930,6 +3931,7 @@ extern tree implicitly_declare			PARAMS ((tree));
 extern tree lookup_label			PARAMS ((tree));
 extern tree declare_local_label                 PARAMS ((tree));
 extern tree define_label			PARAMS ((const char *, int, tree));
+extern void check_goto				PARAMS ((tree));
 extern void push_switch				PARAMS ((void));
 extern void pop_switch				PARAMS ((void));
 extern void define_case_label			PARAMS ((void));

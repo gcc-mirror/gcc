@@ -1,3 +1,31 @@
+2000-05-26  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	Fix goto checking.
+	* cp-tree.h (struct language_function): x_named_labels is now
+	a struct named_label_list*.
+	* decl.c (struct named_label_use_list): Renamed from...
+	(struct named_label_list): ...this.  New struct.
+	(push_binding_level): Don't set eh_region.
+	(note_level_for_eh): New fn.
+	(pop_label): Take label and old value directly.
+	(pop_labels): Adjust for new named_labels format.
+	(lookup_label): Likewise.
+	(poplevel): Note characteristics of a binding level containing a
+	named label.  Mess with named label lists earlier.
+	(mark_named_label_lists): New fn.
+	(mark_lang_function): Call it.
+	(use_label): New fn, split out from...
+	(make_label_decl): ...here.  Don't call it.
+	(decl_jump_unsafe, check_previous_goto, check_previous_goto_1, 
+	check_previous_gotos): New fns,	split out from...
+	(define_label): ...here.
+	(check_switch_goto): New fn.
+	(define_case_label): Call it.
+	(check_goto): New fn.
+	* semantics.c (finish_goto_stmt): Call it and use_label.
+	(begin_compound_stmt): If we're a try block, call note_level_for_eh.
+	(expand_stmt): Never pass 1 as DONT_JUMP_IN to expand_end_bindings.
+
 2000-05-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vtable_entry_ref): Correct usage of
