@@ -1,3 +1,8 @@
+2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+        * config.gcc: Don't use negated character class in shell case
+        clause.
+
 2003-08-29  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin_constant_p): Check cse_not_expected here,
