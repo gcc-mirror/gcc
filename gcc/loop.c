@@ -1257,7 +1257,9 @@ combine_movables (movables, nregs)
 	bzero (matched_regs, nregs);
 	matched_regs[regno] = 1;
 
-	for (m1 = movables; m1; m1 = m1->next)
+	/* We want later insns to match the first one.  Don't make the first
+	   one match any later ones.  So start this loop at m->next.  */
+	for (m1 = m->next; m1; m1 = m1->next)
 	  if (m != m1 && m1->match == 0 && n_times_used[m1->regno] == 1
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
