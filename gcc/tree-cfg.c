@@ -937,6 +937,7 @@ group_case_labels (void)
 	  tree labels = SWITCH_LABELS (stmt);
 	  int old_size = TREE_VEC_LENGTH (labels);
 	  int i, j, new_size = old_size;
+	  tree default_label = TREE_VEC_ELT (labels, old_size - 1);
 
 	  /* Look for possible opportunities to merge cases.
 	     Ignore the last element of the label vector because it
@@ -950,8 +951,18 @@ group_case_labels (void)
 	      if (! base_case)
 		abort ();
 
-	      type = TREE_TYPE (CASE_LOW (base_case));
 	      base_label = CASE_LABEL (base_case);
+
+	      /* Discard cases that have the same destination as the
+		 default case.  */
+	      if (base_label == default_label)
+		{
+		  TREE_VEC_ELT (labels, i) = NULL_TREE;
+		  i++;
+		  continue;
+		}
+
+	      type = TREE_TYPE (CASE_LOW (base_case));
 	      base_high = CASE_HIGH (base_case) ?
 		CASE_HIGH (base_case) : CASE_LOW (base_case);
 
