@@ -1,3 +1,17 @@
+2000-10-11  Michael Meeks  <mmeeks@gnu.org>
+            Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (check_modify_expr): New function.
+	(build_modify_expr): Call it if warn_sequence_point.
+	* c-decl.c (warn_sequence_point): New variable.
+	(c_decode_option): Handle -Wsequence-point and
+	-Wno-sequence-point.  Enable -Wsequence-point as part of -Wall.
+	* c-tree.h (warn_sequence_point): Declare.
+	* invoke.texi (-Wsequence-point): Document.
+	* toplev.c (documented_lang_options): Add -Wsequence-point and
+	-Wno-sequence-point.
+	Original work by Michael Meeks, 16 Jun 1998.
+
 Wed Oct 11 06:15:41 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (get_narrower): Don't look at precision of field if
