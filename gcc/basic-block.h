@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -692,6 +692,7 @@ extern conflict_graph conflict_graph_compute
 extern bool mark_dfs_back_edges		PARAMS ((void));
 extern void update_br_prob_note		PARAMS ((basic_block));
 extern void fixup_abnormal_edges	PARAMS ((void));
+extern bool control_flow_insn_p		PARAMS ((rtx));
 
 /* In dominance.c */
 

@@ -1,3 +1,12 @@
+2003-01-10  Josef Zlomek <zlomj9am@artax.karlin.mff.cuni.cz>
+
+	* Makefile.in (optabs.o): Add dependencies on basic-block.h and
+	hard-reg-set.h.
+	* basic-block.h (control_flow_insn_p): Fuction was exported.
+	* cfgbuild.c (control_flow_insn_p): Fuction was made non-static.
+	* optabs.c (emit_libcall_block): Emit REG_LIBCALL and REG_RETVAL
+	notes only when the region is contained in a single basic block.
+
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR inline-asm/8832
