@@ -1669,7 +1669,9 @@ const_section ()                                                   \
 #define ASM_OUTPUT_INT(FILE, EXP)    asm_output_long(FILE,INTVAL(EXP))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_BYTE(FILE,VALUE)    ASM_OUTPUT_CHAR(FILE,VALUE)
+#define ASM_OUTPUT_BYTE(FILE,VALUE) \
+  fprintf ((FILE), "\tint %ld\n", (long)(VALUE))
+
 
 /* This is how we output a 'c' character string. For the 16xx
    assembler we have to do it one letter at a time */
