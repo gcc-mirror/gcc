@@ -51,6 +51,8 @@ char *alpha_function_name;
 /* Nonzero if the current function needs gp.  */
 
 int alpha_function_needs_gp;
+
+extern char *version_string;
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
 
@@ -270,15 +272,17 @@ input_operand (op, mode)
   return 0;
 }
 
-/* Return 1 if OP is a SYMBOL_REF for the current function.  */
+/* Return 1 if OP is a SYMBOL_REF for a function known to be in this
+   file.  */
 
 int
-current_function_operand (op, mode)
+current_file_function_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return (GET_CODE (op) == SYMBOL_REF
-	  && ! strcmp (XSTR (op, 0), current_function_name));
+	  && (SYMBOL_REF_FLAG (op)
+	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
@@ -981,17 +985,6 @@ print_operand (file, x, code)
 	}
       break;
 
-    case 'F':
-      /* Write the symbol; if the current function uses GP, write a
-	 modified version.  */
-      if (GET_CODE (x) != SYMBOL_REF)
-	output_operand_lossage ("invalid %%F value");
-
-      output_addr_const (file, x);
-      if (alpha_function_needs_gp)
-	fprintf (file, "..ng");
-      break;
-
     case 'A':
       /* Write "_u" for unaligned access.  */
       if (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == AND)
@@ -1026,94 +1019,35 @@ alpha_builtin_saveregs (arglist)
   int stdarg = (TYPE_ARG_TYPES (fntype) != 0
 		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 		    != void_type_node));
-  int nregs = current_function_args_info;
 
-  /* If we have a variable-sized argument already, we will have used all
-     the registers, so set up to indicate that.  */
+  /* Compute the current position into the args, taking into account
+     both registers and memory.  */
 
-  if (GET_CODE (current_function_arg_offset_rtx) != CONST_INT)
-    {
-      argsize = plus_constant (current_function_arg_offset_rtx,
-			       (6 * UNITS_PER_WORD + UNITS_PER_WORD - 1));
-      argsize = expand_shift (RSHIFT_EXPR, Pmode, argsize,
-			      build_int_2 (3, 0), argsize, 0);
-    }
-  else
-    {
-      /* Compute the number of args in memory and number of arguments already
-	 processed.  Then adjust the number of registers if this is stdarg.  */
-      int memargs = ((INTVAL (current_function_arg_offset_rtx)
-		      + UNITS_PER_WORD - 1)
-		     / UNITS_PER_WORD);
-
-      argsize = GEN_INT (MIN (nregs, 6) + memargs);
-
-      if (nregs <= 6)
-	nregs -= stdarg;
-    }
+  argsize = plus_constant (current_function_arg_offset_rtx,
+			   current_function_args_info * UNITS_PER_WORD);
 
   /* Allocate the va_list constructor */
-  block = assign_stack_local (BLKmode, 4 * UNITS_PER_WORD, BITS_PER_WORD);
+  block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
-  /* Store the argsize as the __va_arg member.  */
-  emit_move_insn (change_address (block, DImode, XEXP (block, 0)),
-		  argsize);
+  /* Store the address of the first integer register in the
+     __va_base member.   */
 
-  /* Store the arg pointer in the __va_stack member.  */
+  emit_move_insn (change_address (block, DImode, XEXP (block, 0)),
+		  force_operand (plus_constant (virtual_incoming_args_rtx,
+						-6 * UNITS_PER_WORD),
+				 NULL_RTX));
+
+  /* Store the argsize as the __va_offset member.  */
   emit_move_insn (change_address (block, Pmode,
 				  plus_constant (XEXP (block, 0),
 						 UNITS_PER_WORD)),
-		  virtual_incoming_args_rtx);
-
-  /* Allocate the integer register space, and store it as the
-     __va_ireg member.  */
-  addr = assign_stack_local (BLKmode, 6 * UNITS_PER_WORD, -1);
-  MEM_IN_STRUCT_P (addr) = 1;
-  RTX_UNCHANGING_P (addr) = 1;
-  RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
-
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 2 * UNITS_PER_WORD)),
-		  copy_to_reg (XEXP (addr, 0)));
-
-  /* Now store the incoming integer registers.  */
-  if (nregs < 6)
-      move_block_from_reg
-	(16 + nregs,
-	 change_address (addr, Pmode,
-			 plus_constant (XEXP (addr, 0),
-					nregs * UNITS_PER_WORD)),
-	 6 - nregs);
-
-  /* Allocate the FP register space, and store it as the
-     __va_freg member.  */
-  addr = assign_stack_local (BLKmode, 6 * UNITS_PER_WORD, -1);
-  MEM_IN_STRUCT_P (addr) = 1;
-  RTX_UNCHANGING_P (addr) = 1;
-  RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
-
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 3 * UNITS_PER_WORD)),
-		  copy_to_reg (XEXP (addr, 0)));
-
-  /* Now store the incoming floating-point registers.   If we are not
-     to use the floating-point registers, store the integer registers
-     in those locations too.  */
-  if (nregs < 6)
-      move_block_from_reg
-	(16 + 32 * (TARGET_FPREGS != 0) + nregs,
-	 change_address (addr, Pmode,
-			 plus_constant (XEXP (addr, 0),
-					nregs * UNITS_PER_WORD)),
-	 6 - nregs);
+		  force_operand (argsize, NULL_RTX));
 
   /* Return the address of the va_list constructor, but don't put it in a
-     register.  This fails when not optimizing and produces worse code when
-     optimizing.  */
+     register.  Doing so would fail when not optimizing and produce worse
+     code when optimizing.  */
   return XEXP (block, 0);
 }
 
@@ -1132,77 +1066,15 @@ alpha_sa_size ()
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
       size++;
 
+  /* If we are going to need a frame, we MUST save $26.  */
+  if (! regs_ever_live[26]
+      && (size != 0
+	  || get_frame_size () != 0
+	  || current_function_outgoing_args_size != 0
+	  || current_function_pretend_args_size != 0))
+    size++;
+
   return size * 8;
-}
-
-/* Return non-zero if this function needs gp.  It does if it has
-   an LDSYM insn.  */
-
-int
-alpha_need_gp ()
-{
-  rtx insn;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& GET_CODE (PATTERN (insn)) != USE
-	&& GET_CODE (PATTERN (insn)) != CLOBBER
-	&& get_attr_type (insn) == TYPE_LDSYM)
-      return 1;
-
-  return 0;
-}
-
-/* Return 1 if GP is dead at after INSN.  */
-
-int
-alpha_gp_dead_after (insn)
-     rtx insn;
-{
-  int jump_count = 0;
-  int found = 0;
-  rtx p;
-
-  /* If we aren't optimizing, don't do this optimization.  More importantly,
-     JUMP_LABEL isn't properly set when not optimizing.  */
-
-  if (optimize == 0)
-    return 0;
-
-  /* If we are followed by a BARRIER, we don't return.  */
-  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == BARRIER)
-    return 1;
-
-  /* Otherwise search for a use of GP before a return.  */
-
-  for (p = next_active_insn (insn); p; p = next_active_insn (p))
-    {
-      if (get_attr_type (p) == TYPE_LDSYM
-	  || get_attr_type (p) == TYPE_JSR)
-	{
-	  found = 1;
-	  break;
-	}
-
-      if (GET_CODE (p) == JUMP_INSN)
-	{
-	  if (GET_CODE (PATTERN (p)) == RETURN)
-	    break;
-
-	  if (! simplejump_p (p) || jump_count++ > 10)
-	    {
-	      found = 1;
-	      break;
-	    }
-
-	  p = JUMP_LABEL (p);
-	}
-    }
-
-  /* Restore any operands destroyed by the attribute calls above.  */
-  insn_extract (insn);
-
-  return ! found;
 }
 
 /* Return 1 if this function can directly return via $26.  */
@@ -1215,6 +1087,27 @@ direct_return ()
 	  && current_function_pretend_args_size == 0);
 }
 
+/* Write a version stamp.  Don't write anything if we are running as a
+   cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
+
+#ifndef CROSS_COMPILE
+#include <stamp.h>
+#endif
+
+void
+alpha_write_verstamp (file)
+     FILE *file;
+{
+#ifdef MS_STAMP
+  char *p;
+
+  fprintf (file, "\t.verstamp %d %d ", MS_STAMP, LS_STAMP);
+  for (p = version_string; *p != ' ' && *p != 0; p++)
+    fprintf (file, "%c", *p == '.' ? ' ' : *p);
+  fprintf (file, "\n");
+#endif
+}
+
 /* Write function prologue.  */
 
 void
@@ -1225,29 +1118,33 @@ output_prolog (file, size)
   HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  int reg_offset = current_function_outgoing_args_size;
+  int reg_offset = size + current_function_outgoing_args_size;
+  rtx insn;
   int start_reg_offset = reg_offset;
   unsigned reg_mask = 0;
   int i;
 
-  /* If we need a GP, load it first.  */
-  alpha_function_needs_gp = alpha_need_gp ();
+  /* If we need a GP (we have a LDSYM insn or a CALL_INSN) and we are not
+     a static function), load it first.  */
+
+  alpha_function_needs_gp = 0;
+  if (TREE_PUBLIC (current_function_decl))
+    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      if ((GET_CODE (insn) == CALL_INSN)
+	  || (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	      && GET_CODE (PATTERN (insn)) != USE
+	      && GET_CODE (PATTERN (insn)) != CLOBBER
+	      && get_attr_type (insn) == TYPE_LDSYM))
+	{
+	  alpha_function_needs_gp = 1;
+	  break;
+	}
 
   if (alpha_function_needs_gp)
-    {
-      rtx insn;
+    fprintf (file, "\tldgp $29,0($27)\n");
 
-      fprintf (file, "\tldgp $29,0($27)\n");
-
-      /* If we have a recursive call, put a special label here.  */
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == CALL_INSN
-	    && get_attr_type (insn) != TYPE_JSR)
-	  {
-	    fprintf (file, "%s..ng:\n", current_function_name);
-	    break;
-	  }
-    }
+  /* Put a label after the GP load so we can enter the function at it.  */
+  fprintf (file, "%s..ng:\n", alpha_function_name);
 
   /* Adjust the stack by the frame size.  If the frame size is > 32768
      bytes, we have to load it into a register first and then subtract
@@ -1290,30 +1187,25 @@ output_prolog (file, size)
 	}
 
       fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
-
       fprintf (file, "\tsubq $30,$28,$30\n");
     }
   else if (frame_size)
     fprintf (file, "\tlda $30,-%d($30)\n", frame_size);
 
-  /* Write out the .frame line.  If we need a frame pointer, we use
-     an offset of zero.  */
-
-  if (frame_pointer_needed)
-    fprintf (file, "\t.frame $15,0,$26\n");
-  else
-    fprintf (file, "\t.frame $30,%d,$26\n", frame_size);
-
+  /* Describe our frame.  */
+  fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
+	   frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM,
+	   frame_size, current_function_pretend_args_size);
     
-  /* Save register 26 if it is used.  */
-  if (regs_ever_live[26])
+  /* Save register 26 if we have a frame.  */
+  if (frame_size != 0)
     {
       reg_mask |= 1 << 26;
       fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
       reg_offset += 8;
     }
 
-  /* Now save any other used register that are required to be saved.  */
+  /* Now save any other used integer registers required to be saved.  */
   for (i = 0; i < 32; i++)
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i] && i != 26)
       {
@@ -1343,21 +1235,13 @@ output_prolog (file, size)
   if (reg_mask)
     fprintf (file, "\t.fmask 0x%x,%d\n", reg_mask, start_reg_offset);
 
-  /* If we need a frame pointer, set it to the value of incoming stack
-     which we compute by adding back the frame size pointer.  Because we
-     can subtract one more than we can add, we have to special-case
-     frame sizes of 32K.  Note that there is no restriction that the frame
-     pointer be updated in one instruction.  */
-
+  /* If we need a frame pointer, set it from the stack pointer.  Note that
+     this must always be the last instruction in the prologue.  */
   if (frame_pointer_needed)
-    {
-      if (frame_size == 32768)
-	fprintf (file, "\tlda $15,16384($30)\n\tlda $15,16384($15)\n");
-      else if (frame_size > 32768)
-	fprintf (file, "\taddq $30,$28,$15\n");
-      else
-	fprintf (file, "\tlda $15,%d($30)\n", frame_size);
-    }
+    fprintf (file, "\tbis $30,$30,$15\n");
+
+  /* End the prologue and say if we used gp.  */
+  fprintf (file, "\t.prologue %d\n", alpha_function_needs_gp);
 }
 
 /* Write function epilogue.  */
@@ -1371,8 +1255,7 @@ output_epilog (file, size)
   HOST_WIDE_INT frame_size = ((size + current_function_outgoing_args_size
 			       + current_function_pretend_args_size
 			       + alpha_sa_size () + 15) & ~15);
-  int reg_offset = current_function_outgoing_args_size;
-  int reg_offset_from = STACK_POINTER_REGNUM;
+  int reg_offset = size + current_function_outgoing_args_size;
   int i;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
@@ -1381,72 +1264,32 @@ output_epilog (file, size)
     insn = prev_nonnote_insn (insn);
   if (insn == 0 || GET_CODE (insn) != BARRIER)
     {
-      /* If we have a frame pointer, we restore the registers from an
-	 offset from it, assuming that we can reach the offset.  If not,
-	 we have to compute the address using a scratch register.  This is
-	 messy, but should not be common.  We have to copy the frame
-	 pointer elsewhere here since we will be restoring it before we can
-	 use it to restore the stack pointer.  We use $25.  */
+      int fp_offset;
 
+      /* If we have a frame pointer, restore SP from it.  */
       if (frame_pointer_needed)
-	{
-	  fprintf (file, "\tbis $15,$15,$25\n");
-
-	  if (frame_size < 32768)
-	    reg_offset -= frame_size, reg_offset_from = 25;
-	  else
-	    {
-	      HOST_WIDE_INT low
-		= (frame_size & 0xffff) - 2 * (frame_size & 0x8000);
-	      HOST_WIDE_INT tmp1 = frame_size - low;
-	      HOST_WIDE_INT high
-		= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-	      HOST_WIDE_INT tmp2 = frame_size - (high << 16) - low;
-	      int extra = 0;
-	      int in_reg = 31;
-
-	      if (tmp2)
-		{
-		  extra = 0x4000;
-		  tmp1 -= 0x40000000;	
-		  high = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-		}
-
-	      if (low != 0)
-		{
-		  fprintf (file, "\tlda $28,%d($%d)\n", low, in_reg);
-		  in_reg = 28;
-		}
-
-	      if (extra)
-		{
-		  fprintf (file, "\tldah $28,%d($%d)\n", extra, in_reg);
-		  in_reg = 28;
-		}
-
-	      fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
-
-	      fprintf (file, "\tsubq $25,$28,$28\n");
-
-	      reg_offset_from = 28;
-	    }
-	}
+	fprintf (file, "\tbis $15,$15,$30\n");
 
       /* Restore all the registers, starting with the return address
 	 register.  */
-      if (regs_ever_live[26])
+      if (frame_size != 0)
 	{
-	  fprintf (file, "\tldq $26,%d($%d)\n", reg_offset, reg_offset_from);
+	  fprintf (file, "\tldq $26,%d($30)\n", reg_offset);
 	  reg_offset += 8;
 	}
 
-      /* Now restore any other used register that that we saved.  */
+      /* Now restore any other used integer registers that that we saved,
+	 except for FP if it is being used as FP, since it must be
+	 restored last.  */
+
       for (i = 0; i < 32; i++)
 	if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i]
 	    && i != 26)
 	  {
-	    fprintf (file, "\tldq $%d,%d($%d)\n",
-		     i, reg_offset, reg_offset_from);
+	    if (i == FRAME_POINTER_REGNUM && frame_pointer_needed)
+	      fp_offset = reg_offset;
+	    else
+	      fprintf (file, "\tldq $%d,%d($30)\n", i, reg_offset);
 	    reg_offset += 8;
 	  }
 
@@ -1454,17 +1297,14 @@ output_epilog (file, size)
 	if (! fixed_regs[i + 32] && ! call_used_regs[i + 32]
 	    && regs_ever_live[i + 32])
 	  {
-	    fprintf (file, "\tldt $f%d,%d($%d)\n",
-		     i, reg_offset, reg_offset_from);
+	    fprintf (file, "\tldt $f%d,%d($30)\n", i, reg_offset);
 	    reg_offset += 8;
 	  }
 
-      /* Restore the stack.  If we have a frame pointer, use it.  Otherwise,
-	 add the size back into the stack, handling the large frame size.  */
-
-      if (frame_pointer_needed)
-	fprintf (file, "\tbis $25,$25,$30\n");
-      else if (frame_size > 32767)
+      /* If the stack size is large, compute the size of the stack into
+	 a register because the old FP restore, stack pointer adjust,
+	 and return are required to be consecutive instructions.  */
+      if (frame_size > 32767)
 	{
 	  HOST_WIDE_INT low
 	    = (frame_size & 0xffff) - 2 * (frame_size & 0x8000);
@@ -1501,16 +1341,28 @@ output_epilog (file, size)
 	    }
 
 	  fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
-
-	  fprintf (file, "\taddq $30,$28,$30\n");
 	}
-      else if (frame_size)
+
+      /* If we needed a frame pointer and we have to restore it, do it
+	 now.  */
+
+      if (frame_pointer_needed && regs_ever_live[FRAME_POINTER_REGNUM])
+	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
+
+      /* Now update the stack pointer, if needed.  This must be done in
+	 one, styalized, instruction.  */
+      if (frame_size > 32768)
+	fprintf (file, "\taddq $28,$30,$30\n");
+      else
 	fprintf (file, "\tlda $30,%d($30)\n", frame_size);
 
-      /* Now return to the caller.  */
+      /* Finally return to the caller.  */
       fprintf (file, "\tret $31,($26),1\n");
     }
 
   /* End the function.  */
   fprintf (file, "\t.end %s\n", alpha_function_name);
+
+  /* Show that we know this function if it is called again.  */
+  SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
