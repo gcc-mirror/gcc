@@ -86,6 +86,11 @@ extern int target_flags;
 
 #define TARGET_SNAKE (target_flags & 1)
 
+/* Force gcc not to use the bss segment.  This is (temporarily) provided 
+   for sites which are using pa-gas-1.36 versions prior to Aug 7, 1992.  */
+
+#define TARGET_NO_BSS (target_flags & 2)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -94,6 +99,7 @@ extern int target_flags;
 
 #define TARGET_SWITCHES \
   {{"snake", 1},	\
+   {"no-bss", 2},	\
    { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 0
@@ -1362,13 +1368,14 @@ while (0)
 #define ASM_FILE_START(FILE) \
 do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 \t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31\n\
+\t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82\n\
 \t.SPACE $TEXT$\n\
 \t.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44\n\
 \t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n\
 \t.IMPORT $global$,DATA\n\
 \t.IMPORT $$dyncall,MILLICODE\n");\
      if (profile_flag)\
-       fprintf (FILE, "\t.IMPORT __gcc_mcount, CODE\n");\
+       fprintf (FILE, "\t.IMPORT _mcount, CODE\n");\
    } while (0)
 
 /* Output to assembler file text saying following lines
@@ -1393,6 +1400,26 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 /* Supposedly the assembler rejects the command if there is no tab!  */
 #define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
+
+/* Output before uninitialized data.  */
+
+#define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
+
+/* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
+
+#define EXTRA_SECTIONS in_bss
+
+#define EXTRA_SECTION_FUNCTIONS						\
+void									\
+bss_section ()								\
+{									\
+  if (in_section != in_bss)						\
+    {									\
+      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);		\
+      in_section = in_bss;						\
+    }									\
+}
+
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -1563,8 +1590,11 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
+/* Supposedly the assembler rejects the command if there is no tab!  */
+
+
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( data_section (),					\
+( (TARGET_NO_BSS) ? data_section (): bss_section (),	\
   assemble_name ((FILE), (NAME)),			\
   fputs ("\t.comm ", (FILE)),				\
   fprintf ((FILE), "%d\n", (ROUNDED)))
@@ -1573,10 +1603,11 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( data_section (),					\
+( (TARGET_NO_BSS) ? data_section (): bss_section (),	\
   fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8),	\
   assemble_name ((FILE), (NAME)),				\
-  fprintf ((FILE), "\n\t.blockz %d\n", (ROUNDED)))
+  (TARGET_NO_BSS) ? fprintf ((FILE), "\n\t.blockz %d\n", (ROUNDED)) \
+		  : fprintf ((FILE), "\n\t.block %d\n", (ROUNDED)))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
