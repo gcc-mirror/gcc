@@ -1,3 +1,9 @@
+2003-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COMPONENT_REF): When seeing if should use 
+	bitfield operations, use STRICT_ALIGNMENT, not SLOW_UNALIGNED_ACCESS
+	if EXPAND_CONST_ADDRESS or EXPAND_INITIALIZER.
+
 2003-07-05  Andreas Jaeger  <aj@suse.de>
 
 	* genattrtab.c (write_attr_get): Revert part of last patch to

@@ -7541,7 +7541,10 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 	    || (mode1 != BLKmode
 		&& (((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
 		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))
-		     && SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0)))
+		     && ((modifier == EXPAND_CONST_ADDRESS
+			  || modifier == EXPAND_INITIALIZER)
+			 ? STRICT_ALIGNMENT
+			 : SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0))))
 		    || (bitpos % BITS_PER_UNIT != 0)))
 	    /* If the type and the field are a constant size and the
 	       size of the type isn't the same size as the bitfield,
