@@ -964,8 +964,7 @@ dbxout_type (type, full, show_arg_types)
 	   This used to use `r2' explicitly and we used to
 	   take care to make sure that `char' was type number 2.  */
 	fprintf (asmfile, "r%d;0;127;", TYPE_SYMTAB_ADDRESS (type));
-#ifdef WINNING_GDB
-      else if (TYPE_PRECISION (type) > BITS_PER_WORD)
+      else if (use_gnu_debug_info_extensions && TYPE_PRECISION (type) > BITS_PER_WORD)
 	{
 	  /* This used to say `r1' and we used to take care
 	     to make sure that `int' was type number 1.  */
@@ -975,7 +974,6 @@ dbxout_type (type, full, show_arg_types)
 	  print_int_cst_octal (TYPE_MAX_VALUE (type));
 	  fprintf (asmfile, ";");
 	}
-#endif
       else
 	/* Output other integer types as subranges of `int'.  */
 	/* This used to say `r1' and we used to take care
@@ -1821,10 +1819,8 @@ dbxout_finish_symbol (sym)
   DBX_FINISH_SYMBOL (sym);
 #else
   int line = 0;
-#ifdef WINNING_GDB
-  if (sym != 0)
+  if (use_gnu_debug_info_extensions && sym != 0)
     line = DECL_SOURCE_LINE (sym);
-#endif
 
   fprintf (asmfile, "\",%d,0,%d,", current_sym_code, line);
   if (current_sym_addr)
