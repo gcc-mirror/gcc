@@ -105,6 +105,9 @@ rtx_varies_p (x)
       /* The operand 0 of a LO_SUM is considered constant
 	 (in fact is it related specifically to operand 1).  */
       return rtx_varies_p (XEXP (x, 1));
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -149,6 +152,9 @@ rtx_addr_can_trap_p (x)
 
     case LO_SUM:
       return rtx_addr_can_trap_p (XEXP (x, 1));
+      
+    default:
+      break;
     }
 
   /* If it isn't one of the case above, it can cause a trap.  */
@@ -274,6 +280,9 @@ reg_mentioned_p (reg, in)
     case CONST_DOUBLE:
       /* These are kept unique for a given value.  */
       return 0;
+      
+    default:
+      break;
     }
 
   if (GET_CODE (reg) == code && rtx_equal_p (reg, in))
@@ -364,13 +373,13 @@ reg_referenced_p (x, body)
 			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
 	  && reg_overlap_mentioned_p (x, SET_DEST (body)))
 	return 1;
-      break;
+      return 0;
 
     case ASM_OPERANDS:
       for (i = ASM_OPERANDS_INPUT_LENGTH (body) - 1; i >= 0; i--)
 	if (reg_overlap_mentioned_p (x, ASM_OPERANDS_INPUT (body, i)))
 	  return 1;
-      break;
+      return 0;
 
     case CALL:
     case USE:
@@ -385,10 +394,11 @@ reg_referenced_p (x, body)
       for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
 	if (reg_referenced_p (x, XVECEXP (body, 0, i)))
 	  return 1;
-      break;
+      return 0;
+      
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Nonzero if register REG is referenced in an insn between
@@ -517,6 +527,9 @@ modified_between_p (x, start, end)
 
     case REG:
       return reg_set_between_p (x, start, end);
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -569,6 +582,9 @@ modified_in_p (x, insn)
 
     case REG:
       return reg_set_p (x, insn);
+
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -749,6 +765,9 @@ refers_to_regno_p (regno, endregno, x, loc)
 	return 0;
       x = SET_SRC (x);
       goto repeat;
+
+    default:
+      break;
     }
 
   /* X does not match, so try its subexpressions.  */
@@ -1404,6 +1423,9 @@ volatile_insn_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1467,6 +1489,9 @@ volatile_refs_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1539,6 +1564,9 @@ side_effects_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1679,6 +1707,9 @@ inequality_comparisons_p (x)
     case GE:
     case GEU:
       return 1;
+      
+    default:
+      break;
     }
 
   len = GET_RTX_LENGTH (code);
@@ -1834,6 +1865,9 @@ replace_regs (x, reg_map, nregs, replace_dest)
 
       SET_SRC (x) = replace_regs (SET_SRC (x), reg_map, nregs, 0);
       return x;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
