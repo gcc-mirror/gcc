@@ -35,6 +35,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
+ 
+#define memcpy(src,dst,len) bcopy ((dst),(src),(len))
+#define memset gcc_memset
+#define memcmp(left,right,len) bcmp ((left),(right),(len))
 
 /* If compiled with GNU C, use the built-in alloca */
 #ifdef __GNUC__
