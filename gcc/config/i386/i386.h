@@ -2326,7 +2326,7 @@ while (0)
 
 #define REGPARM_MAX (TARGET_64BIT ? 6 : 3)
 
-#define SSE_REGPARM_MAX (TARGET_64BIT ? 16 : 0)
+#define SSE_REGPARM_MAX (TARGET_64BIT ? 8 : 0)
 
 
 /* Specify the machine mode that this machine uses
