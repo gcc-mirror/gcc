@@ -433,8 +433,7 @@ copy_list (tree list)
 tree
 build_int_cst (tree type, HOST_WIDE_INT low)
 {
-  return build_int_cst_wide (type, low,
-			     low < 0 ? -1 : 0);
+  return build_int_cst_wide (type, low, low < 0 ? -1 : 0);
 }
 
 /* Create an INT_CST node with a LOW value zero extended.  */
