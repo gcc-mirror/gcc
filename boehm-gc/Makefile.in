@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4a from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -46,10 +46,9 @@ AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-INSTALL_STRIP_FLAG =
 transform = @program_transform_name@
 
 NORMAL_INSTALL = :
@@ -106,16 +105,24 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 
-GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c backgraph.c win32_threads.c
+GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
+linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
+backgraph.c win32_threads.c
 
 
-EXTRA_GC_SOURCES = alpha_mach_dep.s mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
+EXTRA_GC_SOURCES = alpha_mach_dep.s \
+mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
+sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 
 libgcjgc_la_SOURCES = $(GC_SOURCES)
@@ -147,14 +154,52 @@ TESTS = gctest
 
 all_objs = @addobjs@ $(libgcjgc_la_OBJECTS)
 
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) 	$(AM_CPPFLAGS) $(CPPFLAGS) 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
 
 LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+	"CFLAGS=$(CFLAGS)" \
+	"CXXFLAGS=$(CXXFLAGS)" \
+	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"INSTALL=$(INSTALL)" \
+	"INSTALL_DATA=$(INSTALL_DATA)" \
+	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+	"MAKE=$(MAKE)" \
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	"PICFLAG=$(PICFLAG)" \
+	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"EXPECT=$(EXPECT)" \
+	"RUNTEST=$(RUNTEST)" \
+	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+	"exec_prefix=$(exec_prefix)" \
+	"infodir=$(infodir)" \
+	"libdir=$(libdir)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" \
+	"AR=$(AR)" \
+	"AS=$(AS)" \
+	"CC=$(CC)" \
+	"CXX=$(CXX)" \
+	"LD=$(LD)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"NM=$(NM)" \
+	"PICFLAG=$(PICFLAG)" \
+	"RANLIB=$(RANLIB)" \
+	"DESTDIR=$(DESTDIR)"
 
 
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
@@ -485,7 +530,7 @@ uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES)
 all-redirect: all-recursive
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs: installdirs-recursive
 installdirs-am:
 
