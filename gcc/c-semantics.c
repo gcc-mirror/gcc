@@ -969,7 +969,9 @@ expand_unreachable_if_stmt (tree t)
 /* Expand an unreachable statement list.  This function skips all
    statements preceding the first potentially reachable label and
    then returns the label (or, in same cases, the statement after
-   one containing the label).  */
+   one containing the label).  This function returns NULL_TREE if
+   the end of the given statement list is unreachable, and a
+   non-NULL value, possibly error_mark_node, otherwise.  */
 static tree
 expand_unreachable_stmt (tree t, int warn)
 {
@@ -1019,7 +1021,7 @@ expand_unreachable_stmt (tree t, int warn)
 
 	case IF_STMT:
 	  if (expand_unreachable_if_stmt (t))
-	    return TREE_CHAIN (t);
+	    return TREE_CHAIN (t) ? TREE_CHAIN (t) : error_mark_node;
 	  break;
 
 	case WHILE_STMT:
@@ -1027,7 +1029,7 @@ expand_unreachable_stmt (tree t, int warn)
 	     no need to rotate the loop, instead the WHILE_STMT can be
 	     expanded like a DO_STMT.  */
 	  genrtl_do_stmt_1 (WHILE_COND (t), WHILE_BODY (t));
-	  return TREE_CHAIN (t);
+	  return TREE_CHAIN (t) ? TREE_CHAIN (t) : error_mark_node;
 
 	case COMPOUND_STMT:
 	  {
@@ -1036,7 +1038,7 @@ expand_unreachable_stmt (tree t, int warn)
 	    if (n != NULL_TREE)
 	      {
 		expand_stmt (n);
-		return TREE_CHAIN (t);
+		return TREE_CHAIN (t) ? TREE_CHAIN (t) : error_mark_node;
 	      }
 	    warn = false;
 	    break;

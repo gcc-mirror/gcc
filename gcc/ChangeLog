@@ -1,3 +1,10 @@
+2004-08-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17078
+	* c-semantics.c (expand_unreachable_if_stmt): If the end of the
+	specified statement list is reachable, always return a non-NULL
+	pointer.  If necessary, return error_mark_node.
+
 2004-08-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/14492
