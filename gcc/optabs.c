@@ -3289,13 +3289,16 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
 {
   rtx op0;
   rtx op1;
-	  
-  if (swap_commutative_operands_p (x, y))
+
+  /* We may not swap in the general case, since this is called from 
+     compare_from_rtx, and we have no way of reporting the changed
+     comparison code.  */
+  if (comparison == swap_condition (comparison)
+      && swap_commutative_operands_p (x, y))
     {
       /* Swap operands and condition to ensure canonical RTL.  */
       op0 = y;
       op1 = x;
-      comparison = swap_condition (comparison);
     }
   else
     {
