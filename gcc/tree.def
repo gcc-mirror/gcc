@@ -641,6 +641,18 @@ DEFTREECODE (GE_EXPR, "ge_expr", '<', 2)
 DEFTREECODE (EQ_EXPR, "eq_expr", '<', 2)
 DEFTREECODE (NE_EXPR, "ne_expr", '<', 2)
 
+/* Additional relational operators for floating point unordered.  */
+DEFTREECODE (UNORDERED_EXPR, "unordered_expr", '<', 2)
+DEFTREECODE (ORDERED_EXPR, "ordered_expr", '<', 2)
+
+/* These are equivalent to unordered or ... */
+DEFTREECODE (UNLT_EXPR, "unlt_expr", '<', 2)
+DEFTREECODE (UNLE_EXPR, "unle_expr", '<', 2)
+DEFTREECODE (UNGT_EXPR, "ungt_expr", '<', 2)
+DEFTREECODE (UNGE_EXPR, "unge_expr", '<', 2)
+DEFTREECODE (UNEQ_EXPR, "uneq_expr", '<', 2)
+DEFTREECODE (UNNE_EXPR, "unne_expr", '<', 2)
+
 /* Operations for Pascal sets.  Not used now.  */
 DEFTREECODE (IN_EXPR, "in_expr", '2', 2)
 DEFTREECODE (SET_LE_EXPR, "set_le_expr", '<', 2)

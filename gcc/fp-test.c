@@ -1,23 +1,23 @@
 /* fp-test.c - Check that all floating-point operations are available.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2000 Free Software Foundation, Inc.
    Contributed by Ronald F. Guilmette <rfg@monkeys.com>.
 
-This file is part of GNU CC.
+   This file is part of GNU CC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GNU CC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GNU CC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GNU CC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* This is a trivial test program which may be useful to people who are
    porting the GCC or G++ compilers to a new system.  The intent here is
@@ -104,6 +104,13 @@ main ()
   si = f1 >= f2;
   si = f1 <= f2;
 
+  si = __builtin_isgreater (f1, f2);
+  si = __builtin_isgreaterequal (f1, f2);
+  si = __builtin_isless (f1, f2);
+  si = __builtin_islessequal (f1, f2);
+  si = __builtin_islessgreater (f1, f2);
+  si = __builtin_isunordered (f1, f2);
+
   sc = f1;
   uc = f1;
   ss = f1;
@@ -143,6 +150,13 @@ main ()
   si = d1 >= d2;
   si = d1 <= d2;
 
+  si = __builtin_isgreater (d1, d2);
+  si = __builtin_isgreaterequal (d1, d2);
+  si = __builtin_isless (d1, d2);
+  si = __builtin_islessequal (d1, d2);
+  si = __builtin_islessgreater (d1, d2);
+  si = __builtin_isunordered (d1, d2);
+
   sc = d1;
   uc = d1;
   ss = d1;
@@ -181,6 +195,13 @@ main ()
   si = D1 < D2;
   si = D1 >= D2;
   si = D1 <= D2;
+
+  si = __builtin_isgreater (D1, D2);
+  si = __builtin_isgreaterequal (D1, D2);
+  si = __builtin_isless (D1, D2);
+  si = __builtin_islessequal (D1, D2);
+  si = __builtin_islessgreater (D1, D2);
+  si = __builtin_isunordered (D1, D2);
 
   sc = D1;
   uc = D1;

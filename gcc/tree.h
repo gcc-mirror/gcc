@@ -116,6 +116,14 @@ enum built_in_function
   BUILT_IN_LONGJMP,
   BUILT_IN_TRAP,
 
+  /* ISO C99 floating point unordered comparisons.  */
+  BUILT_IN_ISGREATER,
+  BUILT_IN_ISGREATEREQUAL,
+  BUILT_IN_ISLESS,
+  BUILT_IN_ISLESSEQUAL,
+  BUILT_IN_ISLESSGREATER,
+  BUILT_IN_ISUNORDERED,
+
   /* Various hooks for the DWARF 2 __throw routine.  */
   BUILT_IN_UNWIND_INIT,
   BUILT_IN_DWARF_CFA,

@@ -2752,12 +2752,12 @@
   "")
 
 ;; The following are the corresponding floating-point insns.  Recall
-;; we need to have variants that expand the arguments from SF mode
+;; we need to have variants that expand the arguments from SFmode
 ;; to DFmode.
 
-(define_insn ""
+(define_insn "*cmpdf_tp"
   [(set (match_operand:DF 0 "register_operand" "=&f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
@@ -2765,9 +2765,9 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
-(define_insn ""
+(define_insn "*cmpdf_no_tp"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
@@ -2777,7 +2777,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(float_extend:DF
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
@@ -2788,7 +2788,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(float_extend:DF
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
@@ -2799,7 +2799,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
@@ -2810,7 +2810,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
@@ -2821,7 +2821,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(float_extend:DF
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (float_extend:DF
@@ -2833,7 +2833,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(match_operator:DF 1 "alpha_comparison_operator"
+	(match_operator:DF 1 "alpha_fp_comparison_operator"
 			   [(float_extend:DF
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (float_extend:DF
@@ -3125,6 +3125,22 @@
 		      (pc)))]
   ""
   "{ operands[1] = alpha_emit_conditional_branch (GEU); }")
+
+(define_expand "bunordered"
+  [(set (pc)
+	(if_then_else (match_dup 1)
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "{ operands[1] = alpha_emit_conditional_branch (UNORDERED); }")
+
+(define_expand "bordered"
+  [(set (pc)
+	(if_then_else (match_dup 1)
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "{ operands[1] = alpha_emit_conditional_branch (ORDERED); }")
 
 (define_expand "seq"
   [(set (match_operand:DI 0 "register_operand" "")

@@ -3718,9 +3718,9 @@ fold_rtx (x, insn)
 		      struct qty_table_elem *ent = &qty_table[qty];
 
 		      if ((comparison_dominates_p (ent->comparison_code, code)
-			   || (comparison_dominates_p (ent->comparison_code,
-						       reverse_condition (code))
-			       && ! FLOAT_MODE_P (mode_arg0)))
+			   || (! FLOAT_MODE_P (mode_arg0)
+			       && comparison_dominates_p (ent->comparison_code,
+						          reverse_condition (code))))
 			  && (rtx_equal_p (ent->comparison_const, folded_arg1)
 			      || (const_arg1
 				  && rtx_equal_p (ent->comparison_const,
@@ -4156,6 +4156,10 @@ record_jump_equiv (insn, taken)
     {
       reversed_nonequality = (code != EQ && code != NE);
       code = reverse_condition (code);
+
+      /* Don't remember if we can't find the inverse.  */
+      if (code == UNKNOWN)
+	return;
     }
 
   /* The mode is the mode of the non-constant.  */

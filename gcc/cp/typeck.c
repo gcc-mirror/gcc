@@ -2926,6 +2926,7 @@ build_function_call_real (function, params, require_complete, flags)
   register tree fntype, fndecl;
   register tree value_type;
   register tree coerced_params;
+  tree result;
   tree name = NULL_TREE, assembler_name = NULL_TREE;
   int is_method;
 
@@ -3023,37 +3024,27 @@ build_function_call_real (function, params, require_complete, flags)
 
   if (TREE_CODE (function) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL
-      && DECL_BUILT_IN (TREE_OPERAND (function, 0))
-      && DECL_BUILT_IN_CLASS (TREE_OPERAND (function, 0)) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (TREE_OPERAND (function, 0)))
-      {
-      case BUILT_IN_ABS:
-      case BUILT_IN_LABS:
-      case BUILT_IN_FABS:
-	if (coerced_params == 0)
-	  return integer_zero_node;
-	return build_unary_op (ABS_EXPR, TREE_VALUE (coerced_params), 0);
-
-      default:
-	break;
-      }
+      && DECL_BUILT_IN (TREE_OPERAND (function, 0)))
+    {
+      result = expand_tree_builtin (TREE_OPERAND (function, 0),
+				    params, coerced_params);
+      if (result)
+	return result;
+    }
 
   /* C++ */
   value_type = TREE_TYPE (fntype) ? TREE_TYPE (fntype) : void_type_node;
-  {
-    register tree result
-      = build_call (function, value_type, coerced_params);
+  result = build_call (function, value_type, coerced_params);
 
-    if (require_complete)
-      {
-	if (TREE_CODE (value_type) == VOID_TYPE)
-	  return result;
-	result = require_complete_type (result);
-      }
-    if (IS_AGGR_TYPE (value_type))
-      result = build_cplus_new (value_type, result);
-    return convert_from_reference (result);
-  }
+  if (require_complete)
+    {
+      if (TREE_CODE (value_type) == VOID_TYPE)
+	return result;
+      result = require_complete_type (result);
+    }
+  if (IS_AGGR_TYPE (value_type))
+    result = build_cplus_new (value_type, result);
+  return convert_from_reference (result);
 }
 
 tree
@@ -3790,6 +3781,23 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  result_type = type1;
 	  pedwarn ("ISO C++ forbids comparison between pointer and integer");
 	}
+      break;
+
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case UNNE_EXPR:
+      build_type = integer_type_node;
+      if (code0 != REAL_TYPE || code1 != REAL_TYPE)
+	{
+	  error ("unordered comparison on non-floating point argument");
+	  return error_mark_node;
+	}
+      common = 1;
       break;
 
     default:

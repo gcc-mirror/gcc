@@ -4145,19 +4145,13 @@ build_over_call (cand, args, flags)
 
   if (TREE_CODE (fn) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
-      && DECL_BUILT_IN (TREE_OPERAND (fn, 0))
-      && DECL_BUILT_IN_CLASS (TREE_OPERAND (fn, 0)) == BUILT_IN_NORMAL)
-    switch (DECL_FUNCTION_CODE (TREE_OPERAND (fn, 0)))
-      {
-      case BUILT_IN_ABS:
-      case BUILT_IN_LABS:
-      case BUILT_IN_FABS:
-	if (converted_args == 0)
-	  return integer_zero_node;
-	return build_unary_op (ABS_EXPR, TREE_VALUE (converted_args), 0);
-      default:
-        break;
-      }
+      && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
+    {
+      tree exp;
+      exp = expand_tree_builtin (TREE_OPERAND (fn, 0), args, converted_args);
+      if (exp)
+	return exp;
+    }
 
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);
   if (TREE_CODE (TREE_TYPE (fn)) == VOID_TYPE)

@@ -1,5 +1,50 @@
 2000-01-24  Richard Henderson  <rth@cygnus.com>
 
+	* rtl.def: Add unordered fp comparisions.
+	* tree.def: Likewise.
+	* tree.h: Add ISO C 9x unordered fp comparision builtins.
+
+	* builtins.c (expand_tree_builtin): New function.
+	* c-typeck.c (build_function_call): Use it.
+	(build_binary_op): Support unordered compares.
+	* c-common.c (c_common_nodes_and_builtins): Add unordered compares.
+
+	* combine.c (known_cond): Handle reverse_condition returning UNKNOWN.
+	(reversible_comparison_p): Allow UNORDERED/ORDERED to be reversed.
+	* cse.c (fold_rtx): Check FLOAT_MODE_P before reversing.
+	(record_jump_equiv): Handle reverse_condition returning UNKNOWN.
+	* jump.c (reverse_condition): Don't abort for UNLE etc, but
+	return UNKNOWN.
+	(swap_condition): Handle unordered compares.
+	(thread_jumps): Check can_reverse before reversing.
+	* loop.c (get_condition): Likewise.  Allow UNORERED/ORDERED to be
+	reversed for FP.
+
+	* optabs.c (can_compare_p): New argument CODE.  Verify branch or
+	setcc is present before acking for cmp_optab.  Update all callers.
+	(prepare_float_lib_cmp, init_optabs): Handle UNORDERED.
+	* expmed.c (do_cmp_and_jump): Update for can_compare_p.
+	* expr.c (expand_expr): Likewise.  Support unordered compares.
+	(do_jump, do_store_flag): Likewise.
+	* expr.h (enum libfunc_index): Add unordered compares.
+
+	* Makefile.in (FPBIT_FUNCS): Add _unord_sf.
+	(DPBIT_FUNCS): Add _unord_df.
+	* config/fp-bit.c (_unord_f2): New.
+	* fp-test.c (main): Try unordered compare builtins.
+
+	* alpha-protos.h (alpha_fp_comparison_operator): Declare.
+	* alpha.c (alpha_comparison_operator): Check mode properly.
+	(alpha_swapped_comparison_operator): Likewise.
+	(signed_comparison_operator): Likewise.
+	(alpha_fp_comparison_operator): New.
+	(alpha_emit_conditional_branch): Handle unordered compares.
+	* alpha.h (PREDICATE_CODES): Update.
+	* alpha.md (fp compares): Use alpha_fp_comparison_operator.
+	(bunordered, bordered): New.
+
+2000-01-24  Richard Henderson  <rth@cygnus.com>
+
 	* alpha.c (alpha_emit_xfloating_cvt): Thinko in operand manipulation.
 	* alpha.md (movtf): New expander, insn, and splitter.
 
@@ -139,8 +184,8 @@ Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-01-22  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
 
-        * config/elfos.h (UNIQUE_SECTION): Restore uninitialised data
-        section naming to that prior to 2000-01-07 patch.
+	* config/elfos.h (UNIQUE_SECTION): Restore uninitialised data
+	section naming to that prior to 2000-01-07 patch.
 	* config/mips/elf.h (UNIQUE_SECTION): Ditto.
 	* config/mips/elf64.h (UNIQUE_SECTION): Ditto.
 	* config/mips/iris6gld.h (UNIQUE_SECTION): Ditto.
@@ -188,18 +233,18 @@ Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 2000-01-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (fixinc.sh): Depend on specs.
-        * fixinc/Makefile.in: Add rule to create machname.h.
-        (fixlib.o): Depend on machname.h.
-        * fixinc/fixtests.c (machine_name): New test.
-        * fixinc/fixfixes.c (machine_name): New fix.
-        * fixinc/fixlib.c (mn_get_regexps): New helper function for
-        the machine_name test and fix.
-        * fixinc/fixlib.h: Prototype it.
-        * fixinc/inclhack.def (machine_name): Use the C test and fix.
+	* fixinc/Makefile.in: Add rule to create machname.h.
+	(fixlib.o): Depend on machname.h.
+	* fixinc/fixtests.c (machine_name): New test.
+	* fixinc/fixfixes.c (machine_name): New fix.
+	* fixinc/fixlib.c (mn_get_regexps): New helper function for
+	the machine_name test and fix.
+	* fixinc/fixlib.h: Prototype it.
+	* fixinc/inclhack.def (machine_name): Use the C test and fix.
 	* fixinc/fixincl.x, fixinc/inclhack.sh: Rebuild.
 
-        * gcc.c (do_spec_1) [case P]: Take care not to create
-        identifiers with three leading or trailing underscores.
+	* gcc.c (do_spec_1) [case P]: Take care not to create
+	identifiers with three leading or trailing underscores.
 
 	* fixinc/Makefile.in (FIXINC_DEFS): Add -DIN_GCC.
 	(fixincl): Don't specify libraries twice on link line.
@@ -851,8 +896,8 @@ Sat Jan 15 15:41:14 EST 2000  John Wehle  (john@feith.com)
 2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.h (REGISTER_MOVE_COST): Remove redundant
-        case for moving from HI/LO/HI_LO_REG.  This makes the behavior
-        match the comment for MIPS16.
+	case for moving from HI/LO/HI_LO_REG.  This makes the behavior
+	match the comment for MIPS16.
 
 Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
 
@@ -878,7 +923,7 @@ Thu Jan 13 23:44:03 2000  Richard Henderson  <rth@cygnus.com>
 	Use emit_jump_insn for the return insn.
 
 Thu Jan 13 14:46:03 2000  Jason Eckhardt  <jle@cygnus.com>
-                          Stan Cox  <scox@cygnus.com>
+	                  Stan Cox  <scox@cygnus.com>
 
 	* predict.c: New file. Preliminary infrastructure work for static
 	branch prediction and basic block reordering.
@@ -1278,21 +1323,21 @@ Tue Jan 11 18:59:35 MET 2000  Jan Hubicka <jh@suse.cz>
 
 2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
 
-        * config/mips/mips.c (mips_va_arg): For EABI, emit the queued
-        integer vararg POSTINCREMENT before the destination of the jump
-        for the hard fp case. 
-        (function_arg_pass_by_reference): Pass a copy of CUM to 
+	* config/mips/mips.c (mips_va_arg): For EABI, emit the queued
+	integer vararg POSTINCREMENT before the destination of the jump
+	for the hard fp case. 
+	(function_arg_pass_by_reference): Pass a copy of CUM to 
 	FUNCTION_ARG.
-        
-        * config/mips/mips.h (GO_IF_LEGITIMATE_ADDRESS): Move check
-        for CONSTANT_ADDRESS_P above while loop for subreg.
+	
+	* config/mips/mips.h (GO_IF_LEGITIMATE_ADDRESS): Move check
+	for CONSTANT_ADDRESS_P above while loop for subreg.
 
 2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* flow.c (propagate_block): When a prologue/epilogue insn
-        is marked dead, unconditionally clear libcall_is_dead and
-        insn_is_dead, and only dump rtl if warnings aren't being
-        suppressed.
+	is marked dead, unconditionally clear libcall_is_dead and
+	insn_is_dead, and only dump rtl if warnings aren't being
+	suppressed.
 
 Tue Jan 11 16:26:47 MET 2000  Jan Hubicka <jh@suse.cz>
 
@@ -1660,11 +1705,11 @@ Thu Jan  6 13:44:59 CET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* configure.in (m68*-*-rtemscoff*): New target, formal name for
 	old m68*-*-rtems*.
-        (m68*-*-rtemself*): New target.
+	(m68*-*-rtemself*): New target.
 	(mips64orion-*-rtems*): Remove duplicate definition of tm_file.
 	(sparc*-*-rtemsaout*): New target, formal name for old sparc*-*-rtems*.
-        (sparc*-*-rtemself*): New target.
-        (sparc*-*-rtems*): Now elf not a.out.
+	(sparc*-*-rtemself*): New target.
+	(sparc*-*-rtems*): Now elf not a.out.
 	* config/i386/rtems.h: Include config/rtems.h.
 	* config/i386/rtemself.h: Include config/rtems.h.
 	* config/i960/rtems.h: Include config/rtems.h.
@@ -1956,7 +2001,7 @@ Fri Dec 31 19:10:31 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 1999-12-30  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
-        * genrecog.c (change_state) Corrected typo.
+	* genrecog.c (change_state) Corrected typo.
 
 1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

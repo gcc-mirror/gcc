@@ -1,3 +1,9 @@
+2000-01-24  Richard Henderson  <rth@cygnus.com>
+
+	* call.c (build_over_call): Use expand_tree_builtin.
+	* typeck.c (build_function_call_real): Likewise.
+	(build_binary_op_nodefault): Handle unordered compares.
+
 2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
 
 	* cp-tree.h (CPTI_BAD_CAST, CPTI_BAD_TYPEID, CPTI_DCAST): New
@@ -111,10 +117,10 @@
 
 2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.coom>
 
-        * typeck.c (build_unary_op): Use cp_pedwarn, not pedwarn.
+	* typeck.c (build_unary_op): Use cp_pedwarn, not pedwarn.
 
-        * typeck2.c (incomplete_type_error): Restore previous
-        cp_error and cp_error_at call sequence.
+	* typeck2.c (incomplete_type_error): Restore previous
+	cp_error and cp_error_at call sequence.
 	
 2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
 

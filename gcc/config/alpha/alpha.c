@@ -706,7 +706,7 @@ alpha_comparison_operator (op, mode)
 {
   enum rtx_code code = GET_CODE (op);
 
-  if (mode != GET_MODE (op) || GET_RTX_CLASS (code) != '<')
+  if (mode != GET_MODE (op) && mode != VOIDmode)
     return 0;
 
   return (code == EQ || code == LE || code == LT
@@ -722,7 +722,8 @@ alpha_swapped_comparison_operator (op, mode)
 {
   enum rtx_code code = GET_CODE (op);
 
-  if (mode != GET_MODE (op) || GET_RTX_CLASS (code) != '<')
+  if ((mode != GET_MODE (op) && mode != VOIDmode)
+      || GET_RTX_CLASS (code) != '<')
     return 0;
 
   code = swap_condition (code);
@@ -737,16 +738,30 @@ signed_comparison_operator (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  switch (GET_CODE (op))
-    {
-    case EQ:  case NE:  case LE:  case LT:  case GE:   case GT:
-      return 1;
+  enum rtx_code code = GET_CODE (op);
 
-    default:
-      break;
-    }
+  if (mode != GET_MODE (op) && mode != VOIDmode)
+    return 0;
 
-  return 0;
+  return (code == EQ || code == NE
+	  || code == LE || code == LT
+	  || code == GE || code == GT);
+}
+
+/* Return 1 if OP is a valid Alpha floating point comparison operator.
+   Here we know which comparisons are valid in which insn.  */
+
+int
+alpha_fp_comparison_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (mode != GET_MODE (op) && mode != VOIDmode)
+    return 0;
+
+  return (code == EQ || code == LE || code == LT || code == UNORDERED);
 }
 
 /* Return 1 if this is a divide or modulus operator.  */
@@ -1484,13 +1499,15 @@ alpha_emit_conditional_branch (code)
   switch (code)
     {
     case EQ:  case LE:  case LT:  case LEU:  case LTU:
+    case UNORDERED:
       /* We have these compares: */
       cmp_code = code, branch_code = NE;
       break;
 
     case NE:
-      /* This must be reversed. */
-      cmp_code = EQ, branch_code = EQ;
+    case ORDERED:
+      /* These must be reversed. */
+      cmp_code = reverse_condition (code), branch_code = EQ;
       break;
 
     case GE:  case GT: case GEU:  case GTU:
@@ -3383,6 +3400,8 @@ print_operand (file, x, code)
 	  fprintf (file, "ule");
         else if (c == LTU)
 	  fprintf (file, "ult");
+	else if (c == UNORDERED)
+	  fprintf (file, "un");
         else
 	  fprintf (file, "%s", GET_RTX_NAME (c));
       }

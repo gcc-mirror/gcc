@@ -1,7 +1,7 @@
 /* This is a software floating point library which can be used instead of
    the floating point routines in libgcc1.c for targets without hardware
    floating point. 
- Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994-1998, 2000 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -78,6 +78,8 @@ Boston, MA 02111-1307, USA.  */
 #define L_lt_df
 #define L_le_sf
 #define L_le_df
+#define L_unord_sf
+#define L_unord_df
 #define L_si_to_sf
 #define L_si_to_df
 #define L_sf_to_si
@@ -268,6 +270,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define _ge_f2 		__gesf2
 #		define _lt_f2 		__ltsf2
 #		define _le_f2 		__lesf2
+#		define _unord_f2	__unordsf2
 #		define si_to_float 	__floatsisf
 #		define float_to_si 	__fixsfsi
 #		define float_to_usi 	__fixunssfsi
@@ -285,6 +288,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define _ge_f2 		__gedf2
 #		define _lt_f2 		__ltdf2
 #		define _le_f2 		__ledf2
+#		define _unord_f2	__unorddf2
 #		define si_to_float 	__floatsidf
 #		define float_to_si 	__fixdfsi
 #		define float_to_usi 	__fixunsdfsi
@@ -1367,6 +1371,24 @@ _le_f2 (FLO_type arg_a, FLO_type arg_b)
     return 1;			/* false, truth <= 0 */
 
   return __fpcmp_parts (&a, &b) ;
+}
+#endif
+
+#if defined(L_unord_sf) || defined(L_unord_df)
+CMPtype
+_unord_f2 (FLO_type arg_a, FLO_type arg_b)
+{
+  fp_number_type a;
+  fp_number_type b;
+  FLO_union_type au, bu;
+
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
+
+  return (isnan (&a) || isnan (&b);
 }
 #endif
 

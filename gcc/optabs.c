@@ -2325,7 +2325,8 @@ expand_abs (mode, op0, target, safe)
 
   /* If this mode is an integer too wide to compare properly,
      compare word by word.  Rely on CSE to optimize constant cases.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode, ccp_jump))
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && ! can_compare_p (GE, mode, ccp_jump))
     do_jump_by_parts_greater_rtx (mode, 0, target, const0_rtx, 
 				  NULL_RTX, op1);
   else
@@ -2840,18 +2841,31 @@ emit_0_to_1_insn (x)
 }
 
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
-   If FOR_JUMP is nonzero, we will be generating a jump based on this
-   comparison, otherwise a store-flags operation.  */
+   PURPOSE describes how this comparison will be used.  CODE is the rtx
+   comparison code we will be using.
+
+   ??? Actually, CODE is slightly weaker than that.  A target is still
+   required to implement all of the normal bcc operations, but not 
+   required to implement all (or any) of the unordered bcc operations.  */
   
 int
-can_compare_p (mode, purpose)
+can_compare_p (code, mode, purpose)
+     enum rtx_code code;
      enum machine_mode mode;
      enum can_compare_purpose purpose;
 {
   do
     {
       if (cmp_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
-	return 1;
+	{
+	  if (purpose == ccp_jump)
+	    return bcc_gen_fctn[(int)code] != NULL;
+	  else if (purpose == ccp_store_flag)
+	    return setcc_gen_code[(int)code] != CODE_FOR_nothing;
+	  else
+	    /* There's only one cmov entry point, and it's allowed to fail.  */
+	    return 1;
+	}
       if (purpose == ccp_jump
 	  && cbranch_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing)
 	return 1;
@@ -3016,7 +3030,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 
   *px = x;
   *py = y;
-  if (can_compare_p (mode, purpose))
+  if (can_compare_p (*pcomparison, mode, purpose))
     return;
 
   /* Handle a lib call just for the mode we are using.  */
@@ -3267,6 +3281,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
 	libfunc = lehf2_libfunc;
 	break;
 
+      case UNORDERED:
+	libfunc = unordhf2_libfunc;
+	break;
+
       default:
 	break;
       }
@@ -3295,6 +3313,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
 
       case LE:
 	libfunc = lesf2_libfunc;
+	break;
+
+      case UNORDERED:
+	libfunc = unordsf2_libfunc;
 	break;
 
       default:
@@ -3327,6 +3349,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
 	libfunc = ledf2_libfunc;
 	break;
 
+      case UNORDERED:
+	libfunc = unorddf2_libfunc;
+	break;
+
       default:
 	break;
       }
@@ -3355,6 +3381,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
 
       case LE:
 	libfunc = lexf2_libfunc;
+	break;
+
+      case UNORDERED:
+	libfunc = unordxf2_libfunc;
 	break;
 
       default:
@@ -3387,6 +3417,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
 	libfunc = letf2_libfunc;
 	break;
 
+      case UNORDERED:
+	libfunc = unordtf2_libfunc;
+	break;
+
       default:
 	break;
       }
@@ -3415,8 +3449,7 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
   if (libfunc == 0)
     abort ();
 
-  emit_library_call (libfunc, 1,
-		     word_mode, 2, x, mode, y, mode);
+  emit_library_call (libfunc, 1, word_mode, 2, x, mode, y, mode);
 
   /* Immediately move the result of the libcall into a pseudo
      register so reload doesn't clobber the value if it needs
@@ -3426,8 +3459,10 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
   *px = result;
   *py = const0_rtx;
   *pmode = word_mode;
+  if (comparison == UNORDERED)
+    *pcomparison = NE;
 #ifdef FLOAT_LIB_COMPARE_RETURNS_BOOL
-  if (FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
+  else if (FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
     *pcomparison = NE;
 #endif
   *punsignedp = 0;
@@ -4650,6 +4685,7 @@ init_optabs ()
   gehf2_libfunc = init_one_libfunc ("__gehf2");
   lthf2_libfunc = init_one_libfunc ("__lthf2");
   lehf2_libfunc = init_one_libfunc ("__lehf2");
+  unordhf2_libfunc = init_one_libfunc ("__unordhf2");
 
   eqsf2_libfunc = init_one_libfunc ("__eqsf2");
   nesf2_libfunc = init_one_libfunc ("__nesf2");
@@ -4657,6 +4693,7 @@ init_optabs ()
   gesf2_libfunc = init_one_libfunc ("__gesf2");
   ltsf2_libfunc = init_one_libfunc ("__ltsf2");
   lesf2_libfunc = init_one_libfunc ("__lesf2");
+  unordsf2_libfunc = init_one_libfunc ("__unordsf2");
 
   eqdf2_libfunc = init_one_libfunc ("__eqdf2");
   nedf2_libfunc = init_one_libfunc ("__nedf2");
@@ -4664,6 +4701,7 @@ init_optabs ()
   gedf2_libfunc = init_one_libfunc ("__gedf2");
   ltdf2_libfunc = init_one_libfunc ("__ltdf2");
   ledf2_libfunc = init_one_libfunc ("__ledf2");
+  unorddf2_libfunc = init_one_libfunc ("__unorddf2");
 
   eqxf2_libfunc = init_one_libfunc ("__eqxf2");
   nexf2_libfunc = init_one_libfunc ("__nexf2");
@@ -4671,6 +4709,7 @@ init_optabs ()
   gexf2_libfunc = init_one_libfunc ("__gexf2");
   ltxf2_libfunc = init_one_libfunc ("__ltxf2");
   lexf2_libfunc = init_one_libfunc ("__lexf2");
+  unordxf2_libfunc = init_one_libfunc ("__unordxf2");
 
   eqtf2_libfunc = init_one_libfunc ("__eqtf2");
   netf2_libfunc = init_one_libfunc ("__netf2");
@@ -4678,6 +4717,7 @@ init_optabs ()
   getf2_libfunc = init_one_libfunc ("__getf2");
   lttf2_libfunc = init_one_libfunc ("__lttf2");
   letf2_libfunc = init_one_libfunc ("__letf2");
+  unordtf2_libfunc = init_one_libfunc ("__unordtf2");
 
   floatsisf_libfunc = init_one_libfunc ("__floatsisf");
   floatdisf_libfunc = init_one_libfunc ("__floatdisf");
