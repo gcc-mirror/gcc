@@ -2153,7 +2153,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    {
 	      replacement = find_fixup_replacement (replacements, var);
 	      if (replacement->new == 0)
-		replacement->new = gen_reg_rtx (GET_MODE (var));
+		replacement->new = gen_reg_rtx (promoted_mode);
 	      SUBREG_REG (x) = replacement->new;
 	      return;
 	    }

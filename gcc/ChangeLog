@@ -1,5 +1,8 @@
 Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (fixup_var_regs_1, case SUBREG): Use promoted mode
+	for replacement.
+
 	* expr.c (store_field): Do nothing except elaborate side-effects if
 	zero-bit field.
 
