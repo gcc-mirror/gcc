@@ -149,10 +149,10 @@ __negdi2 (u)
 DItype
 __lshldi3 (u, b)
      DItype u;
-     SItype b;
+     word_type b;
 {
   DIunion w;
-  SItype bm;
+  word_type bm;
   DIunion uu;
 
   if (b == 0)
@@ -181,10 +181,10 @@ __lshldi3 (u, b)
 DItype
 __lshrdi3 (u, b)
      DItype u;
-     SItype b;
+     word_type b;
 {
   DIunion w;
-  SItype bm;
+  word_type bm;
   DIunion uu;
 
   if (b == 0)
@@ -213,10 +213,10 @@ __lshrdi3 (u, b)
 DItype
 __ashldi3 (u, b)
      DItype u;
-     SItype b;
+     word_type b;
 {
   DIunion w;
-  SItype bm;
+  word_type bm;
   DIunion uu;
 
   if (b == 0)
@@ -245,10 +245,10 @@ __ashldi3 (u, b)
 DItype
 __ashrdi3 (u, b)
      DItype u;
-     SItype b;
+     word_type b;
 {
   DIunion w;
-  SItype bm;
+  word_type bm;
   DIunion uu;
 
   if (b == 0)
@@ -654,7 +654,7 @@ DItype
 __divdi3 (u, v)
      DItype u, v;
 {
-  SItype c = 0;
+  word_type c = 0;
   DIunion uu, vv;
   DItype w;
 
@@ -682,7 +682,7 @@ DItype
 __moddi3 (u, v)
      DItype u, v;
 {
-  SItype c = 0;
+  word_type c = 0;
   DIunion uu, vv;
   DItype w;
 
