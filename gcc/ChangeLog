@@ -1,3 +1,9 @@
+2001-08-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* sparc-protos.h: Add prototypes for fp_zero_operand and 
+	reg_or_0_operand.
+	* sh-protos.h: Add prototype for fpul_operand.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* doc/extend.texi (Other Builtins): Fix typo in last change.

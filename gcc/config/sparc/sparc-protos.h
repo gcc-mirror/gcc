@@ -100,6 +100,8 @@ extern int addrs_ok_for_ldd_peep PARAMS ((rtx, rtx));
 extern int arith_double_4096_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_4096_operand PARAMS ((rtx, enum machine_mode));
 extern int zero_operand PARAMS ((rtx, enum machine_mode));
+extern int fp_zero_operand PARAMS ((rtx, enum machine_mode));
+extern int reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int eligible_for_epilogue_delay PARAMS ((rtx, int));
 extern int eligible_for_return_delay PARAMS ((rtx));
 extern int eligible_for_sibcall_delay PARAMS ((rtx));
