@@ -104,8 +104,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  m68k_coff_asm_named_section
 
-#define INT_ASM_OP "\t.long\t"
-
 /* Don't assume anything about startfiles.  */
 
 #undef STARTFILE_SPEC

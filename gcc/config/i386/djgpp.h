@@ -53,10 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
 
-/* Define the name of the .int op.  */
-#undef INT_ASM_OP
-#define INT_ASM_OP "\t.long\t"
-
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set\t"

@@ -41,6 +41,4 @@ Boston, MA 02111-1307, USA.  */
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
 
-#define INT_ASM_OP "\t.word\t"
-
 /* end of i960-coff.h */

@@ -224,17 +224,6 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
-/* This is the pseudo-op used to generate a reference to a specific
-   symbol in some section.  It is only used in machine-specific
-   configuration files.  This is the same for all known svr4
-   assemblers, except those in targets that don't use 32-bit pointers.
-   Those should override INT_ASM_OP.  Yes, the name of the macro is
-   misleading.  */
-
-#ifndef INT_ASM_OP
-#define INT_ASM_OP		"\t.long\t"
-#endif
-
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
    AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */

@@ -140,8 +140,6 @@ do {								\
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors"
 
-#define INT_ASM_OP		"\t.long\t"
-
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
 

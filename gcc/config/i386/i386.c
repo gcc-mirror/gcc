@@ -5212,11 +5212,11 @@ i386_dwarf_output_addr_const (file, x)
      rtx x;
 {
 #ifdef ASM_QUAD
-  fprintf (file, "%s", TARGET_64BIT ? ASM_QUAD : INT_ASM_OP);
+  fprintf (file, "%s", TARGET_64BIT ? ASM_QUAD : ASM_LONG);
 #else
   if (TARGET_64BIT)
     abort ();
-  fprintf (file, "%s", INT_ASM_OP);
+  fprintf (file, "%s", ASM_LONG);
 #endif
   if (flag_pic)
     output_pic_addr_const (file, x, '\0');

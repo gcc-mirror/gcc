@@ -115,8 +115,6 @@ rdata_section ()						\
 
 /* Support the ctors/dtors sections for g++.  */
 
-#define INT_ASM_OP "\t.word\t"
-
 /* __CTOR_LIST__ and __DTOR_LIST__ must be defined by the linker script.  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY
 

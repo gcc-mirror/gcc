@@ -1,3 +1,18 @@
+2001-11-15  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (dwarf2out_finish): Don't abort because of orphan
+	DIEs if there were errors in the source.
+
+	* config/alpha/alpha-interix.h, config/alpha/elf.h,
+	config/arm/coff.h, config/i386/djgpp.h, config/i386/i386.c,
+	config/i386/i386.h, config/i386/sco5.h, config/i960/i960-coff.h,
+	config/m68k/coff.h, config/m88k/m88k.h, config/m88k/m88k.c,
+	config/pa/pa64-hpux.h, config/sh/sh.h, config/sparc/litecoff.h,
+	config/elfos.h, config/lynx.h, config/netware.h,
+	config/m68hc11/m68hc11.h, config/mcore/mcore-pe.h,
+	config/s390/linux64.h: Remove definitions of INT_ASM_OP, change
+	uses to use ASM_LONG.
+
 2001-11-15  Alan Matsuoka  <alanm@redhat.com>
 
 	* gensupport.c	process_include : Change call to alloca to

@@ -50,9 +50,6 @@ Boston, MA 02111-1307, USA.  */
 #undef LOCAL_ASM_OP
 #define LOCAL_ASM_OP			"\t.local\t"
 
-#undef INT_ASM_OP
-#define INT_ASM_OP			"\t.long\t"
-
 #undef ASM_SHORT
 #define ASM_SHORT			"\t.value\t"
 

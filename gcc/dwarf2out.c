@@ -11853,6 +11853,9 @@ dwarf2out_finish (input_filename)
 	    add_child_die (origin->die_parent, die);
 	  else if (die == comp_unit_die)
 	    ;
+	  else if (errorcount > 0 || sorrycount > 0)
+	    /* It's OK to be confused by errors in the input.  */
+	    add_child_die (comp_unit_die, die);
 	  else
 	    abort ();
 	}
