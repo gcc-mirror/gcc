@@ -1,3 +1,9 @@
+1999-10-04  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ZINCS): Removed.  This is defined in configure.in
+	when needed, and must be left empty when not needed.
+
 1999-10-01  Anthony Green  <green@cygnus.com>
 
 	* THANKS: Refreshed from htdocs version.
