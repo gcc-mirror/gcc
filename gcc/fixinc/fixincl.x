@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 146 fixup descriptions.
+ * This file contains 147 fixup descriptions.
  *
  * See README for more information.
  *
@@ -5803,9 +5803,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          158
+#define REGEX_COUNT          159
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            146
+#define FIX_COUNT            147
 
 /*
  *  Enumerate the fixes
