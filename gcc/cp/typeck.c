@@ -1097,6 +1097,12 @@ comptypes (t1, t2, strict)
         return 0;
       return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
 
+    case UNBOUND_CLASS_TEMPLATE:
+      if (cp_tree_equal (TYPE_IDENTIFIER (t1),
+                         TYPE_IDENTIFIER (t2)) < 1)
+        return 0;
+      return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
+
     case COMPLEX_TYPE:
       return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
 

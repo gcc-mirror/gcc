@@ -4559,7 +4559,8 @@ arg_assoc_template_arg (k, arg)
      contribute to the set of associated namespaces.  ]  */
 
   /* Consider first template template arguments.  */
-  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE)
     return 0;
   else if (TREE_CODE (arg) == TEMPLATE_DECL)
     {

@@ -5696,6 +5696,61 @@ make_typename_type (context, name, complain)
   return build_typename_type (context, name, fullname,  NULL_TREE);
 }
 
+/* Resolve `CONTEXT::template NAME'.  Returns an appropriate type,
+   unless an error occurs, in which case error_mark_node is returned.
+   If COMPLAIN zero, don't complain about any errors that occur.  */
+
+tree
+make_unbound_class_template (context, name, complain)
+     tree context, name;
+     int complain;
+{
+  tree t;
+  tree d;
+
+  if (TYPE_P (name))
+    name = TYPE_IDENTIFIER (name);
+  else if (DECL_P (name))
+    name = DECL_NAME (name);
+  if (TREE_CODE (name) != IDENTIFIER_NODE)
+    my_friendly_abort (20010902);
+
+  if (!uses_template_parms (context)
+      || currently_open_class (context))
+    {
+      tree tmpl = NULL_TREE;
+
+      if (IS_AGGR_TYPE (context))
+	tmpl = lookup_field (context, name, 0, 0);
+
+      if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
+	{
+	  if (complain)
+	    cp_error ("no class template named `%#T' in `%#T'", name, context);
+	  return error_mark_node;
+	}
+      
+      if (!enforce_access (context, tmpl))
+	return error_mark_node;
+
+      return tmpl;
+    }
+
+  /* Build the UNBOUND_CLASS_TEMPLATE.  */
+  t = make_aggr_type (UNBOUND_CLASS_TEMPLATE);
+  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
+  TREE_TYPE (t) = NULL_TREE;
+
+  /* Build the corresponding TEMPLATE_DECL.  */
+  d = build_decl (TEMPLATE_DECL, name, t);
+  TYPE_NAME (TREE_TYPE (d)) = d;
+  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
+  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+  DECL_ARTIFICIAL (d) = 1;
+
+  return t;
+}
+
 /* Select the right _DECL from multiple choices. */
 
 static tree

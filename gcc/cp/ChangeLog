@@ -1,3 +1,20 @@
+2001-10-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* cp-tree.def (UNBOUND_CLASS_TEMPLATE): New tree node.
+	* cp-tree.h (make_unbound_class_template): Prototype new function.
+	* decl.c (make_unbound_class_template): New function.
+	* decl2.c (arg_assoc_template_arg): Handle UNBOUND_CLASS_TEMPLATE.
+	* error.c (dump_type): Likewise.
+	* mangle.c (write_type): Likewise.
+	* parse.y (template_parm): Likewise.
+	(template_argument): Use make_unbound_class_template.
+	* pt.c (convert_template_argument): Handle UNBOUND_CLASS_TEMPLATE.
+	(tsubst): Likewise.
+	(tsubst_copy): Likewise.
+	(unify): Likewise.
+	* tree.c (walk_tree): Likewise.
+	* typeck.c (comptypes): Likewise.
+
 2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xref.c (GNU_xref_member): Use safe-ctype macros and/or fold

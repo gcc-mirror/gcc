@@ -163,6 +163,11 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm", 't', 
    of `T'.  */
 DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
 
+/* For template template argument of the form `T::template C'.
+   TYPE_CONTEXT is `T', the template parameter dependent object.
+   TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
+DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", 't', 0)
+
 /* A type designated by `__typeof (expr)'.  TYPE_FIELDS is the
    expression in question.  */
 DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
