@@ -1376,20 +1376,16 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
 {
   int i;
 
-  /* If this function call is cse'able, precompute all the parameters.
-     Note that if the parameter is constructed into a temporary, this will
-     cause an additional copy because the parameter will be constructed
-     into a temporary location and then copied into the outgoing arguments.
-     If a parameter contains a call to alloca and this function uses the
-     stack, precompute the parameter.  */
+  /* If this is a libcall, then precompute all arguments so that we do not
+     get extraneous instructions emitted as part of the libcall sequence.
 
-  /* If we preallocated the stack space, and some arguments must be passed
-     on the stack, then we must precompute any parameter which contains a
-     function call which will store arguments on the stack.
-     Otherwise, evaluating the parameter may clobber previous parameters
-     which have already been stored into the stack.  (we have code to avoid
-     such case by saving the outgoing stack arguments, but it results in
-     worse code)  */
+     If this target defines ACCUMULATE_OUTGOING_ARGS to true, then we must
+     precompute all arguments that contain function calls.  Otherwise,
+     computing arguments for a subcall may clobber arguments for this call.
+
+     If this target defines ACCUMULATE_OUTGOING_ARGS to false, then we only
+     need to precompute arguments that change the stack pointer, such as calls
+     to alloca, and calls that do not pop all of their arguments.  */
 
   for (i = 0; i < num_actuals; i++)
     if ((flags & ECF_LIBCALL_BLOCK)
