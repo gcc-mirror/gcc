@@ -2020,6 +2020,22 @@ Floating-point register that can hold 32- or 64-bit values.
 @item e
 Floating-point register that can hold 64- or 128-bit values.
 
+@item c
+Floating-point condition code register.
+
+@item d
+Floating-point register that can hold 32- or 64-bit values.
+It is only valid on the SPARC-V9 architecture when the Visual
+Instructions Set is available.
+
+@item b
+Floating-point register that can hold 64- or 128-bit values.
+It is only valid on the SPARC-V9 architecture when the Visual
+Instructions Set is available.
+
+@item h
+64-bit global or out register for the SPARC-V8+ architecture.
+
 @item I
 Signed 13-bit constant
 
