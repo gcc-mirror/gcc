@@ -76,8 +76,6 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 	-rm -f $(GCJ)-cross$(exeext)
 	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
 
-po-generated: java/parse.c java/parse-scan.c
-
 java.srcextra: java/parse.c java/parse-scan.c
 	-cp -p $^ $(srcdir)/java
 
