@@ -3960,11 +3960,32 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
+  /* A type converts to a reference to it.  
+     This code doesn't fully support references, it's just for the
+     special case of va_start and va_copy.  */
+  if (codel == REFERENCE_TYPE
+      && comptypes (TREE_TYPE (type), TREE_TYPE (rhs)) == 1)
+    {
+      if (mark_addressable (rhs) == 0)
+	return error_mark_node;
+      rhs = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (rhs)), rhs);
+
+      /* We already know that these two types are compatible, but they
+	 may not be exactly identical.  In fact, `TREE_TYPE (type)' is
+	 likely to be __builtin_va_list and `TREE_TYPE (rhs)' is
+	 likely to be va_list, a typedef to __builtin_va_list, which
+	 is different enough that it will cause problems later.  */
+      if (TREE_TYPE (TREE_TYPE (rhs)) != TREE_TYPE (type))
+	rhs = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (type)), rhs);
+
+      rhs = build1 (NOP_EXPR, type, rhs);
+      return rhs;
+    }
   /* Arithmetic types all interconvert, and enum is treated like int.  */
-  if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == ENUMERAL_TYPE
-       || codel == COMPLEX_TYPE)
-      && (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
-	  || coder == COMPLEX_TYPE))
+  else if ((codel == INTEGER_TYPE || codel == REAL_TYPE 
+	    || codel == ENUMERAL_TYPE || codel == COMPLEX_TYPE)
+	   && (coder == INTEGER_TYPE || coder == REAL_TYPE 
+	       || coder == ENUMERAL_TYPE || coder == COMPLEX_TYPE))
     return convert_and_check (type, rhs);
 
   /* Conversion to a transparent union from its member types.

@@ -1901,66 +1901,43 @@ expand_builtin_next_arg (arglist)
    from multiple evaluations.  */
 
 static tree
-stabilize_va_list (valist, was_ptr)
+stabilize_va_list (valist, needs_lvalue)
      tree valist;
-     int was_ptr;
+     int needs_lvalue;
 {
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {
-      /* If stdarg.h took the address of an array-type valist that was passed
-         as a parameter, we'll have taken the address of the parameter itself
-         rather than the array as we'd intended.  Undo this mistake.  */
+      if (TREE_SIDE_EFFECTS (valist))
+	valist = save_expr (valist);
 
-      if (was_ptr)
+      /* For this case, the backends will be expecting a pointer to
+	 TREE_TYPE (va_list_type_node), but it's possible we've
+	 actually been given an array (an actual va_list_type_node).
+	 So fix it.  */
+      if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
 	{
-	  STRIP_NOPS (valist);
-
-	  /* Two cases: either &array, which decomposed to 
-	        <ptr <array <record> valist>>
-	     or &ptr, which turned into
-		<ptr <ptr <record>>>
-	     In the first case we'll need to put the ADDR_EXPR back
-	     after frobbing the types as if &array[0].  */
-
-	  if (TREE_CODE (valist) != ADDR_EXPR)
-	    abort ();
-	  valist = TREE_OPERAND (valist, 0);
+ 	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
+ 	  tree p2 = build_pointer_type (va_list_type_node);
+ 	  valist = build1 (ADDR_EXPR, p2, valist);
+	  valist = fold (build1 (NOP_EXPR, p1, valist));
 	}
+    }
+  else
+    {
+      tree pt;
 
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (valist))
-	  == TYPE_MAIN_VARIANT (va_list_type_node))
+      if (! needs_lvalue)
 	{
-	  tree pt = build_pointer_type (TREE_TYPE (va_list_type_node));
-	  valist = build1 (ADDR_EXPR, pt, valist);
-	  TREE_SIDE_EFFECTS (valist)
-	    = TREE_SIDE_EFFECTS (TREE_OPERAND (valist, 0));
-	}
-      else
-	{
-	  if (! POINTER_TYPE_P (TREE_TYPE (valist))
-	      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (valist)))
-		  != TYPE_MAIN_VARIANT (TREE_TYPE (va_list_type_node))))
-	    abort ();
+	  if (! TREE_SIDE_EFFECTS (valist))
+	    return valist;
+	  
+	  pt = build_pointer_type (va_list_type_node);
+	  valist = fold (build1 (ADDR_EXPR, pt, valist));
+	  TREE_SIDE_EFFECTS (valist) = 1;
 	}
 
       if (TREE_SIDE_EFFECTS (valist))
 	valist = save_expr (valist);
-    }
-  else
-    {
-      if (! was_ptr)
-	{
-	  tree pt;
-
-	  if (! TREE_SIDE_EFFECTS (valist))
-	    return valist;
-
-	  pt = build_pointer_type (va_list_type_node);
-          valist = fold (build1 (ADDR_EXPR, pt, valist));
-	  TREE_SIDE_EFFECTS (valist) = 1;
-	}
-      if (TREE_SIDE_EFFECTS (valist))
-        valist = save_expr (valist);
       valist = fold (build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)),
 			     valist));
     }
