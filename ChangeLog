@@ -1,3 +1,7 @@
+2002-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* MAINTAINERS: Add information about purpose of this file.
+
 2002-04-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure.in: Disallow configuring libgcj when it is already

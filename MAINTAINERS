@@ -1,3 +1,23 @@
+Note
+====
+
+This file contains information about people who are permitted to make
+changes to various parts of the compiler and associated libraries.
+
+Please do not contact the people in this file directly to report
+problems in GCC.
+
+For general information about GCC, please visit:
+
+  http://gcc.gnu.org
+
+To report problems in GCC, please visit:
+
+  http://gcc.gnu.org/bugs.html
+
+Maintainers
+===========
+
 			Blanket Write Privs.
 
 John Carr					jfc@mit.edu
