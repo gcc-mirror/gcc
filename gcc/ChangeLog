@@ -1,3 +1,10 @@
+2005-02-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.md ("tls_indirect_call"): Turn into libcall-like
+	expand.
+	("*tls_indirect_call"): New, reference hard regs directly.
+	* config/frv/frv.c (gen_inlined_tls_plt): Adjust.
+
 2005-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/arm/rtems-elf.h (SUBTARGET_EXTRA_ASM_SPEC): 
