@@ -889,9 +889,9 @@ Gilles Zunino for help porting Java to Irix.
 
 @end itemize
 
-
-We'd also like to thank the folks who have contributed time and energy in
-testing GCC:
+In addition to the above, all of which also contributed time and energy in
+testing GCC, we would like to thank the following for their contributions
+to testing:
 
 @itemize @bullet
 @item
@@ -928,12 +928,6 @@ Frank Braun
 Rodney Brown
 
 @item
-Joe Buck
-
-@item
-Craig Burley
-
-@item
 Sidney Cadot
 
 @item
@@ -941,9 +935,6 @@ Bradford Castalia
 
 @item
 Ralph Doncaster
-
-@item
-Ulrich Drepper
 
 @item
 Richard Emberson
@@ -994,19 +985,7 @@ Amancio Hasty
 Bryan W. Headley
 
 @item
-Kate Hedstrom
-
-@item
-Richard Henderson
-
-@item
 Kevin B. Hendricks
-
-@item
-Manfred Hollstein
-
-@item
-Kamil Iskra
 
 @item
 Joep Jansen
@@ -1024,28 +1003,13 @@ Tobias Kuipers
 Anand Krishnaswamy
 
 @item
-Jeff Law
-
-@item
-Robert Lipe
-
-@item
 llewelly
 
 @item
 Damon Love
 
 @item
-Dave Love
-
-@item
-H.J. Lu
-
-@item
 Brad Lucier
-
-@item
-Mumit Khan
 
 @item
 Matthias Klose
@@ -1055,12 +1019,6 @@ Martin Knoblauch
 
 @item
 Jesse Macnish
-
-@item
-David Miller
-
-@item
-Toon Moene
 
 @item
 Stefan Morrell
@@ -1073,9 +1031,6 @@ Matthias Mueller
 
 @item
 Pekka Nikander
-
-@item
-Alexandre Oliva
 
 @item
 Jon Olson
@@ -1099,9 +1054,6 @@ Paul Reilly
 Tom Reilly
 
 @item
-Loren J. Rittle
-
-@item
 Torsten Rueger
 
 @item
@@ -1111,22 +1063,13 @@ Danny Sadinoff
 Marc Schifer
 
 @item
-Peter Schmid
-
-@item
 David Schuler
 
 @item
 Vin Shelton
 
 @item
-Franz Sirl
-
-@item
 Tim Souder
-
-@item
-Mike Stump
 
 @item
 Adam Sulmicki
@@ -1136,9 +1079,6 @@ George Talbot
 
 @item
 Gregory Warnes
-
-@item
-Carlo Wood
 
 @item
 David E. Young
