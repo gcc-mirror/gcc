@@ -288,7 +288,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
   /* Create a namespace to store symbols for common blocks.  */
   if (gfc_common_ns == NULL)
-    gfc_common_ns = gfc_get_namespace (NULL);
+    gfc_common_ns = gfc_get_namespace (NULL, 0);
 
   gfc_get_symbol (com->name, gfc_common_ns, &common_sym);
   decl = common_sym->backend_decl;

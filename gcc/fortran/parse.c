@@ -1405,7 +1405,7 @@ parse_interface (void)
   current_state = COMP_NONE;
 
 loop:
-  gfc_current_ns = gfc_get_namespace (current_interface.ns);
+  gfc_current_ns = gfc_get_namespace (current_interface.ns, 0);
 
   st = next_statement ();
   switch (st)
@@ -2170,7 +2170,7 @@ parse_contained (int module)
 
   do
     {
-      gfc_current_ns = gfc_get_namespace (parent_ns);
+      gfc_current_ns = gfc_get_namespace (parent_ns, 1);
 
       gfc_current_ns->sibling = parent_ns->contained;
       parent_ns->contained = gfc_current_ns;

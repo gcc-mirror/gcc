@@ -2627,7 +2627,7 @@ mio_namespace_ref (gfc_namespace ** nsp)
       ns = (gfc_namespace *)p->u.pointer;
       if (ns == NULL)
 	{
-	  ns = gfc_get_namespace (NULL);
+	  ns = gfc_get_namespace (NULL, 0);
 	  associate_integer_pointer (p, ns);
 	}
       else
@@ -2878,7 +2878,7 @@ load_needed (pointer_info * p)
 	     the namespaces that hold the formal parameters of module
 	     procedures.  */
 
-	  ns = gfc_get_namespace (NULL);
+	  ns = gfc_get_namespace (NULL, 0);
 	  associate_integer_pointer (q, ns);
 	}
 

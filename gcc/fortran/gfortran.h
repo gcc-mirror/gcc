@@ -1619,7 +1619,7 @@ void gfc_free_st_label (gfc_st_label *);
 void gfc_define_st_label (gfc_st_label *, gfc_sl_type, locus *);
 try gfc_reference_st_label (gfc_st_label *, gfc_sl_type);
 
-gfc_namespace *gfc_get_namespace (gfc_namespace *);
+gfc_namespace *gfc_get_namespace (gfc_namespace *, int);
 gfc_symtree *gfc_new_symtree (gfc_symtree **, const char *);
 gfc_symtree *gfc_find_symtree (gfc_symtree *, const char *);
 gfc_user_op *gfc_get_uop (const char *);

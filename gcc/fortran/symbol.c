@@ -1531,10 +1531,11 @@ done:
    this case, that symbol has been used as a host associated variable
    at some previous time.  */
 
-/* Allocate a new namespace structure.  */
+/* Allocate a new namespace structure.  Copies the implicit types from
+   PARENT if PARENT_TYPES is set.  */
 
 gfc_namespace *
-gfc_get_namespace (gfc_namespace * parent)
+gfc_get_namespace (gfc_namespace * parent, int parent_types)
 {
   gfc_namespace *ns;
   gfc_typespec *ts;
@@ -1556,7 +1557,7 @@ gfc_get_namespace (gfc_namespace * parent)
       ns->set_flag[i - 'a'] = 0;
       ts = &ns->default_type[i - 'a'];
 
-      if (ns->parent != NULL)
+      if (parent_types && ns->parent != NULL)
 	{
 	  /* Copy parent settings */
 	  *ts = ns->parent->default_type[i - 'a'];
@@ -2243,7 +2244,7 @@ void
 gfc_symbol_init_2 (void)
 {
 
-  gfc_current_ns = gfc_get_namespace (NULL);
+  gfc_current_ns = gfc_get_namespace (NULL, 0);
 }
 
 
