@@ -251,7 +251,22 @@ EOF
   [ -f libcpp/po/cpplib.pot ] && mv ../objdir/libcpp/po/*.gmo libcpp/po/
 
   # Create a "MD5SUMS" file to use for checking the validity of the release.
-  find . -type f |sed -e 's:^\./::' -e '/MD5SUMS/d' |sort |xargs md5sum >MD5SUMS
+  echo \
+"# This file contains the MD5 checksums of the files in the 
+# gcc-"${RELEASE}".tar.bz2 tarball.
+#
+# Besides verifying that all files in the tarball were correctly expanded,
+# it also can be used to determine if any files have changed since the
+# tarball was expanded or to verify that a patchfile was correctly applied.
+#
+# Suggested usage:
+# md5sum -c MD5SUMS | grep -v \"OK$\"
+" > MD5SUMS
+
+  find . -type f |
+  sed -e 's:^\./::' -e '/MD5SUMS/d' |
+  sort |
+  xargs md5sum >>MD5SUMS
 }
 
 # Buid a single tarfile.  The first argument is the name of the name
