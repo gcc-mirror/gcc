@@ -195,10 +195,10 @@ static tree make_label_decl PROTO((tree, int));
 static void pop_label PROTO((tree));
 static void pop_labels PROTO((tree));
 static void maybe_deduce_size_from_array_init PROTO((tree, tree));
-static void layout_var_decl PROTO((tree, tree *));
+static tree layout_var_decl PROTO((tree, tree));
 static void maybe_commonize_var PROTO((tree));
 static tree build_cleanup_on_safe_obstack PROTO((tree));
-static void check_initializer PROTO((tree, tree *));
+static tree check_initializer PROTO((tree, tree));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
 static void push_cp_function_context PROTO((struct function *));
 static void pop_cp_function_context PROTO((struct function *));
@@ -7305,32 +7305,26 @@ maybe_deduce_size_from_array_init (decl, init)
 }
 
 /* Set DECL_SIZE, DECL_ALIGN, etc. for DECL (a VAR_DECL), and issue
-   any appropriate error messages regarding the layout.  INITP is a
-   pointer to the initializer for DECL; the initializer may be
-   modified by this function.  */
+   any appropriate error messages regarding the layout.  INIT is a
+   the initializer for DECL; returns a modified version.  */
 
-static void
-layout_var_decl (decl, initp)
+static tree
+layout_var_decl (decl, init)
      tree decl;
-     tree *initp;
+     tree init;
 {
   tree ttype = target_type (TREE_TYPE (decl));
 
-  if (DECL_SIZE (decl) == NULL_TREE
+  /* If we haven't already layed out this declaration, and we know its
+     type, do so now.  Note that we must not call complete type for an
+     external object because it's type might involve templates that we
+     are not supposed to isntantiate yet.  */
+  if (!DECL_EXTERNAL (decl)  
+      && DECL_SIZE (decl) == NULL_TREE
       && TYPE_SIZE (complete_type (TREE_TYPE (decl))) != NULL_TREE)
     layout_decl (decl, 0);
 
-  if (TREE_STATIC (decl) && DECL_SIZE (decl) == NULL_TREE)
-    {
-      /* A static variable with an incomplete type:
-	 that is an error if it is initialized.
-	 Otherwise, let it through, but if it is not `extern'
-	 then it may cause an error message later.  */
-      if (DECL_INITIAL (decl) != NULL_TREE)
-	cp_error ("storage size of `%D' isn't known", decl);
-      *initp = NULL_TREE;
-    }
-  else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
+  if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
     {
       /* An automatic variable with an incomplete type: that is an error.
 	 Don't talk about array types here, since we took care of that
@@ -7354,6 +7348,8 @@ layout_var_decl (decl, initp)
       else
 	cp_error ("storage size of `%D' isn't constant", decl);
     }
+
+  return init;
 }
 
 /* Return a cleanup for DECL, created on whatever obstack is
@@ -7476,49 +7472,49 @@ check_for_uninitialized_const_var (decl)
     cp_error ("uninitialized const `%D'", decl);
 }
 
-/* Verify INITP (the initializer for DECL), and record the
-   initialization in DECL_INITIAL, if appropriate.  The initializer
-   may be modified by this function.  */
+/* Verify INIT (the initializer for DECL), and record the
+   initialization in DECL_INITIAL, if appropriate.  Returns a new
+   value for INIT.  */
 
-static void
-check_initializer (decl, initp)
+static tree
+check_initializer (decl, init)
      tree decl;
-     tree *initp;
+     tree init;
 {
-  tree init;
   tree type;
 
   if (TREE_CODE (decl) == FIELD_DECL)
-    return;
-
-  type = TREE_TYPE (decl);
-  init = *initp;
+    return init;
 
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
   if (init != NULL_TREE && DECL_INITIAL (decl) == NULL_TREE)
     init = NULL_TREE;
-  else if (DECL_EXTERNAL (decl))
-    ;
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      if (TREE_STATIC (decl))
-	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
-      grok_reference_init (decl, type, init);
-      init = NULL_TREE;
-    }
 
-  /* Check for certain invalid initializations.  */
+  /* Check the initializer.  */
   if (init)
     {
-      if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
+      /* Things that are going to be initialized need to have complete
+	 type.  */
+      TREE_TYPE (decl) = type = complete_type (TREE_TYPE (decl));
+
+      if (type == error_mark_node)
+	/* We will have already complained.  */
+	init = NULL_TREE;
+      else if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
 	{
 	  cp_error ("variable-sized object `%D' may not be initialized", decl);
 	  init = NULL_TREE;
 	}
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && !TYPE_SIZE (complete_type (TREE_TYPE (type))))
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       && !TYPE_SIZE (TREE_TYPE (type)))
 	{
 	  cp_error ("elements of array `%#D' have incomplete type", decl);
+	  init = NULL_TREE;
+	}
+      else if (!TYPE_SIZE (type))
+	{
+	  cp_error ("`%D' has incomplete type", decl);
+	  TREE_TYPE (decl) = error_mark_node;
 	  init = NULL_TREE;
 	}
     }
@@ -7531,6 +7527,13 @@ check_initializer (decl, initp)
 
       /* This will keep us from needing to worry about our obstacks.  */
       my_friendly_assert (init != NULL_TREE, 149);
+      init = NULL_TREE;
+    }
+  else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      if (TREE_STATIC (decl))
+	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
+      grok_reference_init (decl, type, init);
       init = NULL_TREE;
     }
   else if (init)
@@ -7590,8 +7593,7 @@ check_initializer (decl, initp)
   else
     check_for_uninitialized_const_var (decl);
   
-  /* Store the modified initializer for our caller.  */
-  *initp = init;
+  return init;
 }
 
 /* If DECL is not a local variable, give it RTL.  */
@@ -7735,7 +7737,7 @@ initialize_local_var (decl, init, flags)
   tree type;
   tree cleanup;
 
-  type = TREE_TYPE (decl);
+  type = complete_type (TREE_TYPE (decl));
 
   cleanup = build_cleanup_on_safe_obstack (decl);
 
@@ -7877,7 +7879,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       pop_decl_namespace ();
     }
 
-  type = complete_type (TREE_TYPE (decl));
+  type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
     {
@@ -7954,7 +7956,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       make_decl_rtl (decl, asmspec, 0);
     }
 
-  check_initializer (decl, &init);
+  /* Deduce size of array from initialization, if not already known.  */
+  maybe_deduce_size_from_array_init (decl, init);
+  init = check_initializer (decl, init);
 
   GNU_xref_decl (current_function_decl, decl);
 
@@ -7966,11 +7970,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (toplevel_bindings_p () && temporary)
     end_temporary_allocation ();
 
-  /* Deduce size of array from initialization, if not already known.  */
-  maybe_deduce_size_from_array_init (decl, init);
-
   if (TREE_CODE (decl) == VAR_DECL)
-    layout_var_decl (decl, &init);
+    init = layout_var_decl (decl, init);
 
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
@@ -8762,12 +8763,11 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	  /* If we're in a template, we need DECL_LANG_SPECIFIC so that
 	     we can call push_template_decl.  */
 	  push_permanent_obstack ();
-	  decl = build_lang_decl (VAR_DECL, declarator,
-					complete_type (type));
+	  decl = build_lang_decl (VAR_DECL, declarator, type);
 	  pop_obstacks ();
 	}
       else
-	decl = build_decl (VAR_DECL, declarator, complete_type (type));
+	decl = build_decl (VAR_DECL, declarator, type);
 
       if (context)
 	set_decl_namespace (decl, context, 0);
