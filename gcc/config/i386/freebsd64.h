@@ -29,8 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LINK_SPEC
 #define LINK_SPEC "\
-  %{!m32:-m elf_x86_64} \
-  %{m32:-m elf_i386} \
+  %{m32:-m elf_i386_fbsd} \
   %{Wl,*:%*} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \

@@ -1,3 +1,7 @@
+2003-04-29  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/freebsd64.h (LINK_SPEC): Mirror FreeBSD linker.
+
 2003-04-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10180
