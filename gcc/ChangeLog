@@ -1,3 +1,7 @@
+Fri May 15 01:29:39 1998  John Wehle  (john@feith.com)
+
+	* i386.h (DATA_ALIGNMENT): Define.
+
 Fri May 15 05:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (delete_output_reload): Ignore single USE that
