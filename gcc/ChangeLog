@@ -1,3 +1,17 @@
+2003-12-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (push): Call gen_push_h8300hs_advanced
+	instead of gen_push_h8300hs.
+	(pop): Call gen_pop_h8300hs_advanced instead of
+	gen_pop_h8300hs.
+	* config/h8300/h8300.h (TRAMPOLINE_SIZE): Use Pmode.
+	* config/h8300/h8300.md (*tablejump_h8300hs_advanced):
+	Tighten the predicate.
+	(*tablejump_h8300hs_normal): Tighten the predicate.
+	(push_h8300hs): Change to
+	push_h8300hs_advanced.
+	(pop_h8300hs): Change to pop_h8300hs_advanced.
+
 2003-12-03  Eric Christopher  <echristo@redhat.com>
 
 	* rtl.c: Fix typo.
