@@ -28,48 +28,66 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__m68k__");		\
-	builtin_define_std ("mc68000");		\
-	if (TARGET_68060)			\
+      builtin_define ("__m68k__");		\
+      builtin_define_std ("mc68000");		\
+      if (TARGET_68040_ONLY)			\
+	{					\
+	  if (TARGET_68060)			\
+	    builtin_define_std ("mc68060");	\
+	  else					\
+	    builtin_define_std ("mc68040");	\
+	}					\
+      else if (TARGET_68060) /* -m68020-60 */	\
+	{					\
 	  builtin_define_std ("mc68060");	\
-	else if (TARGET_68040)			\
 	  builtin_define_std ("mc68040");	\
-	else if (TARGET_68020)			\
-	    builtin_define_std ("mc68020");	\
-	if (TARGET_68881)			\
-	  builtin_define ("__HAVE_68881__");	\
-	if (TARGET_CPU32)			\
-	  {					\
-	    builtin_define_std ("mc68332");	\
-	    builtin_define_std ("mcpu32");	\
-	  }					\
-	if (TARGET_COLDFIRE)			\
-	  builtin_define ("__mcoldfire__");	\
-	if (TARGET_5200)			\
+	  builtin_define_std ("mc68030");	\
+	  builtin_define_std ("mc68020");	\
+	}					\
+      else if (TARGET_68040) /* -m68020-40 */	\
+	{					\
+	  builtin_define_std ("mc68040");	\
+	  builtin_define_std ("mc68030");	\
+ 	  builtin_define_std ("mc68020");	\
+	}					\
+      else if (TARGET_68030)			\
+	builtin_define_std ("mc68030");		\
+      else if (TARGET_68020)			\
+	builtin_define_std ("mc68020");		\
+      if (TARGET_68881)				\
+	builtin_define ("__HAVE_68881__");	\
+      if (TARGET_CPU32)				\
+	{					\
+	  builtin_define_std ("mc68332");	\
+	  builtin_define_std ("mcpu32");	\
+	}					\
+      if (TARGET_COLDFIRE)			\
+	builtin_define ("__mcoldfire__");	\
+      if (TARGET_5200)				\
+	builtin_define ("__mcf5200__");		\
+      if (TARGET_528x)				\
+	{					\
+	  builtin_define ("__mcf528x__");	\
 	  builtin_define ("__mcf5200__");	\
-	if (TARGET_528x)			\
-	  {					\
-	    builtin_define ("__mcf528x__");	\
-	    builtin_define ("__mcf5200__");	\
-	  }					\
-	if (TARGET_CFV3)			\
-	  {					\
-	    builtin_define ("__mcf5300__");	\
-	    builtin_define ("__mcf5307__");	\
-	  }					\
-	if (TARGET_CFV4)			\
-	  {					\
-	    builtin_define ("__mcf5400__");	\
-	    builtin_define ("__mcf5407__");	\
-	  }					\
-	if (TARGET_CF_HWDIV)			\
-	  builtin_define ("__mcfhwdiv__");	\
-	if (flag_pic)				\
-	  builtin_define ("__pic__");		\
-	if (flag_pic > 1)			\
-	  builtin_define ("__PIC__");		\
-	builtin_assert ("cpu=m68k");		\
-	builtin_assert ("machine=m68k");	\
+	}					\
+      if (TARGET_CFV3)				\
+	{					\
+	  builtin_define ("__mcf5300__");	\
+	  builtin_define ("__mcf5307__");	\
+	}					\
+      if (TARGET_CFV4)				\
+	{					\
+	  builtin_define ("__mcf5400__");	\
+	  builtin_define ("__mcf5407__");	\
+	}					\
+      if (TARGET_CF_HWDIV)			\
+	builtin_define ("__mcfhwdiv__");	\
+      if (flag_pic)				\
+	builtin_define ("__pic__");		\
+      if (flag_pic > 1)				\
+	builtin_define ("__PIC__");		\
+      builtin_assert ("cpu=m68k");		\
+      builtin_assert ("machine=m68k");		\
     }						\
   while (0)
 
@@ -98,33 +116,13 @@ extern int target_flags;
 /* Macros used in the machine description to test the flags.  */
 
 /* Compile for a 68020 (not a 68000 or 68010).  */
-#define MASK_68020	1
+#define MASK_68020	(1<<0)
 #define TARGET_68020 (target_flags & MASK_68020)
 
-/* Compile 68881 insns for floating point (not library calls).  */
-#define MASK_68881	2
-#define TARGET_68881 (target_flags & MASK_68881)
-
-/* Compile using 68020 bit-field insns.  */
-#define MASK_BITFIELD	4
-#define TARGET_BITFIELD (target_flags & MASK_BITFIELD)
-
-/* Compile using rtd insn calling sequence.
-   This will not work unless you use prototypes at least
-   for all functions that can take varying numbers of args.  */
-#define MASK_RTD	8
-#define TARGET_RTD (target_flags & MASK_RTD)
-
-/* Compile passing first two args in regs 0 and 1.
-   This exists only to test compiler features that will
-   be needed for RISC chips.  It is not usable
-   and is not intended to be usable on this cpu.  */
-#define MASK_REGPARM	16
-#define TARGET_REGPARM (target_flags & MASK_REGPARM)
-
-/* Compile with 16-bit `int'.  */
-#define MASK_SHORT	32
-#define TARGET_SHORT (target_flags & MASK_SHORT)
+/* Compile for a 68030.  This does not really make a difference in GCC,
+   it just enables the __mc68030__ predefine.  */
+#define MASK_68030	(1<<1)
+#define TARGET_68030 (target_flags & MASK_68030)
 
 /* Optimize for 68040, but still allow execution on 68020
    (-m68020-40 or -m68040).
@@ -132,11 +130,11 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2.  */
-#define MASK_68040	256
+#define MASK_68040	(1<<2)	
 #define TARGET_68040 (target_flags & MASK_68040)
 
 /* Use the 68040-only fp instructions (-m68040 or -m68060).  */
-#define MASK_68040_ONLY	512
+#define MASK_68040_ONLY	(1<<3)
 #define TARGET_68040_ONLY (target_flags & MASK_68040_ONLY)
 
 /* Optimize for 68060, but still allow execution on 68020
@@ -145,23 +143,47 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68060 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2.  */
-#define MASK_68060	1024
+#define MASK_68060	(1<<4)
 #define TARGET_68060 (target_flags & MASK_68060)
 
 /* Compile for mcf5200 */
-#define MASK_5200	2048
+#define MASK_5200	(1<<5)
 #define TARGET_5200 (target_flags & MASK_5200)
+
+/* Build for ColdFire v3 */
+#define MASK_CFV3	(1<<6)
+#define TARGET_CFV3	(target_flags & MASK_CFV3)
+
+/* Build for ColdFire v4 */
+#define MASK_CFV4	(1<<7)
+#define TARGET_CFV4	(target_flags & MASK_CFV4)
+
+/* Compile for ColdFire 528x */
+#define MASK_528x	(1<<8)
+#define TARGET_528x	(target_flags & MASK_528x)
+
+/* Divide support for ColdFire */
+#define MASK_CF_HWDIV	(1<<9)
+#define TARGET_CF_HWDIV	(target_flags & MASK_CF_HWDIV)
+
+/* Compile 68881 insns for floating point (not library calls).  */
+#define MASK_68881	(1<<10)
+#define TARGET_68881	(target_flags & MASK_68881)
+
+/* Compile using 68020 bit-field insns.  */
+#define MASK_BITFIELD	(1<<11)
+#define TARGET_BITFIELD (target_flags & MASK_BITFIELD)
+
+/* Compile with 16-bit `int'.  */
+#define MASK_SHORT	(1<<12)
+#define TARGET_SHORT	(target_flags & MASK_SHORT)
 
 /* Align ints to a word boundary.  This breaks compatibility with the 
    published ABI's for structures containing ints, but produces faster
    code on cpus with 32 bit busses (020, 030, 040, 060, CPU32+, coldfire).
    It's required for coldfire cpus without a misalignment module.  */
-#define MASK_ALIGN_INT	4096
+#define MASK_ALIGN_INT	(1<<13)
 #define TARGET_ALIGN_INT (target_flags & MASK_ALIGN_INT)
-
-/* Compile for a CPU32 */
-	/* A 68020 without bitfields is a good heuristic for a CPU32 */
-#define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
 
 /* Use PC-relative addressing modes (without using a global offset table).
    The m68000 supports 16-bit PC-relative addressing.
@@ -172,31 +194,19 @@ extern int target_flags;
    treated as all containing an implicit PC-relative component, and hence
    cannot be used directly as addresses for memory writes.  See the comments
    in m68k.c for more information.  */
-#define MASK_PCREL	8192
+#define MASK_PCREL	(1<<14)
 #define TARGET_PCREL	(target_flags & MASK_PCREL)
 
 /* Relax strict alignment.  */
-#define MASK_NO_STRICT_ALIGNMENT 16384
+#define MASK_NO_STRICT_ALIGNMENT (1<<15)
 #define TARGET_STRICT_ALIGNMENT  (~target_flags & MASK_NO_STRICT_ALIGNMENT)
 
-/* Build for ColdFire v3 */
-#define MASK_CFV3	0x8000
-#define TARGET_CFV3	(target_flags & MASK_CFV3)
 
-/* Build for ColdFire v4 */
-#define MASK_CFV4	0x10000
-#define TARGET_CFV4	(target_flags & MASK_CFV4)
+/* Compile for a CPU32.  A 68020 without bitfields is a good
+   heuristic for a CPU32.  */
+#define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
 
-/* Divide support for ColdFire */
-#define MASK_CF_HWDIV	0x40000
-#define TARGET_CF_HWDIV	(target_flags & MASK_CF_HWDIV)
-
-/* Compile for mcf528x */
-#define MASK_528x	0x80000
-#define TARGET_528x (target_flags & MASK_528x)
-
-
-/* Is the target a coldfire */
+/* Is the target a ColdFire?  */
 #define MASK_COLDFIRE	(MASK_5200|MASK_528x|MASK_CFV3|MASK_CFV4)
 #define TARGET_COLDFIRE	(target_flags & MASK_COLDFIRE)
 
@@ -226,10 +236,6 @@ extern int target_flags;
       N_("Use the bit-field instructions") },				\
     { "nobitfield", - MASK_BITFIELD,					\
       N_("Do not use the bit-field instructions") },			\
-    { "rtd", MASK_RTD,							\
-      N_("Use different calling convention using 'rtd'") },		\
-    { "nortd", - MASK_RTD,						\
-      N_("Use normal calling convention") },				\
     { "short", MASK_SHORT,						\
       N_("Consider type `int' to be 16 bits wide") },			\
     { "noshort", - MASK_SHORT,						\
@@ -237,16 +243,16 @@ extern int target_flags;
     { "68881", MASK_68881, "" },					\
     { "soft-float", - (MASK_68040_ONLY|MASK_68881),			\
       N_("Generate code with library calls for floating point") },	\
-    { "68020-40", -(MASK_ALL_CF_BITS|MASK_68060|MASK_68040_ONLY),		\
+    { "68020-40", -(MASK_ALL_CF_BITS|MASK_68060|MASK_68040_ONLY),	\
       N_("Generate code for a 68040, without any new instructions") },	\
     { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040), ""},\
-    { "68020-60", -(MASK_ALL_CF_BITS|MASK_68040_ONLY),				\
+    { "68020-60", -(MASK_ALL_CF_BITS|MASK_68040_ONLY),			\
       N_("Generate code for a 68060, without any new instructions") },	\
     { "68020-60", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040	\
 		   |MASK_68060), "" },					\
     { "68030", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
       N_("Generate code for a 68030") },				\
-    { "68030", (MASK_68020|MASK_BITFIELD), "" },			\
+    { "68030", (MASK_68020|MASK_68030|MASK_BITFIELD), "" },		\
     { "68040", - (MASK_ALL_CF_BITS|MASK_68060),				\
       N_("Generate code for a 68040") },				\
     { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD			\
@@ -261,20 +267,20 @@ extern int target_flags;
     { "5200", (MASK_5200), "" },					\
     { "5206e", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
 		|MASK_BITFIELD|MASK_68881),				\
-      N_("Generate code for a 5206e") },					\
-    { "5206e", (MASK_5200|MASK_CF_HWDIV), "" },					\
+      N_("Generate code for a 5206e") },				\
+    { "5206e", (MASK_5200|MASK_CF_HWDIV), "" },				\
     { "528x", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
 		|MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a 528x") },					\
-    { "528x", (MASK_528x|MASK_CF_HWDIV), "" },					\
+    { "528x", (MASK_528x|MASK_CF_HWDIV), "" },				\
     { "5307", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
 		|MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a 5307") },					\
-    { "5307", (MASK_CFV3|MASK_CF_HWDIV), "" },					\
+    { "5307", (MASK_CFV3|MASK_CF_HWDIV), "" },				\
     { "5407", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
 		|MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a 5407") },					\
-    { "5407", (MASK_CFV4|MASK_CF_HWDIV), "" },					\
+    { "5407", (MASK_CFV4|MASK_CF_HWDIV), "" },				\
     { "68851", 0,							\
       N_("Generate code for a 68851") },				\
     { "no-68851", 0,							\
@@ -302,7 +308,7 @@ extern int target_flags;
       N_("Use unaligned memory references") },				\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT, "" }}
-/* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
+/* TARGET_DEFAULT is defined in m68k-none.h, netbsd.h, etc.  */
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -784,21 +790,9 @@ enum reg_class {
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
 
-   On the 68000, the RTS insn cannot pop anything.
-   On the 68010, the RTD insn may be used to pop them if the number
-     of args is fixed, but if the number is variable then the caller
-     must pop them all.  RTD can't be used for library calls now
-     because the library is compiled with the Unix compiler.
-   Use of RTD is a selectable option, since it is incompatible with
-   standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.  */
+   On the m68k, the caller must always pop the args. */
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
-    && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
-	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	    == void_type_node)))				\
-   ? (SIZE) : 0)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -877,26 +871,17 @@ enum reg_class {
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
    NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+    (otherwise it is an extra parameter matching an ellipsis).
 
-/* On the 68000 all args are pushed, except if -mregparm is specified
-   then the first two words of arguments are passed in d0, d1.
-   *NOTE* -mregparm does not work.
-   It exists only to test register calling conventions.  */
+   On the m68k all args are always pushed.  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8) ? gen_rtx_REG ((MODE), (CUM) / 4) : 0)
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8					\
-  && 8 < ((CUM) + ((MODE) == BLKmode				\
-		      ? int_size_in_bytes (TYPE)		\
-		      : GET_MODE_SIZE (MODE))))  		\
- ? 2 - (CUM) / 4 : 0)
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
