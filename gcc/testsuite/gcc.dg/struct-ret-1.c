@@ -1,5 +1,6 @@
 /* { dg-do run { target hppa*-*-* } } */
 /* { dg-options { -O2 } { target hppa*-*-* } } */
+extern void exit (int);
 typedef struct {
         int             x;
         int             y;
@@ -16,7 +17,7 @@ main(int argc, char *argv[])
         if (printPoints(toPoint(0, 0), toPoint(1000, 1000)) != 1)
                 abort();
         else
-                exit();
+                exit(0);
 
         return 0;
 }
