@@ -1,6 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5278,8 +5278,8 @@ fold (expr)
 		      TREE_OPERAND (arg0, 0),
 		      negate_expr (TREE_OPERAND (arg0, 1)));
       else if (TREE_CODE (arg0) == COMPLEX_CST)
-	return build_complex (type, TREE_OPERAND (arg0, 0),
-			      negate_expr (TREE_OPERAND (arg0, 1)));
+	return build_complex (type, TREE_REALPART (arg0),
+			      negate_expr (TREE_IMAGPART (arg0)));
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
 	return fold (build (TREE_CODE (arg0), type,
 			    fold (build1 (CONJ_EXPR, type,

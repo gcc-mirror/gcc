@@ -1,5 +1,10 @@
 2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* fold-const.c (fold): When folding a CONJ_EXPR of a COMPLEX_CST,
+	use TREE_REALPART and TREE_IMAGPART instead of TREE_OPERAND.
+
+2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (SIZE_TYPE, WCHAR_TYPE): Define.
 	(flag_short_double, flag_short_wchar): Define.
 	(c_common_nodes_and_builtins): Create many tree nodes shared
