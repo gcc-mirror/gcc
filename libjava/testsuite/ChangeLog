@@ -1,3 +1,7 @@
+2001-03-29  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.lang/instinit2.out: Fixed.
+
 2001-03-22  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jni/field.out: New file.
