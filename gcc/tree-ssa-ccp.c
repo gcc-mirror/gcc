@@ -755,12 +755,6 @@ visit_assignment (tree stmt)
       /* For a simple copy operation, we copy the lattice values.  */
       value *nval = get_value (rhs);
       val = *nval;
-      
-      /* If lhs is not a gimple register, then it cannot take on
-         an undefined value. */
-      if (!is_gimple_reg (SSA_NAME_VAR (lhs)) 
-          && val.lattice_val == UNDEFINED)
-        val.lattice_val = UNKNOWN_VAL;      
     }
   else if (DECL_P (rhs) 
            && NUM_VUSES (vuses) == 1
@@ -797,6 +791,12 @@ visit_assignment (tree stmt)
 	  }
       }
   }
+
+  /* If LHS is not a gimple register, then it cannot take on an
+     UNDEFINED value. */
+  if (!is_gimple_reg (SSA_NAME_VAR (lhs)) 
+      && val.lattice_val == UNDEFINED)
+    val.lattice_val = UNKNOWN_VAL;      
 
   /* Set the lattice value of the statement's output.  */
   set_lattice_value (lhs, val);
