@@ -294,9 +294,14 @@ __gthread_objc_mutex_allocate(objc_mutex_t mutex)
 static inline int
 __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 {
-  if (__gthread_active_p ()
-      && pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
-    return -1;
+  if (__gthread_active_p ())
+    {
+      if (pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
+        return -1;
+
+      objc_free(mutex->backend);
+      mutex->backend = NULL;
+    }
 
   return 0;
 }
