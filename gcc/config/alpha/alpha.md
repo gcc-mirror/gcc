@@ -3984,17 +3984,13 @@
   "br $31,%l0"
   [(set_attr "type" "ibr")])
 
-(define_insn "return"
+(define_expand "return"
   [(return)]
   "direct_return ()"
-  "ret $31,($26),1"
-  [(set_attr "type" "ibr")])
+  "")
 
-;; Use a different pattern for functions which have non-trivial
-;; epilogues so as not to confuse jump and reorg.
-(define_insn "return_internal"
-  [(use (reg:DI 26))
-   (return)]
+(define_insn "*return_internal"
+  [(return)]
   ""
   "ret $31,($26),1"
   [(set_attr "type" "ibr")])
@@ -5431,9 +5427,9 @@
   "mov %1,%0")
 
 (define_expand "epilogue"
-  [(clobber (const_int 0))]
+  [(return)]
   ""
-  "alpha_expand_epilogue (); DONE;")
+  "alpha_expand_epilogue ();")
 
 (define_expand "eh_epilogue"
   [(use (match_operand:DI 0 "register_operand" "r"))

@@ -1267,6 +1267,10 @@ struct machine_function
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
+
+/* Define registers used by the epilogue and return instruction.  */
+
+#define EPILOGUE_USES(REGNO)	((REGNO) == 26)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.

@@ -1,5 +1,13 @@
 2000-01-30  Richard Henderson  <rth@cygnus.com>
 
+	* alpha.c (alpha_expand_epilogue): Don't emit the return insn.
+	* alpha.h (EPILOGUE_USES): New.  Mark $26 live.
+	* alpha.md (return): Turn into an expander.
+	(return_internal): Don't use $26.
+	(epilogue): Emit the return insn.
+
+2000-01-30  Richard Henderson  <rth@cygnus.com>
+
 	* alpha.md (negtf2, abstf2): Fix word order thinko.
 	(extendsftf2): New.
 	(trunctfsf2): Avoid intermediate rounding errors.
