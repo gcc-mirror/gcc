@@ -1,3 +1,8 @@
+Mon Oct 20 14:15:02 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.c (compute_frame_size): Not a leaf function if
+	profile_flag set.
+
 Mon Oct 20 14:16:38 1997  Geoffrey KEATING  <geoffk@ozemail.com.au>
 
 	* rs6000/t-ppccomm: Use -msdata=none for crtstuff.
