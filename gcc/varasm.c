@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2646,6 +2646,11 @@ compare_constant_1 (exp, p)
 	  register tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
 	  tree type;
+	  int have_purpose = 0;
+
+	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	    if (TREE_PURPOSE (link))
+	      have_purpose = 1;
 
 	  if (bcmp ((char *) &length, p, sizeof length))
 	    return 0;
@@ -2653,7 +2658,9 @@ compare_constant_1 (exp, p)
 	  p += sizeof length;
 
 	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays.  */
+	     For arrays, just verify both constructors are for arrays. 
+	     Then insist that either both or none have any TREE_PURPOSE
+	     values.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
 	    type = TREE_TYPE (exp);
 	  else
@@ -2664,10 +2671,16 @@ compare_constant_1 (exp, p)
 
 	  p += sizeof type;
 
+	  if (bcmp ((char *) &have_purpose, p, sizeof have_purpose))
+	    return 0;
+
+	  p += sizeof have_purpose;
+
 	  /* For arrays, insist that the size in bytes match.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	    {
-	      int size = int_size_in_bytes (TREE_TYPE (exp));
+	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
+
 	      if (bcmp ((char *) &size, p, sizeof size))
 		return 0;
 
@@ -2684,6 +2697,30 @@ compare_constant_1 (exp, p)
 	      else
 		{
 		  tree zero = 0;
+
+		  if (bcmp ((char *) &zero, p, sizeof zero))
+		    return 0;
+
+		  p += sizeof zero;
+		}
+
+	      if (TREE_PURPOSE (link)
+		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
+		{
+		  if (bcmp ((char *) &TREE_PURPOSE (link), p,
+			    sizeof TREE_PURCHASE (link)))
+		    return 0;
+
+		  p += sizeof TREE_PURPOSE (link);
+		}
+	      else if (TREE_PURPOSE (link))
+		{
+		  if ((p = compare_constant_1 (TREE_PURPOSE (link), p)) == 0)
+		    return 0;
+		}
+	      else if (have_purpose)
+		{
+		  int zero = 0;
 
 		  if (bcmp ((char *) &zero, p, sizeof zero))
 		    return 0;
@@ -2818,21 +2855,30 @@ record_constant_1 (exp)
 	  register tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
 	  tree type;
+	  int have_purpose = 0;
+
+	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	    if (TREE_PURPOSE (link))
+	      have_purpose = 1;
 
 	  obstack_grow (&permanent_obstack, (char *) &length, sizeof length);
 
 	  /* For record constructors, insist that the types match.
-	     For arrays, just verify both constructors are for arrays.  */
+	     For arrays, just verify both constructors are for arrays. 
+	     Then insist that either both or none have any TREE_PURPOSE
+	     values.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
 	    type = TREE_TYPE (exp);
 	  else
 	    type = 0;
 	  obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
+	  obstack_grow (&permanent_obstack, (char *) &have_purpose,
+			sizeof have_purpose);
 
 	  /* For arrays, insist that the size in bytes match.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	    {
-	      int size = int_size_in_bytes (TREE_TYPE (exp));
+	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 	      obstack_grow (&permanent_obstack, (char *) &size, sizeof size);
 	    }
 
@@ -2843,6 +2889,21 @@ record_constant_1 (exp)
 	      else
 		{
 		  tree zero = 0;
+
+		  obstack_grow (&permanent_obstack,
+				(char *) &zero, sizeof zero);
+		}
+
+	      if (TREE_PURPOSE (link)
+		  && TREE_CODE (TREE_PURPOSE (link)) == FIELD_DECL)
+		obstack_grow (&permanent_obstack,
+			      (char *) &TREE_PURPOSE (link),
+			      sizeof TREE_PURPOSE (link));
+	      else if (TREE_PURPOSE (link))
+		record_constant_1 (TREE_PURPOSE (link));
+	      else if (have_purpose)
+		{
+		  int zero = 0;
 
 		  obstack_grow (&permanent_obstack,
 				(char *) &zero, sizeof zero);
