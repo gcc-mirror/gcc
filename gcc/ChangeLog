@@ -1,3 +1,8 @@
+Sun Mar  1 17:48:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* c-parse.in (undeclared variable error): Tweak error message to
+	be clearer.
+
 Sun Mar 1 10:22:36 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
