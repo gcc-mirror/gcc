@@ -25,7 +25,8 @@ Boston, MA 02111-1307, USA.  */
   {"@objective-c",
    /* cc1obj has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
-     "%{E|M|MM:%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)}\
+     "%{E|M|MM:%(trad_capable_cpp)\
+          -lang-objc %{ansi:-std=c89} %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
 	%{traditional|ftraditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
