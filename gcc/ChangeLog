@@ -1,3 +1,9 @@
+2004-01-29  Richard Henderson  <rth@redhat.com>
+
+        * c-parse.in (extension): Use itype.
+        (SAVE_EXT_FLAGS): Don't allocate a tree.
+        (RESTORE_EXT_FLAGS): Don't read a tree.
+
 2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* c-lex.c (c_lex): Rename to...

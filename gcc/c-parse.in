@@ -204,7 +204,7 @@ do {									\
 %type <ttype> init maybeasm
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> any_word extension
+%type <ttype> any_word
 
 %type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
 %type <ttype> do_stmt_start poplevel stmt label
@@ -230,7 +230,7 @@ do {									\
 %type <ttype> parmlist_or_identifiers parmlist_or_identifiers_1
 %type <ttype> identifiers_or_typenames
 
-%type <itype> setspecs setspecs_fp
+%type <itype> setspecs setspecs_fp extension
 
 %type <location> save_location
 
@@ -295,15 +295,14 @@ static GTY(()) tree declspec_stack;
 
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
-#define SAVE_EXT_FLAGS()			\
-	size_int (pedantic			\
-		  | (warn_pointer_arith << 1)	\
-		  | (warn_traditional << 2)	\
-		  | (flag_iso << 3))
+#define SAVE_EXT_FLAGS()		\
+	(pedantic			\
+	 | (warn_pointer_arith << 1)	\
+	 | (warn_traditional << 2)	\
+	 | (flag_iso << 3))
 
-#define RESTORE_EXT_FLAGS(tval)			\
+#define RESTORE_EXT_FLAGS(val)			\
   do {						\
-    int val = tree_low_cst (tval, 0);		\
     pedantic = val & 1;				\
     warn_pointer_arith = (val >> 1) & 1;	\
     warn_traditional = (val >> 2) & 1;		\
