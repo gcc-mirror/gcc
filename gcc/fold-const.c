@@ -6620,9 +6620,9 @@ fold_complex_div (tree type, tree ac, tree bc, enum tree_code code)
   return fold_complex_div_parts (type, ar, ai, br, bi, code);
 }
 
-/* Fold a unary expression EXPR.  Return the folded expression if
-   folding is successful.  Otherwise, return the original
-   expression.  */
+/* Fold a unary expression of code CODE and type TYPE with operand
+   OP0.  Return the folded expression if folding is successful.
+   Otherwise, return NULL_TREE.  */
 
 static tree
 fold_unary (enum tree_code code, tree type, tree op0)
@@ -7033,9 +7033,9 @@ fold_unary (enum tree_code code, tree type, tree op0)
     } /* switch (code) */
 }
 
-/* Fold a binary expression EXPR.  Return the folded expression if
-   folding is successful.  Otherwise, return the original
-   expression.  */
+/* Fold a binary expression of code CODE and type TYPE with operands
+   OP0 and OP1.  Return the folded expression if folding is
+   successful.  Otherwise, return NULL_TREE.  */
 
 static tree
 fold_binary (enum tree_code code, tree type, tree op0, tree op1)
