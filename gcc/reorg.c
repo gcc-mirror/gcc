@@ -2777,15 +2777,16 @@ mark_target_live_regs (target, res)
 
       REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
 
-      EXECUTE_IF_SET_IN_REG_SET (regs_live, 0, i,
-				 {
-				   if ((regno = reg_renumber[i]) >= 0)
-				     for (j = regno;
-					  j < regno + HARD_REGNO_NREGS (regno,
-									PSEUDO_REGNO_MODE (i));
-					  j++)
-				       SET_HARD_REG_BIT (current_live_regs, j);
-				 });
+      EXECUTE_IF_SET_IN_REG_SET
+	(regs_live, FIRST_PSEUDO_REGISTER, i,
+	 {
+	   if ((regno = reg_renumber[i]) >= 0)
+	     for (j = regno;
+		  j < regno + HARD_REGNO_NREGS (regno,
+						PSEUDO_REGNO_MODE (i));
+		  j++)
+	       SET_HARD_REG_BIT (current_live_regs, j);
+	 });
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
