@@ -1,3 +1,13 @@
+2002-02-14  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS):  New macro, initial revision.
+	* configure.in:  Call it.
+	* config/linker-map.gnu:  New file, initial incomplete revision.
+	* src/Makefile.am:  Optionally pass version script to the linker.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* src/Makefile.in:  Regenerate.
+
 2002-02-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/localename.cc: Remove stdexcept include.

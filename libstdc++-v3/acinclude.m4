@@ -2004,3 +2004,58 @@ fi
 ])
 
 
+dnl
+dnl Add version tags to symbols in shared library (or not), additionally
+dnl marking other symbols as private/local (or not).
+dnl
+dnl GLIBCPP_ENABLE_SYMVERS
+dnl --enable-symvers adds a version script to the linker call when creating
+dnl       the shared library.
+dnl --disable-symvers does not.
+dnl  +  Usage:  GLIBCPP_ENABLE_SYMVERS[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       defaults to `no'.
+AC_DEFUN(GLIBCPP_ENABLE_SYMVERS, [dnl
+AC_REQUIRE([AC_PROG_LD])
+define([GLIBCPP_ENABLE_SYMVERS_DEFAULT], ifelse($1, yes, yes, no))dnl
+AC_ARG_ENABLE(symvers,
+changequote(<<, >>)dnl
+<<  --enable-symvers        enables symbol versioning of the shared library [default=>>GLIBCPP_ENABLE_SYMVERS_DEFAULT],
+changequote([, ])dnl
+[case "$enableval" in
+ yes) enable_symvers=yes ;;
+ no)  enable_symvers=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable symvers]) ;;
+ esac],
+enable_symvers=GLIBCPP_ENABLE_SYMVERS_DEFAULT)dnl
+dnl Option parsed, now set things appropriately
+AC_MSG_CHECKING([whether to version shared lib symbols])
+if test $enable_shared = no; then
+  enable_symvers=irrelevant
+fi
+# placeholder -- maybe have a fallback later
+LINKER_MAP=config/linker-map.gnu
+# symvers variable may evolve into holding the type of linker map someday
+if test $enable_symvers = yes; then
+  # flat-out assume a whole bunch of things right now
+  #
+  # The name of this variable changed between autoconf versions (our problem
+  # for depending on an impl detail, tsk tsk).  It used to be
+  # ac_cv_prog_gnu_ld but is now lt_cv_prog_gnu_ld, and is copied back into
+  # with_gnu_ld which can also be user-settable.  Let's use that one.
+  if test $with_gnu_ld = yes; then
+    # we also assume that the gnu ld in question has phil's patches... can't
+    # think today of an easy way to programatically test for that; revisit
+    LINKER_MAP=config/linker-map.gnu
+  else
+    # placeholder -- maybe have a fallback later
+    LINKER_MAP=config/linker-map.gnu
+    enable_symvers=no
+  fi
+fi
+AC_LINK_FILES($LINKER_MAP, src/linker.map)
+AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB, test "$enable_symvers" = yes)
+AC_MSG_RESULT($enable_symvers)
+])
+
+
