@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtfini.o%s"
+#define ENDFILE_SPEC "-lgloss crtfini.o%s"
 
      
 #undef LIB_SPEC
