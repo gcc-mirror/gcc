@@ -1506,13 +1506,12 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     if the multiplication is written as a shift.  If so, we can
 	     distribute and make a new multiply, shift, or maybe just
 	     have X (if C is 2 in the example above).  But don't make
-	     real multiply if we didn't have one before.  */
+	     something more expensive than we had before.  */
 
 	  if (! FLOAT_MODE_P (mode))
 	    {
 	      HOST_WIDE_INT coeff0 = 1, coeff1 = 1;
 	      rtx lhs = op0, rhs = op1;
-	      int had_mult = 0;
 
 	      if (GET_CODE (lhs) == NEG)
 		coeff0 = -1, lhs = XEXP (lhs, 0);
@@ -1520,7 +1519,6 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT)
 		{
 		  coeff0 = INTVAL (XEXP (lhs, 1)), lhs = XEXP (lhs, 0);
-		  had_mult = 1;
 		}
 	      else if (GET_CODE (lhs) == ASHIFT
 		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT
@@ -1537,7 +1535,6 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT)
 		{
 		  coeff1 = INTVAL (XEXP (rhs, 1)), rhs = XEXP (rhs, 0);
-		  had_mult = 1;
 		}
 	      else if (GET_CODE (rhs) == ASHIFT
 		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT
@@ -1550,9 +1547,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 
 	      if (rtx_equal_p (lhs, rhs))
 		{
+		  rtx orig = gen_rtx_PLUS (mode, op0, op1);
 		  tem = simplify_gen_binary (MULT, mode, lhs,
-					GEN_INT (coeff0 + coeff1));
-		  return (GET_CODE (tem) == MULT && ! had_mult) ? 0 : tem;
+					     GEN_INT (coeff0 + coeff1));
+		  return rtx_cost (tem, SET) <= rtx_cost (orig, SET)
+			 ? tem : 0;
 		}
 	    }
 
@@ -1661,13 +1660,12 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     if the multiplication is written as a shift.  If so, we can
 	     distribute and make a new multiply, shift, or maybe just
 	     have X (if C is 2 in the example above).  But don't make
-	     real multiply if we didn't have one before.  */
+	     something more expensive than we had before.  */
 
 	  if (! FLOAT_MODE_P (mode))
 	    {
 	      HOST_WIDE_INT coeff0 = 1, coeff1 = 1;
 	      rtx lhs = op0, rhs = op1;
-	      int had_mult = 0;
 
 	      if (GET_CODE (lhs) == NEG)
 		coeff0 = -1, lhs = XEXP (lhs, 0);
@@ -1675,7 +1673,6 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT)
 		{
 		  coeff0 = INTVAL (XEXP (lhs, 1)), lhs = XEXP (lhs, 0);
-		  had_mult = 1;
 		}
 	      else if (GET_CODE (lhs) == ASHIFT
 		       && GET_CODE (XEXP (lhs, 1)) == CONST_INT
@@ -1692,7 +1689,6 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT)
 		{
 		  coeff1 = INTVAL (XEXP (rhs, 1)), rhs = XEXP (rhs, 0);
-		  had_mult = 1;
 		}
 	      else if (GET_CODE (rhs) == ASHIFT
 		       && GET_CODE (XEXP (rhs, 1)) == CONST_INT
@@ -1705,9 +1701,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 
 	      if (rtx_equal_p (lhs, rhs))
 		{
+		  rtx orig = gen_rtx_MINUS (mode, op0, op1);
 		  tem = simplify_gen_binary (MULT, mode, lhs,
 					     GEN_INT (coeff0 - coeff1));
-		  return (GET_CODE (tem) == MULT && ! had_mult) ? 0 : tem;
+		  return rtx_cost (tem, SET) <= rtx_cost (orig, SET)
+			 ? tem : 0;
 		}
 	    }
 
