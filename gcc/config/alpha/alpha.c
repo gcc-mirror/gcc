@@ -348,7 +348,6 @@ reg_or_6bit_operand (op, mode)
 {
   return ((GET_CODE (op) == CONST_INT
 	   && (unsigned HOST_WIDE_INT) INTVAL (op) < 64)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || register_operand (op, mode));
 }
 
@@ -362,7 +361,6 @@ reg_or_8bit_operand (op, mode)
 {
   return ((GET_CODE (op) == CONST_INT
 	   && (unsigned HOST_WIDE_INT) INTVAL (op) < 0x100)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || register_operand (op, mode));
 }
 
@@ -374,8 +372,7 @@ cint8_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
-	   && (unsigned HOST_WIDE_INT) INTVAL (op) < 0x100)
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	   && (unsigned HOST_WIDE_INT) INTVAL (op) < 0x100));
 }
 
 /* Return 1 if the operand is a valid second operand to an add insn.  */
@@ -389,8 +386,6 @@ add_operand (op, mode)
     /* Constraints I, J, O and P are covered by K.  */
     return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'K')
 	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
-  else if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
 
   return register_operand (op, mode);
 }
@@ -406,8 +401,6 @@ sext_add_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
 	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'));
-  else if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
 
   return register_operand (op, mode);
 }
@@ -438,8 +431,6 @@ and_operand (op, mode)
     return ((unsigned HOST_WIDE_INT) INTVAL (op) < 0x100
 	    || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100
 	    || zap_mask (INTVAL (op)));
-  else if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
 
   return register_operand (op, mode);
 }
@@ -454,8 +445,6 @@ or_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return ((unsigned HOST_WIDE_INT) INTVAL (op) < 0x100
 	    || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100);
-  else if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
 
   return register_operand (op, mode);
 }
@@ -555,7 +544,6 @@ reg_or_cint_operand (op, mode)
     enum machine_mode mode;
 {
      return (GET_CODE (op) == CONST_INT
-	     || GET_CODE (op) == CONSTANT_P_RTX
 	     || register_operand (op, mode));
 }
 
@@ -573,7 +561,7 @@ some_operand (op, mode)
   switch (GET_CODE (op))
     {
     case REG:  case MEM:  case CONST_DOUBLE:  case CONST_INT:  case LABEL_REF:
-    case SYMBOL_REF:  case CONST:  case CONSTANT_P_RTX:
+    case SYMBOL_REF:  case CONST:
       return 1;
 
     case SUBREG:
@@ -622,7 +610,6 @@ input_operand (op, mode)
       return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
 
     case CONST_INT:
-    case CONSTANT_P_RTX:
       return mode == QImode || mode == HImode || add_operand (op, mode);
 
     default:
