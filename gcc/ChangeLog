@@ -1,3 +1,7 @@
+Wed Mar 18 17:11:18 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.md (movsf+1): Optimize moving a CONST_DOUBLE zero.
+
 Wed Mar 18 17:07:54 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* regclass.c (init_reg_sets): Delete init of reg-move cost tables.
