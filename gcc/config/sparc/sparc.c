@@ -68,18 +68,17 @@ Boston, MA 02111-1307, USA.  */
 static int apparent_fsize;
 static int actual_fsize;
 
-/* Number of live general or floating point registers needed to be saved
-   (as 4-byte quantities).  This is only done if TARGET_EPILOGUE.  */
+/* Number of live general or floating point registers needed to be
+   saved (as 4-byte quantities).  */
 static int num_gfregs;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
-
 rtx sparc_compare_op0, sparc_compare_op1;
 
-/* We may need an epilogue if we spill too many registers.
-   If this is non-zero, then we branch here for the epilogue.  */
-static rtx leaf_label;
+/* Coordinate with the md file wrt special insns created by
+   sparc_nonflat_function_epilogue.  */
+bool sparc_emitting_epilogue;
 
 #ifdef LEAF_REGISTERS
 
@@ -3392,30 +3391,27 @@ compute_frame_size (size, leaf_function)
   int outgoing_args_size = (current_function_outgoing_args_size
 			    + REG_PARM_STACK_SPACE (current_function_decl));
 
-  if (TARGET_EPILOGUE)
+  /* N_REGS is the number of 4-byte regs saved thus far.  This applies
+     even to v9 int regs to be consistent with save_regs/restore_regs.  */
+
+  if (TARGET_ARCH64)
     {
-      /* N_REGS is the number of 4-byte regs saved thus far.  This applies
-	 even to v9 int regs to be consistent with save_regs/restore_regs.  */
-
-      if (TARGET_ARCH64)
-	{
-	  for (i = 0; i < 8; i++)
-	    if (regs_ever_live[i] && ! call_used_regs[i])
-	      n_regs += 2;
-	}
-      else
-	{
-	  for (i = 0; i < 8; i += 2)
-	    if ((regs_ever_live[i] && ! call_used_regs[i])
-		|| (regs_ever_live[i+1] && ! call_used_regs[i+1]))
-	      n_regs += 2;
-	}
-
-      for (i = 32; i < (TARGET_V9 ? 96 : 64); i += 2)
+      for (i = 0; i < 8; i++)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  n_regs += 2;
+    }
+  else
+    {
+      for (i = 0; i < 8; i += 2)
 	if ((regs_ever_live[i] && ! call_used_regs[i])
 	    || (regs_ever_live[i+1] && ! call_used_regs[i+1]))
 	  n_regs += 2;
     }
+
+  for (i = 32; i < (TARGET_V9 ? 96 : 64); i += 2)
+    if ((regs_ever_live[i] && ! call_used_regs[i])
+	|| (regs_ever_live[i+1] && ! call_used_regs[i+1]))
+      n_regs += 2;
 
   /* Set up values for use in `function_epilogue'.  */
   num_gfregs = n_regs;
@@ -3640,24 +3636,9 @@ sparc_nonflat_function_prologue (file, size, leaf_function)
 	  base = frame_base_name;
 	}
 
-      n_regs = 0;
-      if (TARGET_EPILOGUE && ! leaf_function)
-	/* ??? Originally saved regs 0-15 here.  */
-	n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
-      else if (leaf_function)
-	/* ??? Originally saved regs 0-31 here.  */
-	n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
-      if (TARGET_EPILOGUE)
-	save_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs,
-		   real_offset);
-    }
-
-  leaf_label = 0;
-  if (leaf_function && actual_fsize != 0)
-    {
-      /* warning ("leaf procedure with frame size %d", actual_fsize); */
-      if (! TARGET_EPILOGUE)
-	leaf_label = gen_label_rtx ();
+      n_regs = save_regs (file, 0, 8, base, offset, 0, real_offset);
+      save_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs,
+		 real_offset);
     }
 }
 
@@ -3684,15 +3665,8 @@ output_restore_regs (file, leaf_function)
       base = frame_base_name;
     }
 
-  n_regs = 0;
-  if (TARGET_EPILOGUE && ! leaf_function)
-    /* ??? Originally saved regs 0-15 here.  */
-    n_regs = restore_regs (file, 0, 8, base, offset, 0);
-  else if (leaf_function)
-    /* ??? Originally saved regs 0-31 here.  */
-    n_regs = restore_regs (file, 0, 8, base, offset, 0);
-  if (TARGET_EPILOGUE)
-    restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
+  n_regs = restore_regs (file, 0, 8, base, offset, 0);
+  restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
 }
 
 /* This function generates the assembly code for function exit,
@@ -3725,12 +3699,6 @@ sparc_nonflat_function_epilogue (file, size, leaf_function)
 {
   const char *ret;
 
-  if (leaf_label)
-    {
-      emit_label_after (leaf_label, get_last_insn ());
-      final_scan_insn (get_last_insn (), file, 0, 0, 1);
-    }
-
   if (current_function_epilogue_delay_list == 0)
     {
       /* If code does not drop into the epilogue, we need
@@ -3751,95 +3719,93 @@ sparc_nonflat_function_epilogue (file, size, leaf_function)
   else
     ret = (SKIP_CALLERS_UNIMP_P ? "jmp\t%i7+12" : "ret");
 
-  if (TARGET_EPILOGUE || leaf_label)
+  if (! leaf_function)
     {
-      int old_target_epilogue = TARGET_EPILOGUE;
-      target_flags &= ~old_target_epilogue;
-
-      if (! leaf_function)
+      if (current_function_calls_eh_return)
 	{
-	  if (current_function_calls_eh_return)
-	    {
-	      if (current_function_epilogue_delay_list)
-		abort ();
-	      if (SKIP_CALLERS_UNIMP_P)
-		abort ();
+	  if (current_function_epilogue_delay_list)
+	    abort ();
+	  if (SKIP_CALLERS_UNIMP_P)
+	    abort ();
 
-	      fputs ("\trestore\n\tretl\n\tadd\t%sp, %g1, %sp\n", file);
-	    }
-	  /* If we wound up with things in our delay slot, flush them here.  */
-	  else if (current_function_epilogue_delay_list)
-	    {
-	      rtx delay = PATTERN (XEXP (current_function_epilogue_delay_list, 0));
-
-	      if (TARGET_V9 && ! epilogue_renumber (&delay, 1))
-		{
-		  epilogue_renumber (&delay, 0);
-		  fputs (SKIP_CALLERS_UNIMP_P
-			 ? "\treturn\t%i7+12\n"
-			 : "\treturn\t%i7+8\n", file);
-		  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0), file, 1, 0, 0);
-		}
-	      else
-		{
-		  rtx insn = emit_jump_insn_after (gen_rtx_RETURN (VOIDmode),
-						   get_last_insn ());
-		  rtx src;
-
-		  if (GET_CODE (delay) != SET)
-		    abort();
-
-		  src = SET_SRC (delay);
-		  if (GET_CODE (src) == ASHIFT)
-		    {
-		      if (XEXP (src, 1) != const1_rtx)
-			abort();
-		      SET_SRC (delay) = gen_rtx_PLUS (GET_MODE (src), XEXP (src, 0),
-						      XEXP (src, 0));
-		    }
-
-		  PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode,
-					gen_rtvec (2, delay, PATTERN (insn)));
-		  final_scan_insn (insn, file, 1, 0, 1);
-		}
-	    }
-	  else if (TARGET_V9 && ! SKIP_CALLERS_UNIMP_P)
-	    fputs ("\treturn\t%i7+8\n\tnop\n", file);
-	  else
-	    fprintf (file, "\t%s\n\trestore\n", ret);
+	  fputs ("\trestore\n\tretl\n\tadd\t%sp, %g1, %sp\n", file);
 	}
-      else if (current_function_calls_eh_return)
-	abort ();
-      /* All of the following cases are for leaf functions.  */
+      /* If we wound up with things in our delay slot, flush them here.  */
       else if (current_function_epilogue_delay_list)
 	{
-	  /* eligible_for_epilogue_delay_slot ensures that if this is a
-	     leaf function, then we will only have insn in the delay slot
-	     if the frame size is zero, thus no adjust for the stack is
-	     needed here.  */
-	  if (actual_fsize != 0)
-	    abort ();
-	  fprintf (file, "\t%s\n", ret);
-	  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-			   file, 1, 0, 1);
+	  rtx delay = PATTERN (XEXP (current_function_epilogue_delay_list, 0));
+
+	  if (TARGET_V9 && ! epilogue_renumber (&delay, 1))
+	    {
+	      epilogue_renumber (&delay, 0);
+	      fputs (SKIP_CALLERS_UNIMP_P
+		     ? "\treturn\t%i7+12\n"
+		     : "\treturn\t%i7+8\n", file);
+	      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
+			       file, 1, 0, 0);
+	    }
+	  else
+	    {
+	      rtx insn, src;
+
+	      if (GET_CODE (delay) != SET)
+		abort();
+
+	      src = SET_SRC (delay);
+	      if (GET_CODE (src) == ASHIFT)
+		{
+		  if (XEXP (src, 1) != const1_rtx)
+		    abort();
+		  SET_SRC (delay)
+		    = gen_rtx_PLUS (GET_MODE (src), XEXP (src, 0),
+				    XEXP (src, 0));
+		}
+
+	      insn = gen_rtx_PARALLEL (VOIDmode,
+				       gen_rtvec (2, delay,
+						  gen_rtx_RETURN (VOIDmode)));
+	      insn = emit_jump_insn (insn);
+
+	      sparc_emitting_epilogue = true;
+	      final_scan_insn (insn, file, 1, 0, 1);
+	      sparc_emitting_epilogue = false;
+	    }
 	}
-      /* Output 'nop' instead of 'sub %sp,-0,%sp' when no frame, so as to
-	 avoid generating confusing assembly language output.  */
-      else if (actual_fsize == 0)
-	fprintf (file, "\t%s\n\tnop\n", ret);
-      else if (actual_fsize <= 4096)
-	fprintf (file, "\t%s\n\tsub\t%%sp, -%d, %%sp\n", ret, actual_fsize);
-      else if (actual_fsize <= 8192)
-	fprintf (file, "\tsub\t%%sp, -4096, %%sp\n\t%s\n\tsub\t%%sp, -%d, %%sp\n",
-		 ret, actual_fsize - 4096);
-      else if ((actual_fsize & 0x3ff) == 0)
-	fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
-		 actual_fsize, ret);
-      else		 
-	fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
-		 actual_fsize, actual_fsize, ret);
-      target_flags |= old_target_epilogue;
+      else if (TARGET_V9 && ! SKIP_CALLERS_UNIMP_P)
+	fputs ("\treturn\t%i7+8\n\tnop\n", file);
+      else
+	fprintf (file, "\t%s\n\trestore\n", ret);
     }
+  /* All of the following cases are for leaf functions.  */
+  else if (current_function_calls_eh_return)
+    abort ();
+  else if (current_function_epilogue_delay_list)
+    {
+      /* eligible_for_epilogue_delay_slot ensures that if this is a
+	 leaf function, then we will only have insn in the delay slot
+	 if the frame size is zero, thus no adjust for the stack is
+	 needed here.  */
+      if (actual_fsize != 0)
+	abort ();
+      fprintf (file, "\t%s\n", ret);
+      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
+		       file, 1, 0, 1);
+    }
+  /* Output 'nop' instead of 'sub %sp,-0,%sp' when no frame, so as to
+	 avoid generating confusing assembly language output.  */
+  else if (actual_fsize == 0)
+    fprintf (file, "\t%s\n\tnop\n", ret);
+  else if (actual_fsize <= 4096)
+    fprintf (file, "\t%s\n\tsub\t%%sp, -%d, %%sp\n", ret, actual_fsize);
+  else if (actual_fsize <= 8192)
+    fprintf (file, "\tsub\t%%sp, -4096, %%sp\n\t%s\n\tsub\t%%sp, -%d, %%sp\n",
+	     ret, actual_fsize - 4096);
+  else if ((actual_fsize & 0x3ff) == 0)
+    fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
+	     actual_fsize, ret);
+  else		 
+    fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
+	     actual_fsize, actual_fsize, ret);
 
  output_vectors:
   sparc_output_deferred_case_vectors ();
@@ -5698,87 +5664,6 @@ epilogue_renumber (where, test)
 	return 1;
     }
   return 0;
-}
-
-/* Output assembler code to return from a function.  */
-
-const char *
-output_return (operands)
-     rtx *operands;
-{
-  rtx delay = final_sequence ? XVECEXP (final_sequence, 0, 1) : 0;
-
-  if (leaf_label)
-    {
-      operands[0] = leaf_label;
-      return "b%* %l0%(";
-    }
-  else if (current_function_uses_only_leaf_regs)
-    {
-      /* No delay slot in a leaf function.  */
-      if (delay)
-	abort ();
-
-      /* If we didn't allocate a frame pointer for the current function,
-	 the stack pointer might have been adjusted.  Output code to
-	 restore it now.  */
-
-      operands[0] = GEN_INT (actual_fsize);
-
-      /* Use sub of negated value in first two cases instead of add to
-	 allow actual_fsize == 4096.  */
-
-      if (actual_fsize <= 4096)
-	{
-	  if (SKIP_CALLERS_UNIMP_P)
-	    return "jmp\t%%o7+12\n\tsub\t%%sp, -%0, %%sp";
-	  else
-	    return "retl\n\tsub\t%%sp, -%0, %%sp";
-	}
-      else if (actual_fsize <= 8192)
-	{
-	  operands[0] = GEN_INT (actual_fsize - 4096);
-	  if (SKIP_CALLERS_UNIMP_P)
-	    return "sub\t%%sp, -4096, %%sp\n\tjmp\t%%o7+12\n\tsub\t%%sp, -%0, %%sp";
-	  else
-	    return "sub\t%%sp, -4096, %%sp\n\tretl\n\tsub\t%%sp, -%0, %%sp";
-	}
-      else if (SKIP_CALLERS_UNIMP_P)
-	{
-	  if ((actual_fsize & 0x3ff) != 0)
-	    return "sethi\t%%hi(%a0), %%g1\n\tor\t%%g1, %%lo(%a0), %%g1\n\tjmp\t%%o7+12\n\tadd\t%%sp, %%g1, %%sp";
-	  else
-	    return "sethi\t%%hi(%a0), %%g1\n\tjmp\t%%o7+12\n\tadd\t%%sp, %%g1, %%sp";
-	}
-      else
-	{
-	  if ((actual_fsize & 0x3ff) != 0)
-	    return "sethi\t%%hi(%a0), %%g1\n\tor\t%%g1, %%lo(%a0), %%g1\n\tretl\n\tadd\t%%sp, %%g1, %%sp";
-	  else
-	    return "sethi\t%%hi(%a0), %%g1\n\tretl\n\tadd\t%%sp, %%g1, %%sp";
-	}
-    }
-  else if (TARGET_V9)
-    {
-      if (delay)
-	{
-	  epilogue_renumber (&SET_DEST (PATTERN (delay)), 0);
-	  epilogue_renumber (&SET_SRC (PATTERN (delay)), 0);
-	}
-      if (SKIP_CALLERS_UNIMP_P)
-	return "return\t%%i7+12%#";
-      else
-	return "return\t%%i7+8%#";
-    }
-  else
-    {
-      if (delay)
-	abort ();
-      if (SKIP_CALLERS_UNIMP_P)
-	return "jmp\t%%i7+12\n\trestore";
-      else
-	return "ret\n\trestore";
-    }
 }
 
 /* Leaf functions and non-leaf functions have different needs.  */
@@ -8593,23 +8478,6 @@ sparc_v8plus_shift (operands, insn, opcode)
   else
     return strcat (asm_code, "\t%3, %2, %3\n\tsrlx\t%3, 32, %H0\n\tmov\t%3, %L0");
 }
-
-
-/* Return 1 if DEST and SRC reference only global and in registers.  */
-
-int
-sparc_return_peephole_ok (dest, src)
-     rtx dest, src;
-{
-  if (! TARGET_V9)
-    return 0;
-  if (current_function_uses_only_leaf_regs)
-    return 0;
-  if (GET_CODE (src) != CONST_INT
-      && (GET_CODE (src) != REG || ! IN_OR_GLOBAL_P (src)))
-    return 0;
-  return IN_OR_GLOBAL_P (dest);
-}
 
 /* Output rtl to increment the profiler label LABELNO
    for profiling a function entry.  */
@@ -8651,7 +8519,6 @@ sparc_add_gc_roots ()
 {
   ggc_add_rtx_root (&sparc_compare_op0, 1);
   ggc_add_rtx_root (&sparc_compare_op1, 1);
-  ggc_add_rtx_root (&leaf_label, 1);
   ggc_add_rtx_root (&global_offset_table, 1);
   ggc_add_rtx_root (&get_pc_symbol, 1);
   ggc_add_rtx_root (&sparc_addr_diff_list, 1);
