@@ -1,3 +1,8 @@
+Wed Sep  8 00:00:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* defaults.h (TARGET_ESC): Move ...
+	* system.h: ... here, where Linas had it in the first place.  Silly me.
+
 Tue Sep  7 23:46:35 1999  Linas Vepstas  <linas@linas.org>
 
 	* c-common.c: Use ISGRAPH, ISLOWER, toupper.

@@ -121,6 +121,11 @@ extern int fputs_unlocked PROTO ((const char *, FILE *));
    host does not conform to Posix.  */
 #define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
+/* Define a default escape character; its different for EBCDIC.  */
+#ifndef TARGET_ESC
+#define TARGET_ESC 033
+#endif
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
