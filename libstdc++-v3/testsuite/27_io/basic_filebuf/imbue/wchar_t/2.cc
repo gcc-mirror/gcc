@@ -41,9 +41,7 @@ void test02()
   pos_type p = ob.pubseekoff(2, ios_base::beg, ios_base::in);
   VERIFY( p != bad);
 
-  // "if file is not positioned at its beginning" imbue fails
-  // but, according to 27.5.2.2.1, p1, still loc == getloc()
-  // after pubimbue(loc).
+  // According to 27.5.2.2.1, p1, loc == getloc() after pubimbue(loc).
   locale loc_de = __gnu_test::try_named_locale("de_DE");
   locale ret = ob.pubimbue(loc_de);
   VERIFY( ob.getloc() == loc_de );

@@ -1,5 +1,3 @@
-// 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -20,35 +18,39 @@
 
 // 27.8.1.4 Overridden virtual functions
 
-#include <fstream>
+#include <iostream>
 #include <locale>
 #include <testsuite_hooks.h>
 
-void test02()
+// libstdc++/13171
+void test01()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
+  using namespace std;
 
-  locale loc;
-  filebuf ob;
-  VERIFY( ob.getloc() == loc );
-  ob.open(name_01, ios_base::in);
-  VERIFY( ob.is_open() );
- 
-  typedef streambuf::pos_type pos_type;
-  pos_type bad = pos_type(streambuf::off_type(-1));
-  pos_type p = ob.pubseekoff(2, ios_base::beg, ios_base::in);
-  VERIFY( p != bad);
+  locale::global(__gnu_test::try_named_locale("fr_FR"));
 
-  // According to 27.5.2.2.1, loc == getloc() after pubimbue(loc).
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  locale ret = ob.pubimbue(loc_de);
-  VERIFY( ob.getloc() == loc_de );
+  ios_base::sync_with_stdio(false);
+
+  locale::global(locale("en_US"));
+  cin.imbue(locale("en_US"));
+  cout.imbue(locale("en_US"));
+  cerr.imbue(locale("en_US"));
+  clog.imbue(locale("de_DE"));
+  wcin.imbue(locale("en_US"));
+  wcout.imbue(locale("en_US"));
+  wcerr.imbue(locale("en_US"));
+  wclog.imbue(locale("de_DE"));
+  
+  cout << 'f' << endl;
+  cerr << 'r' << endl;
+  clog << 'A' << endl;
+  wcout << L's' << endl;
+  wcerr << L'i' << endl;
+  wclog << L'L' << endl;
 }
 
-int main() 
+int main()
 {
-  test02();
-  return 0;
+  test01();
 }

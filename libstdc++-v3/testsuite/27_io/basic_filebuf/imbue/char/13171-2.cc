@@ -1,5 +1,3 @@
-// 2003-05-13 Benjamin Kosnik  <bkoz@redhat.com>
-
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -22,33 +20,44 @@
 
 #include <fstream>
 #include <locale>
+#include <cassert>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <testsuite_hooks.h>
 
-void test02()
+// libstdc++/13171
+void test01()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
+  using namespace std;
 
-  locale loc;
-  filebuf ob;
-  VERIFY( ob.getloc() == loc );
-  ob.open(name_01, ios_base::in);
-  VERIFY( ob.is_open() );
- 
-  typedef streambuf::pos_type pos_type;
-  pos_type bad = pos_type(streambuf::off_type(-1));
-  pos_type p = ob.pubseekoff(2, ios_base::beg, ios_base::in);
-  VERIFY( p != bad);
+  const char* name = "tmp_fifo_13171-2";
+  unlink(name);
+  mkfifo(name, S_IRWXU);
+  
+  int child = fork();
+  if (child == 0)
+    {
+      filebuf fb;
+      fb.open(name, ios_base::out);
+      fb.sputc('S');
+      fb.close();
+      return;
+    }
 
-  // According to 27.5.2.2.1, loc == getloc() after pubimbue(loc).
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  locale ret = ob.pubimbue(loc_de);
-  VERIFY( ob.getloc() == loc_de );
+  filebuf fb;
+  fb.pubimbue(__gnu_test::try_named_locale("fr_FR"));
+  fb.open(name, ios_base::in);
+  assert(fb.is_open());
+  fb.pubimbue(__gnu_test::try_named_locale("en_US"));
+  filebuf::int_type c = fb.sgetc();
+  assert(c == 'S');
+  fb.close();
 }
 
-int main() 
+int main()
 {
-  test02();
-  return 0;
+  test01();
 }
