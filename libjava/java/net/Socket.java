@@ -892,6 +892,9 @@ public class Socket
     if (sm != null)
       sm.checkSetFactory();
 
+    if (fac == null)
+      throw new SocketException("SocketImplFactory cannot be null");
+
     factory = fac;
   }
 

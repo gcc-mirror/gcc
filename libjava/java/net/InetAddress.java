@@ -1,6 +1,6 @@
 // INetAddress.java -- An Internet Protocol (IP) address.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -413,12 +413,13 @@ public class InetAddress implements Serializable
    */
   public String toString()
   {
-    String hostname = getHostName ();
-
-    if (hostname == "")
-      hostname = getHostAddress ();
-    
-    return hostname + '/' + getHostAddress ();
+    String result;
+    String address = getHostAddress();
+    if (hostName != null)
+      result = hostName + "/" + address;
+    else
+      result = address;
+    return result;
   }
 
   /**

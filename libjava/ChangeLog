@@ -1,3 +1,10 @@
+2002-12-06  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/InetAddress.java (toString): Use hostname when not null,
+	don't do an explicit reverse getHostName() lookup.
+	* java/net/Socket.java (setSocketImplFactory): When fac == null throw
+	NullPointerException.
+
 2002-12-06  Tom Tromey  <tromey@redhat.com>
 
 	* include/java-interp.h (class _Jv_InterpMethod): Added
