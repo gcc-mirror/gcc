@@ -1,3 +1,22 @@
+2004-04-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* opts.c (decode_options): Do not enable flag_rename_registers
+	and flag_web at -O3.
+	* toplev.c (flag_rename_registers): Initialize
+	flag_rename_registers and flag_web to
+	AUTODETECT_FLAG_VAR_TRACKING.
+	(default_debug_hooks): New global.
+	(process_options): Initialize default_debug_hooks.  Warn if
+	-fvar-tracking specified but not supported by the current
+	debug format.  Do not run var tracking at -O0 or if not
+	supported by the current debug format, even if
+	-fvar-tracking was given.  If -fno-rename-registers
+	is not specified, always run register renaming if var
+	tracking is supported by the default debugging information
+	format for the target, and we are at -O1 or higher; similarly
+	for -fweb, but only at -O2 or higher.
+	* doc/invoke.texi (Optimize Options): Document this.
+
 2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac (gcc_cv_ld_as_needed): Use AC_CACHE_CHECK.

@@ -4346,11 +4346,14 @@ Enabled at levels @option{-O2}, @option{-O3}.
 @opindex frename-registers
 Attempt to avoid false dependencies in scheduled code by making use
 of registers left over after register allocation.  This optimization
-will most benefit processors with lots of registers.  It can, however,
+will most benefit processors with lots of registers.  Depending on the
+debug information format adopted by the target, however, it can
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
 
-Enabled at levels @option{-O3}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os},
+on targets where the default format for debugging information supports
+variable tracking.
 
 @item -fweb
 @opindex fweb
@@ -4361,7 +4364,9 @@ passes, such as CSE, loop optimizer and trivial dead code remover.  It can,
 however, make debugging impossible, since variables will no longer stay in a
 ``home register''.
 
-Enabled at levels @option{-O3}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os},
+on targets where the default format for debugging information supports
+variable tracking.
 
 @item -fno-cprop-registers
 @opindex fno-cprop-registers

@@ -571,9 +571,7 @@ decode_options (unsigned int argc, const char **argv)
   if (optimize >= 3)
     {
       flag_inline_functions = 1;
-      flag_rename_registers = 1;
       flag_unswitch_loops = 1;
-      flag_web = 1;
       flag_gcse_after_reload = 1;
     }
 
