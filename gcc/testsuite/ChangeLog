@@ -1,3 +1,8 @@
+2004-01-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/compile/20021123-2.c: Delete; dup of 20021120-1.c.
+	* gcc.c-torture/compile/20021123-3.c: Delete; dup of 20021120-2.c.
+
 2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pragma-re-1.c: Use right pointer type.
