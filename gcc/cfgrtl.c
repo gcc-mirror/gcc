@@ -357,8 +357,8 @@ create_basic_block (head, end, after)
 /* ??? Preserving all such notes strikes me as wrong.  It would be nice
    to post-process the stream to remove empty blocks, loops, ranges, etc.  */
 
-void
-flow_delete_block_noexpunge (b)
+static void
+rtl_delete_block (b)
      basic_block b;
 {
   rtx insn, end, tmp;
@@ -412,13 +412,6 @@ flow_delete_block_noexpunge (b)
 
   b->pred = NULL;
   b->succ = NULL;
-}
-
-static void
-rtl_delete_block (b)
-     basic_block b;
-{
-  flow_delete_block_noexpunge (b);
 
   /* Remove the basic block from the array.  */
   expunge_block (b);

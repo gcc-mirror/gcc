@@ -1,3 +1,9 @@
+Thu Jun 12 20:00:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (flow_delete_block_noexpunge): Kill.
+	* cfgrtl.c (flow_delete_block_noexpunge): Merge to
+	rtl_delete_block.
+
 2003-06-10  Richard Henderson  <rth@redhat.com>
 
         PR inline-asm/4823
