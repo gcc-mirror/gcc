@@ -206,7 +206,7 @@ pa_init_machine_status (p)
 {
   p->machine = (machine_function *) xmalloc (sizeof (machine_function));
 
-  p->machine->pic_offset_table_save_rtx = gen_reg_rtx (Pmode);
+  p->machine->pic_offset_table_save_rtx = NULL_RTX;
 }
 
 static void
@@ -3186,25 +3186,6 @@ hppa_expand_prologue()
 	    }
 	}
     }
-
-  /* When generating PIC code it is necessary to save/restore the
-     PIC register around each function call.  We used to do this
-     in the call patterns themselves, but that implementation
-     made incorrect assumptions about using global variables to hold
-     per-function rtl code generated in the backend.
-
-     So instead, we copy the PIC register into a callee saved register
-     in the prologue.  Then after each call we reload the PIC register
-     from the callee saved register.
-
-     Avoid doing this if the register isn't used (eg. leaf functions)
-     as it's an error to delete an instruction from the prologue.  */
-
-  if (flag_pic
-      && (GET_CODE (PIC_OFFSET_TABLE_SAVE_RTX) != REG
-	  || HARD_REGISTER_P (PIC_OFFSET_TABLE_SAVE_RTX)))
-    emit_move_insn (PIC_OFFSET_TABLE_SAVE_RTX,
-		    gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
 }
 
 

@@ -5737,6 +5737,20 @@
 		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
 				  GEN_INT (64)));
 
+  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    {
+      rtx insn;
+
+      PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+      insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX,
+			  gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
+
+      /* Emit the insn at the beginning of the function after the prologue.  */
+      push_topmost_sequence ();
+      emit_insn_after (insn, get_insns ());
+      pop_topmost_sequence ();
+    }
+
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
      types of calls use different calling conventions, and CSE might try
@@ -5906,6 +5920,20 @@
     emit_move_insn (arg_pointer_rtx,
 		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
 				  GEN_INT (64)));
+
+  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    {
+      rtx insn;
+
+      PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+      insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX,
+			  gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
+
+      /* Emit the insn at the beginning of the function after the prologue.  */
+      push_topmost_sequence ();
+      emit_insn_after (insn, get_insns ());
+      pop_topmost_sequence ();
+    }
 
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
@@ -6103,6 +6131,20 @@
 
   op = XEXP (operands[0], 0);
 
+  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    {
+      rtx insn;
+
+      PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+      insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX,
+			  gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
+
+      /* Emit the insn at the beginning of the function after the prologue.  */
+      push_topmost_sequence ();
+      emit_insn_after (insn, get_insns ());
+      pop_topmost_sequence ();
+    }
+
   /* We do not allow indirect sibling calls.  */
   call_insn = emit_call_insn (gen_sibcall_internal_symref (op, operands[1]));
 
@@ -6157,6 +6199,20 @@
   rtx call_insn;
 
   op = XEXP (operands[1], 0);
+
+  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
+    {
+      rtx insn;
+
+      PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
+      insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX,
+			  gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
+
+      /* Emit the insn at the beginning of the function after the prologue.  */
+      push_topmost_sequence ();
+      emit_insn_after (insn, get_insns ());
+      pop_topmost_sequence ();
+    }
 
   /* We do not allow indirect sibling calls.  */
   call_insn = emit_call_insn (gen_sibcall_value_internal_symref (operands[0],
