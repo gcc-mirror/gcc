@@ -206,7 +206,7 @@ find_hash_table_entry (htab, element, reserve)
 	      if (first_deleted_entry_ptr != NULL)
 		{
 		  entry_ptr = first_deleted_entry_ptr;
-		  *entry_ptr = DELETED_ENTRY;
+		  *entry_ptr = EMPTY_ENTRY;
 		}
 	    }
           break;
@@ -240,6 +240,41 @@ remove_element_from_hash_table_entry (htab, element)
   entry_ptr = find_hash_table_entry (htab, element, 0);
   *entry_ptr = DELETED_ENTRY;
   htab->number_of_deleted_elements++;
+}
+
+/* This function clears a specified slot in a hash table.
+   It is useful when you've already done the lookup and don't want to
+   do it again.  */
+
+void
+clear_hash_table_slot (htab, slot)
+     hash_table_t htab;
+     hash_table_entry_t *slot;
+{
+  if (slot < htab->entries || slot >= htab->entries + htab->size
+      || *slot == EMPTY_ENTRY || *slot == DELETED_ENTRY)
+    abort ();
+  *slot = DELETED_ENTRY;
+  htab->number_of_deleted_elements++;
+}
+
+/* This function scans over the entire hash table calling
+   CALLBACK for each live entry.  If CALLBACK returns false,
+   the iteration stops.  INFO is passed as CALLBACK's second
+   argument.  */
+
+void
+traverse_hash_table (htab, callback, info)
+     hash_table_t htab;
+     int (*callback) (hash_table_entry_t, void *);
+     void *info;
+{
+  hash_table_entry_t *entry_ptr;
+  for (entry_ptr = htab->entries; entry_ptr < htab->entries + htab->size;
+       entry_ptr++)
+    if (*entry_ptr != EMPTY_ENTRY && *entry_ptr != DELETED_ENTRY)
+      if (!callback (*entry_ptr, info))
+	break;
 }
 
 /* The following function returns current size of given hash table. */
