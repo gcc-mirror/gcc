@@ -2285,18 +2285,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      /* Force reload if this is not a register or if there may may
 		 be a problem accessing the register in the outer mode.  */
 	      if (GET_CODE (operand) != REG
-#ifdef BYTE_LOADS_ZERO_EXTEND
-		  /* The comment below clearly does not match the code.
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+		  /* ??? The comment below clearly does not match the code.
 		     What the code below actually does is set force_reload
 		     for a paradoxical subreg of a pseudo.  rms and kenner
 		     can't see the point of doing this.  */
 		  /* Nonparadoxical subreg of a pseudoreg.
 		     Don't to load the full width if on this machine
-		     we expected the fetch to zero-extend.  */
+		     we expected the fetch to extend.  */
 		  || ((GET_MODE_SIZE (operand_mode[i])
 		       > GET_MODE_SIZE (GET_MODE (operand)))
 		      && REGNO (operand) >= FIRST_PSEUDO_REGISTER)
-#endif /* BYTE_LOADS_ZERO_EXTEND */
+#endif
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
@@ -3422,12 +3422,12 @@ find_reloads_toplev (x, ind_levels, is_set_dest)
 	 not offsettable.  In that case, alter_subreg would produce an
 	 invalid address on big-endian machines.
 
-	 For machines that zero-extend byte loads, we must not reload using
+	 For machines that extend byte loads, we must not reload using
 	 a wider mode if we have a paradoxical SUBREG.  find_reloads will
 	 force a reload in that case.  So we should not do anything here.  */
 
       else if (regno >= FIRST_PSEUDO_REGISTER
-#ifdef BYTE_LOADS_ZERO_EXTEND
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 	       && (GET_MODE_SIZE (GET_MODE (x))
 		   <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 #endif
