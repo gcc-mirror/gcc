@@ -466,7 +466,7 @@ init_operators ()
   char buffer[256];
   struct operator_name_info_t *oni;
   
-#define DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY, ASSN_P) \
+#define DEF_OPERATOR(NAME, CODE, MANGLING, ARITY, ASSN_P) \
   my_friendly_assert ((strlen ("operator ") + strlen (NAME) + 1		    \
 		       <= 256),						    \
 		      20000526);					    \
@@ -479,7 +479,7 @@ init_operators ()
 	 : &operator_name_info[(int) CODE]);				    \
   oni->identifier = identifier;						    \
   oni->name = NAME;							    \
-  oni->mangled_name = flag_new_abi ? NEW_MANGLING : OLD_MANGLING;
+  oni->mangled_name = MANGLING;
 
 #include "operators.def"
 #undef DEF_OPERATOR
@@ -592,7 +592,7 @@ init_parse (filename)
 	  (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
 
   init_operators ();
-  init_method ();
+  init_mangle ();
   init_error ();
   gcc_obstack_init (&inline_text_obstack);
   inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);

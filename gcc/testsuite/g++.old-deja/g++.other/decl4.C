@@ -4,4 +4,4 @@
 // Simplified for testsuite by Alexandre Oliva
 
 struct foo { operator long double(); };
-int bar(int __opr); // gets bogus error - XFAIL *-*-*
+int bar(int __opr); // gets bogus error
