@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
