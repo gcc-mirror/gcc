@@ -1,3 +1,71 @@
+2004-09-20  Matt Austern <austern@apple.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (make_rtl_for_nonlocal_decl, start_preparsed_function):
+	Apply lbasename to input_filename before passing to get_fileinfo.
+	* semantics.c (begin_class_definition): Likewise.
+	* lex.c (handle_pragma_interface): Apply get_fileinfo to the
+	correct filename.  Rename variables to be less confusing.
+	(handle_pragma_implementation): Likewise.  Disable "appears
+	after file is included" diagnostic.
+
+	* parser.c (struct cp_token): Add in_system_header fiag.
+	(CP_TOKEN_BLOCK_NUM_TOKENS, struct cp_token_block)
+	(CP_TOKEN_BUFFER_SIZE, cp_token_cache_push_token)
+	(CPP_NONE, cp_lexer_read_token): Delete.
+	(struct cp_lexer): Remove first_token, string_tokens,
+	main_lexer_p fields.  Clarify comments.
+	(struct cp_token_cache): Now just a pair of pointers.
+	(CP_LEXER_BUFFER_SIZE): New #define.
+	(CPP_PURGED): New fake token type.
+	(cp_lexer_new_from_token_array, cp_lexer_destroy)
+	(cp_lexer_peek_token_emit_debug_info, cp_lexer_skip_purged_tokens)
+	(cp_lexer_handle_pragma, cp_token_cache_new, cp_parser_string_literal):
+	New functions.
+	(cp_lexer_new_from_tokens): Now a simple wrapper around
+	cp_lexer_new_from_token_array.
+	(cp_lexer_set_source_position_from_token): Also update
+	in_system_header.
+	(cp_lexer_next_token, cp_lexer_prev_token, cp_lexer_advance_token):
+	Don't wrap round.
+	(cp_lexer_token_difference): Dont handle wrapping round.
+	(cp_lexer_new_main): Enable pragma deferral and raw strings,
+	read the entire translation unit through c_lex_with_flags into
+	this lexer's buffer, then turn raw strings back off again.
+	(cp_lexer_grow_buffer): Adjust for buffer no longer being circular.
+	(cp_lexer_get_preprocessor_token): No need to handle not being
+	the main lexer.  Set token->in_system_header too.
+	(cp_lexer_peek_token): Skip purged tokens.  Feed pragma tokens
+	to cp_lexer_handle_pragma.  No need to call cp_lexer_read_token.
+	(cp_lexer_peek_nth_token): Likewise.
+	(cp_lexer_purge_token): Mark the token PURGED, don't shift all
+	the other tokens down.
+	(cp_lexer_purge_tokens_after): Likewise.
+	(cp_lexer_save_tokens, cp_lexer_rollback_tokens): Don't worry
+	about there being no tokens.
+	(cp_lexer_print_token): Revise to give useful information on
+	all tokens.
+	(struct cp_parser): Add field translate_strings_p.
+	(cp_parser_new): Initialize it.
+	(cp_parser_translation_unit): Destroy the lexer when done.
+	(cp_parser_parameter_declaration): Restructure saving of
+	default arguments.
+	(cp_parser_save_member_function_body): Likewise.
+	(cp_parser_check_for_invalid_template_id)
+	(cp_parser_nested_name_specifier_opt, cp_parser_template_id):
+	Adjust calls to cp_lexer_advance_token.
+	(cp_parser_skip_to_closing_parenthesis, cp_parser_declaration):
+	No need to fiddle c_lex_string_translate.
+	(cp_parser_primary_expression, cp_parser_linkage_specification)
+	(cp_parser_asm_definition, cp_parser_asm_specification_opt)
+	(cp_parser_asm_operand_list, cp_parser_asm_clobber_list)
+	Use cp_parser_string_literal.
+	(cp_parser_attribute_list): Save and restore
+	parser->translate_strings_p, not c_lex_string_translate.
+	(cp_parser_cache_group): Delete.
+	(cp_parser_cache_group_1): Rename cp_parser_cache_group.  Do
+	not take a cache argument.
+
 2004-09-20  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14179

@@ -60,6 +60,10 @@ int c_header_level;	 /* depth in C headers - C++ only */
    to the untranslated one.  */
 int c_lex_string_translate = 1;
 
+/* True if strings should be passed to the caller of c_lex completely
+   unmolested (no concatenation, no translation).  */
+bool c_lex_return_raw_strings = false;
+
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
 static enum integer_type_kind narrowest_unsigned_type
@@ -428,7 +432,12 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      return lex_string (tok, value, false);
+      if (!c_lex_return_raw_strings)
+	return lex_string (tok, value, false);
+      /* else fall through */
+
+    case CPP_PRAGMA:
+      *value = build_string (tok->val.str.len, (char *)tok->val.str.text);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
