@@ -1,3 +1,9 @@
+2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ltcf-cxx.sh: Replace $linker_flags with $compiler_flags wherever
+	it is used as argument to $CC.
+	* ltcf-gcj.sh: Likewise.
+
 2003-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Remove John Carr (who never actually had access to
