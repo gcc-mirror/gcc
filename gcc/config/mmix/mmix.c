@@ -530,7 +530,6 @@ mmix_function_outgoing_value (valtype, func)
      tree func ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = TYPE_MODE (valtype);
-  enum mode_class mclass = GET_MODE_CLASS (mode);
   enum machine_mode cmode;
   int first_val_regnum = MMIX_OUTGOING_RETURN_VALUE_REGNUM;
   rtx vec[MMIX_MAX_REGS_FOR_VALUE];
@@ -3123,7 +3122,7 @@ mmix_intval (x)
       if (GET_MODE (x) == DFmode)
 	{
 	  long bits[2];
-      
+
 	  REAL_VALUE_TO_TARGET_DOUBLE (value, bits);
 
 	  if (sizeof (long) < sizeof (HOST_WIDEST_INT))
