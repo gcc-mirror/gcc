@@ -47,7 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Right now Alpha OSF/1 doesn't seem to have debugging or profiled 
    libraries.  */
 
-#define LIB_SPEC "-lc"
+#define LIB_SPEC "%{p:-lprof1} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are optimizing,
    -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
