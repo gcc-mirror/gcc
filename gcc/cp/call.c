@@ -3963,9 +3963,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   if (addr == error_mark_node)
     return error_mark_node;
 
-  type = TREE_TYPE (TREE_TYPE (addr));
-  while (TREE_CODE (type) == ARRAY_TYPE)
-    type = TREE_TYPE (type);
+  type = strip_array_types (TREE_TYPE (TREE_TYPE (addr)));
 
   fnname = ansi_opname (code);
 
@@ -4018,7 +4016,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   addr = cp_convert (ptr_type_node, addr);
 
   /* We make two tries at finding a matching `operator delete'.  On
-     the first pass, we look for an one-operator (or placement)
+     the first pass, we look for a one-operator (or placement)
      operator delete.  If we're not doing placement delete, then on
      the second pass we look for a two-argument delete.  */
   for (pass = 0; pass < (placement ? 1 : 2); ++pass) 
@@ -4089,7 +4087,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   if (placement)
     return NULL_TREE;
 
-  error ("no suitable `operator delete' for `%T'", type);
+  error ("no suitable `operator %s' for `%T'",
+	 operator_name_info[(int)code].name, type);
   return error_mark_node;
 }
 
