@@ -2128,7 +2128,7 @@ __attribute__ ((sentinel(0)))
 
 The attribute is automatically set with a position of 0 for the built-in
 functions @code{execl} and @code{execlp}.  The built-in function
-@code{execle} has the attribute set set with a position of 1.
+@code{execle} has the attribute set with a position of 1.
 
 A valid @code{NULL} in this context is defined as zero with any pointer
 type.  If your system defines the @code{NULL} macro with an integer type
