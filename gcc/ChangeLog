@@ -1,3 +1,7 @@
+Thu Nov 13 23:33:50 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* fold-const.c (fold_truthop): Fix bug in last change.
+
 1997-11-13  Paul Eggert  <eggert@twinsun.com>
 
 	Fix some confusion with IEEE minus zero.
