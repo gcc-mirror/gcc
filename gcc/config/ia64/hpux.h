@@ -57,12 +57,6 @@ do {							\
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{static:crt0%O%s}}"
 
-#ifndef CROSS_COMPILE
-#define STARTFILE_PREFIX_SPEC \
-  "%{mlp64: /usr/ccs/lib/hpux64/} \
-   %{!mlp64: /usr/ccs/lib/hpux32/}"
-#endif
-
 #undef LINK_SPEC
 #define LINK_SPEC \
   "+Accept TypeMismatch \
