@@ -1,3 +1,7 @@
+2001-12-11  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* config/sparc/sparc.md (prefetch): New.
+
 2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * output.h (regno_uninitialized): Make argument unsigned.
