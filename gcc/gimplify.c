@@ -463,7 +463,6 @@ static tree
 internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 {
   tree t, mod;
-  char class;
 
   gimplify_expr (&val, pre_p, post_p, is_gimple_formal_tmp_rhs, fb_rvalue);
 
@@ -471,7 +470,6 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 
   mod = build (MODIFY_EXPR, TREE_TYPE (t), t, val);
 
-  class = TREE_CODE_CLASS (TREE_CODE (val));
   if (EXPR_HAS_LOCATION (val))
     SET_EXPR_LOCUS (mod, EXPR_LOCUS (val));
   else
