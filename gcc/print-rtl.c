@@ -63,6 +63,9 @@ int flag_dump_unnumbered = 0;
 /* Nonzero if we are dumping graphical description.  */
 int dump_for_graph;
 
+/* Nonzero to dump all call_placeholder alternatives.  */
+static int debug_call_placeholder_verbose;
+
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
 static void
@@ -421,6 +424,37 @@ print_rtx (in_rtx)
       break;
 
     case CALL_PLACEHOLDER:
+      if (debug_call_placeholder_verbose)
+	{
+	  fputs (" (cond [\n  (const_string \"normal\") (sequence [", outfile);
+	  for (tem = XEXP (in_rtx, 0); tem != 0; tem = NEXT_INSN (tem))
+	    {
+	      fputs ("\n    ", outfile);
+	      print_inline_rtx (outfile, tem, 4);
+	    }
+
+	  tem = XEXP (in_rtx, 1);
+	  if (tem)
+	    fputs ("\n    ])\n  (const_string \"tail_call\") (sequence [", outfile);
+	  for (; tem != 0; tem = NEXT_INSN (tem))
+	    {
+	      fputs ("\n    ", outfile);
+	      print_inline_rtx (outfile, tem, 4);
+	    }
+
+	  tem = XEXP (in_rtx, 2);
+	  if (tem)
+	    fputs ("\n    ])\n  (const_string \"tail_recursion\") (sequence [", outfile);
+	  for (; tem != 0; tem = NEXT_INSN (tem))
+	    {
+	      fputs ("\n    ", outfile);
+	      print_inline_rtx (outfile, tem, 4);
+	    }
+
+	  fputs ("\n    ])\n  ])", outfile);
+	  break;
+	}
+
       for (tem = XEXP (in_rtx, 0); tem != 0; tem = NEXT_INSN (tem))
 	if (GET_CODE (tem) == CALL_INSN)
 	  {

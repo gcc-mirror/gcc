@@ -1,3 +1,12 @@
+2000-09-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* print-rtl.c (debug_call_placeholder_verbose): New variable.
+	(print_rtx) [CALL_PLACEHOLDER]: Dump all call sequences if it is
+	set.
+	* integrate.c (copy_rtx_and_substitute): Don't share
+	LEAF_REG_REMAPpable registers with the inlined function.  Don't
+	share the function value with calling sequences.
+
 2000-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (do_case): Fix a typo.
