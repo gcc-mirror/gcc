@@ -1,6 +1,6 @@
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
-	* config/gcc-version.m4: New file.
+	* gcc-version.m4: New file.
 
 2004-09-24  Zack Weinberg  <zack@codesourcery.com>
 
