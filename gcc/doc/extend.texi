@@ -887,19 +887,6 @@ the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
 @end deftypefn
 
-@cindex underscores in variables in macros
-@cindex @samp{_} in variables in macros
-@cindex local variables in macros
-@cindex variables, local, in macros
-@cindex macros, local variables in
-
-The reason for using names that start with underscores for the local
-variables is to avoid conflicts with variable names that occur within the
-expressions that are substituted for @code{a} and @code{b}.  Eventually we
-hope to design a new form of declaration syntax that allows you to declare
-variables whose scopes start only after their initializers; this will be a
-more reliable way to prevent such conflicts.
-
 @node Typeof
 @section Referring to a Type with @code{typeof}
 @findex typeof
@@ -949,6 +936,19 @@ arithmetic type and evaluates each of its arguments exactly once:
       typeof (b) _b = (b); \
     _a > _b ? _a : _b; @})
 @end example
+
+@cindex underscores in variables in macros
+@cindex @samp{_} in variables in macros
+@cindex local variables in macros
+@cindex variables, local, in macros
+@cindex macros, local variables in
+
+The reason for using names that start with underscores for the local
+variables is to avoid conflicts with variable names that occur within the
+expressions that are substituted for @code{a} and @code{b}.  Eventually we
+hope to design a new form of declaration syntax that allows you to declare
+variables whose scopes start only after their initializers; this will be a
+more reliable way to prevent such conflicts.
 
 @noindent
 Some more examples of the use of @code{typeof}:

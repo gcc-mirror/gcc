@@ -1,5 +1,11 @@
 2003-03-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR doc-bug/9813
+	* doc/extend.texi: Move misplaced paragraph about underscores in
+	variables in macros.
+
+2003-03-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* doc/invoke.texi: Fix table environment.
 
 2003-03-21 Richard Earnshaw  <rearnsha@arm.com>
