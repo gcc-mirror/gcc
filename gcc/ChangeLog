@@ -1,3 +1,8 @@
+2001-06-04  Richard Henderson  <rth@redhat.com>
+
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Suppress
+	optimization if current_function_calls_setjmp.
+
 2001-06-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi: Fix documentation of TREE_STRING_LENGTH for
