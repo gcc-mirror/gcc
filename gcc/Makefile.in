@@ -179,7 +179,7 @@ PREMADE_ATTRTAB_MD = Makefile  # Guaranteed not to cmp equal to md.
 PREMADE_ATTRTAB = 
 
 target=@target@
-target_alias=@target@
+target_alias=@target_alias@
 xmake_file=@dep_host_xmake_file@
 tmake_file=@dep_tmake_file@
 out_file=$(srcdir)/config/@out_file@
