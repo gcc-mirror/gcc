@@ -1,5 +1,5 @@
 /* DecimalFormatSymbols.java -- Format symbols used by DecimalFormat
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package java.text;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.io.ObjectInputStream;
-import java.io.IOException;
 
 /**
  * This class is a container for the symbols used by 
