@@ -1,3 +1,10 @@
+2004-06-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/16182	
+	* linkage.m4 (GLIBCXX_CHECK_BUILTIN_MATH_DEC): Revert to
+	AC_DEFINE_UNQUOTED.
+	* configure: Regenerate.
+
 2004-06-25  Paul Brook  <paul@codesourcery.com>
 
 	* libsupc++/cxxabi.h: Define __ARM_EABI__
