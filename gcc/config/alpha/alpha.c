@@ -49,7 +49,7 @@ extern int rtx_equal_function_value_matters;
 /* Specify which cpu to schedule for. */
 
 enum processor_type alpha_cpu;
-static char* const alpha_cpu_name[] = 
+static const char * const alpha_cpu_name[] = 
 {
   "ev4", "ev5", "ev6"
 };
@@ -68,11 +68,11 @@ enum alpha_fp_trap_mode alpha_fptm;
 
 /* Strings decoded into the above options.  */
 
-char *alpha_cpu_string;		/* -mcpu= */
-char *alpha_tp_string;		/* -mtrap-precision=[p|s|i] */
-char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
-char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
-char *alpha_mlat_string;	/* -mmemory-latency= */
+const char *alpha_cpu_string;	/* -mcpu= */
+const char *alpha_tp_string;	/* -mtrap-precision=[p|s|i] */
+const char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
+const char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
+const char *alpha_mlat_string;	/* -mmemory-latency= */
 
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
@@ -856,7 +856,7 @@ reg_not_elim_operand (op, mode)
 int
 normal_memory_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (reload_in_progress && GET_CODE (op) == REG
       && REGNO (op) >= FIRST_PSEUDO_REGISTER)
@@ -1576,6 +1576,8 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
 	  emit_insn (gen_extqh (exth, memh, addr));
 	  mode = DImode;
 	  break;
+	default:
+	  abort();
 	}
 
       addr = expand_binop (mode, ior_optab, gen_lowpart (mode, extl),
@@ -3958,7 +3960,7 @@ static int num_source_filenames = 0;
 
 /* Name of the file containing the current function.  */
 
-static char *current_function_file = "";
+static const char *current_function_file = "";
 
 /* Offsets to alpha virtual arg/local debugging pointers.  */
 
