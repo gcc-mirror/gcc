@@ -1119,7 +1119,7 @@ fname_as_string (int pretty_p)
     }
   else
     {
-      namep = (char *) xcalloc (strlen (name) + 1, sizeof (char));
+      namep = xmalloc (strlen (name) + 1);
       namep = xstrdup (name);
     }
 

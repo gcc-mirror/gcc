@@ -1,5 +1,9 @@
 2004-05-28  Aldy Hernandez  <aldyh@redhat.com>
 
+	* c-common.c (fname_as_string): Fix xcalloc to xmalloc.
+
+2004-05-28  Aldy Hernandez  <aldyh@redhat.com>
+
 	* testsuite/g++.dg/charset/function.cc: New.
 
 	* testsuite/gcc.dg/charset/function.c: New.
