@@ -180,7 +180,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * Contributors::    People who have contributed to GCC.
 
 * Option Index::    Index to command line options.
-* Index::	    Index of concepts and symbol names.
+* Keyword Index::    Index of concepts and symbol names.
 @end menu
 
 @include frontends.texi
@@ -222,8 +222,8 @@ form; it may sometimes be useful to look up both forms.
 
 @printindex op
 
-@node Index
-@unnumbered Index
+@node Keyword Index
+@unnumbered Keyword Index
 
 @printindex cp
 
