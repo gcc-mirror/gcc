@@ -107,28 +107,9 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
       && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	  || VOID_TYPE_P (TREE_TYPE (type))))
     {
-      /* Allow an implicit this pointer for pointer to member
-	 functions.  */
-      if (TYPE_PTRMEMFUNC_P (intype))
-	{
-	  if (pedantic || warn_pmf2ptr)
-	    pedwarn ("converting from `%T' to `%T'", intype, type);
-	  if (TREE_CODE (expr) == PTRMEM_CST)
-	    expr = build_address (PTRMEM_CST_MEMBER (expr));
-	  else
-	    {
-	      tree decl = maybe_dummy_object (TYPE_PTRMEM_CLASS_TYPE (intype), 
-					      0);
-	      decl = build_address (decl);
-	      expr = get_member_function_from_ptrfunc (&decl, expr);
-	    }
-	}
-      else if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
-	{
-	  if (pedantic || warn_pmf2ptr)
-	    pedwarn ("converting from `%T' to `%T'", intype, type);
-	  expr = build_addr_func (expr);
-	}
+      if (TYPE_PTRMEMFUNC_P (intype)
+	  || TREE_CODE (intype) == METHOD_TYPE)
+	return convert_member_func_to_ptr (type, expr);
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	return build_nop (type, expr);
       intype = TREE_TYPE (expr);

@@ -1,4 +1,5 @@
 // PR c++/14278
+// { dg-options "" }
 
 struct X { 
   X (int p);

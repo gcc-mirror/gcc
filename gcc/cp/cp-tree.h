@@ -3585,7 +3585,7 @@ extern tree initialize_reference (tree, tree, tree, tree *);
 extern tree make_temporary_var_for_ref_to_temp (tree, tree);
 extern tree strip_top_quals (tree);
 extern tree perform_implicit_conversion (tree, tree);
-extern tree perform_direct_initialization_if_possible (tree, tree);
+extern tree perform_direct_initialization_if_possible (tree, tree, bool);
 extern tree in_charge_arg_for_name (tree);
 extern tree build_cxx_call (tree, tree);
 #ifdef ENABLE_CHECKING
@@ -4290,6 +4290,7 @@ extern tree build_nop                           (tree, tree);
 extern tree non_reference                       (tree);
 extern tree lookup_anon_field                   (tree, tree);
 extern bool invalid_nonstatic_memfn_p           (tree);
+extern tree convert_member_func_to_ptr          (tree, tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);

@@ -92,6 +92,9 @@ struct conversion {
      copy constructor must be accessible, even though it is not being
      used.  */
   BOOL_BITFIELD check_copy_constructor_p : 1;
+  /* If KIND is ck_ptr, true to indicate that a conversion from a
+     pointer-to-derived to pointer-to-base is being performed.  */
+  BOOL_BITFIELD base_p : 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -125,12 +128,15 @@ static int compare_ics (conversion *, conversion *);
 static tree build_over_call (struct z_candidate *, int);
 static tree build_java_interface_fn_ref (tree, tree);
 #define convert_like(CONV, EXPR)				\
-  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0, 		\
-		     /*issue_conversion_warnings=*/true)
+  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0,		\
+		     /*issue_conversion_warnings=*/true,	\
+		     /*c_cast_p=*/false)
 #define convert_like_with_context(CONV, EXPR, FN, ARGNO)	\
-  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0, 		\
-		     /*issue_conversion_warnings=*/true)
-static tree convert_like_real (conversion *, tree, tree, int, int, bool);
+  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0,		\
+		     /*issue_conversion_warnings=*/true,	\
+                     /*c_cast_p=*/false)
+static tree convert_like_real (conversion *, tree, tree, int, int, bool,
+			       bool);
 static void op_error (enum tree_code, enum tree_code, tree, tree,
 			    tree, const char *);
 static tree build_object_call (tree, tree);
@@ -528,6 +534,7 @@ build_conv (conversion_kind code, tree type, conversion *from)
   t->rank = rank;
   t->user_conv_p = (code == ck_user || from->user_conv_p);
   t->bad_p = from->bad_p;
+  t->base_p = false;
   return t;
 }
 
@@ -721,6 +728,7 @@ standard_conversion (tree to, tree from, tree expr)
 				     cp_type_quals (TREE_TYPE (from)));
 	  from = build_pointer_type (from);
 	  conv = build_conv (ck_ptr, from, conv);
+	  conv->base_p = true;
 	}
 
       if (tcode == POINTER_TYPE)
@@ -4113,11 +4121,14 @@ build_temp (tree expr, tree type, int flags,
    being called to continue a conversion chain. It is negative when a
    reference binding will be applied, positive otherwise.  If
    ISSUE_CONVERSION_WARNINGS is true, warnings about suspicious
-   conversions will be emitted if appropriate.  */
+   conversions will be emitted if appropriate.  If C_CAST_P is true,
+   this conversion is coming from a C-style cast; in that case,
+   conversions to inaccessible bases are permitted.  */
 
 static tree
 convert_like_real (conversion *convs, tree expr, tree fn, int argnum, 
-		   int inner, bool issue_conversion_warnings)
+		   int inner, bool issue_conversion_warnings,
+		   bool c_cast_p)
 {
   tree totype = convs->type;
   void (*diagnostic_fn)(const char *, ...);
@@ -4133,12 +4144,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  if (t->kind == ck_user || !t->bad_p)
 	    {
 	      expr = convert_like_real (t, expr, fn, argnum, 1,
-					/*issue_conversion_warnings=*/false);
+					/*issue_conversion_warnings=*/false,
+					/*c_cast_p=*/false);
 	      break;
 	    }
 	  else if (t->kind == ck_ambig)
 	    return convert_like_real (t, expr, fn, argnum, 1,
-				      /*issue_conversion_warnings=*/false);
+				      /*issue_conversion_warnings=*/false,
+				      /*c_cast_p=*/false);
 	  else if (t->kind == ck_identity)
 	    break;
 	}
@@ -4237,7 +4250,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
   expr = convert_like_real (convs->u.next, expr, fn, argnum,
 			    convs->kind == ck_ref_bind ? -1 : 1,
-			    /*issue_conversion_warnings=*/false);
+			    /*issue_conversion_warnings=*/false,
+			    c_cast_p);
   if (expr == error_mark_node)
     return error_mark_node;
 
@@ -4321,7 +4335,22 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       /* Warn about deprecated conversion if appropriate.  */
       string_conv_p (totype, expr, 1);
       break;
-      
+
+    case ck_ptr:
+      if (convs->base_p)
+	{
+	  tree binfo;
+
+	  binfo = lookup_base (TREE_TYPE (TREE_TYPE (expr)),
+			       TREE_TYPE (totype), 
+			       c_cast_p ? ba_unique : ba_check,
+			       NULL);
+	  if (binfo == error_mark_node)
+	    return error_mark_node;
+	  expr = build_base_path (PLUS_EXPR, expr, binfo, /*nonnull=*/0);
+	}
+      return build_nop (totype, expr);
+
     default:
       break;
     }
@@ -6273,10 +6302,15 @@ perform_implicit_conversion (tree type, tree expr)
 /* Convert EXPR to TYPE (as a direct-initialization) if that is
    permitted.  If the conversion is valid, the converted expression is
    returned.  Otherwise, NULL_TREE is returned, except in the case
-   that TYPE is a class type; in that case, an error is issued.  */
+   that TYPE is a class type; in that case, an error is issued.  If
+   C_CAST_P is ttrue, then this direction initialization is taking
+   place as part of a static_cast being attempted as part of a C-style
+   cast.  */
 
 tree
-perform_direct_initialization_if_possible (tree type, tree expr)
+perform_direct_initialization_if_possible (tree type, 
+					   tree expr,
+					   bool c_cast_p)
 {
   conversion *conv;
   void *p;
@@ -6308,7 +6342,8 @@ perform_direct_initialization_if_possible (tree type, tree expr)
     expr = NULL_TREE;
   else
     expr = convert_like_real (conv, expr, NULL_TREE, 0, 0, 
-			      /*issue_conversion_warnings=*/false);
+			      /*issue_conversion_warnings=*/false,
+			      c_cast_p);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -6449,7 +6484,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
       expr = convert_like_real (conv, expr,
 				/*fn=*/NULL_TREE, /*argnum=*/0,
 				/*inner=*/-1,
-				/*issue_conversion_warnings=*/true);
+				/*issue_conversion_warnings=*/true,
+				/*c_cast_p=*/false);
       if (!real_lvalue_p (expr))
 	{
 	  tree init;
