@@ -1,3 +1,7 @@
+2000-05-10  Kazu Hirata  <kazu@hxi.com>
+
+	* combine.c (try_combine): Fix a typo.
+
 Wed May 10 21:31:44 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.md (insv): Add comment.
