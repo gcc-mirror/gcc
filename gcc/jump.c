@@ -53,6 +53,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "reload.h"
 #include "predict.h"
+#include "timevar.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
@@ -82,6 +83,7 @@ rebuild_jump_labels (f)
 {
   rtx insn;
 
+  timevar_push (TV_REBUILD_JUMP);
   init_label_info (f);
   mark_all_labels (f);
 
@@ -92,6 +94,7 @@ rebuild_jump_labels (f)
   for (insn = forced_labels; insn; insn = XEXP (insn, 1))
     if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
       LABEL_NUSES (XEXP (insn, 0))++;
+  timevar_pop (TV_REBUILD_JUMP);
 }
 
 /* Some old code expects exactly one BARRIER as the NEXT_INSN of a

@@ -47,6 +47,10 @@ DEFTIMEVAR (TV_DELETE_TRIVIALLY_DEAD , "trivially dead code")
 /* Time spent by life analysis.  */
 DEFTIMEVAR (TV_LIFE		     , "life analysis")
 DEFTIMEVAR (TV_LIFE_UPDATE	     , "life info update")
+
+DEFTIMEVAR (TV_ALIAS_ANALYSIS	     , "alias analysis")
+DEFTIMEVAR (TV_REG_SCAN		     , "register scan")
+DEFTIMEVAR (TV_REBUILD_JUMP	     , "rebuild jump labels")
 /* Timing in various stages of the compiler.  */
 DEFTIMEVAR (TV_CPP		     , "preprocessing")
 DEFTIMEVAR (TV_LEX		     , "lexical analysis")

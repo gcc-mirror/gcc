@@ -39,6 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "splay-tree.h"
 #include "ggc.h"
 #include "langhooks.h"
+#include "timevar.h"
 #include "target.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
@@ -2745,6 +2746,8 @@ init_alias_analysis ()
   unsigned int ui;
   rtx insn;
 
+  timevar_push (TV_ALIAS_ANALYSIS);
+
   reg_known_value_size = maxreg;
 
   reg_known_value
@@ -2950,6 +2953,7 @@ init_alias_analysis ()
   new_reg_base_value = 0;
   free (reg_seen);
   reg_seen = 0;
+  timevar_pop (TV_ALIAS_ANALYSIS);
 }
 
 void

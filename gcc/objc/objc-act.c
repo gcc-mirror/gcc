@@ -60,6 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "target.h"
 #include "diagnostic.h"
+#include "cgraph.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -294,6 +295,7 @@ static void handle_class_ref			PARAMS ((tree));
 static void generate_struct_by_value_array	PARAMS ((void))
      ATTRIBUTE_NORETURN;
 static void encode_complete_bitfield		PARAMS ((int, tree, int));
+static void mark_referenced_methods		PARAMS ((void));
 
 /*** Private Interface (data) ***/
 
@@ -486,6 +488,7 @@ objc_init (filename)
 void
 finish_file ()
 {
+  mark_referenced_methods ();
   c_objc_common_finish_file ();
 
   /* Finalize Objective-C runtime data.  No need to generate tables
@@ -4025,6 +4028,29 @@ generate_dispatch_table (type, name, size, list)
 	       NULL_TREE);
 
   return decl;
+}
+
+static void
+mark_referenced_methods ()
+{
+  struct imp_entry *impent;
+  tree chain;
+
+  for (impent = imp_list; impent; impent = impent->next)
+    {
+      chain = CLASS_CLS_METHODS (impent->imp_context);
+      while (chain)
+	{
+	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
+	  chain = TREE_CHAIN (chain);
+	}
+      chain = CLASS_NST_METHODS (impent->imp_context);
+      while (chain)
+	{
+	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
+	  chain = TREE_CHAIN (chain);
+	}
+    }
 }
 
 static void
