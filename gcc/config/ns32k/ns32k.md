@@ -190,7 +190,7 @@
   "cmpf %0,%1")
 
 (define_insn "movdf"
-  [(set (match_operand:DF 0 "general_operand" "=&fg<")
+  [(set (match_operand:DF 0 "general_operand" "=fg<")
 	(match_operand:DF 1 "general_operand" "fFg"))]
   ""
   "*
@@ -273,7 +273,7 @@
   "movmd %1,%0,4")
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "general_operand" "=&g<,*f,g")
+  [(set (match_operand:DI 0 "general_operand" "=g<,*f,g")
 	(match_operand:DI 1 "general_operand" "gF,g,*f"))]
   ""
   "*
