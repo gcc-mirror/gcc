@@ -1,3 +1,8 @@
+2000-05-18  Chris Demetriou  <cgd@sibyte.com>
+
+	* gcc.texi (MULTILIB_EXCEPTIONS): Correct example and update
+	it to match the current practice.
+
 2000-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (STAGESTUFF): Fix typo in spelling of s-under.

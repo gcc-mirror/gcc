@@ -4096,11 +4096,11 @@ specified, there are combinations that should not be built.  In that
 case, set @code{MULTILIB_EXCEPTIONS} to be all of the switch exceptions
 in shell case syntax that should not be built.
 
-For example, in the PowerPC embedded ABI support, it was not desirable
-to build libraries that compiled with the @samp{-mcall-aixdesc} option
-and either of the @samp{-mcall-aixdesc} or @samp{-mlittle} options at
-the same time, and therefore @code{MULTILIB_EXCEPTIONS} is set to
-@code{*mrelocatable/*mcall-aixdesc* *mlittle/*mcall-aixdesc*}.
+For example, in the PowerPC embedded ABI support, it is not desirable
+to build libraries compiled with the @samp{-mcall-aix} option
+and either of the @samp{-fleading-underscore} or @samp{-mlittle} options
+at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
+@code{*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*}.
 
 @findex MULTILIB_EXTRA_OPTS
 @item MULTILIB_EXTRA_OPTS
