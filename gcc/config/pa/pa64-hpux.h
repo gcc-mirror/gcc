@@ -126,7 +126,6 @@ do {								\
 do {									\
   bss_section ();							\
   assemble_name ((FILE), (NAME));					\
-  fputs ("\t.comm ", (FILE));						\
   fprintf ((FILE), "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
 	   MAX ((SIZE), ((ALIGN) / BITS_PER_UNIT)));			\
 } while (0)
