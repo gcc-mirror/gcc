@@ -1,3 +1,11 @@
+2003-05-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR C++/689
+	PR C++/9257
+	* c-opts.c (c_common_decode_option): Don't set
+	warn_ctor_dtor_privacy wen -Wall.
+	* c-common.c (warn_ctor_dtor_privacy): Don't turn on by default.
+
 2003-05-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload1.c (reload_cse_move2add): Revert part of my 2003-05-09's
