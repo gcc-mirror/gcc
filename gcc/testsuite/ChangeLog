@@ -1,3 +1,7 @@
+2002-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/dtor1.C: New test.
+
 2002-05-02  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-8.c: New.
