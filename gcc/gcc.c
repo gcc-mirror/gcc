@@ -1393,7 +1393,7 @@ choose_temp_base ()
     base = "./";
 
   len = strlen (base);
-  temp_filename = xmalloc (len + sizeof("/ccXXXXXX"));
+  temp_filename = xmalloc (len + sizeof("/ccXXXXXX") + 1);
   strcpy (temp_filename, base);
   if (len > 0 && temp_filename[len-1] != '/')
     temp_filename[len++] = '/';
