@@ -1,3 +1,7 @@
+2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl2.c (prune_vtable_vardecl): Delete unused function.
+
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7754

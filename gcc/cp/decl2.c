@@ -61,7 +61,6 @@ typedef struct priority_info_s {
 static void mark_vtable_entries PARAMS ((tree));
 static void grok_function_init PARAMS ((tree, tree));
 static int finish_vtable_vardecl PARAMS ((tree *, void *));
-static int prune_vtable_vardecl PARAMS ((tree *, void *));
 static int is_namespace_ancestor PARAMS ((tree, tree));
 static void add_using_namespace PARAMS ((tree, tree, int));
 static tree ambiguous_decl PARAMS ((tree, tree, tree,int));
@@ -1877,15 +1876,6 @@ finish_vtable_vardecl (t, data)
     note_debug_info_needed (ctype);
 
   return 0;
-}
-
-static int
-prune_vtable_vardecl (t, data)
-     tree *t;
-     void *data ATTRIBUTE_UNUSED;
-{
-  *t = TREE_CHAIN (*t);
-  return 1;
 }
 
 /* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
