@@ -3180,9 +3180,10 @@
     FAIL;
 
   operands[3]
-            = arm_gen_load_multiple (REGNO (operands[0]), INTVAL (operands[2]),
-                                     force_reg (SImode, XEXP (operands[1], 0)),
-                                     TRUE, FALSE);
+    = arm_gen_load_multiple (REGNO (operands[0]), INTVAL (operands[2]),
+			     force_reg (SImode, XEXP (operands[1], 0)),
+			     TRUE, FALSE, RTX_UNCHANGING_P(operands[1]),
+			     MEM_IN_STRUCT_P(operands[1]));
 ")
 
 ;; Load multiple with write-back
@@ -3249,9 +3250,10 @@
     FAIL;
 
   operands[3]
-           = arm_gen_store_multiple (REGNO (operands[1]), INTVAL (operands[2]),
-                                     force_reg (SImode, XEXP (operands[0], 0)),
-                                     TRUE, FALSE);
+    = arm_gen_store_multiple (REGNO (operands[1]), INTVAL (operands[2]),
+			      force_reg (SImode, XEXP (operands[0], 0)),
+			      TRUE, FALSE, RTX_UNCHANGING_P (operands[0]),
+			      MEM_IN_STRUCT_P(operands[0]));
 ")
 
 ;; Store multiple with write-back
@@ -3887,8 +3889,14 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
-			       arm_compare_fp);
+  rtx ccreg;
+
+  /* When compiling for SOFT_FLOAT, ensure both arms are in registers.  */
+  if (! TARGET_HARD_FLOAT)
+    operands[3] = force_reg (SFmode, operands[3]);
+
+  ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
+			   arm_compare_fp);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
@@ -5691,8 +5699,7 @@
   "sub%?s\\t%0, %1, #0"
 [(set_attr "conds" "set")])
 
-; Peepholes to spot possible load- and store-multiples, if the ordering is
-; reversed, check that the memory references aren't volatile.
+; Peepholes to spot possible load- and store-multiples.
 
 (define_peephole
   [(set (match_operand:SI 0 "s_register_operand" "=r")
