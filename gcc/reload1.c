@@ -2869,7 +2869,7 @@ eliminate_regs (x, mem_mode, insn)
 	  if (GET_CODE (new) == MEM
 	      && (GET_MODE_SIZE (GET_MODE (x))
 		  <= GET_MODE_SIZE (GET_MODE (new)))
-#if defined(BYTES_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 	      /* On these machines we will be reloading what is
 		 inside the SUBREG if it originally was a pseudo and
 		 the inner and outer modes are both a word or
