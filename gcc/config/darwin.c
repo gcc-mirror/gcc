@@ -1334,10 +1334,12 @@ darwin_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 }
 
 /* Emit a label for an FDE, making it global and/or weak if appropriate. 
-   The third parameter is nonzero if this is just a placeholder for an
+   The third parameter is nonzero if this is for exception handling.
+   The fourth parameter is nonzero if this is just a placeholder for an
    FDE that we are omitting. */
+
 void 
-darwin_emit_unwind_label(FILE *file, tree decl, int empty)
+darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
 {
   tree id = DECL_ASSEMBLER_NAME (decl)
     ? DECL_ASSEMBLER_NAME (decl)
@@ -1350,12 +1352,15 @@ darwin_emit_unwind_label(FILE *file, tree decl, int empty)
   unsigned int base_len = IDENTIFIER_LENGTH (id);
 
   const char *suffix = ".eh";
-  unsigned int suffix_len = 3;
 
   int need_quotes = name_needs_quotes (base);
   int quotes_len = need_quotes ? 2 : 0;
+  char *lab;
 
-  char *lab = xmalloc (prefix_len + base_len + suffix_len + quotes_len + 1);
+  if (! for_eh)
+    suffix = ".eh1";
+
+  lab = xmalloc (prefix_len + base_len + strlen (suffix) + quotes_len + 1);
   lab[0] = '\0';
 
   if (need_quotes)
@@ -1385,6 +1390,7 @@ darwin_emit_unwind_label(FILE *file, tree decl, int empty)
 }
 
 /* Generate a PC-relative reference to a Mach-O non-lazy-symbol.  */ 
+
 void
 darwin_non_lazy_pcrel (FILE *file, rtx addr)
 {

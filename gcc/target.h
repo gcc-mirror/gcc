@@ -76,9 +76,10 @@ struct gcc_target
 
     /* Output code that will emit a label for unwind info, if this
        target requires such labels.  Second argument is the decl the
-       unwind info is associated with, third is is a boolean: true if
+       unwind info is associated with, third is a boolean: true if
+       this is for exception handling, fourth is a boolean: true if
        this is only a placeholder for an omitted FDE. */
-    void (* unwind_label ) (FILE *, tree, int);
+    void (* unwind_label) (FILE *, tree, int, int);
 
     /* Output an internal label.  */
     void (* internal_label) (FILE *, const char *, unsigned long);

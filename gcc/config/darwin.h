@@ -304,6 +304,21 @@ Boston, MA 02111-1307, USA.  */
 
 #define DBX_DEBUGGING_INFO 1
 
+/* Also enable Dwarf 2 as an option.  */
+#define DWARF2_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#define DEBUG_FRAME_SECTION   "__DWARFA,__debug_frame,coalesced,no_toc+strip_static_syms"
+#define DEBUG_INFO_SECTION    "__DWARFA,__debug_info"
+#define DEBUG_ABBREV_SECTION  "__DWARFA,__debug_abbrev"
+#define DEBUG_ARANGES_SECTION "__DWARFA,__debug_aranges"
+#define DEBUG_MACINFO_SECTION "__DWARFA,__debug_macinfo"
+#define DEBUG_LINE_SECTION    "__DWARFA,__debug_line"
+#define DEBUG_LOC_SECTION     "__DWARFA,__debug_loc"
+#define DEBUG_PUBNAMES_SECTION        "__DWARFA,__debug_pubnames"
+#define DEBUG_STR_SECTION     "__DWARFA,__debug_str"
+#define DEBUG_RANGES_SECTION  "__DWARFA,__debug_ranges"
+
 /* When generating stabs debugging, use N_BINCL entries.  */
 
 #define DBX_USE_BINCL
