@@ -228,7 +228,7 @@ append_arg (const char *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal ("overflowed output arg list for `%s'", arg);
+    fatal ("overflowed output arg list for '%s'", arg);
 
   g77_newargv[g77_newargc++] = arg;
 }
@@ -372,7 +372,7 @@ For more information about these matters, see the file named COPYING\n\
       if (i + skip < argc)
 	i += skip;
       else
-	fatal ("argument to `%s' missing", argv[i]);
+	fatal ("argument to '%s' missing", argv[i]);
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))

@@ -882,7 +882,7 @@ static const struct option options[] =
 static void
 usage (void)
 {
-  fprintf (stderr, _("Try `jcf-dump --help' for more information.\n"));
+  fprintf (stderr, _("Try 'jcf-dump --help' for more information.\n"));
   exit (1);
 }
 
@@ -892,7 +892,7 @@ help (void)
   printf (_("Usage: jcf-dump [OPTION]... CLASS...\n\n"));
   printf (_("Display contents of a class file in readable form.\n\n"));
   printf (_("  -c                      Disassemble method bodies\n"));
-  printf (_("  --javap                 Generate output in `javap' format\n"));
+  printf (_("  --javap                 Generate output in 'javap' format\n"));
   printf ("\n");
   printf (_("  --classpath PATH        Set path to find .class files\n"));
   printf (_("  -IDIR                   Append directory to class path\n"));

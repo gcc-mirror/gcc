@@ -96,7 +96,7 @@ static const struct option options[] =
 static void
 usage (void)
 {
-  fprintf (stderr, _("Try `jv-scan --help' for more information.\n"));
+  fprintf (stderr, _("Try 'jv-scan --help' for more information.\n"));
   exit (1);
 }
 
@@ -108,7 +108,7 @@ help (void)
   printf (_("  --no-assert             Don't recognize the assert keyword\n"));
   printf (_("  --complexity            Print cyclomatic complexity of input file\n"));
   printf (_("  --encoding NAME         Specify encoding of input file\n"));
-  printf (_("  --print-main            Print name of class containing `main'\n"));
+  printf (_("  --print-main            Print name of class containing 'main'\n"));
   printf (_("  --list-class            List all classes defined in file\n"));
   printf (_("  --list-filename         Print input filename when listing class names\n"));
   printf (_("  -o FILE                 Set output file name\n"));
@@ -210,10 +210,10 @@ main (int argc, char **argv)
   /* Check on bad usage */
   if (flag_find_main + flag_dump_class + flag_complexity > 1)
     fatal_error
-      ("only one of `--print-main', `--list-class', and `--complexity' allowed");
+      ("only one of '--print-main', '--list-class', and '--complexity' allowed");
 
   if (output_file && !(out = fopen (output_file, "w")))
-    fatal_error ("can't open output file `%s'", output_file);
+    fatal_error ("can't open output file '%s'", output_file);
 
   ft = ftell (out);
 
@@ -248,7 +248,7 @@ main (int argc, char **argv)
 	    reset_report ();
 	  }
 	else
-	  fatal_error ("file not found `%s'", argv [i]);
+	  fatal_error ("file not found '%s'", argv [i]);
       }
 
   /* Flush and close */

@@ -620,18 +620,18 @@ gfc_mark_addressable (tree exp)
 	    if (TREE_PUBLIC (x))
 	      {
 		error
-		  ("global register variable `%s' used in nested function",
+		  ("global register variable %qs used in nested function",
 		   IDENTIFIER_POINTER (DECL_NAME (x)));
 		return false;
 	      }
-	    pedwarn ("register variable `%s' used in nested function",
+	    pedwarn ("register variable %qs used in nested function",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
 	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
-		error ("address of global register variable `%s' requested",
+		error ("address of global register variable %qs requested",
 		       IDENTIFIER_POINTER (DECL_NAME (x)));
 		return true;
 	      }
@@ -649,7 +649,7 @@ gfc_mark_addressable (tree exp)
 	      }
 #endif
 
-	    pedwarn ("address of register variable `%s' requested",
+	    pedwarn ("address of register variable %qs requested",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
 

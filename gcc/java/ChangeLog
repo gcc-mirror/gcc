@@ -1,3 +1,8 @@
+2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gjavah.c, jcf-dump.c, jv-scan.c, jvspec.c: Avoid ` as left quote
+	in diagnostics.
+
 2004-11-24  Richard Henderson  <rth@redhat.com>
 
 	* verify-glue.c (vfy_init_name, vfy_clinit_name, vfy_object_type,
