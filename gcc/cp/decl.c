@@ -11594,7 +11594,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    else
 	      {
 		decl = build_decl (FIELD_DECL, declarator, type);
-		TREE_ADDRESSABLE (decl) = ! bitfield;
+		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (RIDBIT_SETP (RID_MUTABLE, specbits))
 		  {
 		    DECL_MUTABLE_P (decl) = 1;

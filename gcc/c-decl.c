@@ -4697,7 +4697,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 #endif
 	  }
 	decl = build_decl (FIELD_DECL, declarator, type);
-	TREE_ADDRESSABLE (decl) = ! bitfield;
+	DECL_NONADDRESSABLE_P (decl) = bitfield;
+
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
       }

@@ -1,3 +1,35 @@
+Fri Jun  2 19:31:03 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (struct alias_set_entry): New field has_zero_child.
+	(mem_in_disjoint_alias_sets_p): Return 0 if set in either ase.
+	(get_alias_set): If language-dependent routine set TYPE_ALIAS_SET,
+	do nothing.
+	Call record_component_aliases for aggregate types.
+	(record_alias_subset): Set has_zero_child.
+	(record_component_aliases, case ARRAY_TYPE): Do nothing if
+	TYPE_NONALIASES_COMPONENT.
+	(record_component_aliases, case RECORD_TYPE): Test
+	DECL_NONADDRESSABLE_P.
+	* c-decl.c (grokdeclarator): Set DECL_NONADDRESSABLE_P instead
+	of TREE_ADDRESSABLE.
+	* calls.c (initialize_argument_information): Only test
+	TYPE_TRANSPARENT_UNION for UNION_TYPE.
+	* function.c (assign_parms): Likewise.
+	* integrate.c (function_cannot_inline_p): Likewise.
+	* stor-layout.c (finish_record_layout): Don't call
+	record_component_aliases.
+	* tree.h (struct tree_int_cst): Use struct tree_common.
+	(struct tree_real_cst, struct tree_string): Likewise.
+	(struct tree_complex, struct tree_identifier): Likewise.
+	(struct tree_list, struct tree_vec, struct tree_exp): Likewise.
+	(struct tree_block, struct tree_type, struct tree_decl): Likewise.
+	(TYPE_TRANSPARENT_UNION): Use UNION_TYPE_CHECK.
+	(TYPE_NONALIASES_COMPONENT): New macro.
+	(TYPE_AMBIENT_BOUNDEDNESS): Use FUNCTION_TYPE_CHECK.
+	(DECL_NONADDRESSABLE_P): New macro.
+	(struct tree_decl): Reorder bits for clarity of how many left;
+	add non_adressable.
+
 2000-06-02  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* Makefile.in (libgcc.a): Also depend on $(LIB2ADD).
