@@ -1212,6 +1212,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #endif
 
+#define DWARF2_ADDR_SIZE (ABI_HAS_64BIT_SYMBOLS ? 8 : 4)
+
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
