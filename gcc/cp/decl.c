@@ -3219,9 +3219,6 @@ duplicate_decls (newdecl, olddecl)
 	     will be banished.  */
 	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
-	  COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
-	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (newdecl),
-				       newdecl);
 	}
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))

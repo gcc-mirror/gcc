@@ -1,3 +1,9 @@
+2002-04-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/5998:
+	* decl.c (duplicate_decls): Don't mess with assembler names when
+	redeclaring builtin functions as static.
+
 2002-04-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/5998:
