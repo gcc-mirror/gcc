@@ -1,3 +1,10 @@
+2004-04-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-regs.h (DBX_REGISTER_NUMBER): Simplify and correct mapping of
+	SAR register.  Fix comment.
+	(ADDITIONAL_REGISTER_NAMES): Correct register number of SAR register
+	(%cr11).
+
 2004-04-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
