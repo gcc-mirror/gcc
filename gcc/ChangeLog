@@ -1,5 +1,7 @@
 Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* Makefile.in (clean): Delete libgcc1-test.
+
 	* Makefile.in (INSTALL): cd to $(srcdir) before running texinfo.
 
 Tue Sep  9 17:07:36 1997  Stan Cox  <coxs@dg-rtp.dg.com>

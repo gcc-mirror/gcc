@@ -2019,7 +2019,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
 	-rm -f $(HOST_PREFIX_1)obstack.c 
 # Delete the temp files made in the course of building libgcc.a.
-	-rm -f tmplibgcc* tmpcopy xlimits.h
+	-rm -f tmplibgcc* tmpcopy xlimits.h libgcc1-test
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-gcc.xtar.gz
