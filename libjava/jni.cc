@@ -357,7 +357,11 @@ _Jv_JNI_PopSystemFrame (JNIEnv *env)
   _Jv_JNI_PopLocalFrame (env, NULL, MARK_SYSTEM);
 
   if (env->ex)
-    throw env->ex;
+    {
+      jthrowable t = env->ex;
+      env->ex = NULL;
+      throw t;
+    }
 }
 
 // This function is used from other template functions.  It wraps the
