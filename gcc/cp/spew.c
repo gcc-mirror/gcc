@@ -360,6 +360,19 @@ yylex ()
       break;
 
     case SCSPEC:
+      /* If export, warn that it's unimplemented and go on. */
+      if (tmp_token.yylval.ttype == get_identifier("export"))
+	{
+	  warning ("keyword 'export' not implemented and will be ignored");
+	  consume_token ();
+	  goto retry;
+	}
+      else
+	{
+	  ++first_token;
+	  break;
+	}
+
     case NEW:
       /* do_aggr needs to check if the previous token was RID_NEW,
 	 so just increment first_token instead of calling consume_token.  */
