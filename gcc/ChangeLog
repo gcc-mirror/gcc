@@ -1,3 +1,15 @@
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (___fixunssfsi): Change the
+	threshold to 0x4f.
+
+	Revert:
+	2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
+	* config/h8300/fixunssfsi.c (__fixunssfsi): Enable on H8/300
+	as well.
+	* config/h8300/lib1funcs.asm (___fixunssfsi): Remove.
+	* config/h8300/t-h8300 (LIB1ASMFUNCS): Remove _fixunssfsi_asm.
+
 2004-03-02  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/11767
