@@ -296,7 +296,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
 #endif
     ;
 
-  char zPat[ sizeof( zPatFmt ) + 32 ];
+  char *pz_pat;
 
   static regex_t re;
 
@@ -309,13 +309,15 @@ FIX_PROC_HEAD( char_macro_use_fix )
       exit(3);
     }
 
-  if (sprintf( zPat, zPatFmt, p_fixd->patch_args[1] ) >= sizeof( zPat ))
+  asprintf (&pz_pat, zPatFmt, p_fixd->patch_args[1]);
+  if (!pz_pat)
     {
-      fprintf( stderr, "Oversize format:  %s\n", zPat );
+      fprintf( stderr, "Virtual memory exhausted\n" );
       exit(3);
     }
 
-  compile_re (zPat, &re, 2, "macro pattern", "char_macro_use_fix");
+  compile_re (pz_pat, &re, 2, "macro pattern", "char_macro_use_fix");
+  free (pz_pat);
 
   while (regexec (&re, text, 3, rm, 0) == 0)
     {
@@ -378,7 +380,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
 #endif
     ;
 
-  char zPat[ sizeof( zPatFmt ) + 32 ];
+  char *pz_pat;
 
   static regex_t re;
 
@@ -393,20 +395,23 @@ FIX_PROC_HEAD( char_macro_def_fix )
       exit(3);
     }
 
-  if (sprintf( zPat, zPatFmt, p_fixd->patch_args[1] ) >= sizeof( zPat ))
+  asprintf (&pz_pat, zPatFmt, p_fixd->patch_args[1]);
+  if (!pz_pat)
     {
-      fprintf( stderr, "Oversize format:  %s\n", zPat );
+      fprintf (stderr, "Virtual memory exhausted\n");
       exit(3);
     }
 
-  compile_re (zPat, &re, 1, "macro pattern", "char_macro_def_fix");
+  compile_re (pz_pat, &re, 1, "macro pattern", "char_macro_def_fix");
 
   if ((rerr = regexec (&re, text, 3, rm, 0)) != 0)
     {
-      fprintf( stderr, "Match error %d:\n%s\n", rerr, zPat );
+      fprintf( stderr, "Match error %d:\n%s\n", rerr, pz_pat );
       exit(3);
     }
 
+  free (pz_pat);
+  
   while ((rerr = regexec (&re, text, 3, rm, 0)) == 0)
     {
       const char* pz = text + rm[2].rm_so;

@@ -1,3 +1,9 @@
+2000-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/fixfixes.c (char_macro_use_fix, char_macro_def_fix):
+	Don't check the return value of sprintf.  Use asprintf to avoid
+	buffer overflows.
+
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* flags.h (warn_unused_function, warn_unused_label,
