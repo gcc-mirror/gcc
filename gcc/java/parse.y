@@ -5488,7 +5488,8 @@ source_end_java_method ()
 
   /* Generate function's code */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
-      && ! flag_emit_class_files)
+      && ! flag_emit_class_files
+      && ! flag_emit_xref)
     expand_expr_stmt (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)));
 
   /* pop out of its parameters */
@@ -5497,7 +5498,7 @@ source_end_java_method ()
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Generate rtl for function exit.  */
-  if (! flag_emit_class_files)
+  if (! flag_emit_class_files && ! flag_emit_xref)
     {
       lineno = DECL_SOURCE_LINE_LAST (fndecl);
       /* Emit catch-finally clauses */
@@ -6091,7 +6092,7 @@ resolve_expression_name (id, orig)
 	      /* Otherwise build what it takes to access the field */
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
 				      current_class, name);
-	      if (fs && !flag_emit_class_files)
+	      if (fs && !flag_emit_class_files && !flag_emit_xref)
 		decl = build_class_init (current_class, decl);
 	      /* We may be asked to save the real field access node */
 	      if (orig)
@@ -6140,7 +6141,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 
   /* Resolve the LENGTH field of an array here */
   if (DECL_NAME (decl) == length_identifier_node && TYPE_ARRAY_P (type_found)
-      && ! flag_emit_class_files)
+      && ! flag_emit_class_files && ! flag_emit_xref)
     {
       tree length = build_java_array_length_access (where_found);
       field_ref =
@@ -6169,7 +6170,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 				     type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
 	return error_mark_node;
-      if (is_static && !static_final_found && !flag_emit_class_files)
+      if (is_static && !static_final_found 
+	  && !flag_emit_class_files && !flag_emit_xref)
 	{
 	  field_ref = build_class_init (type_found, field_ref);
 	  /* If the static field was identified by an expression that
@@ -7011,7 +7013,7 @@ patch_invoke (patch, method, args)
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
   
-  if (flag_emit_class_files)
+  if (flag_emit_class_files || flag_emit_xref)
     func = method;
   else
     {
@@ -7057,7 +7059,7 @@ patch_invoke (patch, method, args)
     {
       tree class = DECL_CONTEXT (method);
       tree c1, saved_new, size, new;
-      if (flag_emit_class_files)
+      if (flag_emit_class_files || flag_emit_xref)
 	{
 	  TREE_TYPE (patch) = build_pointer_type (class);
 	  return patch;
@@ -8654,6 +8656,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 
   /* 10.10: Array Store Exception runtime check */
   if (!flag_emit_class_files
+      && !flag_emit_xref
       && lvalue_from_array 
       && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type))
       && !CLASS_FINAL (TYPE_NAME (GET_SKIP_TYPE (rhs_type))))

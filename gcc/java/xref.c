@@ -40,7 +40,8 @@ static xref_flag_table xref_table [] = {
 
 /* Decode an xref flag value. Return 0 if the flag wasn't found. */
 
-int xref_flag_value (flag)
+int
+xref_flag_value (flag)
      char *flag;
 {
   int i;
@@ -48,6 +49,14 @@ int xref_flag_value (flag)
     if (!strcmp (flag, xref_table [i].key))
       return i+1;
   return 0;
+}
+
+void
+xref_set_data (flag, data)
+     int flag;
+     void *data;
+{
+  xref_table [flag-1].data = data;
 }
 
 /* Branch to the right xref "back-end".  */
