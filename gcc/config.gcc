@@ -985,12 +985,12 @@ i370-*-linux*)
 i[34567]86-*-darwin*)
 	tm_file="${tm_file} darwin.h i386/darwin.h"
 	tm_p_file="${tm_p_file} darwin-protos.h"
-	tmake_file=i386/t-darwin
+	tmake_file="t-darwin"
 	extra_objs="darwin.o"
 	target_gtfiles="\$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
-	extra_parts="crtbegin.o crtend.o"
+	extra_parts="crt2.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
 	;;
@@ -1956,12 +1956,12 @@ powerpc-*-beos*)
 powerpc-*-darwin*)
 	tm_file="${tm_file} darwin.h rs6000/darwin.h"
 	tm_p_file="${tm_p_file} darwin-protos.h"
-	tmake_file=rs6000/t-darwin
+	tmake_file="rs6000/t-rs6000 t-darwin rs6000/t-darwin"
 	extra_objs="darwin.o"
 	target_gtfiles="\$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
-	extra_parts="crtbegin.o crtend.o"
+	extra_parts="crt2.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
 	extra_headers=altivec.h

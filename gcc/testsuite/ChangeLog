@@ -1,3 +1,8 @@
+2002-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C: XFAIL excess errors test on
+	Darwin.
+
 2002-11-04  Adam Nemet  <anemet@lnxw.com>
 
 	* gcc.c-torture/execute/941014-1.x: thumb-elf was deprecated, use

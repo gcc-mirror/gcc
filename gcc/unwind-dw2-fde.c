@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GCC.
@@ -85,6 +85,9 @@ __register_frame_info_bases (void *begin, struct object *ob,
   ob->u.single = begin;
   ob->s.i = 0;
   ob->s.b.encoding = DW_EH_PE_omit;
+#ifdef DWARF2_OBJECT_END_PTR_EXTENSION
+  ob->fde_end = NULL;
+#endif
 
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -602,7 +605,7 @@ classify_object_over_fdes (struct object *ob, fde *this_fde)
   int encoding = DW_EH_PE_absptr;
   _Unwind_Ptr base = 0;
 
-  for (; this_fde->length != 0; this_fde = next_fde (this_fde))
+  for (; ! last_fde (ob, this_fde); this_fde = next_fde (this_fde))
     {
       struct dwarf_cie *this_cie;
       _Unwind_Ptr mask, pc_begin;
@@ -656,7 +659,7 @@ add_fdes (struct object *ob, struct fde_accumulator *accu, fde *this_fde)
   int encoding = ob->s.b.encoding;
   _Unwind_Ptr base = base_from_object (ob->s.b.encoding, ob);
 
-  for (; this_fde->length != 0; this_fde = next_fde (this_fde))
+  for (; ! last_fde (ob, this_fde); this_fde = next_fde (this_fde))
     {
       struct dwarf_cie *this_cie;
 
@@ -773,7 +776,7 @@ linear_search_fdes (struct object *ob, fde *this_fde, void *pc)
   int encoding = ob->s.b.encoding;
   _Unwind_Ptr base = base_from_object (ob->s.b.encoding, ob);
 
-  for (; this_fde->length != 0; this_fde = next_fde (this_fde))
+  for (; ! last_fde (ob, this_fde); this_fde = next_fde (this_fde))
     {
       struct dwarf_cie *this_cie;
       _Unwind_Ptr pc_begin, pc_range;

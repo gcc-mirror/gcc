@@ -79,8 +79,8 @@ struct unw_eh_frame_hdr
   unsigned char table_enc;
 };
 
-/* Like base_of_encoded_value, but take the base from a struct object
-   instead of an _Unwind_Context.  */
+/* Like base_of_encoded_value, but take the base from a struct
+   unw_eh_callback_data instead of an _Unwind_Context.  */
 
 static _Unwind_Ptr
 base_from_cb_data (unsigned char encoding, struct unw_eh_callback_data *data)

@@ -61,6 +61,10 @@ struct object
     size_t i;
   } s;
 
+#ifdef DWARF2_OBJECT_END_PTR_EXTENSION
+  char *fde_end;
+#endif
+
   struct object *next;
 };
 
@@ -160,3 +164,13 @@ next_fde (fde *f)
 }
 
 extern fde * _Unwind_Find_FDE (void *, struct dwarf_eh_bases *);
+
+static inline int
+last_fde (struct object *obj, fde *f)
+{
+#ifdef DWARF2_OBJECT_END_PTR_EXTENSION
+  return (char *)f == obj->fde_end || f->length == 0;
+#else
+  return f->length == 0;
+#endif
+}

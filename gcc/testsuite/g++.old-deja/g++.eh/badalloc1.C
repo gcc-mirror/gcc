@@ -1,5 +1,5 @@
-// excess errors test - XFAIL xstormy16-*-*
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// excess errors test - XFAIL xstormy16-*-* *-*-darwin*
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 
 // Check we can throw a bad_alloc exception when malloc dies.
