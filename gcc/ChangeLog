@@ -5,6 +5,8 @@
 	(get_non_padding_token):  We no longer need to compensate for the
 	"horrible things" the C++ front-end does with the current line number,
 
+	* cpplib.c (_cpp_pop_buffer):  Do generate a _cpp_do_file_change
+	callback even when popping the main file.
 	* c-lex.c (fe_file_change):  Handle a NULL new_map.
 	* fix-header.c (cb_file_change):  Likewise.
 	* c-ppoutput.c (pp_file_change):  Likewise.
@@ -40,6 +42,11 @@
 
 	* cpplex.c (_cpp_get_fresh_line):  Return value now just depends on
 	whether pfile->buffer is NULL after pop, ignoring return_at_eof.
+	* cpphash.h (struct cpp_buffer):  Remove unused return_at_eof field.
+	* cpplib.c (cpp_push_buffer):  Since we no longer set return_at_eof,
+	remove the unused return_at_eof parameter.
+	* cppfiles.c, cpplib.c, cppmacro.c, cpppch.c, fix-header.c:
+	Update callers of cpp_push_buffer.
 
 2003-10-01  Zack Weinberg  <zack@codesourcery.com>
 
