@@ -3434,8 +3434,6 @@ int
 invert_jump (jump, nlabel)
      rtx jump, nlabel;
 {
-  register rtx olabel = JUMP_LABEL (jump);
-
   /* We have to either invert the condition and change the label or
      do neither.  Either operation could fail.  We first try to invert
      the jump. If that succeeds, we try changing the label.  If that fails,
