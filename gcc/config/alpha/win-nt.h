@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
 
-#include "winnt/winnt.h"
+#include "winnt/win-nt.h"
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\

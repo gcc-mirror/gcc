@@ -148,5 +148,5 @@ while (0)
  %{!mcrtmt:LIBC.LIB%s KERNEL32.LIB%s ADVAPI32.LIB%s} \
  %{v}"
 
-#include "winnt/winnt.h"
+#include "winnt/win-nt.h"
 
