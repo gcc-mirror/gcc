@@ -6828,7 +6828,8 @@ expand_expr (exp, target, tmode, modifier)
 	   Don't fold if this is for wide characters since it's too
 	   difficult to do correctly and this is a very rare case.  */
 
-	if (TREE_CODE (array) == STRING_CST
+	if (modifier != EXPAND_CONST_ADDRESS && modifier != EXPAND_INITIALIZER
+	    && TREE_CODE (array) == STRING_CST
 	    && TREE_CODE (index) == INTEGER_CST
 	    && compare_tree_int (index, TREE_STRING_LENGTH (array)) < 0
 	    && GET_MODE_CLASS (mode) == MODE_INT
@@ -6841,7 +6842,8 @@ expand_expr (exp, target, tmode, modifier)
 	   we have an explicit constructor and when our operand is a variable
 	   that was declared const.  */
 
-	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
+	if (modifier != EXPAND_CONST_ADDRESS && modifier != EXPAND_INITIALIZER
+	    && TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
 	    && TREE_CODE (index) == INTEGER_CST
 	    && 0 > compare_tree_int (index,
 				     list_length (CONSTRUCTOR_ELTS
@@ -6860,6 +6862,8 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	else if (optimize >= 1
+		 && modifier != EXPAND_CONST_ADDRESS
+		 && modifier != EXPAND_INITIALIZER
 		 && TREE_READONLY (array) && ! TREE_SIDE_EFFECTS (array)
 		 && TREE_CODE (array) == VAR_DECL && DECL_INITIAL (array)
 		 && TREE_CODE (DECL_INITIAL (array)) != ERROR_MARK)
@@ -7102,34 +7106,28 @@ expand_expr (exp, target, tmode, modifier)
 	   an integer-mode (e.g., SImode) object.  Handle this case
 	   by doing the extract into an object as wide as the field
 	   (which we know to be the width of a basic mode), then
-	   storing into memory, and changing the mode to BLKmode.
-	   If we ultimately want the address (EXPAND_CONST_ADDRESS or
-	   EXPAND_INITIALIZER), then we must not copy to a temporary.  */
+	   storing into memory, and changing the mode to BLKmode.  */
 	if (mode1 == VOIDmode
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-	    || (modifier != EXPAND_CONST_ADDRESS
-		&& modifier != EXPAND_INITIALIZER
-		&& ((mode1 != BLKmode && ! direct_load[(int) mode1]
-		     && GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-		     && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
-		    /* If the field isn't aligned enough to fetch as a memref,
-		       fetch it as a bit field.  */
-		    || (mode1 != BLKmode
-			&& SLOW_UNALIGNED_ACCESS (mode1, alignment)
-			&& ((TYPE_ALIGN (TREE_TYPE (tem))
-			     < GET_MODE_ALIGNMENT (mode))
-			    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))
-		    /* If the type and the field are a constant size and the
-		       size of the type isn't the same size as the bitfield,
-		       we must use bitfield operations.  */
-		    || ((bitsize >= 0
-			 && (TREE_CODE (TYPE_SIZE (TREE_TYPE (exp)))
-			     == INTEGER_CST)
-			 && 0 != compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)),
-						   bitsize)))))
-	    || (modifier != EXPAND_CONST_ADDRESS
-		&& modifier != EXPAND_INITIALIZER
-		&& mode == BLKmode
+	    || (mode1 != BLKmode && ! direct_load[(int) mode1]
+		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
+		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+	    /* If the field isn't aligned enough to fetch as a memref,
+	       fetch it as a bit field.  */
+	    || (mode1 != BLKmode
+		&& SLOW_UNALIGNED_ACCESS (mode1, alignment)
+		&& ((TYPE_ALIGN (TREE_TYPE (tem))
+		     < GET_MODE_ALIGNMENT (mode))
+		    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))
+	    /* If the type and the field are a constant size and the
+	       size of the type isn't the same size as the bitfield,
+	       we must use bitfield operations.  */
+	    || (bitsize >= 0
+		&& (TREE_CODE (TYPE_SIZE (TREE_TYPE (exp)))
+		    == INTEGER_CST)
+		&& 0 != compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)),
+					  bitsize))
+	    || (mode == BLKmode
 		&& SLOW_UNALIGNED_ACCESS (mode, alignment)
 		&& (TYPE_ALIGN (type) > alignment
 		    || bitpos % TYPE_ALIGN (type) != 0)))
