@@ -29,7 +29,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "defaults.h"
 #include <stdio.h>
-#include "dwarf2.h"
 #include "tree.h"
 #include "flags.h"
 #include "rtl.h"
@@ -40,6 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "expr.h"
 #include "except.h"
+#include "dwarf2.h"
 
 /* #define NDEBUG 1 */
 #include "assert.h"
@@ -185,7 +185,6 @@ static unsigned long size_of_uleb128	PROTO((unsigned long));
 static unsigned long size_of_sleb128	PROTO((long));
 static void output_uleb128		PROTO((unsigned long));
 static void output_sleb128		PROTO((long));
-char *dwarf2out_cfi_label		PROTO((void));
 static void add_fde_cfi			PROTO((char *, dw_cfi_ref));
 static void lookup_cfa_1		PROTO((dw_cfi_ref, unsigned long *,
 					       long *));
