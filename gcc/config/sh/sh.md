@@ -622,12 +622,16 @@
 ;; Say that we have annulled true branches, since this gives smaller and
 ;; faster code when branches are predicted as not taken.
 
+;; ??? The non-annulled condition should really be "in_delay_slot",
+;; but insns that can be filled in non-annulled get priority over insns
+;; that can only be filled in anulled.
+
 (define_delay
   (and (eq_attr "type" "cbranch")
        (ne (symbol_ref "TARGET_SH2") (const_int 0)))
   ;; SH2e has a hardware bug that pretty much prohibits the use of
   ;; annuled delay slots.
-  [(eq_attr "in_delay_slot" "yes") (and (eq_attr "cond_delay_slot" "yes")
+  [(eq_attr "cond_delay_slot" "yes") (and (eq_attr "cond_delay_slot" "yes")
 					(not (eq_attr "cpu" "sh2e"))) (nil)])
 
 ;; -------------------------------------------------------------------------
