@@ -1,3 +1,9 @@
+2004-06-01  Paolo Bonzini <bonzini@gnu.org>
+
+	* configure.in: Remove new- prefix from toplevel
+	bootstrap targets.
+	* configure: Regenerate.
+
 2004-06-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (all.normal): Rename to all.
