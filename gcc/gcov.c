@@ -281,10 +281,6 @@ fnotice VPROTO ((FILE *file, const char *msgid, ...))
   va_end (ap);
 }
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
 extern void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
