@@ -1,7 +1,7 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
-   Contributed by Gary Funck (gary@intrepid.com).  Derived from the
-   DWARF 1 implementation written by Ron Guilmette (rfg@monkeys.com).
+   Contributed by Gary Funck (gary@intrepid.com).
+   Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -602,6 +602,8 @@ lookup_cfa_1 (cfi, regp, offsetp)
     case DW_CFA_def_cfa:
       *regp = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
       *offsetp = cfi->dw_cfi_oprnd2.dw_cfi_offset;
+      break;
+    default:
       break;
     }
 }
@@ -3810,6 +3812,8 @@ print_die (die, outfile)
 	    fprintf (outfile, "\"%s\"", a->dw_attr_val.v.val_str);
 	  else
 	    fprintf (outfile, "<null>");
+	  break;
+	default:
 	  break;
 	}
 
