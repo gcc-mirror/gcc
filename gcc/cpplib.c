@@ -122,7 +122,8 @@ SCCS_ENTRY
    instead of void, because some old compilers have trouble with
    pointers to functions returning void.  */
 
-#define D(name, t, o) static int CONCAT2(do_, name) PARAMS ((cpp_reader *));
+/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
+#define D(name, t, o) static int CONCAT2(do_,name) PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
 
@@ -134,8 +135,9 @@ enum
 };
 #undef D
 
+/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
 #define D(name, t, origin) \
-{ CONCAT2(do_, name), STRINGX(name), sizeof STRINGX(name) - 1, origin },
+{ CONCAT2(do_,name), STRINGX(name), sizeof STRINGX(name) - 1, origin },
 static const struct directive dtable[] =
 {
 DIRECTIVE_TABLE
