@@ -1,3 +1,8 @@
+2004-04-29  Felix Yen  <fwy@alumni.brown.edu>
+
+	* testsuite/performance/20_util/allocator/producer_consumer.cc:
+	Use linear algorithm for producer.
+
 2004-04-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14975

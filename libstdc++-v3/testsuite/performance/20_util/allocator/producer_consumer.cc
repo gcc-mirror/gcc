@@ -126,8 +126,9 @@ template<typename Container>
   Queue<Container>::push_back(const typename Container::value_type& value)
   {
     AutoLock auto_lock(lock);
+    const bool signal = queue.empty();
     queue.insert(queue.end(), value);
-    if (queue.size() == 1) pthread_cond_signal(&condition);
+    if (signal) pthread_cond_signal(&condition);
   }
 
 template<typename Container>
