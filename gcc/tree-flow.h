@@ -667,6 +667,7 @@ void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
 				struct tree_niter_desc *);
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter);
+tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);

@@ -220,12 +220,23 @@ canonicalize_loop_induction_variables (struct loops *loops, struct loop *loop,
       niter = fold (build2 (MINUS_EXPR, TREE_TYPE (niter), niter,
 			    build_int_cst (TREE_TYPE (niter), 1)));
     }
-  else if (try_eval)
-    niter = find_loop_niter_by_eval (loop, &exit);
+  else
+    {
+      /* If the loop has more than one exit, try checking all of them
+	 for # of iterations determinable through scev.  */
+      if (!loop->single_exit)
+	niter = find_loop_niter (loop, &exit);
 
-  if (chrec_contains_undetermined (niter)
-      || TREE_CODE (niter) != INTEGER_CST)
-    return false;
+      /* Finally if everything else fails, try brute force evaluation.  */
+      if (try_eval
+	  && (chrec_contains_undetermined (niter)
+	      || TREE_CODE (niter) != INTEGER_CST))
+	niter = find_loop_niter_by_eval (loop, &exit);
+
+      if (chrec_contains_undetermined (niter)
+	  || TREE_CODE (niter) != INTEGER_CST)
+	return false;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

@@ -3275,6 +3275,7 @@ extern int integer_nonzerop (tree);
 
 extern bool zero_p (tree);
 extern bool cst_and_fits_in_hwi (tree);
+extern tree num_ending_zeros (tree);
 
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  Returns the outermost data.  */

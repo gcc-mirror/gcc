@@ -80,44 +80,6 @@ nonzero_p (tree arg)
   return (TREE_INT_CST_LOW (arg) != 0 || TREE_INT_CST_HIGH (arg) != 0);
 }
 
-/* Returns number of zeros at the end of binary representation of X.
-   
-   ??? Use ffs if available?  */
-
-static tree
-num_ending_zeros (tree x)
-{
-  unsigned HOST_WIDE_INT fr, nfr;
-  unsigned num, abits;
-  tree type = TREE_TYPE (x);
-
-  if (TREE_INT_CST_LOW (x) == 0)
-    {
-      num = HOST_BITS_PER_WIDE_INT;
-      fr = TREE_INT_CST_HIGH (x);
-    }
-  else
-    {
-      num = 0;
-      fr = TREE_INT_CST_LOW (x);
-    }
-
-  for (abits = HOST_BITS_PER_WIDE_INT / 2; abits; abits /= 2)
-    {
-      nfr = fr >> abits;
-      if (nfr << abits == fr)
-	{
-	  num += abits;
-	  fr = nfr;
-	}
-    }
-
-  if (num > TYPE_PRECISION (type))
-    num = TYPE_PRECISION (type);
-
-  return build_int_cst_type (type, num);
-}
-
 /* Returns inverse of X modulo 2^s, where MASK = 2^s-1.  */
 
 static tree
@@ -823,6 +785,75 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   return integer_onep (niter->assumptions);
 }
 
+/* Try to determine the number of iterations of LOOP.  If we succeed,
+   expression giving number of iterations is returned and *EXIT is
+   set to the edge from that the information is obtained.  Otherwise
+   chrec_dont_know is returned.  */
+
+tree
+find_loop_niter (struct loop *loop, edge *exit)
+{
+  unsigned n_exits, i;
+  edge *exits = get_loop_exit_edges (loop, &n_exits);
+  edge ex;
+  tree niter = NULL_TREE, aniter;
+  struct tree_niter_desc desc;
+
+  *exit = NULL;
+  for (i = 0; i < n_exits; i++)
+    {
+      ex = exits[i];
+      if (!just_once_each_iteration_p (loop, ex->src))
+	continue;
+
+      if (!number_of_iterations_exit (loop, ex, &desc))
+	continue;
+
+      if (nonzero_p (desc.may_be_zero))
+	{
+	  /* We exit in the first iteration through this exit.
+	     We won't find anything better.  */
+	  niter = build_int_cst_type (unsigned_type_node, 0);
+	  *exit = ex;
+	  break;
+	}
+
+      if (!zero_p (desc.may_be_zero))
+	continue;
+
+      aniter = desc.niter;
+
+      if (!niter)
+	{
+	  /* Nothing recorded yet.  */
+	  niter = aniter;
+	  *exit = ex;
+	  continue;
+	}
+
+      /* Prefer constants, the lower the better.  */
+      if (TREE_CODE (aniter) != INTEGER_CST)
+	continue;
+
+      if (TREE_CODE (niter) != INTEGER_CST)
+	{
+	  niter = aniter;
+	  *exit = ex;
+	  continue;
+	}
+
+      if (tree_int_cst_lt (aniter, niter))
+	{
+	  niter = aniter;
+	  *exit = ex;
+	  continue;
+	}
+    }
+  free (exits);
+
+  return niter ? niter : chrec_dont_know;
+}
+
 /*
 
    Analysis of a number of iterations of a loop by a brute-force evaluation.
@@ -1055,13 +1086,11 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
 	continue;
 
       aniter = loop_niter_by_eval (loop, ex);
-      if (chrec_contains_undetermined (aniter)
-	  || TREE_CODE (aniter) != INTEGER_CST)
+      if (chrec_contains_undetermined (aniter))
 	continue;
 
       if (niter
-	  && !nonzero_p (fold (build2 (LT_EXPR, boolean_type_node,
-					     aniter, niter))))
+	  && !tree_int_cst_lt (aniter, niter))
 	continue;
 
       niter = aniter;
