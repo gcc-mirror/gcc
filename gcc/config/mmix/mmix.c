@@ -99,7 +99,6 @@ static HOST_WIDEST_INT mmix_intval PARAMS ((rtx));
 static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
 static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static struct machine_function * mmix_init_machine_status PARAMS ((void));
-static void mmix_init_machine_status PARAMS ((struct function *));
 static void mmix_encode_section_info PARAMS ((tree, int));
 static const char *mmix_strip_name_encoding PARAMS ((const char *));
 
