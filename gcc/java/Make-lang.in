@@ -45,9 +45,6 @@ JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
 JAVA_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcj|sed '$(program_transform_name)'`
 GCJH_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcjh|sed '$(program_transform_name)'`
 
-# Actual names to use when installing a cross-compiler.
-JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'`
-
 GCJ = gcj
 
 # Define the names for selecting java in LANGUAGES.
@@ -187,14 +184,12 @@ java.install-normal:
 # be explicitly prefixed) and native builds.
 java.install-common: installdirs
 	-if [ -f $(GCJ)$(exeext) ]; then \
+	  rm -f $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	  chmod a+x $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
 	  if [ -f $(GCJ)-cross$(exeext) ]; then \
-	    rm -f $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) $(GCJ)-cross$(exeext) $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
-	    chmod a+x $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
+	    true; \
 	  else \
-	    rm -f $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
 	    rm -f $(DESTDIR)$(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(JAVA_INSTALL_NAME)$(exeext) $(JAVA_TARGET_INSTALL_NAME)$(exeext) ); \
@@ -218,9 +213,7 @@ java.install-man:
 
 java.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext)
-	-rm -rf $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/gcjh$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
@@ -404,15 +397,9 @@ rmiregistry.pod: java/gcj.texi
 # Install the man pages.
 java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
 	-if [ -f $(GCJ)$(exeext) ]; then \
-	  if [ -f $(GCJ)-cross$(exeext) ]; then \
-	    rm -f $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(docobjdir)/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
-	    chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
-	  else \
-	    rm -f $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(docobjdir)/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	    chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	  fi ; \
+	  rm -f $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docobjdir)/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
+	  chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
 	fi
 	-rm -f $(DESTDIR)$(man1dir)/gcjh$(man1ext)
 	-$(INSTALL_DATA) $(docobjdir)/gcjh.1 $(DESTDIR)$(man1dir)/gcjh$(man1ext)

@@ -1,3 +1,8 @@
+2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (G77_CROSS_NAME): Delete.
+	(g77.install_common, g77.install-man, g77.uninstall): Adjust for above.
+
 2003-11-30  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (f77.rebuilt): Fix dependency on g77.info.

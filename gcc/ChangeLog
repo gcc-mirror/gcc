@@ -1,3 +1,11 @@
+2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (program_transform_cross_name): Delete.
+	(GCC_CROSS_NAME, CPP_CROSS_NAME): Delete.
+	(PROTOIZE_CROSS_NAME, UNPROTOIZE_CROSS_NAME): Delete.
+	(AR_FOR_TARGET, RANLIB_FOR_TARGET, NM_FOR_TARGET): Adjust for above.
+	(install_cpp, install_driver, install-man, uninstall): Likewise.
+
 2003-12-06  Alan Modra  <amodra@bigpond.net.au>
 
 	PR 13169
