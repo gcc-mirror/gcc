@@ -1,3 +1,7 @@
+2005-02-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* expr.c (gfc_type_convert_binary): Typo in comment.
+
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
   
 	* check.c (gfc_check_selected_int_kind): New function.
