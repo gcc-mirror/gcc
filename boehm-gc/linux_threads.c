@@ -1015,6 +1015,7 @@ int GC_get_nprocs()
 	WARN("Couldn't read /proc/stat\n", 0);
 	return -1;
     }
+    close(f);
     for (i = 0; i < len - 100; ++i) {
         if (stat_buf[i] == '\n' && stat_buf[i+1] == 'c'
 	    && stat_buf[i+2] == 'p' && stat_buf[i+3] == 'u') {

@@ -1,3 +1,7 @@
+2002-03-24  Jeff Sturm  <jsturm@one-point.com>
+
+	* linux_threads.c (GC_get_nprocs): Close file descriptor.
+
 2002-03-15  Anthony Green  <green@redhat.com>
 
 	* misc.c (GC_init_inner): Initialize GC_write_cs before use.
