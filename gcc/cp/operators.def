@@ -130,7 +130,7 @@ DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", "__pp", 2)
 DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", "__mm", 2)
 /* These are extensions.  */
 DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "vx3min", "__mn", 2)
-DEF_SIMPLE_OPERATOR ("<?", MAX_EXPR, "vx3max", "__mx", 2)
+DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "vx3max", "__mx", 2)
 
 /* Assignment operators.  */
 DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS", "__as", 2)

@@ -1,3 +1,8 @@
+2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* operators.def (<?): Duplicated, should have been...
+	(>?): this.  Fixed.
+
 2000-05-27  Alex Samuel    <samuel@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
