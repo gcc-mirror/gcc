@@ -85,20 +85,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Machine dependent cpp options.  */
 
-/* The sequence here allows us to get a more specific version number
-   glued into __APPLE_CC__.  Normally this number would be updated as
-   part of submitting to a release engineering organization.  */
-
-#ifndef APPLE_CC
-#define APPLE_CC 999
-#endif
-
-#define STRINGIFY_THIS(x) # x
-#define REALLY_STRINGIFY(x) STRINGIFY_THIS(x)
-
 #undef	CPP_SPEC
-#define CPP_SPEC "-D__APPLE_CC__=" REALLY_STRINGIFY(APPLE_CC) "	\
-		  %{static:-D__STATIC__}%{!static:-D__DYNAMIC__}"
+#define CPP_SPEC "%{static:-D__STATIC__}%{!static:-D__DYNAMIC__}"
 
 /* Machine dependent libraries.  */
 

@@ -1,3 +1,9 @@
+2002-07-03  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (APPLE_CC): Remove, not meaningful in FSF GCC.
+	(STRINGIFY_THIS, REALLY_STRINGIFY): Remove.
+	(CPP_SPEC): Remove insertion of APPLE_CC definition.
+
 2002-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (struct_undo): Change types of recorded substitutions
