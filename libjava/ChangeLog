@@ -1,5 +1,9 @@
 2002-06-23  Tom Tromey  <tromey@redhat.com>
 
+	* configure: Rebuilt.
+	* configure.in (INTERPRETER): New subst.
+	(AM_RUNTESTFLAGS): Don't subst.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am ($(srcdir)/java/lang/Object.h,
 	$(srcdir)/java/lang/Class.h): Added dummy targets.
