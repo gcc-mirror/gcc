@@ -1,3 +1,7 @@
+2001-06-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi2html (MAKEINFO): Keep value if set already.
+
 2001-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (DECL_SOURCE_FILE): Improve documentation.
