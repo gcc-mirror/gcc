@@ -5589,11 +5589,11 @@ move\\t%0,%z4\\n\\
   "TARGET_HARD_FLOAT && (TARGET_FLOAT64 && !TARGET_64BIT)
    && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))
+       || register_operand (operands[1], DFmode)
        || (GET_CODE (operands [0]) == MEM
 	   && ((GET_CODE (operands[1]) == CONST_INT
 		&& INTVAL (operands[1]) == 0)
-	       || operands[1] == CONST0_RTX (DFmode)))"
+	       || operands[1] == CONST0_RTX (DFmode))))"
   "* return mips_move_2words (operands, insn); "
   [(set_attr "type"	"move,load,store,store,store,store,load,load,load,load,store,store")
    (set_attr "mode"	"DF")
