@@ -667,9 +667,6 @@ expand_call (exp, target, ignore)
       {
 	struct_value_size = int_size_in_bytes (TREE_TYPE (exp));
 
-	if (struct_value_size < 0)
-	  abort ();
-
 	if (target && GET_CODE (target) == MEM)
 	  structure_value_addr = XEXP (target, 0);
 	else
@@ -679,6 +676,9 @@ expand_call (exp, target, ignore)
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
 	       we would have no way of knowing when to free it.  */
+
+	    if (struct_value_size < 0)
+	      abort ();
 
 	    structure_value_addr
 	      = XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
