@@ -4,6 +4,9 @@
 	* gcc.dg/mips-movcc-2.c: New test.
 	* gcc.dg/mips-movcc-3.c: New test.
 
+	* gcc.dg/mips-nmadd-1.c: New test.
+	* gcc.dg/mips-nmadd-2.c: New test.
+
 2004-08-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15871
