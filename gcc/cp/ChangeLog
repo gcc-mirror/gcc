@@ -1,5 +1,8 @@
 Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (build_const_cast): Handle references here instead of
+	handing off to convert_to_reference.
+
 	* except.c: Lose Unexpected, SetTerminate, SetUnexpected,
  	TerminateFunctionCall.
 	(init_exception_processing): Likewise.  Terminate et al are now
