@@ -24,11 +24,6 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
-# This helps subvert libstdcxx_interface, as calculated by devo/config.if
-# Needed so that g++ can find the correct include subdir automatically.
-INTERFACE = v3
-gxx_include_dir=$(includedir)/g++
-
 SUBDIRS = libio libmath libsupc++ src
 
 

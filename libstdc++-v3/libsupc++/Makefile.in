@@ -98,14 +98,19 @@ WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
 glibcpp_basedir = @glibcpp_basedir@
+gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
+libstdcxx_interface = @libstdcxx_interface@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 @USE_LIBDIR_TRUE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
+@USE_LIBDIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@toolexeclibdir = $(toolexecdir)/$(gcc_version)
+@USE_LIBDIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@gcc_version = @gcc_version@
+@USE_LIBDIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@toolexecdir = $(libdir)/gcc-lib/$(target_alias)
+@USE_LIBDIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.
@@ -148,9 +153,10 @@ sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_
 
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
+@GXX_INCLUDE_DIR_TRUE@glibcppinstalldir = @gxx_include_dir@
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_TRUE@glibcppinstalldir = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+@GXX_INCLUDE_DIR_FALSE@@VERSION_SPECIFIC_LIBS_FALSE@glibcppinstalldir = $(prefix)/include/g++-@libstdcxx_interface@
 
-# This insanely simple bit of install magic courtesy of Mr. Tromey.
-glibcppinstalldir = $(prefix)/include/g++-v3
 glibcppinstall_HEADERS = $(headers)
 
 # Flags to force separate libtool library to be static only.

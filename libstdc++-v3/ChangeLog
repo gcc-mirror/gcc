@@ -1,3 +1,16 @@
+2000-10-13  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+            Mark Harig  <markh@landmark.com>
+
+	* src/Makefile.am (toolexeclibdir): Add support fo
+	VERSION_SPECIFIC_LIBS and --with-gxx-include-dir.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Same.
+	(glibcppinstalldir): Adjust.
+	* libsupc++/Makefile.in: Regenerate.
+	* Makefile.am: Remove gxx_include_dir. Remove INCLUDE. 
+	* Makefile.in: Regenerate.
+	* docs/configopts.html: Add descriptions of flags.
+	
 2000-10-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am: Use it.
