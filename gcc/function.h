@@ -548,6 +548,9 @@ extern struct function *outer_function_chain;
    the index of that block in the vector.  */
 extern void identify_blocks PARAMS ((tree, rtx));
 
+/* Set BLOCK_NUMBER for all the blocks in FN.  */
+extern void number_blocks PARAMS ((tree));
+
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */

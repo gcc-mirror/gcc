@@ -273,16 +273,6 @@ static int next_file_number;
 
 #endif /* DBX_USE_BINCL */
 
-/* In dbx output, we must assign symbol-blocks id numbers
-   in the order in which their beginnings are encountered.
-   We output debugging info that refers to the beginning and
-   end of the ranges of code in each block
-   with assembler labels LBBn and LBEn, where n is the block number.
-   The labels are generated in final, which assigns numbers to the
-   blocks in the same way.  */
-
-static int next_block_number;
-
 /* These variables are for dbxout_symbol to communicate to
    dbxout_finish_symbol.
    current_sym_code is the symbol-type-code, a symbol N_... define in stab.h.
@@ -437,7 +427,6 @@ dbxout_init (asm_file, input_file_name, syms)
   lastfile = input_file_name;
 
   next_type_number = 1;
-  next_block_number = 2;
 
 #ifdef DBX_USE_BINCL
   current_file = (struct dbx_file *) xmalloc (sizeof *current_file);
@@ -2630,7 +2619,7 @@ dbxout_block (block, depth, args)
   while (block)
     {
       /* Ignore blocks never expanded or otherwise marked as real.  */
-      if (TREE_USED (block))
+      if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
 	{
 #ifndef DBX_LBRAC_FIRST
 	  /* In dbx format, the syms of a block come before the N_LBRAC.  */
@@ -2647,7 +2636,7 @@ dbxout_block (block, depth, args)
 	  if (depth > 0 && debug_info_level != DINFO_LEVEL_TERSE)
 	    {
 	      char buf[20];
-	      blocknum = next_block_number++;
+	      blocknum = BLOCK_NUMBER (block);
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LBB", blocknum);
 
 	      if (BLOCK_HANDLER_BLOCK (block))
@@ -2680,9 +2669,6 @@ dbxout_block (block, depth, args)
 	      fprintf (asmfile, "\n");
 #endif
 	    }
-	  else if (depth > 0)
-	    /* Count blocks the same way regardless of debug_info_level.  */
-	    next_block_number++;
 
 #ifdef DBX_LBRAC_FIRST
 	  /* On some weird machines, the syms of a block

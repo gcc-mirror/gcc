@@ -174,22 +174,6 @@ static rtx last_ignored_compare = 0;
 
 static int new_block = 1;
 
-/* All the symbol-blocks (levels of scoping) in the compilation
-   are assigned sequence numbers in order of appearance of the
-   beginnings of the symbol-blocks.  Both final and dbxout do this,
-   and assume that they will both give the same number to each block.
-   Final uses these sequence numbers to generate assembler label names
-   LBBnnn and LBEnnn for the beginning and end of the symbol-block.
-   Dbxout uses the sequence numbers to generate references to the same labels
-   from the dbx debugging information.
-
-   Sdb records this level at the beginning of each function,
-   in order to find the current level when recursing down declarations.
-   It outputs the block beginning and endings
-   at the point in the asm file where the blocks would begin and end.  */
-
-int next_block_index;
-
 /* Assign a unique number to each insn that is output.
    This can be used to generate unique local labels.  */
 
@@ -229,18 +213,7 @@ int frame_pointer_needed;
 
 int profile_label_no;
 
-/* Length so far allocated in PENDING_BLOCKS.  */
-
-static int max_block_depth;
-
-/* Stack of sequence numbers of symbol-blocks of which we have seen the
-   beginning but not yet the end.  Sequence numbers are assigned at
-   the beginning; this stack allows us to find the sequence number
-   of a block that is ending.  */
-
-static int *pending_blocks;
-
-/* Number of elements currently in use in PENDING_BLOCKS.  */
+/* Number of unmatched NOTE_INSN_BLOCK_BEG notes we have seen.  */
 
 static int block_depth;
 
@@ -320,10 +293,7 @@ void
 init_final (filename)
      const char *filename ATTRIBUTE_UNUSED;
 {
-  next_block_index = 2;
   app_on = 0;
-  max_block_depth = 20;
-  pending_blocks = (int *) xmalloc (20 * sizeof *pending_blocks);
   final_sequence = 0;
 
 #ifdef ASSEMBLER_DIALECT
@@ -1667,14 +1637,21 @@ final_start_function (first, file, optimize)
     dwarf2out_frame_debug (NULL_RTX);
 #endif
 
+  /* If debugging, assign block numbers to all of the blocks in this
+     function.  */
+  if (write_symbols)
+    {
+      number_blocks (current_function_decl);
+      remove_unncessary_notes ();
+      /* We never actually put out begin/end notes for the top-level
+	 block in the function.  But, conceptually, that block is
+	 always needed.  */
+      TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
+    }
+
 #ifdef FUNCTION_PROLOGUE
   /* First output the function prologue: code to set up the stack frame.  */
   FUNCTION_PROLOGUE (file, get_frame_size ());
-#endif
-
-#if defined (SDB_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
-    next_block_index = 1;
 #endif
 
   /* If the machine represents the prologue as RTL, the profiling code must
@@ -2174,45 +2151,35 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      || write_symbols == DWARF_DEBUG
 	      || write_symbols == DWARF2_DEBUG))
 	{
-	  /* Beginning of a symbol-block.  Assign it a sequence number
-	     and push the number onto the stack PENDING_BLOCKS.  */
+	  int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
 
-	  if (block_depth == max_block_depth)
-	    {
-	      /* PENDING_BLOCKS is full; make it longer.  */
-	      max_block_depth *= 2;
-	      pending_blocks
-		= (int *) xrealloc (pending_blocks,
-				    max_block_depth * sizeof (int));
-	    }
-	  pending_blocks[block_depth++] = next_block_index;
-
+	  ++block_depth;
 	  high_block_linenum = last_linenum;
 
 	  /* Output debugging info about the symbol-block beginning.  */
-
 #ifdef SDB_DEBUGGING_INFO
 	  if (write_symbols == SDB_DEBUG)
-	    sdbout_begin_block (file, last_linenum, next_block_index);
+	    sdbout_begin_block (file, last_linenum, n);
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
 	  if (write_symbols == XCOFF_DEBUG)
-	    xcoffout_begin_block (file, last_linenum, next_block_index);
+	    xcoffout_begin_block (file, last_linenum, n);
 #endif
 #ifdef DBX_DEBUGGING_INFO
 	  if (write_symbols == DBX_DEBUG)
-	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", next_block_index);
+	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)
-	    dwarfout_begin_block (next_block_index);
+	    dwarfout_begin_block (n);
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
 	  if (write_symbols == DWARF2_DEBUG)
-	    dwarf2out_begin_block (next_block_index);
+	    dwarf2out_begin_block (n);
 #endif
 
-	  next_block_index++;
+	  /* Mark this block as output.  */
+	  TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
 	}
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	       && (debug_info_level == DINFO_LEVEL_NORMAL
@@ -2220,8 +2187,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	           || write_symbols == DWARF_DEBUG
 	           || write_symbols == DWARF2_DEBUG))
 	{
-	  /* End of a symbol-block.  Pop its sequence number off
-	     PENDING_BLOCKS and output debugging info based on that.  */
+	  int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
+
+	  /* End of a symbol-block.  */
 
 	  --block_depth;
 	  if (block_depth < 0)
@@ -2229,26 +2197,23 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 #ifdef XCOFF_DEBUGGING_INFO
 	  if (write_symbols == XCOFF_DEBUG)
-	    xcoffout_end_block (file, high_block_linenum,
-				pending_blocks[block_depth]);
+	    xcoffout_end_block (file, high_block_linenum, n);
 #endif
 #ifdef DBX_DEBUGGING_INFO
 	  if (write_symbols == DBX_DEBUG)
-	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBE",
-				       pending_blocks[block_depth]);
+	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
 #endif
 #ifdef SDB_DEBUGGING_INFO
 	  if (write_symbols == SDB_DEBUG)
-	    sdbout_end_block (file, high_block_linenum,
-			      pending_blocks[block_depth]);
+	    sdbout_end_block (file, high_block_linenum, n);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG)
-	    dwarfout_end_block (pending_blocks[block_depth]);
+	    dwarfout_end_block (n);
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
 	  if (write_symbols == DWARF2_DEBUG)
-	    dwarf2out_end_block (pending_blocks[block_depth]);
+	    dwarf2out_end_block (n);
 #endif
 	}
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL

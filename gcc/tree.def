@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in the GNU C compiler.
-   Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -82,7 +82,9 @@ DEFTREECODE (TREE_VEC, "tree_vec", 'x', 2)
    outermost scope of a particular inlining of a function).
    BLOCK_ABSTRACT is non-zero if the block represents an abstract
    instance of a block (i.e. one which is nested within an abstract
-   instance of an inline function). */
+   instance of an inline function). 
+   TREE_ASM_WRITTEN is non-zero if the block was actually referenced
+   in the generated assembly.  */
 DEFTREECODE (BLOCK, "block", 'b', 0)
 
 /* Each data type is represented by a tree node whose code is one of

@@ -797,12 +797,18 @@ struct tree_exp
    listed in the BLOCK_VARS slot.  */
 #define BLOCK_HANDLER_BLOCK(NODE) (BLOCK_CHECK (NODE)->block.handler_block_flag)
 
+/* An index number for this block.  These values are not guaranteed to
+   be unique across functions -- whether or not they are depends on
+   the debugging output format in use.  */
+#define BLOCK_NUMBER(NODE) (BLOCK_CHECK (NODE)->block.block_num)
+
 struct tree_block
 {
   char common[sizeof (struct tree_common)];
 
   unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
+  unsigned block_num : 30;
 
   union tree_node *vars;
   union tree_node *subblocks;

@@ -268,6 +268,7 @@ static tree round_down		PARAMS ((tree, int));
 static rtx round_trampoline_addr PARAMS ((rtx));
 static tree blocks_nreverse	PARAMS ((tree));
 static int all_blocks		PARAMS ((tree, tree *));
+static tree *get_block_vector   PARAMS ((tree, int *));
 /* We always define `record_insns' even if its not used so that we
    can always export `prologue_epilogue_contains'.  */
 static int *record_insns	PARAMS ((rtx)) ATTRIBUTE_UNUSED;
@@ -5489,10 +5490,7 @@ identify_blocks (block, insns)
 
   /* Fill the BLOCK_VECTOR with all of the BLOCKs in this function, in
      depth-first order.  */
-  n_blocks = all_blocks (block, 0);
-  block_vector = (tree *) xmalloc (n_blocks * sizeof (tree));
-  all_blocks (block, block_vector);
-
+  block_vector = get_block_vector (block, &n_blocks);
   block_stack = (tree *) xmalloc (n_blocks * sizeof (tree));
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -5522,12 +5520,6 @@ identify_blocks (block, insns)
 	  }
       }
 
-  /* In whole-function mode, we might not have seen the whole function
-     yet, so we might not use up all the blocks.  */
-  if (n_blocks != current_block_number 
-      && !cfun->x_whole_function_mode_p)
-    abort ();
-
   free (block_vector);
   free (block_stack);
 }
@@ -5544,9 +5536,12 @@ reorder_blocks (block, insns)
 {
   tree current_block = block;
   rtx insn;
+  varray_type block_stack;
 
   if (block == NULL_TREE)
     return NULL_TREE;
+
+  VARRAY_TREE_INIT (block_stack, 10, "block_stack");
 
   /* Prune the old trees away, so that it doesn't get in the way.  */
   BLOCK_SUBBLOCKS (current_block) = 0;
@@ -5560,16 +5555,22 @@ reorder_blocks (block, insns)
 	    tree block = NOTE_BLOCK (insn);
 	    /* If we have seen this block before, copy it.  */
 	    if (TREE_ASM_WRITTEN (block))
-	      block = copy_node (block);
+	      {
+		block = copy_node (block);
+		NOTE_BLOCK (insn) = block;
+	      }
 	    BLOCK_SUBBLOCKS (block) = 0;
 	    TREE_ASM_WRITTEN (block) = 1;
 	    BLOCK_SUPERCONTEXT (block) = current_block; 
 	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
 	    BLOCK_SUBBLOCKS (current_block) = block;
 	    current_block = block;
+	    VARRAY_PUSH_TREE (block_stack, block);
 	  }
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  {
+	    NOTE_BLOCK (insn) = VARRAY_TOP_TREE (block_stack);
+	    VARRAY_POP (block_stack);
 	    BLOCK_SUBBLOCKS (current_block)
 	      = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
 	    current_block = BLOCK_SUPERCONTEXT (current_block);
@@ -5578,6 +5579,9 @@ reorder_blocks (block, insns)
 
   BLOCK_SUBBLOCKS (current_block)
     = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
+
+  VARRAY_FREE (block_stack);
+
   return current_block;
 }
 
@@ -5598,8 +5602,9 @@ blocks_nreverse (t)
   return prev;
 }
 
-/* Count the subblocks of the list starting with BLOCK, and list them
-   all into the vector VECTOR.  Also clear TREE_ASM_WRITTEN in all
+/* Count the subblocks of the list starting with BLOCK.  If VECTOR is
+   non-NULL, list them all into VECTOR, in a depth-first preorder
+   traversal of the block tree.  Also clear TREE_ASM_WRITTEN in all
    blocks.  */
 
 static int
@@ -5627,6 +5632,57 @@ all_blocks (block, vector)
 
   return n_blocks;
 }
+
+/* Return a vector containing all the blocks rooted at BLOCK.  The
+   number of elements in the vector is stored in N_BLOCKS_P.  The
+   vector is dynamically allocated; it is the caller's responsibility
+   to call `free' on the pointer returned.  */
+  
+static tree *
+get_block_vector (block, n_blocks_p)
+     tree block;
+     int *n_blocks_p;
+{
+  tree *block_vector;
+
+  *n_blocks_p = all_blocks (block, NULL);
+  block_vector = (tree *) xmalloc (*n_blocks_p * sizeof (tree));
+  all_blocks (block, block_vector);
+
+  return block_vector;
+}
+
+static int next_block_index = 2;
+
+/* Set BLOCK_NUMBER for all the blocks in FN.  */
+
+void
+number_blocks (fn)
+     tree fn;
+{
+  int i;
+  int n_blocks;
+  tree *block_vector;
+
+  /* For SDB and XCOFF debugging output, we start numbering the blocks
+     from 1 within each function, rather than keeping a running
+     count.  */
+#if defined (SDB_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+  next_block_index = 1;
+#endif
+
+  block_vector = get_block_vector (DECL_INITIAL (fn), &n_blocks);
+
+  /* The top-level BLOCK isn't numbered at all.  */
+  for (i = 1; i < n_blocks; ++i)
+    /* We number the blocks from two.  */
+    BLOCK_NUMBER (block_vector[i]) = next_block_index++;
+
+  free (block_vector);
+
+  return;
+}
+
 
 /* Allocate a function structure and reset its contents to the defaults.  */
 static void

@@ -679,14 +679,11 @@ plain_type_1 (type, level)
 }
 
 /* Output the symbols defined in block number DO_BLOCK.
-   Set NEXT_BLOCK_NUMBER to 0 before calling.
 
    This function works by walking the tree structure of blocks,
    counting blocks until it finds the desired block.  */
 
 static int do_block = 0;
-
-static int next_block_number;
 
 static void
 sdbout_block (block)
@@ -698,16 +695,12 @@ sdbout_block (block)
       if (TREE_USED (block))
 	{
 	  /* When we reach the specified block, output its symbols.  */
-	  if (next_block_number == do_block)
-	    {
-	      sdbout_syms (BLOCK_VARS (block));
-	    }
+	  if (BLOCK_NUMBER (block) == do_block)
+	    sdbout_syms (BLOCK_VARS (block));
 
 	  /* If we are past the specified block, stop the scan.  */
-	  if (next_block_number > do_block)
+	  if (BLOCK_NUMBER (block) > do_block)
 	    return;
-
-	  next_block_number++;
 
 	  /* Scan the blocks within this block.  */
 	  sdbout_block (BLOCK_SUBBLOCKS (block));
@@ -1546,15 +1539,13 @@ sdbout_begin_block (file, line, n)
   if (n == 1)
     {
       /* Include the outermost BLOCK's variables in block 1.  */
-      next_block_number = 0;
-      do_block = 0;
+      do_block = BLOCK_NUMBER (DECL_INITIAL (decl));
       sdbout_block (DECL_INITIAL (decl));
     }
   /* If -g1, suppress all the internal symbols of functions
      except for arguments.  */
   if (debug_info_level != DINFO_LEVEL_TERSE)
     {
-      next_block_number = 0;
       do_block = n;
       sdbout_block (DECL_INITIAL (decl));
     }
