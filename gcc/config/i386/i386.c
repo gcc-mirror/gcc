@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "basic-block.h"
-#include "defaults.h"
 #include "ggc.h"
 
 #ifndef CHECK_STACK_LIMIT

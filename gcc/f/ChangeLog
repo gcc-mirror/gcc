@@ -1,3 +1,8 @@
+Sat Jan 27 20:52:18 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Remove all dependencies on defaults.h.
+	* com.c: Don't include defaults.h.
+
 2001-01-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* com.c: Don't explicitly include any time headers, the right ones are

@@ -1,7 +1,7 @@
 /* Subroutines needed for unwinding IA-64 standard format stack frame
    info for exception handling.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
                   Andrew Haley  <aph@cygnus.com>
 
@@ -46,7 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stddef.h>
 #endif
 
-#include "defaults.h"
 #include "frame-ia64.h"
 #include "eh-common.h"
 

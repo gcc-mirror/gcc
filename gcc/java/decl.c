@@ -35,7 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "function.h"
 #include "except.h"
-#include "defaults.h"
 #include "java-except.h"
 #include "ggc.h"
 

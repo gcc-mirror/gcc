@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "output.h"
 #include "typeclass.h"
-#include "defaults.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "intl.h"

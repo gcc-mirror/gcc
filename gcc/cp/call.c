@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "rtl.h"
 #include "toplev.h"
-#include "defaults.h"
 #include "expr.h"
 #include "ggc.h"
 

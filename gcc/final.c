@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "real.h"
 #include "hard-reg-set.h"
-#include "defaults.h"
 #include "output.h"
 #include "except.h"
 #include "function.h"

@@ -54,7 +54,6 @@ Boston, MA 02111-1307, USA.  */
 #include "bitmap.h"
 #include "basic-block.h"
 #include "ggc.h"
-#include "defaults.h"
 
 /* Commonly used modes.  */
 

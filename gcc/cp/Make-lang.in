@@ -274,9 +274,9 @@ cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H)
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h
 cp/search.o: cp/search.c $(CXX_TREE_H) stack.h flags.h toplev.h $(RTL_H)
 cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
-  insn-config.h integrate.h defaults.h
+  insn-config.h integrate.h
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) system.h
-cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h defaults.h
+cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
 cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
   cp/cfns.h $(EXPR_H) insn-flags.h cp/decl.h $(OBSTACK_H)
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h except.h

@@ -64,7 +64,6 @@ definitions and other extensions.  */
 #include "xref.h"
 #include "function.h"
 #include "except.h"
-#include "defaults.h"
 #include "ggc.h"
 
 #ifndef DIR_SEPARATOR

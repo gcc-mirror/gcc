@@ -92,7 +92,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "real.h"
 #include "toplev.h"
-#include "defaults.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0

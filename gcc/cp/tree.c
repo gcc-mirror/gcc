@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "insn-config.h"
 #include "integrate.h"
-#include "defaults.h"
 
 static tree bot_manip PARAMS ((tree *, int *, void *));
 static tree bot_replace PARAMS ((tree *, int *, void *));

@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 2000 Free Software Foundation.
+   Copyright (C) 1987, 2000, 2001 Free Software Foundation.
    Adapted from expread.y of GDB by Paul Rubin, July 1986.
    Adapted to ANSI C, Richard Stallman, Jan 1987
    Dusted off, polished, and adapted for use as traditional
@@ -24,7 +24,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 %{
 #include "config.h"
 #include "system.h"
-#include "defaults.h"
 #include "tradcpp.h"
 #include <setjmp.h>
 
