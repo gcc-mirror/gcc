@@ -224,6 +224,10 @@ emit_move_sequence (operands, mode, scratch)
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
 
+  if (CONSTANT_P (operand1) && flag_pic
+      && pic_address_needs_scratch (operand1))
+    operands[1] = operand1 = legitimize_address (1, operand1, 0, 0);
+
   /* Handle most common case first: storing into a register.  */
   if (register_operand (operand0, mode))
     {
