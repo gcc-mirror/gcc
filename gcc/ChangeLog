@@ -1,3 +1,14 @@
+2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/darwin.c, config/alpha/alpha.h, config/arm/arm.c,
+	config/arm/arm.h, config/arm/arm.md, config/arm/bpabi.h,
+	config/arm/predicates.md, config/frv/frv.c, config/frv/frv.md,
+	config/h8300/h8300.md, config/i386/gmm_malloc.h,
+	config/ia64/ia64.md, config/ip2k/libgcc.S,
+	config/mips/mips-ps-3d.md, config/mips/mips.c,
+	config/rs6000/rs6000.c, config/s390/s390.c,
+	config/sh/symbian.c: Fix comment typos.
+
 2004-09-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Added missing

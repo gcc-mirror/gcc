@@ -277,7 +277,7 @@
    (set_attr "mode" "SF")])
 
 ;----------------------------------------------------------------------------
-; Floating Point Comparisions for Scalars
+; Floating Point Comparisons for Scalars
 ;----------------------------------------------------------------------------
 
 (define_insn "mips_cabs_cond_<fmt>"
@@ -293,7 +293,7 @@
 
 
 ;----------------------------------------------------------------------------
-; Floating Point Comparisions for Four Singles
+; Floating Point Comparisons for Four Singles
 ;----------------------------------------------------------------------------
 
 (define_insn_and_split "mips_c_cond_4s"
@@ -356,7 +356,7 @@
 
 
 ;----------------------------------------------------------------------------
-; Floating Point Comparisions for Paired Singles
+; Floating Point Comparisons for Paired Singles
 ;----------------------------------------------------------------------------
 
 (define_insn "mips_c_cond_ps"

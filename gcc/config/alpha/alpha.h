@@ -476,7 +476,7 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 
    Note that small vector types can get mapped onto integer modes at the
    whim of not appearing in alpha-modes.def.  We never promoted these
-   values before; don't do so now that we've trimed the set of modes to
+   values before; don't do so now that we've trimmed the set of modes to
    those actually implemented in the backend.  */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)			\

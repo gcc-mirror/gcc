@@ -33,7 +33,7 @@
    calling convention.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) TARGET_BPABI
 
-/* The BPABI integer comparision routines return { -1, 0, 1 }.  */
+/* The BPABI integer comparison routines return { -1, 0, 1 }.  */
 #define TARGET_LIB_INT_CMP_BIASED !TARGET_BPABI
 
 /* Tell the assembler to build BPABI binaries.  */

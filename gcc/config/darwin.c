@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
    are required by consumers of the generated code.  Currently, gdb
    uses this to patch in a jump to the overriding function, this
    allows all uses of the old name to forward to the replacement,
-   including existing function poiinters and virtual methods.  See
+   including existing function pointers and virtual methods.  See
    rs6000_emit_prologue for the code that handles the nop insertions.
  
    The added indirection allows gdb to redirect accesses to static

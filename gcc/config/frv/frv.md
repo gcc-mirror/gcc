@@ -477,7 +477,7 @@
 ;;	     X + L when each S''[X] is added.  If so, set S to the
 ;;	     concatenation of S[0]...S[L-1] and S'', then goto (i).
 ;;
-;;	 (h) If (g) found no permuation, abort.
+;;	 (h) If (g) found no permutation, abort.
 ;;
 ;;	 (i) S is now the sorted sequence for this group, meaning that S[X]
 ;;	     issues to unit X.  Trim any unwanted nops from the end of S.

@@ -17188,7 +17188,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MEM:
       /* When optimizing for size, MEM should be slightly more expensive
 	 than generating address, e.g., (plus (reg) (const)).
-	 L1 cache latecy is about two instructions.  */
+	 L1 cache latency is about two instructions.  */
       *total = optimize_size ? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (2);
       return true;
 

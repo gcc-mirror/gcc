@@ -8638,7 +8638,7 @@ frv_pack_insn_p (rtx insn)
 
        - Conditional instructions are scheduled on the assumption that
 	 they will be executed.  This is usually a good thing, since it
-	 tends to avoid unncessary stalls in the conditional code.
+	 tends to avoid unnecessary stalls in the conditional code.
 	 But we want to pack conditional instructions as tightly as
 	 possible, in order to optimize the case where they aren't
 	 executed.
@@ -9553,7 +9553,7 @@ frv_int_to_acc (enum insn_code icode, int opnum, rtx opval)
 
   /* ACCs and ACCGs are implicity global registers if media instrinsics
      are being used.  We set up this lazily to avoid creating lots of
-     unncessary call_insn rtl in non-media code.  */
+     unnecessary call_insn rtl in non-media code.  */
   for (i = 0; i <= ACC_MASK; i++)
     if ((i & ACC_MASK) == i)
       global_regs[i + ACC_FIRST] = global_regs[i + ACCG_FIRST] = 1;
@@ -9647,7 +9647,7 @@ frv_read_iacc_argument (enum machine_mode mode, tree *arglistptr)
     }
 
   /* IACCs are implicity global registers.  We set up this lazily to
-     avoid creating lots of unncessary call_insn rtl when IACCs aren't
+     avoid creating lots of unnecessary call_insn rtl when IACCs aren't
      being used.  */
   regno = INTVAL (op) + IACC_FIRST;
   for (i = 0; i < HARD_REGNO_NREGS (regno, mode); i++)

@@ -171,7 +171,7 @@
   (and (match_code "plus,minus,ior,xor,and")
        (match_test "mode == GET_MODE (op)")))
 
-;; True for logical binary opertors.
+;; True for logical binary operators.
 (define_special_predicate "logical_binary_operator"
   (and (match_code "ior,xor,and")
        (match_test "mode == GET_MODE (op)")))
