@@ -1,3 +1,7 @@
+2004-09-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bitmap.h: Fix a comment typo.
+
 2004-09-27  Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
 
 	* libgcc2.c (getpagesize): Change type of return value to int.
