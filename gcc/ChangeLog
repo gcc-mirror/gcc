@@ -1,3 +1,8 @@
+Tue Jan 26 13:41:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (doz + set cr and or + set cr patterns): Add missing
+	'#' to split patterns.  Correct indentation of some new patterns.
+
 1999-01-26 12:11 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
 
 	* cppfiles.c (safe_read): Deleted.  
@@ -30,18 +35,16 @@ Tue Jan 26 23:21:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 1999-01-25 14:26 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
-	* cppexp.c: 
-	    (struct arglist): Removed.
-	    (parse_number): Use HOST_WIDE_INT for the accumulator.
-	    Allow two `l' suffixes unless C89.  Clean up.  Make
-	    static.
-	    (parse_charconst): New function broken out of cpp_lex.
-	    Code cleaned up drastically.  Don't use a token_buffer.
-	    (token_buffer): Removed.
-	    (cpp_lex): Don't call parse_number on a constant string.
-	    Use parse_charconst.
-	    (cpp_parse_expr): Properly handle an ERROR op returned by
-	    cpp_lex. 
+	* cppexp.c (struct arglist): Removed.
+	(parse_number): Use HOST_WIDE_INT for the accumulator.
+	Allow two `l' suffixes unless C89.  Clean up.  Make static.
+	(parse_charconst): New function broken out of cpp_lex.
+	Code cleaned up drastically.  Don't use a token_buffer.
+	(token_buffer): Removed.
+	(cpp_lex): Don't call parse_number on a constant string.
+	Use parse_charconst.
+	(cpp_parse_expr): Properly handle an ERROR op returned by
+	cpp_lex. 
 
 1999-01-25 14:10 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
