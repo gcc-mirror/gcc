@@ -1,3 +1,12 @@
+1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Remove redundant linkage check.
+
+1998-08-24  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* typeck.c (c_expand_return): Handle the case that valtype
+	is wider than the functions return type.
+
 1998-08-24  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (CLASS_TYPE_P): New macro.
