@@ -1,5 +1,10 @@
 2003-11-08  Jeff Sturm  <jsturm@one-point.com>
 
+	* gnu/gcj/runtime/FirstThread.java (Klocale, Kcalendar):
+	New fields.
+
+2003-11-08  Jeff Sturm  <jsturm@one-point.com>
+
 	* java/io/ByteArrayOutputStream.java (resize):
 	Fix off-by-one error.
 
