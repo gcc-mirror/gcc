@@ -1,3 +1,13 @@
+2005-03-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Update the prototypes of cached_make_edge and
+	rtl_make_eh_edge.
+	* cfg.c (cached_make_edge): Take edge_cache representing one
+	row of the adjacency matrix of edges.
+	* cfgbuild.c (make_label_edge, rtl_make_eh_edge): Likewise.
+	(make_edges): Initialize edge_cache to represent one row of
+	the adjacency matrix of edges.
+
 2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-phiopt.c (minmax_replacement, blocks_in_phiopt_order):
