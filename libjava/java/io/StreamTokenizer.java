@@ -1,5 +1,5 @@
 /* StreamTokenizer.java -- parses streams of characters into tokens
-   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -554,16 +554,13 @@ public class StreamTokenizer
   }
 
   /**
-   * This method returns the current line number.  Note that if the 
-   * <code>pushBack()</code> method is called, it has no effect on the
-   * line number returned by this method.
-   *
-   * @return The current line number
+   * Puts the current token back into the StreamTokenizer so
+   * <code>nextToken</code> will return the same value on the next call.
+   * May cause the lineno method to return an incorrect value
+   * if lineno is called before the next call to nextToken.
    */
   public void pushBack()
   {
-    // pushBack may cause the lineno method to return an incorrect value
-    // if lineno is called before the next call to nextToken.
     pushedBack = true;
   }
 
@@ -670,7 +667,10 @@ public class StreamTokenizer
     if (hi > 255)
       hi = 255;
     for (int i = low; i <= hi; i++)
-      whitespace[i] = true;
+      {
+	resetChar(i);
+	whitespace[i] = true;
+      }
   }
 
   /**
