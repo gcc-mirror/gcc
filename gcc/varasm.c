@@ -2344,75 +2344,95 @@ const_hash (exp)
   register int len, hi, i;
   register enum tree_code code = TREE_CODE (exp);
 
-  if (code == INTEGER_CST)
+  /* Either set P and LEN to the address and len of something to hash and
+     exit the switch or return a value.  */
+
+  switch (code)
     {
+    case INTEGER_CST:
       p = (char *) &TREE_INT_CST_LOW (exp);
       len = 2 * sizeof TREE_INT_CST_LOW (exp);
-    }
-  else if (code == REAL_CST)
-    {
+      break;
+
+    case REAL_CST:
       p = (char *) &TREE_REAL_CST (exp);
       len = sizeof TREE_REAL_CST (exp);
-    }
-  else if (code == STRING_CST)
-    p = TREE_STRING_POINTER (exp), len = TREE_STRING_LENGTH (exp);
-  else if (code == COMPLEX_CST)
-    return const_hash (TREE_REALPART (exp)) * 5
-      + const_hash (TREE_IMAGPART (exp));
-  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-    {
-      len = int_size_in_bytes (TREE_TYPE (exp));
-      p = (char *) alloca (len);
-      get_set_constructor_bytes (exp, (unsigned char *) p, len);
-    }
-  else if (code == CONSTRUCTOR)
-    {
-      register tree link;
+      break;
 
-      /* For record type, include the type in the hashing.
-	 We do not do so for array types
-	 because (1) the sizes of the elements are sufficient
-	 and (2) distinct array types can have the same constructor.
-	 Instead, we include the array size because the constructor could
-	 be shorter.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	hi = ((HOST_WIDE_INT) TREE_TYPE (exp) & ((1 << HASHBITS) - 1))
-	  % MAX_HASH_TABLE;
-      else
-	hi = ((5 + int_size_in_bytes (TREE_TYPE (exp)))
-	       & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
+    case STRING_CST:
+      p = TREE_STRING_POINTER (exp);
+      len = TREE_STRING_LENGTH (exp);
+      break;
 
-      for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	if (TREE_VALUE (link))
-	  hi = (hi * 603 + const_hash (TREE_VALUE (link))) % MAX_HASH_TABLE;
+    case COMPLEX_CST:
+      return (const_hash (TREE_REALPART (exp)) * 5
+	      + const_hash (TREE_IMAGPART (exp)));
 
-      return hi;
-    }
-  else if (code == ADDR_EXPR)
-    {
-      struct addr_const value;
-      decode_addr_const (exp, &value);
-      if (GET_CODE (value.base) == SYMBOL_REF)
+    case CONSTRUCTOR:
+      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
 	{
-	  /* Don't hash the address of the SYMBOL_REF;
-	     only use the offset and the symbol name.  */
-	  hi = value.offset;
-	  p = XSTR (value.base, 0);
-	  for (i = 0; p[i] != 0; i++)
-	    hi = ((hi * 613) + (unsigned) (p[i]));
+	  len = int_size_in_bytes (TREE_TYPE (exp));
+	  p = (char *) alloca (len);
+	  get_set_constructor_bytes (exp, (unsigned char *) p, len);
+	  break;
 	}
-      else if (GET_CODE (value.base) == LABEL_REF)
-	hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
+      else
+	{
+	  register tree link;
 
-      hi &= (1 << HASHBITS) - 1;
-      hi %= MAX_HASH_TABLE;
+	  /* For record type, include the type in the hashing.
+	     We do not do so for array types
+	     because (1) the sizes of the elements are sufficient
+	     and (2) distinct array types can have the same constructor.
+	     Instead, we include the array size because the constructor could
+	     be shorter.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
+	    hi = ((HOST_WIDE_INT) TREE_TYPE (exp) & ((1 << HASHBITS) - 1))
+	      % MAX_HASH_TABLE;
+	  else
+	    hi = ((5 + int_size_in_bytes (TREE_TYPE (exp)))
+		  & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
+
+	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	    if (TREE_VALUE (link))
+	      hi
+		= (hi * 603 + const_hash (TREE_VALUE (link))) % MAX_HASH_TABLE;
+
+	  return hi;
+	}
+
+    case ADDR_EXPR:
+      {
+	struct addr_const value;
+
+	decode_addr_const (exp, &value);
+	if (GET_CODE (value.base) == SYMBOL_REF)
+	  {
+	    /* Don't hash the address of the SYMBOL_REF;
+	       only use the offset and the symbol name.  */
+	    hi = value.offset;
+	    p = XSTR (value.base, 0);
+	    for (i = 0; p[i] != 0; i++)
+	      hi = ((hi * 613) + (unsigned) (p[i]));
+	  }
+	else if (GET_CODE (value.base) == LABEL_REF)
+	  hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
+
+	hi &= (1 << HASHBITS) - 1;
+	hi %= MAX_HASH_TABLE;
+      }
       return hi;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      return (const_hash (TREE_OPERAND (exp, 0)) * 9
+	      + const_hash (TREE_OPERAND (exp, 1)));
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
     }
-  else if (code == PLUS_EXPR || code == MINUS_EXPR)
-    return const_hash (TREE_OPERAND (exp, 0)) * 9
-      +  const_hash (TREE_OPERAND (exp, 1));
-  else if (code == NOP_EXPR || code == CONVERT_EXPR)
-    return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
 
   /* Compute hashing function */
   hi = len;
@@ -2456,122 +2476,146 @@ compare_constant_1 (exp, p)
   if (code != (enum tree_code) *p++)
     return 0;
 
-  if (code == INTEGER_CST)
+  /* Either set STRP, P and LEN to pointers and length to compare and exit the
+     switch, or return the result of the comparison.  */
+
+  switch (code)
     {
+    case INTEGER_CST:
       /* Integer constants are the same only if the same width of type.  */
       if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
 	return 0;
+
       strp = (char *) &TREE_INT_CST_LOW (exp);
       len = 2 * sizeof TREE_INT_CST_LOW (exp);
-    }
-  else if (code == REAL_CST)
-    {
+      break;
+
+    case REAL_CST:
       /* Real constants are the same only if the same width of type.  */
       if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
 	return 0;
+
       strp = (char *) &TREE_REAL_CST (exp);
       len = sizeof TREE_REAL_CST (exp);
-    }
-  else if (code == STRING_CST)
-    {
+      break;
+
+    case STRING_CST:
       if (flag_writable_strings)
 	return 0;
+
       strp = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (bcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		sizeof TREE_STRING_LENGTH (exp)))
 	return 0;
+
       p += sizeof TREE_STRING_LENGTH (exp);
-    }
-  else if (code == COMPLEX_CST)
-    {
+      break;
+
+    case COMPLEX_CST:
       p = compare_constant_1 (TREE_REALPART (exp), p);
-      if (p == 0) return 0;
-      p = compare_constant_1 (TREE_IMAGPART (exp), p);
-      return p;
-    }
-  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-    {
-      int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
-      strp = (char *) alloca (len);
-      get_set_constructor_bytes (exp, (unsigned char *) strp, len);
-      if (bcmp ((char *) &xlen, p, sizeof xlen))
+      if (p == 0)
 	return 0;
-      p += sizeof xlen;
-    }
-  else if (code == CONSTRUCTOR)
-    {
-      register tree link;
-      int length = list_length (CONSTRUCTOR_ELTS (exp));
-      tree type;
 
-      if (bcmp ((char *) &length, p, sizeof length))
-	return 0;
-      p += sizeof length;
+      return compare_constant_1 (TREE_IMAGPART (exp), p);
 
-      /* For record constructors, insist that the types match.
-	 For arrays, just verify both constructors are for arrays.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	type = TREE_TYPE (exp);
-      else
-	type = 0;
-      if (bcmp ((char *) &type, p, sizeof type))
-	return 0;
-      p += sizeof type;
-
-      /* For arrays, insist that the size in bytes match.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    case CONSTRUCTOR:
+      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
 	{
-	  int size = int_size_in_bytes (TREE_TYPE (exp));
-	  if (bcmp ((char *) &size, p, sizeof size))
+	  int xlen = len = int_size_in_bytes (TREE_TYPE (exp));
+
+	  strp = (char *) alloca (len);
+	  get_set_constructor_bytes (exp, (unsigned char *) strp, len);
+	  if (bcmp ((char *) &xlen, p, sizeof xlen))
 	    return 0;
-	  p += sizeof size;
-	}
 
-      for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	  p += sizeof xlen;
+	  break;
+	}
+      else
 	{
-	  if (TREE_VALUE (link))
-	    {
-	      if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
-		return 0;
-	    }
-	  else
-	    {
-	      tree zero = 0;
+	  register tree link;
+	  int length = list_length (CONSTRUCTOR_ELTS (exp));
+	  tree type;
 
-	      if (bcmp ((char *) &zero, p, sizeof zero))
+	  if (bcmp ((char *) &length, p, sizeof length))
+	    return 0;
+
+	  p += sizeof length;
+
+	  /* For record constructors, insist that the types match.
+	     For arrays, just verify both constructors are for arrays.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
+	    type = TREE_TYPE (exp);
+	  else
+	    type = 0;
+
+	  if (bcmp ((char *) &type, p, sizeof type))
+	    return 0;
+
+	  p += sizeof type;
+
+	  /* For arrays, insist that the size in bytes match.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	    {
+	      int size = int_size_in_bytes (TREE_TYPE (exp));
+	      if (bcmp ((char *) &size, p, sizeof size))
 		return 0;
-	      p += sizeof zero;
+
+	      p += sizeof size;
 	    }
+
+	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	    {
+	      if (TREE_VALUE (link))
+		{
+		  if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
+		    return 0;
+		}
+	      else
+		{
+		  tree zero = 0;
+
+		  if (bcmp ((char *) &zero, p, sizeof zero))
+		    return 0;
+
+		  p += sizeof zero;
+		}
+	    }
+
+	  return p;
 	}
 
-      return p;
-    }
-  else if (code == ADDR_EXPR)
-    {
-      struct addr_const value;
-      decode_addr_const (exp, &value);
-      strp = (char *) &value.offset;
-      len = sizeof value.offset;
-      /* Compare the offset.  */
-      while (--len >= 0)
-	if (*p++ != *strp++)
-	  return 0;
-      /* Compare symbol name.  */
-      strp = XSTR (value.base, 0);
-      len = strlen (strp) + 1;
-    }
-  else if (code == PLUS_EXPR || code == MINUS_EXPR)
-    {
+    case ADDR_EXPR:
+      {
+	struct addr_const value;
+
+	decode_addr_const (exp, &value);
+	strp = (char *) &value.offset;
+	len = sizeof value.offset;
+	/* Compare the offset.  */
+	while (--len >= 0)
+	  if (*p++ != *strp++)
+	    return 0;
+
+	/* Compare symbol name.  */
+	strp = XSTR (value.base, 0);
+	len = strlen (strp) + 1;
+      }
+      break;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
       p = compare_constant_1 (TREE_OPERAND (exp, 0), p);
-      if (p == 0) return 0;
-      p = compare_constant_1 (TREE_OPERAND (exp, 1), p);
-      return p;
-    }
-  else if (code == NOP_EXPR || code == CONVERT_EXPR)
-    {
-      p = compare_constant_1 (TREE_OPERAND (exp, 0), p);
-      return p;
+      if (p == 0)
+	return 0;
+
+      return compare_constant_1 (TREE_OPERAND (exp, 1), p);
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      return compare_constant_1 (TREE_OPERAND (exp, 0), p);
     }
 
   /* Compare constant contents.  */
@@ -2834,6 +2878,7 @@ copy_constant (exp)
 
     case NOP_EXPR:
     case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       return build1 (TREE_CODE (exp), TREE_TYPE (exp),
 		     copy_constant (TREE_OPERAND (exp, 0)));
 
@@ -3833,7 +3878,8 @@ bc_assemble_integer (exp, size)
   
   exp = fold (exp);
   
-  while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR)
+  while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
+	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
     exp = TREE_OPERAND (exp, 0);
   if (TREE_CODE (exp) == INTEGER_CST)
     {
@@ -3844,11 +3890,13 @@ bc_assemble_integer (exp, size)
     {
       const_part = TREE_OPERAND (exp, 0);
       while (TREE_CODE (const_part) == NOP_EXPR
-	     || TREE_CODE (const_part) == CONVERT_EXPR)
+	     || TREE_CODE (const_part) == CONVERT_EXPR
+	     || TREE_CODE (const_part) == NON_LVALUE_EXPR)
 	const_part = TREE_OPERAND (const_part, 0);
       addr_part = TREE_OPERAND (exp, 1);
       while (TREE_CODE (addr_part) == NOP_EXPR
-	     || TREE_CODE (addr_part) == CONVERT_EXPR)
+	     || TREE_CODE (addr_part) == CONVERT_EXPR
+	     || TREE_CODE (addr_part) == NON_LVALUE_EXPR)
 	addr_part = TREE_OPERAND (addr_part, 0);
       if (TREE_CODE (const_part) != INTEGER_CST)
 	tmp = const_part, const_part = addr_part, addr_part = tmp;
