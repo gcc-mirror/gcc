@@ -2144,7 +2144,9 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   AC_SUBST(baseline_dir)
 
   # Determine if checking the ABI is desirable.
-  if test x$enable_symvers = xno; then
+  # Only build this as native, since automake does not understand
+  # CXX_FOR_BUILD.
+  if test x"$GLIBCPP_IS_CROSS_COMPILING" = xtrue || test x$enable_symvers = xno; then
     enable_abi_check=no
   else
     case "$host" in
