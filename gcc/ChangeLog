@@ -1,3 +1,9 @@
+2002-05-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Correct test of --enable-obsolete.  Obsolete all
+	A29k configurations.
+	* doc/install.texi: Update to match.
+
 2002-05-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR bootstrap/6514
@@ -47,26 +53,26 @@ Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-05-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-7.c: New.
+	* gcc.dg/altivec-7.c: New.
 
-        * config/rs6000/altivec.h: Cleanup.
+	* config/rs6000/altivec.h: Cleanup.
 
 2002-04-30  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi (Option Summary): Add -mvrsave=.
-        (RS/6000 and PowerPC Options): Document -mvrsave=.
+	* doc/invoke.texi (Option Summary): Add -mvrsave=.
+	(RS/6000 and PowerPC Options): Document -mvrsave=.
 
-        * config/rs6000/rs6000.c (rs6000_altivec_vrsave): New global.
-        (rs6000_altivec_vrsave_string): Same.
-        (rs6000_override_options): Call rs6000_parse_vrsave_option.
-        (rs6000_parse_vrsave_option): New.
-        (rs6000_stack_info): Only generate vrsave instructions when
-        TARGET_ALTIVEC_VRSAVE.
+	* config/rs6000/rs6000.c (rs6000_altivec_vrsave): New global.
+	(rs6000_altivec_vrsave_string): Same.
+	(rs6000_override_options): Call rs6000_parse_vrsave_option.
+	(rs6000_parse_vrsave_option): New.
+	(rs6000_stack_info): Only generate vrsave instructions when
+	TARGET_ALTIVEC_VRSAVE.
 
-        * config/rs6000/rs6000.h (TARGET_OPTIONS): Add -mvrsave= option.
-        (rs6000_altivec_vrsave_string): Define extern.
-        (rs6000_altivec_vrsave): Same.
-        (TARGET_ALTIVEC_VRSAVE): New.
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Add -mvrsave= option.
+	(rs6000_altivec_vrsave_string): Define extern.
+	(rs6000_altivec_vrsave): Same.
+	(TARGET_ALTIVEC_VRSAVE): New.
 
 2002-04-30  Richard Henderson  <rth@redhat.com>
 
@@ -76,7 +82,7 @@ Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-04-30  Tom Rix  <trix@redhat.com>
 
-	* regrename.c (build_def_use, copyprop_hardreg_forward_1): Sanity 
+	* regrename.c (build_def_use, copyprop_hardreg_forward_1): Sanity
 	check which_alternative.
 
 2002-04-30  Kazu Hirata  <kazu@hxi.com>
@@ -194,7 +200,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 2002-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Merging code from dfa-branch:
-	
+
 	2002-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (output_reserv_sets): Fix typo.
@@ -206,10 +212,10 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Apr 18 08:57:06 2002  Jeffrey A Law  (law@redhat.com)
 
-        * sched-rgn.c (init_ready_list): Make the DFA code handle
-        USE/CLOBBER insns in the same way as the traditional
-        scheduler.
-        (new_ready): Similarly..
+	* sched-rgn.c (init_ready_list): Make the DFA code handle
+	USE/CLOBBER insns in the same way as the traditional
+	scheduler.
+	(new_ready): Similarly..
 
 	2002-04-17  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -256,7 +262,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	* config/sparc/sol2.h: Likewise.
 	* config/sparc/sol2-sld-64.h: Likewise.
 	* config/sparc/linux64.h: Likewise.
-	
+
 	2002-03-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/md.texi: Add comments about usage the latency time for the
@@ -265,7 +271,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* doc/md.texi: Add reference for automaton based pipeline
 	description.
-	
+
 	2002-03-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/passes.texi: Add missed information about genattrtab.
@@ -308,20 +314,20 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	(automaton_states): New global variable.
 	(expand_automata): Call form_important_insn_automata_lists.
 	(write_automata): Call finish_automata_lists.
-	
+
 	2002-02-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (add_excls, add_presence_absence): Check that
-        cpu units in the sets belong the same automaton.
+	cpu units in the sets belong the same automaton.
 
 	* rtl.def (EXCLUSION_SET, PRESENCE_SET, ABSENCE_SET): Add comment
 	about that cpu units in the sets belong the same automaton.
 
 	* doc/md.texi: Ditto.
-	
+
 	2001-12-20  Naveen Sharma  <naveens@noida.hcltech.com>
 		    Nitin Gupta  <niting@noida.hcltech.com>
-	
+
 	* config/sh/sh.c (sh_use_dfa_interface): New function.
 
 	(sh_issue_rate): New Function.
@@ -330,17 +336,17 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* config/sh/sh.md: Add DFA based pipeline description for SH4.
 
-	(define_attr insn_class): New attribute used for DFA 
-         scheduling.
+	(define_attr insn_class): New attribute used for DFA
+	 scheduling.
 	(define_insn cmpgtsi_t): Set attribute insn_class mt_group.
 	(cmpgesi_t,cmpgtusi_t,cmpgeusi_t,cmpeqsi_t,
 	 cmpeqdi_t): Likewise.
 
 	(add,addc1,addsi3,subc,subc1,*subsi3_internal,
-	 negc,negsi2,ashldi3_k,lshrdi3_k,ashrdi3_k): Set insn_class 
+	 negc,negsi2,ashldi3_k,lshrdi3_k,ashrdi3_k): Set insn_class
 	 ex_group.
 	(iorsi3,rotlsi3_1,rotlsi3_31,rotlsi3_16): Likewise.
-	   
+
 	2001-10-03  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
 
 	* haifa-sched.c (queue_to_ready): Remove unnecessary condition for
@@ -353,7 +359,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	necessary.
 	(output_dfa_start_func): Initiate new variable insn_codes_length,
 	(write_automata): Output definition of the new variable.
-	
+
 	2001-10-02  David S. Miller  <davem@redhat.com>
 
 	* haifa-sched.c (advance_one_cycle): New function.
@@ -430,7 +436,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	Ditto.
 
 	* sched-vis.c (get_visual_tbl_length): Ditto.
-	
+
 	2001-08-27  Richard Henderson  <rth@redhat.com>
 
 	* genattr.c (main): Emit state_t even when not doing scheduling.
@@ -441,7 +447,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	2001-08-27  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
 
-        * rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
+	* rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
 	PRESENCE_SET, ABSENCE_SET, DEFINE_BYPASS, DEFINE_AUTOMATON,
 	AUTOMATA_OPTION, DEFINE_RESERVATION, DEFINE_INSN_RESERVATION): New
 	RTL constructions.
@@ -466,7 +472,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.h (LINK_COST_ZERO, LINK_COST_FREE): Remove them.
 
-        * sched-int.h: (curr_state): Add the external definition for
+	* sched-int.h: (curr_state): Add the external definition for
 	automaton pipeline interface.
 	(haifa_insn_data): Add comments for members blockage and units.
 
@@ -485,7 +491,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	first_cycle_multipass_dfa_lookahead, init_dfa_bubbles,
 	dfa_bubble): New members in gcc_target.sched.
 
-        * haifa-sched.c (insert_schedule_bubbles_p): New variable.
+	* haifa-sched.c (insert_schedule_bubbles_p): New variable.
 	(MAX_INSN_QUEUE_INDEX): New macro for automaton interface.
 	(insn_queue): Redefine it as pointer to array.
 	(NEXT_Q, NEXT_Q_AFTER): Use MAX_INSN_QUEUE_INDEX instead of
@@ -527,7 +533,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 	(get_visual_tbl_length): Add code for automaton interface.
 	(target_units, print_block_visualization):  Add comments.
 
-        * Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
+	* Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
 	USE_HOST_GETRUNTIME, USE_HOST_HASHTAB, HOST_VARRAY): New variables.
 	(sched-rgn.o, sched-vis.o): Add new dependency file target.h.
 	(getruntime.o, genautomata.o): New entries.
@@ -702,7 +708,7 @@ Mon Apr 29 12:18:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-04-28  Richard Henderson  <rth@redhat.com>
 
 	PR c/5154
-	* ggc-common.c (ggc_mark_rtx_children_1): Rename from... 
+	* ggc-common.c (ggc_mark_rtx_children_1): Rename from...
 	(ggc_mark_rtx_children): New.
 
 2002-04-28  Jakub Jelinek  <jakub@redhat.com>
