@@ -76,7 +76,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @node Top
 @top
 The C preprocessor implements the macro language used to transform C,
-C++, and Objective C programs before they are compiled.  It can also be
+C++, and Objective-C programs before they are compiled.  It can also be
 useful on its own.
 
 @menu
@@ -187,7 +187,7 @@ you to define @dfn{macros}, which are brief abbreviations for longer
 constructs.
 
 The C preprocessor is intended to be used only with C, C++, and
-Objective C source code.  In the past, it has been abused as a general
+Objective-C source code.  In the past, it has been abused as a general
 text processor.  It will choke on input which does not obey C's lexical
 rules.  For example, apostrophes will be interpreted as the beginning of
 character constants, and cause errors.  Also, you cannot rely on it
@@ -1809,7 +1809,7 @@ the 1999 revision of the C standard.  Support for the 1999 revision is
 not yet complete.
 
 This macro is not defined if the @option{-traditional} option is used, nor
-when compiling C++ or Objective C@.
+when compiling C++ or Objective-C@.
 
 @item __STDC_HOSTED__
 This macro is defined, with value 1, if the compiler's target is a
@@ -1842,7 +1842,7 @@ underscores.
 @itemx __GNUC_MINOR__
 @itemx __GNUC_PATCHLEVEL__
 These macros are defined by all GNU compilers that use the C
-preprocessor: C, C++, and Objective C.  Their values are the major
+preprocessor: C, C++, and Objective-C.  Their values are the major
 version, minor version, and patch level of the compiler, as integer
 constants.  For example, GCC 3.2.1 will define @code{__GNUC__} to 3,
 @code{__GNUC_MINOR__} to 2, and @code{__GNUC_PATCHLEVEL__} to 1.  They
@@ -3172,7 +3172,7 @@ produce no output, rather than a line of output containing just a
 @node Preprocessor Output
 @chapter Preprocessor Output
 
-When the C preprocessor is used with the C, C++, or Objective C
+When the C preprocessor is used with the C, C++, or Objective-C
 compilers, it is integrated into the compiler and communicates a stream
 of binary tokens directly to the compiler's parser.  However, it can
 also be used in the more conventional standalone mode, where it produces
@@ -3626,12 +3626,12 @@ read only once.  Neither one is as portable as a wrapper @samp{#ifndef},
 and we recommend you do not use them in new programs.
 
 @findex #import
-In the Objective C language, there is a variant of @samp{#include}
+In the Objective-C language, there is a variant of @samp{#include}
 called @samp{#import} which includes a file, but does so at most once.
 If you use @samp{#import} instead of @samp{#include}, then you don't
 need the conditionals inside the header file to prevent multiple
 inclusion of the contents.  GCC permits the use of @samp{#import} in C
-and C++ as well as Objective C.  However, it is not in standard C or C++
+and C++ as well as Objective-C.  However, it is not in standard C or C++
 and should therefore not be used by portable programs.
 
 @samp{#import} is not a well designed feature.  It requires the users of

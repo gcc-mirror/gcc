@@ -864,7 +864,7 @@ explanations of options that are meaningful only for C++ programs.
 @cindex options, dialect
 
 The following options control the dialect of C (or languages derived
-from C, such as C++ and Objective C) that the compiler accepts:
+from C, such as C++ and Objective-C) that the compiler accepts:
 
 @table @gcctabopt
 @cindex ANSI support
@@ -4192,7 +4192,7 @@ and searches several directories.
 @item -lobjc
 @opindex lobjc
 You need this special case of the @option{-l} option in order to
-link an Objective C program.
+link an Objective-C program.
 
 @item -nostartfiles
 @opindex nostartfiles

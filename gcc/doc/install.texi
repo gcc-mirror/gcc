@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.29 2001/06/15 22:25:18 ljrittle Exp $
+@comment $Id: install.texi,v 1.30 2001/06/21 00:03:47 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -392,7 +392,7 @@ will be built.  Package names currently recognized in the GCC tree are
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc} and
 @samp{libjava}.  Note that @samp{libobjc} does not recognize itself by
 any name, so, if you list package names in @option{--enable-shared},
-you'll only get static Objective C libraries.  @samp{libf2c} and
+you'll only get static Objective-C libraries.  @samp{libf2c} and
 @samp{libiberty} do not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -911,7 +911,7 @@ Finally, you can run the testsuite (which may take a long time):
 @end example
 
 The testing process will try to test as many components in the GCC
-distribution as possible, including the C, C++, Objective C and Fortran
+distribution as possible, including the C, C++, Objective-C and Fortran
 compilers as well as the C++ and Java runtime libraries.
 
 @section How can I run the test suite on selected tests?
@@ -2397,7 +2397,7 @@ to look like:
 Current GCC versions probably do not work on version 2 of the NeXT
 operating system.
 
-On NeXTStep 3.0, the Objective C compiler does not work, due,
+On NeXTStep 3.0, the Objective-C compiler does not work, due,
 apparently, to a kernel bug that it happens to trigger.  This problem
 does not happen on 3.1.
 

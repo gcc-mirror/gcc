@@ -380,7 +380,7 @@ C99 support, and continuous emphasis on (and contributions to) documentation.
 Nathan Myers for his work on libstdc++-v3.
 
 @item
-NeXT, Inc.@: donated the front end that supports the Objective C
+NeXT, Inc.@: donated the front end that supports the Objective-C
 language.
 
 @item
@@ -527,7 +527,7 @@ Gary Thomas for his ongoing work to make the PPC work for Linux.
 Philipp Thomas for random bugfixes throughout the compiler
 
 @item
-Kresten Krab Thorup wrote the run time support for the Objective C
+Kresten Krab Thorup wrote the run time support for the Objective-C
 language.
 
 @item

@@ -3,7 +3,7 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@node Objective C
+@node Objective-C
 @comment  node-name,  next,  previous,  up
 
 @chapter GNU Objective-C runtime features
@@ -22,7 +22,7 @@ comments about this document to Ovidiu Predescu
 * compatibility_alias::
 @end menu
 
-@node Executing code before main, Type encoding, Objective C, Objective C
+@node Executing code before main, Type encoding, Objective-C, Objective-C
 @section @code{+load}: Executing code before main
 
 
@@ -168,7 +168,7 @@ above apply to classes defined in bundle.
 
 
 
-@node Type encoding, Garbage Collection, Executing code before main, Objective C
+@node Type encoding, Garbage Collection, Executing code before main, Objective-C
 @section Type encoding
 
 The Objective-C compiler generates type encodings for all the
@@ -308,7 +308,7 @@ however, the type specifiers are only encoded when they appear in method
 argument types.
 
 
-@node Garbage Collection, Constant string objects, Type encoding, Objective C
+@node Garbage Collection, Constant string objects, Type encoding, Objective-C
 @section Garbage Collection
 
 Support for a new memory management policy has been added by using a
