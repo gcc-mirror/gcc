@@ -1,5 +1,10 @@
 2004-11-30  Dorit Naishlos  <dorit@il.ibm.com>
 
+	* tree-vectorizer.c (vect_gen_niters_for_prolog_loop): Use
+	tree_low_cst instead of TREE_INT_CST_LOW.
+
+2004-11-30  Dorit Naishlos  <dorit@il.ibm.com>
+
 	PR tree-opt/18173
 	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Return false for
 	decls that are assembled before vectorization takes place.
