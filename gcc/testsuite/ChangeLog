@@ -1,3 +1,8 @@
+2004-11-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/abi/mangle6.C: Run for all MIPS targets.  Provide dummy
+	strings for 32-bit code.
+
 2004-11-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18239
