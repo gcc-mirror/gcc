@@ -1,4 +1,10 @@
 2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
+            Petur Runolfsson  <peturr02@ru.is>
+
+	* include/ext/stdio_sync_filebuf.h: Don't include the whole
+	<fstream>, only <streambuf> and <cstdio>.
+
+2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/12206
 	* include/bits/fstream.tcc (imbue): In case a codecvt facet
