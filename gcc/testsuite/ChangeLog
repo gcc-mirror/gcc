@@ -1,3 +1,8 @@
+1999-11-16  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* g77.f-torture/execute/u77-test.f (wd): Allow for longer
+	working directory pathnames.
+
 1999-11-08  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/gcc-dg.exp: Include target-supports.exp

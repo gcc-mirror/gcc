@@ -1,3 +1,8 @@
+Tue Nov 16 20:39:42 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* libU77/u77-test.f (wd): Allow for longer working directory
+ 	pathnames.
+
 1999-10-14 Theo Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* libU77/acconfig.h: Define GETTIMEOFDAY_ONE_ARGUMENT and
