@@ -1,3 +1,9 @@
+2001-11-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* mangle.c (write_expression): Handle CAST_EXPR, STATIC_CAST_EXPR,
+	CONST_CAST_EXPR.
+	* operators.def: Add CAST_EXPR, STATIC_CAST_EXPR, CONST_CAST_EXPR.
+
 2001-11-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-tree.h (print_class_statistics): Restore.
