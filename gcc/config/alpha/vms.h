@@ -392,7 +392,7 @@ do {									\
 {						\
   fprintf (FILE, "\t.quad 0\n");		\
   fprintf (FILE, "\t.linkage __tramp\n");	\
-  fprintf (FILE, "\t.quad 0\n");		\
+  fprintf (FILE, "\t.quad 0,0\n");		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */

@@ -1,3 +1,9 @@
+Fri Jul  3 02:28:05 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_initialize_trampoline): Hack around Pmode/ptr_mode
+	lossage on VMS.  Reported by kkaempf@rmi.de.
+	* alpha/vms.h (TRAMPOLINE_TEMPLATE): Add missing 0.
+
 Thu Jul  2 17:41:14 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.h (MUST_PASS_IN_STACK): Override default
