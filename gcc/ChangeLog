@@ -1,3 +1,9 @@
+2003-05-03  Falk Hueffner <falk.hueffner@student.uni-tuebingen.de>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Zdenek Dvorak, Aldy
+	Hernandez, and Kazu Hirata.
+
 2003-05-02  Richard Henderson  <rth@redhat.com>
 
 	PR c++/10570
@@ -13,10 +19,10 @@
         * unwind.h: Declare them.
         * libgcc-std.ver (GCC_3.3): Export them.
 
-2003-05-02  Steven BosscherÂ  <steven@gcc.gnu.org>
+2003-05-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-inline.c (find_alloca_call):
-	UseÂ walk_tree_without_duplicates, instead of walk_tree.
+	Use walk_tree_without_duplicates, instead of walk_tree.
 	(find_builtin_longjmp_call): Ditto.
 	* c-objc-common.c (c_cannot_inline_fn): Ditto.
 
