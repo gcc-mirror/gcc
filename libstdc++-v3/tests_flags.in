@@ -157,7 +157,7 @@ ST_FLAGS="-static"
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 case ${query} in
     --built-library)
-    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXX_FLAG} ${INC_PATH} 
+    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXXFLAGS} ${INC_PATH} 
 	   ${LIB_PATH}/../libsupc++/libsupc++.la  ${LIB_PATH}/libstdc++.la
 	   -no-install"
     LTEXE="${LIBTOOL} --mode=execute"
@@ -166,7 +166,7 @@ case ${query} in
     --installed-library)
     # For the installed version, we really only need to use libtool and
     # the .la file to get correct rpaths.
-    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXX_FLAG} ${INC_PATH}
+    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXXFLAGS} ${INC_PATH}
 	   -L${LIB_PATH} ${LIB_PATH}/libstdc++.la -no-install 
 	   -rpath ${LIB_PATH}"
     LTEXE="${LIBTOOL} --mode=execute"
