@@ -1,3 +1,7 @@
+2004-12-16  Wolfgang Bangerth  <bangerth@dealii.com>
+
+	* g++.dg/other/complex1.C: New test.
+
 2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR rtl-optimization/16536

@@ -1,3 +1,17 @@
+2004-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/18882
+	* function.c (assign_stack_local_1): Use BITS_PER_UNIT alignment
+	when passed -2 as 'align'.
+	(put_var_into_stack): Adjust calls to put_reg_into_stack.
+	When passed a CONCAT, instruct put_reg_into_stack to use
+	a consecutive stack slot for the second part.
+	(put_reg_into_stack): Remove 'promoted_mode' parameter, add
+	'consecutive_p' parameter.  Retrieve the register mode from 'reg'.
+	When consecutive_p is true, instruct assign_stack_local_1 to use
+	BITS_PER_UNIT alignment.
+	(put_addressof_into_stack): Adjust call to put_reg_into_stack.
+
 2004-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/18590
