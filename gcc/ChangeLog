@@ -1,5 +1,9 @@
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Update dump file names.  Fix a typo.
+
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* builtins.c (expand_builtin_va_end): Don't use
 	EXPAND_BUILTIN_VA_END.
 	* system.h (EXPAND_BUILTIN_VA_END): Poison.

@@ -3232,7 +3232,7 @@ Annotate the assembler output with miscellaneous debugging information.
 Dump after computing branch probabilities, to @file{@var{file}.12.bp}.
 @item B
 @opindex dB
-Dump after block reordering, to @file{@var{file}.30.bbro}.
+Dump after block reordering, to @file{@var{file}.31.bbro}.
 @item c
 @opindex dc
 Dump after instruction combination, to the file @file{@var{file}.20.combine}.
@@ -3250,7 +3250,7 @@ Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
 @item E
 @opindex dE
-Dump after the second if conversion, to @file{@var{file}.31.ce3}.
+Dump after the third if conversion, to @file{@var{file}.30.ce3}.
 @item f
 @opindex df
 Dump after control and data flow analysis, to @file{@var{file}.11.cfg}.
