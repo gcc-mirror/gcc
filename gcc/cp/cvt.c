@@ -407,12 +407,23 @@ build_up_reference (type, arg, flags, checkconst)
      address, transform all occurrences of the register, into a memory
      reference we could win better.  */
   rval = build_unary_op (ADDR_EXPR, arg, 1);
-  if (flags & LOOKUP_PROTECT)
-    rval = convert_pointer_to (target_type, rval);
+  if ((flags & LOOKUP_PROTECT)
+      && TYPE_MAIN_VARIANT (argtype) != TYPE_MAIN_VARIANT (target_type)
+      && IS_AGGR_TYPE (argtype)
+      && IS_AGGR_TYPE (target_type))
+    {
+      /* We go through get_binfo for the access control.  */
+      tree binfo = get_binfo (target_type, argtype, 1);
+      if (binfo == error_mark_node)
+	return error_mark_node;
+      if (binfo == NULL_TREE)
+	return error_not_base_type (target_type, argtype);
+      rval = convert_pointer_to_real (binfo, rval);
+    }
   else
     rval
       = convert_to_pointer_force (build_pointer_type (target_type), rval);
-  rval = build1 (CONVERT_EXPR, type, rval);
+  rval = build1 (NOP_EXPR, type, rval);
   TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
   return rval;
 }
@@ -1189,49 +1200,9 @@ convert (type, expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  if (TREE_TYPE (expr) == type)
-    return expr;
-
-  if (TREE_CODE (type) != REFERENCE_TYPE)
-    {
-      expr = decay_conversion (expr);
-
-      /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
-	 Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
-      if (TREE_CODE (expr) == NOP_EXPR
-	  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
-	expr = TREE_OPERAND (expr, 0);
-    }
-
   intype = TREE_TYPE (expr);
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      expr = build_unary_op (ADDR_EXPR, expr, 0);
-      if (expr != error_mark_node)
-	expr = convert (build_pointer_type (TREE_TYPE (type)), expr);
-      if (expr != error_mark_node)
-	expr = build_indirect_ref (expr, 0);
-      return expr;
-    }
-  else if (comptypes (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type), 1))
-    return build_static_cast (type, expr);
-
-  if (TYPE_PTR_P (type) && (TREE_CODE (intype) == INTEGER_TYPE
-			    || TREE_CODE (intype) == ENUMERAL_TYPE))
-    /* OK */;
-  else if (TREE_CODE (type) == INTEGER_TYPE && TYPE_PTR_P (intype))
-    {
-    }
-  else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
-	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
-    {
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
-      return fold (build1 (NOP_EXPR, type, expr));
-    }
-  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
-	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
+  if (POINTER_TYPE_P (type) && POINTER_TYPE_P (intype))
     {
       if (TREE_READONLY_DECL_P (expr))
 	expr = decl_constant_value (expr);

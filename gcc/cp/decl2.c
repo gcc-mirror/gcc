@@ -2616,7 +2616,10 @@ import_export_decl (decl)
                  supported.  */
 	      if (flag_weak)
 		make_decl_one_only (decl);
-	      /* else leave vars public so multiple defs will break.  */
+	      else
+		/* we can't do anything useful; leave vars for explicit
+                   instantiation.  */
+		DECL_NOT_REALLY_EXTERN (decl) = 0;
 	    }
 	}
       else
@@ -3602,6 +3605,12 @@ void
 do_toplevel_using_decl (decl)
      tree decl;
 {
+#if 1
+  if (TREE_CODE (decl) == SCOPE_REF
+      && TREE_OPERAND (decl, 0) == std_node)
+    return;
+  sorry ("using-declaration");
+#else
   if (decl == NULL_TREE || decl == error_mark_node)
     return;
 
@@ -3619,6 +3628,7 @@ do_toplevel_using_decl (decl)
 	pushdecl (TREE_VALUE (decl));
 	decl = TREE_CHAIN (decl);
       }
+#endif
 }
 
 tree
@@ -3648,6 +3658,8 @@ void
 do_using_directive (namespace)
      tree namespace;
 {
+  if (namespace == std_node)
+    return;
   sorry ("using directive");
 }
 

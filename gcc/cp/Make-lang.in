@@ -35,7 +35,7 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
-
+#
 # Extra flags to pass to recursive makes.
 CXX_FLAGS_TO_PASS = \
 	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
@@ -62,7 +62,7 @@ CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o new1.o new2.o exception.o
 CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
 	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
 	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
-
+#
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
@@ -124,7 +124,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
 
 cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o
 	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus
-
+#
 # Build hooks:
 
 c++.all.build: g++$(exeext) $(DEMANGLER_PROG)
@@ -181,7 +181,7 @@ cplib2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	@if [ -f cplib2.ready ]; then true; else \
 	  touch cplib2.ready; \
 	fi
-
+#
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
 
@@ -233,7 +233,7 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
 	-rm -rf $(mandir)/$(GXX_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(GXX_CROSS_NAME)$(manext)
-
+#
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
@@ -248,7 +248,7 @@ c++.distclean:
 c++.extraclean:
 c++.maintainer-clean:
 	-rm -f cp/parse.c cp/parse.h
-
+#
 # Stage hooks:
 # The main makefile has already created stage?/cp.
 
@@ -260,7 +260,7 @@ c++.stage3: stage3-start
 	-mv cp/*$(objext) stage3/cp
 c++.stage4: stage4-start
 	-mv cp/*$(objext) stage4/cp
-
+#
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the

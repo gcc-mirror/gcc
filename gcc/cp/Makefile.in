@@ -116,7 +116,7 @@ all: all.indirect
 ####host overrides
 ####cross overrides
 ####build overrides
-
+#
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../cc1plus
@@ -153,7 +153,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
-
+#
 # Lists of files for various purposes.
 
 # Language-specific object files for g++
@@ -175,7 +175,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
 native: config.status ../cc1plus
-
+#
 # Compiling object files from source files.
 
 # Note that dependencies on obstack.h are not written
@@ -248,7 +248,7 @@ error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
 sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 repo.o : repo.c $(CONFIG_H) $(CXX_TREE_H)
-
+#
 # These exist for maintenance purposes.
 
 # Update the tags table.

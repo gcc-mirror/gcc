@@ -263,6 +263,9 @@ tree sigtable_entry_type;
 /* Array type `vtable_entry_type[]' */
 tree vtbl_type_node;
 
+/* namespace std */
+tree std_node;
+
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
 
@@ -1675,6 +1678,13 @@ void
 push_namespace (name)
      tree name;
 {
+#if 1
+  static int warned;
+  if (! warned)
+    sorry ("namespace");
+  
+  warned = 1;
+#else
   extern tree current_namespace;
   tree old_id = get_namespace_id ();
   char *buf;
@@ -1711,6 +1721,7 @@ push_namespace (name)
   sprintf (buf, "%s%s", old_id ? IDENTIFIER_POINTER (old_id) : "",
 	   IDENTIFIER_POINTER (name));
   TREE_PURPOSE (current_namespace) = get_identifier (buf);
+#endif
 }
 
 /* Pop from the scope of the current namespace.  */
@@ -1718,6 +1729,7 @@ push_namespace (name)
 void
 pop_namespace ()
 {
+#if 0
   extern tree current_namespace;
   tree decls, link;
   current_namespace = TREE_CHAIN (current_namespace);
@@ -1761,6 +1773,7 @@ pop_namespace ()
 
   /* suspend a level.  */
   suspend_binding_level ();
+#endif
 }
 
 /* Subroutines for reverting temporarily to top-level for instantiation
@@ -5288,6 +5301,10 @@ init_decl_processing ()
       sigtable_entry_type = build_type_variant (sigtable_entry_type, 1, 0);
       record_builtin_type (RID_MAX, SIGTABLE_PTR_TYPE, sigtable_entry_type);
     }
+
+  std_node = build_decl (NAMESPACE_DECL, get_identifier ("std"),
+			 void_type_node);
+  pushdecl (std_node);
 
 #if 0
   if (flag_rtti)
@@ -12030,8 +12047,25 @@ finish_function (lineno, call_poplevel, nested)
       /* So we can tell if jump_optimize sets it to 1.  */
       can_reach_end = 0;
 
-      /* Run the optimizers and output the assembler code for this function.  */
-      rest_of_compilation (fndecl);
+      /* Run the optimizers and output the assembler code for this
+         function.  */
+
+      if (DECL_ARTIFICIAL (fndecl))
+	{
+	  /* Do we really *want* to inline this synthesized method?  */
+
+	  int save_fif = flag_inline_functions;
+	  flag_inline_functions = 1;
+
+	  /* Turn off DECL_INLINE for the moment so function_cannot_inline_p
+	     will check our size.  */
+	  DECL_INLINE (fndecl) = 0;
+
+	  rest_of_compilation (fndecl);
+	  flag_inline_functions = save_fif;
+	}
+      else
+	rest_of_compilation (fndecl);
 
       if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
 	{

@@ -1078,12 +1078,14 @@ struct lang_decl
 #define CLASSTYPE_TEMPLATE_INFO(NODE) (TYPE_LANG_SPECIFIC(NODE)->template_info)
 #define TI_TEMPLATE(NODE) (TREE_PURPOSE (NODE))
 #define TI_ARGS(NODE) (TREE_VALUE (NODE))
+#define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
 #define TI_USES_TEMPLATE_PARMS(NODE) TREE_LANG_FLAG_0 (NODE)
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
 #define DECL_TI_ARGS(NODE)          TI_ARGS (DECL_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
+#define CLASSTYPE_TI_SPEC_INFO(NODE) TI_SPEC_INFO (CLASSTYPE_TEMPLATE_INFO (NODE))
 
 #define DECL_SAVED_TREE(NODE)		DECL_MEMFUNC_POINTER_TO (NODE)
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -1515,6 +1517,7 @@ extern tree opaque_type_node, signature_type_node;
 /* Array type `(void *)[]' */
 extern tree vtbl_type_node;
 extern tree delta_type_node;
+extern tree std_node;
 
 extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 /* For building calls to `delete'.  */
@@ -2295,7 +2298,7 @@ struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern int more_specialized			PROTO((tree, tree));
 extern void mark_class_instantiated		PROTO((tree, int));
-extern void do_function_instantiation		PROTO((tree, tree, tree));
+extern void do_decl_instantiation		PROTO((tree, tree, tree));
 extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
 extern tree lookup_nested_type_by_name		PROTO((tree, tree));

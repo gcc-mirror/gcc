@@ -645,7 +645,7 @@ GNU_xref_member(cls, fld)
 	  filename(xf), fld->decl.linenum, d,  bufa,  prot,
 	  (TREE_CODE (fld) == FUNCTION_DECL ? 0 : 1),
 	  (DECL_INLINE (fld) ? 1 : 0),
-	  (DECL_FRIEND_P(fld) ? 1 : 0),
+	  (DECL_LANG_SPECIFIC(fld) && DECL_FRIEND_P(fld) ? 1 : 0),
 	  (DECL_VINDEX(fld) ? 1 : 0),
 	  (TREE_STATIC(fld) ? 1 : 0),
 	  pure, confg);

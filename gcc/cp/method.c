@@ -2052,21 +2052,6 @@ synthesize_method (fndecl)
 
   finish_function (lineno, 0, nested);
 
-  /* Do we really *want* to inline this function?  */
-  if (DECL_INLINE (fndecl))
-    {
-      /* Turn off DECL_INLINE for the moment so function_cannot_inline_p
-         will check our size.  */
-      DECL_INLINE (fndecl) = 0;
-
-      /* We say !at_eof because at the end of the file some of the rtl
-	 for fndecl may have been allocated on the temporary obstack.
-	 (The function_obstack is the temporary one if we're not in a
-	 function). */
-      if ((! at_eof) && function_cannot_inline_p (fndecl) == 0)
-	DECL_INLINE (fndecl) = 1;
-    }
-
   extract_interface_info ();
   if (! context)
     pop_from_top_level ();

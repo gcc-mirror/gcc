@@ -1,3 +1,125 @@
+Tue Jun 17 18:35:57 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_builtin_throw): Add support
+ 	-fno-sjlj-exceptions -fPIC exception handling on the SPARC.
+
+Mon Jun 16 01:24:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* repo.c (extract_string): Null-terminate.
+
+	* cp-tree.h (TI_SPEC_INFO): New macro.
+	(CLASSTYPE_TI_SPEC_INFO): New macro.
+	* pt.c (push_template_decl): Correctly determine # of template parms 
+	for partial specs.
+
+	* call.c (compare_ics): Really fix 'this' conversions.
+
+	* pt.c (do_decl_instantiation): Don't crash on explicit inst of
+	non-template fn.
+
+	* pt.c (push_template_decl): Complain about mismatch in # of
+ 	template parms between a class template and a member template.
+
+Sun Jun 15 02:38:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (synthesize_method): You can't call
+ 	function_cannot_inline_p after finish_function.
+	* decl.c (finish_function): Turn on flag_inline_functions and turn
+ 	off DECL_INLINE before handing a synthesized method to the
+ 	backend.
+
+Thu Jun 12 17:35:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (synthesize_method): Remove July 30 change to never set
+ 	DECL_INLINE if at_eof.
+
+Thu Jun 12 15:25:08 1997  Mike Stump  <mrs@cygnus.com>
+
+	* xref.c (GNU_xref_member): Ensure that the node has a
+	decl_lang_specific part before checking DECL_FRIEND_P.
+
+Thu Jun 12 12:36:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Diagnose non-class types used
+	as bases.
+
+Wed Jun 11 17:33:40 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_conditional_expr): Use convert_for_initialization
+	instead of convert_and_check.
+
+Wed Jun 11 12:31:33 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.y (typespec): Don't pedwarn for typeof.
+
+Tue Jun 10 00:22:09 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* repo.c (finish_repo): Only check changes if we would write a
+	repo file.
+
+	* call.c (compare_ics): Fix handling of 'this' conversions.
+
+	* pt.c (do_decl_instantiation): Support static data too.  Rename
+	from do_function_instantiation.
+	* cp-tree.h: Adjust.
+	* parse.y: Adjust.
+
+	* repo.c (extract_string): New fn.
+	(get_base_filename): Use it.
+	(init_repo): Compare old args with current args.
+
+Mon Jun  9 14:25:30 1997  Mike Stump  <mrs@cygnus.com>
+
+	* Makefile.in, Make-lang.in: Protect C-ls with a comment
+ 	character, idea from Paul Eggert <eggert@twinsun.com>.
+
+Mon Jun  9 01:52:03 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (c_expand_return): Be more persistent in looking for
+ 	returned temps.
+
+	* cvt.c (build_up_reference): Use NOP_EXPR for switching from
+ 	pointer to reference.
+
+	* class.c (build_vbase_path): Don't do anything if PATH has no steps.
+
+Sun Jun  8 03:07:05 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_member_call, build_offset_ref):
+ 	Use do_scoped_id instead of do_identifier.
+
+	* cvt.c (convert): Remove bogosity.
+
+Sat Jun  7 20:50:17 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cvt.c (build_up_reference): Do checks of ARGTYPE and
+	TARGET_TYPE before trying to use get_binfo.
+
+Fri Jun  6 17:36:39 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_up_reference): Call get_binfo to get access control.
+
+	* decl2.c (import_export_decl): If we don't support weaks, leave
+ 	statics undefined.
+
+Fri Jun  6 15:55:49 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_builtin_throw): Add support for machines that
+ 	cannot access globals after throw's epilogue when
+ 	-fno-sjlj-exceptions is used.
+
+Thu Jun  5 16:28:43 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y: 'std::' becomes '::'.
+	* lex.c (real_yylex): Remove 'namespace' warning.
+	* init.c (build_member_call): Ignore 'std::'.
+	(build_offset_ref): Likewise.
+	* decl2.c (do_using_directive): Ignore 'using namespace std;'.
+	(do_toplevel_using_decl): Ignore 'using std::whatever'.
+	* decl.c (push_namespace): Just sorry.
+	(pop_namespace): Nop.
+	(init_decl_processing): Declare std namespace.
+
 Tue Jun  3 18:08:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (push_class_decls): A name which ambiguously refers to

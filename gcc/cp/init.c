@@ -1675,6 +1675,10 @@ build_member_call (type, name, parmlist)
   int dont_use_this = 0;
   tree basetype_path, decl;
 
+  if (type == std_node)
+    return build_x_function_call (do_scoped_id (name, 0), parmlist,
+				  current_class_ref);
+
   if (TREE_CODE (method_name) == BIT_NOT_EXPR)
     {
       method_name = TREE_OPERAND (method_name, 0);
@@ -1795,6 +1799,9 @@ build_offset_ref (type, name)
   tree decl, fnfields, fields, t = error_mark_node;
   tree basebinfo = NULL_TREE;
   int dtor = 0;
+
+  if (type == std_node)
+    return do_scoped_id (name, 0);
 
   if (processing_template_decl)
     return build_min_nt (SCOPE_REF, type, name);
