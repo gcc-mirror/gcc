@@ -2255,27 +2255,21 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (op1 == const1_rtx)
     return rem_flag ? const0_rtx : op0;
 
-  /* Don't use the function value register as a target
-     since we have to read it as well as write it,
-     and function-inlining gets confused by this.  */
-  if (target && REG_P (target) && REG_FUNCTION_VALUE_P (target))
+  if (target
+      /* Don't use the function value register as a target
+	 since we have to read it as well as write it,
+	 and function-inlining gets confused by this.  */
+      && ((REG_P (target) && REG_FUNCTION_VALUE_P (target))
+	  /* Don't clobber an operand while doing a multi-step calculation.  */
+	  || (rem_flag
+	      && (reg_mentioned_p (target, op0)
+		  || (GET_CODE (op0) == MEM && GET_CODE (target) == MEM)))
+	  || reg_mentioned_p (target, op1)
+	  || (GET_CODE (op1) == MEM && GET_CODE (target) == MEM)))
     target = 0;
 
-  /* Don't clobber an operand while doing a multi-step calculation.  */
-  if (target)
-    if ((rem_flag && (reg_mentioned_p (target, op0)
-		      || (GET_CODE (op0) == MEM && GET_CODE (target) == MEM)))
-	|| reg_mentioned_p (target, op1)
-	|| (GET_CODE (op1) == MEM && GET_CODE (target) == MEM))
-      target = 0;
-
-  can_clobber_op0 = (GET_CODE (op0) == REG && op0 == target);
-
-  if (GET_CODE (op1) == CONST_INT)
-    log = exact_log2 (INTVAL (op1));
-
-  /* If log is >= 0, we are dividing by 2**log, and will do it by shifting,
-     which is really floor-division.  Otherwise we will really do a divide,
+  /* See if we are dividing by 2**log, and hence will do it by shifting,
+     which is really floor-division, or if we will really do a divide,
      and we assume that is trunc-division.
 
      We must correct the dividend by adding or subtracting something
@@ -2291,17 +2285,19 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      dividend is non-negative.  Performance measurements of the two
      alternatives show that the branch-free code is slightly faster on the
      IBM ROMP but slower on CISC processors (significantly slower on the
-     VAX).  Accordingly, the jump code has been retained.
+     VAX).  Accordingly, the jump code has been retained when BRANCH_COST
+     is small.
 
      On machines where the jump code is slower, the cost of a DIV or MOD
      operation can be set small (less than twice that of an addition); in 
      that case, we pretend that we don't have a power of two and perform
      a normal division or modulus operation.  */
 
-  if ((code == TRUNC_MOD_EXPR || code == TRUNC_DIV_EXPR)
-      && ! unsignedp
-      && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap))
-    log = -1;
+  if (GET_CODE (op1) == CONST_INT
+      && ! ((code == TRUNC_MOD_EXPR || code == TRUNC_DIV_EXPR)
+	    && ! unsignedp
+	    && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap)))
+    log = exact_log2 (INTVAL (op1));
 
   /* Get the mode in which to perform this computation.  Normally it will
      be MODE, but sometimes we can't do the desired operation in MODE.
@@ -2335,12 +2331,17 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  || optab2->handlers[(int) compute_mode].libfunc)
 	break;
 
-  /* If we still couldn't find a mode, use MODE; we'll probably abort in
-     expand_binop.  */
+  /* If we still couldn't find a mode, use MODE, but we'll probably abort
+     in expand_binop.  */
   if (compute_mode == VOIDmode)
     compute_mode = mode;
 
   size = GET_MODE_BITSIZE (compute_mode);
+
+  /* If OP0 is a register that is used as the target, we can modify
+     it in place; otherwise, we have to ensure we copy OP0 before
+     modifying it.  */
+  can_clobber_op0 = (GET_CODE (op0) == REG && op0 == target);
 
   /* Now convert to the best mode to use.  Show we made a copy of OP0
      and hence we can clobber it (we cannot use a SUBREG to widen
@@ -2365,8 +2366,36 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (rem_flag)
     can_clobber_op0 = 0;
 
-  if (target == 0 || GET_MODE (target) != compute_mode)
-    target = gen_reg_rtx (compute_mode);
+  /* See if we will need to modify ADJUSTED_OP0.  Note that this code
+     must agree with that in the switch below.  */
+  if (((code == TRUNC_MOD_EXPR || code == TRUNC_DIV_EXPR)
+       && log >= 0 && ! unsignedp)
+      || ((code == FLOOR_MOD_EXPR || code == FLOOR_DIV_EXPR)
+	  && log < 0 && ! unsignedp)
+      || code == CEIL_MOD_EXPR || code == CEIL_DIV_EXPR
+      || code == ROUND_MOD_EXPR || code == ROUND_DIV_EXPR)
+    {
+      /* If we want the remainder, we may need to use OP0, so make sure
+	 it and ADJUSTED_OP0 are in different registers.  If we want to
+	 preserve subexpressions, make sure OP0 is in a register.
+
+	 If we don't want the remainder, we aren't going to use OP0 anymore.
+	 However, if we cannot clobber OP0 (and hence ADJUSTED_OP0), we must
+	 make a copy of it, hopefully to TARGET.
+
+	 This code is somewhat tricky.  Note that if REM_FLAG is nonzero,
+	 CAN_CLOBBER_OP0 will be zero and we know that OP0 cannot
+	 equal TARGET.  */
+
+      if (rem_flag && preserve_subexpressions_p ())
+	op0 = force_reg (compute_mode, op0);
+
+      if (! can_clobber_op0)
+	adjusted_op0 = copy_to_suggested_reg (op0, target, compute_mode);
+    }
+
+  /* Adjust ADJUSTED_OP0 as described above.  Unless CAN_CLOBBER_OP0
+     is now non-zero, OP0 will retain it's original value.  */
 
   switch (code)
     {
@@ -2378,37 +2407,33 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	     This can be computed without jumps by arithmetically shifting
 	     OP0 right LOG-1 places and then shifting right logically
 	     SIZE-LOG bits.  The resulting value is unconditionally added
-	     to OP0.  */
+	     to OP0.
+
+	     If OP0 cannot be modified in place, copy it, possibly to
+	     TARGET.  Note that we will have previously only allowed
+	     it to be modified in place if it is a register, so that
+	     after this `if', ADJUSTED_OP0 is known to be a
+	     register.  */
 	  if (log == 1 || BRANCH_COST >= 3)
 	    {
-	      rtx temp = gen_reg_rtx (compute_mode);
-	      if (! can_clobber_op0)
-		/* Copy op0 to a reg, to play safe,
-		   since this is done in the other path.  */
-		op0 = force_reg (compute_mode, op0);
-	      temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
-	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
+	      rtx temp;
+
+	      temp = expand_shift (RSHIFT_EXPR, compute_mode, adjusted_op0,
 				   build_int_2 (log - 1, 0), NULL_RTX, 0);
+
+	      /* We cannot allow TEMP to be ADJUSTED_OP0 here.  */
 	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
 				   build_int_2 (size - log, 0),
-				   temp, 1);
-	      /* We supply 0 as the target to make a new pseudo
-		 for the value; that helps loop.c optimize the result.  */
+				   temp != adjusted_op0 ? temp : NULL_RTX, 1);
+
 	      adjusted_op0 = expand_binop (compute_mode, add_optab,
-					   adjusted_op0, temp,
-					   0, 0, OPTAB_LIB_WIDEN);
+					   adjusted_op0, temp, adjusted_op0,
+					   0, OPTAB_LIB_WIDEN);
 	    }
 	  else
 	    {
 	      rtx label = gen_label_rtx ();
-	      if (! can_clobber_op0)
-		{
-		  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
-							compute_mode);
-		  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
-		     which will screw up mem refs for autoincrements.  */
-		  op0 = force_reg (compute_mode, op0);
-		}
+
 	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
 			     NULL_RTX, compute_mode, 0, 0);
 	      emit_jump_insn (gen_bge (label));
@@ -2424,14 +2449,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       if (log < 0 && ! unsignedp)
 	{
 	  rtx label = gen_label_rtx ();
-	  if (! can_clobber_op0)
-	    {
-	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
-						    compute_mode);
-	      /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
-		 which will screw up mem refs for autoincrements.  */
-	      op0 = force_reg (compute_mode, op0);
-	    }
+
 	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
 			 NULL_RTX, compute_mode, 0, 0);
 	  emit_jump_insn (gen_bge (label));
@@ -2444,14 +2462,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
     case CEIL_DIV_EXPR:
     case CEIL_MOD_EXPR:
-      if (! can_clobber_op0)
-	{
-	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
-						compute_mode);
-	  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
-	     which will screw up mem refs for autoincrements.  */
-	  op0 = force_reg (compute_mode, op0);
-	}
       if (log < 0)
 	{
 	  rtx label = 0;
@@ -2468,24 +2478,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    emit_label (label);
 	}
       else
-	{
-	  adjusted_op0 = expand_binop (compute_mode, add_optab,
-				       adjusted_op0, plus_constant (op1, -1),
-				       NULL_RTX, 0, OPTAB_LIB_WIDEN);
-	}
+	adjusted_op0 = expand_binop (compute_mode, add_optab,
+				     adjusted_op0, plus_constant (op1, -1),
+				     adjusted_op0, 0, OPTAB_LIB_WIDEN);
+
       mod_insn_no_good = 1;
       break;
 
     case ROUND_DIV_EXPR:
     case ROUND_MOD_EXPR:
-      if (! can_clobber_op0)
-	{
-	  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
-						compute_mode);
-	  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
-	     which will screw up mem refs for autoincrements.  */
-	  op0 = force_reg (compute_mode, op0);
-	}
       if (log < 0)
 	{
 	  op1 = expand_shift (RSHIFT_EXPR, compute_mode, op1,
@@ -2497,11 +2498,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		  /* Negate OP1 if OP0 < 0.  Do this by computing a temporary
 		     that has all bits equal to the sign bit and exclusive
 		     or-ing it with OP1.  */
-		  rtx temp = gen_reg_rtx (compute_mode);
-		  temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
-		  temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
-				       build_int_2 (size - 1, 0),
-				       NULL_RTX, 0);
+		  rtx temp = expand_shift (RSHIFT_EXPR, compute_mode,
+					   adjusted_op0,
+					   build_int_2 (size - 1, 0),
+					   NULL_RTX, 0);
 		  op1 = expand_binop (compute_mode, xor_optab, op1, temp, op1,
 				      unsignedp, OPTAB_LIB_WIDEN);
 		}
@@ -2518,10 +2518,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  expand_inc (adjusted_op0, op1);
 	}
       else
-	{
-	  op1 = GEN_INT (((HOST_WIDE_INT) 1 << log) / 2);
-	  expand_inc (adjusted_op0, op1);
-	}
+	expand_inc (adjusted_op0, GEN_INT (((HOST_WIDE_INT) 1 << log) / 2));
+
       mod_insn_no_good = 1;
       break;
     }
