@@ -8447,7 +8447,8 @@ reload_combine ()
       if (GET_CODE (insn) == BARRIER)
 	{
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
-	    reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
+	    if (! fixed_regs[i])
+	      reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
 	}
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
