@@ -1,7 +1,5 @@
-/*{{{  Introduction */ 
-
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -1008,9 +1006,12 @@ fr30_move_double (operands)
 
 	  if (reverse)
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, dest1, change_address (src, SImode, addr)));
-	      emit_insn (gen_rtx_SET (SImode, dest0, gen_rtx_REG (SImode, REGNO (addr))));
-	      emit_insn (gen_rtx_SET (SImode, dest0, plus_constant (dest0, UNITS_PER_WORD)));
+	      emit_insn (gen_rtx_SET (VOIDmode, dest1,
+				      change_address (src, SImode, addr)));
+	      emit_insn (gen_rtx_SET (SImode, dest0,
+				      gen_rtx_REG (SImode, REGNO (addr))));
+	      emit_insn (gen_rtx_SET (SImode, dest0,
+				      plus_constant (dest0, UNITS_PER_WORD)));
 
 	      new_mem = gen_rtx_MEM (SImode, dest0);
 	      MEM_COPY_ATTRIBUTES (new_mem, src);
@@ -1019,9 +1020,12 @@ fr30_move_double (operands)
 	    }
 	  else
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, dest0, change_address (src, SImode, addr)));
-	      emit_insn (gen_rtx_SET (SImode, dest1, gen_rtx_REG (SImode, REGNO (addr))));
-	      emit_insn (gen_rtx_SET (SImode, dest1, plus_constant (dest1, UNITS_PER_WORD)));
+	      emit_insn (gen_rtx_SET (VOIDmode, dest0,
+				      change_address (src, SImode, addr)));
+	      emit_insn (gen_rtx_SET (SImode, dest1,
+				      gen_rtx_REG (SImode, REGNO (addr))));
+	      emit_insn (gen_rtx_SET (SImode, dest1,
+				      plus_constant (dest1, UNITS_PER_WORD)));
 
 	      new_mem = gen_rtx_MEM (SImode, dest1);
 	      MEM_COPY_ATTRIBUTES (new_mem, src);
@@ -1054,12 +1058,15 @@ fr30_move_double (operands)
       src0 = operand_subword (src, 0, TRUE, mode);
       src1 = operand_subword (src, 1, TRUE, mode);
       
-      emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, addr), src0));
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      change_address (dest, SImode, addr),
+			      src0));
 
-      if (REGNO (addr) == STACK_POINTER_REGNUM)
-	emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, plus_constant (stack_pointer_rtx, UNITS_PER_WORD)), src1));
-      else if (REGNO (addr) == FRAME_POINTER_REGNUM)
-	emit_insn (gen_rtx_SET (VOIDmode, change_address (dest, SImode, plus_constant (frame_pointer_rtx, UNITS_PER_WORD)), src1));
+      if (REGNO (addr) == STACK_POINTER_REGNUM
+	  || REGNO (addr) == FRAME_POINTER_REGNUM)
+	emit_insn (gen_rtx_SET (VOIDmode,
+				adjust_address (dest, SImode, UNITS_PER_WORD),
+				src1));
       else
 	{
 	  rtx new_mem;
@@ -1087,10 +1094,3 @@ fr30_move_double (operands)
 
   return val;
 }
-
-/*}}}*/
-
-/* Local Variables: */
-/* folded-file: t   */
-/* End:		    */
-

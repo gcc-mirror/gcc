@@ -399,9 +399,7 @@ expand_builtin_init_dwarf_reg_sizes (address)
       if (offset < 0)
 	continue;
 
-      emit_move_insn (change_address (mem, mode,
-				      plus_constant (addr, offset)),
-		      GEN_INT (size));
+      emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
     }
 }
 

@@ -1581,8 +1581,7 @@ move_by_pieces_1 (genfun, mode, data)
 	      MEM_COPY_ATTRIBUTES (to1, data->to);
 	    }
 	  else
-	    to1 = change_address (data->to, mode,
-				  plus_constant (data->to_addr, data->offset));
+	    to1 = adjust_address (data->to, mode, data->offset);
 	}
 
       if (data->autinc_from)
@@ -1591,8 +1590,7 @@ move_by_pieces_1 (genfun, mode, data)
 	  MEM_COPY_ATTRIBUTES (from1, data->from);
 	}
       else
-	from1 = change_address (data->from, mode,
-				plus_constant (data->from_addr, data->offset));
+	from1 = adjust_address (data->from, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
@@ -2005,10 +2003,7 @@ emit_group_load (dst, orig_src, ssize, align)
 	  && bytelen == GET_MODE_SIZE (mode))
 	{
 	  tmps[i] = gen_reg_rtx (mode);
-	  emit_move_insn (tmps[i],
-			  change_address (src, mode,
-					  plus_constant (XEXP (src, 0),
-							 bytepos)));
+	  emit_move_insn (tmps[i], adjust_address (src, mode, bytepos));
 	}
       else if (GET_CODE (src) == CONCAT)
 	{
@@ -2128,13 +2123,10 @@ emit_group_store (orig_dst, src, ssize, align)
 	  && align >= GET_MODE_ALIGNMENT (mode)
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
-	emit_move_insn (change_address (dst, mode,
-					plus_constant (XEXP (dst, 0),
-						       bytepos)),
-			tmps[i]);
+	emit_move_insn (adjust_address (dst, mode, bytepos), tmps[i]);
       else
 	store_bit_field (dst, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			   mode, tmps[i], align, ssize);
+			 mode, tmps[i], align, ssize);
     }
 
   emit_queue ();
@@ -2521,8 +2513,7 @@ store_by_pieces_2 (genfun, mode, data)
 	  MEM_COPY_ATTRIBUTES (to1, data->to);
 	}
       else
-	to1 = change_address (data->to, mode,
-			      plus_constant (data->to_addr, data->offset));
+	to1 = adjust_address (data->to, mode, data->offset);
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr,
@@ -2911,7 +2902,7 @@ emit_move_insn_1 (x, y)
 		    {
 		      rtx mem = assign_stack_temp (reg_mode,
 						   GET_MODE_SIZE (mode), 0);
-		      rtx cmem = change_address (mem, mode, NULL_RTX);
+		      rtx cmem = adjust_address (mem, mode, 0);
 
 		      cfun->cannot_inline
 			= N_("function using short complex types cannot be inline");
@@ -3265,8 +3256,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	 because registers will take care of them.  */
 
       if (partial != 0)
-	xinner = change_address (xinner, BLKmode,
-				 plus_constant (XEXP (xinner, 0), used));
+	xinner = adjust_address (xinner, BLKmode, used);
 
       /* If the partial register-part of the arg counts in its stack size,
 	 skip the part of stack space corresponding to the registers.
@@ -3725,10 +3715,9 @@ expand_assignment (to, from, want_value, suggest_reg)
 	      && (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
 	      && alignment == GET_MODE_ALIGNMENT (mode1))
 	    {
-	      rtx temp = change_address (to_rtx, mode1,
-				         plus_constant (XEXP (to_rtx, 0),
-						        (bitpos /
-						         BITS_PER_UNIT)));
+	      rtx temp
+		= adjust_address (to_rtx, mode1, bitpos / BITS_PER_UNIT);
+
 	      if (GET_CODE (XEXP (temp, 0)) == REG)
 	        to_rtx = temp;
 	      else
@@ -3810,9 +3799,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  unsigned int from_align;
 	  rtx from_rtx = expand_expr_unaligned (from, &from_align);
 	  rtx inner_to_rtx
-	    = change_address (to_rtx, BLKmode,
-			      plus_constant (XEXP (to_rtx, 0),
-					     bitpos / BITS_PER_UNIT));
+	    = adjust_address (to_rtx, BLKmode, bitpos / BITS_PER_UNIT);
 
 	  emit_block_move (inner_to_rtx, from_rtx, expr_size (from),
 			   MIN (alignment, from_align));
@@ -4459,13 +4446,11 @@ store_constructor_field (target, bitsize, bitpos,
     {
       if (bitpos != 0)
 	target
-	  = change_address (target,
+	  = adjust_address (target,
 			    GET_MODE (target) == BLKmode
 			    || 0 != (bitpos
 				     % GET_MODE_ALIGNMENT (GET_MODE (target)))
-			    ? BLKmode : VOIDmode,
-			    plus_constant (XEXP (target, 0),
-					   bitpos / BITS_PER_UNIT));
+			    ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
 
 
       /* Show the alignment may no longer be what it was and update the alias
@@ -4991,10 +4976,7 @@ store_constructor (exp, target, align, cleared, size)
 			 XEXP if the set is multi-word, but not if
 			 it's single-word.  */
 		      if (GET_CODE (target) == MEM)
-			{
-			  to_rtx = plus_constant (XEXP (target, 0), offset);
-			  to_rtx = change_address (target, mode, to_rtx);
-			}
+			to_rtx = adjust_address (target, mode, offset);
 		      else if (offset == 0)
 			to_rtx = target;
 		      else
@@ -5252,9 +5234,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	      || bitpos % BITS_PER_UNIT != 0)
 	    abort ();
 
-	  target = change_address (target, VOIDmode,
-				   plus_constant (XEXP (target, 0),
-						bitpos / BITS_PER_UNIT));
+	  target = adjust_address (target, VOIDmode, bitpos / BITS_PER_UNIT);
 
 	  /* Make sure that ALIGN is no stricter than the alignment of EXP.  */
 	  align = MIN (exp_align, align);
@@ -7079,10 +7059,8 @@ expand_expr (exp, target, tmode, modifier)
 		&& (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
 		&& alignment == GET_MODE_ALIGNMENT (mode1))
 	      {
-		rtx temp = change_address (op0, mode1,
-					   plus_constant (XEXP (op0, 0),
-							  (bitpos /
-							   BITS_PER_UNIT)));
+		rtx temp = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
+
 		if (GET_CODE (XEXP (temp, 0)) == REG)
 		  op0 = temp;
 		else
@@ -7181,9 +7159,7 @@ expand_expr (exp, target, tmode, modifier)
 		    || bitpos % BITS_PER_UNIT != 0)
 		  abort ();
 
-		op0 = change_address (op0, VOIDmode,
-				      plus_constant (XEXP (op0, 0),
-						     bitpos / BITS_PER_UNIT));
+		op0 = adjust_address (op0, VOIDmode, bitpos / BITS_PER_UNIT);
 		if (target == 0)
 		  target = assign_temp (type, 0, 1, 1);
 
@@ -7248,9 +7224,7 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = new;
 	  }
 	else
-	  op0 = change_address (op0, mode1,
-				plus_constant (XEXP (op0, 0),
-					       (bitpos / BITS_PER_UNIT)));
+	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 
 	set_mem_attributes (op0, exp, 0);
 	if (GET_CODE (XEXP (op0, 0)) == REG)
@@ -7450,7 +7424,7 @@ expand_expr (exp, target, tmode, modifier)
 	  if (GET_CODE (target) == MEM)
 	    /* Store data into beginning of memory target.  */
 	    store_expr (TREE_OPERAND (exp, 0),
-			change_address (target, TYPE_MODE (valtype), 0), 0);
+			adjust_address (target, TYPE_MODE (valtype), 0), 0);
 
 	  else if (GET_CODE (target) == REG)
 	    /* Store this field into a union of the proper type.  */
@@ -9122,9 +9096,7 @@ expand_expr_unaligned (exp, palign)
 		    || bitpos % BITS_PER_UNIT != 0)
 		  abort ();
 
-		op0 = change_address (op0, VOIDmode,
-				      plus_constant (XEXP (op0, 0),
-						     bitpos / BITS_PER_UNIT));
+		op0 = adjust_address (op0, VOIDmode, bitpos / BITS_PER_UNIT);
 	      }
 	    else
 	      {
@@ -9156,9 +9128,7 @@ expand_expr_unaligned (exp, palign)
 	  }
 	else
 	  /* Get a reference to just this component.  */
-	  op0 = change_address (op0, mode1,
-				plus_constant (XEXP (op0, 0),
-					       (bitpos / BITS_PER_UNIT)));
+	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 
 	MEM_ALIAS_SET (op0) = get_alias_set (exp);
 

@@ -1,3 +1,20 @@
+Mon Jul  2 15:33:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (adjust_address): New function.
+	* expr.h (adjust_address): Add declaration.
+	* builtins.c: Replace some calls to change_address with calls to it
+	or to validize_mem.
+	* caller-save.c, dwarf2out.c, except.c, expmed.c, expr.c: Likewise.
+	* function.c, config/a29k/a29k.md, config/alpha/alpha.c: Likewise.
+	* config/arm/arm.c, config/convex/convex.c: Likewise.
+	* config/dsp16xx/dsp16xx.md, config/fr30/fr30.c: Likewise.
+	* config/i386/i386.c, config/i386/i386.md: Likewise.
+	* config/ia64/ia64.c, config/ia64/ia64.md: Likewise.
+	* config/m32r/m32r.c, config/m68k/m68k.md: Likewise.
+	* config/m88k/m88k.c, config/mips/mips.md: Likewise.
+	* config/ns32k/ns32k.c, config/rs6000/rs6000.c: Likewise.
+	* config/sh/sh.c, config/sparc/sparc.md: Likewise.
+
 2001-07-02  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.h: Delete obsolete lib1funcs.asm comment.

@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000 Free Software Foundation, Inc.
+;;  1999, 2000, 2001 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -4542,7 +4542,7 @@ move\\t%0,%z4\\n\\
     FAIL;
 
   /* Change the mode to BLKmode for aliasing purposes.  */
-  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
+  operands[1] = adjust_address (operands[1], BLKmode, 0);
 
   /* Otherwise, emit a l[wd]l/l[wd]r pair to load the value.  */
   if (INTVAL (operands[2]) == 64)
@@ -4590,7 +4590,7 @@ move\\t%0,%z4\\n\\
     FAIL;
 
   /* Change the mode to BLKmode for aliasing purposes.  */
-  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
+  operands[1] = adjust_address (operands[1], BLKmode, 0);
 
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   if (INTVAL (operands[2]) == 64)
@@ -4638,7 +4638,7 @@ move\\t%0,%z4\\n\\
     FAIL;
 
   /* Change the mode to BLKmode for aliasing purposes.  */
-  operands[0] = change_address (operands[0], BLKmode, XEXP (operands[0], 0));
+  operands[0] = adjust_address (operands[0], BLKmode, 0);
 
   /* Otherwise, emit a s[wd]l/s[wd]r pair to load the value.  */
   if (INTVAL (operands[1]) == 64)
@@ -5069,7 +5069,7 @@ move\\t%0,%z4\\n\\
 	  rtx op1 = change_address (operands[1], VOIDmode, addr);
 
 	  scratch = gen_rtx_REG (SImode, REGNO (scratch));
-	  memword = change_address (op1, SImode, NULL_RTX);
+	  memword = adjust_address (op1, SImode, 0);
 	  offword = change_address (adj_offsettable_operand (op1, 4),
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
@@ -5149,7 +5149,7 @@ move\\t%0,%z4\\n\\
 	  rtx op0 = change_address (operands[0], VOIDmode, addr);
 
 	  scratch = gen_rtx_REG (SImode, REGNO (operands[2]));
-	  memword = change_address (op0, SImode, NULL_RTX);
+	  memword = adjust_address (op0, SImode, 0);
 	  offword = change_address (adj_offsettable_operand (op0, 4),
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
@@ -5679,7 +5679,7 @@ move\\t%0,%z4\\n\\
   /* We need to get the source in SFmode so that the insn is
      recognized.  */
   if (GET_CODE (operands[1]) == MEM)
-    source = change_address (operands[1], SFmode, NULL_RTX);
+    source = adjust_address (operands[1], SFmode, 0);
   else if (GET_CODE (operands[1]) == REG || GET_CODE (operands[1]) == SUBREG)
     source = gen_rtx_REG (SFmode, true_regnum (operands[1]));
   else

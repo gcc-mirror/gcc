@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -423,23 +423,13 @@ move_tail (operands, bytes, offset)
 {
   if (bytes & 2)
     {
-      rtx src, dest;
-      dest = change_address (operands[0], HImode,
-			    plus_constant (XEXP (operands[0], 0), offset));
-      src = change_address (operands[1], HImode,
-			   plus_constant (XEXP (operands[1], 0), offset));
-      emit_move_insn (dest, src);
+      emit_move_insn (adjust_address (operands[0], HImode, offset),
+		      adjust_address (operands[1], HImode, offset));
       offset += 2;
     }
   if (bytes & 1)
-    {
-      rtx src, dest;
-      dest = change_address (operands[0], QImode,
-			    plus_constant (XEXP (operands[0], 0), offset));
-      src = change_address (operands[1], QImode,
-			   plus_constant (XEXP (operands[1], 0), offset));
-      emit_move_insn (dest, src);
-    }
+    emit_move_insn (adjust_address (operands[0], QImode, offset),
+		    adjust_address (operands[1], QImode, offset));
 }
 
 void
@@ -461,20 +451,16 @@ expand_block_move (operands)
   if (constp && bytes < 20)
     {
       int words = bytes >> 2;
+
       if (words)
 	{
 	  if (words < 3 || flag_unroll_loops)
 	    {
 	      int offset = 0;
+
 	      for (; words; words--, offset += 4)
-		{
-		  rtx src, dest;
-		  dest = change_address (operands[0], SImode,
-					plus_constant (XEXP (operands[0], 0), offset));
-		  src = change_address (operands[1], SImode,
-				       plus_constant (XEXP (operands[1], 0), offset));
-		  emit_move_insn (dest, src);
-		}
+		emit_move_insn (adjust_address (operands[0], SImode, offset),
+				adjust_address (operands[1], SImode, offset));
 	    }
 	  else
 	    {

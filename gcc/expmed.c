@@ -315,8 +315,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
 				  + (offset * UNITS_PER_WORD));
 	  else
-	    op0 = change_address (op0, fieldmode,
-				  plus_constant (XEXP (op0, 0), offset));
+	    op0 = adjust_address (op0, fieldmode, offset);
 	}
       emit_move_insn (op0, value);
       return value;
@@ -331,7 +330,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     if (imode != GET_MODE (op0))
       {
 	if (GET_CODE (op0) == MEM)
-	  op0 = change_address (op0, imode, NULL_RTX);
+	  op0 = adjust_address (op0, imode, 0);
 	else if (imode != BLKmode)
 	  op0 = gen_lowpart (imode, op0);
 	else
@@ -532,8 +531,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  /* Compute offset as multiple of this unit, counting in bytes.  */
 	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
 	  bitpos = bitnum % unit;
-	  op0 = change_address (op0, bestmode, 
-				plus_constant (XEXP (op0, 0), offset));
+	  op0 = adjust_address (op0, bestmode,  offset);
 
 	  /* Fetch that unit, store the bitfield in it, then store
 	     the unit.  */
@@ -547,8 +545,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
       /* Add OFFSET into OP0's address.  */
       if (GET_CODE (xop0) == MEM)
-	xop0 = change_address (xop0, byte_mode,
-			       plus_constant (XEXP (xop0, 0), offset));
+	xop0 = adjust_address (xop0, byte_mode, offset);
 
       /* If xop0 is a register, we need it in MAXMODE
 	 to make it acceptable to the format of insv.  */
@@ -710,8 +707,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 	 Then alter OP0 to refer to that word.  */
       bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
       offset -= (offset % (total_bits / BITS_PER_UNIT));
-      op0 = change_address (op0, mode,
-			    plus_constant (XEXP (op0, 0), offset));
+      op0 = adjust_address (op0, mode, offset);
     }
 
   mode = GET_MODE (op0);
@@ -1048,7 +1044,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     if (imode != GET_MODE (op0))
       {
 	if (GET_CODE (op0) == MEM)
-	  op0 = change_address (op0, imode, NULL_RTX);
+	  op0 = adjust_address (op0, imode, 0);
 	else if (imode != BLKmode)
 	  op0 = gen_lowpart (imode, op0);
 	else
@@ -1115,8 +1111,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
 				  + (offset * UNITS_PER_WORD));
 	  else
-	    op0 = change_address (op0, mode1,
-				  plus_constant (XEXP (op0, 0), offset));
+	    op0 = adjust_address (op0, mode1, offset);
 	}
       if (mode1 != mode)
 	return convert_to_mode (tmode, op0, unsignedp);
@@ -1291,9 +1286,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  unit = GET_MODE_BITSIZE (bestmode);
 		  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
 		  xbitpos = bitnum % unit;
-		  xop0 = change_address (xop0, bestmode,
-					 plus_constant (XEXP (xop0, 0),
-							xoffset));
+		  xop0 = adjust_address (xop0, bestmode, xoffset);
+
 		  /* Fetch it to a register in that size.  */
 		  xop0 = force_reg (bestmode, xop0);
 
@@ -1301,8 +1295,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		}
 	      else
 		/* Get ref to first byte containing part of the field.  */
-		xop0 = change_address (xop0, byte_mode,
-				       plus_constant (XEXP (xop0, 0), xoffset));
+		xop0 = adjust_address (xop0, byte_mode, xoffset);
 
 	      volatile_ok = save_volatile_ok;
 	    }
@@ -1428,9 +1421,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  unit = GET_MODE_BITSIZE (bestmode);
 		  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
 		  xbitpos = bitnum % unit;
-		  xop0 = change_address (xop0, bestmode,
-					 plus_constant (XEXP (xop0, 0),
-							xoffset));
+		  xop0 = adjust_address (xop0, bestmode, xoffset);
+
 		  /* Fetch it to a register in that size.  */
 		  xop0 = force_reg (bestmode, xop0);
 
@@ -1438,8 +1430,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		}
 	      else
 		/* Get ref to first byte containing part of the field.  */
-		xop0 = change_address (xop0, byte_mode,
-				       plus_constant (XEXP (xop0, 0), xoffset));
+		xop0 = adjust_address (xop0, byte_mode, xoffset);
 	    }
 
 	  /* If op0 is a register, we need it in MAXMODE (which is usually
@@ -1606,8 +1597,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 	 Then alter OP0 to refer to that word.  */
       bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
       offset -= (offset % (total_bits / BITS_PER_UNIT));
-      op0 = change_address (op0, mode,
-			    plus_constant (XEXP (op0, 0), offset));
+      op0 = adjust_address (op0, mode, offset);
     }
 
   mode = GET_MODE (op0);

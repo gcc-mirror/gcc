@@ -947,8 +947,7 @@ result_vector (savep, result)
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
 	reg = gen_rtx_REG (mode, savep ? regno : INCOMING_REGNO (regno));
-	mem = change_address (result, mode,
-			      plus_constant (XEXP (result, 0), size));
+	mem = adjust_address (result, mode, size);
 	savevec[nelts++] = (savep
 			    ? gen_rtx_SET (VOIDmode, mem, reg)
 			    : gen_rtx_SET (VOIDmode, reg, mem));
@@ -989,15 +988,12 @@ expand_builtin_apply_args_1 ()
 
 	tem = gen_rtx_REG (mode, INCOMING_REGNO (regno));
 
-	emit_move_insn (change_address (registers, mode,
-					plus_constant (XEXP (registers, 0),
-						       size)),
-			tem);
+	emit_move_insn (adjust_address (registers, mode, size), tem);
 	size += GET_MODE_SIZE (mode);
       }
 
   /* Save the arg pointer to the block.  */
-  emit_move_insn (change_address (registers, Pmode, XEXP (registers, 0)),
+  emit_move_insn (adjust_address (registers, Pmode, 0),
 		  copy_to_reg (virtual_incoming_args_rtx));
   size = GET_MODE_SIZE (Pmode);
 
@@ -1005,9 +1001,7 @@ expand_builtin_apply_args_1 ()
      "invisible" first argument.  */
   if (struct_value_incoming_rtx)
     {
-      emit_move_insn (change_address (registers, Pmode,
-				      plus_constant (XEXP (registers, 0),
-						     size)),
+      emit_move_insn (adjust_address (registers, Pmode, size),
 		      copy_to_reg (struct_value_incoming_rtx));
       size += GET_MODE_SIZE (Pmode);
     }
@@ -1124,11 +1118,7 @@ expand_builtin_apply (function, arguments, argsize)
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
 	reg = gen_rtx_REG (mode, regno);
-	emit_move_insn (reg,
-			change_address (arguments, mode,
-					plus_constant (XEXP (arguments, 0),
-						       size)));
-
+	emit_move_insn (reg, adjust_address (arguments, mode, size));
 	use_reg (&call_fusage, reg);
 	size += GET_MODE_SIZE (mode);
       }
@@ -1139,10 +1129,7 @@ expand_builtin_apply (function, arguments, argsize)
   if (struct_value_rtx)
     {
       rtx value = gen_reg_rtx (Pmode);
-      emit_move_insn (value,
-		      change_address (arguments, Pmode,
-				      plus_constant (XEXP (arguments, 0),
-						     size)));
+      emit_move_insn (value, adjust_address (arguments, Pmode, size));
       emit_move_insn (struct_value_rtx, value);
       if (GET_CODE (struct_value_rtx) == REG)
 	  use_reg (&call_fusage, struct_value_rtx);
@@ -1186,9 +1173,7 @@ expand_builtin_apply (function, arguments, argsize)
 				      gen_rtx_MEM (FUNCTION_MODE, function),
 				      const0_rtx, NULL_RTX, const0_rtx));
 
-      emit_move_insn (change_address (result, GET_MODE (valreg),
-				      XEXP (result, 0)),
-		      valreg);
+      emit_move_insn (adjust_address (result, GET_MODE (valreg), 0), valreg);
     }
   else
 #endif
@@ -1264,10 +1249,7 @@ expand_builtin_return (result)
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
 	reg = gen_rtx_REG (mode, INCOMING_REGNO (regno));
-	emit_move_insn (reg,
-			change_address (result, mode,
-					plus_constant (XEXP (result, 0),
-						       size)));
+	emit_move_insn (reg, adjust_address (result, mode, size));
 
 	push_to_sequence (call_fusage);
 	emit_insn (gen_rtx_USE (VOIDmode, reg));

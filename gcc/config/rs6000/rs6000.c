@@ -1886,8 +1886,7 @@ rs6000_emit_move (dest, source, mode)
   if (GET_CODE (operands[1]) == MEM
       && ! memory_address_p (mode, XEXP (operands[1], 0))
       && ! reload_in_progress)
-    operands[1] = change_address (operands[1], mode,
-				  XEXP (operands[1], 0));
+    operands[1] = adjust_address (operands[1], mode, 0);
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
   return;

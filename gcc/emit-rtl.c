@@ -1108,7 +1108,7 @@ gen_lowpart (mode, x)
 	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
 		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
 
-      return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
+      return adjust_address (x, mode, offset);
     }
   else if (GET_CODE (x) == ADDRESSOF)
     return gen_lowpart (mode, force_reg (GET_MODE (x), x));
@@ -1600,6 +1600,20 @@ change_address (memref, mode, addr)
   new = gen_rtx_MEM (mode, addr);
   MEM_COPY_ATTRIBUTES (new, memref);
   return new;
+}
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address offset by OFFSET bytes.  */
+
+rtx
+adjust_address (memref, mode, offset)
+     rtx memref;
+     enum machine_mode mode;
+     HOST_WIDE_INT offset;
+{
+  /* For now, this is just a wrapper for change_address, but eventually
+     will do memref tracking.  */
+  return
+    change_address (memref, mode, plus_constant (XEXP (memref, 0), offset));
 }
 
 /* Return a newly created CODE_LABEL rtx with a unique label number.  */

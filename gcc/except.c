@@ -2038,9 +2038,8 @@ sjlj_mark_call_sites (lp_info)
   int last_call_site = -2;
   rtx insn, mem;
 
-  mem = change_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
-			plus_constant (XEXP (cfun->eh->sjlj_fc, 0),
-				       sjlj_fc_call_site_ofs));
+  mem = adjust_address (cfun->eh->sjlj_fc, TYPE_MODE (integer_type_node),
+			sjlj_fc_call_site_ofs);
 
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
@@ -2156,12 +2155,10 @@ sjlj_emit_function_enter (dispatch_label)
      calling it directly.  Thus, we must call assemble_external_libcall
      here, as we can not depend on emit_library_call to do it for us.  */
   assemble_external_libcall (eh_personality_libfunc);
-  mem = change_address (fc, Pmode,
-			plus_constant (XEXP (fc, 0), sjlj_fc_personality_ofs));
+  mem = adjust_address (fc, Pmode, sjlj_fc_personality_ofs);
   emit_move_insn (mem, eh_personality_libfunc);
 
-  mem = change_address (fc, Pmode,
-			plus_constant (XEXP (fc, 0), sjlj_fc_lsda_ofs));
+  mem = adjust_address (fc, Pmode, sjlj_fc_lsda_ofs);
   if (cfun->uses_eh_lsda)
     {
       char buf[20];
@@ -2258,12 +2255,11 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
 
   /* Load up dispatch index, exc_ptr and filter values from the
      function context.  */
-  mem = change_address (fc, TYPE_MODE (integer_type_node),
-			plus_constant (XEXP (fc, 0), sjlj_fc_call_site_ofs));
+  mem = adjust_address (fc, TYPE_MODE (integer_type_node),
+			sjlj_fc_call_site_ofs);
   dispatch = copy_to_reg (mem);
 
-  mem = change_address (fc, word_mode,
-			plus_constant (XEXP (fc, 0), sjlj_fc_data_ofs));
+  mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs);
   if (word_mode != Pmode)
     {
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -2274,9 +2270,7 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
     }
   emit_move_insn (cfun->eh->exc_ptr, mem);
 
-  mem = change_address (fc, word_mode,
-			plus_constant (XEXP (fc, 0),
-				       sjlj_fc_data_ofs + UNITS_PER_WORD));
+  mem = adjust_address (fc, word_mode, sjlj_fc_data_ofs + UNITS_PER_WORD);
   emit_move_insn (cfun->eh->filter, mem);
 
   /* Jump to one of the directly reachable regions.  */
