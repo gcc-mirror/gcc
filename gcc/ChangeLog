@@ -1,3 +1,7 @@
+2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* README: Remove.  Some of the contents moved to ../README.
+
 2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/install.texi (--enable-shared): List package names

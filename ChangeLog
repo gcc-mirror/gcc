@@ -1,3 +1,7 @@
+2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* README: Replace with a cut-down and updated version of gcc/README.
+
 2001-06-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* config-ml.in (powerpc-*-* | rs6000-*-*): Allow aix64 and pthread
