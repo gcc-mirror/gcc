@@ -1,4 +1,4 @@
-This directory contains the GNU Compiler Collection (GCC) version 2.96.
+This directory contains the GNU Compiler Collection (GCC) version 3.1.
 It includes all of the support for compiling C, C++, Objective C, Fortran,
 Java, and Chill.
 

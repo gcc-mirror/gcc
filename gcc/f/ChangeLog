@@ -1,3 +1,9 @@
+2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* version.c, root.texi: Update GCC version number to 3.1.  Update
+	G77 version number to 0.5.27.
+	* BUGS, NEWS: Regenerate.
+
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffecom_init_0): Call fatal_error instead of fatal.
