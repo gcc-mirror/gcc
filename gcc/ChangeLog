@@ -1,3 +1,8 @@
+2002-06-10  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (LANGHOOKS_DEF_H): Include langhooks-def.h.
+	(c-common.o): Depend on langhooks.h.
+
 2002-06-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_read_logical_line_trad,
