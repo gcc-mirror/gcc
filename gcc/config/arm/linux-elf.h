@@ -42,6 +42,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
 
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
+
 /* Now we define the strings used to build the spec file.  */
 #define LIB_SPEC \
   "%{shared: -lc} \
