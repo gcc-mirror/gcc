@@ -86,21 +86,51 @@ tree cleanups_this_call;
    returned.  */
 static rtx saveregs_value;
 
-rtx store_expr ();
-static void store_constructor ();
-static rtx store_field ();
-static rtx expand_builtin ();
-static rtx compare ();
-static rtx do_store_flag ();
-static void preexpand_calls ();
-static rtx expand_increment ();
-static void init_queue ();
+/* This structure is used by move_by_pieces to describe the move to
+   be performed.  */
 
-void do_pending_stack_adjust ();
-static void do_jump_for_compare ();
-static void do_jump_by_parts_equality ();
-static void do_jump_by_parts_equality_rtx ();
-static void do_jump_by_parts_greater ();
+struct move_by_pieces
+{
+  rtx to;
+  rtx to_addr;
+  int autinc_to;
+  int explicit_inc_to;
+  rtx from;
+  rtx from_addr;
+  int autinc_from;
+  int explicit_inc_from;
+  int len;
+  int offset;
+  int reverse;
+};
+
+static rtx enqueue_insn		PROTO((rtx, rtx));
+static int queued_subexp_p	PROTO((rtx));
+static void init_queue		PROTO((void));
+static void move_by_pieces	PROTO((rtx, rtx, int, int));
+static int move_by_pieces_ninsns PROTO((unsigned int, int));
+static void move_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
+				       struct move_by_pieces *));
+static void group_insns		PROTO((rtx));
+static void store_constructor	PROTO((tree, rtx));
+static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
+				       enum machine_mode, int, int, int));
+static tree save_noncopied_parts PROTO((tree, tree));
+static tree init_noncopied_parts PROTO((tree, tree));
+static int safe_from_p		PROTO((rtx, tree));
+static int fixed_type_p		PROTO((tree));
+static int get_pointer_alignment PROTO((tree, unsigned));
+static tree string_constant	PROTO((tree, tree *));
+static tree c_strlen		PROTO((tree));
+static rtx expand_builtin  PROTO((tree, rtx, rtx, enum machine_mode, int));
+static rtx expand_increment	PROTO((tree, int));
+static void preexpand_calls	PROTO((tree));
+static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
+static void do_jump_by_parts_equality PROTO((tree, rtx, rtx));
+static void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
+static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
+static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
+static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -1093,24 +1123,6 @@ convert_to_mode (mode, x, unsignedp)
    The caller must pass FROM and TO
     through protect_from_queue before calling.
    ALIGN (in bytes) is maximum alignment we can assume.  */
-
-struct move_by_pieces
-{
-  rtx to;
-  rtx to_addr;
-  int autinc_to;
-  int explicit_inc_to;
-  rtx from;
-  rtx from_addr;
-  int autinc_from;
-  int explicit_inc_from;
-  int len;
-  int offset;
-  int reverse;
-};
-
-static void move_by_pieces_1 ();
-static int move_by_pieces_ninsns ();
 
 static void
 move_by_pieces (to, from, len, align)
@@ -3323,7 +3335,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
    this case, but the address of the object can be found.  */
 
 tree
-get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode, punsignedp, pvolatilep)
+get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
+		     punsignedp, pvolatilep)
      tree exp;
      int *pbitsize;
      int *pbitpos;
