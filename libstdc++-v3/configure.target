@@ -50,16 +50,14 @@
 # Try to guess a default cpu_include_dir based on the name of the CPU.  We
 # cannot do this for os_include_dir; there are too many portable operating
 # systems out there.  :-)
+abi_baseline_triplet=${target}
+c_model=c_std
+c_compatibility=no
 if test -d ${glibcpp_srcdir}/config/cpu/${target_cpu}; then
     cpu_include_dir="cpu/${target_cpu}"
 else
     cpu_include_dir="cpu/generic"
 fi
-
-abi_baseline_triplet=${target}
-
-c_model=c_std
-c_compatibility=no
 
 
 # TARGET-SPECIFIC OVERRIDES
@@ -71,35 +69,20 @@ case "${target_cpu}" in
   alpha*)
     cpu_include_dir="cpu/alpha"
     ;;
-  arm* | strongarm* | xscale* )
-    cpu_include_dir="cpu/arm"
-    ;;
-  i486 | i586 | i686 | i786)
-    # add athlons here maybe
+  athlon* | i586 | i686 | i786 | x86_64)
     cpu_include_dir="cpu/i486"
     ;;
-  m68k | m680[246]0)
+  m680[246]0)
     cpu_include_dir="cpu/m68k"
-    ;;
-  mips*)
-    # MIPS chips are unreliable as to sc/ll support. By default
-    # don't use atomic instructions and override for the OS.
-    cpu_include_dir="cpu/generic"
-    ;;
-  mmix)
-    ATOMICITYH="cpu/generic"
     ;;
   powerpc* | rs6000)
     cpu_include_dir="cpu/powerpc"
     ;;
-  s390 | s390x)
+  s390x)
     cpu_include_dir="cpu/s390"
     ;;
   sparc* | ultrasparc)
     cpu_include_dir="cpu/sparc"
-    ;;
-  x86_64*)
-    cpu_include_dir="cpu/x86-64"
     ;;
 esac
 

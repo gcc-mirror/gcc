@@ -1,3 +1,14 @@
+2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/7926
+	* configure.target: Simplify.
+	* config/cpu/i386/atomicity.h: Remove.
+	* config/cpu/i386: Remove.	
+	* config/cpu/arm/atomicity.h: Remove.
+	* config/cpu/arm: Remove.	
+	* config/cpu/x86-64/atomicity.h: Remove.
+	* config/cpu/x86-64: Remove.	
+	
 2002-11-01  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR libstdc++/8197
