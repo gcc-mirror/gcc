@@ -108,6 +108,11 @@ override_options ()
    {
       warning ("PIC code generation is not compatable with fast indirect calls\n");
    }
+
+  if (flag_pic && profile_flag)
+    {
+      warning ("PIC code generation is not compatable with profiling\n");
+    }
 }
 
 
