@@ -2,6 +2,7 @@ Tue Sep 14 20:26:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.def (match_insn, match_insn2): Remove match_insn; rename
 	match_insn2 to match_insn.
+	* genrecog.c (add_to_sequence): Rename MATCH_INSN2.
 
 Tue Sep 14 20:10:29 1999  Richard Henderson  <rth@cygnus.com>
 

@@ -442,7 +442,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
     case MATCH_SCRATCH:
     case MATCH_OPERATOR:
     case MATCH_PARALLEL:
-    case MATCH_INSN2:
+    case MATCH_INSN:
       new->opno = XINT (pattern, 0);
       new->code = (code == MATCH_PARALLEL ? PARALLEL : UNKNOWN);
       new->enforce_mode = 0;
