@@ -1111,7 +1111,8 @@ init:
 		  push_momentary (); }
 	  initlist_maybe_comma '}'
 		{ $$ = pop_init_level (0);
-		  if ($$ == error_mark_node)
+		  if ($$ == error_mark_node
+		      && ! (yychar == STRING || yychar == CONSTANT))
 		    pop_momentary ();
 		  else
 		    pop_momentary_nofree (); }
@@ -1551,17 +1552,26 @@ compstmt: '{' '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), 1, 0);
 		  $$ = poplevel (1, 1, 0);
-		  pop_momentary (); }
+		  if (yychar == CONSTANT || yychar == STRING)
+		    pop_momentary_nofree ();
+		  else
+		    pop_momentary (); }
 	| '{' pushlevel maybe_label_decls error '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
-		  pop_momentary (); }
+		  if (yychar == CONSTANT || yychar == STRING)
+		    pop_momentary_nofree ();
+		  else
+		    pop_momentary (); }
 	| '{' pushlevel maybe_label_decls stmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
-		  pop_momentary (); }
+		  if (yychar == CONSTANT || yychar == STRING)
+		    pop_momentary_nofree ();
+		  else
+		    pop_momentary (); }
 	;
 
 /* Value is number of statements counted as of the closeparen.  */
@@ -1746,7 +1756,10 @@ stmt:
 		  expand_loop_continue_here ();
 		  if ($9)
 		    c_expand_expr_stmt ($9);
-		  pop_momentary ();
+		  if (yychar == CONSTANT || yychar == STRING)
+		    pop_momentary_nofree ();
+		  else
+		    pop_momentary ();
 		  expand_end_loop (); }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
@@ -1758,7 +1771,10 @@ stmt:
 		  position_after_white_space (); }
 	  lineno_labeled_stmt
 		{ expand_end_case ($3);
-		  pop_momentary (); }
+		  if (yychar == CONSTANT || yychar == STRING)
+		    pop_momentary_nofree ();
+		  else
+		    pop_momentary (); }
 	| BREAK ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
@@ -1878,7 +1894,10 @@ all_iter_stmt_with_decl:
 	    emit_line_note (input_filename, lineno);
 	    expand_end_bindings (getdecls (), 1, 0);
 	    $<ttype>$ = poplevel (1, 1, 0);
-	    pop_momentary ();	    
+	    if (yychar == CONSTANT || yychar == STRING)
+	      pop_momentary_nofree ();
+	    else
+	      pop_momentary ();	    
 	  }
 */
 
