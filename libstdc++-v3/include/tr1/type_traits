@@ -300,10 +300,40 @@ namespace tr1
 
   /// @brief  array modififications [4.7.3].
   template<typename _Tp>
-    struct remove_extent;
-  
+    struct remove_extent
+    {
+      typedef _Tp   type;
+    };
+
+  template<typename _Tp, std::size_t _Size>
+    struct remove_extent<_Tp[_Size]>
+    {
+      typedef _Tp   type;
+    };
+
   template<typename _Tp>
-    struct remove_all_extents;
+    struct remove_extent<_Tp[]>
+    {
+      typedef _Tp   type;
+    };
+
+  template<typename _Tp>
+    struct remove_all_extents
+    {
+      typedef _Tp   type;
+    };
+
+  template<typename _Tp, std::size_t _Size>
+    struct remove_all_extents<_Tp[_Size]>
+    {
+      typedef typename remove_all_extents<_Tp>::type   type;
+    };
+
+  template<typename _Tp>
+    struct remove_all_extents<_Tp[]>
+    {
+      typedef typename remove_all_extents<_Tp>::type   type;
+    };
 
   /// @brief  pointer modifications [4.7.4].
   template<typename _Tp>
