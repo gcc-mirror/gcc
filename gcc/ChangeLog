@@ -1,3 +1,8 @@
+2004-08-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/symbian.h (CC1_SPEC): Add -fno-short-enums.
+	(CC1PLUS_SPEC): Define it to be the same as CC1_SPEC.
+
 2004-08-06  Roman Zippel  <zippel@linux-m68k.org>
  
         * config/m68k/m68k.c (post_inc_operand,pre_dec_operand): New.
