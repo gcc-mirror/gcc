@@ -481,7 +481,7 @@ namespace std
 	  try 
 	    {
 	      streamsize __w = __out.width();
-	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca((sizeof(_CharT) * __w) + 1));
+	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__w + 1)));
 	      __pads[0] = __c;
 	      streamsize __len = 1;
 	      if (__w > __len)
