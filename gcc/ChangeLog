@@ -1,3 +1,8 @@
+2000-11-26  Neil Booth  <neilb@earthling.net>
+
+        * cppmacro.c (cpp_scan_buffer_nooutput): Only scan the
+        current buffer.
+
 2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* makefile.vms: Remove EGCS references.
