@@ -159,10 +159,6 @@ package body Bindgen is
    procedure Move_Linker_Option (From : Natural; To : Natural);
    --  Move routine for sorting linker options
 
-   procedure Public_Version_Warning;
-   --  Emit a warning concerning the use of the Public version under
-   --  certain circumstances. See details in body.
-
    procedure Set_Char (C : Character);
    --  Set given character in Statement_Buffer at the Last + 1 position
    --  and increment Last by one to reflect the stored character.
@@ -1682,8 +1678,6 @@ package body Bindgen is
    ---------------------
 
    procedure Gen_Output_File (Filename : String) is
-      Public_Version : constant Boolean := Gnat_Version_Type = "PUBLIC ";
-      --  Set true if this is the public version of GNAT
 
    begin
       --  Override Ada_Bind_File and Bind_Main_Program for Java since
@@ -1711,12 +1705,6 @@ package body Bindgen is
          end if;
       end loop;
 
-      --  Get the time stamp of the former bind for public version warning
-
-      if Public_Version then
-         Record_Time_From_Last_Bind;
-      end if;
-
       --  Generate output file in appropriate language
 
       if Ada_Bind_File then
@@ -1725,12 +1713,6 @@ package body Bindgen is
          Gen_Output_File_C (Filename);
       end if;
 
-      --  Periodically issue a warning when the public version is used on
-      --  big projects
-
-      if Public_Version then
-         Public_Version_Warning;
-      end if;
    end Gen_Output_File;
 
    -------------------------
@@ -2726,74 +2708,6 @@ package body Bindgen is
    begin
       Linker_Options.Table (To) := Linker_Options.Table (From);
    end Move_Linker_Option;
-
-   ----------------------------
-   -- Public_Version_Warning --
-   ----------------------------
-
-   procedure Public_Version_Warning is
-
-      Time : Int := Time_From_Last_Bind;
-
-      --  Constants to help defining periods
-
-      Hour : constant := 60;
-      Day  : constant := 24 * Hour;
-
-      Never : constant := Integer'Last;
-      --  Special value indicating no warnings should be given
-
-      --  Constants defining when the warning is issued. Programs with more
-      --  than Large Units will issue a warning every Period_Large amount of
-      --  time. Smaller programs will generate a warning every Period_Small
-      --  amount of time.
-
-      Large : constant := 20;
-      --  Threshold for considering a program small or large
-
-      Period_Large : constant := Day;
-      --  Periodic warning time for large programs
-
-      Period_Small : constant := Never;
-      --  Periodic warning time for small programs
-
-      Nb_Unit : Int;
-
-   begin
-      --  Compute the number of units that are not GNAT internal files
-
-      Nb_Unit := 0;
-      for A in ALIs.First .. ALIs.Last loop
-         if not Is_Internal_File_Name (ALIs.Table (A).Sfile) then
-            Nb_Unit := Nb_Unit + 1;
-         end if;
-      end loop;
-
-      --  Do not emit the message if the last message was emitted in the
-      --  specified period taking into account the number of units.
-
-      if Nb_Unit < Large and then Time <= Period_Small then
-         return;
-
-      elsif Time <= Period_Large then
-         return;
-      end if;
-
-      Write_Eol;
-      Write_Str ("IMPORTANT NOTICE:");
-      Write_Eol;
-      Write_Str ("    This version of GNAT is unsupported"
-        &                        " and comes with absolutely no warranty.");
-      Write_Eol;
-      Write_Str ("    If you intend to evaluate or use GNAT for building "
-        &                                       "commercial applications,");
-      Write_Eol;
-      Write_Str ("    please consult http://www.gnat.com/ for information");
-      Write_Eol;
-      Write_Str ("    on the GNAT Professional product line.");
-      Write_Eol;
-      Write_Eol;
-   end Public_Version_Warning;
 
    ----------------------------
    -- Resolve_Binder_Options --
