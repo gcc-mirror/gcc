@@ -777,19 +777,21 @@ extern struct rtx_def *a29k_get_reloaded_address ();
 /* Same, but called for incoming args.
 
    On the 29k, we use this to set all argument registers to fixed and
-   set the last 16 local regs (lr112-lr127) to available.  Some
-   will later be changed to call-saved by FUNCTION_INCOMING_ARG.  */
+   set the last 16 local regs, less two, (lr110-lr125) to available.  Some
+   will later be changed to call-saved by FUNCTION_INCOMING_ARG.
+   lr126,lr127 are always fixed, they are place holders for the caller's
+   lr0,lr1.  */
 
-#define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE)		\
+#define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE)	\
 { int i;							\
-  for (i = R_AR (0); i < R_AR (16); i++)			\
+  for (i = R_AR (0) - 2; i < R_AR (16); i++)			\
     {								\
       fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1; \
       SET_HARD_REG_BIT (fixed_reg_set, i);			\
       SET_HARD_REG_BIT (call_used_reg_set, i);			\
       SET_HARD_REG_BIT (call_fixed_reg_set, i);			\
     }								\
-  for (i = R_LR (112); i < R_LR (128); i++)					\
+  for (i = R_LR (110); i < R_LR (126); i++)					\
     {								\
       fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 0; \
       CLEAR_HARD_REG_BIT (fixed_reg_set, i);			\
