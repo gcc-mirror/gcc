@@ -458,7 +458,8 @@ from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
-  printf ("#include \"rtl.h\"\n\n");
+  printf ("#include \"rtl.h\"\n");
+  printf ("#include \"toplev.h\"\n\n");
 
   /* This variable exists only so it can be the "location"
      of any missing operand whose numbers are skipped by a given pattern.  */

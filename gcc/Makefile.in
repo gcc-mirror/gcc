@@ -1400,7 +1400,7 @@ fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h $(RECOG_H) Makefile toplev.h dwarfout.h \
-   dwarf2out.h sdbout.h dbxout.h \
+   dwarf2out.h sdbout.h dbxout.h $(EXPR_H) \
    $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
@@ -1626,7 +1626,7 @@ s-opinit : $(md_file) genopinit $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
 	touch s-opinit
 
-insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) system.h
+insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) system.h toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
 
 insn-extract.c: s-extract ; @true
@@ -1644,8 +1644,8 @@ s-peep : $(md_file) genpeep $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-peep.c insn-peep.c
 	touch s-peep
 
-insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h output.h \
-     insn-attr.h insn-config.h system.h
+insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h \
+    output.h insn-attr.h insn-config.h system.h toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c
 
 insn-attr.h: s-attr ; @true

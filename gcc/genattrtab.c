@@ -6000,6 +6000,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"real.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"insn-attr.h\"\n");
+  printf ("#include \"toplev.h\"\n");
   printf ("\n");  
   printf ("#define operands recog_operand\n\n");
 

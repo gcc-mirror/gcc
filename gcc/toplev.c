@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
+#include "expr.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -173,9 +174,7 @@ void pedwarn PVPROTO((char *s, ...));
 void pedwarn_with_decl PVPROTO((tree decl, char *s, ...));
 void pedwarn_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void sorry PVPROTO((char *s, ...));
-void really_sorry PVPROTO((char *s, ...));
-void fancy_abort ();
-void set_target_switch ();
+static void set_target_switch PROTO((char *));
 static char *decl_name PROTO((tree, int));
 static void vmessage PROTO((char *, char *, va_list));
 static void v_message_with_file_and_line PROTO((char *, int, char *,
@@ -186,7 +185,7 @@ static void v_error_with_file_and_line PROTO((char *, int, char *, va_list));
 static void v_error_with_decl PROTO((tree, char *, va_list));
 static void v_error_for_asm PROTO((rtx, char *, va_list));
 static void verror PROTO((char *, va_list));
-static void vfatal PROTO((char *, va_list));
+static void vfatal PROTO((char *, va_list)) ATTRIBUTE_NORETURN;
 static void v_warning_with_file_and_line PROTO ((char *, int, char *, va_list));
 static void v_warning_with_decl PROTO((tree, char *, va_list));
 static void v_warning_for_asm PROTO((rtx, char *, va_list));
@@ -195,7 +194,7 @@ static void vpedwarn PROTO((char *, va_list));
 static void v_pedwarn_with_decl PROTO((tree, char *, va_list));
 static void v_pedwarn_with_file_and_line PROTO((char *, int, char *, va_list));
 static void vsorry PROTO((char *, va_list));
-static void v_really_sorry PROTO((char *, va_list));
+static void v_really_sorry PROTO((char *, va_list)) ATTRIBUTE_NORETURN;
 static void float_signal PROTO((int));
 static void pipe_closed PROTO((int));
 static void output_lang_identify PROTO((FILE *));
@@ -206,9 +205,11 @@ static void clean_dump_file PROTO((char *));
 static void compile_file PROTO((char *));
 static void display_help PROTO ((void));
 
-void print_version ();
-int print_single_switch ();
-void print_switch_values ();
+static void print_version PROTO((FILE *, char *));
+static int print_single_switch PROTO((FILE *, int, int, char *, char *, char *,
+				      char *, char *));
+static void print_switch_values PROTO((FILE *, int, int, char *, char *,
+				       char *));
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
@@ -339,16 +340,20 @@ int sorrycount = 0;
      2: and any other information that might be interesting, such as function
         parameter types in C++.  */
 
-char *(*decl_printable_name) (/* tree decl, int verbosity */);
+char *(*decl_printable_name)		PROTO ((tree, int));
 
 /* Pointer to function to compute rtl for a language-specific tree code.  */
 
-struct rtx_def *(*lang_expand_expr) ();
+typedef rtx (*lang_expand_expr_t)
+  PROTO ((union tree_node *, rtx, enum machine_mode,
+	  enum expand_modifier modifier));
+
+lang_expand_expr_t lang_expand_expr = 0;
 
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 
-void (*incomplete_decl_finalize_hook) () = 0;
+void (*incomplete_decl_finalize_hook) PROTO((tree)) = 0;
 
 /* Highest label number used at the end of reload.  */
 
@@ -1379,7 +1384,7 @@ fatal_insn_not_found (insn)
 static char *
 decl_name (decl, verbosity)
      tree decl;
-     int verbosity;
+     int verbosity ATTRIBUTE_UNUSED;
 {
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
@@ -2128,7 +2133,7 @@ do_abort ()
 
 void
 botch (s)
-  char * s;
+  char * s ATTRIBUTE_UNUSED;
 {
   abort ();
 }
@@ -3168,8 +3173,13 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 
 void
 rest_of_type_compilation (type, toplev)
+#if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO) || defined (SDB_DEBUGGING_INFO)
      tree type;
      int toplev;
+#else
+     tree type ATTRIBUTE_UNUSED;
+     int toplev ATTRIBUTE_UNUSED;
+#endif
 {
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
   if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
@@ -3938,7 +3948,7 @@ static void
 display_help ()
 {
   int    undoc;
-  long	 i;
+  unsigned long	 i;
   char * lang;
   
 #ifndef USE_CPPLIB  
@@ -4167,10 +4177,9 @@ check_lang_option (option, lang_option)
    33 if had nonfatal errors, else success.  */
 
 int
-main (argc, argv, envp)
+main (argc, argv)
      int argc;
      char **argv;
-     char **envp;
 {
   register int i;
   char *filename = 0;
@@ -4210,7 +4219,7 @@ main (argc, argv, envp)
 #endif
 
   decl_printable_name = decl_name;
-  lang_expand_expr = (struct rtx_def *(*)()) do_abort;
+  lang_expand_expr = (lang_expand_expr_t) do_abort;
 
   /* Initialize whether `char' is signed.  */
   flag_signed_char = DEFAULT_SIGNED_CHAR;
@@ -4314,7 +4323,7 @@ main (argc, argv, envp)
 	if (check_lang_option (argv[i], documented_lang_options[j].option))
 	  break;
       
-      if (j != -1)
+      if (j != (size_t)-1)
 	{
 	  /* If the option is valid for *some* language,
 	     treat it as valid even if this language doesn't understand it.  */
@@ -4862,7 +4871,7 @@ main (argc, argv, envp)
 /* Decode -m switches.  */
 /* Decode the switch -mNAME.  */
 
-void
+static void
 set_target_switch (name)
      char *name;
 {
@@ -4900,7 +4909,7 @@ set_target_switch (name)
    Each line begins with INDENT (for the case where FILE is the
    assembler output file).  */
 
-void
+static void
 print_version (file, indent)
      FILE *file;
      char *indent;
@@ -4922,7 +4931,7 @@ print_version (file, indent)
    ??? We don't handle error returns from fprintf (disk full); presumably
    other code will catch a disk full though.  */
 
-int
+static int
 print_single_switch (file, pos, max, indent, sep, term, type, name)
      FILE *file;
      int pos, max;
