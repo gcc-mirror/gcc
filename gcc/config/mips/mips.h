@@ -617,6 +617,13 @@ do {							\
 #define EXTENDED_COFF		/* ECOFF, not normal coff */
 #endif
 
+/* Don't use the default definitions, because we don't have gld.
+   Also, we don't want stabs when generating ECOFF output.
+   Instead we depend on collect to handle these.  */
+
+#define ASM_OUTPUT_CONSTRUCTOR(file, name)
+#define ASM_OUTPUT_DESTRUCTOR(file, name)
+
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
