@@ -1,6 +1,6 @@
 // natFile.cc - Native part of File class for POSIX.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -60,14 +60,14 @@ java::io::File::_access (jint query)
 jboolean
 java::io::File::_stat (jint query)
 {
+  if (query == ISHIDDEN)
+    return getName()->charAt(0) == '.';
+
+#ifdef HAVE_STAT
   char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
 
-  if (query == ISHIDDEN)
-    return (getName()->charAt(0) == '.');
-
-#ifdef HAVE_STAT
   struct stat sb;
   if (::stat (buf, &sb))
     return false;
@@ -131,7 +131,7 @@ java::io::File::getCanonicalPath (void)
 jboolean
 java::io::File::isAbsolute (void)
 {
-  return path->charAt(0) == '/';
+  return path->length() > 0 && path->charAt(0) == '/';
 }
 
 jobjectArray
