@@ -212,7 +212,7 @@ public class URLClassLoader extends SecureClassLoader
       return null;
     }
   }
-    
+
   /** 
    * A <code>Resource</code> represents a resource in some
    * <code>URLLoader</code>. It also contains all information (e.g.,
@@ -271,6 +271,22 @@ public class URLClassLoader extends SecureClassLoader
     abstract InputStream getInputStream() throws IOException;
   }
 
+  static URL getCanonicalFileURL(URL url)
+  {
+    if ("file".equals(url.getProtocol()))
+      {
+	try
+	  {
+	    File f = new File(url.getFile()).getCanonicalFile();
+	    url = new URL("file", "", f.toString());
+	  }
+	catch (IOException ignore)
+	  {
+	  }
+      }
+    return url;
+  }
+
   /**
    * A <code>JarURLLoader</code> is a type of <code>URLLoader</code>
    * only loading from jar url.
@@ -282,8 +298,8 @@ public class URLClassLoader extends SecureClassLoader
 
     public JarURLLoader(URLClassLoader classloader, URL baseURL)
     {
-      super(classloader, baseURL);
-        
+      super(classloader, getCanonicalFileURL(baseURL));
+
       // cache url prefix for all resources in this jar url
       String external = baseURL.toExternalForm();
       StringBuffer sb = new StringBuffer(external.length() + 6);
@@ -306,7 +322,7 @@ public class URLClassLoader extends SecureClassLoader
       this.baseJarURL = baseJarURL;
       this.jarfile = jarfile;
     }
-    
+
     /** get resource with the name "name" in the jar url */
     Resource getResource(String name)
     {
@@ -331,7 +347,6 @@ public class URLClassLoader extends SecureClassLoader
 	  return null;
 	}
     }
-      
   }
 
   final static class JarURLResource extends Resource
@@ -358,7 +373,7 @@ public class URLClassLoader extends SecureClassLoader
     {
       return entry.getCertificates();
     }
-                
+
     URL getURL()
     {
       try
@@ -368,7 +383,9 @@ public class URLClassLoader extends SecureClassLoader
 	}
       catch(MalformedURLException e)
 	{
-	  throw new InternalError(e.toString());
+	  InternalError ie = new InternalError();
+	  ie.initCause(e);
+	  throw ie;
 	}
     }
   }
@@ -468,19 +485,24 @@ public class URLClassLoader extends SecureClassLoader
 
     FileURLLoader(URLClassLoader classloader, URL url)
     {
-      super(classloader, url);
-      // Note that this must be a "file" protocol URL.
-      dir = new File(url.getFile());
+      super(classloader, getCanonicalFileURL(url));
+      dir = new File(baseURL.getFile());
     }
-    
+
     /** get resource with the name "name" in the file url */
     Resource getResource(String name)
     {
       File file = new File(dir, name);
+      try
+	{
+	  file = file.getCanonicalFile();
+	}
+      catch (IOException ignore)
+	{
+	}
       if (file.exists() && !file.isDirectory())
 	return new FileResource(this, name, file);
-      else
-	return null;
+      return null;
     }
   }
 
@@ -503,7 +525,7 @@ public class URLClassLoader extends SecureClassLoader
     {
       return (int)file.length();
     }
-                
+
     public URL getURL()
     {
       try
@@ -513,7 +535,9 @@ public class URLClassLoader extends SecureClassLoader
 	}
       catch(MalformedURLException e)
 	{
-	  throw new InternalError(e.toString());
+	  InternalError ie = new InternalError();
+	  ie.initCause(e);
+	  throw ie;
 	}
     }
   }
@@ -667,13 +691,12 @@ public class URLClassLoader extends SecureClassLoader
 	  {
 	    String file = newUrl.getFile();
 	    // Check that it is not a directory
-	    if (!(file.endsWith("/") || file.endsWith(File.separator)))
+	    if (! (file.endsWith("/") || file.endsWith(File.separator)))
 	      loader = new JarURLLoader(this, newUrl);
-	    else // it's a url that point to a jar file
-	      if ("file".equals(newUrl.getProtocol()))
-		loader = new FileURLLoader(this, newUrl);
-	      else
-		loader = new RemoteURLLoader(this, newUrl);
+	    else if ("file".equals(newUrl.getProtocol()))
+	      loader = new FileURLLoader(this, newUrl);
+	    else
+	      loader = new RemoteURLLoader(this, newUrl);
 
 	    // cache it
 	    urlloaders.put(newUrl, loader);
