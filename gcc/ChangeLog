@@ -1,3 +1,14 @@
+Mon Feb  9 23:08:56 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (push): Prohibit symbolic constants if flag_pic.
+	(movsi+1): Likewise for move to non-register.
+
+Mon Feb  9 23:07:04 1998  John Wehle  (john@feith.com)
+
+	* i386.md: Remove redundant integer push patterns.
+	Don't bother checking for TARGET_PUSH_MEMORY when
+	pushing constants or registers.
+
 1998-01-28  Mike Stump  <mrs@wrs.com>
  
 	* rtlanal.c (dead_or_set_regno_p): Ignore REG_DEAD notes after
