@@ -150,6 +150,7 @@ noinst_PROGRAMS = ffitest
 
 ffitest_SOURCES = src/ffitest.c
 ffitest_LDADD = libffi.la
+ffitest_LDFLAGS = -shared-libgcc
 
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
@@ -217,7 +218,6 @@ PROGRAMS =  $(noinst_PROGRAMS)
 am_ffitest_OBJECTS =  ffitest.o
 ffitest_OBJECTS =  $(am_ffitest_OBJECTS)
 ffitest_DEPENDENCIES =  libffi.la
-ffitest_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
