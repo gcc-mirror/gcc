@@ -117,8 +117,9 @@ const char *xcoff_lastfile;
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
   fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
-static void assign_type_number		PARAMS ((tree, char *, int));
+static void assign_type_number		PARAMS ((tree, const char *, int));
 static void xcoffout_block		PARAMS ((tree, int, tree));
+static void xcoffout_source_file	PARAMS ((FILE *, const char *, int));
 
 /* Support routines for XCOFF debugging info.  */
 
@@ -128,7 +129,7 @@ static void xcoffout_block		PARAMS ((tree, int, tree));
 static void
 assign_type_number (syms, name, number)
      tree syms;
-     char *name;
+     const char *name;
      int number;
 {
   tree decl;
@@ -326,7 +327,7 @@ stab_to_sclass (stab)
 /* Output debugging info to FILE to switch to sourcefile FILENAME.
    INLINE_P is true if this is from an inlined function.  */
 
-void
+static void
 xcoffout_source_file (file, filename, inline_p)
      FILE *file;
      const char *filename;
@@ -462,19 +463,19 @@ xcoffout_declare_function (file, decl, name)
      tree decl;
      const char *name;
 {
-  char *n = (char *) name;
   int i;
 
-  if (*n == '*')
-    n++;
+  if (*name == '*')
+    name++;
   else
     for (i = 0; name[i]; ++i)
       {
 	if (name[i] == '[')
 	  {
-	    n = (char *) alloca (i + 1);
+	    char *n = (char *) alloca (i + 1);
 	    strncpy (n, name, i);
 	    n[i] = '\0';
+	    name = n;
 	    break;
 	  }
       }
@@ -487,7 +488,8 @@ xcoffout_declare_function (file, decl, name)
 
   /* .function NAME, TOP, MAPPING, TYPE, SIZE
      16 and 044 are placeholders for backwards compatibility */
-  fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n", n, n, n, n);
+  fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n",
+	   name, name, name, name);
 }
 
 /* Called at beginning of function body (after prologue).
