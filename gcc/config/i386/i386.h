@@ -2350,7 +2350,7 @@ while (0)
    general registers.  */
 
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
-   ix86_register_move_cost (mode, class1, class2);
+   ix86_register_move_cost (MODE, CLASS1, CLASS2)
 
 /* A C expression for the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is
