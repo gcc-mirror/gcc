@@ -1,5 +1,15 @@
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* friend.c (add_friend): Only perform access checks when context
+	is a class.
+	* lex.c (cxx_make_type): Only create a binfo for aggregate types.
+	* parser.c (cp_parser_class_specifier): Disable access checks here
+	when parsing the body of a templated class.
+	* semantics.c (perform_or_defer_access_checks): Reorder to allow
+	NULL binfos when not checking access.
+
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	Use vector API for vbase list.
 	* cp-tree.h: Include vec.h
 	(DEF_VEC_P (tree)): New type.
