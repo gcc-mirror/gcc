@@ -2479,6 +2479,8 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
 				  TREE_OPERAND (arg1, 0), flags);
 
