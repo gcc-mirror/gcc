@@ -305,9 +305,9 @@ static void macroexpand ();
 static void dump_all_macros ();
 static void conditional_skip ();
 static void skip_if_group ();
-static void output_line_command ();
+static void output_line_directive ();
 
-/* Last arg to output_line_command.  */
+/* Last arg to output_line_directive.  */
 enum file_change_code {same_file, enter_file, leave_file};
 
 static int grow_outbuf ();
@@ -390,7 +390,7 @@ static int print_include_names = 0;
 
 /* Nonzero means don't output line number information.  */
 
-static int no_line_commands;
+static int no_line_directives;
 
 /* Nonzero means output the text in failing conditionals,
    inside #failed ... #endfailed.  */
@@ -504,7 +504,7 @@ static int multiline_string_line = 0;
 #define INPUT_STACK_MAX 400
 static struct file_buf {
   char *fname;
-  /* Filename specified with #line command.  */
+  /* Filename specified with #line directive.  */
   char *nominal_fname;
   /* Record where in the search path this file was found.
      For #include_next.  */
@@ -763,7 +763,7 @@ static char rest_extension[] = "...";
 #define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
 
 /* The structure of a node in the hash table.  The hash table
-   has entries for all tokens defined by #define commands (type T_MACRO),
+   has entries for all tokens defined by #define directives (type T_MACRO),
    plus some special tokens like __LINE__ (these each have their own
    type, and the appropriate code is run when that type of node is seen.
    It does not contain control words like "#define", which are recognized
@@ -1179,7 +1179,7 @@ main (argc, argv)
   initialize_char_syntax ();
   dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 0;
 
-  no_line_commands = 0;
+  no_line_directives = 0;
   no_trigraphs = 1;
   dump_macros = dump_none;
   no_output = 0;
@@ -1570,7 +1570,7 @@ main (argc, argv)
 	break;
 
       case 'P':
-	no_line_commands = 1;
+	no_line_directives = 1;
 	break;
 
       case '$':			/* Don't include $ in identifiers.  */
@@ -1692,7 +1692,7 @@ main (argc, argv)
 	if (*p != 0)
 	  *p++= 0;
 	if (debug_output)
-	  output_line_command (fp, &outbuf, 0, same_file);
+	  output_line_directive (fp, &outbuf, 0, same_file);
 	make_definition (q, &outbuf);
 	while (*p == ' ' || *p == '\t')
 	  p++;
@@ -1752,12 +1752,12 @@ main (argc, argv)
   for (i = 1; i < argc; i++) {
     if (pend_undefs[i]) {
       if (debug_output)
-        output_line_command (fp, &outbuf, 0, same_file);
+        output_line_directive (fp, &outbuf, 0, same_file);
       make_undef (pend_undefs[i], &outbuf);
     }
     if (pend_defs[i]) {
       if (debug_output)
-        output_line_command (fp, &outbuf, 0, same_file);
+        output_line_directive (fp, &outbuf, 0, same_file);
       make_definition (pend_defs[i], &outbuf);
     }
     if (pend_assertions[i])
@@ -2102,7 +2102,7 @@ main (argc, argv)
   else if (! freopen (out_fname, "w", stdout))
     pfatal_with_name (out_fname);
 
-  output_line_command (fp, &outbuf, 0, same_file);
+  output_line_directive (fp, &outbuf, 0, same_file);
 
   /* Scan the -include files before the main input.  */
 
@@ -2613,7 +2613,7 @@ do { ip = &instack[indepth];		\
       }
 
       /* If this is expanding a macro definition, don't recognize
-	 preprocessor directives.  */
+	 preprocessing directives.  */
       if (ip->macro != 0)
 	goto randomchar;
       /* If this is expand_into_temp_buffer,
@@ -2891,7 +2891,7 @@ do { ip = &instack[indepth];		\
 	     this branch.  We need #line because the #pragma's newline always
 	     messes up the line count.  */
 	  op->bufp = obp;
-	  output_line_command (ip, op, 0, same_file);
+	  output_line_directive (ip, op, 0, same_file);
 	  check_expand (op, limit - ibp + 2);
 	  obp = op->bufp;
 	  *(obp++) = '/';
@@ -3071,7 +3071,7 @@ do { ip = &instack[indepth];		\
       ++op->lineno;
       if (ip->lineno != op->lineno) {
 	op->bufp = obp;
-	output_line_command (ip, op, 1, same_file);
+	output_line_directive (ip, op, 1, same_file);
 	check_expand (op, limit - ibp);
 	obp = op->bufp;
       }
@@ -3474,12 +3474,12 @@ expand_to_temp_buffer (buf, limit, output_marks, assertions)
 
 /*
  * Process a # directive.  Expects IP->bufp to point after the '#', as in
- * `#define foo bar'.  Passes to the command handler
+ * `#define foo bar'.  Passes to the directive handler
  * (do_define, do_include, etc.): the addresses of the 1st and
- * last chars of the command (starting immediately after the #
- * keyword), plus op and the keyword table pointer.  If the command
+ * last chars of the directive (starting immediately after the #
+ * keyword), plus op and the keyword table pointer.  If the directive
  * contains comments it is copied into a temporary buffer sans comments
- * and the temporary buffer is passed to the command handler instead.
+ * and the temporary buffer is passed to the directive handler instead.
  * Likewise for backslash-newlines.
  *
  * Returns nonzero if this was a known # directive.
@@ -3495,9 +3495,9 @@ handle_directive (ip, op)
   register int ident_length;
   U_CHAR *resume_p;
 
-  /* Nonzero means we must copy the entire command
+  /* Nonzero means we must copy the entire directive
      to get rid of comments or backslash-newlines.  */
-  int copy_command = 0;
+  int copy_directive = 0;
 
   U_CHAR *ident, *after_ident;
 
@@ -3573,13 +3573,13 @@ handle_directive (ip, op)
       while (*p == '#' || is_hor_space[*p]) p++;
       if (*p == '\n') {
 	if (pedantic && !lang_asm)
-	  warning ("invalid preprocessor directive");
+	  warning ("invalid preprocessing directive");
 	return 0;
       }
     }
 
     if (!lang_asm)
-      error ("invalid preprocessor directive name");
+      error ("invalid preprocessing directive name");
 
     return 0;
   }
@@ -3610,9 +3610,9 @@ handle_directive (ip, op)
       if (kt->type == T_IMPORT && !(objc || lookup ("__NeXT__", -1, -1)))
 	break;
 
-      /* Find the end of this command (first newline not backslashed
+      /* Find the end of this directive (first newline not backslashed
 	 and not in a string or comment).
-	 Set COPY_COMMAND if the command must be copied
+	 Set COPY_DIRECTIVE if the directive must be copied
 	 (it contains a backslash-newline or a comment).  */
 
       buf = bp = after_ident;
@@ -3623,7 +3623,7 @@ handle_directive (ip, op)
 	  if (bp < limit) {
 	    if (*bp == '\n') {
 	      ip->lineno++;
-	      copy_command = 1;
+	      copy_directive = 1;
 	      bp++;
 	    } else if (traditional)
 	      bp++;
@@ -3632,7 +3632,7 @@ handle_directive (ip, op)
 
 	case '\'':
 	case '\"':
-	  bp = skip_quoted_string (bp - 1, limit, ip->lineno, &ip->lineno, &copy_command, &unterminated);
+	  bp = skip_quoted_string (bp - 1, limit, ip->lineno, &ip->lineno, &copy_directive, &unterminated);
 	  /* Don't bother calling the directive if we already got an error
 	     message due to unterminated string.  Skip everything and pretend
 	     we called the directive.  */
@@ -3654,7 +3654,7 @@ handle_directive (ip, op)
 	  while (bp < limit && *bp != '>' && *bp != '\n') {
 	    if (*bp == '\\' && bp[1] == '\n') {
 	      ip->lineno++;
-	      copy_command = 1;
+	      copy_directive = 1;
 	      bp++;
 	    }
 	    bp++;
@@ -3670,7 +3670,7 @@ handle_directive (ip, op)
 	    ip->bufp = bp + 1;
 	    skip_to_end_of_comment (ip, &ip->lineno, 0);
 	    bp = ip->bufp;
-	    /* No need to copy the command because of a comment at the end;
+	    /* No need to copy the directive because of a comment at the end;
 	       just don't include the comment in the directive.  */
 	    if (bp == limit || *bp == '\n') {
 	      bp = obp;
@@ -3678,7 +3678,7 @@ handle_directive (ip, op)
 	    }
 	    /* Don't remove the comments if -traditional.  */
 	    if (! keep_comments)
-	      copy_command++;
+	      copy_directive++;
 	  }
 	  break;
 
@@ -3732,11 +3732,11 @@ handle_directive (ip, op)
 	already_output = &junk;
       }				/* Don't we need a newline or #line? */
 
-      if (copy_command) {
+      if (copy_directive) {
 	register U_CHAR *xp = buf;
-	/* Need to copy entire command into temp buffer before dispatching */
+	/* Need to copy entire directive into temp buffer before dispatching */
 
-	cp = (U_CHAR *) alloca (bp - buf + 5); /* room for cmd plus
+	cp = (U_CHAR *) alloca (bp - buf + 5); /* room for directive plus
 						  some slop */
 	buf = cp;
 
@@ -3803,7 +3803,7 @@ handle_directive (ip, op)
 	    if (*xp == '*'
 		|| (cplusplus_comments && *xp == '/')) {
 	      ip->bufp = xp + 1;
-	      /* If we already copied the command through,
+	      /* If we already copied the directive through,
 		 already_output != 0 prevents outputting comment now.  */
 	      skip_to_end_of_comment (ip, already_output, 0);
 	      if (keep_comments)
@@ -3864,11 +3864,11 @@ handle_directive (ip, op)
 	}
       }				/* Don't we need a newline or #line? */
 
-      /* Call the appropriate command handler.  buf now points to
+      /* Call the appropriate directive handler.  buf now points to
 	 either the appropriate place in the input buffer, or to
 	 the temp buffer if it was necessary to make one.  cp
 	 points to the first char after the contents of the (possibly
-	 copied) command, in either case. */
+	 copied) directive, in either case. */
       (*kt->func) (buf, cp, op, kt);
       check_expand (op, ip->length - (ip->bufp - ip->buf));
 
@@ -4893,7 +4893,7 @@ finclude (f, fname, op, system_header_p, dirptr)
   if (!no_trigraphs)
     trigraph_pcp (fp);
 
-  output_line_command (fp, op, 0, enter_file);
+  output_line_directive (fp, op, 0, enter_file);
   rescan (op, 0);
 
   if (missing_newline)
@@ -4904,7 +4904,7 @@ finclude (f, fname, op, system_header_p, dirptr)
 
   indepth--;
   input_file_stack_tick++;
-  output_line_command (&instack[indepth], op, 0, leave_file);
+  output_line_directive (&instack[indepth], op, 0, leave_file);
   free (fp->buf);
   return;
 
@@ -5267,10 +5267,10 @@ pcfinclude (buf, limit, name, op)
 	  str->writeflag = 1;
       }
   }
-  /* This output_line_command serves to switch us back to the current
+  /* This output_line_directive serves to switch us back to the current
      input file in case some of these strings get output (which will 
-     result in line commands for the header file being output). */
-  output_line_command (&instack[indepth], op, 0, enter_file);
+     result in line directives for the header file being output). */
+  output_line_directive (&instack[indepth], op, 0, enter_file);
 }
 
 /* Called from rescan when it hits a key for strings.  Mark them all */
@@ -5293,8 +5293,8 @@ write_output ()
 {
   STRINGDEF *next_string;
   U_CHAR *cur_buf_loc;
-  int line_command_len = 80;
-  char *line_command = xmalloc (line_command_len);
+  int line_directive_len = 80;
+  char *line_directive = xmalloc (line_directive_len);
   int len;
 
   /* In each run through the loop, either cur_buf_loc == */
@@ -5309,14 +5309,14 @@ write_output ()
 	&& cur_buf_loc - outbuf.buf == next_string->output_mark) {
       if (next_string->writeflag) {
 	len = 4 * strlen (next_string->filename) + 32;
-	while (len > line_command_len)
-	  line_command = xrealloc (line_command, 
-				   line_command_len *= 2);
-	sprintf (line_command, "\n# %d ", next_string->lineno);
-	strcpy (quote_string (line_command + strlen (line_command),
+	while (len > line_directive_len)
+	  line_directive = xrealloc (line_directive, 
+				     line_directive_len *= 2);
+	sprintf (line_directive, "\n# %d ", next_string->lineno);
+	strcpy (quote_string (line_directive + strlen (line_directive),
 		              next_string->filename),
 		"\n");
-	safe_write (fileno (stdout), line_command, strlen (line_command));
+	safe_write (fileno (stdout), line_directive, strlen (line_directive));
 	safe_write (fileno (stdout), next_string->contents, next_string->len);
       }	      
       next_string = next_string->chain;
@@ -5331,7 +5331,7 @@ write_output ()
       cur_buf_loc += len;
     }
   }
-  free (line_command);
+  free (line_directive);
 }
 
 /* Pass a directive through to the output file.
@@ -5559,8 +5559,8 @@ create_definition (buf, limit, op)
   return mdef;
 }
  
-/* Process a #define command.
-BUF points to the contents of the #define command, as a contiguous string.
+/* Process a #define directive.
+BUF points to the contents of the #define directive, as a contiguous string.
 LIMIT points to the first character past the end of the definition.
 KEYWORD is the keyword-table entry for #define.  */
 
@@ -5573,7 +5573,7 @@ do_define (buf, limit, op, keyword)
   int hashcode;
   MACRODEF mdef;
 
-  /* If this is a precompiler run (with -pcp) pass thru #define commands.  */
+  /* If this is a precompiler run (with -pcp) pass thru #define directives.  */
   if (pcp_outfile && op)
     pass_thru_directive (buf, limit, op, keyword);
 
@@ -6458,7 +6458,7 @@ delete_assertion (hp)
 }
 
 /*
- * interpret #line command.  Remembers previously seen fnames
+ * interpret #line directive.  Remembers previously seen fnames
  * in its very own hash table.
  */
 #define FNAME_HASHSIZE 37
@@ -6483,7 +6483,7 @@ do_line (buf, limit, op, keyword)
   SKIP_WHITE_SPACE (bp);
 
   if (!isdigit (*bp)) {
-    error ("invalid format `#line' command");
+    error ("invalid format `#line' directive");
     return 0;
   }
 
@@ -6494,7 +6494,7 @@ do_line (buf, limit, op, keyword)
 
   /* NEW_LINENO is one less than the actual line number here.  */
   if (pedantic && new_lineno < 0)
-    pedwarn ("line number out of range in `#line' command");
+    pedwarn ("line number out of range in `#line' directive");
 
   /* skip over the line number.  */
   while (isdigit (*bp))
@@ -6502,7 +6502,7 @@ do_line (buf, limit, op, keyword)
 
 #if 0 /* #line 10"foo.c" is supposed to be allowed.  */
   if (*bp && !is_space[*bp]) {
-    error ("invalid format `#line' command");
+    error ("invalid format `#line' directive");
     return;
   }
 #endif
@@ -6523,7 +6523,7 @@ do_line (buf, limit, op, keyword)
     for (;;)
       switch ((*p++ = *bp++)) {
       case '\0':
-	error ("invalid format `#line' command");
+	error ("invalid format `#line' directive");
 	return 0;
 
       case '\\':
@@ -6548,7 +6548,7 @@ do_line (buf, limit, op, keyword)
     SKIP_WHITE_SPACE (bp);
     if (*bp) {
       if (pedantic)
-	pedwarn ("garbage at end of `#line' command");
+	pedwarn ("garbage at end of `#line' directive");
       if (*bp == '1')
 	file_change = enter_file;
       else if (*bp == '2')
@@ -6558,7 +6558,7 @@ do_line (buf, limit, op, keyword)
       else if (*bp == '4')
 	ip->system_header_p = 2;
       else {
-	error ("invalid format `#line' command");
+	error ("invalid format `#line' directive");
 	return 0;
       }
 
@@ -6575,7 +6575,7 @@ do_line (buf, limit, op, keyword)
 	SKIP_WHITE_SPACE (bp);
       }
       if (*bp) {
-	error ("invalid format `#line' command");
+	error ("invalid format `#line' directive");
 	return 0;
       }
     }
@@ -6599,12 +6599,12 @@ do_line (buf, limit, op, keyword)
       bcopy (fname, hp->value.cpval, fname_length);
     }
   } else if (*bp) {
-    error ("invalid format `#line' command");
+    error ("invalid format `#line' directive");
     return 0;
   }
 
   ip->lineno = new_lineno;
-  output_line_command (ip, op, 0, file_change);
+  output_line_directive (ip, op, 0, file_change);
   check_expand (op, ip->length - (ip->bufp - ip->buf));
   return 0;
 }
@@ -6625,7 +6625,7 @@ do_undef (buf, limit, op, keyword)
   HASHNODE *hp;
   U_CHAR *orig_buf = buf;
 
-  /* If this is a precompiler run (with -pcp) pass thru #undef commands.  */
+  /* If this is a precompiler run (with -pcp) pass thru #undef directives.  */
   if (pcp_outfile && op)
     pass_thru_directive (buf, limit, op, keyword);
 
@@ -6634,7 +6634,7 @@ do_undef (buf, limit, op, keyword)
 
   while ((hp = lookup (buf, sym_length, -1)) != NULL) {
     /* If we are generating additional info for debugging (with -g) we
-       need to pass through all effective #undef commands.  */
+       need to pass through all effective #undef directives.  */
     if (debug_output && op)
       pass_thru_directive (orig_buf, limit, op, keyword);
     if (hp->type != T_MACRO)
@@ -6835,11 +6835,11 @@ do_sccs ()
 }
 
 /*
- * handle #if command by
+ * handle #if directive by
  *   1) inserting special `defined' keyword into the hash table
  *	that gets turned into 0 or 1 by special_symbol (thus,
  *	if the luser has a symbol called `defined' already, it won't
- *      work inside the #if command)
+ *      work inside the #if directive)
  *   2) rescan the input into a temporary output buffer
  *   3) pass the output buffer to the yacc parser and collect a value
  *   4) clean up the mess left from steps 1 and 2.
@@ -6898,7 +6898,7 @@ do_elif (buf, limit, op, keyword)
       skip_if_group (ip, 0, op);
     else {
       ++if_stack->if_succeeded;	/* continue processing input */
-      output_line_command (ip, op, 1, same_file);
+      output_line_directive (ip, op, 1, same_file);
     }
   }
   return 0;
@@ -7054,7 +7054,7 @@ conditional_skip (ip, skip, type, control_macro, op)
     return;
   } else {
     ++if_stack->if_succeeded;
-    output_line_command (ip, &outbuf, 1, same_file);
+    output_line_directive (ip, &outbuf, 1, same_file);
   }
 }
 
@@ -7093,7 +7093,7 @@ skip_if_group (ip, any, op)
     bcopy (ptr, (char *) op->bufp, len);
     op->bufp += len;
     op->lineno++;
-    output_line_command (ip, op, 1, 0);
+    output_line_directive (ip, op, 1, 0);
   }
 
   while (bp < endb) {
@@ -7248,13 +7248,13 @@ skip_if_group (ip, any, op)
 	  while (*p == '#' || is_hor_space[*p]) p++;
 	  if (*p == '\n') {
 	    if (pedantic && !lang_asm)
-	      pedwarn ("invalid preprocessor directive");
+	      pedwarn ("invalid preprocessing directive");
 	    continue;
 	  }
 	}
 
 	if (!lang_asm && pedantic)
-	  pedwarn ("invalid preprocessor directive name");
+	  pedwarn ("invalid preprocessing directive name");
 	continue;
       }
 
@@ -7306,7 +7306,7 @@ skip_if_group (ip, any, op)
       }
       /* Don't let erroneous code go by.  */
       if (kt->length < 0 && !lang_asm && pedantic)
-	pedwarn ("invalid preprocessor directive name");
+	pedwarn ("invalid preprocessing directive name");
     }
   }
 
@@ -7380,13 +7380,13 @@ do_else (buf, limit, op, keyword)
     skip_if_group (ip, 0, op);
   else {
     ++if_stack->if_succeeded;	/* continue processing input */
-    output_line_command (ip, op, 1, same_file);
+    output_line_directive (ip, op, 1, same_file);
   }
   return 0;
 }
 
 /*
- * unstack after #endif command
+ * unstack after #endif directive
  */
 
 static int
@@ -7442,14 +7442,14 @@ do_endif (buf, limit, op, keyword)
     fail: ;
     }
     free (temp);
-    output_line_command (&instack[indepth], op, 1, same_file);
+    output_line_directive (&instack[indepth], op, 1, same_file);
   }
   return 0;
 }
 
 /* When an #else or #endif is found while skipping failed conditional,
    if -pedantic was specified, this is called to warn about text after
-   the command name.  P points to the first char after the command name.  */
+   the directive name.  P points to the first char after the directive name.  */
 
 static void
 validate_else (p)
@@ -7758,7 +7758,7 @@ skip_paren_group (ip)
 }
 
 /*
- * write out a #line command, for instance, after an #include file.
+ * write out a #line directive, for instance, after an #include file.
  * If CONDITIONAL is nonzero, we can omit the #line if it would
  * appear to be a no-op, and we can output a few newlines instead
  * if we want to increase the line number by a small amount.
@@ -7766,15 +7766,15 @@ skip_paren_group (ip)
  */
 
 static void
-output_line_command (ip, op, conditional, file_change)
+output_line_directive (ip, op, conditional, file_change)
      FILE_BUF *ip, *op;
      int conditional;
      enum file_change_code file_change;
 {
   int len;
-  char *line_cmd_buf, *line_end;
+  char *line_directive_buf, *line_end;
 
-  if (no_line_commands
+  if (no_line_directives
       || ip->fname == NULL
       || no_output) {
     op->lineno = ip->lineno;
@@ -7786,7 +7786,7 @@ output_line_command (ip, op, conditional, file_change)
       return;
 
     /* If the inherited line number is a little too small,
-       output some newlines instead of a #line command.  */
+       output some newlines instead of a #line directive.  */
     if (ip->lineno > op->lineno && ip->lineno < op->lineno + 8) {
       check_expand (op, 10);
       while (ip->lineno > op->lineno) {
@@ -7804,13 +7804,9 @@ output_line_command (ip, op, conditional, file_change)
     ip->bufp++;
   }
 
-  line_cmd_buf = (char *) alloca (4 * strlen (ip->nominal_fname) + 100);
-#ifdef OUTPUT_LINE_COMMANDS
-  sprintf (line_cmd_buf, "#line %d ", ip->lineno);
-#else
-  sprintf (line_cmd_buf, "# %d ", ip->lineno);
-#endif
-  line_end = quote_string (line_cmd_buf + strlen (line_cmd_buf),
+  line_directive_buf = (char *) alloca (4 * strlen (ip->nominal_fname) + 100);
+  sprintf (line_directive_buf, "# %d ", ip->lineno);
+  line_end = quote_string (line_directive_buf + strlen (line_directive_buf),
 			   ip->nominal_fname);
   if (file_change != same_file) {
     *line_end++ = ' ';
@@ -7829,11 +7825,11 @@ output_line_command (ip, op, conditional, file_change)
   }
 #endif
   *line_end++ = '\n';
-  len = line_end - line_cmd_buf;
+  len = line_end - line_directive_buf;
   check_expand (op, len + 1);
   if (op->bufp > op->buf && op->bufp[-1] != '\n')
     *op->bufp++ = '\n';
-  bcopy ((char *) line_cmd_buf, (char *) op->bufp, len);
+  bcopy ((char *) line_directive_buf, (char *) op->bufp, len);
   op->bufp += len;
   op->lineno = ip->lineno;
 }
@@ -8874,7 +8870,7 @@ pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
 }
 
 /* Print the file names and line numbers of the #include
-   commands which led to the current file.  */
+   directives which led to the current file.  */
 
 static void
 print_containing_files ()
@@ -9382,51 +9378,51 @@ initialize_builtins (inp, outp)
 
       sprintf (directive, " __BASE_FILE__ \"%s\"\n",
 	       instack[0].nominal_fname);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
       sprintf (directive, " __VERSION__ \"%s\"\n", version_string);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
 #ifndef NO_BUILTIN_SIZE_TYPE
       sprintf (directive, " __SIZE_TYPE__ %s\n", SIZE_TYPE);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 #endif
 
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
       sprintf (directive, " __PTRDIFF_TYPE__ %s\n", PTRDIFF_TYPE);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 #endif
 
       sprintf (directive, " __WCHAR_TYPE__ %s\n", wchar_type);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
       sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
 	       monthnames[timebuf->tm_mon],
 	       timebuf->tm_mday, timebuf->tm_year + 1900);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
       sprintf (directive, " __TIME__ \"%02d:%02d:%02d\"\n",
 	       timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
-      output_line_command (inp, outp, 0, same_file);
+      output_line_directive (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
       if (!traditional)
 	{
           sprintf (directive, " __STDC__ 1");
-          output_line_command (inp, outp, 0, same_file);
+          output_line_directive (inp, outp, 0, same_file);
           pass_thru_directive (directive, &directive[strlen (directive)],
 			       outp, dp);
 	}
       if (objc)
 	{
           sprintf (directive, " __OBJC__ 1");
-          output_line_command (inp, outp, 0, same_file);
+          output_line_directive (inp, outp, 0, same_file);
           pass_thru_directive (directive, &directive[strlen (directive)],
 			       outp, dp);
 	}
