@@ -318,7 +318,6 @@ struct binding_level
     struct binding_level *level_chain;
 
     /* Nonzero for the level that holds the parameters of a function.  */
-    /* 2 for a definition, 1 for a declaration.  */
     char parm_flag;
 
     /* Nonzero if this level "doesn't exist" for tags.  */
@@ -740,13 +739,15 @@ kept_level_p ()
 }
 
 /* Identify this binding level as a level of parameters.
-   DEFINITION_FLAG is 1 for a definition, 0 for a declaration.  */
+   DEFINITION_FLAG is 1 for a definition, 0 for a declaration.
+   But it turns out there is no way to pass the right value for
+   DEFINITION_FLAG, so we ignore it.  */
 
 void
 declare_parm_level (definition_flag)
      int definition_flag;
 {
-  current_binding_level->parm_flag = 1 + definition_flag;
+  current_binding_level->parm_flag = 1;
 }
 
 /* Nonzero if currently making parm declarations.  */
@@ -1718,8 +1719,11 @@ pushdecl (x)
   register struct binding_level *b = current_binding_level;
 
   DECL_CONTEXT (x) = current_function_decl;
-  /* A local declaration for a function doesn't constitute nesting.  */
-  if (TREE_CODE (x) == FUNCTION_DECL && DECL_INITIAL (x) == 0)
+  /* A local extern declaration for a function doesn't constitute nesting.
+     A local auto declaration does, since it's a forward decl
+     for a nested function coming later.  */
+  if (TREE_CODE (x) == FUNCTION_DECL && DECL_INITIAL (x) == 0
+      && DECL_EXTERNAL (x))
     DECL_CONTEXT (x) = 0;
 
   if (warn_nested_externs && DECL_EXTERNAL (x) && b != global_binding_level
@@ -2072,8 +2076,12 @@ pushdecl (x)
 	      char *warnstring = 0;
 
 	      if (TREE_CODE (x) == PARM_DECL
-		  && current_binding_level->parm_flag == 1)
-		/* Don't warn about the parm names in a declaration.  */
+		  && current_binding_level->level_chain->parm_flag)
+		/* Don't warn about the parm names in function declarator
+		   within a function declarator.
+		   It would be nice to avoid warning in any function
+		   declarator in a declaration, as opposed to a definition,
+		   but there is no way to tell it's not a definition.  */
 		;
 	      else if (oldlocal != 0 && TREE_CODE (oldlocal) == PARM_DECL)
 		warnstring = "declaration of `%s' shadows a parameter";
@@ -3693,12 +3701,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      {
 		if (i == (int) RID_LONG && specbits & (1<<i))
 		  {
-		    if (pedantic)
-		      pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
-		    else if (longlong)
+		    if (longlong)
 		      error ("`long long long' is too long for GCC");
 		    else
-		      longlong = 1;
+		      {
+			if (pedantic)
+			  pedwarn ("ANSI C does not support `long long'");
+			longlong = 1;
+		      }
 		  }
 		else if (specbits & (1 << i))
 		  pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
@@ -5846,7 +5856,7 @@ store_parm_decls ()
 			DECL_ARG_TYPE (parm) = integer_type_node;
 #endif
 		      if (pedantic)
-			warning ("promoted argument `%s' doesn't match prototype",
+			pedwarn ("promoted argument `%s' doesn't match prototype",
 				 IDENTIFIER_POINTER (DECL_NAME (parm)));
 		    }
 		  /* If -traditional, allow `int' argument to match
