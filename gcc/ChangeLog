@@ -1,3 +1,8 @@
+2000-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): If enum has a negative
+	value, don't output it as unsigned.
+
 Wed Mar 29 10:53:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* stmt.c (stmt_loop_nest_empty): Allow cfun->stmt to be NULL.
