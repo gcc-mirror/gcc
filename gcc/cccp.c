@@ -539,6 +539,7 @@ static struct default_include { char *fname; int cplusplus; } include_defaults_a
     /* Pick up GNU C++ specific include files.  */
     { GPLUSPLUS_INCLUDE_DIR, 1},
     { GCC_INCLUDE_DIR, 0},
+    { TOOL_INCLUDE_DIR, 0},
 #ifdef CROSS_COMPILE
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
