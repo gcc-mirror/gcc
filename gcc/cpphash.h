@@ -107,6 +107,7 @@ extern MACRODEF create_definition PARAMS ((U_CHAR *, U_CHAR *,
 extern int compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
 					   DEFINITION *));
 extern void macroexpand		  PARAMS ((cpp_reader *, HASHNODE *));
-extern void dump_definition	  PARAMS ((cpp_reader *, MACRODEF));
+extern void dump_definition	  PARAMS ((cpp_reader *, const U_CHAR *, long,
+					   DEFINITION *));
 
 #endif

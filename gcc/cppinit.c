@@ -1040,16 +1040,12 @@ cpp_finish (pfile)
     {
       int i;
       HASHNODE *h;
-      MACRODEF m;
       for (i = HASHSIZE; --i >= 0;)
 	{
 	  for (h = pfile->hashtab[i]; h; h = h->next)
 	    if (h->type == T_MACRO)
 	      {
-		m.defn = h->value.defn;
-		m.symnam = h->name;
-		m.symlen = h->length;
-		dump_definition (pfile, m);
+		dump_definition (pfile, h->name, h->length, h->value.defn);
 		CPP_PUTC (pfile, '\n');
 	      }
 	}
