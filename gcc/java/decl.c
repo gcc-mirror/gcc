@@ -577,11 +577,6 @@ java_init_decl_processing ()
   TYPE_identifier_node = get_identifier ("TYPE");
   init_identifier_node = get_identifier ("<init>");
   clinit_identifier_node = get_identifier ("<clinit>");
-  /* Legacy `$finit$' special method identifier. This needs to be
-     recognized as equivalent to `finit$' but isn't generated anymore.  */
-  finit_leg_identifier_node = get_identifier ("$finit$");
-  /* The new `finit$' special method identifier. This one is now
-     generated in place of `$finit$'.  */
   finit_identifier_node = get_identifier ("finit$");
   instinit_identifier_node = get_identifier ("instinit$");
   void_signature_node = get_identifier ("()V");

@@ -304,7 +304,6 @@ enum java_tree_index
   JTI_CLINIT_IDENTIFIER_NODE,      
   JTI_FINIT_IDENTIFIER_NODE,      
   JTI_INSTINIT_IDENTIFIER_NODE,
-  JTI_FINIT_LEG_IDENTIFIER_NODE,  
   JTI_VOID_SIGNATURE_NODE,       
   JTI_LENGTH_IDENTIFIER_NODE,  
   JTI_FINALIZE_IDENTIFIER_NODE,
@@ -504,8 +503,6 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_CLINIT_IDENTIFIER_NODE]      /* "<clinit>" */
 #define finit_identifier_node \
   java_global_trees[JTI_FINIT_IDENTIFIER_NODE]      /* "finit$" */
-#define finit_leg_identifier_node \
-  java_global_trees[JTI_FINIT_LEG_IDENTIFIER_NODE]  /* "$finit$" */
 /* FIXME "instinit$" and "finit$" should be merged  */
 #define instinit_identifier_node \
   java_global_trees[JTI_INSTINIT_IDENTIFIER_NODE]  /* "instinit$" */
@@ -997,7 +994,7 @@ struct lang_type
   struct JCF *jcf;
   struct CPool *cpool;
   tree cpool_data_ref;		/* Cached */
-  tree finit_stmt_list;		/* List of statements $finit$ will use */
+  tree finit_stmt_list;		/* List of statements finit$ will use */
   tree clinit_stmt_list;	/* List of statements <clinit> will use  */
   tree ii_block;		/* Instance initializer block */
   tree dot_class;		/* The decl of the `class$' function that
@@ -1261,12 +1258,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 /* Predicates on method identifiers. Kept close to other macros using
    them  */
 #define ID_INIT_P(ID)   ((ID) == init_identifier_node)
-/* Match ID to either `$finit$' or `finit$', so that `$finit$'
-   continues to be recognized as an equivalent to `finit$' which is
-   now the preferred name used for the field initialization special
-   method.  */
-#define ID_FINIT_P(ID)  ((ID) == finit_identifier_node \
-			 || (ID) == finit_leg_identifier_node)
+#define ID_FINIT_P(ID)  ((ID) == finit_identifier_node)
 #define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
 #define ID_CLASSDOLLAR_P(ID) ((ID) == classdollar_identifier_node)
 #define ID_INSTINIT_P(ID) ((ID) == instinit_identifier_node)
@@ -1426,7 +1418,7 @@ extern tree *type_map;
    layout of a class.  */
 #define CLASS_BEING_LAIDOUT(TYPE) TYPE_LANG_FLAG_6 (TYPE)
 
-/* True if class TYPE has a field initializer $finit$ function */
+/* True if class TYPE has a field initializer finit$ function */
 #define CLASS_HAS_FINIT_P(TYPE) TYPE_FINIT_STMT_LIST (TYPE)
 
 /* True if identifier ID was seen while processing a single type import stmt */

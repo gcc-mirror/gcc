@@ -1,5 +1,13 @@
 2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* decl.c (java_init_decl_processing): Don't initialize 
+	finit_leg_identifier_node.
+	* java-tree.h (java_tree_index): Remove JTI_FINIT_LEG_IDENTIFIER_NODE.
+	(finit_leg_identifier_node): Remove.
+	(ID_FINIT_P): Don't check for JTI_FINIT_LEG_IDENTIFIER_NODE.
+
+2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	* mangle.c (mangle_member_name): Don't special-case for 
 	NO_DOLLAR_IN_LABEL.
 	* mangle_name.c (unicode_mangling_length): Likewise.
