@@ -49,8 +49,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct function_list
 {
-  struct function_list *next; 	 /* next function */
-  unsigned ident; 		 /* function ident */
+  struct function_list *next;	 /* next function */
+  unsigned ident;		 /* function ident */
   unsigned checksum;	         /* function checksum */
   unsigned n_ctrs[GCOV_COUNTERS];/* number of counters.  */
 };
@@ -61,7 +61,7 @@ typedef struct counts_entry
   /* We hash by  */
   unsigned ident;
   unsigned ctr;
-  
+
   /* Store  */
   unsigned checksum;
   gcov_type *counts;
@@ -69,7 +69,7 @@ typedef struct counts_entry
 
   /* Workspace */
   struct counts_entry *chain;
-  
+
 } counts_entry_t;
 
 static struct function_list *functions_head = 0;
@@ -104,23 +104,22 @@ static const char *const ctr_merge_functions[GCOV_COUNTERS] = GCOV_MERGE_FUNCTIO
 static const char *const ctr_names[GCOV_COUNTERS] = GCOV_COUNTER_NAMES;
 
 /* Forward declarations.  */
-static hashval_t htab_counts_entry_hash PARAMS ((const void *));
-static int htab_counts_entry_eq PARAMS ((const void *, const void *));
-static void htab_counts_entry_del PARAMS ((void *));
-static void read_counts_file PARAMS ((void));
-static unsigned compute_checksum PARAMS ((void));
-static unsigned checksum_string PARAMS ((unsigned, const char *));
-static tree build_fn_info_type PARAMS ((unsigned));
-static tree build_fn_info_value PARAMS ((const struct function_list *, tree));
-static tree build_ctr_info_type PARAMS ((void));
-static tree build_ctr_info_value PARAMS ((unsigned, tree));
-static tree build_gcov_info PARAMS ((void));
-static void create_coverage PARAMS ((void));
+static hashval_t htab_counts_entry_hash (const void *);
+static int htab_counts_entry_eq (const void *, const void *);
+static void htab_counts_entry_del (void *);
+static void read_counts_file (void);
+static unsigned compute_checksum (void);
+static unsigned checksum_string (unsigned, const char *);
+static tree build_fn_info_type (unsigned);
+static tree build_fn_info_value (const struct function_list *, tree);
+static tree build_ctr_info_type (void);
+static tree build_ctr_info_value (unsigned, tree);
+static tree build_gcov_info (void);
+static void create_coverage (void);
 
 
 static hashval_t
-htab_counts_entry_hash (of)
-     const void *of;
+htab_counts_entry_hash (const void *of)
 {
   const counts_entry_t *entry = of;
 
@@ -128,9 +127,7 @@ htab_counts_entry_hash (of)
 }
 
 static int
-htab_counts_entry_eq (of1, of2)
-     const void *of1;
-     const void *of2;
+htab_counts_entry_eq (const void *of1, const void *of2)
 {
   const counts_entry_t *entry1 = of1;
   const counts_entry_t *entry2 = of2;
@@ -139,8 +136,7 @@ htab_counts_entry_eq (of1, of2)
 }
 
 static void
-htab_counts_entry_del (of)
-     void *of;
+htab_counts_entry_del (void *of)
 {
   counts_entry_t *entry = of;
 
@@ -151,7 +147,7 @@ htab_counts_entry_del (of)
 /* Read in the counts file, if available.  */
 
 static void
-read_counts_file ()
+read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
   gcov_unsigned_t version, checksum = -1;
@@ -163,7 +159,7 @@ read_counts_file ()
 
   if (!gcov_open (da_file_name, 1))
     return;
-  
+
   if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
     {
       warning ("`%s' is not a gcov data file", da_file_name);
@@ -174,7 +170,7 @@ read_counts_file ()
     {
       char v[4], e[4];
       gcov_unsigned_t required = GCOV_VERSION;
-      
+
       for (ix = 4; ix--; required >>= 8, version >>= 8)
 	{
 	  v[ix] = version;
@@ -185,7 +181,7 @@ read_counts_file ()
       gcov_close ();
       return;
     }
-  
+
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
 			     htab_counts_entry_del);
@@ -193,7 +189,7 @@ read_counts_file ()
     {
       gcov_unsigned_t length;
       gcov_position_t offset;
-      
+
       length = gcov_read_unsigned ();
       offset = gcov_position ();
       if (tag == GCOV_TAG_FUNCTION)
@@ -206,7 +202,7 @@ read_counts_file ()
 		 new function begins a new set of program runs. We
 		 must unlink the summaried chain.  */
 	      counts_entry_t *entry, *chain;
-	      
+
 	      for (entry = summaried; entry; entry = chain)
 		{
 		  chain = entry->chain;
@@ -220,13 +216,13 @@ read_counts_file ()
 	{
 	  counts_entry_t *entry;
 	  struct gcov_summary summary;
-	  
+
 	  gcov_read_summary (&summary);
 	  seen_summary = 1;
 	  for (entry = summaried; entry; entry = entry->chain)
 	    {
 	      struct gcov_ctr_summary *csum = &summary.ctrs[entry->ctr];
-	      
+
 	      entry->summary.runs += csum->runs;
 	      entry->summary.sum_all += csum->sum_all;
 	      if (entry->summary.run_max < csum->run_max)
@@ -271,8 +267,8 @@ read_counts_file ()
 
 	  if (elt.ctr < GCOV_COUNTERS_SUMMABLE
 	      /* This should always be true for a just allocated entry,
-	     	 and always false for an existing one. Check this way, in
-	     	 case the gcov file is corrupt.  */
+		 and always false for an existing one. Check this way, in
+		 case the gcov file is corrupt.  */
 	      && (!entry->chain || summaried != entry))
 	    {
 	      entry->chain = summaried;
@@ -293,7 +289,7 @@ read_counts_file ()
 	       da_file_name);
       htab_delete (counts_hash);
     }
-  
+
   gcov_close ();
 }
 
@@ -325,7 +321,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return 0;
     }
-  
+
   if (expected != entry->summary.num
       || compute_checksum () != entry->checksum)
     {
@@ -333,7 +329,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return NULL;
     }
-  
+
   if (summary)
     *summary = &entry->summary;
 
@@ -348,15 +344,15 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 {
   if (no_coverage)
     return 0;
-  
+
   if (!num)
     return 1;
-  
+
   if (!ctr_labels[counter])
     {
       /* Generate and save a copy of this so it can be shared.  */
       char buf[20];
-      
+
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
     }
@@ -399,21 +395,21 @@ checksum_string (unsigned chksum, const char *string)
       for (ix = 8; ix--; value <<= 1)
 	{
 	  unsigned feedback;
-	  
+
 	  feedback = (value ^ chksum) & 0x80000000 ? 0x04c11db7 : 0;
 	  chksum <<= 1;
 	  chksum ^= feedback;
 	}
     }
   while (*string++);
-  
+
   return chksum;
 }
 
 /* Compute checksum for the current function.  We generate a CRC32.  */
 
 static unsigned
-compute_checksum ()
+compute_checksum (void)
 {
   unsigned chksum = DECL_SOURCE_LINE (current_function_decl);
 
@@ -430,17 +426,17 @@ compute_checksum ()
    should be output.  */
 
 int
-coverage_begin_output ()
+coverage_begin_output (void)
 {
   if (no_coverage)
     return 0;
-  
+
   if (!bbg_function_announced)
     {
       const char *file = DECL_SOURCE_FILE (current_function_decl);
       unsigned line = DECL_SOURCE_LINE (current_function_decl);
       unsigned long offset;
-      
+
       if (!bbg_file_opened)
 	{
 	  if (!gcov_open (bbg_file_name, -1))
@@ -452,7 +448,7 @@ coverage_begin_output ()
 	    }
 	  bbg_file_opened = 1;
 	}
-      
+
       /* Announce function */
       offset = gcov_write_tag (GCOV_TAG_FUNCTION);
       gcov_write_unsigned (current_function_funcdef_no + 1);
@@ -472,12 +468,12 @@ coverage_begin_output ()
    error has occurred.  Save function coverage counts.  */
 
 void
-coverage_end_function ()
+coverage_end_function (void)
 {
   unsigned i;
-  
+
   if (bbg_file_opened > 1 && gcov_is_error ())
-    {	
+    {
       warning ("error writing `%s'", bbg_file_name);
       bbg_file_opened = -1;
     }
@@ -485,12 +481,12 @@ coverage_end_function ()
   if (fn_ctr_mask)
     {
       struct function_list *item;
-      
+
       item = xmalloc (sizeof (struct function_list));
-      
+
       *functions_tail = item;
       functions_tail = &item->next;
-	
+
       item->next = 0;
       item->ident = current_function_funcdef_no + 1;
       item->checksum = compute_checksum ();
@@ -509,13 +505,12 @@ coverage_end_function ()
 /* Creates the gcov_fn_info RECORD_TYPE.  */
 
 static tree
-build_fn_info_type (counters)
-     unsigned counters;
+build_fn_info_type (unsigned int counters)
 {
   tree type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   tree field, fields;
   tree array_type;
-  
+
   /* ident */
   fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
 
@@ -526,7 +521,7 @@ build_fn_info_type (counters)
 
   array_type = build_index_type (build_int_2 (counters - 1, 0));
   array_type = build_array_type (unsigned_type_node, array_type);
-  
+
   /* counters */
   field = build_decl (FIELD_DECL, NULL_TREE, array_type);
   TREE_CHAIN (field) = fields;
@@ -542,51 +537,49 @@ build_fn_info_type (counters)
    RECORD_TYPE.  */
 
 static tree
-build_fn_info_value (function, type)
-     const struct function_list *function;
-     tree type;
+build_fn_info_value (const struct function_list *function, tree type)
 {
   tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
   unsigned ix;
   tree array_value = NULL_TREE;
-  
+
   /* ident */
   value = tree_cons (fields,
 		     convert (unsigned_intSI_type_node,
 			      build_int_2 (function->ident, 0)),
 		     value);
   fields = TREE_CHAIN (fields);
-  
+
   /* checksum */
   value = tree_cons (fields,
 		     convert (unsigned_intSI_type_node,
 			      build_int_2 (function->checksum, 0)),
 		     value);
   fields = TREE_CHAIN (fields);
-  
+
   /* counters */
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
       {
 	tree counters = convert (unsigned_type_node,
 				 build_int_2 (function->n_ctrs[ix], 0));
-	
+
 	array_value = tree_cons (NULL_TREE, counters, array_value);
       }
-  
+
   array_value = build_constructor (TREE_TYPE (fields), nreverse (array_value));
   value = tree_cons (fields, array_value, value);
 
   value = build_constructor (type, nreverse (value));
-  
+
   return value;
 }
 
 /* Creates the gcov_ctr_info RECORD_TYPE.  */
 
 static tree
-build_ctr_info_type ()
+build_ctr_info_type (void)
 {
   tree type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   tree field, fields = NULL_TREE;
@@ -623,9 +616,7 @@ build_ctr_info_type ()
    RECORD_TYPE.  */
 
 static tree
-build_ctr_info_value (counter, type)
-     unsigned counter;
-     tree type;
+build_ctr_info_value (unsigned int counter, tree type)
 {
   tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
@@ -641,16 +632,16 @@ build_ctr_info_value (counter, type)
   if (prg_n_ctrs[counter])
     {
       tree array_type, array;
-      
+
       array_type = build_index_type (build_int_2 (prg_n_ctrs[counter] - 1, 0));
       array_type = build_array_type (TREE_TYPE (TREE_TYPE (fields)),
 				     array_type);
-      
+
       array = build (VAR_DECL, array_type, NULL_TREE, NULL_TREE);
       TREE_STATIC (array) = 1;
       DECL_NAME (array) = get_identifier (XSTR (ctr_labels[counter], 0));
       assemble_variable (array, 0, 0, 0);
-      
+
       value = tree_cons (fields,
 			 build1 (ADDR_EXPR, TREE_TYPE (fields), array),
 			 value);
@@ -671,7 +662,7 @@ build_ctr_info_value (counter, type)
 		     value);
 
   value = build_constructor (type, nreverse (value));
-  
+
   return value;
 }
 
@@ -679,7 +670,7 @@ build_ctr_info_value (counter, type)
    CONSTRUCTOR.  */
 
 static tree
-build_gcov_info ()
+build_gcov_info (void)
 {
   unsigned n_ctr_types, ix;
   tree type, const_type;
@@ -694,15 +685,15 @@ build_gcov_info ()
   unsigned n_fns;
   const struct function_list *fn;
   tree string_type;
-  
+
   /* Count the number of active counters.  */
   for (n_ctr_types = 0, ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
       n_ctr_types++;
-  
+
   type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   const_type = build_qualified_type (type, TYPE_QUAL_CONST);
-  
+
   /* Version ident */
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
   TREE_CHAIN (field) = fields;
@@ -710,13 +701,13 @@ build_gcov_info ()
   value = tree_cons (field, convert (unsigned_intSI_type_node,
 				     build_int_2 (GCOV_VERSION, 0)),
 		     value);
-  
+
   /* next -- NULL */
   field = build_decl (FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, null_pointer_node, value);
-  
+
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,
 						    TYPE_QUAL_CONST));
@@ -736,7 +727,7 @@ build_gcov_info ()
 			    build_index_type (build_int_2 (filename_len, 0)));
   value = tree_cons (field, build1 (ADDR_EXPR, string_type, filename_string),
 		     value);
-  
+
   /* Build the fn_info type and initializer.  */
   fn_info_type = build_fn_info_type (n_ctr_types);
   fn_info_ptr_type = build_pointer_type (build_qualified_type
@@ -751,13 +742,13 @@ build_gcov_info ()
 
       array_type = build_index_type (build_int_2 (n_fns - 1, 0));
       array_type = build_array_type (fn_info_type, array_type);
-      
+
       fn_info_value = build_constructor (array_type, nreverse (fn_info_value));
       fn_info_value = build1 (ADDR_EXPR, fn_info_ptr_type, fn_info_value);
     }
   else
     fn_info_value = null_pointer_node;
-  
+
   /* number of functions */
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
   TREE_CHAIN (field) = fields;
@@ -765,7 +756,7 @@ build_gcov_info ()
   value = tree_cons (field,
 		     convert (unsigned_type_node, build_int_2 (n_fns, 0)),
 		     value);
-  
+
   /* fn_info table */
   field = build_decl (FIELD_DECL, NULL_TREE, fn_info_ptr_type);
   TREE_CHAIN (field) = fields;
@@ -780,7 +771,7 @@ build_gcov_info ()
 		     convert (unsigned_type_node,
 			      build_int_2 (prg_ctr_mask, 0)),
 		     value);
-  
+
   /* counters */
   ctr_info_type = build_ctr_info_type ();
   ctr_info_ary_type = build_index_type (build_int_2 (n_ctr_types, 0));
@@ -797,11 +788,11 @@ build_gcov_info ()
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, ctr_info_value, value);
-  
+
   finish_builtin_struct (type, "__gcov_info", fields, NULL_TREE);
 
   value = build_constructor (type, nreverse (value));
-  
+
   return value;
 }
 
@@ -810,7 +801,7 @@ build_gcov_info ()
    gcov-io.h.  Write out the constructor to call __gcov_init.  */
 
 static void
-create_coverage ()
+create_coverage (void)
 {
   tree gcov_info, gcov_info_value;
   char name[20];
@@ -819,10 +810,10 @@ create_coverage ()
   rtx gcov_info_address;
 
   no_coverage = 1; /* Disable any further coverage.  */
-  
+
   if (!prg_ctr_mask)
     return;
-  
+
   gcov_info_value = build_gcov_info ();
 
   gcov_info = build (VAR_DECL, TREE_TYPE (gcov_info_value),
@@ -832,7 +823,7 @@ create_coverage ()
   TREE_STATIC (gcov_info) = 1;
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
   DECL_NAME (gcov_info) = get_identifier (name);
-  
+
   /* Build structure.  */
   assemble_variable (gcov_info, 0, 0, 0);
 
@@ -884,8 +875,7 @@ create_coverage ()
    of graph file.  */
 
 void
-coverage_init (filename)
-  const char *filename;
+coverage_init (const char *filename)
 {
   int len = strlen (filename);
 
@@ -893,7 +883,7 @@ coverage_init (filename)
   da_file_name = (char *) xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, filename);
   strcat (da_file_name, GCOV_DATA_SUFFIX);
-  
+
   /* Name of bbg file.  */
   bbg_file_name = (char *) xmalloc (len + strlen (GCOV_GRAPH_SUFFIX) + 1);
   strcpy (bbg_file_name, filename);
@@ -906,13 +896,13 @@ coverage_init (filename)
    variables and constructor.  */
 
 void
-coverage_finish ()
+coverage_finish (void)
 {
   create_coverage ();
   if (bbg_file_opened)
     {
       int error = gcov_close ();
-      
+
       if (error)
 	unlink (bbg_file_name);
 #if SELF_COVERAGE

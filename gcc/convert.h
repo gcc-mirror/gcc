@@ -1,5 +1,5 @@
 /* Definition of functions in convert.c.
-   Copyright (C) 1993, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,8 +18,8 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-extern tree convert_to_integer PARAMS ((tree, tree));
-extern tree convert_to_pointer PARAMS ((tree, tree));
-extern tree convert_to_real PARAMS ((tree, tree));
-extern tree convert_to_complex PARAMS ((tree, tree));
-extern tree convert_to_vector PARAMS ((tree, tree));
+extern tree convert_to_integer (tree, tree);
+extern tree convert_to_pointer (tree, tree);
+extern tree convert_to_real (tree, tree);
+extern tree convert_to_complex (tree, tree);
+extern tree convert_to_vector (tree, tree);

@@ -39,8 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    in other cases error is called.  */
 
 tree
-convert_to_pointer (type, expr)
-     tree type, expr;
+convert_to_pointer (tree type, tree expr)
 {
   if (integer_zerop (expr))
     {
@@ -75,8 +74,7 @@ convert_to_pointer (type, expr)
 
 /* Avoid any floating point extensions from EXP.  */
 tree
-strip_float_extensions (exp)
-     tree exp;
+strip_float_extensions (tree exp)
 {
   tree sub, expt, subt;
 
@@ -124,8 +122,7 @@ strip_float_extensions (exp)
    in other cases error is called.  */
 
 tree
-convert_to_real (type, expr)
-     tree type, expr;
+convert_to_real (tree type, tree expr)
 {
   enum built_in_function fcode = builtin_mathfn_code (expr);
   tree itype = TREE_TYPE (expr);
@@ -194,9 +191,9 @@ convert_to_real (type, expr)
       if (fn)
 	{
 	  tree arg0 = strip_float_extensions (TREE_VALUE (TREE_OPERAND (expr,
-					  				1)));
+									1)));
 	  tree arglist = build_tree_list (NULL_TREE,
-			  		  fold (convert_to_real (type, arg0)));
+					  fold (convert_to_real (type, arg0)));
 
 	  return build_function_call_expr (fn, arglist);
 	}
@@ -285,8 +282,7 @@ convert_to_real (type, expr)
    not in use in any existing structure.  */
 
 tree
-convert_to_integer (type, expr)
-     tree type, expr;
+convert_to_integer (tree type, tree expr)
 {
   enum tree_code ex_form = TREE_CODE (expr);
   tree intype = TREE_TYPE (expr);
@@ -483,7 +479,7 @@ convert_to_integer (type, expr)
 		    /* Don't do unsigned arithmetic where signed was wanted,
 		       or vice versa.
 		       Exception: if both of the original operands were
- 		       unsigned then we can safely do the work as unsigned.
+		       unsigned then we can safely do the work as unsigned.
 		       Exception: shift operations take their type solely
 		       from the first argument.
 		       Exception: the LSHIFT_EXPR case above requires that
@@ -558,7 +554,7 @@ convert_to_integer (type, expr)
 	  /* It is sometimes worthwhile to push the narrowing down through
 	     the conditional and never loses.  */
 	  return fold (build (COND_EXPR, type, TREE_OPERAND (expr, 0),
-			      convert (type, TREE_OPERAND (expr, 1)), 
+			      convert (type, TREE_OPERAND (expr, 1)),
 			      convert (type, TREE_OPERAND (expr, 2))));
 
 	default:
@@ -593,11 +589,10 @@ convert_to_integer (type, expr)
 /* Convert EXPR to the complex type TYPE in the usual ways.  */
 
 tree
-convert_to_complex (type, expr)
-     tree type, expr;
+convert_to_complex (tree type, tree expr)
 {
   tree subtype = TREE_TYPE (type);
-  
+
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case REAL_TYPE:
@@ -649,8 +644,7 @@ convert_to_complex (type, expr)
 /* Convert EXPR to the vector type TYPE in the usual ways.  */
 
 tree
-convert_to_vector (type, expr)
-     tree type, expr;
+convert_to_vector (tree type, tree expr)
 {
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
