@@ -5217,7 +5217,7 @@ make_compound_operation (x, in_code)
 				 gen_binary (GET_CODE (XEXP (x, 0)), mode, new,
 					     GEN_INT (newop1)),
 				 INTVAL (c2) - INTVAL (c1),
-				 NULL_RTX, mode_width - INTVAL (c1),
+				 NULL_RTX, mode_width - INTVAL (c2),
 				 code == LSHIFTRT, 0, in_code == COMPARE);
 	}
 
