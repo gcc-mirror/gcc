@@ -381,11 +381,14 @@ LIBGCC2_INCLUDES =
 # Additional target-dependent options for compiling libgcc2.a.
 TARGET_LIBGCC2_CFLAGS =
 
-# Addition sources to handle exceptions; overridden by some targets.
+# Additional sources to handle exceptions; overridden by some targets.
 LIB2ADDEH = $(srcdir)/frame-dwarf2.c
 
 # libgcc1-test target (must also be overridable for a target)
 LIBGCC1_TEST = libgcc1-test
+
+# nm flags to list global symbols in libgcc object files.
+SHLIB_NM_FLAGS = -pg
 
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
@@ -985,6 +988,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	SHLIB_MKMAP='$(SHLIB_MKMAP)' \
 	SHLIB_MAPFILES='$(SHLIB_MAPFILES)' \
+	SHLIB_NM_FLAGS='$(SHLIB_NM_FLAGS)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
 

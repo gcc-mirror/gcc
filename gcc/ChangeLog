@@ -1,3 +1,12 @@
+2000-10-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.in (SHLIB_NM_FLAGS): New.
+	(libgcc.mk): Pass it.
+	* mklibgcc.in (libgcc.map): Use it.
+
+	* rs6000/t-aix43 (SHLIB_EXT, SHLIB_LINK, SHLIB_LIBS,
+	SHLIB_MKMAP, SHLIB_MAPFILES, SHLIB_NM_FLAGS): New.
+
 2000-10-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.h (REG_CLASS_FROM_LETTER): Cast array arg to unsigned char.
