@@ -1,3 +1,8 @@
+2000-01-12  Joel Sherrill (joel@OARcorp.com)
+
+	* Makefile.in (CC_FOR_TARGET): Use newlib libraries as well
+	as include files.
+
 2000-01-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Add self as cpplib maintainer, as requested by Jason
