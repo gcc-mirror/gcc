@@ -1,5 +1,17 @@
 2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* haifa-sched.c (struct ready_list): New.
+	(ready_lastpos, ready_add, ready_remove_first, ready_sort): New static
+	functions.
+	(schedule_insn): Replace args READY and N_READY with a pointer to a
+	ready_list; return void.  Use the new functions to access the ready
+	list.  All callers changed.
+	(queue_to_ready, debug_ready_list): Likewise.
+	(schedule_block): Initialize a ready_list structure.  Use new
+	functions to access it.
+	(max_priority): Remove unused variable.
+	(schedule_insn): Don't set it.
+
 	* c-common.c (verify_tree): Don't recurse into CONSTRUCTORs.
 
 	* combine.c (cant_combine_insn_p): New function.
