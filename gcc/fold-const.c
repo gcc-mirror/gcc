@@ -2034,6 +2034,20 @@ invert_truthvalue (arg)
 		    invert_truthvalue (TREE_OPERAND (arg, 0)),
 		    invert_truthvalue (TREE_OPERAND (arg, 1)));
 
+    case TRUTH_XOR_EXPR:
+      /* Here we can invert either operand.  We invert the first operand
+	 unless the second operand is a TRUTH_NOT_EXPR in which case our
+	 result is the XOR of the first operand with the inside of the
+	 negation of the second operand.  */
+
+      if (TREE_CODE (TREE_OPERAND (arg, 1)) == TRUTH_NOT_EXPR)
+	return build (TRUTH_XOR_EXPR, type, TREE_OPERAND (arg, 0),
+		      TREE_OPERAND (TREE_OPERAND (arg, 1), 0));
+      else
+	return build (TRUTH_XOR_EXPR, type,
+		      invert_truthvalue (TREE_OPERAND (arg, 0)),
+		      TREE_OPERAND (arg, 1));
+
     case TRUTH_ANDIF_EXPR:
       return build (TRUTH_ORIF_EXPR, type,
 		    invert_truthvalue (TREE_OPERAND (arg, 0)),
@@ -3697,7 +3711,7 @@ fold (expr)
 	 and their values must be 0 or 1.
 	 ("true" is a fixed value perhaps depending on the language.)  */
       /* If first arg is constant zero, return it.  */
-      if (TREE_CODE (arg0) == INTEGER_CST && integer_zerop (arg0))
+      if (integer_zerop (arg0))
 	return arg0;
     case TRUTH_AND_EXPR:
       /* If either arg is constant true, drop it.  */
@@ -3705,9 +3719,10 @@ fold (expr)
 	return non_lvalue (arg1);
       if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
 	return non_lvalue (arg0);
-      /* Both known to be zero => return zero.  */
-      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-	return arg0;
+      /* If second arg is constant zero, result is zero, but first arg
+	 must be evaluated.  */
+      if (integer_zerop (arg1))
+	return omit_one_operand (type, arg1, arg0);
 
     truth_andor:
       /* Check for the possibility of merging component references.  If our
@@ -3742,10 +3757,24 @@ fold (expr)
 	return non_lvalue (arg1);
       if (TREE_CODE (arg1) == INTEGER_CST && integer_zerop (arg1))
 	return non_lvalue (arg0);
-      /* Both known to be true => return true.  */
-      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
-	return arg0;
+      /* If second arg is constant true, result is true, but we must
+	 evaluate first arg.  */
+      if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
+	return omit_one_operand (type, arg1, arg0);
       goto truth_andor;
+
+    case TRUTH_XOR_EXPR:
+      /* If either arg is constant zero, drop it.  */
+      if (integer_zerop (arg0))
+	return non_lvalue (arg1);
+      if (integer_zerop (arg1))
+	return non_lvalue (arg0);
+      /* If either arg is constant true, this is a logical inversion.  */
+      if (integer_onep (arg0))
+	return non_lvalue (invert_truthvalue (arg1));
+      if (integer_onep (arg1))
+	return non_lvalue (invert_truthvalue (arg0));
+      break;
 
     case EQ_EXPR:
     case NE_EXPR:
