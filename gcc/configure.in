@@ -287,7 +287,7 @@ AC_CANONICAL_SYSTEM
 
 # Find the native compiler
 AC_PROG_CC
-AC_GCC_C_LONG_DOUBLE
+gcc_AC_C_LONG_DOUBLE
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
@@ -326,16 +326,16 @@ fi
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX
-GCC_PROG_LN
-GCC_PROG_LN_S
-GCC_C_VOLATILE
+gcc_AC_PROG_LN
+gcc_AC_PROG_LN_S
+gcc_AC_C_VOLATILE
 AC_PROG_RANLIB
 AC_PROG_YACC
-EGCS_PROG_INSTALL
+gcc_AC_PROG_INSTALL
 
 AC_HEADER_STDC
 AC_HEADER_TIME
-GCC_HEADER_STRING
+gcc_AC_HEADER_STRING
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
 		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
@@ -397,8 +397,8 @@ AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 # Make sure wchar_t is available
 #AC_CHECK_TYPE(wchar_t, unsigned int)
 
-GCC_FUNC_VFPRINTF_DOPRNT
-GCC_FUNC_PRINTF_PTR
+gcc_AC_FUNC_VFPRINTF_DOPRNT
+gcc_AC_FUNC_PRINTF_PTR
 
 case "${host}" in
 *-*-uwin*)
@@ -412,17 +412,17 @@ AC_FUNC_VFORK
 AC_FUNC_MMAP_ANYWHERE
 AC_FUNC_MMAP_FILE
 
-GCC_NEED_DECLARATIONS(bcopy bzero bcmp \
+gcc_AC_NEED_DECLARATIONS(bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked strstr environ)
 
-GCC_NEED_DECLARATIONS(malloc realloc calloc free, [
+gcc_AC_NEED_DECLARATIONS(malloc realloc calloc free, [
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
 ])
 
-GCC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
+gcc_AC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
 #include <sys/types.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -430,7 +430,7 @@ GCC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
 ])
 
 # mkdir takes a single argument on some systems. 
-GCC_FUNC_MKDIR_TAKES_ONE_ARG
+gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG
 
 # File extensions
 manext='.1'
