@@ -1,3 +1,8 @@
+2005-03-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMCompiler.java (static block): Also catch
+	BufferUnderflowException.
+
 2005-03-16  Tom Tromey  <tromey@redhat.com>
 
 	* link.cc (ensure_class_linked): Removed #ifdef.
