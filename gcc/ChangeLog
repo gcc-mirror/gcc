@@ -1,3 +1,16 @@
+2004-01-18  Daniel Jacobowitz  <drow@mvista.com>
+
+	* final.c (final_scan_insn): Make non-static again.
+	* output.h (final_scan_insn): Re-add prototype.
+	* config/arc/arc.c (arc_output_function_epilogue): Add NULL
+	to final_scan_insn call.
+	* config/cris/cris.c (cris_target_asm_function_epilogue): Likewise.
+	* config/mips/mips.c (mips_output_conditional_branch): Likewise.
+	* config/pa/pa.c (output_lbranch, output_call): Likewise.
+	* config/sh/sh.c (print_slot): Likewise.
+	* config/sparc/sparc.c (sparc_nonflat_function_epilogue): Likewise.
+	(output_sibcall, sparc_flat_function_epilogue): Likewise.
+
 2004-01-18  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (try_redirect_by_replacing_jump): Declare.

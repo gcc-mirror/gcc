@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1303,7 +1303,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
       /* ??? If stack intactness is important, always emit now.  */
       if (MUST_SAVE_RETURN_ADDR && epilogue_delay != NULL_RTX)
 	{
-	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
+	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1, NULL);
 	  epilogue_delay = NULL_RTX;
 	}
 
@@ -1335,7 +1335,8 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	{
 	  if (epilogue_delay)
 	    {
-	      final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
+	      final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1,
+			       NULL);
 	    }
 	}
 
@@ -1360,7 +1361,7 @@ arc_output_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	    abort ();
 	  if (restored < size)
 	    abort ();
-	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
+	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1, NULL);
 	}
       else if (frame_pointer_needed && !fp_restored_p)
 	{

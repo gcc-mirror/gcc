@@ -68,6 +68,11 @@ extern void final_end_function (void);
 /* Output assembler code for some insns: all or part of a function.  */
 extern void final (rtx, FILE *, int, int);
 
+/* The final scan for one insn, INSN.  Args are same as in `final', except
+   that INSN is the insn being scanned.  Value returned is the next insn to
+   be scanned.  */
+extern rtx final_scan_insn (rtx, FILE *, int, int, int, int *);
+
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
 extern rtx alter_subreg (rtx *);
