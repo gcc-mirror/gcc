@@ -1096,6 +1096,15 @@ The compilation parameter @code{WORDS_BIG_ENDIAN}, if set to 1, says
 that word number zero is the most significant part; otherwise, it is
 the least significant part.
 
+@cindex @code{FLOAT_WORDS_BIG_ENDIAN}, (lack of) effect on @code{subreg}
+On a few targets, @code{FLOAT_WORDS_BIG_ENDIAN} disagrees with
+@code{WORDS_BIG_ENDIAN}.
+However, most parts of the compiler treat floating point values as if
+they had the same endianness as integer values.  This works because
+they handle them solely as a collection of integer values, with no
+particular numerical value.  Only real.c and the runtime libraries
+care about @code{FLOAT_WORDS_BIG_ENDIAN}.
+
 @cindex combiner pass
 @cindex reload pass
 @cindex @code{subreg}, special reload handling
