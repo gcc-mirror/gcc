@@ -2657,44 +2657,99 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   return target;
 }
 
-/* Expand the C99 copysign operation.  OP0 and OP1 must be the same 
-   scalar floating point mode.  Return NULL if we do not know how to
-   expand the operation inline.  */
+/* A subroutine of expand_copysign, perform the copysign operation using the
+   abs and neg primitives advertised to exist on the target.  The assumption
+   is that we have a split register file, and leaving op0 in fp registers,
+   and not playing with subregs so much, will help the register allocator.  */
 
-rtx
-expand_copysign (rtx op0, rtx op1, rtx target)
+static rtx
+expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+		        int bitpos, bool op0_is_abs)
 {
-  enum machine_mode mode = GET_MODE (op0);
-  const struct real_format *fmt;
   enum machine_mode imode;
-  int bitpos, word, nwords, i, have_abs;
   HOST_WIDE_INT hi, lo;
-  rtx temp, insns;
+  int word;
+  rtx label;
 
-  gcc_assert (SCALAR_FLOAT_MODE_P (mode));
-  gcc_assert (GET_MODE (op1) == mode);
+  if (target == op1)
+    target = NULL_RTX;
 
-  /* First try to do it with a special instruction.  */
-  temp = expand_binop (mode, copysign_optab, op0, op1,
-		       target, 0, OPTAB_DIRECT);
-  if (temp)
-    return temp;
-
-  fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL || !fmt->has_signed_zero)
-    return NULL_RTX;
-
-  bitpos = fmt->signbit;
-  if (bitpos < 0)
-    return NULL_RTX;
-
-  have_abs = false;
-  if (GET_CODE (op0) == CONST_DOUBLE)
+  if (!op0_is_abs)
     {
-      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
-	op0 = simplify_unary_operation (ABS, mode, op0, mode);
-      have_abs = true;
+      op0 = expand_unop (mode, abs_optab, op0, target, 0);
+      if (op0 == NULL)
+	return NULL_RTX;
+      target = op0;
     }
+  else
+    {
+      if (target == NULL_RTX)
+        target = copy_to_reg (op0);
+      else
+	emit_move_insn (target, op0);
+    }
+
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    {
+      imode = int_mode_for_mode (mode);
+      if (imode == BLKmode)
+	return NULL_RTX;
+      op1 = gen_lowpart (imode, op1);
+    }
+  else
+    {
+      imode = word_mode;
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	word = (GET_MODE_BITSIZE (mode) - bitpos) / BITS_PER_WORD;
+      else
+	word = bitpos / BITS_PER_WORD;
+      bitpos = bitpos % BITS_PER_WORD;
+      op1 = operand_subword_force (op1, word, mode);
+    }
+
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
+    {
+      hi = 0;
+      lo = (HOST_WIDE_INT) 1 << bitpos;
+    }
+  else
+    {
+      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+      lo = 0;
+    }
+
+  op1 = expand_binop (imode, and_optab, op1,
+		      immed_double_const (lo, hi, imode),
+		      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
+  label = gen_label_rtx ();
+  emit_cmp_and_jump_insns (op1, const0_rtx, EQ, NULL_RTX, imode, 1, label);
+
+  if (GET_CODE (op0) == CONST_DOUBLE)
+    op0 = simplify_unary_operation (NEG, mode, op0, mode);
+  else
+    op0 = expand_unop (mode, neg_optab, op0, target, 0);
+  if (op0 != target)
+    emit_move_insn (target, op0);
+
+  emit_label (label);
+
+  return target;
+}
+
+
+/* A subroutine of expand_copysign, perform the entire copysign operation
+   with integer bitmasks.  BITPOS is the position of the sign bit; OP0_IS_ABS
+   is true if op0 is known to have its sign bit clear.  */
+
+static rtx
+expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+		     int bitpos, bool op0_is_abs)
+{
+  enum machine_mode imode;
+  HOST_WIDE_INT hi, lo;
+  int word, nwords, i;
+  rtx temp, insns;
 
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
     {
@@ -2741,7 +2796,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
 	
 	  if (i == word)
 	    {
-	      if (!have_abs)
+	      if (!op0_is_abs)
 		op0_piece = expand_binop (imode, and_optab, op0_piece,
 					  immed_double_const (~lo, ~hi, imode),
 					  NULL_RTX, 1, OPTAB_LIB_WIDEN);
@@ -2772,7 +2827,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
 		          NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
       op0 = gen_lowpart (imode, op0);
-      if (!have_abs)
+      if (!op0_is_abs)
 	op0 = expand_binop (imode, and_optab, op0,
 			    immed_double_const (~lo, ~hi, imode),
 			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
@@ -2783,6 +2838,57 @@ expand_copysign (rtx op0, rtx op1, rtx target)
     }
 
   return target;
+}
+
+/* Expand the C99 copysign operation.  OP0 and OP1 must be the same 
+   scalar floating point mode.  Return NULL if we do not know how to
+   expand the operation inline.  */
+
+rtx
+expand_copysign (rtx op0, rtx op1, rtx target)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  const struct real_format *fmt;
+  int bitpos;
+  bool op0_is_abs;
+  rtx temp;
+
+  gcc_assert (SCALAR_FLOAT_MODE_P (mode));
+  gcc_assert (GET_MODE (op1) == mode);
+
+  /* First try to do it with a special instruction.  */
+  temp = expand_binop (mode, copysign_optab, op0, op1,
+		       target, 0, OPTAB_DIRECT);
+  if (temp)
+    return temp;
+
+  fmt = REAL_MODE_FORMAT (mode);
+  if (fmt == NULL || !fmt->has_signed_zero)
+    return NULL_RTX;
+
+  bitpos = fmt->signbit;
+  if (bitpos < 0)
+    return NULL_RTX;
+
+  op0_is_abs = false;
+  if (GET_CODE (op0) == CONST_DOUBLE)
+    {
+      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
+	op0 = simplify_unary_operation (ABS, mode, op0, mode);
+      op0_is_abs = true;
+    }
+
+  if (GET_CODE (op0) == CONST_DOUBLE
+      || (neg_optab->handlers[mode].insn_code != CODE_FOR_nothing
+          && abs_optab->handlers[mode].insn_code != CODE_FOR_nothing))
+    {
+      temp = expand_copysign_absneg (mode, op0, op1, target,
+				     bitpos, op0_is_abs);
+      if (temp)
+	return temp;
+    }
+
+  return expand_copysign_bit (mode, op0, op1, target, bitpos, op0_is_abs);
 }
 
 /* Generate an instruction whose insn-code is INSN_CODE,
