@@ -396,7 +396,7 @@ static bool try_optimize_cfg		PARAMS ((int));
 static bool can_fallthru		PARAMS ((basic_block, basic_block));
 static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static bool try_simplify_condjump	PARAMS ((basic_block));
-static bool try_forward_edges		PARAMS ((basic_block));
+static bool try_forward_edges		PARAMS ((int, basic_block));
 static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
@@ -3182,8 +3182,9 @@ try_simplify_condjump (cbranch_block)
    Return true if sucessful.  */
 
 static bool
-try_forward_edges (b)
+try_forward_edges (mode, b)
      basic_block b;
+     int mode;
 {
   bool changed = false;
   edge e, next;
@@ -3216,6 +3217,30 @@ try_forward_edges (b)
 	  /* Bypass trivial infinite loops.  */
 	  if (target == target->succ->dest)
 	    counter = n_basic_blocks;
+
+	  /* Avoid killing of loop pre-headers, as it is the place loop
+	     optimizer wants to hoist code to.
+	 
+	     For fallthru forwarders, the LOOP_BEG note must appear between
+	     the header of block and CODE_LABEL of the loop, for non forwarders
+	     it must appear before the JUMP_INSN.  */
+	  if (mode & CLEANUP_PRE_LOOP)
+	    {
+	      rtx insn = (target->succ->flags & EDGE_FALLTHRU 
+		          ? target->head : prev_nonnote_insn (target->end));
+
+	      if (GET_CODE (insn) != NOTE)
+		insn = NEXT_INSN (insn);
+
+	      for (;insn && GET_CODE (insn) != CODE_LABEL && !INSN_P (insn);
+		   insn = NEXT_INSN (insn))
+		if (GET_CODE (insn) == NOTE
+		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+		  break;
+
+	      if (GET_CODE (insn) == NOTE)
+		break;
+	    }
 	  target = target->succ->dest, counter++;
 	}
 
@@ -3953,7 +3978,7 @@ try_optimize_cfg (mode)
 	    changed_here = true;
 
 	  /* Simplify branch to branch.  */
-	  if (try_forward_edges (b))
+	  if (try_forward_edges (mode, b))
 	    changed_here = true;
 
 	  /* Look for shared code between blocks.  */

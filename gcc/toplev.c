@@ -2737,7 +2737,7 @@ rest_of_compilation (decl)
 	      rebuild_jump_labels (insns);
 	      find_exception_handler_labels ();
 	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	      cleanup_cfg (CLEANUP_PRE_SIBCALL);
+	      cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
 	      optimize = saved_optimize;
 	    }
 
@@ -2846,7 +2846,7 @@ rest_of_compilation (decl)
   reg_scan (insns, max_reg_num (), 0);
   rebuild_jump_labels (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
+  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP);
   copy_loop_headers (insns);
   purge_line_number_notes (insns);
 
@@ -2870,7 +2870,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_ssa, decl);
 
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       convert_to_ssa ();
 
       close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
@@ -2935,7 +2935,7 @@ rest_of_compilation (decl)
   if (optimize > 0)
     {
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
       /* ??? Run if-conversion before delete_null_pointer_checks,
          since the later does not preserve the CFG.  This should
@@ -2992,7 +2992,7 @@ rest_of_compilation (decl)
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (insns);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
 	}
 
@@ -3006,7 +3006,7 @@ rest_of_compilation (decl)
 	  timevar_push (TV_JUMP);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
 	  delete_null_pointer_checks (insns);
 	  timevar_pop (TV_JUMP);
@@ -3040,7 +3040,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_gcse, decl);
 
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg (CLEANUP_EXPENSIVE);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       tem = gcse_main (insns, rtl_dump_file);
 
       save_csb = flag_cse_skip_blocks;
@@ -3067,7 +3067,7 @@ rest_of_compilation (decl)
 	  rebuild_jump_labels (insns);
 	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
 
 	  if (flag_expensive_optimizations)

@@ -551,6 +551,8 @@ enum update_life_extent
 					   to care REG_DEAD notes.  */
 #define CLEANUP_PRE_SIBCALL	8	/* Do not get confused by code hidden
 					   inside call_placeholders..  */
+#define CLEANUP_PRE_LOOP	16	/* Take care to preserve syntactic loop
+					   notes.  */
 /* Flags for loop discovery.  */
 
 #define LOOP_TREE		1 	/* Build loop hierarchy tree.  */

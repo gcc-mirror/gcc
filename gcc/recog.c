@@ -521,8 +521,8 @@ validate_replace_rtx_1 (loc, from, to, object)
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0),
 			  simplify_gen_unary (NEG,
-					      op0_mode, XEXP (x, 1),
-					      op0_mode)), 1);
+					      GET_MODE (x), XEXP (x, 1),
+					      GET_MODE (x))), 1);
       break;
     case ZERO_EXTEND:
     case SIGN_EXTEND:
