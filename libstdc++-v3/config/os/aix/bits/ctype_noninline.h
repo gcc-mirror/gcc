@@ -52,7 +52,7 @@
 
   char
   ctype<char>::do_toupper(char __c) const
-  { return _toupper(__c); }
+  { return ::toupper((int) __c); }
 
   const char*
   ctype<char>::do_toupper(char* __low, const char* __high) const
@@ -67,7 +67,7 @@
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _tolower(__c); }
+  { return ::tolower((int) __c); }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
