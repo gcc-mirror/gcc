@@ -198,13 +198,6 @@ static HARD_REG_SET newpat_used_regs;
 
 static rtx added_links_insn;
 
-/* This is the value of undobuf.num_undo when we started processing this 
-   substitution.  This will prevent gen_rtx_combine from re-used a piece
-   from the previous expression.  Doing so can produce circular rtl
-   structures.  */
-
-static int previous_num_undos;
-
 /* Basic block number of the block in which we are performing combines.  */
 static int this_basic_block;
 
@@ -319,6 +312,7 @@ static char *reg_last_set_sign_bit_copies;
 
 struct undo
 {
+  struct undo *next;
   int is_int;
   union {rtx r; int i;} old_contents;
   union {rtx *r; int *i;} where;
@@ -331,15 +325,19 @@ struct undo
    The value of storage is what to pass to obfree.
 
    other_insn is nonzero if we have modified some other insn in the process
-   of working on subst_insn.  It must be verified too.  */
+   of working on subst_insn.  It must be verified too.
 
-#define MAX_UNDO 50
+   previous_undos is the value of undobuf.undos when we started processing
+   this substitution.  This will prevent gen_rtx_combine from re-used a piece
+   from the previous expression.  Doing so can produce circular rtl
+   structures.  */
 
 struct undobuf
 {
-  int num_undo;
   char *storage;
-  struct undo undo[MAX_UNDO];
+  struct undo *undos;
+  struct undo *frees;
+  struct undo *previous_undos;
   rtx other_insn;
 };
 
@@ -352,32 +350,44 @@ static struct undobuf undobuf;
    the undo table.  */
 
 #define SUBST(INTO, NEWVAL)  \
- do { rtx _new = (NEWVAL);						\
-      if (undobuf.num_undo < MAX_UNDO)					\
-	{								\
-	  undobuf.undo[undobuf.num_undo].is_int = 0;			\
-	  undobuf.undo[undobuf.num_undo].where.r = &INTO;		\
-	  undobuf.undo[undobuf.num_undo].old_contents.r = INTO;	\
-	  INTO = _new;							\
-	  if (undobuf.undo[undobuf.num_undo].old_contents.r != INTO)	\
-	    undobuf.num_undo++; 					\
-	}								\
+ do { rtx _new = (NEWVAL);					\
+      struct undo *_buf;					\
+								\
+      if (undobuf.frees)					\
+	_buf = undobuf.frees, undobuf.frees = _buf->next;	\
+      else							\
+	_buf = (struct undo *) xmalloc (sizeof (struct undo));	\
+								\
+      _buf->is_int = 0;						\
+      _buf->where.r = &INTO;					\
+      _buf->old_contents.r = INTO;				\
+      INTO = _new;						\
+      if (_buf->old_contents.r == INTO)				\
+	_buf->next = undobuf.frees, undobuf.frees = _buf;	\
+      else							\
+	_buf->next = undobuf.undos, undobuf.undos = _buf;	\
     } while (0)
 
-/* Similar to SUBST, but NEWVAL is an int.  INTO will normally be an XINT
-   expression.
-   Note that substitution for the value of a CONST_INT is not safe.  */
+/* Similar to SUBST, but NEWVAL is an int expression.  Note that substitution
+   for the value of a HOST_WIDE_INT value (including CONST_INT) is
+   not safe.  */
 
 #define SUBST_INT(INTO, NEWVAL)  \
- do { if (undobuf.num_undo < MAX_UNDO)					\
-{									\
-	  undobuf.undo[undobuf.num_undo].is_int = 1;			\
-	  undobuf.undo[undobuf.num_undo].where.i = (int *) &INTO;	\
-	  undobuf.undo[undobuf.num_undo].old_contents.i = INTO;		\
-	  INTO = NEWVAL;						\
-	  if (undobuf.undo[undobuf.num_undo].old_contents.i != INTO)	\
-	    undobuf.num_undo++;						\
-	}								\
+ do { struct undo *_buf;					\
+								\
+      if (undobuf.frees)					\
+	_buf = undobuf.frees, undobuf.frees = _buf->next;	\
+      else							\
+	_buf = (struct undo *) xmalloc (sizeof (struct undo));	\
+								\
+      _buf->is_int = 1;						\
+      _buf->where.i = (int *) &INTO;				\
+      _buf->old_contents.i = INTO;				\
+      INTO = NEWVAL;						\
+      if (_buf->old_contents.i == INTO)				\
+	_buf->next = undobuf.frees, undobuf.frees = _buf;	\
+      else							\
+	_buf->next = undobuf.undos, undobuf.undos = _buf;	\
      } while (0)
 
 /* Number of times the pseudo being substituted for
@@ -463,7 +473,7 @@ combine_instructions (f, nregs)
   combine_merges = 0;
   combine_extras = 0;
   combine_successes = 0;
-  undobuf.num_undo = previous_num_undos = 0;
+  undobuf.undos = undobuf.previous_undos = 0;
 
   combine_max_regno = nregs;
 
@@ -1243,7 +1253,7 @@ try_combine (i3, i2, i1)
 
   combine_attempts++;
 
-  undobuf.num_undo = previous_num_undos = 0;
+  undobuf.undos = undobuf.previous_undos = 0;
   undobuf.other_insn = 0;
 
   /* Save the current high-water-mark so we can free storage if we didn't
@@ -1517,7 +1527,7 @@ try_combine (i3, i2, i1)
 	  i2src = subst (i2src, pc_rtx, pc_rtx, 0, 0);
 	}
 
-      previous_num_undos = undobuf.num_undo;
+      undobuf.previous_undos = undobuf.undos;
     }
 
 #ifndef HAVE_cc0
@@ -1591,7 +1601,7 @@ try_combine (i3, i2, i1)
       subst_low_cuid = INSN_CUID (i2);
       newpat = subst (PATTERN (i3), i2dest, i2src, 0,
 		      ! i1_feeds_i3 && i1dest_in_i1src);
-      previous_num_undos = undobuf.num_undo;
+      undobuf.previous_undos = undobuf.undos;
 
       /* Record whether i2's body now appears within i3's body.  */
       i2_is_used = n_occurrences;
@@ -1616,7 +1626,7 @@ try_combine (i3, i2, i1)
       n_occurrences = 0;
       subst_low_cuid = INSN_CUID (i1);
       newpat = subst (newpat, i1dest, i1src, 0, 0);
-      previous_num_undos = undobuf.num_undo;
+      undobuf.previous_undos = undobuf.undos;
     }
 
   /* Fail if an autoincrement side-effect has been duplicated.  Be careful
@@ -2404,20 +2414,22 @@ try_combine (i3, i2, i1)
 static void
 undo_all ()
 {
-  register int i;
-  if (undobuf.num_undo > MAX_UNDO)
-    undobuf.num_undo = MAX_UNDO;
-  for (i = undobuf.num_undo - 1; i >= 0; i--)
+  struct undo *undo, *next;
+
+  for (undo = undobuf.undos; undo; undo = next)
     {
-      if (undobuf.undo[i].is_int)
-	*undobuf.undo[i].where.i = undobuf.undo[i].old_contents.i;
+      next = undo->next;
+      if (undo->is_int)
+	*undo->where.i = undo->old_contents.i;
       else
-	*undobuf.undo[i].where.r = undobuf.undo[i].old_contents.r;
-      
+	*undo->where.r = undo->old_contents.r;
+
+      undo->next = undobuf.frees;
+      undobuf.frees = undo;
     }
 
   obfree (undobuf.storage);
-  undobuf.num_undo = 0;
+  undobuf.undos = 0;
 
   /* Clear this here, so that subsequent get_last_value calls are not
      affected.  */
@@ -8711,6 +8723,7 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
   int i, j;
   char *fmt;
   rtx rt;
+  struct undo *undo;
 
   VA_START (p, mode);
 
@@ -8737,17 +8750,17 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
   /* See if this is in undobuf.  Be sure we don't use objects that came
      from another insn; this could produce circular rtl structures.  */
 
-  for (i = previous_num_undos; i < undobuf.num_undo; i++)
-    if (!undobuf.undo[i].is_int
-	&& GET_CODE (undobuf.undo[i].old_contents.r) == code
-	&& GET_MODE (undobuf.undo[i].old_contents.r) == mode)
+  for (undo = undobuf.undos; undo != undobuf.previous_undos; undo = undo->next)
+    if (!undo->is_int
+	&& GET_CODE (undo->old_contents.r) == code
+	&& GET_MODE (undo->old_contents.r) == mode)
       {
 	for (j = 0; j < n_args; j++)
-	  if (XEXP (undobuf.undo[i].old_contents.r, j) != args[j])
+	  if (XEXP (undo->old_contents.r, j) != args[j])
 	    break;
 
 	if (j == n_args)
-	  return undobuf.undo[i].old_contents.r;
+	  return undo->old_contents.r;
       }
 
   /* Otherwise make a new rtx.  We know we have 1, 2, or 3 args.
