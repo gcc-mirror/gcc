@@ -110,6 +110,7 @@
       _M_out_desc = 0;
       _M_ext_bom = __obj._M_ext_bom;
       _M_int_bom = __obj._M_int_bom;
+      return *this;
     }
 
     ~__enc_traits()
