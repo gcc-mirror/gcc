@@ -1,3 +1,12 @@
+2002-05-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/6503
+	* include/bits/stl_deque.h (_Deque_iterator::operator==,
+	operator!=, operator<, operator>, operator>=, operator<=):
+	Make non-member functions, to allow comparing const and
+	non-const iterators in any order.
+	* testsuite/23_containers/deque_operators.cc: New testfile.
+
 2002-05-16  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html:  Update not-a-bug list with basic_file.h.
