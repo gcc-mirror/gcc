@@ -1,3 +1,11 @@
+2001-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hash.c (hash_lookup): Likewise.
+	
+	* hash.h (hash_lookup): Likewise.
+
+	* tlink.c (symbol_hash_lookup, demangled_hash_lookup): Likewise.
+
 2001-05-03  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/t-freebsd: Don't install "assert.h" in gcc.  Compile
