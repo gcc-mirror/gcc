@@ -1,6 +1,6 @@
 /* Handle CLASSPATH, -classpath, and path searching.
 
-   Copyright (C) 1998, 1999  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -53,10 +53,10 @@ struct entry
   struct entry *next;
 };
 
-static void free_entry PROTO ((struct entry **));
-static void append_entry PROTO ((struct entry **, struct entry *));
-static void add_entry PROTO ((struct entry **, const char *, int));
-static void add_path PROTO ((struct entry **, const char *, int));
+static void free_entry PARAMS ((struct entry **));
+static void append_entry PARAMS ((struct entry **, struct entry *));
+static void add_entry PARAMS ((struct entry **, const char *, int));
+static void add_path PARAMS ((struct entry **, const char *, int));
 
 /* We support several different ways to set the class path.
 

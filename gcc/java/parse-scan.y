@@ -1,5 +1,5 @@
 /* Parser grammar for quick source code scan of Java(TM) language programs.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -90,8 +90,8 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
-static void report_class_declaration PROTO ((const char *));
-static void report_main_declaration PROTO ((struct method_declarator *));
+static void report_class_declaration PARAMS ((const char *));
+static void report_main_declaration PARAMS ((struct method_declarator *));
 
 #include "lex.h"
 #include "parse.h"

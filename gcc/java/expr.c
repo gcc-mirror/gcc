@@ -1,5 +1,5 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,44 +41,44 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "defaults.h"
 
-static void flush_quick_stack PROTO ((void));
-static void push_value PROTO ((tree));
-static tree pop_value PROTO ((tree));
-static void java_stack_swap PROTO ((void));
-static void java_stack_dup PROTO ((int, int));
-static void build_java_athrow PROTO ((tree));
-static void build_java_jsr PROTO ((tree, tree));
-static void build_java_ret PROTO ((tree));
-static void expand_java_multianewarray PROTO ((tree, int));
-static void expand_java_arraystore PROTO ((tree));
-static void expand_java_arrayload PROTO ((tree));
-static void expand_java_array_length PROTO ((void));
-static tree build_java_monitor PROTO ((tree, tree));
-static void expand_java_pushc PROTO ((int, tree));
-static void expand_java_return PROTO ((tree));
-static void expand_java_NEW PROTO ((tree));
-static void expand_java_INSTANCEOF PROTO ((tree));
-static void expand_java_CHECKCAST PROTO ((tree));
-static void expand_iinc PROTO ((unsigned int, int, int));
-static void expand_java_binop PROTO ((tree, enum tree_code));
-static void note_label PROTO ((int, int));
-static void expand_compare PROTO ((enum tree_code, tree, tree, int));
-static void expand_test PROTO ((enum tree_code, tree, int));
-static void expand_cond PROTO ((enum tree_code, tree, int));
-static void expand_java_goto PROTO ((int));
+static void flush_quick_stack PARAMS ((void));
+static void push_value PARAMS ((tree));
+static tree pop_value PARAMS ((tree));
+static void java_stack_swap PARAMS ((void));
+static void java_stack_dup PARAMS ((int, int));
+static void build_java_athrow PARAMS ((tree));
+static void build_java_jsr PARAMS ((tree, tree));
+static void build_java_ret PARAMS ((tree));
+static void expand_java_multianewarray PARAMS ((tree, int));
+static void expand_java_arraystore PARAMS ((tree));
+static void expand_java_arrayload PARAMS ((tree));
+static void expand_java_array_length PARAMS ((void));
+static tree build_java_monitor PARAMS ((tree, tree));
+static void expand_java_pushc PARAMS ((int, tree));
+static void expand_java_return PARAMS ((tree));
+static void expand_java_NEW PARAMS ((tree));
+static void expand_java_INSTANCEOF PARAMS ((tree));
+static void expand_java_CHECKCAST PARAMS ((tree));
+static void expand_iinc PARAMS ((unsigned int, int, int));
+static void expand_java_binop PARAMS ((tree, enum tree_code));
+static void note_label PARAMS ((int, int));
+static void expand_compare PARAMS ((enum tree_code, tree, tree, int));
+static void expand_test PARAMS ((enum tree_code, tree, int));
+static void expand_cond PARAMS ((enum tree_code, tree, int));
+static void expand_java_goto PARAMS ((int));
 #if 0
-static void expand_java_call PROTO ((int, int));
-static void expand_java_ret PROTO ((tree)); 
+static void expand_java_call PARAMS ((int, int));
+static void expand_java_ret PARAMS ((tree)); 
 #endif
-static tree pop_arguments PROTO ((tree)); 
-static void expand_invoke PROTO ((int, int, int)); 
-static void expand_java_field_op PROTO ((int, int, int)); 
-static void java_push_constant_from_pool PROTO ((struct JCF *, int)); 
-static void java_stack_pop PROTO ((int)); 
-static tree build_java_throw_out_of_bounds_exception PROTO ((tree)); 
-static tree build_java_check_indexed_type PROTO ((tree, tree)); 
-static tree java_array_data_offset PROTO ((tree)); 
-static tree case_identity PROTO ((tree, tree)); 
+static tree pop_arguments PARAMS ((tree)); 
+static void expand_invoke PARAMS ((int, int, int)); 
+static void expand_java_field_op PARAMS ((int, int, int)); 
+static void java_push_constant_from_pool PARAMS ((struct JCF *, int)); 
+static void java_stack_pop PARAMS ((int)); 
+static tree build_java_throw_out_of_bounds_exception PARAMS ((tree)); 
+static tree build_java_check_indexed_type PARAMS ((tree, tree)); 
+static tree java_array_data_offset PARAMS ((tree)); 
+static tree case_identity PARAMS ((tree, tree)); 
  
 static tree operand_type[59];
 extern struct obstack permanent_obstack;

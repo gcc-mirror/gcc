@@ -1,7 +1,7 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
 
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,10 +36,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "defaults.h"
 
-static tree push_jvm_slot PROTO ((int, tree));
-static tree lookup_name_current_level PROTO ((tree));
-static tree push_promoted_type PROTO ((const char *, tree));
-static struct binding_level *make_binding_level PROTO ((void));
+static tree push_jvm_slot PARAMS ((int, tree));
+static tree lookup_name_current_level PARAMS ((tree));
+static tree push_promoted_type PARAMS ((const char *, tree));
+static struct binding_level *make_binding_level PARAMS ((void));
 
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD

@@ -1,6 +1,6 @@
 /* Definitions for parsing and type checking for the GNU compiler for
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -479,170 +479,170 @@ struct lang_type
 #define JCF_u4 unsigned long
 #define JCF_u2 unsigned short
 
-extern void add_assume_compiled PROTO ((const char *, int));
-extern tree lookup_class PROTO ((tree));
-extern tree lookup_java_constructor PROTO ((tree, tree));
-extern tree lookup_java_method PROTO ((tree, tree, tree));
-extern tree lookup_argument_method PROTO ((tree, tree, tree));
-extern tree promote_type PROTO ((tree));
-extern tree get_constant PROTO ((struct JCF*, int));
-extern tree get_name_constant PROTO ((struct JCF*, int));
-extern tree get_class_constant PROTO ((struct JCF*, int));
-extern tree parse_signature PROTO ((struct JCF *jcf, int sig_index));
-extern void jcf_parse PROTO ((struct JCF*));
-extern tree add_field PROTO ((tree, tree, tree, int));
-extern tree add_method PROTO ((tree, int, tree, tree));
-extern tree add_method_1 PROTO ((tree, int, tree, tree));
-extern tree make_class PROTO ((void));
-extern tree push_class PROTO ((tree, tree));
-extern tree unmangle_classname PROTO ((const char *name, int name_length));
-extern tree parse_signature_string PROTO ((const unsigned char *, int));
-extern tree get_type_from_signature PROTO ((tree));
-extern void layout_class PROTO ((tree));
-extern tree layout_class_method PROTO ((tree, tree, tree, tree));
-extern void layout_class_methods PROTO ((tree));
-extern tree build_class_ref PROTO ((tree));
-extern tree build_dtable_decl PROTO ((tree));
-extern tree build_internal_class_name PROTO ((tree));
-extern tree build_constants_constructor PROTO ((void));
-extern tree build_ref_from_constant_pool PROTO ((int));
-extern tree build_utf8_ref PROTO ((tree));
-extern tree ident_subst PROTO ((const char*, int,
+extern void add_assume_compiled PARAMS ((const char *, int));
+extern tree lookup_class PARAMS ((tree));
+extern tree lookup_java_constructor PARAMS ((tree, tree));
+extern tree lookup_java_method PARAMS ((tree, tree, tree));
+extern tree lookup_argument_method PARAMS ((tree, tree, tree));
+extern tree promote_type PARAMS ((tree));
+extern tree get_constant PARAMS ((struct JCF*, int));
+extern tree get_name_constant PARAMS ((struct JCF*, int));
+extern tree get_class_constant PARAMS ((struct JCF*, int));
+extern tree parse_signature PARAMS ((struct JCF *jcf, int sig_index));
+extern void jcf_parse PARAMS ((struct JCF*));
+extern tree add_field PARAMS ((tree, tree, tree, int));
+extern tree add_method PARAMS ((tree, int, tree, tree));
+extern tree add_method_1 PARAMS ((tree, int, tree, tree));
+extern tree make_class PARAMS ((void));
+extern tree push_class PARAMS ((tree, tree));
+extern tree unmangle_classname PARAMS ((const char *name, int name_length));
+extern tree parse_signature_string PARAMS ((const unsigned char *, int));
+extern tree get_type_from_signature PARAMS ((tree));
+extern void layout_class PARAMS ((tree));
+extern tree layout_class_method PARAMS ((tree, tree, tree, tree));
+extern void layout_class_methods PARAMS ((tree));
+extern tree build_class_ref PARAMS ((tree));
+extern tree build_dtable_decl PARAMS ((tree));
+extern tree build_internal_class_name PARAMS ((tree));
+extern tree build_constants_constructor PARAMS ((void));
+extern tree build_ref_from_constant_pool PARAMS ((int));
+extern tree build_utf8_ref PARAMS ((tree));
+extern tree ident_subst PARAMS ((const char*, int,
 				const char*, int, int, const char*));
-extern tree identifier_subst PROTO ((const tree,
+extern tree identifier_subst PARAMS ((const tree,
 				     const char *, int, int, const char *));
-extern tree build_java_signature PROTO ((tree));
-extern tree build_java_argument_signature PROTO ((tree));
-extern void set_java_signature PROTO ((tree, tree));
-extern tree build_static_field_ref PROTO ((tree));
-extern tree build_address_of PROTO ((tree));
-extern tree find_local_variable PROTO ((int index, tree type, int pc));
-extern tree find_stack_slot PROTO ((int index, tree type));
-extern tree build_prim_array_type PROTO ((tree, HOST_WIDE_INT));
-extern tree build_java_array_type PROTO ((tree, HOST_WIDE_INT));
-extern int is_compiled_class PROTO ((tree));
-extern tree mangled_classname PROTO ((const char*, tree));
-extern tree lookup_label PROTO ((int));
-extern tree pop_type_0 PROTO ((tree));
-extern tree pop_type PROTO ((tree));
-extern void pop_argument_types PROTO ((tree));
-extern tree decode_newarray_type PROTO ((int));
-extern tree lookup_field PROTO ((tree*, tree));
-extern int is_array_type_p PROTO ((tree));
-extern HOST_WIDE_INT java_array_type_length PROTO ((tree));
-extern int read_class PROTO ((tree));
-extern void load_class PROTO ((tree, int));
+extern tree build_java_signature PARAMS ((tree));
+extern tree build_java_argument_signature PARAMS ((tree));
+extern void set_java_signature PARAMS ((tree, tree));
+extern tree build_static_field_ref PARAMS ((tree));
+extern tree build_address_of PARAMS ((tree));
+extern tree find_local_variable PARAMS ((int index, tree type, int pc));
+extern tree find_stack_slot PARAMS ((int index, tree type));
+extern tree build_prim_array_type PARAMS ((tree, HOST_WIDE_INT));
+extern tree build_java_array_type PARAMS ((tree, HOST_WIDE_INT));
+extern int is_compiled_class PARAMS ((tree));
+extern tree mangled_classname PARAMS ((const char*, tree));
+extern tree lookup_label PARAMS ((int));
+extern tree pop_type_0 PARAMS ((tree));
+extern tree pop_type PARAMS ((tree));
+extern void pop_argument_types PARAMS ((tree));
+extern tree decode_newarray_type PARAMS ((int));
+extern tree lookup_field PARAMS ((tree*, tree));
+extern int is_array_type_p PARAMS ((tree));
+extern HOST_WIDE_INT java_array_type_length PARAMS ((tree));
+extern int read_class PARAMS ((tree));
+extern void load_class PARAMS ((tree, int));
 
-extern tree lookup_name PROTO ((tree));
-extern tree build_known_method_ref PROTO ((tree, tree, tree, tree, tree));
-extern tree build_class_init PROTO ((tree, tree));
-extern tree build_invokevirtual PROTO ((tree, tree));
-extern tree build_invokeinterface PROTO ((tree, tree, tree));
-extern tree invoke_build_dtable PROTO ((int, tree));
-extern tree build_field_ref PROTO ((tree, tree, tree));
-extern void pushdecl_force_head PROTO ((tree));
-extern tree build_java_binop PROTO ((enum tree_code, tree, tree, tree));
-extern tree build_java_soft_divmod PROTO ((enum tree_code, tree, tree, tree));
-extern tree binary_numeric_promotion PROTO ((tree, tree, tree *, tree *));
-extern tree build_java_arrayaccess PROTO ((tree, tree, tree));
-extern tree build_newarray PROTO ((int, tree));
-extern tree build_anewarray PROTO ((tree, tree));
-extern tree build_new_array PROTO ((tree, tree));
-extern tree build_java_array_length_access PROTO ((tree));
-extern tree build_java_arraynull_check PROTO ((tree, tree, tree));
-extern tree create_label_decl PROTO ((tree));
-extern void push_labeled_block PROTO ((tree));
-extern tree prepare_eh_table_type PROTO ((tree));
-extern void java_set_exception_lang_code PROTO ((void));
-extern tree generate_name PROTO ((void));
-extern void pop_labeled_block PROTO ((void));
-extern const char *lang_printable_name PROTO ((tree, int));
-extern tree maybe_add_interface PROTO ((tree, tree));
-extern void set_super_info PROTO ((int, tree, tree, int));
-extern int get_access_flags_from_decl PROTO ((tree));
-extern int interface_of_p PROTO ((tree, tree));
-extern int inherits_from_p PROTO ((tree, tree));
-extern void complete_start_java_method PROTO ((tree));
-extern tree build_result_decl PROTO ((tree));
-extern void emit_handlers PROTO ((void));
-extern void init_outgoing_cpool PROTO ((void));
-extern void make_class_data PROTO ((tree));
-extern void register_class PROTO ((void));
-extern int alloc_name_constant PROTO ((int, tree));
-extern void emit_register_classes PROTO ((void));
-extern void lang_init_source PROTO ((int));
-extern void write_classfile PROTO ((tree));
-extern char *print_int_node PROTO ((tree));
-extern void parse_error_context PVPROTO ((tree cl, const char *, ...))
+extern tree lookup_name PARAMS ((tree));
+extern tree build_known_method_ref PARAMS ((tree, tree, tree, tree, tree));
+extern tree build_class_init PARAMS ((tree, tree));
+extern tree build_invokevirtual PARAMS ((tree, tree));
+extern tree build_invokeinterface PARAMS ((tree, tree, tree));
+extern tree invoke_build_dtable PARAMS ((int, tree));
+extern tree build_field_ref PARAMS ((tree, tree, tree));
+extern void pushdecl_force_head PARAMS ((tree));
+extern tree build_java_binop PARAMS ((enum tree_code, tree, tree, tree));
+extern tree build_java_soft_divmod PARAMS ((enum tree_code, tree, tree, tree));
+extern tree binary_numeric_promotion PARAMS ((tree, tree, tree *, tree *));
+extern tree build_java_arrayaccess PARAMS ((tree, tree, tree));
+extern tree build_newarray PARAMS ((int, tree));
+extern tree build_anewarray PARAMS ((tree, tree));
+extern tree build_new_array PARAMS ((tree, tree));
+extern tree build_java_array_length_access PARAMS ((tree));
+extern tree build_java_arraynull_check PARAMS ((tree, tree, tree));
+extern tree create_label_decl PARAMS ((tree));
+extern void push_labeled_block PARAMS ((tree));
+extern tree prepare_eh_table_type PARAMS ((tree));
+extern void java_set_exception_lang_code PARAMS ((void));
+extern tree generate_name PARAMS ((void));
+extern void pop_labeled_block PARAMS ((void));
+extern const char *lang_printable_name PARAMS ((tree, int));
+extern tree maybe_add_interface PARAMS ((tree, tree));
+extern void set_super_info PARAMS ((int, tree, tree, int));
+extern int get_access_flags_from_decl PARAMS ((tree));
+extern int interface_of_p PARAMS ((tree, tree));
+extern int inherits_from_p PARAMS ((tree, tree));
+extern void complete_start_java_method PARAMS ((tree));
+extern tree build_result_decl PARAMS ((tree));
+extern void emit_handlers PARAMS ((void));
+extern void init_outgoing_cpool PARAMS ((void));
+extern void make_class_data PARAMS ((tree));
+extern void register_class PARAMS ((void));
+extern int alloc_name_constant PARAMS ((int, tree));
+extern void emit_register_classes PARAMS ((void));
+extern void lang_init_source PARAMS ((int));
+extern void write_classfile PARAMS ((tree));
+extern char *print_int_node PARAMS ((tree));
+extern void parse_error_context PARAMS ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern tree build_primtype_type_ref PROTO ((const char *));
-extern tree java_get_real_method_name PROTO ((tree));
-extern void finish_class PROTO ((void));
-extern void java_layout_seen_class_methods PROTO ((void));
-extern void check_for_initialization PROTO ((tree));
+extern tree build_primtype_type_ref PARAMS ((const char *));
+extern tree java_get_real_method_name PARAMS ((tree));
+extern void finish_class PARAMS ((void));
+extern void java_layout_seen_class_methods PARAMS ((void));
+extern void check_for_initialization PARAMS ((tree));
 
-extern tree pushdecl_top_level PROTO ((tree));
-extern int alloc_class_constant PROTO ((tree));
-extern int unicode_mangling_length PROTO ((const char *, int));
-extern void init_expr_processing PROTO ((void));
-extern void push_super_field PROTO ((tree, tree));
-extern void init_class_processing PROTO ((void));
-extern int can_widen_reference_to PROTO ((tree, tree));
-extern int class_depth PROTO ((tree));
-extern int verify_jvm_instructions PROTO ((struct JCF *, const unsigned char *, long));
-extern void maybe_pushlevels PROTO ((int));
-extern void maybe_poplevels PROTO ((int));
-extern int process_jvm_instruction PROTO ((int, const unsigned char *, long));
-extern void set_local_type PROTO ((int, tree));
-extern int merge_type_state PROTO ((tree));
-extern void push_type PROTO ((tree));
-extern void load_type_state PROTO ((tree));
-extern void add_interface PROTO ((tree, tree));
-extern void append_gpp_mangled_name PROTO ((struct obstack *, const char *, int));
-extern void append_gpp_mangled_classtype PROTO ((struct obstack *, const char *));
-extern void emit_unicode_mangled_name PROTO ((struct obstack *, const char *, int));
-extern tree force_evaluation_order PROTO ((tree));
-extern int verify_constant_pool PROTO ((struct JCF *));
-extern void start_java_method PROTO ((tree));
-extern void end_java_method PROTO ((void));
-extern void give_name_to_locals PROTO ((struct JCF *));
-extern void expand_byte_code PROTO ((struct JCF *, tree));
-extern int open_in_zip PROTO ((struct JCF *, const char *, const char *, int));
-extern void set_constant_value PROTO ((tree, tree));
+extern tree pushdecl_top_level PARAMS ((tree));
+extern int alloc_class_constant PARAMS ((tree));
+extern int unicode_mangling_length PARAMS ((const char *, int));
+extern void init_expr_processing PARAMS ((void));
+extern void push_super_field PARAMS ((tree, tree));
+extern void init_class_processing PARAMS ((void));
+extern int can_widen_reference_to PARAMS ((tree, tree));
+extern int class_depth PARAMS ((tree));
+extern int verify_jvm_instructions PARAMS ((struct JCF *, const unsigned char *, long));
+extern void maybe_pushlevels PARAMS ((int));
+extern void maybe_poplevels PARAMS ((int));
+extern int process_jvm_instruction PARAMS ((int, const unsigned char *, long));
+extern void set_local_type PARAMS ((int, tree));
+extern int merge_type_state PARAMS ((tree));
+extern void push_type PARAMS ((tree));
+extern void load_type_state PARAMS ((tree));
+extern void add_interface PARAMS ((tree, tree));
+extern void append_gpp_mangled_name PARAMS ((struct obstack *, const char *, int));
+extern void append_gpp_mangled_classtype PARAMS ((struct obstack *, const char *));
+extern void emit_unicode_mangled_name PARAMS ((struct obstack *, const char *, int));
+extern tree force_evaluation_order PARAMS ((tree));
+extern int verify_constant_pool PARAMS ((struct JCF *));
+extern void start_java_method PARAMS ((tree));
+extern void end_java_method PARAMS ((void));
+extern void give_name_to_locals PARAMS ((struct JCF *));
+extern void expand_byte_code PARAMS ((struct JCF *, tree));
+extern int open_in_zip PARAMS ((struct JCF *, const char *, const char *, int));
+extern void set_constant_value PARAMS ((tree, tree));
 #ifdef jword
-extern int find_constant1 PROTO ((struct CPool *, int, jword));
-extern int find_constant2 PROTO ((struct CPool *, int, jword, jword));
+extern int find_constant1 PARAMS ((struct CPool *, int, jword));
+extern int find_constant2 PARAMS ((struct CPool *, int, jword, jword));
 #endif
-extern int find_utf8_constant PROTO ((struct CPool *, tree));
-extern int find_string_constant PROTO ((struct CPool *, tree));
-extern int find_class_constant PROTO ((struct CPool *, tree));
-extern int find_fieldref_index PROTO ((struct CPool *, tree));
-extern int find_methodref_index PROTO ((struct CPool *, tree));
-extern void write_constant_pool PROTO ((struct CPool *, unsigned char *, int));
-extern int count_constant_pool_bytes PROTO ((struct CPool *));
-extern int encode_newarray_type PROTO ((tree));
+extern int find_utf8_constant PARAMS ((struct CPool *, tree));
+extern int find_string_constant PARAMS ((struct CPool *, tree));
+extern int find_class_constant PARAMS ((struct CPool *, tree));
+extern int find_fieldref_index PARAMS ((struct CPool *, tree));
+extern int find_methodref_index PARAMS ((struct CPool *, tree));
+extern void write_constant_pool PARAMS ((struct CPool *, unsigned char *, int));
+extern int count_constant_pool_bytes PARAMS ((struct CPool *));
+extern int encode_newarray_type PARAMS ((tree));
 #ifdef uint64
-extern void format_int PROTO ((char *, jlong, int));
-extern void format_uint PROTO ((char *, uint64, int));
+extern void format_int PARAMS ((char *, jlong, int));
+extern void format_uint PARAMS ((char *, uint64, int));
 #endif
-extern void jcf_trim_old_input PROTO ((struct JCF *));
+extern void jcf_trim_old_input PARAMS ((struct JCF *));
 #ifdef BUFSIZ
-extern void jcf_print_utf8 PROTO ((FILE *, const unsigned char *, int));
-extern void jcf_print_char PROTO ((FILE *, int));
-extern void jcf_print_utf8_replace PROTO ((FILE *, const unsigned char *,
+extern void jcf_print_utf8 PARAMS ((FILE *, const unsigned char *, int));
+extern void jcf_print_char PARAMS ((FILE *, int));
+extern void jcf_print_utf8_replace PARAMS ((FILE *, const unsigned char *,
 					   int, int, int));
 # if JCF_USE_STDIO
-extern char* open_class PROTO ((char *, struct JCF *, FILE *, const char *));
+extern char* open_class PARAMS ((char *, struct JCF *, FILE *, const char *));
 # else
-extern char* open_class PROTO ((char *, struct JCF *, int, const char *));
+extern char* open_class PARAMS ((char *, struct JCF *, int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
-void java_debug_context PROTO ((void));
+void java_debug_context PARAMS ((void));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */
 #if defined (TREE_CODE) && defined(RTX_CODE) && defined (HAVE_MACHINE_MODES) && defined (ARGS_SIZE_RTX)
-struct rtx_def * java_lang_expand_expr PROTO ((tree, rtx, enum machine_mode,
+struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 					       enum expand_modifier)); 
 #endif /* TREE_CODE && RTX_CODE && HAVE_MACHINE_MODES && ARGS_SIZE_RTX */
 

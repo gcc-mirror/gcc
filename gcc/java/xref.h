@@ -1,5 +1,5 @@
 /* Definitions for the cross reference backend xref.c
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -24,11 +24,11 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Exported functions. */
-int xref_flag_value PROTO ((const char *));
-void expand_xref PROTO ((tree));
-void xref_set_data PROTO ((int, void *));
-void *xref_get_data PROTO ((int));
-void xref_set_current_fp PROTO ((FILE *));
+int xref_flag_value PARAMS ((const char *));
+void expand_xref PARAMS ((tree));
+void xref_set_data PARAMS ((int, void *));
+void *xref_get_data PARAMS ((int));
+void xref_set_current_fp PARAMS ((FILE *));
 
 /* flag_emit_xref range of possible values. */
 
@@ -40,7 +40,7 @@ enum {
 
 typedef struct {
   char *key;			         /* Activator in -fxref=<key>  */
-  void (*expand) PROTO ((FILE *, tree)); /* Function to write xrefs out */
+  void (*expand) PARAMS ((FILE *, tree)); /* Function to write xrefs out */
   FILE *fp;			         /* fp to use during the call.  */
   void *data;			         /* Placeholder for additional data */
 } xref_flag_table;

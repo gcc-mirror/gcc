@@ -1,5 +1,5 @@
 /* Handle types for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,8 +34,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "convert.h"
 #include "toplev.h"
 
-static tree convert_ieee_real_to_integer PROTO ((tree, tree));
-static tree parse_signature_type PROTO ((const unsigned char **,
+static tree convert_ieee_real_to_integer PARAMS ((tree, tree));
+static tree parse_signature_type PARAMS ((const unsigned char **,
 					 const unsigned char *));
 
 tree * type_map;

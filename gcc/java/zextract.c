@@ -2,7 +2,7 @@
    This extracts a member from a .zip file, but does not handle
    uncompression (since that is not needed for classes.zip).
 
-   Copyright (C) 1996, 97-98, 1999  Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -210,8 +210,8 @@ typedef unsigned long     ulg;  /*  predefined on some systems) & match zip  */
 /* Prototypes          */
 /***********************/
 
-static ush makeword PROTO ((const uch *));
-static ulg makelong PROTO ((const uch *));
+static ush makeword PARAMS ((const uch *));
+static ulg makelong PARAMS ((const uch *));
 
 /***********************/
 /* Function makeword() */

@@ -1,5 +1,5 @@
 /* Language parser definitions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -36,8 +36,8 @@ extern int quiet_flag;
 
 #ifndef JC1_LITE
 /* Function extern to java/ */
-extern int int_fits_type_p PROTO ((tree, tree));
-extern tree stabilize_reference PROTO ((tree));
+extern int int_fits_type_p PARAMS ((tree, tree));
+extern tree stabilize_reference PARAMS ((tree));
 #endif
 
 /* Macros for verbose debug info  */
@@ -671,28 +671,28 @@ struct parser_ctxt {
 };
 
 #ifndef JC1_LITE
-void safe_layout_class PROTO ((tree));
-void java_complete_class PROTO ((void));
-void java_check_circular_reference PROTO ((void));
-void java_fix_constructors PROTO ((void));
-void java_check_final PROTO ((void));
-void java_layout_classes PROTO ((void));
-tree java_method_add_stmt PROTO ((tree, tree));
-void java_expand_switch PROTO ((tree));
-int java_report_errors PROTO ((void));
-extern tree do_resolve_class PROTO ((tree, tree, tree));
+void safe_layout_class PARAMS ((tree));
+void java_complete_class PARAMS ((void));
+void java_check_circular_reference PARAMS ((void));
+void java_fix_constructors PARAMS ((void));
+void java_check_final PARAMS ((void));
+void java_layout_classes PARAMS ((void));
+tree java_method_add_stmt PARAMS ((tree, tree));
+void java_expand_switch PARAMS ((tree));
+int java_report_errors PARAMS ((void));
+extern tree do_resolve_class PARAMS ((tree, tree, tree));
 #endif
-char *java_get_line_col PROTO ((char *, int, int));
-extern void reset_report PROTO ((void));
+char *java_get_line_col PARAMS ((char *, int, int));
+extern void reset_report PARAMS ((void));
 
 /* Always in use, no matter what you compile */
-void java_push_parser_context PROTO ((void));
-void java_pop_parser_context PROTO ((int));
-void java_init_lex PROTO ((void));
-extern void java_parser_context_save_global PROTO ((void));
-extern void java_parser_context_restore_global PROTO ((void));
-int yyparse PROTO ((void));
-extern int java_parse PROTO ((void));
-void yyerror PROTO ((const char *));
-extern void java_expand_classes PROTO ((void));
+void java_push_parser_context PARAMS ((void));
+void java_pop_parser_context PARAMS ((int));
+void java_init_lex PARAMS ((void));
+extern void java_parser_context_save_global PARAMS ((void));
+extern void java_parser_context_restore_global PARAMS ((void));
+int yyparse PARAMS ((void));
+extern int java_parse PARAMS ((void));
+void yyerror PARAMS ((const char *));
+extern void java_expand_classes PARAMS ((void));
 #endif

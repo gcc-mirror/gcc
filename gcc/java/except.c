@@ -1,5 +1,5 @@
 /* Handle exceptions for GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,12 +37,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "eh-common.h"
 #include "toplev.h"
 
-static void expand_start_java_handler PROTO ((struct eh_range *));
-static void expand_end_java_handler PROTO ((struct eh_range *));
-static struct eh_range *find_handler_in_range PROTO ((int, struct eh_range *,
+static void expand_start_java_handler PARAMS ((struct eh_range *));
+static void expand_end_java_handler PARAMS ((struct eh_range *));
+static struct eh_range *find_handler_in_range PARAMS ((int, struct eh_range *,
 						      struct eh_range *));
-static void link_handler PROTO ((struct eh_range *, struct eh_range *));
-static void check_start_handlers PROTO ((struct eh_range *, int));
+static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
+static void check_start_handlers PARAMS ((struct eh_range *, int));
 
 extern struct obstack permanent_obstack;
 
