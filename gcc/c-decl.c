@@ -2581,7 +2581,7 @@ c_init_decl_processing (void)
   tree ptr_ftype_void, ptr_ftype_ptr;
   location_t save_loc = input_location;
 
-  /* Adds some ggc roots, and reserved words for c-parse.in.  */
+  /* Initialize reserved words for parser.  */
   c_parse_init ();
 
   current_function_decl = 0;
@@ -6746,6 +6746,8 @@ build_null_declspecs (void)
   ret->attrs = 0;
   ret->typespec_word = cts_none;
   ret->storage_class = csc_none;
+  ret->declspecs_seen_p = false;
+  ret->type_seen_p = false;
   ret->non_sc_seen_p = false;
   ret->typedef_p = false;
   ret->tag_defined_p = false;
@@ -6775,6 +6777,7 @@ declspecs_add_qual (struct c_declspecs *specs, tree qual)
   enum rid i;
   bool dupe = false;
   specs->non_sc_seen_p = true;
+  specs->declspecs_seen_p = true;
   gcc_assert (TREE_CODE (qual) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (qual));
   i = C_RID_CODE (qual);
@@ -6808,6 +6811,8 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 {
   tree type = spec.spec;
   specs->non_sc_seen_p = true;
+  specs->declspecs_seen_p = true;
+  specs->type_seen_p = true;
   if (TREE_DEPRECATED (type))
     specs->deprecated_p = true;
 
@@ -7102,6 +7107,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
   enum rid i;
   enum c_storage_class n = csc_none;
   bool dupe = false;
+  specs->declspecs_seen_p = true;
   gcc_assert (TREE_CODE (scspec) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
@@ -7184,6 +7190,7 @@ struct c_declspecs *
 declspecs_add_attrs (struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
+  specs->declspecs_seen_p = true;
   return specs;
 }
 

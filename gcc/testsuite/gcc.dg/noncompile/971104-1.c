@@ -25,5 +25,5 @@ static void up(int sem){
     ({ "MUTEX     ", "BARB_SEM 1", "BARB_SEM 2", "CUST_SEM 1",
        "CUST_SEM 2", "WAIT_SEM 1", "WAIT_SEM 2", "WAIT_SEM 3",
        "WAIT_SEM 4"}	 /* { dg-error "parse error|syntax error|expected" } */
-	[( sb.sem_num )]) );
+	[( sb.sem_num )]) ); /* { dg-error "expected" } */
 }

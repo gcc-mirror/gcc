@@ -205,6 +205,10 @@ struct c_declspecs {
   enum c_typespec_keyword typespec_word;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
+  /* Whether any declaration specifiers have been seen at all.  */
+  BOOL_BITFIELD declspecs_seen_p : 1;
+  /* Whether a type specifier has been seen.  */
+  BOOL_BITFIELD type_seen_p : 1;
   /* Whether something other than a storage class specifier or
      attribute has been seen.  This is used to warn for the
      obsolescent usage of storage class specifiers other than at the
@@ -346,7 +350,7 @@ struct language_function GTY(())
 };
 
 
-/* in c-parse.in */
+/* in c-parser.c */
 extern void c_parse_init (void);
 
 /* in c-aux-info.c */

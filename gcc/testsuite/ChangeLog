@@ -1,3 +1,9 @@
+2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/separate-1.c, gcc.dg/noncompile/971104-1.c,
+	gcc.dg/noncompile/990416-1.c: Adjust expected messages for new
+	parser.
+
 2005-02-25  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20204

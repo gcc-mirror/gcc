@@ -1,3 +1,26 @@
+2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-parser.c: New file.
+	* c-parse.in: Remove.
+	* Makefile.in (c-parse.o-warn, c-parse.o, c-parse.c, c-parse.y):
+	Remove.
+	(c-parser.o): Add dependencies.
+	(C_AND_OBJC_OBJC, C_OBJS, gcc.srcextra, GTFILES, distclean,
+	maintainer-clean, TAGS): Update.
+	* c-config-lang.in (gtfiles): Update.
+	* gengtype-lex.l: Don't handle "@@".
+	* stub-objc.c (objc_get_class_ivars, objc_build_throw_stmt,
+	objc_build_synchronized, objc_begin_try_stmt,
+	objc_begin_catch_clause, objc_finish_catch_clause,
+	objc_build_finally_clause, objc_finish_try_stmt): New.
+	* c-tree.h (struct c_declspecs): Add declspecs_seen_p and
+	type_seen_p.
+	(c_parse_init): Update comment.
+	* c-decl.c (c_init_decl_processing): Update comment.
+	(build_null_declspecs, declspecs_add_qual, declspecs_add_type,
+	declspecs_add_scspec, declspecs_add_attrs): Initialize and update
+	new c_declspecs members.
+
 2005-02-25  Julian Brown  <julian@codesourcery.com>
 
 	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK
