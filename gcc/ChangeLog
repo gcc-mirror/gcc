@@ -1,5 +1,15 @@
 1998-12-11  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* cccp.c: Do not #include <sys/stat.h> here; this is already done
+	by "system.h".
+	* collect2.c: Likewise.
+	* cpplib.h: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c: Likewise.
+	* getpwd.c: Likewise.
+	* protoize.c: Likewise.
+	* toplev.c: Likewise.
+
 	* cpplib.h (HOST_WIDE_INT): Get definition from "machmode.h"
 	and don't try to define it here.
 	* Makefile.in (cppmain.o): Depend on machmode.h.
