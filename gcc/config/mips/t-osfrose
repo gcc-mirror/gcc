@@ -3,8 +3,8 @@ LIMITS_H	=
 CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic.h
 
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
-PREMADE_ATTRTAB = $(srcdir)/config/mips-at.c
-PREMADE_ATTRTAB_MD = $(srcdir)/config/mips-at.md
+# PREMADE_ATTRTAB = $(srcdir)/config/mips-at.c
+# PREMADE_ATTRTAB_MD = $(srcdir)/config/mips-at.md
 
 # Supress building libgcc1.a, since the MIPS compiler port is complete
 # and does not need anything from libgcc1.a.
