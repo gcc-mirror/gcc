@@ -1,5 +1,11 @@
 2002-11-20  Michael Koch <konqueror@gmx.de>
 
+	* Makefile.am (ordinary_java_source_files):
+	Added java/nio/channels/FileChannel.java.
+	* Makefile.in: Regenerated.
+	
+2002-11-20  Michael Koch <konqueror@gmx.de>
+
 	* java/io/FileInputStream.java
 	(getChannel): New method.
 	* java/io/FileOutputStream.java

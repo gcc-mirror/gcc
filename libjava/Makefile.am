@@ -1982,6 +1982,7 @@ java/nio/channels/Channel.java \
 java/nio/channels/ClosedChannelException.java \
 java/nio/channels/ClosedSelectorException.java \
 java/nio/channels/DatagramChannel.java \
+java/nio/channels/FileChannel.java \
 java/nio/channels/GatheringByteChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/InterruptibleChannel.java \
