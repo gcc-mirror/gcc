@@ -443,6 +443,7 @@ AC_SUBST(ZINCS)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$CANADIAN" = no || test "$NULL_TARGET" = yes)
+AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AC_SUBST(EH_COMMON_INCLUDE)
 
 # Determine gcj version number.

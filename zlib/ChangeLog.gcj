@@ -1,3 +1,11 @@
+1999-06-21  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclibdir): Define as libdir when
+	appropriate.
+	* configure: Rebuilt.
+	* configure.in (USE_LIBDIR): New conditional.
+
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
 	* configure, Makefile.in: Rebuilt.

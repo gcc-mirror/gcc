@@ -1,3 +1,11 @@
+1999-06-21  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclibdir): Define as libdir when
+	appropriate.
+	* configure: Rebuilt.
+	* configure.in (USE_LIBDIR): New conditional.
+
 1999-06-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/net/natInetAddress.cc (lookup): Preserve caller-supplied

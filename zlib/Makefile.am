@@ -10,8 +10,14 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 
+## Install a library built with a cross compiler in tooldir, not
+## libdir.
+if USE_LIBDIR
+toolexeclibdir = $(libdir)
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+endif
 
 ## We don't use `libz.la' because we don't want to conflict with a
 ## system library of that name.
