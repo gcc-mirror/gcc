@@ -1645,7 +1645,7 @@ compute_frame_size (size, fregs_live)
 
   if (!TARGET_SNAKE)
     {
-      for (i = 47; i >= 44; i--)
+      for (i = 43; i >= 40; i--)
 	if (regs_ever_live[i])
 	  {
 	    fsize += 8;
@@ -1655,7 +1655,7 @@ compute_frame_size (size, fregs_live)
     }
   else
     {
-      for (i = 90; i >= 72; i -= 2)
+      for (i = 78; i >= 60; i -= 2)
 	if (regs_ever_live[i] || regs_ever_live[i + 1])
 	  {
 	    fsize += 8;
@@ -1845,7 +1845,7 @@ output_function_prologue (file, size)
 	}
       if (!TARGET_SNAKE)
 	{
-	  for (i = 47; i >= 44; i--)
+	  for (i = 43; i >= 40; i--)
 	    {
 	      if (regs_ever_live[i])
 		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
@@ -1853,7 +1853,7 @@ output_function_prologue (file, size)
 	}
       else
 	{
-	  for (i = 90; i >= 72; i -= 2)
+	  for (i = 78; i >= 60; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
 	      {
 		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
@@ -1877,8 +1877,7 @@ output_function_epilogue (file, size)
   if (frame_pointer_needed
       && (regs_ever_live [2] || profile_flag))
     fprintf (file, "\tldw -20(%%r4),%%r2\n");
-  else if (actual_fsize
-	   && VAL_14_BITS_P (actual_fsize + 20)
+  else if (VAL_14_BITS_P (actual_fsize + 20)
 	   && (regs_ever_live [2] || profile_flag))
     fprintf(file,"\tldw %d(0,%%r30),%%r2\n", - (actual_fsize + 20));
 
@@ -1949,7 +1948,7 @@ output_function_epilogue (file, size)
 	}
       if (!TARGET_SNAKE)
 	{
-	  for (i = 47; i >= 44; i--)
+	  for (i = 43; i >= 40; i--)
 	    {
 	      if (regs_ever_live[i])
 		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
@@ -1957,7 +1956,7 @@ output_function_epilogue (file, size)
 	}
       else
 	{
-	  for (i = 90; i >= 72; i -= 2)
+	  for (i = 78; i >= 60; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
 	      {
 		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
@@ -2742,30 +2741,30 @@ output_arg_descriptor (insn)
       else if (!TARGET_SNAKE)	/* fp args */
 	{
 	  if (arg_mode == SFmode)
-	    arg_regs[regno - 36] = "FR";
+	    arg_regs[regno - 32] = "FR";
 	  else
 	    {
 #ifdef HP_FP_ARG_DESCRIPTOR_REVERSED
-	      arg_regs[regno - 37] = "FR";
-	      arg_regs[regno - 36] = "FU";
+	      arg_regs[regno - 33] = "FR";
+	      arg_regs[regno - 32] = "FU";
 #else
-	      arg_regs[regno - 37] = "FU";
-	      arg_regs[regno - 36] = "FR";
+	      arg_regs[regno - 33] = "FU";
+	      arg_regs[regno - 32] = "FR";
 #endif
 	    }
 	}
       else
 	{
 	  if (arg_mode == SFmode)
-	    arg_regs[(regno - 56) / 2] = "FR";
+	    arg_regs[(regno - 44) / 2] = "FR";
 	  else
 	    {
 #ifdef HP_FP_ARG_DESCRIPTOR_REVERSED
-	      arg_regs[(regno - 58) / 2] = "FR";
-	      arg_regs[(regno - 58) / 2 + 1] = "FU";
+	      arg_regs[(regno - 46) / 2] = "FR";
+	      arg_regs[(regno - 46) / 2 + 1] = "FU";
 #else
-	      arg_regs[(regno - 58) / 2] = "FU";
-	      arg_regs[(regno - 58) / 2 + 1] = "FR";
+	      arg_regs[(regno - 46) / 2] = "FU";
+	      arg_regs[(regno - 46) / 2 + 1] = "FR";
 #endif
 	    }
 	}
