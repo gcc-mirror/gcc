@@ -1,5 +1,5 @@
 /* Move constant computations out of loops.
-   Copyright (C) 1987, 1988, 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -97,12 +97,12 @@ static char *loop_invalid;
 rtx *loop_number_exit_labels;
 
 /* Holds the number of loop iterations.  It is zero if the number could not be
-   calculated.  Must be unsigned long since the number of iterations can
-   be as high as 2^31-1.  For loops with a DImode iterator, this number will
-   will be zero if the number of loop iterations is too large for an
-   unsigned long to hold.  */
+   calculated.  Must be unsigned since the number of iterations can
+   be as high as 2^wordsize-1.  For loops with a wider iterator, this number
+   will will be zero if the number of loop iterations is too large for an
+   unsigned integer to hold.  */
 
-unsigned long loop_n_iterations;
+unsigned HOST_WIDE_INT loop_n_iterations;
 
 /* Nonzero if there is a subroutine call in the current loop.
    (unknown_address_altered is also nonzero in this case.)  */
@@ -298,7 +298,7 @@ init_loop ()
 {
   char *free_point = (char *) oballoc (1);
   rtx reg = gen_rtx (REG, SImode, 0);
-  rtx pow2 = gen_rtx (CONST_INT, VOIDmode, 32);
+  rtx pow2 = GEN_INT (32);
   rtx lea;
   int i;
 
@@ -307,11 +307,8 @@ init_loop ()
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
      will be far less than the cost of an add.  */
-#ifdef REGISTER_MOVE_COST
-  copy_cost = REGISTER_MOVE_COST (GENERAL_REGS, GENERAL_REGS) * 2;
-#else
+
   copy_cost = 2 * 2;
-#endif
 
   /* Free the objects we just allocated.  */
   obfree (free_point);
@@ -637,10 +634,10 @@ scan_loop (loop_start, end, nregs)
 	}
 
       if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	  && find_reg_note (p, REG_LIBCALL, 0))
+	  && find_reg_note (p, REG_LIBCALL, NULL_RTX))
 	in_libcall = 1;
       else if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	       && find_reg_note (p, REG_RETVAL, 0))
+	       && find_reg_note (p, REG_RETVAL, NULL_RTX))
 	in_libcall = 0;
 
       if (GET_CODE (p) == INSN
@@ -662,15 +659,15 @@ scan_loop (loop_start, end, nregs)
 
 	     Otherwise, only use the REG_EQUAL contents if a REG_RETVAL note
 	     is present.  */
-	  temp = find_reg_note (p, REG_EQUIV, 0);
+	  temp = find_reg_note (p, REG_EQUIV, NULL_RTX);
 	  if (temp)
 	    src = XEXP (temp, 0), move_insn = 1;
 	  else 
 	    {
-	      temp = find_reg_note (p, REG_EQUAL, 0);
+	      temp = find_reg_note (p, REG_EQUAL, NULL_RTX);
 	      if (temp && CONSTANT_P (XEXP (temp, 0)))
 		src = XEXP (temp, 0), move_insn = 1;
-	      if (temp && find_reg_note (p, REG_RETVAL, 0))
+	      if (temp && find_reg_note (p, REG_RETVAL, NULL_RTX))
 		{
 		  src = XEXP (temp, 0);
 		  /* A libcall block can use regs that don't appear in
@@ -736,7 +733,7 @@ scan_loop (loop_start, end, nregs)
 		      == INSN_UID (reg_single_usage[regno]))
 		  && n_times_set[REGNO (SET_DEST (set))] == 1
 		  && ! side_effects_p (SET_SRC (set))
-		  && ! find_reg_note (p, REG_RETVAL, 0)
+		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
 #ifdef SMALL_REGISTER_CLASSES
 		  && ! (GET_CODE (SET_SRC (set)) == REG
 			&& REGNO (SET_SRC (set)) < FIRST_PSEUDO_REGISTER)
@@ -773,7 +770,7 @@ scan_loop (loop_start, end, nregs)
 	      m->forces = 0;
 	      m->partial = 0;
 	      m->move_insn = move_insn;
-	      m->is_equiv = (find_reg_note (p, REG_EQUIV, 0) != 0);
+	      m->is_equiv = (find_reg_note (p, REG_EQUIV, NULL_RTX) != 0);
 	      m->savemode = VOIDmode;
 	      m->regno = regno;
 	      /* Set M->cond if either invariant_p or consec_sets_invariant_p
@@ -785,7 +782,7 @@ scan_loop (loop_start, end, nregs)
 	      m->lifetime = (uid_luid[regno_last_uid[regno]]
 			     - uid_luid[regno_first_uid[regno]]);
 	      m->savings = n_times_used[regno];
-	      if (find_reg_note (p, REG_RETVAL, 0))
+	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
 	      n_times_set[regno] = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
@@ -807,19 +804,19 @@ scan_loop (loop_start, end, nregs)
 		  /* We must now reset m->move_insn, m->is_equiv, and possibly
 		     m->set_src to correspond to the effects of all the
 		     insns.  */
-		  temp = find_reg_note (p, REG_EQUIV, 0);
+		  temp = find_reg_note (p, REG_EQUIV, NULL_RTX);
 		  if (temp)
 		    m->set_src = XEXP (temp, 0), m->move_insn = 1;
 		  else
 		    {
-		      temp = find_reg_note (p, REG_EQUAL, 0);
+		      temp = find_reg_note (p, REG_EQUAL, NULL_RTX);
 		      if (temp && CONSTANT_P (XEXP (temp, 0)))
 			m->set_src = XEXP (temp, 0), m->move_insn = 1;
 		      else
 			m->move_insn = 0;
 
 		    }
-		  m->is_equiv = (find_reg_note (p, REG_EQUIV, 0) != 0);
+		  m->is_equiv = (find_reg_note (p, REG_EQUIV, NULL_RTX) != 0);
 		}
 	    }
 	  /* If this register is always set within a STRICT_LOW_PART
@@ -1025,7 +1022,7 @@ static rtx
 libcall_other_reg (insn, equiv)
      rtx insn, equiv;
 {
-  rtx note = find_reg_note (insn, REG_RETVAL, 0);
+  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
   rtx p = XEXP (note, 0);
   rtx output = 0;
 
@@ -1100,7 +1097,7 @@ libcall_benefit (last)
   rtx insn;
   int benefit = 0;
 
-  for (insn = XEXP (find_reg_note (last, REG_RETVAL, 0), 0);
+  for (insn = XEXP (find_reg_note (last, REG_RETVAL, NULL_RTX), 0);
        insn != last; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == CALL_INSN)
@@ -1130,7 +1127,7 @@ skip_consec_insns (insn, count)
       /* Do this at start of loop, since INSN is guaranteed to 
 	 be an insn here.  */
       if (GET_CODE (insn) != NOTE
-	  && (temp = find_reg_note (insn, REG_LIBCALL, 0)))
+	  && (temp = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
 	insn = XEXP (temp, 0);
 
       do insn = NEXT_INSN (insn);
@@ -1154,7 +1151,7 @@ ignore_some_movables (movables)
   for (m = movables; m; m = m->next)
     {
       /* Is this a movable for the value of a libcall?  */
-      rtx note = find_reg_note (m->insn, REG_RETVAL, 0);
+      rtx note = find_reg_note (m->insn, REG_RETVAL, NULL_RTX);
       if (note)
 	{
 	  rtx insn;
@@ -1418,6 +1415,11 @@ rtx_equal_for_loop_p (x, y, movables)
     {
       switch (fmt[i])
 	{
+	case 'w':
+	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
 	    return 0;
@@ -1652,14 +1654,14 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* If this is the first insn of a library call sequence,
 			 skip to the end.  */
 		      if (GET_CODE (p) != NOTE
-			  && (temp = find_reg_note (p, REG_LIBCALL, 0)))
+			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 			p = XEXP (temp, 0);
 
 		      /* If this is the last insn of a libcall sequence, then
 			 delete every insn in the sequence except the last.
 			 The last insn is handled in the normal manner.  */
 		      if (GET_CODE (p) != NOTE
-			  && (temp = find_reg_note (p, REG_RETVAL, 0)))
+			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
 			{
 			  temp = XEXP (temp, 0);
 			  while (temp != p)
@@ -1677,7 +1679,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		  add_label_notes (m->set_src, temp);
 
 		  i1 = emit_insns_before (temp, loop_start);
-		  if (! find_reg_note (i1, REG_EQUAL, 0))
+		  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
 		    REG_NOTES (i1)
 		      = gen_rtx (EXPR_LIST,
 				 m->is_equiv ? REG_EQUIV : REG_EQUAL,
@@ -1699,14 +1701,14 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* Do this at start of loop, since p is guaranteed to 
 			 be an insn here.  */
 		      if (GET_CODE (p) != NOTE
-			  && (temp = find_reg_note (p, REG_LIBCALL, 0)))
+			  && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 			p = XEXP (temp, 0);
 
 		      /* If last insn of libcall sequence, move all
 			 insns except the last before the loop.  The last
 			 insn is handled in the normal manner.  */
 		      if (GET_CODE (p) != NOTE
-			  && (temp = find_reg_note (p, REG_RETVAL, 0)))
+			  && (temp = find_reg_note (p, REG_RETVAL, NULL_RTX)))
 			{
 			  rtx fn_address = 0;
 			  rtx fn_reg = 0;
@@ -1748,7 +1750,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			      if (GET_CODE (next) == CALL_INSN
 				  && GET_CODE (body) == SET
 				  && GET_CODE (SET_DEST (body)) == REG
-				  && (n = find_reg_note (temp, REG_EQUAL, 0)))
+				  && (n = find_reg_note (temp, REG_EQUAL,
+							 NULL_RTX)))
 				{
 				  fn_reg = SET_SRC (body);
 				  if (GET_CODE (fn_reg) != REG)
@@ -1790,8 +1793,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			  start_sequence ();
 			  tem = expand_binop
 			    (GET_MODE (reg), and_optab, reg,
-			     gen_rtx (CONST_INT, VOIDmode,
-				      ((1 << GET_MODE_BITSIZE (m->savemode)))
+			     GEN_INT ((((HOST_WIDE_INT) 1
+					<< GET_MODE_BITSIZE (m->savemode)))
 				      - 1),
 			     reg, 1, OPTAB_LIB_WIDEN);
 			  if (tem == 0)
@@ -1832,10 +1835,10 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* If library call, now fix the REG_NOTES that contain
 			 insn pointers, namely REG_LIBCALL on FIRST
 			 and REG_RETVAL on I1.  */
-		      if (temp = find_reg_note (i1, REG_RETVAL, 0))
+		      if (temp = find_reg_note (i1, REG_RETVAL, NULL_RTX))
 			{
 			  XEXP (temp, 0) = first;
-			  temp = find_reg_note (first, REG_LIBCALL, 0);
+			  temp = find_reg_note (first, REG_LIBCALL, NULL_RTX);
 			  XEXP (temp, 0) = i1;
 			}
 
@@ -1898,7 +1901,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 		      /* if library call, delete all insn except last, which
 			 is deleted below */
-		      if (temp = find_reg_note (m1->insn, REG_RETVAL, 0))
+		      if (temp = find_reg_note (m1->insn, REG_RETVAL,
+						NULL_RTX))
 			{
 			  for (temp = XEXP (temp, 0); temp != m1->insn;
 			       temp = NEXT_INSN (temp))
@@ -2662,9 +2666,9 @@ int
 addr_overlap_p (other, base, size)
      rtx other;
      rtx base;
-     int size;
+     HOST_WIDE_INT size;
 {
-  int start = 0, end;
+  HOST_WIDE_INT start = 0, end;
 
   if (GET_CODE (base) == CONST)
     base = XEXP (base, 0);
@@ -2718,7 +2722,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
       code = GET_CODE (p);
 
       /* If library call, skip to end of of it.  */
-      if (code == INSN && (temp = find_reg_note (p, REG_LIBCALL, 0)))
+      if (code == INSN && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 	p = XEXP (temp, 0);
 
       this = 0;
@@ -2730,7 +2734,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
 	  this = invariant_p (SET_SRC (set));
 	  if (this != 0)
 	    value |= this;
-	  else if (temp = find_reg_note (p, REG_EQUAL, 0))
+	  else if (temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
 	    {
 	      this = invariant_p (XEXP (temp, 0));
 	      if (this != 0)
@@ -3416,7 +3420,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 						 &src_reg, &add_val,
 						 &mult_val))
 	       /* Equivalent expression is a giv. */
-	       || ((regnote = find_reg_note (p, REG_EQUAL, 0))
+	       || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
 		   && (benefit = general_induction_var (XEXP (regnote, 0),
 							&src_reg,
 							&add_val, &mult_val))))
@@ -3438,7 +3442,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      rtx temp;
 
 	      /* If this is a library call, increase benefit.  */
-	      if (find_reg_note (p, REG_RETVAL, 0))
+	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		benefit += libcall_benefit (p);
 
 	      /* Skip the consecutive insns, if there are any.  */
@@ -3449,7 +3453,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		     Do this at start of loop, since INSN is guaranteed to
 		     be an insn here.  */
 		  if (GET_CODE (p) != NOTE
-		      && (temp = find_reg_note (p, REG_LIBCALL, 0)))
+		      && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 		    p = XEXP (temp, 0);
 
 		  do p = NEXT_INSN (p);
@@ -3457,7 +3461,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		}
 
 	      record_giv (v, p, src_reg, dest_reg, mult_val, add_val, benefit,
-			  DEST_REG, not_every_iteration, 0, loop_start,
+			  DEST_REG, not_every_iteration, NULL_PTR, loop_start,
 			  loop_end);
 
 	    }
@@ -4681,8 +4685,7 @@ basic_induction_var (x, dest_reg, inc_val, mult_val)
     case MINUS:
       if (XEXP (x, 0) == dest_reg
  	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
- 	*inc_val = gen_rtx (CONST_INT, VOIDmode,
-			    - INTVAL (XEXP (x, 1)));
+ 	*inc_val = GEN_INT (- INTVAL (XEXP (x, 1)));
       else
  	return 0;
 
@@ -4847,7 +4850,7 @@ simplify_giv_expr (x, benefit)
      mode, this can't be a giv.  */
   if (mode != VOIDmode
       && (GET_MODE_CLASS (mode) != MODE_INT
-	  || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_INT))
+	  || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT))
     return 0;
 
   switch (GET_CODE (x))
@@ -4943,9 +4946,7 @@ simplify_giv_expr (x, benefit)
       return simplify_giv_expr (gen_rtx (PLUS, mode,
 					 XEXP (x, 0),
 					 gen_rtx (MULT, mode,
-						  XEXP (x, 1),
-						  gen_rtx (CONST_INT,
-							   VOIDmode, -1))),
+						  XEXP (x, 1), constm1_rtx)),
 				benefit);
 
     case MULT:
@@ -4978,7 +4979,7 @@ simplify_giv_expr (x, benefit)
 
 	case CONST_INT:
 	  /* Product of two constants.  */
-	  return gen_rtx (CONST_INT, mode, INTVAL (arg0) * INTVAL (arg1));
+	  return GEN_INT (INTVAL (arg0) * INTVAL (arg1));
 
 	case USE:
 	  /* invar * invar.  Not giv. */
@@ -5013,15 +5014,13 @@ simplify_giv_expr (x, benefit)
 
       return simplify_giv_expr (gen_rtx (MULT, mode,
 					 XEXP (x, 0),
-					 gen_rtx (CONST_INT, VOIDmode,
-						  1 << INTVAL (XEXP (x, 1)))),
+					 GEN_INT ((HOST_WIDE_INT) 1
+						  << INTVAL (XEXP (x, 1)))),
 				benefit);
 
     case NEG:
       /* "-a" is "a * (-1)" */
-      return simplify_giv_expr (gen_rtx (MULT, mode,
-					 XEXP (x, 0),
-					 gen_rtx (CONST_INT, VOIDmode, -1)),
+      return simplify_giv_expr (gen_rtx (MULT, mode, XEXP (x, 0), constm1_rtx),
 				benefit);
 
     case NOT:
@@ -5145,7 +5144,7 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
       code = GET_CODE (p);
 
       /* If libcall, skip to end of call sequence.  */
-      if (code == INSN && (temp = find_reg_note (p, REG_LIBCALL, 0)))
+      if (code == INSN && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 	p = XEXP (temp, 0);
 
       if (code == INSN
@@ -5155,12 +5154,12 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
 	  && ((benefit = general_induction_var (SET_SRC (set), &src_reg,
 						add_val, mult_val))
 	      /* Giv created by equivalent expression.  */
-	      || ((temp = find_reg_note (p, REG_EQUAL, 0))
+	      || ((temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
 		  && (benefit = general_induction_var (XEXP (temp, 0), &src_reg,
 						       add_val, mult_val))))
 	  && src_reg == v->src_reg)
 	{
-	  if (find_reg_note (p, REG_RETVAL, 0))
+	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 	    benefit += libcall_benefit (p);
 
 	  count--;
@@ -5215,8 +5214,7 @@ express_from (g1, g2)
       || INTVAL (g2->mult_val) % INTVAL (g1->mult_val) != 0)
     return 0;
 
-  mult = gen_rtx (CONST_INT, VOIDmode,
-		  INTVAL (g2->mult_val) / INTVAL (g1->mult_val));
+  mult = GEN_INT (INTVAL (g2->mult_val) / INTVAL (g1->mult_val));
   add = plus_constant (g2->add_val, - INTVAL (g1->add_val) * INTVAL (mult));
 
   /* Form simplified final result.  */
@@ -5378,7 +5376,7 @@ product_cheap_p (a, b)
 
   rtl_obstack = &temp_obstack;
   start_sequence ();
-  expand_mult (GET_MODE (a), a, b, 0, 0);
+  expand_mult (GET_MODE (a), a, b, NULL_RTX, 0);
   tmp = gen_sequence ();
   end_sequence ();
 
@@ -5500,7 +5498,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	{
 	  /* register always nonnegative, add REG_NOTE to branch */
 	  REG_NOTES (PREV_INSN (loop_end))
-	    = gen_rtx (EXPR_LIST, REG_NONNEG, 0,
+	    = gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
 		       REG_NOTES (PREV_INSN (loop_end)));
 	  bl->nonneg = 1;
 
@@ -5525,7 +5523,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      && INTVAL (bl->biv->add_val) == -1)
 	    {
 	      REG_NOTES (PREV_INSN (loop_end))
-		= gen_rtx (EXPR_LIST, REG_NONNEG, 0,
+		= gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
 			   REG_NOTES (PREV_INSN (loop_end)));
 	      bl->nonneg = 1;
 
@@ -5623,13 +5621,11 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      /* Save some info needed to produce the new insns.  */
 	      reg = bl->biv->dest_reg;
 	      jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 1);
-	      new_add_val = gen_rtx (CONST_INT, VOIDmode,
-				     - INTVAL (bl->biv->add_val));
+	      new_add_val = GEN_INT (- INTVAL (bl->biv->add_val));
 
 	      final_value = XEXP (comparison, 1);
-	      start_value = gen_rtx (CONST_INT, VOIDmode,
-				     (INTVAL (XEXP (comparison, 1))
-				      - INTVAL (bl->biv->add_val)));
+	      start_value = GEN_INT (INTVAL (XEXP (comparison, 1))
+				     - INTVAL (bl->biv->add_val));
 
 	      /* Initialize biv to start_value before loop start.
 		 The old initializing insn will be deleted as a
@@ -5666,7 +5662,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	      /* Add new compare/branch insn at end of loop.  */
 	      start_sequence ();
-	      emit_cmp_insn (reg, const0_rtx, GE, 0, GET_MODE (reg), 0, 0);
+	      emit_cmp_insn (reg, const0_rtx, GE, NULL_RTX,
+			     GET_MODE (reg), 0, 0);
 	      emit_jump_insn (gen_bge (XEXP (jump_label, 0)));
 	      tem = gen_sequence ();
 	      end_sequence ();
@@ -5682,7 +5679,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		  /* Increment of LABEL_NUSES done above. */
 		  /* Register is now always nonnegative,
 		     so add REG_NONNEG note to the branch.  */
-		  REG_NOTES (tem) = gen_rtx (EXPR_LIST, REG_NONNEG, 0,
+		  REG_NOTES (tem) = gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
 					     REG_NOTES (tem));
 		}
 
@@ -5913,10 +5910,9 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		    && GET_CODE (v->mult_val) == CONST_INT
 		    && GET_CODE (v->add_val) == CONST_INT
 		    && validate_change (insn, &XEXP (x, arg_operand),
-					gen_rtx (CONST_INT, VOIDmode,
-						 (INTVAL (arg)
-						  * INTVAL (v->mult_val)
-						  + INTVAL (v->add_val))), 0))
+					GEN_INT (INTVAL (arg)
+						 * INTVAL (v->mult_val)
+						 + INTVAL (v->add_val)), 0))
 		  return 1;
 
 		/* Otherwise, load it into a register.  */
@@ -6255,9 +6251,11 @@ get_condition (jump, earliest)
 	       || (((code == NE
 		     || (code == LT
 			 && GET_MODE_CLASS (inner_mode) == MODE_INT
-			 && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+			 && (GET_MODE_BITSIZE (inner_mode)
+			     <= HOST_BITS_PER_WIDE_INT)
 			 && (STORE_FLAG_VALUE
-			     & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+			     & ((HOST_WIDE_INT) 1
+				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == LT
 			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
@@ -6268,10 +6266,12 @@ get_condition (jump, earliest)
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
-			 && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+			 && (GET_MODE_BITSIZE (inner_mode)
+			     <= HOST_BITS_PER_WIDE_INT)
 			 && GET_MODE_CLASS (inner_mode) == MODE_INT
 			 && (STORE_FLAG_VALUE
-			     & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+			     & ((HOST_WIDE_INT) 1
+				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == GE
 			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
@@ -6322,29 +6322,29 @@ get_condition (jump, earliest)
   /* Canonicalize any ordered comparison with integers involving equality.  */
   if (GET_CODE (op1) == CONST_INT)
     {
-      int const_val = INTVAL (op1);
-      unsigned uconst_val = (unsigned) const_val;
+      HOST_WIDE_INT const_val = INTVAL (op1);
+      unsigned HOST_WIDE_INT uconst_val = const_val;
 
       switch (code)
       {
       case LE:
 	code = LT;
-	op1 = gen_rtx (CONST_INT, VOIDmode, const_val + 1);
+	op1 = GEN_INT (const_val + 1);
 	break;
 
       case GE:
 	code = GT;
-	op1 = gen_rtx (CONST_INT, VOIDmode, const_val - 1);
+	op1 = GEN_INT (const_val - 1);
 	break;
 
       case LEU:
 	code = LTU;
-	op1 = gen_rtx (CONST_INT, VOIDmode, uconst_val + 1);
+	op1 = GEN_INT (uconst_val + 1);
 	break;
 
       case GEU:
 	code = GTU;
-	op1 = gen_rtx (CONST_INT, VOIDmode, uconst_val - 1);
+	op1 = GEN_INT (uconst_val - 1);
 	break;
       }
     }
@@ -6372,7 +6372,7 @@ rtx
 get_condition_for_loop (x)
      rtx x;
 {
-  rtx comparison = get_condition (x, 0);
+  rtx comparison = get_condition (x, NULL_PTR);
 
   if (comparison == 0
       || ! invariant_p (XEXP (comparison, 0))
