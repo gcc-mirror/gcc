@@ -885,7 +885,7 @@ output_move_double (operands)
   rtx latehalf[2];
   rtx middlehalf[2];
   rtx addreg0 = 0, addreg1 = 0;
-  int size = GET_MODE_SIZE (GET_MODE (operands[1]));
+  int size = GET_MODE_SIZE (GET_MODE (operands[0]));
 
   middlehalf[0] = 0;
   middlehalf[1] = 0;
