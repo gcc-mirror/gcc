@@ -3493,21 +3493,6 @@ rest_of_compilation (decl)
       timevar_pop (TV_RENAME_REGISTERS);
     }
 
-  if (flag_if_conversion2)
-    {
-      timevar_push (TV_IFCVT2);
-      open_dump_file (DFI_ce3, decl);
-
-      if_convert (1);
-
-      close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
-      timevar_pop (TV_IFCVT2);
-    }
-#ifdef STACK_REGS
-  if (optimize)
-    split_all_insns (1);
-#endif
-
   if (optimize > 0)
     {
       timevar_push (TV_REORDER_BLOCKS);
@@ -3529,6 +3514,21 @@ rest_of_compilation (decl)
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
       timevar_pop (TV_REORDER_BLOCKS);
     }
+
+  if (flag_if_conversion2)
+    {
+      timevar_push (TV_IFCVT2);
+      open_dump_file (DFI_ce3, decl);
+
+      if_convert (1);
+
+      close_dump_file (DFI_ce3, print_rtl_with_bb, insns);
+      timevar_pop (TV_IFCVT2);
+    }
+#ifdef STACK_REGS
+  if (optimize)
+    split_all_insns (1);
+#endif
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)

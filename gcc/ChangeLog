@@ -1,3 +1,15 @@
+Tue Feb 25 12:35:34 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (lcm.o):  Add dependency on function.h
+	* lcm.c (function.h): Include.
+	* i386.c (machine_function, ix86_stack_locals,
+	* ix86_save_varrargs_registers) : Move to
+	...
+	* i386.h (machine_function, ix86_stack_locals,
+	ix86_save_varrargs_registers): ... here; add optimize_mode_switching
+	(ix86_optimize_mode_switching): New.
+	* i386.md (fix patterns): Set ix86_optimize_mode_switching
+
 2003-02-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/d30v/d30v.c (d30v_init_cumulative_args): Fix typo.  Name

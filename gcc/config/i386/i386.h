@@ -3166,7 +3166,7 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
 /* Define this macro if the port needs extra instructions inserted
    for mode switching in an optimizing compilation.  */
 
-#define OPTIMIZE_MODE_SWITCHING(ENTITY) 1
+#define OPTIMIZE_MODE_SWITCHING(ENTITY) ix86_optimize_mode_switching
 
 /* If you define `OPTIMIZE_MODE_SWITCHING', you have to define this as
    initializer for an array of integers.  Each initializer element N
@@ -3223,6 +3223,19 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
 #define DLL_IMPORT_EXPORT_PREFIX '#'
 
 #define FASTCALL_PREFIX '@'
+
+struct machine_function GTY(())
+{
+  struct stack_local_entry *stack_locals;
+  const char *some_ld_name;
+  int save_varrargs_registers;
+  int accesses_prev_frame;
+  int optimize_mode_switching;
+};
+
+#define ix86_stack_locals (cfun->machine->stack_locals)
+#define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
+#define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
 
 /*
 Local variables:
