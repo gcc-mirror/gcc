@@ -34,7 +34,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DELIM ";"
 
-#define CPP_SPEC "%{ml:-D__LITTLE_ENDIAN__} %{m3e:-D__SH3E__}"
+#define CPP_SPEC "%{ml:-D__LITTLE_ENDIAN__} \
+%{m1:-D__sh1__} \
+%{m2:-D__sh2__} \
+%{m3:-D__sh3__} \
+%{m3e:-D__SH3E__}"
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
