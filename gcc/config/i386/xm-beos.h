@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for BeOS host.
-   Copyright (C) 1997-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on xm-rs6000.h
    by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 

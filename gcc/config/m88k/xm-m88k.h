@@ -1,6 +1,7 @@
 /* Configuration for GNU compiler.
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 89, 90, 91, 93, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1990, 1991, 1993, 1997
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

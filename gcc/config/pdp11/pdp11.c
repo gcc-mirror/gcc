@@ -1,5 +1,6 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999
+   Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.

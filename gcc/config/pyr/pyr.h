@@ -1,6 +1,7 @@
 /* Definitions of target machine parameters for GNU compiler,
    for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1995, 1996, 1997, 1998, 1999
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 93-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).

@@ -1,5 +1,6 @@
 /* Operating system specific defines for BeOS target.
-   Copyright (C) 1995-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on cygwin32.h.
 
 This file is part of GNU CC.

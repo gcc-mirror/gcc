@@ -1,5 +1,6 @@
 /* Definitions for Intel 386 running SCO Unix System V 3.2 Version 5.
-   Copyright (C) 1992, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999 
+   Free Software Foundation, Inc.
    Contributed by Kean Johnston (hug@netcom.com)
 
 This file is part of GNU CC.
