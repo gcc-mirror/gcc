@@ -60,4 +60,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define getpagesize()	sysconf(_SC_PAGE_SIZE)
 #endif /*  L_trampoline */
 
+/* Use atexit for static constructors/destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
+#define TARGET_MEM_FUNCTIONS
+
 #include "mips.h"
