@@ -179,3 +179,35 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
     else							\
       c = getc (FILE);						\
   } while (1)
+
+/* If the host and target formats match, output the floats as hex.  */
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+
+/* This is how to output assembly code to define a `float' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
+
+#undef ASM_OUTPUT_FLOAT
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
+do { long value;							\
+     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value);				\
+   } while (0)
+
+/* This is how to output assembly code to define a `double' constant.
+   We always have to use a pair of .long pseudo-ops to do this because
+   the native SVR4 ELF assembler is buggy and it generates incorrect
+   values when we try to use the the .double pseudo-op instead.  */
+
+#undef ASM_OUTPUT_DOUBLE
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
+do { long value[2];							\
+     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[0]);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[1]);			\
+   } while (0)
+
+#endif /* word order matches */
+#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
