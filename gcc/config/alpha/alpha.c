@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1202,6 +1202,7 @@ direct_return ()
 {
   return (reload_completed && alpha_sa_size () == 0
 	  && get_frame_size () == 0
+	  && current_function_outgoing_args_size == 0
 	  && current_function_pretend_args_size == 0);
 }
 
