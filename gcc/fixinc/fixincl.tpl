@@ -203,3 +203,23 @@ _FOR fix ",\n" =]
 
 /fix=]
 };
+
+#define GNU_TYPE_CT [=_eval type_map _count =]
+int gnu_type_map_ct = GNU_TYPE_CT;
+
+tSCC z_cxx_guard[] = " && !defined(__cplusplus)";
+tSCC z_nil[]       = "";
+
+t_gnu_type_map gnu_type_map[ GNU_TYPE_CT ] = {[=
+
+_FOR type_map ,
+
+=]
+  { [=_EVAL type_name _len=], "[=type_name=]", "[=type_name _up=]", "[=
+  gnu_type=]", [=
+  _IF cxx_type _exist =]z_cxx_guard[=
+  _ELSE               =]z_nil[=
+  _ENDIF=] }[=
+
+/type_map=]
+};

@@ -70,6 +70,8 @@ typedef int t_success;
 # define EXIT_FAILURE 1
 #endif
 
+#define EXIT_BROKEN  3
+
 #define NUL             '\0'
 
 #ifndef NOPROCESS
@@ -148,6 +150,16 @@ struct fix_desc
   tCC**       patch_args;
   long        unused;
 };
+
+typedef struct {
+  int         type_name_len;
+  tCC*        pz_type;
+  tCC*        pz_TYPE;
+  tCC*        pz_gtype;
+  tCC*        pz_cxx_guard;
+} t_gnu_type_map;
+
+extern int gnu_type_map_ct;
 
 /*
  *  Exported procedures

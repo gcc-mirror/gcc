@@ -987,8 +987,8 @@ fix = {
 
 
 /*
- *  Fix HP's use of ../machine/inline.h to refer to
- *    /usr/include/machine/inline.h
+ *  Fix HP & Sony's use of "../machine/xxx.h"
+ *  to refer to:  <machine/xxx.h>
  */
 fix = {
     hackname  = hp_inline;
@@ -1281,8 +1281,8 @@ fix = {
 
 /*
  *  GNU libc1 string.h does not prototype memcpy and memcmp for gcc
- *  versions > 1.  That's a problem.  This fix will expose the prototype
- *  for C++.
+ *  versions > 1.  This fix will open up the declaration for all
+ *  versions of GCC and for g++.
  */
 fix = {
     hackname  = libc1_ifdefd_memx;
@@ -1493,12 +1493,13 @@ fix = {
 fix = {
     hackname = math_huge_val_from_dbl_max;
     files    = math.h;
+
     /*
      * IF HUGE_VAL is defined to be DBL_MAX *and* DBL_MAX is _not_ defined
      * in math.h, this fix applies.
      */
-    select   = "define[ \t]*HUGE_VAL[ \t]*DBL_MAX";
-    bypass   = "define[ \t]*DBL_MAX";
+    select   = "define[ \t]+HUGE_VAL[ \t]+DBL_MAX";
+    bypass   = "define[ \t]+DBL_MAX";
 
     shell    =
     /*
@@ -1507,13 +1508,17 @@ fix = {
      */
 
     "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h "
-                "2>/dev/null`\n\n"
+                   "| sed 's/.*DBL_MAX[ \t]*//' 2>/dev/null`\n\n"
 
     "\tif ( test -n \"${dbl_max_def}\" ) > /dev/null 2>&1\n"
     "\tthen sed -e '/define[ \t]*HUGE_VAL[ \t]*DBL_MAX/"
-			"s/DBL_MAX/'\"$dbl_max_def/\"\n"
+			"s@DBL_MAX@'\"$dbl_max_def@\"\n"
     "\telse cat\n"
     "\tfi";
+
+    test_text =
+    "`echo '#define DBL_MAX\t3.1415e+9 /* really big */' >> float.h`\n"
+    "#define HUGE_VAL DBL_MAX";
 };
 
 
@@ -1542,10 +1547,17 @@ fix = {
     mach     = "m68k-motorola-sysv*";
     files    = sys/limits.h;
     files    = limits.h;
+    select   = "max # bytes atomic in write|error value returned by Math lib";
+
     sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
                    "/\\* max # bytes atomic in write to a\\)$@\\1 */@";
     sed = "s@\\(/\\*#define\tHUGE_VAL\t3.[0-9e+]* \\)"
           "\\(/\\*error value returned by Math lib\\*/\\)$@\\1*/ \\2@";
+
+    test_text =
+    "#undef PIPE_BUF /* max # bytes atomic in write to a\n"
+    "\t\t/* PIPE */\n"
+    "/*#define\tHUGE_VAL\t3.9e+9 /*error value returned by Math lib*/";
 };
 
 
@@ -1876,17 +1888,6 @@ fix = {
 
 
 /*
- *  Incorrect #include in Sony News-OS 3.2.
- */
-fix = {
-    hackname = sony_include;
-    files    = machine/machparam.h;
-    select   = '"\.\./machine/endian.h"';
-    sed      = 's@"../machine/endian.h"@<machine/endian.h>@';
-};
-
-
-/*
  *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
  */
 #ifdef SONY
@@ -1982,6 +1983,7 @@ fix = {
           "s@_NEED___VA_LIST@_NEED___Va_LIST@\n"
           "s@VA_LIST@DUMMY_VA_LIST@\n"
           "s@_Va_LIST@_VA_LIST@";
+    test_text = "extern void mumble( va_list);";
 };
 
 
@@ -2213,8 +2215,6 @@ fix = {
  *  Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
  *  On some systems (UnixWare 2, UnixWare 7), the file is byteorder.h
  *  but we still "hijack" it and redirect it to the GNU byteorder.h..
- *
- *
  */
 #ifdef SVR5
 fix = {
@@ -2519,75 +2519,40 @@ fix = {
 
 /*
  * Fix these files to use the same types that we think they should.
- * XXX - extremely dubious changes here.
+ * Each type must be present in two places:  the select clause
+ * and a "type_map" entry below.
  */
 fix = {
-    hackname = systypes;
+    hackname  = gnu_types;
     files  = "sys/types.h";
     files  = "stdlib.h";
     files  = "sys/stdtypes.h";
     files  = "stddef.h";
     files  = "memory.h";
     files  = "unistd.h";
-    select = "typedef[ \t]+[a-z_][ \ta-z_]*[ \t]"
-             "(size|ptrdiff|wchar)_t";
+    bypass    = '_GCC_(PTRDIFF|SIZE|WCHAR)_T';
+    select    = "^[ \t]*typedef[ \t]+.*[ \t](ptrdiff|size|wchar)_t;";
+    c_fix     = gnu_type;
 
-      sed  = "/^[ \t]*\\*[ \t]*typedef unsigned int size_t;/N";
-
-      sed  = "s/^\\([ \t]*\\*[ \t]*typedef unsigned int size_t;\\n"
-               "[ \t]*\\*\\/\\)/\\1\\\n"
-             "#ifndef __SIZE_TYPE__\\\n"
-             "#define __SIZE_TYPE__ long unsigned int\\\n"
-             "#endif\\\n"
-             "typedef __SIZE_TYPE__ size_t;\\\n/";
-
-      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/i\\\n"
-                   "#ifndef __SIZE_TYPE__\\\n"
-                   "#define __SIZE_TYPE__ long unsigned int\\\n"
-                   "#endif\n";
-
-      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]size_t/"
-               "typedef __SIZE_TYPE__ size_t/";
-
-      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/i\\\n"
-                   "#ifndef __PTRDIFF_TYPE__\\\n"
-                   "#define __PTRDIFF_TYPE__ long int\\\n"
-                   "#endif\n";
-
-      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]ptrdiff_t/"
-               "typedef __PTRDIFF_TYPE__ ptrdiff_t/";
-
-      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/i\\\n"
-                   "#ifndef __WCHAR_TYPE__\\\n"
-                   "#define __WCHAR_TYPE__ int\\\n"
-                   "#endif\\\n"
-                   "#ifndef __cplusplus\n";
-
-      sed  = "/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/a\\\n"
-                   "#endif\n";
-
-      sed  = "s/typedef[ \t][ \t]*[a-z_][ \ta-z_]*[ \t]wchar_t/"
-               "typedef __WCHAR_TYPE__ wchar_t/";
+    test_text = "typedef long int ptrdiff_t; /* long int */\n"
+                "typedef uint_t size_t; /* uint_t */\n"
+                "typedef ushort_t wchar_t; /* ushort_t */";
 };
 
+type_map = {
+  type_name = ptrdiff;
+  gnu_type  = "long int";
+};
 
-/*
- * Fix files that may contain a stray definition of size_t.  Take care
- * not to match ssize_t or mere uses of size_t.
- */
-fix = {
-    hackname = systypes_stdlib_size_t;
-    files    = sys/types.h;
-    files    = stdlib.h;
-    select   = "typedef[ \t]+[A-Za-z_][ \tA-Za-z_]*[ \t]size_t.*";
-    bypass   = "_(GCC|BSD)_SIZE_T";
+type_map = {
+  type_name = size;
+  gnu_type  = "long unsigned int";
+};
 
-    c_fix     = format;
-    c_fix_arg =
-    "#ifndef _GCC_SIZE_T\n"
-    "#define _GCC_SIZE_T\n%0\n#endif";
-
-    test_text = "typedef unsigned int size_t; /* size of something */";
+type_map = {
+  type_name = wchar;
+  gnu_type  = int;
+  cxx_type;
 };
 
 
@@ -2601,18 +2566,43 @@ fix = {
  */
 fix = {
     hackname = sysv68_string;
+    files    = testing.h;
     files    = string.h;
 
     sed = "s/extern[ \t]*int[ \t]*strlen();/extern unsigned int strlen();/";
     sed = "s/extern[ \t]*int[ \t]*ffs[ \t]*(long);/extern int ffs(int);/";
     sed = "s/strdup(char \\*s1);/strdup(const char *s1);/";
+
     sed = "/^extern char$/N";
     sed = "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/";
+
+    /*
+     *  This sed expression is broken inside fixincl.
+     *  The same expression seems to work outside, however :-(
+     */
     sed = "/^\tstrncmp(),$/N";
-    sed = "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n"
-          "extern unsigned int\\\n\\2/";
+    sed = 's/^\(' "\t" 'strncmp()\),\n\(' "\t" 'strlen(),\)$/'
+            '\1;' "\\\nextern unsigned int\\\n\\2/";
+
     sed = "/^extern int$/N";
     sed = "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/";
+
+    test_text =
+    "extern int strlen();\n"
+
+    "extern int ffs(long);\n"
+
+    "extern char\n"
+    "\t*memccpy(),\n"
+    "\tmemcpy();\n"
+
+    "extern int\n"
+    "\tstrncmp(),\n"
+    "\tstrlen(),\n"
+    "\tstrspn();\n"
+
+    "extern int\n"
+    "\tstrlen(), strspn();";
 };
 
 
@@ -2632,40 +2622,6 @@ fix = {
     "extern char*\tmalloc(size_t);\n"
     "extern char*\trealloc(void*,size_t);\n"
     "extern char*\tbsearch(void*,size_t,size_t);\n";
-};
-
-
-/*
- *  Fix this Sun file to avoid interfering with stddef.h.
- *  We use a funny name to ensure it follows 'systypes' fix.
- */
-fix = {
-    hackname = sysz_stdtypes_for_sun;
-    files = sys/stdtypes.h;
-    sed   = "/[\t ]size_t.*;/i\\\n"
-              "#ifndef _GCC_SIZE_T\\\n"
-              "#define _GCC_SIZE_T\n";
-
-    sed   = "/[\t ]size_t.*;/a\\\n"
-              "#endif\n";
-
-    sed   = "/[\t ]ptrdiff_t.*;/i\\\n"
-              "#ifndef _GCC_PTRDIFF_T\\\n"
-              "#define _GCC_PTRDIFF_T\n";
-
-    sed   = "/[\t ]ptrdiff_t.*;/a\\\n"
-              "#endif\n";
-
-    sed   = "/[\t ]wchar_t.*;/i\\\n"
-              "#ifndef _GCC_WCHAR_T\\\n"
-              "#define _GCC_WCHAR_T\n";
-
-    sed   = "/[\t ]wchar_t.*;/a\\\n"
-              "#endif\n";
-
-    test_text = "typedef int size_t; /* ??? */\n"
-     "typedef int ptrdiff_t; /* result of subtracting two pointers */\n"
-     "typedef unsigned short wchar_t; /* big enough for biggest char set */\n";
 };
 
 
@@ -2893,9 +2849,10 @@ fix = {
  * on those systems where the replacement byteorder header is installed.
  */
 fix = {
-    hackname = unixware7_byteorder_fix;
+    hackname = uw7_byteorder_fix;
     files    = arpa/inet.h;
     select   = "in_port_t";
+    test     = "-f $DESTDIR/sys/byteorder.h";
 #ifndef SVR5
 	mach = "*-*-sysv4*";
 	mach = "i?86-*-sysv5*";
@@ -2904,8 +2861,15 @@ fix = {
 	mach = "powerpcle-*-solaris2.[0-4]";
 	mach = "sparc-*-solaris2.[0-4]";
 #endif /* SVR5 */
-    sed      =  '/^extern.*htons.*(in_port_t)/d';
-    sed      =  '/^extern.*ntohs.*(in_port_t)/d';
+
+    c_fix     = format;
+    c_fix_arg = "";
+    c_fix_arg = "^extern.*(htons|ntohs).*\\(in_port_t\\).*\n";
+
+    test_text = "extern htons(in_port_t);"
+                "`[ ! -d $DESTDIR/sys ] && mkdir $DESTDIR/sys\n"
+                "echo '/* DUMMY */' >> sys/byteorder.h\n"
+                "touch $DESTDIR/sys/byteorder.h`";
 };
 
 
