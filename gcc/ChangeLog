@@ -1,4 +1,28 @@
-2003-06-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+2003-06-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* value-prof.c: New.
+	* value-prof.h: New.
+	* Makefile.in (value-prof.o): New.
+	(LIBGCOV): Add _gcov_merge_single and _gcov_merge_delta
+	(profile.o): Add value-prof.h and tree.h dependency.
+	* flags.h (flag_profile_values): Declare.
+	* gcov-io.h (GCOV_COUNTERS, GCOV_COUNTER_NAMES, GCOV_MERGE_FUNCTIONS):
+	Add new counters.
+	(GCOV_COUNTER_V_INTERVAL, GCOV_COUNTER_V_POW2, GCOV_COUNTER_V_SINGLE,
+	GCOV_COUNTER_V_DELTA): New counter sections.
+	(__gcov_merge_single, __gcov_merge_delta): Declare.
+	* flow.c (mark_used_regs): Set subregs_of_mode only when the
+	structure is initialized.
+	* libgcov.c (__gcov_merge_single, __gcov_merge_delta): New functions.
+	* profile.c: Include value-prof.h and tree.h.
+	(gen_interval_profiler, gen_pow2_profiler, gen_one_value_profiler,
+	gen_const_delta_profiler, instrument_values): New static functions.
+	(get_exec_counts): Fix comment.
+	(branch_prob): Invoke instrument_values.
+	* toplev.c (flag_profile_values): New flag.
+	* doc/invoke.texi (-fprofile-values): Document.
+
+2003-06-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (cfgrtl.o): Add expr.h dependency.
 	* cfgrtl.c: Include expr.h.

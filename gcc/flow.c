@@ -3842,7 +3842,8 @@ mark_used_regs (pbi, x, cond, insn)
 
     case SUBREG:
 #ifdef CANNOT_CHANGE_MODE_CLASS
-      if (GET_CODE (SUBREG_REG (x)) == REG
+      if ((flags & PROP_REG_INFO)
+	  && GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
 	bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (x))
 					  * MAX_MACHINE_MODE
@@ -3891,7 +3892,8 @@ mark_used_regs (pbi, x, cond, insn)
 	       || GET_CODE (testreg) == SUBREG)
 	  {
 #ifdef CANNOT_CHANGE_MODE_CLASS
-	    if (GET_CODE (testreg) == SUBREG
+	    if ((flags & PROP_REG_INFO)
+		&& GET_CODE (testreg) == SUBREG
 		&& GET_CODE (SUBREG_REG (testreg)) == REG
 		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER)
 	      bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (testreg))
