@@ -1,5 +1,10 @@
 1998-10-04  Mark Mitchell  <mark@markmitchell.com>
 
+	* call.c (build_over_call): Make pedwarns about dropped qualifiers
+	into full-fledged errors.
+	* cvt.c (convert_to_reference): Likewise.
+	* typeck.c (convert_for_assignment): Likewise.
+
 	* search.c (expand_upcast_vtables): In addition to unsetting 
 	TREE_READONLY, remove top-level const type qualifier.
 

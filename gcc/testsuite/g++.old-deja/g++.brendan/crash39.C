@@ -29,5 +29,5 @@ public:
 #include <string>
 
 class foo {public: foo () {}};
-class bar {public: bar (foo& dflt);};
+class bar {public: bar (const foo& dflt);};
 class baz: public bar {public: baz (): bar (foo ()) {}};
