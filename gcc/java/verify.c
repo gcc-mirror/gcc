@@ -750,8 +750,12 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	      pop_type (field_type);
 	    if (! is_static)
 	      {
+		int clindex = COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool,
+							index);
+		tree self_type = get_class_constant (current_jcf, clindex);
 		/* Defer actual checking until next pass. */
-		pop_type (ptr_type_node);
+		if (pop_type_0 (self_type) == NULL_TREE)
+		  VERIFICATION_ERROR ("incorrect type for field reference");
 	      }
 	    if (! is_putting)
 	      push_type (field_type);
@@ -1283,6 +1287,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   message = "program counter out of range";
   goto verify_error;
  verify_error:
-  error ("verification error at PC=%d: %s", oldpc, message);
+  error ("verification error at PC=%d: %s", oldpc);
+  error (message);
   return 0;
 }
