@@ -212,8 +212,6 @@ do { struct nesting *target = STACK;			\
      do { this = nesting_stack;				\
 	  if (cond_stack == this)			\
 	    cond_stack = cond_stack->next;		\
-	  if (block_stack == this)			\
-	    block_stack = block_stack->next;		\
 	  if (case_stack == this)			\
 	    case_stack = case_stack->next;		\
 	  nesting_depth = nesting_stack->depth - 1;	\
@@ -223,9 +221,6 @@ do { struct nesting *target = STACK;			\
 
 struct stmt_status GTY(())
 {
-  /* Chain of all pending binding contours.  */
-  struct nesting * x_block_stack;
-
   /* If any new stacks are added here, add them to POPSTACKS too.  */
 
   /* Chain of all pending conditional statements.  */
@@ -249,7 +244,6 @@ struct stmt_status GTY(())
   location_t x_emit_locus;
 };
 
-#define block_stack (cfun->stmt->x_block_stack)
 #define cond_stack (cfun->stmt->x_cond_stack)
 #define case_stack (cfun->stmt->x_case_stack)
 #define nesting_stack (cfun->stmt->x_nesting_stack)
@@ -410,7 +404,7 @@ expand_label (tree label)
 
   if (FORCED_LABEL (label))
     forced_labels = gen_rtx_EXPR_LIST (VOIDmode, label_r, forced_labels);
-      
+
   if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
     maybe_set_first_label_num (label_r);
 }
@@ -1436,7 +1430,7 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs)
 	 than 999 operands.  */
       buffer = xstrdup (TREE_STRING_POINTER (string));
       p = buffer + (c - TREE_STRING_POINTER (string));
-      
+
       while ((p = strchr (p, '%')) != NULL)
 	{
 	  if (p[1] == '[')
@@ -1561,7 +1555,7 @@ expand_expr_stmt (tree exp)
 }
 
 /* Warn if EXP contains any computations whose results are not used.
-   Return 1 if a warning is printed; 0 otherwise.  LOCUS is the 
+   Return 1 if a warning is printed; 0 otherwise.  LOCUS is the
    (potential) location of the expression.  */
 
 int
@@ -2061,98 +2055,6 @@ expand_return (tree retval)
     }
 }
 
-/* Generate the RTL code for entering a binding contour.
-   The variables are declared one by one, by calls to `expand_decl'.
-
-   FLAGS is a bitwise or of the following flags:
-
-     1 - Nonzero if this construct should be visible to
-         `exit_something'.
-
-     2 - Nonzero if this contour does not require a
-	 NOTE_INSN_BLOCK_BEG note.  Virtually all calls from
-	 language-independent code should set this flag because they
-	 will not create corresponding BLOCK nodes.  (There should be
-	 a one-to-one correspondence between NOTE_INSN_BLOCK_BEG notes
-	 and BLOCKs.)  If this flag is set, MARK_ENDS should be zero
-	 when expand_end_bindings is called.
-
-    If we are creating a NOTE_INSN_BLOCK_BEG note, a BLOCK may
-    optionally be supplied.  If so, it becomes the NOTE_BLOCK for the
-    note.  */
-
-void
-expand_start_bindings_and_block (int flags, tree block)
-{
-  struct nesting *thisblock = ALLOC_NESTING ();
-  rtx note;
-  int exit_flag = ((flags & 1) != 0);
-  int block_flag = ((flags & 2) == 0);
-
-  /* If a BLOCK is supplied, then the caller should be requesting a
-     NOTE_INSN_BLOCK_BEG note.  */
-  if (!block_flag && block)
-    abort ();
-
-  /* Create a note to mark the beginning of the block.  */
-  note = emit_note (NOTE_INSN_DELETED);
-
-  /* Make an entry on block_stack for the block we are entering.  */
-
-  thisblock->desc = BLOCK_NESTING;
-  thisblock->next = block_stack;
-  thisblock->all = nesting_stack;
-  thisblock->depth = ++nesting_depth;
-  thisblock->data.block.block_target_temp_slot_level = target_temp_slot_level;
-
-  /* When we insert instructions after the last unconditional cleanup,
-     we don't adjust last_insn.  That means that a later add_insn will
-     clobber the instructions we've just added.  The easiest way to
-     fix this is to just insert another instruction here, so that the
-     instructions inserted after the last unconditional cleanup are
-     never the last instruction.  */
-  emit_note (NOTE_INSN_DELETED);
-
-  thisblock->data.block.first_insn = note;
-  thisblock->data.block.block_start_count = ++current_block_start_count;
-  thisblock->exit_label = exit_flag ? gen_label_rtx () : 0;
-  block_stack = thisblock;
-  nesting_stack = thisblock;
-
-  /* Make a new level for allocating stack slots.  */
-  push_temp_slots ();
-}
-
-/* Specify the scope of temporaries created by TARGET_EXPRs.  Similar
-   to CLEANUP_POINT_EXPR, but handles cases when a series of calls to
-   expand_expr are made.  After we end the region, we know that all
-   space for all temporaries that were created by TARGET_EXPRs will be
-   destroyed and their space freed for reuse.  */
-
-void
-expand_start_target_temps (void)
-{
-  /* This is so that even if the result is preserved, the space
-     allocated will be freed, as we know that it is no longer in use.  */
-  push_temp_slots ();
-
-  /* Start a new binding layer that will keep track of all cleanup
-     actions to be performed.  */
-  expand_start_bindings (2);
-
-  target_temp_slot_level = temp_slot_level;
-}
-
-void
-expand_end_target_temps (void)
-{
-  expand_end_bindings (NULL_TREE, 0, 0);
-
-  /* This is so that even if the result is preserved, the space
-     allocated will be freed, as we know that it is no longer in use.  */
-  pop_temp_slots ();
-}
-
 /* Given a pointer to a BLOCK node return nonzero if (and only if) the node
    in question represents the outermost pair of curly braces (i.e. the "body
    block") of a function or method.
@@ -2183,15 +2085,6 @@ is_body_block (tree stmt)
     }
 
   return 0;
-}
-
-/* Return an opaque pointer to the current nesting level, so frontend code
-   can check its own sanity.  */
-
-struct nesting *
-current_nesting_level (void)
-{
-  return cfun ? block_stack : 0;
 }
 
 /* Emit code to restore vital registers at the beginning of a nonlocal goto
@@ -2262,70 +2155,6 @@ expand_nl_goto_receiver (void)
      happen immediately, not later.  So emit an ASM_INPUT to act as blockage
      insn.  */
   emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
-}
-
-/* Warn about any unused VARS (which may contain nodes other than
-   VAR_DECLs, but such nodes are ignored).  The nodes are connected
-   via the TREE_CHAIN field.  */
-
-void
-warn_about_unused_variables (tree vars)
-{
-  tree decl;
-
-  if (warn_unused_variable)
-    for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      if (TREE_CODE (decl) == VAR_DECL
-	  && ! TREE_USED (decl)
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
-	warning ("%Junused variable '%D'", decl, decl);
-}
-
-/* Generate RTL code to terminate a binding contour.
-
-   VARS is the chain of VAR_DECL nodes for the variables bound in this
-   contour.  There may actually be other nodes in this chain, but any
-   nodes other than VAR_DECLS are ignored.
-
-   MARK_ENDS is nonzero if we should put a note at the beginning
-   and end of this binding contour.
-
-   DONT_JUMP_IN is positive if it is not valid to jump into this contour,
-   zero if we can jump into this contour only if it does not have a saved
-   stack level, and negative if we are not to check for invalid use of
-   labels (because the front end does that).  */
-
-void
-expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
-		     int dont_jump_in ATTRIBUTE_UNUSED)
-{
-  struct nesting *thisblock = block_stack;
-
-  /* If any of the variables in this scope were not used, warn the
-     user.  */
-  warn_about_unused_variables (vars);
-
-  if (thisblock->exit_label)
-    {
-      do_pending_stack_adjust ();
-      emit_label (thisblock->exit_label);
-    }
-
-  /* Mark the beginning and end of the scope if requested.  */
-
-  /* Get rid of the beginning-mark if we don't make an end-mark.  */
-  NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
-
-  /* Restore the temporary level of TARGET_EXPRs.  */
-  target_temp_slot_level = thisblock->data.block.block_target_temp_slot_level;
-
-  /* Restore block_stack level for containing block.  */
-
-  POPSTACK (block_stack);
-
-  /* Pop the stack slot nesting and free any slots at this level.  */
-  pop_temp_slots ();
 }
 
 /* Generate RTL for the automatic variable declaration DECL.

@@ -248,7 +248,7 @@ struct tree_common GTY(())
            BLOCK
 	   ..._DECL
        CALL_FROM_THUNK_P in
-           CALL_EXPR 
+           CALL_EXPR
 
    side_effects_flag:
 
@@ -569,7 +569,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
 #define NOT_RECORD_OR_UNION_CHECK(T) \
   TREE_NOT_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
-    
+
 #define NUMERICAL_TYPE_CHECK(T)					\
   TREE_CHECK5 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE,	\
 	       CHAR_TYPE, REAL_TYPE)
@@ -764,7 +764,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST, this means
    there was an overflow in folding, and no warning has been issued
    for this subexpression.  TREE_OVERFLOW implies TREE_CONSTANT_OVERFLOW,
-   but not vice versa. 
+   but not vice versa.
 
    ??? Apparently, lots of code assumes this is defined in all
    expressions.  */
@@ -806,7 +806,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
    accessing the memory pointed to won't generate a trap.  However,
    this only applies to an object when used appropriately: it doesn't
    mean that writing a READONLY mem won't trap.
-   
+
    In ARRAY_REF and ARRAY_RANGE_REF means that we know that the index
    (or slice of the array) always belongs to the range of the array.
    I.e. that the access will not trap, provided that the access to
@@ -843,7 +843,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
    to be compiled separately.
    Nonzero in a RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE or ENUMERAL_TYPE
    if the sdb debugging info for the type has been written.
-   In a BLOCK node, nonzero if reorder_blocks has already seen this block. 
+   In a BLOCK node, nonzero if reorder_blocks has already seen this block.
    In an SSA_NAME node, nonzero if the SSA_NAME occurs in an abnormal
    PHI node.  */
 #define TREE_ASM_WRITTEN(NODE) ((NODE)->common.asm_written_flag)
@@ -1163,7 +1163,7 @@ struct tree_vec GTY(())
 
 /* VDEF_EXPR accessors are specified in tree-flow.h, along with the other
    accessors for SSA operands.  */
-   
+
 /* CATCH_EXPR accessors.  */
 #define CATCH_TYPES(NODE)	TREE_OPERAND (CATCH_EXPR_CHECK (NODE), 0)
 #define CATCH_BODY(NODE)	TREE_OPERAND (CATCH_EXPR_CHECK (NODE), 1)
@@ -1227,7 +1227,7 @@ struct tree_exp GTY(())
 /* Auxiliary pass-specific data.  */
 #define SSA_NAME_AUX(N) \
    SSA_NAME_CHECK (N)->ssa_name.aux
-   
+
 #ifndef _TREE_FLOW_H
 struct ptr_info_def;
 #endif
@@ -1245,7 +1245,7 @@ struct tree_ssa_name GTY(())
   /* Pointer attributes used for alias analysis.  */
   struct ptr_info_def *ptr_info;
 
-  /* Value for SSA name used by GVN.  */ 
+  /* Value for SSA name used by GVN.  */
   tree GTY((skip)) value_handle;
 
   /* Auxiliary information stored with the ssa name.  */
@@ -3360,11 +3360,6 @@ extern void expand_stack_alloc (tree, tree);
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
-extern void expand_start_bindings_and_block (int, tree);
-#define expand_start_bindings(flags) \
-  expand_start_bindings_and_block(flags, NULL_TREE)
-extern void expand_end_bindings (tree, int, int);
-extern void warn_about_unused_variables (tree);
 extern int is_body_block (tree);
 
 extern struct nesting * current_nesting_level (void);
@@ -3632,8 +3627,6 @@ extern void expand_asm_expr (tree);
 extern bool asm_op_is_mem_input (tree, tree);
 extern tree resolve_asm_operand_names (tree, tree, tree);
 extern void init_stmt_for_function (void);
-extern void expand_start_target_temps (void);
-extern void expand_end_target_temps (void);
 extern void expand_elseif (tree);
 extern void expand_decl (tree);
 extern void expand_anon_union_decl (tree, tree, tree);
@@ -3702,7 +3695,7 @@ enum tree_dump_index
   TDI_nested,			/* dump each function after unnesting it */
   TDI_inlined,			/* dump each function after inlining
 				   within it.  */
-  TDI_vcg,			/* create a VCG graph file for each 
+  TDI_vcg,			/* create a VCG graph file for each
 				   function's flowgraph.  */
   TDI_xml,                      /* dump function call graph.  */
   TDI_all,			/* enable all the dumps.  */
@@ -3749,7 +3742,7 @@ extern void fancy_abort (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
-/* Enum and arrays used for tree allocation stats. 
+/* Enum and arrays used for tree allocation stats.
    Keep in sync with tree.c:tree_node_kind_names.  */
 typedef enum
 {
@@ -3780,7 +3773,7 @@ extern int tree_node_sizes[];
    be restricted.  False if we are not in gimple form and folding is not
    restricted to creating gimple expressions.  */
 extern bool in_gimple_form;
-    
+
 /* In tree-ssa-loop-niter.c.  */
 
 tree lower_bound_in_type (tree, tree);

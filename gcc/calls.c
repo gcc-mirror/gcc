@@ -2232,15 +2232,11 @@ expand_call (tree exp, rtx target, int ignore)
      finished with regular parsing.  Which means that some of the
      machinery we use to generate tail-calls is no longer in place.
      This is most often true of sjlj-exceptions, which we couldn't
-     tail-call to anyway.
+     tail-call to anyway.  */
 
-     If current_nesting_level () == 0, we're being called after
-     the function body has been expanded.  This can happen when
-     setting up trampolines in expand_function_end.  */
   if (currently_expanding_call++ != 0
       || !flag_optimize_sibling_calls
       || !rtx_equal_function_value_matters
-      || current_nesting_level () == 0
       || args_size.var
       || lookup_stmt_eh_region (exp) >= 0)
     try_tail_call = 0;
@@ -2371,15 +2367,6 @@ expand_call (tree exp, rtx target, int ignore)
 	 From this point on, if the sibling call fails, we want to set
 	 sibcall_failure instead of continuing the loop.  */
       start_sequence ();
-
-      if (pass == 0)
-	{
-	  /* We know at this point that there are not currently any
-	     pending cleanups.  If, however, in the process of evaluating
-	     the arguments we were to create some, we'll need to be
-	     able to get rid of them.  */
-	  expand_start_target_temps ();
-	}
 
       /* Don't let pending stack adjusts add up to too much.
 	 Also, do all pending adjustments now if there is any chance
@@ -3092,14 +3079,6 @@ expand_call (tree exp, rtx target, int ignore)
       for (i = 0; i < num_actuals; ++i)
 	if (args[i].aligned_regs)
 	  free (args[i].aligned_regs);
-
-      if (pass == 0)
-	{
-	  /* Undo the fake expand_start_target_temps we did earlier.  If
-	     there had been any cleanups created, we've already set
-	     sibcall_failure.  */
-	  expand_end_target_temps ();
-	}
 
       /* If this function is returning into a memory location marked as
 	 readonly, it means it is initializing that location. We normally treat

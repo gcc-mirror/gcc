@@ -746,9 +746,7 @@ pop_scope (void)
 	  goto common_symbol;
 
 	case VAR_DECL:
-	  /* Warnings for unused variables.  Keep this in sync with
-	     stmt.c:warn_about_unused_variables, which we cannot use
-	     since it expects a different data structure.  */
+	  /* Warnings for unused variables.  */
 	  if (warn_unused_variable
 	      && !TREE_USED (p)
 	      && !DECL_IN_SYSTEM_HEADER (p)
@@ -1951,7 +1949,7 @@ pushdecl (tree x)
 	  bind (name, x, file_scope, /*invisible=*/true, /*nested=*/false);
 	  nested = true;
 	}
-    }      
+    }
 
   warn_if_shadowing (x);
 
@@ -4516,7 +4514,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	  DECL_EXTERNAL (decl) = 0;
 	else
 	  DECL_EXTERNAL (decl) = 1;
-	   
+
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));

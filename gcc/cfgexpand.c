@@ -210,7 +210,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 
       expand_expr_stmt (stmt);
 
-      /* Java emits line number notes in the top of labels. 
+      /* Java emits line number notes in the top of labels.
          ??? Make this go away once line number notes are obsoleted.  */
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
@@ -275,7 +275,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
   if (JUMP_TABLE_DATA_P (last))
     last = PREV_INSN (PREV_INSN (last));
   BB_END (bb) = last;
- 
+
   if (dump_file)
     dump_bb (bb, dump_file, 0);
   update_bb_for_insn (bb);
@@ -291,8 +291,6 @@ construct_init_block (void)
 {
   basic_block init_block, first_block;
   edge e;
-
-  expand_start_bindings_and_block (0, NULL_TREE);
 
   for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
     if (e->dest == ENTRY_BLOCK_PTR->next_bb)
@@ -329,7 +327,7 @@ construct_exit_block (void)
   basic_block exit_block;
   edge e, e2, next;
 
-  /* Make sure the locus is set to the end of the function, so that 
+  /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
 #ifdef USE_MAPPED_LOCATION
   if (cfun->function_end_locus != UNKNOWN_LOCATION)
@@ -340,8 +338,6 @@ construct_exit_block (void)
 
   /* The following insns belong to the top scope.  */
   record_block_change (DECL_INITIAL (current_function_decl));
-
-  expand_end_bindings (NULL_TREE, 1, 0);
 
   /* Generate rtl for function exit.  */
   expand_function_end ();

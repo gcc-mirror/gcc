@@ -1,3 +1,28 @@
+2004-07-21  Eric Christopher  <echristo@redhat.com>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Fix comment for code
+	removal.
+	* c-decl.c (pop_scope): Ditto.
+	* calls.c (expand_call): Remove call to current_nesting_level,
+	update comment accordingly. Remove calls to expand_start_target_temps
+	and expand_end_target_temps.
+	* cfgexpand.c (construct_init_block): Remove call to
+	expand_start_bindings_and_block.
+	(construct_exit_block): Remove call to expand_end_bindings.
+	* expr.c (safe_from_p): Remove BIND_EXPR handling.
+	(expand_expr_real_1): Ditto. Fix formatting.
+	(expand_vars): Delete.
+	* stmt.c (POPSTACK): Remove block_stack.
+	(stmt_status): Remove x_block_stack.
+	(block_stack): Delete.
+	(expand_start_bindings_and_block): Ditto.
+	(expand_start_target_temps): Ditto.
+	(expand_end_target_temps): Ditto.
+	(current_nesting_level): Ditto.
+	(warn_about_unused_variables): Ditto.
+	(expand_end_bindings): Ditto.
+	* tree.h: Remove declarations for above.
+
 2004-07-21  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.h (insn_note): Remove NOTE_INSN_PREDICTION.
@@ -125,7 +150,6 @@
 	for EXTRA_SECTION_FUNCTIONS.
 	* doc/install.texi: Update binutils requirements.
 
->>>>>>> 2.4622
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_T_length, VEC_T_index, VEC_T_iterate, VEC_T_truncate,

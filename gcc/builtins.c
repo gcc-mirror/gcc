@@ -571,8 +571,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
   emit_insn (gen_rtx_CLOBBER (VOIDmode, static_chain_rtx));
 
   /* Now put in the code to restore the frame pointer, and argument
-     pointer, if needed.  The code below is from expand_end_bindings
-     in stmt.c; see detailed documentation there.  */
+     pointer, if needed.  */
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)
 #endif
@@ -814,7 +813,7 @@ expand_builtin_nonlocal_goto (tree arglist)
       emit_insn (gen_rtx_CLOBBER (VOIDmode,
 				  gen_rtx_MEM (BLKmode,
 					       hard_frame_pointer_rtx)));
- 
+
       /* Restore frame pointer for containing function.
 	 This sets the actual hard register used for the frame pointer
 	 to the location of the function's incoming static chain info.
@@ -822,14 +821,14 @@ expand_builtin_nonlocal_goto (tree arglist)
 	 proper value and reload the argument pointer, if needed.  */
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
- 
+
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */
       emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
       emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
       emit_indirect_jump (r_label);
     }
- 
+
   /* Search backwards to the jump insn and mark it as a
      non-local goto.  */
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
@@ -2038,7 +2037,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	    case BUILT_IN_SIN:
 	    case BUILT_IN_SINF:
 	    case BUILT_IN_SINL:
-	      if (!expand_twoval_unop (builtin_optab, op0, 0, target, 0))    
+	      if (!expand_twoval_unop (builtin_optab, op0, 0, target, 0))
 		abort();
 	      break;
 	    case BUILT_IN_COS:
@@ -7576,13 +7575,13 @@ fold_builtin_isascii (tree arglist)
     {
       /* Transform isascii(c) -> ((c & ~0x7f) == 0).  */
       tree arg = TREE_VALUE (arglist);
-      
+
       arg = fold (build2 (EQ_EXPR, integer_type_node,
 			  build2 (BIT_AND_EXPR, integer_type_node, arg,
 				  build_int_2 (~ (unsigned HOST_WIDE_INT) 0x7f,
 					       ~ (HOST_WIDE_INT) 0)),
 			  integer_zero_node));
-      
+
       if (in_gimple_form && !TREE_CONSTANT (arg))
         return NULL_TREE;
       else
@@ -7601,7 +7600,7 @@ fold_builtin_toascii (tree arglist)
     {
       /* Transform toascii(c) -> (c & 0x7f).  */
       tree arg = TREE_VALUE (arglist);
-      
+
       return fold (build2 (BIT_AND_EXPR, integer_type_node, arg,
 			   build_int_2 (0x7f, 0)));
     }
@@ -7950,7 +7949,7 @@ fold_builtin_1 (tree exp, bool ignore)
 	  if (flag_unsafe_math_optimizations && BUILTIN_ROOT_P (fcode))
 	    {
 	      tree powfn = mathfn_built_in (type, BUILT_IN_POW);
-	      
+
 	      if (powfn)
 	        {
 		  tree arg0 = TREE_VALUE (TREE_OPERAND (arg, 1));
@@ -7958,7 +7957,7 @@ fold_builtin_1 (tree exp, bool ignore)
 		  /* The inner root was either sqrt or cbrt.  */
 		  REAL_VALUE_TYPE dconstroot =
 		    BUILTIN_SQRT_P (fcode) ? dconsthalf : dconstthird;
-		  
+
 		  /* Adjust for the outer root.  */
 		  SET_REAL_EXP (&dconstroot, REAL_EXP (&dconstroot) - 1);
 		  dconstroot = real_value_truncate (TYPE_MODE (type), dconstroot);
@@ -8032,7 +8031,7 @@ fold_builtin_1 (tree exp, bool ignore)
 				       build_tree_list (NULL_TREE, tree_root));
 		  return build_function_call_expr (powfn, arglist);
 		}
-	      
+
 	    }
 	}
       break;
@@ -8431,7 +8430,7 @@ fold_builtin_1 (tree exp, bool ignore)
 }
 
 /* A wrapper function for builtin folding that prevents warnings for
-   "statement without effect" and the like, caused by removing the 
+   "statement without effect" and the like, caused by removing the
    call node earlier than the warning is generated.  */
 
 tree
@@ -8540,7 +8539,7 @@ readonly_data_expr (tree exp)
   /* Make sure we call decl_readonly_section only for trees it
      can handle (since it returns true for everything it doesn't
      understand).  */
-  if (TREE_CODE (exp) == STRING_CST 
+  if (TREE_CODE (exp) == STRING_CST
       || TREE_CODE (exp) == CONSTRUCTOR
       || (TREE_CODE (exp) == VAR_DECL && TREE_STATIC (exp)))
     return decl_readonly_section (exp, 0);

@@ -3948,7 +3948,7 @@ store_expr (tree exp, rtx target, int want_value)
   else
     {
       temp = expand_expr_real (exp, target, GET_MODE (target),
-			       (want_value & 2 
+			       (want_value & 2
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl);
       /* Return TARGET if it's a specified hardware register.
@@ -4142,7 +4142,7 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 
   nz_elts = 0;
   nc_elts = 0;
-  
+
   for (list = CONSTRUCTOR_ELTS (ctor); list; list = TREE_CHAIN (list))
     {
       tree value = TREE_VALUE (list);
@@ -4297,7 +4297,7 @@ int
 mostly_zeros_p (tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
-    
+
     {
       HOST_WIDE_INT nz_elts, nc_elts, elts;
 
@@ -4831,12 +4831,12 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
 	{
 	  enum machine_mode mode = GET_MODE (target);
-	  
+
 	  icode = (int) vec_init_optab->handlers[mode].insn_code;
 	  if (icode != CODE_FOR_nothing)
 	    {
 	      unsigned int i;
-	      
+
 	      vector = alloca (n_elts);
 	      for (i = 0; i < n_elts; i++)
 		vector [i] = CONST0_RTX (GET_MODE_INNER (mode));
@@ -5479,7 +5479,7 @@ array_ref_element_size (tree exp)
     return size_binop (MULT_EXPR, aligned_size,
 		       size_int (TYPE_ALIGN (elmt_type) / BITS_PER_UNIT));
 
-  /* Otherwise, take the size from that of the element type.  Substitute 
+  /* Otherwise, take the size from that of the element type.  Substitute
      any PLACEHOLDER_EXPR that we have.  */
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (elmt_type), exp);
@@ -5539,7 +5539,7 @@ component_ref_field_offset (tree exp)
     return size_binop (MULT_EXPR, aligned_offset,
 		       size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT));
 
-  /* Otherwise, take the offset from that of the field.  Substitute 
+  /* Otherwise, take the offset from that of the field.  Substitute
      any PLACEHOLDER_EXPR that we have.  */
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
@@ -5861,11 +5861,6 @@ safe_from_p (rtx x, tree exp, int top_p)
 	case SAVE_EXPR:
 	  return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
-	case BIND_EXPR:
-	  /* The only operand we look at is operand 1.  The rest aren't
-	     part of the expression.  */
-	  return safe_from_p (x, TREE_OPERAND (exp, 1), 0);
-
 	default:
 	  break;
 	}
@@ -6037,7 +6032,7 @@ expand_var (tree var)
 	{
 	  /* Prepare a mem & address for the decl.  */
 	  rtx x;
-		    
+
 	  if (TREE_STATIC (var))
 	    abort ();
 
@@ -6060,23 +6055,6 @@ expand_var (tree var)
 	/* No expansion needed.  */;
       else
 	abort ();
-    }
-}
-
-/* Expands declarations of variables in list VARS.  */
-
-static void
-expand_vars (tree vars)
-{
-  for (; vars; vars = TREE_CHAIN (vars))
-    {
-      tree var = vars;
-
-      if (DECL_EXTERNAL (var))
-	continue;
-
-      expand_var (var);
-      expand_decl_init (var);
     }
 }
 
@@ -6148,7 +6126,7 @@ expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
    marked TARGET so that it's safe from being trashed by libcalls.  We
    don't want to use TARGET for anything but the final result;
    Intermediate values must go elsewhere.   Additionally, calls to
-   emit_block_move will be flagged with BLOCK_OP_CALL_PARM.  
+   emit_block_move will be flagged with BLOCK_OP_CALL_PARM.
 
    If EXP is a VAR_DECL whose DECL_RTL was a MEM with an invalid
    address, and ALT_RTL is non-NULL, then *ALT_RTL is set to the
@@ -6183,11 +6161,11 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
     }
 
   /* If this is an expression of some kind and it has an associated line
-     number, then emit the line number before expanding the expression. 
+     number, then emit the line number before expanding the expression.
 
      We need to save and restore the file and line information so that
      errors discovered during expansion are emitted with the right
-     information.  It would be better of the diagnostic routines 
+     information.  It would be better of the diagnostic routines
      used the file/line information embedded in the tree nodes rather
      than globals.  */
   if (cfun && EXPR_HAS_LOCATION (exp))
@@ -6195,7 +6173,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
       location_t saved_location = input_location;
       input_location = EXPR_LOCATION (exp);
       emit_line_note (input_location);
-      
+
       /* Record where the insns produced belong.  */
       record_block_change (TREE_BLOCK (exp));
 
@@ -6212,9 +6190,9 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
      expand_call() will mark CALL_INSNs before we get to this code,
      but it doesn't handle libcalls, and these may trap.  */
   if (rn >= 0)
-    {	
+    {
       rtx insn;
-      for (insn = next_real_insn (last); insn; 
+      for (insn = next_real_insn (last); insn;
 	   insn = next_real_insn (insn))
 	{
 	  if (! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
@@ -6501,7 +6479,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp))) == MODE_VECTOR_INT
 	  || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp))) == MODE_VECTOR_FLOAT)
 	return const_vector_from_tree (exp);
-      else 
+      else
 	return expand_expr (build1 (CONSTRUCTOR, TREE_TYPE (exp),
 				    TREE_VECTOR_CST_ELTS (exp)),
 			    ignore ? const0_rtx : target, tmode, modifier);
@@ -6623,31 +6601,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	sorry ("returned value in block_exit_expr");
       expand_goto (LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (exp)));
       return const0_rtx;
-
-    case BIND_EXPR:
-      {
-	tree block = BIND_EXPR_BLOCK (exp);
-	int mark_ends;
-
-	/* If we're in functions-as-trees mode, this BIND_EXPR represents
-	   the block, so we need to emit NOTE_INSN_BLOCK_* notes.  */
-	mark_ends = (block != NULL_TREE);
-	expand_start_bindings_and_block (mark_ends ? 0 : 2, block);
-
-	/* If VARS have not yet been expanded, expand them now.  */
-	expand_vars (BIND_EXPR_VARS (exp));
-
-	/* TARGET was clobbered early in this function.  The correct
-	   indicator or whether or not we need the value of this 
-	   expression is the IGNORE variable.  */
-	temp = expand_expr (BIND_EXPR_BODY (exp),
-			    ignore ? const0_rtx : target,
-			    tmode, modifier);
-
-	expand_end_bindings (BIND_EXPR_VARS (exp), mark_ends, 0);
-
-	return temp;
-      }
 
     case CONSTRUCTOR:
       /* If we don't need the result, just ensure we evaluate any
@@ -8617,6 +8570,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case TARGET_EXPR:
     case CASE_LABEL_EXPR:
     case VA_ARG_EXPR:
+    case BIND_EXPR:
       /* Lowered by gimplify.c.  */
       abort ();
 
@@ -8740,7 +8694,7 @@ is_aligning_offset (tree offset, tree exp)
      power of 2 and which is larger than BIGGEST_ALIGNMENT.  */
   if (TREE_CODE (offset) != BIT_AND_EXPR
       || !host_integerp (TREE_OPERAND (offset, 1), 1)
-      || compare_tree_int (TREE_OPERAND (offset, 1), 
+      || compare_tree_int (TREE_OPERAND (offset, 1),
 			   BIGGEST_ALIGNMENT / BITS_PER_UNIT) <= 0
       || !exact_log2 (tree_low_cst (TREE_OPERAND (offset, 1), 1) + 1) < 0)
     return 0;
