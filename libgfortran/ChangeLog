@@ -1,3 +1,12 @@
+2004-06-12  Steven G. Kargl  <kargls@comcast.net>
+
+	* Makefile.am: Add rand.c and etime.c
+	* Makefile.in: Regenerated.
+	* aclocal.in: Regenerated.
+	* cpu_time.c (second_sub, second): New functions.
+	* rand.c (irand, rand, srand): New file.
+	* etime.c (etime_sub, etime): New file.
+
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	    Steven Bosscher  <stevenb@suse.de>
 

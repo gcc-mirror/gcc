@@ -2867,6 +2867,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_DOT_PRODUCT:
     case GFC_ISYM_MATMUL:
+    case GFC_ISYM_IRAND:
+    case GFC_ISYM_RAND:
+    case GFC_ISYM_ETIME:
+    case GFC_ISYM_SECOND:
       gfc_conv_intrinsic_funcall (se, expr);
       break;
 

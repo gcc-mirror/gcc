@@ -1,3 +1,16 @@
+2004-06-12  Steven G. Kargl  <kargls@comcast.net>
+
+	* check.c (gfc_check_second_sub, gfc_check_irand, gfc_check_rand
+	gfc_check_srand, gfc_check_etime, gfc_check_etime_sub): New functions.
+	* gfortran.h (gfc_generic_isym_id): New symbols GFC_ISYM_ETIME,
+	GFC_ISYM_IRAND, GFC_ISYM_RAND, GFC_ISYM_SECOND.
+	* trans-intrinsic.c:  Use symbols.
+	* intrinsic.c (add_sym_2s): New function.
+	* intrinsic.c: Add etime, dtime, irand, rand, second, srand.
+	* intrinsic.h: Function prototypes.
+	* iresolve.c (gfc_resolve_etime_sub, gfc_resolve_second_sub 
+	gfc_resolve_srand):  New functions.
+
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14957

@@ -1369,6 +1369,42 @@ gfc_resolve_random_number (gfc_code * c ATTRIBUTE_UNUSED)
     name = gfc_get_string (PREFIX("arandom_r%d"), kind);
   
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+
+}
+
+
+/* G77 compatibility subroutines etime() and dtime().  */
+
+void
+gfc_resolve_etime_sub (gfc_code * c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX("etime_sub"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+/* G77 compatibility subroutine second().  */
+
+void
+gfc_resolve_second_sub (gfc_code * c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX("second_sub"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+/* G77 compatibility function srand().  */
+
+void
+gfc_resolve_srand (gfc_code * c)
+{
+  const char *name;
+  name = gfc_get_string (PREFIX("srand"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
 
@@ -1392,7 +1428,6 @@ gfc_resolve_system_clock (gfc_code * c)
   name = gfc_get_string (PREFIX("system_clock_%d"), kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
-
 
 void
 gfc_iresolve_init_1 (void)

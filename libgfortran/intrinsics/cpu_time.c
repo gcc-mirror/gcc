@@ -114,3 +114,16 @@ void prefix(cpu_time_##KIND) (GFC_REAL_##KIND *__time)		\
 CPU_TIME(4)
 CPU_TIME(8)
 
+void
+prefix(second_sub) (GFC_REAL_4 *s)
+{
+  prefix(cpu_time_4)(s);
+}
+
+GFC_REAL_4
+prefix(second) (void)
+{
+  GFC_REAL_4 s;
+  prefix(cpu_time_4)(&s);
+  return s;
+}
