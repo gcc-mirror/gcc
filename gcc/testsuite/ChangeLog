@@ -1,3 +1,7 @@
+2004-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C: Robustify.
+
 2004-11-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/sibcall-[34].c: Remove MIPS xfails.
