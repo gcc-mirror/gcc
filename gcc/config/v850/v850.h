@@ -1117,16 +1117,6 @@ zbss_section ()								\
 #define ZCOMMON_ASM_OP 	       "\t.zcomm\t"
 #define TCOMMON_ASM_OP 	       "\t.tcomm\t"
 
-/* A C statement or statements to switch to the appropriate section
-   for output of RTX in mode MODE.  You can assume that RTX is some
-   kind of constant in RTL.  The argument MODE is redundant except in
-   the case of a `const_int' rtx.  Select the section by calling
-   `text_section' or one of the alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only
-   data section.  */
-/* #define SELECT_RTX_SECTION(MODE, RTX, ALIGN) */
-
 /* Output at beginning/end of assembler file.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) asm_file_start(FILE)

@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.17 $"
+#define VERSION_INFO2   "$Revision: 1.18 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -229,16 +229,6 @@ Boston, MA 02111-1307, USA.  */
    page alignment would seem to be enough */
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 0x1000
-
-/* Must use data section for relocatable constants when pic.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
-do {							\
-  if (flag_pic && symbolic_operand (RTX, VOIDmode))	\
-    data_section ();					\
-  else							\
-    readonly_data_section ();				\
-} while (0)
 
 /* This supplements FUNCTION_ARG's definition in i386.h to check
    TARGET_WARN_PASS_STRUCT */

@@ -350,16 +350,6 @@ extern int target_flags;
 /* This is how to align an instruction for optimal branching.  */
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) (m68k_align_jumps)
 
-#define SELECT_RTX_SECTION(MODE, X, ALIGN)				\
-{									\
-  if (!flag_pic)							\
-    readonly_data_section();						\
-  else if (LEGITIMATE_PIC_OPERAND_P (X))				\
-    readonly_data_section();						\
-  else									\
-    data_section();							\
-}
-
 /* Define number of bits in most basic integer type.
    (If undefined, default is BITS_PER_WORD).  */
 

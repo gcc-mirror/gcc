@@ -63,13 +63,6 @@ drectve_section ()						\
       in_section = in_drectve;					\
     }								\
 }
-/* A C statement or statements to switch to the appropriate
-   section for output of RTX in mode MODE.  RTX is some kind
-   of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.  Currently, these always
-   go into the const section.  */
-#undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) readonly_data_section ()
 
 #define MCORE_EXPORT_NAME(STREAM, NAME)			\
   do							\

@@ -1,4 +1,71 @@
-Sun May 19 00:24:23 CEST 2002  Jan HUbicka  <jh@suse.cz>
+2002-05-18  Richard Henderson  <rth@redhat.com>
+
+	* system.h (SELECT_RTX_SECTION): Poison.
+	* target-def.h (TARGET_ASM_SELECT_RTX_SECTION): New.
+	* target.h (select_rtx_section): New.
+	* varasm.c (output_constant_pool): Use it.
+	(default_select_rtx_section, default_elf_select_rtx_section): New.
+	* output.h: Declare them.
+
+	* config/darwin.h (SELECT_RTX_SECTION): Move ...
+	* config/darwin.c (machopic_select_rtx_section): ... here.
+	* config/darwin-protos.h: Update.
+
+	* config/nextstep.h (SELECT_RTX_SECTION): Move ...
+	* config/nextstep.c (machopic_select_rtx_section): ... here.
+	(nextstep_select_section): Rename variable to avoid macro clash.
+	* config/nextstep-protos.h: Update.
+
+	* config/elfos.h, config/svr3.h, config/arm/aof.h, config/c4x/c4x.h,
+	config/i386/dgux.h, config/i386/osfrose.h, config/i386/sco5.h,
+	config/i386/svr3gas.h, config/i860/paragon.h, config/ia64/aix.h,
+	config/m32r/m32r.h, config/m68k/dpx2.h, config/m68k/lynx.h, 
+	config/m68k/m68k.h, config/m68k/tower-as.h, config/m88k/dgux.h,
+	config/mcore/mcore-pe.h, config/mips/mips.h, config/mmix/mmix.h,
+	config/pa/pa-linux.h, config/pa/pa.h, config/romp/romp.h, 
+	config/rs6000/lynx.h, config/rs6000/sysv4.h, config/s390/linux.h,
+	config/sparc/sysv4.h, config/xtensa/elf.h, config/xtensa/linux.h
+	(SELECT_RTX_SECTION): Remove.
+
+	* config/darwin.h, config/elfos.h, config/nextstep.h,
+	config/ia64/aix.h, config/ia64/sysv4.h, config/alpha/alpha.c,
+	config/mips/mips.c, config/romp/romp.c, config/rs6000/sysv4.h,
+	config/rs6000/xcoff.h, config/s390/s390.c, config/sparc/aout.h,
+	config/sparc/lynx.h, config/xtensa/xtensa.c
+	(TARGET_ASM_SELECT_RTX_SECTION): New.
+
+	* config/alpha/elf.h (SELECT_RTX_SECTION): Move ...
+	* config/alpha/alpha.c (alpha_elf_select_rtx_section): ... here.
+	* config/ia64/sysv4.h (SELECT_RTX_SECTION): Move ...
+	* config/ia64/ia64.c (ia64_select_rtx_section): ... here.
+	(ia64_aix_select_rtx_section): New.
+	* config/mips/iris6.h (READONLY_DATA_SECTION_ASM_OP): Undef before
+	redefining.
+	* config/mips/mips.c (mips_select_rtx_section): Make static.
+	Support ELF SHF_MERGE features. 
+	* config/mips/mips-protos.h: Update.
+	* config/rs6000/xcoff.h (SELECT_RTX_SECTION): Move ...
+	* config/rs6000/rs6000.c (rs6000_xcoff_select_rtx_section): ... here.
+	(rs6000_elf_select_rtx_section): Rename from rs6000_select_rtx_section;
+	make static, fall back to default_elf_select_rtx_section.
+	* config/rs6000/rs6000-protos.h: Update.
+	* config/sparc/sparc.h (SELECT_RTX_SECTION): Move ...
+	* config/sparc/sparc.c (sparc_aout_select_rtx_section): ... here.
+	* config/sparc/sunos4.h (on_exit): Declare only if IN_LIBGCC2.
+	* config/romp/romp.c (romp_select_rtx_section): New.
+	* config/s390/s390.c (s390_select_rtx_section): New.
+	* config/xtensa/xtensa.c: Include output.h.  Shuffle local function
+	declarations before target macro definition.
+	(xtensa_emit_call): Use static buffer.
+	(xtensa_select_rtx_section): New.
+	* config/xtensa/xtensa.h (MAX_INT_TYPE_SIZE): Remove.
+	(IMPLICIT_FIX_EXPR, EASY_DIV_EXPR): Remove.
+	(ASM_OUTPUT_POOL_PROLOGUE): Update call to resolve_unique_section.
+
+	* doc/tm.texi (TARGET_ASM_SELECT_RTX_SECTION): Update from
+	SELECT_RTX_SECTION docs.
+
+Sun May 19 00:24:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsi/movdi): Fix template.
 	(sse2 patterns): Set attributes consistently.

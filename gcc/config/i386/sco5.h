@@ -348,19 +348,6 @@ do {									\
         fprintf ((FILE), "\n");						\
 } while (0) 
 
-/* Must use data section for relocatable constants when pic.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
-{							\
-  if (TARGET_ELF) {					\
-    if (flag_pic && symbolic_operand (RTX, VOIDmode))	\
-      data_section ();					\
-    else						\
-      readonly_data_section ();				\
-  } else						\
-    readonly_data_section();				\
-}
-
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
 do {									\

@@ -68,16 +68,6 @@ Boston, MA 02111-1307, USA.  */
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
    %{fpic:-K PIC} %{fPIC:-K PIC} %(asm_cpu)"
 
-/* Must use data section for relocatable constants when pic.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
-{							\
-  if (flag_pic && symbolic_operand ((RTX), (MODE)))	\
-    data_section ();					\
-  else							\
-    readonly_data_section ();				\
-}
-
 /* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used
    by most svr4 assemblers.  That is probably due to a (misguided?) attempt

@@ -89,14 +89,6 @@ Boston, MA 02111-1307, USA.  */
 /* glibc's profiling functions don't need gcc to allocate counters.  */
 #define NO_PROFILE_COUNTERS 1
 
-/* Put plabels into the data section so we can relocate them.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
-  if (flag_pic && function_label_operand (RTX, MODE))	\
-    data_section ();					\
-  else							\
-    readonly_data_section ();
-
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to
    another, but if a given system (e.g. m88k running svr) needs to use

@@ -53,12 +53,16 @@ static int memory_offset_in_range_p PARAMS ((rtx, enum machine_mode, int, int));
 static unsigned int hash_rtx PARAMS ((rtx));
 static void romp_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
+					     unsigned HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE romp_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE romp_output_function_epilogue
+#undef TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION romp_select_rtx_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2067,4 +2071,15 @@ romp_initialize_trampoline (tramp, fnaddr, cxt)
   temp = expand_shift (RSHIFT_EXPR, SImode, val, build_int_2 (16, 0), 0, 1);
   addr = memory_address (HImode, plus_constant (tramp, 20));
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, temp));
+}
+
+/* On ROMP, all constants are in the data area.  */
+
+static void
+romp_select_rtx_section (mode, x, align)
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  data section ();
 }

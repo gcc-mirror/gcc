@@ -4721,10 +4721,6 @@ sdata_section ()							\
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) \
-  mips_select_rtx_section (MODE, RTX)
-
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION  mips_select_section
 

@@ -153,10 +153,15 @@ static int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
 
+static void ia64_select_rtx_section PARAMS ((enum machine_mode, rtx,
+					     unsigned HOST_WIDE_INT));
 static void ia64_aix_select_section PARAMS ((tree, int,
 					     unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 static void ia64_aix_unique_section PARAMS ((tree, int))
+     ATTRIBUTE_UNUSED;
+static void ia64_aix_select_rtx_section PARAMS ((enum machine_mode, rtx,
+					         unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 
 /* Table of valid machine attributes.  */
@@ -7843,6 +7848,22 @@ ia64_hpux_function_arg_padding (mode, type)
       ? downward : upward);
 }
 
+/* Switch to the section to which we should output X.  The only thing
+   special we do here is to honor small data.  */
+
+static void
+ia64_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
+{
+  if (GET_MODE_SIZE (mode) > 0
+      && GET_MODE_SIZE (mode) <= ia64_section_threshold)
+    sdata_section ();
+  else
+    default_elf_select_rtx_section (mode, x, align);
+}
+
 /* It is illegal to have relocations in shared segments on AIX.
    Pretend flag_pic is always set.  */
 
@@ -7866,5 +7887,17 @@ ia64_aix_unique_section (decl, reloc)
   int save_pic = flag_pic;
   flag_pic = 1;
   default_unique_section (decl, reloc);
+  flag_pic = save_pic;
+}
+
+static void
+ia64_aix_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
+{
+  int save_pic = flag_pic;
+  flag_pic = 1;
+  ia64_select_rtx_section (mode, x, align);
   flag_pic = save_pic;
 }

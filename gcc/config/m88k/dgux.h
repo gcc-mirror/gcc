@@ -290,13 +290,3 @@ func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
    page alignment would seem to be enough */
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 0x1000
-
-/* Must use data section for relocatable constants when pic.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
-{							\
-  if (flag_pic && symbolic_operand ((RTX), (MODE)))	\
-    data_section ();					\
-  else							\
-    readonly_data_section ();				\
-}

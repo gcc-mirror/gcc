@@ -464,20 +464,6 @@ do								\
   }								\
 while (0)
 
-/* Given a decl node or constant node, choose the section to output it in
-   and select that section.  */
-
-#undef	SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
-do									\
-  {									\
-    if (MODE == Pmode && HALF_PIC_P () && HALF_PIC_ADDRESS_P (RTX))	\
-      data_section ();							\
-    else								\
-      readonly_data_section ();						\
-  }									\
-while (0)
-
 #undef	SELECT_SECTION
 #define SELECT_SECTION(DECL, RELOC, ALIGN)				\
 {									\

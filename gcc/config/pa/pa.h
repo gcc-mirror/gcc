@@ -1492,17 +1492,6 @@ do { 									\
       || GET_CODE (ADDR) == POST_INC)	\
     goto LABEL
 
-/* Arghh.  The hpux10 linker chokes if we have a reference to symbols
-   in a readonly data section when the symbol is defined in a shared
-   library.  Since we can't know at compile time if a symbol will be
-   satisfied by a shared library or main program we put any symbolic
-   constant into the normal data section.  */
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
-  if (symbolic_operand (RTX, MODE))	\
-    data_section ();			\
-  else					\
-    readonly_data_section ();
-
 #define TARGET_ASM_SELECT_SECTION  pa_select_section
    
 /* Define this macro if references to a symbol must be treated

@@ -1735,15 +1735,6 @@ fini_section ()							\
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_HEX */
 
-/* A C statement or statements to switch to the appropriate
-   section for output of RTX in mode MODE.  RTX is some kind
-   of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.  Currently, these always
-   go into the const section.  */
-
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) readonly_data_section()
-
-
 /* Overall Framework of an Assembler File.  */
 /* We need to have a data section we can identify so that we can set
    the DP register back to a data pointer in the small memory model.

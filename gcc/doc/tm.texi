@@ -5757,18 +5757,6 @@ functions should do jobs analogous to those of @code{text_section} and
 @code{data_section}, for your additional sections.  Do not define this
 macro if you do not define @code{EXTRA_SECTIONS}.
 
-@findex SELECT_RTX_SECTION
-@item SELECT_RTX_SECTION (@var{mode}, @var{rtx}, @var{align})
-A C statement or statements to switch to the appropriate section for
-output of @var{rtx} in mode @var{mode}.  You can assume that @var{rtx}
-is some kind of constant in RTL@.  The argument @var{mode} is redundant
-except in the case of a @code{const_int} rtx.  Select the section by
-calling @code{text_section} or one of the alternatives for other
-sections.  @var{align} is the constant alignment in bits.
-
-Do not define this macro if you put all constants in the read-only
-data section.
-
 @findex JUMP_TABLES_IN_TEXT_SECTION
 @item JUMP_TABLES_IN_TEXT_SECTION
 Define this macro to be an expression with a nonzero value if jump
@@ -5836,6 +5824,19 @@ The default version of this function appends the symbol name to the
 ELF section name that would normally be used for the symbol.  For
 example, the function @code{foo} would be placed in @code{.text.foo}.
 Whatever the actual target object format, this is often good enough.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
+Switches to the appropriate section for output of constant pool entry
+@var{x} in @var{mode}.  You can assume that @var{x} is some kind of
+constant in RTL@.  The argument @var{mode} is redundant except in the
+case of a @code{const_int} rtx.  Select the section by calling
+@code{readonly_data_section} or one of the alternatives for other
+sections.  @var{align} is the constant alignment in bits.
+
+The default version of this function takes care of putting symbolic
+constants in @code{flag_pic} mode in @code{data_section} and everything
+else in @code{readonly_data_section}.
 @end deftypefn
 
 @node PIC

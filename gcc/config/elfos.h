@@ -240,18 +240,8 @@ Boston, MA 02111-1307, USA.  */
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
-/* A C statement or statements to switch to the appropriate
-   section for output of RTX in mode MODE.  RTX is some kind
-   of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.
-   If assembler supports SHF_MERGE sections, put it into
-   a .rodata.cstN section where N is size of the constant,
-   otherwise into const section.  */
-
-#undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)	\
-  mergeable_constant_section ((MODE), (ALIGN), 0)
-
+#undef  TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION default_elf_select_rtx_section
 #undef	TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION default_elf_select_section
 

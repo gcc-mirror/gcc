@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "function.h"
 #include "toplev.h"
 #include "optabs.h"
+#include "output.h"
 #include "libfuncs.h"
 #include "target.h"
 #include "target-def.h"
@@ -185,6 +186,24 @@ enum reg_class xtensa_char_to_class[256] =
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
 };
 
+static int b4const_or_zero PARAMS ((int));
+static enum internal_test map_test_to_internal_test PARAMS ((enum rtx_code));
+static rtx gen_int_relational PARAMS ((enum rtx_code, rtx, rtx, int *));
+static rtx gen_float_relational PARAMS ((enum rtx_code, rtx, rtx));
+static rtx gen_conditional_move PARAMS ((rtx));
+static rtx fixup_subreg_mem PARAMS ((rtx x));
+static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
+static void xtensa_init_machine_status PARAMS ((struct function *p));
+static void xtensa_free_machine_status PARAMS ((struct function *p));
+static void printx PARAMS ((FILE *, signed int));
+static void xtensa_select_rtx_section PARAMS ((enum machine_mode, rtx,
+					       unsigned HOST_WIDE_INT));
+
+static rtx frame_size_const;
+static int current_function_arg_words;
+static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
+  REG_ALLOC_ORDER;
+
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
@@ -210,23 +229,11 @@ enum reg_class xtensa_char_to_class[256] =
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 
+#undef TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
+
 struct gcc_target targetm = TARGET_INITIALIZER;
-
-static int b4const_or_zero PARAMS ((int));
-static enum internal_test map_test_to_internal_test PARAMS ((enum rtx_code));
-static rtx gen_int_relational PARAMS ((enum rtx_code, rtx, rtx, int *));
-static rtx gen_float_relational PARAMS ((enum rtx_code, rtx, rtx));
-static rtx gen_conditional_move PARAMS ((rtx));
-static rtx fixup_subreg_mem PARAMS ((rtx x));
-static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
-static void xtensa_init_machine_status PARAMS ((struct function *p));
-static void xtensa_free_machine_status PARAMS ((struct function *p));
-static void printx PARAMS ((FILE *, signed int));
-static rtx frame_size_const;
-static int current_function_arg_words;
-static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
-  REG_ALLOC_ORDER;
-
+
 
 /*
  * Functions to test Xtensa immediate operand validity.
@@ -1628,7 +1635,7 @@ xtensa_emit_call (callop, operands)
      int callop;
      rtx *operands;
 {
-  char *result = (char *) malloc (64);
+  static char result[64];
   rtx tgt = operands[callop];
 
   if (GET_CODE (tgt) == CONST_INT)
@@ -2730,4 +2737,15 @@ a7_overlap_mentioned_p (x)
     }
 
   return 0;
+}
+
+/* The literal pool stays with the function.  */
+
+static void
+xtensa_select_rtx_section (mode, x, align)
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  function_section (current_function_decl);
 }

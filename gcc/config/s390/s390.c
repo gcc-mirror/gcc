@@ -50,6 +50,8 @@ Boston, MA 02111-1307, USA.  */
 static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int s390_adjust_priority PARAMS ((rtx, int));
+static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
+					     unsigned HOST_WIDE_INT));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -69,6 +71,9 @@ static int s390_adjust_priority PARAMS ((rtx, int));
 
 #undef  TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
+
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define	TARGET_ASM_SELECT_RTX_SECTION  s390_select_rtx_section
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST s390_adjust_cost
@@ -3914,3 +3919,17 @@ s390_function_profiler (file, labelno)
     }
 }
 
+/* Select section for constant in constant pool.  In 32-bit mode,
+   constants go in the function section; in 64-bit mode in .rodata.  */
+
+static void
+s390_select_rtx_section (mode, x, align)
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (TARGET_64BIT)
+    readonly_data_section ();
+  else
+    function_section (current_function_decl);
+}

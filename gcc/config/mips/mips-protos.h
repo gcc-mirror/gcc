@@ -120,8 +120,6 @@ extern int              mips_class_max_nregs PARAMS ((enum reg_class,
 extern int              mips_register_move_cost PARAMS ((enum machine_mode,
 							 enum reg_class,
 							 enum reg_class));
-extern void		mips_select_rtx_section PARAMS ((enum machine_mode,
-							 rtx));
 
 extern int		pic_address_needs_scratch PARAMS ((rtx));
 extern int		se_arith_operand PARAMS ((rtx, enum machine_mode));

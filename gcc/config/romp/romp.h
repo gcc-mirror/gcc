@@ -700,12 +700,6 @@ struct rt_cargs {int gregs, fregs; };
   data_offset = ((SIZE) + 12 + 3) / 4;				\
 }
 
-/* Select section for constant in constant pool.
-
-   On ROMP, all constants are in the data area.  */
-
-#define SELECT_RTX_SECTION(MODE, X, ALIGN)	data_section ()
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 

@@ -139,11 +139,3 @@ fini_section ()							\
 }
 
 #define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor
-
-/* A C statement or statements to switch to the appropriate
-   section for output of RTX in mode MODE.  RTX is some kind
-   of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.  Currently, these always
-   go into the const section.  */
-
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) readonly_data_section()
