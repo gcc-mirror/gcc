@@ -1,3 +1,29 @@
+2003-02-04  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/38
+	* g++.dg/parse/array-size1.C: New test.
+
+	PR c++/5657
+	* g++.dg/parse/undefined3.C: New test.
+
+	PR c++/5665
+	* g++.dg/parse/undefined4.C: New test.
+
+	PR c++/5975
+	* g++.dg/parse/undefined5.C: New test.
+
+	PR c++/7259
+	* g++.dg/parse/tmpl-tmpl-param1.C: New test.
+
+	PR c++/8578
+	* g++.dg/parse/casting-operator1.C: New test.
+
+	PR c++/8596
+	* g++.dg/parse/undefined6.C: New test.
+
+	PR c++/8736
+	* g++.dg/parse/missing-template1.C: New test.
+
 Tue Feb  4 21:41:09 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-cadd.c:  Compile using -march=k8.
@@ -5,7 +31,7 @@ Tue Feb  4 21:41:09 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.dg/i386-fpcvt-?.c:  Likewise.
 	* gcc.dg/i386-ssefp-1.c:  Likewise.
 	* gcc.dg/i386-ssetype-?.c:  Likewise; fix for register passing
-	convetions.
+	conventions.
 
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 
