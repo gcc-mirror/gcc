@@ -1900,16 +1900,15 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
   return new;
 }
 
-/* If called from do_line, pops a single buffer.  Otherwise pops all
-   buffers until a real file is reached.  Generates appropriate
-   call-backs.  */
+/* Pops a single buffer, with a file change call-back if appropriate.
+   Then pushes the next -include file, if any remain.  */
 void
 _cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
+  struct include_file *inc = buffer->inc;
   struct if_stack *ifs;
-  bool pushed = false;
 
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
@@ -1920,14 +1919,28 @@ _cpp_pop_buffer (pfile)
   /* In case of a missing #endif.  */
   pfile->state.skipping = 0;
 
-  /* Update the reader's buffer before _cpp_do_file_change.  */
+  /* _cpp_do_file_change expects pfile->buffer to be the new one.  */
   pfile->buffer = buffer->prev;
 
-  if (buffer->inc)
-    pushed = _cpp_pop_file_buffer (pfile, buffer->inc);
+  /* Free the buffer object now; we may want to push a new buffer
+     in _cpp_push_next_include_file.  */
+  obstack_free (&pfile->buffer_ob, buffer);
 
-  if (!pushed)
-    obstack_free (&pfile->buffer_ob, buffer);
+  if (inc)
+    {
+      _cpp_pop_file_buffer (pfile, inc);
+
+      /* Don't generate a callback for popping the main file.  */
+      if (pfile->buffer)
+	{
+	  _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
+
+	  /* If this is the main file, there may be some -include
+	     files left to push.  */
+	  if (!pfile->buffer->prev)
+	    _cpp_maybe_push_include_file (pfile);
+	}
+    }
 }
 
 /* Enter all recognised directives in the hash table.  */

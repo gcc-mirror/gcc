@@ -1074,12 +1074,16 @@ cpp_sys_macro_p (pfile)
   return node && node->value.macro && node->value.macro->syshdr;
 }
 
-/* Read each token in, until EOF.  Directives are transparently
-   processed.  */
+/* Read each token in, until end of the current file.  Directives are
+   transparently processed.  */
 void
 cpp_scan_nooutput (pfile)
      cpp_reader *pfile;
 {
+  /* Request a CPP_EOF token at the end of this file, rather than
+     transparently continuing with the including file.  */
+  pfile->buffer->return_at_eof = true;
+
   while (cpp_get_token (pfile)->type != CPP_EOF)
     ;
 }

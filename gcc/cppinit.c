@@ -554,6 +554,9 @@ cpp_destroy (pfile)
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
 
+  free_chain (CPP_OPTION (pfile, pending)->include_head);
+  free (CPP_OPTION (pfile, pending));
+
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);
 
@@ -1014,65 +1017,44 @@ cpp_finish_options (pfile)
       for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
 	(*p->handler) (pfile, p->arg);
 
-      /* Scan -imacros files after command line defines, but before
-	 files given with -include.  */
-      while ((p = CPP_OPTION (pfile, pending)->imacros_head) != NULL)
-	{
-	  if (push_include (pfile, p))
-	    {
-	      pfile->buffer->return_at_eof = true;
-	      cpp_scan_nooutput (pfile);
-	    }
-	  CPP_OPTION (pfile, pending)->imacros_head = p->next;
-	  free (p);
-	}
+      /* Scan -imacros files after -D, -U, but before -include.
+	 pfile->next_include_file is NULL, so _cpp_pop_buffer does not
+	 push -include files.  */
+      for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
+	if (push_include (pfile, p))
+	  cpp_scan_nooutput (pfile);
+
+      pfile->next_include_file = &CPP_OPTION (pfile, pending)->include_head;
+      _cpp_maybe_push_include_file (pfile);
     }
 
+  free_chain (CPP_OPTION (pfile, pending)->imacros_head);
   free_chain (CPP_OPTION (pfile, pending)->directive_head);
-  _cpp_push_next_buffer (pfile);
 }
 
-/* Called to push the next buffer on the stack given by -include.  If
-   there are none, free the pending structure and restore the line map
-   for the main file.  */
-bool
-_cpp_push_next_buffer (pfile)
+/* Push the next buffer on the stack given by -include, if any.  */
+void
+_cpp_maybe_push_include_file (pfile)
      cpp_reader *pfile;
 {
-  bool pushed = false;
-
-  /* This is't pretty; we'd rather not be relying on this as a boolean
-     for reverting the line map.  Further, we only free the chains in
-     this conditional, so an early call to cpp_finish / cpp_destroy
-     will leak that memory.  */
-  if (CPP_OPTION (pfile, pending)
-      && CPP_OPTION (pfile, pending)->imacros_head == NULL)
+  if (pfile->next_include_file)
     {
-      while (!pushed)
+      struct pending_option *head = *pfile->next_include_file;
+  
+      while (head && !push_include (pfile, head))
+	head = head->next;
+
+      if (head)
+	pfile->next_include_file = &head->next;
+      else
 	{
-	  struct pending_option *p = CPP_OPTION (pfile, pending)->include_head;
-
-	  if (p == NULL)
-	    break;
-	  if (! CPP_OPTION (pfile, preprocessed))
-	    pushed = push_include (pfile, p);
-	  CPP_OPTION (pfile, pending)->include_head = p->next;
-	  free (p);
-	}
-
-      if (!pushed)
-	{
-	  free (CPP_OPTION (pfile, pending));
-	  CPP_OPTION (pfile, pending) = NULL;
-
-	  /* Restore the line map for the main file.  */
-	  if (! CPP_OPTION (pfile, preprocessed))
-	    _cpp_do_file_change (pfile, LC_RENAME,
-				 pfile->line_maps.maps[0].to_file, 1, 0);
+	  /* All done; restore the line map from <command line>.  */
+	  _cpp_do_file_change (pfile, LC_RENAME,
+			       pfile->line_maps.maps[0].to_file, 1, 0);
+	  /* Don't come back here again.  */
+	  pfile->next_include_file = NULL;
 	}
     }
-
-  return pushed;
 }
 
 /* Use mkdeps.c to output dependency information.  */

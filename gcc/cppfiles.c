@@ -761,14 +761,12 @@ _cpp_read_file (pfile, fname)
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the
-   input stack.  Push the next -include file, if any remain.  */
-bool
+   input stack.  */
+void
 _cpp_pop_file_buffer (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
-  bool pushed = false;
-
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
   if (pfile->mi_valid && inc->cmacro == NULL)
@@ -780,18 +778,6 @@ _cpp_pop_file_buffer (pfile, inc)
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
     purge_cache (inc);
-
-  /* Don't generate a callback for popping the main file.  */
-  if (pfile->buffer)
-    {
-      _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
-
-      /* Finally, push the next -included file, if any.  */
-      if (!pfile->buffer->prev)
-	pushed = _cpp_push_next_buffer (pfile);
-    }
-
-  return pushed;
 }
 
 /* Returns the first place in the include chain to start searching for
