@@ -6884,6 +6884,13 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
 void
 print_reg (rtx x, int code, FILE *file)
 {
+  if ((REGNO (x) == ARG_POINTER_REGNUM
+       || REGNO (x) == FRAME_POINTER_REGNUM
+       || REGNO (x) == FLAGS_REG
+       || REGNO (x) == FPSR_REG)
+      && file == asm_out_file)
+    abort ();
+
   if (ASSEMBLER_DIALECT == ASM_ATT || USER_LABEL_PREFIX[0] == 0)
     putc ('%', file);
 
