@@ -115,7 +115,7 @@ init_caller_save ()
 	{
 	  for (j = 1; j <= MOVE_MAX / UNITS_PER_WORD; j++)
 	    {
-	      regno_save_mode[i][j] = choose_hard_reg_mode (i, j);
+	      regno_save_mode[i][j] = HARD_REGNO_CALLER_SAVE_MODE (i, j);
 	      if (regno_save_mode[i][j] == VOIDmode && j == 1)
 		{
 		  call_fixed_regs[i] = 1;

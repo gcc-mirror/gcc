@@ -3174,6 +3174,14 @@ this is worth doing, and 0 otherwise.
 
 If you don't define this macro, a default is used which is good on most
 machines: @code{4 * @var{calls} < @var{refs}}.
+
+@findex HARD_REGNO_CALLER_SAVE_MODE
+@item HARD_REGNO_CALLER_SAVE_MODE (@var{regno}, @var{nregs})
+A C expression specifying which mode is required for saving @var{nregs}
+of a pseudo-register in call-clobbered hard register @var{regno}.  If
+@var{regno} is unsuitable for caller save, @code{VOIDmode} should be
+returned.  For most machines this macro need not be defined since GCC
+will select the smallest suitable mode.
 @end table
 
 @node Function Entry

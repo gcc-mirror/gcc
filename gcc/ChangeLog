@@ -1,4 +1,10 @@
-Wed Sep 30 12:57:30 1998Zack Weinberg  <zack@rabi.phys.columbia.edu>  
+Wed Sep 30 18:19:27 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): New macro.
+	* caller-save.c (init_caller_save): Use it.
+	* tm.texi: Document HARD_REGNO_CALLER_SAVE_MODE.
+
+Wed Sep 30 12:57:30 1998 Zack Weinberg  <zack@rabi.phys.columbia.edu>  
 
 	* configure.in: Add --enable-cpplib option which uses cpplib
 	for cpp, but doesn't link cpplib into cc1.  Make help text
