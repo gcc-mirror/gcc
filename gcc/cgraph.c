@@ -170,8 +170,7 @@ cgraph_node (tree decl)
 {
   struct cgraph_node key, *node, **slot;
 
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   if (!cgraph_hash)
     cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
@@ -223,12 +222,10 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   struct cgraph_edge *e;
 
   for (e = caller->callees; e; e = e->next_callee)
-    if (e->call_expr == call_expr)
-      abort ();
+    gcc_assert (e->call_expr != call_expr);
 #endif
 
-  if (TREE_CODE (call_expr) != CALL_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (call_expr) == CALL_EXPR);
 
   if (!DECL_SAVED_TREE (callee->decl))
     edge->inline_failed = N_("function body not available");
@@ -262,14 +259,12 @@ cgraph_remove_edge (struct cgraph_edge *e)
   for (edge = &e->callee->callers; *edge && *edge != e;
        edge = &((*edge)->next_caller))
     continue;
-  if (!*edge)
-    abort ();
+  gcc_assert (*edge);
   *edge = (*edge)->next_caller;
   for (edge2 = &e->caller->callees; *edge2 && *edge2 != e;
        edge2 = &(*edge2)->next_callee)
     continue;
-  if (!*edge2)
-    abort ();
+  gcc_assert (*edge2);
   *edge2 = (*edge2)->next_callee;
 }
 
@@ -284,8 +279,7 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
   for (edge = &e->callee->callers; *edge && *edge != e;
        edge = &((*edge)->next_caller))
     continue;
-  if (!*edge)
-    abort ();
+  gcc_assert (*edge);
   *edge = (*edge)->next_caller;
   e->callee = n;
   e->next_caller = n->callers;
@@ -412,8 +406,8 @@ struct cgraph_local_info *
 cgraph_local_info (tree decl)
 {
   struct cgraph_node *node;
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    abort ();
+  
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   node = cgraph_node (decl);
   return &node->local;
 }
@@ -424,8 +418,8 @@ struct cgraph_global_info *
 cgraph_global_info (tree decl)
 {
   struct cgraph_node *node;
-  if (TREE_CODE (decl) != FUNCTION_DECL || !cgraph_global_info_ready)
-    abort ();
+  
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL && cgraph_global_info_ready);
   node = cgraph_node (decl);
   return &node->global;
 }
@@ -436,8 +430,8 @@ struct cgraph_rtl_info *
 cgraph_rtl_info (tree decl)
 {
   struct cgraph_node *node;
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    abort ();
+  
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   node = cgraph_node (decl);
   if (decl != current_function_decl
       && !TREE_ASM_WRITTEN (node->decl))
@@ -542,8 +536,7 @@ cgraph_varpool_node (tree decl)
 {
   struct cgraph_varpool_node key, *node, **slot;
 
-  if (!DECL_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
-    abort ();
+  gcc_assert (DECL_P (decl) && TREE_CODE (decl) != FUNCTION_DECL);
 
   if (!cgraph_varpool_hash)
     cgraph_varpool_hash = htab_create_ggc (10, hash_varpool_node,

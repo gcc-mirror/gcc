@@ -833,8 +833,8 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
       jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
       return NULL;
     }
-  if (TREE_CODE (then_exp) != GOTO_EXPR || TREE_CODE (else_exp) != GOTO_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (then_exp) == GOTO_EXPR
+	      && TREE_CODE (else_exp) == GOTO_EXPR);
 
   jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
   last = get_last_insn ();
@@ -936,8 +936,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
      after the sibcall (to perform the function return).  These confuse the
      find_sub_basic_blocks code, so we need to get rid of these.  */
   last = NEXT_INSN (last);
-  if (!BARRIER_P (last))
-    abort ();
+  gcc_assert (BARRIER_P (last));
 
   *can_fallthru = false;
   while (NEXT_INSN (last))

@@ -455,9 +455,8 @@ do_SUBST (rtx *into, rtx newval)
     {
       /* Sanity check that we're replacing oldval with a CONST_INT
 	 that is a valid sign-extension for the original mode.  */
-      if (INTVAL (newval) != trunc_int_for_mode (INTVAL (newval),
-						 GET_MODE (oldval)))
-	abort ();
+      gcc_assert (INTVAL (newval)
+		  == trunc_int_for_mode (INTVAL (newval), GET_MODE (oldval)));
 
       /* Replacing the operand of a SUBREG or a ZERO_EXTEND with a
 	 CONST_INT is not valid, because after the replacement, the
@@ -465,11 +464,10 @@ do_SUBST (rtx *into, rtx newval)
 	 when do_SUBST is called to replace the operand thereof, so we
 	 perform this test on oldval instead, checking whether an
 	 invalid replacement took place before we got here.  */
-      if ((GET_CODE (oldval) == SUBREG
-	   && GET_CODE (SUBREG_REG (oldval)) == CONST_INT)
-	  || (GET_CODE (oldval) == ZERO_EXTEND
-	      && GET_CODE (XEXP (oldval, 0)) == CONST_INT))
-	abort ();
+      gcc_assert (!(GET_CODE (oldval) == SUBREG
+		    && GET_CODE (SUBREG_REG (oldval)) == CONST_INT));
+      gcc_assert (!(GET_CODE (oldval) == ZERO_EXTEND
+		    && GET_CODE (XEXP (oldval, 0)) == CONST_INT));
     }
 
   if (undobuf.frees)
@@ -1746,8 +1744,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	{
 	  /* We don't handle the case of the target word being wider
 	     than a host wide int.  */
-	  if (HOST_BITS_PER_WIDE_INT < BITS_PER_WORD)
-	    abort ();
+	  gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD);
 
 	  lo &= ~(UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1);
 	  lo |= (INTVAL (SET_SRC (PATTERN (i3)))
@@ -1770,7 +1767,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       else
 	/* We don't handle the case of the higher word not fitting
 	   entirely in either hi or lo.  */
-	abort ();
+	gcc_unreachable ();
 
       combine_merges++;
       subst_insn = i3;
@@ -3639,8 +3636,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 		{
 		  x = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
 						new, GET_MODE (XEXP (x, 0)));
-		  if (! x)
-		    abort ();
+		  gcc_assert (x);
 		}
 	      else
 		SUBST (XEXP (x, i), new);
@@ -4693,8 +4689,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 	rtx op1 = XEXP (x, 1);
 	int len;
 
-	if (GET_CODE (op1) != PARALLEL)
-	  abort ();
+	gcc_assert (GET_CODE (op1) == PARALLEL);
 	len = XVECLEN (op1, 0);
 	if (len == 1
 	    && GET_CODE (XVECEXP (op1, 0, 0)) == CONST_INT
@@ -5699,7 +5694,7 @@ simplify_logical (rtx x)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return x;
@@ -11705,10 +11700,11 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	case REG_NON_LOCAL_GOTO:
 	  if (JUMP_P (i3))
 	    place = i3;
-	  else if (i2 && JUMP_P (i2))
-	    place = i2;
 	  else
-	    abort ();
+	    {
+	      gcc_assert (i2 && JUMP_P (i2));
+	      place = i2;
+	    }
 	  break;
 
 	case REG_EH_REGION:
@@ -11717,8 +11713,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	    place = i3;
 	  else if (i2 && CALL_P (i2))
 	    place = i2;
-	  else if (flag_non_call_exceptions)
+	  else
 	    {
+	      gcc_assert (flag_non_call_exceptions);
 	      if (may_trap_p (i3))
 		place = i3;
 	      else if (i2 && may_trap_p (i2))
@@ -11727,8 +11724,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		 can now prove that the instructions can't trap.  Drop the
 		 note in this case.  */
 	    }
-	  else
-	    abort ();
 	  break;
 
 	case REG_ALWAYS_RETURN:
@@ -11738,10 +11733,11 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	     possible for both I2 and I3 to be a call.  */
 	  if (CALL_P (i3))
 	    place = i3;
-	  else if (i2 && CALL_P (i2))
-	    place = i2;
 	  else
-	    abort ();
+	    {
+	      gcc_assert (i2 && CALL_P (i2));
+	      place = i2;
+	    }
 	  break;
 
 	case REG_UNUSED:
@@ -11848,22 +11844,30 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	     a JUMP_LABEL instead or decrement LABEL_NUSES.  */
 	  if (place && JUMP_P (place))
 	    {
-	      if (!JUMP_LABEL (place))
+	      rtx label = JUMP_LABEL (place);
+	      
+	      if (!label)
 		JUMP_LABEL (place) = XEXP (note, 0);
-	      else if (JUMP_LABEL (place) != XEXP (note, 0))
-		abort ();
-	      else if (LABEL_P (JUMP_LABEL (place)))
-		LABEL_NUSES (JUMP_LABEL (place))--;
+	      else
+		{
+		  gcc_assert (label == XEXP (note, 0));
+		  if (LABEL_P (label))
+		    LABEL_NUSES (label)--;
+		}
 	      place = 0;
 	    }
 	  if (place2 && JUMP_P (place2))
 	    {
-	      if (!JUMP_LABEL (place2))
+	      rtx label = JUMP_LABEL (place2);
+	      
+	      if (!label)
 		JUMP_LABEL (place2) = XEXP (note, 0);
-	      else if (JUMP_LABEL (place2) != XEXP (note, 0))
-		abort ();
-	      else if (LABEL_P (JUMP_LABEL (place2)))
-		LABEL_NUSES (JUMP_LABEL (place2))--;
+	      else
+		{
+		  gcc_assert (label == XEXP (note, 0));
+		  if (LABEL_P (label))
+		    LABEL_NUSES (label)--;
+		}
 	      place2 = 0;
 	    }
 	  break;
@@ -12192,7 +12196,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	default:
 	  /* Any other notes should not be present at this point in the
 	     compilation.  */
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (place)
@@ -12348,8 +12352,7 @@ insn_cuid (rtx insn)
 	 && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE)
     insn = NEXT_INSN (insn);
 
-  if (INSN_UID (insn) > max_uid_cuid)
-    abort ();
+  gcc_assert (INSN_UID (insn) <= max_uid_cuid);
 
   return INSN_CUID (insn);
 }

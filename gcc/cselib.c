@@ -235,9 +235,9 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
   rtx x = (rtx) x_arg;
   enum machine_mode mode = GET_MODE (x);
 
-  if (GET_CODE (x) == CONST_INT
-      || (mode == VOIDmode && GET_CODE (x) == CONST_DOUBLE))
-    abort ();
+  gcc_assert (GET_CODE (x) != CONST_INT
+	      && (mode != VOIDmode || GET_CODE (x) != CONST_DOUBLE));
+  
   if (mode != GET_MODE (v->u.val_rtx))
     return 0;
 
@@ -370,8 +370,7 @@ remove_useless_values (void)
 
   htab_traverse (hash_table, discard_useless_values, 0);
 
-  if (n_useless_values != 0)
-    abort ();
+  gcc_assert (!n_useless_values);
 }
 
 /* Return the mode in which a register was last set.  If X is not a
@@ -524,7 +523,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -539,8 +538,7 @@ wrap_constant (enum machine_mode mode, rtx x)
   if (GET_CODE (x) != CONST_INT
       && (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode))
     return x;
-  if (mode == VOIDmode)
-    abort ();
+  gcc_assert (mode != VOIDmode);
   return gen_rtx_CONST (mode, x);
 }
 
@@ -643,40 +641,54 @@ cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
   fmt = GET_RTX_FORMAT (code);
   for (; i >= 0; i--)
     {
-      if (fmt[i] == 'e')
+      switch (fmt[i])
 	{
-	  rtx tem = XEXP (x, i);
-	  unsigned int tem_hash = cselib_hash_rtx (tem, 0, create);
-
-	  if (tem_hash == 0)
-	    return 0;
-
-	  hash += tem_hash;
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
+	case 'e':
 	  {
-	    unsigned int tem_hash = cselib_hash_rtx (XVECEXP (x, i, j), 0, create);
-
+	    rtx tem = XEXP (x, i);
+	    unsigned int tem_hash = cselib_hash_rtx (tem, 0, create);
+	    
 	    if (tem_hash == 0)
 	      return 0;
-
+	    
 	    hash += tem_hash;
 	  }
-      else if (fmt[i] == 's')
-	{
-	  const unsigned char *p = (const unsigned char *) XSTR (x, i);
+	  break;
+	case 'E':
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    {
+	      unsigned int tem_hash
+		= cselib_hash_rtx (XVECEXP (x, i, j), 0, create);
+	      
+	      if (tem_hash == 0)
+		return 0;
+	      
+	      hash += tem_hash;
+	    }
+	  break;
 
-	  if (p)
-	    while (*p)
-	      hash += *p++;
+	case 's':
+	  {
+	    const unsigned char *p = (const unsigned char *) XSTR (x, i);
+	    
+	    if (p)
+	      while (*p)
+		hash += *p++;
+	    break;
+	  }
+	  
+	case 'i':
+	  hash += XINT (x, i);
+	  break;
+
+	case '0':
+	case 't':
+	  /* unused */
+	  break;
+	  
+	default:
+	  gcc_unreachable ();
 	}
-      else if (fmt[i] == 'i')
-	hash += XINT (x, i);
-      else if (fmt[i] == '0' || fmt[i] == 't')
-	/* unused */;
-      else
-	abort ();
     }
 
   return hash ? hash : 1 + (unsigned int) GET_CODE (x);
@@ -690,10 +702,7 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
 {
   cselib_val *e = pool_alloc (cselib_val_pool);
 
-#ifdef ENABLE_CHECKING
-  if (value == 0)
-    abort ();
-#endif
+  gcc_assert (value);
 
   e->value = value;
   /* We use custom method to allocate this RTL construct because it accounts
@@ -799,7 +808,7 @@ cselib_subst_to_values (rtx x)
 	if (GET_MODE (l->elt->u.val_rtx) == GET_MODE (x))
 	  return l->elt->u.val_rtx;
 
-      abort ();
+      gcc_unreachable ();
 
     case MEM:
       e = cselib_lookup_mem (x, 0);
@@ -963,9 +972,8 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
   unsigned int i;
 
   /* If we see pseudos after reload, something is _wrong_.  */
-  if (reload_completed && regno >= FIRST_PSEUDO_REGISTER
-      && reg_renumber[regno] >= 0)
-    abort ();
+  gcc_assert (!reload_completed || regno < FIRST_PSEUDO_REGISTER
+	      || reg_renumber[regno] < 0);
 
   /* Determine the range of registers that must be invalidated.  For
      pseudos, only REGNO is affected.  For hard regs, we must take MODE
@@ -973,8 +981,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
      if they contain values that overlap REGNO.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      if (mode == VOIDmode)
-	abort ();
+      gcc_assert (mode != VOIDmode);
 
       if (regno < max_value_regs)
 	i = 0;
@@ -1188,11 +1195,9 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 	}
       else
 	{
-	  if (REG_VALUES (dreg)->elt == 0)
-	    REG_VALUES (dreg)->elt = src_elt;
-	  else
-	    /* The register should have been invalidated.  */
-	    abort ();
+	  /* The register should have been invalidated.  */
+	  gcc_assert (REG_VALUES (dreg)->elt == 0);
+	  REG_VALUES (dreg)->elt = src_elt;
 	}
 
       if (src_elt->locs == 0)

@@ -329,8 +329,7 @@ cgraph_finalize_function (tree decl, bool nested)
 	 case can be sort-of legitimately seen with real function 
 	 redefinition errors.  I would argue that the front end should
 	 never present us with such a case, but don't enforce that for now.  */
-      if (node->output)
-	abort ();
+      gcc_assert (!node->output);
 
       /* Reset our data structures so we can analyze the function again.  */
       memset (&node->local, 0, sizeof (node->local));
@@ -697,8 +696,8 @@ cgraph_finalize_compilation_unit (void)
       if (!DECL_SAVED_TREE (decl))
 	continue;
 
-      if (node->analyzed || !node->reachable || !DECL_SAVED_TREE (decl))
-	abort ();
+      gcc_assert (!node->analyzed && node->reachable);
+      gcc_assert (DECL_SAVED_TREE (decl));
 
       cgraph_analyze_function (node);
 
@@ -756,8 +755,8 @@ cgraph_mark_functions_to_output (void)
     {
       tree decl = node->decl;
       struct cgraph_edge *e;
-      if (node->output)
-	abort ();
+      
+      gcc_assert (!node->output);
 
       for (e = node->callers; e; e = e->next_caller)
 	if (e->inline_failed)
@@ -773,13 +772,10 @@ cgraph_mark_functions_to_output (void)
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	node->output = 1;
-      /* We should've reclaimed all functions that are not needed.  */
-      else if (!node->global.inlined_to && DECL_SAVED_TREE (decl)
-	       && !DECL_EXTERNAL (decl))
-	{
-	  dump_cgraph_node (stderr, node);
-	  abort ();
-	}
+      else
+	/* We should've reclaimed all functions that are not needed.  */
+	gcc_assert (node->global.inlined_to || !DECL_SAVED_TREE (decl)
+		    || DECL_EXTERNAL (decl));
     }
 }
 
@@ -791,8 +787,7 @@ cgraph_expand_function (struct cgraph_node *node)
   tree decl = node->decl;
 
   /* We ought to not compile any inline clones.  */
-  if (node->global.inlined_to)
-    abort ();
+  gcc_assert (!node->global.inlined_to);
 
   if (flag_unit_at_a_time)
     announce_function (decl);
@@ -802,8 +797,7 @@ cgraph_expand_function (struct cgraph_node *node)
 
   /* Make sure that BE didn't give up on compiling.  */
   /* ??? Can happen with nested function of extern inline.  */
-  if (!TREE_ASM_WRITTEN (node->decl))
-    abort ();
+  gcc_assert (TREE_ASM_WRITTEN (node->decl));
 
   current_function_decl = NULL;
   if (DECL_SAVED_TREE (node->decl)
@@ -895,8 +889,7 @@ cgraph_remove_unreachable_nodes (void)
     fprintf (cgraph_dump_file, "\nReclaiming functions:");
 #ifdef ENABLE_CHECKING
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->aux)
-      abort ();
+    gcc_assert (!node->aux);
 #endif
   for (node = cgraph_nodes; node; node = node->next)
     if (node->needed && !node->global.inlined_to
@@ -905,8 +898,8 @@ cgraph_remove_unreachable_nodes (void)
 	node->aux = first;
 	first = node;
       }
-    else if (node->aux)
-      abort ();
+    else
+      gcc_assert (!node->aux);
 
   /* Perform reachability analysis.  As a special case do not consider
      extern inline functions not inlined as live because we won't output
@@ -1040,8 +1033,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
       && duplicate
       && flag_unit_at_a_time)
     {
-      if (e->callee->global.inlined_to)
-	abort ();
+      gcc_assert (!e->callee->global.inlined_to);
       if (!DECL_EXTERNAL (e->callee->decl))
         overall_insns -= e->callee->global.insns, nfunctions_inlined++;
       duplicate = 0;
@@ -1071,8 +1063,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e)
   int old_insns = 0, new_insns = 0;
   struct cgraph_node *to = NULL, *what;
 
-  if (!e->inline_failed)
-    abort ();
+  gcc_assert (e->inline_failed);
   e->inline_failed = NULL;
 
   if (!e->callee->global.inlined && flag_unit_at_a_time)
@@ -1089,13 +1080,11 @@ cgraph_mark_inline_edge (struct cgraph_edge *e)
       old_insns = e->caller->global.insns;
       new_insns = cgraph_estimate_size_after_inlining (1, e->caller,
 						       what);
-      if (new_insns < 0)
-	abort ();
+      gcc_assert (new_insns >= 0);
       to = e->caller;
       to->global.insns = new_insns;
     }
-  if (what->global.inlined_to != to)
-    abort ();
+  gcc_assert (what->global.inlined_to == to);
   overall_insns += new_insns - old_insns;
   ncalls_inlined++;
 }
@@ -1122,11 +1111,10 @@ cgraph_mark_inline (struct cgraph_edge *edge)
           cgraph_mark_inline_edge (e);
 	  if (e == edge)
 	    edge = next;
-	  times ++;
+	  times++;
 	}
     }
-  if (!times)
-    abort ();
+  gcc_assert (times);
   return edge;
 }
 
@@ -1653,8 +1641,7 @@ cgraph_expand_all_functions (void)
   cgraph_mark_functions_to_output ();
 
   order_pos = cgraph_postorder (order);
-  if (order_pos != cgraph_n_nodes)
-    abort ();
+  gcc_assert (order_pos == cgraph_n_nodes);
 
   /* Garbage collector may remove inline clones we eliminate during
      optimization.  So we must be sure to not reference them.  */
@@ -1667,8 +1654,7 @@ cgraph_expand_all_functions (void)
       node = order[i];
       if (node->output)
 	{
-	  if (!node->reachable)
-	    abort ();
+	  gcc_assert (node->reachable);
 	  node->output = 0;
 	  cgraph_expand_function (node);
 	}
@@ -1831,12 +1817,17 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   DECL_SOURCE_LOCATION (decl) = input_location;
   cfun->function_end_locus = input_location;
 
-  if (which == 'I')
-    DECL_STATIC_CONSTRUCTOR (decl) = 1;
-  else if (which == 'D')
-    DECL_STATIC_DESTRUCTOR (decl) = 1;
-  else
-    abort ();
+  switch (which)
+    {
+    case 'I':
+      DECL_STATIC_CONSTRUCTOR (decl) = 1;
+      break;
+    case 'D':
+      DECL_STATIC_DESTRUCTOR (decl) = 1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   gimplify_function_tree (decl);
 

@@ -208,8 +208,7 @@ check_irred (struct graph *g, struct edge *e)
 
   /* All edges should lead from a component with higher number to the
      one with lower one.  */
-  if (g->vertices[e->src].component < g->vertices[e->dest].component)
-    abort ();
+  gcc_assert (g->vertices[e->src].component >= g->vertices[e->dest].component);
 
   if (g->vertices[e->src].component != g->vertices[e->dest].component)
     return;

@@ -98,8 +98,7 @@ remove_bbs (basic_block *bbs, int nbbs)
 static int
 find_path (edge e, basic_block **bbs)
 {
-  if (e->dest->pred->pred_next)
-    abort ();
+  gcc_assert (!e->dest->pred->pred_next);
 
   /* Find bbs in the path.  */
   *bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
@@ -323,6 +322,7 @@ remove_path (struct loops *loops, edge e)
   basic_block *rem_bbs, *bord_bbs, *dom_bbs, from, bb;
   int i, nrem, n_bord_bbs, n_dom_bbs;
   sbitmap seen;
+  bool deleted;
 
   if (!loop_delete_branch_edge (e, 0))
     return false;
@@ -367,8 +367,8 @@ remove_path (struct loops *loops, edge e)
 
   /* Remove the path.  */
   from = e->src;
-  if (!loop_delete_branch_edge (e, 1))
-    abort ();
+  deleted = loop_delete_branch_edge (e, 1);
+  gcc_assert (deleted);
   dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
 
   /* Cancel loops contained in the path.  */
@@ -765,47 +765,37 @@ static bool
 loop_delete_branch_edge (edge e, int really_delete)
 {
   basic_block src = e->src;
+  basic_block newdest;
   int irr;
   edge snd;
 
-  if (src->succ->succ_next)
-    {
-      basic_block newdest;
+  gcc_assert (src->succ->succ_next);
+  
+  /* Cannot handle more than two exit edges.  */
+  if (src->succ->succ_next->succ_next)
+    return false;
+  /* And it must be just a simple branch.  */
+  if (!any_condjump_p (BB_END (src)))
+    return false;
 
-      /* Cannot handle more than two exit edges.  */
-      if (src->succ->succ_next->succ_next)
-	return false;
-      /* And it must be just a simple branch.  */
-      if (!any_condjump_p (BB_END (src)))
-	return false;
+  snd = e == src->succ ? src->succ->succ_next : src->succ;
+  newdest = snd->dest;
+  if (newdest == EXIT_BLOCK_PTR)
+    return false;
 
-      snd = e == src->succ ? src->succ->succ_next : src->succ;
-      newdest = snd->dest;
-      if (newdest == EXIT_BLOCK_PTR)
-	return false;
+  /* Hopefully the above conditions should suffice.  */
+  if (!really_delete)
+    return true;
 
-      /* Hopefully the above conditions should suffice.  */
-      if (!really_delete)
-	return true;
+  /* Redirecting behaves wrongly wrto this flag.  */
+  irr = snd->flags & EDGE_IRREDUCIBLE_LOOP;
 
-      /* Redirecting behaves wrongly wrto this flag.  */
-      irr = snd->flags & EDGE_IRREDUCIBLE_LOOP;
-
-      if (!redirect_edge_and_branch (e, newdest))
-	return false;
-      src->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
-      src->succ->flags |= irr;
-
-      return true;
-    }
-  else
-    {
-      /* Cannot happen -- we are using this only to remove an edge
-	 from branch.  */
-      abort ();
-    }
-
-  return false;  /* To avoid warning, cannot get here.  */
+  if (!redirect_edge_and_branch (e, newdest))
+    return false;
+  src->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+  src->succ->flags |= irr;
+  
+  return true;
 }
 
 /* Check whether LOOP's body can be duplicated.  */
@@ -880,18 +870,14 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
   int prob_pass_thru, prob_pass_wont_exit, prob_pass_main;
   int add_irreducible_flag;
 
-  if (e->dest != loop->header)
-    abort ();
-  if (ndupl <= 0)
-    abort ();
+  gcc_assert (e->dest == loop->header);
+  gcc_assert (ndupl > 0);
 
   if (orig)
     {
       /* Orig must be edge out of the loop.  */
-      if (!flow_bb_inside_loop_p (loop, orig->src))
-	abort ();
-      if (flow_bb_inside_loop_p (loop, orig->dest))
-	abort ();
+      gcc_assert (flow_bb_inside_loop_p (loop, orig->src));
+      gcc_assert (!flow_bb_inside_loop_p (loop, orig->dest));
     }
 
   bbs = get_loop_body (loop);
@@ -907,8 +893,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
   /* In case we are doing loop peeling and the loop is in the middle of
      irreducible region, the peeled copies will be inside it too.  */
   add_irreducible_flag = e->flags & EDGE_IRREDUCIBLE_LOOP;
-  if (is_latch && add_irreducible_flag)
-    abort ();
+  gcc_assert (!is_latch || !add_irreducible_flag);
 
   /* Find edge from latch.  */
   latch_edge = loop_latch_edge (loop);
@@ -960,11 +945,9 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 	  scale_act = REG_BR_PROB_BASE - prob_pass_thru;
 	}
       for (i = 0; i < ndupl; i++)
-	if (scale_step[i] < 0 || scale_step[i] > REG_BR_PROB_BASE)
-	  abort ();
-      if (scale_main < 0 || scale_main > REG_BR_PROB_BASE
-	  || scale_act < 0  || scale_act > REG_BR_PROB_BASE)
-	abort ();
+	gcc_assert (scale_step[i] >= 0 && scale_step[i] <= REG_BR_PROB_BASE);
+      gcc_assert (scale_main >= 0 && scale_main <= REG_BR_PROB_BASE
+		  && scale_act >= 0  && scale_act <= REG_BR_PROB_BASE);
     }
 
   /* Loop the new bbs will belong to.  */
@@ -1154,8 +1137,7 @@ create_preheader (struct loop *loop, int flags)
       irred |= (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
       nentry++;
     }
-  if (!nentry)
-    abort ();
+  gcc_assert (nentry);
   if (nentry == 1)
     {
       for (e = loop->header->pred; e->src == loop->latch; e = e->pred_next);
@@ -1285,9 +1267,8 @@ create_loop_notes (void)
 #ifdef ENABLE_CHECKING
   /* Verify that there really are no loop notes.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (NOTE_P (insn)
-	&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-      abort ();
+    gcc_assert (!NOTE_P (insn) ||
+		NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
 #endif
 
   flow_loops_find (&loops, LOOP_TREE);
@@ -1335,8 +1316,7 @@ create_loop_notes (void)
 		      && onlyjump_p (insn))
 		    {
 		      pbb = BLOCK_FOR_INSN (insn);
-		      if (!pbb || !pbb->succ || pbb->succ->succ_next)
-			abort ();
+		      gcc_assert (pbb && pbb->succ && !pbb->succ->succ_next);
 
 		      if (!flow_bb_inside_loop_p (loop, pbb->succ->dest))
 			insn = BB_HEAD (first[loop->num]);
