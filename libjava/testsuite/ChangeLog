@@ -1,3 +1,7 @@
+2001-11-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* libjava.lang/TLtest.xfail: New file. Needs threads.
+
 2001-10-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.lang/PR3096.java: New file.
