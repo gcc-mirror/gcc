@@ -536,11 +536,13 @@ do {									\
 #define DBX_REGISTER_NUMBER(n) \
   ((TARGET_ELF) ? svr4_dbx_register_map[n] : dbx_register_map[n])
 
+#undef DWARF2_DEBUGGING_INFO
 #undef DWARF_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 #undef DBX_DEBUGGING_INFO
 #undef PREFERRED_DEBUGGING_TYPE
 
+#define DWARF2_DEBUGGING_INFO 1
 #define DWARF_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO   1
 #define DBX_DEBUGGING_INFO   1

@@ -1,3 +1,7 @@
+2001-07-28  Golubev I. N.  <gin@mo.msk.ru>
+
+	* config/i386/sco5.h (DWARF2_DEBUGGING_INFO): Define.
+
 2001-07-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Properly link the host
