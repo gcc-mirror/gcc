@@ -1,3 +1,8 @@
+2004-01-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-sse-5.c: New test
+	* g++.dg/eh/simd-1.c: Add -w argument for i386.
+
 2004-01-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12815

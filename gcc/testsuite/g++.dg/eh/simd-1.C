@@ -1,6 +1,7 @@
 // Test EH when V2SI SIMD registers are involved.
 // Contributed by Aldy Hernandez (aldy@quesejoda.com).
 // { dg-options "-O" }
+// { dg-options "-O -w" { target i?86-*-* } }
 // { dg-do run }
 // { dg-error "" "PR target/12916" { target sparc*-*-* } 10 }
 
