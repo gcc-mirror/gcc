@@ -209,6 +209,9 @@ alloca (size)
     register pointer new = malloc (sizeof (header) + size);
     /* Address of header.  */
 
+    if (new == 0)
+      abort();
+
     ((header *) new)->h.next = last_alloca_header;
     ((header *) new)->h.deep = depth;
 
