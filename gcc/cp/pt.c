@@ -5694,8 +5694,6 @@ tsubst_decl (t, args, type, complain)
   tree r = NULL_TREE;
   tree in_decl = t;
 
-  my_friendly_assert (complain & tf_error, 20011214);
-  
   /* Set the filename and linenumber to improve error-reporting.  */
   saved_lineno = lineno;
   saved_filename = input_filename;
