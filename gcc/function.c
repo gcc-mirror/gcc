@@ -2607,6 +2607,7 @@ assign_parms (fndecl, second_time)
   tree function_result_decl = 0;
   int nparmregs = list_length (fnargs) + LAST_VIRTUAL_REGISTER + 1;
   int varargs_setup = 0;
+  rtx conversion_insns = 0;
 
   /* Nonzero if the last arg is named `__builtin_va_alist',
      which is used on some machines for old-fashioned non-ANSI varargs.h;
@@ -3050,14 +3051,22 @@ assign_parms (fndecl, second_time)
 		 register for a DFmode).  In that case, moves are the only
 		 thing valid, so we can't do a convert from there.  This
 		 occurs when the calling sequence allow such misaligned
-		 usages.  */
-	      if (GET_CODE (entry_parm) == REG
-		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
-		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm),
-					   GET_MODE (entry_parm)))
-		convert_move (parmreg, copy_to_reg (entry_parm), unsignedp);
-	      else
-		convert_move (parmreg, validize_mem (entry_parm), unsignedp);
+		 usages.
+
+		 In addition, the conversion may involve a call, which could
+		 clobber parameters which haven't been copied to pseudo
+		 registers yet.  Therefore, we must first copy the parm to
+		 a pseudo reg here, and save the conversion until after all
+		 parameters have been moved.  */
+
+	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
+
+	      emit_move_insn (tempreg, validize_mem (entry_parm));
+
+	      push_to_sequence (conversion_insns);
+	      convert_move (parmreg, tempreg);
+	      conversion_insns = get_insns ();
+	      end_sequence ();
 	    }
 	  else
 	    emit_move_insn (parmreg, validize_mem (entry_parm));
@@ -3122,13 +3131,15 @@ assign_parms (fndecl, second_time)
 	  if (passed_mode != nominal_mode)
 	    {
 	      /* Conversion is required.   */
-	      if (GET_CODE (entry_parm) == REG
-		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
-		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm), passed_mode))
-		entry_parm = copy_to_reg (entry_parm);
+	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
 
-	      entry_parm = convert_to_mode (nominal_mode, entry_parm,
+	      emit_move_insn (tempreg, validize_mem (entry_parm));
+
+	      push_to_sequence (conversion_insns);
+	      entry_parm = convert_to_mode (nominal_mode, tempreg,
 					    TREE_UNSIGNED (TREE_TYPE (parm)));
+	      conversion_insns = get_insns ();
+	      end_sequence ();
 	    }
 
 	  if (entry_parm != stack_parm)
@@ -3143,8 +3154,17 @@ assign_parms (fndecl, second_time)
 		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
 		}
 
-	      emit_move_insn (validize_mem (stack_parm),
-			      validize_mem (entry_parm));
+	      if (passed_mode != nominal_mode)
+		{
+		  push_to_sequence (conversion_insns);
+		  emit_move_insn (validize_mem (stack_parm),
+				  validize_mem (entry_parm));
+		  conversion_insns = get_insns ();
+		  end_sequence ();
+		}
+	      else
+		emit_move_insn (validize_mem (stack_parm),
+				validize_mem (entry_parm));
 	    }
 
 	  DECL_RTL (parm) = stack_parm;
@@ -3161,6 +3181,10 @@ assign_parms (fndecl, second_time)
       if (TREE_READONLY (parm))
 	RTX_UNCHANGING_P (DECL_RTL (parm)) = 1;
     }
+
+  /* Output all parameter conversion instructions (possibly including calls)
+     now that all parameters have been copied out of hard registers.  */
+  emit_insns (conversion_insns);
 
   max_parm_reg = max_reg_num ();
   last_parm_insn = get_last_insn ();
