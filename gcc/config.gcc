@@ -530,33 +530,10 @@ arm*-*-netbsd*)
 	tmake_file="t-netbsd arm/t-netbsd"
 	use_collect2=yes
 	;;
-arm*-*-linux*oldld*)		# ARM GNU/Linux with old ELF linker
-	xm_file=arm/xm-linux.h
-	xmake_file=x-linux
-	tm_file="arm/linux-oldld.h arm/linux-elf.h"
-	case $machine in
-	armv2*-*-*)
-		tm_file="arm/linux-elf26.h $tm_file"
-		;;
-	esac
-	tmake_file="t-linux arm/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	gnu_ld=yes
-	case x${enable_threads} in
-	x | xyes | xpthreads | xposix)
-		thread_file='posix'
-		;;
-	esac
-	;;
-arm*-*-linux*)		# ARM GNU/Linux with ELF
+arm*-*-linux*)			# ARM GNU/Linux with ELF
 	xm_file=arm/xm-linux.h
 	xmake_file=x-linux
 	tm_file="arm/linux-elf.h"
-	case $machine in
-	armv2*-*-*)
-		tm_file="arm/linux-elf26.h $tm_file"
-		;;
-	esac
 	tmake_file="t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
