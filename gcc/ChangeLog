@@ -1,5 +1,21 @@
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Initialize
+	costs according to processor variant.
+	(m68hc11_shift_cost): New function to compute shift costs.
+	(m68hc11_rtx_costs): Define costs according to processor variant.
+	(m6811_cost): Costs for 68HC11.
+	(m6812_cost): Costs for 68HC12.
+	(COSTS_N_INSNS): Remove.
+
+	* config/m68hc11/m68hc11.h (RTX_COSTS): New.
+	(DEFAULT_RTX_COSTS): Remove.
+	(CONST_COSTS): Define costs according to OUTER_CODE.
+	(processor_costs): New struct to define costs.
+	(m68hc11_cost): Pointer to current costs.
+
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md (*addhi3_68hc12): Fix generation
 	and use m68hc11_notice_keep_cc when using leax/leay.
 	(addhi3 split): Reject split if the insn is handled by 

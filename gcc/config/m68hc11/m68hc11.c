@@ -73,7 +73,7 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
-
+static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
 
 void create_regs_rtx PARAMS ((void));
@@ -131,6 +131,78 @@ rtx m68hc11_compare_op0;
 rtx m68hc11_compare_op1;
 
 
+struct processor_costs *m68hc11_cost;
+
+/* Costs for a 68HC11.  */
+struct processor_costs m6811_cost = {
+  /* add */
+  COSTS_N_INSNS (2),
+  /* logical */
+  COSTS_N_INSNS (2),
+  /* non-constant shift */
+  COSTS_N_INSNS (20),
+  /* shiftQI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (3), COSTS_N_INSNS (4), COSTS_N_INSNS (3),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
+
+  /* shiftHI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (4), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (10),
+    COSTS_N_INSNS (8), COSTS_N_INSNS (6), COSTS_N_INSNS (4)
+  },
+  /* mulQI */
+  COSTS_N_INSNS (20),
+  /* mulHI */
+  COSTS_N_INSNS (20 * 4),
+  /* mulSI */
+  COSTS_N_INSNS (20 * 16),
+  /* divQI */
+  COSTS_N_INSNS (20),
+  /* divHI */
+  COSTS_N_INSNS (80),
+  /* divSI */
+  COSTS_N_INSNS (100)
+};
+
+/* Costs for a 68HC12.  */
+struct processor_costs m6812_cost = {
+  /* add */
+  COSTS_N_INSNS (1),
+  /* logical */
+  COSTS_N_INSNS (1),
+  /* non-constant shift */
+  COSTS_N_INSNS (20),
+  /* shiftQI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (3), COSTS_N_INSNS (4), COSTS_N_INSNS (3),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
+
+  /* shiftHI const */
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (4), COSTS_N_INSNS (2),
+    COSTS_N_INSNS (2), COSTS_N_INSNS (4), COSTS_N_INSNS (6),
+    COSTS_N_INSNS (8), COSTS_N_INSNS (10), COSTS_N_INSNS (8),
+    COSTS_N_INSNS (6), COSTS_N_INSNS (4)
+  },
+  /* mulQI */
+  COSTS_N_INSNS (3),
+  /* mulHI */
+  COSTS_N_INSNS (3),
+  /* mulSI */
+  COSTS_N_INSNS (3 * 4),
+  /* divQI */
+  COSTS_N_INSNS (12),
+  /* divHI */
+  COSTS_N_INSNS (12),
+  /* divSI */
+  COSTS_N_INSNS (100)
+};
+
 /* Machine specific options */
 
 const char *m68hc11_regparm_string;
@@ -174,7 +246,8 @@ m68hc11_override_options ()
          a -m68hc11 option was specified on the command line.  */
       if (TARGET_DEFAULT != MASK_M6811)
         target_flags &= ~TARGET_DEFAULT;
-      
+
+      m68hc11_cost = &m6811_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 256;
       m68hc11_index_reg_class = NO_REGS;
@@ -191,6 +264,7 @@ m68hc11_override_options ()
   /* Configure for a 68hc12 processor.  */
   if (TARGET_M6812)
     {
+      m68hc11_cost = &m6812_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 65536;
       m68hc11_index_reg_class = D_REGS;
@@ -4780,8 +4854,6 @@ m68hc11_reorg (first)
 
 /* Cost functions.  */
 
-#define COSTS_N_INSNS(N) ((N) * 4 - 2)
-
 /* Cost of moving memory. */
 int
 m68hc11_memory_move_cost (mode, class, in)
@@ -4912,10 +4984,43 @@ m68hc11_address_cost (addr)
   return cost;
 }
 
+static int
+m68hc11_shift_cost (mode, x, shift)
+     enum machine_mode mode;
+     rtx x;
+     int shift;
+{
+  int total;
+
+  total = rtx_cost (x, SET);
+  if (mode == QImode)
+    total += m68hc11_cost->shiftQI_const[shift % 8];
+  else if (mode == HImode)
+    total += m68hc11_cost->shiftHI_const[shift % 16];
+  else if (shift == 8 || shift == 16 || shift == 32)
+    total += m68hc11_cost->shiftHI_const[8];
+  else if (shift != 0 && shift != 16 && shift != 32)
+    {
+      total += m68hc11_cost->shiftHI_const[1] * shift;
+    }
+
+  /* For SI and others, the cost is higher.  */
+  if (GET_MODE_SIZE (mode) > 2)
+    total *= GET_MODE_SIZE (mode) / 2;
+
+  /* When optimizing for size, make shift more costly so that
+     multiplications are prefered.  */
+  if (optimize_size && (shift % 8) != 0)
+    total *= 2;
+  
+  return total;
+}
+
 int
 m68hc11_rtx_costs (x, code, outer_code)
      rtx x;
-     enum rtx_code code, outer_code;
+     enum rtx_code code;
+     enum rtx_code outer_code ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = GET_MODE (x);
   int extra_cost = 0;
@@ -4923,9 +5028,6 @@ m68hc11_rtx_costs (x, code, outer_code)
 
   switch (code)
     {
-    case MEM:
-      return m68hc11_address_cost (XEXP (x, 0)) + 4;
-
     case ROTATE:
     case ROTATERT:
     case ASHIFT:
@@ -4933,82 +5035,91 @@ m68hc11_rtx_costs (x, code, outer_code)
     case ASHIFTRT:
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  int val = INTVAL (XEXP (x, 1));
-	  int cost;
+          return m68hc11_shift_cost (mode, XEXP (x, 0), INTVAL (XEXP (x, 1)));
+	}
 
-	  /* 8 or 16 shift instructions are fast.
-	     Others are proportional to the shift counter.  */
-	  if (val == 8 || val == 16 || val == -8 || val == -16)
-	    {
-	      val = 0;
-	    }
-	  cost = COSTS_N_INSNS (val + 1);
-	  cost += rtx_cost (XEXP (x, 0), outer_code);
-	  if (GET_MODE_SIZE (mode) >= 4 && val)
-	    {
-	      cost *= 4;
-	    }
-	  return cost;
-	}
-      total = rtx_cost (XEXP (x, 0), outer_code);
-      if (GET_MODE_SIZE (mode) >= 4)
-	{
-	  total += COSTS_N_INSNS (16);
-	}
-      else
-	{
-	  total += COSTS_N_INSNS (8);
-	}
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->shift_var;
+      return total;
+
+    case AND:
+    case XOR:
+    case IOR:
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->logical;
+
+      /* Logical instructions are byte instructions only.  */
+      total *= GET_MODE_SIZE (mode);
       return total;
 
     case MINUS:
     case PLUS:
-    case AND:
-    case XOR:
-    case IOR:
-      extra_cost = 0;
-
-      total = rtx_cost (XEXP (x, 0), outer_code)
-	+ rtx_cost (XEXP (x, 1), outer_code);
-      if (GET_MODE_SIZE (mode) <= 2)
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      total += m68hc11_cost->add;
+      if (GET_MODE_SIZE (mode) > 2)
 	{
-	  total += COSTS_N_INSNS (2);
-	}
-      else
-	{
-	  total += COSTS_N_INSNS (4);
+	  total *= GET_MODE_SIZE (mode) / 2;
 	}
       return total;
 
+    case UDIV:
     case DIV:
     case MOD:
-      if (mode == QImode || mode == HImode)
-	{
-	  return 30;
-	}
-      else if (mode == SImode)
-	{
-	  return 100;
-	}
-      else
-	{
-	  return 150;
-	}
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      switch (mode)
+        {
+        case QImode:
+          total += m68hc11_cost->divQI;
+          break;
 
+        case HImode:
+          total += m68hc11_cost->divHI;
+          break;
+
+        case SImode:
+        default:
+          total += m68hc11_cost->divSI;
+          break;
+        }
+      return total;
+      
     case MULT:
-      if (mode == QImode)
-	{
-	  return TARGET_OP_TIME ? 10 : 2;
-	}
-      if (mode == HImode)
-	{
-	  return TARGET_OP_TIME ? 30 : 4;
-	}
-      if (mode == SImode)
-	{
-	  return TARGET_OP_TIME ? 100 : 20;
-	}
-      return 150;
+      /* mul instruction produces 16-bit result.  */
+      if (mode == HImode && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+          && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+        return m68hc11_cost->multQI
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+
+      /* emul instruction produces 32-bit result for 68HC12.  */
+      if (TARGET_M6812 && mode == SImode
+          && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+          && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
+        return m68hc11_cost->multHI
+          + rtx_cost (XEXP (XEXP (x, 0), 0), code)
+          + rtx_cost (XEXP (XEXP (x, 1), 0), code);
+
+      total = rtx_cost (XEXP (x, 0), code) + rtx_cost (XEXP (x, 1), code);
+      switch (mode)
+        {
+        case QImode:
+          total += m68hc11_cost->multQI;
+          break;
+
+        case HImode:
+          total += m68hc11_cost->multHI;
+          break;
+
+        case SImode:
+          if (GET_CODE (XEXP (x, 1)) == CONST_INT
+              && INTVAL (XEXP (x, 1)) == 65536)
+            break;
+
+        default:
+          total += m68hc11_cost->multSI;
+          break;
+        }
+      return total;
 
     case NEG:
     case SIGN_EXTEND:
@@ -5019,20 +5130,20 @@ m68hc11_rtx_costs (x, code, outer_code)
     case COMPARE:
     case ABS:
     case ZERO_EXTEND:
-      total = rtx_cost (XEXP (x, 0), outer_code);
+      total = extra_cost + rtx_cost (XEXP (x, 0), code);
       if (mode == QImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (1);
+	  return total + COSTS_N_INSNS (1);
 	}
       if (mode == HImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (2);
+	  return total + COSTS_N_INSNS (2);
 	}
       if (mode == SImode)
 	{
-	  return total + extra_cost + COSTS_N_INSNS (4);
+	  return total + COSTS_N_INSNS (4);
 	}
-      return total + extra_cost + COSTS_N_INSNS (8);
+      return total + COSTS_N_INSNS (8);
 
     case IF_THEN_ELSE:
       if (GET_CODE (XEXP (x, 1)) == PC || GET_CODE (XEXP (x, 2)) == PC)
