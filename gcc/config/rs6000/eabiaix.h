@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	RS6000_ABI_NAME
 #define RS6000_ABI_NAME "aix"
 
-#undef	CPP_SYSV_DEFAULT_SPEC
-#define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_AIX"
-
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
    defaults for this target and thus do not need to be handled

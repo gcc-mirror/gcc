@@ -36,9 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_PPC630
 
-#undef  CPP_DEFAULT_SPEC
-#define CPP_DEFAULT_SPEC "-D_ARCH_PPC64"
-
 #undef  ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC "-mppc64"
 
@@ -112,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-D_PPC_ -D__PPC__ -D_PPC64_ -D__PPC64__ -D__powerpc__ -D__powerpc64__ \
-  -D_PIC_ -D__PIC__ -D_BIG_ENDIAN -D__BIG_ENDIAN__ -D__ELF__ \
+  -D_PIC_ -D__PIC__ -D__ELF__ \
   -D__LONG_MAX__=9223372036854775807L \
   -Acpu=powerpc64 -Amachine=powerpc64"
 

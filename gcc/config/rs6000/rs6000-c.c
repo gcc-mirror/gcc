@@ -69,3 +69,61 @@ rs6000_pragma_longcall (pfile)
 
   rs6000_default_long_calls = (n == integer_one_node);
 }
+
+/* Handle defining many CPP flags based on TARGET_xxx.  As a general
+   policy, rather than trying to guess what flags a user might want a
+   #define for, it's better to define a flag for everything.  */
+
+#define builtin_define(TXT) cpp_define (pfile, TXT)
+#define builtin_assert(TXT) cpp_assert (pfile, TXT)
+
+void
+rs6000_cpu_cpp_builtins (pfile)
+     cpp_reader *pfile;
+{
+  if (TARGET_POWER2)
+    builtin_define ("_ARCH_PWR2");
+  else if (TARGET_POWER)
+    builtin_define ("_ARCH_PWR");
+  if (TARGET_POWERPC)
+    builtin_define ("_ARCH_PPC");
+  if (TARGET_POWERPC64)
+    builtin_define ("_ARCH_PPC64");
+  if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)
+    builtin_define ("_ARCH_COM");
+  if (TARGET_ALTIVEC)
+    builtin_define ("__ALTIVEC__");
+  if (TARGET_SOFT_FLOAT)
+    builtin_define ("_SOFT_FLOAT");
+  if (BYTES_BIG_ENDIAN)
+    {
+      builtin_define ("__BIG_ENDIAN__");
+      builtin_define ("_BIG_ENDIAN");
+      builtin_assert ("machine=bigendian");
+    }
+  else
+    {
+      builtin_define ("__LITTLE_ENDIAN__");
+      builtin_define ("_LITTLE_ENDIAN");
+      builtin_assert ("machine=littleendian");
+    }
+  if (TARGET_LONG_DOUBLE_128)
+    builtin_define ("__LONG_DOUBLE_128__");
+
+  switch (rs6000_current_abi)
+    {
+    case ABI_V4:
+      builtin_define ("_CALL_SYSV");
+      break;
+    case ABI_AIX_NODESC:
+      builtin_define ("_CALL_AIX");
+      break;
+    case ABI_AIX:
+      builtin_define ("_CALL_AIXDESC");
+      builtin_define ("_CALL_AIX");
+      break;
+    case ABI_DARWIN:
+      builtin_define ("_CALL_DARWIN");
+      break;
+    }
+}

@@ -2876,7 +2876,6 @@ powerpc*-*-* | rs6000-*-*)
 
 		x401 | x403 | x405 | xec603e | x801 | x821 | x823 | x860)
 			target_cpu_default2="\\\"$with_cpu\\\""
-			tm_file="$tm_file rs6000/softfloat.h"
 			;;
 
 		xyes | xno)

@@ -183,8 +183,11 @@ extern void debug_stack_info PARAMS ((rs6000_stack_t *));
 
 extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
 
+/* Declare functions in rs6000-c.c */
+
 #ifdef GCC_CPPLIB_H
 extern void rs6000_pragma_longcall PARAMS ((cpp_reader *));
+extern void rs6000_cpu_cpp_builtins PARAMS ((cpp_reader *));
 #endif
 
 #endif  /* rs6000-protos.h */

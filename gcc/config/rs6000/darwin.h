@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_OVERRIDE_OPTIONS  \
   rs6000_altivec_abi = 1;
 
-#define CPP_PREDEFINES "-D__ppc__ -D__POWERPC__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__BIG_ENDIAN__ -D__APPLE__"
+#define CPP_PREDEFINES "-D__ppc__ -D__POWERPC__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__APPLE__"
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */

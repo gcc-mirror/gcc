@@ -34,10 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc"
 
-/* Override rs6000.h definition.  */
-#undef	CPP_DEFAULT_SPEC
-#define	CPP_DEFAULT_SPEC "-D_ARCH_PPC"
-
 /* Small data support types.  */
 enum rs6000_sdata_type {
   SDATA_NONE,			/* No small data support.  */
@@ -969,55 +965,11 @@ do {						\
 #define CPP_SYSV_SPEC \
 "%{mrelocatable*: -D_RELOCATABLE} \
 %{fpic: -D__PIC__=1 -D__pic__=1} \
-%{!fpic: %{fPIC: -D__PIC__=2 -D__pic__=2}} \
-%{mlong-double-128: -D__LONG_DOUBLE_128__=1} \
-%{!mlong-double-64: %(cpp_longdouble_default)} \
-%{mcall-sysv: -D_CALL_SYSV} \
-%{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
-%{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %(cpp_sysv_default) }}} \
-%{msoft-float: -D_SOFT_FLOAT} \
-%{!msoft-float: %{!mhard-float: \
-    %{mcpu=401: -D_SOFT_FLOAT} \
-    %{mcpu=403: -D_SOFT_FLOAT} \
-    %{mcpu=405: -D_SOFT_FLOAT} \
-    %{mcpu=ec603e: -D_SOFT_FLOAT} \
-    %{mcpu=801: -D_SOFT_FLOAT} \
-    %{mcpu=821: -D_SOFT_FLOAT} \
-    %{mcpu=823: -D_SOFT_FLOAT} \
-    %{mcpu=860: -D_SOFT_FLOAT} \
-    %{!mcpu*: %(cpp_float_default) }}}"
-
-/* Whether floating point is disabled by default.  */
-#define	CPP_FLOAT_DEFAULT_SPEC ""
-
-/* Whether 'long double' is 128 bits by default.  */
-#define	CPP_LONGDOUBLE_DEFAULT_SPEC ""
-
-#define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
-
-#define CPP_ENDIAN_BIG_SPEC "-D_BIG_ENDIAN -D__BIG_ENDIAN__ -Amachine=bigendian"
-
-#define CPP_ENDIAN_LITTLE_SPEC "-D_LITTLE_ENDIAN -D__LITTLE_ENDIAN__ -Amachine=littleendian"
-
-#define	CPP_ENDIAN_SPEC \
-"%{mlittle: %(cpp_endian_little) } \
-%{mlittle-endian: %(cpp_endian_little) } \
-%{mbig: %(cpp_endian_big) } \
-%{mbig-endian: %(cpp_endian_big) } \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-freebsd: %(cpp_endian_big) } \
-    %{mcall-linux: %(cpp_endian_big) } \
-    %{mcall-gnu: %(cpp_endian_big) } \
-    %{mcall-netbsd: %(cpp_endian_big) } \
-    %{mcall-i960-old: %(cpp_endian_little) } \
-    %{mcall-aixdesc:  %(cpp_endian_big) } \
-    %{!mcall-linux: %{!mcall-gnu: %{!mcall-freebsd: %{!mcall-netbsd: %{!mcall-aixdesc: %(cpp_endian_default) }}}}}}}}}"
-
-#define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_big)"
+%{!fpic: %{fPIC: -D__PIC__=2 -D__pic__=2}}"
 
 /* Override rs6000.h definition.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
+#define	CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) \
 %{mads: %(cpp_os_ads) } \
 %{myellowknife: %(cpp_os_yellowknife) } \
 %{mmvme: %(cpp_os_mvme) } \
@@ -1323,9 +1275,6 @@ ncrtn.o%s"
 #undef	SUBTARGET_EXTRA_SPECS
 #define	SUBTARGET_EXTRA_SPECS						\
   { "cpp_sysv",			CPP_SYSV_SPEC },			\
-  { "cpp_sysv_default",		CPP_SYSV_DEFAULT_SPEC },		\
-  { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },		\
-  { "cpp_endian",		CPP_ENDIAN_SPEC },			\
   { "crtsavres_default",        CRTSAVRES_DEFAULT_SPEC },              \
   { "lib_ads",			LIB_ADS_SPEC },				\
   { "lib_yellowknife",		LIB_YELLOWKNIFE_SPEC },			\
@@ -1390,10 +1339,6 @@ ncrtn.o%s"
   { "cc1_endian_big",		CC1_ENDIAN_BIG_SPEC },			\
   { "cc1_endian_little",	CC1_ENDIAN_LITTLE_SPEC },		\
   { "cc1_endian_default",	CC1_ENDIAN_DEFAULT_SPEC },		\
-  { "cpp_endian_big",		CPP_ENDIAN_BIG_SPEC },			\
-  { "cpp_endian_little",	CPP_ENDIAN_LITTLE_SPEC },		\
-  { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },		\
-  { "cpp_longdouble_default",	CPP_LONGDOUBLE_DEFAULT_SPEC },		\
   { "cpp_os_ads",		CPP_OS_ADS_SPEC },			\
   { "cpp_os_yellowknife",	CPP_OS_YELLOWKNIFE_SPEC },		\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
