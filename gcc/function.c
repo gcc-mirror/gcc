@@ -2942,7 +2942,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
     case MEM:
       /* Most cases of MEM that convert to valid addresses have already been
-	 handled by our scan of regno_reg_rtx.  The only special handling we
+	 handled by our scan of decls.  The only special handling we
 	 need here is to make a copy of the rtx to ensure it isn't being
 	 shared if we have to change it to a pseudo. 
 
@@ -3000,7 +3000,9 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	     ??? Also note that this can still lose if OBJECT is an insn that
 	     has less restrictions on an address that some other insn.
 	     In that case, we will modify the shared address.  This case
-	     doesn't seem very likely, though.  */
+	     doesn't seem very likely, though.  One case where this could
+	     happen is in the case of a USE or CLOBBER reference, but we
+	     take care of that below.  */
 
 	  if (instantiate_virtual_regs_1 (&XEXP (x, 0),
 					  object ? object : x, 0))
@@ -3013,8 +3015,6 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	}
 
       /* Fall through to generic unary operation case.  */
-    case USE:
-    case CLOBBER:
     case SUBREG:
     case STRICT_LOW_PART:
     case NEG:          case NOT:
@@ -3028,6 +3028,23 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
     case FFS:
       /* These case either have just one operand or we know that we need not
 	 check the rest of the operands.  */
+      loc = &XEXP (x, 0);
+      goto restart;
+
+    case USE:
+    case CLOBBER:
+      /* If the operand is a MEM, see if the change is a valid MEM.  If not,
+	 go ahead and make the invalid one, but do it to a copy.  For a REG,
+	 just make the recursive call, since there's no chance of a problem. */
+
+      if ((GET_CODE (XEXP (x, 0)) == MEM
+	   && instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 0), XEXP (x, 0),
+					  0))
+	  || (GET_CODE (XEXP (x, 0)) == REG
+	      && instantiate_virtual_regs_1 (&XEXP (x, 0), 0, 0)))
+	return 1;
+
+      XEXP (x, 0) = copy_rtx (XEXP (x, 0));
       loc = &XEXP (x, 0);
       goto restart;
 
