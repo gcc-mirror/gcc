@@ -3352,9 +3352,6 @@ do {									\
 #define PREDICATE_CODES							\
 {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
 {"fp_zero_operand", {CONST_DOUBLE}},					\
-{"fp_sethi_p", {CONST_DOUBLE}},						\
-{"fp_mov_p", {CONST_DOUBLE}},						\
-{"fp_high_losum_p", {CONST_DOUBLE}},					\
 {"intreg_operand", {SUBREG, REG}},					\
 {"fcc_reg_operand", {REG}},						\
 {"icc_or_fcc_reg_operand", {REG}},					\

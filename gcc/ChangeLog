@@ -1,5 +1,8 @@
 2001-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* sparc.h (PREDICATE_CODES): Delete fp_sethi_p, fp_mov_p and
+	fp_high_losum_p.
+
 	* gencodes.c (output_predicate_decls): Fill empty initializer
 	braces.
 
