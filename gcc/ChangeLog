@@ -1,3 +1,9 @@
+Wed Jun  3 11:02:24 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* configure.in: Set float_format to m68k for all m68k targets that
+	do not override LONG_DOUBLE_TYPE_SIZE.
+	* config/float-m68k.h: New file.
+
 Tue Jun  2 23:14:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize): Remove debug messages accidentally left in
