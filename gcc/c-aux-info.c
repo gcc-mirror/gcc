@@ -23,16 +23,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
-#include <sys/param.h>
-#include <errno.h>
 #include "config.h"
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
-
-#ifndef errno
-extern int errno;
-#endif
 
 extern char* xmalloc ();
 
