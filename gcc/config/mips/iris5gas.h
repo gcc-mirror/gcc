@@ -1,19 +1,27 @@
-/* Definitions of target machine for GNU compiler.  Irix version 5 with gas.  */
+/* Definitions of target machine for GNU compiler.  Irix version 5 with gas.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
-/* Enable debugging.  */
-#define DBX_DEBUGGING_INFO 1
-#define DWARF2_DEBUGGING_INFO 1
-#define MIPS_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* GNU as does handle DWARF2 directives.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
-
-/* Override mips.h version to match DWARF 2 default.  */
-#undef MDEBUG_ASM_SPEC
-#define MDEBUG_ASM_SPEC "%{gstabs*|gcoff*:-mdebug} \
-%{!gstabs*:%{!gcoff*:-no-mdebug}}"
 
 /* Override iris5.h version to invoke [cd]tors and register eh frame
    information.  */

@@ -1,3 +1,23 @@
+2004-01-06  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (MDEBUG_ASM_SPEC): Change for dwarf2 default.
+	(DWARF2_DEBUGGING_INFO): Define.
+	(PREFERRED_DEBUGGING_TYPE): Set to dwarf2.
+	* config/mips/openbsd.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	* config/mips/iris6.h (SUBTARGET_ASM_DEBUGGING_SPEC): Only pass -g0
+	for irix as.
+	(SUBTARGET_ASM_OPTIMIZING_SPEC): Only pass O0 for irix as.
+	* config/mips/iris6gas.h (MDEBUG_ASM_SPEC): Remove.
+	* config/mips/iris5gas.h: Ditto.
+	(DBX_DEBUGGING_INFO): Remove.
+	(DWARF2_DEBUGGING_INFO): Ditto.
+	(MIPS_DEBUGGING_INFO): Ditto.
+	(PREFERRED_DEBUGGING_TYPE): Ditto.
+	* config/mips/elf.h (DWARF2_DEBUGGING_INFO): Remove.
+	(PREFERRED_DEBUGGING_TYPE): Ditto.
+	(SUBTARGET_ASM_DEBUGGING_SPEC): Ditto.
+	* config/mips/elf64.h: Ditto.
+
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (STAGEPROFILE_FLAGS_TO_PASS): Use -fprofile-generate.
@@ -8,7 +28,7 @@
 	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Compile darwin-ldouble.c.
 	(TARGET_LIBGCC2_CFLAGS): Use -mlong-double-128.
 	* config/rs6000/darwin-ldouble.c: New.
-	
+
 	* emit-rtl.c (gen_lowpart_common): Use simplify_gen_subreg
 	for constants.
 	(constant_subword): Delete.
@@ -110,7 +130,7 @@
 	ASM_OUTPUT_MAIN_SOURCE_FILENAME.
 
 2004-01-05  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* ggc-zone.c: Remove everything in #ifdef USING_MALLOC_PAGE_GROUPS
 	(USING_MMAP): We don't support non-mmap.
 	(struct alloc_chunk): Steal 1 bit from typecode, use it to mark
@@ -125,7 +145,7 @@
 	(alloc_small_page): Don't care about bytes_free anymore.
 	(alloc_large_page): Round up size.
 	(ggc_alloc_zone_1): Mark large objects as such, and calculate
-	their size the new way. 
+	their size the new way.
 	Remove page table lookups and setting.
 	(ggc_get_size): Calculate large object size the new way.
 	(sweep_pages): Redo to account for fact that we no longer have
@@ -195,7 +215,7 @@
 2004-01-05  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (output_andsi3): Fix signed/unsigned comparison
-	warning.	
+	warning.
 
 2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 

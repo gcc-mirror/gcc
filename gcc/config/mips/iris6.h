@@ -267,19 +267,20 @@ Boston, MA 02111-1307, USA.  */
 /* Must pass -show instead of -v.  */
 /* Must pass -G 0 to the assembler, otherwise we may get warnings about
    GOT overflow.  */
-/* ??? We pass -w to disable all assembler warnings.  The `label should be
-   inside .ent/.end block' warning that we get for DWARF II debug info labels
-   is particularly annoying.  */
+/* Must pass -w to the assembler to quiet warnings about .ent/.end for dwarf2.  */
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) == 0
+/* We have a separate file for gas.  */
 #undef SUBTARGET_MIPS_AS_ASM_SPEC
 #define SUBTARGET_MIPS_AS_ASM_SPEC "%{v:-show} -G 0 -w"
 
 #undef SUBTARGET_ASM_DEBUGGING_SPEC
-#define SUBTARGET_ASM_DEBUGGING_SPEC "-g0 %(mdebug_asm_spec)"
+#define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
 /* The MIPS assembler occasionally misoptimizes.  Since GCC should be
    doing scheduling anyhow, just turn off optimization in the assembler.  */
 #undef SUBTARGET_ASM_OPTIMIZING_SPEC
 #define SUBTARGET_ASM_OPTIMIZING_SPEC "-O0"
+#endif
 
 /* The assembler now accepts .section pseudo-ops, but it does not allow
    one to change the section in the middle of a function, so we can't use
