@@ -709,7 +709,8 @@ namespace __gnu_norm
 		      size_t __position = 0) : _Base()
       {
 	if (__position > __s.size())
-	  __throw_out_of_range("bitset::bitset initial position not valid");
+	  __throw_out_of_range(__N("bitset::bitset initial position "
+				   "not valid"));
 	_M_copy_from_string(__s, __position,
 			    basic_string<_CharT, _Traits, _Alloc>::npos);
       }
@@ -728,7 +729,8 @@ namespace __gnu_norm
 	     size_t __position, size_t __n) : _Base()
       {
 	if (__position > __s.size())
-	  __throw_out_of_range("bitset::bitset initial position not valid");
+	 __throw_out_of_range(__N("bitset::bitset initial position "
+				  "not valid"));
 	_M_copy_from_string(__s, __position, __n);
       }
 
@@ -1070,7 +1072,8 @@ namespace __gnu_norm
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
     void
-    bitset<_Nb>::_M_copy_from_string(const basic_string<_CharT,_Traits,_Alloc>& __s, size_t __pos, size_t __n)
+    bitset<_Nb>::_M_copy_from_string(const basic_string<_CharT, _Traits,
+				     _Alloc>& __s, size_t __pos, size_t __n)
     {
       reset();
       const size_t __nbits = std::min(_Nb, std::min(__n, __s.size() - __pos));
@@ -1084,7 +1087,7 @@ namespace __gnu_norm
 	      set(__i);
 	      break;
 	    default:
-	      __throw_invalid_argument("bitset::_M_copy_from_string");
+	      __throw_invalid_argument(__N("bitset::_M_copy_from_string"));
 	    }
 	}
     }
@@ -1092,7 +1095,8 @@ namespace __gnu_norm
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
     void
-    bitset<_Nb>::_M_copy_to_string(basic_string<_CharT, _Traits, _Alloc>& __s) const
+    bitset<_Nb>::_M_copy_to_string(basic_string<_CharT, _Traits,
+				   _Alloc>& __s) const
     {
       __s.assign(_Nb, '0');
       for (size_t __i = 0; __i < _Nb; ++__i)
