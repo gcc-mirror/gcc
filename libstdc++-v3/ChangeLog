@@ -1,3 +1,10 @@
+2000-11-17  Loren J. Rittle  <ljrittle@acm.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Correct last patch
+	  to ``make --enable-cstdio=stdio the default''.
+	* libstdc++-v3/aclocal.m4: Rebuilt.
+	* libstdc++-v3/configure: Rebuilt.
+
 2000-11-17  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY):  Move switch statement

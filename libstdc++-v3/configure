@@ -36,7 +36,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-debug          extra debugging, turn off optimization [default=no]"
 ac_help="$ac_help
-  --enable-cstdio        enable GNU libio for target io package. (default)
+  --enable-cstdio        enable stdio for target io package. (default)
      --enable-cstdio=LIB    use LIB target-speific io package."
 ac_help="$ac_help
   --enable-c-mbchar       enable multibyte (wide) characters [default=yes]"
@@ -2678,10 +2678,10 @@ echo "configure:2677: checking for cstdio to use" >&5
 if test "${enable_cstdio+set}" = set; then
   enableval="$enable_cstdio"
   if test x$enable_cstdio = xno; then
-     enable_cstdio=libio
+     enable_cstdio=stdio
   fi
 else
-  enable_cstdio=libio
+  enable_cstdio=stdio
 fi
 
 

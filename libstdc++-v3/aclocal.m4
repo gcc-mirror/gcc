@@ -1234,17 +1234,17 @@ dnl
 dnl GLIBCPP_ENABLE_CSTDIO
 dnl --enable-cstdio=libio sets config/c_io_libio.h and friends
 dnl 
-dnl default is libio
+dnl default is stdio
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_MSG_CHECKING([for cstdio to use])
   AC_ARG_ENABLE(cstdio,
-  [  --enable-cstdio        enable GNU libio for target io package. (default)
+  [  --enable-cstdio        enable stdio for target io package. (default)
      --enable-cstdio=LIB    use LIB target-speific io package.], 
   if test x$enable_cstdio = xno; then
-     enable_cstdio=libio
+     enable_cstdio=stdio
   fi,
-     enable_cstdio=libio)
+     enable_cstdio=stdio)
 
   enable_cstdio_flag=$enable_cstdio
 
