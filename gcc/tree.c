@@ -1562,7 +1562,7 @@ tree_cons (purpose, value, chain)
 #endif
 
   for (i = (sizeof (struct tree_common) / sizeof (int)) - 1; i >= 0; i--)
-    ((int *) t)[i] = 0;
+    ((int *) node)[i] = 0;
 
   TREE_SET_CODE (node, TREE_LIST);
   if (current_obstack == &permanent_obstack)
