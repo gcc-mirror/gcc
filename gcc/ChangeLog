@@ -1,3 +1,8 @@
+2003-03-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_cbranch, output_bb, output_bvb): Output nop for
+	conditional branch to the following instruction.
+
 2003-03-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR doc-bug/9813
