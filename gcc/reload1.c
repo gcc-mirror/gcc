@@ -4881,7 +4881,7 @@ emit_reload_insns (insn)
 			    {
 			      reload_insn
 				= gen_input_reload (second_reload_reg,
-						    oldequiv);
+						    oldequiv, where);
 			      if (this_reload_insn == 0)
 				this_reload_insn = reload_insn;
 			      oldequiv = second_reload_reg;
