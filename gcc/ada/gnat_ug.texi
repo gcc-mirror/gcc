@@ -4313,7 +4313,7 @@ temporary disabling of validity checks.
 @findex Style checking
 
 @noindent
-The -gnaty@var{^x^(option,option,..)^} switch causes the compiler to
+The -gnaty^@var{x}^(@var{option},@var{option},..)^ switch causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
 in writing the GNAT sources themselves. This switch allows user programs
 to activate all or some of these checks. If the source program fails a
@@ -8197,9 +8197,9 @@ unless @code{^-a^/ALL_FILES^} is also specified.
 @item
 @code{gnatmake} has been designed to make the use of Ada libraries
 particularly convenient. Assume you have an Ada library organized
-as follows: @var{^obj-dir^[OBJ_DIR]^} contains the objects and ALI files for
+as follows: ^@var{obj-dir}^[@var{OBJ_DIR}]^ contains the objects and ALI files for
 of your Ada compilation units,
-whereas @var{^include-dir^[INCLUDE_DIR]^} contains the
+whereas ^@var{include-dir}^[@var{INCLUDE_DIR}]^ contains the
 specs of these units, but no bodies. Then to compile a unit
 stored in @code{main.adb}, which uses this Ada library you would just type
 
@@ -8208,8 +8208,8 @@ stored in @code{main.adb}, which uses this Ada library you would just type
 $ gnatmake -aI@var{include-dir}  -aL@var{obj-dir}  main
 @end ifclear
 @ifset vms
-$ gnatmake /SOURCE_SEARCH=@var{[INCLUDE_DIR]}
-           /SKIP_MISSING=@var{[OBJ_DIR]} main
+$ gnatmake /SOURCE_SEARCH=[@var{INCLUDE_DIR}]
+           /SKIP_MISSING=[@var{OBJ_DIR}] main
 @end ifset
 @end smallexample
 

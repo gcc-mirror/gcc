@@ -3576,7 +3576,7 @@ temporary disabling of validity checks.
 @findex Style checking
 
 @noindent
-The /STYLE=@var{(option,option,..)} qualifier causes the compiler to
+The /STYLE=(@var{option},@var{option},..) qualifier causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
 in writing the GNAT sources themselves. This qualifier allows user programs
 to activate all or some of these checks. If the source program fails a
@@ -7197,15 +7197,15 @@ unless @code{/ALL_FILES} is also specified.
 @item
 @code{GNAT MAKE} has been designed to make the use of Ada libraries
 particularly convenient. Assume you have an Ada library organized
-as follows: @var{[OBJ_DIR]} contains the objects and ALI files for
+as follows: [@var{OBJ_DIR}] contains the objects and ALI files for
 of your Ada compilation units,
-whereas @var{[INCLUDE_DIR]} contains the
+whereas [@var{INCLUDE_DIR}] contains the
 specs of these units, but no bodies. Then to compile a unit
 stored in @code{MAIN.ADB}, which uses this Ada library you would just type
 
 @smallexample
-$ GNAT MAKE /SOURCE_SEARCH=@var{[INCLUDE_DIR]}
-           /SKIP_MISSING=@var{[OBJ_DIR]} main
+$ GNAT MAKE /SOURCE_SEARCH=[@var{INCLUDE_DIR}]
+           /SKIP_MISSING=[@var{OBJ_DIR}] main
 @end smallexample
 
 @item
