@@ -1,3 +1,17 @@
+Mon Oct  1 19:20:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (get_alias_set): Try to replace PLACEHOLDER_EXPR.
+	Loop through NOPs, placeholders, and components.
+	Don't go through NOPs if change mode.
+	(record_alias_subset): Do nothing if SUBSET and SET are the same.
+	* emit-rtl.c (set_mem_alias_set): Enable check.
+	* expr.c (find_placeholder): New function.
+	(expand_expr, case PLACEHOLDER_EXPR): Use it.
+	(expand_expr, case COMPONENT_EXPR): Always copy OP0 when we need
+	to modify it and avoid unneeded copies.
+	* expr.h (expand_expr): Always define.
+	(find_placeholder): New declaration.
+
 2001-10-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("add-split"): Fix add split when

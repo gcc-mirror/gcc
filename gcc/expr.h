@@ -498,13 +498,19 @@ extern rtx store_expr PARAMS ((tree, rtx, int));
    Useful after calling expand_expr with 1 as sum_ok.  */
 extern rtx force_operand PARAMS ((rtx, rtx));
 
-#ifdef TREE_CODE
+/* Return an object on the placeholder list that matches EXP, a
+   PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
+   PLACEHOLDER_EXPR or a pointer type to it.  For further information,
+   see tree.def.  If no such object is found, abort.  If PLIST is nonzero,
+   it is a location into which a pointer into the placeholder list at
+   which the object is found is placed.  */
+extern tree find_placeholder PARAMS ((tree, tree *));
+
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.  */
 extern rtx expand_expr PARAMS ((tree, rtx, enum machine_mode,
 				enum expand_modifier));
-#endif
 
 /* At the start of a function, record that we have no previously-pushed
    arguments waiting to be popped.  */

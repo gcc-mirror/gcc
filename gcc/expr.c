@@ -5955,6 +5955,69 @@ check_max_integer_computation_mode (exp)
 }
 #endif
 
+/* Return an object on the placeholder list that matches EXP, a
+   PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
+   PLACEHOLDER_EXPR or a pointer type to it.  For further information,
+   see tree.def.  If no such object is found, abort.  If PLIST is nonzero,
+   it is a location into which a pointer into the placeholder list at
+   which the object is found is placed.  */
+
+tree
+find_placeholder (exp, plist)
+     tree exp;
+     tree *plist;
+{
+  tree type = TREE_TYPE (exp);
+  tree placeholder_expr;
+
+  for (placeholder_expr = placeholder_list; placeholder_expr != 0;
+       placeholder_expr = TREE_CHAIN (placeholder_expr))
+    {
+      tree need_type = TYPE_MAIN_VARIANT (type);
+      tree elt;
+
+      /* Find the outermost reference that is of the type we want.  If none,
+	 see if any object has a type that is a pointer to the type we
+	 want.  */
+      for (elt = TREE_PURPOSE (placeholder_expr); elt != 0;
+	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+		   || TREE_CODE (elt) == COND_EXPR)
+		  ? TREE_OPERAND (elt, 1)
+		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		  ? TREE_OPERAND (elt, 0) : 0))
+	if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
+	  {
+	    if (plist)
+	      *plist = placeholder_expr;
+	    return elt;
+	  }
+
+      for (elt = TREE_PURPOSE (placeholder_expr); elt != 0;
+	   elt
+	   = ((TREE_CODE (elt) == COMPOUND_EXPR
+	       || TREE_CODE (elt) == COND_EXPR)
+	      ? TREE_OPERAND (elt, 1)
+	      : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		 || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		 || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		 || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+	      ? TREE_OPERAND (elt, 0) : 0))
+	if (POINTER_TYPE_P (TREE_TYPE (elt))
+	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
+		== need_type))
+	  {
+	    if (plist)
+	      *plist = placeholder_expr;
+	    return build1 (INDIRECT_REF, need_type, elt);
+	  }
+    }
+
+  abort ();
+}
+
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.
@@ -6482,66 +6545,14 @@ expand_expr (exp, target, tmode, modifier)
 
     case PLACEHOLDER_EXPR:
       {
+	tree old_list = placeholder_list;
 	tree placeholder_expr;
 
-	/* If there is an object on the head of the placeholder list,
-	   see if some object in it of type TYPE or a pointer to it.  For
-	   further information, see tree.def.  */
-	for (placeholder_expr = placeholder_list;
-	     placeholder_expr != 0;
-	     placeholder_expr = TREE_CHAIN (placeholder_expr))
-	  {
-	    tree need_type = TYPE_MAIN_VARIANT (type);
-	    tree object = 0;
-	    tree old_list = placeholder_list;
-	    tree elt;
-
-	    /* Find the outermost reference that is of the type we want.
-	       If none, see if any object has a type that is a pointer to
-	       the type we want.  */
-	    for (elt = TREE_PURPOSE (placeholder_expr);
-		 elt != 0 && object == 0;
-		 elt
-		 = ((TREE_CODE (elt) == COMPOUND_EXPR
-		     || TREE_CODE (elt) == COND_EXPR)
-		    ? TREE_OPERAND (elt, 1)
-		    : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
-		    ? TREE_OPERAND (elt, 0) : 0))
-	      if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
-		object = elt;
-
-	    for (elt = TREE_PURPOSE (placeholder_expr);
-		 elt != 0 && object == 0;
-		 elt
-		 = ((TREE_CODE (elt) == COMPOUND_EXPR
-		     || TREE_CODE (elt) == COND_EXPR)
-		    ? TREE_OPERAND (elt, 1)
-		    : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		       || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
-		    ? TREE_OPERAND (elt, 0) : 0))
-	      if (POINTER_TYPE_P (TREE_TYPE (elt))
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
-		      == need_type))
-		object = build1 (INDIRECT_REF, need_type, elt);
-
-	    if (object != 0)
-	      {
-		/* Expand this object skipping the list entries before
-		   it was found in case it is also a PLACEHOLDER_EXPR.
-		   In that case, we want to translate it using subsequent
-		   entries.  */
-		placeholder_list = TREE_CHAIN (placeholder_expr);
-		temp = expand_expr (object, original_target, tmode,
-				    ro_modifier);
-		placeholder_list = old_list;
-		return temp;
-	      }
-	  }
+	exp = find_placeholder (exp, &placeholder_expr);
+	placeholder_list = TREE_CHAIN (placeholder_expr);
+	temp = expand_expr (exp, original_target, tmode, ro_modifier);
+	placeholder_list = old_list;
+	return temp;
       }
 
       /* We can't find the object or there was a missing WITH_RECORD_EXPR.  */
@@ -6923,6 +6934,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep,
 					&alignment);
+	rtx orig_op0;
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
@@ -6934,15 +6946,16 @@ expand_expr (exp, target, tmode, modifier)
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
 
-	op0 = expand_expr (tem,
-			   (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
-			    && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
-				!= INTEGER_CST)
-			    ? target : NULL_RTX),
-			   VOIDmode,
-			   (modifier == EXPAND_INITIALIZER
-			    || modifier == EXPAND_CONST_ADDRESS)
-			   ? modifier : EXPAND_NORMAL);
+	orig_op0 = op0
+	  = expand_expr (tem,
+			 (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+			  && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
+			      != INTEGER_CST)
+			  ? target : NULL_RTX),
+			 VOIDmode,
+			 (modifier == EXPAND_INITIALIZER
+			  || modifier == EXPAND_CONST_ADDRESS)
+			 ? modifier : EXPAND_NORMAL);
 
 	/* If this is a constant, put it into a register if it is a
 	   legitimate constant and OFFSET is 0 and memory if it isn't.  */
@@ -7031,7 +7044,9 @@ expand_expr (exp, target, tmode, modifier)
 	/* Don't forget about volatility even if this is a bitfield.  */
 	if (GET_CODE (op0) == MEM && volatilep && ! MEM_VOLATILE_P (op0))
 	  {
-	    op0 = copy_rtx (op0);
+	    if (op0 == orig_op0)
+	      op0 = copy_rtx (op0);
+
 	    MEM_VOLATILE_P (op0) = 1;
 	  }
 
@@ -7172,6 +7187,9 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
 	else
 	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
+
+	if (op0 == orig_op0)
+	  op0 = copy_rtx (op0);
 
 	set_mem_attributes (op0, exp, 0);
 	if (GET_CODE (XEXP (op0, 0)) == REG)
