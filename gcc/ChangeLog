@@ -1,4 +1,9 @@
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/md.texi (Machine Constraints): Correct the meaning of
+	constraints related to floating-point registers on SPARC.
+
+2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/10663
