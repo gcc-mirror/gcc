@@ -7220,10 +7220,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       DECL_INITIAL (decl) = error_mark_node;
     }
 
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl, attributes);
-#endif
-
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (decl, attributes, prefix_attributes);
 
@@ -13436,10 +13432,6 @@ start_function (declspecs, declarator, attrs, flags)
   if (!DECL_INITIAL (decl1))
     DECL_INITIAL (decl1) = error_mark_node;
 
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
-#endif
-
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
@@ -13640,8 +13632,7 @@ start_function (declspecs, declarator, attrs, flags)
   pushlevel (0);
   current_binding_level->parm_flag = 1;
 
-  if (attrs)
-    cplus_decl_attributes (decl1, NULL_TREE, attrs);
+  cplus_decl_attributes (decl1, NULL_TREE, attrs);
 
   /* Promote the value to int before returning it.  */
   if (c_promoting_integer_type_p (restype))

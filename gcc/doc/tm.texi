@@ -8413,10 +8413,8 @@ as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
 in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
 @end deftypefn
 
-@table @code
-@findex INSERT_ATTRIBUTES
-@item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr})
-Define this macro if you want to be able to add attributes to a decl
+@deftypefn {Target Hook} void TARGET_INSERT_ATTRIBUTES (tree @var{node}, tree *@var{attr_ptr})
+Define this target hook if you want to be able to add attributes to a decl
 when it is being created.  This is normally useful for back ends which
 wish to implement a pragma by using the attributes which correspond to
 the pragma's effect.  The @var{node} argument is the decl which is being
@@ -8426,12 +8424,9 @@ shared with other decls, but attributes may be chained on the head of
 the list and @code{*@var{attr_ptr}} modified to point to the new
 attributes, or a copy of the list may be made if further changes are
 needed.
+@end deftypefn
 
-@findex SET_DEFAULT_DECL_ATTRIBUTES
-@item SET_DEFAULT_DECL_ATTRIBUTES (@var{decl}, @var{attributes})
-If defined, a C statement that assigns default attributes to
-newly defined @var{decl}.
-
+@table @code
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier

@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"
+#include "target.h"
 cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 #undef WCHAR_TYPE_SIZE
@@ -745,17 +746,7 @@ decl_attributes (node, attributes)
   else if (TYPE_P (node))
     type = node, is_type = 1;
 
-#ifdef PRAGMA_INSERT_ATTRIBUTES
-  /* If the code in c-pragma.c wants to insert some attributes then
-     allow it to do so.  Do this before allowing machine back ends to
-     insert attributes, so that they have the opportunity to override
-     anything done here.  */
-  PRAGMA_INSERT_ATTRIBUTES (node, & attributes);
-#endif
-
-#ifdef INSERT_ATTRIBUTES
-  INSERT_ATTRIBUTES (node, & attributes);
-#endif
+  (*targetm.insert_attributes) (node, &attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     {

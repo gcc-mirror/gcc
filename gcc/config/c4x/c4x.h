@@ -2443,9 +2443,6 @@ do {						\
   c4x_init_pragma (&c_lex);						\
 } while (0)
 
-#define SET_DEFAULT_DECL_ATTRIBUTES(DECL, ATTRIBUTES) \
-  c4x_set_default_attributes (DECL, &ATTRIBUTES)
-
 /* Assembler Commands for Alignment.  */
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \

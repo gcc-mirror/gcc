@@ -3447,10 +3447,6 @@ start_decl (declarator, declspecs, initialized, attributes)
   if (! flag_no_common || ! TREE_PUBLIC (decl))
     DECL_COMMON (decl) = 1;
 
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl, attributes);
-#endif
-
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (decl, attributes);
 
@@ -6020,10 +6016,6 @@ start_function (declspecs, declarator, attributes)
      However, `extern inline' acts like a declaration
      except for defining how to inline.  So set DECL_EXTERNAL in that case.  */
   DECL_EXTERNAL (decl1) = current_extern_inline;
-
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attributes);
-#endif
 
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */

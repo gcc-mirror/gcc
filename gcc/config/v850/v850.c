@@ -54,6 +54,7 @@ static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *))
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
 static int v850_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+static void v850_insert_attributes   PARAMS ((tree, tree *));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -85,6 +86,9 @@ static int v850_interrupt_p = FALSE;
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE v850_valid_decl_attribute
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES v850_insert_attributes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2653,9 +2657,10 @@ v850_output_local (file, decl, name, size, align)
 
 /* Add data area to the given declaration if a ghs data area pragma is
    currently in effect (#pragma ghs startXXX/endXXX).  */
-void
-v850_set_default_decl_attr (decl)
+static void
+v850_insert_attributes (decl, attr_ptr)
      tree decl;
+     tree *attr_ptr ATTRIBUTE_UNUSED;
 {
   if (data_area_stack
       && data_area_stack->data_area

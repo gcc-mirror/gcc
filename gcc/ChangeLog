@@ -1,5 +1,41 @@
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* target.h (struct gcc_target): Add insert_attributes.
+	* target-def.h (TARGET_INSERT_ATTRIBUTES): Define.
+	(TARGET_INITIALIZER): Update.
+	* tree.c, tree.h (default_insert_attributes): New function.
+	Update comments on other default functions to refer to targetm,
+	not target.
+	* doc/tm.texi (INSERT_ATTRIBUTES): Update to document
+	TARGET_INSERT_ATTRIBUTES.
+	(SET_DEFAULT_DECL_ATTRIBUTES): Remove.
+	* c-common.c (decl_attributes): Use targetm.insert_attributes.
+	Don't use PRAGMA_INSERT_ATTRIBUTES.
+	* Makefile.in (c-common.o): Depend on $(TARGET_H).
+	* c-decl.c (start_decl, start_function): Don't call
+	SET_DEFAULT_DECL_ATTRIBUTES.
+	* config/c4x/c4x.h (SET_DEFAULT_DECL_ATTRIBUTES): Don't define.
+	* config/c4x/c4x-protos.h (c4x_set_default_attributes): Don't
+	declare.
+	* config/c4x/c4x.c (TARGET_INSERT_ATTRIBUTES): Define.
+	(c4x_check_attribute): Avoid modifying attribute list itself.
+	(c4x_set_default_attributes): Rename to c4x_insert_attributes.
+	Make static.
+	* config/sh/sh.h (PRAGMA_INSERT_ATTRIBUTES): Don't define.
+	* config/sh/sh-protos.h (sh_pragma_insert_attributes): Don't
+	declare.
+	* config/sh/sh.c (TARGET_INSERT_ATTRIBUTES): Define.
+	(sh_pragma_insert_attributes): Rename to sh_insert_attributes.
+	Make static.
+	* config/v850/v850.h (SET_DEFAULT_DECL_ATTRIBUTES): Don't define.
+	* config/v850/v850-protos.h (v850_set_default_decl_attr): Don't
+	declare.
+	* config/v850/v850.c (TARGET_INSERT_ATTRIBUTES): Define.
+	(v850_set_default_decl_attr): Rename to v850_insert_attributes.
+	Adjust parameters.  Make static.
+
+2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (decl_attributes): Only take a single attributes
 	parameter.
 	* c-common.h (decl_attributes): Update prototype.

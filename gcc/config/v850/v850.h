@@ -1486,10 +1486,6 @@ do { char dstr[30];					\
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-/* A C statement that assigns default attributes to a newly created DECL.  */
-#define SET_DEFAULT_DECL_ATTRIBUTES(decl, attr) \
-     v850_set_default_decl_attr (decl)
-
 /* Tell compiler we want to support GHS pragmas */
 #define REGISTER_TARGET_PRAGMAS(PFILE) do {				  \
   cpp_register_pragma_space (PFILE, "ghs");				  \

@@ -1,5 +1,12 @@
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* decl.c (start_decl): Don't call SET_DEFAULT_DECL_ATTRIBUTES.
+	(start_function): Don't call SET_DEFAULT_DECL_ATTRIBUTES.  Call
+	cplus_decl_attributes even if attrs is NULL.
+	* friend.c (do_friend): Don't call SET_DEFAULT_DECL_ATTRIBUTES.
+
+2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* decl.c (grokdeclarator), decl2.c (cplus_decl_attributes): Update
 	calls to decl_attributes.
 
