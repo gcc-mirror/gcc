@@ -59,11 +59,10 @@ extern Int namet__name_len;
    strings we want are sitting in the name strings table in exactly the form
    we need them (null terminated), we just point to the name directly. */
 
-static char *Get_Name_String PARAMS ((Name_Id));
+static char *Get_Name_String (Name_Id);
 
 INLINE char *
-Get_Name_String (Id)
-     Name_Id Id;
+Get_Name_String (Name_Id Id)
 {
   return Name_Chars_Ptr + Names_Ptr[Id - First_Name_Id].Name_Chars_Index + 1;
 }
@@ -73,13 +72,12 @@ Get_Name_String (Id)
    wide characters are put back in their external form, and character literals
    are also returned in their external form (with surrounding apostrophes) */
 
-extern void namet__get_decoded_name_string PARAMS ((Name_Id));
+extern void namet__get_decoded_name_string (Name_Id);
 
-static char *Get_Decoded_Name_String PARAMS ((Name_Id));
+static char *Get_Decoded_Name_String (Name_Id);
 
 INLINE char *
-Get_Decoded_Name_String (Id)
-     Name_Id Id;
+Get_Decoded_Name_String (Name_Id Id)
 {
   namet__get_decoded_name_string (Id);
   Name_Buffer[Name_Len] = 0;
@@ -90,15 +88,15 @@ Get_Decoded_Name_String (Id)
    package body entity suffixes stripped, and also all letters are upper
    cased.  This is used fo rbuilding the enumeration literal table. */
 
-extern void casing__set_all_upper_case PARAMS ((void));
+extern void casing__set_all_upper_case (void);
 
 /* The following routines and variables are not part of Namet, but we
    include the header here since it seems the best place for it.  */
 
 #define Get_Encoded_Type_Name exp_dbug__get_encoded_type_name
-extern Boolean Get_Encoded_Type_Name PARAMS ((Entity_Id));
+extern Boolean Get_Encoded_Type_Name (Entity_Id);
 #define Get_Variant_Encoding exp_dbug__get_variant_encoding
-extern void Get_Variant_Encoding PARAMS ((Entity_Id));
+extern void Get_Variant_Encoding (Entity_Id);
 
 #define Spec_Context_List exp_dbug__spec_context_list
 #define Body_Context_List exp_dbug__body_context_list
@@ -108,7 +106,7 @@ extern char *Spec_Context_List, *Body_Context_List;
 extern char *Spec_Filename, *Body_Filename;
 
 #define Is_Non_Ada_Error exp_ch11__is_non_ada_error
-extern Boolean Is_Non_Ada_Error PARAMS ((Entity_Id));
+extern Boolean Is_Non_Ada_Error (Entity_Id);
 
 /* Here are some functions in sinput.adb we call from a-trans.c.  */
 typedef Nat Source_File_Index;
@@ -120,8 +118,8 @@ typedef Int Logical_Line_Number;
 #define Get_Source_File_Index sinput__get_source_file_index
 #define Get_Logical_Line_Number sinput__get_logical_line_number
 
-extern File_Name_Type Debug_Source_Name	PARAMS ((Source_File_Index));
-extern File_Name_Type Full_Debug_Name	PARAMS ((Source_File_Index));
-extern File_Name_Type Reference_Name	PARAMS ((Source_File_Index));
-extern Source_File_Index Get_Source_File_Index PARAMS ((Source_Ptr));
-extern Logical_Line_Number Get_Logical_Line_Number PARAMS ((Source_Ptr));
+extern File_Name_Type Debug_Source_Name	(Source_File_Index);
+extern File_Name_Type Full_Debug_Name	(Source_File_Index);
+extern File_Name_Type Reference_Name	(Source_File_Index);
+extern Source_File_Index Get_Source_File_Index (Source_Ptr);
+extern Logical_Line_Number Get_Logical_Line_Number (Source_Ptr);

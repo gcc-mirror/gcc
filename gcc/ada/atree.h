@@ -274,7 +274,7 @@ extern struct Node *Nodes_Ptr;
 
 
 #define Parent atree__parent
-extern Node_Id Parent PARAMS((Node_Id));
+extern Node_Id Parent (Node_Id);
 
 /* Overloaded Functions:
 
@@ -287,24 +287,22 @@ typedef Int Tree_Id;
 /* These two functions can only be used for Node_Id and List_Id values and
    they work in the C version because Empty = No_List = 0.  */
 
-static Boolean No	PARAMS ((Tree_Id));
-static Boolean Present	PARAMS ((Tree_Id));
+static Boolean No	(Tree_Id);
+static Boolean Present	(Tree_Id);
 
 INLINE Boolean
-No (N)
-     Tree_Id N;
+No (Tree_Id N)
 {
   return N == Empty;
 }
 
 INLINE Boolean
-Present (N)
-     Tree_Id N;
+Present (Tree_Id N)
 {
   return N != Empty;
 }
 
-extern Node_Id Parent		PARAMS((Tree_Id));
+extern Node_Id Parent		(Tree_Id);
 
 #define Current_Error_Node atree__current_error_node
 extern Node_Id Current_Error_Node;
