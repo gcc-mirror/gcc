@@ -1,3 +1,7 @@
+Thu Jul  8 12:55:12 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/elf.h (BSS_SECTION_ASM_OP): Use .section .bss.
+
 Thu Jul  8 18:03:19 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): Never call remove_adress_replacements
