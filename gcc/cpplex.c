@@ -2106,21 +2106,22 @@ _cpp_init_input_buffer (pfile)
  trigraphs and escaped newlines in the input stream.
 
  The trigraphs are three consecutive characters beginning with two
- question marks.  A question mark is not a valid as part of a number
- or identifier, so parsing of a number or identifier terminates
- normally upon reaching it, returning to the mainloop which handles
- the trigraph just like it would in any other position.  Similarly for
- the backslash of a backslash-newline combination.  So we just need
- the escaped-newline dropper in the mainloop to check if the token on
- the top of the stack is a number or identifier, and to continue the
- processing of the token as if nothing had happened.
+ question marks.  A question mark is not valid as part of a number or
+ identifier, so parsing of a number or identifier terminates normally
+ upon reaching it, returning to the mainloop which handles the
+ trigraph just like it would in any other position.  Similarly for the
+ backslash of a backslash-newline combination.  So we just need the
+ escaped-newline dropper in the mainloop to check if the token on the
+ top of the stack after dropping the escaped newline is a number or
+ identifier, and if so to continue the processing it as if nothing had
+ happened.
 
  For strings, we replace trigraphs whenever we reach a quote or
  newline, because there might be a backslash trigraph escaping them.
  We need to be careful that we start trigraph replacing from where we
  left off previously, because it is possible for a first scan to leave
  "fake" trigraphs that a second scan would pick up as real (e.g. the
- sequence "????\\n=" would find a fake ??= trigraph after removing the
+ sequence "????/\n=" would find a fake ??= trigraph after removing the
  escaped newline.)
 
  For line comments, on reaching a newline we scan the previous
