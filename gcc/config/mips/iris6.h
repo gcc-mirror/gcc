@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -129,7 +129,7 @@ Boston, MA 02111-1307, USA.  */
    includes this file.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_const, in_ctors, in_dtors, in_bss
+#define EXTRA_SECTIONS in_sdata, in_rdata, in_const, in_ctors, in_dtors
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
