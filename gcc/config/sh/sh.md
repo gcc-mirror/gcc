@@ -1572,7 +1572,7 @@
   [(set (reg:SI 0)
 	(plus:SI (reg:SI 0)
 		 (mem:HI (plus:SI (reg:SI 0)
-				  (match_operand:SI 0 "arith_reg_operand" "=r")))))
+				  (match_operand:SI 0 "arith_reg_operand" "+r")))))
    (set (match_dup 0) (mem:HI (plus:SI (reg:SI 0)
 				       (match_dup 0))))]
   ""
