@@ -432,10 +432,8 @@ addr_const_to_string (char *str, rtx x)
   switch (GET_CODE (x))
     {
     case PC:
-      if (flag_pic)
-	strcat (str, ",");
-      else
-	abort ();
+      gcc_assert (flag_pic);
+      strcat (str, ",");
       break;
 
     case SYMBOL_REF:
