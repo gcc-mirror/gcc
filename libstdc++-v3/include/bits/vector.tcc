@@ -121,7 +121,7 @@ namespace _GLIBCXX_STD
     vector<_Tp, _Alloc>::
     erase(iterator __first, iterator __last)
     {
-      iterator __i(copy(__last, end(), __first));
+      iterator __i(std::copy(__last, end(), __first));
       std::_Destroy(__i, end(), this->get_allocator());
       this->_M_impl._M_finish = this->_M_impl._M_finish - (__last - __first);
       return __first;
@@ -149,7 +149,7 @@ namespace _GLIBCXX_STD
 	    }
 	  else if (size() >= __xlen)
 	    {
-	      iterator __i(copy(__x.begin(), __x.end(), begin()));
+	      iterator __i(std::copy(__x.begin(), __x.end(), begin()));
 	      std::_Destroy(__i, end(), this->get_allocator());
 	    }
 	  else
@@ -226,7 +226,7 @@ namespace _GLIBCXX_STD
 	  }
 	else if (size() >= __len)
 	  {
-	    iterator __new_finish(copy(__first, __last,
+	    iterator __new_finish(std::copy(__first, __last,
 				       this->_M_impl._M_start));
 	    std::_Destroy(__new_finish, end(), this->get_allocator());
 	    this->_M_impl._M_finish = __new_finish.base();
