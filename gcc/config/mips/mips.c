@@ -5566,7 +5566,11 @@ compute_frame_size (size)
       fp_bits = 3;
     }
 
-  for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno += fp_inc)
+  /* This loop must iterate over the same space as its companion in
+     save_restore_regs.  */
+  for (regno = (FP_REG_LAST - fp_inc + 1);
+       regno >= FP_REG_FIRST;
+       regno -= fp_inc)
     {
       if (regs_ever_live[regno] && !call_used_regs[regno])
 	{
@@ -6020,7 +6024,11 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	    }
 	}
 
-      for (regno = FP_REG_LAST-1; regno >= FP_REG_FIRST; regno -= fp_inc)
+      /* This loop must iterate over the same space as its companion in
+	 compute_frame_size.  */
+      for (regno = (FP_REG_LAST - fp_inc + 1);
+	   regno >= FP_REG_FIRST;
+	   regno -= fp_inc)
 	if (BITSET_P (fmask, regno - FP_REG_FIRST))
 	  {
 	    if (file == 0)

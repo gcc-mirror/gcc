@@ -1,3 +1,9 @@
+Fri Feb 12 00:51:26 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (save_restore_insns): Fix loop to save/restore FP registers.
+	(compute_frame_size): Change loop over FP regs to be consistent
+	with the loop in save_restore_insns.
+
 Thu Feb 11 17:38:40 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* i960/i960.h (OVERRIDE_OPTIONS): Warn if -mlong-double-64 is used.
