@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -640,10 +640,10 @@
    zapnot %r1,%m2,%0"
   [(set_attr "type" "iaddlog,iaddlog,shiftcm")])
 
-;; There are times when we can split and AND into two AND insns.  This occurs
+;; There are times when we can split an AND into two AND insns.  This occurs
 ;; when we can first clear any bytes and then clear anything else.  For
 ;; example "I & 0xffff07" is "(I & 0xffffff) & 0xffffffffffffff07".
-;; Only to this when running on 64-bit host since the computations are
+;; Only do this when running on 64-bit host since the computations are
 ;; too messy otherwise.
 
 (define_split
