@@ -1,3 +1,8 @@
+2003-09-15  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (LEGITIMATE_PIC_OPERAND_P): Use
+	SYMBOL_REF_LOCAL_P.
+
 2003-09-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.h (DEFAULT_FUNCTION_ARG_PADDING): New.
