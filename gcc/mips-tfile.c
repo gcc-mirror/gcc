@@ -2912,14 +2912,19 @@ parse_def (name_start)
 
 
   /* Search for the end of the name being defined.  */
-  for (name_end_p1 = name_start; (ch = *name_end_p1) != ';'; name_end_p1++)
+  /* Allow spaces and such in names for G++ templates, which produce stabs
+     that look like:
+
+     #.def   SMANIP<long unsigned int>; .scl 10; .type 0x8; .size 8; .endef */
+
+  for (name_end_p1 = name_start; (ch = *name_end_p1) != ';' || ch == '\0'; name_end_p1++)
+    ;
+
+  if (ch == '\0')
     {
-      if (ch == '\0' || isspace (ch))
-	{
-	  error_line = __LINE__;
-	  saber_stop ();
-	  goto bomb_out;
-	}
+      error_line = __LINE__;
+      saber_stop ();
+      goto bomb_out;
     }
 
   /* Parse the remaining subdirectives now.  */
