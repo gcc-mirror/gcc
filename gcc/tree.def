@@ -365,10 +365,26 @@ DEFTREECODE (ARRAY_REF, "array_ref", "r", 2)
 
 /* Constructor: return an aggregate value made from specified components.
    In C, this is used only for structure and array initializers.
+   Also used for SET_TYPE in Chill (and potentially Pascal).
    The first "operand" is really a pointer to the RTL,
    for constant constructors only.
    The second operand is a list of component values
-   made out of a chain of TREE_LIST nodes.  */
+   made out of a chain of TREE_LIST nodes.
+
+   For ARRAY_TYPE:
+   The TREE_PURPOSE of each node is the corresponding index.
+   If the TREE_PURPOSE is a RANGE_EXPR, it is a short-hand for many nodes,
+   one for each index in the range.  (If the corresponding TREE_VALUE
+   has side-effects, they are evaluated once for each element.  Wrap the
+   value in a SAVE_EXPR if you want to evaluate side effects only once.)
+
+   For RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE:
+   The TREE_PURPOSE of each node is a FIELD_DECL.
+
+   For SET_TYPE:
+   The TREE_VALUE specifies a value (index) in the set that is true.
+   If TREE_PURPOSE is non-NULL, it specifies the lower limit of a
+   range of true values.  Elements not listed are false (not in the set).  */
 DEFTREECODE (CONSTRUCTOR, "constructor", "e", 2)
 
 /* The expression types are mostly straightforward, with the fourth argument
