@@ -100,6 +100,8 @@ extern int target_flags;
 #define MASK_STACK_PROBE	0x00000100	/* Enable stack probing */
 #define MASK_NO_ALIGN_STROPS	0x00001000	/* Enable aligning of string ops. */
 #define MASK_INLINE_ALL_STROPS	0x00002000	/* Inline stringops in all cases */
+#define MASK_NO_PUSH_ARGS	0x00004000	/* Use push instructions */
+#define MASK_ACCUMULATE_OUTGOING_ARGS 0x00008000/* Accumulate outgoing args */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -118,6 +120,13 @@ extern int target_flags;
    the published ABI's for structures containing doubles, but produces
    faster code on the pentium.  */
 #define TARGET_ALIGN_DOUBLE (target_flags & MASK_ALIGN_DOUBLE)
+
+/* Use push instructions to save outgoing args.  */
+#define TARGET_PUSH_ARGS (!(target_flags & MASK_NO_PUSH_ARGS))
+
+/* Accumulate stack adjustments to prologue/epilogue.  */
+#define TARGET_ACCUMULATE_OUTGOING_ARGS \
+ (target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
 
 /* Put uninitialized locals into bss, not data.
    Meaningful only on svr3.  */
@@ -254,6 +263,14 @@ extern const int x86_promote_hi_regs;
     "Inline all known string operations" },				      \
   { "no-inline-all-stringops",	-MASK_INLINE_ALL_STROPS,		      \
     "Do not inline all known string operations" },			      \
+  { "push-args",		-MASK_NO_PUSH_ARGS,			      \
+    "Use push instructions to save outgoing arguments" },		      \
+  { "no-push-args",		MASK_NO_PUSH_ARGS, ""			      \
+    "UDo not use push instructions to save outgoing arguments" },	      \
+  { "accumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS,		      \
+    "Use push instructions to save outgoing arguments" },		      \
+  { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS, ""	      \
+    "Do not use push instructions to save outgoing arguments" },	      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 
@@ -1135,6 +1152,19 @@ enum reg_class
    has the effect of rounding up to 2.  */
 
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & (-2))
+
+/* If defined, the maximum amount of space required for outgoing arguments will
+   be computed and placed into the variable
+   `current_function_outgoing_args_size'.  No space will be pushed onto the
+   stack for each call; instead, the function prologue should increase the stack
+   frame size by this amount.  */
+
+#define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
+
+/* If defined, a C expression whose value is nonzero when we want to use PUSH
+   instructions to pass outgoing arguments.  */
+
+#define PUSH_ARGS (TARGET_PUSH_ARGS && !ACCUMULATE_OUTGOING_ARGS)
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0

@@ -93,6 +93,20 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "real.h"
 #include "toplev.h"
+#include "defaults.h"
+
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
+/* Supply a default definition for PUSH_ARGS.  */
+#ifndef PUSH_ARGS
+#ifdef PUSH_ROUNDING
+#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
+#else
+#define PUSH_ARGS	0
+#endif
+#endif
 
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */
@@ -7883,7 +7897,7 @@ nonzero_bits (x, mode)
 	  int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
 
 #ifdef PUSH_ROUNDING
-	  if (REGNO (x) == STACK_POINTER_REGNUM)
+	  if (REGNO (x) == STACK_POINTER_REGNUM && PUSH_ARGS)
 	    sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
 #endif
 
@@ -11422,7 +11436,7 @@ use_crosses_set_p (x, from_cuid)
 #ifdef PUSH_ROUNDING
       /* Don't allow uses of the stack pointer to be moved,
 	 because we don't know whether the move crosses a push insn.  */
-      if (regno == STACK_POINTER_REGNUM)
+      if (regno == STACK_POINTER_REGNUM && PUSH_ARGS)
 	return 1;
 #endif
       for (; regno < endreg; regno++)

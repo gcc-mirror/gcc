@@ -556,7 +556,7 @@ extern int target_flags;
    This is both an optimization and a necessity: longjmp
    doesn't behave itself when the stack pointer moves within
    the function!  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* The weird HPPA calling conventions require a minimum of 48 bytes on
    the stack: 16 bytes for register saves, and 32 bytes for magic.

@@ -32,6 +32,19 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "tm_p.h"
 
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
+/* Supply a default definition for PUSH_ARGS.  */
+#ifndef PUSH_ARGS
+#ifdef PUSH_ROUNDING
+#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
+#else
+#define PUSH_ARGS	0
+#endif
+#endif
+
 #if !defined FUNCTION_OK_FOR_SIBCALL
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
 #endif
@@ -49,9 +62,13 @@ Boston, MA 02111-1307, USA.  */
 #ifdef PUSH_ROUNDING
 
 #if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
-#define PUSH_ARGS_REVERSED	/* If it's last to first */
+#define PUSH_ARGS_REVERSED  PUSH_ARGS
 #endif
 
+#endif
+
+#ifndef PUSH_ARGS_REVERSED
+#define PUSH_ARGS_REVERSED 0
 #endif
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
@@ -101,10 +118,8 @@ struct arg_data
      differ from STACK if this arg pads downward.  This location is known
      to be aligned to FUNCTION_ARG_BOUNDARY.  */
   rtx stack_slot;
-#ifdef ACCUMULATE_OUTGOING_ARGS
   /* Place that this stack area has been saved, if needed.  */
   rtx save_area;
-#endif
   /* If an argument's alignment does not permit direct copying into registers,
      copy in smaller-sized pieces into pseudos.  These are stored in a
      block pointed to by this field.  The next field says how many
@@ -116,7 +131,6 @@ struct arg_data
   struct args_size alignment_pad;
 };
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
 /* A vector of one char per byte of stack space.  A byte if non-zero if
    the corresponding stack location has been used.
    This vector is used to prevent a function call within an argument from
@@ -132,7 +146,6 @@ static int highest_outgoing_arg_in_use;
    to make sure the object being constructed does not overlap the
    argument list for the constructor call.  */
 int stack_arg_under_construction;
-#endif
 
 static int calls_function	PARAMS ((tree, int));
 static int calls_function_1	PARAMS ((tree, int));
@@ -176,7 +189,7 @@ static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx, int,
 							 enum machine_mode,
 							 int, va_list));
 
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+#ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));
 static void restore_fixed_argument_area	PARAMS ((rtx, rtx, int, int));
 #endif
@@ -413,10 +426,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   rtx struct_value_size_rtx = GEN_INT (struct_value_size);
 #endif
   rtx call_insn;
-#ifndef ACCUMULATE_OUTGOING_ARGS
   int already_popped = 0;
   HOST_WIDE_INT n_popped = RETURN_POPS_ARGS (fndecl, funtype, stack_size);
-#endif
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,
@@ -424,7 +435,6 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   if (GET_CODE (funexp) != SYMBOL_REF)
     funexp = memory_address (FUNCTION_MODE, funexp);
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
       && HAVE_sibcall_pop && HAVE_sibcall_value_pop
@@ -459,7 +469,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    even if the call has no arguments to pop.  */
 #if defined (HAVE_call) && defined (HAVE_call_value)
   if (HAVE_call && HAVE_call_value && HAVE_call_pop && HAVE_call_value_pop
-       && n_popped > 0)
+      && n_popped > 0)
 #else
   if (HAVE_call_pop && HAVE_call_value_pop)
 #endif
@@ -482,7 +492,6 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       already_popped = 1;
     }
   else
-#endif
 #endif
 
 #if defined (HAVE_sibcall) && defined (HAVE_sibcall_value)
@@ -559,18 +568,6 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      if the context of the call as a whole permits.  */
   inhibit_defer_pop = old_inhibit_defer_pop;
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-  /* If returning from the subroutine does not automatically pop the args,
-     we need an instruction to pop them sooner or later.
-     Perhaps do it now; perhaps just record how much space to pop later.
-
-     If returning from the subroutine does pop the args, indicate that the
-     stack pointer will be changed.  */
-
-  /* The space for the args is no longer waiting for the call; either it
-     was popped by the call, or it'll be popped below.  */
-  arg_space_so_far -= rounded_stack_size;
-
   if (n_popped > 0)
     {
       if (!already_popped)
@@ -582,15 +579,41 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
     }
 
-  if (rounded_stack_size != 0)
+  if (!ACCUMULATE_OUTGOING_ARGS)
     {
-      if (flag_defer_pop && inhibit_defer_pop == 0
-	  && !(ecf_flags & ECF_IS_CONST))
-	pending_stack_adjust += rounded_stack_size;
-      else
-	adjust_stack (rounded_stack_size_rtx);
+      /* If returning from the subroutine does not automatically pop the args,
+	 we need an instruction to pop them sooner or later.
+	 Perhaps do it now; perhaps just record how much space to pop later.
+
+	 If returning from the subroutine does pop the args, indicate that the
+	 stack pointer will be changed.  */
+
+      /* The space for the args is no longer waiting for the call; either it
+	 was popped by the call, or it'll be popped below.  */
+      arg_space_so_far -= rounded_stack_size - n_popped;
+
+      if (rounded_stack_size != 0)
+	{
+	  if (flag_defer_pop && inhibit_defer_pop == 0
+	      && !(ecf_flags & ECF_IS_CONST))
+	    pending_stack_adjust += rounded_stack_size;
+	  else
+	    adjust_stack (rounded_stack_size_rtx);
+	}
     }
-#endif
+  /* When we accumulate outgoing args, we must avoid any stack manipulations.
+     Restore the stack pointer to its original value now.  Usually
+     ACCUMULATE_OUTGOING_ARGS targets don't get here, but there are exceptions.
+     On  i386 ACCUMULATE_OUTGOING_ARGS can be enabled on demand, and
+     popping variants of functions exist as well.
+
+     ??? We may optimize similar to defer_pop above, but it is
+     probably not worthwhile.
+   
+     ??? It will be worthwhile to enable combine_stack_adjustments even for
+     such machines.  */
+  else if (n_popped)
+    anti_adjust_stack (GEN_INT (n_popped));
 }
 
 /* Determine if the function identified by NAME and FNDECL is one with
@@ -774,7 +797,7 @@ precompute_register_parameters (num_actuals, args, reg_parm_seen)
       }
 }
 
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+#ifdef REG_PARM_STACK_SPACE
 
   /* The argument list is the property of the called routine and it
      may clobber it.  If the fixed area has been used for previous
@@ -1013,13 +1036,16 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
      We fill up ARGS from the front or from the back if necessary
      so that in any case the first arg to be pushed ends up at the front.  */
 
-#ifdef PUSH_ARGS_REVERSED
-  i = num_actuals - 1, inc = -1;
-  /* In this case, must reverse order of args
-     so that we compute and push the last arg first.  */
-#else
-  i = 0, inc = 1;
-#endif
+  if (PUSH_ARGS_REVERSED)
+    {
+      i = num_actuals - 1, inc = -1;
+      /* In this case, must reverse order of args
+	 so that we compute and push the last arg first.  */
+    }
+  else
+    {
+      i = 0, inc = 1;
+    }
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (p = actparms, argpos = 0; p; p = TREE_CHAIN (p), i += inc, argpos++)
@@ -1261,6 +1287,14 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
      int preferred_stack_boundary ATTRIBUTE_UNUSED;
 {
   int unadjusted_args_size = args_size->constant;
+
+  /* For accumulate outgoing args mode we don't need to align, since the frame
+     will be already aligned.  Align to STACK_BOUNDARY in order to prevent
+     backends from generating missaligned frame sizes.  */
+#ifdef STACK_BOUNDARY
+  if (ACCUMULATE_OUTGOING_ARGS && preferred_stack_boundary > STACK_BOUNDARY)
+    preferred_stack_boundary = STACK_BOUNDARY;
+#endif
 
   /* Compute the actual size of the argument block required.  The variable
      and constant sizes must be combined, the size may have to be rounded,
@@ -1692,9 +1726,7 @@ expand_call (exp, target, ignore)
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
   char *name = 0;
-#ifdef ACCUMULATE_OUTGOING_ARGS
   rtx before_call;
-#endif
   rtx insn;
   int try_tail_call;
   int pass;
@@ -1744,11 +1776,7 @@ expand_call (exp, target, ignore)
      So the entire argument block must then be preallocated (i.e., we
      ignore PUSH_ROUNDING in that case).  */
 
-#ifdef PUSH_ROUNDING
-  int must_preallocate = 0;
-#else
-  int must_preallocate = 1;
-#endif
+  int must_preallocate = !PUSH_ARGS;
 
   /* Size of the stack reserved for parameter registers.  */
   int reg_parm_stack_space = 0;
@@ -1777,18 +1805,16 @@ expand_call (exp, target, ignore)
   int is_volatile = 0;
   /* Nonzero if this is a call to a function that won't throw an exception.  */
   int nothrow = TREE_NOTHROW (exp);
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+#ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
   int low_to_save = -1, high_to_save;
   rtx save_area = 0;		/* Place that it is saved */
 #endif
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
   int old_stack_arg_under_construction = 0;
-#endif
 
   rtx old_stack_level = 0;
   int old_pending_adj = 0;
@@ -1866,8 +1892,8 @@ expand_call (exp, target, ignore)
 #endif
 #endif
 
-#if defined(PUSH_ROUNDING) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
-  if (reg_parm_stack_space > 0)
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+  if (reg_parm_stack_space > 0 && PUSH_ARGS)
     must_preallocate = 1;
 #endif
 
@@ -1935,9 +1961,7 @@ expand_call (exp, target, ignore)
     {
       rtx temp;
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
       before_call = get_last_insn ();
-#endif
 
       temp = expand_inline_function (fndecl, actparms, target,
 				     ignore, TREE_TYPE (exp),
@@ -1946,64 +1970,65 @@ expand_call (exp, target, ignore)
       /* If inlining succeeded, return.  */
       if (temp != (rtx) (HOST_WIDE_INT) -1)
 	{
-#ifdef ACCUMULATE_OUTGOING_ARGS
-	  /* If the outgoing argument list must be preserved, push
-	     the stack before executing the inlined function if it
-	     makes any calls.  */
-
-	  for (i = reg_parm_stack_space - 1; i >= 0; i--)
-	    if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
-	      break;
-
-	  if (stack_arg_under_construction || i >= 0)
+	  if (ACCUMULATE_OUTGOING_ARGS)
 	    {
-	      rtx first_insn
-		= before_call ? NEXT_INSN (before_call) : get_insns ();
-	      rtx insn = NULL_RTX, seq;
+	      /* If the outgoing argument list must be preserved, push
+		 the stack before executing the inlined function if it
+		 makes any calls.  */
 
-	      /* Look for a call in the inline function code.
-		 If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
-		 nonzero then there is a call and it is not necessary
-		 to scan the insns.  */
+	      for (i = reg_parm_stack_space - 1; i >= 0; i--)
+		if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
+		  break;
 
-	      if (DECL_SAVED_INSNS (fndecl)->outgoing_args_size == 0)
-		for (insn = first_insn; insn; insn = NEXT_INSN (insn))
-		  if (GET_CODE (insn) == CALL_INSN)
-		    break;
-
-	      if (insn)
+	      if (stack_arg_under_construction || i >= 0)
 		{
-		  /* Reserve enough stack space so that the largest
-		     argument list of any function call in the inline
-		     function does not overlap the argument list being
-		     evaluated.  This is usually an overestimate because
-		     allocate_dynamic_stack_space reserves space for an
-		     outgoing argument list in addition to the requested
-		     space, but there is no way to ask for stack space such
-		     that an argument list of a certain length can be
-		     safely constructed. 
+		  rtx first_insn
+		    = before_call ? NEXT_INSN (before_call) : get_insns ();
+		  rtx insn = NULL_RTX, seq;
 
-		     Add the stack space reserved for register arguments, if
-		     any, in the inline function.  What is really needed is the
-		     largest value of reg_parm_stack_space in the inline
-		     function, but that is not available.  Using the current
-		     value of reg_parm_stack_space is wrong, but gives
-		     correct results on all supported machines.  */
+		  /* Look for a call in the inline function code.
+		     If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
+		     nonzero then there is a call and it is not necessary
+		     to scan the insns.  */
 
-		  int adjust = (DECL_SAVED_INSNS (fndecl)->outgoing_args_size
-				+ reg_parm_stack_space);
+		  if (DECL_SAVED_INSNS (fndecl)->outgoing_args_size == 0)
+		    for (insn = first_insn; insn; insn = NEXT_INSN (insn))
+		      if (GET_CODE (insn) == CALL_INSN)
+			break;
 
-		  start_sequence ();
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-		  allocate_dynamic_stack_space (GEN_INT (adjust),
-						NULL_RTX, BITS_PER_UNIT);
-		  seq = get_insns ();
-		  end_sequence ();
-		  emit_insns_before (seq, first_insn);
-		  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+		  if (insn)
+		    {
+		      /* Reserve enough stack space so that the largest
+			 argument list of any function call in the inline
+			 function does not overlap the argument list being
+			 evaluated.  This is usually an overestimate because
+			 allocate_dynamic_stack_space reserves space for an
+			 outgoing argument list in addition to the requested
+			 space, but there is no way to ask for stack space such
+			 that an argument list of a certain length can be
+			 safely constructed. 
+
+			 Add the stack space reserved for register arguments, if
+			 any, in the inline function.  What is really needed is the
+			 largest value of reg_parm_stack_space in the inline
+			 function, but that is not available.  Using the current
+			 value of reg_parm_stack_space is wrong, but gives
+			 correct results on all supported machines.  */
+
+		      int adjust = (DECL_SAVED_INSNS (fndecl)->outgoing_args_size
+				    + reg_parm_stack_space);
+
+		      start_sequence ();
+		      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+		      allocate_dynamic_stack_space (GEN_INT (adjust),
+						    NULL_RTX, BITS_PER_UNIT);
+		      seq = get_insns ();
+		      end_sequence ();
+		      emit_insns_before (seq, first_insn);
+		      emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+		    }
 		}
 	    }
-#endif
 
 	  /* If the result is equivalent to TARGET, return TARGET to simplify
 	     checks in store_expr.  They can be equivalent but not equal in the
@@ -2260,10 +2285,9 @@ expand_call (exp, target, ignore)
 	     If it is virtual_outgoing_args_rtx, we must copy it to another
 	     register in some cases.  */
 	  rtx temp = (GET_CODE (structure_value_addr) != REG
-#ifdef ACCUMULATE_OUTGOING_ARGS
-		      || (stack_arg_under_construction
+		      || (ACCUMULATE_OUTGOING_ARGS
+			  && stack_arg_under_construction
 			  && structure_value_addr == virtual_outgoing_args_rtx)
-#endif
 		      ? copy_addr_to_reg (structure_value_addr)
 		      : structure_value_addr);
 
@@ -2380,9 +2404,7 @@ expand_call (exp, target, ignore)
 	      || reg_mentioned_p (virtual_outgoing_args_rtx,
 				  structure_value_addr))
 	  && (args_size.var
-#ifndef ACCUMULATE_OUTGOING_ARGS
-	      || args_size.constant
-#endif
+	      || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)
 	      ))
 	structure_value_addr = copy_to_reg (structure_value_addr);
 
@@ -2405,13 +2427,11 @@ expand_call (exp, target, ignore)
 	      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 	      old_pending_adj = pending_stack_adjust;
 	      pending_stack_adjust = 0;
-#ifdef ACCUMULATE_OUTGOING_ARGS
 	      /* stack_arg_under_construction says whether a stack arg is
 		 being constructed at the old stack level.  Pushing the stack
 		 gets a clean outgoing argument block.  */
 	      old_stack_arg_under_construction = stack_arg_under_construction;
 	      stack_arg_under_construction = 0;
-#endif
 	    }
 	  argblock = push_block (ARGS_SIZE_RTX (args_size), 0, 0);
 	}
@@ -2433,85 +2453,87 @@ expand_call (exp, target, ignore)
 
 	  if (must_preallocate)
 	    {
-#ifdef ACCUMULATE_OUTGOING_ARGS
-	      /* Since the stack pointer will never be pushed, it is possible
-		 for the evaluation of a parm to clobber something we have
-		 already written to the stack.  Since most function calls on
-		 RISC machines do not use the stack, this is uncommon, but
-		 must work correctly.
+	      if (ACCUMULATE_OUTGOING_ARGS)
+		{
+		  /* Since the stack pointer will never be pushed, it is possible
+		     for the evaluation of a parm to clobber something we have
+		     already written to the stack.  Since most function calls on
+		     RISC machines do not use the stack, this is uncommon, but
+		     must work correctly.
 
-		 Therefore, we save any area of the stack that was already
-		 written and that we are using.  Here we set up to do this by
-		 making a new stack usage map from the old one.  The actual
-		 save will be done by store_one_arg. 
+		     Therefore, we save any area of the stack that was already
+		     written and that we are using.  Here we set up to do this by
+		     making a new stack usage map from the old one.  The actual
+		     save will be done by store_one_arg. 
 
-		 Another approach might be to try to reorder the argument
-		 evaluations to avoid this conflicting stack usage.  */
+		     Another approach might be to try to reorder the argument
+		     evaluations to avoid this conflicting stack usage.  */
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-	      /* Since we will be writing into the entire argument area, the
-		 map must be allocated for its entire size, not just the part
-		 that is the responsibility of the caller.  */
-	      needed += reg_parm_stack_space;
+		  /* Since we will be writing into the entire argument area, the
+		     map must be allocated for its entire size, not just the part
+		     that is the responsibility of the caller.  */
+		  needed += reg_parm_stack_space;
 #endif
 
 #ifdef ARGS_GROW_DOWNWARD
-	      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-						 needed + 1);
+		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+						     needed + 1);
 #else
-	      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-						 needed);
+		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+						     needed);
 #endif
-	      stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
+		  stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
 
-	      if (initial_highest_arg_in_use)
-		bcopy (initial_stack_usage_map, stack_usage_map,
-		       initial_highest_arg_in_use);
+		  if (initial_highest_arg_in_use)
+		    bcopy (initial_stack_usage_map, stack_usage_map,
+			   initial_highest_arg_in_use);
 
-	      if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
-		bzero (&stack_usage_map[initial_highest_arg_in_use],
-		       (highest_outgoing_arg_in_use
-			- initial_highest_arg_in_use));
-	      needed = 0;
+		  if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
+		    bzero (&stack_usage_map[initial_highest_arg_in_use],
+			   (highest_outgoing_arg_in_use
+			    - initial_highest_arg_in_use));
+		  needed = 0;
 
-	      /* The address of the outgoing argument list must not be copied
-		 to a register here, because argblock would be left pointing
-		 to the wrong place after the call to
-		 allocate_dynamic_stack_space below. */
+		  /* The address of the outgoing argument list must not be copied
+		     to a register here, because argblock would be left pointing
+		     to the wrong place after the call to
+		     allocate_dynamic_stack_space below. */
 
-	      argblock = virtual_outgoing_args_rtx;
-
-#else /* not ACCUMULATE_OUTGOING_ARGS */
-	      if (inhibit_defer_pop == 0)
-		{
-		  /* Try to reuse some or all of the pending_stack_adjust
-		     to get this space.  Maybe we can avoid any pushing.  */
-		  if (needed > pending_stack_adjust)
-		    {
-		      needed -= pending_stack_adjust;
-		      pending_stack_adjust = 0;
-		    }
-		  else
-		    {
-		      pending_stack_adjust -= needed;
-		      needed = 0;
-		    }
-		}
-	      /* Special case this because overhead of `push_block' in this
-		 case is non-trivial.  */
-	      if (needed == 0)
-		argblock = virtual_outgoing_args_rtx;
+		  argblock = virtual_outgoing_args_rtx;
+	        }
 	      else
-		argblock = push_block (GEN_INT (needed), 0, 0);
+		{
+		  if (inhibit_defer_pop == 0)
+		    {
+		      /* Try to reuse some or all of the pending_stack_adjust
+			 to get this space.  Maybe we can avoid any pushing.  */
+		      if (needed > pending_stack_adjust)
+			{
+			  needed -= pending_stack_adjust;
+			  pending_stack_adjust = 0;
+			}
+		      else
+			{
+			  pending_stack_adjust -= needed;
+			  needed = 0;
+			}
+		    }
+		  /* Special case this because overhead of `push_block' in this
+		     case is non-trivial.  */
+		  if (needed == 0)
+		    argblock = virtual_outgoing_args_rtx;
+		  else
+		    argblock = push_block (GEN_INT (needed), 0, 0);
 
-	      /* We only really need to call `copy_to_reg' in the case where
-		 push insns are going to be used to pass ARGBLOCK to a function
-		 call in ARGS.  In that case, the stack pointer changes value
-		 from the allocation point to the call point, and hence
-		 the value of VIRTUAL_OUTGOING_ARGS_RTX changes as well.
-		 But might as well always do it.  */
-	      argblock = copy_to_reg (argblock);
-#endif /* not ACCUMULATE_OUTGOING_ARGS */
+		  /* We only really need to call `copy_to_reg' in the case where
+		     push insns are going to be used to pass ARGBLOCK to a function
+		     call in ARGS.  In that case, the stack pointer changes value
+		     from the allocation point to the call point, and hence
+		     the value of VIRTUAL_OUTGOING_ARGS_RTX changes as well.
+		     But might as well always do it.  */
+		  argblock = copy_to_reg (argblock);
+		}
 	    }
 	}
 
@@ -2524,51 +2546,52 @@ expand_call (exp, target, ignore)
 	  argblock = force_reg (Pmode, force_operand (temp, NULL_RTX));
 	}
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
-      /* The save/restore code in store_one_arg handles all cases except one:
-	 a constructor call (including a C function returning a BLKmode struct)
-	 to initialize an argument.  */
-      if (stack_arg_under_construction)
+      if (ACCUMULATE_OUTGOING_ARGS)
 	{
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-	  rtx push_size = GEN_INT (reg_parm_stack_space + args_size.constant);
-#else
-	  rtx push_size = GEN_INT (args_size.constant);
-#endif
-	  if (old_stack_level == 0)
+	  /* The save/restore code in store_one_arg handles all cases except one:
+	     a constructor call (including a C function returning a BLKmode struct)
+	     to initialize an argument.  */
+	  if (stack_arg_under_construction)
 	    {
-	      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-	      old_pending_adj = pending_stack_adjust;
-	      pending_stack_adjust = 0;
-	      /* stack_arg_under_construction says whether a stack arg is
-		 being constructed at the old stack level.  Pushing the stack
-		 gets a clean outgoing argument block.  */
-	      old_stack_arg_under_construction = stack_arg_under_construction;
-	      stack_arg_under_construction = 0;
-	      /* Make a new map for the new argument list.  */
-	      stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
-	      bzero (stack_usage_map, highest_outgoing_arg_in_use);
-	      highest_outgoing_arg_in_use = 0;
-	    }
-	  allocate_dynamic_stack_space (push_size, NULL_RTX, BITS_PER_UNIT);
-	}
-      /* If argument evaluation might modify the stack pointer, copy the
-	 address of the argument list to a register.  */
-      for (i = 0; i < num_actuals; i++)
-	if (args[i].pass_on_stack)
-	  {
-	    argblock = copy_addr_to_reg (argblock);
-	    break;
-	  }
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+	      rtx push_size = GEN_INT (reg_parm_stack_space + args_size.constant);
+#else
+	      rtx push_size = GEN_INT (args_size.constant);
 #endif
+	      if (old_stack_level == 0)
+		{
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+		  old_pending_adj = pending_stack_adjust;
+		  pending_stack_adjust = 0;
+		  /* stack_arg_under_construction says whether a stack arg is
+		     being constructed at the old stack level.  Pushing the stack
+		     gets a clean outgoing argument block.  */
+		  old_stack_arg_under_construction = stack_arg_under_construction;
+		  stack_arg_under_construction = 0;
+		  /* Make a new map for the new argument list.  */
+		  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
+		  bzero (stack_usage_map, highest_outgoing_arg_in_use);
+		  highest_outgoing_arg_in_use = 0;
+		}
+	      allocate_dynamic_stack_space (push_size, NULL_RTX, BITS_PER_UNIT);
+	    }
+	  /* If argument evaluation might modify the stack pointer, copy the
+	     address of the argument list to a register.  */
+	  for (i = 0; i < num_actuals; i++)
+	    if (args[i].pass_on_stack)
+	      {
+		argblock = copy_addr_to_reg (argblock);
+		break;
+	      }
+	}
 
       compute_argument_addresses (args, argblock, num_actuals);
 
-#ifdef PUSH_ARGS_REVERSED
 #ifdef PREFERRED_STACK_BOUNDARY
       /* If we push args individually in reverse order, perform stack alignment
 	 before the first push (the last arg).  */
-      if (args_size.constant != unadjusted_args_size)
+      if (PUSH_ARGS_REVERSED && argblock == 0
+	  && args_size.constant != unadjusted_args_size)
 	{
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
@@ -2596,7 +2619,6 @@ expand_call (exp, target, ignore)
 	  NO_DEFER_POP;
 	}
 #endif
-#endif
 
       /* Don't try to defer pops if preallocating, not even from the first arg,
 	 since ARGBLOCK probably refers to the SP.  */
@@ -2621,11 +2643,12 @@ expand_call (exp, target, ignore)
 	 once we have started filling any specific hard regs.  */
       precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+#ifdef REG_PARM_STACK_SPACE
       /* Save the fixed argument area if it's part of the caller's frame and
 	 is clobbered by argument setup for this call.  */
-      save_area = save_fixed_argument_area (reg_parm_stack_space, argblock,
-					    &low_to_save, &high_to_save);
+      if (ACCUMULATE_OUTGOING_ARGS)
+	save_area = save_fixed_argument_area (reg_parm_stack_space, argblock,
+					      &low_to_save, &high_to_save);
 #endif
 
       /* Now store (and compute if necessary) all non-register parms.
@@ -2654,22 +2677,21 @@ expand_call (exp, target, ignore)
 	    store_one_arg (&args[i], argblock, may_be_alloca,
 			   args_size.var != 0, reg_parm_stack_space);
 
-#ifndef PUSH_ARGS_REVERSED
 #ifdef PREFERRED_STACK_BOUNDARY
       /* If we pushed args in forward order, perform stack alignment
 	 after pushing the last arg.  */
       /* ??? Fix for arg_space_so_far.  */
-      if (argblock == 0)
+      if (!PUSH_ARGS_REVERSED && argblock == 0)
 	anti_adjust_stack (GEN_INT (args_size.constant
 				    - unadjusted_args_size));
-#endif
 #endif
 
       /* If register arguments require space on the stack and stack space
 	 was not preallocated, allocate stack space here for arguments
 	 passed in registers.  */
-#if ! defined(ACCUMULATE_OUTGOING_ARGS) && defined(OUTGOING_REG_PARM_STACK_SPACE)
-      if (must_preallocate == 0 && reg_parm_stack_space > 0)
+#ifdef OUTGOING_REG_PARM_STACK_SPACE
+      if (!ACCUMULATE_OUTGOING_ARGS
+	  must_preallocate == 0 && reg_parm_stack_space > 0)
 	anti_adjust_stack (GEN_INT (reg_parm_stack_space));
 #endif
 
@@ -2749,13 +2771,12 @@ expand_call (exp, target, ignore)
 
 	  /* Construct an "equal form" for the value which mentions all the
 	     arguments in order as well as the function name.  */
-#ifdef PUSH_ARGS_REVERSED
-	  for (i = 0; i < num_actuals; i++)
-	    note = gen_rtx_EXPR_LIST (VOIDmode, args[i].initial_value, note);
-#else
-	  for (i = num_actuals - 1; i >= 0; i--)
-	    note = gen_rtx_EXPR_LIST (VOIDmode, args[i].initial_value, note);
-#endif
+	  if (PUSH_ARGS_REVERSED)
+	    for (i = 0; i < num_actuals; i++)
+	      note = gen_rtx_EXPR_LIST (VOIDmode, args[i].initial_value, note);
+	  else
+	    for (i = num_actuals - 1; i >= 0; i--)
+	      note = gen_rtx_EXPR_LIST (VOIDmode, args[i].initial_value, note);
 	  note = gen_rtx_EXPR_LIST (VOIDmode, funexp, note);
 
 	  insns = get_insns ();
@@ -2939,15 +2960,12 @@ expand_call (exp, target, ignore)
 	{
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 	  pending_stack_adjust = old_pending_adj;
-#ifdef ACCUMULATE_OUTGOING_ARGS
 	  stack_arg_under_construction = old_stack_arg_under_construction;
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
 	  stack_usage_map = initial_stack_usage_map;
-#endif
 	  sibcall_failure = 1;
 	}
-#ifdef ACCUMULATE_OUTGOING_ARGS
-      else
+      else if (ACCUMULATE_OUTGOING_ARGS)
 	{
 #ifdef REG_PARM_STACK_SPACE
 	  if (save_area)
@@ -2981,7 +2999,6 @@ expand_call (exp, target, ignore)
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
 	  stack_usage_map = initial_stack_usage_map;
 	}
-#endif
 
       /* If this was alloca, record the new stack level for nonlocal gotos.  
 	 Check for the handler slots since we might not have a save area
@@ -3125,22 +3142,18 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   int is_const;
   int reg_parm_stack_space = 0;
   int nothrow;
-#ifdef ACCUMULATE_OUTGOING_ARGS
   int needed;
-#endif
 
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+#ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
   int low_to_save = -1, high_to_save = 0;
   rtx save_area = 0;            /* Place that it is saved */
 #endif
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
   /* Size of the stack reserved for parameter registers.  */
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
-#endif
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
@@ -3336,133 +3349,139 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   if (args_size.constant > current_function_outgoing_args_size)
     current_function_outgoing_args_size = args_size.constant;
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
-  /* Since the stack pointer will never be pushed, it is possible for
-     the evaluation of a parm to clobber something we have already
-     written to the stack.  Since most function calls on RISC machines
-     do not use the stack, this is uncommon, but must work correctly.
+  if (ACCUMULATE_OUTGOING_ARGS)
+    {
+      /* Since the stack pointer will never be pushed, it is possible for
+	 the evaluation of a parm to clobber something we have already
+	 written to the stack.  Since most function calls on RISC machines
+	 do not use the stack, this is uncommon, but must work correctly.
 
-     Therefore, we save any area of the stack that was already written
-     and that we are using.  Here we set up to do this by making a new
-     stack usage map from the old one.
+	 Therefore, we save any area of the stack that was already written
+	 and that we are using.  Here we set up to do this by making a new
+	 stack usage map from the old one.
 
-     Another approach might be to try to reorder the argument
-     evaluations to avoid this conflicting stack usage.  */
+	 Another approach might be to try to reorder the argument
+	 evaluations to avoid this conflicting stack usage.  */
 
-  needed = args_size.constant;
+      needed = args_size.constant;
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-  /* Since we will be writing into the entire argument area, the
-     map must be allocated for its entire size, not just the part that
-     is the responsibility of the caller.  */
-  needed += reg_parm_stack_space;
+      /* Since we will be writing into the entire argument area, the
+	 map must be allocated for its entire size, not just the part that
+	 is the responsibility of the caller.  */
+      needed += reg_parm_stack_space;
 #endif
 
 #ifdef ARGS_GROW_DOWNWARD
-  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-				     needed + 1);
+      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+					 needed + 1);
 #else
-  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-				     needed);
+      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+					 needed);
 #endif
-  stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
+      stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
 
-  if (initial_highest_arg_in_use)
-    bcopy (initial_stack_usage_map, stack_usage_map,
-	   initial_highest_arg_in_use);
+      if (initial_highest_arg_in_use)
+	bcopy (initial_stack_usage_map, stack_usage_map,
+	       initial_highest_arg_in_use);
 
-  if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
-    bzero (&stack_usage_map[initial_highest_arg_in_use],
-	   highest_outgoing_arg_in_use - initial_highest_arg_in_use);
-  needed = 0;
+      if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
+	bzero (&stack_usage_map[initial_highest_arg_in_use],
+	       highest_outgoing_arg_in_use - initial_highest_arg_in_use);
+      needed = 0;
 
-  /* The address of the outgoing argument list must not be copied to a
-     register here, because argblock would be left pointing to the
-     wrong place after the call to allocate_dynamic_stack_space below.
-     */
+      /* The address of the outgoing argument list must not be copied to a
+	 register here, because argblock would be left pointing to the
+	 wrong place after the call to allocate_dynamic_stack_space below.
+	 */
 
-  argblock = virtual_outgoing_args_rtx;
-#else /* not ACCUMULATE_OUTGOING_ARGS */
-#ifndef PUSH_ROUNDING
-  argblock = push_block (GEN_INT (args_size.constant), 0, 0);
-#endif
-#endif
+      argblock = virtual_outgoing_args_rtx;
+    }
+  else
+    {
+      if (!PUSH_ARGS)
+	argblock = push_block (GEN_INT (args_size.constant), 0, 0);
+    }
 
-#ifdef PUSH_ARGS_REVERSED
 #ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
-  if (argblock == 0)
+  if (argblock == 0 && PUSH_ARGS_REVERSED)
     anti_adjust_stack (GEN_INT (args_size.constant
 				- original_args_size.constant));
 #endif
-#endif
 
-#ifdef PUSH_ARGS_REVERSED
-  inc = -1;
-  argnum = nargs - 1;
-#else
-  inc = 1;
-  argnum = 0;
-#endif
-
-#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
-  /* The argument list is the property of the called routine and it
-     may clobber it.  If the fixed area has been used for previous
-     parameters, we must save and restore it.
-
-     Here we compute the boundary of the that needs to be saved, if any.  */
-
-#ifdef ARGS_GROW_DOWNWARD
-  for (count = 0; count < reg_parm_stack_space + 1; count++)
-#else
-  for (count = 0; count < reg_parm_stack_space; count++)
-#endif
+  if (PUSH_ARGS_REVERSED)
     {
-      if (count >=  highest_outgoing_arg_in_use
-	  || stack_usage_map[count] == 0)
-	continue;
-
-      if (low_to_save == -1)
-	low_to_save = count;
-
-      high_to_save = count;
+      inc = -1;
+      argnum = nargs - 1;
+    }
+  else
+    {
+      inc = 1;
+      argnum = 0;
     }
 
-  if (low_to_save >= 0)
+#ifdef REG_PARM_STACK_SPACE
+  if (ACCUMULATE_OUTGOING_ARGS)
     {
-      int num_to_save = high_to_save - low_to_save + 1;
-      enum machine_mode save_mode
-	= mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
-      rtx stack_area;
+      /* The argument list is the property of the called routine and it
+	 may clobber it.  If the fixed area has been used for previous
+	 parameters, we must save and restore it.
 
-      /* If we don't have the required alignment, must do this in BLKmode.  */
-      if ((low_to_save & (MIN (GET_MODE_SIZE (save_mode),
-			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
-	save_mode = BLKmode;
+	 Here we compute the boundary of the that needs to be saved, if any.  */
 
 #ifdef ARGS_GROW_DOWNWARD
-      stack_area = gen_rtx_MEM (save_mode,
-				memory_address (save_mode,
-						plus_constant (argblock,
-							       - high_to_save)));
+      for (count = 0; count < reg_parm_stack_space + 1; count++)
 #else
-      stack_area = gen_rtx_MEM (save_mode,
-				memory_address (save_mode,
-						plus_constant (argblock,
-							       low_to_save)));
+      for (count = 0; count < reg_parm_stack_space; count++)
 #endif
-      if (save_mode == BLKmode)
 	{
-	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  emit_block_move (validize_mem (save_area), stack_area,
-			   GEN_INT (num_to_save),
-			   PARM_BOUNDARY / BITS_PER_UNIT);
+	  if (count >=  highest_outgoing_arg_in_use
+	      || stack_usage_map[count] == 0)
+	    continue;
+
+	  if (low_to_save == -1)
+	    low_to_save = count;
+
+	  high_to_save = count;
 	}
-      else
+
+      if (low_to_save >= 0)
 	{
-	  save_area = gen_reg_rtx (save_mode);
-	  emit_move_insn (save_area, stack_area);
+	  int num_to_save = high_to_save - low_to_save + 1;
+	  enum machine_mode save_mode
+	    = mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
+	  rtx stack_area;
+
+	  /* If we don't have the required alignment, must do this in BLKmode.  */
+	  if ((low_to_save & (MIN (GET_MODE_SIZE (save_mode),
+				   BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
+	    save_mode = BLKmode;
+
+#ifdef ARGS_GROW_DOWNWARD
+	  stack_area = gen_rtx_MEM (save_mode,
+				    memory_address (save_mode,
+						    plus_constant (argblock,
+								   - high_to_save)));
+#else
+	  stack_area = gen_rtx_MEM (save_mode,
+				    memory_address (save_mode,
+						    plus_constant (argblock,
+								   low_to_save)));
+#endif
+	  if (save_mode == BLKmode)
+	    {
+	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
+	      emit_block_move (validize_mem (save_area), stack_area,
+			       GEN_INT (num_to_save),
+			       PARM_BOUNDARY / BITS_PER_UNIT);
+	    }
+	  else
+	    {
+	      save_area = gen_reg_rtx (save_mode);
+	      emit_move_insn (save_area, stack_area);
+	    }
 	}
     }
 #endif
@@ -3477,80 +3496,75 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
       register rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
-#ifdef ACCUMULATE_OUTGOING_ARGS
-      int lower_bound, upper_bound, i;
-#endif
+      int lower_bound = 0, upper_bound = 0, i;
 
       if (! (reg != 0 && partial == 0))
 	{
-#ifdef ACCUMULATE_OUTGOING_ARGS
-	  /* If this is being stored into a pre-allocated, fixed-size, stack
-	     area, save any previous data at that location.  */
+	  if (ACCUMULATE_OUTGOING_ARGS)
+	    {
+	      /* If this is being stored into a pre-allocated, fixed-size, stack
+		 area, save any previous data at that location.  */
 
 #ifdef ARGS_GROW_DOWNWARD
-	  /* stack_slot is negative, but we want to index stack_usage_map
-	     with positive values.  */
-	  upper_bound = -argvec[argnum].offset.constant + 1;
-	  lower_bound = upper_bound - argvec[argnum].size.constant;
+	      /* stack_slot is negative, but we want to index stack_usage_map
+		 with positive values.  */
+	      upper_bound = -argvec[argnum].offset.constant + 1;
+	      lower_bound = upper_bound - argvec[argnum].size.constant;
 #else
-	  lower_bound = argvec[argnum].offset.constant;
-	  upper_bound = lower_bound + argvec[argnum].size.constant;
+	      lower_bound = argvec[argnum].offset.constant;
+	      upper_bound = lower_bound + argvec[argnum].size.constant;
 #endif
 
-	  for (i = lower_bound; i < upper_bound; i++)
-	    if (stack_usage_map[i]
-		/* Don't store things in the fixed argument area at this point;
-		   it has already been saved.  */
-		&& i > reg_parm_stack_space)
-	      break;
+	      for (i = lower_bound; i < upper_bound; i++)
+		if (stack_usage_map[i]
+		    /* Don't store things in the fixed argument area at this point;
+		       it has already been saved.  */
+		    && i > reg_parm_stack_space)
+		  break;
 
-	  if (i != upper_bound)
-	    {
-	      /* We need to make a save area.  See what mode we can make it. */
-	      enum machine_mode save_mode
-		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
-				 MODE_INT, 1);
-	      rtx stack_area
-		= gen_rtx_MEM
-		  (save_mode,
-		   memory_address
-		   (save_mode,
-		    plus_constant (argblock,
-				   argvec[argnum].offset.constant)));
-	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+	      if (i != upper_bound)
+		{
+		  /* We need to make a save area.  See what mode we can make it. */
+		  enum machine_mode save_mode
+		    = mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
+				     MODE_INT, 1);
+		  rtx stack_area
+		    = gen_rtx_MEM
+		      (save_mode,
+		       memory_address
+		       (save_mode,
+			plus_constant (argblock,
+				       argvec[argnum].offset.constant)));
+		  argvec[argnum].save_area = gen_reg_rtx (save_mode);
 
-	      emit_move_insn (argvec[argnum].save_area, stack_area);
+		  emit_move_insn (argvec[argnum].save_area, stack_area);
+		}
 	    }
-#endif
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
-	  for (i = lower_bound; i < upper_bound; i++)
-	    stack_usage_map[i] = 1;
-#endif
+	  if (ACCUMULATE_OUTGOING_ARGS)
+	    for (i = lower_bound; i < upper_bound; i++)
+	      stack_usage_map[i] = 1;
 
 	  NO_DEFER_POP;
 	}
     }
 
-#ifndef PUSH_ARGS_REVERSED
 #ifdef PREFERRED_STACK_BOUNDARY
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
-  if (argblock == 0)
+  if (argblock == 0 && !PUSH_ARGS_REVERSED)
     anti_adjust_stack (GEN_INT (args_size.constant
 				- original_args_size.constant));
 #endif
-#endif
 
-#ifdef PUSH_ARGS_REVERSED
-  argnum = nargs - 1;
-#else
-  argnum = 0;
-#endif
+  if (PUSH_ARGS_REVERSED)
+    argnum = nargs - 1;
+  else
+    argnum = 0;
 
   fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0);
 
@@ -3647,50 +3661,51 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	value = hard_libcall_value (outmode);
     }
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
-#ifdef REG_PARM_STACK_SPACE
-  if (save_area)
+  if (ACCUMULATE_OUTGOING_ARGS)
     {
-      enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef REG_PARM_STACK_SPACE
+      if (save_area)
+	{
+	  enum machine_mode save_mode = GET_MODE (save_area);
 #ifdef ARGS_GROW_DOWNWARD
-      rtx stack_area
-	= gen_rtx_MEM (save_mode,
-		       memory_address (save_mode,
-				       plus_constant (argblock,
-						      - high_to_save)));
+	  rtx stack_area
+	    = gen_rtx_MEM (save_mode,
+			   memory_address (save_mode,
+					   plus_constant (argblock,
+							  - high_to_save)));
 #else
-      rtx stack_area
-	= gen_rtx_MEM (save_mode,
-		       memory_address (save_mode,
-				       plus_constant (argblock, low_to_save)));
+	  rtx stack_area
+	    = gen_rtx_MEM (save_mode,
+			   memory_address (save_mode,
+					   plus_constant (argblock, low_to_save)));
 #endif
-      if (save_mode != BLKmode)
-	emit_move_insn (stack_area, save_area);
-      else
-	emit_block_move (stack_area, validize_mem (save_area),
-			 GEN_INT (high_to_save - low_to_save + 1),
-			     PARM_BOUNDARY / BITS_PER_UNIT);
+	  if (save_mode != BLKmode)
+	    emit_move_insn (stack_area, save_area);
+	  else
+	    emit_block_move (stack_area, validize_mem (save_area),
+			     GEN_INT (high_to_save - low_to_save + 1),
+				 PARM_BOUNDARY / BITS_PER_UNIT);
+	}
+#endif
+	      
+      /* If we saved any argument areas, restore them.  */
+      for (count = 0; count < nargs; count++)
+	if (argvec[count].save_area)
+	  {
+	    enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
+	    rtx stack_area
+	      = gen_rtx_MEM (save_mode,
+			     memory_address
+			     (save_mode,
+			      plus_constant (argblock,
+					     argvec[count].offset.constant)));
+
+	    emit_move_insn (stack_area, argvec[count].save_area);
+	  }
+
+      highest_outgoing_arg_in_use = initial_highest_arg_in_use;
+      stack_usage_map = initial_stack_usage_map;
     }
-#endif
-	  
-  /* If we saved any argument areas, restore them.  */
-  for (count = 0; count < nargs; count++)
-    if (argvec[count].save_area)
-      {
-	enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
-	rtx stack_area
-	  = gen_rtx_MEM (save_mode,
-			 memory_address
-			 (save_mode,
-			  plus_constant (argblock,
-					 argvec[count].offset.constant)));
-
-	emit_move_insn (stack_area, argvec[count].save_area);
-      }
-
-  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
-  stack_usage_map = initial_stack_usage_map;
-#endif
 
   return value;
 
@@ -3847,9 +3862,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
   rtx reg = 0;
   int partial = 0;
   int used = 0;
-#ifdef ACCUMULATE_OUTGOING_ARGS
   int i, lower_bound = 0, upper_bound = 0;
-#endif
 
   if (TREE_CODE (pval) == ERROR_MARK)
     return;
@@ -3858,74 +3871,74 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
      this argument.  */
   push_temp_slots ();
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
-  /* If this is being stored into a pre-allocated, fixed-size, stack area,
-     save any previous data at that location.  */
-  if (argblock && ! variable_size && arg->stack)
+  if (ACCUMULATE_OUTGOING_ARGS)
     {
+      /* If this is being stored into a pre-allocated, fixed-size, stack area,
+	 save any previous data at that location.  */
+      if (argblock && ! variable_size && arg->stack)
+	{
 #ifdef ARGS_GROW_DOWNWARD
-      /* stack_slot is negative, but we want to index stack_usage_map
-         with positive values.  */
-      if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
-	upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
-      else
-	upper_bound = 0;
+	  /* stack_slot is negative, but we want to index stack_usage_map
+	     with positive values.  */
+	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
+	    upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
+	  else
+	    upper_bound = 0;
 
-      lower_bound = upper_bound - arg->size.constant;
+	  lower_bound = upper_bound - arg->size.constant;
 #else
-      if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
-	lower_bound = INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1));
-      else
-	lower_bound = 0;
+	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
+	    lower_bound = INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1));
+	  else
+	    lower_bound = 0;
 
-      upper_bound = lower_bound + arg->size.constant;
+	  upper_bound = lower_bound + arg->size.constant;
 #endif
 
-      for (i = lower_bound; i < upper_bound; i++)
-	if (stack_usage_map[i]
-	    /* Don't store things in the fixed argument area at this point;
-	       it has already been saved.  */
-	    && i > reg_parm_stack_space)
-	  break;
+	  for (i = lower_bound; i < upper_bound; i++)
+	    if (stack_usage_map[i]
+		/* Don't store things in the fixed argument area at this point;
+		   it has already been saved.  */
+		&& i > reg_parm_stack_space)
+	      break;
 
-      if (i != upper_bound)
-	{
-	  /* We need to make a save area.  See what mode we can make it.  */
-	  enum machine_mode save_mode
-	    = mode_for_size (arg->size.constant * BITS_PER_UNIT, MODE_INT, 1);
-	  rtx stack_area
-	    = gen_rtx_MEM (save_mode,
-			   memory_address (save_mode,
-					   XEXP (arg->stack_slot, 0)));
+	  if (i != upper_bound)
+	    {
+	      /* We need to make a save area.  See what mode we can make it.  */
+	      enum machine_mode save_mode
+		= mode_for_size (arg->size.constant * BITS_PER_UNIT, MODE_INT, 1);
+	      rtx stack_area
+		= gen_rtx_MEM (save_mode,
+			       memory_address (save_mode,
+					       XEXP (arg->stack_slot, 0)));
 
-	  if (save_mode == BLKmode)
-	    {
-	      arg->save_area = assign_stack_temp (BLKmode,
-						  arg->size.constant, 0);
-	      MEM_SET_IN_STRUCT_P (arg->save_area,
-				   AGGREGATE_TYPE_P (TREE_TYPE
-						     (arg->tree_value))); 
-	      preserve_temp_slots (arg->save_area);
-	      emit_block_move (validize_mem (arg->save_area), stack_area,
-			       GEN_INT (arg->size.constant),
-			       PARM_BOUNDARY / BITS_PER_UNIT);
-	    }
-	  else
-	    {
-	      arg->save_area = gen_reg_rtx (save_mode);
-	      emit_move_insn (arg->save_area, stack_area);
+	      if (save_mode == BLKmode)
+		{
+		  arg->save_area = assign_stack_temp (BLKmode,
+						      arg->size.constant, 0);
+		  MEM_SET_IN_STRUCT_P (arg->save_area,
+				       AGGREGATE_TYPE_P (TREE_TYPE
+							 (arg->tree_value))); 
+		  preserve_temp_slots (arg->save_area);
+		  emit_block_move (validize_mem (arg->save_area), stack_area,
+				   GEN_INT (arg->size.constant),
+				   PARM_BOUNDARY / BITS_PER_UNIT);
+		}
+	      else
+		{
+		  arg->save_area = gen_reg_rtx (save_mode);
+		  emit_move_insn (arg->save_area, stack_area);
+		}
 	    }
 	}
+      /* Now that we have saved any slots that will be overwritten by this
+	 store, mark all slots this store will use.  We must do this before
+	 we actually expand the argument since the expansion itself may
+	 trigger library calls which might need to use the same stack slot.  */
+      if (argblock && ! variable_size && arg->stack)
+	for (i = lower_bound; i < upper_bound; i++)
+	  stack_usage_map[i] = 1;
     }
-
-  /* Now that we have saved any slots that will be overwritten by this
-     store, mark all slots this store will use.  We must do this before
-     we actually expand the argument since the expansion itself may
-     trigger library calls which might need to use the same stack slot.  */
-  if (argblock && ! variable_size && arg->stack)
-    for (i = lower_bound; i < upper_bound; i++)
-      stack_usage_map[i] = 1;
-#endif
 
   /* If this isn't going to be placed on both the stack and in registers,
      set up the register and number of words.  */
@@ -3946,7 +3959,6 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
      it directly into its stack slot.  Otherwise, we can.  */
   if (arg->value == 0)
     {
-#ifdef ACCUMULATE_OUTGOING_ARGS
       /* stack_arg_under_construction is nonzero if a function argument is
 	 being evaluated directly into the outgoing argument list and
 	 expand_call must take special action to preserve the argument list
@@ -3967,7 +3979,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 
       if (arg->pass_on_stack)
 	stack_arg_under_construction++;
-#endif
+
       arg->value = expand_expr (pval,
 				(partial
 				 || TYPE_MODE (TREE_TYPE (pval)) != arg->mode)
@@ -3981,10 +3993,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	arg->value = convert_modes (arg->mode, TYPE_MODE (TREE_TYPE (pval)),
 				    arg->value, arg->unsignedp);
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
       if (arg->pass_on_stack)
 	stack_arg_under_construction--;
-#endif
     }
 
   /* Don't allow anything left on stack from computation

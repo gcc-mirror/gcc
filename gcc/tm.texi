@@ -2630,15 +2630,24 @@ errors in certain cases of mismatch, it also makes for better
 code on certain machines.  If the macro is not defined in target
 header files, it defaults to 0.
 
+@findex PUSH_ARGS
+@item PUSH_ARGS
+A C expression. If nonzero, push insns will be used to pass
+outgoing arguments.
+If the target machine does not have a push instruction, set it to zero.
+That directs GCC to use an alternate strategy: to
+allocate the entire argument block and then store the arguments into
+it.  When PUSH_ARGS is nonzero, PUSH_ROUNDING must be defined too.
+On some machines, the definition
+
 @findex PUSH_ROUNDING
 @item PUSH_ROUNDING (@var{npushed})
 A C expression that is the number of bytes actually pushed onto the
 stack when an instruction attempts to push @var{npushed} bytes.
-
-If the target machine does not have a push instruction, do not define
-this macro.  That directs GCC to use an alternate strategy: to
-allocate the entire argument block and then store the arguments into
-it.
+@findex PUSH_ROUNDING
+@item PUSH_ROUNDING (@var{npushed})
+A C expression that is the number of bytes actually pushed onto the
+stack when an instruction attempts to push @var{npushed} bytes.
 
 On some machines, the definition
 
@@ -2658,13 +2667,13 @@ alignment.  Then the definition should be
 @findex ACCUMULATE_OUTGOING_ARGS
 @findex current_function_outgoing_args_size
 @item ACCUMULATE_OUTGOING_ARGS
-If defined, the maximum amount of space required for outgoing arguments
+A C expression. If nonzero, the maximum amount of space required for outgoing arguments
 will be computed and placed into the variable
 @code{current_function_outgoing_args_size}.  No space will be pushed
 onto the stack for each call; instead, the function prologue should
 increase the stack frame size by this amount.
 
-Defining both @code{PUSH_ROUNDING} and @code{ACCUMULATE_OUTGOING_ARGS}
+Setting both @code{PUSH_ARGS} and @code{ACCUMULATE_OUTGOING_ARGS}
 is not proper.
 
 @findex REG_PARM_STACK_SPACE

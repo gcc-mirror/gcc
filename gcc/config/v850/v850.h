@@ -667,7 +667,7 @@ enum reg_class
 #define PROMOTE_PROTOTYPES 1
 
 /* Keep the stack pointer constant throughout the function.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.

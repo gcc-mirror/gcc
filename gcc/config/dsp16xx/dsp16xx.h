@@ -1071,7 +1071,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 
    It is not proper to define both 'PUSH_ROUNDING' and
    'ACCUMULATE_OUTGOING_ARGS'. */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Offset of first parameter from the argument pointer
    register value. */

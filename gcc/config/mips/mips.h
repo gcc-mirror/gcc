@@ -2260,7 +2260,7 @@ extern struct mips_frame_info current_frame_info;
 
    It is not proper to define both `PUSH_ROUNDING' and
    `ACCUMULATE_OUTGOING_ARGS'.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Offset from the argument pointer register to the first argument's
    address.  On some machines it may depend on the data type of the

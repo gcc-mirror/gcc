@@ -368,7 +368,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
 /* we can't set this for clipper as library calls may have 3 args and we pass
    only 2 args in regs. */
 
-/* #define ACCUMULATE_OUTGOING_ARGS */
+/* #define ACCUMULATE_OUTGOING_ARGS 1*/
   
 
 /* Offset of first parameter from the argument pointer register value.

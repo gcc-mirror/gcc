@@ -837,7 +837,7 @@ enum reg_class
 
    Defining both `PUSH_ROUNDING' and `ACCUMULATE_OUTGOING_ARGS' is not
    proper.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* A C expression that should indicate the number of bytes of its own arguments
    that a function pops on returning, or 0 if the function pops no arguments

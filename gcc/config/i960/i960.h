@@ -833,7 +833,7 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 /* Keep the stack pointer constant throughout the function.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Value is 1 if returning from a function call automatically
    pops the arguments described by the number-of-args field in the call.

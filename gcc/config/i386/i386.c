@@ -1797,6 +1797,9 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
 
   offset += nregs * UNITS_PER_WORD;
 
+  if (ACCUMULATE_OUTGOING_ARGS)
+    total_size += current_function_outgoing_args_size;
+
   total_size += offset;
 
   /* Align start of frame for local function.  */
@@ -1807,6 +1810,9 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
   /* Align stack boundary. */
   padding2 = ((total_size + preferred_alignment - 1)
 	      & -preferred_alignment) - total_size;
+
+  if (ACCUMULATE_OUTGOING_ARGS)
+    padding2 += current_function_outgoing_args_size;
 
   if (nregs_on_stack)
     *nregs_on_stack = nregs;

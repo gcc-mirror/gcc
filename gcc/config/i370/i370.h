@@ -520,7 +520,7 @@ enum reg_class
 /* Accumulate the outgoing argument count so we can request the right
    DSA size and determine stack offset.  */
 
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Define offset from stack pointer, to location where a parm can be
    pushed.  */

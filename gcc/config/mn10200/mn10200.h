@@ -401,7 +401,7 @@ enum reg_class {
 
    We allow frame pointers to be eliminated when not having one will
    not interfere with debugging.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 #define FRAME_POINTER_REQUIRED 0
 #define CAN_DEBUG_WITHOUT_FP
 
