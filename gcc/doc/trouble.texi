@@ -291,14 +291,36 @@ bug because redefining an @code{extern} variable as @code{static}
 is undefined in ISO C@.
 
 @item
+In extremely rare cases involving some very large functions you may
+receive errors from the AIX Assembler complaining about a displacement
+that is too large.  If you should run into it, you can work around by
+making your function smaller.
+
+@item
+The @file{libstdc++.a} library in GCC relies on the SVR4 dynamic
+linker semantics which merges global symbols between libraries and
+applications, especially necessary for C++ streams functionality.
+This is not the default behavior of AIX shared libraries and dynamic
+linking.  @file{libstdc++.a} is built on AIX with ``runtime-linking''
+enabled so that symbol merging can occur.  To utilize this feature,
+the application linked with @file{libstdc++.a} must include the
+@option{-Wl,-brtl} flag on the link line.  G++ cannot impose this
+because this option may interfere with the semantics of the user
+program and users may not always use @samp{g++} to link his or her
+application. Applications are not required to use the
+@option{-Wl,-brtl} flag on the link line---the rest of the
+@file{libstdc++.a} library which is not dependent on the symbol
+merging semantics will continue to function correctly.
+
+@item
 AIX on the RS/6000 provides support (NLS) for environments outside of
 the United States.  Compilers and assemblers use NLS to support
 locale-specific representations of various objects including
-floating-point numbers (@samp{.} vs @samp{,} for separating decimal fractions).
-There have been problems reported where the library linked with GCC does
-not produce the same floating-point formats that the assembler accepts.
-If you have this problem, set the @env{LANG} environment variable to
-@samp{C} or @samp{En_US}.
+floating-point numbers (@samp{.} vs @samp{,} for separating decimal
+fractions). There have been problems reported where the library linked
+with GCC does not produce the same floating-point formats that the
+assembler accepts. If you have this problem, set the @env{LANG}
+environment variable to @samp{C} or @samp{En_US}.
 
 @item
 @opindex fdollars-in-identifiers
@@ -901,6 +923,11 @@ implemented using the ISO standard @file{stdarg.h} method of
 variable arguments.  Furthermore, calls to functions using @file{stdarg.h}
 variable arguments must have a prototype for the called function
 in scope at the time of the call.
+
+@item
+On AIX and other platforms without weak symbol support, templates
+need to be instantiated explicitly and symbols for static members
+of templates will not be generated.
 @end itemize
 
 @node C++ Misunderstandings

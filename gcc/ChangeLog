@@ -1,3 +1,12 @@
+2002-01-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (*-ibm-aix*): Update assembler and exception
+	handling information.
+	* doc/trouble.texi (Interoperation): Add libstdc++ information
+	for AIX.
+	(Misunderstandings): Add template instantiation and static template
+	member information for AIX.
+
 2002-01-17  Jason Merrill  <jason@redhat.com>
 
 	* dbxout.c (dbxout_type): Support const and volatile.
