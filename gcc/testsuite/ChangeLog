@@ -1,4 +1,7 @@
+
 Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
+
+	* lib/g77.exp (g77_target_compile): Fix multilibs for libf2c.
 
         * lib/old-dejagnu.exp (old-dejagnu): Added the
         "execution test - XFAIL *-*-*" handling in the spirit of
