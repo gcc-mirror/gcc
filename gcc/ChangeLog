@@ -1,3 +1,9 @@
+2002-10-24  Richard Henderson  <rth@redhat.com>
+
+        PR opt/7944
+        * reload.c (find_reloads_toplev): Mode of X is not important
+	when simplifying subregs of constants.
+
 2002-10-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips64vr-*-elf*, mips64vrel-*-elf*): Add
