@@ -623,7 +623,8 @@ in the following sections.
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects @gol
 -mstack-align  -mdata-align  -mconst-align @gol
 -m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue  -mno-gotplt @gol
--melf  -maout  -melinux  -mlinux  -sim  -sim2}
+-melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
+-mmul-bug-workaround  -mno-mul-bug-workaround}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -10209,6 +10210,13 @@ program should be set to @var{n} bytes.
 @opindex metrax100
 The options @option{-metrax4} and @option{-metrax100} are synonyms for
 @option{-march=v3} and @option{-march=v8} respectively.
+
+@item -mmul-bug-workaround
+@itemx -mno-mul-bug-workaround
+@opindex mmul-bug-workaround
+@opindex mno-mul-bug-workaround
+Work around a bug in the @code{muls} and @code{mulu} instructions for CPU
+models where it applies.  This option is active by default.
 
 @item -mpdebug
 @opindex mpdebug
