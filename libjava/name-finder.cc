@@ -1,6 +1,6 @@
 // name-finder.cc - Convert addresses to names
 
-/* Copyright (C) 2000  Free Software Foundation, Inc
+/* Copyright (C) 2000, 2002  Free Software Foundation, Inc
 
    This file is part of libgcj.
 
@@ -61,6 +61,13 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
 #if defined (HAVE_PIPE) && defined (HAVE_FORK) && defined (HAVE_EXECVP)
   error = 0;
 
+  // Initialize file descriptors so that shutdown works properly.
+  f_pipe[0] = -1;
+  f_pipe[1] = -1;
+  b_pipe[0] = -1;
+  b_pipe[1] = -1;
+  b_pipe_fd = NULL;
+
   char *argv[6];
   {
     int arg = 0;
@@ -93,8 +100,12 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
       _exit (127);
     }
 
+  // Close child end of pipes.  Set local descriptors to -1 so we
+  // don't try to close the fd again.
   close (f_pipe [0]);
+  f_pipe[0] = -1;
   close (b_pipe [1]);
+  b_pipe[1] = -1;
 
   if (pid < 0)
     {
@@ -104,6 +115,12 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
 
   b_pipe_fd = fdopen (b_pipe[0], "r");
   error |= !b_pipe_fd;
+
+  if (! error)
+    {
+      // Don't try to close the fd twice.
+      b_pipe[0] = -1;
+    }
 #endif
 }
 
