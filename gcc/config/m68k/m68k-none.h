@@ -94,13 +94,13 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* Define one of __HAVE_68881__, __HAVE_FPA__, or nothing (soft float), appropriately.  */
 #undef CPP_FPU_SPEC
-#if TARGET_DEFAULT & 02
+#if TARGET_DEFAULT & MASK_68881
 /* ??? Why isn't m68302 treated like m68000 here?  */
 #define CPP_FPU_SPEC \
 "%{!mc68000:%{!m68000:%{!m68332:%{!m5200:%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}}}}}"
 #else
 /* This can't currently happen, but we code it anyway to show how it's done.  */
-#if TARGET_DEFAULT & 0100
+#if TARGET_DEFAULT & MASK_FPA
 #define CPP_FPU_SPEC \
 "%{!msoft-float:%{m68881:-D__HAVE_68881__ }%{!m68881:-D__HAVE_FPA__ }}"
 #else
@@ -113,10 +113,12 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    Other definitions depend on what the default cpu is and switches
    given to the compiler:
 
-   -m68000: define nothing else
+   -m68000, -mc68000: define nothing else
+   -m68010: define mc68010
    -m68020, -mc68020: define mc68020
    -m68030: define mc68030
    -m68040: define mc68040
+   -m68060: define mc68060
    -m68020-40: define mc68020 mc68030 mc68040
    -m68302: define mc68302
    -m68332: define mc68332
