@@ -47,57 +47,19 @@ EOF
 fi
 
 
-#
-# Utility functions
-#
+# Build lines.
 
-emit_gcc_compile() {
-  dst=$1; shift
-  src=$1; shift
-  flags=$*
-
-  echo '	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES)' \
-    $flags -c $src -o $dst
-}
-
-emit_oldcc_compile() {
-  dst=$1; shift
-  src=$1; shift
-  flags=$*
-
-  if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
-    echo '	$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)' \
-      $flags -c $src -o $dst
-  else
-    echo '	$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)'
-      $flags -c $src
-    tmp=`echo $src | sed -e 's/[.]c$/'${objext}/ -e 's,.*/,,'`
-    echo "	mv $tmp $dst"
-  fi
-}
-
-emit_make_compile() {
-  dst=$1; shift
-  tgt=$1; shift
-  tmp="";
-  if [ "$1" = "T=t" ]; then
-    tmp="T=t"; tgt="t$tgt"; shift
-  fi
-  flags=$*
-
-  echo '	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)"' \\
-  echo '	  AR_FOR_TARGET="$(AR_FOR_TARGET)"' \\
-  echo '	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)"' \\
-  echo '	  AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)"' \\
-  echo '	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)"' \\
-  echo '	  CC="$(CC)" CFLAGS="$(CFLAGS)"' \\
-  echo '	  HOST_PREFIX="$(HOST_PREFIX)"' \\
-  echo '	  HOST_PREFIX_1="$(HOST_PREFIX_1)"' \\
-  echo '	  LANGUAGES="$(LANGUAGES)"' \\
-  echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-  echo '	  MULTILIB_CFLAGS="'$flags'"' $tmp $tgt
-  echo "	mv ${tgt} ${dst}"
-}
+gcc_compile='$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES)'
+oldcc_compile='$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)'
+make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	  AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
+	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	  CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	  HOST_PREFIX="$(HOST_PREFIX)" \
+	  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  LANGUAGES="$(LANGUAGES)"'
 
 # Dependancies for libgcc1.c
 libgcc1_c_dep='$(srcdir)/libgcc1.c $(CONFIG_H)'
@@ -106,7 +68,7 @@ libgcc1_c_dep='$(srcdir)/libgcc1.c $(CONFIG_H)'
 libgcc2_c_dep='$(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
 
 # Dependancies for fp-bit.c
-fpbit_c_dep='$(srcdir)/config/fp-bit.c config.status tsystem.h'
+fpbit_c_dep='config.status tsystem.h'
 
 #
 # Build libgcc1 components.
@@ -130,8 +92,8 @@ case X"$LIBGCC1" in
         out="libgcc/${dir}/${name}${objext}"
 
         echo ${out}: '$(srcdir)/config/$(LIB1ASMSRC)'
-        emit_gcc_compile $out '$(srcdir)/config/$(LIB1ASMSRC)' \
-	  $flags -DL$name -xassembler-with-cpp
+	echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
+	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
       done
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
     done
@@ -142,7 +104,14 @@ case X"$LIBGCC1" in
       out="libgcc/${name}${objext}"
 
       echo $out: $libgcc1_c_dep
-      emit_oldcc_compile $out '$(srcdir)/libgcc1.c' -DL${name}
+      if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
+	echo "	$oldcc_compile" $flags -c $src -o $dst
+      else
+	echo "	$oldcc_compile" $flags -c $src
+	tmp=`echo $src | sed -e 's/[.]c$/'${objext}/ -e 's,.*/,,'`
+	echo "	mv $tmp $dst"
+      fi
+
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
     done
 
@@ -155,7 +124,15 @@ case X"$LIBGCC1" in
         echo "	cp $file ${name}.s"
         file=${name}.s
       fi
-      emit_oldcc_compile $out $file
+
+      if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
+	echo "	$oldcc_compile" -c $file -o $out
+      else
+	echo "	$oldcc_compile" -c $file
+	tmp=`echo $src | sed -e 's/[.][cs]$/'${objext}/ -e 's,.*/,,'`
+	echo "	mv $tmp $dst"
+      fi
+
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
     done
     ;;
@@ -178,8 +155,8 @@ for name in $LIB2FUNCS; do
     out="libgcc/${dir}/${name}${objext}"
 
     echo $out: $libgcc2_c_dep
-    emit_gcc_compile $out '$(srcdir)/libgcc2.c' '$(MAYBE_USE_COLLECT2)' \
-      $flags -DL$name
+    echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' $flags -DL$name \
+      -c '$(srcdir)/libgcc2.c' -o $out
   done
   libgcc2_objs="$libgcc2_objs ${name}${objext}"
 done
@@ -191,8 +168,8 @@ for name in $LIB2FUNCS_EH; do
     out="libgcc/${dir}/${name}${objext}"
 
     echo $out: $libgcc2_c_dep
-    emit_gcc_compile $out '$(srcdir)/libgcc2.c' '$(MAYBE_USE_COLLECT2)' \
-      -fexceptions $flags -DL$name
+    echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' -fexceptions \
+      $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $out
   done
   libgcc2_objs="$libgcc2_objs ${name}${objext}"
 done
@@ -204,9 +181,9 @@ if [ "$FPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      echo $out: $fpbit_c_dep
-      emit_gcc_compile $out '$(srcdir)/config/fp-bit.c' \
-	-DFLOAT -DFINE_GRAINED_LIBRARIES $flags -DL$name
+      echo $out: $FPBIT $fpbit_c_dep
+      echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	-c $FPBIT -o $out
     done
     libgcc2_objs="$libgcc2_objs ${name}${objext}"
   done
@@ -219,9 +196,9 @@ if [ "$DPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      echo $out: $fpbit_c_dep
-      emit_gcc_compile $out '$(srcdir)/config/fp-bit.c' \
-	-DFINE_GRAINED_LIBRARIES $flags -DL$name
+      echo $out: $DPBIT $fpbit_c_dep
+      echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	-c $DPBIT -o $out
     done
     libgcc2_objs="$libgcc2_objs ${name}${objext}"
   done
@@ -245,7 +222,10 @@ for file in $LIB2ADD; do
 	# target file.  This because ./$f is used as a temporary in
 	# each case before being moved to libgcc/$dir/.
 	echo $out: $lastout
-	emit_make_compile $out $f $flags
+	echo "	$make_compile" \\
+	echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
+	echo '	  MULTILIB_CFLAGS="'$flags'"' $f
+	echo "	mv $f $out"
 
 	lastout="$out"
       done
@@ -262,7 +242,7 @@ for file in $LIB2ADD; do
       fi
 
       echo $out: $file
-      emit_gcc_compile $out $file $flags
+      echo "	$gcc_compile" $flags -c $file -o $out
     done
     libgcc2_objs="$libgcc2_objs ${oname}${objext}"
   fi
@@ -319,7 +299,10 @@ for f in $EXTRA_MULTILIB_PARTS; do
     # target file.  This because ./$f is used as a temporary in
     # each case before being moved to libgcc/$dir/.
     echo $out: $lastout
-    emit_make_compile $out $f T=t $flags
+    echo "	$make_compile" \\
+    echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
+    echo '	  MULTILIB_CFLAGS="'$flags'"' T=t t$f
+    echo "	mv t$f $out"
 
     all="$all $out"
     lastout="$out"

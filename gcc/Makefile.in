@@ -972,7 +972,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD)
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	$(SHELL) $(srcdir)/move-if-change tmp-libgcc.mk libgcc.mk
 
-libgcc.a: libgcc2.ready libgcc.mk
+libgcc.a: libgcc2.ready libgcc.mk $(FPBIT) $(DPBIT)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -1003,7 +1003,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	touch s-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
-stmp-multilib: libgcc2.ready libgcc.mk
+stmp-multilib: libgcc2.ready libgcc.mk $(FPBIT) $(DPBIT)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
