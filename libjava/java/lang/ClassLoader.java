@@ -91,10 +91,6 @@ public abstract class ClassLoader
     return loadClass (name, false);
   }
   
-  /* findClass implementation for the system classloader. 
-  native Class systemFindClass(String name)
-    throws java.lang.ClassNotFoundException;
-
   /** 
    * Loads the class by the given name.  The default implementation
    * will search for the class in the following order (similar to jdk 1.2)
