@@ -1,3 +1,7 @@
+Wed Feb 14 11:13:45 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (pushsf, pushdf_nointeger): Fix constraint.
+
 2001-02-14  Richard Henderson  <rth@redhat.com>
 
 	* regclass.c (init_reg_sets_1): Revert last two changes.
