@@ -358,32 +358,34 @@ public class EventQueue
     if (prev == null)
       throw new EmptyStackException();
 
-    // Don't synchronize both this and prev at the same time, or deadlock could
-    // occur.
+    /* The order is important here, we must get the prev lock first,
+       or deadlock could occur as callers usually get here following
+       prev's next pointer, and thus obtain prev's lock before trying
+       to get this lock. */
     synchronized (prev)
       {
         prev.next = next;
         if (next != null)
           next.prev = prev;
-      }
 
-    synchronized (this)
-      {
-        int i = next_out;
-        while (i != next_in)
+        synchronized (this)
           {
-            prev.postEvent(queue[i]);
-            next_out = i;
-            if (++i == queue.length)
-              i = 0;
-          }
-	// Empty the queue so it can be reused
-	next_in = 0;
-	next_out = 0;
+            int i = next_out;
+            while (i != next_in)
+              {
+                prev.postEvent(queue[i]);
+                next_out = i;
+                if (++i == queue.length)
+                  i = 0;
+              }
+	    // Empty the queue so it can be reused
+	    next_in = 0;
+	    next_out = 0;
 
-        // Tell our EventDispatchThread that it can end execution
-        dispatchThread.interrupt ();
-	dispatchThread = null;
+            // Tell our EventDispatchThread that it can end execution
+            dispatchThread.interrupt ();
+	    dispatchThread = null;
+          }
       }
   }
 

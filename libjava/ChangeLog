@@ -1,5 +1,11 @@
 2004-01-19  Fernando Nasser  <fnasser@redhat.com>
 
+	* java/awt/EventQueue.java (pop): Prevent racing condition to add
+	events to the queue out of order by acquiring locks in the proper
+	order and not by releasing one before acquiring the other.
+
+2004-01-19  Fernando Nasser  <fnasser@redhat.com>
+
 	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Make text not
 	visible so that dialog can be reused.
 
