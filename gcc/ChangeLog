@@ -1,3 +1,9 @@
+2003-11-14  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c: Use C statements instead of #ifdef's when testing
+	for MOTOROLA versus MIT syntax.  Improves readability and provides
+	better compile-time error checking for both code paths.
+
 2003-11-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/frv/frv-protos.h: Update for C90.
