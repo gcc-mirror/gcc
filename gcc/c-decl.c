@@ -1900,6 +1900,7 @@ pushdecl (x)
     {
       char *file;
       int line;
+      int declared_global;
 
       /* Don't type check externs here when -traditional.  This is so that
 	 code with conflicting declarations inside blocks will get warnings
@@ -1921,6 +1922,9 @@ pushdecl (x)
 	  line = DECL_SOURCE_LINE (t);
 	}
 
+      /* duplicate_decls might write to TREE_PUBLIC (x) and DECL_EXTERNAL (x)
+	 to make it identical to the initial declaration.  */
+      declared_global = TREE_PUBLIC (x) || DECL_EXTERNAL (x);
       if (t != 0 && duplicate_decls (x, t))
 	{
 	  if (TREE_CODE (t) == PARM_DECL)
@@ -1934,7 +1938,10 @@ pushdecl (x)
 	     warn.  But don't complain if -traditional,
 	     since traditional compilers don't complain.  */
 	  if (!flag_traditional && TREE_PUBLIC (name)
+
+	      /* should this be '&& ! declared_global' ?  */
 	      && ! TREE_PUBLIC (x) && ! DECL_EXTERNAL (x)
+
 	      /* We used to warn also for explicit extern followed by static,
 		 but sometimes you need to do it that way.  */
 	      && IDENTIFIER_IMPLICIT_DECL (name) != 0)
@@ -1949,7 +1956,9 @@ pushdecl (x)
 	  /* If this is a global decl, and there exists a conflicting local
 	     decl in a parent block, then we can't return as yet, because we
 	     need to register this decl in the current binding block.  */
-	  if (! TREE_PUBLIC (x) || lookup_name (name) == t)
+	  /* A test for TREE_PUBLIC (x) will fail for variables that have
+	     been declared static first, and extern now.  */
+	  if (! declared_global || lookup_name (name) == t)
 	    return t;
 	}
 
