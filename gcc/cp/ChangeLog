@@ -1,3 +1,7 @@
+2000-09-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (mark_local_for_remap_r): Handle CASE_LABELs.
+
 2000-09-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* except.c: Delete #if 0:d EXCEPTION_SECTION_ASM_OP-default and

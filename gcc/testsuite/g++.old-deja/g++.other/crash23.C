@@ -3,5 +3,5 @@
 
 class T;
 inline void operator<(T&, T&) { }
-inline void operator<(T&, T&) { }
+inline void operator<(T&, T&) { } // ERROR - duplicate definition
 

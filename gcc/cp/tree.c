@@ -2465,6 +2465,8 @@ mark_local_for_remap_r (tp, walk_subtrees, data)
   else if (TREE_CODE (t) == TARGET_EXPR
 	   && nonstatic_local_decl_p (TREE_OPERAND (t, 0)))
     decl = TREE_OPERAND (t, 0);
+  else if (TREE_CODE (t) == CASE_LABEL)
+    decl = CASE_LABEL_DECL (t);
   else
     decl = NULL_TREE;
 
