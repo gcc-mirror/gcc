@@ -1,3 +1,9 @@
+2005-01-23  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/19464
+	* tree-optimize.c (init_tree_optimization_passes): Add one more
+	copyrename pass just before out-of-ssa.
+
 2005-01-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/18058
