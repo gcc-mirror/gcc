@@ -70,8 +70,7 @@ namespace std
     use_facet(const locale& __loc)
     {
       typedef locale::_Impl::__vec_facet        __vec_facet;
-      locale::id& __id = _Facet::id;         
-      size_t __i = __id._M_index;
+      size_t __i = _Facet::id._M_index;
       __vec_facet* __facet = __loc._M_impl->_M_facets;
       const locale::facet* __fp = (*__facet)[__i]; 
       if (__fp == 0 || __i >= __facet->size())
@@ -84,8 +83,7 @@ namespace std
     has_facet(const locale& __loc) throw()
     {
       typedef locale::_Impl::__vec_facet        __vec_facet;
-      locale::id& __id = _Facet::id;         
-      size_t __i = __id._M_index;
+      size_t __i = _Facet::id._M_index;
       __vec_facet* __facet = __loc._M_impl->_M_facets;
       return (__i < __facet->size() && (*__facet)[__i] != 0);
     }
