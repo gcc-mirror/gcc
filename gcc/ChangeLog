@@ -14,9 +14,10 @@
 
 2003-09-22  David Edelsohn  <edelsohn@gnu.org>
 	    Hartmut Penner  <hpenner@de.ibm.com>
+	    Segher Boessenkool  <boessen@de.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_in_gprs_p): Rename to ...
-	(gpr_or_gpr_p): Change to bool.
+	(gpr_or_gpr_p): Test INT_REGNO_P and convert to boolean.  
 	(rs6000_split_altivec_in_gprs): Rename to ...
 	(rs6000_split_multireg_move): Add support for update addressing.
 	* config/rs6000/rs6000-protos.h: Same.
