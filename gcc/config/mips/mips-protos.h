@@ -101,7 +101,7 @@ extern void irix_output_external_libcall (rtx);
 #endif
 extern void mips_output_filename (FILE *, const char *);
 extern void mips_output_lineno (FILE *, int);
-extern void mips_output_ascii (FILE *, const char *, size_t);
+extern void mips_output_ascii (FILE *, const char *, size_t, const char *);
 extern void mips_output_aligned_bss (FILE *, tree, const char *,
 				     unsigned HOST_WIDE_INT, int);
 extern void mips_declare_object (FILE *, const char *, const char *,
