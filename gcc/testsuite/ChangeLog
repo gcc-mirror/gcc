@@ -1,3 +1,17 @@
+2004-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15337
+	* g++.dg/expr/sizeof3.C: New test.
+
+	PR c++/14777
+	* g++.dg/template/access14.C: New test.
+
+	PR c++/15554
+	* g++.dg/template/enum1.C: New test.
+
+	PR c++/15057
+	* g++.dg/eh/throw1.C: New test.
+
 2004-06-07  David Ayers  <d.ayers@inode.at>
 	    Ziemowit Laski  <zlaski@apple.com>
 
