@@ -6968,13 +6968,25 @@ expand_expr (exp, target, tmode, modifier)
       if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
 	  || mode == ptr_mode)
 	{
+	  rtx constant_part;
+
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	      && TREE_CONSTANT (TREE_OPERAND (exp, 1)))
 	    {
+	      rtx constant_part;
+
 	      op1 = expand_expr (TREE_OPERAND (exp, 1), subtarget, VOIDmode,
 				 EXPAND_SUM);
-	      op1 = plus_constant (op1, TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)));
+	      /* Use immed_double_const to ensure that the constant is
+		 truncated according to the mode of OP1, then sign extended
+		 to a HOST_WIDE_INT.  Using the constant directly can result
+		 in non-canonical RTL in a 64x32 cross compile.  */
+	      constant_part
+		= immed_double_const (TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)),
+				      (HOST_WIDE_INT) 0,
+				      GET_MODE (op1));
+	      op1 = plus_constant (op1, XINT (constant_part, 0));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
 	      return op1;
@@ -6984,6 +6996,8 @@ expand_expr (exp, target, tmode, modifier)
 		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
 		   && TREE_CONSTANT (TREE_OPERAND (exp, 0)))
 	    {
+	      rtx constant_part;
+
 	      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
 				 EXPAND_SUM);
 	      if (! CONSTANT_P (op0))
@@ -6996,7 +7010,15 @@ expand_expr (exp, target, tmode, modifier)
 		    goto binop2;
 		  goto both_summands;
 		}
-	      op0 = plus_constant (op0, TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)));
+	      /* Use immed_double_const to ensure that the constant is
+		 truncated according to the mode of OP1, then sign extended
+		 to a HOST_WIDE_INT.  Using the constant directly can result
+		 in non-canonical RTL in a 64x32 cross compile.  */
+	      constant_part
+		= immed_double_const (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)),
+				      (HOST_WIDE_INT) 0,
+				      GET_MODE (op0));
+	      op0 = plus_constant (op0, XINT (constant_part, 0));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
 	      return op0;
