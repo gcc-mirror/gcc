@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-options "-O2 -force_cpusubtype_ALL -mpowerpc64 -mdynamic-no-pic" } */
+/* { dg-options "-O2 -mpowerpc64 -mdynamic-no-pic" } */
 
 long long knight_attacks[64];
 long long InitializeAttackBoards(void);

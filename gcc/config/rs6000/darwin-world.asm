@@ -34,6 +34,7 @@
  *  executable file might be covered by the GNU General Public License.
  */ 
 
+	.machine ppc7400
 .data
 	.align 2
 

@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-options "-O2 -force_cpusubtype_ALL -mpowerpc64" } */
+/* { dg-options "-O2 -mpowerpc64" } */
 
 typedef struct Nlm_rect {
   short sh1;

@@ -754,6 +754,7 @@ static void macho_branch_islands (void);
 static void add_compiler_branch_island (tree, tree, int);
 static int no_previous_def (tree function_name);
 static tree get_prev_label (tree function_name);
+static void rs6000_darwin_file_start (void);
 #endif
 
 static tree rs6000_build_builtin_va_list (void);
@@ -1713,6 +1714,7 @@ rs6000_file_start (void)
 	putc ('\n', file);
     }
 }
+
 
 /* Return nonzero if this function is known to have a null epilogue.  */
 
@@ -16859,32 +16861,6 @@ rs6000_fatal_bad_address (rtx op)
 
 #if TARGET_MACHO
 
-#if 0
-/* Returns 1 if OP is either a symbol reference or a sum of a symbol
-   reference and a constant.  */
-
-int
-symbolic_operand (rtx op)
-{
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return 1;
-    case CONST:
-      op = XEXP (op, 0);
-      return (GET_CODE (op) == SYMBOL_REF ||
-	      (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
-	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
-    default:
-      return 0;
-    }
-}
-#endif
-
-#if TARGET_MACHO
-
 static tree branch_island_list = 0;
 
 /* Remember to generate a branch island for far calls to the given
@@ -17060,8 +17036,6 @@ output_call (rtx insn, rtx *operands, int dest_operand_number,
   return buf;
 }
 
-#endif /* TARGET_MACHO */
-
 /* Generate PIC and indirect symbol stubs.  */
 
 void
@@ -17195,6 +17169,57 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 void
 toc_section (void)
 {
+}
+
+/* Output a .machine directive for the Darwin assembler, and call
+   the generic start_file routine.  */
+
+static void
+rs6000_darwin_file_start (void)
+{
+  static const struct 
+  {
+    const char *arg;
+    const char *name;
+    int if_set;
+  } mapping[] = {
+    { "970", "ppc970", MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64 },
+    { "power4", "ppc970", 0 },
+    { "G5", "ppc970", 0 },
+    { "7450", "ppc7450", 0 },
+    { "7400", "ppc7400", MASK_ALTIVEC },
+    { "G4", "ppc7400", 0 },
+    { "750", "ppc750", 0 },
+    { "740", "ppc750", 0 },
+    { "G3", "ppc750", 0 },
+    { "604e", "ppc604e", 0 },
+    { "604", "ppc604", 0 },
+    { "603e", "ppc603", 0 },
+    { "603", "ppc603", 0 },
+    { "601", "ppc601", 0 },
+    { NULL, "ppc", 0 } };
+  const char *cpu_id = "";
+  size_t i;
+  
+  rs6000_file_start();
+
+  /* Determine the argument to -mcpu=.  Default to G3 if not specified.  */
+  for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
+    if (rs6000_select[i].set_arch_p && rs6000_select[i].string
+	&& rs6000_select[i].string[0] != '\0')
+      cpu_id = rs6000_select[i].string;
+
+  /* Look through the mapping array.  Pick the first name that either
+     matches the argument, has a bit set in IF_SET that is also set
+     in the target flags, or has a NULL name.  */
+
+  i = 0;
+  while (mapping[i].arg != NULL
+	 && strcmp (mapping[i].arg, cpu_id) != 0
+	 && (mapping[i].if_set & target_flags) == 0)
+    i++;
+
+  fprintf (asm_out_file, "\t.machine %s\n", mapping[i].name);
 }
 
 #endif /* TARGET_MACHO */
