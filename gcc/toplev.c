@@ -1912,7 +1912,7 @@ process_options (void)
   if (flag_speculative_prefetching)
     {
       if (flag_speculative_prefetching_set)
-	WARNIng ("-fspeculative-prefetching not supported for this target");
+	warning ("-fspeculative-prefetching not supported for this target");
       flag_speculative_prefetching = 0;
     }
 #else
