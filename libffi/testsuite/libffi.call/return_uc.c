@@ -20,19 +20,17 @@ int main (void)
   ffi_arg rint;
 
   unsigned char uc;
-  unsigned long ul;
 
   args[0] = &ffi_type_uchar;
   values[0] = &uc;
-  
+
   /* Initialize the cif */
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1, 
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
 		     &ffi_type_uchar, args) == FFI_OK);
-  
-  for (uc = (unsigned char) '\x00'; 
+
+  for (uc = (unsigned char) '\x00';
        uc < (unsigned char) '\xff'; uc++)
     {
-      ul++;
       ffi_call(&cif, FFI_FN(return_uc), &rint, values);
       CHECK(rint == (signed int) uc);
     }

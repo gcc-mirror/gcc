@@ -26,7 +26,7 @@ static float __attribute__((stdcall)) stdcall_many(float f1,
   return ((f1/f2+f3/f4+f5/f6+f7/f8+f9/f10+f11/f12) * f13);
 }
 
-int main (void) 
+int main (void)
 {
   ffi_cif cif;
   ffi_type *args[13];
@@ -34,30 +34,30 @@ int main (void)
   float fa[13];
   float f, ff;
   unsigned long ul;
-  
+
   for (ul = 0; ul < 13; ul++)
     {
       args[ul] = &ffi_type_float;
       values[ul] = &fa[ul];
 	fa[ul] = (float) ul;
     }
-  
+
   /* Initialize the cif */
   CHECK(ffi_prep_cif(&cif, FFI_STDCALL, 13,
 		     &ffi_type_float, args) == FFI_OK);
-  
-  ff =  stdcall_many(fa[0], fa[1],	
-		     fa[2], fa[3],	
-		     fa[4], fa[5],	
+
+  ff =  stdcall_many(fa[0], fa[1],
+		     fa[2], fa[3],
+		     fa[4], fa[5],
 		     fa[6], fa[7],
-		     fa[8], fa[9],			
+		     fa[8], fa[9],
 		     fa[10], fa[11], fa[12]);
 
   ffi_call(&cif, FFI_FN(stdcall_many), &f, values);
-  
+
   if (f - ff < FLT_EPSILON)
     printf("stdcall many arg tests ok!\n");
   else
-    CHECK(0);	
-  exit(0);	
+    CHECK(0);
+  exit(0);
 }

@@ -6,7 +6,7 @@
 
 /* { dg-do run } */
 #include "ffitest.h"
-static int promotion(signed char sc, signed short ss, 
+static int promotion(signed char sc, signed short ss,
 		     unsigned char uc, unsigned short us)
 {
   int r = (int) sc + (int) ss + (int) uc + (int) us;
@@ -34,18 +34,18 @@ int main (void)
   values[1] = &ss;
   values[2] = &uc;
   values[3] = &us;
-  
+
   /* Initialize the cif */
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4, 
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4,
 		     &ffi_type_sint, args) == FFI_OK);
-  
+
   us = 0;
   ul = 0;
-  
-  for (sc = (signed char) -127; 
+
+  for (sc = (signed char) -127;
        sc <= (signed char) 120; /*@-type@*/ sc += 1 /*@=type@*/)
     for (ss = -30000; ss <= 30000; ss += 10000)
-      for (uc = (unsigned char) 0; 
+      for (uc = (unsigned char) 0;
 	   uc <= (unsigned char) 200; /*@-type@*/ uc += 20 /*@=type@*/)
 	for (us = 0; us <= 60000; us += 10000)
 	  {
@@ -55,5 +55,5 @@ int main (void)
 		  (unsigned char) uc + (unsigned short) us);
 	  }
   printf("%lu promotion tests run\n", ul);
-  exit(0); 
+  exit(0);
 }
