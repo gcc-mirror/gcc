@@ -755,7 +755,8 @@ extern int get_pool_offset		PROTO((rtx));
 extern rtx simplify_subtraction		PROTO((rtx));
 extern rtx assign_stack_local		PROTO((enum machine_mode, int, int));
 extern rtx assign_stack_temp		PROTO((enum machine_mode, int, int));
-extern rtx assign_temp			PROTO((union tree_node*, int, int));
+extern rtx assign_temp			PROTO((union tree_node*, int,
+					       int, int));
 extern rtx protect_from_queue		PROTO((rtx, int));
 extern void emit_queue			PROTO((void));
 extern rtx emit_move_insn		PROTO((rtx, rtx));
