@@ -1,3 +1,9 @@
+2003-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11030
+	* pt.c (instantiate_class_template): Don't call xref_tag to
+	inject name when the friend class is a specialization.
+
 2003-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (build_scoped_method_call): Remove.
