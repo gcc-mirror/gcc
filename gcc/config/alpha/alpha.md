@@ -4718,7 +4718,8 @@
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
    && ! samegp_function_operand (operands[0], Pmode)
-   && peep2_regno_dead_p (1, 29)"
+   && (peep2_regno_dead_p (1, 29)
+       || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
@@ -4748,7 +4749,8 @@
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
    && ! samegp_function_operand (operands[0], Pmode)
-   && ! peep2_regno_dead_p (1, 29)"
+   && ! (peep2_regno_dead_p (1, 29)
+         || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(call (mem:DI (match_dup 2))
 		    (match_dup 1))
 	      (set (reg:DI 26) (plus:DI (pc) (const_int 4)))
@@ -5708,7 +5710,7 @@
 (define_expand "aligned_loadqi"
   [(set (match_operand:SI 3 "register_operand" "")
 	(match_operand:SI 1 "memory_operand" ""))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (subreg:DI (match_dup 3) 0)
 			 (const_int 8)
 			 (match_operand:DI 2 "const_int_operand" "")))]
@@ -5719,7 +5721,7 @@
 (define_expand "aligned_loadhi"
   [(set (match_operand:SI 3 "register_operand" "")
 	(match_operand:SI 1 "memory_operand" ""))
-   (set (subreg:DI (match_operand:HI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (subreg:DI (match_dup 3) 0)
 			 (const_int 16)
 			 (match_operand:DI 2 "const_int_operand" "")))]
@@ -5735,7 +5737,7 @@
 ;; operand 3 can overlap the input and output registers.
 
 (define_expand "unaligned_loadqi"
-  [(use (match_operand:QI 0 "register_operand" ""))
+  [(use (match_operand:DI 0 "register_operand" ""))
    (use (match_operand:DI 1 "address_operand" ""))
    (use (match_operand:DI 2 "register_operand" ""))
    (use (match_operand:DI 3 "register_operand" ""))]
@@ -5756,7 +5758,7 @@
 			(const_int -8))))
    (set (match_operand:DI 3 "register_operand" "")
 	(match_dup 1))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (match_dup 2)
 			 (const_int 8)
 			 (ashift:DI (match_dup 3) (const_int 3))))]
@@ -5769,7 +5771,7 @@
 			(const_int -8))))
    (set (match_operand:DI 3 "register_operand" "")
 	(match_dup 1))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (match_dup 2)
 			 (const_int 8)
 			 (minus:DI
@@ -5779,7 +5781,7 @@
   "")
 
 (define_expand "unaligned_loadhi"
-  [(use (match_operand:QI 0 "register_operand" ""))
+  [(use (match_operand:DI 0 "register_operand" ""))
    (use (match_operand:DI 1 "address_operand" ""))
    (use (match_operand:DI 2 "register_operand" ""))
    (use (match_operand:DI 3 "register_operand" ""))]
@@ -5800,7 +5802,7 @@
 			(const_int -8))))
    (set (match_operand:DI 3 "register_operand" "")
 	(match_dup 1))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (match_dup 2)
 			 (const_int 16)
 			 (ashift:DI (match_dup 3) (const_int 3))))]
@@ -5813,7 +5815,7 @@
 			(const_int -8))))
    (set (match_operand:DI 3 "register_operand" "")
 	(plus:DI (match_dup 1) (const_int 1)))
-   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+   (set (match_operand:DI 0 "register_operand" "")
 	(zero_extract:DI (match_dup 2)
 			 (const_int 16)
 			 (minus:DI
@@ -6008,9 +6010,6 @@
 {
   rtx scratch, seq;
 
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
-
   if (aligned_memory_operand (operands[1], QImode))
     {
       seq = gen_reload_inqi_help (operands[0], operands[1],
@@ -6029,8 +6028,8 @@
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
 
       addr = get_unaligned_address (operands[1], 0);
-      seq = gen_unaligned_loadqi (operands[0], addr, scratch,
-			  gen_rtx_REG (DImode, REGNO (operands[0])));
+      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+      seq = gen_unaligned_loadqi (operands[0], addr, scratch, operands[0]);
       alpha_set_memflags (seq, operands[1]);
     }
   emit_insn (seq);
@@ -6044,9 +6043,6 @@
   "! TARGET_BWX"
 {
   rtx scratch, seq;
-
-  if (GET_CODE (operands[1]) != MEM)
-    abort ();
 
   if (aligned_memory_operand (operands[1], HImode))
     {
@@ -6066,8 +6062,8 @@
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]));
 
       addr = get_unaligned_address (operands[1], 0);
-      seq = gen_unaligned_loadhi (operands[0], addr, scratch,
-			  gen_rtx_REG (DImode, REGNO (operands[0])));
+      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+      seq = gen_unaligned_loadhi (operands[0], addr, scratch, operands[0]);
       alpha_set_memflags (seq, operands[1]);
     }
   emit_insn (seq);
@@ -6080,9 +6076,6 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
-
   if (aligned_memory_operand (operands[0], QImode))
     {
       emit_insn (gen_reload_outqi_help
@@ -6115,9 +6108,6 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
 {
-  if (GET_CODE (operands[0]) != MEM)
-    abort ();
-
   if (aligned_memory_operand (operands[0], HImode))
     {
       emit_insn (gen_reload_outhi_help
@@ -6148,71 +6138,47 @@
 ;; always get a proper address for a stack slot during reload_foo
 ;; expansion, so we must delay our address manipulations until after.
 
-(define_insn "reload_inqi_help"
+(define_insn_and_split "reload_inqi_help"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (match_operand:QI 1 "memory_operand" "m"))
    (clobber (match_operand:SI 2 "register_operand" "=r"))]
   "! TARGET_BWX && (reload_in_progress || reload_completed)"
-  "#")
-
-(define_insn "reload_inhi_help"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-        (match_operand:HI 1 "memory_operand" "m"))
-   (clobber (match_operand:SI 2 "register_operand" "=r"))]
-  "! TARGET_BWX && (reload_in_progress || reload_completed)"
-  "#")
-
-(define_insn "reload_outqi_help"
-  [(set (match_operand:QI 0 "memory_operand" "=m")
-        (match_operand:QI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "=r"))
-   (clobber (match_operand:SI 3 "register_operand" "=r"))]
-  "! TARGET_BWX && (reload_in_progress || reload_completed)"
-  "#")
-
-(define_insn "reload_outhi_help"
-  [(set (match_operand:HI 0 "memory_operand" "=m")
-        (match_operand:HI 1 "register_operand" "r"))
-   (clobber (match_operand:SI 2 "register_operand" "=r"))
-   (clobber (match_operand:SI 3 "register_operand" "=r"))]
-  "! TARGET_BWX && (reload_in_progress || reload_completed)"
-  "#")
-
-(define_split
-  [(set (match_operand:QI 0 "register_operand" "")
-        (match_operand:QI 1 "memory_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" ""))]
+  "#"
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
 {
   rtx aligned_mem, bitnum;
   get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-
+  operands[0] = gen_lowpart (DImode, operands[0]);
   emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
 				 operands[2]));
   DONE;
 })
 
-(define_split
-  [(set (match_operand:HI 0 "register_operand" "")
-        (match_operand:HI 1 "memory_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" ""))]
+(define_insn_and_split "reload_inhi_help"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (match_operand:HI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "=r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#"
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
 {
   rtx aligned_mem, bitnum;
   get_aligned_mem (operands[1], &aligned_mem, &bitnum);
-
+  operands[0] = gen_lowpart (DImode, operands[0]);
   emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
 				 operands[2]));
   DONE;
 })
 
-(define_split
-  [(set (match_operand:QI 0 "memory_operand" "")
-        (match_operand:QI 1 "register_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" ""))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+(define_insn_and_split "reload_outqi_help"
+  [(set (match_operand:QI 0 "memory_operand" "=m")
+        (match_operand:QI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "=r"))
+   (clobber (match_operand:SI 3 "register_operand" "=r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#"
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
 {
@@ -6223,11 +6189,13 @@
   DONE;
 })
 
-(define_split
-  [(set (match_operand:HI 0 "memory_operand" "")
-        (match_operand:HI 1 "register_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" ""))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
+(define_insn_and_split "reload_outhi_help"
+  [(set (match_operand:HI 0 "memory_operand" "=m")
+        (match_operand:HI 1 "register_operand" "r"))
+   (clobber (match_operand:SI 2 "register_operand" "=r"))
+   (clobber (match_operand:SI 3 "register_operand" "=r"))]
+  "! TARGET_BWX && (reload_in_progress || reload_completed)"
+  "#"
   "! TARGET_BWX && reload_completed"
   [(const_int 0)]
 {
@@ -7895,7 +7863,8 @@
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
    && ! samegp_function_operand (operands[1], Pmode)
-   && peep2_regno_dead_p (1, 29)"
+   && (peep2_regno_dead_p (1, 29)
+       || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (match_dup 2)))
@@ -7927,7 +7896,8 @@
 	      (clobber (reg:DI 26))])]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
    && ! samegp_function_operand (operands[1], Pmode)
-   && ! peep2_regno_dead_p (1, 29)"
+   && ! (peep2_regno_dead_p (1, 29)
+         || find_reg_note (insn, REG_NORETURN, NULL_RTX))"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
 			 (match_dup 2)))
