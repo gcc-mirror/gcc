@@ -44,20 +44,28 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 
-/**
- * @author Per Bothner
- * @date January 6, 1999.
- */
-
 /*
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * (The latter turns out to have some errors ...)
  * Status:  Believed complete and correct.
+ */
+
+/**
+ * This class models an Internet address.  It does not have a public
+ * constructor.  Instead, new instances of this objects are created
+ * using the static methods getLocalHost(), getByName(), and
+ * getAllByName().
+ * <p>
+ * This class fulfills the function of the C style functions gethostname(),
+ * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
+ * into their corresponding numeric addresses and vice versa.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Per Bothner
  *
  * @specnote This class is not final since JK 1.4
  */
-
 public class InetAddress implements Serializable
 {
   // The Serialized Form specifies that an int 'address' is saved/restored.

@@ -164,9 +164,50 @@ public class ServerSocket
     if (bindAddr == null)
       bindAddr = InetAddress.ANY_IF;
 
+    // create socket
     impl.create(true);
-    impl.bind(bindAddr, port);
-    impl.listen(backlog);
+
+    // bind to address/port
+    try
+      {
+        impl.bind(bindAddr, port);
+      }
+    catch (IOException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close();
+        throw error;
+      }
+
+    // listen on socket
+    try
+      {
+        impl.listen(backlog);
+      }
+    catch (IOException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close();
+        throw error;
+      }
   }
 
   /**

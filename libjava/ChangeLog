@@ -1,5 +1,17 @@
 2003-05-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java:
+	Merged class documentation with classpath.
+	* java/net/JarURLConnection.java:
+	Explicitely import all used classes.
+	* java/net/URL.java:
+	Reformatting.
+	* java/net/ServerSocket.java,
+	java/net/Socket.java:
+	New versions from classpath.
+
+2003-05-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileChannelImpl.java
 	(read): New implementation.
 	(implRead): New methods.
