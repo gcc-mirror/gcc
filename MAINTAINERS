@@ -30,6 +30,7 @@ mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 hppa port		Jeff Law		law@cygnus.com
+m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@cygnus.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 rs6000 port		Geoff Keating		geoffk@cygnus.com
