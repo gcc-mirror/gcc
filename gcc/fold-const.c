@@ -3733,8 +3733,8 @@ fold (expr)
 	 Also note that operand_equal_p is always false if an operand
 	 is volatile.  */
 
-      if (operand_equal_p (arg0, arg1,
-			   FLOAT_TYPE_P (type) && ! flag_fast_math))
+      if ((! FLOAT_TYPE_P (type) || flag_fast_math)
+	  && operand_equal_p (arg0, arg1, 0))
 	return convert (type, integer_zero_node);
 
       goto associate;
