@@ -2779,6 +2779,8 @@ fp_zero_operand (op, mode)
 {
   REAL_VALUE_TYPE r;
 
+  if (GET_CODE (op) != CONST_DOUBLE)
+    return 0;
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
   return REAL_VALUES_EQUAL (r, dconst0);
 }
