@@ -1,3 +1,8 @@
+2005-01-16  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_push_parm): Call c_type_promotes_to()
+	via a lang-hook.
+
 2005-01-15  Ziemowit Laski  <zlaski@apple.com>
 
 	PR objc/19321

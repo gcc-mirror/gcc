@@ -7388,7 +7388,8 @@ objc_push_parm (tree parm)
     TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (parm));
 
   DECL_ARG_TYPE_AS_WRITTEN (parm) = TREE_TYPE (parm);
-  DECL_ARG_TYPE (parm) = c_type_promotes_to (TREE_TYPE (parm));
+  DECL_ARG_TYPE (parm)
+    = lang_hooks.types.type_promotes_to (TREE_TYPE (parm));
 
   /* Record constancy and volatility.  */
   c_apply_type_quals_to_decl
