@@ -123,7 +123,7 @@ case $basic_machine in
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
 		| powerpc | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
-		| mips64el | mips64orion | mips64orionel )
+		| pdp11 | mips64el | mips64orion | mips64orionel )
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -138,7 +138,7 @@ case $basic_machine in
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
-	      | sh-* | powerpc-* | sparc64-* | mips64-* | mipsel-* \
+	      | pdp11-* | sh-* | powerpc-* | sparc64-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-* )
 		;;
 	# Recognize the various machine names and aliases which stand
@@ -524,6 +524,9 @@ case $basic_machine in
 	vax)
 		basic_machine=vax-dec
 		;;
+	pdp11)
+		basic_machine=pdp11-dec
+		;;
 	we32k)
 		basic_machine=we32k-att
 		;;
@@ -655,6 +658,9 @@ else
 case $basic_machine in
 	*-acorn)
 		os=-riscix1.2
+		;;
+        pdp11-*)
+		os=-none
 		;;
 	*-dec | vax-*)
 		os=-ultrix4.2
