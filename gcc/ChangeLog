@@ -1,3 +1,9 @@
+Fri Jun  4 00:12:40 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* freebsd-elf.h (SWITCH_TAKES_ARG):  Redefine, not define.
+	(STARTFILE_SPEC):  Define, override the svr4.h version.
+	(ENDFILE_SPEC):  Likewise.
+
 Thu Jun  3 23:58:55 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc/inclhack.def (limits_ifndefs): Also apply to sys/limits.h
