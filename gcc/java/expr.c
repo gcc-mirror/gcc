@@ -1768,7 +1768,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	tree array_decl;
 #if 0
 	/* Enable this once we can set the vtable field statically.  FIXME */
-	if (TREE_CONSTANT (init) && TREE_STATIC (init)
+	if (TREE_CONSTANT (init) && TREE_STATIC (exp)
 	    && JPRIMITIVE_TYPE_P (element_type))
 	  {
 	    tree temp, value, init_decl;
