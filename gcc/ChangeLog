@@ -1,3 +1,9 @@
+2004-09-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17151
+	* combine.c (force_to_mode): Remove dubious early return test that
+	inhibits further optimization.
+
 2004-09-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* profile.c: Fix a comment typo.
