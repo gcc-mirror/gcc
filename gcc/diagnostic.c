@@ -561,7 +561,7 @@ output_format (output_buffer *buffer, text_info *text)
             output_long_long_decimal
               (buffer, va_arg (*text->args_ptr, long long));
           else
-            /* Sould not happen. */
+            /* Sould not happen.  */
             abort();
           break;
 

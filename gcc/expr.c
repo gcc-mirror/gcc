@@ -4465,7 +4465,7 @@ store_expr (exp, target, want_value)
     {
       /* C++ can generate ?: expressions with a throw expression in one
 	 branch and an rvalue in the other. Here, we resolve attempts to
-	 store the throw expression's nonexistant result. */
+	 store the throw expression's nonexistant result.  */
       if (want_value)
 	abort ();
       expand_expr (exp, const0_rtx, VOIDmode, 0);
@@ -7001,7 +7001,7 @@ expand_expr (exp, target, tmode, modifier)
 	  return original_target;
 	}
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case STRING_CST:
       temp = output_constant_def (exp, 1);

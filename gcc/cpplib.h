@@ -432,7 +432,7 @@ extern const char *progname;
 #define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
 #define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
 #define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
-#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing. */
+#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -470,7 +470,7 @@ struct cpp_hashnode GTY(())
   unsigned int is_directive : 1;
   unsigned int directive_index : 7;	/* If is_directive, 
 					   then index into directive table.
-					   Otherwise, a NODE_OPERATOR. */
+					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
   ENUM_BITFIELD(node_type) type : 8;	/* CPP node type.  */
   unsigned char flags;			/* CPP flags.  */

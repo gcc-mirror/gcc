@@ -612,7 +612,7 @@ int flag_abi_version = 1;
 
 int warn_abi = 0;
 
-/* Nonzero means warn about invalid uses of offsetof. */
+/* Nonzero means warn about invalid uses of offsetof.  */
 
 int warn_invalid_offsetof = 1;
 

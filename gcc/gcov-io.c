@@ -338,7 +338,7 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 #endif /*!IN_GCOV */
 
 /* Return a pointer to read BYTES bytes from the gcov file. Returns
-   NULL on failure (read past EOF). */
+   NULL on failure (read past EOF).  */
 
 static const unsigned char *
 gcov_read_bytes (unsigned bytes)
@@ -489,7 +489,7 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 
 #if IN_LIBGCOV
 /* Move to the a set position in a gcov file.  BASE is zero to move to
-   the end, and nonzero to move to that position. */
+   the end, and nonzero to move to that position.  */
 
 GCOV_LINKAGE void
 gcov_seek (gcov_position_t base)

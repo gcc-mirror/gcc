@@ -81,7 +81,7 @@ static unsigned prg_ctr_mask; /* Mask of counter types generated.  */
 static unsigned prg_n_ctrs[GCOV_COUNTERS]; /* Total counters allocated.  */
 
 /* Counter information for current function.  */
-static unsigned fn_ctr_mask; /* Mask of counters used. */
+static unsigned fn_ctr_mask; /* Mask of counters used.  */
 static unsigned fn_n_ctrs[GCOV_COUNTERS]; /* Counters allocated.  */
 static unsigned fn_b_ctrs[GCOV_COUNTERS]; /* Allocation base.  */
 
@@ -305,7 +305,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 {
   counts_entry_t *entry, elt;
 
-  /* No hash table, no counts. */
+  /* No hash table, no counts.  */
   if (!counts_hash)
     {
       static int warned = 0;
@@ -386,7 +386,7 @@ coverage_counter_ref (unsigned counter, unsigned no)
 }
 
 /* Generate a checksum for a string.  CHKSUM is the current
-   checksum. */
+   checksum.  */
 
 static unsigned
 checksum_string (unsigned chksum, const char *string)
@@ -881,7 +881,7 @@ create_coverage ()
 }
 
 /* Perform file-level initialization. Read in data file, generate name
-   of graph file. */
+   of graph file.  */
 
 void
 coverage_init (filename)

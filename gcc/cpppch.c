@@ -109,7 +109,7 @@ struct cpp_savedstate
   size_t hashsize;
   /* Number of definitions */
   size_t n_defs;
-  /* Array of definitions.  In cpp_write_pch_deps it is used for sorting. */
+  /* Array of definitions.  In cpp_write_pch_deps it is used for sorting.  */
   cpp_hashnode **defs;
   /* Space for the next definition.  Definitions are null-terminated
      strings.  */
@@ -244,7 +244,7 @@ count_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
     }
 }
 
-/* Collect the identifiers into the state's string table. */
+/* Collect the identifiers into the state's string table.  */
 static int
 write_defs (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *hn, void *ss_p)
 {
@@ -314,7 +314,7 @@ cpp_write_pch_deps (cpp_reader *r, FILE *f)
   ss->n_defs = 0;
   cpp_forall_identifiers (r, write_defs, ss);
 
-  /* Sort the list, copy it into a buffer, and write it out. */
+  /* Sort the list, copy it into a buffer, and write it out.  */
   qsort (ss->defs, ss->n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
   definedstrs = ss->definedstrs = xmalloc (ss->hashsize);
   for (i = 0; i < ss->n_defs; ++i)
@@ -496,7 +496,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
   qsort (nl.defs, nl.n_defs, sizeof (cpp_hashnode *), &comp_hashnodes);
  
   /* Loop through nl.defs and undeftab, both of which are sorted lists.
-     There should be no matches. */
+     There should be no matches.  */
   first = undeftab;
   last = undeftab + m.definition_length;
   i = 0;

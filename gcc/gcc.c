@@ -6155,7 +6155,7 @@ main (argc, argv)
 	}
     }
 
-  /* Process sysroot_suffix_spec. */
+  /* Process sysroot_suffix_spec.  */
   if (*sysroot_suffix_spec != 0
       && do_spec_2 (sysroot_suffix_spec) == 0)
     {
@@ -6165,7 +6165,7 @@ main (argc, argv)
         target_sysroot_suffix = xstrdup (argbuf[argbuf_index -1]);
     }
 
-  /* Process sysroot_hdrs_suffix_spec. */
+  /* Process sysroot_hdrs_suffix_spec.  */
   if (*sysroot_hdrs_suffix_spec != 0
       && do_spec_2 (sysroot_hdrs_suffix_spec) == 0)
     {

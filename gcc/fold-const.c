@@ -8222,7 +8222,7 @@ tree_expr_nonnegative_p (t)
 	      }
 	}
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     default:
       if (truth_value_p (TREE_CODE (t)))

@@ -97,7 +97,7 @@ typedef struct btr_def_s
      containing the def (before the def), or in a block containing
      a use (after the use).  If there are such other live ranges, then
      other_btr_uses_before_def or other_btr_uses_after_use must be set true
-     as appropriate. */
+     as appropriate.  */
   char other_btr_uses_before_def;
   char other_btr_uses_after_use;
   bitmap live_range;
@@ -248,7 +248,7 @@ insn_sets_btr_p (rtx insn, int check_const, int *regno)
   return 0;
 }
 
-/* Find and return a use of a target register within an instruction INSN. */
+/* Find and return a use of a target register within an instruction INSN.  */
 static rtx *
 find_btr_use (rtx insn)
 {
@@ -376,7 +376,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx insn)
   return user;
 }
 
-/* Write the contents of S to the dump file. */
+/* Write the contents of S to the dump file.  */
 static void
 dump_hard_reg_set (HARD_REG_SET s)
 {
@@ -386,7 +386,7 @@ dump_hard_reg_set (HARD_REG_SET s)
       fprintf (rtl_dump_file, " %d", reg);
 }
 
-/* Write the set of target regs live in block BB to the dump file. */
+/* Write the set of target regs live in block BB to the dump file.  */
 static void
 dump_btrs_live (int bb)
 {
@@ -572,7 +572,7 @@ compute_kill (sbitmap *bb_kill, sbitmap *btr_defset,
   int regno;
 
   /* For each basic block, form the set BB_KILL - the set
-     of definitions that the block kills. */
+     of definitions that the block kills.  */
   sbitmap_vector_zero (bb_kill, n_basic_blocks);
   for (i = 0; i < n_basic_blocks; i++)
     {
@@ -622,7 +622,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
   sbitmap reaching_defs = sbitmap_alloc (max_uid);
 
   /* Link uses to the uses lists of all of their reaching defs.
-     Count up the number of reaching defs of each use. */
+     Count up the number of reaching defs of each use.  */
   for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
@@ -643,7 +643,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 	      if (def != NULL)
 		{
 		  /* Remove all reaching defs of regno except
-		     for this one. */
+		     for this one.  */
 		  sbitmap_difference (reaching_defs, reaching_defs,
 				      btr_defset[def->btr - first_btr]);
 		  SET_BIT(reaching_defs, insn_uid);
@@ -691,7 +691,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		      if (user->first_reaching_def != -1)
 			{ /* There is more than one reaching def.  This is
 			     a rare case, so just give up on this def/use
-			     web when it occurs. */
+			     web when it occurs.  */
 			  def->has_ambiguous_use = 1;
 			  def_array[user->first_reaching_def]
 			    ->has_ambiguous_use = 1;
@@ -788,7 +788,7 @@ block_at_edge_of_live_range_p (int bb, btr_def def)
    Blocks at the boundary of the live range may contain other live
    ranges for the same target register, so we have to be careful
    to remove the target register from the live set of these blocks
-   only if they do not contain other live ranges for the same register. */
+   only if they do not contain other live ranges for the same register.  */
 static void
 clear_btr_from_live_range (btr_def def)
 {
@@ -980,9 +980,9 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	  && dominated_by_p (dom, other_def->bb, def->bb))
 	{
 	  /* def->bb dominates the other def, so def and other_def could
-	     be combined. */
+	     be combined.  */
 	  /* Merge their live ranges, and get the set of
-	     target registers live over the merged range. */
+	     target registers live over the merged range.  */
 	  int btr;
 	  HARD_REG_SET combined_btrs_live;
 	  bitmap combined_live_range = BITMAP_XMALLOC ();
@@ -1024,7 +1024,7 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 		 some REG_DEAD notes may no longer be correct.  We could
 		 be more precise about this if we looked at the combined
 		 live range, but here I just delete any REG_DEAD notes
-		 in case they are no longer correct. */
+		 in case they are no longer correct.  */
 	      for (user = def->uses; user != NULL; user = user->next)
 		remove_note (user->insn,
 			     find_regno_note (user->insn, REG_DEAD,
@@ -1059,7 +1059,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
      Set a target register in block NEW_DEF_BB to the value
      needed for this target register definition.
      Replace all uses of the old target register definition by
-     uses of the new definition.  Delete the old definition. */
+     uses of the new definition.  Delete the old definition.  */
   basic_block b = new_def_bb;
   rtx insp = b->head;
   rtx old_insn = def->insn;
@@ -1098,7 +1098,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 
   new_insn = gen_move_insn (btr_rtx, src);
 
-  /* Insert target register initialization at head of basic block. */
+  /* Insert target register initialization at head of basic block.  */
   def->insn = emit_insn_after (new_insn, insp);
 
   regs_ever_live[btr] = 1;
@@ -1111,13 +1111,13 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   delete_insn (old_insn);
 
   /* Replace each use of the old target register by a use of the new target
-     register. */
+     register.  */
   for (user = def->uses; user != NULL; user = user->next)
     {
       /* Some extra work here to ensure consistent modes, because
 	 it seems that a target register REG rtx can be given a different
 	 mode depending on the context (surely that should not be
-	 the case?). */
+	 the case?).  */
       rtx replacement_rtx;
       if (GET_MODE (user->use) == GET_MODE (btr_rtx)
 	  || GET_MODE (user->use) == VOIDmode)
@@ -1164,7 +1164,7 @@ can_move_up (basic_block bb, rtx insn, int n_insns)
    Return nonzero if there may be benefit from attempting to
    migrate this DEF further (i.e. we have reduced the cost below
    MIN_COST, but we may be able to reduce it further).
-   Return zero if no further migration is possible. */
+   Return zero if no further migration is possible.  */
 static int
 migrate_btr_def (btr_def def, int min_cost)
 {
@@ -1234,7 +1234,7 @@ migrate_btr_def (btr_def def, int min_cost)
        try = get_immediate_dominator (dom, try))
     {
       /* Try to move the instruction that sets the target register into
-	 basic block TRY. */
+	 basic block TRY.  */
       int try_freq = basic_block_freq (try);
 
       if (rtl_dump_file)
@@ -1283,7 +1283,7 @@ migrate_btr_def (btr_def def, int min_cost)
 }
 
 /* Attempt to move instructions that set target registers earlier
-   in the flowgraph, away from their corresponding uses. */
+   in the flowgraph, away from their corresponding uses.  */
 static void
 migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 {
@@ -1361,16 +1361,16 @@ branch_target_load_optimize (rtx insns, bool after_prologue_epilogue_gen)
       else
 	issue_rate = 1;
 
-      /* Build the CFG for migrate_btr_defs. */
+      /* Build the CFG for migrate_btr_defs.  */
 #if 1
       /* This may or may not be needed, depending on where we
-	 run this phase. */
+	 run this phase.  */
       cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 #endif
 
       life_analysis (insns, NULL, 0);
 
-      /* Dominator info is also needed for migrate_btr_def. */
+      /* Dominator info is also needed for migrate_btr_def.  */
       dom = calculate_dominance_info (CDI_DOMINATORS);
       migrate_btr_defs (class,
 		       ((*targetm.branch_target_register_callee_saved)
