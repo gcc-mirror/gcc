@@ -1,5 +1,16 @@
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/template/qualttp20.C: Remove unnecessary error tags.
+	* g++.dg/template/qualttp3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise
+	* g++.dg/template/qualttp5.C: Likewise
+	* g++.dg/template/qualttp6.C: Likewise
+	* g++.dg/template/qualttp7.C: Likewise
+	* g++.dg/template/qualttp8.C: Likewise
+	* g++.dg/template/recurse.C: Likewise.
+
+2002-03-15  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.dg/opt/dtor1.C: New test.
 
 2002-03-15  Jakub Jelinek  <jakub@redhat.com>

@@ -18,5 +18,5 @@ template <> struct F<52>
 int main ()
 {
   F<1> f;
-  return f();		// { dg-error "instantiate" "excessive recursion" }
+  return f();
 }
