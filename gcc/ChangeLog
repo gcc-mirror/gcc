@@ -1,3 +1,11 @@
+Fri May  8 09:53:24  Paul Eggert  <eggert@twinsun.com>
+
+	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
+	curses.h if it contains `typedef char bool;', as suggested by
+	Manfred Hollstein <manfred@s-direktnet.de>.
+
+	* configure.in: Rename fixinc.math to fixinc.wrap.
+
 Thu May  7 19:26:34 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c (read_specs): Handle missing blank line at end of specs file.
