@@ -1,3 +1,10 @@
+2004-02-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14181
+	* parser.c (cp_parser_new_expression): Parse an ill-formed 
+	direct-new-declarator after a parenthesized type-id to emit good
+	diagnostic.
+
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.def, cvt.c: Update copyright.
