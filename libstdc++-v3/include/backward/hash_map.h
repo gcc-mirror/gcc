@@ -60,10 +60,10 @@
 #include "algobase.h"
 #include <ext/hash_map>
 
-using std::hash;
-using std::hashtable;
-using std::hash_map;
-using std::hash_multimap;
+using __gnu_cxx::hash;
+using __gnu_cxx::hashtable;
+using __gnu_cxx::hash_map;
+using __gnu_cxx::hash_multimap;
 
 #endif /* _CPP_BACKWARD_HASH_MAP_H */
 

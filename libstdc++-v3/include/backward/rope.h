@@ -47,11 +47,11 @@
 #include "hashtable.h"   
 #include <ext/rope>
 
-using std::char_producer; 
-using std::sequence_buffer; 
-using std::rope; 
-using std::crope; 
-using std::wrope; 
+using __gnu_cxx::char_producer; 
+using __gnu_cxx::sequence_buffer; 
+using __gnu_cxx::rope; 
+using __gnu_cxx::crope; 
+using __gnu_cxx::wrope; 
 
 #endif /* _CPP_BACKWARD_ROPE_H */
 

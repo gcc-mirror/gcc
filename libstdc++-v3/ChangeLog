@@ -1,3 +1,22 @@
+2002-03-15  Philipp Thomas  <pthomas@suse.de>
+
+	* include/backward/hash_map.h: hash, hashtable, hash_map and
+	hash_multimap are in namespace __gnu_cxx.
+	include/backward/hash_set.h: hash, hashtable, hash_set and
+	hash_multiset are in namespace __gnu_cxx.
+	include/backward/hashtable.h: hash and hashtable are in 
+	namespace __gnu_cxx.
+	include/backward/rope.h: char_producer, sequence_buffer,
+	rope, crope and wrope are in namespace __gnu_cxx.
+	include/backward/slist.h: slist is in namespace __gnu_cxx.
+	* testsuite/backward/header_hash_map_h.cc
+	testsuite/backward/header_hash_set_h.cc
+	testsuite/backward/header_hashtable_h.cc
+	testsuite/backward/header_rope_h.cc
+	testsuite/backward/header_slist_h.cc
+	testsuite/backward/header_tempbuf_h.cc: New tests for
+	checking that we're using the correct namespace.
+
 2002-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/4381
