@@ -244,12 +244,12 @@ if [ x"${host}" = x"${target}" ] ; then
 	# that are in the 'cross only' list
 	skipdirs="${skipdirs} ${cross_only}"
 	is_cross_compiler=no
-	target_subdir=.
-	case "${host}" in
-          # We need multilib support for irix6, to get libiberty built
-	  #  properly for o32 and n32.
-          mips-sgi-irix6*) target_subdir=${host} ;;
-	esac
+	# Default to --enable-multilib.  See similar code below.
+	if [ x${enable_multilib} = xno ]; then
+	  target_subdir=.
+	else
+	  target_subdir=libraries
+	fi
 else
 	# similarly, don't build the targets in the 'native only' 
 	# list when building a cross compiler
