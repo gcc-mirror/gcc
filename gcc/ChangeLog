@@ -1,3 +1,7 @@
+Wed Oct  8 14:37:44 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config/ptx4.h: Fix typo.
+
 Wed Oct  8 08:57:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
