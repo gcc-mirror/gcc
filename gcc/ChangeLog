@@ -1,3 +1,8 @@
+2004-03-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Create a default tmake_file for linux, and use
+	it in all but two linux clauses.  Comment those two.
+
 2004-03-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (try_combine):  Do not refer to is_replaced.
