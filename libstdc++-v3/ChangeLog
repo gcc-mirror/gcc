@@ -1,3 +1,17 @@
+2002-01-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (_Temporary_buffer):  Add doxygen hook.
+	* include/bits/stl_algo.h:  Include stl_tempbuf.h.
+	* include/ext/memory:  Do not include stl_tempbuf.h.
+	(temporary_buffer):  Add doxygen hook.
+	(__get_temporary_buffer, get_temporary_buffer,
+	return_temporary_buffer):  Move back to std:: header...
+	* include/std/std_memory.h:  ...here.  Do not include stl_tempbuf.h.
+	* include/ext/rope:  Do not include stl_tempbuf.h.
+	* include/ext/stl_hashtable.h:  Likewise.
+	* include/std/std_algorithm.h:  Likewise.
+	* testsuite/20_util/temporary_buffer.cc:  New file.
+
 2002-01-24  andrew@andypo.net
 	    (tweaks, test and commit by Loren J. Rittle  <ljrittle@acm.org>)
 
