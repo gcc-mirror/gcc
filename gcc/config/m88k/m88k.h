@@ -202,9 +202,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"03 Feb 1992"
+#define VERSION_INFO2	"12 Feb 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	1.96.5.3 03 Feb 1992 09:39:25"
+#define	TM_SCCS_ID	"@(#)m88k.h	1.96.5.5 12 Feb 1992 12:59:25"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -384,8 +384,9 @@ extern char * reg_names[];
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 128
 
-/* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 128
+/* Allocation boundary (in *bits*) for the code of a function.
+   Pack code tightly when compiling crtstuff.c.  */
+#define FUNCTION_BOUNDARY (flag_inhibit_size_directive ? 32 : 128)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
@@ -1806,8 +1807,9 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
     fprintf (FILE, "%s\t %d\n", ALIGN_ASM_OP, 1<<(LOG))
 
 /* Align the text address to half a cache boundary when it can only be
-   reached by jumping.  */
-#define ASM_OUTPUT_ALIGN_CODE(FILE) ASM_OUTPUT_ALIGN (FILE, 3)
+   reached by jumping.  Pack code tightly when compiling crtstuff.c.  */
+#define ASM_OUTPUT_ALIGN_CODE(FILE) \
+  ASM_OUTPUT_ALIGN (FILE, (flag_inhibit_size_directive ? 2 : 3))
 
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP
