@@ -443,13 +443,14 @@ ___notdi2:
 ___negsi2:
 	comb
 	coma
-	addd	#1
 	xgdx
-	eorb	#0xFF
-	eora	#0xFF
-	adcb	#0
-	adca	#0
+	comb
+	coma
+	inx
 	xgdx
+	bne	done
+	inx
+done:
 	rts
 #endif
 
