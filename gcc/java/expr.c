@@ -1844,6 +1844,165 @@ expand_invoke (opcode, method_ref_index, nargs)
     }
 }
 
+/* Create a stub which will be put into the vtable but which will call
+   a JNI function.  */
+
+tree
+build_jni_stub (method)
+     tree method;
+{
+  tree jnifunc, call, args, body, lookup_arg, method_sig, arg_types;
+  tree jni_func_type, tem;
+  tree env_var, res_var = NULL_TREE, block;
+  tree method_args, res_type;
+
+  tree klass = DECL_CONTEXT (method);
+  int from_class = ! CLASS_FROM_SOURCE_P (klass);
+  klass = build_class_ref (klass);
+
+  if (! METHOD_NATIVE (method) || ! flag_jni)
+    abort ();
+
+  DECL_ARTIFICIAL (method) = 1;
+  DECL_EXTERNAL (method) = 0;
+
+  env_var = build_decl (VAR_DECL, get_identifier ("env"), ptr_type_node);
+  if (TREE_TYPE (TREE_TYPE (method)) != void_type_node)
+    {
+      res_var = build_decl (VAR_DECL, get_identifier ("res"),
+			    TREE_TYPE (TREE_TYPE (method)));
+      TREE_CHAIN (env_var) = res_var;
+    }
+
+  /* One strange way that the front ends are different is that they
+     store arguments differently.  */
+  if (from_class)
+    method_args = DECL_ARGUMENTS (method);
+  else
+    method_args = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (method));
+  block = build_block (env_var, NULL_TREE, NULL_TREE,
+		       method_args, NULL_TREE);
+  TREE_SIDE_EFFECTS (block) = 1;
+  /* When compiling from source we don't set the type of the block,
+     because that will prevent patch_return from ever being run.  */
+  if (from_class)
+    TREE_TYPE (block) = TREE_TYPE (TREE_TYPE (method));
+
+  /* Compute the local `env' by calling _Jv_GetJNIEnvNewFrame.  */
+  body = build (MODIFY_EXPR, ptr_type_node, env_var,
+		build (CALL_EXPR, ptr_type_node,
+		       build_address_of (soft_getjnienvnewframe_node),
+		       build_tree_list (NULL_TREE, klass),
+		       NULL_TREE));
+  CAN_COMPLETE_NORMALLY (body) = 1;
+
+  /* All the arguments to this method become arguments to the
+     underlying JNI function.  If we had to wrap object arguments in a
+     special way, we would do that here.  */
+  args = NULL_TREE;
+  for (tem = method_args; tem != NULL_TREE; tem = TREE_CHAIN (tem))
+    args = tree_cons (NULL_TREE, tem, args);
+  args = nreverse (args);
+  arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
+
+  /* For a static method the second argument is the class.  For a
+     non-static method the second argument is `this'; that is already
+     available in the argument list.  */
+  if (METHOD_STATIC (method))
+    {
+      args = tree_cons (NULL_TREE, klass, args);
+      arg_types = tree_cons (NULL_TREE, object_ptr_type_node, arg_types);
+    }
+
+  /* The JNIEnv structure is the first argument to the JNI function.  */
+  args = tree_cons (NULL_TREE, env_var, args);
+  arg_types = tree_cons (NULL_TREE, ptr_type_node, arg_types);
+
+  /* We call _Jv_LookupJNIMethod to find the actual underlying
+     function pointer.  _Jv_LookupJNIMethod will throw the appropriate
+     exception if this function is not found at runtime.  */
+  method_sig = build_java_signature (TREE_TYPE (method));
+  lookup_arg =
+    build_tree_list (NULL_TREE,
+		     build_utf8_ref (unmangle_classname
+				     (IDENTIFIER_POINTER (method_sig),
+				      IDENTIFIER_LENGTH (method_sig))));
+  tem = DECL_NAME (method);
+  lookup_arg
+    = tree_cons (NULL_TREE, klass,
+		 tree_cons (NULL_TREE, build_utf8_ref (tem), lookup_arg));
+
+  jni_func_type
+    = build_pointer_type (build_function_type (TREE_TYPE (TREE_TYPE (method)),
+					       arg_types));
+
+  jnifunc = build (CALL_EXPR, ptr_type_node,
+		   build_address_of (soft_lookupjnimethod_node),
+		   lookup_arg, NULL_TREE);
+
+  /* Now we make the actual JNI call via the resulting function
+     pointer.    */
+  call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (method)),
+		build1 (NOP_EXPR, jni_func_type, jnifunc),
+		args, NULL_TREE);
+
+  /* If the JNI call returned a result, capture it here.  If we had to
+     unwrap JNI object results, we would do that here.  */
+  if (res_var != NULL_TREE)
+    call = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (method)),
+		  res_var, call);
+
+  TREE_SIDE_EFFECTS (call) = 1;
+  CAN_COMPLETE_NORMALLY (call) = 1;
+
+  body = build (COMPOUND_EXPR, void_type_node, body, call);
+  TREE_SIDE_EFFECTS (body) = 1;
+
+  /* Now free the environment we allocated.  */
+  call = build (CALL_EXPR, ptr_type_node,
+		build_address_of (soft_jnipopsystemframe_node),
+		build_tree_list (NULL_TREE, env_var),
+		NULL_TREE);
+  TREE_SIDE_EFFECTS (call) = 1;
+  CAN_COMPLETE_NORMALLY (call) = 1;
+  body = build (COMPOUND_EXPR, void_type_node, body, call);
+  TREE_SIDE_EFFECTS (body) = 1;
+
+  /* Finally, do the return.  When compiling from source we rely on
+     patch_return to patch the return value -- because DECL_RESULT is
+     not set at the time this function is called.  */
+  if (from_class)
+    {
+      res_type = void_type_node;
+      if (res_var != NULL_TREE)
+	{
+	  tree drt;
+	  if (! DECL_RESULT (method))
+	    abort ();
+	  /* Make sure we copy the result variable to the actual
+	     result.  We use the type of the DECL_RESULT because it
+	     might be different from the return type of the function:
+	     it might be promoted.  */
+	  drt = TREE_TYPE (DECL_RESULT (method));
+	  if (drt != TREE_TYPE (res_var))
+	    res_var = build1 (CONVERT_EXPR, drt, res_var);
+	  res_var = build (MODIFY_EXPR, drt, DECL_RESULT (method), res_var);
+	  TREE_SIDE_EFFECTS (res_var) = 1;
+	}
+    }
+  else
+    {
+      /* This is necessary to get patch_return to run.  */
+      res_type = NULL_TREE;
+    }
+  body = build (COMPOUND_EXPR, void_type_node, body,
+		build1 (RETURN_EXPR, res_type, res_var));
+  TREE_SIDE_EFFECTS (body) = 1;
+
+  BLOCK_EXPR_BODY (block) = body;
+  return block;
+}
+
 
 /* Expand an operation to extract from or store into a field.
    IS_STATIC is 1 iff the field is static.

@@ -63,7 +63,7 @@ DEFTREECODE (CATCH_EXPR, "catch", '1', 1)
 DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", 'e', 2)
 
 /* Throw statement.
-   Operand 0 is the throw expresion.  */
+   Operand 0 is the throw expression.  */
 DEFTREECODE (THROW_EXPR, "throw", '1', 1)
 
 /* Conditional operator.
@@ -93,3 +93,8 @@ DEFTREECODE (CLASS_LITERAL, "class_literal", '1', 1)
    is used for context detection, so that special rules can be
    enforced. */
 DEFTREECODE (INSTANCE_INITIALIZERS_EXPR, "instance_initializers_expr", '1', 1)
+/*
+Local variables:
+mode:c
+End:
+*/

@@ -35,6 +35,7 @@ DEFINE_LANG_NAME ("Java")
   { "-femit-class-files", "Dump class files to <name>.class" },
   { "-fuse-boehm-gc", "Generate code for Boehm GC" },
   { "-fhash-synchronization", "Don't put synchronization structure in each object" },
+  { "-fjni", "Assume native functions are implemented using JNI" },
 #if ! USE_CPPLIB
   { "-MD", "Print dependencies to FILE.d" },
   { "-MMD", "Print dependencies to FILE.d" },

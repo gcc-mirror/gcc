@@ -684,8 +684,21 @@ parse_class_file ()
     {
       JCF *jcf = current_jcf;
 
-      if (METHOD_NATIVE (method) || METHOD_ABSTRACT (method))
+      if (METHOD_ABSTRACT (method))
 	continue;
+
+      if (METHOD_NATIVE (method))
+	{
+	  if (! flag_jni)
+	    continue;
+	  DECL_MAX_LOCALS (method)
+	    = list_length (TYPE_ARG_TYPES (TREE_TYPE (method)));
+	  start_java_method (method);
+	  give_name_to_locals (jcf);
+	  expand_expr_stmt (build_jni_stub (method));
+	  end_java_method ();
+	  continue;
+	}
 
       if (DECL_CODE_OFFSET (method) == 0)
 	{

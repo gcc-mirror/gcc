@@ -381,6 +381,9 @@ tree soft_checkarraystore_node;
 tree soft_monitorenter_node;
 tree soft_monitorexit_node;
 tree soft_lookupinterfacemethod_node;
+tree soft_lookupjnimethod_node;
+tree soft_getjnienvnewframe_node;
+tree soft_jnipopsystemframe_node;
 tree soft_fmod_node;
 tree soft_exceptioninfo_call_node;
 tree soft_idiv_node;
@@ -753,12 +756,13 @@ init_decl_processing ()
 					build_function_type (ptr_type_node, t),
 					0, NOT_BUILT_IN, NULL_PTR);
   DECL_IS_MALLOC (alloc_object_node) = 1;
+
+  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
   soft_initclass_node = builtin_function ("_Jv_InitClass",
 					  build_function_type (void_type_node,
 							       t),
 					  0, NOT_BUILT_IN,
 					  NULL_PTR);
-  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
   throw_node[0] = builtin_function ("_Jv_Throw",
 				    build_function_type (ptr_type_node, t),
 				    0, NOT_BUILT_IN, NULL_PTR);
@@ -848,6 +852,24 @@ init_decl_processing ()
     = builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			build_function_type (ptr_type_node, t),
 			0, NOT_BUILT_IN, NULL_PTR);
+
+  t = tree_cons (NULL_TREE, object_ptr_type_node,
+		 tree_cons (NULL_TREE, ptr_type_node,
+			    tree_cons (NULL_TREE, ptr_type_node, endlink)));
+  soft_lookupjnimethod_node
+    = builtin_function ("_Jv_LookupJNIMethod",
+			build_function_type (ptr_type_node, t),
+			0, NOT_BUILT_IN, NULL_PTR);
+  t = tree_cons (NULL_TREE, ptr_type_node, endlink);
+  soft_getjnienvnewframe_node
+    = builtin_function ("_Jv_GetJNIEnvNewFrame",
+			build_function_type (ptr_type_node, t),
+			0, NOT_BUILT_IN, NULL_PTR);
+  soft_jnipopsystemframe_node
+    = builtin_function ("_Jv_JNI_PopSystemFrame",
+			build_function_type (ptr_type_node, t),
+			0, NOT_BUILT_IN, NULL_PTR);
+
   t = tree_cons (NULL_TREE, double_type_node,
 		 tree_cons (NULL_TREE, double_type_node, endlink));
   soft_fmod_node
@@ -1726,7 +1748,7 @@ complete_start_java_method (fndecl)
 
   if (METHOD_SYNCHRONIZED (fndecl) && ! flag_emit_class_files)
     {
-      /* Warp function body with a monitorenter plus monitorexit cleanup. */
+      /* Wrap function body with a monitorenter plus monitorexit cleanup. */
       tree enter, exit, lock;
       if (METHOD_STATIC (fndecl))
 	lock = build_class_ref (DECL_CONTEXT (fndecl));
