@@ -34,14 +34,14 @@ copy=cp
 # With GNU ld
 AC_ARG_WITH(gnu-ld,
 [  --with-gnu-ld           arrange to work with GNU ld.],
-gnu_ld="$with_gnu_ld",
-gnu_ld=no)
+gnu_ld_flag="$with_gnu_ld",
+gnu_ld_flag=no)
 
 # With GNU as
 AC_ARG_WITH(gnu-as,
 [  --with-gnu-as           arrange to work with GNU as.],
-gas="$with_gnu_as",
-gas=no)
+gas_flag="$with_gnu_as",
+gas_flag=no)
 
 # With stabs
 AC_ARG_WITH(stabs,
@@ -246,6 +246,10 @@ for machine in $build $host $target; do
 	exeext=
 	# Set this to control which thread package will be used.
 	thread_file=
+	# Reinitialize these from the flag values every loop pass, since some
+	# configure entries modify them.
+	gas="$gas_flag"
+	gnu_ld="$gnu_ld_flag"
 
 	# Set default cpu_type, tm_file and xm_file so it can be updated in
 	# each machine entry.

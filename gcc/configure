@@ -556,9 +556,9 @@ copy=cp
 # Check whether --with-gnu-ld or --without-gnu-ld was given.
 if test "${with_gnu_ld+set}" = set; then
   withval="$with_gnu_ld"
-  gnu_ld="$with_gnu_ld"
+  gnu_ld_flag="$with_gnu_ld"
 else
-  gnu_ld=no
+  gnu_ld_flag=no
 fi
 
 
@@ -566,9 +566,9 @@ fi
 # Check whether --with-gnu-as or --without-gnu-as was given.
 if test "${with_gnu_as+set}" = set; then
   withval="$with_gnu_as"
-  gas="$with_gnu_as"
+  gas_flag="$with_gnu_as"
 else
-  gas=no
+  gas_flag=no
 fi
 
 
@@ -1935,6 +1935,10 @@ for machine in $build $host $target; do
 	exeext=
 	# Set this to control which thread package will be used.
 	thread_file=
+	# Reinitialize these from the flag values every loop pass, since some
+	# configure entries modify them.
+	gas="$gas_flag"
+	gnu_ld="$gnu_ld_flag"
 
 	# Set default cpu_type, tm_file and xm_file so it can be updated in
 	# each machine entry.

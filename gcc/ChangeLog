@@ -1,3 +1,9 @@
+Wed Apr 15 12:38:03 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (gnu_ld): Rename to gnu_ld_flag before main loop.
+	Set gnu_ld to gnu_ld_flag inside main loop.
+	(gas): Likewise.
+
 Wed Apr 15 14:50:05 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* toplev.c (compile_file): Call init_parse using new interface.
