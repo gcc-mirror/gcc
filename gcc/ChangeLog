@@ -1,3 +1,8 @@
+2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (reload_outcc): Use HARD_REGNO_NREGS to
+	access the second half of the TFmode scratch operand.
+
 2001-08-10  Anthony Green  <green@redhat.com>
 
 	* java/class.c (emit_register_classes): Conditionalize code on
