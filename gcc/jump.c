@@ -4345,6 +4345,10 @@ rtx_renumbered_equal_p (x, y)
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
+    case CODE_LABEL:
+      /* If we didn't match EQ equality above, they aren't the same.  */
+      return 0;
+
     default:
       break;
     }
