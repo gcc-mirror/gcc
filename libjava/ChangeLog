@@ -1,3 +1,8 @@
+2001-01-27  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNIFunctions): Added comment for each entry in
+	native interface structure.
+
 2001-01-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/ObjectInputStream.java (read): AND byte with 0xff to make
