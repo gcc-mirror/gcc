@@ -1086,6 +1086,10 @@ ARM_FUNC_START fixdfsi
 
 	FUNC_END fixdfsi
 
+#endif /* L_fixdfsi */
+
+#ifdef L_fixunsdfsi
+
 ARM_FUNC_START fixunsdfsi
 	orrs	ip, xl, xh, lsl #1
 	movcss	r0, #0			@ value is negative
@@ -1096,13 +1100,13 @@ ARM_FUNC_START fixunsdfsi
 	orr	ip, ip, #0x00f00000
 	and	r2, xh, ip
 	teq	r2, ip
-	beq	1f			@ value is INF or NAN
+	beq	2f			@ value is INF or NAN
 	bic	ip, ip, #0x40000000
 	cmp	r2, ip
-	bcc	1b			@ value is too small
+	bcc	1f			@ value is too small
 	add	ip, ip, #(31 << 20)
 	cmp	r2, ip
-	bhi	2f			@ value is too large
+	bhi	3f			@ value is too large
 
 	rsb	r2, r2, ip
 	mov	ip, xh, lsl #11
@@ -1112,14 +1116,20 @@ ARM_FUNC_START fixunsdfsi
 	mov	r0, ip, lsr r2
 	RET
 
-1:	orrs	xl, xl, xh, lsl #12
-	bne	4b			@ value is NAN.
-2:	mov	r0, #0xffffffff		@ maximum unsigned si
+1:	mov	r0, #0
+	RET
+
+2:	orrs	xl, xl, xh, lsl #12
+	bne	4f			@ value is NAN.
+3:	mov	r0, #0xffffffff		@ maximum unsigned si
+	RET
+
+4:	mov	r0, #0			@ How should we convert NAN?
 	RET
 
 	FUNC_END fixunsdfsi
 
-#endif /* L_fixunsdfdi */
+#endif /* L_fixunsdfsi */
 
 #ifdef L_truncdfsf2
 
