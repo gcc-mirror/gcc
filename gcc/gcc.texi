@@ -3563,6 +3563,15 @@ The option @samp{-dd} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.dbr}
 to the input file name.
 
+@cindex branch shortening
+@item
+Branch shortening.  On many RISC machines, branch instructions have a
+limited range.  Thus, longer sequences of instructions must be used for 
+long branches.  In this pass, the compiler figures out what how far each
+instruction will be from each other instruction, and therefore whether
+the usual instructions, or the longer sequences, must be used for each
+branch. 
+
 @cindex register-to-stack conversion
 @item
 Conversion from usage of some hard registers to usage of a register

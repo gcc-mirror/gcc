@@ -2088,7 +2088,8 @@ Print statistics on memory usage, at the end of the run, to
 standard error.
 @item p
 Annotate the assembler output with a comment indicating which
-pattern and alternative was used.
+pattern and alternative was used.  The length of each instruction is
+also printed.
 @item x
 Just generate RTL for a function instead of compiling it.  Usually used
 with @samp{r}.
