@@ -898,21 +898,15 @@ left_shift (a, b)
      struct constant *a;
      unsigned long b;
 {
+   /* It's unclear from the C standard whether shifts can overflow.
+      The following code ignores overflow; perhaps a C standard
+      interpretation ruling is needed.  */
   if (b >= HOST_BITS_PER_LONG)
-    {
-      if (! a->unsignedp && a->value != 0)
-	integer_overflow ();
-      return 0;
-    }
+    return 0;
   else if (a->unsignedp)
     return (unsigned long) a->value << b;
   else
-    {
-      long l = a->value << b;
-      if (l >> b != a->value)
-	integer_overflow ();
-      return l;
-    }
+    return a->value << b;
 }
 
 static long
