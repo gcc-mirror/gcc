@@ -1,3 +1,11 @@
+2002-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (num_get::_M_extract_int): Change
+	prototype.
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int): Remove
+	__max_digits checks, adjust arguments.
+	(num_get::do_get(*)): Changeup.
+
 2002-01-23  Loren Rittle <ljrittle@acm.org>
 
         * config/locale/c_locale_generic.cc: Fix typename usage.
