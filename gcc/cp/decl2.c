@@ -3220,6 +3220,11 @@ do_static_initialization (decl, init, sentry, priority)
   /* Cleanup any temporaries needed for the initial value.  */
   expand_end_target_temps ();
 
+  /* Cleanup any deferred pops from function calls.  This would be done
+     by expand_end_cond, but we also need it when !sentry, since we are
+     constructing these sequences by parts.  */
+  do_pending_stack_adjust ();
+
   /* Close the conditional opened above.  */
   if (sentry)
     expand_end_cond ();
@@ -3275,6 +3280,11 @@ do_static_destruction (decl, sentry, priority)
   
   /* Actually to the destruction.  */
   expand_expr_stmt (build_cleanup (decl));
+
+  /* Cleanup any deferred pops from function calls.  This would be done
+     by expand_end_cond, but we also need it when !sentry, since we are
+     constructing these sequences by parts.  */
+  do_pending_stack_adjust ();
 
   /* Close the conditional opened above.  */
   if (sentry)
