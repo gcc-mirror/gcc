@@ -560,7 +560,7 @@ char *lang_options[] =
   "-fno-ident",
   "-fident",
   "-fdollars-in-identifiers",
-  "-fnodollars-in-identifiers",
+  "-fno-dollars-in-identifiers",
   "-ansi",
   "-Wimplicit",
   "-Wno-implicit",
