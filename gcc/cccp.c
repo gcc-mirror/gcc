@@ -2880,7 +2880,7 @@ do { ip = &instack[indepth];		\
 	while (ibp < limit) {
 	  switch (*ibp++) {
 	  case '/':
-	    if (warn_comments && ibp < limit && *ibp == '*')
+	    if (warn_comments && *ibp == '*')
 	      warning ("`/*' within comment");
 	    break;
 	  case '*':
@@ -2928,8 +2928,8 @@ do { ip = &instack[indepth];		\
 	 as an identifier.  Periods also, for sake of "3.e7".  */
 
       if (ident_length == 0) {
-	while (ibp < limit) {
-	  while (ibp < limit && ibp[0] == '\\' && ibp[1] == '\n') {
+	for (;;) {
+	  while (ibp[0] == '\\' && ibp[1] == '\n') {
 	    ++ip->lineno;
 	    ibp += 2;
 	  }
@@ -2942,11 +2942,11 @@ do { ip = &instack[indepth];		\
 	  /* A sign can be part of a preprocessing number
 	     if it follows an e.  */
 	  if (c == 'e' || c == 'E') {
-	    while (ibp < limit && ibp[0] == '\\' && ibp[1] == '\n') {
+	    while (ibp[0] == '\\' && ibp[1] == '\n') {
 	      ++ip->lineno;
 	      ibp += 2;
 	    }
-	    if (ibp < limit && (*ibp == '+' || *ibp == '-')) {
+	    if (*ibp == '+' || *ibp == '-') {
 	      *obp++ = *ibp++;
 	      /* But traditional C does not let the token go past the sign.  */
 	      if (traditional)
@@ -3204,7 +3204,7 @@ startagain:
 		      old_oln = op->lineno;
 		    }
 		    /* A comment: copy it unchanged or discard it.  */
-		    else if (*ibp == '/' && ibp+1 != limit && ibp[1] == '*') {
+		    else if (*ibp == '/' && ibp[1] == '*') {
 		      if (put_out_comments) {
 			*obp++ = '/';
 			*obp++ = '*';
