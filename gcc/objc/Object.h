@@ -112,9 +112,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 - read: (TypedStream*)aStream;
 - write: (TypedStream*)aStream;
-
-+ read: (TypedStream*)aStream;
-+ write: (TypedStream*)aStream;
+- awake: (TypedStream*)aStream;
 
 @end
 
