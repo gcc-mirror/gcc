@@ -9281,7 +9281,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "TARGET_HARD_FLOAT"
   "*
 {
  return mips_fill_delay_slot (\"c.ult.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
@@ -9293,7 +9293,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(uneq:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "TARGET_HARD_FLOAT"
   "*
 {
  return mips_fill_delay_slot (\"c.ueq.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
@@ -9305,7 +9305,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unle:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "TARGET_HARD_FLOAT"
   "*
 {
  return mips_fill_delay_slot (\"c.ule.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
