@@ -4458,6 +4458,7 @@ do_class_using_decl (tree decl)
   tree name, value;
 
   if (TREE_CODE (decl) != SCOPE_REF
+      || !TREE_OPERAND (decl, 0)
       || !TYPE_P (TREE_OPERAND (decl, 0)))
     {
       error ("using-declaration for non-member at class scope");
