@@ -91,6 +91,8 @@
 	(Gnatmake): Move sorting of linker options to function
 	Makeutl.Linker_Options_Switches.
 
+	* makeutl.ads, makeutl.adb: New files.
+
 	* Makefile.in: Add makeutl.o to the object files for gnatmake
 
 	* makeusg.adb: Add line for new switch -eL.
