@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC 	""
 
 /* VxWorks uses object files, not loadable images.  Make the linker just
-   combine objects. */
+   combine objects.  */
 #undef  LINK_SPEC
 #define LINK_SPEC 	"-r"
 
