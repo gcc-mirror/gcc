@@ -316,7 +316,9 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++)
-	inform ("file %s not found, execution counts assumed to be zero",
+	inform ((flag_guess_branch_prob
+		 ? "file %s not found, execution counts estimated"
+		 : "file %s not found, execution counts assumed to be zero"),
 		da_file_name);
       return NULL;
     }
