@@ -2024,6 +2024,27 @@ sched_analyze_insn (x, insn)
   else
     sched_analyze_2 (x, insn);
 
+  /* After reload, it is possible for an instruction to have a REG_DEAD note
+     for a register that actually dies a few instructions earlier.  For
+     example, this can happen with SECONDARY_MEMORY_NEEDED reloads.
+     In this case, we must consider the insn to use the register mentioned
+     in the REG_DEAD note.  Otherwise, we may accidentally move this insn
+     after another insn that sets the register, thus getting obviously invalid
+     rtl.  This confuses reorg which believes that REG_DEAD notes are still
+     meaningful.
+
+     ??? We would get better code if we fixed reload to put the REG_DEAD
+     notes in the right places, but that may not be worth the effort.  */
+
+  if (reload_completed)
+    {
+      rtx note;
+
+      for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_DEAD)
+	  sched_analyze_2 (XEXP (note, 0), insn);
+    }
+
   /* Handle function calls and function returns created by the epilogue
      threading code.  */
   if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
