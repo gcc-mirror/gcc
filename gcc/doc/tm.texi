@@ -3304,7 +3304,7 @@ should return the .eh_frame register number.  The default is
 Define this macro to map register numbers held in the call frame info
 that gcc has collected using @code{DWARF_FRAME_REGNUM} to those that
 should be output in .debug_frame (@code{@var{for_eh}} is zero) and
-.eh_frame (@code{@var{for_eh}} is non-zero).  The default is to 
+.eh_frame (@code{@var{for_eh}} is nonzero).  The default is to 
 return @code{@var{regno}}.
 
 @end defmac
@@ -8414,7 +8414,7 @@ and @code{TARGET_OPTIONS}.  It is given data which came from
 is no need for extensive validity checking).  It returns @code{NULL} if
 it is safe to load a PCH file with this data, or a suitable error message
 if not.  The error message will be presented to the user, so it should
-be localised.
+be localized.
 @end deftypefn
 
 @node Misc

@@ -3577,7 +3577,7 @@ Turning on optimization flags makes the compiler attempt to improve
 the performance and/or code size at the expense of compilation time
 and possibly the ability to debug the program.
 
-The compiler performs optimisation based on the knowledge it has of
+The compiler performs optimization based on the knowledge it has of
 the program.  Using the @option{-funit-at-a-time} flag will allow the
 compiler to consider information gained from later functions in the
 file when compiling a function.  Compiling multiple files at once to a
