@@ -1,3 +1,7 @@
+2002-02-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/t-mmix (MULTILIB_EXTRA_OPTS): Disable.
+
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (pushhi1_h8300): Correct the mode

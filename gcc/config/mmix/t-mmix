@@ -14,7 +14,9 @@ MULTILIB_OPTIONS = mabi=gnu
 MULTILIB_DIRNAMES = gnuabi
 
 # Don't use global registers in libraries.
-MULTILIB_EXTRA_OPTS = mno-base-addresses
+# FIXME: Not applied at "root" level, so disabled at the moment to stop
+# incorrect comparisons with -mabi=gnu.
+#MULTILIB_EXTRA_OPTS = mno-base-addresses
 
 $(T)crti.o: $(srcdir)/config/mmix/crti.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
