@@ -17,10 +17,10 @@
 #define LINK_SPEC "-P1000 %{msystem-v:-V} %{mcoff:-k}"
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{mthreads:-L/lib/thread/}%{msystem-v:-lc_v}%{!msystem-v:%{mposix:-lc_p} -lc}"
+#define LIB_SPEC "%{mthreads:-L/lib/thread/} %{msystem-v:-lc_v} %{!msystem-v:%{mposix:-lc_p} -lc}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{p:%{mcoff:pinit1.o%s}%{!mcoff:pinit.o%s}}%{!p:%{msystem-v:%{mcoff:vinit1.o%s}%{!mcoff:vinit.o%s}}%{!msystem-v:%{mcoff:init1.o%s}%{!mcoff:init.o%s}}}"
+#define STARTFILE_SPEC "%{p:%{mcoff:pinit1.o%s} %{!mcoff:pinit.o%s}} %{!p:%{msystem-v:%{mcoff:vinit1.o%s} %{!mcoff:vinit.o%s}} %{!msystem-v:%{mcoff:init1.o%s}%{!mcoff:init.o%s}}}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "%{mcoff:initn.o%s} %{p:_etext.o%s}"
