@@ -5304,6 +5304,7 @@ instantiate_type (lhstype, rhs, complain)
 			  function);
 		cp_error ("  to form a pointer to member function, say `&%T::%D'",
 			  t, DECL_NAME (function));
+		return error_mark_node;
 	      }
 
 	    mark_used (function);
