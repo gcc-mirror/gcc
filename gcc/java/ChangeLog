@@ -1,3 +1,8 @@
+1999-02-10  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (THREAD_NAME): Renamed -lqthreads to -lgcjcoop.
+	(GC_NAME): Renamed -lgc to -lgcjgc.
+
 Tue Feb  9 19:31:09 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lex.c (java_lang_cloneable): Initialize.
