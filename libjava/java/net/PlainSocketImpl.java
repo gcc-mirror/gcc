@@ -39,11 +39,6 @@ class PlainSocketImpl extends SocketImpl
    * This is used for reads and writes to/from the socket and
    * to close it.
    *
-   * {@link SocketImpl#fd} is created from this like so:
-   * <pre>
-   *   fd = new FileDescriptor (fnum);
-   * </pre>
-   *
    * When the socket is closed this is reset to -1.
    */
   int fnum = -1;
@@ -108,6 +103,22 @@ class PlainSocketImpl extends SocketImpl
   private native void write(byte[] buffer, int offset, int count)
     throws IOException;
 
+  protected void finalize() throws Throwable
+  {
+    synchronized (this)
+      {
+	if (fnum != -1)
+	  try
+	    {
+	      close();
+	    }
+	  catch (IOException ex)
+	    {
+	      // ignore
+	    }
+      }
+    super.finalize();
+  }
 
   /** @return the input stream attached to the socket.
    */
