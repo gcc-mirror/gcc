@@ -1,5 +1,8 @@
 Fri Feb 12 00:51:26 1999  Jeffrey A Law  (law@cygnus.com)
 
+        * reload.c (find_reloads_address_1): Fix handling of an autoincremented
+        pseudo which is homed in the stack.
+
 	* mips.c (save_restore_insns): Fix loop to save/restore FP registers.
 	(compute_frame_size): Change loop over FP regs to be consistent
 	with the loop in save_restore_insns.
