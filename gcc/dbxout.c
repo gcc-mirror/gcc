@@ -1270,7 +1270,9 @@ dbxout_type (type, full, show_arg_types)
       {
 	int i, n_baseclasses = 0;
 
-	if (TYPE_BINFO (type) != 0 && TYPE_BINFO_BASETYPES (type) != 0)
+	if (TYPE_BINFO (type) != 0
+	    && TREE_CODE (TYPE_BINFO (type)) == TREE_VEC
+	    && TYPE_BINFO_BASETYPES (type) != 0)
 	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
 
 	/* Output a structure type.  We must use the same test here as we
