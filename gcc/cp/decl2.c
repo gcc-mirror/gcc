@@ -1147,6 +1147,10 @@ check_classfn (ctype, cname, function)
 		{
 		  if (DECL_ASSEMBLER_NAME (function) == DECL_ASSEMBLER_NAME (fndecl))
 		    return;
+		  /* We have to do more extensive argument checking here, as
+		     the name may have been changed by asm("new_name"). */
+		  if (decls_match (function, fndecl))
+		    return;
 		  fndecl = DECL_CHAIN (fndecl);
 		}
 	      break;		/* loser */
@@ -1195,6 +1199,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 {
   register tree value;
   char *asmspec = 0;
+  int flags = LOOKUP_ONLYCONVERTING;
 
   /* Convert () initializers to = initializers.  */
   if (init == NULL_TREE && declarator != NULL_TREE
@@ -1206,6 +1211,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
     {
       init = TREE_OPERAND (declarator, 1);
       declarator = TREE_OPERAND (declarator, 0);
+      flags = 0;
     }
 
   if (init
@@ -1353,17 +1359,22 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
 
-      finish_decl (value, init, asmspec_tree, 1);
+      finish_decl (value, init, asmspec_tree, 1, flags);
       pushdecl_class_level (value);
       return value;
     }
   if (TREE_CODE (value) == FIELD_DECL)
     {
       if (asmspec)
-	DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
+	{
+	  /* This must override the asm specifier which was placed
+	     by grokclassfn.  Lay this out fresh.  */
+	  DECL_RTL (value) = NULL_RTX;
+	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
+	}
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
-      finish_decl (value, init, asmspec_tree, 1);
+      finish_decl (value, init, asmspec_tree, 1, flags);
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
@@ -1378,7 +1389,14 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  /* When does this happen?  */
 	  my_friendly_assert (init == NULL_TREE, 193);
 	}
-      finish_decl (value, init, asmspec_tree, 1);
+      if (asmspec)
+	{
+	  /* This must override the asm specifier which was placed
+	     by grokclassfn.  Lay this out fresh.  */
+	  DECL_RTL (value) = NULL_RTX;
+	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
+	}
+      finish_decl (value, init, asmspec_tree, 1, flags);
 
       /* Pass friends back this way.  */
       if (DECL_FRIEND_P (value))
@@ -1439,7 +1457,7 @@ grokbitfield (declarator, declspecs, width)
       cp_error ("static member `%D' cannot be a bitfield", value);
       return NULL_TREE;
     }
-  finish_decl (value, NULL_TREE, NULL_TREE, 0);
+  finish_decl (value, NULL_TREE, NULL_TREE, 0, 0);
 
   if (width != error_mark_node)
     {
@@ -1631,7 +1649,7 @@ groktypefield (declspecs, parmlist)
       return void_type_node;
     }
 
-  finish_decl (decl, NULL_TREE, NULL_TREE, 0);
+  finish_decl (decl, NULL_TREE, NULL_TREE, 0, 0);
 
   /* If this declaration is common to another declaration
      complain about such redundancy, and return NULL_TREE
@@ -1934,7 +1952,7 @@ setup_vtbl_ptr ()
       DECL_INITIAL (current_vtable_decl) = error_mark_node;
       /* Have to cast the initializer, since it may have come from a
 	 more base class then we ascribe CURRENT_VTABLE_DECL to be.  */
-      finish_decl (current_vtable_decl, convert_force (TREE_TYPE (current_vtable_decl), vfield), 0, 0);
+      finish_decl (current_vtable_decl, convert_force (TREE_TYPE (current_vtable_decl), vfield, 0), NULL_TREE, 0, 0);
       current_vtable_decl = build_indirect_ref (current_vtable_decl, NULL_PTR);
     }
   else
@@ -1947,8 +1965,10 @@ void
 mark_inline_for_output (decl)
      tree decl;
 {
+  decl = DECL_MAIN_VARIANT (decl);
   if (DECL_SAVED_INLINE (decl))
     return;
+  my_friendly_assert (TREE_PERMANENT (decl), 363);
   DECL_SAVED_INLINE (decl) = 1;
   if (DECL_PENDING_INLINE_INFO (decl) != 0
       && ! DECL_PENDING_INLINE_INFO (decl)->deja_vu)
@@ -2176,7 +2196,7 @@ finish_table (name, type, init, publicp)
 	  DECL_INITIAL (empty_table) = init;
 	  asmspec = build_string (IDENTIFIER_LENGTH (DECL_NAME (empty_table)),
 				  IDENTIFIER_POINTER (DECL_NAME (empty_table)));
-	  finish_decl (empty_table, init, asmspec, 0);
+	  finish_decl (empty_table, init, asmspec, 0, 0);
 	}
       is_empty = 1;
     }
@@ -2214,7 +2234,7 @@ finish_table (name, type, init, publicp)
 			      IDENTIFIER_POINTER (DECL_NAME (empty_table)));
     }
 
-  finish_decl (decl, init, asmspec, 0);
+  finish_decl (decl, init, asmspec, 0, 0);
   return decl;
 }
 
@@ -2782,7 +2802,7 @@ finish_file ()
 		}
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-		expand_aggr_init (decl, init, 0);
+		expand_aggr_init (decl, init, 0, 0);
 	      else if (TREE_CODE (init) == TREE_VEC)
 		{
 		  expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
@@ -2803,7 +2823,7 @@ finish_file ()
 		  /* a `new' expression at top level.  */
 		  expand_expr (decl, const0_rtx, VOIDmode, 0);
 		  free_temp_slots ();
-		  expand_aggr_init (build_indirect_ref (decl, NULL_PTR), init, 0);
+		  expand_aggr_init (build_indirect_ref (decl, NULL_PTR), init, 0, 0);
 		}
 	    }
 	  else if (decl == error_mark_node)
@@ -3041,7 +3061,7 @@ reparse_absdcl_as_casts (decl, expr)
     {
       type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
       decl = TREE_OPERAND (decl, 0);
-      expr = build_c_cast (type, expr);
+      expr = build_c_cast (type, expr, 0);
     }
 
   return expr;
@@ -3165,4 +3185,78 @@ check_cp_case_value (value)
   constant_expression_warning (value);
 
   return value;
+}
+
+static tree current_namespace;
+
+/* Get the inner part of a namespace id.  It doesn't have any prefix, nor
+   postfix.  Returns 0 if in global namespace.  */
+tree
+get_namespace_id ()
+{
+  tree x = current_namespace;
+  if (x)
+    x = TREE_PURPOSE (x);
+  return x;
+}
+
+/* Build up a DECL_ASSEMBLER_NAME for NAME in the current namespace. */
+tree
+current_namespace_id (name)
+     tree name;
+{
+  tree old_id = get_namespace_id ();
+  char *buf;
+
+  /* Global names retain old encoding. */
+  if (! old_id)
+    return name;
+
+  buf = (char *) alloca (8 + IDENTIFIER_LENGTH (old_id)
+			 + IDENTIFIER_LENGTH (name));
+  sprintf (buf, "__ns_%s_%s", IDENTIFIER_POINTER (old_id),
+	   IDENTIFIER_POINTER (name));
+  return get_identifier (buf);
+}
+
+/* Push into the scopre of the NAME namespace.  */
+void
+push_namespace (name)
+     tree name;
+{
+  tree old_id = get_namespace_id ();
+  char *buf;
+
+  current_namespace = tree_cons (NULL_TREE, name, current_namespace);
+  buf = (char *) alloca (4 + (old_id ? IDENTIFIER_LENGTH (old_id) : 0)
+			 + IDENTIFIER_LENGTH (name));
+  sprintf (buf, "%s%s", old_id ? IDENTIFIER_POINTER (old_id) : "",
+	   IDENTIFIER_POINTER (name));
+  TREE_PURPOSE (current_namespace) = get_identifier (buf);
+}
+
+/* Pop from the scope of the current namespace.  */
+void
+pop_namespace ()
+{
+  current_namespace = TREE_CHAIN (current_namespace);
+}
+
+void
+do_namespace_alias (alias, namespace)
+     tree alias, namespace;
+{
+}
+
+tree
+do_using_decl (decl)
+     tree decl;
+{
+  return error_mark_node;
+}
+
+void
+do_using_directive (namespace)
+     tree namespace;
+{
 }

@@ -185,7 +185,7 @@ perform_member_init (member, name, init, explicit)
 			   array_type_nelts (type), TREE_VALUE (init), 1);
 	}
       else
-	expand_aggr_init (decl, init, 0);
+	expand_aggr_init (decl, init, 0, 0);
     }
   else
     {
@@ -734,7 +734,7 @@ expand_virtual_init (binfo, decl)
     return;
 
   /* Have to convert VTBL since array sizes may be different.  */
-  vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl);
+  vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl, 0);
   expand_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
 }
 
@@ -1071,7 +1071,7 @@ expand_member_init (exp, name, init)
   else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
     {
       parm = build_component_ref (exp, name, 0, 0);
-      expand_aggr_init (parm, NULL_TREE, 0);
+      expand_aggr_init (parm, NULL_TREE, 0, 0);
       rval = error_mark_node;
     }
 
@@ -1087,6 +1087,8 @@ expand_member_init (exp, name, init)
    INIT comes in two flavors: it is either a value which
    is to be stored in EXP, or it is a parameter list
    to go to a constructor, which will operate on EXP.
+   If FLAGS is LOOKUP_ONLYCONVERTING then it is the = init form of
+   the initializer, if FLAGS is 0, then it is the (init) form.
    If `init' is a CONSTRUCTOR, then we emit a warning message,
    explaining that such initializations are illegal.
 
@@ -1116,9 +1118,10 @@ expand_member_init (exp, name, init)
    */
 
 void
-expand_aggr_init (exp, init, alias_this)
+expand_aggr_init (exp, init, alias_this, flags)
      tree exp, init;
      int alias_this;
+     int flags;
 {
   tree type = TREE_TYPE (exp);
   int was_const = TREE_READONLY (exp);
@@ -1179,7 +1182,7 @@ expand_aggr_init (exp, init, alias_this)
     init = CONSTRUCTOR_ELTS (init);
 #endif
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
-		      init, alias_this, LOOKUP_NORMAL);
+		      init, alias_this, LOOKUP_NORMAL|flags);
   TREE_READONLY (exp) = was_const;
 }
 
@@ -1353,9 +1356,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		  init = build (CALL_EXPR, init_type,
 				TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), 0);
 		  TREE_SIDE_EFFECTS (init) = 1;
-#if 0
-		  TREE_RAISES (init) = ??
-#endif
 		    if (init_list)
 		      TREE_VALUE (init_list) = init;
 		}
@@ -1425,9 +1425,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	      init = build (CALL_EXPR, build_pointer_type (TREE_TYPE (init)),
 			    TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), 0);
 	      TREE_SIDE_EFFECTS (init) = 1;
-#if 0
-	      TREE_RAISES (init) = ??
-#endif
 	      TREE_VALUE (TREE_OPERAND (init, 1))
 		= convert_pointer_to (TREE_TYPE (TREE_TYPE (TREE_VALUE (tmp))), arg);
 
@@ -1561,7 +1558,7 @@ expand_recursive_init_1 (binfo, true_exp, addr, init_list, alias_this)
 	      tree subexp = build_indirect_ref (convert_pointer_to (TREE_VALUE (init_list), addr), NULL_PTR);
 	      tree member_base = build (COMPONENT_REF, TREE_TYPE (member), subexp, member);
 	      if (IS_AGGR_TYPE (TREE_TYPE (member)))
-		expand_aggr_init (member_base, DECL_INITIAL (member), 0);
+		expand_aggr_init (member_base, DECL_INITIAL (member), 0, 0);
 	      else if (TREE_CODE (TREE_TYPE (member)) == ARRAY_TYPE
 		       && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (member)))
 		{
@@ -1803,7 +1800,7 @@ build_member_call (cname, name, parmlist)
 	{
 	  tree newtype = build_type_variant (type, TYPE_READONLY (oldtype),
 					     TYPE_VOLATILE (oldtype));
-	  decl = convert_force (build_pointer_type (newtype), olddecl);
+	  decl = convert_force (build_pointer_type (newtype), olddecl, 0);
 	}
       else
 	decl = olddecl;
@@ -3114,7 +3111,7 @@ build_new (placement, decl, init, use_global_new)
 	  /* New 2.0 interpretation: `new int (10)' means
 	     allocate an int, and initialize it with 10.  */
 
-	  init = build_c_cast (type, init);
+	  init = build_c_cast (type, init, 1);
 	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval),
 			build_modify_expr (build_indirect_ref (rval, NULL_PTR),
 					   NOP_EXPR, init),
@@ -3151,7 +3148,7 @@ build_new (placement, decl, init, use_global_new)
 				    build_binary_op (MINUS_EXPR, nelts, integer_one_node, 1),
 				    init, 0);
 	  else
-	    expand_aggr_init (build_indirect_ref (rval, NULL_PTR), init, 0);
+	    expand_aggr_init (build_indirect_ref (rval, NULL_PTR), init, 0, 0);
 
 	  do_pending_stack_adjust ();
 
@@ -3179,7 +3176,7 @@ build_new (placement, decl, init, use_global_new)
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))
     {
       /* The type of new int [3][3] is not int *, but int [3] * */
-      rval = build_c_cast (build_pointer_type (type), rval);
+      rval = build_c_cast (build_pointer_type (type), rval, 0);
     }
 
   if (pending_sizes)
@@ -3273,7 +3270,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	  while (elts)
 	    {
 	      host_i -= 1;
-	      expand_aggr_init (baseref, TREE_VALUE (elts), 0);
+	      expand_aggr_init (baseref, TREE_VALUE (elts), 0, 0);
 
 	      expand_assignment (base, baseinc, 0, 0);
 	      elts = TREE_CHAIN (elts);
@@ -3357,7 +3354,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	  if (from_array == 2)
 	    expand_expr_stmt (build_modify_expr (to, NOP_EXPR, from));
 	  else if (TYPE_NEEDS_CONSTRUCTING (type))
-	    expand_aggr_init (to, from, 0);
+	    expand_aggr_init (to, from, 0, 0);
 	  else if (from)
 	    expand_assignment (to, from, 0, 0);
 	  else
@@ -3371,7 +3368,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 			   array_type_nelts (type), 0, 0);
 	}
       else
-	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0);
+	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0, 0);
 
       expand_assignment (base,
 			 build (PLUS_EXPR, TYPE_POINTER_TO (type), base, size),
@@ -3488,7 +3485,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = save_expr (addr);
 
       /* throw away const and volatile on target type of addr */
-      addr = convert_force (build_pointer_type (type), addr);
+      addr = convert_force (build_pointer_type (type), addr, 0);
       ref = build_indirect_ref (addr, NULL_PTR);
       ptr = 1;
     }
@@ -3514,7 +3511,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (TREE_CONSTANT (addr))
 	addr = convert_pointer_to (type, addr);
       else
-	addr = convert_force (build_pointer_type (type), addr);
+	addr = convert_force (build_pointer_type (type), addr, 0);
 
       if (TREE_CODE (addr) == NOP_EXPR
 	  && TREE_OPERAND (addr, 0) == current_class_decl)
@@ -3803,7 +3800,7 @@ build_vbase_delete (type, decl)
   while (vbases)
     {
       tree this_addr = convert_force (TYPE_POINTER_TO (BINFO_TYPE (vbases)),
-				      addr);
+				      addr, 0);
       result = tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
 					integer_zero_node,

@@ -1802,7 +1802,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		 we can manage.  */
 	      tree temp = get_temp_name (TREE_TYPE (instance), 0);
 	      if (IS_AGGR_TYPE (TREE_TYPE (instance)))
-		expand_aggr_init (temp, instance, 0);
+		expand_aggr_init (temp, instance, 0, flags);
 	      else
 		{
 		  store_init_value (temp, instance);
@@ -2144,7 +2144,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		{
 		  tree type = build_pointer_type
 		    (build_type_variant (basetype, constp, volatilep));
-		  TREE_VALUE (parms) = convert_force (type, instance_ptr);
+		  TREE_VALUE (parms) = convert_force (type, instance_ptr, 0);
 		}
 	    }
 
@@ -2652,8 +2652,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
     TREE_TYPE (result) = value_type;
     TREE_SIDE_EFFECTS (result) = 1;
-    TREE_RAISES (result)
-      = TYPE_RAISES_EXCEPTIONS (fntype) || (parms && TREE_RAISES (parms));
     TREE_HAS_CONSTRUCTOR (result) = is_constructor;
     return result;
   }

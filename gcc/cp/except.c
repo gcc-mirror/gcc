@@ -43,7 +43,7 @@ tree builtin_return_address_fndecl;
 #define TRY_NEW_EH
 #endif
 #endif
-#if defined(__i386) || defined(__rs6000) || defined(__hppa)
+#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips)
 #define TRY_NEW_EH
 #endif
 #endif
@@ -803,6 +803,16 @@ init_exception_processing ()
   saved_throw_type = gen_rtx (REG, Pmode, 6);
   saved_throw_value = gen_rtx (REG, Pmode, 7);
 #endif
+#ifdef __mc68000
+  saved_pc = gen_rtx (REG, Pmode, 10);
+  saved_throw_type = gen_rtx (REG, Pmode, 11);
+  saved_throw_value = gen_rtx (REG, Pmode, 12);
+#endif
+#ifdef __mips
+  saved_pc = gen_rtx (REG, Pmode, 16);
+  saved_throw_type = gen_rtx (REG, Pmode, 17);
+  saved_throw_value = gen_rtx (REG, Pmode, 18);
+#endif
   new_eh_queue (&ehqueue);
   new_eh_queue (&eh_table_output_queue);
   new_eh_stack (&ehstack);
@@ -977,6 +987,13 @@ expand_end_all_catch ()
   if (! doing_eh (1))
     return;
 
+  /* Code to throw out to outer context, if we fall off end of catch
+     handlers.  */
+  emit_move_insn (saved_pc, gen_rtx (LABEL_REF,
+				     Pmode,
+				     top_label_entry (&caught_return_label_stack)));
+  emit_jump (throw_label);
+
   /* Find the start of the catch block.  */
   last = pop_last_insn ();
   catchstart = NEXT_INSN (last);
@@ -1136,7 +1153,7 @@ expand_start_catch_block (declspecs, declarator)
 
       /* if it returned FALSE, jump over the catch block, else fall into it */
       emit_jump_insn (gen_bne (false_label_rtx));
-      finish_decl (decl, init, NULL_TREE, 0);
+      finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
     {
@@ -1165,7 +1182,7 @@ void expand_end_catch_block ()
       /* label we jump to if we caught the exception */
       emit_jump (top_label_entry (&caught_return_label_stack));
 
-      /* Code to throw out to outer context, if we get an throw from within
+      /* Code to throw out to outer context, if we get a throw from within
 	 our catch handler. */
       /* These are saved for the exception table.  */
       push_rtl_perm ();
@@ -1240,7 +1257,7 @@ do_unwind (throw_label)
   easy_expand_asm ("restore");
   emit_barrier ();
 #endif
-#if defined(__i386) || defined(__rs6000) || defined(__hppa)
+#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips)
   extern FILE *asm_out_file;
   tree fcall;
   tree params;
@@ -1443,9 +1460,13 @@ expand_throw (exp)
 
 	emit_move_insn (saved_throw_type, throw_type_rtx);
 	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, error_mark_node);
+
+	/* Make a copy of the thrown object.  WP 15.1.5  */
+	exp = build_new (NULL_TREE, TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (exp))), exp, 0);
+
 	if (exp == error_mark_node)
 	  error ("  in thrown expression");
-	throw_value_rtx = expand_expr (build_unary_op (ADDR_EXPR, exp, 0), NULL_RTX, VOIDmode, 0);
+	throw_value_rtx = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 	emit_move_insn (saved_throw_value, throw_value_rtx);
       }
     }

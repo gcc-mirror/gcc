@@ -309,6 +309,10 @@ build_up_reference (type, arg, flags, checkconst)
   targ = arg;
   if (TREE_CODE (targ) == SAVE_EXPR)
     targ = TREE_OPERAND (targ, 0);
+  while (TREE_CODE (targ) == NOP_EXPR
+	 && (TYPE_MAIN_VARIANT (argtype)
+	     == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (targ, 0)))))
+    targ = TREE_OPERAND (targ, 0);
 
   switch (TREE_CODE (targ))
     {
@@ -552,13 +556,16 @@ build_up_reference (type, arg, flags, checkconst)
 	}
       else
 	{
+	  /* We should never get here for class objects, because they are
+             always in memory.  */
+	  my_friendly_assert (! IS_AGGR_TYPE (argtype), 362);
 	  temp = get_temp_name (argtype, 0);
 	  if (global_bindings_p ())
 	    {
 	      /* Give this new temp some rtl and initialize it.  */
 	      DECL_INITIAL (temp) = targ;
 	      TREE_STATIC (temp) = 1;
-	      finish_decl (temp, targ, NULL_TREE, 0);
+	      finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
 	      /* Do this after declaring it static.  */
 	      rval = build_unary_op (ADDR_EXPR, temp, 0);
 	      TREE_TYPE (rval) = type;
@@ -604,8 +611,6 @@ build_up_reference (type, arg, flags, checkconst)
    DECL is either NULL_TREE or the _DECL node for a reference that is being
    initialized.  It can be error_mark_node if we don't know the _DECL but
    we know it's an initialization.  */
-
-tree cp_convert PROTO((tree, tree, int, int));
 
 tree
 convert_to_reference (reftype, expr, convtype, flags, decl)
@@ -703,7 +708,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  
       rval = build_unary_op (ADDR_EXPR, expr, 0);
       if (rval != error_mark_node)
-	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval);
+	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval, 0);
       if (rval != error_mark_node)
 	rval = build1 (NOP_EXPR, reftype, rval);
     }
@@ -1061,7 +1066,6 @@ convert_to_aggr (type, expr, msgp, protect)
 		     NULL_TREE);
   TREE_TYPE (result) = TREE_TYPE (fntype);
   TREE_SIDE_EFFECTS (result) = 1;
-  TREE_RAISES (result) = !! TYPE_RAISES_EXCEPTIONS (fntype);
   return result;
 }
 
@@ -1184,10 +1188,8 @@ cp_convert (type, expr, convtype, flags)
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
 
-  if (type == TREE_TYPE (e)
-      || TREE_CODE (e) == ERROR_MARK)
-    return e;
-  if (TREE_CODE (TREE_TYPE (e)) == ERROR_MARK)
+  if (TREE_CODE (e) == ERROR_MARK
+      || TREE_CODE (TREE_TYPE (e)) == ERROR_MARK)
     return error_mark_node;
 
   /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */
@@ -1229,7 +1231,8 @@ cp_convert (type, expr, convtype, flags)
       /* enum = enum, enum = int, enum = float are all errors. */
       if (flag_int_enum_equivalence == 0
 	  && TREE_CODE (type) == ENUMERAL_TYPE
-	  && ARITHMETIC_TYPE_P (intype))
+	  && ARITHMETIC_TYPE_P (intype)
+	  && ! (convtype & CONV_STATIC))
 	{
 	  cp_pedwarn ("conversion from `%#T' to `%#T'", intype, type);
 
@@ -1309,7 +1312,7 @@ cp_convert (type, expr, convtype, flags)
 	  sig_ptr = get_temp_name (type, 1);
 	  DECL_INITIAL (sig_ptr) = constructor;
 	  CLEAR_SIGNATURE (sig_ty);
-	  finish_decl (sig_ptr, constructor, 0, 0);
+	  finish_decl (sig_ptr, constructor, NULL_TREE, 0, 0);
 	  SET_SIGNATURE (sig_ty);
 	  TREE_READONLY (sig_ptr) = 1;
 
@@ -1338,7 +1341,7 @@ cp_convert (type, expr, convtype, flags)
 				  build_tree_list (NULL_TREE, e),
 				  TYPE_BINFO (type),
 				  LOOKUP_NORMAL | LOOKUP_SPECULATIVELY
-				  | LOOKUP_ONLYCONVERTING
+				  | (convtype&CONV_NONCONVERTING ? 0 : LOOKUP_ONLYCONVERTING)
 				  | (conversion ? LOOKUP_NO_CONVERSION : 0));
 
       if (ctor == error_mark_node)
@@ -1428,9 +1431,10 @@ convert (type, expr)
    are not normally allowed due to access restrictions
    (such as conversion from sub-type to private super-type).  */
 tree
-convert_force (type, expr)
+convert_force (type, expr, convtype)
      tree type;
      tree expr;
+     int convtype;
 {
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
@@ -1455,13 +1459,8 @@ convert_force (type, expr)
       /* compatible pointer to member functions. */
       return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
     }
-  {
-    int old_equiv = flag_int_enum_equivalence;
-    flag_int_enum_equivalence = 1;
-    e = convert (type, e);
-    flag_int_enum_equivalence = old_equiv;
-  }
-  return e;
+
+  return cp_convert (type, e, CONV_OLD_CONVERT|convtype, 0);
 }
 
 /* Subroutine of build_type_conversion.  */

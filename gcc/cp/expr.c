@@ -155,7 +155,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 		TREE_ADDRESSABLE (init) = 1;
 
 		flag_access_control = 0;
-		expand_aggr_init (slot, init, 0);
+		expand_aggr_init (slot, init, 0, LOOKUP_ONLYCONVERTING);
 		flag_access_control = old_ac;
 
 		if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -195,7 +195,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    init = build (RTL_EXPR, return_type, 0, call_target);
 	    /* We got back a reference to the type we want.  Now initialize
 	       target with that.  */
-	    expand_aggr_init (slot, init, 0);
+	    expand_aggr_init (slot, init, 0, LOOKUP_ONLYCONVERTING);
 	  }
 
 	if (DECL_RTL (slot) != target)

@@ -2303,8 +2303,9 @@ do_pending_expansions ()
       else if (! flag_implicit_templates)
 	DECIDE (0);
 
-      /* OK, it was an implicit instantiation.  */
-      TREE_PUBLIC (t) = 0;
+      if (i->interface == 1)
+	/* OK, it was an implicit instantiation.  */
+	TREE_PUBLIC (t) = 0;
 
       /* If it's a method, let the class type decide it.
 	 @@ What if the method template is in a separate file?

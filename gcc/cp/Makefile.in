@@ -162,8 +162,8 @@ CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
  edsel.o except.o init.o method.o search.o tree.o xref.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist` ../c-common.o
-OBJDEPS = ../stamp-objlist ../c-common.o
+OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
+OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
 
 compiler: ../cc1plus
 ../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)

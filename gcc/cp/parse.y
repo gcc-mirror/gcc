@@ -167,13 +167,14 @@ empty_parms ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER TYPENAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR
+%left IDENTIFIER TYPENAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME
 
 %left '{' ',' ';'
 
 %nonassoc THROW
+%right <code> ':'
 %right <code> ASSIGN '='
-%right <code> '?' ':'
+%right <code> '?'
 %left <code> OROR
 %left <code> ANDAND
 %left <code> '|'
@@ -228,7 +229,7 @@ empty_parms ()
 %type <ttype> fcast_or_absdcl regcast_or_absdcl sub_cast_expr
 %type <ttype> expr_or_declarator complex_notype_declarator
 %type <ttype> notype_unqualified_id unqualified_id qualified_id
-%type <ttype> overqualified_id notype_qualified_id
+%type <ttype> overqualified_id notype_qualified_id any_id
 %type <ttype> complex_direct_notype_declarator functional_cast
 %type <ttype> named_parm complex_parmlist typed_declspecs1 parms_comma
 
@@ -264,11 +265,15 @@ empty_parms ()
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
 %type <ttype> new_initializer new_placement specialization type_specifier_seq
+%type <ttype> using_decl
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn 
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
+
+%token NSNAME
+%type <ttype> NSNAME
 
 %type <strtype> .pushlevel
 
@@ -313,6 +318,11 @@ extdefs:
 		{ $<ttype>$ = NULL_TREE; }
 	;
 
+extdefs_opt:
+	  extdefs
+	| /* empty */
+	;
+
 .hush_warning:
 		{ have_extern_spec = 1;
 		  used_extern_spec = 0;
@@ -345,9 +355,7 @@ extdef:
 	| asm_keyword '(' string ')' ';'
 		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3);
 		  assemble_asm ($3); }
-	| extern_lang_string '{' extdefs '}'
-		{ pop_lang_context (); }
-	| extern_lang_string '{' '}'
+	| extern_lang_string '{' extdefs_opt '}'
 		{ pop_lang_context (); }
 	| extern_lang_string .hush_warning fndef .warning_ok
 		{ if (pending_inlines) do_pending_inlines ();
@@ -355,6 +363,38 @@ extdef:
 	| extern_lang_string .hush_warning datadef .warning_ok
 		{ if (pending_inlines) do_pending_inlines ();
 		  pop_lang_context (); }
+	| NAMESPACE identifier '{'
+		{ push_namespace ($2); }
+	  extdefs_opt '}'
+		{ pop_namespace (); }
+	| NAMESPACE '{'
+		{ push_namespace (NULL_TREE); }
+	  extdefs_opt '}'
+		{ pop_namespace (); }
+	| NAMESPACE identifier '=' any_id ';'
+		{ do_namespace_alias ($2, $4); }
+	| using_decl ';'
+		{ }
+	| USING NAMESPACE any_id ';'
+		{ do_using_directive ($3); }
+	;
+
+using_decl:
+	  USING qualified_id
+		{ $$ = do_using_decl ($2); }
+	| USING global_scope qualified_id
+		{ $$ = do_using_decl ($3); }
+	| USING global_scope unqualified_id
+		{ $$ = do_using_decl ($3); }
+	;
+
+any_id:
+	  unqualified_id
+	| qualified_id
+	| global_scope qualified_id
+		{ $$ = $2; }
+	| global_scope unqualified_id
+		{ $$ = $2; }
 	;
 
 extern_lang_string:
@@ -462,7 +502,7 @@ template_def:
 		  d = start_decl ($<ttype>2, /*current_declspecs*/NULL_TREE, 0,
 				  $3);
 		  cplus_decl_attributes (d, $5);
-		  finish_decl (d, NULL_TREE, $4, 0);
+		  finish_decl (d, NULL_TREE, $4, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    reinit_parse_for_template ((int) $6, $1, d);
@@ -481,7 +521,7 @@ template_def:
 		  d = start_decl ($<ttype>3, current_declspecs,
 				  0, $<ttype>4);
 		  cplus_decl_attributes (d, $6);
-		  finish_decl (d, NULL_TREE, $5, 0);
+		  finish_decl (d, NULL_TREE, $5, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    {
@@ -495,7 +535,7 @@ template_def:
 		{
 		  int def = ($4 != ';');
 		  tree d = start_decl ($<ttype>3, $<ttype>2, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
+		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
 		    reinit_parse_for_template ((int) $4, $1, d);
@@ -521,7 +561,7 @@ datadef:
 	| declmods notype_declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
+		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		}
 	| typed_declspecs initdecls ';'
 		{
@@ -531,7 +571,7 @@ datadef:
 	| typed_declspecs declarator ';'
 		{ tree d;
 		  d = start_decl ($<ttype>2, $<ttype>$, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
+		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  note_list_got_semicolon ($<ttype>$);
 		}
         | declmods ';'
@@ -752,11 +792,13 @@ identifier:
 	  IDENTIFIER
 	| TYPENAME
 	| PTYPENAME
+	| NSNAME
 	;
 
 notype_identifier:
 	  IDENTIFIER
-	| PTYPENAME %prec EMPTY
+	| PTYPENAME 
+	| NSNAME %prec EMPTY
 	;
 
 identifier_defn:
@@ -939,7 +981,7 @@ condition:
 		}
 	init
 		{ 
-		  finish_decl ($<ttype>7, $8, $5, 0);
+		  finish_decl ($<ttype>7, $8, $5, 0, LOOKUP_ONLYCONVERTING);
 		  resume_momentary ($<itype>6);
 		  $$ = $<ttype>7; 
 		  if (TREE_CODE (TREE_TYPE ($$)) == ARRAY_TYPE)
@@ -1225,7 +1267,7 @@ expr_no_commas:
 		{ $$ = build_m_component_ref ($$, build_x_unary_op ($2, $3)); }
 	| object '(' type_id ')' expr_no_commas  %prec UNARY
 		{ tree type = groktypename ($3);
-		  $$ = build_m_component_ref ($$, build_c_cast (type, $5)); }
+		  $$ = build_m_component_ref ($$, build_c_cast (type, $5, 0)); }
 	| object primary_no_id  %prec UNARY
 		{ $$ = build_m_component_ref ($$, $2); }
 */
@@ -1236,7 +1278,8 @@ notype_unqualified_id:
 		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
 	| operator_name
 	| IDENTIFIER
-	| PTYPENAME %prec EMPTY
+	| PTYPENAME
+	| NSNAME %prec EMPTY
 	;
 
 unqualified_id:
@@ -1421,7 +1464,7 @@ primary:
 		        }
 #endif
 		      else my_friendly_abort (79);
-		      $$ = build_c_cast (type, build_compound_expr ($3));
+		      $$ = build_c_cast (type, build_compound_expr ($3), 1);
 		    }
 		}
 	| functional_cast
@@ -1659,7 +1702,7 @@ decl:
 		{ tree d = get_decl_list ($1);
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
+		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  resume_momentary (yes);
 		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1)))
 		    note_got_semicolon ($1);
@@ -1668,7 +1711,7 @@ decl:
 		{ tree d = $1;
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
-		  finish_decl (d, NULL_TREE, NULL_TREE, 0);
+		  finish_decl (d, NULL_TREE, NULL_TREE, 0, 0);
 		  resume_momentary (yes);
 		  note_list_got_semicolon ($1);
 		}
@@ -1899,7 +1942,7 @@ initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0);
+		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| declarator maybe_raises maybeasm maybe_attribute
 		{ tree d;
@@ -1916,7 +1959,7 @@ initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4);
-		  finish_decl (d, NULL_TREE, $3, 0); }
+		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 initdcl:
@@ -1925,11 +1968,11 @@ initdcl:
 		  cplus_decl_attributes ($<ttype>$, $4); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0); }
+		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING); }
 	| declarator maybe_raises maybeasm maybe_attribute
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes ($<ttype>$, $4);
-		  finish_decl ($<ttype>$, NULL_TREE, $3, 0); }
+		  finish_decl ($<ttype>$, NULL_TREE, $3, 0, 0); }
 	;
 
 notype_initdcl0:
@@ -1940,7 +1983,7 @@ notype_initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0);
+		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| notype_declarator maybe_raises maybeasm maybe_attribute
 		{ tree d;
@@ -1948,7 +1991,7 @@ notype_initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4);
-		  finish_decl (d, NULL_TREE, $3, 0); }
+		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 nomods_initdcl0:
@@ -1959,7 +2002,7 @@ nomods_initdcl0:
 		  cplus_decl_attributes ($<ttype>$, $4); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ finish_decl ($<ttype>6, $7, $3, 0);
+		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
 	| notype_declarator maybe_raises maybeasm maybe_attribute
 		{ tree d;
@@ -1967,7 +2010,7 @@ nomods_initdcl0:
 		  $$ = suspend_momentary ();
 		  d = start_decl ($1, current_declspecs, 0, $2);
 		  cplus_decl_attributes (d, $4);
-		  finish_decl (d, NULL_TREE, $3, 0); }
+		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax
@@ -2569,6 +2612,7 @@ component_decl_1:
 					 empty_parms (), $3);
 		  $$ = grokfield ($$, TREE_CHAIN ($1), NULL_TREE, NULL_TREE,
 				  NULL_TREE); }
+	| using_decl
 	;
 
 /* The case of exactly one component is handled directly by component_decl. */
@@ -2886,6 +2930,8 @@ nested_name_specifier:
    inline here?!?  (jason) */
 nested_name_specifier_1:
 	  TYPENAME SCOPE
+		{ got_scope = TREE_TYPE ($$); }
+	| NSNAME SCOPE
 		{ got_scope = TREE_TYPE ($$); }
 	| template_type SCOPE
 		{ got_scope = TREE_TYPE ($$); }
@@ -3681,13 +3727,13 @@ try_for_typename:
 bad_parm:
 	  /* empty */ %prec EMPTY
 		{
-		  warning ("type specifier omitted for parameter");
-		  $$ = build_tree_list (TREE_PURPOSE (TREE_VALUE ($<ttype>-1)), NULL_TREE);
+		  error ("type specifier omitted for parameter");
+		  $$ = build_tree_list (integer_type_node, NULL_TREE);
 		}
 	| notype_declarator
 		{
-		  warning ("type specifier omitted for parameter");
-		  $$ = build_tree_list (TREE_PURPOSE (TREE_VALUE ($<ttype>-1)), $$);
+		  error ("type specifier omitted for parameter");
+		  $$ = build_tree_list (integer_type_node, $$);
 		}
 	;
 
@@ -3696,11 +3742,13 @@ maybe_raises:
 		{ $$ = NULL_TREE; }
 	| THROW '(' ansi_raise_identifiers  ')' %prec EMPTY
 		{ $$ = $3; }
+	| THROW LEFT_RIGHT %prec EMPTY
+		{ $$ = build_decl_list (NULL_TREE, NULL_TREE); }
 	;
 
 ansi_raise_identifier:
 	  type_id
-		{ $$ = build_decl_list (NULL_TREE, $$); }
+		{ $$ = build_decl_list (NULL_TREE, groktypename($$)); }
 	;
 
 ansi_raise_identifiers:

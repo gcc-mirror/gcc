@@ -932,7 +932,8 @@ poplevel (keep, reverse, functionbody)
     if (TREE_CODE (decl) == FUNCTION_DECL
 	&& ! TREE_ASM_WRITTEN (decl)
 	&& DECL_INITIAL (decl) != NULL_TREE
-	&& TREE_ADDRESSABLE (decl))
+	&& TREE_ADDRESSABLE (decl)
+	&& decl_function_context (decl) == current_function_decl)
       {
 	/* If this decl was copied from a file-scope decl
 	   on account of a block-scope extern decl,
@@ -1933,7 +1934,7 @@ clear_anon_tags ()
    For C++, we must compare the parameter list so that `int' can match
    `int&' in a parameter position, but `int&' is not confused with
    `const int&'.  */
-static int
+int
 decls_match (newdecl, olddecl)
      tree newdecl, olddecl;
 {
@@ -2276,13 +2277,6 @@ duplicate_decls (newdecl, olddecl)
 			DECL_LANGUAGE (newdecl));
 	    }
 	}
-
-      /* These bits are logically part of the type.  */
-      if (pedantic
-	  && (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
-	      || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl)))
-	cp_error_at ("type qualifiers for `%D' conflict with previous decl",
-		     newdecl);
     }
 
   /* If new decl is `static' and an `extern' was seen previously,
@@ -2391,7 +2385,7 @@ duplicate_decls (newdecl, olddecl)
 
 	  if (! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 0))
 	    {
-	      cp_error ("declaration of `%D' raises different exceptions...",
+	      cp_error ("declaration of `%D' throws different exceptions...",
 			newdecl);
 	      cp_error_at ("...from previous declaration here", olddecl);
 	    }
@@ -2535,6 +2529,8 @@ duplicate_decls (newdecl, olddecl)
 	  if (DECL_ARGUMENTS (olddecl))
 	    DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	}
+      if (DECL_LANG_SPECIFIC (olddecl))
+	DECL_MAIN_VARIANT (newdecl) = DECL_MAIN_VARIANT (olddecl);
     }
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2671,7 +2667,7 @@ pushdecl (x)
 #else
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use. */
-  if (TREE_CODE (x) == TYPE_DECL)
+  if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL)
     name = DECL_NAME (x);
 #endif
 
@@ -2908,38 +2904,12 @@ pushdecl (x)
 	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
 	    {
 	      /* We have one.  Their types must agree.  */
-	      if (! comptypes (TREE_TYPE (x), TREE_TYPE (oldglobal), 1))
+	      if (duplicate_decls (x, oldglobal))
+		/* OK */;
+	      else
 		{
 		  cp_warning ("extern declaration of `%#D' doesn't match", x);
 		  cp_warning_at ("global declaration `%#D'", oldglobal);
-		}
-	      else
-		{
-		  /* Inner extern decl is inline if global one is.
-		     Copy enough to really inline it.  */
-		  if (DECL_INLINE (oldglobal))
-		    {
-		      DECL_INLINE (x) = DECL_INLINE (oldglobal);
-		      DECL_INITIAL (x) = (current_function_decl == oldglobal
-					  ? NULL_TREE : DECL_INITIAL (oldglobal));
-		      DECL_SAVED_INSNS (x) = DECL_SAVED_INSNS (oldglobal);
-		      DECL_FRAME_SIZE (x) = DECL_FRAME_SIZE (oldglobal);
-		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
-		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
-		      TREE_ASM_WRITTEN (x) = TREE_ASM_WRITTEN (oldglobal);
-		      DECL_ABSTRACT_ORIGIN (x) = oldglobal;
-		    }
-		  /* Inner extern decl is built-in if global one is.  */
-		  if (DECL_BUILT_IN (oldglobal))
-		    {
-		      DECL_BUILT_IN (x) = DECL_BUILT_IN (oldglobal);
-		      DECL_FUNCTION_CODE (x) = DECL_FUNCTION_CODE (oldglobal);
-		    }
-		  /* Keep the arg types from a file-scope fcn defn.  */
-		  if (TYPE_ARG_TYPES (TREE_TYPE (oldglobal)) != NULL_TREE
-		      && DECL_INITIAL (oldglobal)
-		      && TYPE_ARG_TYPES (TREE_TYPE (x)) == NULL_TREE)
-		    TREE_TYPE (x) = TREE_TYPE (oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
@@ -5625,7 +5595,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
     {
       DECL_INITIAL (tmp) = init;
       TREE_STATIC (tmp) = current_binding_level == global_binding_level;
-      finish_decl (tmp, init, 0, 0);
+      finish_decl (tmp, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   if (TREE_STATIC (tmp))
     preserve_initializer ();
@@ -5740,6 +5710,24 @@ grok_reference_init (decl, type, init, cleanupp)
   return;
 }
 
+/* Fill in DECL_INITIAL with some magical value to prevent expand_decl from
+   mucking with forces it does not comprehend (i.e. initialization with a
+   constructor).  If we are at global scope and won't go into COMMON, fill
+   it in with a dummy CONSTRUCTOR to force the variable into .data;
+   otherwise we can use error_mark_node.  */
+
+static void
+obscure_complex_init (decl)
+     tree decl;
+{
+  if (current_binding_level == global_binding_level
+      && ! DECL_COMMON (decl))
+    DECL_INITIAL (decl) = build (CONSTRUCTOR, TREE_TYPE (decl), NULL_TREE,
+				 NULL_TREE);
+  else
+    DECL_INITIAL (decl) = error_mark_node;
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -5754,16 +5742,20 @@ grok_reference_init (decl, type, init, cleanupp)
    INIT0 holds the value of an initializer that should be allowed to escape
    the normal rules.
 
+   FLAGS is LOOKUP_ONLYCONVERTING is the = init syntax was used, else 0
+   if the (init) syntax was used.
+
    For functions that take default parameters, DECL points to its
    "maximal" instantiation.  `finish_decl' must then also declared its
    subsequently lower and lower forms of instantiation, checking for
    ambiguity as it goes.  This can be sped up later.  */
 
 void
-finish_decl (decl, init, asmspec_tree, need_pop)
+finish_decl (decl, init, asmspec_tree, need_pop, flags)
      tree decl, init;
      tree asmspec_tree;
      int need_pop;
+     int flags;
 {
   register tree type;
   tree cleanup = NULL_TREE, ttype;
@@ -5871,10 +5863,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
       if (asmspec)
 	{
 	  /* This must override the asm specifier which was placed
-	     by grokclassfn.  Lay this out fresh.
-	     
-	     @@ Should emit an error if this redefines an asm-specified
-	     @@ name, or if we have already used the function's name.  */
+	     by grokclassfn.  Lay this out fresh.  */
 	  DECL_RTL (TREE_TYPE (decl)) = NULL_RTX;
 	  DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
 	  make_decl_rtl (decl, asmspec, 0);
@@ -5971,18 +5960,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 
 	  /* We must hide the initializer so that expand_decl
 	     won't try to do something it does not understand.  */
-	  if (current_binding_level == global_binding_level)
-	    {
-	      tree value;
-	      if (DECL_COMMON (decl))
-		/* Should this be a NULL_TREE? */
-		value = error_mark_node;
-	      else
-		value = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
-	      DECL_INITIAL (decl) = value;
-	    }
-	  else
-	    DECL_INITIAL (decl) = error_mark_node;
+	  obscure_complex_init (decl);
 	}
       else
 	{
@@ -5993,14 +5971,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	  /* Don't let anyone try to initialize this variable
 	     until we are ready to do so.  */
 	  if (init)
-	    {
-	      tree value;
-	      if (DECL_COMMON (decl))
-		value = error_mark_node;
-	      else
-		value = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
-	      DECL_INITIAL (decl) = value;
-	    }
+	    obscure_complex_init (decl);
 	}
     }
   else if (DECL_EXTERNAL (decl))
@@ -6026,20 +5997,9 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	  && (TYPE_READONLY (type) || TREE_READONLY (decl)))
 	cp_error ("uninitialized const `%D'", decl);
 
-      /* Initialize variables in need of static initialization with
-	 an empty CONSTRUCTOR to keep assemble_variable from putting them in
-	 the wrong program space.  */
-      if (flag_pic == 0
-	  && TREE_STATIC (decl)
-	  && TREE_PUBLIC (decl)
-	  && ! DECL_EXTERNAL (decl)
-	  && TREE_CODE (decl) == VAR_DECL
-	  && TYPE_NEEDS_CONSTRUCTING (type)
-	  && (DECL_INITIAL (decl) == NULL_TREE
-	      || DECL_INITIAL (decl) == error_mark_node)
-	  && ! DECL_COMMON (decl))
-	DECL_INITIAL (decl) = build (CONSTRUCTOR, type, NULL_TREE,
-				     NULL_TREE);
+      if (TYPE_SIZE (type) != NULL_TREE
+	  && TYPE_NEEDS_CONSTRUCTING (type))
+	obscure_complex_init (decl);
     }
   else if (TREE_CODE (decl) == VAR_DECL
 	   && TREE_CODE (type) != REFERENCE_TYPE
@@ -6396,7 +6356,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 		{
 		  emit_line_note (DECL_SOURCE_FILE (decl),
 				  DECL_SOURCE_LINE (decl));
-		  expand_aggr_init (decl, init, 0);
+		  expand_aggr_init (decl, init, 0, flags);
 		}
 
 	      /* Set this to 0 so we can tell whether an aggregate which
@@ -6510,7 +6470,7 @@ expand_static_init (decl, init)
       expand_assignment (temp, integer_one_node, 0, 0);
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	{
-	  expand_aggr_init (decl, init, 0);
+	  expand_aggr_init (decl, init, 0, 0);
 	  do_pending_stack_adjust ();
 	}
       else
@@ -6639,7 +6599,7 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
   if (friendp)
     cp_error_at ("invalid friend declaration", object);
   if (raises)
-    cp_error_at ("invalid raises declaration", object);
+    cp_error_at ("invalid exception specifications", object);
 }
 
 /* CTYPE is class type, or null if non-class.
@@ -6888,6 +6848,8 @@ grokvardecl (type, declarator, specbits, initialized)
     }
   else
     decl = build_decl (VAR_DECL, declarator, type);
+
+  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (DECL_ASSEMBLER_NAME (decl));
 
   if (RIDBIT_SETP (RID_EXTERN, specbits))
     {
@@ -7166,7 +7128,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      init = TREE_OPERAND (decl, 1);
 
 	      decl = start_decl (declarator, declspecs, 1, NULL_TREE);
-	      finish_decl (decl, init, NULL_TREE, 1);
+	      finish_decl (decl, init, NULL_TREE, 1, 0);
 	      return 0;
 	    }
 	  innermost_code = TREE_CODE (decl);
@@ -9071,7 +9033,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  return NULL_TREE;
 
 	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c)
-	  DECL_ASSEMBLER_NAME (decl) = declarator;
+	  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (declarator);
 
 	if (staticp == 1)
 	  {
@@ -10349,26 +10311,17 @@ finish_enum (enumtype, values)
     int highprec = min_precision (maxnode, unsignedp);
     int precision = MAX (lowprec, highprec);
 
+    TYPE_SIZE (enumtype) = NULL_TREE;
+
+    /* Lay out the type as though it were an integer.  */
     if (! flag_short_enums && precision < TYPE_PRECISION (integer_type_node))
-      precision = TYPE_PRECISION (integer_type_node);
-
-
-    /*
-     *  The following code is unnecessary since the function 
-     *  type_promotes_to deals correctly with promotion of enums of 
-     *  underlying unsigned types to signed integer types.
-     *  Moreover, it causes an enum bitfield to require one more bit of
-     *  storage than defined by the ANSI/ISO C++ resolution section r.7.2
-     *  which defines the range of an enum. 
-     */
-#if 0
-    /* Unlike the C frontend, we prefer signed types.  */
-    if (unsignedp && int_fits_type_p (maxnode, type_for_size (precision, 0)))
-      unsignedp = 0;
-#endif
+      {
+	TYPE_MIN_VALUE (enumtype) = minnode;
+	TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+	layout_type (enumtype);
+      }
 
     TYPE_PRECISION (enumtype) = precision;
-    TYPE_SIZE (enumtype) = NULL_TREE;
     if (unsignedp)
       fixup_unsigned_type (enumtype);
     else
@@ -11110,7 +11063,7 @@ store_return_init (return_id, init)
       /* Let `finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
       pushdecl (decl);
-      finish_decl (decl, init, 0, 0);
+      finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
 }
 
@@ -11757,7 +11710,7 @@ start_method (declspecs, declarator, raises)
 	grok_op_properties (fndecl, DECL_VIRTUAL_P (fndecl), 0);
     }
 
-  finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);
+  finish_decl (fndecl, NULL_TREE, NULL_TREE, 0, 0);
 
   /* Make a place for the parms */
   pushlevel (0);

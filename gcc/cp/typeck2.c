@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 361.  Free: */
+/* First used: 0 (reserved), Last used: 363.  Free: */
 
 static int abortcount = 0;
 
@@ -1430,7 +1430,7 @@ build_functional_cast (exp, parms)
 	  pedwarn ("initializer list being treated as compound expression");
 	  parms = build_compound_expr (parms);
 	}
-      return build_c_cast (type, parms);
+      return build_c_cast (type, parms, 1);
     }
 
   if (TYPE_SIZE (type) == NULL_TREE)
@@ -1440,7 +1440,7 @@ build_functional_cast (exp, parms)
     }
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    return build_c_cast (type, parms);
+    return build_c_cast (type, parms, 1);
 
   expr_as_ctor = build_method_call (NULL_TREE, name, parms,
 				    NULL_TREE, LOOKUP_NORMAL);
