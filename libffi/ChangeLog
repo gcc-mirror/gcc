@@ -1,3 +1,8 @@
+2004-01-12  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libffi-dg.exp: Set LD_LIBRARY_PATH_32 for
+	Solaris.
+
 2004-01-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/libffi.call/ffitest.h (allocate_mmap): Cast MAP_FAILED
