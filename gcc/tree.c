@@ -727,6 +727,16 @@ savealloc (size)
 {
   return (char *) obstack_alloc (saveable_obstack, size);
 }
+
+/* Allocate SIZE bytes in the expression obstack
+   and return a pointer to them.  */
+
+char *
+expralloc (size)
+     int size;
+{
+  return (char *) obstack_alloc (expression_obstack, size);
+}
 
 /* Print out which obstack an object is in.  */
 
@@ -2025,6 +2035,20 @@ build_decl_list (parm, value)
   return node;
 }
 
+/* Similar, but build on the expression_obstack.  */
+
+tree
+build_expr_list (parm, value)
+     tree parm, value;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = expression_obstack;
+  node = build_tree_list (parm, value);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
 /* Return a newly created TREE_LIST node whose
    purpose and value fields are PARM and VALUE
    and whose TREE_CHAIN is CHAIN.  */
@@ -2066,6 +2090,20 @@ decl_tree_cons (purpose, value, chain)
   register tree node;
   register struct obstack *ambient_obstack = current_obstack;
   current_obstack = &temp_decl_obstack;
+  node = tree_cons (purpose, value, chain);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
+/* Similar, but build on the expression_obstack.  */
+
+tree
+expr_tree_cons (purpose, value, chain)
+     tree purpose, value, chain;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = expression_obstack;
   node = tree_cons (purpose, value, chain);
   current_obstack = ambient_obstack;
   return node;
