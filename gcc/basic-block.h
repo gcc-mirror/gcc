@@ -362,7 +362,6 @@ extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern basic_block create_basic_block_structure PARAMS ((rtx, rtx, rtx, basic_block));
 extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
-extern void flow_delete_block_noexpunge	PARAMS ((basic_block));
 extern void clear_bb_flags		PARAMS ((void));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
