@@ -231,6 +231,12 @@ override_options ()
 	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX;
 	  target_flags &= ~ (MASK_CIX);
 	}
+      else if (! strcmp (alpha_cpu_string, "ev67")
+	       || ! strcmp (alpha_cpu_string, "21264a"))
+	{
+	  alpha_cpu = PROCESSOR_EV6;
+	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX;
+	}
       else
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
     }
