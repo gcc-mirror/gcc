@@ -369,6 +369,98 @@ to private C++ fields and methods, but other fields and methods
 are mapped to public fields and methods.
 </para>
 </sect2>
+<sect2><title>Non-Java fields</title>
+<para>
+When you write a Java wrapper around an existing library, that library
+will often allocate and manage its own data structures.  These are
+<quote>objects</quote> that are not Java <literal>Object</literal>s;
+instead they are usually C <literal>struct</literal> instances.
+Typically, you will write a Java class, and use native CNI methods
+which call functions in the C library.  The problem is how to get
+from the Java wrapper object to the C <literal>struct</literal> instances.
+The obvious solution is to add a field to the Java object that
+points to the C structure.  The problem is that there is no Java
+type that we can give to this field.</para>
+<para>The GCJ solution is to define a special dummy class
+<literal>gnu.gcj.RawData</literal>.  This can be used as the type for fields,
+parameters, array elements, or local variables in Java code.
+It means that the field or variable is a pointer to a non-Java object.
+Nothing else is known about it, so it corresponds to a
+<literal>(void*)</literal> declaration is C or C++ code.</para>
+<para>
+The garbage collector will ignore a field that has type
+<literal>gnu.gcj.RawData</literal>.  You are responsible for
+freeing the C data structure when you are done with it, and
+performing any necessary cleanups.  In most cases, you should
+use a <literal>finalize</literal> method, and have it call
+the library's cleanup routine.  Also, the C data structure
+should not contain a pointer back to the Java object, since
+the garbage collector will not know about the pointer.
+If you need to save a pointer to a Java object inside some
+non-Java data structure, you first need to <quote>pin</quote>
+or <quote>globalize</quote> the pointer;  there is no CNI function
+to do this yet.
+(From the point of view of the
+implementation, a <literal>gnu.gcj.RawData</literal> value is
+the same as an integer that has the same size as a pointer.)</para>
+<para>
+Here is an example where we create a Java wrapper around C stdio:
+<programlisting>
+import gnu.gcj.RawData;
+
+public class StdioFile
+{
+  private RawData file;
+  public StdioFile (RawData file) { this.file = file; }
+  public StdioFile (String name, String mode)
+    throws FileNotFoundException
+  { init(name, mode); }
+  private native void init (String name, String mode)
+    throws FileNotFoundException;
+  public native int getc();
+  public native int close();
+  protected native void finalize();
+}
+</programlisting>
+This is the CNI implementation:
+<programlisting>
+jint
+StdioFile::getc()
+{
+  return getc((FILE*) file);
+}
+
+jint
+StdioFile::close()
+{
+  return fclose((FILE*) file);
+}
+
+void
+StdioFile::init(jstring name, jstring mode)
+{
+  int cname_len = JvGetStringUTFLength (name);
+  int cmode_len = JvGetStringUTFLength (mode);
+  char cname[cname_len + 1];
+  char cmode[cmode_len + 1];
+  JvGetStringUTFRegion (name, 0, name->length(), cname);
+  JvGetStringUTFRegion (mode, 0, mode->length(), cmode);
+  cname[cname_len] = '\0';
+  cmode[cmode_len] = '\0';
+  file = (gnu::gcj::RawData*) fopen(cname, cmode);
+  if (file == NULL)
+    JvThrow(new java::lang::FileNotFoundException(name));
+}
+
+void
+StdioFile::finalize()
+{
+  fclose((FILE*) file);
+}
+</programlisting>
+
+</sect2>
+
 </sect1>
 
 <sect1><title>Arrays</title>
