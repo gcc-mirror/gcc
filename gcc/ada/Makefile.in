@@ -122,7 +122,7 @@ ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata
 SOME_ADAFLAGS =-gnata
 FORCE_DEBUG_ADAFLAGS = -g
-GNATLIBFLAGS = -gnatpg
+GNATLIBFLAGS = -gnatpg -nostdinc
 GNATLIBCFLAGS = -g -O2
 GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -fexceptions \
 	-DIN_RTS
@@ -471,6 +471,7 @@ ifeq ($(strip $(filter-out alpha% dec vx%,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-tpopsp.adb<5ztpopsp.adb \
   s-taspri.ads<5ztaspri.ads \
@@ -498,6 +499,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-tpopsp.adb<5ztpopsp.adb \
@@ -536,6 +538,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-tpopsp.adb<5ztpopsp.adb \
@@ -621,6 +624,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-tpopsp.adb<5ztpopsp.adb \
@@ -650,6 +654,7 @@ ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-tpopsp.adb<5ztpopsp.adb \
@@ -679,6 +684,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   s-osinte.ads<5zosinte.ads \
   s-osprim.adb<5zosprim.adb \
   s-parame.ads<5zparame.ads \
+  s-stchop.adb<5zstchop.adb \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-tpopsp.adb<5ztpopsp.adb \
@@ -870,7 +876,14 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   s-tpopsp.adb<7stpopsp.adb \
   system.ads<56system.ads
 
-  THREADSLIB=
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt.adb<5lml-tgt.adb
+  GNATLIB_SHARED = gnatlib-shared-dual
+
+  SYMLIB = $(ADDR2LINE_SYMLIB)
+  THREADSLIB= -lc_r
+  GMEM_LIB = gmemlib
+  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1125,7 +1138,7 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-ifeq ($(strip $(filter-out alpha% ia64 dec vms% openvms% alphavms%,$(host))),)
+ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(host))),)
 
 soext  = .exe
 hyphen = _
@@ -1137,31 +1150,27 @@ hyphen = _
 endif
 
 ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(targ))),)
-
-ifeq ($(strip $(filter-out ia64% hp vms% openvms%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS_AUX = \
+ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS_AUX1 = \
+  s-crtl.ads<5xcrtl.ads \
   s-osinte.adb<5xosinte.adb \
   s-osinte.ads<5xosinte.ads \
-  s-parame.ads<5vparame.ads
+  system.ads<5qsystem.ads
 else
-ifeq ($(strip $(filter-out alpha64% dec hp vms% openvms% alphavms%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS_AUX = \
+ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS_AUX1 = \
+  s-crtl.ads<5vcrtl.ads \
   s-osinte.adb<5vosinte.adb \
   s-osinte.ads<5vosinte.ads \
-  s-parame.ads<5vparame.ads
-else
+  system.ads<5xsystem.ads
+endif
+endif
 ifeq ($(strip $(filter-out express EXPRESS,$(THREAD_KIND))),)
-  LIBGNAT_TARGET_PAIRS_AUX = \
-  s-osinte.adb<5vosinte.adb \
-  s-osinte.ads<5vosinte.ads \
+  LIBGNAT_TARGET_PAIRS_AUX2 = \
   s-parame.ads<5xparame.ads
 else
-  LIBGNAT_TARGET_PAIRS_AUX = \
-  s-osinte.adb<5vosinte.adb \
-  s-osinte.ads<5vosinte.ads \
+  LIBGNAT_TARGET_PAIRS_AUX2 = \
   s-parame.ads<5vparame.ads
-endif
-endif
 endif
 
   LIBGNAT_TARGET_PAIRS = \
@@ -1180,7 +1189,6 @@ endif
   i-cpp.adb<6vcpp.adb \
   interfac.ads<6vinterf.ads \
   s-asthan.adb<5vasthan.adb \
-  s-crtl.ads<5vcrtl.ads \
   s-inmaop.adb<5vinmaop.adb \
   s-interr.adb<5vinterr.adb \
   s-intman.adb<5vintman.adb \
@@ -1195,14 +1203,16 @@ endif
   s-traent.adb<5vtraent.adb \
   s-traent.ads<5vtraent.ads \
   s-vaflop.adb<5vvaflop.adb \
-  system.ads<5xsystem.ads   \
-  $(LIBGNAT_TARGET_PAIRS_AUX)
+  $(LIBGNAT_TARGET_PAIRS_AUX1) \
+  $(LIBGNAT_TARGET_PAIRS_AUX2)
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<5vml-tgt.adb
 
   GNATLIB_SHARED=gnatlib-shared-vms
+ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
   EXTRA_LIBGNAT_SRCS=vmshandler.asm
   EXTRA_LIBGNAT_OBJS=vmshandler.o
+endif
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \
      ../../gnatlbr$(exeext) \

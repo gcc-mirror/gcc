@@ -913,7 +913,7 @@ package body System.Task_Primitives.Operations is
       Self_ID   : Task_ID := T;
       Result    : DWORD;
       Succeeded : BOOL;
-      Is_Self : constant Boolean := T = Self;
+      Is_Self   : constant Boolean := T = Self;
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
@@ -943,8 +943,7 @@ package body System.Task_Primitives.Operations is
       Free (Self_ID);
 
       if Is_Self then
-         Succeeded := TlsSetValue (TlsIndex, System.Null_Address);
-         pragma Assert (Succeeded = True);
+         Specific.Set (null);
       end if;
    end Finalize_TCB;
 

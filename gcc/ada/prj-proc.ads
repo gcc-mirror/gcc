@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,9 +36,14 @@ package Prj.Proc is
      (Project           : out Project_Id;
       Success           : out Boolean;
       From_Project_Node : Project_Node_Id;
-      Report_Error      : Put_Line_Access);
+      Report_Error      : Put_Line_Access;
+      Trusted_Mode      : Boolean := False);
    --  Process a project file tree into project file data structures.
    --  If Report_Error is null, use the error reporting mechanism.
    --  Otherwise, report errors using Report_Error.
+   --  If Trusted_Mode is True, it is assumed that the project doesn't contain
+   --  any file duplicated through symbolic links (although the latter are
+   --  still valid if they point to a file which is outside of the project),
+   --  and that no directory has a name which is a valid source name.
 
 end Prj.Proc;

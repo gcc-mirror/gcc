@@ -34,8 +34,8 @@
 --  This is a POSIX version of this package where foreign threads are
 --  recognized.
 
---  Currently, DEC Unix, SCO UnixWare, Solaris pthread, HPUX pthread,
---  GNU/Linux threads, and RTEMS use this version.
+--  Currently, DEC Unix, SCO UnixWare, Solaris pthread, HPUX pthread and
+--  GNU/Linux threads use this version.
 
 separate (System.Task_Primitives.Operations)
 package body Specific is

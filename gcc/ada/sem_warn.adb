@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -472,9 +472,38 @@ package body Sem_Warn is
                      end loop;
 
                      --  Here we issue the warning, all checks completed
+                     --  If the unset reference is prefix of a selected
+                     --  component that comes from source, mention the
+                     --  component as well. If the selected component comes
+                     --  from expansion, all we know is that the entity is
+                     --  not fully initialized at the point of the reference.
+                     --  Locate an unintialized component to get a better
+                     --  error message.
 
                      if Nkind (Parent (UR)) = N_Selected_Component then
                         Error_Msg_Node_2 := Selector_Name (Parent (UR));
+
+                        if not Comes_From_Source (Parent (UR)) then
+                           declare
+                              Comp : Entity_Id;
+
+                           begin
+                              Comp := First_Entity (Etype (E1));
+                              while Present (Comp) loop
+                                 if Ekind (Comp) = E_Component
+                                   and then Nkind (Parent (Comp)) =
+                                     N_Component_Declaration
+                                   and then No (Expression (Parent (Comp)))
+                                 then
+                                    Error_Msg_Node_2 := Comp;
+                                    exit;
+                                 end if;
+
+                                 Next_Entity (Comp);
+                              end loop;
+                           end;
+                        end if;
+
                         Error_Msg_N
                           ("`&.&` may be referenced before it has a value?",
                            UR);

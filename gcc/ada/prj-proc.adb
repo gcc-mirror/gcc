@@ -101,14 +101,16 @@ package body Prj.Proc is
    --  recursively for all imported projects and a extended project, if any.
    --  Then process the declarative items of the project.
 
-   procedure Check (Project : in out Project_Id);
+   procedure Check (Project : in out Project_Id; Trusted_Mode : Boolean);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
+   --  See Prj.Nmsc.Ada_Check for information on Trusted_Mode.
 
-   procedure Recursive_Check (Project : Project_Id);
+   procedure Recursive_Check (Project : Project_Id; Trusted_Mode : Boolean);
    --  If Project is not marked as checked, mark it as checked, call
    --  Check_Naming_Scheme for the project, then call itself for a
    --  possible extended project and all the imported projects of Project.
+   --  See Prj.Nmsc.Ada_Check for information on Trusted_Mode
 
    ---------
    -- Add --
@@ -205,7 +207,7 @@ package body Prj.Proc is
    -- Check --
    -----------
 
-   procedure Check (Project : in out Project_Id) is
+   procedure Check (Project : in out Project_Id; Trusted_Mode : Boolean) is
    begin
       --  Make sure that all projects are marked as not checked
 
@@ -213,8 +215,7 @@ package body Prj.Proc is
          Projects.Table (Index).Checked := False;
       end loop;
 
-      Recursive_Check (Project);
-
+      Recursive_Check (Project, Trusted_Mode);
    end Check;
 
    ----------------
@@ -815,7 +816,8 @@ package body Prj.Proc is
      (Project           : out Project_Id;
       Success           : out Boolean;
       From_Project_Node : Project_Node_Id;
-      Report_Error      : Put_Line_Access)
+      Report_Error      : Put_Line_Access;
+      Trusted_Mode      : Boolean := False)
    is
       Obj_Dir    : Name_Id;
       Extending  : Project_Id;
@@ -839,7 +841,7 @@ package body Prj.Proc is
          Extended_By       => No_Project);
 
       if Project /= No_Project then
-         Check (Project);
+         Check (Project, Trusted_Mode);
       end if;
 
       --  If main project is an extending all project, set the object
@@ -861,15 +863,15 @@ package body Prj.Proc is
          end;
       end if;
 
-      --  Check that no extended project shares its object directory with
-      --  another extended project or with its extending project(s).
+      --  Check that no extending project shares its object directory with
+      --  the project(s) it extends.
 
       if Project /= No_Project then
-         for Extended in 1 .. Projects.Last loop
-            Extending := Projects.Table (Extended).Extended_By;
+         for Proj in 1 .. Projects.Last loop
+            Extending := Projects.Table (Proj).Extended_By;
 
             if Extending /= No_Project then
-               Obj_Dir := Projects.Table (Extended).Object_Directory;
+               Obj_Dir := Projects.Table (Proj).Object_Directory;
 
                --  Check that a project being extended does not share its
                --  object directory with any project that extends it, directly
@@ -885,13 +887,13 @@ package body Prj.Proc is
                       Projects.Table (Extending2).Object_Directory = Obj_Dir
                   then
                      if Projects.Table (Extending2).Virtual then
-                        Error_Msg_Name_1 := Projects.Table (Extended).Name;
+                        Error_Msg_Name_1 := Projects.Table (Proj).Name;
 
                         if Error_Report = null then
                            Error_Msg
                              ("project % cannot be extended by a virtual " &
                               "project with the same object directory",
-                              Projects.Table (Extended).Location);
+                              Projects.Table (Proj).Location);
 
                         else
                            Error_Report
@@ -905,7 +907,7 @@ package body Prj.Proc is
                      else
                         Error_Msg_Name_1 :=
                           Projects.Table (Extending2).Name;
-                        Error_Msg_Name_2 := Projects.Table (Extended).Name;
+                        Error_Msg_Name_2 := Projects.Table (Proj).Name;
 
                         if Error_Report = null then
                            Error_Msg
@@ -932,70 +934,6 @@ package body Prj.Proc is
                   --  Continue with the next extending project, if any
 
                   Extending2 := Projects.Table (Extending2).Extended_By;
-               end loop;
-
-               --  Check that two projects being extended do not share their
-               --  project directories.
-
-               for Prj in Extended + 1 .. Projects.Last loop
-                  Extending2 := Projects.Table (Prj).Extended_By;
-
-                  if Extending2 /= No_Project
-                    and then Projects.Table (Prj).Sources_Present
-                    and then Projects.Table (Prj).Object_Directory = Obj_Dir
-                    and then not Projects.Table (Extending).Virtual
-                  then
-                     Error_Msg_Name_1 := Projects.Table (Extending).Name;
-                     Error_Msg_Name_2 := Projects.Table (Extended).Name;
-
-                     if Error_Report = null then
-                        Error_Msg ("project % cannot extend project %",
-                                   Projects.Table (Extending).Location);
-
-                     else
-                        Error_Report
-                          ("project """ &
-                           Get_Name_String (Error_Msg_Name_1) &
-                           """ cannot extend project """ &
-                           Get_Name_String (Error_Msg_Name_2) & '"',
-                           Project);
-                     end if;
-
-                     Error_Msg_Name_1 := Projects.Table (Extended).Name;
-                     Error_Msg_Name_2 := Projects.Table (Prj).Name;
-
-                     if Error_Report = null then
-                        Error_Msg
-                          ("\project % has the same object directory " &
-                           "as project %",
-                           Projects.Table (Extending).Location);
-
-                     else
-                        Error_Report
-                          ("project """ &
-                             Get_Name_String (Error_Msg_Name_1) &
-                             """ has the same object directory as project """ &
-                             Get_Name_String (Error_Msg_Name_2) & """,",
-                           Project);
-                     end if;
-
-                     Error_Msg_Name_1 := Projects.Table (Extending2).Name;
-
-                     if Error_Report = null then
-                        Error_Msg
-                          ("\which is extended by project %",
-                           Projects.Table (Extending).Location);
-
-                     else
-                        Error_Report
-                          ("which is extended by project """ &
-                           Get_Name_String (Error_Msg_Name_1) & '"',
-                           Project);
-                     end if;
-
-                     Project := No_Project;
-                     exit;
-                  end if;
                end loop;
             end if;
          end loop;
@@ -1817,7 +1755,7 @@ package body Prj.Proc is
    -- Recursive_Check --
    ---------------------
 
-   procedure Recursive_Check (Project : Project_Id) is
+   procedure Recursive_Check (Project : Project_Id; Trusted_Mode : Boolean) is
       Data                  : Project_Data;
       Imported_Project_List : Project_List := Empty_Project_List;
 
@@ -1838,14 +1776,15 @@ package body Prj.Proc is
          --  Call itself for a possible extended project.
          --  (if there is no extended project, then nothing happens).
 
-         Recursive_Check (Data.Extends);
+         Recursive_Check (Data.Extends, Trusted_Mode);
 
          --  Call itself for all imported projects
 
          Imported_Project_List := Data.Imported_Projects;
          while Imported_Project_List /= Empty_Project_List loop
             Recursive_Check
-              (Project_Lists.Table (Imported_Project_List).Project);
+              (Project_Lists.Table (Imported_Project_List).Project,
+               Trusted_Mode);
             Imported_Project_List :=
               Project_Lists.Table (Imported_Project_List).Next;
          end loop;
@@ -1856,7 +1795,7 @@ package body Prj.Proc is
             Write_Line ("""");
          end if;
 
-         Prj.Nmsc.Ada_Check (Project, Error_Report);
+         Prj.Nmsc.Ada_Check (Project, Error_Report, Trusted_Mode);
       end if;
    end Recursive_Check;
 

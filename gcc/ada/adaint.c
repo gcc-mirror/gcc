@@ -2390,6 +2390,7 @@ _flush_cache()
 #if defined (CROSS_COMPILE)  \
   || (! (defined (sparc) && defined (sun) && defined (__SVR4)) \
       && ! (defined (linux) && defined (i386)) \
+      && ! defined (__FreeBSD__) \
       && ! defined (hpux) \
       && ! defined (_AIX) \
       && ! (defined (__alpha__)  && defined (__osf__)) \

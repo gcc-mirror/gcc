@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1999-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,14 +33,16 @@
 
 --  This package provides a system-independent implementation of stack
 --  checking using comparison with stack base and limit.
+--  This package defines basic types and objects. Operations related
+--  to stack checking can be found in package
+--  System.Stack_Checking.Operations.
 
 with System.Storage_Elements;
 
-pragma Polling (Off);
---  Turn off polling, we do not want polling to take place during stack
---  checking operations. It causes infinite loops and other problems.
-
 package System.Stack_Checking is
+
+   pragma Elaborate_Body;
+
    type Stack_Info is record
       Limit : System.Address := System.Null_Address;
       Base  : System.Address := System.Null_Address;
@@ -59,30 +61,7 @@ package System.Stack_Checking is
    --  upgrowing stack) may contain any address that is part of another stack.
    --  The Stack_Access may be part of a larger data structure.
 
-   Multi_Processor        : constant Boolean := False; --  Not supported yet
-
-   ----------------------
-   -- Client Interface --
-   ----------------------
-
-   procedure Set_Stack_Size
-     (Stack_Size : System.Storage_Elements.Storage_Offset);
-   --  Specify the stack size for the current task.
-
-   procedure Update_Stack_Cache (Stack : Stack_Access);
-   --  Set the stack cache for the current task. Note that this is only
-   --  for optimization purposes, nothing can be assumed about the
-   --  contents of the cache at any time, see Set_Stack_Info.
-
-   procedure Invalidate_Stack_Cache (Any_Stack : Stack_Access);
-   --  Invalidate cache entries for the task T that owns Any_Stack.
-   --  This causes the Set_Stack_Info function to be called during
-   --  the next stack check done by T. This can be used to interrupt
-   --  task T asynchronously.
-   --  Stack_Check should be called in loops for this to work reliably.
-
-   function Stack_Check (Stack_Address : System.Address) return Stack_Access;
-   --  This version of Stack_Check should not be inlined.
+   Multi_Processor : constant Boolean := False; --  Not supported yet
 
 private
 
@@ -92,14 +71,8 @@ private
       Size  => 0);
    --  Use explicit assignment to avoid elaboration code (call to init proc).
 
-   Null_Stack       : constant Stack_Access := Null_Stack_Info'Access;
+   Null_Stack : constant Stack_Access := Null_Stack_Info'Access;
    --  Stack_Access value that will return a Stack_Base and Stack_Limit
    --  that fail any stack check.
-
-   Cache            : aliased Stack_Access := Null_Stack;
-
-   pragma Export (C, Cache, "_gnat_stack_cache");
-   pragma Export (C, Stack_Check, "_gnat_stack_check");
-   pragma Export (C, Set_Stack_Size, "__gnat_set_stack_size");
 
 end System.Stack_Checking;

@@ -406,6 +406,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-sopco4$(objext) \
   s-sopco5$(objext) \
   s-stache$(objext) \
+  s-stchop$(objext) \
   s-stalib$(objext) \
   s-stoele$(objext) \
   s-stopoo$(objext) \
