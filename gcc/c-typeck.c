@@ -2682,7 +2682,9 @@ lvalue_p (tree ref)
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
-   otherwise, print an error message and return zero.  */
+   otherwise, print an error message and return zero.  MSGID
+   is a format string which receives no arguments, but in which
+   formats such as %< and %> may occur.  */
 
 static int
 lvalue_or_else (tree ref, const char *msgid)
@@ -2690,7 +2692,7 @@ lvalue_or_else (tree ref, const char *msgid)
   int win = lvalue_p (ref);
 
   if (! win)
-    error ("%s", msgid);
+    error (msgid);
 
   return win;
 }
