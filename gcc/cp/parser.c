@@ -1124,6 +1124,18 @@ typedef enum cp_parser_id_kind
   CP_PARSER_ID_KIND_QUALIFIED
 } cp_parser_id_kind;
 
+/* The different kinds of declarators we want to parse.  */
+
+typedef enum cp_parser_declarator_kind
+{
+  /* We want an abstract declartor. */
+  CP_PARSER_DECLARATOR_ABSTRACT,
+  /* We want a named declarator.  */
+  CP_PARSER_DECLARATOR_NAMED,
+  /* We don't mind.  */
+  CP_PARSER_DECLARATOR_EITHER
+} cp_parser_declarator_kind;
+
 /* A mapping from a token type to a corresponding tree node type.  */
 
 typedef struct cp_parser_token_tree_map_node
@@ -1540,9 +1552,9 @@ static void cp_parser_linkage_specification
 static tree cp_parser_init_declarator
   PARAMS ((cp_parser *, tree, tree, tree, bool, bool, bool *));
 static tree cp_parser_declarator
-  PARAMS ((cp_parser *, bool, bool *));
+  PARAMS ((cp_parser *, cp_parser_declarator_kind, bool *));
 static tree cp_parser_direct_declarator
-  PARAMS ((cp_parser *, bool, bool *));
+  PARAMS ((cp_parser *, cp_parser_declarator_kind, bool *));
 static enum tree_code cp_parser_ptr_operator
   PARAMS ((cp_parser *, tree *, tree *));
 static tree cp_parser_cv_qualifier_seq_opt
@@ -6123,8 +6135,7 @@ cp_parser_condition (parser)
       tree initializer = NULL_TREE;
       
       /* Parse the declarator.  */
-      declarator = cp_parser_declarator (parser, 
-					 /*abstract_p=*/false,
+      declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					 /*ctor_dtor_or_conv_p=*/NULL);
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
@@ -8506,8 +8517,7 @@ cp_parser_explicit_instantiation (parser)
 
       /* Parse the declarator.  */
       declarator 
-	= cp_parser_declarator (parser, 
-				/*abstract_p=*/false, 
+	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 				/*ctor_dtor_or_conv_p=*/NULL);
       decl = grokdeclarator (declarator, decl_specifiers, 
 			     NORMAL, 0, NULL);
@@ -9720,8 +9730,7 @@ cp_parser_init_declarator (parser,
   cp_parser_start_deferring_access_checks (parser);
   /* Parse the declarator.  */
   declarator 
-    = cp_parser_declarator (parser,
-			    /*abstract_p=*/false,
+    = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    &ctor_dtor_or_conv_p);
   /* Gather up the deferred checks.  */
   declarator_access_checks 
@@ -10020,9 +10029,9 @@ cp_parser_init_declarator (parser,
    expression, not a declaration.)  */
 
 static tree
-cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
+cp_parser_declarator (parser, dcl_kind, ctor_dtor_or_conv_p)
      cp_parser *parser;
-     bool abstract_p;
+     cp_parser_declarator_kind dcl_kind;
      bool *ctor_dtor_or_conv_p;
 {
   cp_token *token;
@@ -10054,16 +10063,17 @@ cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
     {
       /* The dependent declarator is optional if we are parsing an
 	 abstract-declarator.  */
-      if (abstract_p)
+      if (dcl_kind != CP_PARSER_DECLARATOR_NAMED)
 	cp_parser_parse_tentatively (parser);
 
       /* Parse the dependent declarator.  */
-      declarator = cp_parser_declarator (parser, abstract_p,
+      declarator = cp_parser_declarator (parser, dcl_kind,
 					 /*ctor_dtor_or_conv_p=*/NULL);
 
       /* If we are parsing an abstract-declarator, we must handle the
 	 case where the dependent declarator is absent.  */
-      if (abstract_p && !cp_parser_parse_definitely (parser))
+      if (dcl_kind != CP_PARSER_DECLARATOR_NAMED
+	  && !cp_parser_parse_definitely (parser))
 	declarator = NULL_TREE;
 	
       /* Build the representation of the ptr-operator.  */
@@ -10080,7 +10090,7 @@ cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
   /* Everything else is a direct-declarator.  */
   else
     declarator = cp_parser_direct_declarator (parser, 
-					      abstract_p,
+					      dcl_kind,
 					      ctor_dtor_or_conv_p);
 
   if (attributes && declarator != error_mark_node)
@@ -10107,9 +10117,13 @@ cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
      direct-abstract-declarator [opt] [ constant-expression [opt] ]
      ( abstract-declarator )
 
-   Returns a representation of the declarator.  ABSTRACT_P is TRUE if
-   we are parsing a direct-abstract-declarator; FALSE if we are
-   parsing a direct-declarator.  CTOR_DTOR_OR_CONV_P is as for 
+   Returns a representation of the declarator.  DCL_KIND is
+   CP_PARSER_DECLARATOR_ABSTRACT, if we are parsing a
+   direct-abstract-declarator.  It is CP_PARSER_DECLARATOR_NAMED, if
+   we are parsing a direct-declarator.  It is
+   CP_PARSER_DECLARATOR_EITHER, if we can accept either - in the case
+   of ambiguity we prefer an abstract declarator, as per
+   [dcl.ambig.res].  CTOR_DTOR_OR_CONV_P is as for
    cp_parser_declarator.
 
    For the declarator-id production, the representation is as for an
@@ -10122,184 +10136,41 @@ cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
    indicating the size of the array is the second operand.  */
 
 static tree
-cp_parser_direct_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
+cp_parser_direct_declarator (parser, dcl_kind, ctor_dtor_or_conv_p)
      cp_parser *parser;
-     bool abstract_p;
+     cp_parser_declarator_kind dcl_kind;
      bool *ctor_dtor_or_conv_p;
 {
   cp_token *token;
-  tree declarator;
+  tree declarator = NULL_TREE;
   tree scope = NULL_TREE;
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
   bool saved_in_declarator_p = parser->in_declarator_p;
-
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  /* Find the initial direct-declarator.  It might be a parenthesized
-     declarator.  */
-  if (token->type == CPP_OPEN_PAREN)
-    {
-      bool error_p;
-
-      /* For an abstract declarator we do not know whether we are
-	 looking at the beginning of a parameter-declaration-clause,
-	 or at a parenthesized abstract declarator.  For example, if
-	 we see `(int)', we are looking at a
-	 parameter-declaration-clause, and the
-	 direct-abstract-declarator has been omitted.  If, on the
-	 other hand we are looking at `((*))' then we are looking at a
-	 parenthesized abstract-declarator.  There is no easy way to
-	 tell which situation we are in.  */
-      if (abstract_p)
-	cp_parser_parse_tentatively (parser);
-
-      /* Consume the `('.  */
-      cp_lexer_consume_token (parser->lexer);
-      /* Parse the nested declarator.  */
-      declarator 
-	= cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p);
-      /* Expect a `)'.  */
-      error_p = !cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
-
-      /* If parsing a parenthesized abstract declarator didn't work,
-	 try a parameter-declaration-clause.  */
-      if (abstract_p && !cp_parser_parse_definitely (parser))
-	declarator = NULL_TREE;
-      /* If we were not parsing an abstract declarator, but failed to
-	 find a satisfactory nested declarator, then an error has
-	 occurred.  */
-      else if (!abstract_p 
-	       && (declarator == error_mark_node || error_p))
-	return error_mark_node;
-      /* Default args cannot appear in an abstract decl.  */
-      parser->default_arg_ok_p = false;
-    }
-  /* Otherwise, for a non-abstract declarator, there should be a
-     declarator-id.  */
-  else if (!abstract_p)
-    {
-      declarator = cp_parser_declarator_id (parser);
-      
-      if (TREE_CODE (declarator) == SCOPE_REF)
-	{
-	  scope = TREE_OPERAND (declarator, 0);
-	  
-	  /* In the declaration of a member of a template class
-	     outside of the class itself, the SCOPE will sometimes be
-	     a TYPENAME_TYPE.  For example, given:
-	     
-               template <typename T>
-	       int S<T>::R::i = 3;
-
-             the SCOPE will be a TYPENAME_TYPE for `S<T>::R'.  In this
-	     context, we must resolve S<T>::R to an ordinary type,
-	     rather than a typename type.
-
-	     The reason we normally avoid resolving TYPENAME_TYPEs is
-	     that a specialization of `S' might render `S<T>::R' not a
-	     type.  However, if `S' is specialized, then this `i' will
-	     not be used, so there is no harm in resolving the types
-	     here.  */
-	  if (TREE_CODE (scope) == TYPENAME_TYPE)
-	    {
-	      /* Resolve the TYPENAME_TYPE.  */
-	      scope = cp_parser_resolve_typename_type (parser, scope);
-	      /* If that failed, the declarator is invalid.  */
-	      if (scope == error_mark_node)
-		return error_mark_node;
-	      /* Build a new DECLARATOR.  */
-	      declarator = build_nt (SCOPE_REF, 
-				     scope,
-				     TREE_OPERAND (declarator, 1));
-	    }
-	}
-      else if (TREE_CODE (declarator) != IDENTIFIER_NODE)
-	/* Default args can only appear for a function decl.  */
-	parser->default_arg_ok_p = false;
-      
-      /* Check to see whether the declarator-id names a constructor, 
-	 destructor, or conversion.  */
-      if (ctor_dtor_or_conv_p 
-	  && ((TREE_CODE (declarator) == SCOPE_REF 
-	       && CLASS_TYPE_P (TREE_OPERAND (declarator, 0)))
-	      || (TREE_CODE (declarator) != SCOPE_REF
-		  && at_class_scope_p ())))
-	{
-	  tree unqualified_name;
-	  tree class_type;
-
-	  /* Get the unqualified part of the name.  */
-	  if (TREE_CODE (declarator) == SCOPE_REF)
-	    {
-	      class_type = TREE_OPERAND (declarator, 0);
-	      unqualified_name = TREE_OPERAND (declarator, 1);
-	    }
-	  else
-	    {
-	      class_type = current_class_type;
-	      unqualified_name = declarator;
-	    }
-
-	  /* See if it names ctor, dtor or conv.  */
-	  if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR
-	      || IDENTIFIER_TYPENAME_P (unqualified_name)
-	      || constructor_name_p (unqualified_name, class_type))
-	    {
-	      *ctor_dtor_or_conv_p = true;
-	      /* We would have cleared the default arg flag above, but
-		 they are ok.  */
-	      parser->default_arg_ok_p = saved_default_arg_ok_p;
-	    }
-	}
-    }
-  /* But for an abstract declarator, the initial direct-declarator can
-     be omitted.  */
-  else
-    {
-      declarator = NULL_TREE;
-      parser->default_arg_ok_p = false;
-    }
-
-  scope = get_scope_of_declarator (declarator);
-  if (scope)
-    /* Any names that appear after the declarator-id for a member
-       are looked up in the containing scope.  */
-    push_scope (scope);
-  else
-    scope = NULL_TREE;
-  parser->in_declarator_p = true;
-
-  /* Now, parse function-declarators and array-declarators until there
-     are no more.  */
+  bool first = true;
+  
   while (true)
     {
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      /* If it's a `[', we're looking at an array-declarator.  */
-      if (token->type == CPP_OPEN_SQUARE)
+      if (token->type == CPP_OPEN_PAREN)
 	{
-	  tree bounds;
+	  /* This is either a parameter-declaration-clause, or a
+  	     parenthesized declarator. When we know we are parsing a
+  	     named declaratory, it must be a paranthesized declarator
+  	     if FIRST is true. For instance, `(int)' is a
+  	     parameter-declaration-clause, with an omitted
+  	     direct-abstract-declarator. But `((*))', is a
+  	     parenthesized abstract declarator. Finally, when T is a
+  	     template parameter `(T)' is a
+  	     paremeter-declaration-clause, and not a parenthesized
+  	     named declarator.
+	     
+	     We first try and parse a parameter-declaration-clause,
+	     and then try a nested declarator (if FIRST is true).
 
-	  /* Consume the `['.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  /* Peek at the next token.  */
-	  token = cp_lexer_peek_token (parser->lexer);
-	  /* If the next token is `]', then there is no
-	     constant-expression.  */
-	  if (token->type != CPP_CLOSE_SQUARE)
-	    bounds = cp_parser_constant_expression (parser);
-	  else
-	    bounds = NULL_TREE;
-	  /* Look for the closing `]'.  */
-	  cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
-
-	  declarator = build_nt (ARRAY_REF, declarator, bounds);
-	}
-      /* If it's a `(', we're looking at a function-declarator.  */
-      else if (token->type == CPP_OPEN_PAREN)
-	{
-	  /* A function-declarator.  Or maybe not.  Consider, for
-	     example:
+	     It is not an error for it not to be a
+	     parameter-declaration-clause, even when FIRST is
+	     false. Consider,
 
 	       int i (int);
 	       int i (3);
@@ -10318,51 +10189,211 @@ cp_parser_direct_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
 	     The former is a function-declaration; the latter is a
 	     variable initialization.  
 
-	     First, we attempt to parse a parameter-declaration
-	     clause.  If this works, then we continue; otherwise, we
-	     replace the tokens consumed in the process and continue.  */
-	  tree params;
+	     Thus again, we try a parameter-declation-clause, and if
+	     that fails, we back out and return.  */
 
-	  /* We are now parsing tentatively.  */
-	  cp_parser_parse_tentatively (parser);
-	  
-	  /* Consume the `('.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  /* Parse the parameter-declaration-clause.  */
-	  params = cp_parser_parameter_declaration_clause (parser);
-	  
-	  /* If all went well, parse the cv-qualifier-seq and the
-	     exception-specification.  */
-	  if (cp_parser_parse_definitely (parser))
+	  if (!first || dcl_kind != CP_PARSER_DECLARATOR_NAMED)
 	    {
-	      tree cv_qualifiers;
-	      tree exception_specification;
+	      tree params;
+	      
+	      cp_parser_parse_tentatively (parser);
 
-	      /* Consume the `)'.  */
-	      cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+	      /* Consume the `('.  */
+	      cp_lexer_consume_token (parser->lexer);
+	      if (first)
+		{
+		  /* If this is going to be an abstract declarator, we're
+		     in a declarator and we can't have default args.  */
+		  parser->default_arg_ok_p = false;
+		  parser->in_declarator_p = true;
+		}
+	  
+	      /* Parse the parameter-declaration-clause.  */
+	      params = cp_parser_parameter_declaration_clause (parser);
 
-	      /* Parse the cv-qualifier-seq.  */
-	      cv_qualifiers = cp_parser_cv_qualifier_seq_opt (parser);
-	      /* And the exception-specification.  */
-	      exception_specification 
-		= cp_parser_exception_specification_opt (parser);
+	      /* If all went well, parse the cv-qualifier-seq and the
+	     	 exception-specfication.  */
+	      if (cp_parser_parse_definitely (parser))
+		{
+		  tree cv_qualifiers;
+		  tree exception_specification;
+		  
+		  first = false;
+		  /* Consume the `)'.  */
+		  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
-	      /* Create the function-declarator.  */
-	      declarator = make_call_declarator (declarator,
-						 params,
-						 cv_qualifiers,
-						 exception_specification);
+		  /* Parse the cv-qualifier-seq.  */
+		  cv_qualifiers = cp_parser_cv_qualifier_seq_opt (parser);
+		  /* And the exception-specification.  */
+		  exception_specification 
+		    = cp_parser_exception_specification_opt (parser);
+
+		  /* Create the function-declarator.  */
+		  declarator = make_call_declarator (declarator,
+						     params,
+						     cv_qualifiers,
+						     exception_specification);
+		  /* Any subsequent parameter lists are to do with
+	 	     return type, so are not those of the declared
+	 	     function.  */
+		  parser->default_arg_ok_p = false;
+		  
+		  /* Repeat the main loop.  */
+		  continue;
+		}
 	    }
-	  /* Otherwise, we must be done with the declarator.  */
+	  
+	  /* If this is the first, we can try a parenthesized
+	     declarator.  */
+	  if (first)
+	    {
+	      parser->default_arg_ok_p = saved_default_arg_ok_p;
+	      parser->in_declarator_p = saved_in_declarator_p;
+	      
+	      /* Consume the `('.  */
+	      cp_lexer_consume_token (parser->lexer);
+	      /* Parse the nested declarator.  */
+	      declarator 
+		= cp_parser_declarator (parser, dcl_kind, ctor_dtor_or_conv_p);
+	      first = false;
+	      /* Expect a `)'.  */
+	      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
+		declarator = error_mark_node;
+	      if (declarator == error_mark_node)
+		break;
+	      
+	      goto handle_declarator;
+	    }
+	  /* Otherwise, we must be done. */
 	  else
 	    break;
 	}
-      /* Otherwise, we're done with the declarator.  */
+      else if ((!first || dcl_kind != CP_PARSER_DECLARATOR_NAMED)
+	       && token->type == CPP_OPEN_SQUARE)
+	{
+	  /* Parse an array-declarator.  */
+	  tree bounds;
+
+	  first = false;
+	  parser->default_arg_ok_p = false;
+	  parser->in_declarator_p = true;
+	  /* Consume the `['.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  /* Peek at the next token.  */
+	  token = cp_lexer_peek_token (parser->lexer);
+	  /* If the next token is `]', then there is no
+	     constant-expression.  */
+	  if (token->type != CPP_CLOSE_SQUARE)
+	    bounds = cp_parser_constant_expression (parser);
+	  else
+	    bounds = NULL_TREE;
+	  /* Look for the closing `]'.  */
+	  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'"))
+	    {
+	      declarator = error_mark_node;
+	      break;
+	    }
+
+	  declarator = build_nt (ARRAY_REF, declarator, bounds);
+	}
+      else if (first && dcl_kind != CP_PARSER_DECLARATOR_ABSTRACT)
+	{
+	  /* Parse a declarator_id */
+	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
+	    cp_parser_parse_tentatively (parser);
+	  declarator = cp_parser_declarator_id (parser);
+	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER
+	      && !cp_parser_parse_definitely (parser))
+	    declarator = error_mark_node;
+	  if (declarator == error_mark_node)
+	    break;
+	  
+	  if (TREE_CODE (declarator) == SCOPE_REF)
+	    {
+	      tree scope = TREE_OPERAND (declarator, 0);
+	  
+	      /* In the declaration of a member of a template class
+	     	 outside of the class itself, the SCOPE will sometimes
+	     	 be a TYPENAME_TYPE.  For example, given:
+	     	  
+               	 template <typename T>
+	       	 int S<T>::R::i = 3;
+		  
+             	 the SCOPE will be a TYPENAME_TYPE for `S<T>::R'.  In
+             	 this context, we must resolve S<T>::R to an ordinary
+             	 type, rather than a typename type.
+		  
+	     	 The reason we normally avoid resolving TYPENAME_TYPEs
+	     	 is that a specialization of `S' might render
+	     	 `S<T>::R' not a type.  However, if `S' is
+	     	 specialized, then this `i' will not be used, so there
+	     	 is no harm in resolving the types here.  */
+	      if (TREE_CODE (scope) == TYPENAME_TYPE)
+		{
+		  /* Resolve the TYPENAME_TYPE.  */
+		  scope = cp_parser_resolve_typename_type (parser, scope);
+		  /* If that failed, the declarator is invalid.  */
+		  if (scope == error_mark_node)
+		    return error_mark_node;
+		  /* Build a new DECLARATOR.  */
+		  declarator = build_nt (SCOPE_REF, 
+					 scope,
+					 TREE_OPERAND (declarator, 1));
+		}
+	    }
+      
+	  /* Check to see whether the declarator-id names a constructor, 
+	     destructor, or conversion.  */
+	  if (declarator && ctor_dtor_or_conv_p 
+	      && ((TREE_CODE (declarator) == SCOPE_REF 
+		   && CLASS_TYPE_P (TREE_OPERAND (declarator, 0)))
+		  || (TREE_CODE (declarator) != SCOPE_REF
+		      && at_class_scope_p ())))
+	    {
+	      tree unqualified_name;
+	      tree class_type;
+
+	      /* Get the unqualified part of the name.  */
+	      if (TREE_CODE (declarator) == SCOPE_REF)
+		{
+		  class_type = TREE_OPERAND (declarator, 0);
+		  unqualified_name = TREE_OPERAND (declarator, 1);
+		}
+	      else
+		{
+		  class_type = current_class_type;
+		  unqualified_name = declarator;
+		}
+
+	      /* See if it names ctor, dtor or conv.  */
+	      if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR
+		  || IDENTIFIER_TYPENAME_P (unqualified_name)
+		  || constructor_name_p (unqualified_name, class_type))
+		*ctor_dtor_or_conv_p = true;
+	    }
+
+	handle_declarator:;
+	  scope = get_scope_of_declarator (declarator);
+	  if (scope)
+	    /* Any names that appear after the declarator-id for a member
+       	       are looked up in the containing scope.  */
+	    push_scope (scope);
+	  parser->in_declarator_p = true;
+	  if ((ctor_dtor_or_conv_p && *ctor_dtor_or_conv_p)
+	      || (declarator
+		  && (TREE_CODE (declarator) == SCOPE_REF
+		      || TREE_CODE (declarator) == IDENTIFIER_NODE)))
+	    /* Default args are only allowed on function
+	       declarations.  */
+	    parser->default_arg_ok_p = saved_default_arg_ok_p;
+	  else
+	    parser->default_arg_ok_p = false;
+
+	  first = false;
+	}
+      /* We're done.  */
       else
 	break;
-      /* Any subsequent parameter lists are to do with return type, so
-	 are not those of the declared function.  */
-      parser->default_arg_ok_p = false;
     }
 
   /* For an abstract declarator, we might wind up with nothing at this
@@ -10610,7 +10641,7 @@ cp_parser_type_id (parser)
   cp_parser_parse_tentatively (parser);
   /* Look for the declarator.  */
   abstract_declarator 
-    = cp_parser_declarator (parser, /*abstract_p=*/true, NULL);
+    = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_ABSTRACT, NULL);
   /* Check to see if there really was a declarator.  */
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL_TREE;
@@ -10911,23 +10942,15 @@ cp_parser_parameter_declaration (cp_parser *parser,
       bool saved_default_arg_ok_p = parser->default_arg_ok_p;
       parser->default_arg_ok_p = false;
   
-      /* We don't know whether the declarator will be abstract or
-	 not.  So, first we try an ordinary declarator.  */
-      cp_parser_parse_tentatively (parser);
       declarator = cp_parser_declarator (parser,
-					 /*abstract_p=*/false,
+					 CP_PARSER_DECLARATOR_EITHER,
 					 /*ctor_dtor_or_conv_p=*/NULL);
-      /* If that didn't work, look for an abstract declarator.  */
-      if (!cp_parser_parse_definitely (parser))
-	declarator = cp_parser_declarator (parser,
-					   /*abstract_p=*/true,
-					   /*ctor_dtor_or_conv_p=*/NULL);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
       attributes = chainon (attributes, cp_parser_attributes_opt (parser));
     }
 
-  /* The restriction on definining new types applies only to the type
+  /* The restriction on defining new types applies only to the type
      of the parameter, not to the default argument.  */
   parser->type_definition_forbidden_message = saved_message;
 
@@ -11140,8 +11163,7 @@ cp_parser_function_definition (parser, friend_p)
     *friend_p = cp_parser_friend_p (decl_specifiers);
 
   /* Parse the declarator.  */
-  declarator = cp_parser_declarator (parser, 
-				     /*abstract_p=*/false,
+  declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 				     /*ctor_dtor_or_conv_p=*/NULL);
 
   /* Gather up any access checks that occurred.  */
@@ -12314,8 +12336,7 @@ cp_parser_member_declaration (parser)
 
 	      /* Parse the declarator.  */
 	      declarator 
-		= cp_parser_declarator (parser,
-					/*abstract_p=*/false,
+		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					&ctor_dtor_or_conv_p);
 
 	      /* If something went wrong parsing the declarator, make sure
@@ -12955,20 +12976,8 @@ cp_parser_exception_declaration (parser)
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
     declarator = NULL_TREE;
   else
-    {
-      /* Otherwise, we can't be sure whether we are looking at a
-	 direct, or an abstract, declarator.  */
-      cp_parser_parse_tentatively (parser);
-      /* Try an ordinary declarator.  */
-      declarator = cp_parser_declarator (parser,
-					 /*abstract_p=*/false,
-					 /*ctor_dtor_or_conv_p=*/NULL);
-      /* If that didn't work, try an abstract declarator.  */
-      if (!cp_parser_parse_definitely (parser))
-	declarator = cp_parser_declarator (parser,
-					   /*abstract_p=*/true,
-					   /*ctor_dtor_or_conv_p=*/NULL);
-    }
+    declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_EITHER,
+				       /*ctor_dtor_or_conv_p=*/NULL);
 
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;

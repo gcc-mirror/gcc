@@ -1,3 +1,21 @@
+2003-01-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9109
+	* parser.c (cp_parser_declarator_kind): New enum.
+	(cp_parser_declarator): Adjust.
+	(cp_parser_direct_declarator): Adjust. Allow for either named or
+	abstract declarator. Prefer abstract, if possible. Allow
+	parenthesized function name.
+	(cp_parser_condition): Adjust cp_parser_declarator call.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_type_id): Likewise.
+	(cp_parser_function_definition): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_parameter_declaration): Use cp_parser_declarator to do
+	the tentative parsing.
+	(cp_parser_exception_declaration): Likewise.
+
 2003-01-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_template_parameter): Adjust call to
