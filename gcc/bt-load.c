@@ -1385,10 +1385,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	    }
 	}
       else
-	{
-	  if (def->live_range)
-	    BITMAP_XFREE (def->live_range);
-	}
+	BITMAP_XFREE (def->live_range);
     }
 
   free (btrs_live);
