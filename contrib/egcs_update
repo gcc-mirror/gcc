@@ -75,7 +75,6 @@ for f in gcc/c-parse.y \
 	 gcc/cp/parse.h \
 	 gcc/objc/objc-parse.c \
 	 gcc/objc/objc-parse.y \
-	 gcc/java/parse.c \
 	 gcc/java/parse.h \
 	 libf2c/libU77/stamp-h.in \
 	 contrib/fixinc/fixincl.x \
