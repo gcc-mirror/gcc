@@ -1,3 +1,8 @@
+2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18299
+	* gcc.c-torture/pr18299-1.c: New test.
+
 2004-11-06  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/pr16286.c: Also test for bool and pixel.
