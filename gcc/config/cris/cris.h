@@ -1643,6 +1643,8 @@ call_ ## FUNC (void)						\
   {PLUS, IOR, AND, UMIN}},				\
  {"cris_operand_extend_operator",			\
   {PLUS, MINUS, UMIN}},					\
+ {"cris_additive_operand_extend_operator",		\
+  {PLUS, MINUS}},					\
  {"cris_extend_operator",				\
   {ZERO_EXTEND, SIGN_EXTEND}},				\
  {"cris_plus_or_bound_operator",			\

@@ -337,6 +337,22 @@ cris_operand_extend_operator (x, mode)
 	  && (code == PLUS || code == MINUS || code == UMIN));
 }
 
+/* Check if MODE is same as mode for X, and X is PLUS or MINUS.  */
+
+int
+cris_additive_operand_extend_operator (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (x);
+
+  return (GET_MODE (x) == mode
+	  && (code == PLUS || code == MINUS));
+}
+
 /* Check to see if MODE is same as mode for X, and X is SIGN_EXTEND or
    ZERO_EXTEND.  */
 
