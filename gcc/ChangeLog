@@ -1,5 +1,10 @@
 2004-07-07  Steven Bosscher  <stevenb@suse.de>
 
+	* tree-cfg.c (group_case_labels): Remove case labels that have
+	the same target as the default case.
+
+2004-07-07  Steven Bosscher  <stevenb@suse.de>
+
 	* tree-inline.c (optimize_inline_calls): Set DECL_INLINED_FNS
 	regardless of DECL_LANG_SPECIFIC being present or not.
 	* tree.h (DECL_NUM_STMTS): Purge.
