@@ -8954,7 +8954,8 @@ resolve_expression_name (id, orig)
 		}
 	      /* Instance variables can't appear as an argument of
 		 an explicit constructor invocation */
-	      if (!fs && ctxp->explicit_constructor_p)
+	      if (!fs && ctxp->explicit_constructor_p
+		  && !enclosing_context_p (DECL_CONTEXT (decl), current_class))
 		{
 		  parse_error_context
 		    (id, "Can't reference `%s' before the superclass constructor has been called", IDENTIFIER_POINTER (name));
@@ -9320,7 +9321,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		(wfl, "Keyword `this' used outside allowed context");
 	      return 1;
 	    }
-	  if (ctxp->explicit_constructor_p)
+	  if (ctxp->explicit_constructor_p
+	      && type == current_class)
 	    {
 	      parse_error_context (wfl, "Can't reference `this' before the superclass constructor has been called");
 	      return 1;
