@@ -198,6 +198,7 @@ end ifc
 %type <ttype> notype_declarator after_type_declarator
 %type <ttype> parm_declarator
 %type <ttype> parm_declarator_starttypename parm_declarator_nostarttypename
+%type <ttype> array_declarator
 
 %type <ttype> structsp_attr structsp_nonattr
 %type <ttype> component_decl_list component_decl_list2
@@ -1668,10 +1669,8 @@ after_type_declarator:
 /*	| after_type_declarator '(' error ')'  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
 		  poplevel (0, 0, 0); }  */
-	| after_type_declarator '[' expr ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| after_type_declarator '[' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| after_type_declarator array_declarator  %prec '.'
+		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| '*' maybe_type_quals_setattrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
@@ -1695,17 +1694,8 @@ parm_declarator_starttypename:
 /*	| parm_declarator_starttypename '(' error ')'  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
 		  poplevel (0, 0, 0); }  */
-ifc
-	| parm_declarator_starttypename '[' '*' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
-		  if (! flag_isoc99)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
-		}
-end ifc
-	| parm_declarator_starttypename '[' expr ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| parm_declarator_starttypename '[' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| parm_declarator_starttypename array_declarator  %prec '.'
+		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| TYPENAME
 	;
 
@@ -1715,17 +1705,8 @@ parm_declarator_nostarttypename:
 /*	| parm_declarator_nostarttypename '(' error ')'  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
 		  poplevel (0, 0, 0); }  */
-ifc
-	| parm_declarator_nostarttypename '[' '*' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
-		  if (! flag_isoc99)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
-		}
-end ifc
-	| parm_declarator_nostarttypename '[' expr ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| parm_declarator_nostarttypename '[' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| parm_declarator_nostarttypename array_declarator  %prec '.'
+		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| '*' maybe_type_quals_setattrs parm_declarator_starttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| '*' maybe_type_quals_setattrs parm_declarator_nostarttypename  %prec UNARY
@@ -1747,17 +1728,8 @@ notype_declarator:
 		{ $$ = $3; }
 	| '*' maybe_type_quals_setattrs notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
-ifc
-	| notype_declarator '[' '*' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE);
-		  if (! flag_isoc99)
-		    error ("`[*]' in parameter declaration only allowed in ISO C 99");
-		}
-end ifc
-	| notype_declarator '[' expr ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| notype_declarator '[' ']'  %prec '.'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| notype_declarator array_declarator  %prec '.'
+		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| IDENTIFIER
 	;
 
@@ -2035,16 +2007,42 @@ direct_absdcl1:
 		{ $$ = $3; }
 	| direct_absdcl1 '(' parmlist
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
-	| direct_absdcl1 '[' expr ']'
-		{ $$ = build_nt (ARRAY_REF, $1, $3); }
-	| direct_absdcl1 '[' ']'
-		{ $$ = build_nt (ARRAY_REF, $1, NULL_TREE); }
+	| direct_absdcl1 array_declarator
+		{ $$ = set_array_declarator_type ($2, $1, 1); }
 	| '(' parmlist
 		{ $$ = build_nt (CALL_EXPR, NULL_TREE, $2, NULL_TREE); }
-	| '[' expr ']'
-		{ $$ = build_nt (ARRAY_REF, NULL_TREE, $2); }
+	| array_declarator
+		{ $$ = set_array_declarator_type ($1, NULL_TREE, 1); }
+	;
+
+/* The [...] part of a declarator for an array type.  */
+
+array_declarator:
+	  '[' expr ']'
+		{ $$ = build_array_declarator ($2, NULL_TREE, 0, 0); }
+	| '[' declspecs_nosc expr ']'
+		{ $$ = build_array_declarator ($3, $2, 0, 0); }
 	| '[' ']'
-		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
+		{ $$ = build_array_declarator (NULL_TREE, NULL_TREE, 0, 0); }
+	| '[' declspecs_nosc ']'
+		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 0); }
+	| '[' '*' ']'
+		{ $$ = build_array_declarator (NULL_TREE, NULL_TREE, 0, 1); }
+	| '[' declspecs_nosc '*' ']'
+		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 1); }
+	| '[' SCSPEC expr ']'
+		{ if (C_RID_CODE ($2) != RID_STATIC)
+		    error ("storage class specifier in array declarator");
+		  $$ = build_array_declarator ($3, NULL_TREE, 1, 0); }
+	| '[' SCSPEC declspecs_nosc expr ']'
+		{ if (C_RID_CODE ($2) != RID_STATIC)
+		    error ("storage class specifier in array declarator");
+		  $$ = build_array_declarator ($4, $3, 1, 0); }
+	| '[' declspecs_nosc SCSPEC expr ']'
+		{ if (C_RID_CODE ($3) != RID_STATIC)
+		    error ("storage class specifier in array declarator");
+		  $$ = build_array_declarator ($4, $2, 1, 0); }
+	;
 
 /* A nonempty series of declarations and statements (possibly followed by
    some labels) that can form the body of a compound statement.

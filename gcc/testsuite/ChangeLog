@@ -1,3 +1,7 @@
+2001-05-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-arraydecl-1.c, gcc.dg/c99-arraydecl-1.c: New tests.
+
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	G++ no longer defines builtins that do not begin with __builtin.

@@ -2182,6 +2182,13 @@ An attribute specifier list may, in future, be permitted to appear after
 the declarator in a function definition (before any old-style parameter
 declarations or the function body).
 
+Attribute specifiers may be mixed with type qualifiers appearing inside
+the @code{[]} of a parameter array declarator, in the C99 construct by
+which such qualifiers are applied to the pointer to which the array is
+implicitly converted.  Such attribute specifiers apply to the pointer,
+not to the array, but at present this is not implemented and they are
+ignored.
+
 An attribute specifier list may appear at the start of a nested
 declarator.  At present, there are some limitations in this usage: the
 attributes apply to the identifer declared, and to all subsequent

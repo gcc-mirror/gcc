@@ -1,3 +1,21 @@
+2001-05-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (array_declarator): New.  Handle C99 constructs.
+	Don't restrict [*] declarators to C only.
+	(after_type_declarator, parm_declarator_starttypename,
+	parm_declarator_nostarttypename, notype_declarator,
+	direct_absdcl1): Use it.
+	* c-decl.c (build_array_declarator, set_array_declarator_type):
+	New functions.  Warn that [*] isn't properly implemented; pedwarn
+	for [*] outside C99 mode if pedantic rather than giving a hard
+	error.
+	(grokdeclarator): Handle static and type qualifiers in parameter
+	array declarators.
+	* c-tree.h (build_array_declarator, set_array_declarator_type):
+	Declare.
+	* extend.texi (Attribute Syntax): Document attributes in parameter
+	array declarators.
+
 2001-05-25  Mark  <mark@codesourcery.com>
 
 	* config/i386/i386.md: Make sure cmpstr peepholes do not 
