@@ -98,7 +98,7 @@ static symbol * symbol_pop (void);
 static void file_push (file *);
 static file * file_pop (void);
 static void tlink_init (void);
-static int tlink_execute (const char *, char **, const char *);
+static int tlink_execute (const char *, char **, const char *, const char *);
 static char * frob_extension (const char *, const char *);
 static char * obstack_fgets (FILE *, struct obstack *);
 static char * tfgets (FILE *);
@@ -279,11 +279,12 @@ tlink_init (void)
 }
 
 static int
-tlink_execute (const char *prog, char **argv, const char *redir)
+tlink_execute (const char *prog, char **argv, const char *outname,
+	       const char *errname)
 {
   struct pex_obj *pex;
 
-  pex = collect_execute (prog, argv, redir);
+  pex = collect_execute (prog, argv, outname, errname);
   return collect_wait (prog, pex);
 }
 
@@ -533,7 +534,7 @@ recompile_files (void)
 	fprintf (stderr, _("collect: recompiling %s\n"), f->main);
 
       if (chdir (f->dir) != 0
-	  || tlink_execute (c_file_name, argv, NULL) != 0
+	  || tlink_execute (c_file_name, argv, NULL, NULL) != 0
 	  || chdir (initial_cwd) != 0)
 	return 0;
 
@@ -735,7 +736,7 @@ scan_linker_output (const char *fname)
 void
 do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
 {
-  int exit = tlink_execute ("ld", ld_argv, ldout);
+  int exit = tlink_execute ("ld", ld_argv, ldout, lderrout);
 
   tlink_init ();
 
@@ -749,20 +750,26 @@ do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
 	while (exit && i++ < MAX_ITERATIONS)
 	  {
 	    if (tlink_verbose >= 3)
-	      dump_file (ldout);
+	      {
+		dump_file (ldout, stdout);
+		dump_file (lderrout, stderr);
+	      }
 	    demangle_new_symbols ();
-	    if (! scan_linker_output (ldout))
+	    if (! scan_linker_output (ldout)
+		&& ! scan_linker_output (lderrout))
 	      break;
 	    if (! recompile_files ())
 	      break;
 	    if (tlink_verbose)
 	      fprintf (stderr, _("collect: relinking\n"));
-	    exit = tlink_execute ("ld", ld_argv, ldout);
+	    exit = tlink_execute ("ld", ld_argv, ldout, lderrout);
 	  }
     }
 
-  dump_file (ldout);
+  dump_file (ldout, stdout);
   unlink (ldout);
+  dump_file (lderrout, stderr);
+  unlink (lderrout);
   if (exit)
     {
       error ("ld returned %d exit status", exit);

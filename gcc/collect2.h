@@ -23,17 +23,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 extern void do_tlink (char **, char **);
 
-extern struct pex_obj *collect_execute (const char *, char **, const char *);
+extern struct pex_obj *collect_execute (const char *, char **, const char *,
+					const char *);
 
 extern void collect_exit (int) ATTRIBUTE_NORETURN;
 
 extern int collect_wait (const char *, struct pex_obj *);
 
-extern void dump_file (const char *);
+extern void dump_file (const char *, FILE *);
 
 extern int file_exists (const char *);
 
 extern const char *ldout;
+extern const char *lderrout;
 extern const char *c_file_name;
 extern struct obstack temporary_obstack;
 extern char *temporary_firstobj;
