@@ -4476,7 +4476,6 @@ tsubst_friend_function (decl, args)
       tree old_decl;
       tree new_friend_template_info;
       tree new_friend_result_template_info;
-      tree ns;
       int  new_friend_is_defn;
 
       /* We must save some information from NEW_FRIEND before calling
@@ -4499,13 +4498,7 @@ tsubst_friend_function (decl, args)
 	  new_friend_result_template_info = NULL_TREE;
 	}
 
-      /* Inside pushdecl_namespace_level, we will push into the 
-	 current namespace. However, the friend function should 
-	 tyically go into the namespace of the template. */
-      ns = decl_namespace_context (new_friend);
-      push_nested_namespace (ns);
       old_decl = pushdecl_namespace_level (new_friend);
-      pop_nested_namespace (ns);
 
       if (old_decl != new_friend)
 	{

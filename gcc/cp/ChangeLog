@@ -1,8 +1,3 @@
-1999-06-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
-
-	* pt.c (tsubst_friend_function): Push into namespace of friend
-	function before pushdecl'ing it.
-
 1999-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (build_new_op): Remove REF_BIND from all operands.
