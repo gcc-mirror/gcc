@@ -973,7 +973,8 @@ emit_swap_insn (insn, regstack, reg)
   if (current_block && insn != current_block->head)
     {
       rtx tmp = PREV_INSN (insn);
-      while (tmp != current_block->head)
+      rtx limit = PREV_INSN (current_block->head);
+      while (tmp != limit)
 	{
 	  if (GET_CODE (tmp) == CODE_LABEL
 	      || (GET_CODE (tmp) == NOTE
@@ -1017,10 +1018,7 @@ emit_swap_insn (insn, regstack, reg)
   if (i1)
     emit_block_insn_after (swap_rtx, i1, current_block);
   else if (current_block)
-    {
-      i1 = emit_insn_before (swap_rtx, current_block->head);
-      current_block->head = i1;
-    }
+    emit_block_insn_before (swap_rtx, current_block->head, current_block);
   else
     emit_insn_before (swap_rtx, insn);
 }
