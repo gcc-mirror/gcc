@@ -643,6 +643,7 @@ enum reg_class
     BK_REG,			/* 'k' */
     SP_REG,			/* 'b' */
     RC_REG,			/* 'v' */
+    COUNTER_REGS,		/*  */
     INT_REGS,			/* 'c' */
     GENERAL_REGS,		/* 'r' */
     DP_REG,			/* 'z' */
@@ -665,6 +666,7 @@ enum reg_class
    "BK_REG",		\
    "SP_REG",		\
    "RC_REG",		\
+   "COUNTER_REGS",	\
    "INT_REGS",		\
    "GENERAL_REGS",	\
    "DP_REG",		\
@@ -690,6 +692,7 @@ enum reg_class
  {0x00080000}, /* 'k' BK */			\
  {0x00100000}, /* 'b' SP */			\
  {0x08000000}, /* 'v' RC */			\
+ {0x0800ff00}, /*     RC,AR0-AR7 */		\
  {0x0e1eff00}, /* 'c' AR0-AR7, IR0-IR1, BK, SP, RS, RE, RC */	\
  {0xfe1effff}, /* 'r' R0-R11, AR0-AR7, IR0-IR1, BK, SP, RS, RE, RC */\
  {0x00010000}, /* 'z' DP */			\

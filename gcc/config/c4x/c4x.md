@@ -4582,23 +4582,24 @@
 
 ; This pattern needs to be emitted at the start of the loop to
 ; say that RS and RE are loaded.
-(define_insn "init_branch_on_count"
-  [(unspec[(match_operand:QI 0 "rc_reg_operand" "v")] 22)
+(define_insn "*rptb_init"
+  [(unspec[(match_operand:QI 0 "register_operand" "va")] 22)
    (clobber (reg:QI 25))
    (clobber (reg:QI 26))]
   ""
   ""
   [(set_attr "type" "repeat")])
 
+
 ; The RS (25) and RE (26) registers must be unviolate from the top of the loop
 ; to here.
 (define_insn "rptb_end"
   [(set (pc)
-        (if_then_else (ge (match_operand:QI 2 "rc_reg_operand" "0,0,0,0,0")
+        (if_then_else (ge (match_operand:QI 0 "register_operand" "+v,?a,!*d,!*x*k,!m")
                           (const_int 0))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:QI 0 "rc_reg_operand" "+v,*a,*d,*x*k,*m")
+   (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (use (reg:QI 25))
@@ -4608,11 +4609,11 @@
   "*
    if (which_alternative == 0)
      return c4x_rptb_nop_p (insn) ? \"nop\" : \"\";
-   else if (which_alternative == 1)
+   else if (which_alternative == 1 && TARGET_DB)
      return \"dbu%#\\t%0,%l1\";
    else if (which_alternative == 2)
      return c4x_output_cbranch (\"subi\\t1,%0\\n\\tbge\", insn);
-   else if (which_alternative == 3)
+   else if (which_alternative == 3 || (which_alternative == 1 && ! TARGET_DB))
      return c4x_output_cbranch (\"subi\\t1,%0\\n\\tcmpi\\t0,%0\\n\\tbge\", insn);
    else
      return c4x_output_cbranch (\"push\\tr0\\n\\tldi\\t%0,r0\\n\\tsubi\\t1,r0\\n\\tsti\\tr0,%0\\n\\tpop\\tr0\\n\\tbhs\", insn);
@@ -4622,7 +4623,7 @@
 
 (define_expand "decrement_and_branch_on_count"
   [(parallel [(set (pc)
-                   (if_then_else (ge (match_operand:QI 0 "rc_reg_operand" "")
+                   (if_then_else (ge (match_operand:QI 0 "register_operand" "")
                                      (const_int 0))
                                  (label_ref (match_operand 1 "" ""))
                                  (pc)))
@@ -4633,8 +4634,15 @@
               (use (reg:QI 26))
               (clobber (reg:CC_NOOV 21))])]
   ""
-  "")
-
+  "if (1)
+     {
+        /* The C30 maximum iteration count for DB is 2^24.  */
+	if (!TARGET_DB)
+            FAIL;
+        emit_insn (gen_decrement_and_branch_until_zero (operands[0],
+                                                        operands[1]));
+	DONE;
+     }")
 
 (define_expand "movstrqi_small2"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "src_operand" ""))
