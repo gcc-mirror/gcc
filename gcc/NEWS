@@ -7,7 +7,9 @@ Target specific NEWS
 		    was added to do -mcpu=603e and -msoft-float.
 
     MCore: Port of gcc to Motorola's MCore 210 and 340 contributed.
-    
+
+    XScale: Port of gcc to Intel's XScale processor contributed.
+        
 Noteworthy changes in GCC for EGCS 1.1.
 ---------------------------------------
 
