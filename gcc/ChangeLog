@@ -1,3 +1,8 @@
+Sat Jan 16 15:13:46 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (shadd): Create shadd insns, even if the result of the shift is
+	needed without the addition.
+
 Sat Jan 16 10:48:16 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (movdf, movsf): Temporary workaround for no_new_pseudos lossage.
