@@ -1,3 +1,8 @@
+2001-11-06  Olivier Hainque <hainque@act-europe.fr>
+
+	* unwind-dw2.c (execute_cfa_program): Evaluate call frame
+	instructions up to the target pc inclusive.
+
 2001-11-06  Steve Christiansen  <smc@us.ibm.com>
 
 	* loop.c (loop_regs_scan):  Don't invalidate PIC register.
