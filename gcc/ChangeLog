@@ -1,3 +1,10 @@
+2003-05-12  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c (ia64_function_ok_for_sibcall): Mark 'exp'
+	as unused.
+	(bundling): Initialize 'pos'.
+	(ia64_expand_builtin): Initialize 'rmode'.
+
 2003-05-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (ASM_OUTPUT_SKIP): Accept HOST_WIDE_INT.
