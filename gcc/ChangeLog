@@ -1,3 +1,7 @@
+2001-11-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c: Remove whitespace at end of line.
+
 Wed Nov 28 14:51:23 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config.gcc (i[34567]86-*-interix3*): New case.
