@@ -70,5 +70,6 @@ extern void __gnat_initialize		(void *);
 extern void __gnat_init_float		(void);
 extern void __gnat_install_handler	(void);
 extern void __gnat_install_SEH_handler  (void *);
+extern void __gnat_adjust_context_for_raise (int, void *);
 
 extern int gnat_exit_status;
