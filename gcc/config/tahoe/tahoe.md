@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, Tahoe version
-;; Copyright (C) 1989, 1994 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1994, 1996 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1946,7 +1946,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (ne (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 		      (subreg:QI (match_operand:SI 1 "general_operand" "g") 0))
 	     (const_int 0))
@@ -1958,7 +1958,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (eq (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 		      (subreg:QI (match_operand:SI 1 "general_operand" "g") 0))
 	     (const_int 0))
@@ -1970,7 +1970,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (ne (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 		      (subreg:QI (match_operand:SI 1 "general_operand" "g") 0))
 	     (const_int 0))
@@ -1982,7 +1982,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (eq (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 		      (subreg:QI (match_operand:SI 1 "general_operand" "g") 0))
 	     (const_int 0))
@@ -1996,7 +1996,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (ne (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 			      (match_operand:QI 1 "register_operand" "r"))
 	     (const_int 0))
@@ -2008,7 +2008,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (eq (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 			      (match_operand:QI 1 "register_operand" "r"))
 	     (const_int 0))
@@ -2020,7 +2020,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (ne (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 			      (match_operand:QI 1 "register_operand" "r"))
 	     (const_int 0))
@@ -2032,7 +2032,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (sign_extract:SI (match_operand:SI 0 "nonimmediate_operand" "rm")
+	 (eq (sign_extract:SI (match_operand:SI 0 "register_operand" "rm")
 			      (const_int 1)
 			      (match_operand:QI 1 "register_operand" "r"))
 	     (const_int 0))
