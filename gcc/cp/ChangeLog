@@ -1,3 +1,10 @@
+2004-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/18384, c++/18327
+	* decl.c (reshape_init_array): Use UHWI type for max_index_cst
+	and index.  Convert max_index to size_type_node if it isn't
+	host_integerp (, 1).
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/18962

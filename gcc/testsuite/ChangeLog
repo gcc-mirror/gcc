@@ -1,3 +1,8 @@
+2004-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/18384, c++/18327
+	* g++.dg/init/array18.C: New test.
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/16819
