@@ -1,3 +1,8 @@
+2001-09-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi: Explain AIX exception handling work-around.
+	Update URL for AIX fixes.
+
 2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (do_pragma): Never expand macros.
