@@ -3533,16 +3533,16 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     gen_aux_info_record (decl, 0, 0, TYPE_ARG_TYPES (TREE_TYPE (decl)) != 0);
 
+  /* For C and Objective-C, we by default put things in .common when
+     possible.  */
+  DECL_COMMON (decl) = 1;
+
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (decl, attributes, prefix_attributes);
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
   tem = pushdecl (decl);
-
-  /* For C and Objective-C, we by default put things in .common when
-     possible.  */
-  DECL_COMMON (tem) = 1;
 
   /* For a local variable, define the RTL now.  */
   if (current_binding_level != global_binding_level
