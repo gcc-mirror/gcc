@@ -1974,7 +1974,9 @@ output_alternate_entry_point (file, insn)
     case LABEL_GLOBAL_ENTRY:
       ASM_GLOBALIZE_LABEL (file, name);
     case LABEL_STATIC_ENTRY:
-      /* FIXME output a .type directive here if appropriate.  */
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+      ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
+#endif
       ASM_OUTPUT_LABEL (file, name);
       break;
 
