@@ -1110,8 +1110,10 @@ namespace std
 	   long double __units) const
     { 
       const locale __loc = __io.getloc();
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-      const int __n = numeric_limits<long double>::digits10;
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+      // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
+      // decimal digit, '\0'. 
+      const int __n = numeric_limits<long double>::max_exponent10 + 5;
       char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __n));
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
       int __len = __convert_from_v(__cs, "%.01Lf", __units, _S_c_locale);
@@ -1206,8 +1208,9 @@ namespace std
 		    			         : __mpf.thousands_sep();
 		  const char* __gbeg = __grouping.c_str();
 		  const char* __gend = __gbeg + __grouping.size();
-		  const int __n = numeric_limits<long double>::digits10 * 2;
-		  _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
+		  const int __n = (__end - __beg) * 2;
+		  _CharT* __ws2 =
+		    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
 		  _CharT* __ws_end = __add_grouping(__ws2, __sep, __gbeg, 
 						    __gend, __beg, __end);
 		  __value.insert(0, __ws2, __ws_end - __ws2);
@@ -1863,10 +1866,9 @@ namespace std
       // If the buffer was not large enough, try again with the correct size.
       if (__res >= __len)
 	{
-	  _CharT* __c2 =
+	  __c =
 	    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__res + 1)));
-	  _M_transform_helper(__c2, __lo, __res + 1);
-	  return string_type(__c2);
+	  _M_transform_helper(__c, __lo, __res + 1);
 	}
       return string_type(__c);
     }
