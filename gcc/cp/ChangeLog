@@ -1,3 +1,13 @@
+2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (finish_non_static_data_member): Add object param.
+	* method.c (hack_identifier): Adjust.
+	* pt.c (tsubst_copy_and_build) <COMPONENT_REF case>: Don't search
+	again for a FIELD_DECL.
+	* semantics.c (finish_non_static_data_member): Add object
+	parameter. Always save the DECL in the COMPONENT_REF.
+	* call.c (resolve_scoped_fn_name): Adjust.
+
 2003-07-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* pt.c (get_bindings): Make definition consistent with
