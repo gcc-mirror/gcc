@@ -1,6 +1,6 @@
  /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -61,7 +61,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
-extern GENERIC_PTR xmalloc PROTO((size_t));
+extern char *xmalloc PROTO((size_t));
 extern int do_spec		PROTO((char *));
 extern char *input_filename;
 extern size_t input_filename_length;
@@ -98,7 +98,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_verbose_flag = 0;
 
   /* This will be 0 if we encounter a situation where we should not
-     link in libjava.  */
+     link in libgcj.  */
   int library = 1;
 
 #if COMBINE_INPUTS
@@ -154,8 +154,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* Saw `-l' option for the thread library.  */
   char *saw_threadlib = 0;
 
-  /* Saw `-ljava' on command line.  */
-  int saw_libjava = 0;
+  /* Saw `-lgcj' on command line.  */
+  int saw_libgcj = 0;
 
   /* Saw -C or -o option, respectively. */
   int saw_C = 0;
@@ -238,8 +238,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      main_class_name = argv[i] + 7;
 	      added--;
 	    }
-	  else if (strcmp (argv[i], "-ljava") == 0)
-	    saw_libjava = 1;
+	  else if (strcmp (argv[i], "-lgcj") == 0)
+	    saw_libgcj = 1;
 	  else if (strcmp (argv[i], "-lc") == 0)
 	    args[i] |= WITHLIBC;
 #ifdef GC_NAME
@@ -262,7 +262,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      if (argc == 2)
 		{
 		  /* If they only gave us `-v', don't try to link
-		     in libjava.  */ 
+		     in libgcj.  */ 
 		  library = 0;
 		}
 	    }
@@ -438,7 +438,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  continue;
 	}
 
-      /* Make sure -ljava is before the math library, since libjava
+      /* Make sure -lgcj is before the math library, since libgcj
 	 itself uses those math routines.  */
       if (!saw_math && (args[i] & MATHLIB) && library)
 	{
@@ -446,21 +446,21 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  saw_math = argv[i];
 	}
 
-      /* Likewise -ljava must come before -lc.  */
+      /* Likewise -lgcj must come before -lc.  */
       if (!saw_libc && (args[i] & WITHLIBC) && library)
 	{
 	  --j;
 	  saw_libc = argv[i];
 	}
 
-      /* And -ljava must come before -lgcjgc.  */
+      /* And -lgcj must come before -lgcjgc.  */
       if (!saw_gc && (args[i] & GCLIB) && library)
 	{
 	  --j;
 	  saw_gc = argv[i];
 	}
 
-      /* And -ljava must come before thread library.  */
+      /* And -lgcj must come before thread library.  */
       if (!saw_threadlib && (args[i] & THREADLIB) && library)
 	{
 	  --j;
@@ -501,10 +501,10 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   if (saw_g + saw_O == 0)
     arglist[j++] = "-g1";
 
-  /* Add `-ljava' if we haven't already done so.  */
-  if (library && ! saw_libjava)
+  /* Add `-lgcj' if we haven't already done so.  */
+  if (library && ! saw_libgcj)
     {
-      arglist[j++] = "-ljava";
+      arglist[j++] = "-lgcj";
       added_libraries++;
     }
 
@@ -527,7 +527,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 #endif
 
   /* Thread library must come after GC library as well as after
-     -ljava.  */
+     -lgcj.  */
   if (saw_threadlib)
     arglist[j++] = saw_threadlib;
 #ifdef THREAD_NAME

@@ -1,5 +1,12 @@
 1999-02-10  Tom Tromey  <tromey@cygnus.com>
 
+	* jvspec.c (lang_specific_driver): Use libgcj, not libjava.
+	* Makefile.in (jcf-path.o): Define LIBGCJ_ZIP_FILE.
+	(libgcj_zip): Renamed.
+	* jcf-path.c (add_entry): Use LIBGCJ_ZIP_FILE, not
+	LIBJAVA_ZIP_FILE.
+	(jcf_path_init): Use LIBGCJ_ZIP_FILE.
+
 	* jvspec.c (THREAD_NAME): Renamed -lqthreads to -lgcjcoop.
 	(GC_NAME): Renamed -lgc to -lgcjgc.
 
