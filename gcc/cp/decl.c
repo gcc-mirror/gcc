@@ -8710,6 +8710,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 {
   tree cname, decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
+  int has_default_arg = 0;
   tree t;
 
   if (ctype)
@@ -8826,7 +8827,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     if (TREE_PURPOSE (t)
 	&& TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
       {
-	add_defarg_fn (decl);
+	has_default_arg = 1;
 	break;
       }
 
@@ -8847,6 +8848,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	      return NULL_TREE;
 	    }
 
+
 	  /* A friend declaration of the form friend void f<>().  Record
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
@@ -8854,8 +8856,25 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    = perm_tree_cons (TREE_OPERAND (orig_declarator, 0),
 			      TREE_OPERAND (orig_declarator, 1),
 			      NULL_TREE);
+
+	  if (has_default_arg)
+	    {
+	      cp_error ("default arguments are not allowed in declaration of friend template specialization `%D'",
+			decl);
+	      return NULL_TREE;
+	    }
+
+	  if (inlinep)
+	    {
+	      cp_error ("`inline' is not allowed in declaration of friend template specialization `%D'", 
+			decl);
+	      return NULL_TREE;
+	    }
 	}
     }
+
+  if (has_default_arg)
+    add_defarg_fn (decl);
 
   /* Plain overloading: will not be grok'd by grokclassfn.  */
   if (! ctype && ! processing_template_decl

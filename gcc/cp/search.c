@@ -2122,7 +2122,8 @@ marked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 {
-  return BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE; 
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
 }
 
 static tree
@@ -2130,7 +2131,8 @@ unmarked_pushdecls_p (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 { 
-  return !BINFO_PUSHDECLS_MARKED (binfo) ? binfo : NULL_TREE;
+  return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
 }
 
 #if 0

@@ -6128,7 +6128,12 @@ tsubst (t, args, complain, in_decl)
 	if (max == error_mark_node)
 	  return error_mark_node;
 
-	if (processing_template_decl)
+	if (processing_template_decl 
+	    /* When providing explicit arguments to a template
+	       function, but leaving some arguments for subsequent
+	       deduction, MAX may be template-dependent even if we're
+	       not PROCESSING_TEMPLATE_DECL.  */
+	    || TREE_CODE (max) != INTEGER_CST)
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
 	    TYPE_MIN_VALUE (itype) = size_zero_node;
@@ -6908,9 +6913,20 @@ tsubst_copy (t, args, complain, in_decl)
         /* Substituted template arguments */
 	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, complain,
 				  in_decl);
-	tree chain;
-	for (chain = targs; chain; chain = TREE_CHAIN (chain))
-	  TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+
+	if (targs && TREE_CODE (targs) == TREE_LIST)
+	  {
+	    tree chain;
+	    for (chain = targs; chain; chain = TREE_CHAIN (chain))
+	      TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+	  }
+	else if (targs)
+	  {
+	    int i;
+	    for (i = 0; i < TREE_VEC_LENGTH (targs); ++i)
+	      TREE_VEC_ELT (targs, i) 
+		= maybe_fold_nontype_arg (TREE_VEC_ELT (targs, i));
+	  }
 
 	return lookup_template_function
 	  (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl), targs);

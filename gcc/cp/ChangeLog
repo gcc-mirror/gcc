@@ -1,5 +1,18 @@
 1999-05-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (TEMPLATE_ID_EXPR): Update documentation.
+	* decl.c (grokfndecl): Don't allow inline declarations of friend
+	template specializations, or friend template specializations with
+	default arguments.
+	* pt.c (tsubst): Handle substitution into array types that does
+	not yield a fixed upper bound, even when not processing a
+	template.
+	(tsubst_copy): Deal with the fact that the second operand to a
+	TEMPLATE_ID_EXPR may be NULL_TREE, a TREE_LIST, or a TREE_VEC.
+	* search.c (marked_pushdecls_p): Don't descend into
+	TEMPLATE_TYPE_PARMs and the like.
+	(unmarked_pushdecls_p): Likewise.
+	
 	* call.c (build_over_call): Don't throw away
 	initializations/copies of empty classes; use MODIFY_EXPR and
 	INIT_EXPR as for non-empty classes.

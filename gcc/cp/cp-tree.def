@@ -173,10 +173,10 @@ DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 DEFTREECODE (DEFAULT_ARG, "default_arg", 'c', 2)
 
 /* A template-id, like foo<int>.  The first operand is the template.
-   The second is the list of explicitly specified arguments.  The
-   template will be a FUNCTION_DECL, TEMPLATE_DECL, or an OVERLOAD.
-   If the template-id refers to a member template, the template may be
-   an IDENTIFIER_NODE.  */
+   The second is the TREE_LIST or TREE_VEC of explicitly specified
+   arguments.  The template will be a FUNCTION_DECL, TEMPLATE_DECL, or
+   an OVERLOAD.  If the template-id refers to a member template, the
+   template may be an IDENTIFIER_NODE.  */
 DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
 /* An association between name and entity. Parameters are the scope
