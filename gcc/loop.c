@@ -637,7 +637,7 @@ scan_loop (loop, flags)
 
   for (p = NEXT_INSN (loop_start);
        p != loop_end
-	 && GET_CODE (p) != CODE_LABEL && GET_RTX_CLASS (GET_CODE (p)) != 'i'
+	 && GET_CODE (p) != CODE_LABEL && ! INSN_P (p)
 	 && (GET_CODE (p) != NOTE
 	     || (NOTE_LINE_NUMBER (p) != NOTE_INSN_LOOP_BEG
 		 && NOTE_LINE_NUMBER (p) != NOTE_INSN_LOOP_END));
@@ -753,11 +753,9 @@ scan_loop (loop, flags)
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
-      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	  && find_reg_note (p, REG_LIBCALL, NULL_RTX))
+      if (INSN_P (p) && find_reg_note (p, REG_LIBCALL, NULL_RTX))
 	in_libcall = 1;
-      else if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	       && find_reg_note (p, REG_RETVAL, NULL_RTX))
+      else if (INSN_P (p) && find_reg_note (p, REG_RETVAL, NULL_RTX))
 	in_libcall = 0;
 
       if (GET_CODE (p) == INSN
@@ -2736,7 +2734,7 @@ find_and_verify_loops (f, loops)
      possible second cse pass.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	struct loop *this_loop = uid_loop[INSN_UID (insn)];
 
@@ -3556,7 +3554,7 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  ++count;
 
@@ -3609,8 +3607,7 @@ loop_reg_used_before_p (loop, set, insn)
      are done.  Otherwise, if we hit LOOP->END, wrap around to LOOP->START.  */
   for (p = loop->scan_start; p != insn; p = NEXT_INSN (p))
     {
-      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	  && reg_overlap_mentioned_p (reg, PATTERN (p)))
+      if (INSN_P (p) && reg_overlap_mentioned_p (reg, PATTERN (p)))
 	return 1;
 
       if (p == loop->end)
@@ -4107,8 +4104,7 @@ strength_reduce (loop, insn_count, flags)
 			      && insn_dependent_p (giv_insn, next)))
 			break;
 #ifdef HAVE_cc0
-		      if (! INSN_P (next)
-			  || ! sets_cc0_p (PATTERN (next)))
+		      if (! INSN_P (next) || ! sets_cc0_p (PATTERN (next)))
 #endif
 			dominator = next;
 		    }
@@ -4352,7 +4348,7 @@ strength_reduce (loop, insn_count, flags)
 		{
 		  rtx note;
     
-		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		  if (! INSN_P (p))
 		    continue;
 		  if (reg_mentioned_p (old_reg, PATTERN (p)))
 		    {
@@ -4747,7 +4743,7 @@ strength_reduce (loop, insn_count, flags)
 		    if ((auto_inc_opt == 1 && sets_cc0_p (PATTERN (v->insn)))
 			|| (auto_inc_opt == -1
 			    && (prev = prev_nonnote_insn (v->insn)) != 0
-			    && GET_RTX_CLASS (GET_CODE (prev)) == 'i'
+			    && INSN_P (prev)
 			    && sets_cc0_p (PATTERN (prev))))
 		      auto_inc_opt = 0;
 		  }
@@ -7474,7 +7470,7 @@ recombine_givs (loop, bl, unroll_p)
 	  if (p == loop->start)
 	    p = loop->end;
 	  p = PREV_INSN (p);
-	  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+	  if (! INSN_P (p))
 	    continue;
 	  ends_need_computing -= find_life_end (PATTERN (p), stats, p, biv);
 	}
@@ -7913,7 +7909,7 @@ check_dbra_loop (loop, insn_count)
 	     see if perhaps there are no uses except to count.  */
 	  no_use_except_counting = 1;
 	  for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
-	    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+	    if (INSN_P (p))
 	      {
 		rtx set = single_set (p);
 
@@ -7951,7 +7947,7 @@ check_dbra_loop (loop, insn_count)
       else if (num_mem_sets <= 1)
 	{
 	  for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
-	    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+	    if (INSN_P (p))
 	      num_nonfixed_reads += count_nonfixed_reads (loop, PATTERN (p));
 
 	  /* If the loop has a single store, and the destination address is
@@ -8292,7 +8288,7 @@ check_dbra_loop (loop, insn_count)
 		 remove all REG_EQUAL notes based on the reversed biv
 		 here.  */
 	      for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
-		if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+		if (INSN_P (p))
 		  {
 		    rtx *pnote;
 		    rtx set = single_set (p);
@@ -9552,7 +9548,7 @@ load_mems (loop)
 	  rtx_and_int ri;
 	  rtx set;
 
-	  if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+	  if (INSN_P (p))
 	    {
 	      /* See if this copies the mem into a register that isn't
 		 modified afterwards.  We'll try to do copy propagation
@@ -9745,7 +9741,7 @@ try_copy_prop (loop, replacement, regno)
       if (GET_CODE (insn) == CODE_LABEL && init_insn)
 	break;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       /* Is this the initializing insn?  */

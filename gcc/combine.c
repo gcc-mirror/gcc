@@ -588,7 +588,7 @@ combine_instructions (f, nregs)
       subst_low_cuid = i;
       subst_insn = insn;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies,
 		       NULL);
@@ -629,7 +629,7 @@ combine_instructions (f, nregs)
       if (GET_CODE (insn) == CODE_LABEL)
 	label_tick++;
 
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      else if (INSN_P (insn))
 	{
 	  /* See if we know about function return values before this
 	     insn based upon SUBREG flags.  */
@@ -1166,8 +1166,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
         return 0;
 
       for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
-        if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-  	  && p != succ && volatile_refs_p (PATTERN (p)))
+        if (INSN_P (p) && p != succ && volatile_refs_p (PATTERN (p)))
   	return 0;
     }
 
@@ -1182,8 +1181,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
      they might affect machine state.  */
 
   for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
-    if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	&& p != succ && volatile_insn_p (PATTERN (p)))
+    if (INSN_P (p) && p != succ && volatile_insn_p (PATTERN (p)))
       return 0;
 
   /* If INSN or I2 contains an autoincrement or autodecrement,
@@ -1518,9 +1516,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
      REG_LIBCALL note since we don't want to disrupt the contiguity of a
      libcall.  */
 
-  if (GET_RTX_CLASS (GET_CODE (i3)) != 'i'
-      || GET_RTX_CLASS (GET_CODE (i2)) != 'i'
-      || (i1 && GET_RTX_CLASS (GET_CODE (i1)) != 'i')
+  if (! INSN_P (i3) || ! INSN_P (i2) || (i1 && ! INSN_P (i1))
 #if 0
       /* ??? This gives worse code, and appears to be unnecessary, since no
 	 pass after flow uses REG_LIBCALL/REG_RETVAL notes.  */
@@ -2323,8 +2319,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 			|| insn != BLOCK_HEAD (this_basic_block + 1));
 	       insn = NEXT_INSN (insn))
 	    {
-	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-		  && reg_referenced_p (ni2dest, PATTERN (insn)))
+	      if (INSN_P (insn) && reg_referenced_p (ni2dest, PATTERN (insn)))
 		{
 		  for (link = LOG_LINKS (insn); link;
 		       link = XEXP (link, 1))
@@ -2525,7 +2520,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 		     temp && (this_basic_block == n_basic_blocks - 1
 			      || BLOCK_HEAD (this_basic_block) != temp);
 		     temp = NEXT_INSN (temp))
-		  if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
+		  if (temp != i3 && INSN_P (temp))
 		    for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
 		      if (XEXP (link, 0) == i2)
 			XEXP (link, 0) = i3;
@@ -12213,7 +12208,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 	      for (tem = PREV_INSN (i3); place == 0; tem = PREV_INSN (tem))
 		{
-		  if (GET_RTX_CLASS (GET_CODE (tem)) != 'i')
+		  if (! INSN_P (tem))
 		    {
 		      if (tem == bb->head)
 			break;
@@ -12554,8 +12549,7 @@ distribute_links (links)
 	   (insn && (this_basic_block == n_basic_blocks - 1
 		     || BLOCK_HEAD (this_basic_block + 1) != insn));
 	   insn = NEXT_INSN (insn))
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	    && reg_overlap_mentioned_p (reg, PATTERN (insn)))
+	if (INSN_P (insn) && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	  {
 	    if (reg_referenced_p (reg, PATTERN (insn)))
 	      place = insn;

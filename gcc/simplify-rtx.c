@@ -3189,7 +3189,7 @@ cselib_process_insn (insn)
       return;
     }
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     {
       cselib_current_insn = 0;
       return;

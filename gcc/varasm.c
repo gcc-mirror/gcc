@@ -3889,13 +3889,13 @@ mark_constant_pool ()
     pool->mark = 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       mark_constants (PATTERN (insn));
 
   for (insn = current_function_epilogue_delay_list;
        insn;
        insn = XEXP (insn, 1))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       mark_constants (PATTERN (insn));
 
   /* It's possible that the only reference to a symbol is in a symbol
@@ -3953,7 +3953,7 @@ mark_constants (x)
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
      a constant just because it happens to appear in a REG_EQUIV note.  */
-  if (GET_RTX_CLASS (GET_CODE (x)) == 'i')
+  if (INSN_P (x))
     {
       mark_constants (PATTERN (x));
       return;

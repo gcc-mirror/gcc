@@ -472,7 +472,7 @@ validate_equiv_mem (start, reg, memref)
 
   for (insn = start; insn && ! equiv_mem_modified; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       if (find_reg_note (insn, REG_DEAD, reg))
@@ -632,8 +632,7 @@ memref_used_between_p (memref, start, end)
 
   for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
        insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& memref_referenced_p (memref, PATTERN (insn)))
+    if (INSN_P (insn) && memref_referenced_p (memref, PATTERN (insn)))
       return 1;
 
   return 0;
@@ -698,7 +697,7 @@ update_equiv_regs ()
 	    loop_depth--;
 	}
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
@@ -909,7 +908,7 @@ update_equiv_regs ()
 	  && BLOCK_HEAD (block + 1) == insn)
 	++block;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	{
 	  if (GET_CODE (insn) == NOTE)
 	    {
@@ -1076,7 +1075,7 @@ block_alloc (b)
       if (GET_CODE (insn) != NOTE)
 	insn_number++;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  register rtx link, set;
 	  register int win = 0;
@@ -2168,7 +2167,7 @@ no_conflict_p (insn, r0, r1)
   last = XEXP (note, 0);
 
   for (p = NEXT_INSN (insn); p && p != last; p = NEXT_INSN (p))
-    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+    if (INSN_P (p))
       {
 	if (find_reg_note (p, REG_DEAD, r1))
 	  ok = 1;

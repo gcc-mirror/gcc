@@ -2825,7 +2825,7 @@ sh_loop_align (label)
   while (next && GET_CODE (next) == CODE_LABEL);
 
   if (! next
-      || GET_RTX_CLASS (GET_CODE (next)) != 'i'
+      || ! INSN_P (next)
       || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC
       || recog_memoized (next) == CODE_FOR_consttable_2)
     return 0;
@@ -2863,7 +2863,7 @@ machine_dependent_reorg (first)
 	 dependent REG_NOTE, or some other approach entirely.  */
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      rtx note;
 
@@ -2928,7 +2928,7 @@ machine_dependent_reorg (first)
 		   scan && GET_CODE (scan) != CODE_LABEL;
 		   scan = PREV_INSN (scan))
 		{
-		  if (GET_RTX_CLASS (GET_CODE (scan)) != 'i')
+		  if (! INSN_P (scan))
 		    continue;
 
 		  if (! reg_mentioned_p (reg, scan))
@@ -2981,7 +2981,7 @@ machine_dependent_reorg (first)
 	      if (GET_CODE (scan) == CODE_LABEL && ! foundinsn)
 		break;
 
-	      if (GET_RTX_CLASS (GET_CODE (scan)) != 'i')
+	      if (! INSN_P (scan))
 		continue;
 
 	      /* Don't try to trace forward past a JUMP.  To optimize
@@ -3309,7 +3309,7 @@ split_branches (first)
   bzero ((char *) uid_branch, max_uid * sizeof *uid_branch);
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    if (! INSN_P (insn))
       continue;
     else if (INSN_DELETED_P (insn))
       {

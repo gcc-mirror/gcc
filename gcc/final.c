@@ -990,7 +990,7 @@ shorten_branches (first)
      we must split them before we compute the address/length info.  */
 
   for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	rtx old = insn;
 	/* Don't split the insn if it has been deleted.  */
@@ -1037,7 +1037,7 @@ shorten_branches (first)
       int log;
 
       INSN_SHUID (insn) = i++;
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  /* reorg might make the first insn of a loop being run once only,
              and delete the label in front of it.  Then we want to apply
@@ -1086,7 +1086,7 @@ shorten_branches (first)
 	{
 	  rtx label;
 
-	  for (label = insn; label && GET_RTX_CLASS (GET_CODE (label)) != 'i';
+	  for (label = insn; label && ! INSN_P (label);
 	       label = NEXT_INSN (label))
 	    if (GET_CODE (label) == CODE_LABEL)
 	      {
@@ -4206,10 +4206,10 @@ leaf_renumber_regs (first)
      The reg-notes can contain frame pointer refs,
      and renumbering them could crash, and should not be needed.  */
   for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       leaf_renumber_regs_insn (PATTERN (insn));
   for (insn = current_function_epilogue_delay_list; insn; insn = XEXP (insn, 1))
-    if (GET_RTX_CLASS (GET_CODE (XEXP (insn, 0))) == 'i')
+    if (INSN_P (XEXP (insn, 0)))
       leaf_renumber_regs_insn (PATTERN (XEXP (insn, 0)));
 }
 
@@ -4255,7 +4255,7 @@ leaf_renumber_regs_insn (in_rtx)
       in_rtx->used = 1;
     }
 
-  if (GET_RTX_CLASS (GET_CODE (in_rtx)) == 'i')
+  if (INSN_P (in_rtx))
     {
       /* Inside a SEQUENCE, we find insns.
 	 Renumber just the patterns of these insns,

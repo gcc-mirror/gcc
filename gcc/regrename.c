@@ -465,7 +465,7 @@ build_def_use (b, ebb, regs_used, du, defs_live_exit)
 	  struct resources insn_res;
 	  struct resources insn_sets;
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  if (! INSN_P (insn))
 	    continue;
 
 	  CLEAR_RESOURCE (&insn_sets);
@@ -559,7 +559,7 @@ replace_reg_in_block (du, uid_ruid, def, reg_def, avail_reg)
   /* Now replace in the uses. */
   for (du_idx = def + 1; du_idx < du->high_bound; du_idx++)
     {
-      if (GET_RTX_CLASS (GET_CODE (VARRAY_RTX (*uid_ruid, du_idx))) != 'i')
+      if (! INSN_P (VARRAY_RTX (*uid_ruid, du_idx)))
 	continue;
 
       reg_use = regno_use_in (r, PATTERN (VARRAY_RTX (*uid_ruid, du_idx)));
@@ -802,7 +802,7 @@ consider_use (insn, regno, def_block, use_block)
   edge e;
   basic_block ub = BASIC_BLOCK (use_block);
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   /* If a use's basic block is different than the def's basic block, 

@@ -1761,7 +1761,7 @@ unshare_all_rtl_again (insn)
   tree decl;
 
   for (p = insn; p; p = NEXT_INSN (p))
-    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+    if (INSN_P (p))
       {
 	reset_used_flags (PATTERN (p));
 	reset_used_flags (REG_NOTES (p));
@@ -1788,7 +1788,7 @@ unshare_all_rtl_1 (insn)
      rtx insn;
 {
   for (; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	PATTERN (insn) = copy_rtx_if_shared (PATTERN (insn));
 	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
@@ -2354,8 +2354,7 @@ next_cc0_user (insn)
   if (insn && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
 
-  if (insn && GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-      && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+  if (insn && INSN_P (insn) && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
     return insn;
 
   return 0;
@@ -2450,10 +2449,8 @@ try_split (pat, trial, last)
 	     set LAST and continue from the insn after the one returned.
 	     We can't use next_active_insn here since AFTER may be a note.
 	     Ignore deleted insns, which can be occur if not optimizing.  */
-	  for (tem = NEXT_INSN (before); tem != after;
-	       tem = NEXT_INSN (tem))
-	    if (! INSN_DELETED_P (tem)
-		&& GET_RTX_CLASS (GET_CODE (tem)) == 'i')
+	  for (tem = NEXT_INSN (before); tem != after; tem = NEXT_INSN (tem))
+	    if (! INSN_DELETED_P (tem) && INSN_P (tem))
 	      tem = try_split (PATTERN (tem), tem, 1);
 	}
       /* Avoid infinite loop if the result matches the original pattern.  */
@@ -2503,7 +2500,7 @@ make_insn_raw (pattern)
 
 #ifdef ENABLE_RTL_CHECKING
   if (insn
-      && GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      && INSN_P (insn)
       && (returnjump_p (insn)
 	  || (GET_CODE (insn) == SET
 	      && SET_DEST (insn) == pc_rtx)))
@@ -2865,7 +2862,7 @@ remove_unnecessary_notes ()
 		 don't include labels; if the only thing in the block
 		 is a label, then there are still no PC values that
 		 lie within the block.  */
-	      if (GET_RTX_CLASS (GET_CODE (prev)) == 'i')
+	      if (INSN_P (prev))
 		break;
 
 	      /* We're only interested in NOTEs.  */

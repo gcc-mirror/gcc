@@ -892,7 +892,7 @@ alloc_gcse_mem (f)
   bzero ((char *) uid_cuid, n);
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	uid_cuid[INSN_UID (insn)] = i++;
       else
 	uid_cuid[INSN_UID (insn)] = i;
@@ -905,7 +905,7 @@ alloc_gcse_mem (f)
   cuid_insn = (rtx *) gmalloc (n);
   bzero ((char *) cuid_insn, n);
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       CUID_INSN (i++) = insn;
 
   /* Allocate vars to track sets of regs.  */
@@ -1164,7 +1164,7 @@ compute_sets (f)
   rtx insn;
 
   for (insn = f; insn != 0; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       note_stores (PATTERN (insn), record_set_info, insn);
 }
 
@@ -2132,7 +2132,7 @@ compute_hash_table (set_p)
 	    }
 #endif
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  if (! INSN_P (insn))
 	    continue;
 
 	  if (GET_CODE (insn) == CALL_INSN)
@@ -2166,7 +2166,7 @@ compute_hash_table (set_p)
       for (insn = BLOCK_HEAD (bb), in_libcall_block = 0;
 	   insn && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	if (INSN_P (insn))
 	  {
 	    if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	      in_libcall_block = 1;
@@ -3226,7 +3226,7 @@ classic_gcse ()
 
 	  /* Keep track of everything modified by this insn.  */
 	  /* ??? Need to be careful w.r.t. mods done to INSN.  */
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    mark_oprs_set (insn);
 	}
     }
@@ -3939,7 +3939,7 @@ cprop (alter_jumps)
 	   insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      changed |= cprop_insn (insn, alter_jumps);
 
@@ -4265,7 +4265,7 @@ insert_insn_end_bb (expr, bb, pre)
 	{
 	  rtx maybe_cc0_setter = prev_nonnote_insn (insn);
 	  if (maybe_cc0_setter
-	      && GET_RTX_CLASS (GET_CODE (maybe_cc0_setter)) == 'i'
+	      && INSN_P (maybe_cc0_setter)
 	      && sets_cc0_p (PATTERN (maybe_cc0_setter)))
 	    insn = maybe_cc0_setter;
 	}
@@ -4356,7 +4356,7 @@ insert_insn_end_bb (expr, bb, pre)
 	  rtx insn = XVECEXP (pat, 0, i);
 
 	  set_block_num (insn, bb);
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    add_label_notes (PATTERN (insn), new_insn);
 
 	  note_stores (PATTERN (insn), record_set_info, insn);
@@ -4908,7 +4908,7 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin, nonnull_avout, npi)
 	  rtx reg;
 
 	  /* Ignore anything that is not a normal insn.  */
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  if (! INSN_P (insn))
 	    continue;
 
 	  /* Basically ignore anything that is not a simple SET.  We do have

@@ -3522,8 +3522,7 @@ loop_find_equiv_value (loop, reg)
       if (GET_CODE (insn) == CODE_LABEL)
 	break;
 
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	       && reg_set_p (reg, insn))
+      else if (INSN_P (insn) && reg_set_p (reg, insn))
 	{
 	  /* We found the last insn before the loop that sets the register.
 	     If it sets the entire register, and has a REG_EQUAL note,
@@ -4125,8 +4124,7 @@ set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
     }
 
   /* Verify that FIRST_UID is an insn that entirely sets REGNO.  */
-  if (GET_RTX_CLASS (GET_CODE (p)) != 'i'
-      || ! dead_or_set_regno_p (p, regno))
+  if (! INSN_P (p) || ! dead_or_set_regno_p (p, regno))
     return 0;
 
   /* FIRST_UID is always executed.  */

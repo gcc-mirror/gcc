@@ -491,7 +491,7 @@ find_evaluations (evals, nregs)
       last = BLOCK_END (bb);
       while (1)
 	{
-	  if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+	  if (INSN_P (p))
 	    note_stores (PATTERN (p), find_evaluations_1, NULL);
 
 	  if (p == last)
@@ -999,7 +999,7 @@ rename_block (bb, idom)
   do
     {
       insn = next;
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  struct rename_context context;
 	  context.done_renames = set_data;
@@ -2122,7 +2122,7 @@ rename_equivalent_regs (reg_partition)
       do
 	{
 	  insn = next;
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      for_each_rtx (&PATTERN (insn), 
 			    rename_equivalent_regs_in_insn, 

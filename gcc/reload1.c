@@ -773,7 +773,7 @@ reload (first, global, dumpfile)
 	  = gen_rtx_INSN_LIST (VOIDmode, insn,
 			       reg_equiv_init[REGNO (SET_SRC (set))]);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	scan_paradoxical_subregs (PATTERN (insn));
     }
 
@@ -1113,7 +1113,7 @@ reload (first, global, dumpfile)
      and regenerate REG_INC notes that may have been moved around.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	rtx *pnote;
 
@@ -1225,7 +1225,7 @@ maybe_fix_stack_asms ()
       HARD_REG_SET clobbered, allowed;
       rtx pat;
 
-      if (GET_RTX_CLASS (GET_CODE (chain->insn)) != 'i'
+      if (! INSN_P (chain->insn)
 	  || (noperands = asm_noperands (PATTERN (chain->insn))) < 0)
 	continue;
       pat = PATTERN (chain->insn);
@@ -1360,11 +1360,10 @@ calculate_needs_all_insns (global)
 	 known offsets at labels.  */
 
       if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
-	  || (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	      && REG_NOTES (insn) != 0))
+	  || (INSN_P (insn) && REG_NOTES (insn) != 0))
 	set_label_offsets (insn, insn, 0);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  rtx old_body = PATTERN (insn);
 	  int old_code = INSN_CODE (insn);
@@ -3746,7 +3745,7 @@ reload_as_needed (live_known)
       if (GET_CODE (insn) == CODE_LABEL)
 	set_offsets_for_label (insn);
 
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      else if (INSN_P (insn))
 	{
 	  rtx oldpat = PATTERN (insn);
 
@@ -3834,7 +3833,7 @@ reload_as_needed (live_known)
 
 	      if (asm_noperands (PATTERN (insn)) >= 0)
 		for (p = NEXT_INSN (prev); p != next; p = NEXT_INSN (p))
-		  if (p != insn && GET_RTX_CLASS (GET_CODE (p)) == 'i'
+		  if (p != insn && INSN_P (p)
 		      && (recog_memoized (p) < 0
 			  || (extract_insn (p), ! constrain_operands (1))))
 		    {
@@ -6560,7 +6559,7 @@ emit_output_reload_insns (chain, rl, j)
 
   /* Look at all insns we emitted, just to be safe.  */
   for (p = get_insns (); p; p = NEXT_INSN (p))
-    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+    if (INSN_P (p))
       {
 	rtx pat = PATTERN (p);
 
@@ -7635,7 +7634,7 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
 	{
 	  if (GET_CODE (i2) == CODE_LABEL)
 	    break;
-	  if (GET_RTX_CLASS (GET_CODE (i2)) != 'i')
+	  if (! INSN_P (i2))
 	    continue;
 	  if (reg_referenced_p (dst, PATTERN (i2)))
 	    {
@@ -7969,7 +7968,7 @@ reload_cse_regs_1 (first)
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	reload_cse_simplify (insn);
 
       cselib_process_insn (insn);
@@ -8424,7 +8423,7 @@ reload_combine ()
 	  if (! fixed_regs[r])
 	      reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
 
       reload_combine_ruid++;
@@ -8855,7 +8854,7 @@ reload_cse_move2add (first)
 
       if (GET_CODE (insn) == CODE_LABEL)
 	last_label_luid = move2add_luid;
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (! INSN_P (insn))
 	continue;
       pat = PATTERN (insn);
       /* For simplicity, we only perform this optimization on

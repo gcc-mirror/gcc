@@ -301,7 +301,7 @@ sequence_uses_addressof (seq)
   rtx insn;
 
   for (insn = seq; insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	/* If this is a CALL_PLACEHOLDER, then recursively call ourselves
 	   with each nonempty sequence attached to the CALL_PLACEHOLDER.  */

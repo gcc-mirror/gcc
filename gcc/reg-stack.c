@@ -302,7 +302,7 @@ stack_regs_mentioned (insn)
   unsigned int uid, max;
   int test;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   uid = INSN_UID (insn);
@@ -342,8 +342,7 @@ next_flags_user (insn)
       if (!insn)
 	return NULL_RTX;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-          && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
+      if (INSN_P (insn) && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
         return insn;
 
       if (GET_CODE (insn) == JUMP_INSN
@@ -1237,8 +1236,7 @@ swap_rtx_condition (insn)
 	  insn = NEXT_INSN (insn);
 	  if (insn == NULL_RTX)
 	    return 0;
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	      && reg_mentioned_p (dest, insn))
+	  if (INSN_P (insn) && reg_mentioned_p (dest, insn))
 	    break;
 	  if (GET_CODE (insn) == JUMP_INSN)
 	    return 0;

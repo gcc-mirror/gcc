@@ -4950,7 +4950,7 @@ uses_TOC ()
     rtx insn;
 
     for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (INSN_P (insn))
 	{
 	  rtx pat = PATTERN (insn);
 	  int i;
@@ -6975,7 +6975,7 @@ rs6000_adjust_priority (insn, priority)
      operationss.  */
 
 #if 0
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return priority;
 
   if (GET_CODE (PATTERN (insn)) == USE)

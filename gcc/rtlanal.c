@@ -418,7 +418,7 @@ reg_used_between_p (reg, from_insn, to_insn)
     return 0;
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+    if (INSN_P (insn)
 	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
 	   || (GET_CODE (insn) == CALL_INSN
 	      && (find_reg_fusage (insn, USE, reg)
@@ -517,7 +517,7 @@ reg_referenced_between_p (reg, from_insn, to_insn)
     return 0;
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+    if (INSN_P (insn)
 	&& (reg_referenced_p (reg, PATTERN (insn))
 	   || (GET_CODE (insn) == CALL_INSN
 	      && find_reg_fusage (insn, USE, reg))))
@@ -538,8 +538,7 @@ reg_set_between_p (reg, from_insn, to_insn)
     return 0;
 
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& reg_set_p (reg, insn))
+    if (INSN_P (insn) && reg_set_p (reg, insn))
       return 1;
   return 0;
 }
@@ -571,7 +570,7 @@ reg_set_p (reg, insn)
 
   /* We can be passed an insn or part of one.  If we are passed an insn,
      check if a side-effect of the insn clobbers REG.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+  if (INSN_P (insn))
     {
       if (FIND_REG_INC_NOTE (insn, reg)
 	  || (GET_CODE (insn) == CALL_INSN
@@ -802,7 +801,7 @@ single_set (insn)
   rtx set;
   int i;
   
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   if (GET_CODE (PATTERN (insn)) == SET)
@@ -852,7 +851,7 @@ multiple_sets (insn)
   int i;
   
   /* INSN must be an insn.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   /* Only a PARALLEL can have multiple SETs.  */
@@ -891,7 +890,7 @@ find_last_value (x, pinsn, valid_to, allow_hwreg)
 
   for (p = PREV_INSN (*pinsn); p && GET_CODE (p) != CODE_LABEL;
        p = PREV_INSN (p))
-    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+    if (INSN_P (p))
       {
 	rtx set = single_set (p);
 	rtx note = find_reg_note (p, REG_EQUAL, NULL_RTX);
@@ -1194,7 +1193,7 @@ reg_set_last (x, insn)
        && ! (GET_CODE (insn) == CALL_INSN
 	     && reg_set_last_last_regno <= FIRST_PSEUDO_REGISTER);
        insn = PREV_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+    if (INSN_P (insn))
       {
 	note_stores (PATTERN (insn), reg_set_last_1, NULL);
 	if (reg_set_last_unknown)
@@ -1427,7 +1426,7 @@ find_reg_note (insn, kind, datum)
   register rtx link;
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -1451,7 +1450,7 @@ find_regno_note (insn, kind, regno)
   register rtx link;
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (! INSN_P (insn))
     return 0;
 
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

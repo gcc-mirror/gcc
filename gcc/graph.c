@@ -152,7 +152,7 @@ darkgrey\n  shape: ellipse" : "white",
 	name =  GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (tmp_rtx));
       fprintf (fp, " %s", name);
     }
-  else if (GET_RTX_CLASS (GET_CODE (tmp_rtx)) == 'i')
+  else if (INSN_P (tmp_rtx))
     print_rtl_single (fp, PATTERN (tmp_rtx));
   else
     print_rtl_single (fp, tmp_rtx);
