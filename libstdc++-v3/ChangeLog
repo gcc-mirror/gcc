@@ -1,5 +1,13 @@
 2004-06-18  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/16020
+	* include/debug/safe_base.h
+	(_Safe_sequence_base::_Safe_sequence_base(const _Safe_sequence_base&),
+	_Safe_sequence_base::operator=): Provide definitions.
+	* testsuite/23_containers/bitset/cons/16020.cc: New.
+
+2004-06-18  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/rope (rope(_CharT, const allocator_type&)): Fix
 	to use _Data_allocate.
 	* include/ext/ropeimpl.h (rope<>::_S_leaf_concat_char_iter): Likewise.
