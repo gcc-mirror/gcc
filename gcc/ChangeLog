@@ -1,3 +1,18 @@
+1998-02-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c: Add old_args_size.
+	(dwarf2out_args_size): Use it.
+	(dwarf2out_begin_prologue): Initialize it.
+	(dwarf2out_stack_adjust): If !asynchronous_exceptions, save up
+	pushed args until we see a call.
+	* final.c (final_scan_insn): Hand CALL_INSNs off to the dwarf2 code
+	before outputting them.
+
+1998-02-06  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* cplus-dem.c (demangle_template_template_parm): New function.
+	(demangle_template): Handle template template parameters.
+
 1998-02-02  Mark Mitchell  <mmitchell@usa.net>
 
 	* calls.c (expand_call): Don't confuse member functions named

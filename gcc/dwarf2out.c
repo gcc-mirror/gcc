@@ -847,6 +847,9 @@ static long cfa_store_offset;
 /* The running total of the size of arguments pushed onto the stack.  */
 static long args_size;
 
+/* The last args_size we actually output.  */
+static long old_args_size;
+
 /* Entry point to update the canonical frame address (CFA).
    LABEL is passed to add_fde_cfi.  The value of CFA is now to be
    calculated from REG+OFFSET.  */
@@ -961,7 +964,13 @@ dwarf2out_args_size (label, size)
      char *label;
      long size;
 {
-  register dw_cfi_ref cfi = new_cfi ();
+  register dw_cfi_ref cfi;
+
+  if (size == old_args_size)
+    return;
+  old_args_size = size;
+
+  cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
   cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
   add_fde_cfi (label, cfi);
@@ -1066,6 +1075,26 @@ dwarf2out_stack_adjust (insn)
 {
   long offset;
   char *label;
+
+  if (! asynchronous_exceptions && GET_CODE (insn) == CALL_INSN)
+    {
+      /* Extract the size of the args from the CALL rtx itself.  */
+
+      insn = PATTERN (insn);
+      if (GET_CODE (insn) == PARALLEL)
+	insn = XVECEXP (insn, 0, 0);
+      if (GET_CODE (insn) == SET)
+	insn = SET_SRC (insn);
+      assert (GET_CODE (insn) == CALL);
+      dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
+      return;
+    }
+
+  /* If only calls can throw, and we have a frame pointer,
+     save up adjustments until we see the CALL_INSN.  */
+  else if (! asynchronous_exceptions
+	   && cfa_reg != STACK_POINTER_REGNUM)
+    return;
 
   if (GET_CODE (insn) == BARRIER)
     {
@@ -1850,7 +1879,7 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
 
-  args_size = 0;
+  args_size = old_args_size = 0;
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code

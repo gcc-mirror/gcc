@@ -2174,6 +2174,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	debug_insn = insn;
 
+#if defined (DWARF2_UNWIND_INFO) && !defined (ACCUMULATE_OUTGOING_ARGS)
+	/* If we push arguments, we want to know where the calls are.  */
+	if (GET_CODE (insn) == CALL_INSN && dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
+#endif
+
 	/* If the proper template needs to be chosen by some C code,
 	   run that code and get the real template.  */
 
@@ -2226,7 +2232,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #if !defined (ACCUMULATE_OUTGOING_ARGS)
 	/* If we push arguments, we need to check all insns for stack
 	   adjustments.  */
-	if (dwarf2out_do_frame ())
+	if (GET_CODE (insn) == INSN && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
 #else
 #if defined (HAVE_prologue)
