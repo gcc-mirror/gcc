@@ -4,6 +4,8 @@
 
 	* gcc.dg/20020201-3.c: New test.
 
+	* gcc.c-torture/execute/bitfld-2.c: New test.
+
 2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/bitfld-1.c: Update.
