@@ -1,3 +1,9 @@
+Mon Feb  2 00:09:52 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* config/m68k/x-next: Remove /NextDeveloper/Headers from
+	the directories to fixinclude - /usr/include is a link
+	to it and hence its contents are fixed by default.
+
 Sun Feb  1 14:15:33 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h: define JUMP_TABLES_IN_TEXT_SECTION
