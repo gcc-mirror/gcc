@@ -3866,6 +3866,10 @@ extern void yyerror				PARAMS ((const char *));
 extern void clear_inline_text_obstack		PARAMS ((void));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
+extern void cxx_init PARAMS ((void));
+extern void cxx_finish PARAMS ((void));
+extern void cxx_init_options PARAMS ((void));
+extern void cxx_post_options PARAMS ((void));
 
 /* in method.c */
 extern void init_method				PARAMS ((void));
@@ -4189,6 +4193,14 @@ extern int char_type_p                          PARAMS ((tree));
 extern void verify_stmt_tree                    PARAMS ((tree));
 extern tree find_tree                           PARAMS ((tree, tree));
 extern linkage_kind decl_linkage                PARAMS ((tree));
+extern tree cp_walk_subtrees PARAMS ((tree*, int*, walk_tree_fn,
+				      void*, void*));
+extern int cp_cannot_inline_tree_fn PARAMS ((tree*));
+extern tree cp_add_pending_fn_decls PARAMS ((void*,tree));
+extern int cp_is_overload_p PARAMS ((tree));
+extern int cp_auto_var_in_fn_p PARAMS ((tree,tree));
+extern tree cp_copy_res_decl_for_inlining PARAMS ((tree, tree, tree, void*,
+						   int*, void*));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

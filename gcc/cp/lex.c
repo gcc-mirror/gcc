@@ -62,10 +62,6 @@ static void handle_pragma_unit PARAMS ((cpp_reader *));
 static void handle_pragma_interface PARAMS ((cpp_reader *));
 static void handle_pragma_implementation PARAMS ((cpp_reader *));
 static void handle_pragma_java_exceptions PARAMS ((cpp_reader *));
-static void cxx_init PARAMS ((void));
-static void cxx_finish PARAMS ((void));
-static void cxx_init_options PARAMS ((void));
-static void cxx_post_options PARAMS ((void));
 
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
@@ -241,21 +237,14 @@ static const char *const cplus_tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-/* Each front end provides its own hooks, for toplev.c.  */
-struct lang_hooks lang_hooks = {cxx_init,
-				cxx_finish,
-				cxx_init_options,
-				cxx_decode_option,
-				cxx_post_options};
-
 /* Post-switch processing.  */
-static void
+void
 cxx_post_options ()
 {
   cpp_post_options (parse_in);
 }
 
-static void
+void
 cxx_init_options ()
 {
   /* Make identifier nodes long enough for the language-specific slots.  */
@@ -275,7 +264,7 @@ cxx_init_options ()
   diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
 }
 
-static void
+void
 cxx_init ()
 {
   c_common_lang_init ();
@@ -284,10 +273,11 @@ cxx_init ()
   init_repo (input_filename);
 }
 
-static void
+void
 cxx_finish ()
 {
-  if (flag_gnu_xref) GNU_xref_end (errorcount+sorrycount);
+  if (flag_gnu_xref)
+    GNU_xref_end (errorcount+sorrycount);
 }
 
 const char *

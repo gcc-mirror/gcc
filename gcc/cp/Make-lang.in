@@ -101,7 +101,7 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parse.o cp/ptree.o cp/rtti.o \
  cp/spew.o cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/xref.o cp/repo.o cp/dump.o \
- cp/optimize.o cp/mangle.o
+ cp/optimize.o cp/mangle.o cp/cp-lang.o
 
 # Use loose warnings for this front end.
 cp-warn =
@@ -241,6 +241,7 @@ cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h
 cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
   toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def \
   $(TM_P_H)
+cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h

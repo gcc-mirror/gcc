@@ -50,12 +50,6 @@ static tree count_trees_r PARAMS ((tree *, int *, void *));
 static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
 static tree find_tree_r PARAMS ((tree *, int *, void *));
 extern int cp_statement_code_p PARAMS ((enum tree_code));
-static treeopt_walk_subtrees_type cp_walk_subtrees;
-static treeopt_cannot_inline_tree_fn_type cp_cannot_inline_tree_fn;
-static treeopt_add_pending_fn_decls_type cp_add_pending_fn_decls;
-static treeopt_tree_chain_matters_p_type cp_is_overload_p;
-static treeopt_auto_var_in_fn_p_type cp_auto_var_in_fn_p;
-static treeopt_copy_res_decl_for_inlining_type cp_copy_res_decl_for_inlining;
 
 static tree handle_java_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree handle_com_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -2058,7 +2052,7 @@ make_ptrmem_cst (type, member)
 /* Apply FUNC to all language-specific sub-trees of TP in a pre-order
    traversal.  Called from walk_tree().  */
 
-static tree 
+tree 
 cp_walk_subtrees (tp, walk_subtrees_p, func, data, htab)
      tree *tp;
      int *walk_subtrees_p;
@@ -2129,7 +2123,7 @@ cp_walk_subtrees (tp, walk_subtrees_p, func, data, htab)
 /* Decide whether there are language-specific reasons to not inline a
    function as a tree.  */
 
-static int
+int
 cp_cannot_inline_tree_fn (fnp)
      tree *fnp;
 {
@@ -2163,7 +2157,7 @@ cp_cannot_inline_tree_fn (fnp)
    handled by the caller), that thus cannot be inlined, to FNS_P, then
    return the latest function added to the array, PREV_FN.  */
 
-static tree
+tree
 cp_add_pending_fn_decls (fns_p, prev_fn)
      void *fns_p;
      tree prev_fn;
@@ -2185,7 +2179,7 @@ cp_add_pending_fn_decls (fns_p, prev_fn)
    whether to copy a node or to preserve its chain when inlining a
    function.  */
 
-static int
+int
 cp_is_overload_p (t)
      tree t;
 {
@@ -2195,7 +2189,7 @@ cp_is_overload_p (t)
 /* Determine whether VAR is a declaration of an automatic variable in
    function FN.  */
 
-static int
+int
 cp_auto_var_in_fn_p (var, fn)
      tree var, fn;
 {
@@ -2207,7 +2201,7 @@ cp_auto_var_in_fn_p (var, fn)
    FN being inlined into CALLER or if the top node of target_exprs is
    to be used.  */
 
-static tree
+tree
 cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
 			       need_decl, target_exprs)
      tree result, fn, caller;
@@ -2270,12 +2264,6 @@ void
 init_tree ()
 {
   make_lang_type_fn = cp_make_lang_type;
-  lang_walk_subtrees = cp_walk_subtrees;
-  lang_cannot_inline_tree_fn = cp_cannot_inline_tree_fn;
-  lang_add_pending_fn_decls = cp_add_pending_fn_decls;
-  lang_tree_chain_matters_p = cp_is_overload_p;
-  lang_auto_var_in_fn_p = cp_auto_var_in_fn_p;
-  lang_copy_res_decl_for_inlining = cp_copy_res_decl_for_inlining;
   lang_unsave = cp_unsave;
   lang_statement_code_p = cp_statement_code_p;
   lang_set_decl_assembler_name = mangle_decl;
