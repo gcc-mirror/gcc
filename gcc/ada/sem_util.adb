@@ -1602,6 +1602,18 @@ package body Sem_Util is
                Error_Msg_N ("& conflicts with declaration#", E);
                return;
 
+            --  If the name of the unit appears in its own context clause,
+            --  a dummy package with the name has already been created, and
+            --  the error emitted. Try to continue quietly.
+
+            elsif Error_Posted (E)
+              and then Sloc (E) = No_Location
+              and then Nkind (Parent (E)) = N_Package_Specification
+              and then Current_Scope = Standard_Standard
+            then
+               Set_Scope (Def_Id, Current_Scope);
+               return;
+
             else
                Error_Msg_N ("& conflicts with declaration#", Def_Id);
 
