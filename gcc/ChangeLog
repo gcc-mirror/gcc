@@ -1,5 +1,13 @@
 2002-09-20  Richard Henderson  <rth@redhat.com>
 
+	* real.c (do_fix_trunc): Static.
+	(encode_ieee_single, encode_ieee_double, encode_ieee_extended,
+	encode_ieee_quad, encode_vax_f, encode_vax_d, encode_vax_g,
+	encode_i370_single, encode_i370_double, encode_c4x_single,
+	encode_c4x_extended): Add default abort case.
+
+2002-09-20  Richard Henderson  <rth@redhat.com>
+
 	* real.h (enum real_value_class, SIGNIFICAND_BITS, EXP_BITS,
 	MAX_EXP, SIGSZ, SIG_MSB, struct real_value): Move from real.c.
 	(struct realvaluetype): Remove.
