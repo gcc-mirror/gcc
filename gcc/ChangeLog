@@ -1,3 +1,10 @@
+Sat Jan 25 12:05:17 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (fold_trunc_transparent_mathfn): New function.
+	(fold_builtin): Use it.
+	* convert.c (convert_to_real): Re-enable code to convert
+	math functions; add support for floor familly functions.
+
 2003-01-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (cfgloop.o, cfgloopanal.o, cfgloopmanip.o): Add
