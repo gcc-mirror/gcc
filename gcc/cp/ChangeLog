@@ -1,3 +1,11 @@
+1999-12-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (initialize_inlined_parameters): Take FN to which the
+	parameters belong as an argument.
+	(expand_call_inline): Expand calls into the parameter
+	initializations before pushing the function onto the list of
+	functions we are presently expanding.
+
 1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (get_vtable_name): Use a literal format string and
