@@ -6041,13 +6041,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    `main'.  */
 /* #define DEFAULT_MAIN_RETURN */
 
-/* Define this if the target system supports the function `atexit' from the
-   ANSI C standard.  If this is not defined, and `INIT_SECTION_ASM_OP' is not
-   defined, a default `exit' function will be provided to support C++.
-
-   Defined by svr4.h */
-/* #define HAVE_ATEXIT */
-
 /* Define this if your `exit' function needs to do something besides calling an
    external function `_cleanup' before terminating with `_exit'.  The
    `EXIT_BODY' macro is only needed if netiher `HAVE_ATEXIT' nor

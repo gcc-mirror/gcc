@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "sparc/sparc.h"
 
-#define HAVE_ATEXIT
-
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu=sparc -Amachine=sparc"
 

@@ -1,6 +1,6 @@
 /* netware.h -- operating system specific defines to be used when 
    targeting GCC for some generic NetWare 4 system.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 2000 Free Software Foundation, Inc.
 
    Written by David V. Henkel-Wallace (gumby@cygnus.com)
 
@@ -62,8 +62,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    readonly data section) or else you can #define the symbols
    EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
    SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
-
-#define	HAVE_ATEXIT
 
 #undef	HAS_INIT_SECTION
 #undef	INIT_SECTION_ASM_OP

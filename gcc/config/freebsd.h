@@ -136,6 +136,3 @@ do {				 					\
 
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA
-
-/* Tell libgcc2.c that FreeBSD targets support atexit(3).  */
-#define HAVE_ATEXIT

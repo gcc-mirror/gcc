@@ -1293,9 +1293,6 @@ do { char dstr[30];                                     \
    PROMOTE_FUNCTION_RETURN does the same for function returns.  */
 #define PROMOTE_FUNCTION_ARGS
 
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT
-
 
 /* We can debug without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP 

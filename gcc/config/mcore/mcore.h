@@ -1070,10 +1070,6 @@ extern enum reg_class reg_class_from_letter[];
 
 #define WORD_REGISTER_OPERATIONS
 
-/* Provided in ANSI C MCore libraries.  */
-#undef  HAVE_ATEXIT
-#define HAVE_ATEXIT 1
-
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
