@@ -28,6 +28,7 @@
 /* Generic or default I/O operations. */
 
 #include "libioP.h"
+#ifdef _GLIBCPP_USE_WCHAR_T
 #ifdef __STDC__
 #include <stdlib.h>
 #endif
@@ -751,3 +752,5 @@ _IO_unsave_wmarkers (fp)
   if (_IO_have_backup (fp))
     _IO_free_wbackup_area (fp);
 }
+
+#endif /* _GLIBCPP_USE_WCHAR_T */

@@ -1,5 +1,18 @@
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
+	* iofopen.c (_IO_new_fopen): Don't define `_IO_wide_data wd'
+	if _GLIBCPP_USE_WCHAR_T is not defined.
+	* iofwide.c: Don't define codecvt functions when 
+	_GLIBCPP_USE_WCHAR_T is not defined.
+	(_IO_fwide): Don't try to put the stream in wide mode when
+	_GLIBCPP_USE_WCHAR_T is not defined.
+	* libio.h (_IO_wide_data): Define it as an incomplete struct
+	when _GLIBCPP_USE_WCHAR_T is not defined.
+	* wfiledoalloc.c: Don't define anything when 
+	_GLIBCPP_USE_WCHAR_T is not defined.
+	* wfileops.c: Likewise.
+	* wgenops.c: Likewise.
+	
 	* _G_config.h (_G_USING_THUNKS): Allow overrides from
 	OS-configuration files.
 	* libioP.h: Test _G_USING_THUNKS with #if, rather than #ifdef.

@@ -44,7 +44,9 @@ _IO_new_fopen (filename, mode)
 #ifdef _IO_MTSAFE_IO
     _IO_lock_t lock;
 #endif
+#if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
     struct _IO_wide_data wd;
+#endif /* !(defined _LIBC || defined _GLIBCPP_USE_WCHAR_T) */
   } *new_f = (struct locked_FILE *) malloc (sizeof (struct locked_FILE));
 
   if (new_f == NULL)

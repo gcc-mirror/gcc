@@ -46,6 +46,7 @@
 # define _POSIX_SOURCE
 #endif
 #include "libioP.h"
+#ifdef _GLIBCPP_USE_WCHAR_T
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef __STDC__
@@ -103,3 +104,5 @@ _IO_wfile_doallocate (fp)
     fp->_flags |= _IO_LINE_BUF;
   return 1;
 }
+
+#endif /* _GLIBCPP_USE_WCHAR_T */

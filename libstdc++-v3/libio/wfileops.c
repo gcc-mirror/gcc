@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <libioP.h>
+#ifdef _GLIBCPP_USE_WCHAR_T
 #include <wchar.h>
 #ifdef HAVE_GCONV_H
 #  include <gconv.h>
@@ -749,3 +750,5 @@ struct _IO_jump_t _IO_wfile_jumps =
   JUMP_INIT(showmanyc, _IO_default_showmanyc),
   JUMP_INIT(imbue, _IO_default_imbue)
 };
+
+#endif /* _GLIBCPP_USE_WCHAR_T */

@@ -223,58 +223,84 @@ namespace std {
   locale::_Impl::_M_construct_collate(const char* __name)
   {
     _M_facet_init(new collate_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new collate_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
 
   void 
   locale::_Impl::_M_construct_ctype(const char* __name)
   {
     _M_facet_init(new ctype_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new ctype_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
     _M_facet_init(new codecvt_byname<char, char, mbstate_t>(__name));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new codecvt_byname<wchar_t, char, mbstate_t>(__name));
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
     
   void 
   locale::_Impl::_M_construct_monetary(const char* __name)
   {
     _M_facet_init(new moneypunct_byname<char, false>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new moneypunct_byname<wchar_t, false>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
     _M_facet_init(new moneypunct_byname<char, true >(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new moneypunct_byname<wchar_t, true >(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
 
     _M_replace_facet(locale::_S_classic, &money_get<char>::id);
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_replace_facet(locale::_S_classic, &money_get<wchar_t>::id);
+#endif /* _GLIBCPP_USE_WCHAR_T */
     _M_replace_facet(locale::_S_classic, &money_put<char>::id);
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_replace_facet(locale::_S_classic, &money_put<wchar_t>::id);
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
     
   void 
   locale::_Impl::_M_construct_numeric(const char* __name)
   {
     _M_facet_init(new numpunct_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new numpunct_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
 
     _M_replace_facet(locale::_S_classic, &num_get<char>::id);
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_replace_facet(locale::_S_classic, &num_get<wchar_t>::id);
+#endif /* _GLIBCPP_USE_WCHAR_T */
     _M_replace_facet(locale::_S_classic, &num_put<char>::id);
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_replace_facet(locale::_S_classic, &num_put<wchar_t>::id);
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
     
   void 
   locale::_Impl::_M_construct_time(const char* __name)
   {
     _M_facet_init(new time_get_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new time_get_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
     _M_facet_init(new time_put_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new time_put_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
     
   void 
   locale::_Impl::_M_construct_messages(const char* __name)
   {
     _M_facet_init(new messages_byname<char>(__name, 0));
+#ifdef _GLIBCPP_USE_WCHAR_T
     _M_facet_init(new messages_byname<wchar_t>(__name, 0));
+#endif /* _GLIBCPP_USE_WCHAR_T */
   }
 }
 

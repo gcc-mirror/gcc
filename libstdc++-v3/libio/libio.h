@@ -254,7 +254,13 @@ struct _IO_wide_data
   struct _IO_jump_t *_wide_vtable;
 #endif
 };
-#endif
+#else /* !(defined _LIBC || defined _GLIBCPP_USE_WCHAR_T) */
+/* Because _IO_no_init unconditionally takes a `_IO_wide_data*' as its
+   last parameter we must still define this type.  We intentionally
+   leave it incomplete to prevent any use of this type when we are not
+   supporting wide characters.  */
+struct _IO_wide_data;
+#endif /* !(defined _LIBC || defined _GLIBCPP_USE_WCHAR_T) */
 
 struct _IO_FILE {
   int _flags;		/* High-order word is _IO_MAGIC; rest is flags. */
