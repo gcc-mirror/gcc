@@ -340,7 +340,7 @@ in the following sections.
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian
 -mcall-aix  -mcall-sysv  -mprototype  -mno-prototype
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata
--msdata=@var{opt}  -G @var{num}
+-msdata=@var{opt}  -mvxworks -G @var{num}
 
 @emph{RT Options}
 -mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs
@@ -5564,6 +5564,10 @@ On embedded PowerPC systems, assume that the startup module is called
 On embedded PowerPC systems, assume that the startup module is called
 @file{crt0.o} and the standard C libraries are @file{libyk.a} and
 @file{libc.a}.
+
+@item -mvxworks
+On System V.4 and embedded PowerPC systems, specify that you are
+compiling for a VxWorks system.
 
 @item -memb
 On embedded PowerPC systems, set the @var{PPC_EMB} bit in the ELF flags
