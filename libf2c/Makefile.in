@@ -68,6 +68,7 @@ FLAGS_TO_PASS= \
 	LIBTOOL='$(LIBTOOL)' \
 	CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' \
+	AR='$(AR)' \
 	RANLIB='$(RANLIB)' \
 	prefix='$(prefix)' \
 	exec_prefix='$(exec_prefix)' \
@@ -210,7 +211,8 @@ install: all
 	   if [ -f $(LIBG2C_BASE).so ]; then \
 	     mv $(LIBG2C_BASE).so* $(prefix)/lib ;\
 	   fi)
-	$(INSTALL_DATA) frtbegin.o $(libsubdir)
+	$(INSTALL_DATA) libfrtbegin.a $(libsubdir)/$(MULTISUBDIR)
+	$(RANLIB) $(libsubdir)/$(MULTISUBDIR)/libfrtbegin.a
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
 	@if [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]; then \
 	  echo ''; \

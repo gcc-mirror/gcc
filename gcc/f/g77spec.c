@@ -53,6 +53,10 @@ Boston, MA 02111-1307, USA.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
+#ifndef FORTRAN_INIT
+#define FORTRAN_INIT "-lfrtbegin"
+#endif
+
 #ifndef FORTRAN_LIBRARY
 #define FORTRAN_LIBRARY "-lg2c"
 #endif
