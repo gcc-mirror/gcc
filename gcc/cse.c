@@ -5879,6 +5879,7 @@ cse_insn (insn, in_libcall_block)
 {
   register rtx x = PATTERN (insn);
   register int i;
+  rtx tem;
   register int n_sets = 0;
 
   /* Records what this insn does to set CC0.  */
@@ -6038,14 +6039,11 @@ cse_insn (insn, in_libcall_block)
       fold_rtx (x, insn);
     }
 
-  if (n_sets == 1 && REG_NOTES (insn) != 0)
-    {
-      /* Store the equivalent value in SRC_EQV, if different.  */
-      rtx tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-
-      if (tem && ! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl)))
-        src_eqv = canon_reg (XEXP (tem, 0), NULL_RTX);
-    }
+  /* Store the equivalent value in SRC_EQV, if different.  */
+  if (n_sets == 1 && REG_NOTES (insn) != 0
+      && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0
+      && ! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl)))
+    src_eqv = canon_reg (XEXP (tem, 0), NULL_RTX);
 
   /* Canonicalize sources and addresses of destinations.
      We do this in a separate pass to avoid problems when a MATCH_DUP is
@@ -6683,7 +6681,7 @@ cse_insn (insn, in_libcall_block)
       if (n_sets == 1 && src_const && GET_CODE (dest) == REG
 	  && GET_CODE (src_const) != REG)
 	{
-	  rtx tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	  tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 	  
 	  /* Record the actual constant value in a REG_EQUAL note, making
 	     a new one if one does not already exist.  */
