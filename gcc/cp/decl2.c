@@ -562,10 +562,10 @@ lang_f_options[] =
 /* The list of `-f' options that we no longer support.  The `-f'
    prefix is not given in this table.  The `-fno-' variants are not
    listed here.  This table must be kept in alphabetical order.  */
-static const char *unsupported_options[] = {
+static const char * const unsupported_options[] = {
   "all-virtual",
   "enum-int-equiv",
-  "guiding-decls"
+  "guiding-decls",
   "nonnull-objects",
   "this-is-variable",
 };
@@ -629,9 +629,9 @@ lang_decode_option (argc, argv)
 	 caller that the option was processed successfully.  */
       if (bsearch (&positive_option, 
 		   unsupported_options, 
-		   sizeof (unsupported_options[0]),
 		   (sizeof (unsupported_options) 
 		    / sizeof (unsupported_options[0])),
+		   sizeof (unsupported_options[0]),
 		   compare_options))
 	{
 	  warning ("-f%s is no longer supported", p);
