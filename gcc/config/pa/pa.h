@@ -1719,6 +1719,33 @@ while (0)
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
   (COST) = pa_adjust_cost (INSN, LINK, DEP, COST)
 
+/* Adjust scheduling priorities.  We use this to try and keep addil
+   and the next use of %r1 close together.  */
+#define ADJUST_PRIORITY(PREV) \
+  {								\
+    rtx set = single_set (PREV);				\
+    rtx src, dest;						\
+    if (set)							\
+      {								\
+        src = SET_SRC (set);					\
+	dest = SET_DEST (set);					\
+	if (GET_CODE (src) == LO_SUM				\
+	    && symbolic_operand (XEXP (src, 1), VOIDmode)	\
+	    && ! read_only_operand (XEXP (src, 1), VOIDmode))   \
+	  INSN_PRIORITY (PREV) >>= 3;				\
+        else if (GET_CODE (src) == MEM				\
+		 && GET_CODE (XEXP (src, 0)) == LO_SUM		\
+		 && symbolic_operand (XEXP (XEXP (src, 0), 1), VOIDmode)\
+		 && ! read_only_operand (XEXP (XEXP (src, 0), 1), VOIDmode))\
+	  INSN_PRIORITY (PREV) >>= 1;				\
+	else if (GET_CODE (dest) == MEM				\
+		 && GET_CODE (XEXP (dest, 0)) == LO_SUM		\
+		 && symbolic_operand (XEXP (XEXP (dest, 0), 1), VOIDmode)\
+		 && ! read_only_operand (XEXP (XEXP (dest, 0), 1), VOIDmode))\
+	  INSN_PRIORITY (PREV) >>= 3;				\
+      }								\
+  }
+
 /* Handling the special cases is going to get too complicated for a macro,
    just call `pa_adjust_insn_length' to do the real work.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\

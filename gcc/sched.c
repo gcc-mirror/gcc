@@ -2563,6 +2563,9 @@ adjust_priority (prev)
 	    }
 	  break;
 	}
+#ifdef ADJUST_PRIORITY
+      ADJUST_PRIORITY (prev);
+#endif
     }
 }
 
