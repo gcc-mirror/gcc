@@ -97,6 +97,7 @@ static void dump_scope PARAMS ((tree, enum tree_string_flags));
 static void dump_template_parms PARAMS ((tree, int, enum tree_string_flags));
 
 static const char *function_category PARAMS ((tree));
+static void lang_print_error_function PARAMS ((const char *));
 static void maybe_print_instantiation_context PARAMS ((output_buffer *));
 static void print_instantiation_full_context PARAMS ((output_buffer *));
 static void print_instantiation_partial_context PARAMS ((output_buffer *, tree,
@@ -152,6 +153,7 @@ init_error ()
   gcc_obstack_init (&scratch_obstack);
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
 
+  print_error_function = lang_print_error_function;
   lang_diagnostic_starter = cp_diagnostic_starter;
   lang_diagnostic_finalizer = cp_diagnostic_finalizer;
 }
@@ -2429,6 +2431,19 @@ cv_to_string (p, v)
   OB_FINISH ();
 
   return (char *)obstack_base (&scratch_obstack);
+}
+
+static void
+lang_print_error_function (file)
+     const char *file;
+{
+  output_state os;
+
+  default_print_error_function (file);
+  os = output_buffer_state (diagnostic_buffer);
+  output_set_prefix (diagnostic_buffer, file);
+  maybe_print_instantiation_context (diagnostic_buffer);
+  output_buffer_state (diagnostic_buffer) = os;
 }
 
 static void
