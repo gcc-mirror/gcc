@@ -2574,7 +2574,8 @@ build_x_function_call (function, params, decl)
 				TYPE_BINFO (type), LOOKUP_NORMAL);
     }
     
-  if (TREE_CODE (function) == OFFSET_REF)
+  if (TREE_CODE (function) == OFFSET_REF
+      && TREE_CODE (type) != METHOD_TYPE)
     function = resolve_offset_ref (function);
 
   if ((TREE_CODE (function) == FUNCTION_DECL
