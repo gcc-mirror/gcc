@@ -64,7 +64,7 @@ case $os in
 		;;
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
-	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
+	-unicom* | -ibm* | -next | -hp | -isi* | -apollo | -altos* | \
 	-convergent* | -ncr* | -news | -32* | -3600* | -3100* | -hitachi* |\
 	-c[123]* | -convex* | -sun | -crds | -omron* | -dg | -ultra | -tti* | \
 	-harris | -dolphin | -highlevel | -gould | -cbm | -ns | -masscomp )
@@ -344,13 +344,16 @@ case $basic_machine in
 		basic_machine=mips-sony
 		os=-newsos
 		;;
-	next)
+	next | m*-next )
 		basic_machine=m68k-next
 		case $os in
+		    -nextstep* )
+			;;
 		    -ns2*)
+		      os=-nextstep2
 			;;
 		    *)
-		      os=-ns3
+		      os=-nextstep3
 			;;
 		esac
 		;;
@@ -556,7 +559,7 @@ case $os in
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* | -ns* | -cxux* | -aout* | -elf*)
+	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -686,7 +689,7 @@ case $basic_machine in
 		os=-mvs
 		;;
 	*-next)
-		os=-bsd
+		os=-nextstep3
 		;;
 	i[34]86-*)
 		os=-sco3.2v2
