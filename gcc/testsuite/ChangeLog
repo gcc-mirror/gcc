@@ -1,3 +1,9 @@
+2004-04-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/const-elim-1.c: XFAIL hppa*.*-*-* (PA32).  Merge further
+	XFAILs from mainline: strongarm-*-*, xscale-*-*, powerpc*-*-aix*.
+	Update commentary.
+
 2004-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/compat/struct-by-value-5a_main.c,
@@ -9,7 +15,7 @@
 	* gcc.dg/compat/struct-by-value-5a_y.c,
 	gcc.dg/compat/struct-by-value-5b_y.c: New, split out from
 	gcc.dg/compat/struct-by-value-5_y.c.
-	
+
 	* gcc.dg/compat/struct-by-value-6a_main.c,
 	gcc.dg/compat/struct-by-value-6b_main.c: New files.
 	* gcc.dg/compat/struct-by-value-6_main.c: Delete.
@@ -19,7 +25,7 @@
 	* gcc.dg/compat/struct-by-value-6a_y.c,
 	gcc.dg/compat/struct-by-value-6b_y.c: New, split out from
 	gcc.dg/compat/struct-by-value-6_y.c.
-	
+
 	* gcc.dg/compat/struct-by-value-7a_main.c,
 	gcc.dg/compat/struct-by-value-7b_main.c: New files.
 	* gcc.dg/compat/struct-by-value-7_main.c: Delete.
@@ -37,7 +43,7 @@
 	failure and exit(0) on success.
 	* g++.dg/expr/anew2.C: Ditto.
 	* g++.dg/expr/anew3.C: Ditto.
-	* g++.dg/expr/anew4.C: Ditto. 
+	* g++.dg/expr/anew4.C: Ditto.
 
 2004-04-09  Zack Weinberg  <zack@codesourcery.com>
 
