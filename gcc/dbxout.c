@@ -2474,12 +2474,16 @@ dbxout_parms (parms)
 	  {
 	    /* Parm was passed via invisible reference, with the reference
 	       living on the stack.  DECL_RTL looks like
-	       (MEM (MEM (PLUS (REG ...) (CONST_INT ...)))).  */
+	       (MEM (MEM (PLUS (REG ...) (CONST_INT ...)))) or it
+	       could look like (MEM (MEM (REG))).  */
 	    const char *decl_name = (DECL_NAME (parms)
 				     ? IDENTIFIER_POINTER (DECL_NAME (parms))
 				     : "(anon)");
-	    current_sym_value
-	      = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
+           if (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 0)) == REG)
+              current_sym_value = 0;
+	    else
+	      current_sym_value
+	        = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
 	    current_sym_addr = 0;
 	      
 	    FORCE_TEXT;
