@@ -593,6 +593,9 @@ flags_from_decl_or_type (tree exp)
       if (DECL_IS_PURE (exp))
 	flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
 
+      if (DECL_IS_NOVOPS (exp))
+	flags |= ECF_NOVOPS;
+
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;
 

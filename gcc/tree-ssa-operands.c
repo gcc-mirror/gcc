@@ -1529,7 +1529,9 @@ get_call_expr_operands (tree stmt, tree expr)
      computed.  By not bothering with virtual operands for CALL_EXPRs
      we avoid adding superfluous virtual operands, which can be a
      significant compile time sink (See PR 15855).  */
-  if (aliases_computed_p && !bitmap_empty_p (call_clobbered_vars))
+  if (aliases_computed_p
+      && !bitmap_empty_p (call_clobbered_vars)
+      && !(call_flags & ECF_NOVOPS))
     {
       /* A 'pure' or a 'const' functions never call clobber anything. 
 	 A 'noreturn' function might, but since we don't return anyway 

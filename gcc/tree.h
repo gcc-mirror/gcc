@@ -2185,6 +2185,11 @@ struct tree_binfo GTY (())
    as "pure" function (like const function, but may read global memory).  */
 #define DECL_IS_PURE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.pure_flag)
 
+/* Nonzero in a FUNCTION_DECL means this function should be treated
+   as "novops" function (function that does not read global memory,
+   but may have arbitrary side effects).  */
+#define DECL_IS_NOVOPS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.novops_flag)
+     
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl.bit_field_flag)
@@ -2365,7 +2370,6 @@ struct tree_decl GTY(())
   unsigned uninlinable : 1;
   unsigned thread_local_flag : 1;
   unsigned declared_inline_flag : 1;
-  unsigned seen_in_bind_expr : 1;
   ENUM_BITFIELD(symbol_visibility) visibility : 2;
   unsigned visibility_specified : 1;
 
@@ -2383,7 +2387,9 @@ struct tree_decl GTY(())
   unsigned gimple_formal_temp : 1;
   unsigned debug_expr_is_from : 1;
   unsigned returns_twice_flag : 1;
-  /* 11 unused bits.  */
+  unsigned seen_in_bind_expr : 1;
+  unsigned novops_flag : 1;
+  /* 9 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
@@ -3688,6 +3694,9 @@ extern rtx emit_line_note (location_t);
 #define ECF_SP_DEPRESSED	256
 /* Create libcall block around the call.  */
 #define ECF_LIBCALL_BLOCK	512
+/* Function does not read or write memory (but may have side effects, so
+   it does not necessarily fit ECF_CONST).  */
+#define ECF_NOVOPS		1024
 
 extern int flags_from_decl_or_type (tree);
 extern int call_expr_flags (tree);

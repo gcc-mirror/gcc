@@ -541,6 +541,7 @@ static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_limit_stack_attribute (tree *, tree, tree, int,
 					     bool *);
 static tree handle_pure_attribute (tree *, tree, tree, int, bool *);
+static tree handle_novops_attribute (tree *, tree, tree, int, bool *);
 static tree handle_deprecated_attribute (tree *, tree, tree, int,
 					 bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
@@ -614,6 +615,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_no_limit_stack_attribute },
   { "pure",                   0, 0, true,  false, false,
 			      handle_pure_attribute },
+  /* For internal use (marking of builtins) only.  The name contains space
+     to prevent its usage in source code.  */
+  { "no vops",                0, 0, true,  false, false,
+			      handle_novops_attribute },
   { "deprecated",             0, 0, false, false, false,
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
@@ -4851,6 +4856,19 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       *no_add_attrs = true;
     }
 
+  return NULL_TREE;
+}
+
+/* Handle a "no vops" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
+			 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			 bool *ARG_UNUSED (no_add_attrs))
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
+  DECL_IS_NOVOPS (*node) = 1;
   return NULL_TREE;
 }
 
