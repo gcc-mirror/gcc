@@ -3575,7 +3575,7 @@ finish_file ()
 
       /* We lie to the back-end, pretending that some functions are
 	 not defined when they really are.  This keeps these functions
-	 from being put out unncessarily.  But, we must stop lying
+	 from being put out unnecessarily.  But, we must stop lying
 	 when the functions are referenced, or if they are not comdat
 	 since they need to be put out now.  */
       for (i = 0; i < deferred_fns_used; ++i)
