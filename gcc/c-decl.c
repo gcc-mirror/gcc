@@ -3016,7 +3016,7 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
 
   intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
-  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, intTI_type_node));
 
   unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));

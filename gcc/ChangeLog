@@ -32,6 +32,8 @@ Wed Jun 10 08:56:27 1998  John Carr  <jfc@mit.edu>
 
 Wed Jun 10 02:11:55 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* decl.c (init_decl_processing): Fix typo.
+
 	* mips.c (gpr_mode): New variable.
 	(override_options): Initialize gpr_mode.
 	(compute_frame_size): Use "gpr_mode" instead of "word_mode" to
