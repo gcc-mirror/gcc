@@ -1051,7 +1051,11 @@ expand_call (exp, target, ignore)
 	      rtx copy;
 
 	      if (TYPE_SIZE (type) == 0
-		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
+		      && (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0
+			  || (TREE_INT_CST_LOW (TYPE_SIZE (type))
+			      > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
 		{
 		  /* This is a variable-sized object.  Make space on the stack
 		     for it.  */
