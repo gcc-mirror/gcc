@@ -350,6 +350,17 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       op0 = protect_from_queue (op0, 1);
     }
 
+  /* If VALUE is a floating-point mode, access it as an integer of the
+     corresponding size.  This can occur on a machine with 64 bit registers
+     that uses SFmode for float.  This can also occur for unaligned float
+     structure fields.  */
+  if (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT)
+    {
+      if (GET_CODE (value) != REG)
+	value = copy_to_reg (value);
+      value = gen_rtx (SUBREG, word_mode, value, 0);
+    }
+
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */
 
@@ -519,17 +530,6 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
   rtx subtarget, temp;
   int all_zero = 0;
   int all_one = 0;
-
-  /* If VALUE is a floating-point mode, access it as an integer of the
-     corresponding size.  This can occur on a machine with 64 bit registers
-     that uses SFmode for float.  This can also occur for unaligned float
-     structure fields.  */
-  if (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT)
-    {
-      if (GET_CODE (value) != REG)
-	value = copy_to_reg (value);
-      value = gen_rtx (SUBREG, word_mode, value, 0);
-    }
 
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
