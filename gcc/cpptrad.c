@@ -682,7 +682,10 @@ scan_out_logical_line (pfile, macro)
 	  break;
 
 	case '#':
-	  if (out - 1 == pfile->out.base && !pfile->state.in_directive)
+	  if (out - 1 == pfile->out.base
+	      /* A '#' from a macro doesn't start a directive.  */
+	      && !pfile->context->prev
+	      && !pfile->state.in_directive)
 	    {
 	      /* A directive.  With the way _cpp_handle_directive
 		 currently works, we only want to call it if either we
@@ -705,7 +708,8 @@ scan_out_logical_line (pfile, macro)
 		{
 		  bool do_it = false;
 
-		  if (is_numstart (*cur))
+		  if (is_numstart (*cur)
+		      && CPP_OPTION (pfile, lang) != CLK_ASM)
 		    do_it = true;
 		  else if (is_idstart (*cur))
 		    /* Check whether we know this directive, but don't
