@@ -117,6 +117,10 @@ _Jv_WaitForState (jclass klass, int state)
     {
       // Must call _Jv_PrepareCompiledClass while holding the class
       // mutex.
+#ifdef INTERPRETER
+      if (_Jv_IsInterpretedClass (klass))
+	_Jv_PrepareClass (klass);
+#endif
       _Jv_PrepareCompiledClass (klass);
       _Jv_MonitorExit (klass);
       return;
@@ -141,15 +145,7 @@ _Jv_WaitForState (jclass klass, int state)
 void
 java::lang::ClassLoader::linkClass0 (java::lang::Class *klass)
 {
-  if (klass->state >= JV_STATE_LINKED)
-    return;
-
-#ifdef INTERPRETER
-  if (_Jv_IsInterpretedClass (klass))
-    _Jv_PrepareClass (klass);
-#endif
-
-  _Jv_PrepareCompiledClass (klass);
+  _Jv_WaitForState (klass, JV_STATE_LINKED);
 }
 
 void

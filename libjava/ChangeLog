@@ -1,3 +1,12 @@
+2003-01-30  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/lang/natClass.cc (initializeClass): Check tables when
+	(state == JV_STATE_IN_PROGRESS).
+	(_Jv_GetInterfaces): Use _Jv_WaitForState to link interface.
+	* java/lang/natClassLoader.cc (_Jv_WaitForState): Handle
+	interpreted classes.
+	(linkClass0): Use _Jv_WaitForState.
+
 2003-01-28  Oscar Pearce  <oscar@pearceenterprises.com>
 
 	* java/awt/Component.java (processPaintEvent): Dispose of Graphics

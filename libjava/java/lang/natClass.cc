@@ -766,9 +766,21 @@ java::lang::Class::initializeClass (void)
     wait ();
 
   // Steps 3 &  4.
-  if (state == JV_STATE_DONE || state == JV_STATE_IN_PROGRESS)
+  if (state == JV_STATE_DONE)
     {
       _Jv_MonitorExit (this);
+      return;
+    }
+  if (state == JV_STATE_IN_PROGRESS)
+    {
+      _Jv_MonitorExit (this);
+
+      /* Initialization in progress.  The class is linked now,
+         so ensure internal tables are built.  */
+      _Jv_PrepareConstantTimeTables (this);
+      _Jv_MakeVTable(this);
+      _Jv_LinkOffsetTable(this);
+
       return;
     }
 
@@ -1213,6 +1225,10 @@ _Jv_GetInterfaces (jclass klass, _Jv_ifaces *ifaces)
   for (int i=0; i < klass->interface_count; i++)
     {
       jclass iface = klass->interfaces[i];
+
+      /* Make sure interface is linked.  */
+      _Jv_WaitForState(iface, JV_STATE_LINKED);
+
       if (_Jv_IndexOf (iface, (void **) ifaces->list, ifaces->count) == -1)
         {
 	  if (ifaces->count + 1 >= ifaces->len)
