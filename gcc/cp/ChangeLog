@@ -1,3 +1,9 @@
+Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+        * Make-lang.in (GXX_OBJS): Remove choose-temp.o, pexecute.o and
+	mkstemp.o.  Get them from libiberty now.
+	(DEMANGLER_PROG): Simlarly, temove getopt.o getopt1.o.
+	
 Tue Feb  2 22:38:48 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* decl2.c (lang_decode_option): Use read_integral_parameter.
