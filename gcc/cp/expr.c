@@ -154,9 +154,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	   initialization.  It is left here to show the choices that
 	   exist for C++.  */
 	   
-	if (TREE_CODE (func) == ADDR_EXPR
-	    && TREE_CODE (TREE_OPERAND (func, 0)) == FUNCTION_DECL
-	    && DECL_CONSTRUCTOR_P (TREE_OPERAND (func, 0)))
+	if (AGGR_INIT_VIA_CTOR_P (exp))
 	  {
 	    type = build_pointer_type (type);
 	    /* Don't clobber a value that might be part of a default
