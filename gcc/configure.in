@@ -1448,7 +1448,13 @@ if test -f ../ld/Makefile; then
 	rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
 fi
 
-# Figure out what assembler we will be using.
+# Identify the assembler which will work hand-in-glove with the newly
+# built GCC, so that we can examine its features.  This is the assembler
+# which will be driven by the driver program.
+#
+# If build != host, and we aren't building gas in-tree, we identify a
+# build->target assembler and hope that it will have the same features
+# as the host->target assembler we'll be using.
 AC_MSG_CHECKING(what assembler to use)
 in_tree_gas=no
 gcc_cv_as=
@@ -1537,7 +1543,13 @@ case $in_tree_gas in
     ;;
 esac
 
-# Figure out what linker we will be using.
+# Identify the linker which will work hand-in-glove with the newly
+# built GCC, so that we can examine its features.  This is the linker
+# which will be driven by the driver program.
+#
+# If build != host, and we aren't building gas in-tree, we identify a
+# build->target linker and hope that it will have the same features
+# as the host->target linker we'll be using.
 AC_MSG_CHECKING(what linker to use)
 in_tree_ld=no
 gcc_cv_ld=
