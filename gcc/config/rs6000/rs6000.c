@@ -4004,7 +4004,9 @@ print_operand (file, x, code)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0),
 					   UNITS_PER_WORD));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), UNITS_PER_WORD));
+	    output_address (XEXP (adjust_address_nv (x, SImode,
+						     UNITS_PER_WORD),
+				  0));
 
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
@@ -4383,7 +4385,7 @@ print_operand (file, x, code)
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 8));
+	    output_address (XEXP (adjust_address_nv (x, SImode, 8), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
@@ -4434,7 +4436,7 @@ print_operand (file, x, code)
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
 	  else
-	    output_address (plus_constant (XEXP (x, 0), 12));
+	    output_address (XEXP (adjust_address_nv (x, SImode, 12), 0));
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
