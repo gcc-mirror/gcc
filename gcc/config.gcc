@@ -2219,8 +2219,8 @@ mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 mips*-*-linux*)				# Linux MIPS, either endian.
 	xmake_file=x-linux
 	case $machine in
-	       mips*el-*)  tm_file="mips/elfl.h mips/linux.h" ;;
-	       *)	  tm_file="mips/elf.h mips/linux.h" ;;
+	       mips*el-*)  tm_file="elfos.h mips/elfl.h mips/linux.h" ;;
+	       *)	  tm_file="elfos.h mips/elf.h mips/linux.h" ;;
 	esac
 	tmake_file=t-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"

@@ -32,4 +32,5 @@ Boston, MA 02111-1307, USA.  */
 
 /* Don't assume anything about startfiles.  The linker script will load the
    appropriate startfiles.  */
+#undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""

@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
    specified using the `__attribute__ ((aligned (N)))' construct.  If
    not defined, the default value is `BIGGEST_ALIGNMENT'.  */
 
+#undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (32768*8)
 
 /* We need to use .esize and .etype instead of .size and .type to
@@ -77,6 +78,7 @@ do {							\
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
 
+#undef ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC) \
 do {								\
   extern FILE *asm_out_text_file;				\
@@ -172,6 +174,7 @@ do {									 \
    but until that support is generally available, the 'if' below
    should serve. */
 
+#undef ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
 #define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
  do {						\
@@ -191,6 +194,7 @@ do {									 \
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 #undef UNIQUE_SECTION_P
 #define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
+#undef UNIQUE_SECTION
 #define UNIQUE_SECTION(DECL,RELOC)					   \
 do {									   \
   int len, size, sec;							   \
@@ -311,6 +315,7 @@ void FN ()                                                            \
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
+#undef ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)                             \
   do {                                                                \
     ctors_section ();                                                 \
@@ -322,6 +327,7 @@ void FN ()                                                            \
 
 /* A C statement (sans semicolon) to output an element in the table of
    global destructors.  */
+#undef ASM_OUTPUT_DESTRUCTOR
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)                              \
   do {                                                                \
     dtors_section ();                                                 \
