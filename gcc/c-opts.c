@@ -1440,7 +1440,11 @@ finish_options (const char *tif)
 
 	  if (opt->code == OPT_imacros
 	      && cpp_push_include (parse_in, opt->arg))
-	    cpp_scan_nooutput (parse_in);
+	    {
+	      /* Disable push_command_line_include callback for now. */
+	      include_cursor = deferred_count + 1;
+	      cpp_scan_nooutput (parse_in);
+	    }
 	}
     }
 
