@@ -1312,6 +1312,8 @@ legitimize_pic_address (orig, mode, reg)
 			 gen_rtx (PLUS, Pmode,
 				  pic_offset_table_rtx, orig));
       current_function_uses_pic_offset_table = 1;
+      if (reload_in_progress)
+	regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       emit_move_insn (reg, pic_ref);
       return reg;
