@@ -57,10 +57,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Override svr4.h and m88k.h.  */
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP "\tsection\t.init,\"xa\",#progbits\n"
+#define INIT_SECTION_ASM_OP "section\t.init,\"xa\",#progbits"
 #undef	CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\tsection\t.ctors,\"a\",#progbits\n"
+#define CTORS_SECTION_ASM_OP	"section\t.ctors,\"a\",#progbits"
 #undef	DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\tsection\t.dtors,\"a\",#progbits\n"
+#define DTORS_SECTION_ASM_OP	"section\t.dtors,\"a\",#progbits"
 
 
