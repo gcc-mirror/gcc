@@ -135,8 +135,11 @@ for code in ALL STD ; do
 	newdirs=
 	for d in $dirs ; do
 	  # Find all directories under $d, relative to $d, excluding $d itself.
+	  # Assume directory names ending in CC or containing ++ are
+	  # for C++, so skip those.
 	  subdirs="$subdirs "`cd $rel_source_dir/$d; find . -type d -print | \
-	           sed -e '/^\.$/d' -e "s|^\./|${d}/|" -e 's|^\./||'`
+	           sed -e '/^\.$/d' -e "s|^\./|${d}/|" -e 's|^\./||' \
+		     -e '/CC$/d' -e '/\+\+/d'`
 	  links=
 	  links=`cd $rel_source_dir; find $d/. -type l -print | \
 		       sed -e "s|$d/./|$d/|" -e 's|^\./||'`
