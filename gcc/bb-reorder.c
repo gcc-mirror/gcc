@@ -456,7 +456,7 @@ find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
 		}
 	    }
 
-	  /* If the best destination has multiple precessesors, and can be
+	  /* If the best destination has multiple predecessors, and can be
 	     duplicated cheaper than a jump, don't allow it to be added
 	     to a trace.  We'll duplicate it when connecting traces.  */
 	  if (best_edge && best_edge->dest->pred->pred_next
