@@ -1,7 +1,7 @@
 # Configure fragment invoked in the post-target section for subdirs
 # wanting multilib support.
 #
-# Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+# Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 #   Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -546,6 +546,8 @@ multi-do:
 		flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 		if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) \
 				CFLAGS="$(CFLAGS) $${flags}" \
+				FFLAGS="$(FFLAGS) $${flags}" \
+				ADAFLAGS="$(ADAFLAGS) $${flags}" \
 				prefix="$(prefix)" \
 				exec_prefix="$(exec_prefix)" \
 				GCJFLAGS="$(GCJFLAGS) $${flags}" \
@@ -777,11 +779,12 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" GCJ="${GCJ_}$flags"'
+    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags"'
 
     if [ "${with_target_subdir}" = "." ]; then
 	CC_=$CC' '
 	CXX_=$CXX' '
+	F77_=$F77' '
 	GCJ_=$GCJ' '
     else
 	# Create a regular expression that matches any string as long
@@ -808,6 +811,18 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    CXX_="${CXX_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
 	    CXX_="${CXX_}${arg} " ;;
+	  esac
+	done
+
+	F77_=
+	for arg in ${F77}; do
+	  case $arg in
+	  -[BIL]"${ML_POPDIR}"/*)
+	    F77_="${F77_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  "${ML_POPDIR}"/*)
+	    F77_="${F77_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  *)
+	    F77_="${F77_}${arg} " ;;
 	  esac
 	done
 
