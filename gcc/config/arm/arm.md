@@ -6234,10 +6234,10 @@
        case 1:
 	 output_asm_insn (\"cmn\t%1, %2\", operands);
 	 break;
-       case 3:
+       case 2:
 	 output_asm_insn (\"add\t%0, %1, %2\", operands);
 	 break;
-       case 4:
+       case 3:
 	 output_asm_insn (\"add\t%0, %0, %2\", operands);
 	 break;
        }
