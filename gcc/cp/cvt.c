@@ -2024,11 +2024,16 @@ type_promotes_to (type)
      wider.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
 	   || type == wchar_type_node)
-    type = type_for_size
-      (MAX (TYPE_PRECISION (type), TYPE_PRECISION (integer_type_node)),
-       (flag_traditional
-	|| (TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node)))
-       && TREE_UNSIGNED (type));
+    {
+      int precision = MAX (TYPE_PRECISION (type),
+			   TYPE_PRECISION (integer_type_node));
+      tree totype = type_for_size (precision, 0);
+      if (TREE_UNSIGNED (type)
+	  && ! int_fits_type_p (TYPE_MAX_VALUE (type), totype))
+	type = type_for_size (precision, 1);
+      else
+	type = totype;
+    }
   else if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.
