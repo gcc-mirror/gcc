@@ -1,3 +1,18 @@
+
+Wed Oct 27 00:14:13 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* gcse.c (expr_reaches_here_p): Use xcalloc and explit free instead
+	of alloca.
+	(pre_gcse): Likewise.
+	(hoist_expr_reaches_here_p): Likewise.
+	(hoist_code): Likewise.
+	(pre_expr_reaches_here_p): Replace alloca with xcalloc.   Move core
+	code to ...
+	(pre_expr_reaches_here_p_work): ... here.
+	(expr_reaches_here_p): Replace alloca with xcalloc.   Move core 
+	code to ...
+	(expr_reaches_here_p_work): ... here.
+
 Tue Oct 26 20:42:45 1999  Richard Henderson  <rth@cygnus.com>
 
 	* resource.c (find_basic_block): Delete.
