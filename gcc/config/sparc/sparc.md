@@ -2191,7 +2191,7 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(if_then_else (match_operand 1 "comparison_operator" "")
 		      (match_operand:SI 2 "arith10_operand" "")
-		      (match_operand:SI 3 "arith10_operand" "")))]
+		      (match_operand:SI 3 "register_operand" "")))]
   "TARGET_V9"
   "
 {
@@ -2217,7 +2217,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(if_then_else (match_operand 1 "comparison_operator" "")
 		      (match_operand:DI 2 "arith10_operand" "")
-		      (match_operand:DI 3 "arith10_operand" "")))]
+		      (match_operand:DI 3 "register_operand" "")))]
   "TARGET_V9"
   "
 {
@@ -2317,7 +2317,8 @@
     }
 }")
 
-; ??? There is not actually a 32 bit version of this instruction.
+/* Conditional move define_insns.  */
+
 (define_insn "*movsi_cc_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(if_then_else (match_operator 1 "comparison_operator"
@@ -2338,8 +2339,7 @@
   "mov%C1 %%icc,%2,%0"
   [(set_attr "type" "cmove")])
 
-;; ??? There is not actually a 32 bit version of this instruction.
-(define_insn "*movdi_ccx_sp64"
+(define_insn "*movsi_ccx_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(if_then_else (match_operator 1 "comparison_operator"
 				      [(reg:CCX 0) (const_int 0)])
@@ -2359,7 +2359,6 @@
   "mov%C1 %%xcc,%2,%0"
   [(set_attr "type" "cmove")])
 
-;; ??? There is not actually a 32 bit version of this instruction.
 (define_insn "*movsi_ccfp_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(if_then_else (match_operator 1 "comparison_operator"
@@ -2371,7 +2370,6 @@
   "mov%C1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
-;; ??? There is not actually a 32 bit version of this instruction.
 (define_insn "*movsi_ccfpe_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(if_then_else (match_operator 1 "comparison_operator"
@@ -2405,7 +2403,6 @@
   "mov%C1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
-;; ??? There is not actually a 32 bit version of this instruction.
 (define_insn "*movsi_cc_reg_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(if_then_else (match_operator 1 "v9_regcmp_op"
