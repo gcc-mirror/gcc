@@ -3469,8 +3469,11 @@ finish_decl (decl, init, asmspec_tree)
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
+      /* TYPE_MAX_VALUE is always one less than the number of elements
+	 in the array, because we start counting at zero.  Therefore,
+	 warn only if the value is less than zero.  */
       if (pedantic && TYPE_DOMAIN (type) != 0
-	  && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) <= 0)
+	  && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
 	error_with_decl (decl, "zero or negative size array `%s'");
 
       layout_decl (decl, 0);
