@@ -35,9 +35,9 @@ int main ()
 	base*		base_ptr;
 	derived*	derived_ptr;
 
-	expected_size = 4;
+	expected_size = sizeof (int);
 	base_ptr = new base;
-	expected_size = 8;
+	expected_size = 2 * sizeof (int);
 	derived_ptr = new derived ();
 
 	if ((new_call_count != 2) || (errors != 0))
