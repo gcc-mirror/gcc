@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision$"
+#define VERSION_INFO2   "$Revision: 1.1 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -132,6 +132,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     extern int flag_signed_bitfields;			\
     flag_signed_bitfields = 0;				\
     abort_helper ();					\
+    optimization_options (LEVEL);			\
   } while (0)
 
 
