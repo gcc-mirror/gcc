@@ -1,3 +1,7 @@
+2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* doc/install.text (--enable-shared): Fix typo.
+
 2004-06-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Remove post_p
