@@ -1395,7 +1395,6 @@ struct lang_type
   tree vfields;
   tree vbases;
   tree tags;
-  tree search_slot;
   tree size;
   tree size_unit;
   tree pure_virtuals;
@@ -1612,10 +1611,6 @@ struct lang_type
 /* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
   (BINFO_N_BASETYPES (TYPE_BINFO (NODE)))
-
-/* Used for keeping search-specific information.  Any search routine
-   which uses this must define what exactly this slot is used for.  */
-#define CLASSTYPE_SEARCH_SLOT(NODE) (TYPE_LANG_SPECIFIC(NODE)->search_slot)
 
 /* These are the size and alignment of the type without its virtual
    base classes, for when we use this type as a base itself.  */
@@ -4098,7 +4093,7 @@ extern tree do_friend				PARAMS ((tree, tree, tree, tree, tree, enum overload_fl
 
 /* in init.c */
 extern void init_init_processing		PARAMS ((void));
-extern void emit_base_init			PARAMS ((tree));
+extern void emit_base_init			PARAMS ((void));
 extern void expand_member_init			PARAMS ((tree, tree, tree));
 extern tree build_aggr_init			PARAMS ((tree, tree, int));
 extern int is_aggr_type				PARAMS ((tree, int));
@@ -4117,7 +4112,7 @@ extern tree build_vec_delete			PARAMS ((tree, tree, tree, int));
 extern tree create_temporary_var                PARAMS ((tree));
 extern void begin_init_stmts                    PARAMS ((tree *, tree *));
 extern tree finish_init_stmts                   PARAMS ((tree, tree));
-extern void initialize_vtbl_ptrs                PARAMS ((tree, tree));
+extern void initialize_vtbl_ptrs                PARAMS ((tree));
 extern tree build_java_class_ref                PARAMS ((tree));
 
 /* in input.c */
@@ -4291,8 +4286,7 @@ extern tree lookup_nested_tag			PARAMS ((tree, tree));
 extern tree get_matching_virtual		PARAMS ((tree, tree, int));
 extern void get_pure_virtuals		        PARAMS ((tree));
 extern tree init_vbase_pointers			PARAMS ((tree, tree));
-extern void expand_indirect_vtbls_init		PARAMS ((tree, tree));
-extern void clear_search_slots			PARAMS ((tree));
+extern void expand_indirect_vtbls_init		PARAMS ((tree));
 extern void get_vbase_types			PARAMS ((tree));
 extern void maybe_suppress_debug_info		PARAMS ((tree));
 extern void note_debug_info_needed		PARAMS ((tree));

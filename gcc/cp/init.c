@@ -151,15 +151,18 @@ dfs_initialize_vtbl_ptrs (binfo, data)
   return NULL_TREE;
 }
 
-/* Initialize all the vtable pointers for the hierarchy dominated by
-   TYPE. */
+/* Initialize all the vtable pointers in the object pointed to by
+   ADDR.  */
 
 void
-initialize_vtbl_ptrs (type, addr)
-     tree type;
+initialize_vtbl_ptrs (addr)
      tree addr;
 {
-  tree list = build_tree_list (type, addr);
+  tree list;
+  tree type;
+
+  type = TREE_TYPE (TREE_TYPE (addr));
+  list = build_tree_list (type, addr);
 
   /* Walk through the hierarchy, initializing the vptr in each base
      class.  We do these in pre-order because under the new ABI we
@@ -169,8 +172,7 @@ initialize_vtbl_ptrs (type, addr)
 		 NULL, dfs_unmarked_real_bases_queue_p, list);
   dfs_walk (TYPE_BINFO (type), dfs_unmark,
 	    dfs_marked_real_bases_queue_p, type);
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-    expand_indirect_vtbls_init (TYPE_BINFO (type), addr);
+  expand_indirect_vtbls_init (addr);
 }
 
 /* Subroutine of emit_base_init.  */
@@ -624,21 +626,16 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
    that call with a pushlevel/poplevel pair, since we are technically
    at the PARM level of scope.
 
-   Argument IMMEDIATELY, if zero, forces a new sequence to be
-   generated to contain these new insns, so it can be emitted later.
-   This sequence is saved in the global variable BASE_INIT_EXPR.
-   Otherwise, the insns are emitted into the current sequence.
-
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
 
 void
-emit_base_init (t)
-     tree t;
+emit_base_init ()
 {
   tree member;
   tree mem_init_list;
   tree rbase_init_list, vbase_init_list;
+  tree t = current_class_type;
   tree t_binfo = TYPE_BINFO (t);
   tree binfos = BINFO_BASETYPES (t_binfo);
   int i;
@@ -695,7 +692,7 @@ emit_base_init (t)
     }
 
   /* Initialize the vtable pointers for the class.  */
-  initialize_vtbl_ptrs (t, current_class_ptr);
+  initialize_vtbl_ptrs (current_class_ptr);
 
   while (mem_init_list)
     {
