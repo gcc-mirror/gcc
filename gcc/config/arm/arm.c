@@ -238,7 +238,7 @@ int arm_is_strong = 0;
 /* Nonzero if this chip is an XScale.  */
 int arm_is_xscale = 0;
 
-/* Nonzero if this chip is a an ARM6 or an ARM7.  */
+/* Nonzero if this chip is an ARM6 or an ARM7.  */
 int arm_is_6_or_7 = 0;
 
 /* Nonzero if generating Thumb instructions.  */

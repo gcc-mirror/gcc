@@ -3292,7 +3292,7 @@ ia64_print_operand_address (stream, address)
 {
 }
 
-/* Print an operand to a assembler instruction.
+/* Print an operand to an assembler instruction.
    C	Swap and print a comparison operator.
    D	Print an FP comparison operator.
    E    Print 32 - constant, for SImode shifts as extract.
