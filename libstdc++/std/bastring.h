@@ -40,6 +40,24 @@ class istream; class ostream;
 
 #include <iterator>
 
+#ifdef __STL_USE_EXCEPTIONS
+
+extern void __out_of_range (const char *);
+extern void __length_error (const char *);
+
+#define OUTOFRANGE(cond) \
+  do { if (cond) __out_of_range (#cond); } while (0)
+#define LENGTHERROR(cond) \
+  do { if (cond) __length_error (#cond); } while (0)
+
+#else
+
+#include <cassert>
+#define OUTOFRANGE(cond) assert (!(cond))
+#define LENGTHERROR(cond) assert (!(cond))
+
+#endif
+
 template <class charT, class traits = string_char_traits<charT> >
 class basic_string
 {
@@ -262,8 +280,16 @@ public:
   reference operator[] (size_type pos)
     { unique (); return (*rep ())[pos]; }
 
-  inline reference at (size_type pos);
-  inline const_reference at (size_type pos) const;
+  reference at (size_type pos)
+    {
+      OUTOFRANGE (pos >= length ());
+      return (*this)[pos];
+    }
+  const_reference at (size_type pos) const
+    {
+      OUTOFRANGE (pos >= length ());
+      return data ()[pos];
+    }
 
 private:
   void terminate () const
@@ -358,41 +384,6 @@ private:
   static Rep nilRep;
   charT *dat;
 };
-
-typedef basic_string <char> string;
-// typedef basic_string <wchar_t> wstring;
-
-#ifdef __STL_USE_EXCEPTIONS
-
-#include <stdexcept>
-#define OUTOFRANGE(cond) \
-  do { if (!(cond)) throw out_of_range (#cond); } while (0)
-#define LENGTHERROR(cond) \
-  do { if (!(cond)) throw length_error (#cond); } while (0)
-
-#else
-
-#include <cassert>
-#define OUTOFRANGE(cond) assert (!(cond))
-#define LENGTHERROR(cond) assert (!(cond))
-
-#endif
-
-template <class charT, class traits>
-inline basic_string <charT, traits>::reference
-basic_string <charT, traits>::at (size_type pos)
-{
-  OUTOFRANGE (pos >= length ());
-  return (*this)[pos];
-}
-
-template <class charT, class traits>
-inline basic_string <charT, traits>::const_reference
-basic_string <charT, traits>::at (size_type pos) const
-{
-  OUTOFRANGE (pos >= length ());
-  return data ()[pos];
-}
 
 #ifdef __STL_MEMBER_TEMPLATES
 template <class charT, class traits> template <class InputIterator>

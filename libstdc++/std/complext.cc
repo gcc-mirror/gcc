@@ -236,7 +236,7 @@ pow (const complex<FLOAT>& xin, int y)
   if (y < 0)
     {
       y = -y;
-      x = FLOAT(1)/x;
+      x = 1/x;
     }
   for (;;)
     {

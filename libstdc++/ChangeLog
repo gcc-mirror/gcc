@@ -1,3 +1,17 @@
+Thu Oct  9 23:24:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stdexcepti.cc (__out_of_range): New fn.
+	(__length_error): New fn.
+
+	* std/bastring.h (OUTOFRANGE): Fix logic.  Use throwing functions.
+	(LENGTHERROR): Likewise.
+	Revert Oct 2 changes.
+	* string: Revert Oct 2 changes.
+
+Tue Oct  7 00:51:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/{f,d,ld}complex.h: Replace guiding fns if not -ansi.
+
 Thu Oct  2 00:08:18 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h: Move exception stuff after definition of string.

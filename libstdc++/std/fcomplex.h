@@ -54,6 +54,33 @@ private:
   friend complex& __doami<> (complex *, const complex&);
   friend complex& __doaml<> (complex *, const complex&);
   friend complex& __doadv<> (complex *, const complex&);
+
+#ifndef __STRICT_ANSI__
+  friend inline complex operator + (const complex& x, float y)
+    { return operator+<> (x, y); }
+  friend inline complex operator + (float x, const complex& y)
+    { return operator+<> (x, y); }
+  friend inline complex operator - (const complex& x, float y)
+    { return operator-<> (x, y); }
+  friend inline complex operator - (float x, const complex& y)
+    { return operator-<> (x, y); }
+  friend inline complex operator * (const complex& x, float y)
+    { return operator*<> (x, y); }
+  friend inline complex operator * (float x, const complex& y)
+    { return operator*<> (x, y); }
+  friend inline complex operator / (const complex& x, float y)
+    { return operator/<> (x, y); }
+  friend inline complex operator / (float x, const complex& y)
+    { return operator/<> (x, y); }
+  friend inline bool operator == (const complex& x, float y)
+    { return operator==<> (x, y); }
+  friend inline bool operator == (float x, const complex& y)
+    { return operator==<> (x, y); }
+  friend inline bool operator != (const complex& x, float y)
+    { return operator!=<> (x, y); }
+  friend inline bool operator != (float x, const complex& y)
+    { return operator!=<> (x, y); }
+#endif /* __STRICT_ANSI__ */
 };
 } // extern "C++"
 
