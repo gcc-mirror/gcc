@@ -424,15 +424,16 @@ _Jv_JNI_FindClass (JNIEnv *env, const char *name)
       // This might throw an out of memory exception.
       jstring n = JvNewStringUTF (s);
 
-      java::lang::ClassLoader *loader;
-      if (env->klass == NULL)
+      java::lang::ClassLoader *loader = NULL;
+      if (env->klass != NULL)
+	loader = env->klass->getClassLoader ();
+
+      if (loader == NULL)
 	{
 	  // FIXME: should use getBaseClassLoader, but we don't have that
 	  // yet.
 	  loader = java::lang::ClassLoader::getSystemClassLoader ();
 	}
-      else
-	loader = env->klass->getClassLoader ();
 
       r = loader->loadClass (n);
     }
