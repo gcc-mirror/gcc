@@ -6484,6 +6484,19 @@ fold (expr)
 	      && ! TREE_CONSTANT_OVERFLOW (tem))
 	    return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
 
+	  /* Likewise, we can simplify a comparison of a real constant with
+	     a MINUS_EXPR whose first operand is also a real constant, i.e.
+	     (c1 - x) < c2 becomes x > c1-c2.  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg1) == REAL_CST
+	      && TREE_CODE (arg0) == MINUS_EXPR
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == REAL_CST
+	      && 0 != (tem = const_binop (MINUS_EXPR, TREE_OPERAND (arg0, 0),
+					  arg1, 0))
+	      && ! TREE_CONSTANT_OVERFLOW (tem))
+	    return fold (build (swap_tree_comparison (code), type,
+				TREE_OPERAND (arg0, 1), tem));
+
 	  /* Fold comparisons against built-in math functions.  */
 	  if (TREE_CODE (arg1) == REAL_CST
 	      && flag_unsafe_math_optimizations
