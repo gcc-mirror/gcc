@@ -419,7 +419,7 @@ output_move_double (operands)
   rtx xops[2];
   rtx addreg0 = 0, addreg1 = 0;
   int dest_overlapped_low = 0;
-  int size = GET_MODE_SIZE (GET_MODE (operands[1]));
+  int size = GET_MODE_SIZE (GET_MODE (operands[0]));
 
   middlehalf[0] = 0;
   middlehalf[1] = 0;
@@ -575,20 +575,7 @@ output_move_double (operands)
       else if (optype1 == OFFSOP)
 	latehalf[1] = adj_offsettable_operand (operands[1], 4);
       else if (optype1 == CNSTOP)
-	{
-	  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	    split_double (operands[1], &operands[1], &latehalf[1]);
-	  else if (CONSTANT_P (operands[1]))
-	    {
-	      /* ??? jrv: Can this really happen?  A DImode constant
-		 that isn't a CONST_DOUBLE? */
-	      if (GET_CODE (operands[1]) == CONST_INT
-		  && INTVAL (operands[1]) < 0)
-	        latehalf[1] = constm1_rtx;
-	      else
-	        latehalf[1] = const0_rtx;
-	    }
-	}
+	split_double (operands[1], &operands[1], &latehalf[1]);
       else
 	latehalf[1] = operands[1];
     }
