@@ -143,3 +143,28 @@ default_cxx_guard_type (void)
 {
   return long_long_integer_type_node;
 }
+
+
+/* Returns the size of the cookie to use when allocating an array
+   whose elements have the indicated TYPE.  Assumes that it is already
+   known that a cookie is needed.  */
+
+tree
+default_cxx_get_cookie_size (tree type)
+{
+  tree cookie_size;
+
+  /* We need to allocate an additional max (sizeof (size_t), alignof
+     (true_type)) bytes.  */
+  tree sizetype_size;
+  tree type_align;
+  
+  sizetype_size = size_in_bytes (sizetype);
+  type_align = size_int (TYPE_ALIGN_UNIT (type));
+  if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))
+    cookie_size = sizetype_size;
+  else
+    cookie_size = type_align;
+
+  return cookie_size;
+}

@@ -482,6 +482,11 @@ struct gcc_target
     tree (*guard_type) (void);
     /* Return true if only the low bit of the guard should be tested.  */
     bool (*guard_mask_bit) (void);
+    /* Returns the size of the array cookie for an array of type.  */
+    tree (*get_cookie_size) (tree);
+    /* Returns true if the element size should be stored in the
+       array cookie.  */
+    bool (*cookie_has_size) (void);
   } cxx;
 
   /* Leave the boolean fields at the end.  */

@@ -400,10 +400,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_CXX_GUARD_MASK_BIT hook_bool_void_false
 #endif
 
+#ifndef TARGET_CXX_GET_COOKIE_SIZE
+#define TARGET_CXX_GET_COOKIE_SIZE default_cxx_get_cookie_size
+#endif
+
+#ifndef TARGET_CXX_COOKIE_HAS_SIZE
+#define TARGET_CXX_COOKIE_HAS_SIZE hook_bool_void_false
+#endif
+
 #define TARGET_CXX		\
   {				\
     TARGET_CXX_GUARD_TYPE,	\
-    TARGET_CXX_GUARD_MASK_BIT	\
+    TARGET_CXX_GUARD_MASK_BIT,	\
+    TARGET_CXX_GET_COOKIE_SIZE,	\
+    TARGET_CXX_COOKIE_HAS_SIZE	\
   }
 
 /* The whole shebang.  */
