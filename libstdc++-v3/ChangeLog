@@ -1,3 +1,8 @@
+2003-02-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/filebuf_virtuals.cc (test08): Fix for
+	unsigned char platforms.
+
 2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (time_put::do_put): Use __write.
