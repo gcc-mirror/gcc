@@ -8390,7 +8390,18 @@ tsubst_copy_and_build (tree t,
       }
 
     case INDIRECT_REF:
-      return build_x_indirect_ref (RECUR (TREE_OPERAND (t, 0)), "unary *");
+      {
+	tree r = RECUR (TREE_OPERAND (t, 0));
+
+	if (REFERENCE_REF_P (t))
+	  {
+	    gcc_assert (TREE_CODE (TREE_TYPE (r)) == REFERENCE_TYPE);
+	    r = convert_from_reference (r);
+	  }
+	else
+	  r = build_x_indirect_ref (r, "unary *");
+	return r;
+      }
 
     case NOP_EXPR:
       return build_nop
@@ -8626,8 +8637,6 @@ tsubst_copy_and_build (tree t,
 	if (DECL_P (function))
 	  mark_used (function);
 
-	function = convert_from_reference (function);
-
 	if (TREE_CODE (function) == OFFSET_REF)
 	  return build_offset_ref_call_from_tree (function, call_args);
 	if (TREE_CODE (function) == COMPONENT_REF)
@@ -8815,13 +8824,21 @@ tsubst_copy_and_build (tree t,
 	return build_typeid (operand_0);
       }
 
-    case PARM_DECL:
-      return convert_from_reference (tsubst_copy (t, args, complain, in_decl));
-
     case VAR_DECL:
-      if (args)
-	t = tsubst_copy (t, args, complain, in_decl);
-      return convert_from_reference (t);
+      if (!args)
+	return t;
+      /* Fall through */
+      
+    case PARM_DECL:
+      {
+	tree r = tsubst_copy (t, args, complain, in_decl);
+	
+	if (TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE)
+	  /* If the original type was a reference, we'll be wrapped in
+	     the appropriate INDIRECT_REF.  */
+	  r = convert_from_reference (r);
+	return r;
+      }
 
     case VA_ARG_EXPR:
       return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
@@ -11560,7 +11577,6 @@ tsubst_initializer_list (tree t, tree argvec)
     {
       tree decl;
       tree init;
-      tree val;
 
       decl = tsubst_copy (TREE_PURPOSE (t), argvec, tf_error | tf_warning,
 			  NULL_TREE);
@@ -11570,14 +11586,6 @@ tsubst_initializer_list (tree t, tree argvec)
       
       init = tsubst_expr (TREE_VALUE (t), argvec, tf_error | tf_warning,
 			  NULL_TREE);
-      if (!init)
-	;
-      else if (TREE_CODE (init) == TREE_LIST)
-	for (val = init; val; val = TREE_CHAIN (val))
-	  TREE_VALUE (val) = convert_from_reference (TREE_VALUE (val));
-      else if (init != void_type_node)
-	init = convert_from_reference (init);
-
       in_base_initializer = 0;
 
       if (decl)

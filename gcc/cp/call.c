@@ -2650,7 +2650,8 @@ build_user_type_conversion (tree totype, tree expr, int flags)
     {
       if (cand->second_conv->kind == ck_ambig)
 	return error_mark_node;
-      return convert_from_reference (convert_like (cand->second_conv, expr));
+      expr = convert_like (cand->second_conv, expr);
+      return convert_from_reference (expr);
     }
   return NULL_TREE;
 }
@@ -2672,8 +2673,6 @@ resolve_args (tree args)
 	  error ("invalid use of void expression");
 	  return error_mark_node;
 	}
-      arg = convert_from_reference (arg);
-      TREE_VALUE (t) = arg;
     }
   return args;
 }
@@ -2979,6 +2978,7 @@ build_object_call (tree obj, tree args)
       else
 	{
 	  obj = convert_like_with_context (cand->convs[0], obj, cand->fn, -1);
+	  obj = convert_from_reference (obj);
 	  result = build_function_call (obj, args);
 	}
     }
@@ -3475,7 +3475,6 @@ prep_operand (tree operand)
 {
   if (operand)
     {
-      operand = convert_from_reference (operand);
       if (CLASS_TYPE_P (TREE_TYPE (operand))
 	  && CLASSTYPE_TEMPLATE_INSTANTIATION (TREE_TYPE (operand)))
 	/* Make sure the template type is instantiated now.  */
@@ -5198,8 +5197,6 @@ build_new_method_call (tree instance, tree fns, tree args,
   if (args == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
-    instance = convert_from_reference (instance);
   basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
   instance_ptr = build_this (instance);
 

@@ -48,6 +48,7 @@ struct diagnostic_context;
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
       TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
+      REFERENCE_REF_P (in INDIRECT_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -483,9 +484,8 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
     CPTI_ABI,
-    CPTI_TYPE_INFO_TYPE,
+    CPTI_CONST_TYPE_INFO_TYPE,
     CPTI_TYPE_INFO_PTR_TYPE,
-    CPTI_TYPE_INFO_REF_TYPE,
     CPTI_ABORT_FNDECL,
     CPTI_GLOBAL_DELETE_FNDECL,
     CPTI_AGGR_TAG,
@@ -561,9 +561,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
 #define abi_node                        cp_global_trees[CPTI_ABI]
-#define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
+#define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
 #define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
-#define type_info_ref_type              cp_global_trees[CPTI_TYPE_INFO_REF_TYPE]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
@@ -2223,6 +2222,10 @@ struct lang_decl GTY(())
 #define DECL_SAVED_FUNCTION_DATA(NODE)			\
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))	\
    ->u.f.u.saved_language_function)
+
+/* Indicates an indirect_expr is for converting a reference.  */
+#define REFERENCE_REF_P(NODE) \
+  TREE_LANG_FLAG_0 (INDIRECT_REF_CHECK (NODE))
 
 #define NEW_EXPR_USE_GLOBAL(NODE) \
   TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))

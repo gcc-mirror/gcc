@@ -8813,6 +8813,7 @@ cp_parser_template_argument (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	return argument;
     }
+
   /* If the next token is "&", the argument must be the address of an
      object or function with external linkage.  */
   address_p = cp_lexer_next_token_is (parser->lexer, CPP_AND);
@@ -8835,6 +8836,12 @@ cp_parser_template_argument (cp_parser* parser)
 	cp_parser_abort_tentative_parse (parser);
       else
 	{
+	  if (TREE_CODE (argument) == INDIRECT_REF)
+	    {
+	      gcc_assert (REFERENCE_REF_P (argument));
+	      argument = TREE_OPERAND (argument, 0);
+	    }
+	  
 	  if (qualifying_class)
 	    argument = finish_qualified_id_expr (qualifying_class,
 						 argument,
@@ -8858,6 +8865,8 @@ cp_parser_template_argument (cp_parser* parser)
 		       || TREE_CODE (argument) == SCOPE_REF))
 	    /* A pointer-to-member.  */
 	    ;
+	  else if (TREE_CODE (argument) == TEMPLATE_PARM_INDEX)
+	    ;
 	  else
 	    cp_parser_simulate_error (parser);
 
@@ -8876,6 +8885,7 @@ cp_parser_template_argument (cp_parser* parser)
       cp_parser_error (parser, "invalid non-type template argument");
       return error_mark_node;
     }
+
   /* If the argument wasn't successfully parsed as a type-id followed
      by '>>', the argument can only be a constant expression now.
      Otherwise, we try parsing the constant-expression tentatively,

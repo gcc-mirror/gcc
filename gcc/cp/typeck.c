@@ -1343,13 +1343,6 @@ decay_conversion (tree exp)
   type = TREE_TYPE (exp);
   code = TREE_CODE (type);
 
-  if (code == REFERENCE_TYPE)
-    {
-      exp = convert_from_reference (exp);
-      type = TREE_TYPE (exp);
-      code = TREE_CODE (type);
-    }
-
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -1905,12 +1898,6 @@ finish_class_member_access_expr (tree object, tree name)
       object = build_non_dependent_expr (object);
     }
   
-  if (TREE_CODE (object_type) == REFERENCE_TYPE)
-    {
-      object = convert_from_reference (object);
-      object_type = TREE_TYPE (object);
-    }
-
   /* [expr.ref]
 
      The type of the first expression shall be "class object" (of a
@@ -2102,7 +2089,7 @@ build_indirect_ref (tree ptr, const char *errorstring)
 	     ? ptr : decay_conversion (ptr));
   type = TREE_TYPE (pointer);
 
-  if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
+  if (POINTER_TYPE_P (type))
     {
       /* [expr.unary.op]
 	 
@@ -2627,9 +2614,6 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 	}
       else
 	{
-	  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
-	    val = convert_from_reference (val);
-
 	  if (fndecl && DECL_BUILT_IN (fndecl)
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P)
 	    /* Don't do ellipsis conversion for __built_in_constant_p
@@ -5372,11 +5356,6 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     }
   else
     {
-      if (TREE_CODE (lhstype) == REFERENCE_TYPE)
-	{
-	  lhs = convert_from_reference (lhs);
-	  olhstype = lhstype = TREE_TYPE (lhs);
-	}
       lhs = require_complete_type (lhs);
       if (lhs == error_mark_node)
 	return error_mark_node;
@@ -6024,9 +6003,6 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
   if (rhs == error_mark_node
       || (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node))
     return error_mark_node;
-
-  if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
-    rhs = convert_from_reference (rhs);
 
   if ((TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
        && TREE_CODE (type) != ARRAY_TYPE
