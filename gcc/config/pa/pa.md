@@ -2806,16 +2806,16 @@
 (define_insn "decrement_and_branch_until_zero"
   [(set (pc)
 	(if_then_else
-	  (ge (plus:SI (match_operand:SI 0 "register_operand" "+!r,m")
-		       (const_int -1))
-	      (const_int 0))
-	  (label_ref (match_operand 1 "" ""))
+	  (match_operator 2 "comparison_operator"
+	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,m")
+		     (match_operand:SI 1 "int5_operand" "L,L"))
+	    (const_int 0)])
+	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
    (set (match_dup 0)
-	(plus:SI (match_dup 0)
-		 (const_int -1)))
-   (clobber (match_scratch:SI 2 "=X,r"))]
-  "find_reg_note (insn, REG_NONNEG, 0)"
+	(plus:SI (match_dup 0) (match_dup 1)))
+   (clobber (match_scratch:SI 4 "=X,r"))]
+  ""
 "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
@@ -2824,30 +2824,30 @@
       if (which_alternative == 0)
 	/* Short branch.  Normal handling of nullification.  */
         if (get_attr_length (insn) == 1)
-          return \"addib,>=,n -1,%0,%1\";
+          return \"addib,%C2,n %1,%0,%3\";
 	/* Long Conditional branch forward with delay slot nullified if
 	   branch is taken.  */
         else if (get_attr_length (insn) == 2)
-          return \"addi,< -1,%0,%0\;bl,n %1,0\";
+          return \"addi,%N2 %1,%0,%0\;bl,n %3,0\";
 	/* Long Conditional branch backwards with delay slot nullified
 	   if branch is not taken.  */
         else
-          return \"addib,< -1,%0,.+16\;nop\;bl %1,0\";
+          return \"addib,%N2 %1,%0,.+16\;nop\;bl %3,0\";
       else
         {
 	  /* Must reload loop counter from memory.  Ugly.  */
-          output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
+          output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
 	  /* Short branch.  Normal handling of nullification.  */
           if (get_attr_length (insn) == 4)
-	    return \"comb,>,n 0,%2,%1\";
+	    return \"comb,%B2,n 0,%4,%3\";
 	  /* Long Conditional branch forward with delay slot nullified if
 	     branch is taken.  */
           else if (get_attr_length (insn) == 5)
-	    return \"comclr,<= 0,%2,0\;bl,n %1,0\";
+	    return \"comclr,%S2 0,%4,0\;bl,n %3,0\";
 	  else 
 	  /* Long Conditional branch backwards with delay slot nullified
 	     if branch is not taken.  */
-	    return \"comb,<= 0,%2,.+16\;nop\;bl %1,0\";
+	    return \"comb,%S2 0,%4,.+16\;nop\;bl %3,0\";
         }
     }
   else
@@ -2856,20 +2856,20 @@
       if (which_alternative == 0)
         if (get_attr_length (insn) == 1)
 	  /* Short form.  */
-          return \"addib,>= -1,%0,%1%#\";
+          return \"addib,%C2 %1,%0,%3%#\";
         else
 	  /* Long form.  */
-          return \"addi,< -1,%0,%0\;bl%* %1,0\";
+          return \"addi,%N2 %1,%0,%0\;bl%* %3,0\";
       else
         {
 	  /* Reload loop counter from memory.  */
-          output_asm_insn (\"ldw %0,%2\;ldo -1(%2),%2\;stw %2,%0\", operands);
+          output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
 	  /* Short form.  */
           if (get_attr_length (insn) == 4)
-	    return \"comb,> 0,%2,%1%#\";
+	    return \"comb,%B2 0,%4,%3%#\";
 	  /* Long form.  */
           else
-	    return \"comclr,<= 0,%2,0\;bl%* %1,0\";
+	    return \"comclr,%S2 0,%4,0\;bl%* %3,0\";
         }
     }
 }"
