@@ -1,5 +1,11 @@
 2004-12-07  Eric Christopher  <echristo@redhat.com>
 
+	* config/mips/mips-protos.h (mips_valid_pointer_mode): Move
+	prototype...
+	* config/mips/mips.c: ... here. Make static.
+
+2004-12-07  Eric Christopher  <echristo@redhat.com>
+
 	PR target/18442
 	* config/mips/mips.c (mips_vector_mode_supported_p): New function.
 	(TARGET_SCALAR_MODE_SUPPORTED_P): Define to above.
