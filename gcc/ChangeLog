@@ -1,3 +1,7 @@
+2000-03-16  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c: Revert last two changes.
+
 2000-03-16  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* fp-bit.c (_unpack_d): If NO_DENORMALS is defined, anything that

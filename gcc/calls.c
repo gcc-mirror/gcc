@@ -163,9 +163,6 @@ static void compute_argument_addresses		PARAMS ((struct arg_data *,
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
 							 int, rtx *));
-static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx, int,
-							 enum machine_mode,
-							 int, va_list));
 static int libfunc_nothrow			PARAMS ((rtx));
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
@@ -1710,7 +1707,6 @@ expand_call (exp, target, ignore)
   rtx old_stack_level = 0;
   int old_pending_adj = 0;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int old_arg_space_so_far = arg_space_so_far;
   rtx call_fusage = 0;
   register tree p;
   register int i;
@@ -2384,10 +2380,7 @@ expand_call (exp, target, ignore)
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    {
-      anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
-      arg_space_so_far += args_size.constant - unadjusted_args_size;
-    }
+    anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
 #endif
 #endif
 
@@ -2438,10 +2431,6 @@ expand_call (exp, target, ignore)
 	       args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       valreg, old_inhibit_defer_pop, call_fusage, is_const, nothrow);
-
-  /* Stack pointer ought to be restored to the value before call.  */
-  if (old_arg_space_so_far != arg_space_so_far)
-    abort();
 
   /* If call is cse'able, make appropriate pair of reg-notes around it.
      Test valreg so we don't crash; may safely ignore `const'
@@ -2704,21 +2693,38 @@ libfunc_nothrow (fun)
 
   return 1;
 }
-
-/* Emit a library call to function FUN (a SYMBOL_REF rtx).
-   The RETVAL parameter specifies whether return value needs to be saved, other 
-   parameters are documented in the emit_library_call function bellow.  */
 
-static rtx
-emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
-     int retval;
-     rtx orgfun;
-     rtx value;
-     int no_queue;
-     enum machine_mode outmode;
-     int nargs;
-     va_list p;
+/* Output a library call to function FUN (a SYMBOL_REF rtx)
+   (emitting the queue unless NO_QUEUE is nonzero),
+   for a value of mode OUTMODE,
+   with NARGS different arguments, passed as alternating rtx values
+   and machine_modes to convert them to.
+   The rtx values should have been passed through protect_from_queue already.
+
+   NO_QUEUE will be true if and only if the library call is a `const' call
+   which will be enclosed in REG_LIBCALL/REG_RETVAL notes; it is equivalent
+   to the variable is_const in expand_call.
+
+   NO_QUEUE must be true for const calls, because if it isn't, then
+   any pending increment will be emitted between REG_LIBCALL/REG_RETVAL notes,
+   and will be lost if the libcall sequence is optimized away.
+
+   NO_QUEUE must be false for non-const calls, because if it isn't, the
+   call insn will have its CONST_CALL_P bit set, and it will be incorrectly
+   optimized.  For instance, the instruction scheduler may incorrectly
+   move memory references across the non-const call.  */
+
+void
+emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
+			   int nargs, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  rtx orgfun;
+  int no_queue;
+  enum machine_mode outmode;
+  int nargs;
+#endif
+  va_list p;
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
   /* Size of arguments before any adjustments (such as rounding).  */
@@ -2734,7 +2740,525 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	       struct args_size offset; struct args_size size; rtx save_area; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int old_arg_space_so_far = arg_space_so_far;
+  rtx call_fusage = 0;
+  int reg_parm_stack_space = 0;
+  int nothrow;
+#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+  /* Define the boundary of the register parm stack space that needs to be
+     save, if any.  */
+  int low_to_save = -1, high_to_save = 0;
+  rtx save_area = 0;            /* Place that it is saved */
+#endif
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+  int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
+  char *initial_stack_usage_map = stack_usage_map;
+  int needed;
+#endif
+
+#ifdef REG_PARM_STACK_SPACE
+  /* Size of the stack reserved for parameter registers.  */
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
+  reg_parm_stack_space = REG_PARM_STACK_SPACE ((tree) 0);
+#endif
+#endif
+
+  VA_START (p, nargs);
+
+#ifndef ANSI_PROTOTYPES
+  orgfun = va_arg (p, rtx);
+  no_queue = va_arg (p, int);
+  outmode = va_arg (p, enum machine_mode);
+  nargs = va_arg (p, int);
+#endif
+
+  fun = orgfun;
+
+  nothrow = libfunc_nothrow (fun);
+
+  /* Copy all the libcall-arguments out of the varargs data
+     and into a vector ARGVEC.
+
+     Compute how to pass each argument.  We only support a very small subset
+     of the full argument passing conventions to limit complexity here since
+     library functions shouldn't have many args.  */
+
+  argvec = (struct arg *) alloca (nargs * sizeof (struct arg));
+  bzero ((char *) argvec, nargs * sizeof (struct arg));
+
+
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
+
+  args_size.constant = 0;
+  args_size.var = 0;
+
+  push_temp_slots ();
+
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* Ensure current function's preferred stack boundary is at least
+     what we need.  */
+  if (cfun->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#endif
+
+  for (count = 0; count < nargs; count++)
+    {
+      rtx val = va_arg (p, rtx);
+      enum machine_mode mode = va_arg (p, enum machine_mode);
+
+      /* We cannot convert the arg value to the mode the library wants here;
+	 must do it earlier where we know the signedness of the arg.  */
+      if (mode == BLKmode
+	  || (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode))
+	abort ();
+
+      /* On some machines, there's no way to pass a float to a library fcn.
+	 Pass it as a double instead.  */
+#ifdef LIBGCC_NEEDS_DOUBLE
+      if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
+	val = convert_modes (DFmode, SFmode, val, 0), mode = DFmode;
+#endif
+
+      /* There's no need to call protect_from_queue, because
+	 either emit_move_insn or emit_push_insn will do that.  */
+
+      /* Make sure it is a reasonable operand for a move or push insn.  */
+      if (GET_CODE (val) != REG && GET_CODE (val) != MEM
+	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
+	val = force_operand (val, NULL_RTX);
+
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+      if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
+	{
+	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
+	     be viewed as just an efficiency improvement.  */
+	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+	  emit_move_insn (slot, val);
+	  val = force_operand (XEXP (slot, 0), NULL_RTX);
+	  mode = Pmode;
+	}
+#endif
+
+      argvec[count].value = val;
+      argvec[count].mode = mode;
+
+      argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
+
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+      argvec[count].partial
+	= FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, NULL_TREE, 1);
+#else
+      argvec[count].partial = 0;
+#endif
+
+      locate_and_pad_parm (mode, NULL_TREE,
+			   argvec[count].reg && argvec[count].partial == 0,
+			   NULL_TREE, &args_size, &argvec[count].offset,
+			   &argvec[count].size, &alignment_pad);
+
+      if (argvec[count].size.var)
+	abort ();
+
+      if (reg_parm_stack_space == 0 && argvec[count].partial)
+	argvec[count].size.constant -= argvec[count].partial * UNITS_PER_WORD;
+
+      if (argvec[count].reg == 0 || argvec[count].partial != 0
+	  || reg_parm_stack_space > 0)
+	args_size.constant += argvec[count].size.constant;
+
+      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
+    }
+  va_end (p);
+
+#ifdef FINAL_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
+						     args_size.var);
+#endif
+      
+  /* If this machine requires an external definition for library
+     functions, write one out.  */
+  assemble_external_libcall (fun);
+
+  original_args_size = args_size;
+#ifdef PREFERRED_STACK_BOUNDARY
+  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
+			 / STACK_BYTES) * STACK_BYTES);
+#endif
+
+  args_size.constant = MAX (args_size.constant,
+			    reg_parm_stack_space);
+
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+  args_size.constant -= reg_parm_stack_space;
+#endif
+
+  if (args_size.constant > current_function_outgoing_args_size)
+    current_function_outgoing_args_size = args_size.constant;
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+  /* Since the stack pointer will never be pushed, it is possible for
+     the evaluation of a parm to clobber something we have already
+     written to the stack.  Since most function calls on RISC machines
+     do not use the stack, this is uncommon, but must work correctly.
+
+     Therefore, we save any area of the stack that was already written
+     and that we are using.  Here we set up to do this by making a new
+     stack usage map from the old one.
+
+     Another approach might be to try to reorder the argument
+     evaluations to avoid this conflicting stack usage.  */
+
+  needed = args_size.constant;
+
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+  /* Since we will be writing into the entire argument area, the
+     map must be allocated for its entire size, not just the part that
+     is the responsibility of the caller.  */
+  needed += reg_parm_stack_space;
+#endif
+
+#ifdef ARGS_GROW_DOWNWARD
+  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+				     needed + 1);
+#else
+  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+				     needed);
+#endif
+  stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
+
+  if (initial_highest_arg_in_use)
+    bcopy (initial_stack_usage_map, stack_usage_map,
+	   initial_highest_arg_in_use);
+
+  if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
+    bzero (&stack_usage_map[initial_highest_arg_in_use],
+	   highest_outgoing_arg_in_use - initial_highest_arg_in_use);
+  needed = 0;
+
+  /* The address of the outgoing argument list must not be copied to a
+     register here, because argblock would be left pointing to the
+     wrong place after the call to allocate_dynamic_stack_space below.
+     */
+
+  argblock = virtual_outgoing_args_rtx;
+#else /* not ACCUMULATE_OUTGOING_ARGS */
+#ifndef PUSH_ROUNDING
+  argblock = push_block (GEN_INT (args_size.constant), 0, 0);
+#endif
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* If we push args individually in reverse order, perform stack alignment
+     before the first push (the last arg).  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
+  inc = -1;
+  argnum = nargs - 1;
+#else
+  inc = 1;
+  argnum = 0;
+#endif
+
+#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+  /* The argument list is the property of the called routine and it
+     may clobber it.  If the fixed area has been used for previous
+     parameters, we must save and restore it.
+
+     Here we compute the boundary of the that needs to be saved, if any.  */
+
+#ifdef ARGS_GROW_DOWNWARD
+  for (count = 0; count < reg_parm_stack_space + 1; count++)
+#else
+  for (count = 0; count < reg_parm_stack_space; count++)
+#endif
+    {
+      if (count >=  highest_outgoing_arg_in_use
+	  || stack_usage_map[count] == 0)
+	continue;
+
+      if (low_to_save == -1)
+	low_to_save = count;
+
+      high_to_save = count;
+    }
+
+  if (low_to_save >= 0)
+    {
+      int num_to_save = high_to_save - low_to_save + 1;
+      enum machine_mode save_mode
+	= mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
+      rtx stack_area;
+
+      /* If we don't have the required alignment, must do this in BLKmode.  */
+      if ((low_to_save & (MIN (GET_MODE_SIZE (save_mode),
+			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
+	save_mode = BLKmode;
+
+#ifdef ARGS_GROW_DOWNWARD
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
+						plus_constant (argblock,
+							       - high_to_save)));
+#else
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
+						plus_constant (argblock,
+							       low_to_save)));
+#endif
+      if (save_mode == BLKmode)
+	{
+	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
+	  emit_block_move (validize_mem (save_area), stack_area,
+			   GEN_INT (num_to_save),
+			   PARM_BOUNDARY / BITS_PER_UNIT);
+	}
+      else
+	{
+	  save_area = gen_reg_rtx (save_mode);
+	  emit_move_insn (save_area, stack_area);
+	}
+    }
+#endif
+	  
+  /* Push the args that need to be pushed.  */
+
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
+  for (count = 0; count < nargs; count++, argnum += inc)
+    {
+      register enum machine_mode mode = argvec[argnum].mode;
+      register rtx val = argvec[argnum].value;
+      rtx reg = argvec[argnum].reg;
+      int partial = argvec[argnum].partial;
+#ifdef ACCUMULATE_OUTGOING_ARGS
+      int lower_bound, upper_bound, i;
+#endif
+
+      if (! (reg != 0 && partial == 0))
+	{
+#ifdef ACCUMULATE_OUTGOING_ARGS
+	  /* If this is being stored into a pre-allocated, fixed-size, stack
+	     area, save any previous data at that location.  */
+
+#ifdef ARGS_GROW_DOWNWARD
+	  /* stack_slot is negative, but we want to index stack_usage_map
+	     with positive values.  */
+	  upper_bound = -argvec[argnum].offset.constant + 1;
+	  lower_bound = upper_bound - argvec[argnum].size.constant;
+#else
+	  lower_bound = argvec[argnum].offset.constant;
+	  upper_bound = lower_bound + argvec[argnum].size.constant;
+#endif
+
+	  for (i = lower_bound; i < upper_bound; i++)
+	    if (stack_usage_map[i]
+		/* Don't store things in the fixed argument area at this point;
+		   it has already been saved.  */
+		&& i > reg_parm_stack_space)
+	      break;
+
+	  if (i != upper_bound)
+	    {
+	      /* We need to make a save area.  See what mode we can make it. */
+	      enum machine_mode save_mode
+		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
+				 MODE_INT, 1);
+	      rtx stack_area
+		= gen_rtx_MEM
+		  (save_mode,
+		   memory_address
+		   (save_mode,
+		    plus_constant (argblock,
+				   argvec[argnum].offset.constant)));
+
+	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+	      emit_move_insn (argvec[argnum].save_area, stack_area);
+	    }
+#endif
+	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
+			  argblock, GEN_INT (argvec[argnum].offset.constant),
+			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+	  /* Now mark the segment we just used.  */
+	  for (i = lower_bound; i < upper_bound; i++)
+	    stack_usage_map[i] = 1;
+#endif
+
+	  NO_DEFER_POP;
+	}
+    }
+
+#ifndef PUSH_ARGS_REVERSED
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* If we pushed args in forward order, perform stack alignment
+     after pushing the last arg.  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
+  argnum = nargs - 1;
+#else
+  argnum = 0;
+#endif
+
+  fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0);
+
+  /* Now load any reg parms into their regs.  */
+
+  /* ARGNUM indexes the ARGVEC array in the order in which the arguments
+     are to be pushed.  */
+  for (count = 0; count < nargs; count++, argnum += inc)
+    {
+      register rtx val = argvec[argnum].value;
+      rtx reg = argvec[argnum].reg;
+      int partial = argvec[argnum].partial;
+
+      /* Handle calls that pass values in multiple non-contiguous
+	 locations.  The PA64 has examples of this for library calls.  */
+      if (reg != 0 && GET_CODE (reg) == PARALLEL)
+	emit_group_load (reg, val,
+			 GET_MODE_SIZE (GET_MODE (val)),
+			 GET_MODE_ALIGNMENT (GET_MODE (val)));
+      else if (reg != 0 && partial == 0)
+	emit_move_insn (reg, val);
+
+      NO_DEFER_POP;
+    }
+
+  /* For version 1.37, try deleting this entirely.  */
+  if (! no_queue)
+    emit_queue ();
+
+  /* Any regs containing parms remain in use through the call.  */
+  for (count = 0; count < nargs; count++)
+    {
+      rtx reg = argvec[count].reg;
+      if (reg != 0 && GET_CODE (argvec[count].reg) == PARALLEL)
+	use_group_regs (&call_fusage, reg);
+      else if (reg != 0)
+	use_reg (&call_fusage, reg);
+    }
+
+  /* Don't allow popping to be deferred, since then
+     cse'ing of library calls could delete a call and leave the pop.  */
+  NO_DEFER_POP;
+
+  /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
+     will set inhibit_defer_pop to that value.  */
+
+  /* The return type is needed to decide how many bytes the function pops.
+     Signedness plays no role in that, so for simplicity, we pretend it's
+     always signed.  We also assume that the list of arguments passed has
+     no impact, so we pretend it is unknown.  */
+
+  emit_call_1 (fun, 
+               get_identifier (XSTR (orgfun, 0)), 
+	       build_function_type (outmode == VOIDmode ? void_type_node
+				    : type_for_mode (outmode, 0), NULL_TREE),
+	       original_args_size.constant, args_size.constant, 0,
+	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
+	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
+	       old_inhibit_defer_pop + 1, call_fusage, no_queue, nothrow);
+
+  pop_temp_slots ();
+
+  /* Now restore inhibit_defer_pop to its actual original value.  */
+  OK_DEFER_POP;
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+#ifdef REG_PARM_STACK_SPACE
+  if (save_area)
+    {
+      enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef ARGS_GROW_DOWNWARD
+      rtx stack_area
+	= gen_rtx_MEM (save_mode,
+		       memory_address (save_mode,
+				       plus_constant (argblock,
+						       - high_to_save)));
+#else
+      rtx stack_area
+	= gen_rtx_MEM (save_mode,
+		       memory_address (save_mode,
+				       plus_constant (argblock, low_to_save)));
+#endif
+
+      if (save_mode != BLKmode)
+	emit_move_insn (stack_area, save_area);
+      else
+	emit_block_move (stack_area, validize_mem (save_area),
+			 GEN_INT (high_to_save - low_to_save + 1),
+			 PARM_BOUNDARY / BITS_PER_UNIT);
+    }
+#endif
+	  
+  /* If we saved any argument areas, restore them.  */
+  for (count = 0; count < nargs; count++)
+    if (argvec[count].save_area)
+      {
+	enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
+	rtx stack_area
+	  = gen_rtx_MEM (save_mode,
+			 memory_address
+			 (save_mode,
+			  plus_constant (argblock,
+					 argvec[count].offset.constant)));
+
+	emit_move_insn (stack_area, argvec[count].save_area);
+      }
+
+  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
+  stack_usage_map = initial_stack_usage_map;
+#endif
+}
+
+/* Like emit_library_call except that an extra argument, VALUE,
+   comes second and says where to store the result.
+   (If VALUE is zero, this function chooses a convenient way
+   to return the value.
+
+   This function returns an rtx for where the value is to be found.
+   If VALUE is nonzero, VALUE is returned.  */
+
+rtx
+emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
+				 enum machine_mode outmode, int nargs, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  rtx orgfun;
+  rtx value;
+  int no_queue;
+  enum machine_mode outmode;
+  int nargs;
+#endif
+  va_list p;
+  /* Total size in bytes of all the stack-parms scanned so far.  */
+  struct args_size args_size;
+  /* Size of arguments before any adjustments (such as rounding).  */
+  struct args_size original_args_size;
+  register int argnum;
+  rtx fun;
+  int inc;
+  int count;
+  struct args_size alignment_pad;
+  rtx argblock = 0;
+  CUMULATIVE_ARGS args_so_far;
+  struct arg { rtx value; enum machine_mode mode; rtx reg; int partial;
+	       struct args_size offset; struct args_size size; rtx save_area; };
+  struct arg *argvec;
+  int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
@@ -2767,6 +3291,16 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 #endif
 
+  VA_START (p, nargs);
+
+#ifndef ANSI_PROTOTYPES
+  orgfun = va_arg (p, rtx);
+  value = va_arg (p, rtx);
+  no_queue = va_arg (p, int);
+  outmode = va_arg (p, enum machine_mode);
+  nargs = va_arg (p, int);
+#endif
+
   is_const = no_queue;
   fun = orgfun;
 
@@ -2781,7 +3315,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */
-  if (outmode != VOIDmode && aggregate_value_p (type_for_mode (outmode, 0)))
+  if (aggregate_value_p (type_for_mode (outmode, 0)))
     {
 #ifdef PCC_STATIC_STRUCT_RETURN
       rtx pointer_reg
@@ -2894,7 +3428,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	     be viewed as just an efficiency improvement.  */
 	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
 	  emit_move_insn (slot, val);
-	  val = force_operand (XEXP (slot, 0), NULL_RTX);
+	  val = XEXP (slot, 0);
 	  mode = Pmode;
 	}
 #endif
@@ -2928,6 +3462,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
       FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
     }
+  va_end (p);
 
 #ifdef FINAL_REG_PARM_STACK_SPACE
   reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
@@ -2939,14 +3474,8 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   original_args_size = args_size;
 #ifdef PREFERRED_STACK_BOUNDARY
-  args_size.constant = (((args_size.constant
-			  + arg_space_so_far
-			  + pending_stack_adjust
-			  + STACK_BYTES - 1)
-			 / STACK_BYTES
-			 * STACK_BYTES)
-			- arg_space_so_far
-			- pending_stack_adjust);
+  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
+			 / STACK_BYTES) * STACK_BYTES);
 #endif
 
   args_size.constant = MAX (args_size.constant,
@@ -3016,11 +3545,8 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
-    {
-      anti_adjust_stack (GEN_INT (args_size.constant
-				  - original_args_size.constant));
-      arg_space_so_far += args_size.constant - original_args_size.constant;
-    }
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
 #endif
 #endif
 
@@ -3151,7 +3677,6 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
-	  arg_space_so_far += argvec[argnum].size.constant;
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3168,11 +3693,8 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    {
-      anti_adjust_stack (GEN_INT (args_size.constant
-				  - original_args_size.constant));
-      arg_space_so_far += args_size.constant - unadjusted_args_size;
-    }
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
 #endif
 #endif
 
@@ -3239,20 +3761,16 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
-  /* The return type is needed to decide how many bytes the function pops.
-     Signedness plays no role in that, so for simplicity, we pretend it's
-     always signed.  We also assume that the list of arguments passed has
-     no impact, so we pretend it is unknown.  */
+  /* See the comment in emit_library_call about the function type we build
+     and pass here.  */
 
   emit_call_1 (fun, 
                get_identifier (XSTR (orgfun, 0)),
-	       build_function_type (outmode == VOIDmode ? void_type_node
-				    : type_for_mode (outmode, 0), NULL_TREE),
+	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
                original_args_size.constant, args_size.constant,
 	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-	       (mem_value == 0 && outmode != VOIDmode
-		? hard_libcall_value (outmode) : NULL_RTX),
+	       mem_value == 0 ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, is_const, nothrow);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
@@ -3260,12 +3778,8 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 
   pop_temp_slots ();
 
-  /* Stack pointer ought to be restored to the value before call.  */
-  if (old_arg_space_so_far != arg_space_so_far)
-    abort();
-
   /* Copy the value to the right place.  */
-  if (outmode != VOIDmode && retval)
+  if (outmode != VOIDmode)
     {
       if (mem_value)
 	{
@@ -3324,91 +3838,6 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   highest_outgoing_arg_in_use = initial_highest_arg_in_use;
   stack_usage_map = initial_stack_usage_map;
 #endif
-
-  return value;
-
-}
-
-/* Output a library call to function FUN (a SYMBOL_REF rtx)
-   (emitting the queue unless NO_QUEUE is nonzero),
-   for a value of mode OUTMODE,
-   with NARGS different arguments, passed as alternating rtx values
-   and machine_modes to convert them to.
-   The rtx values should have been passed through protect_from_queue already.
-
-   NO_QUEUE will be true if and only if the library call is a `const' call
-   which will be enclosed in REG_LIBCALL/REG_RETVAL notes; it is equivalent
-   to the variable is_const in expand_call.
-
-   NO_QUEUE must be true for const calls, because if it isn't, then
-   any pending increment will be emitted between REG_LIBCALL/REG_RETVAL notes,
-   and will be lost if the libcall sequence is optimized away.
-
-   NO_QUEUE must be false for non-const calls, because if it isn't, the
-   call insn will have its CONST_CALL_P bit set, and it will be incorrectly
-   optimized.  For instance, the instruction scheduler may incorrectly
-   move memory references across the non-const call.  */
-
-void
-emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
-			   int nargs, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  rtx orgfun;
-  int no_queue;
-  enum machine_mode outmode;
-  int nargs;
-#endif
-  va_list p;
-
-  VA_START (p, nargs);
-
-#ifndef ANSI_PROTOTYPES
-  orgfun = va_arg (p, rtx);
-  no_queue = va_arg (p, int);
-  outmode = va_arg (p, enum machine_mode);
-  nargs = va_arg (p, int);
-#endif
-
-  emit_library_call_value_1 (0, orgfun, NULL_RTX, no_queue, outmode, nargs, p);
-
-  va_end (p);
-}
-
-/* Like emit_library_call except that an extra argument, VALUE,
-   comes second and says where to store the result.
-   (If VALUE is zero, this function chooses a convenient way
-   to return the value.
-
-   This function returns an rtx for where the value is to be found.
-   If VALUE is nonzero, VALUE is returned.  */
-
-rtx
-emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
-				 enum machine_mode outmode, int nargs, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  rtx orgfun;
-  rtx value;
-  int no_queue;
-  enum machine_mode outmode;
-  int nargs;
-#endif
-  va_list p;
-
-  VA_START (p, nargs);
-
-#ifndef ANSI_PROTOTYPES
-  orgfun = va_arg (p, rtx);
-  value = va_arg (p, rtx);
-  no_queue = va_arg (p, int);
-  outmode = va_arg (p, enum machine_mode);
-  nargs = va_arg (p, int);
-#endif
-
-  value = emit_library_call_value_1 (1, orgfun, value, no_queue, outmode, nargs, p);
-
-  va_end (p);
 
   return value;
 }
