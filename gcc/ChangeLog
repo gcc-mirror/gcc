@@ -1,3 +1,8 @@
+Tue Oct 26 13:30:35 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (TARGET_MEM_FUNCTIONS): Define here.
+	* linux.h, netbsd.h, vms.h: Not here.
+
 1999-10-26  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (ISA_HAS_64BIT_REGS,ISA_HAS_BRANCHLIKELY,
