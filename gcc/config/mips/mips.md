@@ -2838,11 +2838,17 @@
   "TARGET_64BIT && !TARGET_MIPS16"
   "*
 {
+  int regno1;
   dslots_jump_total++;
   dslots_jump_filled++;
   operands[2] = const0_rtx;
+  
+  if (GET_CODE (operands[1]) == REG)
+    regno1 = REGNO (operands[1]);
+  else 
+    regno1 = REGNO (XEXP (operands[1], 0));
 
-  if (REGNO (operands[0]) == REGNO (operands[1]))
+  if (REGNO (operands[0]) == regno1)
     return \"%(bltzl\\t%1,1f\\n\\tdsubu\\t%0,%z2,%0\\n%~1:%)\";
   else
     return \"%(bgez\\t%1,1f\\n\\tmove\\t%0,%1\\n\\tdsubu\\t%0,%z2,%0\\n%~1:%)\";
