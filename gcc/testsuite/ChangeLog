@@ -1,3 +1,8 @@
+2003-03-11  D.Venkatasubramanian  <dvenkat@noida.hcltech.com>
+
+	* gcc.misc-tests/bprob.exp: Disable test cases for h8300-*-* as
+	profiling options are not supported.
+
 2003-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.benjamin/16077.C: Adjust warnings.

@@ -20,7 +20,8 @@
 # Some targets don't have any implementation of __bb_init_func or are
 # missing other needed machinery.
 if { [istarget mmix-*-*]
-     || [istarget cris-*-*] } {
+     || [istarget cris-*-*]
+     || [istarget h8300-*-*] } {
     return
 }
 
