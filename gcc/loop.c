@@ -4699,13 +4699,24 @@ loop_givs_reduce (struct loop *loop, struct iv_class *bl)
 	     this is an address giv, then try to put the increment
 	     immediately after its use, so that flow can create an
 	     auto-increment addressing mode.  */
+	  /* Don't do this for loops entered at the bottom, to avoid
+	     this invalid transformation:
+		jmp L;	        ->          jmp L;
+	     TOP:			TOP:
+		use giv			    use giv
+	     L:				    inc giv
+		inc biv			L:
+		test biv		    test giv
+		cbr TOP			    cbr TOP
+	  */
 	  if (v->giv_type == DEST_ADDR && bl->biv_count == 1
 	      && bl->biv->always_executed && ! bl->biv->maybe_multiple
 	      /* We don't handle reversed biv's because bl->biv->insn
 		 does not have a valid INSN_LUID.  */
 	      && ! bl->reversed
 	      && v->always_executed && ! v->maybe_multiple
-	      && INSN_UID (v->insn) < max_uid_for_loop)
+	      && INSN_UID (v->insn) < max_uid_for_loop
+	      && !loop->top)	
 	    {
 	      /* If other giv's have been combined with this one, then
 		 this will work only if all uses of the other giv's occur
