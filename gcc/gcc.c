@@ -328,6 +328,7 @@ static const char *convert_filename	PARAMS ((const char *, int, int));
 #endif
 
 static const char *if_exists_spec_function PARAMS ((int, const char **));
+static const char *if_exists_else_spec_function PARAMS ((int, const char **));
 
 /* The Specs Language
 
@@ -1451,6 +1452,7 @@ static struct spec_list *specs = (struct spec_list *) 0;
 static const struct spec_function static_spec_functions[] =
 {
   { "if-exists",		if_exists_spec_function },
+  { "if-exists-else",		if_exists_else_spec_function },
   { 0, 0 }
 };
 
@@ -7263,4 +7265,24 @@ if_exists_spec_function (argc, argv)
     return argv[0];
 
   return NULL;
+}
+
+/* if-exists-else built-in spec function.
+
+   This is like if-exists, but takes an additional argument which
+   is returned if the first argument does not exist.  */
+
+static const char *
+if_exists_else_spec_function (argc, argv)
+     int argc;
+     const char **argv;
+{
+  /* Must have exactly two arguments.  */
+  if (argc != 2)
+    return NULL;
+
+  if (IS_ABSOLUTE_PATHNAME (argv[0]) && ! access (argv[0], R_OK))
+    return argv[0];
+
+  return argv[1];
 }
