@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1491,6 +1491,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (prescan > 0)
 	break;
       new_block = 1;
+
+#ifdef FINAL_PRESCAN_LABEL
+      FINAL_PRESCAN_INSN (insn, NULL_PTR, 0);
+#endif
+
 #ifdef SDB_DEBUGGING_INFO
       if (write_symbols == SDB_DEBUG && LABEL_NAME (insn))
 	sdbout_label (insn);
