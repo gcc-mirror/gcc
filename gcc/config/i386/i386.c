@@ -2024,7 +2024,7 @@ ix86_prologue (do_rtl)
 	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
 	  emit_insn (gen_prologue_set_got (xops[0], 
 					   gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-					   gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+					   xops[1]));
 	}
       else
 	{
@@ -2040,14 +2040,12 @@ ix86_prologue (do_rtl)
  
       if (do_rtl)
 	{
-	  emit_insn (gen_prologue_get_pc
-		     (xops[0],
-		      gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
 	  emit_insn (gen_pop (xops[0]));
 	  emit_insn (gen_prologue_set_got
 		     (xops[0],
-					   gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-					   gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
+		      gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
+		      xops[1]));
 	}
       else
 	{
