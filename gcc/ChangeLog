@@ -1,3 +1,7 @@
+2002-12-09  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config.gcc: Added tic4x-* target as an alias to c4x-*
+
 Sun Dec  8 14:57:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc):  Use force_operand instead of constructing
