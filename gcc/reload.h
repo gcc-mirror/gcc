@@ -109,6 +109,7 @@ extern enum insn_code reload_out_optab[];
 extern void init_reload ();
 extern void find_reloads ();
 extern void subst_reloads ();
+extern rtx get_secondary_mem ();
 extern rtx eliminate_regs ();
 extern rtx gen_input_reload ();
 extern rtx find_replacement ();
