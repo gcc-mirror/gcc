@@ -306,6 +306,7 @@ copy_body_r (tp, walk_subtrees, data)
       new_decl = remap_decl (*tp, id);
       my_friendly_assert (new_decl != NULL_TREE, 19991203);
       /* Replace this variable with the copy.  */
+      STRIP_TYPE_NOPS (new_decl);
       *tp = new_decl;
     }
   else if (nonstatic_local_decl_p (*tp) 
@@ -384,7 +385,38 @@ initialize_inlined_parameters (id, args, fn)
     {
       tree init_stmt;
       tree var;
+      tree value;
+      
+      /* Find the initializer.  */
+      value = TREE_VALUE (a);
+      /* If the parameter is never assigned to, we may not need to
+	 create a new variable here at all.  Instead, we may be able
+	 to just use the argument value.  */
+      if (TREE_READONLY (p) && !TREE_SIDE_EFFECTS (value))
+	{
+	  /* Simplify the value, if possible.  */
+	  value = fold (decl_constant_value (value));
+	  
+	  /* We can't risk substituting complex expressions.  They
+	     might contain variables that will be assigned to later.
+	     Theoretically, we could check the expression to see if
+	     all of the variables that determine its value are
+	     read-only, but we don't bother.  */
+	  if (TREE_CONSTANT (value) || TREE_READONLY_DECL_P (value))
+	    {
+	      /* If this is a declaration, wrap it a NOP_EXPR so that
+		 we don't try to put the VALUE on the list of
+		 BLOCK_VARS.  */
+	      if (DECL_P (value))
+		value = build1 (NOP_EXPR, TREE_TYPE (value), value);
 
+	      splay_tree_insert (id->decl_map,
+				 (splay_tree_key) p,
+				 (splay_tree_value) value);
+	      continue;
+	    }
+	}
+	
       /* Make an equivalent VAR_DECL.  */
       var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
       /* Register the VAR_DECL as the equivalent for the PARM_DECL;
@@ -400,7 +432,7 @@ initialize_inlined_parameters (id, args, fn)
 	 object will be constructed in VAR.  */
       init_stmt = build_min_nt (EXPR_STMT,
 				build (INIT_EXPR, TREE_TYPE (p),
-				       var, TREE_VALUE (a)));
+				       var, value));
       /* Declare this new variable.  Note that we do this *after* the
 	 initialization because we are going to reverse all the
 	 initialization statements below.  */

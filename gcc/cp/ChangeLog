@@ -1,3 +1,10 @@
+2000-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (copy_body_r): Use STRIP_TYPE_NOPS when copying
+	variables.
+	(initialize_inlined_parameters): Try to avoid creating new
+	VAR_DECLs.
+
 2000-04-27  Alex Samuel  <samuel@codesourcery.com>
 
 	* lex.c (my_get_run_time): Remove.
