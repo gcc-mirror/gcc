@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. 
    Matsushita MN10300 series
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -36,6 +36,10 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
+
+/* Global registers known to hold the value zero.  */
+extern struct rtx_def *zero_dreg;
+extern struct rtx_def *zero_areg;
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -404,8 +408,7 @@ enum reg_class {
   OFFSET = initial_offset (FROM, TO)
 
 #define FRAME_POINTER_REQUIRED \
-  !(leaf_function_p ())
-
+  !(leaf_function_p () || current_function_outgoing_args_size == 0)
 #define CAN_DEBUG_WITHOUT_FP
 
 /* A guess for the MN10300.  */
@@ -562,6 +565,20 @@ extern struct rtx_def *function_arg ();
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x18)),	\
 		 (FNADDR));						\
 }
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.
+
+   On the mn10300, the return address is not at a constant location
+   due to the frame layout.  Luckily, it is at a constant offset from
+   the argument pointer, so we define RETURN_ADDR_RTX to return a
+   MEM using arg_pointer_rtx.  Reload will replace arg_pointer_rtx
+   with a reference to the stack/frame pointer + an appropriate offset.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)   \
+  ((COUNT == 0)                         \
+   ? gen_rtx (MEM, Pmode, arg_pointer_rtx) \
+   : (rtx) 0)
+
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
    reference the 2 integer arg registers.
    Ordinarily they are not call used registers, but they are for
