@@ -1,3 +1,10 @@
+Sun Aug  2 00:42:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/netbsd.h: Undo previous change to DWARF2_UNWIND_INFO.
+	* m68k/netbsd.h: Likewise.
+	* ns32k/netbsd.h: Likewise.
+	* sparc/netbsd.h: Likewise.
+
 Sat Aug  1 17:59:30 1998  Richard Henderson  <rth@cygnus.com>
 
         * ginclude/va-alpha.h (va_list): Use a typedef, not a define.
