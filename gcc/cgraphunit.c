@@ -165,6 +165,7 @@ cgraph_finalize_compilation_unit ()
       if (lang_hooks.callgraph.lower_function)
 	(*lang_hooks.callgraph.lower_function) (decl);
 
+      current_function_decl = node->decl;
       if (!node->needed && !DECL_COMDAT (node->decl))
 	node->local.can_inline_once = tree_inlinable_function_p (decl, 1);
       else
