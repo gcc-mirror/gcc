@@ -32,7 +32,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int max_opno;
 static int max_dup_opno;
 static int max_scratch_opno;
-static int register_constraints;
 static int insn_code_number;
 static int insn_index_number;
 
@@ -83,10 +82,6 @@ max_operand_1 (rtx x)
 
   code = GET_CODE (x);
 
-  if (code == MATCH_OPERAND && XSTR (x, 2) != 0 && *XSTR (x, 2) != '\0')
-    register_constraints = 1;
-  if (code == MATCH_SCRATCH && XSTR (x, 1) != 0 && *XSTR (x, 1) != '\0')
-    register_constraints = 1;
   if (code == MATCH_OPERAND || code == MATCH_OPERATOR
       || code == MATCH_PARALLEL)
     max_opno = MAX (max_opno, XINT (x, 0));
@@ -376,9 +371,7 @@ gen_insn (rtx insn, int lineno)
 
   printf ("/* %s:%d */\n", read_rtx_filename, lineno);
 
-  /* Find out how many operands this function has,
-     and also whether any of them have register constraints.  */
-  register_constraints = 0;
+  /* Find out how many operands this function has.  */
   operands = max_operand_vec (insn, 1);
   if (max_dup_opno >= operands)
     fatal ("match_dup operand number has no match_operand");
@@ -431,10 +424,7 @@ gen_expand (rtx expand)
   if (XVEC (expand, 1) == 0)
     fatal ("define_expand for %s lacks a pattern", XSTR (expand, 0));
 
-  /* Find out how many operands this function has,
-     and also whether any of them have register constraints.  */
-  register_constraints = 0;
-
+  /* Find out how many operands this function has.  */
   operands = max_operand_vec (expand, 1);
 
   /* Output the function name and argument declarations.  */

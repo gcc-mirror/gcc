@@ -1,3 +1,7 @@
+2003-11-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genemit.c (register_constraints): Remove.
+
 2003-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("tmdi_reg", "tmsi_reg", "*movdi_64", "*movdi_31", 
