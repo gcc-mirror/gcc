@@ -346,10 +346,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			   && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx))
 		      break;
 		    pushes++;
-		    if (total_pushed + GET_MODE_SIZE (SET_DEST (pbody))
+		    if (total_pushed + GET_MODE_SIZE (GET_MODE (SET_DEST (pbody)))
 			> stack_adjust_amount)
 		      break;
-		    total_pushed += GET_MODE_SIZE (SET_DEST (pbody));
+		    total_pushed += GET_MODE_SIZE (GET_MODE (SET_DEST (pbody)));
 		  }
 
 		/* Discard the amount pushed from the stack adjust;
@@ -379,7 +379,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			   && GET_CODE (XEXP (dest, 0)) == POST_INC
 			   && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx))
 		      break;
-		    total_pushed -= GET_MODE_SIZE (SET_DEST (pbody));
+		    total_pushed -= GET_MODE_SIZE (GET_MODE (SET_DEST (pbody)));
 		    /* If this push doesn't fully fit in the space
 		       of the stack adjust that we deleted,
 		       make another stack adjust here for what we
