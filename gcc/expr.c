@@ -6318,9 +6318,11 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 
   /* If this is a signed equality comparison, we can do it as an
      unsigned comparison since zero-extension is cheaper than sign
-     extension and comparisons with zero are done as unsigned.  If we
-     are comparing against a constant, we must convert it to what it
-     would look like unsigned.  */
+     extension and comparisons with zero are done as unsigned.  This is
+     the case even on machines that can do fast sign extension, since
+     zero-extension is easier to combinen with other operations than
+     sign-extension is.  If we are comparing against a constant, we must
+     convert it to what it would look like unsigned.  */
   if ((code == EQ || code == NE) && ! unsignedp
       && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_INT)
     {

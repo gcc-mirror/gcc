@@ -952,9 +952,9 @@ fixup_unsigned_type (type)
    VOLATILEP is true or SLOW_BYTE_ACCESS is false, we return the smallest
    mode meeting these conditions.
 
-   Otherwise (VOLATILEP is false and SLOW_BYTE_ACCESS is true), if a mode
-   whose size is UNITS_PER_WORD meets all the conditions, it is returned
-   instead.  */
+   Otherwise (VOLATILEP is false and SLOW_BYTE_ACCESS is true), we return
+   the largest mode (but a mode no wider than UNITS_PER_WORD) that meets
+   all the conditions.  */
 
 enum machine_mode
 get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
@@ -987,12 +987,25 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
       || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode)))
     return VOIDmode;
 
-  if (SLOW_BYTE_ACCESS
-      && ! volatilep
-      && BITS_PER_WORD <= MIN (align, BIGGEST_ALIGNMENT)
-      && (largest_mode == VOIDmode
-	  || BITS_PER_WORD <= GET_MODE_BITSIZE (largest_mode)))
-    return word_mode;
+  if (SLOW_BYTE_ACCESS && ! volatilep)
+    {
+      enum machine_mode wide_mode = VOIDmode, tmode;
+
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT); tmode != VOIDmode;
+	   tmode = GET_MODE_WIDER_MODE (tmode))
+	{
+	  unit = GET_MODE_BITSIZE (tmode);
+	  if (bitpos / unit == (bitpos + bitsize - 1) / unit
+	      && unit <= BITS_PER_WORD
+	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
+	      && (largest_mode == VOIDmode
+		  || unit <= GET_MODE_BITSIZE (largest_mode)))
+	    wide_mode = tmode;
+	}
+
+      if (wide_mode != VOIDmode)
+	return wide_mode;
+    }
 
   return mode;
 }

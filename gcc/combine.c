@@ -356,6 +356,7 @@ static rtx expand_compound_operation ();
 static rtx expand_field_assignment ();
 static rtx make_extraction ();
 static int get_pos_from_mask ();
+static rtx force_to_mode ();
 static rtx make_field_assignment ();
 static rtx make_compound_operation ();
 static rtx apply_distributive_law ();
@@ -1295,7 +1296,8 @@ try_combine (i3, i2, i1)
       if (undobuf.other_insn == 0
 	  && (cc_use = find_single_use (SET_DEST (newpat), i3,
 					&undobuf.other_insn))
-	  && ((compare_mode = SELECT_CC_MODE (GET_CODE (*cc_use), i2src))
+	  && ((compare_mode = SELECT_CC_MODE (GET_CODE (*cc_use),
+					      i2src, const0_rtx))
 	      != GET_MODE (SET_DEST (newpat))))
 	{
 	  int regno = REGNO (SET_DEST (newpat));
@@ -2428,6 +2430,11 @@ subst (x, from, to, in_dest, unique_copy)
     case '<':
       temp = simplify_relational_operation (code, op0_mode,
 					    XEXP (x, 0), XEXP (x, 1));
+#ifdef FLOAT_STORE_FLAG_VALUE
+      if (temp != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	temp = ((temp == const0_rtx) ? CONST0_RTX (GET_MODE (x))
+		: immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, GET_MODE (x)));
+#endif
       break;
     case 'c':
     case '2':
@@ -3194,7 +3201,7 @@ subst (x, from, to, in_dest, unique_copy)
 #if !defined (HAVE_cc0) && defined (EXTRA_CC_MODES)
 	  /* If this machine has CC modes other than CCmode, check to see
 	     if we need to use a different CC mode here.  */
-	  compare_mode = SELECT_CC_MODE (new_code, op0);
+	  compare_mode = SELECT_CC_MODE (new_code, op0, op1);
 
 	  /* If the mode changed, we have to change SET_DEST, the mode
 	     in the compare, and the mode in the place SET_DEST is used.
@@ -3636,25 +3643,6 @@ subst (x, from, to, in_dest, unique_copy)
     case ASHIFTRT:
     case ROTATE:
     case ROTATERT:
-#ifdef SHIFT_COUNT_TRUNCATED
-      /* (*shift <X> (sign_extend <Y>)) = (*shift <X> <Y>) (most machines).
-	 True for all kinds of shifts and also for zero_extend.  */
-      if ((GET_CODE (XEXP (x, 1)) == SIGN_EXTEND
-	   || GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
-	  && FAKE_EXTEND_SAFE_P (mode, XEXP (XEXP (x, 1), 0)))
-	SUBST (XEXP (x, 1),
-	       /* This is a perverse SUBREG, wider than its base.  */
-	       gen_lowpart_for_combine (mode, XEXP (XEXP (x, 1), 0)));
-
-      /* tege: Change (bitshifts ... (and ... mask), c)
-	 to (bitshifts ... c) if mask just masks the bits the bitshift
-	 insns do automatically on this machine.  */
-      if (GET_CODE (XEXP (x, 1)) == AND
-	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
-	  && (~ INTVAL (XEXP (XEXP (x, 1), 1)) & GET_MODE_MASK (mode)) == 0)
-	SUBST (XEXP (x, 1), XEXP (XEXP (x, 1), 0));
-#endif
-
       /* If this is a shift by a constant amount, simplify it.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
@@ -3663,6 +3651,15 @@ subst (x, from, to, in_dest, unique_copy)
 	  if (GET_CODE (x) != code)
 	    goto restart;
 	}
+
+#ifdef SHIFT_COUNT_TRUNCATED
+      else if (GET_CODE (XEXP (x, 1)) != REG)
+	SUBST (XEXP (x, 1),
+	       force_to_mode (XEXP (x, 1), GET_MODE (x),
+			      exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))),
+			      0));
+#endif
+
       break;
     }
 
@@ -4011,6 +4008,15 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (inner);
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (inner);
 	}
+      else if (GET_MODE (inner) == REG)
+	/* We can't call gen_lowpart_for_combine here since we always want
+	   a SUBREG and it would sometimes return a new hard register.  */
+	new = gen_rtx (SUBREG, tmode, inner,
+		       (WORDS_BIG_ENDIAN
+			&& GET_MODE_SIZE (is_mode) > UNITS_PER_WORD)
+		       ? ((GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (tmode)
+			   / UNITS_PER_WORD))
+		       : 0);
       else
 	new = gen_lowpart_for_combine (tmode, inner);
 
@@ -4019,7 +4025,9 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
       if (in_dest)
 	return (GET_CODE (new) == MEM ? new
-		: gen_rtx_combine (STRICT_LOW_PART, VOIDmode, new));
+		: (GET_CODE (new) != SUBREG
+		   ? gen_rtx (CLOBBER, tmode, const0_rtx)
+		   : gen_rtx_combine (STRICT_LOW_PART, VOIDmode, new)));
 
       /* Otherwise, sign- or zero-extend unless we already are in the
 	 proper mode.  */
