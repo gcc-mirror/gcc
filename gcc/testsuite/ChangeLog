@@ -1,5 +1,8 @@
 2004-02-04  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13932
+	* g++.dg/warn/conv2.C: New test.
+
 	* lib/file-format.exp (gcc_target_object_format): Use
 	${tool}_target_compile, not gcc_target_compile.
 	* lib/target-supports.exp (check_alias_available): Likewise.

@@ -5642,8 +5642,6 @@ convert_for_assignment (tree type, tree rhs,
   if (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node)
     return error_mark_node;
 
-  rhs = dubious_conversion_warnings (type, rhs, errtype, fndecl, parmnum);
-
   /* The RHS of an assignment cannot have void type.  */
   if (coder == VOID_TYPE)
     {
