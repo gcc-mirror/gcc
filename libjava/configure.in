@@ -299,11 +299,16 @@ test -d java/net || mkdir java/net
 AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/net/natInetAddress.cc)
 AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/net/natNetworkInterface.cc)
 
-dnl Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.ca.c
+dnl Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.cc.
 test -d gnu/java || mkdir gnu/java
 test -d gnu/java/net || mkdir gnu/java/net
 AC_LINK_FILES(gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainSocketImpl.cc)
 AC_LINK_FILES(gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainDatagramSocketImpl.cc)
+
+dnl Likewise for natPipeImpl.cc and natSelectorImpl.cc.
+test -d gnu/java/nio || mkdir gnu/java/nio
+AC_LINK_FILES(gnu/java/nio/natPipeImpl${PLATFORM}.cc, gnu/java/nio/natPipeImpl.cc)
+AC_LINK_FILES(gnu/java/nio/natSelectorImpl${PLATFORM}.cc, gnu/java/nio/natSelectorImpl.cc)
 
 case "${host}" in
     *mingw*)
