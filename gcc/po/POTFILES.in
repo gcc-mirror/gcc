@@ -113,7 +113,6 @@ config/a29k/a29k-protos.h
 config/a29k/a29k.c
 config/a29k/a29k.h
 config/a29k/rtems.h
-config/a29k/udi.h
 config/a29k/unix.h
 config/a29k/vx29k.h
 config/alpha/alpha-interix.h
