@@ -1,6 +1,7 @@
 // SAX parser interface.
+// http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: Parser.java,v 1.1 2000/10/02 02:43:17 sboag Exp $
+// $Id: Parser.java,v 1.3.2.3 2002/01/29 21:34:14 dbrownell Exp $
 
 package org.xml.sax;
 
@@ -14,6 +15,8 @@ import java.util.Locale;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This was the main event supplier interface for SAX1; it has
@@ -37,9 +40,8 @@ import java.util.Locale;
  *             {@link org.xml.sax.XMLReader XMLReader}
  *             interface, which includes Namespace support.
  * @since SAX 1.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
  * @see org.xml.sax.EntityResolver
  * @see org.xml.sax.DTDHandler
  * @see org.xml.sax.DocumentHandler

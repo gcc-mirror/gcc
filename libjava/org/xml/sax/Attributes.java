@@ -1,8 +1,9 @@
 // Attributes.java - attribute list with Namespace support
-// Written by David Megginson, sax@megginson.com
+// http://www.saxproject.org
+// Written by David Megginson
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: Attributes.java,v 1.1 2000/10/02 02:43:16 sboag Exp $
+// $Id: Attributes.java,v 1.5.2.4 2002/01/29 21:34:14 dbrownell Exp $
 
 
 package org.xml.sax;
@@ -14,6 +15,8 @@ package org.xml.sax;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This interface allows access to a list of attributes in
@@ -30,7 +33,13 @@ package org.xml.sax;
  * contain attributes used as Namespace declarations (xmlns*) unless
  * the <code>http://xml.org/sax/features/namespace-prefixes</code> 
  * feature is set to <var>true</var> (it is <var>false</var> by 
- * default).</p>
+ * default).
+ * Because SAX2 conforms to the "Namespaces in XML" specification,
+ * it does not give namespace declaration attributes a namespace URI.
+ * Some other W3C specifications are in conflict with that, expecting
+ * these declarations to be in a namespace.
+ * Handler code may need to resolve that conflict.
+ * </p>
  *
  * <p>If the namespace-prefixes feature (see above) is <var>false</var>, 
  * access by qualified name may not be available; if the 
@@ -47,10 +56,10 @@ package org.xml.sax;
  * vary from implementation to implementation.</p>
  *
  * @since SAX 2.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
- * @see org.xml.sax.helpers.AttributeListImpl
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
+ * @see org.xml.sax.helpers.AttributesImpl
+ * @see org.xml.sax.ext.DeclHandler#attributeDecl
  */
 public interface Attributes
 {
@@ -167,7 +176,7 @@ public interface Attributes
      * @return The index of the attribute, or -1 if it does not
      *         appear in the list.
      */
-    public int getIndex (String uri, String localPart);
+    public int getIndex (String uri, String localName);
 
 
     /**

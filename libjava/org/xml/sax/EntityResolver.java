@@ -1,6 +1,7 @@
 // SAX entity resolver.
+// http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: EntityResolver.java,v 1.1 2000/10/02 02:43:17 sboag Exp $
+// $Id: EntityResolver.java,v 1.7.2.3 2002/01/29 21:34:14 dbrownell Exp $
 
 package org.xml.sax;
 
@@ -13,6 +14,8 @@ import java.io.IOException;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>If a SAX application needs to implement customized handling
@@ -58,10 +61,9 @@ import java.io.IOException;
  * (possibly by using the public identifier).</p>
  *
  * @since SAX 1.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
- * @see org.xml.sax.Parser#setEntityResolver
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
+ * @see org.xml.sax.XMLReader#setEntityResolver
  * @see org.xml.sax.InputSource
  */
 public interface EntityResolver {
@@ -70,19 +72,26 @@ public interface EntityResolver {
     /**
      * Allow the application to resolve external entities.
      *
-     * <p>The Parser will call this method before opening any external
-     * entity except the top-level document entity (including the
-     * external DTD subset, external entities referenced within the
-     * DTD, and external entities referenced within the document
-     * element): the application may request that the parser resolve
+     * <p>The parser will call this method before opening any external
+     * entity except the top-level document entity.  Such entities include
+     * the external DTD subset and external parameter entities referenced
+     * within the DTD (in either case, only if the parser reads external
+     * parameter entities), and external general entities referenced
+     * within the document element (if the parser reads external general
+     * entities).  The application may request that the parser locate
      * the entity itself, that it use an alternative URI, or that it
-     * use an entirely different input source.</p>
+     * use data provided by the application (as a character or byte
+     * input stream).</p>
      *
      * <p>Application writers can use this method to redirect external
      * system identifiers to secure and/or local URIs, to look up
      * public identifiers in a catalogue, or to read an entity from a
      * database or other input source (including, for example, a dialog
-     * box).</p>
+     * box).  Neither XML nor SAX specifies a preferred policy for using
+     * public or system IDs to resolve resources.  However, SAX specifies
+     * how to interpret any InputSource returned by this method, and that
+     * if none is returned, then the system ID will be dereferenced as
+     * a URL.  </p>
      *
      * <p>If the system identifier is a URL, the SAX parser must
      * resolve it fully before reporting it to the application.</p>

@@ -1,11 +1,15 @@
 // XMLReaderFactory.java - factory for creating a new reader.
-// Written by David Megginson, sax@megginson.com
+// http://www.saxproject.org
+// Written by David Megginson
+// and by David Brownell
 // NO WARRANTY!  This class is in the Public Domain.
 
-// $Id: XMLReaderFactory.java,v 1.1 2000/10/02 02:43:20 sboag Exp $
+// $Id: XMLReaderFactory.java,v 1.5.2.4 2002/01/29 21:34:15 dbrownell Exp $
 
 package org.xml.sax.helpers;
-import org.xml.sax.Parser;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
 
@@ -16,12 +20,12 @@ import org.xml.sax.SAXException;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This class contains static methods for creating an XML reader
- * from an explicit class name, or for creating an XML reader based
- * on the value of the <code>org.xml.sax.driver</code> system 
- * property:</p>
+ * from an explicit class name, or based on runtime defaults:</p>
  *
  * <pre>
  * try {
@@ -31,23 +35,20 @@ import org.xml.sax.SAXException;
  * }
  * </pre>
  *
- * <p>Note that these methods will not be usable in environments where
- * system properties are not accessible or where the application or
- * applet is not permitted to load classes dynamically.</p>
- *
- * <p><strong>Note to implementors:</strong> SAX implementations in specialized
- * environments may replace this class with a different one optimized for the
- * environment, as long as its method signatures remain the same.</p>
+ * <p><strong>Note to Distributions bundled with parsers:</strong>
+ * You should modify the implementation of the no-arguments
+ * <em>createXMLReader</em> to handle cases where the external
+ * configuration mechanisms aren't set up.  That method should do its
+ * best to return a parser when one is in the class path, even when
+ * nothing bound its class name to <code>org.xml.sax.driver</code> so
+ * those configuration mechanisms would see it.</p>
  *
  * @since SAX 2.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
- * @see org.xml.sax.XMLReader
+ * @author David Megginson, David Brownell
+ * @version 2.0.1 (sax2r2)
  */
 final public class XMLReaderFactory
 {
-
     /**
      * Private constructor.
      *
@@ -57,43 +58,103 @@ final public class XMLReaderFactory
     {
     }
 
+    private static final String property = "org.xml.sax.driver";
 
     /**
-     * Attempt to create an XML reader from a system property.
+     * Attempt to create an XMLReader from system defaults.
+     * In environments which can support it, the name of the XMLReader
+     * class is determined by trying each these options in order, and
+     * using the first one which succeeds:</p> <ul>
      *
-     * <p>This method uses the value of the system property
-     * "org.xml.sax.driver" as the full name of a Java class
-     * and tries to instantiate that class as a SAX2 
-     * XMLReader.</p>
+     * <li>If the system property <code>org.xml.sax.driver</code>
+     * has a value, that is used as an XMLReader class name. </li>
      *
-     * <p>Note that many Java interpreters allow system properties
-     * to be specified on the command line.</p>
+     * <li>The JAR "Services API" is used to look for a class name
+     * in the <em>META-INF/services/org.xml.sax.driver</em> file in
+     * jarfiles available to the runtime.</li>
+     *
+     * <li> SAX parser distributions are strongly encouraged to provide
+     * a default XMLReader class name that will take effect only when
+     * previous options (on this list) are not successful.</li>
+     *
+     * <li>Finally, if {@link ParserFactory#makeParser()} can
+     * return a system default SAX1 parser, that parser is wrapped in
+     * a {@link ParserAdapter}.  (This is a migration aid for SAX1
+     * environments, where the <code>org.xml.sax.parser</code> system
+     * property will often be usable.) </li>
+     *
+     * </ul>
+     *
+     * <p> In environments such as small embedded systems, which can not
+     * support that flexibility, other mechanisms to determine the default
+     * may be used. </p>
+     *
+     * <p>Note that many Java environments allow system properties to be
+     * initialized on a command line.  This means that <em>in most cases</em>
+     * setting a good value for that property ensures that calls to this
+     * method will succeed, except when security policies intervene.
+     * This will also maximize application portability to older SAX
+     * environments, with less robust implementations of this method.
+     * </p>
      *
      * @return A new XMLReader.
-     * @exception org.xml.sax.SAXException If the value of the
-     *            "org.xml.sax.driver" system property is null,
-     *            or if the class cannot be loaded and instantiated.
+     * @exception org.xml.sax.SAXException If no default XMLReader class
+     *            can be identified and instantiated.
      * @see #createXMLReader(java.lang.String)
      */
     public static XMLReader createXMLReader ()
 	throws SAXException
     {
-	String className = System.getProperty("org.xml.sax.driver");
+	String		className = null;
+	ClassLoader	loader = NewInstance.getClassLoader ();
+	
+	// 1. try the JVM-instance-wide system property
+	try { className = System.getProperty (property); }
+	catch (Exception e) { /* normally fails for applets */ }
+
+	// 2. if that fails, try META-INF/services/
 	if (className == null) {
-	    Parser parser;
 	    try {
-		parser = ParserFactory.makeParser();
+		String		service = "META-INF/services/" + property;
+		InputStream	in;
+		BufferedReader	reader;
+
+		if (loader == null)
+		    in = ClassLoader.getSystemResourceAsStream (service);
+		else
+		    in = loader.getResourceAsStream (service);
+
+		if (in != null) {
+		    reader = new BufferedReader (
+			    new InputStreamReader (in, "UTF8"));
+		    className = reader.readLine ();
+		    in.close ();
+		}
 	    } catch (Exception e) {
-		parser = null;
 	    }
-	    if (parser == null) {
-		throw new
-		    SAXException("System property org.xml.sax.driver not specified");
-	    } else {
-		return new ParserAdapter(parser);
-	    }
-	} else {
-	    return createXMLReader(className);
+	}
+
+	// 3. Distro-specific fallback
+	if (className == null) {
+// BEGIN DISTRIBUTION-SPECIFIC
+
+	    // EXAMPLE:
+	    // className = "com.example.sax.XmlReader";
+	    // or a $JAVA_HOME/jre/lib/*properties setting...
+
+// END DISTRIBUTION-SPECIFIC
+	}
+	
+	// do we know the XMLReader implementation class yet?
+	if (className != null)
+	    return loadClass (loader, className);
+
+	// 4. panic -- adapt any SAX1 parser
+	try {
+	    return new ParserAdapter (ParserFactory.makeParser ());
+	} catch (Exception e) {
+	    throw new SAXException ("Can't create default XMLReader; "
+		    + "is system property org.xml.sax.driver set?");
 	}
     }
 
@@ -104,6 +165,10 @@ final public class XMLReaderFactory
      * <p>Given a class name, this method attempts to load
      * and instantiate the class as an XML reader.</p>
      *
+     * <p>Note that this method will not be usable in environments where
+     * the caller (perhaps an applet) is not permitted to load classes
+     * dynamically.</p>
+     *
      * @return A new XML reader.
      * @exception org.xml.sax.SAXException If the class cannot be
      *            loaded, instantiated, and cast to XMLReader.
@@ -112,8 +177,14 @@ final public class XMLReaderFactory
     public static XMLReader createXMLReader (String className)
 	throws SAXException
     {
+	return loadClass (NewInstance.getClassLoader (), className);
+    }
+
+    private static XMLReader loadClass (ClassLoader loader, String className)
+    throws SAXException
+    {
 	try {
-	    return (XMLReader)(Class.forName(className).newInstance());
+	    return (XMLReader) NewInstance.newInstance (loader, className);
 	} catch (ClassNotFoundException e1) {
 	    throw new SAXException("SAX2 driver class " + className +
 				   " not found", e1);
@@ -122,15 +193,11 @@ final public class XMLReaderFactory
 				   " found but cannot be loaded", e2);
 	} catch (InstantiationException e3) {
 	    throw new SAXException("SAX2 driver class " + className +
-				   " loaded but cannot be instantiated (no empty public constructor?)",
+	   " loaded but cannot be instantiated (no empty public constructor?)",
 				   e3);
 	} catch (ClassCastException e4) {
 	    throw new SAXException("SAX2 driver class " + className +
 				   " does not implement XMLReader", e4);
 	}
-				   
     }
-
 }
-
-// end of XMLReaderFactory.java

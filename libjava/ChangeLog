@@ -1,3 +1,13 @@
+2002-12-19  Anthony Green  <green@redhat.com>
+
+	* Makefile.am (ordinary_java_source_files): Add
+	org/xml/sax/helpers/NewInstance.java.
+	* Makefile.in: Rebuilt.
+	* org/xml/sax/package.html, org/xml/sax/ext/package.html,
+	org/xml/sax/helpers/package.html: New files.
+	* org/xml/sax/*: Upgrade to SAX 2.0.1 release from
+	http://www.saxproject.org.
+
 2002-12-19  Andrew Haley  <aph@redhat.com>
 
 	* java/util/natResourceBundle.cc: Include
