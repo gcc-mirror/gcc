@@ -5953,7 +5953,9 @@ s390_emit_epilogue (void)
       /* Fetch return address from stack before load multiple,
 	 this will do good for scheduling.  */
 
-      if (cfun->machine->save_return_addr_p)
+      if (cfun->machine->save_return_addr_p
+	  || (cfun->machine->first_restore_gpr < BASE_REGISTER
+	      && cfun->machine->last_save_gpr > RETURN_REGNUM))
 	{
 	  int return_regnum = find_unused_clobbered_reg();
 	  if (!return_regnum)
