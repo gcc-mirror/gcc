@@ -11370,7 +11370,7 @@ rs6000_hash_constant (k)
   int fidx;
   
   if (GET_CODE (k) == LABEL_REF)
-    return result * 1231 + X0INT (XEXP (k, 0), 3);
+    return result * 1231 + (unsigned) INSN_UID (XEXP (k, 0));
 
   if (GET_CODE (k) == CODE_LABEL)
     fidx = 3;
