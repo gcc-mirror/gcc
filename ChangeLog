@@ -1,3 +1,7 @@
+2001-03-10  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* MAINTAINERS: Added Stan Shebs as new maintainer for Objective-C.
+
 2001-03-09  Nicola Pero <n.pero@mi.flashnet.it>
 
 	* configure.in: Only use `lang_requires' for languages athat are
