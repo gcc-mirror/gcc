@@ -267,6 +267,7 @@ lhd_expand_decl (tree ARG_UNUSED (t))
 const char *
 lhd_decl_printable_name (tree decl, int ARG_UNUSED (verbosity))
 {
+  gcc_assert (decl && DECL_NAME (decl));
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
