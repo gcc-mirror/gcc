@@ -1,3 +1,11 @@
+2004-12-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/18928
+	* simplify_rtx.c (plus_minus_operand_p): New function to encode
+	the test for suitable operands for calls to simplify_plus_minus.
+	Only allow (CONST (PLUS x y)) if both x and y are CONSTANT_P.
+	(simplify_binary_operation): Use plus_minus_operand_p.
+
 2004-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-opt/16951
