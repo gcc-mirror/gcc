@@ -223,6 +223,7 @@ or with constant text in a single argument.
         Use this when inconsistent options are detected.
  %x{OPTION}	Accumulate an option for %X.
  %X	Output the accumulated linker options specified by compilations.
+ %Y	Output the accumulated assembler options specified by compilations.
  %a     process ASM_SPEC as a spec.
         This allows config.h to specify part of the spec for running as.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
@@ -426,7 +427,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
@@ -459,7 +460,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".h", "@c-header"},
@@ -494,7 +495,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".i", "@cpp-output"},
@@ -505,7 +506,7 @@ static struct compiler default_compilers[] =
 	%{aux-info*}\
 	%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-    %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+    %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
             %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o} %{!pipe:%g.s} %A\n }"},
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
@@ -515,12 +516,12 @@ static struct compiler default_compilers[] =
 	    %{aux-info*}\
 	    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-       %{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+       %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
 	       %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
 	       %{!pipe:%g.s} %A\n }"},
   {".s", "@assembler"},
   {"@assembler",
-   "%{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+   "%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
             %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o} %i %A\n }"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
@@ -532,7 +533,7 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n\
-    %{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a \
+    %{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
 		    %{!pipe:%g.s} %A\n }}}}"},
   /* Mark end of table */
@@ -564,10 +565,16 @@ static char *link_command_spec = "\
 #endif
 
 /* A vector of options to give to the linker.
-   These options are accumulated by %x
+   These options are accumulated by -Xlinker and -Wl,
    and substituted into the linker command with %X.  */
 static int n_linker_options;
 static char **linker_options;
+
+/* A vector of options to give to the assembler.
+   These options are accumulated by -Wa,
+   and substituted into the assembler command with %X.  */
+static int n_assembler_options;
+static char **assembler_options;
 
 /* Read compilation specs from a file named FILENAME,
    replacing the default ones.
@@ -1933,6 +1940,66 @@ process_command (argc, argv)
 
 	  linker_options[n_linker_options - 1] = argv[++i];
 	}
+      else if (! strncmp (argv[i], "-Wl,", 4))
+	{
+	  int prev, j;
+	  /* Pass the rest of this option to the linker when we link.  */
+
+	  n_linker_options++;
+	  if (!linker_options)
+	    linker_options
+	      = (char **) xmalloc (n_linker_options * sizeof (char **));
+	  else
+	    linker_options
+	      = (char **) xrealloc (linker_options,
+				    n_linker_options * sizeof (char **));
+
+	  /* Split the argument at commas.  */
+	  prev = 4;
+	  for (j = 4; argv[i][j]; j++)
+	    if (argv[i][j] == ',')
+	      {
+		linker_options[n_linker_options - 1]
+		  = save_string (argv[i] + prev, j - prev);
+		n_linker_options++;
+		linker_options
+		  = (char **) xrealloc (linker_options,
+					n_linker_options * sizeof (char **));
+		prev = j + 1;
+	      }
+	  /* Record the part after the last comma.  */
+	  linker_options[n_linker_options - 1] = argv[i] + prev;
+	}
+      else if (! strncmp (argv[i], "-Wa,", 4))
+	{
+	  int prev, j;
+	  /* Pass the rest of this option to the assembler.  */
+
+	  n_assembler_options++;
+	  if (!assembler_options)
+	    assembler_options
+	      = (char **) xmalloc (n_assembler_options * sizeof (char **));
+	  else
+	    assembler_options
+	      = (char **) xrealloc (assembler_options,
+				    n_assembler_options * sizeof (char **));
+
+	  /* Split the argument at commas.  */
+	  prev = 4;
+	  for (j = 4; argv[i][j]; j++)
+	    if (argv[i][j] == ',')
+	      {
+		assembler_options[n_assembler_options - 1]
+		  = save_string (argv[i] + prev, j - prev);
+		n_assembler_options++;
+		assembler_options
+		  = (char **) xrealloc (assembler_options,
+					n_assembler_options * sizeof (char **));
+		prev = j + 1;
+	      }
+	  /* Record the part after the last comma.  */
+	  assembler_options[n_assembler_options - 1] = argv[i] + prev;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
 	{
 	  register char *p = &argv[i][1];
@@ -2030,6 +2097,10 @@ process_command (argc, argv)
   for (i = 1; i < argc; i++)
     {
       if (!strcmp (argv[i], "-Xlinker"))
+	i++;
+      else if (! strncmp (argv[i], "-Wl,", 4))
+	i++;
+      else if (! strncmp (argv[i], "-Wa,", 4))
 	i++;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	i++;
@@ -2497,7 +2568,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    }
 	    break;
 
-	  /* Dump out the options accumulated previously using %x.  */
+	  /* Dump out the options accumulated previously using %x,
+	     -Xlinker and -Wl,.  */
 	  case 'X':
 	    for (i = 0; i < n_linker_options; i++)
 	      {
@@ -2507,6 +2579,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      }
 	    break;
 
+	  /* Dump out the options accumulated previously using -Wa,.  */
+	  case 'Y':
+	    for (i = 0; i < n_assembler_options; i++)
+	      {
+		do_spec_1 (assembler_options[i], 1, NULL_PTR);
+		/* Make each accumulated option a separate argument.  */
+		do_spec_1 (" ", 0, NULL_PTR);
+	      }
+	    break;
+
+	    /* Here are digits and numbers that just process
+	       a certain constant string as a spec.
 	    /* Here are digits and numbers that just process
 	       a certain constant string as a spec.  */
 
