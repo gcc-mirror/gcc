@@ -18,6 +18,8 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+extern void darwin_parse_macosx_version_name (void);
+
 extern int name_needs_quotes (const char *);
 
 extern void machopic_validate_stub_or_non_lazy_ptr (const char *, int);

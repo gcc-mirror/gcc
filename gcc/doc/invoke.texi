@@ -462,7 +462,7 @@ in the following sections.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded}
+-whatsloaded -mmacosx=@var{ver}}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -7589,6 +7589,13 @@ See man ld(1) for more information.
 @opindex bundle_loader
 This specifies the @var{executable} that will be loading the build
 output file being linked. See man ld(1) for more information.
+
+@item -mmacosx=@var{ver}
+@opindex mmacosx
+This specifies the earliest version of Mac OS for which code should
+be generated.  Specifying @code{-mmacosx=10.2}, for example, allows
+the compiler to use features that were first made available in that
+version of the operating system.
 
 @item -allowable_client  @var{client_name}
 @itemx -arch_only

@@ -87,7 +87,8 @@ do {									\
         flag_pic = 2;							\
       }									\
   }									\
-}while(0)
+  darwin_parse_macosx_version_name ();                                  \
+} while (0)
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
