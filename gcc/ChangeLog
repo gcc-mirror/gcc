@@ -1,3 +1,14 @@
+2003-04-05  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (df.o):  Depend on alloc-pool.h, not obstack.h.
+	* df.c: Include alloc-pool.h, not obstack.h.
+	(df_ref_obstack): Remove.
+	(df_ref_pool, df_link_pool): Add pools.
+	(df_alloc): Init the new pools.
+	(df_free): And free them.
+	(df_link_create): Use the pools.
+	(df_ref_create): Ditto.
+
 2003-04-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* simplify-rtx.c: Fix formatting.
@@ -1351,7 +1362,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	operands in case MULT_EXPR of 2003-02-16 patch.
 
 2003-03-20  Daniel Berlin  <dberlin@dberlin.org>
-	Merge changes from new-regalloc-branch
+	Merge changes from new-regalloc-branch 
 
 	From Michael Matz  <matz@suse.de>
 	* df.c (df_ref_record_1): Move init of loc to safe point.
