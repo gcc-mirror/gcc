@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -475,7 +475,7 @@ m68k_output_function_prologue (stream, size)
 	}
       if (dwarf2out_do_frame ())
 	{
-	  cfa_store_offset += fsize;
+	  cfa_store_offset += fsize + 4;
 	  cfa_offset = cfa_store_offset;
 	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
 	}
