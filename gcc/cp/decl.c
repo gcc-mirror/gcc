@@ -4575,8 +4575,7 @@ make_typename_type (context, name)
 }
 
 /* Given a TYPE_DECL T looked up in CONTEXT, return a TYPENAME_TYPE
-   where the scope is either CONTEXT or the first base of CONTEXT along the
-   inheritance chain to T that depends on template parameters.
+   where the scope is CONTEXT.  Also remember what type T refers to.
 
    Called from lookup_name_real to implement the implicit typename
    extension.  */
@@ -4585,29 +4584,7 @@ static tree
 make_implicit_typename (context, t)
      tree context, t;
 {
-  tree retval;
-
-  if (TREE_CODE (context) != TYPENAME_TYPE 
-      && uses_template_parms (DECL_CONTEXT (t))
-      && DECL_CONTEXT (t) != context)
-    {
-      tree binfo = get_binfo (DECL_CONTEXT (t), context, 0);
-      while (binfo)
-	{
-	  tree next = BINFO_INHERITANCE_CHAIN (binfo);
-	  if (! uses_template_parms (BINFO_TYPE (next))
-	      || BINFO_TYPE (next) == context)
-	    break;
-	  binfo = next;
-	}
-      if (binfo)
-	retval = make_typename_type (BINFO_TYPE (binfo), DECL_NAME (t));
-      else
-	/* FIXME: find the enclosing class whose base t comes from.  */
-	retval = make_typename_type (DECL_CONTEXT (t), DECL_NAME (t));
-    }
-  else
-    retval = make_typename_type (context, DECL_NAME (t));
+  tree retval = make_typename_type (context, DECL_NAME (t));
 
   if (TREE_CODE (retval) == TYPENAME_TYPE)
     TREE_TYPE (retval) = TREE_TYPE (t);
