@@ -162,7 +162,7 @@ BEGIN {
       }
     }
     else if ( sys == "elf" && asm_code ~ "section.*\.debug" ) {
-      while ( asm_code !~ "^[ \t]*previous" &&
+      while ( asm_code !~ "^[ \t]*[.]*previous" &&
 	      asm_code !~ "\.popsection" && 
               getline asm_code < asm_filename > 0 );
       if ( ! (getline asm_code < asm_filename > 0)) break;
