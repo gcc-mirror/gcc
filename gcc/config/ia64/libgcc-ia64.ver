@@ -5,4 +5,5 @@ GCC_3.0 {
   __ia64_restore_stack_nonlocal
   __ia64_save_stack_nonlocal
   __ia64_trampoline
+  __ia64_backtrace
 }
