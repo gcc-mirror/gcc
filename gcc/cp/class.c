@@ -4586,7 +4586,19 @@ include_empty_classes (record_layout_info rli)
   if (TREE_CODE (rli_size) == INTEGER_CST
       && INT_CST_LT_UNSIGNED (rli_size, eoc))
     {
-      rli->bitpos = round_up (rli->bitpos, BITS_PER_UNIT);
+      if (!abi_version_at_least (2))
+	/* In version 1 of the ABI, the size of a class that ends with
+	   a bitfield was not rounded up to a whole multiple of a
+	   byte.  Because rli_size_unit_so_far returns only the number
+	   of fully allocated bytes, any extra bits were not included
+	   in the size.  */
+	rli->bitpos = round_down (rli->bitpos, BITS_PER_UNIT);
+      else
+	/* The size should have been rounded to a whole byte.  */
+	my_friendly_assert (tree_int_cst_equal (rli->bitpos,
+						round_down (rli->bitpos,
+							    BITS_PER_UNIT)),
+			    20030903);
       rli->bitpos 
 	= size_binop (PLUS_EXPR, 
 		      rli->bitpos,
