@@ -1,3 +1,9 @@
+2001-11-26  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (gnatbind, gnatmake, gnatbl, gnatchop, gnatcmd,
+	gnatlink, gnatkr, gnatls, gnatmem, gnatprep, gnatpsta, gnatpsys,
+	gnatxref, gnatfind, gnatlbr): Depend on CONFIG_H and prefix.o.
+
 2001-11-25  Laurent Guerby  <guerby@acm.org>
 
 	* sysdep.c (rts_get_*): Fix style.
