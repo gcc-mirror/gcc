@@ -2132,7 +2132,9 @@ while (0)
 #define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
+#ifndef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 1
+#endif
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
