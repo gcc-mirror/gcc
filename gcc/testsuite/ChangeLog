@@ -1,3 +1,7 @@
+2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/memtemp79.C: Fixed. Remove XFAIL.
+
 2000-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.abi/ptrmem.C: New test.
