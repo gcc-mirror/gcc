@@ -1099,6 +1099,13 @@ ia64_expand_load_address (dest, src)
   if (GET_CODE (dest) != REG)
     abort ();
 
+  /* ILP32 mode still loads 64-bits of data from the GOT.  This avoids
+     having to pointer-extend the value afterward.  Other forms of address
+     computation below are also more natural to compute as 64-bit quantities.
+     If we've been given an SImode destination register, change it.  */
+  if (GET_MODE (dest) != Pmode)
+    dest = gen_rtx_REG (Pmode, REGNO (dest));
+
   if (TARGET_AUTO_PIC)
     {
       emit_insn (gen_load_gprel64 (dest, src));
@@ -1129,11 +1136,20 @@ ia64_expand_load_address (dest, src)
       lo = ((ofs & 0x3fff) ^ 0x2000) - 0x2000;
       hi = ofs - lo;
 
-      emit_insn (gen_load_symptr (dest, plus_constant (sym, hi), dest));
+      ia64_expand_load_address (dest, plus_constant (sym, hi));
       emit_insn (gen_adddi3 (dest, dest, GEN_INT (lo)));
     }
   else
-    emit_insn (gen_load_symptr (dest, src, dest));
+    {
+      rtx tmp;
+
+      tmp = gen_rtx_HIGH (Pmode, src);
+      tmp = gen_rtx_PLUS (Pmode, tmp, pic_offset_table_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, tmp));
+
+      tmp = gen_rtx_LO_SUM (GET_MODE (dest), dest, src);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, tmp));
+    }
 }
 
 static GTY(()) rtx gen_tls_tga;

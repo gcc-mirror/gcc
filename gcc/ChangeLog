@@ -1,5 +1,11 @@
 2003-05-14  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_load_address): Force destination
+	to be DImode register.  Merge load_symptr.
+	* config/ia64/ia64.md (load_symptr): Remove.
+
+2003-05-14  Richard Henderson  <rth@redhat.com>
+
 	* rtl.h (TREE_CONSTANT_POOL_ADDRESS_P): Rename from
 	DEFERRED_CONSTANT_P.
 	* integrate.c (copy_rtx_and_substitute): Update use.
