@@ -504,10 +504,18 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
       break;
     case CONSTANT_Float:
       {
-	jfloat fnum = JPOOL_FLOAT (jcf, index);
-	fprintf (out, "%s%.10g", verbosity > 0 ? "Float " : "", (double) fnum);
+	union
+	{
+	  jfloat f;
+	  int32 i;
+	} pun;
+	
+	pun.f = JPOOL_FLOAT (jcf, index);
+	fprintf (out, "%s%.10g",
+		 verbosity > 0 ? "Float " : "", (double) pun.f);
 	if (verbosity > 1)
-	  fprintf (out, ", bits = 0x%08lx", (long) (* (int32 *) &fnum));
+	  fprintf (out, ", bits = 0x%08lx", (long) pun.i);
+	
 	break;
       }
     case CONSTANT_Double:
