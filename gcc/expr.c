@@ -7542,47 +7542,43 @@ expand_expr (exp, target, tmode, modifier)
 
       /* If the input and output modes are both the same, we are done.
 	 Otherwise, if neither mode is BLKmode and both are within a word, we
-	 can use gen_lowpart.  If neither is true, store the operand into
-	 memory and convert the MEM to the new mode.  */
+	 can use gen_lowpart.  If neither is true, make sure the operand is
+	 in memory and convert the MEM to the new mode.  */
       if (TYPE_MODE (type) == GET_MODE (op0))
 	;
       else if (TYPE_MODE (type) != BLKmode && GET_MODE (op0) != BLKmode
 	       && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_WORD
 	       && GET_MODE_SIZE (GET_MODE (op0)) <= UNITS_PER_WORD)
 	op0 = gen_lowpart (TYPE_MODE (type), op0);
-      else
+      else if (GET_CODE (op0) != MEM)
 	{
+	  /* If the operand is not a MEM, force it into memory.  Since we
+	     are going to be be changing the mode of the MEM, don't call
+	     force_const_mem for constants because we don't allow pool
+	     constants to change mode.  */
 	  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	  enum machine_mode non_blkmode
-	    = GET_MODE (op0) == BLKmode ? TYPE_MODE (type) : GET_MODE (op0);
 
-	  if (CONSTANT_P (op0))
-	    op0 = validize_mem (force_const_mem (TYPE_MODE (inner_type), op0));
-	  else
-	    {
-	      if (target == 0 || GET_MODE (target) != TYPE_MODE (inner_type))
-		target
-		  = assign_stack_temp_for_type (TYPE_MODE (inner_type),
-						GET_MODE_SIZE (non_blkmode),
-						0, inner_type);
+	  if (TREE_ADDRESSABLE (exp))
+	    abort ();
 
-	      if (GET_MODE (target) == BLKmode)
-		emit_block_move (target, op0,
-				 expr_size (TREE_OPERAND (exp, 0)));
-	      else
-		emit_move_insn (target, op0);
+	  if (target == 0 || GET_MODE (target) != TYPE_MODE (inner_type))
+	    target
+	      = assign_stack_temp_for_type
+		(TYPE_MODE (inner_type),
+		 GET_MODE_SIZE (TYPE_MODE (inner_type)), 0, inner_type);
 
-	      op0 = target;
-	    }
+	  emit_move_insn (target, op0);
+	  op0 = target;
 	}
 
+      /* At this point, OP0 is in the correct mode.  If the output type is such
+	 that the operand is known to be aligned, indicate that it is.
+	 Otherwise, we need only be concerned about alignment for non-BLKmode
+	 results.  */
       if (GET_CODE (op0) == MEM)
 	{
 	  op0 = copy_rtx (op0);
 
-	  /* If the output type is such that the operand is known to be
-	     aligned, indicate that it is.  Otherwise, we need only be
-	     concerned about alignment for non-BLKmode results.  */
 	  if (TYPE_ALIGN_OK (type))
 	    set_mem_align (op0, MAX (MEM_ALIGN (op0), TYPE_ALIGN (type)));
 	  else if (TYPE_MODE (type) != BLKmode && STRICT_ALIGNMENT
@@ -7594,6 +7590,9 @@ expand_expr (exp, target, tmode, modifier)
 	      rtx new = assign_stack_temp_for_type (TYPE_MODE (type),
 						    temp_size, 0, type);
 	      rtx new_with_op0_mode = copy_rtx (new);
+
+	      if (TREE_ADDRESSABLE (exp))
+		abort ();
 
 	      PUT_MODE (new_with_op0_mode, GET_MODE (op0));
 	      if (GET_MODE (op0) == BLKmode)
