@@ -1,3 +1,8 @@
+Tue Dec 18 17:02:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (widen_memory_access): Only call compare_tree_int
+	on an INTEGER_CST.
+
 2001-12-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_override_options): Only use DI ops when
