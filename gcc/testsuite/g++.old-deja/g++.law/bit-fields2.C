@@ -10,6 +10,12 @@
 // From: Jaimie Wilson/MSL <Jaimie_Wilson@msl.isis.org>
 // Date:   Fri, 28 Jan 1994 06:11:43 -0500
 // Subject: GCC bug report
+//
+// This test is only meant for targets where EMPTY_FIELD_BOUNDARY is
+// defined to no larger than the size of an unsigned int, or where
+// PCC_BITFIELD_TYPE_MATTERS is defined.  Add skips below for targets that
+// do not have that property.
+// Skip if target: mmix-knuth-mmixware
 
 
 #include <stdio.h>
