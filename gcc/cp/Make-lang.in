@@ -162,7 +162,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
-	-rm -f cp/*$(objext)
+	-rm -f cp/*$(objext) $(DEMANGLER_PROG)
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
