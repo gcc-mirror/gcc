@@ -202,8 +202,4 @@ Boston, MA 02111-1307, USA.
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-/* This causes trouble, because it requires the host machine
-   to support ANSI C.  */
-/* #define MULTIBYTE_CHARS */
-
 #define TARGET_HAS_F_SETLKW

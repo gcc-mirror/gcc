@@ -52,8 +52,6 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-__cxa_atexit   enable __cxa_atexit for C++"
 ac_help="$ac_help
-  --enable-c-mbchar       enable multibyte characters for C and C++"
-ac_help="$ac_help
   --enable-threads        enable thread usage for target GCC
   --enable-threads=LIB    use LIB thread package for target GCC"
 ac_help="$ac_help
@@ -2147,19 +2145,6 @@ if test "${enable___cxa_atexit+set}" = set; then
 fi
 
 
-# Enable Multibyte Characters for C/C++
-# Check whether --enable-c-mbchar or --disable-c-mbchar was given.
-if test "${enable_c_mbchar+set}" = set; then
-  enableval="$enable_c_mbchar"
-  if test x$enable_c_mbchar != xno; then
-  cat >> confdefs.h <<\EOF
-#define MULTIBYTE_CHARS 1
-EOF
-
-fi
-fi
-
-  
 # Enable threads
 # Pass with no value to take the default
 # Pass with a value to specify a thread package

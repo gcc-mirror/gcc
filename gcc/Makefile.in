@@ -813,7 +813,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  haifa-sched.o hashtable.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
- loop.o mbchar.o optabs.o options.o opts.o params.o postreload.o predict.o \
+ loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
  print-rtl.o print-tree.o value-prof.o					   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
@@ -1283,7 +1283,6 @@ c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
     flags.h toplev.h $(C_COMMON_H) real.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
     function.h c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H) $(C_COMMON_H) gt-c-pragma.h
-mbchar.o: mbchar.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) mbchar.h
 graph.o: graph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h flags.h output.h \
     $(RTL_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
