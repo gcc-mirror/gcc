@@ -2345,8 +2345,29 @@ check_format_info (status, info, params)
       /* Functions taking a va_list normally pass a non-literal format
 	 string.  These functions typically are declared with
 	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0 && warn_format_nonliteral)
-	status_warning (status, "format not a string literal, argument types not checked");
+      if (!(format_types[info->format_type].flags & FMT_FLAG_ARG_CONVERT))
+	{
+	  /* For strftime-like formats, warn for not checking the format
+	     string; but there are no arguments to check.  */
+	  if (warn_format_nonliteral)
+	    status_warning (status, "format not a string literal, format string not checked");
+	}
+      else if (info->first_arg_num != 0)
+	{
+	  /* If there are no arguments for the format at all, we may have
+	     printf (foo) which is likely to be a security hole.  */
+	  while (arg_num + 1 < info->first_arg_num)
+	    {
+	      if (params == 0)
+		break;
+	      params = TREE_CHAIN (params);
+	      ++arg_num;
+	    }
+	  if (params == 0 && warn_format_nonliteral)
+	    status_warning (status, "format not a string literal and no format arguments");
+	  else if (warn_format_nonliteral)
+	    status_warning (status, "format not a string literal, argument types not checked");
+	}
     }
 
   /* If there were extra arguments to the format, normally warn.  However,

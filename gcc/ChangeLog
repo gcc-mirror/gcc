@@ -1,5 +1,13 @@
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (check_format_info): Warn for non-constant format
+	strings with strftime formats if -Wformat-nonliteral.  Where the
+	format can convert arguments, if the format is not a string
+	literal and there are no arguments to the format, give a different
+	warning message from the general non-string-literal case.
+
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (format_wanted_type): Add reading_from_flag.
 	(print_char_table): Mark %s and %S formats with flag "R".
 	(check_format_info_main): Set up reading_from_flag appropriately.
