@@ -145,7 +145,7 @@ static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
 static void check_bases_and_members PARAMS ((tree, int *));
-static tree create_vtable_ptr PARAMS ((tree, int *, int *, tree *));
+static tree create_vtable_ptr PARAMS ((tree, int *, tree *));
 static void layout_class_type PARAMS ((tree, int *, int *, tree *));
 static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
@@ -370,7 +370,7 @@ convert_to_base (tree object, tree type, bool check_access)
   binfo = lookup_base (TREE_TYPE (object), type, 
 		       check_access ? ba_check : ba_ignore, 
 		       NULL);
-  if (!binfo || TREE_CODE (binfo) == error_mark_node)
+  if (!binfo || binfo == error_mark_node)
     return error_mark_node;
 
   return build_base_path (PLUS_EXPR, object, binfo, /*nonnull=*/1);
@@ -4342,10 +4342,9 @@ check_bases_and_members (t, empty_p)
    on VIRTUALS_P.  */
 
 static tree
-create_vtable_ptr (t, empty_p, vfuns_p, virtuals_p)
+create_vtable_ptr (t, empty_p, virtuals_p)
      tree t;
      int *empty_p;
-     int *vfuns_p;
      tree *virtuals_p;
 {
   tree fn;
@@ -4789,7 +4788,7 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   determine_primary_base (t, vfuns_p);
 
   /* Create a pointer to our virtual function table.  */
-  vptr = create_vtable_ptr (t, empty_p, vfuns_p, virtuals_p);
+  vptr = create_vtable_ptr (t, empty_p, virtuals_p);
 
   /* The vptr is always the first thing in the class.  */
   if (vptr)
