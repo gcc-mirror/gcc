@@ -133,6 +133,61 @@
 	(logsf2, logdf2, logxf2, logtf2): Update expander patterns to match
 	the corresponding *fyl2x_?fxf3 instructions.
 
+2003-05-14  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib2funcs.S (TRAMPOLINE_SIZE): Change from 49 to 59.
+	* config/xtensa/xtensa-config.h (XCHAL_HAVE_CONST16,
+	XCHAL_HAVE_L32R): New.
+	* config/xtensa/xtensa-protos.h (non_const_move_operand,
+	xtensa_load_constant, xtensa_function_prologue,
+	xtensa_function_epilogue): Delete prototypes.
+	(xtensa_expand_prologue): New.
+	* config/xtensa/xtensa.c (frame_size_const,
+	TARGET_ASM_FUNCTION_PROLOGUE, TARGET_MACHINE_DEPENDENT_REORG,
+	non_const_move_operand, xtensa_load_constant, xtensa_reorg,
+	xtensa_function_prologue): Delete.
+	(add_operand, xtensa_mem_offset): Formatting.
+	(move_operand): If the const16 option is available, allow any SFmode
+	and SImode constants.
+	(xtensa_emit_move_sequence): Inline the former contents of
+	xtensa_load_constant with modifications to handle the const16 option.
+	(override_options): Add xtensa_char_to_class['W'] and set it to
+	the general register class only if the const16 option is enabled.
+	Fix formatting.  Disallow PIC when using the const16 option.
+	(print_operand): Reorganize to switch on "letter" instead of the
+	RTL code.  Add output_operand_lossage calls for invalid cases.
+	Add support for 't' and 'b' letters.
+	(xtensa_expand_prologue): New function to replace
+	xtensa_function_prologue and xtensa_reorg.
+	(xtensa_function_epilogue): Declare this as static.  Delete code
+	to print the retw.n or retw instruction.
+	(xtensa_return_addr): Use A0_REG instead of 0.
+	(xtensa_rtx_costs): Add costs for using the const16 option.
+	* config/xtensa/xtensa.h (MASK_CONST16, TARGET_CONST16): New.
+	(TARGET_DEFAULT): Add CONST16 if L32R instructions not available.
+	(TARGET_SWITCHES): Add "const16" and "no-const16".
+	(REG_CLASS_FROM_LETTER): Add comment about new 'W' letter.
+	(EXTRA_CONSTRAINT): Change 'T' constraint to only apply when not
+	using the const16 option.
+	(TRAMPOLINE_TEMPLATE): Rewrite to avoid hardwired use of l32r insn.
+	(TRAMPOLINE_SIZE): Change from 49 to 59.
+	(INITIALIZE_TRAMPOLINE): Adjust offsets to match new trampoline.
+	(GO_IF_LEGITIMATE_ADDRESS): Do not allow constant pool addresses
+	when using the const16 option.
+	(PREDICATE_CODES): Delete non_const_move_operand.
+	* config/xtensa/xtensa.md (define_constants): Add A1_REG, A8_REG, and
+	UNSPECV_ENTRY.
+	(movdi, movdf): If the source is a constant, always expand to a
+	sequence of movsi insns.
+	(movdi_internal, movdf_internal): Remove alternative using l32r insns.
+	(movsi_internal, movsf_internal): Add alternative using const16 insns.
+	(movsf): Add const16 support.
+	(entry, prologue, epilogue): New.
+	(set_frame_ptr): Add missing mode for unspec_volatile operation.
+	Likewise for subsequent split pattern.
+	* doc/invoke.texi (Option Summary, Xtensa Options): Document new
+	"-mconst16" and "-mno-const16" options.
+
 2003-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_load_address): Force destination
