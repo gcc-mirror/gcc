@@ -1569,6 +1569,7 @@ extern void set_reg_attrs_from_mem (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
 extern void set_reg_pointer_align (rtx, unsigned int);
+extern int mem_expr_equal_p (tree, tree);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
