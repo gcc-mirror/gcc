@@ -61,7 +61,8 @@ texinfo/makeinfo/Makefile.in: texinfo/makeinfo/Makefile.am texinfo/configure.in 
 texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/aclocal.m4
 # Now, proceed to gcc automatically generated files
 gcc/configure: gcc/configure.in
-gcc/c-stamp-h.in: gcc/configure.in gcc/acconfig.h
+gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
+gcc/config.in: gcc/cstamp-h.in
 gcc/c-parse.y: gcc/c-parse.in
 gcc/c-parse.c: gcc/c-parse.y
 gcc/c-parse.h: gcc/c-parse.c
