@@ -41,16 +41,22 @@ package java.io;
 import java.nio.channels.FileChannel;
 import gnu.java.nio.FileChannelImpl;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date September 25, 1998 
- */
-
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status: Believe complete and correct to 1.1.
  */
 
+/**
+ * This class allows reading and writing of files at random locations.
+ * Most Java I/O classes are either pure sequential input or output.  This
+ * class fulfills the need to be able to read the bytes of a file in an
+ * arbitrary order.  In addition, this class implements the
+ * <code>DataInput</code> and <code>DataOutput</code> interfaces to allow
+ * the reading and writing of Java primitives.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Tom Tromey <tromey@cygnus.com>
+ */
 public class RandomAccessFile implements DataOutput, DataInput
 {
 

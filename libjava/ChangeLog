@@ -1,3 +1,14 @@
+2003­03-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FileOutputStream.java:
+	Merged class documentation and authors with classpath.
+	(FileOutputStream): Partly merged with classpath.
+	(write): Merged with classpath.
+	(getChannel): Make it synchronized instead of explicit block in this
+	method.
+	* java/io/RandomAccessFile.java:
+	Merged class documentation and authors with classpath.
+
 2003-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set
