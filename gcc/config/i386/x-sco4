@@ -1,10 +1,11 @@
 RANLIB = :
 RANLIB_TEST = false
-CLIB = -lPW
-CC = cc -nointl
-
-# Seems to be needed with SCO DEV3.2v4.
-X_CFLAGS = -D__STDC__=0
+CC = rcc $(RCCFLAGS)
+OLDCC = rcc $(RCCFLAGS)
+RCCFLAGS = -Dunix -Di386 -DM_UNIX -DM_I386 -DNULL=0
+CCLIBFLAGS =
+CLIB = -lmalloc
+ALLOCA = -lPW
 
 # See all the declarations.
 FIXPROTO_DEFINES = -D_XOPEN_SOURCE
