@@ -1,7 +1,7 @@
-/* Definitions of target machine for GNU compiler.  
-   SysV68 Motorola 3300 Delta Series
+/* Definitions of target machine for GNU compiler,
+   SysV68 Motorola 3300 Delta Series.
    Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
-   Written by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
+   Coptributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
 
 This file is part of GNU CC.
@@ -108,7 +108,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { extern int current_function_returns_pointer;			\
     if ((current_function_returns_pointer) &&				\
       ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))        \
-      asm_fprintf (FILE, "\tmovl %Rd0,%Ra0\n"); } 
+      asm_fprintf (FILE, "\tmov.l %Rd0,%Ra0\n"); } 
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
