@@ -84,6 +84,9 @@ namespace std
       ~__basic_file();
 
       streamsize 
+      xwrite(const char* __s, streamsize __n);
+
+      streamsize 
       xsputn(const char* __s, streamsize __n);
 
       streamsize 
