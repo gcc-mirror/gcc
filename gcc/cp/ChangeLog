@@ -1,3 +1,11 @@
+2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (copy_virtuals): Remove.
+	(build_primary_vtable): Use copy_list directly.
+	(build_secondary_vtable): Likewise.
+	(update_vtable_entry_for_fn): Clear BV_CALL_INDEX here.
+	(create_vtable_ptr): Likewise.
+
 2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* search.c: Follow spelling conventions.
