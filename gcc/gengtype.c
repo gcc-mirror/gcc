@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1559,6 +1559,10 @@ walk_type (t, d)
     else if (strcmp (oo->name, "descbits") == 0)
       ;
     else if (strcmp (oo->name, "param_is") == 0)
+      ;
+    else if (strncmp (oo->name, "param", 5) == 0
+	     && ISDIGIT (oo->name[5])
+	     && strcmp (oo->name + 6, "_is") == 0)
       ;
     else if (strcmp (oo->name, "chain_next") == 0)
       ;
