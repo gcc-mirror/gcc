@@ -2815,6 +2815,7 @@ lookup_tag (code, name, binding_level, thislevel_only)
      int thislevel_only;
 {
   register struct binding_level *level;
+  int thislevel = 1;
 
   for (level = binding_level; level; level = level->level_chain)
     {
@@ -2829,12 +2830,22 @@ lookup_tag (code, name, binding_level, thislevel_only)
 		  pending_invalid_xref = name;
 		  pending_invalid_xref_file = input_filename;
 		  pending_invalid_xref_line = lineno;
+		  /* If in the same binding level as a declaration as a tag
+		     of a different type, this must not be allowed to
+		     shadow that tag, so give the error immediately.
+		     (For example, "struct foo; union foo;" is invalid.)  */
+		  if (thislevel)
+		    pending_xref_error ();
 		}
 	      return TREE_VALUE (tail);
 	    }
 	}
-      if (thislevel_only && ! level->tag_transparent)
-	return NULL_TREE;
+      if (! level->tag_transparent)
+	{
+	  if (thislevel_only)
+	    return NULL_TREE;
+	  thislevel = 0;
+	}
     }
   return NULL_TREE;
 }
@@ -5112,9 +5123,6 @@ xref_tag (code, name)
   ref = make_node (code);
   if (code == ENUMERAL_TYPE)
     {
-      /* (In ANSI, Enums can be referred to only if already defined.)  */
-      if (pedantic)
-	pedwarn ("ISO C forbids forward references to `enum' types");
       /* Give the type a default layout like unsigned int
 	 to avoid crashing if it does not get defined.  */
       TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);

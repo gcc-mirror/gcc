@@ -1397,7 +1397,11 @@ structsp:
 		{ $$ = finish_enum ($<ttype>3, nreverse ($4),
 				    chainon ($1, $7)); }
 	| enum_head identifier
-		{ $$ = xref_tag (ENUMERAL_TYPE, $2); }
+		{ $$ = xref_tag (ENUMERAL_TYPE, $2);
+		  /* In ISO C, enumerated types can be referred to
+		     only if already defined.  */
+		  if (pedantic && !COMPLETE_TYPE_P ($$))
+		    pedwarn ("ISO C forbids forward references to `enum' types"); }
 	;
 
 maybecomma:
@@ -1534,8 +1538,10 @@ enumerator:
 	;
 
 typename:
-	typed_typespecs absdcl
-		{ $$ = build_tree_list ($1, $2); }
+	  typed_typespecs
+		{ pending_xref_error (); }
+	  absdcl
+		{ $$ = build_tree_list ($1, $3); }
 	| nonempty_type_quals absdcl
 		{ $$ = build_tree_list ($1, $2); }
 	;
