@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1729,6 +1729,13 @@ literal_section ()						\
   {"unaligned_memory_operand", {MEM}},			\
   {"any_memory_operand", {MEM}},
 
+/* Tell collect that the object format is ECOFF.  */
+#define OBJECT_FORMAT_COFF
+#define EXTENDED_COFF
+
+/* If we use NM, pass -g to it so it only lists globals.  */
+#define NM_FLAGS "-pg"
+
 /* Definitions for debugging.  */
 
 #define SDB_DEBUGGING_INFO		/* generate info for mips-tfile */
