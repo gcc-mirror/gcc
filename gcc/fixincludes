@@ -1322,7 +1322,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 
 if [ -r ${LIB}/$file ]; then
-  if grep 'class[(]' ${LIB}/$file >/dev/null; then
+  if grep '[^a-zA-Z_]class[(]' ${LIB}/$file >/dev/null; then
     echo Fixing $file
     sed -e '/class[(]/i\
 #ifndef __cplusplus
@@ -2694,6 +2694,50 @@ if [ -r ${LIB}/$file ]; then
   sed -e 's/typedef volatile int sig_atomic_t/typedef int sig_atomic_t/' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# Some math.h files define struct exception, which conflicts with
+# the class exception defined in the C++ file std/stdexcept.h.  We
+# redefine it to __math_exception.  This is not a great fix, but I
+# haven't been able to think of anything better.
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, exception
+  sed -e '/struct exception/i\
+#ifdef __cplusplus\
+#define exception __math_exception\
+#endif'\
+      -e '/struct exception/a\
+#ifdef __cplusplus\
+#undef exception\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if egrep 'matherr()' ${LIB}/$file >/dev/null 2>&1; then
+    sed -e '/matherr/i\
+#ifdef __cplusplus\
+#define exception __math_exception\
+#endif'\
+        -e '/matherr/a\
+#ifdef __cplusplus\
+#undef exception\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
   else
