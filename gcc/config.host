@@ -306,7 +306,6 @@ case ${host} in
   i[34567]86-*-sysv*) # Intel 80386's running System V
     ;;
   i386-*-vsta) # Intel 80386's running VSTa kernel
-    host_xm_file="i386/xm-vsta.h"
     ;;
   i[34567]86-*-pe | i[34567]86-*-cygwin*)
     host_xm_file=i386/xm-cygwin.h
