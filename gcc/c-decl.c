@@ -4165,21 +4165,15 @@ grokdeclarator (tree declarator, tree declspecs,
 	     qualify the return type, not the function type.  */
 	  if (type_quals)
 	    {
-	      /* Type qualifiers on a function return type are normally
-		 permitted by the standard but have no effect, so give a
-		 warning at -Wextra.  Qualifiers on a void return type have
-		 meaning as a GNU extension, and are banned on function
-		 definitions in ISO C.  FIXME: strictly we shouldn't
-		 pedwarn for qualified void return types except on function
-		 definitions, but not doing so could lead to the undesirable
-		 state of a "volatile void" function return type not being
-		 warned about, and a use of the function being compiled
-		 with GNU semantics, with no diagnostics under -pedantic.  */
-	      if (VOID_TYPE_P (type) && pedantic && !in_system_header)
-		pedwarn ("ISO C forbids qualified void function return type");
-	      else if (extra_warnings
-		       && !(VOID_TYPE_P (type)
-			    && type_quals == TYPE_QUAL_VOLATILE))
+	      /* Type qualifiers on a function return type are
+		 normally permitted by the standard but have no
+		 effect, so give a warning at -Wreturn-type.
+		 Qualifiers on a void return type are banned on
+		 function definitions in ISO C; GCC used to used them
+		 for noreturn functions.  */
+	      if (VOID_TYPE_P (type) && really_funcdef)
+		pedwarn ("function definition has qualified void return type");
+	      else if (warn_return_type)
 		warning ("type qualifiers ignored on function return type");
 
 	      type = c_build_qualified_type (type, type_quals);
@@ -4499,7 +4493,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
 
-	/* GNU C interprets a `volatile void' return type to indicate
+	/* GNU C interprets a volatile-qualified function type to indicate
 	   that the function does not return.  */
 	if ((type_quals & TYPE_QUAL_VOLATILE)
 	    && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
@@ -5714,8 +5708,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
   old_decl = lookup_name_in_scope (DECL_NAME (decl1), current_scope);
   if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
       && !DECL_BUILT_IN (old_decl)
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (old_decl))))
+      && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
+		    TREE_TYPE (TREE_TYPE (old_decl)))
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     {
       TREE_TYPE (decl1) = TREE_TYPE (old_decl);

@@ -1,5 +1,19 @@
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/15052
+	* c-decl.c (grokdeclarator): Only pedwarn for qualified void
+	return type on function definitions.  Move other warnings for
+	qualified return type to -Wreturn-type.  Do not condition any such
+	warnings on -pedantic.  Update comments.
+	(start_function): Only copy function type from previous prototype
+	declaration if return types are compatible.
+	* c-typeck.c (function_types_compatible_p): Don't condition
+	warning for incompatibility of volatile qualifiers on the return
+	type on -pedantic.  Update comment.
+	* doc/invoke.texi (-Wreturn-type, -Wextra): Update.
+
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-typeck.c (set_init_index): Require designator to be of integer
 	type.
 
