@@ -1,3 +1,9 @@
+2001-05-17  Brendan Conoboy <blc@cygnus.com>
+	    Bruce Korb <bkorb@gnu.org>
+
+	* fixinc/fixincl.sh(FIXINC): accept local directory if fixincl not
+	found in fixinc directory.  Facilitates binary distributions.
+
 2001-05-17  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* dbxout.c (dbxout_symbol_location): For CONCAT, skip types not
