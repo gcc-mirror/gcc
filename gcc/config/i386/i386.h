@@ -2765,6 +2765,8 @@ extern int reg_mentioned_in_mem ();
 extern char *output_int_conditional_move ();
 extern char *output_fp_conditional_move ();
 extern int ix86_can_use_return_insn_p ();
+extern int small_shift_operand ();
+extern char *output_ashlsi3 ();
 
 #ifdef NOTYET
 extern struct rtx_def *copy_all_rtx ();

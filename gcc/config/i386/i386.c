@@ -123,7 +123,7 @@ const int x86_use_leave = m_386 | m_K6;
 const int x86_push_memory = m_386 | m_K6;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
 const int x86_movx = m_386 | m_PPRO | m_K6;
-const int x86_double_with_add = ~m_386;
+const int x86_double_with_add = ~(m_386 | m_PENT | m_PPRO);
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO;
 const int x86_use_q_reg = m_PENT | m_PPRO | m_K6;
@@ -1685,6 +1685,17 @@ symbolic_operand (op, mode)
     default:
       return 0;
     }
+}
+
+/* Return nonzero if OP is a constant shift count small enough to
+   encode into an lea instruction.  */
+
+int
+small_shift_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) > 0 && INTVAL (op) < 4);
 }
 
 /* Test for a valid operand for a call instruction.
@@ -5594,4 +5605,90 @@ x86_adjust_cost (insn, link, dep_insn, cost)
     }
 
   return cost;
+}
+
+/* Output assembly code for a left shift.
+
+   Always use "sal" when shifting a memory operand or for a non constant
+   shift count.
+
+   When optimizing for size, we know that src == dest, and we should always
+   use "sal".  If src != dest, then copy src to dest and use "sal".
+   
+   Pentium and PPro (speed):
+
+     When src == dest, use "add" for a shift counts of one, else use
+     "sal".  If we modeled Pentium AGI stalls and U/V pipelining better we
+     would want to generate lea for some shifts on the Pentium.
+
+     When src != dest, use "lea" for small shift counts.  Otherwise,
+     copy src to dest and use the normal shifting code.  Exception for
+     TARGET_DOUBLE_WITH_ADD.  */
+
+char *
+output_ashlsi3 (operands)
+     rtx *operands;
+{
+  /* Handle case where srcreg != dstreg.  */
+  if (REG_P (operands[0]) && REGNO (operands[0]) != REGNO (operands[1]))
+    {
+      if (TARGET_DOUBLE_WITH_ADD && INTVAL (operands[2]) == 1)
+	{
+	  output_asm_insn (AS2 (mov%L0,%1,%0), operands);
+	  return AS2 (add%L0,%1,%0);
+	}
+      else
+        {
+          CC_STATUS_INIT;
+
+	  /* This should be extremely rare (impossible?).  We can not encode a
+	     shift of the stack pointer using an lea instruction.  So copy the
+	     stack pointer into the destination register and use an lea.  */
+	  if (operands[1] == stack_pointer_rtx)
+	    {
+	      output_asm_insn (AS2 (mov%L0,%1,%0), operands);
+	      operands[1] = operands[0];
+	    }
+
+	  /* For shifts up to and including 3 bits, use lea.  */
+          operands[1] = gen_rtx_MULT (SImode, operands[1],
+				      GEN_INT (1 << INTVAL (operands[2])));
+	  return AS2 (lea%L0,%a1,%0);
+	}
+    }
+
+  /* Source and destination match.  */
+
+  /* Handle variable shift.  */
+  if (REG_P (operands[2]))
+    return AS2 (sal%L0,%b2,%0);
+
+  /* Always perform shift by 1 using an add instruction.  */
+  if (REG_P (operands[0]) && operands[2] == const1_rtx)
+    return AS2 (add%L0,%0,%0);
+
+#if 0
+  /* ??? Currently disabled.  reg-stack currently stomps on the mode of
+     each insn.  Thus, we can not easily detect when we should use lea to
+     improve issue characteristics.  Until reg-stack is fixed, fall back to
+     sal instruction for Pentiums to avoid AGI stall.  */
+  /* Shift reg by 2 or 3 use an lea instruction for Pentium if this is
+     insn is expected to issue into the V pipe (the insn's mode will be
+     TImode for a U pipe, and !TImode for a V pipe instruction).  */
+  if (! optimize_size
+      && REG_P (operands[0])
+      && GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) <= 3
+      && (int)ix86_cpu == (int)PROCESSOR_PENTIUM
+      && GET_MODE (insn) != TImode)
+    {
+      CC_STATUS_INIT;
+      operands[1] = gen_rtx_MULT (SImode, operands[1],
+				  GEN_INT (1 << INTVAL (operands[2])));
+      return AS2 (lea%L0,%a1,%0);
+    }
+#endif
+
+  /* Otherwise use a shift instruction.  */
+  return AS2 (sal%L0,%2,%0);
 }
