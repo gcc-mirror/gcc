@@ -456,6 +456,9 @@ int is_seekable (stream *);
 #define empty_internal_buffer prefix(empty_internal_buffer)
 void empty_internal_buffer(stream *);
 
+#define flush prefix(flush)
+try flush (stream *);
+
 
 /* unit.c */
 
