@@ -5007,6 +5007,8 @@ fold (expr)
 
 	  tree01 = TREE_OPERAND (arg0, 1);
 	  tree11 = TREE_OPERAND (arg1, 1);
+	  STRIP_NOPS (tree01);
+	  STRIP_NOPS (tree11);
 	  code01 = TREE_CODE (tree01);
 	  code11 = TREE_CODE (tree11);
 	  if (code01 == INTEGER_CST
@@ -5017,22 +5019,40 @@ fold (expr)
 	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
 	    return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
 		      code0 == LSHIFT_EXPR ? tree01 : tree11);
-	  else if (code11 == MINUS_EXPR
-		&& TREE_CODE (TREE_OPERAND (tree11, 0)) == INTEGER_CST
-		&& TREE_INT_CST_HIGH (TREE_OPERAND (tree11, 0)) == 0
-		&& TREE_INT_CST_LOW (TREE_OPERAND (tree11, 0))
-		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-		&& operand_equal_p (tree01, TREE_OPERAND (tree11, 1), 0))
-	    return build (code0 == LSHIFT_EXPR ? LROTATE_EXPR : RROTATE_EXPR,
-			type, TREE_OPERAND (arg0, 0), tree01);
-	  else if (code01 == MINUS_EXPR
-		&& TREE_CODE (TREE_OPERAND (tree01, 0)) == INTEGER_CST
-		&& TREE_INT_CST_HIGH (TREE_OPERAND (tree01, 0)) == 0
-		&& TREE_INT_CST_LOW (TREE_OPERAND (tree01, 0))
-		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-		&& operand_equal_p (tree11, TREE_OPERAND (tree01, 1), 0))
-	    return build (code0 != LSHIFT_EXPR ? LROTATE_EXPR : RROTATE_EXPR,
-			type, TREE_OPERAND (arg0, 0), tree11);
+	  else if (code11 == MINUS_EXPR)
+	    {
+	      tree tree110, tree111;
+	      tree110 = TREE_OPERAND (tree11, 0);
+	      tree111 = TREE_OPERAND (tree11, 1);
+	      STRIP_NOPS (tree110);
+	      STRIP_NOPS (tree111);
+	      if (TREE_CODE (tree110) == INTEGER_CST
+		  && TREE_INT_CST_HIGH (tree110) == 0
+		  && (TREE_INT_CST_LOW (tree110)
+		      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		  && operand_equal_p (tree01, tree111, 0))
+		return build ((code0 == LSHIFT_EXPR 
+			       ? LROTATE_EXPR 
+			       : RROTATE_EXPR),
+			      type, TREE_OPERAND (arg0, 0), tree01);
+	    }
+	  else if (code01 == MINUS_EXPR)
+	    {
+	      tree tree010, tree011;
+	      tree010 = TREE_OPERAND (tree01, 0);
+	      tree011 = TREE_OPERAND (tree01, 1);
+	      STRIP_NOPS (tree010);
+	      STRIP_NOPS (tree011);
+	      if (TREE_CODE (tree010) == INTEGER_CST
+		  && TREE_INT_CST_HIGH (tree010) == 0
+		  && (TREE_INT_CST_LOW (tree010)
+		      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		  && operand_equal_p (tree11, tree011, 0))
+		return build ((code0 != LSHIFT_EXPR 
+			       ? LROTATE_EXPR 
+			       : RROTATE_EXPR),
+			       type, TREE_OPERAND (arg0, 0), tree11);
+	    }
 	}
 
       goto associate;
