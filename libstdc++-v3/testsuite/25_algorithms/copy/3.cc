@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,43 +16,43 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 25.2.12 [lib.alg.partitions] Partitions.
+// 25.2.1 [lib.alg.copy] Copy.
 
 #include <algorithm>
+#include <vector>
+#include <deque>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
-const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-const int N = sizeof(A) / sizeof(int);
-
-// copy
 void
 test01()
 {
-    using std::copy;
+  using namespace std;
+  bool test __attribute__((unused)) = true;
 
-    int s1[N];
-    copy(A, A + N, s1);
-    VERIFY(std::equal(s1, s1 + N, A));
-}
+  const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+  const int N = sizeof(A) / sizeof(int);
+  const deque<int> a(A, A + N);
 
-// copy_backward
-void
-test02()
-{
-    using std::copy_backward;
+  int s1[N];
+  copy(a.begin(), a.end(), s1);
+  VERIFY( equal(s1, s1 + N, a.begin()) );
 
-    int s1[N];
-    copy_backward(A, A + N, s1 + N);
-    VERIFY(std::equal(s1, s1 + N, A));
+  vector<int> v1(N);
+  copy(a.begin(), a.end(), v1.begin());
+  VERIFY( equal(v1.begin(), v1.end(), a.begin()) );
+
+  int s2[N];
+  copy_backward(a.begin(), a.end(), s2 + N);
+  VERIFY( equal(s2, s2 + N, a.begin()) );
+
+  vector<int> v2(N);
+  copy_backward(a.begin(), a.end(), v2.end());
+  VERIFY( equal(v2.begin(), v2.end(), a.begin()) );
 }
 
 int
 main()
 {
   test01();
-  test02();
-
   return 0;
 }
