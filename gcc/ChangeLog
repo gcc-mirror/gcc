@@ -1,3 +1,17 @@
+2000-11-13  Neil Booth  <neilb@earthling.net>
+
+        * cpplex.c (_cpp_lex_token): CPP_COMMENT and true CPP_EOF
+        cases return without MI check.
+        * cpplib.c (do_diagnostic): Take boolean of whether to
+        print the directive name.
+        (do_error, do_warning): Update.
+        (do_pragma_dependency): Use it.
+        * cpplib.h (VARARGS_FIRST): Delete.
+        (struct cpp_token): Delete integer.
+        * cppmacro.c (enter_macro_context): Move disabled check
+        to _cpp_get_token.
+        (_cpp_get_token): Simplify into a single loop.
+
 2000-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in:  Use 'test -f' not '[ -e'.

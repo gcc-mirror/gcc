@@ -170,7 +170,6 @@ struct cpp_string
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
 #define NAMED_OP	(1 << 4) /* C++ named operators, also "defined".  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
-#define VARARGS_FIRST   STRINGIFY_ARG /* First token of varargs expansion.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
@@ -181,7 +180,6 @@ struct cpp_token
 
   union
   {
-    HOST_WIDEST_INT integer;	/* An integer.  */
     struct cpp_hashnode *node;	/* An identifier.  */
     struct cpp_string str;	/* A string, or number.  */
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */

@@ -91,7 +91,7 @@ static void push_conditional	PARAMS ((cpp_reader *, int, int,
 static int  read_line_number	PARAMS ((cpp_reader *, int *));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
-static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type));
+static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
 static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
@@ -792,13 +792,15 @@ do_line (pfile)
  */
 
 static void
-do_diagnostic (pfile, code)
+do_diagnostic (pfile, code, print_dir)
      cpp_reader *pfile;
      enum error_type code;
+     int print_dir;
 {
   if (_cpp_begin_message (pfile, code, NULL, 0))
     {
-      fprintf (stderr, "#%s ", pfile->directive->name);
+      if (print_dir)
+	fprintf (stderr, "#%s ", pfile->directive->name);
       pfile->state.prevent_expansion++;
       cpp_output_line (pfile, stderr);
       pfile->state.prevent_expansion--;
@@ -809,14 +811,14 @@ static void
 do_error (pfile)
      cpp_reader *pfile;
 {
-  do_diagnostic (pfile, ERROR);
+  do_diagnostic (pfile, ERROR, 1);
 }
 
 static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
-  do_diagnostic (pfile, WARNING);
+  do_diagnostic (pfile, WARNING, 1);
 }
 
 /* Report program identification.  */
@@ -1085,8 +1087,8 @@ do_pragma_dependency (pfile)
       cpp_start_lookahead (pfile);
       cpp_get_token (pfile, &msg);
       cpp_stop_lookahead (pfile, msg.type == CPP_EOF);
-      if (msg.type != CPP_EOF && _cpp_begin_message (pfile, WARNING, NULL, 0))
-	cpp_output_line (pfile, stderr);
+      if (msg.type != CPP_EOF)
+	do_diagnostic (pfile, WARNING, 0);
     }
 }
 

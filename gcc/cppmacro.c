@@ -60,7 +60,7 @@ struct macro_arg
 
 static void lock_pools PARAMS ((cpp_reader *));
 static void unlock_pools PARAMS ((cpp_reader *));
-static int enter_macro_context PARAMS ((cpp_reader *, cpp_token *));
+static int enter_macro_context PARAMS ((cpp_reader *, cpp_hashnode *));
 static void builtin_macro PARAMS ((cpp_reader *, cpp_token *));
 static cpp_context *push_arg_context PARAMS ((cpp_reader *, macro_arg *));
 static enum cpp_ttype parse_arg PARAMS ((cpp_reader *, macro_arg *, int));
@@ -631,21 +631,13 @@ funlike_invocation_p (pfile, node, list)
    TOKEN is replaced with the first token of the expansion, and we
    return non-zero.  */
 static int
-enter_macro_context (pfile, token)
+enter_macro_context (pfile, node)
      cpp_reader *pfile;
-     cpp_token *token;
+     cpp_hashnode *node;
 {
   cpp_context *context;
-  cpp_macro *macro;
-  unsigned char flags;
+  cpp_macro *macro = node->value.macro;
   struct toklist list;
-
-  macro = token->val.node->value.macro;
-  if (macro->disabled)
-    {
-      token->flags |= NO_EXPAND;
-      return 0;
-    }
 
   /* Save the position of the outermost macro invocation.  */
   if (!pfile->context->prev)
@@ -654,7 +646,7 @@ enter_macro_context (pfile, token)
       lock_pools (pfile);
     }
 
-  if (macro->fun_like && !funlike_invocation_p (pfile, token->val.node, &list))
+  if (macro->fun_like && !funlike_invocation_p (pfile, node, &list))
     {
       if (!pfile->context->prev)
 	unlock_pools (pfile);
@@ -667,22 +659,16 @@ enter_macro_context (pfile, token)
       list.limit = macro->expansion + macro->count;
     }
 
-  /* Temporary kludge.  */
-  if (list.first == list.limit)
-    return 2;
+  if (list.first != list.limit)
+    {
+      /* Push its context.  */
+      context = next_context (pfile);
+      context->list = list;
+      context->macro = macro;
 
-  /* Now push its context.  */
-  context = next_context (pfile);
-  context->list = list;
-  context->macro = macro;
-
-  /* The first expansion token inherits the PREV_WHITE of TOKEN.  */
-  flags = token->flags & PREV_WHITE;
-  *token = *context->list.first++;
-  token->flags |= flags;
-
-  /* Disable the macro within its expansion.  */
-  macro->disabled = 1;
+      /* Disable the macro within its expansion.  */
+      macro->disabled = 1;
+    }
 
   return 1;
 }
@@ -895,8 +881,9 @@ _cpp_get_token (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
- next_token:
-  do
+  unsigned char flags = 0;
+
+  for (;;)
     {
       cpp_context *context = pfile->context;
 
@@ -906,24 +893,28 @@ _cpp_get_token (pfile, token)
       else if (!context->prev)
 	_cpp_lex_token (pfile, token);
       else if (context->list.first != context->list.limit)
-	*token = *context->list.first++;
+	{
+	  *token = *context->list.first++;
+	  token->flags |= flags;
+	  flags = 0;
+	}
       else
 	{
 	  if (context->macro)
 	    {
 	      _cpp_pop_context (pfile);
-	      goto next_token;
+	      continue;
 	    }
 	  /* End of argument pre-expansion.  */
 	  token->type = CPP_EOF;
 	  token->flags = 0;
 	  return;
 	}
-    }
-  while (pfile->skipping);
 
-  for (;;)
-    {
+      /* Loop until we're not skipping.  */
+      if (pfile->skipping)
+	continue;
+
       if (token->flags & PASTE_LEFT)
 	paste_all_tokens (pfile, token);
 
@@ -935,31 +926,32 @@ _cpp_get_token (pfile, token)
 	  && !pfile->state.prevent_expansion
 	  && !(token->flags & NO_EXPAND))
 	{
-	  int m;
+	  cpp_hashnode *node = token->val.node;
 
 	  /* Macros invalidate controlling macros.  */
 	  pfile->mi_state = MI_FAILED;
 
-	  if (token->val.node->flags & NODE_BUILTIN)
+	  if (node->flags & NODE_BUILTIN)
 	    {
 	      builtin_macro (pfile, token);
 	      break;
 	    }
 
-	  m = enter_macro_context (pfile, token);
-	  if (m == 1)
+	  /* Merge PREV_WHITE of tokens.  */
+	  flags = token->flags & PREV_WHITE;
+
+	  if (node->value.macro->disabled)
+	    token->flags |= NO_EXPAND;
+	  else if (enter_macro_context (pfile, node))
 	    continue;
-	  if (m == 2)
-	    goto next_token;
 	}
 
       if (token->val.node != pfile->spec_nodes.n__Pragma)
 	break;
 
-      /* Invalidate controlling macros.  */
+      /* Handle it, and get another token.  */
       pfile->mi_state = MI_FAILED;
       _cpp_do__Pragma (pfile);
-      goto next_token;
     }
 }
 
