@@ -6014,7 +6014,8 @@ fold (expr)
 	      t = build (code, type, tem,
 			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
 	      arg0 = tem;
-	      arg1 = TREE_OPERAND (t, 2);
+	      /* arg1 should be the first argument of the new T.  */
+	      arg1 = TREE_OPERAND (t, 1);
 	      STRIP_NOPS (arg1);
 	    }
 	}

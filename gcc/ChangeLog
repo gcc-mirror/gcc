@@ -1,3 +1,7 @@
+Sun Sep 20 12:14:45 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* fold-const.c (fold): Fix another type in COND_EXPR handling code.
+
 1998-09-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* configure.in: Add support for c4x targets.
