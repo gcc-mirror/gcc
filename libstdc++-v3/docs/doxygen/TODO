@@ -30,13 +30,6 @@ ext/*           Some of the SGI algorithm/functional extensions.
 
 __gnu_cxx       Tricky.  Right now ext/* are in this namespace.
 
-[1.3.5]         "implementation-defined behavior:  behavior ... that depends
-                on the implementation *and that each implementation shall
-                document*."  [my emphasis]  Not all implementation choices
-                have been thus described; doxygen is not necessarily the
-                appropriate place for such descriptions, either.  I suggest
-                adding this list to the Chapter 17 HOWTO.
-
 -----------------------------------------------------------
 
 NOTES:

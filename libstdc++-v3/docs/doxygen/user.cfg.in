@@ -296,8 +296,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @srcdir@/docs/doxygen/mainpage.doxy \
-                         @srcdir@/docs/doxygen/doxygroups.cc \
+INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          @srcdir@/src \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/new \

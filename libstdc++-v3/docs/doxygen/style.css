@@ -21,3 +21,4 @@ FONT.comment       { color: #800000 }
 FONT.preprocessor  { color: #806020 }
 FONT.stringliteral { color: #002080 }
 FONT.charliteral   { color: #008080 }
+.smallertext { font-size: smaller }

@@ -1,3 +1,18 @@
+2002-02-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/TODO:  Impl-defined behavior now documented...
+	* docs/html/17_intro/howto.html:  ...here.
+	* docs/doxygen/mainpage.doxy:  Remove, rename...
+	* docs/doxygen/mainpage.html:  ...to this.  Tweak HTML, add license.
+	* docs/doxygen/style.css:  Add small text.
+	* docs/doxygen/run_doxygen:  Adjust for new mainpage.
+	* docs/doxygen/user.cfg.in:  Likewise.
+
+2002-02-04  Stephan Buys  <s.buys@icon.co.za>
+
+	* include/bits/stl_map.h:  Initial doxygen markup.
+	* include/std/std_fstream.h:  Initial doxygen markup.
+
 2002-02-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/5579

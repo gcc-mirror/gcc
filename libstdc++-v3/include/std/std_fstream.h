@@ -48,7 +48,7 @@
 #include <bits/basic_file.h>
 #include <bits/gthr.h>
 
-namespace std 
+namespace std
 {
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
@@ -60,7 +60,7 @@ namespace std
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
-      
+
       // Non-standard Types:
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
@@ -79,7 +79,7 @@ namespace std
 
       // Current and beginning state type for codecvt.
       __state_type		_M_state_cur;
-      __state_type 		_M_state_beg; 	
+      __state_type 		_M_state_beg;
 
       // MT lock inherited from libio or other low-level io library.
       __c_lock          	_M_lock;
@@ -87,46 +87,46 @@ namespace std
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer..
       bool			_M_buf_allocated;
 
-      // XXX Needed? 
-      bool			_M_last_overflowed;  
-  
+      // XXX Needed?
+      bool			_M_last_overflowed;
+
     public:
       // Constructors/destructor:
       basic_filebuf();
 
       // Non-standard ctor:
-      basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, 
+      basic_filebuf(__c_file_type* __f, ios_base::openmode __mode,
 		    int_type __s = static_cast<int_type>(BUFSIZ));
- 
+
       // Non-standard member:
       int
       fd();
 
-      virtual 
-      ~basic_filebuf() 
-      { 
+      virtual
+      ~basic_filebuf()
+      {
 	this->close();
 	_M_last_overflowed = false;
       }
 
       // Members:
-      bool 
+      bool
       is_open(void) const { return _M_file ? _M_file->is_open() : false; }
-    
-      __filebuf_type* 
+
+      __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
-    
-      __filebuf_type* 
+
+      __filebuf_type*
       close(void);
 
     protected:
-      void 
+      void
       _M_allocate_internal_buffer();
 
-      void 
+      void
       _M_destroy_internal_buffer();
 
-      void 
+      void
       _M_allocate_pback_buffer();
 
       // Create __file_type object and initialize it properly.
@@ -134,17 +134,17 @@ namespace std
       _M_allocate_file();
 
       // Overridden virtual functions:
-      virtual streamsize 
+      virtual streamsize
       showmanyc(void);
-   
-      // Stroustrup, 1998, p. 628 
+
+      // Stroustrup, 1998, p. 628
       // underflow() and uflow() functions are called to get the next
       // charater from the real input source when the buffer is empty.
       // Buffered input uses underflow()
-      virtual int_type 
+      virtual int_type
       underflow(void);
 
-      virtual int_type 
+      virtual int_type
       pbackfail(int_type __c = _Traits::eof());
 
       // NB: For what the standard expects of the overflow function,
@@ -155,7 +155,7 @@ namespace std
       // this in actuality be a helper function that checks for the
       // eccentricities of this implementation, and then call
       // overflow() if indeed the buffer is full.
-      virtual int_type 
+      virtual int_type
       overflow(int_type __c = _Traits::eof());
 
       // Stroustrup, 1998, p 648
@@ -163,23 +163,23 @@ namespace std
       // real output destination when the buffer is full. A call to
       // overflow(c) outputs the contents of the buffer plus the
       // character c.
-      // 27.5.2.4.5 
+      // 27.5.2.4.5
       // Consume some sequence of the characters in the pending sequence.
-      int_type 
+      int_type
       _M_really_overflow(int_type __c = _Traits::eof());
-    
-      virtual __streambuf_type* 
+
+      virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n);
-    
-      virtual pos_type 
+
+      virtual pos_type
       seekoff(off_type __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      virtual pos_type 
+      virtual pos_type
       seekpos(pos_type __pos,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      virtual int 
+      virtual int
       sync(void)
       {
 	bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
@@ -197,14 +197,14 @@ namespace std
 	    _M_really_overflow();
 	    _M_file->seekpos(__cur + __off);
 	  }
-	_M_last_overflowed = false;	
+	_M_last_overflowed = false;
 	return 0;
       }
-      
-      virtual void 
+
+      virtual void
       imbue(const locale& __loc);
 
-      virtual streamsize 
+      virtual streamsize
       xsgetn(char_type* __s, streamsize __n)
       {
 	streamsize __ret = 0;
@@ -224,20 +224,24 @@ namespace std
 	  __ret += __streambuf_type::xsgetn(__s, __n - __ret);
 	return __ret;
       }
- 
-      virtual streamsize 
+
+      virtual streamsize
       xsputn(const char_type* __s, streamsize __n)
       {
 	_M_pback_destroy();
 	return __streambuf_type::xsputn(__s, __n);
       }
-       
+
       void
       _M_output_unshift();
     };
 
 
+
   // 27.8.1.5  Template class basic_ifstream
+  /**
+   *  Derivation of general input streams, specific to files.
+  */
   template<typename _CharT, typename _Traits>
     class basic_ifstream : public basic_istream<_CharT, _Traits>
     {
@@ -252,52 +256,69 @@ namespace std
       // Non-standard types:
       typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
       typedef basic_istream<char_type, traits_type>	__istream_type;
-    
+
     private:
       __filebuf_type	_M_filebuf;
 
     public:
      // Constructors/Destructors:
+     /** Default constructor.  Create an input file stream.  */
       basic_ifstream()
       : __istream_type(NULL), _M_filebuf()
       { this->init(&_M_filebuf); }
 
-      explicit 
+      /**
+       *  @brief Create an input file stream.
+       *  @param  s  Null terminated string specifying filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *
+       *  Tip:  When using std::string to hold the filename, you must use
+       *  .c_str() before passing it to this constructor.
+      */
+      explicit
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
       : __istream_type(NULL), _M_filebuf()
-      { 
-	this->init(&_M_filebuf); 
-	this->open(__s, __mode); 
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
       }
-    
+
       ~basic_ifstream()
       { }
 
       // Members:
-      __filebuf_type* 
-      rdbuf() const 
+      /**
+       *  @brief  Get a pointer to the file stream's buffer.
+       *  @return Pointer to basic_filebuf.
+      */
+      __filebuf_type*
+      rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
-      bool 
+      bool
       is_open(void) { return _M_filebuf.is_open(); }
 
-      void 
+      void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
-      { 
+      {
 	if (_M_filebuf.open(__s, __mode | ios_base::in) == NULL)
-	  this->setstate(ios_base::failbit); 
+	  this->setstate(ios_base::failbit);
       }
 
-      void 
+      /** Close the file.  */
+      void
       close(void)
-      { 
+      {
 	if (!_M_filebuf.close())
-	  this->setstate(ios_base::failbit);	
+	  this->setstate(ios_base::failbit);
       }
     };
 
-  
+
   // 27.8.1.8  Template class basic_ofstream
+  /**
+   *  Derivation of general output streams, specific to files.
+  */
   template<typename _CharT, typename _Traits>
     class basic_ofstream : public basic_ostream<_CharT,_Traits>
     {
@@ -312,54 +333,83 @@ namespace std
       // Non-standard types:
       typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
       typedef basic_ostream<char_type, traits_type>	__ostream_type;
-      
+
     private:
       __filebuf_type	_M_filebuf;
 
     public:
       // Constructors:
+      /** Default constructor for output file_stream.  */
       basic_ofstream()
       : __ostream_type(NULL), _M_filebuf()
       { this->init(&_M_filebuf); }
-      
-      explicit 
-      basic_ofstream(const char* __s, 
+
+      /**
+       *  @brief  Create an output stream.
+       *  @param  s  Null terminated string specifying filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *
+       *  Tip:  When using std::string to hold the filename, you must use
+       *  .c_str() before passing it to this constructor.
+      */
+      explicit
+      basic_ofstream(const char* __s,
 		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
       : __ostream_type(NULL), _M_filebuf()
-      { 
-	this->init(&_M_filebuf); 
-	this->open(__s, __mode); 
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
       }
 
       ~basic_ofstream()
       { }
 
       // Members:
-      __filebuf_type* 
+      /**
+       *  @brief  Get a pointer to the file stream's buffer.
+       *  @return Pointer to basic_filebuf.
+      */
+      __filebuf_type*
       rdbuf(void) const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
- 
-      bool 
+
+      /**
+       *  @brief Query to see if file stream is open.
+       *  @return True if stream is open.
+      */
+      bool
       is_open(void) { return _M_filebuf.is_open(); }
 
-      void 
-      open(const char* __s, 
+      /**
+       *  @brief Specify a file to open for output.
+       *  @param  s  Null terminated string specifying filename.
+       *  @param  mode  Mode in which to open file (see std::ios_base).
+       *
+       *  Tip:  When using std::string to hold the filename, you must use
+       *  .c_str() before passing it to this constructor.
+      */
+      void
+      open(const char* __s,
 	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
-      { 
+      {
 	if (!_M_filebuf.open(__s, __mode | ios_base::out))
-	  this->setstate(ios_base::failbit); 
+	  this->setstate(ios_base::failbit);
       }
 
-      void 
+      /** Close the file stream.  */
+      void
       close(void)
-      { 
+      {
 	if (!_M_filebuf.close())
-	  this->setstate(ios_base::failbit); 
+	  this->setstate(ios_base::failbit);
       }
     };
 
 
   // 27.8.1.11  Template class basic_fstream
+  /**
+   *  Derivation of general input/output streams, specific to files.
+  */
   template<typename _CharT, typename _Traits>
     class basic_fstream : public basic_iostream<_CharT, _Traits>
     {
@@ -378,46 +428,72 @@ namespace std
 
     private:
       __filebuf_type	_M_filebuf;
-      
+
     public:
       // Constructors/destructor:
+      /** Default constructor.  Create a file stream.  */
       basic_fstream()
       : __iostream_type(NULL), _M_filebuf()
       { this->init(&_M_filebuf); }
 
-      explicit 
+      /**
+       *  @brief Create an input/output stream.
+       *  @param  s  Null terminated string specifying filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *
+       *  Tip:  When using std::string to hold the filename, you must use
+       *  .c_str() before passing it to this constructor.
+      */
+      explicit
       basic_fstream(const char* __s,
 		    ios_base::openmode __mode = ios_base::in | ios_base::out)
       : __iostream_type(NULL), _M_filebuf()
-      { 
-	this->init(&_M_filebuf); 
-	this->open(__s, __mode); 
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
       }
- 
+
       ~basic_fstream()
       { }
-    
+
       // Members:
-      __filebuf_type* 
-      rdbuf(void) const 
+      /**
+       *  @brief  Get a pointer to the file stream's buffer.
+       *  @return Pointer to basic_filebuf.
+      */
+      __filebuf_type*
+      rdbuf(void) const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
-      bool 
+      /**
+       *  @brief Query to see if file stream is open.
+       *  @return True if stream is open.
+      */
+      bool
       is_open(void) { return _M_filebuf.is_open(); }
 
-      void 
-      open(const char* __s, 
+      /**
+       *  @brief Specify a file to open for input and/or output.
+       *  @param  s  Null terminated string specifying filename.
+       *  @param  mode  Mode in which to open file (see std::ios_base).
+       *
+       *  Tip:  When using std::string to hold the filename, you must use
+       *  .c_str() before passing it to this constructor.
+      */
+      void
+      open(const char* __s,
 	   ios_base::openmode __mode = ios_base::in | ios_base::out)
-      { 
+      {
 	if (!_M_filebuf.open(__s, __mode))
-	  setstate(ios_base::failbit); 
+	  setstate(ios_base::failbit);
       }
 
-      void 
+      /** Close the file stream.  */
+      void
       close(void)
-      { 
+      {
 	if (!_M_filebuf.close())
-	  setstate(ios_base::failbit); 
+	  setstate(ios_base::failbit);
       }
     };
 } // namespace std
@@ -429,4 +505,4 @@ namespace std
 #endif
 #endif
 
-#endif	
+#endif
