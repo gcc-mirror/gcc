@@ -1,3 +1,10 @@
+2004-10-30  Mark Wielaard  <mark@klomp.org>
+
+	PR libgcj/18234
+	* java/lang/Runtime.java (static): Call init().
+	(Runtime): Remove call to init().
+	(init): Make static.
+
 2004-10-28  David Daney  <ddaney@avtrex.com>
 
 	* gnu/gcj/convert/Output_UnicodeLittleUnmarked.java: New file.

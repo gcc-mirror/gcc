@@ -111,6 +111,7 @@ public class Runtime
 
   static
   {
+    init();
     insertSystemProperties(defaultProperties);
   }
 
@@ -151,7 +152,6 @@ public class Runtime
     // work.
     libpath = new String[0];
 
-    init ();
   }
 
   /**
@@ -709,10 +709,10 @@ public class Runtime
   native boolean loadLibraryInternal(String libname);
 
   /**
-   * A helper for the constructor which does some internal native
+   * A helper for Runtime static initializer which does some internal native
    * initialization.
    */
-  private native void init ();
+  private static native void init ();
 
   /**
    * Map a system-independent "short name" to the full file name, and append
