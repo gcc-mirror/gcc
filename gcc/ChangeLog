@@ -1,3 +1,7 @@
+2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
+
 2005-03-07  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/ia64/hpux.h (LINK_SPEC): Add -z.
