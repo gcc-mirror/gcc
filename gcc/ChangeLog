@@ -1,3 +1,11 @@
+Wed Jun  9 04:14:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixincludes: Avoid removing '.'.
+	* fixinc/fixinc.svr4: Likewise.
+	* fixinc/fixinc.winnt: Likewise.
+	* fixinc/inclhack.tpl: Likewise.
+	* fixinc/fixincl.sh, fixinc/inclhack.sh: Rebuilt.
+
 1999-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (sun_catmacro): Escape parens in the select
