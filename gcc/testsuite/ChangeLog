@@ -1,3 +1,22 @@
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lib/gcc-dg.exp: Set up TORTURE_OPTIONS, torture_with_loops,
+	and torture_without_loops as is done by c-torture.exp.
+	(search_for): Copy from c-torture.exp.
+	(gcc-dg-runtest): New function, drives a directory of tests
+	iterating over the TORTURE_OPTIONS.
+	(scan-assembler, scan-assembler-not): Move here from
+	individual directory drivers.
+
+	* gcc.dg/dg.exp: scan-assembler, scan-assembler-not now
+	defined by lib/gcc-dg.exp.
+	* gcc.dg/cpp/cpp.exp: Likewise.
+	* gcc.dg/noncompile/noncompile.exp: Likewise.  Use
+	gcc-dg-runtest, so we cycle over optimization options.
+
+	* gcc.dg/cpp/20000625-2.c: Expect warning on line 8, not 9.
+	* gcc.dg/compare2.c: No longer expected to fail.
+
 Fri Aug  4 23:00:50 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcc.c-torture/execute/20000804-1.c: New test.

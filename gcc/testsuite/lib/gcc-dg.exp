@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,11 +17,43 @@
 # Please email any bugs, comments, and/or additions to this file to:
 # bug-gcc@prep.ai.mit.edu
 
-# Define gcc callbacks for dg.exp.
-
 load_lib dg.exp
 load_lib file-format.exp
 load_lib target-supports.exp
+
+if ![info exists TORTURE_OPTIONS] {
+    # It is theoretically beneficial to group all of the O2/O3 options together,
+    # as in many cases the compiler will generate identical executables for
+    # all of them--and the c-torture testsuite will skip testing identical
+    # executables multiple times.
+    # Also note that -finline-functions is explicitly included in one of the
+    # items below, even though -O3 is also specified, because some ports may
+    # choose to disable inlining functions by default, even when optimizing.
+    set TORTURE_OPTIONS [list \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
+	{ -O3 -fomit-frame-pointer } \
+	{ -O3 -fomit-frame-pointer -funroll-loops } \
+	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions } \
+	{ -O3 -g } \
+	{ -O3 -fssa } \
+	{ -Os } ]
+}
+
+
+# Split TORTURE_OPTIONS into two choices: one for testcases with loops and
+# one for testcases without loops.
+
+set torture_with_loops $TORTURE_OPTIONS
+set torture_without_loops ""
+foreach option $TORTURE_OPTIONS {
+    if ![string match "*loop*" $option] {
+	lappend torture_without_loops $option
+    }
+}
+
+# Define gcc callbacks for dg.exp.
 
 proc gcc-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
@@ -70,7 +102,6 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
     return [list $comp_output $output_file]
 }
 
-
 proc gcc-dg-prune { system text } {
     set text [prune_gcc_output $text]
 
@@ -84,3 +115,82 @@ proc gcc-dg-prune { system text } {
 
     return $text
 }
+
+# Utility routines.
+
+#
+# search_for -- looks for a string match in a file
+#
+proc search_for { file pattern } {
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	if [string match "*$pattern*" $cur_line] then {
+	    close $fd
+	    return 1
+	}
+    }
+    close $fd
+    return 0
+}
+
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+proc gcc-dg-runtest { testcases default-extra-flags } {
+    global runtests
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of 
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+        }
+
+	# Look for a loop within the source code - if we don't find one,
+	# don't pass -funroll[-all]-loops.
+	global torture_with_loops torture_without_loops
+	if [expr [search_for $test "for*("]+[search_for $test "while*("]] {
+	    set option_list $torture_with_loops
+	} else {
+	    set option_list $torture_without_loops
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags $option_list {
+	    verbose "Testing $nshort, $flags" 1
+	    dg-test $test $flags ${default-extra-flags}
+	}
+    }
+}
+
+# Utility for scanning compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+proc scan-assembler { testcase pattern } {
+    global subdir
+
+    set fd [open [file rootname $testcase].s r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- $pattern $text] {
+	pass "$subdir/$testcase scan-assembler"
+    } else {
+	fail "$subdir/$testcase scan-assembler"
+    }
+}
+
+# Call pass if pattern is not present, otherwise fail.
+proc scan-assembler-not { testcase pattern } {
+    global subdir
+
+    set fd [open [file rootname $testcase].s r]
+    set text [read $fd]
+    close $fd
+
+    if ![regexp -- $pattern $text] {
+	pass "$subdir/$testcase scan-assembler-not"
+    } else {
+	fail "$subdir/$testcase scan-assembler-not"
+    }
+}
+
