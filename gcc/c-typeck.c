@@ -1567,8 +1567,9 @@ build_function_call (function, params)
 
   result = build (CALL_EXPR, TREE_TYPE (fntype),
 		  function, coerced_params, NULL_TREE);
-
   TREE_SIDE_EFFECTS (result) = 1;
+  result = fold (result);
+
   if (VOID_TYPE_P (TREE_TYPE (result)))
     return result;
   return require_complete_type (result);

@@ -116,6 +116,7 @@ static rtx expand_builtin_frame_address	PARAMS ((tree));
 static rtx expand_builtin_fputs		PARAMS ((tree, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
+static tree fold_builtin_constant_p	PARAMS ((tree));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -1161,44 +1162,19 @@ expand_builtin_constant_p (exp)
 {
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
+  rtx tmp;
 
   if (arglist == 0)
     return const0_rtx;
-  else
-    {
-      tree arg = TREE_VALUE (arglist);
-      rtx tmp;
+  arglist = TREE_VALUE (arglist);
 
-      /* We return 1 for a numeric type that's known to be a constant
-	 value at compile-time or for an aggregate type that's a
-	 literal constant.  */
-      STRIP_NOPS (arg);
+  /* We have taken care of the easy cases during constant folding.  This
+     case is not obvious, so emit (constant_p_rtx (ARGLIST)) and let CSE get a
+     chance to see if it can deduce whether ARGLIST is constant.  */
 
-      /* If we know this is a constant, emit the constant of one.  */
-      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
-	  || (TREE_CODE (arg) == CONSTRUCTOR
-	      && TREE_CONSTANT (arg))
-	  || (TREE_CODE (arg) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST))
-	return const1_rtx;
-
-      /* If we aren't going to be running CSE or this expression
-	 has side effects, show we don't know it to be a constant.
-	 Likewise if it's a pointer or aggregate type since in those
-	 case we only want literals, since those are only optimized
-	 when generating RTL, not later.  */
-      if (TREE_SIDE_EFFECTS (arg) || cse_not_expected
-	  || AGGREGATE_TYPE_P (TREE_TYPE (arg))
-	  || POINTER_TYPE_P (TREE_TYPE (arg)))
-	return const0_rtx;
-
-      /* Otherwise, emit (constant_p_rtx (ARG)) and let CSE get a
-	 chance to see if it can deduce whether ARG is constant.  */
-
-      tmp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-      tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
-      return tmp;
-    }
+  tmp = expand_expr (arglist, NULL_RTX, VOIDmode, 0);
+  tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
+  return tmp;
 }
 
 /* Expand a call to one of the builtin math functions (sin, cos, or sqrt).
@@ -1342,7 +1318,6 @@ expand_builtin_strlen (exp, target, mode)
     {
       rtx pat;
       tree src = TREE_VALUE (arglist);
-      tree len = c_strlen (src);
 
       int align
 	= get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -1350,10 +1325,6 @@ expand_builtin_strlen (exp, target, mode)
       rtx result, src_reg, char_rtx, before_strlen;
       enum machine_mode insn_mode = value_mode, char_mode;
       enum insn_code icode = CODE_FOR_nothing;
-
-      /* If the length is known, just return it.  */
-      if (len != 0)
-	return expand_expr (len, target, mode, EXPAND_MEMORY_USE_BAD);
 
       /* If SRC is not a pointer type, don't do this operation inline.  */
       if (align == 0)
@@ -2813,4 +2784,79 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   /* The switch statement above can drop through to cause the function
      to be called normally.  */
   return expand_call (exp, target, ignore);
+}
+
+/* Fold a call to __builtin_constant_p, if we know it will evaluate to a
+   constant.  ARGLIST is the argument list of the call.  */
+
+static tree
+fold_builtin_constant_p (arglist)
+     tree arglist;
+{
+  if (arglist == 0)
+    return 0;
+
+  arglist = TREE_VALUE (arglist);
+
+  /* We return 1 for a numeric type that's known to be a constant
+     value at compile-time or for an aggregate type that's a
+     literal constant.  */
+  STRIP_NOPS (arglist);
+
+  /* If we know this is a constant, emit the constant of one.  */
+  if (TREE_CODE_CLASS (TREE_CODE (arglist)) == 'c'
+      || (TREE_CODE (arglist) == CONSTRUCTOR
+	  && TREE_CONSTANT (arglist))
+      || (TREE_CODE (arglist) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arglist, 0)) == STRING_CST))
+    return integer_one_node;
+
+  /* If we aren't going to be running CSE or this expression
+     has side effects, show we don't know it to be a constant.
+     Likewise if it's a pointer or aggregate type since in those
+     case we only want literals, since those are only optimized
+     when generating RTL, not later.  */
+  if (TREE_SIDE_EFFECTS (arglist) || cse_not_expected
+      || AGGREGATE_TYPE_P (TREE_TYPE (arglist))
+      || POINTER_TYPE_P (TREE_TYPE (arglist)))
+    return integer_zero_node;
+
+  return 0;
+}
+
+/* Used by constant folding to eliminate some builtin calls early.  EXP is
+   the CALL_EXPR of a call to a builtin function.  */
+
+tree
+fold_builtin (exp)
+     tree exp;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return 0;
+
+  switch (fcode)
+    {
+    case BUILT_IN_CONSTANT_P:
+      return fold_builtin_constant_p (arglist);
+
+    case BUILT_IN_STRLEN:
+      if (arglist != 0
+	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+	  && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE)
+	{
+	  tree len = c_strlen (TREE_VALUE (arglist));
+	  if (len != 0)
+	    return len;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return 0;
 }

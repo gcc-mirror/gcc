@@ -1,3 +1,14 @@
+2000-11-01  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* builtins.c (fold_builtin_constant_p, fold_builtin): New functions.
+	(expand_builtin_constant_p): Move parts of the code into
+	fold_builtin_constant_p.
+	(expand_builtin_strlen): Move parts of the code into fold_builtin.
+	* expr.h (fold_builtin): Declare.
+	* fold-const.c (fold): Handle builtin calls.
+
+	* c-typeck.c (build_function_call): Call fold on the CALL_EXPR.
+
 2000-11-01  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (expand_start_null_loop): New.
