@@ -1,3 +1,14 @@
+2003-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get::_M_extract_num):
+	Absolutely avoid dereferencing end iterators.
+	(time_get::_M_extract_name): Likewise.
+
+	* include/bits/locale_facets.tcc
+	(time_get::_M_extract_via_format, case 'e'): Don't try to
+	be smart wrt returning the right __beg in case of parse
+	error, time_get::_M_extract_num must be fixed instead.
+
 2003-10-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12778
