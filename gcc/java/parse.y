@@ -1326,6 +1326,8 @@ block_end:
 		    DECL_END_SOURCE_LINE (current_function_decl) = 
 		      EXPR_WFL_ADD_COL ($1.location, 1);		  
 		  $$ = exit_block ();
+		  if (!BLOCK_SUBBLOCKS ($$))
+		    BLOCK_SUBBLOCKS ($$) = empty_stmt_node;
 		}
 ;
 
