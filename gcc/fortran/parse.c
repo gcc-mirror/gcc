@@ -178,7 +178,7 @@ decode_statement (void)
 
     case 'b':
       match ("backspace", gfc_match_backspace, ST_BACKSPACE);
-      match ("block data% ", gfc_match_block_data, ST_BLOCK_DATA);
+      match ("block data", gfc_match_block_data, ST_BLOCK_DATA);
       break;
 
     case 'c':
