@@ -1,3 +1,12 @@
+2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (target_noncanonical, program_transform_name): Use 
+	immediate define instead of deferred.
+	(GCC_INSTALL_NAME, GCC_TARGET_INSTALL_NAME, CPP_INSTALL_NAME, 
+	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, GCOV_INSTALL_NAME,
+	GCCBUG_INSTALL_NAME): Define via a immediate $(shell) instead of
+	deferred backquote.
+
 2004-01-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (c_init_decl_processing): Set pedantic_lvalues to

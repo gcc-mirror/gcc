@@ -41,9 +41,9 @@
 # - define the names for selecting the language in LANGUAGES.
 
 # Actual names to use when installing a native compiler.
-JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
-JAVA_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcj|sed '$(program_transform_name)'`
-GCJH_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcjh|sed '$(program_transform_name)'`
+JAVA_INSTALL_NAME := $(shell echo gcj|sed '$(program_transform_name)')
+JAVA_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcj|sed '$(program_transform_name)')
+GCJH_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcjh|sed '$(program_transform_name)')
 
 GCJ = gcj
 
