@@ -3604,6 +3604,20 @@ expand_decl_init (decl)
 {
   int was_used = TREE_USED (decl);
 
+  /* If this is a CONST_DECL, we don't have to generate any code, but
+     if DECL_INITIAL is a constant, call expand_expr to force TREE_CST_RTL
+     to be set while in the obstack containing the constant.  If we don't
+     do this, we can lose if we have functions nested three deep and the middle
+     function makes a CONST_DECL whose DECL_INITIAL is a STRING_CST while
+     the innermost function is the first to expand that STRING_CST.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    {
+      if (DECL_INITIAL (decl) && TREE_CONSTANT (DECL_INITIAL (decl)))
+	expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
+		     EXPAND_INITIALIZER);
+      return;
+    }
+
   if (TREE_STATIC (decl))
     return;
 
