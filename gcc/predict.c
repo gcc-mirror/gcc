@@ -852,37 +852,9 @@ estimate_probability (struct loops *loops_info)
 
   /* Attach the combined probability to each conditional jump.  */
   FOR_EACH_BB (bb)
-    if (JUMP_P (BB_END (bb))
-	&& any_condjump_p (BB_END (bb))
-	&& bb->succ->succ_next != NULL)
-      combine_predictions_for_insn (BB_END (bb), bb);
+    combine_predictions_for_insn (BB_END (bb), bb);
 
-  remove_fake_exit_edges ();
-  /* Fill in the probability values in flowgraph based on the REG_BR_PROB
-     notes.  */
-  FOR_EACH_BB (bb)
-    {
-      rtx last_insn = BB_END (bb);
-
-      if (!can_predict_insn_p (last_insn))
-	{
-	  /* We can predict only conditional jumps at the moment.
-	     Expect each edge to be equally probable.
-	     ?? In the future we want to make abnormal edges improbable.  */
-	  int nedges = 0;
-	  edge e;
-
-	  for (e = bb->succ; e; e = e->succ_next)
-	    {
-	      nedges++;
-	      if (e->probability != 0)
-		break;
-	    }
-	  if (!e)
-	    for (e = bb->succ; e; e = e->succ_next)
-	      e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
-	}
-    }
+  remove_fake_edges ();
   estimate_bb_frequencies (loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
   if (profile_status == PROFILE_ABSENT)
