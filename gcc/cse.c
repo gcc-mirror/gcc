@@ -7384,6 +7384,16 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
       count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
 
+    case ASM_OPERANDS:
+      /* If the asm is volatile, then this insn cannot be deleted,
+	 and so the inputs *must* be live.  */
+      if (MEM_VOLATILE_P (x))
+	dest = NULL_RTX;
+      /* Iterate over just the inputs, not the constraints as well.  */
+      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	count_reg_usage (ASM_OPERANDS_INPUT (x, i), counts, dest, incr);
+      return;
+
     case INSN_LIST:
       abort ();
 
