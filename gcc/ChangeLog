@@ -1,3 +1,8 @@
+Wed Sep 16 15:24:54 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (PREFERRED_RELOAD_CLASS): Respect an existing class
+	narrower than FLOAT_REGS.
+
 Wed Sep 16 17:51:00 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* cpplib.c: removed OLD_GPLUSPLUS_INCLUDE_DIR
