@@ -1,3 +1,8 @@
+2003-07-04  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* install.texi: Even the g77 manpage is derived from
+	the full g77 manual.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* ABOUT-NLS: Delete.
