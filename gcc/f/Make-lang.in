@@ -257,8 +257,15 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
+# `tex2dvi' was used below, but the Texinfo 3.12 one won't work properly
+# with the include files from $(srcdir).  This use of TEXINPUTS may not
+# be universally valid.  `$(TEX)' should be used if it gets defined in
+# gcc/Makefile.in.
 	if [ -f lang-f77 ]; then \
-	  $(TEXI2DVI) -I$(srcdir)/f -o f/g77.dvi $(srcdir)/f/g77.texi; \
+	  TEXINPUTS=$(srcdir)/f:$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
+	  texindex g77.??; \
+	  TEXINPUTS=$(srcdir)/f:$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
+	  mv g77.dvi f; \
 	fi
 
 # This dance is all about producing accurate documentation for g77's
@@ -410,6 +417,8 @@ f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/fini f/stamp-str f/str-*.h f/str-*.j
 	-rm -f f/intdoc f/ansify f/intdoc.h0
+	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
+	       g77.pg g77.tp g77.vrs g77.cp g77.fns g77.log g77.pgs g77.tps 
 f77.clean:
 	-rm -f g77.c g77.o g77spec.o g77version.o
 f77.distclean:
