@@ -81,9 +81,12 @@ public class PrintStream extends FilterOutputStream
   // Work buffer of bytes where we temporarily keep converter output.
   byte[] work_bytes = new byte[100];
 
-  // True if error occurred.
-  private boolean error;
-  // True if auto-flush.
+  /**
+   * This boolean indicates whether or not an error has ever occurred
+   * on this stream.
+   */
+  private boolean error_occurred = false;
+
   /**
    * This is <code>true</code> if auto-flush is enabled, 
    * <code>false</code> otherwise
@@ -123,7 +126,6 @@ public class PrintStream extends FilterOutputStream
     super(out);
 
     converter = UnicodeToBytes.getDefaultEncoder();
-    error = false;
     this.auto_flush = auto_flush;
   }
 
@@ -139,7 +141,7 @@ public class PrintStream extends FilterOutputStream
   public boolean checkError ()
   {
     flush();
-    return error;
+    return error_occurred;
   }
 
   /**
@@ -148,7 +150,7 @@ public class PrintStream extends FilterOutputStream
    */
   protected void setError ()
   {
-    error = true;
+    error_occurred = true;
   }
 
   /**

@@ -755,6 +755,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
 	    ((long)(buf [7] & 0xff)));  
   }
 
+  // FIXME: This method should be re-thought.  I suspect we have multiple
+  // UTF-8 decoders floating around.  We should use the standard charset
+  // converters, maybe and adding a direct call into one of the new
+  // NIO converters for a super-fast UTF8 decode.
   static String convertFromUTF (byte[] buf) 
     throws EOFException, UTFDataFormatException
   {
