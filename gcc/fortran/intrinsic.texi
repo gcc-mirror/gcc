@@ -46,6 +46,18 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ANINT}:     ANINT,     Nearest whole number
 * @code{ANY}:       ANY,       Determine if any values are true
 * @code{ASIN}:      ASIN,      Arcsine function
+* @code{ATAN}:      ATAN,      Arctangent function
+* @code{BESJ0}:     BESJ0,     Bessel function of the first kind of order 0
+* @code{BESJ1}:     BESJ1,     Bessel function of the first kind of order 1
+* @code{BESJN}:     BESJN,     Bessel function of the first kind
+* @code{BESY0}:     BESY0,     Bessel function of the first kind of order 0
+* @code{BESY1}:     BESY1,     Bessel function of the first kind of order 1
+* @code{BESYN}:     BESYN,     Bessel function of the first kind
+* @code{COSH}:      COSH,      Hyperbolic cosine function
+* @code{ERF}:       ERF,       Error function
+* @code{ERFC}:      ERFC,      Complementary error function
+* @code{SINH}:      SINH,      Hyperbolic sine function
+* @code{TANH}:      TANH,      Hyperbolic tangent function
 @end menu
 
 @node Introduction
@@ -722,34 +734,550 @@ end program test_asin
 @end table
 
 
+@node ATAN
+@section @code{ATAN} --- Arctangent function 
+@findex @code{ATAN} intrinsic
+@findex @code{DATAN} intrinsic
+@cindex arctangent
+
+@table @asis
+@item @emph{Description}:
+@code{ATAN(X)} computes the arctangent of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = ATAN(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{ - \pi / 2 \leq \arcsin (x) \leq \pi / 2}.
+
+@item @emph{Example}:
+@smallexample
+program test_atan
+  real(8) :: x = 2.866_8
+  x = atan(x)
+end program test_atan
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESJ0
+@section @code{BESJ0} --- Bessel function of the first kind of order 0
+@findex @code{BESJ0} intrinsic
+@findex @code{DBESJ0} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESJ0(X)} computes the Bessel function of the first kind of order 0
+of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = BESJ0(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{ - 0.4027... \leq Bessel (0,x) \leq 1}.
+
+@item @emph{Example}:
+@smallexample
+program test_besj0
+  real(8) :: x = 0.0_8
+  x = besj0(x)
+end program test_besj0
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESJ1
+@section @code{BESJ1} --- Bessel function of the first kind of order 1
+@findex @code{BESJ1} intrinsic
+@findex @code{DBESJ1} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESJ1(X)} computes the Bessel function of the first kind of order 1
+of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = BESJ1(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{ - 0.5818... \leq Bessel (0,x) \leq 0.5818 }.
+
+@item @emph{Example}:
+@smallexample
+program test_besj1
+  real(8) :: x = 1.0_8
+  x = besj1(x)
+end program test_besj1
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESJ1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESJN
+@section @code{BESJN} --- Bessel function of the first kind
+@findex @code{BESJN} intrinsic
+@findex @code{DBESJN} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESJN(N, X)} computes the Bessel function of the first kind of order
+@var{N} of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = BESJN(N, X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_besjn
+  real(8) :: x = 1.0_8
+  x = besjn(5,x)
+end program test_besjn
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESJN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESY0
+@section @code{BESY0} --- Bessel function of the second kind of order 0
+@findex @code{BESY0} intrinsic
+@findex @code{DBESY0} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESY0(X)} computes the Bessel function of the second kind of order 0
+of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = BESY0(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_besy0
+  real(8) :: x = 0.0_8
+  x = besy0(x)
+end program test_besy0
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESY0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESY1
+@section @code{BESY1} --- Bessel function of the second kind of order 1
+@findex @code{BESY1} intrinsic
+@findex @code{DBESY1} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESY1(X)} computes the Bessel function of the second kind of order 1
+of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = BESY1(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_besy1
+  real(8) :: x = 1.0_8
+  x = besy1(x)
+end program test_besy1
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESY1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node BESYN
+@section @code{BESYN} --- Bessel function of the second kind
+@findex @code{BESYN} intrinsic
+@findex @code{DBESYN} intrinsic
+@cindex Bessel
+
+@table @asis
+@item @emph{Description}:
+@code{BESYN(N, X)} computes the Bessel function of the second kind of order
+@var{N} of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = BESYN(N, X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{N} @tab The type shall be an @code{INTEGER(*)}.
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_besyn
+  real(8) :: x = 1.0_8
+  x = besyn(5,x)
+end program test_besyn
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DBESYN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node COSH
+@section @code{COSH} --- Hyperbolic cosine function 
+@findex @code{COSH} intrinsic
+@findex @code{DCOSH} intrinsic
+@cindex hyperbolic cosine
+
+@table @asis
+@item @emph{Description}:
+@code{COSH(X)} computes the hyperbolic cosine of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = COSH(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it is positive
+(@math{ \cosh (x) \geq 0 }.
+
+@item @emph{Example}:
+@smallexample
+program test_cosh
+  real(8) :: x = 1.0_8
+  x = cosh(x)
+end program test_cosh
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+@node ERF
+@section @code{ERF} --- Error function 
+@findex @code{ERF} intrinsic
+@cindex error
+
+@table @asis
+@item @emph{Description}:
+@code{ERF(X)} computes the error function of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = ERF(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it is positive
+(@math{ - 1 \leq erf (x) \leq 1 }.
+
+@item @emph{Example}:
+@smallexample
+program test_erf
+  real(8) :: x = 0.17_8
+  x = erf(x)
+end program test_erf
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DERF(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node ERFC
+@section @code{ERFC} --- Error function 
+@findex @code{ERFC} intrinsic
+@cindex error
+
+@table @asis
+@item @emph{Description}:
+@code{ERFC(X)} computes the complementary error function of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = ERFC(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it is positive
+(@math{ 0 \leq erfc (x) \leq 2 }.
+
+@item @emph{Example}:
+@smallexample
+program test_erfc
+  real(8) :: x = 0.17_8
+  x = erfc(x)
+end program test_erfc
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node SINH
+@section @code{SINH} --- Hyperbolic sine function 
+@findex @code{SINH} intrinsic
+@findex @code{DSINH} intrinsic
+@cindex hyperbolic sine
+
+@table @asis
+@item @emph{Description}:
+@code{SINH(X)} computes the hyperbolic sine of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = SINH(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)}.
+
+@item @emph{Example}:
+@smallexample
+program test_sinh
+  real(8) :: x = - 1.0_8
+  x = sinh(x)
+end program test_sinh
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node TANH
+@section @code{TANH} --- Hyperbolic tangent function 
+@findex @code{TANH} intrinsic
+@findex @code{DTANH} intrinsic
+@cindex hyperbolic tangent
+
+@table @asis
+@item @emph{Description}:
+@code{TANH(X)} computes the hyperbolic tangent of @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Type}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = TANH(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be an @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL(*)} and lies in the range
+@math{ - 1 \leq tanh(x) \leq 1 }.
+
+@item @emph{Example}:
+@smallexample
+program test_tanh
+  real(8) :: x = 2.1_8
+  x = tanh(x)
+end program test_tanh
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name            @tab Argument          @tab Return type       @tab Option
+@item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@end multitable
+@end table
 
 
 
 @comment gen   associated
 @comment 
-@comment gen   atan
-@comment       datan
-@comment 
 @comment gen   atan2
 @comment       datan2
-@comment 
-@comment gen   besj0
-@comment       dbesj0 
-@comment 
-@comment gen   besj1
-@comment       dbesj1
-@comment 
-@comment gen   besjn
-@comment       dbesjn
-@comment 
-@comment gen   besy0
-@comment       dbesy0
-@comment 
-@comment gen   besy1
-@comment       dbesy1
-@comment 
-@comment gen   besyn
-@comment       dbesyn
 @comment 
 @comment gen   bit_size 
 @comment 
@@ -770,9 +1298,6 @@ end program test_asin
 @comment       dcos
 @comment       ccos
 @comment       zcos,cdcos
-@comment 
-@comment gen   cosh
-@comment       dcosh
 @comment 
 @comment gen   count
 @comment 
@@ -804,12 +1329,6 @@ end program test_asin
 @comment gen   eoshift
 @comment 
 @comment gen   epsilon
-@comment 
-@comment gen   erf
-@comment       derf
-@comment 
-@comment gen   erfc
-@comment       derfc
 @comment 
 @comment gen   etime
 @comment sub   etime
@@ -925,7 +1444,7 @@ end program test_asin
 @comment gen   maxexponent
 @comment 
 @comment gen   maxloc
-@comment
+@comment 
 @comment gen   maxval
 @comment 
 @comment gen   merge
@@ -1013,9 +1532,6 @@ end program test_asin
 @comment       csin
 @comment       zsin,cdsin
 @comment 
-@comment gen   sinh
-@comment       dsinh
-@comment 
 @comment gen   size
 @comment 
 @comment gen   spacing
@@ -1042,9 +1558,6 @@ end program test_asin
 @comment gen   tan
 @comment       dtan
 @comment 
-@comment gen   tanh
-@comment       dtanh
-@comment 
 @comment gen   tiny
 @comment 
 @comment gen   transfer
@@ -1064,6 +1577,4 @@ end program test_asin
 @comment gen   unpack
 @comment 
 @comment gen   verify
-
- 
 
