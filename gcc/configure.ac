@@ -1736,9 +1736,9 @@ gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
-elif test -x as$host_exeext; then
+elif test -x as$build_exeext; then
 	# Build using assembler in the current directory.
-	gcc_cv_as=./as$host_exeext
+	gcc_cv_as=./as$build_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in \
      && test -f ../gas/Makefile \
      && test x$build = x$host; then
@@ -1747,8 +1747,8 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
   # we'll use what we're building after installation anyway.
   in_tree_gas=yes
   _gcc_COMPUTE_GAS_VERSION
-  rm -f as$host_exeext
-  $LN_S ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
+  rm -f as$build_exeext
+  $LN_S ../gas/as-new$build_exeext as$build_exeext 2>/dev/null
   in_tree_gas_is_elf=no
   if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
      || (grep 'obj_format = multi' ../gas/Makefile \
@@ -1789,9 +1789,9 @@ if test "x$gcc_cv_as" = x; then
 	# one we can find in the users's path.
 	# user's path.
 	if test "x$program_prefix" != xNONE; then
-		gcc_cv_as=${program_prefix}as$host_exeext
+		gcc_cv_as=${program_prefix}as$build_exeext
 	else
-		gcc_cv_as=`echo as | sed "${program_transform_name}"`$host_exeext
+		gcc_cv_as=`echo as | sed "${program_transform_name}"`$build_exeext
 	fi
 
 	if test x$host = x$build; then
@@ -1820,8 +1820,8 @@ if test "x$gcc_cv_as" = x; then
 	fi
 
 	for dir in $test_dirs; do
-		if test -x $dir/as$host_exeext; then
-			gcc_cv_as=$dir/as$host_exeext
+		if test -x $dir/as$build_exeext; then
+			gcc_cv_as=$dir/as$build_exeext
 			break;
 		fi
 	done
@@ -1851,9 +1851,9 @@ gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
-elif test -x collect-ld$host_exeext; then
+elif test -x collect-ld$build_exeext; then
 	# Build using linker in the current directory.
-	gcc_cv_ld=./collect-ld$host_exeext
+	gcc_cv_ld=./collect-ld$build_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
      && test -f ../ld/Makefile \
      && test x$build = x$host; then
@@ -1880,8 +1880,8 @@ changequote(,)dnl
 	gcc_cv_gld_major_version=`expr "$gcc_cv_gld_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gld_minor_version=`expr "$gcc_cv_gld_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
-	rm -f collect-ld$host_exeext
-	$LN_S ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
+	rm -f collect-ld$build_exeext
+	$LN_S ../ld/ld-new$build_exeext collect-ld$build_exeext 2>/dev/null
 elif test -x "$LD_FOR_TARGET"; then
         gcc_cv_ld="$LD_FOR_TARGET"
 elif test -x "$LD" && test x$host = x$target; then
@@ -1914,9 +1914,9 @@ if test "x$gcc_cv_ld" = x; then
 	# one we can find in the users's path.
 	# user's path.
 	if test "x$program_prefix" != xNONE; then
-		gcc_cv_ld=${program_prefix}ld$host_exeext
+		gcc_cv_ld=${program_prefix}ld$build_exeext
 	else
-		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$host_exeext
+		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$build_exeext
 	fi
 
 	if test x$host = x$build; then
@@ -1945,8 +1945,8 @@ if test "x$gcc_cv_ld" = x; then
 	fi
 
 	for dir in $test_dirs; do
-		if test -x $dir/ld$host_exeext; then
-			gcc_cv_ld=$dir/ld$host_exeext
+		if test -x $dir/ld$build_exeext; then
+			gcc_cv_ld=$dir/ld$build_exeext
 			break;
 		fi
 	done
@@ -1964,19 +1964,19 @@ esac
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
 AC_MSG_CHECKING(what nm to use)
 in_tree_nm=no
-if test -x nm$host_exeext; then
-	gcc_cv_nm=./nm$host_exeext
+if test -x nm$build_exeext; then
+	gcc_cv_nm=./nm$build_exeext
 elif test -f $gcc_cv_binutils_srcdir/configure.in \
      && test -f ../binutils/Makefile; then
 	# Single tree build which includes binutils.
 	in_tree_nm=yes
-	gcc_cv_nm=./nm$host_exeext
-	rm -f nm$host_exeext
-	$LN_S ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
+	gcc_cv_nm=./nm$build_exeext
+	rm -f nm$build_exeext
+	$LN_S ../binutils/nm-new$build_exeext nm$build_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
-	gcc_cv_nm=${program_prefix}nm$host_exeext
+	gcc_cv_nm=${program_prefix}nm$build_exeext
 else
-	gcc_cv_nm=`echo nm | sed "${program_transform_name}"`$host_exeext
+	gcc_cv_nm=`echo nm | sed "${program_transform_name}"`$build_exeext
 fi
 case $in_tree_nm in
   yes) AC_MSG_RESULT("newly built nm") ;;
@@ -1986,20 +1986,20 @@ esac
 # Figure out what objdump we will be using.
 AC_MSG_CHECKING(what objdump to use)
 in_tree_objdump=no
-if test -x objdump$host_exeext; then
-	gcc_cv_objdump=./objdump$host_exeext
+if test -x objdump$build_exeext; then
+	gcc_cv_objdump=./objdump$build_exeext
 elif test -f $gcc_cv_binutils_srcdir/configure.in \
      && test -f ../binutils/Makefile; then
 	# Single tree build which includes binutils.
 	in_tree_objdump=yes
-	gcc_cv_objdump=./objdump$host_exeext
-	rm -f objdump$host_exeext
-	$LN_S ../binutils/objdump$host_exeext objdump$host_exeext 2>/dev/null
+	gcc_cv_objdump=./objdump$build_exeext
+	rm -f objdump$build_exeext
+	$LN_S ../binutils/objdump$build_exeext objdump$build_exeext 2>/dev/null
 elif test "x$program_prefix" != xNONE; then
-	gcc_cv_objdump=${program_prefix}objdump$host_exeext
+	gcc_cv_objdump=${program_prefix}objdump$build_exeext
 else
 	gcc_cv_objdump=`echo objdump | \
-		sed "${program_transform_name}"`$host_exeext
+		sed "${program_transform_name}"`$build_exeext
 fi
 case $in_tree_objdump in
   yes) AC_MSG_RESULT("newly built objdump") ;;
