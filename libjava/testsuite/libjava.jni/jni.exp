@@ -39,6 +39,9 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   # Find jni.h.
   lappend options "additional_flags=-I$srcdir/../include"
 
+  # Append C++ options
+  lappend options "additional_flags=$options_cxx"
+
   set x [libjava_prune_warnings \
 	   [target_compile $file $soname executable $options]]
   if {$x != ""} {
@@ -71,6 +74,7 @@ proc gcj_jni_build_header {file} {
 proc gcj_jni_test_one {file} {
   global runtests
   global host_triplet
+  global INTERPRETER
 
 # apple uses a different extension for shared/dynamic libraries
 # so we check against powerpc-apple-darwin and set them to 
@@ -128,23 +132,36 @@ proc gcj_jni_test_one {file} {
     set cxxflags [join $cxxflaglist]
   }
 
-  if {! [gcj_jni_compile_c_to_so $cfile]} {
+  if {! [gcj_jni_compile_c_to_so $cfile $cxxflags]} {
     # FIXME
     return 0
   }
 
   # We use -l$main because the .so is named the same as the main
   # program.
-  set args [list "additional_flags=-fjni -L. -l$main $cxxflags"]
+  set args [list "additional_flags=-fjni -L. -l$main"]
   if {! [gcj_link $main $main $file $args]} {
     # FIXME
     return 0
   }
 
-  if {! [gcj_invoke $main [file rootname $file].out $cxxldlibflags]} {
+  set resultfile [file rootname $file].out
+
+  if {! [gcj_invoke $main $resultfile $cxxldlibflags]} {
     # FIXME
     return 0
   }
+  
+  # We purposely ignore errors here; we still want to run the other
+  # appropriate tests.
+  set errname [file rootname [file tail $file]]
+  set gij [libjava_find_gij]
+  # libjava_find_gij will return `gij' if it couldn't find the
+  # program; in this case we want to skip the test.
+  if {$INTERPRETER == "yes" && $gij != "gij"} {
+      libjava_invoke $errname "gij test" opts $gij \
+	"" $resultfile $main
+  }  
 
   # When we succeed we remove all our clutter.
   eval gcj_cleanup [glob -nocomplain -- ${main}.*] [list $main lib${main}.${so_extension}]
