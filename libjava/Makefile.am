@@ -339,6 +339,10 @@ all_java_source_files = \
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
+if ONESTEP
+
+# Compile all classfiles in one go.
+
 libgcj-@gcc_version@.jar: $(all_java_source_files)
 	-@rm -f libgcj-@gcc_version@.jar
 	@echo Compiling Java sourcefiles...
@@ -355,6 +359,22 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 # on a particular .class file must wait until the jarfile
 # is built.
 $(all_java_class_files): libgcj-@gcc_version@.jar
+
+else # !ONESTEP
+
+# Compile each classfile individually.
+
+.java.class:
+	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $<
+
+libgcj-@gcc_version@.jar: $(all_java_class_files)
+	-@rm -f libgcj-@gcc_version@.jar
+## Note that we explicitly want to include directory information.
+	find java gnu javax org -type d -o -type f -name '*.class' | \
+	  sed -e '/\/\./d' -e '/\/xlib/d' | \
+	  $(ZIP) cfM0E@ $@
+
+endif
 
 # Note: The libtool objects are removed by mostlyclean-local
 # because of command-line-length issues.
