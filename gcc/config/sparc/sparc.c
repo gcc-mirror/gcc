@@ -4223,8 +4223,9 @@ function_arg_record_value_2 (type, startbitpos, parms)
 }
 
 static rtx
-function_arg_record_value (type, slotno, named, regbase)
+function_arg_record_value (type, mode, slotno, named, regbase)
      tree type;
+     enum machine_mode mode;
      int slotno, named, regbase;
 {
   HOST_WIDE_INT typesize = int_size_in_bytes (type);
@@ -4266,7 +4267,7 @@ function_arg_record_value (type, slotno, named, regbase)
 	     anyway so the rest of gcc doesn't go nuts.  Returning a PARALLEL
 	     leads to breakage due to the fact that there are zero bytes to
 	     load.  */
-	  return gen_rtx_REG (DImode, regbase);
+	  return gen_rtx_REG (mode, regbase);
 	}
       else
 	{
@@ -4280,7 +4281,7 @@ function_arg_record_value (type, slotno, named, regbase)
   if (nregs == 0)
     abort();
 
-  parms.ret = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs));
+  parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (nregs));
 
   /* Fill in the entries.  */
   parms.nregs = 0;
@@ -4412,7 +4413,7 @@ function_arg (cum, mode, type, named, incoming_p)
       if (int_size_in_bytes (type) > 16)
 	abort (); /* shouldn't get here */
 
-      return function_arg_record_value (type, slotno, named, regbase);
+      return function_arg_record_value (type, mode, slotno, named, regbase);
     }
   else if (type && TREE_CODE (type) == UNION_TYPE)
     {
@@ -4642,7 +4643,7 @@ function_value (type, mode, incoming_p)
 	  if (int_size_in_bytes (type) > 32)
 	    abort (); /* shouldn't get here */
 
-	  return function_arg_record_value (type, 0, 1, regbase);
+	  return function_arg_record_value (type, mode, 0, 1, regbase);
 	}
       else if (TREE_CODE (type) == UNION_TYPE)
 	{
