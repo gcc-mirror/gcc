@@ -1,4 +1,22 @@
 2003-12-09  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* config/linker-map.gnu: Remove private ios_base members from
+	export list.
+
+	* config/cpu/alpha/atomicity.h: Consistently format.
+	* config/cpu/cris/atomicity.h: Same.
+	* config/cpu/generic/atomicity.h: Same.
+	* config/cpu/hppa/atomicity.h: Same.
+	* config/cpu/i386/atomicity.h: Same.
+	* config/cpu/i486/atomicity.h: Same.
+	* config/cpu/ia64/atomicity.h: Same.
+	* config/cpu/m68k/atomicity.h: Same.
+	* config/cpu/mips/atomicity.h: Same.
+	* config/cpu/powerpc/atomicity.h: Same.
+	* config/cpu/s390/atomicity.h: Same.
+	* config/cpu/sparc/atomicity.h: Same.
+	
+2003-12-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/13296
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS): Remove.

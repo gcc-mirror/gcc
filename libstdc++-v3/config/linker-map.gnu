@@ -27,7 +27,16 @@ GLIBCXX_3.4 {
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
-      std::[A-Za-k]*;
+      std::[A-Za-h]*;
+      std::i[a-n]*;
+      std::ios_base::[A-Ha-z]*;
+      std::ios_base::_M_grow_words*;
+      std::ios_base::_M_init*;
+      std::ios_base::Init::[A-Za-z]*;
+      std::ios_base::Init::_S_initialized*;
+      std::ios_base::[J-Za-z]*;
+      std::i[p-z]*;
+      std::[A-Zj-k]*;
       std::length_error*;
       std::logic_error*;
       std::locale::[A-Za-e]*;
@@ -95,6 +104,10 @@ GLIBCXX_3.4 {
     # std::locale::_Impl constructors, destructors
     _ZNSt6locale5_ImplC*;
     _ZNSt6locale5_ImplD*;
+
+    # std::ios_base, std::ios_base::Init destructors
+    _ZNSt8ios_baseD*;
+    _ZNSt8ios_base4InitD*;
 
     # bool has_facet 
     _ZSt9has_facet*;

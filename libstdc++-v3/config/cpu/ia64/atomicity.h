@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: IA64 version  -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,16 +36,16 @@ typedef int _Atomic_word;
 
 static inline _Atomic_word 
 __attribute__ ((__unused__))
-__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+__exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
-  return __sync_fetch_and_add (__mem, __val);
+  return __sync_fetch_and_add(__mem, __val);
 }
 
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (volatile _Atomic_word* __mem, int __val)
+__atomic_add(volatile _Atomic_word* __mem, int __val)
 {
-  __sync_fetch_and_add (__mem, __val);
+  __sync_fetch_and_add(__mem, __val);
 }
 
 #endif /* atomicity.h */
