@@ -318,7 +318,7 @@ in the following sections.
 -mpowerpc  -mpowerpc64  -mno-powerpc
 -mpowerpc-gpopt  -mno-powerpc-gpopt
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt
--mnew-mnemonics  -mno-new-mnemonics
+-mnew-mnemonics  -mold-mnemonics
 -mfull-toc   -mminimal-toc  -mno-fop-in-toc  -mno-sum-in-toc
 -m64  -m32  -mxl-call  -mno-xl-call  -mthreads  -mpe
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple
