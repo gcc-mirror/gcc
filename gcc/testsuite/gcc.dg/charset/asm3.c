@@ -1,6 +1,6 @@
 /* Test for complex asm statements. Make sure it compiles
    then test for some of the asm statements not being translated.  */
-/* { dg-do compile }
+/* { dg-do compile { target i?86-*-* } }
    { dg-require-iconv "IBM-1047" }
    { dg-final { scan-assembler "std" } }
    { dg-final { scan-assembler "cld" } }
