@@ -36,7 +36,8 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "diagnostic.h"
+#include "input.h"
+#include "errors.h"
 #include "tree.h"
 
 /* Token defs.  */
@@ -50,6 +51,7 @@ int yylex (void);
 void update_yylval (int a); 
 
 static int next_tree_charno = 1;
+static int lineno = 1;
  
 static void update_lineno_charno (void);
 static void dump_lex_value (int lexret);
@@ -58,7 +60,9 @@ static void dump_lex_value (int lexret);
    {fprintf (stderr, "\nlexer returning"); dump_lex_value (a);} return a;}
 #define NOT_RETURN(a) {update_yylval (a); if (option_lexer_trace)\
    {fprintf (stderr, "\nlexer swallowing"); dump_lex_value (a);}}
-
+#ifndef USE_MAPPED_LOCATION
+#define LINEMAP_POSITION_FOR_COLUMN(INPUT, LINETABLE, COL)
+#endif
 %}
 
 %option nostack
@@ -70,8 +74,10 @@ static void dump_lex_value (int lexret);
 %%
 
  { 
-   /* Should really allocate only what we need. lll;.  */
+   /* ??? Should really allocate only what we need.  */
    yylval = my_malloc (sizeof (struct prod_token_parm_item));
+   LINEMAP_POSITION_FOR_COLUMN (input_location, &line_table,
+				next_tree_charno);
    ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
  }
@@ -210,11 +216,9 @@ static void dump_lex_value (int lexret);
   
 [^\n]  {
   update_lineno_charno ();
-  fprintf (stderr, "%s:%i:%i: Unrecognized character %c\n",
-	   ((struct prod_token_parm_item *)yylval)->tp.tok.location.file, 
-           ((struct prod_token_parm_item *)yylval)->tp.tok.location.line, 
-	   ((struct prod_token_parm_item *)yylval)->tp.tok.charno, yytext[0]);
-  errorcount++;
+  error ("%HUnrecognized character %qc.", 
+	 &((struct prod_token_parm_item *)yylval)->tp.tok.location,
+	 yytext[0]);
 }
 
 %%
@@ -229,17 +233,23 @@ update_lineno_charno (void)
    /* Update the values we send to caller in case we sometimes don't
       tell them about all the 'tokens' eg comments etc.  */
    int yyl;
+   LINEMAP_POSITION_FOR_COLUMN (input_location, &line_table,
+				next_tree_charno);
    ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
-   if (input_line == 0)
-     input_line = 1;
 
    for ( yyl = 0; yyl < yyleng; ++yyl ) 
       {
          if ( yytext[yyl] == '\n' ) 
             {
-	      ++input_line;
-               next_tree_charno = 1;
+#ifdef USE_MAPPED_LOCATION
+	      source_location s = linemap_line_start (&line_table, ++lineno,
+						      80);
+	      input_location = s;
+#else
+	      input_line = ++lineno;
+#endif
+	      next_tree_charno = 1;
             } 
          else 
            next_tree_charno++;
@@ -269,10 +279,13 @@ static void
 dump_lex_value (int lexret) 
 {
   int ix;
+
   fprintf (stderr, " %d l:%d c:%d ln:%d text=", lexret,
-         ((struct prod_token_parm_item *) yylval)->tp.tok.location.line,
-         ((struct prod_token_parm_item *) yylval)->tp.tok.charno,
-         ((struct prod_token_parm_item *) yylval)->tp.tok.length);
+	   LOCATION_LINE (((struct prod_token_parm_item *)
+			  yylval)->tp.tok.location),
+	   ((struct prod_token_parm_item *) yylval)->tp.tok.charno,
+	   ((struct prod_token_parm_item *) yylval)->tp.tok.length);
+
   for (ix = 0; ix < yyleng; ix++) 
     {
       fprintf (stderr, "%c", yytext[ix]);

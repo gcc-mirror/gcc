@@ -39,7 +39,7 @@ the GCC compiler.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "diagnostic.h"
+#include "errors.h"
 #include "timevar.h"
 
 #include "treelang.h"
@@ -198,16 +198,16 @@ storage typename NAME init_opt SEMICOLON {
   if (VAR_INIT (prod))
     {
       gcc_assert (((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code);
-    if (STORAGE_CLASS (prod) == EXTERNAL_REFERENCE_STORAGE)
-      {
-        fprintf (stderr, "%s:%i:%i: External reference variables may not have initial value\n",
-		 tok->tp.tok.location.file,
-		 tok->tp.tok.location.line, tok->tp.tok.charno);
-        print_token (stderr, 0, tok);
-        errorcount++;
-        YYERROR;
-      }
+      if (STORAGE_CLASS (prod) == EXTERNAL_REFERENCE_STORAGE)
+	{
+	  error("%HExternal reference variable %q.*s has an initial value.",
+		&tok->tp.tok.location, tok->tp.tok.length, tok->tp.tok.chars);
+	  YYERROR;
+	  VAR_INIT (prod) = NULL;
+	}
+
     }
+
   prod->tp.pro.code = tree_code_create_variable
     (STORAGE_CLASS (prod), 
      ((struct prod_token_parm_item*)SYMBOL_TABLE_NAME (prod))->tp.tok.chars,
@@ -276,11 +276,8 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
       break;
       
     case AUTOMATIC_STORAGE:
-      fprintf (stderr, "%s:%i:%i: A function cannot be automatic\n",
-	       tok->tp.tok.location.file,
-	       tok->tp.tok.location.line, tok->tp.tok.charno);
-      print_token (stderr, 0, tok);
-      errorcount++;
+      error ("%HFunction %q.*s cannot be automatic.",
+	     &tok->tp.tok.location, tok->tp.tok.length, tok->tp.tok.chars);
       YYERROR;
       break;
 
@@ -294,14 +291,13 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
        this_parm = this_parm->tp.pro.next)
     {
       gcc_assert (this_parm->category == production_category);
-
       this_parm_var = VARIABLE (this_parm);
 
       gcc_assert (this_parm_var);
       gcc_assert (this_parm_var->category == production_category);
+      gcc_assert (this_parm_var->tp.pro.main_token);
 
       this_parms = my_malloc (sizeof (struct prod_token_parm_item));
-      gcc_assert (this_parm_var->tp.pro.main_token);
 
       this_parms->tp.par.variable_name =
 	this_parm_var->tp.pro.main_token->tp.tok.chars;
@@ -343,13 +339,11 @@ NAME LEFT_BRACE {
   current_function = proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
-      fprintf (stderr, "%s:%i:%i: Function prototype not found\n",
-	       tok->tp.tok.location.file,
-	       tok->tp.tok.location.line, tok->tp.tok.charno);
-      print_token (stderr, 0, tok);
-      errorcount++;
+      error ("%HNo prototype found for %q.*s", &tok->tp.tok.location,
+	     tok->tp.tok.length, tok->tp.tok.chars);
       YYERROR;
     }
+
   gcc_assert (proto->tp.pro.code);
 
   tree_code_create_function_initial (proto->tp.pro.code, tok->tp.tok.location,
@@ -362,7 +356,7 @@ NAME LEFT_BRACE {
        this_parm = this_parm->tp.pro.next)
     {
       gcc_assert ((struct prod_token_parm_item*)VARIABLE (this_parm));
-      gcc_assert ((( (struct prod_token_parm_item*)VARIABLE (this_parm))->tp.pro.code));
+      gcc_assert (((struct prod_token_parm_item*)VARIABLE (this_parm))->tp.pro.code);
     }
 #endif
 }
@@ -522,41 +516,34 @@ LEFT_BRACE variable_defs_opt statements_opt RIGHT_BRACE {
 return:
 tl_RETURN expression_opt {
   struct prod_token_parm_item *type_prod;
-  struct prod_token_parm_item* ret_tok;
-  ret_tok = $1;
+  struct prod_token_parm_item *ret_tok = $1;
+  struct prod_token_parm_item *exp = $2;
+
   type_prod = EXPRESSION_TYPE (current_function);
   if (NUMERIC_TYPE (type_prod) == VOID_TYPE)
-    if ($2 == NULL)
+    if (exp == NULL)
       tree_code_generate_return (type_prod->tp.pro.code, NULL);
     else
       {
-        fprintf (stderr, "%s:%i:%i: Redundant expression in return\n",
-                ret_tok->tp.tok.location.file,
-                ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
-        errorcount++;
+	warning ("%HRedundant expression in return.",
+		 &ret_tok->tp.tok.location, ret_tok->tp.tok.length,
+		 ret_tok->tp.tok.chars);
         tree_code_generate_return (type_prod->tp.pro.code, NULL);
        }
   else
-    if ($2 == NULL)
-      {
-        fprintf (stderr, "%s:%i:%i: Expression missing in return\n",
-                ret_tok->tp.tok.location.file,
-                ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
-        errorcount++;
-      }
+    if (exp == NULL)
+	error ("%HExpression missing in return.", &ret_tok->tp.tok.location);
     else
       {
-        struct prod_token_parm_item *exp;
-        exp = $2;
         /* Check same type.  */
-        if (check_type_match (NUMERIC_TYPE (type_prod), $2))
+        if (check_type_match (NUMERIC_TYPE (type_prod), exp))
           {
-            gcc_assert (type_prod->tp.pro.code);
-            gcc_assert (exp->tp.pro.code);
+	    gcc_assert (type_prod->tp.pro.code);
+	    gcc_assert (exp->tp.pro.code);
 
             /* Generate the code. */
             tree_code_generate_return (type_prod->tp.pro.code,
-                                       exp->tp.pro.code);
+				       exp->tp.pro.code);
           }
       }
 }
@@ -645,11 +632,8 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
   proto = lookup_tree_name (&search_prod);
   if (!proto)
     {
-      fprintf (stderr, "%s:%i:%i: Function prototype not found\n",
-	       tok->tp.tok.location.file,
-	       tok->tp.tok.location.line, tok->tp.tok.charno);
-      print_token (stderr, 0, tok);
-      errorcount++;
+      error ("%HFunction prototype not found for %q.*%s.",
+	     &tok->tp.tok.location, tok->tp.tok.length, tok->tp.tok.chars);
       YYERROR;
     }
   EXPRESSION_TYPE (prod) = EXPRESSION_TYPE (proto);
@@ -664,11 +648,8 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
 
   if (exp_count !=  exp_proto_count)
     {
-      fprintf (stderr, "%s:%i:%i: expression count mismatch with prototype\n",
-	       tok->tp.tok.location.file,
-	       tok->tp.tok.location.line, tok->tp.tok.charno);
-      print_token (stderr, 0, tok);
-      errorcount++;
+      error ("%HExpression count mismatch %q.*s with prototype.",
+	     &tok->tp.tok.location, tok->tp.tok.length, tok->tp.tok.chars);
       YYERROR;
     }
   parms = tree_code_init_parameters ();
@@ -726,11 +707,8 @@ NAME {
   symbol_table_entry = lookup_tree_name (&search_prod);
   if (!symbol_table_entry)
     {
-      fprintf (stderr, "%s:%i:%i: Variable referred to but not defined\n",
-              tok->tp.tok.location.file,
-              tok->tp.tok.location.line, tok->tp.tok.charno);
-      print_token (stderr, 0, tok);
-      errorcount++;
+      error ("%HVariable %q.*s not defined.",
+	     &tok->tp.tok.location, tok->tp.tok.length, tok->tp.tok.chars);
       YYERROR;
     }
 
@@ -758,6 +736,7 @@ init_opt:
 
 init:
 ASSIGN init_element {
+  $$ = $2;
 }
 ;
 
@@ -779,9 +758,10 @@ print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value)
   unsigned int  ix;
 
   tok  =  value;
-  fprintf (file, "%d \"", tok->tp.tok.location.line);
+  fprintf (file, "%d \"", LOCATION_LINE (tok->tp.tok.location));
   for (ix  =  0; ix < tok->tp.tok.length; ix++)
     fprintf (file, "%c", tok->tp.tok.chars[ix]);
+
   fprintf (file, "\"");
 }
 
@@ -790,19 +770,12 @@ static void
 yyerror (const char *error_message)
 {
   struct prod_token_parm_item *tok;
-  
+
   tok = yylval;
   if (tok)
-    {
-      fprintf (stderr, "%s:%i:%i: %s\n", tok->tp.tok.location.file,
-	       tok->tp.tok.location.line, tok->tp.tok.charno, error_message);
-      print_token (stderr, 0, tok);
-    }
+    error ("%H%s", &tok->tp.tok.location, error_message);
   else
-    fprintf (stderr, "%s\n", error_message);
-  
-  errorcount++;
-
+    error ("%s", error_message);
 }
 
 /* Reverse the order of a token list, linked by parse_next, old first
@@ -821,6 +794,7 @@ reverse_prod_list (struct prod_token_parm_item *old_first)
   while (current) 
     {
       gcc_assert (current->category == production_category);
+
       next = current->tp.pro.next;
       current->tp.pro.next = prev;
       prev = current;
@@ -835,13 +809,8 @@ static void
 ensure_not_void (unsigned int type, struct prod_token_parm_item* name)
 {
   if (type == VOID_TYPE)
-    {
-      fprintf (stderr, "%s:%i:%i: Type must not be void in this context\n",
-	       name->tp.tok.location.file,
-	       name->tp.tok.location.line, name->tp.tok.charno);
-      print_token (stderr, 0, name);
-      errorcount++;
-    }
+    error ("%HType must not be void in this context.",
+	   &name->tp.tok.location);
 }
 
 /* Check TYPE1 and TYPE2 which are integral types.  Return the lowest
@@ -932,13 +901,15 @@ make_plus_expression (struct prod_token_parm_item* tok,
 
   NUMERIC_TYPE (prod) = type_code;
   type = tree_code_get_type (type_code);
+
   gcc_assert (type);
+
   OP1 (prod) = op1;
   OP2 (prod) = op2;
       
-  prod->tp.pro.code = tree_code_get_expression
-     (prod_code, type, op1->tp.pro.code,
-      op2->tp.pro.code, NULL);
+  prod->tp.pro.code = tree_code_get_expression (prod_code, type,
+						op1->tp.pro.code,
+						op2->tp.pro.code, NULL);
 
   return prod;
 }

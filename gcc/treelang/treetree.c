@@ -686,7 +686,9 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_assert (op1 && op2);
       operator = MODIFY_EXPR;
       ret1 = fold (build2 (operator, void_type_node, op1,
-                           fold (build1 (CONVERT_EXPR, TREE_TYPE (op1), op2))));
+                           fold (build1 (CONVERT_EXPR, TREE_TYPE (op1),
+					 op2))));
+
       break;
 
     case EXP_PLUS:
@@ -837,24 +839,22 @@ tree_mark_addressable (tree exp)
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
-		error ("global register variable `%s' used in nested function",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		error ("Global register variable %qD used in nested function.",
+		       x);
 		return 0;
 	      }
-	    pedwarn ("register variable `%s' used in nested function",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	    pedwarn ("Register variable %qD used in nested function.", x);
 	  }
 	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
-		error ("address of global register variable `%s' requested",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		error ("Address of global register variable %qD requested.",
+		       x);
 		return 0;
 	      }
 
-	    pedwarn ("address of register variable `%s' requested",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	    pedwarn ("Address of register variable %qD requested.", x);
 	  }
 
 	/* drops in */

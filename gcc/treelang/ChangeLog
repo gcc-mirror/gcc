@@ -1,5 +1,34 @@
 2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR other/17762
+	* lex.l: Include input.h and errors.h
+	(lineno): New variable.
+	(LINEMAP_POSITION_FOR_COLUMN): Define as noop when USE_MAPPED_LOCATION
+	is not defined.
+	Set column position with LINEMAP_POSITION_FOR_COLUMN.
+	Use error instead of fprintf.
+	Set input_location with the value returned by linemap_start_line when
+	USE_MAPPED_LOCATION is defined.
+	(dump_lex_value): Use LOCATION_LINE.
+	* parse.y: Include errors.h.
+	Use error and warning instead of fprintf.
+	(return): Move exp to rule scope and always set to $2.  Test against
+	exp instead of $2.
+	(init): Set $$ to $2.
+	(print_token): Use LOCATION_LINE.
+	* tree1.c (treelang_init): Call treelang_init_decl_processing last.
+	Call linemap_add to set input_filename when USE_MAPPED_LOCATION is
+	defined.
+	(treelang_parse_file): Always start at line one.
+	Rename input_filename to main_input_filename when USE_MAPPED_LOCATION is
+	defined.
+	Leave main_input_filename when done parsing the input.
+	(insert_tree_name): Use error instead of fprintf.
+	* treetree.c (tree_code_get_expression): Wrap long line.
+	(tree_mark_addressable): Use %qD to print out DECLs.
+
+2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
+
 	* parse.y: Use gcc_assert and gcc_unreachable instead of abort.
 	* tree1.c: Likewise.
 	* treetree.c: Likewise.

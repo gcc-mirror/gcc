@@ -1,0 +1,5 @@
+// { dg-do compile }
+foo // { dg-error "foo" "prototype" }
+{ 
+ x = 3;
+}
