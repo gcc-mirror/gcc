@@ -1319,7 +1319,8 @@ walk_tree (tp, func, data, htab)
 	      WALK_SUBTREE (DECL_SIZE_UNIT (DECL_STMT_DECL (*tp)));
 	    }
 
-	  WALK_SUBTREE (TREE_CHAIN (*tp));
+	  /* This can be tail-recursion optimized if we write it this way.  */
+	  return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
 	}
 
       /* We didn't find what we were looking for.  */
@@ -1452,6 +1453,73 @@ walk_tree_without_duplicates (tp, func, data)
   result = walk_tree (tp, func, data, htab);
   htab_delete (htab);
   return result;
+}
+
+/* Like walk_tree, but only examines statement nodes.  We don't need a
+   without_duplicates variant of this one because the statement tree is
+   a tree, not a graph.  */
+
+tree 
+walk_stmt_tree (tp, func, data)
+     tree *tp;
+     walk_tree_fn func;
+     void *data;
+{
+  enum tree_code code;
+  int walk_subtrees;
+  tree result;
+  int i, len;
+
+#define WALK_SUBTREE(NODE)				\
+  do							\
+    {							\
+      result = walk_stmt_tree (&(NODE), func, data);	\
+      if (result)					\
+	return result;					\
+    }							\
+  while (0)
+
+  /* Skip empty subtrees.  */
+  if (!*tp)
+    return NULL_TREE;
+
+  /* Skip subtrees below non-statement nodes.  */
+  if (!statement_code_p (TREE_CODE (*tp)))
+    return NULL_TREE;
+
+  /* Call the function.  */
+  walk_subtrees = 1;
+  result = (*func) (tp, &walk_subtrees, data);
+
+  /* If we found something, return it.  */
+  if (result)
+    return result;
+
+  /* Even if we didn't, FUNC may have decided that there was nothing
+     interesting below this point in the tree.  */
+  if (!walk_subtrees)
+    return NULL_TREE;
+
+  /* FUNC may have modified the tree, recheck that we're looking at a
+     statement node.  */
+  code = TREE_CODE (*tp);
+  if (!statement_code_p (code))
+    return NULL_TREE;
+
+  /* Walk over all the sub-trees of this operand.  Statement nodes never
+     contain RTL, and we needn't worry about TARGET_EXPRs.  */
+  len = TREE_CODE_LENGTH (code);
+
+  /* Go through the subtrees.  We need to do this in forward order so
+     that the scope of a FOR_EXPR is handled properly.  */
+  for (i = 0; i < len; ++i)
+    WALK_SUBTREE (TREE_OPERAND (*tp, i));
+
+  /* Finally visit the chain.  This can be tail-recursion optimized if
+     we write it this way.  */
+  return walk_stmt_tree (&TREE_CHAIN (*tp), func, data);
+
+#undef WALK_SUBTREE
 }
 
 /* Called from count_trees via walk_tree.  */

@@ -4543,6 +4543,9 @@ extern tree walk_tree                           PARAMS ((tree *,
 extern tree walk_tree_without_duplicates        PARAMS ((tree *,
 							 walk_tree_fn,
 							 void *));
+extern tree walk_stmt_tree			PARAMS ((tree *,
+							 walk_tree_fn,
+							 void *));
 extern tree copy_tree_r                         PARAMS ((tree *, int *, void *));
 extern int cp_valid_lang_attribute		PARAMS ((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));

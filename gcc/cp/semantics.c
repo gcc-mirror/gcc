@@ -2274,21 +2274,28 @@ prune_unused_decls (tp, walk_subtrees, data)
 	  return prune_unused_decls (tp, walk_subtrees, data);
 	}
     }
-  else if (TREE_CODE (t) == BLOCK)
+  else if (TREE_CODE (t) == SCOPE_STMT)
     {
-      /* walk_tree doesn't inspect BLOCK_VARS, so we must do it by hand.  */
-      tree *vp;
+      /* Remove all unused decls from the BLOCK of this SCOPE_STMT.  */
+      tree block = SCOPE_STMT_BLOCK (t);
 
-      for (vp = &BLOCK_VARS (t); *vp; )
+      if (block)
 	{
-	  tree v = *vp;
-	  if (! TREE_USED (v) && DECL_NAME (v) && DECL_SOURCE_LINE (v) == 0)
-	    *vp = TREE_CHAIN (v);  /* drop */
-	  else
-	    vp = &TREE_CHAIN (v);  /* advance */
+	  tree *vp;
+
+	  for (vp = &BLOCK_VARS (block); *vp; )
+	    {
+	      tree v = *vp;
+	      if (! TREE_USED (v) && DECL_NAME (v) && DECL_SOURCE_LINE (v) == 0)
+		*vp = TREE_CHAIN (v);  /* drop */
+	      else
+		vp = &TREE_CHAIN (v);  /* advance */
+	    }
+	  /* If there are now no variables, the entire BLOCK can be dropped.
+	     (This causes SCOPE_NULLIFIED_P (t) to be true.)  */
+	  if (BLOCK_VARS (block) == NULL_TREE)
+	    SCOPE_STMT_BLOCK (t) = NULL_TREE;
 	}
-      if (BLOCK_VARS (t) == NULL_TREE)
-	TREE_USED (t) = 0;
     }
   return NULL_TREE;
 }
@@ -2314,18 +2321,14 @@ finish_stmt_tree (t)
      tree *t;
 {
   tree stmt;
-  int old_lineno;
   
   /* Remove the fake extra statement added in begin_stmt_tree.  */
   stmt = TREE_CHAIN (*t);
   *t = stmt;
   SET_LAST_STMT (NULL_TREE);
 
-  /* Remove unused decls from the stmt tree.  walk_tree messes with
-     the line number, so save/restore it.  */
-  old_lineno = lineno;
-  walk_tree_without_duplicates (t, prune_unused_decls, NULL);
-  lineno = old_lineno;
+  /* Remove unused decls from the stmt tree.  */
+  walk_stmt_tree (t, prune_unused_decls, NULL);
 
   if (cfun)
     {
