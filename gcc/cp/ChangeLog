@@ -1,3 +1,8 @@
+2002-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (expand_default_init): Handle brace-enclosed initializers
+	correctly.
+
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (write_expression): Correct handling of enumeration
