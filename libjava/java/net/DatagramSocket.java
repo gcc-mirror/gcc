@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.net;
 
 import gnu.java.net.PlainDatagramSocketImpl;
+import gnu.java.nio.DatagramChannelImpl;
 import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.IllegalBlockingModeException;
@@ -565,7 +566,8 @@ public class DatagramSocket
         ("Socket connected to a multicast address my not receive");
 
     if (getChannel() != null
-        && !getChannel().isBlocking ())
+        && !getChannel().isBlocking ()
+        && !((DatagramChannelImpl) getChannel()).isInChannelOperation())
       throw new IllegalBlockingModeException ();
 
     getImpl().receive(p);
@@ -618,7 +620,8 @@ public class DatagramSocket
     // use getTimeToLive for TTL val.
 
     if (getChannel() != null
-        && !getChannel().isBlocking ())
+        && !getChannel().isBlocking ()
+        && !((DatagramChannelImpl) getChannel()).isInChannelOperation())
       throw new IllegalBlockingModeException ();
 
     getImpl().send(p);
