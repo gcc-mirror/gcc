@@ -1,5 +1,13 @@
 1999-05-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* search.c (lookup_field_r): Set the TREE_TYPE of an ambiguous
+	lookup to error_mark_node here.
+	(lookup_member): Revise documentation.  Add comments.  Don't set
+	the TREE_TYPE to error_mark_node here, and don't build up an extra
+	TREE_LIST for ambiguous lookups.
+	(setup_class_bindings): Adjust accordingly.
+	(push_class_decls): Revise out-of-date comments.
+	
 	* typeck.c (build_const_cast): Tighten checks for legality.
 
 1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
