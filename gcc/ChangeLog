@@ -1,3 +1,12 @@
+2003-05-04  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c (cpp_create_reader, post_options): Warn about
+	trigraphs unless explicity set or -trigraphs.
+	* cpplex.c (warn_in_comment): New.
+	(_cpp_process_line_notes): Better handling of -Wtrigraphs.
+	(_cpp_skip_block_comment): Add call to _cpp_process_line_notes.
+	* doc/cppopts.texi, doc/cpp.texi: Update.
+
 2003-05-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (LIBGCOV): Add _gcov_merge_add.

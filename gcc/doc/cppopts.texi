@@ -87,12 +87,16 @@ comment, or whenever a backslash-newline appears in a @samp{//} comment.
 @item -Wtrigraphs
 @opindex Wtrigraphs
 @anchor{Wtrigraphs}
-Warn if any trigraphs that may change the meaning of a program are
-encountered.  This option is in effect unless trigraphs are turned on,
-and is implied by @option{-Wall}.  With the exception of a trigraph
-that would form an escaped newline, warnings are not given for
-trigraphs within comments as they do not affect the meaning of the
-program.
+Most trigraphs in comments cannot affect the meaning of the program.
+However, a trigraph that would form an escaped newline (@samp{??/} at
+the end of a line) can, by changing where the comment begins or ends.
+Therefore, only trigraphs that would form escaped newlines produce
+warnings inside a comment.
+
+This option is implied by @option{-Wall}.  If @option{-Wall} is not
+given, this option is still enabled unless trigraphs are enabled.  To
+get trigraph conversion without warnings, but get the other
+@option{-Wall} warnings, use @samp{-trigraphs -Wall -Wno-trigraphs}.
 
 @item -Wtraditional
 @opindex Wtraditional
