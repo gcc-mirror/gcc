@@ -1059,11 +1059,25 @@ output_scc_di(op, operand1, operand2, dest)
     output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
 #endif
 #endif
-  else
+  else if (TARGET_68020 || TARGET_5200)
 #ifdef MOTOROLA
     output_asm_insn ("tst%.l %0\n\tjbne %l4\n\ttst%.l %1", loperands);
 #else
     output_asm_insn ("tst%.l %0\n\tjne %l4\n\ttst%.l %1", loperands);
+#endif
+  else
+#ifdef MOTOROLA
+#ifdef SGS_CMP_ORDER
+    output_asm_insn ("cmp%.w %0,%#0\n\tjbne %l4\n\tcmp%.w %1,%#0", loperands);
+#else
+    output_asm_insn ("cmp%.w %#0,%0\n\tjbne %l4\n\tcmp%.w %#0,%1", loperands);
+#endif
+#else
+#ifdef SGS_CMP_ORDER
+    output_asm_insn ("cmp%.w %0,%#0\n\tjne %l4\n\tcmp%.w %1,%#0", loperands);
+#else
+    output_asm_insn ("cmp%.w %#0,%0\n\tjne %l4\n\tcmp%.w %#0,%1", loperands);
+#endif
 #endif
   loperands[5] = dest;
   

@@ -1,3 +1,8 @@
+Mon Jul  6 22:21:56 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* m68k.c (output_scc_di): Use cmpw #0 instead of tstl when
+	testing address registers on the 68000.
+
 Mon Jul  6 22:17:19 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
 
 	* jump.c (jump_optimize) Check for CONST_INT before using INTVAL.
