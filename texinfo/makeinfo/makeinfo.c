@@ -1,5 +1,5 @@
 /* Makeinfo -- convert texinfo format files into info files.
-   $Id: makeinfo.c,v 1.1.1.1 1997/08/21 22:58:07 jason Exp $
+   $Id: makeinfo.c,v 1.2 1997/09/03 04:25:24 law Exp $
 
    Copyright (C) 1987, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
 
@@ -105,6 +105,7 @@ int minor_version = 67;
 #include <sys/file.h>
 #endif /* HAVE_SYS_FILE_H */
 
+#if !defined(alloca)
 #if defined (__GNUC__)
 #define alloca __builtin_alloca
 #else
@@ -116,6 +117,7 @@ extern char *alloca ();
 #endif /* !_AIX */
 #endif /* !HAVE_ALLOCA_H */
 #endif /* !__GNUC__ */
+#endif /* alloca */
 
 void *xmalloc (), *xrealloc ();
 #if defined (__osf__)

@@ -51,6 +51,8 @@
 #  endif /* !hpux */
 #endif /* FD_SET */
 
+extern char *getenv ();
+
 static char *read_from_fd ();
 static void clean_manpage ();
 static NODE *manpage_node_of_file_buffer ();
@@ -180,7 +182,7 @@ executable_file_in_path (filename, path)
 static char *
 find_man_formatter ()
 {
-  return (executable_file_in_path ("man", (char *)getenv ("PATH")));
+  return (executable_file_in_path ("man", getenv ("PATH")));
 }
 
 static char *manpage_pagename = (char *)NULL;
