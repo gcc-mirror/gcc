@@ -1513,10 +1513,13 @@ find_regno_fusage (insn, code, regno)
 
 void
 remove_note (insn, note)
-     register rtx note;
      register rtx insn;
+     register rtx note;
 {
   register rtx link;
+
+  if (note == NULL_RTX)
+    return;
 
   if (REG_NOTES (insn) == note)
     {

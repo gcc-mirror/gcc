@@ -371,15 +371,6 @@ static void remove_fake_successors	PROTO ((basic_block));
    it being unused. */
 void verify_flow_info			PROTO ((void));
 
-/* Flags for propagate_block.  */
-
-#define PROP_DEATH_NOTES	1	/* Create DEAD and UNUSED notes.  */
-#define PROP_LOG_LINKS		2	/* Create LOG_LINKS.  */
-#define PROP_REG_INFO		4	/* Update regs_ever_live et al.  */
-#define PROP_KILL_DEAD_CODE	8	/* Remove dead code.  */
-#define PROP_SCAN_DEAD_CODE	16	/* Scan for dead code.  */
-#define PROP_AUTOINC		32	/* Create autoinc mem references.  */
-#define PROP_FINAL		63	/* All of the above.  */
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -838,6 +829,8 @@ compute_bb_for_insn (max)
 {
   int i;
 
+  if (basic_block_for_insn)
+    VARRAY_FREE (basic_block_for_insn);
   VARRAY_BB_INIT (basic_block_for_insn, max, "basic_block_for_insn");
 
   for (i = 0; i < n_basic_blocks; ++i)
@@ -2567,16 +2560,21 @@ verify_local_live_at_start (new_live_at_start, bb)
    If we find registers removed from live_at_start, that means we have
    a broken peephole that is killing a register it shouldn't.
 
-   BLOCK_FOR_INSN is assumed to be correct.
-
    ??? This is not true in one situation -- when a pre-reload splitter
    generates subregs of a multi-word pseudo, current life analysis will
-   lose the kill.  So we _can_ have a pseudo go live.  How irritating.  */
+   lose the kill.  So we _can_ have a pseudo go live.  How irritating.
+
+   BLOCK_FOR_INSN is assumed to be correct.
+
+   ??? PROP_FLAGS should not contain PROP_LOG_LINKS.  Need to set up
+   reg_next_use for that.  Including PROP_REG_INFO does not refresh
+   regs_ever_live unless the caller resets it to zero.  */
 
 void
-update_life_info (blocks, extent)
+update_life_info (blocks, extent, prop_flags)
      sbitmap blocks;
      enum update_life_extent extent;
+     int prop_flags;
 {
   regset tmp;
   int i;
@@ -2586,7 +2584,8 @@ update_life_info (blocks, extent)
   /* For a global update, we go through the relaxation process again.  */
   if (extent != UPDATE_LIFE_LOCAL)
     {
-      calculate_global_regs_live (blocks, blocks, 0);
+      calculate_global_regs_live (blocks, blocks,
+				  prop_flags & PROP_SCAN_DEAD_CODE);
 
       /* If asked, remove notes from the blocks we'll update.  */
       if (extent == UPDATE_LIFE_GLOBAL_RM_NOTES)
@@ -2599,7 +2598,7 @@ update_life_info (blocks, extent)
 
       COPY_REG_SET (tmp, bb->global_live_at_end);
       propagate_block (tmp, bb->head, bb->end, (regset) NULL, i,
-		       PROP_DEATH_NOTES);
+		       prop_flags);
 
       if (extent == UPDATE_LIFE_LOCAL)
 	verify_local_live_at_start (tmp, bb);
@@ -3194,12 +3193,17 @@ allocate_reg_life_data ()
      vector oriented regsets would set regset_{size,bytes} here also.  */
   allocate_reg_info (max_regno, FALSE, FALSE);
 
-  /* Because both reg_scan and flow_analysis want to set up the REG_N_SETS
-     information, explicitly reset it here.  The allocation should have
-     already happened on the previous reg_scan pass.  Make sure in case
-     some more registers were allocated.  */
+  /* Reset all the data we'll collect in propagate_block and its 
+     subroutines.  */
   for (i = 0; i < max_regno; i++)
-    REG_N_SETS (i) = 0;
+    {
+      REG_N_SETS (i) = 0;
+      REG_N_REFS (i) = 0;
+      REG_N_DEATHS (i) = 0;
+      REG_N_CALLS_CROSSED (i) = 0;
+      REG_LIVE_LENGTH (i) = 0;
+      REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+    }
 }
 
 /* Compute the registers live at the beginning of a basic block

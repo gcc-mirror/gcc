@@ -1,3 +1,25 @@
+Wed Oct 20 06:26:58 1999  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (PROP_*): Move constants from ...
+	* flow.c: ... here.
+	(compute_bb_for_insn): Free the array before reallocating.
+	(update_life_info): New arg PROP_FLAGS; pass on to propagate_block.
+	(allocate_reg_life_data): Reset all reg variables collected by
+	propagate_block.
+	(get_block_head_tail): Don't convert from bb to block.
+	(get_bb_head_tail): New.  Update all callers of get_block_head_tail.
+	(find_insn_reg_weight): Take block not bb.
+	(schedule_block): Don't set block num for moved insns.
+	(schedule_region): Don't update_life_info or find_insn_reg_weight.
+	(schedule_insns): Do it here instead.
+	* combine.c (combine_instructions): Invoke compute_bb_for_insn
+	before update_life_info.
+	* recog.c (split_all_insns, peephole2_optimize): Update for
+	new arg to update_life_info.
+	* rtlanal.c (remove_note): Cope with NULL note.
+	* toplev.c (rest_of_compilation): Don't invoke recompute_reg_usage
+	if we did sched1.
+
 Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* jump.c (jump_optimize_1): More accurately detect casesi insns.
