@@ -18,6 +18,21 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
+/* If secondary reloads are the same for inputs and outputs, define those
+   macros here.  */
+
+#ifdef SECONDARY_RELOAD_CLASS
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) \
+  SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
+  SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
+#endif
+
+/* If either macro is defined, show that we need secondary reloads.  */
+#if defined(SECONDARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
+#define HAVE_SECONDARY_RELOADS
+#endif
+
 /* See reload.c and reload1.c for comments on these variables.  */
 
 /* Maximum number of reloads we can need.  */
@@ -36,6 +51,9 @@ extern int reload_needed_for_multiple[MAX_RELOADS];
 extern rtx reload_needed_for[MAX_RELOADS];
 extern int reload_secondary_reload[MAX_RELOADS];
 extern int reload_secondary_p[MAX_RELOADS];
+#ifdef MAX_INSN_CODE
+extern enum insn_code reload_secondary_icode[MAX_RELOADS];
+#endif
 extern int n_reloads;
 
 extern rtx reload_reg_rtx[MAX_RELOADS];
@@ -78,6 +96,14 @@ extern char indirect_symref_ok;
 
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
 extern char double_reg_address_ok;
+
+#ifdef MAX_INSN_CODE
+/* These arrays record the insn_code of insns that may be needed to
+   perform input and output reloads of special objects.  They provide a
+   place to pass a scratch register.  */
+extern enum insn_code reload_in_optab[];
+extern enum insn_code reload_out_optab[];
+#endif
 
 void init_reload ();
 void find_reloads ();
