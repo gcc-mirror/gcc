@@ -1,5 +1,12 @@
 2002-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.in (libgcc_visibility): Substitute.
+	* configure: Rebuilt.
+	* mklibgcc.in: If libgcc_visibility = yes, make libgcc.a global
+	defined symbols .hidden.
+
+2002-02-26  Jakub Jelinek  <jakub@redhat.com>
+
 	PR debug/5770
 	* dwarf2out.c (rtl_for_decl_location): Return CONST_STRING for
 	STRING_CST initializer spanning the whole variable without

@@ -1484,6 +1484,8 @@ if test x"$gcc_cv_as_hidden" = xyes; then
 		[Define if your assembler supports .hidden.])
 fi
 AC_MSG_RESULT($gcc_cv_as_hidden)
+libgcc_visibility=$gcc_cv_as_hidden
+AC_SUBST(libgcc_visibility)
 
 AC_MSG_CHECKING(assembler leb128 support)
 gcc_cv_as_leb128=no
