@@ -7994,7 +7994,9 @@ ix86_expand_int_movcc (operands)
 	code = LTU;
       else
 	code = GEU;
-      ix86_compare_op1 = GEN_INT (INTVAL (ix86_compare_op1) + 1);
+      ix86_compare_op1
+	= gen_int_mode (INTVAL (ix86_compare_op1) + 1,
+			GET_MODE (ix86_compare_op0));
     }
 
   start_sequence ();
