@@ -1,3 +1,8 @@
+1998-01-13  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (init_decl_processing): Only call init_rtti_processing
+	FLAG_RTTI is set.
+
 Mon Jan 12 01:35:18 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_new_1): Split out from build_new.

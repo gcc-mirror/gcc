@@ -5601,7 +5601,8 @@ init_decl_processing ()
   init_class_processing ();
   init_init_processing ();
   init_search_processing ();
-  init_rtti_processing ();
+  if (flag_rtti)
+    init_rtti_processing ();
 
   if (flag_exceptions)
     init_exception_processing ();
