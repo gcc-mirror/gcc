@@ -1,3 +1,16 @@
+2003-06-28  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* diagnostic.c (output_integer_with_precision): New macro.
+	(output_format): Use it.  Handle more format specifiers.
+	(output_long_decimal): Remove.
+	(output_unsigned_decimal): Likewise.
+	(output_long_unsigned_decimal): Likewise.
+	(output_octal): Likewise.
+	(output_long_octal): Likewise.
+	(output_hexadecimal): Likewise.
+	(output_long_hexadecimal): Likewise.
+	(output_long_long_decimal): Likewise.
+
 2003-06-28  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md: Follow recent emit_note API change.

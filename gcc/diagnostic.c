@@ -44,6 +44,34 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define line_wrap_cutoff(BUFFER) (BUFFER)->state.maximum_length
 #define prefix_was_emitted_for(BUFFER) (BUFFER)->state.emitted_prefix_p
 
+/* Format an integer given by va_arg (ARG, type-specifier T) where
+   type-specifier is a precision modifier as indicated by PREC.  F is
+   a string used to construct the appropciate format-specifier.  */
+#define output_integer_with_precision(BUFFER, ARG, PREC, T, F)  \
+  do                                                            \
+    switch (PREC)                                               \
+      {                                                         \
+      case 0:                                                   \
+        output_formatted_scalar                                 \
+          (BUFFER, "%" F, va_arg (ARG, T));                     \
+        break;                                                  \
+                                                                \
+      case 1:                                                   \
+        output_formatted_scalar                                 \
+          (BUFFER, "%l" F, va_arg (ARG, long T));               \
+        break;                                                  \
+                                                                \
+      case 2:                                                   \
+        output_formatted_scalar                                 \
+          (BUFFER, "%ll" F, va_arg (ARG, long long T));         \
+        break;                                                  \
+                                                                \
+      default:                                                  \
+        break;                                                  \
+      }                                                         \
+  while (0)
+
+
 /* Prototypes.  */
 static void output_flush (output_buffer *);
 static void output_do_verbatim (output_buffer *, text_info *);
@@ -57,15 +85,6 @@ static void format_with_decl (output_buffer *, text_info *, tree);
 static void diagnostic_for_decl (diagnostic_context *, diagnostic_info *,
 				 tree);
 static void set_real_maximum_length (output_buffer *);
-
-static void output_unsigned_decimal (output_buffer *, unsigned int);
-static void output_long_decimal (output_buffer *, long int);
-static void output_long_unsigned_decimal (output_buffer *,
-					  long unsigned int);
-static void output_octal (output_buffer *, unsigned int);
-static void output_long_octal (output_buffer *, unsigned long int);
-static void output_hexadecimal (output_buffer *, unsigned int);
-static void output_long_hexadecimal (output_buffer *, unsigned long int);
 static void output_append_r (output_buffer *, const char *, int);
 static void wrap_text (output_buffer *, const char *, const char *);
 static void maybe_wrap_text (output_buffer *, const char *, const char *);
@@ -292,54 +311,6 @@ output_decimal (output_buffer *buffer, int i)
   output_formatted_scalar (buffer, "%d", i);
 }
 
-static inline void
-output_long_decimal (output_buffer *buffer, long int i)
-{
-  output_formatted_scalar (buffer, "%ld", i);
-}
-
-static inline void
-output_unsigned_decimal (output_buffer *buffer, unsigned int i)
-{
-  output_formatted_scalar (buffer, "%u", i);
-}
-
-static inline void
-output_long_unsigned_decimal (output_buffer *buffer, long unsigned int i)
-{
-  output_formatted_scalar (buffer, "%lu", i);
-}
-
-static inline void
-output_octal (output_buffer *buffer, unsigned int i)
-{
-  output_formatted_scalar (buffer, "%o", i);
-}
-
-static inline void
-output_long_octal (output_buffer *buffer, long unsigned int i)
-{
-  output_formatted_scalar (buffer, "%lo", i);
-}
-
-static inline void
-output_hexadecimal (output_buffer *buffer, unsigned int i)
-{
-  output_formatted_scalar (buffer, "%x", i);
-}
-
-static inline void
-output_long_hexadecimal (output_buffer *buffer, long unsigned int i)
-{
-  output_formatted_scalar (buffer, "%lx", i);
-}
-
-static inline void
-output_long_long_decimal (output_buffer *buffer, long long int i)
-{
-  output_formatted_scalar (buffer, "%lld", i);
-}
-
 void
 output_host_wide_integer (output_buffer *buffer, HOST_WIDE_INT i)
 {
@@ -469,8 +440,8 @@ output_buffer_to_stream (output_buffer *buffer)
    %o: unsigned integer in base eight.
    %x: unsigned integer in base sixteen.
    %ld, %li, %lo, %lu, %lx: long versions of the above.
-   %ll: long long int.
-   %w: and integer of type HOST_WIDE_INT.
+   %lld, %lli, %llo, %llu, %llx: long long versions.
+   %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
    %c: character.
    %s: string.
    %p: pointer.
@@ -483,7 +454,8 @@ output_format (output_buffer *buffer, text_info *text)
 {
   for (; *text->format_spec; ++text->format_spec)
     {
-      bool long_integer = 0;
+      int precision = 0;
+      bool wide = false;
 
       /* Ignore text.  */
       {
@@ -497,17 +469,27 @@ output_format (output_buffer *buffer, text_info *text)
       if (*text->format_spec == '\0')
 	break;
 
-      /* We got a '%'.  Let's see what happens. Record whether we're
-         parsing a long integer format specifier.  */
-      if (*++text->format_spec == 'l')
-	{
-	  long_integer = true;
-	  ++text->format_spec;
-	}
+      /* We got a '%'.  Parse precision modifiers, if any.  */
+      switch (*++text->format_spec)
+        {
+        case 'w':
+          wide = true;
+          ++text->format_spec;
+          break;
 
-      /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %m, %o, %s, %u,
-         %x, %p, %.*s; %%.  And nothing else.  Front-ends should install
-         printers to grok language specific format specifiers.  */
+        case 'l':
+          do
+            ++precision;
+          while (*++text->format_spec == 'l');
+          break;
+
+        default:
+          break;
+        }
+      /* We don't support precision behond that of "long long".   */
+      if (precision > 2)
+        abort();
+
       switch (*text->format_spec)
 	{
 	case 'c':
@@ -516,18 +498,23 @@ output_format (output_buffer *buffer, text_info *text)
 
 	case 'd':
 	case 'i':
-	  if (long_integer)
-	    output_long_decimal (buffer, va_arg (*text->args_ptr, long int));
-	  else
-	    output_decimal (buffer, va_arg (*text->args_ptr, int));
+          if (wide)
+            output_formatted_scalar
+              (buffer, HOST_WIDE_INT_PRINT_DEC,
+               va_arg (*text->args_ptr, HOST_WIDE_INT));
+          else
+            output_integer_with_precision
+              (buffer, *text->args_ptr, precision, int, "d");
 	  break;
 
 	case 'o':
-	  if (long_integer)
-	    output_long_octal (buffer,
-			       va_arg (*text->args_ptr, unsigned long int));
-	  else
-	    output_octal (buffer, va_arg (*text->args_ptr, unsigned int));
+          if (wide)
+            output_formatted_scalar
+              (buffer, "%" HOST_WIDE_INT_PRINT "o",
+               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+          else
+            output_integer_with_precision
+              (buffer, *text->args_ptr, precision, unsigned, "u");
 	  break;
 
 	case 's':
@@ -539,31 +526,24 @@ output_format (output_buffer *buffer, text_info *text)
           break;
 
 	case 'u':
-	  if (long_integer)
-	    output_long_unsigned_decimal
-	      (buffer, va_arg (*text->args_ptr, long unsigned int));
-	  else
-	    output_unsigned_decimal
-	      (buffer, va_arg (*text->args_ptr, unsigned int));
+          if (wide)
+            output_formatted_scalar
+              (buffer, HOST_WIDE_INT_PRINT_UNSIGNED,
+               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+          else
+            output_integer_with_precision
+              (buffer, *text->args_ptr, precision, unsigned, "u");
 	  break;
 
 	case 'x':
-	  if (long_integer)
-	    output_long_hexadecimal
-	      (buffer, va_arg (*text->args_ptr, unsigned long int));
-	  else
-	    output_hexadecimal
-              (buffer, va_arg (*text->args_ptr, unsigned int));
-	  break;
-
-        case 'l':
-          if (long_integer)
-            output_long_long_decimal
-              (buffer, va_arg (*text->args_ptr, long long));
+          if (wide)
+            output_formatted_scalar
+              (buffer, HOST_WIDE_INT_PRINT_HEX,
+               va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
           else
-            /* Sould not happen.  */
-            abort();
-          break;
+            output_integer_with_precision
+              (buffer, *text->args_ptr, precision, unsigned, "x");
+	  break;
 
 	case 'm':
 	  output_add_string (buffer, xstrerror (text->err_no));
@@ -597,11 +577,6 @@ output_format (output_buffer *buffer, text_info *text)
 	    output_append (buffer, s, s + n);
 	  }
 	  break;
-
-        case 'w':
-          output_host_wide_integer
-            (buffer, va_arg (*text->args_ptr, HOST_WIDE_INT));
-          break;                                   
 
 	default:
 	  if (!buffer->format_decoder
