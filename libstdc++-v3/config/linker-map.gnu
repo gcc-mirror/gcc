@@ -55,12 +55,7 @@ GLIBCPP_3.4 {
       std::__num_base::_S_format_float*;
       std::__num_base::_S_format_int*;
       std::__num_base::_S_atoms_in;
-      std::__num_base::_S_atoms_out;
-      
-      # Needed only when generic cpu's atomicity.h is in use.
-      __gnu_cxx::_Atomic_add_mutex;
-      __gnu_cxx::_Atomic_add_mutex_once;
-      __gnu_cxx::__gthread_atomic_add_mutex_once
+      std::__num_base::_S_atoms_out
     };
 
     # Names not in an 'extern' block are mangled names.
@@ -78,28 +73,7 @@ GLIBCPP_3.4 {
     # bool has_facet 
     _ZSt9has_facet*;
 
-    # operator new(size_t)
-    _Znw[jm];
-    # operator new(size_t, std::nothrow_t const&)
-    _Znw[jm]RKSt9nothrow_t;
-
-    # operator delete(void*)
-    _ZdlPv;
-    # operator delete(void*, std::nothrow_t const&)
-    _ZdlPvRKSt9nothrow_t;
-
-    # operator new[](size_t)
-    _Zna[jm];
-    # operator new[](size_t, std::nothrow_t const&)
-    _Zna[jm]RKSt9nothrow_t;
-
-    # operator delete[](void*)
-    _ZdaPv;
-    # operator delete[](void*, std::nothrow_t const&)
-    _ZdaPvRKSt9nothrow_t;
-
-    # vtable
-    _ZTVN9__gnu_cxx*;
+    # virtual table
     _ZTVNSt8ios_base7failureE;
     _ZTVNSt6locale5facetE;
     _ZTVS[a-z];
@@ -109,18 +83,15 @@ GLIBCPP_3.4 {
     _ZTVSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
     _ZTVSt21__ctype_abstract_baseI[cw]E;
 
+    # VTT structure
     _ZTTS[a-z];
     _ZTTSt[0-9][A-Za-z]*;
     _ZTTSt[0-9][0-9][A-Za-z]*;
 
-    # typeinfo
-    _ZTI[a-z];
+    # typeinfo structure
+    _ZTIS[a-z];
     _ZTINSt8ios_base7failureE;
     _ZTINSt6locale5facetE;
-    _ZTIN9__gnu_cxx*;
-    _ZTIP[a-z];
-    _ZTIPK[a-z];
-    _ZTIS[a-z];
     _ZTISt[0-9][A-Za-z]*;
     _ZTISt[0-9][0-9][A-Za-z]*;
     _ZTISt11__timepunctI[cw]E;
@@ -128,12 +99,9 @@ GLIBCPP_3.4 {
     _ZTISt21__ctype_abstract_baseI[cw]E;
     _ZTISt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
 
-    _ZTS[a-z];
+    # typeinfo name
     _ZTSNSt8ios_base7failureE;
     _ZTSNSt6locale5facetE;
-    _ZTSN9__gnu_cxx*;
-    _ZTSP[a-z];
-    _ZTSPK[a-z];
     _ZTSS[a-z];
     _ZTSSt[0-9][A-Za-z]*;
     _ZTSSt[0-9][0-9][A-Za-z]*;
@@ -143,12 +111,11 @@ GLIBCPP_3.4 {
     _ZTSSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
 
     # function-scope static objects requires a guard variable.
-    _ZGV*;
+    _ZGVNSt*;
 
     # virtual function thunks
-    _ZTh*;
-    _ZTv*;
-    _ZTc*;
+    _ZThn8_NS*;
+    _ZTv0_n12_NS*;
 
     # std::__convert_to_v
     _ZSt14__convert_to_v*;
@@ -186,6 +153,18 @@ GLIBCPP_3.4 {
     __signbit;
     __signbitf;
     __signbitl;
+
+    # __gnu_cxx::__pool_alloc
+    _ZN9__gnu_cxx12__pool_allocILb1ELi0EE8allocateE[jm];
+    _ZN9__gnu_cxx12__pool_allocILb1ELi0EE10deallocateEPv[jm];
+
+    # __gnu_cxx::stdio_sync_filebuf
+    _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
+
+    # Needed only when generic cpu's atomicity.h is in use.
+    _ZN9__gnu_cxx17_Atomic_add_mutexE;
+    _ZN9__gnu_cxx22_Atomic_add_mutex_onceE;
+    _ZN9__gnu_cxx31__gthread_atomic_add_mutex_onceEv;
 
   local:
     *;
@@ -227,15 +206,60 @@ CXXABI_1.3 {
     __gxx_personality_sj0;
     __dynamic_cast;
 
+    # operator new(size_t)
+    _Znw[jm];
+    # operator new(size_t, std::nothrow_t const&)
+    _Znw[jm]RKSt9nothrow_t;
+
+    # operator delete(void*)
+    _ZdlPv;
+    # operator delete(void*, std::nothrow_t const&)
+    _ZdlPvRKSt9nothrow_t;
+
+    # operator new[](size_t)
+    _Zna[jm];
+    # operator new[](size_t, std::nothrow_t const&)
+    _Zna[jm]RKSt9nothrow_t;
+
+    # operator delete[](void*)
+    _ZdaPv;
+    # operator delete[](void*, std::nothrow_t const&)
+    _ZdaPvRKSt9nothrow_t;
+
+    # virtual table
+    _ZTVN10__cxxabiv117__class_type_infoE;
+    _ZTVN10__cxxabiv120__si_class_type_infoE;
+    _ZTVN10__cxxabiv121__vmi_class_type_infoE;
+    _ZTVN10__cxxabiv123__fundamental_type_infoE;
+    _ZTVN10__cxxabiv117__array_type_infoE;
+    _ZTVN10__cxxabiv120__function_type_infoE;
+    _ZTVN10__cxxabiv116__enum_type_infoE;
+    _ZTVN10__cxxabiv117__pbase_type_infoE;
+    _ZTVN10__cxxabiv119__pointer_type_infoE;
+    _ZTVN10__cxxabiv129__pointer_to_member_type_infoE;
+
+    # typeinfo structure (and some names)
+    _ZTI[a-z];
+    _ZTIP[a-z];
+    _ZTIPK[a-z];
+    _ZTIN10__cxxabiv117__class_type_infoE;
+    _ZTIN10__cxxabiv120__si_class_type_infoE;
+    _ZTIN10__cxxabiv121__vmi_class_type_infoE;
+    _ZTIN10__cxxabiv123__fundamental_type_infoE;
+    _ZTIN10__cxxabiv117__array_type_infoE;
+    _ZTIN10__cxxabiv120__function_type_infoE;
+    _ZTIN10__cxxabiv116__enum_type_infoE;
+    _ZTIN10__cxxabiv117__pbase_type_infoE;
+    _ZTIN10__cxxabiv119__pointer_type_infoE;
+    _ZTIN10__cxxabiv129__pointer_to_member_type_infoE;
+
+    # typeinfo name
+    _ZTS[a-z];
+    _ZTSP[a-z];
+    _ZTSPK[a-z];
+
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
-
-    # typeinfo
-    _ZTIN10__cxxabi*;
-    _ZTSN10__cxxabi*;
-
-    # vtable
-    _ZTVN10__cxxabi*;
 
   local:
     *;

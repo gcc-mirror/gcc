@@ -39,3 +39,8 @@ namespace std
   template class allocator<char>;
   template class allocator<wchar_t>;
 } // namespace std
+
+namespace __gnu_cxx
+{
+  template class __pool_alloc<true, 0>;
+} // namespace __gnu_cxx
