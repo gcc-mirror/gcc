@@ -1,3 +1,12 @@
+2004-11-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get<>::do_get_weekday,
+	time_get<>::do_get_monthname): Absolutely avoid dereferencing
+	end iterators.
+
+	* include/bits/locale_facets.tcc (time_get<>::_M_extract_name):
+	Minor tweak.	
+
 2004-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 	    Doug Gregor  <dgregor@cs.indiana.edu>
 
