@@ -215,6 +215,8 @@ extern int regno_clobbered_p PROTO((int, rtx));
 
 /* Functions in reload1.c:  */
 
+int count_occurrences            PROTO((rtx, rtx));
+
 /* Initialize the reload pass once per compilation.  */
 extern void init_reload PROTO((void));
 
