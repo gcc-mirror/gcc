@@ -41,14 +41,14 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
-static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void vax_file_start PARAMS ((void));
-static void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-					 HOST_WIDE_INT, tree));
-static int vax_address_cost_1 PARAMS ((rtx));
-static int vax_address_cost PARAMS ((rtx));
-static int vax_rtx_costs_1 PARAMS ((rtx, enum rtx_code, enum rtx_code));
-static bool vax_rtx_costs PARAMS ((rtx, int, int, int *));
+static void vax_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void vax_file_start (void);
+static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
+				 HOST_WIDE_INT, tree);
+static int vax_address_cost_1 (rtx);
+static int vax_address_cost (rtx);
+static int vax_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
+static bool vax_rtx_costs (rtx, int, int, int *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -77,7 +77,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Set global variables as needed for the options enabled.  */
 
 void
-override_options ()
+override_options (void)
 {
   /* We're VAX floating point, not IEEE floating point.  */
   memset (real_format_for_mode, 0, sizeof real_format_for_mode);
@@ -96,9 +96,7 @@ override_options ()
    which registers should not be saved even if used.  */
 
 static void
-vax_output_function_prologue (file, size)
-     FILE * file;
-     HOST_WIDE_INT size;
+vax_output_function_prologue (FILE * file, HOST_WIDE_INT size)
 {
   register int regno;
   register int mask = 0;
@@ -135,7 +133,7 @@ vax_output_function_prologue (file, size)
    so that gas can distinguish between D_float and G_float prior to
    processing the .stabs directive identifying type double.  */
 static void
-vax_file_start ()
+vax_file_start (void)
 {
   default_file_start ();
 
@@ -146,9 +144,7 @@ vax_file_start ()
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
 void
-split_quadword_operands (operands, low, n)
-     rtx *operands, *low;
-     int n ATTRIBUTE_UNUSED;
+split_quadword_operands (rtx * operands, rtx * low, int n ATTRIBUTE_UNUSED)
 {
   int i;
   /* Split operands.  */
@@ -178,9 +174,7 @@ split_quadword_operands (operands, low, n)
 }
 
 void
-print_operand_address (file, addr)
-     FILE *file;
-     register rtx addr;
+print_operand_address (FILE * file, register rtx addr)
 {
   register rtx reg1, breg, ireg;
   rtx offset;
@@ -361,8 +355,7 @@ print_operand_address (file, addr)
 }
 
 const char *
-rev_cond_name (op)
-     rtx op;
+rev_cond_name (rtx op)
 {
   switch (GET_CODE (op))
     {
@@ -393,8 +386,7 @@ rev_cond_name (op)
 }
 
 int
-vax_float_literal(c)
-    register rtx c;
+vax_float_literal(register rtx c)
 {
   register enum machine_mode mode;
   REAL_VALUE_TYPE r, s;
@@ -440,8 +432,7 @@ vax_float_literal(c)
 
 
 static int
-vax_address_cost_1 (addr)
-    register rtx addr;
+vax_address_cost_1 (register rtx addr)
 {
   int reg = 0, indexed = 0, indir = 0, offset = 0, predec = 0;
   rtx plus_op0 = 0, plus_op1 = 0;
@@ -509,8 +500,7 @@ vax_address_cost_1 (addr)
 }
 
 static int
-vax_address_cost (x)
-     rtx x;
+vax_address_cost (rtx x)
 {
   return (1 + (GET_CODE (x) == REG ? 0 : vax_address_cost_1 (x)));
 }
@@ -520,9 +510,7 @@ vax_address_cost (x)
    other models.  */
 
 static int
-vax_rtx_costs_1 (x, code, outer_code)
-    register rtx x;
-    enum rtx_code code, outer_code;
+vax_rtx_costs_1 (register rtx x, enum rtx_code code, enum rtx_code outer_code)
 {
   enum machine_mode mode = GET_MODE (x);
   register int c;
@@ -745,10 +733,7 @@ vax_rtx_costs_1 (x, code, outer_code)
 }
 
 static bool
-vax_rtx_costs (x, code, outer_code, total)
-    rtx x;
-    int code, outer_code;
-    int *total;
+vax_rtx_costs (rtx x, int code, int outer_code, int * total)
 {
   *total = vax_rtx_costs_1 (x, code, outer_code);
   return true;
@@ -762,12 +747,11 @@ vax_rtx_costs (x, code, outer_code, total)
 */
 
 static void
-vax_output_mi_thunk (file, thunk, delta, vcall_offset, function)
-     FILE *file;
-     tree thunk ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
-     tree function;
+vax_output_mi_thunk (FILE * file,
+                     tree thunk ATTRIBUTE_UNUSED, 
+                     HOST_WIDE_INT delta,
+                     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+                     tree function)
 {
   fprintf (file, "\t.word 0x0ffc\n\taddl2 $" HOST_WIDE_INT_PRINT_DEC, delta);
   asm_fprintf (file, ",4(%Rap)\n");

@@ -1,3 +1,7 @@
+2003-09-21  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/vax/vax.c: Convert to ISO C90.
+
 2003-09-21  Graham Stott  <grahams@btinternet.com>
 
        PR target/12353
