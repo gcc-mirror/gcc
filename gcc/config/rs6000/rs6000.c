@@ -7250,11 +7250,11 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   rtx temp;
 
   /* These modes should always match. */
-  if ( GET_MODE (op1) != compare_mode )
+  if (GET_MODE (op1) != compare_mode)
     return 0;
-  if ( GET_MODE (true_cond) != result_mode )
+  if (GET_MODE (true_cond) != result_mode)
     return 0;
-  if ( GET_MODE (false_cond) != result_mode )
+  if (GET_MODE (false_cond) != result_mode)
     return 0;
 
   /* First, work out if the hardware can do this at all, or
@@ -9039,6 +9039,17 @@ rs6000_output_function_prologue (file, size)
       emit_note (0, NOTE_INSN_DELETED);
       rs6000_emit_prologue ();
       emit_note (0, NOTE_INSN_DELETED);
+
+      /* Expand INSN_ADDRESSES so final() doesn't crash. */
+      {
+	rtx insn;
+	unsigned addr = 0;
+	for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
+	  {
+	    INSN_ADDRESSES_NEW (insn, addr);
+	    addr += 4;
+	  }
+      }
       
       if (TARGET_DEBUG_STACK)
 	debug_rtx_list (get_insns (), 100);
@@ -9426,6 +9437,17 @@ rs6000_output_function_epilogue (file, size)
 	  emit_note (0, NOTE_INSN_DELETED);
 	  rs6000_emit_epilogue (FALSE);
 	  emit_note (0, NOTE_INSN_DELETED);
+
+	  /* Expand INSN_ADDRESSES so final() doesn't crash. */
+	  {
+	    rtx insn;
+	    unsigned addr = 0;
+	    for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
+	      {
+		INSN_ADDRESSES_NEW (insn, addr);
+		addr += 4;
+	      }
+	  }
 
 	  if (TARGET_DEBUG_STACK)
 	    debug_rtx_list (get_insns (), 100);

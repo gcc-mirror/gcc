@@ -1,3 +1,9 @@
+2002-04-16  Dale Johannesen <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Compute
+	instruction addresses.
+	(rs6000_output_function_epilogue): Likewise.
+
 2002-04-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* c-parse.in (poplevel, compstmt_start,
