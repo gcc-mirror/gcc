@@ -121,7 +121,7 @@ public class ZipFile implements ZipConstants
 
   public InputStream getInputStream(ZipEntry ze)  throws IOException
   {
-    byte[] buffer = new byte[(int) ze.getSize()];
+    byte[] buffer = new byte[(int) ze.getCompressedSize()];
 
     /* Read the size of the extra field, and skip to the start of the
        data.  */
