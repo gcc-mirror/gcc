@@ -1,5 +1,7 @@
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Move vax-*-vms* unsupported notice up with the rest.
+
 	* config.gcc (alpha64*-dec-*vms*, alpha*-dec-*vms*,
 	powerpc-*-eabisim*, powerpc-*-eabi*, powerpcle-*-eabisim*,
 	powerpcle-*-eabi*): Disable fixproto.
