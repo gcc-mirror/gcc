@@ -1,4 +1,4 @@
-/* scan.c - Utility functions for scan-decls and patch-header programs.
+/* scan.c - Utility functions for scan-decls and fix-header programs.
    Copyright (C) 1993 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
