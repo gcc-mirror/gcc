@@ -4503,6 +4503,18 @@ method_header (int flags, tree type, tree mdecl, tree throws)
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
     }
 
+  /* A native method can't be strictfp.  */
+  if ((flags & ACC_NATIVE) && (flags & ACC_STRICT))
+    parse_error_context (id, "native method `%s' can't be strictfp",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
+  /* No such thing as a transient or volatile method.  */
+  if ((flags & ACC_TRANSIENT))
+    parse_error_context (id, "method `%s' can't be transient",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
+  if ((flags & ACC_VOLATILE))
+    parse_error_context (id, "method `%s' can't be volatile",
+			 IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
+
   /* Things to be checked when declaring a constructor */
   if (!type)
     {

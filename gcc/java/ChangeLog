@@ -1,3 +1,8 @@
+2003-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (method_header): Native method can't be strictfp.
+	No method can be transient or volatile.
+
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Make-lang.in (jvspec.o-warn): Add -Wno-error.
