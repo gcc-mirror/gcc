@@ -28,12 +28,16 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS \
-  rs6000_cpu = PROCESSOR_PPC8540; \
-  rs6000_spe_abi = 1; \
+  if (rs6000_select[1].string == NULL) \
+    rs6000_cpu = PROCESSOR_PPC8540; \
+  if (rs6000_abi_string == NULL || strstr (rs6000_abi_string, "spe") == NULL) \
+    rs6000_spe_abi = 1; \
   rs6000_fprs = 0; \
   /* See note below.  */ \
-  /*rs6000_long_double_type_size = 128;*/ \
-  rs6000_isel = 1
+  /*if (rs6000_long_double_size_string == NULL)*/ \
+  /*  rs6000_long_double_type_size = 128;*/ \
+  if (rs6000_isel_string == NULL) \
+    rs6000_isel = 1
 
 /*
   The e500 ABI says that either long doubles are 128 bits, or if

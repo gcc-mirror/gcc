@@ -1,3 +1,9 @@
+2003-02-10  Nick Clifton  <nickc@redhat.com>
+            Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Do not
+        override options which have been specified on the command line.
+
 2003-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (abssf2): New.
