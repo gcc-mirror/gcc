@@ -377,7 +377,7 @@ __muldi3 (DWtype u, DWtype v)
 #if defined (sdiv_qrnnd)
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
      defined (L_umoddi3) || defined (L_moddi3))
-static inline
+static inline __attribute__ ((__always_inline__))
 #endif
 UWtype
 __udiv_w_sdiv (UWtype *rp, UWtype a1, UWtype a0, UWtype d)
@@ -511,7 +511,7 @@ const UQItype __clz_tab[] =
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
      defined (L_umoddi3) || defined (L_moddi3))
-static inline
+static inline __attribute__ ((__always_inline__))
 #endif
 UDWtype
 __udivmoddi4 (UDWtype n, UDWtype d, UDWtype *rp)
