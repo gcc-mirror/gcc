@@ -7153,6 +7153,11 @@ generated).
 If defined, a C statement that assigns default attributes to
 newly defined @var{type}.
 
+@findex SET_DEFAULT_DECL_ATTRIBUTES
+@item SET_DEFAULT_DECL_ATTRIBUTES (@var{decl}, @var{attributes})
+If defined, a C statement that assigns default attributes to
+newly defined @var{decl}.
+
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier
