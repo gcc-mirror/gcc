@@ -1441,7 +1441,7 @@ maybe_make_one_only (tree decl)
      to for variables so that cp_finish_decl will update their linkage,
      because their DECL_INITIAL may not have been set properly yet.  */
 
-  if (TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+  if (!TARGET_WEAK_NOT_IN_ARCHIVE_TOC
       || (! DECL_EXPLICIT_INSTANTIATION (decl)
 	  && ! DECL_TEMPLATE_SPECIALIZATION (decl)))
     {
@@ -1582,6 +1582,7 @@ maybe_emit_vtables (tree ctype)
   tree vtbl;
   tree primary_vtbl;
   bool needed = false;
+  bool weaken_vtables;
 
   /* If the vtables for this class have already been emitted there is
      nothing more to do.  */
@@ -1612,6 +1613,29 @@ maybe_emit_vtables (tree ctype)
   else if (TREE_PUBLIC (vtbl) && !DECL_COMDAT (vtbl))
     needed = true;
   
+  /* Determine whether to make vtables weak.  The ABI requires that we
+      do so.  There are two cases in which we have to violate the ABI
+      specification: targets where we don't have weak symbols
+      (obviously), and targets where weak symbols don't appear in
+      static archives' tables of contents.  On such targets, avoiding
+      undefined symbol link errors requires that we only make a symbol
+      weak if we know that it will be emitted everywhere it's needed.
+      So on such targets we don't make vtables weak in the common case
+      where we're emitting a vtable of a nontemplate class in the 
+      translation unit containing the definition of a noninline key
+      method. */
+  if (flag_weak && !TARGET_WEAK_NOT_IN_ARCHIVE_TOC)
+    weaken_vtables = true;
+  else if (flag_weak)
+    {
+      if (CLASSTYPE_USE_TEMPLATE (ctype))
+ 	weaken_vtables = CLASSTYPE_IMPLICIT_INSTANTIATION (ctype);
+      else
+ 	weaken_vtables = !CLASSTYPE_KEY_METHOD (ctype)
+ 	  || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (ctype));
+    }
+  else
+    weaken_vtables = false;
 
   /* The ABI requires that we emit all of the vtables if we emit any
      of them.  */
@@ -1658,8 +1682,8 @@ maybe_emit_vtables (tree ctype)
 	  DECL_IGNORED_P (vtbl) = 1;
 	}
 
-      /* Always make vtables weak.  */
-      if (flag_weak)
+      /* Always make vtables weak.  Or at least almost always; see above. */
+      if (weaken_vtables)
 	comdat_linkage (vtbl);
 
       rest_of_decl_compilation (vtbl, NULL, 1, 1);

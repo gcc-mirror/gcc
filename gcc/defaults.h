@@ -238,11 +238,13 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 #endif
 
-/* Determines whether explicit template instantiations should
-   be given link-once semantics. The C++ ABI requires this 
-   macro to be nonzero; see the documentation.  */
-#ifndef TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
-# define TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY 1
+/* This determines whether weak symbols must be left out of a static
+   archive's table of contents.  Defining this macro to be nonzero has
+   the consequence that certain symbols will not be made weak that
+   otherwise would be.  The C++ ABI requires this macro to be zero;
+   see the documentation. */ 
+#ifndef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
+#define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 0
 #endif
 
 /* This determines whether or not we need linkonce unwind information */

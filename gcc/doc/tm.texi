@@ -6753,13 +6753,23 @@ commands that will make the symbol(s) associated with @var{decl} have
 hidden, protected or internal visibility as specified by @var{visibility}.
 @end deftypefn
 
-@defmac TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+@defmac TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 A C expression that evaluates to true if the target's linker expects
-explicit template specializations, as well as implicit, to be given
-linkonce semantics.  The default is @code{1}.  The C++ ABI requires
-this macro to be nonzero.  Define this macro for targets where full
-C++ ABI compliance is impossible and where explicit and implicit 
-template specialization must be treated differently.
+that weak symbols do not appear in a static archive's table of contents.
+The default is @code{0}.  
+
+Leaving weak symbols out of an archive's table of contents means that,
+if a symbol will only have a definition in one translation unit and
+will have undefined references from other translation units, that
+symbol should not be weak.  Defining this macro to be nonzero will
+thus have the effect that certain symbols that would normally be weak
+(explicit template instantiations, and vtables for polymorphic classes
+with noninline key methods) will instead be nonweak.
+
+The C++ ABI requires this macro to be zero.  Define this macro for
+targets where full C++ ABI compliance is impossible and where linker
+restrictions require weak symbols to be left out of a static archive's
+table of contents.
 @end defmac
 
 @defmac TARGET_SUPPORTS_HIDDEN

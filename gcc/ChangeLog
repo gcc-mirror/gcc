@@ -1,3 +1,13 @@
+2004-06-03  Matt Austern  <austern@apple.com>
+
+	PR c++/15428
+	* default.h (TARGET_WEAK_NOT_IN_ARCHIVE_TOC): New name
+	for TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY, with reversed sense.
+	* config/darwin.h (TARGET_WEAK_NOT_IN_ARCHIVE_TOC): Likewise.
+	* doc/tm.texi (TARGET_WEAK_NOT_IN_ARCHIVE_TOC): Rewrite
+	documentation to reflect the new macro name and to clarify its 
+	meaning.
+	
 2004-06-04  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.def (VAR_LOCATION): Make RTX_EXTRA.
