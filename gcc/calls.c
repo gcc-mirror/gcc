@@ -1936,6 +1936,12 @@ expand_call (exp, target, ignore)
 					  int_size_in_bytes (TREE_TYPE (exp)),
 					  0);
 
+	      MEM_IN_STRUCT_P (target)
+		= (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+		   || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+		   || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+		   || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
+
 	      /* Save this temp slot around the pop below.  */
 	      preserve_temp_slots (target);
 	    }
