@@ -1971,6 +1971,8 @@ synth_mult (alg_out, t, cost_limit)
 	      best_alg->op[best_alg->ops] = alg_add_factor;
 	      cost_limit = cost;
 	    }
+	  /* Other factors will have been taken care of in the recursion.  */
+	  break;
 	}
 
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
@@ -1988,6 +1990,7 @@ synth_mult (alg_out, t, cost_limit)
 	      best_alg->op[best_alg->ops] = alg_sub_factor;
 	      cost_limit = cost;
 	    }
+	  break;
 	}
     }
 
@@ -2103,7 +2106,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	 vice versa.  */
 
       mult_cost = rtx_cost (gen_rtx (MULT, mode, op0, op1), SET);
-      mult_cost = MIN (8 * add_cost, mult_cost);
+      mult_cost = MIN (12 * add_cost, mult_cost);
 
       synth_mult (&alg, val, mult_cost);
       synth_mult (&neg_alg, - val,
