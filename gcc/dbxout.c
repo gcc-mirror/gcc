@@ -131,23 +131,10 @@ Boston, MA 02111-1307, USA.  */
 #define STABS_GCC_MARKER "gcc2_compiled."
 #endif
 
-/* Nonzero means if the type has methods, only output debugging
-   information if methods are actually written to the asm file.  This
-   optimization only works if the debugger can detect the special C++
-   marker.  */
-
-#define MINIMAL_DEBUG 1
-
-#ifdef NO_DOLLAR_IN_LABEL
-#ifdef NO_DOT_IN_LABEL
-#undef MINIMAL_DEBUG
-#define MINIMAL_DEBUG 0
-#endif
-#endif
+/* Typical USG systems don't have stab.h, and they also have
+   no use for DBX-format debugging info.  */
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-
-static int flag_minimal_debug = MINIMAL_DEBUG;
 
 /* Nonzero if we have actually used any of the GDB extensions
    to the debugging format.  The idea is that we use them for the
@@ -308,7 +295,7 @@ static void dbxout_type_fields		PARAMS ((tree));
 static void dbxout_type_method_1	PARAMS ((tree, const char *));
 static void dbxout_type_methods		PARAMS ((tree));
 static void dbxout_range_type		PARAMS ((tree));
-static void dbxout_type			PARAMS ((tree, int, int));
+static void dbxout_type			PARAMS ((tree, int));
 static void print_int_cst_octal		PARAMS ((tree));
 static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
 static void dbxout_type_name		PARAMS ((tree));
@@ -628,25 +615,6 @@ dbxout_type_fields (type)
 	  if (tem != TYPE_FIELDS (type))
 	    CONTIN;
 
-	  if (use_gnu_debug_info_extensions
-	      && flag_minimal_debug
-	      && TREE_CODE (tem) == FIELD_DECL
-	      && DECL_VIRTUAL_P (tem)
-	      && DECL_ASSEMBLER_NAME (tem))
-	    {
-	      have_used_extensions = 1;
-	      CHARS (3 + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (tem)));
-	      fputs (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem)), asmfile);
-	      dbxout_type (DECL_FCONTEXT (tem), 0, 0);
-	      fprintf (asmfile, ":");
-	      dbxout_type (TREE_TYPE (tem), 0, 0);
-	      fputc (',', asmfile);
-	      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-		       int_bit_position (tem));
-	      fputc (';', asmfile);
-	      continue;
-	    }
-
 	  if (DECL_NAME (tem))
 	    {
 	      fprintf (asmfile, "%s:", IDENTIFIER_POINTER (DECL_NAME (tem)));
@@ -672,7 +640,7 @@ dbxout_type_fields (type)
 
 	  dbxout_type ((TREE_CODE (tem) == FIELD_DECL
 			&& DECL_BIT_FIELD_TYPE (tem))
-		       ? DECL_BIT_FIELD_TYPE (tem) : TREE_TYPE (tem), 0, 0);
+		       ? DECL_BIT_FIELD_TYPE (tem) : TREE_TYPE (tem), 0);
 
 	  if (TREE_CODE (tem) == VAR_DECL)
 	    {
@@ -746,7 +714,7 @@ dbxout_type_method_1 (decl, debug_name)
       fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
 	       tree_low_cst (DECL_VINDEX (decl), 0));
       fputc (';', asmfile);
-      dbxout_type (DECL_CONTEXT (decl), 0, 0);
+      dbxout_type (DECL_CONTEXT (decl), 0);
       fprintf (asmfile, ";");
       CHARS (8);
     }
@@ -792,7 +760,7 @@ dbxout_type_methods (type)
 
   type_identifier_length = IDENTIFIER_LENGTH (type_encoding);
 
-  sprintf(formatted_type_identifier_length, "%d", type_identifier_length);
+  sprintf (formatted_type_identifier_length, "%d", type_identifier_length);
 
   if (TREE_CODE (methods) != TREE_VEC)
     fndecl = methods;
@@ -803,9 +771,6 @@ dbxout_type_methods (type)
 
   while (fndecl)
     {
-      tree name = DECL_NAME (fndecl);
-      int need_prefix = 1;
-
       /* Group together all the methods for the same operation.
 	 These differ in the types of the arguments.  */
       for (last = NULL_TREE;
@@ -818,7 +783,6 @@ dbxout_type_methods (type)
 	  /* This is the "mangled" name of the method.
 	     It encodes the argument types.  */
 	  const char *debug_name;
-	  int show_arg_types = 0;
 
 	  /* Skip methods that aren't FUNCTION_DECLs.  (In C++, these
 	     include TEMPLATE_DECLs.)  The debugger doesn't know what
@@ -838,81 +802,9 @@ dbxout_type_methods (type)
 	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT (fndecl))
 	    continue;
 
-	  if (flag_minimal_debug)
-	    {
-	      char marker;
-
-	      /* We can't optimize a method which uses an anonymous
-                 class, because the debugger will not be able to
-                 associate the arbitrary class name with the actual
-                 class.  */
-#ifndef NO_DOLLAR_IN_LABEL
-	      marker = '$';
-#else
-	      marker = '.';
-#endif
-	      if (strchr (debug_name, marker))
-		show_arg_types = 1;
-	      /* Detect ordinary methods because their mangled names
-		 start with the operation name.  */
-	      else if (!strncmp (IDENTIFIER_POINTER (name), debug_name,
-				 IDENTIFIER_LENGTH (name)))
-		{
-		  debug_name += IDENTIFIER_LENGTH (name);
-		  if (debug_name[0] == '_' && debug_name[1] == '_')
-		    {
-		      const char *method_name = debug_name + 2;
-		      const char *length_ptr =
-			formatted_type_identifier_length;
-		      /* Get past const and volatile qualifiers.  */
-		      while (*method_name == 'C' || *method_name == 'V')
-			method_name++;
-		      /* Skip digits for length of type_encoding.  */
-		      while (*method_name == *length_ptr && *length_ptr)
-			  length_ptr++, method_name++;
-		      if (! strncmp (method_name,
-				     IDENTIFIER_POINTER (type_encoding),
-				     type_identifier_length))
-			method_name += type_identifier_length;
-		      debug_name = method_name;
-		    }
-		}
-	      /* Detect constructors by their style of name mangling.  */
-	      else if (debug_name[0] == '_' && debug_name[1] == '_')
-		{
-		  const char *ctor_name = debug_name + 2;
-		  const char *length_ptr = formatted_type_identifier_length;
-		  while (*ctor_name == 'C' || *ctor_name == 'V')
-		    ctor_name++;
-		  /* Skip digits for length of type_encoding.  */
-		  while (*ctor_name == *length_ptr && *length_ptr)
-		      length_ptr++, ctor_name++;
-		  if (!strncmp (IDENTIFIER_POINTER (type_encoding), ctor_name,
-				type_identifier_length))
-		    debug_name = ctor_name + type_identifier_length;
-		}
-	      /* The other alternative is a destructor.  */
-	      else
-		show_arg_types = 1;
-
-	      /* Output the operation name just once, for the first method
-		 that we output.  */
-	      if (need_prefix)
-		{
-		  fprintf (asmfile, "%s::", IDENTIFIER_POINTER (name));
-		  CHARS (IDENTIFIER_LENGTH (name) + 2);
-		  need_prefix = 0;
-		}
-	    }
-
-	  dbxout_type (TREE_TYPE (fndecl), 0, show_arg_types);
+	  dbxout_type (TREE_TYPE (fndecl), 0);
 
 	  dbxout_type_method_1 (fndecl, debug_name);
-	}
-      if (!need_prefix)
-	{
-          putc (';', asmfile);
-	  CHARS (1);
 	}
     }
 }
@@ -927,9 +819,9 @@ dbxout_range_type (type)
 {
   fprintf (asmfile, "r");
   if (TREE_TYPE (type))
-    dbxout_type (TREE_TYPE (type), 0, 0);
+    dbxout_type (TREE_TYPE (type), 0);
   else if (TREE_CODE (type) != INTEGER_TYPE)
-    dbxout_type (type, 0, 0); /* E.g. Pascal's ARRAY [BOOLEAN] of INTEGER */
+    dbxout_type (type, 0); /* E.g. Pascal's ARRAY [BOOLEAN] of INTEGER */
   else
     {
       /* Traditionally, we made sure 'int' was type 1, and builtin types
@@ -980,16 +872,12 @@ dbxout_range_type (type)
    If FULL is nonzero, and the type has been described only with
    a forward-reference, output the definition now.
    If FULL is zero in this case, just refer to the forward-reference
-   using the number previously allocated.
-
-   If SHOW_ARG_TYPES is nonzero, we output a description of the argument
-   types for a METHOD_TYPE.  */
+   using the number previously allocated.  */
 
 static void
-dbxout_type (type, full, show_arg_types)
+dbxout_type (type, full)
      tree type;
      int full;
-     int show_arg_types;
 {
   register tree tem;
   static int anonymous_type_number = 0;
@@ -1114,7 +1002,7 @@ dbxout_type (type, full, show_arg_types)
   if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
     { 
-      dbxout_type (DECL_ORIGINAL_TYPE (TYPE_NAME (type)), 0, 0);
+      dbxout_type (DECL_ORIGINAL_TYPE (TYPE_NAME (type)), 0);
       return;
     }
 
@@ -1246,7 +1134,7 @@ dbxout_type (type, full, show_arg_types)
     case FILE_TYPE:
       putc ('d', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     case COMPLEX_TYPE:
@@ -1271,13 +1159,13 @@ dbxout_type (type, full, show_arg_types)
 
 	  fprintf (asmfile, "real:");
 	  CHARS (10);
-	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  dbxout_type (TREE_TYPE (type), 0);
 	  fprintf (asmfile, ",%d,%d;",
 		   0, TYPE_PRECISION (TREE_TYPE (type)));
 	  CHARS (8);
 	  fprintf (asmfile, "imag:");
 	  CHARS (5);
-	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  dbxout_type (TREE_TYPE (type), 0);
 	  fprintf (asmfile, ",%d,%d;;",
 		   TYPE_PRECISION (TREE_TYPE (type)),
 		   TYPE_PRECISION (TREE_TYPE (type)));
@@ -1300,7 +1188,7 @@ dbxout_type (type, full, show_arg_types)
 	}
       putc ('S', asmfile);
       CHARS (1);
-      dbxout_type (TYPE_DOMAIN (type), 0, 0);
+      dbxout_type (TYPE_DOMAIN (type), 0);
       break;
 
     case ARRAY_TYPE:
@@ -1315,7 +1203,7 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, "@S;");
 	  putc ('S', asmfile);
 	  CHARS (1);
-	  dbxout_type (TYPE_DOMAIN (type), 0, 0);
+	  dbxout_type (TYPE_DOMAIN (type), 0);
 	  break;
 	}
       /* Output "a" followed by a range type definition
@@ -1342,7 +1230,7 @@ dbxout_type (type, full, show_arg_types)
 	  dbxout_range_type (tem);
 	}
       CHARS (14);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     case RECORD_TYPE:
@@ -1419,7 +1307,7 @@ dbxout_type (type, full, show_arg_types)
 			  * BITS_PER_UNIT));
 		fputc (',', asmfile);
 		CHARS (15);
-		dbxout_type (BINFO_TYPE (child), 0, 0);
+		dbxout_type (BINFO_TYPE (child), 0);
 		putc (';', asmfile);
 	      }
 	    else
@@ -1428,7 +1316,7 @@ dbxout_type (type, full, show_arg_types)
 		   which have the same names at the types they hold.  */
 		dbxout_type_name (BINFO_TYPE (child));
 		putc (':', asmfile);
-		dbxout_type (BINFO_TYPE (child), full, 0);
+		dbxout_type (BINFO_TYPE (child), full);
 		fputc (',', asmfile);
 		fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
 			 tree_low_cst (BINFO_OFFSET (child), 0)
@@ -1472,7 +1360,7 @@ dbxout_type (type, full, show_arg_types)
 	  if (TYPE_VFIELD (type))
 	    {
 	      putc ('%', asmfile);
-	      dbxout_type (DECL_FCONTEXT (TYPE_VFIELD (type)), 0, 0);
+	      dbxout_type (DECL_FCONTEXT (TYPE_VFIELD (type)), 0);
 	    }
 	  putc (';', asmfile);
 	  CHARS (3);
@@ -1531,7 +1419,7 @@ dbxout_type (type, full, show_arg_types)
     case POINTER_TYPE:
       putc ('*', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     case METHOD_TYPE:
@@ -1540,33 +1428,20 @@ dbxout_type (type, full, show_arg_types)
 	  have_used_extensions = 1;
 	  putc ('#', asmfile);
 	  CHARS (1);
-	  if (flag_minimal_debug && !show_arg_types)
-	    {
-	      /* Normally, just output the return type.
-		 The argument types are encoded in the method name.  */
-	      putc ('#', asmfile);
-	      CHARS (1);
-	      dbxout_type (TREE_TYPE (type), 0, 0);
-	      putc (';', asmfile);
-	      CHARS (1);
-	    }
-	  else
-	    {
-	      /* When outputting destructors, we need to write
-		 the argument types out longhand.  */
-	      dbxout_type (TYPE_METHOD_BASETYPE (type), 0, 0);
-	      putc (',', asmfile);
-	      CHARS (1);
-	      dbxout_type (TREE_TYPE (type), 0, 0);
-	      dbxout_args (TYPE_ARG_TYPES (type));
-	      putc (';', asmfile);
-	      CHARS (1);
-	    }
+
+	  /* Write the argument types out longhand.  */
+	  dbxout_type (TYPE_METHOD_BASETYPE (type), 0);
+	  putc (',', asmfile);
+	  CHARS (1);
+	  dbxout_type (TREE_TYPE (type), 0);
+	  dbxout_args (TYPE_ARG_TYPES (type));
+	  putc (';', asmfile);
+	  CHARS (1);
 	}
       else
 	{
 	  /* Treat it as a function type.  */
-	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  dbxout_type (TREE_TYPE (type), 0);
 	}
       break;
 
@@ -1576,16 +1451,16 @@ dbxout_type (type, full, show_arg_types)
 	  have_used_extensions = 1;
 	  putc ('@', asmfile);
 	  CHARS (1);
-	  dbxout_type (TYPE_OFFSET_BASETYPE (type), 0, 0);
+	  dbxout_type (TYPE_OFFSET_BASETYPE (type), 0);
 	  putc (',', asmfile);
 	  CHARS (1);
-	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  dbxout_type (TREE_TYPE (type), 0);
 	}
       else
 	{
 	  /* Should print as an int, because it is really
 	     just an offset.  */
-	  dbxout_type (integer_type_node, 0, 0);
+	  dbxout_type (integer_type_node, 0);
 	}
       break;
 
@@ -1594,13 +1469,13 @@ dbxout_type (type, full, show_arg_types)
 	have_used_extensions = 1;
       putc (use_gnu_debug_info_extensions ? '&' : '*', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     case FUNCTION_TYPE:
       putc ('f', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0, 0);
+      dbxout_type (TREE_TYPE (type), 0);
       break;
 
     default:
@@ -1755,9 +1630,9 @@ dbxout_symbol (decl, local)
       current_sym_addr = XEXP (DECL_RTL (decl), 0);
 
       if (TREE_TYPE (type))
-	dbxout_type (TREE_TYPE (type), 0, 0);
+	dbxout_type (TREE_TYPE (type), 0);
       else
-	dbxout_type (void_type_node, 0, 0);
+	dbxout_type (void_type_node, 0);
 
       /* For a nested function, when that function is compiled,
 	 mention the containing function name
@@ -1828,7 +1703,7 @@ dbxout_symbol (decl, local)
 
 		fprintf (asmfile, "%s\"%s:T", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (name));
-		dbxout_type (type, 1, 0);
+		dbxout_type (type, 1);
 		dbxout_finish_symbol (NULL_TREE);
 	      }
 
@@ -1859,7 +1734,7 @@ dbxout_symbol (decl, local)
 	    putc ('t', asmfile);
 	    current_sym_code = DBX_TYPE_DECL_STABS_CODE;
 
-	    dbxout_type (type, 1, 0);
+	    dbxout_type (type, 1);
 	    dbxout_finish_symbol (decl);
 	    did_output = 1;
 	  }
@@ -1889,7 +1764,7 @@ dbxout_symbol (decl, local)
 
 	    fprintf (asmfile, "%s\"%s:T", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (name));
-	    dbxout_type (type, 1, 0);
+	    dbxout_type (type, 1);
 	    dbxout_finish_symbol (NULL_TREE);
 	    did_output = 1;
 	  }
@@ -1907,7 +1782,7 @@ dbxout_symbol (decl, local)
 	    /* Some debuggers fail when given NULL names, so give this a
 	       harmless name of ` '.  */
 	    fprintf (asmfile, "%s\" :T", ASM_STABS_OP);
-	    dbxout_type (type, 1, 0);
+	    dbxout_type (type, 1);
 	    dbxout_finish_symbol (NULL_TREE);
 	  }
 
@@ -2196,7 +2071,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 #endif
 
   dbxout_symbol_name (decl, suffix, letter);
-  dbxout_type (type, 0, 0);
+  dbxout_type (type, 0);
   dbxout_finish_symbol (decl);
 
 #ifdef DBX_STATIC_BLOCK_END
@@ -2351,7 +2226,7 @@ dbxout_parms (parms)
 
 	    /* It is quite tempting to use:
 	       
-	           dbxout_type (TREE_TYPE (parms), 0, 0);
+	           dbxout_type (TREE_TYPE (parms), 0);
 
 	       as the next statement, rather than using DECL_ARG_TYPE(), so
 	       that gcc reports the actual type of the parameter, rather
@@ -2363,7 +2238,7 @@ dbxout_parms (parms)
 	       double on the stack, but if we emit a stab saying the type is a
 	       float, then gdb will only read in a single value, and this will
 	       produce an erropneous value.  */
- 	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
+ 	    dbxout_type (DECL_ARG_TYPE (parms), 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
@@ -2414,7 +2289,7 @@ dbxout_parms (parms)
 			 regparm_letter);
 	      }
 
-	    dbxout_type (parm_type, 0, 0);
+	    dbxout_type (parm_type, 0);
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
@@ -2467,7 +2342,7 @@ dbxout_parms (parms)
 			 regparm_letter);
 	      }
 
-	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    dbxout_type (TREE_TYPE (parms), 0);
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
@@ -2489,7 +2364,7 @@ dbxout_parms (parms)
 	      
 	    FORCE_TEXT;
 	    fprintf (asmfile, "%s\"%s:v", ASM_STABS_OP, decl_name);
-	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    dbxout_type (TREE_TYPE (parms), 0);
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
@@ -2545,7 +2420,7 @@ dbxout_parms (parms)
 	    current_sym_value
 	      = DEBUGGER_ARG_OFFSET (current_sym_value,
 				     XEXP (DECL_RTL (parms), 0));
-	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    dbxout_type (TREE_TYPE (parms), 0);
 	    dbxout_finish_symbol (parms);
 	  }
       }
@@ -2598,7 +2473,7 @@ dbxout_args (args)
   while (args)
     {
       putc (',', asmfile);
-      dbxout_type (TREE_VALUE (args), 0, 0);
+      dbxout_type (TREE_VALUE (args), 0);
       CHARS (1);
       args = TREE_CHAIN (args);
     }

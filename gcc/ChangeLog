@@ -1,3 +1,9 @@
+2001-05-21  Jason Merrill  <jason_merrill@redhat.com>
+
+	* dbxout.c (MINIMAL_DEBUG, flag_minimal_debug): Lose.
+	(dbxout_type_fields): Lose minimal_debug support.
+	(dbxout_type_methods, dbxout_type): Likewise.
+
 2001-05-17  Andrew Haley  <aph@redhat.com>
 
 	* config/rs6000/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
