@@ -481,8 +481,10 @@ format_item:
 
     case FMT_SIGN:
     case FMT_BLANK:
-    case FMT_CHAR:
       goto between_desc;
+
+    case FMT_CHAR:
+      goto extension_optional_comma;
 
     case FMT_COLON:
     case FMT_SLASH:
@@ -722,6 +724,38 @@ optional_comma:
 
     default:
       /* Assume that we have another format item.  */
+      saved_token = t;
+      break;
+    }
+
+  goto format_item;
+
+extension_optional_comma:
+  /* As a GNU extension, permit a missing comma after a string literal.  */
+  t = format_lex ();
+  switch (t)
+    {
+    case FMT_COMMA:
+      break;
+
+    case FMT_RPAREN:
+      level--;
+      if (level < 0)
+	goto finished;
+      goto between_desc;
+
+    case FMT_COLON:
+    case FMT_SLASH:
+      goto optional_comma;
+
+    case FMT_END:
+      error = unexpected_end;
+      goto syntax;
+
+    default:
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %C")
+	  == FAILURE)
+	return FAILURE;
       saved_token = t;
       break;
     }

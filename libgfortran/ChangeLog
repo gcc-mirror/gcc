@@ -1,3 +1,8 @@
+2004-05-21  Roger Sayle  <roger@eyesopen.com>
+
+	* io/format.c (parse_format_list): Allow the comma after a string
+	literal to be optional.
+
 2004-05-18  Paul Brook  <paul@codesourcery.com>
 	Feng Wang  <fengwang@nudt.edu.cn>
 
