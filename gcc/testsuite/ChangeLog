@@ -1,3 +1,7 @@
+2003-09-29  Richard Henderson  <rth@redhat.com>
+
+        * g++.dg/init/array10.C: Add dg-options.
+
 2003-09-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/unroll1.C: Change unsigned to __SIZE_TYPE__.
