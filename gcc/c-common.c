@@ -981,6 +981,8 @@ decl_attributes (node, attributes, prefix_attributes)
 		  break;
 		}
 	      id = get_identifier (TREE_STRING_POINTER (id));
+	      /* This counts as a use of the object pointed to.  */
+	      TREE_USED (id) = 1;
 
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		DECL_INITIAL (decl) = error_mark_node;
