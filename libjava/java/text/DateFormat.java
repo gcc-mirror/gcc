@@ -38,8 +38,13 @@ exception statement from your version. */
 
 package java.text;
 
-import java.util.*;
 import java.io.InvalidObjectException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
