@@ -1,5 +1,10 @@
 2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* jcf-write.c: Follow spelling conventions.
+	* parse.y: Likewise.
+
+2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* ChangeLog: Fix typos.
 	* expr.c: Fix comment typos.
 	* jcf-write.c: Likewise.

@@ -402,7 +402,7 @@ static GTY(()) tree package_list;
 static GTY(()) tree current_this;
 
 /* Hold a list of catch clauses list. The first element of this list is
-   the list of the catch clauses of the currently analysed try block. */
+   the list of the catch clauses of the currently analyzed try block. */
 static GTY(()) tree currently_caught_type_list;
 
 /* This holds a linked list of all the case labels for the current
@@ -8514,7 +8514,7 @@ build_outer_method_access_method (tree decl)
   /* There is a potential bug here. We should be able to use
      fix_method_argument_names, but then arg names get mixed up and
      eventually a constructor will have its this$0 altered and the
-     outer context won't be assignment properly. The test case is
+     outer context won't be assignment properly. The testcase is
      stub.java FIXME */
   TYPE_ARG_TYPES (TREE_TYPE (mdecl)) = args;
 
