@@ -1792,6 +1792,13 @@ do									\
   }									\
 while (0)
 
+/* We can't directly access anything that contains a symbol,
+   nor can we indirect via the constant pool.  */
+#define LEGITIMATE_PIC_OPERAND_P(X)				\
+	(! nonpic_symbol_mentioned_p (X)			\
+	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
+	     || ! nonpic_symbol_mentioned_p (get_pool_constant (X))))
+
 #define SYMBOLIC_CONST_P(X)	\
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
   && nonpic_symbol_mentioned_p (X))
