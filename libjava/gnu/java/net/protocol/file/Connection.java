@@ -164,7 +164,46 @@ public class Connection extends URLConnection
     return outputStream;
   }
 
-  // Override default method in URLConnection.
+  /**
+   * Get the last modified time of the resource.
+   *
+   * @return the time since epoch that the resource was modified.
+   */
+  public long getLastModified()
+  {
+    try
+      {
+	if (!connected)
+	  connect();
+
+	return file.lastModified();
+      }
+    catch (IOException e)
+      {
+	return -1;
+      }
+  }
+
+  /**
+   * Get the length of content.
+   *
+   * @return the length of the content.
+   */
+  public int getContentLength()
+  {
+    try
+      {
+	if (!connected)
+	  connect();
+        
+	return (int) file.length();
+      }
+    catch (IOException e)
+      {
+	return -1;
+      }
+  }
+  
   /**
    * This method returns a <code>Permission</code> object representing the
    * permissions required to access this URL.  This method returns a
