@@ -69,6 +69,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
 
+/* Default this to not be compiling for Windows/NT.  */
+#ifndef WINDOWS_NT
+#define WINDOWS_NT 0
+#endif
+
 /* Define the location for the startup file on OSF/1 for Alpha.  */
 
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
@@ -333,7 +338,7 @@ extern int target_flags;
    $28			(likewise)
    $0			(likewise, but return value)
    $21-$16		(likewise, but input args)
-   $27			(procedure value)
+   $27			(procedure value in OSF, nonsaved in NT)
    $9-$14		(saved integer registers)
    $26			(return PC)
    $15			(frame pointer)
@@ -1294,7 +1299,7 @@ extern char *current_function_name;
    Do not define this if the table should contain absolute addresses.
    On the Alpha, the table is really GP-relative, not relative to the PC
    of the table, but we pretend that it is PC-relative; this should be OK,
-   but we hsould try to find some better way sometime.  */
+   but we should try to find some better way sometime.  */
 #define CASE_VECTOR_PC_RELATIVE
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -1652,9 +1657,9 @@ literal_section ()						\
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  		\
-  fprintf (FILE, "\t.long %d\n",		\
-    (GET_CODE (VALUE) == CONST_INT		\
-     ? INTVAL (VALUE) & 0xffffffff : (abort (), 0)))
+( fprintf (FILE, "\t.long "),			\
+  output_addr_const (FILE, (VALUE)),		\
+  fprintf (FILE, "\n"))
 
 /* This is how to output an assembler line defining a `long' constant.  */
 
@@ -1748,8 +1753,13 @@ literal_section ()						\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
+#if WINDOWS_NT
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+  fprintf (FILE, "\t.long $%d\n", (VALUE) + 32)
+#else
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
   fprintf (FILE, "\t.gprel32 $%d\n", (VALUE) + 32)
+#endif
 
 /* This is how to output an assembler line
    that says to advance the location counter
