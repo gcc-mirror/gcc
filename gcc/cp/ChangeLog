@@ -1,3 +1,26 @@
+1999-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TYPE_NEEDS_CONSTRUCTING): Remove #if 0'd definition.
+	(maybe_inject_for_scope_var): Declare it.
+	(initialize_local_var): Likewise.
+	* decl.c (maybe_inject_for_scope_var): Make it global.
+	(initialize_local_var): Likewise.  Move cleanup handling here,
+	from cp_finish_decl.
+	(make_rtl_for_nonlocal_decl): Use
+	push_obstacks_nochange/pop_obstacks, rather than
+	end_temporary_allocation/resume_temporary_allocation.
+	(cp_finish_decl): Try to complete the type of a variable when it
+	is declared.  Move cleanup-handling to initialize_local_var.
+	(expand_static_init): Use tree-building code, rather than
+	RTL-building code.
+	* decl2.c (get_temp_name): Assert non-initializedness of
+	temporaries.
+	* init.c (create_temporary_var): Move RTL-assigning code to ...
+	(get_temp_regvar): Here.
+	* pt.c (tsbust_expr): Fix indentation.  Call cp_finish_decl here.
+	* semantics.c (expand_stmt): Don't call cp_finish_decl here.  Just
+	call initialize_local_var to generate initialization code.
+	
 1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (fndecl_as_string, type_as_string,

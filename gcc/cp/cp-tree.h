@@ -1690,13 +1690,6 @@ extern int flag_new_for_scope;
 /* Nonzero for _TYPE means that the _TYPE defines a destructor.  */
 #define TYPE_HAS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_2(NODE))
 
-#if 0
-/* Nonzero for _TYPE node means that creating an object of this type
-   will involve a call to a constructor.  This can apply to objects
-   of ARRAY_TYPE if the type of the elements needs a constructor.  */
-#define TYPE_NEEDS_CONSTRUCTING(NODE) ... defined in ../tree.h ...
-#endif
-
 /* Nonzero means that an object of this type can not be initialized using
    an initializer list.  */
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
@@ -2936,6 +2929,8 @@ extern tree start_decl				PROTO((tree, tree, int, tree, tree));
 extern void start_decl_1			PROTO((tree));
 extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
 extern void finish_decl				PROTO((tree, tree, tree));
+extern void maybe_inject_for_scope_var          PROTO((tree));
+extern void initialize_local_var                PROTO((tree, tree, int));
 extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));

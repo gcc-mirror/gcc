@@ -196,8 +196,6 @@ static void pop_labels PROTO((tree));
 static void maybe_deduce_size_from_array_init PROTO((tree, tree));
 static void layout_var_decl PROTO((tree, tree *));
 static void maybe_commonize_var PROTO((tree));
-static void maybe_inject_for_scope_var PROTO((tree));
-static void initialize_local_var PROTO((tree, tree, tree, int));
 static tree build_cleanup_on_safe_obstack PROTO((tree));
 static void check_initializer PROTO((tree, tree *));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
@@ -7669,16 +7667,16 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
      tree init;
      const char *asmspec;
 {
-  int was_temp;
   int toplev;
   tree type;
 
   type = TREE_TYPE (decl);
   toplev = toplevel_bindings_p ();
-  was_temp = (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
-	      && allocation_temporary_p ());
-  if (was_temp)
-    end_temporary_allocation ();
+  push_obstacks_nochange ();
+  if (TREE_STATIC (decl) 
+      && TYPE_NEEDS_DESTRUCTOR (type)
+      && allocation_temporary_p ())
+    end_temporary_allocation  ();
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
     make_decl_rtl (decl, NULL_PTR, toplev);
@@ -7747,8 +7745,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
   else
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
 
-  if (was_temp)
-    resume_temporary_allocation ();
+  pop_obstacks ();
 }
 
 /* The old ARM scoping rules injected variables declared in the
@@ -7757,7 +7754,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
    DECL is a just-declared VAR_DECL; if necessary inject its
    declaration into the surrounding scope.  */
 
-static void
+void
 maybe_inject_for_scope_var (decl)
      tree decl;
 {
@@ -7794,16 +7791,34 @@ maybe_inject_for_scope_var (decl)
 
 /* Generate code to initialized DECL (a local variable).  */
 
-static void
-initialize_local_var (decl, init, cleanup, flags)
+void
+initialize_local_var (decl, init, flags)
      tree decl;
      tree init;
-     tree cleanup;
      int flags;
 {
   tree type;
+  tree cleanup;
 
   type = TREE_TYPE (decl);
+
+  cleanup = build_cleanup_on_safe_obstack (decl);
+
+  if (DECL_SIZE (decl) == NULL_TREE && !TREE_STATIC (decl))
+    {
+      /* If we used it already as memory, it must stay in memory.  */
+      DECL_INITIAL (decl) = NULL_TREE;
+      TREE_ADDRESSABLE (decl) = TREE_USED (decl);
+    }
+
+  if (DECL_RTL (decl))
+    /* Only a RESULT_DECL should have non-NULL RTL when arriving here.
+       All other local variables are assigned RTL in this function.  */
+    my_friendly_assert (TREE_CODE (decl) == RESULT_DECL, 19990828);
+  else
+    /* Create RTL for this variable.  */
+    expand_decl (decl);
+
   expand_start_target_temps ();
 
   if (DECL_SIZE (decl) && type != error_mark_node)
@@ -7811,7 +7826,6 @@ initialize_local_var (decl, init, cleanup, flags)
       int already_used;
   
       /* Compute and store the initial value.  */
-      expand_decl_init (decl);
       already_used = TREE_USED (decl) || TREE_USED (type);
 
       if (init || TYPE_NEEDS_CONSTRUCTING (type))
@@ -7829,39 +7843,33 @@ initialize_local_var (decl, init, cleanup, flags)
 	  finish_expr_stmt (build_aggr_init (decl, init, flags));
 	  pop_momentary ();
 	}
+      else
+	expand_decl_init (decl);
 
       /* Set this to 0 so we can tell whether an aggregate which was
 	 initialized was ever used.  Don't do this if it has a
 	 destructor, so we don't complain about the 'resource
-	 allocation is initialization' idiom.  */
-      /* Now set attribute((unused)) on types so decls of that type
-	 will be marked used. (see TREE_USED, above.)  This avoids the
-	 warning problems this particular code tried to work
-	 around. */
-
+	 allocation is initialization' idiom.  Now set
+	 attribute((unused)) on types so decls of that type will be
+	 marked used. (see TREE_USED, above.)  */
       if (TYPE_NEEDS_CONSTRUCTING (type)
 	  && ! already_used
 	  && cleanup == NULL_TREE
 	  && DECL_NAME (decl))
 	TREE_USED (decl) = 0;
-
-      if (already_used)
+      else if (already_used)
 	TREE_USED (decl) = 1;
     }
 
   /* Cleanup any temporaries needed for the initial value.  */
   expand_end_target_temps ();
 
-  if (DECL_SIZE (decl) && type != error_mark_node)
-    {
-      /* Store the cleanup, if there was one.  */
-      if (cleanup)
-	{
-	  if (! expand_decl_cleanup (decl, cleanup))
-	    cp_error ("parser lost in parsing declaration of `%D'",
-		      decl);
-	}
-    }
+  /* Record the cleanup required for this declaration.  */
+  if (DECL_SIZE (decl) 
+      && type != error_mark_node
+      && cleanup
+      && !expand_decl_cleanup (decl, cleanup))
+    cp_error ("parser lost in parsing declaration of `%D'", decl);
 }
 
 /* Finish processing of a declaration;
@@ -7895,7 +7903,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 {
   register tree type;
   tree ttype = NULL_TREE;
-  int was_incomplete;
   int temporary = allocation_temporary_p ();
   const char *asmspec = NULL;
   int was_readonly = 0;
@@ -7935,13 +7942,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       pop_decl_namespace ();
     }
 
-  /* If the type of the thing we are declaring either has
-     a constructor, or has a virtual function table pointer,
-     AND its initialization was accepted by `start_decl',
-     then we stayed on the permanent obstack through the
-     declaration, otherwise, changed obstacks as GCC would.  */
-
-  type = TREE_TYPE (decl);
+  type = complete_type (TREE_TYPE (decl));
 
   if (type == error_mark_node)
     {
@@ -8039,9 +8040,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
      If not, it will get done when the type is completed.  */
-
-  was_incomplete = (DECL_SIZE (decl) == NULL_TREE);
-
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL
       || TREE_CODE (decl) == RESULT_DECL)
     {
@@ -8078,44 +8076,15 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	}
       else if (! toplev)
 	{
-	  tree cleanup = build_cleanup_on_safe_obstack (decl);
-
-	  /* This is a declared decl which must live until the
-	     end of the binding contour.  It may need a cleanup.  */
-
-	  /* Recompute the RTL of a local array now
-	     if it used to be an incomplete type.  */
-	  if (was_incomplete && ! TREE_STATIC (decl))
-	    {
-	      /* If we used it already as memory, it must stay in memory.  */
-	      TREE_ADDRESSABLE (decl) = TREE_USED (decl);
-	      /* If it's still incomplete now, no init will save it.  */
-	      if (DECL_SIZE (decl) == NULL_TREE)
-		DECL_INITIAL (decl) = NULL_TREE;
-	      expand_decl (decl);
-	    }
-	  else if (! TREE_ASM_WRITTEN (decl)
-		   && (TYPE_SIZE (type) != NULL_TREE
-		       || TREE_CODE (type) == ARRAY_TYPE))
-	    {
-	      /* Do this here, because we did not expand this decl's
-		 rtl in start_decl.  */
-	      if (DECL_RTL (decl) == NULL_RTX)
-		expand_decl (decl);
-	      else if (cleanup)
-		{
-		  /* XXX: Why don't we use decl here?  */
-		  /* Ans: Because it was already expanded? */
-		  if (! expand_decl_cleanup (NULL_TREE, cleanup))
-		    cp_error ("parser lost in parsing declaration of `%D'",
-			      decl);
-		  /* Cleanup used up here.  */
-		  cleanup = NULL_TREE;
-		}
-	    }
-
+	  /* This is a local declaration.  */
 	  maybe_inject_for_scope_var (decl);
-	  initialize_local_var (decl, init, cleanup, flags);
+	  /* Initialize the local variable.  But, if we're building a
+	     statement-tree, we'll do the initialization when we
+	     expand the tree.  */
+	  if (!building_stmt_tree ())
+	    initialize_local_var (decl, init, flags);
+	  else if (init || DECL_INITIAL (decl) == error_mark_node)
+	    DECL_INITIAL (decl) = init;
 	}
     finish_end0:
 
@@ -8195,6 +8164,7 @@ expand_static_init (decl, init)
     {
       /* Emit code to perform this initialization but once.  */
       tree temp;
+      tree if_stmt;
       tree assignment;
       tree temp_init;
 
@@ -8229,8 +8199,10 @@ expand_static_init (decl, init)
       rest_of_decl_compilation (temp, NULL_PTR, 0, 0);
 
       /* Begin the conditional initialization.  */
-      expand_start_cond (build_binary_op (EQ_EXPR, temp,
-					  integer_zero_node), 0);
+      if_stmt = begin_if_stmt ();
+      finish_if_stmt_cond (build_binary_op (EQ_EXPR, temp,
+					    integer_zero_node), 
+			   if_stmt);
 
       /* Do the initialization itself.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
@@ -8325,10 +8297,12 @@ expand_static_init (decl, init)
 				       expr_tree_cons (NULL_TREE, 
 						       cleanup, 
 						       NULL_TREE));
-	  expand_expr_stmt (fcall);
+	  finish_expr_stmt (fcall);
 	}
 
-      expand_end_cond ();
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+
       /* Resume old (possibly temporary) allocation.  */
       pop_obstacks ();
     }

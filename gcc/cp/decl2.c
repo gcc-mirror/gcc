@@ -2070,7 +2070,8 @@ get_temp_name (type, staticp)
   if (! toplev)
     {
       expand_decl (decl);
-      expand_decl_init (decl);
+      my_friendly_assert (DECL_INITIAL (decl) == NULL_TREE,
+			  19990826);
     }
   pop_obstacks ();
 

@@ -2706,8 +2706,6 @@ create_temporary_var (type)
 
   if (building_stmt_tree ())
     add_decl_stmt (decl);
-  else
-    DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
 
   return decl;
 }
@@ -2727,6 +2725,8 @@ get_temp_regvar (type, init)
 
   decl = create_temporary_var (type);
   DECL_REGISTER (decl) = 1;
+  if (!building_stmt_tree ())
+    DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 
   return decl;
