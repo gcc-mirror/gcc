@@ -2325,16 +2325,15 @@ compile_file (name)
 
 	  }
 	/* Warn about static fns or vars defined but not used,
-	   but not about inline functions
-	   since unused inline statics is normal practice.  */
+	   but not about inline functions or static consts
+	   since defining those in header files is normal practice.  */
 	if (warn_unused
-	    && (TREE_CODE (decl) == FUNCTION_DECL
-		|| TREE_CODE (decl) == VAR_DECL)
+	    && ((TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
+		|| (TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    && ! DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl)
 	    && ! TREE_USED (decl)
-	    && ! DECL_INLINE (decl)
 	    && ! DECL_REGISTER (decl)
 	    /* The TREE_USED bit for file-scope decls
 	       is kept in the identifier, to handle multiple
