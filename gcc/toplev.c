@@ -63,6 +63,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "ssa.h"
 #include "params.h"
+#include "reload.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"

@@ -343,6 +343,7 @@ int earlyclobber_operand_p PARAMS ((rtx));
 
 /* Functions in reload1.c:  */
 
+extern void reload_cse_regs		PARAMS ((rtx));
 extern int reloads_conflict		PARAMS ((int, int));
 
 /* Initialize the reload pass once per compilation.  */
