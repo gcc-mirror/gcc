@@ -4240,17 +4240,15 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	return 0;
     }
 
-  /* If we have address of a stack slot but it's not valid
-     (displacement is too large), compute the sum in a register.  */
+  /* If we have address of a stack slot but it's not valid because the
+     displacement is too large, compute the sum in a register.
+     Handle all base registers here, not just fp/ap/sp, because on some
+     targets (namely SH) we can also get too large displacements from
+     big-endian corrections.  */
   else if (GET_CODE (ad) == PLUS
-	   && (XEXP (ad, 0) == frame_pointer_rtx
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	       || XEXP (ad, 0) == hard_frame_pointer_rtx
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	       || XEXP (ad, 0) == arg_pointer_rtx
-#endif
-	       || XEXP (ad, 0) == stack_pointer_rtx)
+	   && GET_CODE (XEXP (ad, 0)) == REG
+	   && REGNO (XEXP (ad, 0)) < FIRST_PSEUDO_REGISTER
+	   && REG_OK_FOR_BASE_P (XEXP (ad, 0))
 	   && GET_CODE (XEXP (ad, 1)) == CONST_INT)
     {
       /* Unshare the MEM rtx so we can safely alter it.  */
