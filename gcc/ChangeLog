@@ -1,5 +1,7 @@
 Sat Jun 27 22:37:05 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* tm.texi (NEED_MATH_LIBRARY): Document new target macro.
+
 	* Makefile.in (gencheck): Remove $(TREE_H) dependency.
 
 Sat Jun 27 20:20:00 1998  John Carr  <jfc@mit.edu>

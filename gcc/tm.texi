@@ -7457,4 +7457,13 @@ operations other than load, store and copy operations.
 You need only define this macro if the target holds values larger than
 @code{word_mode} in general purpose registers.  Most targets should not define
 this macro.
+
+@findex NEED_MATH_LIBRARY
+@item NEED_MATH_LIBRARY
+Define this macro as a C expression that is nonzero if @code{g++} should
+automatically link in the math library or to zero if @code{g++} should not
+automatically link in the math library.
+
+You need only define this macro if the target does not always need the math
+library linked into C++ programs.
 @end table
