@@ -2624,7 +2624,7 @@ make_range (exp, pin_p, plow, phigh)
     {
       code = TREE_CODE (exp);
       arg0 = TREE_OPERAND (exp, 0), arg1 = TREE_OPERAND (exp, 1);
-      if (tree_code_length[(int) code] > 0)
+      if (arg0 != 0 && tree_code_length[(int) code] > 0)
 	type = TREE_TYPE (arg0);
 
       switch (code)
