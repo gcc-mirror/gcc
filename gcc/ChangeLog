@@ -1,3 +1,9 @@
+2002-10-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7209
+	* fold_const.c (fold_binary_op_with_conditional_arg): Always
+	build compound_expr if we used save_expr.
+
 2002-10-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* output.h (SECTION_NOTYPE): Define.
