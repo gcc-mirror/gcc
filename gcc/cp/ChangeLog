@@ -1,3 +1,9 @@
+2003-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9993
+	* decl.c (finish_function): Only allow the NRVO to use variables
+	declared at function scope.
+
 2003-03-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6440
