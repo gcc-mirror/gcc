@@ -3514,7 +3514,9 @@ duplicate_decls (newdecl, olddecl)
 
       /* Already complained about this, so don't do so again.  */
       else if (current_class_type == NULL_TREE
-	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
+	       || !DECL_ASSEMBLER_NAME_SET_P (newdecl)
+	       || (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) 
+		   != current_class_type))
 	{
 	  error ("conflicting types for `%#D'", newdecl);
 	  cp_error_at ("previous declaration as `%#D'", olddecl);
