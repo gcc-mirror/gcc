@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -683,13 +683,23 @@ namespace std
             {
               const int_type __eof = traits_type::eof();
               __streambuf_type* __sb = this->rdbuf();
-              int_type __c = __eof;
+              int_type __c = __sb->sgetc();
 
-              if (__n != numeric_limits<streamsize>::max())
-                --__n;
-              while (_M_gcount <= __n
-                     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
-		++_M_gcount;
+	      while (true)
+		{
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof))
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof))
+		    _M_gcount = 0;
+		  else
+		    break;
+		}
+
 	      if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
             }
@@ -718,19 +728,32 @@ namespace std
             {
               const int_type __eof = traits_type::eof();
               __streambuf_type* __sb = this->rdbuf();
-              int_type __c = __eof;
+              int_type __c = __sb->sgetc();
 
-              if (__n != numeric_limits<streamsize>::max())
-                --__n;
-              while (_M_gcount <= __n
-                     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
-                {
-                  ++_M_gcount;
-                  if (traits_type::eq_int_type(__c, __delim))
-                    break;
-                }
+	      while (true)
+		{
+		  while (_M_gcount < __n
+			 && !traits_type::eq_int_type(__c, __eof)
+			 && !traits_type::eq_int_type(__c, __delim))
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }
+		  if (__n == numeric_limits<streamsize>::max()
+		      && !traits_type::eq_int_type(__c, __eof)
+		      && !traits_type::eq_int_type(__c, __delim))
+		    _M_gcount = 0;
+		  else
+		    break;
+		}
+
               if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __delim))
+		{
+		  ++_M_gcount;
+		  __sb->sbumpc();
+		}
             }
           catch(...)
             { this->_M_setstate(ios_base::badbit); }
