@@ -1,3 +1,7 @@
+2002-01-10  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.c-torture/execute/loop-11.c: New.
+
 2002-01-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-4.c: Add test for mtvscr, dssall, mfvscr, 
