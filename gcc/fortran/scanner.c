@@ -1034,7 +1034,7 @@ load_file (char *filename, bool initial)
 
       /* Add line.  */
 
-      b = gfc_getmem (sizeof (gfc_linebuf) + len + 1);
+      b = gfc_getmem (gfc_linebuf_header_size + len + 1);
 
 #ifdef USE_MAPPED_LOCATION
       b->location
