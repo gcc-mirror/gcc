@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -152,7 +152,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     return this == other;
   }
 
-  // public Object clone ();
+  public Object clone ()
+  {
+    // Just use Object's generic cloner.
+    return super.clone ();
+  }
 
   // Names of timezones.  This array is kept in parallel with
   // rawOffsets.  This list comes from the JCL 1.1 book.

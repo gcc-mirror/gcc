@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -47,5 +47,10 @@ public abstract class Format implements java.io.Serializable, Cloneable
 	throw new ParseException("parseObject failed", index);
       }
     return result;
+  }
+
+  public Object clone ()
+  {
+    return super.clone ();
   }
 }

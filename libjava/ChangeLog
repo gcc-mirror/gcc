@@ -1,5 +1,21 @@
 2000-02-03  Tom Tromey  <tromey@cygnus.com>
 
+	* java/util/Calendar.java (toString): New method.
+	* java/util/SimpleTimeZone.java (clone): New method.
+	(toString): New method.
+	* java/util/TimeZone.java (clone): New method.
+	* java/text/SimpleDateFormat.java (clone): New method.
+	* java/text/NumberFormat.java (clone): New method.
+	(equals): New method.
+	* java/text/Format.java (clone): New method.
+	* java/text/DateFormatSymbols.java (DateFormatSymbols): New
+	constructor.
+	(clone): New method.
+	* java/text/DateFormat.java (clone): New method.
+	* java/text/Collator.java (clone): New method.
+
+2000-02-03  Tom Tromey  <tromey@cygnus.com>
+
 	* java/io/PipedOutputStream.java (write(byte[], int, int)): New
 	method.
 
