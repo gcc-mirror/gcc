@@ -38,6 +38,8 @@ typedef struct cselib_val_struct GTY(())
   /* If this value is used as an address, points to a list of values that
      use it as an address in a MEM.  */
   struct elt_list *addr_list;
+
+  struct cselib_val_struct *next_containing_mem;
 } cselib_val;
 
 /* A list of rtl expressions that hold the same value.  */
