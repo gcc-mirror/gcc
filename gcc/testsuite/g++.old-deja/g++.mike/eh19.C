@@ -16,7 +16,7 @@ main() {
   try {
     var.func(1);
     var.func(0);
-  } catch(test1::fehler())		// ERROR - cannot have function type
+  } catch(test1::fehler())		// function type promoted to pointer
     {
       ;
     }
