@@ -1,3 +1,7 @@
+2004-03-16  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	* config/h8300/t-rtems (h8300-*-rtems*): New.
+
 2004-03-16  Eric Christopher  <echristo@redhat.com>
 
 	* doc/cppopts.texi(fwide-exec-charset): Fix typo.
