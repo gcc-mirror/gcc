@@ -965,17 +965,13 @@ fi
 # Collect build-machine-specific information.
 . ${srcdir}/config.build
 
-target_gtfiles=
-host_xm_file=
-host_xm_defines=
-host_xmake_file=
-host_exeext=
+# Collect host-machine-specific information.
+. ${srcdir}/config.host
 
-# Decode the host machine, then the target machine.
-# For the host machine, we save the xm_file variable as host_xm_file;
-# then we decode the target machine and forget everything else
-# that came from the host machine.
-for machine in $host $target; do
+target_gtfiles=
+
+# Collect target-machine-specific information.
+for machine in $target ; do
 	. ${srcdir}/config.gcc
 done
 
