@@ -219,6 +219,7 @@
 	* cfgloopmanip.c (remove_bbs, find_path, create_preheader,
 	split_loop_bb, loopify, duplicate_loop_to_header_edge,
 	force_single_succ_latches, loop_split_edge_with): Ditto.
+	* function.h (current_function_name): Remove.
 	* gcse.c (dominators): Variable removed.
 	(free_code_hoist_mem, compute_code_hoist_data, hoist_code):
 	Updated for the new interface for dominance information.
