@@ -2678,7 +2678,8 @@
 			   (match_operand:SI 1 "arith11_operand" "rI"))
 		      (plus:SI (mem:SI (plus:SI (pc) (match_dup 0)))
 			       (label_ref (match_operand 2 "" "")))
-		      (label_ref (match_operand 3 "" ""))))]
+		      (pc)))
+   (use (label_ref (match_operand 3 "" "")))]
   ""
   "*
 {
