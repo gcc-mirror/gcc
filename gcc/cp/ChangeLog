@@ -1,3 +1,7 @@
+1998-10-26  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (grokdeclarator): Disallow `explicit' in a friend declaration.
+
 1998-10-26  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (process_init_constructor): Only skip anonymous fields
