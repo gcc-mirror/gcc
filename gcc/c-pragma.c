@@ -383,8 +383,17 @@ handle_pragma_token (string, token)
     case ps_left:
 
       if (token == NULL_TREE)
-	state = (strcmp (string, ")") ? ps_bad : ps_right);
-
+	{
+	  /* #pragma pack () resets packing rules to their
+	     defaults.  */
+	  if (strcmp (string, ")") == 0)
+	    {
+	      align = 0;
+	      state = ps_right;
+	    }
+	  else
+	    state = ps_bad;
+	}
       else if (TREE_CODE (token) == INTEGER_CST)
 	goto handle_align;
 

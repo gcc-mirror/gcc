@@ -1,3 +1,8 @@
+Wed Jun  9 03:10:34 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* c-pragma.c (handle_pragma_token): Handle `#pragma pack()'
+	correctly.
+
 Tue Jun  8 05:47:48 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* optabs.c (expand_cmplxdiv_wide): Use expand_abs to get the absolute
