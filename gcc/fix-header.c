@@ -80,8 +80,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "c-incpath.h"
 
-static void v_fatal PARAMS ((const char *, va_list)) ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
-static void fatal PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void v_fatal (const char *, va_list)
+     ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
+static void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 sstring buf;
 
@@ -187,23 +188,21 @@ struct symbol_list {
 struct symbol_list symbol_table[SYMBOL_TABLE_SIZE];
 int cur_symbol_table_size;
 
-static void add_symbols PARAMS ((symbol_flags, namelist));
-static struct fn_decl *lookup_std_proto PARAMS ((const char *, int));
-static void write_lbrac PARAMS ((void));
-static void recognized_macro PARAMS ((const char *));
-static void check_macro_names PARAMS ((cpp_reader *, namelist));
-static void read_scan_file PARAMS ((char *, int, char **));
-static void write_rbrac PARAMS ((void));
-static int inf_skip_spaces PARAMS ((int));
-static int inf_read_upto PARAMS ((sstring *, int));
-static int inf_scan_ident PARAMS ((sstring *, int));
-static int check_protection PARAMS ((int *, int *));
-static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
+static void add_symbols (symbol_flags, namelist);
+static struct fn_decl *lookup_std_proto (const char *, int);
+static void write_lbrac (void);
+static void recognized_macro (const char *);
+static void check_macro_names (cpp_reader *, namelist);
+static void read_scan_file (char *, int, char **);
+static void write_rbrac (void);
+static int inf_skip_spaces (int);
+static int inf_read_upto (sstring *, int);
+static int inf_scan_ident (sstring *, int);
+static int check_protection (int *, int *);
+static void cb_file_change (cpp_reader *, const struct line_map *);
 
 static void
-add_symbols (flags, names)
-     symbol_flags flags;
-     namelist names;
+add_symbols (symbol_flags flags, namelist names)
 {
   symbol_table[cur_symbol_table_size].flags = flags;
   symbol_table[cur_symbol_table_size].names = names;
@@ -376,9 +375,7 @@ struct obstack scan_file_obstack;
 /* NOTE:  If you edit this, also edit gen-protos.c !! */
 
 static struct fn_decl *
-lookup_std_proto (name, name_length)
-     const char *name;
-     int name_length;
+lookup_std_proto (const char *name, int name_length)
 {
   int i = hashstr (name, name_length) % HASH_SIZE;
   int i0 = i;
@@ -409,7 +406,7 @@ int required_unseen_count = 0;
 int required_other = 0;
 
 static void
-write_lbrac ()
+write_lbrac (void)
 {
   if (partial_count)
     {
@@ -438,8 +435,7 @@ struct partial_proto required_dummy_proto, seen_dummy_proto;
 #define SEEN(FN) ((FN)->partial == &seen_dummy_proto)
 
 static void
-recognized_macro (fname)
-     const char *fname;
+recognized_macro (const char *fname)
 {
   /* The original include file defines fname as a macro.  */
   struct fn_decl *fn = lookup_std_proto (fname, strlen (fname));
@@ -488,8 +484,7 @@ recognized_macro (fname)
 }
 
 void
-recognized_extern (name)
-     const cpp_token *name;
+recognized_extern (const cpp_token *name)
 {
   switch (special_file_handling)
     {
@@ -509,11 +504,8 @@ recognized_extern (name)
    'extern "C"' braces); or 'f' for other function declarations.  */
 
 void
-recognized_function (fname, line, kind, have_arg_list)
-     const cpp_token *fname;
-     unsigned int line;
-     int kind; /* One of 'f' 'F' or 'I' */
-     int have_arg_list;
+recognized_function (const cpp_token *fname, unsigned int line, int kind,
+		     int have_arg_list)
 {
   struct partial_proto *partial;
   int i;
@@ -570,9 +562,7 @@ recognized_function (fname, line, kind, have_arg_list)
    call recognized_macro on it.  */
 
 static void
-check_macro_names (pfile, names)
-     cpp_reader *pfile;
-     namelist names;
+check_macro_names (cpp_reader *pfile, namelist names)
 {
   size_t len;
   while (*names)
@@ -585,19 +575,15 @@ check_macro_names (pfile, names)
 }
 
 static void
-cb_file_change (pfile, map)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const struct line_map *map;
+cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		const struct line_map *map)
 {
   /* Just keep track of current file name.  */
   cur_file = map->to_file;
 }
 
 static void
-read_scan_file (in_fname, argc, argv)
-     char *in_fname;
-     int argc;
-     char **argv;
+read_scan_file (char *in_fname, int argc, char **argv)
 {
   cpp_reader *scan_in;
   cpp_callbacks *cb;
@@ -741,7 +727,7 @@ read_scan_file (in_fname, argc, argv)
 }
 
 static void
-write_rbrac ()
+write_rbrac (void)
 {
   struct fn_decl *fn;
   const char *cptr;
@@ -881,8 +867,7 @@ write_rbrac ()
 #define INF_UNGET(c) ((c)!=EOF && inf_ptr--)
 
 static int
-inf_skip_spaces (c)
-     int c;
+inf_skip_spaces (int c)
 {
   for (;;)
     {
@@ -920,9 +905,7 @@ inf_skip_spaces (c)
 /* Read into STR from inf_buffer upto DELIM.  */
 
 static int
-inf_read_upto (str, delim)
-     sstring *str;
-     int delim;
+inf_read_upto (sstring *str, int delim)
 {
   int ch;
   for (;;)
@@ -938,9 +921,7 @@ inf_read_upto (str, delim)
 }
 
 static int
-inf_scan_ident (s, c)
-     sstring *s;
-     int c;
+inf_scan_ident (sstring *s, int c)
 {
   s->ptr = s->base;
   if (ISIDST (c))
@@ -964,8 +945,7 @@ inf_scan_ident (s, c)
    Otherwise return 0.  */
 
 static int
-check_protection (ifndef_line, endif_line)
-     int *ifndef_line, *endif_line;
+check_protection (int *ifndef_line, int *endif_line)
 {
   int c;
   int if_nesting = 1; /* Level of nesting of #if's */
@@ -1066,12 +1046,10 @@ check_protection (ifndef_line, endif_line)
   return 1;
 }
 
-extern int main			PARAMS ((int, char **));
+extern int main (int, char **);
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   int inf_fd;
   struct stat sbuf;
@@ -1314,9 +1292,7 @@ main (argc, argv)
 
 
 static void
-v_fatal (str, ap)
-  const char * str;
-  va_list ap;
+v_fatal (const char *str, va_list ap)
 {
   fprintf (stderr, "%s: %s: ", progname, inc_filename);
   vfprintf (stderr, str, ap);

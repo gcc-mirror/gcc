@@ -1,3 +1,15 @@
+2003-07-12  Andreas Jaeger  <aj@suse.de>
+
+	* fp-test.c (main): Use ISO C90 prototype.
+
+	* version.c: Remove unneded include of ansidecl.h.
+
+	* cgraph.h: Convert prototypes to ISO C90.
+	* cgraph.c: Likewise.
+	* fix-header.c: Likewise.
+	* ra.h: Likewise.
+	* protoize.c: Likewise.
+
 Sat Jul 12 06:09:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_inlined_into, cgraph_inlined_calees): Fix
@@ -32,7 +44,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(cgraph_inlined_into, cgraph_inlined_callees,
 	cgraph_estimate_size_after_inlining, cgraph_estimate_growth,
 	cgraph_mark_inline, cgraph_check_inline_limits,
-	cgraph_default_inline_p, cgraph_decide_inling_of_small_functions, 
+	cgraph_default_inline_p, cgraph_decide_inling_of_small_functions,
 	cgraph_decide_inlining, cgraph_inline_p): New functions.
 	* params.def (PARAM_LARGE_FUNCTION_INSNS, PARAM_LARGE_FUNCTION_GROWTH,
 	PARAM_INLINE_UNIT_GROWTH): New parameters.
@@ -111,7 +123,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* c-decl.c (finish_decl): Handle 'used' here...
 	* cgraphunit.c (cgraph_finalize_function): ... and here ...
 	* c-common.c: (handle_used_attribute): ... not here.
-	
+
 	* configure.in (onstep): Support --enable-intermodule.
 	* Makefile.in (OBJS-common): New.
 	(OBJS-md): New.
@@ -121,7 +133,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(libbackend.a): Support @onestep@.
 	(libbackend.o): New.
 	* configure: Regenerate.
-	
+
 	* c-common.h (c_reset_state): New prototype.
 	(c_parse_file): New prototype.
 	(finish_file): Move prototype from c-tree.h.
@@ -203,7 +215,7 @@ Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* loop.c (loop_iv_add_mult_emit_before): Call loop_regs_update before
 	loop_insn_emit_before.
 	(loop_iv_add_mult_sink, loop_iv_add_mult_hoist): Likewise.
-	
+
 2003-07-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppcharset.c: Fix comment.

@@ -153,17 +153,17 @@ extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 
 /* In cgraph.c  */
-void dump_cgraph			PARAMS ((FILE *));
-void cgraph_remove_call			PARAMS ((tree, tree));
-void cgraph_remove_node			PARAMS ((struct cgraph_node *));
-struct cgraph_edge *cgraph_record_call	PARAMS ((tree, tree));
-struct cgraph_node *cgraph_node		PARAMS ((tree decl));
-struct cgraph_node *cgraph_node_for_identifier	PARAMS ((tree id));
-bool cgraph_calls_p			PARAMS ((tree, tree));
-struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
-struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
-struct cgraph_rtl_info *cgraph_rtl_info PARAMS ((tree));
-const char * cgraph_node_name PARAMS ((struct cgraph_node *));
+void dump_cgraph (FILE *);
+void cgraph_remove_call (tree, tree);
+void cgraph_remove_node (struct cgraph_node *);
+struct cgraph_edge *cgraph_record_call (tree, tree);
+struct cgraph_node *cgraph_node (tree decl);
+struct cgraph_node *cgraph_node_for_identifier (tree id);
+bool cgraph_calls_p (tree, tree);
+struct cgraph_local_info *cgraph_local_info (tree);
+struct cgraph_global_info *cgraph_global_info (tree);
+struct cgraph_rtl_info *cgraph_rtl_info (tree);
+const char * cgraph_node_name (struct cgraph_node *);
 
 struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
 struct cgraph_varpool_node *cgraph_varpool_node_for_identifier (tree id);
@@ -172,11 +172,11 @@ void cgraph_varpool_finalize_decl (tree);
 bool cgraph_varpool_assemble_pending_decls (void);
 
 /* In cgraphunit.c  */
-void cgraph_finalize_function		PARAMS ((tree, tree));
-void cgraph_finalize_compilation_unit	PARAMS ((void));
-void cgraph_create_edges		PARAMS ((tree, tree));
-void cgraph_optimize			PARAMS ((void));
-void cgraph_mark_needed_node		PARAMS ((struct cgraph_node *, int));
-bool cgraph_inline_p			PARAMS ((tree, tree));
+void cgraph_finalize_function (tree, tree);
+void cgraph_finalize_compilation_unit (void);
+void cgraph_create_edges (tree, tree);
+void cgraph_optimize (void);
+void cgraph_mark_needed_node (struct cgraph_node *, int);
+bool cgraph_inline_p (tree, tree);
 
 #endif  /* GCC_CGRAPH_H  */

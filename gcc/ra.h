@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 
@@ -569,63 +569,61 @@ extern int flag_ra_spill_every_use;
 /* Nonzero to output all notes in the debug dumps.  */
 extern int flag_ra_dump_notes;
 
-extern inline void * ra_alloc PARAMS ((size_t));
-extern inline void * ra_calloc PARAMS ((size_t));
-extern int hard_regs_count PARAMS ((HARD_REG_SET));
-extern rtx ra_emit_move_insn PARAMS ((rtx, rtx));
-extern void ra_debug_msg PARAMS ((unsigned int,
-			          const char *, ...)) ATTRIBUTE_PRINTF_2;
-extern int hard_regs_intersect_p PARAMS ((HARD_REG_SET *, HARD_REG_SET *));
-extern unsigned int rtx_to_bits PARAMS ((rtx));
-extern struct web * find_subweb PARAMS ((struct web *, rtx));
-extern struct web * find_subweb_2 PARAMS ((struct web *, unsigned int));
-extern struct web * find_web_for_subweb_1 PARAMS ((struct web *));
+extern inline void * ra_alloc (size_t);
+extern inline void * ra_calloc (size_t);
+extern int hard_regs_count (HARD_REG_SET);
+extern rtx ra_emit_move_insn (rtx, rtx);
+extern void ra_debug_msg (unsigned int, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
+extern unsigned int rtx_to_bits (rtx);
+extern struct web * find_subweb (struct web *, rtx);
+extern struct web * find_subweb_2 (struct web *, unsigned int);
+extern struct web * find_web_for_subweb_1 (struct web *);
 
 #define find_web_for_subweb(w) (((w)->parent_web) \
 				? find_web_for_subweb_1 ((w)->parent_web) \
 				: (w))
 
-extern void ra_build_realloc PARAMS ((struct df *));
-extern void ra_build_free PARAMS ((void));
-extern void ra_build_free_all PARAMS ((struct df *));
-extern void ra_colorize_init PARAMS ((void));
-extern void ra_colorize_free_all PARAMS ((void));
-extern void ra_rewrite_init PARAMS ((void));
+extern void ra_build_realloc (struct df *);
+extern void ra_build_free (void);
+extern void ra_build_free_all (struct df *);
+extern void ra_colorize_init (void);
+extern void ra_colorize_free_all (void);
+extern void ra_rewrite_init (void);
 
-extern void ra_print_rtx PARAMS ((FILE *, rtx, int));
-extern void ra_print_rtx_top PARAMS ((FILE *, rtx, int));
-extern void ra_debug_rtx PARAMS ((rtx));
-extern void ra_debug_insns PARAMS ((rtx, int));
-extern void ra_debug_bbi PARAMS ((int));
-extern void ra_print_rtl_with_bb PARAMS ((FILE *, rtx));
-extern void dump_igraph PARAMS ((struct df *));
-extern void dump_igraph_machine PARAMS ((void));
-extern void dump_constraints PARAMS ((void));
-extern void dump_cost PARAMS ((unsigned int));
-extern void dump_graph_cost PARAMS ((unsigned int, const char *));
-extern void dump_ra PARAMS ((struct df *));
-extern void dump_number_seen PARAMS ((void));
-extern void dump_static_insn_cost PARAMS ((FILE *, const char *,
-					   const char *));
-extern void dump_web_conflicts PARAMS ((struct web *));
-extern void dump_web_insns PARAMS ((struct web*));
-extern int web_conflicts_p PARAMS ((struct web *, struct web *));
-extern void debug_hard_reg_set PARAMS ((HARD_REG_SET));
+extern void ra_print_rtx (FILE *, rtx, int);
+extern void ra_print_rtx_top (FILE *, rtx, int);
+extern void ra_debug_rtx (rtx);
+extern void ra_debug_insns (rtx, int);
+extern void ra_debug_bbi (int);
+extern void ra_print_rtl_with_bb (FILE *, rtx);
+extern void dump_igraph (struct df *);
+extern void dump_igraph_machine (void);
+extern void dump_constraints (void);
+extern void dump_cost (unsigned int);
+extern void dump_graph_cost (unsigned int, const char *);
+extern void dump_ra (struct df *);
+extern void dump_number_seen (void);
+extern void dump_static_insn_cost (FILE *, const char *, const char *);
+extern void dump_web_conflicts (struct web *);
+extern void dump_web_insns (struct web*);
+extern int web_conflicts_p (struct web *, struct web *);
+extern void debug_hard_reg_set (HARD_REG_SET);
 
-extern void remove_list PARAMS ((struct dlist *, struct dlist **));
-extern struct dlist * pop_list PARAMS ((struct dlist **));
-extern void record_conflict PARAMS ((struct web *, struct web *));
-extern int memref_is_stack_slot PARAMS ((rtx));
-extern void build_i_graph PARAMS ((struct df *));
-extern void put_web PARAMS ((struct web *, enum node_type));
-extern void remove_web_from_list PARAMS ((struct web *));
-extern void reset_lists PARAMS ((void));
-extern struct web * alias PARAMS ((struct web *));
-extern void merge_moves PARAMS ((struct web *, struct web *));
-extern void ra_colorize_graph PARAMS ((struct df *));
+extern void remove_list (struct dlist *, struct dlist **);
+extern struct dlist * pop_list (struct dlist **);
+extern void record_conflict (struct web *, struct web *);
+extern int memref_is_stack_slot (rtx);
+extern void build_i_graph (struct df *);
+extern void put_web (struct web *, enum node_type);
+extern void remove_web_from_list (struct web *);
+extern void reset_lists (void);
+extern struct web * alias (struct web *);
+extern void merge_moves (struct web *, struct web *);
+extern void ra_colorize_graph (struct df *);
 
-extern void actual_spill PARAMS ((void));
-extern void emit_colors PARAMS ((struct df *));
-extern void delete_moves PARAMS ((void));
-extern void setup_renumber PARAMS ((int));
-extern void remove_suspicious_death_notes PARAMS ((void));
+extern void actual_spill (void);
+extern void emit_colors (struct df *);
+extern void delete_moves (void);
+extern void setup_renumber (int);
+extern void remove_suspicious_death_notes (void);
