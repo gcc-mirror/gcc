@@ -3861,7 +3861,7 @@ true_regnum (x)
    pending equivalences.  If nonzero, the expressions really aren't the
    same.  */
 
-static short *same_regs;
+static int *same_regs;
 
 static int num_same_regs;
 
@@ -3924,12 +3924,12 @@ thread_jumps (f, max_reg, verbose)
   rtx b1op0, b1op1, b2op0, b2op1;
   int changed = 1;
   int i;
-  short *all_reset;
+  int *all_reset;
 
   /* Allocate register tables and quick-reset table.  */
   modified_regs = (char *) alloca (max_reg * sizeof (char));
-  same_regs = (short *) alloca (max_reg * sizeof (short));
-  all_reset = (short *) alloca (max_reg * sizeof (short));
+  same_regs = (int *) alloca (max_reg * sizeof (int));
+  all_reset = (int *) alloca (max_reg * sizeof (int));
   for (i = 0; i < max_reg; i++)
     all_reset[i] = -1;
     
@@ -3948,7 +3948,7 @@ thread_jumps (f, max_reg, verbose)
 	  bzero (modified_regs, max_reg * sizeof (char));
 	  modified_mem = 0;
 
-	  bcopy (all_reset, same_regs, max_reg * sizeof (short));
+	  bcopy (all_reset, same_regs, max_reg * sizeof (int));
 	  num_same_regs = 0;
 
 	  label = JUMP_LABEL (b1);
