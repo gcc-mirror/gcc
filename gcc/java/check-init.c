@@ -196,7 +196,7 @@ final_assign_error (name)
      tree name;
 {
   static const char format[]
-    = "can't re-assign here a value to the final variable '%s'";
+    = "can't reassign a value to the final variable '%s'";
   parse_error_context (wfl, format, IDENTIFIER_POINTER (name));
 }
 
@@ -791,10 +791,6 @@ check_init (exp, before)
     case FIX_TRUNC_EXPR:
     case INDIRECT_REF:
     case ADDR_EXPR:
-    case PREDECREMENT_EXPR:
-    case PREINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
     case NON_LVALUE_EXPR:
     case INSTANCEOF_EXPR:
     case FIX_CEIL_EXPR:
@@ -803,6 +799,18 @@ check_init (exp, before)
     case ABS_EXPR:
     case FFS_EXPR:
       /* Avoid needless recursion. */
+      exp = TREE_OPERAND (exp, 0);
+      goto again;
+
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+      tmp = get_variable_decl (TREE_OPERAND (exp, 0));
+      if (tmp != NULL_TREE && DECL_FINAL (tmp))
+	final_assign_error (DECL_NAME (tmp));      
+
+      /* Avoid needless recursion.  */
       exp = TREE_OPERAND (exp, 0);
       goto again;
 
