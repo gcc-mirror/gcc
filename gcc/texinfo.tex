@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.255 1998/07/19 13:49:22 karl Exp $
+% $Id: texinfo.tex,v 2.256 1998/08/10 15:51:13 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.255 $
+\deftexinfoversion$Revision: 2.256 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -959,9 +959,17 @@ where each line of input produces a line of output.}
 
 % @value{foo} gets the text saved in variable foo.
 %
-\def\value{\begingroup
-  \catcode`\-=12 \catcode`\_=12 % Allow - and _ in VAR.
-  \valuexxx}
+{
+  \catcode`\_ = \active
+  %
+  % We might end up with active _ or - characters in the argument if
+  % we're called from @code, as @code{@value{foo-bar_}}.  So \let any
+  % such active characters to their normal equivalents.
+  \gdef\value{\begingroup
+    \catcode`\-=12 \catcode`\_=12
+    \indexbreaks \let_\normalunderscore
+    \valuexxx}
+}
 \def\valuexxx#1{\expandablevalue{#1}\endgroup}
 
 % We have this subroutine so that we can handle at least some @value's
@@ -1413,20 +1421,18 @@ where each line of input produces a line of output.}
 % and arrange explicitly to hyphenate at a dash.
 %  -- rms.
 {
-\catcode`\-=\active
-\catcode`\_=\active
-\catcode`\|=\active
-\global\def\code{\begingroup \catcode`\-=\active \let-\codedash \catcode`\_=\active \let_\codeunder \codex}
-% The following is used by \doprintindex to insure that long function names
-% wrap around.  It is necessary for - and _ to be active before the index is
-% read from the file, as \entry parses the arguments long before \code is
-% ever called.  -- mycroft
-% _ is always active; and it shouldn't be \let = to an _ that is a
-% subscript character anyway. Then, @cindex @samp{_} (for example)
-% fails.  --karl
-\global\def\indexbreaks{%
-  \catcode`\-=\active \let-\realdash
-}
+  \catcode`\-=\active
+  \catcode`\_=\active
+  %
+  \global\def\code{\begingroup
+    \catcode`\-=\active \let-\codedash
+    \catcode`\_=\active \let_\codeunder
+    \codex
+  }
+  %
+  % If we end up with any active - characters when handling the index,
+  % just treat them as a normal -.
+  \global\def\indexbreaks{\catcode`\-=\active \let-\realdash}
 }
 
 \def\realdash{-}
