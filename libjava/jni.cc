@@ -1251,7 +1251,7 @@ add_char (char *buf, jchar c, int *here)
     }
   else if (c == '/')
     buf[(*here)++] = '_';
-  if ((c >= '0' && c <= '9')
+  else if ((c >= '0' && c <= '9')
       || (c >= 'a' && c <= 'z')
       || (c >= 'A' && c <= 'Z'))
     buf[(*here)++] = (char) c;

@@ -1,5 +1,7 @@
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
+	* jni.cc (add_char): Added missing `else'.
+
 	* jni.cc (_Jv_JNI_AttachCurrentThread): Return error if malloc
 	fails.
 
