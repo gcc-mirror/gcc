@@ -1,3 +1,9 @@
+2003-07-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (pushqi1_h8300hs): Revert my patch
+	today.
+	(pushhi1_h8300hs): Likewise.
+
 2003-07-07  Andreas Jaeger  <aj@suse.de>
 
 	* genextract.c: Convert remaining prototypes to ISO C90.
