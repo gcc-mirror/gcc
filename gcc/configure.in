@@ -797,7 +797,7 @@ dnl gcc_AC_C_ENUM_BF_UNSIGNED
 AC_CHECK_FUNCS(times clock dup2 kill getrlimit setrlimit atoll atoq \
 	sysconf strsignal putc_unlocked fputc_unlocked fputs_unlocked \
 	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo lstat \
-        scandir alphasort gettimeofday mbstowcs wcswidth mmap)
+        scandir alphasort gettimeofday mbstowcs wcswidth mmap mincore)
 
 if test x$ac_cv_func_mbstowcs = xyes; then
   AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,

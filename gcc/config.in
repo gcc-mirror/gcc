@@ -165,6 +165,9 @@
 /* Define if you have the mempcpy function.  */
 #undef HAVE_MEMPCPY
 
+/* Define if you have the mincore function.  */
+#undef HAVE_MINCORE
+
 /* Define if you have the mmap function.  */
 #undef HAVE_MMAP
 
