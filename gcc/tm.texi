@@ -139,7 +139,8 @@ definition.
 @findex CC1_SPEC
 @item CC1_SPEC
 A C string constant that tells the GCC driver program options to
-pass to @code{cc1, cc1plus, f771, and the other language front ends}.
+pass to @code{cc1}, @code{cc1plus}, @code{f771}, and the other language
+front ends.
 It can also specify how to translate options you give to GCC into options
 for GCC to pass to front ends..
 
