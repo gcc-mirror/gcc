@@ -1,4 +1,11 @@
 2001-11-26  DJ Delorie  <dj@redhat.com>
+            Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in (stamp-h): Depend on Makefile for proper
+	serialization.
+	(*-subdir): Depend on config.h for proper serialization.
+
+2001-11-26  DJ Delorie  <dj@redhat.com>
 
 	* configure.in: Check for alloca.h (for regex.c and putenv.c).
 	* configure: Regenerate.
