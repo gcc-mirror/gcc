@@ -97,7 +97,7 @@ vms_fopen (fname, type)
    PREFERRED_DEBUGGING_TYPE to choose a format in a system-dependent way. 
 
    This is one long line cause VAXC can't handle a \-newline.  */
-#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
+#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF_DEBUGGING_INFO) + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
 #ifndef PREFERRED_DEBUGGING_TYPE
 You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif /* no PREFERRED_DEBUGGING_TYPE */
@@ -111,6 +111,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
@@ -2315,6 +2318,10 @@ compile_file (name)
   if (write_symbols == DWARF_DEBUG)
     TIMEVAR (symout_time, dwarfout_init (asm_out_file, main_input_filename));
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    TIMEVAR (symout_time, dwarf2out_init (asm_out_file, main_input_filename));
+#endif
 
   /* Initialize yet another pass.  */
 
@@ -2523,6 +2530,16 @@ compile_file (name)
 	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
 	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+	/* Output DWARF2 information for file-scope tentative data object
+	   declarations, file-scope (extern) function declarations (which
+	   had no corresponding body) and file-scope tagged type declarations
+	   and definitions which have not yet been forced out.  */
+
+	if (write_symbols == DWARF2_DEBUG
+	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
+	  TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 1));
+#endif
       }
   }
 
@@ -2544,6 +2561,14 @@ compile_file (name)
     TIMEVAR (symout_time,
 	     {
 	       dwarfout_finish ();
+	     });
+#endif
+
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    TIMEVAR (symout_time,
+	     {
+	       dwarf2out_finish ();
 	     });
 #endif
 
@@ -2756,6 +2781,11 @@ rest_of_type_compilation (type, toplev)
   if (write_symbols == DWARF_DEBUG && toplev)
     TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+  /* Don't write out function-scope types here.  */
+  if (write_symbols == DWARF2_DEBUG && toplev)
+    TIMEVAR (symout_time, dwarf2out_file_scope_decl (TYPE_STUB_DECL (type), 0));
+#endif
 }
 
 /* This is called from finish_function (within yyparse)
@@ -2863,6 +2893,17 @@ rest_of_compilation (decl)
 		  set_decl_abstract_flags (decl, 0);
 		}
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+	      /* Generate the DWARF2 info for the "abstract" instance
+		 of a function which we may later generate inlined and/or
+		 out-of-line instances of.  */
+	      if (write_symbols == DWARF2_DEBUG)
+		{
+		  set_decl_abstract_flags (decl, 1);
+		  TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
+		  set_decl_abstract_flags (decl, 0);
+		}
+#endif
 	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
 	      goto exit_rest_of_compilation;
@@ -2882,6 +2923,18 @@ rest_of_compilation (decl)
 	    {
 	      set_decl_abstract_flags (decl, 1);
 	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
+	      set_decl_abstract_flags (decl, 0);
+	    }
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+	  /* Generate the DWARF2 info for the "abstract" instance of
+	     a function which we will generate an out-of-line instance
+	     of almost immediately (and which we may also later generate
+	     various inlined instances of).  */
+	  if (write_symbols == DWARF2_DEBUG)
+	    {
+	      set_decl_abstract_flags (decl, 1);
+	      TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
 	      set_decl_abstract_flags (decl, 0);
 	    }
 #endif
@@ -3376,6 +3429,11 @@ rest_of_compilation (decl)
     TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
 #endif
 
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
+#endif
+
  exit_rest_of_compilation:
 
   /* In case the function was not output,
@@ -3818,8 +3876,6 @@ main (argc, argv, envp)
 	    }
 	  else if (str[0] == 'g')
 	    {
-	      char *p = str + 1;
-	      char *q;
 	      unsigned len;
 	      unsigned level;
 	      /* A lot of code assumes write_symbols == NO_DEBUG if the
@@ -3847,8 +3903,19 @@ main (argc, argv, envp)
 		{ "gstabs+", DBX_DEBUG, 1 },
 #endif
 #ifdef DWARF_DEBUGGING_INFO
+		{ "gdwarf-1", DWARF_DEBUG, 0 },
+		{ "gdwarf-1+", DWARF_DEBUG, 1 },
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+		{ "gdwarf-2", DWARF2_DEBUG, 0 },
+#endif
+#if defined (DWARF_DEBUGGING_INFO) || defined (DWARF2_DEBUGGING_INFO)
+#if PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG || !defined (DWARF2_DEBUGGING_INFO)
 		{ "gdwarf", DWARF_DEBUG, 0 },
 		{ "gdwarf+", DWARF_DEBUG, 1 },
+#else
+		{ "gdwarf", DWARF2_DEBUG, 0 },
+#endif
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
 		{ "gxcoff", XCOFF_DEBUG, 0 },
@@ -3861,36 +3928,38 @@ main (argc, argv, envp)
 	      };
 	      /* Indexed by enum debug_info_type.  */
 	      static char *debug_type_names[] = {
-		"none", "stabs", "coff", "dwarf", "xcoff"
+		"none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
 	      };
-
-	      while (*p && (*p < '0' || *p > '9'))
-		p++;
-	      len = p - str;
-	      q = p;
-	      while (*q && (*q >= '0' && *q <= '9'))
-		q++;
-	      if (*p)
-		level = atoi (p);
-	      else
-		level = 2;	/* default debugging info level */
-	      if (*q || level > 3)
-		{
-		  warning ("invalid debug level specification in option: `-%s'",
-			   str);
-		  /* ??? This error message is incorrect in the case of
-		     -g4 -g.  */
-		  warning ("no debugging information will be generated");
-		  level = 0;
-		}
 
 	      /* Look up STR in the table.  */
 	      for (da = debug_args; da->arg; da++)
 		{
-		  if (! strncmp (str, da->arg, len))
+		  if (! strncmp (str, da->arg, strlen (da->arg)))
 		    {
 		      enum debug_info_type type = da->debug_type;
-		      /* ??? A few targets use STR and LEN in the
+		      char *p, *q;
+
+		      p = str + strlen (da->arg);
+		      if (*p && (*p < '0' || *p > '9'))
+			continue;
+		      q = p;
+		      while (*q && (*q >= '0' && *q <= '9'))
+			q++;
+		      if (*p)
+			level = atoi (p);
+		      else
+			level = 2;	/* default debugging info level */
+		      if (*q || level > 3)
+			{
+			  warning ("invalid debug level specification in option: `-%s'",
+				   str);
+			  /* ??? This error message is incorrect in the case of
+			     -g4 -g.  */
+			  warning ("no debugging information will be generated");
+			  level = 0;
+			}
+
+		      /* ??? A few targets use STR in the
 			 definition of PREFERRED_DEBUGGING_TYPE!  */
 		      if (type == NO_DEBUG)
 			type = PREFERRED_DEBUGGING_TYPE;
@@ -4232,4 +4301,91 @@ print_switch_values (file, pos, max, indent, sep, term)
 #endif
 
   fprintf (file, "%s", term);
+}
+
+/* Record the beginning of a new source file, named FILENAME.  */
+
+void
+debug_start_source_file (filename)
+     register char *filename;
+{
+#ifdef DBX_DEBUGGING_INFO
+  if (write_symbols == DBX_DEBUG)
+    dbxout_start_new_source_file (filename);
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF_DEBUG)
+    dwarfout_start_new_source_file (filename);
+#endif /* DWARF_DEBUGGING_INFO */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF2_DEBUG)
+    dwarf2out_start_source_file (filename);
+#endif /* DWARF2_DEBUGGING_INFO */  
+}
+
+/* Record the resumption of a source file.  LINENO is the line number in
+   the source file we are returning to.  */
+
+void
+debug_end_source_file (lineno)
+     register unsigned lineno;
+{
+#ifdef DBX_DEBUGGING_INFO
+  if (write_symbols == DBX_DEBUG)
+    dbxout_resume_previous_source_file ();
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF_DEBUG)
+    dwarfout_resume_previous_source_file (lineno);
+#endif /* DWARF_DEBUGGING_INFO */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF2_DEBUG)
+    dwarf2out_end_source_file ();
+#endif /* DWARF2_DEBUGGING_INFO */
+}
+
+/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+   the tail part of the directive line, i.e. the part which is past the
+   initial whitespace, #, whitespace, directive-name, whitespace part.  */
+
+void
+debug_define (lineno, buffer)
+     register unsigned lineno;
+     register char *buffer;
+{
+#ifdef DWARF_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF_DEBUG)
+    dwarfout_define (lineno, buffer);
+#endif /* DWARF_DEBUGGING_INFO */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF2_DEBUG)
+    dwarf2out_define (lineno, buffer);
+#endif /* DWARF2_DEBUGGING_INFO */
+}
+
+/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+   the tail part of the directive line, i.e. the part which is past the
+   initial whitespace, #, whitespace, directive-name, whitespace part.  */
+
+void
+debug_undef (lineno, buffer)
+     register unsigned lineno;
+     register char *buffer;
+{
+#ifdef DWARF_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF_DEBUG)
+    dwarfout_undef (lineno, buffer);
+#endif /* DWARF_DEBUGGING_INFO */
+#ifdef DWARF2_DEBUGGING_INFO
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && write_symbols == DWARF2_DEBUG)
+    dwarf2out_undef (lineno, buffer);
+#endif /* DWARF2_DEBUGGING_INFO */
 }

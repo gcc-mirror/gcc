@@ -88,12 +88,11 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64: -D__mips64} \
 %{!mabi*: -D__mips64}"
 
-/* Irix 6 uses DWARF.  */
-#define DWARF_DEBUGGING_INFO
-#define DWARF_VERSION 2
+/* Irix 6 uses DWARF-2.  */
+#define DWARF2_DEBUGGING_INFO
 #define MIPS_DEBUGGING_INFO
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the DWARF-2
@@ -479,7 +478,7 @@ do {									 \
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
 %{bestGnum} %{shared} %{non_shared} \
-%{call_shared} %{no_archive} %{exact_version} \
+%{call_shared} %{no_archive} %{exact_version} %{w} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
 %{shared:-hidden_symbol __do_global_ctors,__do_global_dtors} \

@@ -434,12 +434,8 @@ check_newline ()
 	      && getc (finput) == 'e'
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
-#ifdef DWARF_DEBUGGING_INFO
-	      if (c != '\n'
-		  && (debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
-	        dwarfout_define (lineno, get_directive_line (finput));
-#endif /* DWARF_DEBUGGING_INFO */
+	      if (c != '\n')
+		debug_define (lineno, get_directive_line (finput));
 	      goto skipline;
 	    }
 	}
@@ -451,12 +447,8 @@ check_newline ()
 	      && getc (finput) == 'f'
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
-#ifdef DWARF_DEBUGGING_INFO
-	      if (c != '\n'
-		  && (debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
-	        dwarfout_undef (lineno, get_directive_line (finput));
-#endif /* DWARF_DEBUGGING_INFO */
+	      if (c != '\n')
+		debug_undef (lineno, get_directive_line (finput));
 	      goto skipline;
 	    }
 	}
@@ -608,16 +600,7 @@ linenum:
 	      p->name = input_filename;
 	      input_file_stack = p;
 	      input_file_stack_tick++;
-#ifdef DBX_DEBUGGING_INFO
-	      if (write_symbols == DBX_DEBUG)
-		dbxout_start_new_source_file (input_filename);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	      if (debug_info_level == DINFO_LEVEL_VERBOSE
-		  && write_symbols == DWARF_DEBUG)
-		dwarfout_start_new_source_file (input_filename);
-#endif /* DWARF_DEBUGGING_INFO */
-
+	      debug_start_source_file (input_filename);
 	      used_up = 1;
 	    }
 	  else if (TREE_INT_CST_LOW (yylval.ttype) == 2)
@@ -629,15 +612,7 @@ linenum:
 		  input_file_stack = p->next;
 		  free (p);
 		  input_file_stack_tick++;
-#ifdef DBX_DEBUGGING_INFO
-		  if (write_symbols == DBX_DEBUG)
-		    dbxout_resume_previous_source_file ();
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-		  if (debug_info_level == DINFO_LEVEL_VERBOSE
-		      && write_symbols == DWARF_DEBUG)
-		    dwarfout_resume_previous_source_file (input_file_stack->line);
-#endif /* DWARF_DEBUGGING_INFO */
+		  debug_end_source_file (input_file_stack->line);
 		}
 	      else
 		error ("#-lines for entering and leaving files don't match");

@@ -895,10 +895,10 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
-#if defined (DWARF_DEBUGGING_INFO) && DWARF_VERSION == 2
+#ifdef DWARF2_DEBUGGING_INFO
   /* Output DWARF definition of the function.  */
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_begin_prologue ();
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_begin_prologue ();
 #endif
 
   /* For SDB and XCOFF, the function beginning must be marked between
@@ -1066,6 +1066,11 @@ final_end_function (first, file, optimize)
     dwarfout_end_function ();
 #endif
 
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_end_function ();
+#endif
+
 #ifdef XCOFF_DEBUGGING_INFO
   if (write_symbols == XCOFF_DEBUG)
     xcoffout_end_function (file, high_function_linenum);
@@ -1085,6 +1090,11 @@ final_end_function (first, file, optimize)
 #ifdef DWARF_DEBUGGING_INFO
   if (write_symbols == DWARF_DEBUG)
     dwarfout_end_epilogue ();
+#endif
+
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_end_epilogue ();
 #endif
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -1365,6 +1375,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_begin_function ();
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+	  /* This outputs a marker where the function body starts, so it
+	     must be after the prologue.  */
+	  if (write_symbols == DWARF2_DEBUG)
+	    dwarf2out_begin_function ();
+#endif
 	  break;
 	}
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
@@ -1377,11 +1393,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 	  && (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
-#ifdef DWARF_DEBUGGING_INFO
 	      || write_symbols == DWARF_DEBUG
-#endif
-	     )
-	 )
+	      || write_symbols == DWARF2_DEBUG))
 	{
 	  /* Beginning of a symbol-block.  Assign it a sequence number
 	     and push the number onto the stack PENDING_BLOCKS.  */
@@ -1416,17 +1429,18 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_begin_block (next_block_index);
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+	  if (write_symbols == DWARF2_DEBUG)
+	    dwarf2out_begin_block (next_block_index);
+#endif
 
 	  next_block_index++;
 	}
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	       && (debug_info_level == DINFO_LEVEL_NORMAL
 		   || debug_info_level == DINFO_LEVEL_VERBOSE
-#ifdef DWARF_DEBUGGING_INFO
 	           || write_symbols == DWARF_DEBUG
-#endif
-	          )
-	      )
+	           || write_symbols == DWARF2_DEBUG))
 	{
 	  /* End of a symbol-block.  Pop its sequence number off
 	     PENDING_BLOCKS and output debugging info based on that.  */
@@ -1452,6 +1466,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  if (write_symbols == DWARF_DEBUG && block_depth >= 0)
 	    dwarfout_end_block (pending_blocks[block_depth]);
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+	  if (write_symbols == DWARF2_DEBUG && block_depth >= 0)
+	    dwarf2out_end_block (pending_blocks[block_depth]);
+#endif
 	}
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL
 	       && (debug_info_level == DINFO_LEVEL_NORMAL
@@ -1460,6 +1478,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef DWARF_DEBUGGING_INFO
           if (write_symbols == DWARF_DEBUG)
             dwarfout_label (insn);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+          if (write_symbols == DWARF2_DEBUG)
+            dwarf2out_label (insn);
 #endif
 	}
       else if (NOTE_LINE_NUMBER (insn) > 0)
@@ -1536,6 +1558,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG && LABEL_NAME (insn))
 	dwarfout_label (insn);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+      if (write_symbols == DWARF2_DEBUG && LABEL_NAME (insn))
+	dwarf2out_label (insn);
 #endif
       if (app_on)
 	{
@@ -2155,6 +2181,11 @@ output_source_line (file, insn)
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG)
 	dwarfout_line (filename, NOTE_LINE_NUMBER (insn));
+#endif
+
+#ifdef DWARF2_DEBUGGING_INFO
+      if (write_symbols == DWARF2_DEBUG)
+	dwarf2out_line (filename, NOTE_LINE_NUMBER (insn));
 #endif
     }
 }

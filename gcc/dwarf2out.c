@@ -21,10 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 
-#ifndef DWARF_VERSION
-#define DWARF_VERSION 1
-#endif
-#if defined (DWARF_DEBUGGING_INFO) && (DWARF_VERSION == 2)
+#ifdef DWARF2_DEBUGGING_INFO
 #include <stdio.h>
 #include "dwarf2.h"
 #include "tree.h"
@@ -321,6 +318,8 @@ extern char *language_string;
 #define DWARF_OFFSET_SIZE 4
 #endif
 
+#define DWARF_VERSION 2
+
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 3)
 
@@ -405,7 +404,7 @@ static unsigned file_table_in_use;
 #define FILE_TABLE_INCREMENT 64
 
 /* Local pointer to the name of the main input file.  Initialized in
-   dwarfout_init.  */
+   dwarf2out_init.  */
 static char *primary_filename;
 
 /* For Dwarf output, we must assign lexical-blocks id numbers in the order in
@@ -5617,7 +5616,7 @@ add_location_or_const_value_attribute (die, decl)
      (at debug-time) will show the function as having been called with the
      *new* value rather than the value which was originally passed in.  This
      happens rarely enough that it is not a major problem, but it *is* a
-     problem, and I'd like to fix it.  A future version of dwarfout.c may
+     problem, and I'd like to fix it.  A future version of dwarf2out.c may
      generate two additional attributes for any given DW_TAG_formal_parameter 
      DIE which will describe the "passed type" and the "passed location" for
      the given formal parameter in addition to the attributes we now generate 
@@ -6197,7 +6196,7 @@ decl_start_label (decl)
 
 /* These routines generate the internnal representation of the DIE's for
    the compilation unit.  Debugging information is collected by walking
-   the declaration trees passed in from dwarfout_file_scope_decl().  */
+   the declaration trees passed in from dwarf2out_file_scope_decl().  */
 
 static void
 gen_array_type_die (type, context_die)
@@ -7626,7 +7625,7 @@ gen_decl_die (decl, context_die)
 
 /***************** Debug Information Generation Hooks ***********************/
 void
-dwarfout_file_scope_decl (decl, set_finalizing)
+dwarf2out_file_scope_decl (decl, set_finalizing)
      register tree decl;
      register int set_finalizing;
 {
@@ -7755,7 +7754,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 /* Output a marker (i.e. a label) for the beginning of the generated code for
    a lexical block.  */
 void
-dwarfout_begin_block (blocknum)
+dwarf2out_begin_block (blocknum)
      register unsigned blocknum;
 {
   function_section (current_function_decl);
@@ -7765,7 +7764,7 @@ dwarfout_begin_block (blocknum)
 /* Output a marker (i.e. a label) for the end of the generated code for a
    lexical block.  */
 void
-dwarfout_end_block (blocknum)
+dwarf2out_end_block (blocknum)
      register unsigned blocknum;
 {
   function_section (current_function_decl);
@@ -7775,7 +7774,7 @@ dwarfout_end_block (blocknum)
 /* Output a marker (i.e. a label) at a point in the assembly code which
    corresponds to a given source level label.  */
 void
-dwarfout_label (insn)
+dwarf2out_label (insn)
      register rtx insn;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -7791,7 +7790,7 @@ dwarfout_label (insn)
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */
 void
-dwarfout_begin_prologue ()
+dwarf2out_begin_prologue ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register dw_fde_ref fde;
@@ -7825,7 +7824,7 @@ dwarfout_begin_prologue ()
    the real body of the function begins (after parameters have been moved to
    their home locations).  */
 void
-dwarfout_begin_function ()
+dwarf2out_begin_function ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   register long int offset;
@@ -7919,7 +7918,7 @@ dwarfout_begin_function ()
 /* Output a marker (i.e. a label) for the point in the generated code where
    the real body of the function ends (just before the epilogue code).  */
 void
-dwarfout_end_function ()
+dwarf2out_end_function ()
 {
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -7935,7 +7934,7 @@ dwarfout_end_function ()
    for a function definition.  This gets called *after* the epilogue code has
    been generated.  */
 void
-dwarfout_end_epilogue ()
+dwarf2out_end_epilogue ()
 {
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -7948,7 +7947,7 @@ dwarfout_end_epilogue ()
 }
 
 /* Lookup a filename (in the list of filenames that we know about here in
-   dwarfout.c) and return its "index".  The index of each (known) filename is
+   dwarf2out.c) and return its "index".  The index of each (known) filename is
    just a unique number which is associated with only that one filename.
    We need such numbers for the sake of generating labels
    (in the .debug_sfnames section) and references to those
@@ -8007,7 +8006,7 @@ lookup_filename (file_name)
    and record information relating to this source line, in
    'line_info_table' for later output of the .debug_line section.  */
 void
-dwarfout_line (filename, line)
+dwarf2out_line (filename, line)
      register char *filename;
      register unsigned line;
 {
@@ -8067,16 +8066,15 @@ dwarfout_line (filename, line)
 /* Record the beginning of a new source file, for later output
    of the .debug_macinfo section.  At present, unimplemented.  */
 void
-dwarfout_start_new_source_file (filename)
+dwarf2out_start_source_file (filename)
      register char *filename;
 {
 }
 
-/* Record the resumption of a source file, for later output
+/* Record the end of a source file, for later output
    of the .debug_macinfo section.  At present, unimplemented.  */
 void
-dwarfout_resume_previous_source_file (lineno)
-     register unsigned lineno;
+dwarf2out_end_source_file ()
 {
 }
 
@@ -8084,14 +8082,14 @@ dwarfout_resume_previous_source_file (lineno)
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 void
-dwarfout_define (lineno, buffer)
+dwarf2out_define (lineno, buffer)
      register unsigned lineno;
      register char *buffer;
 {
   static int initialized = 0;
   if (!initialized)
     {
-      dwarfout_start_new_source_file (primary_filename);
+      dwarf2out_start_source_file (primary_filename);
       initialized = 1;
     }
 }
@@ -8100,7 +8098,7 @@ dwarfout_define (lineno, buffer)
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 void
-dwarfout_undef (lineno, buffer)
+dwarf2out_undef (lineno, buffer)
      register unsigned lineno;
      register char *buffer;
 {
@@ -8108,7 +8106,7 @@ dwarfout_undef (lineno, buffer)
 
 /* Set up for Dwarf output at the start of compilation.  */
 void
-dwarfout_init (asm_out_file, main_input_filename)
+dwarf2out_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
      register char *main_input_filename;
 {
@@ -8185,7 +8183,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 void
-dwarfout_finish ()
+dwarf2out_finish ()
 {
   /* Traverse the DIE tree and add sibling attributes to those DIE's
      that have children.  */
@@ -8266,4 +8264,4 @@ dwarfout_finish ()
       output_aranges ();
     }
 }
-#endif /* DWARF_DEBUGGING_INFO  && DWARF_VERSION == 2 */
+#endif /* DWARF2_DEBUGGING_INFO */
