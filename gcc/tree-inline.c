@@ -528,8 +528,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
   else if (TREE_CODE (*tp) == STATEMENT_LIST)
     copy_statement_list (tp);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0),
-		     walk_subtrees);
+    remap_save_expr (tp, id->decl_map, walk_subtrees);
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
     /* UNSAVE_EXPRs should not be generated until expansion time.  */
     abort ();
@@ -2318,11 +2317,10 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
 /* The SAVE_EXPR pointed to by TP is being copied.  If ST contains
    information indicating to what new SAVE_EXPR this one should be mapped,
-   use that one.  Otherwise, create a new node and enter it in ST.  FN is the
-   function into which the copy will be placed.  */
+   use that one.  Otherwise, create a new node and enter it in ST.  */
 
 void
-remap_save_expr (tree *tp, void *st_, tree fn, int *walk_subtrees)
+remap_save_expr (tree *tp, void *st_, int *walk_subtrees)
 {
   splay_tree st = (splay_tree) st_;
   splay_tree_node n;
@@ -2336,11 +2334,6 @@ remap_save_expr (tree *tp, void *st_, tree fn, int *walk_subtrees)
     {
       t = copy_node (*tp);
 
-      /* The SAVE_EXPR is now part of the function into which we
-	 are inlining this body.  */
-      SAVE_EXPR_CONTEXT (t) = fn;
-      /* And we haven't evaluated it yet.  */
-      SAVE_EXPR_RTL (t) = NULL_RTX;
       /* Remember this SAVE_EXPR.  */
       splay_tree_insert (st, (splay_tree_key) *tp, (splay_tree_value) t);
       /* Make sure we don't remap an already-remapped SAVE_EXPR.  */
@@ -2412,7 +2405,7 @@ unsave_r (tree *tp, int *walk_subtrees, void *data)
   else if (TREE_CODE (*tp) == BIND_EXPR)
     copy_bind_expr (tp, walk_subtrees, id);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, st, current_function_decl, walk_subtrees);
+    remap_save_expr (tp, st, walk_subtrees);
   else
     {
       copy_tree_r (tp, walk_subtrees, NULL);

@@ -282,8 +282,6 @@ struct tree_common GTY(())
            all decls
        BIT_FIELD_REF_UNSIGNED in
            BIT_FIELD_REF
-       SAVE_EXPR_NOPLACEHOLDER in
-	   SAVE_EXPR
 
    asm_written_flag:
 
@@ -1029,19 +1027,6 @@ struct tree_vec GTY(())
 #define IS_EMPTY_STMT(NODE)	(TREE_CODE (NODE) == NOP_EXPR \
 				 && VOID_TYPE_P (TREE_TYPE (NODE)) \
 				 && integer_zerop (TREE_OPERAND (NODE, 0)))
-
-/* In a SAVE_EXPR node.  */
-#define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND_CHECK_CODE (NODE, SAVE_EXPR, 1)
-#define SAVE_EXPR_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, SAVE_EXPR, 2)
-
-#define SAVE_EXPR_NOPLACEHOLDER(NODE) \
-  (SAVE_EXPR_CHECK (NODE)->common.unsigned_flag)
-
-/* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
-   both in normal code and in a handler.  (Normally, in a handler, all
-   SAVE_EXPRs are unsaved, meaning that their values are
-   recalculated.)  */
-#define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (SAVE_EXPR_CHECK (NODE))
 
 /* In a WITH_CLEANUP_EXPR node.  */
 #define WITH_CLEANUP_EXPR_RTL(NODE) \
@@ -3209,11 +3194,6 @@ extern tree substitute_placeholder_in_expr (tree, tree);
    belongs to a function parameter.  */
 
 extern tree variable_size (tree);
-
-/* Given a type T, force elaboration of any SAVE_EXPRs used in the definition
-   of that type.  */
-
-extern void force_type_save_exprs (tree);
 
 /* stabilize_reference (EXP) returns a reference equivalent to EXP
    but it can be used multiple times

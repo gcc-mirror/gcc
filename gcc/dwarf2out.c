@@ -10249,53 +10249,6 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
       break;
 
     case SAVE_EXPR:
-      /* If optimization is turned on, the SAVE_EXPRs that describe how to
-	 access the upper bound values may be bogus.  If they refer to a
-	 register, they may only describe how to get at these values at the
-	 points in the generated code right after they have just been
-	 computed.  Worse yet, in the typical case, the upper bound values
-	 will not even *be* computed in the optimized code (though the
-	 number of elements will), so these SAVE_EXPRs are entirely
-	 bogus. In order to compensate for this fact, we check here to see
-	 if optimization is enabled, and if so, we don't add an attribute
-	 for the (unknown and unknowable) upper bound.  This should not
-	 cause too much trouble for existing (stupid?)  debuggers because
-	 they have to deal with empty upper bounds location descriptions
-	 anyway in order to be able to deal with incomplete array types.
-	 Of course an intelligent debugger (GDB?)  should be able to
-	 comprehend that a missing upper bound specification in an array
-	 type used for a storage class `auto' local array variable
-	 indicates that the upper bound is both unknown (at compile- time)
-	 and unknowable (at run-time) due to optimization.
-
-	 We assume that a MEM rtx is safe because gcc wouldn't put the
-	 value there unless it was going to be used repeatedly in the
-	 function, i.e. for cleanups.  */
-      if (SAVE_EXPR_RTL (bound)
-	  && (! optimize || MEM_P (SAVE_EXPR_RTL (bound))))
-	{
-	  dw_die_ref ctx = lookup_decl_die (current_function_decl);
-	  dw_die_ref decl_die = new_die (DW_TAG_variable, ctx, bound);
-	  rtx loc = SAVE_EXPR_RTL (bound);
-
-	  /* If the RTL for the SAVE_EXPR is memory, handle the case where
-	     it references an outer function's frame.  */
-	  if (MEM_P (loc))
-	    {
-	      rtx new_addr = fix_lexical_addr (XEXP (loc, 0), bound);
-
-	      if (XEXP (loc, 0) != new_addr)
-		loc = gen_rtx_MEM (GET_MODE (loc), new_addr);
-	    }
-
-	  add_AT_flag (decl_die, DW_AT_artificial, 1);
-	  add_type_attribute (decl_die, TREE_TYPE (bound), 1, 0, ctx);
-	  add_AT_location_description (decl_die, DW_AT_location,
-				       loc_descriptor (loc, true));
-	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
-	}
-
-      /* Else leave out the attribute.  */
       break;
 
     case VAR_DECL:
@@ -10330,15 +10283,6 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	  ctx = comp_unit_die;
 	else
 	  ctx = lookup_decl_die (current_function_decl);
-
-	/* If we weren't able to find a context, it's most likely the case
-	   that we are processing the return type of the function.  So
-	   make a SAVE_EXPR to point to it and have the limbo DIE code
-	   find the proper die.  The save_expr function doesn't always
-	   make a SAVE_EXPR, so do it ourselves.  */
-	if (ctx == 0)
-	  bound = build (SAVE_EXPR, TREE_TYPE (bound), bound,
-			 current_function_decl, NULL_TREE);
 
 	decl_die = new_die (DW_TAG_variable, ctx, bound);
 	add_AT_flag (decl_die, DW_AT_artificial, 1);
@@ -13735,15 +13679,6 @@ dwarf2out_finish (const char *filename)
 	    add_child_die (origin->die_parent, die);
 	  else if (die == comp_unit_die)
 	    ;
-	  /* If this was an expression for a bound involved in a function
-	     return type, it may be a SAVE_EXPR for which we weren't able
-	     to find a DIE previously.  So try now.  */
-	  else if (node->created_for
-		   && TREE_CODE (node->created_for) == SAVE_EXPR
-		   && 0 != (origin = (lookup_decl_die
-				      (SAVE_EXPR_CONTEXT
-				       (node->created_for)))))
-	    add_child_die (origin, die);
 	  else if (errorcount > 0 || sorrycount > 0)
 	    /* It's OK to be confused by errors in the input.  */
 	    add_child_die (comp_unit_die, die);

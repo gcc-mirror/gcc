@@ -3990,20 +3990,7 @@ grokdeclarator (tree declarator, tree declspecs,
 		    }
 
 		  if (size_varies)
-		    {
-		      /* We must be able to distinguish the
-			 SAVE_EXPR_CONTEXT for the variably-sized type
-			 so that we can set it correctly in
-			 set_save_expr_context.  The convention is
-			 that all SAVE_EXPRs that need to be reset
-			 have NULL_TREE for their SAVE_EXPR_CONTEXT.  */
-		      tree cfd = current_function_decl;
-		      if (decl_context == PARM)
-			current_function_decl = NULL_TREE;
-		      itype = variable_size (itype);
-		      if (decl_context == PARM)
-			current_function_decl = cfd;
-		    }
+		    itype = variable_size (itype);
 		  itype = build_index_type (itype);
 		}
 	    }
@@ -6065,25 +6052,6 @@ store_parm_decls_oldstyle (tree fndecl, tree arg_info)
     }
 }
 
-/* A subroutine of store_parm_decls called via walk_tree.  Mark all
-   decls non-local.  */
-
-static tree
-set_decl_nonlocal (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (DECL_P (t))
-    {
-      DECL_NONLOCAL (t) = 1;
-      *walk_subtrees = 0;
-    }
-  else if (TYPE_P (t))
-    *walk_subtrees = 0;
-
-  return NULL;
-}
-
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
@@ -6095,9 +6063,6 @@ void
 store_parm_decls (void)
 {
   tree fndecl = current_function_decl;
-
-  /* The function containing FNDECL, if any.  */
-  tree context = decl_function_context (fndecl);
 
   /* The argument information block for FNDECL.  */
   tree arg_info = DECL_ARGUMENTS (fndecl);
@@ -6129,27 +6094,14 @@ store_parm_decls (void)
   /* Begin the statement tree for this function.  */
   DECL_SAVED_TREE (fndecl) = push_stmt_list ();
 
-  /* If this is a nested function, save away the sizes of any
-     variable-size types so that we can expand them when generating
-     RTL.  */
-  if (context)
-    {
-      tree t;
-
-      DECL_LANG_SPECIFIC (fndecl)->pending_sizes
-	= nreverse (get_pending_sizes ());
-      for (t = DECL_LANG_SPECIFIC (fndecl)->pending_sizes;
-	   t;
-	   t = TREE_CHAIN (t))
-	{
-	  /* We will have a nonlocal use of whatever variables are
-	     buried inside here.  */
-	  walk_tree (&TREE_OPERAND (TREE_VALUE (t), 0),
-		     set_decl_nonlocal, NULL, NULL);
-
-	  SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = context;
-	}
-    }
+  /* ??? Insert the contents of the pending sizes list into the function
+     to be evaluated.  This just changes mis-behaviour until assign_parms
+     phase ordering problems are resolved.  */
+  {
+    tree t;
+    for (t = nreverse (get_pending_sizes ()); t ; t = TREE_CHAIN (t))
+      add_stmt (TREE_VALUE (t));
+  }
 
   /* Even though we're inside a function body, we still don't want to
      call expand_expr to calculate the size of a variable-sized array.

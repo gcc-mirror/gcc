@@ -723,10 +723,9 @@ DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", '1', 1)
 DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", '1', 1)
 
 /* Represents something we computed once and will use multiple times.
-   First operand is that expression.  Second is the function decl
-   in which the SAVE_EXPR was created.  The third operand is the RTL,
-   nonzero only after the expression has been computed.  */
-DEFTREECODE (SAVE_EXPR, "save_expr", 'e', 3)
+   First operand is that expression.  After it is evaluated once, it
+   will be replaced by the temporary variable that holds the value.  */
+DEFTREECODE (SAVE_EXPR, "save_expr", 'e', 1)
 
 /* For a UNSAVE_EXPR, operand 0 is the value to unsave.  By unsave, we
    mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs, CALL_EXPRs,

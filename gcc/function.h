@@ -243,10 +243,6 @@ struct function GTY(())
      on machines which require execution of the epilogue on all returns.  */
   rtx x_naked_return_label;
 
-  /* List (chain of EXPR_LISTs) of pseudo-regs of SAVE_EXPRs.
-     So we can mark them all live at the end of the function, if nonopt.  */
-  rtx x_save_expr_regs;
-
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
   rtx x_stack_slot_list;
@@ -506,7 +502,6 @@ extern int trampolines_created;
 #define parm_reg_stack_loc (cfun->x_parm_reg_stack_loc)
 #define return_label (cfun->x_return_label)
 #define naked_return_label (cfun->x_naked_return_label)
-#define save_expr_regs (cfun->x_save_expr_regs)
 #define stack_slot_list (cfun->x_stack_slot_list)
 #define parm_birth_insn (cfun->x_parm_birth_insn)
 #define frame_offset (cfun->x_frame_offset)

@@ -1349,11 +1349,6 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 
   align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
 
-  if (GET_MODE (x) != BLKmode)
-    abort ();
-  if (GET_MODE (y) != BLKmode)
-    abort ();
-
   x = protect_from_queue (x, 1);
   y = protect_from_queue (y, 0);
   size = protect_from_queue (size, 0);
@@ -1364,6 +1359,11 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
     abort ();
   if (size == 0)
     abort ();
+
+  /* Make sure we've got BLKmode addresses; store_one_arg can decide that
+     block copy is more efficient for other large modes, e.g. DCmode.  */
+  x = adjust_address (x, BLKmode, 0);
+  y = adjust_address (y, BLKmode, 0);
 
   /* Set MEM_SIZE as appropriate for this block copy.  The main place this
      can be incorrect is coming from __builtin_memcpy.  */
@@ -5090,14 +5090,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    = gen_reg_rtx (promote_mode (domain, DECL_MODE (index),
 						 &unsignedp, 0));
 		  SET_DECL_RTL (index, index_r);
-		  if (TREE_CODE (value) == SAVE_EXPR
-		      && SAVE_EXPR_RTL (value) == 0)
-		    {
-		      /* Make sure value gets expanded once before the
-                         loop.  */
-		      expand_expr (value, const0_rtx, VOIDmode, 0);
-		      emit_queue ();
-		    }
 		  store_expr (lo_index, index_r, 0);
 
 		  /* Build the head of the loop.  */
@@ -5986,7 +5978,6 @@ safe_from_p (rtx x, tree exp, int top_p)
 {
   rtx exp_rtl = 0;
   int i, nops;
-  static tree save_expr_list;
 
   if (x == 0
       /* If EXP has varying size, we MUST use a target since we currently
@@ -6016,30 +6007,6 @@ safe_from_p (rtx x, tree exp, int top_p)
       x = SUBREG_REG (x);
       if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER)
 	return 0;
-    }
-
-  /* A SAVE_EXPR might appear many times in the expression passed to the
-     top-level safe_from_p call, and if it has a complex subexpression,
-     examining it multiple times could result in a combinatorial explosion.
-     E.g. on an Alpha running at least 200MHz, a Fortran testcase compiled
-     with optimization took about 28 minutes to compile -- even though it was
-     only a few lines long.  So we mark each SAVE_EXPR we see with TREE_PRIVATE
-     and turn that off when we are done.  We keep a list of the SAVE_EXPRs
-     we have processed.  Note that the only test of top_p was above.  */
-
-  if (top_p)
-    {
-      int rtn;
-      tree t;
-
-      save_expr_list = 0;
-
-      rtn = safe_from_p (x, exp, 0);
-
-      for (t = save_expr_list; t != 0; t = TREE_CHAIN (t))
-	TREE_PRIVATE (TREE_PURPOSE (t)) = 0;
-
-      return rtn;
     }
 
   /* Now look at our tree code and possibly recurse.  */
@@ -6139,28 +6106,8 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  break;
 
 	case CLEANUP_POINT_EXPR:
-	  return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
-
 	case SAVE_EXPR:
-	  exp_rtl = SAVE_EXPR_RTL (exp);
-	  if (exp_rtl)
-	    break;
-
-	  /* If we've already scanned this, don't do it again.  Otherwise,
-	     show we've scanned it and record for clearing the flag if we're
-	     going on.  */
-	  if (TREE_PRIVATE (exp))
-	    return 1;
-
-	  TREE_PRIVATE (exp) = 1;
-	  if (! safe_from_p (x, TREE_OPERAND (exp, 0), 0))
-	    {
-	      TREE_PRIVATE (exp) = 0;
-	      return 0;
-	    }
-
-	  save_expr_list = tree_cons (exp, NULL_TREE, save_expr_list);
-	  return 1;
+	  return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
 	case BIND_EXPR:
 	  /* The only operand we look at is operand 1.  The rest aren't
@@ -6841,88 +6788,30 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return temp;
 
     case SAVE_EXPR:
-      context = decl_function_context (exp);
+      {
+	tree val = TREE_OPERAND (exp, 0);
+	rtx ret = expand_expr_real_1 (val, target, tmode, modifier, alt_rtl);
 
-      /* If this SAVE_EXPR was at global context, assume we are an
-	 initialization function and move it into our context.  */
-      if (context == 0)
-	SAVE_EXPR_CONTEXT (exp) = current_function_decl;
+	if (TREE_CODE (val) != VAR_DECL || !DECL_ARTIFICIAL (val))
+	  {
+	    /* We can indeed still hit this case, typically via builtin
+	       expanders calling save_expr immediately before expanding
+	       something.  Assume this means that we only have to deal
+	       with non-BLKmode values.  */
+	    if (GET_MODE (ret) == BLKmode)
+	      abort ();
 
-      if (context == current_function_decl)
-	context = 0;
+	    val = build_decl (VAR_DECL, NULL, TREE_TYPE (exp));
+	    DECL_ARTIFICIAL (val) = 1;
+	    TREE_OPERAND (exp, 0) = val;
 
-      /* If this is non-local, handle it.  */
-      if (context)
-	{
-	  /* The following call just exists to abort if the context is
-	     not of a containing function.  */
-	  find_function_data (context);
+	    if (!CONSTANT_P (ret))
+	      ret = copy_to_reg (ret);
+	    SET_DECL_RTL (val, ret);
+	  }
 
-	  temp = SAVE_EXPR_RTL (exp);
-	  if (temp && REG_P (temp))
-	    {
-	      put_var_into_stack (exp, /*rescan=*/true);
-	      temp = SAVE_EXPR_RTL (exp);
-	    }
-	  if (temp == 0 || !MEM_P (temp))
-	    abort ();
-	  return
-	    replace_equiv_address (temp,
-				   fix_lexical_addr (XEXP (temp, 0), exp));
-	}
-      if (SAVE_EXPR_RTL (exp) == 0)
-	{
-	  if (mode == VOIDmode)
-	    temp = const0_rtx;
-	  else
-	    temp = assign_temp (build_qualified_type (type,
-						      (TYPE_QUALS (type)
-						       | TYPE_QUAL_CONST)),
-				3, 0, 0);
-
-	  SAVE_EXPR_RTL (exp) = temp;
-	  if (!optimize && REG_P (temp))
-	    save_expr_regs = gen_rtx_EXPR_LIST (VOIDmode, temp,
-						save_expr_regs);
-
-	  /* If the mode of TEMP does not match that of the expression, it
-	     must be a promoted value.  We pass store_expr a SUBREG of the
-	     wanted mode but mark it so that we know that it was already
-	     extended.  */
-
-	  if (REG_P (temp) && GET_MODE (temp) != mode)
-	    {
-	      temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
-	      promote_mode (type, mode, &unsignedp, 0);
-	      SUBREG_PROMOTED_VAR_P (temp) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
-	    }
-
-	  if (temp == const0_rtx)
-	    expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
-	  else
-	    store_expr (TREE_OPERAND (exp, 0), temp,
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
-
-	  TREE_USED (exp) = 1;
-	}
-
-      /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
-	 must be a promoted value.  We return a SUBREG of the wanted mode,
-	 but mark it so that we know that it was already extended.  */
-
-      if (REG_P (SAVE_EXPR_RTL (exp))
-	  && GET_MODE (SAVE_EXPR_RTL (exp)) != mode)
-	{
-	  /* Compute the signedness and make the proper SUBREG.  */
-	  promote_mode (type, mode, &unsignedp, 0);
-	  temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
-	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (temp, unsignedp);
-	  return temp;
-	}
-
-      return SAVE_EXPR_RTL (exp);
+        return ret;
+      }
 
     case UNSAVE_EXPR:
       {
@@ -7301,25 +7190,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		 && (offset != 0
 		     || (code == ARRAY_RANGE_REF && mode == BLKmode)))
 	  {
-	    /* If the operand is a SAVE_EXPR, we can deal with this by
-	       forcing the SAVE_EXPR into memory.  */
-	    if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
-	      {
-		put_var_into_stack (TREE_OPERAND (exp, 0),
-				    /*rescan=*/true);
-		op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
-	      }
-	    else
-	      {
-		tree nt
-		  = build_qualified_type (TREE_TYPE (tem),
-					  (TYPE_QUALS (TREE_TYPE (tem))
-					   | TYPE_QUAL_CONST));
-		rtx memloc = assign_temp (nt, 1, 1, 1);
+	    tree nt = build_qualified_type (TREE_TYPE (tem),
+					    (TYPE_QUALS (TREE_TYPE (tem))
+					     | TYPE_QUAL_CONST));
+	    rtx memloc = assign_temp (nt, 1, 1, 1);
 
-		emit_move_insn (memloc, op0);
-		op0 = memloc;
-	      }
+	    emit_move_insn (memloc, op0);
+	    op0 = memloc;
 	  }
 
 	if (offset != 0)
@@ -9045,31 +8922,20 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
 		   || GET_CODE (op0) == PARALLEL || GET_CODE (op0) == LO_SUM)
 	    {
-	      /* If the operand is a SAVE_EXPR, we can deal with this by
-		 forcing the SAVE_EXPR into memory.  */
-	      if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
-		{
-		  put_var_into_stack (TREE_OPERAND (exp, 0),
-				      /*rescan=*/true);
-		  op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
-		}
+	      /* If this object is in a register, it can't be BLKmode.  */
+	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	      rtx memloc = assign_temp (inner_type, 1, 1, 1);
+
+	      if (GET_CODE (op0) == PARALLEL)
+	        /* Handle calls that pass values in multiple
+		   non-contiguous locations.  The Irix 6 ABI has examples
+		   of this.  */
+		emit_group_store (memloc, op0, inner_type,
+				  int_size_in_bytes (inner_type));
 	      else
-		{
-		  /* If this object is in a register, it can't be BLKmode.  */
-		  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-		  rtx memloc = assign_temp (inner_type, 1, 1, 1);
+		emit_move_insn (memloc, op0);
 
-		  if (GET_CODE (op0) == PARALLEL)
-		    /* Handle calls that pass values in multiple
-		       non-contiguous locations.  The Irix 6 ABI has examples
-		       of this.  */
-		    emit_group_store (memloc, op0, inner_type,
-				      int_size_in_bytes (inner_type));
-		  else
-		    emit_move_insn (memloc, op0);
-
-		  op0 = memloc;
-		}
+	      op0 = memloc;
 	    }
 
 	  if (!MEM_P (op0))
