@@ -1,5 +1,7 @@
 Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* collect2.c (is_in_list): Wrap inside COLLECT_EXPORT_LIST ifdef.
+
 	* local-alloc.c (reg_classes_overlap_p): Delete dead function.
 
 	* tree.h (lang_print_xnode): Provide prototype.
