@@ -27,7 +27,9 @@ MULTILIB_DIRNAMES	= soft-float \
 
 MULTILIB_MATCHES	= mlittle=mlittle-endian \
 			  mbig=mbig-endian \
-			  msoft-float=mcpu?403
+			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?821 \
+			  msoft-float=mcpu?860
 
 MULTILIB_EXCEPTIONS	= *mlittle/*mcall-aixdesc*
 

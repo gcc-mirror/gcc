@@ -65,6 +65,6 @@ __FIXUP_END__:
 __CTOR_END__:
 
 	.section ".dtors","w"
-	.globl	__CTOR_END__
-	.type	__CTOR_END__,@object
+	.globl	__DTOR_END__
+	.type	__DTOR_END__,@object
 __DTOR_END__:

@@ -22,8 +22,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 MULTILIB_OPTIONS	= msoft-float
 MULTILIB_DIRNAMES	= soft-float
 MULTILIB_MATCHES	= msoft-float=mcpu?403 \
-			  msoft-float=mcpu?mpc403 \
-			  msoft-float=mcpu?ppc403
+			  msoft-float=mcpu?821 \
+			  msoft-float=mcpu?860
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
