@@ -1,3 +1,7 @@
+2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* win32-host.c: Normalize copyright boilerplate.
+
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (print_int_node): Use string concatentation on
