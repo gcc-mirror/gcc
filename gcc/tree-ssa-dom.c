@@ -1386,7 +1386,7 @@ record_cond (tree cond, tree value)
   initialize_hash_element (cond, value, element);
 
   slot = htab_find_slot_with_hash (avail_exprs, (void *)element,
-				   element->hash, true);
+				   element->hash, INSERT);
   if (*slot == NULL)
     {
       *slot = (void *) element;

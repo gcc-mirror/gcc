@@ -1,7 +1,10 @@
 2005-01-31  Jeff Law  <law@redhat.com>
 
-        * fold-const.c (fold, case CEIL_MOD_EXPR): Do not lose side
-        effects when optimizing 0 % X.  Do not try to optimize X % 0.
+	* tree-ssa-dom.c (record_cond): Pass correct variable type
+	for last argument to htab_find_slot_with_hash.
+
+	* fold-const.c (fold, case CEIL_MOD_EXPR): Do not lose side
+	effects when optimizing 0 % X.  Do not try to optimize X % 0.
 
 2005-01-31  James E. Wilson  <wilson@specifixinc.com>
 
