@@ -121,6 +121,7 @@ vinfo_for_stmt (tree stmt)
 
 /* The misalignment of the memory access in bytes.  */
 #define DR_MISALIGNMENT(DR)   (DR)->aux
+#define MAX_NUMBER_OF_UNALIGNED_DATA_REFS 1
 
 static inline bool
 aligned_access_p (struct data_reference *data_ref_info)
@@ -152,14 +153,21 @@ typedef struct _loop_vec_info {
   /* The loop exit_condition.  */
   tree exit_cond;
 
-  /* Number of iterations. -1 if unknown.  */
-  HOST_WIDE_INT num_iters;
+  /* Number of iterations.  */
+  tree num_iters;
 
   /* Is the loop vectorizable? */
   bool vectorizable;
 
   /* Unrolling factor  */
   int vectorization_factor;
+
+  /* Unknown DRs according to which loop was peeled.  */
+  struct data_reference *unaligned_drs [MAX_NUMBER_OF_UNALIGNED_DATA_REFS];
+
+  /* If true, loop is peeled.
+   unaligned_drs show in this case DRs used for peeling.  */
+  bool do_peeling_for_alignment;
 
   /* All data references in the loop that are being written to.  */
   varray_type data_ref_writes;
@@ -177,8 +185,14 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_VECT_FACTOR(L)    (L)->vectorization_factor
 #define LOOP_VINFO_DATAREF_WRITES(L) (L)->data_ref_writes
 #define LOOP_VINFO_DATAREF_READS(L)  (L)->data_ref_reads
+#define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))       
+#define LOOP_DO_PEELING_FOR_ALIGNMENT(L) (L)->do_peeling_for_alignment
+#define LOOP_UNALIGNED_DR(L, I)      (L)->unaligned_drs[(I)] 
+  
 
-#define LOOP_VINFO_NITERS_KNOWN_P(L) ((L)->num_iters > 0)
+#define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
+(host_integerp ((L)->num_iters,0)                        \
+&& TREE_INT_CST_LOW ((L)->num_iters) > 0)      
 
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
