@@ -19,6 +19,11 @@ struct H m = { .J = {}, 3 };
 struct I { int J; int K[3]; int L; };
 struct M { int N; struct I O[3]; int P; };
 struct M n[] = { [0 ... 5].O[1 ... 2].K[0 ... 1] = 4, 5, 6, 7 };
+struct M o[] = { [0 ... 5].O = { [1 ... 2].K[0 ... 1] = 4 },
+		 [5].O[2].K[2] = 5, 6, 7 };
+struct M p[] = { [0 ... 5].O[1 ... 2].K = { [0 ... 1] = 4 },
+		 [5].O[2].K[2] = 5, 6, 7 };
+int q[3][3] = { [0 ... 1] = { [1 ... 2] = 23 }, [1][2] = 24 };
 
 int main (void)
 {
@@ -57,6 +62,16 @@ int main (void)
 	abort ();
     }
   if (n[5].O[2].K[2] != 5 || n[5].O[2].L != 6 || n[5].P != 7)
+    abort ();
+  if (memcmp (n, o, sizeof (n)) || sizeof (n) != sizeof (o))
+    abort ();
+  if (memcmp (n, p, sizeof (n)) || sizeof (n) != sizeof (p))
+    abort ();
+  if (q[0][0] || q[0][1] != 23 || q[0][2] != 23)
+    abort ();
+  if (q[1][0] || q[1][1] != 23 || q[1][2] != 24)
+    abort ();
+  if (q[2][0] || q[2][1] || q[2][2])
     abort ();
   exit (0);
 }

@@ -1,3 +1,13 @@
+2001-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (struct constructor_stack): Add range_stack member.
+	(really_start_incremental_init): Clear it.
+	(push_init_level): Save constructor_range_stack and clear it if
+	pushing explicit braces.
+	(pop_init_level): abort if constructor_range_stack is non-zero at
+	explicit closing brace.  Restore saved constructor_range_stack if
+	not implicit.
+
 2001-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* expr.c (emit_move_insn): Add REG_EQUAL note when constant loaded

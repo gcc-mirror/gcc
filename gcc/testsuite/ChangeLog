@@ -1,3 +1,8 @@
+2001-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu99-init-1.c: Add 3 more designated range initializer
+	tests.
+
 2001-01-25  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.c-torture/execute/ieee/20000320-1.c (main): For MIPS, change

@@ -4954,6 +4954,8 @@ static int designator_errorneous;
    structuring in the initializer, including the outermost one.  It
    saves the values of most of the variables above.  */
 
+struct constructor_range_stack;
+
 struct constructor_stack
 {
   struct constructor_stack *next;
@@ -4965,12 +4967,13 @@ struct constructor_stack
   tree unfilled_fields;
   tree bit_index;
   tree elements;
-  int offset;
   struct init_node *pending_elts;
+  int offset;
   int depth;
   /* If nonzero, this value should replace the entire
      constructor at this level.  */
   tree replacement_value;
+  struct constructor_range_stack *range_stack;
   char constant;
   char simple;
   char implicit;
@@ -5159,6 +5162,7 @@ really_start_incremental_init (type)
   p->depth = constructor_depth;
   p->replacement_value = 0;
   p->implicit = 0;
+  p->range_stack = 0;
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->next = 0;
@@ -5272,6 +5276,7 @@ push_init_level (implicit)
   p->outer = 0;
   p->incremental = constructor_incremental;
   p->next = constructor_stack;
+  p->range_stack = 0;
   constructor_stack = p;
 
   constructor_constant = 1;
@@ -5282,6 +5287,8 @@ push_init_level (implicit)
   constructor_pending_elts = 0;
   if (!implicit)
     {
+      p->range_stack = constructor_range_stack;
+      constructor_range_stack = 0;
       designator_depth = 0;
       designator_errorneous = 0;
     }
@@ -5404,6 +5411,9 @@ pop_init_level (implicit)
 	 pop any inner levels that didn't have explicit braces.  */
       while (constructor_stack->implicit)
 	process_init_element (pop_init_level (1));
+
+      if (constructor_range_stack)
+	abort ();
     }
 
   p = constructor_stack;
@@ -5531,6 +5541,8 @@ pop_init_level (implicit)
   constructor_incremental = p->incremental;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
+  if (!p->implicit)
+    constructor_range_stack = p->range_stack;
   RESTORE_SPELLING_DEPTH (constructor_depth);
 
   constructor_stack = p->next;
