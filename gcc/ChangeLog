@@ -1,3 +1,9 @@
+2005-02-15  Peter O'Gorman  <peter@pogma.com>
+
+	PR bootstrap/18810
+	* mklibgcc.in (vis_hide): Use a temporary object file, not
+	-o /dev/null.
+
 2005-02-15  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/19924
