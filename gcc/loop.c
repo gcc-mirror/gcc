@@ -3741,7 +3741,7 @@ loop_bivs_init_find (loop)
 	  && (test = get_condition_for_loop (loop, p)) != 0
 	  && GET_CODE (XEXP (test, 0)) == REG
 	  && REGNO (XEXP (test, 0)) < max_reg_before_loop
-	  && (bl = ivs->reg_biv_class[REGNO (XEXP (test, 0))]) != 0
+	  && (bl = REG_IV_CLASS (ivs, REGNO (XEXP (test, 0)))) != 0
 	  && valid_initial_value_p (XEXP (test, 1), p, call_seen, loop->start)
 	  && bl->init_insn == 0)
 	{
@@ -4915,7 +4915,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
   /* Add this to the reg's iv_class, creating a class
      if this is the first incrementation of the reg.  */
 
-  bl = ivs->reg_biv_class[REGNO (dest_reg)];
+  bl = REG_IV_CLASS (ivs, REGNO (dest_reg));
   if (bl == 0)
     {
       /* Create and initialize new iv_class.  */
@@ -4946,7 +4946,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
       ivs->loop_iv_list = bl;
 
       /* Put it in the array of biv register classes.  */
-      ivs->reg_biv_class[REGNO (dest_reg)] = bl;
+      REG_IV_CLASS (ivs, REGNO (dest_reg)) = bl;
     }
 
   /* Update IV_CLASS entry for this biv.  */
@@ -5075,7 +5075,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
 
   /* Add the giv to the class of givs computed from one biv.  */
 
-  bl = ivs->reg_biv_class[REGNO (src_reg)];
+  bl = REG_IV_CLASS (ivs, REGNO (src_reg));
   if (bl)
     {
       v->next_iv = bl->giv;
@@ -5267,7 +5267,7 @@ check_final_value (loop, v)
   struct iv_class *bl;
   rtx final_value = 0;
 
-  bl = ivs->reg_biv_class[REGNO (v->src_reg)];
+  bl = REG_IV_CLASS (ivs, REGNO (v->src_reg));
 
   /* DEST_ADDR givs will never reach here, because they are always marked
      replaceable above in record_giv.  */
@@ -8225,7 +8225,8 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	      if (v->ignore || v->maybe_dead || v->mode != mode)
 		continue;
 
-	      for (tv = ivs->reg_biv_class[REGNO (arg)]->giv; tv; tv = tv->next_iv)
+	      for (tv = REG_IV_CLASS (ivs, REGNO (arg))->giv; tv; 
+		   tv = tv->next_iv)
 		if (! tv->ignore && ! tv->maybe_dead
 		    && rtx_equal_p (tv->mult_val, v->mult_val)
 		    && rtx_equal_p (tv->add_val, v->add_val)
@@ -8323,7 +8324,7 @@ record_initial (dest, set, data)
       || REG_IV_TYPE (ivs, REGNO (dest)) != BASIC_INDUCT)
     return;
 
-  bl = ivs->reg_biv_class[REGNO (dest)];
+  bl = REG_IV_CLASS (ivs, REGNO (dest));
 
   /* If this is the first set found, record it.  */
   if (bl->init_insn == 0)

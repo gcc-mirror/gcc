@@ -363,6 +363,7 @@ extern FILE *loop_dump_stream;
   (*(enum iv_mode *) &VARRAY_INT(ivs->reg_iv_type, (n)))
 #define REG_IV_INFO(ivs, n) \
   (*(struct induction **) &VARRAY_GENERIC_PTR(ivs->reg_iv_info, (n)))
+#define REG_IV_CLASS(ivs, n) ivs->reg_biv_class[n]
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
