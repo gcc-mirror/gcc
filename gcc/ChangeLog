@@ -1,3 +1,7 @@
+2002-04-08  Richard Henderson  <rth@redhat.com>
+
+	* reorg.c (get_branch_condition): Use reversed_comparison_code.
+
 2002-04-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/larith.asm (__map_data_section): Fix condition
