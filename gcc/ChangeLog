@@ -1,3 +1,16 @@
+2003-02-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (store_one_arg): Revert 1999-02-16 change.  Revert
+	2000-12-17 change.  Pass EXPAND_STACK_PARM to expand_expr.
+	* expr.h (enum expand_modifier): Define EXPAND_STACK_PARM.
+	(enum block_op_methods): Reorder for better store_expr optimization.
+	* expr.c (store_expr): Test bit 1 of "want_value" for call param
+	stores, test bit 0 for original want_value meaning.  Pass
+	BLOCK_OP_CALL_PARM to emit_block_move when bit 1 set.  Adjust
+	recursive calls, and calls to expand_param.
+	(expand_expr): Handle EXPAND_STACK_PARM modifier.  When cse
+	expected, set target to 0 rather than to subtarget.  Formatting.
+
 Sat Feb 22 19:34:29 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/linux.h (TARGET_HAS_F_SETLKW): Define.

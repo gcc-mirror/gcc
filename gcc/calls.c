@@ -4420,13 +4420,6 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 		}
 	    }
 	}
-      /* Now that we have saved any slots that will be overwritten by this
-	 store, mark all slots this store will use.  We must do this before
-	 we actually expand the argument since the expansion itself may
-	 trigger library calls which might need to use the same stack slot.  */
-      if (argblock && ! variable_size && arg->stack)
-	for (i = lower_bound; i < upper_bound; i++)
-	  stack_usage_map[i] = 1;
     }
 
   /* If this isn't going to be placed on both the stack and in registers,
@@ -4479,7 +4472,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 				(partial
 				 || TYPE_MODE (TREE_TYPE (pval)) != arg->mode)
 				? NULL_RTX : arg->stack,
-				VOIDmode, 0);
+				VOIDmode, EXPAND_STACK_PARM);
 
       /* If we are promoting object (or for any other reason) the mode
 	 doesn't agree, convert the mode.  */
@@ -4622,37 +4615,6 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	    }
 	}
 
-      /* Special handling is required if part of the parameter lies in the
-	 register parameter area.  The argument may be copied into the stack
-	 slot using memcpy(), but the original contents of the register
-	 parameter area will be restored after the memcpy() call.
-
-	 To ensure that the part that lies in the register parameter area
-	 is copied correctly, we emit a separate push for that part.  This
-	 push should be small enough to avoid a call to memcpy().  */
-#ifndef STACK_PARMS_IN_REG_PARM_AREA
-      if (arg->reg && arg->pass_on_stack)
-#else
-      if (1)
-#endif
-	{
-	  if (arg->offset.constant < reg_parm_stack_space && arg->offset.var)
-	    error ("variable offset is passed partially in stack and in reg");
-	  else if (arg->offset.constant < reg_parm_stack_space && arg->size.var)
-	    error ("variable size is passed partially in stack and in reg");
-	  else if (arg->offset.constant < reg_parm_stack_space 
-	      && ((arg->offset.constant + arg->size.constant) 
-		   > reg_parm_stack_space))
-          {
-	    rtx size_rtx1 = GEN_INT (reg_parm_stack_space - arg->offset.constant);
-	    emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx1,
-		            parm_align, partial, reg, excess, argblock,
-			    ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
-		            ARGS_SIZE_RTX (arg->alignment_pad));
-	  }
-	}
-	
-
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      parm_align, partial, reg, excess, argblock,
 		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
@@ -4669,6 +4631,12 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
       if (partial == 0)
 	arg->value = arg->stack_slot;
     }
+
+  /* Mark all slots this store used.  */
+  if (ACCUMULATE_OUTGOING_ARGS && !(flags & ECF_SIBCALL)
+      && argblock && ! variable_size && arg->stack)
+    for (i = lower_bound; i < upper_bound; i++)
+      stack_usage_map[i] = 1;
 
   /* Once we have pushed something, pops can't safely
      be deferred during the rest of the arguments.  */
