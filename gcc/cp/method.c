@@ -1766,9 +1766,6 @@ build_typename_overload (type)
   build_mangled_name (type, 0, 1);
   id = get_identifier (obstack_base (&scratch_obstack));
   IDENTIFIER_OPNAME_P (id) = 1;
-#if 0
-  IDENTIFIER_GLOBAL_VALUE (id) = TYPE_MAIN_DECL (type);
-#endif
   TREE_TYPE (id) = type;
   end_squangling ();
   return id;
@@ -1797,6 +1794,28 @@ get_id_2 (name, name2)
   OB_PUTCP (name);
   OB_PUTID (name2);
   OB_FINISH ();
+  return get_identifier (obstack_base (&scratch_obstack));
+}
+
+/* Returns the name of a construction vtable group.  TYPE is the most
+   derived class in the hierarhcy.  BINFO is the most derived class in
+   the construction vtable group.  */
+
+tree
+get_ctor_vtbl_name (type, binfo)
+     tree type;
+     tree binfo;
+{
+  start_squangling ();
+  OB_INIT ();
+  OB_PUTCP (CTOR_VTBL_NAME_PREFIX);
+  build_mangled_name (type, 0, 0);
+  OB_PUTC ('_');
+  build_mangled_name (BINFO_TYPE (binfo), 0, 0);
+  OB_PUTC ('_');
+  build_overload_int (BINFO_OFFSET (binfo), mf_none);
+  OB_FINISH ();
+  end_squangling ();
   return get_identifier (obstack_base (&scratch_obstack));
 }
 

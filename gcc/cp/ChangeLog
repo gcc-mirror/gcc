@@ -1,5 +1,35 @@
 2000-05-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (SET_BINFO_NEW_VTABLE_MARKED): Add sanity checks.
+	(VTT_NAME_PREFIX): New macro.
+	(CTOR_VTBL_NAME_PREFIX): Likewise.
+	(get_ctor_vtbl_name): New function.
+	* class.c (get_vtable_name): Simplify.
+	(get_vtt_name): New function.
+	(get_vtable_decl): Don't set IDENTIFIER_GLOBAL_VALUE.
+	(dfs_mark_primary_bases): Update the CLASSTYPE_VBASECLASSES list
+	when a virtual base becomes primary.
+	(finish_struct_1): Set CLASSTYPE_VFIELDS a little earlier.  Build
+	VTTs.
+	(finish_vtbls): Adjust calls to accumulate_vtbl_inits to pass in
+	additional parameters.
+	(dfs_finish_vtbls): Don't clear BINFO_NEW_VTABLE_MARKED.
+	(initialize_array): New function.
+	(build_vtt): Likewise.
+	(build_vtt_inits): Likewise.
+	(dfs_build_vtt_inits): Likewise.
+	(dfs_fixup_binfo_vtbls): Likewise.
+	(build_ctor_vtbl_group): Likewise.
+	(initialize_vtable): Use initialize_array.
+	(accumulate_vtbl_inits): Reimplement to handle construction
+	vtables.
+	(dfs_accumulate_vtbl_inits): Likewise.
+	(bulid_vtbl_initializer): Adjust parameter name.
+	* method.c (build_typename_overload): Remove #if 0'd code.
+	(get_ctor_vtbl_name): New function.
+	* search.c (dfs_walk_real): Use BINFO_N_BASETYPES.
+	(init_vbase_pointers): Don't mess with the TREE_CHAIN of a binfo.
+	
 	* cp-tree.h (struct lang_type): Remove search_slot.
 	(CLASSTYPE_SEARCH_SLOT): Remove.
 	(emit_base_init): Change prototype.
