@@ -4641,7 +4641,12 @@ expand_expr (exp, target, tmode, modifier)
 	if (target == 0)
 	  {
 	    if (DECL_RTL (slot) != 0)
-	      target = DECL_RTL (slot);
+	      {
+		target = DECL_RTL (slot);
+		/* We have already expanded the slot, so don't do
+		   it again.  (mrs)  */
+		return target;
+	      }
 	    else
 	      {
 		target = assign_stack_temp (mode, int_size_in_bytes (type), 0);
@@ -4651,6 +4656,15 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 
 #if 0
+	    /* I bet this needs to be done, and I bet that it needs to
+	       be above, inside the else clause.  The reason is
+	       simple, how else is it going to get cleaned up? (mrs)
+
+	       The reason is probably did not work before, and was
+	       commented out is because this was re-expanding already
+	       expanded target_exprs (target == 0 and DECL_RTL (slot)
+	       != 0) also cleaning them up many times as well.  :-( */
+
 	    /* Since SLOT is not known to the called function
 	       to belong to its stack frame, we must build an explicit
 	       cleanup.  This case occurs when we must build up a reference
