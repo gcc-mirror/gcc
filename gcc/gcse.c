@@ -3963,6 +3963,15 @@ try_replace_reg (from, to, insn)
   if (num_changes_pending () && apply_change_group ())
     success = 1;
 
+  /* Try to simplify SET_SRC if we have substituted a constant.  */
+  if (success && set && CONSTANT_P (to))
+    {
+      src = simplify_rtx (SET_SRC (set));
+
+      if (src)
+	validate_change (insn, &SET_SRC (set), src, 0);
+    }
+
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
       /* If above failed and this is a single set, try to simplify the source of
