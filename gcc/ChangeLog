@@ -1,3 +1,12 @@
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (expand_a_rotate): Don't generate insns
+	by hand.
+	(output_a_rotate): Tweak a comment.
+	* config/h8300/h8300.md (*rotlqi3_1): Change to rotlqi3_1.
+	(*rotlhi3_1): Change to rotlhi3_1.
+	(*rotlsi3_1): Change to rotlsi3_1.
+
 2004-02-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/13866
