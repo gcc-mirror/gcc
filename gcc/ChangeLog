@@ -1,3 +1,8 @@
+2001-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (prepare_move_operands) [PIC]: Use operands[0] as
+	temporary if no_new_pseudos.
+
 2001-01-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinternals.texi: Update.

@@ -475,11 +475,14 @@ prepare_move_operands (operands, mode)
 	       && GET_CODE (XEXP (operands[1], 0)) == PLUS
 	       && SYMBOLIC_CONST_P (XEXP (XEXP (operands[1], 0), 0)))
 	{
+	  temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
 	  temp = legitimize_pic_address (XEXP (XEXP (operands[1], 0), 0),
-					 SImode, gen_reg_rtx (Pmode));
+					 SImode, temp);
 	  operands[1] = expand_binop (SImode, add_optab, temp,
 				      XEXP (XEXP (operands[1], 0), 1),
-				      gen_reg_rtx (Pmode), 0, OPTAB_LIB_WIDEN);
+				      no_new_pseudos ? temp
+				      : gen_reg_rtx (Pmode),
+				      0, OPTAB_LIB_WIDEN);
 	}
     }
 
