@@ -10508,8 +10508,37 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
 #endif
 
+	    /* [class.conv.ctor]
+
+	       A constructor declared without the function-specifier
+	       explicit that can be called with a single parameter
+	       specifies a conversion from the type of its first
+	       parameter to the type of its class.  Such a constructor
+	       is called a converting constructor.  */
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
+	    else if (DECL_CONSTRUCTOR_P (decl))
+	      {
+		/* The constructor can be called with exactly one
+		   parameter if there is at least one parameter, and
+		   any subsequent parameters have default arguments.
+		   We don't look at the first parameter, which is
+		   really just the `this' parameter for the new
+		   object.  */
+		tree arg_types = 
+		  TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)));
+
+		/* Skip the `in_chrg' argument too, if present.  */
+		if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (decl)))
+		  arg_types = TREE_CHAIN (arg_types);
+
+		if (arg_types == void_list_node
+		    || (arg_types 
+			&& TREE_CHAIN (arg_types) 
+			&& TREE_CHAIN (arg_types) != void_list_node
+			&& !TREE_PURPOSE (TREE_CHAIN (arg_types))))
+		  DECL_NONCONVERTING_P (decl) = 1;
+	      }
 	  }
 	else if (TREE_CODE (type) == METHOD_TYPE)
 	  {
