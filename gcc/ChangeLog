@@ -145,6 +145,29 @@
 	fold_relational_hi_lo, nondestructive_fold_binary_to_constant):
 	Likewise replace build with either build2 or build3.
 
+2004-05-20  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* system.h: Poison NO_RECURSIVE_FUNCTION_CSE.
+	* calls.c (prepare_call_address): Don't test
+	NO_RECURSIVE_FUNCTION_CSE.
+	* config/arc/arc.h (NO_RECURSIVE_FUNCTION_CSE): Don't define.
+	* config/arm/arm.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/avr/avr.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/frv/frv.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/i386/i386.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/ip2k/ip2k.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/iq2000/iq2000.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/m32r/m32r.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/m68k/m68k.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/mcore/mcore.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/mips/mips.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/stormy16/stormy16.h (NO_RECURSIVE_FUNCTION_CSE):
+	Likewise.
+	* config/xtensa/xtensa.h (NO_RECURSIVE_FUNCTION_CSE): Likewise.
+	* config/sh/sh.h: Remove NO_RECURSIVE_FUNCTION_CSE comment.
+	* doc/tm.texi (Costs): Remove documentation for
+	NO_RECURSIVE_FUNCTION_CSE.
+
 2004-05-20  Paul Brook  <paul@codesourcery.com>
 
 	* unwind-dw2-fde.c (get_cie_encoding): Handle dwarf3 CIE format.
