@@ -1104,6 +1104,15 @@ as if it were a statement, they do not allow the use of
 Statements do not contain information about
 the file from which they came; that information is implicit in the
 @code{FUNCTION_DECL} from which the statements originate.
+
+@item STMT_IS_FULL_EXPR_P
+In C++, statements normally constitute ``full expressions''; temporaries
+created during a statement are destroyed when the statement is complete.
+However, G++ sometimes represents expressions by statements; these
+statements will not have @code{STMT_IS_FULL_EXPR_P} set.  Temporaries
+created during such statements should be destroyed when the innermost
+enclosing statement with @code{STMT_IS_FULL_EXPR_P} set is exited.
+
 @end ftable
 
 Here is the list of the various statement nodes, and the macros used to
@@ -1789,9 +1798,20 @@ is a @code{VAR_DECL} for the temporary variable.  The second operand is
 the initializer for the temporary.  The initializer is evaluated, and
 copied (bitwise) into the temporary.
 
-FIXME: Discuss cleanups for the variable.
-FIXME: Discuss the situation where the value is actually written into a
-different variable.
+The third operand to the @code{TARGET_EXPR}, if present, is a
+cleanup-expression (i.e., destructor call) for the temporary.  If this
+expression is not copied into some other location (i.e., if it is not
+the right-hand side of an assignment, or the second operand to a
+comma-expression which is itself the right-hand side of an assignment,
+etc.), then this expression must be executed when the statement
+containing this expression is complete.  These cleanups must always be
+executed in the order opposite to that in which they were encountered.
+Note that if a temporary is created on one branch of a conditional
+operator (i.e., in the second or third operand to a @code{COND_EXPR}),
+the cleanup must be run only if that branch is actually executed.
+
+See @code{STMT_IS_FULL_EXPR_P} for more information about running these
+cleanups.
 
 @item AGGR_INIT_EXPR
 An @code{AGGR_INIT_EXPR} represents the initialization as the return
