@@ -1,3 +1,8 @@
+2000-10-06  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
+
+	* haifa-sched.c (schedule_insns): Fix typo in freeing
+	forward_dependency_cache.
+
 2000-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (calli_pcrel, call_valuei_pcrel): Add

@@ -7155,7 +7155,7 @@ schedule_insns (dump_file)
       free (output_dependency_cache);
       output_dependency_cache = NULL;
 #ifdef ENABLE_CHECKING
-      free (output_dependency_cache);
+      free (forward_dependency_cache);
       forward_dependency_cache = NULL;
 #endif
     }
