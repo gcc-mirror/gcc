@@ -221,7 +221,7 @@ else
 
 # Make a temp file name in the proper directory.
 
-	dsttmp=$dstdir/#inst.$$#
+	dsttmp=$dstdir/_inst.$$_
 
 # Move or copy the file name to the temp name
 
