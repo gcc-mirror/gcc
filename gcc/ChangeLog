@@ -7,6 +7,14 @@ Tue Feb  9 17:27:29 GMT 1999  Nathan Sidwell  <nathan@acm.org>
 
 Tue Feb  9 16:52:22 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* i386/cygwin.h (SUBTARGET_OVERRIDE_OPTIONS): New macro to ignore 
+	fpic/fPIC for windows32 targets.
+	* i386/xm-cygwin.h (GET_ENV_PATH_LIST): Replace '\\' in windows32
+	paths with '/'.
+	* i386/mingw32.h (CPP_SPEC): Define.
+	(CPP_PREDEFINES): Add MINGW32 version id.
+	* i386/crtdll.h (CPP_PREDEFINES): Likewise.
+
 	* Makefile.in (collect2$(exeext)): Delete redundant dependency and
 	add missing exeext to target.
 
