@@ -1,3 +1,8 @@
+Tue Aug 26 18:50:32 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (find_reloads, case '0'): Reject matching a non-offsettable
+	address where an offsettable address is required.
+
 Tue Aug 26 17:54:56 1997  Michael P. Hayes  (michaelh@ongaonga.chch.cri.nz>
 
 	* loop.c (check_final_value): Don't miss a biv increment in a

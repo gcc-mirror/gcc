@@ -2865,7 +2865,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		        [(i == commutative || i == commutative + 1)
 			 ? 2*commutative + 1 - i : i])
 		    : operands_match[c][i])
-		  win = this_alternative_win[c];
+		  {
+		    /* If we are matching a non-offsettable address where an
+		       offsettable address was expected, then we must reject
+		       this combination, because we can't reload it.  */
+		    if (this_alternative_offmemok[c]
+			&& GET_CODE (recog_operand[c]) == MEM
+			&& this_alternative[c] == (int) NO_REGS
+			&& ! this_alternative_win[c])
+		      bad = 1;
+
+		    win = this_alternative_win[c];
+		  }
 		else
 		  {
 		    /* Operands don't match.  */
