@@ -2468,6 +2468,8 @@ alpha_return_addr (count, frame)
 static int
 alpha_ra_ever_killed ()
 {
+  rtx top;
+
 #ifdef ASM_OUTPUT_MI_THUNK
   if (current_function_is_thunk)
     return 0;
@@ -2475,8 +2477,11 @@ alpha_ra_ever_killed ()
   if (!alpha_return_addr_rtx)
     return regs_ever_live[REG_RA];
 
-  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA),
-			    get_insns(), NULL_RTX);
+  push_topmost_sequence ();
+  top = get_insns ();
+  pop_topmost_sequence ();
+
+  return reg_set_between_p (gen_rtx_REG (Pmode, REG_RA), top, NULL_RTX);
 }
 
 
@@ -3192,6 +3197,32 @@ alpha_write_verstamp (file)
 #endif
 }
 
+/* Helper function to set RTX_FRAME_RELATED_P on instructions, including
+   sequences.  */
+
+static rtx
+set_frame_related_p ()
+{
+  rtx seq = gen_sequence ();
+  end_sequence ();
+
+  if (GET_CODE (seq) == SEQUENCE)
+    {
+      int i = XVECLEN (seq, 0);
+      while (--i >= 0)
+	RTX_FRAME_RELATED_P (XVECEXP (seq, 0, i)) = 1;
+     return emit_insn (seq);
+    }
+  else
+    {
+      seq = emit_insn (seq);
+      RTX_FRAME_RELATED_P (seq) = 1;
+      return seq;
+    }
+}
+
+#define FRP(exp)  (start_sequence (), exp, set_frame_related_p ())
+
 /* Write function prologue.  */
 
 /* On vms we have two kinds of functions:
@@ -3271,8 +3302,8 @@ alpha_expand_prologue ()
 
       if (frame_size != 0)
 	{
-	  emit_move_insn (stack_pointer_rtx,
-			  plus_constant (stack_pointer_rtx, -frame_size));
+	  FRP (emit_move_insn (stack_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, -frame_size)));
 	}
     }
   else
@@ -3302,7 +3333,18 @@ alpha_expand_prologue ()
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      emit_move_insn (stack_pointer_rtx, plus_constant (ptr, -leftover));
+      ptr = emit_move_insn (stack_pointer_rtx, plus_constant (ptr, -leftover));
+
+      /* This alternative is special, because the DWARF code cannot possibly
+	 intuit through the loop above.  So we invent this note it looks at
+	 instead.  */
+      RTX_FRAME_RELATED_P (ptr) = 1;
+      REG_NOTES (ptr)
+	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			     gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					     GEN_INT (-frame_size))),
+			     REG_NOTES (ptr));
     }
 
   /* Cope with very large offsets to the register save area.  */
@@ -3318,21 +3360,22 @@ alpha_expand_prologue ()
 	bias = reg_offset, reg_offset = 0;
 
       sa_reg = gen_rtx_REG (DImode, 24);
-      emit_move_insn (sa_reg, plus_constant (stack_pointer_rtx, bias));
+      FRP (emit_move_insn (sa_reg, plus_constant (stack_pointer_rtx, bias)));
     }
     
   /* Save regs in stack order.  Beginning with VMS PV.  */
   if (TARGET_OPEN_VMS && vms_is_stack_procedure)
     {
-      emit_move_insn (gen_rtx_MEM (DImode, stack_pointer_rtx),
-		      gen_rtx_REG (DImode, REG_PV));
+      FRP (emit_move_insn (gen_rtx_MEM (DImode, stack_pointer_rtx),
+		           gen_rtx_REG (DImode, REG_PV)));
     }
 
   /* Save register RA next.  */
   if (imask & (1L << REG_RA))
     {
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset)),
-		      gen_rtx_REG (DImode, REG_RA));
+      FRP (emit_move_insn (gen_rtx_MEM (DImode,
+					plus_constant (sa_reg, reg_offset)),
+		           gen_rtx_REG (DImode, REG_RA)));
       imask &= ~(1L << REG_RA);
       reg_offset += 8;
     }
@@ -3341,18 +3384,18 @@ alpha_expand_prologue ()
   for (i = 0; i < 32; i++)
     if (imask & (1L << i))
       {
-	emit_move_insn (gen_rtx_MEM (DImode,
-				     plus_constant (sa_reg, reg_offset)),
-			gen_rtx_REG (DImode, i));
+	FRP (emit_move_insn (gen_rtx_MEM (DImode,
+				          plus_constant (sa_reg, reg_offset)),
+			     gen_rtx_REG (DImode, i)));
 	reg_offset += 8;
       }
 
   for (i = 0; i < 32; i++)
     if (fmask & (1L << i))
       {
-	emit_move_insn (gen_rtx_MEM (DFmode,
-				     plus_constant (sa_reg, reg_offset)),
-			gen_rtx_REG (DFmode, i+32));
+	FRP (emit_move_insn (gen_rtx_MEM (DFmode,
+				          plus_constant (sa_reg, reg_offset)),
+			     gen_rtx_REG (DFmode, i+32)));
 	reg_offset += 8;
       }
 
@@ -3361,25 +3404,25 @@ alpha_expand_prologue ()
       if (!vms_is_stack_procedure)
 	{
 	  /* Register frame procedures fave the fp.  */
-	  emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
-			  hard_frame_pointer_rtx);
+	  FRP (emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
+			       hard_frame_pointer_rtx));
 	}
 
       if (vms_base_regno != REG_PV)
-	emit_move_insn (gen_rtx_REG (DImode, vms_base_regno),
-			gen_rtx_REG (DImode, REG_PV));
+	FRP (emit_move_insn (gen_rtx_REG (DImode, vms_base_regno),
+			     gen_rtx_REG (DImode, REG_PV)));
 
       if (vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	{
-	  emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 	}
 
       /* If we have to allocate space for outgoing args, do it now.  */
       if (current_function_outgoing_args_size != 0)
 	{
-	  emit_move_insn (stack_pointer_rtx, 
-	    plus_constant (hard_frame_pointer_rtx,
-	      - ALPHA_ROUND (current_function_outgoing_args_size)));
+	  FRP (emit_move_insn (stack_pointer_rtx, 
+	        plus_constant (hard_frame_pointer_rtx,
+	         - ALPHA_ROUND (current_function_outgoing_args_size))));
 	}
     }
   else
@@ -3388,13 +3431,13 @@ alpha_expand_prologue ()
       if (frame_pointer_needed)
 	{
 	  if (TARGET_CAN_FAULT_IN_PROLOGUE)
-	    emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	    FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 	  else
 	    {
 	      /* This must always be the last instruction in the
 		 prologue, thus we emit a special move + clobber.  */
-	      emit_insn (gen_init_fp (hard_frame_pointer_rtx,
-				      stack_pointer_rtx, sa_reg));
+	      FRP (emit_insn (gen_init_fp (hard_frame_pointer_rtx,
+				           stack_pointer_rtx, sa_reg)));
 	    }
 	}
     }
@@ -3611,6 +3654,12 @@ output_end_prologue (file)
 
 /* Write function epilogue.  */
 
+/* ??? At some point we will want to support full unwind, and so will 
+   need to mark the epilogue as well.  At the moment, we just confuse
+   dwarf2out.  */
+#undef FRP
+#define FRP(exp) exp
+
 void
 alpha_expand_epilogue ()
 {
@@ -3659,7 +3708,7 @@ alpha_expand_epilogue ()
 	   && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	  || (!TARGET_OPEN_VMS && frame_pointer_needed))
 	{
-	  emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+	  FRP (emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx));
 	}
 
       /* Cope with very large offsets to the register save area.  */
@@ -3677,13 +3726,14 @@ alpha_expand_epilogue ()
 	  sa_reg = gen_rtx_REG (DImode, 22);
 	  sa_reg_exp = plus_constant (stack_pointer_rtx, bias);
 
-	  emit_move_insn (sa_reg, sa_reg_exp);
+	  FRP (emit_move_insn (sa_reg, sa_reg_exp));
 	}
 	  
       /* Restore registers in order, excepting a true frame pointer. */
 
-      emit_move_insn (gen_rtx_REG (DImode, REG_RA),
-		      gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset)));
+      FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA),
+		           gen_rtx_MEM (DImode, plus_constant(sa_reg,
+							      reg_offset))));
       reg_offset += 8;
       imask &= ~(1L << REG_RA);
 
@@ -3694,10 +3744,10 @@ alpha_expand_epilogue ()
 	      fp_offset = reg_offset;
 	    else
 	      {
-		emit_move_insn (gen_rtx_REG (DImode, i),
-				gen_rtx_MEM (DImode,
-					     plus_constant(sa_reg,
-						           reg_offset)));
+		FRP (emit_move_insn (gen_rtx_REG (DImode, i),
+				     gen_rtx_MEM (DImode,
+					          plus_constant(sa_reg,
+						                reg_offset))));
 	      }
 	    reg_offset += 8;
 	  }
@@ -3705,9 +3755,10 @@ alpha_expand_epilogue ()
       for (i = 0; i < 32; ++i)
 	if (fmask & (1L << i))
 	  {
-	    emit_move_insn (gen_rtx_REG (DFmode, i+32),
-			    gen_rtx_MEM (DFmode,
-					 plus_constant(sa_reg, reg_offset)));
+	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32),
+			         gen_rtx_MEM (DFmode,
+					      plus_constant(sa_reg,
+							    reg_offset))));
 	    reg_offset += 8;
 	  }
     }
@@ -3732,20 +3783,20 @@ alpha_expand_epilogue ()
 	  else
 	    {
 	      sp_adj1 = gen_rtx_REG (DImode, 23);
-	      emit_move_insn (sp_adj1, sp_adj2);
+	      FRP (emit_move_insn (sp_adj1, sp_adj2));
 	    }
 	  sp_adj2 = GEN_INT (low);
 	}
       else
 	{
 	  sp_adj2 = gen_rtx_REG (DImode, 23);
-	  sp_adj1 = alpha_emit_set_const (sp_adj2, DImode, frame_size, 3);
+	  FRP (sp_adj1 = alpha_emit_set_const (sp_adj2, DImode, frame_size, 3));
 	  if (!sp_adj1)
 	    {
 	      /* We can't drop new things to memory this late, afaik,
 		 so build it up by pieces.  */
 #if HOST_BITS_PER_WIDE_INT == 64
-	      sp_adj1 = alpha_emit_set_long_const (sp_adj2, frame_size);
+	      FRP (sp_adj1 = alpha_emit_set_long_const (sp_adj2, frame_size));
 	      if (!sp_adj1)
 		abort ();
 #else
@@ -3761,29 +3812,29 @@ alpha_expand_epilogue ()
       if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
-	  emit_move_insn (hard_frame_pointer_rtx,
-			  gen_rtx_MEM (DImode,
-				       plus_constant(sa_reg, fp_offset)));
+	  FRP (emit_move_insn (hard_frame_pointer_rtx,
+			       gen_rtx_MEM (DImode,
+				            plus_constant(sa_reg, fp_offset))));
 	}
       else if (TARGET_OPEN_VMS)
 	{
 	  emit_insn (gen_blockage ());
-	  emit_move_insn (hard_frame_pointer_rtx,
-			  gen_rtx_REG (DImode, vms_save_fp_regno));
+	  FRP (emit_move_insn (hard_frame_pointer_rtx,
+			       gen_rtx_REG (DImode, vms_save_fp_regno)));
 	}
 
       /* Restore the stack pointer.  */
       emit_insn (gen_blockage ());
-      emit_move_insn (stack_pointer_rtx,
-		      gen_rtx_PLUS (DImode, sp_adj1, sp_adj2));
+      FRP (emit_move_insn (stack_pointer_rtx,
+		           gen_rtx_PLUS (DImode, sp_adj1, sp_adj2)));
     }
   else 
     {
       if (TARGET_OPEN_VMS && !vms_is_stack_procedure)
         {
           emit_insn (gen_blockage ());
-          emit_move_insn (hard_frame_pointer_rtx,
-			  gen_rtx_REG (DImode, vms_save_fp_regno));
+          FRP (emit_move_insn (hard_frame_pointer_rtx,
+			       gen_rtx_REG (DImode, vms_save_fp_regno)));
         }
     }
 
