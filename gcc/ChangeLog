@@ -1,3 +1,7 @@
+Wed Jun 24 17:55:15 1998  Klaus Kaempf  <kkaempf@progis.de>
+
+	* alpha.md (call_vms, call_value_vms): Strip leading * from symbol.
+
 Wed Jun 24 16:27:23 1998  John Carr  <jfc@mit.edu>
 
 	* expr.c (get_memory_rtx): New function.
