@@ -1,3 +1,8 @@
+Fri Oct 30 00:39:27 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* egcs_update: Do touch java/parse.c and java/parse-scan.c. They're
+	in the repo again.
+
 Fri Oct 16 07:35:00 1998  Bruce Korb <korb@datadesign.com>
 
 	* egcs_update:  Added gcc/fixinc/* generated files to touch list.
