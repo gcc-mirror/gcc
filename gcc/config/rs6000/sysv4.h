@@ -384,6 +384,10 @@ do {									\
 #define ABI_STACK_BOUNDARY ((TARGET_EABI && !TARGET_ALTIVEC_ABI) ? 64 : 128)
 
 /* No data type wants to be aligned rounder than this.  */
+/* FIXME: This should be keyed off of TARGET_ALTIVEC_ABI instead but
+   TARGET_ALTIVEC_ABI uses rs6000_altivec_abi which is only defined in
+   rs6000.c.  Consequently, genconstants will fail to link because it
+   uses rtl.c which uses BIGGEST_ALIGNMENT.  */
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT ((TARGET_EABI && !TARGET_ALTIVEC) ? 64 : 128)
 
