@@ -1482,11 +1482,9 @@ const struct attribute_spec ix86_attribute_table[] =
   { NULL,        0, 0, false, false, false, NULL }
 };
 
-/* If PIC, we cannot make sibling calls to global functions
-   because the PLT requires %ebx live.
-   If we are returning floats on the register stack, we cannot make
-   sibling calls to functions that return floats.  (The stack adjust
-   instruction will wind up after the sibcall jump, and not be executed.)  */
+/* Decide whether we can make a sibling call to a function.  DECL is the
+   declaration of the function being targeted by the call and EXP is the
+   CALL_EXPR representing the call.  */
 
 static bool
 ix86_function_ok_for_sibcall (decl, exp)
@@ -1501,10 +1499,11 @@ ix86_function_ok_for_sibcall (decl, exp)
 
   /* If we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
-     function that does; the necessary stack adjustment will not be
-     executed.  */
+     function that does or, conversely, from a function that does return
+     a float to a function that doesn't; the necessary stack adjustment
+     would not be executed.  */
   if (STACK_REG_P (ix86_function_value (TREE_TYPE (exp)))
-      && ! STACK_REG_P (ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)))))
+      != STACK_REG_P (ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)))))
     return false;
 
   /* If this call is indirect, we'll need to be able to use a call-clobbered
