@@ -363,6 +363,8 @@ int optimize = 0;
 struct _global_rtl global_rtl;
 rtx pic_offset_table_rtx;
 
+static void attr_hash_add_rtx	PROTO((int, rtx));
+static void attr_hash_add_string PROTO((int, char *));
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
 #ifdef HAVE_VPRINTF
 static char *attr_printf	PVPROTO((int, char *, ...));
@@ -396,6 +398,7 @@ static rtx identity_fn		PROTO((rtx));
 static rtx zero_fn		PROTO((rtx));
 static rtx one_fn		PROTO((rtx));
 static rtx max_fn		PROTO((rtx));
+static void write_length_unit_log PROTO ((void));
 static rtx simplify_cond	PROTO((rtx, int, int));
 #if 0
 static rtx simplify_by_alternatives PROTO((rtx, int, int));

@@ -169,7 +169,8 @@ static void store_constructor_field PROTO((rtx, int, int, enum machine_mode,
 static void store_constructor	PROTO((tree, rtx, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
-static enum memory_use_mode	PROTO((enum expand_modifier));
+static enum memory_use_mode
+  get_memory_usage_from_modifier PROTO((enum expand_modifier));
 static tree save_noncopied_parts PROTO((tree, tree));
 static tree init_noncopied_parts PROTO((tree, tree));
 static int safe_from_p		PROTO((rtx, tree, int));

@@ -63,6 +63,17 @@ struct clobber_ent
   struct clobber_ent *next;
 };
 
+static void max_operand_1		PROTO((rtx));
+static int max_operand_vec		PROTO((rtx, int));
+static void print_code			PROTO((RTX_CODE));
+static void gen_exp			PROTO((rtx));
+static void gen_insn			PROTO((rtx));
+static void gen_expand			PROTO((rtx));
+static void gen_split			PROTO((rtx));
+static void output_add_clobbers		PROTO((void));
+static void output_init_mov_optab	PROTO((void));
+
+
 static void
 max_operand_1 (x)
      rtx x;

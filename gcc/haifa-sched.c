@@ -518,7 +518,6 @@ extern rtx forced_labels;
 
 
 static int is_cfg_nonregular PROTO ((void));
-void debug_control_flow PROTO ((void));
 static int build_control_flow PROTO ((int_list_ptr *, int_list_ptr *,
 				      int *, int *));
 static void new_edge PROTO ((int, int));
@@ -715,6 +714,7 @@ static int find_conditional_protection PROTO ((rtx, int));
 static int is_conditionally_protected PROTO ((rtx, int, int));
 static int may_trap_exp PROTO ((rtx, int));
 static int haifa_classify_insn PROTO ((rtx));
+static int is_prisky PROTO ((rtx, int, int));
 static int is_exception_free PROTO ((rtx, int, int));
 
 static char find_insn_mem_list PROTO ((rtx, rtx, rtx, rtx));
@@ -761,6 +761,7 @@ static void get_block_head_tail PROTO ((int, rtx *, rtx *));
 static void find_pre_sched_live PROTO ((int));
 static void find_post_sched_live PROTO ((int));
 static void update_reg_usage PROTO ((void));
+static int queue_to_ready ((rtx [], int))
 
 void debug_ready_list PROTO ((rtx[], int));
 static void init_target_units PROTO (());

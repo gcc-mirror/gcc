@@ -116,6 +116,7 @@ static void mark_jump_label		PROTO((rtx, rtx, int));
 static void delete_computation		PROTO((rtx));
 static void delete_from_jump_chain	PROTO((rtx));
 static int delete_labelref_insn		PROTO((rtx, rtx, int));
+static void mark_modified_reg		PROTO((rtx, rtx));
 static void redirect_tablejump		PROTO((rtx, rtx));
 static rtx find_insert_position         PROTO((rtx, rtx));
 

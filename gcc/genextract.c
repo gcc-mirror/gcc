@@ -95,6 +95,7 @@ static int dupnums[MAX_DUP_OPERANDS];
 
 static struct code_ptr *peepholes;
 
+static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, char *));
 static void print_path PROTO ((char *));
 char *xmalloc PROTO ((unsigned));
