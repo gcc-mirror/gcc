@@ -1,5 +1,11 @@
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
+	PR/12292
+	* combine.c (make_field_assignment): Check whether rtx's code
+	is CONST_INT before using INTVAL.
+
+2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
+
 	* cgraph.c (cgraph_node): Use INSERT instead of 1 in
 	htab_find_slot_with_hash.
 	(cgraph_node_for_identifier): Use NO_INSERT.
