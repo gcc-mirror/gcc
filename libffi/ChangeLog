@@ -1,3 +1,12 @@
+2004-03-15 Kelley Cook <kcook@gcc.gnu.org>
+
+	* configure.in: Rename file to ...
+	* configure.ac: ... this.
+	* fficonfig.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2004-03-12  Matt Austern  <austern@apple.com>
 
 	* src/powerpc/darwin.S: Fix EH information so it corresponds to
