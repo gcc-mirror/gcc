@@ -414,7 +414,7 @@ rs6000_file_start (file, default_cpu)
 #endif
 
       if (*start == '\0')
-	fputs ("\n", file);
+	putc ('\n', file);
     }
 }
 
@@ -3903,7 +3903,7 @@ rs6000_output_load_toc_table (file, reg)
 		   reg_names[0]);
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
       assemble_name (file, buf);
-      fputs ("-", file);
+      putc ('-', file);
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
       assemble_name (file, buf);
       fprintf (file, ")(%s)\n", reg_names[reg]);
@@ -4156,7 +4156,7 @@ output_prolog (file, size)
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCprobe", probe_labelno++);
 	  fputs ("\tbdnz ", file);
 	  assemble_name (file, buf);
-	  fputs ("\n", file);
+	  putc ('\n', file);
 	}
     }
 
@@ -4676,7 +4676,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
       fprintf (file, "\tb %s", prefix);
       assemble_name (file, fname);
       if (DEFAULT_ABI == ABI_V4 && flag_pic) fputs ("@local", file);
-      fputs ("\n", file);
+      putc ('\n', file);
     }
 
   else
@@ -4725,7 +4725,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  fprintf (file, "\tb %s", prefix);
 	  assemble_name (file, fname);
 	  if (flag_pic) fputs ("@plt", file);
-	  fputs ("\n", file);
+	  putc ('\n', file);
 	  break;
 	      
 	  /* Don't use r11, that contains the static chain, just use r0/r12.  */

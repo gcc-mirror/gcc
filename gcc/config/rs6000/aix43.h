@@ -204,3 +204,8 @@ do {									\
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
+/* AIX 4 uses PowerPC nop (ori 0,0,0) instruction as call glue for PowerPC
+   and "cror 31,31,31" for POWER architecture.  */
+
+#undef RS6000_CALL_GLUE
+#define RS6000_CALL_GLUE "{cror 31,31,31|nop}"
