@@ -246,7 +246,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %u\n", (SIZE))
 
-/* The NEWS assembler complains about fmove.d; see if it likes fmove.x.  */
+#if 0
+/* The NEWS assembler in version 3.4 complains about fmove.d, but this
+   macro proved not to work right.  3.4 is old, so forget about it. */
 #define ASM_OUTPUT_OPCODE(FILE, STRING) \
 {						\
   if (!strncmp (STRING, "fmove.d", 7)		\
@@ -256,6 +258,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       STRING += 7;				\
     }						\
 }
+#endif
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
