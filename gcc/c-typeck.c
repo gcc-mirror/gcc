@@ -2463,7 +2463,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		     constant expression involving such literals or a
 		     conditional expression involving such literals)
 		     and it is non-negative.  */
-		  if (tree_expr_nonnegative_p (sop))
+		  if (c_tree_expr_nonnegative_p (sop))
 		    /* OK */;
 		  /* Do not warn if the comparison is an equality operation,
 		     the unsigned quantity is an integral constant, and it
@@ -2579,6 +2579,27 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
   }
 }
 
+
+/* Return true if `t' is known to be non-negative.  */
+
+int
+c_tree_expr_nonnegative_p (t)
+     tree t;
+{
+  if (TREE_CODE (t) == STMT_EXPR)
+    {
+      t=COMPOUND_BODY (STMT_EXPR_STMT (t));
+
+      /* Find the last statement in the chain, ignoring the final
+	     * scope statement */
+      while (TREE_CHAIN (t) != NULL_TREE 
+             && TREE_CODE (TREE_CHAIN (t)) != SCOPE_STMT)
+        t=TREE_CHAIN (t);
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+    }
+  return tree_expr_nonnegative_p (t);
+}
+
 /* Return a tree for the difference of pointers OP0 and OP1.
    The resulting tree has type int.  */
 
@@ -3406,8 +3427,8 @@ build_conditional_expr (ifexp, op1, op2)
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
 		 involving such literals) and it is non-negative.  */
-	      else if ((unsigned_op2 && tree_expr_nonnegative_p (op1))
-		       || (unsigned_op1 && tree_expr_nonnegative_p (op2)))
+	      else if ((unsigned_op2 && c_tree_expr_nonnegative_p (op1))
+		       || (unsigned_op1 && c_tree_expr_nonnegative_p (op2)))
 		/* OK */;
 	      else
 		warning ("signed and unsigned type in conditional expression");

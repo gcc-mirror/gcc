@@ -1,3 +1,11 @@
+2002-09-07  Ansgar Esztermann  <ansgar@thphy.uni-duesseldorf.de>
+
+	* c-typeck.c (c_tree_expr_nonnegative_p): New function.
+	(build_binary_op): Call c_tree_expr_nonnegative_p rather than
+	tree_expr_nonnegative_p.  
+	(build_conditional_expr): Likewise.
+	* c-tree.h (c_tree_expr_nonnegative_p): Declare.
+
 2002-09-07  Richard Henderson  <rth@redhat.com>
 
 	* builtins.def (inf, inff, infl): Mark const.
@@ -53,7 +61,7 @@
 
 Fri Sep  6 13:10:08 2002  Jeffrey A Law  (law@redhat.com)
 
-        * pentium.md (pentium-firstvboth): Fix typo.
+	* pentium.md (pentium-firstvboth): Fix typo.
 
 2002-09-06	Dhananjay Deshpande <dhananjayd@kpit.com>
 
@@ -525,7 +533,7 @@ Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	PR objc/5956:
 	* objc/objc-act.c (build_typed_selector_reference): Fix typo which
 	was causing the new selector never to match the existing ones 
-        (Patch by Alexander Malmberg <alexander@malmberg.org>). 
+	(Patch by Alexander Malmberg <alexander@malmberg.org>). 
 
 2002-09-03  Graham Stott  <graham.stott@btinternet.com>
 
@@ -834,17 +842,17 @@ Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	already been defined, and emit a warning if not.
 
 2002-08-27  Nick Clifton  <nickc@redhat.com>
-            Catherine Moore  <clm@redhat.com>
-            Jim Wilson  <wilson@cygnus.com>
+	    Catherine Moore  <clm@redhat.com>
+	    Jim Wilson  <wilson@cygnus.com>
 
-        * config.gcc: Add v850e-*-* target.
-        Add --with-cpu= support for v850.
-        * config/v850/lib1funcs.asm: Add v850e callt functions.
-        * config/v850/v850.h: Add support for v850e target.
-        * config/v850/v850.c: Add functions to support v850e target.
-        * config/v850/v850-protos.h: Add prototypes for new functions in v850.c.
-        * config/v850/v850.md: Add patterns for v850e instructions.
-        * doc/invoke.texi: Document new v850e command line switches.
+	* config.gcc: Add v850e-*-* target.
+	Add --with-cpu= support for v850.
+	* config/v850/lib1funcs.asm: Add v850e callt functions.
+	* config/v850/v850.h: Add support for v850e target.
+	* config/v850/v850.c: Add functions to support v850e target.
+	* config/v850/v850-protos.h: Add prototypes for new functions in v850.c.
+	* config/v850/v850.md: Add patterns for v850e instructions.
+	* doc/invoke.texi: Document new v850e command line switches.
 
 Tue Aug 27 18:30:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
 			  Aldy Hernandez <aldyh at redhat dot com>

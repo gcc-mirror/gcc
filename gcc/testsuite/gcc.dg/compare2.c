@@ -26,11 +26,11 @@ void f(int x, unsigned int y)
 
   /* Statement expression.  */
   x > ({tf; 64;}); /* { dg-bogus "signed and unsigned" "case 9" } */
-  y > ({tf; 64;}); /* { dg-bogus "signed and unsigned" "case 10" { xfail *-*-* } } */
+  y > ({tf; 64;}); /* { dg-bogus "signed and unsigned" "case 10" } */
 
   /* Statement expression with recursive ?: .  */
   x > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 11" } */
-  y > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 12" { xfail *-*-* } } */
+  y > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 12" } */
 
   /* Statement expression with signed ?:.  */
   x > ({tf; tf?64:-1;}); /* { dg-bogus "signed and unsigned" "case 13" } */
