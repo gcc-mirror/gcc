@@ -1,5 +1,9 @@
 2002-01-29  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/elf.h (SDB_DEBUGGING_INFO): Undef.
+
+2002-01-29  Richard Henderson  <rth@redhat.com>
+
 	* expr.c (force_operand): Ignore flag_pic for detecting pic
 	address loads.
 	* regclass.c (init_reg_sets_1): Test fixed_regs not flag_pic
