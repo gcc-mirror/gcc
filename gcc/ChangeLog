@@ -1,3 +1,9 @@
+2004-08-09  Paul Brook  <paul@codesourcery.com>
+	Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2.c (uw_install_context_1): Update target saved stack
+	pointer.
+
 2004-08-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* ggc-common.c (ggc_rlimit_bound): Don't check RSS limit.

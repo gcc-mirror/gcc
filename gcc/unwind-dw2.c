@@ -1274,6 +1274,12 @@ uw_install_context_1 (struct _Unwind_Context *current,
 		      struct _Unwind_Context *target)
 {
   long i;
+  _Unwind_SpTmp sp_slot;
+
+  /* If the target frame does not have a saved stack pointer,
+     then set up the target's CFA.  */
+  if (!_Unwind_GetGRPtr (target, __builtin_dwarf_sp_column ()))
+	_Unwind_SetSpColumn (target, target->cfa, &sp_slot);
 
   for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
     {
@@ -1284,25 +1290,22 @@ uw_install_context_1 (struct _Unwind_Context *current,
 	memcpy (c, t, dwarf_reg_size_table[i]);
     }
 
-#ifdef EH_RETURN_STACKADJ_RTX
-  {
-    void *target_cfa;
+  /* If the current frame doesn't have a saved stack pointer, then we
+     need to rely on EH_RETURN_STACKADJ_RTX to get our target stack
+     pointer value reloaded.  */
+  if (!_Unwind_GetGRPtr (current, __builtin_dwarf_sp_column ()))
+    {
+      void *target_cfa;
 
-    /* If the last frame records a saved stack pointer, use it.  */
-    if (_Unwind_GetGRPtr (target, __builtin_dwarf_sp_column ()))
       target_cfa = _Unwind_GetPtr (target, __builtin_dwarf_sp_column ());
-    else
-      target_cfa = target->cfa;
 
-    /* We adjust SP by the difference between CURRENT and TARGET's CFA.  */
-    if (STACK_GROWS_DOWNWARD)
-      return target_cfa - current->cfa + target->args_size;
-    else
-      return current->cfa - target_cfa - target->args_size;
-  }
-#else
+      /* We adjust SP by the difference between CURRENT and TARGET's CFA.  */
+      if (STACK_GROWS_DOWNWARD)
+	return target_cfa - current->cfa + target->args_size;
+      else
+	return current->cfa - target_cfa - target->args_size;
+    }
   return 0;
-#endif
 }
 
 static inline _Unwind_Ptr
