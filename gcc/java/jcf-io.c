@@ -120,7 +120,6 @@ opendir_in_zip (const char *zipfile, int is_system)
   zipf->next = SeenZipFiles;
   zipf->name = (char*)(zipf+1);
   strcpy (zipf->name, zipfile);
-  SeenZipFiles = zipf;
   fd = open (zipfile, O_RDONLY | O_BINARY);
   zipf->fd = fd;
   if (fd < 0)
@@ -140,6 +139,8 @@ opendir_in_zip (const char *zipfile, int is_system)
       if (read_zip_archive (zipf) != 0)
 	return NULL;
     }
+
+  SeenZipFiles = zipf;
   return zipf;
 }
 
