@@ -307,7 +307,7 @@ static int current_sym_nchars;
 #define CONTIN  \
   do {if (current_sym_nchars > DBX_CONTIN_LENGTH) dbxout_continue ();} while (0)
 #else
-#define CONTIN
+#define CONTIN do { } while (0)
 #endif
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
