@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,16 +67,12 @@ protected UnicastRemoteObject(int port, RMIClientSocketFactory csf, RMIServerSoc
   //this.csf = csf;
   //this.ssf = ssf;
   this.ref = new UnicastServerRef(new ObjID(), port, ssf);
-  //Should we export it here?
-  // if we export, we got infinite recursive call:
-  //  UnicastRemoteObject.<init>->...->UnicastServer.startDGC()->UnicastRemoteObject.<init>->...
-  //exportObject(this);
+  exportObject(this);
 }
 
 protected UnicastRemoteObject(RemoteRef ref) throws RemoteException {
 	super((UnicastServerRef)ref);
-       //Should we export it here?
-       //exportObject(this);
+	exportObject(this);
 }
 
 public Object clone() throws CloneNotSupportedException {

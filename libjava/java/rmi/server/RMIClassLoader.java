@@ -43,39 +43,72 @@ import java.net.URLClassLoader;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.net.MalformedURLException;
-import java.util.StringTokenizer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import java.util.ArrayList;
 
 public class RMIClassLoader
 {
 
   static private class MyClassLoader extends URLClassLoader
   {
+
+    private MyClassLoader(URL[] urls, ClassLoader parent, String annotation)
+    {
+      super(urls, parent);
+      this.annotation = annotation;
+    }
+
     private MyClassLoader(URL[] urls, ClassLoader parent)
     {
       super (urls, parent);
+      this.annotation = urlToAnnotation(urls);
     }
 
-    Class defineClass(String name, byte[] data)
+    public static String urlToAnnotation(URL[] urls)
     {
-      return defineClass(name, data, 0, data.length);
+      if (urls.length == 0)
+	return null;
+
+      StringBuffer annotation = new StringBuffer(64*urls.length);
+      for(int i = 0; i < urls.length; i++)
+	{
+	  annotation.append(urls[i].toExternalForm());
+	  annotation.append(' ');
+	}
+
+      return annotation.toString();
     }
+
+    public final String getClassAnnotation(){
+      return annotation;
+    }
+
+    private final String annotation;
+
   }
 
   private static Map cacheLoaders; //map annotations to loaders
-  private static Map cacheClasses; //map loader to classes that the loader loaded+
+  private static Map cacheAnnotations; //map loaders to annotations
+
+  //defaultAnnotation is got from system property
+  // "java.rmi.server.defaultAnnotation"
   private static String defaultAnnotation;
+  //URL object for defaultAnnotation
   private static URL defaultCodebase;
+  //class loader for defaultAnnotation
   private static MyClassLoader defaultLoader;
   
   static
   {
-    cacheLoaders = Collections.synchronizedMap(new WeakHashMap(5)); 
-    cacheClasses = Collections.synchronizedMap(new WeakHashMap(5));
+    // 89 is a nice prime number for Hashtable initial capacity
+    cacheLoaders = new Hashtable(89);
+    cacheAnnotations = new Hashtable(89);
+    
     defaultAnnotation = System.getProperty("java.rmi.server.defaultAnnotation");
     try 
       {
@@ -89,9 +122,8 @@ public class RMIClassLoader
     if (defaultCodebase != null)
       {
         defaultLoader = new MyClassLoader(new URL[]{ defaultCodebase },
-					  Thread.currentThread().getContextClassLoader());
+					  null, defaultAnnotation);
         cacheLoaders.put(defaultAnnotation, defaultLoader);
-        cacheClasses.put(defaultLoader, Collections.synchronizedMap(new WeakHashMap())); 
       }
   }
   
@@ -104,91 +136,76 @@ public class RMIClassLoader
     return (loadClass("", name));
   }
 
-  public static Class loadClass(URL codebase, String name) 
-    throws MalformedURLException, ClassNotFoundException 
-  {
-    URL u = new URL(codebase, name + ".class");
-    try 
-      {
-	URLConnection conn = u.openConnection();
-	DataInputStream strm = new DataInputStream(conn.getInputStream());
-	byte data[] = new byte[conn.getContentLength()];
-	strm.readFully(data);
-	return (defaultLoader.defineClass(name, data));
-      }
-    catch (IOException _) 
-      {
-	throw new ClassNotFoundException(name);
-      }
-  }
-  
   public static Class loadClass(String codebases, String name) 
     throws MalformedURLException, ClassNotFoundException 
   {
-    ClassLoader loader = (ClassLoader)cacheLoaders.get(codebases);
-    if (loader == null)
+    Class c = null;
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    //try context class loader first
+    try 
       {
-	if (codebases != "")
+	    c = loader.loadClass(name);       
+      }
+    catch(ClassNotFoundException e) {}
+
+    if (c != null)
+      return c;
+
+    if (codebases.length() == 0) //==""
+      loader = defaultLoader;
+    else 
+      {
+	loader = (ClassLoader)cacheLoaders.get(codebases);
+	if (loader == null)
 	  {
-	    //codebases are separated by " "
+	    //create an entry in cacheLoaders mapping a loader to codebases.
+            
+	    // codebases are separated by " "
 	    StringTokenizer tok = new StringTokenizer(codebases, " "); 
 	    ArrayList urls = new ArrayList();
 	    while (tok.hasMoreTokens())
 	      urls.add(new URL(tok.nextToken()));
-	    
+  
 	    loader = new MyClassLoader((URL[])urls.toArray(new URL[urls.size()]),
-				       Thread.currentThread().getContextClassLoader());
+					null, codebases);
 	    cacheLoaders.put(codebases, loader);
-	    cacheClasses.put(loader, Collections.synchronizedMap(new WeakHashMap())); 
-	  }
-	else
-	  {
-	    //if codebases is empty, construct a classloader 
-	    // based on current context classloader,
-	    // and we won't cache classloader for empty codebases
-	    loader = new MyClassLoader(new URL[]{ defaultCodebase },
-				       Thread.currentThread().getContextClassLoader());
 	  }
       }
 
-    Class c = null;
-    Map classes = (Map)cacheClasses.get(loader);
-    if (classes != null)
-      {
-        c = (Class)classes.get(name);
-        if (c == null)
-	  {
-            c = loader.loadClass(name);
-            classes.put(name, c); 
-	  }
-      }else
-        c = loader.loadClass(name);
-    
-    return c;
+    return loader != null ? loader.loadClass(name) : Class.forName(name);
   }
   
   public static String getClassAnnotation(Class cl)
   {
     ClassLoader loader = cl.getClassLoader();
-    if (loader == null)
+    if (loader == null || loader == ClassLoader.getSystemClassLoader())
       {
-	if (defaultCodebase != null)
-	  return defaultCodebase.toExternalForm();
-	else
-	  return null;
+	return null; //??
       }
+	
+    if (loader instanceof MyClassLoader)
+      {
+	return ((MyClassLoader)loader).getClassAnnotation();
+      }
+	
+    String s = (String)cacheAnnotations.get(loader);
+    if (s != null)
+      return s;
+	    
     if (loader instanceof URLClassLoader)
       {
 	URL[] urls = ((URLClassLoader)loader).getURLs();
 	if(urls.length == 0)
 	  return null;
-	StringBuffer annotation = new StringBuffer(urls[0].toExternalForm());
-	for(int i = 1; i < urls.length; i++)
+
+	StringBuffer annotation = new StringBuffer(64*urls.length);
+	for(int i = 0; i < urls.length; i++)
 	  {
-	    annotation.append(' ');
 	    annotation.append(urls[i].toExternalForm());
+	    annotation.append(' ');
 	  }
-	return annotation.toString();
+	s = annotation.toString();
+	cacheAnnotations.put(loader, s);
       }
     return null;
   }

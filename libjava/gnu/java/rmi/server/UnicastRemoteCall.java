@@ -38,14 +38,24 @@ exception statement from your version. */
 package gnu.java.rmi.server;
 
 import java.lang.Exception;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.StreamCorruptedException;
 import java.rmi.server.RemoteCall;
+import java.rmi.RemoteException;
+import java.rmi.MarshalException;
+import java.rmi.UnmarshalException;
+import java.rmi.server.UID;
+import java.rmi.server.ObjID;
+import java.rmi.server.RemoteObject;
+
 import java.util.Vector;
 
-public class UnicastRemoteCall implements RemoteCall
+public class UnicastRemoteCall
+	implements RemoteCall, ProtocolConstants
 {
 
   private UnicastConnection conn;
@@ -55,6 +65,9 @@ public class UnicastRemoteCall implements RemoteCall
   private long hash;
   private Vector vec;
   private int ptr;
+
+  private ObjectOutput oout;
+  private ObjectInput oin;
 
   /**
    * Incoming call.
@@ -67,30 +80,71 @@ public class UnicastRemoteCall implements RemoteCall
   /**
    * Outgoing call.
    */
-  UnicastRemoteCall(Object obj, int opnum, long hash)
+  UnicastRemoteCall(UnicastConnection conn, ObjID objid, int opnum, long hash)
+    throws RemoteException
   {
-    this.object = obj;
+    this.conn = conn;
     this.opnum = opnum;
     this.hash = hash;
+    
+    // signal the call when constructing
+    try
+      {
+	DataOutputStream dout = conn.getDataOutputStream();
+	dout.write(MESSAGE_CALL);
+	
+	oout = conn.getObjectOutputStream();
+	objid.write(oout);
+	oout.writeInt(opnum);
+	oout.writeLong(hash);
+      }
+    catch(IOException ex)
+      {
+	throw new MarshalException("Try to write header but failed.", ex);
+      }
   }
-
+  
+  UnicastConnection getConnection()
+  {
+    return conn;
+  }
+  
   public ObjectOutput getOutputStream() throws IOException
   {
-    vec = new Vector();
-    return new DummyObjectOutputStream();
+    if (conn != null)
+      {
+	if(oout == null)
+	  return (oout = conn.getObjectOutputStream());
+	else
+	  return oout;
+      }
+    else
+      {
+	vec = new Vector();
+	return (new DummyObjectOutputStream());
+      }
   }
 
   public void releaseOutputStream() throws IOException
   {
-    // Does nothing.
+    if(oout != null)
+      oout.flush();
   }
 
   public ObjectInput getInputStream() throws IOException
   {
     if (conn != null)
-      return conn.getObjectInputStream();
-    ptr = 0;
-    return new DummyObjectInputStream();
+      {
+	if(oin == null)
+	  return (oin = conn.getObjectInputStream());
+	else
+	  return oin;
+      }
+    else
+      {
+	ptr = 0;
+	return (new DummyObjectInputStream());
+      }
   }
 
   public void releaseInputStream() throws IOException
@@ -104,15 +158,57 @@ public class UnicastRemoteCall implements RemoteCall
     vec = new Vector();
     return new DummyObjectOutputStream();
   }
-
+  
   public void executeCall() throws Exception
   {
-    throw new Error("Not implemented");
+    byte returncode;
+    ObjectInput oin;
+    try
+      {
+	releaseOutputStream();
+	DataInputStream din = conn.getDataInputStream();
+        if (din.readByte() != MESSAGE_CALL_ACK)
+	    throw new RemoteException("Call not acked");
+
+        oin = getInputStream();
+        returncode = oin.readByte();
+        UID.read(oin);
+      }
+    catch(IOException ex)
+      {
+        throw new UnmarshalException("Try to read header but failed:", ex);
+      }
+    
+    //check return code
+    switch(returncode)
+      {
+      case RETURN_ACK: //it's ok
+	return;
+      case RETURN_NACK:
+	Object returnobj;
+	try
+	  {
+	    returnobj = oin.readObject();
+	  }
+	catch(Exception ex2)
+	  {
+	    throw new UnmarshalException
+	      ("Try to read exception object but failed", ex2);
+	  }
+	
+	if(!(returnobj instanceof Exception))
+	  throw new UnmarshalException("Should be Exception type here: "
+				       + returnobj);
+	throw (Exception)returnobj;
+	
+      default:
+	throw new UnmarshalException("Invalid return code");
+      }
   }
 
   public void done() throws IOException
   {
-    /* Does nothing */
+    // conn.disconnect();
   }
 
   Object returnValue()

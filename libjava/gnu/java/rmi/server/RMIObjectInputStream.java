@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,23 +50,13 @@ import java.lang.reflect.Proxy;
 public class RMIObjectInputStream
 	extends ObjectInputStream {
 
-UnicastConnectionManager manager;
-
-public RMIObjectInputStream(InputStream strm, UnicastConnectionManager man) throws IOException {
-	super(strm);
-	manager = man;
-	enableResolveObject(true);
-}
-
 public RMIObjectInputStream(InputStream strm) throws IOException {
-	this(strm, UnicastConnectionManager.getInstance(0, null));
+	super(strm);
+	enableResolveObject(true);
 }
 
 protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
 	String annotation = (String)getAnnotation();
-	try{
-		return super.resolveClass(desc);
-	}catch(ClassNotFoundException _){};
 	
 	try {
 		if(annotation == null)
@@ -90,24 +80,23 @@ protected Class resolveProxyClass(String intfs[])
         throws IOException, ClassNotFoundException
 {
     String annotation = (String)getAnnotation();
-    try{
-		return super.resolveProxyClass(intfs);
-	}catch(ClassNotFoundException _){};
 	
     Class clss[] = new Class[intfs.length];
     if(annotation == null)
         clss[0] = RMIClassLoader.loadClass(intfs[0]);
     else
         clss[0] = RMIClassLoader.loadClass(annotation, intfs[0]);
+    
     //assume all interfaces can be loaded by the same classloader
     ClassLoader loader = clss[0].getClassLoader();
-    if(loader == null)
-        for(int i = 1; i < intfs.length; i++)
-            clss[i] = Class.forName(intfs[i]);    
-    else
-        for(int i = 1; i < intfs.length; i++)
-            clss[i] = loader.loadClass(intfs[i]);    
+    for (int i = 0; i < intfs.length; i++)
+        clss[i] = Class.forName(intfs[i], false, loader);
+        
+    try {
     return Proxy.getProxyClass(loader, clss);
+	} catch (IllegalArgumentException e) {
+	    throw new ClassNotFoundException(null, e);
+	}  
 }
 
 protected Object readValue(Class valueClass) throws IOException, ClassNotFoundException {

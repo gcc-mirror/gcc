@@ -127,11 +127,11 @@ public boolean equals(Object obj) {
 	  }
 	catch (InstantiationException e1) 
 	  {
-	    throw new UnmarshalException("failed to create ref");
+	    throw new UnmarshalException("failed to create ref", e1);
 	  }
 	catch (IllegalAccessException e2) 
 	  {
-	    throw new UnmarshalException("failed to create ref");
+	    throw new UnmarshalException("failed to create ref", e2);
 	  }
 	ref.readExternal(in);
       }

@@ -1,5 +1,55 @@
 2002-11-07  Mark Wielaard  <mark@klomp.org>
 
+        Merge Orp RMI patches from Wu Gansha <gansha.wu@intel.com>
+	* java/rmi/MarshalledObject.java (equals): Check hashcode first.
+
+	* java/rmi/server/RMIClassLoader.java (MyClassLoader): Create/Use
+	annotation.
+	(loadClass): Take String as codebases.
+	(getClassAnnotation): Use MyClassLoader annotations.
+	* java/rmi/server/UnicastRemoteObject.java (UnicastRemoteObject):
+	call exportObject(this).
+
+	* gnu/java/rmi/RMIMarshalledObjectOutputStream.java
+	(RMIMarshalledObjectOutputStream): set locBytesStream and locStream.
+	(setAnnotation): Don't set locBytesStream and locStream.
+	(replaceObject): Removed.
+	(flush): Don't test locStream.
+	(getLocBytes): LikeWise.
+	* gnu/java/rmi/dgc/DGCImpl.java: extends UnicastServerRef.
+	(leaseCache): New field.
+	(dirty): Use leaseCache.
+	(LeaseRecord): New inner class.
+	* gnu/java/rmi/registry/RegistryImpl.java (RegistryImpl): Don't
+	explicitly call exportObject().
+	* gnu/java/rmi/registry/RegistryImpl_Stub.java: set useNewInvoke to
+	false to communicate with Sun JDK130.
+	* gnu/java/rmi/server/ConnectionRunnerPool.java: Add CPU comment.
+	* gnu/java/rmi/server/RMIObjectInputStream.java
+	(UnicastConnectionManager): Removed field.
+	* gnu/java/rmi/server/RMIObjectOutputStream.java (replaceObject):
+	Use UnicastServer.getExportedRef().
+	* gnu/java/rmi/server/UnicastConnection.java (reviveTime): New field.
+	(expireTime): Likewise.
+	(CONNECTION_TIMEOUT): Likewise.
+	(disconnect): Call sock.close().
+	(isExpired): New method.
+	(resetTime): Likewise.
+	(run): Use do while loop and catch Exception for discardConnection().
+	* gnu/java/rmi/server/UnicastConnectionManager.java: Pool connections.
+	* gnu/java/rmi/server/UnicastRef.java: Lots of changes.
+	* gnu/java/rmi/server/UnicastRemoteCall.java: Lots of changes.
+	* gnu/java/rmi/server/UnicastServer.java (refcache): New field.
+	(exportObject): Use refcache.
+	(unexportObject): Likewise.
+	(getExportedRef): New method.
+	* gnu/java/rmi/server/UnicastServerRef.java (UnicastServerRef): New
+	constructor.
+	(exportObject): Save manager.serverobj.
+	(getStub): New method.
+
+2002-11-07  Mark Wielaard  <mark@klomp.org>
+
 	* java/lang/reflect/natField.cc (getBoolean): Use getType().
 	(getByte): Likewise.
 	(getShort): Likewise.

@@ -64,7 +64,8 @@ public RegistryImpl(int port) throws RemoteException {
 
 public RegistryImpl(int port, RMIClientSocketFactory cf, RMIServerSocketFactory sf) throws RemoteException {
 	super(new UnicastServerRef(new ObjID(ObjID.REGISTRY_ID), port, sf));
-	((UnicastServerRef)getRef()).exportObject(this);
+	// The following is unnecessary, because UnicastRemoteObject export itself automatically.
+	//((UnicastServerRef)getRef()).exportObject(this);
 }
 
 public Remote lookup(String name) throws RemoteException, NotBoundException, AccessException {

@@ -67,7 +67,7 @@ public final class RegistryImpl_Stub
     static {
         try {
             java.rmi.server.RemoteRef.class.getMethod("invoke", new java.lang.Class[] { java.rmi.Remote.class, java.lang.reflect.Method.class, java.lang.Object[].class, long.class });
-            useNewInvoke = true;
+            useNewInvoke = false;
             $method_bind_0 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("bind", new java.lang.Class[] {java.lang.String.class, java.rmi.Remote.class});
             $method_list_1 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("list", new java.lang.Class[] {});
             $method_lookup_2 = gnu.java.rmi.registry.RegistryImpl.class.getMethod("lookup", new java.lang.Class[] {java.lang.String.class});

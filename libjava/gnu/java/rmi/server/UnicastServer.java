@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Hashtable;
 import java.net.UnknownHostException;
+import java.rmi.Remote;
 import java.rmi.server.ObjID;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.server.UID;
@@ -56,27 +57,36 @@ import gnu.java.rmi.dgc.DGCImpl;
 public class UnicastServer
 	implements ProtocolConstants {
 
-static private Hashtable objects = new Hashtable();
+static private Hashtable objects = new Hashtable();  //mapping OBJID to server ref
+static private Hashtable refcache = new Hashtable(); //mapping obj itself to server ref
 static private DGCImpl dgc;
 
 public static void exportObject(UnicastServerRef obj) {
 	startDGC();
 	objects.put(obj.objid, obj);
+	refcache.put(obj.myself, obj);
 	obj.manager.startServer();
 }
 
 // FIX ME: I haven't handle force parameter
 public static boolean unexportObject(UnicastServerRef obj, boolean force) {
 	objects.remove(obj.objid);
+	refcache.remove(obj.myself);
 	obj.manager.stopServer();
 	return true;
+}
+
+public static UnicastServerRef getExportedRef(Remote remote){
+    return (UnicastServerRef)refcache.get(remote);
 }
 
 private static synchronized void startDGC() {
 	if (dgc == null) {
 		try {
 			dgc = new DGCImpl();
-			((UnicastServerRef)dgc.getRef()).exportObject(dgc);
+			// Changed DGCImpl to inherit UnicastServerRef directly
+			//((UnicastServerRef)dgc.getRef()).exportObject(dgc);
+			dgc.exportObject(dgc);
 		}
 		catch (RemoteException e) {
 			e.printStackTrace();

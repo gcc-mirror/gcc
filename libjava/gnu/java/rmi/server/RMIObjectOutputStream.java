@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,10 +72,9 @@ protected Object replaceObject(Object obj)
         throws IOException
 {
     if((obj instanceof Remote) && !(obj instanceof RemoteStub)){
-	    UnicastServerRef ref = new UnicastServerRef(new ObjID(), 0, null);
-		try{
-		    return ref.exportObject((Remote)obj);
-		}catch(Exception e){}
+	    UnicastServerRef ref = UnicastServer.getExportedRef((Remote)obj);
+	    if (ref != null)
+		    return ref.getStub();
     }
     return obj;
 }

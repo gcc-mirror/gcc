@@ -91,6 +91,7 @@ class ConnectionRunnerPool
       
     }
   
+  // Should this value equal to number of CPU?
   private static int size = 5;
   private static int max_size = 10;
   
