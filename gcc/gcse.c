@@ -559,6 +559,7 @@ static void alloc_reg_set_mem (int);
 static void free_reg_set_mem (void);
 static int get_bitmap_width (int, int, int);
 static void record_one_set (int, rtx);
+static void replace_one_set (int, rtx, rtx);
 static void record_set_info (rtx, rtx, void *);
 static void compute_sets (rtx);
 static void hash_scan_insn (rtx, struct hash_table *, int);
@@ -1174,6 +1175,24 @@ free_reg_set_mem (void)
 {
   free (reg_set_table);
   obstack_free (&reg_set_obstack, NULL);
+}
+
+/* An OLD_INSN that used to set REGNO was replaced by NEW_INSN.
+   Update the corresponding `reg_set_table' entry accordingly.
+   We assume that NEW_INSN is not already recorded in reg_set_table[regno].  */
+
+static void
+replace_one_set (int regno, rtx old_insn, rtx new_insn)
+{
+  struct reg_set *reg_info;
+  if (regno >= reg_set_table_size)
+    return;
+  for (reg_info = reg_set_table[regno]; reg_info; reg_info = reg_info->next)
+    if (reg_info->insn == old_insn)
+      {
+        reg_info->insn = new_insn;
+        break;
+      }
 }
 
 /* Record REGNO in the reg_set table.  */
@@ -5327,7 +5346,14 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
   return did_insert;
 }
 
-/* Copy the result of INSN to REG.  INDX is the expression number.  */
+/* Copy the result of INSN to REG.  INDX is the expression number.
+   Given "old_reg <- expr" (INSN), instead of adding after it
+     reaching_reg <- old_reg
+   it's better to do the following:
+     reaching_reg <- expr
+     old_reg      <- reaching_reg
+   because this way copy propagation can discover additional PRE
+   opportunuties.  */
 
 static void
 pre_insert_copy_insn (struct expr *expr, rtx insn)
@@ -5337,14 +5363,25 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
   int indx = expr->bitmap_index;
   rtx set = single_set (insn);
   rtx new_insn;
+  rtx new_set;
+  rtx old_reg;
 
   if (!set)
     abort ();
 
-  new_insn = emit_insn_after (gen_move_insn (reg, copy_rtx (SET_DEST (set))), insn);
+  old_reg = SET_DEST (set);
+  new_insn = emit_insn_after (gen_move_insn (old_reg,
+                                             reg),
+                              insn);
+  new_set = single_set (new_insn);
+
+  if (!new_set)
+    abort();
+  SET_DEST (set) = reg;
 
   /* Keep register set table up to date.  */
-  record_one_set (regno, new_insn);
+  replace_one_set (REGNO (old_reg), insn, new_insn);
+  record_one_set (regno, insn);
 
   gcse_create_count++;
 
