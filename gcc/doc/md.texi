@@ -771,16 +771,16 @@ instruction operands on a RISC machine.
 This is a slight variant on @code{register_operand} which works around
 a limitation in the machine-description reader.
 
-@example
+@smallexample
 (match_operand @var{n} "pmode_register_operand" @var{constraint})
-@end example
+@end smallexample
 
 @noindent
 means exactly what
 
-@example
+@smallexample
 (match_operand:P @var{n} "register_operand" @var{constraint})
-@end example
+@end smallexample
 
 @noindent
 would mean, if the machine-description reader accepted @samp{:P}

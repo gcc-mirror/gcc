@@ -1,3 +1,11 @@
+2004-09-17  James Morrison  <phython@gcc.gnu.org>
+
+	* doc/cfg.texi: Use @smallexample.
+	* doc/md.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+	* doc/extend.texi: Likewise.  Use @r{} in comments.
+	* doc/trouble.texi: Use @r{} in comments.
+
 2004-09-17  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.ac (gcc_cv_gld_version): Handle whitespace before

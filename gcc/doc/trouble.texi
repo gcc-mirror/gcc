@@ -910,11 +910,11 @@ of instantiation.  For example, consider
   struct A @{
     template <typename T>
     void f () @{
-      foo (1);        // 1
-      int i = N;      // 2
+      foo (1);        // @r{1}
+      int i = N;      // @r{2}
       T t;
-      t.bar();        // 3
-      foo (t);        // 4
+      t.bar();        // @r{3}
+      foo (t);        // @r{4}
     @}
 
     static const int N;

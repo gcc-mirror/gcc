@@ -1193,7 +1193,7 @@ marked as an alias tag and added to the alias set of TMT@.
 
 For instance, consider the following function:
 
-@example
+@smallexample
 foo (int i)
 @{
   int *p, *q, a, b;
@@ -1208,7 +1208,7 @@ foo (int i)
   a = b + 2;
   return *p;
 @}
-@end example
+@end smallexample
 
 After aliasing analysis has finished, the type memory tag for
 pointer @code{p} will have two aliases, namely variables @code{a} and
@@ -1216,7 +1216,7 @@ pointer @code{p} will have two aliases, namely variables @code{a} and
 Every time pointer @code{p} is dereferenced, we want to mark the
 operation as a potential reference to @code{a} and @code{b}.
 
-@example
+@smallexample
 foo (int i)
 @{
   int *p, a, b;
@@ -1239,7 +1239,7 @@ foo (int i)
   # VUSE <b_8>;
   return *p_1;
 @}
-@end example
+@end smallexample
 
 In certain cases, the list of may aliases for a pointer may grow
 too large.  This may cause an explosion in the number of virtual

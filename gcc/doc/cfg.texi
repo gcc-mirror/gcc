@@ -120,7 +120,7 @@ in the various @file{tree-*} files.
 The following snippet will pretty-print all the statements of the
 program in the GIMPLE representation.
 
-@example
+@smallexample
 FOR_EACH_BB (bb)
   @{
      block_stmt_iterator si;
@@ -131,7 +131,7 @@ FOR_EACH_BB (bb)
           print_generic_stmt (stderr, stmt, 0);
        @}
   @}
-@end example
+@end smallexample
 
 
 @node Edges
@@ -231,7 +231,7 @@ stages of the compilation process, GCC tries to avoid such dense flow
 graphs by factoring computed jumps.  For example, given the following
 series of jumps, 
 
-@example
+@smallexample
   goto *x;
   [ ... ]
 
@@ -240,13 +240,13 @@ series of jumps,
 
   goto *x;
   [ ... ]
-@end example
+@end smallexample
 
 @noindent
 factoring the computed jumps results in the following code sequence
 which has a much simpler flow graph:
 
-@example
+@smallexample
   goto y;
   [ ... ]
 
@@ -258,7 +258,7 @@ which has a much simpler flow graph:
 
 y:
   goto *x;
-@end example
+@end smallexample
 
 However, the classic problem with this transformation is that it has a
 runtime cost in there resulting code: An extra jump.  Therefore, the
