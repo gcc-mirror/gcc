@@ -520,7 +520,7 @@ dbxout_continue ()
 #else
   fprintf (asmfile, "\\\\");
 #endif
-  dbxout_finish_symbol (0);
+  dbxout_finish_symbol (NULL_TREE);
   fprintf (asmfile, "%s \"", ASM_STABS_OP);
   current_sym_nchars = 0;
 }
@@ -1207,32 +1207,33 @@ static void
 print_int_cst_octal (c)
      tree c;
 {
-  unsigned int high = TREE_INT_CST_HIGH (c);
-  unsigned int low = TREE_INT_CST_LOW (c);
-  int excess = (3 - (HOST_BITS_PER_INT % 3));
+  unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (c);
+  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (c);
+  int excess = (3 - (HOST_BITS_PER_WIDE_INT % 3));
 
   fprintf (asmfile, "0");
 
   if (excess == 3)
     {
-      print_octal (high, HOST_BITS_PER_INT / 3);
-      print_octal (low, HOST_BITS_PER_INT / 3);
+      print_octal (high, HOST_BITS_PER_WIDE_INT / 3);
+      print_octal (low, HOST_BITS_PER_WIDE_INT / 3);
     }
   else
     {
-      unsigned int beg = high >> excess;
-      unsigned int middle
-	= ((high & ((1 << excess) - 1)) << (3 - excess)
-	   | (low >> (HOST_BITS_PER_INT / 3 * 3)));
-      unsigned int end = low & ((1 << (HOST_BITS_PER_INT / 3 * 3)) - 1);
+      unsigned HOST_WIDE_INT beg = high >> excess;
+      unsigned HOST_WIDE_INT middle
+	= ((high & (((HOST_WIDE_INT) 1 << excess) - 1)) << (3 - excess)
+	   | (low >> (HOST_BITS_PER_WIDE_INT / 3 * 3)));
+      unsigned HOST_WIDE_INT end
+	= low & (((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 3 * 3)) - 1);
       fprintf (asmfile, "%o%01o", beg, middle);
-      print_octal (end, HOST_BITS_PER_INT / 3);
+      print_octal (end, HOST_BITS_PER_WIDE_INT / 3);
     }
 }
 
 static void
 print_octal (value, digits)
-     unsigned int value;
+     unsigned HOST_WIDE_INT value;
      int digits;
 {
   int i;
@@ -1396,7 +1397,7 @@ dbxout_symbol (decl, local)
 		fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (name));
 		dbxout_type (type, 1, 0);
-		dbxout_finish_symbol (0);
+		dbxout_finish_symbol (NULL_TREE);
 	      }
 
 	    /* Output typedef name.  */
@@ -1446,7 +1447,7 @@ dbxout_symbol (decl, local)
 	    fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (name));
 	    dbxout_type (type, 1, 0);
-	    dbxout_finish_symbol (0);
+	    dbxout_finish_symbol (NULL_TREE);
 	  }
 
 	/* Prevent duplicate output of a typedef.  */
@@ -1484,7 +1485,7 @@ dbxout_symbol (decl, local)
 	      if (TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE
 		  || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 		{
-		  int ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
+		  HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
 #ifdef DBX_OUTPUT_CONSTANT_SYMBOL
 		  DBX_OUTPUT_CONSTANT_SYMBOL (asmfile, name, ival);
 #else
@@ -1762,8 +1763,8 @@ dbxout_parms (parms)
 	/* Perform any necessary register eliminations on the parameter's rtl,
 	   so that the debugging output will be accurate.  */
 	DECL_INCOMING_RTL (parms)
-	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, 0);
-	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, 0);
+	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
+	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
 	if (leaf_function)
 	  {
@@ -2170,7 +2171,7 @@ dbxout_block (block, depth, args)
 #endif
 
 	  /* Output the subblocks.  */
-	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, 0);
+	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
 
 	  /* Refer to the marker for the end of the block.  */
 	  if (depth > 0 && debug_info_level != DINFO_LEVEL_TERSE)
