@@ -899,15 +899,15 @@ check_format_info (info, params)
 		&& fci->pointer_count > 0)
 	  /* Don't warn about differences merely in signedness.  */
 	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
-	       && TREE_CODE (cur_type) == INTEGER_TYPE
+	       && TREE_CODE (TYPE_MAIN_VARIANT (cur_type)) == INTEGER_TYPE
 	       && (TREE_UNSIGNED (wanted_type)
 		   ? wanted_type == (cur_type = unsigned_type (cur_type))
 		   : wanted_type == (cur_type = signed_type (cur_type))))
 	  /* Likewise, "signed char", "unsigned char" and "char" are
 	     equivalent but the above test won't consider them equivalent.  */
 	  && ! (wanted_type == char_type_node
-		&& (cur_type == signed_char_type_node
-		    || cur_type == unsigned_char_type_node)))
+		&& (TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
+		    || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node)))
 	{
 	  register char *this;
 	  register char *that;
@@ -1458,7 +1458,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  type = unsigned_type (type);
 	}
 
-      if (!max_gt && !unsignedp0 && TREE_CODE (primop1) != INTEGER_CST)
+      if (!max_gt && !unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  /* This is the case of (char)x >?< 0x80, which people used to use
 	     expecting old C compilers to change the 0x80 into -0x80.  */
@@ -1468,7 +1468,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	    warning ("comparison is always 1 due to limited range of data type");
 	}
 
-      if (!min_lt && unsignedp0 && TREE_CODE (primop1) != INTEGER_CST)
+      if (!min_lt && unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
 	  if (val == integer_zero_node)
