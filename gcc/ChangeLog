@@ -1,3 +1,12 @@
+2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h: Add casts to the arguments of the following
+        macros: evfsabs, evfsnabs, evfsneg, evfsadd, evfssub, evfsmul,
+        evfsdiv, evfscfui, evfscfsi evfscfuf evfscfsf, evfsctui, evfsctsi,
+        evfsctuf, evfsctsf, evfsctuiz, evfsctsiz, __ev_get_upper*,
+        __ev_get_lower*, __ev_get_u32, __ev_get_s32, __ev_get_fs,
+        __ev_get_u16, __ev_get_s16.
+
 2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
