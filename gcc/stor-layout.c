@@ -835,6 +835,8 @@ layout_type (type)
       if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  tree field;
+	  enum machine_mode mode = VOIDmode;
+
 	  /* A record which has any BLKmode members must itself be BLKmode;
 	     it can't go in a register.
 	     Unless the member is BLKmode only because it isn't aligned.  */
@@ -860,13 +862,23 @@ layout_type (type)
 		  != ((TREE_INT_CST_LOW (DECL_SIZE (field)) + bitpos - 1)
 		      / BITS_PER_WORD)
 		  /* But there is no problem if the field is entire words.  */
-		  && TREE_INT_CST_LOW (DECL_SIZE (field)) % BITS_PER_WORD == 0)
+		  && TREE_INT_CST_LOW (DECL_SIZE (field)) % BITS_PER_WORD != 0)
 		goto record_lose;
+
+	      /* If this field is the whole struct, remember its mode so
+		 that, say, we can put a double in a class into a DF
+		 register instead of forcing it to live in the stack.  */
+	      if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field)))
+		mode = DECL_MODE (field);
 	    }
 
-	  TYPE_MODE (type)
-	    = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			     MODE_INT, 1);
+	  if (mode != VOIDmode)
+	    /* We only have one real field; use its mode.  */
+	    TYPE_MODE (type) = mode;
+	  else
+	    TYPE_MODE (type)
+	      = mode_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
+			       MODE_INT, 1);
 
 	  /* If structure's known alignment is less than
 	     what the scalar mode would need, and it matters,
