@@ -1,3 +1,7 @@
+2004-02-24  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/i386-regparm.c: New test.
+
 2004-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14106
