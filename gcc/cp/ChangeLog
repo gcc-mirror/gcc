@@ -1,3 +1,28 @@
+Wed Jul 19 11:49:57 1995  Gerald Baumgartner  <gb@alexander.cs.purdue.edu>
+
+	* cp-tree.h (SIGTABLE_VT_OFF_NAME): Renamed from SIGTABLE_OFFSET_NAME.
+	(SIGTABLE_VB_OFF_NAME): New macro.
+	(vt_off_identifier): Renamed from offset_identifier.
+	(vb_off_identifier): Added extern declaration.
+
+	* decl.c (vt_off_identifier): Renamed from offset identifier.
+	(vb_off_identifier): New variable to hold the identifier for the
+	sigtable field vb_off.
+	(init_decl_processing): Initialize vb_off_identifier.
+	Renamed vt_off_identifier from offset_identifier.
+	* sig.c (build_signature_method_call): Renamed offset_identifier and
+	local variable offset to vt_off_identifer and vt_off, respecitively.
+	* sig.c (build_signature_table_constructor): Renamed offset to vt_off.
+
+	* decl.c (init_decl_processing): Add vb_off field to
+	sigtable_entry_type.  Reorder fields so that pfn gets properly
+	aligned at a 64 bit boundary on the Alpha.
+	* sig.c (build_signature_table_constructor): Build the constructor
+	according to the new layout.  Set the vb_off field to -1 for now.
+
+	* decl.c (init_decl_processing): Align sigtable_entry_type on word
+	boundaries instead of double word boundaries to save space.
+
 Fri Jun 30 13:45:51 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* call.c (convert_harshness): Add QUAL_CODE when we're faced with
