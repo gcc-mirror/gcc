@@ -1,3 +1,7 @@
+Tue Feb 23 16:24:19 CET 1999 Marc Lehmann <pcg@goof.com>
+
+	* config/i386/i386.md: fix typoe.
+
 Mon Feb 22 19:36:33 1999  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* config/mips/mips.c (mips_debugger_offset): When TARGET_MIPS16 &&
@@ -144,6 +148,7 @@ Fri Feb 19 18:18:56 1999  Don Bowman  <don@pixstream.com>
 	* configure.in (mips*-*-vxworks*): Enable gthreads vxworks support.
 	* configure: Rebuilt.
 
+>>>>>>> 1.3049
 Sun Feb 21 20:34:44 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
