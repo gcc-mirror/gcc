@@ -7617,8 +7617,8 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 
 	  for (i = 1; i < TARGET_VTABLE_DATA_ENTRY_DISTANCE; ++i)
 	    add = tree_cons (NULL_TREE,
-			     build_c_cast (vtable_entry_type,
-				     size_zero_node),
+			     build1 (NOP_EXPR, vtable_entry_type,
+				     null_pointer_node),
 			     add);
 	  *prev = add;
 	}
