@@ -1,3 +1,8 @@
+2002-07-08  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* include/bits/stl_deque.h (_Deque_alloc_base):  Change order of
+	member declarations to avoid compiler warnings and restore 3.1 ABI.
+
 2002-07-08  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/23_containers/howto.html:  Link to dk_std::vector paper
