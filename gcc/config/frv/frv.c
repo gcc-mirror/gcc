@@ -8872,9 +8872,9 @@ frv_init_libfuncs (void)
   set_conv_libfunc (sfix_optab,   DImode, DFmode, "__dtoll");
 
   set_conv_libfunc (ufix_optab,   SImode, SFmode, "__ftoui");
-  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__ftoull");
-  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__dtoui");
-  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__dtoull");
+  set_conv_libfunc (ufix_optab,   DImode, SFmode, "__ftoull");
+  set_conv_libfunc (ufix_optab,   SImode, DFmode, "__dtoui");
+  set_conv_libfunc (ufix_optab,   DImode, DFmode, "__dtoull");
 
   set_conv_libfunc (sfloat_optab, SFmode, SImode, "__itof");
   set_conv_libfunc (sfloat_optab, SFmode, DImode, "__lltof");
