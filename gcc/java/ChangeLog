@@ -1,3 +1,8 @@
+Thu Sep  9 17:33:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (finish_class): We're now outside a valid method
+ 	declaration. Tell the rest of gcc so.
+
 1999-09-07  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (add_class_decl): Generate include for gcj/array.h, not
