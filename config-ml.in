@@ -218,6 +218,75 @@ arc-*-elf*)
 	  done
 	fi
 	;;
+arm-*-*)
+	if [ x"$enable_fpu" = xno ]
+	then
+	  old_multidirs=${multidirs}
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "${x}" in
+	      *fpu*) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x"$enable_26bit" = xno ]
+	then
+	  old_multidirs=${multidirs}
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "${x}" in
+	      *26bit*) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x"$enable_underscore" = xno ]
+	then
+	  old_multidirs=${multidirs}
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "${x}" in
+	      *under*) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x"$enable_interwork" = xno ]
+	then
+	  old_multidirs=${multidirs}
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "${x}" in
+	      *interwork*) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x$enable_biendian = xno ]
+	then
+	  old_multidirs="${multidirs}"
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "$x" in
+	      *le* ) : ;;
+	      *be* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x"$enable_nofmult" = xno ]
+	then
+	  old_multidirs="${multidirs}"
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "$x" in
+	      *nofmult* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	;;
 m68*-*-*)
 	if [ x$enable_softfloat = xno ]
 	then
