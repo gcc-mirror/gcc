@@ -1609,8 +1609,7 @@ dump_expr (t, flags)
 	else
 	  {
 	    do_int:
-	    if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (t)
-		!= (TREE_INT_CST_LOW (t) >> (HOST_BITS_PER_WIDE_INT - 1)))
+	    if (! host_integerp (t, 0))
 	      {
 	        tree val = t;
 

@@ -1,3 +1,9 @@
+2000-10-20  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (walk_tree): Don't walk into default args.
+
+	* error.c (dump_expr): Use host_integerp.
+
 2000-10-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* typeck2.c (abstract_virtuals_error): Use "because" instead of
