@@ -37,24 +37,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
 #define MASK_ELF		0x10000000	/* ELF not rose */
 #define MASK_NO_IDENT		0x08000000	/* suppress .ident */
+#define MASK_NO_UNDERSCORES	0x04000000	/* suppress leading _ */
 
-#define TARGET_HALF_PIC	(target_flags & MASK_HALF_PIC)
-#define TARGET_DEBUG	(target_flags & MASK_HALF_PIC_DEBUG)
-#define HALF_PIC_DEBUG	TARGET_DEBUG
-#define TARGET_ELF	(target_flags & MASK_ELF)
-#define TARGET_ROSE	((target_flags & MASK_ELF) == 0)
-#define TARGET_IDENT	((target_flags & MASK_NO_IDENT) == 0)
+#define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
+#define TARGET_DEBUG		(target_flags & MASK_HALF_PIC_DEBUG)
+#define HALF_PIC_DEBUG		TARGET_DEBUG
+#define TARGET_ELF		(target_flags & MASK_ELF)
+#define TARGET_ROSE		((target_flags & MASK_ELF) == 0)
+#define TARGET_IDENT		((target_flags & MASK_NO_IDENT) == 0)
+#define TARGET_UNDERSCORES	((target_flags & MASK_NO_UNDERSCORES) == 0)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
      { "half-pic",	 MASK_HALF_PIC},				\
      { "no-half-pic",	-MASK_HALF_PIC},				\
+     { "debug-half-pic", MASK_HALF_PIC_DEBUG},				\
      { "debugb",	 MASK_HALF_PIC_DEBUG},				\
      { "elf",		 MASK_ELF},					\
      { "no-elf",	-MASK_ELF},					\
      { "rose",		-MASK_ELF},					\
      { "ident",		-MASK_NO_IDENT},				\
-     { "no-ident",	 MASK_NO_IDENT},
+     { "no-ident",	 MASK_NO_IDENT},				\
+     { "underscores",	-MASK_NO_UNDERSCORES},				\
+     { "no-underscores", MASK_NO_UNDERSCORES},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -74,6 +79,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  CPP_SPEC
 #define CPP_SPEC "\
 %{!melf: -D__ROSE__} %{melf: -D__ELF__} \
+%{mno-underscores: -D__NO_UNDERSCORES__} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
 %{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
@@ -144,6 +150,36 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) fprintf (FILE, "\tcall _mcount\n")
+
+/* Prefix for internally generated assembler labels.  If we aren't using
+   underscores, we are using prefix `.'s to identify labels that should
+   be ignored, as in `i386/gas.h' --karl@cs.umb.edu  */
+#undef	LPREFIX
+#define	LPREFIX ((TARGET_UNDERSCORES) ? "L" : ".L")
+
+/* This is how to store into the string BUF
+   the symbol_ref name of an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+   This is suitable for output with `assemble_name'.  */
+
+#undef	ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)			\
+    sprintf ((BUF), "*%s%s%d", (TARGET_UNDERSCORES) ? "" : ".",		\
+	     (PREFIX), (NUMBER))
+
+/* This is how to output an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.  */
+
+#undef	ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
+  fprintf (FILE, "%s%s%d:\n", (TARGET_UNDERSCORES) ? "" : ".",		\
+	   PREFIX, NUM)
+
+/* This is how to output a reference to a user-level label named NAME.  */
+
+#undef	ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE,NAME)					\
+  fprintf (FILE, "%s%s", (TARGET_UNDERSCORES) ? "_" : "", NAME)
 
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  On most machines, this can be defined as
