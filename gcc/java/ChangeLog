@@ -1,3 +1,10 @@
+2003-08-13  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Make-lang.in: Added missing win32-host.o to JAVA_OBJS,
+	GCJH_OBJS, JCFDUMP_OBJS
+	* win32-host.c: Removed the unnecessary and broken dependency
+	on jcf.h
+
 2003-08-11  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (java_check_regular_methods): Typo fixes.  Call

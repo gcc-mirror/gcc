@@ -107,18 +107,18 @@ gt-java-builtins.h gtype-java.h gt-java-resource.h : s-gtype ; @true
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
-  java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
+  java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
 
 GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/zextract.o version.o mkdeps.o errors.o ggc-none.o
+  java/win32-host.o java/zextract.o version.o mkdeps.o errors.o ggc-none.o
 
 JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/zextract.o errors.o version.o mkdeps.o ggc-none.o
+		java/win32-host.o java/zextract.o errors.o version.o mkdeps.o ggc-none.o
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o
 
