@@ -1,3 +1,7 @@
+2004-05-25  Paul Brook  <paul@codesourcery.com>
+
+	* expr.c (check_inquiry): Remove bogus tests.
+
 2004-05-23  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/13773
