@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dm68k -Dunix -DAMIX -Amachine(m68k) -Acpu(m68k) -Asystem(unix) -Alint(off)"
+  "-Dm68k -Dunix -DAMIX -D__svr4__ -Amachine(m68k) -Acpu(m68k) -Asystem(unix) -Alint(off)"
 
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
    Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"
@@ -121,3 +121,22 @@ do {									\
   } while (sp < (LEN));						\
   putc ('\n', (FILE));						\
 }
+
+/* Override these for the sake of an assembler bug: the Amix
+   assembler can't handle .LC0@GOT syntax.  This pollutes the final
+   table for shared librarys but what's a poor soul to do; sigh... RFH */
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
+  if (flag_pic && !strcmp(PREFIX,"LC"))			\
+    sprintf (LABEL, "*%s%%%d", PREFIX, NUM);		\
+  else							\
+    sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+
+#undef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+  if (flag_pic && !strcmp(PREFIX,"LC"))			\
+    asm_fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);	\
+  else							\
+    asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
+
