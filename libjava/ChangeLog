@@ -1,3 +1,20 @@
+2002-02-20  Per Bothner  <per@bothner.com>
+
+	* java/net/URL.java (getPath):  New JDK 1.3 method.
+
+	* java/net/URLStreamHandler.java (parseURL):
+	It is wrong to prepend '/' to the file part of a relative url.
+
+	* java/net/URLStreamHandler.java (parseURL):
+	Minor optizations - append '/' rather than "/".
+
+	* java/net/URLStreamHandler.java (parseURL):
+	Don't canonicalize "xx/.." or "./" URLs - JDK doesn't.
+	We probably should canonicalize for a context-relative url, though.
+	* java/net/URL.java (sameFile):  Delegate to URLStreamHandler.
+	* java/net/URLStreamHandler.java (canonicalizeFilename):  New helper.
+	(sameFile):  New method.  Uses canonicalizeFilename.
+
 2002-02-22  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (init_properties): Include the `Inc.' in

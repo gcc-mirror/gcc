@@ -1,6 +1,6 @@
 // URLStreamHandler.java - Superclass of all stream protocol handlers.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -84,17 +84,20 @@ public abstract class URLStreamHandler
     else if (file == null || file.length() <= 0)
       {
 	// No file context available; just spec for file.
-	file = "/" + spec.substring(start, limit);
+	file = spec.substring(start, limit);
       }
     else if (start < limit)
       {
 	// Context is available, but only override it if there is a new file.
-        // FIXME: unsure to what extent `/` and File.separatorChar
-	//        can mix in URLs.  Ignore File.separatorChar for now.
 	file = file.substring(0, file.lastIndexOf('/'))
-		+ "/" + spec.substring(start, limit);
+		+ '/' + spec.substring(start, limit);
       }
 
+    u.set(u.getProtocol(), host, port, file, u.getRef());
+  }
+  
+  private static String canonicalizeFilename(String file)
+  {
     int index;
 
     // Replace "/./" with "/".  This probably isn't very efficient in
@@ -113,10 +116,33 @@ public abstract class URLStreamHandler
 	else
 	  break;
       }
-    
-    u.set(u.getProtocol(), host, port, file, u.getRef());
+    return file; 
   }
-  
+
+  public boolean sameFile(URL url1, URL url2)
+  {
+    if (url1 == url2)
+      return true;
+    // This comparison is very conservative.  It assumes that any
+    // field can be null.
+    if (url1 == null || url2 == null || url1.getPort() != url2.getPort())
+      return false;
+    String s1, s2;
+    s1 = url1.getProtocol();
+    s2 = url2.getProtocol();
+    if (s1 != s2 && (s1 == null || ! s1.equals(s2)))
+      return false;
+    s1 = url1.getHost();
+    s2 = url2.getHost();
+    if (s1 != s2 && (s1 == null || ! s1.equals(s2)))
+      return false;
+    s1 = canonicalizeFilename(url1.getFile());
+    s2 = canonicalizeFilename(url2.getFile());
+    if (s1 != s2 && (s1 == null || ! s1.equals(s2)))
+      return false;
+    return true;
+  }
+
   protected void setURL(URL u, String protocol, String host, int port,
 			String file, String ref)
   {

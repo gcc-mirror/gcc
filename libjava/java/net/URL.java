@@ -1,6 +1,6 @@
 // URL.java - A Uniform Resource Locator.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -219,6 +219,12 @@ public final class URL implements Serializable
     return file;
   }
 
+  public String getPath()
+  {
+    int quest = file.indexOf('?');
+    return quest < 0 ? file : file.substring(0, quest);
+  }
+
   public String getHost()
   {
     return host;
@@ -274,16 +280,7 @@ public final class URL implements Serializable
 
   public boolean sameFile(URL other)
   {
-    // This comparison is very conservative.  It assumes that any
-    // field can be null.
-    return (other != null 
-	    && port == other.port
-	    && ((protocol == null && other.protocol == null)
-		|| (protocol != null && protocol.equals(other.protocol)))
-	    && ((host == null && other.host == null)
-		|| (host != null && host.equals(other.host)))
-	    && ((file == null && other.file == null)
-		|| (file != null && file.equals(other.file))));
+    return handler.sameFile(this, other);
   }
 
   protected void set(String protocol, String host, int port, String file,
