@@ -1,3 +1,7 @@
+1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_component_ref): Diagnose ref to nested type.
+
 1998-06-10  Brendan Kehoe  <brendan@cygnus.com>
 
 	* decl.c (grokparms): Check that INIT isn't an error_mark_node

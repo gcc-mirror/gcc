@@ -1959,10 +1959,12 @@ build_component_ref (datum, component, basetype_path, protect)
        hierarchy, the compiler will abort (because vptr lookups are
        not supposed to be ambiguous.  */
     field = CLASSTYPE_VFIELD (basetype);
-  else if (TREE_CODE (component) == FIELD_DECL
-	   || TREE_CODE (component) == TYPE_DECL)
+  else if (TREE_CODE (component) == FIELD_DECL)
+    field = component;
+  else if (TREE_CODE (component) == TYPE_DECL)
     {
-      field = component;
+      cp_pedwarn ("invalid use of type decl `%#D' as expression", component);
+      return component;
     }
   else
     {
@@ -2049,10 +2051,7 @@ build_component_ref (datum, component, basetype_path, protect)
       if (TREE_CODE (field) != FIELD_DECL)
 	{
 	  if (TREE_CODE (field) == TYPE_DECL)
-	    {
-	      cp_error ("invalid use of type decl `%#D' as expression", field);
-	      return error_mark_node;
-	    }
+	    cp_pedwarn ("invalid use of type decl `%#D' as expression", field);
 	  else if (DECL_RTL (field) != 0)
 	    mark_used (field);
 	  else
