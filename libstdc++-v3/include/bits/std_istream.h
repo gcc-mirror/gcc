@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.6.1  Input streams
 //
 
+/** @file std_istream.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_ISTREAM
 #define _CPP_ISTREAM	1
 

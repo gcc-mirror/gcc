@@ -54,8 +54,8 @@
  */
 
 /** @file stl_function.h
- *  This is an internal header file, included by other STL headers.  You
- *  should not attempt to use it directly.
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
 
 #ifndef __SGI_STL_INTERNAL_FUNCTION_H
@@ -96,7 +96,7 @@ namespace std
  *  @{
 */
 /**
- *  This is one of the @link s20_3_1_base functor base classes @endlink.
+ *  This is one of the @link s20_3_1_base functor base classes@endlink.
 */
 template <class _Arg, class _Result>
 struct unary_function {
@@ -105,7 +105,7 @@ struct unary_function {
 };
 
 /**
- *  This is one of the @link s20_3_1_base functor base classes @endlink.
+ *  This is one of the @link s20_3_1_base functor base classes@endlink.
 */
 template <class _Arg1, class _Arg2, class _Result>
 struct binary_function {
@@ -119,42 +119,42 @@ struct binary_function {
 /** @defgroup s20_3_2_arithmetic Arithmetic Classes
  *  Because basic math often needs to be done during an algorithm, the library
  *  provides functors for those operations.  See the documentation for
- *  @link s20_3_1_base the base classes @endlink for examples of their use.
+ *  @link s20_3_1_base the base classes@endlink for examples of their use.
  *
  *  @{
 */
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct plus : public binary_function<_Tp,_Tp,_Tp> {
   _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x + __y; }
 };
 
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct minus : public binary_function<_Tp,_Tp,_Tp> {
   _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x - __y; }
 };
 
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct multiplies : public binary_function<_Tp,_Tp,_Tp> {
   _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x * __y; }
 };
 
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct divides : public binary_function<_Tp,_Tp,_Tp> {
   _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x / __y; }
 };
 
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct modulus : public binary_function<_Tp,_Tp,_Tp> 
 {
   _Tp operator()(const _Tp& __x, const _Tp& __y) const { return __x % __y; }
 };
 
-/// One of the @link s20_3_2_arithmetic math functors @endlink.
+/// One of the @link s20_3_2_arithmetic math functors@endlink.
 template <class _Tp>
 struct negate : public unary_function<_Tp,_Tp> 
 {
@@ -188,42 +188,42 @@ template <class _Tp> inline _Tp identity_element(multiplies<_Tp>) {
  *
  *  @{
 */
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct equal_to : public binary_function<_Tp,_Tp,bool> 
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x == __y; }
 };
 
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct not_equal_to : public binary_function<_Tp,_Tp,bool> 
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x != __y; }
 };
 
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct greater : public binary_function<_Tp,_Tp,bool> 
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x > __y; }
 };
 
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct less : public binary_function<_Tp,_Tp,bool> 
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x < __y; }
 };
 
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct greater_equal : public binary_function<_Tp,_Tp,bool>
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x >= __y; }
 };
 
-/// One of the @link s20_3_3_comparisons comparison functors @endlink.
+/// One of the @link s20_3_3_comparisons comparison functors@endlink.
 template <class _Tp>
 struct less_equal : public binary_function<_Tp,_Tp,bool> 
 {
@@ -237,21 +237,21 @@ struct less_equal : public binary_function<_Tp,_Tp,bool>
  *
  *  @{
 */
-/// One of the @link s20_3_4_logical Boolean operations functors @endlink.
+/// One of the @link s20_3_4_logical Boolean operations functors@endlink.
 template <class _Tp>
 struct logical_and : public binary_function<_Tp,_Tp,bool>
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x && __y; }
 };
 
-/// One of the @link s20_3_4_logical Boolean operations functors @endlink.
+/// One of the @link s20_3_4_logical Boolean operations functors@endlink.
 template <class _Tp>
 struct logical_or : public binary_function<_Tp,_Tp,bool>
 {
   bool operator()(const _Tp& __x, const _Tp& __y) const { return __x || __y; }
 };
 
-/// One of the @link s20_3_4_logical Boolean operations functors @endlink.
+/// One of the @link s20_3_4_logical Boolean operations functors@endlink.
 template <class _Tp>
 struct logical_not : public unary_function<_Tp,bool>
 {
@@ -286,7 +286,7 @@ struct logical_not : public unary_function<_Tp,bool>
  *
  *  @{
 */
-/// One of the @link s20_3_5_negators negation functors @endlink.
+/// One of the @link s20_3_5_negators negation functors@endlink.
 template <class _Predicate>
 class unary_negate
   : public unary_function<typename _Predicate::argument_type, bool> {
@@ -299,7 +299,7 @@ public:
   }
 };
 
-/// One of the @link s20_3_5_negators negation functors @endlink.
+/// One of the @link s20_3_5_negators negation functors@endlink.
 template <class _Predicate>
 inline unary_negate<_Predicate> 
 not1(const _Predicate& __pred)
@@ -307,7 +307,7 @@ not1(const _Predicate& __pred)
   return unary_negate<_Predicate>(__pred);
 }
 
-/// One of the @link s20_3_5_negators negation functors @endlink.
+/// One of the @link s20_3_5_negators negation functors@endlink.
 template <class _Predicate> 
 class binary_negate 
   : public binary_function<typename _Predicate::first_argument_type,
@@ -324,7 +324,7 @@ public:
   }
 };
 
-/// One of the @link s20_3_5_negators negation functors @endlink.
+/// One of the @link s20_3_5_negators negation functors@endlink.
 template <class _Predicate>
 inline binary_negate<_Predicate> 
 not2(const _Predicate& __pred)
@@ -364,7 +364,7 @@ not2(const _Predicate& __pred)
  *
  *  @{
 */
-/// One of the @link s20_3_6_binder binder functors @endlink.
+/// One of the @link s20_3_6_binder binder functors@endlink.
 template <class _Operation> 
 class binder1st
   : public unary_function<typename _Operation::second_argument_type,
@@ -389,7 +389,7 @@ public:
 #endif
 };
 
-/// One of the @link s20_3_6_binder binder functors @endlink.
+/// One of the @link s20_3_6_binder binder functors@endlink.
 template <class _Operation, class _Tp>
 inline binder1st<_Operation> 
 bind1st(const _Operation& __fn, const _Tp& __x) 
@@ -398,7 +398,7 @@ bind1st(const _Operation& __fn, const _Tp& __x)
   return binder1st<_Operation>(__fn, _Arg1_type(__x));
 }
 
-/// One of the @link s20_3_6_binder binder functors @endlink.
+/// One of the @link s20_3_6_binder binder functors@endlink.
 template <class _Operation> 
 class binder2nd
   : public unary_function<typename _Operation::first_argument_type,
@@ -423,7 +423,7 @@ public:
 #endif
 };
 
-/// One of the @link s20_3_6_binder binder functors @endlink.
+/// One of the @link s20_3_6_binder binder functors@endlink.
 template <class _Operation, class _Tp>
 inline binder2nd<_Operation> 
 bind2nd(const _Operation& __fn, const _Tp& __x) 
@@ -535,7 +535,7 @@ compose2(const _Operation1& __fn1, const _Operation2& __fn2,
  *
  *  @{
 */
-/// One of the @link s20_3_7_adaptors adaptors for function pointers @endlink.
+/// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
 template <class _Arg, class _Result>
 class pointer_to_unary_function : public unary_function<_Arg, _Result> {
 protected:
@@ -546,14 +546,14 @@ public:
   _Result operator()(_Arg __x) const { return _M_ptr(__x); }
 };
 
-/// One of the @link s20_3_7_adaptors adaptors for function pointers @endlink.
+/// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
 template <class _Arg, class _Result>
 inline pointer_to_unary_function<_Arg, _Result> ptr_fun(_Result (*__x)(_Arg))
 {
   return pointer_to_unary_function<_Arg, _Result>(__x);
 }
 
-/// One of the @link s20_3_7_adaptors adaptors for function pointers @endlink.
+/// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
 template <class _Arg1, class _Arg2, class _Result>
 class pointer_to_binary_function : 
   public binary_function<_Arg1,_Arg2,_Result> {
@@ -568,7 +568,7 @@ public:
     }
 };
 
-/// One of the @link s20_3_7_adaptors adaptors for function pointers @endlink.
+/// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
 template <class _Arg1, class _Arg2, class _Result>
 inline pointer_to_binary_function<_Arg1,_Arg2,_Result> 
 ptr_fun(_Result (*__x)(_Arg1, _Arg2)) {
@@ -823,7 +823,7 @@ public:
  *
  *  @{
 */
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp>
 class mem_fun_t : public unary_function<_Tp*,_Ret> {
 public:
@@ -833,7 +833,7 @@ private:
   _Ret (_Tp::*_M_f)();
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp>
 class const_mem_fun_t : public unary_function<const _Tp*,_Ret> {
 public:
@@ -843,7 +843,7 @@ private:
   _Ret (_Tp::*_M_f)() const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp>
 class mem_fun_ref_t : public unary_function<_Tp,_Ret> {
 public:
@@ -853,7 +853,7 @@ private:
   _Ret (_Tp::*_M_f)();
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp>
 class const_mem_fun_ref_t : public unary_function<_Tp,_Ret> {
 public:
@@ -863,7 +863,7 @@ private:
   _Ret (_Tp::*_M_f)() const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp, class _Arg>
 class mem_fun1_t : public binary_function<_Tp*,_Arg,_Ret> {
 public:
@@ -873,7 +873,7 @@ private:
   _Ret (_Tp::*_M_f)(_Arg);
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp, class _Arg>
 class const_mem_fun1_t : public binary_function<const _Tp*,_Arg,_Ret> {
 public:
@@ -884,7 +884,7 @@ private:
   _Ret (_Tp::*_M_f)(_Arg) const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp, class _Arg>
 class mem_fun1_ref_t : public binary_function<_Tp,_Arg,_Ret> {
 public:
@@ -894,7 +894,7 @@ private:
   _Ret (_Tp::*_M_f)(_Arg);
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Ret, class _Tp, class _Arg>
 class const_mem_fun1_ref_t : public binary_function<_Tp,_Arg,_Ret> {
 public:
@@ -904,7 +904,7 @@ private:
   _Ret (_Tp::*_M_f)(_Arg) const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp>
 class mem_fun_t<void, _Tp> : public unary_function<_Tp*,void> {
 public:
@@ -914,7 +914,7 @@ private:
   void (_Tp::*_M_f)();
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp>
 class const_mem_fun_t<void, _Tp> : public unary_function<const _Tp*,void> {
 public:
@@ -924,7 +924,7 @@ private:
   void (_Tp::*_M_f)() const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp>
 class mem_fun_ref_t<void, _Tp> : public unary_function<_Tp,void> {
 public:
@@ -934,7 +934,7 @@ private:
   void (_Tp::*_M_f)();
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp>
 class const_mem_fun_ref_t<void, _Tp> : public unary_function<_Tp,void> {
 public:
@@ -944,7 +944,7 @@ private:
   void (_Tp::*_M_f)() const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp, class _Arg>
 class mem_fun1_t<void, _Tp, _Arg> : public binary_function<_Tp*,_Arg,void> {
 public:
@@ -954,7 +954,7 @@ private:
   void (_Tp::*_M_f)(_Arg);
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp, class _Arg>
 class const_mem_fun1_t<void, _Tp, _Arg> 
   : public binary_function<const _Tp*,_Arg,void> {
@@ -965,7 +965,7 @@ private:
   void (_Tp::*_M_f)(_Arg) const;
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp, class _Arg>
 class mem_fun1_ref_t<void, _Tp, _Arg>
   : public binary_function<_Tp,_Arg,void> {
@@ -976,7 +976,7 @@ private:
   void (_Tp::*_M_f)(_Arg);
 };
 
-/// One of the @link s20_3_8_memadaptors adaptors for member pointers @endlink.
+/// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
 template <class _Tp, class _Arg>
 class const_mem_fun1_ref_t<void, _Tp, _Arg>
   : public binary_function<_Tp,_Arg,void> {

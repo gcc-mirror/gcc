@@ -29,6 +29,11 @@
 
 // Written by Gabriel Dos Reis <Gabriel.Dos-Reis@DPTMaths.ENS-Cachan.Fr>
 
+/** @file mask_array.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_BITS_MASK_ARRAY_H
 #define _CPP_BITS_MASK_ARRAY_H 1
 

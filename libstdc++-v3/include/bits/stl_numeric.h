@@ -53,10 +53,10 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/* NOTE: This is an internal header file, included by other STL headers.
- *   You should not attempt to use it directly.
+/** @file stl_numeric.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
-
 
 #ifndef _CPP_BITS_STL_NUMERIC_H
 #define _CPP_BITS_STL_NUMERIC_H 1

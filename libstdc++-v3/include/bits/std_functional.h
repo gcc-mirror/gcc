@@ -41,6 +41,11 @@
  *
  */
 
+/** @file std_functional.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_FUNCTIONAL
 #define _CPP_FUNCTIONAL 1
 

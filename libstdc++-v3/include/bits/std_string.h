@@ -31,6 +31,11 @@
 // ISO C++ 14882: 21  Strings library
 //
 
+/** @file std_string.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_STRING
 #define _CPP_STRING	1
 

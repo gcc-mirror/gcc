@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.6.3  Standard manipulators
 //
 
+/** @file std_iomanip.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_IOMANIP
 #define _CPP_IOMANIP 1
 

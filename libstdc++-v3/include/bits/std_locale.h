@@ -31,6 +31,11 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
+/** @file std_locale.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_LOCALE
 #define _CPP_LOCALE	1
 

@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.8  File-based streams
 //
 
+/** @file basic_file.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_BASIC_FILE
 #define _CPP_BASIC_FILE		1
 
@@ -121,7 +126,9 @@ namespace std
 #endif
     {
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
+      // underlying data source/sink
       __c_file_type* 	_M_cfile;
+      // true iff we opened _M_cfile, and thus must close it ourselves
       bool 		_M_cfile_created;
 #else
 # ifdef _GLIBCPP_USE_WCHAR_T
@@ -142,8 +149,10 @@ namespace std
 
       // Used for opening the standard streams, cin, cout, cerr, clog,
       // and their wide-stream equivalents. Instead of calling open, it
-      // just sets __c_file_type->_fileno and the respective _flags bits, and
-      // returns.
+      // just sets
+      //  - for libio:  __c_file_type->_fileno and the respective _flags bits
+      //  - for stdio:  _M_cfile = __file and some internal flags
+      // and returns.
       __basic_file*
       sys_open(__c_file_type* __file, ios_base::openmode __mode);
 

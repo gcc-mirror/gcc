@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.5  Stream buffers
 //
 
+/** @file std_streambuf.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_STREAMBUF
 #define _CPP_STREAMBUF	1
 
@@ -95,7 +100,7 @@ namespace std
       // the same place.  True for fstreams, false for sstreams.
       bool 			_M_buf_unified;	
 
-       // This is based on _IO_FILE, just reordered to be more
+      // This is based on _IO_FILE, just reordered to be more
       // consistent, and is intended to be the most minimal abstraction
       // for an internal buffer.
       // get == input == read

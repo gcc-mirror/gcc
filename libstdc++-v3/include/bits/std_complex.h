@@ -34,6 +34,11 @@
 // Improved by Gabriel Dos Reis <dosreis@cmla.ens-cachan.fr>
 //
 
+/** @file std_complex.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_COMPLEX
 #define _CPP_COMPLEX	1
 

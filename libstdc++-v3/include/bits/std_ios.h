@@ -31,6 +31,11 @@
 // ISO C++ 14882: 27.4  Iostreams base classes
 //
 
+/** @file std_ios.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_IOS
 #define _CPP_IOS	1
 

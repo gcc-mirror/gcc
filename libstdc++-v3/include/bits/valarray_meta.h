@@ -29,6 +29,11 @@
 
 // Written by Gabriel Dos Reis <Gabriel.Dos-Reis@cmla.ens-cachan.fr>
 
+/** @file valarray_meta.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_VALARRAY_META_H
 #define _CPP_VALARRAY_META_H 1
 

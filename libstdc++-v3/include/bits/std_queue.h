@@ -53,6 +53,11 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
+/** @file std_queue.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _CPP_QUEUE
 #define _CPP_QUEUE 1
 

@@ -17,13 +17,14 @@
     <li><a href="annotated.html">Compound List</a>
     <li><a href="classes.html">Alphabetical List</a>
     <li><a href="files.html">File List</a>
-    <!-- Will be useful, but not yet. <li><a href="modules.html">Modules</a> -->
+    <li><a href="modules.html">Modules</a>
    </ul>
 </p>
 
 <h2> Generating this file </h2>
-<p>This page is automatically generated.  The Makefile rule <code> make
-   doxygen </code> in the libstdc++-v3 build directory generates these pages
+<p>These HTML pages are automatically generated, along with the man pages.
+   The Makefile rule <code> 'make
+   doxygen' </code> in the libstdc++-v3 build directory generates these pages
    using a tool called, appropriately enough, Doxygen.  To learn more about
    Doxygen, take a look at <a href="http://www.doxygen.org">the Doxygen
    webpage</a>.
