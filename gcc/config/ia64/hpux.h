@@ -127,3 +127,14 @@ do {							\
 
 #define REGISTER_TARGET_PRAGMAS(PFILE) \
   cpp_register_pragma (PFILE, 0, "builtin", ia64_hpux_handle_builtin_pragma)
+
+/* Tell ia64.c that we are using the HP linker and we should delay output of
+   function extern declarations so that we don't output them for functions
+   which are never used (and may not be defined).  */
+
+#undef TARGET_HPUX_LD
+#define TARGET_HPUX_LD	1
+
+/* Put out the needed function declarations at the end.  */
+
+#define ASM_FILE_END(STREAM) ia64_hpux_asm_file_end(STREAM)
