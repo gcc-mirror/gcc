@@ -7608,7 +7608,7 @@ mips_expand_epilogue ()
 
   if (mips_can_use_return_insn ())
     {
-      emit_insn (gen_return ());
+      emit_jump_insn (gen_return ());
       return;
     }
 

@@ -27,6 +27,9 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-11  Jeffrey Law <law@redhat.com>
 
+	* mips.c (mips_expand_prologue): Use emit_jump_insn for trivial
+	RETURN insns.
+
 	* loop.c (loop_regs_scan): Avoid useless generation of REG objects.
 
 	* mips.c (function_arg_advance): gen_ashldi3 returns an INSN now,
