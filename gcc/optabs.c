@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -380,8 +380,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     op0 = force_reg (mode, op0);
 
   if (CONSTANT_P (op1) && preserve_subexpressions_p ()
-      && rtx_cost (op1, binoptab->code) > 2)
-    op1 = force_reg (shift_op ? word_mode : mode, op1);
+      && ! shift_op && rtx_cost (op1, binoptab->code) > 2)
+    op1 = force_reg (mode, op1);
 
   /* Record where to delete back to if we backtrack.  */
   last = get_last_insn ();
@@ -445,20 +445,24 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	 the result, convert the operands.  */
 
       if (GET_MODE (op0) != VOIDmode
-	  && GET_MODE (op0) != mode0)
+	  && GET_MODE (op0) != mode0
+	  && mode0 != VOIDmode)
 	xop0 = convert_to_mode (mode0, xop0, unsignedp);
 
       if (GET_MODE (xop1) != VOIDmode
-	  && GET_MODE (xop1) != mode1)
+	  && GET_MODE (xop1) != mode1
+	  && mode1 != VOIDmode)
 	xop1 = convert_to_mode (mode1, xop1, unsignedp);
 
       /* Now, if insn's predicates don't allow our operands, put them into
 	 pseudo regs.  */
 
-      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0))
+      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0)
+	  && mode0 != VOIDmode)
 	xop0 = copy_to_mode_reg (mode0, xop0);
 
-      if (! (*insn_operand_predicate[icode][2]) (xop1, mode1))
+      if (! (*insn_operand_predicate[icode][2]) (xop1, mode1)
+	  && mode1 != VOIDmode)
 	xop1 = copy_to_mode_reg (mode1, xop1);
 
       if (! (*insn_operand_predicate[icode][0]) (temp, mode))
