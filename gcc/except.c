@@ -418,7 +418,7 @@ int exceptions_via_longjmp = 2;
 
 /* One to enable asynchronous exception support.  */
 
-int asynchronous_exceptions = 0;
+int flag_non_call_exceptions = 0;
 
 /* One to protect cleanup actions with a handler that calls
    __terminate, zero otherwise.  */
@@ -2706,7 +2706,7 @@ can_throw (insn)
 	return 1;
     }
 
-  if (asynchronous_exceptions)
+  if (flag_non_call_exceptions)
     {
       /* If we wanted asynchronous exceptions, then everything but NOTEs
 	 and CODE_LABELs could throw.  */

@@ -476,10 +476,6 @@ extern void pop_ehqueue                         PARAMS ((void));
 
 extern int exceptions_via_longjmp;
 
-/* One to enable asynchronous exception support.  */
-
-extern int asynchronous_exceptions;
-
 /* One to protect cleanup actions with a handler that calls
    __terminate, zero otherwise.  */
 

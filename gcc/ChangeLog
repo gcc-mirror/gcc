@@ -1,5 +1,11 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
+	* bb-reorder.c, dwarf2out.c, except.c, except.h, flow.c,
+	jump.c, toplev.c:
+	Rename asynchronous_exceptions to flag_non_call_exceptions.
+	* except.h (flag_non_call_exceptions): Move ...
+	* flags.h: ... here.
+
 	* rtl.h (LCT_NORETURN): New.
 	* calls.c (emit_library_call_value_1): Handle it.
 
@@ -329,8 +335,8 @@ Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ChangeLog (2001-02-21): Remove erroneous entry.
 	* gcc.c (cc1_options): Add "-param".
-        (DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
-        (option_map): Likewise.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
+	(option_map): Likewise.
 	(display_help): Add "--param" to 'other' options.
 	* invoke.texi (Optimize Options): Add documentation for `--param
 	max-delay-slot-insn-search' and `--param
@@ -346,7 +352,7 @@ Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* c-tree.texi (USING_STMT): Document.
 
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* extend.texi: Improve documentation of volatile asms.
 
