@@ -730,7 +730,12 @@ force_reg (mode, x)
 
   if (GET_CODE (x) == REG)
     return x;
+  
   temp = gen_reg_rtx (mode);
+  
+  if (! general_operand (x, mode))
+    x = force_operand (x, NULL_RTX);
+  
   insn = emit_move_insn (temp, x);
 
   /* Let optimizers know that TEMP's value never changes

@@ -1,3 +1,8 @@
+Mon Aug  2 09:38:10 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* explow.c (force_reg): Call force_operand if X does not
+	satisfy general_operand.
+
 Mon Aug  2 01:34:22 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fix-header.c (main): When testing for CONTINUED, use string
