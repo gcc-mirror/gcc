@@ -1,10 +1,14 @@
+2002-12-18  Roger Sayle  <roger@eyesopen.com>
+
+	* basic-block.h (flow_bb_inside_loop_p): Correct prototype.
+
 2002-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/altivec.h (vec_cmplt macro): Reverse arguments in
 	macro.
 	(vec_cmplt C++ functions): Reverse arguments.
 
-2002-11-18  Geoffrey Keating  <geoffk@apple.com>
+2002-12-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/t-rs6000: Move contents to t-fprules,
 	add rules for dependencies of rs6000.o and to build rs6000-c.o

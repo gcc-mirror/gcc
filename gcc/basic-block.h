@@ -752,8 +752,10 @@ extern void free_aux_for_edges		PARAMS ((void));
    it being unused.  */
 extern void verify_flow_info		PARAMS ((void));
 extern bool flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
-extern bool flow_loop_nested_p PARAMS ((const struct loop *, const struct loop *));
-extern bool flow_bb_inside_loop_p       PARAMS ((const struct loop *, basic_block));
+extern bool flow_loop_nested_p PARAMS ((const struct loop *,
+					const struct loop *));
+extern bool flow_bb_inside_loop_p       PARAMS ((const struct loop *,
+						 const basic_block));
 extern basic_block *get_loop_body       PARAMS ((const struct loop *));
 extern int dfs_enumerate_from           PARAMS ((basic_block, int,
 				         bool (*)(basic_block, void *),
