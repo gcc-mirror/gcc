@@ -4785,7 +4785,6 @@ check_precompiled (pcf, fname, limit)
   long st_size;
   int length = 0;
   char *buf;
-  char *dollar_loc;
   int i;
   char *cp;
 
@@ -5018,7 +5017,7 @@ static void
 pcstring_used (hp)
      HASHNODE *hp;
 {
-  KEYDEF *kp, *tmp;
+  KEYDEF *kp;
   
   for (kp = hp->value.keydef; kp; kp = kp->chain)
     kp->str->writeflag = 1;
@@ -5035,7 +5034,6 @@ write_output ()
   int line_command_len = 80;
   char *line_command = xmalloc (line_command_len);
   int len;
-  int written;
 
   /* In each run through the loop, either cur_buf_loc == */
   /* next_string_loc, in which case we print a series of strings, or */
@@ -6116,7 +6114,6 @@ assertion_lookup (name, len, hash)
      int len;
      int hash;
 {
-  register U_CHAR *bp;
   register ASSERTION_HASHNODE *bucket;
 
   bucket = assertion_hashtab[hash];
@@ -8415,7 +8412,6 @@ pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
      char *msg;
      char *arg1, *arg2, *arg3;
 {
-  int i;
   if (!pedantic_errors && inhibit_warnings)
     return;
   if (file != NULL)
