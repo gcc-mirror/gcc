@@ -497,6 +497,10 @@ int warn_conversion;
 
 int warn_parentheses;
 
+/* Warn if initializer is not completely bracketed.  */
+
+int warn_missing_braces;
+
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
 
@@ -645,6 +649,10 @@ c_decode_option (p)
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-import"))
     ; /* cpp handles this one.  */
+  else if (!strcmp (p, "-Wmissing-braces"))
+    warn_missing_braces = 1;
+  else if (!strcmp (p, "-Wno-missing-braces"))
+    warn_missing_braces = 0;
   else if (!strcmp (p, "-Wall"))
     {
       extra_warnings = 1;
@@ -660,6 +668,7 @@ c_decode_option (p)
       warn_format = 1;
       warn_char_subscripts = 1;
       warn_parentheses = 1;
+      warn_missing_braces = 1;
     }
   else
     return 0;
