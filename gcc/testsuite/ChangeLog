@@ -1,3 +1,8 @@
+2003-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/20020227-1.x: Update specific XFAIL
+	conditions for SPARC targets.
+
 2003-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20030204-1.c: New test.
