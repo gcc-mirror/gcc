@@ -108,12 +108,6 @@ extern tree nonlocal_labels;
    These are the arguments to function calls that have already returned.  */
 extern int pending_stack_adjust;
 
-/* A list of all cleanups which belong to the arguments of
-   function calls being expanded by expand_call.  */
-#ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
-extern tree cleanups_this_call;
-#endif
-
 /* When temporaries are created by TARGET_EXPRs, they are created at
    this level of temp_slot_level, so that they can remain allocated
    until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
@@ -359,6 +353,12 @@ extern rtx memset_libfunc;
 extern rtx bzero_libfunc;
 
 extern rtx throw_libfunc;
+extern rtx sjthrow_libfunc;
+extern rtx sjpopnthrow_libfunc;
+extern rtx terminate_libfunc;
+extern rtx setjmp_libfunc;
+extern rtx longjmp_libfunc;
+extern rtx get_dynamic_handler_chain_libfunc;
 
 extern rtx eqhf2_libfunc;
 extern rtx nehf2_libfunc;
@@ -705,9 +705,6 @@ extern void clear_pending_stack_adjust PROTO((void));
 extern void do_pending_stack_adjust PROTO((void));
 
 #ifdef TREE_CODE
-/* Expand all cleanups up to OLD_CLEANUPS.  */
-extern void expand_cleanups_to PROTO((tree));
-
 /* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
 extern void jumpifnot PROTO((tree, rtx));
 

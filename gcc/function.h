@@ -135,11 +135,12 @@ struct function
   struct label_node *false_label_stack;
   struct label_node *caught_return_label_stack;
   tree protect_list;
+  rtx dhc;
+  rtx dcc;
 
   /* For expr.c.  */
   int pending_stack_adjust;
   int inhibit_defer_pop;
-  tree cleanups_this_call;
   rtx saveregs_value;
   rtx apply_args_value;
   rtx forced_labels;

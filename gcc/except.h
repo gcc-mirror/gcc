@@ -82,7 +82,34 @@ struct eh_queue {
 };
 
 
+/* Start an exception handling region.  All instructions emitted after
+   this point are considered to be part of the region until
+   expand_eh_region_end () is invoked.  */
+
 extern void expand_eh_region_start		PROTO((void));
+
+/* Start an exception handling region for the given cleanup action.
+   All instructions emitted after this point are considered to be part
+   of the region until expand_eh_region_end () is invoked.  CLEANUP is
+   the cleanup action to perform.  The return value is true if the
+   exception region was optimized away.  If that case,
+   expand_eh_region_end does not need to be called for this cleanup,
+   nor should it be.
+
+   This routine notices one particular common case in C++ code
+   generation, and optimizes it so as to not need the exception
+   region.  */
+
+extern int expand_eh_region_start_tree		PROTO((tree));
+
+/* End an exception handling region.  The information about the region
+   is found on the top of ehstack.
+
+   HANDLER is either the cleanup for the exception region, or if we're
+   marking the end of a try block, HANDLER is integer_zero_node.
+
+   HANDLER will be transformed to rtl when expand_leftover_cleanups ()
+   is invoked.  */
 
 extern void expand_eh_region_end		PROTO((tree));
 
@@ -100,16 +127,6 @@ extern rtx pop_label_entry			PROTO((struct label_node **labelstack));
    NULL_TREE if LABELSTACK is empty.  */
 
 extern tree top_label_entry			PROTO((struct label_node **labelstack));
-
-/* The stack used to keep track of the exception region corresponding to
-   the current instruction.  */
-
-extern struct eh_stack ehstack;
-
-/* A queue used to track closed exception regions whose handlers have
-   not been emitted yet.  */
-
-extern struct eh_queue ehqueue;
 
 /* A set of insns for the catch clauses in the current function. They
    will be emitted at the end of the current function.  */
@@ -233,3 +250,30 @@ extern rtx eh_saved_pc_rtx;
    unnecessary exception regions. Invoked from jump_optimize ().  */
 
 extern void exception_optimize			PROTO((void));
+
+/* Get the dynamic handler chain.  */
+extern rtx get_dynamic_handler_chain		PROTO((void));
+
+/* Get the dynamic cleanup chain.  */
+extern rtx get_dynamic_cleanup_chain		PROTO((void));
+
+/* Throw an exception.  */
+
+extern void emit_throw				PROTO((void));
+
+/* One to use setjmp/longjmp method of generating code.  */
+
+extern int exceptions_via_longjmp;
+
+/* One to enable asynchronous exception support.  */
+
+extern int asynchronous_exceptions;
+
+/* One to protect cleanup actions with a handler that calls
+   __terminate, zero otherwise.  */
+
+extern int protect_cleanup_actions_with_terminate;
+
+#ifdef TREE_CODE
+extern tree protect_with_terminate		PROTO((tree));
+#endif

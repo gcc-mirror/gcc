@@ -129,12 +129,10 @@ extern rtx arg_pointer_save_area;
 /* Chain of all RTL_EXPRs that have insns in them.  */
 extern tree rtl_expr_chain;
 
-#if 0  /* Turned off because 0 seems to work just as well.  */
-/* Cleanup lists are required for binding levels regardless of whether
-   that binding level has cleanups or not.  This node serves as the
-   cleanup list whenever an empty list is required.  */
-static tree empty_cleanup_list;
-#endif
+/* Stack allocation level in which temporaries for TARGET_EXPRs live.  */
+extern int target_temp_slot_level;
+
+extern int temp_slot_level;
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -262,7 +260,7 @@ struct nesting
 	     as they were at the locus where this block appears.
 	     There is an element for each containing block,
 	     ordered innermost containing block first.
-	     The tail of this list can be 0 (was empty_cleanup_list),
+	     The tail of this list can be 0,
 	     if all remaining elements would be empty lists.
 	     The element's TREE_VALUE is the cleanup-list of that block,
 	     which may be null.  */
@@ -274,6 +272,28 @@ struct nesting
 	  int function_call_count;
 	  /* Bytecode specific: stack level to restore stack to on exit.  */
 	  int bc_stack_level;
+	  /* Nonzero if this is associated with a EH region.  */
+	  int exception_region;
+	  /* The saved target_temp_slot_level from our outer block.
+	     We may reset target_temp_slot_level to be the level of
+	     this block, if that is done, target_temp_slot_level
+	     reverts to the saved target_temp_slot_level at the very
+	     end of the block.  */
+	  int target_temp_slot_level;
+	  /* True if we are currently emitting insns in an area of
+	     output code that is controlled by a conditional
+	     expression.  This is used by the cleanup handling code to
+	     generate conditional cleanup actions.  */
+	  int conditional_code;
+	  /* A place to move the start of the exception region for any
+	     of the conditional cleanups, must be at the end or after
+	     the start of the last unconditional cleanup, and before any
+	     conditional branch points.  */
+	  rtx last_unconditional_cleanup;
+	  /* When in a conditional context, this is the specific
+	     cleanup list associated with last_unconditional_cleanup,
+	     where we place the conditionalized cleanups.  */
+	  tree *cleanup_ptr;
 	} block;
       /* For switch (C) or case (Pascal) statements,
 	 and also for dummies (see `expand_start_case_dummy').  */
@@ -391,7 +411,7 @@ struct goto_fixup
   rtx stack_level;
   /* List of lists of cleanup expressions to be run by this goto.
      There is one element for each block that this goto is within.
-     The tail of this list can be 0 (was empty_cleanup_list),
+     The tail of this list can be 0,
      if all remaining elements would be empty.
      The TREE_VALUE contains the cleanup list of that block as of the
      time this goto was seen.
@@ -1021,11 +1041,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
       fixup->block_start_count = block_start_count;
       fixup->stack_level = 0;
       fixup->cleanup_list_list
-	= (((block->data.block.outer_cleanups
-#if 0
-	     && block->data.block.outer_cleanups != empty_cleanup_list
-#endif
-	     )
+	= ((block->data.block.outer_cleanups
 	    || block->data.block.cleanups)
 	   ? tree_cons (NULL_TREE, block->data.block.cleanups,
 			block->data.block.outer_cleanups)
@@ -1301,7 +1317,7 @@ bc_fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
       /* Emit code to restore the stack and continue */
       bc_emit_bytecode_labeldef (f->label);
 
-      /* Save stack_depth across call, since bc_adjust_stack () will alter
+      /* Save stack_depth across call, since bc_adjust_stack will alter
          the perceived stack depth via the instructions generated.  */
 
       if (f->bc_stack_level >= 0)
@@ -2918,10 +2934,7 @@ expand_return (retval)
 	result_reg_mode = tmpmode;
       result_reg = gen_reg_rtx (result_reg_mode);
 
-      /* Now that the value is in pseudos, copy it to the result reg(s).  */
-      expand_cleanups_to (NULL_TREE);
       emit_queue ();
-      free_temp_slots ();
       for (i = 0; i < n_regs; i++)
 	emit_move_insn (operand_subword (result_reg, i, 0, result_reg_mode),
 			result_pseudos[i]);
@@ -2940,10 +2953,7 @@ expand_return (retval)
       val = gen_reg_rtx (DECL_MODE (DECL_RESULT (current_function_decl)));
       val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
       val = force_not_mem (val);
-      expand_cleanups_to (NULL_TREE);
       emit_queue ();
-      /* All temporaries have now been used.  */
-      free_temp_slots ();
       /* Return the calculated value, doing cleanups first.  */
       expand_value_return (val);
     }
@@ -2952,9 +2962,7 @@ expand_return (retval)
       /* No cleanups or no hard reg used;
 	 calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, 0);
-      expand_cleanups_to (NULL_TREE);
       emit_queue ();
-      free_temp_slots ();
       expand_value_return (DECL_RTL (DECL_RESULT (current_function_decl)));
     }
 }
@@ -3061,22 +3069,13 @@ expand_start_bindings (exit_flag)
   thisblock->data.block.stack_level = 0;
   thisblock->data.block.cleanups = 0;
   thisblock->data.block.function_call_count = 0;
-#if 0
-  if (block_stack)
-    {
-      if (block_stack->data.block.cleanups == NULL_TREE
-	  && (block_stack->data.block.outer_cleanups == NULL_TREE
-	      || block_stack->data.block.outer_cleanups == empty_cleanup_list))
-	thisblock->data.block.outer_cleanups = empty_cleanup_list;
-      else
-	thisblock->data.block.outer_cleanups
-	  = tree_cons (NULL_TREE, block_stack->data.block.cleanups,
-		       block_stack->data.block.outer_cleanups);
-    }
-  else
-    thisblock->data.block.outer_cleanups = 0;
-#endif
-#if 1
+  thisblock->data.block.exception_region = 0;
+  thisblock->data.block.target_temp_slot_level = target_temp_slot_level;
+
+  thisblock->data.block.conditional_code = 0;
+  thisblock->data.block.last_unconditional_cleanup = note;
+  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
+
   if (block_stack
       && !(block_stack->data.block.cleanups == NULL_TREE
 	   && block_stack->data.block.outer_cleanups == NULL_TREE))
@@ -3085,7 +3084,6 @@ expand_start_bindings (exit_flag)
 		   block_stack->data.block.outer_cleanups);
   else
     thisblock->data.block.outer_cleanups = 0;
-#endif
   thisblock->data.block.label_chain = 0;
   thisblock->data.block.innermost_stack_block = stack_block_stack;
   thisblock->data.block.first_insn = note;
@@ -3099,6 +3097,91 @@ expand_start_bindings (exit_flag)
       /* Make a new level for allocating stack slots.  */
       push_temp_slots ();
     }
+}
+
+/* Specify the scope of temporaries created by TARGET_EXPRs.  Similar
+   to CLEANUP_POINT_EXPR, but handles cases when a series of calls to
+   expand_expr are made.  After we end the region, we know that all
+   space for all temporaries that were created by TARGET_EXPRs will be
+   destroyed and their space freed for reuse.  */
+
+void
+expand_start_target_temps ()
+{
+  /* This is so that even if the result is preserved, the space
+     allocated will be freed, as we know that it is no longer in use.  */
+  push_temp_slots ();
+
+  /* Start a new binding layer that will keep track of all cleanup
+     actions to be performed.  */
+  expand_start_bindings (0);
+
+  target_temp_slot_level = temp_slot_level;
+}
+
+void
+expand_end_target_temps ()
+{
+  expand_end_bindings (NULL_TREE, 0, 0);
+  
+  /* This is so that even if the result is preserved, the space
+     allocated will be freed, as we know that it is no longer in use.  */
+  pop_temp_slots ();
+}
+
+/* Mark top block of block_stack as an implicit binding for an
+   exception region.  This is used to prevent infinite recursion when
+   ending a binding with expand_end_bindings.  It is only ever called
+   by expand_eh_region_start, as that it the only way to create a
+   block stack for a exception region.  */
+
+void
+mark_block_as_eh_region ()
+{
+  block_stack->data.block.exception_region = 1;
+  if (block_stack->next
+      && block_stack->next->data.block.conditional_code)
+    {
+      block_stack->data.block.conditional_code
+	= block_stack->next->data.block.conditional_code;
+      block_stack->data.block.last_unconditional_cleanup
+	= block_stack->next->data.block.last_unconditional_cleanup;
+      block_stack->data.block.cleanup_ptr
+	= block_stack->next->data.block.cleanup_ptr;
+    }
+}
+
+/* True if we are currently emitting insns in an area of output code
+   that is controlled by a conditional expression.  This is used by
+   the cleanup handling code to generate conditional cleanup actions.  */
+
+int
+conditional_context ()
+{
+  return block_stack && block_stack->data.block.conditional_code;
+}
+
+/* Mark top block of block_stack as not for an implicit binding for an
+   exception region.  This is only ever done by expand_eh_region_end
+   to let expand_end_bindings know that it is being called explicitly
+   to end the binding layer for just the binding layer associated with
+   the exception region, otherwise expand_end_bindings would try and
+   end all implicit binding layers for exceptions regions, and then
+   one normal binding layer.  */
+
+void
+mark_block_as_not_eh_region ()
+{
+  block_stack->data.block.exception_region = 0;
+}
+
+/* True if the top block of block_stack was marked as for an exception
+   region by mark_block_as_eh_region.  */
+
+int
+is_eh_region ()
+{
+  return block_stack && block_stack->data.block.exception_region;
 }
 
 /* Given a pointer to a BLOCK node, save a pointer to the most recently
@@ -3128,14 +3211,33 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      int mark_ends;
      int dont_jump_in;
 {
-  register struct nesting *thisblock = block_stack;
+  register struct nesting *thisblock;
   register tree decl;
+
+  while (block_stack->data.block.exception_region)
+    {
+      /* Because we don't need or want a new temporary level and
+	 because we didn't create one in expand_eh_region_start,
+	 create a fake one now to avoid removing one in
+	 expand_end_bindings.  */
+      push_temp_slots ();
+
+      block_stack->data.block.exception_region = 0;
+
+      expand_end_bindings (NULL_TREE, 0, 0);
+    }
 
   if (output_bytecode)
     {
       bc_expand_end_bindings (vars, mark_ends, dont_jump_in);
       return;
     }
+
+  /* Since expand_eh_region_start does an expand_start_bindings, we
+     have to first end all the bindings that were created by
+     expand_eh_region_start.  */
+     
+  thisblock = block_stack;
 
   if (warn_unused)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
@@ -3361,6 +3463,9 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	if (TREE_CODE (decl) == VAR_DECL && rtl != 0)
 	  use_variable (rtl);
       }
+
+  /* Restore the temporary level of TARGET_EXPRs.  */
+  target_temp_slot_level = thisblock->data.block.target_temp_slot_level;
 
   /* Restore block_stack level for containing block.  */
 
@@ -3614,7 +3719,7 @@ bc_expand_decl (decl, cleanup)
   else if (DECL_SIZE (decl) == 0)
 
     /* Variable with incomplete type.  The stack offset herein will be
-       fixed later in expand_decl_init ().  */
+       fixed later in expand_decl_init.  */
     DECL_RTL (decl) = bc_gen_rtx ((char *) 0, 0, (struct bc_label *) 0);
 
   else if (TREE_CONSTANT (DECL_SIZE (decl)))
@@ -3765,7 +3870,8 @@ bc_expand_decl_init (decl)
 
    We wrap CLEANUP in an UNSAVE_EXPR node, so that we can expand the
    CLEANUP multiple times, and have the correct semantics.  This
-   happens in exception handling, and for non-local gotos.
+   happens in exception handling, for gotos, returns, breaks that
+   leave the current scope.
 
    If CLEANUP is nonzero and DECL is zero, we record a cleanup
    that is not associated with any particular variable.   */
@@ -3784,14 +3890,162 @@ expand_decl_cleanup (decl, cleanup)
 
   if (cleanup != 0)
     {
-      cleanup = unsave_expr (cleanup);
+      tree t;
+      rtx seq;
+      tree *cleanups = &thisblock->data.block.cleanups;
+      int cond_context = conditional_context ();
 
-      thisblock->data.block.cleanups
-	= temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
-      /* If this block has a cleanup, it belongs in stack_block_stack.  */
-      stack_block_stack = thisblock;
-      expand_eh_region_start ();
+      if (cond_context)
+	{
+	  rtx flag = gen_reg_rtx (word_mode);
+	  rtx set_flag_0;
+	  tree cond;
+
+	  start_sequence ();
+	  emit_move_insn (flag, const0_rtx);
+	  set_flag_0 = get_insns ();
+	  end_sequence ();
+
+	  thisblock->data.block.last_unconditional_cleanup
+	    = emit_insns_after (set_flag_0,
+				thisblock->data.block.last_unconditional_cleanup);
+
+	  emit_move_insn (flag, const1_rtx);
+
+	  /* All cleanups must be on the function_obstack.  */
+	  push_obstacks_nochange ();
+	  resume_temporary_allocation ();
+
+	  cond = build_decl (VAR_DECL, NULL_TREE, type_for_mode (word_mode, 1));
+	  DECL_RTL (cond) = flag;
+
+	  /* Conditionalize the cleanup.  */
+	  cleanup = build (COND_EXPR, void_type_node,
+			   truthvalue_conversion (cond),
+			   cleanup, integer_zero_node);
+	  cleanup = fold (cleanup);
+
+	  pop_obstacks ();
+
+	  cleanups = thisblock->data.block.cleanup_ptr;
+	}
+
+      /* All cleanups must be on the function_obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
+      cleanup = unsave_expr (cleanup);
+      pop_obstacks ();
+
+      t = *cleanups = temp_tree_cons (decl, cleanup, *cleanups);
+
+      if (! cond_context)
+	/* If this block has a cleanup, it belongs in stack_block_stack.  */
+	stack_block_stack = thisblock;
+
+      if (cond_context)
+	{
+	  start_sequence ();
+	}
+
+      /* If this was optimized so that there is no exception region for the
+	 cleanup, then mark the TREE_LIST node, so that we can later tell
+	 if we need to call expand_eh_region_end.  */
+      if (expand_eh_region_start_tree (cleanup))
+	TREE_ADDRESSABLE (t) = 1;
+
+      if (cond_context)
+	{
+	  seq = get_insns ();
+	  end_sequence ();
+	  thisblock->data.block.last_unconditional_cleanup
+	    = emit_insns_after (seq,
+				thisblock->data.block.last_unconditional_cleanup);
+	}
+      else
+	{
+	  thisblock->data.block.last_unconditional_cleanup
+	    = get_last_insn ();
+	  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
+	}
     }
+  return 1;
+}
+
+/* Arrange for the top element of the dynamic cleanup chain to be
+   popped if we exit the current binding contour.  If the current
+   contour is left via an exception, then __sjthrow will pop the top
+   element off the dynamic cleanup chain.  The code that avoids doing
+   the action we push into the cleanup chain in the exceptional case
+   is contained in expand_cleanups.
+
+   This routine is only used by expand_eh_region_start, and that is
+   the only way in which an exception region should be started.  This
+   routine is only used when using the setjmp/longjmp codegen method
+   for exception handling.  */
+
+int
+expand_dcc_cleanup ()
+{
+  struct nesting *thisblock = block_stack;
+  tree cleanup;
+
+  /* Error if we are not in any block.  */
+  if (thisblock == 0)
+    return 0;
+
+  /* Record the cleanup for the dynamic handler chain.  */
+
+  /* All cleanups must be on the function_obstack.  */
+  push_obstacks_nochange ();
+  resume_temporary_allocation ();
+  cleanup = make_node (POPDCC_EXPR);
+  pop_obstacks ();
+
+  /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
+  thisblock->data.block.cleanups
+    = temp_tree_cons (NULL_TREE, cleanup, thisblock->data.block.cleanups);
+
+  /* If this block has a cleanup, it belongs in stack_block_stack.  */
+  stack_block_stack = thisblock;
+  return 1;
+}
+
+/* Arrange for the top element of the dynamic handler chain to be
+   popped if we exit the current binding contour.  If the current
+   contour is left via an exception, then __sjthrow will pop the
+   top element off the dynamic handler chain.  The code that avoids
+   doing the action we push into the handler chain in the exceptional
+   case is contained in expand_cleanups.
+
+   This routine is only used by expand_eh_region_start, and that is
+   the only way in which an exception region should be started.  This
+   routine is only used when using the setjmp/longjmp codegen method
+   for exception handling.  */
+
+int
+expand_dhc_cleanup ()
+{
+  struct nesting *thisblock = block_stack;
+  tree cleanup;
+
+  /* Error if we are not in any block.  */
+  if (thisblock == 0)
+    return 0;
+
+  /* Record the cleanup for the dynamic handler chain.  */
+
+  /* All cleanups must be on the function_obstack.  */
+  push_obstacks_nochange ();
+  resume_temporary_allocation ();
+  cleanup = make_node (POPDHC_EXPR);
+  pop_obstacks ();
+
+  /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
+  thisblock->data.block.cleanups
+    = temp_tree_cons (NULL_TREE, cleanup, thisblock->data.block.cleanups);
+
+  /* If this block has a cleanup, it belongs in stack_block_stack.  */
+  stack_block_stack = thisblock;
   return 1;
 }
 
@@ -3891,7 +4145,19 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 	else
 	  {
 	    if (! in_fixup)
-	      expand_eh_region_end (TREE_VALUE (tail));
+	      {
+		tree cleanup = TREE_VALUE (tail);
+
+		/* See expand_d{h,c}c_cleanup for why we avoid this.  */
+		if (TREE_CODE (cleanup) != POPDHC_EXPR
+		    && TREE_CODE (cleanup) != POPDCC_EXPR
+		    /* See expand_eh_region_start_tree for this case.  */
+		    && ! TREE_ADDRESSABLE (tail))
+		  {
+		    cleanup = protect_with_terminate (cleanup);
+		    expand_eh_region_end (cleanup);
+		  }
+	      }
 
 	    if (reachable)
 	      {
@@ -3908,6 +4174,29 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 	      }
 	  }
       }
+}
+
+/* Mark when the context we are emitting RTL for as a conditional
+   context, so that any cleanup actions we register with
+   expand_decl_init will be properly conditionalized when those
+   cleanup actions are later performed.  Must be called before any
+   expression (tree) is expanded that is within a contidional context.  */
+
+void
+start_cleanup_deferal ()
+{
+  ++block_stack->data.block.conditional_code;
+}
+
+/* Mark the end of a conditional region of code.  Because cleanup
+   deferals may be nested, we may still be in a conditional region
+   after we end the currently deferred cleanups, only after we end all
+   deferred cleanups, are we back in unconditional code.  */
+
+void
+end_cleanup_deferal ()
+{
+  --block_stack->data.block.conditional_code;
 }
 
 /* Move all cleanups from the current block_stack
@@ -3953,11 +4242,7 @@ any_pending_cleanups (this_contour)
   if (this_contour && block_stack->data.block.cleanups != NULL)
     return 1;
   if (block_stack->data.block.cleanups == 0
-      && (block_stack->data.block.outer_cleanups == 0
-#if 0
-	  || block_stack->data.block.outer_cleanups == empty_cleanup_list
-#endif
-	  ))
+      && block_stack->data.block.outer_cleanups == 0)
     return 0;
 
   for (block = block_stack->next; block; block = block->next)
@@ -4101,7 +4386,7 @@ case_index_expr_type ()
    If VALUE is a duplicate or overlaps, return 2 and do nothing
    except store the (first) duplicate node in *DUPLICATE.
    If VALUE is out of range, return 3 and do nothing.
-   If we are jumping into the scope of a cleaup or var-sized array, return 5.
+   If we are jumping into the scope of a cleanup or var-sized array, return 5.
    Return 0 on success.
 
    Extended to handle range statements.  */
@@ -6186,4 +6471,3 @@ unroll_block_trees ()
 
   reorder_blocks (block_vector, block, get_insns ());
 }
-

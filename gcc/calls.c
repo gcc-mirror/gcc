@@ -590,7 +590,6 @@ expand_call (exp, target, ignore)
   int old_pending_adj = 0;
   int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  tree old_cleanups = cleanups_this_call;
   rtx call_fusage = 0;
   register tree p;
   register int i, j;
@@ -720,17 +719,6 @@ expand_call (exp, target, ignore)
       /* If inlining succeeded, return.  */
       if ((HOST_WIDE_INT) temp != -1)
 	{
-	  if (flag_short_temps)
-	    {
-	      /* Perform all cleanups needed for the arguments of this
-		 call (i.e. destructors in C++).  It is ok if these
-		 destructors clobber RETURN_VALUE_REG, because the
-		 only time we care about this is when TARGET is that
-		 register.  But in C++, we take care to never return
-		 that register directly.  */
-	      expand_cleanups_to (old_cleanups);
-	    }
-
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* If the outgoing argument list must be preserved, push
 	     the stack before executing the inlined function if it
@@ -1979,8 +1967,9 @@ expand_call (exp, target, ignore)
 
   /* If value type not void, return an rtx for the value.  */
 
-  /* If there are cleanups to be called, don't use a hard reg as target.  */
-  if (cleanups_this_call != old_cleanups
+  /* If there are cleanups to be called, don't use a hard reg as target.
+     We need to double check this and see if it matters anymore.  */
+  if (any_pending_cleanups ()
       && target && REG_P (target)
       && REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = 0;
@@ -2152,13 +2141,6 @@ expand_call (exp, target, ignore)
       SUBREG_PROMOTED_UNSIGNED_P (target) = unsignedp;
     }
 #endif
-
-  if (flag_short_temps)
-    {
-      /* Perform all cleanups needed for the arguments of this call
-	 (i.e. destructors in C++).  */
-      expand_cleanups_to (old_cleanups);
-    }
 
   /* If size of args is variable or this was a constructor call for a stack
      argument, restore saved stack-pointer value.  */

@@ -1690,7 +1690,14 @@ extern void expand_null_return			PROTO((void));
 extern void expand_return			PROTO((tree));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
+extern void start_cleanup_deferal		PROTO((void));
+extern void end_cleanup_deferal			PROTO((void));
+extern void mark_block_as_eh_region		PROTO((void));
+extern void mark_block_as_not_eh_region		PROTO((void));
+extern int is_eh_region				PROTO((void));
+extern int conditional_context			PROTO((void));
 extern tree last_cleanup_this_contour		PROTO((void));
+extern int expand_dhc_cleanup			PROTO((void));
 extern void expand_start_case			PROTO((int, tree, tree,
 						       char *));
 extern void expand_end_case			PROTO((tree));

@@ -308,10 +308,6 @@ extern int flag_schedule_insns_after_reload;
 
 extern int flag_delayed_branch;
 
-/* Nonzero means to run cleanups after CALL_EXPRs. */
-
-extern int flag_short_temps;
-
 /* Nonzero means pretend it is OK to examine bits of target floats,
    even if that isn't true.  The resulting code will have incorrect constants,
    but the same series of instructions that the native compiler would make.  */
