@@ -1,5 +1,10 @@
 2004-02-26  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(send): Check if target address is resolved.
+
+2004-02-26  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am: Generate and install headers for inner classes in
 	java.nio.channels.Pipe and gnu.java.nio.PipeImpl.
 	* Makefile.in: Regenerated.
