@@ -1268,7 +1268,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     }
 
   DECL_ATTRIBUTES (newdecl)
-    = (*targetm.merge_decl_attributes) (olddecl, newdecl);
+    = targetm.merge_decl_attributes (olddecl, newdecl);
 
   /* Merge the data types specified in the two decls.  */
   TREE_TYPE (newdecl)

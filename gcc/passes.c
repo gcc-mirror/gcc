@@ -556,7 +556,7 @@ rest_of_handle_machine_reorg (tree decl, rtx insns)
   timevar_push (TV_MACH_DEP);
   open_dump_file (DFI_mach, decl);
 
-  (*targetm.machine_dependent_reorg) ();
+  targetm.machine_dependent_reorg ();
 
   close_dump_file (DFI_mach, print_rtl, insns);
   timevar_pop (TV_MACH_DEP);
@@ -2086,7 +2086,7 @@ rest_of_compilation (tree decl)
 
   timevar_pop (TV_FINAL);
 
-  if ((*targetm.binds_local_p) (current_function_decl))
+  if (targetm.binds_local_p (current_function_decl))
     {
       int pref = cfun->preferred_stack_boundary;
       if (cfun->recursive_call_emit

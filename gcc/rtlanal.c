@@ -3841,7 +3841,7 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
       break;
 
     default:
-      if ((*targetm.rtx_costs) (x, code, outer_code, &total))
+      if (targetm.rtx_costs (x, code, outer_code, &total))
 	return total;
       break;
     }
@@ -3881,7 +3881,7 @@ address_cost (rtx x, enum machine_mode mode)
   if (!memory_address_p (mode, x))
     return 1000;
 
-  return (*targetm.address_cost) (x);
+  return targetm.address_cost (x);
 }
 
 /* If the target doesn't override, compute the cost as with arithmetic.  */

@@ -130,7 +130,7 @@ function_attribute_inlinable_p (tree fndecl)
 
 	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)
 	    if (is_attribute_p (targetm.attribute_table[i].name, name))
-	      return (*targetm.function_attribute_inlinable_p) (fndecl);
+	      return targetm.function_attribute_inlinable_p (fndecl);
 	}
     }
 

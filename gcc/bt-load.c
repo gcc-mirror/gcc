@@ -1267,7 +1267,7 @@ migrate_btr_def (btr_def def, int min_cost)
   bitmap_copy (live_range, def->live_range);
 
 #ifdef INSN_SCHEDULING
-  if ((*targetm.sched.use_dfa_pipeline_interface) ())
+  if (targetm.sched.use_dfa_pipeline_interface ())
     def_latency = insn_default_latency (def->insn);
   else
     def_latency = result_ready_cost (def->insn);
@@ -1414,12 +1414,12 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 void
 branch_target_load_optimize (rtx insns, bool after_prologue_epilogue_gen)
 {
-  enum reg_class class = (*targetm.branch_target_register_class) ();
+  enum reg_class class = targetm.branch_target_register_class ();
   if (class != NO_REGS)
     {
       /* Initialize issue_rate.  */
       if (targetm.sched.issue_rate)
-	issue_rate = (*targetm.sched.issue_rate) ();
+	issue_rate = targetm.sched.issue_rate ();
       else
 	issue_rate = 1;
 

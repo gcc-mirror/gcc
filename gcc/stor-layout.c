@@ -394,7 +394,7 @@ layout_decl (tree decl, unsigned int known_align)
 	     field.  */
 	  if (integer_zerop (DECL_SIZE (decl))
 	      && ! DECL_PACKED (decl)
-	      && ! (*targetm.ms_bitfield_layout_p) (DECL_FIELD_CONTEXT (decl)))
+	      && ! targetm.ms_bitfield_layout_p (DECL_FIELD_CONTEXT (decl)))
 	    {
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 	      if (PCC_BITFIELD_TYPE_MATTERS)

@@ -1323,7 +1323,7 @@ vmsdbgout_begin_block (register unsigned line, register unsigned blocknum)
     (*dwarf2_debug_hooks.begin_block) (line, blocknum);
 
   if (debug_info_level > DINFO_LEVEL_TERSE)
-    (*targetm.asm_out.internal_label) (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
+    targetm.asm_out.internal_label (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
 
 /* Output a marker (i.e. a label) for the end of the generated code for a
@@ -1336,7 +1336,7 @@ vmsdbgout_end_block (register unsigned line, register unsigned blocknum)
     (*dwarf2_debug_hooks.end_block) (line, blocknum);
 
   if (debug_info_level > DINFO_LEVEL_TERSE)
-    (*targetm.asm_out.internal_label) (asm_out_file, BLOCK_END_LABEL, blocknum);
+    targetm.asm_out.internal_label (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
 /* Not implemented in VMS Debug.  */
@@ -1516,8 +1516,8 @@ vmsdbgout_source_line (register unsigned line, register const char *filename)
     {
       dst_line_info_ref line_info;
 
-      (*targetm.asm_out.internal_label) (asm_out_file, LINE_CODE_LABEL,
-				 line_info_table_in_use);
+      targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL,
+				      line_info_table_in_use);
 
       /* Expand the line info table if necessary.  */
       if (line_info_table_in_use == line_info_table_allocated)
@@ -1673,7 +1673,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 
   /* Output a terminator label for the .text section.  */
   text_section ();
-  (*targetm.asm_out.internal_label) (asm_out_file, TEXT_END_LABEL, 0);
+  targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
 
   /* Output debugging information.
      Warning! Do not change the name of the .vmsdebug section without

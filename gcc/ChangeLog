@@ -1,3 +1,13 @@
+2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c, attribs.c, bt-load.c, builtins.c, c-common.c,
+	c-decl.c, c-objc-common.c, c-typeck.c, calls.c, cfglayout.c,
+	cse.c, dbxout.c, dwarf2out.c, except.c, final.c,
+	haifa-sched.c, integrate.c, passes.c, rtlanal.c, sched-rgn.c,
+	sched-vis.c, simplify-rtx.c, stor-layout.c, tree.c, varasm.c,
+	vmsdbgout.c: Replace calls via (*targetm.foo) () with
+	targetm.foo ().
+
 2004-03-19  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/rs6000/altivec.h (vec_dst, vec_dstst, vec_dststt,
