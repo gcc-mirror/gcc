@@ -79,12 +79,6 @@
 #endif
 #endif
 
-#if defined (WINDOWS32) && !defined (__CYGWIN32__)
-/* It's not Unix, really.  See?  Capital letters.  */
-#include <windows.h>
-#define getpid() GetCurrentProcessId()
-#endif
-
 #ifndef _
 /* This is for other GNU distributions with internationalized messages.
    When compiling libc, the _ macro is predefined.  */
@@ -261,8 +255,6 @@ static int nonoption_flags_len;
 
 static int original_argc;
 static char *const *original_argv;
-
-extern pid_t __libc_pid;
 
 /* Make sure the environment variable bash 2.0 puts in the environment
    is valid for the getopt call we must make sure that the ARGV passed
