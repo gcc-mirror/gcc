@@ -5,6 +5,10 @@ Tue Feb 29 14:07:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Tue Feb 29 10:45:59 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* pa/t-pa: Use quadlib.c instead of quadlib.asm.
+	* pa/quadlib.asm: Remove.
+	* pa/quadlib.c: New file.
+
 	* configure.in (hpux10, hpux11, PA32 mode): Use i128 float format.
 	* configure: Rebuilt.
 
