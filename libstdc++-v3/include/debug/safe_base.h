@@ -98,7 +98,7 @@ namespace __gnu_debug
     _Safe_iterator_base&
     operator=(const _Safe_iterator_base&);
 
-    explicit 
+    explicit
     _Safe_iterator_base(const _Safe_iterator_base&);
 
     ~_Safe_iterator_base() { this->_M_detach(); }
@@ -163,25 +163,6 @@ namespace __gnu_debug
     _Safe_sequence_base()
     : _M_iterators(0), _M_const_iterators(0), _M_version(1)
     { }
-
-    explicit
-    _Safe_sequence_base(const _Safe_sequence_base& __seq)
-    : _M_iterators(__seq._M_iterators),
-      _M_const_iterators(__seq._M_const_iterators),
-      _M_version(__seq._M_version)
-    { }
-
-    _Safe_sequence_base&
-    operator=(const _Safe_sequence_base& __seq)
-    {
-      if (&__seq != this)
-	{
-	  _M_iterators = __seq._M_iterators;
-	  _M_const_iterators = __seq._M_const_iterators;
-	  _M_version = __seq._M_version;
-	}
-      return *this;
-    }
 
     /** Notify all iterators that reference this sequence that the
 	sequence is being destroyed. */
