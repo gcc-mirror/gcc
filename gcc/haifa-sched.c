@@ -5755,7 +5755,7 @@ get_visual_tbl_length ()
   char *s;
 
   /* compute length of one field in line */
-  s = (char *) alloca (INSN_LEN + 5);
+  s = (char *) alloca (INSN_LEN + 6);
   sprintf (s, "  %33s", "uname");
   n1 = strlen (s);
 
