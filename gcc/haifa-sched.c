@@ -3392,7 +3392,11 @@ sched_analyze_1 (x, insn)
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	  if (code == SET)
-	    SET_REGNO_REG_SET (reg_pending_sets, regno);
+	    {
+	      for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
+	      SET_REGNO_REG_SET (reg_pending_sets, regno);
+	    }
 	  else
 	    SET_REGNO_REG_SET (reg_pending_clobbers, regno);
 

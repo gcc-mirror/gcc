@@ -1,3 +1,8 @@
+Mon Mar  8 23:43:47 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_analyze_1): Fix last change -- add clobber
+	dependancies to sets in the non-hard-reg case too.
+
 Mon Mar  8 18:55:21 1999  Marc Espie <espie@cvs.openbsd.org>
 
         * config/openbsd.h (HANDLE_SYSV_PRAGMA): Define.
