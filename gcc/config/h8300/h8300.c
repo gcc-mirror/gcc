@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "function.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "c-pragma.h"
 #include "tm_p.h"
@@ -3045,8 +3044,6 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
   return 0;
 }
 
-extern struct obstack *saveable_obstack;
-
 void
 h8300_encode_label (decl)
      tree decl;
@@ -3055,7 +3052,7 @@ h8300_encode_label (decl)
   int len = strlen (str);
   char *newstr;
 
-  newstr = obstack_alloc (saveable_obstack, len + 2);
+  newstr = ggc_alloc_string (NULL, len + 1);
 
   strcpy (newstr + 1, str);
   *newstr = '&';
