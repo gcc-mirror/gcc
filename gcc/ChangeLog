@@ -3,7 +3,8 @@
 	* gbl-ctors.h: Add special license exception.
 	* libgcc2.h: Likewise.
 	* tsystem.h: Likewise.
-	
+	* gcov-io.h: Likewise.
+
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (calls.o): Depend on except.h.
