@@ -3531,8 +3531,24 @@ else
 		(plus:SI (pc)
 			 (unspec [(match_operand:SI 1 "" "")] 9))
 		(const (plus:SI (label_ref (match_operand:SI 2 "" ""))
-				(const_int 2))))))]
-  "" "")
+				(const_int 2))))))
+   (use (match_dup 2))]
+  ;; Even though the PIC register is not really used by the call
+  ;; sequence in which this is expanded, the PLT code assumes the PIC
+  ;; register is set, so we must not skip its initialization.  Since
+  ;; we only use this expand as part of calling sequences, and never
+  ;; to take the address of a function, this is the best point to
+  ;; insert the (use).  Using the PLT to take the address of a
+  ;; function would be wrong, not only because the PLT entry could
+  ;; then be called from a function that doesn't initialize the PIC
+  ;; register to the proper GOT, but also because pointers to the same
+  ;; function might not compare equal, should they be set by different
+  ;; shared libraries.
+  "" "
+{
+  operands[2] = pic_offset_table_rtx;
+  current_function_uses_pic_offset_table = 1;
+}")
 
 ;; case instruction for switch statements.
 
