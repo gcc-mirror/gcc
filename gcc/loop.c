@@ -65,6 +65,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #ifndef HAVE_prefetch
 #define HAVE_prefetch 0
+#define CODE_FOR_prefetch 0
 #define gen_prefetch(a,b,c) (abort(), NULL_RTX)
 #endif
 
