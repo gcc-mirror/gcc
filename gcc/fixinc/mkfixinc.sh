@@ -53,7 +53,6 @@ case $machine in
     i370-*-openedition | \
     i?86-moss-msdos* | \
     i?86-*-moss* | \
-    i?86-*-win32 | \
     i?86-*-pe | \
     i?86-*-cygwin* | \
     i?86-*-mingw32* | \
@@ -64,12 +63,7 @@ case $machine in
     powerpc-*-eabi*    | \
     powerpc-*-rtems*   | \
     powerpcle-*-eabisim* | \
-    powerpcle-*-eabi*  | \
-    powerpcle-*-winnt* | \
-    powerpcle-*-pe | \
-    powerpcle-*-cygwin* | \
-    thumb-*-coff* | \
-    thumbel-*-coff* )
+    powerpcle-*-eabi* )
         #  Don't do any fixing.
         #
         fixincludes=
