@@ -6212,6 +6212,7 @@ diddle_return_value (code)
 	     register in the USE/CLOBBER insn.  */
 	  return_reg = hard_function_value (TREE_TYPE (decl_result),
 					    current_function_decl);
+	  REG_FUNCTION_VALUE_P (return_reg) = 1;
 	  emit_insn (gen_rtx_fmt_e (code, VOIDmode, return_reg));
 	}
       else if (GET_CODE (return_reg) == PARALLEL)
