@@ -2,6 +2,8 @@
 
 	* cse.c (cse_insn): Don't lose REG_NON_LOCAL_GOTO note.
 
+        * fold-const.c (operand_equal_p): Fix VECTOR_CST comparison.
+
 2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Remove unnecessary parallels from
