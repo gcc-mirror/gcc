@@ -3584,7 +3584,8 @@ resolve_inner_class (circularity_hash, cl, enclosing, super, class_type)
 	     IDENTIFIER_POINTER (DECL_NAME (local_enclosing)));
 	  local_enclosing = NULL_TREE;
         }
-      local_enclosing = local_super;
+      else
+	local_enclosing = local_super;
     }
 
   /* We failed. Return LOCAL_SUPER and LOCAL_ENCLOSING. */
@@ -15701,7 +15702,7 @@ purge_unchecked_exceptions (mdecl)
 }
 
 /* This function goes over all of CLASS_TYPE ctors and checks whether
-   each of then features at least one unchecked exception in it
+   each of them features at least one unchecked exception in its
    `throws' clause. If it's the case, it returns `true', `false'
    otherwise.  */
 
