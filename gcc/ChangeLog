@@ -1,3 +1,10 @@
+2001-12-06  H.J. Lu <hjl@gnu.org>
+
+	* Makefile.in (.po.gmo): Use "-test -d po || mkdir po" to
+	reduce noise.
+	(.po.pox): Likewise.
+	(o/$(PACKAGE).pot): Likewise.
+
 2001-12-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree.c (get_callee_fndecl): Move DECL_ABSTRACT_ORIGIN-following...
