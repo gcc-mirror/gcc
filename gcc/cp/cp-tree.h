@@ -158,7 +158,7 @@ struct diagnostic_context;
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
-#define VAR_OR_FUNCTION_DECL_CHECK(NODE)			\
+#define VAR_OR_FUNCTION_DECL_CHECK(NODE) __extension__		\
 ({  const tree __t = (NODE);					\
     enum tree_code const __c = TREE_CODE(__t);			\
     if (__c != VAR_DECL && __c != FUNCTION_DECL)		\
@@ -166,7 +166,7 @@ struct diagnostic_context;
 			 __FUNCTION__);				\
     __t; })
 
-#define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE)			\
+#define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE) __extension__	\
 ({  const tree __t = (NODE);					\
     enum tree_code const __c = TREE_CODE(__t);			\
     if (__c != VAR_DECL						\
@@ -176,7 +176,7 @@ struct diagnostic_context;
 			 __FUNCTION__);				\
     __t; })
 
-#define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)		\
+#define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE) __extension__ \
 ({  const tree __t = (NODE);					\
     enum tree_code const __c = TREE_CODE(__t);			\
     if (__c != VAR_DECL						\
@@ -187,7 +187,7 @@ struct diagnostic_context;
 			 __FUNCTION__);				\
     __t; })
 
-#define RECORD_OR_UNION_TYPE_CHECK(NODE)			\
+#define RECORD_OR_UNION_TYPE_CHECK(NODE) __extension__		\
 ({  const tree __t = (NODE);					\
     enum tree_code const __c = TREE_CODE(__t);			\
     if (__c != RECORD_TYPE && __c != UNION_TYPE)		\
@@ -195,7 +195,7 @@ struct diagnostic_context;
 			 __FUNCTION__);				\
     __t; })
 
-#define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE)		\
+#define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) __extension__ \
 ({  const tree __t = (NODE);					\
     enum tree_code const __c = TREE_CODE(__t);			\
     if (__c != BOUND_TEMPLATE_TEMPLATE_PARM)			\
@@ -1036,17 +1036,17 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
    are put in this structure to save space.  */
-struct lang_type_header GTY(())
+__extension__ struct lang_type_header GTY(())
 {
-  unsigned char is_lang_type_class : 1;
+  CHAR_BITFIELD is_lang_type_class : 1;
 
-  unsigned char has_type_conversion : 1;
-  unsigned char has_init_ref : 1;
-  unsigned char has_default_ctor : 1;
-  unsigned char uses_multiple_inheritance : 1;
-  unsigned char const_needs_init : 1;
-  unsigned char ref_needs_init : 1;
-  unsigned char has_const_assign_ref : 1;
+  CHAR_BITFIELD has_type_conversion : 1;
+  CHAR_BITFIELD has_init_ref : 1;
+  CHAR_BITFIELD has_default_ctor : 1;
+  CHAR_BITFIELD uses_multiple_inheritance : 1;
+  CHAR_BITFIELD const_needs_init : 1;
+  CHAR_BITFIELD ref_needs_init : 1;
+  CHAR_BITFIELD has_const_assign_ref : 1;
 };
 
 /* This structure provides additional information above and beyond
@@ -1154,13 +1154,13 @@ struct lang_type GTY(())
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
-#define LANG_TYPE_CLASS_CHECK(NODE)				\
+#define LANG_TYPE_CLASS_CHECK(NODE) __extension__		\
 ({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
     if (! lt->u.h.is_lang_type_class)				\
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
     &lt->u.c; })
 
-#define LANG_TYPE_PTRMEM_CHECK(NODE)				\
+#define LANG_TYPE_PTRMEM_CHECK(NODE) __extension__		\
 ({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
     if (lt->u.h.is_lang_type_class)				\
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
@@ -1748,7 +1748,7 @@ struct lang_decl GTY(())
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
-#define LANG_DECL_U2_CHECK(NODE, TF)				\
+#define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
 ({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
     if (lt->decl_flags.u2sel != TF)				\
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
@@ -2941,7 +2941,7 @@ typedef enum cp_lvalue_kind {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_class = 2,    /* An rvalue of class-type.  */
-  clk_bitfield = 4, /* An lvalue for a bit-field.  */
+  clk_bitfield = 4  /* An lvalue for a bit-field.  */
 } cp_lvalue_kind;
 
 /* The kinds of scopes we recognize.  */
@@ -3051,7 +3051,7 @@ typedef enum base_access {
   ba_check = 2,    /* Check access */
   ba_not_special = 3, /* Do not consider special privilege
 		         current_class_type might give.  */
-  ba_quiet = 4,    /* Do not issue error messages (bit mask).  */
+  ba_quiet = 4     /* Do not issue error messages (bit mask).  */
 } base_access;
 
 /* The kind of base we can find, looking in a class hierarchy.

@@ -3457,7 +3457,10 @@ add_using_namespace (tree user, tree used, bool indirect)
   timevar_push (TV_NAME_LOOKUP);
   /* Using oneself is a no-op.  */
   if (user == used)
-    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (void)0);
+    {
+      timevar_pop (TV_NAME_LOOKUP);
+      return;
+    }
   my_friendly_assert (TREE_CODE (user) == NAMESPACE_DECL, 380);
   my_friendly_assert (TREE_CODE (used) == NAMESPACE_DECL, 380);
   /* Check if we already have this.  */
@@ -3467,7 +3470,8 @@ add_using_namespace (tree user, tree used, bool indirect)
       if (!indirect)
 	/* Promote to direct usage.  */
 	TREE_INDIRECT_USING (t) = 0;
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, (void)0);
+      timevar_pop (TV_NAME_LOOKUP);
+      return;
     }
 
   /* Add used to the user's using list.  */

@@ -52,7 +52,7 @@ update_lineno (l, len)
 
 ID	[[:alpha:]_][[:alnum:]_]*
 WS	[[:space:]]+
-IWORD	short|long|(un)?signed|char|int|HOST_WIDE_INT|bool|size_t
+IWORD	short|long|(un)?signed|char|int|HOST_WIDE_INT|bool|size_t|CHAR_BITFIELD
 ITYPE	{IWORD}({WS}{IWORD})*
 
 %x in_struct in_struct_comment in_comment in_yacc_escape

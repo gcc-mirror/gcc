@@ -1,3 +1,8 @@
+2003-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gengtype-lex.l (IWORD): Add CHAR_BITFIELD.
+	* system.h (CHAR_BITFIELD): New.
+
 2003-04-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Generalize to accept GT

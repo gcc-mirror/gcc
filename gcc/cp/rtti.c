@@ -922,7 +922,7 @@ dfs_class_hint_mark (tree binfo, void *data)
       SET_CLASSTYPE_MARKED (basetype);
     }
   return NULL_TREE;
-};
+}
 
 /* Clear the base's dfs marks, after searching for duplicate bases.  */
 

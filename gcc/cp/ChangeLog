@@ -1,3 +1,34 @@
+2003-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* operators.def (DEF_SIMPLE_OPERATOR, DEF_ASSN_OPERATOR,
+	DEF_ASSN_OPERATOR): Delete spurious semi-colon.
+	* rtti.c (dfs_class_hint_mark): Likewise.
+
+	* decl.c (push_local_name, push_class_level_binding,
+	maybe_inject_for_scope_var): Don't use POP_TIMEVAR_AND_RETURN in
+	functions returning void.
+	* decl2.c (add_using_namespace): Likewise.
+
+	* decl.c (print_binding_level, print_other_binding_stack,
+	print_binding_stack): Cast argument of %p specifier to void*.
+	* ptree.c (cxx_print_decl): Likewise.
+
+	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK,
+	VAR_FUNCTION_OR_PARM_DECL_CHECK,
+	VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK, RECORD_OR_UNION_TYPE_CHECK,
+	BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK, LANG_TYPE_CLASS_CHECK,
+	LANG_TYPE_PTRMEM_CHECK, LANG_DECL_U2_CHECK): Add __extension__.
+
+	* decl.c (set_current_binding_level): New macro.  Use throughout
+	when setting the current binding level.
+
+	* cp-tree.h (cp_lvalue_kind, base_access): Delete trailing comma
+	in enum.
+	* method.c (mangling_flags): Likewise.
+
+	* cp-tree.h (lang_type_header): Add __extension__ and use
+	CHAR_BITFIELD for members.
+
 2003-04-02  Geoffrey Keating  <geoffk@apple.com>
 
 	PR other/9274

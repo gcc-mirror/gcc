@@ -50,7 +50,7 @@ enum mangling_flags
   mf_maybe_uninstantiated = 1,
   /* When mangling a numeric value, use the form `_XX_' (instead of
      just `XX') if the value has more than one digit.  */
-  mf_use_underscores_around_value = 2,
+  mf_use_underscores_around_value = 2
 };
 
 typedef enum mangling_flags mangling_flags;
