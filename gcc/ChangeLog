@@ -1,3 +1,9 @@
+2001-06-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install-old.texi: Remove more old installation
+	documentation.
+	* doc/install.texi: Add relevant parts here.
+
 2001-06-03  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi2html: New script.
