@@ -1,3 +1,11 @@
+2003-12-18  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* stamp-xgnatug: New stamp file.
+	* Make-lang.in (stamp-xgnatug):  New stamp file and comment.
+	(ada/doctools/xgnatug): Add $(build_exeext).
+	(ada/gnat_ug_unx.texi, ada/gnat_ug_vwx.texi, ada/gnat_ug_vms.texi
+	ada/gnat_ug_wnt.texi): Update to depend on stamp-xgnatug.
+
 2003-12-17  Ed Falis  <falis@gnat.com>
 
 	* a-elchha.adb (Tailored_Exception_Information): made Info constant to

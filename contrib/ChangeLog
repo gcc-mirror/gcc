@@ -1,3 +1,8 @@
+2003-12-18  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_update (files_generated): Add in gcc/ada/stamp-xgnatug and update
+	gcc/ada/gnat_ug_* to use it.
+
 2003-12-16  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc_update (files_and_dependencies): For libjava/libltdl directory,

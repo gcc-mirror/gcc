@@ -442,28 +442,48 @@ ada.generated-manpages:
 # Generate documentation.
 #
 # The generated Texinfo files for the User Guide are stored in
-# $(srcdir), like the Info files.
+# $(srcdir).  However, if the documentation files depended on
+# executables in the build tree, there'd be no way to ship a source
+# tree with the documentation already generated such that `make'
+# wouldn't attempt to rebuild it.  So, we punt and arrange for the
+# documentation files to depend on a stamp file which has the
+# combined dependencies of the texi files and the generatator file.
+# This stamp file calls a submake to build the executable.
+# 
+# If gnu make 3.80 is ever made a requirement to build, then
+# this dance could be avoided using an order-only dependency:
+#
+# $(srcdir)/ada/gnat_ug_unx.texi: \
+#     ada/gnat_ug.texi ada/ug_words | ada/doctools/xgnatug$(build_exeext)
 
-ada/doctools/xgnatug : ada/xgnatug.adb
+$(srcdir)/ada/stamp-xgnatug: ada/xgnatug.adb ada/gnat_ug.texi ada/ug_words
+	$(MAKE) ada/doctools/xgnatug$(build_exeext) 
+	$(STAMP) $(srcdir)/ada/stamp-xgnatug
+
+ada/doctools/xgnatug$(build_exeext): ada/xgnatug.adb
 	-$(MKDIR) ada/doctools
 	cp $^ ada/doctools
 	cd ada/doctools && gnatmake -q xgnatug
 
-$(srcdir)/ada/gnat_ug_unx.texi : ada/doctools/xgnatug \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug unx $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_unx.texi
+$(srcdir)/ada/gnat_ug_unx.texi: $(srcdir)/ada/stamp-xgnatug
+	ada/doctools/xgnatug unx $(srcdir)/ada/gnat_ug.texi \
+	  $(srcdir)/ada/ug_words \
+	  $(srcdir)/ada/gnat_ug_unx.texi
 
-$(srcdir)/ada/gnat_ug_vms.texi : ada/doctools/xgnatug \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug vms $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vms.texi
+$(srcdir)/ada/gnat_ug_vms.texi: $(srcdir)/ada/stamp-xgnatug
+	ada/doctools/xgnatug vms $(srcdir)/ada/gnat_ug.texi \
+ 	  $(srcdir)/ada/ug_words \
+	  $(srcdir)/ada/gnat_ug_vms.texi
 
-$(srcdir)/ada/gnat_ug_vxw.texi : ada/doctools/xgnatug \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug vxworks $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vxw.texi
+$(srcdir)/ada/gnat_ug_vxw.texi: $(srcdir)/ada/stamp-xgnatug
+	ada/doctools/xgnatug vxworks $(srcdir)/ada/gnat_ug.texi \
+ 	  $(srcdir)/ada/ug_words \
+	  $(srcdir)/ada/gnat_ug_vxw.texi
 
-$(srcdir)/ada/gnat_ug_wnt.texi : ada/doctools/xgnatug \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_wnt.texi
+$(srcdir)/ada/gnat_ug_wnt.texi: $(srcdir)/ada/stamp-xgnatug
+	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi \
+	  $(srcdir)/ada/ug_words \
+	  $(srcdir)/ada/gnat_ug_wnt.texi
 
 $(docobjdir)/gnat_ug_unx.info : $(srcdir)/ada/gnat_ug_unx.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
