@@ -520,25 +520,28 @@ extern tree cp_global_trees[CPTI_MAX];
 /* Global state.  */
 
 struct saved_scope {
-  struct binding_level *old_binding_level;
   tree old_bindings;
   tree old_namespace;
-  struct saved_scope *prev;
-  tree class_name, class_type;
+  tree class_name;
+  tree class_type;
   tree access_specifier;
-  tree function_decl;
-  struct binding_level *class_bindings;
   varray_type lang_base;
   tree *lang_stack;
   tree lang_name;
   tree x_function_parms;
   tree template_parms;
-  HOST_WIDE_INT x_processing_template_decl;
   tree x_previous_class_type;
   tree x_previous_class_values;
+
+  HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_explicit_instantiation;
+
   char *firstobj;
+
+  struct binding_level *class_bindings;
+
+  struct saved_scope *prev;
 };
 
 /* The current open namespace.  */

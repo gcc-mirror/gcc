@@ -2382,14 +2382,12 @@ mark_saved_scope (arg)
   struct saved_scope *t = *(struct saved_scope **)arg;
   while (t)
     {
-      mark_binding_level (&t->old_binding_level);
       mark_binding_level (&t->class_bindings);
       ggc_mark_tree (t->old_bindings);
       ggc_mark_tree (t->old_namespace);
       ggc_mark_tree (t->class_name);
       ggc_mark_tree (t->class_type);
       ggc_mark_tree (t->access_specifier);
-      ggc_mark_tree (t->function_decl);
       if (t->lang_base)
 	ggc_mark_tree_varray (t->lang_base);
       ggc_mark_tree (t->lang_name);
@@ -2451,7 +2449,7 @@ maybe_push_to_top_level (pseudo)
      int pseudo;
 {
   struct saved_scope *s
-    = (struct saved_scope *) xmalloc (sizeof (struct saved_scope));
+    = (struct saved_scope *) xcalloc (1, sizeof (struct saved_scope));
   struct binding_level *b;
   tree old_bindings = NULL_TREE;
 
@@ -2485,28 +2483,18 @@ maybe_push_to_top_level (pseudo)
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
-  if (scope_chain)
-    *s = *scope_chain;
-  s->old_binding_level = scope_chain ? current_binding_level : 0;
-  s->old_bindings = old_bindings;
-  s->prev = scope_chain;
-  scope_chain = s;
   current_binding_level = b;
 
-  current_class_name = current_class_type = NULL_TREE;
+  s->prev = scope_chain;
+  s->old_bindings = old_bindings;
+
+  scope_chain = s;
   current_function_decl = NULL_TREE;
-  class_binding_level = (struct binding_level *)0;
   VARRAY_TREE_INIT (current_lang_base, 10, "current_lang_base");
   current_lang_stack = &VARRAY_TREE (current_lang_base, 0);
   current_lang_name = lang_name_cplusplus;
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
-  previous_class_type = previous_class_values = NULL_TREE;
-  class_cache_firstobj = 0;
-  processing_specialization = 0;
-  processing_explicit_instantiation = 0;
-  current_template_parms = NULL_TREE;
-  processing_template_decl = 0;
   current_namespace = global_namespace;
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
@@ -7485,6 +7473,8 @@ check_initializer (decl, init)
 
   if (TREE_CODE (decl) == FIELD_DECL)
     return init;
+
+  type = TREE_TYPE (decl);
 
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
   if (init != NULL_TREE && DECL_INITIAL (decl) == NULL_TREE)
