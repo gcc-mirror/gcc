@@ -1,3 +1,26 @@
+2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/16570
+	* config.gcc (i[34567]86-*-* | x86_64-*-*): Add i386/t-gmm_malloc
+	to tmake_file.
+	(i[34567]86-*-linux*aout* | i[34567]86-*-linux*libc1): Likewise.
+	(i[34567]86-*-linux* | x86_64-*-linux*): Add i386/t-pmm_malloc
+	to tmake_file.
+
+	* config/i386/t-gmm_malloc: New file.
+	* config/i386/t-pmm_malloc: Likewise.
+	
+	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
+
+2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
+	    Tanguy Fautr√  <tfautre@pandora.be>
+
+	* config/i386/pmm_malloc.h: New file.
+
+2004-08-03  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/gmm_malloc.h: New file.
+
 2004-08-03  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (machopic_output_stub):  Align Darwin stubs.

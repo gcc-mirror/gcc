@@ -2122,6 +2122,18 @@ am33_2.0-*-linux*)
 	;;
 esac
 
+case ${target} in
+i[34567]86-*-linux*aout* | i[34567]86-*-linux*libc1)
+	tmake_file="${tmake_file} i386/t-gmm_malloc"
+	;;
+i[34567]86-*-linux* | x86_64-*-linux*)
+	tmake_file="${tmake_file} i386/t-pmm_malloc"
+	;;
+i[34567]86-*-* | x86_64-*-*)
+	tmake_file="${tmake_file} i386/t-gmm_malloc"
+	;;
+esac
+
 # Support for --with-cpu and related options (and a few unrelated options,
 # too).
 case ${with_cpu} in

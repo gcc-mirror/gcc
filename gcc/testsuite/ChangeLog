@@ -1,3 +1,8 @@
+2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/16570
+	* gcc.dg/i386-sse-9.c: New test.
+
 2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/array-7.c, gcc.dg/c99-tag-2.c: New tests.
