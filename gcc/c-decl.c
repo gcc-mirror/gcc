@@ -812,6 +812,7 @@ poplevel (keep, reverse, functionbody)
   tree subblocks = current_binding_level->blocks;
   tree block = 0;
   tree decl;
+  int block_previously_created;
 
   keep |= current_binding_level->keep;
 
@@ -877,7 +878,8 @@ poplevel (keep, reverse, functionbody)
      create a BLOCK to record them for the life of this function.  */
 
   block = 0;
-  if (current_binding_level->this_block != 0)
+  block_previously_created = (current_binding_level->this_block != 0);
+  if (block_previously_created)
     block = current_binding_level->this_block;
   else if (keep || functionbody
 	   || (current_binding_level->keep_if_subblocks && subblocks != 0))
@@ -973,8 +975,11 @@ poplevel (keep, reverse, functionbody)
   if (functionbody)
     DECL_INITIAL (current_function_decl) = block;
   else if (block)
-    current_binding_level->blocks
-      = chainon (current_binding_level->blocks, block);
+    {
+      if (!block_previously_created)
+        current_binding_level->blocks
+          = chainon (current_binding_level->blocks, block);
+    }
   /* If we did not make a block for the level just exited,
      any blocks made for inner levels
      (since they cannot be recorded as subblocks in that level)
@@ -1048,15 +1053,14 @@ insert_block (block)
     = chainon (current_binding_level->blocks, block);
 }
 
-/* Return the BLOCK node for the innermost scope
+/* Set the BLOCK node for the innermost scope
    (the one we are currently in).  */
 
-tree
-current_block ()
+void
+set_block (block)
+     register tree block;
 {
-  if (current_binding_level->this_block == 0)
-    current_binding_level->this_block = make_node (BLOCK);
-  return current_binding_level->this_block;
+  current_binding_level->this_block = block;
 }
 
 void
