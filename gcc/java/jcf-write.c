@@ -2877,7 +2877,8 @@ generate_classfile (clas, state)
       have_value = DECL_INITIAL (part) != NULL_TREE 
 	&& FIELD_STATIC (part)
 	&& (TREE_CODE (DECL_INITIAL (part)) == STRING_CST
-	    || TREE_CODE (DECL_INITIAL (part)) == INTEGER_CST
+	    || (TREE_CODE (DECL_INITIAL (part)) == INTEGER_CST
+		&& !TREE_TYPE (part) == string_type_node)
 	    || TREE_CODE (DECL_INITIAL (part)) == REAL_CST);
       if (have_value)
 	attr_count++;
