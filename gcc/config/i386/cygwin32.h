@@ -432,3 +432,8 @@ do {								\
 extern void i386_pe_record_external_function PROTO((char *));
 extern void i386_pe_declare_function_type STDIO_PROTO((FILE *, char *, int));
 extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
+
+/* For Win32 ABI compatibility */
+#undef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
