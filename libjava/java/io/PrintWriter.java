@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -85,7 +85,7 @@ public class PrintWriter extends Writer
   {
     try
       {
-	out.write(str == null ? "null" : str);
+	write(str == null ? "null" : str);
       }
     catch (IOException ex)
       {
@@ -105,32 +105,44 @@ public class PrintWriter extends Writer
 
   public void print(boolean bool)
   {
-    print(bool ? "true" : "false");
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write (bool ? "true" : "false");
   }
 
   public void print(int inum)
   {
-    print(Integer.toString(inum));
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write(Integer.toString(inum));
   }
 
   public void print(long lnum)
   {
-    print(Long.toString(lnum));
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write(Long.toString(lnum));
   }
 
   public void print(float fnum)
   {
-    print(Float.toString(fnum));
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write(Float.toString(fnum));
   }
 
   public void print(double dnum)
   {
-    print(Double.toString(dnum));
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write(Double.toString(dnum));
   }
 
   public void print(Object obj)
   {
-    print(obj == null ? "null" : obj.toString());
+    // We purposely call write() and not print() here.  This preserves
+    // compatibility with JDK 1.2.
+    write(obj == null ? "null" : obj.toString());
   }
 
   private static final char[] line_separator
