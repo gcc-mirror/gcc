@@ -316,8 +316,11 @@ proc dg-require-dll { args } {
 
 proc dg-xfail-if { args } {
     set args [lreplace $args 0 0]
-    global compiler_conditional_xfail_data
-    set compiler_conditional_xfail_data $args
+    set selector "target [join [lindex $args 1]]"
+    if { [dg-process-target $selector] == "S" } {
+	global compiler_conditional_xfail_data
+	set compiler_conditional_xfail_data $args
+    }
 }
 
 
