@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "reload.h"
 #include "c-tree.h"
+#include "function.h"
 #include "expr.h"
 #include "obstack.h"
 #include "toplev.h"
@@ -2599,7 +2600,6 @@ compute_frame_size (size, fregs_live)
      int size;
      int *fregs_live;
 {
-  extern int current_function_outgoing_args_size;
   int i, fsize;
 
   /* Space for frame pointer + filler. If any frame is allocated

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "tree.h"
 #include "c-tree.h"
+#include "function.h"
 #include "expr.h"
 #include "flags.h"
 #include "machmode.h"

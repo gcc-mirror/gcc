@@ -2009,9 +2009,6 @@ LFLGRET"ID":\n\
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 
-extern int current_function_calls_alloca;
-extern int current_function_outgoing_args_size;
-
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
   || current_function_calls_alloca || current_function_outgoing_args_size)
@@ -2025,11 +2022,6 @@ extern int current_function_outgoing_args_size;
    It should use the frame pointer only.  This is mandatory because
    of alloca; we also take advantage of it to omit stack adjustments
    before returning.  */
-
-/* This declaration is needed due to traditional/ANSI
-   incompatibilities which cannot be #ifdefed away
-   because they occur inside of macros.  Sigh.  */
-extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
   (TARGET_FLAT ? sparc_flat_output_function_epilogue (FILE, (int)SIZE) \

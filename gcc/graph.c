@@ -25,6 +25,7 @@
 #include "rtl.h"
 #include "flags.h"
 #include "output.h"
+#include "function.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "toplev.h"

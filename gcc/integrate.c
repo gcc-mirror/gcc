@@ -60,8 +60,7 @@ extern struct obstack *function_maybepermanent_obstack;
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
-static rtx initialize_for_inline	PROTO((tree, int, int, int, int));
-static void finish_inline		PROTO((tree, rtx));
+static rtvec initialize_for_inline	PROTO((tree, int));
 static void adjust_copied_decl_tree	PROTO((tree));
 static tree copy_decl_list		PROTO((tree));
 static tree copy_decl_tree		PROTO((tree));
@@ -256,10 +255,6 @@ static rtx *insn_map;
    Only reg numbers less than max_parm_reg are mapped here.  */
 static tree *parmdecl_map;
 
-/* Keep track of first pseudo-register beyond those that are parms.  */
-extern int max_parm_reg;
-extern rtx *parm_reg_stack_loc;
-
 /* When an insn is being copied by copy_for_inline,
    this is nonzero if we have copied an ASM_OPERANDS.
    In that case, it is the original input-operand vector.  */
@@ -289,35 +284,14 @@ save_for_inline_eh_labelmap (label)
 /* Subroutine for `save_for_inline{copying,nocopy}'.  Performs initialization
    needed to save FNDECL's insns and info for future inline expansion.  */
    
-static rtx
-initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
+static rtvec
+initialize_for_inline (fndecl, copy)
      tree fndecl;
-     int min_labelno;
-     int max_labelno;
-     int max_reg;
      int copy;
 {
-  int function_flags, i;
+  int i;
   rtvec arg_vector;
   tree parms;
-
-  /* Compute the values of any flags we must restore when inlining this.  */
-
-  function_flags
-    = (current_function_calls_alloca * FUNCTION_FLAGS_CALLS_ALLOCA
-       + current_function_calls_setjmp * FUNCTION_FLAGS_CALLS_SETJMP
-       + current_function_calls_longjmp * FUNCTION_FLAGS_CALLS_LONGJMP
-       + current_function_returns_struct * FUNCTION_FLAGS_RETURNS_STRUCT
-       + (current_function_returns_pcc_struct
-	  * FUNCTION_FLAGS_RETURNS_PCC_STRUCT)
-       + current_function_needs_context * FUNCTION_FLAGS_NEEDS_CONTEXT
-       + (current_function_has_nonlocal_label
-	  * FUNCTION_FLAGS_HAS_NONLOCAL_LABEL)
-       + current_function_returns_pointer * FUNCTION_FLAGS_RETURNS_POINTER
-       + current_function_uses_const_pool * FUNCTION_FLAGS_USES_CONST_POOL
-       + (current_function_uses_pic_offset_table
-	  * FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
-       + current_function_has_computed_jump * FUNCTION_FLAGS_HAS_COMPUTED_JUMP);
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
   bzero ((char *) parmdecl_map, max_parm_reg * sizeof (tree));
@@ -393,54 +367,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 	}
     }
 
-  /* Assume we start out in the insns that set up the parameters.  */
-  in_nonparm_insns = 0;
-
-  /* The list of DECL_SAVED_INSNS, starts off with a header which
-     contains the following information:
-
-     the first insn of the function (not including the insns that copy
-     parameters into registers).
-     the first parameter insn of the function,
-     the first label used by that function,
-     the last label used by that function,
-     the highest register number used for parameters,
-     the total number of registers used,
-     the size of the incoming stack area for parameters,
-     the number of bytes popped on return,
-     the stack slot list,
-     the labels that are forced to exist,
-     some flags that are used to restore compiler globals,
-     the value of current_function_outgoing_args_size,
-     the original argument vector,
-     the original DECL_INITIAL,
-     and pointers to the table of pseudo regs, pointer flags, and alignment. */
-
-  return gen_inline_header_rtx (NULL_RTX, NULL_RTX, min_labelno, max_labelno,
-				max_parm_reg, max_reg,
-				current_function_args_size,
-				current_function_pops_args,
-				stack_slot_list, forced_labels, function_flags,
-				current_function_outgoing_args_size,
-				arg_vector, (rtx) DECL_INITIAL (fndecl),
-				(rtvec) regno_reg_rtx, regno_pointer_flag,
-				regno_pointer_align,
-				(rtvec) parm_reg_stack_loc);
-}
-
-/* Subroutine for `save_for_inline{copying,nocopy}'.  Finishes up the
-   things that must be done to make FNDECL expandable as an inline function.
-   HEAD contains the chain of insns to which FNDECL will expand.  */
-   
-static void
-finish_inline (fndecl, head)
-     tree fndecl;
-     rtx head;
-{
-  FIRST_FUNCTION_INSN (head) = get_first_nonparm_insn ();
-  FIRST_PARM_INSN (head) = get_insns ();
-  DECL_SAVED_INSNS (fndecl) = head;
-  DECL_FRAME_SIZE (fndecl) = get_frame_size ();
+  return arg_vector;
 }
 
 /* Adjust the BLOCK_END_NOTE pointers in a given copied DECL tree so that
@@ -487,8 +414,8 @@ void
 save_for_inline_copying (fndecl)
      tree fndecl;
 {
-  rtx first_insn, last_insn, insn;
-  rtx head, copy;
+  rtvec argvec;
+  rtx new_first_insn, new_last_insn, insn;
   int max_labelno, min_labelno, i, len;
   int max_reg;
   int max_uid;
@@ -496,6 +423,8 @@ save_for_inline_copying (fndecl)
   char *new, *new1;
   rtx *new_parm_reg_stack_loc;
   rtx *new2;
+  struct emit_status *es
+    = (struct emit_status *) xmalloc (sizeof (struct emit_status));
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
@@ -505,6 +434,8 @@ save_for_inline_copying (fndecl)
       return_label = gen_label_rtx ();
       emit_label (return_label);
     }
+
+  *es = *current_function->emit;
 
   /* Get some bounds on the labels and registers used.  */
 
@@ -520,7 +451,7 @@ save_for_inline_copying (fndecl)
 
   parmdecl_map = (tree *) alloca (max_parm_reg * sizeof (tree));
 
-  head = initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, 1);
+  argvec = initialize_for_inline (fndecl, 1);
 
   if (current_function_uses_const_pool)
     {
@@ -544,7 +475,7 @@ save_for_inline_copying (fndecl)
       clear_const_double_mem ();
     }
 
-  max_uid = INSN_UID (head);
+  max_uid = get_max_uid ();
 
   /* We have now allocated all that needs to be allocated permanently
      on the rtx obstack.  Set our high-water mark, so that we
@@ -565,29 +496,29 @@ save_for_inline_copying (fndecl)
   insn = get_insns ();
   if (GET_CODE (insn) != NOTE)
     abort ();
-  first_insn = rtx_alloc (NOTE);
-  NOTE_SOURCE_FILE (first_insn) = NOTE_SOURCE_FILE (insn);
-  NOTE_LINE_NUMBER (first_insn) = NOTE_LINE_NUMBER (insn);
-  INSN_UID (first_insn) = INSN_UID (insn);
-  PREV_INSN (first_insn) = NULL;
-  NEXT_INSN (first_insn) = NULL;
-  last_insn = first_insn;
+  new_first_insn = rtx_alloc (NOTE);
+  NOTE_SOURCE_FILE (new_first_insn) = NOTE_SOURCE_FILE (insn);
+  NOTE_LINE_NUMBER (new_first_insn) = NOTE_LINE_NUMBER (insn);
+  INSN_UID (new_first_insn) = INSN_UID (insn);
+  PREV_INSN (new_first_insn) = NULL;
+  NEXT_INSN (new_first_insn) = NULL;
+  new_last_insn = new_first_insn;
 
   /* Each pseudo-reg in the old insn chain must have a unique rtx in the copy.
      Make these new rtx's now, and install them in regno_reg_rtx, so they
      will be the official pseudo-reg rtx's for the rest of compilation.  */
 
-  reg_map = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
+  reg_map = (rtx *) savealloc (es->regno_pointer_flag_length * sizeof (rtx));
 
   len = sizeof (struct rtx_def) + (GET_RTX_LENGTH (REG) - 1) * sizeof (rtunion);
   for (i = max_reg - 1; i > LAST_VIRTUAL_REGISTER; i--)
     reg_map[i] = (rtx)obstack_copy (function_maybepermanent_obstack,
 				    regno_reg_rtx[i], len);
 
-  regno_reg_rtx = reg_map;
+  es->x_regno_reg_rtx = reg_map;
 
   /* Put copies of all the virtual register rtx into the new regno_reg_rtx.  */
-  init_virtual_regs ();
+  init_virtual_regs (es);
 
   /* Likewise each label rtx must have a unique rtx as its copy.  */
 
@@ -663,6 +594,7 @@ save_for_inline_copying (fndecl)
 
   for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
     {
+      rtx copy;
       orig_asm_operands_vector = 0;
 
       if (insn == first_nonparm_insn)
@@ -732,9 +664,9 @@ save_for_inline_copying (fndecl)
 	}
       INSN_UID (copy) = INSN_UID (insn);
       insn_map[INSN_UID (insn)] = copy;
-      NEXT_INSN (last_insn) = copy;
-      PREV_INSN (copy) = last_insn;
-      last_insn = copy;
+      NEXT_INSN (new_last_insn) = copy;
+      PREV_INSN (copy) = new_last_insn;
+      new_last_insn = copy;
     }
 
   adjust_copied_decl_tree (DECL_INITIAL (fndecl));
@@ -746,23 +678,28 @@ save_for_inline_copying (fndecl)
       REG_NOTES (insn_map[INSN_UID (insn)])
 	= copy_for_inline (REG_NOTES (insn));
 
-  NEXT_INSN (last_insn) = NULL;
-
-  finish_inline (fndecl, head);
+  NEXT_INSN (new_last_insn) = NULL;
 
   /* Make new versions of the register tables.  */
-  new = (char *) savealloc (regno_pointer_flag_length);
-  bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
-  new1 = (char *) savealloc (regno_pointer_flag_length);
-  bcopy (regno_pointer_align, new1, regno_pointer_flag_length);
+  new = (char *) savealloc (es->regno_pointer_flag_length);
+  memcpy (new, es->regno_pointer_flag, es->regno_pointer_flag_length);
+  new1 = (char *) savealloc (es->regno_pointer_flag_length);
+  memcpy (new1, es->regno_pointer_align, es->regno_pointer_flag_length);
+  es->regno_pointer_flag = new;
+  es->regno_pointer_align = new1;
 
-  regno_pointer_flag = new;
-  regno_pointer_align = new1;
+  free (label_map);
 
-  set_new_first_and_last_insn (first_insn, last_insn);
-
-  if (label_map)
-    free (label_map);
+  current_function->inl_max_label_num = max_label_num ();
+  current_function->inl_last_parm_insn = current_function->x_last_parm_insn;
+  current_function->original_arg_vector = argvec;
+  current_function->original_decl_initial = DECL_INITIAL (fndecl);
+  /* Use the copy we made for compiling the function now, and
+     use the original values for inlining.  */
+  current_function->inl_emit = current_function->emit;
+  current_function->emit = es;
+  set_new_first_and_last_insn (new_first_insn, new_last_insn);
+  DECL_SAVED_INSNS (fndecl) = current_function;
 }
 
 /* Copy NODE (as with copy_node).  NODE must be a DECL.  Set the
@@ -885,7 +822,7 @@ save_for_inline_nocopy (fndecl)
      tree fndecl;
 {
   rtx insn;
-  rtx head;
+  rtvec argvec;
   rtx first_nonparm_insn;
 
   /* Set up PARMDECL_MAP which maps pseudo-reg number to its PARM_DECL.
@@ -904,8 +841,7 @@ save_for_inline_nocopy (fndecl)
       emit_label (return_label);
     }
 
-  head = initialize_for_inline (fndecl, get_first_label_num (),
-				max_label_num (), max_reg_num (), 0);
+  argvec = initialize_for_inline (fndecl, 0);
 
   /* If there are insns that copy parms from the stack into pseudo registers,
      those insns are not copied.  `expand_inline_function' must
@@ -957,7 +893,12 @@ save_for_inline_nocopy (fndecl)
 
   preserve_data ();
 
-  finish_inline (fndecl, head);
+  current_function->inl_emit = current_function->emit;
+  current_function->inl_max_label_num = max_label_num ();
+  current_function->inl_last_parm_insn = current_function->x_last_parm_insn;
+  current_function->original_arg_vector = argvec;
+  current_function->original_decl_initial = DECL_INITIAL (fndecl);
+  DECL_SAVED_INSNS (fndecl) = current_function;
 }
 
 /* Given PX, a pointer into an insn, search for references to the constant
@@ -1385,17 +1326,19 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      tree type;
      rtx structure_value_addr;
 {
+  struct function *inl_f = DECL_SAVED_INSNS (fndecl);
   tree formal, actual, block;
-  rtx header = DECL_SAVED_INSNS (fndecl);
-  rtx insns = FIRST_FUNCTION_INSN (header);
-  rtx parm_insns = FIRST_PARM_INSN (header);
+  rtx parm_insns = inl_f->inl_emit->x_first_insn;
+  rtx insns = (inl_f->inl_last_parm_insn
+	       ? NEXT_INSN (inl_f->inl_last_parm_insn)
+	       : parm_insns);
   tree *arg_trees;
   rtx *arg_vals;
   rtx insn;
   int max_regno;
   register int i;
-  int min_labelno = FIRST_LABELNO (header);
-  int max_labelno = LAST_LABELNO (header);
+  int min_labelno = inl_f->inl_emit->x_first_label_num;
+  int max_labelno = inl_f->inl_max_label_num;
   int nargs;
   rtx local_return_label = 0;
   rtx loc;
@@ -1405,15 +1348,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;
 #endif
-  rtvec arg_vector = ORIGINAL_ARG_VECTOR (header);
+  rtvec arg_vector = (rtvec) inl_f->original_arg_vector;
   rtx static_chain_value = 0;
+  int inl_max_uid;
 
   /* The pointer used to track the true location of the memory used
      for MAP->LABEL_MAP.  */
   rtx *real_label_map = 0;
 
   /* Allow for equivalences of the pseudos we make for virtual fp and ap.  */
-  max_regno = MAX_REGNUM (header) + 3;
+  max_regno = inl_f->inl_emit->x_reg_rtx_no + 3;
   if (max_regno < FIRST_PSEUDO_REGISTER)
     abort ();
 
@@ -1556,10 +1500,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
   map->label_map = real_label_map;
 
-  map->insn_map = (rtx *) alloca (INSN_UID (header) * sizeof (rtx));
-  bzero ((char *) map->insn_map, INSN_UID (header) * sizeof (rtx));
+  inl_max_uid = (inl_f->inl_emit->x_cur_insn_uid + 1);
+  map->insn_map = (rtx *) alloca (inl_max_uid * sizeof (rtx));
+  bzero ((char *) map->insn_map, inl_max_uid * sizeof (rtx));
   map->min_insnno = 0;
-  map->max_insnno = INSN_UID (header);
+  map->max_insnno = inl_max_uid;
 
   map->integrating = 1;
 
@@ -1591,21 +1536,21 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (map->insns_at_start == 0)
     map->insns_at_start = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
-  map->regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (header);
-  map->regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (header);
+  map->regno_pointer_flag = inl_f->inl_emit->regno_pointer_flag;
+  map->regno_pointer_align = inl_f->inl_emit->regno_pointer_align;
 
   /* Update the outgoing argument size to allow for those in the inlined
      function.  */
-  if (OUTGOING_ARGS_SIZE (header) > current_function_outgoing_args_size)
-    current_function_outgoing_args_size = OUTGOING_ARGS_SIZE (header);
+  if (inl_f->outgoing_args_size > current_function_outgoing_args_size)
+    current_function_outgoing_args_size = inl_f->outgoing_args_size;
 
   /* If the inline function needs to make PIC references, that means
      that this function's PIC offset table must be used.  */
-  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
+  if (inl_f->uses_pic_offset_table)
     current_function_uses_pic_offset_table = 1;
 
   /* If this function needs a context, set it up.  */
-  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_NEEDS_CONTEXT)
+  if (inl_f->needs_context)
     static_chain_value = lookup_static_chain (fndecl);
 
   if (GET_CODE (parm_insns) == NOTE
@@ -1871,7 +1816,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      stack pointer around the call.  This saves stack space, but
      also is required if this inline is being done between two
      pushes.  */
-  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_CALLS_ALLOCA)
+  if (inl_f->calls_alloca)
     emit_stack_save (SAVE_BLOCK, &stack_save, NULL_RTX);
 
   /* Now copy the insns one by one.  Do this in two passes, first the insns and
@@ -2134,7 +2079,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     emit_label (local_return_label);
 
   /* Restore the stack pointer if we saved it above.  */
-  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_CALLS_ALLOCA)
+  if (inl_f->calls_alloca)
     emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
 
   /* Make copies of the decls of the symbols in the inline function, so that
@@ -2144,7 +2089,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   inline_function_decl = fndecl;
   integrate_parm_decls (DECL_ARGUMENTS (fndecl), map, arg_vector);
-  integrate_decl_tree ((tree) ORIGINAL_DECL_INITIAL (header), 0, map);
+  integrate_decl_tree (inl_f->original_decl_initial, 0, map);
   inline_function_decl = 0;
 
   /* End the scope containing the copied formal parameter variables
@@ -2363,7 +2308,7 @@ copy_rtx_and_substitute (orig, map)
 	  if (regno == VIRTUAL_STACK_VARS_REGNUM)
 	    {
 	      rtx loc, seq;
-	      int size = DECL_FRAME_SIZE (map->fndecl);
+	      int size = get_func_frame_size (DECL_SAVED_INSNS (map->fndecl));
 
 #ifdef FRAME_GROWS_DOWNWARD
 	      /* In this case, virtual_stack_vars_rtx points to one byte
@@ -2401,7 +2346,7 @@ copy_rtx_and_substitute (orig, map)
 	      /* Do the same for a block to contain any arguments referenced
 		 in memory.  */
 	      rtx loc, seq;
-	      int size = FUNCTION_ARGS_SIZE (DECL_SAVED_INSNS (map->fndecl));
+	      int size = DECL_SAVED_INSNS (map->fndecl)->args_size;
 
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
@@ -3374,81 +3319,19 @@ void
 output_inline_function (fndecl)
      tree fndecl;
 {
-  rtx head;
+  struct function *f = DECL_SAVED_INSNS (fndecl);
   rtx last;
 
   /* Things we allocate from here on are part of this function, not
      permanent.  */
   temporary_allocation ();
-
-  head = DECL_SAVED_INSNS (fndecl);
+  current_function = f;
   current_function_decl = fndecl;
-
-  /* This call is only used to initialize global variables.  */
-  init_function_start (fndecl, "lossage", 1);
-
-  /* Redo parameter determinations in case the FUNCTION_...
-     macros took machine-specific actions that need to be redone.  */
-  assign_parms (fndecl, 1);
-
-  /* Set stack frame size.  */
-  assign_stack_local (BLKmode, DECL_FRAME_SIZE (fndecl), 0);
-
-  /* The first is a bit of a lie (the array may be larger), but doesn't
-     matter too much and it isn't worth saving the actual bound.  */
-  reg_rtx_no = regno_pointer_flag_length = MAX_REGNUM (head);
-  regno_reg_rtx = (rtx *) INLINE_REGNO_REG_RTX (head);
-  regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (head);
-  regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (head);
-  max_parm_reg = MAX_PARMREG (head);
-  parm_reg_stack_loc = (rtx *) PARMREG_STACK_LOC (head);
-  
-  stack_slot_list = STACK_SLOT_LIST (head);
-  forced_labels = FORCED_LABELS (head);
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_HAS_COMPUTED_JUMP)
-    current_function_has_computed_jump = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_ALLOCA)
-    current_function_calls_alloca = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_SETJMP)
-    current_function_calls_setjmp = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_LONGJMP)
-    current_function_calls_longjmp = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_RETURNS_STRUCT)
-    current_function_returns_struct = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_RETURNS_PCC_STRUCT)
-    current_function_returns_pcc_struct = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_NEEDS_CONTEXT)
-    current_function_needs_context = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_HAS_NONLOCAL_LABEL)
-    current_function_has_nonlocal_label = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_RETURNS_POINTER)
-    current_function_returns_pointer = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_USES_CONST_POOL)
-    current_function_uses_const_pool = 1;
-
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
-    current_function_uses_pic_offset_table = 1;
-
-  current_function_outgoing_args_size = OUTGOING_ARGS_SIZE (head);
-  current_function_pops_args = POPS_ARGS (head);
-
-  /* This is the only thing the expand_function_end call that uses to be here
-     actually does and that call can cause problems.  */
-  immediate_size_expand--;
+  clear_emit_caches ();
 
   /* Find last insn and rebuild the constant pool.  */
-  for (last = FIRST_PARM_INSN (head);
-       NEXT_INSN (last); last = NEXT_INSN (last))
+  init_const_rtx_hash_table ();
+  for (last = get_insns (); NEXT_INSN (last); last = NEXT_INSN (last))
     {
       if (GET_RTX_CLASS (GET_CODE (last)) == 'i')
 	{
@@ -3457,8 +3340,7 @@ output_inline_function (fndecl)
 	}
     }
 
-  set_new_first_and_last_insn (FIRST_PARM_INSN (head), last);
-  set_new_first_and_last_label_num (FIRST_LABELNO (head), LAST_LABELNO (head));
+  set_new_last_label_num (f->inl_max_label_num);
 
   /* We must have already output DWARF debugging information for the
      original (abstract) inline function declaration/definition, so
@@ -3475,10 +3357,12 @@ output_inline_function (fndecl)
   DECL_DEFER_OUTPUT (fndecl) = 0;
 
   /* We can't inline this anymore.  */
+  f->inlinable = 0;
   DECL_INLINE (fndecl) = 0;
 
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
+  current_function = 0;
   current_function_decl = 0;
 }

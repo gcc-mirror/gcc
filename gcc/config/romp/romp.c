@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "function.h"
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))

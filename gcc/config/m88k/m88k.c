@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "tree.h"
+#include "function.h"
 #include "c-tree.h"
 #include "expr.h"
 #include "flags.h"
@@ -1758,11 +1759,6 @@ static int  frame_size;
 static int  variable_args_p;
 static int  epilogue_marked;
 static int  prologue_marked;
-
-extern char call_used_regs[];
-extern int  current_function_pretend_args_size;
-extern int  current_function_outgoing_args_size;
-extern int  frame_pointer_needed;
 
 #define FIRST_OCS_PRESERVE_REGISTER	14
 #define LAST_OCS_PRESERVE_REGISTER	30

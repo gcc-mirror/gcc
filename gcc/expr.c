@@ -83,34 +83,10 @@ int cse_not_expected;
    Nowadays this is never zero.  */
 int do_preexpand_calls = 1;
 
-/* Number of units that we should eventually pop off the stack.
-   These are the arguments to function calls that have already returned.  */
-int pending_stack_adjust;
-
-/* Under some ABIs, it is the caller's responsibility to pop arguments
-   pushed for function calls.  A naive implementation would simply pop
-   the arguments immediately after each call.  However, if several
-   function calls are made in a row, it is typically cheaper to pop
-   all the arguments after all of the calls are complete since a
-   single pop instruction can be used.  Therefore, GCC attempts to
-   defer popping the arguments until absolutely necessary.  (For
-   example, at the end of a conditional, the arguments must be popped,
-   since code outside the conditional won't know whether or not the
-   arguments need to be popped.)
-
-   When INHIBIT_DEFER_POP is non-zero, however, the compiler does not
-   attempt to defer pops.  Instead, the stack is popped immediately
-   after each call.  Rather then setting this variable directly, use
-   NO_DEFER_POP and OK_DEFER_POP.  */
-int inhibit_defer_pop;
-
 /* Don't check memory usage, since code is being emitted to check a memory
    usage.  Used when current_function_check_memory_usage is true, to avoid
    infinite recursion.  */
 static int in_check_memory_usage;
-
-/* Postincrements that still need to be expanded.  */
-static rtx pending_chain;
 
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
@@ -147,12 +123,10 @@ struct clear_by_pieces
 };
 
 extern struct obstack permanent_obstack;
-extern rtx arg_pointer_save_area;
 
 static rtx get_push_address	PROTO ((int));
 
 static rtx enqueue_insn		PROTO((rtx, rtx));
-static void init_queue		PROTO((void));
 static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
 				       struct move_by_pieces *));
@@ -302,8 +276,10 @@ init_expr_once ()
 void
 init_expr ()
 {
-  init_queue ();
+  current_function->expr
+    = (struct expr_status *) xmalloc (sizeof (struct expr_status));
 
+  pending_chain = 0;
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
   saveregs_value = 0;
@@ -311,41 +287,12 @@ init_expr ()
   forced_labels = 0;
 }
 
-/* Save all variables describing the current status into the structure *P.
-   This is used before starting a nested function.  */
-
+/* Small sanity check that the queue is empty at the end of a function.  */
 void
-save_expr_status (p)
-     struct function *p;
+finish_expr_for_function ()
 {
-  p->pending_chain = pending_chain;
-  p->pending_stack_adjust = pending_stack_adjust;
-  p->inhibit_defer_pop = inhibit_defer_pop;
-  p->saveregs_value = saveregs_value;
-  p->apply_args_value = apply_args_value;
-  p->forced_labels = forced_labels;
-
-  pending_chain = NULL_RTX;
-  pending_stack_adjust = 0;
-  inhibit_defer_pop = 0;
-  saveregs_value = 0;
-  apply_args_value = 0;
-  forced_labels = 0;
-}
-
-/* Restore all variables describing the current status from the structure *P.
-   This is used after a nested function.  */
-
-void
-restore_expr_status (p)
-     struct function *p;
-{
-  pending_chain = p->pending_chain;
-  pending_stack_adjust = p->pending_stack_adjust;
-  inhibit_defer_pop = p->inhibit_defer_pop;
-  saveregs_value = p->saveregs_value;
-  apply_args_value = p->apply_args_value;
-  forced_labels = p->forced_labels;
+  if (pending_chain)
+    abort ();
 }
 
 /* Manage the queue of increment instructions to be output
@@ -506,13 +453,6 @@ emit_queue ()
 	QUEUED_INSN (p) = emit_insn (QUEUED_BODY (p));
       pending_chain = QUEUED_NEXT (p);
     }
-}
-
-static void
-init_queue ()
-{
-  if (pending_chain)
-    abort ();
 }
 
 /* Copy data from FROM to TO, where the machine modes are not the same.
@@ -5687,9 +5627,9 @@ expand_expr (exp, target, tmode, modifier)
 	    push_obstacks (p->function_obstack,
 			   p->function_maybepermanent_obstack);
 
-	    p->forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
-						  label_rtx (exp),
-						  p->forced_labels);
+	    p->expr->x_forced_labels
+	      = gen_rtx_EXPR_LIST (VOIDmode, label_rtx (exp),
+				   p->expr->x_forced_labels);
 	    pop_obstacks ();
 	  }
 	else
@@ -5737,7 +5677,8 @@ expand_expr (exp, target, tmode, modifier)
 	 memory protection).
 
 	 Aggregates are not checked here; they're handled elsewhere.  */
-      if (current_function_check_memory_usage && code == VAR_DECL
+      if (current_function && current_function_check_memory_usage
+	  && code == VAR_DECL
 	  && GET_CODE (DECL_RTL (exp)) == MEM
 	  && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
 	{
@@ -6254,7 +6195,8 @@ expand_expr (exp, target, tmode, modifier)
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
 
-	if (current_function_check_memory_usage && !AGGREGATE_TYPE_P (TREE_TYPE (exp)))
+	if (current_function && current_function_check_memory_usage
+	    && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
 	  {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);
@@ -6542,7 +6484,8 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	/* Check the access.  */
-	if (current_function_check_memory_usage && GET_CODE (op0) == MEM)
+	if (current_function && current_function_check_memory_usage
+	    && GET_CODE (op0) == MEM)
           {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);

@@ -282,11 +282,10 @@ Boston, MA 02111-1307, USA.  */
    callers that have neglected to properly declare the callee can
    still find the correct return value.  */
 
-extern int current_function_returns_pointer;
 #define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
 do {									\
-  if ((current_function_returns_pointer) && 				\
-      ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
+  if (current_function_returns_pointer					\
+      && ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
     asm_fprintf (FILE, "\tmove.l %Ra0,%Rd0\n");				\
 } while (0);
 

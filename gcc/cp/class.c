@@ -3404,7 +3404,7 @@ finish_struct_1 (t)
 	 if the insn `r' member and the size `i' member are
 	 different sizes, as on the alpha, the larger of the two
 	 will end up with garbage in it.  */
-      DECL_SAVED_INSNS (x) = NULL_RTX;
+      DECL_SAVED_INSNS (x) = 0;
       DECL_FIELD_SIZE (x) = 0;
 
       check_for_override (x, t);
@@ -3503,7 +3503,7 @@ finish_struct_1 (t)
       if (type == error_mark_node)
 	continue;
 	  
-      DECL_SAVED_INSNS (x) = NULL_RTX;
+      DECL_SAVED_INSNS (x) = 0;
       DECL_FIELD_SIZE (x) = 0;
 
       /* When this goes into scope, it will be a non-local reference.  */
@@ -3871,7 +3871,7 @@ finish_struct_1 (t)
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_CLASS_CONTEXT (vfield) = t;
       DECL_FCONTEXT (vfield) = t;
-      DECL_SAVED_INSNS (vfield) = NULL_RTX;
+      DECL_SAVED_INSNS (vfield) = 0;
       DECL_FIELD_SIZE (vfield) = 0;
       DECL_ALIGN (vfield) = TYPE_ALIGN (ptr_type_node);
 #if 0

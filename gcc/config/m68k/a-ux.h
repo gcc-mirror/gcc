@@ -150,9 +150,8 @@ crt2.o%s "
 
 #define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
 {									\
-  extern int current_function_returns_pointer;				\
-  if ((current_function_returns_pointer) &&				\
-      ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
+  if (current_function_returns_pointer					\
+      && ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
     asm_fprintf (FILE, "\t%s %Ra0,%Rd0\n", ASM_MOV_INSN);		\
 }
 

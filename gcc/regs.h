@@ -166,27 +166,9 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_LAST_NOTE_UID(N) (VARRAY_REG (reg_n_info, N)->last_note_uid)
 
-/* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
-   After rtl generation, it is 1 plus the largest register number used.  */
-
-extern int reg_rtx_no;
-
-/* Vector indexed by regno; contains 1 for a register is considered a pointer.
-   Reloading, etc. will use a pointer register rather than a non-pointer
-   as the base register in an address, when there is a choice of two regs.  */
-
-extern char *regno_pointer_flag;
-#define REGNO_POINTER_FLAG(REGNO) regno_pointer_flag[REGNO]
-extern int regno_pointer_flag_length;
-
 /* List made of EXPR_LIST rtx's which gives pairs of pseudo registers
    that have to go in the same hard reg.  */
 extern rtx regs_may_share;
-
-/* Vector mapping pseudo regno into the REG rtx for that register.
-   This is computed by reg_scan.  */
-
-extern rtx *regno_reg_rtx;
 
 /* Flag set by local-alloc or global-alloc if they decide to allocate
    something in a call-clobbered register.  */

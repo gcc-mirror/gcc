@@ -61,6 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "insn-attr.h"
 #include "recog.h"
+#include "function.h"
 #include "expr.h"
 #include "real.h"
 #include "except.h"
@@ -88,10 +89,6 @@ Boston, MA 02111-1307, USA.  */
    (It is safe to use element 0 because insn uid 0 is not used.  */
 
 static rtx *jump_chain;
-
-/* List of labels referred to from initializers.
-   These can never be deleted.  */
-rtx forced_labels;
 
 /* Maximum index in jump_chain.  */
 

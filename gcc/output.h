@@ -341,48 +341,23 @@ extern int which_alternative;
 extern rtx final_sequence;
 #endif
 
-/* Number of bytes of args popped by function being compiled on its return.
-   Zero if no bytes are to be popped.
-   May affect compilation of return insn or of function epilogue.  */
+/* Nonzero means generate position-independent code.
+   This is not fully implemented yet.  */
 
-extern int current_function_pops_args;
+extern int flag_pic;
 
-/* Nonzero if function being compiled needs to be given an address
-   where the value should be stored.  */
+/* The line number of the beginning of the current function.
+   sdbout.c needs this so that it can output relative linenumbers.  */
 
-extern int current_function_returns_struct;
+#ifdef SDB_DEBUGGING_INFO /* Avoid undef sym in certain broken linkers.  */
+extern int sdb_begin_function_line;
+#endif
 
-/* Nonzero if function being compiled needs to
-   return the address of where it has put a structure value.  */
+/* File in which assembler code is being written.  */
 
-extern int current_function_returns_pcc_struct;
-
-/* Nonzero if function being compiled needs to be passed a static chain.  */
-
-extern int current_function_needs_context;
-
-/* Nonzero if function being compiled can call setjmp.  */
-
-extern int current_function_calls_setjmp;
-
-/* Nonzero if function being compiled can call longjmp.  */
-
-extern int current_function_calls_longjmp;
-
-/* Nonzero if function being compiled can call alloca,
-   either as a subroutine or builtin.  */
-
-extern int current_function_calls_alloca;
-
-/* Nonzero if function being compiled receives nonlocal gotos
-   from nested functions.  */
-
-extern int current_function_has_nonlocal_label;
-
-/* Nonzero if function being compiled contains nested functions.  */
-
-extern int current_function_contains_functions;
-
+#ifdef BUFSIZ
+extern FILE *asm_out_file;
+#endif
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining
@@ -401,90 +376,6 @@ extern int current_function_sp_is_unchanging;
    sched2) and is useful only if the port defines LEAF_REGISTERS.  */
 
 extern int current_function_uses_only_leaf_regs;
-
-/* Nonzero if the function being compiled issues a computed jump.  */
-
-extern int current_function_has_computed_jump;
-
-/* Nonzero if the current function returns a pointer type */
-
-extern int current_function_returns_pointer;
-
-/* If function's args have a fixed size, this is that size, in bytes.
-   Otherwise, it is -1.
-   May affect compilation of return insn or of function epilogue.  */
-
-extern int current_function_args_size;
-
-/* # bytes the prologue should push and pretend that the caller pushed them.
-   The prologue must do this, but only if parms can be passed in registers.  */
-
-extern int current_function_pretend_args_size;
-
-/* # of bytes of outgoing arguments required to be pushed by the prologue.
-   If this is non-zero, it means that ACCUMULATE_OUTGOING_ARGS was defined
-   and no stack adjusts will be done on function calls.  */
-
-extern int current_function_outgoing_args_size;
-
-/* Nonzero if current function uses varargs.h or equivalent.
-   Zero for functions that use stdarg.h.  */
-
-extern int current_function_varargs;
-
-/* Nonzero if current function uses stdarg.h or equivalent.
-   Zero for functions that use varargs.h.  */
-
-extern int current_function_stdarg;
-
-/* Quantities of various kinds of registers
-   used for the current function's args.  */
-
-extern CUMULATIVE_ARGS current_function_args_info;
-
-/* Name of function now being compiled.  */
-
-extern char *current_function_name;
-
-#ifdef RTX_CODE
-/* If non-zero, an RTL expression for that location at which the current
-   function returns its result.  Usually equal to
-   DECL_RTL (DECL_RESULT (current_function_decl)).  */
-
-extern rtx current_function_return_rtx;
-
-/* If some insns can be deferred to the delay slots of the epilogue, the
-   delay list for them is recorded here.  */
-
-extern rtx current_function_epilogue_delay_list;
-#endif
-
-/* Nonzero means generate position-independent code.
-   This is not fully implemented yet.  */
-
-extern int flag_pic;
-
-/* This is nonzero if the current function uses pic_offset_table_rtx.  */
-extern int current_function_uses_pic_offset_table;
-
-/* This is nonzero if the current function uses the constant pool.  */
-extern int current_function_uses_const_pool;
-
-/* Language-specific reason why the current function cannot be made inline.  */
-extern char *current_function_cannot_inline;
-
-/* The line number of the beginning of the current function.
-   sdbout.c needs this so that it can output relative linenumbers.  */
-
-#ifdef SDB_DEBUGGING_INFO /* Avoid undef sym in certain broken linkers.  */
-extern int sdb_begin_function_line;
-#endif
-
-/* File in which assembler code is being written.  */
-
-#ifdef BUFSIZ
-extern FILE *asm_out_file;
-#endif
 
 /* Default file in which to dump debug output.  */
 

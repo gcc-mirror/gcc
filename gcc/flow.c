@@ -154,9 +154,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack *function_obstack;
 
-/* List of labels that must never be deleted.  */
-extern rtx forced_labels;
-
 /* Number of basic blocks in the current function.  */
 
 int n_basic_blocks;

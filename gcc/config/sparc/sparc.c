@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "function.h"
 #include "expr.h"
 #include "recog.h"
 #include "toplev.h"
@@ -2674,7 +2675,7 @@ mem_min_alignment (mem, desired)
 	  /* Check if the compiler has recorded some information
 	     about the alignment of the base REG.  If reload has
 	     completed, we already matched with proper alignments.  */
-	  if (((regno_pointer_align != NULL
+	  if (((current_function != 0
 		&& REGNO_POINTER_ALIGN (regno) >= desired)
 	       || reload_completed)
 	      && ((INTVAL (offset) & (desired - 1)) == 0))

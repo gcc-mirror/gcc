@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
+#include "function.h"
 #include "toplev.h"
 #include "expr.h"
 #include "basic-block.h"
@@ -265,10 +266,6 @@ struct file_stack *input_file_stack;
 
 /* Incremented on each change to input_file_stack.  */
 int input_file_stack_tick;
-
-/* FUNCTION_DECL for function now being parsed or compiled.  */
-
-extern tree current_function_decl;
 
 /* Name to use as base of names for dump output files.  */
 
@@ -2952,14 +2949,18 @@ compile_file (name)
   init_decl_processing ();
   init_optabs ();
   init_stmt ();
-  init_expmed ();
-  init_expr_once ();
   init_loop ();
   init_reload ();
   init_alias_once ();
 
+  /* The following initialization functions need to generate rtl, so
+     provide a dummy function context for them.  */
+  init_dummy_function_start ();
+  init_expmed ();
+  init_expr_once ();
   if (flag_caller_saves)
     init_caller_save ();
+  expand_dummy_function_end ();
 
   /* If auxiliary info generation is desired, open the output file.
      This goes in the same directory as the source file--unlike
@@ -3730,7 +3731,7 @@ rest_of_compilation (decl)
 	    }
 #endif
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
+	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	  goto exit_rest_of_compilation;
 	}
 
@@ -3765,7 +3766,7 @@ rest_of_compilation (decl)
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
+	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are
@@ -3774,6 +3775,9 @@ rest_of_compilation (decl)
       if (DECL_EXTERNAL (decl))
 	goto exit_rest_of_compilation;
     }
+
+  /* Initialize some variables used by the optimizers.  */
+  init_function_for_compilation ();
 
   if (! DECL_DEFER_OUTPUT (decl))
     TREE_ASM_WRITTEN (decl) = 1;
@@ -3846,9 +3850,8 @@ rest_of_compilation (decl)
     goto exit_rest_of_compilation;
 
   /* Dump rtl code after jump, if we are doing that.  */
-
-    if (jump_opt_dump)
-      dump_rtl (".jump", decl, print_rtl, insns);
+  if (jump_opt_dump)
+    dump_rtl (".jump", decl, print_rtl, insns);
 
   /* Perform common subexpression elimination.
      Nonzero value from `cse_main' means that jumps were simplified

@@ -1039,8 +1039,6 @@ struct sh_args {
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-extern int current_function_varargs;
-
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
     && ((NAMED)								\

@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 #include "except.h"
+#include "function.h"
 #include "expr.h"
 #include "defaults.h"
 #include "toplev.h"

@@ -783,9 +783,6 @@ extern void* pyr_function_arg ();
 
 /* This should return non-zero when we really set up a frame pointer.
    Otherwise, GCC is directed to preserve sp by returning zero.  */
-extern int current_function_pretend_args_size;
-extern int current_function_args_size;
-extern int current_function_calls_alloca;
 #define EXIT_IGNORE_STACK \
   (get_frame_size () + current_function_pretend_args_size		\
    + current_function_args_size != 0					\

@@ -94,265 +94,21 @@ Boston, MA 02111-1307, USA.  */
 #define NEED_SEPARATE_AP
 #endif
 
-/* Number of bytes of args popped by function being compiled on its return.
-   Zero if no bytes are to be popped.
-   May affect compilation of return insn or of function epilogue.  */
-
-int current_function_pops_args;
-
-/* Nonzero if function being compiled needs to be given an address
-   where the value should be stored.  */
-
-int current_function_returns_struct;
-
-/* Nonzero if function being compiled needs to
-   return the address of where it has put a structure value.  */
-
-int current_function_returns_pcc_struct;
-
-/* Nonzero if function being compiled needs to be passed a static chain.  */
-
-int current_function_needs_context;
-
-/* Nonzero if function being compiled can call setjmp.  */
-
-int current_function_calls_setjmp;
-
-/* Nonzero if function being compiled can call longjmp.  */
-
-int current_function_calls_longjmp;
-
-/* Nonzero if function being compiled receives nonlocal gotos
-   from nested functions.  */
-
-int current_function_has_nonlocal_label;
-
-/* Nonzero if function being compiled has nonlocal gotos to parent
-   function.  */
-
-int current_function_has_nonlocal_goto;
-
-/* Nonzero if function being compiled contains nested functions.  */
-
-int current_function_contains_functions;
-
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining
    compiler passes. */
-
 int current_function_is_leaf;
 
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
    life_analysis has run. */
-
 int current_function_sp_is_unchanging;
 
 /* Nonzero if the function being compiled is a leaf function which only
    uses leaf registers.  This is valid after reload (specifically after
    sched2) and is useful only if the port defines LEAF_REGISTERS.  */
-
 int current_function_uses_only_leaf_regs;
-
-/* Nonzero if the function being compiled issues a computed jump.  */
-
-int current_function_has_computed_jump;
-
-/* Nonzero if the current function is a thunk (a lightweight function that
-   just adjusts one of its arguments and forwards to another function), so
-   we should try to cut corners where we can.  */
-int current_function_is_thunk;
-
-/* Nonzero if function being compiled can call alloca,
-   either as a subroutine or builtin.  */
-
-int current_function_calls_alloca;
-
-/* Nonzero if the current function returns a pointer type */
-
-int current_function_returns_pointer;
-
-/* If some insns can be deferred to the delay slots of the epilogue, the
-   delay list for them is recorded here.  */
-
-rtx current_function_epilogue_delay_list;
-
-/* If function's args have a fixed size, this is that size, in bytes.
-   Otherwise, it is -1.
-   May affect compilation of return insn or of function epilogue.  */
-
-int current_function_args_size;
-
-/* # bytes the prologue should push and pretend that the caller pushed them.
-   The prologue must do this, but only if parms can be passed in registers.  */
-
-int current_function_pretend_args_size;
-
-/* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
-   defined, the needed space is pushed by the prologue.  */
-
-int current_function_outgoing_args_size;
-
-/* This is the offset from the arg pointer to the place where the first
-   anonymous arg can be found, if there is one.  */
-
-rtx current_function_arg_offset_rtx;
-
-/* Nonzero if current function uses varargs.h or equivalent.
-   Zero for functions that use stdarg.h.  */
-
-int current_function_varargs;
-
-/* Nonzero if current function uses stdarg.h or equivalent.
-   Zero for functions that use varargs.h.  */
-
-int current_function_stdarg;
-
-/* Quantities of various kinds of registers
-   used for the current function's args.  */
-
-CUMULATIVE_ARGS current_function_args_info;
-
-/* Name of function now being compiled.  */
-
-char *current_function_name;
-
-/* If non-zero, an RTL expression for the location at which the current 
-   function returns its result.  If the current function returns its
-   result in a register, current_function_return_rtx will always be
-   the hard register containing the result.  */
-
-rtx current_function_return_rtx;
-
-/* Nonzero if the current function uses the constant pool.  */
-
-int current_function_uses_const_pool;
-
-/* Nonzero if the current function uses pic_offset_table_rtx.  */
-int current_function_uses_pic_offset_table;
-
-/* The arg pointer hard register, or the pseudo into which it was copied.  */
-rtx current_function_internal_arg_pointer;
-
-/* Language-specific reason why the current function cannot be made inline.  */
-char *current_function_cannot_inline;
-
-/* Nonzero if instrumentation calls for function entry and exit should be
-   generated.  */
-int current_function_instrument_entry_exit;
-
-/* Nonzero if memory access checking be enabled in the current function.  */
-int current_function_check_memory_usage;
-
-/* The FUNCTION_DECL for an inline function currently being expanded.  */
-tree inline_function_decl;
-
-/* Number of function calls seen so far in current function.  */
-
-int function_call_count;
-
-/* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
-   (labels to which there can be nonlocal gotos from nested functions)
-   in this function.  */
-
-tree nonlocal_labels;
-
-/* List (chain of EXPR_LIST) of stack slots that hold the current handlers
-   for nonlocal gotos.  There is one for every nonlocal label in the function;
-   this list matches the one in nonlocal_labels.
-   Zero when function does not have nonlocal labels.  */
-
-rtx nonlocal_goto_handler_slots;
-
-/* List (chain of EXPR_LIST) of labels heading the current handlers for
-   nonlocal gotos.  */
-
-rtx nonlocal_goto_handler_labels;
-
-/* RTX for stack slot that holds the stack pointer value to restore
-   for a nonlocal goto.
-   Zero when function does not have nonlocal labels.  */
-
-rtx nonlocal_goto_stack_level;
-
-/* Label that will go on parm cleanup code, if any.
-   Jumping to this label runs cleanup code for parameters, if
-   such code must be run.  Following this code is the logical return label.  */
-
-rtx cleanup_label;
-
-/* Label that will go on function epilogue.
-   Jumping to this label serves as a "return" instruction
-   on machines which require execution of the epilogue on all returns.  */
-
-rtx return_label;
-
-/* List (chain of EXPR_LISTs) of pseudo-regs of SAVE_EXPRs.
-   So we can mark them all live at the end of the function, if nonopt.  */
-rtx save_expr_regs;
-
-/* List (chain of EXPR_LISTs) of all stack slots in this function.
-   Made for the sake of unshare_all_rtl.  */
-rtx stack_slot_list;
-
-/* Chain of all RTL_EXPRs that have insns in them.  */
-tree rtl_expr_chain;
-
-/* Label to jump back to for tail recursion, or 0 if we have
-   not yet needed one for this function.  */
-rtx tail_recursion_label;
-
-/* Place after which to insert the tail_recursion_label if we need one.  */
-rtx tail_recursion_reentry;
-
-/* Location at which to save the argument pointer if it will need to be
-   referenced.  There are two cases where this is done: if nonlocal gotos
-   exist, or if vars stored at an offset from the argument pointer will be
-   needed by inner routines.  */
-
-rtx arg_pointer_save_area;
-
-/* Offset to end of allocated area of stack frame.
-   If stack grows down, this is the address of the last stack slot allocated.
-   If stack grows up, this is the address for the next slot.  */
-HOST_WIDE_INT frame_offset;
-
-/* List (chain of TREE_LISTs) of static chains for containing functions.
-   Each link has a FUNCTION_DECL in the TREE_PURPOSE and a reg rtx
-   in an RTL_EXPR in the TREE_VALUE.  */
-static tree context_display;
-
-/* List (chain of TREE_LISTs) of trampolines for nested functions.
-   The trampoline sets up the static chain and jumps to the function.
-   We supply the trampoline's address when the function's address is requested.
-
-   Each link has a FUNCTION_DECL in the TREE_PURPOSE and a reg rtx
-   in an RTL_EXPR in the TREE_VALUE.  */
-static tree trampoline_list;
-
-/* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-static rtx parm_birth_insn;
-
-#if 0
-/* Nonzero if a stack slot has been generated whose address is not
-   actually valid.  It means that the generated rtl must all be scanned
-   to detect and correct the invalid addresses where they occur.  */
-static int invalid_stack_slot;
-#endif
-
-/* Last insn of those whose job was to put parms into their nominal homes.  */
-static rtx last_parm_insn;
-
-/* 1 + last pseudo register number possibly used for loading a copy
-   of a parameter of this function. */
-int max_parm_reg;
-
-/* Vector indexed by REGNO, containing location on stack in which
-   to put the parm which is nominally in pseudo register REGNO,
-   if we discover that that parm must go in the stack.  The highest
-   element in this vector is one less than MAX_PARM_REG, above.  */
-rtx *parm_reg_stack_loc;
 
 /* Nonzero once virtual register instantiation has been done.
    assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
@@ -369,7 +125,9 @@ void (*restore_machine_status) PROTO((struct function *));
    integrate.c  */
 
 extern int rtx_equal_function_value_matters;
-extern tree sequence_rtl_expr;
+
+/* The FUNCTION_DECL for an inline function currently being expanded.  */
+tree inline_function_decl;
 
 /* The currently compiled function.  */
 struct function *current_function = 0;
@@ -440,24 +198,6 @@ struct temp_slot
      info is for combine_temp_slots.  */
   HOST_WIDE_INT full_size;
 };
-
-/* List of all temporaries allocated, both available and in use.  */
-
-struct temp_slot *temp_slots;
-
-/* Current nesting level for temporaries.  */
-
-int temp_slot_level;
-
-/* Current nesting level for variables in a block.  */
-
-int var_temp_slot_level;
-
-/* When temporaries are created by TARGET_EXPRs, they are created at
-   this level of temp_slot_level, so that they can remain allocated
-   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
-   of TARGET_EXPRs.  */
-int target_temp_slot_level;
 
 /* This structure is used to record MEMs or pseudos used to replace VAR, any
    SUBREGs of VAR, and any MEMs containing VAR as an address.  We need to
@@ -569,67 +309,10 @@ push_function_context_to (context)
 
   p->next = outer_function_chain;
   outer_function_chain = p;
-
-  p->name = current_function_name;
   p->decl = current_function_decl;
-  p->pops_args = current_function_pops_args;
-  p->returns_struct = current_function_returns_struct;
-  p->returns_pcc_struct = current_function_returns_pcc_struct;
-  p->returns_pointer = current_function_returns_pointer;
-  p->needs_context = current_function_needs_context;
-  p->calls_setjmp = current_function_calls_setjmp;
-  p->calls_longjmp = current_function_calls_longjmp;
-  p->calls_alloca = current_function_calls_alloca;
-  p->has_nonlocal_label = current_function_has_nonlocal_label;
-  p->has_nonlocal_goto = current_function_has_nonlocal_goto;
-  p->contains_functions = current_function_contains_functions;
-  p->has_computed_jump = current_function_has_computed_jump;
-  p->is_thunk = current_function_is_thunk;
-  p->args_size = current_function_args_size;
-  p->pretend_args_size = current_function_pretend_args_size;
-  p->arg_offset_rtx = current_function_arg_offset_rtx;
-  p->varargs = current_function_varargs;
-  p->stdarg = current_function_stdarg;
-  p->uses_const_pool = current_function_uses_const_pool;
-  p->uses_pic_offset_table = current_function_uses_pic_offset_table;
-  p->internal_arg_pointer = current_function_internal_arg_pointer;
-  p->cannot_inline = current_function_cannot_inline;
-  p->max_parm_reg = max_parm_reg;
-  p->parm_reg_stack_loc = parm_reg_stack_loc;
-  p->outgoing_args_size = current_function_outgoing_args_size;
-  p->return_rtx = current_function_return_rtx;
-  p->nonlocal_goto_handler_slots = nonlocal_goto_handler_slots;
-  p->nonlocal_goto_handler_labels = nonlocal_goto_handler_labels;
-  p->nonlocal_goto_stack_level = nonlocal_goto_stack_level;
-  p->nonlocal_labels = nonlocal_labels;
-  p->cleanup_label = cleanup_label;
-  p->return_label = return_label;
-  p->save_expr_regs = save_expr_regs;
-  p->stack_slot_list = stack_slot_list;
-  p->parm_birth_insn = parm_birth_insn;
-  p->frame_offset = frame_offset;
-  p->tail_recursion_label = tail_recursion_label;
-  p->tail_recursion_reentry = tail_recursion_reentry;
-  p->arg_pointer_save_area = arg_pointer_save_area;
-  p->rtl_expr_chain = rtl_expr_chain;
-  p->last_parm_insn = last_parm_insn;
-  p->context_display = context_display;
-  p->trampoline_list = trampoline_list;
-  p->function_call_count = function_call_count;
-  p->temp_slots = temp_slots;
-  p->temp_slot_level = temp_slot_level;
-  p->target_temp_slot_level = target_temp_slot_level;
-  p->var_temp_slot_level = var_temp_slot_level;
   p->fixup_var_refs_queue = 0;
-  p->epilogue_delay_list = current_function_epilogue_delay_list;
-  p->args_info = current_function_args_info;
-  p->check_memory_usage = current_function_check_memory_usage;
-  p->instrument_entry_exit = current_function_instrument_entry_exit;
 
   save_tree_status (p, context);
-  save_storage_status (p);
-  save_emit_status (p);
-  save_expr_status (p);
   save_varasm_status (p, context);
   if (save_machine_status)
     (*save_machine_status) (p);
@@ -657,66 +340,11 @@ pop_function_context_from (context)
   outer_function_chain = p->next;
 
   current_function_contains_functions
-    = p->contains_functions || p->inline_obstacks
-      || context == current_function_decl;
-  current_function_has_computed_jump = p->has_computed_jump;
-  current_function_name = p->name;
+    |= p->inline_obstacks || context == current_function_decl;
   current_function_decl = p->decl;
-  current_function_pops_args = p->pops_args;
-  current_function_returns_struct = p->returns_struct;
-  current_function_returns_pcc_struct = p->returns_pcc_struct;
-  current_function_returns_pointer = p->returns_pointer;
-  current_function_needs_context = p->needs_context;
-  current_function_calls_setjmp = p->calls_setjmp;
-  current_function_calls_longjmp = p->calls_longjmp;
-  current_function_calls_alloca = p->calls_alloca;
-  current_function_has_nonlocal_label = p->has_nonlocal_label;
-  current_function_has_nonlocal_goto = p->has_nonlocal_goto;
-  current_function_is_thunk = p->is_thunk;
-  current_function_args_size = p->args_size;
-  current_function_pretend_args_size = p->pretend_args_size;
-  current_function_arg_offset_rtx = p->arg_offset_rtx;
-  current_function_varargs = p->varargs;
-  current_function_stdarg = p->stdarg;
-  current_function_uses_const_pool = p->uses_const_pool;
-  current_function_uses_pic_offset_table = p->uses_pic_offset_table;
-  current_function_internal_arg_pointer = p->internal_arg_pointer;
-  current_function_cannot_inline = p->cannot_inline;
-  max_parm_reg = p->max_parm_reg;
-  parm_reg_stack_loc = p->parm_reg_stack_loc;
-  current_function_outgoing_args_size = p->outgoing_args_size;
-  current_function_return_rtx = p->return_rtx;
-  nonlocal_goto_handler_slots = p->nonlocal_goto_handler_slots;
-  nonlocal_goto_handler_labels = p->nonlocal_goto_handler_labels;
-  nonlocal_goto_stack_level = p->nonlocal_goto_stack_level;
-  nonlocal_labels = p->nonlocal_labels;
-  cleanup_label = p->cleanup_label;
-  return_label = p->return_label;
-  save_expr_regs = p->save_expr_regs;
-  stack_slot_list = p->stack_slot_list;
-  parm_birth_insn = p->parm_birth_insn;
-  frame_offset = p->frame_offset;
-  tail_recursion_label = p->tail_recursion_label;
-  tail_recursion_reentry = p->tail_recursion_reentry;
-  arg_pointer_save_area = p->arg_pointer_save_area;
-  rtl_expr_chain = p->rtl_expr_chain;
-  last_parm_insn = p->last_parm_insn;
-  context_display = p->context_display;
-  trampoline_list = p->trampoline_list;
-  function_call_count = p->function_call_count;
-  temp_slots = p->temp_slots;
-  temp_slot_level = p->temp_slot_level;
-  target_temp_slot_level = p->target_temp_slot_level;
-  var_temp_slot_level = p->var_temp_slot_level;
-  current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
-  current_function_args_info = p->args_info;
-  current_function_check_memory_usage = p->check_memory_usage;
-  current_function_instrument_entry_exit = p->instrument_entry_exit;
 
   restore_tree_status (p, context);
-  restore_storage_status (p);
-  restore_expr_status (p);
   restore_emit_status (p);
   restore_varasm_status (p);
 
@@ -741,18 +369,29 @@ void pop_function_context ()
 
 /* Allocate fixed slots in the stack frame of the current function.  */
 
-/* Return size needed for stack frame based on slots so far allocated.
+/* Return size needed for stack frame based on slots so far allocated in
+   function F.
    This size counts from zero.  It is not rounded to PREFERRED_STACK_BOUNDARY;
    the caller may have to do that.  */
 
 HOST_WIDE_INT
-get_frame_size ()
+get_func_frame_size (f)
+     struct function *f;
 {
 #ifdef FRAME_GROWS_DOWNWARD
-  return -frame_offset;
+  return -f->x_frame_offset;
 #else
-  return frame_offset;
+  return f->x_frame_offset;
 #endif
+}
+
+/* Return size needed for stack frame based on slots so far allocated.
+   This size counts from zero.  It is not rounded to PREFERRED_STACK_BOUNDARY;
+   the caller may have to do that.  */
+HOST_WIDE_INT
+get_frame_size ()
+{
+  return get_func_frame_size (current_function);
 }
 
 /* Allocate a stack slot of SIZE bytes and return a MEM rtx for it
@@ -885,14 +524,14 @@ assign_outer_stack_local (mode, size, align, function)
     alignment = align / BITS_PER_UNIT;
 
 #ifdef FRAME_GROWS_DOWNWARD
-  function->frame_offset -= size;
+  function->x_frame_offset -= size;
 #endif
 
   /* Round frame offset to that alignment.  */
 #ifdef FRAME_GROWS_DOWNWARD
-  function->frame_offset = FLOOR_ROUND (function->frame_offset, alignment);
+  function->x_frame_offset = FLOOR_ROUND (function->x_frame_offset, alignment);
 #else
-  function->frame_offset = CEIL_ROUND (function->frame_offset, alignment);
+  function->x_frame_offset = CEIL_ROUND (function->x_frame_offset, alignment);
 #endif
 
   /* On a big-endian machine, if we are allocating more space than we will use,
@@ -901,15 +540,15 @@ assign_outer_stack_local (mode, size, align, function)
     bigend_correction = size - GET_MODE_SIZE (mode);
 
   addr = plus_constant (virtual_stack_vars_rtx,
-			function->frame_offset + bigend_correction);
+			function->x_frame_offset + bigend_correction);
 #ifndef FRAME_GROWS_DOWNWARD
-  function->frame_offset += size;
+  function->x_frame_offset += size;
 #endif
 
   x = gen_rtx_MEM (mode, addr);
 
-  function->stack_slot_list
-    = gen_rtx_EXPR_LIST (VOIDmode, x, function->stack_slot_list);
+  function->x_stack_slot_list
+    = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
 
   pop_obstacks ();
 
@@ -1079,7 +718,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
   p->in_use = 1;
   p->addr_taken = 0;
-  p->rtl_expr = sequence_rtl_expr;
+  p->rtl_expr = seq_rtl_expr;
 
   if (keep == 2)
     {
@@ -1693,8 +1332,8 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 
   if (function)
     {
-      if (regno < function->max_parm_reg)
-	new = function->parm_reg_stack_loc[regno];
+      if (regno < function->x_max_parm_reg)
+	new = function->x_parm_reg_stack_loc[regno];
       if (new == 0)
 	new = assign_outer_stack_local (decl_mode, GET_MODE_SIZE (decl_mode),
 					0, function);
@@ -1758,7 +1397,7 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
 {
   tree pending;
   rtx first_insn = get_insns ();
-  struct sequence_stack *stack = sequence_stack;
+  struct sequence_stack *stack = seq_stack;
   tree rtl_exps = rtl_expr_chain;
 
   /* Must scan all insns for stack-refs that exceed the limit.  */
@@ -5584,11 +5223,11 @@ fix_lexical_addr (addr, var)
 #ifdef NEED_SEPARATE_AP
       rtx addr;
 
-      if (fp->arg_pointer_save_area == 0)
-	fp->arg_pointer_save_area
+      if (fp->x_arg_pointer_save_area == 0)
+	fp->x_arg_pointer_save_area
 	  = assign_outer_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0, fp);
 
-      addr = fix_lexical_addr (XEXP (fp->arg_pointer_save_area, 0), var);
+      addr = fix_lexical_addr (XEXP (fp->x_arg_pointer_save_area, 0), var);
       addr = memory_address (Pmode, addr);
 
       base = copy_to_reg (gen_rtx_MEM (Pmode, addr));
@@ -5641,7 +5280,7 @@ trampoline_address (function)
 	round_trampoline_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0));
 
   for (fp = outer_function_chain; fp; fp = fp->next)
-    for (link = fp->trampoline_list; link; link = TREE_CHAIN (link))
+    for (link = fp->x_trampoline_list; link; link = TREE_CHAIN (link))
       if (TREE_PURPOSE (link) == function)
 	{
 	  tramp = fix_lexical_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0),
@@ -5687,7 +5326,8 @@ trampoline_address (function)
 		     fp->function_maybepermanent_obstack);
       rtlexp = make_node (RTL_EXPR);
       RTL_EXPR_RTL (rtlexp) = tramp;
-      fp->trampoline_list = tree_cons (function, rtlexp, fp->trampoline_list);
+      fp->x_trampoline_list = tree_cons (function, rtlexp,
+					 fp->x_trampoline_list);
       pop_obstacks ();
     }
   else
@@ -5949,6 +5589,8 @@ prepare_function_start ()
   current_function_uses_pic_offset_table = 0;
   current_function_cannot_inline = 0;
 
+  current_function->inlinable = 0;
+
   /* We have not yet needed to make a label to jump to for tail-recursion.  */
   tail_recursion_label = 0;
 
@@ -6054,7 +5696,14 @@ init_function_start (subr, filename, line)
 
   current_function_returns_pointer
     = POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (subr)));
+}
 
+/* Make sure all values used by the optimization passes have sane
+   defaults.  */
+void
+init_function_for_compilation ()
+{
+  reg_renumber = 0;
   /* No prologue/epilogue insns yet.  */
   prologue = epilogue = 0;
 }
@@ -6343,6 +5992,19 @@ expand_function_start (subr, parms_have_cleanups)
   force_next_line_note ();
 }
 
+/* Undo the effects of init_dummy_function_start.  */
+void
+expand_dummy_function_end ()
+{
+  /* End any sequences that failed to be closed due to syntax errors.  */
+  while (in_sequence_p ())
+    end_sequence ();
+
+  /* Outside function body, can't compute type's actual size
+     until next function's body starts.  */
+  current_function = 0;
+}
+
 /* Generate RTL for the end of the current function.
    FILENAME and LINE are the current position in the source file. 
 
@@ -6361,6 +6023,8 @@ expand_function_end (filename, line, end_bindings)
 #ifdef TRAMPOLINE_TEMPLATE
   static rtx initial_trampoline;
 #endif
+
+  finish_expr_for_function ();
 
 #ifdef NON_SAVING_SETJMP
   /* Don't put any variables in registers if we call setjmp

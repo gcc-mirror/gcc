@@ -1508,8 +1508,6 @@ compute_frame_size (size, p_reg_saved)
      int size;
      long *p_reg_saved;
 {
-  extern int current_function_outgoing_args_size;
-
   return (size
 	  + compute_register_save_size (p_reg_saved)
 	  + current_function_outgoing_args_size);

@@ -52,14 +52,6 @@ Boston, MA 02111-1307, USA.  */
 #define OUTGOING_REGNO(IN) (IN)
 #endif
 
-/* Nonzero means __builtin_saveregs has already been done in this function.
-   The value is the pseudoreg containing the value __builtin_saveregs
-   returned.  */
-rtx saveregs_value;
-
-/* Similarly for __builtin_apply_args.  */
-rtx apply_args_value;
-
 static int get_pointer_alignment	PROTO((tree, unsigned));
 static tree c_strlen			PROTO((tree));
 static rtx get_memory_rtx		PROTO((tree));

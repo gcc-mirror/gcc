@@ -660,68 +660,6 @@ extern char *note_insn_name[];
 /* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
 #define SYMBOL_REF_USED(RTX) ((RTX)->used)
 
-/* For an INLINE_HEADER rtx, FIRST_FUNCTION_INSN is the first insn
-   of the function that is not involved in copying parameters to
-   pseudo-registers.  FIRST_PARM_INSN is the very first insn of
-   the function, including the parameter copying.
-   We keep this around in case we must splice
-   this function into the assembly code at the end of the file.
-   FIRST_LABELNO is the first label number used by the function (inclusive).
-   LAST_LABELNO is the last label used by the function (exclusive).
-   MAX_REGNUM is the largest pseudo-register used by that function.
-   FUNCTION_ARGS_SIZE is the size of the argument block in the stack.
-   POPS_ARGS is the number of bytes of input arguments popped by the function
-   STACK_SLOT_LIST is the list of stack slots.
-   FORCED_LABELS is the list of labels whose address was taken.
-   FUNCTION_FLAGS are where single-bit flags are saved.
-   OUTGOING_ARGS_SIZE is the size of the largest outgoing stack parameter list.
-   ORIGINAL_ARG_VECTOR is a vector of the original DECL_RTX values
-    for the function arguments.
-   ORIGINAL_DECL_INITIAL is a pointer to the original DECL_INITIAL for the
-    function.
-   INLINE_REGNO_REG_RTX, INLINE_REGNO_POINTER_FLAG, and
-    INLINE_REGNO_POINTER_ALIGN are pointers to the corresponding arrays.
-
-   We want this to lay down like an INSN.  The PREV_INSN field
-   is always NULL.  The NEXT_INSN field always points to the
-   first function insn of the function being squirreled away.  */
-
-#define FIRST_FUNCTION_INSN(RTX) ((RTX)->fld[2].rtx)
-#define FIRST_PARM_INSN(RTX) ((RTX)->fld[3].rtx)
-#define FIRST_LABELNO(RTX) ((RTX)->fld[4].rtint)
-#define LAST_LABELNO(RTX) ((RTX)->fld[5].rtint)
-#define MAX_PARMREG(RTX) ((RTX)->fld[6].rtint)
-#define MAX_REGNUM(RTX) ((RTX)->fld[7].rtint)
-#define FUNCTION_ARGS_SIZE(RTX) ((RTX)->fld[8].rtint)
-#define POPS_ARGS(RTX) ((RTX)->fld[9].rtint)
-#define STACK_SLOT_LIST(RTX) ((RTX)->fld[10].rtx)
-#define FORCED_LABELS(RTX) ((RTX)->fld[11].rtx)
-#define FUNCTION_FLAGS(RTX) ((RTX)->fld[12].rtint)
-#define OUTGOING_ARGS_SIZE(RTX) ((RTX)->fld[13].rtint)
-#define ORIGINAL_ARG_VECTOR(RTX) ((RTX)->fld[14].rtvec)
-#define ORIGINAL_DECL_INITIAL(RTX) ((RTX)->fld[15].rtx)
-#define INLINE_REGNO_REG_RTX(RTX) ((RTX)->fld[16].rtvec)
-#define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[17].rtstr)
-#define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[18].rtstr)
-#define PARMREG_STACK_LOC(RTX) ((RTX)->fld[19].rtvec)
-
-/* In FUNCTION_FLAGS we save some variables computed when emitting the code
-   for the function and which must be `or'ed into the current flag values when
-   insns from that function are being inlined.  */
-
-/* These ought to be an enum, but non-ANSI compilers don't like that.  */
-#define FUNCTION_FLAGS_CALLS_ALLOCA 01
-#define FUNCTION_FLAGS_CALLS_SETJMP 02
-#define FUNCTION_FLAGS_RETURNS_STRUCT 04
-#define FUNCTION_FLAGS_RETURNS_PCC_STRUCT 010
-#define FUNCTION_FLAGS_NEEDS_CONTEXT 020
-#define FUNCTION_FLAGS_HAS_NONLOCAL_LABEL 040
-#define FUNCTION_FLAGS_RETURNS_POINTER 0100
-#define FUNCTION_FLAGS_USES_CONST_POOL 0200
-#define FUNCTION_FLAGS_CALLS_LONGJMP 0400
-#define FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE 01000
-#define FUNCTION_FLAGS_HAS_COMPUTED_JUMP 02000
-
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
 
@@ -935,10 +873,6 @@ extern rtvec gen_rtvec_v		PROTO((int, rtx *));
 extern rtvec gen_rtvec_vv		PROTO((int, rtunion *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
 extern rtx gen_label_rtx		PROTO((void));
-extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
-					       int, int, rtx, rtx, int, int,
-					       rtvec, rtx,
-					       rtvec, char *, char *, rtvec));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
@@ -1309,15 +1243,6 @@ extern int cse_not_expected;
    generate any new pseudo registers.  */
 extern int no_new_pseudos;
 
-/* Indexed by pseudo register number, gives the rtx for that pseudo.
-   Allocated in parallel with regno_pointer_flag.  */
-extern rtx *regno_reg_rtx;
-
-/* Vector indexed by regno; contain the alignment in bytes and type
-   pointed to for a register that contains a pointer, if known.  */
-extern char *regno_pointer_align;
-#define REGNO_POINTER_ALIGN(REGNO) regno_pointer_align[REGNO]
-
 /* Translates rtx code to tree code, for those codes needed by
    REAL_ARITHMETIC.  The function returns an int because the caller may not
    know what `enum tree_code' means.  */
@@ -1385,6 +1310,7 @@ extern void reorder_insns			PROTO ((rtx, rtx, rtx));
 extern int get_max_uid				PROTO ((void));
 extern int in_sequence_p			PROTO ((void));
 extern void force_next_line_note		PROTO ((void));
+extern void clear_emit_caches			PROTO ((void));
 extern void init_emit				PROTO ((void));
 extern void init_emit_once			PROTO ((int));
 extern void push_topmost_sequence		PROTO ((void));
@@ -1393,6 +1319,7 @@ extern int subreg_realpart_p			PROTO ((rtx));
 extern void reverse_comparison			PROTO ((rtx));
 extern void set_new_first_and_last_insn		PROTO ((rtx, rtx));
 extern void set_new_first_and_last_label_num	PROTO ((int, int));
+extern void set_new_last_label_num		PROTO ((int));
 extern void unshare_all_rtl			PROTO ((rtx));
 extern void set_last_insn			PROTO ((rtx));
 extern void link_cc0_insns			PROTO ((rtx));
@@ -1403,7 +1330,6 @@ extern void remove_insn				PROTO ((rtx));
 extern void reorder_insns_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern void emit_insn_after_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern enum rtx_code classify_insn		PROTO ((rtx));
-extern void init_virtual_regs                   PROTO ((void));
 extern rtx emit					PROTO ((rtx));
 /* Query and clear/ restore no_line_numbers.  This is used by the
    switch / case handling in stmt.c to give proper line numbers in
@@ -1470,10 +1396,6 @@ extern void set_file_and_line_for_stmt	PROTO ((char *, int));
 extern void expand_null_return		PROTO((void));
 extern void emit_jump			PROTO ((rtx));
 extern int preserve_subexpressions_p	PROTO ((void));
-
-/* List (chain of EXPR_LIST) of labels heading the current handlers for
-   nonlocal gotos.  */
-extern rtx nonlocal_goto_handler_labels;
 
 /* In expr.c */
 extern void init_expr_once		PROTO ((void));

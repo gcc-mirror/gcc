@@ -1386,29 +1386,3 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 
   return mode;
 }
-
-/* Save all variables describing the current status into the structure *P.
-   This is used before starting a nested function.  */
-
-void
-save_storage_status (p)
-     struct function *p ATTRIBUTE_UNUSED;
-{
-#if 0  /* Need not save, since always 0 and non0 (resp.) within a function.  */
-  p->pending_sizes = pending_sizes;
-  p->immediate_size_expand = immediate_size_expand;
-#endif /* 0 */
-}
-
-/* Restore all variables describing the current status from the structure *P.
-   This is used after a nested function.  */
-
-void
-restore_storage_status (p)
-     struct function *p ATTRIBUTE_UNUSED;
-{
-#if 0
-  pending_sizes = p->pending_sizes;
-  immediate_size_expand = p->immediate_size_expand;
-#endif /* 0 */
-}

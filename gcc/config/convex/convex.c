@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "insn-attr.h"
 #include "output.h"
+#include "function.h"
 #include "expr.h"
 
 /* Tables used in convex.h */
