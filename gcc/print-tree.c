@@ -144,8 +144,22 @@ print_node_brief (file, prefix, node, indent)
     }
   if (TREE_CODE (node) == REAL_CST)
     {
-#ifndef REAL_IS_NOT_DOUBLE
-      fprintf (file, " %e", TREE_REAL_CST (node));
+      REAL_VALUE_TYPE d = TREE_REAL_CST (node);
+      if (TREE_OVERFLOW (node))
+	fprintf (file, " overflow");
+
+#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
+      if (REAL_VALUE_ISINF (d))
+	fprintf (file, " Inf");
+      else if (REAL_VALUE_ISNAN (d))
+	fprintf (file, " Nan");
+      else
+	{
+	  char string[100];
+
+	  REAL_VALUE_TO_DECIMAL (d, "%e", string);
+	  fprintf (file, " %s", string);
+	}
 #else
       {
 	int i;
@@ -155,7 +169,7 @@ print_node_brief (file, prefix, node, indent)
 	  fprintf (file, "%02x", *p++);
 	fprintf (file, "");
       }
-#endif /* REAL_IS_NOT_DOUBLE */
+#endif
     }
 
   fprintf (file, ">");
@@ -605,17 +619,34 @@ print_node (file, prefix, node, indent)
 	  break;
 
 	case REAL_CST:
-#ifndef REAL_IS_NOT_DOUBLE
-	  fprintf (file, " %e", TREE_REAL_CST (node));
-#else
 	  {
-	    char *p = (char *) &TREE_REAL_CST (node);
-	    fprintf (file, " 0x");
-	    for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
-	      fprintf (file, "%02x", *p++);
-	    fprintf (file, "");
+	    REAL_VALUE_TYPE d = TREE_REAL_CST (node);
+	    if (TREE_OVERFLOW (node))
+	      fprintf (file, " overflow");
+
+#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
+	    if (REAL_VALUE_ISINF (d))
+	      fprintf (file, " Inf");
+	    else if (REAL_VALUE_ISNAN (d))
+	      fprintf (file, " Nan");
+	    else
+	      {
+		char string[100];
+
+		REAL_VALUE_TO_DECIMAL (d, "%e", string);
+		fprintf (file, " %s", string);
+	      }
+#else
+	    {
+	      int i;
+	      unsigned char *p = (unsigned char *) &TREE_REAL_CST (node);
+	      fprintf (file, " 0x");
+	      for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
+		fprintf (file, "%02x", *p++);
+	      fprintf (file, "");
+	    }
+#endif
 	  }
-#endif /* REAL_IS_NOT_DOUBLE */
 	  break;
 
 	case COMPLEX_CST:
