@@ -1778,12 +1778,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
       /* Machine mode function was declared to return.   */
       enum machine_mode departing_mode = TYPE_MODE (type);
-
       /* (Possibly wider) machine mode it actually computes
 	 (for the sake of callers that fail to declare it right).
 	 We have to use the mode of the result's RTL, rather than
 	 its type, since expand_function_start may have promoted it.  */
-      enum machine_mode arriving_mode = GET_MODE (loc);
+      enum machine_mode arriving_mode
+	= GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
       rtx reg_to_map;
 
       /* Don't use MEMs as direct targets because on some machines
@@ -1797,11 +1797,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	     the mode from that, otherwise abort. */
 	  if (departing_mode == BLKmode)
 	    {
-	      departing_mode = GET_MODE (loc);
-	      arriving_mode = departing_mode;
+	      if (REG == GET_CODE (DECL_RTL (DECL_RESULT (fndecl))))
+		{
+		  departing_mode = GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
+		  arriving_mode = departing_mode;
+		}
+	      else
+		abort();
 	    }
 	      
-	  target = gen_reg_rtx (departing_mode);
+	target = gen_reg_rtx (departing_mode);
 	}
 
       /* If function's value was promoted before return,
@@ -1832,86 +1837,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	map->inline_target = reg_to_map;
       else
 	map->reg_map[REGNO (loc)] = reg_to_map;
-    }
-  else if (GET_CODE (loc) == CONCAT)
-    {
-      /* The function returns an object in a pair of registers and we use
-	 the return value.  Set up our target for remapping.  */
-
-      /* Machine mode function was declared to return.   */
-      enum machine_mode departing_mode = TYPE_MODE (type);
-
-      /* (Possibly wider) machine mode it actually computes
-	 (for the sake of callers that fail to declare it right).
-	 We have to use the mode of the result's RTL, rather than
-	 its type, since expand_function_start may have promoted it.  */
-      enum machine_mode arriving_mode = GET_MODE (loc);
-      rtx reg_to_map;
-
-      /* Don't use MEMs as direct targets because on some machines
-	 substituting a MEM for a REG makes invalid insns.
-	 Let the combiner substitute the MEM if that is valid.  */
-      if (target == 0 || GET_CODE (target) != REG
-	  || GET_MODE (target) != departing_mode)
-	{
-	  /* Don't make BLKmode registers.  If this looks like
-	     a BLKmode object being returned in a register, get
-	     the mode from that, otherwise abort. */
-	  if (departing_mode == BLKmode)
-	    {
-	      departing_mode = GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
-	      arriving_mode = departing_mode;
-	    }
-	      
-	  target = gen_reg_rtx (departing_mode);
-	}
-
-      /* If function's value was promoted before return,
-	 avoid machine mode mismatch when we substitute INLINE_TARGET.
-	 But TARGET is what we will return to the caller.  */
-      if (arriving_mode != departing_mode)
-	{
-	  enum machine_mode submode;
-
-	  /* Avoid creating a paradoxical subreg wider than
-	     BITS_PER_WORD, since that is illegal.  */
-	  if (GET_MODE_UNIT_SIZE (arriving_mode) > UNITS_PER_WORD)
-	    {
-	      if (!(TRULY_NOOP_TRUNCATION
-		    (GET_MODE_SIZE (departing_mode) * BITS_PER_UNIT,
-		     GET_MODE_SIZE (arriving_mode) * BITS_PER_UNIT)))
-		/* Maybe could be handled by using convert_move () ?  */
-		abort ();
-
-	      reg_to_map = gen_reg_rtx (arriving_mode);
-
-	      submode = TOGGLE_COMPLEX_MODE (departing_mode);
-	      target
-		= gen_rtx_CONCAT (departing_mode,
-				  gen_lowpart (submode, XEXP (reg_to_map, 0)),
-				  gen_lowpart (submode, XEXP (reg_to_map, 1)));
-	    }
-	  else
-	    {
-	      submode = TOGGLE_COMPLEX_MODE (arriving_mode);
-	      reg_to_map
-		= gen_rtx_CONCAT (arriving_mode,
-				  gen_lowpart (submode, XEXP (target, 0)),
-				  gen_lowpart (submode, XEXP (target, 1)));
-	    }
-	}
-      else
-	reg_to_map = target;
-
-      /* Usually, the result value is the machine's return register.
-	 Sometimes it may be a pseudo. Handle both cases.  */
-      if (REG_FUNCTION_VALUE_P (XEXP (loc, 0)))
-	map->inline_target = reg_to_map;
-      else
-	{
-	  map->reg_map[REGNO (XEXP (loc, 0))] = XEXP (reg_to_map, 0);
-	  map->reg_map[REGNO (XEXP (loc, 1))] = XEXP (reg_to_map, 1);
-	}
     }
   else
     abort ();
@@ -2512,26 +2437,8 @@ copy_rtx_and_substitute (orig, map)
 		/* Must be unrolling loops or replicating code if we
 		   reach here, so return the register unchanged.  */
 		return orig;
-	      else if (GET_MODE (map->inline_target) == BLKmode)
-		return map->inline_target;
-	      else if (GET_CODE (map->inline_target) == CONCAT)
-		{
-		  rtx ret;
-
-		  /* ??? Assume that the real part of a concat is in the
-		     first function value register.  */
-		  if (REGNO (orig) == 0 
-		      || ! FUNCTION_VALUE_REGNO_P (REGNO (orig) - 1))
-		    ret = XEXP (map->inline_target, 0);
-		  else
-		    ret = XEXP (map->inline_target, 1);
-
-		  if (mode != GET_MODE (ret))
-		    ret = gen_lowpart (mode, ret);
-
-		  return ret;
-		}
-	      else if (mode != GET_MODE (map->inline_target))
+	      else if (GET_MODE (map->inline_target) != BLKmode
+		       && mode != GET_MODE (map->inline_target))
 		return gen_lowpart (mode, map->inline_target);
 	      else
 		return map->inline_target;
