@@ -48,7 +48,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 		    
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
 
-#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s}}"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s}}\
+	%{ansi:/svr4/usr/ccs/lib/values-Xc.o%s} \
+                          %{!ansi: \
+                           %{traditional:/svr4/usr/ccs/lib/values-Xt.o%s} \
+                           %{!traditional:/svr4/usr/ccs/lib/values-Xa.o%s}}"
 
 #define MACHINE_TYPE "RISC-OS System V.4 Mips"
 
