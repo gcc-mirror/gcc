@@ -150,6 +150,10 @@ extern char *sys_errlist[];
 extern char *strerror();
 #endif
 
+#ifndef HAVE_KILL
+#define kill(p,s) raise(s)
+#endif
+
 /* If a stage of compilation returns an exit status >= 1,
    compilation of that file ceases.  */
 
