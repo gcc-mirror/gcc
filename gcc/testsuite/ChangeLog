@@ -1,3 +1,8 @@
+2004-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17501
+	* g++.dg/template/typename7.C: New test.
+
 2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcc.dg/tree-ssa/copy-headers.c: Update outcome.
