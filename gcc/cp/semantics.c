@@ -2032,7 +2032,8 @@ finish_template_type (name, args, entering_scope)
   tree decl;
 
   decl = lookup_template_class (name, args,
-				NULL_TREE, NULL_TREE, entering_scope);
+				NULL_TREE, NULL_TREE,
+	                        entering_scope, /*complain=*/1);
   if (decl != error_mark_node)
     decl = TYPE_STUB_DECL (decl);
 

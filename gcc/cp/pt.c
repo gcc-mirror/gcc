@@ -3813,17 +3813,20 @@ maybe_get_template_decl_from_type_decl (decl)
 
    If ENTERING_SCOPE is non-zero, we are about to enter the scope of
    the class we are looking up.
+   
+   If COMPLAIN is non-zero, issue error messages.
 
    If the template class is really a local class in a template
    function, then the FUNCTION_CONTEXT is the function in which it is
    being instantiated.  */
 
 tree
-lookup_template_class (d1, arglist, in_decl, context, entering_scope)
+lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
      tree d1, arglist;
      tree in_decl;
      tree context;
      int entering_scope;
+     int complain;
 {
   tree template = NULL_TREE, parmlist;
   tree t;
@@ -3881,15 +3884,19 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
      crash. Alternatively D1 might not be a template type at all.  */
   if (! template)
     {
-      cp_error ("`%T' is not a template", d1);
+      if (complain)
+        cp_error ("`%T' is not a template", d1);
       return error_mark_node;
     }
 
   if (TREE_CODE (template) != TEMPLATE_DECL)
     {
-      cp_error ("non-template type `%T' used as a template", d1);
-      if (in_decl)
-	cp_error_at ("for template declaration `%D'", in_decl);
+      if (complain)
+        {
+          cp_error ("non-template type `%T' used as a template", d1);
+          if (in_decl)
+	    cp_error_at ("for template declaration `%D'", in_decl);
+	}
       return error_mark_node;
     }
 
@@ -3903,7 +3910,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
-      arglist2 = coerce_template_parms (parmlist, arglist, template, 1, 1);
+      arglist2 = coerce_template_parms (parmlist, arglist, template,
+                                        complain, /*require_all_args=*/1);
       if (arglist2 == error_mark_node)
 	return error_mark_node;
 
@@ -3971,7 +3979,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	       --i, t = TREE_CHAIN (t))
 	    {
 	      tree a = coerce_template_parms (TREE_VALUE (t),
-					      arglist, template, 1, 1);
+					      arglist, template,
+	                                      complain, /*require_all_args=*/1);
 	      SET_TMPL_ARGS_LEVEL (bound_args, i, a);
 
 	      /* We temporarily reduce the length of the ARGLIST so
@@ -3990,7 +3999,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	arglist
 	  = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
 				   INNERMOST_TEMPLATE_ARGS (arglist),
-				   template, 1, 1);
+				   template,
+	                           complain, /*require_all_args=*/1);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
@@ -5466,7 +5476,7 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
 	    return error_mark_node;
 
   	  r = lookup_template_class (t, argvec, in_decl, context,
-				     entering_scope);
+				     entering_scope, complain);
 
 	  return cp_build_qualified_type_real (r, TYPE_QUALS (t),
 					       complain);
@@ -6426,7 +6436,8 @@ tsubst (t, args, complain, in_decl)
 		    r = lookup_template_class (arg, 
 					       argvec, in_decl, 
 					       DECL_CONTEXT (arg),
-					       /*entering_scope=*/0);
+					       /*entering_scope=*/0,
+	                                       complain);
 		    return cp_build_qualified_type_real (r, 
 						         TYPE_QUALS (t),
 						         complain);

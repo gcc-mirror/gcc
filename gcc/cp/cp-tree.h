@@ -4135,7 +4135,7 @@ extern tree current_template_args		PARAMS ((void));
 extern tree push_template_decl			PARAMS ((tree));
 extern tree push_template_decl_real             PARAMS ((tree, int));
 extern void redeclare_class_template            PARAMS ((tree, tree));
-extern tree lookup_template_class		PARAMS ((tree, tree, tree, tree, int));
+extern tree lookup_template_class		PARAMS ((tree, tree, tree, tree, int, int));
 extern tree lookup_template_function            PARAMS ((tree, tree));
 extern int uses_template_parms			PARAMS ((tree));
 extern tree instantiate_class_template		PARAMS ((tree));
