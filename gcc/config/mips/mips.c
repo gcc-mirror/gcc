@@ -626,6 +626,11 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { 0, 0, 0 }
 };
 
+/* Nonzero if -march should decide the default value of MASK_SOFT_FLOAT.  */
+#ifndef MIPS_MARCH_CONTROLS_SOFT_FLOAT
+#define MIPS_MARCH_CONTROLS_SOFT_FLOAT 0
+#endif
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5218,6 +5223,24 @@ override_options ()
 	target_flags |= MASK_LONG64;
       else
 	target_flags &= ~MASK_LONG64;
+    }
+
+  if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
+      && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
+    {
+      /* For some configurations, it is useful to have -march control
+	 the default setting of MASK_SOFT_FLOAT.  */
+      switch ((int) mips_arch)
+	{
+	case PROCESSOR_R4100:
+	case PROCESSOR_R4120:
+	  target_flags |= MASK_SOFT_FLOAT;
+	  break;
+
+	default:
+	  target_flags &= ~MASK_SOFT_FLOAT;
+	  break;
+	}
     }
 
   if (mips_abi != ABI_32 && mips_abi != ABI_O64)

@@ -1859,7 +1859,7 @@ mips64-*-elf* | mips64el-*-elf*)
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
         tm_file="mips/vr.h ${tm_file} mips/elf64.h"
-        tm_defines="MIPS_ABI_DEFAULT=ABI_O64"
+        tm_defines="MIPS_ABI_DEFAULT=ABI_O64 MIPS_MARCH_CONTROLS_SOFT_FLOAT=1"
         tmake_file=mips/t-vr
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
