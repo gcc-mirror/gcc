@@ -404,6 +404,7 @@ int main(int argc, char **argv){
      all following options are handled as file names.  */
   while (optind < argc)
     new_argv[new_argc++] = argv[optind++];
+  new_argv[new_argc] = NULL;
 
   if(action == ACTION_NONE){
     fprintf(stderr, "One of options -{ctxu} must be specified.\n");
@@ -495,7 +496,7 @@ int main(int argc, char **argv){
     else if(manifest)
       make_manifest(jarfd, NULL);
     
-    init_args (new_argv, new_argc);
+    init_args (new_argv, 0);
     /* now we add the files to the archive */
     while ((arg = get_next_arg ())){
 
