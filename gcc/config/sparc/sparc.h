@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -26,23 +26,38 @@ Boston, MA 02111-1307, USA.  */
 
 /* Sparc64 support has been added by trying to allow for a day when one
    compiler can handle both v8 and v9.  There are a few cases where this
-   isn't doable, but keep them to a minimum!  Two macros are used to help out:
-   TARGET_V9 is used to select (at runtime) !v9-ness or v9-ness.
-   SPARCV9 is defined when compiling for sparc64 only.
-   In places where it is possible to choose between the two at runtime, use
-   TARGET_V9.  In places where it is currently not possible to select
-   between the two at runtime use SPARCV9.  Again, keep uses of SPARCV9 to a
-   minimum.  No attempt is made to support both v8 and v9 in the v9 compiler.
+   isn't doable, but keep them to a minimum!
+
+   TARGET_V9 is used to select at runtime the sparc64 chip.
+   TARGET_ARCH64 is used to select at runtime a 64 bit environment.
+   SPARC_V9 is defined as 0 or 1 (so it may be used inside and outside
+   #define's), and says whether the cpu is a sparc64 chip (which may be
+   running in a 32 or 64 bit environment).
+   SPARC_ARCH64 is defined as 0 for a 32 bit environment and 1 for a 64 bit
+   environment.
+
+   In places where it is possible to choose at runtime, use TARGET_V9 and
+   TARGET_ARCH64.  In places where it is currently not possible to select
+   between the two at runtime use SPARC_{V9,ARCH64}.  Again, keep uses of
+   SPARC_{V9,ARCH64} to a minimum.  No attempt is made to support both v8
+   and v9 in the v9 compiler.
 
    If a combination v8/v9 compiler is too slow, it should always be possible
-   to #define TARGET_V9 as 0 (and potentially other v9-only options), and
-   #undef SPARCV9.  */
+   to #define TARGET_{V9,ARCH64} as 0 (and potentially other v9-only
+   options), and #define SPARC_{V9,ARCH64} as 0.
+   I measured the difference once and it was around 10%.  /dje 960120
+*/
 
+#ifndef SPARC_V9
+#define SPARC_V9 0
+#endif
+#ifndef SPARC_ARCH64
+#define SPARC_ARCH64 0
+#endif
+
+/* ??? Delete and use `TARGET_ARCH64' instead.  */
 /* What architecture we're compiling for.  This must coincide with the
-   `arch_type' attribute in the .md file.  The names were chosen to avoid
-   potential misunderstandings with the various 32 bit flavors (v7, v8, etc.):
-   if we used ARCH_V9 then we'd want to use something like ARCH_V8 but that
-   could be misleading and ARCH_NOTV9 sounds klunky.  */
+   `arch_type' attribute in the .md file.  */
 enum arch_type { ARCH_32BIT, ARCH_64BIT };
 extern enum arch_type sparc_arch_type;
 
@@ -51,7 +66,7 @@ extern enum arch_type sparc_arch_type;
 /* ??? The GCC_NEW_VARARGS macro is now obsolete, because gcc always uses
    the right varags.h file when bootstrapping.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define CPP_PREDEFINES \
   "-Dsparc -Dsun -Dunix -D__sparc_v9__ \
    -Asystem(unix) -Asystem(bsd) -Acpu(sparc64) -Amachine(sparc64)"
@@ -76,7 +91,7 @@ extern enum arch_type sparc_arch_type;
 
 /* Define macros to distinguish architectures.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define CPP_SPEC "\
 %{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
 %{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
@@ -96,7 +111,7 @@ extern enum arch_type sparc_arch_type;
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define PTRDIFF_TYPE "long long int"
 #define SIZE_TYPE "long long unsigned int"
 #else
@@ -172,21 +187,32 @@ extern int target_flags;
 #define MASK_UNALIGNED_DOUBLES 4
 #define TARGET_UNALIGNED_DOUBLES (target_flags & MASK_UNALIGNED_DOUBLES)
 
-/* ??? Bits 0x18 are currently unused.  */
-
-/* Nonzero means we should schedule code for the TMS390Z55 SuperSparc chip.  */
-#define MASK_SUPERSPARC 0x20
-#define TARGET_SUPERSPARC (target_flags & MASK_SUPERSPARC)
-
 /* Nonzero means that we should generate code for a v8 sparc.  */
-#define MASK_V8 0x40
+#define MASK_V8 0x8
 #define TARGET_V8 (target_flags & MASK_V8)
 
 /* Nonzero means that we should generate code for a sparclite.
    This enables the sparclite specific instructions, but does not affect
    whether FPU instructions are emitted.  */
-#define MASK_SPARCLITE 0x80
+#define MASK_SPARCLITE 0x10
 #define TARGET_SPARCLITE (target_flags & MASK_SPARCLITE)
+
+/* Nonzero means we should schedule code for the TMS390Z55 SuperSparc chip.  */
+#define MASK_SUPERSPARC 0x20
+#define TARGET_SUPERSPARC (target_flags & MASK_SUPERSPARC)
+
+/* Nonzero if we're compiling for v9 sparc.
+   Note that v9's can run in 32 bit mode so this doesn't necessarily mean
+   the word size is 64.  It does mean that the extra fp regs are available
+   as are the new instructions.  */
+#define MASK_V9 0x40
+#define TARGET_V9 (target_flags & MASK_V9)
+
+/* ??? Bit 0x80 currently unused.  */
+
+/* Mask of all CPU selection flags.
+   ??? Migrate to -mcpu=?  */
+#define MASK_CPUS (MASK_V8 + MASK_SPARCLITE + MASK_SUPERSPARC + MASK_V9)
 
 /* Nonzero means that we should generate code using a flat register window
    model, i.e. no save/restore instructions are generated, in the most
@@ -218,9 +244,7 @@ extern int target_flags;
 #define MASK_HARD_QUAD 0x800
 #define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
 
-/* Nonzero if we're compiling for 64 bit sparc.  */
-#define MASK_V9 0x1000
-#define TARGET_V9 (target_flags & MASK_V9)
+/* Bit 0x1000 is unused.  */
 
 /* Nonzero if ints are 64 bits.
    This automatically implies longs are 64 bits too.
@@ -239,21 +263,23 @@ extern int target_flags;
 #define MASK_PTR64 0x8000
 #define TARGET_PTR64 (target_flags & MASK_PTR64)
 
-/* Nonzero if we are generating code to be tested in a 32 bit environment.
+/* Nonzero if generating code to run in a 64 bit environment.  */
+#define MASK_ARCH64 0x10000
+#define TARGET_ARCH64 (target_flags & MASK_ARCH64)
+
+/* Nonzero if generating code to run in a 32 bit environment.
    Hence, we assume the upper 32 bits of symbolic addresses are zero, and
    avoid generating %uhi and %ulo terms.
    Pointers are still 64 bits though!  This option is for v9 only.  */
-/* ??? This option is deprecated.  Try to use -mmedlow.  */
-#define MASK_ENV32 0x10000
-#define TARGET_ENV32 (target_flags & MASK_ENV32)
+#define TARGET_ARCH32 (! TARGET_ARCH64)
 
-/* Memory models.
-   Two memory models are supported:
+/* SPARC64 memory models.
    TARGET_MEDLOW: 32 bit address space, top 32 bits = 0
                   (pointers still 64 bits)
-   TARGET_MEDANY: 32 bit address space, data segment loaded anywhere
-                  (use %g4 as offset).
-   TARGET_FULLANY: not supported yet.
+   TARGET_MEDANY: 64 bit address space, data segment restricted to 4G, but
+                  can be loaded anywhere (use %g4 as offset).
+   TARGET_FULLANY: 64 bit address space, no restrictions.
+                   This option is not fully supported yet.
    These options are for v9 only.  All mask values are nonzero so the v8
    compiler can assume this stuff won't interfere.  */
 #define MASK_MEDLOW 0x20000
@@ -292,15 +318,19 @@ extern int target_flags;
     {"no-epilogue", -MASK_EPILOGUE},	\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES}, \
     {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES}, \
-    {"supersparc", MASK_SUPERSPARC+MASK_V8},	\
-    {"cypress", -MASK_SUPERSPARC-MASK_V8},	\
+    {"supersparc", -MASK_CPUS},		\
+    {"supersparc", MASK_SUPERSPARC+MASK_V8}, \
+    {"cypress", -MASK_CPUS},		\
+    {"v8", -MASK_CPUS},			\
     {"v8", MASK_V8},			\
-    {"no-v8", -MASK_V8},		\
+    {"no-v8", -MASK_CPUS},		\
+    {"sparclite", -MASK_CPUS},		\
     {"sparclite", MASK_SPARCLITE},	\
-    {"no-sparclite", -MASK_SPARCLITE},	\
+    {"no-sparclite", -MASK_CPUS},	\
+    {"f930", -MASK_FPU-MASK_CPUS},	\
     {"f930", MASK_SPARCLITE},		\
-    {"f930", -MASK_FPU},		\
-    {"f934", MASK_SPARCLITE},		\
+    {"f934", -MASK_CPUS},		\
+    {"f934", MASK_FPU+MASK_SPARCLITE},	\
     {"flat", MASK_FRW+MASK_FLAT},	\
     {"no-flat", -(MASK_FRW+MASK_FLAT)},	\
     {"app-regs", MASK_APP_REGS},	\
@@ -317,10 +347,11 @@ extern int target_flags;
 #define SUBTARGET_SWITCHES
 
 /* ??? Until we support a combination v8/v9 compiler, the v9 specific options
-   are only defined for the v9 compiler.  */
-#ifdef SPARCV9
+   are only defined for the v9 compiler (in a true 64 bit environment).  */
+#if SPARC_ARCH64
 #define V9_SWITCHES \
-/*  {"v9", MASK_V9}, */			\
+/*  {"arch32", -MASK_ARCH64}, */	\
+/*  {"arch64", MASK_ARCH64}, */		\
     {"int64", MASK_INT64+MASK_LONG64},	\
     {"int32", -MASK_INT64},		\
     {"int32", MASK_LONG64},		\
@@ -334,7 +365,9 @@ extern int target_flags;
     {"medlow", -MASK_CODE_MODEL},	\
     {"medlow", MASK_MEDLOW},		\
     {"medany", -MASK_CODE_MODEL},	\
-    {"medany", MASK_MEDANY},
+    {"medany", MASK_MEDANY},		\
+    {"fullany", -MASK_CODE_MODEL},	\
+    {"fullany", MASK_FULLANY},
 #else
 #define V9_SWITCHES
 #endif
@@ -366,11 +399,11 @@ extern int target_flags;
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD		(TARGET_V9 ? 64 : 32)
+#define BITS_PER_WORD		(TARGET_ARCH64 ? 64 : 32)
 #define MAX_BITS_PER_WORD	64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD		(TARGET_V9 ? 8 : 4)
+#define UNITS_PER_WORD		(TARGET_ARCH64 ? 8 : 4)
 #define MIN_UNITS_PER_WORD	4
 
 /* Now define the sizes of the C data types.  */
@@ -385,7 +418,7 @@ extern int target_flags;
 #define MAX_INT_TYPE_SIZE	64
 #define MAX_LONG_TYPE_SIZE	64
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 /* ??? This does not work in SunOS 4.x, so it is not enabled here.
    Instead, it is enabled in sol2.h, because it does work under Solaris.  */
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
@@ -398,22 +431,22 @@ extern int target_flags;
 #define POINTER_SIZE (TARGET_PTR64 ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY (TARGET_V9 ? 64 : 32)
+#define PARM_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY (TARGET_V9 ? 128 : 64)
+#define STACK_BOUNDARY (TARGET_ARCH64 ? 128 : 64)
 
 /* ALIGN FRAMES on double word boundaries */
 
 #define SPARC_STACK_ALIGN(LOC) \
-  (TARGET_V9 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
+  (TARGET_ARCH64 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
 
 /* Alignment of field after `int : 0' in a structure.  */
 /* ??? Should this be based on TARGET_INT64?  */
-#define EMPTY_FIELD_BOUNDARY (TARGET_V9 ? 64 : 32)
+#define EMPTY_FIELD_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
 
 /* Every structure's size must be a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
@@ -422,7 +455,7 @@ extern int target_flags;
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT (TARGET_V9 ? 128 : 64)
+#define BIGGEST_ALIGNMENT (TARGET_ARCH64 ? 128 : 64)
 
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 64
@@ -515,7 +548,7 @@ extern int target_flags;
    32+32+32+4 == 100.
    Register 0 is used as the integer condition code register.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define FIRST_PSEUDO_REGISTER 100
 #else
 #define FIRST_PSEUDO_REGISTER 64
@@ -540,7 +573,7 @@ extern int target_flags;
    Register 1 is also used when restoring call-preserved registers in large
    stack frames.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define FIXED_REGISTERS  \
  {0, 1, 1, 1, 1, 0, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
@@ -578,7 +611,7 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define CALL_USED_REGISTERS  \
  {1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -615,6 +648,15 @@ extern int target_flags;
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
   {								\
+    if (SPARC_V9 && ! SPARC_ARCH64)				\
+      {								\
+	int regno;						\
+	for (regno = 1; regno <= 4; regno++)			\
+	  fixed_regs[regno] = 0;				\
+	fixed_regs[5] = 1;					\
+	for (regno = 48; regno < 80; regno++)			\
+	  call_used_regs[regno] = 1;				\
+      }								\
     if (! TARGET_FPU)						\
       {								\
 	int regno;						\
@@ -664,7 +706,7 @@ while (0)
    included in the hard register count).  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE) \
-  (TARGET_V9								\
+  (TARGET_ARCH64							\
    ?  ((REGNO) < 32							\
        ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
        : (GET_MODE_SIZE (MODE) + 3) / 4)				\
@@ -748,7 +790,7 @@ extern int sparc_mode_class[];
 
 /* Register in which static-chain is passed to a function.  This must
    not be a register used by the prologue.  */
-#define STATIC_CHAIN_REGNUM (TARGET_V9 ? 5 : 2)
+#define STATIC_CHAIN_REGNUM (TARGET_ARCH64 ? 5 : 2)
 
 /* Register which holds offset table for position-independent
    data references.  */
@@ -763,8 +805,8 @@ extern int sparc_mode_class[];
    For v9, all aggregates are returned in memory.  */
 #define RETURN_IN_MEMORY(TYPE)				\
   (TYPE_MODE (TYPE) == BLKmode				\
-   || (! TARGET_V9 && (TYPE_MODE (TYPE) == TFmode	\
-		       || TYPE_MODE (TYPE) == TCmode)))
+   || (! TARGET_ARCH64 && (TYPE_MODE (TYPE) == TFmode	\
+			    || TYPE_MODE (TYPE) == TCmode)))
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
@@ -775,13 +817,13 @@ extern int sparc_mode_class[];
 #define STRUCT_VALUE_OFFSET 64
 
 #define STRUCT_VALUE \
-  (TARGET_V9						\
+  (TARGET_ARCH64					\
    ? 0							\
    : gen_rtx (MEM, Pmode,				\
 	      gen_rtx (PLUS, Pmode, stack_pointer_rtx,	\
 		       gen_rtx (CONST_INT, VOIDmode, STRUCT_VALUE_OFFSET))))
 #define STRUCT_VALUE_INCOMING \
-  (TARGET_V9						\
+  (TARGET_ARCH64					\
    ? 0							\
    : gen_rtx (MEM, Pmode,				\
 	      gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
@@ -834,7 +876,7 @@ extern int sparc_mode_class[];
    trying to compile _fixunsdfsi because fix_truncdfsi2 won't match its
    constraints.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
 		 GENERAL_OR_FP_REGS, GENERAL_OR_EXTRA_FP_REGS,
 		 ALL_REGS, LIM_REG_CLASSES };
@@ -846,7 +888,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Give names of register classes as strings for dump file.   */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define REG_CLASS_NAMES \
   { "NO_REGS", "FPCC_REGS", "GENERAL_REGS", "FP_REGS", "EXTRA_FP_REGS", \
     "GENERAL_OR_FP_REGS", "GENERAL_OR_EXTRA_FP_REGS", "ALL_REGS" }
@@ -859,7 +901,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define REG_CLASS_CONTENTS \
   {{0, 0, 0, 0}, {0, 0, 0, 0xf}, {-2, 0, 0, 0}, \
    {0, -1, 0, 0}, {0, -1, -1, 0}, {-2, -1, 0, 0}, {-2, -1, -1, 0}, \
@@ -877,7 +919,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) == 0 ? NO_REGS		\
    : (REGNO) < 32 ? GENERAL_REGS	\
@@ -898,7 +940,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
    On v9, the float registers are ordered a little "funny" because some
    of them (%f16-%f47) are call-preserved.  */
-#ifdef SPARCV9
+#if SPARC_V9
 #define REG_ALLOC_ORDER \
 { 8, 9, 10, 11, 12, 13,			\
   15, 16, 17, 18, 19, 20, 21, 22,	\
@@ -932,7 +974,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    then we have the possibility of having a leaf function.
    v9: The floating point registers are ordered a little "funny" because some
    of them (%f16-%f47) are call-preserved.   */
-#ifdef SPARCV9
+#if SPARC_V9
 #define REG_LEAF_ALLOC_ORDER \
 { 24, 25, 26, 27, 28, 29,		\
   15, 8, 9, 10, 11, 12, 13,		\
@@ -968,7 +1010,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    register is used and is not permitted in a leaf function.  We make %g7
    a global reg if -mflat and voila.  Since %g7 is a system register and is
    fixed it won't be used by gcc anyway.  */
-#ifdef SPARCV9
+#if SPARC_V9
 #define LEAF_REGISTERS \
 { 1, 1, 1, 1, 1, 1, 1, 0,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
@@ -1003,7 +1045,7 @@ extern char leaf_reg_remap[];
 #define BASE_REG_CLASS GENERAL_REGS
 
 /* Local macro to handle the two v9 classes of FP regs.  */
-#ifdef SPARCV9
+#if SPARC_V9
 #define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS || (CLASS) == EXTRA_FP_REGS)
 #else
 #define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS)
@@ -1011,7 +1053,7 @@ extern char leaf_reg_remap[];
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 
-#ifdef SPARCV9
+#if SPARC_V9
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'f' ? FP_REGS		\
    : (C) == 'e' ? EXTRA_FP_REGS	\
@@ -1106,7 +1148,7 @@ extern char leaf_reg_remap[];
    because the movsi and movsf patterns don't handle r/f moves.
    For v8 we copy the default definition.  */
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE) \
-  (TARGET_V9							\
+  (TARGET_ARCH64						\
    ? (GET_MODE_BITSIZE (MODE) < 32				\
       ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
       : MODE)							\
@@ -1130,7 +1172,7 @@ extern char leaf_reg_remap[];
    v9: Non-float args are passed in %o0-5 and float args are passed in
    %f0-%f15.  */
 #define NPARM_REGS(MODE) \
-  (TARGET_V9 ? (GET_MODE_CLASS (MODE) == MODE_FLOAT ? 16 : 6) : 6)
+  (TARGET_ARCH64 ? (GET_MODE_CLASS (MODE) == MODE_FLOAT ? 16 : 6) : 6)
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
@@ -1148,7 +1190,7 @@ extern char leaf_reg_remap[];
    of the first local allocated.  */
 /* This allows space for one TFmode floating point value.  */
 #define STARTING_FRAME_OFFSET \
-  (TARGET_V9 ? (SPARC_STACK_BIAS - 16) \
+  (TARGET_ARCH64 ? (SPARC_STACK_BIAS - 16) \
    : (-SPARC_STACK_ALIGN (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)))
 
 /* If we generate an insn to push BYTES bytes,
@@ -1161,12 +1203,12 @@ extern char leaf_reg_remap[];
    even if this function isn't going to use it.
    v9: This is 128 for the ins and locals, plus a reserved space of 8.  */
 #define FIRST_PARM_OFFSET(FNDECL) \
-  (TARGET_V9 ? (SPARC_STACK_BIAS + 136) \
+  (TARGET_ARCH64 ? (SPARC_STACK_BIAS + 136) \
    : (STRUCT_VALUE_OFFSET + UNITS_PER_WORD))
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
-#ifndef SPARCV9
+#if ! SPARC_ARCH64
 #define REG_PARM_STACK_SPACE(DECL) (NPARM_REGS (SImode) * UNITS_PER_WORD)
 #endif
 
@@ -1189,19 +1231,23 @@ extern char leaf_reg_remap[];
    When !TARGET_FPU, put float return values in the general registers,
    since we don't have any fp registers.  */
 #define BASE_RETURN_VALUE_REG(MODE) \
-  (TARGET_V9 ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
+  (TARGET_ARCH64 \
+   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
    : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 8))
 #define BASE_OUTGOING_VALUE_REG(MODE) \
-  (TARGET_V9 ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-		: TARGET_FRW ? 8 : 24) \
+  (TARGET_ARCH64 \
+   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
+      : TARGET_FRW ? 8 : 24) \
    : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32	\
       : (TARGET_FRW ? 8 : 24)))
 #define BASE_PASSING_ARG_REG(MODE) \
-  (TARGET_V9 ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
-   : (8))
+  (TARGET_ARCH64 \
+   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
+   : 8)
 #define BASE_INCOMING_ARG_REG(MODE) \
-  (TARGET_V9 ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-		: TARGET_FRW ? 8 : 24) \
+  (TARGET_ARCH64 \
+   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
+      : TARGET_FRW ? 8 : 24) \
    : (TARGET_FRW ? 8 : 24))
 
 /* Define this macro if the target machine has "register windows".  This
@@ -1257,7 +1303,7 @@ extern char leaf_reg_remap[];
    On SPARC, these are the "output" registers.  v9 also uses %f0-%f15.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-  (TARGET_V9 ? (((N) < 14 && (N) > 7) || (N) > 31 && (N) < 48) \
+  (TARGET_ARCH64 ? (((N) < 14 && (N) > 7) || (N) > 31 && (N) < 48) \
    : ((N) < 14 && (N) > 7))
 
 /* Define a data type for recording info about an argument list
@@ -1291,7 +1337,7 @@ extern char leaf_reg_remap[];
           allocated like all other arguments.
 	- The unimp instruction stuff for structure returns is gone.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 enum sparc_arg_class { SPARC_ARG_INT = 0, SPARC_ARG_FLOAT = 1 };
 struct sparc_args {
     int arg_count[2];	/* must be int! (for __builtin_args_info) */
@@ -1318,14 +1364,15 @@ struct sparc_args {
 #define ROUND_ADVANCE(SIZE)	\
   (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#else /* ! SPARCV9 */
+#else /* ! SPARC_ARCH64 */
+
 #define CUMULATIVE_ARGS int
 
 #define ROUND_REG(CUM, MODE) (CUM)
 
 #define ROUND_ADVANCE(SIZE)	\
   ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-#endif /* ! SPARCV9 */
+#endif /* ! SPARC_ARCH64 */
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -1334,7 +1381,7 @@ struct sparc_args {
    On SPARC, the offset always starts at 0: the first parm reg is always
    the same reg.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 extern int sparc_arg_count,sparc_n_named_args;
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)		\
   do {								\
@@ -1359,7 +1406,7 @@ extern int sparc_arg_count,sparc_n_named_args;
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
   do {								\
     (CUM).arg_count[(int) GET_SPARC_ARG_CLASS (MODE)] =		\
@@ -1381,7 +1428,7 @@ extern int sparc_arg_count,sparc_n_named_args;
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
    This macro is only used in this file.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define PASS_IN_REG_P(CUM, MODE, TYPE)				\
   (ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)		\
    && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))		\
@@ -1437,7 +1484,7 @@ extern int sparc_arg_count,sparc_n_named_args;
    needs partial registers on the Sparc (!v9).  On v9, there are no arguments
    that are passed partially in registers (??? complex values?).  */
 
-#ifndef SPARCV9
+#if ! SPARC_ARCH64
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 		\
   (PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
    && ((CUM) + ((MODE) == BLKmode					\
@@ -1452,7 +1499,7 @@ extern int sparc_arg_count,sparc_n_named_args;
    For Pascal, also pass arrays by reference.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)	\
   ((TYPE && AGGREGATE_TYPE_P (TYPE))				\
-   || (!TARGET_V9 && MODE == TFmode))
+   || (!TARGET_ARCH64 && MODE == TFmode))
 
 /* A C expression that indicates when it is the called function's
    responsibility to make copies of arguments passed by reference.
@@ -1461,7 +1508,7 @@ extern int sparc_arg_count,sparc_n_named_args;
 /* ??? We'd love to be able to use NAMED here.  Unfortunately, it doesn't
    include the last named argument so we keep track of the args ourselves.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
   (sparc_arg_count < sparc_n_named_args)
 #endif
@@ -1475,7 +1522,7 @@ extern int sparc_arg_count,sparc_n_named_args;
 
 extern void sparc64_init_expanders ();
 extern struct rtx_def *sparc64_fpconv_stack_temp ();
-#ifdef SPARCV9
+#if SPARC_ARCH64
 #define INIT_EXPANDERS sparc64_init_expanders ()
 #endif
 
@@ -1949,7 +1996,7 @@ extern union tree_node *current_function_decl;
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
 do {									\
-  if (TARGET_V9)							\
+  if (TARGET_ARCH64)							\
     {									\
       fprintf (FILE, "\trd %%pc,%%g1\n");				\
       fprintf (FILE, "\tldx [%%g1+24],%%g5\n");				\
@@ -1972,7 +2019,7 @@ do {									\
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE (TARGET_V9 ? 40 : 20)
+#define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 40 : 20)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1982,7 +2029,7 @@ void sparc_initialize_trampoline ();
 void sparc64_initialize_trampoline ();
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
   do {								\
-    if (TARGET_V9)						\
+    if (TARGET_ARCH64)						\
       sparc64_initialize_trampoline (TRAMP, FNADDR, CXT);	\
     else							\
       sparc_initialize_trampoline (TRAMP, FNADDR, CXT);		\
@@ -2013,7 +2060,8 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 
 /* This is the offset of the return address to the true next instruction to be
    executed for the current function. */
-#define RETURN_ADDR_OFFSET (8 + 4*(! TARGET_V9 && current_function_returns_struct))
+#define RETURN_ADDR_OFFSET \
+  (8 + 4 * (! TARGET_ARCH64 && current_function_returns_struct))
 
 /* The current return address is in %i7.  The return address of anything
    farther back is in the register window save area at [%fp+60].  */
@@ -2131,9 +2179,9 @@ extern struct rtx_def *sparc_builtin_saveregs ();
        && ! symbolic_memory_operand (OP, VOIDmode))	\
       || (reload_in_progress && GET_CODE (OP) == REG	\
 	  && REGNO (OP) >= FIRST_PSEUDO_REGISTER))	\
-   : ! TARGET_V9 && (C) == 'T'			\
+   : (! TARGET_ARCH64 && (C) == 'T')			\
    ? (mem_aligned_8 (OP))				\
-   : ! TARGET_V9 && (C) == 'U'						\
+   : (! TARGET_ARCH64 && (C) == 'U')			\
    ? (register_ok_for_ldd (OP))				\
    : 0)
  
@@ -2150,9 +2198,9 @@ extern struct rtx_def *sparc_builtin_saveregs ();
       ? (REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
 	 && reg_renumber[REGNO (OP)] < 0)		\
       : GET_CODE (OP) == MEM)				\
-   : ! TARGET_V9 && (C) == 'T'			\
+   : (! TARGET_ARCH64 && (C) == 'T')			\
    ? mem_aligned_8 (OP) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
-   : ! TARGET_V9 && (C) == 'U'			\
+   : (! TARGET_ARCH64 && (C) == 'U')			\
    ? (GET_CODE (OP) == REG				\
       && (REGNO (OP) < FIRST_PSEUDO_REGISTER		\
 	  || reg_renumber[REGNO (OP)] > 0)		\
@@ -2395,8 +2443,8 @@ extern struct rtx_def *legitimize_pic_address ();
    ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
    : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
        || GET_CODE (X) == NEG || GET_CODE (X) == ASHIFT)		\
-      ? (TARGET_V9 && GET_MODE (X) == DImode ? CCX_NOOVmode : CC_NOOVmode) \
-      : (TARGET_V9 && GET_MODE (X) == DImode ? CCXmode : CCmode)))
+      ? (TARGET_ARCH64 && GET_MODE (X) == DImode ? CCX_NOOVmode : CC_NOOVmode) \
+      : (TARGET_ARCH64 && GET_MODE (X) == DImode ? CCXmode : CCmode)))
 
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
@@ -2535,7 +2583,8 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
-    return (TARGET_V8 || TARGET_SPARCLITE || TARGET_V9) ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25);	\
+    return (TARGET_V8 || TARGET_SPARCLITE || TARGET_V9) \
+	? COSTS_N_INSNS (5) : COSTS_N_INSNS (25);	\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -2595,7 +2644,6 @@ extern struct rtx_def *legitimize_pic_address ();
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#ifdef SPARCV9
 #define REGISTER_NAMES \
 {"%g0", "%g1", "%g2", "%g3", "%g4", "%g5", "%g6", "%g7",		\
  "%o0", "%o1", "%o2", "%o3", "%o4", "%o5", "%sp", "%o7",		\
@@ -2605,21 +2653,18 @@ extern struct rtx_def *legitimize_pic_address ();
  "%f8", "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",		\
  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",	\
  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",	\
+ SPARC64_REGISTER_NAMES							\
+}
+
+#if SPARC_V9
+#define SPARC64_REGISTER_NAMES \
  "%f32", "%f33", "%f34", "%f35", "%f36", "%f37", "%f38", "%f39",	\
  "%f40", "%f41", "%f42", "%f43", "%f44", "%f45", "%f46", "%f47",	\
  "%f48", "%f49", "%f50", "%f51", "%f52", "%f53", "%f54", "%f55",	\
  "%f56", "%f57", "%f58", "%f59", "%f60", "%f61", "%f62", "%f63",	\
- "%fcc0", "%fcc1", "%fcc2", "%fcc3"}
+ "%fcc0", "%fcc1", "%fcc2", "%fcc3"
 #else
-#define REGISTER_NAMES \
-{"%g0", "%g1", "%g2", "%g3", "%g4", "%g5", "%g6", "%g7",		\
- "%o0", "%o1", "%o2", "%o3", "%o4", "%o5", "%sp", "%o7",		\
- "%l0", "%l1", "%l2", "%l3", "%l4", "%l5", "%l6", "%l7",		\
- "%i0", "%i1", "%i2", "%i3", "%i4", "%i5", "%fp", "%i7",		\
- "%f0", "%f1", "%f2", "%f3", "%f4", "%f5", "%f6", "%f7",		\
- "%f8", "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",		\
- "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",	\
- "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31"}
+#define SPARC64_REGISTER_NAMES
 #endif
 
 /* Define additional names for use in asm clobbers and asm declarations.
@@ -2757,7 +2802,7 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_ENV32)						\
+  else if (TARGET_MEDLOW)						\
     fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
@@ -2774,7 +2819,7 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_ENV32)						\
+  else if (TARGET_MEDLOW)						\
     fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
