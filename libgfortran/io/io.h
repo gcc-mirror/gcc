@@ -245,10 +245,11 @@ typedef struct
 unit_flags;
 
 
-/* The default value of record length is defined here.  This value can
-   be overriden by the OPEN statement or by an environment variable.  */
+/* The default value of record length for preconnected units is defined
+   here. This value can be overriden by an environment variable.
+   Default value is 1 Gb.  */
 
-#define DEFAULT_RECL 10000
+#define DEFAULT_RECL 1073741824
 
 
 typedef struct gfc_unit
