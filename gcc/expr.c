@@ -8480,14 +8480,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0)
 	/* Warning about missing arg was already issued.  */
 	return const0_rtx;
-      else if (TREE_CODE (TREE_VALUE (arglist)) != INTEGER_CST)
+      else if (TREE_CODE (TREE_VALUE (arglist)) != INTEGER_CST
+	       || tree_int_cst_sgn (TREE_VALUE (arglist)) < 0)
 	{
-	  error ("invalid arg to `__builtin_return_address'");
-	  return const0_rtx;
-	}
-      else if (tree_int_cst_sgn (TREE_VALUE (arglist)) < 0)
-	{
-	  error ("invalid arg to `__builtin_return_address'");
+	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
+	    error ("invalid arg to `__builtin_frame_address'");
+	  else
+	    error ("invalid arg to `__builtin_return_address'");
 	  return const0_rtx;
 	}
       else
