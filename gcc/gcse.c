@@ -3656,16 +3656,65 @@ find_avail_set (regno, insn)
      int regno;
      rtx insn;
 {
-  struct expr *set = lookup_set (regno, NULL_RTX);
+  /* SET1 contains the last set found that can be returned to the caller for
+     use in a substitution.  */
+  struct expr *set1 = 0;
+ 
+  /* Loops are not possible here.  To get a loop we would need two sets
+     available at the start of the block containing INSN.  ie we would
+     need two sets like this available at the start of the block:
 
-  while (set)
-    {
-      if (TEST_BIT (cprop_avin[BLOCK_NUM (insn)], set->bitmap_index))
+       (set (reg X) (reg Y))
+       (set (reg Y) (reg X))
+
+     This can not happen since the set of (reg Y) would have killed the
+     set of (reg X) making it unavailable at the start of this block.  */
+  while (1)
+     {
+      rtx src;
+      struct expr *set = lookup_set (regno, NULL_RTX);
+
+      /* Find a set that is available at the start of the block
+	 which contains INSN.  */
+      while (set)
+	{
+	  if (TEST_BIT (cprop_avin[BLOCK_NUM (insn)], set->bitmap_index))
+	    break;
+	  set = next_set (regno, set);
+	}
+
+      /* If no available set was found we've reached the end of the
+	 (possibly empty) copy chain.  */
+      if (set == 0)
+ 	break;
+
+      if (GET_CODE (set->expr) != SET)
+	abort ();
+
+      src = SET_SRC (set->expr);
+
+      /* We know the set is available.
+	 Now check that SRC is ANTLOC (i.e. none of the source operands
+	 have changed since the start of the block).  
+
+         If the source operand changed, we may still use it for the next
+         iteration of this loop, but we may not use it for substitutions.  */
+      if (CONSTANT_P (src) || oprs_not_set_p (src, insn))
+	set1 = set;
+
+      /* If the source of the set is anything except a register, then
+	 we have reached the end of the copy chain.  */
+      if (GET_CODE (src) != REG)
 	break;
-      set = next_set (regno, set);
-    }
 
-  return set;
+      /* Follow the copy chain, ie start another iteration of the loop
+	 and see if we have an available copy into SRC.  */
+      regno = REGNO (src);
+     }
+
+  /* SET1 holds the last set that was available and anticipatable at
+     INSN.  */
+  return set1;
 }
 
 /* Subroutine of cprop_insn that tries to propagate constants into
@@ -3875,27 +3924,21 @@ cprop_insn (insn, alter_jumps)
 	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
 	       && REGNO (src) != regno)
 	{
-	  /* We know the set is available.
-	     Now check that SET_SRC is ANTLOC (i.e. none of the source operands
-	     have changed since the start of the block).  */
-	  if (oprs_not_set_p (src, insn))
+	  if (try_replace_reg (reg_used->reg_rtx, src, insn))
 	    {
-	      if (try_replace_reg (reg_used->reg_rtx, src, insn))
+	      changed = 1;
+	      copy_prop_count++;
+	      if (gcse_file != NULL)
 		{
-		  changed = 1;
-		  copy_prop_count++;
-		  if (gcse_file != NULL)
-		    {
-		      fprintf (gcse_file, "COPY-PROP: Replacing reg %d in insn %d with reg %d\n",
-			       regno, INSN_UID (insn), REGNO (src));
-		    }
-
-		  /* The original insn setting reg_used may or may not now be
-		     deletable.  We leave the deletion to flow.  */
-		  /* FIXME: If it turns out that the insn isn't deletable,
-		     then we may have unnecessarily extended register lifetimes
-		     and made things worse.  */
+		  fprintf (gcse_file, "COPY-PROP: Replacing reg %d in insn %d with reg %d\n",
+			   regno, INSN_UID (insn), REGNO (src));
 		}
+
+	      /* The original insn setting reg_used may or may not now be
+		 deletable.  We leave the deletion to flow.  */
+	      /* FIXME: If it turns out that the insn isn't deletable,
+		 then we may have unnecessarily extended register lifetimes
+		 and made things worse.  */
 	    }
 	}
     }
