@@ -608,6 +608,20 @@ find_basic_blocks (f, nonlocal_label_list)
 	      }
 	}
 
+      /* ??? See if we have a "live" basic block that is not reachable.
+	 This can happen if it is headed by a label that is preserved or
+	 in one of the label lists, but no call or computed jump is in
+	 the loop.  It's not clear if we can delete the block or not,
+	 but don't for now.  However, we will mess up register status if
+	 it remains unreachable, so add a fake reachability from the
+	 previous block.  */
+
+      for (i = 1; i < n_basic_blocks; i++)
+	if (block_live[i] && ! basic_block_drops_in[i]
+	    && GET_CODE (basic_block_head[i]) == CODE_LABEL
+	    && LABEL_REFS (basic_block_head[i]) == basic_block_head[i])
+	  basic_block_drops_in[i] = 1;
+
       /* Now delete the code for any basic blocks that can't be reached.
 	 They can occur because jump_optimize does not recognize
 	 unreachable loops as unreachable.  */
@@ -1061,18 +1075,18 @@ life_analysis (f, nregs)
 
 	  {
 	    register rtx jump, head;
+
 	    /* Update the basic_block_new_live_at_end's of the block
 	       that falls through into this one (if any).  */
 	    head = basic_block_head[i];
-	    jump = PREV_INSN (head);
 	    if (basic_block_drops_in[i])
 	      {
-		register int from_block = BLOCK_NUM (jump);
 		register int j;
 		for (j = 0; j < regset_size; j++)
-		  basic_block_new_live_at_end[from_block][j]
+		  basic_block_new_live_at_end[i-1][j]
 		    |= basic_block_live_at_start[i][j];
 	      }
+
 	    /* Update the basic_block_new_live_at_end's of
 	       all the blocks that jump to this one.  */
 	    if (GET_CODE (head) == CODE_LABEL)
