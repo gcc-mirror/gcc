@@ -1,3 +1,7 @@
+2003-01-30  Richard Henderson  <rth@redhat.com>
+
+	* tree-inline.c (walk_tree): Streamline duplicate hash table lookup.
+
 2003-02-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* expr.c (expand_expr): Use gen_int_mode for the argument
