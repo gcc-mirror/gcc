@@ -1,3 +1,10 @@
+2005-03-19  Andy Hutchinson  <HutchinsonAndy@netscape.net>
+
+	PR target/18251
+	* config/avr/avr.md (movstrhi): Rewrite as RTL loop.
+	(*movstrqi_insn): Delete.
+	(*movstrhi): Delete.
+
 2005-03-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/19683
