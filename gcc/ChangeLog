@@ -1,5 +1,8 @@
 Sat Feb 28 08:13:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcc.c (snapshot_warning): New function.
+	(main): Call it for snapshots.
+
 	* dwarf2out.c (expand_builtin_dwarf_reg_size): If reg_raw_mode
 	not valid for reg, use last size.  Also refine range assertion.
 
