@@ -3063,13 +3063,16 @@ typedef enum linkage_kind {
   lk_external              /* External linkage.  */
 } linkage_kind;
 
-/* Bitmask flags to pass to instantiate_type.  */
-typedef enum instantiate_type_flags {
-  itf_none = 0,               /* nothing special */
-  itf_complain = 1 << 0,      /* complain about errors */
-  itf_no_attributes = 1 << 1, /* ignore attributes on comparisons */
-  itf_ptrmem_ok = 1 << 2,     /* pointers to member ok (internal use) */
-} instantiate_type_flags;
+/* Bitmask flags to control type substitution.  */
+typedef enum tsubst_flags_t {
+  tf_none = 0,               /* nothing special */
+  tf_error = 1 << 0,         /* give error messages  */
+  tf_warning = 1 << 1,       /* give warnings too  */
+  tf_no_attributes = 1 << 2, /* ignore attributes on comparisons
+				(instantiate_type use) */
+  tf_ptrmem_ok = 1 << 3      /* pointers to member ok (internal
+				instantiate_type use) */
+} tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy. */
 typedef enum base_access {
@@ -3598,7 +3601,7 @@ extern void pop_nested_class			PARAMS ((void));
 extern int current_lang_depth			PARAMS ((void));
 extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
-extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));
+extern tree instantiate_type			PARAMS ((tree, tree, tsubst_flags_t));
 extern void print_class_statistics              PARAMS ((void));
 extern void cxx_print_statistics		PARAMS ((void));
 extern void cxx_print_xnode			PARAMS ((FILE *, tree, int));
@@ -3972,9 +3975,9 @@ extern int maybe_clone_body                     PARAMS ((tree));
 extern void init_pt                             PARAMS ((void));
 extern void check_template_shadow		PARAMS ((tree));
 extern tree get_innermost_template_args         PARAMS ((tree, int));
-extern tree tsubst				PARAMS ((tree, tree, int, tree));
-extern tree tsubst_expr				PARAMS ((tree, tree, int, tree));
-extern tree tsubst_copy				PARAMS ((tree, tree, int, tree));
+extern tree tsubst				PARAMS ((tree, tree, tsubst_flags_t, tree));
+extern tree tsubst_expr				PARAMS ((tree, tree, tsubst_flags_t, tree));
+extern tree tsubst_copy				PARAMS ((tree, tree, tsubst_flags_t, tree));
 extern void maybe_begin_member_template_processing PARAMS ((tree));
 extern void maybe_end_member_template_processing PARAMS ((void));
 extern tree finish_member_template_decl         PARAMS ((tree));
@@ -3992,7 +3995,7 @@ extern tree current_template_args		PARAMS ((void));
 extern tree push_template_decl			PARAMS ((tree));
 extern tree push_template_decl_real             PARAMS ((tree, int));
 extern void redeclare_class_template            PARAMS ((tree, tree));
-extern tree lookup_template_class		PARAMS ((tree, tree, tree, tree, int, int));
+extern tree lookup_template_class		PARAMS ((tree, tree, tree, tree, int, tsubst_flags_t));
 extern tree lookup_template_function            PARAMS ((tree, tree));
 extern int uses_template_parms			PARAMS ((tree));
 extern tree instantiate_class_template		PARAMS ((tree));
@@ -4003,7 +4006,7 @@ extern void mark_decl_instantiated		PARAMS ((tree, int));
 extern int more_specialized			PARAMS ((tree, tree, int, int));
 extern void mark_class_instantiated		PARAMS ((tree, int));
 extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
-extern void do_type_instantiation		PARAMS ((tree, tree, int));
+extern void do_type_instantiation		PARAMS ((tree, tree, tsubst_flags_t));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
 extern int push_tinst_level			PARAMS ((tree));
@@ -4262,9 +4265,9 @@ extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
 extern const struct attribute_spec cp_attribute_table[];
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));
-extern tree cp_build_qualified_type_real        PARAMS ((tree, int, int));
+extern tree cp_build_qualified_type_real        PARAMS ((tree, int, tsubst_flags_t));
 #define cp_build_qualified_type(TYPE, QUALS) \
-  cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
+  cp_build_qualified_type_real ((TYPE), (QUALS), tf_error | tf_warning)
 extern tree build_shared_int_cst                PARAMS ((int));
 extern special_function_kind special_function_p PARAMS ((tree));
 extern int count_trees                          PARAMS ((tree));

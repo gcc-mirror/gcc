@@ -267,7 +267,7 @@ cp_convert_to_pointer (type, expr, force)
     }
 
   if (type_unknown_p (expr))
-    return instantiate_type (type, expr, itf_complain);
+    return instantiate_type (type, expr, tf_error | tf_warning);
 
   error ("cannot convert `%E' from type `%T' to type `%T'",
 	    expr, intype, type);
@@ -478,7 +478,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
     {
       expr = instantiate_type (type, expr, 
 			       (flags & LOOKUP_COMPLAIN)
-	                       ? itf_complain : itf_none);
+	                       ? tf_error | tf_warning : tf_none);
       if (expr == error_mark_node)
 	return error_mark_node;
 

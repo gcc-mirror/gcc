@@ -6043,14 +6043,14 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 tree
 instantiate_type (lhstype, rhs, flags)
      tree lhstype, rhs;
-     enum instantiate_type_flags flags;
+     tsubst_flags_t flags;
 {
-  int complain = (flags & itf_complain);
-  int strict = (flags & itf_no_attributes)
+  int complain = (flags & tf_error);
+  int strict = (flags & tf_no_attributes)
                ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
-  int allow_ptrmem = flags & itf_ptrmem_ok;
+  int allow_ptrmem = flags & tf_ptrmem_ok;
   
-  flags &= ~itf_ptrmem_ok;
+  flags &= ~tf_ptrmem_ok;
   
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
@@ -6257,7 +6257,7 @@ instantiate_type (lhstype, rhs, flags)
     case ADDR_EXPR:
     {
       if (PTRMEM_OK_P (rhs))
-        flags |= itf_ptrmem_ok;
+        flags |= tf_ptrmem_ok;
       
       return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
     }

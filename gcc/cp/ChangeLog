@@ -1,5 +1,45 @@
 2002-02-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Rename instantiate_type_flags to tsubst_flags_t & expand use.
+	* cp-tree.h (instantiate_type_flags): Rename to ...
+	(tsubst_flags_t): ... here. Rename itf_complain to tf_error,
+	add tf_warning flag.
+	(instantiate_type): Adjust prototype.
+	(tsubst, tsubst_expr, tsubst_copy, lookup_template_class,
+	do_type_instantiation, cp_build_qualified_type_real): Likewise.
+	cp_build_qualified_type: Adjust.
+	* class.c (instantiate_type): Adjust parameter. Rename itf_* to
+	tf_*.
+	* call.c (standard_conversion): Rename itf_* to tf_*.
+	(reference_binding): Likewise.
+	(convert_like_real): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	* decl.c (lookup_namespace_name): Use tf_* flags.
+	(make_typename_type): Likewise.
+	(grokdeclarator): Likewise.
+	* pt.c (convert_nontype_argument): Adjust COMPLAIN usage.
+	(coerce_template_template_parms, convert_template_argument,
+	coerce_template_parms, maybe_get_template_decl_from_type_decl,
+	lookup_template_class, tsubst_friend_function, tsubst_friend_class,
+	instantiate_class_template, tsubst_template_arg_vector, 
+	tsubst_template_parms, tsubst_aggr_type, tsubst_default_argument, 
+	tsubst_decl, tsubst_arg_types, tsubst_function_type,
+	tsubst_call_declarator_parms, tsubst, tsubst_copy, tsubst_expr, 
+	instantiate_template, fn_type_unification,
+	resolve_overloaded_unification, verify_class_unification, 
+	unify, get_bindings_real, do_type_instantiation, 
+	regenerate_decl_from_template, instantiate_decl, 
+	tsubst_initializer_list, tsubst_enum,
+	get_mostly_instantiated_function_type,
+	invalid_nontype_parm_type_p): Likewise.
+	* tree.c (cp_build_qualified_type_real): Likewise.
+	* typeck.c (build_binary_op): Rename itf_* to tf_*.
+	(build_ptrmemfunc): Likewise.
+	(convert_for_assignment): Likewise.
+
+2002-02-07  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/109
 	* decl.c (grokdeclarator): Allow friend declarations from
 	dependant types.

@@ -5491,7 +5491,7 @@ lookup_namespace_name (namespace, name)
 					 /*in_decl=*/NULL_TREE,
 					 /*context=*/NULL_TREE,
 					 /*entering_scope=*/0,
-	                                 /*complain=*/1);
+	                                 tf_error | tf_warning);
 	  else if (DECL_FUNCTION_TEMPLATE_P (val)
 		   || TREE_CODE (val) == OVERLOAD)
 	    val = lookup_template_function (val,
@@ -5680,7 +5680,7 @@ make_typename_type (context, name, complain)
 					TREE_OPERAND (fullname, 1),
 					NULL_TREE, context,
 					/*entering_scope=*/0,
-	                                /*complain=*/1);
+	                                tf_error | tf_warning);
 	}
       else
 	{
@@ -10906,7 +10906,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    && uses_template_parms (current_class_type))
 		  {
 		    tree args = current_template_args ();
-		    type = tsubst (type, args, /*complain=*/1, NULL_TREE);
+		    type = tsubst (type, args, tf_error | tf_warning,
+				   NULL_TREE);
 		  }
 
 		/* This pop_nested_class corresponds to the

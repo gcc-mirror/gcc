@@ -505,16 +505,15 @@ build_cplus_array_type (elt_type, index_type)
 
 /* Make a variant of TYPE, qualified with the TYPE_QUALS.  Handles
    arrays correctly.  In particular, if TYPE is an array of T's, and
-   TYPE_QUALS is non-empty, returns an array of qualified T's.  If
-   at attempt is made to qualify a type illegally, and COMPLAIN is
-   non-zero, an error is issued.  If COMPLAIN is zero, error_mark_node
-   is returned.  */
+   TYPE_QUALS is non-empty, returns an array of qualified T's.
+   Errors are emitted under control of COMPLAIN. If COMPLAIN is zero,
+   error_mark_node is returned for bad qualifiers.  */
 
 tree
 cp_build_qualified_type_real (type, type_quals, complain)
      tree type;
      int type_quals;
-     int complain;
+     tsubst_flags_t complain;
 {
   tree result;
 
@@ -532,7 +531,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	  || TYPE_PTRMEM_P (type)
 	  || TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
     {
-      if (complain)
+      if (complain & tf_error)
 	error ("`%T' cannot be `restrict'-qualified", type);
       else
 	return error_mark_node;
@@ -543,7 +542,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
   if (type_quals != TYPE_UNQUALIFIED
       && TREE_CODE (type) == FUNCTION_TYPE)
     {
-      if (complain)
+      if (complain & tf_error)
 	error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
       else
 	return error_mark_node;
