@@ -1,3 +1,20 @@
+2004-06-15  Peter Barada  <peter@the-baradas.com>
+
+	* config/m68k/m68k.md (movsi_cfv4): New pattern to allow mov3q.
+	(movsi_cf): Make named, don't match TARGET_CFV4.
+	(pushexthisi_const): Use mov3q if possible.
+	(extendhisi2, cvf4_extendhisi2): Split extendhisi2 pattern
+	to special case mvz.w for ColdFire V4.
+	(extendqisi2, cvf4_extendqisi2): Split extendhisi2 pattern
+	to special case mvz.b for ColdFire V4.
+	(udivmodhi4, divmodhi4): Use mvz to zero extend arg for
+	divide.
+	(iorsi3, xorsi3, andsi3): Use bitfield instructions if possible.
+	* config/m68k/m68k.c(valid_mov3q_const):  New function.
+	(const_method): SWAP is valid for ColdFire.
+	(MULL_COST, MULW_COST): Fix costs for ColdFire V3/V4.
+	* config/m68k/m68k-protos.h (valid_mov3q_const): Prototype here.
+
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
 	* c-common.def (CASE_LABEL): Remove.
