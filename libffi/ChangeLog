@@ -1,3 +1,8 @@
+2003-10-23  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/java_raw_api.c (ffi_java_ptrarray_to_raw): Replace 
+	FFI_ASSERT(FALSE) with FFI_ASSERT(0).
+
 2003-10-22  David Daney  <ddaney@avtrex.com>
 
 	* src/mips/ffitarget.h: Replace undefined UINT32 and friends with
