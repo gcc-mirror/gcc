@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GCC.
@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 extern "C" {
 #endif /* __cplusplus */
 
-#include <ansidecl.h>
+#include "ansidecl.h"
 
 /* Use typedefs for the key and data types to facilitate changing
    these types, if necessary.  These types should be sufficiently wide

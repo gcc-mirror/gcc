@@ -1,5 +1,5 @@
 /* Sorting algorithms.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
    Contributed by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 extern "C" {
 #endif /* __cplusplus */
 
-#include <ansidecl.h>
+#include "ansidecl.h"
 
 /* Sort an array of pointers.  */
 

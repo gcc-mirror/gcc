@@ -1,5 +1,5 @@
 /* A Fibonacci heap datatype.
-   Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Daniel Berlin (dan@cgsoftware.com).
 
 This file is part of GCC.
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _FIBHEAP_H_
 #define _FIBHEAP_H_
 
-#include <ansidecl.h>
+#include "ansidecl.h"
 
 typedef long fibheapkey_t;
 
