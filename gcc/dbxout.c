@@ -1008,7 +1008,7 @@ dbxout_type (type, full, show_arg_types)
     case FILE_TYPE:
       putc ('d', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0);
+      dbxout_type (TREE_TYPE (type), 0, 0);
       break;
 
     case COMPLEX_TYPE:
@@ -1027,7 +1027,7 @@ dbxout_type (type, full, show_arg_types)
     case SET_TYPE:
       putc ('S', asmfile);
       CHARS (1);
-      dbxout_type (TREE_TYPE (type), 0);
+      dbxout_type (TREE_TYPE (type), 0, 0);
       break;
 
     case ARRAY_TYPE:
