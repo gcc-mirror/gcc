@@ -1,5 +1,3 @@
-# Use collect2 to link.
-EXTRA_PROGRAMS	= ld
 EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
 CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h $(srcdir)/halfpic.h
