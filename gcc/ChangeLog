@@ -1,3 +1,8 @@
+2003-03-23  Arpad Beszedes <beszedes@cc.u-szeged.hu>
+
+	* builtins.c (expand_builtin_fputs): When optimizing for size,
+	don't transform fputs into fwrite.
+
 2003-03-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
