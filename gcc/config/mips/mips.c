@@ -419,8 +419,12 @@ struct mips_arg_info
   /* The number of words passed in registers, rounded up.  */
   unsigned int reg_words;
 
-  /* The offset of the first register from GP_ARG_FIRST or FP_ARG_FIRST,
-     or MAX_ARGS_IN_REGISTERS if the argument is passed entirely
+  /* For EABI, the offset of the first register from GP_ARG_FIRST or
+     FP_ARG_FIRST.  For other ABIs, the offset of the first register from
+     the start of the ABI's argument structure (see the CUMULATIVE_ARGS
+     comment for details).
+
+     The value is MAX_ARGS_IN_REGISTERS if the argument is passed entirely
      on the stack.  */
   unsigned int reg_offset;
 
@@ -3046,7 +3050,7 @@ static void
 mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	       tree type, int named, struct mips_arg_info *info)
 {
-  bool even_reg_p;
+  bool doubleword_aligned_p;
   unsigned int num_bytes, num_words, max_regs;
 
   /* Work out the size of the argument.  */
@@ -3123,27 +3127,10 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
       gcc_unreachable ();
     }
 
-  /* Now decide whether the argument must go in an even-numbered register.
-     Usually this is determined by type alignment, but there are two
-     exceptions:
-
-     - Under the O64 ABI, the second float argument goes in $f14 if it
-       is single precision (doubles go in $f13 as expected).
-
-     - Floats passed in FPRs must be in an even-numbered register if
-       we're using paired FPRs.  */
-  if (type)
-    even_reg_p = TYPE_ALIGN (type) > BITS_PER_WORD;
-  else
-    even_reg_p = GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD;
-
-  if (info->fpr_p)
-    {
-      if (mips_abi == ABI_O64 && mode == SFmode)
-	even_reg_p = true;
-      if (FP_INC > 1)
-	even_reg_p = true;
-    }
+  /* See whether the argument has doubleword alignment.  */
+  doubleword_aligned_p = (type
+			  ? TYPE_ALIGN (type) > BITS_PER_WORD
+			  : GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD);
 
   /* Set REG_OFFSET to the register count we're interested in.
      The EABI allocates the floating-point registers separately,
@@ -3152,12 +3139,13 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 		      ? cum->num_fprs
 		      : cum->num_gprs);
 
-  if (even_reg_p)
+  /* Advance to an even register if the argument is doubleword-aligned.  */
+  if (doubleword_aligned_p)
     info->reg_offset += info->reg_offset & 1;
 
-  /* The alignment applied to registers is also applied to stack arguments.  */
+  /* Work out the offset of a stack argument.  */
   info->stack_offset = cum->stack_words;
-  if (even_reg_p)
+  if (doubleword_aligned_p)
     info->stack_offset += info->stack_offset & 1;
 
   max_regs = MAX_ARGS_IN_REGISTERS - info->reg_offset;
@@ -3311,10 +3299,14 @@ function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
       return gen_rtx_PARALLEL (mode, gen_rtvec (2, real, imag));
     }
 
-  if (info.fpr_p)
-    return gen_rtx_REG (mode, FP_ARG_FIRST + info.reg_offset);
-  else
+  if (!info.fpr_p)
     return gen_rtx_REG (mode, GP_ARG_FIRST + info.reg_offset);
+  else if (info.reg_offset == 1)
+    /* This code handles the special o32 case in which the second word
+       of the argument structure is passed in floating-point registers.  */
+    return gen_rtx_REG (mode, FP_ARG_FIRST + FP_INC);
+  else
+    return gen_rtx_REG (mode, FP_ARG_FIRST + info.reg_offset);
 }
 
 
