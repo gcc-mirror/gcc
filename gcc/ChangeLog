@@ -1,3 +1,8 @@
+2004-11-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinode.c (make_phi_node): Use a new variable,
+	capacity, to receive the return value of ideal_phi_node_len.
+
 2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gthr-solaris.h (__gthread_recursive_mutex_t): New type.

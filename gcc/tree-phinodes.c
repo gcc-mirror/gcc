@@ -206,10 +206,11 @@ static tree
 make_phi_node (tree var, int len)
 {
   tree phi;
+  int capacity;
 
-  len = ideal_phi_node_len (len);
+  capacity = ideal_phi_node_len (len);
 
-  phi = allocate_phi_node (len);
+  phi = allocate_phi_node (capacity);
 
   /* We do not have to clear a part of the PHI node that stores PHI
      arguments, which is safe because we tell the garbage collector to
@@ -218,7 +219,7 @@ make_phi_node (tree var, int len)
      pointers in the unused portion of the array.  */
   memset (phi, 0, sizeof (struct tree_phi_node) - sizeof (struct phi_arg_d));
   TREE_SET_CODE (phi, PHI_NODE);
-  PHI_ARG_CAPACITY (phi) = len;
+  PHI_ARG_CAPACITY (phi) = capacity;
   TREE_TYPE (phi) = TREE_TYPE (var);
   if (TREE_CODE (var) == SSA_NAME)
     SET_PHI_RESULT (phi, var);
