@@ -1,4 +1,4 @@
-/* Configuration for an i386 running MS-DOS with djgpp/go32 */
+/* Configuration for an i386 running MS-DOS with djgpp/go32.  */
 
 #define YES_UNDERSCORES
 
