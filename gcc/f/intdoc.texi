@@ -1,3 +1,5 @@
+@c This file is automatically derived from intdoc.c, intdoc.in,
+@c ansify.c, intrin.def, and intrin.h.  Edit those files instead.
 @menu
 @ifset familyF2U
 * Abort Intrinsic::     Abort the program.

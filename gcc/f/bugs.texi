@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1996-08-19
+@c 1996-09-09
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -25,21 +25,8 @@ configure, port, build, and install @code{g77},
 @ref{Problems Installing}.
 
 @itemize @bullet
-@cindex DNRM2 miscompiled
-@item
-An old version of the BLAS function @code{DNRM2} is miscompiled
-on ix86 machines when @samp{-O2} (or higher, probably) is
-used.
-The bug is in the @code{gcc} back end, as proven using
-a C translation of a simplified version of @code{DRNM2}
-that illustrates the bug.
-(The code in @file{gcc/reg-stack.c} fails to recognize that,
-after an initial load of @samp{XMAX}, a subsequent load
-must be preceded by a stack pop, or @samp{fstp %st(0)} in
-assembler, to avoid ultimately overflowing the floating-point
-stack.)
-
 @cindex Alpha
+@cindex -O2
 @item
 @code{g77}'s version of @code{gcc}, and probably @code{g77}
 itself, cannot be reliably used with the @samp{-O2} option
@@ -52,6 +39,24 @@ It also manifests itself as a failure to compile
 in this case, @samp{R} might be initialized to @samp{4.0}.
 
 Until this bug is fixed, use only @samp{-O1} or no optimization.
+
+@cindex DNRM2
+@cindex stack, 387 coprocessor
+@cindex ix86
+@cindex -O2
+@item
+A code-generation bug afflicts
+Intel x86 targets when @samp{-O2} is specified
+compiling, for example, an old version of
+the @samp{DNRM2} routine.
+The x87 coprocessor stack is being somewhat
+mismanaged in cases where assigned @code{GOTO}
+and @code{ASSIGN} are involved.
+
+Version 0.5.21 of @code{g77} contains an initial
+effort to fix the problem, but this effort is
+incomplete, and a more complete fix is planned
+for the next release.
 
 @cindex SIGNAL() intrinsic
 @cindex intrinsics, SIGNAL()

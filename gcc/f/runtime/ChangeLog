@@ -1,3 +1,13 @@
+Tue Sep  9 00:33:24 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* Version 0.5.21 released.
+
+Mon Sep  8 19:39:01 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* libI77/close.c (f_exit): Fix thinko, inverted test
+	of whether initialization done, so exiting now closes
+	open units again.
+
 Tue Aug 26 01:42:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	From Jim Wilson:

@@ -13874,9 +13874,9 @@ duplicate_decls (tree newdecl, tree olddecl)
   {
     register unsigned olddecl_uid = DECL_UID (olddecl);
 
-    bcopy ((char *) newdecl + sizeof (struct tree_common),
-	   (char *) olddecl + sizeof (struct tree_common),
-	   sizeof (struct tree_decl) - sizeof (struct tree_common));
+    memcpy ((char *) olddecl + sizeof (struct tree_common),
+	    (char *) newdecl + sizeof (struct tree_common),
+	    sizeof (struct tree_decl) - sizeof (struct tree_common));
     DECL_UID (olddecl) = olddecl_uid;
   }
 
@@ -15744,7 +15744,7 @@ open_include_file (filename, searchptr)
   else
     {
       dir = (char *) xmalloc (p - filename + 1);
-      bcopy (filename, dir, p - filename);
+      memcpy (dir, filename, p - filename);
       dir[p - filename] = '\0';
       from = p + 1;
       map = read_name_map (dir);
@@ -15958,7 +15958,7 @@ ffecom_file_ (char *name)
      early #line directives (when -g is in effect).  */
 
   fp = &instack[++indepth];
-  bzero ((char *) fp, sizeof (FILE_BUF));
+  memset ((char *) fp, 0, sizeof (FILE_BUF));
   if (name == NULL)
     name = "";
   fp->nominal_fname = fp->fname = name;
@@ -16218,7 +16218,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
   instack[indepth].column = ffewhere_column_use (c);
 
   fp = &instack[indepth + 1];
-  bzero ((char *) fp, sizeof (FILE_BUF));
+  memset ((char *) fp, 0, sizeof (FILE_BUF));
   fp->nominal_fname = fp->fname = fname;
   fp->dir = searchptr;
 
