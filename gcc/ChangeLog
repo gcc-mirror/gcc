@@ -1,3 +1,14 @@
+2001-12-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (rs6000_builtins): Add vsldoi variants.
+
+        * config/rs6000/rs6000.md ("altivec_vsldoi_*"): Same.
+
+        * config/rs6000/rs6000.c: Clean up some spacing and indentation.
+        (altivec_init_builtins): Add tree types for builtins with 4 bit
+        literals.
+	(bdesc_3arg): Add vsldoi variants.
+
 2001-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a.h (datalbl, jmplbl): Declare array size explicitly.
