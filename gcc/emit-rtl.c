@@ -180,7 +180,6 @@ static rtx make_jump_insn_raw (rtx);
 static rtx make_call_insn_raw (rtx);
 static rtx find_line_note (rtx);
 static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
-static void unshare_all_rtl_1 (rtx);
 static void unshare_all_decls (tree);
 static void reset_used_decls (tree);
 static void mark_label_nuses (rtx);
@@ -2450,7 +2449,7 @@ unshare_all_rtl (tree fndecl, rtx insn)
   unshare_all_decls (DECL_INITIAL (fndecl));
 
   /* Unshare just about everything else.  */
-  unshare_all_rtl_1 (insn);
+  unshare_all_rtl_in_chain (insn);
 
   /* Make sure the addresses of stack slots found outside the insn chain
      (such as, in DECL_RTL of a variable) are not shared
@@ -2492,11 +2491,138 @@ unshare_all_rtl_again (rtx insn)
   unshare_all_rtl (cfun->decl, insn);
 }
 
+/* Check that ORIG is not marked when it should not be and mark ORIG as in use,
+   Recursively does the same for subexpressions.  */
+
+static void
+verify_rtx_sharing (rtx orig, rtx insn)
+{
+  rtx x = orig;
+  int i;
+  enum rtx_code code;
+  const char *format_ptr;
+
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+
+  /* These types may be freely shared.  */
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case SCRATCH:
+      /* SCRATCH must be shared because they represent distinct values.  */
+      return;
+
+    case CONST:
+      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+	 a LABEL_REF, it isn't sharable.  */
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	return;
+      break;
+
+    case MEM:
+      /* A MEM is allowed to be shared if its address is constant.  */
+      if (CONSTANT_ADDRESS_P (XEXP (x, 0))
+	  || reload_completed || reload_in_progress)
+	return;
+
+      break;
+
+    default:
+      break;
+    }
+
+  /* This rtx may not be shared.  If it has already been seen,
+     replace it with a copy of itself.  */
+
+  if (RTX_FLAG (x, used))
+    {
+      error ("Invalid rtl sharing found in the insn");
+      debug_rtx (insn);
+      error ("Shared rtx");
+      debug_rtx (x);
+      abort ();
+    }
+  RTX_FLAG (x, used) = 1;
+
+  /* Now scan the subexpressions recursively. */
+
+  format_ptr = GET_RTX_FORMAT (code);
+
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  verify_rtx_sharing (XEXP (x, i), insn);
+	  break;
+
+	case 'E':
+	  if (XVEC (x, i) != NULL)
+	    {
+	      int j;
+	      int len = XVECLEN (x, i);
+
+	      for (j = 0; j < len; j++)
+		{
+		  /* We allow sharing of ASM_OPERANDS inside single instruction.  */
+		  if (j && GET_CODE (XVECEXP (x, i, j)) == SET
+		      && GET_CODE (SET_SRC (XVECEXP (x, i, j))) == ASM_OPERANDS)
+		    verify_rtx_sharing (SET_DEST (XVECEXP (x, i, j)), insn);
+		  else
+		    verify_rtx_sharing (XVECEXP (x, i, j), insn);
+		}
+	    }
+	  break;
+	}
+    }
+  return;
+}
+
+/* Go through all the RTL insn bodies and chec that there is no inexpected
+   sharing in between the subexpressions.  */
+
+void
+verify_rtl_sharing (void)
+{
+  rtx p;
+
+  for (p = get_insns (); p; p = NEXT_INSN (p))
+    if (INSN_P (p))
+      {
+	reset_used_flags (PATTERN (p));
+	reset_used_flags (REG_NOTES (p));
+	reset_used_flags (LOG_LINKS (p));
+      }
+
+  for (p = get_insns (); p; p = NEXT_INSN (p))
+    if (INSN_P (p))
+      {
+	verify_rtx_sharing (PATTERN (p), p);
+	verify_rtx_sharing (REG_NOTES (p), p);
+	verify_rtx_sharing (LOG_LINKS (p), p);
+      }
+}
+
 /* Go through all the RTL insn bodies and copy any invalid shared structure.
    Assumes the mark bits are cleared at entry.  */
 
-static void
-unshare_all_rtl_1 (rtx insn)
+void
+unshare_all_rtl_in_chain (rtx insn)
 {
   for (; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
@@ -2668,6 +2794,7 @@ copy_rtx_if_shared (rtx orig)
     case CONST_DOUBLE:
     case CONST_VECTOR:
     case SYMBOL_REF:
+    case LABEL_REF:
     case CODE_LABEL:
     case PC:
     case CC0:
@@ -2800,6 +2927,69 @@ reset_used_flags (rtx x)
 	case 'E':
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    reset_used_flags (XVECEXP (x, i, j));
+	  break;
+	}
+    }
+}
+
+/* Set all the USED bits in X to allow copy_rtx_if_shared to be used
+   to look for shared sub-parts.  */
+
+void
+set_used_flags (rtx x)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *format_ptr;
+
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+
+  /* These types may be freely shared so we needn't do any resetting
+     for them.  */
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST_VECTOR:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+      return;
+
+    case INSN:
+    case JUMP_INSN:
+    case CALL_INSN:
+    case NOTE:
+    case LABEL_REF:
+    case BARRIER:
+      /* The chain of insns is not being copied.  */
+      return;
+
+    default:
+      break;
+    }
+
+  RTX_FLAG (x, used) = 1;
+
+  format_ptr = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  set_used_flags (XEXP (x, i));
+	  break;
+
+	case 'E':
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    set_used_flags (XVECEXP (x, i, j));
 	  break;
 	}
     }
