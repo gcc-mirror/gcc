@@ -1,3 +1,9 @@
+Tue Jan  9 21:34:57 2001  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa32-regs.h (CONDITIONAL_REGISTER_USAGE): When generating pic code,
+	PIC_OFFSET_TABLE_REGNUM_SAVED is a call_used register.
+	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Likewise.
+
 Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* objc/lang-options.h: Remove bogus reference to
