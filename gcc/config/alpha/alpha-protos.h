@@ -34,7 +34,6 @@ extern void alpha_expand_epilogue PARAMS ((void));
 extern void alpha_output_filename PARAMS ((FILE *, const char *));
 extern void alpha_output_lineno PARAMS ((FILE *, int));
 
-#ifdef RTX_CODE
 extern int reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_6bit_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_8bit_operand PARAMS ((rtx, enum machine_mode));
@@ -113,13 +112,7 @@ extern rtx alpha_emit_set_long_const PARAMS ((rtx, HOST_WIDE_INT,
 extern bool alpha_expand_mov PARAMS ((enum machine_mode, rtx *));
 extern bool alpha_expand_mov_nobwx PARAMS ((enum machine_mode, rtx *));
 extern void alpha_emit_floatuns PARAMS ((rtx[]));
-extern rtx alpha_emit_conditional_branch PARAMS ((enum rtx_code));
-extern rtx alpha_emit_setcc PARAMS ((enum rtx_code));
 extern rtx alpha_emit_conditional_move PARAMS ((rtx, enum machine_mode));
-extern int alpha_split_conditional_move PARAMS ((enum rtx_code, rtx, rtx,
-						 rtx, rtx));
-extern void alpha_emit_xfloating_arith PARAMS ((enum rtx_code, rtx[]));
-extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_split_tfmode_pair PARAMS ((rtx[]));
 extern void alpha_split_tfmode_frobsign PARAMS ((rtx[],
 						 rtx (*)(rtx, rtx, rtx)));
@@ -135,51 +128,45 @@ extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void alpha_initialize_trampoline PARAMS ((rtx, rtx, rtx, int, int, int));
 extern void alpha_reorg PARAMS ((rtx));
-#endif /* RTX_CODE */
+
+extern tree alpha_build_va_list PARAMS ((void));
+extern void alpha_va_start PARAMS ((int, tree, rtx));
+extern rtx alpha_va_arg PARAMS ((tree, tree));
+extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
+				 tree, int));
+extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
+extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
+extern void alpha_output_mi_thunk_osf PARAMS ((FILE *, tree,
+					       HOST_WIDE_INT, tree));
 
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value PARAMS ((enum machine_mode,
-				     REAL_VALUE_TYPE *, int));
+				      REAL_VALUE_TYPE *, int));
 #endif
+
+#ifdef RTX_CODE
+extern rtx alpha_emit_conditional_branch PARAMS ((enum rtx_code));
+extern rtx alpha_emit_setcc PARAMS ((enum rtx_code));
+extern int alpha_split_conditional_move PARAMS ((enum rtx_code, rtx, rtx,
+						 rtx, rtx));
+extern void alpha_emit_xfloating_arith PARAMS ((enum rtx_code, rtx[]));
+extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
+#endif
+
+extern rtx alpha_need_linkage PARAMS ((const char *, int));
 
 #if TARGET_ABI_OPEN_VMS
 #ifdef HAVE_MACHINE_MODES
 extern enum avms_arg_type alpha_arg_type PARAMS ((enum machine_mode));
 #endif
-#ifdef RTX_CODE
 extern rtx alpha_arg_info_reg_val PARAMS ((CUMULATIVE_ARGS));
-#endif
-#ifdef BUFSIZ
 extern void alpha_write_linkage PARAMS ((FILE *));
-#endif
 #endif /* TARGET_ABI_OPEN_VMS */
 
-#ifdef RTX_CODE
-extern rtx alpha_need_linkage PARAMS ((const char *, int));
-#endif
-
-#ifdef TREE_CODE
-extern tree alpha_build_va_list PARAMS ((void));
-#ifdef RTX_CODE
-extern void alpha_va_start PARAMS ((int, tree, rtx));
-extern rtx alpha_va_arg PARAMS ((tree, tree));
-extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
-				 tree, int));
-#endif
-extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
-extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
-extern void alpha_output_mi_thunk_osf PARAMS ((FILE *, tree,
-					       HOST_WIDE_INT, tree));
-#endif /* TREE CODE */
-
-#ifdef RTX_CODE
 extern rtx unicosmk_add_call_info_word PARAMS ((rtx));
-#endif
 
 #if TARGET_ABI_UNICOSMK
-#ifdef RTX_CODE
 extern void unicosmk_defer_case_vector PARAMS ((rtx, rtx));
-#endif
 extern void unicosmk_add_extern PARAMS ((const char *));
 extern void unicosmk_output_align PARAMS ((FILE *, int));
 extern char * unicosmk_text_section PARAMS ((void));
