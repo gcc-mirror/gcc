@@ -1,3 +1,8 @@
+2001-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi: Move terminology and spelling conventions to
+	htdocs/codingconventions.html.
+
 2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Document that configure options not listed in
