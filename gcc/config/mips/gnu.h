@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS GNU Hurd version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,34 +17,135 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dmips -DMACH -D__GNU__ -D__HURD__ \
--Asystem(unix) -Asystem(mach) -Acpu(mips) -Amachine(mips) -Asystem(gnu) \
-
-#define LINK_SPEC "\
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
-%{bestGnum} %{shared} %{non_shared}"
-
-#define MACHINE_TYPE "MIPS-GNU"
-
 #include "mips/mips.h"
 
-#undef ASM_FINAL_SPEC
-#undef SDB_DEBUGGING_INFO
-#undef MIPS_DEBUGGING_INFO
+#undef SWITCH_TAKES_ARG
+#undef ASM_FILE_END
+#undef ASM_OUTPUT_IDENT
+#undef ASM_OUTPUT_SOURCE_LINE
+#undef READONLY_DATA_SECTION
+#undef SELECT_SECTION
+#undef ASM_DECLARE_FUNCTION_NAME
+#undef ASM_DECLARE_OBJECT_NAME
+/* #undef PREFERRED_DEBUGGING_TYPE */
 
-/* Generate DBX debugging information.  */
-#define DBX_DEBUGGING_INFO
+#include "svr4.h"
+
+#undef MD_EXEC_PREFIX
+#undef MD_STARTFILE_PREFIX
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (MIPS GNU/ELF)");
+
+/* Output at beginning of assembler file.  */
+/* The .file command should always begin the output.  */
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)						\
+  do {									\
+	mips_asm_file_start (FILE);					\
+	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
+  } while (0)
+
+#undef ASM_FILE_END
+#define ASM_FILE_END(FILE)						\
+  do {				 					\
+	mips_asm_file_end(FILE);					\
+	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",			\
+		IDENT_ASM_OP, version_string);				\
+  } while (0)
 
 #undef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) \
-    fprintf (STREAM, "\t.stabd %d,0,%d\n", \
-	     N_SLINE, LINE);
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
+  do {									\
+      ++sym_lineno;							\
+      fprintf ((FILE), ".LM%d:\n\t%s %d,0,%d,.LM%d\n",			\
+	       sym_lineno, ASM_STABN_OP, N_SLINE, (LINE), sym_lineno);	\
+  } while (0)
 
-/* We use BSD object format and our assembler handles .stab<x>. */
-#undef ASM_STABS_OP
-#undef ASM_STABN_OP
-#undef ASM_STABD_OP
-#define ASM_STABS_OP	(".stabs")
-#define ASM_STABN_OP	(".stabn")
-#define ASM_STABD_OP	(".stabd")
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)			\
+  do {									\
+    extern FILE *asm_out_text_file;					\
+									\
+    if (TARGET_GP_OPT)							\
+      STREAM = asm_out_text_file;					\
+    fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);				\
+    assemble_name (STREAM, NAME);					\
+    putc (',', STREAM);							\
+    fprintf (STREAM, TYPE_OPERAND_FMT, "function");			\
+    putc ('\n', STREAM);						\
+    ASM_DECLARE_RESULT (STREAM, DECL_RESULT (DECL));			\
+    current_function_name = NAME;					\
+    HALF_PIC_DECLARE (NAME);						\
+  } while (0)
+
+/* Switch  Recognition by gcc.c.  Add -G xx support */
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR)						\
+  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
+   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
+   || (CHAR) == 'I' || (CHAR) == 'm'					\
+   || (CHAR) == 'h' || (CHAR) == 'z'					\
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'G')
+
+#undef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 1
+
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
+
+#define MIPS_GNU
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES GNU_CPP_PREDEFINES("mips") \
+"-DMIPSEB -DR3000 -D_MIPSEB -D_R3000 \
+-D_MIPS_SZINT=32 -D_MIPS_SZLONG=32 -D_MIPS_SZPTR=32"
+
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/include"
+
+#undef ASM_SPEC
+#define ASM_SPEC "\
+%{mmips-as: \
+	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
+	%{pipe: %e-pipe is not supported.} \
+	%{K}} \
+%{!mmips-as: \
+	%{mcpu=*}} \
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
+%{membedded-pic}"
+
+#undef LINK_SPEC
+#define LINK_SPEC "\
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+%{call_shared} %{no_archive} %{exact_version} \
+%{!shared: %{!non_shared: %{!call_shared: -non_shared}}} \
+-systype /gnu/ "
+		    
+#undef LIB_SPEC
+#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
+
+#undef MACHINE_TYPE
+#define MACHINE_TYPE "GNU MIPS/ELF"
+
+#undef YES_UNDERSCORE
+
+#undef SDB_DEBUGGING_INFO
+#undef DBX_DEBUGGING_INFO
+#undef MIPS_DEBUGGING_INFO
+#define DWARF_DEBUGGING_INFO
+
+#define NO_MIPS_SELECT_SECTION
+
+/* Get machine-independent configuration parameters for the GNU system.  */
+#include "gnu.h"
