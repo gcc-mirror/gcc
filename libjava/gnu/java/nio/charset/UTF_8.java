@@ -101,7 +101,7 @@ final class UTF_8 extends Charset
     protected CoderResult decodeLoop (ByteBuffer in, CharBuffer out)
     {
       // TODO: Optimize this in the case in.hasArray() / out.hasArray()
-      int inPos = 0;
+      int inPos = in.position(); 
       try
         {
           while (in.hasRemaining ())
@@ -196,7 +196,7 @@ final class UTF_8 extends Charset
 
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
-      int inPos = 0;
+      int inPos = in.position();
       try
         {
           // TODO: Optimize this in the case in.hasArray() / out.hasArray()
