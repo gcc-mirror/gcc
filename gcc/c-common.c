@@ -2043,6 +2043,8 @@ c_common_type_for_mode (mode, unsignedp)
       return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
     case V2SImode:
       return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
+    case V2HImode:
+      return unsignedp ? unsigned_V2HI_type_node : V2HI_type_node;
     case V4HImode:
       return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
     case V8QImode:

@@ -1965,6 +1965,7 @@ enum tree_index
   TI_UV8HI_TYPE,
   TI_UV8QI_TYPE,
   TI_UV4HI_TYPE,
+  TI_UV2HI_TYPE,
   TI_UV2SI_TYPE,
   TI_UV2SF_TYPE,
   TI_UV2DI_TYPE,
@@ -1977,6 +1978,7 @@ enum tree_index
   TI_V8HI_TYPE,
   TI_V8QI_TYPE,
   TI_V4HI_TYPE,
+  TI_V2HI_TYPE,
   TI_V2SI_TYPE,
   TI_V2SF_TYPE,
   TI_V2DF_TYPE,
@@ -2048,6 +2050,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define unsigned_V8QI_type_node		global_trees[TI_UV8QI_TYPE]
 #define unsigned_V8HI_type_node		global_trees[TI_UV8HI_TYPE]
 #define unsigned_V4HI_type_node		global_trees[TI_UV4HI_TYPE]
+#define unsigned_V2HI_type_node		global_trees[TI_UV2HI_TYPE]
 #define unsigned_V2SI_type_node		global_trees[TI_UV2SI_TYPE]
 #define unsigned_V2DI_type_node		global_trees[TI_UV2DI_TYPE]
 #define unsigned_V1DI_type_node		global_trees[TI_UV1DI_TYPE]
@@ -2058,6 +2061,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define V8QI_type_node			global_trees[TI_V8QI_TYPE]
 #define V8HI_type_node			global_trees[TI_V8HI_TYPE]
 #define V4HI_type_node			global_trees[TI_V4HI_TYPE]
+#define V2HI_type_node			global_trees[TI_V2HI_TYPE]
 #define V2SI_type_node			global_trees[TI_V2SI_TYPE]
 #define V2SF_type_node			global_trees[TI_V2SF_TYPE]
 #define V2DI_type_node			global_trees[TI_V2DI_TYPE]

@@ -1,3 +1,11 @@
+Mon Oct 14 11:35:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-common.c (c_common_type_for_mode): Add V2HImode case.
+	* tree.c (build_common_tree_nodes_2): Initialize
+	unsigned_V2HI_type_node and V2HI_type_node.
+	* tree.h (enum tree_index): Add TI_UV2HI_TYPE and TI_V2HI_TYPE.
+	(unsigned_V2HI_type_node, V2HI_type_node): Define.
+
 2002-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP):
