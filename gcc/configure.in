@@ -2479,7 +2479,7 @@ for machine in $build $host $target; do
 		;;
 	vax-*-sysv*)			# vaxen running system V
 		tm_file="${tm_file} vax/vaxv.h"
-		xm_file="${tm_file} vax/xm-vaxv.h"
+		xm_file="${xm_file} vax/xm-vaxv.h"
 		float_format=vax
 		;;
 	vax-*-netbsd*)
