@@ -1,3 +1,5 @@
+2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+	
 	PR libstdc++/6501
 	* include/c_std/std_cctype.h: Include bits/c++config.h.
 	* config/os/hpux/bits/os_defines.h (_SB_CTYPE_MACROS): Define.
