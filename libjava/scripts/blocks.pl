@@ -6,8 +6,7 @@ if ($ARGV[0] eq '')
     if (! -f $file)
     {
 	# Too painful to figure out how to get Perl to do it.
-	# FIXME.
-	system 'wget -o .wget-log http://www.isi.edu/in-notes/iana/unidata/Blocks.txt';
+	system 'wget -o .wget-log http://www.unicode.org/Public/UNIDATA/Blocks.txt';
     }
 }
 else
@@ -22,6 +21,7 @@ while (<INPUT>)
 {
     next if /^#/;
     chop;
+    next if /^$/;
 
     ($start, $to, $text) = split (/; /);
     ($symbol = $text) =~ tr/a-z/A-Z/;
@@ -29,6 +29,23 @@ while (<INPUT>)
 
     # Special case for one of the SPECIALS.
     next if $start eq 'FEFF';
+
+    # Special case some areas that our heuristic mishandles.
+    if ($symbol eq 'HIGH_SURROGATES')
+    {
+	$symbol = 'SURROGATES_AREA';
+	$text = 'Surrogates Area';
+	$to = 'DFFF';
+    }
+    elsif ($symbol =~ /SURROGATES/)
+    {
+	next;
+    }
+    elsif ($symbol eq 'PRIVATE_USE')
+    {
+	$symbol .= '_AREA';
+	$text = 'Private Use Area';
+    }
 
     printf "    public static final UnicodeBlock %s = new UnicodeBlock (\"%s\", '\\u%s', '\\u%s');\n",
            $symbol, $text, $start, $to;

@@ -1,3 +1,9 @@
+2000-12-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Character.java: Updated UnicodeBlock constants.
+	* scripts/blocks.pl: Special case private use and surrogate
+	areas.  Updated URL.
+
 2000-12-12  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

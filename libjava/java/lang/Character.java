@@ -361,6 +361,8 @@ public final class Character implements Serializable, Comparable
     public static final UnicodeBlock ARMENIAN = new UnicodeBlock ("Armenian", '\u0530', '\u058F');
     public static final UnicodeBlock HEBREW = new UnicodeBlock ("Hebrew", '\u0590', '\u05FF');
     public static final UnicodeBlock ARABIC = new UnicodeBlock ("Arabic", '\u0600', '\u06FF');
+    public static final UnicodeBlock SYRIAC__ = new UnicodeBlock ("Syriac  ", '\u0700', '\u074F');
+    public static final UnicodeBlock THAANA = new UnicodeBlock ("Thaana", '\u0780', '\u07BF');
     public static final UnicodeBlock DEVANAGARI = new UnicodeBlock ("Devanagari", '\u0900', '\u097F');
     public static final UnicodeBlock BENGALI = new UnicodeBlock ("Bengali", '\u0980', '\u09FF');
     public static final UnicodeBlock GURMUKHI = new UnicodeBlock ("Gurmukhi", '\u0A00', '\u0A7F');
@@ -370,11 +372,20 @@ public final class Character implements Serializable, Comparable
     public static final UnicodeBlock TELUGU = new UnicodeBlock ("Telugu", '\u0C00', '\u0C7F');
     public static final UnicodeBlock KANNADA = new UnicodeBlock ("Kannada", '\u0C80', '\u0CFF');
     public static final UnicodeBlock MALAYALAM = new UnicodeBlock ("Malayalam", '\u0D00', '\u0D7F');
+    public static final UnicodeBlock SINHALA = new UnicodeBlock ("Sinhala", '\u0D80', '\u0DFF');
     public static final UnicodeBlock THAI = new UnicodeBlock ("Thai", '\u0E00', '\u0E7F');
     public static final UnicodeBlock LAO = new UnicodeBlock ("Lao", '\u0E80', '\u0EFF');
-    public static final UnicodeBlock TIBETAN = new UnicodeBlock ("Tibetan", '\u0F00', '\u0FBF');
+    public static final UnicodeBlock TIBETAN = new UnicodeBlock ("Tibetan", '\u0F00', '\u0FFF');
+    public static final UnicodeBlock MYANMAR_ = new UnicodeBlock ("Myanmar ", '\u1000', '\u109F');
     public static final UnicodeBlock GEORGIAN = new UnicodeBlock ("Georgian", '\u10A0', '\u10FF');
     public static final UnicodeBlock HANGUL_JAMO = new UnicodeBlock ("Hangul Jamo", '\u1100', '\u11FF');
+    public static final UnicodeBlock ETHIOPIC = new UnicodeBlock ("Ethiopic", '\u1200', '\u137F');
+    public static final UnicodeBlock CHEROKEE = new UnicodeBlock ("Cherokee", '\u13A0', '\u13FF');
+    public static final UnicodeBlock UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS = new UnicodeBlock ("Unified Canadian Aboriginal Syllabics", '\u1400', '\u167F');
+    public static final UnicodeBlock OGHAM = new UnicodeBlock ("Ogham", '\u1680', '\u169F');
+    public static final UnicodeBlock RUNIC = new UnicodeBlock ("Runic", '\u16A0', '\u16FF');
+    public static final UnicodeBlock KHMER = new UnicodeBlock ("Khmer", '\u1780', '\u17FF');
+    public static final UnicodeBlock MONGOLIAN = new UnicodeBlock ("Mongolian", '\u1800', '\u18AF');
     public static final UnicodeBlock LATIN_EXTENDED_ADDITIONAL = new UnicodeBlock ("Latin Extended Additional", '\u1E00', '\u1EFF');
     public static final UnicodeBlock GREEK_EXTENDED = new UnicodeBlock ("Greek Extended", '\u1F00', '\u1FFF');
     public static final UnicodeBlock GENERAL_PUNCTUATION = new UnicodeBlock ("General Punctuation", '\u2000', '\u206F');
@@ -394,20 +405,26 @@ public final class Character implements Serializable, Comparable
     public static final UnicodeBlock GEOMETRIC_SHAPES = new UnicodeBlock ("Geometric Shapes", '\u25A0', '\u25FF');
     public static final UnicodeBlock MISCELLANEOUS_SYMBOLS = new UnicodeBlock ("Miscellaneous Symbols", '\u2600', '\u26FF');
     public static final UnicodeBlock DINGBATS = new UnicodeBlock ("Dingbats", '\u2700', '\u27BF');
+    public static final UnicodeBlock BRAILLE_PATTERNS = new UnicodeBlock ("Braille Patterns", '\u2800', '\u28FF');
+    public static final UnicodeBlock CJK_RADICALS_SUPPLEMENT = new UnicodeBlock ("CJK Radicals Supplement", '\u2E80', '\u2EFF');
+    public static final UnicodeBlock KANGXI_RADICALS = new UnicodeBlock ("Kangxi Radicals", '\u2F00', '\u2FDF');
+    public static final UnicodeBlock IDEOGRAPHIC_DESCRIPTION_CHARACTERS = new UnicodeBlock ("Ideographic Description Characters", '\u2FF0', '\u2FFF');
     public static final UnicodeBlock CJK_SYMBOLS_AND_PUNCTUATION = new UnicodeBlock ("CJK Symbols and Punctuation", '\u3000', '\u303F');
     public static final UnicodeBlock HIRAGANA = new UnicodeBlock ("Hiragana", '\u3040', '\u309F');
     public static final UnicodeBlock KATAKANA = new UnicodeBlock ("Katakana", '\u30A0', '\u30FF');
     public static final UnicodeBlock BOPOMOFO = new UnicodeBlock ("Bopomofo", '\u3100', '\u312F');
     public static final UnicodeBlock HANGUL_COMPATIBILITY_JAMO = new UnicodeBlock ("Hangul Compatibility Jamo", '\u3130', '\u318F');
     public static final UnicodeBlock KANBUN = new UnicodeBlock ("Kanbun", '\u3190', '\u319F');
+    public static final UnicodeBlock BOPOMOFO_EXTENDED = new UnicodeBlock ("Bopomofo Extended", '\u31A0', '\u31BF');
     public static final UnicodeBlock ENCLOSED_CJK_LETTERS_AND_MONTHS = new UnicodeBlock ("Enclosed CJK Letters and Months", '\u3200', '\u32FF');
     public static final UnicodeBlock CJK_COMPATIBILITY = new UnicodeBlock ("CJK Compatibility", '\u3300', '\u33FF');
+    public static final UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A = new UnicodeBlock ("CJK Unified Ideographs Extension A", '\u3400', '\u4DB5');
     public static final UnicodeBlock CJK_UNIFIED_IDEOGRAPHS = new UnicodeBlock ("CJK Unified Ideographs", '\u4E00', '\u9FFF');
+    public static final UnicodeBlock YI_SYLLABLES = new UnicodeBlock ("Yi Syllables", '\uA000', '\uA48F');
+    public static final UnicodeBlock YI_RADICALS = new UnicodeBlock ("Yi Radicals", '\uA490', '\uA4CF');
     public static final UnicodeBlock HANGUL_SYLLABLES = new UnicodeBlock ("Hangul Syllables", '\uAC00', '\uD7A3');
-    public static final UnicodeBlock HIGH_SURROGATES = new UnicodeBlock ("High Surrogates", '\uD800', '\uDB7F');
-    public static final UnicodeBlock HIGH_PRIVATE_USE_SURROGATES = new UnicodeBlock ("High Private Use Surrogates", '\uDB80', '\uDBFF');
-    public static final UnicodeBlock LOW_SURROGATES = new UnicodeBlock ("Low Surrogates", '\uDC00', '\uDFFF');
-    public static final UnicodeBlock PRIVATE_USE = new UnicodeBlock ("Private Use", '\uE000', '\uF8FF');
+    public static final UnicodeBlock SURROGATES_AREA = new UnicodeBlock ("Surrogates Area", '\uD800', '\uDFFF');
+    public static final UnicodeBlock PRIVATE_USE_AREA = new UnicodeBlock ("Private Use Area", '\uE000', '\uF8FF');
     public static final UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS = new UnicodeBlock ("CJK Compatibility Ideographs", '\uF900', '\uFAFF');
     public static final UnicodeBlock ALPHABETIC_PRESENTATION_FORMS = new UnicodeBlock ("Alphabetic Presentation Forms", '\uFB00', '\uFB4F');
     public static final UnicodeBlock ARABIC_PRESENTATION_FORMS_A = new UnicodeBlock ("Arabic Presentation Forms-A", '\uFB50', '\uFDFF');
@@ -430,6 +447,8 @@ public final class Character implements Serializable, Comparable
       ARMENIAN,
       HEBREW,
       ARABIC,
+      SYRIAC__,
+      THAANA,
       DEVANAGARI,
       BENGALI,
       GURMUKHI,
@@ -439,11 +458,20 @@ public final class Character implements Serializable, Comparable
       TELUGU,
       KANNADA,
       MALAYALAM,
+      SINHALA,
       THAI,
       LAO,
       TIBETAN,
+      MYANMAR_,
       GEORGIAN,
       HANGUL_JAMO,
+      ETHIOPIC,
+      CHEROKEE,
+      UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS,
+      OGHAM,
+      RUNIC,
+      KHMER,
+      MONGOLIAN,
       LATIN_EXTENDED_ADDITIONAL,
       GREEK_EXTENDED,
       GENERAL_PUNCTUATION,
@@ -463,20 +491,26 @@ public final class Character implements Serializable, Comparable
       GEOMETRIC_SHAPES,
       MISCELLANEOUS_SYMBOLS,
       DINGBATS,
+      BRAILLE_PATTERNS,
+      CJK_RADICALS_SUPPLEMENT,
+      KANGXI_RADICALS,
+      IDEOGRAPHIC_DESCRIPTION_CHARACTERS,
       CJK_SYMBOLS_AND_PUNCTUATION,
       HIRAGANA,
       KATAKANA,
       BOPOMOFO,
       HANGUL_COMPATIBILITY_JAMO,
       KANBUN,
+      BOPOMOFO_EXTENDED,
       ENCLOSED_CJK_LETTERS_AND_MONTHS,
       CJK_COMPATIBILITY,
+      CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A,
       CJK_UNIFIED_IDEOGRAPHS,
+      YI_SYLLABLES,
+      YI_RADICALS,
       HANGUL_SYLLABLES,
-      HIGH_SURROGATES,
-      HIGH_PRIVATE_USE_SURROGATES,
-      LOW_SURROGATES,
-      PRIVATE_USE,
+      SURROGATES_AREA,
+      PRIVATE_USE_AREA,
       CJK_COMPATIBILITY_IDEOGRAPHS,
       ALPHABETIC_PRESENTATION_FORMS,
       ARABIC_PRESENTATION_FORMS_A,
