@@ -50,6 +50,54 @@ o Correct pastability test for CPP_NAME and CPP_NUMBER.
 #include "cpphash.h"
 #include "symcat.h"
 
+static const cpp_token placemarker_token = {0, 0, CPP_PLACEMARKER, 0 UNION_INIT_ZERO};
+static const cpp_token eof_token = {0, 0, CPP_EOF, 0 UNION_INIT_ZERO};
+
+/* Flags for cpp_context.  */
+#define CONTEXT_PASTEL	(1 << 0) /* An argument context on LHS of ##.  */
+#define CONTEXT_PASTER	(1 << 1) /* An argument context on RHS of ##.  */
+#define CONTEXT_RAW	(1 << 2) /* If argument tokens already expanded.  */
+#define CONTEXT_ARG	(1 << 3) /* If an argument context.  */
+
+typedef struct cpp_context cpp_context;
+struct cpp_context
+{
+  union
+  {
+    const cpp_toklist *list;	/* Used for macro contexts only.  */
+    const cpp_token **arg;	/* Used for arg contexts only.  */
+  } u;
+
+  /* Pushed token to be returned by next call to get_raw_token.  */
+  const cpp_token *pushed_token;
+
+  struct macro_args *args;	/* 0 for arguments and object-like macros.  */
+  unsigned short posn;		/* Current posn, index into u.  */
+  unsigned short count;		/* No. of tokens in u.  */
+  unsigned short level;
+  unsigned char flags;
+};
+
+typedef struct macro_args macro_args;
+struct macro_args
+{
+  unsigned int *ends;
+  const cpp_token **tokens;
+  unsigned int capacity;
+  unsigned int used;
+  unsigned short level;
+};
+
+static const cpp_token *get_raw_token PARAMS ((cpp_reader *));
+static const cpp_token *parse_arg PARAMS ((cpp_reader *, int, unsigned int,
+					   macro_args *, unsigned int *));
+static int parse_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_args *));
+static void save_token PARAMS ((macro_args *, const cpp_token *));
+static int pop_context PARAMS ((cpp_reader *));
+static int push_macro_context PARAMS ((cpp_reader *, const cpp_token *));
+static void push_arg_context PARAMS ((cpp_reader *, const cpp_token *));
+static void free_macro_args PARAMS ((macro_args *));
+
 #define auto_expand_name_space(list) \
     _cpp_expand_name_space ((list), 1 + (list)->name_cap / 2)
 static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
@@ -131,9 +179,9 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 #define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITE))
 #define PREV_TOKEN_TYPE (cur_token[-1].type)
 
-#define PUSH_TOKEN(ttype) cur_token++->type = ttype
-#define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
-#define BACKUP_TOKEN(ttype) (--cur_token)->type = ttype
+#define PUSH_TOKEN(ttype) cur_token++->type = (ttype)
+#define REVISE_TOKEN(ttype) cur_token[-1].type = (ttype)
+#define BACKUP_TOKEN(ttype) (--cur_token)->type = (ttype)
 #define BACKUP_DIGRAPH(ttype) do { \
   BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
 
@@ -144,6 +192,20 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 			       : (TOKEN_SPELL(token) == SPELL_IDENT	\
 				  ? (token)->val.node->length		\
 				  : 0)))
+
+#define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
+#define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
+
+#define ASSIGN_FLAGS_AND_POS(d, s) \
+  do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
+      if ((d)->flags & BOL) {(d)->col = (s)->col; (d)->line = (s)->line;} \
+  } while (0)
+
+/* f is flags, just consisting of PREV_WHITE | BOL.  */
+#define MODIFY_FLAGS_AND_POS(d, s, f) \
+  do {(d)->flags &= ~(PREV_WHITE | BOL); (d)->flags |= (f); \
+      if ((f) & BOL) {(d)->col = (s)->col; (d)->line = (s)->line;} \
+  } while (0)
 
 #define T(e, s) {SPELL_OPERATOR, (const U_CHAR *) s},
 #define I(e, s) {SPELL_IDENT, s},
@@ -368,7 +430,6 @@ cpp_scan_buffer_nooutput (pfile)
 }
 
 /* Scan until CPP_BUFFER (pfile) is exhausted, writing output to PRINT.  */
-
 void
 cpp_scan_buffer (pfile, print)
      cpp_reader *pfile;
@@ -399,6 +460,29 @@ cpp_scan_buffer (pfile, print)
       output_token (pfile, token, prev);
       prev = token;
     }
+}
+
+/* Scan a single line of the input into the token_buffer.  */
+void
+cpp_scan_line (pfile)
+     cpp_reader *pfile;
+{
+  const cpp_token *token, *prev = 0;
+
+  do
+    {
+      token = cpp_get_token (pfile);
+      if (token->type == CPP_EOF)
+	{
+	  cpp_pop_buffer (pfile);
+	  break;
+	}
+
+      output_token (pfile, token, prev);
+      prev = token;
+    }
+  while (pfile->cur_context > 0
+	 || pfile->contexts[0].posn < pfile->contexts[0].count);
 }
 
 /* Helper routine used by parse_include, which can't see spell_token.
@@ -872,8 +956,8 @@ skip_block_comment (pfile)
   return seen_eof;
 }
 
-/* Skip a C++ or Chill line comment.  Handles escaped newlines.
-   Returns non-zero if a multiline comment.  */
+/* Skip a C++ line comment.  Handles escaped newlines.  Returns
+   non-zero if a multiline comment.  */
 static int
 skip_line_comment (pfile)
      cpp_reader *pfile;
@@ -1092,19 +1176,17 @@ parse_string (pfile, list, token, terminator)
 
 	      cur--;
 
-	      /* In Fortran and assembly language, silently terminate
-		 strings of either variety at end of line.  This is a
-		 kludge around not knowing where comments are in these
-		 languages.  */
-	      if (CPP_OPTION (pfile, lang_fortran)
-		  || CPP_OPTION (pfile, lang_asm))
+	      /* In assembly language, silently terminate strings of
+		 either variety at end of line.  This is a kludge
+		 around not knowing where comments are.  */
+	      if (CPP_OPTION (pfile, lang_asm))
 		goto out;
 
-	      /* Character constants, headers and asserts may not
-		 extend over multiple lines.  In Standard C, neither
-		 may strings.  We accept multiline strings as an
+	      /* Character constants and header names may not extend
+		 over multiple lines.  In Standard C, neither may
+		 strings.  We accept multiline strings as an
 		 extension.  (Even in directives - otherwise, glibc's
-	         longlong.h breaks.)  */
+		 longlong.h breaks.)  */
 	      if (terminator != '"')
 		goto unterminated;
 		
@@ -1175,8 +1257,8 @@ parse_string (pfile, list, token, terminator)
 }
 
 /* The character TYPE helps us distinguish comment types: '*' = C
-   style, '-' = Chill-style and '/' = C++ style.  For code simplicity,
-   the stored comment includes the comment start and any terminator.  */
+   style, '/' = C++ style.  For code simplicity, the stored comment
+   includes the comment start and any terminator.  */
 
 #define COMMENT_START_LEN 2
 static void
@@ -1352,26 +1434,12 @@ lex_line (pfile, list)
 	  break;
 
 	case '\'':
-	  /* Character constants are not recognized when processing Fortran,
-	     or if -traditional.  */
-	  if (CPP_OPTION (pfile, lang_fortran) || CPP_TRADITIONAL (pfile))
-	    goto other;
-
-	  /* Fall through.  */
 	case '\"':
-	  /* Traditionally, escaped strings are not strings.  */
-	  if (CPP_TRADITIONAL (pfile) && IMMED_TOKEN ()
-	      && PREV_TOKEN_TYPE == CPP_BACKSLASH)
-	    goto other;
-
 	  cur_token->type = c == '\'' ? CPP_CHAR : CPP_STRING;
 	  /* Do we have a wide string?  */
 	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
-	      && cur_token[-1].val.node == pfile->spec_nodes->n_L
-	      && !CPP_TRADITIONAL (pfile))
-	    {
-	      (--cur_token)->type = (c == '\'' ? CPP_WCHAR : CPP_WSTRING);
-	    }
+	      && cur_token[-1].val.node == pfile->spec_nodes->n_L)
+	    BACKUP_TOKEN (c == '\'' ? CPP_WCHAR : CPP_WSTRING);
 
 	do_parse_string:
 	  /* Here c is one of ' " or >.  */
@@ -1423,7 +1491,7 @@ lex_line (pfile, list)
 			      || (list->directive->flags & COMMENTS)))
 			save_comment (list, cur_token++, cur,
 				      buffer->cur - cur, c);
-		      else if (!CPP_OPTION (pfile, traditional))
+		      else
 			flags = PREV_WHITE;
 
 		      cur = buffer->cur;
@@ -1461,7 +1529,7 @@ lex_line (pfile, list)
 			  || (list->directive->flags & COMMENTS)))
 		    save_comment (list, cur_token++, cur,
 				  buffer->cur - cur, c);
-		  else if (!CPP_OPTION (pfile, traditional))
+		  else
 		    flags = PREV_WHITE;
 
 		  cur = buffer->cur;
@@ -1524,14 +1592,9 @@ lex_line (pfile, list)
 		 But it is still a directive, and therefore disappears
 		 from the output. */
 	      cur_token--;
-	      if (cur_token->flags & PREV_WHITE)
-		{
-		  if (CPP_WTRADITIONAL (pfile))
-		    cpp_warning (pfile,
-				 "K+R C ignores #\\n with the # indented");
-		  if (CPP_TRADITIONAL (pfile))
-		    cur_token++;
-		}
+	      if (cur_token->flags & PREV_WHITE
+		  && CPP_WTRADITIONAL (pfile))
+		cpp_warning (pfile, "K+R C ignores #\\n with the # indented");
 	    }
 
 	  /* Skip vertical space until we have at least one token to
@@ -1543,11 +1606,7 @@ lex_line (pfile, list)
 
 	case '-':
 	  if (IMMED_TOKEN () && PREV_TOKEN_TYPE == CPP_MINUS)
-	    {
-	      if (CPP_OPTION (pfile, chill))
-		goto do_line_comment;
-	      REVISE_TOKEN (CPP_MINUS_MINUS);
-	    }
+	    REVISE_TOKEN (CPP_MINUS_MINUS);
 	  else
 	    PUSH_TOKEN (CPP_MINUS);
 	  break;
@@ -1734,7 +1793,6 @@ lex_line (pfile, list)
 	  if (CPP_OPTION (pfile, dollars_in_ident))
 	    goto letter;
 	  /* Fall through */
-	other:
 	default:
 	  cur_token->val.aux = c;
 	  PUSH_TOKEN (CPP_OTHER);
@@ -1829,13 +1887,12 @@ output_token (pfile, token, prev)
     }
   else if (token->flags & PREV_WHITE)
     CPP_PUTC (pfile, ' ');
-  /* Check for and prevent accidental token pasting, in ANSI mode.  */
-
-  else if (!CPP_TRADITIONAL (pfile) && prev)
+  else if (prev)
     {
+      /* Check for and prevent accidental token pasting.  */
       if (can_paste (pfile, prev, token, &dummy) != CPP_EOF)
 	CPP_PUTC (pfile, ' ');
-      /* can_paste catches most of the accidental paste cases, but not all.
+      /* can_paste doesn't catch all the accidental pastes.
 	 Consider a + ++b - if there is not a space between the + and ++, it
 	 will be misparsed as a++ + b.  */
       else if ((prev->type == CPP_PLUS && token->type == CPP_PLUS_PLUS)
@@ -1927,67 +1984,6 @@ _cpp_spell_operator (type)
 
 /* Macro expansion algorithm.  TODO.  */
 
-static const cpp_token placemarker_token = {0, 0, CPP_PLACEMARKER, 0 UNION_INIT_ZERO};
-static const cpp_token eof_token = {0, 0, CPP_EOF, 0 UNION_INIT_ZERO};
-
-#define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
-#define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
-
-/* Flags for cpp_context.  */
-#define CONTEXT_PASTEL	(1 << 0) /* An argument context on LHS of ##.  */
-#define CONTEXT_PASTER	(1 << 1) /* An argument context on RHS of ##.  */
-#define CONTEXT_RAW	(1 << 2) /* If argument tokens already expanded.  */
-#define CONTEXT_ARG	(1 << 3) /* If an argument context.  */
-
-#define ASSIGN_FLAGS_AND_POS(d, s) \
-  do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
-      if ((d)->flags & BOL) {(d)->col = (s)->col; (d)->line = (s)->line;} \
-  } while (0)
-
-/* f is flags, just consisting of PREV_WHITE | BOL.  */
-#define MODIFY_FLAGS_AND_POS(d, s, f) \
-  do {(d)->flags &= ~(PREV_WHITE | BOL); (d)->flags |= (f); \
-      if ((f) & BOL) {(d)->col = (s)->col; (d)->line = (s)->line;} \
-  } while (0)
-
-typedef struct cpp_context cpp_context;
-struct cpp_context
-{
-  union
-  {
-    const cpp_toklist *list;	/* Used for macro contexts only.  */
-    const cpp_token **arg;	/* Used for arg contexts only.  */
-  } u;
-
-  /* Pushed token to be returned by next call to get_raw_token.  */
-  const cpp_token *pushed_token;
-
-  struct macro_args *args;	/* 0 for arguments and object-like macros.  */
-  unsigned short posn;		/* Current posn, index into u.  */
-  unsigned short count;		/* No. of tokens in u.  */
-  unsigned short level;
-  unsigned char flags;
-};
-
-typedef struct macro_args macro_args;
-struct macro_args
-{
-  unsigned int *ends;
-  const cpp_token **tokens;
-  unsigned int capacity;
-  unsigned int used;
-  unsigned short level;
-};
-
-static const cpp_token *get_raw_token PARAMS ((cpp_reader *));
-static const cpp_token *parse_arg PARAMS ((cpp_reader *, int, unsigned int,
-					   macro_args *, unsigned int *));
-static int parse_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_args *));
-static void save_token PARAMS ((macro_args *, const cpp_token *));
-static int pop_context PARAMS ((cpp_reader *));
-static int push_macro_context PARAMS ((cpp_reader *, const cpp_token *));
-static void push_arg_context PARAMS ((cpp_reader *, const cpp_token *));
-static void free_macro_args PARAMS ((macro_args *));
 
 /* Free the storage allocated for macro arguments.  */
 static void
@@ -3179,18 +3175,10 @@ special_symbol (pfile, node, token)
       break;
 	
     case T_INCLUDE_LEVEL:
-      {
-	int true_indepth = 0;
-
-	/* Do not count the primary source file in the include level.  */
-	ip = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
-	while (ip)
-	  {
-	    true_indepth++;
-	    ip = CPP_PREV_BUFFER (ip);
-	  }
-	result = alloc_number_token (pfile, true_indepth);
-      }
+      /* pfile->include_depth counts the primary source as level 1,
+	 but historically __INCLUDE_DEPTH__ has called the primary
+	 source level 0.  */
+      result = alloc_number_token (pfile, pfile->include_depth - 1);
       break;
 
     case T_SPECLINE:
