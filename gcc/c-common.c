@@ -1118,10 +1118,7 @@ fname_as_string (int pretty_p)
 	return (char *) cstr.text;
     }
   else
-    {
-      namep = xmalloc (strlen (name) + 1);
-      namep = xstrdup (name);
-    }
+    namep = xstrdup (name);
 
   return namep;
 }
