@@ -3007,6 +3007,7 @@ extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
 extern int extract_init				PROTO((tree, tree));
 extern void do_case				PROTO((tree, tree));
+extern tree cplus_expand_constant               PROTO((tree));
 
 /* friend.c */
 extern int is_friend				PROTO((tree, tree));
