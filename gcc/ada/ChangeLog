@@ -1,3 +1,7 @@
+2001-12-12  Geert Bosch <bosch@gnat.com>
+
+	*  einfo.h: Regenerate.
+
 2001-12-12  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch12.adb (Save_Entity_Descendant): Use syntactic field names 
