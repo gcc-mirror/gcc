@@ -1,3 +1,8 @@
+2001-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-dump.c (dequeue_and_dump): Don't look at DECL_ASSEMBLER_NAME
+	if it is not set.
+
 2001-04-15  Jim Wilson  <wilson@redhat.com>
 
 	* function.c (expand_function_end): Handle PARALLEL real_decl_rtl.
