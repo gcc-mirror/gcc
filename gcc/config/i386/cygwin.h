@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA. */
   N_("Use the Mingw32 interface") },					\
 { "windows",		  MASK_WINDOWS, N_("Create GUI application") },	\
 { "no-win32",		  -MASK_WIN32, N_("Don't set Windows defines") },\
+{ "win32",		  0, N_("Set Windows defines") },		\
 { "console",		  -MASK_WINDOWS,				\
   N_("Create console application") }, 					\
 { "dll",		  MASK_DLL, N_("Generate code for a DLL") },	\
@@ -78,14 +79,15 @@ Boston, MA 02111-1307, USA. */
    by calling the init function from the prologue. */
 
 #undef LIBGCC_SPEC
-#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lcrtdll}"
+#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt1%O%s}} \
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:crt1%O%s} \
+#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:-L/usr/local/lib/mingw -L/usr/lib/mingw crt2%O%s} \
   %{pg:gcrt0%O%s}}}"
 
 #undef CPP_SPEC
+#ifdef CROSS_COMPILE
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
@@ -93,18 +95,45 @@ Boston, MA 02111-1307, USA. */
     -D_cdecl=__attribute__((__cdecl__))} \
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
-  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix -D__unix__} \
-  %{!mno-win32:-D_WIN32 -DWINNT -isystem /usr/include/w32api} \
+  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
+    -isystem /usr/local/native-include \
+    -idirafter /usr/native-include} \
   %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %{mno-cygwin:-DWIN32 -D__WIN32__ -D_WIN32 -D__MINGW32__=0.2 \
+  %{!mno-win32:-D_WIN32 -DWINNT -isystem /usr/include/w32api} \
+  %{mno-cygwin:-DWIN32 -D__WIN32__ -D__MINGW32__=0.2 \
     %{mthreads:-D_MT} \
-    -isystem /usr/include/mingw32 \
-    -isystem /usr/include/mingw \
+    -isystem /usr/local/native-include/mingw \
+    -idirafter /usr/native-include/mingw \
     -iwithprefixbefore ../../../../mingw/include/g++-3 \
     -iwithprefixbefore ../../../../mingw/include \
     -iwithprefixbefore ../../../../mingw32/include/g++-3 \
-    -iwithprefixbefore ../../../../mingw32/include }"
-
+    -iwithprefixbefore ../../../../mingw32/include } \
+   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
+     -idirafter /usr/include/w32api}"
+#else
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  -D__stdcall=__attribute__((__stdcall__)) \
+  -D__cdecl=__attribute__((__cdecl__)) \
+  %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
+    -D_cdecl=__attribute__((__cdecl__))} \
+  -D__declspec(x)=__attribute__((x)) \
+  -D__i386__ -D__i386 \
+  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
+    -isystem /usr/local/include \
+    -idirafter /usr/include} \
+  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
+  %{mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
+    -D__MINGW32__=0.3 -D__MSVCRT__ \
+    %{mthreads:-D_MT} \
+    -isystem /usr/local/include/mingw \
+    -idirafter /usr/include/mingw \
+    -iwithprefixbefore ../../../../mingw/include/g++-3 \
+    -iwithprefixbefore ../../../../mingw/include \
+    -iwithprefixbefore ../../../../mingw32/include/g++-3 \
+    -iwithprefixbefore ../../../../mingw32/include } \
+   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
+     -idirafter /usr/include/w32api}"
+#endif
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -559,14 +588,19 @@ extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
 #define INT_ASM_OP "\t.long\t"
 #endif
 
-#undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX     "/usr/lib/"
 
 #undef STANDARD_STARTFILE_PREFIX
 #define STANDARD_STARTFILE_PREFIX     "/usr/lib/mingw/"
+
+#ifndef CROSS_COMPILE
+#undef LOCAL_INCLUDE_DIR
+#undef TOOL_INCLUDE_DIR
+#undef SYSTEM_INCLUDE_DIR
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR 0
+#endif
 
 #undef TREE
 
