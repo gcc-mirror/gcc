@@ -1,5 +1,11 @@
 2004-10-22  Michael Koch  <konqueror@gmx.de>
 
+	PR libjava/14009
+	* gnu/java/net/protocol/http/Connection.java
+	(sendRequest): Handle case when url.getFile() returns an empty string.
+
+2004-10-22  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Math.java,
 	java/lang/StackTraceElement.java,
 	java/nio/Buffer.java,

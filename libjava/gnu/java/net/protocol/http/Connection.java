@@ -217,8 +217,10 @@ public final class Connection extends HttpURLConnection
       new PrintWriter(new OutputStreamWriter(outputStream, "8859_1")); 
     
     // Send request including any request properties that were set.
-    outputWriter.print (getRequestMethod() + " " + url.getFile()
-                        + " HTTP/1.1\r\n");
+    String requestFile = url.getFile();
+    outputWriter.print(getRequestMethod() + " "
+		       + requestFile.length() != 0 ? requestFile : "/";
+                       + " HTTP/1.1\r\n");
 
     // Set additional HTTP headers.
     if (getRequestProperty ("Host") == null)
