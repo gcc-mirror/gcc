@@ -294,6 +294,8 @@ print_node (file, prefix, node, indent)
     fputs (" protected", file);
   if (TREE_STATIC (node))
     fputs (" static", file);
+  if (TREE_DEPRECATED (node))
+    fputs (" deprecated", file);
   if (TREE_LANG_FLAG_0 (node))
     fputs (" tree_0", file);
   if (TREE_LANG_FLAG_1 (node))

@@ -1215,6 +1215,9 @@ do_identifier (token, parsing, args)
   else
     id = lastiddecl;
 
+  if (lexing && id && TREE_DEPRECATED (id))
+    warn_deprecated_use (id);
+
   /* Do Koenig lookup if appropriate (inside templates we build lookup
      expressions instead).
 

@@ -1464,6 +1464,11 @@ int warn_disabled_optimization;
 
 int warn_missing_noreturn;
 
+/* Nonzero means warn about uses of __attribute__((deprecated)) 
+   declarations.  */
+
+int warn_deprecated_decl = 1;
+
 /* Likewise for -W.  */
 
 static const lang_independent_options W_options[] =
@@ -1502,6 +1507,8 @@ static const lang_independent_options W_options[] =
    N_("Warn when padding is required to align struct members") },
   {"disabled-optimization", &warn_disabled_optimization, 1,
    N_("Warn when an optimization pass is disabled") },
+  {"deprecated-declarations", &warn_deprecated_decl, 1,
+   N_("Warn about uses of __attribute__((deprecated)) declarations") },
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") }
 };

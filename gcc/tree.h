@@ -139,6 +139,7 @@ struct tree_common
   unsigned private_flag : 1;
   unsigned protected_flag : 1;
   unsigned bounded_flag : 1;
+  unsigned deprecated_flag : 1;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -260,7 +261,13 @@ struct tree_common
 	   expressions, VAR_DECL, PARM_DECL, FIELD_DECL, FUNCTION_DECL,
 	   IDENTIFIER_NODE
        TYPE_BOUNDED in
-	   ..._TYPE */
+	   ..._TYPE
+
+   deprecated_flag:
+
+	TREE_DEPRECATED in
+	   ..._DECL
+*/
 
 /* Define accessors for the fields that all tree nodes have
    (though some fields are not used for all kinds of nodes).  */
@@ -650,6 +657,10 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    argument type(s).  */
 
 #define TREE_BOUNDED(NODE) ((NODE)->common.bounded_flag)
+
+/* Nonzero in a IDENTIFIER_NODE if the use of the name is defined as a
+   deprecated feature by __attribute__((deprecated)).  */
+#define TREE_DEPRECATED(NODE) ((NODE)->common.deprecated_flag)
 
 /* These flags are available for each language front end to use internally.  */
 #define TREE_LANG_FLAG_0(NODE) ((NODE)->common.lang_flag_0)

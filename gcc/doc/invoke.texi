@@ -213,7 +213,8 @@ in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -W  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
--Wconversion  -Wdisabled-optimization  -Wdiv-by-zero  -Werror @gol
+-Wconversion  -Wno-deprecated-declarations @gol
+-Wdisabled-optimization  -Wdiv-by-zero  -Werror @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wformat-nonliteral  -Wformat-security @gol
 -Wimplicit  -Wimplicit-int  @gol
@@ -2505,6 +2506,13 @@ like @code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
 appropriate may not be detected.  This option has no effect unless
 @option{-Wformat} is enabled (possibly by @option{-Wall}).
+
+@item -Wno-deprecated-declarations
+@opindex Wno-deprecated-declarations
+Do not warn about uses of functions, variables, and types marked as
+deprecated by using the @code{deprecated} attribute. 
+(@pxref{Function Attributes}, @pxref{Variable Attributes},
+@pxref{Type Attributes}.)
 
 @item -Wpacked
 @opindex Wpacked
