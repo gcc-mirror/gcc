@@ -12761,8 +12761,8 @@ dwarf2out_undef (lineno, buffer)
 /* Set up for Dwarf output at the start of compilation.  */
 
 static void
-dwarf2out_init (input_filename)
-     const char *input_filename ATTRIBUTE_UNUSED;
+dwarf2out_init (filename)
+     const char *filename ATTRIBUTE_UNUSED;
 {
   init_file_table ();
 
@@ -13068,16 +13068,16 @@ prune_unused_types ()
    and generate the DWARF-2 debugging info.  */
 
 static void
-dwarf2out_finish (input_filename)
-     const char *input_filename;
+dwarf2out_finish (filename)
+     const char *filename;
 {
   limbo_die_node *node, *next_node;
   dw_die_ref die = 0;
 
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
-  add_name_attribute (comp_unit_die, input_filename);
-  if (input_filename[0] != DIR_SEPARATOR)
+  add_name_attribute (comp_unit_die, filename);
+  if (filename[0] != DIR_SEPARATOR)
     add_comp_dir_attribute (comp_unit_die);
   else if (get_AT (comp_unit_die, DW_AT_comp_dir) == NULL)
     {

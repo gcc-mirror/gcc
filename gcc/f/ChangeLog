@@ -1,3 +1,8 @@
+2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ste.c (struct gbe_block): Rename field from input_filename.
+	(ffeste_start_block_, ffeste_start_stmt_): Likewise.
+
 2003-04-17  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/10375

@@ -388,7 +388,7 @@ typedef struct gbe_block
   struct gbe_block *outer;
   ffestw block;
   int lineno;
-  const char *input_filename;
+  const char *filename;
   bool is_stmt;
 } *gbe_block;
 
@@ -402,7 +402,7 @@ ffeste_start_block_ (ffestw block)
   b->outer = ffeste_top_block_;
   b->block = block;
   b->lineno = lineno;
-  b->input_filename = input_filename;
+  b->filename = input_filename;
   b->is_stmt = FALSE;
 
   ffeste_top_block_ = b;
@@ -444,7 +444,7 @@ ffeste_start_stmt_(void)
   b->outer = ffeste_top_block_;
   b->block = NULL;
   b->lineno = lineno;
-  b->input_filename = input_filename;
+  b->filename = input_filename;
   b->is_stmt = TRUE;
 
   ffeste_top_block_ = b;
