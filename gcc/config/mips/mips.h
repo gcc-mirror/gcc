@@ -561,10 +561,6 @@ extern void		sbss_section PARAMS ((void));
      N_("Work around early 4300 hardware bug")},			\
   {"no-fix4300",         -MASK_4300_MUL_FIX,				\
      N_("Don't work around early 4300 hardware bug")},			\
-  {"3900",		  0,				                \
-     N_("Optimize for 3900")},						\
-  {"4650",		  0,                    			\
-     N_("Optimize for 4650")},						\
   {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV,			\
      N_("Trap on integer divide by zero")},				\
   {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
@@ -1044,16 +1040,6 @@ extern int mips_abi;
 #define SUBTARGET_CC1_SPEC ""
 #endif
 
-/* Deal with historic options.  */
-#ifndef CC1_CPU_SPEC
-#define CC1_CPU_SPEC "\
-%{!mcpu*: \
-%{m3900:-march=r3900 -mips1 -mfp32 -mgp32 \
-%n`-m3900' is deprecated. Use `-march=r3900' instead.\n} \
-%{m4650:-march=r4650 -mmad -msingle-float \
-%n`-m4650' is deprecated. Use `-march=r4650' instead.\n}}"
-#endif
-
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
 /* Note, we will need to adjust the following if we ever find a MIPS variant
    that has 32-bit GPRs and 64-bit FPRs as well as fix all of the reload bugs
@@ -1073,8 +1059,7 @@ extern int mips_abi;
 %{mgp32: %{mfp64:%emay not use both -mgp32 and -mfp64} %{!mfp32: -mfp32}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{save-temps: } \
-%(subtarget_cc1_spec) \
-%(cc1_cpu_spec)"
+%(subtarget_cc1_spec)"
 #endif
 
 /* Preprocessor specs.  */
@@ -1099,7 +1084,6 @@ extern int mips_abi;
 
 #define EXTRA_SPECS							\
   { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
-  { "cc1_cpu_spec", CC1_CPU_SPEC},                                      \
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
   { "gas_asm_spec", GAS_ASM_SPEC },					\
@@ -2989,9 +2973,10 @@ typedef struct mips_args {
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& (!TARGET_GAS)						\
-	&& (mips_abi == ABI_N32						\
-	    || mips_abi == ABI_64)))
+	&& (TARGET_GAS)							\
+	&& (mips_abi != ABI_N32 					\
+	    && mips_abi != ABI_64)))
+
 
 /* Define this, so that when PIC, reload won't try to reload invalid
    addresses which require two reload registers.  */
@@ -4275,11 +4260,12 @@ do {							\
 /* This is how to declare a function name.  The actual work of
    emitting the label is moved to function_prologue, so that we can
    get the line number correctly emitted before the .ent directive,
-   and after any .file directives.  */
-/*
+   and after any .file directives.  Define to NULL so that the function
+   is not declared before the .ent directive elsewhere.  */
+
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)
-*/
+
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

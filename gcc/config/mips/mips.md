@@ -8095,22 +8095,6 @@ move\\t%0,%z4\\n\\
      }
 }")
 
-(define_expand "bungt"
-  [(set (pc)
-	(if_then_else (ungt:CC (cc0)
-			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (operands[0])		/* avoid unused code warning */
-     {
-	gen_conditional_branch (operands, UNGT);
-	DONE;
-     }
-}")
-
 (define_expand "bunlt"
   [(set (pc)
 	(if_then_else (unlt:CC (cc0)
@@ -8139,22 +8123,6 @@ move\\t%0,%z4\\n\\
   if (operands[0])		/* avoid unused code warning */
      {
 	gen_conditional_branch (operands, UNEQ);
-	DONE;
-     }
-}")
-
-(define_expand "bunge"
-  [(set (pc)
-	(if_then_else (unge:CC (cc0)
-			       (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (operands[0])		/* avoid unused code warning */
-     {
-	gen_conditional_branch (operands, UNGE);
 	DONE;
      }
 }")
@@ -9255,18 +9223,6 @@ move\\t%0,%z4\\n\\
  [(set_attr "type"      "fcmp")
   (set_attr "mode"      "FPSW")])
 
-(define_insn "sungt_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ungt:CC (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ugt.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
-
 (define_insn "sunlt_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:DF 1 "register_operand" "f")
@@ -9287,18 +9243,6 @@ move\\t%0,%z4\\n\\
   "*
 {
  return mips_fill_delay_slot (\"c.ueq.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
-
-(define_insn "sunge_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unge:CC (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.uge.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"      "fcmp")
   (set_attr "mode"      "FPSW")])
@@ -9399,18 +9343,6 @@ move\\t%0,%z4\\n\\
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")])
 
-(define_insn "sungt_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ungt:CC (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ugt.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
-
 (define_insn "sunlt_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:SF 1 "register_operand" "f")
@@ -9431,18 +9363,6 @@ move\\t%0,%z4\\n\\
   "*
 {
  return mips_fill_delay_slot (\"c.ueq.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
-
-(define_insn "sunge_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unge:CC (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.uge.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"      "fcmp")
   (set_attr "mode"      "FPSW")])
