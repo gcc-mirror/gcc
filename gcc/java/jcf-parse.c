@@ -1053,10 +1053,7 @@ yyparse ()
 
       resource_filename = IDENTIFIER_POINTER (TREE_VALUE (current_file_list));
       compile_resource_file (resource_name, resource_filename);
-      
-      java_expand_classes ();
-      if (!java_report_errors ())
-	emit_register_classes ();
+
       return 0;
     }
 
