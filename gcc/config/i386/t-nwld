@@ -38,6 +38,7 @@ SHLIB_SRC = $(srcdir)/config/i386/netware-libgcc.c
 
 SHLIB_LINK = set -e; \
 	cat $(SHLIB_DEF) >@shlib_so_name@.def; \
+	echo "name $(SHLIB_NAME)" >>@shlib_so_name@.def; \
 	echo "version $(gcc_version)" | sed "s!\.!,!g" >>@shlib_so_name@.def; \
 	touch libgcc/build; \
 	echo "build $$$$(($$$$(<libgcc/build)+0))" >>@shlib_so_name@.def; \
@@ -47,7 +48,7 @@ SHLIB_LINK = set -e; \
 		else echo "WARNING: $(SHLIB_NAME) built without XDC data will not work well." 1>&2; \
 	fi; \
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -o $(SHLIB_NAME) \
-		$(SHLIB_SRC) -static-libgcc -lnetware \
+		$(SHLIB_SRC) -posix -static-libgcc -lnetware \
 		-Wl,--Map,--map-info,full,--strip-all,--def-file,@shlib_so_name@.def; \
 	rm -f @shlib_so_name@.imp; $(LN_S) $(SHLIB_MAP) @shlib_so_name@.imp; \
 	echo $$$$(($$$$(<libgcc/build)+1)) >libgcc/build

@@ -57,3 +57,6 @@ void nwld_named_section_asm_out_destructor (rtx, int);
 
 #undef  EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"TARGET_SUB_SECTION_SEPARATOR
+
+/* nwld does not currently support stabs debug info */
+#undef DBX_DEBUGGING_INFO

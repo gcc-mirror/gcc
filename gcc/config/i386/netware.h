@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
-	builtin_define ("IAPX386");					\
+	builtin_define_std ("IAPX386");					\
 	builtin_define ("_M_IX86=300");					\
 	builtin_define ("__netware__");					\
 	builtin_assert ("system=netware");				\
