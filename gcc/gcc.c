@@ -591,7 +591,7 @@ static const char *cpp_options =
  %{std*} %{nostdinc*}\
  %{C} %{v} %{I*} %{P} %{$} %I\
  %{MD:-M -MF %{!o: %b.d}%{o*:%.d%*}} %{MMD:-MM -MF %{!o: %b.d}%{o*:%.d%*}}\
- %{M} %{MM} %{MF} %{MG} %{MP} %{MQ} %{MT} %{M|MD|MM|MMD:%{o*:-MQ %*}}\
+ %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*} %{M|MD|MM|MMD:%{o*:-MQ %*}}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
