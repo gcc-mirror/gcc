@@ -2000,8 +2000,10 @@ struct tree_binfo GTY (())
    that describes the status of this function.  */
 #define DECL_STRUCT_FUNCTION(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
 
-/* For FUNCTION_DECL, if it is built-in,
-   this identifies which built-in operation it is.  */
+/* For FUNCTION_DECL, if it is built-in, this identifies which built-in
+   operation it is.  Note, however, that this field is overloaded, with
+   DECL_BUILT_IN_CLASS as the discriminant, so the latter must always be
+   checked before any access to the former.  */
 #define DECL_FUNCTION_CODE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.f)
 
 /* The DECL_VINDEX is used for FUNCTION_DECLS in two different ways.
