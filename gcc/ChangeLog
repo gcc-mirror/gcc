@@ -1,3 +1,11 @@
+2002-05-15  Eric Botcazou  <ebotcazou@multimania.com>
+
+	* fold-const.c (fold) [LT_EXPR]: Move the transformation of a
+	comparison against the highest or lowest integer value before
+	the 'X >= CST to X > (CST - 1)' and 'X < CST to X <= (CST - 1)'
+	transformation and that of an unsigned comparison against 0
+	right after.
+
 2002-05-16  Richard Henderson  <rth@redhat.com>
 
 	PR c/3467
