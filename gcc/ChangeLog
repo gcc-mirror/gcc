@@ -1,5 +1,7 @@
 Mon Apr 26 23:55:50 1999  Robert Lipe  <robertlipe@usa.net>
 
+	* Makefile.in (fixinc.sh): Fix dependencies.
+
 	* fixinc/inclhack.def (avoid_bool): Enable match if typedefs are 
 	prepended by spaces.
 	(sco5_stat_wrappers): New fix.   Make sys/stat.h C++ safe.
