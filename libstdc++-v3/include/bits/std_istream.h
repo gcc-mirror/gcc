@@ -46,7 +46,6 @@ namespace std
     class basic_istream : virtual public basic_ios<_CharT, _Traits>
     {
     public:
-
       // Types (inherited from basic_ios (27.4.4)):
       typedef _CharT                     		char_type;
       typedef typename _Traits::int_type 		int_type;
@@ -215,7 +214,6 @@ namespace std
     class basic_istream<_CharT, _Traits>::sentry
     {
     public:
-
       typedef _Traits 					traits_type;
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_istream<_CharT, _Traits> 		__istream_type;
@@ -267,7 +265,6 @@ namespace std
       public basic_ostream<_CharT, _Traits>
     {
     public:
-
       // Non-standard Types:
       typedef basic_istream<_CharT, _Traits>		__istream_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;

@@ -30,6 +30,7 @@
 //
 
 #include <bits/std_locale.h>
+#include <bits/std_ostream.h> // for flush()
 
 namespace std 
 {
