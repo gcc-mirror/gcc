@@ -54,7 +54,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "debug-half-pic", MASK_HALF_PIC_DEBUG},				\
      { "debugb",	 MASK_HALF_PIC_DEBUG},				\
      { "elf",		 MASK_ELF},					\
-     { "no-elf",	-MASK_ELF},					\
      { "rose",		-MASK_ELF},					\
      { "ident",		-MASK_NO_IDENT},				\
      { "no-ident",	 MASK_NO_IDENT},				\
@@ -77,6 +76,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
+#ifndef NO_UNDERSCORE
 #define CPP_SPEC "\
 %{!melf: -D__ROSE__} %{melf: -D__ELF__} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
@@ -87,18 +87,40 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+#else
+
+#define CPP_SPEC "\
+%{!melf: -D__ROSE__} %{melf: -D__ELF__} \
+%{mno-underscores: -D__NO_UNDERSCORES__} \
+%{melf: %{!munderscores: -D__NO_UNDERSCORES__}} \
+%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
+%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+#endif
 
 /* Turn on -pic-extern by default.  */
 #undef  CC1_SPEC
+#ifndef NO_UNDERSCORE
 #define CC1_SPEC "\
-%{!melf: %{!mrose: %{!mno-elf: -mrose }}} \
+%{!melf: %{!mrose: -mrose }} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{pic-none: -mno-half-pic} \
-%{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
-%{!pic-none: \
-	%{melf: -mno-half-pic} \
-	%{mno-rose: %{!melf: -mno-half-pic}} \
-	%{!melf: %{!mno-rose: %{!fPIC: %{!fpic: -mhalf-pic}}}}}"
+%{!melf: %{pic-none: -mno-half-pic} \
+	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+	 %{!pic-none: -mhalf-pic }}"
+#else
+
+#define CC1_SPEC "\
+%{!melf: %{!mrose: -mrose }} \
+%{melf: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
+%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{!melf: %{pic-none: -mno-half-pic} \
+	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+	 %{!pic-none: -mhalf-pic }}"
+#endif
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"

@@ -24,8 +24,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
+#ifndef NO_UNDERSCORE
 #define CPP_SPEC "\
-%{!mrose: %{!mno-elf: -D__ELF__}} %{mrose: -D__ROSE__} %{mno-elf: -D__ROSE__} \
+%{mrose: -D__ROSE__} %{!mrose: -D__ELF__} \
 %{mno-underscores: -D__NO_UNDERSCORES__} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
 %{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
@@ -34,19 +35,40 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+#else
+
+#define CPP_SPEC "\
+%{mrose: -D__ROSE__} %{!mrose: -D__ELF__} \
+%{mno-underscores: -D__NO_UNDERSCORES__} \
+%{!mrose: %{!munderscores: -D__NO_UNDERSCORES__}} \
+%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
+%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
+#endif
 
 /* Turn on -mpic-extern by default (change to later use -fpic.  */
 #undef  CC1_SPEC
+#ifndef NO_UNDERSCORE
 #define CC1_SPEC "\
-%{!melf: %{!mrose: %{!mno-elf: -melf }}} \
+%{!melf: %{!mrose: -melf }} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{pic-none: -mno-half-pic} \
-%{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
-%{!pic-none: \
-	%{!mno-elf: %{!mrose: -mno-half-pic}} \
-	%{fpic: -mno-half-pic} \
-	%{fPIC: -mno-half-pic} \
-	%{!fpic: %{!fPIC: %{mrose: -mhalf-pic} %{mno-elf: -mhalf-pic}}}}"
+%{mrose: %{pic-none: -mno-half-pic} \
+	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+	 %{!pic-none: -mhalf-pic }}"
+#else
+
+#define CC1_SPEC "\
+%{!melf: %{!mrose: -mrose }} \
+%{!mrose: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
+%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{mrose: %{pic-none: -mno-half-pic} \
+	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+	 %{!pic-none: -mhalf-pic }}"
+#endif
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
