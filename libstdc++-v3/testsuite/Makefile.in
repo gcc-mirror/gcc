@@ -181,7 +181,7 @@ abi_check_SOURCES = abi_check.cc
 
 baseline_dir = @baseline_dir@
 baseline_file = ${baseline_dir}/baseline_symbols.txt
-extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
+extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
 
 # These two special 'check-script' rules use the bash script
 # 'check_survey' to do testing. This script is not as portable as the
