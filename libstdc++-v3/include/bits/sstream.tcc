@@ -205,7 +205,7 @@ namespace std
 		this->gbump((__beg + __pos) - this->gptr());
 	      if (__testout)
                 this->pbump((__beg + __pos) - this->pptr());
-	      __ret = pos_type(off_type(__pos));
+	      __ret = __sp;
 	    }
 	}
       return __ret;
