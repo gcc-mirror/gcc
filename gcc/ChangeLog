@@ -1,3 +1,9 @@
+Wed Mar  3 23:55:14 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpp.in: New.  Better cpp shell script.
+	* cpp.sh: Delete.
+	* Makefile.in (cpp.sh): Build from cpp.in
+
 Tue Mar  2 01:27:52 1999  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (cpp_install_dir, INSTALL_CPP, UNINSTALL_CPP): New

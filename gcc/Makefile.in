@@ -2287,6 +2287,10 @@ install-cpp: cpp.sh
 	  $(INSTALL_PROGRAM) -m 755 cpp.sh $(prefix)/$(cpp_install_dir)/cpp; \
 	else true; fi
 
+cpp.sh: $(srcdir)/cpp.in Makefile
+	sed -e 's%@GCC@%'$(GCC_INSTALL_NAME)'%' $(srcdir)/cpp.in > xcpp.T
+	mv -f xcpp.T cpp.sh
+
 uninstall-cpp:
 	-rm -f $(bindir)/cpp
 	-if [ x$(cpp_install_dir) != x ]; then \
