@@ -1,5 +1,7 @@
 Sun Oct 17 15:22:50 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (move_operand): Reject (lo_sum (reg) (unspec ...)).
+
 	* haifa-sched.c (add_dependence): Only check/update the cache
 	if it exists.
 	(remove_dependence): Likewise.
