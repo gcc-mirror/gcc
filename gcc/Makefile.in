@@ -2839,7 +2839,7 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  $(STAMP) deduced.h; \
 	fi
 
-GEN_PROTOS_OBJS = gen-protos.o scan.o
+GEN_PROTOS_OBJS = gen-protos.o scan.o $(BUILD_ERRORS)
 gen-protos$(build_exeext): $(GEN_PROTOS_OBJS)
 	${CC_FOR_BUILD} $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	  $(GEN_PROTOS_OBJS) $(BUILD_LIBS)
