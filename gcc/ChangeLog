@@ -1,5 +1,11 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/sparc/cypress.md, config/sparc/hypersparc.md,
+	config/sparc/sparc-modes.def, config/sparc/sparc.c,
+	config/sparc/sparc.md, config/sparc/sparclet.md,
+	config/sparc/supersparc.md, config/sparc/ultra1_2.md,
+	config/sparc/ultra3.md: Replace "GNU CC", "GNU Compiler", and
+	"GNU C Compiler" with "GCC".
 	* config/ip2k/ip2k.h: Replace "GNU CC" and "GNU compiler" with "GCC".
 
 2003-06-16  Aldy Hernandez  <aldyh@redhat.com>
