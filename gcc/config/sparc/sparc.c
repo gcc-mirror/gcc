@@ -7196,6 +7196,10 @@ sparc_output_addr_vec (vec)
   rtx lab = XEXP (vec, 0), body = XEXP (vec, 1);
   int idx, vlen = XVECLEN (body, 0);
 
+#ifdef ASM_OUTPUT_ADDR_VEC_START  
+  ASM_OUTPUT_ADDR_VEC_START (asm_out_file);
+#endif
+
 #ifdef ASM_OUTPUT_CASE_LABEL
   ASM_OUTPUT_CASE_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab),
 			 NEXT_INSN (lab));
@@ -7208,6 +7212,10 @@ sparc_output_addr_vec (vec)
       ASM_OUTPUT_ADDR_VEC_ELT
 	(asm_out_file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
     }
+    
+#ifdef ASM_OUTPUT_ADDR_VEC_END
+  ASM_OUTPUT_ADDR_VEC_END (asm_out_file);
+#endif
 }
 
 static void 
@@ -7217,6 +7225,10 @@ sparc_output_addr_diff_vec (vec)
   rtx lab = XEXP (vec, 0), body = XEXP (vec, 1);
   rtx base = XEXP (XEXP (body, 0), 0);
   int idx, vlen = XVECLEN (body, 1);
+
+#ifdef ASM_OUTPUT_ADDR_VEC_START  
+  ASM_OUTPUT_ADDR_VEC_START (asm_out_file);
+#endif
 
 #ifdef ASM_OUTPUT_CASE_LABEL
   ASM_OUTPUT_CASE_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (lab),
@@ -7233,6 +7245,10 @@ sparc_output_addr_diff_vec (vec)
          CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
          CODE_LABEL_NUMBER (base));
     }
+    
+#ifdef ASM_OUTPUT_ADDR_VEC_END
+  ASM_OUTPUT_ADDR_VEC_END (asm_out_file);
+#endif
 }
 
 static void

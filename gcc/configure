@@ -5534,6 +5534,44 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
+echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
+echo "configure:5539: checking assembler subsection support" >&5
+gcc_cv_as_subsections=
+if test x$gcc_cv_as != x; then
+	# Check if we have .subsection
+	echo ".subsection 1" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_subsections=".subsection"
+		if test -x nm$host_exeext; then
+			gcc_cv_nm=./nm$host_exeext
+		elif test x$host = x$target; then
+			# Native build.
+			gcc_cv_nm=nm$host_exeext
+		fi
+		if test x$gcc_cv_nm != x; then
+			cat > conftest.s <<EOF
+conftest_label1: .word 0
+.subsection -1
+conftest_label2: .word 0
+.previous
+EOF
+			if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+				$gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
+				$gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
+				if ! cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
+					gcc_cv_as_subsections="working .subsection -1"
+					cat >> confdefs.h <<\EOF
+#define HAVE_GAS_SUBSECTION_ORDERING 1
+EOF
+
+				fi
+			fi
+		fi
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+echo "$ac_t""$gcc_cv_as_subsections" 1>&6
+
 # Figure out what language subdirectories are present.
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
@@ -5731,7 +5769,7 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:5735: checking whether to enable init_priority by default" >&5
+echo "configure:5773: checking whether to enable init_priority by default" >&5
 if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi

@@ -2473,8 +2473,15 @@ extern struct rtx_def *legitimize_pic_address ();
    for the index in the tablejump instruction.  */
 /* If we ever implement any of the full models (such as CM_FULLANY),
    this has to be DImode in that case */
+#ifdef HAVE_GAS_SUBSECTION_ORDERING
 #define CASE_VECTOR_MODE \
 (! TARGET_PTR64 ? SImode : flag_pic ? SImode : TARGET_CM_MEDLOW ? SImode : DImode)
+#else
+/* If assembler does not have working .subsection -1, we use DImode for pic, as otherwise
+   we have to sign extend which slows things down. */
+#define CASE_VECTOR_MODE \
+(! TARGET_PTR64 ? SImode : flag_pic ? DImode : TARGET_CM_MEDLOW ? SImode : DImode)
+#endif
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
@@ -2998,6 +3005,20 @@ do {									\
   assemble_name (FILE, label);						\
   fputc ('\n', FILE);							\
 } while (0)
+
+/* This is what to output before and after case-vector (both
+   relative and absolute).  If .subsection -1 works, we put case-vectors
+   at the beginning of the current section.  */
+
+#ifdef HAVE_GAS_SUBSECTION_ORDERING
+
+#define ASM_OUTPUT_ADDR_VEC_START(FILE)					\
+  fprintf(FILE, "\t.subsection\t-1\n")
+
+#define ASM_OUTPUT_ADDR_VEC_END(FILE)					\
+  fprintf(FILE, "\t.previous\n")
+
+#endif
 
 /* This is how to output an assembler line
    that says to advance the location counter
