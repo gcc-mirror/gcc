@@ -420,12 +420,12 @@ pragma Elaborate_Body (OS_Lib);
    --  returns an empty string.
    --
    --  For case-sensitive file systems, the value of Case_Sensitive parameter
-   --  is ignored. In systems that have a non case-sensitive file system like
-   --  Windows and OpenVMS, if this parameter is set OFF, then the result
-   --  is returned folded to lower case, this allows to checks if two files
-   --  are the same by applying this function to their names and by comparing
-   --  the results of these calls. If Case_Sensitive is ON, this function does
-   --  not change the casing of file and directory names.
+   --  is ignored.  For file systems that are not case-sensitive, such as
+   --  Windows and OpenVMS, if this parameter is set to False, then the file
+   --  and directory names are folded to lower case. This allows checking
+   --  whether two files are the same by applying this function to their names
+   --  and comparing the results.  If Case_Sensitive is set to True, this
+   --  function does not change the casing of file and directory names.
 
    function Is_Absolute_Path (Name : String) return Boolean;
    --  Returns True if Name is an absolute path name, i.e. it designates
@@ -652,7 +652,38 @@ pragma Elaborate_Body (OS_Lib);
    --  operating systems which have no notion of separately spawnable programs.
    --
    --  "Spawn" should not be used in tasking applications.
+
+   procedure Spawn
+     (Program_Name           : String;
+      Args                   : Argument_List;
+      Output_File_Descriptor : File_Descriptor;
+      Return_Code            : out Integer;
+      Err_To_Out             : Boolean := True);
+   --  Similar to the procedure above, but redirects the output to
+   --  the file designated by Output_File_Descriptor. If Err_To_Out
+   --  is True, then the Standard Error output is also redirected.
    --
+   --  Return_Code is set to the status code returned by the operating
+   --  system as described above.
+   --
+   --  "Spawn" should not be used in tasking applications.
+
+   procedure Spawn
+     (Program_Name  : String;
+      Args          : Argument_List;
+      Output_File   : String;
+      Success       : out Boolean;
+      Return_Code   : out Integer;
+      Err_To_Out    : Boolean := True);
+   --  Similar to the procedure above, but saves the output of the command
+   --  to a file with the name Output_File.
+   --
+   --  Success is set to True if the command is executed and its output
+   --  successfully written to the file. If Success is True, then
+   --  Return_Code will be set to the status code returned by the
+   --  operating system. Otherwise, Return_Code is undefined.
+   --
+   --  "Spawn" should not be used in tasking applications.
 
    type Process_Id is private;
    --  A private type used to identify a process activated by the following

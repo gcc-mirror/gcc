@@ -1512,7 +1512,7 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 #if defined (__vxworks)
   return 0;
 
-#elif defined (_AIX) || defined (__unix__)
+#elif defined (_AIX) || defined (__APPLE__) || defined (__unix__)
   int ret;
   struct stat statbuf;
 
@@ -1557,11 +1557,11 @@ __gnat_portable_spawn (char *args[])
   strcat (args[0], args_0);
   strcat (args[0], "\"");
 
-  status = spawnvp (P_WAIT, args_0, (const char* const*)args);
+  status = spawnvp (P_WAIT, args_0, (char* const*)args);
 
   /* restore previous value */
   free (args[0]);
-  args[0] = args_0;
+  args[0] = (char *)args_0;
 
   if (status < 0)
     return -1;
@@ -1604,6 +1604,34 @@ __gnat_portable_spawn (char *args[])
 #endif
 
   return 0;
+}
+
+/* Create a copy of the given file descriptor.
+   Return -1 if an error occurred.  */
+
+int
+__gnat_dup (int oldfd)
+{
+#if defined (__vxworks)
+   /* Not supported on VxWorks.  */
+   return -1;
+#else
+   return dup (oldfd);
+#endif
+}
+
+/* Make newfd be the copy of oldfd, closing newfd first if necessary.
+   Return -1 if an error occured.  */
+
+int
+__gnat_dup2 (int oldfd, int newfd)
+{
+#if defined (__vxworks)
+  /* Not supported on VxWorks.  */
+  return -1;
+#else
+  return dup2 (oldfd, newfd);
+#endif
 }
 
 /* WIN32 code to implement a wait call that wait for any child process.  */
@@ -1743,8 +1771,9 @@ win32_no_block_spawn (char *command, char *args[])
       k++;
     }
 
-  result = CreateProcess (NULL, (char *) full_command, &SA, NULL, TRUE,
-                          NORMAL_PRIORITY_CLASS, NULL, NULL, &SI, &PI);
+  result = CreateProcess
+	     (NULL, (char *) full_command, &SA, NULL, TRUE,
+              GetPriorityClass (GetCurrentProcess()), NULL, NULL, &SI, &PI);
 
   free (full_command);
 
