@@ -745,6 +745,14 @@ standard_conversion (to, from, expr)
     {
       conv = build_conv (STD_CONV, to, conv);
     }
+  else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
+	   || (tcode == POINTER_TYPE && fcode == INTEGER_TYPE))
+    {
+      /* For backwards brain damage compatibility, allow interconversion of
+	 pointers and integers with a pedwarn.  */
+      conv = build_conv (STD_CONV, to, conv);
+      ICS_BAD_FLAG (conv) = 1;
+    }
   else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE)
     {
       enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
@@ -3750,9 +3758,10 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	  else if (TREE_CODE (t) == IDENTITY_CONV)
 	    break;
 	}
-      return convert_for_initialization
-	(NULL_TREE, totype, expr, LOOKUP_NORMAL,
-	 "conversion", fn, argnum);
+      cp_pedwarn ("invalid conversion from `%T' to `%T'", TREE_TYPE (expr), totype);
+      if (fn)
+	cp_pedwarn ("  initializing argument %P of `%D'", argnum, fn);
+      return cp_convert (totype, expr);
     }
   
   if (!inner)
@@ -4152,32 +4161,8 @@ build_over_call (cand, args, flags)
       tree type = TREE_VALUE (parm);
 
       conv = TREE_VEC_ELT (convs, i);
-      if (ICS_BAD_FLAG (conv))
-	{
-	  tree t = conv;
-	  val = TREE_VALUE (arg);
-
-	  for (; t; t = TREE_OPERAND (t, 0))
-	    {
-	      if (TREE_CODE (t) == USER_CONV
-		  || TREE_CODE (t) == AMBIG_CONV)
-		{
-		  val = convert_like_with_context (t, val, fn, i - is_method);
-		  break;
-		}
-	      else if (TREE_CODE (t) == IDENTITY_CONV)
-		break;
-	    }
-	  val = convert_for_initialization
-	    (NULL_TREE, type, val, LOOKUP_NORMAL,
-	     "argument", fn, i - is_method);
-	}
-      else
-	{
-	  val = TREE_VALUE (arg);
-	  val = convert_like_with_context
-	          (conv, TREE_VALUE (arg), fn, i - is_method);
-	}
+      val = convert_like_with_context
+	(conv, TREE_VALUE (arg), fn, i - is_method);
 
       if (PROMOTE_PROTOTYPES
 	  && INTEGRAL_TYPE_P (type)
@@ -5550,7 +5535,21 @@ can_convert_arg (to, from, arg)
   return (t && ! ICS_BAD_FLAG (t));
 }
 
-/* Convert EXPR to TYPE.  Return the converted expression.  */
+/* Like can_convert_arg, but allows dubious conversions as well.  */
+
+int
+can_convert_arg_bad (to, from, arg)
+     tree to, from, arg;
+{
+  tree t = implicit_conversion (to, from, arg, LOOKUP_NORMAL);
+  return !!t;
+}
+
+/* Convert EXPR to TYPE.  Return the converted expression.
+
+   Note that we allow bad conversions here because by the time we get to
+   this point we are committed to doing the conversion.  If we end up
+   doing a bad conversion, convert_like will complain.  */
 
 tree
 perform_implicit_conversion (type, expr)
@@ -5563,7 +5562,7 @@ perform_implicit_conversion (type, expr)
     return error_mark_node;
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      LOOKUP_NORMAL);
-  if (!conv || ICS_BAD_FLAG (conv))
+  if (!conv)
     {
       cp_error ("could not convert `%E' to `%T'", expr, type);
       return error_mark_node;

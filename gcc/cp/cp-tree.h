@@ -3489,6 +3489,7 @@ extern tree build_new_op			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree build_op_delete_call		PARAMS ((enum tree_code, tree, tree, int, tree));
 extern int can_convert				PARAMS ((tree, tree));
 extern int can_convert_arg			PARAMS ((tree, tree, tree));
+extern int can_convert_arg_bad			PARAMS ((tree, tree, tree));
 extern int enforce_access                       PARAMS ((tree, tree));
 extern tree convert_default_arg                 PARAMS ((tree, tree, tree, int));
 extern tree convert_arg_to_ellipsis             PARAMS ((tree));

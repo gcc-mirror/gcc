@@ -1,3 +1,20 @@
+2001-10-04  Jason Merrill  <jason_merrill@redhat.com>
+
+	* call.c (standard_conversion): Add bad conversion between
+	integers and pointers.
+	(convert_like_real): Don't use convert_for_initialization for bad
+	conversions; complain here and use cp_convert.
+	(build_over_call): Don't handle bad conversions specially.
+	(perform_implicit_conversion): Allow bad conversions.
+	(can_convert_arg_bad): New fn.
+	* cp-tree.h: Declare it.
+	* typeck.c (convert_for_assignment): Use it.
+	(ptr_reasonably_similar): Any target type is similar to void.
+
+2001-10-02  Jason Merrill  <jason_merrill@redhat.com>
+
+	* decl2.c (cxx_decode_option): Add 'else'.
+
 2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Make-lang.in (CXX_OBJS): Added cp-lang.o.
@@ -238,7 +255,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 	CLASSTYPE_PURE_VIRTUALS.
 	(TYPE_RAISES_EXCEPTIONS): Map onto TYPE_BINFO.
 	* class.c (duplicate_tag_error): Remove TYPE_NONCOPIED_PARTS.
-	(layout_class_type): Don't call fixup_inlin_methods here ...
+	(layout_class_type): Don't call fixup_inline_methods here ...
 	(finish_struct_1): ... call it here.
 
 2001-09-04  Mark Mitchell  <mark@codesourcery.com>
