@@ -320,12 +320,12 @@ associated @file{Makefile.in}.
 
 Much of GCC does not use automake, so directly edit the @file{Makefile.in}
 file.  Specifically this applies to the @file{gcc}, @file{intl},
-@file{libiberty}, @file{libobjc} directories as well as any
-of their subdirectories.
+@file{libcpp}, @file{libiberty}, @file{libobjc} directories as well
+as any of their subdirectories.
 
-The Java directory @file{libjava} requires a automake 1.9.1.
-
-Every other directory requires automake 1.8.5.
+The Java directory @file{libjava} requires automake 1.9.1.  Every other
+directory should work with either automake 1.8.5 and automake 1.9.1, but
+most of them have been tested only with automake 1.8.5 so far.
 
 @item gettext version 0.12 (or later)
 
