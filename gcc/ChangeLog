@@ -1,4 +1,4 @@
-2003-08-01  Andreas Krebbel <krebbel1@de.ibm.com>
+2003-08-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Do not attempt to use CCL,
 	CCL1, or CCL2 modes with floating point operations.
