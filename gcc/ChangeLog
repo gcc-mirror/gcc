@@ -6,6 +6,10 @@ Tue Feb  2 20:29:34 1999  Catherine Moore  <clm@cygnus.com>
  
 Tue Feb  2 19:43:59 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.md (ashlsi3): Turn into a define_expand an anonymous pattern.
+	Make the anonymous pattern match when ! optimize_size.
+	(ashlsi3 size optimizer): New pattern.
+
 	* intl/Makefile.in (uninstall): Add missing "; \".
 
 Tue Feb  2 18:21:23 1999  Stan Cox  <scox@cygnus.com>
