@@ -1,3 +1,10 @@
+2003-02-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/9038
+	* c-opts.c (sanitize_cpp_opts): Add Fortran front end
+	options to be ignored.
+	(c_common_decode_option): Ignore them when preprocessing.
+
 2003-02-21  Ben Elliston  <bje@redhat.com>
 
 	PR other/5634
