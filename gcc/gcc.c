@@ -4614,7 +4614,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      q = v;
 	      while (ISDIGIT (*q))
 		q++;
-	      if (*q != 0 && *q != ' ' && *q != '.' && *q != '-')
+	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-')
 		abort ();
 
               if (q > v)
