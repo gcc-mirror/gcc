@@ -1,6 +1,12 @@
+2004-10-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (function_section): If DECL is NULL_TREE, don't try
+	to do anything else.  Do not call get_insns if cfun or
+	cfun->emit are NULL.
+
 2004-10-28  Adam Nemet  <anemet@lnxw.com>
 
-	PR middle-end/18160  
+	PR middle-end/18160
 	* c-typeck.c (c_mark_addressable): Issue error if address of a
 	register variable is taken.  Use "%qD" to print DECL_NAME.
 
@@ -206,9 +212,9 @@
 	<GOTO_EXPR>: Don't let an explicit GOTO_EXPR slip through.
 
 2004-10-27  Daniel Berlin <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/17133
-	
+
 	* tree-cfg.c (rewrite_to_new_ssa_names_bb): Also rewrite must
 	def kill operand.
 
@@ -236,13 +242,13 @@
 
 	* tree-pass.h (TODO_fix_def_def_chains): New todo flag.
 
-	* tree-optimize.c (execute_todo): Handle TODO_fix_def_def_chains.	
+	* tree-optimize.c (execute_todo): Handle TODO_fix_def_def_chains.
 
 	* tree-pretty-print.c (dump_vops): Print out MUST_DEF's so that
 	they include the rhs now.
 
 	* tree-ssa-ccp.c (visit_assignment): V_MUST_DEF_OP became
-	V_MUST_DEF_RESULT. 
+	V_MUST_DEF_RESULT.
 
 	* tree-ssa-dce.c (mark_operand_necessary): Add phionly argument.
 	Update callers.
@@ -265,17 +271,17 @@
 	as setting the use portion as well.
 	(copy_virtual_operands): Copy the kill operand as well.
 	(create_ssa_artficial_load_stmt): V_MUST_DEF_OP became
-	V_MUST_DEF_RESULT. 
+	V_MUST_DEF_RESULT.
 
 	* tree-ssa-operands.h (v_may_def_operand_type): Renamed to
-	v_def_use_operand_type. 
+	v_def_use_operand_type.
 	(v_must_def_optype_d): Use v_def_use_operand_type.
 	(V_MUST_DEF_OP_*): Renamed to V_MUST_DEF_RESULT_*
 	(V_MUST_DEF_KILL_*): New macros.
 	(struct ssa_operand_iterator_d): Add num_v_mustu and v_mustu_i
 	members.
 	Rename existing must_i and num_v_must members to mustd_i and
-	num_v_mustd. 
+	num_v_mustd.
 	(SSA_OP_VMUSTDEFKILL): New flag.
 	(SSA_OP_VIRTUAL_KILLS): New flag.
 	(SSA_OP_ALL_OPERANDS): Add in SSA_OP_ALL_KILLS.
