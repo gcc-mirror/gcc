@@ -4,7 +4,7 @@
 
 /* { dg-do compile } */
 
-inline int
+__inline int
 foo (int **q) {
   return *q && **q;
 }
