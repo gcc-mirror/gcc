@@ -1570,7 +1570,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       && TREE_CHAIN (init) == NULL_TREE)
     init = NULL_TREE;
 
-  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, NULL_TREE);
+  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, attrlist);
   if (! value || value == error_mark_node)
     /* friend or constructor went bad.  */
     return value;

@@ -1,3 +1,8 @@
+1999-04-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Always call cplus_decl_attributes.
+	* decl2.c (grokfield): Pass attrlist to grokdeclarator.
+
 1999-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_static_data_member_decl): New function.

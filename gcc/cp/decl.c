@@ -8701,6 +8701,10 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
        tentative.  error_mark_node is replaced later with the BLOCK.  */
     DECL_INITIAL (decl) = error_mark_node;
 
+  if (attrlist)
+    cplus_decl_attributes (decl, TREE_PURPOSE (attrlist), 
+			   TREE_VALUE (attrlist));
+
   /* Caller will do the rest of this.  */
   if (check < 0)
     return decl;
@@ -8793,9 +8797,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (ctype == NULL_TREE || check)
 	return decl;
 
-      if (attrlist)
-	cplus_decl_attributes (decl, TREE_PURPOSE (attrlist), 
-			       TREE_VALUE (attrlist));
       make_decl_rtl (decl, NULL_PTR, 1);
 
       if (virtualp)
@@ -10759,15 +10760,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	attrlist = build_decl_list (NULL_TREE, inner_attrs);
     }
 
+  /* Now TYPE has the actual type.  */
+
   if (explicitp == 1)
     {
       error ("only constructors can be declared `explicit'");
       explicitp = 0;
     }
-
-  /* Now TYPE has the actual type.  */
-
-  /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
   if (RIDBIT_SETP (RID_MUTABLE, specbits))
     {
@@ -10795,7 +10794,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       declarator = dname;
     }
   else
+    /* Unexpected declarator format.  */
     my_friendly_abort (990210);
+
+  /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
   if (RIDBIT_SETP (RID_TYPEDEF, specbits) && decl_context != TYPENAME)
     {
