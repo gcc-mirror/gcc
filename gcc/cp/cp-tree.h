@@ -244,7 +244,7 @@ extern int flag_rtti;
 /* Nonzero if we use access type_info objects directly, and use the
    cross-vendor layout for them. Zero if we use an accessor function
    to get the type_info object address.  */
-#define new_abi_rtti_p() (0)
+#define new_abi_rtti_p() (flag_new_abi)
 
 
 /* Language-dependent contents of an identifier.  */

@@ -1,3 +1,71 @@
+2000-01-31  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* cp-tree.h (new_abi_rtti_p): Use flag_new_abi.
+
+	Runtime support for new-abi rtti.
+	* inc/typeinfo (type_info::operator!=): Define in class.
+	(type_info::before, type_info::name, type_info::operator==,
+	type_info::operator!=): Define new ABI implementations.
+	(type_info::is_pointer_p, type_info::is_function_p): Declare
+	new virtual functions.
+	(type_info::do_catch, type_info::do_upcast): Likewise.
+	
+	* tinfo.h (__base_class_info): Define new class.
+	(__class_type_info): Likewise.
+	(__si_class_type_info): Likewise.
+	(__vmi_class_type_info): Likewise.
+	(__dynamic_cast): Prototype.
+	
+	* tinfo.cc: Conditionalize old and new rtti mechanisms.
+	(type_info::is_pointer_p): Define new function.
+	(type_info::is_function_p): Likewise.
+	(type_info::do_catch): Likewise.
+	(type_info::do_upcast): Likewise.
+	(vtable_prefix): New structure for vtable access.
+	(adjust_pointer): Define new template function.
+	(contained_p, public_p, virtual_p, contained_public_p,
+	contained_nonpublic_p, contained_nonvirtual_p): Define new
+	functions.
+	(nonvirtual_base_type): New local variable.
+	(__class_type_info::~__class_type_info): Define.
+	(__si_class_type_info::~__si_class_type_info): Likewise.
+	(__vmi_class_type_info::~__vmi_class_type_info): Likewise.
+	(__class_type_info::do_catch): Define new function.
+	(__class_type_info::do_upcast): Likewise.
+	(__class_type_info::find_public_src): Likewise.
+	(__class_type_info::do_find_public_src): Likewise.
+	(__si_class_type_info::do_find_public_src): Likewise.
+	(__vmi_class_type_info::do_find_public_src): Likewise.
+	(__class_type_info::do_dyncast): Likewise.
+	(__si_class_type_info::do_dyncast): Likewise.
+	(__vmi_class_type_info::do_dyncast): Likewise.
+	(__class_type_info::do_upcast): Likewise.
+	(__si_class_type_info::do_upcast): Likewise.
+	(__vmi_class_type_info::do_upcast): Likewise.
+	(__dynamic_cast): Likewise.
+	
+	* tinfo2.cc (__fundamental_type_info): Define new class.
+	(__pointer_type_info): Likewise.
+	(__reference_type_info): Likewise.
+	(__array_type_info): Likewise.
+	(__function_type_info): Likewise.
+	(__enum_type_info): Likewise.
+	(__ptr_to_member_type_info): Likewise.
+	(__fundamental_type_info::~__fundamental_type_info): Define.
+	(__pointer_type_info::~__pointer_type_info): Likewise.
+	(__reference_type_info::~__reference_type_info): Likewise.
+	(__array_type_info::~__array_type_info): Likewise.
+	(__function_type_info::~__function_type_info): Likewise.
+	(__enum_type_info::~__enum_type_info): Likewise.
+	(__ptr_to_member_type_info::~__ptr_to_member_type_info): Likewise.
+	(__pointer_type_info::do_catch): Define new function.
+	(__ptr_to_member_type_info::do_catch): Define new function.
+	
+	(__throw_type_match_rtti_2): Use new ABI interface, if enabled.
+	(__is_pointer): Likewise.
+
+	* exception.cc (__cplus_type_matcher): Deal with new-abi rtti.
+
 2000-01-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp/class.c (build_vtable): Rename to build_primary_vtable.
