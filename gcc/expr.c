@@ -5471,20 +5471,33 @@ expand_expr (exp, target, tmode, modifier)
   register rtx op0, op1, temp;
   tree type = TREE_TYPE (exp);
   int unsignedp = TREE_UNSIGNED (type);
-  register enum machine_mode mode = TYPE_MODE (type);
+  register enum machine_mode mode;
   register enum tree_code code = TREE_CODE (exp);
   optab this_optab;
-  /* Use subtarget as the target for operand 0 of a binary operation.  */
-  rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
-  rtx original_target = target;
-  int ignore = (target == const0_rtx
-		|| ((code == NON_LVALUE_EXPR || code == NOP_EXPR
-		     || code == CONVERT_EXPR || code == REFERENCE_EXPR
-		     || code == COND_EXPR)
-		    && TREE_CODE (type) == VOID_TYPE));
+  rtx subtarget, original_target;
+  int ignore;
   tree context;
   /* Used by check-memory-usage to make modifier read only.  */
   enum expand_modifier ro_modifier;
+
+  /* Handle ERROR_MARK before anybody tries to access its type. */
+  if (TREE_CODE (exp) == ERROR_MARK)
+    {
+      op0 = CONST0_RTX (tmode);
+      if (op0 != 0)
+	return op0;
+      return const0_rtx;
+    }
+
+  mode = TYPE_MODE (type);
+  /* Use subtarget as the target for operand 0 of a binary operation.  */
+  subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
+  original_target = target;
+  ignore = (target == const0_rtx
+	    || ((code == NON_LVALUE_EXPR || code == NOP_EXPR
+		 || code == CONVERT_EXPR || code == REFERENCE_EXPR
+		 || code == COND_EXPR)
+		&& TREE_CODE (type) == VOID_TYPE));
 
   /* Make a read-only version of the modifier.  */
   if (modifier == EXPAND_NORMAL || modifier == EXPAND_SUM
@@ -8143,12 +8156,6 @@ expand_expr (exp, target, tmode, modifier)
 	emit_move_insn (dhc, validize_mem (gen_rtx_MEM (Pmode, dhc)));
 	return const0_rtx;
       }
-
-    case ERROR_MARK:
-      op0 = CONST0_RTX (tmode);
-      if (op0 != 0)
-	return op0;
-      return const0_rtx;
 
     default:
       return (*lang_expand_expr) (exp, original_target, tmode, modifier);
