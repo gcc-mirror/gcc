@@ -27,9 +27,7 @@ if the incore facility is used.
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#ifndef __STDC__
-extern int errno;
-#endif
+#include <stdlib.h>
 #include <dbz.h>
 
 /*
@@ -301,13 +299,6 @@ static int debug;			/* controlled by dbzdebug() */
 #else
 #define	DEBUG(args)	;
 #endif
-
-/* externals used */
-extern char *malloc();
-extern char *calloc();
-extern void free();		/* ANSI C; some old implementations say int */
-extern int atoi();
-extern long atol();
 
 /* misc. forwards */
 static long hash();
