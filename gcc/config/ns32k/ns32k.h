@@ -959,8 +959,9 @@ __transfer_from_trampoline ()		\
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
-   Can do SImode, but HI mode is more efficient. */
-#define CASE_VECTOR_MODE HImode
+   HI mode is more efficient but the range is not wide enough for
+   all programs. */
+#define CASE_VECTOR_MODE SImode
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
@@ -1274,7 +1275,7 @@ do {									\
 /* This is how to output an element of a case-vector that is relative.  */
 /* ** Notice that the second element is LI format! */
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\t.word L%d-LI%d\n", VALUE, REL)
+  fprintf (FILE, "\t.double L%d-LI%d\n", VALUE, REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
