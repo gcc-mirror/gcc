@@ -1,3 +1,7 @@
+2000-09-30  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gxxint.texi: Use @email for formatting email addresses.
+
 2000-09-29  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c: Remove direct obstack manipulation.  Replace with

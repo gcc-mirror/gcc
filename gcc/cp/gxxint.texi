@@ -9,7 +9,7 @@
 @chapter Internal Architecture of the Compiler
 
 This is meant to describe the C++ front-end for gcc in detail.
-Questions and comments to Benjamin Kosnik @code{<bkoz@@cygnus.com>}.
+Questions and comments to Benjamin Kosnik @email{bkoz@@cygnus.com}.
 
 @menu
 * Limitations of g++::          
