@@ -1,5 +1,5 @@
 /* Perform various loop optimizations, including strength reduction.
-   Copyright (C) 1987, 88, 89, 91-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3997,8 +3997,14 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			auto_inc_opt = 1;
 		    }
 		  /* Check for case where increment is before the the address
-		     giv.  */
-		  else if (INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn))
+		     giv.  Do this test in "loop order".  */
+		  else if ((INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn)
+			    && (INSN_LUID (v->insn) < INSN_LUID (scan_start)
+				|| (INSN_LUID (bl->biv->insn)
+				    > INSN_LUID (scan_start))))
+			   || (INSN_LUID (v->insn) < INSN_LUID (scan_start)
+			       && (INSN_LUID (scan_start)
+				   < INSN_LUID (bl->biv->insn))))
 		    auto_inc_opt = -1;
 		  else
 		    auto_inc_opt = 1;
