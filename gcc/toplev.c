@@ -662,6 +662,8 @@ char *lang_options[] =
   "-fno-huge-objects",
   "-fimplement-inlines",
   "-fno-implement-inlines",
+  "-fimplicit-templates",
+  "-fno-implicit-templates",
   "-flabels-ok",
   "-fno-labels-ok",
   "-fmemoize-lookups",
@@ -2373,6 +2375,7 @@ compile_file (name)
 	   we avoid a problem.  mcsun!unido!fauern!tumuc!pes@uunet.uu.net.  */
 	if (write_symbols == SDB_DEBUG && TREE_CODE (decl) == VAR_DECL
 	    && TREE_PUBLIC (decl) && DECL_INITIAL (decl)
+	    && ! DECL_EXTERNAL (decl)
 	    && DECL_RTL (decl) != 0)
 	  TIMEVAR (symout_time, sdbout_symbol (decl, 0));
 
@@ -2381,6 +2384,7 @@ compile_file (name)
 	if (write_symbols == SDB_DEBUG
 	    && TREE_CODE (decl) == VAR_DECL
 	    && DECL_INITIAL (decl)
+	    && ! DECL_EXTERNAL (decl)
 	    && DECL_RTL (decl) != 0
 	    && GET_CODE (DECL_RTL (decl)) == MEM)
 	  TIMEVAR (symout_time, sdbout_toplevel_data (decl));
