@@ -22,7 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -509,9 +509,9 @@ gen_compare_reg (code, x, y)
 	y = force_reg (SImode, y);
     }
 
-  cc_reg = gen_rtx (REG, ccmode, 36);
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
-		      gen_rtx (COMPARE, ccmode, x, y)));
+  cc_reg = gen_rtx_REG (ccmode, 36);
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+			  gen_rtx_COMPARE (ccmode, x, y)));
 
   return cc_reg;
 }
@@ -600,12 +600,12 @@ emit_move_sequence (operands, mode)
       && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
       && ! HARD_REGNO_MODE_OK (REGNO (operands[1]), mode))
     {
-      emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			  gen_rtvec (2,
-				     gen_rtx (SET, VOIDmode,
-					      operands[0], operands[1]),
-				     gen_rtx (CLOBBER, VOIDmode,
-					      gen_rtx (SCRATCH, Pmode)))));
+      emit_insn (gen_rtx_PARALLEL
+		 (VOIDmode,
+		  gen_rtvec (2,
+			     gen_rtx_SET (VOIDmode, operands[0], operands[1]),
+			     gen_rtx_CLOBBER (VOIDmode,
+					      gen_rtx_SCRATCH (Pmode)))));
       return 1;
     }
 
@@ -656,8 +656,8 @@ i960_output_move_double (dst, src)
 	     edge conditions.  */
 	  operands[0] = dst;
 	  operands[1] = src;
-	  operands[2] = gen_rtx (REG, Pmode, REGNO (dst) + 1);
-	  operands[3] = gen_rtx (MEM, word_mode, operands[2]);
+	  operands[2] = gen_rtx_REG (Pmode, REGNO (dst) + 1);
+	  operands[3] = gen_rtx_MEM (word_mode, operands[2]);
 	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
 	  output_asm_insn ("lda	%1,%2\n\tld	%3,%0\n\tld	%4,%D0", operands);
 	  return "";
@@ -725,8 +725,8 @@ i960_output_move_quad (dst, src)
 	     edge conditions.  */
 	  operands[0] = dst;
 	  operands[1] = src;
-	  operands[2] = gen_rtx (REG, Pmode, REGNO (dst) + 3);
-	  operands[3] = gen_rtx (MEM, word_mode, operands[2]);
+	  operands[2] = gen_rtx_REG (Pmode, REGNO (dst) + 3);
+	  operands[3] = gen_rtx_MEM (word_mode, operands[2]);
 	  operands[4] = adj_offsettable_operand (operands[3], UNITS_PER_WORD);
 	  operands[5] = adj_offsettable_operand (operands[4], UNITS_PER_WORD);
 	  operands[6] = adj_offsettable_operand (operands[5], UNITS_PER_WORD);
@@ -789,7 +789,7 @@ i960_output_ldconst (dst, src)
 
       for (i = 0; i < 3; i++)
 	{
-	  operands[0] = gen_rtx (REG, SImode, REGNO (dst) + i);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (dst) + i);
 	  operands[1] = GEN_INT (value_long[i]);
 	  output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 			   operands);
@@ -808,11 +808,11 @@ i960_output_ldconst (dst, src)
 
       output_asm_insn ("# ldconst	%1,%0",operands);
 
-      operands[0] = gen_rtx (REG, SImode, REGNO (dst));
+      operands[0] = gen_rtx_REG (SImode, REGNO (dst));
       operands[1] = first;
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
-      operands[0] = gen_rtx (REG, SImode, REGNO (dst) + 1);
+      operands[0] = gen_rtx_REG (SImode, REGNO (dst) + 1);
       operands[1] = second;
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
@@ -827,8 +827,8 @@ i960_output_ldconst (dst, src)
       REAL_VALUE_TO_TARGET_SINGLE (d, value);
 
       output_asm_insn ("# ldconst	%1,%0",operands);
-      operands[0] = gen_rtx (REG, SImode, REGNO (dst));
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
+      operands[0] = gen_rtx_REG (SImode, REGNO (dst));
+      operands[1] = GEN_INT (value);
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
       return "";
@@ -863,7 +863,7 @@ i960_output_ldconst (dst, src)
 	return "movl	%1,%0";
 
       /* Output the upper half with a recursive call.  */
-      xoperands[0] = gen_rtx (REG, SImode, REGNO (dst) + 1);
+      xoperands[0] = gen_rtx_REG (SImode, REGNO (dst) + 1);
       xoperands[1] = upperhalf;
       output_asm_insn (i960_output_ldconst (xoperands[0], xoperands[1]),
 		       xoperands);
@@ -899,7 +899,7 @@ i960_output_ldconst (dst, src)
 	{
 	  if (i960_last_insn_type == I_TYPE_REG && TARGET_C_SERIES)
 	    return "lda	%1,%0";
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, rsrc1 - 31);
+	  operands[1] = GEN_INT (rsrc1 - 31);
 	  output_asm_insn ("addo\t31,%1,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -910,7 +910,7 @@ i960_output_ldconst (dst, src)
       if (rsrc1 >= -31)
 	{
 	  /* return 'sub -(%1),0,%0' */
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, - rsrc1);
+	  operands[1] = GEN_INT (- rsrc1);
 	  output_asm_insn ("subo\t%1,0,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -918,7 +918,7 @@ i960_output_ldconst (dst, src)
       /* ldconst	-32		->	not	31,X  */
       if (rsrc1 == -32)
 	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, ~rsrc1);
+	  operands[1] = GEN_INT (~rsrc1);
 	  output_asm_insn ("not\t%1,%0	# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -927,7 +927,7 @@ i960_output_ldconst (dst, src)
   /* If const is a single bit.  */
   if (bitpos (rsrc1) >= 0)
     {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, bitpos (rsrc1));
+      operands[1] = GEN_INT (bitpos (rsrc1));
       output_asm_insn ("setbit\t%1,0,%0\t# ldconst %3,%0", operands);
       return "";
     }
@@ -940,8 +940,8 @@ i960_output_ldconst (dst, src)
       if (bitstr (rsrc1, &s, &e) < 6)
 	{
 	  rsrc2 = ((unsigned int) rsrc1) >> s;
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode, rsrc2);
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, s);
+	  operands[1] = GEN_INT (rsrc2);
+	  operands[2] = GEN_INT (s);
 	  output_asm_insn ("shlo\t%2,%1,%0\t# ldconst %3,%0", operands);
 	  return "";
 	}
@@ -2008,9 +2008,9 @@ legitimize_address (x, oldx, mode)
      similar optimizations.  */
   if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
       && GET_CODE (XEXP (x, 1)) == PLUS)
-    x = gen_rtx (PLUS, Pmode,
-		 gen_rtx (PLUS, Pmode, XEXP (x, 0), XEXP (XEXP (x, 1), 0)),
-		 XEXP (XEXP (x, 1), 1));
+    x = gen_rtx_PLUS (Pmode,
+		      gen_rtx_PLUS (Pmode, XEXP (x, 0), XEXP (XEXP (x, 1), 0)),
+		      XEXP (XEXP (x, 1), 1));
 
   /* Canonicalize (plus (plus (mult (reg) (const)) (plus (reg) (const))) const)
      into (plus (plus (mult (reg) (const)) (reg)) (const)).  */
@@ -2035,10 +2035,10 @@ legitimize_address (x, oldx, mode)
 	constant = 0;
 
       if (constant)
-	x = gen_rtx (PLUS, Pmode,
-		     gen_rtx (PLUS, Pmode, XEXP (XEXP (x, 0), 0),
-			      XEXP (XEXP (XEXP (x, 0), 1), 0)),
-		     plus_constant (other, INTVAL (constant)));
+	x = gen_rtx_PLUS (Pmode,
+			  gen_rtx_PLUS (Pmode, XEXP (XEXP (x, 0), 0),
+					XEXP (XEXP (XEXP (x, 0), 1), 0)),
+			  plus_constant (other, INTVAL (constant)));
     }
 
   return x;
@@ -2330,7 +2330,7 @@ i960_function_arg (cum, mode, type, named)
   else
     {
       cum->ca_nregparms = ROUND_PARM (cum->ca_nregparms, align);
-      ret = gen_rtx (REG, mode, cum->ca_nregparms);
+      ret = gen_rtx_REG (mode, cum->ca_nregparms);
     }
 
   return ret;
@@ -2462,17 +2462,17 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	 va_start assumes it.  */
       emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
       emit_jump_insn (gen_bne (label));
-      emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
-			  stack_pointer_rtx));
-      emit_insn (gen_rtx (SET, VOIDmode, stack_pointer_rtx,
-			  memory_address (SImode,
-					  plus_constant (stack_pointer_rtx,
-							 48))));
+      emit_insn (gen_rtx_SET (VOIDmode, arg_pointer_rtx,
+			      stack_pointer_rtx));
+      emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			      memory_address (SImode,
+					      plus_constant (stack_pointer_rtx,
+							     48))));
       emit_label (label);
 
       /* ??? Note that we unnecessarily store one extra register for stdarg
 	 fns.  We could optimize this, but it's kept as for now.  */
-      regblock = gen_rtx (MEM, BLKmode,
+      regblock = gen_rtx_MEM (BLKmode,
 			  plus_constant (arg_pointer_rtx,
 					 first_reg * 4));
       move_block_from_reg (first_reg, regblock,

@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -139,24 +139,22 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
     {
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	{
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
+	  latehalf[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
 	}
       else if (CONSTANT_P (operands[1]))
 	latehalf[1] = const0_rtx;
@@ -225,11 +223,11 @@ output_fp_move_double (operands)
 	{
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset + 4);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
+	  xoperands[0] = GEN_INT (offset + 4);
 	  output_asm_insn ("st_32 %1,r25,%0", xoperands);
 	  xoperands[1] = operands[1];
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  output_asm_insn ("st_32 %1,r25,%0", xoperands);
 	  xoperands[1] = operands[0];
 	  output_asm_insn ("ld_dbl %1,r25,%0\n\tnop", xoperands);
@@ -243,13 +241,13 @@ output_fp_move_double (operands)
 	{
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset);
+	  xoperands[0] = GEN_INT (offset);
 	  xoperands[1] = operands[1];
 	  output_asm_insn ("st_dbl %1,r25,%0", xoperands);
 	  xoperands[1] = operands[0];
 	  output_asm_insn ("ld_32 %1,r25,%0\n\tnop", xoperands);
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-	  xoperands[0] = gen_rtx (CONST_INT, VOIDmode, offset + 4);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+	  xoperands[0] = GEN_INT (offset + 4);
 	  output_asm_insn ("ld_32 %1,r25,%0\n\tnop", xoperands);
 	  return "";
 	}
@@ -298,7 +296,7 @@ output_add_large_offset (target, reg, offset)
        (unsigned) (high + 0x2000) >= 0x4000; 
        high >>= 1, n += 1)
     ;
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, high);
+  operands[2] = GEN_INT (high);
   output_asm_insn ("add_nt r2,r0,%2", operands);
   i = n;
   while (i >= 3)
@@ -310,7 +308,7 @@ output_add_large_offset (target, reg, offset)
   output_asm_insn ("add_nt %0,r2,%1", operands);
   if (offset - (high << n) != 0)
     {
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, offset - (high << n));
+      operands[2] = GEN_INT (offset - (high << n));
       output_asm_insn ("add_nt %0,%0,%2", operands);
     }
   return "";

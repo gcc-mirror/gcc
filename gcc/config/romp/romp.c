@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 1991, 1992, 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -824,8 +824,8 @@ print_operand (file, x, code)
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s", reg_names[REGNO (x) + 1]);
       else if (GET_CODE (x) == MEM)
-	print_operand (file, gen_rtx (MEM, GET_MODE (x),
-				      plus_constant (XEXP (x, 0), 4)), 0);
+	print_operand (file, gen_rtx_MEM (GET_MODE (x),
+					  plus_constant (XEXP (x, 0), 4)), 0);
       else
 	abort ();
       break;
@@ -1221,8 +1221,7 @@ output_epilog (file, size)
   /* Restore floating-point registers.  */
   if (write_code)
     output_loadsave_fpregs (file, CLOBBER,
-			    gen_rtx (PLUS, Pmode, gen_rtx (REG, Pmode, 1),
-				     gen_rtx (CONST_INT, VOIDmode, fp_save)));
+			    plus_constant (gen_rtx_REG (Pmode, 1), fp_save));
 
   /* If we push the stack and do not have size > 32K, adjust the register
      save location to the current position of sp.  Otherwise, if long frame,
@@ -1348,9 +1347,9 @@ get_symref (name)
       end_temporary_allocation ();
       p = *last_p = (struct symref_hashent *)
 			permalloc (sizeof (struct symref_hashent));
-      p->symref = gen_rtx (SYMBOL_REF, Pmode,
-			   obstack_copy0 (&permanent_obstack,
-					  name, strlen (name)));
+      p->symref = gen_rtx_SYMBOL_REF (Pmode,
+				      obstack_copy0 (&permanent_obstack,
+						     name, strlen (name)));
       p->next = 0;
       resume_temporary_allocation ();
     }
@@ -1739,8 +1738,7 @@ output_loadsave_fpregs (file, code, addr)
 
   if (mask)
     fprintf (file, "\t%s\n",
-	     output_fpop (code, gen_rtx (CONST_INT, VOIDmode, mask),
-				gen_rtx (MEM, Pmode, addr),
+	     output_fpop (code, GEN_INT (mask), gen_rtx_MEM (Pmode, addr),
 				0, const0_rtx));
 
 }

@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -42,16 +42,14 @@ extern int frame_pointer_needed;
 
 static int frame_size;
 
-/*
- * compute size of a clipper stack frame where 'lsize' is the required
- * space for local variables.
- */
+/* Compute size of a clipper stack frame where 'lsize' is the required
+   space for local variables.  */
 
 int
 clipper_frame_size (lsize)
      int lsize;
 {
-  int i,size;				/* total size of frame */
+  int i, size;				/* total size of frame */
   int save_size;
   save_size = 0;			/* compute size for reg saves */
 
@@ -69,17 +67,15 @@ clipper_frame_size (lsize)
   return size;
 }
 
-/*
- * prologue and epilogue output
- * function is entered with pc pushed, i.e. stack is 32 bit aligned
- *
- * current_function_args_size == 0 means that the current function's args
- * are passed totally in registers i.e fp is not used as ap.
- * If frame_size is also 0 the current function does not push anything and
- * can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
- * can be omitted.
- *
- */
+/* Prologue and epilogue output
+   Function is entered with pc pushed, i.e. stack is 32 bit aligned
+
+   current_function_args_size == 0 means that the current function's args
+   are passed totally in registers i.e fp is not used as ap.
+   If frame_size is also 0 the current function does not push anything and
+   can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
+   can be omitted.  */
+
 void
 output_function_prologue (file, lsize)
      FILE *file;
@@ -387,55 +383,42 @@ clipper_builtin_saveregs (arglist)
 
   addr = copy_to_reg (XEXP (block, 0));
 
-  f0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 24));
-  f1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 32));
-  r0_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 40));
-  r1_addr =  gen_rtx (PLUS, Pmode, addr, gen_rtx (CONST_INT, Pmode, 44));
+  f0_addr = plus_constant (addr, 24);
+  f1_addr = plus_constant (addr, 32);
+  r0_addr = plus_constant (addr, 40);
+  r1_addr = plus_constant (addr, 44);
 
 
   /* Store float regs  */
 
-  emit_move_insn (gen_rtx (MEM, DFmode, f0_addr), gen_rtx (REG, DFmode, 16));
-  emit_move_insn (gen_rtx (MEM, DFmode, f1_addr), gen_rtx (REG, DFmode, 17));
+  emit_move_insn (gen_rtx_MEM (DFmode, f0_addr), gen_rtx_REG (DFmode, 16));
+  emit_move_insn (gen_rtx_MEM (DFmode, f1_addr), gen_rtx_REG (DFmode, 17));
 
   /* Store int regs  */
 
-  emit_move_insn (gen_rtx (MEM, SImode, r0_addr), gen_rtx (REG, SImode, 0));
-  emit_move_insn (gen_rtx (MEM, SImode, r1_addr), gen_rtx (REG, SImode, 1));
+  emit_move_insn (gen_rtx_MEM (SImode, r0_addr), gen_rtx_REG (SImode, 0));
+  emit_move_insn (gen_rtx_MEM (SImode, r1_addr), gen_rtx_REG (SImode, 1));
 
   /* Store the arg pointer in the __va_stk member.  */
 
-  emit_move_insn (gen_rtx (MEM, SImode, addr),
+  emit_move_insn (gen_rtx_MEM (SImode, addr),
 		  copy_to_reg (virtual_incoming_args_rtx));
-		  
 
   /* now move addresses of the saved regs into the pointer array */
 
   scratch = gen_reg_rtx (Pmode);
 
   emit_move_insn (scratch, r0_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 4))),
-		  scratch);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 4)), scratch);
 		  
   emit_move_insn (scratch, f0_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 8))),
-		  scratch);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 8)), scratch);
 		  
   emit_move_insn (scratch, r1_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 12))),
-		  scratch);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 12)), scratch);
 		  
   emit_move_insn (scratch, f1_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    gen_rtx (CONST_INT, Pmode, 16))),
-		  scratch);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 16)), scratch);
 
 
   if (current_function_check_memory_usage)

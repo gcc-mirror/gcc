@@ -21,8 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define __datalbl
 #include "config.h"
-#include <stdio.h>
-#include <string.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "expr.h"
@@ -117,7 +116,7 @@ function_arg (cum, mode, type, named)
   else
     size = GET_MODE_SIZE (mode);
   if (cum + size < 12)
-    return gen_rtx (REG, mode, cum);
+    return gen_rtx_REG (mode, cum);
   else
     return (rtx) 0;
 }

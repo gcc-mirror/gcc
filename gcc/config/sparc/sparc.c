@@ -22,7 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -1038,18 +1038,18 @@ gen_compare_reg (code, x, y)
 	  prev_args[reg][1] = y;
 	  next_fcc_reg = (next_fcc_reg + 1) & 3;
 	}
-      cc_reg = gen_rtx (REG, mode, reg + SPARC_FIRST_V9_FCC_REG);
+      cc_reg = gen_rtx_REG (mode, reg + SPARC_FIRST_V9_FCC_REG);
     }
 #else
     cc_reg = gen_reg_rtx (mode);
 #endif /* ! experiment */
   else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-    cc_reg = gen_rtx (REG, mode, SPARC_FCC_REG);
+    cc_reg = gen_rtx_REG (mode, SPARC_FCC_REG);
   else
-    cc_reg = gen_rtx (REG, mode, SPARC_ICC_REG);
+    cc_reg = gen_rtx_REG (mode, SPARC_ICC_REG);
 
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
-		      gen_rtx (COMPARE, mode, x, y)));
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+			  gen_rtx_COMPARE (mode, x, y)));
 
   return cc_reg;
 }
@@ -1115,17 +1115,16 @@ gen_v9_scc (compare_code, operands)
 	  && GET_MODE (operands[0]) == DImode
 	  && GET_MODE (op0) == DImode)
 	{
-	  emit_insn (gen_rtx (SET, VOIDmode, operands[0], op0));
-	  emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			      gen_rtx (IF_THEN_ELSE, DImode,
-				       gen_rtx (compare_code, DImode,
-						op0, const0_rtx),
-				       const1_rtx,
-				       operands[0])));
+	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], op0));
+	  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				  gen_rtx_IF_THEN_ELSE
+				  (DImode, gen_rtx (compare_code, DImode,
+						    op0, const0_rtx),
+				   const1_rtx, operands[0])));
 	  return 1;
 	}
 
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
       if (GET_MODE (op0) != DImode)
 	{
 	  temp = gen_reg_rtx (DImode);
@@ -1133,12 +1132,12 @@ gen_v9_scc (compare_code, operands)
 	}
       else
 	temp = op0;
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (IF_THEN_ELSE, GET_MODE (operands[0]),
-				   gen_rtx (compare_code, DImode,
-					    temp, const0_rtx),
-				   const1_rtx,
-				   operands[0])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_IF_THEN_ELSE
+			      (GET_MODE (operands[0]),
+			       gen_rtx (compare_code, DImode,
+					temp, const0_rtx),
+			       const1_rtx, operands[0])));
       return 1;
     }
   else
@@ -1155,13 +1154,13 @@ gen_v9_scc (compare_code, operands)
 	  default :
 	    abort ();
 	}
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (IF_THEN_ELSE, GET_MODE (operands[0]),
-				   gen_rtx (compare_code,
-					    GET_MODE (operands[1]),
-					    operands[1], const0_rtx),
-				    const1_rtx, operands[0])));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_IF_THEN_ELSE
+			      (GET_MODE (operands[0]),
+			       gen_rtx (compare_code, GET_MODE (operands[1]),
+					operands[1], const0_rtx),
+			       const1_rtx, operands[0])));
       return 1;
     }
 }
@@ -1175,13 +1174,13 @@ emit_v9_brxx_insn (code, op0, label)
      enum rtx_code code;
      rtx op0, label;
 {
-  emit_jump_insn (gen_rtx (SET, VOIDmode,
-			   pc_rtx,
-			   gen_rtx (IF_THEN_ELSE, VOIDmode,
-				    gen_rtx (code, GET_MODE (op0),
-					     op0, const0_rtx),
-				    gen_rtx (LABEL_REF, VOIDmode, label),
-				    pc_rtx)));
+  emit_jump_insn (gen_rtx_SET (VOIDmode,
+			       pc_rtx,
+			       gen_rtx_IF_THEN_ELSE
+			       (VOIDmode,
+				gen_rtx (code, GET_MODE (op0),
+					 op0, const0_rtx),
+				gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx)));
 }
 
 /* Return nonzero if a return peephole merging return with
@@ -1419,16 +1418,17 @@ legitimize_pic_address (orig, mode, reg)
       else
 	address = orig;
 
-      pic_ref = gen_rtx (MEM, Pmode,
-			 gen_rtx (PLUS, Pmode,
-				  pic_offset_table_rtx, address));
+      pic_ref = gen_rtx_MEM (Pmode,
+			     gen_rtx_PLUS (Pmode,
+					   pic_offset_table_rtx, address));
+
       current_function_uses_pic_offset_table = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       insn = emit_move_insn (reg, pic_ref);
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
-				  REG_NOTES (insn));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, orig,
+					    REG_NOTES (insn));
       return reg;
     }
   else if (GET_CODE (orig) == CONST)
@@ -1466,7 +1466,7 @@ legitimize_pic_address (orig, mode, reg)
 	    /* If we reach here, then something is seriously wrong.  */
 	    abort ();
 	}
-      return gen_rtx (PLUS, Pmode, base, offset);
+      return gen_rtx_PLUS (Pmode, base, offset);
     }
   else if (GET_CODE (orig) == LABEL_REF)
     /* ??? Why do we do this?  */
@@ -1496,18 +1496,18 @@ pic_setup_code ()
 
   /* If -O0, show the PIC register remains live before this.  */
   if (obey_regdecls)
-    emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+    emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
     
   l1 = gen_label_rtx ();
 
-  pic_pc_rtx = gen_rtx (CONST, Pmode,
-			gen_rtx (MINUS, Pmode,
-				 global_offset_table,
-				 gen_rtx (CONST, Pmode,
-					  gen_rtx (MINUS, Pmode,
-						   gen_rtx (LABEL_REF,
-							    VOIDmode, l1),
-						   pc_rtx))));
+  pic_pc_rtx
+    = gen_rtx_CONST (Pmode,
+		     gen_rtx_MINUS
+		     (Pmode, global_offset_table,
+		      gen_rtx_CONST (Pmode,
+				     gen_rtx_MINUS
+				     (Pmode, gen_rtx_LABEL_REF (VOIDmode, l1),
+				      pc_rtx))));
 
   /* sparc64: the RDPC instruction doesn't pair, and puts 4 bubbles in the
      pipe to boot.  So don't use it here, especially when we're
@@ -1519,29 +1519,29 @@ pic_setup_code ()
   /* Iff we are doing delay branch optimization, slot the sethi up
      here so that it will fill the delay slot of the call.  */
   if (flag_delayed_branch)
-    emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-			gen_rtx (HIGH, Pmode, pic_pc_rtx)));
-
+    emit_insn (gen_rtx_SET (VOIDmode, pic_offset_table_rtx,
+			    gen_rtx_HIGH (Pmode, pic_pc_rtx)));
+  
   /* Note that we pun calls and jumps here!  */
   emit_jump_insn (gen_get_pc_via_call (l2, l1));
 
   emit_label (l2);
 
   if (!flag_delayed_branch)
-    emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-			gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+    emit_insn (gen_rtx_SET (VOIDmode, pic_offset_table_rtx,
+			    gen_rtx_HIGH (Pmode, pic_pc_rtx)));
 
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (LO_SUM, Pmode,
-			       pic_offset_table_rtx, pic_pc_rtx)));
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (PLUS, Pmode,
-			       pic_offset_table_rtx,
-			       gen_rtx (REG, Pmode, 15))));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx_LO_SUM (Pmode,
+					  pic_offset_table_rtx, pic_pc_rtx)));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx_PLUS (Pmode,
+					pic_offset_table_rtx,
+					gen_rtx_REG (Pmode, 15))));
 
-  /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
+  /* emit_insn (gen_rtx_ASM_INPUT (VOIDmode, "!#PROLOGUE# 1")); */
   LABEL_PRESERVE_P (l1) = 1;
   LABEL_PRESERVE_P (l2) = 1;
 
@@ -1568,7 +1568,7 @@ finalize_pic ()
 
   /* Initialize every time through, since we can't easily
      know this to be permanent.  */
-  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
+  global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
   flag_pic = 0;
 
   emit_insn_after (pic_setup_code (), get_insns ());
@@ -1585,7 +1585,7 @@ finalize_pic ()
      since setjmp/longjmp can cause life info to screw up.
      ??? In the case where we don't obey regdecls, this is not sufficient
      since we may not fall out the bottom.  */
-  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 }
 
 /* Emit insns to move operands[1] into operands[0].
@@ -1618,7 +1618,7 @@ emit_move_sequence (operands, mode)
 	  || GET_CODE (operand1) == MEM)
 	{
 	  /* Run this case quickly.  */
-	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
+	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
 	  return 1;
 	}
     }
@@ -1628,7 +1628,7 @@ emit_move_sequence (operands, mode)
 	  || (operand1 == const0_rtx && ! TARGET_LIVE_G0))
 	{
 	  /* Run this case quickly.  */
-	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
+	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
 	  return 1;
 	}
       if (! reload_in_progress)
@@ -1698,14 +1698,14 @@ emit_move_sequence (operands, mode)
 	  if (TARGET_ARCH64 && mode == DImode)
 	    emit_insn (gen_sethi_di_sp64 (temp, operand1));
 	  else
-	    emit_insn (gen_rtx (SET, VOIDmode, temp,
-				gen_rtx (HIGH, mode, operand1)));
+	    emit_insn (gen_rtx_SET (VOIDmode, temp,
+				    gen_rtx_HIGH (mode, operand1)));
 
 	  if (GET_CODE (operand1) == CONST_INT)
 	    operand1 = GEN_INT (INTVAL (operand1) & 0xffffffff);
 	  else if (GET_CODE (operand1) == CONST_DOUBLE)
 	    operand1 = GEN_INT (CONST_DOUBLE_LOW (operand1) & 0xffffffff);
-	  operands[1] = gen_rtx (LO_SUM, mode, temp, operand1);
+	  operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
 	}
     }
 
@@ -1952,14 +1952,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (op0) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (op0) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (op0, 4);
   else
     latehalf[0] = op0;
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (op1) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (op1) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (op1, 4);
   else if (optype1 == CNSTOP)
@@ -1968,8 +1968,7 @@ output_move_double (operands)
 	{
 	  if (arith_double_operand (op1, DImode))
 	    {
-	      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_LOW (op1));
+	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
 	      return "mov %1,%0";
 	    }
 	  else
@@ -2057,7 +2056,7 @@ output_move_double (operands)
 	  xops[0] = latehalf[0];
 	  xops[1] = op0;
 	  output_asm_insn ("add %1,%0,%1", xops);
-	  operands[1] = gen_rtx (MEM, DImode, op0);
+	  operands[1] = gen_rtx_MEM (DImode, op0);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  addreg1 = 0;
 	  highest_first = 1;
@@ -2163,12 +2162,12 @@ output_move_quad (operands)
 
   if (optype0 == REGOP)
     {
-      wordpart[0][0] = gen_rtx (REG, word_mode, REGNO (op0) + 0);
-      wordpart[1][0] = gen_rtx (REG, word_mode, REGNO (op0) + 1);
+      wordpart[0][0] = gen_rtx_REG (word_mode, REGNO (op0) + 0);
+      wordpart[1][0] = gen_rtx_REG (word_mode, REGNO (op0) + 1);
       if (TARGET_ARCH32)
 	{
-	  wordpart[2][0] = gen_rtx (REG, word_mode, REGNO (op0) + 2);
-	  wordpart[3][0] = gen_rtx (REG, word_mode, REGNO (op0) + 3);
+	  wordpart[2][0] = gen_rtx_REG (word_mode, REGNO (op0) + 2);
+	  wordpart[3][0] = gen_rtx_REG (word_mode, REGNO (op0) + 3);
 	}
     }
   else if (optype0 == OFFSOP)
@@ -2193,12 +2192,12 @@ output_move_quad (operands)
 
   if (optype1 == REGOP)
     {
-      wordpart[0][1] = gen_rtx (REG, word_mode, REGNO (op1) + 0);
-      wordpart[1][1] = gen_rtx (REG, word_mode, REGNO (op1) + 1);
+      wordpart[0][1] = gen_rtx_REG (word_mode, REGNO (op1) + 0);
+      wordpart[1][1] = gen_rtx_REG (word_mode, REGNO (op1) + 1);
       if (TARGET_ARCH32)
 	{
-	  wordpart[2][1] = gen_rtx (REG, word_mode, REGNO (op1) + 2);
-	  wordpart[3][1] = gen_rtx (REG, word_mode, REGNO (op1) + 3);
+	  wordpart[2][1] = gen_rtx_REG (word_mode, REGNO (op1) + 2);
+	  wordpart[3][1] = gen_rtx_REG (word_mode, REGNO (op1) + 3);
 	}
     }
   else if (optype1 == OFFSOP)
@@ -2628,8 +2627,7 @@ output_size_for_block_move (size, reg, align)
     output_asm_insn ("sub %1,%2,%0", xoperands);
   else
     {
-      xoperands[1]
-	= gen_rtx (CONST_INT, VOIDmode, INTVAL (size) - INTVAL (align));
+      xoperands[1] = GEN_INT (INTVAL (size) - INTVAL (align));
       output_asm_insn ("set %1,%0", xoperands);
     }
 }
@@ -2667,7 +2665,7 @@ output_block_move (operands)
   if (align > UNITS_PER_WORD)
     {
       align = UNITS_PER_WORD;
-      alignrtx = gen_rtx (CONST_INT, VOIDmode, UNITS_PER_WORD);
+      alignrtx = GEN_INT (UNITS_PER_WORD);
     }
 
   /* We consider 8 ld/st pairs, for a total of 16 inline insns to be
@@ -2763,11 +2761,11 @@ output_block_move (operands)
     }
 
   if (align != INTVAL (alignrtx))
-    alignrtx = gen_rtx (CONST_INT, VOIDmode, align);
+    alignrtx = GEN_INT (align);
 
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
-  xoperands[4] = gen_rtx (CONST_INT, VOIDmode, align);
-  xoperands[5] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
+  xoperands[3] = GEN_INT (movstrsi_label++);
+  xoperands[4] = GEN_INT (align);
+  xoperands[5] = GEN_INT (movstrsi_label++);
 
   ASM_GENERATE_INTERNAL_LABEL (label3, "Lm", INTVAL (xoperands[3]));
   ASM_GENERATE_INTERNAL_LABEL (label5, "Lm", INTVAL (xoperands[5]));
@@ -3540,12 +3538,16 @@ output_function_epilogue (file, size, leaf_function)
 	  /* If we wound up with things in our delay slot, flush them here.  */
 	  if (current_function_epilogue_delay_list)
 	    {
-	      rtx insn = emit_jump_insn_after (gen_rtx (RETURN, VOIDmode),
+	      rtx insn = emit_jump_insn_after (gen_rtx_RETURN (VOIDmode),
 					       get_last_insn ());
-	      PATTERN (insn) = gen_rtx (PARALLEL, VOIDmode,
-					gen_rtvec (2,
-						   PATTERN (XEXP (current_function_epilogue_delay_list, 0)),
-						   PATTERN (insn)));
+	      PATTERN (insn)
+		= gen_rtx_PARALLEL
+		  (VOIDmode,
+		   gen_rtvec (2,
+			      PATTERN
+			      (XEXP (current_function_epilogue_delay_list, 0)),
+			      PATTERN (insn)));
+
 	      final_scan_insn (insn, file, 1, 0, 1);
 	    }
 	  else
@@ -3844,7 +3846,7 @@ function_arg (cum, mode, type, named, incoming_p)
 
   if (TARGET_ARCH32)
     {
-      reg = gen_rtx (REG, mode, regno);
+      reg = gen_rtx_REG (mode, regno);
       return reg;
     }
 
@@ -3856,7 +3858,7 @@ function_arg (cum, mode, type, named, incoming_p)
        || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
       && SPARC_FP_REG_P (regno))
     {
-      reg = gen_rtx (REG, mode, regno);
+      reg = gen_rtx_REG (mode, regno);
       if (cum->prototype_p || cum->libcall_p)
 	{
 	  /* "* 2" because fp reg numbers are recorded in 4 byte
@@ -3866,12 +3868,11 @@ function_arg (cum, mode, type, named, incoming_p)
 	     value in the reg but reserve space on the stack.  That's an
 	     optimization, and is deferred [for a bit].  */
 	  if ((regno - SPARC_FP_ARG_FIRST) >= SPARC_INT_ARG_MAX * 2)
-	    return gen_rtx (PARALLEL, mode,
-			    gen_rtvec (2,
-				       gen_rtx (EXPR_LIST, VOIDmode,
-						NULL_RTX, const0_rtx),
-				       gen_rtx (EXPR_LIST, VOIDmode,
-						reg, const0_rtx)));
+	    return gen_rtx_PARALLEL
+	      (mode,
+	       gen_rtvec (2,
+			  gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx),
+			  gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx)));
 	  else
 	    return reg;
 	}
@@ -3883,21 +3884,21 @@ function_arg (cum, mode, type, named, incoming_p)
 			     ? SPARC_INCOMING_INT_ARG_FIRST
 			     : SPARC_OUTGOING_INT_ARG_FIRST);
 	      int intreg = regbase + (regno - SPARC_FP_ARG_FIRST) / 2;
-	      return gen_rtx (PARALLEL, mode,
-			      gen_rtvec (2,
-					 gen_rtx (EXPR_LIST, VOIDmode,
-						  gen_rtx (REG, mode, intreg),
-						  const0_rtx),
-					 gen_rtx (EXPR_LIST, VOIDmode,
-						  reg, const0_rtx)));
+
+	      return gen_rtx_PARALLEL
+		(mode,
+		 gen_rtvec (2,
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (mode, intreg),
+					       const0_rtx),
+			    gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx)));
 	    }
 	  else
-	    return gen_rtx (PARALLEL, mode,
-			    gen_rtvec (2,
-				       gen_rtx (EXPR_LIST, VOIDmode,
-						NULL_RTX, const0_rtx),
-				       gen_rtx (EXPR_LIST, VOIDmode,
-						reg, const0_rtx)));
+	    return gen_rtx_PARALLEL
+	      (mode,
+	       gen_rtvec (2,
+			  gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx),
+			  gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx)));
 	}
     }
   else if (type && TREE_CODE (type) == RECORD_TYPE)
@@ -3974,12 +3975,11 @@ function_arg (cum, mode, type, named, incoming_p)
       if (nregs == 0)
 	abort ();
 
-      ret = gen_rtx (PARALLEL, BLKmode, rtvec_alloc (nregs + 1));
+      ret = gen_rtx_PARALLEL (BLKmode, rtvec_alloc (nregs + 1));
 
       /* ??? This causes the entire struct to be passed in memory.
 	 This isn't necessary, but is left for later.  */
-      XVECEXP (ret, 0, 0) = gen_rtx (EXPR_LIST, VOIDmode, NULL_RTX,
-				     const0_rtx);
+      XVECEXP (ret, 0, 0) = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 
       /* Fill in the entries.  */
       start_int_bitpos = -1;
@@ -3996,12 +3996,13 @@ function_arg (cum, mode, type, named, incoming_p)
 		  && ! packed_p
 		  && named)
 		{
-		  reg = gen_rtx (REG, DECL_MODE (field),
-				 (SPARC_FP_ARG_FIRST + this_slotno * 2
-				  + (DECL_MODE (field) == SFmode
-				     && (bitpos & 32) != 0)));
-		  XVECEXP (ret, 0, i) = gen_rtx (EXPR_LIST, VOIDmode, reg,
-						 GEN_INT (bitpos / BITS_PER_UNIT));
+		  reg = gen_rtx_REG (DECL_MODE (field),
+				     (SPARC_FP_ARG_FIRST + this_slotno * 2
+				      + (DECL_MODE (field) == SFmode
+					 && (bitpos & 32) != 0)));
+		  XVECEXP (ret, 0, i)
+		    = gen_rtx_EXPR_LIST (VOIDmode, reg,
+					 GEN_INT (bitpos / BITS_PER_UNIT));
 		  i++;
 		  start_int_bitpos = -1;
 		}
@@ -4025,9 +4026,10 @@ function_arg (cum, mode, type, named, incoming_p)
 			mode = word_mode;
 
 		      regno = regbase + this_slotno;
-		      reg = gen_rtx (REG, mode, regno);
-		      XVECEXP (ret, 0, i) = gen_rtx (EXPR_LIST, VOIDmode, reg,
-						     GEN_INT (bitpos / BITS_PER_UNIT));
+		      reg = gen_rtx_REG (mode, regno);
+		      XVECEXP (ret, 0, i)
+			= gen_rtx_EXPR_LIST (VOIDmode, reg,
+					     GEN_INT (bitpos / BITS_PER_UNIT));
 		      i++;
 		      if (start_int_bitpos == -1)
 			start_int_bitpos = bitpos;
@@ -4049,12 +4051,12 @@ function_arg (cum, mode, type, named, incoming_p)
 	abort ();
 
       mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
-      reg = gen_rtx (REG, mode, regno);
+      reg = gen_rtx_REG (mode, regno);
     }
   else
     {
       /* Scalar or complex int.  */
-      reg = gen_rtx (REG, mode, regno);
+      reg = gen_rtx_REG (mode, regno);
     }
 
   return reg;
@@ -4261,18 +4263,15 @@ sparc_builtin_saveregs (arglist)
   int regno;
 
   for (regno = first_reg; regno < NPARM_REGS (word_mode); regno++)
-    emit_move_insn (gen_rtx (MEM, word_mode,
-			     gen_rtx (PLUS, Pmode,
-				      frame_pointer_rtx,
-				      GEN_INT (STACK_POINTER_OFFSET
-					       + UNITS_PER_WORD * regno))),
-		    gen_rtx (REG, word_mode,
-			     BASE_INCOMING_ARG_REG (word_mode) + regno));
+    emit_move_insn (gen_rtx_MEM (word_mode,
+				 plus_constant (frame_pointer_rtx,
+						(STACK_POINTER_OFFSET
+						 + UNITS_PER_WORD * regno))),
+		    gen_rtx_REG (word_mode,
+				 BASE_INCOMING_ARG_REG (word_mode) + regno));
 
-  address = gen_rtx (PLUS, Pmode,
-		     frame_pointer_rtx,
-		     GEN_INT (STACK_POINTER_OFFSET
-			      + UNITS_PER_WORD * first_reg));
+  address = plus_constant (frame_pointer_rtx,
+			   STACK_POINTER_OFFSET + UNITS_PER_WORD * first_reg);
 
   if (current_function_check_memory_usage
       && first_reg < NPARM_REGS (word_mode))
@@ -4549,7 +4548,7 @@ output_return (operands)
 	 the stack pointer might have been adjusted.  Output code to
 	 restore it now.  */
 
-      operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize);
+      operands[0] = GEN_INT (actual_fsize);
 
       /* Use sub of negated value in first two cases instead of add to
 	 allow actual_fsize == 4096.  */
@@ -4563,7 +4562,7 @@ output_return (operands)
 	}
       else if (actual_fsize <= 8192)
 	{
-	  operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize - 4096);
+	  operands[0] = GEN_INT (actual_fsize - 4096);
 	  if (SKIP_CALLERS_UNIMP_P)
 	    return "sub %%sp,-4096,%%sp\n\tjmp %%o7+12\n\tsub %%sp,-%0,%%sp";
 	  else
@@ -5002,8 +5001,8 @@ output_double_int (file, value)
 
       high = (xword >> 32) & 0xffffffff;
       low  = xword & 0xffffffff;
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode, high));
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode, low));
+      ASM_OUTPUT_INT (file, GEN_INT (high));
+      ASM_OUTPUT_INT (file, GEN_INT (low));
 #else
       if (INTVAL (value) < 0)
 	ASM_OUTPUT_INT (file, constm1_rtx);
@@ -5014,10 +5013,8 @@ output_double_int (file, value)
     }
   else if (GET_CODE (value) == CONST_DOUBLE)
     {
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_HIGH (value)));
-      ASM_OUTPUT_INT (file, gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_LOW (value)));
+      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_HIGH (value)));
+      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_LOW (value)));
     }
   else if (GET_CODE (value) == SYMBOL_REF
 	   || GET_CODE (value) == CONST
@@ -5212,34 +5209,30 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
 			      size_int (10), 0, 1);
   rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddr,
 			     size_int (10), 0, 1);
-  rtx low_cxt = expand_and (cxt, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
-  rtx low_fn = expand_and (fnaddr, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
-  rtx g1_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x03000000));
-  rtx g2_sethi = gen_rtx (HIGH, SImode,
-			  gen_rtx (CONST_INT, VOIDmode, 0x05000000));
-  rtx g1_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x82106000));
-  rtx g2_ori = gen_rtx (HIGH, SImode,
-			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));
+  rtx low_cxt = expand_and (cxt, GEN_INT (0x3ff), 0);
+  rtx low_fn = expand_and (fnaddr, GEN_INT (0x3ff), 0);
+  rtx g1_sethi = gen_rtx_HIGH (SImode, GEN_INT (0x03000000));
+  rtx g2_sethi = gen_rtx_HIGH (SImode, GEN_INT (0x05000000));
+  rtx g1_ori = gen_rtx_HIGH (SImode, GEN_INT (0x82106000));
+  rtx g2_ori = gen_rtx_HIGH (SImode, GEN_INT (0x8410A000));
   rtx tem = gen_reg_rtx (SImode);
   emit_move_insn (tem, g1_sethi);
   emit_insn (gen_iorsi3 (high_fn, high_fn, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 0)), high_fn);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 0)), high_fn);
   emit_move_insn (tem, g1_ori);
   emit_insn (gen_iorsi3 (low_fn, low_fn, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 4)), low_fn);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)), low_fn);
   emit_move_insn (tem, g2_sethi);
   emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 8)), high_cxt);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)), high_cxt);
   emit_move_insn (tem, g2_ori);
   emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, SImode, tramp))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, SImode,
-					       plus_constant (tramp, 8)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, SImode,
-					       plus_constant (tramp, 16)))));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 16)), low_cxt);
+  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode, tramp))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (SImode, plus_constant (tramp, 8)))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (SImode, plus_constant (tramp, 16)))));
 }
 
 /* The 64 bit version is simpler because it makes more sense to load the
@@ -5250,17 +5243,17 @@ void
 sparc64_initialize_trampoline (tramp, fnaddr, cxt)
      rtx tramp, fnaddr, cxt;
 {
-  emit_move_insn (gen_rtx (MEM, DImode, plus_constant (tramp, 24)), cxt);
-  emit_move_insn (gen_rtx (MEM, DImode, plus_constant (tramp, 32)), fnaddr);
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode, tramp))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
-					       plus_constant (tramp, 8)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
-					       plus_constant (tramp, 16)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
-					       plus_constant (tramp, 24)))));
-  emit_insn (gen_flush (validize_mem (gen_rtx (MEM, DImode,
-					       plus_constant (tramp, 32)))));
+  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), cxt);
+  emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 32)), fnaddr);
+  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, tramp))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (DImode, plus_constant (tramp, 16)))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (DImode, plus_constant (tramp, 24)))));
+  emit_insn (gen_flush (validize_mem
+			(gen_rtx_MEM (DImode, plus_constant (tramp, 32)))));
 }
 
 /* Subroutines to support a flat (single) register window calling

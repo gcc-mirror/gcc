@@ -21,7 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Forward declarations.  */
 void print_operand_address ();
-char *index ();
 
 static int h8300_interrupt_function_p PROTO ((tree));
 static int h8300_monitor_function_p PROTO ((tree));
@@ -956,16 +955,16 @@ function_arg (cum, mode, type, named)
 	  switch (cum->nbytes / UNITS_PER_WORD)
 	    {
 	    case 0:
-	      result = gen_rtx (REG, mode, 0);
+	      result = gen_rtx_REG (mode, 0);
 	      break;
 	    case 1:
-	      result = gen_rtx (REG, mode, 1);
+	      result = gen_rtx_REG (mode, 1);
 	      break;
 	    case 2:
-	      result = gen_rtx (REG, mode, 2);
+	      result = gen_rtx_REG (mode, 2);
 	      break;
 	    case 3:
-	      result = gen_rtx (REG, mode, 3);
+	      result = gen_rtx_REG (mode, 3);
 	      break;
 	    default:
 	      result = 0;
@@ -1843,12 +1842,14 @@ expand_a_shift (mode, code, operands)
   /* need a loop to get all the bits we want  - we generate the
      code at emit time, but need to allocate a scratch reg now  */
 
-  emit_insn (gen_rtx
-	     (PARALLEL, VOIDmode,
+  emit_insn (gen_rtx_PARALLEL
+	     (VOIDmode,
 	      gen_rtvec (2,
-			 gen_rtx (SET, VOIDmode, operands[0],
-				  gen_rtx (code, mode, operands[0], operands[2])),
-			 gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, QImode, 0)))));
+			 gen_rtx_SET (VOIDmode, operands[0],
+				      gen_rtx (code, mode, operands[0],
+					       operands[2])),
+			 gen_rtx_CLOBBER (VOIDmode,
+					  gen_rtx_SCRATCH (QImode)))));
 
   return 1;
 }
@@ -2776,9 +2777,9 @@ fix_bit_operand (operands, what, type)
 	  /* Ok to have a memory dest.  */
 	  if (GET_CODE (operands[0]) == MEM && !EXTRA_CONSTRAINT (operands[0], 'U'))
 	    {
-	      rtx mem;
-	      mem = gen_rtx (MEM, GET_MODE (operands[0]),
-			   copy_to_mode_reg (Pmode, XEXP (operands[0], 0)));
+	      rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
+				     copy_to_mode_reg (Pmode,
+						       XEXP (operands[0], 0)));
 	      RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (operands[0]);
 	      MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (operands[0]);
 	      MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (operands[0]);
@@ -2787,9 +2788,9 @@ fix_bit_operand (operands, what, type)
 
 	  if (GET_CODE (operands[1]) == MEM && !EXTRA_CONSTRAINT (operands[1], 'U'))
 	    {
-	      rtx mem;
-	      mem = gen_rtx (MEM, GET_MODE (operands[1]),
-			   copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
+	      rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
+				     copy_to_mode_reg (Pmode,
+						       XEXP (operands[1], 0)));
 	      RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (operands[1]);
 	      MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (operands[1]);
 	      MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (operands[1]);
@@ -2804,8 +2805,9 @@ fix_bit_operand (operands, what, type)
   operands[1] = force_reg (QImode, operands[1]);
   {
     rtx res = gen_reg_rtx (QImode);
-    emit_insn (gen_rtx (SET, VOIDmode, res, gen_rtx (type, QImode, operands[1], operands[2])));
-    emit_insn (gen_rtx (SET, VOIDmode, operands[0], res));
+    emit_insn (gen_rtx_SET (VOIDmode, res,
+			    gen_rtx (type, QImode, operands[1], operands[2])));
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0], res));
   }
   return 1;
 }

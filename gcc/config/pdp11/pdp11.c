@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -365,14 +365,14 @@ output_move_double (operands)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
       output_asm_insn ("sub $4,%0", operands);
-      operands[0] = gen_rtx (MEM, SImode, operands[0]);
+      operands[0] = gen_rtx_MEM (SImode, operands[0]);
       optype0 = OFFSOP;
     }
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
       output_asm_insn ("sub $4,%1", operands);
-      operands[1] = gen_rtx (MEM, SImode, operands[1]);
+      operands[1] = gen_rtx_MEM (SImode, operands[1]);
       optype1 = OFFSOP;
     }
 
@@ -395,14 +395,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, HImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 2);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, HImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 2);
   else if (optype1 == CNSTOP)
@@ -412,10 +412,8 @@ output_move_double (operands)
 	    /* now the mess begins, high word is in lower word??? 
 
 	       that's what ashc makes me think, but I don't remember :-( */
-	    latehalf[1] = gen_rtx(CONST_INT, VOIDmode, 
-				  INTVAL(operands[1])>>16);
-	    operands[1] = gen_rtx(CONST_INT, VOIDmode,
-				  INTVAL(operands[1])&0xff);
+	    latehalf[1] = GEN_INT (INTVAL(operands[1]) >> 16);
+	    operands[1] = GEN_INT (INTVAL(operands[1]) & 0xff);
 	}
       else if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	{
@@ -579,14 +577,14 @@ output_move_quad (operands)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
       output_asm_insn ("sub $8,%0", operands);
-      operands[0] = gen_rtx (MEM, DImode, operands[0]);
+      operands[0] = gen_rtx_MEM (DImode, operands[0]);
       optype0 = OFFSOP;
     }
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
       output_asm_insn ("sub $8,%1", operands);
-      operands[1] = gen_rtx (MEM, SImode, operands[1]);
+      operands[1] = gen_rtx_MEM (SImode, operands[1]);
       optype1 = OFFSOP;
     }
 
@@ -609,14 +607,14 @@ output_move_quad (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 2);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 2);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 2);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 2);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
@@ -633,21 +631,15 @@ output_move_quad (operands)
 	    abort();
 	    
 #ifndef HOST_WORDS_BIG_ENDIAN
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
+	  latehalf[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+	  operands[1] = GEN_INT	(CONST_DOUBLE_HIGH (operands[1]));
 #else /* HOST_WORDS_BIG_ENDIAN */
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
+	  latehalf[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
 #endif /* HOST_WORDS_BIG_ENDIAN */
 	}
       else if (GET_CODE(operands[1]) == CONST_INT)
-      {
-	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode, 0);
-      }
+	latehalf[1] = GEN_INT (0);
       else
 	  abort();
       

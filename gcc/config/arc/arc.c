@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* ??? This is an old port, and is undoubtedly suffering from bit rot.  */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -706,10 +706,10 @@ gen_compare_reg (code, x, y)
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg;
 
-  cc_reg = gen_rtx (REG, mode, 61);
+  cc_reg = gen_rtx_REG (mode, 61);
 
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
-		      gen_rtx (COMPARE, mode, x, y)));
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+			  gen_rtx_COMPARE (mode, x, y)));
 
   return cc_reg;
 }
@@ -785,10 +785,10 @@ arc_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       int align_slop = size & 1;
       rtx regblock;
 
-      regblock = gen_rtx (MEM, BLKmode,
-			  plus_constant (arg_pointer_rtx,
-					 FIRST_PARM_OFFSET (0)
-					 + align_slop * UNITS_PER_WORD));
+      regblock = gen_rtx_MEM (BLKmode,
+			      plus_constant (arg_pointer_rtx,
+					     FIRST_PARM_OFFSET (0)
+					     + align_slop * UNITS_PER_WORD));
       move_block_from_reg (first_reg_offset, regblock,
 			   MAX_ARC_PARM_REGS - first_reg_offset,
 			   ((MAX_ARC_PARM_REGS - first_reg_offset)

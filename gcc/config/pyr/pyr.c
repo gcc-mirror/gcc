@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free, 1998 Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in pyr.md need these.  */
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -256,9 +256,9 @@ extend_const (x, extop, from_mode, to_mode)
   else
     val = val & ~((-1) << (GET_MODE_BITSIZE (from_mode)));
   if (GET_MODE_BITSIZE (to_mode) == HOST_BITS_PER_INT)
-    return gen_rtx (CONST_INT, VOIDmode, val);
-  return gen_rtx (CONST_INT, VOIDmode,
-		  val & ~((-1) << (GET_MODE_BITSIZE (to_mode))));
+    return GEN_INT (val);
+
+  return GEN_INT (val & ~((-1) << (GET_MODE_BITSIZE (to_mode))));
 }
 
 rtx
@@ -296,7 +296,7 @@ extend_and_branch (extop)
   if (op1 == 0)
     {
       op0 = ensure_extended (op0, extop, test_mode);
-      emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, op0));
+      emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, op0));
     }
   else
     {
@@ -338,8 +338,8 @@ extend_and_branch (extop)
 	    op0 = force_reg (test_mode, op0);
 	}
 
-      emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx,
-			  gen_rtx (COMPARE, VOIDmode, op0, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
+			      gen_rtx_COMPARE (VOIDmode, op0, op1)));
     }
 }
 
@@ -625,16 +625,13 @@ output_move_double (operands)
 	      || (CONST_DOUBLE_HIGH (const_op) == -1
 		  && CONST_DOUBLE_LOW (const_op) < 0))
 	    {
-	      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_LOW (const_op));
+	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (const_op));
 	      return "movl %1,%0";
 	    }
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (const_op));
+	  operands[1] = GEN_INT (CONST_DOUBLE_HIGH (const_op));
 	  output_asm_insn ("movw %1,%0", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (const_op));
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (const_op));
 	  return "movw %1,%0";
 	}
       else
@@ -646,16 +643,13 @@ output_move_double (operands)
 	      || (CONST_DOUBLE_LOW (const_op) == -1
 		  && CONST_DOUBLE_HIGH (const_op) < 0))
 	    {
-	      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				     CONST_DOUBLE_HIGH (const_op));
+	      operands[1] = GEN_INT (CONST_DOUBLE_HIGH (const_op));
 	      return "movl %1,%0";
 	    }
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (const_op));
+	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (const_op));
 	  output_asm_insn ("movw %1,%0", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (const_op));
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+	  operands[1] = GEN_INT (CONST_DOUBLE_HIGH (const_op));
 	  return "movw %1,%0";
 	}
     }
@@ -680,7 +674,7 @@ output_shift (pattern, op2, mod)
 	  cc_status = cc_prev_status;
 	  return "";
 	}
-      op2 = gen_rtx (CONST_INT, VOIDmode, cnt);
+      op2 = GEN_INT (cnt);
     }
   return pattern;
 }

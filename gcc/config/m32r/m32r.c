@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -941,7 +941,7 @@ gen_compare (code, x, y)
 {
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   enum rtx_code compare_code, branch_code;
-  rtx cc_reg = gen_rtx (REG, mode, CARRY_REGNUM);
+  rtx cc_reg = gen_rtx_REG (mode, CARRY_REGNUM);
   int swap_p = 0;
 
   switch (code)
@@ -1077,9 +1077,9 @@ m32r_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       int size = M32R_MAX_PARM_REGS - first_reg_offset;
       rtx regblock;
 
-      regblock = gen_rtx (MEM, BLKmode,
-			  plus_constant (arg_pointer_rtx,
-					 FIRST_PARM_OFFSET (0)));
+      regblock = gen_rtx_MEM (BLKmode,
+			      plus_constant (arg_pointer_rtx,
+					     FIRST_PARM_OFFSET (0)));
       move_block_from_reg (first_reg_offset, regblock,
 			   size, size * UNITS_PER_WORD);
 

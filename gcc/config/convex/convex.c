@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1988, 1993, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -359,8 +359,8 @@ expand_movstr (operands)
 	dest = change_address (dest, mode, 0);
 
       /* Make load and store patterns for this piece */
-      load = gen_rtx (SET, VOIDmode, reg, src);
-      store = gen_rtx (SET, VOIDmode, dest, reg);
+      load = gen_rtx_SET (VOIDmode, reg, src);
+      store = gen_rtx_SET (VOIDmode, dest, reg);
 
       /* Emit the load and the store from last time. 
 	 When we emit a store, we can reuse its temp reg. */
@@ -397,7 +397,7 @@ static void
 expand_movstr_call (operands)
      rtx *operands;
 {
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
 		     VOIDmode, 3,
 		     XEXP (operands[0], 0), Pmode,
 		     XEXP (operands[1], 0), Pmode,

@@ -20,8 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#include <ctype.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -142,16 +141,16 @@ function_arg (cum, mode, type, named)
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx (REG, mode, 6);
+      result = gen_rtx_REG (mode, 6);
       break;
     case 1:
-      result = gen_rtx (REG, mode, 7);
+      result = gen_rtx_REG (mode, 7);
       break;
     case 2:
-      result = gen_rtx (REG, mode, 8);
+      result = gen_rtx_REG (mode, 8);
       break;
     case 3:
-      result = gen_rtx (REG, mode, 9);
+      result = gen_rtx_REG (mode, 9);
       break;
     default:
       result = 0;
@@ -490,9 +489,8 @@ print_operand (file, x, code)
 	{
 	case MEM:
 	  if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	    output_address (gen_rtx (PLUS, SImode,
-				     gen_rtx (REG, SImode, 0),
-				     XEXP (x, 0)));
+	    output_address (gen_rtx_PLUS (SImode, gen_rtx (REG, SImode, 0),
+					  XEXP (x, 0)));
 	  else
 	    output_address (XEXP (x, 0));
 	  break;
@@ -719,7 +717,7 @@ output_move_single (operands)
 	return "%S0st%W0 %.,%0";
     }
 
-  fatal_insn ("output_move_single:", gen_rtx (SET, VOIDmode, dst, src));
+  fatal_insn ("output_move_single:", gen_rtx_SET (VOIDmode, dst, src));
   return "";
 }
 
@@ -765,7 +763,7 @@ output_move_double (operands)
 
       for (i = 0; i < 2; i++)
 	{
-	  xop[0] = gen_rtx (REG, SImode, REGNO (dst)+i);
+	  xop[0] = gen_rtx_REG (SImode, REGNO (dst)+i);
 	  xop[1] = GEN_INT (high_low[i]);
 	  output_asm_insn (output_move_single (xop), xop);
 	}
@@ -1014,15 +1012,15 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
      rtx *p_r1;
      rtx *p_ep;
 {
-  rtx reg = gen_rtx (REG, Pmode, regno);
+  rtx reg = gen_rtx_REG (Pmode, regno);
   rtx insn;
   int i;
 
   if (!*p_r1)
     {
       regs_ever_live[1] = 1;
-      *p_r1 = gen_rtx (REG, Pmode, 1);
-      *p_ep = gen_rtx (REG, Pmode, 30);
+      *p_r1 = gen_rtx_REG (Pmode, 1);
+      *p_ep = gen_rtx_REG (Pmode, 30);
     }
 
   if (TARGET_DEBUG)
@@ -1076,8 +1074,9 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 			       < ep_memory_offset (GET_MODE (*p_mem),
 						   unsignedp)))
 		    *p_mem = change_address (*p_mem, VOIDmode,
-					     gen_rtx (PLUS, Pmode,
-						      *p_ep, XEXP (addr, 1)));
+					     gen_rtx_PLUS (Pmode,
+							   *p_ep,
+							   XEXP (addr, 1)));
 		}
 	    }
 	}
@@ -1091,10 +1090,10 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
       && SET_SRC (PATTERN (insn)) == *p_r1)
     delete_insn (insn);
   else
-    emit_insn_before (gen_rtx (SET, Pmode, *p_r1, *p_ep), first_insn);
+    emit_insn_before (gen_rtx_SET (Pmode, *p_r1, *p_ep), first_insn);
 
-  emit_insn_before (gen_rtx (SET, Pmode, *p_ep, reg), first_insn);
-  emit_insn_before (gen_rtx (SET, Pmode, *p_ep, *p_r1), last_insn);
+  emit_insn_before (gen_rtx_SET (Pmode, *p_ep, reg), first_insn);
+  emit_insn_before (gen_rtx_SET (Pmode, *p_ep, *p_r1), last_insn);
 }
 
 
@@ -1423,10 +1422,10 @@ expand_prologue ()
 	  offset = 0;
 	  for (i = 6; i < 10; i++)
 	    {
-	      emit_move_insn (gen_rtx (MEM, SImode,
-				       plus_constant (stack_pointer_rtx,
-						      offset)),
-			      gen_rtx (REG, SImode, i));
+	      emit_move_insn (gen_rtx_MEM (SImode,
+					   plus_constant (stack_pointer_rtx,
+							  offset)),
+			      gen_rtx_REG (SImode, i));
 	      offset += 4;
 	    }
 	}
@@ -1438,14 +1437,14 @@ expand_prologue ()
   for (i = 1; i < 31; i++)
     {
       if (((1L << i) & reg_saved) != 0)
-	save_regs[num_save++] = gen_rtx (REG, Pmode, i);
+	save_regs[num_save++] = gen_rtx_REG (Pmode, i);
     }
 
   /* If the return pointer is saved, the helper functions also allocate
      16 bytes of stack for arguments to be saved in.  */
   if (((1L << 31) & reg_saved) != 0)
     {
-      save_regs[num_save++] = gen_rtx (REG, Pmode, 31);
+      save_regs[num_save++] = gen_rtx_REG (Pmode, 31);
       default_stack = 16;
     }
 
@@ -1475,27 +1474,30 @@ expand_prologue ()
 	 stack space is allocated.  */
       if (save_func_len < save_normal_len)
 	{
-	  save_all = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
-	  XVECEXP (save_all, 0, 0) = gen_rtx (SET, VOIDmode,
-					      stack_pointer_rtx,
-					      gen_rtx (PLUS, Pmode,
-						       stack_pointer_rtx,
-						       GEN_INT (-alloc_stack)));
+	  save_all = gen_rtx_PARALLEL
+	    (VOIDmode,
+	     rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
+
+	  XVECEXP (save_all, 0, 0)
+	    = gen_rtx_SET (VOIDmode,
+			   stack_pointer_rtx,
+			   plus_constant (stack_pointer_rtx, -alloc_stack));
 
 	  if (TARGET_V850)
 	    {
 	      XVECEXP (save_all, 0, num_save+1)
-		= gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 10));
+		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 10));
 	    }
 
 	  offset = - default_stack;
 	  for (i = 0; i < num_save; i++)
 	    {
 	      XVECEXP (save_all, 0, i+1)
-		= gen_rtx (SET, VOIDmode,
-			   gen_rtx (MEM, Pmode,
-				    plus_constant (stack_pointer_rtx, offset)),
-				    save_regs[i]);
+		= gen_rtx_SET (VOIDmode,
+			       gen_rtx_MEM (Pmode,
+					    plus_constant (stack_pointer_rtx,
+							   offset)),
+			       save_regs[i]);
 	      offset -= 4;
 	    }
 
@@ -1546,18 +1548,18 @@ expand_prologue ()
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == 31)
 	    {
-	      emit_move_insn (gen_rtx (MEM, SImode,
-				       plus_constant (stack_pointer_rtx,
-						      offset)),
+	      emit_move_insn (gen_rtx_MEM (SImode,
+					   plus_constant (stack_pointer_rtx,
+							  offset)),
 			      save_regs[--num_save]);
 	      offset -= 4;
 	    }
 	  
 	  for (i = 0; i < num_save; i++)
 	    {
-	      emit_move_insn (gen_rtx (MEM, SImode,
-				       plus_constant (stack_pointer_rtx,
-						      offset)),
+	      emit_move_insn (gen_rtx_MEM (SImode,
+					   plus_constant (stack_pointer_rtx,
+							  offset)),
 			      save_regs[i]);
 	      offset -= 4;
 	    }
@@ -1576,7 +1578,7 @@ expand_prologue ()
 			       GEN_INT (-diff)));
       else
 	{
-	  rtx reg = gen_rtx (REG, Pmode, 12);
+	  rtx reg = gen_rtx_REG (Pmode, 12);
 	  emit_move_insn (reg, GEN_INT (-diff));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
 	}
@@ -1622,14 +1624,14 @@ expand_epilogue ()
   for (i = 1; i < 31; i++)
     {
       if (((1L << i) & reg_saved) != 0)
-	restore_regs[num_restore++] = gen_rtx (REG, Pmode, i);
+	restore_regs[num_restore++] = gen_rtx_REG (Pmode, i);
     }
 
   /* If the return pointer is saved, the helper functions also allocate
      16 bytes of stack for arguments to be saved in.  */
   if (((1L << 31) & reg_saved) != 0)
     {
-      restore_regs[num_restore++] = gen_rtx (REG, Pmode, 31);
+      restore_regs[num_restore++] = gen_rtx_REG (Pmode, 31);
       default_stack = 16;
     }
 
@@ -1658,23 +1660,24 @@ expand_epilogue ()
       /* Don't bother checking if we don't actually save any space.  */
       if (restore_func_len < restore_normal_len)
 	{
-	  restore_all = gen_rtx (PARALLEL, VOIDmode,
-				 rtvec_alloc (num_restore + 2));
-	  XVECEXP (restore_all, 0, 0) = gen_rtx (RETURN, VOIDmode);
+	  restore_all = gen_rtx_PARALLEL (VOIDmode,
+					  rtvec_alloc (num_restore + 2));
+	  XVECEXP (restore_all, 0, 0) = gen_rtx_RETURN (VOIDmode);
 	  XVECEXP (restore_all, 0, 1)
-	    = gen_rtx (SET, VOIDmode, stack_pointer_rtx,
-		       gen_rtx (PLUS, Pmode,
-				stack_pointer_rtx,
-				GEN_INT (alloc_stack)));
+	    = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			    gen_rtx_PLUS (Pmode,
+					  stack_pointer_rtx,
+					  GEN_INT (alloc_stack)));
 
 	  offset = alloc_stack - 4;
 	  for (i = 0; i < num_restore; i++)
 	    {
 	      XVECEXP (restore_all, 0, i+2)
-		= gen_rtx (SET, VOIDmode,
-			   restore_regs[i],
-			   gen_rtx (MEM, Pmode,
-				    plus_constant (stack_pointer_rtx, offset)));
+		= gen_rtx_SET (VOIDmode,
+			       restore_regs[i],
+			       gen_rtx_MEM (Pmode,
+					    plus_constant (stack_pointer_rtx,
+							   offset)));
 	      offset -= 4;
 	    }
 
@@ -1692,7 +1695,7 @@ expand_epilogue ()
 					   GEN_INT (actual_fsize)));
 		  else
 		    {
-		      rtx reg = gen_rtx (REG, Pmode, 12);
+		      rtx reg = gen_rtx_REG (Pmode, 12);
 		      emit_move_insn (reg, GEN_INT (actual_fsize));
 		      emit_insn (gen_addsi3 (stack_pointer_rtx,
 					     stack_pointer_rtx,
@@ -1735,7 +1738,7 @@ expand_epilogue ()
 				   GEN_INT (diff)));
 	  else
 	    {
-	      rtx reg = gen_rtx (REG, Pmode, 12);
+	      rtx reg = gen_rtx_REG (Pmode, 12);
 	      emit_move_insn (reg, GEN_INT (diff));
 	      emit_insn (gen_addsi3 (stack_pointer_rtx,
 				     stack_pointer_rtx,
@@ -1756,18 +1759,18 @@ expand_epilogue ()
 	  if (num_restore > 0 && REGNO (restore_regs[num_restore-1]) == 31)
 	    {
 	      emit_move_insn (restore_regs[--num_restore],
-			      gen_rtx (MEM, SImode,
-				       plus_constant (stack_pointer_rtx,
-						      offset)));
+			      gen_rtx_MEM (SImode,
+					   plus_constant (stack_pointer_rtx,
+							  offset)));
 	      offset -= 4;
 	    }
 
 	  for (i = 0; i < num_restore; i++)
 	    {
 	      emit_move_insn (restore_regs[i],
-			      gen_rtx (MEM, SImode,
-				       plus_constant (stack_pointer_rtx,
-						      offset)));
+			      gen_rtx_MEM (SImode,
+					   plus_constant (stack_pointer_rtx,
+							  offset)));
 
 	      offset -= 4;
 	    }

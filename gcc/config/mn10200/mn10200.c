@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10200 series
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -275,7 +275,7 @@ print_operand (file, x, code)
 	if (GET_CODE (x) != MEM)
 	  abort ();
 	if (GET_CODE (XEXP (x, 0)) == REG)
-	  x = gen_rtx (PLUS, PSImode, XEXP (x, 0), GEN_INT (0));
+	  x = gen_rtx_PLUS (PSImode, XEXP (x, 0), GEN_INT (0));
 	else
 	  x = XEXP (x, 0);
 	fputc ('(', file);
@@ -594,12 +594,12 @@ expand_prologue ()
 	      if (!regs_ever_live[2])
 		{
 		  regs_ever_live[2] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 2);
+		  zero_dreg = gen_rtx_REG (HImode, 2);
 		}
 	      if (!regs_ever_live[3])
 		{
 		  regs_ever_live[3] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 3);
+		  zero_dreg = gen_rtx_REG (HImode, 3);
 		}
 	    }
 
@@ -611,12 +611,12 @@ expand_prologue ()
 	      if (!regs_ever_live[5])
 		{
 		  regs_ever_live[5] = 1;
-		  zero_areg = gen_rtx (REG, HImode, 5);
+		  zero_areg = gen_rtx_REG (HImode, 5);
 		}
 	      if (!regs_ever_live[6])
 		{
 		  regs_ever_live[6] = 1;
-		  zero_areg = gen_rtx (REG, HImode, 6);
+		  zero_areg = gen_rtx_REG (HImode, 6);
 		}
 	    }
 
@@ -638,14 +638,14 @@ expand_prologue ()
     {
       emit_insn (gen_addpsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			      GEN_INT (-4)));
-      emit_move_insn (gen_rtx (MEM, PSImode, stack_pointer_rtx),
-		      gen_rtx (REG, PSImode, STATIC_CHAIN_REGNUM));
+      emit_move_insn (gen_rtx_MEM (PSImode, stack_pointer_rtx),
+		      gen_rtx_REG (PSImode, STATIC_CHAIN_REGNUM));
     }
 
   if (frame_pointer_needed)
     {
       /* Store a2 into a0 temporarily.  */
-      emit_move_insn (gen_rtx (REG, PSImode, 4), frame_pointer_rtx);
+      emit_move_insn (gen_rtx_REG (PSImode, 4), frame_pointer_rtx);
 
       /* Set up the frame pointer.  */
       emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
@@ -670,11 +670,10 @@ expand_prologue ()
 	     register 4 (a0).  */
 	  regno = (i == FRAME_POINTER_REGNUM && frame_pointer_needed) ? 4 : i;
 	
-	  emit_move_insn (gen_rtx (MEM, PSImode,
-				   gen_rtx (PLUS, Pmode,
-					    stack_pointer_rtx,
-					    GEN_INT (offset))),
-			  gen_rtx (REG, PSImode, regno));
+	  emit_move_insn (gen_rtx_MEM (PSImode,
+				       plus_constant (stack_pointer_rtx,
+						      offset)),
+			  gen_rtx_REG (PSImode, regno));
 	  offset += 4;
 	}
     }
@@ -683,10 +682,10 @@ expand_prologue ()
      expects to find it.  */
   if (current_function_needs_context)
     {
-      emit_move_insn (gen_rtx (REG, PSImode, STATIC_CHAIN_REGNUM),
+      emit_move_insn (gen_rtx_REG (PSImode, STATIC_CHAIN_REGNUM),
 		      gen_rtx (MEM, PSImode,
-			       gen_rtx (PLUS, PSImode, stack_pointer_rtx,
-					GEN_INT (size))));
+			       gen_rtx_PLUS (PSImode, stack_pointer_rtx,
+					     GEN_INT (size))));
     }
 }
 
@@ -764,11 +763,9 @@ expand_epilogue ()
 	  regno = ((i == FRAME_POINTER_REGNUM && frame_pointer_needed)
 		   ? temp_regno : i);
 	
-	  emit_move_insn (gen_rtx (REG, PSImode, regno),
-			  gen_rtx (MEM, PSImode,
-				   gen_rtx (PLUS, Pmode,
-					    basereg,
-					    GEN_INT (offset))));
+	  emit_move_insn (gen_rtx_REG (PSImode, regno),
+			  gen_rtx_MEM (PSImode,
+				       plus_constant (basereg, offset)));
 	  offset += 4;
 	}
     }
@@ -778,7 +775,7 @@ expand_epilogue ()
       /* Deallocate this frame's stack.  */
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
       /* Restore the old frame pointer.  */
-      emit_move_insn (frame_pointer_rtx, gen_rtx (REG, PSImode, temp_regno));
+      emit_move_insn (frame_pointer_rtx, gen_rtx_REG (PSImode, temp_regno));
     }
   else if (size)
     {
@@ -972,14 +969,14 @@ expand_a_shift (mode, code, operands)
   /* need a loop to get all the bits we want  - we generate the
      code at emit time, but need to allocate a scratch reg now  */
 
-  emit_insn (gen_rtx
-	     (PARALLEL, VOIDmode,
+  emit_insn (gen_rtx_PARALLEL
+	     (VOIDmode,
 	      gen_rtvec (2,
-			 gen_rtx (SET, VOIDmode, operands[0],
-				  gen_rtx (code, mode,
-					   operands[0], operands[2])),
-			 gen_rtx (CLOBBER, VOIDmode,
-				  gen_rtx (SCRATCH, HImode, 0)))));
+			 gen_rtx_SET (VOIDmode, operands[0],
+				      gen_rtx (code, mode,
+					       operands[0], operands[2])),
+			 gen_rtx_CLOBBER (VOIDmode,
+					  gen_rtx_SCRATCH (HImode)))));
 
   return 1;
 }
@@ -1374,10 +1371,10 @@ function_arg (cum, mode, type, named)
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx (REG, mode, 0);
+      result = gen_rtx_REG (mode, 0);
       break;
     case 1:
-      result = gen_rtx (REG, mode, 1);
+      result = gen_rtx_REG (mode, 1);
       break;
     default:
       result = 0;

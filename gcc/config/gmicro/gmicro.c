@@ -1,8 +1,7 @@
 /* Subroutines for insn-output.c for the Gmicro.
-   Ported by Masanobu Yuhara, Fujitsu Laboratories LTD.
+   Copyright (C) 1990, 1991, 1997, 1998 Free Software Foundation, Inc.
+   Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
-
-   Copyright (C) 1990, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,9 +23,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -499,14 +497,14 @@ output_move_double (operands)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
       output_asm_insn ("sub.w %#8,%0", operands);
-      operands[0] = gen_rtx (MEM, DImode, operands[0]);
+      operands[0] = gen_rtx_MEM (DImode, operands[0]);
       optype0 = OFFSOP;
     }
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
       output_asm_insn ("sub.w %#8,%1", operands);
-      operands[1] = gen_rtx (MEM, DImode, operands[1]);
+      operands[1] = gen_rtx_MEM (DImode, operands[1]);
       optype1 = OFFSOP;
     }
 
@@ -529,14 +527,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
@@ -634,18 +632,14 @@ output_move_const_double (operands)
   else if (GREG_P (operands[0])) 
     {
       rtx xoperands[2];
-      xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-      xoperands[1] = gen_rtx (CONST_INT, VOIDmode,
-			      CONST_DOUBLE_HIGH (operands[1]));
+      xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
+      xoperands[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
       output_asm_insn ("mov.w %1,%0", xoperands);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
+      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
       return "mov.w %1,%0";
     }
   else 
-    {
-      return output_move_double (operands); /* ?????? */
-    }
+    return output_move_double (operands); /* ?????? */
 }
 
 char *
@@ -760,7 +754,7 @@ add_imm_word (imm, dest, immp)
 
   if (imm < 0) 
     {
-      *immp = gen_rtx (CONST_INT, VOIDmode, -imm);
+      *immp = GEN_INT (-imm);
       return sub_imm_word (-imm, dest);
     }
     
@@ -795,7 +789,7 @@ sub_imm_word (imm, dest, immp)
 
   if (imm < 0 &&  imm != 0x80000000) 
     {
-      *immp = gen_rtx (CONST_INT, VOIDmode, -imm);
+      *immp = GEN_INT (-imm);
       return add_imm_word (-imm, dest);
     }
     
