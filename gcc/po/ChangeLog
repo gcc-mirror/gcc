@@ -1,5 +1,7 @@
 2003-05-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.pot: Regenerate.
+
 	* da.po: Update to latest version.
 	* es.po: Likewise.
 	* fr.po: Likewise.
