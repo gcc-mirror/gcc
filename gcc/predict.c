@@ -955,6 +955,7 @@ estimate_bb_frequencies (loops)
   for (i = -2; i < n_basic_blocks; i++)
     {
       basic_block bb;
+      volatile double tmp;
 
       if (i == -2)
 	bb = ENTRY_BLOCK_PTR;
@@ -962,8 +963,12 @@ estimate_bb_frequencies (loops)
 	bb = EXIT_BLOCK_PTR;
       else
 	bb = BASIC_BLOCK (i);
-      bb->frequency
-	= BLOCK_INFO (bb)->frequency * BB_FREQ_MAX / freq_max + 0.5;
+
+      /* ??? Prevent rounding differences due to optimization on x86.  */
+      tmp = BLOCK_INFO (bb)->frequency * BB_FREQ_MAX;
+      tmp /= freq_max;
+      tmp += 0.5;
+      bb->frequency = tmp;
     }
 
   free_aux_for_blocks ();
