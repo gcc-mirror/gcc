@@ -3764,7 +3764,19 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
-		    quotient = expand_sdiv_pow2 (compute_mode, op0, abs_d);
+
+		    if (sdiv_pow2_cheap[compute_mode]
+			&& ((sdiv_optab->handlers[compute_mode].insn_code
+			     != CODE_FOR_nothing)
+			    || (sdivmod_optab->handlers[compute_mode].insn_code
+				!= CODE_FOR_nothing)))
+		      quotient = expand_divmod (0, TRUNC_DIV_EXPR,
+						compute_mode, op0,
+						gen_int_mode (abs_d,
+							      compute_mode),
+						NULL_RTX, 0);
+		    else
+		      quotient = expand_sdiv_pow2 (compute_mode, op0, abs_d);
 
 		    /* We have computed OP0 / abs(OP1).  If OP1 is negative,
 		       negate the quotient.  */

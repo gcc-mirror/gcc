@@ -1,3 +1,9 @@
+2004-09-12  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/16795
+	* expmed.c (expand_divmod): If cheap power of 2 divide is
+	available, use it for negative constant as well.
+
 2004-09-12  Andrew Pinski  <apinski@apple.com>
 
 	* darwin.h (ASM_OUTPUT_COMMON): Make sure we do not have a
