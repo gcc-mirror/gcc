@@ -1515,18 +1515,6 @@ enum tree_index
   TI_UINTDI_TYPE,
   TI_UINTTI_TYPE,
     
-  TI_CHAR_TYPE,
-  TI_SIGNED_CHAR_TYPE,
-  TI_UNSIGNED_CHAR_TYPE,
-  TI_INTEGER_TYPE,
-  TI_UNSIGNED_TYPE,
-  TI_SHORT_INTEGER_TYPE,
-  TI_SHORT_UNSIGNED_TYPE,
-  TI_LONG_INTEGER_TYPE,
-  TI_LONG_UNSIGNED_TYPE,
-  TI_LONG_LONG_INTEGER_TYPE,
-  TI_LONG_LONG_UNSIGNED_TYPE,
-
   TI_INTEGER_ZERO,
   TI_INTEGER_ONE,
   TI_NULL_POINTER,
@@ -1568,18 +1556,6 @@ extern tree global_trees[TI_MAX];
 #define unsigned_intDI_type_node	global_trees[TI_UINTDI_TYPE]
 #define unsigned_intTI_type_node	global_trees[TI_UINTTI_TYPE]
 
-#define char_type_node			global_trees[TI_CHAR_TYPE]
-#define signed_char_type_node		global_trees[TI_SIGNED_CHAR_TYPE]
-#define unsigned_char_type_node		global_trees[TI_UNSIGNED_CHAR_TYPE]
-#define short_integer_type_node		global_trees[TI_SHORT_INTEGER_TYPE]
-#define short_unsigned_type_node	global_trees[TI_SHORT_UNSIGNED_TYPE]
-#define integer_type_node		global_trees[TI_INTEGER_TYPE]
-#define unsigned_type_node		global_trees[TI_UNSIGNED_TYPE]
-#define long_integer_type_node		global_trees[TI_LONG_INTEGER_TYPE]
-#define long_unsigned_type_node		global_trees[TI_LONG_UNSIGNED_TYPE]
-#define long_long_integer_type_node	global_trees[TI_LONG_LONG_INTEGER_TYPE]
-#define long_long_unsigned_type_node	global_trees[TI_LONG_LONG_UNSIGNED_TYPE]
-
 #define integer_zero_node		global_trees[TI_INTEGER_ZERO]
 #define integer_one_node		global_trees[TI_INTEGER_ONE]
 #define size_zero_node			global_trees[TI_SIZE_ZERO]
@@ -1602,6 +1578,43 @@ extern tree global_trees[TI_MAX];
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
+/* An enumeration of the standard C integer types.  These must be
+   ordered so that shorter types appear before longer ones.  */
+enum integer_type_kind 
+{
+  itk_char,
+  itk_signed_char,
+  itk_unsigned_char,
+  itk_short,
+  itk_unsigned_short,
+  itk_int,
+  itk_unsigned_int,
+  itk_long,
+  itk_unsigned_long,
+  itk_long_long,
+  itk_unsigned_long_long,
+  itk_none
+};
+
+typedef enum integer_type_kind integer_type_kind;
+
+/* The standard C integer types.  Use integer_type_kind to index into
+   this array.  */
+extern tree integer_types[itk_none];
+
+#define char_type_node			integer_types[itk_char]
+#define signed_char_type_node		integer_types[itk_signed_char]
+#define unsigned_char_type_node		integer_types[itk_unsigned_char]
+#define short_integer_type_node		integer_types[itk_short]
+#define short_unsigned_type_node	integer_types[itk_unsigned_short]
+#define integer_type_node		integer_types[itk_int]
+#define unsigned_type_node		integer_types[itk_unsigned_int]
+#define long_integer_type_node		integer_types[itk_long]
+#define long_unsigned_type_node		integer_types[itk_unsigned_long]
+#define long_long_integer_type_node	integer_types[itk_long_long]
+#define long_long_unsigned_type_node	integer_types[itk_unsigned_long_long]
+
 
 #define NULL_TREE (tree) NULL
 

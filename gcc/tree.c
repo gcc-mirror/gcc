@@ -296,6 +296,7 @@ static char *built_in_filename;
 #define BUILT_IN_FILENAME ("<built-in>")
 
 tree global_trees[TI_MAX];
+tree integer_types[itk_none];
 
 /* Init the principal obstacks.  */
 
@@ -333,6 +334,7 @@ init_obstacks ()
 		sizeof type_hash_table / sizeof type_hash_table [0],
 		sizeof type_hash_table[0], mark_type_hash);
   ggc_add_tree_root (global_trees, TI_MAX);
+  ggc_add_tree_root (integer_types, itk_none);
 }
 
 void
