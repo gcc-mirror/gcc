@@ -325,7 +325,7 @@ private:
   friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
   friend void _Jv_LinkOffsetTable (jclass);
   friend void _Jv_LayoutVTableMethods (jclass klass);
-  friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *);
+  friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *, jboolean *);
   friend void _Jv_MakeVTable (jclass);
 
   // Return array class corresponding to element type KLASS, creating it if

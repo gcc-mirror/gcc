@@ -1184,15 +1184,17 @@ void _Jv_ClassReader::handleFieldsEnd ()
 void
 _Jv_ClassReader::handleMethodsBegin (int count)
 {
-  def->methods = (_Jv_Method*)
-    _Jv_AllocBytes (sizeof (_Jv_Method)*count);
+  def->methods = (_Jv_Method *) _Jv_AllocBytes (sizeof (_Jv_Method) * count);
 
   def->interpreted_methods
     = (_Jv_MethodBase **) _Jv_AllocBytes (sizeof (_Jv_MethodBase *)
 					  * count);
 
   for (int i = 0; i < count; i++)
-    def->interpreted_methods[i] = 0;
+    {
+      def->interpreted_methods[i] = 0;
+      def->methods[i].index = (_Jv_ushort) -1;
+    }
 
   def->method_count = count;
 }
@@ -1376,12 +1378,14 @@ throw_internal_error (char *msg)
   throw new java::lang::InternalError (JvNewStringLatin1 (msg));
 }
 
-static void throw_incompatible_class_change_error (jstring msg)
+static void
+throw_incompatible_class_change_error (jstring msg)
 {
   throw new java::lang::IncompatibleClassChangeError (msg);
 }
 
-static void throw_class_circularity_error (jstring msg)
+static void
+throw_class_circularity_error (jstring msg)
 {
   throw new java::lang::ClassCircularityError (msg);
 }
