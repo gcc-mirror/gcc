@@ -314,7 +314,8 @@ unsigned local_tick;
 
 int flag_signed_char;
 
-/* Nonzero means give an enum type only as many bytes as it needs.  */
+/* Nonzero means give an enum type only as many bytes as it needs.  A value
+   of 2 means it has not yet been initialized.  */
 
 int flag_short_enums;
 
@@ -2231,6 +2232,9 @@ process_options (void)
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
 #endif
+
+  if (flag_short_enums == 2)
+    flag_short_enums = targetm.default_short_enums ();
 
   /* Set aux_base_name if not already set.  */
   if (aux_base_name)
