@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body Ada.Wide_Text_IO.Complex_Aux is
    ---------
 
    procedure Get
-     (File  : in  File_Type;
+     (File  : File_Type;
       ItemR : out Long_Long_Float;
       ItemI : out Long_Long_Float;
       Width : Field)
@@ -96,7 +96,7 @@ package body Ada.Wide_Text_IO.Complex_Aux is
    ----------
 
    procedure Gets
-     (From  : in String;
+     (From  : String;
       ItemR : out Long_Long_Float;
       ItemI : out Long_Long_Float;
       Last  : out Positive)
@@ -163,8 +163,8 @@ package body Ada.Wide_Text_IO.Complex_Aux is
      (To    : out String;
       ItemR : Long_Long_Float;
       ItemI : Long_Long_Float;
-      Aft   : in  Field;
-      Exp   : in  Field)
+      Aft   :  Field;
+      Exp   :  Field)
    is
       I_String : String (1 .. 3 * Field'Last);
       R_String : String (1 .. 3 * Field'Last);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -86,34 +86,34 @@ pragma Elaborate_Body (Text_IO);
 
    procedure Create
      (File : in out File_Type;
-      Mode : in File_Mode := Out_File;
-      Name : in String := "";
-      Form : in String := "");
+      Mode : File_Mode := Out_File;
+      Name : String := "";
+      Form : String := "");
 
    procedure Open
      (File : in out File_Type;
-      Mode : in File_Mode;
-      Name : in String;
-      Form : in String := "");
+      Mode : File_Mode;
+      Name : String;
+      Form : String := "");
 
    procedure Close  (File : in out File_Type);
    procedure Delete (File : in out File_Type);
-   procedure Reset  (File : in out File_Type; Mode : in File_Mode);
+   procedure Reset  (File : in out File_Type; Mode : File_Mode);
    procedure Reset  (File : in out File_Type);
 
-   function Mode (File : in File_Type) return File_Mode;
-   function Name (File : in File_Type) return String;
-   function Form (File : in File_Type) return String;
+   function Mode (File : File_Type) return File_Mode;
+   function Name (File : File_Type) return String;
+   function Form (File : File_Type) return String;
 
-   function Is_Open (File : in File_Type) return Boolean;
+   function Is_Open (File : File_Type) return Boolean;
 
    ------------------------------------------------------
    -- Control of default input, output and error files --
    ------------------------------------------------------
 
-   procedure Set_Input  (File : in File_Type);
-   procedure Set_Output (File : in File_Type);
-   procedure Set_Error  (File : in File_Type);
+   procedure Set_Input  (File : File_Type);
+   procedure Set_Output (File : File_Type);
+   procedure Set_Error  (File : File_Type);
 
    function Standard_Input  return File_Type;
    function Standard_Output return File_Type;
@@ -140,76 +140,76 @@ pragma Elaborate_Body (Text_IO);
    --  Note: The parameter file is IN OUT in the RM, but this is clearly
    --  an oversight, and was intended to be IN, see AI95-00057.
 
-   procedure Flush (File : in File_Type);
+   procedure Flush (File : File_Type);
    procedure Flush;
 
    --------------------------------------------
    -- Specification of line and page lengths --
    --------------------------------------------
 
-   procedure Set_Line_Length (File : in File_Type; To : in Count);
-   procedure Set_Line_Length (To : in Count);
+   procedure Set_Line_Length (File : File_Type; To : Count);
+   procedure Set_Line_Length (To : Count);
 
-   procedure Set_Page_Length (File : in File_Type; To : in Count);
-   procedure Set_Page_Length (To : in Count);
+   procedure Set_Page_Length (File : File_Type; To : Count);
+   procedure Set_Page_Length (To : Count);
 
-   function Line_Length (File : in File_Type) return Count;
+   function Line_Length (File : File_Type) return Count;
    function Line_Length return Count;
 
-   function Page_Length (File : in File_Type) return Count;
+   function Page_Length (File : File_Type) return Count;
    function Page_Length return Count;
 
    ------------------------------------
    -- Column, Line, and Page Control --
    ------------------------------------
 
-   procedure New_Line (File : in File_Type; Spacing : in Positive_Count := 1);
-   procedure New_Line (Spacing : in Positive_Count := 1);
+   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure New_Line (Spacing : Positive_Count := 1);
 
-   procedure Skip_Line (File : in File_Type; Spacing : in Positive_Count := 1);
-   procedure Skip_Line (Spacing : in Positive_Count := 1);
+   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
+   procedure Skip_Line (Spacing : Positive_Count := 1);
 
-   function End_Of_Line (File : in File_Type) return Boolean;
+   function End_Of_Line (File : File_Type) return Boolean;
    function End_Of_Line return Boolean;
 
-   procedure New_Page (File : in File_Type);
+   procedure New_Page (File : File_Type);
    procedure New_Page;
 
-   procedure Skip_Page (File : in File_Type);
+   procedure Skip_Page (File : File_Type);
    procedure Skip_Page;
 
-   function End_Of_Page (File : in File_Type) return Boolean;
+   function End_Of_Page (File : File_Type) return Boolean;
    function End_Of_Page return Boolean;
 
-   function End_Of_File (File : in File_Type) return Boolean;
+   function End_Of_File (File : File_Type) return Boolean;
    function End_Of_File return Boolean;
 
-   procedure Set_Col (File : in File_Type;  To : in Positive_Count);
-   procedure Set_Col (To : in Positive_Count);
+   procedure Set_Col (File : File_Type;  To : Positive_Count);
+   procedure Set_Col (To : Positive_Count);
 
-   procedure Set_Line (File : in File_Type; To : in Positive_Count);
-   procedure Set_Line (To : in Positive_Count);
+   procedure Set_Line (File : File_Type; To : Positive_Count);
+   procedure Set_Line (To : Positive_Count);
 
-   function Col (File : in File_Type) return Positive_Count;
+   function Col (File : File_Type) return Positive_Count;
    function Col return Positive_Count;
 
-   function Line (File : in File_Type) return Positive_Count;
+   function Line (File : File_Type) return Positive_Count;
    function Line return Positive_Count;
 
-   function Page (File : in File_Type) return Positive_Count;
+   function Page (File : File_Type) return Positive_Count;
    function Page return Positive_Count;
 
    ----------------------------
    -- Character Input-Output --
    ----------------------------
 
-   procedure Get (File : in File_Type; Item : out Character);
+   procedure Get (File : File_Type; Item : out Character);
    procedure Get (Item : out Character);
-   procedure Put (File : in File_Type; Item : in Character);
-   procedure Put (Item : in Character);
+   procedure Put (File : File_Type; Item : Character);
+   procedure Put (Item : Character);
 
    procedure Look_Ahead
-     (File        : in File_Type;
+     (File        : File_Type;
       Item        : out Character;
       End_Of_Line : out Boolean);
 
@@ -218,14 +218,14 @@ pragma Elaborate_Body (Text_IO);
       End_Of_Line : out Boolean);
 
    procedure Get_Immediate
-     (File : in File_Type;
+     (File : File_Type;
       Item : out Character);
 
    procedure Get_Immediate
      (Item : out Character);
 
    procedure Get_Immediate
-     (File      : in File_Type;
+     (File      : File_Type;
       Item      : out Character;
       Available : out Boolean);
 
@@ -237,13 +237,13 @@ pragma Elaborate_Body (Text_IO);
    -- String Input-Output --
    -------------------------
 
-   procedure Get (File : in File_Type; Item : out String);
+   procedure Get (File : File_Type; Item : out String);
    procedure Get (Item : out String);
-   procedure Put (File : in File_Type; Item : in String);
-   procedure Put (Item : in String);
+   procedure Put (File : File_Type; Item : String);
+   procedure Put (Item : String);
 
    procedure Get_Line
-     (File : in File_Type;
+     (File : File_Type;
       Item : out String;
       Last : out Natural);
 
@@ -251,12 +251,18 @@ pragma Elaborate_Body (Text_IO);
      (Item : out String;
       Last : out Natural);
 
-   procedure Put_Line
-     (File : in File_Type;
-      Item : in String);
+   function Get_Line (File : File_Type) return String;
+   pragma Ada_05 (Get_Line);
+
+   function Get_Line return String;
+   pragma Ada_05 (Get_Line);
 
    procedure Put_Line
-     (Item : in String);
+     (File : File_Type;
+      Item : String);
+
+   procedure Put_Line
+     (Item : String);
 
    ---------------------------------------
    -- Generic packages for Input-Output --
@@ -375,7 +381,7 @@ private
 
    procedure Write
      (File : in out Text_AFCB;
-      Item : in Ada.Streams.Stream_Element_Array);
+      Item : Ada.Streams.Stream_Element_Array);
    --  Write operation used when Text_IO file is treated directly as Stream
 
    ------------------------

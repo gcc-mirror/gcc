@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,49 +43,76 @@ with Ada.Strings.Wide_Maps;
 private package Ada.Strings.Wide_Search is
 pragma Preelaborate (Wide_Search);
 
-   function Index (Source   : in Wide_String;
-                   Pattern  : in Wide_String;
-                   Going    : in Direction := Forward;
-                   Mapping  : in Wide_Maps.Wide_Character_Mapping :=
-                                          Wide_Maps.Identity)
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping :=
+                  Wide_Maps.Identity) return Natural;
+
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
+
+   function Index
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership := Inside;
+      Going  : Direction  := Forward) return Natural;
+
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
       return Natural;
 
-   function Index (Source   : in Wide_String;
-                   Pattern  : in Wide_String;
-                   Going    : in Direction := Forward;
-                   Mapping  : in Wide_Maps.Wide_Character_Mapping_Function)
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
+
+   function Index
+     (Source  : Wide_String;
+      Set     : Wide_Maps.Wide_Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural;
+
+   function Index_Non_Blank
+     (Source : Wide_String;
+      Going  : Direction := Forward) return Natural;
+
+   function Index_Non_Blank
+     (Source : Wide_String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural;
+
+   function Count
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
       return Natural;
 
-   function Index (Source : in Wide_String;
-                   Set    : in Wide_Maps.Wide_Character_Set;
-                   Test   : in Membership := Inside;
-                   Going  : in Direction  := Forward)
-      return Natural;
+   function Count
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
 
-   function Index_Non_Blank (Source : in Wide_String;
-                             Going  : in Direction := Forward)
-      return Natural;
+   function Count
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set) return Natural;
 
-   function Count (Source   : in Wide_String;
-                   Pattern  : in Wide_String;
-                   Mapping  : in Wide_Maps.Wide_Character_Mapping :=
-                                          Wide_Maps.Identity)
-      return Natural;
-
-   function Count (Source   : in Wide_String;
-                   Pattern  : in Wide_String;
-                   Mapping  : in Wide_Maps.Wide_Character_Mapping_Function)
-      return Natural;
-
-   function Count (Source   : in Wide_String;
-                   Set      : in Wide_Maps.Wide_Character_Set)
-      return Natural;
-
-
-   procedure Find_Token (Source : in Wide_String;
-                         Set    : in Wide_Maps.Wide_Character_Set;
-                         Test   : in Membership;
-                         First  : out Positive;
-                         Last   : out Natural);
+   procedure Find_Token
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership;
+      First  : out Positive;
+      Last   : out Natural);
 
 end Ada.Strings.Wide_Search;

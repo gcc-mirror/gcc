@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,59 +50,82 @@ package body Ada.Strings.Fixed is
    ------------------------
 
    function Index
-     (Source   : in String;
-      Pattern  : in String;
-      Going    : in Direction := Forward;
-      Mapping  : in Maps.Character_Mapping := Maps.Identity)
-      return     Natural
+     (Source  : String;
+      Pattern : String;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    renames Ada.Strings.Search.Index;
 
    function Index
-     (Source   : in String;
-      Pattern  : in String;
-      Going    : in Direction := Forward;
-      Mapping  : in Maps.Character_Mapping_Function)
-      return     Natural
+     (Source  : String;
+      Pattern : String;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping_Function) return Natural
    renames Ada.Strings.Search.Index;
 
    function Index
-     (Source : in String;
-      Set    : in Maps.Character_Set;
-      Test   : in Membership := Inside;
-      Going  : in Direction  := Forward)
-      return   Natural
+     (Source : String;
+      Set    : Maps.Character_Set;
+      Test   : Membership := Inside;
+      Going  : Direction  := Forward) return Natural
+   renames Ada.Strings.Search.Index;
+
+   function Index
+     (Source  : String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
+   renames Ada.Strings.Search.Index;
+
+   function Index
+     (Source  : String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping_Function) return Natural
+   renames Ada.Strings.Search.Index;
+
+   function Index
+     (Source  : String;
+      Set     : Maps.Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural
    renames Ada.Strings.Search.Index;
 
    function Index_Non_Blank
-     (Source : in String;
-      Going  : in Direction := Forward)
-      return   Natural
+     (Source : String;
+      Going  : Direction := Forward) return Natural
+   renames Ada.Strings.Search.Index_Non_Blank;
+
+   function Index_Non_Blank
+     (Source : String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural
    renames Ada.Strings.Search.Index_Non_Blank;
 
    function Count
-     (Source   : in String;
-      Pattern  : in String;
-      Mapping  : in Maps.Character_Mapping := Maps.Identity)
-      return     Natural
+     (Source  : String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    renames Ada.Strings.Search.Count;
 
    function Count
-     (Source   : in String;
-      Pattern  : in String;
-      Mapping  : in Maps.Character_Mapping_Function)
-      return     Natural
+     (Source  : String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping_Function) return Natural
    renames Ada.Strings.Search.Count;
 
    function Count
-     (Source   : in String;
-      Set      : in Maps.Character_Set)
-      return     Natural
+     (Source : String;
+      Set    : Maps.Character_Set) return Natural
    renames Ada.Strings.Search.Count;
 
    procedure Find_Token
-     (Source : in String;
-      Set    : in Maps.Character_Set;
-      Test   : in Membership;
+     (Source : String;
+      Set    : Maps.Character_Set;
+      Test   : Membership;
       First  : out Positive;
       Last   : out Natural)
    renames Ada.Strings.Search.Find_Token;
@@ -112,9 +135,8 @@ package body Ada.Strings.Fixed is
    ---------
 
    function "*"
-     (Left  : in Natural;
-      Right : in Character)
-      return  String
+     (Left  : Natural;
+      Right : Character) return String
    is
       Result : String (1 .. Left);
 
@@ -127,9 +149,8 @@ package body Ada.Strings.Fixed is
    end "*";
 
    function "*"
-     (Left  : in Natural;
-      Right : in String)
-      return  String
+     (Left  : Natural;
+      Right : String) return String
    is
       Result : String (1 .. Left * Right'Length);
       Ptr    : Integer := 1;
@@ -148,10 +169,9 @@ package body Ada.Strings.Fixed is
    ------------
 
    function Delete
-     (Source  : in String;
-      From    : in Positive;
-      Through : in Natural)
-      return    String
+     (Source  : String;
+      From    : Positive;
+      Through : Natural) return String
    is
    begin
       if From > Through then
@@ -185,10 +205,10 @@ package body Ada.Strings.Fixed is
 
    procedure Delete
      (Source  : in out String;
-      From    : in Positive;
-      Through : in Natural;
-      Justify : in Alignment := Left;
-      Pad     : in Character := Space)
+      From    : Positive;
+      Through : Natural;
+      Justify : Alignment := Left;
+      Pad     : Character := Space)
    is
    begin
       Move (Source  => Delete (Source, From, Through),
@@ -202,10 +222,9 @@ package body Ada.Strings.Fixed is
    ----------
 
    function Head
-     (Source : in String;
-      Count  : in Natural;
-      Pad    : in Character := Space)
-      return   String
+     (Source : String;
+      Count  : Natural;
+      Pad    : Character := Space) return String
    is
       subtype Result_Type is String (1 .. Count);
 
@@ -232,9 +251,9 @@ package body Ada.Strings.Fixed is
 
    procedure Head
      (Source  : in out String;
-      Count   : in Natural;
-      Justify : in Alignment := Left;
-      Pad     : in Character := Space)
+      Count   : Natural;
+      Justify : Alignment := Left;
+      Pad     : Character := Space)
    is
    begin
       Move (Source  => Head (Source, Count, Pad),
@@ -249,10 +268,9 @@ package body Ada.Strings.Fixed is
    ------------
 
    function Insert
-     (Source   : in String;
-      Before   : in Positive;
-      New_Item : in String)
-      return     String
+     (Source   : String;
+      Before   : Positive;
+      New_Item : String) return String
    is
       Result : String (1 .. Source'Length + New_Item'Length);
       Front  : constant Integer := Before - Source'First;
@@ -274,9 +292,9 @@ package body Ada.Strings.Fixed is
 
    procedure Insert
      (Source   : in out String;
-      Before   : in Positive;
-      New_Item : in String;
-      Drop     : in Truncation := Error)
+      Before   : Positive;
+      New_Item : String;
+      Drop     : Truncation := Error)
    is
    begin
       Move (Source => Insert (Source, Before, New_Item),
@@ -289,11 +307,11 @@ package body Ada.Strings.Fixed is
    ----------
 
    procedure Move
-     (Source  : in  String;
+     (Source  : String;
       Target  : out String;
-      Drop    : in  Truncation := Error;
-      Justify : in  Alignment  := Left;
-      Pad     : in  Character  := Space)
+      Drop    : Truncation := Error;
+      Justify : Alignment  := Left;
+      Pad     : Character  := Space)
    is
       Sfirst  : constant Integer := Source'First;
       Slast   : constant Integer := Source'Last;
@@ -398,10 +416,9 @@ package body Ada.Strings.Fixed is
    ---------------
 
    function Overwrite
-     (Source   : in String;
-      Position : in Positive;
-      New_Item : in String)
-      return     String
+     (Source   : String;
+      Position : Positive;
+      New_Item : String) return String
    is
    begin
       if Position not in Source'First .. Source'Last + 1 then
@@ -430,9 +447,9 @@ package body Ada.Strings.Fixed is
 
    procedure Overwrite
      (Source   : in out String;
-      Position : in Positive;
-      New_Item : in String;
-      Drop     : in Truncation := Right)
+      Position : Positive;
+      New_Item : String;
+      Drop     : Truncation := Right)
    is
    begin
       Move (Source => Overwrite (Source, Position, New_Item),
@@ -445,11 +462,10 @@ package body Ada.Strings.Fixed is
    -------------------
 
    function Replace_Slice
-     (Source   : in String;
-      Low      : in Positive;
-      High     : in Natural;
-      By       : in String)
-      return     String
+     (Source : String;
+      Low    : Positive;
+      High   : Natural;
+      By     : String) return String
    is
    begin
       if Low > Source'Last + 1 or High < Source'First - 1 then
@@ -490,12 +506,12 @@ package body Ada.Strings.Fixed is
 
    procedure Replace_Slice
      (Source   : in out String;
-      Low      : in Positive;
-      High     : in Natural;
-      By       : in String;
-      Drop     : in Truncation := Error;
-      Justify  : in Alignment  := Left;
-      Pad      : in Character  := Space)
+      Low      : Positive;
+      High     : Natural;
+      By       : String;
+      Drop     : Truncation := Error;
+      Justify  : Alignment  := Left;
+      Pad      : Character  := Space)
    is
    begin
       Move (Replace_Slice (Source, Low, High, By), Source, Drop, Justify, Pad);
@@ -506,10 +522,9 @@ package body Ada.Strings.Fixed is
    ----------
 
    function Tail
-     (Source : in String;
-      Count  : in Natural;
-      Pad    : in Character := Space)
-      return   String
+     (Source : String;
+      Count  : Natural;
+      Pad    : Character := Space) return String
    is
       subtype Result_Type is String (1 .. Count);
 
@@ -536,9 +551,9 @@ package body Ada.Strings.Fixed is
 
    procedure Tail
      (Source  : in out String;
-      Count   : in Natural;
-      Justify : in Alignment := Left;
-      Pad     : in Character := Space)
+      Count   : Natural;
+      Justify : Alignment := Left;
+      Pad     : Character := Space)
    is
    begin
       Move (Source  => Tail (Source, Count, Pad),
@@ -553,9 +568,8 @@ package body Ada.Strings.Fixed is
    ---------------
 
    function Translate
-     (Source  : in String;
-      Mapping : in Maps.Character_Mapping)
-      return    String
+     (Source  : String;
+      Mapping : Maps.Character_Mapping) return String
    is
       Result : String (1 .. Source'Length);
 
@@ -569,7 +583,7 @@ package body Ada.Strings.Fixed is
 
    procedure Translate
      (Source  : in out String;
-      Mapping : in Maps.Character_Mapping)
+      Mapping : Maps.Character_Mapping)
    is
    begin
       for J in Source'Range loop
@@ -578,9 +592,8 @@ package body Ada.Strings.Fixed is
    end Translate;
 
    function Translate
-     (Source  : in String;
-      Mapping : in Maps.Character_Mapping_Function)
-      return    String
+     (Source  : String;
+      Mapping : Maps.Character_Mapping_Function) return String
    is
       Result : String (1 .. Source'Length);
       pragma Unsuppress (Access_Check);
@@ -595,7 +608,7 @@ package body Ada.Strings.Fixed is
 
    procedure Translate
      (Source  : in out String;
-      Mapping : in Maps.Character_Mapping_Function)
+      Mapping : Maps.Character_Mapping_Function)
    is
       pragma Unsuppress (Access_Check);
    begin
@@ -609,9 +622,8 @@ package body Ada.Strings.Fixed is
    ----------
 
    function Trim
-     (Source : in String;
-      Side   : in Trim_End)
-      return   String
+     (Source : String;
+      Side   : Trim_End) return String
    is
       Low, High : Integer;
 
@@ -658,9 +670,9 @@ package body Ada.Strings.Fixed is
 
    procedure Trim
      (Source  : in out String;
-      Side    : in Trim_End;
-      Justify : in Alignment := Left;
-      Pad     : in Character := Space)
+      Side    : Trim_End;
+      Justify : Alignment := Left;
+      Pad     : Character := Space)
    is
    begin
       Move (Trim (Source, Side),
@@ -670,10 +682,9 @@ package body Ada.Strings.Fixed is
    end Trim;
 
    function Trim
-     (Source : in String;
-      Left   : in Maps.Character_Set;
-      Right  : in Maps.Character_Set)
-      return   String
+     (Source : String;
+      Left   : Maps.Character_Set;
+      Right  : Maps.Character_Set) return String
    is
       High, Low : Integer;
 
@@ -705,10 +716,10 @@ package body Ada.Strings.Fixed is
 
    procedure Trim
      (Source  : in out String;
-      Left    : in Maps.Character_Set;
-      Right   : in Maps.Character_Set;
-      Justify : in Alignment := Strings.Left;
-      Pad     : in Character := Space)
+      Left    : Maps.Character_Set;
+      Right   : Maps.Character_Set;
+      Justify : Alignment := Strings.Left;
+      Pad     : Character := Space)
    is
    begin
       Move (Source  => Trim (Source, Left, Right),

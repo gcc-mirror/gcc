@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -40,14 +40,12 @@ package Ada.Wide_Text_IO.Editing is
    type Picture is private;
 
    function Valid
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Boolean;
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Boolean;
 
    function To_Picture
-     (Pic_String      : in String;
-      Blank_When_Zero : in Boolean := False)
-      return            Picture;
+     (Pic_String      : String;
+      Blank_When_Zero : Boolean := False) return Picture;
 
    function Pic_String      (Pic : in Picture) return String;
    function Blank_When_Zero (Pic : in Picture) return Boolean;
@@ -63,62 +61,59 @@ package Ada.Wide_Text_IO.Editing is
 
    generic
       type Num is delta <> digits <>;
-      Default_Currency   : in Wide_String :=
+      Default_Currency   : Wide_String :=
                                 Wide_Text_IO.Editing.Default_Currency;
-      Default_Fill       : in Wide_Character :=
+      Default_Fill       : Wide_Character :=
                                 Wide_Text_IO.Editing.Default_Fill;
-      Default_Separator  : in Wide_Character :=
+      Default_Separator  : Wide_Character :=
                                 Wide_Text_IO.Editing.Default_Separator;
-      Default_Radix_Mark : in Wide_Character :=
+      Default_Radix_Mark : Wide_Character :=
                                 Wide_Text_IO.Editing.Default_Radix_Mark;
 
    package Decimal_Output is
 
       function Length
-        (Pic      : in Picture;
-         Currency : in Wide_String := Default_Currency)
-         return     Natural;
+        (Pic      : Picture;
+         Currency : Wide_String := Default_Currency) return Natural;
 
       function Valid
         (Item     : Num;
-         Pic      : in Picture;
-         Currency : in Wide_String := Default_Currency)
-         return     Boolean;
+         Pic      : Picture;
+         Currency : Wide_String := Default_Currency) return Boolean;
 
       function Image
         (Item       : Num;
-         Pic        : in Picture;
-         Currency   : in Wide_String    := Default_Currency;
-         Fill       : in Wide_Character := Default_Fill;
-         Separator  : in Wide_Character := Default_Separator;
-         Radix_Mark : in Wide_Character := Default_Radix_Mark)
-         return       Wide_String;
+         Pic        : Picture;
+         Currency   : Wide_String    := Default_Currency;
+         Fill       : Wide_Character := Default_Fill;
+         Separator  : Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Character := Default_Radix_Mark) return Wide_String;
 
       procedure Put
-        (File       : in File_Type;
+        (File       : File_Type;
          Item       : Num;
-         Pic        : in Picture;
-         Currency   : in Wide_String    := Default_Currency;
-         Fill       : in Wide_Character := Default_Fill;
-         Separator  : in Wide_Character := Default_Separator;
-         Radix_Mark : in Wide_Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : Wide_String    := Default_Currency;
+         Fill       : Wide_Character := Default_Fill;
+         Separator  : Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Character := Default_Radix_Mark);
 
       procedure Put
         (Item       : Num;
-         Pic        : in Picture;
-         Currency   : in Wide_String    := Default_Currency;
-         Fill       : in Wide_Character := Default_Fill;
-         Separator  : in Wide_Character := Default_Separator;
-         Radix_Mark : in Wide_Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : Wide_String    := Default_Currency;
+         Fill       : Wide_Character := Default_Fill;
+         Separator  : Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Character := Default_Radix_Mark);
 
       procedure Put
         (To         : out Wide_String;
          Item       : Num;
-         Pic        : in Picture;
-         Currency   : in Wide_String    := Default_Currency;
-         Fill       : in Wide_Character := Default_Fill;
-         Separator  : in Wide_Character := Default_Separator;
-         Radix_Mark : in Wide_Character := Default_Radix_Mark);
+         Pic        : Picture;
+         Currency   : Wide_String    := Default_Currency;
+         Fill       : Wide_Character := Default_Fill;
+         Separator  : Wide_Character := Default_Separator;
+         Radix_Mark : Wide_Character := Default_Radix_Mark);
 
    end Decimal_Output;
 
@@ -196,8 +191,7 @@ private
       Currency_Symbol     : Wide_String;
       Fill_Character      : Wide_Character;
       Separator_Character : Wide_Character;
-      Radix_Point         : Wide_Character)
-      return                Wide_String;
+      Radix_Point         : Wide_Character) return Wide_String;
    --  Formats number according to Pic
 
    function Expand (Picture : in String) return String;

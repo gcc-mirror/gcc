@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,8 +42,7 @@ package body Ada.Strings.Wide_Search is
    function Belongs
      (Element : Wide_Character;
       Set     : Wide_Maps.Wide_Character_Set;
-      Test    : Membership)
-      return    Boolean;
+      Test    : Membership) return Boolean;
    pragma Inline (Belongs);
    --  Determines if the given element is in (Test = Inside) or not in
    --  (Test = Outside) the given character set.
@@ -55,9 +54,8 @@ package body Ada.Strings.Wide_Search is
    function Belongs
      (Element : Wide_Character;
       Set     : Wide_Maps.Wide_Character_Set;
-      Test    : Membership)
-      return    Boolean is
-
+      Test    : Membership) return Boolean
+   is
    begin
       if Test = Inside then
          return Is_In (Element, Set);
@@ -71,10 +69,10 @@ package body Ada.Strings.Wide_Search is
    -----------
 
    function Count
-     (Source   : in Wide_String;
-      Pattern  : in Wide_String;
-      Mapping  : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return     Natural
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural
    is
       N : Natural;
       J : Natural;
@@ -117,10 +115,9 @@ package body Ada.Strings.Wide_Search is
    end Count;
 
    function Count
-     (Source   : in Wide_String;
-      Pattern  : in Wide_String;
-      Mapping  : in Wide_Maps.Wide_Character_Mapping_Function)
-      return     Natural
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
    is
       Mapped_Source : Wide_String (Source'Range);
 
@@ -132,9 +129,9 @@ package body Ada.Strings.Wide_Search is
       return Count (Mapped_Source, Pattern);
    end Count;
 
-   function Count (Source : in Wide_String;
-                   Set    : in Wide_Maps.Wide_Character_Set)
-     return Natural
+   function Count
+     (Source : in Wide_String;
+      Set : Wide_Maps.Wide_Character_Set) return Natural
    is
       N : Natural := 0;
 
@@ -153,9 +150,9 @@ package body Ada.Strings.Wide_Search is
    ----------------
 
    procedure Find_Token
-     (Source : in Wide_String;
-      Set    : in Wide_Maps.Wide_Character_Set;
-      Test   : in Membership;
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership;
       First  : out Positive;
       Last   : out Natural)
    is
@@ -190,11 +187,11 @@ package body Ada.Strings.Wide_Search is
    -----------
 
    function Index
-     (Source   : in Wide_String;
-      Pattern  : in Wide_String;
-      Going    : in Direction := Forward;
-      Mapping  : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return     Natural
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural
    is
    begin
       if Pattern = "" then
@@ -239,16 +236,11 @@ package body Ada.Strings.Wide_Search is
       return 0;
    end Index;
 
-   -----------
-   -- Index --
-   -----------
-
    function Index
-     (Source   : in Wide_String;
-      Pattern  : in Wide_String;
-      Going    : in Direction := Forward;
-      Mapping  : in Wide_Maps.Wide_Character_Mapping_Function)
-      return     Natural
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
    is
       Mapped_Source : Wide_String (Source'Range);
 
@@ -261,11 +253,10 @@ package body Ada.Strings.Wide_Search is
    end Index;
 
    function Index
-     (Source : in Wide_String;
-      Set    : in Wide_Maps.Wide_Character_Set;
-      Test   : in Membership := Inside;
-      Going  : in Direction  := Forward)
-      return   Natural
+     (Source : Wide_String;
+      Set    : Wide_Maps.Wide_Character_Set;
+      Test   : Membership := Inside;
+      Going  : Direction  := Forward) return Natural
    is
    begin
       if Going = Forward then
@@ -288,14 +279,92 @@ package body Ada.Strings.Wide_Search is
       return 0;
    end Index;
 
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (From .. Source'Last), Pattern, Forward, Mapping);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (Source'First .. From), Pattern, Backward, Mapping);
+      end if;
+   end Index;
+
+   function Index
+     (Source  : Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return Index
+           (Source (From .. Source'Last), Pattern, Forward, Mapping);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return Index
+           (Source (Source'First .. From), Pattern, Backward, Mapping);
+      end if;
+   end Index;
+
+   function Index
+     (Source  : Wide_String;
+      Set     : Wide_Maps.Wide_Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (From .. Source'Last), Set, Test, Forward);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (Source'First .. From), Set, Test, Backward);
+      end if;
+   end Index;
+
    ---------------------
    -- Index_Non_Blank --
    ---------------------
 
    function Index_Non_Blank
-     (Source : in Wide_String;
-      Going  : in Direction := Forward)
-      return   Natural
+     (Source : Wide_String;
+      Going  : Direction := Forward) return Natural
    is
    begin
       if Going = Forward then
@@ -316,7 +385,30 @@ package body Ada.Strings.Wide_Search is
       --  Fall through if no match
 
       return 0;
+   end Index_Non_Blank;
 
+   function Index_Non_Blank
+     (Source : Wide_String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index_Non_Blank (Source (From .. Source'Last), Forward);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index_Non_Blank (Source (Source'First .. From), Backward);
+      end if;
    end Index_Non_Blank;
 
 end Ada.Strings.Wide_Search;

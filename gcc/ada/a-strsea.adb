@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,9 +76,9 @@ package body Ada.Strings.Search is
    -----------
 
    function Count
-     (Source   : String;
-      Pattern  : String;
-      Mapping  : Maps.Character_Mapping := Maps.Identity) return Natural
+     (Source  : String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
       N : Natural;
       J : Natural;
@@ -110,9 +110,9 @@ package body Ada.Strings.Search is
    end Count;
 
    function Count
-     (Source   : String;
-      Pattern  : String;
-      Mapping  : Maps.Character_Mapping_Function) return Natural
+     (Source  : String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping_Function) return Natural
    is
       Mapped_Source : String (Source'Range);
       N             : Natural;
@@ -280,7 +280,6 @@ package body Ada.Strings.Search is
 
       declare
          pragma Unsuppress (Access_Check);
-
       begin
          for J in Source'Range loop
             Mapped_Source (J) := Mapping.all (Source (J));
@@ -348,6 +347,84 @@ package body Ada.Strings.Search is
       return 0;
    end Index;
 
+   function Index
+     (Source  : String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (From .. Source'Last), Pattern, Forward, Mapping);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (Source'First .. From), Pattern, Backward, Mapping);
+      end if;
+   end Index;
+
+   function Index
+     (Source  : String;
+      Pattern : String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Maps.Character_Mapping_Function) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return Index
+           (Source (From .. Source'Last), Pattern, Forward, Mapping);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return Index
+           (Source (Source'First .. From), Pattern, Backward, Mapping);
+      end if;
+   end Index;
+
+   function Index
+     (Source  : String;
+      Set     : Maps.Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (From .. Source'Last), Set, Test, Forward);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index (Source (Source'First .. From), Set, Test, Backward);
+      end if;
+   end Index;
+
    ---------------------
    -- Index_Non_Blank --
    ---------------------
@@ -375,7 +452,30 @@ package body Ada.Strings.Search is
       --  Fall through if no match
 
       return 0;
+   end Index_Non_Blank;
 
+   function Index_Non_Blank
+     (Source : String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural
+   is
+   begin
+      if Going = Forward then
+         if From < Source'First then
+            raise Index_Error;
+         end if;
+
+         return
+           Index_Non_Blank (Source (From .. Source'Last), Forward);
+
+      else
+         if From > Source'Last then
+            raise Index_Error;
+         end if;
+
+         return
+           Index_Non_Blank (Source (Source'First .. From), Backward);
+      end if;
    end Index_Non_Blank;
 
 end Ada.Strings.Search;

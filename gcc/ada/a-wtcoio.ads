@@ -27,36 +27,36 @@ package Ada.Wide_Text_IO.Complex_IO is
    Default_Exp  : Field := 3;
 
    procedure Get
-     (File  : in  File_Type;
+     (File  : File_Type;
       Item  : out Complex;
-      Width : in  Field := 0);
+      Width : Field := 0);
 
    procedure Get
      (Item  : out Complex;
-      Width : in  Field := 0);
+      Width : Field := 0);
 
    procedure Put
-     (File : in File_Type;
-      Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (File : File_Type;
+      Item : Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Put
-     (Item : in Complex;
-      Fore : in Field := Default_Fore;
-      Aft  : in Field := Default_Aft;
-      Exp  : in Field := Default_Exp);
+     (Item : Complex;
+      Fore : Field := Default_Fore;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
    procedure Get
-     (From : in  Wide_String;
+     (From : Wide_String;
       Item : out Complex;
       Last : out Positive);
 
    procedure Put
      (To   : out Wide_String;
-      Item : in  Complex;
-      Aft  : in  Field := Default_Aft;
-      Exp  : in  Field := Default_Exp);
+      Item : Complex;
+      Aft  : Field := Default_Aft;
+      Exp  : Field := Default_Exp);
 
 end Ada.Wide_Text_IO.Complex_IO;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,7 @@ package body Ada.Strings.Wide_Maps is
    ---------
 
    function "-"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set
    is
       LS : constant Wide_Character_Ranges_Access := Left.Set;
       RS : constant Wide_Character_Ranges_Access := Right.Set;
@@ -159,8 +158,7 @@ package body Ada.Strings.Wide_Maps is
    -----------
 
    function "and"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set
    is
       LS : constant Wide_Character_Ranges_Access := Left.Set;
       RS : constant Wide_Character_Ranges_Access := Right.Set;
@@ -210,8 +208,7 @@ package body Ada.Strings.Wide_Maps is
    -----------
 
    function "not"
-     (Right  : in Wide_Character_Set)
-      return Wide_Character_Set
+     (Right : Wide_Character_Set) return Wide_Character_Set
    is
       RS : constant Wide_Character_Ranges_Access := Right.Set;
 
@@ -253,8 +250,7 @@ package body Ada.Strings.Wide_Maps is
    ----------
 
    function "or"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set
    is
       LS : constant Wide_Character_Ranges_Access := Left.Set;
       RS : constant Wide_Character_Ranges_Access := Right.Set;
@@ -341,8 +337,7 @@ package body Ada.Strings.Wide_Maps is
    -----------
 
    function "xor"
-     (Left, Right : in Wide_Character_Set)
-      return        Wide_Character_Set
+     (Left, Right : Wide_Character_Set) return Wide_Character_Set
    is
    begin
       return (Left or Right) - (Left and Right);
@@ -409,9 +404,8 @@ package body Ada.Strings.Wide_Maps is
    -----------
 
    function Is_In
-     (Element : in Wide_Character;
-      Set     : in Wide_Character_Set)
-      return    Boolean
+     (Element : Wide_Character;
+      Set     : Wide_Character_Set) return Boolean
    is
       L, R, M : Natural;
       SS      : constant Wide_Character_Ranges_Access := Set.Set;
@@ -446,9 +440,8 @@ package body Ada.Strings.Wide_Maps is
    ---------------
 
    function Is_Subset
-     (Elements : in Wide_Character_Set;
-      Set      : in Wide_Character_Set)
-      return     Boolean
+     (Elements : Wide_Character_Set;
+      Set      : Wide_Character_Set) return Boolean
    is
       ES : constant Wide_Character_Ranges_Access := Elements.Set;
       SS : constant Wide_Character_Ranges_Access := Set.Set;
@@ -493,8 +486,7 @@ package body Ada.Strings.Wide_Maps is
    ---------------
 
    function To_Domain
-     (Map  : in Wide_Character_Mapping)
-      return Wide_Character_Sequence
+     (Map : Wide_Character_Mapping) return Wide_Character_Sequence
    is
    begin
       return Map.Map.Domain;
@@ -505,8 +497,7 @@ package body Ada.Strings.Wide_Maps is
    ----------------
 
    function To_Mapping
-     (From, To : in Wide_Character_Sequence)
-      return     Wide_Character_Mapping
+     (From, To : Wide_Character_Sequence) return Wide_Character_Mapping
    is
       Domain : Wide_Character_Sequence (1 .. From'Length);
       Rangev : Wide_Character_Sequence (1 .. To'Length);
@@ -554,8 +545,7 @@ package body Ada.Strings.Wide_Maps is
    --------------
 
    function To_Range
-     (Map  : in Wide_Character_Mapping)
-      return Wide_Character_Sequence
+     (Map : Wide_Character_Mapping) return Wide_Character_Sequence
    is
    begin
       return Map.Map.Rangev;
@@ -566,8 +556,7 @@ package body Ada.Strings.Wide_Maps is
    ---------------
 
    function To_Ranges
-     (Set :  in Wide_Character_Set)
-      return Wide_Character_Ranges
+     (Set :  in Wide_Character_Set) return Wide_Character_Ranges
    is
    begin
       return Set.Set.all;
@@ -578,8 +567,7 @@ package body Ada.Strings.Wide_Maps is
    -----------------
 
    function To_Sequence
-     (Set  : in Wide_Character_Set)
-      return Wide_Character_Sequence
+     (Set : Wide_Character_Set) return Wide_Character_Sequence
    is
       SS : constant Wide_Character_Ranges_Access := Set.Set;
 
@@ -604,8 +592,7 @@ package body Ada.Strings.Wide_Maps is
    --  Case of multiple range input
 
    function To_Set
-     (Ranges : in Wide_Character_Ranges)
-      return   Wide_Character_Set
+     (Ranges : Wide_Character_Ranges) return Wide_Character_Set
    is
       Result : Wide_Character_Ranges (Ranges'Range);
       N      : Natural := 0;
@@ -667,8 +654,7 @@ package body Ada.Strings.Wide_Maps is
    --  Case of single range input
 
    function To_Set
-     (Span : in Wide_Character_Range)
-      return Wide_Character_Set
+     (Span : Wide_Character_Range) return Wide_Character_Set
    is
    begin
       if Span.Low > Span.High then
@@ -685,8 +671,7 @@ package body Ada.Strings.Wide_Maps is
    --  Case of wide string input
 
    function To_Set
-     (Sequence : in Wide_Character_Sequence)
-      return     Wide_Character_Set
+     (Sequence : Wide_Character_Sequence) return Wide_Character_Set
    is
       R : Wide_Character_Ranges (1 .. Sequence'Length);
 
@@ -701,8 +686,7 @@ package body Ada.Strings.Wide_Maps is
    --  Case of single wide character input
 
    function To_Set
-     (Singleton : in Wide_Character)
-      return      Wide_Character_Set
+     (Singleton : Wide_Character) return Wide_Character_Set
    is
    begin
       return
@@ -715,9 +699,8 @@ package body Ada.Strings.Wide_Maps is
    -----------
 
    function Value
-     (Map     : in Wide_Character_Mapping;
-      Element : in Wide_Character)
-      return    Wide_Character
+     (Map     : Wide_Character_Mapping;
+      Element : Wide_Character) return Wide_Character
    is
       L, R, M : Natural;
 

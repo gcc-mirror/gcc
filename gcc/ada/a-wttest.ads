@@ -19,6 +19,6 @@ package Ada.Wide_Text_IO.Text_Streams is
 
    type Stream_Access is access all Streams.Root_Stream_Type'Class;
 
-   function Stream (File : in File_Type) return Stream_Access;
+   function Stream (File : File_Type) return Stream_Access;
 
 end Ada.Wide_Text_IO.Text_Streams;
