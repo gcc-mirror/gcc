@@ -178,14 +178,18 @@ ___ashiftrt_r4_0:
 	.align	2
 ___ashrsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_ashrsi3_31
+	and	r0,r5
 	mova	L_ashrsi3_table,r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
+	.align	2
 L_ashrsi3_table:
 	.byte		L_ashrsi3_0-L_ashrsi3_table
 	.byte		L_ashrsi3_1-L_ashrsi3_table
@@ -322,14 +326,18 @@ L_ashrsi3_0:
 	.align	2
 ___ashlsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_ashlsi3_32
+	and	r0,r5
 	mova	L_ashlsi3_table,r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
+	.align	2
 L_ashlsi3_table:
 	.byte		L_ashlsi3_0-L_ashlsi3_table
 	.byte		L_ashlsi3_1-L_ashlsi3_table
@@ -447,10 +455,6 @@ L_ashlsi3_25:
 	rts
 	shll	r0
 
-L_ashlsi3_32:
-	rts
-	mov	#0,r0
-
 L_ashlsi3_0:
 	rts
 	nop
@@ -479,14 +483,18 @@ L_ashlsi3_0:
 	.align	2
 ___lshrsi3:
 	mov	#31,r0
-	cmp/hi	r0,r5
-	bt	L_lshrsi3_32
+	and	r0,r5
 	mova	L_lshrsi3_table,r0
 	mov.b	@(r0,r5),r5
-	add	r5,r0		! Change to braf when gas is fixed
+#ifdef __sh1__
+	add	r5,r0
 	jmp	@r0
+#else
+	braf	r5
+#endif
 	mov	r4,r0
 
+	.align	2
 L_lshrsi3_table:
 	.byte		L_lshrsi3_0-L_lshrsi3_table
 	.byte		L_lshrsi3_1-L_lshrsi3_table
@@ -603,10 +611,6 @@ L_lshrsi3_25:
 	shlr8	r0
 	rts
 	shlr	r0
-
-L_lshrsi3_32:
-	rts
-	mov	#0,r0
 
 L_lshrsi3_0:
 	rts
