@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,122 +36,7 @@
 #ifndef _CPP_CWCHAR
 #define _CPP_CWCHAR 1
 
-#include <bits/c++config.h>
-#include <bits/std_cstdio.h>
-#include <bits/std_cstdarg.h>
-
-#if _GLIBCPP_USE_WCHAR_T
 #pragma GCC system_header
 #include <wchar.h>
 
-// Get rid of those macros defined in <wchar.h> in lieu of real functions.
-#undef getwchar
-
-namespace std
-{
-  using ::wint_t;
-  using ::mbstate_t;
-
-  extern "C" wint_t btowc(int); 
-  extern "C" int wctob(wint_t); 
-  extern "C" wint_t fgetwc(FILE*); 
-  extern "C" wchar_t* fgetws(wchar_t*, int, FILE*); 
-  extern "C" wint_t fputwc(wchar_t, FILE*); 
-  extern "C" int fputws(const wchar_t*, FILE*); 
-  extern "C" int fwide(FILE*, int); 
-  extern "C" int fwprintf(FILE*, const wchar_t*, ...); 
-  extern "C" int fwscanf(FILE*, const wchar_t*, ...); 
-  extern "C" int swprintf(wchar_t*, size_t, const wchar_t*, ...); 
-  extern "C" int swscanf(const wchar_t*, const wchar_t*, ...); 
-  extern "C" int vfwprintf(FILE*, const wchar_t*, va_list); 
-  extern "C" int vfwscanf(FILE*, const wchar_t*, va_list); 
-  extern "C" int vswprintf(wchar_t*, size_t, const wchar_t*, va_list); 
-  extern "C" int vswscanf(const wchar_t*, const wchar_t*, va_list); 
-  extern "C" int vwprintf(const wchar_t*, va_list); 
-  extern "C" int vwscanf(const wchar_t*, va_list); 
-  extern "C" int wprintf(const wchar_t*, ...); 
-  extern "C" int wscanf(const wchar_t*, ...); 
-  extern "C" wint_t getwc(FILE* stream); 
-  extern "C" wint_t getwchar(void); 
-  extern "C" int mbsinit(const mbstate_t*); 
-  extern "C" size_t mbrlen(const char*, size_t, mbstate_t*); 
-  extern "C" size_t mbrtowc(wchar_t*, const char*, size_t, mbstate_t*); 
-  extern "C" size_t mbsrtowcs(wchar_t*, const char**, size_t, mbstate_t*); 
-  extern "C" size_t wcsrtombs(char*, const wchar_t **, size_t, mbstate_t*);
-  extern "C" wint_t putwc(wchar_t, FILE*); 
-  extern "C" wint_t putwchar(wchar_t); 
-  extern "C" wint_t ungetwc(wint_t, FILE*);
-  extern "C" size_t wcrtomb(char*, wchar_t, mbstate_t*); 
-  extern "C" double wcstod(const wchar_t*, wchar_t**); 
-  extern "C" float wcstof(const wchar_t*, wchar_t**); 
-  extern "C" long int wcstol(const wchar_t*, wchar_t**, int); 
-  extern "C" unsigned long int wcstoul(const wchar_t*, wchar_t**, int); 
-  extern "C" wchar_t* wcscpy(wchar_t* s1, const wchar_t*); 
-  extern "C" wchar_t* wcsncpy(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wcscat(wchar_t*, const wchar_t*); 
-  extern "C" wchar_t* wcsncat(wchar_t*, const wchar_t*, size_t); 
-  extern "C" int wcscmp(const wchar_t*, const wchar_t*); 
-  extern "C" int wcscoll(const wchar_t*, const wchar_t*); 
-  extern "C" int wcsncmp(const wchar_t*, const wchar_t*, size_t); 
-  extern "C" size_t wcsxfrm(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wcschr(const wchar_t*, wchar_t); 
-  extern "C" size_t wcscspn(const wchar_t*, const wchar_t*); 
-  extern "C" size_t wcslen(const wchar_t*); 
-  extern "C" wchar_t* wcspbrk(const wchar_t*, const wchar_t*); 
-  extern "C" wchar_t* wcsrchr(const wchar_t*, wchar_t); 
-  extern "C" size_t wcsspn(const wchar_t*, const wchar_t*); 
-  extern "C" wchar_t* wcsstr(const wchar_t*, const wchar_t*); 
-  extern "C" wchar_t* wcstok(wchar_t*, const wchar_t*, wchar_t**); 
-  extern "C" wchar_t* wmemchr(const wchar_t*, wchar_t, size_t);
-  extern "C" int wmemcmp(const wchar_t*, const wchar_t*, size_t); 
-  //extern "C" int wmemcmp(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemcpy(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemmove(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemset(wchar_t*, wchar_t, size_t); 
-  extern "C" size_t wcsftime(wchar_t*, size_t, const wchar_t*, const struct tm*); 
-
-#if 0
-  // Full C99 listing
-  extern "C" long double wcstold(const wchar_t*, wchar_t**); 
-  extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
-  extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 
-#endif
-}
-
-#else
-extern "C" 
-{
-  typedef struct 
-  {
-    int __fill[6];
-  } mbstate_t;
-}
-
-namespace std 
-{
-  using ::mbstate_t;
-}
-#endif //_GLIBCPP_USE_WCHAR_T
-
-
 #endif 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
@@ -28,15 +28,24 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
+// ISO C++ 14882: 20.5 Extensions  
 //
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_WRAP_FEATURES_H
+#define _CPP_WRAP_FEATURES_H 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+#include <bits/c++config.h>
 
-#pragma GCC system_header
-#include <limits.h>
+namespace _C_legacy {
+  extern "C" {
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <features.h>
+  }
+} // namespace _C_legacy
+
+// NB: Don't bring elements from this non-standard header into namespace std.
+
+# undef _IN_C_LEGACY_
 
 #endif

@@ -1,4 +1,4 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
@@ -27,16 +27,38 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef  _INCLUDED_CPP_LIBIOP_H_
+# define _INCLUDED_CPP_LIBIOP_H_ 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _LIBIOP_NEED_C_LEGACY_
+# endif
 
-#pragma GCC system_header
-#include <limits.h>
+# include <bits/wrap_libioP.h>
 
-#endif
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using _C_legacy::_IO_jump_t;
+  using _C_legacy::_IO_FILE_plus;
+  using _C_legacy::_IO_cookie_file;
+
+  using _C_legacy::_IO_file_jumps;
+  using _C_legacy::_IO_wfile_jumps;
+
+# ifdef _LIBIOP_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _LIBIOP_NEED_C_LEGACY_
+# endif /* _LIBIOP_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_LIBIOP_H_ */
+
+
+
+

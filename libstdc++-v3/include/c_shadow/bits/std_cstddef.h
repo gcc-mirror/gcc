@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,15 +28,32 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
+// ISO C++ 14882: 18.1  Types
 //
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_CSTDDEF
+#define _CPP_CSTDDEF 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+namespace _C_legacy {
+  extern "C" {
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+// XXX
+#   define __need_size_t
+#   define __need_ptrdiff_t
+#   define __need_NULL
+#   include_next <stddef.h>
+  }
+} // namespace _C_legacy
 
-#pragma GCC system_header
-#include <limits.h>
+#  undef ptrdiff_t  
+#  undef size_t  
+
+namespace std {
+  using _C_legacy::ptrdiff_t;
+  using _C_legacy::size_t;
+} // namespace std
+  
+# undef _IN_C_LEGACY_
 
 #endif

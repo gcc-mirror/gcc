@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,55 +36,7 @@
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-#include <bits/c++config.h>
-
 #pragma GCC system_header
 #include <ctype.h>
 
-// Get rid of those macros defined in <ctype.h> in lieu of real functions.
-#undef isalnum
-#undef isalpha
-#undef isblank
-#undef iscntrl
-#undef isdigit
-#undef isgraph
-#undef islower
-#undef isprint
-#undef ispunct
-#undef isspace
-#undef isupper
-#undef isxdigit
-#undef tolower
-#undef toupper
-
-namespace std
-{
-  extern "C" int isalnum(int __c);
-  extern "C" int isalpha(int __c);
-  extern "C" int isblank(int __c);
-  extern "C" int iscntrl(int __c);
-  extern "C" int isdigit(int __c);
-  extern "C" int isgraph(int __c);
-  extern "C" int islower(int __c);
-  extern "C" int isprint(int __c);
-  extern "C" int ispunct(int __c);
-  extern "C" int isspace(int __c);
-  extern "C" int isupper(int __c);
-  extern "C" int isxdigit(int __c);
-  extern "C" int tolower(int __c);
-  extern "C" int toupper(int __c);
-}
-
 #endif 
-
-
-
-
-
-
-
-
-
-
-
-

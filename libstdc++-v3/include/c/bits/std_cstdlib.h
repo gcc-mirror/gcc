@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,91 +36,7 @@
 #ifndef _CPP_CSTDLIB
 #define _CPP_CSTDLIB 1
 
-#include <bits/c++config.h>
-
 #pragma GCC system_header
 #include <stdlib.h>
 
-namespace std 
-{
-  using ::div_t;
-  using ::ldiv_t;
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-# ifdef _GLIBCPP_HAVE_LLDIV_T
-  using ::lldiv_t;
-# else
-  struct lldiv_t
-  {
-    long long quot;
-    long long rem;
-  };
-# endif
 #endif 
-
-  extern "C" double atof(const char*); 
-  extern "C" int atoi(const char*); 
-  extern "C" long int atol(const char*); 
-  extern "C" double strtod(const char*, char**); 
-  extern "C" float strtof(const char*, char**); 
-  extern "C" long int strtol(const char*, char**, int); 
-  extern "C" unsigned long int strtoul(const char*, char**, int);
-  extern "C" int rand(void); 
-  extern "C" void srand(unsigned int); 
-  extern "C" void* calloc(size_t, size_t); 
-  extern "C" void free(void*); 
-  extern "C" void* malloc(size_t); 
-  extern "C" void* realloc(void*, size_t); 
-  extern "C" void abort(void); 
-  extern "C" int atexit(void (*func)(void)); 
-  extern "C" void exit(int); 
-  extern "C" void _Exit(int); 
-  extern "C" char*getenv(const char*); 
-  extern "C" int system(const char*); 
-  extern "C" void* bsearch(const void*, const void*, size_t, size_t, 
-			   int (*comp)(const void *, const void *)); 
-  extern "C" void qsort(void*, size_t, size_t, 
-			int (*comp)(const void *, const void *)); 
-  extern "C" int abs(int); 
-  extern "C" long int labs(long int); 
-  extern "C" div_t div(int, int); 
-  extern "C" ldiv_t ldiv(long int, long int); 
-  extern "C" int mblen(const char*, size_t); 
-  extern "C" int mbtowc(wchar_t*, const char*, size_t); 
-  extern "C" int wctomb(char*, wchar_t); 
-  extern "C" size_t mbstowcs(wchar_t*, const char*, size_t); 
-  extern "C" size_t wcstombs(char*, const wchar_t*, size_t);
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-  inline long long 
-  abs(long long __x) { return __x >= 0 ? __x : -__x; }
-
-  inline long long 
-  llabs(long long __x) { return __x >= 0 ? __x : -__x; }
-
-  inline lldiv_t 
-  div(long long __n, long long __d)
-  { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
-
-  inline lldiv_t 
-  lldiv(long long __n, long long __d)
-  { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
-
-  extern "C" long long int atoll(const char*); 
-  extern "C" long long int strtoll(const char*, char**, int); 
-  extern "C" unsigned long long int strtoull(const char*, char**, int); 
-#endif
-
-#ifdef _GLIBCPP_HAVE_STRTOLD
-  extern "C" long double strtold(const char*, char**); 
-#endif
-}
-
-#endif 
-
-
-
-
-
-
-

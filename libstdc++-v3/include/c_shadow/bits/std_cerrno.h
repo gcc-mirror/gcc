@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,16 +27,22 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// ISO C++ 14882: 19.3  Error numbers
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_CERRNO
+#define _CPP_CERRNO 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+//namespace _C_legacy {
+  extern "C" {
+//#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <errno.h>
+  }
+//} // namespace _C_legacy::
 
-#pragma GCC system_header
-#include <limits.h>
+//# undef _IN_C_LEGACY_
 
 #endif
+
+
