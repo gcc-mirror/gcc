@@ -49,6 +49,8 @@ static void skip_if_group		PROTO ((cpp_reader *));
 static void parse_name			PARAMS ((cpp_reader *, int));
 static void parse_string		PARAMS ((cpp_reader *, int));
 static int parse_assertion		PARAMS ((cpp_reader *));
+static const char *if_directive_name	PARAMS ((cpp_reader *,
+						 struct if_stack *));
 
 /* External declarations.  */
 

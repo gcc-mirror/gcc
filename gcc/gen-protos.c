@@ -25,13 +25,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 int verbose = 0;
 const char *progname;
 
+static void add_hash		PARAMS ((const char *));
+static int parse_fn_proto	PARAMS ((char *, char *, struct fn_decl *));
+
 #define HASH_SIZE 2503 /* a prime */
 int hash_tab[HASH_SIZE];
 int next_index;
 
 static void
 add_hash (fname)
-     char *fname;
+     const char *fname;
 {
   int i, i0;
 
@@ -123,6 +126,8 @@ parse_fn_proto (start, end, fn)
   fn->params = param_start;
   return 1;
 }
+
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

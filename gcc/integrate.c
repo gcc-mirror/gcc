@@ -78,6 +78,7 @@ static void process_reg_param		PROTO((struct inline_remap *, rtx,
 					       rtx));
 void set_decl_abstract_flags		PROTO((tree, int));
 static tree copy_and_set_decl_abstract_origin PROTO((tree));
+static rtx expand_inline_function_eh_labelmap PROTO((rtx));
 
 /* The maximum number of instructions accepted for inlining a
    function.  Increasing values mean more agressive inlining.
@@ -1240,7 +1241,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
 	default:
 	  abort ();
-	  break;
 	}
 
       if (copy)

@@ -891,6 +891,7 @@ extern rtx expand_builtin_va_arg PROTO((tree, tree));
 #endif
 
 extern rtx expand_builtin_setjmp PROTO((rtx, rtx, rtx, rtx));
+extern void expand_builtin_longjmp PROTO ((rtx, rtx));
 extern rtx expand_builtin_saveregs PROTO((void));
 extern int get_varargs_alias_set PROTO((void));
 
