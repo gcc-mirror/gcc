@@ -1,3 +1,7 @@
+Fri Jan 29 22:34:41 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (recombine_givs): Don't try to derive givs that have combined.
+
 Fri Jan 29 15:00:39 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (notice, fnotice): Check ANSI_PROTOTYPES, not __STDC__,

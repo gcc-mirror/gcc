@@ -7272,16 +7272,13 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	  rtx sum;
 
 	  v = giv_array[stats[i].giv_number];
-	  if (v->giv_type != DEST_REG || v->derived)
+	  if (v->giv_type != DEST_REG || v->derived || v->same)
 	    continue;
 	  if (! last_giv)
 	    {
-	      if (! v->same)
-		{
-		  last_giv = v;
-		  life_start = stats[i].start_luid;
-		  life_end = stats[i].end_luid;
-		}
+	      last_giv = v;
+	      life_start = stats[i].start_luid;
+	      life_end = stats[i].end_luid;
 	      continue;
 	    }
 	  /* Use unsigned arithmetic to model loop wrap around.  */
