@@ -2475,7 +2475,8 @@ do {									\
 
 /* ??? Keep this around for now, as we might need it later.  */
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)   ((CODE) == '+')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
+  ((CODE) == '+' || (CODE) == ',')
 
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
    for an instruction operand that is a memory reference whose address is X.  X
