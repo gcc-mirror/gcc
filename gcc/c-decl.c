@@ -1445,6 +1445,9 @@ duplicate_decls (newdecl, olddecl)
 	      DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
 	}
 
+      /* Keep the old rtl since we can safely use it.  */
+      DECL_RTL (newdecl) = DECL_RTL (olddecl);
+
       /* Merge the type qualifiers.  */
       if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
 	  && !TREE_THIS_VOLATILE (newdecl))
@@ -1474,9 +1477,6 @@ duplicate_decls (newdecl, olddecl)
       /* Merge the initialization information.  */
       if (DECL_INITIAL (newdecl) == 0)
 	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-
-      /* Keep the old rtl since we can safely use it.  */
-      DECL_RTL (newdecl) = DECL_RTL (olddecl);
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
@@ -1819,7 +1819,7 @@ pushdecl (x)
 	  IDENTIFIER_LOCAL_VALUE (name) = x;
 
 	  /* If this is an extern function declaration, see if we
-	     have a global definition for the function.  */
+	     have a global definition or declaration for the function.  */
 	  if (oldlocal == 0
 	      && DECL_EXTERNAL (x) && !DECL_INLINE (x)
 	      && oldglobal != 0
@@ -1829,13 +1829,30 @@ pushdecl (x)
 	      /* We have one.  Their types must agree.  */
 	      if (! comptypes (TREE_TYPE (x),
 			       TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (name))))
-		pedwarn_with_decl (x, "local declaration of `%s' doesn't match global one");
-	      /* If the global one is inline, make the local one inline.  */
-	      else if (DECL_INLINE (oldglobal)
-		       || DECL_BUILT_IN (oldglobal)
-		       || (TYPE_ARG_TYPES (TREE_TYPE (oldglobal)) != 0
-			   && TYPE_ARG_TYPES (TREE_TYPE (x)) == 0))
-		IDENTIFIER_LOCAL_VALUE (name) = oldglobal;
+		pedwarn_with_decl (x, "extern declaration of `%s' doesn't match global one");
+	      else
+		{
+		  /* Inner extern decl is inline if global one is.
+		     Copy enough to really inline it.  */
+		  if (DECL_INLINE (oldglobal))
+		    {
+		      DECL_INLINE (x) = DECL_INLINE (oldglobal);
+		      DECL_INITIAL (x) = DECL_INITIAL (oldglobal);
+		      DECL_SAVED_INSNS (x) = DECL_SAVED_INSNS (oldglobal);
+		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
+		    }
+		  /* Inner extern decl is built-in if global one is.  */
+		  if (DECL_BUILT_IN (oldglobal))
+		    {
+		      DECL_BUILT_IN (x) = DECL_BUILT_IN (oldglobal);
+		      DECL_SET_FUNCTION_CODE (x, DECL_FUNCTION_CODE (oldglobal));
+		    }
+		  /* Keep the arg types from a file-scope fcn defn.  */
+		  if (TYPE_ARG_TYPES (TREE_TYPE (oldglobal)) != 0
+		      && DECL_INITIAL (oldglobal)
+		      && TYPE_ARG_TYPES (TREE_TYPE (x)) == 0)
+		    TREE_TYPE (x) = TREE_TYPE (oldglobal);
+		}
 	    }
 
 #if 0 /* This case is probably sometimes the right thing to do.  */
