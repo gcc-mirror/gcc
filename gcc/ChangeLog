@@ -1,3 +1,9 @@
+2000-40-30  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def:  Added definitions needed by OSR5
+	* fixinc/inclhack.sh: regen
+	* fixinc/fixincl.x: regen
+
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
 	* ifcvt.c (dead_or_predicable): Manually squeeze non-movable notes

@@ -791,28 +791,6 @@ fix = {
 };
 
 
-/*
- *  On SCO OpenServer 5.0.0 through (at least) 5.0.5 <sys/stat.h> contains
- *  tiny static wrappers that aren't C++ safe.
- */
-fix = {
-    hackname = sco5_stat_wrappers;
-    mach     = "i*86-*-sco3.2v5*";
-    files    = "sys/stat.h";
-
-    sed = "/^static int[ \t]*[a-z]*stat(/i\\\n"
-        "#ifdef __cplusplus\\\n"
-        "extern \"C\"\\\n"
-        "{\\\n"
-        "#endif\\\n";
-
-    sed = "/^}$/a\\\n"
-        "#ifdef __cplusplus\\\n"
-        "}\\\n"
-        "#endif \/* __cplusplus *\/\\\n";
-};
-
-
 #ifdef OLD_CPP
 /*
  *  Fix else and endif directives that contain non-commentary text
@@ -903,6 +881,7 @@ fix = {
     select   = "^extern struct sigevent;";
     sed      = "s/^extern struct sigevent;/struct sigevent;/";
 };
+
 
 /*
  *  get rid of bogus inline definitions in HP-UX 8.0
@@ -1540,6 +1519,56 @@ fix = {
 
 
 /*
+ *  "!__STDC__" is "!defined( __STRICT_ANSI__ )"
+ */
+fix = {
+    hackname = sco_strict_ansi;
+    mach     = "i?86-*-sco3.2*";
+    select   = "^[ \t]*#[ \t]*if.*!__STDC__";
+    sed      = 's/!__STDC__/!defined(__STRICT_ANSI__)/g';
+};
+
+
+/*
+ *  The static functions lstat() and fchmod() in <sys/stat.h> 
+ *  cause G++ grief since they're not wrapped in "if __cplusplus".
+ *
+ *  On SCO OpenServer 5.0.0 through (at least) 5.0.5 <sys/stat.h> contains
+ *  tiny static wrappers that aren't C++ safe.
+ */
+fix = {
+    hackname = sco_static_func;
+    files    = sys/stat.h;
+    mach     = "i?86-*-sco3.2*";
+    select   = "^static int";
+
+    sed      = "/^static int/i\\\n"
+               "#if __cplusplus\\\n"
+               "extern \"C\" {\\\n"
+               "#endif /* __cplusplus */";
+
+    sed      = "/^}$/a\\\n"
+               "#if __cplusplus\\\n"
+               " }\\\n"
+               "#endif /* __cplusplus */";
+};
+
+
+/*
+ *  Fix prototype declaration of utime in sys/times.h.
+ *  In 3.2v4.0 the const is missing.
+ */
+fix = {
+    hackname = sco_utime;
+    files    = sys/times.h;
+    mach     = "i?86-*-sco3.2v4*";
+    select   = "\(const char \*, struct utimbuf \*\);";
+    sed      = 's/(const char \*, struct utimbuf \*);/'
+                 '(const char *, const struct utimbuf *);/';
+};
+
+
+/*
  *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
  */
 #ifdef SONY
@@ -1673,6 +1702,33 @@ fix = {
 };
 #endif
 
+
+/*
+ *  Apply fix this to all OSs since this problem seems to effect
+ *  more than just SunOS.
+ */
+fix = {
+    hackname = sun_auth_proto;
+    files    = rpc/auth.h;
+    files    = rpc/clnt.h;
+    files    = rpc/svc.h;
+    files    = rpc/xdr.h;
+    /*
+     *  Select those files containing '(*name)()'.
+     */
+    select   = '\(\*[a-z][a-z_]*\)\(\)';
+    sed      = 's'
+                '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
+                "/\\\n"
+                    "#ifdef __cplusplus\\\n"
+                    '\1...\2' "\\\n"
+                    "#else\\\n"
+                    '\1\2' "\\\n"
+                    "#endif"
+                "/";
+};
+
+
 /*
  *  Fix bogus #ifdef on SunOS 4.1.
  */
@@ -1756,33 +1812,6 @@ fix = {
 
     sed = "/^void\t" '(\*signal())();$/a'  "\\\n"
           '#endif'                         "\n";
-};
-
-
-/*
- *  Apply fix this to all OSs since this problem seems to effect
- *  more than just SunOS.  In general, fixes which are triggered
- *  by a specific target are bad.
- */
-fix = {
-    hackname = sun_auth_proto;
-    files    = rpc/auth.h;
-    files    = rpc/clnt.h;
-    files    = rpc/svc.h;
-    files    = rpc/xdr.h;
-    /*
-     *  Select those files containing '(*name)()'.
-     */
-    select   = '\(\*[a-z][a-z_]*\)\(\)';
-    sed      = 's'
-                '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
-                "/\\\n"
-                    "#ifdef __cplusplus\\\n"
-                    '\1...\2' "\\\n"
-                    "#else\\\n"
-                    '\1\2' "\\\n"
-                    "#endif"
-                "/";
 };
 
 
@@ -1943,16 +1972,16 @@ fix = {
 /*
  *   Fix broken decl of getcwd present on some svr4 systems.
  */
-#ifdef SVR4
 fix = {
     hackname = svr4_getcwd;
     files    = stdlib.h;
     files    = unistd.h;
+    files    = prototypes.h;
     select   = 'getcwd\(char \*, int\)';
 
     sed = 's/getcwd(char \*, int)/getcwd(char *, size_t)/';
 };
-#endif
+
 
 /*
  *  set ifdef _KERNEL
@@ -2034,10 +2063,10 @@ fix = {
 };
 #endif
 
+
 /*
  *   Fix broken decl of profil present on some svr4 systems.
  */
-#ifdef SVR4
 fix = {
     hackname = svr4_profil;
     files    = stdlib.h;
@@ -2047,7 +2076,7 @@ fix = {
                          'unsigned int, unsigned int)'
            '/profil(unsigned short *, size_t, int, unsigned)/';
 };
-#endif
+
 
 /*
  *  Convert functions to prototype form, and fix arg names in <sys/stat.h>.
@@ -2143,7 +2172,9 @@ fix = {
 };
 #endif /*  SVR5 */
 
-/* Fix these files to use the same types that we think they should.
+
+/*
+ * Fix these files to use the same types that we think they should.
  * XXX - extremely dubious changes here.
  */
 fix = {
