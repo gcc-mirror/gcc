@@ -1705,7 +1705,7 @@ size_in_bytes (type)
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
 		  size_int (BITS_PER_UNIT));
   if (TREE_CODE (t) == INTEGER_CST)
-    force_fit_type (t);
+    force_fit_type (t, 0);
   return t;
 }
 
