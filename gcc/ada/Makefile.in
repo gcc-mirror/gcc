@@ -1717,19 +1717,19 @@ install-gnatlib: ../stamp-gnatlib
 	$(RMDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
 	-$(MKDIR) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	-$(MKDIR) $(DESTDIR)$(ADA_INCLUDE_DIR)
-	-$(INSTALL_DATA) ada/rts/Makefile.adalib $(DESTDIR)$(ADA_RTL_OBJ_DIR)
-	for file in ada/rts/*.ali; do \
+	-$(INSTALL_DATA) rts/Makefile.adalib $(DESTDIR)$(ADA_RTL_OBJ_DIR)
+	for file in rts/*.ali; do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
-	-for file in ada/rts/*$(arext);do \
+	-for file in rts/*$(arext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
-	-for file in ada/rts/lib*$(soext);do \
+	-for file in rts/lib*$(soext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 else
-	-for file in ada/rts/lib*-**$(soext);do \
+	-for file in rts/lib*-**$(soext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 endif
@@ -1738,7 +1738,7 @@ endif
 	-( cd $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
 	  $(LN_S) libgnarl-*$(soext) libgnarl$(soext) )
 # This copy must be done preserving the date on the original file.
-	for file in ada/rts/*.adb ada/rts/*.ads; do \
+	for file in rts/*.adb rts/*.ads; do \
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_INCLUDE_DIR); \
 	done
 	cd $(DESTDIR)$(ADA_INCLUDE_DIR); $(CHMOD) a-wx *.adb

@@ -1,3 +1,8 @@
+2003-03-02  Laurent Guerby <guerby@acm.org>
+
+	* Makefile.in (install-gnatlib): Match previous change there 
+	so it works.
+	
 2003-02-28  Andreas Schwab  <schwab@suse.de>
 
 	* Make-lang.in (install-gnatlib): Change to ada directory before
