@@ -1824,7 +1824,7 @@ cp_parser_name_lookup_error (cp_parser* parser,
 
 /* If we are parsing tentatively, remember that an error has occurred
    during this tentative parse.  Returns true if the error was
-   simulated; false if a messgae should be issued by the caller.  */
+   simulated; false if a message should be issued by the caller.  */
 
 static bool
 cp_parser_simulate_error (cp_parser* parser)
@@ -4895,7 +4895,7 @@ cp_parser_pm_expression (cp_parser* parser)
 
 /* Parse a multiplicative-expression.
 
-   mulitplicative-expression:
+   multiplicative-expression:
      pm-expression
      multiplicative-expression * pm-expression
      multiplicative-expression / pm-expression
