@@ -1,6 +1,6 @@
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* gcc.dg/cpp/named_ops.c: New test.
+	* g++.dg/parse/named_ops.C: New test.
 
 2002-05-23  Mark Mitchell  <mark@codesourcery.com>
 
