@@ -497,6 +497,7 @@ AC_DEFUN(GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, [
     AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
   fi
 
+  # XXX Review this.  Nothing uses it.
   if test -n "$LIBMATHOBJS"; then
     need_libmath=yes
   fi

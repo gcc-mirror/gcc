@@ -1,9 +1,33 @@
+2003-08-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCXX_EXPORT_INCLUDES):  Remove LIBMATH_INCLUDES
+	and LIBSUPCXX_INCLUDES.  Re-purpose TOPLEVEL_INCLUDES to refer to
+	things from the top level.
+	* configure.ac (GLIBCXX_IS_NATIVE):  Determine earlier and re-order.
+	Comment out the conditionals for CANADIAN and GLIBCXX_BUILD_LIBMATH
+	(currently unused).  Strip the fake-VPATH shell fragment from
+	automake-generated rules, if present.
+	* linkage.m4:  Add comment.
+
+	* fragment.am:  New file, containing factored-out common settings.
+	(AM_CPPFLAGS):  Absorb the deprecated INCLUDES variable contents.
+	* Makefile.am:  Include fragment.am.  Remove common variables.
+	* include/Makefile.am:  Likewise.
+	* libmath/Makefile.am:  Likewise.
+	* libsupc++/Makefile.am:  Likewise.
+	* po/Makefile.am:  Likewise.  Print rules during check.
+	* src/Makefile.am:  Likewise.
+	* testsuite/Makefile.am:  Likewise.
+
+	* aclocal.m4, configure, Makefile.in, include/Makefile.in,
+	libmath/Makefile.in, libsupc++/Makefile.in, po/Makefile.in,
+	src/Makefile.in, testsuite/Makefile.in:  Regenerate.
+
 2003-08-11  John Levon  <levon@movementarian.org>
 
 	* docs/html/ext/howto/guide.html (GLIBCXX_FORCE_NEW): Update
 	remaining places for the name change from GLIBCPP_FORCE_NEW
 	to GLIBCXX_FORCE_NEW
-
 
 2003-08-11  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -62,7 +86,7 @@
 	
 2003-08-07  Carlo Wood  <carlo@alinoe.com>
 
-        * include/bits/demangle.h: Do not use cctype functions that depend
+	* include/bits/demangle.h: Do not use cctype functions that depend
 	on locale.
 	
 2003-08-05  Phil Edwards  <pme@gcc.gnu.org>

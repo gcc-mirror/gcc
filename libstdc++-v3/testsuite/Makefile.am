@@ -23,15 +23,12 @@
 
 AUTOMAKE_OPTIONS = dejagnu
 
-mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+include $(top_srcdir)/fragment.am
 
 AM_MAKEFLAGS = -j1
 AM_RUNTESTFLAGS =
-PWD_COMMAND = $${PWDCMD-pwd}
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
-glibcxx_srcdir=@glibcxx_srcdir@
-glibcxx_builddir=@glibcxx_builddir@
 testsuite_flags_script=${glibcxx_builddir}/scripts/testsuite_flags
 CXX=`${testsuite_flags_script} --build-cxx`
 
@@ -39,13 +36,6 @@ CXXLINK = \
 	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcxx_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-
-GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
-INCLUDES = \
-	-nostdinc++ \
-	@GLIBCXX_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
 # Generated lists of files to run.  All of these names are valid make
 # targets, if you wish to generate a list manually.

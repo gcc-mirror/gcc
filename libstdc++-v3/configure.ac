@@ -39,6 +39,14 @@ target_alias=${target_alias-$host_alias}
 # Handy for debugging:
 #AC_MSG_NOTICE($build / $host / $target / $host_alias / $target_alias); sleep 5
 
+if test "$build" != "$host"; then
+  # We are being configured with some form of cross compiler.
+  GLIBCXX_IS_NATIVE=false
+  GCC_NO_EXECUTABLES
+else
+  GLIBCXX_IS_NATIVE=true
+fi
+
 # Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
 #  1.x:  minimum required version
@@ -94,10 +102,46 @@ if test $atomicity_include_dir = cpu/generic ; then
 fi
 
 
-if test "$build" != "$host"; then
+if $GLIBCXX_IS_NATIVE; then
 
-  # We are being configured with some form of cross compiler.
-  GLIBCXX_IS_NATIVE=false
+  # We can do more elaborate tests that assume a working linker.
+  CANADIAN=no
+
+  # Check for available headers.
+  AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
+  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
+  sys/types.h])
+
+  GLIBCXX_CHECK_COMPILER_FEATURES
+  GLIBCXX_CHECK_LINKER_FEATURES
+  GLIBCXX_CHECK_MATH_SUPPORT
+  GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+  GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+  GLIBCXX_CHECK_WCHAR_T_SUPPORT
+  GLIBCXX_CHECK_STDLIB_SUPPORT
+
+  # For showmanyc_helper().
+  AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
+  GLIBCXX_CHECK_POLL
+  GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+
+  # For xsputn_2().
+  AC_CHECK_HEADERS(sys/uio.h)
+  GLIBCXX_CHECK_WRITEV
+
+  AC_LC_MESSAGES
+
+  AC_TRY_COMPILE(
+    [#include <setjmp.h>],
+    [sigjmp_buf env;
+     while (! sigsetjmp (env, 1))
+       siglongjmp (env, 1);
+    ],
+    [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
+
+  AC_FUNC_MMAP
+
+else
 
   # This lets us hard-code the functionality we know we'll have in the cross
   # target environment.  "Let" is a sugar-coated word placed on an especially
@@ -114,7 +158,7 @@ if test "$build" != "$host"; then
   # crosses can be removed.
 
   # If Canadian cross, then don't pick up tools from the build directory.
-  # Used in GLIBCXX_EXPORT_INCLUDES (and nowhere else?).
+  # Used only in GLIBCXX_EXPORT_INCLUDES.
   if test -n "$with_cross_host" &&
      test x"$build" != x"$with_cross_host" &&
      test x"$build" != x"$target";
@@ -199,46 +243,6 @@ if test "$build" != "$host"; then
     AC_DEFINE(HAVE_TANHL)
   fi
 
-else
-
-  # We are being configured natively.  We can do more elaborate tests that
-  # include AC_TRY_COMPILE now, as the linker is assumed to be working.
-  GLIBCXX_IS_NATIVE=true
-  CANADIAN=no
-
-  # Check for available headers.
-  AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
-  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
-  sys/types.h])
-
-  GLIBCXX_CHECK_COMPILER_FEATURES
-  GLIBCXX_CHECK_LINKER_FEATURES
-  GLIBCXX_CHECK_MATH_SUPPORT
-  GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
-  GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
-  GLIBCXX_CHECK_WCHAR_T_SUPPORT
-  GLIBCXX_CHECK_STDLIB_SUPPORT
-
-  # For showmanyc_helper().
-  AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
-  GLIBCXX_CHECK_POLL
-  GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
-
-  # For xsputn_2().
-  AC_CHECK_HEADERS(sys/uio.h)
-  GLIBCXX_CHECK_WRITEV
-
-  AC_LC_MESSAGES
-
-  AC_TRY_COMPILE(
-    [#include <setjmp.h>],
-    [sigjmp_buf env;
-     while (! sigsetjmp (env, 1))
-       siglongjmp (env, 1);
-    ],
-    [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
-
-  AC_FUNC_MMAP
 fi
 
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
@@ -259,9 +263,9 @@ AC_SUBST(OS_INC_SRCDIR)
 
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)
-AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
+#AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
 # from GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT:
-AM_CONDITIONAL(GLIBCXX_BUILD_LIBMATH,  test $need_libmath = yes)
+#AM_CONDITIONAL(GLIBCXX_BUILD_LIBMATH,  test $need_libmath = yes)
  
 AC_CACHE_SAVE
 
@@ -271,7 +275,7 @@ else
   multilib_arg=
 fi
 
-# Export all the install information
+# Export all the install information.
 GLIBCXX_EXPORT_INSTALL_INFO
 
 # Export all the include and flag information to Makefiles.
@@ -311,14 +315,22 @@ AC_CONFIG_COMMANDS([default],
    # To work around this not being passed down from config-ml.in ->
    # srcdir/Makefile.am -> srcdir/{src,libsupc++,...}/Makefile.am, manually
    # append it here.  Only modify Makefiles that have just been created.
-   for i in src libsupc++ testsuite; do
+   #
+   # Also, get rid of this simulated-VPATH thing that automake does.
+   cat > vpsed << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   for i in libmath libsupc++ src testsuite; do
     case $CONFIG_FILES in
      *${i}/Makefile*)
        #echo "Adding MULTISUBDIR to $i/Makefile"
-       grep '^MULTISUBDIR =' Makefile >> $i/Makefile
+       sed -f vpsed $i/Makefile > tmp
+       grep '^MULTISUBDIR =' Makefile >> tmp
+       mv tmp $i/Makefile
        ;;
     esac
    done
+   rm vpsed
  fi
  (cd include && ${MAKE-make})
 ],

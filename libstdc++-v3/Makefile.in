@@ -49,8 +49,6 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 BASIC_FILE_CC = @BASIC_FILE_CC@
 BASIC_FILE_H = @BASIC_FILE_H@
-CANADIAN_FALSE = @CANADIAN_FALSE@
-CANADIAN_TRUE = @CANADIAN_TRUE@
 CC = @CC@
 CCODECVT_CC = @CCODECVT_CC@
 CCODECVT_H = @CCODECVT_H@
@@ -86,8 +84,6 @@ FPOS_H = @FPOS_H@
 FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
 GLIBCXX_BUILD_DEBUG_TRUE = @GLIBCXX_BUILD_DEBUG_TRUE@
-GLIBCXX_BUILD_LIBMATH_FALSE = @GLIBCXX_BUILD_LIBMATH_FALSE@
-GLIBCXX_BUILD_LIBMATH_TRUE = @GLIBCXX_BUILD_LIBMATH_TRUE@
 GLIBCXX_BUILD_PCH_FALSE = @GLIBCXX_BUILD_PCH_FALSE@
 GLIBCXX_BUILD_PCH_TRUE = @GLIBCXX_BUILD_PCH_TRUE@
 GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE = @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@
@@ -107,12 +103,9 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LDFLAGS = @LDFLAGS@
 LIBMATHOBJS = @LIBMATHOBJS@
-LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LIBUNWIND_FLAG = @LIBUNWIND_FLAG@
@@ -205,11 +198,25 @@ toplevel_srcdir = @toplevel_srcdir@
 
 MAINT_CHARSET = latin1
 
-SUBDIRS = include libmath libsupc++ src po testsuite 
-
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-
 PWD_COMMAND = $${PWDCMD-pwd}
+
+toolexecdir = $(glibcxx_toolexecdir)
+toolexeclibdir = $(glibcxx_toolexeclibdir)
+
+# These bits are all figured out from configure.  Look in acinclude.m4
+# or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
+CONFIG_CXXFLAGS = \
+	$(SECTION_FLAGS) $(EXTRA_CXX_FLAGS)
+
+WARN_CXXFLAGS = \
+	$(WARN_FLAGS) $(WERROR) -fdiagnostics-show-location=once
+
+
+# -I/-D flags to pass when compiling.
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
+
+SUBDIRS = include libmath libsupc++ src po testsuite 
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -281,13 +288,13 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	all-recursive install-data-recursive install-exec-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
-DIST_COMMON = README ../ABOUT-NLS ../COPYING ../COPYING.LIB \
-	../ChangeLog ../README ../config.guess ../config.rpath \
-	../config.sub ../configure ../configure.in ../install-sh \
-	../ltcf-c.sh ../ltcf-cxx.sh ../ltcf-gcj.sh ../ltconfig \
-	../ltmain.sh ../missing ../mkinstalldirs ../ylwrap ChangeLog \
-	Makefile.am Makefile.in acconfig.h acinclude.m4 aclocal.m4 \
-	config.h.in configure configure.ac
+DIST_COMMON = README $(top_srcdir)/fragment.am ../ABOUT-NLS ../COPYING \
+	../COPYING.LIB ../ChangeLog ../README ../config.guess \
+	../config.rpath ../config.sub ../configure ../configure.in \
+	../install-sh ../ltcf-c.sh ../ltcf-cxx.sh ../ltcf-gcj.sh \
+	../ltconfig ../ltmain.sh ../missing ../mkinstalldirs ../ylwrap \
+	ChangeLog Makefile.am Makefile.in acconfig.h acinclude.m4 \
+	aclocal.m4 config.h.in configure configure.ac
 DIST_SUBDIRS = $(SUBDIRS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -296,7 +303,7 @@ all: config.h
 
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/fragment.am $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
