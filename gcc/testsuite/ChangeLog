@@ -1,5 +1,11 @@
 2004-07-28  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/16688
+	PR tree-optimization/16689
+	* g++.dg/tree-ssa/pr16688.C: New test.
+
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
 	* gcc.dg/tree-ssa/20031022-1.c: Adjust number of expected
 	loads.  Not only in the comment, this time.
 
