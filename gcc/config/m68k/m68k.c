@@ -1497,10 +1497,13 @@ output_move_qimode (operands)
 
   /* This is probably useless, since it loses for pushing a struct
      of several bytes a byte at a time.	 */
+  /* 68k family always modifies the stack pointer by at least 2, even for
+     byte pushes.  The 5200 (coldfire) does not do this.  */
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
       && XEXP (XEXP (operands[0], 0), 0) == stack_pointer_rtx
-      && ! ADDRESS_REG_P (operands[1]))
+      && ! ADDRESS_REG_P (operands[1])
+      && ! TARGET_5200)
     {
       xoperands[1] = operands[1];
       xoperands[2]
@@ -1551,7 +1554,10 @@ output_move_qimode (operands)
     }
   if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
     return "move%.l %1,%0";
-  if (ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
+  /* 68k family doesn't support byte moves to from address registers.  The
+     5200 (coldfire) does not have this restriction.  */
+  if ((ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
+      && ! TARGET_5200)
     return "move%.w %1,%0";
   return "move%.b %1,%0";
 }
