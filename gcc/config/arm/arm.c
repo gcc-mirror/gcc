@@ -521,7 +521,7 @@ arm_override_options ()
   
   if (TARGET_THUMB && !(insn_flags & FL_THUMB))
     {
-      warning ("target CPU does not supoport THUMB instructions.");
+      warning ("target CPU does not support THUMB instructions.");
       target_flags &= ~ARM_FLAG_THUMB;
     }
 
