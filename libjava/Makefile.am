@@ -251,10 +251,15 @@ CONVERT_DIR = gnu/gcj/convert
 
 jv_convert_SOURCES =
 EXTRA_jv_convert_SOURCES = $(convert_source_files)
-jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -rpath $(toolexeclibdir)
-jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) -o jv-convert
+## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
+## need this because we are explicitly using libtool to link using the
+## `.la' file.
+jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert -nodefaultlibs \
+	-rpath $(toolexeclibdir)
+jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+	-o jv-convert
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS)
+	$(GCLIBS) $(THREADLIBS) -lm -lc
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 	$(GCDEPS) $(THREADDEPS) libgcj.la
 
