@@ -91,8 +91,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_64BIT + MASK_PTR64 + MASK_VIS + MASK_FASTER_STRUCTS \
-   + MASK_STACK_BIAS + MASK_APP_REGS /* + MASK_EPILOGUE */ + MASK_FPU \
+  (MASK_V9 + MASK_64BIT + MASK_PTR64 + MASK_FASTER_STRUCTS \
+   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU \
    + MASK_LONG_DOUBLE_128 /* + MASK_HARD_QUAD */)
 
 /* The default code model.  */
@@ -101,12 +101,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 /************************[  Assembler stuff  ]********************************/
-
-/* XXX */
-#if 0
-#undef  ASM_CPU_DEFAULT_SPEC
-#define ASM_CPU_DEFAULT_SPEC "-Av9a"
-#endif
 
 /* XXX2 */
 /* This is how to output a definition of an internal numbered label where
