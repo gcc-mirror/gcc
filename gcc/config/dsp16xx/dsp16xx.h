@@ -1528,7 +1528,6 @@ extern struct dsp16xx_frame_info current_frame_info;
     return COSTS_N_INSNS (1);                                   \
   case ASHIFT:                                                  \
   case ASHIFTRT:                                                \
-  case LSHIFT:                                                  \
   case LSHIFTRT:                                                \
     if (GET_CODE (XEXP (X,1)) == CONST_INT)                     \
       {                                                         \
