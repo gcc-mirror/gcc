@@ -1,3 +1,8 @@
+Tue Aug  3 00:45:02 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): When doing biv->giv conversion, update
+	reg note of NEXT->insn.
+
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* real.c (PUT_REAL): Clear unused bytes if long double is IEEE quad.
