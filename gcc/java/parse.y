@@ -13777,7 +13777,7 @@ merge_string_cste (op1, op2, after)
 	  else
 	    {
 	      *p++ = c >> 6 | 0xc0;
-	      *p++ = c & 0x3f | 0x80;
+	      *p++ = (c & 0x3f) | 0x80;
 	    }
 	  *p = '\0';
  
