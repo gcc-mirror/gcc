@@ -3355,7 +3355,7 @@ extern int rtx_equal_function_value_matters;
   {"fpscr_operand", {REG}},						\
   {"fpul_operand", {REG}},						\
   {"general_extend_operand", {SUBREG, REG, MEM, TRUNCATE}},		\
-  {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
+  {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM, CONST }}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"unaligned_load_operand", {MEM}},					\
   {"greater_comparison_operator", {GT,GE,GTU,GEU}},			\
