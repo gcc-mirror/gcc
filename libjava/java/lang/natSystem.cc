@@ -1,6 +1,6 @@
 // natSystem.cc - Native code implementing System class.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -203,6 +203,17 @@ getpwuid_adaptor(int (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
 {
   return getpwuid_r (user_id, pwd_r, buf_r, len_r, pwd_entry);
+}
+
+/* This is used on HPUX 10.20 */
+template <typename T_uid, typename T_passwd, typename T_buf, typename T_len>
+static inline int
+getpwuid_adaptor(int (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
+				   T_buf *buf_r, T_len len_r),
+		 uid_t user_id, struct passwd *pwd_r,
+		 char *buf_r, size_t len_r, struct passwd **pwd_entry)
+{
+  return getpwuid_r (user_id, pwd_r, buf_r, len_r);
 }
 
 /* This is used on IRIX 5.2.  */
