@@ -1631,7 +1631,8 @@ Used to represent a @code{switch} statement.  The @code{SWITCH_COND} is
 the expression on which the switch is occurring.  See the documentation
 for an @code{IF_STMT} for more information on the representation used
 for the condition.  The @code{SWITCH_BODY} is the body of the switch
-statement.
+statement.   The @code{SWITCH_TYPE} is the original type of switch
+expression as given in the source, before any compiler conversions.
 
 @item TRY_BLOCK
 Used to represent a @code{try} block.  The body of the try block is

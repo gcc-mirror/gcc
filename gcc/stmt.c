@@ -4876,20 +4876,20 @@ add_case_node (low, high, label, duplicate)
 /* Returns the number of possible values of TYPE.
    Returns -1 if the number is unknown, variable, or if the number does not
    fit in a HOST_WIDE_INT.
-   Sets *SPARENESS to 2 if TYPE is an ENUMERAL_TYPE whose values
+   Sets *SPARSENESS to 2 if TYPE is an ENUMERAL_TYPE whose values
    do not increase monotonically (there may be duplicates);
    to 1 if the values increase monotonically, but not always by 1;
    otherwise sets it to 0.  */
 
 HOST_WIDE_INT
-all_cases_count (type, spareness)
+all_cases_count (type, sparseness)
      tree type;
-     int *spareness;
+     int *sparseness;
 {
   tree t;
   HOST_WIDE_INT count, minval, lastval;
 
-  *spareness = 0;
+  *sparseness = 0;
 
   switch (TREE_CODE (type))
     {
@@ -4928,11 +4928,12 @@ all_cases_count (type, spareness)
 	{
 	  HOST_WIDE_INT thisval = tree_low_cst (TREE_VALUE (t), 0);
 
-	  if (*spareness == 2 || thisval < lastval)
-	    *spareness = 2;
+	  if (*sparseness == 2 || thisval <= lastval)
+	    *sparseness = 2;
 	  else if (thisval != minval + count)
-	    *spareness = 1;
+	    *sparseness = 1;
 
+	  lastval = thisval;
 	  count++;
 	}
     }
@@ -5213,11 +5214,13 @@ free_case_nodes (cn)
 
 /* Terminate a case (Pascal) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
+   If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
+   type as given in the source before any compiler conversions.
    Generate the code to test it and jump to the right place.  */
 
 void
-expand_end_case (orig_index)
-     tree orig_index;
+expand_end_case_type (orig_index, orig_type)
+     tree orig_index, orig_type;
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = 0;
@@ -5241,6 +5244,8 @@ expand_end_case (orig_index)
   index_expr = thiscase->data.case_stmt.index_expr;
   index_type = TREE_TYPE (index_expr);
   unsignedp = TREE_UNSIGNED (index_type);
+  if (orig_type == NULL)
+    orig_type = TREE_TYPE (orig_index);
 
   do_pending_stack_adjust ();
 
@@ -5261,9 +5266,9 @@ expand_end_case (orig_index)
 	 No sense trying this if there's a default case, however.  */
 
       if (!thiscase->data.case_stmt.default_label
-	  && TREE_CODE (TREE_TYPE (orig_index)) == ENUMERAL_TYPE
+	  && TREE_CODE (orig_type) == ENUMERAL_TYPE
 	  && TREE_CODE (index_expr) != INTEGER_CST)
-	check_for_full_enumeration_handling (TREE_TYPE (orig_index));
+	check_for_full_enumeration_handling (orig_type);
 
       /* If we don't have a default-label, create one here,
 	 after the body of the switch.  */
@@ -5420,7 +5425,7 @@ expand_end_case (orig_index)
 		 default code is emitted.  */
 
 	      use_cost_table
-		= (TREE_CODE (TREE_TYPE (orig_index)) != ENUMERAL_TYPE
+		= (TREE_CODE (orig_type) != ENUMERAL_TYPE
 		   && estimate_case_costs (thiscase->data.case_stmt.case_list));
 	      balance_case_nodes (&thiscase->data.case_stmt.case_list, NULL);
 	      emit_case_nodes (index, thiscase->data.case_stmt.case_list,

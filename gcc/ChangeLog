@@ -1,3 +1,19 @@
+2002-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/4475, c++/3780:
+	* c-common.def (SWITCH_STMT): Add SWITCH_TYPE operand.
+	* c-common.h (SWITCH_TYPE): Define.
+	* c-typeck.c (c_start_case): Set SWITCH_TYPE.
+	* stmt.c (all_cases_count): Set lastval to thisval at end of loop.
+	Rename spareness variable to sparseness.
+	(expand_end_case_type): Renamed from expand_end_case, use orig_type
+	if non-NULL instead of TREE_TYPE (orig_index).
+	* tree.h (expand_end_case_type): Renamed from expand_end_case.
+	(expand_end_case): Define using expand_end_case_type.
+	* c-semantics.c (genrtl_switch_stmt): Pass SWITCH_TYPE
+	to expand_end_case_type.
+	* doc/c-tree.texi (SWITCH_STMT): Document SWITCH_TYPE.
+
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (PREFERRED_STACK_BOUNDARY): Define to match standard rounding.

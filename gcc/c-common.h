@@ -603,10 +603,12 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 
-/* SWITCH_STMT accessors. These give access to the condition and body
+/* SWITCH_STMT accessors. These give access to the condition, body and
+   original condition type (before any compiler conversions)
    of the switch statement, respectively.  */
 #define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
+#define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 
 /* CASE_LABEL accessors. These give access to the high and low values
    of a case label, respectively.  */

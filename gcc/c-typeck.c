@@ -7176,15 +7176,15 @@ c_start_case (exp)
      tree exp;
 {
   enum tree_code code;
-  tree type;
+  tree type, orig_type = error_mark_node;
   struct c_switch *cs;
 
   if (exp != error_mark_node)
     {
       code = TREE_CODE (TREE_TYPE (exp));
-      type = TREE_TYPE (exp);
+      orig_type = TREE_TYPE (exp);
 
-      if (! INTEGRAL_TYPE_P (type)
+      if (! INTEGRAL_TYPE_P (orig_type)
 	  && code != ERROR_MARK)
 	{
 	  error ("switch quantity not an integer");
@@ -7206,7 +7206,7 @@ c_start_case (exp)
 
   /* Add this new SWITCH_STMT to the stack.  */
   cs = (struct c_switch *) xmalloc (sizeof (*cs));
-  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, NULL_TREE);
+  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = switch_stack;
   switch_stack = cs;
