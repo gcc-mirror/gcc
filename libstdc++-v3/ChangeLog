@@ -1,3 +1,8 @@
+2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* testsuite/27_io/ostream_inserter_arith.cc (test05, test06):
+        Add missing bool test.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.am: Replace PWD with PWD_COMMAND.

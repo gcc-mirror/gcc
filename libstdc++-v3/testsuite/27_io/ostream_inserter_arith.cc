@@ -360,6 +360,8 @@ test04()
 int
 test05()
 {
+  bool test = true;
+
   double pi = 3.14159265358979323846;
   ostringstream ostr;
   ostr.precision(20);
@@ -377,6 +379,8 @@ test05()
 int
 test06()
 {
+  bool test = true;
+
   int prec = numeric_limits<double>::digits10 + 2;
   double oval = numeric_limits<double>::min();
 
