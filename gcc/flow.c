@@ -311,6 +311,7 @@ struct propagate_block_info
 /* Forward declarations */
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
+static rtx find_label_refs		PARAMS ((rtx, rtx));
 static void clear_edges			PARAMS ((void));
 static void make_edges			PARAMS ((rtx));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
@@ -534,6 +535,50 @@ count_basic_blocks (f)
   return count;
 }
 
+/* Scan a list of insns for labels referrred to other than by jumps.
+   This is used to scan the alternatives of a call placeholder.  */
+static rtx find_label_refs (f, lvl)
+     rtx f;
+     rtx lvl;
+{
+  rtx insn;
+
+  for (insn = f; insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      {
+	rtx note;
+
+	/* Make a list of all labels referred to other than by jumps
+	   (which just don't have the REG_LABEL notes). 
+
+	   Make a special exception for labels followed by an ADDR*VEC,
+	   as this would be a part of the tablejump setup code. 
+
+	   Make a special exception for the eh_return_stub_label, which
+	   we know isn't part of any otherwise visible control flow.  */
+	     
+	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	  if (REG_NOTE_KIND (note) == REG_LABEL)
+	    {
+	      rtx lab = XEXP (note, 0), next;
+
+	      if (lab == eh_return_stub_label)
+		;
+	      else if ((next = next_nonnote_insn (lab)) != NULL
+		       && GET_CODE (next) == JUMP_INSN
+		       && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			   || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+		;
+	      else if (GET_CODE (lab) == NOTE)
+		;
+	      else
+		lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);
+	    }
+      }
+
+  return lvl;
+}
+
 /* Find all basic blocks of the function whose first insn is F.
 
    Collect and return a list of labels whose addresses are taken.  This
@@ -672,11 +717,16 @@ find_basic_blocks_1 (f)
 	    int region = (note ? INTVAL (XEXP (note, 0)) : 1);
 	    int call_has_abnormal_edge = 0;
 
-	    /* If this is a call placeholder, record its tail recursion
-	       label, if any.  */
-	    if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER
-		&& XEXP (PATTERN (insn), 3) != NULL_RTX)
-	      trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
+	    if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	      {
+		/* Scan each of the alternatives for label refs.  */
+		lvl = find_label_refs (XEXP (PATTERN (insn), 0), lvl);
+		lvl = find_label_refs (XEXP (PATTERN (insn), 1), lvl);
+		lvl = find_label_refs (XEXP (PATTERN (insn), 2), lvl);
+		/* Record its tail recursion label, if any.  */
+		if (XEXP (PATTERN (insn), 3) != NULL_RTX)
+		  trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
+	      }
 
 	    /* If there is an EH region or rethrow, we have an edge.  */
 	    if ((eh_list && region > 0)

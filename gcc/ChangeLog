@@ -1,5 +1,11 @@
 2000-05-26  Richard Earnshaw  <rearnsha@arm.com>
 
+	* flow.c (find_label_refs): New function.
+	(find_basic_blocks_1): Call it for each alternative of a call 
+	placeholder.
+
+2000-05-26  Richard Earnshaw  <rearnsha@arm.com>
+
 	* ifcvt.c (cond_exec_get_condition): Set test_if to the SET_SRC
 	of get_pc.
 
