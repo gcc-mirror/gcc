@@ -5429,7 +5429,8 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 	      && slotno == SPARC_INT_ARG_MAX - 1)
 	    return 1;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
+      else if ((GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
+		&& GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	       || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
 		   && ! (TARGET_FPU && named)))
 	{
@@ -5476,7 +5477,8 @@ function_arg_pass_by_reference (const struct sparc_args *cum ATTRIBUTE_UNUSED,
   else
     {
       return ((type && TREE_CODE (type) == ARRAY_TYPE)
-	      /* Consider complex values as aggregates, so care for TCmode.  */
+	      /* Consider complex values as aggregates, so care
+		 for CTImode and TCmode.  */
 	      || GET_MODE_SIZE (mode) > 16
 	      || (type
 		  && AGGREGATE_TYPE_P (type)
@@ -5520,14 +5522,6 @@ function_arg_advance (struct sparc_args *cum, enum machine_mode mode,
 	    cum->words += 2;
 	  else /* passed by reference */
 	    ++cum->words;
-	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
-	{
-	  cum->words += 2;
-	}
-      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	{
-	  cum->words += GET_MODE_SIZE (mode) / UNITS_PER_WORD;
 	}
       else
 	{
@@ -5661,17 +5655,19 @@ sparc_va_arg (tree valist, tree type)
       if (TYPE_ALIGN (type) >= 2 * (unsigned) BITS_PER_WORD)
 	align = 2 * UNITS_PER_WORD;
 
-      if (AGGREGATE_TYPE_P (type))
+      /* Consider complex values as aggregates, so care
+	 for CTImode and TCmode.  */
+      if ((unsigned HOST_WIDE_INT) size > 16)
 	{
-	  if ((unsigned HOST_WIDE_INT) size > 16)
-	    {
-	      indirect = 1;
-	      size = rsize = UNITS_PER_WORD;
-	      align = 0;
-	    }
-	  /* SPARC v9 ABI states that structures up to 8 bytes in size are
-	     given one 8 byte slot.  */
-	  else if (size == 0)
+	  indirect = 1;
+	  size = rsize = UNITS_PER_WORD;
+	  align = 0;
+	}
+      else if (AGGREGATE_TYPE_P (type))
+	{
+	  /* SPARC-V9 ABI states that structures up to 16 bytes in size
+	     are given whole slots as needed.  */
+	  if (size == 0)
 	    size = rsize = UNITS_PER_WORD;
 	  else
 	    size = rsize;
