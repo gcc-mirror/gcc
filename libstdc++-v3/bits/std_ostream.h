@@ -262,7 +262,7 @@ namespace std {
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>& 
     ends(basic_ostream<_CharT, _Traits>& __os)
-    { return __os.put(_Traits::__eos()); }
+    { return __os.put(_Traits::_S_eos()); }
   
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>& 
