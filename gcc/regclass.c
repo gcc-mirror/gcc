@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -346,6 +346,9 @@ init_reg_sets ()
 
 	may_move_cost[i][j] = cost;
       }
+
+  /* Do any additional initialization regsets may need */
+  INIT_ONCE_REG_SET ();
 }
 
 /* After switches have been processed, which perhaps alter
@@ -1729,6 +1732,9 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   if (renumber_p)
     reg_renumber = renumber;
 
+  /* Tell the regset code about the new number of registers */
+  MAX_REGNO_REG_SET (num_regs, new_p, renumber_p);
+
   regno_max = num_regs;
 }
 
@@ -1943,3 +1949,17 @@ reg_classes_intersect_p (c1, c2)
   return 0;
 }
 
+/* Release any memory allocated by register sets.  */
+
+void
+regset_release_memory ()
+{
+  if (basic_block_live_at_start)
+    {
+      free_regset_vector (basic_block_live_at_start, n_basic_blocks);
+      basic_block_live_at_start = 0;
+    }
+
+  FREE_REG_SET (regs_live_at_setjmp);
+  bitmap_release_memory ();
+}
