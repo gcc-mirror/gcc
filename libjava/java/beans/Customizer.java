@@ -72,15 +72,15 @@ public interface Customizer {
 	 ** Customizer.
 	 ** @param bean the Bean to customize.
 	 **/
-	public abstract void setObject(Object bean);
+	void setObject(Object bean);
 
 	/** Add a PropertyChangeListener.
 	 ** @param l the PropertyChangeListener to add.
 	 **/
-	public abstract void addPropertyChangeListener(PropertyChangeListener l);
+	void addPropertyChangeListener(PropertyChangeListener l);
 
 	/** Remove a PropertyChangeListener.
 	 ** @param l the PropertyChangeListener to remove.
 	 **/
-	public abstract void removePropertyChangeListener(PropertyChangeListener l);
+	void removePropertyChangeListener(PropertyChangeListener l);
 }
