@@ -2358,7 +2358,7 @@ expand_parity (enum machine_mode mode, rtx op0, rtx target)
 	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
 				  true);
 	      if (temp != 0)
-		temp = expand_binop (wider_mode, and_optab, temp, GEN_INT (1),
+		temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
 				     target, true, OPTAB_DIRECT);
 	      if (temp == 0)
 		delete_insns_since (last);
@@ -3337,9 +3337,9 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 
 	  if (note != 0)
-	    XEXP (note, 0) = GEN_INT (-1);
+	    XEXP (note, 0) = constm1_rtx;
 	  else
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, constm1_rtx,
 						  REG_NOTES (insn));
 	}
 
