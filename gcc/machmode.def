@@ -51,7 +51,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    constant.
 
    A FORMAT argument must be one of the real_mode_format structures
-   declared in real.h, or else a literal 0.
+   declared in real.h, or else a literal 0.  Do not put a leading &
+   on the argument.
+
+   An EXPR argument must be a syntactically valid C expression.
+   If an EXPR contains commas, you may need to write an extra pair of
+   parentheses around it, so it appears to be a single argument to the
+   statement.
 
    This file defines only those modes which are of use on almost all
    machines.  Other modes can be defined in the target-specific
@@ -119,6 +125,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	replacing the 'F' in the mode name with a 'C'.  (It is an
 	error if there is no 'F'.  For INT modes, the names are
 	derived by prefixing a C to the name.
+
+     ADJUST_BYTESIZE (MODE, EXPR);
+     ADJUST_ALIGNMENT (MODE, EXPR);
+     ADJUST_FLOAT_FORMAT (MODE, EXPR);
+        Arrange for the byte size, alignment, or floating point format
+	of MODE to be adjustable at run time.  EXPR will be executed
+	once after processing all command line options, and should
+	evaluate to the desired byte size, alignment, or format.
+
+	Unlike a FORMAT argument, if you are adjusting a float format
+	you must put an & in front of the name of each format structure.
 
    Note: If a mode is ever made which is more than 255 bytes wide,
    machmode.h and genmodes.c will have to be changed to allocate

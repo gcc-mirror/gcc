@@ -2198,8 +2198,8 @@ genmodes$(build_exeext) : genmodes.o $(BUILD_ERRORS) $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	 genmodes.o $(BUILD_ERRORS) $(BUILD_LIBS)
 
-genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h machmode.def \
-	     $(extra_modes_file)
+genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h $(HASHTAB_H) \
+	     machmode.def $(extra_modes_file)
 
 genpreds$(build_exeext) : genpreds.o $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
