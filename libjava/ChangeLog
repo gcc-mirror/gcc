@@ -1,5 +1,16 @@
 2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* java/net/InetAddress.java (loopbackAddress): Renamed from 
+	localhostAddress.
+	(getByName): Return loopback address for null hostname, without
+	security check. Use lookup(), not getAllByName.
+	(getAllByName): Return loopback address for null hostname, without
+	security check.
+	* java/net/natInetAddressPosix.cc (lookup): Don't perform security
+	check here.
+
+2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
+
 	PR libgcj/17020
 	Reported by Robin Green.
 	* defineclass.cc (handleField): Don't throw exception on unrecognised

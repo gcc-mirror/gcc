@@ -229,13 +229,6 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
     {
       if (!all)
         host = JvNewStringUTF (hptr->h_name);
-      java::lang::SecurityException *ex = checkConnect (host);
-      if (ex != NULL)
-	{
-	  if (iaddr == NULL || iaddr->addr == NULL)
-	    throw ex;
-	  hptr = NULL;
-	}
     }
   if (hptr == NULL)
     {
