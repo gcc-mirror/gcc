@@ -449,28 +449,39 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 					      sreg, NULL_PTR, dreg,
 					      GET_MODE (SET_SRC (body)));
 
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-		    /* Deleting insn could lose a death-note for SREG or DREG
-		       so don't do it if final needs accurate death-notes.  */
-		    if (! PRESERVE_DEATH_INFO_REGNO_P (sreg)
-			&& ! PRESERVE_DEATH_INFO_REGNO_P (dreg))
-#endif
+		    if (tem != 0 &&
+			GET_MODE (tem) == GET_MODE (SET_DEST (body)))
 		      {
 			/* DREG may have been the target of a REG_DEAD note in
 			   the insn which makes INSN redundant.  If so, reorg
 			   would still think it is dead.  So search for such a
 			   note and delete it if we find it.  */
-			for (trial = prev_nonnote_insn (insn);
-			     trial && GET_CODE (trial) != CODE_LABEL;
-			     trial = prev_nonnote_insn (trial))
-			  if (find_regno_note (trial, REG_DEAD, dreg))
-			    {
-			      remove_death (dreg, trial);
-			      break;
-			    }
-
-			if (tem != 0
-			    && GET_MODE (tem) == GET_MODE (SET_DEST (body)))
+			if (! find_regno_note (insn, REG_UNUSED, dreg))
+			  for (trial = prev_nonnote_insn (insn);
+			       trial && GET_CODE (trial) != CODE_LABEL;
+			       trial = prev_nonnote_insn (trial))
+			    if (find_regno_note (trial, REG_DEAD, dreg))
+			      {
+				remove_death (dreg, trial);
+				break;
+			      }
+#ifdef PRESERVE_DEATH_INFO_REGNO_P
+			/* Deleting insn could lose a death-note for SREG
+			   so don't do it if final needs accurate
+			   death-notes.  */
+			if (PRESERVE_DEATH_INFO_REGNO_P (sreg)
+			    && (trial = find_regno_note (insn, REG_DEAD, sreg)))
+			  {
+			    /* Change this into a USE so that we won't emit
+			       code for it, but still can keep the note.  */
+			    PATTERN (insn)
+			      = gen_rtx (USE, VOIDmode, XEXP (trial, 0));
+			    /* Remove all reg notes but the REG_DEAD one.  */
+			    REG_NOTES (insn) = trial;
+			    XEXP (trial, 1) = NULL_RTX;
+			  }
+			else
+#endif
 			  delete_insn (insn);
 		      }
 		  }
