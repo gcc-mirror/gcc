@@ -7547,6 +7547,35 @@ simplify_comparison (code, pop0, pop1)
 	  /* If the inner mode is narrower and we are extracting the low part,
 	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
 	  if (subreg_lowpart_p (op0)
+	  /* Check for the case where we are comparing A - C1 with C2,
+	     both constants are smaller than 1/2 the maxium positive
+	     value in MODE, and the comparison is equality or unsigned.
+	     In that case, if A is either zero-extended to MODE or has
+	     sufficient sign bits so that the high-order bit in MODE
+	     is a copy of the sign in the inner mode, we can prove that it is
+	     safe to do the operation in the wider mode.  This simplifies
+	     many range checks.  */
+
+	  if (mode_width <= HOST_BITS_PER_WIDE_INT
+	      && subreg_lowpart_p (op0)
+	      && GET_CODE (SUBREG_REG (op0)) == PLUS
+	      && GET_CODE (XEXP (SUBREG_REG (op0), 1)) == CONST_INT
+	      && INTVAL (XEXP (SUBREG_REG (op0), 1)) < 0
+	      && (- INTVAL (XEXP (SUBREG_REG (op0), 1))
+		  < GET_MODE_MASK (mode) / 2)
+	      && (unsigned) const_op < GET_MODE_MASK (mode) / 2
+	      && (0 == (significant_bits (XEXP (SUBREG_REG (op0), 0),
+					  GET_MODE (SUBREG_REG (op0)))
+			& ~ GET_MODE_MASK (mode))
+		  || (num_sign_bit_copies (XEXP (SUBREG_REG (op0), 0),
+					   GET_MODE (SUBREG_REG (op0)))
+		      > (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+			 - GET_MODE_BITSIZE (mode)))))
+	    {
+	      op0 = SUBREG_REG (op0);
+	      continue;
+	    }
+
 	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) < mode_width)
 	    /* Fall through */ ;
 	  else
@@ -7890,11 +7919,8 @@ simplify_comparison (code, pop0, pop1)
   /* We now do the opposite procedure: Some machines don't have compare
      insns in all modes.  If OP0's mode is an integer mode smaller than a
      word and we can't do a compare in that mode, see if there is a larger
-     mode for which we can do the compare and where the only significant
-     bits in OP0 and OP1 are those in the narrower mode.  We can do
-     this if this is an equality comparison, in which case we can
-     merely widen the operation, or if we are testing the sign bit, in
-     which case we can explicitly put in the test.  */
+     mode for which we can do the compare.  There are a number of cases in
+     which we can use the wider mode.  */
 
   mode = GET_MODE (op0);
   if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
@@ -7904,25 +7930,43 @@ simplify_comparison (code, pop0, pop1)
 	 (tmode != VOIDmode
 	  && GET_MODE_BITSIZE (tmode) <= HOST_BITS_PER_WIDE_INT);
 	 tmode = GET_MODE_WIDER_MODE (tmode))
-      if (cmp_optab->handlers[(int) tmode].insn_code != CODE_FOR_nothing
-	  && (significant_bits (op0, tmode) & ~ GET_MODE_MASK (mode)) == 0
-	  && (significant_bits (op1, tmode) & ~ GET_MODE_MASK (mode)) == 0
-	  && (code == EQ || code == NE
-	      || (op1 == const0_rtx && (code == LT || code == GE)
-		  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)))
+      if (cmp_optab->handlers[(int) tmode].insn_code != CODE_FOR_nothing)
 	{
-	  op0 = gen_lowpart_for_combine (tmode, op0);
-	  op1 = gen_lowpart_for_combine (tmode, op1);
-
-	  if (code == LT || code == GE)
+	  /* If the only significant bits in OP0 and OP1 are those in the
+	     narrower mode and this is an equality or unsigned comparison,
+	     we can use the wider mode.  Similarly for sign-extended
+	     values and equality or signed comparisons.  */
+	  if (((code == EQ || code == NE
+		|| code == GEU || code == GTU || code == LEU || code == LTU)
+	       && ((significant_bits (op0, tmode) & ~ GET_MODE_MASK (mode))
+		   == 0)
+	       && ((significant_bits (op1, tmode) & ~ GET_MODE_MASK (mode))
+		   == 0))
+	      || ((code == EQ || code == NE
+		   || code == GE || code == GT || code == LE || code == LT)
+		  && (num_sign_bit_copies (op0, tmode)
+		      >= GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
+		  && (num_sign_bit_copies (op1, tmode)
+		      >= GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
 	    {
-	      op0 = gen_binary (AND, tmode, op0,
+	      op0 = gen_lowpart_for_combine (tmode, op0);
+	      op1 = gen_lowpart_for_combine (tmode, op1);
+	      break;
+	    }
+
+	  /* If this is a test for negative, we can make an explicit
+	     test of the sign bit.  */
+
+	  if (op1 == const0_rtx && (code == LT || code == GE)
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	    {
+	      op0 = gen_binary (AND, tmode,
+				gen_lowpart_for_combine (tmode, op0),
 				GEN_INT ((HOST_WIDE_INT) 1
 					 << (GET_MODE_BITSIZE (mode) - 1)));
 	      code = (code == LT) ? NE : EQ;
+	      break;
 	    }
-
-	  break;
 	}
 
   *pop0 = op0;
@@ -8624,8 +8668,17 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	case REG_NONNEG:
 	  /* These notes say something about results of an insn.  We can
 	     only support them if they used to be on I3 in which case they
-	     remain on I3.  Otherwise they are ignored.  */
-	  if (from_insn == i3)
+	     remain on I3.  Otherwise they are ignored.
+
+	     If the note refers to an expression that is not a constant, we
+	     must also ignore the note since we cannot tell whether the
+	     equivalence is still true.  It might be possible to do
+	     slightly better than this (we only have a problem if I2DEST
+	     or I1DEST is present in the expression), but it doesn't
+	     seem worth the trouble.  */
+
+	  if (from_insn == i3
+	      && (XEXP (note, 0) == 0 || CONSTANT_P (XEXP (note, 0))))
 	    place = i3;
 	  break;
 
