@@ -1,3 +1,7 @@
+Thu Sep 23 08:46:21 1999  Guy Harris  <guy@netapp.com>
+
+	* gcc.1: Fix a formatting error.
+
 Wed Sep 22 16:10:21 1999  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* install.texi (Configurations): Remove pyramid. Add fr30, i686,
