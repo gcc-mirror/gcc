@@ -1,3 +1,8 @@
+Fri Jun  4 05:42:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (barrier_align): Don't return early for normal branch/barrier
+	when optimizing for SH2.
+
 Thu Jun  3 22:27:50 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* i386/udk.h (LINK_SPEC): Correct linker search path for 

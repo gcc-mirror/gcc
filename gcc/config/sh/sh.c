@@ -2712,7 +2712,7 @@ barrier_align (barrier_or_label)
   if (TARGET_SMALLCODE)
     return 0;
 
-  if (! TARGET_SH3 || ! optimize)
+  if (! TARGET_SH2 || ! optimize)
     return CACHE_LOG;
 
   /* When fixing up pcloads, a constant table might be inserted just before
