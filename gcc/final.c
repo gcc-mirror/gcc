@@ -529,7 +529,7 @@ shorten_branches (first)
 	  int i;
 	  int const_delay_slots;
 #ifdef DELAY_SLOTS
-	  const_delay_slots = const_num_delay_slots (XVECEXP (body, 0, 1));
+	  const_delay_slots = const_num_delay_slots (XVECEXP (body, 0, 0));
 #else
 	  const_delay_slots = 0;
 #endif
