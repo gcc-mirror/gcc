@@ -227,7 +227,7 @@ SYNOPSIS_C='<synopsis of the problem (one line)>'
 if [ -z "$SEVERITY_C" ]; then
   SEVERITY_C='<[ non-critical | serious | critical ] (one line)>'
 fi
-PRIORITY_C='<[ low | medium | high ] (one line)>'
+PRIORITY_C='<[ low | medium ] (one line)>'
 CATEGORY_C='<choose from the top of this file (one line)>'
 RELEASE_C='<release number or tag (one line)>'
 ENVIRONMENT_C='<machine, os, target, libraries (multiple lines)>'
@@ -321,7 +321,6 @@ SEND-PR: critical     GCC is completely not operational; no work-around known.
 SEND-PR: serious      GCC is not working properly; a work-around is possible.
 SEND-PR: non-critical Report indicates minor problem.
 >Priority:	$PRIORITY_C
-SEND-PR: high         A solution is necessary as soon as possible.
 SEND-PR: medium       The problem should be solved in the next release.
 SEND-PR: low          The problem should be solve in a future release.
 >Category:	$CATEGORY_C
@@ -423,7 +422,8 @@ while [ -z "$REQUEST_ID" ]; do
   PATTERN=">Priority:"
   PRIORITY=`eval sed -n -e "\"$SED_CMD\"" $TEMP`
   case "$PRIORITY" in
-    ""|low|medium|high) CNT=`expr $CNT + 1` ;;
+    ""|low|medium) CNT=`expr $CNT + 1` ;;
+    high) echo "$COMMAND: \`Priority: high' is reserved for GCC maintainers." ;;
     *)  echo "$COMMAND: \`$PRIORITY' is not a valid value for \`Priority'."
   esac
   #
