@@ -501,6 +501,7 @@ format_item:
     p_descriptor:
       get_fnode (&head, &tail, FMT_P);
       tail->u.k = value;
+      tail->repeat = 1;
 
       t = format_lex ();
       if (t == FMT_F || t == FMT_EN || t == FMT_ES || t == FMT_D
