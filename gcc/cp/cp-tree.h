@@ -321,6 +321,9 @@ enum languages { lang_c, lang_cplusplus };
 #define TYPE_ASSEMBLER_NAME_STRING(NODE) (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME  (NODE))))
 #define TYPE_ASSEMBLER_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (TYPE_NAME (NODE))))
 
+/* The _DECL for this _TYPE.  */
+#define TYPE_MAIN_DECL(NODE) (TYPE_NAME (NODE))
+
 #define IS_AGGR_TYPE(t)		(TYPE_LANG_FLAG_5 (t))
 #define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE || t == UNINSTANTIATED_P_TYPE)
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
@@ -1723,6 +1726,24 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
 
+/* These flags are used by the conversion code.
+   CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
+   CONV_STATIC     :  Perform the explicit conversions for static_cast.
+   CONV_CONST      :  Perform the explicit conversions for const_cast.
+   CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
+   CONV_PRIVATE    :  Perform upcasts to private bases.  */
+
+#define CONV_IMPLICIT    1
+#define CONV_STATIC      2
+#define CONV_CONST       4
+#define CONV_REINTERPRET 8
+#define CONV_PRIVATE	 16
+#define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC)
+#define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
+			  | CONV_REINTERPRET)
+#define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
+			  | CONV_REINTERPRET | CONV_PRIVATE)
+
 /* Anatomy of a DECL_FRIENDLIST (which is a TREE_LIST):
    purpose = friend name (IDENTIFIER_NODE);
    value = TREE_LIST of FUNCTION_DECLS;
@@ -1790,7 +1811,7 @@ extern void print_class_statistics		PROTO((void));
 extern void maybe_push_cache_obstack		PROTO((void));
 
 /* in cvt.c */
-extern tree convert_to_reference		PROTO((tree, tree, tree, tree, int, char *, int, int));
+extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
 extern tree convert_from_reference		PROTO((tree));
 extern tree convert_to_aggr			PROTO((tree, tree, char **, int));
 extern tree convert_pointer_to			PROTO((tree, tree));

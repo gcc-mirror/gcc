@@ -35,9 +35,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 tree builtin_return_address_fndecl;
 
 /* Define at your own risk!  */
+#ifndef CROSS_COMPILE
 #ifdef sun
 #ifdef sparc
 #define TRY_NEW_EH
+#endif
 #endif
 #endif
 
@@ -97,8 +99,8 @@ expand_end_all_catch ()
 }
 
 void
-expand_start_catch_block (typename, identifier)
-     tree typename, identifier;
+expand_start_catch_block (declspecs, declarator)
+     tree declspecs, declarator;
 {
 }
 
@@ -409,7 +411,6 @@ exception_section ()
 
 extern rtx emit_insn		PROTO((rtx));
 extern rtx gen_nop		PROTO(());
-extern void do_unwind		PROTO((rtx));
 
 /* local globals for function calls
    ====================================================================== */
@@ -808,7 +809,7 @@ init_exception_processing ()
   catch_match_fndecl =
     define_function ("__throw_type_match",
 		     build_function_type (integer_type_node,
-					  tree_cons (NULL_TREE, string_type_node, tree_cons (NULL_TREE, string_type_node, void_list_node))),
+					  tree_cons (NULL_TREE, string_type_node, tree_cons (NULL_TREE, ptr_type_node, void_list_node))),
 		     NOT_BUILT_IN,
 		     pushdecl,
 		     0);
@@ -1088,24 +1089,27 @@ expand_leftover_cleanups ()
     }
 }
 
-
 /* call this to start a catch block. Typename is the typename, and identifier
    is the variable to place the object in or NULL if the variable doesn't
    matter.  If typename is NULL, that means its a "catch (...)" or catch
    everything.  In that case we don't need to do any type checking.
    (ie: it ends up as the "else" clause rather than an "else if" clause) */
 void
-expand_start_catch_block (typename, identifier)
-     tree typename, identifier;
+expand_start_catch_block (declspecs, declarator)
+     tree declspecs, declarator;
 {
   rtx false_label_rtx;
   tree type;
+  tree decl;
 
   if (! doing_eh (1))
     return;
 
-  if (typename)
-    type = groktypename (typename);
+  if (declspecs)
+    {
+      decl = grokdeclarator (declarator, declspecs, PARM, 0, NULL_TREE);
+      type = TREE_TYPE (decl);
+    }
   else
     type = NULL_TREE;
 

@@ -1134,7 +1134,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
       if (errstr && protect)
 	{
-	  error (errstr, IDENTIFIER_POINTER (name), TYPE_NAME_STRING (type));
+	  cp_error (errstr, name, type);
 	  return error_mark_node;
 	}
       return rval;

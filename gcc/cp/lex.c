@@ -662,6 +662,9 @@ init_lex ()
   ridpointers[(int) RID_PROTECTED] = get_identifier ("protected");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_PROTECTED],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_PROTECTED]));
+  ridpointers[(int) RID_TEMPLATE] = get_identifier ("template");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_TEMPLATE],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_TEMPLATE]));
   /* This is for ANSI C++. */
   ridpointers[(int) RID_MUTABLE] = get_identifier ("mutable");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_MUTABLE],

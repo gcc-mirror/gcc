@@ -37,6 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern tree grokdeclarator ();
 extern tree get_file_function_name ();
+extern tree cleanups_this_call;
 static void grok_function_init ();
 
 /* A list of virtual function tables we must make sure to write out.  */
@@ -362,6 +363,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
+  {"short-temps", &flag_short_temps, 1},
 };
 
 /* Decode the string P as a language-specific option.
@@ -2595,6 +2597,7 @@ finish_file ()
 	{
 	  tree decl = TREE_VALUE (vars);
 	  tree init = TREE_PURPOSE (vars);
+	  tree old_cleanups = cleanups_this_call;
 
 	  /* If this was a static attribute within some function's scope,
 	     then don't initialize it here.  Also, don't bother
@@ -2684,6 +2687,8 @@ finish_file ()
 	    ;
 	  else my_friendly_abort (22);
 	  vars = TREE_CHAIN (vars);
+	  /* Cleanup any temporaries needed for the initial value.  */
+	  expand_cleanups_to (old_cleanups);
 	}
 
       expand_end_bindings (getdecls(), 1, 0);
@@ -2936,7 +2941,7 @@ finish_decl_parsing (decl)
       TREE_OPERAND (decl, 0) = finish_decl_parsing (TREE_OPERAND (decl, 0));
       return decl;
     case SCOPE_REF:
-      push_nested_class (TREE_OPERAND (decl, 0), 3);
+      push_nested_class (TREE_TYPE (TREE_OPERAND (decl, 0)), 3);
       TREE_COMPLEXITY (decl) = current_class_depth;
       return decl;
     case ARRAY_REF:

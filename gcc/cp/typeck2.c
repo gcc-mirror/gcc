@@ -59,7 +59,7 @@ binfo_or_else (parent_or_type, type)
 {
   tree binfo;
   if (TYPE_MAIN_VARIANT (parent_or_type) == TYPE_MAIN_VARIANT (type))
-    return parent_or_type;
+    return TYPE_BINFO (parent_or_type);
   if ((binfo = get_binfo (parent_or_type, TYPE_MAIN_VARIANT (type), 0)))
     {
       if (binfo == error_mark_node)
@@ -738,7 +738,10 @@ digest_init (type, init, tail)
 	      return error_mark_node;
 	    }
 
-	  if (pedantic && typ1 != char_type_node)
+	  if (pedantic
+	      && typ1 != char_type_node
+	      && typ1 != signed_char_type_node
+	      && typ1 != unsigned_char_type_node)
 	    pedwarn ("ANSI C++ forbids string initializer except for `char' elements");
 	  TREE_TYPE (string) = type;
 	  if (TYPE_DOMAIN (type) != 0
@@ -752,7 +755,7 @@ digest_init (type, init, tail)
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (string))
-		warning ("initializer-string for array of chars is too long");
+		pedwarn ("initializer-string for array of chars is too long");
 	    }
 	  return string;
 	}

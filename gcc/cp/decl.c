@@ -47,6 +47,8 @@ extern struct obstack permanent_obstack;
 
 extern int current_class_depth;
 
+extern tree cleanups_this_call;
+
 /* Stack of places to restore the search obstack back to.  */
    
 /* Obstack used for remembering local class declarations (like
@@ -1077,7 +1079,7 @@ poplevel (keep, reverse, functionbody)
     }
 
   /* Take care of compiler's internal binding structures.  */
-  if (tmp == 2 && class_binding_level)
+  if (tmp == 2)
     {
 #if 0
       /* We did not call push_momentary for this
@@ -1976,7 +1978,7 @@ decls_match (newdecl, olddecl)
 	      TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
 	  else
-	    types_match = compparms (p1, p2, 1);
+	    types_match = compparms (p1, p2, 3);
 	}
       else
 	types_match = 0;
@@ -2114,31 +2116,44 @@ duplicate_decls (newdecl, olddecl)
        after implicit decl.  */
     ;
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	   && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl))
-	   && DECL_ASSEMBLER_NAME (newdecl) == DECL_ASSEMBLER_NAME (olddecl))
-    /* Redeclaring a builtin as another function is handled in
-       push_overloaded_decl.  */
+	   && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
     {
       /* If you declare a built-in or predefined function name as static,
-	 the old definition is overridden,
-	 but optionally warn this was a bad choice of name.  */
-      if (! TREE_PUBLIC (newdecl))
-	if (warn_shadow)
-	  cp_warning ("shadowing %s function `%#D'",
-		      DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-		      newdecl);
-      /* Likewise, if the built-in is not ansi, then programs can override
-         it even globally without an error.  */
-      else if (! DECL_BUILT_IN (olddecl))
-	cp_warning ("library function `%#D' redeclared as non-function `%#D'",
-		    olddecl, newdecl);
-      else
+	 the old definition is overridden, but optionally warn this was a
+	 bad choice of name.  Ditto for overloads.  */
+      if (! TREE_PUBLIC (newdecl)
+	  || (TREE_CODE (newdecl) == FUNCTION_DECL
+	      && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl)))
 	{
+	  if (warn_shadow)
+	    cp_warning ("shadowing %s function `%#D'",
+			DECL_BUILT_IN (olddecl) ? "built-in" : "library",
+			olddecl);
+	  /* Discard the old built-in function.  */
+	  return 0;
+	}
+      else if (! types_match)
+	{
+	  if (TREE_CODE (newdecl) != FUNCTION_DECL)
+	    {
+	      /* If the built-in is not ansi, then programs can override
+		 it even globally without an error.  */
+	      if (! DECL_BUILT_IN (olddecl))
+		cp_warning ("library function `%#D' redeclared as non-function `%#D'",
+			    olddecl, newdecl);
+	      else
+		{
+		  cp_error ("declaration of `%#D'", newdecl);
+		  cp_error ("conflicts with built-in declaration `%#D'",
+			    olddecl);
+		}
+	      return 0;
+	    }
+
 	  cp_warning ("declaration of `%#D'", newdecl);
 	  cp_warning ("conflicts with built-in declaration `%#D'",
 		      olddecl);
 	}
-      return 0;
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
@@ -2185,7 +2200,7 @@ duplicate_decls (newdecl, olddecl)
 	}
 
       /* Already complained about this, so don't do so again.  */
-      if (current_class_type == NULL_TREE
+      else if (current_class_type == NULL_TREE
 	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
 	{
 	  /* Since we're doing this before finish_struct can set the
@@ -3082,7 +3097,12 @@ pushdecl_class_level (x)
 	     members are checked in finish_struct.  */
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
 
-	  if (icv)
+	  if (icv
+	      /* Don't complain about inherited names.  */
+	      && id_in_current_class (name)
+	      /* Or shadowed tags.  */
+	      && !(TREE_CODE (icv) == TYPE_DECL
+		   && DECL_CONTEXT (icv) == current_class_type))
 	    {
 	      cp_error ("declaration of identifier `%D' as `%#D'", name, x);
 	      cp_error_at ("conflicts with previous use in class as `%#D'",
@@ -3186,23 +3206,18 @@ push_overloaded_decl (decl, forgettable)
     {
       old = IDENTIFIER_GLOBAL_VALUE (orig_name);
       if (old && TREE_CODE (old) == FUNCTION_DECL
+	  && DECL_ARTIFICIAL (old)
 	  && (DECL_BUILT_IN (old) || DECL_BUILT_IN_NONANSI (old)))
 	{
-	  if (! decls_match (decl, old)
-	      && (DECL_LANGUAGE (decl) == lang_c
-		  || compparms (TYPE_ARG_TYPES (TREE_TYPE (decl)),
-				TYPE_ARG_TYPES (TREE_TYPE (old)), 2)))
-	    {
-	      cp_warning ("declaration of `%#D'", decl);
-	      cp_warning ("conflicts with built-in declaration `%#D'", old);
-	    }
+	  if (duplicate_decls (decl, old))
+	    return old;
 	  old = NULL_TREE;
 	}
     }
   else
     {
       old = IDENTIFIER_LOCAL_VALUE (orig_name);
-      
+
       if (! purpose_member (orig_name, current_binding_level->shadowed))
 	{
 	  current_binding_level->shadowed
@@ -3355,6 +3370,18 @@ redeclaration_error_message (newdecl, olddecl)
 	  else
 	    return "redefinition of `%#D'";
 	}
+
+      {
+	tree t1 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
+	tree t2 = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
+
+	if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE)
+	  t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
+	
+	for (; t1; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+	  if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
+	    return "duplicate default arguments given for `%#D'";
+      }
       return 0;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -3990,9 +4017,19 @@ lookup_name_current_level (name)
     }
   else if (IDENTIFIER_LOCAL_VALUE (name) != NULL_TREE)
     {
-      for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
-	if (DECL_NAME (t) == name)
-	  break;
+      struct binding_level *b = current_binding_level;
+      while (1)
+	{
+	  for (t = b->names; t; t = TREE_CHAIN (t))
+	    if (DECL_NAME (t) == name)
+	      goto out;
+	  if (b->keep == 2)
+	    b = b->level_chain;
+	  else
+	    break;
+	}
+    out:
+      ;
     }
 
   return t;
@@ -5559,23 +5596,12 @@ grok_reference_init (decl, type, init, cleanupp)
     }
   /* OK, can we generate a reference then?  */
   else if ((actual_init = convert_to_reference
-	    (decl, type, init, 0, 0, "initialization", 0,
-	     LOOKUP_SPECULATIVELY|LOOKUP_NORMAL)))
+	    (type, init, CONV_IMPLICIT,
+	     LOOKUP_SPECULATIVELY|LOOKUP_NORMAL, decl)))
     {
       if (actual_init == error_mark_node)
 	goto fail;
 
-      init = actual_init;
-      is_reference = 1;
-    }
-  /* OK, try going through a temporary.  */
-  else if ((actual_init = convert_to_reference
-	    (error_mark_node, type, init, 0, 0, "initialization",
-	     0, LOOKUP_NORMAL)))
-    {
-      if (actual_init == error_mark_node)
-	goto fail;
-      
       init = actual_init;
       is_reference = 1;
 
@@ -5705,12 +5731,9 @@ finish_decl (decl, init, asmspec_tree, need_pop)
       return;
     }
 
+  /* If a name was specified, get the string.  */
   if (asmspec_tree)
-    {
       asmspec = TREE_STRING_POINTER (asmspec_tree);
-      /* Zero out old RTL, since we will rewrite it.  */
-      DECL_RTL (decl) = NULL_RTX;
-    }
 
   /* If the type of the thing we are declaring either has
      a constructor, or has a virtual function table pointer,
@@ -6276,6 +6299,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	}
       else if (! toplev)
 	{
+	  tree old_cleanups = cleanups_this_call;
 	  /* This is a declared decl which must live until the
 	     end of the binding contour.  It may need a cleanup.  */
 
@@ -6335,6 +6359,8 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 			      decl);
 		}
 	    }
+	  /* Cleanup any temporaries needed for the initial value.  */
+	  expand_cleanups_to (old_cleanups);
 	}
     finish_end0:
 
@@ -6404,6 +6430,8 @@ expand_static_init (decl, init)
      tree init;
 {
   tree oldstatic = value_member (decl, static_aggregates);
+  tree old_cleanups;
+
   if (oldstatic)
     {
       if (TREE_PURPOSE (oldstatic) && init != NULL_TREE)
@@ -6422,6 +6450,7 @@ expand_static_init (decl, init)
       rest_of_decl_compilation (temp, NULL_PTR, 0, 0);
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
 					  integer_zero_node, 1), 0);
+      old_cleanups = cleanups_this_call;
       expand_assignment (temp, integer_one_node, 0, 0);
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	{
@@ -6430,6 +6459,8 @@ expand_static_init (decl, init)
 	}
       else
 	expand_assignment (decl, init, 0, 0);
+      /* Cleanup any temporaries needed for the initial value.  */
+      expand_cleanups_to (old_cleanups);
       expand_end_cond ();
       if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
 	{
@@ -10235,6 +10266,7 @@ finish_enum (enumtype, values)
 	  else if (value < minvalue)
 	    minvalue = value;
 	  TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+	  TREE_TYPE (DECL_INITIAL (TREE_VALUE (pair))) = enumtype;
 	}
     }
 
@@ -11967,4 +11999,11 @@ revert_static_member_fn (decl, fn, argtypes)
     *fn = tmp;
   if (argtypes)
     *argtypes = args;
+}
+
+int
+id_in_current_class (id)
+     tree id;
+{
+  return !!purpose_member (id, class_binding_level->class_shadowed);
 }

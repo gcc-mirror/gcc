@@ -47,7 +47,6 @@ static tree pointer_int_sum ();
 static tree pointer_diff ();
 static tree convert_sequence ();
 /* static */ tree unary_complex_lvalue ();
-static void pedantic_lvalue_warning ();
 tree truthvalue_conversion ();
 
 extern rtx original_result_rtx;
@@ -223,10 +222,7 @@ commonparms (p1, p2)
 	  if (cmp < 0)
 	    my_friendly_abort (111);
 	  if (cmp == 0)
-	    {
-	      error ("redeclaration of default argument %d", i+1);
-	      any_change = 1;
-	    }
+	    any_change = 1;
 	  TREE_PURPOSE (n) = TREE_PURPOSE (p2);
 	}
       if (TREE_VALUE (p1) != TREE_VALUE (p2))
@@ -411,7 +407,7 @@ common_type (t1, t2)
       return t1;
 
     case METHOD_TYPE:
-      if (TYPE_METHOD_BASETYPE (t1) == TYPE_METHOD_BASETYPE (t2)
+      if (comptypes (TYPE_METHOD_BASETYPE (t1), TYPE_METHOD_BASETYPE (t2), 1)
 	  && TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
 	{
 	  /* Get this value the long way, since TYPE_METHOD_BASETYPE
@@ -642,6 +638,9 @@ comptypes (type1, type2, strict)
 
     case TEMPLATE_TYPE_PARM:
       return 1;
+
+    case UNINSTANTIATED_P_TYPE:
+      return UPT_TEMPLATE (t1) == UPT_TEMPLATE (t2);
     }
   return 0;
 }
@@ -1340,9 +1339,10 @@ build_object_ref (datum, basetype, field)
   else if (is_aggr_typedef (basetype, 1))
     {
       tree real_basetype = IDENTIFIER_TYPE_VALUE (basetype);
-      if (binfo_or_else (real_basetype, TREE_TYPE (datum)))
+      tree binfo = binfo_or_else (real_basetype, TREE_TYPE (datum));
+      if (binfo)
 	return build_component_ref (build_scoped_ref (datum, basetype),
-				    field, NULL_TREE, 1);
+				    field, binfo, 1);
     }
   return error_mark_node;
 }
@@ -3006,12 +3006,14 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    ;
 	  else if (tt0 == void_type_node)
 	    {
-	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE)
+	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
+		  && tree_int_cst_lt (TYPE_SIZE (type0), TYPE_SIZE (type1)))
 		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
 	    }
 	  else if (tt1 == void_type_node)
 	    {
-	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE)
+	      if (pedantic && TREE_CODE (tt0) == FUNCTION_TYPE
+		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
 		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
 	    }
 	  else if ((TYPE_SIZE (tt0) != 0) != (TYPE_SIZE (tt1) != 0))
@@ -3457,13 +3459,6 @@ pointer_int_sum (resultcode, ptrop, intop)
 
   register tree result_type = TREE_TYPE (ptrop);
 
-  /* Needed to make OOPS V2R3 work.  */
-  intop = folded;
-  if (TREE_CODE (intop) == INTEGER_CST
-      && TREE_INT_CST_LOW (intop) == 0
-      && TREE_INT_CST_HIGH (intop) == 0)
-    return ptrop;
-
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
@@ -3490,6 +3485,13 @@ pointer_int_sum (resultcode, ptrop, intop)
     }
   else
     size_exp = size_in_bytes (TREE_TYPE (result_type));
+
+  /* Needed to make OOPS V2R3 work.  */
+  intop = folded;
+  if (TREE_CODE (intop) == INTEGER_CST
+      && TREE_INT_CST_LOW (intop) == 0
+      && TREE_INT_CST_HIGH (intop) == 0)
+    return ptrop;
 
   /* If what we are about to multiply by the size of the elements
      contains a constant term, apply distributive law
@@ -3882,7 +3884,6 @@ build_unary_op (code, xarg, noconvert)
 	  case FIX_CEIL_EXPR:
 	    {
 	      tree incremented, modify, value;
-	      pedantic_lvalue_warning (CONVERT_EXPR);
 	      arg = stabilize_reference (arg);
 	      if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
 		value = arg;
@@ -4158,17 +4159,18 @@ unary_complex_lvalue (code, arg)
   if (TREE_CODE (arg) == COMPOUND_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 1), 0);
-      pedantic_lvalue_warning (COMPOUND_EXPR);
       return build (COMPOUND_EXPR, TREE_TYPE (real_result),
 		    TREE_OPERAND (arg, 0), real_result);
     }
 
   /* Handle (a ? b : c) used as an "lvalue".  */
   if (TREE_CODE (arg) == COND_EXPR)
-    {
-      pedantic_lvalue_warning (COND_EXPR);
-      return rationalize_conditional_expr (code, arg);
-    }
+    return rationalize_conditional_expr (code, arg);
+
+  if (TREE_CODE (arg) == MODIFY_EXPR)
+    return unary_complex_lvalue
+      (code, build (COMPOUND_EXPR, TREE_TYPE (TREE_OPERAND (arg, 0)),
+		    arg, TREE_OPERAND (arg, 0)));
 
   if (code != ADDR_EXPR)
     return 0;
@@ -4294,19 +4296,6 @@ unary_complex_lvalue (code, arg)
 
   /* Don't let anything else be handled specially.  */
   return 0;
-}
-
-/* If pedantic, warn about improper lvalue.   CODE is either COND_EXPR
-   COMPOUND_EXPR, or CONVERT_EXPR (for casts).  */
-
-static void
-pedantic_lvalue_warning (code)
-     enum tree_code code;
-{
-  if (pedantic)
-    pedwarn ("ANSI C++ forbids use of %s expressions as lvalues",
-	     code == COND_EXPR ? "conditional"
-	     : code == COMPOUND_EXPR ? "compound" : "cast");
 }
 
 /* Mark EXP saying that we need to be able to take the
@@ -4783,6 +4772,24 @@ build_compound_expr (list)
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest),
 		break_out_cleanups (TREE_VALUE (list)), rest);
+}
+
+tree build_static_cast (type, expr)
+   tree type, expr;
+{
+  return build_c_cast (type, expr);
+}
+
+tree build_reinterpret_cast (type, expr)
+   tree type, expr;
+{
+  return build_c_cast (type, expr);
+}
+
+tree build_const_cast (type, expr)
+   tree type, expr;
+{
+  return build_c_cast (type, expr);
 }
 
 /* Build an expression representing a cast to type TYPE of expression EXPR.  */
@@ -5294,7 +5301,6 @@ build_modify_expr (lhs, modifycode, rhs)
 
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
-      pedantic_lvalue_warning (COMPOUND_EXPR);
       newrhs = build_modify_expr (TREE_OPERAND (lhs, 1),
 				  modifycode, rhs);
       if (TREE_CODE (newrhs) == ERROR_MARK)
@@ -5302,9 +5308,14 @@ build_modify_expr (lhs, modifycode, rhs)
       return build (COMPOUND_EXPR, lhstype,
 		    TREE_OPERAND (lhs, 0), newrhs);
 
+    case MODIFY_EXPR:
+      newrhs = build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs);
+      if (TREE_CODE (newrhs) == ERROR_MARK)
+	return error_mark_node;
+      return build (COMPOUND_EXPR, lhstype, lhs, newrhs);
+
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
-      pedantic_lvalue_warning (COND_EXPR);
       rhs = save_expr (rhs);
       {
 	/* Produce (a ? (b = rhs) : (c = rhs))
@@ -5450,7 +5461,7 @@ build_modify_expr (lhs, modifycode, rhs)
 					     convert (lhstype, newrhs)));
 	if (TREE_CODE (result) == ERROR_MARK)
 	  return result;
-	return convert (TREE_TYPE (lhs), result);
+	return convert_force (TREE_TYPE (lhs), result);
       }
     }
 
@@ -6559,9 +6570,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
      return here before checking if RHS is of complete type.  */
      
   if (codel == REFERENCE_TYPE)
-    return convert_to_reference ((exp ? exp : error_mark_node),
-		 		 type, rhs, fndecl, parmnum, errtype,
-				 0, flags);
+    return convert_to_reference (type, rhs, CONV_IMPLICIT, flags,
+				 exp ? exp : error_mark_node);
 
   rhs = require_complete_type (rhs);
   if (rhs == error_mark_node)

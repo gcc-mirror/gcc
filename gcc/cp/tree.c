@@ -94,9 +94,6 @@ lvalue_p (ref)
 	  return (lvalue_p (TREE_OPERAND (ref, 1))
 		  && lvalue_p (TREE_OPERAND (ref, 2)));
 
-	case MODIFY_EXPR:
-	  return 1;
-
 	case COMPOUND_EXPR:
 	  return lvalue_p (TREE_OPERAND (ref, 1));
 	}
