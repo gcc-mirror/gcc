@@ -1058,6 +1058,8 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
       /* Don't combine with an insn that sets a register to itself if it has
 	 a REG_EQUAL note.  This may be part of a REG_NO_CONFLICT sequence.  */
       || (rtx_equal_p (src, dest) && find_reg_note (insn, REG_EQUAL, NULL_RTX))
+      /* Can't merge an ASM_OPERANDS.  */
+      || GET_CODE (src) == ASM_OPERANDS
       /* Can't merge a function call.  */
       || GET_CODE (src) == CALL
       /* Don't eliminate a function call argument.  */
