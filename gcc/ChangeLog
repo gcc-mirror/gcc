@@ -1,3 +1,10 @@
+Wed Aug 27 15:49:12 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/elf.h (LINK_SPEC): Conditionalize on USE_GNULIBC_1.
+	* config.guess: Recognize alpha-linux-gnulibc1.
+	* configure.in (alpha-*-linux-gnulibc1): New target.
+	(alpha-*-linux-gnu*): Don't build crtbegin/end.
+
 Wed Aug 27 11:52:58 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k.md (iorsi3_internal): Readd ! TARGET_5200 check lost in
