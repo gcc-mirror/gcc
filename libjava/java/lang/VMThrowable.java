@@ -1,5 +1,5 @@
 /* java.lang.VMThrowable -- VM support methods for Throwable.
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -96,8 +96,7 @@ final class VMThrowable
     if (trace != null)
       {
 	NameFinder nameFinder = new NameFinder();
-	result = nameFinder.lookup(t, trace.stackTraceAddrs(), 
-				   trace.length());
+	result = nameFinder.lookup(t, trace);
 	nameFinder.close();
       }
     else
