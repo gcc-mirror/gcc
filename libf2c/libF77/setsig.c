@@ -16,10 +16,6 @@
 #define VOID void
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern void sig_die(char*, int);
 #define Int int
 
@@ -65,10 +61,6 @@ sig_die("Trace trap", 1);
 }
 #endif
 
-
-#ifdef __cplusplus
-	}
-#endif
 
  void
 f_setsig()

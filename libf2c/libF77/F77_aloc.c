@@ -7,13 +7,7 @@
 static integer memfailure = 3;
 
 #include <stdlib.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern void G77_exit_0 (integer*);
-#ifdef __cplusplus
-	}
-#endif
 
  char *
 F77_aloc(integer Len, char *whence)

@@ -53,9 +53,6 @@ typedef union
 	longint ili;
 #endif
 } Uint;
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern int (*f__doed)(struct syl*, char*, ftnlen),(*f__doned)(struct syl*);
 extern int (*f__dorevert)(void);
 extern void fmt_bg(void);
@@ -65,9 +62,6 @@ extern int w_ed(struct syl*, char*, ftnlen),w_ned(struct syl*);
 extern int wrt_E(ufloat*, int, int, int, ftnlen);
 extern int wrt_F(ufloat*, int, int, ftnlen);
 extern int wrt_L(Uint*, int, ftnlen);
-#ifdef __cplusplus
-	}
-#endif
 extern flag f__cblank,f__cplus,f__workdone, f__nonl;
 extern char *f__fmtbuf;
 extern int f__fmtlen;

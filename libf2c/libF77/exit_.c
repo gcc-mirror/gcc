@@ -13,9 +13,6 @@
 #undef min
 #undef max
 #include <stdlib.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern void f_exit(void);
 
  void
@@ -26,6 +23,3 @@ G77_exit_0 (integer *rc)
 #endif
 	exit(*rc);
 	}
-#ifdef __cplusplus
-}
-#endif

@@ -14,11 +14,7 @@
 #if defined (MSDOS) && !defined (GO32)
 #include "io.h"
 #else
-#ifdef __cplusplus
-extern "C" int unlink(const char*);
-#else
 extern int unlink(const char*);
-#endif
 #endif
 #endif
 

@@ -11,10 +11,6 @@
 int f__xargc;
 char **f__xargv;
 
-#ifdef __cplusplus
-	}
-#endif
-
  void
 f_setarg(int argc, char **argv)
 {

@@ -1,3 +1,11 @@
+Fri May 31 21:54:37 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/F77_aloc.c, libF77/exit_.c, libF77/main.c,
+	libF77/s_paus.c, libF77/s_stop.c, libF77/setarg.c,
+	libF77/setsig.c, libF77/sig_die.c, libF77/signal1.h0,
+	libI77/close.c, libI77/dolio.c, libI77/fio.h, libI77/fmt.h,
+	libI77/lio.h: Delete checks on __cplusplus.
+
 Fri May 31 21:50:01 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/*: Delete KR_headers cruft.

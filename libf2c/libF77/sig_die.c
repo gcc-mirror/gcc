@@ -8,9 +8,6 @@
 #endif
 
 #include <stdlib.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
  extern void f_exit(void);
 
 void sig_die(register char *s, int kill)
@@ -36,6 +33,3 @@ void sig_die(register char *s, int kill)
 		exit(1);
 		}
 	}
-#ifdef __cplusplus
-}
-#endif

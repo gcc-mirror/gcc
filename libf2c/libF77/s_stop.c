@@ -5,9 +5,6 @@
 #undef min
 #undef max
 #include <stdlib.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 void f_exit(void);
 
 int s_stop(char *s, ftnlen n)
@@ -32,6 +29,3 @@ exit(0);
 
 return 0; /* NOT REACHED */
 }
-#ifdef __cplusplus
-}
-#endif
