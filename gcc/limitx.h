@@ -5,5 +5,6 @@
 #define _LIMITS_H_
 
 #ifndef _LIBC_LIMITS_H_
-#include "syslimits.h"
+/* Use <...> so that we find syslimits.h only in system include dirs.  */
+#include <syslimits.h>
 #endif
