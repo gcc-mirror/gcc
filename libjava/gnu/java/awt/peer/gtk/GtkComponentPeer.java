@@ -353,9 +353,13 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void requestFocus ()
   {
-    gtkWidgetRequestFocus ();
-    postFocusEvent (FocusEvent.FOCUS_GAINED, false);
+    gtkRequestFocus();
   }
+
+  // Called from requestFocus, we don't want to make requestFocus itself
+  // native since several JNI header generators have difficulties with
+  // overridden and/or miranda methods. (Bug in gcjh < 3.5.)
+  native private void gtkRequestFocus ();
 
   public void reshape (int x, int y, int width, int height) 
   {
