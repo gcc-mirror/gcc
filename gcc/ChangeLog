@@ -1,3 +1,8 @@
+Tue Jun 30 23:16:39 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize): Show that the jump chain is not
+	valid when not optimizing.
+
 Tue Jun 30 16:01:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.def (CONSTANT_P_RTX): New.
