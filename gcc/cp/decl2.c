@@ -378,10 +378,6 @@ int flag_weak = 1;
 
 int flag_use_cxa_atexit;
 
-/* Nonzero to not ignore namespace std. */
-
-int flag_honor_std = 1;
-
 /* 0 if we should not perform inlining.
    1 if we should expand functions calls inline at the tree level.  
    2 if we should consider *all* functions to be inline 
@@ -448,7 +444,6 @@ lang_f_options[] =
   {"for-scope", &flag_new_for_scope, 2},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"handle-exceptions", &flag_exceptions, 1},
-  {"honor-std", &flag_honor_std, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
@@ -473,6 +468,7 @@ static const char * const unsupported_options[] = {
   "cond-mismatch",
   "enum-int-equiv",
   "guiding-decls",
+  "honor-std",
   "huge-objects",
   "labels-ok",
   "new-abi",
@@ -4403,8 +4399,7 @@ set_decl_namespace (decl, scope, friendp)
      int friendp;
 {
   tree old;
-  if (scope == fake_std_node)
-    scope = global_namespace;
+  
   /* Get rid of namespace aliases. */
   scope = ORIGINAL_NAMESPACE (scope);
   
@@ -4913,13 +4908,7 @@ validate_nonmember_using_decl (decl, scope, name)
      tree *scope;
      tree *name;
 {
-  if (TREE_CODE (decl) == SCOPE_REF
-      && TREE_OPERAND (decl, 0) == fake_std_node)
-    {
-      *scope = global_namespace;
-      *name = TREE_OPERAND (decl, 1);
-    }
-  else if (TREE_CODE (decl) == SCOPE_REF)
+  if (TREE_CODE (decl) == SCOPE_REF)
     {
       *scope = TREE_OPERAND (decl, 0);
       *name = TREE_OPERAND (decl, 1);
@@ -5156,8 +5145,6 @@ void
 do_using_directive (namespace)
      tree namespace;
 {
-  if (namespace == fake_std_node)
-    return;
   if (building_stmt_tree ())
     add_stmt (build_stmt (USING_STMT, namespace));
   
@@ -5260,8 +5247,6 @@ handle_class_head (aggr, scope, id)
   
       if (current == NULL_TREE)
         current = current_namespace;
-      if (scope == fake_std_node)
-        scope = global_namespace;
       if (scope == NULL_TREE)
         scope = global_namespace;
 

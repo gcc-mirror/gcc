@@ -620,22 +620,6 @@ representation, the global namespace is no different from any other
 namespace.  Thus, in what follows, we describe namespaces generally,
 rather than the global namespace in particular.
 
-The @code{::std} namespace, however, @emph{is} special when
-@code{flag_honor_std} is not set.  When @code{flag_honor_std} is set,
-the @code{std} namespace is just like any other namespace.  When
-@code{flag_honor_std} is not set, however, the @code{::std} namespace is
-treated as a synonym for the global namespace, thereby allowing users to
-write code that will work with compilers that put the standard library
-in the @code{::std} namespace.  The @code{std} namespace is represented
-by the variable @code{std_node}.  Although @code{std_node} is a
-@code{NAMESPACE_DECL}, it does not have all the fields required of a
-real namespace, and the macros and functions described here do not work,
-in general.  It is safest simply to ignore @code{std_node} should you
-encounter it while examining the internal representation.  In
-particular, you will encounter @code{std_node} while looking at the
-members of the global namespace.  Just skip it without attempting to
-examine its members.
-
 The following macros and functions can be used on a @code{NAMESPACE_DECL}:
 
 @ftable @code

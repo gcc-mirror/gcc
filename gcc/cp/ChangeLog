@@ -1,3 +1,33 @@
+2001-08-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Kill -fhonor-std.
+	* NEWS: Document.
+	* cp-tree.h (flag_honor_std): Remove.
+	(CPTI_FAKE_STD): Remove.
+	(std_node): Remove comment about it being NULL.
+	(fake_std_node): Remove.
+	* decl.c (in_fake_std): Remove.
+	(walk_namespaces_r): Remove fake_std_node check.
+	(push_namespace): Remove in_fake_std code.
+	(pop_namespace): Likewise.
+	(lookup_name_real): Remove fake_std_node check.
+	(init_decl_processing): Always create std_node. Always add
+	std:: things there.
+	(builtin_function): Always put non '_' fns in std.
+	* decl2.c (flag_honor_std): Remove.
+	(lang_f_options): Remove honor-std.
+	(unsupported_options): Add honor-std.
+	(set_decl_namespace): Remove fake_std_node check.
+	(validate_nonmember_using_decl): Likewise.
+	(do_using_directive): Likewise.
+	(handle_class_head): Likewise.
+	* dump.c (cp_dump_tree): Likewise.
+	* except.c (init_exception_processing): Adjust.
+	* init.c (build_member_call): Remove fake_std_node check.
+	(build_offset_ref): Likewise.
+	* lang-options.h: Remove -fhonor-std, -fno-honor-std.
+	* rtti.c (init_rtti_processing): Adjust.
+
 2001-07-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* tree.c (cp_tree_equal): WITH_CLEANUP_EXPR node to use its second

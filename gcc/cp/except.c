@@ -62,16 +62,13 @@ init_exception_processing ()
 {
   tree tmp;
 
-  if (flag_honor_std)
-    push_namespace (std_identifier);
-
   /* void std::terminate (); */
+  push_namespace (std_identifier);
   tmp = build_function_type (void_type_node, void_list_node);
   terminate_node = build_cp_library_fn_ptr ("terminate", tmp);
   TREE_THIS_VOLATILE (terminate_node) = 1;
   TREE_NOTHROW (terminate_node) = 1;
-  if (flag_honor_std)
-    pop_namespace ();
+  pop_namespace ();
 
   /* void __cxa_call_unexpected(void *); */
   tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);

@@ -206,11 +206,6 @@ tree cp_global_trees[CPTI_MAX];
 
 static tree global_type_node;
 
-/* If non-zero, this is the number of times we have entered the `std'
-   namespace when we are treating that namespace as an alias for the
-   global namespace.  */
-static int in_fake_std;
-
 /* Expect only namespace names now. */
 static int only_namespace_names;
 
@@ -1794,12 +1789,6 @@ walk_namespaces_r (namespace, f, data)
       if (TREE_CODE (current) != NAMESPACE_DECL
 	  || DECL_NAMESPACE_ALIAS (current))
 	continue;
-      if (!DECL_LANG_SPECIFIC (current))
-	{
-	  /* Hmm. std. */
-	  my_friendly_assert (current == fake_std_node, 393);
-	  continue;
-	}
 
       /* We found a namespace.  */
       result |= walk_namespaces_r (current, f, data);
@@ -2279,13 +2268,6 @@ push_namespace (name)
         need_new = 0;
       implicit_use = 1;
     }
-  else if (current_namespace == global_namespace
-	   && !flag_honor_std
-	   && name == std_identifier)
-    {
-      in_fake_std++;
-      return;
-    }
   else
     {
       /* Check whether this is an extended namespace definition. */
@@ -2331,12 +2313,7 @@ push_namespace (name)
 void
 pop_namespace ()
 {
-  if (current_namespace == global_namespace)
-    {
-      my_friendly_assert (in_fake_std > 0, 980421);
-      in_fake_std--;
-      return;
-    }
+  my_friendly_assert (current_namespace != global_namespace, 20010801);
   current_namespace = CP_DECL_CONTEXT (current_namespace);
   /* The binding level is not popped, as it might be re-opened later.  */
   suspend_binding_level ();
@@ -5892,10 +5869,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       if (looking_for_template)
         flags |= LOOKUP_TEMPLATES_EXPECTED;
 
-      /* std:: becomes :: for now.  */
-      if (got_scope && got_scope == fake_std_node)
-	got_scope = void_type_node;
-
       if (got_scope)
 	type = got_scope;
       else if (got_object != error_mark_node)
@@ -6377,20 +6350,9 @@ init_decl_processing ()
   declare_namespace_level ();
 
   /* Create the `std' namespace.  */
-  if (flag_honor_std)
-    {
-      push_namespace (std_identifier);
-      std_node = current_namespace;
-      pop_namespace ();
-      fake_std_node = error_mark_node;
-    }
-  else
-    {
-      fake_std_node = build_decl (NAMESPACE_DECL,
-				  std_identifier,
-				  void_type_node);
-      pushdecl (fake_std_node);
-    }
+  push_namespace (std_identifier);
+  std_node = current_namespace;
+  pop_namespace ();
 
   c_common_nodes_and_builtins ();
 
@@ -6492,12 +6454,10 @@ init_decl_processing ()
     tree bad_alloc_type_node, newtype, deltype;
     tree ptr_ftype_sizetype;
 
-    if (flag_honor_std)
-      push_namespace (std_identifier);
+    push_namespace (std_identifier);
     bad_alloc_type_node = xref_tag
       (class_type_node, get_identifier ("bad_alloc"), 1);
-    if (flag_honor_std)
-      pop_namespace ();
+    pop_namespace ();
     ptr_ftype_sizetype 
       = build_function_type (ptr_type_node,
 			     tree_cons (NULL_TREE,
@@ -6666,13 +6626,13 @@ builtin_function (name, type, code, class, libname)
 
   /* All builtins that don't begin with an `_' should go in the `std'
      namespace.  */
-  if (flag_honor_std && name[0] != '_')
+  if (name[0] != '_')
     {
       push_namespace (std_identifier);
       DECL_CONTEXT (decl) = std_node;
     }
   pushdecl (decl);
-  if (flag_honor_std && name[0] != '_')
+  if (name[0] != '_')
     pop_namespace ();
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,

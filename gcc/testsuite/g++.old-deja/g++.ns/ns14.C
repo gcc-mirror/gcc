@@ -1,4 +1,4 @@
-//Special g++ Options: -fhonor-std
+
 namespace std{ 
   int f(){
     return 0;
