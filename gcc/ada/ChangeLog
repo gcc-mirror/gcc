@@ -1,3 +1,7 @@
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
+	* s-tpinop.ads: Add 2001 to copyright notice. Fix header format.
+
 2001-10-25  Pascal Obry <obry@gnat.com>
 
 	* g-awk.ads: Move all pragma inlines next to the routine 
