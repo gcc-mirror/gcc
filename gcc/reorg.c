@@ -2767,8 +2767,7 @@ mark_target_live_regs (target, res)
   if (b != -1)
     {
       regset regs_live = basic_block_live_at_start[b];
-      int offset, j;
-      REGSET_ELT_TYPE bit;
+      int j;
       int regno;
       rtx start_insn, stop_insn;
 
