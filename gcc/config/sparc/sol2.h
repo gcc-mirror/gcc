@@ -98,6 +98,10 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)		\
   ((flag_pic || GLOBAL) ? DW_EH_PE_aligned : DW_EH_PE_absptr)
 #endif
+
+/* The Solaris linker doesn't understand constructor priorities.  */
+#undef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY 0
 
 /* ??? This does not work in SunOS 4.x, so it is not enabled in sparc.h.
    Instead, it is enabled here, because it does work under Solaris.  */

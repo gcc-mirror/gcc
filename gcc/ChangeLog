@@ -1,3 +1,8 @@
+2003-12-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sol2.h: Set SUPPORTS_INIT_PRIORITY to 0.
+	* config/sparc/sol2-gld.h: Set SUPPORTS_INIT_PRIORITY to 1.
+
 2003-12-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb_base_register_rtx_p): Don't allow virtual registers
