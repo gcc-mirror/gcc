@@ -1,3 +1,7 @@
+Mon Dec  2 19:42:52 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_int_movcc):  Avoid overflow.
+
 2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (dosize): Output r7/er7 instead of sp.
