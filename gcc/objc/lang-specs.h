@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
     		   -lang-objc %{gen-decls} \
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
      %{!S:as %a %Y\
@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
     		   -lang-objc %{gen-decls} \
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y\
@@ -85,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
     		   -lang-objc %{gen-decls} \
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n",
     "%{!S:as %a %Y\
