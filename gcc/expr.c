@@ -8906,7 +8906,7 @@ is_aligning_offset (offset, exp)
 		      == TREE_TYPE (exp)))));
 }
 
-/* Return the tree node if a ARG corresponds to a string constant or zero
+/* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return non-zero, set *PTR_OFFSET to the offset
    in bytes within the string that ARG is accessing.  The type of the
    offset will be `sizetype'.  */

@@ -1,3 +1,11 @@
+2002-05-02  Kazu Hirata  <kazu@hxi.com>
+
+	* combine.c: Fix comment formatting.
+	* expr.c: Likewise.
+	* genautomata.c: Likewise.
+	* stmt.c: Likewise.
+	* tree.h: Likewise.
+
 2002-05-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: State GNAT version requirements.
