@@ -1331,12 +1331,7 @@ extern char *current_function_name;
   case MULT:						\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
       return COSTS_N_INSNS (6);				\
-    else if (GET_CODE (XEXP (X, 1)) != CONST_INT	\
-	     || exact_log2 (INTVAL (XEXP (X, 1))) < 0)	\
-      return COSTS_N_INSNS (21);			\
-    else if (const48_operand (XEXP (X, 1), VOIDmode))	\
-      break;						\
-    return COSTS_N_INSNS (2);				\
+    return COSTS_N_INSNS (23);				\
   case ASHIFT:						\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& INTVAL (XEXP (X, 1)) <= 3)			\
