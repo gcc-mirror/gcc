@@ -66,11 +66,11 @@ __extension__							\
 ({ TYPE __va_temp;						\
    ((__builtin_classify_type (__va_temp) >= 12)			\
     ? ((pvar) += __va_rounded_size (TYPE *),			\
-       **(TYPE **) ((pvar) - __va_rounded_size (TYPE *)))	\
+       **(TYPE **) (void *) ((pvar) - __va_rounded_size (TYPE *))) \
     : __va_rounded_size (TYPE) == 8				\
     ? ({ union {char __d[sizeof (TYPE)]; int __i[2];} __u;	\
-	 __u.__i[0] = ((int *) (pvar))[0];			\
-	 __u.__i[1] = ((int *) (pvar))[1];			\
+	 __u.__i[0] = ((int *) (void *) (pvar))[0];		\
+	 __u.__i[1] = ((int *) (void *) (pvar))[1];		\
 	 (pvar) += 8;						\
 	 *(TYPE *) (void *) __u.__d; })				\
     : ((pvar) += __va_rounded_size (TYPE),			\
