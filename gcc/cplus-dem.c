@@ -2907,8 +2907,7 @@ demangle_function_name (work, mangled, declp, scan)
      string *declp;
      const char *scan;
 {
-  int i;
-  int len;
+  size_t i;
   string type;
   const char *tem;
 
@@ -2955,7 +2954,7 @@ demangle_function_name (work, mangled, declp, scan)
 	{
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
-	      len = declp->p - declp->b - 10;
+	      int len = declp->p - declp->b - 10;
 	      if (strlen (optable[i].in) == len
 		  && memcmp (optable[i].in, declp->b + 10, len) == 0)
 		{

@@ -5834,7 +5834,7 @@ finish_struct (t, fieldlist, attributes)
 	}
       else if (TREE_TYPE (x) != error_mark_node)
 	{
-	  int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
+	  unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
 			   : TYPE_ALIGN (TREE_TYPE (x)));
 	  /* Non-bit-fields are aligned for their type, except packed
 	     fields which require only BITS_PER_UNIT alignment.  */

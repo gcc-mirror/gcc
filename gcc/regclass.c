@@ -328,7 +328,7 @@ init_reg_sets ()
 static void
 init_reg_sets_1 ()
 {
-  register int i, j;
+  register unsigned int i, j;
 
   /* This macro allows the fixed or call-used registers
      to depend on target flags.  */
