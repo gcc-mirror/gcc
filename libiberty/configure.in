@@ -217,15 +217,15 @@ checkfuncs="$checkfuncs getsysinfo table sysctl"
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
 if test "x" = "y"; then
-  AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bsearch bzero calloc clock)
-  AC_CHECK_FUNCS(getcwd getpagesize index insque mkstemps memchr memcmp memcpy)
-  AC_CHECK_FUNCS(memmove mempcpy memset putenv random rename rindex sigsetmask)
-  AC_CHECK_FUNCS(strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strrchr strstr)
-  AC_CHECK_FUNCS(strtod strtol strtoul tmpnam vasprintf vfprintf vprintf)
-  AC_CHECK_FUNCS(vsprintf waitpid getrusage on_exit psignal strerror strsignal)
-  AC_CHECK_FUNCS(sysconf times sbrk gettimeofday ffs snprintf vsnprintf)
-  AC_CHECK_FUNCS(pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl)
-  AC_CHECK_FUNCS(realpath canonicalize_file_name)
+  AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bsearch bzero calloc clock \
+  getcwd getpagesize index insque mkstemps memchr memcmp memcpy \
+  memmove mempcpy memset putenv random rename rindex sigsetmask \
+  strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strrchr strstr \
+  strtod strtol strtoul tmpnam vasprintf vfprintf vprintf \
+  vsprintf waitpid getrusage on_exit psignal strerror strsignal \
+  sysconf times sbrk gettimeofday ffs snprintf vsnprintf \
+  pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl \
+  realpath canonicalize_file_name)
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
   AC_DEFINE(HAVE_SYS_SIGLIST, 1, [Define if you have the sys_siglist variable.])
