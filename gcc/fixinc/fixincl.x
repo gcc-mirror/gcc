@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 141 fixup descriptions.
+ * This file contains 143 fixup descriptions.
  *
  * See README for more information.
  *
@@ -2099,6 +2099,41 @@ static tTestDesc aHpux11_Uint32_CTests[] = {
 static const char* apzHpux11_Uint32_CPatch[] = {
     "format",
     "#define UINT32_C(__c) __CONCAT__(__c,ul)",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Hpux11_Vsnprintf fix
+ */
+tSCC zHpux11_VsnprintfName[] =
+     "hpux11_vsnprintf";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_VsnprintfList[] =
+  "|stdio.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzHpux11_VsnprintfMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_VsnprintfSelect0[] =
+       "extern int vsnprintf\\(char \\*, __size_t, const char \\*, __va__list\\);";
+
+#define    HPUX11_VSNPRINTF_TEST_CT  1
+static tTestDesc aHpux11_VsnprintfTests[] = {
+  { TT_EGREP,    zHpux11_VsnprintfSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Vsnprintf
+ */
+static const char* apzHpux11_VsnprintfPatch[] = {
+    "format",
+    "extern int vsnprintf(char *, __size_t, const char *, __va_list);",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4601,6 +4636,41 @@ static const char* apzTinfo_CplusplusPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Ultrix_Atexit_Param fix
+ */
+tSCC zUltrix_Atexit_ParamName[] =
+     "ultrix_atexit_param";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zUltrix_Atexit_ParamList[] =
+  "|stdlib.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzUltrix_Atexit_ParamMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zUltrix_Atexit_ParamSelect0[] =
+       "atexit\\(.*\\(\\)";
+
+#define    ULTRIX_ATEXIT_PARAM_TEST_CT  1
+static tTestDesc aUltrix_Atexit_ParamTests[] = {
+  { TT_EGREP,    zUltrix_Atexit_ParamSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Ultrix_Atexit_Param
+ */
+static const char* apzUltrix_Atexit_ParamPatch[] = {
+    "format",
+    "atexit( void (*__func)( void )",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Ultrix_Atof_Param fix
  */
 tSCC zUltrix_Atof_ParamName[] =
@@ -5507,9 +5577,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          148
+#define REGEX_COUNT          150
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            141
+#define FIX_COUNT            143
 
 /*
  *  Enumerate the fixes
@@ -5567,6 +5637,7 @@ typedef enum {
     HPUX11_CPP_POW_INLINE_FIXIDX,
     HPUX11_FABSF_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
+    HPUX11_VSNPRINTF_FIXIDX,
     HPUX8_BOGUS_INLINES_FIXIDX,
     HPUX_MAXINT_FIXIDX,
     HPUX_SYSTIME_FIXIDX,
@@ -5633,6 +5704,7 @@ typedef enum {
     SYSV68_STRING_FIXIDX,
     SYSZ_STDLIB_FOR_SUN_FIXIDX,
     TINFO_CPLUSPLUS_FIXIDX,
+    ULTRIX_ATEXIT_PARAM_FIXIDX,
     ULTRIX_ATOF_PARAM_FIXIDX,
     ULTRIX_CONST_FIXIDX,
     ULTRIX_CONST2_FIXIDX,
@@ -5918,6 +5990,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHpux11_Uint32_CMachs,
      HPUX11_UINT32_C_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_Uint32_CTests,   apzHpux11_Uint32_CPatch, 0 },
+
+  {  zHpux11_VsnprintfName,    zHpux11_VsnprintfList,
+     apzHpux11_VsnprintfMachs,
+     HPUX11_VSNPRINTF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux11_VsnprintfTests,   apzHpux11_VsnprintfPatch, 0 },
 
   {  zHpux8_Bogus_InlinesName,    zHpux8_Bogus_InlinesList,
      apzHpux8_Bogus_InlinesMachs,
@@ -6248,6 +6325,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzTinfo_CplusplusMachs,
      TINFO_CPLUSPLUS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aTinfo_CplusplusTests,   apzTinfo_CplusplusPatch, 0 },
+
+  {  zUltrix_Atexit_ParamName,    zUltrix_Atexit_ParamList,
+     apzUltrix_Atexit_ParamMachs,
+     ULTRIX_ATEXIT_PARAM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aUltrix_Atexit_ParamTests,   apzUltrix_Atexit_ParamPatch, 0 },
 
   {  zUltrix_Atof_ParamName,    zUltrix_Atof_ParamList,
      apzUltrix_Atof_ParamMachs,
