@@ -3383,9 +3383,8 @@ compute_frame_size (size, leaf_function)
     }
   else
     {
-      /* We subtract STARTING_FRAME_OFFSET, remember it's negative.
-         The stack bias (if any) is taken out to undo its effects.  */
-      apparent_fsize = (size - STARTING_FRAME_OFFSET + SPARC_STACK_BIAS + 7) & -8;
+      /* We subtract STARTING_FRAME_OFFSET, remember it's negative.  */
+      apparent_fsize = (size - STARTING_FRAME_OFFSET + 7) & -8;
       apparent_fsize += n_regs * 4;
       actual_fsize = apparent_fsize + ((outgoing_args_size + 7) & -8);
     }
