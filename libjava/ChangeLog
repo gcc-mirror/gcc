@@ -1,3 +1,8 @@
+2004-04-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/Properties.java
+	(load): Fix wrongly merged fix.
+
 2004-04-21  Mark Wielaard  <mark@klomp.org>
 
 	* native/jni/gtk-peer/gthread-jni.c (maybe_rethrow): Explicitly

@@ -194,8 +194,8 @@ label   = Name:\\u0020</pre>
           pos++;
 
         // If empty line or begins with a comment character, skip this line.
-        if (line.length() == 0
-	    || line.charAt(0) == '#' || line.charAt(0) == '!')
+        if ((line.length() - pos) == 0
+	    || line.charAt(pos) == '#' || line.charAt(pos) == '!')
           continue;
 
         // The characters up to the next Whitespace, ':', or '='
