@@ -343,10 +343,14 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
   enum reg_class t_class = NO_REGS;
   enum machine_mode t_mode = VOIDmode;
   enum insn_code t_icode = CODE_FOR_nothing;
-  enum reload_type secondary_type
-    = in_p ? RELOAD_FOR_INPUT_ADDRESS : RELOAD_FOR_OUTPUT_ADDRESS;
+  enum reload_type secondary_type;
   int i;
   int s_reload, t_reload = -1;
+
+  if (type == RELOAD_FOR_INPUT_ADDRESS || type == RELOAD_FOR_OUTPUT_ADDRESS)
+    secondary_type = type;
+  else
+    secondary_type = in_p ? RELOAD_FOR_INPUT_ADDRESS : RELOAD_FOR_OUTPUT_ADDRESS;
 
   *picode = CODE_FOR_nothing;
 
