@@ -1,7 +1,7 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -685,8 +685,8 @@ shared_unmarked_p (binfo, data)
 /* Set the access associated with NODE to ACCESS.  */
 
 #define SET_BINFO_ACCESS(NODE, ACCESS)			\
-  ((TREE_LANG_FLAG_1 (NODE) = (ACCESS & 2) != 0),	\
-   (TREE_LANG_FLAG_6 (NODE) = (ACCESS & 1) != 0))
+  ((TREE_LANG_FLAG_1 (NODE) = ((ACCESS) & 2) != 0),	\
+   (TREE_LANG_FLAG_6 (NODE) = ((ACCESS) & 1) != 0))
 
 /* Called from access_in_type via dfs_walk.  Calculate the access to
    DATA (which is really a DECL) in BINFO.  */
