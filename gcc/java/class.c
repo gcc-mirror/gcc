@@ -422,7 +422,7 @@ add_method (this_class, access_flags, name, method_sig)
      tree method_sig;
 {
   tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
-  tree function_type, method_type, fndecl;
+  tree function_type, fndecl;
   unsigned char *sig = (unsigned char*)IDENTIFIER_POINTER (method_sig);
   push_obstacks (&permanent_obstack, &permanent_obstack);
   if (sig[0] != '(')
@@ -1172,9 +1172,6 @@ append_gpp_mangled_type (obstack, type)
      struct obstack *obstack;
      tree type;
 {
-  char buf[8];
-  int len;
-  char *ptr;
   switch (TREE_CODE (type))
     {
       char code;
