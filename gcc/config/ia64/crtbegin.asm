@@ -62,6 +62,7 @@ __dso_handle:
 
 .section .init_array, "a"
 	data8 @fptr(__do_jv_register_classes)
+	data8 @fptr(__do_global_ctors_aux)
 
 #else /* !HAVE_INITFINI_ARRAY */
 /*
