@@ -1404,6 +1404,11 @@ fold_convert (t, arg1)
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
 	{
+	  /* If we would build a constant wider than GCC supports,
+	     leave the conversion unfolded.  */
+	  if (TYPE_PRECISION (type) > 2 * HOST_BITS_PER_WIDE_INT)
+	    return t;
+
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */
 	  t = build_int_2 (TREE_INT_CST_LOW (arg1),
