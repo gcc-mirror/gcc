@@ -21,20 +21,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
+#include <i386/i386elf.h>
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES  "-D__rtems__ -Asystem=rtems \
     -D__ELF__ -D__i386__ -D__USE_INIT_FINI__"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{msoft-float:-D_SOFT_FLOAT}"
-
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC   "crtend.o%s crtn.o%s"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif

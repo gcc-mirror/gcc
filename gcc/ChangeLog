@@ -1,3 +1,14 @@
+2002-04-12	Eric Norum <eric.norum@usask.ca>
+
+	* config/rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
+	config/c4x/rtems.h, config/h8300/rtems.h, config/i386/rtems.h,
+	config/i386/rtemself.h, config/i960/rtems.h, config/m68k/rtems.h,
+	config/m68k/rtemself.h, config/mips/rtems.h, config/mips/rtems64.h,
+	config/pa/rtems.h, config/rs6000/rtems.h, config/sh/rtems.h,
+	config/sh/rtemself.h, config/sparc/rtems.h, config/sparc/rtemself.h,
+	config/v850/rtems.h (*-rtems*): Cleanup pass to move common
+	definitions to config/rtems.h and make the targets more similar.
+
 Fri Apr 12 08:06:54 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_assigment): Remove duplicate conversions #ifdef
