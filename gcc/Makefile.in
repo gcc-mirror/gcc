@@ -218,6 +218,10 @@ RANLIB_TEST_FOR_TARGET = \
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
+# Where to find some libiberty headers.
+HASHTAB_H   = $(srcdir)/../include/hashtab.h
+OBSTACK_H   = $(srcdir)/../include/obstack.h
+
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
 CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include
 
@@ -680,7 +684,7 @@ OBJS = diagnostic.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
  predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o \
- sibcall.o
+ sibcall.o conflict.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1387,7 +1391,7 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(COLLECT2_OBJS) $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
-	$(srcdir)/../include/obstack.h $(DEMANGLE_H) collect2.h version.h
+	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
@@ -1548,7 +1552,7 @@ dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    toplev.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h $(EXPR_H) output.h hard-reg-set.h $(REGS_H) defaults.h real.h \
-   insn-config.h $(srcdir)/../include/obstack.h xcoffout.h c-pragma.h \
+   insn-config.h $(OBSTACK_H) xcoffout.h c-pragma.h \
    sdbout.h toplev.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
@@ -1572,7 +1576,7 @@ jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
-   output.h function.h cselib.h $(GGC_H) $(srcdir)/../include/obstack.h
+   output.h function.h cselib.h ggc.h $(OBSTACK_H)
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h function.h $(GGC_H)
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
@@ -1587,6 +1591,8 @@ lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h insn-attr.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) $(BASIC_BLOCK_H) \
    output.h insn-config.h
+conflict.o : conflict.c $(CONFIG_H) $(OBSTACK_H) $(HASHTAB_H) \
+   rtl.h basic-block.h
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
    $(GGC_H)
@@ -2056,7 +2062,6 @@ LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
 		prefix.o version.o mbchar.o @extra_cpp_objs@
 
 LIBCPP_DEPS = cpplib.h cpphash.h intl.h system.h
-HASHTAB_H   = $(srcdir)/../include/hashtab.h
 
 # All the other archives built/used by this makefile are for targets.  This
 # one is strictly for the host.
@@ -2287,7 +2292,7 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
 	   scan-decls.o scan.o libcpp.a $(HOST_LIBS) ../libiberty/libiberty.a
 
-fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
+fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
 	xsys-protos.h $(build_xm_file) system.h cpplib.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 

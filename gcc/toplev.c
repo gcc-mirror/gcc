@@ -1426,6 +1426,8 @@ int reorder_blocks_time;
 int rename_registers_time;
 int shorten_branch_time;
 int stack_reg_time;
+int to_ssa_time;
+int from_ssa_time;
 int final_time;
 int symout_time;
 int dump_time;
@@ -1510,9 +1512,9 @@ print_time (str, total)
      int total;
 {
   fprintf (stderr,
-	   "time in %s: %d.%06d (%.0f%%)\n",
+	   "time in %s: %d.%06d (%d%%)\n",
 	   str, total / 1000000, total % 1000000,
-	   all_time == 0 ? 0.00 : (double) total / (double) all_time * 100.0);
+	   all_time == 0 ? 0 : (100 * total) / all_time);
 }
 
 /* This is the default decl_printable_name function.  */
@@ -1890,6 +1892,26 @@ close_dump_file (index, func, insns)
      });
 }
 
+/* Routine to empty a dump file.  */
+static void
+clean_dump_file (suffix)
+  const char *suffix;
+{
+  char * const dumpname = concat (dump_base_name, suffix, NULL);
+
+  rtl_dump_file = fopen (dumpname, "w");
+
+  if (rtl_dump_file == NULL)
+    pfatal_with_name (dumpname);       
+
+  free (dumpname);
+
+  fclose (rtl_dump_file);
+  rtl_dump_file = NULL;
+  
+  return;
+}
+
 /* Do any final processing required for the declarations in VEC, of
    which there are LEN.  We write out inline functions and variables
    that have been deferred until this point, but which are required.
@@ -2176,6 +2198,8 @@ compile_file (name)
   rename_registers_time = 0;
   shorten_branch_time = 0;
   stack_reg_time = 0;
+  to_ssa_time = 0;
+  from_ssa_time = 0;
   final_time = 0;
   symout_time = 0;
   dump_time = 0;
@@ -2559,6 +2583,8 @@ compile_file (name)
       print_time ("integration", integration_time);
       print_time ("jump", jump_time);
       print_time ("cse", cse_time);
+      print_time ("to ssa", to_ssa_time);
+      print_time ("from ssa", from_ssa_time);
       print_time ("gcse", gcse_time);
       print_time ("loop", loop_time);
       print_time ("cse2", cse2_time);
@@ -3032,11 +3058,11 @@ rest_of_compilation (decl)
   if (flag_ssa)
     {
       open_dump_file (DFI_ssa, decl);
-      convert_to_ssa ();
+      TIMEVAR (to_ssa_time, convert_to_ssa ());
       close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
 
       open_dump_file (DFI_ussa, decl);
-      convert_from_ssa ();
+      TIMEVAR (from_ssa_time, convert_from_ssa ());
       /* New registers have been created.  Rescan their usage.  */
       reg_scan (insns, max_reg_num (), 1);
       close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
