@@ -144,6 +144,10 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   friend class gnu::gcj::runtime::StackTrace;
 
   friend void _Jv_PrepareClass(jclass);
+
+#ifdef JV_MARKOBJ_DECL
+  friend JV_MARKOBJ_DECL;
+#endif
 };
 
 class _Jv_InterpClass : public java::lang::Class
