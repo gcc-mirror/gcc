@@ -28,7 +28,6 @@ extern int ix86_frame_pointer_required PARAMS ((void));
 extern void ix86_setup_frame_addresses PARAMS ((void));
 
 extern void ix86_asm_file_end PARAMS ((FILE *));
-extern void load_pic_register PARAMS ((void));
 extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));
 extern void ix86_expand_epilogue PARAMS ((int));
@@ -96,6 +95,7 @@ extern void print_operand_address PARAMS ((FILE*, rtx));
 extern void split_di PARAMS ((rtx[], int, rtx[], rtx[]));
 extern void split_ti PARAMS ((rtx[], int, rtx[], rtx[]));
 
+extern const char *output_set_got PARAMS ((rtx));
 extern const char *output_387_binary_op PARAMS ((rtx, rtx*));
 extern const char *output_fix_trunc PARAMS ((rtx, rtx*));
 extern const char *output_fp_compare PARAMS ((rtx, rtx*, int, int));

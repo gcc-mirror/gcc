@@ -1,3 +1,16 @@
+2002-05-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (get_pic_label_name): New.
+	(load_pic_register): Remove.
+	(output_set_got): New.
+	(ix86_expand_prologue): Use gen_set_got; mark insn REG_MAYBE_DEAD.
+	* config/i386/i386.md (UNSPEC_SET_GOT): New.
+	(UNSPECV_PROLOGUE_SET_GOT, UNSPECV_PROLOGUE_GET_PC): Remove.
+	(prologue_set_got, prologue_get_pc): Remove.
+	(set_got, set_got_nopic, set_got_deep, set_got_nodeep): New.
+	(builtin_setjmp_receiver): Use gen_set_got.
+	* config/i386/i386-protos.h: Update.
+
 Thu May 23 09:22:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (hash_expr): Do not use alias set for hashing.

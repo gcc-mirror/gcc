@@ -647,6 +647,7 @@ static char internal_label_prefix[16];
 static int internal_label_prefix_len;
 
 static int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
+static const char *get_pic_label_name PARAMS ((void));
 static void output_pic_addr_const PARAMS ((FILE *, rtx, int));
 static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 				       int, int, FILE *));
@@ -3795,6 +3796,14 @@ ix86_setup_frame_addresses ()
 
 static char pic_label_name[32];
 
+static const char *
+get_pic_label_name ()
+{
+  if (! pic_label_name[0])
+    ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", 0);
+  return pic_label_name;
+}
+
 /* This function generates code for -fpic that loads %ebx with
    the return address of the caller and then returns.  */
 
@@ -3847,33 +3856,45 @@ ix86_asm_file_end (file)
   output_asm_insn ("ret", xops);
 }
 
-void
-load_pic_register ()
+/* Emit code for the SET_GOT patterns.  */
+
+const char *
+output_set_got (dest)
+     rtx dest;
 {
-  rtx gotsym, pclab;
+  rtx xops[3];
 
-  if (TARGET_64BIT)
-    abort ();
+  xops[0] = dest;
+  xops[1] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
-  gotsym = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-
-  if (TARGET_DEEP_BRANCH_PREDICTION)
+  if (! TARGET_DEEP_BRANCH_PREDICTION || !flag_pic)
     {
-      if (! pic_label_name[0])
-	ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", 0);
-      pclab = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, pic_label_name));
+      xops[2] = gen_rtx_LABEL_REF (Pmode, gen_label_rtx ());
+
+      if (!flag_pic)
+	output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
+      else
+	output_asm_insn ("call\t%a2", xops);
+
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
+
+      if (flag_pic)
+	output_asm_insn ("pop{l}\t%0", xops);
     }
   else
     {
-      pclab = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+      xops[2] = gen_rtx_SYMBOL_REF (Pmode, get_pic_label_name ());
+      xops[2] = gen_rtx_MEM (QImode, xops[2]);
+      output_asm_insn ("call\t%X2", xops);
     }
 
-  emit_insn (gen_prologue_get_pc (pic_offset_table_rtx, pclab));
+  if (!flag_pic || TARGET_DEEP_BRANCH_PREDICTION)
+    output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
+  else
+    output_asm_insn ("add{l}\t{%1+[.-%X2], %0|%0, %a1+(.-%X2)}", xops);
 
-  if (! TARGET_DEEP_BRANCH_PREDICTION)
-    emit_insn (gen_popsi1 (pic_offset_table_rtx));
-
-  emit_insn (gen_prologue_set_got (pic_offset_table_rtx, gotsym, pclab));
+  return "";
 }
 
 /* Generate an "push" pattern for input ARG.  */
@@ -4197,7 +4218,15 @@ ix86_expand_prologue ()
 #endif
 
   if (pic_reg_used)
-    load_pic_register ();
+    {
+      insn = emit_insn (gen_set_got (pic_offset_table_rtx));
+
+      /* ??? The current_function_uses_pic_offset_table flag is woefully
+	 inaccurate, as it isn't updated as code gets deleted.  Allow the
+	 thing to be removed.  A better solution would be to actually get
+	 proper liveness for ebx, as then we won't save/restore it too.  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
+    }
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  However, if -fpic, the above call will have
