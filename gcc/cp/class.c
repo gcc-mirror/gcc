@@ -3658,17 +3658,6 @@ check_bitfield_decl (field)
 	  DECL_INITIAL (field) = NULL;
 	  cp_error_at ("zero width for bit-field `%D'", field);
 	}
-      else if (0 < compare_tree_int (w,
-				     TYPE_PRECISION
-				     (long_long_unsigned_type_node)))
-	{
-	  /* The backend will dump if you try to use something too
-	     big; avoid that.  */
-	  DECL_INITIAL (field) = NULL;
-	  sorry ("bit-fields larger than %d bits",
-		 TYPE_PRECISION (long_long_unsigned_type_node));
-	  cp_error_at ("  in declaration of `%D'", field);
-	}
       else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
 	       && TREE_CODE (type) != ENUMERAL_TYPE
 	       && TREE_CODE (type) != BOOLEAN_TYPE)
@@ -4168,8 +4157,10 @@ dfs_search_base_offsets (binfo, data)
    non-static data member of the type indicated by RLI.  BINFO is the
    binfo corresponding to the base subobject, or, if this is a
    non-static data-member, a dummy BINFO for the type of the data
-   member.  V maps offsets to types already located at those offsets.
-   This function determines the position of the DECL.  */
+   member.  BINFO may be NULL if checks to see if the field overlaps
+   an existing field with the same type are not required.  V maps
+   offsets to types already located at those offsets.  This function
+   determines the position of the DECL.  */
 
 static void
 layout_nonempty_base_or_field (rli, decl, binfo, v)
@@ -4192,7 +4183,8 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
 	 BINFO_OFFSET.  */
       offset = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (decl)),
 			       BITS_PER_UNIT));
-      propagate_binfo_offsets (binfo, offset);
+      if (binfo)
+	propagate_binfo_offsets (binfo, offset);
  
       /* We have to check to see whether or not there is already
 	 something of the same type at the offset we're about to use.
@@ -4209,10 +4201,10 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
 	 empty class, have non-zero size, any overlap can happen only
 	 with a direct or indirect base-class -- it can't happen with
 	 a data member.  */
-      if (flag_new_abi && dfs_walk (binfo,
-				    dfs_search_base_offsets,
-				    dfs_skip_vbases,
-				    v))
+      if (binfo && flag_new_abi && dfs_walk (binfo,
+					     dfs_search_base_offsets,
+					     dfs_skip_vbases,
+					     v))
 	{
 	  /* Undo the propogate_binfo_offsets call.  */
 	  offset = convert (sizetype,
@@ -4930,6 +4922,8 @@ layout_class_type (t, empty_p, has_virtual_p,
        field = TREE_CHAIN (field))
     {
       tree binfo;
+      tree type;
+      tree padding;
 
       /* We still pass things that aren't non-static data members to
 	 the back-end, in case it wants to do something with them.  */
@@ -4939,11 +4933,64 @@ layout_class_type (t, empty_p, has_virtual_p,
 	  continue;
 	}
 
+      type = TREE_TYPE (field);
+
+      /* If this field is a bit-field whose width is greater than its
+	 type, then there are some special rules for allocating it
+	 under the new ABI.  Under the old ABI, there were no special
+	 rules, but the back-end can't handle bitfields longer than a
+	 `long long', so we use the same mechanism.  */
+      if (DECL_C_BIT_FIELD (field)
+	  && ((flag_new_abi 
+	       && INT_CST_LT (TYPE_SIZE (type), DECL_SIZE (field)))
+	      || (!flag_new_abi
+		  && compare_tree_int (DECL_SIZE (field),
+				       TYPE_PRECISION
+				       (long_long_unsigned_type_node)) > 0)))
+	{
+	  integer_type_kind itk;
+	  tree integer_type;
+
+	  /* We must allocate the bits as if suitably aligned for the
+	     longest integer type that fits in this many bits.  type
+	     of the field.  Then, we are supposed to use the left over
+	     bits as additional padding.  */
+	  for (itk = itk_char; itk != itk_none; ++itk)
+	    if (INT_CST_LT (DECL_SIZE (field), 
+			    TYPE_SIZE (integer_types[itk])))
+	      break;
+
+	  /* ITK now indicates a type that is too large for the
+	     field.  We have to back up by one to find the largest
+	     type that fits.  */
+	  integer_type = integer_types[itk - 1];
+	  padding = size_diffop (DECL_SIZE (field), 
+				 TYPE_SIZE (integer_type));
+	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
+	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
+	}
+      else
+	padding = NULL_TREE;
+
       /* Create a dummy BINFO corresponding to this field.  */
-      binfo = make_binfo (size_zero_node, TREE_TYPE (field),
-			  NULL_TREE, NULL_TREE);
+      binfo = make_binfo (size_zero_node, type, NULL_TREE, NULL_TREE);
       unshare_base_binfos (binfo);
       layout_nonempty_base_or_field (rli, field, binfo, v);
+
+      /* If we needed additional padding after this field, add it
+	 now.  */
+      if (padding)
+	{
+	  tree padding_field;
+
+	  padding_field = build_decl (FIELD_DECL, 
+				      NULL_TREE,
+				      char_type_node); 
+	  DECL_BIT_FIELD (padding_field) = 1;
+	  DECL_SIZE (padding_field) = padding;
+	  DECL_ALIGN (padding_field) = 1;
+	  layout_nonempty_base_or_field (rli, padding_field, NULL_TREE, v);
+	}
     }
 
   /* Clean up.  */
