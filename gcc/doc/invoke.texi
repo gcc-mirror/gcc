@@ -3842,8 +3842,7 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-fweb}, @option{-frename-registers}
-and @option{-fgcse-after-reload} options.
+@option{-fweb} and @option{-fgcse-after-reload} options.
 
 @item -O0
 @opindex O0

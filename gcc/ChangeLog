@@ -1,3 +1,8 @@
+2004-07-12  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Optimize Options): Document -frename-registers
+	not being enabled by default at -O3.
+
 2004-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <PLUS_EXPR>: Canonicalize X + -C as X - C for
