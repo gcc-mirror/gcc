@@ -223,7 +223,7 @@ void
 clipper_movstr (operands)
      rtx *operands;
 {
-  rtx dst,src,cnt,tmp,top,bottom,xops[3];
+  rtx dst,src,cnt,tmp,top,bottom=NULL_RTX,xops[3];
   int align;
   int fixed;
 

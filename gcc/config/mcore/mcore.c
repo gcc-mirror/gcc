@@ -2708,7 +2708,10 @@ emit_new_cond_insn (insn, cond)
       src = SET_SRC (pat);
     }
   else
-    dst = JUMP_LABEL (insn);
+    {
+      dst = JUMP_LABEL (insn);
+      src = NULL_RTX;
+    }
 
   switch (num)
     {
