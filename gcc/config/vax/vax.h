@@ -956,13 +956,15 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 	   && GET_CODE (XVECEXP (EXP, 0, 0)) == SET)		\
     {								\
       if (GET_CODE (SET_SRC (XVECEXP (EXP, 0, 0))) == CALL)	\
-	CC_STATUS_INIT;						\
+	CC_STATUS_INIT;					        \
       else if (GET_CODE (SET_DEST (XVECEXP (EXP, 0, 0))) != PC) \
 	{ cc_status.flags = 0;					\
 	  cc_status.value1 = SET_DEST (XVECEXP (EXP, 0, 0));	\
-	  cc_status.value2 = SET_SRC (XVECEXP (EXP, 0, 0)); } } \
-  /* PARALLELs whose first element sets the PC are aob, sob insns.	\
-     They do change the cc's.  So drop through and forget the cc's.  */ \
+	  cc_status.value2 = SET_SRC (XVECEXP (EXP, 0, 0)); }   \
+      else							\
+	/* PARALLELs whose first element sets the PC are aob,   \
+	   sob insns.  They do change the cc's.  */		\
+	CC_STATUS_INIT; }					\
   else CC_STATUS_INIT;						\
   if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	\
       && cc_status.value2					\
