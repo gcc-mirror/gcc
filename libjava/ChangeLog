@@ -1,3 +1,7 @@
+2003-05-06  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc: Reverted previous patch.
+
 2003-05-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/DataOutputStream.java
