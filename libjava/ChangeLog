@@ -1,5 +1,11 @@
 2002-03-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/natFileDescriptorEcos.cc (init): Don't use
+	GetStdHandle.
+	* java/io/natFileDescriptorPosix.cc (valid): Don't call stat if FD
+	is negative.
+	(init): Don't use GetStdHandle.
+
 	* include/config.h.in: Rebuilt.
 	* configure: Rebuilt.
 	* Makefile.in: Rebuilt.
