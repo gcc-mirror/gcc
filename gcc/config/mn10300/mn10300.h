@@ -374,29 +374,6 @@ enum reg_class {
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 5
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.
-
-   We allow frame pointers to be eliminated when not having one will
-   not interfere with debugging.
-
-     * If this is a leaf function, then we can keep the stack pointer
-     constant throughout the function, and therefore gdb can easily
-     find the base of the current frame.
-
-     * If this function never allocates stack space for outgoing
-     args (ie calls functions with either no args, or args only
-     in registers), then the stack pointer will be constant and
-     gdb can easily find the base of the current frame.
-
-     We'd really like to define ACCUMULATE_OUTGOING_ARGS and eliminate
-     all frame pointer, but currently we can't.
-
-     We probably also want a -m option to eliminate frame pointer, even
-     if the resulting executable can not be debugged.  */
-
 #define ELIMINABLE_REGS				\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
@@ -407,8 +384,9 @@ enum reg_class {
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   OFFSET = initial_offset (FROM, TO)
 
-#define FRAME_POINTER_REQUIRED \
-  !(leaf_function_p () || current_function_outgoing_args_size == 0)
+/* We can debug without frame pointers on the mn10300, so eliminate
+   them whenever possible.  */
+#define FRAME_POINTER_REQUIRED 0
 #define CAN_DEBUG_WITHOUT_FP
 
 /* A guess for the MN10300.  */
@@ -426,6 +404,8 @@ enum reg_class {
 /* We use d0/d1 for passing parameters, so allocate 8 bytes of space
    for a register flushback area.  */
 #define REG_PARM_STACK_SPACE(DECL) 8
+#define OUTGOING_REG_PARM_STACK_SPACE
+#define ACCUMULATE_OUTGOING_ARGS
 
 /* So we can allocate space for return pointers once for the function
    instead of around every call.  */
@@ -500,8 +480,9 @@ extern struct rtx_def *function_arg ();
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.   */
-   
-#define FUNCTION_VALUE(VALTYPE, FUNC) gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  gen_rtx (REG, TYPE_MODE (VALTYPE), POINTER_TYPE_P (VALTYPE) ? 4 : 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -510,7 +491,7 @@ extern struct rtx_def *function_arg ();
 
 /* 1 if N is a possible register number for a function value.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N) == 4)
 
 /* Return values > 8 bytes in length in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
@@ -1014,6 +995,7 @@ extern void expand_prologue ();
 extern void expand_epilogue ();
 extern void notice_update_cc ();
 extern int call_address_operand ();
+extern int impossible_plus_operand ();
 extern enum reg_class secondary_reload_class ();
 extern int initial_offset ();
 extern char *output_tst ();
