@@ -4,13 +4,6 @@
 	(_Jv_CallAnyMethodA): Handle FFI_TYPE_POINTER arguments.  Move
 	constructor test.
 
-2002-02-17  Anthony Green  <green@redhat.com>
-
-	* configure.host (FILE): New macro for specifing File
-	implementation.
-	* configure: Rebuilt.	
-	* configure.in: Use FILE.  Define HAVE_TIME for newlib targets.
-
 2002-02-27  Adam Megacz <adam@xwt.org>
 
 	* java/net/natInetAddress.cc: Changed USE_WINSOCK to WIN32, added
