@@ -18,5 +18,6 @@ details.  */
 #include <winsock.h>
 
 extern void _Jv_platform_initialize (void);
+extern void _Jv_platform_gettimeofday (struct timeval *);
 
 #endif /* __JV_WIN32_H__ */
