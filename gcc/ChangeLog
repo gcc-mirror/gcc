@@ -56,6 +56,8 @@
 
 2003-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_decl): Don't set DECL_SIZE_UNIT if already set.
+
 	* expr.c (store_constructor): Set RTX_UNCHANGING_P if readonly_field_p
 	before clearing.
 

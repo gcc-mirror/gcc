@@ -419,7 +419,7 @@ layout_decl (decl, known_align)
       DECL_SIZE (decl) = TYPE_SIZE (type);
       DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
     }
-  else
+  else if (DECL_SIZE_UNIT (decl) == 0)
     DECL_SIZE_UNIT (decl)
       = convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
 				       bitsize_unit_node));
