@@ -21,12 +21,16 @@ Boston, MA 02111-1307, USA.  */
 /* Macros to implement the 64 bit ABI.  This file is meant to be included
    after mips.h.  */
 
-#undef ABI_64BIT
-#define ABI_64BIT 1
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT
 
 /* For Irix 6, -mips3 implies TARGET_LONG64.  */
 #undef TARGET_LONG64
-#define TARGET_LONG64		(target_flags & MASK_64BIT)
+#define TARGET_LONG64		(mips_abi == ABI_64)
+
+#undef SUBTARGET_TARGET_OPTIONS
+#define SUBTARGET_TARGET_OPTIONS\
+  { "abi=", &mips_abi_string	},
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -35,6 +39,13 @@ Boston, MA 02111-1307, USA.  */
   -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
 
 /* We must make -mips3 do what -mlong64 used to do.  */
+/* ??? If no mipsX option given, but a mabi=X option is, then should set
+   _MIPS_ISA based on the mabi=X option.  */
+/* ??? If no mabi=X option give, but a mipsX option is, then should set
+   _MIPS_SIM based on the mipsX option.  */
+/* ??? Same for _MIPS_SZINT.  */
+/* ??? Same for _MIPS_SZPTR.  */
+/* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
@@ -51,24 +62,24 @@ Boston, MA 02111-1307, USA.  */
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
 %{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4}}}} \
-%{mips1: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mips2: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mips3: -D_ABI64=3 -D_MIPS_SIM=_ABI64}	\
-%{mips4: -D_ABI64=3 -D_MIPS_SIM=_ABI64}	\
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_ABI64=3 -D_MIPS_SIM=_ABI64}}}}	\
+%{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
+%{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
+%{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64}}}	\
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{mips1: -D_MIPS_SZLONG=32}%{mips2: -D_MIPS_SZLONG=32}  \
-%{!mips1:%{!mips2: -D_MIPS_SZLONG=64}}			\
-%{mips1: -D_MIPS_SZPTR=32}%{mips2: -D_MIPS_SZPTR=32}	\
-%{mips3: -D_MIPS_SZPTR=64}%{mips4: -D_MIPS_SZPTR=64}	\
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_SZPTR=64}}}}	\
+%{mabi=32: -D_MIPS_SZLONG=32}%{mabi=n32: -D_MIPS_SZLONG=32} \
+%{!mabi=32: %{!mabi=n32: -D_MIPS_SZLONG=64}} \
+%{mabi=32: -D_MIPS_SZPTR=32}%{mabi=n32: -D_MIPS_SZPTR=32} \
+%{!mabi=32: %{!mabi=n32: -D_MIPS_SZPTR=64}} \
 %{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
-%{mips1: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips2: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{!mips1:%{!mips2: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-%{mips3:-U__mips -D__mips=3 -D__mips64} \
-%{!mips1:%{!mips2:-U__mips -D__mips=4 -D__mips64}} \
-%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
+%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{!mabi=32:%{!mabi=n32: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
+%{mips3: -U__mips -D__mips=3} \
+%{!mips1:%{!mips2: -U__mips -D__mips=4}} \
+%{mgp32: -U__mips64}%{mgp64: -D__mips64} \
+%{mabi=32: -U__mips64}%{mabi=n32: -D__mips64} \
+%{!mabi=32: %{!mabi=n32: -D__mips64}} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
 %{m4650:%{!msoft-float:-D__mips_single_float}} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
@@ -78,36 +89,50 @@ Boston, MA 02111-1307, USA.  */
 #define EMPTY_FIELD_BOUNDARY	32
 
 #undef STACK_BOUNDARY
-#define STACK_BOUNDARY 128
+#define STACK_BOUNDARY (mips_abi == ABI_32 ? 64 : 128)
 
 #undef MIPS_STACK_ALIGN
-#define MIPS_STACK_ALIGN(LOC) (((LOC)+15) & ~15)
+#define MIPS_STACK_ALIGN(LOC) \
+  (mips_abi == ABI_32 ? ((LOC)+7) & ~7 : ((LOC)+15) & ~15)
 
 #undef GP_ARG_LAST
-#define GP_ARG_LAST  (mips_isa < 3 ? GP_REG_FIRST + 7 : GP_REG_FIRST + 11)
+#define GP_ARG_LAST  (mips_abi == ABI_32 ? GP_REG_FIRST + 7 : GP_REG_FIRST + 11)
 #undef FP_ARG_LAST
-#define FP_ARG_LAST  (mips_isa < 3 ? FP_REG_FIRST + 15 : FP_REG_FIRST + 19)
+#define FP_ARG_LAST  (mips_abi == ABI_32 ? FP_REG_FIRST + 15 : FP_REG_FIRST + 19)
 
-/* fp20-23 are now caller saved.  */
 #undef SUBTARGET_CONDITIONAL_REGISTER_USAGE
 #define SUBTARGET_CONDITIONAL_REGISTER_USAGE \
 {									\
-  if (mips_isa >= 3)							\
+  /* fp20-23 are now caller saved.  */					\
+  if (mips_abi == ABI_64)						\
     {									\
       int regno;							\
       for (regno = FP_REG_FIRST + 20; regno < FP_REG_FIRST + 24; regno++) \
 	call_used_regs[regno] = 1;					\
     }									\
+  /* odd registers from fp21 to fp31 are now caller saved.  */		\
+  if (mips_abi == ABI_N32)						\
+    {									\
+      int regno;							\
+      for (regno = FP_REG_FIRST + 21; regno <= FP_REG_FIRST + 31; regno+=2) \
+	call_used_regs[regno] = 1;					\
+    }									\
 }
 
 #undef MAX_ARGS_IN_REGISTERS
-#define MAX_ARGS_IN_REGISTERS	(mips_isa < 3 ? 4 : 8)
+#define MAX_ARGS_IN_REGISTERS	(mips_abi == ABI_32 ? 4 : 8)
 
 #undef REG_PARM_STACK_SPACE
-#define REG_PARM_STACK_SPARC(FNDECL) 					 \
-  (mips_abi < 3								 \
+#if 0
+/* ??? This is necessary in order for the ABI_32 support to work.  However,
+   expr.c (emit_push_insn) has no support for a REG_PARM_STACK_SPACE
+   definition that returns zero.  That would have to be fixed before this
+   can be enabled.  */
+#define REG_PARM_STACK_SPACE(FNDECL) 					 \
+  (mips_abi == ABI_32							 \
    ? (MAX_ARGS_IN_REGISTERS*UNITS_PER_WORD) - FIRST_PARM_OFFSET (FNDECL) \
    : 0)
+#endif
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)				\
   (! BYTES_BIG_ENDIAN							\
@@ -116,7 +141,7 @@ Boston, MA 02111-1307, USA.  */
        ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
 	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))\
        : (GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY			\
-	  && (mips_isa < 3 || GET_MODE_CLASS (MODE) == MODE_INT)))	\
+	  && (mips_abi == ABI_32 || GET_MODE_CLASS (MODE) == MODE_INT)))\
       ? downward : upward))
 
 extern struct rtx_def *type_dependent_reg ();
@@ -125,7 +150,8 @@ extern struct rtx_def *type_dependent_reg ();
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE)	\
-  (mips_isa < 3 ? TYPE_MODE (TYPE) == BLKmode : int_size_in_bytes (TYPE) > 16)
+  (mips_abi == ABI_32							\
+   ? TYPE_MODE (TYPE) == BLKmode : int_size_in_bytes (TYPE) > 16)
 
 extern struct rtx_def *mips_function_value ();
 #undef FUNCTION_VALUE
@@ -136,7 +162,7 @@ extern struct rtx_def *mips_function_value ();
    For stdarg, we do not need to save the current argument, because it
    is a real argument.  */
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if (mips_isa >= 3							\
+{ if (mips_abi != ABI_32						\
       && ((CUM).arg_words						\
 	  < (MAX_ARGS_IN_REGISTERS - ! current_function_varargs)))	\
     {									\
@@ -163,12 +189,13 @@ extern struct rtx_def *mips_function_value ();
     }									\
 }
 
+/* ??? Should disable for mips_abi == ABI32.  */
 #define STRICT_ARGUMENT_NAMING
 
 /* ??? Unimplemented stuff follows.  */
 
 /* ??? Add support for 16 byte/128 bit long doubles here when
-   mips_isa >= 3.  */
+   mips_abi != ABI32.  */
 
 /* ??? Make main return zero if user did not specify return value.  */
 
