@@ -1,4 +1,6 @@
-Fri Jun 19 22:37:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
+Fri Jun 19 22:40:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* regmove.c (copy_src_to_dest): Add decl for loop_depth.
 
 	* svr4.h (ASM_GENERATE_INTERNAL_LABEL): Cast arg to unsigned.
 	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA1): Likewise.
