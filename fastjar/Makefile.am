@@ -103,7 +103,7 @@ stamp-geninsrc: fastjar.1 grepjar.1 fastjar.info
 	-cp -p $(top_builddir)/fastjar.info $(srcdir)/fastjar.info
 	touch $@
 
-CLEANFILES = stamp-geninsrc
+CLEANFILES = stamp-geninsrc fastjar.info
 MAINTAINERCLEANFILES = $(srcdir)/fastjar.1 \
                        $(srcdir)/grepjar.1 \
                        $(srcdir)/fastjar.info
