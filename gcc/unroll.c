@@ -2397,12 +2397,13 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	    {
 	      /* If the initial value of the biv is itself (i.e. it is too
 		 complicated for strength_reduce to compute), or is a hard
-		 register, then we must create a new pseudo reg to hold the
-		 initial value of the biv.  */
+		 register, or it isn't invariant, then we must create a new
+		 pseudo reg to hold the initial value of the biv.  */
 
 	      if (GET_CODE (bl->initial_value) == REG
 		  && (REGNO (bl->initial_value) == bl->regno
-		      || REGNO (bl->initial_value) < FIRST_PSEUDO_REGISTER))
+		      || REGNO (bl->initial_value) < FIRST_PSEUDO_REGISTER
+		      || ! invariant_p (bl->initial_value)))
 		{
 		  rtx tem = gen_reg_rtx (bl->biv->mode);
 		  
