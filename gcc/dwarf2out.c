@@ -42,6 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "dwarf2.h"
 
 /* We cannot use <assert.h> in GCC source, since that would include
+#include "dyn-string.h"
    GCC's assert.h, which may not be compatible with the host compiler.  */
 #undef assert
 #ifdef NDEBUG
@@ -2250,7 +2251,7 @@ static tree dwarf_last_decl;
 
 /* Forward declarations for functions defined in this file.  */
 
-static void addr_const_to_string	PROTO((char *, rtx));
+static void addr_const_to_string	PROTO((dyn_string_t, rtx));
 static char *addr_to_string		PROTO((rtx));
 static int is_pseudo_reg		PROTO((rtx));
 static tree type_main_variant		PROTO((tree));
@@ -2509,9 +2510,9 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #define ASM_NAME_TO_STRING(STR, NAME) \
   do {									      \
       if ((NAME)[0] == '*')						      \
-	strcpy (STR, NAME+1);						      \
+	dyn_string_append (STR, NAME + 1);				      \
       else								      \
-	strcpy (STR, NAME);                                                   \
+	dyn_string_append (STR, NAME);                                        \
   }                                                                           \
   while (0)
 #endif
@@ -2524,50 +2525,44 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 static void
 addr_const_to_string (str, x)
-     char *str;
+     dyn_string_t str;
      rtx x;
 {
   char buf1[256];
-  char buf2[256];
 
 restart:
-  str[0] = '\0';
   switch (GET_CODE (x))
     {
     case PC:
       if (flag_pic)
-	strcat (str, ",");
+	dyn_string_append (str, ",");
       else
 	abort ();
       break;
 
     case SYMBOL_REF:
-      ASM_NAME_TO_STRING (buf1, XSTR (x, 0));
-      strcat (str, buf1);
+      ASM_NAME_TO_STRING (str, XSTR (x, 0));
       break;
 
     case LABEL_REF:
       ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
+      ASM_NAME_TO_STRING (str, buf1);
       break;
 
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (x));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
+      ASM_NAME_TO_STRING (str, buf1);
       break;
 
     case CONST_INT:
       sprintf (buf1, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
-      strcat (str, buf1);
+      dyn_string_append (str, buf1);
       break;
 
     case CONST:
       /* This used to output parentheses around the expression, but that does 
          not work on the 386 (either ATT or BSD assembler).  */
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
+      addr_const_to_string (str, XEXP (x, 0));
       break;
 
     case CONST_DOUBLE:
@@ -2582,7 +2577,7 @@ restart:
 	  else
 	    sprintf (buf1, HOST_WIDE_INT_PRINT_DEC,
 		     CONST_DOUBLE_LOW (x));
-	  strcat (str, buf1);
+	  dyn_string_append (str, buf1);
 	}
       else
 	/* We can't handle floating point constants; PRINT_OPERAND must
@@ -2594,23 +2589,19 @@ restart:
       /* Some assemblers need integer constants to appear last (eg masm).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
+	  addr_const_to_string (str, XEXP (x, 1));
 	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    strcat (str, "+");
+	    dyn_string_append (str, "+");
 
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
+	  addr_const_to_string (str, XEXP (x, 0));
 	}
       else
 	{
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
+	  addr_const_to_string (str, XEXP (x, 0));
 	  if (INTVAL (XEXP (x, 1)) >= 0)
-	    strcat (str, "+");
+	    dyn_string_append (str, "+");
 
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
+	  addr_const_to_string (str, XEXP (x, 1));
 	}
       break;
 
@@ -2621,28 +2612,22 @@ restart:
       if (GET_CODE (x) != MINUS)
 	goto restart;
 
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      strcat (str, "-");
+      addr_const_to_string (str, XEXP (x, 0));
+      dyn_string_append (str, "-");
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) < 0)
 	{
-	  strcat (str, ASM_OPEN_PAREN);
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	  strcat (str, ASM_CLOSE_PAREN);
+	  dyn_string_append (str, ASM_OPEN_PAREN);
+	  addr_const_to_string (str, XEXP (x, 1));
+	  dyn_string_append (str, ASM_CLOSE_PAREN);
 	}
       else
-	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	}
+	addr_const_to_string (str, XEXP (x, 1));
       break;
 
     case ZERO_EXTEND:
     case SIGN_EXTEND:
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
+      addr_const_to_string (str, XEXP (x, 0));
       break;
 
     default:
@@ -2657,9 +2642,16 @@ static char *
 addr_to_string (x)
      rtx x;
 {
-  char buf[1024];
-  addr_const_to_string (buf, x);
-  return xstrdup (buf);
+  dyn_string_t ds = dyn_string_new (256);
+  char *s;
+
+  addr_const_to_string (ds, x);
+  
+  /* Return the dynamically allocated string, but free the
+     dyn_string_t itself.  */
+  s = ds->s;
+  free (ds);
+  return s;
 }
 
 /* Test if rtl node points to a pseudo register.  */
