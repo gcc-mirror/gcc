@@ -165,11 +165,12 @@ tree data_tree = NULL_TREE;
 tree pure_tree = NULL_TREE;
 tree noreturn_tree = NULL_TREE;
 tree interrupt_tree = NULL_TREE;
+tree naked_tree = NULL_TREE;
 
 /* Forward declarations */
 static int c4x_isr_reg_used_p PARAMS ((unsigned int));
 static int c4x_leaf_function_p PARAMS ((void));
-static int c4x_assembler_function_p PARAMS ((void));
+static int c4x_naked_function_p PARAMS ((void));
 static int c4x_immed_float_p PARAMS ((rtx));
 static int c4x_a_register PARAMS ((rtx));
 static int c4x_x_register PARAMS ((rtx));
@@ -785,13 +786,12 @@ c4x_leaf_function_p ()
 
 
 static int
-c4x_assembler_function_p ()
+c4x_naked_function_p ()
 {
   tree type;
 
   type = TREE_TYPE (current_function_decl);
-  return (lookup_attribute ("assembler", TYPE_ATTRIBUTES (type)) != NULL)
-    || (lookup_attribute ("naked", TYPE_ATTRIBUTES (type)) != NULL);
+  return lookup_attribute ("naked", TYPE_ATTRIBUTES (type)) != NULL;
 }
 
 
@@ -824,8 +824,8 @@ c4x_expand_prologue ()
      is used so it won't needlessly push the frame pointer.  */
   int dont_push_ar3;
 
-  /* For __assembler__ function don't build a prologue.  */
-  if (c4x_assembler_function_p ())
+  /* For __naked__ function don't build a prologue.  */
+  if (c4x_naked_function_p ())
     {
       return;
     }
@@ -1011,8 +1011,8 @@ c4x_expand_epilogue()
   rtx insn;
   int size = get_frame_size ();
   
-  /* For __assembler__ function build no epilogue.  */
-  if (c4x_assembler_function_p ())
+  /* For __naked__ function build no epilogue.  */
+  if (c4x_naked_function_p ())
     {
       insn = emit_jump_insn (gen_return_from_epilogue ());
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -1207,7 +1207,7 @@ c4x_null_epilogue_p ()
   int regno;
 
   if (reload_completed
-      && ! c4x_assembler_function_p ()
+      && ! c4x_naked_function_p ()
       && ! c4x_interrupt_function_p ()
       && ! current_function_calls_alloca
       && ! current_function_args_size
@@ -1217,10 +1217,10 @@ c4x_null_epilogue_p ()
       for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
 	if (regs_ever_live[regno] && ! call_used_regs[regno]
 	    && (regno != AR3_REGNO))
-	  return 0;
-      return 1;
+	  return 1;
+      return 0;
     }
-  return 0;
+  return 1;
 }
 
 
@@ -4608,6 +4608,7 @@ c4x_insert_attributes (decl, attributes)
       c4x_check_attribute ("const", pure_tree, decl, attributes);
       c4x_check_attribute ("noreturn", noreturn_tree, decl, attributes);
       c4x_check_attribute ("interrupt", interrupt_tree, decl, attributes);
+      c4x_check_attribute ("naked", naked_tree, decl, attributes);
       break;
 
     case VAR_DECL:
@@ -4624,9 +4625,7 @@ const struct attribute_spec c4x_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt",    0, 0, false, true,  true,  c4x_handle_fntype_attribute },
-  /* FIXME: code elsewhere in this file treats "naked" as a synonym of
-     "interrupt"; should it be accepted here?  */
-  { "assembler",    0, 0, false, true,  true,  c4x_handle_fntype_attribute },
+  { "naked",    0, 0, false, true,  true,  c4x_handle_fntype_attribute },
   { "leaf_pretend", 0, 0, false, true,  true,  c4x_handle_fntype_attribute },
   { NULL,           0, 0, false, false, false, NULL }
 };
