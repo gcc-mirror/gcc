@@ -1,3 +1,7 @@
+2001-03-23  Kevin B Hendricks  <khendricks@ivey.uwo.ca>
+
+	* configure.host: Enable interpreter for PPC.
+
 2001-04-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natSystem.cc (init_properties): Revert yesterday's changes
