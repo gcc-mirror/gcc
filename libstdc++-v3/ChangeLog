@@ -1,3 +1,8 @@
+2002-03-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/faq/index.html: Add OS X workaround.
+	* docs/html/17_intro/TODO: Update.
+
 2002-03-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc
@@ -44,7 +49,7 @@
 	(__cxa_call_unexpected): Pass it.
 	(PERSONALITY_FUNCTION): Likewise.  Use get_adjusted_ptr.
 
-Fri Mar 15 09:55:49 2002  Anthony Green  <green@redhat.com>
+2002-03-15  Anthony Green  <green@redhat.com>
 
 	* configure.in: Remove useless is_mingw32.
 	* configure: Rebuilt.
