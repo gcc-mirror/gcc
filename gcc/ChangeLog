@@ -1,3 +1,9 @@
+2003-02-10  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (try_to_integrate): Tidy stack_usage_map access.
+	(emit_library_call_value_1): Likewise.	Formatting.
+	(store_one_arg): Likewise.
+
 2003-02-09  Nick Clifton  <nickc@redhat.com>
             Aldy Hernandez  <aldyh@redhat.com>
 

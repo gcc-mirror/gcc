@@ -1834,9 +1834,11 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
 	     the stack before executing the inlined function if it
 	     makes any calls.  */
 
-	  for (i = reg_parm_stack_space - 1; i >= 0; i--)
-	    if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
-	      break;
+	  i = reg_parm_stack_space;
+	  if (i > highest_outgoing_arg_in_use)
+	    i = highest_outgoing_arg_in_use;
+	  while (--i >= 0 && stack_usage_map[i] == 0)
+	    ;
 
 	  if (stack_arg_under_construction || i >= 0)
 	    {
@@ -3727,12 +3729,12 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    {
 	      tree type = (*lang_hooks.types.type_for_mode) (mode, 0);
 
-	      slot = gen_rtx_MEM (mode,
-				  expand_expr (build1 (ADDR_EXPR,
-						       build_pointer_type
-						       (type),
-						       make_tree (type, val)),
-					       NULL_RTX, VOIDmode, 0));
+	      slot
+		= gen_rtx_MEM (mode,
+			       expand_expr (build1 (ADDR_EXPR,
+						    build_pointer_type (type),
+						    make_tree (type, val)),
+					    NULL_RTX, VOIDmode, 0));
 	    }
 
 	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
@@ -3923,14 +3925,15 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	      upper_bound = lower_bound + argvec[argnum].size.constant;
 #endif
 
-	      for (i = lower_bound; i < upper_bound; i++)
-		if (stack_usage_map[i]
-		    /* Don't store things in the fixed argument area at this
-		       point; it has already been saved.  */
-		    && i > reg_parm_stack_space)
-		  break;
+	      i = lower_bound;
+	      /* Don't worry about things in the fixed argument area;
+		 it has already been saved.  */
+	      if (i < reg_parm_stack_space)
+		i = reg_parm_stack_space;
+	      while (i < upper_bound && stack_usage_map[i] == 0)
+		i++;
 
-	      if (i != upper_bound)
+	      if (i < upper_bound)
 		{
 		  /* We need to make a save area.  See what mode we can make
 		     it.  */
@@ -4301,14 +4304,15 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	  upper_bound = lower_bound + arg->size.constant;
 #endif
 
-	  for (i = lower_bound; i < upper_bound; i++)
-	    if (stack_usage_map[i]
-		/* Don't store things in the fixed argument area at this point;
-		   it has already been saved.  */
-		&& i > reg_parm_stack_space)
-	      break;
+	  i = lower_bound;
+	  /* Don't worry about things in the fixed argument area;
+	     it has already been saved.  */
+	  if (i < reg_parm_stack_space)
+	    i = reg_parm_stack_space;
+	  while (i < upper_bound && stack_usage_map[i] == 0)
+	    i++;
 
-	  if (i != upper_bound)
+	  if (i < upper_bound)
 	    {
 	      /* We need to make a save area.  See what mode we can make it.  */
 	      enum machine_mode save_mode
