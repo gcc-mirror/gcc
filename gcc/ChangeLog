@@ -1,3 +1,7 @@
+Tue Jan  4 01:35:13 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* fold-const.c (make_range): Don't try to reverse an unbounded range.
+
 Tue Jan  4 00:18:46 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* regclass.c (regclass): Properly compute loop_cost.  Adjust

@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3315,9 +3315,10 @@ make_range (exp, pin_p, plow, phigh)
 
 	      in_p = n_in_p, low = n_low, high = n_high;
 
-	      /* If the high bound is missing, reverse the range so it
-		 goes from zero to the low bound minus 1.  */
-	      if (high == 0)
+	      /* If the high bound is missing, but we
+		 have a low bound, reverse the range so
+		 it goes from zero to the low bound minus 1.  */
+	      if (high == 0 && low)
 		{
 		  in_p = ! in_p;
 		  high = range_binop (MINUS_EXPR, NULL_TREE, low, 0,
