@@ -1,3 +1,8 @@
+2003-01-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* hwint.h: If the current compiler has no 64-bit type at all,
+	make HOST_WIDEST_INT 32 bits.
+
 2003-01-06  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.md (movdf_internal2): Fix constraints.
@@ -17,7 +22,7 @@
 
 2003-01-06 Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
-        * config/c4x/c4x.h: Remove hwint.h include and HOST_WIDE_INT_PRINT_HEX
+	* config/c4x/c4x.h: Remove hwint.h include and HOST_WIDE_INT_PRINT_HEX
 	redefinition.
 
 2003-01-05  Kazu Hirata  <kazu@cs.umass.edu>
@@ -547,10 +552,10 @@ Wed Dec 25 20:30:53 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-12-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        PR/8763
-        * config/rs6000/altivec.md (mulv4sf3): Rewrite to add -0.0 vector.
-        (altivec_vspltisw_v4sf): Name pattern.
-        (altivec_vslw_v4sf): New pattern.
+	PR/8763
+	* config/rs6000/altivec.md (mulv4sf3): Rewrite to add -0.0 vector.
+	(altivec_vspltisw_v4sf): Name pattern.
+	(altivec_vslw_v4sf): New pattern.
 
 2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
@@ -714,38 +719,38 @@ Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-12-20  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
-        * config/ns32k/ns32k.md (movdi): Use "l" instead of "f" to match
-        all registers capable of holding a double float.
-        (*rcond): change name of "reverse branch" insns to
-        something more meaningful.
-        (*rbgt, *rblt, *rbge, *rble): Reverse branches to handle IEEE
-        comparisons properly.
-        (*ffs): Change operand 0 from write to read-modify-write.
-        (*ffsssi2): Drop constraints from define_expand.
+	* config/ns32k/ns32k.md (movdi): Use "l" instead of "f" to match
+	all registers capable of holding a double float.
+	(*rcond): change name of "reverse branch" insns to
+	something more meaningful.
+	(*rbgt, *rblt, *rbge, *rble): Reverse branches to handle IEEE
+	comparisons properly.
+	(*ffs): Change operand 0 from write to read-modify-write.
+	(*ffsssi2): Drop constraints from define_expand.
 
-        * config/ns32k/ns32k.h (STORE_RATIO, STORE_BY_PIECES): Avoid using
-        MOVE_RATIO as default for store operations.
+	* config/ns32k/ns32k.h (STORE_RATIO, STORE_BY_PIECES): Avoid using
+	MOVE_RATIO as default for store operations.
 
-        * config/ns32k/ns32k.h (enum reg_class, REG_CLASS_NAMES): Add
-        LONG_REGS class.
-        (CANNOT_CHANGE_MODE_CLASS): Can't subreg LONG_REGS.
-        (GO_IF_LEGITIMATE_ADDRESS): Remove spurious abort().
-        * config/ns32k/ns32k.c (regclass_map): Add LONG_REGS class.
+	* config/ns32k/ns32k.h (enum reg_class, REG_CLASS_NAMES): Add
+	LONG_REGS class.
+	(CANNOT_CHANGE_MODE_CLASS): Can't subreg LONG_REGS.
+	(GO_IF_LEGITIMATE_ADDRESS): Remove spurious abort().
+	* config/ns32k/ns32k.c (regclass_map): Add LONG_REGS class.
 
-        * config/ns32k/STATUS: New File
-        * config/ns32k/NOTES: New file.
+	* config/ns32k/STATUS: New File
+	* config/ns32k/NOTES: New file.
 
 2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
 
        	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
 	option for S/390 and zSeries.
-        * config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
-        s390_arch_string): New variables.
-        (override_options): Checking for options and setting of
+	* config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
+	s390_arch_string): New variables.
+	(override_options): Checking for options and setting of
 	appropriate target_flags, cpu and arch flags.
-        * config/s390/s390.h: (processor_type): New enum.
-        (TARGET_SWITCHES): New switches -mesa/zarch.
-        * config/s390/s390.md: New attribute 'cpu'.
+	* config/s390/s390.h: (processor_type): New enum.
+	(TARGET_SWITCHES): New switches -mesa/zarch.
+	* config/s390/s390.md: New attribute 'cpu'.
 
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
