@@ -1,3 +1,7 @@
+2000-05-18  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (bytecompile_file): Use exec, not system.
+
 2000-05-17  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.mauve/mauve.exp (test_mauve): Call `prune_warnings'.
