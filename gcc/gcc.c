@@ -660,6 +660,7 @@ struct option_map option_map[] =
    {"--silent", "-q", 0},
    {"--force-link", "-u", "a"},
    {"--verbose", "-v", 0},
+   {"--version", "-dumpversion", 0}
    {"--no-warnings", "-w", 0},
    {"--language", "-x", "a"},
 
