@@ -6120,15 +6120,19 @@ copy_equiv_class (vla_ptr_t *to, const vla_ptr_t *from)
 static int
 first_cycle_unit_presence (state_t state, int unit_num)
 {
-  int presence_p;
+  alt_state_t alt_state;
 
   if (state->component_states == NULL)
-    presence_p = test_unit_reserv (state->reservs, 0, unit_num);
+    return test_unit_reserv (state->reservs, 0, unit_num);
   else
-    presence_p
-      = test_unit_reserv (state->component_states->state->reservs,
-			  0, unit_num);
-  return presence_p;
+    {
+      for (alt_state = state->component_states;
+	   alt_state != NULL;
+	   alt_state = alt_state->next_sorted_alt_state)
+	if (test_unit_reserv (alt_state->state->reservs, 0, unit_num))
+	  return true;
+    }
+  return false;
 }
 
 /* The function returns nonzero value if STATE is not equivalent to

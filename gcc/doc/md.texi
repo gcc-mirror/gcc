@@ -6232,9 +6232,7 @@ the treatment of operator @samp{|} in the regular expressions.  The
 usual treatment of the operator is to try the first alternative and,
 if the reservation is not possible, the second alternative.  The
 nondeterministic treatment means trying all alternatives, some of them
-may be rejected by reservations in the subsequent insns.  You can not
-query functional unit reservations in nondeterministic automaton
-states.
+may be rejected by reservations in the subsequent insns.
 
 @item
 @dfn{progress} means output of a progress bar showing how many states
