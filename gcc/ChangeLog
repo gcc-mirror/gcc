@@ -1,3 +1,8 @@
+1998-05-27  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* toplev.h (rtx_def): Provide global declaration to avoid
+	`limited scope' warnings.
+
 Tue May 26 23:47:52 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* Makefile.in (gencheck.o): Use HOST_CC.
