@@ -1,5 +1,10 @@
 2000-05-01  Richard Henderson  <rth@cygnus.com>
 
+	* configure.in (alpha*-*-linux-gnulibc1*) [tmake_file]: Remove
+	reference to alpha/t-linux.
+	(alpha*-*-linux-gnu*): Likewise.
+	* configure: Rebuild.
+
 	* calls.c (expand_call): Don't emit reg notes for a sibcall.
 
 	* flow.c (calculate_global_regs_live): Skip for_each_successor_phi
