@@ -6900,13 +6900,6 @@ without having to traverse C-like structures and unions, while @command{f2c}
 is unlikely to ever offer this ability (due to limitations in the
 C language).
 
-However, due to apparent bugs in the back end, @command{g77} currently doesn't
-take advantage of this facility at all---it doesn't emit any debugging
-information for @code{COMMON} and @code{EQUIVALENCE} areas,
-other than information
-on the array of @code{char} it creates (and, in the case
-of local @code{EQUIVALENCE}, names) for each such area.
-
 Yet another example is arrays.
 @command{g77} represents them to the debugger
 using the same ``dimensionality'' as in the source code, while @command{f2c}

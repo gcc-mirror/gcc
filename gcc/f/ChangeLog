@@ -1,3 +1,8 @@
+2003-09-21  George Helffrich  <bugzilla@w170.uklinux.net>
+
+	* g77.texi: Remove ancient part about debugging COMMON
+	and EQUIVALENCE not correctly.
+
 2003-09-18  Roger Sayle  <roger@eyesopen.com>
 
 	* com.c (ffecom_overlap_): Remove FFS_EXPR case.
