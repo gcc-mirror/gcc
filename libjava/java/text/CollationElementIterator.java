@@ -1,6 +1,6 @@
 // CollationElementIterator.java - Iterate over decomposed characters.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -45,13 +45,13 @@ public final class CollationElementIterator
   public static final short secondaryOrder (int order)
   {
     // From the JDK 1.2 spec.
-    return (order >>> 8) & 255;
+    return (short) ((order >>> 8) & 255);
   }
 
   public static final short tertiaryOrder (int order)
   {
     // From the JDK 1.2 spec.
-    return order & 255;
+    return (short) (order & 255);
   }
 
   // Non-public constructor.
