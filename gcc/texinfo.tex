@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.250 1998/06/27 23:16:34 karl Exp $
+% $Id: texinfo.tex,v 2.247 1998/06/29 14:05:28 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.250 $
+\deftexinfoversion$Revision: 2.247 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1052,24 +1052,6 @@ where each line of input produces a line of output.}
 % @bullet and @minus need the same treatment as @math, just above.
 \def\bullet{\implicitmath\ptexbullet\implicitmath}
 \def\minus{\implicitmath-\implicitmath}
-
-\def\node{\ENVcheck\parsearg\nodezzz}
-\def\nodezzz#1{\nodexxx [#1,]}
-\def\nodexxx[#1,#2]{\gdef\lastnode{#1}}
-\let\nwnode=\node
-\let\lastnode=\relax
-
-\def\donoderef{\ifx\lastnode\relax\else
-\expandafter\expandafter\expandafter\setref{\lastnode}\fi
-\global\let\lastnode=\relax}
-
-\def\unnumbnoderef{\ifx\lastnode\relax\else
-\expandafter\expandafter\expandafter\unnumbsetref{\lastnode}\fi
-\global\let\lastnode=\relax}
-
-\def\appendixnoderef{\ifx\lastnode\relax\else
-\expandafter\expandafter\expandafter\appendixsetref{\lastnode}\fi
-\global\let\lastnode=\relax}
 
 % @refill is a no-op.
 \let\refill=\relax
@@ -4605,6 +4587,7 @@ width0pt\relax} \fi
     \expandafter\parsearg 
   \fi \next}
 
+
 \message{cross references,}
 \newwrite\auxfile
 
@@ -4616,28 +4599,52 @@ width0pt\relax} \fi
 \def\inforefzzz #1,#2,#3,#4**{\putwordSee{} \putwordInfo{} \putwordfile{} \file{\ignorespaces #3{}},
   node \samp{\ignorespaces#1{}}}
 
-% @setref{foo} defines a cross-reference point named foo.
+% @node's job is to define \lastnode.
+\def\node{\ENVcheck\parsearg\nodezzz}
+\def\nodezzz#1{\nodexxx [#1,]}
+\def\nodexxx[#1,#2]{\gdef\lastnode{#1}}
+\let\nwnode=\node
+\let\lastnode=\relax
 
-\def\setref#1{%
-\dosetq{#1-title}{Ytitle}%
-\dosetq{#1-pg}{Ypagenumber}%
-\dosetq{#1-snt}{Ysectionnumberandtype}}
+% The sectioning commands (@chapter, etc.) call these.
+\def\donoderef{%
+  \ifx\lastnode\relax\else
+    \expandafter\expandafter\expandafter\setref{\lastnode}%
+      {Ysectionnumberandtype}%
+    \global\let\lastnode=\relax
+  \fi
+}
+\def\unnumbnoderef{%
+  \ifx\lastnode\relax\else
+    \expandafter\expandafter\expandafter\setref{\lastnode}{Ynothing}%
+    \global\let\lastnode=\relax
+  \fi
+}
+\def\appendixnoderef{%
+  \ifx\lastnode\relax\else
+    \expandafter\expandafter\expandafter\setref{\lastnode}%
+      {Yappendixletterandtype}
+    \global\let\lastnode=\relax
+  \fi
+}
 
-\def\unnumbsetref#1{%
-\dosetq{#1-title}{Ytitle}%
-\dosetq{#1-pg}{Ypagenumber}%
-\dosetq{#1-snt}{Ynothing}}
+% \setref{NAME}{SNT} defines a cross-reference point NAME, namely
+% NAME-title, NAME-pg, and NAME-SNT.  Called from \foonoderef.  We have
+% to set \indexdummies so commands such as @code in a section title
+% aren't expanded.  It would be nicer not to expand the titles in the
+% first place, but there's so many layers that that is hard to do.
+% 
+\def\setref#1#2{{%
+  \indexdummies
+  \dosetq{#1-title}{Ytitle}%
+  \dosetq{#1-pg}{Ypagenumber}%
+  \dosetq{#1-snt}{#2}
+}}
 
-\def\appendixsetref#1{%
-\dosetq{#1-title}{Ytitle}%
-\dosetq{#1-pg}{Ypagenumber}%
-\dosetq{#1-snt}{Yappendixletterandtype}}
-
-% \xref, \pxref, and \ref generate cross-references to specified points.
-% For \xrefX, #1 is the node name, #2 the name of the Info
-% cross-reference, #3 the printed node name, #4 the name of the Info
-% file, #5 the name of the printed manual.  All but the node name can be
-% omitted.
+% @xref, @pxref, and @ref generate cross-references.  For \xrefX, #1 is
+% the node name, #2 the name of the Info cross-reference, #3 the printed
+% node name, #4 the name of the Info file, #5 the name of the printed
+% manual.  All but the node name can be omitted.
 %
 \def\pxref#1{\putwordsee{} \xrefX[#1,,,,,,,]}
 \def\xref#1{\putwordSee{} \xrefX[#1,,,,,,,]}
