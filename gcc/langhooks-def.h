@@ -42,6 +42,7 @@ extern int lhd_decode_option PARAMS ((int, char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
 extern tree lhd_return_tree PARAMS ((tree));
 extern int lhd_safe_from_p PARAMS ((rtx, tree));
+extern int lhd_staticp PARAMS ((tree));
 extern void lhd_clear_binding_stack PARAMS ((void));
 extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern void lhd_set_yydebug PARAMS ((int));
@@ -71,6 +72,7 @@ int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_SAFE_FROM_P		lhd_safe_from_p
+#define LANG_HOOKS_STATICP		lhd_staticp
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
@@ -132,6 +134,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_GET_ALIAS_SET, \
   LANG_HOOKS_EXPAND_CONSTANT, \
   LANG_HOOKS_SAFE_FROM_P, \
+  LANG_HOOKS_STATICP, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \
