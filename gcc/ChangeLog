@@ -5,6 +5,23 @@
 
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (DECL_SEEN_IN_BIND_EXPR_P): New macro.
+	* gimplify.c (gimple_add_tmp_var, gimplify_bind_expr): Use it.
+	(gimplify_target_expr, gimplify_expr): Likewise.
+	(copy_if_shared_r): No longer need special case for BIND_EXPR.
+	(unshare_body, unvisit_body): Only look at nested if BODY_P is
+	whole function.
+	(gimplify_compound_lval): See if we can strip any useless conversion.
+	(gimplify_modify_expr, gimplify_modify_expr_to_memcpy): Take size
+	from RHS, not LHS.
+	(gimplify_modify_expr_to_memset): Likewise.
+	(gimplify_expr, case CONSTRUCTOR): Handle use as statement.
+	* tree-inline.c (setup_one_parameter): Use DECL_SEEN_IN_BIND_EXPR_P.
+	(declare_inline_vars): Likewise.
+	(walk_type_fields): New function.
+	(walk_tree): Use it.
+	* tree-nested.c (create_tmp_var_for): Show seen in BIND_EXPR.
+	
 	* tree-sra.c (struct sra_walk_fns): Init function now returns bool.
 	(sra_walk_modify_expr): Allow init function to fail.
 	(scan_init): Now returns bool.
