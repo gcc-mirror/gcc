@@ -6201,7 +6201,7 @@ expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
   /* We can get called with some Weird Things if the user does silliness
      like "(short) &a".  In that case, convert_memory_address won't do
      the right thing, so ignore the given target mode.  */
-  if (!targetm.valid_pointer_mode (tmode))
+  if (tmode != Pmode && tmode != ptr_mode)
     tmode = Pmode;
 
   result = expand_expr_addr_expr_1 (TREE_OPERAND (exp, 0), target,
