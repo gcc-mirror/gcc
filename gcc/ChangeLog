@@ -1,6 +1,36 @@
 2004-12-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/18179
+	* tree-vectorizer.c (vect_get_base_and_offset): Call get_inner_reference
+	and vect_analyze_offset_expr.
+	(vect_create_addr_base_for_vector_ref): Build address_base by combining 
+	base and initial_offset fields of vect_stmt_info.
+	(vect_update_inits_of_dr): Update offset of data-ref instead of its
+	access-fn. Remove argument.
+	(vect_update_inits_of_drs): Call vect_update_inits_of_dr with new
+	arguments.
+	(vect_compute_data_ref_alignment): Check misalignment info in 
+	vect_stmt_info. Remove argument.
+	(vect_compute_data_refs_alignment): Call vect_compute_data_ref_alignment
+	with correct argument.
+	(vect_analyze_data_ref_access): Check access info in vect_stmt_info.
+	(vect_analyze_pointer_ref_access): Update step and initial_offset fields
+	of vect_stmt_info.
+	(vect_get_memtag_and_dr): Call vect_get_base_and_offset and set the 
+	fields of stmt_vec_info.
+	(vect_analyze_data_refs): Find vectype and pass it to 
+	vect_get_memtag_and_dr.
+	(vect_get_first_index): Remove.
+	(vect_compute_array_base_alignment): Remove.
+	(vect_compute_array_ref_alignment): Remove
+	(vect_create_data_ref_ptr): Use TYPE_SIZE_UNIT instead GET_MODE_SIZE.
+	(vect_gen_niters_for_prolog_loop): Use TREE_CONSTANT instead 
+	host_integerp.
+	(vectorizable_load): Use size arithmetics.
+
+2004-12-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/18179
 	* tree-vectorizer.c (vect_get_base_and_offset): Rename (previous name
 	vect_get_base_and_bit_offset).
 	(vect_get_memtag_and_dr): Rename (previous name vect_get_symbl_and_dr).
