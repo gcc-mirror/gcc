@@ -3324,6 +3324,7 @@ static unsigned get_AT_unsigned		PARAMS ((dw_die_ref,
 static inline dw_die_ref get_AT_ref 	PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static int is_c_family			PARAMS ((void));
+static int is_java			PARAMS ((void));
 static int is_fortran			PARAMS ((void));
 static void remove_AT			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
@@ -4515,6 +4516,14 @@ is_fortran ()
 
   return (lang == DW_LANG_Fortran77 || lang == DW_LANG_Fortran90);
 } 
+
+static inline int
+is_java ()
+{
+  register unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+
+  return (lang == DW_LANG_Java);
+}
 
 /* Free up the memory used by A.  */
 
@@ -7407,7 +7416,7 @@ add_bound_info (subrange_die, bound_attr, bound)
     case INTEGER_CST:
       if (! host_integerp (bound, 0)
 	  || (bound_attr == DW_AT_lower_bound
-	      && ((is_c_family () && integer_zerop (bound))
+	      && (((is_c_family () || is_java ()) &&  integer_zerop (bound))
 		  || (is_fortran () && integer_onep (bound)))))
 	/* use the default */
 	;
@@ -9036,6 +9045,8 @@ gen_compile_unit_die (filename)
     language = DW_LANG_Fortran77;
   else if (strcmp (language_string, "GNU Pascal") == 0)
     language = DW_LANG_Pascal83;
+  else if (strcmp (language_string, "GNU Java") == 0)
+    language = DW_LANG_Java;
   else if (flag_traditional)
     language = DW_LANG_C;
   else
