@@ -1,3 +1,20 @@
+2001-10-29  Laurent Guerby  <guerby@acm.org>
+	
+	* init.c:
+	(Raise_From_Signal_Handler, Propagate_Signal_Exception): Make arg
+	const.
+	(_gnat_error_handler): Make MSG const.
+
+2001-10-29  Richard Kenner <kenner@gnat.com>
+
+	* sysdep.c: Fix localtime_r problem on LynxOS.
+	Also remove #elif to avoid warnings.
+	
+	* misc.c (yyparse): Don't set up and register jmpbuf; remove decls 
+	used by this.
+	
+	* decl.c (annotate_value): Make SIZE unsigned to avoid warning.
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* 86numaux.adb, a-tigeau.ads, a-wtgeau.ads, decl.c, exp_ch6.adb,

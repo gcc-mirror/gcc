@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.5 $
+ *                             $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -154,9 +154,6 @@ static char *convert_ada_name_to_qualified_name PARAMS ((char *));
 /* For most front-ends, this is the parser for the language.  For us, we
    process the GNAT tree.  */
 
-#define Set_Jmpbuf_Address system__soft_links__set_jmpbuf_address_soft
-extern void Set_Jmpbuf_Address (void *);
-
 /* Declare functions we use as part of startup.  */
 extern void __gnat_initialize	PARAMS((void));
 extern void adainit		PARAMS((void));
@@ -165,34 +162,17 @@ extern void _ada_gnat1drv	PARAMS((void));
 int
 yyparse ()
 {
-  /* Make up what Gigi uses as a jmpbuf.  */
-  size_t jmpbuf[10];
-
   /* call the target specific initializations */
   __gnat_initialize();
 
   /* Call the front-end elaboration procedures */
   adainit ();
 
-  /* Set up to catch unhandled exceptions.  */
-  if (__builtin_setjmp (jmpbuf))
-    {
-      Set_Jmpbuf_Address (0);
-      abort ();
-    }
-
-  /* This is only really needed in longjmp/setjmp mode exceptions
-     but we don't know any easy way to tell what mode the host is
-     compiled in, and it is harmless to do it unconditionally */
-
-  Set_Jmpbuf_Address (jmpbuf);
-
   immediate_size_expand = 1;
 
   /* Call the front end */
   _ada_gnat1drv ();
 
-  Set_Jmpbuf_Address (0);
   return 0;
 }
 
