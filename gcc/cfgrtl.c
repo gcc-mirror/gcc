@@ -1841,7 +1841,7 @@ purge_dead_edges (bb)
 	  /* Avoid abnormal flags to leak from computed jumps turned
 	     into simplejumps.  */
  
-	  e->flags &= EDGE_ABNORMAL;
+	  e->flags &= ~EDGE_ABNORMAL;
 
 	  /* Check purposes we can have edge.  */
 	  if ((e->flags & EDGE_FALLTHRU)
