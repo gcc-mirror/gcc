@@ -10147,45 +10147,79 @@ ix86_force_to_memory (mode, operand)
      enum machine_mode mode;
      rtx operand;
 {
+  rtx result;
   if (!reload_completed)
     abort ();
-  switch (mode)
+  if (TARGET_64BIT && TARGET_RED_ZONE)
     {
-      case DImode:
-	{
-	  rtx operands[2];
-	  split_di (&operand, 1, operands, operands+1);
-	  emit_insn (
-	    gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (SImode,
-				      gen_rtx_PRE_DEC (Pmode,
-						       stack_pointer_rtx)),
-			 operands[1]));
-	  emit_insn (
-	    gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (SImode,
-				      gen_rtx_PRE_DEC (Pmode,
-						       stack_pointer_rtx)),
-			 operands[0]));
-	}
-	break;
-      case HImode:
-	/* It is better to store HImodes as SImodes.  */
-	if (!TARGET_PARTIAL_REG_STALL)
-	  operand = gen_lowpart (SImode, operand);
-	/* FALLTHRU */
-      case SImode:
-	emit_insn (
-	  gen_rtx_SET (VOIDmode,
-		       gen_rtx_MEM (GET_MODE (operand),
-				    gen_rtx_PRE_DEC (SImode,
-						     stack_pointer_rtx)),
-		       operand));
-	break;
-      default:
-	abort();
+      result = gen_rtx_MEM (mode,
+			    gen_rtx_PLUS (Pmode,
+					  stack_pointer_rtx,
+					  GEN_INT (-RED_ZONE_SIZE)));
+      emit_move_insn (result, operand);
     }
-  return gen_rtx_MEM (mode, stack_pointer_rtx);
+  else if (TARGET_64BIT && !TARGET_RED_ZONE)
+    {
+      switch (mode)
+	{
+	case HImode:
+	case SImode:
+	  operand = gen_lowpart (DImode, operand);
+	  /* FALLTHRU */
+	case DImode:
+	  emit_insn (
+		      gen_rtx_SET (VOIDmode,
+				   gen_rtx_MEM (DImode,
+						gen_rtx_PRE_DEC (DImode,
+							stack_pointer_rtx)),
+				   operand));
+	  break;
+	default:
+	  abort ();
+	}
+      result = gen_rtx_MEM (mode, stack_pointer_rtx);
+    }
+  else
+    {
+      switch (mode)
+	{
+	case DImode:
+	  {
+	    rtx operands[2];
+	    split_di (&operand, 1, operands, operands + 1);
+	    emit_insn (
+			gen_rtx_SET (VOIDmode,
+				     gen_rtx_MEM (SImode,
+						  gen_rtx_PRE_DEC (Pmode,
+							stack_pointer_rtx)),
+				     operands[1]));
+	    emit_insn (
+			gen_rtx_SET (VOIDmode,
+				     gen_rtx_MEM (SImode,
+						  gen_rtx_PRE_DEC (Pmode,
+							stack_pointer_rtx)),
+				     operands[0]));
+	  }
+	  break;
+	case HImode:
+	  /* It is better to store HImodes as SImodes.  */
+	  if (!TARGET_PARTIAL_REG_STALL)
+	    operand = gen_lowpart (SImode, operand);
+	  /* FALLTHRU */
+	case SImode:
+	  emit_insn (
+		      gen_rtx_SET (VOIDmode,
+				   gen_rtx_MEM (GET_MODE (operand),
+						gen_rtx_PRE_DEC (SImode,
+							stack_pointer_rtx)),
+				   operand));
+	  break;
+	default:
+	  abort ();
+	}
+      result = gen_rtx_MEM (mode, stack_pointer_rtx);
+    }
+  return result;
 }
 
 /* Free operand from the memory.  */
@@ -10193,15 +10227,22 @@ void
 ix86_free_from_memory (mode)
      enum machine_mode mode;
 {
-  /* Use LEA to deallocate stack space.  In peephole2 it will be converted
-     to pop or add instruction if registers are available.  */
-  emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			  gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					GEN_INT (mode == DImode
-						 ? 8
-						 : mode == HImode && TARGET_PARTIAL_REG_STALL
-						 ? 2
-						 : 4))));
+  if (!TARGET_64BIT || !TARGET_RED_ZONE)
+    {
+      int size;
+
+      if (mode == DImode || TARGET_64BIT)
+	size = 8;
+      else if (mode == HImode && TARGET_PARTIAL_REG_STALL)
+	size = 2;
+      else
+	size = 4;
+      /* Use LEA to deallocate stack space.  In peephole2 it will be converted
+         to pop or add instruction if registers are available.  */
+      emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					    GEN_INT (size))));
+    }
 }
 
 /* Put float CONST_DOUBLE in the constant pool instead of fp regs.
