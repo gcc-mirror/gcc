@@ -1,3 +1,27 @@
+2000-03-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (_dollar_ok): New macro.
+	(is_idchar, is_idstart): Use it.
+	(IStable): Rename to _cpp_IStable.  Declare it const if
+	gcc >=2.7 or C99.  Delete all references to FAKE_CONST.
+	(is_idchar, is_idstart, is_numchar, is_numstart, is_hspace,
+	is_space): Update for renamed IStable.
+
+	* cppinit.c: Delete all references to FAKE_CONST and CAT
+	macros. Define init_IStable as empty macro if gcc >=2.7 or
+	C99. Change TABLE() to ISTABLE and hardcode name of table.
+	(cpp_start_read): Don't change the IStable based on
+	dollars_in_ident.
+
+	* cpphash.c (unsafe_chars): Add pfile argument.  All callers
+	changed.  Handle '$' for char1 correctly.
+	* cpplib.c (cpp_get_token): Use is_numchar when parsing numbers.
+
+	* cppexp.c (tokentab2): Make const.
+	(cpp_lex): Make toktab const.
+	* cppinit.c (include_defaults_array): Make const.
+	(initialize_standard_includes): Make default_include const.
+
 2000-03-03  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug): Add cast to silence warning.

@@ -35,7 +35,7 @@ static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
-static int unsafe_chars		 PARAMS ((int, int));
+static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
 static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
 static enum cpp_token macarg	 PARAMS ((cpp_reader *, int));
 static struct tm *timestamp	 PARAMS ((cpp_reader *));
@@ -1317,7 +1317,7 @@ macroexpand (pfile, hp)
 	      U_CHAR *expanded = ARG_BASE + arg->expanded;
 	      if (!ap->raw_before && totlen > 0 && arg->expand_length
 		  && !CPP_TRADITIONAL (pfile)
-		  && unsafe_chars (xbuf[totlen - 1], expanded[0]))
+		  && unsafe_chars (pfile, xbuf[totlen - 1], expanded[0]))
 		{
 		  xbuf[totlen++] = '\r';
 		  xbuf[totlen++] = ' ';
@@ -1328,7 +1328,7 @@ macroexpand (pfile, hp)
 
 	      if (!ap->raw_after && totlen > 0 && offset < defn->length
 		  && !CPP_TRADITIONAL (pfile)
-		  && unsafe_chars (xbuf[totlen - 1], exp[offset]))
+		  && unsafe_chars (pfile, xbuf[totlen - 1], exp[offset]))
 		{
 		  xbuf[totlen++] = '\r';
 		  xbuf[totlen++] = ' ';
@@ -1382,7 +1382,8 @@ macroexpand (pfile, hp)
    could cause mis-tokenization.  */
 
 static int
-unsafe_chars (c1, c2)
+unsafe_chars (pfile, c1, c2)
+     cpp_reader *pfile;
      int c1, c2;
 {
   switch (c1)
@@ -1396,6 +1397,11 @@ unsafe_chars (c1, c2)
       if (c2 == '-' || c2 == '+')
 	return 1;		/* could extend a pre-processing number */
       goto letter;
+
+    case '$':
+      if (CPP_OPTIONS (pfile)->dollars_in_ident)
+	goto letter;
+      return 0;
 
     case 'L':
       if (c2 == '\'' || c2 == '\"')
@@ -1468,7 +1474,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
     {
       int c1 = mbuf->rlimit[-3];
       int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
-      if (c2 == EOF || !unsafe_chars (c1, c2))
+      if (c2 == EOF || !unsafe_chars (pfile, c1, c2))
 	mbuf->rlimit -= 2;
     }
 }

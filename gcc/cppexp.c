@@ -403,7 +403,7 @@ struct token {
   int token;
 };
 
-static struct token tokentab2[] = {
+static const struct token tokentab2[] = {
   {"&&", ANDAND},
   {"||", OROR},
   {"<<", LSH},
@@ -424,7 +424,7 @@ cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;
 {
-  struct token *toktab;
+  const struct token *toktab;
   enum cpp_token token;
   struct operation op;
   U_CHAR *tok_start, *tok_end;

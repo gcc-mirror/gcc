@@ -612,22 +612,23 @@ enum node_type {
 #define IShspace	0x08	/* ' ' \t \f \v */
 #define ISspace		0x10	/* ' ' \t \f \v \n */
 
-#define is_idchar(x)	(IStable[x] & ISidnum)
-#define is_numchar(x)	(IStable[x] & ISidnum)
-#define is_idstart(x)	(IStable[x] & ISidstart)
-#define is_numstart(x)	(IStable[x] & ISnumstart)
-#define is_hspace(x)	(IStable[x] & IShspace)
-#define is_space(x)	(IStable[x] & ISspace)
+#define _dollar_ok(x)	((x) == '$' && CPP_OPTIONS (pfile)->dollars_in_ident)
 
-/* This table is not really `const', but it is only modified at
-   initialization time, in a separate translation unit from the rest
-   of the library.  We let the rest of the library think it is `const'
-   to get better code and some additional compile-time checks.  */
-#ifndef FAKE_CONST
-#define FAKE_CONST const
+#define is_idchar(x)	((_cpp_IStable[x] & ISidnum) || _dollar_ok(x))
+#define is_idstart(x)	((_cpp_IStable[x] & ISidstart) || _dollar_ok(x))
+#define is_numchar(x)	(_cpp_IStable[x] & ISidnum)
+#define is_numstart(x)	(_cpp_IStable[x] & ISnumstart)
+#define is_hspace(x)	(_cpp_IStable[x] & IShspace)
+#define is_space(x)	(_cpp_IStable[x] & ISspace)
+
+/* This table is constant if it can be initialized at compile time,
+   which is the case if cpp was compiled with GCC >=2.7, or another
+   compiler that supports C99.  */
+#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
+extern const unsigned char _cpp_IStable[256];
+#else
+extern unsigned char _cpp_IStable[256];
 #endif
-extern FAKE_CONST unsigned char IStable[256];
-#undef FAKE_CONST
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
