@@ -292,12 +292,12 @@
 #define __glibcpp_char_min (char)__glibcpp_signed_char_min
 #define __glibcpp_char_max (char)__glibcpp_signed_char_max
 #define __glibcpp_char_digits __glibcpp_signed_char_digits
-#define __glibcpp_char_digits10 __glibcpp_signed_char_digits
+#define __glibcpp_char_digits10 __glibcpp_signed_char_digits10
 #else
 #define __glibcpp_char_min (char)__glibcpp_unsigned_char_min
 #define __glibcpp_char_max (char)__glibcpp_unsigned_char_max
 #define __glibcpp_char_digits __glibcpp_unsigned_char_digits
-#define __glibcpp_char_digits10 __glibcpp_unsigned_char_digits
+#define __glibcpp_char_digits10 __glibcpp_unsigned_char_digits10
 #endif
 
 // short

@@ -1,3 +1,8 @@
+2002-10-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/std/std_limits.h (__glibcpp_char_digits10): Fix Typo.
+	(__glibcpp_char_digits10): Likewise.
+
 2002-10-10  Jonathan Lennox  <lennox@cs.columbia.edu>
 
         PR libstdc++/8071, libstdc++/8127, c++/6745
