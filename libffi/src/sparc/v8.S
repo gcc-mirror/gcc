@@ -109,7 +109,9 @@ longlong:
 	.globl ffi_closure_v8
 
 ffi_closure_v8:
-	.register	%g2, #scratch
+#ifdef HAVE_AS_REGISTER_PSEUDO_OP
+		.register	%g2, #scratch
+#endif
 .LLFB2:
 	save	%sp, -STACKFRAME, %sp
 .LLCFI1:

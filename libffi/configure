@@ -3599,6 +3599,43 @@ echo "$ac_t""$libffi_cv_as_sparc_ua_pcrel" 1>&6
 EOF
 
     fi
+
+    echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
+echo "configure:3600: checking assembler .register pseudo-op support" >&5
+if eval "test \"`echo '$''{'libffi_cv_as_register_pseudo_op'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+       libffi_cv_as_register_pseudo_op=unknown
+       # Check if we have .register
+       cat > conftest.$ac_ext <<EOF
+#line 3608 "configure"
+#include "confdefs.h"
+asm (".register %g2, #scratch");
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:3615: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  libffi_cv_as_register_pseudo_op=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  libffi_cv_as_register_pseudo_op=no
+fi
+rm -f conftest*
+    
+fi
+
+echo "$ac_t""$libffi_cv_as_register_pseudo_op" 1>&6
+    if test "x$libffi_cv_as_register_pseudo_op" = xyes; then
+       cat >> confdefs.h <<\EOF
+#define HAVE_AS_REGISTER_PSEUDO_OP 1
+EOF
+
+    fi
 fi
 
 

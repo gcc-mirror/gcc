@@ -1,3 +1,12 @@
+2003-05-07  Jeff Sturm  <jsturm@one-point.com>
+
+	Fixes PR bootstrap/10656
+	* configure.in (HAVE_AS_REGISTER_PSEUDO_OP): Test assembler
+	support for .register pseudo-op.
+	* src/sparc/v8.S: Use it.
+	* fficonfig.h.in: Rebuilt.
+	* configure: Rebuilt.
+
 2003-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/ffi.h.in (POWERPC64): Define if 64-bit.
