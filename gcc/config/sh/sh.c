@@ -3700,17 +3700,13 @@ initial_elimination_offset (from, to)
    compiler.  */
 
 int
-handle_pragma (file, t)
-     FILE *file;
-     tree t;
+sh_handle_pragma (p_getc, p_ungetc, pname)
+     int (*  p_getc)   PROTO((void));
+     void (* p_ungetc) PROTO((int));
+     char *  pname;
 {
   int retval = 0;
-  register char *pname;
 
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (t);
   if (strcmp (pname, "interrupt") == 0)
     pragma_interrupt = retval = 1;
   else if (strcmp (pname, "trapa") == 0)

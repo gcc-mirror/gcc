@@ -1,3 +1,12 @@
+Wed Sep 16 12:29:22 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/sh/sh.h: Update definition of HANDLE_PRAGMA to match
+	new specification.
+
+	* config/sh/sh.c (handle_pragma): Rename to sh_handle_pragma().
+	(sh_handle_pragma): Change function arguments to match new
+	specification for HANDLE_PRAGMA. 
+
 Wed Sep 16 12:43:19 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gen-protos.c (parse_fn_proto): Cast argument of ISALNUM to
