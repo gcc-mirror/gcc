@@ -1,5 +1,6 @@
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	PR c/11428
 	* gcc.c-torture/compile/20030704-1.c: New.
 
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
