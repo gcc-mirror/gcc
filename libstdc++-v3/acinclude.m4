@@ -1687,9 +1687,8 @@ dnl
 dnl GLIBCPP_ENABLE_CHEADERS
 dnl --enable-cheaders= [does stuff].
 dnl --disable-cheaders [does not do anything, really].
-dnl  +  This will eventually need to be 'c_shadow' by default.
 dnl  +  Usage:  GLIBCPP_ENABLE_CHEADERS[(DEFAULT)]
-dnl       Where DEFAULT is either `c' or `c_std' or 'c_shadow'.  
+dnl       Where DEFAULT is either `c' or `c_std'.
 dnl       If ommitted, it defaults to `c_std'.
 AC_DEFUN(GLIBCPP_ENABLE_CHEADERS, [dnl
 define([GLIBCPP_ENABLE_CHEADERS_DEFAULT], ifelse($1, c_std, c_std, c_std))dnl
@@ -1705,9 +1704,6 @@ changequote([, ])
    c_std)  
         enable_cheaders=c_std 
         ;;
-   c_shadow)  
-        enable_cheaders=c_shadow 
-        ;;
    *)   AC_MSG_ERROR([Unknown argument to enable/disable "C" headers]) 
         ;;
   esac],
@@ -1716,9 +1712,6 @@ changequote([, ])
 
   dnl Option parsed, now set things appropriately
   case "$enable_cheaders" in
-    c_shadow) 
-        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_shadow'
-        ;;
     c_std)   
         C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_std'
         ;;
@@ -1767,7 +1760,6 @@ dnl TOPLEVEL_INCLUDES
 dnl LIBMATH_INCLUDES
 dnl LIBSUPCXX_INCLUDES
 dnl LIBIO_INCLUDES
-dnl CSHADOW_INCLUDES
 dnl
 dnl GLIBCPP_EXPORT_INCLUDES
 AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [

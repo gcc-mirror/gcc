@@ -47,7 +47,6 @@ bits_headers = \
 	${bits_srcdir}/fpos.h \
 	${bits_srcdir}/fstream.tcc \
 	${bits_srcdir}/functexcept.h \
-	${bits_srcdir}/generic_shadow.h \
 	${bits_srcdir}/gslice.h \
 	${bits_srcdir}/gslice_array.h \
 	${bits_srcdir}/indirect_array.h \

@@ -1,3 +1,14 @@
+2002-09-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * include/c_shadow: Remove.
+        * include/bits/generic_shadow.h: Remove.
+        * include/Makefile.am: Remove generic_shadow.h.
+        * acinclude.m4: Remove c_shadow references.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+        * mkcshadow: Remove.
+        * mkinclosure: Remove.
+
 2002-09-16  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/7922
