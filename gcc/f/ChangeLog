@@ -1,3 +1,7 @@
+Tue Mar 27 17:40:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
+
 Mon Mar 26 18:13:30 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (duplicate_decls): Don't copy DECL_FRAME_SIZE.

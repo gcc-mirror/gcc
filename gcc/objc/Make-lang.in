@@ -59,7 +59,7 @@ objc-parse.o : $(srcdir)/objc/objc-parse.c \
    $(CONFIG_H) $(TREE_H) $(srcdir)/toplev.h $(srcdir)/ggc.h \
    $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/c-common.h \
    $(srcdir)/input.h $(srcdir)/flags.h $(srcdir)/output.h \
-   $(srcdir)/objc/objc-act.h system.h cpplib.h
+   $(srcdir)/objc/objc-act.h $(SYSTEM_H) cpplib.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-parse.c $(OUTPUT_OPTION)
 
@@ -77,7 +77,7 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	$(SHELL) $(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
-   $(CONFIG_H) $(TREE_H) $(RTL_H) system.h $(EXPR_H) \
+   $(CONFIG_H) $(TREE_H) $(RTL_H) $(SYSTEM_H) $(EXPR_H) \
    $(srcdir)/c-tree.h $(srcdir)/c-common.h $(srcdir)/c-lex.h \
    $(srcdir)/toplev.h $(srcdir)/flags.h $(srcdir)/objc/objc-act.h \
    $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h

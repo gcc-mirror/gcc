@@ -1,3 +1,7 @@
+2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
+
 2001-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* parse.h (DECL_END_SOURCE_LINE): Don't rely on DECL_FRAME_SIZE.

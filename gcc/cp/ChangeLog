@@ -1,3 +1,7 @@
+2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Depend on $(SYSTEM_H), not system.h.
+
 2001-03-26  Mike Yang <yang@research.att.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
