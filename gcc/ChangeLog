@@ -1,3 +1,12 @@
+1999-04-19 14:51 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpplib.c (output_line_command): Drop CONDITIONAL argument.
+	We can omit unnecessary line commands if file_change ==
+	same_file and pfile->lineno != 0.  All callers changed.
+	(cpp_get_token [case '\n']): Don't bump pfile->lineno if
+	CPP_OPTIONS (pfile)->no_line_commands is set.
+	* cpplib.h: Fix prototype of output_line_command.
+
 1999-04-18 17:46 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppfiles.c (find_position, read_and_prescan): Use `unsigned

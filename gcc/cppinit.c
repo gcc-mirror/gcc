@@ -505,7 +505,7 @@ dump_special_to_buffer (pfile, macro_name)
 {
   static char define_directive[] = "#define ";
   int macro_name_length = strlen (macro_name);
-  output_line_command (pfile, 0, same_file);
+  output_line_command (pfile, same_file);
   CPP_RESERVE (pfile, sizeof(define_directive) + macro_name_length);
   CPP_PUTS_Q (pfile, define_directive, sizeof(define_directive)-1);
   CPP_PUTS_Q (pfile, macro_name, macro_name_length);
@@ -814,7 +814,7 @@ cpp_start_read (pfile, fname)
   while (p)
     {
       if (opts->debug_output)
-	output_line_command (pfile, 0, same_file);
+	output_line_command (pfile, same_file);
       if (p->undef)
 	cpp_undef (pfile, p->arg);
       else
@@ -829,7 +829,7 @@ cpp_start_read (pfile, fname)
   while (p)
     {
       if (opts->debug_output)
-	output_line_command (pfile, 0, same_file);
+	output_line_command (pfile, same_file);
       if (p->undef)
 	cpp_unassert (pfile, p->arg);
       else
@@ -980,7 +980,7 @@ cpp_start_read (pfile, fname)
   ih_fake->limit = 0;
   if (!finclude (pfile, f, ih_fake))
     return 0;
-  output_line_command (pfile, 0, same_file);
+  output_line_command (pfile, same_file);
   pfile->only_seen_white = 2;
 
   /* The -imacros files can be scanned now, but the -include files
@@ -1043,7 +1043,7 @@ cpp_start_read (pfile, fname)
       ih_fake->buf = (char *)-1;
       ih_fake->limit = 0;
       if (finclude (pfile, fd, ih_fake))
-	output_line_command (pfile, 0, enter_file);
+	output_line_command (pfile, enter_file);
 
       q = p->next;
       free (p);
@@ -1092,6 +1092,25 @@ cpp_finish (pfile)
 	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
 		cpp_fatal (pfile, "I/O error on output");
 	    }
+	}
+    }
+
+  if (opts->dump_macros == dump_only)
+    {
+      int i;
+      HASHNODE *h;
+      MACRODEF m;
+      for (i = HASHSIZE; --i >= 0;)
+	{
+	  for (h = pfile->hashtab[i]; h; h = h->next)
+	    if (h->type == T_MACRO)
+	      {
+		m.defn = h->value.defn;
+		m.symnam = h->name;
+		m.symlen = h->length;
+		dump_definition (pfile, m);
+		CPP_PUTC (pfile, '\n');
+	      }
 	}
     }
 }
