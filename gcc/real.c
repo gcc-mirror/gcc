@@ -209,7 +209,7 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #endif
 
 /* Calculate the size of the generic "e" type.  This always has
-   identical in-memory size and representation to REAL_VALUE_TYPE.
+   identical in-memory size to REAL_VALUE_TYPE.
    There are only two supported sizes: ten and six 16-bit words (160
    or 96 bits).  */
 
@@ -224,11 +224,13 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 # define MINDECEXP -4956
 #endif
 
-/* Fail compilation if 2*NE is not the appropriate size.  */
-
+/* Fail compilation if 2*NE is not the appropriate size. 
+   If HOST_BITS_PER_WIDE_INT is 64, we're going to have padding
+   at the end of the array, because neither 96 nor 160 is
+   evenly divisible by 64.  */
 struct compile_test_dummy {
   char twice_NE_must_equal_sizeof_REAL_VALUE_TYPE
-  [(sizeof (REAL_VALUE_TYPE) == 2*NE) ? 1 : -1];
+  [(sizeof (REAL_VALUE_TYPE) >= 2*NE) ? 1 : -1];
 };
 
 /* Construct macros to translate between REAL_VALUE_TYPE and e type.
@@ -236,7 +238,12 @@ struct compile_test_dummy {
    A REAL_VALUE_TYPE is guaranteed to occupy contiguous locations
    in memory, with no holes.  */
 #define GET_REAL(r, e)  memcpy ((e), (r), 2*NE)
-#define PUT_REAL(e, r)  memcpy ((r), (e), 2*NE)
+#define PUT_REAL(e, r)						\
+  do {								\
+    memcpy (r, e, 2*NE);					\
+    if (2*NE < sizeof (*r))					\
+      memset ((char *) (r) + 2*NE, 0, sizeof (*r) - 2*NE);	\
+  } while (0)
 
 /* Number of 16 bit words in internal format */
 #define NI (NE+3)

@@ -1,3 +1,8 @@
+2002-04-19  Andreas Schwab  <schwab@suse.de>
+
+	* real.c: Allow sizeof (REAL_VALUE_TYPE) > 2*NE.
+	(PUT_REAL): Restore old definition.
+
 2002-04-19  Dan Nicolaescu  <dann@godzilla.ics.uci.edu>
 	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
