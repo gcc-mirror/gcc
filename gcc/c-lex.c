@@ -132,10 +132,6 @@ int linemode;
    used in a context which makes it a reference to a variable.  */
 tree lastiddecl;
 
-/* Nonzero enables objc features.  */
-
-int doing_objc_thang;
-
 extern int yydebug;
 
 /* File used for outputting assembler code.  */

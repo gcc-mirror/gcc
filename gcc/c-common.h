@@ -56,6 +56,19 @@ enum c_tree_index
 
 extern tree c_global_trees[CTI_MAX];
 
+typedef enum c_language_kind
+{
+  clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
+		       etc. */
+  clk_cplusplus,   /* ANSI/ISO C++ */
+  clk_objective_c  /* Objective C */
+} 
+c_language_kind;
+
+/* The variant of the C language being processed.  Each C language
+   front-end defines this variable.  */
+extern c_language_kind c_language;
+
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]

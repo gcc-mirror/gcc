@@ -798,7 +798,7 @@ lang_decode_option (argc, argv)
 {
   const char *p = argv[0];
   if (!strcmp (p, "-lang-objc"))
-    doing_objc_thang = 1;
+    c_language = clk_objective_c;
   else if (!strcmp (p, "-gen-decls"))
     flag_gen_declaration = 1;
   else if (!strcmp (p, "-Wselector"))
