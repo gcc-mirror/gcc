@@ -2552,16 +2552,20 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   if (cum->ca_nstackparms == 0 && first_reg < NPARM_REGS && !no_rtl)
     {
       rtx label = gen_label_rtx ();
-      rtx regblock;
+      rtx regblock, fake_arg_pointer_rtx;
 
-      /* If arg_pointer_rtx == 0, no arguments were passed on the stack
+      /* Use a different rtx than arg_pointer_rtx so that cse and friends
+	 can go on believing that the argument pointer can never be zero.  */
+      fake_arg_pointer_rtx = gen_raw_REG (Pmode, ARG_POINTER_REGNUM);
+
+      /* If the argument pointer is 0, no arguments were passed on the stack
 	 and we need to allocate a chunk to save the registers (if any
 	 arguments were passed on the stack the caller would allocate the
 	 48 bytes as well).  We must allocate all 48 bytes (12*4) because
 	 va_start assumes it.  */
-      emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
+      emit_insn (gen_cmpsi (fake_arg_pointer_rtx, const0_rtx));
       emit_jump_insn (gen_bne (label));
-      emit_insn (gen_rtx_SET (VOIDmode, arg_pointer_rtx,
+      emit_insn (gen_rtx_SET (VOIDmode, fake_arg_pointer_rtx,
 			      stack_pointer_rtx));
       emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 			      memory_address (SImode,
@@ -2598,6 +2602,7 @@ i960_va_start (valist, nextarg)
      rtx nextarg ATTRIBUTE_UNUSED;
 {
   tree s, t, base, num;
+  rtx fake_arg_pointer_rtx;
 
   /* The array type always decays to a pointer before we get here, so we
      can't use ARRAY_REF.  */
@@ -2606,7 +2611,10 @@ i960_va_start (valist, nextarg)
 		build (PLUS_EXPR, unsigned_type_node, valist,
 		       TYPE_SIZE_UNIT (TREE_TYPE (valist))));
 
-  s = make_tree (unsigned_type_node, arg_pointer_rtx);
+  /* Use a different rtx than arg_pointer_rtx so that cse and friends
+     can go on believing that the argument pointer can never be zero.  */
+  fake_arg_pointer_rtx = gen_raw_REG (Pmode, ARG_POINTER_REGNUM);
+  s = make_tree (unsigned_type_node, fake_arg_pointer_rtx);
   t = build (MODIFY_EXPR, unsigned_type_node, base, s);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
