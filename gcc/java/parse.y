@@ -12915,11 +12915,14 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
     new_rhs = convert (lhs_type, rhs);
 
   /* Try a narrowing primitive conversion (5.1.3):
-       - expression is a constant expression of type int AND
+       - expression is a constant expression of type byte, short, char,
+         or int, AND
        - variable is byte, short or char AND
        - The value of the expression is representable in the type of the
          variable */
-  else if (rhs_type == int_type_node && TREE_CONSTANT (rhs)
+  else if ((rhs_type == byte_type_node || rhs_type == short_type_node
+	    || rhs_type == char_type_node || rhs_type == int_type_node)
+	    && TREE_CONSTANT (rhs)
 	   && (lhs_type == byte_type_node || lhs_type == char_type_node
 	       || lhs_type == short_type_node))
     {
