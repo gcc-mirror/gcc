@@ -2,6 +2,7 @@
 
 	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC): Look in /lib64.
 	({STARTFILE,ENDFILE}_LINUX_SPEC): Define.
+	(FP_SAVE_INLINE): Delete.
 
 	* config/rs6000/sysv4.h (ENDFILE_SPEC): Add crtsaveres.o.
 	* config/rs6000/eabi.asm: Remove ABI save restore routines.
