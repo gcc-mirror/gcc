@@ -1,6 +1,6 @@
 #include <vector>
 
-#include <strstream.h>
+#include <sstream>
 
 using namespace std;
 
@@ -16,7 +16,7 @@ std::vector<connection_t> connections;
 
 int
 main() {
-  ostrstream str;
+  ostringstream str;
 
   connections.insert(connections.end(), connection_t());
 

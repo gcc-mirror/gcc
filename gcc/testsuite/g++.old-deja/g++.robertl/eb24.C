@@ -1,5 +1,5 @@
 // Build don't link:
-#include <iostream.h>
+#include <iostream>
 
 template < class T >
 class X
@@ -19,5 +19,5 @@ class Y : public X<T>
 
     using X<T>::x;
 
-    void        f () { cout << x << endl; }
+    void        f () { std::cout << x << std::endl; }
 };

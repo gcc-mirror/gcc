@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed visibility
-#include <iostream.h>
+#include <iostream>
 
 
 
@@ -8,17 +8,17 @@ class base {
 //==========
 
     void base_priv(char * n) 		
-	{ cout << "base_priv called from: " << n << "\n";  };
+	{ std::cout << "base_priv called from: " << n << "\n";  };
 
 protected:
 
     void base_prot(char * n) 
-	{ cout << "base_prot called from: " << n << "\n"; };
+	{ std::cout << "base_prot called from: " << n << "\n"; };
 
 public:
 
     void base_publ(char * n) 
-	{ cout << "base_publ called from: " << n << "\n"; };
+	{ std::cout << "base_publ called from: " << n << "\n"; };
 
     void test(char * n) { base_publ(n); base_prot(n); base_priv(n); }
 
@@ -57,12 +57,12 @@ int main(int argc, char *argv[])
     base b;
     b.base_publ("base class object");
     b.test("member of base class object");
-    cout << "\n";
+    std::cout << "\n";
 
     derived pd;
     pd.test("member of derived class object");
     derived_friend();
-    cout << "\n";
+    std::cout << "\n";
 
 } /* main */
 

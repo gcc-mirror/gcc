@@ -1,15 +1,15 @@
-#include <stream.h>
-#include <strstream.h>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
 int
 main(int, char* [])
 {
-  strstream s;
+  stringstream s;
 
   s << "line 1\nline 2\n\nline 4";
-  s << ends;
+  s << std::ends;
 
   int nLine = 0;
 
@@ -22,7 +22,7 @@ main(int, char* [])
     }
 
     ++nLine;
-    cout << nLine << ": " << line << endl;
+    std::cout << nLine << ": " << line << std::endl;
 
     if( nLine > 10 ) {  // stop infinite loop
       break;

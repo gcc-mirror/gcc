@@ -2,10 +2,10 @@
 // g++/15071
 // gcc invocation fails to link in libstdc++
 
-#include <iostream.h>
+#include <iostream>
 
 int main() {
-  cout<<"hi"<<endl;
+  std::cout << "hi" << std::endl;
 
   return 0;
 }

@@ -1,7 +1,7 @@
 // Build don't link: 
 // GROUPS passed old-abort
 // Special g++ Options: -Wreturn-type
-#include <iostream.h>
+#include <iostream>
 
 class A {
 public:
@@ -9,6 +9,6 @@ public:
 };
 
 A &f(A &a) {// ERROR -  new decl.*
-  cout << "Blah\n";
+  std::cout << "Blah\n";
 } // ERROR - non-void function
 

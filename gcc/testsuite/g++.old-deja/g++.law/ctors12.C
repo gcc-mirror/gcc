@@ -1,7 +1,7 @@
 // GROUPS passed constructors
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream.h>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 
 #define MAGIC 7654
 
@@ -14,9 +14,9 @@ public:
         complex() { re=im=0; magic=MAGIC; }
         complex(double d) { re=d; im=0; magic=MAGIC; }
         complex(double d, double d2) {re=d; im=d2; magic=MAGIC; }
-        ~complex() {if(magic!=MAGIC) {printf("FAIL\n");exit(1);}}
-        friend ostream& operator << (ostream& o, const complex& c)
-                { return o << "(" << c.re << "," << c.im << ")"; }
+        ~complex() {if(magic!=MAGIC) {std::printf("FAIL\n"); std::exit(1);}}
+        friend std::ostream& operator << (std::ostream& o, const complex& c)
+        { return o << "(" << c.re << "," << c.im << ")"; }
 };
 
 int complex::count=0;
@@ -27,7 +27,7 @@ int main()
         int i;                                           // page 289
 
         for(i=0; i<6; i++) ;
-	printf ("PASS\n");
+	std::printf ("PASS\n");
 
         return 0;
 }

@@ -1,7 +1,7 @@
 // prms-id: 658
 
-#include <ostream.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 
 /* We may not find the libg++ <bool.h>.  */
 #ifndef FALSE
@@ -65,8 +65,8 @@ void
 Object::OK() const
 {
     if (_destructed) {
-	cerr << "FAILURE - reference was made to a destructed object\n";
-	abort();
+	std::cerr << "FAILURE - reference was made to a destructed object\n";
+	std::abort();
     }
 }
 
@@ -98,3 +98,5 @@ Char::operator char () const
 {
     return _c;
 }
+
+

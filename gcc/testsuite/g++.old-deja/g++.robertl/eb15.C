@@ -1,18 +1,18 @@
 // Build don't link:
-#include<iostream.h>
-#include<stddef.h>
+#include<iostream>
+#include<cstddef>
 
 struct A {
   A() {
-    cerr<<"A constructing\n";
+    std::cerr<<"A constructing\n";
     throw 1;
   }
   void *operator new(size_t sz) {
-    cerr<<"A allocated\n";
+    std::cerr<<"A allocated\n";
     return ::operator new(sz);
   }
   void operator delete (void *p) {
-    cerr<<"A deleted\n";
+    std::cerr<<"A deleted\n";
     ::operator delete (p);
   }
 };
@@ -23,3 +23,6 @@ int main() {
   } catch (...) {
   }
 }
+
+
+

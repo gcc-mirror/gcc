@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 
 class A1 {
         friend class B;
@@ -22,6 +22,9 @@ int main()
         A1* a=new A3;
         B b(a);
 
-        if (b.itsA) cout << "cast ok" << endl; else cout << "cast failed" << endl;
+        if (b.itsA) 
+	  std::cout << "cast ok" << std::endl; 
+	else 
+	  std::cout << "cast failed" << std::endl;
         return 0;
 }

@@ -1,6 +1,6 @@
 // PRMS Id: 8569
 
-#include <iostream.h>
+#include <iostream>
 #include <vector>
 
 using std::vector;
@@ -33,10 +33,15 @@ private:
 int main(int argc, char**argv)   {
     IncludeIt foo;
     IncludeIt* bar;
-    exit(0);
+    std::exit(0);
 }
 
 template class std::__malloc_alloc_template<0>;
 #ifndef __USE_MALLOC
 template class std::__default_alloc_template<false, 0>;
 #endif
+
+
+
+
+

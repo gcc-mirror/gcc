@@ -1,8 +1,9 @@
-#include <iomanip.h>
-#include <stdlib.h>
+#include <iomanip>
+#include <iostream>
+#include <cstdlib>
 
 int main()
 {
-	cout << setbase(3) << endl;
-	exit (0);
+  std::cout << std::setbase(3) << std::endl;
+  std::exit (0);
 }

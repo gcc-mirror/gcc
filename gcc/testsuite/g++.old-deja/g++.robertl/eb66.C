@@ -1,5 +1,5 @@
-#include <assert.h>
-#include <iostream.h>
+#include <cassert>
+#include <iostream>
 
 int bar ()
 {
@@ -17,6 +17,10 @@ int main ()
     {
     }
 
-//  cout << "i = " << i << endl;
+//  std::cout << "i = " << i << std::endl;
   assert (i == 0) ; 
 }
+
+
+
+

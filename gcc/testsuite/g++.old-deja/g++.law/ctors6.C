@@ -1,8 +1,8 @@
 // Build don't link: 
 // GROUPS passed constructors
-#include <complex.h>
+#include <complex>
 
-double foo(double_complex *a)
+double foo(std::complex<double> *a)
 {
   return 0.0;
 }
@@ -10,6 +10,6 @@ double foo(double_complex *a)
 
 double bar(void)
 {
-  double_complex v[10];
+  std::complex<double> v[10];
   return foo(v);
 }

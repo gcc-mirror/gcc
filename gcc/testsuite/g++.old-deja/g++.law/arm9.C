@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed ARM-compliance
-#include        <iostream.h>
+#include        <iostream>
 enum f1 {
      F1
 };
@@ -13,13 +13,13 @@ class A {
 public:
     void set (f1 f);
 };
-void A::set (f1 f) { cout << "called A f1\n";}
+void A::set (f1 f) { std::cout << "called A f1\n";}
 
 class B : public A {
 public:
     void set (f2 f);
 };
-void B::set (f2 f) { cout << "called B\n";} // ERROR - candidate
+void B::set (f2 f) { std::cout << "called B\n";} // ERROR - candidate
 
 int main() {
     B b;
@@ -31,3 +31,8 @@ int main() {
                // belong to different scopes.  Thus B::set() should have
                // hidden (completely) the A::set() function.
 }
+
+
+
+
+

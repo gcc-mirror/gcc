@@ -5,16 +5,16 @@
 
 // libc-5.4.xx has __IO_putc in its static C library, which can conflict
 // with the copy of __IO_putc in the libstdc++ library built by egcs.
-#include <iostream.h>
-#include <streambuf.h>
-#include <stdio.h>
+#include <iostream>
+#include <streambuf>
+#include <cstdio>
 
-istream x (0);
+std::istream x (0);
 
 main () {
   x.get();
-  putc(0, 0);
-  fgets(0, 0, 0); 
+  std::putc(0, 0);
+  std::fgets(0, 0, 0); 
   x.get((char*) 0, 0);
 }
 

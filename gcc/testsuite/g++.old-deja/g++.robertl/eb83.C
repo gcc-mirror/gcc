@@ -1,7 +1,7 @@
 // Skip if not native
 // Special g++ Options: -fprofile-arcs -ftest-coverage
 void
-swap(int& x, int& y) throw()
+test_swap(int& x, int& y) throw()
 {
   int tmp = x;
   x = y;
@@ -12,5 +12,5 @@ main()
 {
   int i = 5;
   int j = 7;
-  swap(i, j);
+  test_swap(i, j);
 }

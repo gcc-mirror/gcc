@@ -1,6 +1,6 @@
 // Bug: g++ doesn't find the conversion from ostream_withassign to ostream.
 
-#include <iostream.h>
+#include <iostream>
 
 template <class T>
 struct A {
@@ -8,7 +8,7 @@ struct A {
 };
 
 template <class T>
-ostream & operator<< (ostream & os, A<T> & a)
+std::ostream & operator<< (std::ostream & os, A<T> & a)
 {
   os << a.t;
   return os;
@@ -17,5 +17,6 @@ ostream & operator<< (ostream & os, A<T> & a)
 int main ()
 {
   A<int> a = { 1 };
-  cout << a << endl;
+  std::cout << a << std::endl;
 }
+

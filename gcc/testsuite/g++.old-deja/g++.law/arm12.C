@@ -5,7 +5,7 @@
 // Subject: Bad access control with private constructor and derivation
 // Date: Fri, 28 May 1993 12:39:57 -0400 (EDT)
 
-#include <iostream.h>
+#include <iostream>
 
 class X
 {
@@ -24,17 +24,17 @@ public:
 
 X::X()
 {// ERROR - .*
-  cout << "X::X()" << endl;
+  std::cout << "X::X()" << std::endl;
 }
 
 void X::f()
 {
-  cout << "X::f()" << endl;
+  std::cout << "X::f()" << std::endl;
 }
 
 Y::Y()
 {// ERROR -  within this
-  cout << "Y::Y()" << endl;
+  std::cout << "Y::Y()" << std::endl;
 }
 
 
@@ -43,5 +43,7 @@ int main()
   Y y;
   y.f();
 }
+
+
 
 
