@@ -1712,10 +1712,10 @@ pushdecl (tree x)
       if (DECL_EXTERNAL (x) || scope == global_scope)
 	{
 	  /* Find and check against a previous, not-in-scope, external
-	     decl for this identifier.  (C99 s???: If two declarations
-	     with external linkage, referring to the same object, have
-	     incompatible types, the behavior is undefined).  */
-	  tree ext = any_external_decl (name);
+	     decl for this identifier.  (C99 6.2.7p2: All declarations
+	     that refer to the same object or function shall have
+	     compatible type; otherwise, the behavior is undefined.)  */
+ 	  tree ext = any_external_decl (name);
 	  if (ext)
 	    {
 	      if (duplicate_decls (x, ext, scope != global_scope, 
