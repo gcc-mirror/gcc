@@ -210,22 +210,18 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
+/* Provide a LIB_SPEC appropriate for FreeBSD.  Just select the appropriate
+   libc, depending on whether we're doing profiling or need threads support.
+   (simular to the default, except no -lg, and no -p.  */
 
-#undef	LIB_SPEC
-#if 1
-/* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
- */
-#define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
-     %{!ggdb:-lc} %{ggdb:-lg}}"
-#else
-#define LIB_SPEC \
-  "%{!shared: \
-     %{mieee-fp:-lieee} %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
-       %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
-#endif
+#undef LIB_SPEC
+#define LIB_SPEC "%{!shared: \
+   %{!pg:%{!pthread:%{!kthread:-lc} \
+     %{kthread:-lpthread -lc}} \
+     %{pthread:-lc_r}} \
+   %{pg:%{!pthread:%{!kthread:-lc_p} \
+     %{kthread:-lpthread_p -lc_p}} \
+     %{pthread:-lc_r_p}}}"
 
 /* Provide a LINK_SPEC appropriate for FreeBSD.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
@@ -242,13 +238,17 @@ Boston, MA 02111-1307, USA.  */
    done.  */
 
 #undef	LINK_SPEC
-#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
+#define LINK_SPEC "-m elf_i386 \
+  %{Wl,*:%*} \
+  %{v:-V} \
+  %{assert*} %{R*} %{rpath*} %{defsym*} \
+  %{shared:-Bshareable %{h*} %{soname*}} \
+    %{!shared: \
       %{!static: \
-	%{rdynamic:-export-dynamic} \
+        %{rdynamic:-export-dynamic} \
 	%{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}} \
-	%{static:-Bstatic}}}"
+    %{static:-Bstatic}}} \
+  %{symbolic:-Bsymbolic}"
 
 /* A C statement to output to the stdio stream FILE an assembler
    command to advance the location counter to a multiple of 1<<LOG
