@@ -1,5 +1,9 @@
 Mon Jun 18 12:50:49 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (find_unreachable_blocks): New function.
+	(delete_unreachable_blocks): Use find_unreachable_blocks.
+	* basic-block.h (find_unreachable_blocks): Declare.
+
         * dce.c (eliminate_dead_code): Fix formatting glitch.
 
 2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
