@@ -1,3 +1,24 @@
+2004-03-10  Alan Modra  <amodra@bigpond.net.au>
+	    Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/rs6000/rs6000.c (invalid_gpr_mem): New function.
+	(base_reg_operand): New function.
+	(legitimate_offset_address_p): Don't test modes in an attempt to
+	distinguish gpr vs fpr mem loads/stores.  Don't prohibit offsets
+	invalid for 64-bit gpr loads/stores here.
+	(secondary_reload_class): Add "inp" parameter.	Generate a reload
+	for 64-bit gpr loads/stores.
+	* config/rs6000/rs6000.h (SECONDARY_RELOAD_CLASS): Delete.
+	(SECONDARY_INPUT_RELOAD_CLASS, SECONDARY_OUTPUT_RELOAD_CLASS): Define.
+	(PREDICATE_CODES): Add invalid_gpr_mem and base_reg_operand.
+	(DISPARAGE_RELOAD_CLASS): Define.
+	* config/rs6000/rs6000-protos.h (secondary_reload_class): Update.
+	* config/rs6000/rs6000.md (movdf_hardfloat64): Correct attrs.
+	Add m->b alternative and split.
+	(movdi_internal64): Replace r->m and m->r with r->Y and Y->r.
+	Add m->b alternative and split.
+	* reload.c (find_reloads): Invoke DISPARAGE_RELOAD_CLASS.
+
 2004-03-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR other/14474

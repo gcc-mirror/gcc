@@ -104,7 +104,7 @@ extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int addrs_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
 extern enum reg_class secondary_reload_class (enum reg_class,
-					      enum machine_mode, rtx);
+					      enum machine_mode, rtx, int);
 extern int ccr_bit (rtx, int);
 extern int extract_MB (rtx);
 extern int extract_ME (rtx);

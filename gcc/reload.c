@@ -3412,6 +3412,12 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		       && ! const_to_mem)
 		bad = 1;
 
+#ifdef DISPARAGE_RELOAD_CLASS
+	      reject
+		+= DISPARAGE_RELOAD_CLASS (operand,
+					   (enum reg_class) this_alternative[i]);
+#endif
+
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.
 		 If we are reloading a SCRATCH, we won't be generating any
