@@ -1432,6 +1432,19 @@ javax/accessibility/AccessibleTable.java \
 javax/accessibility/AccessibleTableModelChange.java \
 javax/accessibility/AccessibleText.java \
 javax/accessibility/AccessibleValue.java \
+javax/imageio/ImageReader.java \
+javax/imageio/ImageTranscoder.java \
+javax/imageio/ImageWriter.java \
+javax/imageio/spi/IIOServiceProvider.java \
+javax/imageio/spi/ImageInputStreamSpi.java \
+javax/imageio/spi/ImageOutputStreamSpi.java \
+javax/imageio/spi/ImageReaderWriterSpi.java \
+javax/imageio/spi/ImageTranscoderSpi.java \
+javax/imageio/spi/RegisterableService.java \
+javax/imageio/spi/ServiceRegistry.java \
+javax/imageio/stream/IIOByteBuffer.java \
+javax/imageio/stream/ImageInputStream.java \
+javax/imageio/stream/ImageOutputStream.java \
 javax/naming/directory/Attribute.java \
 javax/naming/directory/AttributeInUseException.java \
 javax/naming/directory/AttributeModificationException.java \
@@ -1862,6 +1875,8 @@ java/util/regex/PatternSyntaxException.java
 
 
 ordinary_java_source_files = $(core_java_source_files) \
+gnu/classpath/ServiceFactory.java \
+gnu/classpath/ServiceProviderLoadingAction.java \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/io/DefaultMimeTypes.java \
@@ -3010,9 +3025,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/awt/xlib/XGraphicsConfiguration.P \
 .deps/gnu/awt/xlib/XOffScreenImage.P .deps/gnu/awt/xlib/XPanelPeer.P \
 .deps/gnu/awt/xlib/XToolkit.P .deps/gnu/classpath/Configuration.P \
-.deps/gnu/gcj/Core.P .deps/gnu/gcj/RawData.P \
-.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
-.deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/classpath/ServiceFactory.P \
+.deps/gnu/classpath/ServiceProviderLoadingAction.P .deps/gnu/gcj/Core.P \
+.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
+.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_ASCII.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
@@ -4233,6 +4249,18 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/accessibility/AccessibleTableModelChange.P \
 .deps/javax/accessibility/AccessibleText.P \
 .deps/javax/accessibility/AccessibleValue.P \
+.deps/javax/imageio/ImageReader.P .deps/javax/imageio/ImageTranscoder.P \
+.deps/javax/imageio/ImageWriter.P \
+.deps/javax/imageio/spi/IIOServiceProvider.P \
+.deps/javax/imageio/spi/ImageInputStreamSpi.P \
+.deps/javax/imageio/spi/ImageOutputStreamSpi.P \
+.deps/javax/imageio/spi/ImageReaderWriterSpi.P \
+.deps/javax/imageio/spi/ImageTranscoderSpi.P \
+.deps/javax/imageio/spi/RegisterableService.P \
+.deps/javax/imageio/spi/ServiceRegistry.P \
+.deps/javax/imageio/stream/IIOByteBuffer.P \
+.deps/javax/imageio/stream/ImageInputStream.P \
+.deps/javax/imageio/stream/ImageOutputStream.P \
 .deps/javax/naming/AuthenticationException.P \
 .deps/javax/naming/AuthenticationNotSupportedException.P \
 .deps/javax/naming/BinaryRefAddr.P .deps/javax/naming/Binding.P \
