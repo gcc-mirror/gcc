@@ -611,21 +611,38 @@ JvRunMain (jclass klass, int argc, const char **argv)
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif
 
-  if (klass == NULL)
-    {
-      arg_vec = JvConvertArgv (argc - 2, argv + 2);
-      main_group = new java::lang::ThreadGroup (23);
-      main_thread = new java::lang::FirstThread (main_group,
-						 JvNewStringLatin1 (argv[1]),
-						 arg_vec);
-    }
-  else
-    {
-      arg_vec = JvConvertArgv (argc - 1, argv + 1);
-      main_group = new java::lang::ThreadGroup (23);
-      main_thread = new java::lang::FirstThread (main_group, klass, arg_vec);
-    }
+  arg_vec = JvConvertArgv (argc - 1, argv + 1);
+  main_group = new java::lang::ThreadGroup (23);
+  main_thread = new java::lang::FirstThread (main_group, klass, arg_vec);
 
+  main_thread->start();
+  _Jv_ThreadWait ();
+
+  java::lang::Runtime::getRuntime ()->exit (0);
+}
+
+void
+_Jv_RunMain (const char *class_name, int argc, const char **argv)
+{
+  INIT_SEGV;
+#ifdef HANDLE_FPE
+  INIT_FPE;
+#else
+  arithexception = new java::lang::ArithmeticException
+    (JvNewStringLatin1 ("/ by zero"));
+#endif
+
+  no_memory = new java::lang::OutOfMemoryError;
+
+#ifdef USE_LTDL
+  LTDL_SET_PRELOADED_SYMBOLS ();
+#endif
+
+  arg_vec = JvConvertArgv (argc - 1, argv + 1);
+  main_group = new java::lang::ThreadGroup (23);
+  main_thread = new java::lang::FirstThread (main_group,
+					     JvNewStringLatin1 (class_name),
+					     arg_vec);
   main_thread->start();
   _Jv_ThreadWait ();
 

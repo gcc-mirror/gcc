@@ -16,6 +16,7 @@ details.  */
 
 #include <java/lang/Object.h>
 #include <java/lang/String.h>
+#include <java/net/URL.h>
 
 // We declare these here to avoid including cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -108,6 +109,7 @@ public:
 
   jstring getName (void);
 
+  java::net::URL        *getResource (jstring resourceName);
   java::io::InputStream *getResourceAsStream (jstring resourceName);
   JArray<jobject> *getSigners (void);
 
@@ -182,7 +184,7 @@ private:
   friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 			      java::lang::ClassLoader *loader);
 
-  friend void _Jv_InternClassStrings (jclass);
+  friend void _Jv_PrepareCompiledClass (jclass);
 
 #ifdef INTERPRETER
   friend jboolean _Jv_IsInterpretedClass (jclass);

@@ -92,8 +92,6 @@ java::lang::Class::forName (jstring className)
   if (! klass)
     JvThrow (new java::lang::ClassNotFoundException (className));
 
-  _Jv_InitClass (klass);
-
   return klass;
 }
 
@@ -354,6 +352,8 @@ java::lang::Class::newInstance (void)
       || java::lang::reflect::Modifier::isAbstract(accflags))
     JvThrow (new java::lang::InstantiationException);
 
+  _Jv_InitClass (this);
+
   _Jv_Method *meth = _Jv_GetMethodLocal (this, init_name, void_signature);
   if (! meth)
     JvThrow (new java::lang::NoSuchMethodException);
@@ -408,7 +408,7 @@ java::lang::Class::initializeClass (void)
         {
           // Step 1.
 	  _Jv_MonitorEnter (this);
-	  _Jv_InternClassStrings (this);
+	  _Jv_PrepareCompiledClass (this);
 	}
     }
   else

@@ -201,16 +201,18 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 $(nat_headers): libgcj.zip
 
 ## Our internal main program needs to be able to create a FirstThread.
-FTFRIEND = void JvRunMain (jclass klass, int argc, const char **argv)
 java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
-	$(GCJH) -classpath $(top_builddir) -friend '$(FTFRIEND);' \
+	$(GCJH) -classpath $(top_builddir) \
+		-friend 'void JvRunMain (jclass, int, const char **);' \
+		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
 ## ThreadGroup has a special constructor that is used when creating
 ## the first ThreadGroup.  We need to expose this to the main program.
-TGFRIEND = void JvRunMain (jclass klass, int argc, const char **argv)
 java/lang/ThreadGroup.h: java/lang/ThreadGroup.class libgcj.zip
-	$(GCJH) -classpath $(top_builddir) -friend '$(TGFRIEND);' \
+	$(GCJH) -classpath $(top_builddir) \
+		-friend 'void JvRunMain (jclass, int, const char **);' \
+		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
 java/lang/String.h: java/lang/String.class libgcj.zip
@@ -236,7 +238,7 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 	    -friend 'java::lang::Class;' \
 	    $(basename $<)
 
-java/lang/VMClassLoader.h: java/lang/VMClassLoader.class libgcj.zip
+gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'java::lang::ClassLoader;' \
 	    $(basename $<)
@@ -481,6 +483,7 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ## header, please list it in special_java_source_files.
 ordinary_java_source_files =  $(convert_source_files) \
 gnu/gcj/runtime/MethodInvocation.java \
+gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/util/path/SearchPath.java \
 gnu/gcj/util/path/PathEntry.java \
 gnu/gcj/util/path/DirectoryPathEntry.java \
@@ -498,6 +501,8 @@ gnu/gcj/protocol/file/Connection.java \
 gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
+gnu/gcj/protocol/jar/Handler.java \
+gnu/gcj/protocol/jar/Connection.java \
 gnu/gcj/RawData.java \
 gnu/gcj/util/EnumerationChain.java \
 java/io/BufferedInputStream.java \
@@ -565,7 +570,6 @@ java/lang/ClassCastException.java \
 java/lang/ClassCircularityError.java \
 java/lang/ClassFormatError.java	\
 java/lang/ClassLoader.java \
-java/lang/VMClassLoader.java \
 java/lang/ClassNotFoundException.java \
 java/lang/CloneNotSupportedException.java \
 java/lang/Cloneable.java \
@@ -643,6 +647,7 @@ java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java \
 java/net/InetAddress.java \
+java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
 java/net/MulticastSocket.java \
 java/net/NoRouteToHostException.java \
@@ -656,6 +661,7 @@ java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
 java/net/SocketOptions.java \
 java/net/URL.java \
+java/net/URLClassLoader.java \
 java/net/URLConnection.java \
 java/net/URLDecoder.java \
 java/net/URLEncoder.java \
@@ -665,6 +671,7 @@ java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
 java/security/MessageDigest.java \
 java/security/NoSuchAlgorithmException.java \
+java/security/SecureClassLoader.java \
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
@@ -711,6 +718,9 @@ java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
+java/util/jar/JarFile.java \
+java/util/jar/JarInputStream.java \
+java/util/jar/JarEntry.java \
 java/util/zip/Adler32.java \
 java/util/zip/CRC32.java \
 java/util/zip/CheckedInputStream.java \

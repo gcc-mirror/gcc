@@ -1,3 +1,67 @@
+1999-08-18  Kresten Krab Thorup  <krab@gnu.org>
+
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Renamed
+	from _Jv_InternClassStrings.   
+
+	* prims.cc (_Jv_RunMain): New function.
+	(JvRunMain): Remove gij-support.
+
+	* gij.cc (main): Use _Jv_RunMain.
+
+	* java/util/zip/ZipFile.java: Call readDirectory in constructor.
+
+	* interpret.cc (PUSHA, PUSHI, PUSHF, PUSHL, PUSHD): Don't store
+	argument in temp variable.
+	(continue1): For all op_x2y insns, use temp variable for
+	intermediate value.  Also remove some comments.
+
+	* java/lang/natClass.cc (newInstance): Call _Jv_InitClass.
+	(forName): Don't call _Jv_InitClass.
+
+	* java/lang/Class.java (getResource,getResourceAsStream): Implement.
+
+	* java/util/zip/ZipEntry.java (ZipEntry(ZipEntry)): New construcor.
+
+	* java/util/jar/JarInputStream.java: New file.
+
+	* java/util/jar/JarEntry.java: New file.
+
+	* java/util/jar/JarFile.java: New file.
+
+	* java/net/URLClassLoader.java: New file.
+
+	* java/net/JarURLConnection.java: New file.
+
+	* gnu/gcj/protocol/jar/Handler.java: New file.
+
+	* gnu/gcj/protocol/jar/Connection.java: New file.
+
+	* java/security/SecureClassLoader.java: New file.
+
+	* java/lang/ClassLoader.java (parent): New variable.
+	(ClassLoader (ClassLoader)): new constructor.  
+	(findClass): New method.
+	(loadClass): Add default 1.2 implementation.
+	(getSystemResourceAsBytes, getResourceAsBytes): Removed.
+	(readfully): Removed.
+
+	* gnu/gcj/runtime/VMClassLoader.java: Moved from java/lang. 
+	(findSystemClass): New method.
+	(VMClassLoader): Constructor rewritten.
+	(init): New method.
+	All other methods removed.
+	
+	* java/lang/natClassLoader.cc: Change use of java::lang::VMClassLoader
+	to gnu::gcj::runtime::VMClassLoader. 
+	(_Jv_InternClassStrings): Use _Jv_ResolvePoolEntry.  Also handle
+	class entries.   
+	(VMClassLoader::findSystemClass): renamed from findBootClass.
+
+	* Makefile.am: Add new files.
+	(FirstThread.h, ThreadGroup.h): Add _Jv_Main friend.
+
+	* Makefile.in: Rebuilt.
+
 1999-08-17  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natThread.cc (sleep): Turn 0 millis and 0 nanos into 1

@@ -72,6 +72,7 @@ inline jobjectArray JvNewObjectArray (jsize length, jclass cls, jobject init)
 
 extern "C" jstringArray JvConvertArgv(int argc, const char **argv);
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
+void _Jv_RunMain (const char* name, int argc, const char **argv);
 
 inline jsize JvGetArrayLength (jarray array) { return array->length; }
 

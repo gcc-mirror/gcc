@@ -46,6 +46,18 @@ public class ZipEntry implements ZipConstants
     this.name = name;
   }
 
+  public ZipEntry (ZipEntry ent)
+  {
+    comment = ent.comment;
+    compressedSize = ent.compressedSize;
+    crc = ent.crc;
+    extra = ent.extra;
+    method = ent.method;
+    size = ent.size;
+    time = ent.time;
+    relativeOffset = ent.relativeOffset;
+  }
+
   public String getComment () { return comment; }
 
   public long getCompressedSize () { return compressedSize; }
