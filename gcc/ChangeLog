@@ -1,3 +1,8 @@
+2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (divmodsi4): Replace all the uses
+	of er4 with er3.  Adjust all callers.
+
 2003-11-13  Andrew Pinski <apinski@apple.com>
 
 	* config/darwin.c (machopic_output_possible_stub_label): 
