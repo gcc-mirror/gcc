@@ -1,3 +1,8 @@
+1999-03-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (add_function_candidate): Check for proper number of args
+	before checking the validity of those args.
+
 1999-03-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (struct lang_type): Add anon_union field.

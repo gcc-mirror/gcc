@@ -1134,24 +1134,60 @@ add_function_candidate (candidates, fn, arglist, flags)
   tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
   int i, len;
   tree convs;
-  tree parmnode = parmlist;
-  tree argnode = arglist;
+  tree parmnode, argnode;
   int viable = 1;
 
   /* The `this' and `in_chrg' arguments to constructors are not considered
      in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))
     {
-      parmnode = TREE_CHAIN (parmnode);
-      argnode = TREE_CHAIN (argnode);
+      parmlist = TREE_CHAIN (parmlist);
+      arglist = TREE_CHAIN (arglist);
       if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
 	{
-	  parmnode = TREE_CHAIN (parmnode);
-	  argnode = TREE_CHAIN (argnode);
+	  parmlist = TREE_CHAIN (parmlist);
+	  arglist = TREE_CHAIN (arglist);
 	}
     }
 
-  len = list_length (argnode);
+  len = list_length (arglist);
+
+  /* 13.3.2 - Viable functions [over.match.viable]
+     First, to be a viable function, a candidate function shall have enough
+     parameters to agree in number with the arguments in the list.
+
+     We need to check this first; otherwise, checking the ICSes might cause
+     us to produce an ill-formed template instantiation.  */
+
+  parmnode = parmlist;
+  for (i = 0; i < len; ++i)
+    {
+      if (parmnode == NULL_TREE || parmnode == void_list_node)
+	break;
+      parmnode = TREE_CHAIN (parmnode);
+    }
+
+  if (i < len && parmnode)
+    viable = 0;
+
+  /* Make sure there are default args for the rest of the parms.  */
+  else for (; parmnode && parmnode != void_list_node;
+	    parmnode = TREE_CHAIN (parmnode))
+    if (! TREE_PURPOSE (parmnode))
+      {
+	viable = 0;
+	break;
+      }
+
+  if (! viable)
+    goto out;
+
+  /* Second, for F to be a viable function, there shall exist for each
+     argument an implicit conversion sequence that converts that argument
+     to the corresponding parameter of F.  */
+
+  parmnode = parmlist;
+  argnode = arglist;
   convs = make_scratch_vec (len);
 
   for (i = 0; i < len; ++i)
@@ -1196,7 +1232,10 @@ add_function_candidate (candidates, fn, arglist, flags)
 
       TREE_VEC_ELT (convs, i) = t;
       if (! t)
-	break;
+	{
+	  viable = 0;
+	  break;
+	}
 
       if (ICS_BAD_FLAG (t))
 	viable = -1;
@@ -1206,18 +1245,7 @@ add_function_candidate (candidates, fn, arglist, flags)
       argnode = TREE_CHAIN (argnode);
     }
 
-  if (i < len)
-    viable = 0;
-
-  /* Make sure there are default args for the rest of the parms.  */
-  for (; parmnode && parmnode != void_list_node;
-       parmnode = TREE_CHAIN (parmnode))
-    if (! TREE_PURPOSE (parmnode))
-      {
-	viable = 0;
-	break;
-      }
-
+ out:
   return add_candidate (candidates, fn, convs, viable);
 }
 
