@@ -279,16 +279,7 @@ typedef struct optab
 
 /* Given an enum insn_code, access the function to construct
    the body of that kind of insn.  */
-#ifdef FUNCTION_CONVERSION_BUG
-/* Some compilers fail to convert a function properly to a
-   pointer-to-function when used as an argument.
-   So produce the pointer-to-function directly.
-   Luckily, these compilers seem to work properly when you
-   call the pointer-to-function.  */
-#define GEN_FCN(CODE) (insn_data[(int) (CODE)].genfun)
-#else
 #define GEN_FCN(CODE) (*insn_data[(int) (CODE)].genfun)
-#endif
 
 /* Enumeration of valid indexes into optab_table.  */
 enum optab_index
