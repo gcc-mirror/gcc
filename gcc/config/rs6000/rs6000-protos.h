@@ -116,7 +116,7 @@ extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
 extern void rs6000_emit_sCOND (enum rtx_code, rtx);
 extern void rs6000_emit_cbranch (enum rtx_code, rtx);
 extern char * output_cbranch (rtx, const char *, int, rtx);
-extern char * output_e500_flip_gt_bit (rtx, rtx);
+extern char * output_e500_flip_eq_bit (rtx, rtx);
 extern rtx rs6000_emit_set_const (rtx, enum machine_mode, rtx, int);
 extern int rs6000_emit_cmove (rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);

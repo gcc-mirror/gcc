@@ -2458,14 +2458,14 @@
 ;; FP comparison stuff.
 
 ;; Flip the GT bit.
-(define_insn "e500_flip_gt_bit"
+(define_insn "e500_flip_eq_bit"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
        (unspec:CCFP
         [(match_operand:CCFP 1 "cc_reg_operand" "y")] 999))]
   "!TARGET_FPRS && TARGET_HARD_FLOAT"
   "*
 {
-  return output_e500_flip_gt_bit (operands[0], operands[1]);
+  return output_e500_flip_eq_bit (operands[0], operands[1]);
 }"
   [(set_attr "type" "cr_logical")])
 
