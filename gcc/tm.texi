@@ -6261,6 +6261,14 @@ output.  Currently, the allowable values are @code{DBX_DEBUG},
 @code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG}, and
 @code{XCOFF_DEBUG}.
 
+If the user specifies @samp{-ggdb}, then there are two special cases
+where this macro's value is ignored and another value is substituted.
+If @code{DWARF2_DEBUGGING_INFO} is defined and
+@code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, then
+@code{DWARF2_DEBUG} is substituted.  Otherwise, if
+@code{DBX_DEBUGGING_INFO} is defined, then @code{DBX_DEBUG} is
+substituted.
+
 The value of this macro only affects the default debugging output; the
 user can always get a specific type of output by using @samp{-gstabs},
 @samp{-gcoff}, @samp{-gdwarf-1}, @samp{-gdwarf-2}, or @samp{-gxcoff}.
@@ -6589,6 +6597,13 @@ define @code{INCOMING_RETURN_ADDR_RTX} and either set
 @code{RTX_FRAME_RELATED_P} on the prologue insns if you use RTL for the
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
 as appropriate from @code{FUNCTION_PROLOGUE} if you don't.
+
+@findex LINKER_DOES_NOT_WORK_WITH_DWARF2
+@item LINKER_DOES_NOT_WORK_WITH_DWARF2
+Define this macro if the linker does not work with dwarf version 2.
+Normally, if the user specifies only @samp{-ggdb}, then GNU CC will use
+dwarf version 2 if available; this macro causes GNU CC to use the format
+specified by @code{PREFERRED_DEBUGGING_TYPE} instead.
 
 @findex PUT_SDB_@dots{}
 @item PUT_SDB_@dots{}
