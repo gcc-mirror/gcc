@@ -1,8 +1,15 @@
+Mon Mar  8 15:27:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (merge_blocks_nomove): For HAVE_cc0 targets, make sure
+	to also delete the cc0 setter when deleting a conditional branch
+	to the next block.
+
 Mon Mar  8 18:47:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (copy_src_to_dest): New argument max_old_uid.
 
 Mon Mar  8 08:23:00 1999  Bruce Korb <korb@datadesign.com>
+
 	* ChangeLog: merged entries from fixincl-branch
 
 Sun Mar  7 11:48:56 1999  Richard Henderson  <rth@cygnus.com>
