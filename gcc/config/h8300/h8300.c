@@ -510,7 +510,7 @@ h8300_output_function_prologue (file, size)
      HOST_WIDE_INT size;
 {
   int fsize = round_frame_size (size);
-  int idx;
+  int regno;
   int saved_regs;
   int n_regs;
 
@@ -580,10 +580,8 @@ h8300_output_function_prologue (file, size)
 
   /* Push the rest of the registers in ascending order.  */
   saved_regs = compute_saved_regs ();
-  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno += n_regs)
     {
-      int regno = idx;
-
       n_regs = 1;
       if (saved_regs & (1 << regno))
 	{
@@ -621,7 +619,7 @@ h8300_output_function_epilogue (file, size)
      HOST_WIDE_INT size;
 {
   int fsize = round_frame_size (size);
-  int idx;
+  int regno;
   rtx insn = get_last_insn ();
   int saved_regs;
   int n_regs;
@@ -648,10 +646,8 @@ h8300_output_function_epilogue (file, size)
 
   /* Pop the saved registers in descending order.  */
   saved_regs = compute_saved_regs ();
-  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
+  for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno -= n_regs)
     {
-      int regno = (FIRST_PSEUDO_REGISTER - 1) - idx;
-
       n_regs = 1;
       if (saved_regs & (1 << regno))
 	{
