@@ -241,18 +241,17 @@ static const char *const cplus_tree_code_name[] = {
 void
 cxx_post_options ()
 {
-  cpp_post_options (parse_in);
+  c_common_post_options ();
 }
 
+/* Initialization before switch parsing.  */
 void
 cxx_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_GNUCXX);
+  c_common_init_options (clk_cplusplus);
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
-  /* Mark as "unspecified".  */
-  flag_bounds_check = -1;
   /* By default wrap lines at 80 characters.  Is getenv ("COLUMNS")
      preferable?  */
   diagnostic_line_cutoff (global_dc) = 80;
@@ -720,10 +719,7 @@ cxx_init (filename)
 
   cxx_init_decl_processing ();
 
-  /* Create the built-in __null node.  Note that we can't yet call for
-     type_for_size here because integer_type_node and so forth are not
-     set up.  Therefore, we don't set the type of these nodes until
-     cxx_init_decl_processing.  */
+  /* Create the built-in __null node.  */
   null_node = build_int_2 (0, 0);
   TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
@@ -731,7 +727,7 @@ cxx_init (filename)
   token_count = init_cpp_parse ();
   interface_unknown = 1;
 
-  filename = c_common_lang_init (filename);
+  filename = c_common_init (filename);
 
   init_cp_pragma ();
 

@@ -1,3 +1,10 @@
+2001-11-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl2.c (c_language): Move to c-common.c.
+	* lex.c (cxx_post_options, cxx_init_options): Use c-common.c
+	functions.
+	(cxx_init): Update.
+
 2001-11-26  Jason Merrill  <jason@redhat.com>
 
 	* call.c (joust): Remove COND_EXPR hack.

@@ -296,17 +296,17 @@ stack_include_file (pfile, inc)
   /* Not in cache?  */
   if (! inc->buffer)
     {
-      /* Mark a regular, zero-length file never-reread.  Zero-length
-	 files are stacked the first time, so preprocessing a main
-	 file of zero length does not raise an error.  */
-      if (S_ISREG (inc->st.st_mode) && inc->st.st_size == 0)
-	_cpp_never_reread (inc);
-      else if (read_include_file (pfile, inc))
+      if (read_include_file (pfile, inc))
 	{
 	  /* If an error occurs, do not try to read this file again.  */
 	  _cpp_never_reread (inc);
 	  return false;
 	}
+      /* Mark a regular, zero-length file never-reread.  We read it,
+	 NUL-terminate it, and stack it once, so preprocessing a main
+	 file of zero length does not raise an error.  */
+      if (S_ISREG (inc->st.st_mode) && inc->st.st_size == 0)
+	_cpp_never_reread (inc);
       close (inc->fd);
       inc->fd = -1;
     }
@@ -382,7 +382,8 @@ read_include_file (pfile, inc)
       if (pagesize == -1)
 	pagesize = getpagesize ();
 
-      if (size / pagesize >= MMAP_THRESHOLD)
+      if (size / pagesize >= MMAP_THRESHOLD
+	  && (size % pagesize) != 0)
 	{
 	  buf = (U_CHAR *) mmap (0, size, PROT_READ, MAP_PRIVATE, inc->fd, 0);
 	  if (buf == (U_CHAR *)-1)
@@ -392,7 +393,7 @@ read_include_file (pfile, inc)
       else
 #endif
 	{
-	  buf = (U_CHAR *) xmalloc (size);
+	  buf = (U_CHAR *) xmalloc (size + 1);
 	  offset = 0;
 	  while (offset < size)
 	    {
@@ -410,6 +411,8 @@ read_include_file (pfile, inc)
 		}
 	      offset += count;
 	    }
+	  /* The lexer requires that the buffer be NUL-terminated.  */
+	  buf[size] = '\0';
 	}
     }
   else if (S_ISBLK (inc->st.st_mode))
@@ -424,19 +427,25 @@ read_include_file (pfile, inc)
 	 bigger than the majority of C source files.  */
       size = 8 * 1024;
 
-      buf = (U_CHAR *) xmalloc (size);
+      buf = (U_CHAR *) xmalloc (size + 1);
       offset = 0;
       while ((count = read (inc->fd, buf + offset, size - offset)) > 0)
 	{
 	  offset += count;
 	  if (offset == size)
-	    buf = xrealloc (buf, (size *= 2));
+	    {
+	      size *= 2;
+	      buf = xrealloc (buf, size + 1);
+	    }
 	}
       if (count < 0)
 	goto perror_fail;
 
-      if (offset < size)
-	buf = xrealloc (buf, offset);
+      if (offset + 1 < size)
+	buf = xrealloc (buf, offset + 1);
+
+      /* The lexer requires that the buffer be NUL-terminated.  */
+      buf[offset] = '\0';
       inc->st.st_size = offset;
     }
 

@@ -534,7 +534,9 @@ extern void disable_builtin_function		PARAMS ((const char *));
 
 extern tree build_va_arg			PARAMS ((tree, tree));
 
-extern const char *c_common_lang_init		PARAMS ((const char *));
+extern void c_common_init_options		PARAMS ((enum c_language_kind));
+extern void c_common_post_options		PARAMS ((void));
+extern const char *c_common_init		PARAMS ((const char *));
 extern void c_common_finish			PARAMS ((void));
 extern HOST_WIDE_INT c_common_get_alias_set	PARAMS ((tree));
 extern bool c_promoting_integer_type_p		PARAMS ((tree));

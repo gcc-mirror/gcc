@@ -1158,7 +1158,7 @@ destringize_and_run (pfile, in)
   const unsigned char *src, *limit;
   char *dest, *result;
 
-  dest = result = alloca (in->len);
+  dest = result = alloca (in->len + 1);
   for (src = in->text, limit = src + in->len; src < limit;)
     {
       /* We know there is a character following the backslash.  */
@@ -1166,6 +1166,7 @@ destringize_and_run (pfile, in)
 	src++;
       *dest++ = *src++;
     }
+  *dest = '\0';
 
   run_directive (pfile, T_PRAGMA, result, dest - result);
 }
@@ -1647,9 +1648,8 @@ cpp_define (pfile, str)
      Change the first "=" in the string to a space.  If there is none,
      tack " 1" on the end.  */
 
-  /* Length including the null.  */  
   count = strlen (str);
-  buf = (char *) alloca (count + 2);
+  buf = (char *) alloca (count + 3);
   memcpy (buf, str, count);
 
   p = strchr (str, '=');
@@ -1660,6 +1660,7 @@ cpp_define (pfile, str)
       buf[count++] = ' ';
       buf[count++] = '1';
     }
+  buf[count] = '\0';
 
   run_directive (pfile, T_DEFINE, buf, count);
 }
@@ -1714,11 +1715,12 @@ handle_assertion (pfile, str, type)
     {
       /* Copy the entire option so we can modify it.  Change the first
 	 "=" in the string to a '(', and tack a ')' on the end.  */
-      char *buf = (char *) alloca (count + 1);
+      char *buf = (char *) alloca (count + 2);
 
       memcpy (buf, str, count);
       buf[p - str] = '(';
       buf[count++] = ')';
+      buf[count] = '\0';
       str = buf;
     }
 

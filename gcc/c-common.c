@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "expr.h"
 #include "c-common.h"
+#include "tree-inline.h"
 #include "diagnostic.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -78,6 +79,10 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 			? "long unsigned int"			\
 			: "long long unsigned int"))
 #endif
+
+/* The variant of the C language being processed.  */
+
+enum c_language_kind c_language;
 
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes.
@@ -2371,7 +2376,7 @@ c_common_nodes_and_builtins ()
   tree va_list_arg_type_node;
 
   /* We must initialize this before any builtin functions (which might have
-     attributes) are declared.  (c_common_lang_init is too late.)  */
+     attributes) are declared.  (c_common_init is too late.)  */
   format_attribute_table = c_format_attribute_table;
 
   /* Define `int' and `char' first so that dbx will output them first.  */
@@ -3858,17 +3863,43 @@ static bool c_attrs_initialized = false;
 
 static void c_init_attributes PARAMS ((void));
 
-/* Do the parts of lang_init common to C and C++.  */
-const char *
-c_common_lang_init (filename)
-     const char *filename;
+/* Common initialization before parsing options.  */
+void
+c_common_init_options (lang)
+     enum c_language_kind lang;
 {
-  filename = init_c_lex (filename);
+  c_language = lang;
+  parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89:
+				lang == clk_cplusplus ? CLK_GNUCXX: CLK_OBJC);
 
-  init_pragma ();
+  /* Mark as "unspecified" (see c_common_post_options).  */
+  flag_bounds_check = -1;
+}
+
+/* Post-switch processing.  */
+void
+c_common_post_options ()
+{
+  cpp_post_options (parse_in);
+
+  /* Use tree inlining if possible.  Function instrumentation is only
+     done in the RTL level, so we disable tree inlining.  */
+  if (! flag_instrument_function_entry_exit)
+    {
+      if (!flag_no_inline)
+	{
+	  flag_inline_trees = 1;
+	  flag_no_inline = 1;
+	}
+      if (flag_inline_functions)
+	{
+	  flag_inline_trees = 2;
+	  flag_inline_functions = 0;
+	}
+    }
 
   /* If still "unspecified", make it match -fbounded-pointers.  */
-  if (flag_bounds_check < 0)
+  if (flag_bounds_check == -1)
     flag_bounds_check = flag_bounded_pointers;
 
   /* Special format checking options don't work without -Wformat; warn if
@@ -3883,6 +3914,18 @@ c_common_lang_init (filename)
     warning ("-Wformat-security ignored without -Wformat");
   if (warn_missing_format_attribute && !warn_format)
     warning ("-Wmissing-format-attribute ignored without -Wformat");
+}
+
+/* Front end initialization common to C, ObjC and C++.  */
+const char *
+c_common_init (filename)
+     const char *filename;
+{
+  /* Do this before initializing pragmas, as then cpplib's hash table
+     has been set up.  */
+  filename = init_c_lex (filename);
+
+  init_pragma ();
 
   if (!c_attrs_initialized)
     c_init_attributes ();
