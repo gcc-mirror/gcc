@@ -1,3 +1,11 @@
+Tue Apr  8 11:12:07 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (legitimate_pic_address_disp_p): Do not accept PLUS in the
+	GOTOFF operand.
+	(legitimize_pic_address): Move plus outside the unspec.
+	* i386.c (legitimate_constant_p):  Check (CONST (PLUS (UNSPEC ...
+	for validity.
+
 2003-04-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h (gcov_save_position): Remove __inline__ from
