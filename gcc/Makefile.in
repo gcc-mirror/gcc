@@ -167,7 +167,7 @@ INSTALL_ASSERT_H = install-assert-h
 # The GCC to use for compiling libgcc2.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
-GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -I$(build_tooldir)/include
+GCC_FOR_TARGET = ./xgcc -B$(build_tooldir)/bin/ -B./ -I$(build_tooldir)/include
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
