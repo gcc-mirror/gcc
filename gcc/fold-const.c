@@ -7074,11 +7074,9 @@ fold (tree expr)
       {
 	HOST_WIDE_INT diff;
 
-	if (TREE_CODE (arg0) == ADDR_EXPR
-	    && TREE_CODE (arg1) == ADDR_EXPR
-	    && ptr_difference_const (TREE_OPERAND (arg0, 0),
-				     TREE_OPERAND (arg1, 0),
-				     &diff))
+	if ((TREE_CODE (arg0) == ADDR_EXPR
+	     || TREE_CODE (arg1) == ADDR_EXPR)
+	    && ptr_difference_const (arg0, arg1, &diff))
 	  return build_int_cst_type (type, diff);
       }
 	  
@@ -10815,23 +10813,49 @@ round_down (tree value, int divisor)
   return value;
 }
 
+/* Returns the pointer to the base of the object addressed by EXP and
+   extracts the information about the offset of the access, storing it
+   to PBITPOS and POFFSET.  */
+
+static tree
+split_address_to_core_and_offset (tree exp,
+				  HOST_WIDE_INT *pbitpos, tree *poffset)
+{
+  tree core;
+  enum machine_mode mode;
+  int unsignedp, volatilep;
+  HOST_WIDE_INT bitsize;
+
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    {
+      core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
+				  poffset, &mode, &unsignedp, &volatilep);
+
+      if (TREE_CODE (core) == INDIRECT_REF)
+	core = TREE_OPERAND (core, 0);
+    }
+  else
+    {
+      core = exp;
+      *pbitpos = 0;
+      *poffset = NULL_TREE;
+    }
+
+  return core;
+}
+
 /* Returns true if addresses of E1 and E2 differ by a constant, false
-   otherwise.  If they do, &E1 - &E2 is stored in *DIFF.  */
+   otherwise.  If they do, E1 - E2 is stored in *DIFF.  */
 
 bool
 ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
 {
   tree core1, core2;
-  HOST_WIDE_INT bitsize1, bitsize2;
   HOST_WIDE_INT bitpos1, bitpos2;
   tree toffset1, toffset2, tdiff, type;
-  enum machine_mode mode1, mode2;
-  int unsignedp1, unsignedp2, volatilep1, volatilep2;
 
-  core1 = get_inner_reference (e1, &bitsize1, &bitpos1, &toffset1, &mode1,
-			       &unsignedp1, &volatilep1);
-  core2 = get_inner_reference (e2, &bitsize2, &bitpos2, &toffset2, &mode2,
-			       &unsignedp2, &volatilep2);
+  core1 = split_address_to_core_and_offset (e1, &bitpos1, &toffset1);
+  core2 = split_address_to_core_and_offset (e2, &bitpos2, &toffset2);
 
   if (bitpos1 % BITS_PER_UNIT != 0
       || bitpos2 % BITS_PER_UNIT != 0

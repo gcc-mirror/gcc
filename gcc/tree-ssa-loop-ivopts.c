@@ -678,6 +678,9 @@ determine_base_object (tree expr)
       if (!base)
 	return fold_convert (ptr_type_node, expr);
 
+      if (TREE_CODE (base) == INDIRECT_REF)
+	return fold_convert (ptr_type_node, TREE_OPERAND (base, 0));
+
       return fold (build1 (ADDR_EXPR, ptr_type_node, base));
 
     case PLUS_EXPR:
@@ -2613,7 +2616,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	addr = gen_rtx_fmt_ee (MULT, Pmode, addr, GEN_INT (rat));
 
       if (var_present)
-	addr = gen_rtx_fmt_ee (PLUS, Pmode, reg1, addr);
+	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
 
       if (symbol_present)
 	{
@@ -2630,7 +2633,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	base = NULL_RTX;
     
       if (base)
-	addr = gen_rtx_fmt_ee (PLUS, Pmode, base, addr);
+	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
   
       start_sequence ();
       addr = memory_address (Pmode, addr);
@@ -2672,7 +2675,7 @@ find_depends (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
   return NULL_TREE;
 }
 
-/* Estimates cost of forcing EXPR into variable.  DEPENDS_ON is a set of the
+/* Estimates cost of forcing EXPR into a variable.  DEPENDS_ON is a set of the
    invariants the computation depends on.  */
 
 static unsigned
@@ -2683,6 +2686,9 @@ force_var_cost (struct ivopts_data *data,
   static unsigned integer_cost;
   static unsigned symbol_cost;
   static unsigned address_cost;
+  tree op0, op1;
+  unsigned cost0, cost1, cost;
+  enum machine_mode mode;
 
   if (!costs_initialized)
     {
@@ -2744,8 +2750,60 @@ force_var_cost (struct ivopts_data *data,
       return address_cost;
     }
 
-  /* Just an arbitrary value, FIXME.  */
-  return target_spill_cost;
+  switch (TREE_CODE (expr))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      op0 = TREE_OPERAND (expr, 0);
+      op1 = TREE_OPERAND (expr, 1);
+
+      if (is_gimple_val (op0))
+	cost0 = 0;
+      else
+	cost0 = force_var_cost (data, op0, NULL);
+
+      if (is_gimple_val (op1))
+	cost1 = 0;
+      else
+	cost1 = force_var_cost (data, op1, NULL);
+
+      break;
+
+    default:
+      /* Just an arbitrary value, FIXME.  */
+      return target_spill_cost;
+    }
+
+  mode = TYPE_MODE (TREE_TYPE (expr));
+  switch (TREE_CODE (expr))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      cost = add_cost (mode);
+      break;
+
+    case MULT_EXPR:
+      if (cst_and_fits_in_hwi (op0))
+	cost = multiply_by_cost (int_cst_value (op0), mode);
+      else if (cst_and_fits_in_hwi (op1))
+	cost = multiply_by_cost (int_cst_value (op1), mode);
+      else
+	return target_spill_cost;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  cost += cost0;
+  cost += cost1;
+
+  /* Bound the cost by target_spill_cost.  The parts of complicated
+     computations often are either loop invariant or at least can
+     be shared between several iv uses, so letting this grow without
+     limits would not give reasonable results.  */
+  return cost < target_spill_cost ? cost : target_spill_cost;
 }
 
 /* Estimates cost of expressing address ADDR  as var + symbol + offset.  The
@@ -2809,9 +2867,7 @@ ptr_difference_cost (struct ivopts_data *data,
 
   gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
 
-  if (TREE_CODE (e2) == ADDR_EXPR
-      && ptr_difference_const (TREE_OPERAND (e1, 0),
-			       TREE_OPERAND (e2, 0), &diff))
+  if (ptr_difference_const (e1, e2, &diff))
     {
       *offset += diff;
       *symbol_present = false;
@@ -2994,7 +3050,7 @@ get_computation_cost_at (struct ivopts_data *data,
      (symbol/var/const parts may be omitted).  If we are looking for an address,
      find the cost of addressing this.  */
   if (address_p)
-    return get_address_cost (symbol_present, var_present, offset, ratio);
+    return cost + get_address_cost (symbol_present, var_present, offset, ratio);
 
   /* Otherwise estimate the costs for computing the expression.  */
   aratio = ratio > 0 ? ratio : -ratio;
