@@ -1,3 +1,7 @@
+2001-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* loop.c (loop_delete_insns): Add prototype.
+
 2001-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* flow.c (proagate_one_insn): Remove useless assignment.
