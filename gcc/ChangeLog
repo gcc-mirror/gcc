@@ -1,3 +1,7 @@
+2000-12-05  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (warn_if_unused_value): Move side effects test earlier.
+
 2000-12-05  Alan Modra <alan@linuxcare.com.au>
 
 	* bb-reorder.c (reorder_basic_blocks): Do check for EH edges even
