@@ -2168,6 +2168,15 @@ Enables printing serialization debugging by the @code{java.io.ObjectInput} and
 @code{java.io.ObjectOutput} classes when set to something else then the empty
 string.  Only used when running a debug build of the library.
 
+@item gnu.classpath.vm.shortname
+This is a succint name of the virtual machine.  For @code{libgcj},
+this will always be @samp{libgcj}.
+
+@item gnu.classpath.home.url
+A base URL used for finding system property files (e.g.,
+@file{classpath.security}).  By default this is a @samp{file:} URL
+pointing to the @file{lib} directory under @samp{java.home}.
+
 @end table
 
 @node libgcj Runtime Properties
