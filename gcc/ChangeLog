@@ -1,3 +1,10 @@
+2003-01-25  Jerry Quinn  <jlquinn@optonline.net>
+
+	* gcc/doc/invoke.texi (Optimization Options): Group together
+	optional and experimental flags.  Move trapv and bounds-check
+	out of this section.
+	(Code Gen Options): Move trapv and bounds-check to here.
+
 2003-01-27  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcse.c (constprop_register): Check NEXT_INSN (insn) != NULL.
