@@ -606,6 +606,13 @@ convert_move (to, from, unsignedp)
       return;
     }
 
+  if (GET_CODE (to) == CONCAT && GET_CODE (from) == CONCAT)
+    {
+      convert_move (XEXP (to, 0), XEXP (from, 0), unsignedp);
+      convert_move (XEXP (to, 1), XEXP (from, 1), unsignedp);
+      return;
+    }
+
   if (to_real != from_real)
     abort ();
 

@@ -1,3 +1,7 @@
+2003-06-11  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* expr.c (convert_move): Handle moves between two CONCATs.
+
 2003-06-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (RETURN_IN_MEMORY): Accept DImode if
