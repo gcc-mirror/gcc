@@ -1,3 +1,7 @@
+2004-04-30  Paul Brook  <paul@codesourcery.com>
+
+	* arm.c (arm_needs_doubleword_align): Use mode alignment.
+
 2004-04-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/altivec/altivec.h [__cplusplus] (vec_subsubs): Rename to
@@ -7,8 +11,8 @@
 
 2004-04-30  Uros Bizjak  <uros@kss-loka.si>
 
-        * config/i386/i386.md (atansf2, atandf2, atanxf2): Move near
-        atan2?f3 expanders.
+	* config/i386/i386.md (atansf2, atandf2, atanxf2): Move near
+	atan2?f3 expanders.
 
 2004-04-29  Nick Clifton  <nickc@redhat.com>
 
@@ -20,10 +24,10 @@
 
 2004-04-30  Uros Bizjak  <uros@kss-loka.si>
 
-        * reg-stack.c (subst_stack_regs_pat): <UNSPEC_SIN, UNSPEC_COS,
-        UNSPEC_FRNDINT, UNSPEC_F2XM1>: abort() if src1 dies.
-        <UNSPEC_SINCOS_COS, UNSPEC_TAN_ONE, UNSPEC_XTRACT_FRACT>: Same.
-        <UNSPEC_SINCOS_SIN, UNSPEC_TAN_TAN, UNSPEC_XTRACT_EXP>: Same.
+	* reg-stack.c (subst_stack_regs_pat): <UNSPEC_SIN, UNSPEC_COS,
+	UNSPEC_FRNDINT, UNSPEC_F2XM1>: abort() if src1 dies.
+	<UNSPEC_SINCOS_COS, UNSPEC_TAN_ONE, UNSPEC_XTRACT_FRACT>: Same.
+	<UNSPEC_SINCOS_SIN, UNSPEC_TAN_TAN, UNSPEC_XTRACT_EXP>: Same.
 
 2004-04-29  Richard Guenther  <richard.guenther@uni-tuebingen.de>
 

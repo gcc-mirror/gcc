@@ -2318,11 +2318,8 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 bool
 arm_needs_doubleword_align (enum machine_mode mode, tree type)
 {
-  return (mode == DImode
-	  || mode == DFmode
-	  || VECTOR_MODE_SUPPORTED_P (mode)
-	  || (mode == BLKmode
-	      && TYPE_ALIGN (type) > PARM_BOUNDARY));
+  return (GET_MODE_ALIGNMENT (mode) > PARM_BOUNDARY
+	  || (type && TYPE_ALIGN (type) > PARM_BOUNDARY));
 }
 
 
