@@ -3697,8 +3697,10 @@ expand_function_start (subr, parms_have_cleanups)
   /* If function gets a static chain arg, store it in the stack frame.
      Do this first, so it gets the first stack slot offset.  */
   if (current_function_needs_context)
-    emit_move_insn (assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0),
-		    static_chain_incoming_rtx);
+    {
+      last_ptr = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+      emit_move_insn (last_ptr, static_chain_incoming_rtx);
+    }
 
   /* If the parameters of this function need cleaning up, get a label
      for the beginning of the code which executes those cleanups.  This must
@@ -3814,7 +3816,10 @@ expand_function_start (subr, parms_have_cleanups)
 
   /* Fetch static chain values for containing functions.  */
   tem = decl_function_context (current_function_decl);
-  if (tem)
+  /* If not doing stupid register allocation, then start off with the static
+     chain pointer in a pseudo register.  Otherwise, we use the stack
+     address that was generated above.  */
+  if (tem && ! obey_regdecls)
     last_ptr = copy_to_reg (static_chain_incoming_rtx);
   context_display = 0;
   while (tem)
