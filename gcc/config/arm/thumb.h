@@ -472,9 +472,15 @@ extern char * structure_size_string;
 
 #define MODES_TIEABLE_P(MODE1,MODE2) 1
 
+/* The NOARG_LO_REGS class is the set of LO_REGS that are not used for passing
+   arguments to functions.  These are the registers that are available for
+   spilling during reload.  The code in reload1.c:init_reload() will detect this
+   class and place it into 'reload_address_base_reg_class'.  */
+
 enum reg_class
 {
   NO_REGS,
+  NONARG_LO_REGS,
   LO_REGS,
   STACK_REG,
   BASE_REGS,
@@ -490,6 +496,7 @@ enum reg_class
 #define REG_CLASS_NAMES \
 {			\
   "NO_REGS",		\
+  "NONARG_LO_REGS",	\
   "LO_REGS",		\
   "STACK_REG",		\
   "BASE_REGS",		\
@@ -500,6 +507,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS	\
 {				\
   0x00000,			\
+  0x000f0,			\
   0x000ff,			\
   0x02000,			\
   0x020ff,			\
@@ -509,7 +517,8 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO)			\
  ((REGNO) == STACK_POINTER_REGNUM ? STACK_REG	\
-  : (REGNO) < 8 ? LO_REGS			\
+  : (REGNO) < 8 ? ((REGNO) < 4 ? LO_REGS	\
+		   : NONARG_LO_REGS)		\
   : HI_REGS)
 
 #define BASE_REG_CLASS BASE_REGS
@@ -555,8 +564,15 @@ enum reg_class
    abort.  Alternatively, this could be fixed by modifying BASE_REG_CLASS
    to be LO_REGS instead of BASE_REGS.  It is not clear what affect this
    change would have.  */
+/* ??? This looks even more suspiciously wrong.  PREFERRED_RELOAD_CLASS
+   must always return a strict subset of the input class.  Just blindly
+   returning LO_REGS is safe only if the input class is a superset of LO_REGS,
+   but there is no check for this.  Added another exception for NONARG_LO_REGS
+   because it is not a superset of LO_REGS.  */
+/* ??? We now use NONARG_LO_REGS for caller_save_spill_class, so the
+   comments about BASE_REGS are now obsolete.  */
 #define PREFERRED_RELOAD_CLASS(X,CLASS) \
-  ((CLASS) == BASE_REGS ? (CLASS)	\
+  ((CLASS) == BASE_REGS || (CLASS) == NONARG_LO_REGS ? (CLASS)	\
    : LO_REGS)
 /*
   ((CONSTANT_P ((X)) && GET_CODE ((X)) != CONST_INT		\
@@ -565,9 +581,10 @@ enum reg_class
       && (unsigned HOST_WIDE_INT) INTVAL ((X)) > 255) ? NO_REGS	\
    : LO_REGS) */
 
-/* Must leave BASE_REGS reloads alone, see comment above.  */
+/* Must leave BASE_REGS and NONARG_LO_REGS reloads alone, see comment
+   above.  */
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,X)				\
-   ((CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
+   ((CLASS) != LO_REGS && (CLASS) != BASE_REGS && (CLASS) != NONARG_LO_REGS \
    ? ((true_regnum (X) == -1 ? LO_REGS					\
        : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
        : NO_REGS)) 							\
@@ -885,6 +902,16 @@ int thumb_shiftable_const ();
   else if (GET_CODE (X) == PLUS)					\
     {									\
       /* REG+REG address can be any two index registers.  */		\
+      /* ??? REG+REG addresses have been completely disabled before	\
+	 reload completes, because we do not have enough available	\
+	 reload registers.  We only have 3 guaranteed reload registers	\
+	 (NONARG_LO_REGS - the frame pointer), but we need at least 4	\
+	 to support REG+REG addresses.  We have left them enabled after	\
+	 reload completes, in the hope that reload_cse_regs and related	\
+	 routines will be able to create them after the fact.  It is	\
+	 probably possible to support REG+REG addresses with additional	\
+	 reload work, but I do not not have enough time to attempt such	\
+	 a change at this time.  */					\
       /* ??? Normally checking the mode here is wrong, since it isn't	\
 	 impossible to use REG+REG with DFmode.  However, the movdf	\
 	 pattern requires offsettable addresses, and REG+REG is not	\
@@ -898,14 +925,14 @@ int thumb_shiftable_const ();
 	 will be replaced with STACK, and SP relative addressing only   \
 	 permits SP+OFFSET.  */						\
       if (GET_MODE_SIZE (MODE) <= 4					\
+	  /* ??? See comment above.  */					\
+	  && reload_completed						\
 	  && GET_CODE (XEXP (X, 0)) == REG				\
 	  && GET_CODE (XEXP (X, 1)) == REG				\
 	  && XEXP (X, 0) != frame_pointer_rtx				\
 	  && XEXP (X, 1) != frame_pointer_rtx				\
-	  /* CYGNUS LOCAL nickc */ \
 	  && XEXP (X, 0) != virtual_stack_vars_rtx			\
 	  && XEXP (X, 1) != virtual_stack_vars_rtx			\
-	  /* END CYGNUS LOCAL */ \
 	  && REG_OK_FOR_INDEX_P (XEXP (X, 0))				\
 	  && REG_OK_FOR_INDEX_P (XEXP (X, 1)))				\
 	goto WIN;							\
@@ -913,9 +940,6 @@ int thumb_shiftable_const ();
       else if (GET_CODE (XEXP (X, 0)) == REG				\
 	       && (REG_OK_FOR_INDEX_P (XEXP (X, 0))			\
 		   || XEXP (X, 0) == arg_pointer_rtx)			\
-	       /* CYGNUS LOCAL nickc */ \
-	       && GET_MODE_SIZE (MODE) != 2				\
-	       /* END CYGNUS LOCAL */ \
 	       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
 	       && LEGITIMATE_OFFSET (MODE, INTVAL (XEXP (X, 1))))	\
 	goto WIN;							\
@@ -933,6 +957,32 @@ int thumb_shiftable_const ();
     }									\
 }
 
+/* ??? If an HImode FP+large_offset address is converted to an HImode
+   SP+large_offset address, then reload won't know how to fix it.  It sees
+   only that SP isn't valid for HImode, and so reloads the SP into an index
+   register, but the resulting address is still invalid because the offset
+   is too big.  We fix it here instead by reloading the entire address.  */
+/* We could probably achieve better results by defining PROMOTE_MODE to help
+   cope with the variances between the Thumb's signed and unsigned byte and
+   halfword load instructions.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	\
+{									\
+  if (GET_CODE (X) == PLUS						\
+      && GET_MODE_SIZE (MODE) < 4					\
+      && GET_CODE (XEXP (X, 0)) == REG					\
+      && XEXP (X, 0) == stack_pointer_rtx				\
+      && GET_CODE (XEXP (X, 1)) == CONST_INT				\
+      && ! LEGITIMATE_OFFSET (MODE, INTVAL (XEXP (X, 1))))		\
+    {									\
+      rtx orig_X = X;							\
+      X = copy_rtx (X);							\
+      push_reload (orig_X, NULL_RTX, &X, NULL_PTR,			\
+		   reload_address_base_reg_class,			\
+		   Pmode, VOIDmode, 0, 0, OPNUM, TYPE);			\
+      goto WIN;								\
+    }									\
+}
+  
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)

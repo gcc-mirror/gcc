@@ -1,5 +1,13 @@
 Wed Sep 23 16:22:01 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* config/arm/thumb.h: The following patches were made by Jim Wilson:
+	(enum reg_class): Add NONARG_LO_REGS support.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS,
+	PREFERRED_RELOAD_CLASS, SECONDARY_RELOAD_CLASS): Likewise.
+	(GO_IF_LEGITIMATE_ADDRESS): Disable REG+REG addresses before reload
+	completes.  Re-enable HImode REG+OFFSET addresses.
+	(LEGITIMIZE_RELOAD_ADDRESS): Define.
+
 	* expmed.c (extract_bit_field): Add comment from Jim Wilson. 
 
 Wed Sep 23 13:26:02 1998  Richard Henderson  <rth@cygnus.com>
