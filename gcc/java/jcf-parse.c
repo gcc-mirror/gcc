@@ -530,11 +530,17 @@ read_class (tree name)
 
   if (jcf == NULL)
     {
+      const char* path_name;
       this_jcf.zipd = NULL;
       jcf = &this_jcf;
-      if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
-		      &this_jcf, 1) == 0)
+      
+      path_name = find_class (IDENTIFIER_POINTER (name),
+			      IDENTIFIER_LENGTH (name),
+			      &this_jcf, 1);
+      if (path_name == 0)
 	return 0;
+      else
+	free((char *) path_name);
     }
 
   current_jcf = jcf;
@@ -542,6 +548,7 @@ read_class (tree name)
   if (current_jcf->java_source)
     {
       const char *filename = current_jcf->filename;
+      char *real_path;
       tree given_file, real_file;
       FILE *finput;
       int generate;
@@ -551,7 +558,9 @@ read_class (tree name)
 
       given_file = get_identifier (filename);
       filename = IDENTIFIER_POINTER (given_file);
-      real_file = get_identifier (lrealpath (filename));
+      real_path = lrealpath (filename);
+      real_file = get_identifier (real_path);
+      free (real_path);
 
       generate = IS_A_COMMAND_LINE_FILENAME_P (given_file);
       output_class = current_class = NULL_TREE;
@@ -1025,7 +1034,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
   int filename_count = 0;
   location_t save_location = input_location;
-  char *list, *next;
+  char *file_list = NULL, *list, *next;
   tree node;
   FILE *finput = NULL;
   int in_quotes = 0;
@@ -1063,6 +1072,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
       fclose (finput);
       finput = NULL;
+      file_list = list;
     }
   else
     list = (char *) main_input_filename;
@@ -1138,6 +1148,9 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       list = next;
     }
 
+  if (file_list != NULL)
+    free (file_list);
+
   if (filename_count == 0)
     warning ("no input file specified");
 
@@ -1159,13 +1172,16 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   for (node = current_file_list; node; node = TREE_CHAIN (node))
     {
       unsigned char magic_string[4];
+      char *real_path;
       uint32 magic = 0;
       tree name = DECL_NAME (node);
       tree real_file;
       const char *filename = IDENTIFIER_POINTER (name);
 
       /* Skip already parsed files */
-      real_file = get_identifier (lrealpath (filename));
+      real_path = lrealpath (filename);
+      real_file = get_identifier (real_path);
+      free (real_path);
       if (HAS_BEEN_ALREADY_PARSED_P (real_file))
 	continue;
 

@@ -6955,13 +6955,13 @@ process_imports (void)
       tree to_be_found = EXPR_WFL_NODE (TREE_PURPOSE (import));
       char *original_name;
 
-      original_name = xmemdup (IDENTIFIER_POINTER (to_be_found),
-			       IDENTIFIER_LENGTH (to_be_found),
-			       IDENTIFIER_LENGTH (to_be_found) + 1);
-
       /* Don't load twice something already defined. */
       if (IDENTIFIER_CLASS_VALUE (to_be_found))
 	continue;
+
+      original_name = xmemdup (IDENTIFIER_POINTER (to_be_found),
+			       IDENTIFIER_LENGTH (to_be_found),
+			       IDENTIFIER_LENGTH (to_be_found) + 1);
 
       while (1)
 	{
