@@ -110,7 +110,6 @@ static void
 tree_ssa_phiopt (void)
 {
   basic_block bb;
-  bool removed_phis = false;
 
   /* Search every basic block for COND_EXPR we may be able to optimize
      in reverse order so we can find more.  */
@@ -191,9 +190,6 @@ tree_ssa_phiopt (void)
 	      || value_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1)
 	      || abs_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
 	    {
-	      /* We have done the replacement so we need to rebuild the
-		 cfg when this pass is complete.  */
-	      removed_phis = true;
 	    }
 	}
     }
