@@ -49,8 +49,8 @@ qualify_ambiguous_name (id)
      tree id;
 {
   tree qual, qual_wfl, decl;
-  tree name;	 /* { dg-bogus "name" "uninitialized variable warning" { xfail *-*-* } } */
-  tree ptr_type; /* { dg-bogus "ptr_type" "uninitialized variable warning" { xfail *-*-* } } */
+  tree name;	 /* { dg-bogus "name" "uninitialized variable warning" } */
+  tree ptr_type; /* { dg-bogus "ptr_type" "uninitialized variable warning" } */
   int again, new_array_found = 0;
   int super_found = 0, this_found = 0;
 
