@@ -694,9 +694,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 
 #define nativecode_ptr_type_node ptr_type_node
 
-/* They need to be reset before processing each class */
-extern GTY(()) struct CPool *outgoing_cpool; 
-
 #define wfl_operator \
   java_global_trees[JTI_WFL_OPERATOR]
 
@@ -1219,7 +1216,6 @@ extern int enclosing_context_p (tree, tree);
 extern void complete_start_java_method (tree);
 extern tree build_result_decl (tree);
 extern void emit_handlers (void);
-extern void init_outgoing_cpool (void);
 extern void make_class_data (tree);
 extern void register_class (void);
 extern int alloc_name_constant (int, tree);

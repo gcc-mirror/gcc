@@ -693,12 +693,6 @@ load_inner_classes (tree cur_class)
     }
 }
 
-void
-init_outgoing_cpool (void)
-{
-  outgoing_cpool = ggc_alloc_cleared (sizeof (struct CPool));
-}
-
 static void
 parse_class_file (void)
 {
@@ -710,7 +704,6 @@ parse_class_file (void)
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
   input_line = 0;
   (*debug_hooks->start_source_file) (input_line, input_filename);
-  init_outgoing_cpool ();
 
   /* Currently we always have to emit calls to _Jv_InitClass when
      compiling from class files.  */

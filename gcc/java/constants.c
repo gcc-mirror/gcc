@@ -37,6 +37,7 @@ static int find_class_or_string_constant (CPool *, int, tree);
 static int find_name_and_type_constant (CPool *, tree, tree);
 static tree get_tag_node (int);
 static tree build_constant_data_ref (void);
+static CPool *cpool_for_class (tree);
 
 /* Set the INDEX'th constant in CPOOL to have the given TAG and VALUE. */
 
@@ -315,8 +316,6 @@ write_constant_pool (CPool *cpool, unsigned char *buffer, int length)
     abort ();
 }
 
-CPool *outgoing_cpool;
-
 static GTY(()) tree tag_nodes[13];
 static tree
 get_tag_node (int tag)
@@ -328,6 +327,21 @@ get_tag_node (int tag)
   return tag_nodes[tag];
 }
 
+/* Given a class, return its constant pool, creating one if necessary.  */
+
+static CPool *
+cpool_for_class (tree class)
+{
+  CPool *cpool = TYPE_CPOOL (class);
+
+  if (cpool == NULL)
+    {
+      cpool = ggc_alloc_cleared (sizeof (struct CPool));
+      TYPE_CPOOL (class) = cpool;
+    }
+  return cpool;
+}
+
 /* Look for a constant pool entry that matches TAG and NAME.
    Creates a new entry if not found.
    TAG is one of CONSTANT_Utf8, CONSTANT_String or CONSTANT_Class.
@@ -337,6 +351,7 @@ get_tag_node (int tag)
 int
 alloc_name_constant (int tag, tree name)
 {
+  CPool *outgoing_cpool = cpool_for_class (current_class);
   return find_tree_constant (outgoing_cpool, tag, name);
 }
 
@@ -414,6 +429,7 @@ build_ref_from_constant_pool (int index)
 tree
 build_constants_constructor (void)
 {
+  CPool *outgoing_cpool = cpool_for_class (current_class);
   tree tags_value, data_value;
   tree cons;
   tree tags_list = NULL_TREE;
