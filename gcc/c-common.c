@@ -945,24 +945,18 @@ decl_attributes (node, attributes, prefix_attributes)
 		continue; 
 	      }
 
-	    /* Check for init_priorities that are reserved for
-               implementation. Reserved for language and runtime
-               support implementations.*/
-	    if ((10 <= pri && pri <= 99)
-		/* Reserved for standard library implementations. */
-		|| (500 <= pri && pri <= 999)
-		/* Reserved for objects with no attributes. */
-		|| pri > (MAX_INIT_PRIORITY - 50))
-	      {
-		warning
-		  ("requested init_priority is reserved for internal use");
-		continue;
-	      }
-
 	    if (pri > MAX_INIT_PRIORITY || pri <= 0)
 	      {
 		error ("requested init_priority is out of range");
 		continue;
+	      }
+
+	    /* Check for init_priorities that are reserved for
+               language and runtime support implementations.*/
+	    if (pri <= MAX_RESERVED_INIT_PRIORITY)
+	      {
+		warning 
+		  ("requested init_priority is reserved for internal use");
 	      }
 
 	    static_aggregates_initp
