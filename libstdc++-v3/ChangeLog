@@ -1,5 +1,18 @@
 2001-03-24  Phil Edwards  <pme@sources.redhat.com>
 
+	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_FEATURES):  Update comment.
+	* src/Makefile.am:  Replace leading spaces with tabs on continuation
+	lines.
+	* aclocal.m4:  Regenerated.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+
+2001-03-24  Phil Edwards  <pme@sources.redhat.com>
+
 	* docs/html/19_diagnostics/howto.html:  HTML fixup.  Describe
 	concept-checking code and current status of same.
 	* docs/html/ext/howto.html:  Ditto.
