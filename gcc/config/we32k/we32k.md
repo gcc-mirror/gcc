@@ -802,24 +802,29 @@
 
 ;; truncate instructions
 
-(define_insn "truncdfsf2"
-  [(clobber (reg:SI 0))
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (float_truncate:SF (match_operand:DF 1 "general_operand" "orF")))
    (clobber (reg:SI 1))
-   (clobber (reg:SI 2))
-   (set (match_operand:SF 0 "nonimmediate_operand" "=mr")
-        (float_truncate:SF (match_operand:DF 1 "general_operand" "orF")))]
-  ""
+   (clobber (reg:SI 2))]
+  "REGNO (operands[0]) == 0"
   "*
   {
   output_push_double(&operands[1]);
   output_asm_insn(\"call &2, _fdtos\");
 
-  if (GET_CODE (operands[0]) != REG || REGNO (operands[0]) != 0)
-    output_asm_insn(\"movw %%r0, %0\", operands);
-
   return \"\";
   }")
 
+(define_expand "truncdfsf2"
+  [(parallel [(set (reg:SF 0)
+               (float_truncate:SF (match_operand:DF 1 "general_operand" "orF")))
+              (clobber (reg:SI 1))
+              (clobber (reg:SI 2))])
+   (set (match_operand:SF 0 "nonimmediate_operand" "=mr")
+        (reg:SF 0))]
+  ""
+  "")
 
 (define_insn "truncsihi2"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=mr")
@@ -841,28 +846,27 @@
 
 ;; sign-extend move instructions
 
-(define_insn "extendsfdf2"
-  [(clobber (reg:SI 0))
-   (clobber (reg:SI 1))
-   (clobber (reg:SI 2))
-   (set (match_operand:DF 0 "nonimmediate_operand" "=or")
-        (float_extend:DF (match_operand:SF 1 "general_operand" "mrF")))]
-  ""
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=r")
+        (float_extend:DF (match_operand:SF 1 "general_operand" "mrF")))
+   (clobber (reg:SI 2))]
+  "REGNO (operands[0]) == 0"
   "*
   {
-  rtx xoperands[2];
-
   output_asm_insn(\"pushw %1\", operands);
   output_asm_insn(\"call &1, _fstod\");
 
-  if (GET_CODE (operands[0]) != REG || REGNO (operands[0]) != 0) {
-    xoperands[0] = operands[0];
-    xoperands[1] = gen_rtx(REG, DFmode, 0);
-    output_move_double(xoperands);
-    }
-
   return \"\";
   }")
+
+(define_expand "extendsfdf2"
+  [(parallel [(set (reg:DF 0)
+               (float_extend:DF (match_operand:SF 1 "general_operand" "mrF")))
+              (clobber (reg:SI 2))])
+   (set (match_operand:DF 0 "nonimmediate_operand" "=or")
+        (reg:DF 0))]
+  ""
+  "")
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
@@ -1189,11 +1193,6 @@
 
 ;; jump instructions
 
-(define_insn ""
-  [(set (pc) (mem:SI (match_operand:SI 0 "address_operand" "p")))]
-  "GET_CODE (operands[0]) != MEM"
-  "jmp *%a0")
-
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))]
   ""
@@ -1203,29 +1202,3 @@
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
   "jmp %l0")
-
-;; peephole optimizations
-
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "nonimmediate_operand" "or"))
-   (set (match_operand:SI 2 "register_operand" "=r")
-        (mem:SI (match_dup 0)))]
-  "REGNO (operands[0]) == REGNO (operands[2]) && (REG_P (operands[1]) || offsettable_memref_p (operands[1]))"
-  "movw %a1, %0")
-
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "nonimmediate_operand" "or"))
-   (set (match_operand:HI 2 "register_operand" "=r")
-        (mem:HI (match_dup 0)))]
-  "REGNO (operands[0]) == REGNO (operands[2]) && (REG_P (operands[1]) || offsettable_memref_p (operands[1]))"
-  "movh %a1, %0")
-
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "nonimmediate_operand" "or"))
-   (set (match_operand:QI 2 "register_operand" "=r")
-        (mem:QI (match_dup 0)))]
-  "REGNO (operands[0]) == REGNO (operands[2]) && (REG_P (operands[1]) || offsettable_memref_p (operands[1]))"
-  "movb %a1, %0")
