@@ -1869,7 +1869,8 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	    
 	    /* Both operands may be of pointer type.  FIXME: Shouldn't
 	       we just expect PTR + OFFSET always?  */
-	    if (POINTER_TYPE_P (TREE_TYPE (op0)))
+	    if (POINTER_TYPE_P (TREE_TYPE (op0))
+		&& TREE_CODE (op0) != INTEGER_CST)
 	      {
 		if (TREE_CODE (op0) == SSA_NAME)
 		  merge_pointed_to_info (ai, var, op0);
@@ -1879,7 +1880,8 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 		  add_pointed_to_expr (var, op0);
 	      }
 
-	    if (POINTER_TYPE_P (TREE_TYPE (op1)))
+	    if (POINTER_TYPE_P (TREE_TYPE (op1))
+		&& TREE_CODE (op1) != INTEGER_CST)
 	      {
 		if (TREE_CODE (op1) == SSA_NAME)
 		  merge_pointed_to_info (ai, var, op1);
@@ -1892,8 +1894,10 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	    /* Neither operand is a pointer?  VAR can be pointing
 	       anywhere.  FIXME: Is this right?  If we get here, we
 	       found PTR = INT_CST + INT_CST.  */
-	    if (!POINTER_TYPE_P (TREE_TYPE (op0))
-		&& !POINTER_TYPE_P (TREE_TYPE (op1)))
+	    if (!(POINTER_TYPE_P (TREE_TYPE (op0))
+		  && TREE_CODE (op0) != INTEGER_CST)
+		&& !(POINTER_TYPE_P (TREE_TYPE (op1))
+		     && TREE_CODE (op1) != INTEGER_CST))
 	      add_pointed_to_expr (var, rhs);
 	  }
 

@@ -1,3 +1,9 @@
+2004-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-alias.c (collect_points_to_info_r): Handle
+	pointing to PTR + OFFSET as PTR, not as pointing to PTR or pointing
+	to OFFSET.
+
 2004-09-11  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr_addr_expr_1) Rename from expand_expr_addr_expr.
