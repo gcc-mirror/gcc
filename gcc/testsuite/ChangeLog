@@ -1,3 +1,7 @@
+2003-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030123-1.c: New test.
+
 Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/8492
