@@ -1,3 +1,8 @@
+Fri Oct 10 18:54:39 CEST 2003  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
+
+	* gcov-io.h: Check BITS_PER_UNIT when defining gcov_unsigned_t,
+	gcov_position_t and gcov_type.
+
 2003-10-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.in (HAVE_AS_TLS): Add sh-*-* and sh[34]*-*-* cases.
