@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "typeclass.h"
 #include "toplev.h"
+#include "predict.h"
 #include "tm_p.h"
 
 #define CALLED_AS_BUILT_IN(NODE) \
@@ -3232,8 +3233,9 @@ expand_builtin_fputs (arglist, ignore)
 		      VOIDmode, EXPAND_NORMAL);
 }
 
-/* Expand a call to __builtin_expect.  We return our argument and
-   emit a NOTE_INSN_EXPECTED_VALUE note.  */
+/* Expand a call to __builtin_expect.  We return our argument and emit a
+   NOTE_INSN_EXPECTED_VALUE note.  This is the expansion of __builtin_expect in
+   a non-jump context.  */
 
 static rtx
 expand_builtin_expect (arglist, target)
@@ -3273,6 +3275,115 @@ expand_builtin_expect (arglist, target)
 
   return target;
 }
+
+/* Like expand_builtin_expect, except do this in a jump context.  This is
+   called from do_jump if the conditional is a __builtin_expect.  Return either
+   a SEQUENCE of insns to emit the jump or NULL if we cannot optimize
+   __builtin_expect.  We need to optimize this at jump time so that machines
+   like the PowerPC don't turn the test into a SCC operation, and then jump
+   based on the test being 0/1.  */
+
+rtx
+expand_builtin_expect_jump (exp, if_false_label, if_true_label)
+     tree exp;
+     rtx if_false_label;
+     rtx if_true_label;
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  rtx ret = NULL_RTX;
+
+  /* Only handle __builtin_expect (test, 0) and
+     __builtin_expect (test, 1).  */
+  if (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
+      && TREE_CODE (arg1) == INTEGER_CST
+      && (TREE_INT_CST_LOW (arg1) == 0 || TREE_INT_CST_LOW (arg1) == 1)
+      && TREE_INT_CST_HIGH (arg1) == 0)
+    {
+      int j;
+      int num_jumps = 0;
+
+      /* Expand the jump insns.  */
+      start_sequence ();
+      do_jump (arg0, if_false_label, if_true_label);
+      ret = gen_sequence ();
+      end_sequence ();
+
+      /* Now that the __builtin_expect has been validated, go through and add
+	 the expect's to each of the conditional jumps.  If we run into an
+	 error, just give up and generate the 'safe' code of doing a SCC
+	 operation and then doing a branch on that.  */
+      for (j = 0; j < XVECLEN (ret, 0); j++)
+	{
+	  rtx insn = XVECEXP (ret, 0, j);
+	  rtx pattern;
+
+	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn)
+	      && (pattern = pc_set (insn)) != NULL_RTX)
+	    {
+	      rtx ifelse = SET_SRC (pattern);
+	      rtx label;
+	      int taken;
+
+	      if (GET_CODE (ifelse) != IF_THEN_ELSE)
+		continue;
+
+	      if (GET_CODE (XEXP (ifelse, 1)) == LABEL_REF)
+		{
+		  taken = 1;
+		  label = XEXP (XEXP (ifelse, 1), 0);
+		}
+	      /* An inverted jump reverses the probabilities.  */
+	      else if (GET_CODE (XEXP (ifelse, 2)) == LABEL_REF)
+		{
+		  taken = 0;
+		  label = XEXP (XEXP (ifelse, 2), 0);
+		}
+	      /* We shouldn't have to worry about conditional returns during
+		 the expansion stage, but handle it gracefully anyway.  */
+	      else if (GET_CODE (XEXP (ifelse, 1)) == RETURN)
+		{
+		  taken = 1;
+		  label = NULL_RTX;
+		}
+	      /* An inverted return reverses the probabilities.  */
+	      else if (GET_CODE (XEXP (ifelse, 2)) == RETURN)
+		{
+		  taken = 0;
+		  label = NULL_RTX;
+		}
+	      else
+		continue;
+
+	      /* If the test is expected to fail, reverse the
+		 probabilities.  */
+	      if (TREE_INT_CST_LOW (arg1) == 0)
+		taken = 1 - taken;
+
+	      /* If we are jumping to the false label, reverse the
+		 probabilities.  */
+	      if (label == NULL_RTX)
+		;		/* conditional return */
+	      else if (label == if_false_label)
+		taken = 1 - taken;
+	      else if (label != if_true_label)
+		continue;
+
+	      num_jumps++;
+	      predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
+	    }
+	}
+
+      /* If no jumps were modified, fail and do __builtin_expect the normal
+	 way.  */
+      if (num_jumps == 0)
+	ret = NULL_RTX;
+    }
+
+  return ret;
+}
+
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
