@@ -1,6 +1,6 @@
 // link.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -94,6 +94,109 @@ _Jv_Linker::resolve_field (_Jv_Field *field, java::lang::ClassLoader *loader)
     }
 }
 
+// A helper for find_field that knows how to recursively search
+// superclasses and interfaces.
+_Jv_Field *
+_Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
+			       jclass *declarer)
+{
+  while (search)
+    {
+      // From 5.4.3.2.  First search class itself.
+      for (int i = 0; i < search->field_count; ++i)
+	{
+	  _Jv_Field *field = &search->fields[i];
+	  if (_Jv_equalUtf8Consts (field->name, name))
+	    {
+	      *declarer = search;
+	      return field;
+	    }
+	}
+
+      // Next search direct interfaces.
+      for (int i = 0; i < search->interface_count; ++i)
+	{
+	  _Jv_Field *result = find_field_helper (search->interfaces[i], name,
+						 declarer);
+	  if (result)
+	    return result;
+	}
+
+      // Now search superclass.
+      search = search->superclass;
+    }
+
+  return NULL;
+}
+
+// Find a field.
+// KLASS is the class that is requesting the field.
+// OWNER is the class in which the field should be found.
+// FIELD_TYPE_NAME is the type descriptor for the field.
+// This function does the class loader type checks, and
+// also access checks.  Returns the field, or throws an
+// exception on error.
+_Jv_Field *
+_Jv_Linker::find_field (jclass klass, jclass owner,
+			_Jv_Utf8Const *field_name,
+			_Jv_Utf8Const *field_type_name)
+{
+  jclass field_type = 0;
+
+  if (owner->loader != klass->loader)
+    {
+      // FIXME: The implementation of this function
+      // (_Jv_FindClassFromSignature) will generate an instance of
+      // _Jv_Utf8Const for each call if the field type is a class name
+      // (Lxx.yy.Z;).  This may be too expensive to do for each and
+      // every fieldref being resolved.  For now, we fix the problem
+      // by only doing it when we have a loader different from the
+      // class declaring the field.
+      field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
+					       klass->loader);
+    }
+
+  jclass found_class = 0;
+  _Jv_Field *the_field = find_field_helper (owner, field_name, &found_class);
+
+  if (the_field == 0)
+    {
+      java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+      sb->append(JvNewStringLatin1("field "));
+      sb->append(owner->getName());
+      sb->append(JvNewStringLatin1("."));
+      sb->append(_Jv_NewStringUTF(field_name->chars()));
+      sb->append(JvNewStringLatin1(" was not found."));
+      throw new java::lang::NoSuchFieldError (sb->toString());
+    }
+
+  if (_Jv_CheckAccess (klass, found_class, the_field->flags))
+    {
+      // Resolve the field using the class' own loader if necessary.
+
+      if (!the_field->isResolved ())
+	resolve_field (the_field, found_class->loader);
+
+      if (field_type != 0 && the_field->type != field_type)
+	throw new java::lang::LinkageError
+	  (JvNewStringLatin1 
+	   ("field type mismatch with different loaders"));
+    }
+  else
+    {
+      java::lang::StringBuffer *sb
+	= new java::lang::StringBuffer ();
+      sb->append(klass->getName());
+      sb->append(JvNewStringLatin1(": "));
+      sb->append(found_class->getName());
+      sb->append(JvNewStringLatin1("."));
+      sb->append(_Jv_NewStringUtf8Const (field_name));
+      throw new java::lang::IllegalAccessError(sb->toString());
+    }
+
+  return the_field;
+}
+
 _Jv_word
 _Jv_Linker::resolve_pool_entry (jclass klass, int index)
 {
@@ -173,72 +276,8 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index)
 	_Jv_Utf8Const *field_name = pool->data[name_index].utf8;
 	_Jv_Utf8Const *field_type_name = pool->data[type_index].utf8;
 
-	// FIXME: The implementation of this function
-	// (_Jv_FindClassFromSignature) will generate an instance of
-	// _Jv_Utf8Const for each call if the field type is a class name
-	// (Lxx.yy.Z;).  This may be too expensive to do for each and
-	// every fieldref being resolved.  For now, we fix the problem by
-	// only doing it when we have a loader different from the class
-	// declaring the field.
-
-	jclass field_type = 0;
-
-	if (owner->loader != klass->loader)
-	  field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
-						   klass->loader);
-      
-	_Jv_Field* the_field = 0;
-
-	for (jclass cls = owner; cls != 0; cls = cls->getSuperclass ())
-	  {
-	    for (int i = 0;  i < cls->field_count;  i++)
-	      {
-		_Jv_Field *field = &cls->fields[i];
-		if (! _Jv_equalUtf8Consts (field->name, field_name))
-		  continue;
-
-		if (_Jv_CheckAccess (klass, cls, field->flags))
-		  {
-		    // Resolve the field using the class' own loader if
-		    // necessary.
-
-		    if (!field->isResolved ())
-		      resolve_field (field, cls->loader);
-
-		    if (field_type != 0 && field->type != field_type)
-		      throw new java::lang::LinkageError
-			(JvNewStringLatin1 
-			 ("field type mismatch with different loaders"));
-
-		    the_field = field;
-		    goto end_of_field_search;
-		  }
-		else
-		  {
-		    java::lang::StringBuffer *sb
-		      = new java::lang::StringBuffer ();
-		    sb->append(klass->getName());
-		    sb->append(JvNewStringLatin1(": "));
-		    sb->append(cls->getName());
-		    sb->append(JvNewStringLatin1("."));
-		    sb->append(_Jv_NewStringUtf8Const (field_name));
-		    throw new java::lang::IllegalAccessError(sb->toString());
-		  }
-	      }
-	  }
-
-      end_of_field_search:
-	if (the_field == 0)
-	  {
-	    java::lang::StringBuffer *sb = new java::lang::StringBuffer();
-	    sb->append(JvNewStringLatin1("field "));
-	    sb->append(owner->getName());
-	    sb->append(JvNewStringLatin1("."));
-	    sb->append(_Jv_NewStringUTF(field_name->chars()));
-	    sb->append(JvNewStringLatin1(" was not found."));
-	    throw
-	      new java::lang::IncompatibleClassChangeError (sb->toString());
-	  }
+	_Jv_Field *the_field = find_field (klass, owner, field_name,
+					   field_type_name);
 
 	pool->data[index].field = the_field;
 	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
@@ -296,7 +335,7 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index)
 	    ifaces.list = (jclass *) _Jv_Malloc (ifaces.len
 						 * sizeof (jclass *));
 
-	    get_interfaces (owner, &ifaces);	  
+	    get_interfaces (owner, &ifaces);
 
 	    for (int i = 0; i < ifaces.count; i++)
 	      {
@@ -885,55 +924,15 @@ _Jv_Linker::link_symbol_table (jclass klass)
 	  continue;
 	}
 
-      // try fields
+      // Try fields.
       {
-	_Jv_Field *the_field = NULL;
-
 	wait_for_state(target_class, JV_STATE_PREPARED);
-	for (jclass cls = target_class; cls != 0; cls = cls->getSuperclass ())
-	  {
-	    for (int i = 0; i < cls->field_count; i++)
-	      {
-		_Jv_Field *field = &cls->fields[i];
-		if (! _Jv_equalUtf8Consts (field->name, sym.name))
-		  continue;
-
-		// FIXME: What access checks should we perform here?
-// 		if (_Jv_CheckAccess (klass, cls, field->flags))
-// 		  {
-
-		if (!field->isResolved ())
-		  resolve_field (field, cls->loader);
-
-// 		if (field_type != 0 && field->type != field_type)
-// 		  throw new java::lang::LinkageError
-// 		    (JvNewStringLatin1 
-// 		     ("field type mismatch with different loaders"));
-
-		the_field = field;
-		if (debug_link)
-		  fprintf (stderr, "  offsets[%d] = %d (class %s@%p : %s)\n",
-			   (int)index,
-			   (int)field->u.boffset,
-			   (const char*)cls->name->chars(),
-			   cls,
-			   (const char*)field->name->chars());
-		goto end_of_field_search;
-	      }
-	  }
-      end_of_field_search:
-	if (the_field != NULL)
-	  {
-	    if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
-	      throw new java::lang::IncompatibleClassChangeError;
-	    else
-	      klass->otable->offsets[index] = the_field->u.boffset;
-	  }
+	_Jv_Field *the_field = find_field (klass, target_class,
+					   sym.name, sym.signature);
+	if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
+	  throw new java::lang::IncompatibleClassChangeError;
 	else
-	  {
-	    throw new java::lang::NoSuchFieldError
-	      (_Jv_NewStringUtf8Const (sym.name));
-	  }
+	  klass->otable->offsets[index] = the_field->u.boffset;
       }
     }
 
@@ -1005,48 +1004,15 @@ _Jv_Linker::link_symbol_table (jclass klass)
 	  continue;
 	}
 
-      // try fields
+      // Try fields.
       {
-	_Jv_Field *the_field = NULL;
-
 	wait_for_state(target_class, JV_STATE_PREPARED);
-	for (jclass cls = target_class; cls != 0; cls = cls->getSuperclass ())
-	  {
-	    for (int i = 0; i < cls->field_count; i++)
-	      {
-		_Jv_Field *field = &cls->fields[i];
-		if (! _Jv_equalUtf8Consts (field->name, sym.name))
-		  continue;
-
-		// FIXME: What access checks should we perform here?
-// 		if (_Jv_CheckAccess (klass, cls, field->flags))
-// 		  {
-
-		if (!field->isResolved ())
-		  resolve_field (field, cls->loader);
-
-// 		if (field_type != 0 && field->type != field_type)
-// 		  throw new java::lang::LinkageError
-// 		    (JvNewStringLatin1 
-// 		     ("field type mismatch with different loaders"));
-
-		the_field = field;
-		goto end_of_static_field_search;
-	      }
-	  }
-      end_of_static_field_search:
-	if (the_field != NULL)
-	  {
-	    if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
-	      klass->atable->addresses[index] = the_field->u.addr;
-	    else
-	      throw new java::lang::IncompatibleClassChangeError;
-	  }
+	_Jv_Field *the_field = find_field (klass, target_class,
+					   sym.name, sym.signature);
+	if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
+	  klass->atable->addresses[index] = the_field->u.addr;
 	else
-	  {
-	    throw new java::lang::NoSuchFieldError
-	      (_Jv_NewStringUtf8Const (sym.name));
-	  }
+	  throw new java::lang::IncompatibleClassChangeError;
       }
     }
 

@@ -1,3 +1,14 @@
+2005-01-10  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/18868:
+	* include/jvm.h (_Jv_Linker::find_field): Declare.
+	(_Jv_Linker::find_field_helper): Likewise.
+	* link.cc (find_field_helper): New method.
+	(find_field): Likewise.
+	(resolve_pool_entry): Use it.  Throw NoSuchFieldError when field
+	not found.
+	(link_symbol_table): Use find_field.
+
 2005-01-10  Michael Koch  <konqueror@gmx.de>
 
 	PR libgcj/18014
