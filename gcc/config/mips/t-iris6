@@ -28,6 +28,9 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 # -hidden_symbol option, which is documented to be ignored in conjunction
 # with -exports_file), but fails to actually hide any symbols.
 # -Wl,-exports_file,@shlib_map_file@
+SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $(slibdir)/@shlib_base_name@.so.0; \
+	rm -f $(slibdir)/@shlib_base_name@; \
+	$(LN_S) @shlib_base_name@.so.0 $(slibdir)/@shlib_base_name@.so
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver 
 

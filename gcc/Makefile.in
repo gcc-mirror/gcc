@@ -312,6 +312,8 @@ unlibsubdir = ../../..
 dollar = @dollar@
 # Used in install-cross.
 gcc_tooldir = @gcc_tooldir@
+# Used to install the shared libgcc.
+slibdir = @slibdir@
 # Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
 build_tooldir = $(exec_prefix)/$(target_alias)
 # Directory in which the compiler finds target-independent g++ includes.
@@ -1023,6 +1025,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
 	SHLIB_LINK='$(SHLIB_LINK)' \
+	SHLIB_INSTALL='$(SHLIB_INSTALL)' \
 	SHLIB_EXT='$(SHLIB_EXT)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
 	SHLIB_MKMAP='$(SHLIB_MKMAP)' \
@@ -2429,6 +2432,7 @@ installdirs:
 	-if [ -d $(gcc_tooldir) ] ; then true ; else mkdir $(gcc_tooldir) ; chmod a+rx $(gcc_tooldir) ; fi
 	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; chmod a+rx $(assertdir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
+	-if [ -d $(slibdir) ] ; then true ; else mkdir $(slibdir) ; chmod a+rx $(slibdir) ; fi
 # We don't use mkdir -p to create the parents of man1dir,
 # because some systems don't support it.
 # Instead, we use this technique to create the immediate parent of man1dir.
@@ -2553,29 +2557,30 @@ install-man: installdirs $(srcdir)/gcc.1 $(GENERATED_MANPAGES) lang.install-man
 	-chmod a-x $(man1dir)/gcov$(manext)
 
 # Install the library.
-install-libgcc: libgcc.a installdirs
-	-if [ -f libgcc.a ] ; then \
-	  rm -f $(libsubdir)/libgcc.a; \
-	  $(INSTALL_DATA) libgcc.a $(libsubdir)/libgcc.a; \
-	  if $(RANLIB_TEST_FOR_TARGET) ; then \
-	    (cd $(libsubdir); $(RANLIB_FOR_TARGET) libgcc.a); else true; fi; \
-	  chmod a-x $(libsubdir)/libgcc.a; \
-	else true; fi
+install-libgcc: libgcc.mk libgcc.a installdirs
+	if $(RANLIB_TEST_FOR_TARGET); then \
+	  r_f_t=$(RANLIB_FOR_TARGET); \
+	else \
+	  r_f_t=: ; \
+	fi; \
+	$(MAKE) INSTALL_DATA="$(INSTALL_DATA)" \
+	  RANLIB_FOR_TARGET="$$r_f_t" \
+	  libsubdir="$(libsubdir)" \
+	  slibdir="$(slibdir)" \
+	  -f libgcc.mk install
 
 # Install multiple versions of libgcc.a.
 install-multilib: stmp-multilib installdirs
-	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
-	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; chmod a+rx $(libsubdir)/$${dir}; fi; \
-	  for f in libgcc.a $(EXTRA_MULTILIB_PARTS); do \
-	    rm -f $(libsubdir)/$${dir}/$${f}; \
-	    $(INSTALL_DATA) $${dir}/$${f} $(libsubdir)/$${dir}/$${f}; \
-	  done; \
-	  if $(RANLIB_TEST_FOR_TARGET); then \
-	    (cd $(libsubdir)/$${dir}; $(RANLIB_FOR_TARGET) libgcc.a); \
-	  else true; fi; \
-	  chmod a-x $(libsubdir)/$${dir}/libgcc.a; \
-	done
+	if $(RANLIB_TEST_FOR_TARGET); then \
+	  r_f_t=$(RANLIB_FOR_TARGET); \
+	else \
+	  r_f_t=: ; \
+	fi; \
+	$(MAKE) INSTALL_DATA="$(INSTALL_DATA)" \
+	  RANLIB_FOR_TARGET="$$r_f_t" \
+	  libsubdir="$(libsubdir)" \
+	  slibdir="$(slibdir)" \
+	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
 install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)

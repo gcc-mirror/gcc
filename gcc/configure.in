@@ -1802,6 +1802,21 @@ fi
 AC_SUBST(gcc_tooldir)
 AC_SUBST(dollar)
 
+# Find a directory in which to install a shared libgcc.
+
+AC_ARG_ENABLE(version-specific-runtime-libs,
+[  --enable-version-specific-runtime-libs    Specify that runtime libraries shou
+ld be installed in a compiler-specific directory ])
+
+if [ "${enable_version_specific_runtime_libs-no}" = "yes" ]; then
+  slibdir='$(libsubdir)'
+elif [ "$host" != "$target" ]; then
+  slibdir='$(build_tooldir)/lib'
+else
+  slibdir='$(prefix)/lib'
+fi
+AC_SUBST(slibdir)
+
 # Nothing to do for FLOAT_H, float_format already handled.
 objdir=`pwd`
 AC_SUBST(objdir)

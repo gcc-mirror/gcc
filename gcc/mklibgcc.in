@@ -29,6 +29,7 @@
 # SHLIB_MKMAP
 # SHLIB_MAPFILES
 # SHLIB_NM_FLAGS
+# SHLIB_INSTALL
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -382,3 +383,46 @@ done
 
 echo ""
 echo "all: $all"
+
+echo ""
+echo "install: $all"
+for ml in $MULTILIBS; do
+  dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+  if [ $dir != . ]; then
+    ldir='$(libsubdir)'/$dir
+    echo "	if [ -d $ldir ]; then true; else mkdir $ldir; chmod a+rx $ldir; fi;"
+  else
+    ldir='$(libsubdir)'
+  fi
+  echo '	$(INSTALL_DATA)' ${dir}/libgcc.a ${ldir}/
+  echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc.a
+
+  if [ "$SHLIB_LINK" ]; then
+    if [ -z "$SHLIB_MULTILIB" ]; then
+      if [ "$dir" = "." ]; then
+	shlib_base_name="libgcc_s";
+      else
+	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
+      fi
+      echo "	$SHLIB_INSTALL" \
+	| sed -e "s%@shlib_base_name@%$shlib_base_name%g"
+    elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
+      shlib_base_name="libgcc_s";
+      echo "	$SHLIB_INSTALL" \
+	| sed -e "s%@shlib_base_name@%$shlib_base_name%g"
+    fi
+  fi
+done
+for f in $EXTRA_MULTILIB_PARTS; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    if [ $dir != . ]; then
+      out=${dir}/$f
+      ldir='$(libsubdir)'/$dir
+    else
+      out=$f
+      ldir='$(libsubdir)'
+    fi
+    echo '	$(INSTALL_DATA)' $out $ldir/
+  done
+done
