@@ -7660,7 +7660,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 #if 0
   /* There's no need to do this now that combine.c can eliminate lots of
      sign extensions.  This can be less efficient in certain cases on other
-     machines.
+     machines. */
 
   /* If this is a signed equality comparison, we can do it as an
      unsigned comparison since zero-extension is cheaper than sign
