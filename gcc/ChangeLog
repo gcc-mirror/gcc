@@ -7,9 +7,6 @@
 
 	* tree.c (save_expr): No longer TREE_READONLY.
 
-	* fold-const.c (operand_equal_p): Remove code to allow null ARG0/1.
-	Define locals macros OP_SAME and OP_SAME_WITH_NULL and use throughout.
-
 2004-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (rest_of_clean_state):  Fix merge conflict made during
