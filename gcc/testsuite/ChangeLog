@@ -1,3 +1,7 @@
+2001-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20010912-1.c: New test.
+
 2001-09-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.misc-tests/gcov.exp: Move almost everything to a new,
