@@ -2601,7 +2601,7 @@ legitimate_address_p (mode, addr, strict)
     }
 
   if (GET_CODE (addr) == REG || GET_CODE (addr) == SUBREG)
-      base = addr;
+    base = addr;
 
   else if (GET_CODE (addr) == PLUS)
     {
@@ -2691,6 +2691,12 @@ legitimate_address_p (mode, addr, strict)
 	  return FALSE;
 	}
 
+      if (GET_MODE (base) != Pmode)
+	{
+	  ADDR_INVALID ("Base is not in Pmode.\n", base);
+	  return FALSE;
+	}
+
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (base))
 	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (base)))
 	{
@@ -2709,6 +2715,12 @@ legitimate_address_p (mode, addr, strict)
       if (GET_CODE (indx) != REG)
 	{
 	  ADDR_INVALID ("Index is not a register.\n", indx);
+	  return FALSE;
+	}
+
+      if (GET_MODE (indx) != Pmode)
+	{
+	  ADDR_INVALID ("Index is not in Pmode.\n", indx);
 	  return FALSE;
 	}
 
