@@ -1,3 +1,8 @@
+2002-10-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7676
+	* class.c (add_method): Compare template parms too.
+	
 2002-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (globals): Add entity and need_abi_warning.
