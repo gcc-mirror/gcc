@@ -1,3 +1,7 @@
+2000-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (joust): Fix handling of overloaded builtin operators.
+
 2000-05-30  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-tree.h (DECL_ANTICIPATED): New macro.

@@ -5128,7 +5128,7 @@ joust (cand1, cand2, warn)
       /* Kludge around broken overloading rules whereby
 	 Integer a, b; test ? a : b; is ambiguous, since there's a builtin
 	 that takes references and another that takes values.  */
-      if (DECL_OVERLOADED_OPERATOR_P (cand1->fn) == COND_EXPR)
+      if (cand1->fn == ansi_opname (COND_EXPR))
 	{
 	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
 	  tree c2 = TREE_VEC_ELT (cand2->convs, 1);
