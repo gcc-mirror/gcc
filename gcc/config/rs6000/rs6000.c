@@ -12863,6 +12863,10 @@ gen_frame_mem_offset (enum machine_mode mode, rtx reg, int offset)
   return gen_rtx_MEM (mode, gen_rtx_PLUS (Pmode, reg, offset_rtx));
 }
 
+#ifndef TARGET_FIX_AND_CONTINUE
+#define TARGET_FIX_AND_CONTINUE 0
+#endif
+
 /* Emit function prologue as insns.  */
 
 void
@@ -12880,11 +12884,24 @@ rs6000_emit_prologue (void)
   int using_store_multiple;
   HOST_WIDE_INT sp_offset = 0;
   
-   if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
-     {
-       reg_mode = V2SImode;
-       reg_size = 8;
-     }
+  if (TARGET_FIX_AND_CONTINUE)
+    {
+      /* gdb on darwin arranges to forward a function from the old
+	 address by modifying the first 4 instructions of the function
+	 to branch to the overriding function.  This is necessary to
+	 permit function pointers that point to the old function to
+	 actually forward to the new function.  */
+      emit_insn (gen_nop ());
+      emit_insn (gen_nop ());
+      emit_insn (gen_nop ());
+      emit_insn (gen_nop ());
+    }
+
+  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
+    {
+      reg_mode = V2SImode;
+      reg_size = 8;
+    }
 
   using_store_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
 			  && (!TARGET_SPE_ABI

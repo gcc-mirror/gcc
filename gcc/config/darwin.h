@@ -812,8 +812,16 @@ objc_section_init (void)			\
 /* Set on a symbol with SYMBOL_FLAG_FUNCTION or
    MACHO_SYMBOL_FLAG_VARIABLE to indicate that the function or
    variable has been defined in this translation unit.  */
+
 #define MACHO_SYMBOL_FLAG_VARIABLE (SYMBOL_FLAG_MACH_DEP)
 #define MACHO_SYMBOL_FLAG_DEFINED ((SYMBOL_FLAG_MACH_DEP) << 1)
+
+/* Set on a symbol to indicate when fix-and-continue style code
+   generation is being used and the symbol refers to a static symbol
+   that should be rebound from new instances of a translation unit to
+   the original instance of the data.  */
+
+#define MACHO_SYMBOL_STATIC ((SYMBOL_FLAG_MACH_DEP) << 2)
 
 /* Symbolic names for various things we might know about a symbol.  */
 

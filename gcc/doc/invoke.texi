@@ -7010,6 +7010,17 @@ without that switch.  Using this switch may require recompiling all
 other modules in a program, including system libraries.  Use this 
 switch to conform to a non-default data model.
 
+@item -mfix-and-continue
+@itemx -ffix-and-continue
+@itemx -findirect-data
+@opindex mfix-and-continue
+@opindex ffix-and-continue
+@opindex findirect-data
+Generate code suitable for fast turn around development.  Needed to
+enable gdb to dynamically load @code{.o} files into already running
+programs.  @option{-findirect-data} and @option{-ffix-and-continue}
+are provided for backwards compatibility.
+
 @item -all_load
 @opindex all_load
 Loads all members of static archive libraries.

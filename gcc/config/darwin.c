@@ -44,6 +44,37 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "hashtab.h"
 
+/* Darwin supports a feature called fix-and-continue, which is used
+   for rapid turn around debugging.  When code is compiled with the
+   -mfix-and-continue flag, two changes are made to the generated code
+   that allow the system to do things that it would normally not be
+   able to do easily.  These changes allow gdb to load in
+   recompilation of a translation unit that has been changed into a
+   running program and replace existing functions and methods of that
+   translation unit with with versions of those functions and methods
+   from the newly compiled translation unit.  The new functions access
+   the existing static data from the old translation unit, if the data
+   existed in the unit to be replaced, and from the new translation
+   unit, for new data.
+
+   The changes are to insert 4 nops at the beginning of all functions
+   and to use indirection to get at static duration data.  The 4 nops
+   are required by consumers of the generated code.  Currently, gdb
+   uses this to patch in a jump to the overriding function, this
+   allows all uses of the old name to forward to the replacement,
+   including existing function poiinters and virtual methods.  See
+   rs6000_emit_prologue for the code that handles the nop insertions.
+ 
+   The added indirection allows gdb to redirect accesses to static
+   duration data from the newly loaded translation unit to the
+   existing data, if any.  @code{static} data is special and is
+   handled by setting the second word in the .non_lazy_symbol_pointer
+   data structure to the address of the data.  See indirect_data for
+   the code that handles the extra indirection, and
+   machopic_output_indirection and its use of MACHO_SYMBOL_STATIC for
+   the code that handles @code{static} data indirection.  */
+
+
 /* Nonzero if the user passes the -mone-byte-bool switch, which forces
    sizeof(bool) to be 1. */
 const char *darwin_one_byte_bool = 0;
@@ -90,9 +121,51 @@ machopic_classify_symbol (rtx sym_ref)
 	    ? MACHOPIC_UNDEFINED_FUNCTION : MACHOPIC_UNDEFINED_DATA);
 }
 
+#ifndef TARGET_FIX_AND_CONTINUE
+#define TARGET_FIX_AND_CONTINUE 0
+#endif
+
+/* Indicate when fix-and-continue style code generation is being used
+   and when a reference to data should be indirected so that it can be
+   rebound in a new translation unit to refernce the original instance
+   of that data.  Symbol names that are for code generation local to
+   the translation unit are bound to the new translation unit;
+   currently this means symbols that begin with L or _OBJC_;
+   otherwise, we indicate that an indirect reference should be made to
+   permit the runtime to rebind new instances of the translation unit
+   to the original instance of the data.  */
+
+static int
+indirect_data (rtx sym_ref)
+{
+  int lprefix;
+  const char *name;
+
+  /* If we aren't generating fix-and-continue code, don't do anything special.  */
+  if (TARGET_FIX_AND_CONTINUE == 0)
+    return 0;
+
+  /* Otherwise, all symbol except symbols that begin with L or _OBJC_
+     are indirected.  Symbols that begin with L and _OBJC_ are always
+     bound to the current translation unit as they are used for
+     generated local data of the translation unit.  */
+
+  name = XSTR (sym_ref, 0);
+
+  lprefix = (((name[0] == '*' || name[0] == '&')
+              && (name[1] == 'L' || (name[1] == '"' && name[2] == 'L')))
+             || (strncmp (name, "_OBJC_", 6)));
+
+  return ! lprefix;
+}
+
+
 static int
 machopic_data_defined_p (rtx sym_ref)
 {
+  if (indirect_data (sym_ref))
+    return 0;
+
   switch (machopic_classify_symbol (sym_ref))
     {
     case MACHOPIC_DEFINED_DATA:
@@ -799,7 +872,8 @@ machopic_output_indirection (void **slot, void *data)
 
       machopic_output_stub (asm_out_file, sym, stub);    
     }
-  else if (machopic_symbol_defined_p (symbol))
+  else if (! indirect_data (symbol)
+	   && machopic_symbol_defined_p (symbol))
     {
       data_section ();
       assemble_align (GET_MODE_ALIGNMENT (Pmode));
@@ -810,6 +884,8 @@ machopic_output_indirection (void **slot, void *data)
     }
   else
     {
+      rtx init = const0_rtx;
+
       machopic_nl_symbol_ptr_section ();
       assemble_name (asm_out_file, ptr_name);
       fprintf (asm_out_file, ":\n");
@@ -818,7 +894,18 @@ machopic_output_indirection (void **slot, void *data)
       assemble_name (asm_out_file, sym_name);
       fprintf (asm_out_file, "\n");
       
-      assemble_integer (const0_rtx, GET_MODE_SIZE (Pmode),
+      /* Variables that are marked with MACHO_SYMBOL_STATIC need to
+	 have their symbol name instead of 0 in the second entry of
+	 the non-lazy symbol pointer data structure when they are
+	 defined.  This allows the runtime to rebind newer instances
+	 of the translation unit with the original instance of the
+	 data.  */
+
+      if ((SYMBOL_REF_FLAGS (symbol) & MACHO_SYMBOL_STATIC)
+	  && machopic_symbol_defined_p (symbol))
+	init = gen_rtx_SYMBOL_REF (Pmode, sym_name);
+
+      assemble_integer (init, GET_MODE_SIZE (Pmode),
 			GET_MODE_ALIGNMENT (Pmode), 1);
     }
   
@@ -829,7 +916,7 @@ void
 machopic_finish (FILE *asm_out_file)
 {
   if (machopic_indirections)
-    htab_traverse_noresize (machopic_indirections, 
+    htab_traverse_noresize (machopic_indirections,
 			    machopic_output_indirection,
 			    asm_out_file);
 }
@@ -887,6 +974,11 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 	  || (!DECL_COMMON (decl) && DECL_INITIAL (decl)
 	      && DECL_INITIAL (decl) != error_mark_node)))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_DEFINED;
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && indirect_data (sym_ref)
+      && ! TREE_PUBLIC (decl))
+    SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_STATIC;
 }
 
 void
@@ -1257,5 +1349,14 @@ darwin_file_end (void)
     }
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
+
+/* True, iff we're generating fast turn around debugging code.  When
+   true, we arrange for function prologues to start with 4 nops so
+   that gdb may insert code to redirect them, and for data to accessed
+   indirectly.  The runtime uses this indirection to forward
+   references for data to the original instance of that data.  */
+
+int darwin_fix_and_continue;
+const char *darwin_fix_and_continue_switch;
 
 #include "gt-darwin.h"
