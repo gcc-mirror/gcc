@@ -713,6 +713,8 @@ combine_instructions (f, nregs)
 	}
     }
 
+  delete_noop_moves (f);
+
   if (need_refresh)
     {
       compute_bb_for_insn (get_max_uid ());
@@ -9598,8 +9600,12 @@ recog_for_combine (pnewpat, insn, pnotes)
   old_notes = REG_NOTES (insn);
   REG_NOTES (insn) = 0;
 
-  /* Is the result of combination a valid instruction?  */
-  insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+  /* Is the result of combination a valid instruction?
+     Recognize all noop sets, these will be killed by followup pass.  */
+  if (GET_CODE (pat) == SET && set_noop_p (pat))
+    insn_code_number = INT_MAX;
+  else
+    insn_code_number = recog (pat, insn, &num_clobbers_to_add);
 
   /* If it isn't, there is the possibility that we previously had an insn
      that clobbered some register as a side effect, but the combined
@@ -9624,7 +9630,11 @@ recog_for_combine (pnewpat, insn, pnotes)
       if (pos == 1)
 	pat = XVECEXP (pat, 0, 0);
 
-      insn_code_number = recog (pat, insn, &num_clobbers_to_add);
+      /* Recognize all noop sets, these will be killed by followup pass.  */
+      if (GET_CODE (pat) == SET && set_noop_p (pat))
+	insn_code_number = INT_MAX;
+      else
+        insn_code_number = recog (pat, insn, &num_clobbers_to_add);
     }
 
   REG_NOTES (insn) = old_notes;
@@ -12325,10 +12335,16 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		 is still a REG_DEAD note, but we have hit the beginning
 		 of the block.  If the existing life info says the reg
 		 was dead, there's nothing left to do.  Otherwise, we'll
-		 need to do a global life update after combine.  */
-	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0
-		  && REGNO_REG_SET_P (bb->global_live_at_start,
-				      REGNO (XEXP (note, 0))))
+		 need to do a global life update after combine.  
+	       
+		 Similary we need to update in case insn is an dead set
+		 we are about to remove soon.
+	       */
+	      if (REG_NOTE_KIND (note) == REG_DEAD
+		  && ((place && noop_move_p (place))
+		      || (place == 0
+			  && REGNO_REG_SET_P (bb->global_live_at_start,
+					       REGNO (XEXP (note, 0))))))
 		{
 		  SET_BIT (refresh_blocks, this_basic_block);
 		  need_refresh = 1;
