@@ -134,9 +134,6 @@ void GC_push_all_stacks()
 	    		        (LPCONTEXT)&thread_table[i].context))
 	  ABORT("GetThreadContext failed");
 #	ifdef I386
-	  if (thread_table[i].context.Esp >= (DWORD)thread_table[i].stack
-	      || thread_table[i].context.Esp < (DWORD)bottom)
-	      ABORT("Thread stack pointer out of range");
 	  GC_push_one ((word) thread_table[i].context.Edi);
     	  GC_push_one ((word) thread_table[i].context.Esi);
     	  GC_push_one ((word) thread_table[i].context.Ebp);
