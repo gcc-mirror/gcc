@@ -3312,6 +3312,10 @@ TAGS: lang.tags
 	mv tmp-tags/* .;					     \
 	rmdir tmp-tags)
 
+# ------------------------------------------------------
+# Bootstrap-related targets (not used during 'make all')
+# ------------------------------------------------------
+
 # A list of files to be destroyed during "lean" builds.
 VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 
@@ -3807,8 +3811,10 @@ risky-stage4: stage4
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
 .PHONY: stagefeedback stageprofile
 
+# -----------------------------------------------------
 # Rules for generating translated message descriptions.
 # Disabled by autoconf if the tools are not available.
+# -----------------------------------------------------
 
 XGETTEXT = @XGETTEXT@
 GMSGFMT = @GMSGFMT@
