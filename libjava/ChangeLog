@@ -1,3 +1,104 @@
+2003-02-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/dnd/DragSourceContext.java
+	(addDragSourceListener): Added documentation.
+	* java/awt/dnd/DragSourceDragEvent.java
+	(serialVersionUID): New member variable.
+	(getDropAction): Reformated.
+	* java/awt/dnd/DragSourceDropEvent.java
+	(serialVersionUID): New member variable.
+	(dropSuccess): Renamed from success for serialization issues.
+	* java/awt/dnd/DragSourceEvent.java
+	(serialVersionUID): New member variable.
+	* java/awt/dnd/DropTarget.java
+	(serialVersionUID): New member variable.
+	(DropTarget): Implemented, documentation reworked.
+	(setComponent): Documentation added.
+	(getComponent): Documentation added.
+	(setDefaultActions): Documentation added.
+	(getDefaultActions): Documentation added.
+	(addDropTargetListener): Documentation added.
+	* java/awt/dnd/DropTargetContext.java
+	(DropTargetContext): Documentation added.
+	(TransferableProxy.TransferableProxy): New method.
+	(dropComplete): Fixed documentation.
+	(getTransferable): Fixed documentation.
+	(createTransferableProxy): Implemented.
+	* java/awt/dnd/DropTargetDragEvent.java
+	(DropTargetDragEvent): Documentation added.
+	(serialVersionUID): New member variable.
+	(DropTargetDragEvent): Throw exceptions, documentation added.
+	(acceptDrag): Implemented.
+	(getCurrentDataFlavors): Implemented.3yy
+	(getCurrentDataFlavorsAsList): Implemented.
+	(isDataFlavorSupported): Implemented.
+	(rejectDrag): Implemented.
+	* java/awt/dnd/DropTargetDropEvent.java
+	(DropTargetDropEvent): Documentation added.
+	(serialVersionUID): New member variable.
+	(actions): Renamed from srcActions for serialization issues.
+	(isLocalTx): Renamed from isLocalTx for serialization issues.
+	(DropTargetDropEvent): New implementation, throw exceptions,
+	documentation added.
+	(getCurrentDataFlavors): Implemented.
+	(getCurrentDataFlavorsAsList): Implemented.
+	(isDataFlavorSupported): Implemented.
+	(getSourceActions): Implemented.
+	(getDropAction): Implemented.
+	(getTransferable): Implemented.
+	(acceptDrop): Implemented.
+	(rejectDrop): Implemented.
+	* java/awt/dnd/DropTargetListener.java
+	(drop): Fixed documentation.
+	* java/awt/dnd/MouseDragGestureRecognizer.java
+	(MouseDragGestureRecognizer): Documentation added.
+
+2003-02-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/font/FontRenderContext.java,
+	java/awt/font/ShapeGraphicAttribute.java,
+	java/awt/font/MultipleMaster.java,
+	java/awt/font/TransformAttribute.java,
+	java/awt/font/GlyphJustificationInfo.java,
+	java/awt/font/LineBreakMeasurer.java,
+	java/awt/font/TextMeasurer.java,
+	java/awt/font/TextLayout.java,
+	java/awt/font/LineMetrics.java,
+	java/awt/font/TextAttribute.java,
+	java/awt/font/GlyphMetrics.java,
+	java/awt/font/OpenType.java,
+	java/awt/font/GlyphVector.java,
+	java/awt/font/GraphicAttribute.java,
+	java/awt/font/ImageGraphicAttribute.java,
+	java/awt/font/NumericShaper.java: New files.
+	* Makefile.am
+	(awt_java_source_files): Added the following files:
+	java/awt/font/FontRenderContext.java
+	java/awt/font/ShapeGraphicAttribute.java
+	java/awt/font/MultipleMaster.java
+	java/awt/font/TransformAttribute.java
+	java/awt/font/GlyphJustificationInfo.java
+	java/awt/font/LineBreakMeasurer.java
+	java/awt/font/TextMeasurer.java
+	java/awt/font/TextLayout.java
+	java/awt/font/LineMetrics.java
+	java/awt/font/TextAttribute.java
+	java/awt/font/GlyphMetrics.java
+	java/awt/font/OpenType.java
+	java/awt/font/GlyphVector.java
+	java/awt/font/GraphicAttribute.java
+	java/awt/font/ImageGraphicAttribute.java
+	java/awt/font/NumericShaper.java
+	* Makefile.in: Regenerated.
+
+2003-02-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/print/Paper.java
+	(Paper): Implements Cloneable.
+	* java/awt/print/PrinterJob.java
+	(setJobName): Return value must be void.
+	(print): Throws PrinterException.
+	
 2003-02-16  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::pop_jump): Removed unused

@@ -43,7 +43,7 @@ package java.awt.print;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Paper
+public class Paper implements Cloneable
 {
 
 /*

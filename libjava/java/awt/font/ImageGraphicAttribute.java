@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* ImageGraphicAttribute.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,74 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.geom.Rectangle2D;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public class ImageGraphicAttribute extends GraphicAttribute
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  private Image image;
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  public ImageGraphicAttribute (Image image, int alignment)
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    super (alignment);
+    this.image = image;
   }
 
-  public DragSourceEvent(DragSourceContext context, int x, int y)
+  public ImageGraphicAttribute (Image image, int alignment, float originX,
+                                float originY)
   {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
+    super (alignment);
+    this.image = image;
+    
+    throw new Error ("not implemented");
   }
 
-  public DragSourceContext getDragSourceContext()
+  public void draw (Graphics2D graphics, float x, float y)
   {
-    return (DragSourceContext) source;
+    throw new Error ("not implemented");
   }
 
-  public Point getLocation()
+  public boolean equals (Object obj)
   {
-    return locationSpecified ? new Point(x, y) : null;
+    if (! (obj instanceof ImageGraphicAttribute))
+      return false;
+
+    return equals ((ImageGraphicAttribute) obj);
   }
 
-  public int getX()
+  public boolean equals (ImageGraphicAttribute rhs)
   {
-    return x;
+    throw new Error ("not implemented");
   }
 
-  public int getY()
+  public float getAdvance ()
   {
-    return y;
+    throw new Error ("not implemented");
   }
-} // class DragSourceEvent
+
+  public float getAscent ()
+  {
+    throw new Error ("not implemented");
+  }
+
+  public Rectangle2D getBounds () 
+  {
+    throw new Error ("not implemented");
+  }
+
+  public float getDescent ()
+  {
+    throw new Error ("not implemented");
+  }
+
+  public int hashCode ()
+  {
+    throw new Error ("not implemented");
+  }
+}

@@ -50,6 +50,11 @@ import java.util.TooManyListenersException;
 public class DropTarget
   implements DropTargetListener, EventListener, Serializable
 {
+  /**
+   * Compatible with JDK 1.2+
+   */
+  private static final long serialVersionUID = -6283860791671019047L;
+
   protected static class DropTargetAutoScroller
     implements ActionListener
   {
@@ -74,64 +79,85 @@ public class DropTarget
   private boolean isActive = false;
     
   /**
-   * FIXME
+   * Creates a <code>DropTarget</code> object.
    *
-   * @exception HeadlessException FIXME
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
    */
   public DropTarget ()
   {
+    this (null, 0, null, true, null);
   }
   
   /**
-   * FIXME
+   * Creates a <code>DropTarget</code> object.
    *
-   * @exception HeadlessException FIXME
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
    */
   public DropTarget (Component c, DropTargetListener dtl)
   {
+    this (c, 0, dtl, true, null);
   }
   
   /**
-   * FIXME
+   * Creates a <code>DropTarget</code> object.
    *
-   * @exception HeadlessException FIXME
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
    */
   public DropTarget (Component c, int i, DropTargetListener dtl)
   {
+    this (c, i, dtl, true, null);
   }
   
   /**
-   * FIXME
+   * Creates a <code>DropTarget</code> object.
    *
-   * @exception HeadlessException FIXME
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
    */
   public DropTarget (Component c, int i, DropTargetListener dtl, boolean b)
   {
+    this (c, i, dtl, b, null);
   }
   
   /**
-   * FIXME
+   * Creates a <code>DropTarget</code> object.
    *
-   * @exception HeadlessException FIXME
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless()
+   * returns true.
    */
   public DropTarget (Component c, int i, DropTargetListener dtl, boolean b,
-		     FlavorMap fm)
+                     FlavorMap fm)
   {
   }
 
+  /**
+   * Sets the component associated with this drop target object.
+   */
   public void setComponent (Component c)
   {
   }
 
+  /**
+   * Returns the component associated with this drop target object.
+   */
   public Component getComponent ()
   {
     return null;
   }
 
+  /**
+   * Sets the default actions.
+   */
   public void setDefaultActions (int ops)
   {
   }
 
+  /**
+   * Returns the default actions.
+   */
   public int getDefaultActions ()
   {
     return 0;
@@ -148,7 +174,10 @@ public class DropTarget
   }
 
   /**
-   * @exception TooManyListenersException FIXME
+   * Adds a new <code>DropTargetListener</code>.
+   * 
+   * @exception TooManyListenersException If there is already a
+   * <code>DropTargetListener</code>.
    */
   public void addDropTargetListener (DropTargetListener dtl)
     throws TooManyListenersException

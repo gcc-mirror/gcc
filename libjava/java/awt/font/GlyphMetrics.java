@@ -1,5 +1,5 @@
-/* DragSourceDragEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* GlyphMetrics.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,67 +36,99 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import gnu.java.awt.EventModifier;
+import java.awt.geom.Rectangle2D;
 
 /**
  * @author Michael Koch
- * @since 1.2
  */
-public class DragSourceDragEvent extends DragSourceEvent
+public final class GlyphMetrics
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = 481346297933902471L;
-
-  private final int dropAction;
-  private final int targetActions;
-  private final int gestureModifiers;
-
-  public DragSourceDragEvent(DragSourceContext context, int dropAction,
-                             int actions, int modifiers)
+  public static final byte COMBINING = 2;
+  public static final byte COMPONENT = 3;
+  public static final byte LIGATURE = 1;
+  public static final byte STANDARD = 0;
+  public static final byte WHITESPACE = 4;
+ 
+  private boolean horizontal;
+  private float advanceX;
+  private float advanceY;
+  private Rectangle2D bounds;
+  private byte glyphType;
+  
+  public GlyphMetrics (boolean horizontal, float advanceX, float advanceY,
+                       Rectangle2D bounds, byte glyphType)
   {
-    super(context);
-    this.dropAction = dropAction;
-    targetActions = actions;
-    gestureModifiers = EventModifier.extend(modifiers);
+    this.horizontal = horizontal;
+    this.advanceX = advanceX;
+    this.advanceY = advanceY;
+    this.bounds = bounds;
+    this.glyphType = glyphType;
+  }
+  
+  public GlyphMetrics (float advance, Rectangle2D bounds, byte glyphType)
+  {
+    this (true, advance, advance, bounds, glyphType);
   }
 
-  public DragSourceDragEvent(DragSourceContext context, int dropAction,
-                             int actions, int modifiers, int x, int y)
+  public float getAdvance ()
   {
-    super(context, x, y);
-    this.dropAction = dropAction;
-    targetActions = actions;
-    gestureModifiers = EventModifier.extend(modifiers);
+    return horizontal ? advanceX : advanceY;
   }
 
-  public int getTargetActions()
+  public float getAdvanceX ()
   {
-    return targetActions;
+    return advanceX;
   }
 
-  public int getGestureModifiers()
+  public float getAdvanceY ()
   {
-    return EventModifier.revert(gestureModifiers);
+    return advanceY;
   }
 
-  public int getGestureModifiersEx()
+  public Rectangle2D getBounds2D ()
   {
-    return gestureModifiers;
+    return bounds;
   }
 
-  public int getUserAction()
+  public float getLSB ()
   {
-    return dropAction;
+    throw new Error ("not implemented");
   }
 
-  public int getDropAction()
+  public float getRSB ()
   {
-    return (dropAction
-            & targetActions
-            & ((DragSourceContext) source).getSourceActions());
+    throw new Error ("not implemented");
   }
-} // class DragSourceDragEvent
+
+  public int getType ()
+  {
+    return glyphType;
+  }
+
+  public boolean isCombining ()
+  {
+    return (glyphType == COMBINING);
+  }
+
+  public boolean isComponent ()
+  {
+    return (glyphType == COMPONENT);
+  }
+
+  public boolean isLigature()
+  {
+    return (glyphType == LIGATURE);
+  }
+
+  public boolean isStandard()
+  {
+    return (glyphType == STANDARD);
+  }
+
+  public boolean isWhitespace()
+  {
+    return (glyphType == WHITESPACE);
+  }
+}

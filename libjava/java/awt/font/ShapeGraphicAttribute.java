@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* ShapeGraphicAttribute.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,70 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
-/**
- * @since 1.2
- */
-public class DragSourceEvent extends EventObject
+public final class ShapeGraphicAttribute extends GraphicAttribute
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  public static final boolean FILL = false;
+  public static final boolean STROKE = true;
+
+  private Shape shape;
+  private boolean stroke;
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  public ShapeGraphicAttribute (Shape shape, int alignment, boolean stroke)
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    super (alignment);
+    this.shape = shape;
+    this.stroke = stroke;
   }
 
-  public DragSourceEvent(DragSourceContext context, int x, int y)
+  public void draw (Graphics2D graphics, float x, float y)
   {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
+    throw new Error ("not implemented");
   }
 
-  public DragSourceContext getDragSourceContext()
+  public boolean equals (Object obj)
   {
-    return (DragSourceContext) source;
+    if (! (obj instanceof ShapeGraphicAttribute))
+      return false;
+
+    return equals ((ShapeGraphicAttribute) obj);
   }
 
-  public Point getLocation()
+  public boolean equals (ShapeGraphicAttribute rhs)
   {
-    return locationSpecified ? new Point(x, y) : null;
+    return (shape.equals (rhs.shape)
+            && getAlignment () == rhs.getAlignment ()
+            && stroke == rhs.stroke);
   }
 
-  public int getX()
+  public float getAdvance ()
   {
-    return x;
+    throw new Error ("not implemented");
   }
 
-  public int getY()
+  public float getAscent ()
   {
-    return y;
+    throw new Error ("not implemented");
   }
-} // class DragSourceEvent
+
+  public Rectangle2D getBounds ()
+  {
+    return shape.getBounds2D ();
+  }
+
+  public float getDescent ()
+  {
+    throw new Error ("not implemented");
+  }
+
+  public int hashCode ()
+  {
+    // FIXME: Check what SUN does here
+    return shape.hashCode ();
+  }
+}

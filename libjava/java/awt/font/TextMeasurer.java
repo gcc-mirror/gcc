@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* TextMeasurer.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,62 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.text.AttributedCharacterIterator;
 
 /**
- * @since 1.2
+ * @author Michael Koch
+ * @since 1.3
  */
-public class DragSourceEvent extends EventObject
+public final class TextMeasurer implements Cloneable
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  private AttributedCharacterIterator ci;
+  private FontRenderContext frc;
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  public TextMeasurer (AttributedCharacterIterator text, FontRenderContext frc)
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    this.ci = text;
+    this.frc = frc;
   }
 
-  public DragSourceEvent(DragSourceContext context, int x, int y)
+  protected Object clone ()
   {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
+    try
+      {
+        return super.clone ();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        // This may never occur
+        throw new InternalError ();
+      }
   }
 
-  public DragSourceContext getDragSourceContext()
+  public void deleteChar (AttributedCharacterIterator newParagraph,
+                          int deletePos)
   {
-    return (DragSourceContext) source;
+    throw new Error ("not implemented");
   }
 
-  public Point getLocation()
+  public float getAdvanceBetween (int start, int limit)
   {
-    return locationSpecified ? new Point(x, y) : null;
+    throw new Error ("not implemented");
   }
 
-  public int getX()
+  public TextLayout getLayout (int start, int limit)
   {
-    return x;
+    throw new Error ("not implemented");
   }
 
-  public int getY()
+  public int getLineBreakIndex (int start, float maxAdvance)
   {
-    return y;
+    throw new Error ("not implemented");
   }
-} // class DragSourceEvent
+
+  public void insertChar (AttributedCharacterIterator newParagraph,
+                          int insertPos)
+  {
+    throw new Error ("not implemented");
+  }
+}

@@ -1,5 +1,5 @@
-/* DragSourceEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* GraphicAttribute.java
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,58 +36,49 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.awt.dnd;
+package java.awt.font;
 
-import java.awt.Point;
-import java.util.EventObject;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 
 /**
- * @since 1.2
+ * @author Michael Koch
  */
-public class DragSourceEvent extends EventObject
+public abstract class GraphicAttribute
 {
-  /**
-   * Compatible with JDK 1.2+
-   */
-  private static final long serialVersionUID = -763287114604032641L;
+  public static final int BOTTOM_ALIGNMENT = -2;
+  public static final int CENTER_BASELINE = 1;
+  public static final int HANGING_BASELINE = 2;
+  public static final int ROMAN_BASELINE = 0;
+  public static final int TOP_ALIGNMENT = -1;
+
+  private int alignment;
   
-  private final boolean locationSpecified;
-  private final int x;
-  private final int y;
-
-  public DragSourceEvent(DragSourceContext context)
+  protected GraphicAttribute (int alignment)
   {
-    super(context);
-    locationSpecified = false;
-    x = 0;
-    y = 0;
+    this.alignment = alignment;
   }
 
-  public DragSourceEvent(DragSourceContext context, int x, int y)
+  public abstract void draw (Graphics2D graphics, float x, float y);
+
+  public abstract float getAdvance ();
+
+  public int getAlignment ()
   {
-    super(context);
-    locationSpecified = true;
-    this.x = x;
-    this.y = y;
+    return alignment;
   }
 
-  public DragSourceContext getDragSourceContext()
+  public abstract float getAscent ();
+
+  public Rectangle2D getBounds ()
   {
-    return (DragSourceContext) source;
+    throw new Error ("not implemented");
   }
 
-  public Point getLocation()
-  {
-    return locationSpecified ? new Point(x, y) : null;
-  }
+  public abstract float getDescent ();
 
-  public int getX()
+  public GlyphJustificationInfo getJustificationInfo ()
   {
-    return x;
+    throw new Error ("not implemented");
   }
-
-  public int getY()
-  {
-    return y;
-  }
-} // class DragSourceEvent
+}

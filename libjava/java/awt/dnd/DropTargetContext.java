@@ -46,6 +46,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.List;
 
+/**
+ * @author Michael Koch <konqueror@gmx.de>
+ * @since 1.2
+ */
 public class DropTargetContext implements Serializable
 {
   static final long serialVersionUID = -634158968993743371L;
@@ -55,6 +59,12 @@ public class DropTargetContext implements Serializable
     protected boolean isLocal;
     protected Transferable transferable;
 
+    TransferableProxy (Transferable t, boolean local)
+    {
+      this.transferable = t;
+      this.isLocal = local;
+    }
+    
     public DataFlavor[] getTransferDataFlavors ()
     {
       // FIXME: implement this
@@ -110,9 +120,9 @@ public class DropTargetContext implements Serializable
   }
 
   /**
-   * FIXME
+   * Signals that the drop is completed.
    *
-   * @exception InvalidDnDOperationException FIXME
+   * @exception InvalidDnDOperationException If a drop is not outstanding.
    */
   public void dropComplete (boolean success)
   {
@@ -158,9 +168,9 @@ public class DropTargetContext implements Serializable
   }
 
   /**
-   * FIXME
+   * Return the <code>Transferable</code> operandof this operation.
    *
-   * @exception InvalidDnDOperationException FIXME
+   * @exception InvalidDnDOperationException If a drag is not outstanding.
    */
   protected Transferable getTransferable() throws InvalidDnDOperationException
   {
@@ -170,7 +180,6 @@ public class DropTargetContext implements Serializable
 
   protected Transferable createTransferableProxy(Transferable t, boolean local)
   {
-    // FIXME: implement this
-    return null;
+    return new TransferableProxy (t, local);
   }
 } // class DropTargetContext

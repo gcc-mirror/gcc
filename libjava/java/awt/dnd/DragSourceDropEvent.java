@@ -46,30 +46,35 @@ package java.awt.dnd;
  */
 public class DragSourceDropEvent extends DragSourceEvent
 {
+  /**
+   * Compatible with JDK 1.2+
+   */
+  private static final long serialVersionUID = -5571321229470821891L;
+
   private final int dropAction;
-  private final boolean success;
+  private final boolean dropSuccess;
 
   public DragSourceDropEvent (DragSourceContext context)
   {
     super (context);
     this.dropAction = 0;
-    this.success = false;
+    this.dropSuccess = false;
   }
   
   public DragSourceDropEvent (DragSourceContext context, int dropAction,
-                              boolean success)
+                              boolean dropSuccess)
   {
     super (context);
     this.dropAction = dropAction;
-    this.success = success;
+    this.dropSuccess = dropSuccess;
   }
 
   public DragSourceDropEvent (DragSourceContext context, int dropAction,
-                              boolean success, int x, int y)
+                              boolean dropSuccess, int x, int y)
   {
     super (context, x, y);
     this.dropAction = dropAction;
-    this.success = success;
+    this.dropSuccess = dropSuccess;
   }
 
   public int getDropAction()
@@ -79,6 +84,6 @@ public class DragSourceDropEvent extends DragSourceEvent
 
   public boolean getDropSuccess()
   {
-    return success;
+    return dropSuccess;
   }
 } // class DragSourceDropEvent

@@ -81,7 +81,7 @@ public interface DropTargetListener extends EventListener
   void dragExit (DropTargetEvent e);
 
   /**
-   * FIXME
+   * Called when the drag operation has terminated with a drop.
    *
    * @param e the drag source drag event
    */
