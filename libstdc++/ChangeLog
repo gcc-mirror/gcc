@@ -1,3 +1,10 @@
+Tue Nov 25 23:16:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	London changes to string:
+	* std/bastring.cc (check_realloc): Don't be selfish anymore.
+	* std/bastring.h (non-const operator[]): Be selfish.
+	(iterator forms of insert and erase): Stay selfish.
+
 Tue Nov 25 14:03:43 1997  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (stmp-complex, bigstmp-complex): Changed to

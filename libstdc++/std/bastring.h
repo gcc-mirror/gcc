@@ -220,9 +220,9 @@ public:
   basic_string& insert (size_type pos, size_type n, charT c)
     { return replace (pos, 0, n, c); }
   iterator insert(iterator p, charT c)
-    { insert (p - ibegin (), 1, c); return p; }
+    { insert (p - ibegin (), 1, c); selfish (); return p; }
   iterator insert(iterator p, size_type n, charT c)
-    { insert (p - ibegin (), n, c); return p; }
+    { insert (p - ibegin (), n, c); selfish (); return p; }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
     void insert(iterator p, InputIterator first, InputIterator last)
@@ -234,9 +234,9 @@ public:
   basic_string& erase (size_type pos = 0, size_type n = npos)
     { return replace (pos, n, (size_type)0, (charT)0); }
   iterator erase(iterator p)
-    { replace (p - ibegin (), 1, (size_type)0, (charT)0); return p; }
+    { replace (p-ibegin (), 1, (size_type)0, (charT)0); selfish (); return p; }
   iterator erase(iterator f, iterator l)
-    { replace (f - ibegin (), l - f, (size_type)0, (charT)0); return f; }
+    { replace (f-ibegin (), l-f, (size_type)0, (charT)0);selfish ();return f; }
 
   basic_string& replace (size_type pos1, size_type n1, const basic_string& str,
 			 size_type pos2 = 0, size_type n2 = npos);
@@ -278,7 +278,7 @@ public:
     }
 
   reference operator[] (size_type pos)
-    { unique (); return (*rep ())[pos]; }
+    { selfish (); return (*rep ())[pos]; }
 
   reference at (size_type pos)
     {
