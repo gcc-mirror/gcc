@@ -21,10 +21,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.3 1991/11/07 23:23:40 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.4 1991/11/21 22:25:19 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/07 23:23:40 $
+  $Date: 1991/11/21 22:25:19 $
   $Log: hash.h,v $
+ * Revision 0.4  1991/11/21  22:25:19  dennisg
+ * deleted hash mask information from hash struct.
+ * changed hashing algorithm.  those values are no longer needed.
+ *
  * Revision 0.3  1991/11/07  23:23:40  dennisg
  * implemented hash table expansion as suggested by rms.
  *
@@ -89,7 +93,7 @@ typedef struct cache {
 	 * Variables used to track the size of the hash
 	 *	table so to determine when to resize it.
 	 */
-  u_int       sizeOfHash,                         /* Number of buckets 
+  u_short     sizeOfHash,                         /* Number of buckets 
                                                     allocated for the hash
                                                     table (number of array
                                                     entries allocated for
@@ -132,11 +136,6 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue );
                                                   assert() if the key isn't 
                                                   in the table. */
 void hash_remove( Cache_t theCache, void* aKey );
-                                                /* Given key, return its 
-                                                  value.  Return NULL if the
-                                                  key/value pair isn't in
-                                                  the hash. */
-void* hash_value_for_key( Cache_t theCache, void* aKey );
                                                 /* Used to index through the
                                                   hash table.  Start with NULL
                                                   to get the first entry.
