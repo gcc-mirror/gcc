@@ -1,3 +1,11 @@
+2000-01-24  Jason Merrill  <jason@casey.cygnus.com>
+
+	* pt.c (maybe_fold_nontype_arg): Do nothing if we're not in a
+	template.
+
+	* decl2.c (mark_used): Do instantiate inlines that have been
+	explicitly instantiated.
+
 2000-01-24  Richard Henderson  <rth@cygnus.com>
 
 	* call.c (build_over_call): Use expand_tree_builtin.

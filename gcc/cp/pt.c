@@ -5121,6 +5121,11 @@ static tree
 maybe_fold_nontype_arg (arg)
      tree arg;
 {
+  /* If we're not in a template, ARG is already as simple as it's going to
+     get, and trying to reprocess the trees will break.  */
+  if (! processing_template_decl)
+    return arg;
+
   if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't'
       && !uses_template_parms (arg))
     {
