@@ -46,8 +46,7 @@ Boston, MA 02111-1307, USA.  */
    of the support for getting C++ file-scope static objects
    constructed before entering "main".  */
 
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC		\
+#define NETBSD_STARTFILE_SPEC	\
   "%{!shared:			\
      %{pg:gcrt0%O%s}		\
      %{!pg:			\
@@ -56,16 +55,20 @@ Boston, MA 02111-1307, USA.  */
    %:if-exists(crti%O%s)	\
    %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}"
 
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC NETBSD_STARTFILE_SPEC
+
 
 /* Provide an ENDFILE_SPEC appropriate for NetBSD ELF.  Here we
    add crtend.o, which provides part of the support for getting
    C++ file-scope static objects deconstructed after exiting "main".  */
 
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC		\
+#define NETBSD_ENDFILE_SPEC	\
   "%{!shared:crtend%O%s} %{shared:crtendS%O%s} \
    %:if-exists(crtn%O%s)"
 
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC NETBSD_ENDFILE_SPEC
 
 /* Provide a LINK_SPEC appropriate for NetBSD ELF.  Here we provide
    support for the special GCC options -assert, -R, -rpath, -shared,
