@@ -1,3 +1,16 @@
+2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update the prototype for
+	split_adds_subs.  Remove the prototypes for
+	const_int_le_2_operand and const_int_le_6_operand.
+	* config/h8300/h8300.c (split_adds_sub): Don't output inc/dec.
+	(const_int_le_2_operand): Remove.
+	(const_int_le_6_operand): Likewise.
+	* config/h8300/h8300.h (PREDICATE_CODES): Remove the entries
+	for const_int_le_2_operand and const_int_le_6_operand.
+	* config/h8300/h8300.md: Update all uses of split_adds_subs.
+	(a peephole2): New.
+
 Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (NPREDECESORC, SET_NPREDECESORS): Kill.

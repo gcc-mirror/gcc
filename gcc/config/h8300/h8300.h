@@ -1284,8 +1284,6 @@ struct cum_arg
   {"bit_operand", {REG, SUBREG, MEM}},					\
   {"bit_memory_operand", {MEM}},					\
   {"stack_pointer_operand", {REG}},					\
-  {"const_int_le_2_operand", {CONST_INT}},				\
-  {"const_int_le_6_operand", {CONST_INT}},				\
   {"const_int_gt_2_operand", {CONST_INT}},				\
   {"const_int_ge_8_operand", {CONST_INT}},				\
   {"const_int_qi_operand", {CONST_INT}},				\
