@@ -38,13 +38,13 @@ package body Eval_Fat is
    --  case of anyone ever having to adjust this code for another value,
    --  and for documentation purposes.
 
+   --  Another assumption is that the range of the floating-point type
+   --  is symmetric around zero.
+
    type Radix_Power_Table is array (Int range 1 .. 4) of Int;
 
    Radix_Powers : constant Radix_Power_Table :=
                     (Radix ** 1, Radix ** 2, Radix ** 3, Radix ** 4);
-
-   function Float_Radix return T renames Ureal_2;
-   --  Radix expressed in real form
 
    -----------------------
    -- Local Subprograms --
@@ -74,12 +74,6 @@ package body Eval_Fat is
    --  even, a floor operation or a ceiling operation depending on the setting
    --  of Mode (see corresponding descriptions in Urealp).
 
-   function Eps_Model (RT : R) return T;
-   --  Return the smallest model number of R.
-
-   function Eps_Denorm (RT : R) return T;
-   --  Return the smallest denormal of type R.
-
    function Machine_Emin (RT : R) return Int;
    --  Return value of the Machine_Emin attribute
 
@@ -91,10 +85,8 @@ package body Eval_Fat is
    begin
       if Towards = X then
          return X;
-
       elsif Towards > X then
          return Succ (RT, X);
-
       else
          return Pred (RT, X);
       end if;
@@ -106,14 +98,11 @@ package body Eval_Fat is
 
    function Ceiling (RT : R; X : T) return T is
       XT : constant T := Truncation (RT, X);
-
    begin
       if UR_Is_Negative (X) then
          return XT;
-
       elsif X = XT then
          return X;
-
       else
          return XT + Ureal_1;
       end if;
@@ -382,10 +371,10 @@ package body Eval_Fat is
       Calculate_Fraction_And_Exponent : begin
          Uintp_Mark := Mark;
 
-         --  Determine correct rounding based on the remainder
-         --  which is in N and the divisor D. The rounding is
-         --  performed on the absolute value of X, so Ceiling
-         --  and Floor need to check for the sign of X explicitly.
+         --  Determine correct rounding based on the remainder which is in
+         --  N and the divisor D. The rounding is performed on the absolute
+         --  value of X, so Ceiling and Floor need to check for the sign of
+         --  X explicitly.
 
          case Mode is
             when Round_Even =>
@@ -439,25 +428,6 @@ package body Eval_Fat is
          Release_And_Save (Uintp_Mark, Fraction, Exponent);
       end Calculate_Fraction_And_Exponent;
    end Decompose_Int;
-
-   ----------------
-   -- Eps_Denorm --
-   ----------------
-
-   function Eps_Denorm (RT : R) return T is
-   begin
-      return Float_Radix ** UI_From_Int
-                                  (Machine_Emin (RT) - Machine_Mantissa (RT));
-   end Eps_Denorm;
-
-   ---------------
-   -- Eps_Model --
-   ---------------
-
-   function Eps_Model (RT : R) return T is
-   begin
-      return Float_Radix ** UI_From_Int (Machine_Emin (RT));
-   end Eps_Model;
 
    --------------
    -- Exponent --
@@ -735,37 +705,8 @@ package body Eval_Fat is
    ----------
 
    function Pred (RT : R; X : T) return T is
-      Result_F : UI;
-      Result_X : UI;
-
    begin
-      if abs X < Eps_Model (RT) then
-         if Denorm_On_Target then
-            return X - Eps_Denorm (RT);
-
-         elsif X > Ureal_0 then
-
-            --  Target does not support denorms, so predecessor is 0.0
-
-            return Ureal_0;
-
-         else
-            --  Target does not support denorms, and X is 0.0
-            --  or at least bigger than -Eps_Model (RT)
-
-            return -Eps_Model (RT);
-         end if;
-
-      else
-         Decompose_Int (RT, X, Result_F,  Result_X, Ceiling);
-         return UR_From_Components
-           (Num      => Result_F - 1,
-            Den      => Machine_Mantissa (RT) - Result_X,
-            Rbase    => Radix,
-            Negative => False);
-         --  Result_F may be false, but this is OK as UR_From_Components
-         --  handles that situation.
-      end if;
+      return -Succ (RT, -X);
    end Pred;
 
    ---------------
@@ -892,35 +833,38 @@ package body Eval_Fat is
    ----------
 
    function Succ (RT : R; X : T) return T is
-      Result_F : UI;
-      Result_X : UI;
+      Emin     : constant UI := UI_From_Int (Machine_Emin (RT));
+      Mantissa : constant UI := UI_From_Int (Machine_Mantissa (RT));
+      Exp      : UI := UI_Max (Emin, Exponent (RT, X));
+      Frac     : T;
+      New_Frac : T;
 
    begin
-      if abs X < Eps_Model (RT) then
-         if Denorm_On_Target then
-            return X + Eps_Denorm (RT);
-
-         elsif X < Ureal_0 then
-            --  Target does not support denorms, so successor is 0.0
-            return Ureal_0;
-
-         else
-            --  Target does not support denorms, and X is 0.0
-            --  or at least smaller than Eps_Model (RT)
-
-            return Eps_Model (RT);
-         end if;
-
-      else
-         Decompose_Int (RT, X, Result_F, Result_X, Floor);
-         return UR_From_Components
-           (Num      => Result_F + 1,
-            Den      => Machine_Mantissa (RT) - Result_X,
-            Rbase    => Radix,
-            Negative => False);
-         --  Result_F may be false, but this is OK as UR_From_Components
-         --  handles that situation.
+      if UR_Is_Zero (X) then
+         Exp := Emin;
       end if;
+
+      --  Set exponent such that the radix point will be directly
+      --  following the mantissa after scaling
+
+      if Denorm_On_Target or Exp /= Emin then
+         Exp := Exp - Mantissa;
+      else
+         Exp := Exp - 1;
+      end if;
+
+      Frac := Scaling (RT, X, -Exp);
+      New_Frac := Ceiling (RT, Frac);
+
+      if New_Frac = Frac then
+         if New_Frac = Scaling (RT, -Ureal_1, Mantissa - 1) then
+            New_Frac := New_Frac + Scaling (RT, Ureal_1, Uint_Minus_1);
+         else
+            New_Frac := New_Frac + Ureal_1;
+         end if;
+      end if;
+
+      return Scaling (RT, New_Frac, Exp);
    end Succ;
 
    ----------------
@@ -929,7 +873,6 @@ package body Eval_Fat is
 
    function Truncation (RT : R; X : T) return T is
       pragma Warnings (Off, RT);
-
    begin
       return UR_From_Uint (UR_Trunc (X));
    end Truncation;
