@@ -352,7 +352,6 @@ h8300_init_once ()
       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
 
       /* H8S */
-      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
     }
 }
