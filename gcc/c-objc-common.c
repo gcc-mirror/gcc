@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "langhooks.h"
 
-static int c_tree_printer PARAMS ((output_buffer *));
+static bool c_tree_printer PARAMS ((output_buffer *, text_info *));
 static tree inline_forbidden_p PARAMS ((tree *, int *, void *));
 static void expand_deferred_fns PARAMS ((void));
 static tree start_cdtor	PARAMS ((int));
@@ -389,13 +389,14 @@ c_objc_common_finish_file ()
    by the C++ front-end.
    Please notice when called, the `%' part was already skipped by the
    diagnostic machinery.  */
-static int
-c_tree_printer (buffer)
+static bool
+c_tree_printer (buffer, text)
      output_buffer *buffer;
+     text_info *text;
 {
-  tree t = va_arg (output_buffer_format_args (buffer), tree);
+  tree t = va_arg (*text->args_ptr, tree);
 
-  switch (*output_buffer_text_cursor (buffer))
+  switch (*text->format_spec)
     {
     case 'D':
     case 'F':
@@ -406,10 +407,10 @@ c_tree_printer (buffer)
           : "({anonymous})";
         output_add_string (buffer, n);
       }
-      return 1;
+      return true;
 
     default:
-      return 0;
+      return false;
     }
 }
 

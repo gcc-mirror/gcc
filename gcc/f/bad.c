@@ -43,6 +43,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "where.h"
 #include "intl.h"
+#include "diagnostic.h"
 
 /* Externals defined here. */
 
@@ -202,7 +203,7 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
       if ((ffebad_severity_ != FFEBAD_severityPEDANTIC)
 	  || !flag_pedantic_errors)
 	{
-	  if (count_error (1) == 0)
+	  if (!diagnostic_count_error (global_dc, DK_WARNING))
 	    {			/* User wants no warnings. */
 	      ffebad_is_temp_inhibited_ = TRUE;
 	      return FALSE;
@@ -214,7 +215,7 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
     case FFEBAD_severityWEIRD:
     case FFEBAD_severitySEVERE:
     case FFEBAD_severityDISASTER:
-      count_error (0);
+      diagnostic_count_error (global_dc, DK_ERROR);
       break;
 
     default:
@@ -420,7 +421,7 @@ ffebad_finish ()
 	{
 	  if (bi != 0)
 	    fputc ('\n', stderr);
-	  report_error_function (fn);
+	  diagnostic_report_current_function (global_dc);
 	  fprintf (stderr,
 		   /* the trailing space on the <file>:<line>: line
 		      fools emacs19 compilation mode into finding the

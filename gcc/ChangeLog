@@ -1,3 +1,35 @@
+2002-06-05  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* toplev.h (report_error_function): Remove.
+
+	* diagnostic.h (location_t): New datatype.
+	(text_info): Likewise.
+	(diagnostic_info): Likewise.
+	(output_prefix): New macro.
+	(diagnostic_last_function_changed): Likewise.
+	(diagnostic_set_last_function): Likewise.
+	(diagnostic_last_module_changed): Likewise.
+	(diagnostic_set_last_module): Likewise.
+	(report_diagnostic): Now macro.
+	(diagnostic_set_info): Declare.
+
+	* diagnostic.c (report_problematic_module): Rename to
+	diagnostic_repor_current_module. 
+	(set_diagnostic_context): Remove.
+	(count_error): Rename to diagnostic_error_count.
+	(error_function_changed): Remove.
+	(record_last_error_function): Likewise.
+	(error_module_changed): Likewise.
+	(record_last_error_module): Likewise.
+	(context_as_prefix): Rename to diagnostic_build_prefix.
+	(flush_diagnostic_buffer): Rename to diagnostic_flush_buffer.
+	(diagnostic_set_info): New function.
+
+	* objc/objc-act.c: #include diagnostic.h
+	(error_with_ivar): Adjust call to count_error.
+	(warn_with_method): Likewise.
+	* objc/Make-lang.in (objc-act.o): Depend on diagnostic.h
+
 2002-06-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_build_va_list): Use

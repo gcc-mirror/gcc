@@ -1,3 +1,16 @@
+2002-06-04  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (cp_diagnostic_starter): Adjust call.
+	(maybe_print_instantiation_context): Change prototype to take a
+	'diagnostic_info *'.
+	(print_instantiation_full_context): Likewise.
+	(print_instantiation_partial_context): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_diagnostic_finalizer): Likewise.
+	(cp_print_error_function): Likewise.
+	(cp_printer): Take a secondary parameter as a 'text_info *'.
+	Remove output_state savings.  Adjust calls.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* pt.c (inline_parm_levels): Mark for GC.

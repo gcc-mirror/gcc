@@ -1025,7 +1025,7 @@ check_function_format (status, attrs, params)
 static void
 status_warning VPARAMS ((int *status, const char *msgid, ...))
 {
-  diagnostic_context dc;
+  diagnostic_info diagnostic ;
 
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, int *, status);
@@ -1036,9 +1036,9 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
   else
     {
       /* This duplicates the warning function behavior.  */
-      set_diagnostic_context
-	(&dc, msgid, &ap, input_filename, lineno, /* warn = */ 1);
-      report_diagnostic (&dc);
+      diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, lineno,
+                           DK_WARNING);
+      report_diagnostic (&diagnostic);
     }
 
   VA_CLOSE (ap);

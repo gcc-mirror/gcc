@@ -352,7 +352,8 @@ f/bad.o: f/bad.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h flags.h f/com.h f/com-rt.def $(TREE_H) f/bld.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
- f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h toplev.h intl.h
+ f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h toplev.h intl.h \
+ diagnostic.h
 f/bit.o: f/bit.c f/proj.h $(CONFIG_H) $(SYSTEM_H) glimits.h f/bit.h \
  f/malloc.h
 f/bld.o: f/bld.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bld.h f/bld-op.def f/bit.h \

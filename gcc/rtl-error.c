@@ -32,7 +32,8 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
-static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *, int));
+static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *,
+                                        diagnostic_t));
 
 /* Figure file and line of the given INSN.  */
 static void
@@ -74,18 +75,18 @@ file_and_line_for_asm (insn, pfile, pline)
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void
-diagnostic_for_asm (insn, msg, args_ptr, warn)
+diagnostic_for_asm (insn, msg, args_ptr, kind)
      rtx insn;
      const char *msg;
      va_list *args_ptr;
-     int warn;
+     diagnostic_t kind;
 {
-  diagnostic_context dc;
+  diagnostic_info diagnostic;
 
-  set_diagnostic_context (&dc, msg, args_ptr, NULL, 0, warn);
-  file_and_line_for_asm (insn, &diagnostic_file_location (&dc),
-			 &diagnostic_line_location (&dc));
-  report_diagnostic (&dc);
+  diagnostic_set_info (&diagnostic, msg, args_ptr, NULL, 0, kind);
+  file_and_line_for_asm (insn, &diagnostic.location.file,
+                         &diagnostic.location.line);
+  report_diagnostic (&diagnostic);
 }
 
 void
@@ -95,7 +96,7 @@ error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   VA_FIXEDARG (ap, rtx, insn);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 0);
+  diagnostic_for_asm (insn, msgid, &ap, DK_ERROR);
   VA_CLOSE (ap);
 }
 
@@ -106,7 +107,7 @@ warning_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   VA_FIXEDARG (ap, rtx, insn);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 1);
+  diagnostic_for_asm (insn, msgid, &ap, DK_WARNING);
   VA_CLOSE (ap);
 }
 
