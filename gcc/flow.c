@@ -3345,14 +3345,13 @@ mark_regs_live_at_end (set)
 #endif
     }
 
-#ifdef PIC_OFFSET_TABLE_REGNUM
 #ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
   /* Many architectures have a GP register even without flag_pic.
      Assume the pic register is not in use, or will be handled by
      other means, if it is not fixed.  */
-  if (fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+      && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
     SET_REGNO_REG_SET (set, PIC_OFFSET_TABLE_REGNUM);
-#endif
 #endif
 
   /* Mark all global registers, and all registers used by the epilogue
@@ -3484,12 +3483,11 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	    SET_REGNO_REG_SET (new_live_at_end, ARG_POINTER_REGNUM);
 #endif
 
-#ifdef PIC_OFFSET_TABLE_REGNUM
 	  /* Any constant, or pseudo with constant equivalences, may
 	     require reloading from memory using the pic register.  */
-	  if (fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+	  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+	      && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
 	    SET_REGNO_REG_SET (new_live_at_end, PIC_OFFSET_TABLE_REGNUM);
-#endif
 	}
 
       /* Regs used in phi nodes are not included in

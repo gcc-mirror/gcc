@@ -2208,7 +2208,7 @@ compute_hash_table (set_p)
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 		     && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-#if defined (PIC_OFFSET_TABLE_REGNUM) && !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
+#if !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
 		     && ! (regno == PIC_OFFSET_TABLE_REGNUM && flag_pic)
 #endif
 
@@ -2641,7 +2641,7 @@ compute_kill_rd ()
 		       && ! (regno == ARG_POINTER_REGNUM
 			     && fixed_regs[regno])
 #endif
-#if defined (PIC_OFFSET_TABLE_REGNUM) && !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
+#if !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
 		       && ! (regno == PIC_OFFSET_TABLE_REGNUM && flag_pic)
 #endif
 		       && regno != FRAME_POINTER_REGNUM)

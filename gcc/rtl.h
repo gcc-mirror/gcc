@@ -1606,6 +1606,9 @@ extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
 
 #define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 4)
 
+/* REGNUM never really appearing in the INSN stream.  */
+#define INVALID_REGNUM			(~(unsigned int)0)
+
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
 extern rtx *find_single_use		PARAMS ((rtx, rtx, rtx *));
 
