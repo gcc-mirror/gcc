@@ -43,7 +43,7 @@ import gnu.java.nio.CharBufferImpl;
  * @since 1.4
  */
 public abstract class CharBuffer extends Buffer
-  implements Cloneable, CharSequence
+  implements Comparable, CharSequence
 {
   protected char [] backing_buffer;
   
@@ -119,7 +119,7 @@ public abstract class CharBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public CharBuffer get (char[] dst, int offset, int length)
+  public CharBuffer get (char[] dst, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       {
@@ -135,7 +135,7 @@ public abstract class CharBuffer extends Buffer
    * @exception BufferUnderflowException If there are fewer than length
    * characters remaining in this buffer.
    */
-  final public CharBuffer get (char[] dst)
+  public CharBuffer get (char[] dst)
   {
     return get (dst, 0, dst.length);
   }
@@ -146,7 +146,7 @@ public abstract class CharBuffer extends Buffer
    * @exception IllegalArgumentException If the source buffer is this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public CharBuffer put (CharBuffer src)
+  public CharBuffer put (CharBuffer src)
   {
     if (src == this)
       throw new IllegalArgumentException ();
@@ -168,7 +168,7 @@ public abstract class CharBuffer extends Buffer
    * and length parameters do not hold
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public CharBuffer put (char[] src, int offset, int length)
+  public CharBuffer put (char[] src, int offset, int length)
   {
     if (offset < 0
         || offset >= src.length
