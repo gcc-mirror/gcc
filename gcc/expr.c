@@ -10578,7 +10578,11 @@ do_store_flag (exp, target, mode, only_cheap)
 	 fail for negative values.  */
       if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
 	  && BITS_PER_WORD == GET_MODE_BITSIZE (TYPE_MODE (type)))
-	tem = tem & (((HOST_WIDE_INT) 1 << BITS_PER_WORD) - 1);
+	/* We don't use the obvious constant shift to generate the mask,
+	   because that generates compiler warnings when BITS_PER_WORD is
+	   greater than or equal to HOST_BITS_PER_WIDE_INT, even though this
+	   code is unreachable in that case.  */
+	tem = tem & GET_MODE_MASK (word_mode);
       bitnum = exact_log2 (tem);
 
       /* If INNER is a right shift of a constant and it plus BITNUM does
