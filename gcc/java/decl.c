@@ -392,6 +392,16 @@ tree soft_irem_node;
 tree soft_ldiv_node;
 tree soft_lrem_node;
 
+/* Declarations for vtables for primitive arrays.  */
+tree boolean_array_vtable;
+tree byte_array_vtable;
+tree char_array_vtable;
+tree short_array_vtable;
+tree int_array_vtable;
+tree long_array_vtable;
+tree float_array_vtable;
+tree double_array_vtable;
+
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
 
@@ -449,6 +459,21 @@ builtin_function (name, type, function_code, class, library_name)
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
   return decl;
+}
+
+/* Return tree that represents a vtable for a primitive array.  */
+static tree
+create_primitive_vtable (name)
+     const char *name;
+{
+  tree r;
+  char buf[50];
+
+  sprintf (buf, "_Jv_%sVTable", name);
+  r = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
+  DECL_EXTERNAL (r) = 1;
+  make_decl_rtl (r, buf, 1);
+  return r;
 }
 
 void
@@ -573,7 +598,17 @@ init_decl_processing ()
   float_zero_node = build_real (float_type_node, dconst0);
   double_zero_node = build_real (double_type_node, dconst0);
 
-  /* As your adding items here, please update the code right after
+  /* These are the vtables for arrays of primitives.  */
+  boolean_array_vtable = create_primitive_vtable ("boolean");
+  byte_array_vtable = create_primitive_vtable ("byte");
+  char_array_vtable = create_primitive_vtable ("char");
+  short_array_vtable = create_primitive_vtable ("short");
+  int_array_vtable = create_primitive_vtable ("int");
+  long_array_vtable = create_primitive_vtable ("long");
+  float_array_vtable = create_primitive_vtable ("float");
+  double_array_vtable = create_primitive_vtable ("double");
+
+  /* As you're adding items here, please update the code right after
      this section, so that the filename containing the source code of
      the pre-defined class gets registered correctly. */
   unqualified_object_id_node = get_identifier ("Object");
