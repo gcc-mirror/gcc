@@ -1102,7 +1102,7 @@ extern int current_function_anonymous_args;
     return COSTS_N_INSNS (multcosts (X));		\
   case ASHIFT:						\
   case ASHIFTRT:					\
-  case LSHIFT:						\
+  case LSHIFTRT:					\
     return COSTS_N_INSNS (shiftcosts (X)) ;		\
   case DIV:						\
   case UDIV:						\
