@@ -1,3 +1,7 @@
+2003-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* error.c (dump_expr): Use HOST_WIDE_INT_PRINT_DOUBLE_HEX.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/9738
