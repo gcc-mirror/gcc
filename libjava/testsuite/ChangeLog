@@ -10,6 +10,8 @@
 	* libjava.lang/ArrayStore2.out: New file.
 	* libjava.lang/ArrayStore2.xfail: New file. xfail-source-output.
 
+	* libjava.lang/stringconst.xfail: xfail-output -> xfail-source-output.
+
 2002-02-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/err7.xfail: Removed.
