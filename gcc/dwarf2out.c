@@ -164,9 +164,9 @@ dw_fde_node;
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #ifdef STACK_GROWS_DOWNWARD
-#define DWARF_CIE_DATA_ALIGNMENT (-UNITS_PER_WORD)
+#define DWARF_CIE_DATA_ALIGNMENT (-((int) UNITS_PER_WORD))
 #else
-#define DWARF_CIE_DATA_ALIGNMENT UNITS_PER_WORD
+#define DWARF_CIE_DATA_ALIGNMENT ((int) UNITS_PER_WORD)
 #endif
 
 /* A pointer to the base of a table that contains frame description
