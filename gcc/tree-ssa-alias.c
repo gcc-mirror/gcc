@@ -2025,9 +2025,6 @@ create_memory_tag (tree type, bool is_type_tag)
      determine whether they should be considered globals.  */
   DECL_CONTEXT (tag) = current_function_decl;
 
-  /* If the pointed-to type is volatile, so is the tag.  */
-  TREE_THIS_VOLATILE (tag) = TREE_THIS_VOLATILE (type);
-
   /* Memory tags are by definition addressable.  This also prevents
      is_gimple_ref frome confusing memory tags with optimizable
      variables.  */
@@ -2125,6 +2122,9 @@ get_tmt_for (tree ptr, struct alias_info *ai)
       alias_map->set = tag_set;
       ai->pointers[ai->num_pointers++] = alias_map;
     }
+
+  /* If the pointed-to type is volatile, so is the tag.  */
+  TREE_THIS_VOLATILE (tag) = TREE_THIS_VOLATILE (tag_type);
 
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */

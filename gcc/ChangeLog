@@ -1,3 +1,11 @@
+2004-09-22  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/16721
+	* tree-dfa.c (dump_variable): Show TREE_THIS_VOLATILE.
+	* tree-ssa-alias.c (create_memory_tag): Move setting of
+	TREE_THIS_VOLATILE ...
+	(get_tmt_for): ... here.
+
 2004-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (cmove splitter): Fix formatting.
