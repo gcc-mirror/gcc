@@ -1,3 +1,7 @@
+Tue Nov 10 17:04:11 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (LEGITIMIZE_ADDRESS): Add missing goto on last case.
+
 1998-11-09  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* dbxout.c: Check HAVE_STAB_H instead of HAVE_STABS_H.
