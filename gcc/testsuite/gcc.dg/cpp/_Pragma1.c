@@ -13,12 +13,10 @@ p1				/* { dg-error "poisoned" } */
 _Pragma ("GCC poison p2")
 p2				/* { dg-error "poisoned" } */
 
-/* I can see no reason it cannot appear in a directive.  Check we
-   enter the conditional.  Putting the _Pragma at EOL also catches
-   nasties like not saving current lexer state properly.  Also test
-   that wide strings are OK.  */
-#if 1 _Pragma (L"GCC poison p3")
-p3				/* { dg-error "poisoned" } */
+/* Don't interpret _Pragmas in directives.  The standard is not clear
+   on this, but I think this makes most sense.  */
+#if 1 _Pragma (L"GCC poison p3") /* { dg-error "missing binary operator" } */
+p3
 #endif
 
 #define M1 _Pragma ("GCC poison p4")
@@ -29,10 +27,10 @@ p4				/* No problem; not yet poisoned.  */
 M1 p4				/* { dg-error "poisoned" } */
 M2 (GCC poison p5) p5		/* { dg-error "poisoned" } */
 
-/* Look, ma!  These things even nest.  */
+/* Not interpreting _Pragma in directives means they don't nest.  */
 _Pragma ("_Pragma (\"GCC poison p6\") GCC poison p7")
-p6				/* { dg-error "poisoned" } */
-p7				/* { dg-error "poisoned" } */
+p6
+p7
 
 /* Check we ignore them in false conditionals.  */
 #if 0

@@ -1,3 +1,8 @@
+2000-11-15  Neil Booth  <neilb@earthling.net>
+
+        gcc.dg/cpp/_Pragma1.c: Update.
+        gcc.dg/cpp/_Pragma2.c: New test.
+
 2000-11-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/anon5.C: New test.
