@@ -624,6 +624,8 @@ char *lang_options[] =
   "-fno-xref",
   "-fnonnull-objects",
   "-fno-nonnull-objects",
+  "-fimplement-inlines",
+  "-fno-implement-inlines",
 
   "-Wreturn-type",
   "-Wno-return-type",
