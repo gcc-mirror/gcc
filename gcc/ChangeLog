@@ -1,5 +1,18 @@
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (sdata_symbolic_operand): Use
+	SYMBOL_REF_SMALL_P and SYMBOL_REF_LOCAL_P.
+	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
+	(function_operand): Use SYMBOL_REF_FUNCTION_P.
+	(ia64_expand_load_address): Likewise.
+	(ia64_assemble_integer): Likewise.
+	(ia64_encode_section_info): Remove.
+	(ia64_strip_name_encoding): Remove.
+	* config/ia64/ia64.h (ENCODE_SECTION_INFO_CHAR): Remove.
+	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't strip it.
+
+2003-04-16  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (SYMBOL_FLAG_NEAR, SYMBOL_FLAG_SAMEGP): New.
 	(samegp_function_operand): Use SYMBOL_FLAG_SAMEGP.
 	(direct_call_operand): Use SYMBOL_FLAG_NEAR.

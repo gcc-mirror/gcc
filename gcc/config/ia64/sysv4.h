@@ -61,8 +61,6 @@ do {									\
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
   const char *name_ = NAME;			\
-  if (*name_ == ENCODE_SECTION_INFO_CHAR)	\
-    name_ += 2;					\
   if (*name_ == '*')				\
     name_++;					\
   else						\
