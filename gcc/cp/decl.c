@@ -55,7 +55,6 @@ Boston, MA 02111-1307, USA.  */
 static tree grokparms (tree);
 static const char *redeclaration_error_message (tree, tree);
 
-static void push_binding_level (cxx_scope *);
 static void pop_binding_level (void);
 static void suspend_binding_level (void);
 static void resume_binding_level (struct cp_binding_level *);
@@ -382,19 +381,15 @@ struct cp_binding_level GTY(())
        only valid if KIND == SK_TEMPLATE_PARMS.  */
     bool explicit_spec_p : 1;
 
-    /* 1 means make a BLOCK for this level regardless of all else.
-       2 for temporary binding contours created by the compiler.  */
-    unsigned keep : 2;
+    /* true means make a BLOCK for this level regardless of all else.  */
+    unsigned keep : 1;
 
     /* Nonzero if this level can safely have additional
        cleanup-needing variables added to it.  */
     unsigned more_cleanups_ok : 1;
     unsigned have_cleanups : 1;
 
-    /* Nonzero if this level "doesn't exist" for tags.  */
-    unsigned tag_transparent : 1;
-
-    /* 20 bits left to fill a 32-bit word.  */
+    /* 22 bits left to fill a 32-bit word.  */
   };
 
 #define NULL_BINDING_LEVEL ((struct cp_binding_level *) NULL)
@@ -414,9 +409,9 @@ struct cp_binding_level GTY(())
 
 static GTY((deletable (""))) struct cp_binding_level *free_binding_level;
 
-/* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
+/* true means unconditionally make a BLOCK for the next level pushed.  */
 
-static int keep_next_level_flag;
+static bool keep_next_level_flag;
 
 /* A TREE_LIST of VAR_DECLs.  The TREE_PURPOSE is a RECORD_TYPE or
    UNION_TYPE; the TREE_VALUE is a VAR_DECL with that type.  At the
@@ -452,6 +447,7 @@ cxx_scope_descriptor (cxx_scope *scope)
      enumerators.  */
   static const char* scope_kind_names[] = {
     "block-scope",
+    "cleanup-scope",
     "try-scope",
     "catch-scope",
     "for-scope",
@@ -461,8 +457,10 @@ cxx_scope_descriptor (cxx_scope *scope)
     "template-parameter-scope",
     "template-explicit-spec-scope"
   };
+  const scope_kind kind = scope->explicit_spec_p
+    ? sk_template_spec : scope->kind;
 
-  return scope_kind_names[scope->kind];
+  return scope_kind_names[kind];
 }
 
 /* Output a debugging information about SCOPE when performning
@@ -478,10 +476,27 @@ cxx_scope_debug (cxx_scope *scope, int line, const char *action)
     verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
 }
 
-/* Construct a scope that may be TAG-TRANSPARENT, the sub-blocks of
-   which may be KEPT.  */
-static inline cxx_scope *
-make_cxx_scope (bool tag_transparent, int keep)
+/* Return the estimated initial size of the hashtable of a NAMESPACE
+   scope.  */
+
+static inline size_t
+namespace_scope_ht_size (tree ns)
+{
+  tree name = DECL_NAME (ns);
+
+  return name == std_identifier
+    ? NAMESPACE_STD_HT_SIZE
+    : (name == global_scope_name
+       ? GLOBAL_SCOPE_HT_SIZE
+       : NAMESPACE_ORDINARY_HT_SIZE);
+}
+
+/* Create a new KIND scope and make it the top of the active scopes stack.
+   ENTITY is the scope of the associated C++ entity (namespace, class,
+   function); it is NULL otherwise.  */
+
+cxx_scope *
+begin_scope (scope_kind kind, tree entity)
 {
   cxx_scope *scope;
   
@@ -493,31 +508,62 @@ make_cxx_scope (bool tag_transparent, int keep)
     }
   else
     scope = ggc_alloc (sizeof (cxx_scope));
-
   memset (scope, 0, sizeof (cxx_scope));
-  scope->tag_transparent = tag_transparent;
-  scope->keep = keep;
+
+  scope->this_entity = entity;
   scope->more_cleanups_ok = true;
+  switch (kind)
+    {
+    case sk_cleanup:
+      scope->keep = true;
+      break;
+      
+    case sk_template_spec:
+      scope->explicit_spec_p = true;
+      kind = sk_template_parms;
+      /* fall through */
+    case sk_template_parms:
+    case sk_block:
+    case sk_try:
+    case sk_catch:
+    case sk_for:
+    case sk_class:
+    case sk_function_parms:
+      scope->keep = keep_next_level_flag;
+      break;
 
-  return scope;
-}
+    case sk_namespace:
+      scope->type_decls = binding_table_new (namespace_scope_ht_size (entity));
+      NAMESPACE_LEVEL (entity) = scope;
+      VARRAY_TREE_INIT (scope->static_decls,
+                        DECL_NAME (entity) == std_identifier
+                        || DECL_NAME (entity) == global_scope_name
+                        ? 200 : 10,
+                        "Static declarations");
+      break;
 
-static void
-push_binding_level (cxx_scope *newlevel)
-{
-  /* Add this level to the front of the chain (stack) of levels that
-     are active.  */
-  newlevel->level_chain = current_binding_level;
-  current_binding_level = newlevel;
+    default:
+      /* Should not happen.  */
+      my_friendly_assert (false, 20030922);
+      break;
+    }
+  scope->kind = kind;
+
+  /* Add it to the front of currently active scopes stack.  */
+  scope->level_chain = current_binding_level;
+  current_binding_level = scope;
+  keep_next_level_flag = false;
 
   if (ENABLE_SCOPE_CHECKING)
     {
-      newlevel->binding_depth = binding_depth;
+      scope->binding_depth = binding_depth;
       indent (binding_depth);
-      cxx_scope_debug (newlevel, input_location.line, "push");
+      cxx_scope_debug (scope, input_location.line, "push");
       is_class_level = 0;
       binding_depth++;
     }
+
+  return scope;
 }
 
 /* Find the innermost enclosing class scope, and reset
@@ -664,12 +710,12 @@ namespace_bindings_p (void)
   return b->kind == sk_namespace;
 }
 
-/* If KEEP is nonzero, make a BLOCK node for the next binding level,
+/* If KEEP is true, make a BLOCK node for the next binding level,
    unconditionally.  Otherwise, use the normal logic to decide whether
    or not to create a BLOCK.  */
 
 void
-keep_next_level (int keep)
+keep_next_level (bool keep)
 {
   keep_next_level_flag = keep;
 }
@@ -681,9 +727,9 @@ kept_level_p (void)
 {
   return (current_binding_level->blocks != NULL_TREE
 	  || current_binding_level->keep
+          || current_binding_level->kind == sk_cleanup
 	  || current_binding_level->names != NULL_TREE
-	  || (current_binding_level->type_decls != NULL
-	      && !current_binding_level->tag_transparent));
+	  || current_binding_level->type_decls != NULL);
 }
 
 /* Returns the kind of the innermost scope.  */
@@ -799,17 +845,6 @@ set_class_shadows (tree shadows)
   class_binding_level->class_shadowed = shadows;
 }
 
-/* Enter a new binding level.
-   If TAG_TRANSPARENT is nonzero, do so only for the name space of variables,
-   not for that of tags.  */
-
-void
-pushlevel (int tag_transparent)
-{
-  push_binding_level (make_cxx_scope (tag_transparent, keep_next_level_flag));
-  keep_next_level_flag = 0;
-}
-
 /* We're defining an object of type TYPE.  If it needs a cleanup, but
    we're not allowed to add any more objects with cleanups to the current
    scope, create a new binding level.  */
@@ -820,26 +855,10 @@ maybe_push_cleanup_level (tree type)
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && current_binding_level->more_cleanups_ok == 0)
     {
-      keep_next_level (2);
-      pushlevel (1);
+      begin_scope (sk_cleanup, NULL);
       clear_last_expr ();
       add_scope_stmt (/*begin_p=*/1, /*partial_p=*/1);
     }
-}
-  
-/* Enter a new scope.  The KIND indicates what kind of scope is being
-   created.  */
-
-void
-begin_scope (scope_kind sk)
-{
-  pushlevel (0);
-  if (sk == sk_template_spec)
-    {
-      current_binding_level->explicit_spec_p = true;
-      sk = sk_template_parms;
-    }
-  current_binding_level->kind = sk;
 }
 
 /* Exit the current scope.  */
@@ -1116,12 +1135,13 @@ poplevel (int keep, int reverse, int functionbody)
   tree block = NULL_TREE;
   tree decl;
   int leaving_for_scope;
+  scope_kind kind;
 
   timevar_push (TV_NAME_LOOKUP);
 
   my_friendly_assert (current_binding_level->kind != sk_class, 19990916);
 
-  real_functionbody = (current_binding_level->keep == 2
+  real_functionbody = (current_binding_level->kind == sk_cleanup
 		       ? ((functionbody = 0), tmp) : functionbody);
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
@@ -1133,7 +1153,7 @@ poplevel (int keep, int reverse, int functionbody)
      rather than the end.  This hack is no longer used.  */
   my_friendly_assert (keep == 0 || keep == 1, 0);
 
-  if (current_binding_level->keep == 1)
+  if (current_binding_level->keep)
     keep = 1;
 
   /* Any uses of undefined labels, and any defined labels, now operate
@@ -1365,7 +1385,7 @@ poplevel (int keep, int reverse, int functionbody)
       pop_labels (block);
     }
 
-  tmp = current_binding_level->keep;
+  kind = current_binding_level->kind;
 
   pop_binding_level ();
   if (functionbody)
@@ -1390,7 +1410,7 @@ poplevel (int keep, int reverse, int functionbody)
     TREE_USED (block) = 1;
 
   /* Take care of compiler's internal binding structures.  */
-  if (tmp == 2)
+  if (kind == sk_cleanup)
     {
       tree scope_stmts;
 
@@ -1461,9 +1481,7 @@ pushlevel_class (void)
   if (ENABLE_SCOPE_CHECKING)
     is_class_level = 1;
 
-  begin_scope (sk_class);
-  class_binding_level = current_binding_level;
-  class_binding_level->this_entity = current_class_type;
+  class_binding_level = begin_scope (sk_class, current_class_type);
 }
 
 /* ...and a poplevel for class declarations.  */
@@ -1770,8 +1788,6 @@ print_binding_level (struct cp_binding_level* lvl)
   tree t;
   int i = 0, len;
   fprintf (stderr, " blocks=" HOST_PTR_PRINTF, (void *) lvl->blocks);
-  if (lvl->tag_transparent)
-    fprintf (stderr, " tag-transparent");
   if (lvl->more_cleanups_ok)
     fprintf (stderr, " more-cleanups-ok");
   if (lvl->have_cleanups)
@@ -1877,30 +1893,6 @@ print_binding_stack (void)
    the identifier is polymorphic, with three possible values:
    NULL_TREE, a list of "cxx_binding"s.  */
 
-
-/* Push the initial binding contour of NAMESPACE-scope.  Any subsequent
-   push of NS is actually a resume.  */
-static void
-initial_push_namespace_scope (tree ns)
-{
-  tree name = DECL_NAME (ns);
-  cxx_scope *scope;
-
-  begin_scope (sk_namespace);
-  scope = current_binding_level;
-  scope->type_decls = binding_table_new (name == std_identifier
-                                         ? NAMESPACE_STD_HT_SIZE
-                                         : (name == global_scope_name
-                                            ? GLOBAL_SCOPE_HT_SIZE
-                                            : NAMESPACE_ORDINARY_HT_SIZE));
-  VARRAY_TREE_INIT (scope->static_decls,
-                    name == std_identifier || name == global_scope_name
-                    ? 200 : 10,
-                    "Static declarations");
-  scope->this_entity = ns;
-  NAMESPACE_LEVEL (ns) = scope;
-}
-
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
    select a name that is unique to this compilation unit.  */
 
@@ -1954,7 +1946,7 @@ push_namespace (tree name)
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
       d = pushdecl (d);
-      initial_push_namespace_scope (d);
+      begin_scope (sk_namespace, d);
     }
   else
     resume_binding_level (NAMESPACE_LEVEL (d));
@@ -2400,7 +2392,7 @@ push_local_name (tree decl)
 }
 
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
-   Normally put it into the inner-most non-tag-transparent scope,
+   Normally put it into the inner-most non-sk_cleanup scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
    The latter is needed for implicit declarations.  */
 
@@ -2411,7 +2403,7 @@ pushtag (tree name, tree type, int globalize)
 
   timevar_push (TV_NAME_LOOKUP);
   b = current_binding_level;
-  while (b->tag_transparent
+  while (b->kind == sk_cleanup
 	 || (b->kind == sk_class
 	     && (globalize
 		 /* We may be defining a new type in the initializer
@@ -2553,7 +2545,7 @@ clear_anon_tags (void)
     return;
 
   b = current_binding_level;
-  while (b->tag_transparent)
+  while (b->kind == sk_cleanup)
     b = b->level_chain;
   if (b->type_decls != NULL)
     binding_table_remove_anonymous_types (b->type_decls);
@@ -5015,7 +5007,7 @@ follow_tag_typedef (tree type)
    return the structure (or union or enum) definition for that name.
    Searches binding levels from BINDING_SCOPE up to the global level.
    If THISLEVEL_ONLY is nonzero, searches only the specified context
-   (but skips any tag-transparent contexts to find one that is
+   (but skips any sk_cleanup contexts to find one that is
    meaningful for tags).
    FORM says which kind of type the caller wants;
    it is RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE.
@@ -5103,7 +5095,7 @@ lookup_tag (enum tree_code form, tree name,
               POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->type);
             }
 	  }
-      if (thislevel_only && ! level->tag_transparent)
+      if (thislevel_only && level->kind != sk_cleanup)
 	{
 	  if (level->kind == sk_template_parms && allow_template_parms_p)
 	    {
@@ -5869,7 +5861,7 @@ lookup_name_current_level (tree name)
 	  if (BINDING_SCOPE (IDENTIFIER_BINDING (name)) == b)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, IDENTIFIER_VALUE (name));
 
-	  if (b->keep == 2)
+	  if (b->kind == sk_cleanup)
 	    b = b->level_chain;
 	  else
 	    break;
@@ -5899,7 +5891,7 @@ lookup_type_current_level (tree name)
 	  if (purpose_member (name, b->type_shadowed))
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
                                     REAL_IDENTIFIER_TYPE_VALUE (name));
-	  if (b->keep == 2)
+	  if (b->kind == sk_cleanup)
 	    b = b->level_chain;
 	  else
 	    break;
@@ -6100,7 +6092,7 @@ cxx_init_decl_processing (void)
   my_friendly_assert (global_namespace == NULL_TREE, 375);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
                                       void_type_node);
-  initial_push_namespace_scope (global_namespace);
+  begin_scope (sk_namespace, global_namespace);
 
   current_lang_name = NULL_TREE;
 
@@ -13582,7 +13574,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
 
-  begin_scope (sk_function_parms);
+  begin_scope (sk_function_parms, decl1);
 
   ++function_depth;
 
@@ -13834,7 +13826,7 @@ begin_function_body (void)
     /* Always keep the BLOCK node associated with the outermost pair of
        curly braces of a function.  These are needed for correct
        operation of dwarfout.c.  */
-    keep_next_level (1);
+    keep_next_level (true);
 
   stmt = begin_compound_stmt (/*has_no_scope=*/false);
   COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
@@ -14159,7 +14151,7 @@ start_method (tree declspecs, tree declarator, tree attrlist)
   cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0);
 
   /* Make a place for the parms */
-  begin_scope (sk_function_parms);
+  begin_scope (sk_function_parms, fndecl);
 
   DECL_IN_AGGR_P (fndecl) = 1;
   return fndecl;

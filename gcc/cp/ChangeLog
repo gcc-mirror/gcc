@@ -1,3 +1,39 @@
+2003-09-22  Gabriel Dos Reis  <gcc@integrable-solutions.net>
+
+	* cp-tree.h (scope_kind): Add new enumerator.
+	(keep_next_level): Change parameter type to bool.
+	(begin_scope):  Change prototype.
+	(pushlevel): Remove declaration.
+	* decl.c (push_binding_level): Fold in begin_scope.  Remove.
+	(struct cp_binding_level): Remove tag_tranparent field.  Make keep
+	of bitsize one.
+	(keep_next_level_flag): Make a bool.
+	(cxx_scope_descriptor): Update scope names table
+	(make_cxx_scope): Fold in begin_scope.  Remove..
+	(namespace_scope_ht_size): New function.
+	(begin_scope): Change prototype.  Return a scope.  Tidy.
+	(kept_level_p): Update.
+	(pushlevel): Remove.
+	(maybe_push_cleanup_level): Simplify.
+	(poplevel): Update for sk_cleanup and keep change.
+	(print_binding_level): Likewise.
+	(initial_push_namespace_scope): Fold in begin_scope.  Remove.
+	(push_namespace): Update.
+	(pushtag): Likewise.
+	(lookup_tag): Likewise.
+	(lookup_name_current_level): Likewise.
+	(lookup_type_current_level): Likewise.
+	(cxx_init_decl_processing): Likewise.
+	(start_function): Likewise.
+	(begin_function_body): Likewise.
+	(start_method): Likewise.
+	* pt.c (push_inline_template_parms_recursive): Likewise.
+	(begin_template_parm_list): Likewise.
+	(begin_specialization): Likewise.
+	* semantics.c (do_pushlevel): Likewise.
+	(begin_compound_stmt): Likewise.
+	(begin_stmt_expr): Likewise.
+
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
 	* class.c, cp-tree.h, decl.c, decl2.c, error.c, init.c,

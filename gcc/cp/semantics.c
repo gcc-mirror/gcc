@@ -360,7 +360,7 @@ do_pushlevel (scope_kind sk)
     {
       if (!processing_template_decl)
 	add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-      begin_scope (sk);
+      begin_scope (sk, NULL);
     }
 }
 
@@ -1004,7 +1004,7 @@ begin_compound_stmt (bool has_no_scope)
        statement-expression.  But, if it's a statement-expression with
        a scopeless block, there's nothing to keep, and we don't want
        to accidentally keep a block *inside* the scopeless block.  */ 
-    keep_next_level (0);
+    keep_next_level (false);
 
   return r;
 }
@@ -1408,7 +1408,7 @@ begin_stmt_expr (void)
 
   last_expr_type = NULL_TREE;
   
-  keep_next_level (1);
+  keep_next_level (true);
 
   return last_tree; 
 }

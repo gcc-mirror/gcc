@@ -352,7 +352,8 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 		 parms, current_template_parms);
   TEMPLATE_PARMS_FOR_INLINE (current_template_parms) = 1;
 
-  pushlevel (0);
+  begin_scope (TREE_VEC_LENGTH (parms) ? sk_template_parms : sk_template_spec,
+               NULL);
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i) 
     {
       tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
@@ -609,7 +610,7 @@ begin_template_parm_list (void)
 
      pushtag contains special code to call pushdecl_with_scope on the
      TEMPLATE_DECL for S2.  */
-  begin_scope (sk_template_parms);
+  begin_scope (sk_template_parms, NULL);
   ++processing_template_decl;
   ++processing_template_parmlist;
   note_template_header (0);
@@ -653,7 +654,7 @@ check_specialization_scope (void)
 void
 begin_specialization (void)
 {
-  begin_scope (sk_template_spec);
+  begin_scope (sk_template_spec, NULL);
   note_template_header (1);
   check_specialization_scope ();
 }
