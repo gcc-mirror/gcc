@@ -106,7 +106,9 @@ static varray_type avail_exprs_stack;
 
    A NULL node is used to mark the last node associated with the
    current block.  */
-varray_type block_defs_stack;
+VEC(tree_on_heap) *block_defs_stack;
+
+/* FIXME: The other stacks should also be VEC(tree_on_heap).  */
 
 /* Stack of statements we need to rescan during finalization for newly
    exposed variables.
@@ -384,7 +386,7 @@ tree_ssa_dominator_optimize (void)
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
   vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq, free);
   VARRAY_TREE_INIT (avail_exprs_stack, 20, "Available expression stack");
-  VARRAY_TREE_INIT (block_defs_stack, 20, "Block DEFS stack");
+  block_defs_stack = VEC_alloc (tree_on_heap, 20);
   VARRAY_TREE_INIT (const_and_copies_stack, 20, "Block const_and_copies stack");
   VARRAY_TREE_INIT (nonzero_vars_stack, 20, "Block nonzero_vars stack");
   VARRAY_TREE_INIT (vrp_variables_stack, 20, "Block vrp_variables stack");
@@ -502,6 +504,9 @@ tree_ssa_dominator_optimize (void)
       if (value && !is_gimple_min_invariant (value))
 	SSA_NAME_VALUE (name) = NULL;
     }
+  
+  VEC_free (tree_on_heap, block_defs_stack);
+  block_defs_stack = NULL;
 }
 
 static bool
@@ -804,7 +809,7 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
   VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
-  VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+  VEC_safe_push (tree_on_heap, block_defs_stack, NULL_TREE);
   VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
   VARRAY_PUSH_TREE (nonzero_vars_stack, NULL_TREE);
   VARRAY_PUSH_TREE (vrp_variables_stack, NULL_TREE);
@@ -925,12 +930,10 @@ static void
 restore_currdefs_to_original_value (void)
 {
   /* Restore CURRDEFS to its original state.  */
-  while (VARRAY_ACTIVE_SIZE (block_defs_stack) > 0)
+  while (VEC_length (tree_on_heap, block_defs_stack) > 0)
     {
-      tree tmp = VARRAY_TOP_TREE (block_defs_stack);
+      tree tmp = VEC_pop (tree_on_heap, block_defs_stack);
       tree saved_def, var;
-
-      VARRAY_POP (block_defs_stack);
 
       if (tmp == NULL_TREE)
 	break;
@@ -999,7 +1002,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	     unwind any expressions related to the TRUE arm before processing
 	     the false arm below.  */
 	  VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
-	  VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+	  VEC_safe_push (tree_on_heap, block_defs_stack, NULL_TREE);
 	  VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
 
 	  edge_info = true_edge->aux;
