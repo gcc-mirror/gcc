@@ -1,3 +1,9 @@
+2000-03-19  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (delete_block): Delete the addr_vec along with the block.
+	(flow_delete_insn): Decrement LABEL_NUSES when deleting insns that
+	reference labels.
+
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (remove_unncessary_notes): Check that all

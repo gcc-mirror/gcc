@@ -1853,7 +1853,7 @@ delete_block (b)
      basic_block b;
 {
   int deleted_handler = 0;
-  rtx insn, end;
+  rtx insn, end, tmp;
 
   /* If the head of this block is a CODE_LABEL, then it might be the
      label for an exception handler which can't be reached.
@@ -1902,11 +1902,22 @@ delete_block (b)
 	}
     }
 
-  /* Selectively unlink the insn chain.  Include any BARRIER that may
-     follow the basic block.  */
-  end = next_nonnote_insn (b->end);
-  if (!end || GET_CODE (end) != BARRIER)
-    end = b->end;
+  /* Include any jump table following the basic block.  */
+  end = b->end;
+  if (GET_CODE (end) == JUMP_INSN
+      && (tmp = JUMP_LABEL (end)) != NULL_RTX
+      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+      && GET_CODE (tmp) == JUMP_INSN
+      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+    end = tmp;
+
+  /* Include any barrier that may follow the basic block.  */
+  tmp = next_nonnote_insn (b->end);
+  if (tmp && GET_CODE (tmp) == BARRIER)
+    end = tmp;
+
+  /* Selectively delete the entire chain.  */
   flow_delete_insn_chain (insn, end);
 
  no_delete_insns:
@@ -1972,6 +1983,7 @@ flow_delete_insn (insn)
 {
   rtx prev = PREV_INSN (insn);
   rtx next = NEXT_INSN (insn);
+  rtx note;
 
   PREV_INSN (insn) = NULL_RTX;
   NEXT_INSN (insn) = NULL_RTX;
@@ -1990,6 +2002,10 @@ flow_delete_insn (insn)
      the label itself should happen in the normal course of block merging.  */
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
     LABEL_NUSES (JUMP_LABEL (insn))--;
+
+  /* Also if deleting an insn that references a label.  */
+  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX)
+    LABEL_NUSES (XEXP (note, 0))--;
 
   return next;
 }
