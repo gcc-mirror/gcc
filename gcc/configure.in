@@ -3130,6 +3130,7 @@ changequote([,])dnl
 		tmake_file="t-linux t-linux-gnulibc1"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
+		float_format=sparc
 		;;
 	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
 		xm_file="${xm_file} sparc/xm-linux.h"
@@ -3141,6 +3142,7 @@ changequote([,])dnl
  		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
+		float_format=sparc
 		;;
 	sparc-*-lynxos*)
 		if test x$gas = xyes
@@ -3283,6 +3285,7 @@ changequote([,])dnl
 		xmake_file=x-linux
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
+		float_format=sparc
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tahoe-harris-*)			# Harris tahoe, using COFF.

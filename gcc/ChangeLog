@@ -1,3 +1,9 @@
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* config/float-sparc.h: New file.
+	* configure.in: Use float_format=sparc for sparc-*-linux-gnulibc1,
+	sparc-*-linux-gnu and sparc64-*-linux*.
+
 1999-08-02  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.c (rs6000_va_list): Type is an array.
