@@ -89,6 +89,7 @@ extern rtx arm_gen_compare_reg (RTX_CODE, rtx, rtx);
 extern rtx arm_gen_return_addr_mask (void);
 extern void arm_reload_in_hi (rtx *);
 extern void arm_reload_out_hi (rtx *);
+extern int arm_const_double_inline_cost (rtx);
 extern const char *fp_immediate_constant (rtx);
 extern const char *output_call (rtx *);
 extern const char *output_call_mem (rtx *);

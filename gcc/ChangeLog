@@ -1,3 +1,17 @@
+2004-11-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_override_options): Use arm_ld_sched rather than testing
+	a bit in tune_flags.
+	(const_double_needs_minipool): Likewise.  Split most of the code out
+	into ...
+	(arm_const_double_inline_cost): ... new function here.
+	* arm-protos.h (arm_const_double_inline_cost): Add prototype.
+	* arm.h (EXTRA_CONSTRAINT_STR_ARM): Add D[abc] constraints for double-
+	word constants of length 2, 3 and 4 insns respectively.
+	(CONSTRAINT_LEN): The 'D' prefix is a 2-letter constraint.
+	* arm.md (arm_movdi, movdf_soft_insn): Add alternatives for D[abc]
+	constraints.  Set insn lenghts accordingly.
+
 2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h (edge_def): Add dest_idx.

@@ -1163,7 +1163,7 @@ arm_override_options (void)
       /* For processors with load scheduling, it never costs more than
          2 cycles to load a constant, and the load scheduler may well
 	 reduce that to 1.  */
-      if (tune_flags & FL_LDSCHED)
+      if (arm_ld_sched)
         arm_constant_limit = 1;
 
       /* On XScale the longer latency of a load makes it more difficult
@@ -7258,31 +7258,43 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   minipool_fix_tail = fix;
 }
 
-/* Determine if a CONST_DOUBLE should be pushed to the minipool */
-static bool
-const_double_needs_minipool (rtx val)
+/* Return the cost of synthesising the const_double VAL inline.
+   Returns the number of insns needed, or 99 if we don't know how to
+   do it.  */
+int
+arm_const_double_inline_cost (rtx val)
 {
   long parts[2];
-
-  /* thumb only knows to load a CONST_DOUBLE from memory at the moment */
-  if (TARGET_THUMB)
-    return true;
-
+  
   if (GET_MODE (val) == DFmode)
     {
       REAL_VALUE_TYPE r;
       if (!TARGET_SOFT_FLOAT)
-	return true;
+	return 99;
       REAL_VALUE_FROM_CONST_DOUBLE (r, val);
       REAL_VALUE_TO_TARGET_DOUBLE (r, parts);
     }
   else if (GET_MODE (val) != VOIDmode)
-    return true;
+    return 99;
   else
     {
       parts[0] = CONST_DOUBLE_LOW (val);
       parts[1] = CONST_DOUBLE_HIGH (val);
     }
+
+  return (arm_gen_constant (SET, SImode, NULL_RTX, parts[0],
+			    NULL_RTX, NULL_RTX, 0, 0)
+	  + arm_gen_constant (SET, SImode, NULL_RTX, parts[1],
+			      NULL_RTX, NULL_RTX, 0, 0));
+}
+
+/* Determine if a CONST_DOUBLE should be pushed to the minipool */
+static bool
+const_double_needs_minipool (rtx val)
+{
+  /* thumb only knows to load a CONST_DOUBLE from memory at the moment */
+  if (TARGET_THUMB)
+    return true;
 
   /* Don't push anything to the minipool if a CONST_DOUBLE can be built with
      a few ALU insns directly. On balance, the optimum is likely to be around
@@ -7290,11 +7302,8 @@ const_double_needs_minipool (rtx val)
      When optimizing for size, a limit of 3 allows saving at least one word
      except for cases where a single minipool entry could be shared more than
      2 times which is rather unlikely to outweight the overall savings. */
-  return (  arm_gen_constant (SET, SImode, NULL_RTX, parts[0],
-			      NULL_RTX, NULL_RTX, 0, 0)
-	  + arm_gen_constant (SET, SImode, NULL_RTX, parts[1],
-			      NULL_RTX, NULL_RTX, 0, 0)
-	  > ((optimize_size || (tune_flags & FL_LDSCHED)) ? 3 : 4));
+  return (arm_const_double_inline_cost (val)
+	  > ((optimize_size || arm_ld_sched) ? 3 : 4));
 }
 
 /* Scan INSN and note any of its operands that need fixing.
