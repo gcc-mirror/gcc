@@ -151,7 +151,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 20 December 2000
+@center Last updated 12 January 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -2192,7 +2192,8 @@ is relevant to the design of plain @samp{gcc} without @samp{-ansi} only
 for pragmatic reasons, not as a requirement.
 
 GCC normally defines @code{__STDC__} to be 1, and in addition
-defines @code{__STRICT_ANSI__} if you specify the @samp{-ansi} option.
+defines @code{__STRICT_ANSI__} if you specify the @option{-ansi} option,
+or a @option{-std} option for strict conformance to some version of ISO C.
 On some hosts, system include files use a different convention, where
 @code{__STDC__} is normally 0, but is 1 if the user specifies strict
 conformance to the C Standard.  GCC follows the host convention when

@@ -1,3 +1,11 @@
+2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* cpp.texi, extend.texi, gcc.texi, install.texi, invoke.texi,
+	tm.texi: Consistently refer to ISO C instead of ANSI C.  Refer to
+	-std options alongside references to -ansi.  Update some
+	documentation for C99.
+	* cpp.1: Regenerate.
+
 2001-01-12  Andreas Jaeger  <aj@suse.de>
 
 	* haifa-sched.c (restore_line_notes): Remove argument block B

@@ -2267,7 +2267,7 @@ stores the fixed include files.  A cross compiled GNU CC runs
 @code{fixincludes} on the header files in @file{$(tooldir)/include}.
 (If the cross compilation header files need to be fixed, they must be
 installed before GNU CC is built.  If the cross compilation header files
-are already suitable for ANSI C and GNU CC, nothing special need be
+are already suitable for ISO C and GNU CC, nothing special need be
 done).
 
 @code{GPLUSPLUS_INCLUDE_DIR} means the same thing for native and cross.  It

@@ -547,13 +547,14 @@ Here are run-time target specifications.
 @item CPP_PREDEFINES
 Define this to be a string constant containing @samp{-D} options to
 define the predefined macros that identify this machine and system.
-These macros will be predefined unless the @samp{-ansi} option is
-specified.
+These macros will be predefined unless the @option{-ansi} option (or a
+@option{-std} option for strict ISO C conformance) is specified.
 
 In addition, a parallel set of macros are predefined, whose names are
 made by appending @samp{__} at the beginning and at the end.  These
-@samp{__} macros are permitted by the ANSI standard, so they are
-predefined regardless of whether @samp{-ansi} is specified.
+@samp{__} macros are permitted by the ISO standard, so they are
+predefined regardless of whether @option{-ansi} or a @option{-std} option
+is specified.
 
 For example, on the Sun, one can use the following value:
 
@@ -3001,7 +3002,7 @@ RTX may have a first operand of zero.  This indicates that the entire
 argument is also stored on the stack.
 
 @cindex @file{stdarg.h} and register arguments
-The usual way to make the ANSI library @file{stdarg.h} work on a machine
+The usual way to make the ISO library @file{stdarg.h} work on a machine
 where some arguments are usually passed in registers, is to cause
 nameless arguments to be passed on the stack instead.  This is done
 by making @code{FUNCTION_ARG} return 0 whenever @var{named} is 0.
@@ -3900,10 +3901,10 @@ on the stack.  Other machines require their own implementations of
 varargs, and the two machine independent header files must have
 conditionals to include it.
 
-ANSI @file{stdarg.h} differs from traditional @file{varargs.h} mainly in
+ISO @file{stdarg.h} differs from traditional @file{varargs.h} mainly in
 the calling convention for @code{va_start}.  The traditional
 implementation takes just one argument, which is the variable in which
-to store the argument pointer.  The ANSI implementation of
+to store the argument pointer.  The ISO implementation of
 @code{va_start} takes an additional second argument.  The user is
 supposed to write the last named argument of the function here.
 
@@ -3915,7 +3916,7 @@ below.
 @findex __builtin_saveregs
 @item __builtin_saveregs ()
 Use this built-in function to save the argument registers in memory so
-that the varargs mechanism can access them.  Both ANSI and traditional
+that the varargs mechanism can access them.  Both ISO and traditional
 versions of @code{va_start} must use @code{__builtin_saveregs}, unless
 you use @code{SETUP_INCOMING_VARARGS} (see below) instead.
 
@@ -4345,8 +4346,8 @@ macro, a reasonable default is used.
 @cindex @code{bzero}, implicit usage
 @cindex @code{memset}, implicit usage
 @item TARGET_MEM_FUNCTIONS
-Define this macro if GCC should generate calls to the System V
-(and ANSI C) library functions @code{memcpy} and @code{memset}
+Define this macro if GCC should generate calls to the ISO C
+(and System V) library functions @code{memcpy} and @code{memset}
 rather than the BSD functions @code{bcopy} and @code{bzero}.
 
 @findex LIBGCC_NEEDS_DOUBLE
@@ -8159,7 +8160,7 @@ appropriate rtl instructions.  It is used only when compiling the end of
 @item NEED_ATEXIT
 @findex NEED_ATEXIT
 Define this if the target system lacks the function @code{atexit}
-from the ANSI C standard.  If this macro is defined, a default definition
+from the ISO C standard.  If this macro is defined, a default definition
 will be provided to support C++.  If @code{ON_EXIT} is not defined,
 a default @code{exit} function will also be provided.
 

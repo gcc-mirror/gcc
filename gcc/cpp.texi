@@ -42,7 +42,7 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title The C Preprocessor
-@subtitle Last revised November 2000
+@subtitle Last revised January 2001
 @subtitle for GCC version 2
 @author Richard M. Stallman
 @page
@@ -1156,8 +1156,9 @@ conformance with the standard.
 
 @item __STRICT_ANSI__
 @findex __STRICT_ANSI__
-GNU C defines this macro if and only if the @samp{-ansi} switch was
-specified when GNU C was invoked.  Its definition is the null string.
+GNU C defines this macro if and only if the @option{-ansi} switch, or a
+@option{-std} switch specifying strict conformance to some version of ISO C,
+was specified when GNU C was invoked.  Its definition is the null string.
 This macro exists primarily to direct certain GNU header files not to
 define certain traditional Unix constructs which are incompatible with
 ISO C@.
