@@ -1,3 +1,12 @@
+Sat Jun 23 01:16:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (block_info_def): Add nvisited.
+	(propagate_freq): Count nvisited; re-queue delayed blocks; handle
+	irreducible regions.
+
+	* flow.c (dump_edge_info): Dump the probability of edge.
+	(combine_predictions_for_insn): Dump the basic block.
+
 2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Update documentation of source files of C

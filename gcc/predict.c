@@ -215,7 +215,8 @@ combine_predictions_for_insn (insn, bb)
   int best_predictor = END_PREDICTORS;
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, "Predictions for insn %i\n", INSN_UID (insn));
+    fprintf (rtl_dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
+	     bb->index);
 
   /* We implement "first match" heuristics and use probability guessed
      by predictor with smallest index.  In future we will use better
@@ -541,6 +542,10 @@ typedef struct block_info_def
 
   /* True if block already converted.  */
   int visited:1;
+
+  /* Number of block proceeded before adding basic block to the queue.  Used
+     to recognize irregular regions.  */
+  int nvisited;
 } *block_info;
 
 /* Similar information for edges.  */
@@ -567,6 +572,7 @@ propagate_freq (head)
   basic_block last = bb;
   edge e;
   basic_block nextbb;
+  int nvisited = 0;
 
   BLOCK_INFO (head)->frequency = 1;
   for (; bb; bb = nextbb)
@@ -581,12 +587,39 @@ propagate_freq (head)
 	{
 	  for (e = bb->pred; e; e = e->pred_next)
 	    if (!BLOCK_INFO (e->src)->visited && !EDGE_INFO (e)->back_edge)
+	      break;
+
+	  /* We didn't proceeded all predecesors of edge e yet.  These may
+	     be waiting in the queue or we may hit irreducible region.
+
+	     To avoid infinite looping on irrecudible regions, count number
+	     of block proceeded at the time basic block has been queued.  In the
+	     case number didn't changed, we've hit irreducible region and we
+	     forget the backward edge.  This can increase time complexity
+	     by the number of irreducible blocks, but in same way standard the
+	     loop does, so it should not result in noticeable slowodwn.
+
+	     Alternativly we may distinquish backward and cross edges in the
+	     DFS tree by preprocesing pass and ignore existence of non-loop
+	     backward edges.  */
+	  if (e && BLOCK_INFO (bb)->nvisited != nvisited)
+	    {
+	      if (!nextbb)
+		nextbb = e->dest;
+	      else
+		BLOCK_INFO (last)->next = e->dest;
+	      BLOCK_INFO (last)->nvisited = nvisited;
+	      last = e->dest;
 	      continue;
+	    }
+	  else if (e && rtl_dump_file)
+	    fprintf (rtl_dump_file, "Irreducible region hit, ignoring edge to bb %i\n",
+		     bb->index);
 
 	  for (e = bb->pred; e; e = e->pred_next)
 	    if (EDGE_INFO (e)->back_edge)
 	      cyclic_probability += EDGE_INFO (e)->back_edge_prob;
-	    else
+	    else if (BLOCK_INFO (e->src)->visited)
 	      frequency += (e->probability
 			    * BLOCK_INFO (e->src)->frequency /
 			    REG_BR_PROB_BASE);
@@ -616,8 +649,10 @@ propagate_freq (head)
 	      nextbb = e->dest;
 	    else
 	      BLOCK_INFO (last)->next = e->dest;
+	    BLOCK_INFO (last)->nvisited = nvisited;
 	    last = e->dest;
 	  }
+      nvisited ++;
     }
 }
 
