@@ -15,7 +15,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   glibcpp_basedir=$auxdir/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
-  AM_INIT_AUTOMAKE(libstdc++, 2.92)
+  AM_INIT_AUTOMAKE(libstdc++, 3.0.0)
 
   # Never versions of autoconf add an underscore to these functions.
   # Prevent future problems ...
