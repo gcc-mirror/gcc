@@ -41,7 +41,6 @@ struct lang_identifier GTY(())
   tree local_value;
   tree label_value;
   tree implicit_decl;
-  tree error_locus;
   tree limbo_value;
 };
 
@@ -91,10 +90,6 @@ struct lang_decl GTY(())
    has had one at any point in this compilation.  */
 #define IDENTIFIER_IMPLICIT_DECL(NODE)	\
   (((struct lang_identifier *) (NODE))->implicit_decl)
-/* This is the last function in which we printed an "undefined variable"
-   message for this identifier.  Value is a FUNCTION_DECL or null.  */
-#define IDENTIFIER_ERROR_LOCUS(NODE)	\
-  (((struct lang_identifier *) (NODE))->error_locus)
 
 /* In identifiers, C uses the following fields in a special way:
    TREE_PUBLIC        to record that there was a previous local extern decl.
@@ -226,6 +221,7 @@ extern void push_label_level                    PARAMS ((void));
 extern void push_parm_decl                      PARAMS ((tree));
 extern tree pushdecl_top_level                  PARAMS ((tree));
 extern void pushtag                             PARAMS ((tree, tree));
+extern void record_function_scope_shadow	PARAMS ((tree));
 extern tree set_array_declarator_type           PARAMS ((tree, tree, int));
 extern tree shadow_label                        PARAMS ((tree));
 extern void shadow_tag                          PARAMS ((tree));

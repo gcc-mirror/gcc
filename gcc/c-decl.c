@@ -268,7 +268,8 @@ tree static_ctors, static_dtors;
 
 /* Forward declarations.  */
 
-static struct binding_level * make_binding_level	PARAMS ((void));
+static struct binding_level *make_binding_level		PARAMS ((void));
+static struct binding_level *get_function_binding_level PARAMS ((void));
 static void pop_binding_level		PARAMS ((struct binding_level **));
 static void clear_limbo_values		PARAMS ((tree));
 static int duplicate_decls		PARAMS ((tree, tree, int));
@@ -309,7 +310,6 @@ c_print_identifier (file, node, indent)
   print_node (file, "local", IDENTIFIER_LOCAL_VALUE (node), indent + 4);
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
-  print_node (file, "error locus", IDENTIFIER_ERROR_LOCUS (node), indent + 4);
   print_node (file, "limbo value", IDENTIFIER_LIMBO_VALUE (node), indent + 4);
   if (C_IS_RESERVED_WORD (node))
     {
@@ -358,6 +358,17 @@ make_binding_level ()
     }
   else
     return (struct binding_level *) ggc_alloc (sizeof (struct binding_level));
+}
+
+/* Return the outermost binding level for the current function.  */
+static struct binding_level *
+get_function_binding_level ()
+{
+  struct binding_level *b = current_binding_level;
+
+  while (b->level_chain->parm_flag == 0)
+    b = b->level_chain;
+  return b;
 }
 
 /* Remove a binding level from a list and add it to the level chain.  */
@@ -2016,6 +2027,17 @@ pushdecl (x)
   return x;
 }
 
+/* Record that the local value of NAME is shadowed at function scope.
+   This is used by build_external_ref in c-typeck.c.  */
+void
+record_function_scope_shadow (name)
+     tree name;
+{
+  struct binding_level *b = get_function_binding_level ();
+  b->shadowed = tree_cons (name, IDENTIFIER_LOCAL_VALUE (name),
+			   b->shadowed);
+}
+
 /* Like pushdecl, only it places X in GLOBAL_BINDING_LEVEL, if appropriate.  */
 
 tree
@@ -2557,11 +2579,8 @@ c_make_fname_decl (id, type_dep)
   if (current_function_decl)
     {
       /* Add the decls to the outermost block.  */
-      struct binding_level *b = current_binding_level;
-      struct binding_level *old = b;
-      while (b->level_chain->parm_flag == 0)
-	b = b->level_chain;
-      current_binding_level = b;
+      struct binding_level *old = current_binding_level;
+      current_binding_level = get_function_binding_level ();
       pushdecl (decl);
       current_binding_level = old;
     }	
