@@ -1611,8 +1611,7 @@ build_offset_ref (type, name)
   if (member == error_mark_node)
     return error_mark_node;
 
-  /* A lot of this logic is now handled in lookup_field and
-     lookup_fnfield.  */
+  /* A lot of this logic is now handled in lookup_member.  */
   if (member && BASELINK_P (member))
     {
       /* Go from the TREE_BASELINK to the member function info.  */
@@ -1648,7 +1647,6 @@ build_offset_ref (type, name)
 	  t = OVL_CURRENT (t);
 
 	  /* unique functions are handled easily.  */
-	  basebinfo = TREE_PURPOSE (fnfields);
 	  if (!enforce_access (basebinfo, t))
 	    return error_mark_node;
 	  mark_used (t);
@@ -1776,29 +1774,24 @@ resolve_offset_ref (exp)
   if (TREE_CODE (member) == FIELD_DECL
       && (base == current_class_ref || is_dummy_object (base)))
     {
-      tree basetype_path;
       tree expr;
 
+      basetype = DECL_CONTEXT (member);
+
+      /* Try to get to basetype from 'this'; if that doesn't work,
+         nothing will.  */
+      base = current_class_ref;
+
+      /* First convert to the intermediate base specified, if appropriate.  */
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
-	basetype = TYPE_OFFSET_BASETYPE (type);
-      else
-	basetype = DECL_CONTEXT (member);
+	base = build_scoped_ref (base, TYPE_OFFSET_BASETYPE (type));
 
-      base = current_class_ptr;
+      addr = build_unary_op (ADDR_EXPR, base, 0);
+      addr = convert_pointer_to (basetype, addr);
 
-      if (get_base_distance (basetype, TREE_TYPE (TREE_TYPE (base)), 0, &basetype_path) < 0)
-	{
-	  error_not_base_type (basetype, TREE_TYPE (TREE_TYPE (base)));
-	  return error_mark_node;
-	}
-      /* Kludge: we need to use basetype_path now, because
-	 convert_pointer_to will bash it.  */
-      enforce_access (basetype_path, member);
-      addr = convert_pointer_to (basetype, base);
+      if (addr == error_mark_node)
+	return error_mark_node;
 
-      /* Even in the case of illegal access, we form the
-	 COMPONENT_REF; that will allow better error recovery than
-	 just feeding back error_mark_node.  */
       expr = build (COMPONENT_REF, TREE_TYPE (member),
 		    build_indirect_ref (addr, NULL_PTR), member);
       return convert_from_reference (expr);

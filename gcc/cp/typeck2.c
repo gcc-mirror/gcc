@@ -1031,7 +1031,11 @@ process_init_constructor (type, init, elts)
 
    x.A::ii refers to the ii member of the L part of
    the A part of the C object named by X.  In this case,
-   DATUM would be x, and BASETYPE would be A.  */
+   DATUM would be x, and BASETYPE would be A.
+
+   Note that this is nonconformant; the standard specifies that first
+   we look up ii in A, then convert x to an L& and pull out the ii part.
+   But narrowing seems to be standard practice, so let's do it anyway.  */
 
 tree
 build_scoped_ref (datum, basetype)
@@ -1044,43 +1048,15 @@ build_scoped_ref (datum, basetype)
   if (datum == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  /* Don't do this if it would cause an error or if we're being pedantic.  */
+  if (! ACCESSIBLY_UNIQUELY_DERIVED_P (basetype, type)
+      || pedantic)
+    return datum;
 
-  type = TYPE_MAIN_VARIANT (type);
+  ref = build_unary_op (ADDR_EXPR, datum, 0);
+  ref = convert_pointer_to (basetype, ref);
 
-  /* This is an easy conversion.  */
-  if (is_aggr_type (basetype, 1))
-    {
-      tree binfo = TYPE_BINFO (basetype);
-      if (binfo != TYPE_BINFO (type))
-	{
-	  binfo = get_binfo (binfo, type, 1);
-	  if (binfo == error_mark_node)
-	    return error_mark_node;
-	  if (binfo == 0)
-	    return error_not_base_type (basetype, type);
-	}
-
-      switch (TREE_CODE (datum))
-	{
-	case NOP_EXPR:
-	case CONVERT_EXPR:
-	case FLOAT_EXPR:
-	case FIX_TRUNC_EXPR:
-	case FIX_FLOOR_EXPR:
-	case FIX_ROUND_EXPR:
-	case FIX_CEIL_EXPR:
-	  ref = convert_pointer_to (binfo,
-				    build_unary_op (ADDR_EXPR, TREE_OPERAND (datum, 0), 0));
-	  break;
-	default:
-	  ref = convert_pointer_to (binfo,
-				    build_unary_op (ADDR_EXPR, datum, 0));
-	}
-      return build_indirect_ref (ref, "(compiler error in build_scoped_ref)");
-    }
-  return error_mark_node;
+  return build_indirect_ref (ref, "(compiler error in build_scoped_ref)");
 }
 
 /* Build a reference to an object specified by the C++ `->' operator.

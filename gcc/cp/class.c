@@ -91,7 +91,7 @@ static void add_virtual_function PARAMS ((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PARAMS ((tree, tree));
 static void delete_duplicate_fields PARAMS ((tree));
 static void finish_struct_bits PARAMS ((tree));
-static int alter_access PARAMS ((tree, tree, tree, tree));
+static int alter_access PARAMS ((tree, tree, tree));
 static void handle_using_decl PARAMS ((tree, tree));
 static int overrides PARAMS ((tree, tree));
 static int strictly_overrides PARAMS ((tree, tree));
@@ -1441,8 +1441,7 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  /* Setting the DECL_CONTEXT here is probably redundant.  */
-  DECL_CONTEXT (method) = type;
+  int using = (DECL_CONTEXT (method) != type);
   
   if (fields && *fields)
     *fields = build_overload (method, *fields);
@@ -1558,20 +1557,27 @@ add_method (type, fields, method)
 		     same name and the same parameter types cannot be
 		     overloaded if any of them is a static member
 		     function declaration.  */
-		  if (DECL_STATIC_FUNCTION_P (fn)
-		      != DECL_STATIC_FUNCTION_P (method))
+		  if ((DECL_STATIC_FUNCTION_P (fn)
+		       != DECL_STATIC_FUNCTION_P (method))
+		      || using)
 		    {
 		      tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
 		      tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
 
 		      if (! DECL_STATIC_FUNCTION_P (fn))
 			parms1 = TREE_CHAIN (parms1);
-		      else
+		      if (! DECL_STATIC_FUNCTION_P (method))
 			parms2 = TREE_CHAIN (parms2);
 
 		      if (compparms (parms1, parms2))
-			cp_error ("`%#D' and `%#D' cannot be overloaded",
-				  fn, method);
+			{
+			  if (using)
+			    /* Defer to the local function.  */
+			    return;
+			  else
+			    cp_error ("`%#D' and `%#D' cannot be overloaded",
+				      fn, method);
+			}
 		    }
 
 		  /* Since this is an ordinary function in a
@@ -1715,14 +1721,12 @@ delete_duplicate_fields (fields)
     TREE_CHAIN (x) = delete_duplicate_fields_1 (x, TREE_CHAIN (x));
 }
 
-/* Change the access of FDECL to ACCESS in T.  The access to FDECL is
-   along the path given by BINFO.  Return 1 if change was legit,
-   otherwise return 0.  */
+/* Change the access of FDECL to ACCESS in T.  Return 1 if change was
+   legit, otherwise return 0.  */
 
 static int
-alter_access (t, binfo, fdecl, access)
+alter_access (t, fdecl, access)
      tree t;
-     tree binfo;
      tree fdecl;
      tree access;
 {
@@ -1746,7 +1750,7 @@ alter_access (t, binfo, fdecl, access)
     }
   else
     {
-      enforce_access (binfo, fdecl);
+      enforce_access (t, fdecl);
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
@@ -1768,11 +1772,7 @@ handle_using_decl (using_decl, t)
     : access_public_node;
   tree fdecl, binfo;
   tree flist = NULL_TREE;
-  tree fields = TYPE_FIELDS (t);
-  tree method_vec = CLASSTYPE_METHOD_VEC (t);
-  tree tmp;
-  int i;
-  int n_methods;
+  tree old_value;
 
   binfo = binfo_or_else (ctype, t);
   if (! binfo)
@@ -1793,57 +1793,58 @@ handle_using_decl (using_decl, t)
       return;
     }
 
-  /* Functions are represented as TREE_LIST, with the purpose
-     being the type and the value the functions. Other members
-     come as themselves. */
-  if (TREE_CODE (fdecl) == TREE_LIST)
+  if (BASELINK_P (fdecl))
     /* Ignore base type this came from. */
     fdecl = TREE_VALUE (fdecl);
 
-  if (TREE_CODE (fdecl) == OVERLOAD)
+  old_value = IDENTIFIER_CLASS_VALUE (name);
+  if (old_value)
     {
-      /* We later iterate over all functions. */
-      flist = fdecl;
-      fdecl = OVL_FUNCTION (flist);
-    }
-  
-  name = DECL_NAME (fdecl);
-  n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); i++)
-    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
-	== name)
-      {
-	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	cp_error_at ("  because of local method `%#D' with same name",
-		     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
-	return;
-      }
+      if (is_overloaded_fn (old_value))
+	old_value = OVL_CURRENT (old_value);
 
-  if (! DECL_LANG_SPECIFIC (fdecl))
-    /* We don't currently handle DECL_ACCESS for TYPE_DECLs; just return.  */
-    return;
-  
-  for (tmp = fields; tmp; tmp = TREE_CHAIN (tmp))
-    if (DECL_NAME (tmp) == name)
-      {
-	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	cp_error_at ("  because of local field `%#D' with same name", tmp);
-	return;
-      }
-  
-  /* Make type T see field decl FDECL with access ACCESS.*/
-  if (flist)
+      if (DECL_P (old_value) && DECL_CONTEXT (old_value) == t)
+	/* OK */;
+      else
+	old_value = NULL_TREE;
+    }
+
+  if (is_overloaded_fn (fdecl))
+    flist = fdecl;
+  else if (! DECL_LANG_SPECIFIC (fdecl))
+    my_friendly_abort (20000221);
+
+  if (! old_value)
+    ;
+  else if (is_overloaded_fn (old_value))
     {
-      while (flist)
+      if (flist)
+	/* It's OK to use functions from a base when there are functions with
+	   the same name already present in the current class.  */;
+      else
 	{
-	  if (alter_access (t, binfo, OVL_FUNCTION (flist), 
-			    access) == 0)
-	    return;
-	  flist = OVL_CHAIN (flist);
+	  cp_error ("`%D' invalid in `%#T'", using_decl, t);
+	  cp_error_at ("  because of local method `%#D' with same name",
+		       OVL_CURRENT (old_value));
+	  return;
 	}
     }
   else
-    alter_access (t, binfo, fdecl, access);
+    {
+      cp_error ("`%D' invalid in `%#T'", using_decl, t);
+      cp_error_at ("  because of local field `%#D' with same name", old_value);
+      return;
+    }
+  
+  /* Make type T see field decl FDECL with access ACCESS.*/
+  if (flist)
+    for (; flist; flist = OVL_NEXT (flist))
+      {
+	add_method (t, 0, OVL_CURRENT (flist));
+	alter_access (t, OVL_CURRENT (flist), access);
+      }
+  else
+    alter_access (t, fdecl, access);
 }
 
 /* Run through the base clases of T, updating
@@ -4413,17 +4414,12 @@ check_bases_and_members (t, empty_p)
 				   cant_have_const_ctor,
 				   no_const_asn_ref);
 
+  /* Process the using-declarations.  */
+  for (; access_decls; access_decls = TREE_CHAIN (access_decls))
+    handle_using_decl (TREE_VALUE (access_decls), t);
+
   /* Build and sort the CLASSTYPE_METHOD_VEC.  */
   finish_struct_methods (t);
-
-  /* Process the access-declarations.  We wait until now to do this
-     because handle_using_decls requires that the CLASSTYPE_METHOD_VEC
-     be set up correctly.  */
-  while (access_decls)
-    {
-      handle_using_decl (TREE_VALUE (access_decls), t);
-      access_decls = TREE_CHAIN (access_decls);
-    }
 }
 
 /* If T needs a pointer to its virtual function table, set TYPE_VFIELD

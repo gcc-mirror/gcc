@@ -1606,7 +1606,15 @@ lookup_member (xbasetype, name, protect, want_type)
 
   if (rval && is_overloaded_fn (rval)) 
     {
-      rval = tree_cons (basetype_path, rval, NULL_TREE);
+      /* Note that the binfo we put in the baselink is the binfo where
+	 we found the functions, which we need for overload
+	 resolution, but which should not be passed to enforce_access;
+	 rather, enforce_access wants a binfo which refers to the
+	 scope in which we started looking for the function.  This
+	 will generally be the binfo passed into this function as
+	 xbasetype.  */
+
+      rval = tree_cons (rval_binfo, rval, NULL_TREE);
       SET_BASELINK_P (rval);
     }
 
