@@ -4169,10 +4169,16 @@ ia64_override_options ()
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
-  if (TARGET_INLINE_DIV_LAT && TARGET_INLINE_DIV_THR)
+  if (TARGET_INLINE_FLOAT_DIV_LAT && TARGET_INLINE_FLOAT_DIV_THR)
     {
-      warning ("cannot optimize division for both latency and throughput");
-      target_flags &= ~MASK_INLINE_DIV_THR;
+      warning ("cannot optimize floating point division for both latency and throughput");
+      target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
+    }
+
+  if (TARGET_INLINE_INT_DIV_LAT && TARGET_INLINE_INT_DIV_THR)
+    {
+      warning ("cannot optimize integer division for both latency and throughput");
+      target_flags &= ~MASK_INLINE_INT_DIV_THR;
     }
 
   if (ia64_fixed_range_string)

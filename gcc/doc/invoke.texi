@@ -622,8 +622,9 @@ in the following sections.
 @gccoptlist{
 -mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
 -mvolatile-asm-stop  -mb-step  -mregister-names  -mno-sdata @gol
--mconstant-gp  -mauto-pic  -minline-divide-min-latency @gol
--minline-divide-max-throughput  -mno-dwarf2-asm @gol
+-mconstant-gp  -mauto-pic  -minline-float-divide-min-latency @gol
+-minline-float-divide-max-throughput -minline-int-divide-min-latency @gol
+-minline-int-divide-max-throughput -mno-dwarf2-asm @gol
 -mfixed-range=@var{register-range}}
 
 @emph{D30V Options}
@@ -9389,13 +9390,25 @@ useful when compiling kernel code.
 Generate code that is self-relocatable.  This implies @option{-mconstant-gp}.
 This is useful when compiling firmware code.
 
-@item -minline-divide-min-latency
-@opindex minline-divide-min-latency
-Generate code for inline divides using the minimum latency algorithm.
+@item -minline-float-divide-min-latency
+@opindex minline-float-divide-min-latency
+Generate code for inline divides of floating point values
+using the minimum latency algorithm.
 
-@item -minline-divide-max-throughput
-@opindex minline-divide-max-throughput
-Generate code for inline divides using the maximum throughput algorithm.
+@item -minline-float-divide-max-throughput
+@opindex minline-float-divide-max-throughput
+Generate code for inline divides of floating point values
+using the maximum throughput algorithm.
+
+@item -minline-int-divide-min-latency
+@opindex minline-int-divide-min-latency
+Generate code for inline divides of integer values
+using the minimum latency algorithm.
+
+@item -minline-int-divide-max-throughput
+@opindex minline-int-divide-max-throughput
+Generate code for inline divides of integer values
+using the maximum throughput algorithm.
 
 @item -mno-dwarf2-asm
 @itemx -mdwarf2-asm
