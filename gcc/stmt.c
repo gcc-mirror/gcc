@@ -1486,13 +1486,11 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   for (t = inputs; t ; t = TREE_CHAIN (t), i++)
     constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 
-#ifdef MD_ASM_CLOBBERS
   /* Sometimes we wish to automatically clobber registers across an asm.
      Case in point is when the i386 backend moved from cc0 to a hard reg --
      maintaining source-level compatibility means automatically clobbering
      the flags register.  */
-  MD_ASM_CLOBBERS (clobbers);
-#endif
+  clobbers = targetm.md_asm_clobbers (clobbers);
 
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */

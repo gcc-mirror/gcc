@@ -8864,10 +8864,12 @@ without user intervention.  For instance, under Microsoft Windows
 symbols must be explicitly imported from shared libraries (DLLs).
 @end defmac
 
-@defmac MD_ASM_CLOBBERS (@var{clobbers})
-A C statement that adds to @var{clobbers} @code{STRING_CST} trees for
+@deftypefn {Target Hook} tree TARGET_MD_ASM_CLOBBERS (tree @var{clobbers})
+This target hook should add to @var{clobbers} @code{STRING_CST} trees for
 any hard regs the port wishes to automatically clobber for all asms.
-@end defmac
+It should return the result of the last @code{tree_cons} used to add a
+clobber.
+@end deftypefn
 
 @defmac MATH_LIBRARY
 Define this macro as a C string constant for the linker argument to link

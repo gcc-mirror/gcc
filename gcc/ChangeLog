@@ -1,4 +1,21 @@
+2004-03-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* hooks.c (hook_tree_tree_identity): New.
+	* hooks.h: Add a prototype for hook_tree_tree_identity.
+	* stmt.c (expand_asm_operands): Use targetm.md_asm_clobbers
+	instead of MD_ASM_CLOBBERS.
+	* system.h (MD_ASM_CLOBBERS): Poison.
+	* target-def.h (TARGET_MD_ASM_CLOBBERS): New.
+	(TARGET_INITIALIZER): Add TARGET_MD_ASM_CLOBBERS.
+	* target.h (gcc_target): Add md_asm_clobbers.
+	* config/i386/i386.c (TARGET_MD_ASM_CLOBBERS): New.
+	(ix86_md_asm_clobbers): New.
+	* config/i386/i386.h (MD_ASM_CLOBBERS): Remove.
+	* doc/tm.texi (MD_ASM_CLOBBERS): Change to
+	TARGET_MD_ASM_CLOBBERS.
+
 2004-03-03  Stuart Hastings  <stuart@apple.com>
+
 	* gcc/config.gcc: Arrange for Darwin/x86 to build libgcc_eh.a.
 	
 2004-03-03  Eric Botcazou  <ebotcazou@libertysurf.fr>

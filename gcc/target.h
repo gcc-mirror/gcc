@@ -425,6 +425,10 @@ struct gcc_target
      of the current frame into the built-in setjmp buffer.  */
   rtx (* builtin_setjmp_frame_value) (void);
 
+  /* This target hook should add STRING_CST trees for any hard regs
+     the port wishes to automatically clobber for all asms.  */
+  tree (* md_asm_clobbers) (tree);
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

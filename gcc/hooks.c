@@ -209,3 +209,10 @@ hook_bool_voidp_size_t_false (void * a ATTRIBUTE_UNUSED,
 {
   return false;
 }
+
+/* Generic hook that takes a tree and returns it as is.  */
+tree
+hook_tree_tree_identity (tree a)
+{
+  return a;
+}
