@@ -26,6 +26,10 @@ __CTOR_END__:
 __DTOR_END__:
 	data8	0
 
+.section .IA_64.unwind
+__EH_FRAME_END__:
+	data8	-1
+
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
  *

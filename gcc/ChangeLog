@@ -1,3 +1,33 @@
+Tue Apr 25 16:16:04 2000  Andrew MacLeod  <amacleod@cygnus.com>
+			  Jim Wilson  <wilson@cygnus.com>
+			  Andrew Haley  <aph@cygnus.com>
+	
+	* config/ia64/crtbegin.asm: Add IA-64 unwind support.  Correct alloc
+	and gp save/restore problems.
+	* config/ia64/crtend.asm: Add IA-64 unwind support.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Don't include pr_size
+	in fr_pad_size calculation.
+	(save_restore_insns): Move PR save area.  Correct uses of
+ 	RTX_FRAME_RELATED_P.
+	(ia64_expand_prologue): Mark alloc with RTX_FRAME_RELATED_P.
+	(ia64_expand_epilogue): Add eh_epilogue support.
+	(ia64_function_prologue): Emit .prologue directive.
+	(ia64_init_machine_status, ia64_mark_machine_status): New functions.
+	(ia64_override_options): Set init_machine_status and
+	mark_machine_status.
+	(rtx_needs_barrier): Handle bsp reads and writes.
+	(spill_offset, sp_offset, spill_offset_emitted, tmp_reg, tmp_saved):
+	New static variables.
+	(process_set, process_for_unwind_directive): New functions.
+	* config/ia64/ia64.h (ASM_OUTPUT_XDATA_CHAR, ASM_OUTPUT_XDATA_SHORT,
+	ASM_OUTPUT_XDATA_INT, ASM_OUTPUT_XDATA_DOUBLE_INT, ASM_OUTPUT_EH_CHAR,
+	ASM_OUTPUT_EH_SHORT, ASM_OUTPUT_EH_INT, ASM_OUTPUT_EH_DOUBLE_INT): New
+	macros.
+	(EH_FRAME_SECTION_ASM_OP): Define to IA_64.unwind section.
+	(IA64_UNWIND_INFO, HANDLER_SECTION, IA64_UNWIND_EMIT): Define.
+	(struct machine_function): Define.
+	* config/ia64/ia64.md (bsp_value, set_bsp, eh_epilogue): New patterns.
+	
 2000-04-25  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/Makefile.in: make the removal of old programs more
