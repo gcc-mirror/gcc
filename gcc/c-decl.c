@@ -130,9 +130,10 @@ static GTY(()) tree c_scope_stmt_stack;
    some other global meaning for that identifier.  */
 static GTY(()) tree truly_local_externals;
 
-/* A list of the builtin file-scope DECLs.  */
+/* All the builtins; this is a subset of the entries of global_scope.  */
 
-static GTY(()) tree builtin_decls;
+static GTY(()) tree first_builtin_decl;
+static GTY(()) tree last_builtin_decl;
 
 /* A DECL for the current file-scope context.  */
 
@@ -2288,7 +2289,8 @@ c_init_decl_processing (void)
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
 
-  builtin_decls = global_scope->names;
+  first_builtin_decl = global_scope->names;
+  last_builtin_decl = global_scope->names_last;
 }
 
 /* Create the VAR_DECL for __FUNCTION__ etc. ID is the name to give the
@@ -6869,8 +6871,10 @@ c_reset_state (void)
   current_file_decl = build_decl (TRANSLATION_UNIT_DECL, NULL, NULL);
   TREE_CHAIN (current_file_decl) = file_scope_decl;
 
-  /* Reintroduce the global declarations.  */
-  for (link = builtin_decls; link; link = TREE_CHAIN (link))
+  /* Reintroduce the builtin declarations.  */
+  for (link = first_builtin_decl;
+       link != TREE_CHAIN (last_builtin_decl);
+       link = TREE_CHAIN (link))
     pushdecl (copy_node (link));
 }
 

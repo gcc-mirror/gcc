@@ -1,34 +1,42 @@
+2003-08-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (builtin_decls): Replace with first_builtin_decl
+	and last_builtin_decl.
+	(c_init_decl_processing): Initialize both.
+	(c_reset_state): Iterate from first_builtin_decl to
+	last_builtin_decl inclusive to reintroduce builtins.
+
 2003-08-06  David Mosberger  <davidm@hpl.hp.com>
 
-        * doc/extend.texi (Function Attributes): Document the IA-64 version
-        of the "model" attribute.
+	* doc/extend.texi (Function Attributes): Document the IA-64 version
+	of the "model" attribute.
 
-        * config/ia64/ia64.h (SYMBOL_FLAG_SMALL_ADDR): New macro.
-        (SYMBOL_REF_SMALL_ADDR_P): Ditto.
-        (PREDICATE_CODES): Mention "small_addr_symbolic_operand".
+	* config/ia64/ia64.h (SYMBOL_FLAG_SMALL_ADDR): New macro.
+	(SYMBOL_REF_SMALL_ADDR_P): Ditto.
+	(PREDICATE_CODES): Mention "small_addr_symbolic_operand".
 
-        * config/ia64/ia64.c (ia64_handle_model_attribute): New function.
-        (ia64_encode_section_info): Likewise.
-        (ia64_attribute_table): Add "model" attribute.
-        (TARGET_ENCODE_SECTION_INFO): Define.
-        (small_addr_symbolic_operand): New function.
-        (got_symbolic_operand): Return 0 for a symbolref to an object
-        in the small address area.
-        (enum ia64_addr_area): New type.
-        (small_ident1): New variable.
-        (small_ident2): Likewise.
-        (init_idents): New function.
-        (ia64_get_addr_area): Likewise.
-        (ia64_encode_addr_area): Likewise.
-        (ia64_encode_section_info): Likewise.
-        (ia64_expand_load_address): For symbolic references to objects in
-        the small-address-area, load the address via gen_rtx_SET() (which,
-        eventually, will expand into "addl").
+	* config/ia64/ia64.c (ia64_handle_model_attribute): New function.
+	(ia64_encode_section_info): Likewise.
+	(ia64_attribute_table): Add "model" attribute.
+	(TARGET_ENCODE_SECTION_INFO): Define.
+	(small_addr_symbolic_operand): New function.
+	(got_symbolic_operand): Return 0 for a symbolref to an object
+	in the small address area.
+	(enum ia64_addr_area): New type.
+	(small_ident1): New variable.
+	(small_ident2): Likewise.
+	(init_idents): New function.
+	(ia64_get_addr_area): Likewise.
+	(ia64_encode_addr_area): Likewise.
+	(ia64_encode_section_info): Likewise.
+	(ia64_expand_load_address): For symbolic references to objects in
+	the small-address-area, load the address via gen_rtx_SET() (which,
+	eventually, will expand into "addl").
 
 2003-08-06  Per Bothner  <pbothner@apple.com>
 
 	* line-map.h (fileline):  New typedef.
-	(struct line_map, linemap_add, linemap_lookup):  Use it.	
+	(struct line_map, linemap_add, linemap_lookup):  Use it.
 	* input.h (struct location_s):  Comment notes that long-term we want
 	to replace it by fileline.
 
@@ -133,7 +141,7 @@
 	(pp_c_real_literal): Likewise.
 	(pp_c_integer_literal): Likewise.
 	* c-pretty-print.c (pp_c_char): Use pp_string in lieu of
-	pp_identifier. 
+	pp_identifier.
 	(pp_c_character_literal): Tidy.
 	(pp_c_string_literal): Make public.
 	(pp_c_bool_literal): Likewise.
@@ -268,8 +276,8 @@
 	* langhooks-def.h (lhd_initialize_diagnostics): Declare.
 	(LANG_HOOKS_INITIALIZE_DIAGNOSTITCS): New macro.
 	(LANG_HOOKS_INITIALIZER): Adjust.
-	* langhooks.h (struct lang_hooks): Add new field 
-	initialize_diagnostics. 
+	* langhooks.h (struct lang_hooks): Add new field
+	initialize_diagnostics.
 	* langhooks.c (lhd_initialize_diagnostics): Define.
 
 2003-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
@@ -410,7 +418,7 @@
 
 	* varasm.c (lookup_constant_def): New function.
 	* rtl.h (lookup_constant_def): Declare it.
-	* dwarf2out.c (loc_descriptor_from_tree): Use it.  
+	* dwarf2out.c (loc_descriptor_from_tree): Use it.
 	Use targetm.delegitimize_address, not ASM_SIMPLIFY_DWARF_ADDR.
 
 2003-08-01  Zack Weinberg  <zack@codesourcery.com>
