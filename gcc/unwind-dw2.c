@@ -48,7 +48,9 @@
 #define PRE_GCC3_DWARF_FRAME_REGISTERS DWARF_FRAME_REGISTERS
 #endif
 
-/* This is the register and unwind state for a particular frame.  */
+/* This is the register and unwind state for a particular frame.  This
+   provides the information necessary to unwind up past a frame and return
+   to its caller.  */
 struct _Unwind_Context
 {
   void *reg[DWARF_FRAME_REGISTERS+1];
@@ -889,6 +891,11 @@ execute_cfa_program (const unsigned char *insn_ptr,
     }
 }
 
+/* Given the _Unwind_Context CONTEXT for a stack frame, look up the FDE for
+   its caller and decode it into FS.  This function also sets the
+   args_size and lsda members of CONTEXT, as they are really information
+   about the caller's frame.  */
+
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
@@ -1082,6 +1089,11 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	break;
       }
 }
+
+/* CONTEXT describes the unwind state for a frame, and FS describes the FDE
+   of its caller.  Update CONTEXT to refer to the caller as well.  Note
+   that the args_size and lsda members are not updated here, but later in
+   uw_frame_state_for.  */
 
 static void
 uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
