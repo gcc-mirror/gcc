@@ -596,7 +596,7 @@ int flag_finite_math_only = 0;
 /* Zero means that floating-point math operations cannot generate a
    (user-visible) trap.  This is the case, for example, in nonstop
    IEEE 754 arithmetic.  Trapping conditions include division by zero,
-   overflow, underflow, invalid and inexact, but does not include 
+   overflow, underflow, invalid and inexact, but does not include
    operations on signaling NaNs (see below).  */
 
 int flag_trapping_math = 1;
@@ -4439,7 +4439,7 @@ independent_decode_option (argc, argv)
 
 	  if (argv[1][0])
 	    dump_base_name = argv[1];
-	  
+
 	  return 2;
 	}
       else
@@ -4519,7 +4519,7 @@ independent_decode_option (argc, argv)
 
 	  if (argv[1][0])
 	    aux_base_name = argv[1];
-	  
+
 	  return 2;
 	}
       else if (!strcmp (arg, "auxbase-strip"))
@@ -4533,7 +4533,7 @@ independent_decode_option (argc, argv)
 	      if (argv[1][0])
 		aux_base_name = argv[1];
 	    }
-	  
+
 	  return 2;
 	}
       else
@@ -5205,7 +5205,7 @@ process_options ()
 	print_switch_values (stderr, 0, MAX_LINE, "", " ", "\n");
     }
 
-  if (! quiet_flag)
+  if (! quiet_flag  || flag_detailed_statistics)
     time_report = 1;
 
   if (flag_syntax_only)
@@ -5341,7 +5341,7 @@ lang_dependent_init (name)
 {
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
-  
+
   /* Front-end initialization.  This hook can assume that GC,
      identifier hashes etc. are set up, but debug initialization is
      not done yet.  This routine must return the original filename
@@ -5464,7 +5464,7 @@ do_compile ()
   else if (filename)
     {
       char *name = xstrdup (lbasename (filename));
-      
+
       aux_base_name = name;
       strip_off_ending (name, strlen (name));
     }
