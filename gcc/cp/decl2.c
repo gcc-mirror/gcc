@@ -196,6 +196,10 @@ int warn_redundant_decls;
 
 int warn_missing_braces;
 
+/* Warn about comparison of signed and unsigned values.  */
+
+int warn_sign_compare;
+
 /* Warn about *printf or *scanf format/argument anomalies. */
 
 int warn_format;
@@ -541,6 +545,8 @@ lang_decode_option (p)
 	warn_redundant_decls = setting;
       else if (!strcmp (p, "missing-braces"))
 	warn_missing_braces = setting;
+      else if (!strcmp (p, "sign-compare"))
+	warn_sign_compare = setting;
       else if (!strcmp (p, "format"))
 	warn_format = setting;
       else if (!strcmp (p, "conversion"))
@@ -565,7 +571,6 @@ lang_decode_option (p)
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "all"))
 	{
-	  extra_warnings = setting;
 	  warn_return_type = setting;
 	  warn_unused = setting;
 	  warn_implicit = setting;
@@ -574,6 +579,7 @@ lang_decode_option (p)
 	  warn_format = setting;
 	  warn_parentheses = setting;
 	  warn_missing_braces = setting;
+	  warn_sign_compare = setting;
 	  warn_extern_inline = setting;
 	  warn_nonvdtor = setting;
 	  /* We save the value of warn_uninitialized, since if they put

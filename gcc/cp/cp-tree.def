@@ -37,7 +37,7 @@ DEFTREECODE (VEC_DELETE_EXPR, "vec_dl_expr", "e", 2)
 
 /* For a UNSAVE_EXPR, operand 0 is the value to unsave.  By unsave, we
    mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs,
-   WITH_CLEANUP_EXPRs, CALL_EXPRs and RTL_EXPRs, that are protected
+   CALL_EXPRs and RTL_EXPRs, that are protected
    from being evaluated more than once should be reset so that a new
    expand_expr call of this expr will cause those to be re-evaluated.
    This is useful when we want to reuse a tree in different places,

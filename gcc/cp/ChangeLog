@@ -1,3 +1,92 @@
+Thu Feb  8 15:15:14 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Move code that looks for virtuals in base
+ 	classes...
+	* class.c (fixup_virtual): ... to a new function.
+	(finish_struct_1): Call it.
+
+	* cp-tree.h: Declare warn_sign_compare.
+
+	* typeck.c (build_binary_op_nodefault): Check warn_sign_compare
+        rather than extra_warnings to decide whether to warn about
+        comparison of signed and unsigned.
+
+	* decl2.c (lang_decode_option): Handle warn_sign_compare.  -Wall
+        implies -Wsign-compare.  -Wall doesn't imply -W.
+
+Wed Feb  7 15:27:57 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_component_ref): Fix to handle anon unions in base
+	classes as well.
+
+Wed Feb  7 14:29:12 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* class.c (resolves_to_fixed_type_p): Delete code dealing with
+	a WITH_CLEANUP_EXPR, since we don't generate them any more.
+	* cvt.c (build_up_reference): Likewise.
+	* decl.c (grok_reference_init): Likewise.
+	(cp_finish_decl): Likewise.
+	* error.c (dump_expr): Likewise.
+	* tree.c (real_lvalue_p): Likewise.
+	(lvalue_p): Likewise.
+	(build_cplus_new): Likewise.
+	(unsave_expr_now): Likewise.
+	* typeck.c (unary_complex_lvalue, build_modify_expr,
+	c_expand_return): Likewise.
+
+Tue Feb  6 13:39:22 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	Make the C++ front-end pay attention to attributes for structures.
+	* class.c (finish_struct): New argument ATTRIBUTES, passed down into
+	finish_struct_1.
+ 	(finish_struct_1): New argument ATTRIBUTES; call cplus_decl_attributes.
+	Take out old round_up_size use and setting the DECL_ALIGN possibly
+	using it.  Take out setting of TYPE_ALIGN to round_up_size, which
+	can override what the attribute set.
+	* cp-tree.h (finish_struct): Update prototype.
+	* parse.y (template_instantiate_once): Pass a NULL_TREE for the
+	attributes to finish_struct.
+	(structsp): For a CLASS decl, add maybe_attribute to rule and pass that
+	value down into finish_struct.
+	* Makefile.in (CONFLICTS): Switch to 7 shift/reduce conflicts.
+
+Tue Feb  6 13:12:15 1996  Per Bothner  <bothner@kalessin.cygnus.com>
+
+	* decl.c (poplevel):  Re-word dead for local handling.
+	(pushdecl):  Remove useless DECL_DEAD_FOR_LOCAL test.
+	(cp_finish_decl):  If is_for_scope, check for duplicates so
+	we can disable is_for_scope.  Otherwise, preserve_temp_slots.
+
+	* lex.c (do_identifier):  Use global binding in preference of
+	dead for local variable.
+
+Mon Feb  5 17:46:46 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (initializing_context): Handle anon union changes, the
+	context where fields of anon unions can be initialized now has to be
+	found by walking up the TYPE_CONTEXT chain.
+
+Fri Feb  2 14:54:04 1996  Doug Evans  <dje@charmed.cygnus.com>
+
+	* decl.c (start_decl): #ifdef out code to set DECL_COMMON
+	if ASM_OUTPUT{,_ALIGNED}_BSS is defined.
+	(obscure_complex_init): If bss is supported, always set
+	DECL_INITIAL to error_mark_node.
+
+Thu Feb  1 16:19:56 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* init.c (is_friend): Make sure there's a context before we see if
+	it's an aggr type.
+
+Thu Feb  1 15:44:53 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (is_friend): Classes are not friendly with nested classes.
+
+Thu Feb  1 15:27:37 1996  Doug Evans  <dje@charmed.cygnus.com>
+
+	* lex.c (check_newline): Pass last character read to HANDLE_PRAGMA,
+	and record its result.
+
 Thu Feb  1 09:27:01 1996  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (finish_struct_anon): Switch around code to not move anon
@@ -10187,9 +10276,3 @@ Mon Nov  8 13:50:49 1993  Jason Merrill  (jason@deneb.cygnus.com)
 Tue Sep  7 20:03:33 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* cp-decl.c: Allow references and template type parameters as well
-
-Local Variables:
-eval: (auto-fill-mode)
-left-margin: 8
-fill-column: 76
-End:

@@ -219,6 +219,10 @@ extern int warn_redundant_decls;
 
 extern int warn_missing_braces;
 
+/* Warn about comparison of signed and unsigned values.  */
+
+extern int warn_sign_compare;
+
 /* Warn about a subscript that has type char.  */
 
 extern int warn_char_subscripts;
@@ -1061,7 +1065,7 @@ struct lang_decl
 #endif
 
 /* In a VAR_DECL for a variable declared in a for statement,
-   this is the shadowed variable. */
+   this is the shadowed (local) variable. */
 #define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
@@ -1936,7 +1940,7 @@ extern tree build_vfn_ref			PROTO((tree *, tree, tree));
 extern void add_method				PROTO((tree, tree *, tree));
 extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
-extern tree finish_struct			PROTO((tree, tree, int));
+extern tree finish_struct			PROTO((tree, tree, tree, int));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
 extern void pushclass				PROTO((tree, int));

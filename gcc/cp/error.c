@@ -1082,12 +1082,6 @@ dump_expr (t, nop)
       }
       break;
 
-    case WITH_CLEANUP_EXPR:
-      /* Note that this only works for G++ cleanups.  If somebody
-	 builds a general cleanup, there's no way to represent it.  */
-      dump_expr (TREE_OPERAND (t, 0), 0);
-      break;
-
     case TARGET_EXPR:
       /* Note that this only works for G++ target exprs.  If somebody
 	 builds a general TARGET_EXPR, there's no way to represent that

@@ -1798,9 +1798,42 @@ build_component_ref (datum, component, basetype_path, protect)
 	}
     }
 
+  /* See if we have to do any conversions so that we pick up the field from the
+     right context.  */
   if (DECL_FIELD_CONTEXT (field) != basetype)
     {
       tree context = DECL_FIELD_CONTEXT (field);
+      tree base = context;
+      while (base != basetype && ANON_AGGRNAME_P (TYPE_IDENTIFIER (base)))
+	{
+	  base = TYPE_CONTEXT (base);
+	}
+
+      /* Handle base classes here...  */
+      if (base != basetype && TYPE_USES_COMPLEX_INHERITANCE (basetype))
+	{
+	  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
+	  if (integer_zerop (addr))
+	    {
+	      error ("invalid reference to NULL ptr, use ptr-to-member instead");
+	      return error_mark_node;
+	    }
+	  if (VBASE_NAME_P (DECL_NAME (field)))
+	    {
+	      /* It doesn't matter which vbase pointer we grab, just
+		 find one of them.  */
+	      tree binfo = get_binfo (base,
+				      TREE_TYPE (TREE_TYPE (addr)), 0);
+	      addr = convert_pointer_to_real (binfo, addr);
+	    }
+	  else
+	    addr = convert_pointer_to (base, addr);
+	  datum = build_indirect_ref (addr, NULL_PTR);
+	  my_friendly_assert (datum != error_mark_node, 311);
+	}
+      basetype = base;
+ 
+      /* Handle things from anon unions here...  */
       if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
 	{
 	  tree subfield = lookup_anon_field (basetype, context);
@@ -1810,28 +1843,6 @@ build_component_ref (datum, component, basetype_path, protect)
 	}
     }
 
-  if (DECL_FIELD_CONTEXT (field) != basetype
-      && TYPE_USES_COMPLEX_INHERITANCE (basetype))
-    {
-      tree addr = build_unary_op (ADDR_EXPR, datum, 0);
-      if (integer_zerop (addr))
-	{
-	  error ("invalid reference to NULL ptr, use ptr-to-member instead");
-	  return error_mark_node;
-	}
-      if (VBASE_NAME_P (DECL_NAME (field)))
-	  {
-	    /* It doesn't matter which vbase pointer we grab, just
-	       find one of them.  */
-	    tree binfo = get_binfo (DECL_FIELD_CONTEXT (field),
-				    TREE_TYPE (TREE_TYPE (addr)), 0);
-	    addr = convert_pointer_to_real (binfo, addr);
-	  }
-	else
-	  addr = convert_pointer_to (DECL_FIELD_CONTEXT (field), addr);
-      datum = build_indirect_ref (addr, NULL_PTR);
-      my_friendly_assert (datum != error_mark_node, 311);
-    }
   ref = fold (build (COMPONENT_REF, TREE_TYPE (field),
 		     break_out_cleanups (datum), field));
 
@@ -3486,7 +3497,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  resultcode = xresultcode;
 	}
 
-      if (short_compare && extra_warnings)
+      if (short_compare && warn_sign_compare)
 	{
 	  int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	  int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
@@ -4308,14 +4319,6 @@ unary_complex_lvalue (code, arg)
       return build (COMPOUND_EXPR, TREE_TYPE (real_result), arg, real_result);
     }
 
-  if (TREE_CODE (arg) == WITH_CLEANUP_EXPR)
-    {
-      tree real_result = build_unary_op (code, TREE_OPERAND (arg, 0), 0);
-      real_result = build (WITH_CLEANUP_EXPR, TREE_TYPE (real_result),
-			   real_result, 0, TREE_OPERAND (arg, 2));
-      return real_result;
-    }
-
   if (TREE_CODE (TREE_TYPE (arg)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (arg)) == METHOD_TYPE
       || TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
@@ -4402,17 +4405,6 @@ unary_complex_lvalue (code, arg)
     if (TREE_CODE (arg) == SAVE_EXPR && TREE_CODE (targ) == INDIRECT_REF)
       return build (SAVE_EXPR, build_pointer_type (TREE_TYPE (arg)),
 		     TREE_OPERAND (targ, 0), current_function_decl, NULL);
-
-    /* We shouldn't wrap WITH_CLEANUP_EXPRs inside of SAVE_EXPRs, but in case
-       we do, here's how to handle it.  */
-    if (TREE_CODE (arg) == SAVE_EXPR && TREE_CODE (targ) == WITH_CLEANUP_EXPR)
-      {
-#if 0
-	/* Not really a bug, but something to turn on when testing.  */
-	compiler_error ("WITH_CLEANUP_EXPR wrapped in SAVE_EXPR");
-#endif
-	return unary_complex_lvalue (ADDR_EXPR, targ);
-      }
   }
 
   /* Don't let anything else be handled specially.  */
@@ -5661,38 +5653,10 @@ build_modify_expr (lhs, modifycode, rhs)
 						 TREE_OPERAND (newrhs, 2))));
 	}
     }
-  else if (modifycode != INIT_EXPR && TREE_CODE (newrhs) == WITH_CLEANUP_EXPR)
-    {
-      tree cleanup = TREE_OPERAND (newrhs, 2);
-      tree slot;
-
-      /* Finish up by running cleanups and having the "value" of the lhs.  */
-      tree exprlist = tree_cons (NULL_TREE, cleanup,
-				 build_tree_list (NULL_TREE, lhs));
-      newrhs = TREE_OPERAND (newrhs, 0);
-      if (TREE_CODE (newrhs) == TARGET_EXPR)
-	  slot = TREE_OPERAND (newrhs, 0);
-      else if (TREE_CODE (newrhs) == ADDR_EXPR)
-	{
-	  /* Bad but valid.  */
-	  slot = newrhs;
-	  warning ("address taken of temporary object");
-	}
-      else
-	my_friendly_abort (118);
-
-      /* Copy the value computed in SLOT into LHS.  */
-      exprlist = tree_cons (NULL_TREE,
-			    build_modify_expr (lhs, modifycode, slot),
-			    exprlist);
-      /* Evaluate the expression that needs CLEANUP.  This will
-	 compute the value into SLOT.  */
-      exprlist = tree_cons (NULL_TREE, newrhs, exprlist);
-      result = convert (lhstype, build_compound_expr (exprlist));
-    }
   else
     result = build (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
 		    lhstype, lhs, newrhs);
+
   TREE_SIDE_EFFECTS (result) = 1;
 
   /* If we got the LHS in a different type for storing in,
@@ -6788,8 +6752,7 @@ c_expand_return (retval)
 	{
 	  whats_returned = TREE_OPERAND (whats_returned, 0);
 	  while (TREE_CODE (whats_returned) == NEW_EXPR
-		 || TREE_CODE (whats_returned) == TARGET_EXPR
-		 || TREE_CODE (whats_returned) == WITH_CLEANUP_EXPR)
+		 || TREE_CODE (whats_returned) == TARGET_EXPR)
 	    {
 	      /* Get the target.  */
 	      whats_returned = TREE_OPERAND (whats_returned, 0);
