@@ -577,7 +577,7 @@ current_scope ()
   return current_class_type;
 }
 
-/* Returns non-zero if we are currently in a function scope.  Note
+/* Returns nonzero if we are currently in a function scope.  Note
    that this function returns zero if we are within a local class, but
    not within a member function body of the local class.  */
 
@@ -862,7 +862,7 @@ dfs_accessible_p (binfo, data)
   return NULL_TREE;
 }
 
-/* Returns non-zero if it is OK to access DECL through an object
+/* Returns nonzero if it is OK to access DECL through an object
    indiated by BINFO in the context of DERIVED.  */
 
 static int
@@ -925,7 +925,7 @@ protected_accessible_p (decl, derived, binfo)
   return 1;
 }
 
-/* Returns non-zero if SCOPE is a friend of a type which would be able
+/* Returns nonzero if SCOPE is a friend of a type which would be able
    to access DECL through the object indicated by BINFO.  */
 
 static int
@@ -1014,7 +1014,7 @@ type_access_control (type, val)
 }
 
 /* DECL is a declaration from a base class of TYPE, which was the
-   class used to name DECL.  Return non-zero if, in the current
+   class used to name DECL.  Return nonzero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,
    then we can tell in what context the access is occurring by looking
    at the most derived class along the path indicated by BINFO.  */
@@ -1028,7 +1028,7 @@ accessible_p (type, decl)
   tree binfo;
   tree t;
 
-  /* Non-zero if it's OK to access DECL if it has protected
+  /* Nonzero if it's OK to access DECL if it has protected
      accessibility in TYPE.  */
   int protected_ok = 0;
 
@@ -1146,15 +1146,15 @@ struct lookup_field_info {
   /* If non-NULL, the lookup was ambiguous, and this is a list of the
      candidates.  */
   tree ambiguous;
-  /* If non-zero, we are looking for types, not data members.  */
+  /* If nonzero, we are looking for types, not data members.  */
   int want_type;
-  /* If non-zero, RVAL was found by looking through a dependent base.  */
+  /* If nonzero, RVAL was found by looking through a dependent base.  */
   int from_dep_base_p;
   /* If something went wrong, a message indicating what.  */
   const char *errstr;
 };
 
-/* Returns non-zero if BINFO is not hidden by the value found by the
+/* Returns nonzero if BINFO is not hidden by the value found by the
    lookup so far.  If BINFO is hidden, then there's no need to look in
    it.  DATA is really a struct lookup_field_info.  Called from
    lookup_field via breadth_first_search.  */
@@ -1185,7 +1185,7 @@ lookup_field_queue_p (binfo, data)
    
      template <typename T> struct S { S* sp; }
 
-   Returns non-zero if DECL is such a declaration in a class TYPE.  */
+   Returns nonzero if DECL is such a declaration in a class TYPE.  */
 
 static int
 template_self_reference_p (type, decl)
@@ -1692,7 +1692,7 @@ adjust_result_of_qualified_name_lookup (tree decl,
    returned and the walk is terminated.  At each node, FN is passed a
    BINFO indicating the path from the curently visited base-class to
    TYPE.  Before each base-class is walked QFN is called.  If the
-   value returned is non-zero, the base-class is walked; otherwise it
+   value returned is nonzero, the base-class is walked; otherwise it
    is not.  If QFN is NULL, it is treated as a function which always
    returns 1.  Both FN and QFN are passed the DATA whenever they are
    called.  */
@@ -1929,7 +1929,7 @@ check_final_overrider (overrider, basefn)
    virtual functions in TYPE's hierarchy which FNDECL overrides.
    We do not look in TYPE itself, only its bases.
    
-   Returns non-zero, if we find any. Set FNDECL's DECL_VIRTUAL_P, if we
+   Returns nonzero, if we find any. Set FNDECL's DECL_VIRTUAL_P, if we
    find that it overrides anything.
    
    We check that every function which is overridden, is correctly

@@ -50,10 +50,10 @@ extern cpp_reader *parse_in;
 /* This structure contains information about the initializations
    and/or destructions required for a particular priority level.  */
 typedef struct priority_info_s {
-  /* Non-zero if there have been any initializations at this priority
+  /* Nonzero if there have been any initializations at this priority
      throughout the translation unit.  */
   int initializations_p;
-  /* Non-zero if there have been any destructions at this priority
+  /* Nonzero if there have been any destructions at this priority
      throughout the translation unit.  */
   int destructions_p;
 } *priority_info;
@@ -536,7 +536,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return error_mark_node;
     }
 
-  /* Deleting ptr to void is undefined behaviour [expr.delete/3].  */
+  /* Deleting ptr to void is undefined behavior [expr.delete/3].  */
   if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
     {
       warning ("deleting `%T' is undefined", type);
@@ -1950,7 +1950,7 @@ import_export_decl (decl)
 }
 
 /* Here, we only decide whether or not the tinfo node should be
-   emitted with the vtable.  IS_IN_LIBRARY is non-zero iff the
+   emitted with the vtable.  IS_IN_LIBRARY is nonzero iff the
    typeinfo for TYPE should be in the runtime library.  */
 
 void
@@ -2226,7 +2226,7 @@ static splay_tree priority_info_map;
    initialization and destruction of objects with static storage
    duration.  The function generated takes two parameters of type
    `int': __INITIALIZE_P and __PRIORITY.  If __INITIALIZE_P is
-   non-zero, it performs initializations.  Otherwise, it performs
+   nonzero, it performs initializations.  Otherwise, it performs
    destructions.  It only performs those initializations or
    destructions with the indicated __PRIORITY.  The generated function
    returns no value.  
@@ -2373,7 +2373,7 @@ get_priority_info (priority)
 }
 
 /* Set up to handle the initialization or destruction of DECL.  If
-   INITP is non-zero, we are initializing the variable.  Otherwise, we
+   INITP is nonzero, we are initializing the variable.  Otherwise, we
    are destroying it.  */
 
 static tree
@@ -3999,7 +3999,7 @@ pop_scope (t)
 }
 
 /* [basic.lookup.koenig] */
-/* A non-zero return value in the functions below indicates an error.  */
+/* A nonzero return value in the functions below indicates an error.  */
 
 struct arg_lookup
 {
@@ -4742,7 +4742,7 @@ mark_used (decl)
    nonterminals. AGGR is the class, union or struct tag. SCOPE is the
    explicit scope used (NULL for no scope resolution). ID is the
    name. DEFN_P is true, if this is a definition of the class and
-   NEW_TYPE_P is set to non-zero, if we push into the scope containing
+   NEW_TYPE_P is set to nonzero, if we push into the scope containing
    the to be defined aggregate.
    
    Return a TYPE_DECL for the type declared by ID in SCOPE.  */

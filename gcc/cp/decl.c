@@ -659,7 +659,7 @@ namespace_bindings_p ()
   return b->namespace_p;
 }
 
-/* If KEEP is non-zero, make a BLOCK node for the next binding level,
+/* If KEEP is nonzero, make a BLOCK node for the next binding level,
    unconditionally.  Otherwise, use the normal logic to decide whether
    or not to create a BLOCK.  */
 
@@ -688,7 +688,7 @@ declare_namespace_level ()
   current_binding_level->namespace_p = 1;
 }
 
-/* Returns non-zero if this scope was created to store template
+/* Returns nonzero if this scope was created to store template
    parameters.  */
 
 int
@@ -1740,7 +1740,7 @@ clear_identifier_class_values ()
     IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
 }
 
-/* Returns non-zero if T is a virtual function table.  */
+/* Returns nonzero if T is a virtual function table.  */
 
 int
 vtable_decl_p (t, data)
@@ -1750,7 +1750,7 @@ vtable_decl_p (t, data)
   return (TREE_CODE (t) == VAR_DECL && DECL_VIRTUAL_P (t));
 }
 
-/* Returns non-zero if T is a TYPE_DECL for a type with virtual
+/* Returns nonzero if T is a TYPE_DECL for a type with virtual
    functions.  */
 
 int
@@ -1779,8 +1779,8 @@ struct walk_globals_data {
 };
 
 /* Walk the vtable declarations in NAMESPACE.  Whenever one is found
-   for which P returns non-zero, call F with its address.  If any call
-   to F returns a non-zero value, return a non-zero value.  */
+   for which P returns nonzero, call F with its address.  If any call
+   to F returns a nonzero value, return a nonzero value.  */
 
 static int
 walk_vtables_r (namespace, data)
@@ -1800,8 +1800,8 @@ walk_vtables_r (namespace, data)
 }
 
 /* Walk the vtable declarations.  Whenever one is found for which P
-   returns non-zero, call F with its address.  If any call to F
-   returns a non-zero value, return a non-zero value.  */
+   returns nonzero, call F with its address.  If any call to F
+   returns a nonzero value, return a nonzero value.  */
 int
 walk_vtables (p, f, data)
      walk_globals_pred p;
@@ -1848,8 +1848,8 @@ walk_namespaces (f, data)
 }
 
 /* Walk the global declarations in NAMESPACE.  Whenever one is found
-   for which P returns non-zero, call F with its address.  If any call
-   to F returns a non-zero value, return a non-zero value.  */
+   for which P returns nonzero, call F with its address.  If any call
+   to F returns a nonzero value, return a nonzero value.  */
 
 static int
 walk_globals_r (namespace, data)
@@ -1882,8 +1882,8 @@ walk_globals_r (namespace, data)
 }
 
 /* Walk the global declarations.  Whenever one is found for which P
-   returns non-zero, call F with its address.  If any call to F
-   returns a non-zero value, return a non-zero value.  */
+   returns nonzero, call F with its address.  If any call to F
+   returns a nonzero value, return a nonzero value.  */
 
 int
 walk_globals (p, f, data)
@@ -2559,7 +2559,7 @@ pop_everything ()
 
 /* The type TYPE is being declared.  If it is a class template, or a
    specialization of a class template, do any processing required and
-   perform error-checking.  If IS_FRIEND is non-zero, this TYPE is
+   perform error-checking.  If IS_FRIEND is nonzero, this TYPE is
    being declared a friend.  B is the binding level at which this TYPE
    should be bound.
 
@@ -5292,7 +5292,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
      int thislevel_only;
 {
   register struct cp_binding_level *level;
-  /* Non-zero if, we should look past a template parameter level, even
+  /* Nonzero if, we should look past a template parameter level, even
      if THISLEVEL_ONLY.  */
   int allow_template_parms_p = 1;
 
@@ -5375,7 +5375,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 		 are in the pseudo-global level created for the
 		 template parameters, rather than the (surrounding)
 		 namespace level.  Thus, we keep going one more level,
-		 even though THISLEVEL_ONLY is non-zero.  */
+		 even though THISLEVEL_ONLY is nonzero.  */
 	      allow_template_parms_p = 0;
 	      continue;
 	    }
@@ -5399,7 +5399,7 @@ set_current_level_tags_transparency (tags_transparent)
    Otherwise return 0.  However, the value can never be 0
    in the cases in which this is used.
 
-   C++: If NAME is non-zero, this is the new name to install.  This is
+   C++: If NAME is nonzero, this is the new name to install.  This is
    done when replacing anonymous tags with real tag names.  */
 
 static tree
@@ -6022,7 +6022,7 @@ check_for_out_of_scope_variable (tree decl)
    If PREFER_TYPE is -2, we're being called from yylex(). (UGLY)
    Otherwise we prefer non-TYPE_DECLs.
 
-   If NONCLASS is non-zero, we don't look for the NAME in class scope,
+   If NONCLASS is nonzero, we don't look for the NAME in class scope,
    using IDENTIFIER_CLASS_VALUE.  */
 
 static tree
@@ -6425,7 +6425,7 @@ typedef struct predefined_identifier
   const char *const name;
   /* The place where the IDENTIFIER_NODE should be stored.  */
   tree *const node;
-  /* Non-zero if this is the name of a constructor or destructor.  */
+  /* Nonzero if this is the name of a constructor or destructor.  */
   const int ctor_or_dtor_p;
 } predefined_identifier;
 
@@ -8394,7 +8394,7 @@ declare_global_var (name, type)
 }
 
 /* Returns a pointer to the `atexit' function.  Note that if
-   FLAG_USE_CXA_ATEXIT is non-zero, then this will actually be the new
+   FLAG_USE_CXA_ATEXIT is nonzero, then this will actually be the new
    `__cxa_atexit' function specified in the IA64 C++ ABI.  */
 
 static tree
@@ -11985,7 +11985,7 @@ require_complete_types_for_parms (parms)
     }
 }
 
-/* Returns non-zero if T is a local variable.  */
+/* Returns nonzero if T is a local variable.  */
 
 int
 local_variable_p (t)
@@ -12003,7 +12003,7 @@ local_variable_p (t)
   return 0;
 }
 
-/* Returns non-zero if T is an automatic local variable or a label.
+/* Returns nonzero if T is an automatic local variable or a label.
    (These are the declarations that need to be remapped when the code
    containing them is duplicated.)  */
 
@@ -12253,7 +12253,7 @@ grokparms (first_parm)
       first parameter is a reference to non-const qualified T.
 
    This function can be used as a predicate. Positive values indicate
-   a copy constructor and non-zero values indicate a copy assignment
+   a copy constructor and nonzero values indicate a copy assignment
    operator.  */
 
 int
@@ -12890,7 +12890,7 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	  && template_class_depth (current_class_type)
 	  && PROCESSING_REAL_TEMPLATE_DECL_P ())
 	{
-	  /* Since GLOBALIZE is non-zero, we are not looking at a
+	  /* Since GLOBALIZE is nonzero, we are not looking at a
 	     definition of this tag.  Since, in addition, we are currently
 	     processing a (member) template declaration of a template
 	     class, we must be very careful; consider:

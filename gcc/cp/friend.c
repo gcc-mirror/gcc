@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Friend data structures are described in cp-tree.h.  */
 
-/* Returns non-zero if SUPPLICANT is a friend of TYPE.  */
+/* Returns nonzero if SUPPLICANT is a friend of TYPE.  */
 
 int
 is_friend (type, supplicant)

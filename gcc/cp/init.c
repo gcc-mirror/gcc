@@ -840,7 +840,7 @@ expand_virtual_init (binfo, decl)
 /* If an exception is thrown in a constructor, those base classes already
    constructed must be destroyed.  This function creates the cleanup
    for BINFO, which has just been constructed.  If FLAG is non-NULL,
-   it is a DECL which is non-zero when this base needs to be
+   it is a DECL which is nonzero when this base needs to be
    destroyed.  */
 
 static void
@@ -886,7 +886,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
 
 /* Construct the virtual base-classes of THIS_REF (whose address is
    THIS_PTR).  The object has the indicated TYPE.  The construction
-   actually takes place only if FLAG is non-zero.  INIT_LIST is list
+   actually takes place only if FLAG is nonzero.  INIT_LIST is list
    of initializations for constructors to perform.  */
 
 static void

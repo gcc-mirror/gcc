@@ -75,7 +75,7 @@
 # define MANGLE_TRACE_TREE(FN, NODE)
 #endif
 
-/* Non-zero if NODE is a class template-id.  We can't rely on
+/* Nonzero if NODE is a class template-id.  We can't rely on
    CLASSTYPE_USE_TEMPLATE here because of tricky bugs in the parser
    that hard to distinguish A<T> from A, where A<T> is the type as
    instantiated outside of the template, and A is the type used
@@ -214,7 +214,7 @@ static void write_java_integer_type_codes PARAMS ((tree));
 #define write_string(STRING)                                          \
   obstack_grow (&G.name_obstack, (STRING), strlen (STRING))
 
-/* Non-zero if NODE1 and NODE2 are both TREE_LIST nodes and have the
+/* Nonzero if NODE1 and NODE2 are both TREE_LIST nodes and have the
    same purpose (context, which may be a type) and value (template
    decl).  See write_template_prefix for more information on what this
    is used for.  */
@@ -230,7 +230,7 @@ static void write_java_integer_type_codes PARAMS ((tree));
 #define write_unsigned_number(NUMBER) \
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
-/* If DECL is a template instance, return non-zero and, if
+/* If DECL is a template instance, return nonzero and, if
    TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
    Otherwise return zero.  */
 
@@ -370,7 +370,7 @@ add_substitution (node)
     dump_substitution_candidates ();
 }
 
-/* Helper function for find_substitution.  Returns non-zero if NODE,
+/* Helper function for find_substitution.  Returns nonzero if NODE,
    which may be a decl or a CLASS_TYPE, is a template-id with template
    name of substitution_index[INDEX] in the ::std namespace.  */
 
@@ -403,7 +403,7 @@ is_std_substitution (node, index)
 	      == subst_identifiers[index]));
 }
 
-/* Helper function for find_substitution.  Returns non-zero if NODE,
+/* Helper function for find_substitution.  Returns nonzero if NODE,
    which may be a decl or a CLASS_TYPE, is the template-id
    ::std::identifier<char>, where identifier is
    substitution_index[INDEX].  */
@@ -463,7 +463,7 @@ is_std_substitution_char (node, index)
    candidates for entities appearing earlier in the same mangling
 
    If a substitution is found, write its mangled representation and
-   return non-zero.  If none is found, just return zero.  */
+   return nonzero.  If none is found, just return zero.  */
 
 static int
 find_substitution (node)
@@ -665,7 +665,7 @@ write_encoding (decl)
 	  ::= <nested-name>
 	  ::= <local-name>  
 
-   If IGNORE_LOCAL_SCOPE is non-zero, this production of <name> is
+   If IGNORE_LOCAL_SCOPE is nonzero, this production of <name> is
    called from <local-name>, which mangles the enclosing scope
    elsewhere and then uses this function to mangle just the part
    underneath the function scope.  So don't use the <local-name>
@@ -1341,7 +1341,7 @@ static void
 write_type (type)
      tree type;
 {
-  /* This gets set to non-zero if TYPE turns out to be a (possibly
+  /* This gets set to nonzero if TYPE turns out to be a (possibly
      CV-qualified) builtin type.  */
   int is_builtin_type = 0;
 
@@ -1645,7 +1645,7 @@ write_function_type (type)
 }
 
 /* Non-terminal <bare-function-type>.  TYPE is a FUNCTION_TYPE or
-   METHOD_TYPE.  If INCLUDE_RETURN_TYPE is non-zero, the return value
+   METHOD_TYPE.  If INCLUDE_RETURN_TYPE is nonzero, the return value
    is mangled before the parameter types.  If non-NULL, DECL is
    FUNCTION_DECL for the function whose type is being emitted.
 
@@ -1670,7 +1670,7 @@ write_bare_function_type (type, include_return_type_p, decl)
 }
 
 /* Write the mangled representation of a method parameter list of
-   types given in PARM_TYPES.  If METHOD_P is non-zero, the function is 
+   types given in PARM_TYPES.  If METHOD_P is nonzero, the function is
    considered a non-static method, and the this parameter is omitted.
    If non-NULL, DECL is the FUNCTION_DECL for the function whose
    parameters are being emitted.  */

@@ -1014,7 +1014,7 @@ convert_force (type, expr, convtype)
    allowed (references private members, etc).
    If no conversion exists, NULL_TREE is returned.
 
-   If (FOR_SURE & 1) is non-zero, then we allow this type conversion
+   If (FOR_SURE & 1) is nonzero, then we allow this type conversion
    to take place immediately.  Otherwise, we build a SAVE_EXPR
    which can be evaluated if the results are ever needed.
 

@@ -402,7 +402,7 @@ maybe_end_member_template_processing ()
     }
 }
 
-/* Returns non-zero iff T is a member template function.  We must be
+/* Returns nonzero iff T is a member template function.  We must be
    careful as in
 
      template <class T> class C { void f(); }
@@ -439,7 +439,7 @@ is_member_template (t)
 }
 
 #if 0 /* UNUSED */
-/* Returns non-zero iff T is a member template class.  See
+/* Returns nonzero iff T is a member template class.  See
    is_member_template for a description of what precisely constitutes
    a member template.  */
 
@@ -647,7 +647,7 @@ reset_specialization ()
   template_header_count = 0;
 }
 
-/* We've just seen a template header.  If SPECIALIZATION is non-zero,
+/* We've just seen a template header.  If SPECIALIZATION is nonzero,
    it was of the form template <>.  */
 
 static void 
@@ -744,7 +744,7 @@ retrieve_local_specialization (tmpl)
   return (tree) htab_find (local_specializations, tmpl);
 }
 
-/* Returns non-zero iff DECL is a specialization of TMPL.  */
+/* Returns nonzero iff DECL is a specialization of TMPL.  */
 
 int
 is_specialization_of (decl, tmpl)
@@ -947,7 +947,7 @@ print_candidates (fns)
    NULL_TREE if none is available.  In that case, the functions in
    TEMPLATE_ID are non-members.
 
-   If NEED_MEMBER_TEMPLATE is non-zero the function is known to be a
+   If NEED_MEMBER_TEMPLATE is nonzero the function is known to be a
    specialization of a member template.
 
    The template args (those explicitly specified and those deduced)
@@ -2132,12 +2132,12 @@ struct template_parm_data
   int current_arg;
 
   /* An array whose size is the number of template parameters.  The
-     elements are non-zero if the parameter has been used in any one
+     elements are nonzero if the parameter has been used in any one
      of the arguments processed so far.  */
   int* parms;
 
   /* An array whose size is the number of template arguments.  The
-     elements are non-zero if the argument makes use of template
+     elements are nonzero if the argument makes use of template
      parameters of this level.  */
   int* arg_uses_template_parms;
 };
@@ -2355,8 +2355,8 @@ process_partial_specialization (decl)
 
 /* Check that a template declaration's use of default arguments is not
    invalid.  Here, PARMS are the template parameters.  IS_PRIMARY is
-   non-zero if DECL is the thing declared by a primary template.
-   IS_PARTIAL is non-zero if DECL is a partial specialization.  */
+   nonzero if DECL is the thing declared by a primary template.
+   IS_PARTIAL is nonzero if DECL is a partial specialization.  */
 
 static void
 check_default_tmpl_args (decl, parms, is_primary, is_partial)
@@ -2503,7 +2503,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 /* Worker for push_template_decl_real, called via
    for_each_template_parm.  DATA is really an int, indicating the
    level of the parameters we are interested in.  If T is a template
-   parameter of that level, return non-zero.  */
+   parameter of that level, return nonzero.  */
 
 static int
 template_parm_this_level_p (t, data)
@@ -2525,7 +2525,7 @@ template_parm_this_level_p (t, data)
    previously existing one, if appropriate.  Returns the DECL, or an
    equivalent one, if it is replaced via a call to duplicate_decls.  
 
-   If IS_FRIEND is non-zero, DECL is a friend declaration.  */
+   If IS_FRIEND is nonzero, DECL is a friend declaration.  */
 
 tree
 push_template_decl_real (decl, is_friend)
@@ -3512,7 +3512,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
    messages are issued even if COMPLAIN is zero; for instance, if a
    template argument is composed from a local class.
 
-   If REQUIRE_ALL_ARGUMENTS is non-zero, all arguments must be
+   If REQUIRE_ALL_ARGUMENTS is nonzero, all arguments must be
    provided in ARGLIST, or else trailing parameters must have default
    values.  If REQUIRE_ALL_ARGUMENTS is zero, we will attempt argument
    deduction for any unspecified trailing arguments.  */
@@ -3885,7 +3885,7 @@ maybe_get_template_decl_from_type_decl (decl)
    IN_DECL, if non-NULL, is the template declaration we are trying to
    instantiate.  
 
-   If ENTERING_SCOPE is non-zero, we are about to enter the scope of
+   If ENTERING_SCOPE is nonzero, we are about to enter the scope of
    the class we are looking up.
    
    Issue error and warning messages under control of COMPLAIN.
@@ -4480,9 +4480,9 @@ for_each_template_parm_r (tp, walk_subtrees, d)
 /* For each TEMPLATE_TYPE_PARM, TEMPLATE_TEMPLATE_PARM, 
    BOUND_TEMPLATE_TEMPLATE_PARM or TEMPLATE_PARM_INDEX in T, 
    call FN with the parameter and the DATA.
-   If FN returns non-zero, the iteration is terminated, and
+   If FN returns nonzero, the iteration is terminated, and
    for_each_template_parm returns 1.  Otherwise, the iteration
-   continues.  If FN never returns a non-zero value, the value
+   continues.  If FN never returns a nonzero value, the value
    returned by for_each_template_parm is 0.  If FN is NULL, it is
    considered to be the function which always returns 1.  */
 
@@ -5546,7 +5546,7 @@ tsubst_template_parms (parms, args, complain)
 /* Substitute the ARGS into the indicated aggregate (or enumeration)
    type T.  If T is not an aggregate or enumeration type, it is
    handled as if by tsubst.  IN_DECL is as for tsubst.  If
-   ENTERING_SCOPE is non-zero, T is the context for a template which
+   ENTERING_SCOPE is nonzero, T is the context for a template which
    we are presently tsubst'ing.  Return the substituted value.  */
 
 static tree
@@ -8553,7 +8553,7 @@ template_decl_level (decl)
 
 /* Decide whether ARG can be unified with PARM, considering only the
    cv-qualifiers of each type, given STRICT as documented for unify.
-   Returns non-zero iff the unification is OK on that basis.*/
+   Returns nonzero iff the unification is OK on that basis.*/
 
 static int
 check_cv_quals_for_unify (strict, arg, parm)
@@ -9653,7 +9653,7 @@ mark_class_instantiated (t, extern_p)
 
 /* Perform an explicit instantiation of template class T.  STORAGE, if
    non-null, is the RID for extern, inline or static.  COMPLAIN is
-   non-zero if this is called from the parser, zero if called recursively,
+   nonzero if this is called from the parser, zero if called recursively,
    since the standard is unclear (as detailed below).  */
  
 void
@@ -9897,7 +9897,7 @@ regenerate_decl_from_template (decl, tmpl)
 }
 
 /* Produce the definition of D, a _DECL generated from a template.  If
-   DEFER_OK is non-zero, then we don't have to actually do the
+   DEFER_OK is nonzero, then we don't have to actually do the
    instantiation now; we just have to do it sometime.  */
 
 tree
@@ -10458,7 +10458,7 @@ current_instantiation ()
 }
 
 /* [temp.param] Check that template non-type parm TYPE is of an allowable
-   type. Return zero for ok, non-zero for disallowed. Issue error and
+   type. Return zero for ok, nonzero for disallowed. Issue error and
    warning messages under control of COMPLAIN.  */
 
 static int
