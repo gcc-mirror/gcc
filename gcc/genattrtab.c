@@ -96,6 +96,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+char **insn_name_ptr = 0;
+
 extern void free ();
 extern rtx read_rtx ();
 
@@ -724,6 +727,7 @@ check_attr_test (exp, is_const)
 	{
 	  /* These cases are valid for constant attributes, but can't be
 	     simplified.  */
+	  exp = copy_rtx (exp);
 	  RTX_UNCHANGING_P (exp) = 1;
 	  break;
 	}
@@ -1028,8 +1032,8 @@ make_canonical (attr, exp)
     case SYMBOL_REF:
       if (!attr->is_const || RTX_UNCHANGING_P (exp))
 	break;
-      RTX_UNCHANGING_P (exp) = 1;
       exp = convert_const_symbol_ref (exp, attr);
+      RTX_UNCHANGING_P (exp) = 1;
       check_attr_value (exp, attr);
       /* Goto COND case since this is now a COND.  Note that while the
          new expression is rescanned, all symbol_ref notes are mared as
@@ -1951,13 +1955,20 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
   else
     abort ();
 
-  /* If uses an address, must return original expression.  */
+  /* If uses an address, must return original expression.  But set the
+     RTX_UNCHANGING_P bit so we don't try to simplify it again.  */
 
   address_used = 0;
   walk_attr_value (newexp);
 
   if (address_used)
-    return exp;
+    {
+      if (! RTX_UNCHANGING_P (exp))
+	exp = copy_rtx (exp);
+
+      RTX_UNCHANGING_P (exp) = 1;
+      return exp;
+    }
   else
     return newexp;
 }
@@ -2388,8 +2399,11 @@ simplify_test_exp (exp, insn_code, insn_index)
   /* We have already simplified this expression.  Simplifying it again
      won't buy anything unless we weren't given a valid insn code
      to process (i.e., we are canonicalizing something.).  */
-  if (insn_code != -2)
-    RTX_UNCHANGING_P (newexp) = 1;
+  if (insn_code != -2 && ! RTX_UNCHANGING_P (newexp))
+    {
+      newexp = copy_rtx (newexp);
+      RTX_UNCHANGING_P (newexp) = 1;
+    }
 
   return newexp;
 }
