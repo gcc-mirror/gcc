@@ -87,12 +87,12 @@ Boston, MA 02111-1307, USA.  */
 #define BSS_SECTION_ASM_OP	".section\t.bss"
 
 /* A C statement (sans semicolon) to output to the stdio stream
-   FILE the assembler definition of an uninitialized global label named
+   FILE the assembler definition of uninitialized global DECL named
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.
    Try to use asm_output_aligned_bss to implement this macro.  */
 
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss ((FILE), (NAME), (SIZE), (ALIGN))
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 /* Support generic sections */
 
