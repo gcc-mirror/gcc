@@ -4214,15 +4214,13 @@ real_yylex ()
 		    /* mbtowc sometimes needs an extra char before accepting */
 		    if (char_len <= i)
 		      put_back (c);
-		    if (wide_flag)
+		    if (! wide_flag)
 		      {
-			*(wchar_t *)p = wc;
-			p += sizeof (wc);
+			p += (i + 1);
+			c = getch ();
+			continue;
 		      }
-		    else
-		      p += (i + 1);
-		    c = getch ();
-		    continue;
+		    c = wc;
 		  }
 #endif /* MULTIBYTE_CHARS */
 	      }
