@@ -1,3 +1,15 @@
+2004-07-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_use_dfa_pipeline_interface): Delete.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/mips/3000.md: Add copyright notice.  Remove automota and
+	function units; use generic ones instead.  Only define reservations
+	for things that are different from generic.md.  Extend each clause
+	to include r3900.
+	* config/mips/{4000,4100,4300,4600,5000,6000,generic}.md: New files.
+	* config/mips/mips.md: Include them. Remove define_function_units.
+	(alu, imuldiv): New automata and units.
+
 2004-07-12  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (Optimize Options): Document -frename-registers
