@@ -1,6 +1,6 @@
-// Build don't link: 
+// Build don't link:
+// Special g++ Options: -w
 // GROUPS passed vtable
-// excess errors test - XFAIL *-*-*
 // vtable file
 // From: mrs@cygnus.com (Mike Stump)
 // Date:     Wed, 20 Apr 1994 17:46:11 -0700

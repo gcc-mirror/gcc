@@ -6,6 +6,16 @@
 // Subject:  Re: g++ ignores language context of function pointers
 // Message-ID: <9302021238.AA01513@Achates.MIT.EDU>
 
-        typedef void (*pfv2)(double, double);
-        extern "C" { typedef void (*pfv3)(double, double); }// ERROR -  , XFAIL *-*-*
+typedef void (*pfv)();
+void f ();
 
+extern "C"
+{
+  typedef void (*pcfv)(void);
+  void cf (void);
+}
+
+pfv p = f;
+pfv p2 = cf;			// ERROR - mismatch XFAIL *-*-*
+pcfv p3 = f;			// ERROR - mismatch XFAIL *-*-*
+pcfv p4 = cf;
