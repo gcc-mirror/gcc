@@ -13,9 +13,24 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
+#include "platform.h"
+
 #include <java/util/TimeZone.h>
 #include <java/lang/Character.h>
 #include <java/lang/Integer.h>
+
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
+#include <string.h>
 
 /*
  * This method returns a time zone string that is used by init_properties

@@ -1,5 +1,9 @@
 2002-05-13  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natRuntime.cc: Don't include sys/time.h and time.h.
+	* java/util/natTimeZone.cc: Include sys/time.h and time.h here.
+	Include platform.h.
+
 	Fixes PR libgcj/6389:
 	* Makefile.in: Rebuilt.
 	* Makefile.am (nat_source_files): Added natTimeZone.cc.
