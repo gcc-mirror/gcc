@@ -3385,8 +3385,12 @@ expand_builtin_fputs (arglist, ignore, unlocked)
       /* FALLTHROUGH */
     case 1: /* length is greater than 1, call fwrite.  */
       {
-	tree string_arg = TREE_VALUE (arglist);
+	tree string_arg;
 
+	/* If optimizing for size keep fputs. */
+	if (optimize_size)
+	  return 0;
+	string_arg = TREE_VALUE (arglist);
 	/* New argument list transforming fputs(string, stream) to
 	   fwrite(string, 1, len, stream).  */
 	arglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));

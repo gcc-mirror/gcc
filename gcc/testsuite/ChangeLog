@@ -1,3 +1,9 @@
+2003-03-29  Arpad Beszedes <beszedes@cc.u-szeged.hu>
+
+	PR middle-end/9967
+	* gcc.c-torture/execute/stdio-opt-1.c: Adjust test for change to
+	builtin fputs.
+
 2003-03-29  Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
 
 	* gcc.dg/20030323-1.c: New test.

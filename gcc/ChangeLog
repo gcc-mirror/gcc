@@ -1,3 +1,9 @@
+2003-03-29  Arpad Beszedes <beszedes@cc.u-szeged.hu>
+
+	PR middle-end/9967
+	* builtins.c (expand_builtin_fputs): When optimizing for size,
+	don't transform fputs into fwrite.
+
 2003-03-29  Albert Chin-A-Young  <china@thewrittenword.com>
 	DJ Delorie  <dj at redhat dot com>,
 	Bruce Korb  <bkorb at gnu dot org>
