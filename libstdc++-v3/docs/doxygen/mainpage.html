@@ -25,7 +25,7 @@
 
 <h2> Documentation Overview </h2>
 
-<p class="smallertext">Generated 2002-03-27.</p>
+<p class="smallertext">@LEVEL@-level docs, generated @DATE@.</p>
 
 <p>There are two types of documentation for libstdc++-v3.  One is the
    distribution documentation, which can be read online at
@@ -35,7 +35,14 @@
 </p>
 
 <p>The other type is the source documentation, of which this is the first page.
-   Here are quick links to the pages which we seem to use the most; a full
+   Both &quot;user-level&quot; and &quot;maintainer-level&quot; source
+   documentation is produced:  user-level docs are for the users of this
+   library.  The maint-level docs are for those interested in the underlying
+   workings of the library; they include all the user-level docs plus
+   additional notes and additional classes/functions/etc.
+</p>
+
+<p>Here are quick links to the pages which we seem to use the most; a full
    index is at the bottom:
    <!-- Keep this in sync with below. -->
    <ul>
@@ -48,10 +55,10 @@
 
 <h2> Generating this file </h2>
 <p>These HTML pages are automatically generated, along with the man pages.
-   The Makefile rule <code> 'make
-   doxygen' </code> in the libstdc++-v3 build directory generates these pages
-   using a tool called, appropriately enough, Doxygen.  To learn more about
-   Doxygen, take a look at
+   The Makefile rules <code> 'make doxygen' </code> and
+   <code> 'make doxygen-maint' </code> in the libstdc++-v3 build directory
+   generates these pages using a tool called, appropriately enough, Doxygen.
+   To learn more about Doxygen, take a look at
    <a href="http://www.doxygen.org/">
    <!-- snagged from the generated page -->
    <img src="doxygen.gif" alt="the Doxygen homepage"

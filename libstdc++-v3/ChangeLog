@@ -1,5 +1,15 @@
 2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
 
+	* libsupc++/exception (__verbose_terminate_handler):  Point to docs.
+	* docs/doxygen/doxygroups.cc:  Doxygen hooks for abi::__cxa_demangle.
+	* docs/html/18_support/howto.html:  Document the demangler.
+	* docs/html/17_intro/howto.html:  And link to it.
+
+	* docs/doxygen/mainpage.html:  Describe user-vs-maintainer docs.
+	* docs/doxygen/run_doxygen:  Print user-vs-maintainer.
+
+2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
+
 	* config/linker-map.gnu:  Export __verbose_terminate_handler.
 	* libsupc++/Makefile.am (sources):  Add cxa_demangle.c, dyn-string.c.
 	Make new LTCOMPILE variable, use it in new special build rules.
