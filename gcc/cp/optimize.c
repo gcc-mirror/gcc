@@ -13,7 +13,7 @@ GNU CC is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "input.h"
 #include "integrate.h"
+#include "toplev.h"
 #include "varray.h"
 #include "ggc.h"
 
@@ -38,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      function-local static constants just like global static
      constants; the back-end already knows not to output them if they
      are not needed.
-     
+
    o Provide heuristics to clamp inlining of recursive template
      calls?  */
 
@@ -104,9 +105,9 @@ remap_decl (decl, id)
   if (!n)
     {
       tree t;
-      
+
       /* Make a copy of the variable or label.  */
-      t = copy_decl_for_inlining (decl, fn, 
+      t = copy_decl_for_inlining (decl, fn,
 				  VARRAY_TREE (id->fns, 0));
 
       /* The decl T could be a dynamic array or other variable size type,
@@ -118,7 +119,7 @@ remap_decl (decl, id)
 	  && TYPE_DOMAIN (TREE_TYPE (t)))
 	{
 	  TREE_TYPE (t) = copy_node (TREE_TYPE (t));
-	  TYPE_DOMAIN (TREE_TYPE (t)) 
+	  TYPE_DOMAIN (TREE_TYPE (t))
 	    = copy_node (TYPE_DOMAIN (TREE_TYPE (t)));
 	  walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
 		     copy_body_r, id, NULL);
@@ -126,11 +127,11 @@ remap_decl (decl, id)
 
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */
-      n = splay_tree_insert (id->decl_map, 
-			     (splay_tree_key) decl, 
+      n = splay_tree_insert (id->decl_map,
+			     (splay_tree_key) decl,
 			     (splay_tree_value) t);
     }
- 
+
   return (tree) n->value;
 }
 
@@ -174,8 +175,8 @@ remap_block (scope_stmt, decls, id)
       SCOPE_STMT_BLOCK (scope_stmt) = new_block;
 
       /* Remap its variables.  */
-      for (old_var = decls ? decls : BLOCK_VARS (old_block); 
-	   old_var; 
+      for (old_var = decls ? decls : BLOCK_VARS (old_block);
+	   old_var;
 	   old_var = TREE_CHAIN (old_var))
 	{
 	  tree new_var;
@@ -227,7 +228,7 @@ remap_block (scope_stmt, decls, id)
       splay_tree_node n;
 
       /* Find this block in the table of remapped things.  */
-      n = splay_tree_lookup (id->decl_map, 
+      n = splay_tree_lookup (id->decl_map,
 			     (splay_tree_key) SCOPE_STMT_BLOCK (scope_stmt));
       my_friendly_assert (n != NULL, 19991203);
       SCOPE_STMT_BLOCK (scope_stmt) = (tree) n->value;
@@ -293,11 +294,11 @@ copy_body_r (tp, walk_subtrees, data)
       TREE_CHAIN (goto_stmt) = TREE_CHAIN (return_stmt);
 
       /* If we're returning something, just turn that into an
-	 assignment into the equivalent of the original 
+	 assignment into the equivalent of the original
 	 RESULT_DECL.  */
       if (RETURN_EXPR (return_stmt))
 	{
-	  *tp = build_stmt (EXPR_STMT, 
+	  *tp = build_stmt (EXPR_STMT,
 			    RETURN_EXPR (return_stmt));
 	  STMT_IS_FULL_EXPR_P (*tp) = 1;
 	  /* And then jump to the end of the function.  */
@@ -322,11 +323,11 @@ copy_body_r (tp, walk_subtrees, data)
       STRIP_TYPE_NOPS (new_decl);
       *tp = new_decl;
     }
-  else if (nonstatic_local_decl_p (*tp) 
+  else if (nonstatic_local_decl_p (*tp)
 	   && DECL_CONTEXT (*tp) != VARRAY_TREE (id->fns, 0))
     my_friendly_abort (0);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0), 
+    remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0),
 		     walk_subtrees);
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
     /* UNSAVE_EXPRs should not be generated until expansion time.  */
@@ -416,19 +417,19 @@ initialize_inlined_parameters (id, args, fn)
       tree init_stmt;
       tree var;
       tree value;
-      
+
       /* Find the initializer.  */
       value = TREE_VALUE (a);
       /* If the parameter is never assigned to, we may not need to
 	 create a new variable here at all.  Instead, we may be able
 	 to just use the argument value.  */
-      if (TREE_READONLY (p) 
+      if (TREE_READONLY (p)
 	  && !TREE_ADDRESSABLE (p)
 	  && !TREE_SIDE_EFFECTS (value))
 	{
 	  /* Simplify the value, if possible.  */
 	  value = fold (decl_constant_value (value));
-	  
+
 	  /* We can't risk substituting complex expressions.  They
 	     might contain variables that will be assigned to later.
 	     Theoretically, we could check the expression to see if
@@ -448,13 +449,13 @@ initialize_inlined_parameters (id, args, fn)
 	      continue;
 	    }
 	}
-	
+
       /* Make an equivalent VAR_DECL.  */
       var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
       /* Register the VAR_DECL as the equivalent for the PARM_DECL;
 	 that way, when the PARM_DECL is encountered, it will be
 	 automatically replaced by the VAR_DECL.  */
-      splay_tree_insert (id->decl_map, 
+      splay_tree_insert (id->decl_map,
 			 (splay_tree_key) p,
 			 (splay_tree_value) var);
 
@@ -526,8 +527,8 @@ declare_return_variable (id, use_stmt)
       my_friendly_assert (VARRAY_ACTIVE_SIZE (id->target_exprs) != 0,
 			  20000430);
       var = TREE_OPERAND (VARRAY_TOP_TREE (id->target_exprs), 0);
-      my_friendly_assert 
-	(same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (var), 
+      my_friendly_assert
+	(same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (var),
 						    TREE_TYPE (result)),
 	 20000430);
     }
@@ -538,7 +539,7 @@ declare_return_variable (id, use_stmt)
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
      automatically replaced by the VAR_DECL.  */
-  splay_tree_insert (id->decl_map, 
+  splay_tree_insert (id->decl_map,
 		     (splay_tree_key) result,
 		     (splay_tree_value) var);
 
@@ -594,8 +595,8 @@ inlinable_function_p (fn, id)
 
   /* We can inline a template instantiation only if it's fully
      instantiated.  */
-  if (inlinable 
-      && DECL_TEMPLATE_INFO (fn) 
+  if (inlinable
+      && DECL_TEMPLATE_INFO (fn)
       && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
     {
       fn = instantiate_decl (fn, /*defer_ok=*/0);
@@ -652,7 +653,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* See what we've got.  */
   id = (inline_data *) data;
-  t = *tp;  
+  t = *tp;
 
   /* Recurse, but letting recursive invocations know that we are
      inside the body of a TARGET_EXPR.  */
@@ -775,9 +776,9 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Declare the return variable for the function.  */
   STMT_EXPR_STMT (expr)
-    = chainon (STMT_EXPR_STMT (expr), 
+    = chainon (STMT_EXPR_STMT (expr),
 	       declare_return_variable (id, &use_stmt));
-  
+
   /* After we've initialized the parameters, we insert the body of the
      function itself.  */
   inlined_body = &STMT_EXPR_STMT (expr);
@@ -788,7 +789,7 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Close the block for the parameters.  */
   scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
-  my_friendly_assert (DECL_INITIAL (fn) 
+  my_friendly_assert (DECL_INITIAL (fn)
 		      && TREE_CODE (DECL_INITIAL (fn)) == BLOCK,
 		      19991203);
   remap_block (scope_stmt, NULL_TREE, id);
@@ -799,7 +800,7 @@ expand_call_inline (tp, walk_subtrees, data)
      before we evaluate the returned value below, because that evalulation
      may cause RTL to be generated.  */
   STMT_EXPR_STMT (expr)
-    = chainon (STMT_EXPR_STMT (expr), 
+    = chainon (STMT_EXPR_STMT (expr),
 	       build_stmt (LABEL_STMT, id->ret_label));
 
   /* Finally, mention the returned value so that the value of the
@@ -952,8 +953,8 @@ int
 calls_setjmp_p (fn)
      tree fn;
 {
-  return walk_tree_without_duplicates (&DECL_SAVED_TREE (fn), 
-				       calls_setjmp_r, 
+  return walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				       calls_setjmp_r,
 				       NULL) != NULL_TREE;
 }
 
@@ -1080,7 +1081,7 @@ maybe_clone_body (fn)
       expand_body (clone);
       pop_from_top_level ();
     }
-  
+
   /* We don't need to process the original function any further.  */
   return 1;
 }
