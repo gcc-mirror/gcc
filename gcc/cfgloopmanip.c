@@ -1156,9 +1156,10 @@ create_preheader (struct loop *loop, int flags)
   gcc_assert (nentry);
   if (nentry == 1)
     {
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src != loop->latch)
-	  break;
+      /* Get an edge that is different from the one from loop->latch
+	 to loop->header.  */
+      e = EDGE_PRED (loop->header,
+		     EDGE_PRED (loop->header, 0)->src == loop->latch);
 
       if (!(flags & CP_SIMPLE_PREHEADERS) || EDGE_COUNT (e->src->succs) == 1)
 	return NULL;
@@ -1178,9 +1179,10 @@ create_preheader (struct loop *loop, int flags)
 
   /* Reorganize blocks so that the preheader is not stuck in the middle of the
      loop.  */
-  FOR_EACH_EDGE (e, ei, dummy->preds)
-    if (e->src != loop->latch)
-      break;
+  
+  /* Get an edge that is different from the one from loop->latch to
+     dummy.  */
+  e = EDGE_PRED (dummy, EDGE_PRED (dummy, 0)->src == loop->latch);
   move_block_after (dummy, e->src);
 
   loop->header->loop_father = loop;
