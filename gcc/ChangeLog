@@ -1,3 +1,8 @@
+2003-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Fix typos.
+	* doc/rtl.texi: Likewise.
+
 2003-05-30  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
 
 	* config/h8300/crti.asm: Use .h8300hn and .h8300sn for normal
