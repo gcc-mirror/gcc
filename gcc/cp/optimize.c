@@ -89,9 +89,7 @@ maybe_clone_body (tree fn)
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
   push_to_top_level ();
-  for (clone = TREE_CHAIN (fn);
-       clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
+  FOR_EACH_CLONE (clone, fn)
     {
       tree parm;
       tree clone_parm;

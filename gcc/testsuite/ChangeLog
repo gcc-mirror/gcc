@@ -1,3 +1,20 @@
+2004-07-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/inline1.C: New test.
+	* g++.dg/abi/local1-a.cc: Likewise.
+	* g++.dg/abi/local1.C: Likewise.
+	* g++.dg/abi/mangle11.C: Tweak location of warnings.
+	* g++.dg/abi/mangle12.C: Likewise.
+	* g++.dg/abi/mangle17.C: Likewise.
+	* g++.dg/abi/mangle20-2.C: Likewise.
+	* g++.dg/opt/interface1.C: Likewise.
+	* g++.dg/opt/interface1.h: Likewise.
+	* g++.dg/opt/interface1-a.cc: New test.
+	* g++.dg/parse/repo1.C: New test.
+	* g++.dg/template/repo1.C: Likewise.
+	* g++.dg/warn/Winline-1.C: Likewise.
+	* lib/gcc-dg.exp (gcc-dg-test-1): Fix -frepo handling.
+
 2004-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/tree-ssa/20040729-1.c: New test.

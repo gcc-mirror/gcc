@@ -119,8 +119,10 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     if { $do_what == "repo" } {
 	set object_file "$output_file"
 	set output_file "[file rootname [file tail $prog]].exe"
-	concat comp_output \
-	       [$target_compile "$object_file" "$output_file" "executable" $options]
+	set comp_output \
+	    [ concat $comp_output \
+		  [$target_compile "$object_file" "$output_file" \
+		       "executable" $options] ]
     }
 
     return [list $comp_output $output_file]

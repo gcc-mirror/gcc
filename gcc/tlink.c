@@ -470,6 +470,12 @@ recompile_files (void)
       obstack_grow (&temporary_obstack, "; ", 2);
       obstack_grow (&temporary_obstack, c_file_name, strlen (c_file_name));
       obstack_1grow (&temporary_obstack, ' ');
+      if (!f->args)
+	{
+	  error ("repository file `%s' does not contain command-line "
+		 "arguments", f->key);
+	  return 0;
+	}
       obstack_grow (&temporary_obstack, f->args, strlen (f->args));
       obstack_1grow (&temporary_obstack, ' ');
       command = obstack_copy0 (&temporary_obstack, f->main, strlen (f->main));
@@ -645,6 +651,9 @@ scan_linker_output (const char *fname)
 
       if (sym && sym->tweaked)
 	{
+	  error ("`%s' was assigned to `%s', but was not defined "
+		 "during recompilation, or vice versa", 
+		 sym->key, sym->file->key);
 	  fclose (stream);
 	  return 0;
 	}

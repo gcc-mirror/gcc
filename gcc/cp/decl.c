@@ -1753,6 +1753,7 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_LANG_SPECIFIC (newdecl)->decl_flags.u2 =
 	DECL_LANG_SPECIFIC (olddecl)->decl_flags.u2;
       DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
+      DECL_REPO_AVAILABLE_P (newdecl) = DECL_REPO_AVAILABLE_P (olddecl);
       DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
       DECL_INITIALIZED_IN_CLASS_P (newdecl)
         |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
@@ -4571,7 +4572,8 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       defer_p = 1;
     }
   /* Likewise for template instantiations.  */
-  else if (DECL_COMDAT (decl))
+  else if (DECL_LANG_SPECIFIC (decl)
+	   && DECL_IMPLICIT_INSTANTIATION (decl))
     defer_p = 1;
 
   /* If we're deferring the variable, we only need to make RTL if
@@ -5513,7 +5515,8 @@ grokfndecl (tree ctype,
 	 declare an entity with linkage.
 
 	 Only check this for public decls for now.  See core 319, 389.  */
-      t = no_linkage_check (TREE_TYPE (decl));
+      t = no_linkage_check (TREE_TYPE (decl),
+			    /*relaxed_p=*/false);
       if (t)
 	{
 	  if (TYPE_ANONYMOUS_P (t))
@@ -5723,6 +5726,25 @@ grokfndecl (tree ctype,
   return decl;
 }
 
+/* DECL is a VAR_DECL for a static data member.  Set flags to reflect
+   the linkage that DECL will receive in the object file.  */
+
+static void
+set_linkage_for_static_data_member (tree decl)
+{
+  /* A static data member always has static storage duration and
+     external linkage.  Note that static data members are forbidden in
+     local classes -- the only situation in which a class has
+     non-external linkage.  */
+  TREE_PUBLIC (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  /* For non-template classes, static data members are always put
+     out in exactly those files where they are defined, just as
+     with ordinarly namespace-scope variables.  */
+  if (!processing_template_decl)
+    DECL_INTERFACE_KNOWN (decl) = 1;
+}
+
 /* Create a VAR_DECL named NAME with the indicated TYPE.
 
    If SCOPE is non-NULL, it is the class type or namespace containing
@@ -5782,12 +5804,10 @@ grokvardecl (tree type,
       DECL_EXTERNAL (decl) = !initialized;
     }
 
-  /* In class context, static means one per class,
-     public access, and static storage.  */
   if (DECL_CLASS_SCOPE_P (decl))
     {
-      TREE_PUBLIC (decl) = 1;
-      TREE_STATIC (decl) = 1;
+      set_linkage_for_static_data_member (decl);
+      /* This function is only called with out-of-class definitions.  */
       DECL_EXTERNAL (decl) = 0;
     }
   /* At top level, either `static' or no s.c. makes a definition
@@ -5822,7 +5842,8 @@ grokvardecl (tree type,
 	 declare an entity with linkage.
 
 	 Only check this for public decls for now.  */
-      tree t = no_linkage_check (TREE_TYPE (decl));
+      tree t = no_linkage_check (TREE_TYPE (decl),
+				 /*relaxed_p=*/false);
       if (t)
 	{
 	  if (TYPE_ANONYMOUS_P (t))
@@ -7859,9 +7880,11 @@ grokdeclarator (const cp_declarator *declarator,
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
 		decl = build_lang_decl (VAR_DECL, unqualified_id, type);
-		TREE_STATIC (decl) = 1;
-		/* In class context, 'static' means public access.  */
-		TREE_PUBLIC (decl) = DECL_EXTERNAL (decl) = 1;
+		set_linkage_for_static_data_member (decl);
+		/* Even if there is an in-class initialization, DECL
+		   is considered undefined until an out-of-class
+		   definition is provided.  */
+		DECL_EXTERNAL (decl) = 1;
 	      }
 	    else
 	      {
@@ -9842,6 +9865,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	DECL_EXTERNAL (decl1) = 0;
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
+      /* If this function is in an interface implemented in this file,
+	 make sure that the backend knows to emit this function 
+	 here.  */
+      if (!DECL_EXTERNAL (decl1))
+	mark_needed (decl1);
     }
   else if (interface_unknown && interface_only
 	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))

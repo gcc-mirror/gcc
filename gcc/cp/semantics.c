@@ -2892,18 +2892,6 @@ expand_body (tree fn)
 
   extract_interface_info ();
 
-  /* If this function is marked with the constructor attribute, add it
-     to the list of functions to be called along with constructors
-     from static duration objects.  */
-  if (DECL_STATIC_CONSTRUCTOR (fn))
-    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
-
-  /* If this function is marked with the destructor attribute, add it
-     to the list of functions to be called along with destructors from
-     static duration objects.  */
-  if (DECL_STATIC_DESTRUCTOR (fn))
-    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
-
   if (DECL_CLONED_FUNCTION_P (fn))
     {
       /* If this is a clone, go through the other clones now and mark
@@ -2957,14 +2945,38 @@ expand_or_defer_fn (tree fn)
       return;
     }
 
+  /* If this function is marked with the constructor attribute, add it
+     to the list of functions to be called along with constructors
+     from static duration objects.  */
+  if (DECL_STATIC_CONSTRUCTOR (fn))
+    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
+
+  /* If this function is marked with the destructor attribute, add it
+     to the list of functions to be called along with destructors from
+     static duration objects.  */
+  if (DECL_STATIC_DESTRUCTOR (fn))
+    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
+
+  /* We make a decision about linkage for these functions at the end
+     of the compilation.  Until that point, we do not want the back
+     end to output them -- but we do want it to see the bodies of
+     these fucntions so that it can inline them as appropriate.  */
+  if (DECL_DECLARED_INLINE_P (fn) || DECL_IMPLICIT_INSTANTIATION (fn))
+    {
+      if (!at_eof)
+	{
+	  DECL_EXTERNAL (fn) = 1;
+	  DECL_NOT_REALLY_EXTERN (fn) = 1;
+	  note_vague_linkage_fn (fn);
+	}
+      else
+	import_export_decl (fn);
+    }
+
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
   if (flag_syntax_only)
     return;
-
-  /* Compute the appropriate object-file linkage for inline functions.  */
-  if (DECL_DECLARED_INLINE_P (fn))
-    import_export_decl (fn);
 
   function_depth++;
 

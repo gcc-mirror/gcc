@@ -48,7 +48,7 @@ struct diagnostic_context;
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
-   1: IDENTIFIER_VIRTUAL_P.
+   1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
@@ -56,7 +56,7 @@ struct diagnostic_context;
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (in _TYPE).
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
-   2: IDENTIFIER_OPNAME_P.
+   2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       TYPE_POLYMORPHIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -70,9 +70,10 @@ struct diagnostic_context;
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
+      DECL_TINFO_P (in VAR_DECL)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
-   6: For future expansion
+   6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -374,6 +375,12 @@ typedef enum cp_id_kind
    destructor.  */
 #define IDENTIFIER_CTOR_OR_DTOR_P(NODE) \
   TREE_LANG_FLAG_3 (NODE)
+
+/* True iff NAME is the DECL_ASSEMBLER_NAME for an entity with vague
+   linkage which the prelinker has assigned to this translation
+   unit.  */
+#define IDENTIFIER_REPO_CHOSEN(NAME) \
+  (TREE_LANG_FLAG_6 (NAME))
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) \
@@ -1515,7 +1522,11 @@ struct lang_type GTY(())
 
 struct lang_decl_flags GTY(())
 {
-  ENUM_BITFIELD(languages) language : 8;
+  ENUM_BITFIELD(languages) language : 4;
+  unsigned global_ctor_p : 1;
+  unsigned global_dtor_p : 1;
+  unsigned anticipated_p : 1;
+  unsigned template_conv_p : 1;
 
   unsigned operator_attr : 1;
   unsigned constructor_attr : 1;
@@ -1534,14 +1545,12 @@ struct lang_decl_flags GTY(())
   unsigned initialized_in_class : 1;
   unsigned assignment_operator_p : 1;
 
-  unsigned global_ctor_p : 1;
-  unsigned global_dtor_p : 1;
-  unsigned anticipated_p : 1;
-  unsigned template_conv_p : 1;
   unsigned u1sel : 1;
   unsigned u2sel : 1;
   unsigned can_be_full : 1;
   unsigned this_thunk_p : 1;
+  unsigned repo_available_p : 1;
+  unsigned dummy : 3;
 
   union lang_decl_u {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
@@ -1631,19 +1640,6 @@ struct lang_decl GTY(())
 
 #endif /* ENABLE_TREE_CHECKING */
 
-/* DECL_NEEDED_P holds of a declaration when we need to emit its
-   definition.  This is true when the back-end tells us that
-   the symbol has been referenced in the generated code.  If, however,
-   we are not generating code, then it is also true when a symbol has
-   just been used somewhere, even if it's not really needed.  We need
-   anything that isn't comdat, but we don't know for sure whether or
-   not something is comdat until end-of-file.  */
-#define DECL_NEEDED_P(DECL)					\
-  ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
-   || (DECL_ASSEMBLER_NAME_SET_P (DECL)				\
-       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)))	\
-   || (((flag_syntax_only || flag_unit_at_a_time) && TREE_USED (DECL))))
-
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
    class, or a local variable) do not have linkage at all, and this
@@ -1729,6 +1725,21 @@ struct lang_decl GTY(())
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->u.f.cloned_function)
+
+/* Perform an action for each clone of FN, if FN is a function with
+   clones.  This macro should be used like:
+   
+      FOR_EACH_CLONE (clone, fn)
+        { ... }
+
+  */
+#define FOR_EACH_CLONE(CLONE, FN)			\
+  if (TREE_CODE (FN) == FUNCTION_DECL			\
+      && (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (FN)	\
+	  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (FN)))	\
+     for (CLONE = TREE_CHAIN (FN);			\
+	  CLONE && DECL_CLONED_FUNCTION_P (CLONE);	\
+	  CLONE = TREE_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\
@@ -1921,6 +1932,11 @@ struct lang_decl GTY(())
    DECL_LANG_SPECIFIC (NODE)->u.f.u3sel = 1,			\
    DECL_LANG_SPECIFIC (NODE)->decl_flags.this_thunk_p = (THIS_ADJUSTING))
 
+/* True iff DECL is an entity with vague linkage whose definition is
+   available in this translation unit.  */
+#define DECL_REPO_AVAILABLE_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.repo_available_p)
+
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
@@ -1964,6 +1980,10 @@ struct lang_decl GTY(())
 #define DECL_FUNCTION_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) \
    && TREE_CODE (DECL_CONTEXT (NODE)) == FUNCTION_DECL)
+
+/* 1 iff VAR_DECL node NODE is a type-info decl.  This flag is set for
+   both the primary typeinfo object and the associated NTBS name.  */
+#define DECL_TINFO_P(NODE) TREE_LANG_FLAG_4 (VAR_DECL_CHECK (NODE))
 
 /* 1 iff VAR_DECL node NODE is virtual table or VTT.  */
 #define DECL_VTABLE_OR_VTT_P(NODE) TREE_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
@@ -3643,6 +3663,7 @@ extern tree get_primary_binfo                   (tree);
 extern void debug_class				(tree);
 extern void debug_thunks 			(tree);
 extern tree cp_fold_obj_type_ref		(tree, tree);
+extern void set_linkage_according_to_type       (tree, tree);
 
 /* in cvt.c */
 extern tree convert_to_reference (tree, tree, int, int, tree);
@@ -3787,9 +3808,7 @@ extern tree finish_table (tree, tree, tree, int);
 extern tree coerce_new_type (tree);
 extern tree coerce_delete_type (tree);
 extern void comdat_linkage (tree);
-extern void import_export_vtable (tree, tree, int);
 extern void import_export_decl (tree);
-extern void import_export_tinfo	(tree, tree, bool);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree     (tree, tree);
 extern void check_default_args (tree);
@@ -3801,6 +3820,9 @@ extern tree get_guard (tree);
 extern tree get_guard_cond (tree);
 extern tree set_guard (tree);
 extern tree cxx_callgraph_analyze_expr (tree *, int *, tree);
+extern void mark_needed (tree);
+extern bool decl_needed_p (tree);
+extern void note_vague_linkage_fn (tree);
 
 /* XXX Not i18n clean.  */
 #define cp_deprecated(STR)						\
@@ -3973,9 +3995,9 @@ extern bool reregister_specialization           (tree, tree, tree);
 extern tree fold_non_dependent_expr             (tree);
 
 /* in repo.c */
-extern void repo_template_used (tree);
-extern void repo_template_instantiated (tree, bool);
-extern void init_repo (const char *);
+extern void init_repo (void);
+extern int repo_emit_p (tree);
+extern bool repo_export_class_p (tree);
 extern void finish_repo (void);
 
 /* in rtti.c */
@@ -4192,7 +4214,7 @@ extern tree error_type				(tree);
 extern int varargs_function_p			(tree);
 extern int really_overloaded_fn			(tree);
 extern bool cp_tree_equal			(tree, tree);
-extern tree no_linkage_check			(tree);
+extern tree no_linkage_check			(tree, bool);
 extern void debug_binfo				(tree);
 extern tree build_dummy_object			(tree);
 extern tree maybe_dummy_object			(tree, tree *);

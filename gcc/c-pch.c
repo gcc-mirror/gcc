@@ -384,6 +384,10 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
     return result == 0;
 }
 
+/* If non-NULL, this function is called after a precompile header file
+   is loaded.  */
+void (*lang_post_pch_load) (void);
+
 /* Load in the PCH file NAME, open on FD.  It was originally searched for
    by ORIG_NAME.  */
 
@@ -443,6 +447,11 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     return;
 
   fclose (f);
+  
+  /* Give the front end a chance to take action after a PCH file has
+     been loadeded.  */
+  if (lang_post_pch_load)
+    (*lang_post_pch_load) ();
 }
 
 /* Indicate that no more PCH files should be read.  */
