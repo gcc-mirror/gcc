@@ -2618,7 +2618,10 @@ expand_exit_loop_if_false (whichloop, cond)
 int
 stmt_loop_nest_empty ()
 {
-  return (loop_stack == NULL);
+  /* cfun->stmt can be NULL if we are building a call to get the
+     EH context for a setjmp/longjmp EH target and the current
+     function was a deferred inline function.  */
+  return (cfun->stmt != NULL && loop_stack == NULL);
 }
 
 /* Return non-zero if we should preserve sub-expressions as separate

@@ -1,3 +1,7 @@
+Wed Mar 29 10:53:49 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (stmt_loop_nest_empty): Allow cfun->stmt to be NULL.
+
 2000-03-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (c_common_nodes_and_builtins): Don't special case
