@@ -1,3 +1,7 @@
+Wed Feb 10 10:35:05 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* tmp-emsgids.c: Delete.
+
 Wed Feb 10 09:57:08 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* rtlanal.c (for_each_rtx): Fix declaration to conform to GNU
