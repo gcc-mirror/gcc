@@ -172,18 +172,11 @@ namespace std
 
       /**
        *  @if maint
-       *  Actual size of allocated internal buffer, in bytes. Unused
-       *  for sstreams, which have readily available _M_string.capacity().
+       *  Actual size of allocated internal buffer. Unused for sstreams,
+       *  which have readily available _M_string.capacity().
        *  @endif
       */
       size_t			_M_buf_size;
-
-      /**
-       *  @if maint
-       *  Optimal or preferred size of internal buffer, in bytes.
-       *  @endif
-      */
-      size_t			_M_buf_size_opt;
 
       /**
        *  @if maint
@@ -340,7 +333,6 @@ namespace std
       {
 	_M_buf_unified = false;
 	_M_buf_size = 0;
-	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
       }
 
@@ -552,9 +544,9 @@ namespace std
        *  - this is not an error
       */
       basic_streambuf()
-      : _M_buf(NULL), _M_buf_size(0), _M_buf_size_opt(BUFSIZ), 
-      _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0), _M_in_end(0),
-      _M_out_beg(0), _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
+      : _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_unified(false),
+      _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0),
+      _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
       _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
       _M_pback_cur_save(0), _M_pback_end_save(0), 
       _M_pback_init(false)

@@ -177,13 +177,8 @@ namespace std
       void
       _M_stringbuf_init(ios_base::openmode __mode)
       {
-	// NB: Start ostringstream buffers at 512 bytes. This is an
-	// experimental value (pronounced "arbitrary" in some of the
-	// hipper english-speaking countries), and can be changed to
-	// suit particular needs.
-	this->_M_buf_size_opt = 512;
 	this->_M_mode = __mode;
-	
+
 	__size_type __len = 0;
 	if (this->_M_mode & (ios_base::ate | ios_base::app))
 	  __len = _M_string.size();
@@ -235,7 +230,7 @@ namespace std
 	    
 	    // Step 2: Use the external array.
 	    this->_M_buf = __s;
-	    this->_M_buf_size_opt = this->_M_buf_size = __n;
+	    this->_M_buf_size = __n;
 	    _M_really_sync(__s, 0, 0);
 	  }
 	return this;

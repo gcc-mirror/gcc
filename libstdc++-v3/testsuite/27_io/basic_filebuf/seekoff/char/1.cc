@@ -39,7 +39,7 @@ class derived_filebuf: public std::filebuf
 {
  public:
   void
-  set_size(int_type __size) { _M_buf_size_opt = __size; }
+  set_size(int_type __size) { _M_buf_size = __size; }
 };
 
 derived_filebuf fb_03; // in | out
