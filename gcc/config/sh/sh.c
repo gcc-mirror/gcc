@@ -3098,6 +3098,14 @@ machine_dependent_reorg (first)
 			   && REGNO (dst) <= LAST_XD_REG)
 			  || REGNO (dst) == FPUL_REG))
 		    {
+		      /* This must be an insn that clobbers r0.  */
+		      rtx clobber = XVECEXP (PATTERN (scan), 0,
+					     XVECLEN (PATTERN (scan), 0) - 1);
+
+		      if (GET_CODE (clobber) != CLOBBER
+			  || ! rtx_equal_p (XEXP (clobber, 0), r0_rtx))
+			abort ();
+
 		      if (last_float
 			  && reg_set_between_p (r0_rtx, last_float_move, scan))
 			last_float = 0;
@@ -3105,7 +3113,19 @@ machine_dependent_reorg (first)
 		      if (lab)
 			emit_insn_before (gen_mova (lab), scan);
 		      else
-			*last_float_addr = r0_inc_rtx;
+			{
+			  /* There will be a REG_UNUSED note for r0 on
+			     LAST_FLOAT_MOVE; we have to change it to REG_INC,
+			     lest reorg:mark_target_live_regs will not
+			     consider r0 to be used, and we end up with delay
+			     slot insn in front of SCAN that clobber r0.  */
+			  rtx note
+			    = find_regno_note (last_float_move, REG_UNUSED, 0);
+
+			  PUT_MODE (note, REG_INC);
+
+			  *last_float_addr = r0_inc_rtx;
+			}
 		      last_float_move = scan;
 		      last_float = src;
 		      newsrc = gen_rtx (MEM, mode,
@@ -3114,6 +3134,9 @@ machine_dependent_reorg (first)
 					 ? r0_inc_rtx
 					 : r0_rtx));
 		      last_float_addr = &XEXP (newsrc, 0);
+
+		      /* Remove the clobber of r0.  */
+		      XEXP (clobber, 0) = gen_rtx_SCRATCH (Pmode);
 		    }
 		  else
 		    {

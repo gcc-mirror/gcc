@@ -1,3 +1,9 @@
+Tue Jun 22 03:17:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (machine_dependent_reorg): When fixing up fp pcloads,
+	remove the clobber of r0 and change the REG_UNUSED note to
+	REG_INC.
+
 1999-06-21  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* real.c (ereal_from_double): Fix for 64-bit big endian hosts.
