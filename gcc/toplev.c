@@ -3643,6 +3643,17 @@ rest_of_compilation (decl)
 
   init_temp_slots ();
 
+  /* Make sure volatile mem refs aren't considered valid operands for
+     arithmetic insns.  We must call this here if this is a nested inline
+     function, since the above code leaves us in the init_recog state
+     (from final.c), and the function context push/pop code does not
+     save/restore volatile_ok.
+
+     ??? Maybe it isn't necessary for expand_start_function to call this
+     anymore if we do it here?  */
+
+  init_recog_no_volatile ();
+
   /* The parsing time is all the time spent in yyparse
      *except* what is spent in this function.  */
 
