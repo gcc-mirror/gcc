@@ -1697,4 +1697,6 @@ extern rtx addr_side_effect_eval	PROTO ((rtx, int, int));
 extern int stack_regs_mentioned		PROTO((rtx insn));
 #endif
 
+
+extern void delete_null_pointer_checks	PROTO ((rtx));
 #endif /* _RTL_H */
