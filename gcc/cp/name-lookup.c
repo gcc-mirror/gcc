@@ -4571,10 +4571,19 @@ maybe_process_template_type_declaration (tree type, int is_friend,
   return decl;
 }
 
-/* Push a tag name NAME for struct/class/union/enum type TYPE.
-   Normally put it into the inner-most non-sk_cleanup scope,
-   but if GLOBALIZE is true, put it in the inner-most non-class scope.
-   The latter is needed for implicit declarations.
+/* Push a tag name NAME for struct/class/union/enum type TYPE.  In case
+   that the NAME is a class template, the tag is processed but not pushed.
+
+   The pushed scope depend on the SCOPE parameter:
+   - When SCOPE is TS_CURRENT, put it into the inner-most non-sk_cleanup
+     scope.
+   - When SCOPE is TS_GLOBAL, put it in the inner-most non-class and
+     non-template-parameter scope.  This case is needed for forward
+     declarations.
+   - When SCOPE is TS_WITHIN_ENCLOSING_NON_CLASS, this is similar to
+     TS_GLOBAL case except that names within template-parameter scopes
+     are not pushed at all.
+
    Returns TYPE upon success and ERROR_MARK_NODE otherwise.  */
 
 tree
@@ -4590,10 +4599,9 @@ pushtag (tree name, tree type, tag_scope scope)
 	 /* Neither are the scopes used to hold template parameters
 	    for an explicit specialization.  For an ordinary template
 	    declaration, these scopes are not scopes from the point of
-	    view of the language -- but we need a place to stash
-	    things that will go in the containing namespace when the
-	    template is instantiated.  */
-	 || (b->kind == sk_template_parms && b->explicit_spec_p)
+	    view of the language.  */
+	 || (b->kind == sk_template_parms
+	     && (b->explicit_spec_p || scope == ts_global))
 	 || (b->kind == sk_class
 	     && (scope != ts_current
 		 /* We may be defining a new type in the initializer
@@ -4666,7 +4674,7 @@ pushtag (tree name, tree type, tag_scope scope)
 	      else
 		pushdecl_class_level (d);
 	    }
-	  else
+	  else if (b->kind != sk_template_parms)
 	    d = pushdecl_with_scope (d, b);
 
 	  if (d == error_mark_node)

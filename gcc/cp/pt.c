@@ -5781,11 +5781,13 @@ instantiate_class_template (tree type)
 
 	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 		{
+		  /* template <class T> friend class C;  */
 		  friend_type = tsubst_friend_class (friend_type, args);
 	  	  adjust_processing_template_decl = true;
 		}
 	      else if (TREE_CODE (friend_type) == UNBOUND_CLASS_TEMPLATE)
 		{
+		  /* template <class T> friend class C::D;  */
 		  friend_type = tsubst (friend_type, args,
 					tf_error | tf_warning, NULL_TREE);
 		  if (TREE_CODE (friend_type) == TEMPLATE_DECL)
@@ -5794,6 +5796,15 @@ instantiate_class_template (tree type)
 		}
 	      else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
 		{
+		  /* This could be either
+
+		       friend class T::C;
+
+		     when dependent_type_p is false or
+
+		       template <class U> friend class T::C;
+
+		     otherwise.  */
 		  friend_type = tsubst (friend_type, args,
 					tf_error | tf_warning, NULL_TREE);
 		  /* Bump processing_template_decl for correct
@@ -5803,13 +5814,14 @@ instantiate_class_template (tree type)
 		    adjust_processing_template_decl = true;
 		  --processing_template_decl;
 		}
-	      else if (uses_template_parms (friend_type))
-		friend_type = tsubst (friend_type, args,
-				      tf_error | tf_warning, NULL_TREE);
-	      else if (CLASSTYPE_USE_TEMPLATE (friend_type))
-		friend_type = friend_type;
-	      else 
+	      else if (!CLASSTYPE_USE_TEMPLATE (friend_type)
+		       && hidden_name_p (TYPE_NAME (friend_type)))
 		{
+		  /* friend class C;
+
+		     where C hasn't been declared yet.  Let's lookup name
+		     from namespace scope directly, bypassing any name that
+		     come from dependent base class.  */
 		  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
 
 		  /* The call to xref_tag_from_type does injection for friend
@@ -5817,9 +5829,22 @@ instantiate_class_template (tree type)
 		  push_nested_namespace (ns);
 		  friend_type = 
 		    xref_tag_from_type (friend_type, NULL_TREE, 
-					/*tag_scope=*/ts_global);
+					/*tag_scope=*/ts_current);
 		  pop_nested_namespace (ns);
 		}
+	      else if (uses_template_parms (friend_type))
+		/* friend class C<T>;  */
+		friend_type = tsubst (friend_type, args,
+				      tf_error | tf_warning, NULL_TREE);
+	      /* Otherwise it's
+
+		   friend class C;
+
+		 where C is already declared or
+
+		   friend class C<int>;
+
+	         We don't have to do anything in these cases.  */
 
 	      if (adjust_processing_template_decl)
 		/* Trick make_friend_class into realizing that the friend

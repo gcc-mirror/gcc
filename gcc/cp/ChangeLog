@@ -1,5 +1,16 @@
 2005-03-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/4403
+	PR c++/9783, DR433
+	* name-lookup.c (pushtag): Skip template parameter scope when
+	scope is ts_global.  Don't push tag into template parameter
+	scope.
+	* pt.c (instantiate_class_template): Reorder friend class
+	template substitution to handle non-dependent friend class
+	that hasn't been previously declared.
+
+2005-03-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	Friend class name lookup 5/n
 	PR c++/1016
 	* cp-tree.h (pushtag): Adjust declaration.

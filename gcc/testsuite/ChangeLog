@@ -1,5 +1,13 @@
 2005-03-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/4403
+	PR c++/9783, DR433
+	* g++.dg/template/friend34.C: New test.
+	* g++.dg/template/friend35.C: Likewise.
+	* g++.old-deja/g++.pt/inherit2.C: Remove XFAIL's.
+
+2005-03-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	Friend class name lookup 5/n
 	PR c++/1016
 	* g++.dg/lookup/hidden-class1.C: New test.
