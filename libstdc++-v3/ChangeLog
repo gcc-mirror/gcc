@@ -1,3 +1,25 @@
+2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.tcc
+	(basic_string::append(const basic_string&, size_type,
+	size_type), basic_string::compare(size_type, size_type,
+	const basic_string&), basic_string::compare(size_type,
+	size_type, const basic_string&, size_type, size_type),
+	basic_string::compare(const _CharT*), basic_string::
+	compare(size_type, size_type, const _CharT*),
+	basic_string::compare(size_type, size_type, const _CharT*,
+	size_type), _S_string_copy(const basic_string&, _CharT*,
+	typename _Alloc::size_type)): Fully qualify min() with std::.
+	
+2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.tcc
+	(basic_string::_S_construct(_InIter, _InIter, const _Alloc&,
+	forward_iterator_tag)): Delay the declaration of __dnew,
+	fully qualify distance() with std::.
+	(basic_string::_M_replace_safe): Fully qualify distance()
+	with std::.
+
 2002-11-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/8716

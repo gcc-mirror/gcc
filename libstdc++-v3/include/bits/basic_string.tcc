@@ -137,14 +137,14 @@ namespace std
       _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a, 
 		   forward_iterator_tag)
       {
-	size_type __dnew = static_cast<size_type>(distance(__beg, __end));
-
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refcopy();
 
 	// NB: Not required, but considered best practice.
 	if (__builtin_expect(__beg == _InIter(), 0))
 	  __throw_logic_error("attempt to create string with null pointer");
+
+	size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
 	
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, __a);
@@ -523,7 +523,7 @@ namespace std
       _M_replace_safe(iterator __i1, iterator __i2, _ForwardIter __k1, 
 		      _ForwardIter __k2)
       {
-	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
+	size_type __dnew = static_cast<size_type>(std::distance(__k1, __k2));
 	size_type __dold = __i2 - __i1;
 	size_type __dmax = this->max_size();
 
@@ -578,7 +578,7 @@ namespace std
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
       // iterators formed here.
-      size_type __len = min(__str.size() - __pos, __n) + this->size();
+      size_type __len = std::min(__str.size() - __pos, __n) + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
       return _M_replace_safe(_M_iend(), _M_iend(), __str._M_check(__pos),
@@ -848,8 +848,8 @@ namespace std
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize= min(__size - __pos, __n);
-      size_type __len = min(__rsize, __osize);
+      size_type __rsize= std::min(__size - __pos, __n);
+      size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __str.data(), __len);
       if (!__r)
 	__r = __rsize - __osize;
@@ -867,9 +867,9 @@ namespace std
       if (__pos1 > __size || __pos2 > __osize)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize = min(__size - __pos1, __n1);
-      size_type __rosize = min(__osize - __pos2, __n2);
-      size_type __len = min(__rsize, __rosize);
+      size_type __rsize = std::min(__size - __pos1, __n1);
+      size_type __rosize = std::min(__osize - __pos2, __n2);
+      size_type __len = std::min(__rsize, __rosize);
       int __r = traits_type::compare(_M_data() + __pos1, 
 				     __str.data() + __pos2, __len);
       if (!__r)
@@ -885,7 +885,7 @@ namespace std
     {
       size_type __size = this->size();
       size_type __osize = traits_type::length(__s);
-      size_type __len = min(__size, __osize);
+      size_type __len = std::min(__size, __osize);
       int __r = traits_type::compare(_M_data(), __s, __len);
       if (!__r)
 	__r = __size - __osize;
@@ -903,8 +903,8 @@ namespace std
 	__throw_out_of_range("basic_string::compare");
       
       size_type __osize = traits_type::length(__s);
-      size_type __rsize = min(__size - __pos, __n1);
-      size_type __len = min(__rsize, __osize);
+      size_type __rsize = std::min(__size - __pos, __n1);
+      size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
 	__r = __rsize - __osize;
@@ -921,9 +921,9 @@ namespace std
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __osize = min(traits_type::length(__s), __n2);
-      size_type __rsize = min(__size - __pos, __n1);
-      size_type __len = min(__rsize, __osize);
+      size_type __osize = std::min(traits_type::length(__s), __n2);
+      size_type __rsize = std::min(__size - __pos, __n1);
+      size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
 	__r = __rsize - __osize;
@@ -937,7 +937,7 @@ namespace std
     {
       typedef typename _Alloc::size_type size_type;
       size_type __strsize = __str.size();
-      size_type __bytes = min(__strsize, __bufsiz - 1);
+      size_type __bytes = std::min(__strsize, __bufsiz - 1);
       _Traits::copy(__buf, __str.data(), __bytes);
       __buf[__bytes] = _CharT();
     }
