@@ -1167,6 +1167,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   int nargs;
   rtx local_return_label = 0;
   rtx loc;
+  rtx stack_save = 0;
   rtx temp;
   struct inline_remap *map;
   rtx cc0_insn = 0;
@@ -1648,6 +1649,13 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   global_const_equiv_map = map->const_equiv_map;
   global_const_equiv_map_size = map->const_equiv_map_size;
 
+  /* If the called fucntion does an alloca, save and restore the
+     frame pointer around the call.  This saves stack space, but
+     also is required if this inline is being done between two
+     pushes.  */
+  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_CALLS_ALLOCA)
+    emit_stack_save (SAVE_BLOCK, &stack_save, NULL_RTX);
+
   /* Now copy the insns one by one.  Do this in two passes, first the insns and
      then their REG_NOTES, just like save_for_inline.  */
 
@@ -1867,6 +1875,10 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   if (local_return_label)
     emit_label (local_return_label);
+
+  /* Restore the stack pointer if we saved it above.  */
+  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_CALLS_ALLOCA)
+    emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
 
   /* Make copies of the decls of the symbols in the inline function, so that
      the copies of the variables get declared in the current function.  Set
