@@ -214,12 +214,23 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 # been found only upon reading the documentation that was automatically
 # produced from it.
 
-$(srcdir)/f/intdoc.texi: f/intdoc$(build_exeext)
+# If the documentation files depended on executables in the build
+# tree, there'd be no way to ship a source tree with the documentation
+# already generated such that `make' wouldn't attempt to rebuilt it.
+# So, we punt and arrange for the documentation files to depend on the
+# dependencies of the executables, not on the executables themselves.
+# But then, we have to build the executables explicitly in their build
+# rules.
+
+INTDOC_DEPS = $(srcdir)/f/intdoc.c $(srcdir)/f/intrin.h $(srcdir)/f/intrin.def
+
+$(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
+	$(MAKE) f/intdoc$(build_exeext)
 	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
 
-f/intdoc: f/intdoc.c f/intdoc.h0 f/intrin.h f/intrin.def hconfig.h system.h
+f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 hconfig.h system.h
 	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
-		  $(srcdir)/f/intdoc.c -o f/intdoc
+		  $(srcdir)/f/intdoc.c -o f/intdoc$(build_exeext)
 
 f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
 	f/ansify$(build_exeext) $(srcdir)/f/intdoc.in \

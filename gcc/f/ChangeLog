@@ -1,3 +1,9 @@
+2000-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Make-lang.in (INTDOC_DEPS): New macro.
+	(f/intdoc.texi): Depend on $(INTDOC_DEPS).  Build f/intdoc.
+	(f/intdoc): Likewise.  Add $(build_exeext).
+
 2000-11-17  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* lex.c (ffelex_hash_): Change ggc_alloc_string (var, -1) to
