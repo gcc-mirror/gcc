@@ -1,3 +1,8 @@
+2002-02-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* dwarf2out.c (gen_inlined_subroutine_die): If block is abstract,
+	generate a die for the lexical block.
+
 2002-02-26  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
