@@ -4799,18 +4799,16 @@ print_operand (file, op, letter)
     }
 
   else if ((letter == 'x') && (GET_CODE(op) == CONST_INT))
-    fprintf (file, "0x%04x", 0xffff & (INTVAL(op)));
-
-  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
-	   && HOST_BITS_PER_WIDE_INT == 32)
-    fprintf (file, "0x%08x", INTVAL(op));
-
-  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
-	   && HOST_BITS_PER_WIDE_INT == 64)
-    fprintf (file, "0x%016lx", INTVAL(op));
-
+    fprintf (file, "0x%04x", 0xffff & ((int) INTVAL(op)));
+#if HOST_BITS_PER_WIDE_INT <= HOST_BITS_PER_LONG
+  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT))
+    fprintf (file, "0x%08lx", (unsigned long) INTVAL(op));
+#else
+  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT))
+    fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL(op));
+#endif
   else if ((letter == 'd') && (GET_CODE(op) == CONST_INT))
-    fprintf (file, "%d", (INTVAL(op)));
+    fprintf (file, "%ld", ((long) INTVAL(op)));
 
   else if (letter == 'z'
 	   && (GET_CODE (op) == CONST_INT)
@@ -6090,7 +6088,7 @@ function_prologue (file, size)
 	      current_function_outgoing_args_size,
 	      current_frame_info.extra_size);
 
-      fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
+      fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
 	       current_frame_info.mask,
 	       current_frame_info.gp_save_offset,
 	       current_frame_info.fmask,
@@ -6220,10 +6218,10 @@ function_prologue (file, size)
 	       reg_names[PIC_FUNCTION_ADDR_REGNUM]);
       if (tsize > 0)
 	{
-	  fprintf (file, "\t%s\t%s,%s,%d\n",
+	  fprintf (file, "\t%s\t%s,%s,%ld\n",
 		   (TARGET_LONG64 ? "dsubu" : "subu"),
 		   sp_str, sp_str, tsize);
-	  fprintf (file, "\t.cprestore %d\n", current_frame_info.args_size);
+	  fprintf (file, "\t.cprestore %ld\n", current_frame_info.args_size);
 	}
 
       if (dwarf2out_do_frame ())
