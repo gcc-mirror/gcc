@@ -109,6 +109,7 @@ extern int target_flags;
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
 #define RELAX_BIT	(1<<15)
+#define USERMODE_BIT	(1<<16)
 #define HITACHI_BIT     (1<<22)
 #define NOMACSAVE_BIT   (1<<23)
 #define PREFERGOT_BIT	(1<<24)
@@ -184,6 +185,9 @@ extern int target_flags;
 /* Nonzero if generating code for a little endian SH.  */
 #define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
 
+/* Nonzero if we should do everything in userland.  */
+#define TARGET_USERMODE		(target_flags & USERMODE_BIT)
+
 /* Nonzero if we should prefer @GOT calls when generating PIC.  */
 #define TARGET_PREFERGOT	(target_flags & PREFERGOT_BIT)
 
@@ -210,6 +214,7 @@ extern int target_flags;
   {"prefergot",	PREFERGOT_BIT},			\
   {"relax",	RELAX_BIT},			\
   {"space", 	SPACE_BIT},			\
+  {"usermode",	USERMODE_BIT},			\
   SUBTARGET_SWITCHES                            \
   {"",   	TARGET_DEFAULT} 		\
 }
@@ -1201,6 +1206,13 @@ extern int current_function_anonymous_args;
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
   if (TARGET_HARVARD)							\
+    {									\
+      if (TARGET_USERMODE)						\
+	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__ic_invalidate"),\
+			   0, VOIDmode, 1, (TRAMP), SImode);		\
+      else								\
+	emit_insn (gen_ic_invalidate_line (TRAMP));			\
+    }									\
     emit_insn (gen_ic_invalidate_line (TRAMP));				\
 }
 

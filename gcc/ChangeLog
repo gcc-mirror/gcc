@@ -1,3 +1,19 @@
+2000-09-07  Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (sh-*-linux*): Added.
+	* configure: Rebuilt.
+	* config/sh/t-linux: New file.
+	* config/sh/sh.h (USERMODE_BIT): Define.
+	(TARGET_USERMODE): Likewise.
+	(TARGET_SWITCHES): New switches for the bits above.
+	(INITIALIZE_TRAMPOLINE): Call __ic_invalidate in USERMODE.
+	* config/sh/linux.h: New file.
+	* config/sh/lib1funcs.asm (GLOBAL): Don't prefix symbols with
+	underscore on linux.
+	(L_sdivsi3, L_udivsi3): Define for linux.
+	(L_ic_invalidate): Define.
+	* invoke.texi (SH Options): Document -musermode.
+
 2000-09-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (OVERRIDE_OPTIONS): Don't disable function
