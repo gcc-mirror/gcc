@@ -231,6 +231,8 @@ empty_parms ()
 %type <ftype> typed_declspecs1 type_specifier_seq nonempty_cv_qualifiers
 %type <ftype> structsp typespecqual_reserved parm named_parm full_parm
 
+%type <itype> extension
+
 /* C++ extensions */
 %token <ttype> PTYPENAME
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
@@ -370,7 +372,7 @@ extdefs_opt:
 
 extension:
 	EXTENSION
-		{ $<itype>$ = pedantic;
+		{ $$ = pedantic;
 		  pedantic = 0; }
 	;
 
@@ -416,7 +418,7 @@ extdef:
 		{ do_toplevel_using_decl ($1); }
 	| using_directive
 	| extension extdef
-		{ pedantic = $<itype>1; }
+		{ pedantic = $1; }
 	;
 
 namespace_alias:
@@ -584,7 +586,7 @@ template_extdef:
 		{ if (pending_inlines) do_pending_inlines ();
 		  pop_lang_context (); }
 	| extension template_extdef
-		{ pedantic = $<itype>1; }
+		{ pedantic = $1; }
 	;
 
 template_datadef:
@@ -1082,7 +1084,7 @@ unary_expr:
 	/* __extension__ turns off -pedantic for following primary.  */
 	| extension cast_expr  	  %prec UNARY
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  pedantic = $1; }
 	| '*' cast_expr   %prec UNARY
 		{ $$ = build_x_indirect_ref ($2, "unary *"); }
 	| '&' cast_expr   %prec UNARY
@@ -1660,7 +1662,7 @@ decl:
 	| declmods ';'
 		{ warning ("empty declaration"); }
 	| extension decl
-		{ pedantic = $<itype>1; }
+		{ pedantic = $1; }
 	;
 
 /* Any kind of declarator (thus, all declarators allowed
@@ -2427,7 +2429,7 @@ component_decl:
 		{ $$ = NULL_TREE; }
 	| extension component_decl
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  pedantic = $1; }
         | template_header component_decl
                 {  
 		  if ($2)
