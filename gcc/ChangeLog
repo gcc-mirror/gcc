@@ -1,3 +1,15 @@
+Fri Apr 17 11:21:43 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * frame.c: Include stdlib.h and unistd.h to possibly get various
+        function prototypes.  The fixproto script guarantees these header
+        files exist on the target system.
+        * libgcc2.c: Likewise.
+ 
+        * gthr-single.h (__gthread_mutex_lock, __gthread_mutex_trylock,
+        __gthread_mutex_unlock): Add __attribute__ ((__unused__)) to the
+        function parameters.
+        * libgcc2.c (__udiv_w_sdiv): Likewise.
+
 Thu Apr 16 22:41:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (asm_output_bss): Add prototype.
