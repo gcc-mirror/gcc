@@ -451,7 +451,6 @@ vax_rtx_cost (x)
     case FIX:
       c = 7;			/* 17 on VAX 2 */
       break;
-    case LSHIFT:
     case ASHIFT:
     case LSHIFTRT:
     case ASHIFTRT:
