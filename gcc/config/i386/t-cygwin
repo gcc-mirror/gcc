@@ -10,7 +10,9 @@ LIMITS_H_TEST = true
 # If we are building next to winsup, this will let us find the real
 # limits.h when building libgcc2.  Otherwise, winsup must be installed
 # first.
-LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/include
+LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/include \
+	-I$(srcdir)/../winsup/cygwin/include \
+	-I$(srcdir)/../winsup/w32api/include
 
 winnt.o: $(srcdir)/config/i386/winnt.c $(RTL_H) $(TREE_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
