@@ -45,5 +45,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
-
-#define NO_IMPLICIT_EXTERN_C

@@ -106,9 +106,6 @@ Boston, MA 02111-1307, USA.  */
    So we have to squirrel it away with this.  */
 #define SETUP_FRAME_ADDRESSES() rs6000_aix_emit_builtin_unwind_init ()
 
-/* Don't assume anything about the header files.  */
-#define NO_IMPLICIT_EXTERN_C
-
 /* Override svr4.h  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX

@@ -1,3 +1,9 @@
+2002-11-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/rs6000/sysv4.h: Define NO_IMPLICIT_EXTERN_C here...
+	* config/rs6000/linux.h, config/rs6000/linux64.h,
+	config/rs6000/windiss.h: ... not here.
+
 2002-11-10  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define
@@ -62,7 +68,7 @@ Sun Nov 10 18:49:21 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-08  Dale Johannesen  <dalej@apple.com>
 
-        * dbxout.c (dbxout_type):  Fix stabs info for vector types.
+	* dbxout.c (dbxout_type):  Fix stabs info for vector types.
 
 2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -86,25 +92,25 @@ Fri Nov  8 11:20:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-07  David Mosberger  <davidm@hpl.hp.com>
 
-        * config/ia64/crtend.asm: Include "auto-host.h".
-        [HAVE_INITFINI_ARRAY]: Invoke __do_global_ctors_aux via .init_array.
-        * config/ia64/crtbegin.asm: Similarly.
-        * config/ia64/t-ia64 (crtbegin.o): Include from current directory.
-        (crtend.o, crtbeginS.o, crtendS.o): Likewise.
+	* config/ia64/crtend.asm: Include "auto-host.h".
+	[HAVE_INITFINI_ARRAY]: Invoke __do_global_ctors_aux via .init_array.
+	* config/ia64/crtbegin.asm: Similarly.
+	* config/ia64/t-ia64 (crtbegin.o): Include from current directory.
+	(crtend.o, crtbeginS.o, crtendS.o): Likewise.
 
-        * aclocal.m4 (gcc_AC_INITFINI_ARRAY): New.
-        * configure.in: Use it if --enable-initfini-array not specified.
-        * doc/install.texi (Configuration): Document --enable-initfini-array.
+	* aclocal.m4 (gcc_AC_INITFINI_ARRAY): New.
+	* configure.in: Use it if --enable-initfini-array not specified.
+	* doc/install.texi (Configuration): Document --enable-initfini-array.
 	* configure, config.in: Rebuild.
 
 2002-11-07  Jason Thorpe  <thorpej@wasabisystems.com>
-  
+
 	* config/arm/arm-protos.h (arm_get_frame_size)
-	(thumb_get_frame_size): New prototypes.  
+	(thumb_get_frame_size): New prototypes.
 	* config/arm/arm.c (arm_get_frame_size)
-	(thumb_get_frame_size): New functions.       
-	(use_return_insn, arm_output_epilogue, arm_output_function_epilogue) 
-	(arm_compute_initial_elimination_offset, arm_expand_prologue): Use  
+	(thumb_get_frame_size): New functions.
+	(use_return_insn, arm_output_epilogue, arm_output_function_epilogue)
+	(arm_compute_initial_elimination_offset, arm_expand_prologue): Use
 	arm_get_frame_size.
 	(thumb_expand_prologue, thumb_expand_epilogue): Use
 	thumb_get_frame_size.
@@ -200,8 +206,8 @@ Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-04  Dale Johannesen  <dalej@apple.com>
 
-        * doloop.c (doloop_modify_runtime):  Fix loop count computation
-        for unrolled loops.
+	* doloop.c (doloop_modify_runtime):  Fix loop count computation
+	for unrolled loops.
 	* loop.c (loop_invariant_p):  Support calling from unroller.
 
 2002-11-04  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -230,7 +236,7 @@ Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/pa/pa64-regs.h: Same.
 
 	* config/sh/sh-protos.h (sh_cannot_change_mode_class): Add prototype.
-	
+
 	* config/sh/sh.c (sh_cannot_change_mode_class): New.
 
 	* config/mips/mips-protos.h (mips_cannot_change_mode_class): Add
@@ -286,7 +292,7 @@ Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(simplify_set): Same.
 	(gen_lowpart_for_combine): Calculate subregs_of_mode.  Remove
 	REG_CHANGES_MODE.
-	
+
 	* regs.h: Add extern for subregs_of_mode;
 	Include hard-reg-set and basic-block.
 	(REG_CHANGES_MODE): Delete.
@@ -400,7 +406,7 @@ Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(-minline-float-divide-max-throughput): New.
 	(-minline-int-divide-min-latency): New.
 	(-minline-int-divide-max-throughput): New.
-	
+
 2002-11-01  Richard Earnshaw  (rearnsha@arm.com)
 
 	PR target/7856
@@ -420,7 +426,7 @@ Fri Nov  1 10:33:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-31  Eric Christopher  <echristo@redhat.com>
 
-        * explow.c (convert_memory_address): Use shallow_copy_rtx.
+	* explow.c (convert_memory_address): Use shallow_copy_rtx.
 
 2002-10-31  Steve Ellcey  <sje@cup.hp.com>
 
@@ -465,7 +471,7 @@ Thu Oct 31 12:45:55 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-10-30  Aldy Hernandez  <aldyh@redhat.com>
 
-        * c-common.c: Add GTY to vector_type_node_list.
+	* c-common.c: Add GTY to vector_type_node_list.
 
 2002-10-30  John David Anglin  <dave@hiauly.hia.nrc.ca>
 
@@ -607,8 +613,8 @@ Tue Oct 29 15:37:39 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        * expr.c (expand_expr) [PLUS]: Don't use simplify_binary_operation;
-        check for zero operands explicitly.
+	* expr.c (expand_expr) [PLUS]: Don't use simplify_binary_operation;
+	check for zero operands explicitly.
 
 2002-10-29  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -748,7 +754,7 @@ Sat Oct 26 01:44:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-24  Igor Shevlyakov <igor@microunity.com>
 
-        * varasm.c (struct rtx_const): Array size 16 for V16QImode.
+	* varasm.c (struct rtx_const): Array size 16 for V16QImode.
 
 2002-10-24  Richard Henderson  <rth@redhat.com>
 
