@@ -1,5 +1,14 @@
 2003-01-30  Richard Henderson  <rth@redhat.com>
 
+	* ggc-page.c (G.context_depth_allocations): New.
+	(G.context_depth_collections): New.
+	(alloc_page): Set G.context_depth_allocations.
+	(ggc_collect): Set G.context_depth_collections.
+	(ggc_push_context): Limit to HOST_BITS_PER_LONG contexts.
+	(ggc_pop_context): Early exit for no allocations or collections.
+
+2003-01-30  Richard Henderson  <rth@redhat.com>
+
 	* tree-inline.c (walk_tree): Streamline duplicate hash table lookup.
 
 2003-01-30  Richard Earnshaw  <rearnsha@arm.com>
