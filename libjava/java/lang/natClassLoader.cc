@@ -308,8 +308,12 @@ struct _Jv_LoaderInfo {
     java::lang::ClassLoader *loader;
 };
 
-_Jv_LoaderInfo *initiated_classes[HASH_LEN];
-jclass loaded_classes[HASH_LEN];
+static _Jv_LoaderInfo *initiated_classes[HASH_LEN];
+static jclass loaded_classes[HASH_LEN];
+
+// This is the root of a linked list of classes
+
+
 
 jclass
 _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)

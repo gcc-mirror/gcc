@@ -1142,13 +1142,15 @@ void _Jv_ClassReader::handleFieldsEnd ()
 
 
 
-void _Jv_ClassReader::handleMethodsBegin (int count)
+void
+_Jv_ClassReader::handleMethodsBegin (int count)
 {
   def->methods = (_Jv_Method*)
     _Jv_AllocBytesChecked (sizeof (_Jv_Method)*count);
 
-  def->interpreted_methods = (_Jv_InterpMethod**)
-    _Jv_AllocBytesChecked (sizeof (_Jv_InterpMethod*) * count);
+  def->interpreted_methods
+    = (_Jv_MethodBase **) _Jv_AllocBytesChecked (sizeof (_Jv_MethodBase *)
+						 * count);
 
   for (int i = 0; i < count; i++)
     def->interpreted_methods[i] = 0;
@@ -1230,7 +1232,8 @@ void _Jv_ClassReader::handleExceptionTableEntry
   (int method_index, int exc_index, 
    int start_pc, int end_pc, int handler_pc, int catch_type)
 {
-  _Jv_InterpMethod *method = def->interpreted_methods[method_index];
+  _Jv_InterpMethod *method = reinterpret_cast<_Jv_InterpMethod *>
+    (def->interpreted_methods[method_index]);
   _Jv_InterpException *exc = method->exceptions ();
 
   exc[exc_index].start_pc     = start_pc;
@@ -1246,17 +1249,29 @@ void _Jv_ClassReader::handleMethodsEnd ()
   for (int i = 0; i < def->method_count; i++)
     {
       _Jv_Method *method = &def->methods[i];
-      if (method->accflags & (Modifier::NATIVE | Modifier::ABSTRACT))
+      if ((method->accflags & Modifier::NATIVE) != 0)
 	{
 	  if (def->interpreted_methods[i] != 0)
-	    throw_class_format_error ("code provided "
-				      "for abstract or native method");
+	    throw_class_format_error ("code provided for native method");
+	  else
+	    {
+	      _Jv_JNIMethod *m = (_Jv_JNIMethod *)
+		_Jv_AllocBytesChecked (sizeof (_Jv_JNIMethod));
+	      m->defining_class = def;
+	      m->self = method;
+	      m->function = NULL;
+	      def->interpreted_methods[i] = m;
+	    }
+	}
+      else if ((method->accflags & Modifier::ABSTRACT) != 0)
+	{
+	  if (def->interpreted_methods[i] != 0)
+	    throw_class_format_error ("code provided for abstract method");
 	}
       else
 	{
 	  if (def->interpreted_methods[i] == 0)
-	    throw_class_format_error ("abstract or native method "
-				      "with no code");
+	    throw_class_format_error ("method with no code");
 	}
     }
 

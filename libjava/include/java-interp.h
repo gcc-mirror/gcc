@@ -14,6 +14,18 @@ details.  */
 #include <jvm.h>
 #include <java-cpool.h>
 
+// Base class for method representations.  Subclasses are interpreted
+// and JNI methods.
+class _Jv_MethodBase
+{
+protected:
+  // The class which defined this method.
+  _Jv_InterpClass *defining_class;
+
+  // The method description.
+  _Jv_Method *self;
+};
+
 #ifdef INTERPRETER
 
 #pragma interface
@@ -66,17 +78,14 @@ class _Jv_InterpException {
   friend class _Jv_InterpMethod;
 };
 
-class _Jv_InterpMethod {
-
+class _Jv_InterpMethod : public _Jv_MethodBase
+{
   _Jv_ushort       max_stack;
   _Jv_ushort       max_locals;
   int              code_length;
 
   _Jv_ushort       exc_count;
   _Jv_ushort       args_raw_size;
-
-  _Jv_InterpClass *defining_class;
-  _Jv_Method      *self;
 
   unsigned char* bytecode () 
   {
@@ -121,9 +130,6 @@ class _Jv_InterpMethod {
   friend class gnu::gcj::runtime::MethodInvocation;
 
   friend void _Jv_PrepareClass(jclass);
-
-  // This function is used when making a JNI call from the interpreter.
-  friend void _Jv_JNI_conversion_call (ffi_cif *, void *, ffi_raw *, void *);
 };
 
 class _Jv_InterpMethodInvocation {
@@ -140,7 +146,7 @@ class _Jv_InterpMethodInvocation {
   
 class _Jv_InterpClass : public java::lang::Class
 {
-  _Jv_InterpMethod **interpreted_methods;
+  _Jv_MethodBase **interpreted_methods;
   _Jv_ushort        *field_initializers;
 
   friend class _Jv_ClassReader;
@@ -164,5 +170,20 @@ struct _Jv_ResolvedMethod {
 };
 
 #endif /* INTERPRETER */
+
+class _Jv_JNIMethod : public _Jv_MethodBase
+{
+  // The underlying function.  If NULL we have to look for the
+  // function.
+  void *function;
+
+  // This function is used when making a JNI call from the interpreter.
+  static void call (ffi_cif *, void *, ffi_raw *, void *);
+
+  void *ncode ();
+
+  friend class _Jv_ClassReader;
+  friend void _Jv_PrepareClass(jclass);
+};
 
 #endif /* __JAVA_INTERP_H__ */

@@ -563,21 +563,21 @@ _Jv_PrepareClass(jclass klass)
      have code -- for static constructors. */
   for (int i = 0; i < clz->method_count; i++)
     {
-      _Jv_InterpMethod *imeth = clz->interpreted_methods[i];
+      _Jv_MethodBase *imeth = clz->interpreted_methods[i];
 
-      if (imeth != 0)		// it could be abstract or native
+      if ((clz->methods[i].accflags & Modifier::NATIVE) != 0)
 	{
-	  clz->methods[i].ncode = imeth->ncode ();
+	  // You might think we could use a virtual `ncode' method in
+	  // the _Jv_MethodBase and unify the native and non-native
+	  // cases.  Well, we can't, because we don't allocate these
+	  // objects using `new', and thus they don't get a vtable.
+	  _Jv_JNIMethod *jnim = reinterpret_cast<_Jv_JNIMethod *> (imeth);
+	  clz->methods[i].ncode = jnim->ncode ();
 	}
-      else
+      else if (imeth != 0)		// it could be abstract
 	{
-	  if ((clz->methods[i].accflags & Modifier::NATIVE) != 0)
-	    {
-	      JvThrow
-		(new java::lang::VirtualMachineError
-		 (JvNewStringLatin1 
-		  ("the interpreter does not support native methods")));
-	    }
+	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (im);
+	  clz->methods[i].ncode = im->ncode ();
 	}
     }
 
@@ -587,13 +587,6 @@ _Jv_PrepareClass(jclass klass)
       clz->notifyAll ();
       return;
     }
-
-  /* FIXME: native methods for interpreted classes should be handled, I
-   * dunno exactly how, but it seems that we should try to find them at
-   * this point, and if we fail, try again after <clinit>, since it
-   * could have caused additional code to be loaded.  Interfaces cannot
-   * have native methods (not even for static initialization). */
-
 
   /* Now onto the actual job: vtable layout.  First, count how many new
      methods we have */
@@ -1022,13 +1015,9 @@ _Jv_InterpMethod::ncode ()
 
   args_raw_size = ffi_raw_size (&closure->cif);
 
-  if ((self->accflags & Modifier::NATIVE) != 0)
-    {
-      // FIXME: for now we assume that all native methods for
-      // interpreted code use JNI.
-      fun = (ffi_closure_fun) &_Jv_JNI_conversion_call;
-    }
-  else if ((self->accflags & Modifier::SYNCHRONIZED) != 0)
+  JvAssert ((self->accflags & Modifier::NATIVE) == 0);
+
+  if ((self->accflags & Modifier::SYNCHRONIZED) != 0)
     {
       if (staticp)
 	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class;
@@ -1041,9 +1030,48 @@ _Jv_InterpMethod::ncode ()
     }
 
   ffi_prep_raw_closure (&closure->closure,
-		     &closure->cif, 
-		     fun,
-		     (void*)this);
+			&closure->cif, 
+			fun,
+			(void*) this);
+
+  self->ncode = (void*)closure;
+  return self->ncode;
+}
+
+
+void *
+_Jv_JNIMethod::ncode ()
+{
+  using namespace java::lang::reflect;
+
+  if (self->ncode != 0)
+    return self->ncode;
+
+  jboolean staticp = (self->accflags & Modifier::STATIC) != 0;
+  int arg_count = count_arguments (self->signature, staticp);
+
+  ncode_closure *closure =
+    (ncode_closure*)_Jv_AllocBytesChecked (sizeof (ncode_closure)
+					+ arg_count * sizeof (ffi_type*));
+
+  init_cif (self->signature,
+	    arg_count,
+	    staticp,
+	    &closure->cif,
+	    &closure->arg_types[0]);
+
+  ffi_closure_fun fun;
+
+  JvAssert ((self->accflags & Modifier::NATIVE) != 0);
+
+  // FIXME: for now we assume that all native methods for
+  // interpreted code use JNI.
+  fun = (ffi_closure_fun) &_Jv_JNIMethod::call;
+
+  ffi_prep_raw_closure (&closure->closure,
+			&closure->cif, 
+			fun,
+			(void*) this);
 
   self->ncode = (void*)closure;
   return self->ncode;

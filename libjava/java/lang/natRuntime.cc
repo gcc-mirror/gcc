@@ -24,7 +24,52 @@ details.  */
 /* FIXME: we don't always need this.  The next libtool will let us use
    AC_LTDL_PREOPEN to see if we do.  */
 const lt_dlsymlist lt_preloaded_symbols[1] = { { 0, 0 } };
-#endif
+
+// We keep track of all the libraries loaded by this application.  For
+// now we use them to look up symbols for JNI.  `libraries_size' holds
+// the total size of the buffer.  `libraries_count' is the number of
+// items which are in use.
+static int libraries_size;
+static int libraries_count;
+static lt_dlhandle *libraries;
+
+static void
+add_library (lt_dlhandle lib)
+{
+  if (libraries_count == libraries_size)
+    {
+      int ns = libraries_size * 2;
+      if (ns == 0)
+	ns = 10;
+      lt_dlhandle *n = (lt_dlhandle *) _Jv_Malloc (ns * sizeof (lt_dlhandle));
+      if (libraries)
+	{
+	  memcpy (n, libraries, libraries_size * sizeof (lt_dlhandle));
+	  _Jv_Free (libraries);
+	}
+      libraries = n;
+      libraries_size = ns;
+      for (int i = libraries_count; i < libraries_size; ++i)
+	libraries[i] = NULL;
+    }
+
+  libraries[libraries_count++] = lib;
+}
+
+void *
+_Jv_FindSymbolInExecutable (const char *symname)
+{
+  for (int i = 0; i < libraries_count; ++i)
+    {
+      void *r = lt_dlsym (libraries[i], symname);
+      if (r)
+	return r;
+    }
+
+  return lt_dlsym (NULL, symname);
+}
+
+#endif /* USE_LTDL */
 
 void
 java::lang::Runtime::exit (jint status)

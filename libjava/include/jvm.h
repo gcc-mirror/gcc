@@ -201,6 +201,9 @@ extern "C"
 extern char *_Jv_ThisExecutable (void);
 extern void _Jv_ThisExecutable (const char *);
 
+/* Return a pointer to a symbol in executable or loaded library.  */
+void *_Jv_FindSymbolInExecutable (const char *);
+
 /* Initialize JNI.  */
 extern void _Jv_JNI_Init (void);
 
