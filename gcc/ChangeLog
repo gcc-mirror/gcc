@@ -1,5 +1,9 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
+	* emit-rtl.c (try_split): Avoid infinite loop if the split
+	results in a sequence that contains the original insn.
+
 	1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* combine.c (combine_simplify_rtx): Don't make shared rtl.
 	(simplify_logical): Likewise.
