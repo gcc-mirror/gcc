@@ -62,7 +62,17 @@ class EventDispatchThread extends Thread
         try
 	{
 	  AWTEvent evt = queue.getNextEvent();
+	  if (isInterrupted ())
+	    {
+	      // We are interrupted when we should finish executing
+	      return;
+	    }
 	  queue.dispatchEvent(evt);
+	}
+	catch (InterruptedException ie)
+	{
+	  // We are interrupted when we should finish executing
+	  return;
 	}
 	catch (Throwable x)
 	{
