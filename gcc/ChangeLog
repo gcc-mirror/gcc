@@ -1,3 +1,7 @@
+2003-08-23  Dale Johannesen  <dalej@apple.com>
+	* calls.c (emit_library_call_value_1): Fix obvious errors in
+	arguments to emit_group_load.
+
 2003-08-23  Jason Eckhardt  <jle@rice.edu>
 
 	* calls.c (emit_library_call_value_1): Remove code related
