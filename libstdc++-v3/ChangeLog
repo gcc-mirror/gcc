@@ -1,3 +1,8 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* docs/html/22_locale/locale.html: Fix spelling error of
+	"separate" as "seperate".
+
 2001-10-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use

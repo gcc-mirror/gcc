@@ -3265,7 +3265,7 @@ There are also header files @file{tree.h} and @file{tree.def}
 which define the format of the tree representation.
 
 C Preprocessing, for language front ends, that want or require it, is
-performed by cpplib, which is covered in seperate documentation.  In
+performed by cpplib, which is covered in separate documentation.  In
 particular, the internals are covered in @xref{Top, ,Cpplib internals, cppinternals, Cpplib Internals}.
 
 
