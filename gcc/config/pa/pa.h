@@ -105,14 +105,22 @@ extern int target_flags;
    compatable.  */
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
-/* Likewise for linenos.  */
+/* Likewise for linenos. 
+
+   We make the first line stab special to avoid adding several
+   gross hacks to GAS.  */
 #undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)		\
   { static int sym_lineno = 1;				\
-    fprintf (file, "\t.stabn 68,0,%d,L$M%d-%s\nL$M%d:\n",	\
-	     line, sym_lineno,				\
-	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0) + 1, \
-	     sym_lineno);				\
+    static tree last_function_decl = NULL;		\
+    if (current_function_decl == last_function_decl)	\
+      fprintf (file, "\t.stabn 68,0,%d,L$M%d-%s\nL$M%d:\n",	\
+	       line, sym_lineno,			\
+	       XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0) + 1, \
+	       sym_lineno);				\
+    else						\
+      fprintf (file, "\t.stabn 68,0,%d,0\n", line);	\
+    last_function_decl = current_function_decl;		\
     sym_lineno += 1; }
 
 /* But, to make this work, we have to output the stabs for the function
