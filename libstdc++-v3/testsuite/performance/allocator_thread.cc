@@ -147,12 +147,12 @@ int main(void)
   calibrate_iterations<vector<test_type> >();
   test_container(vector<test_type>());
   test_container(vector<test_type, malloc_allocator<test_type> >());
-  //test_container(vector<test_type, __mt_alloc<test_type> >());
+  test_container(vector<test_type, __mt_alloc<test_type> >());
 
   calibrate_iterations<list<test_type> >();
   test_container(list<test_type>());
   test_container(list<test_type, malloc_allocator<test_type> >());
-  //test_container(list<test_type, __mt_alloc<test_type> >());
+  test_container(list<test_type, __mt_alloc<test_type> >());
 
   return 0;
 }

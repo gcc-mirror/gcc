@@ -1,3 +1,9 @@
+2004-01-14  Stefan Olsson  <stefan@snon.net>
+
+	* include/ext/mt_allocator.h: Fixups.
+	* testsuite/performance/allocator.cc: Enable __mt_alloc tests.
+	* testsuite/performance/allocator_thread.cc: Same.
+	
 2004-01-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/performance/ifstream_extract_float.cc: Add higher
