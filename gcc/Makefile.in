@@ -1398,14 +1398,14 @@ doc: info
 info: $(srcdir)/cpp.info $(srcdir)/gcc.info
 
 $(srcdir)/cpp.info: cpp.texi
-	$(MAKEINFO) `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
+	cd $(srcdir); $(MAKEINFO) cpp.texi
 
 #$(srcdir)/gplus.info: gplus.texi
 #	$(MAKEINFO) `echo $(srcdir)/gplus.texi | sed 's,^\./,,'`
 
 $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
-	$(MAKEINFO) `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
+	cd $(srcdir); $(MAKEINFO) gcc.texi
 
 dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi
 
