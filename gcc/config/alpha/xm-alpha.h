@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for DEC Alpha.
-   Copyright (C) 1990, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
 This file is part of GNU CC.
@@ -38,8 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Arguments to use with `exit'.  */
 #define	SUCCESS_EXIT_CODE	0
-#define	FAILURE_EXIT_CODE	2
-#define	FATAL_EXIT_CODE		3
+#define	FATAL_EXIT_CODE		33
 
 /* If not compiled with GNU C, use the builtin alloca.  */
 #ifndef __GNUC__
