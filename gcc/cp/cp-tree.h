@@ -170,7 +170,6 @@ struct lang_identifier GTY(())
   struct c_common_identifier c_common;
   cxx_binding *namespace_bindings;
   cxx_binding *bindings;
-  tree class_value;
   tree class_template_info;
   tree label_value;
 };
@@ -339,14 +338,6 @@ typedef enum cp_id_kind
    NULL_TREE if there is no binding.  */
 #define IDENTIFIER_VALUE(NODE)			\
   (IDENTIFIER_BINDING (NODE) ? IDENTIFIER_BINDING (NODE)->value : NULL)
-
-/* If IDENTIFIER_CLASS_VALUE is set, then NODE is bound in the current
-   class, and IDENTIFIER_CLASS_VALUE is the value binding.  This is
-   just a pointer to the VALUE field of one of the bindings in the
-   IDENTIFIER_BINDINGs list, so any time that this is non-NULL so is
-   IDENTIFIER_BINDING.  */
-#define IDENTIFIER_CLASS_VALUE(NODE) \
-  (LANG_IDENTIFIER_CAST (NODE)->class_value)
 
 /* TREE_TYPE only indicates on local and class scope the current
    type. For namespace scope, the presence of a type in any namespace
@@ -4013,9 +4004,7 @@ extern void get_pure_virtuals		        (tree);
 extern void maybe_suppress_debug_info		(tree);
 extern void note_debug_info_needed		(tree);
 extern void push_class_decls			(tree);
-extern void pop_class_decls			(void);
 extern void print_search_statistics		(void);
-extern void init_search_processing		(void);
 extern void reinit_search_statistics		(void);
 extern tree current_scope			(void);
 extern int at_function_scope_p                  (void);

@@ -3047,7 +3047,6 @@ cxx_init_decl_processing (void)
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();
-  init_search_processing ();
   init_rtti_processing ();
 
   if (flag_exceptions)

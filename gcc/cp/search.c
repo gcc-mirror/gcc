@@ -36,39 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "stack.h"
 
-/* Obstack used for remembering decision points of breadth-first.  */
-
-static struct obstack search_obstack;
-
-/* Methods for pushing and popping objects to and from obstacks.  */
-
-struct stack_level *
-push_stack_level (struct obstack *obstack, char *tp,/* Sony NewsOS 5.0 compiler doesn't like void * here.  */
-		  int size)
-{
-  struct stack_level *stack;
-  obstack_grow (obstack, tp, size);
-  stack = (struct stack_level *) ((char*)obstack_next_free (obstack) - size);
-  obstack_finish (obstack);
-  stack->obstack = obstack;
-  stack->first = (tree *) obstack_base (obstack);
-  stack->limit = obstack_room (obstack) / sizeof (tree *);
-  return stack;
-}
-
-struct stack_level *
-pop_stack_level (struct stack_level *stack)
-{
-  struct stack_level *tem = stack;
-  struct obstack *obstack = tem->obstack;
-  stack = tem->prev;
-  obstack_free (obstack, tem);
-  return stack;
-}
-
-#define search_level stack_level
-static struct search_level *search_stack;
-
 struct vbase_info 
 {
   /* The class dominating the hierarchy.  */
@@ -90,9 +57,6 @@ static tree dfs_push_type_decls (tree, void *);
 static tree dfs_push_decls (tree, void *);
 static tree add_conversions (tree, void *);
 static int look_for_overrides_r (tree, tree);
-static struct search_level *push_search_level (struct stack_level *,
-					       struct obstack *);
-static struct search_level *pop_search_level (struct stack_level *);
 static tree bfs_walk (tree, tree (*) (tree, void *),
 		      tree (*) (tree, int, void *), void *);
 static tree lookup_field_queue_p (tree, int, void *);
@@ -108,26 +72,6 @@ static void setup_class_bindings (tree, int);
 static int template_self_reference_p (tree, tree);
 static tree dfs_get_pure_virtuals (tree, void *);
 
-/* Allocate a level of searching.  */
-
-static struct search_level *
-push_search_level (struct stack_level *stack, struct obstack *obstack)
-{
-  struct search_level tem;
-
-  tem.prev = stack;
-  return push_stack_level (obstack, (char *)&tem, sizeof (tem));
-}
-
-/* Discard a level of search allocation.  */
-
-static struct search_level *
-pop_search_level (struct stack_level *obstack)
-{
-  struct search_level *stack = pop_stack_level (obstack);
-
-  return stack;
-}
 
 /* Variables for gathering statistics.  */
 #ifdef GATHER_STATISTICS
@@ -1263,17 +1207,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
       xbasetype = NULL_TREE;
     }
 
-  if (type == current_class_type && TYPE_BEING_DEFINED (type)
-      && IDENTIFIER_CLASS_VALUE (name))
-    {
-      tree field = IDENTIFIER_CLASS_VALUE (name);
-      if (! is_overloaded_fn (field)
-	  && ! (want_type && TREE_CODE (field) != TYPE_DECL))
-	/* We're in the scope of this class, and the value has already
-	   been looked up.  Just return the cached value.  */
-	return field;
-    }
-
   type = complete_type (type);
   if (!basetype_path)
     basetype_path = TYPE_BINFO (type);
@@ -2099,6 +2032,11 @@ note_debug_info_needed (tree type)
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp, 0);
 }
 
+/* A vector of IDENTIFIER_NODEs that have been processed by
+   setup_class_bindings.  */
+
+static GTY(()) VEC(tree) *marked_identifiers;
+
 /* Subroutines of push_class_decls ().  */
 
 static void
@@ -2109,8 +2047,11 @@ setup_class_bindings (tree name, int type_binding_p)
 
   /* If we've already done the lookup for this declaration, we're
      done.  */
-  if (IDENTIFIER_CLASS_VALUE (name))
+  if (IDENTIFIER_MARKED (name))
     return;
+
+  IDENTIFIER_MARKED (name) = 1;
+  VEC_safe_push (tree, marked_identifiers, name);
 
   /* First, deal with the type binding.  */
   if (type_binding_p)
@@ -2161,8 +2102,13 @@ setup_class_bindings (tree name, int type_binding_p)
 	    {
 	      tree fns;
 	      for (fns = value_binding; fns; fns = OVL_NEXT (fns))
-		if (IDENTIFIER_CLASS_VALUE (DECL_NAME (OVL_CURRENT (fns))))
-		  return;
+		{
+		  tree name = DECL_NAME (OVL_CURRENT (fns));
+		  if (IDENTIFIER_MARKED (name))
+		    return;
+		  IDENTIFIER_MARKED (name) = 1;
+		  VEC_safe_push (tree, marked_identifiers, name);
+		}
 	    }
 	  pushdecl_class_level (value_binding);
 	}
@@ -2245,7 +2191,8 @@ dfs_push_decls (tree binfo, void *data)
 void
 push_class_decls (tree type)
 {
-  search_stack = push_search_level (search_stack, &search_obstack);
+  tree id;
+  size_t i;
 
   if (!TYPE_BINFO (type))
     /* This occurs when parsing an invalid declarator id where the
@@ -2257,15 +2204,14 @@ push_class_decls (tree type)
 
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
-}
 
-void
-pop_class_decls (void)
-{
-  /* We haven't pushed a search level when dealing with cached classes,
-     so we'd better not try to pop it.  */
-  if (search_stack)
-    search_stack = pop_search_level (search_stack);
+  /* Clear the IDENTIFIER_MARKED bits.  */
+  for (i = 0;
+       (id = VEC_iterate (tree, marked_identifiers, i));
+       ++i)
+    IDENTIFIER_MARKED (id) = 0;
+  if (marked_identifiers)
+    VEC_truncate (tree, marked_identifiers, 0);
 }
 
 void
@@ -2280,12 +2226,6 @@ print_search_statistics (void)
 #else /* GATHER_STATISTICS */
   fprintf (stderr, "no search statistics\n");
 #endif /* GATHER_STATISTICS */
-}
-
-void
-init_search_processing (void)
-{
-  gcc_obstack_init (&search_obstack);
 }
 
 void
@@ -2593,3 +2533,4 @@ original_binfo (tree binfo, tree here)
   return result;
 }
 
+#include "gt-cp-search.h"

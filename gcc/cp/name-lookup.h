@@ -88,7 +88,6 @@ typedef struct cxx_saved_binding GTY(())
   tree identifier;
   /* The binding we're saving.  */
   cxx_binding *binding;
-  tree class_value;
   tree real_type_value;
 } cxx_saved_binding;
 
@@ -97,7 +96,6 @@ DEF_VEC_O(cxx_saved_binding);
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void pop_binding (tree, tree);
-extern void clear_identifier_class_values (void);
 extern tree constructor_name_full (tree);
 extern tree constructor_name (tree);
 extern bool constructor_name_p (tree, tree);

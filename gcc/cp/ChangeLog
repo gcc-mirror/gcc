@@ -1,3 +1,51 @@
+2004-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_identifier): Remove class_value.
+	(IDENTIFIER_CLASS_VALUE): Remove.
+	(pop_class_decls): Likewise.
+	(init_search_processing): Likewise.
+	* class.c (handle_using_decl): Use lookup_member, not
+	IDENTIFIER_CLASS_VALUE.
+	(restore_class_cache): New function, split out from ...
+	(pushclass): ... here.  Do not call clear_identifier_class_values.
+	(invalidate_class_lookup_cache): Do not clear
+	IDENTIFIER_CLASS_VALUE.
+	(popclass): Do not call pop_class_decls.
+	(maybe_note_name_used_in_class): Do not save names looked up after
+	the class is complete.  Use lookup_member, not
+	IDENTIFIER_CLASS_VALUE.
+	* config-lang.in (gtfiles): Add $(srcdir)/cp/search.c.
+	* decl.c (cxx_init_decl_processing): Do not call
+	init_search_processing.
+	* method.c (do_build_copy_constructor): Remove unnecessary code.
+	(do_build_assign_ref): Likewise.
+	* name-lookup.c (pushdecl): Use lookup_member, not
+	IDENTIFIER_CLASS_VALUE.
+	(set_identifier_type_value_with_scope): Set TREE_TYPE on the
+	type_shadowed list.
+	(poplevel_class): Do not restore IDENTIFIER_CLASS_VALUE.
+	(push_class_binding): Do not set it.
+	(clear_identifier_class_values): Remove.
+	(push_class_level_binding): Do not set IDENTIFIER_CLASS_VALUE.
+	(store_binding): Do not save it.
+	(pop_from_top_level): Do not restore it.
+	* name-lookup.h (cxx_saved_binding): Remove class_value.
+	(clear_identifier_class_values): Remove.
+	* ptree.c (cxx_print_identifier): Do not print
+	IDENTIFIER_CLASS_VALUE.
+	* search.c (search_obstack): Remove.
+	(push_stack_level): Remove.
+	(pop_stack_level): Remove.
+	(search_level): Remove.
+	(search_stack): Remove.
+	(lookup_member): Don't check IDENTIFIER_CLASS_VALUE.
+	(setup_class_bindings): Use IDENTIFIER_MARKED, not
+	IDENTIFIER_CLASS_VALUE.
+	(marked_identifiers): New variable.
+	(push_class_decls): Clear IDENTIFIER_MARKED.
+	(pop_class_decls): Don't call pop_search_level.
+	(init_search_processing): Remove.
+
 2004-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (get_aggr_typedef): Remove.
