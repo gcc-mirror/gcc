@@ -1,3 +1,9 @@
+2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-parse.in (fndef): Set DECL_SOURCE_LINE and FILE earlier.
+	(nested_function): Likewise.
+	(notype_nested_function): Likewise.
+
 2003-05-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy-abi: Update overflow type for
