@@ -218,6 +218,7 @@ static struct processors all_cores[] =
   {"arm700",	FL_CO_PROC | FL_MODE26 | FL_MODE32 },
   {"arm700i",	FL_CO_PROC | FL_MODE26 | FL_MODE32 },
   {"arm710",	             FL_MODE26 | FL_MODE32 },
+  {"arm720",	             FL_MODE26 | FL_MODE32 },
   {"arm710c",	             FL_MODE26 | FL_MODE32 },
   {"arm7100",	             FL_MODE26 | FL_MODE32 },
   {"arm7500",	             FL_MODE26 | FL_MODE32 },

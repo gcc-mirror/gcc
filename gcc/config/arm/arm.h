@@ -132,6 +132,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=arm7:-D__ARM_ARCH_3__} \
 %{march=arm700:-D__ARM_ARCH_3__} \
 %{march=arm710:-D__ARM_ARCH_3__} \
+%{march=arm720:-D__ARM_ARCH_3__} \
 %{march=arm7100:-D__ARM_ARCH_3__} \
 %{march=arm7500:-D__ARM_ARCH_3__} \
 %{march=arm7500fe:-D__ARM_ARCH_3__} \
@@ -165,6 +166,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=arm7:-D__ARM_ARCH_3__} \
  %{mcpu=arm700:-D__ARM_ARCH_3__} \
  %{mcpu=arm710:-D__ARM_ARCH_3__} \
+ %{mcpu=arm720:-D__ARM_ARCH_3__} \
  %{mcpu=arm7100:-D__ARM_ARCH_3__} \
  %{mcpu=arm7500:-D__ARM_ARCH_3__} \
  %{mcpu=arm7500fe:-D__ARM_ARCH_3__} \

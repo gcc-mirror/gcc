@@ -1,3 +1,8 @@
+1999-12-14  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Add support for -mcpu=arm720 command line
+	switch. 
+
 Tue Dec 14 18:13:32 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Fix sign of giv lifetime calculation
