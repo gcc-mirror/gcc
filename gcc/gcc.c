@@ -1094,6 +1094,7 @@ static const struct option_map option_map[] =
    {"--output", "-o", "a"},
    {"--output-class-directory", "-foutput-class-dir=", "ja"},
    {"--param", "--param", "a"},
+   {"--pass-exit-codes", "-pass-exit-codes", 0},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pie", "-pie", 0},

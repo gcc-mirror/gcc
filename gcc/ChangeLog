@@ -1,3 +1,7 @@
+2004-12-02  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c (struct option_map): Add entry for "--pass-exit-codes".
+
 2004-12-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18763
