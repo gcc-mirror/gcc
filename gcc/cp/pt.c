@@ -1417,9 +1417,17 @@ convert_nontype_argument (type, expr)
   if (INTEGRAL_TYPE_P (expr_type) && TREE_READONLY_DECL_P (expr))
     expr = decl_constant_value (expr);
 
-  if (INTEGRAL_TYPE_P (expr_type) 
-      || TYPE_PTRMEM_P (expr_type) 
-      || TYPE_PTRMEMFUNC_P (expr_type))
+  if (is_overloaded_fn (expr))
+    /* OK for now.  We'll check that it has external linkage later.
+       Check this first since if expr_type is the unknown_type_node
+       we would otherwise complain below.  */
+    ;
+  else if (INTEGRAL_TYPE_P (expr_type) 
+	   || TYPE_PTRMEM_P (expr_type) 
+	   || TYPE_PTRMEMFUNC_P (expr_type)
+	   /* The next two are g++ extensions.  */
+	   || TREE_CODE (expr_type) == REAL_TYPE
+	   || TREE_CODE (expr_type) == COMPLEX_TYPE)
     {
       if (! TREE_CONSTANT (expr))
 	{
@@ -1474,9 +1482,6 @@ convert_nontype_argument (type, expr)
       if (!TREE_PUBLIC (expr))
 	goto bad_argument;
     }
-  else if (is_overloaded_fn (expr))
-    /* OK for now.  We'll check that it has external linkage later.  */
-    ;
   else 
     {
       cp_error ("object `%E' cannot be used as template argument", expr);
@@ -1526,8 +1531,7 @@ convert_nontype_argument (type, expr)
 	    tree fns;
 	    tree fn;
 
-	    if (TYPE_PTRFN_P (expr_type) ||
-		expr_type == unknown_type_node)
+	    if (TREE_CODE (expr) == ADDR_EXPR)
 	      fns = TREE_OPERAND (expr, 0);
 	    else
 	      fns = expr;
@@ -1819,7 +1823,7 @@ coerce_template_parms (parms, arglist, in_decl,
       /* In case we are checking arguments inside a template template
 	 parameter, ARG that does not come from default argument is 
 	 also a TREE_LIST node */
-      if (TREE_CODE (arg) == TREE_LIST)
+      if (TREE_CODE (arg) == TREE_LIST && ! is_overloaded_fn (arg))
 	{
           is_tmpl_parm = 1;
 	  arg = TREE_VALUE (arg);
@@ -2227,6 +2231,8 @@ lookup_template_class (d1, arglist, in_decl, context)
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
+      if (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d1)) == NULL_TREE)
+	return error_mark_node;
       template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
       d1 = DECL_NAME (template);
     }

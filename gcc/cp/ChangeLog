@@ -1,3 +1,13 @@
+Thu Jan 29 10:39:30 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (convert_nontype_argument): Move check for is_overloaded_fn
+	early to avoid bogus error.  Handle overloaded function
+	names provided as template arguments correctly.
+	(coerce_template_parms): Don't mishandle overloaded functions when
+	dealing with template template parameters.
+	(lookup_template_class): Issue an error message, rather than
+	crashing, when the TYPE_DECL provided is not a template type.
+
 Wed Jan 28 23:14:44 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (instantiate_type): Don't just return a known type if
