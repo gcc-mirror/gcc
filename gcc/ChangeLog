@@ -1,5 +1,9 @@
 2003-03-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (output_cbranch): Fix typo in comment.
+
+2003-03-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
 	* pa.c (output_cbranch, output_bb, output_bvb): Output nop for
 	conditional branch to the following instruction.  Use next_real_insn
 	instead of next_active_insn.
