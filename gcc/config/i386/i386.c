@@ -65,7 +65,18 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   2,					/* cost of reg,reg fld/fst */
   {8, 8, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {8, 8, 8}				/* cost of loading integer registers */
+  {8, 8, 8},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {4, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 8, 16},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 8, 16},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
 };
 
 struct processor_costs i486_cost = {	/* 486 specific costs */
@@ -86,7 +97,18 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   2,					/* cost of reg,reg fld/fst */
   {8, 8, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {8, 8, 8}				/* cost of loading integer registers */
+  {8, 8, 8},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {4, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 8, 16},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 8, 16},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3					/* MMX or SSE register to integer */
 };
 
 struct processor_costs pentium_cost = {
@@ -107,7 +129,18 @@ struct processor_costs pentium_cost = {
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6}				/* cost of loading integer registers */
+  {4, 4, 6},				/* cost of loading integer registers */
+  8,					/* cost of moving MMX register */
+  {8, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 8, 16},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 8, 16},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3					/* MMX or SSE register to integer */
 };
 
 struct processor_costs pentiumpro_cost = {
@@ -128,7 +161,18 @@ struct processor_costs pentiumpro_cost = {
   2,					/* cost of reg,reg fld/fst */
   {2, 2, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 6}				/* cost of loading integer registers */
+  {4, 4, 6},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {2, 2},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {2, 2},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {2, 2, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {2, 2, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3					/* MMX or SSE register to integer */
 };
 
 struct processor_costs k6_cost = {
@@ -149,7 +193,18 @@ struct processor_costs k6_cost = {
   4,					/* cost of reg,reg fld/fst */
   {6, 6, 6},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 4}				/* cost of loading integer registers */
+  {4, 4, 4},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {2, 2},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {2, 2},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {2, 2, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {2, 2, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  6					/* MMX or SSE register to integer */
 };
 
 struct processor_costs athlon_cost = {
@@ -170,7 +225,18 @@ struct processor_costs athlon_cost = {
   4,					/* cost of reg,reg fld/fst */
   {6, 6, 20},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 16}				/* cost of loading integer registers */
+  {4, 4, 16},				/* cost of loading integer registers */
+  2,					/* cost of moving MMX register */
+  {2, 2},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {2, 2},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {2, 2, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {2, 2, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  6					/* MMX or SSE register to integer */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;
@@ -8854,7 +8920,13 @@ ix86_register_move_cost (mode, class1, class2)
      ??? We should make this cost CPU specific.  */
   if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
       || SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
-    return 3;
+    return ix86_cost->mmxsse_to_integer;
+  if (MAYBE_FLOAT_CLASS_P (class1))
+    return ix86_cost->fp_move;
+  if (MAYBE_SSE_CLASS_P (class1))
+    return ix86_cost->sse_move;
+  if (MAYBE_MMX_CLASS_P (class1))
+    return ix86_cost->mmx_move;
   return 2;
 }
 
@@ -8886,4 +8958,97 @@ ix86_hard_regno_mode_ok (regno, mode)
   if (regno < 4 || mode != QImode)
     return 1;
   return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
+}
+
+/* Return the cost of moving data of mode M between a
+   register and memory.  A value of 2 is the default; this cost is
+   relative to those in `REGISTER_MOVE_COST'.
+
+   If moving between registers and memory is more expensive than
+   between two registers, you should define this macro to express the
+   relative cost.  
+ 
+   Model also increased moving costs of QImode registers in non
+   Q_REGS classes.
+ */
+int
+ix86_memory_move_cost (mode, class, in)
+     enum machine_mode mode;
+     enum reg_class class;
+     int in;
+{
+  if (FLOAT_CLASS_P (class))
+    {
+      int index;
+      switch (mode)
+	{
+	  case SFmode:
+	    index = 0;
+	    break;
+	  case DFmode:
+	    index = 1;
+	    break;
+	  case XFmode:
+	  case TFmode:
+	    index = 2;
+	    break;
+	  default:
+	    return 100;
+	}
+      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
+    }
+  if (SSE_CLASS_P (class))
+    {
+      int index;
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    index = 0;
+	    break;
+	  case 8:
+	    index = 1;
+	    break;
+	  case 16:
+	    index = 2;
+	    break;
+	  default:
+	    return 100;
+	}
+      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
+    }
+  if (MMX_CLASS_P (class))
+    {
+      int index;
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    index = 0;
+	    break;
+	  case 8:
+	    index = 1;
+	    break;
+	  default:
+	    return 100;
+	}
+      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
+    }
+  switch (GET_MODE_SIZE (mode))
+    {
+      case 1:
+	if (in)
+	  return (Q_CLASS_P (class) ? ix86_cost->int_load[0]
+		  : ix86_cost->movzbl_load);
+	else
+	  return (Q_CLASS_P (class) ? ix86_cost->int_store[0]
+		  : ix86_cost->int_store[0] + 4);
+	break;
+      case 2:
+	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
+      default:
+	/* Compute number of 32bit moves needed.  TFmode is moved as XFmode.  */
+	if (mode == TFmode)
+	  mode = XFmode;
+	return ((in ? ix86_cost->int_load[1] : ix86_cost->int_store[1])
+		* (int) GET_MODE_SIZE (mode) / 4);
+    }
 }

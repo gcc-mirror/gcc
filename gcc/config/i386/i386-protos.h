@@ -139,6 +139,8 @@ extern int ix86_secondary_memory_needed PARAMS ((enum reg_class,
 						 enum machine_mode, int));
 extern enum reg_class ix86_preferred_reload_class PARAMS ((rtx,
 							   enum reg_class));
+extern int ix86_memory_move_cost PARAMS ((enum machine_mode, enum reg_class,
+					  int));
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));

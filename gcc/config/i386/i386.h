@@ -72,6 +72,18 @@ struct processor_costs {
 				   in SFmode, DFmode and XFmode */
   int fp_store[3];		/* cost of storing FP register
 				   in SFmode, DFmode and XFmode */
+  int mmx_move;			/* cost of moving MMX register.  */
+  int mmx_load[2];		/* cost of loading MMX register
+				   in SImode and DImode */
+  int mmx_store[2];		/* cost of storing MMX register
+				   in SImode and DImode */
+  int sse_move;			/* cost of moving SSE register.  */
+  int sse_load[3];		/* cost of loading SSE register
+				   in SImode, DImode and TImode*/
+  int sse_store[3];		/* cost of storing SSE register
+				   in SImode, DImode and TImode*/
+  int mmxsse_to_integer;	/* cost of moving mmxsse register to
+				   integer and vice versa.  */
 };
 
 extern struct processor_costs *ix86_cost;
@@ -2395,28 +2407,10 @@ while (0)
 
    If moving between registers and memory is more expensive than
    between two registers, you should define this macro to express the
-   relative cost.  
- 
-   Model also increased moving costs of QImode registers in non
-   Q_REGS classes.
- */
+   relative cost.  */
 
-#define MEMORY_MOVE_COST(MODE,CLASS,IN)					\
-  (FLOAT_CLASS_P (CLASS)						\
-   ? (GET_MODE_SIZE (MODE)==4						\
-      ? (IN ? ix86_cost->fp_load[0] : ix86_cost->fp_store[0])		\
-      : (GET_MODE_SIZE (MODE)==8					\
-	 ? (IN ? ix86_cost->fp_load[1] : ix86_cost->fp_store[1])	\
-	 : (IN ? ix86_cost->fp_load[2] : ix86_cost->fp_store[2])))	\
-   : (GET_MODE_SIZE (MODE)==1						\
-      ? (IN ? (Q_CLASS_P (CLASS) ? ix86_cost->int_load[0]		\
-				 : ix86_cost->movzbl_load)		\
-	    : (Q_CLASS_P (CLASS) ? ix86_cost->int_store[0]		\
-				 : ix86_cost->int_store[0] + 4))	\
-      : (GET_MODE_SIZE (MODE)==2					\
-	 ? (IN ? ix86_cost->int_load[1] : ix86_cost->int_store[1])	\
-	 : ((IN ? ix86_cost->int_load[2] : ix86_cost->int_store[2])	\
-	    * (int) GET_MODE_SIZE (MODE) / 4))))
+#define MEMORY_MOVE_COST(MODE,CLASS,IN)	\
+  ix86_memory_move_cost (MODE, CLASS, IN)
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
