@@ -1,5 +1,41 @@
 2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.in (GTFILES): Remove stmt.c
+	(stmt.o): Do not depend on gt-stmt.h.
+	* emit-rtl.c (emit_line_note): Do not call
+	set_file_and_line_for_stmt.
+	* expr.c (expand_expr_real_1) <SWITCH_EXPR>: Let expand_case
+	do everything.
+	* function.c (free_after_parsing): Do not free STMT field.
+	(allocate_struct_function): Do not call init_stmt_for_function.
+	(assign_stack_temp_for_type): Do not accept values of keep
+	other than 0 or 1.
+	(init_temp_slots): Do not initialize removed variables.
+	* function.h (struct function): Remove STMT, X_TARGET_TEMP_SLOT_LEVEL
+	and X_VAR_TEMP_SLOT_LEVEL fields.
+	* rtl.h (set_file_and_line_for_stmt): Remove.
+	* stmt.c (struct nesting, ALLOC_NESTING, POPSTACK,
+	struct stmt_status, cond_stack, case_stack, nesting_stack,
+	nesting_depth, emit_locus, set_file_and_line_for_stmt,
+	same_case_target_p, init_stmt_for_function, emit_nop,
+	expand_start_cond, expand_start_elseif, expand_start_else,
+	expand_elseif, expand_end_cond): Remove.
+	(preserve_subexpressions_p): Remove references to CFUN->STMT.
+	(expand_start_case, expand_end_case_type): Remove, merge into...
+	(expand_case): ... this one, including other bits from
+	expand_expr_real_1.  Inline same_case_target_p.  Turn members
+	of CASE_STACK into local variables.
+	(emit_case_bit_tests): Inline same_case_target_p.
+	(add_case_node): Add HEAD argument, return new head of the list,
+	do not handle default label here.
+	* tree.h (expand_start_cond, expand_end_cond, expand_start_else,
+	expand_start_elseif, current_nesting_level, expand_start_case,
+	expand_end_case_type, expand_end_case, add_case_node,
+	init_stmt_for_function, expand_elseif): Remove prototypes.
+	(expand_case): Add prototype.
+
+2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
 	* expr.c (expand_expr_real_1): Use optab_for_tree_code.
 
 2004-08-09  Paolo Bonzini  <bonzini@gnu.org>

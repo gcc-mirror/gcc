@@ -3352,22 +3352,12 @@ extern void expand_decl_init (tree);
 extern void expand_label (tree);
 extern void expand_goto (tree);
 extern void expand_asm (tree, int);
-extern void expand_start_cond (tree, int);
-extern void expand_end_cond (void);
-extern void expand_start_else (void);
-extern void expand_start_elseif (tree);
 
 extern void expand_stack_alloc (tree, tree);
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
 extern int is_body_block (tree);
-
-extern struct nesting * current_nesting_level (void);
-extern void expand_start_case (tree);
-extern void expand_end_case_type (tree, tree);
-#define expand_end_case(cond) expand_end_case_type (cond, NULL)
-extern void add_case_node (tree, tree, tree);
 
 /* In tree-eh.c */
 extern void using_eh_for_cleanups (void);
@@ -3619,7 +3609,6 @@ extern void notice_global_symbol (tree);
 extern void set_user_assembler_name (tree, const char *);
 
 /* In stmt.c */
-extern void emit_nop (void);
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
 				     bool *, bool *, bool *);
@@ -3629,8 +3618,7 @@ extern void expand_asm_operands (tree, tree, tree, tree, int, location_t);
 extern void expand_asm_expr (tree);
 extern bool asm_op_is_mem_input (tree, tree);
 extern tree resolve_asm_operand_names (tree, tree, tree);
-extern void init_stmt_for_function (void);
-extern void expand_elseif (tree);
+extern void expand_case (tree);
 extern void expand_decl (tree);
 extern void expand_anon_union_decl (tree, tree, tree);
 
