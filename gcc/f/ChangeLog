@@ -1,3 +1,8 @@
+2001-12-14  Roger Sayle <roger@eyesopen.com>
+
+	* com-rt.def: Use __builtin_sqrt instead of __builtin_fsqrt.
+	* com.c (ffecom_init_0): Same, and fixed enumeration usage.
+
 2001-12-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77.texi: Don't condition menus on @ifinfo.
@@ -953,7 +958,7 @@ Sun Jun 11 00:03:00 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* top.c (ffe_decode_option): Update -Wall unused flags by calling
- 	set_Wunused.
+	set_Wunused.
 
 2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -1270,7 +1275,7 @@ Sun Sep 12 23:29:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(g77_newargv): Constify.
 	(lookup_option, append_arg, lang_specific_driver): Constify a char*.
 	(lang_specific_driver): All calls to the function pointer
- 	parameter now explicitly call `fatal'.
+	parameter now explicitly call `fatal'.
 
 Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 

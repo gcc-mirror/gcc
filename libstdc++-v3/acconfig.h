@@ -100,8 +100,8 @@
 // Define if the compiler/host combination has __builtin_sinl
 #undef HAVE___BUILTIN_SINL
 
-// Define if the compiler/host combination has __builtin_fsqrt
-#undef HAVE___BUILTIN_FSQRT
+// Define if the compiler/host combination has __builtin_sqrt
+#undef HAVE___BUILTIN_SQRT
 
 // Define if the compiler/host combination has __builtin_sqrtf
 #undef HAVE___BUILTIN_SQRTF

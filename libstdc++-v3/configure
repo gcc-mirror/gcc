@@ -6502,10 +6502,10 @@ EOF
   fi
 
   
-  echo $ac_n "checking for __builtin_fsqrt declaration""... $ac_c" 1>&6
-echo "configure:6507: checking for __builtin_fsqrt declaration" >&5
-  if test x${glibcpp_cv_func___builtin_fsqrt_use+set} != xset; then
-    if eval "test \"`echo '$''{'glibcpp_cv_func___builtin_fsqrt_use'+set}'`\" = set"; then
+  echo $ac_n "checking for __builtin_sqrt declaration""... $ac_c" 1>&6
+echo "configure:6507: checking for __builtin_sqrt declaration" >&5
+  if test x${glibcpp_cv_func___builtin_sqrt_use+set} != xset; then
+    if eval "test \"`echo '$''{'glibcpp_cv_func___builtin_sqrt_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
@@ -6522,17 +6522,17 @@ cross_compiling=$ac_cv_prog_cxx_cross
 #include "confdefs.h"
 #include <math.h>
 int main() {
- __builtin_fsqrt(0);
+ __builtin_sqrt(0);
 ; return 0; }
 EOF
 if { (eval echo configure:6529: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  glibcpp_cv_func___builtin_fsqrt_use=yes
+  glibcpp_cv_func___builtin_sqrt_use=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  glibcpp_cv_func___builtin_fsqrt_use=no
+  glibcpp_cv_func___builtin_sqrt_use=no
 fi
 rm -f conftest*
       ac_ext=c
@@ -6546,12 +6546,12 @@ cross_compiling=$ac_cv_prog_cc_cross
 fi
 
   fi
-  echo "$ac_t""$glibcpp_cv_func___builtin_fsqrt_use" 1>&6
-  if test x$glibcpp_cv_func___builtin_fsqrt_use = x"yes"; then
-    echo $ac_n "checking for __builtin_fsqrt linkage""... $ac_c" 1>&6
-echo "configure:6553: checking for __builtin_fsqrt linkage" >&5
-    if test x${glibcpp_cv_func___builtin_fsqrt_link+set} != xset; then
-      if eval "test \"`echo '$''{'glibcpp_cv_func___builtin_fsqrt_link'+set}'`\" = set"; then
+  echo "$ac_t""$glibcpp_cv_func___builtin_sqrt_use" 1>&6
+  if test x$glibcpp_cv_func___builtin_sqrt_use = x"yes"; then
+    echo $ac_n "checking for __builtin_sqrt linkage""... $ac_c" 1>&6
+echo "configure:6553: checking for __builtin_sqrt linkage" >&5
+    if test x${glibcpp_cv_func___builtin_sqrt_link+set} != xset; then
+      if eval "test \"`echo '$''{'glibcpp_cv_func___builtin_sqrt_link'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
@@ -6560,26 +6560,26 @@ else
 #include "confdefs.h"
 #include <math.h>
 int main() {
- __builtin_fsqrt(0);
+ __builtin_sqrt(0);
 ; return 0; }
 EOF
 if { (eval echo configure:6567: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
-  glibcpp_cv_func___builtin_fsqrt_link=yes
+  glibcpp_cv_func___builtin_sqrt_link=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  glibcpp_cv_func___builtin_fsqrt_link=no
+  glibcpp_cv_func___builtin_sqrt_link=no
 fi
 rm -f conftest*
       
 fi
 
     fi
-    echo "$ac_t""$glibcpp_cv_func___builtin_fsqrt_link" 1>&6
-    if test x$glibcpp_cv_func___builtin_fsqrt_link = x"yes"; then
-      ac_tr_func=HAVE_`echo __builtin_fsqrt | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+    echo "$ac_t""$glibcpp_cv_func___builtin_sqrt_link" 1>&6
+    if test x$glibcpp_cv_func___builtin_sqrt_link = x"yes"; then
+      ac_tr_func=HAVE_`echo __builtin_sqrt | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
       cat >> confdefs.h <<EOF
 #define ${ac_tr_func} 1
 EOF
@@ -7239,7 +7239,7 @@ EOF
 EOF
 
     cat >> confdefs.h <<\EOF
-#define HAVE___BUILTIN_FSQRT 1
+#define HAVE___BUILTIN_SQRT 1
 EOF
 
     cat >> confdefs.h <<\EOF

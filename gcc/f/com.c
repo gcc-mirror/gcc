@@ -11713,23 +11713,23 @@ ffecom_init_0 ()
     = build_function_type (void_type_node, NULL_TREE);
 
   builtin_function ("__builtin_sqrtf", float_ftype_float,
-		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtf");
-  builtin_function ("__builtin_fsqrt", double_ftype_double,
-		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrt");
+		    BUILT_IN_SQRTF, BUILT_IN_NORMAL, "sqrtf");
+  builtin_function ("__builtin_sqrt", double_ftype_double,
+		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt");
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
-		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtl");
+		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl");
   builtin_function ("__builtin_sinf", float_ftype_float,
-		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinf");
+		    BUILT_IN_SINF, BUILT_IN_NORMAL, "sinf");
   builtin_function ("__builtin_sin", double_ftype_double,
 		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin");
   builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
-		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sinl");
+		    BUILT_IN_SINL, BUILT_IN_NORMAL, "sinl");
   builtin_function ("__builtin_cosf", float_ftype_float,
-		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosf");
+		    BUILT_IN_COSF, BUILT_IN_NORMAL, "cosf");
   builtin_function ("__builtin_cos", double_ftype_double,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
-		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
+		    BUILT_IN_COSL, BUILT_IN_NORMAL, "cosl");
 
   pedantic_lvalues = FALSE;
 

@@ -4400,10 +4400,8 @@ The ISO C89 functions @code{abs}, @code{cos}, @code{fabs},
 @code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr} are all
 recognized as built-in functions unless @option{-fno-builtin} is
 specified (or @option{-fno-builtin-@var{function}} is specified for an
-individual function).  All of these functions have
-corresponding versions prefixed
-with @code{__builtin_}, except that the version for @code{sqrt} is
-called @code{__builtin_fsqrt}.
+individual function).  All of these functions have corresponding
+versions prefixed with @code{__builtin_}.
 
 GCC provides built-in versions of the ISO C99 floating point comparison
 macros that avoid raising exceptions for unordered operands.  They have

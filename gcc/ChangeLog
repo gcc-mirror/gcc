@@ -1,3 +1,11 @@
+2001-12-14  Roger Sayle <roger@eyesopen.com>
+
+	* builtins.def: Rename BUILT_IN_FSQRT to BUILT_IN_SQRT and
+	__builtin_fsqrt to __builtin_sqrt.
+
+	* builtins.c (expand_builtin_mathfn,expand_builtin): Same.
+	* doc/extend.texi: Simplify documentation to match patch.
+
 Fri Dec 14 21:23:54 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* config.gcc: Revamp target_cpu_default2 to strings;
@@ -137,7 +145,7 @@ Thu Dec 13 20:30:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* collect2.c (COLLECT_SHARED_INIT_FUNC)
 	(COLLECT_SHARD_FINI_FUNC): Define default values.
-	(write_c_file_stat): Use them to call construtor and destructor 
+	(write_c_file_stat): Use them to call construtor and destructor
 	functions in shared libraries.
 	* doc/tm.texi (COLLECT_SHARED_INIT_FUNC)
 	(COLLECT_SHARD_FINI_FUNC): Document them.

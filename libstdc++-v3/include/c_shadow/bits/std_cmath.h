@@ -318,7 +318,7 @@ namespace _C_legacy {
 
 #if _GLIBCPP_HAVE___BUILTIN_SQRT
   inline double 
-  _CPP_sqrt_capture(double __x) { return __builtin_fsqrt(__x); }
+  _CPP_sqrt_capture(double __x) { return __builtin_sqrt(__x); }
 #else
   inline double 
   _CPP_sqrt_capture(double __x) { return sqrt(__x); }

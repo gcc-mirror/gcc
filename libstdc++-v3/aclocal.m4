@@ -599,7 +599,7 @@ dnl check for __builtin_fabl
 dnl check for __builtin_labs
 dnl check for __builtin_sqrtf
 dnl check for __builtin_sqrtl
-dnl check for __builtin_fsqrt
+dnl check for __builtin_sqrt
 dnl check for __builtin_sinf
 dnl check for __builtin_sin
 dnl check for __builtin_sinl
@@ -618,7 +618,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_labs)
 
   GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrtf)
-  GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_fsqrt)
+  GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrt)
   GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrtl)
 
   GLIBCPP_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sinf)
@@ -648,7 +648,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
     AC_DEFINE(HAVE___BUILTIN_SIN)
     AC_DEFINE(HAVE___BUILTIN_SINF)
     AC_DEFINE(HAVE___BUILTIN_SINL)
-    AC_DEFINE(HAVE___BUILTIN_FSQRT)
+    AC_DEFINE(HAVE___BUILTIN_SQRT)
     AC_DEFINE(HAVE___BUILTIN_SQRTF)
     AC_DEFINE(HAVE___BUILTIN_SQRTL)
   fi

@@ -273,7 +273,7 @@ DEFGFRT (FFECOM_gfrtL_LOG10, "log10", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, T
 DEFGFRT (FFECOM_gfrtL_POW, "pow", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
 DEFGFRT (FFECOM_gfrtL_SIN, "__builtin_sin", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
 DEFGFRT (FFECOM_gfrtL_SINH, "sinh", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
-DEFGFRT (FFECOM_gfrtL_SQRT, "__builtin_fsqrt", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
+DEFGFRT (FFECOM_gfrtL_SQRT, "__builtin_sqrt", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
 DEFGFRT (FFECOM_gfrtL_TAN, "tan", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
 DEFGFRT (FFECOM_gfrtL_TANH, "tanh", FFECOM_rttypeDOUBLE_, "d", FALSE, FALSE, TRUE)
 
