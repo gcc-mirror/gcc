@@ -1,3 +1,8 @@
+1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (instantiate_type): Downgrade errors for object-dependent
+	memfn refs to pedwarn.
+
 1999-05-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Don't treat [] as indicating a
