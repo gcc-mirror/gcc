@@ -1,3 +1,18 @@
+Wed Jul  1 11:19:13 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980701-1.f (which was producing "unaligned trap"
+	on an Alpha running GNU/Linux, as predicted):
+	* equiv.c (ffeequiv_layout_local_): Don't bother
+	coping with pre-padding of entire area while building
+	it; do that instead after the building is done, and
+	do it by modifying only the modulo field.  This covers
+	the case of alignment stringency being increased without
+	lowering the starting offset, unlike the previous changes,
+	and even more elegantly than those.
+
+	* target.c (ffetarget_align): Make sure alignments
+	are non-zero, just in case.
+
 Mon Jun 29 09:47:33 1998  Craig Burley  <burley@gnu.org>
 
 	Fix 980628-*.f:

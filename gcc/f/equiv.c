@@ -368,6 +368,7 @@ ffeequiv_layout_local_ (ffeequiv eq)
 	      ffestorag item_st;		/* Storage for var. */
 	      ffesymbol item_sym;		/* Var itself. */
 	      ffetargetOffset item_offset;	/* Offset for var from root. */
+	      ffetargetOffset new_size;
 
 	      item_exp = ffebld_head (item);
 	      item_sym = ffeequiv_symbol (item_exp);
@@ -433,28 +434,18 @@ ffeequiv_layout_local_ (ffeequiv eq)
 		}
 	      else if (item_offset < ffestorag_offset (st))
 		{
-		  ffetargetOffset new_size;
-
-		  /* First, calculate the initial padding necessary
-		     to preserve the current alignment/modulo requirements
-		     for the storage area.  */
-		  pad = (-item_offset) % ffestorag_alignment (st);
-		  if (pad != 0)
-		    pad = ffestorag_alignment (st) - pad;
-
-		  /* Increase size of equiv area to start for lower offset relative
-		     to root symbol.  */
+		  /* Increase size of equiv area to start for lower offset
+		     relative to root symbol.  */
 		  if (! ffetarget_offset_add (&new_size,
-					     (ffestorag_offset (st)
-					      - item_offset)
-					     + pad,
-					     ffestorag_size (st)))
+					      ffestorag_offset (st)
+					      - item_offset,
+					      ffestorag_size (st)))
 		    ffetarget_offset_overflow (ffesymbol_text (s));
 		  else
 		    ffestorag_set_size (st, new_size);
 
 		  ffestorag_set_symbol (st, item_sym);
-		  ffestorag_set_offset (st, item_offset - pad);
+		  ffestorag_set_offset (st, item_offset);
 
 #if FFEEQUIV_DEBUG
 		  fprintf (stderr, " [eq offset=%" ffetargetOffset_f
@@ -537,6 +528,42 @@ ffeequiv_layout_local_ (ffeequiv eq)
   ffesymbol_set_equiv (root_sym, NULL);	/* This one has storage now. */
 
   ffeequiv_kill (eq);		/* Fully processed, no longer needed. */
+
+  /* If the offset for this storage area is zero (it cannot be positive),
+     that means the alignment/modulo info is already correct.  Otherwise,
+     the alignment info is correct, but the modulo info reflects a
+     zero offset, so fix it.  */
+
+  if (ffestorag_offset (st) < 0)
+    {
+      /* Calculate the initial padding necessary to preserve
+	 the alignment/modulo requirements for the storage area.
+	 These requirements are themselves kept track of in the
+	 record for the storage area as a whole, but really pertain
+	 to offset 0 of that area, which is where the root symbol
+	 was originally placed.
+
+	 The goal here is to have the offset and size for the area
+	 faithfully reflect the area itself, not extra requirements
+	 like alignment.  So to meet the alignment requirements,
+	 the modulo for the area should be set as if the area had an
+	 alignment requirement of alignment/0 and was aligned/padded
+	 downward to meet the alignment requirements of the area at
+	 offset zero, the amount of padding needed being the desired
+	 value for the modulo of the area.  */
+
+      alignment = ffestorag_alignment (st);
+      modulo = ffestorag_modulo (st);
+
+      /* Since we want to move the whole area *down* (lower memory
+	 addresses) as required by the alignment/modulo paid, negate
+	 the offset to ffetarget_align, which assumes aligning *up*
+	 is desired.  */
+      pad = ffetarget_align (&alignment, &modulo,
+			     - ffestorag_offset (st),
+			     alignment, 0);
+      ffestorag_set_modulo (st, pad);
+    }
 
   if (init)
     ffedata_gather (st);	/* Gather subordinate inits into one init. */
