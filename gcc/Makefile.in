@@ -1254,6 +1254,13 @@ $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
 	makeinfo `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
 
+# This works with GNU Make's default rule.
+$(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
+		md.texi rtl.texi tm.texi 
+
+# This works with GNU Make's default rule.
+$(srcdir)/cpp.dvi: cpp.texi
+
 $(srcdir)/INSTALL: install1.texi install.texi
 	makeinfo -D INSTALLONLY --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
 
