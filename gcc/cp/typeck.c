@@ -2433,6 +2433,27 @@ build_array_ref (array, idx)
       || TREE_TYPE (idx) == error_mark_node)
     return error_mark_node;
 
+  /* If ARRAY is a COMPOUND_EXPR or COND_EXPR, move our reference
+     inside it.  */
+  switch (TREE_CODE (array))
+    {
+    case COMPOUND_EXPR:
+      {
+	tree value = build_array_ref (TREE_OPERAND (array, 1), idx);
+	return build (COMPOUND_EXPR, TREE_TYPE (value),
+		      TREE_OPERAND (array, 0), value);
+      }
+
+    case COND_EXPR:
+      return build_conditional_expr
+	(TREE_OPERAND (array, 0),
+	 build_array_ref (TREE_OPERAND (array, 1), idx),
+	 build_array_ref (TREE_OPERAND (array, 2), idx));
+
+    default:
+      break;
+    }
+
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE
       && TREE_CODE (array) != INDIRECT_REF)
     {
@@ -2469,6 +2490,7 @@ build_array_ref (array, idx)
 	  if (mark_addressable (array) == 0)
 	    return error_mark_node;
 	}
+
       /* An array that is indexed by a constant value which is not within
 	 the array bounds cannot be stored in a register either; because we
 	 would get a crash in store_bit_field/extract_bit_field when trying

@@ -1,3 +1,8 @@
+2001-04-10  Richard Henderson  <rth@redhat.com>
+
+	* typeck.c (build_array_ref): Push the array reference inside
+	COMPOUND_EXPR and COND_EXPR.
+
 2001-04-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (find_final_overrider_data): Add `candidates'.
